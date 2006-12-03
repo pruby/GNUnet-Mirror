@@ -29,7 +29,6 @@
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
-#include "gnunet_blockstore.h"
 
 typedef void (*ResultHandler)(const HashCode512 * key,
 			      unsigned int type,

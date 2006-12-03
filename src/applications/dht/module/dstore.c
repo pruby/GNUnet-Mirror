@@ -32,6 +32,7 @@
 
 #include "platform.h"
 #include "dstore.h"
+#include "gnunet_blockstore.h"
 
 
 /**

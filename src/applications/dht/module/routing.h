@@ -29,6 +29,39 @@
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
+#include "dstore.h"
+
+/**
+ * Start a DHT get operation.
+ */
+void dht_get_start(const HashCode512 * key,
+		  unsigned int type,
+		  ResultHandler handler,
+		  void * cls);
+
+/**
+ * Stop a DHT get operation (prevents calls to
+ * the given iterator).
+ */
+void dht_get_stop(const HashCode512 * key,
+		  unsigned int type,
+		  ResultHandler handler,
+		  void * cls);
+
+/**
+ * Perform a DHT put operation.  Note that PUT operations always
+ * expire after a period of time and the client is responsible for
+ * doing periodic refreshs.  The given expiration time is ONLY used to
+ * ensure that the datum is certainly deleted by that time (it maybe
+ * deleted earlier).
+ *
+ * @param expirationTime absolute expiration time
+ */
+void dht_put(const HashCode512 * key,
+	     unsigned int type,
+	     unsigned int size,
+	     cron_t expirationTime,
+	     const char * data);
 
 /**
  * Initialize routing DHT component.

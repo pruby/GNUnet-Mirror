@@ -23,12 +23,20 @@
  * @brief state for active DHT routing operations
  * @author Christian Grothoff
  *
- * TODO:
+ * CRITICAL:
  * - tracking of get/put opertations
- * - retry
- * - reply handling
- * - prioritization
+ * - reply routing
+ *
+ * RC:
+ * - add support for GET retry (or delayed initial GET ops)
+ * - fix problem with possible GET/PUT routing loops!
+ *   (not convinced that current design even probabilistically
+ *    prevents loops; also check for routing loops by
+ *    checking pending queries)
  * - stats
+ *
+ * LATER:
+ * - prioritization
  */
 
 #include "platform.h"
@@ -174,6 +182,18 @@ static void routeResult(const HashCode512 * key,
 			unsigned int size,
 			const char * data,
 			void * cls) {
+  MUTEX_LOCK(lock);
+  /* FIXME */
+  MUTEX_UNLOCK(lock);
+}
+
+static void addRoute(const PeerIdentity * sender,
+		     ResultHandler handler,
+		     void * cls,
+		     const DHT_GET_MESSAGE * get) {
+  MUTEX_LOCK(lock);
+  /* FIXME */
+  MUTEX_UNLOCK(lock);
 }
 
 /**
@@ -191,6 +211,7 @@ static int handleGet(const PeerIdentity * sender,
   PeerIdentity next[GET_TRIES];
   const DHT_GET_MESSAGE * get;
   int total;
+  int routed;
   int i;
 
   if (ntohs(msg->size) != sizeof(DHT_GET_MESSAGE)) {
@@ -204,6 +225,7 @@ static int handleGet(const PeerIdentity * sender,
 			NULL);
   if (total > 0)
     return OK;
+  routed = 0;
   for (i=0;i<GET_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
 			      &get->key,
@@ -212,11 +234,19 @@ static int handleGet(const PeerIdentity * sender,
       break;
     if (-1 == hashCodeCompareDistance(&next[i].hashPubKey,
 				      &coreAPI->myIdentity->hashPubKey,
-				      &get->key))
+				      &get->key)) {
+      if ( (routed == 0) &&
+	   (sender != NULL) )
+	addRoute(sender,
+		 NULL,
+		 NULL,
+		 get);
+      routed = 1;
       coreAPI->unicast(&next[i],
 		       msg,
 		       0, /* FIXME: priority */
 		       5 * cronSECONDS); /* FIXME */
+    }
   }
   return OK;
 }
@@ -290,6 +320,83 @@ static int handleResult(const PeerIdentity * sender,
 	      (const char*) &result[1],
 	      NULL);
   return OK;
+}
+
+/**
+ * Start a DHT get operation.
+ */
+void dht_get_start(const HashCode512 * key,
+		   unsigned int type,
+		   ResultHandler handler,
+		   void * cls) {
+  DHT_GET_MESSAGE get;
+  
+  get.header.size = htons(sizeof(DHT_GET_MESSAGE));
+  get.header.type = htons(P2P_PROTO_DHT_GET);
+  get.type = htonl(type);
+  get.prio = htonl(0); /* FIXME */
+  get.reserved = htonl(0);
+  get.key = *key;  
+  handleGet(NULL,
+	    &get.header);
+}
+
+/**
+ * Stop a DHT get operation (prevents calls to
+ * the given iterator).
+ */
+void dht_get_stop(const HashCode512 * key,
+		  unsigned int type,
+		  ResultHandler handler,
+		  void * cls) {
+  int i;
+  
+  MUTEX_LOCK(lock);
+  for (i=0;i<rt_size;i++) {
+    if (records[i] == NULL)
+      continue;
+    if ( (records[i]->source.receiver == handler) &&
+	 (records[i]->source.receiver_closure == cls) &&
+	 (0 == memcmp(key,
+		      &records[i]->get->key,
+		      sizeof(HashCode512))) ) {
+      FREE(records[i]->get);
+      FREE(records[i]);
+      records[i] = NULL;
+      break;
+    }
+  }
+  MUTEX_UNLOCK(lock);
+}
+
+/**
+ * Perform a DHT put operation.  Note that PUT operations always
+ * expire after a period of time and the client is responsible for
+ * doing periodic refreshs.  The given expiration time is ONLY used to
+ * ensure that the datum is certainly deleted by that time (it maybe
+ * deleted earlier).
+ *
+ * @param expirationTime absolute expiration time
+ */
+void dht_put(const HashCode512 * key,
+	     unsigned int type,
+	     unsigned int size,
+	     cron_t expirationTime,
+	     const char * data) {
+  DHT_PUT_MESSAGE * put;
+  
+  put = MALLOC(sizeof(DHT_PUT_MESSAGE) + size);
+  put->header.size = htons(sizeof(DHT_PUT_MESSAGE) + size);
+  put->header.type = htons(P2P_PROTO_DHT_PUT);
+  put->key = *key;
+  put->type = htonl(type);
+  put->timeout = htonll(expirationTime - get_time());
+  memcpy(&put[1],
+	 data,
+	 size);  
+  handlePut(NULL,
+	    &put->header);
+  FREE(put);
 }
 
 /**
