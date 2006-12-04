@@ -174,7 +174,7 @@ static int d_put(const HashCode512 * key,
   payload += size;
   if (payload > quota) {
     if ( (sq_prepare(dbh,
-		     "SELECT * FROM ds071 ORDER BY puttime ASC",
+		     "SELECT size, type, puttime, expire, key, value FROM ds071 ORDER BY puttime ASC",
 		     &stmt) == SQLITE_OK) &&
 	 (sq_prepare(dbh,
 		   "DELETE FROM ds071 "
@@ -229,7 +229,7 @@ static int d_get(const HashCode512 * key,
   }
   db_init(dbh);
   if (sq_prepare(dbh,
-		 "SELECT * FROM ds071 WHERE key=? AND type=?",
+		 "SELECT size, type, puttime, expire, key, value FROM ds071 WHERE key=? AND type=?",
 		 &stmt) != SQLITE_OK) {
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
@@ -245,15 +245,15 @@ static int d_get(const HashCode512 * key,
 		   type);
   cnt = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    size = sqlite3_column_int(stmt, 1);
-    if (size != sqlite3_column_bytes(stmt, 6)) {
+    size = sqlite3_column_int(stmt, 0);
+    if (size != sqlite3_column_bytes(stmt, 5)) {
       GE_BREAK(NULL, 0);
       continue;
     }
-    expire = sqlite3_column_int64(stmt, 4);
+    expire = sqlite3_column_int64(stmt, 3);
     if (expire < get_time())
       continue;
-    dat = sqlite3_column_blob(stmt, 6);
+    dat = sqlite3_column_blob(stmt, 5);
     handler(key,
 	    type,
 	    size,
