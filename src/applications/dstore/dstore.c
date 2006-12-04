@@ -251,7 +251,7 @@ static int d_get(const HashCode512 * key,
       continue;
     }
     expire = sqlite3_column_int64(stmt, 3);
-    if (expire < get_time())
+    if (expire < get_time()) 
       continue;
     dat = sqlite3_column_blob(stmt, 5);
     handler(key,

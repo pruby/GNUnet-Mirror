@@ -40,10 +40,14 @@ static void checkIt(const HashCode512 * key,
 		    unsigned int size,
 		    const char * data,
 		    void * cls) {
-  if (size != sizeof(HashCode512))
+  if (size != sizeof(HashCode512)) {
+    printf("ERROR: Invalid size\n");
     error = 2;
-  if (0 != memcmp(data, cls, size))
+  }
+  if (0 != memcmp(data, cls, size)) {
+    printf("ERROR: Invalid data\n");
     error = 3;
+  }
 }
 
 /**
@@ -55,7 +59,7 @@ static int test(Dstore_ServiceAPI * api) {
   cron_t exp;
   unsigned int i;  
 
-  exp = get_time() + 5 * cronSECONDS;
+  exp = get_time() + 5 * cronMINUTES;
   memset(&k,
 	 0,
 	 sizeof(HashCode512));
@@ -67,7 +71,7 @@ static int test(Dstore_ServiceAPI * api) {
 			  i % 2,
 			  exp,
 			  sizeof(HashCode512),
-			  (const char*) &k));
+			  (const char*) &n));
     k = n;
   }
   memset(&k,
