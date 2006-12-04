@@ -112,6 +112,16 @@ static void db_init(sqlite3 * dbh) {
 	       NULL,
 	       NULL,
 	       NULL);
+  sqlite3_exec(dbh,
+	       "CREATE INDEX idx_key ON ds071 (key)",
+	       NULL, 
+	       NULL, 
+	       NULL);
+  sqlite3_exec(dbh,
+	       "CREATE INDEX idx_puttime ON ds071 (puttime)",
+	       NULL, 
+	       NULL, 
+	       NULL);
 }
 
 /**
