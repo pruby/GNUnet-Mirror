@@ -187,7 +187,7 @@ static int d_put(const HashCode512 * key,
 		     "SELECT size, type, puttime, expire, key, value FROM ds071 ORDER BY puttime ASC",
 		     &stmt) == SQLITE_OK) &&
 	 (sq_prepare(dbh,
-		   "DELETE FROM ds071 "
+		     "DELETE FROM ds071 "
 		     "WHERE size = ? AND type = ? AND puttime = ? AND expire = ? AND key = ? AND value = ?",
 		     &dstmt) == SQLITE_OK) ) {
       while (payload > quota) {
