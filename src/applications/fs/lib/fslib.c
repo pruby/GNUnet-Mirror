@@ -164,7 +164,7 @@ FS_SEARCH_makeContext(struct GE_Context * ectx,
   ret->abort = NO;
   ret->thread = PTHREAD_CREATE(&processReplies,
 			       ret,
-			       64 * 1024);
+			       1028 * 1024);
   if (ret->thread == NULL)
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_BULK,
