@@ -218,6 +218,7 @@ static int d_get(const HashCode512 * key,
   cron_t expire;
   unsigned int size;
   const char * dat;
+  unsigned int cnt;
 
   MUTEX_LOCK(lock);
   if (SQLITE_OK != sqlite3_open(fn,
@@ -242,6 +243,7 @@ static int d_get(const HashCode512 * key,
   sqlite3_bind_int(stmt,
 		   2,
 		   type);
+  cnt = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     size = sqlite3_column_int(stmt, 1);
     if (size != sqlite3_column_bytes(stmt, 6)) {
@@ -257,11 +259,12 @@ static int d_get(const HashCode512 * key,
 	    size,
 	    dat,
 	    closure);
+    cnt++;
   }
   sqlite3_finalize(stmt);
   sqlite3_close(dbh);
   MUTEX_UNLOCK(lock);
-  return 0;
+  return cnt;
 }
 
 Dstore_ServiceAPI *
