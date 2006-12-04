@@ -12,15 +12,9 @@ src/transports/ip.c
 src/transports/tcp6.c
 src/transports/tcp_helper.c
 src/transports/udp_helper.c
-src/applications/dht/tools/dhttest2.c
 src/applications/dht/tools/dht-query.c
 src/applications/dht/tools/dht_api.c
-src/applications/dht/tools/dht-join.c
-src/applications/dht/module/datastore_dht_master.c
-src/applications/dht/module/datastore_memory.c
-src/applications/dht/module/dht.c
 src/applications/dht/module/cs.c
-src/applications/dht/module/datastore_memory_test.c
 src/applications/chat/chat.c
 src/applications/chat/gnunet-chat.c
 src/applications/advertising/advertising.c
@@ -224,7 +218,6 @@ src/transports/ip6.h
 src/transports/ip.h
 src/include/gnunet_core.h
 src/include/gnunet_dht.h
-src/include/gnunet_dht_datastore_memory.h
 src/include/gnunet_util.h
 src/include/gnunet_fragmentation_service.h
 src/include/gnunet_getoption_lib.h
@@ -280,7 +273,6 @@ src/include/gnunet_collection_lib.h
 src/include/gnunet_uritrack_lib.h
 src/include/gnunet_namespace_lib.h
 src/applications/dht/module/dht.h
-src/applications/dht/module/datastore_dht_master.h
 src/applications/chat/chat.h
 src/applications/advertising/bootstrap.h
 src/applications/datastore/prefetch.h
