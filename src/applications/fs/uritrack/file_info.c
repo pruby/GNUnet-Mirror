@@ -62,7 +62,7 @@ static struct IPC_SEMAPHORE * createIPC(struct GE_Context * ectx,
 
 static char * getUriDbName(struct GE_Context * ectx,
 			   struct GC_Configuration * cfg) {
-  char * new;
+  char * nw;
   char * pfx;
 
   GC_get_configuration_value_filename(cfg,
@@ -70,12 +70,14 @@ static char * getUriDbName(struct GE_Context * ectx,
 				      "GNUNET_HOME",
 				      GNUNET_HOME_DIRECTORY,
 				      &pfx);
-  new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
-  strcpy(new, pfx);
-  strcat(new, "/");
-  strcat(new, STATE_NAME);
+  nw = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
+  strcpy(nw, pfx);
+  strcat(nw, "/");
+  strcat(nw, STATE_NAME);
   FREE(pfx);
-  return new;
+  disk_directory_create_for_file(ectx,
+				 nw);
+  return nw;
 }
 
 static char * getToggleName(struct GE_Context * ectx,
@@ -93,6 +95,8 @@ static char * getToggleName(struct GE_Context * ectx,
   strcat(nw, "/");
   strcat(nw, TRACK_OPTION);
   FREE(pfx);
+  disk_directory_create_for_file(ectx,
+				 nw);
   return nw;
 }
 
@@ -163,12 +167,7 @@ void URITRACK_trackURI(struct GE_Context * ectx,
 		      fn,
 		      O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE,
 		      S_IRUSR|S_IWUSR);
-  if (fh == -1) {
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			 "open",
-			 fn);
-  } else {
+  if (fh != -1) {
     WRITE(fh, suri, strlen(suri) + 1);
     WRITE(fh, &size, sizeof(unsigned int));
     WRITE(fh, data, ntohl(size));
@@ -194,11 +193,14 @@ void URITRACK_clearTrackedURIS(struct GE_Context * ectx,
   sem = createIPC(ectx, cfg);
   IPC_SEMAPHORE_DOWN(sem, YES);
   fn = getUriDbName(ectx, cfg);
-  if (0 != UNLINK(fn))
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			 "unlink",
-			 fn);
+  if (YES == disk_file_test(ectx,
+			    fn)) { 
+    if (0 != UNLINK(fn))
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			   "unlink",
+			   fn);
+  }
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_DESTROY(sem);

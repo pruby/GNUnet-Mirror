@@ -67,8 +67,7 @@ void GE_LOG(struct GE_Context * ctx,
   size_t size;
   char * buf;
 
-  if (ctx == NULL)
-  {
+  if (ctx == NULL) {
     ctx = defaultContext;
 #ifdef WINDOWS
     /* Most tools disband the console window early in the initialization

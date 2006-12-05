@@ -124,6 +124,9 @@ int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
       c->abort_init = YES;
       PTHREAD_JOIN(c->init, &unused);
       callbacks[i] = callbacks[callbacks_size-1];
+      GROW(callbacks,
+	   callbacks_size,
+	   callbacks_size - 1);
       FREE(c);
       MUTEX_UNLOCK(lock);
       return OK;

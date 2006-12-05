@@ -36,7 +36,6 @@ extern "C" {
 #endif
 #endif
 
-
 /**
  * Toggle tracking URIs.
  *

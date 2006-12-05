@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -45,12 +45,25 @@ typedef struct {
  * @brief data block
  */
 typedef struct {
+
+  /**
+   * Type of the block, in network byte order.
+   */
   unsigned int type;
+
+  /* data follows here */
+
 } DBlock;
 
 typedef struct {
+
+  /**
+   * Type of the block (IBLOCK), in network byte order.
+   */
   DBlock iblock;
+
   CHK data[1];
+
 } IBlock;
 
 /**
@@ -70,58 +83,110 @@ typedef struct {
    * Query and key of the top IBlock.
    */
   CHK chk;
+
 } FileIdentifier;
 
 /**
  * @brief keyword block (advertising data under a keyword)
  */
 typedef struct {
+
+  /**
+   * Type of the block (KBLOCK), in network byte order.
+   */
   unsigned int type;
 
-  Signature signature; /* 256 b */
+  /**
+   * Signature using RSA-key generated from search keyword.
+   */
+  Signature signature;
+
   /**
    * Key generated (!) from the H(keyword) as the seed!
    */
   PublicKey keyspace;
 
   /* 0-terminated URI here */
+
   /* variable-size Meta-Data follows here! */
+
 } KBlock;
 
 typedef struct {
+  
+  /**
+   * Type of the block (SBLOCK), in network byte order.
+   */
   unsigned int type;
 
-  Signature signature; /* 256 b */
   /**
-   * S = H(subspace); 264 b
+   * RSA signature (from pseudonym controlling the namespace)
+   */
+  Signature signature; 
+
+  /**
+   * Public key of the pseudonym; S = H(subspace);
    */
   PublicKey subspace;
 
   /* from here on signed */
+  
   /**
    * R = H(N-I)^S, used for routing!
    */
   HashCode512 identifier;
   /* from here on encrypted */
-  TIME_T creationTime; /* in network byte order */
-  TIME_T updateInterval; /* in network byte order */
-  HashCode512 nextIdentifier; /* N,  20 b */
-  HashCode512 identifierIncrement; /* I, 20 b */
+
+  /**
+   * Time at which this SBlock was created;
+   * in network byte order 
+   */
+  TIME_T creationTime;
+
+  /**
+   * Interval (in seconds) how often the publisher intends to produce
+   * an updated SBlock; ECRS_SBLOCK_UPDATE_NONE(0) is used for
+   * non-updateable SBlocks, ECRS_SBLOCK_UPDATE_SPORADIC(-1) is used
+   * for entries without a fixed update frequency; in network byte
+   * order
+   */
+  TIME_T updateInterval; 
+
+  /**
+   * N, the identifier that will be used for the
+   * next revision of this SBlock.
+   */
+  HashCode512 nextIdentifier; 
+
+  /**
+   * I, the increment between identifiers (used to enable
+   * skipping of blocks by appying multiple increments.
+   */ 
+  HashCode512 identifierIncrement; 
+
   /* 0-terminated URI follows here! */
+
   /* variable-size Meta-Data follows here! */
 } SBlock;
 
 typedef struct {
+
+  /**
+   * Type of the block (NBLOCK), in network byte order.
+   */
   unsigned int type;
 
   Signature signature; /* 256 b */
 
   PublicKey subspace; /* S = H(subspace); 264 b */
+
   /**
    * Must be all zeros
    */
   HashCode512 identifier;
+
   /* The REST (from here on) is encrypted! */
+
   /**
    * Identifier of the namespace
    */
@@ -140,13 +205,16 @@ typedef struct {
  * @brief keyword-NBlock (advertising namespace under a keyword)
  */
 typedef struct {
+
+  /**
+   * Type of the block (KNBLOCK), in network byte order.
+   */
   unsigned int type;
 
   KBlock kblock;
 
   NBlock nblock;
 } KNBlock;
-
 
 /**
  * Perform on-demand content encoding.
@@ -229,6 +297,5 @@ int isDatumApplicable(unsigned int type,
 		      const HashCode512 * knownDatumQuery,
 		      unsigned int keyCount,
 		      const HashCode512 * keys);
-
 
 #endif
