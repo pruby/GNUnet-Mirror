@@ -48,7 +48,7 @@
  * Until which load do we consider the peer idle and do not
  * charge at all?
  */
-#define IDLE_LOAD_THRESHOLD 50
+#define IDLE_LOAD_THRESHOLD 75
 
 /**
  * For how many different hosts can we have a query pending (at most).
