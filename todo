@@ -14,8 +14,6 @@ Notes:
 
 0.7.1 [12'06] (aka "stabilization")
 - core:
-  * need to be more aggressive at using available bandwidth!
-    (core polling!)
   * add stats for total core message queue length!?
   * # total RC of interned peer IDs in pid table -- why so big? [RCpre2]
 - finish util refactoring:
