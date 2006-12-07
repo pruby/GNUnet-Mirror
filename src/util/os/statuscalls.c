@@ -378,6 +378,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   cron_t now;
   unsigned long long maxExpect;
   unsigned long long currentLoadSum;
+  unsigned long long currentTotal;
   int i;
   int ret;
   int weight;
@@ -397,21 +398,21 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     updateInterfaceTraffic(monitor);
   }
   if (dir == Upload) {
-    currentLoadSum = monitor->globalTrafficBetweenProc.last_out;
+    currentTotal = monitor->globalTrafficBetweenProc.last_out;
     for (i=0;i<monitor->ifcsSize;i++)
-      currentLoadSum += monitor->ifcs[i].last_out;
+      currentTotal += monitor->ifcs[i].last_out;
   } else {
-    currentLoadSum = monitor->globalTrafficBetweenProc.last_in;
+    currentTotal = monitor->globalTrafficBetweenProc.last_in;
     for (i=0;i<monitor->ifcsSize;i++)
-      currentLoadSum += monitor->ifcs[i].last_in;
+      currentTotal += monitor->ifcs[i].last_in;
   }
-  if ( (di->lastSum > currentLoadSum) ||
+  if ( (di->lastSum > currentTotal) ||
        (di->have_last == 0) ||
        (now < di->lastCall) ) {
     /* integer overflow or first datapoint; since we cannot tell where
        / by how much the overflow happened, all we can do is ignore
        this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
-    di->lastSum = currentLoadSum;
+    di->lastSum = currentTotal;
     di->lastCall = now;
     di->have_last = 1;
     MUTEX_UNLOCK(monitor->statusMutex);
@@ -430,20 +431,20 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     if (maxExpect == 0)
       ret = di->lastValue;
     else
-      ret = (di->lastValue * (100-weight) + weight * (currentLoadSum + di->overload - di->lastSum) / maxExpect) / 100;
+      ret = (di->lastValue * (100-weight) + weight * (currentTotal + di->overload - di->lastSum) / maxExpect) / 100;
     MUTEX_UNLOCK(monitor->statusMutex);
     return ret;
   }
-  currentLoadSum -= di->lastSum;
-  di->lastSum += currentLoadSum;
-  currentLoadSum += di->overload;
+  
+  currentLoadSum = currentTotal - di->lastSum + di->overload;
+  di->lastSum = currentTotal;
   di->lastCall = now;
   if (currentLoadSum < maxExpect)
     di->overload = 0;
   else
     di->overload = currentLoadSum - maxExpect;
-  di->lastValue = currentLoadSum * 100 / maxExpect;
-  ret = di->lastValue;
+  ret = currentLoadSum * 100 / maxExpect;
+  di->lastValue = ret;
   MUTEX_UNLOCK(monitor->statusMutex);
   return ret;
 }
