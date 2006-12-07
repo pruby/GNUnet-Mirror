@@ -515,6 +515,10 @@ static int stat_decrypted;
 
 static int stat_noise_sent;
 
+static int stat_total_allowed_sent;
+
+static int stat_total_allowed_recv;
+
 /* ******************** CODE ********************* */
 
 #if DEBUG_CONNECTION
@@ -1948,6 +1952,8 @@ static void scheduleInboundTraffic() {
   int load;
   int * perm;
   EncName enc;
+  unsigned long long total_allowed_sent;
+  unsigned long long total_allowed_recv;
 
   MUTEX_LOCK(lock);
   now = get_time();
@@ -2251,11 +2257,12 @@ static void scheduleInboundTraffic() {
   /* free memory */
   FREE(adjustedRR);
   FREE(shares);
-  FREE(entries);
-  for (u = 0; u < CONNECTION_MAX_HOSTS_; u++) {
-    BufferEntry * be = CONNECTION_buffer_[u];
-    if (be == NULL)
-      continue;
+
+  total_allowed_sent = 0;
+  total_allowed_recv = 0;
+  for (u=0;u<activePeerCount;u++) {
+    BufferEntry * be = entries[u];
+
     if (be->idealized_limit < MIN_BPM_PER_PEER) {
 #if DEBUG_CONNECTION
       IF_GELOG(ectx,
@@ -2273,9 +2280,19 @@ static void scheduleInboundTraffic() {
 	 minimum value AND try to shutdown the connection. */
       be->idealized_limit = MIN_BPM_PER_PEER;
       shutdownConnection(be);
+    } else {
+      total_allowed_sent += be->max_bpm;
+      total_allowed_recv += be->idealized_limit;
     }
   }
+  if (stats != NULL) {
+    stats->set(stat_total_allowed_sent,
+	       total_allowed_sent);
+    stats->set(stat_total_allowed_recv,
+	       total_allowed_recv);
+  }
 
+  FREE(entries);
   MUTEX_UNLOCK(lock);
 }
 
@@ -2811,10 +2828,10 @@ static int connectionConfigChangeCallback(void * ctx,
     max_bpm = new_max_bpm;
     newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 2);
     /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-    if (newMAXHOSTS < 2)
-      newMAXHOSTS = 2;          /* strict minimum is 2 */
+    if (newMAXHOSTS < 4)
+      newMAXHOSTS = 4;    /* strict minimum is 4 (must match bootstrap.c!) */
     if (newMAXHOSTS > 256)
-      newMAXHOSTS = 256;        /* limit, before we run out of sockets! */
+      newMAXHOSTS = 256;  /* limit, otherwise we run out of sockets! */
 
     if (newMAXHOSTS != CONNECTION_MAX_HOSTS_) {
       /* change size of connection buffer!!! */
@@ -2949,9 +2966,15 @@ void initConnection(struct GE_Context * e,
 						  (incl. invalid/undecryptable data)
 						  without transport headers */
 					       "# bytes received"));
-    stat_decrypted = stats->create(gettext_noop(/* bytes successfully decrypted */
+    stat_decrypted
+      = stats->create(gettext_noop(/* bytes successfully decrypted */
 						"# bytes decrypted"));
-    stat_noise_sent = stats->create(gettext_noop("# bytes noise sent"));
+    stat_noise_sent 
+      = stats->create(gettext_noop("# bytes noise sent"));
+    stat_total_allowed_sent 
+      = stats->create(gettext_noop("# total advertised bytes per minute received limit"));
+    stat_total_allowed_recv
+      = stats->create(gettext_noop("# total allowed bytes per minute transmission limit"));
   }
   transport->start(&core_receive);
 }
