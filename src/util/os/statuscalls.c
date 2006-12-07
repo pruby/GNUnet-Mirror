@@ -430,7 +430,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     if (maxExpect == 0)
       ret = di->lastValue;
     else
-      ret = (di->lastValue * (100-weight) + weight * (currentLoadSum - di->lastSum) / maxExpect) / 2;
+      ret = (di->lastValue * (100-weight) + weight * (currentLoadSum - di->lastSum) / maxExpect) / 100;
     MUTEX_UNLOCK(monitor->statusMutex);
     return ret;
   }

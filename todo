@@ -14,8 +14,9 @@ Notes:
 
 0.7.1 [12'06] (aka "stabilization")
 - core:
-  * adjustedRR computation (smooth out, avoid scaling issue) [RCpre2]
-  * match http HELLO downloads to min-connection count! [RCpre2]
+  * need to be more aggressive at using available bandwidth!
+    (core polling!)
+  * add stats for total core message queue length!?
   * # total RC of interned peer IDs in pid table -- why so big? [RCpre2]
 - finish util refactoring:
   * gnunet-setup ncurses wizard [RCpre2]

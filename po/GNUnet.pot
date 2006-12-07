@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-12-04 08:45-0700\n"
+"POT-Creation-Date: 2006-12-04 19:14-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -181,11 +181,11 @@ msgstr ""
 msgid "allows clients to determine gnunetd's configuration"
 msgstr ""
 
-#: src/applications/fs/uritrack/file_info.c:125
+#: src/applications/fs/uritrack/file_info.c:129
 msgid "Collecting file identifiers disabled.\n"
 msgstr ""
 
-#: src/applications/fs/uritrack/file_info.c:369
+#: src/applications/fs/uritrack/file_info.c:371
 #, c-format
 msgid "Deleted corrupt URI database in `%s'."
 msgstr ""
