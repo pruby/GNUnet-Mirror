@@ -39,9 +39,14 @@ static int stat_pid_rc;
 static struct GE_Context * ectx;
 
 typedef struct {
-  /** the identifier itself */
+  /**
+   * the identifier itself 
+   */
   HashCode512 id;
-  /** reference counter */
+
+  /**
+   * reference counter 
+   */
   unsigned int rc;
 } PID_Entry;
 
@@ -88,11 +93,11 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
   GE_ASSERT(ectx, ret < size);
   table[ret].id = pid->hashPubKey;
   table[ret].rc = 1;
+  MUTEX_UNLOCK(lock);
   if (stats != NULL) {
     stats->change(stat_pid_rc, 1);
     stats->change(stat_pid_entries, 1);
   }
-  MUTEX_UNLOCK(lock);
   return ret;
 }
 

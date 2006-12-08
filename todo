@@ -13,8 +13,6 @@ Notes:
 
 
 0.7.1 [12'06] (aka "stabilization")
-- core:
-  * # total RC of interned peer IDs in pid table -- why so big? [RCpre2]
 - finish util refactoring:
   * gnunet-setup ncurses wizard [RCpre2]
 - more testcases: [RCpre3]
@@ -22,24 +20,24 @@ Notes:
   * gap (incl. economy)
   * fs/namespaces
   * fs/collection
-  * tracekit
   * advertising
-  * rpc
 - fix critical known bugs:
   * Windows installer [Nils]
     + uninstall: Remove account
-    + libcurl, guile [RCpre0]
+    + libcurl, guile
   * file/socket leak (#955) - possibly fixed
 
 0.7.2 [3'07]:
 - Transports:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
-- Testcases not compiling or passing:
+- Testcases (fix, add):
   * dht/tools
+  * tracekit
 - Scheme (scm) specification of entire configuration;
   check options used in modules:
   - DHT options
   - kvstore
+  - gnunet-gtk
 - Features:
   * SMTP logger
   * Chat support [RC]
@@ -64,6 +62,8 @@ Notes:
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
+- Testcases:
+  * RPC
 
 0.7.4 [12'07] (aka "advanced features"):
 - gnunet-chat [ RC ]

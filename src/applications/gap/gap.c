@@ -493,10 +493,11 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
     ranking = 0; /* no chance for blocked peers */
   idx = getIndex(id);
 #if DEBUG_GAP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Ranking for %u: %u\n",
-      idx,
-      ranking);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Ranking for %u: %u\n",
+	 idx,
+	 ranking);
 #endif
   qr->rankings[idx] = ranking;
   change_pid_rc(id, -1);
@@ -544,15 +545,17 @@ static void sendToSelected(const PeerIdentity * peer,
 
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  hash2enc(&peer->hashPubKey,
-		   &encp);
-	  hash2enc(&qr->msg->queries[0],
-		   &encq));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Sending query `%s' to `%s'\n",
-	&encq,
-	&encp);
+    IF_GELOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(&peer->hashPubKey,
+		      &encp);
+	     hash2enc(&qr->msg->queries[0],
+		      &encq));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Sending query `%s' to `%s'\n",
+	   &encq,
+	   &encp);
 #endif
     if (stats != NULL)
       stats->change(stat_routing_forwards, 1);
@@ -632,6 +635,9 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     }
   }
   if (oldestIndex == -1) {				
+    memset(&dummy,
+	   0,
+	   sizeof(QueryRecord));
     qr = &dummy;
   } else {
     qr = &queries[oldestIndex];
@@ -648,6 +654,8 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     memset(&qr->bitmap[0],
 	   0,
 	   BITMAP_SIZE);
+    if (qr->noTarget != 0)
+      change_pid_rc(qr->noTarget, -1);
     if (excludePeer != NULL)
       qr->noTarget = intern_pid(excludePeer);
     else
@@ -688,8 +696,10 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     coreAPI->forAllConnectedNodes
       (&sendToSelected,
        qr);
-    if (qr == &dummy)
+    if (qr == &dummy) {      
+      change_pid_rc(dummy.noTarget, -1);
       FREE(dummy.msg);
+    }
   }
   MUTEX_UNLOCK(lock);
 }
@@ -941,7 +951,8 @@ static int addToSlot(int mode,
 	if (ite->destination[i] == sender)
 	  return SYSERR;
       if (ite->hostsWaiting >= MAX_HOSTS_WAITING) {
-	decrement_pid_rcs(ite->destination, ite->hostsWaiting);
+	decrement_pid_rcs(ite->destination, 
+			  ite->hostsWaiting);
 	if (stats != NULL)
 	  stats->change(stat_memory_destinations, - ite->hostsWaiting);
 	GROW(ite->destination,
@@ -955,7 +966,8 @@ static int addToSlot(int mode,
       ite->primaryKey = *query;
       if (stats != NULL)
 	stats->change(stat_memory_destinations, - ite->hostsWaiting);
-      decrement_pid_rcs(ite->destination, ite->hostsWaiting);
+      decrement_pid_rcs(ite->destination, 
+			ite->hostsWaiting);
       GROW(ite->destination,
 	   ite->hostsWaiting,
 	   0);
@@ -1303,12 +1315,14 @@ static void sendReply(IndirectionTableEntry * ite,
     resolve_pid(ite->destination[j],
 		&recv);
 #if DEBUG_GAP
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  hash2enc(&recv.hashPubKey,
-		   &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"GAP sending reply to `%s'\n",
-	&enc);
+    IF_GELOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(&recv.hashPubKey,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "GAP sending reply to `%s'\n",
+	   &enc);
 #endif
     coreAPI->unicast(&recv,
 		     msg,
