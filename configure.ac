@@ -387,14 +387,14 @@ AC_ARG_WITH(dialog,
         ;;
       yes)
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([dialog], [dialog_menu],
+          AC_CHECK_LIB([dialog], [dlg_menu],
             dialog=1))
         ;;
       *)
         LDFLAGS="-L$with_dialog/lib $LDFLAGS"
         CPPFLAGS="-I$with_dialog/include $CPPFLAGS"
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([dialog], [dialog_menu],
+          AC_CHECK_LIB([dialog], [dlg_menu],
             EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
               dialog=1))
         ;;
@@ -402,7 +402,7 @@ AC_ARG_WITH(dialog,
    ],
    [AC_MSG_RESULT([--with-dialog not specified])
     AC_CHECK_HEADERS(dialog.h,
-      AC_CHECK_LIB([dialog], [dialog_menu],
+      AC_CHECK_LIB([dialog], [dlg_menu],
           dialog=1))])
 
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
