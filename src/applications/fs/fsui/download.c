@@ -296,7 +296,7 @@ void * downloadThread(void * cls) {
     struct ECRS_MetaData * md;
 
     totalBytes = ECRS_fileSize(dl->fi.uri);
-    fn = MALLOC(strlen(dl->filename) + strlen(GNUNET_DIRECTORY_EXT));
+    fn = MALLOC(strlen(dl->filename) + strlen(GNUNET_DIRECTORY_EXT) + 1);
     strcpy(fn, dl->filename);
     if (fn[strlen(fn)-1] == '/') {
       fn[strlen(fn)-1] = '\0';
