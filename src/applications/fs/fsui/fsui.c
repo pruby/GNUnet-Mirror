@@ -430,7 +430,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FSUI shutdown.  This may take a while.\n");
 
   /* 1) stop everything */
@@ -583,7 +583,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   FREE(ctx->name);
   if (ctx->ipc != NULL)
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FSUI shutdown complete.\n");
   FREE(ctx);
 }
