@@ -602,7 +602,9 @@ static int SEND_NONBLOCKING(int s,
   
   setBlocking(s, YES);
 
-  if (*sent == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
+  if ( (*sent == SYSERR) && 
+       ( (errno == EWOULDBLOCK) 
+	 || (errno == EAGAIN) ) )
     return NO;
   else if ( (*sent < 0) || (*sent > max) )
     return SYSERR;

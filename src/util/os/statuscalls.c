@@ -60,8 +60,11 @@
 #define PROC_NET_DEV "/proc/net/dev"
 
 typedef struct {
+
   char * name;
+
   unsigned long long last_in;
+
   unsigned long long last_out;
 } NetworkStats;
 
@@ -129,7 +132,7 @@ typedef struct LoadMonitor {
 
 void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
 					    NetworkDirection dir,
-					    unsigned long long delta) {
+					    unsigned long long delta) {  
   MUTEX_LOCK(monitor->statusMutex);
   if (dir == Download)
     monitor->globalTrafficBetweenProc.last_in += delta;
@@ -281,7 +284,7 @@ static int resetStatusCalls(void * cls,
   basic = GC_get_configuration_value_yesno(cfg,
 					   "LOAD",
 					   "BASICLIMITING",
-					   NO);
+					   YES);
   if (basic == SYSERR)
     return SYSERR;
   if (-1 == GC_get_configuration_value_string(cfg,
@@ -330,6 +333,12 @@ static int resetStatusCalls(void * cls,
     monitor->ifcs[i].last_in = 0;
     monitor->ifcs[i].last_out = 0;
   }
+  monitor->upload_info.have_last = NO;
+  monitor->upload_info.lastCall = 0;
+  monitor->upload_info.overload = 0;
+  monitor->download_info.have_last = NO;
+  monitor->download_info.lastCall = 0;
+  monitor->download_info.overload = 0;
   FREE(interfaces);
   monitor->useBasicMethod = basic;
   GC_get_configuration_value_number(cfg,

@@ -215,7 +215,8 @@ int socket_recv(struct SocketHandle * s,
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
       continue;
-    if (ret == (size_t) -1) {
+    if ( (ret == (size_t) -1) ||
+	 (ret > max - pos) ) {
       if (errno == EINTR) {
 	*read = pos;
 	return YES;
@@ -290,7 +291,8 @@ int socket_recv_from(struct SocketHandle * s,
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
       continue;
-    if (ret == (size_t) -1) {
+    if ( (ret == (size_t) -1) ||
+	 (ret > max - pos) ) {
       if (errno == EINTR) {
 	*read = pos;
 	return YES;
@@ -362,7 +364,8 @@ int socket_send(struct SocketHandle * s,
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
       continue;
-    if (ret == (size_t) -1) {
+    if ( (ret == (size_t) -1) ||
+	 (ret > max - pos) ) {
       if (errno == EINTR) {
 	*sent = pos;
 	return YES;
@@ -438,7 +441,8 @@ int socket_send_to(struct SocketHandle * s,
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
       continue;
-    if (ret == (size_t) -1) {
+    if ( (ret == (size_t) -1) ||
+	 (ret > max - pos) ) {
       if (errno == EINTR) {
 	*sent = pos;
 	return YES;
