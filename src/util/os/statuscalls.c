@@ -376,6 +376,8 @@ unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
   return -1;
 }
 
+#define INCREMENTAL_INTERVAL (60 * cronSECONDS)
+
 /**
  * Get the load of the network relative to what is allowed.
  * @return the network load as a percentage of allowed
@@ -433,10 +435,10 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   }
 
   maxExpect = (now - di->lastCall) * di->max / cronSECONDS;
-  if (now - di->lastCall < 5 * cronSECONDS) {
+  if (now - di->lastCall < INCREMENTAL_INTERVAL) {
     /* return weighted average between last return value and
        load in the last interval */
-    weight = (now - di->lastCall) * 100 / (5 * cronSECONDS); /* how close are we to lastCall? */
+    weight = (now - di->lastCall) * 100 / INCREMENTAL_INTERVAL; /* how close are we to lastCall? */
     if (maxExpect == 0)
       ret = di->lastValue;
     else

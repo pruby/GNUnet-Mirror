@@ -496,7 +496,7 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
   	 0,
 	 sizeof(PingPongEntry)*MAX_PING_PONG);
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_BULK,
+	 GE_DEBUG | GE_USER | GE_REQUEST,
 	 _("`%s' registering handlers %d %d (plaintext and ciphertext)\n"),
 	 "pingpong",
 	 p2p_PROTO_PING,

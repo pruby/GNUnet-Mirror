@@ -184,7 +184,7 @@ static P2P_hello_MESSAGE * createhello() {
     return NULL;
   }
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
+	 GE_DEBUG | GE_USER | GE_REQUEST,
 	 "TCP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);

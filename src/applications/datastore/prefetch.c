@@ -140,8 +140,7 @@ static int aquire(const HashCode512 * key,
   if (load < 10)
     load = 10;    /* never sleep less than 500 ms */
   if (load > 100)
-    load = 100;   /* never sleep longer than 5 seconds since that
-		     might show up badly in the shutdown sequence... */
+    load = 100;   /* never sleep longer than 5 seconds */
   if (doneSignal)
     return SYSERR;
   /* the higher the load, the longer the sleep */
@@ -166,8 +165,7 @@ static void * rcbAcquire(void * unused) {
     if (load < 10)
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)
-      load = 100;   /* never sleep longer than 5 seconds since that
-		       might show up badly in the shutdown sequence... */
+      load = 100;   /* never sleep longer than 5 seconds */
     PTHREAD_SLEEP(50 * cronMILLIS * load);
   }
   return NULL;

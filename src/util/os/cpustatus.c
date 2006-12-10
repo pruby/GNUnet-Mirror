@@ -363,7 +363,7 @@ static int updateCpuUsage(){
 int os_cpu_get_load(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg) {
   static int currentLoad;
-  static int lastRet = -1;
+  static int agedLoad = -1;
   static cron_t lastCall;
   unsigned long long maxCPULoad;
   int ret;
@@ -378,31 +378,31 @@ int os_cpu_get_load(struct GE_Context * ectx,
 					      &maxCPULoad))
     return -1;
   MUTEX_LOCK(statusMutex);
-  ret = (100 * currentLoad) / maxCPULoad;
   now = get_time();
-  if ( (lastRet != -1) &&
-       (now - lastCall < 250 * cronMILLIS) ) {
+  if ( (agedLoad == -1) ||
+       (now - lastCall > 500 * cronMILLIS) ) {
     /* use smoothing, but do NOT update lastRet at frequencies higher
-       than 250ms; this makes the smoothing (mostly) independent from
-       the frequency at which getCPULoad is called. */
-    ret = (ret + 7 * lastRet)/8;
-    MUTEX_UNLOCK(statusMutex);
-    return ret;
-  }
-  currentLoad = updateCpuUsage();
-  if (currentLoad == -1) {
-    lastRet = -1;
-    MUTEX_UNLOCK(statusMutex);
-    return -1;
-  }
-
-  ret = (100 * currentLoad) / maxCPULoad;
-  /* for CPU, we don't do the 'fast increase' since CPU is much
-     more jitterish to begin with */
-  if (lastRet != -1)
-    ret = (ret + 7 * lastRet) / 8;
-  lastRet = ret;
-  lastCall = now;
+       than 500ms; this makes the smoothing (mostly) independent from
+       the frequency at which getCPULoad is called (and we don't spend
+       more time measuring CPU than actually computing something). */
+    currentLoad = updateCpuUsage();    
+    lastCall = now;
+    if (currentLoad == -1) {
+      agedLoad = -1;
+    } else {
+      if (agedLoad == -1) {
+	agedLoad = currentLoad;
+      } else {
+	/* for CPU, we don't do the 'fast increase' since CPU is much
+	   more jitterish to begin with */
+	agedLoad = (agedLoad * 31 + currentLoad) / 32; 
+      }
+    }
+  }  
+  if (agedLoad == -1)
+    ret = -1;
+  else
+    ret = (100 * agedLoad) / maxCPULoad;
   MUTEX_UNLOCK(statusMutex);
   return ret;
 }

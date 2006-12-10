@@ -49,7 +49,7 @@ int main(int argc, char * argv[]){
   start = get_time();
   ret = os_cpu_get_load(ectx,
 			cfg);
-  while (start + 12 * cronSECONDS > get_time())
+  while (start + 60 * cronSECONDS > get_time())
     sqrt(245.2523); /* do some processing to drive load up */
   if (ret > os_cpu_get_load(ectx,
 			    cfg)) {

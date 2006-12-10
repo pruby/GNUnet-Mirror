@@ -64,8 +64,20 @@
 
 #define DEBUG_CONNECTION NO
 
-/* output knapsack priorities into a file? */
+/**
+ * output knapsack priorities into a file? 
+ */
 #define DEBUG_COLLECT_PRIO NO
+
+/**
+ * Until which load do we consider the peer overly idle
+ * (which means that we would like to use more resources).<p>
+ *
+ * Note that we use 50 to leave some room for applications
+ * to consume resources "idly" (i.e. up to 75%) and then
+ * still have some room for "paid for" resource consumption.
+ */
+#define IDLE_LOAD_THRESHOLD 50
 
 /**
  * If an attempt to establish a connection is not answered
@@ -406,16 +418,6 @@ typedef struct BufferEntry_ {
   cron_t lastSendAttempt;
 
   /**
-   * How frequent (per connection!) may we attempt to solve the knapsack
-   * problem and send a message out? Note that setting this value higher
-   * reduces the CPU overhead while a lower value can improve thoughput.
-   *
-   * The value is adjusted according to how fast we perceive the CPU
-   * to be (and is also proportional too how much bandwidth we have)...
-   */
-  cron_t MAX_SEND_FREQUENCY;
-
-  /**
    * a hash collision overflow chain 
    */
   struct BufferEntry_ *overflowChain;
@@ -641,7 +643,6 @@ static void printMsg(const char *prefix,
  */
 static BufferEntry * initBufferEntry() {
   BufferEntry * be;
-  int load;
 
   be = MALLOC(sizeof(BufferEntry));
   memset(be, 0, sizeof(BufferEntry));
@@ -658,10 +659,6 @@ static BufferEntry * initBufferEntry() {
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
   be->lastSendAttempt = 0;      /* never */
-  load = os_cpu_get_load(ectx, cfg);
-  if (load == -1)
-    load = 50; /* failed to determine load, assume 50% */
-  be->MAX_SEND_FREQUENCY = 50 * cronMILLIS * load;
   be->inSendBuffer = NO;
   be->last_bps_update = get_time(); /* now */
   return be;
@@ -939,27 +936,28 @@ static int outgoingCheck(unsigned int priority) {
  * @return OK if sending a message now is acceptable
  */
 static int checkSendFrequency(BufferEntry * be) {
-  if(be->max_bpm == 0)
+  cron_t msf;
+
+  if (be->max_bpm == 0)
     be->max_bpm = 1;
 
-  if(be->session.mtu == 0) {
-    be->MAX_SEND_FREQUENCY =    /* ms per message */
+  if (be->session.mtu == 0) {
+    msf =    /* ms per message */
       EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
       /2;
-  }
-  else {
-    be->MAX_SEND_FREQUENCY =    /* ms per message */
+  } else {
+    msf =    /* ms per message */
       be->session.mtu           /* byte per message */
       / (be->max_bpm * cronMINUTES / cronMILLIS)  /* bytes per ms */
-      /2;                       /* some head-room */
+      / 2;                       /* some head-room */
   }
   /* Also: allow at least 2 * MINIMUM_SAMPLE_COUNT knapsack
      solutions for any MIN_SAMPLE_TIME! */
-  if (be->MAX_SEND_FREQUENCY > 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
-    be->MAX_SEND_FREQUENCY = 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
+  if (msf > 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
+    msf = 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
 
-  if (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > get_time()) {
-#if DEBUG_CONNECTION || 1
+  if (be->lastSendAttempt + msf > get_time()) {
+#if DEBUG_CONNECTION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Send frequency too high (CPU load), send deferred.\n");
@@ -1179,7 +1177,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
   if(msgCap < EXPECTED_MTU)
     msgCap = EXPECTED_MTU;
   if (load < 50) {                  /* afford more if CPU load is low */
-    if(load == 0)
+    if (load == 0)
       load = 1; /* avoid division by zero */
     msgCap += (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU) / load;
   }
@@ -2418,13 +2416,14 @@ static void cronDecreaseLiveness(void *unused) {
 	total_allowed_sent += root->max_bpm;
 	total_allowed_recv += root->idealized_limit;
         if ( (now > root->isAlive) && /* concurrency might make this false... */
-	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS)) {
+	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS) ) {
           EncName enc;
 
           /* switch state form UP to DOWN: too much inactivity */
           IF_GELOG(ectx,
 		   GE_DEBUG | GE_REQUEST | GE_USER,
-		   hash2enc(&root->session.sender.hashPubKey, &enc));
+		   hash2enc(&root->session.sender.hashPubKey, 
+			    &enc));
           GE_LOG(ectx,
 		 GE_DEBUG | GE_REQUEST | GE_USER,
 		 "closing connection with `%s': "
@@ -2438,8 +2437,9 @@ static void cronDecreaseLiveness(void *unused) {
         if ( (root->available_send_window >= 60000) &&
 	     (root->sendBufferSize < 4) &&
 	     (scl_nextHead != NULL) &&
-	     (os_network_monitor_get_load(load_monitor, Upload) < 25) &&
-	     (os_cpu_get_load(ectx, cfg) < 50) ) {
+	     (os_network_monitor_get_load(load_monitor, 
+					  Upload) < IDLE_LOAD_THRESHOLD) &&
+	     (os_cpu_get_load(ectx, cfg) < IDLE_LOAD_THRESHOLD) ) {
           /* create some traffic by force! */
           char * msgBuf;
           unsigned int mSize;
@@ -2524,8 +2524,10 @@ int checkHeader(const PeerIdentity * sender,
   GE_ASSERT(ectx, sender != NULL);
   hash2enc(&sender->hashPubKey, &enc);
   if(size < sizeof(P2P_PACKET_HEADER)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-        _("Message from `%s' discarded: invalid format.\n"), &enc);
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Message from `%s' discarded: invalid format.\n"), 
+	   &enc);
     return SYSERR;
   }
   hash2enc(&sender->hashPubKey, &enc);
@@ -2540,7 +2542,10 @@ int checkHeader(const PeerIdentity * sender,
     stats->change(stat_received, size);
 
 #if DEBUG_CONNECTION
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Decrypting message from host `%s'\n", &enc);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER, 
+	 "Decrypting message from host `%s'\n", 
+	 &enc);
 #endif
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
@@ -2565,9 +2570,10 @@ int checkHeader(const PeerIdentity * sender,
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
   if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
-    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
-        "Decrypting message from host `%s' failed, wrong sessionkey!\n",
-        &enc);
+    GE_LOG(ectx, 
+	   GE_INFO | GE_BULK | GE_USER,
+	   "Decrypting message from host `%s' failed, wrong sessionkey!\n",
+	   &enc);
 #if DEBUG_CONNECTION
     printMsg("Wrong sessionkey", sender,
              &be->skey_remote, (const INITVECTOR *) &msg->hash,
@@ -2596,10 +2602,11 @@ int checkHeader(const PeerIdentity * sender,
       }
     }
     if(res == SYSERR) {
-      GE_LOG(ectx, GE_WARNING | GE_REQUEST | GE_USER,
-          _("Invalid sequence number"
-            " %u <= %u, dropping message.\n"),
-          sequenceNumber, be->lastSequenceNumberReceived);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_REQUEST | GE_USER,
+	     _("Invalid sequence number"
+	       " %u <= %u, dropping message.\n"),
+	     sequenceNumber, be->lastSequenceNumberReceived);
       MUTEX_UNLOCK(lock);
       return SYSERR;
     }
@@ -3447,12 +3454,9 @@ int isConnected(const PeerIdentity * hi) {
   MUTEX_LOCK(lock);
   be = lookForHost(hi);
   MUTEX_UNLOCK(lock);
-  if(be == NULL) {
+  if (be == NULL) 
     return NO;
-  }
-  else {
-    return (be->status == STAT_UP);
-  }
+  return (be->status == STAT_UP);  
 }
 
 /**
@@ -3464,7 +3468,8 @@ int isConnected(const PeerIdentity * hi) {
 unsigned int computeIndex(const PeerIdentity * hostId) {
   unsigned int res = (((unsigned int) hostId->hashPubKey.bits[0]) &
                       ((unsigned int) (CONNECTION_MAX_HOSTS_ - 1)));
-  GE_ASSERT(ectx, res < CONNECTION_MAX_HOSTS_);
+  GE_ASSERT(ectx, 
+	    res < CONNECTION_MAX_HOSTS_);
   return res;
 }
 
@@ -3484,12 +3489,12 @@ unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
   ENTRY();
   MUTEX_LOCK(lock);
   be = lookForHost(node);
-  if((be != NULL) && (be->status == STAT_UP)) {
+  if ( (be != NULL) &&
+       (be->status == STAT_UP) ) {
     ret = be->idealized_limit;
     if(ret == 0)
       ret = 1;
-  }
-  else {
+  } else {
     ret = 0;
   }
   MUTEX_UNLOCK(lock);
