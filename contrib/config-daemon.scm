@@ -994,7 +994,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
 (define (load-maxdown builder)
  (builder
  "LOAD"
- "MAXNETDOWNBPS"
+ "MAXNETDOWNBPSTOTAL"
  (_ "What is the maximum number of bytes per second that we may receive?")
  (nohelp)
  '()
@@ -1006,7 +1006,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
 (define (load-maxup builder)
  (builder
  "LOAD"
- "MAXNETUPBPS"
+ "MAXNETUPBPSTOTAL"
  (_ "What is the maximum number of bytes per second that we may send?")
  (nohelp)
  '()

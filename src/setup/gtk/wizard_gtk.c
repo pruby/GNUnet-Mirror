@@ -228,14 +228,14 @@ void load_step3setup_gtk(GtkButton * button,
   entCPU = lookup_widget("entCPU");	
   GC_get_configuration_value_string(editCfg,
 				    "LOAD", 
-				    "MAXNETUPBPS", 
+				    "MAXNETUPBPSTOTAL", 
 				    "50000",
 				    &val);
   gtk_entry_set_text(GTK_ENTRY(entUp), val);
   FREE(val);
   GC_get_configuration_value_string(editCfg,
 				    "LOAD", 
-				    "MAXNETDOWNBPS", 
+				    "MAXNETDOWNBPSTOTAL", 
 				    "50000",
 				    &val);
   gtk_entry_set_text(GTK_ENTRY(entDown), val);
@@ -535,7 +535,7 @@ void on_entUp_changedsetup_gtk (GtkEditable * editable,
   GC_set_configuration_value_string(editCfg, 
 				    err_ctx,
 				    "LOAD",
-				    "MAXNETUPBPS",
+				    "MAXNETUPBPSTOTAL",
 				    ret);
   g_free(ret);
 }
@@ -549,7 +549,7 @@ void on_entDown_changedsetup_gtk (GtkEditable * editable,
   GC_set_configuration_value_string(editCfg,
 				    err_ctx, 
 				    "LOAD", 
-				    "MAXNETDOWNBPS",
+				    "MAXNETDOWNBPSTOTAL",
 				    ret);
   g_free(ret);
 }
