@@ -1364,7 +1364,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 		dbh);
       content_size = 0;
     } else {
-      SSCANF(sql_row[1], "%llu", &content_size);
+      SSCANF(sql_row[0], "%llu", &content_size);
     }
     if (sql_res != NULL)
       mysql_free_result(sql_res);
