@@ -36,9 +36,11 @@
 
 /**
  * What is the maximum size that we allow for a kblock
- * before we start dropping meta-data?
+ * before we start dropping meta-data? (128x128 thumbnails
+ * with 24-bit color can take 49152 bytes, so we pick
+ * something slightly higher -- we're limited by 64k).
  */
-#define MAX_KBLOCK_SIZE 32000
+#define MAX_KBLOCK_SIZE 60000
 
 #if EXTRA_CHECKS
 
