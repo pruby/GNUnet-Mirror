@@ -189,6 +189,7 @@ int main(int argc,
   int i;
   HashCode512 hc;
 
+  meta = ECRS_createMetaData();
   i = GNUNET_init(argc,
 		  argv,
 		  "gnunet-pseudonym [OPTIONS]",
