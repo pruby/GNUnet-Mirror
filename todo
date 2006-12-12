@@ -13,6 +13,8 @@ Notes:
 
 
 0.7.1 [12'06] (aka "stabilization")
+- stopping collection (gnunet-pseudonym -E) always fails,
+  even if collection was just started!
 - more testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
