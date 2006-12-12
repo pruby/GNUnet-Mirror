@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util_boot.h"
@@ -56,7 +57,7 @@ static unsigned int priority;
 
 static unsigned int expiration;
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 static struct ECRS_MetaData * meta;
 
