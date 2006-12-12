@@ -26,7 +26,7 @@
  *
  * TODO:
  * - use ectx to capture error messages and show them to
- *   the user properly
+ *   the user properly (some currently printf'ed to console!)
  * - additional autodetections (IP, etc)
  * - share helper functions with mconf.c (refactoring)
  */

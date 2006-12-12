@@ -148,7 +148,6 @@ src/util/error/error.c
 src/util/boot/startup.c
 src/util/string/string.c
 src/util/string/xmalloctest.c
-src/util/string/dlmalloc.c
 src/util/string/xmalloc.c
 src/util/threads/pthread.c
 src/util/threads/shutdowntest2.c
@@ -317,7 +316,6 @@ src/applications/stats/statistics.h
 src/applications/tracekit/tracekit.h
 src/applications/tbench/tbench.h
 src/util/network/network.h
-src/util/string/dlmalloc.h
 src/util/crypto/locking_gcrypt.h
 src/setup/ncurses/mconf.h
 src/setup/ncurses/wizard_curs.h
