@@ -27,7 +27,6 @@
 #include "gnunet_util_string.h"
 #include "gnunet_util_error.h"
 #include "platform.h"
-#include "dlmalloc.h"
 
 #ifndef INT_MAX
 #define INT_MAX 0x7FFFFFFF

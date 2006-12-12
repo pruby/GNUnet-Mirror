@@ -154,7 +154,7 @@ static int insert_nic(const char *name,
 }
 
 void load_step2setup_gtk(GtkButton * button,
-		gpointer prev_window) {
+			 gpointer prev_window) {
   GtkWidget * entIP;
   GtkWidget * chkFW;
   GtkTreeIter iter;
@@ -261,7 +261,7 @@ void load_step3setup_gtk(GtkButton * button,
 }
 
 void load_step4setup_gtk(GtkButton * button,
-		gpointer prev_window) {
+			 gpointer prev_window) {
   GtkWidget * entUser;
   GtkWidget * entGroup;
   char * uname = NULL;
@@ -352,7 +352,7 @@ void load_step4setup_gtk(GtkButton * button,
 
 
 void load_step5setup_gtk(GtkButton * button,
-		gpointer prev_window) {
+			 gpointer prev_window) {
   GtkWidget * chkMigr;
   GtkWidget * entQuota;
   GtkWidget * chkEnh;
@@ -366,13 +366,19 @@ void load_step5setup_gtk(GtkButton * button,
   chkStart =  lookup_widget("chkStart");
   chkEnh =  lookup_widget("chkEnh");
 
-  GC_get_configuration_value_string(editCfg, "FS", "QUOTA", "1024",
-    &val);
+  GC_get_configuration_value_string(editCfg,
+				    "FS",
+				    "QUOTA",
+				    "1024",
+				    &val);
   gtk_entry_set_text(GTK_ENTRY(entQuota), val);
   FREE(val);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkMigr),
-			 GC_get_configuration_value_yesno(editCfg, "FS", "ACTIVEMIGRATION", YES) == YES);
+			       GC_get_configuration_value_yesno(editCfg, 
+								"FS",
+								"ACTIVEMIGRATION",
+								YES) == YES);
 
   if (os_modify_autostart(err_ctx, 1, 1, NULL, NULL, NULL))
     gtk_widget_set_sensitive(chkStart, TRUE);
@@ -468,23 +474,26 @@ void on_finish_clickedsetup_gtk (GtkButton * button,
   char * gup;
   char * bin;
   if (doAutoStart && (user_name != NULL))
-    if (!wiz_createGroupUser(group_name, user_name)) {
+    if (!wiz_createGroupUser(group_name, 
+			     user_name)) {
 #ifndef MINGW
-      showErr(_("Unable to create user account:"), STRERROR(errno));
+      showErr(_("Unable to create user account:"), 
+	      STRERROR(errno));
 #endif
       return;
     }
 
-  if (wiz_autostartService(doAutoStart, user_name, group_name) != OK) {
+  if (wiz_autostartService(doAutoStart,
+			   user_name,
+			   group_name) != OK) {
 #ifndef MINGW
-    showErr(_("Unable to change startup process:"), STRERROR(errno));
+    showErr(_("Unable to change startup process:"), 
+	    STRERROR(errno));
 #endif
   }	
 
   if (OK != save_conf())
-    return;
-
-  
+    return;  
   if (doUpdate) {
     bin = os_get_installation_path(IPK_BINDIR);
     gup = MALLOC(strlen(bin) + 30 + strlen(cfg_fn));
@@ -502,13 +511,13 @@ void on_finish_clickedsetup_gtk (GtkButton * button,
 }
 
 void on_updateFailedOK_clickedsetup_gtk (GtkButton * button,
-				gpointer user_data) {
+					 gpointer user_data) {
   GtkWidget * dialog = user_data;
   gtk_widget_destroy(dialog);
 }
 
 void on_entIP_changedsetup_gtk (GtkEditable * editable,
-		       gpointer user_data) {
+				gpointer user_data) {
   gchar * ret;
 
   ret = gtk_editable_get_chars(editable, 0, -1);
@@ -522,13 +531,13 @@ void on_entIP_changedsetup_gtk (GtkEditable * editable,
 
 
 void on_chkFW_toggledsetup_gtk (GtkToggleButton * togglebutton,
-		       gpointer user_data) {
+				gpointer user_data) {
   GC_set_configuration_value_choice(editCfg, err_ctx, "LIMITED", "NAT",
     gtk_toggle_button_get_active(togglebutton) ? "YES" : "NO");
 }
 
 void on_entUp_changedsetup_gtk (GtkEditable * editable,
-		       gpointer user_data) {
+				gpointer user_data) {
   gchar * ret;
 
   ret = gtk_editable_get_chars(editable, 0, -1);
@@ -557,15 +566,25 @@ void on_entDown_changedsetup_gtk (GtkEditable * editable,
 
 void on_radGNUnet_toggledsetup_gtk(GtkToggleButton * togglebutton,
 			  gpointer user_data) {
-  GC_set_configuration_value_choice(editCfg, err_ctx, "LOAD", "BASICLIMITING",
-    gtk_toggle_button_get_active(togglebutton) ? "YES" : "NO");
+  GC_set_configuration_value_choice(editCfg, 
+				    err_ctx, 
+				    "LOAD", 
+				    "BASICLIMITING",
+				    gtk_toggle_button_get_active(togglebutton) 
+				    ? "YES" 
+				    : "NO");
 }
 
 
 void on_radShare_toggledsetup_gtk (GtkToggleButton * togglebutton,
-			  gpointer user_data) {
-  GC_set_configuration_value_choice(editCfg, err_ctx, "LOAD", "BASICLIMITING",
-    gtk_toggle_button_get_active(togglebutton) ? "NO" : "YES");
+				   gpointer user_data) {
+  GC_set_configuration_value_choice(editCfg,
+				    err_ctx,
+				    "LOAD", 
+				    "BASICLIMITING",
+				    gtk_toggle_button_get_active(togglebutton) 
+				    ? "NO" 
+				    : "YES");
 }
 
 
@@ -581,13 +600,18 @@ void on_entCPU_changedsetup_gtk (GtkEditable * editable,
 }
 
 void on_chkMigr_toggledsetup_gtk (GtkToggleButton * togglebutton,
-			 gpointer user_data) {
-  GC_set_configuration_value_choice(editCfg, err_ctx, "FS", "ACTIVEMIGRATION",
-    gtk_toggle_button_get_active(togglebutton) ? "YES" : "NO");
+				  gpointer user_data) {
+  GC_set_configuration_value_choice(editCfg, 
+				    err_ctx,
+				    "FS", 
+				    "ACTIVEMIGRATION",
+				    gtk_toggle_button_get_active(togglebutton) 
+				    ? "YES" 
+				    : "NO");
 }
 
 void on_entQuota_changedsetup_gtk (GtkEditable * editable,
-			  gpointer user_data) {
+				   gpointer user_data) {
   gchar * ret;
 
   ret = gtk_editable_get_chars(editable, 0, -1);
@@ -634,7 +658,7 @@ void on_entUser_changedsetup_gtk (GtkEditable * editable,
 }
 
 void on_entGroup_changedsetup_gtk (GtkEditable * editable,
-			  gpointer user_data) {
+				   gpointer user_data) {
   gchar * ret;
 
   FREENONNULL(group_name);

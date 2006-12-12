@@ -129,7 +129,7 @@ static int dyn_config(const char * module,
 
 static const char * INFO =
   "gnunet-setup [OPTIONS] config"
-#if HAVE_CURSES
+#if HAVE_DIALOG
   "|menuconfig|wizard-curses"
 #endif
 #if HAVE_GTK
@@ -189,7 +189,7 @@ int main(int argc,
 	   GE_WARNING | GE_REQUEST | GE_USER,
 	   _("No interface specified, using default\n"));
     operation = "config";
-#if HAVE_CURSES
+#if HAVE_DIALOG
     operation = "menuconfig";
 #endif
 #if HAVE_GTK

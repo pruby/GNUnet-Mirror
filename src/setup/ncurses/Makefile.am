@@ -9,8 +9,8 @@ plugin_LTLIBRARIES = \
  libgnunetsetup_curses.la
 
 libgnunetsetup_curses_la_SOURCES = \
- mconf.c mconf.h 
-# wizard_curs.c wizard_curs.h
+ mconf.c mconf.h \
+ wizard_curs.c wizard_curs.h
 
 libgnunetsetup_curses_la_LDFLAGS = \
  -lncursesw -ldialog \

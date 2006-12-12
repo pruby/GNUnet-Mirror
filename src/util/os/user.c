@@ -82,7 +82,7 @@ int os_modify_user(int testCapability,
     char * cmd;
 
     haveGroup = group_name && strlen(group_name) > 0;		
-    cmd = MALLOC(haveGroup ? strlen(group_name) : 0 + strlen(user_name) + 64);
+    cmd = MALLOC(256 + (haveGroup ? strlen(group_name) : 0) + strlen(user_name));
 
     if (haveGroup) {
       sprintf(cmd,

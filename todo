@@ -13,8 +13,6 @@ Notes:
 
 
 0.7.1 [12'06] (aka "stabilization")
-- finish util refactoring:
-  * gnunet-setup ncurses wizard [RCpre2]
 - more testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
