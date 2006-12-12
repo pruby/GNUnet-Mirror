@@ -207,9 +207,9 @@ int main(int argc,
   /* stop collections */
   if (start_collection || stop_collection) {
     if (OK == CO_stopCollection(ectx,
-				cfg))
+				cfg)) 
       printf(_("Collection stopped.\n"));
-    else
+    else if (stop_collection)
       printf(_("Failed to stop collection (not active?).\n"));
   }
 
