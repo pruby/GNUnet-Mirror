@@ -746,7 +746,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
 
 (define (tcp-blacklist builder)
  (builder
- TCP"
+ "TCP"
  "BLACKLIST"
  (_ "Which IPs are not allowed to connect?")
  (nohelp)
@@ -1110,8 +1110,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  "LOAD"
  "HARDUPLIMIT"
  (_ "What is the maximum upstream bandwidth (hard limit)?")
- (_ "The limit is given as a percentage o
-f the MAXNETUPBPS limit.  Use 100 to have MAXNETUPBPS be the hard limit.  Use zero for no limit.")
+ (_ "The limit is given as a percentage of the MAXNETUPBPS limit.  Use 100 to have MAXNETUPBPS be the hard limit.  Use zero for no limit.")
  '()
  #t
  0
@@ -1154,16 +1153,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
  "LOAD"
  "INTERFACES"
  (_ "Network interface to monitor")
- (_ 
-"	For which interfaces should we do accounting?  GNUnet will evaluate
-		the total traffic (not only the GNUnet related traffic) and adjust
-		its bandwidth usage accordingly. You can currently only specify a
-		single interface. GNUnet will also use this interface to determine
-		the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.
-		'ifconfig' will tell you what you have.  Never use 'lo', that just
-		won't work.
-		Under Windows, specify the index number reported by
-		 \"gnunet-win-tool -n\".")
+ (_ "For which interfaces should we do accounting?  GNUnet will evaluate the total traffic (not only the GNUnet related traffic) and adjust its bandwidth usage accordingly. You can currently only specify a single interface. GNUnet will also use this interface to determine the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.  'ifconfig' will tell you what you have.  Never use 'lo', that just won't work.  Under Windows, specify the index number reported by  'gnunet-win-tool -n'.")
  '()
  #t
  "eth0"
