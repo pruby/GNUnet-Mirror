@@ -37,6 +37,7 @@
 
 #include "platform.h"
 #include "gnunet_blockstore.h"
+#include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
 #include "gnunet_util_crypto.h"
 
@@ -127,22 +128,272 @@ static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
 
+static char * 
+getCollectionFileName() {
+  char * fn;
+  char * fnBase;
+
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &fnBase);
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(COLLECTION) +
+	      4);
+  strcpy(fn, fnBase);
+  disk_directory_create(ectx, fn);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, COLLECTION);
+  FREE(fnBase);
+  return fn;
+}
+
 /**
  * Initialize collection module.
  */
 void CO_init(struct GE_Context * e,
 	     struct GC_Configuration * c) {
+  char * fn;
+  int len;
+  unsigned int mlen;
+  unsigned long long size;
+  char * buf;
+  int fd;
+  const char * pos;
+  size_t rsize;
+  unsigned int i;
+  char * tmp;
+
   cfg = c;
   ectx = e;
   lock = MUTEX_CREATE(YES);
-  /* FIXME: read collection data */
+  fn = getCollectionFileName();
+  if (! disk_file_test(ectx, fn)) {
+    FREE(fn);
+    return;
+  }
+  /* read collection data */
+  if (OK != disk_file_size(ectx,
+			   fn,
+			   &size,
+			   YES)) {
+    FREE(fn);
+    return;
+  }
+  if ( (size > 0x7FFFFFFF) ||
+       (size < sizeof(CollectionData) + 4 * sizeof(int)) ) {
+    GE_BREAK(ectx, 0);
+    UNLINK(fn);
+    FREE(fn);
+    return;
+  }  
+  fd = open(fn, O_RDONLY | O_LARGEFILE);
+  if (fd == -1) {
+    GE_BREAK(ectx, 0);
+    UNLINK(fn);
+    FREE(fn);
+    return;
+  }
+  rsize = (size_t) size;
+  buf = MMAP(NULL,
+	     rsize,
+	     PROT_READ,
+	     MAP_SHARED,
+	     fd,
+	     0);
+  if (buf == MAP_FAILED) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 "mmap",
+			 fn);
+    CLOSE(fd);
+    FREE(fn);
+    return;
+  }
+  collectionData = MALLOC(sizeof(CollectionInfo));
+  memcpy(&collectionData->data,
+	 buf,
+	 sizeof(CollectionData));
+  pos = &buf[sizeof(CollectionData)];
+  rsize -= sizeof(CollectionData);
+  len = ntohl(*(int*)pos);
+  GROW(collectionData->files,
+       collectionData->file_count,
+       len);
+  pos += sizeof(int);
+  collectionData->changed = ntohl(*(int*)pos);
+  pos += sizeof(int);
+  mlen = ntohl(*(int*)pos);
+  pos += sizeof(int);
+  len = ntohl(*(int*)pos);
+  collectionData->name = MALLOC(len+1);
+  pos += sizeof(int);
+  rsize -= 4 * sizeof(int);
+  if (len > rsize) {
+    GE_BREAK(ectx, 0);
+    len = rsize;
+  }
+  memcpy(collectionData->name,
+	 pos,
+	 len);
+  rsize -= len;
+  pos += len;
+  if (mlen > rsize) {
+    GE_BREAK(ectx, 0);
+    mlen = rsize;
+  }
+  collectionData->meta 
+    = ECRS_deserializeMetaData(ectx,
+			       pos,
+			       mlen);
+  rsize -= mlen;
+  pos += mlen;
+  GE_BREAK(ectx, 
+	   collectionData->meta != NULL);
+  for (i=0;i<collectionData->file_count;i++) {
+    if (rsize < 2 * sizeof(int)) {
+      GE_BREAK(ectx, 0);
+      break;
+    }
+    mlen = ntohl(*(int*)pos);
+    pos += sizeof(int);
+    len = ntohl(*(int*)pos);
+    pos += sizeof(int);
+    rsize -= 2 * sizeof(int);
+    if (rsize < mlen + len) {
+      GE_BREAK(ectx, 0);
+      break;
+    }
+    tmp = MALLOC(len + 1);
+    tmp[len] = '\0';
+    memcpy(tmp,
+	   pos,
+	   len);
+    pos += len;
+    rsize -= len;
+    collectionData->files[i].uri
+      = ECRS_stringToUri(ectx,
+			 tmp);
+    GE_ASSERT(ectx, 
+	      collectionData->files[i].uri != NULL);
+    FREE(tmp);
+    collectionData->files[i].meta
+       = ECRS_deserializeMetaData(ectx,
+				  pos,
+				  mlen);
+    GE_ASSERT(ectx, 
+	      collectionData->files[i].meta != NULL);
+    pos += mlen;
+    rsize -= mlen;
+  }
+  GE_ASSERT(ectx, rsize == 0);  
+  MUNMAP(buf, (size_t) size);
+  CLOSE(fd);
+  FREE(fn);
+  /* kill invalid entries (meta or uri == NULL) */
+  for (i=0;i<collectionData->file_count;i++) {
+    if ( (collectionData->files[i].uri != NULL) &&
+	 (collectionData->files[i].meta != NULL) ) 
+      continue;
+    if (collectionData->files[i].uri != NULL) 
+      ECRS_freeUri(collectionData->files[i].uri);
+    if (collectionData->files[i].meta != NULL)
+      ECRS_freeMetaData(collectionData->files[i].meta);
+    collectionData->files[i]
+      = collectionData->files[collectionData->file_count-1];
+    GROW(collectionData->files,
+	 collectionData->file_count,
+	 collectionData->file_count-1);
+  }
+}
+
+static void WRITEINT(int fd,
+		     int val) {
+  int bval;
+
+  bval = htons(val);
+  WRITE(fd,
+	&bval,
+	sizeof(int));
+}
+
+static void writeCO() {
+  char * fn;
+  unsigned int mlen;
+  char * buf;
+  int fd;
+  unsigned int i;
+  char * tmp;
+
+  if (collectionData == NULL) 
+    return;
+  
+  /* write collection data */
+  mlen = ECRS_sizeofMetaData(collectionData->meta,
+			     NO);
+  buf = MALLOC(mlen);
+  if (OK != ECRS_serializeMetaData(ectx,
+				   collectionData->meta,
+				   buf,
+				   mlen,
+				   NO)) {
+    FREE(buf);
+    return;
+  }
+    
+  fn = getCollectionFileName();
+  fd = open(fn,
+	    O_CREAT | O_LARGEFILE | O_WRONLY | O_TRUNC,
+	    S_IRUSR | S_IWUSR);
+  if (fd == -1) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+			 "open",
+			 fn);
+    FREE(fn);
+    FREE(buf);
+    return;
+  } 
+  WRITE(fd, 
+	collectionData, 
+	sizeof(CollectionData));
+  WRITEINT(fd, collectionData->file_count);
+  WRITEINT(fd, collectionData->changed);
+  WRITEINT(fd, mlen);
+  WRITEINT(fd, strlen(collectionData->name));
+  WRITE(fd, collectionData->name, strlen(collectionData->name));
+  WRITE(fd, buf, mlen);
+  FREE(buf);
+  for (i=0;i<collectionData->file_count;i++) {
+    mlen = ECRS_sizeofMetaData(collectionData->files[i].meta,
+			       NO);
+    buf = MALLOC(mlen);
+    if (OK != ECRS_serializeMetaData(ectx,
+				     collectionData->files[i].meta,
+				     buf,
+				     mlen,
+				     NO)) {
+      FREE(buf);
+      break;
+    }
+    tmp = ECRS_uriToString(collectionData->files[i].uri);    
+    WRITEINT(fd, strlen(tmp));
+    WRITEINT(fd, mlen);
+    WRITE(fd, tmp, strlen(tmp));
+    FREE(tmp);
+    WRITE(fd, buf, mlen);
+    FREE(buf);
+  }
+  CLOSE(fd);
+  FREE(fn);
 }
 
 /**
  * Shutdown collection module.
  */
 void CO_done() {
-  /* FIXME: write collection data */
+  writeCO();
   CO_stopCollection();
   MUTEX_DESTROY(lock);
   lock = NULL;
