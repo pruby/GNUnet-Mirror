@@ -41,8 +41,7 @@
 #include "gnunet_util_crypto.h"
 
 /**
- * Entry in the state-DB that caches the current
- * collection.
+ * Filename used to store collection information
  */
 #define COLLECTION "collection"
 
@@ -55,40 +54,102 @@
  * @brief information about a collection
  */
 typedef struct CollectionData {
-  DataContainer hdr;
-  /**
-   * Has this collection changed since the last publication? (NBO)
-   */
-  int changed;
+
   /**
    * What is the last ID for the publication?
    */
   HashCode512 lastId;
+
   /**
    * What is the next ID for the publication?
    */
   HashCode512 nextId;
+
   /**
    * What is the update interval? (NBO!)
    */
   TIME_T updateInterval;
+
   /**
    * What is the update interval? (NBO!)
    */
   TIME_T lastPublication;
+
   /**
    * Anonymity level for the collection. (NBO)
    */
   unsigned int anonymityLevel;
+
+  /**
+   * Priority of the collection (NBO).
+   */
+  unsigned int priority;
+
+} CollectionData;
+
+
+typedef struct {
+
+  CollectionData data;
+
   /**
    * Name of the collection
    */
-  char name[1];
-  /* the name is followed by a
-     serialized ECRS directory */
-} CollectionData;
+  char * name;
 
-static CollectionData * collectionData;
+  /**
+   * Metadata describing the collection
+   */
+  struct ECRS_MetaData * meta;  
+
+  /**
+   * Files in the collection.
+   */
+  ECRS_FileInfo * files;
+
+  /**
+   * How many files are in files?
+   */
+  unsigned int file_count;
+
+  /**
+   * Has this collection changed since the last publication?
+   */
+  int changed;
+
+} CollectionInfo;
+
+static CollectionInfo * collectionData;
+
+static struct MUTEX * lock;
+
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+
+/**
+ * Initialize collection module.
+ */
+void CO_init(struct GE_Context * e,
+	     struct GC_Configuration * c) {
+  cfg = c;
+  ectx = e;
+  lock = MUTEX_CREATE(YES);
+  /* FIXME: read collection data */
+}
+
+/**
+ * Shutdown collection module.
+ */
+void CO_done() {
+  /* FIXME: write collection data */
+  CO_stopCollection();
+  MUTEX_DESTROY(lock);
+  lock = NULL;
+  ectx = NULL;
+  cfg = NULL;
+}
+	
 
 /**
  * Start collection.
@@ -99,9 +160,7 @@ static CollectionData * collectionData;
  *        to publish updates when the CO_Context
  *        is destroyed (i.e. on exit from the UI).
  */
-int CO_startCollection(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       unsigned int anonymityLevel,
+int CO_startCollection(unsigned int anonymityLevel,
 		       unsigned int prio,
 		       TIME_T updateInterval,
 		       const char * name,
@@ -110,12 +169,9 @@ int CO_startCollection(struct GE_Context * ectx,
   struct ECRS_URI * rootURI;
   HashCode512 nextId;
   TIME_T now;
-  CollectionData * cd;
-  unsigned long long dirLen;
-  char * dirData;
-  struct ECRS_MetaData * dirMeta;
-
-  CO_stopCollection(ectx, cfg); /* cancel old collection */
+ 
+  MUTEX_LOCK(lock);    
+  CO_stopCollection(); /* cancel old collection */
   GE_ASSERT(ectx, name != NULL);
   advertisement = ECRS_parseCharKeywordURI(ectx,
 					   COLLECTION);
@@ -133,31 +189,28 @@ int CO_startCollection(struct GE_Context * ectx,
 				 &nextId);
   if (rootURI == NULL) {
     ECRS_freeUri(advertisement);
+    MUTEX_UNLOCK(lock);      
     return SYSERR;
   }
   ECRS_freeUri(advertisement);
   ECRS_freeUri(rootURI);
-  dirMeta = ECRS_dupMetaData(meta);
-  GE_ASSERT(ectx, OK == ECRS_createDirectory(ectx,
-					     &dirData,
-					     &dirLen,
-					     0,
-					     NULL,
-					     dirMeta));
-  ECRS_freeMetaData(dirMeta);
-  cd = MALLOC(sizeof(CollectionData) + strlen(name) + dirLen);
-  collectionData = cd;
-  cd->hdr.size = ntohl(sizeof(CollectionData) + strlen(name));
-  makeRandomId(&cd->lastId);
-  cd->nextId = nextId;
-  cd->updateInterval = htonll(updateInterval);
-  cd->anonymityLevel = htonl(anonymityLevel);
-  cd->changed = htonl(NO);
-  strcpy(cd->name, name);
-  memcpy(&cd->name[strlen(name)+1],
-	 dirData,
-	 dirLen);
-  FREE(dirData);
+  collectionData = MALLOC(sizeof(CollectionInfo));
+  memset(collectionData, 
+	 0,
+	 sizeof(CollectionInfo));
+  makeRandomId(&collectionData->data.lastId);
+  collectionData->data.nextId = nextId;
+  collectionData->data.updateInterval 
+    = htonll(updateInterval);
+  collectionData->data.anonymityLevel
+    = htonl(anonymityLevel);
+  collectionData->data.priority 
+    = htonl(prio);
+  collectionData->meta 
+    = ECRS_dupMetaData(meta);
+  collectionData->name 
+    = STRDUP(name);
+  MUTEX_UNLOCK(lock);    
   return OK;
 }
 
@@ -166,15 +219,29 @@ int CO_startCollection(struct GE_Context * ectx,
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int CO_stopCollection(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg) {
-  if (collectionData == NULL)
+int CO_stopCollection() {
+  unsigned int i;
+
+  MUTEX_LOCK(lock);    
+  if (collectionData == NULL) {
+    MUTEX_UNLOCK(lock);    
     return SYSERR;
+  }
   ECRS_deleteNamespace(ectx,
 		       cfg,
 		       collectionData->name);
+  ECRS_freeMetaData(collectionData->meta);
+  for (i=0;i<collectionData->file_count;i++) {
+    ECRS_freeMetaData(collectionData->files[i].meta);
+    ECRS_freeUri(collectionData->files[i].uri);
+  }
+  GROW(collectionData->files,
+       collectionData->file_count,
+       0);
+  FREE(collectionData->name);
   FREE(collectionData);
   collectionData = NULL;
+  MUTEX_UNLOCK(lock);    
   return OK;
 }
 
@@ -183,11 +250,17 @@ int CO_stopCollection(struct GE_Context * ectx,
  *
  * @return NULL if there is no collection, otherwise its name
  */
-const char * CO_getCollection(struct GE_Context * ectx,
-			      struct GC_Configuration * cfg) {
-  if (collectionData == NULL)
+char * CO_getCollection() {
+  char * name;
+
+  MUTEX_LOCK(lock);    
+  if (collectionData == NULL) {
+    MUTEX_UNLOCK(lock);
     return NULL;
-  return &collectionData->name[0];
+  }
+  name = STRDUP(collectionData->name);
+  MUTEX_UNLOCK(lock);
+  return name;
 }
 
 /**
@@ -207,9 +280,8 @@ const char * CO_getCollection(struct GE_Context * ectx,
  * explicit publication of an update at another
  * time is desired.
  */
-void CO_publishCollectionNow(struct GE_Context * ectx,
-			     struct GC_Configuration * cfg,
-			     unsigned int prio) {
+void CO_publishCollectionNow() {
+  HashCode512 delta;
   TIME_T now;
   struct ECRS_URI * uri;
   struct ECRS_URI * directoryURI;
@@ -217,31 +289,33 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
   unsigned long long dirLen;
   char * tmpName;
   int fd;
+  char * dirData;
 
-  if (collectionData == NULL)
+  MUTEX_LOCK(lock);
+  if ( (collectionData == NULL) ||
+       (collectionData->changed == NO) ) {
+    MUTEX_UNLOCK(lock);
     return;
-  if (ntohl(collectionData->changed) == NO)
-    return;
-
+  }
   TIME(&now);
-  if ( (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
-       (ntohl(collectionData->lastPublication) + ntohl(collectionData->updateInterval) < now) )
+  if ( (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
+       (ntohl(collectionData->data.lastPublication) + ntohl(collectionData->data.updateInterval) < now) ) {  
+    MUTEX_UNLOCK(lock);
     return;
-  if ( (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
-    HashCode512 delta;
-
-    deltaId(&collectionData->nextId,
-	    &collectionData->lastId,
+  }
+  if ( (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
+    deltaId(&collectionData->data.nextId,
+	    &collectionData->data.lastId,
 	    &delta);
-    collectionData->lastId = collectionData->nextId;
-    addHashCodes(&collectionData->nextId,
+    collectionData->data.lastId = collectionData->data.nextId;
+    addHashCodes(&collectionData->data.nextId,
 		 &delta,
-		 &collectionData->nextId);
+		 &collectionData->data.nextId);
   } else {
-    collectionData->lastId = collectionData->nextId;
-    makeRandomId(&collectionData->nextId);
+    collectionData->data.lastId = collectionData->data.nextId;
+    makeRandomId(&collectionData->data.nextId);
   }
   tmpName = STRDUP("/tmp/gnunet-collectionXXXXXX");
   fd = mkstemp(tmpName);
@@ -250,14 +324,26 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
 		    GE_ERROR | GE_ADMIN | GE_BULK,
 		    "mkstemp");
     FREE(tmpName);
+    MUTEX_UNLOCK(lock);
     return;
   }
-  dirLen = ntohl(collectionData->hdr.size) - sizeof(CollectionData) - strlen(collectionData->name);
-  if (-1 == WRITE(fd, &collectionData->name[strlen(collectionData->name)+1], dirLen)) {
+  dirData = NULL;
+  GE_ASSERT(ectx,
+	    OK == ECRS_createDirectory(ectx,
+				       &dirData,
+				       &dirLen,
+				       collectionData->file_count,
+				       collectionData->files,
+				       collectionData->meta));
+  if (-1 == WRITE(fd, 
+		  dirData,
+		  dirLen)) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_ADMIN | GE_BULK,
 		    "write");
     FREE(tmpName);
+    FREE(dirData);
+    MUTEX_UNLOCK(lock);
     return;
   }
   CLOSE(fd);
@@ -265,8 +351,8 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
 			    cfg,
 			    tmpName,
 			    NO, /* indexing */
-			    ntohl(collectionData->anonymityLevel),
-			    prio,
+			    ntohl(collectionData->data.anonymityLevel),
+			    ntohl(collectionData->data.priority),
 			    now + COLLECTION_ADV_LIFETIME,
 			    NULL,
 			    NULL,
@@ -275,53 +361,30 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
 			    &directoryURI)) {
     UNLINK(tmpName);
     FREE(tmpName);
+    MUTEX_UNLOCK(lock);
     return;
   }
   UNLINK(tmpName);
   FREE(tmpName);
-  metaData = NULL;
-  GE_ASSERT(ectx, OK == ECRS_listDirectory(ectx,
-					   &collectionData->name[strlen(collectionData->name)+1],
-					   dirLen,
-					   &metaData,
-					   NULL,
-					   NULL));
   uri = ECRS_addToNamespace(ectx,
 			    cfg,
 			    collectionData->name,
-			    ntohl(collectionData->anonymityLevel),
-			    prio,
+			    ntohl(collectionData->data.anonymityLevel),
+			    ntohl(collectionData->data.priority),
 			    now + COLLECTION_ADV_LIFETIME,
 			    now,
-			    ntohl(collectionData->updateInterval),
-			    &collectionData->lastId,
-			    &collectionData->nextId,
+			    ntohl(collectionData->data.updateInterval),
+			    &collectionData->data.lastId,
+			    &collectionData->data.nextId,
 			    directoryURI,
-			    metaData);
+			    collectionData->meta);
   if (uri != NULL) {
-    collectionData->lastPublication = htonl(now);
-    collectionData->changed = htonl(NO);
+    collectionData->data.lastPublication = htonl(now);
+    collectionData->changed = NO;
     ECRS_freeUri(uri);
   }
   ECRS_freeMetaData(metaData);
-}
-
-struct CCcls {
-  unsigned int count;
-  ECRS_FileInfo * fis;
-};
-
-static int collectCallback(const ECRS_FileInfo * fi,
-			   const HashCode512 * key,
-			   int isRoot,
-			   void * closure) {
-  struct CCcls * cls = closure;
-  GROW(cls->fis,
-       cls->count,
-       cls->count+1);
-  cls->fis[cls->count-1].uri = ECRS_dupUri(fi->uri);
-  cls->fis[cls->count-1].meta = ECRS_dupMetaData(fi->meta);
-  return OK;
+  MUTEX_UNLOCK(lock);
 }
 
 /**
@@ -337,63 +400,39 @@ static int collectCallback(const ECRS_FileInfo * fi,
  * inserting files using libECRS directly or need other
  * ways to explicitly extend a collection.
  */
-void CO_publishToCollection(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg,
-			    const ECRS_FileInfo * fi,
-			    unsigned int prio) {
-  unsigned long long dirLen;
-  char * dirData;
-  struct ECRS_MetaData * metaData;
-  struct CCcls cls;
-  int i;
+void CO_publishToCollection(const ECRS_FileInfo * fi) {
+  unsigned int i;
+  ECRS_FileInfo fc;
 
-  if (collectionData == NULL)
-    return;
   if ((ECRS_isKeywordUri(fi->uri))) {
     GE_BREAK(ectx, 0);
     return;
   }
-  dirLen = ntohl(collectionData->hdr.size) - strlen(collectionData->name) - sizeof(CollectionData);
-  cls.count = 0;
-  cls.fis = NULL;
-  GE_ASSERT(ectx, OK ==
-	    ECRS_listDirectory(ectx,
-			       &collectionData->name[strlen(collectionData->name)+1],
-			       dirLen,
-			       &metaData,
-			       &collectCallback,
-			       &cls));
-  collectCallback(fi,
-		  NULL,
-		  NO,
-		  &cls);
-  dirData = NULL;
-  GE_ASSERT(ectx, OK ==
-	    ECRS_createDirectory(ectx,
-				 &dirData,
-				 &dirLen,
-				 cls.count,
-				 cls.fis,
-				 metaData));
-  ECRS_freeMetaData(metaData);
-  for (i=0;i<cls.count;i++) {
-    ECRS_freeUri(cls.fis[i].uri);
-    ECRS_freeMetaData(cls.fis[i].meta);
+  if (lock == NULL) {
+    GE_BREAK(ectx, 0);
+    return;
   }
-  GROW(cls.fis,
-       cls.count,
-       0);
-  REALLOC(collectionData,
-	  sizeof(CollectionData) + strlen(collectionData->name) + dirLen);
-  memcpy(&collectionData->name[strlen(collectionData->name)+1],
-	 dirData,
-	 dirLen);
-  FREE(dirData);
-  collectionData->changed = htonl(YES);
-  if (ntohll(collectionData->updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
-    CO_publishCollectionNow(ectx, cfg, prio);
+  MUTEX_LOCK(lock);
+  if (collectionData == NULL) {
+    MUTEX_UNLOCK(lock);  
+    return;
+  }
+  for (i=0;i<collectionData->file_count;i++) {
+    if (ECRS_equalsUri(fi->uri,
+		       collectionData->files[i].uri)) {
+      MUTEX_UNLOCK(lock);  
+      return;
+    }
+  }
+  fc.uri = ECRS_dupUri(fi->uri);
+  fc.meta = ECRS_dupMetaData(fi->meta);
+  APPEND(collectionData->files,
+	 collectionData->file_count,
+	 fc);
+  collectionData->changed = YES;
+  if (ntohll(collectionData->data.updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
+    CO_publishCollectionNow();
+  MUTEX_UNLOCK(lock);
 }
-
-
 
 /* end of collection.c */

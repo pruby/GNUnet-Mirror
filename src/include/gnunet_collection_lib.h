@@ -37,31 +37,40 @@ extern "C" {
 #endif
 
 /**
- * Start collection.
+ * Initialize collection module.
  */
-int CO_startCollection(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       unsigned int anonymityLevel,
+void CO_init(struct GE_Context * ectx,
+	     struct GC_Configuration * cfg);
+
+/**
+ * Shutdown collection module.
+ */
+void CO_done(void);
+		       
+
+/**
+ * Start a collection (also automatically stops
+ * an existing collection).
+ */
+int CO_startCollection(unsigned int anonymityLevel,
 		       unsigned int priority,
 		       TIME_T updateInterval,
 		       const char * name,
-		       const struct ECRS_MetaData * meta); /* collection.c */
+		       const struct ECRS_MetaData * meta); 
 
 /**
  * Stop collection.
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int CO_stopCollection(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg); /* collection.c */
+int CO_stopCollection(void); 
 
 /**
  * Are we using a collection?
  *
  * @return NULL if there is no collection, otherwise its name
  */
-const char * CO_getCollection(struct GE_Context * ectx,
-			      struct GC_Configuration * cfg); /* collection.c */
+char * CO_getCollection(void);
 
 /**
  * Upload an update of the current collection information to the
@@ -78,9 +87,7 @@ const char * CO_getCollection(struct GE_Context * ectx,
  * However, clients may want to call this function if explicit
  * publication of an update at another time is desired.
  */
-void CO_publishCollectionNow(struct GE_Context * ectx,
-			     struct GC_Configuration * cfg,
-			     unsigned int priority);
+void CO_publishCollectionNow(void);
 
 /**
  * If we are currently building a collection, publish the given file
@@ -93,13 +100,7 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
  * maybe useful if you're inserting files using libECRS directly or
  * need other ways to explicitly extend a collection.
  */
-void CO_publishToCollection(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg,
-			    const ECRS_FileInfo * fi,
-			    unsigned int prio);
-
-
-
+void CO_publishToCollection(const ECRS_FileInfo * fi);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

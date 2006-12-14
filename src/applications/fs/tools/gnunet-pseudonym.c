@@ -204,13 +204,13 @@ int main(int argc,
     return -1;
   }
   success = 0; /* no errors */
+  CO_init(ectx, cfg);
 
   /* stop collections */
-  if (start_collection || stop_collection) {
-    if (OK == CO_stopCollection(ectx,
-				cfg)) 
+  if (stop_collection && (! start_collection)) {
+    if (OK == CO_stopCollection()) 
       printf(_("Collection stopped.\n"));
-    else if (stop_collection)
+    else
       printf(_("Failed to stop collection (not active?).\n"));
   }
 
@@ -235,9 +235,7 @@ int main(int argc,
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_OWNER,
 			 create_name);
-      if (OK == CO_startCollection(ectx,
-				   cfg,
-				   anonymity,
+      if (OK == CO_startCollection(anonymity,
 				   priority,
 				   ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
 				   create_name,
@@ -313,6 +311,7 @@ int main(int argc,
       printf(_("Could not access namespace information.\n"));
   }
   ECRS_freeMetaData(meta);
+  CO_done();
   GNUNET_fini(ectx, cfg);
   return success;
 }
