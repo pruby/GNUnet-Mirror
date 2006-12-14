@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-12-04 19:14-0700\n"
+"POT-Creation-Date: 2006-12-11 21:40-0700\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -806,7 +806,7 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/anonymity.c:67 src/applications/gap/gap.c:1832
+#: src/applications/fs/module/anonymity.c:67 src/applications/gap/gap.c:1846
 msgid "Failed to get traffic stats.\n"
 msgstr ""
 
@@ -1286,116 +1286,116 @@ msgstr ""
 msgid "Supported client-server messages:\n"
 msgstr ""
 
-#: src/applications/gap/pid_table.c:156
+#: src/applications/gap/pid_table.c:161
 msgid "# distinct interned peer IDs in pid table"
 msgstr ""
 
-#: src/applications/gap/pid_table.c:158
+#: src/applications/gap/pid_table.c:163
 msgid "# total RC of interned peer IDs in pid table"
 msgstr ""
 
-#: src/applications/gap/gap.c:1645
+#: src/applications/gap/gap.c:1659
 #, fuzzy, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "Mottog ogiltigt \"%s\" meddelande från \"%s\".\n"
 
-#: src/applications/gap/gap.c:1646
+#: src/applications/gap/gap.c:1660
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1820
+#: src/applications/gap/gap.c:1834
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1839 src/applications/gap/gap.c:1845
-#: src/applications/gap/gap.c:1852
+#: src/applications/gap/gap.c:1853 src/applications/gap/gap.c:1859
+#: src/applications/gap/gap.c:1866
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2135
+#: src/applications/gap/gap.c:2149
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/gap/gap.c:2136
+#: src/applications/gap/gap.c:2150
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2137
+#: src/applications/gap/gap.c:2151
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2138
+#: src/applications/gap/gap.c:2152
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2139
+#: src/applications/gap/gap.c:2153
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2140
+#: src/applications/gap/gap.c:2154
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2141
+#: src/applications/gap/gap.c:2155
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2142
+#: src/applications/gap/gap.c:2156
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2143
+#: src/applications/gap/gap.c:2157
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2144
+#: src/applications/gap/gap.c:2158
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2145
+#: src/applications/gap/gap.c:2159
 msgid "# gap duplicate requests that were re-tried"
 msgstr ""
 
-#: src/applications/gap/gap.c:2146
+#: src/applications/gap/gap.c:2160
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2147
+#: src/applications/gap/gap.c:2161
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2148
+#: src/applications/gap/gap.c:2162
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2149
+#: src/applications/gap/gap.c:2163
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2150
+#: src/applications/gap/gap.c:2164
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2151
+#: src/applications/gap/gap.c:2165
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2152
+#: src/applications/gap/gap.c:2166
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2153
+#: src/applications/gap/gap.c:2167
 msgid "# gap response weights"
 msgstr ""
 
-#: src/applications/gap/gap.c:2169
+#: src/applications/gap/gap.c:2183
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2197
+#: src/applications/gap/gap.c:2211
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "\"%s\" registrerar handtag %d %d\n"
@@ -2201,11 +2201,11 @@ msgstr ""
 msgid "Cannot store client info\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1190
+#: src/applications/vpn/vpn.c:1190 src/setup/ncurses/wizard_curs.c:105
 msgid "Yes"
 msgstr "Ja"
 
-#: src/applications/vpn/vpn.c:1190
+#: src/applications/vpn/vpn.c:1190 src/setup/ncurses/wizard_curs.c:104
 msgid "No"
 msgstr "Nej"
 
@@ -2293,12 +2293,12 @@ msgstr "Kan inte fråga efter CPU-användning (Win 9x).\n"
 msgid "Can't create semaphore: %i"
 msgstr "Kan inte skapa semafor: %i"
 
-#: src/util/os/statuscalls.c:176 src/util/os/statuscalls.c:254
+#: src/util/os/statuscalls.c:179 src/util/os/statuscalls.c:257
 #, fuzzy, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Misslyckades att läsa kompislista från \"%s\"\n"
 
-#: src/util/os/statuscalls.c:296 src/util/os/statuscalls.c:305
+#: src/util/os/statuscalls.c:299 src/util/os/statuscalls.c:308
 #, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -2711,7 +2711,8 @@ msgid "Exit"
 msgstr ""
 
 #: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:265
-#: src/setup/ncurses/mconf.c:370
+#: src/setup/ncurses/mconf.c:370 src/setup/ncurses/wizard_curs.c:121
+#: src/setup/ncurses/wizard_curs.c:191 src/setup/ncurses/wizard_curs.c:307
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
@@ -2731,7 +2732,7 @@ msgstr ""
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:413
+#: src/setup/ncurses/mconf.c:413 src/setup/ncurses/wizard_curs.c:562
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "GNUnet-konfiguration"
@@ -2761,23 +2762,36 @@ msgid ""
 "Your configuration changes were NOT saved.\n"
 msgstr "Konfigurationsfil \"%s\" skapad.\n"
 
-#: src/setup/ncurses/wizard_curs.c:56 src/setup/lib/wizard_util.c:131
+#: src/setup/ncurses/wizard_curs.c:67 src/setup/lib/wizard_util.c:131
 #: src/setup/lib/wizard_util.c:176
 msgid "Error"
 msgstr "Fel"
 
-#: src/setup/ncurses/wizard_curs.c:120 src/setup/ncurses/wizard_curs.c:135
-#: src/setup/ncurses/wizard_curs.c:188 src/setup/ncurses/wizard_curs.c:225
-#: src/setup/ncurses/wizard_curs.c:255 src/setup/ncurses/wizard_curs.c:281
-#: src/setup/ncurses/wizard_curs.c:314 src/setup/ncurses/wizard_curs.c:341
-#: src/setup/ncurses/wizard_curs.c:373 src/setup/ncurses/wizard_curs.c:398
-#: src/setup/ncurses/wizard_curs.c:427 src/setup/ncurses/wizard_curs.c:450
-#: src/setup/ncurses/wizard_curs.c:505 src/setup/ncurses/wizard_curs.c:567
-#: src/setup/ncurses/wizard_curs.c:598 src/setup/ncurses/wizard_curs.c:642
+#: src/setup/ncurses/wizard_curs.c:77 src/setup/gtk/gconf.c:417
+msgid "Help"
+msgstr "Hjälp"
+
+#: src/setup/ncurses/wizard_curs.c:86
+#, fuzzy
+msgid "Error!"
+msgstr "Fel"
+
+#: src/setup/ncurses/wizard_curs.c:153
+#, fuzzy
+msgid "Abort"
+msgstr "_Om"
+
+#: src/setup/ncurses/wizard_curs.c:154
+#, fuzzy
+msgid "Ok"
+msgstr "k"
+
+#: src/setup/ncurses/wizard_curs.c:222 src/setup/ncurses/wizard_curs.c:290
+#: src/setup/ncurses/wizard_curs.c:443
 msgid "GNUnet configuration"
 msgstr "GNUnet-konfiguration"
 
-#: src/setup/ncurses/wizard_curs.c:121
+#: src/setup/ncurses/wizard_curs.c:223
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -2807,51 +2821,36 @@ msgstr ""
 "\n"
 "the GNUnet team"
 
-#: src/setup/ncurses/wizard_curs.c:136
+#: src/setup/ncurses/wizard_curs.c:291
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:142 src/setup/ncurses/wizard_curs.c:195
-#: src/setup/ncurses/wizard_curs.c:232 src/setup/ncurses/wizard_curs.c:287
-#: src/setup/ncurses/wizard_curs.c:319 src/setup/ncurses/wizard_curs.c:379
-#: src/setup/gtk/gconf.c:417
-msgid "Help"
-msgstr "Hjälp"
-
-#: src/setup/ncurses/wizard_curs.c:142 src/setup/ncurses/wizard_curs.c:196
+#: src/setup/ncurses/wizard_curs.c:312 src/setup/ncurses/wizard_curs.c:325
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
 "you are using DSL."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:189
+#: src/setup/ncurses/wizard_curs.c:323
+#, fuzzy
+msgid "Network configuration: interface"
+msgstr "Nätverksgränssnitt:"
+
+#: src/setup/ncurses/wizard_curs.c:324
 msgid ""
 "What is the name of the network interface that connects your computer to the "
 "Internet?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:226
-msgid ""
-"What is this computer's public IP address or hostname?\n"
-"\n"
-"If in doubt, leave this empty."
-msgstr ""
+#: src/setup/ncurses/wizard_curs.c:335
+#, fuzzy
+msgid "Network configuration: NAT"
+msgstr "GNUnet-konfiguration"
 
-#: src/setup/ncurses/wizard_curs.c:233
-msgid ""
-"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
-"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
-"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
-"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
-"enter it here.\n"
-"If in doubt, leave the field empty. GNUnet will then try to determine your "
-"IP-Address."
-msgstr ""
-
-#: src/setup/ncurses/wizard_curs.c:256
+#: src/setup/ncurses/wizard_curs.c:336
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -2862,97 +2861,95 @@ msgid ""
 "forwarding\")."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:282
-msgid "How much upstream (Bytes/s) may be used?"
+#: src/setup/ncurses/wizard_curs.c:349
+#, fuzzy
+msgid "Network configuration: IP"
+msgstr "GNUnet-konfiguration"
+
+#: src/setup/ncurses/wizard_curs.c:350
+msgid "What is this computer's public IP address or hostname?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:287
+#: src/setup/ncurses/wizard_curs.c:351
+msgid ""
+"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
+"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
+"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
+"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
+"enter it here.\n"
+"If left empty, GNUnet will try to automatically detect the IP.\n"
+"You can specify a hostname, GNUnet will then use DNS to resolve it.\n"
+"If in doubt, leave this empty."
+msgstr ""
+
+#: src/setup/ncurses/wizard_curs.c:366
+#, fuzzy
+msgid "Bandwidth configuration: upload"
+msgstr "GNUnet-konfiguration"
+
+#: src/setup/ncurses/wizard_curs.c:367
+#, fuzzy
+msgid "How much upstream bandwidth (in bytes/s) may be used?"
+msgstr "Hur mycket CPU (i %) får användas?"
+
+#: src/setup/ncurses/wizard_curs.c:368
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
 "The \"upstream\" is the data channel through which data is *sent* to the "
-"internet. The limit is either the total maximum for this computer or how "
-"much GNUnet itself is allowed to use. You can specify that later. If you "
-"have a flatrate, you can set it to the maximum speed of your internet "
-"connection."
+"internet. The limit is the maximum amountwhich GNUnet is allowed to use. If "
+"you have a flatrate, you can set it to the maximum speed of your internet "
+"connection. You should not use a value that is higher than what your actual "
+"connection allows."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:314
-msgid "How much downstream (Bytes/s) may be used?"
-msgstr ""
+#: src/setup/ncurses/wizard_curs.c:380
+#, fuzzy
+msgid "Bandwidth configuration: download"
+msgstr "GNUnet-konfiguration"
 
-#: src/setup/ncurses/wizard_curs.c:320
+#: src/setup/ncurses/wizard_curs.c:381
+#, fuzzy
+msgid "How much downstream bandwidth (in bytes/s) may be used?"
+msgstr "Hur mycket CPU (i %) får användas?"
+
+#: src/setup/ncurses/wizard_curs.c:382
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
 "The \"downstream\" is the data channel through which data is *received* from "
-"the internet. The limit is either the total maximum for this computer or how "
-"much GNUnet itself is allowed to use. You can specify that later. If you "
-"have a flatrate you can set it to the maximum speed of your internet "
-"connection."
+"the internet. The limit is the maximum amountwhich GNUnet is allowed to use. "
+"If you have a flatrate, you can set it to the maximum speed of your internet "
+"connection. You should not use a value that is higher than what your actual "
+"connection allows."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:342
-msgid ""
-"Share denoted bandwidth with other applications?\n"
-"\n"
-"Say \"yes\" here, if you don't want other network traffic to interfere with "
-"GNUnet's operation, but still wish to constrain GNUnet's bandwidth usage to "
-"values entered in the previous steps, or if you can't reliably measure the "
-"maximum capabilities of your connection. \"No\" can be very useful if other "
-"applications are causing a lot of traffic on your LAN.  In this case, you do "
-"not want to limit the traffic that GNUnet can inflict on your internet "
-"connection whenever your high-speed LAN gets used (e.g. by NFS)."
+#: src/setup/ncurses/wizard_curs.c:394
+#, fuzzy
+msgid "Quota configuration"
+msgstr "GNUnet-konfiguration"
+
+#: src/setup/ncurses/wizard_curs.c:395
+msgid "What is the maximum size of the datastore in MB?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:374
-msgid "How much CPU (in %) may be used?"
-msgstr "Hur mycket CPU (i %) får användas?"
-
-#: src/setup/ncurses/wizard_curs.c:380
+#: src/setup/ncurses/wizard_curs.c:396
 msgid ""
-"You can limit GNUnet's resource usage here.\n"
-"\n"
-"This is the percentage of processor time GNUnet is allowed to use."
-msgstr ""
-"Du kan begränsa GNUnets resursanvändning här.\n"
-"\n"
-"Det här är det procenttal som GNUnet tillåts använda av processortiden."
-
-#: src/setup/ncurses/wizard_curs.c:399
-msgid ""
-"Store migrated content?\n"
-"\n"
-"GNUnet is able to store data from other peers in your datastore. This is "
-"useful if an adversary has access to your inserted content and you need to "
-"deny that the content is yours. With \"content migration\" on, the content "
-"could have \"migrated\" over the internet to your node without your "
-"knowledge.\n"
-"It also helps to spread popular content over different peers to enhance "
-"availability."
+"The GNUnet datastore contains all content that GNUnet needs to store "
+"(indexed, inserted and migrated content)."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:428
-msgid ""
-"What's the maximum datastore size in MB?\n"
-"\n"
-"The GNUnet datastore contains all data that GNUnet generates (index data, "
-"inserted and migrated content)."
+#: src/setup/ncurses/wizard_curs.c:409
+#, fuzzy
+msgid "Daemon configuration: user account"
+msgstr "Kunde inte skapa användarkonto:"
+
+#: src/setup/ncurses/wizard_curs.c:410
+msgid "As which user should gnunetd be run?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:451
+#: src/setup/ncurses/wizard_curs.c:411
 msgid ""
-"Do you want to launch GNUnet as a system service?\n"
-"\n"
-"If you say \"yes\" here, the GNUnet background process will be automatically "
-"started when you turn on your computer. If you say \"no\" here, you have to "
-"launch GNUnet yourself each time you want to use it."
-msgstr ""
-
-#: src/setup/ncurses/wizard_curs.c:506
-msgid ""
-"Define the user owning the GNUnet service.\n"
-"\n"
 "For security reasons, it is a good idea to let this setup create a new user "
 "account under which the GNUnet service is started at system startup.\n"
 "\n"
@@ -2960,15 +2957,19 @@ msgid ""
 "includes files you want to publish in GNUnet. You'll have to grant read "
 "permissions to the user specified below.\n"
 "\n"
-"Leave the fields empty to run GNUnet with system privileges.\n"
-"\n"
-"GNUnet user:"
+"Leave the field empty to run GNUnet with system privileges.\n"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:568
+#: src/setup/ncurses/wizard_curs.c:429
+msgid "Daemon configuration: group account"
+msgstr ""
+
+#: src/setup/ncurses/wizard_curs.c:430
+msgid "As which group should gnunetd be run?"
+msgstr ""
+
+#: src/setup/ncurses/wizard_curs.c:431
 msgid ""
-"Define the group owning the GNUnet service.\n"
-"\n"
 "For security reasons, it is a good idea to let this setup create a new group "
 "for the chosen user account.\n"
 "\n"
@@ -2976,50 +2977,66 @@ msgid ""
 "\n"
 "Only members of this group will be allowed to start and stop the the GNUnet "
 "server and have access to GNUnet server data.\n"
-"\n"
-"GNUnet group:"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:599
+#: src/setup/ncurses/wizard_curs.c:444
+msgid "Do you want to automatically launch GNUnet as a system service?"
+msgstr ""
+
+#: src/setup/ncurses/wizard_curs.c:445
 msgid ""
-"If you are an experienced user, you may want to tweak your GNUnet "
-"installation using the enhanced configurator.\n"
-"\n"
-"Do you want to start it after saving your configuration?"
+"If you say \"yes\" here, the GNUnet background process will be automatically "
+"started when you turn on your computer. If you say \"no\" here, you have to "
+"launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:620 src/setup/gtk/wizard_gtk.c:473
-msgid "Unable to create user account:"
+#: src/setup/ncurses/wizard_curs.c:466 src/setup/gtk/wizard_gtk.c:428
+#, c-format
+msgid "Unable to save configuration file `%s':"
+msgstr "Kunde inte spara konfigurationsfil \"%s\":"
+
+#: src/setup/ncurses/wizard_curs.c:493
+#, fuzzy
+msgid "Unable to create user account for daemon."
 msgstr "Kunde inte skapa användarkonto:"
 
-#: src/setup/ncurses/wizard_curs.c:623 src/setup/gtk/wizard_gtk.c:480
-msgid "Unable to change startup process:"
+#: src/setup/ncurses/wizard_curs.c:507
+msgid "Unable to setup autostart for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:636
-#, c-format
-msgid ""
-"Unable to save configuration file %s: %s.\n"
-"\n"
-"Try again?"
-msgstr ""
+#: src/setup/ncurses/wizard_curs.c:521
+#, fuzzy
+msgid "Save configuration?"
+msgstr "GNUnet-konfiguration"
+
+#: src/setup/ncurses/wizard_curs.c:522
+#, fuzzy
+msgid "Save configuration now?"
+msgstr "GNUnet-konfiguration"
+
+#: src/setup/ncurses/wizard_curs.c:566
+msgid "Back"
+msgstr "Tillbaka"
 
 #: src/setup/gtk/wizard_gtk.c:145
 #, fuzzy
 msgid "(unknown connection)"
 msgstr "Nätverksanslutning"
 
-#: src/setup/gtk/wizard_gtk.c:422
-#, c-format
-msgid "Unable to save configuration file `%s':"
-msgstr "Kunde inte spara konfigurationsfil \"%s\":"
-
-#: src/setup/gtk/wizard_gtk.c:444
+#: src/setup/gtk/wizard_gtk.c:450
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "Vill du spara dina inställningar?"
 
-#: src/setup/gtk/wizard_gtk.c:496
+#: src/setup/gtk/wizard_gtk.c:480
+msgid "Unable to create user account:"
+msgstr "Kunde inte skapa användarkonto:"
+
+#: src/setup/gtk/wizard_gtk.c:490
+msgid "Unable to change startup process:"
+msgstr ""
+
+#: src/setup/gtk/wizard_gtk.c:505
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -3405,17 +3422,17 @@ msgstr "%.*s filter %s (SMTP)"
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
 msgstr ""
 
-#: src/transports/tcp_old.c:1256
+#: src/transports/tcp_old.c:1258
 #, fuzzy
 msgid "# bytes received via TCP-OLD"
 msgstr "# byte mottogs via TCP"
 
-#: src/transports/tcp_old.c:1258
+#: src/transports/tcp_old.c:1260
 #, fuzzy
 msgid "# bytes sent via TCP-OLD"
 msgstr "# byte skickades via TCP"
 
-#: src/transports/tcp_old.c:1260
+#: src/transports/tcp_old.c:1262
 #, fuzzy
 msgid "# bytes dropped by TCP-OLD (outgoing)"
 msgstr "# byte kastade via TCP (utgående)"
@@ -3539,62 +3556,70 @@ msgstr ""
 msgid "%s failed, message type %d already in use.\n"
 msgstr ""
 
-#: src/server/connection.c:1024
+#: src/server/connection.c:1114
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "\"%s\" valda %d av %d meddelanden (MTU: %d).\n"
 
-#: src/server/connection.c:1033
+#: src/server/connection.c:1123
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Detaljer om meddelande: %u: längd %d, prioritet: %d\n"
 
-#: src/server/connection.c:2419
+#: src/server/connection.c:2529
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Meddelande från \"%s\" kastades bort: ogiltigt format.\n"
 
-#: src/server/connection.c:2491
+#: src/server/connection.c:2607
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:2508
+#: src/server/connection.c:2624
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2937
+#: src/server/connection.c:3063
 msgid "# outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2941
+#: src/server/connection.c:3067
 msgid "# bytes of outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2943
+#: src/server/connection.c:3069
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:2946
+#: src/server/connection.c:3072
 msgid "# bytes encrypted"
 msgstr "# byte krypterade"
 
-#: src/server/connection.c:2950
+#: src/server/connection.c:3076
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# byte skickade av typen %d"
 
-#: src/server/connection.c:2954
+#: src/server/connection.c:3080
 #, fuzzy
 msgid "# bytes received"
 msgstr "# byte mottogs via TCP"
 
-#: src/server/connection.c:2956
+#: src/server/connection.c:3083
 msgid "# bytes decrypted"
 msgstr "# byte dekrypterade"
 
-#: src/server/connection.c:2957
+#: src/server/connection.c:3085
 msgid "# bytes noise sent"
+msgstr ""
+
+#: src/server/connection.c:3087
+msgid "# total advertised bytes per second received limit"
+msgstr ""
+
+#: src/server/connection.c:3089
+msgid "# total allowed bytes per second transmission limit"
 msgstr ""
 
 #: src/server/version.c:152
@@ -3878,6 +3903,15 @@ msgstr "använd konfigurationsfil FILNAMN"
 msgid "specify host on which gnunetd is running"
 msgstr "ange värd på vilken gnunetd körs"
 
+#~ msgid ""
+#~ "You can limit GNUnet's resource usage here.\n"
+#~ "\n"
+#~ "This is the percentage of processor time GNUnet is allowed to use."
+#~ msgstr ""
+#~ "Du kan begränsa GNUnets resursanvändning här.\n"
+#~ "\n"
+#~ "Det här är det procenttal som GNUnet tillåts använda av processortiden."
+
 #, fuzzy
 #~ msgid "No help available."
 #~ msgstr "\"%s\" är inte tillgänglig."
@@ -3885,10 +3919,6 @@ msgstr "ange värd på vilken gnunetd körs"
 #, fuzzy
 #~ msgid "Show rarely used options"
 #~ msgstr "Visa alla alternativ"
-
-#, fuzzy
-#~ msgid "Meta-configuration"
-#~ msgstr "GNUnet-konfiguration"
 
 #, fuzzy
 #~ msgid "Full pathname of GNUnet HOME directory"
@@ -3931,10 +3961,6 @@ msgstr "ange värd på vilken gnunetd körs"
 #, fuzzy
 #~ msgid "Applications"
 #~ msgstr "_Alternativ"
-
-#, fuzzy
-#~ msgid "Network interface"
-#~ msgstr "Nätverksgränssnitt:"
 
 #, fuzzy
 #~ msgid "Network interface to monitor"
@@ -4265,9 +4291,6 @@ msgstr "ange värd på vilken gnunetd körs"
 #~ msgid "CPU usage"
 #~ msgstr "CPU-användning"
 
-#~ msgid "Back"
-#~ msgstr "Tillbaka"
-
 #~ msgid "Finish"
 #~ msgstr "Slutför"
 
@@ -4429,9 +4452,6 @@ msgstr "ange värd på vilken gnunetd körs"
 #~ "Användning: %s\n"
 #~ "%s\n"
 #~ "\n"
-
-#~ msgid "k"
-#~ msgstr "k"
 
 #~ msgid "g"
 #~ msgstr "g"

@@ -75,7 +75,7 @@ extern "C" {
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-#define GNUNET_UTIL_VERSION 0x00070101
+#define GNUNET_UTIL_VERSION 0x00070102
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

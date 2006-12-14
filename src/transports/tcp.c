@@ -70,6 +70,8 @@ static TransportAPI tcpAPI;
 
 static struct CIDRNetwork * filteredNetworks_;
 
+static struct CIDRNetwork * allowedNetworks_;
+
 static struct GC_Configuration * cfg;
 
 static struct MUTEX * tcpblacklistlock;
@@ -98,6 +100,44 @@ static int isBlacklisted(const void * addr,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
   return ret;
+}
+
+/**
+ * Check if we are allowed to connect to the given IP.
+ */
+static int isWhitelisted(const void * addr,
+			 unsigned int addr_len) {
+  IPaddr ip;
+  int ret;
+
+  if (addr_len == sizeof(struct sockaddr_in)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in*) addr)->sin_addr,
+	   sizeof(IPaddr));
+  } else if (addr_len == sizeof(IPaddr)) {
+    memcpy(&ip,
+	   addr,
+	   addr_len);
+  } else {
+    return SYSERR;
+  }
+  ret = OK;
+  MUTEX_LOCK(tcpblacklistlock);
+  if (allowedNetworks_ != NULL)
+    ret = check_ipv4_listed(allowedNetworks_,
+			    ip);
+  MUTEX_UNLOCK(tcpblacklistlock);
+  return ret;
+}
+
+static int isRejected(const void * addr,
+		      unsigned int addr_len) {
+  if ((YES == isBlacklisted(addr,
+			    addr_len)) ||
+      (YES != isWhitelisted(addr, 
+			    addr_len)))	
+    return YES;
+  return NO;
 }
 
 /**
@@ -142,6 +182,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != TCP_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip,
+			     sizeof(IPaddr))) ||
+       (YES != isWhitelisted(&haddr->ip,
 			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
   else
@@ -341,7 +383,7 @@ static int startTransportServer(void) {
 			   &select_message_handler,
 			   NULL,
 			   &select_accept_handler,
-			   &isBlacklisted,
+			   &isRejected,
 			   &select_close_handler,
 			   NULL,
 			   0 /* memory quota */ );
@@ -364,6 +406,7 @@ static int reloadConfiguration(void * ctx,
 	
   MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
+  FREENONNULL(allowedNetworks_);
   ch = NULL;
   GC_get_configuration_value_string(cfg,
 				    "TCP",
@@ -372,6 +415,18 @@ static int reloadConfiguration(void * ctx,
 				    &ch);
   filteredNetworks_ = parse_ipv4_network_specification(ectx,
 						       ch);
+  FREE(ch);
+  ch = NULL;
+  GC_get_configuration_value_string(cfg,
+				    "TCP",
+				    "WHITELIST",
+				    "",
+				    &ch);
+  if (strlen(ch) > 0)
+    allowedNetworks_ = parse_ipv4_network_specification(ectx,
+							ch);
+  else
+    allowedNetworks_ = NULL;
   FREE(ch);
   MUTEX_UNLOCK(tcpblacklistlock);
   /* TODO: error handling! */
@@ -454,6 +509,7 @@ void donetransport_tcp() {
   coreAPI->releaseService(stats);
   stats = NULL;
   FREENONNULL(filteredNetworks_);
+  FREENONNULL(allowedNetworks_);
   MUTEX_DESTROY(tcplock);
   MUTEX_DESTROY(tcpblacklistlock);
 }

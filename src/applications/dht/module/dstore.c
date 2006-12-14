@@ -56,11 +56,11 @@ void dht_store_put(unsigned int type,
 		   const char * data) {
   if (discard_time < get_time())
     return;
-  return dstore->put(key,
-		     type,
-		     discard_time,
-		     size,
-		     data);
+  dstore->put(key,
+	      type,
+	      discard_time,
+	      size,
+	      data);
 }
   
 /**

@@ -744,6 +744,30 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 65535)
  'nat-unlimited))
 
+(define (tcp-blacklist builder)
+ (builder
+ TCP"
+ "BLACKLIST"
+ (_ "Which IPs are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
+(define (tcp-whitelist builder)
+ (builder
+ "TCP"
+ "WHITELIST"
+ (_ "Which IPs are allowed to connect? Leave empty to allow connections from any IP.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (tcp builder)
  (builder
  "TCP"
@@ -752,6 +776,8 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (tcp-port builder)
+   (tcp-blacklist builder)
+   (tcp-whitelist builder)
  )
  #t
  #f
@@ -822,6 +848,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  '()
  'advanced))
 
+(define (udp-whitelist builder)
+ (builder
+ "UDP"
+ "WHITELIST"
+ (_ "Which IPs are allowed to connect? Leave empty to allow connections from any IP.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (udp builder)
  (builder
  "UDP"
@@ -832,6 +870,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
    (udp-port builder)
    (udp-mtu builder)
    (udp-blacklist builder)
+   (udp-whitelist builder)
  )
  #t
  #f
@@ -863,6 +902,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  '()
  'advanced))
 
+(define (tcp6-whitelist builder)
+ (builder
+ "TCP6"
+ "WHITELIST"
+ (_ "Which IPs are allowed to connect? Leave empty to allow any IP to connect.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (tcp6 builder)
  (builder
  "TCP6"
@@ -872,6 +923,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (list 
    (tcp6-port builder)
    (tcp6-blacklist builder)
+   (tcp6-whitelist builder)
  )
  #t
  #f
@@ -915,6 +967,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  '()
  'advanced))
 
+(define (udp6-whitelist builder)
+ (builder
+ "UDP6"
+ "WHITELIST"
+ (_ "Which IPs are allowed to connect? Leave empty to allow any IP to connect.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (udp6 builder)
  (builder
  "UDP6"
@@ -925,6 +989,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
    (udp6-port builder)
    (udp6-mtu builder)
    (udp6-blacklist builder)
+   (udp6-whitelist builder)
  )
  #t
  #f

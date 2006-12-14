@@ -62,12 +62,11 @@ static int sq_prepare(sqlite3 * dbh,
 		      const char *zSql,       /* SQL statement, UTF-8 encoded */
 		      sqlite3_stmt **ppStmt) {  /* OUT: Statement handle */
   char * dummy;
-  sqlite3_prepare(dbh,
+  return sqlite3_prepare(dbh,
 		  zSql,
 		  strlen(zSql),
 		  ppStmt,
 		  (const char**) &dummy);
-  return OK;
 }
 
 static void db_reset() {

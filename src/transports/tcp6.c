@@ -70,6 +70,8 @@ static TransportAPI tcp6API;
 
 static struct CIDR6Network * filteredNetworks_;
 
+static struct CIDR6Network * allowedNetworks_;
+
 static struct GC_Configuration * cfg;
 
 static struct MUTEX * tcpblacklistlock;
@@ -100,6 +102,44 @@ static int isBlacklisted(const void * addr,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
   return ret;
+}
+
+/**
+ * Check if we are allowed to connect to the given IP.
+ */
+static int isWhitelisted(const void * addr,
+			 unsigned int addr_len) {
+  IP6addr ip;
+  int ret;
+
+  if (addr_len == sizeof(IP6addr)) {
+    memcpy(&ip,
+	   addr,
+	   sizeof(IP6addr));
+  } else if (addr_len == sizeof(struct sockaddr_in6)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in6*) addr)->sin6_addr,
+	   sizeof(IP6addr));
+  } else {
+    return SYSERR;
+  }
+  ret = OK;
+  MUTEX_LOCK(tcpblacklistlock);
+  if (allowedNetworks_ != NULL)
+    ret = check_ipv6_listed(filteredNetworks_,
+			    ip);
+  MUTEX_UNLOCK(tcpblacklistlock);
+  return ret;
+}
+
+static int isRejected(const void * addr,
+		      unsigned int addr_len) {
+  if ((YES == isBlacklisted(addr,
+			    addr_len)) ||
+      (YES != isWhitelisted(addr, 
+			    addr_len)))	
+    return YES;
+  return NO;
 }
 
 /**
@@ -144,6 +184,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != TCP6_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip,
+			     sizeof(IP6addr))) ||
+       (YES != isWhitelisted(&haddr->ip,
 			     sizeof(IP6addr))) )
     return SYSERR; /* obviously invalid */
   else
@@ -351,7 +393,7 @@ static int startTransportServer(void) {
 			   &select_message_handler,
 			   NULL,
 			   &select_accept_handler,
-			   &isBlacklisted,
+			   &isRejected,
 			   &select_close_handler,
 			   NULL,
 			   0 /* memory quota */ );
@@ -373,18 +415,27 @@ static int reloadConfiguration(void * ctx,
     return 0; /* fast path */
   MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "TCP",
-					     "BLACKLIST",
-					     NULL,
-					     &ch))
-    filteredNetworks_ = parse_ipv6_network_specification(ectx,
-							 "");
-  else {
-    filteredNetworks_ = parse_ipv6_network_specification(ectx,
-							 ch);
-    FREE(ch);
-  }
+  FREENONNULL(allowedNetworks_);
+  GC_get_configuration_value_string(cfg,
+				    "TCP6",
+				    "BLACKLIST",
+				    "",
+				    &ch);
+  filteredNetworks_ = parse_ipv6_network_specification(ectx,
+						       ch);
+  FREE(ch);
+  GC_get_configuration_value_string(cfg,
+				    "TCP6",
+				    "WHITELIST",
+				    "",
+				    &ch);
+  if (strlen(ch) > 0)
+    allowedNetworks_ = parse_ipv6_network_specification(ectx,
+							ch);
+  else
+    allowedNetworks_ = NULL;
+  FREE(ch);
+  
   MUTEX_UNLOCK(tcpblacklistlock);
   return 0;
 }

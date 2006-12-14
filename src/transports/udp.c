@@ -62,6 +62,8 @@ static struct LoadMonitor * load_monitor;
 
 static struct CIDRNetwork * filteredNetworks_;
 
+static struct CIDRNetwork * allowedNetworks_;
+
 static struct MUTEX * configLock;
 
 /**
@@ -168,6 +170,45 @@ static int isBlacklisted(const void * addr,
 }
 
 /**
+ * Check if we are allowed to connect to the given IP.
+ */
+static int isWhitelisted(const void * addr,
+			 unsigned int addr_len) {
+  IPaddr ip;
+  int ret;
+
+  if (addr_len == sizeof(struct sockaddr_in)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in*) addr)->sin_addr,
+	   sizeof(IPaddr));
+  } else if (addr_len == sizeof(IPaddr)) {
+    memcpy(&ip,
+	   addr,
+	   addr_len);
+  } else {
+    return SYSERR;
+  }
+  ret = OK;
+  MUTEX_LOCK(configLock);
+  if (allowedNetworks_ != NULL)
+    ret = check_ipv4_listed(allowedNetworks_,
+			    ip);
+  MUTEX_UNLOCK(configLock);
+  return ret;
+}
+
+static int isRejected(const void * addr,
+		      unsigned int addr_len) {
+  if ((YES == isBlacklisted(addr,
+			    addr_len)) ||
+      (YES != isWhitelisted(addr, 
+			    addr_len)))	
+    return YES;
+  return NO;
+}
+
+
+/**
  * Verify that a hello-Message is correct (a node is reachable at that
  * address). Since the reply will be asynchronous, a method must be
  * called on success.
@@ -184,6 +225,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (YES == isBlacklisted(&haddr->senderIP,
+			     sizeof(IPaddr))) ||
+       (YES != isWhitelisted(&haddr->senderIP,
 			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
   else {
@@ -350,7 +393,7 @@ static int startTransportServer(void) {
 			     &select_message_handler,
 			     NULL,
 			     &select_accept_handler,
-			     &isBlacklisted,
+			     &isRejected,
 			     &select_close_handler,
 			     NULL,
 			     0 /* memory quota */ );
@@ -381,6 +424,7 @@ static int reloadConfiguration() {
 
   MUTEX_LOCK(configLock);
   FREENONNULL(filteredNetworks_);
+  FREENONNULL(allowedNetworks_);
   ch = NULL;
   GC_get_configuration_value_string(cfg,
 				    "UDP",
@@ -389,6 +433,18 @@ static int reloadConfiguration() {
 				    &ch);
   filteredNetworks_ = parse_ipv4_network_specification(ectx,
 						       ch);
+  FREE(ch);
+  ch = NULL;
+  GC_get_configuration_value_string(cfg,
+				    "UDP",
+				    "WHITELIST",
+				    "",
+				    &ch);
+  if (strlen(ch) > 0) 
+    allowedNetworks_ = parse_ipv4_network_specification(ectx,
+							ch);
+  else
+    allowedNetworks_ = NULL;
   FREE(ch);
   MUTEX_UNLOCK(configLock);
   return 0;

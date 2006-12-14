@@ -8,6 +8,16 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.1pre1 to 0.7.1pre2
+======================
+
+Run
+
+$ gnunet-update
+
+(as the same user that also runs gnunetd).
+
+
 0.7.1pre0 to 0.7.1pre1
 ======================
 
@@ -51,7 +61,6 @@ $ gnunet-setup
 
 to update the configuration and run the setup tool to configure new
 options (you maybe able to skip gnunet-setup).  Restart gnunetd.
-
 
 
 0.7.0pre6, 0.7.0, 0.7.0{a,b,c,d} to 0.7.0e
