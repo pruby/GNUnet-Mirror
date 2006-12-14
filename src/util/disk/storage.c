@@ -397,13 +397,14 @@ int disk_directory_create_for_file(struct GE_Context * ectx,
  */
 int disk_file_read(struct GE_Context * ectx,
 		   const char * fileName,
-		   int  len,
+		   int len,
 		   void * result) {
   /* open file, must exist, open read only */
   int handle;
   int size;
 
   GE_ASSERT(ectx, fileName != NULL);
+  GE_ASSERT(ectx, len > 0);  
   if (len == 0)
     return 0;
   GE_ASSERT(ectx, result != NULL);
