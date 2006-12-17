@@ -2,6 +2,9 @@ Sun Dec 17 16:54:33 MST 2006
 	Various improvements for OS X portability.
 	CPU load detection fix for Solaris.
 
+Sat Dec 16 11:42:13 MST 2006
+	Bugfixes in collection library (gnunet-pseudonym).
+	
 Mon Dec 11 21:11:54 MST 2006
 	Implemented ncurses/dialog based gnunet-setup wizard.
 	Releasing GNUnet 0.7.1pre2.
