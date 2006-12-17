@@ -1,5 +1,6 @@
 Sun Dec 17 16:54:33 MST 2006
 	Various improvements for OS X portability.
+	CPU load detection fix for Solaris.
 
 Mon Dec 11 21:11:54 MST 2006
 	Implemented ncurses/dialog based gnunet-setup wizard.
