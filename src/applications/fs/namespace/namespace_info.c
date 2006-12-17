@@ -48,11 +48,11 @@ static void writeNamespaceInfo(struct GE_Context * ectx,
   char * fnBase;
 
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fnBase);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_DIR) +
 	      strlen(namespaceName) +
@@ -97,11 +97,11 @@ static int readNamespaceInfo(struct GE_Context * ectx,
   char * fnBase;
 
   *meta = NULL;
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fnBase);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_DIR) +
 	      strlen(namespaceName) +
@@ -374,11 +374,11 @@ static char * getUpdateDataFilename(struct GE_Context * ectx,
   char * tmp;
   char * ret;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &tmp);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &tmp);
   ret = MALLOC(strlen(tmp) + strlen(NS_UPDATE_DIR) +
 	       strlen(nsname) + sizeof(EncName) + 20);
   strcpy(ret, tmp);
@@ -927,11 +927,11 @@ int NS_getNamespaceRoot(struct GE_Context * ectx,
   char * fnBase;
   int ret;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fnBase);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_ROOTS) +
 	      strlen(ns) +
