@@ -299,6 +299,10 @@ int main(int argc,
     }
     FREE(create_name);
     create_name = NULL;
+  } else {
+    if (start_collection) 
+      printf(_("You must specify a name for the collection (`%s' option).\n"),
+	     "-C");
   }
   if (0 == be_quiet) {
   /* print information about pseudonyms */

@@ -13,10 +13,8 @@ Notes:
 
 
 0.7.1 [12'06] (aka "stabilization")
-- stopping collection (gnunet-pseudonym -E) always fails,
-  even if collection was just started! [RC]
-- investigate #1156 [RC]
-- investigate #1100
+- investigate #1156 (mysql crash?) [RC]
+- investigate #1100 (documentation)
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
