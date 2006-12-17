@@ -75,7 +75,7 @@ int verifyCrypto() {
 
   unsigned char plain[] = {29, 128, 192, 253, 74, 171, 38, 187, 84, 219, 76, 76, 209, 118, 33, 249, 172, 124, 96, 9, 157, 110, 8, 215, 200, 63, 69, 230, 157, 104, 247, 164};
   unsigned char raw_key[] = {106, 74, 209, 88, 145, 55, 189, 135, 125, 180, 225, 108, 183, 54, 25, 169, 129, 188, 131, 75, 227, 245, 105, 10, 225, 15, 115, 159, 148, 184, 34, 191};
-  unsigned char encrresult[] = {81, 81, 181, 234, 78, 198, 242, 124, 199, 59, 152, 213, 230, 76, 250, 135, 243, 23, 66, 130, 175, 146, 141, 172, 165, 82, 193, 236, 133, 145, 93, 37};
+  unsigned char encrresult[] = {167, 102, 230, 233, 127, 195, 176, 107, 17, 91, 199, 127, 96, 113, 75, 195, 245, 217, 61, 236, 159, 165, 103, 121, 203, 99, 202, 41, 23, 222, 25, 102, 1 };
 
   res = NULL;
   ret = 0;
@@ -92,30 +92,39 @@ int verifyCrypto() {
     goto error;
   }
 
-  encryptBlock(plain,
-                  SESSIONKEY_LEN,
-                  &key,
-                  (const INITVECTOR*) "test",
-                  result);
+  if (SESSIONKEY_LEN != 
+      encryptBlock(plain,
+		   SESSIONKEY_LEN,
+		   &key,
+		   (const INITVECTOR*) "testtesttesttest",
+		   result)) {
+    printf("Wrong return value from encrypt block.\n");
+    ret = 1;
+    goto error;
+  }
 
-  if (memcmp(encrresult, result, SESSIONKEY_LEN) != 0)
-  {
+  if (memcmp(encrresult, 
+	     result,
+	     SESSIONKEY_LEN) != 0) {
     printf("Encrypted result wrong.\n");
-
     ret = 1;
     goto error;
   }
 
   res = MALLOC(SESSIONKEY_LEN);
 
-  decryptBlock(&key,
-                    result,
-                    SESSIONKEY_LEN,
-                    (const INITVECTOR*) "test",
-                    res);
-
-  if (memcmp(res, plain, SESSIONKEY_LEN) != 0)
-  {
+  if (SESSIONKEY_LEN !=
+      decryptBlock(&key,
+		   result,
+		   SESSIONKEY_LEN,
+		   (const INITVECTOR*) "testtesttesttest",
+		   res)) {
+    printf("Wrong return value from decrypt block.\n");
+    ret = 1;
+    goto error;
+  }
+      
+  if (memcmp(res, plain, SESSIONKEY_LEN) != 0) {
     printf("Decrypted result does not match input.\n");
 
     ret = 1;
