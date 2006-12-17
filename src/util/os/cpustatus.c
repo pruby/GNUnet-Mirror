@@ -24,6 +24,7 @@
  * @author Tzvetan Horozov
  * @author Christian Grothoff
  * @author Igor Wronsky
+ * @author Alex Harper (OS X portion)
  *
  * Status calls implementation for load management.
  */
