@@ -14,33 +14,27 @@ Notes:
 
 0.7.1 [12'06] (aka "stabilization")
 - stopping collection (gnunet-pseudonym -E) always fails,
-  even if collection was just started!
-- more testcases: [RCpre3]
-  * ecrs_core
-  * gap (incl. economy)
-  * fs/namespaces
-  * fs/collection
-  * advertising
-- fix critical known bugs:
-  * Windows installer [Nils]
-    + uninstall: Remove account
-    + libcurl, guile
-  * file/socket leak (#955) - possibly fixed
+  even if collection was just started! [RC]
+- investigate #1156 [RC]
+- investigate #1100
+- Windows installer [Nils]
+  * uninstall: Remove account
+  * libcurl, guile
 
 0.7.2 [3'07]:
-- Transports:
-  * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
-- Testcases (fix, add):
-  * dht/tools
-  * tracekit
-- Scheme (scm) specification of entire configuration;
-  check options used in modules:
-  - DHT options
-  - kvstore
-  - gnunet-gtk
-- Features:
-  * SMTP logger
-  * Chat support [RC]
+- minor improvements:
+  * Scheme (scm) specification of entire configuration;
+    check options used in modules:
+    + DHT options
+    + kvstore
+    + gnunet-gtk
+  * directories can be compacted -- add heuristic to determine
+    if we should NOT padd with zeros (if we would waste too
+    much space).  Needs some lookahead for size of remaining
+    directory entries. (theoretically can compact some directories
+    by 50% (?) -- incidentially 25% is what gzip can do on the
+    current directories!) [ CG ]
+- new features:
   * XFS / support for location URIs [CG] 
     + dstore deletion for quota maintenance [RC]
     + dstore bloomfilter
@@ -48,21 +42,24 @@ Notes:
     + dht/cs: not done yet [RC]
     + dht/tools: update clients [RC]
     + dht/gap integration [RC]
-- Optimizations:
-  * directories can be compacted -- add heuristic to determine
-    if we should NOT padd with zeros (if we would waste too
-    much space).  Needs some lookahead for size of remaining
-    directory entries. (theoretically can compact some directories
-    by 50% (?) -- incidentially 25% is what gzip can do on the
-    current directories!) [ CG ]
+  * HTTP transport (libcurl, libmicrohttpd)
+  * SMTP transport (libesmtp)
+  * SMTP logger
+- testcases (fix, add):
+  * dht/tools
+  * ecrs_core
+  * gap (incl. economy)
+  * advertising
 
 0.7.3 [6'07] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
+- Chat support basics [RC]
 - Documentation:
   * LJ article
 - Testcases:
+  * tracekit
   * RPC
 
 0.7.4 [12'07] (aka "advanced features"):

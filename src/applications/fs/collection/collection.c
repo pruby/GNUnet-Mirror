@@ -218,6 +218,10 @@ void CO_init(struct GE_Context * e,
   pos = &buf[sizeof(CollectionData)];
   rsize -= sizeof(CollectionData);
   len = ntohl(*(int*)pos);
+  if (len > 1024 * 1024 * 4) {
+    GE_BREAK(ectx, 0);
+    len = 1024 * 1024 * 4;
+  }
   GROW(collectionData->files,
        collectionData->file_count,
        len);
@@ -227,6 +231,10 @@ void CO_init(struct GE_Context * e,
   mlen = ntohl(*(int*)pos);
   pos += sizeof(int);
   len = ntohl(*(int*)pos);
+  if (len > 1024) {
+    GE_BREAK(ectx, 0);
+    len = 1024; 
+  }
   collectionData->name = MALLOC(len+1);
   pos += sizeof(int);
   rsize -= 4 * sizeof(int);
@@ -256,14 +264,18 @@ void CO_init(struct GE_Context * e,
       GE_BREAK(ectx, 0);
       break;
     }
-    mlen = ntohl(*(int*)pos);
-    pos += sizeof(int);
     len = ntohl(*(int*)pos);
+    pos += sizeof(int);
+    mlen = ntohl(*(int*)pos);
     pos += sizeof(int);
     rsize -= 2 * sizeof(int);
     if (rsize < mlen + len) {
       GE_BREAK(ectx, 0);
       break;
+    }
+    if (len > 1024 * 16) {
+      GE_BREAK(ectx, 0);
+      len = 1024 * 16;
     }
     tmp = MALLOC(len + 1);
     tmp[len] = '\0';
@@ -312,7 +324,7 @@ static void WRITEINT(int fd,
 		     int val) {
   int bval;
 
-  bval = htons(val);
+  bval = htonl(val);
   WRITE(fd,
 	&bval,
 	sizeof(int));
@@ -333,11 +345,12 @@ static void writeCO() {
   mlen = ECRS_sizeofMetaData(collectionData->meta,
 			     NO);
   buf = MALLOC(mlen);
-  if (OK != ECRS_serializeMetaData(ectx,
-				   collectionData->meta,
-				   buf,
-				   mlen,
-				   NO)) {
+  if (mlen != ECRS_serializeMetaData(ectx,
+				     collectionData->meta,
+				     buf,
+				     mlen,
+				     NO)) {
+    GE_BREAK(ectx, 0);
     FREE(buf);
     return;
   }
@@ -355,12 +368,15 @@ static void writeCO() {
     FREE(buf);
     return;
   } 
+  GE_BREAK(ectx,
+	   collectionData->file_count <= 1024 * 1024 * 4);
   WRITE(fd, 
 	collectionData, 
 	sizeof(CollectionData));
   WRITEINT(fd, collectionData->file_count);
   WRITEINT(fd, collectionData->changed);
   WRITEINT(fd, mlen);
+  GE_BREAK(ectx, strlen(collectionData->name) < 1024);
   WRITEINT(fd, strlen(collectionData->name));
   WRITE(fd, collectionData->name, strlen(collectionData->name));
   WRITE(fd, buf, mlen);
@@ -369,17 +385,19 @@ static void writeCO() {
     mlen = ECRS_sizeofMetaData(collectionData->files[i].meta,
 			       NO);
     buf = MALLOC(mlen);
-    if (OK != ECRS_serializeMetaData(ectx,
-				     collectionData->files[i].meta,
-				     buf,
-				     mlen,
-				     NO)) {
+    if (mlen != ECRS_serializeMetaData(ectx,
+				       collectionData->files[i].meta,
+				       buf,
+				       mlen,
+				       NO)) {
+      GE_BREAK(ectx, 0);
       FREE(buf);
       break;
     }
     tmp = ECRS_uriToString(collectionData->files[i].uri);    
     WRITEINT(fd, strlen(tmp));
     WRITEINT(fd, mlen);
+    GE_BREAK(ectx, strlen(tmp) < 16 * 1024);
     WRITE(fd, tmp, strlen(tmp));
     FREE(tmp);
     WRITE(fd, buf, mlen);
@@ -452,7 +470,7 @@ int CO_startCollection(unsigned int anonymityLevel,
   makeRandomId(&collectionData->data.lastId);
   collectionData->data.nextId = nextId;
   collectionData->data.updateInterval 
-    = htonll(updateInterval);
+    = htonl(updateInterval);
   collectionData->data.anonymityLevel
     = htonl(anonymityLevel);
   collectionData->data.priority 
@@ -536,7 +554,6 @@ void CO_publishCollectionNow() {
   TIME_T now;
   struct ECRS_URI * uri;
   struct ECRS_URI * directoryURI;
-  struct ECRS_MetaData *  metaData;
   unsigned long long dirLen;
   char * tmpName;
   int fd;
@@ -634,7 +651,6 @@ void CO_publishCollectionNow() {
     collectionData->changed = NO;
     ECRS_freeUri(uri);
   }
-  ECRS_freeMetaData(metaData);
   MUTEX_UNLOCK(lock);
 }
 
@@ -681,7 +697,7 @@ void CO_publishToCollection(const ECRS_FileInfo * fi) {
 	 collectionData->file_count,
 	 fc);
   collectionData->changed = YES;
-  if (ntohll(collectionData->data.updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
+  if (ntohl(collectionData->data.updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
     CO_publishCollectionNow();
   MUTEX_UNLOCK(lock);
 }

@@ -32,11 +32,14 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
+#define START_DAEMON 1
 
 int main(int argc,
 	 char * argv[]){
   struct GC_Configuration * cfg;
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   struct ClientServerConnection * sock;
   struct ECRS_MetaData * meta;
@@ -49,6 +52,7 @@ int main(int argc,
     GC_free(cfg);
     return -1;
   }
+#if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
@@ -57,8 +61,9 @@ int main(int argc,
   GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
 						    cfg,
 						    30 * cronSECONDS));
-  ok = YES;
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
+#endif
+  ok = YES;
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
 		     EXTRACTOR_MIMETYPE,
@@ -69,6 +74,9 @@ int main(int argc,
 
   /* ACTUAL TEST CODE */
   CO_stopCollection();
+  ECRS_deleteNamespace(NULL,
+		       cfg,
+		       "test-collection");
   CHECK(NULL == CO_getCollection());
   CHECK(OK == CO_startCollection(1,
 				 100,
@@ -91,6 +99,9 @@ int main(int argc,
   FREE(have);
   CO_publishCollectionNow();
   CO_stopCollection();
+  ECRS_deleteNamespace(NULL,
+		       cfg,
+		       "test-collection");
   CHECK(NULL == CO_getCollection());
 	
   /* END OF TEST CODE */
@@ -100,7 +111,9 @@ int main(int argc,
     connection_destroy(sock);
   }
   ECRS_freeMetaData(meta);
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }
