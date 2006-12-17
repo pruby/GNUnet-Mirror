@@ -580,8 +580,13 @@ static int SEND_NONBLOCKING(int s,
 #elif SOLARIS
     flags = MSG_DONTWAIT;
 #elif OSX
-    /* As braindead as Win32? */
-    flags = 0;
+    {
+    int __tmp = 1;
+    if (setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, 
+        (void *)&__tmp, sizeof(__tmp)) < 0)
+      printf("setsockopt failed\n");
+    }
+    flags = MSG_DONTWAIT;
 #elif CYGWIN
 	flags = MSG_NOSIGNAL;
 #elif LINUX
@@ -1005,10 +1010,12 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   if (sock == -1) {
     return SYSERR;
   }
+#ifndef OSX
   if (0 != setBlocking(sock, NO)) {
     CLOSE(sock);
     return SYSERR;
   }
+#endif
   memset(&soaddr,
 	 0,
 	 sizeof(soaddr));

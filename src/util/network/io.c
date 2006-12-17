@@ -141,6 +141,16 @@ void socket_destroy(struct SocketHandle * s) {
 }
 
 /* TODO: log errors! */
+#ifdef OSX
+static int socket_set_nosigpipe(struct SocketHandle * s,
+                                int dontSigPipe) {
+  return setsockopt(s->handle, SOL_SOCKET, SO_NOSIGPIPE,
+                    (void *)&dontSigPipe, 
+                    sizeof(dontSigPipe));
+}
+#endif
+
+/* TODO: log errors! */
 int socket_set_blocking(struct SocketHandle * s,
 			int doBlock) {
 #if MINGW
@@ -193,7 +203,9 @@ int socket_recv(struct SocketHandle * s,
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  /* anything? */
+  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
@@ -267,7 +279,9 @@ int socket_recv_from(struct SocketHandle * s,
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  /* anything? */
+  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
@@ -341,7 +355,9 @@ int socket_send(struct SocketHandle * s,
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  /* As braindead as Win32? */
+  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
 #elif CYGWIN
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
@@ -416,7 +432,9 @@ int socket_send_to(struct SocketHandle * s,
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  /* As braindead as Win32? */
+  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
 #elif CYGWIN
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
