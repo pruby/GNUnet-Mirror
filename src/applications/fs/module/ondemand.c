@@ -369,19 +369,19 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   }
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
-
-  fileHandle = disk_file_open(ectx,
-			      fn,
-			      O_LARGEFILE | O_RDONLY,
-			      0);
-  if (fileHandle == -1) {
+  if ( (YES != disk_file_test(ectx, 
+			      fn)) ||
+       (-1 == (fileHandle = disk_file_open(ectx,
+					   fn,
+					   O_LARGEFILE | O_RDONLY,
+					   0))) ) {
     char unavail_key[256];
     EncName enc;
     unsigned long long * first_unavail;
     struct stat linkStat;
 
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
 			 "open",
 			 fn);
 
@@ -494,7 +494,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	      ntohl(odb->blockSize));
   if (blen != ntohl(odb->blockSize)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
 			 "read",
 			 fn);
     FREE(fn);
@@ -512,8 +512,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(fn);
   if (ret == SYSERR) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   "Indexed content does not match its hash.\n");
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Indexed content changed (does not match its hash).\n"));
     asyncDelete(datastore, dbv, query);
     return SYSERR;
   }

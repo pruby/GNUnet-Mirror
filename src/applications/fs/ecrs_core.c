@@ -84,7 +84,6 @@ int fileBlockEncode(const DBlock * data,
   if (! equalsHashCode512(query,
 			  &hc)) {
     FREE(val);
-    GE_BREAK(NULL, 0);
     *value = NULL;
     return SYSERR;
   }
