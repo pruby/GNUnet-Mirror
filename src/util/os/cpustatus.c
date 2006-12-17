@@ -32,6 +32,7 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_threads.h"
+#include "gnunet_util_string.h"
 
 #if SOLARIS
 #if HAVE_KSTAT_H
@@ -50,6 +51,15 @@
 #endif
 #endif
 
+#ifdef OSX
+#include <mach-o/arch.h>
+#include <mach/mach.h>
+#include <mach/mach_error.h>
+
+static host_name_port_t mhost;
+static processor_cpu_load_info_t prev_cpu_load = NULL;
+#endif
+
 #define DEBUG_STATUSCALLS NO
 
 #ifdef LINUX
@@ -58,6 +68,38 @@ static FILE * proc_stat;
 
 static struct MUTEX * statusMutex;
 
+#ifdef OSX
+int initMachCpuStats() {
+  unsigned int cpu_count;
+  processor_cpu_load_info_t cpu_load;
+  mach_msg_type_number_t cpu_msg_count;
+  kern_return_t kret;
+  int i,j;    
+
+  mhost = mach_host_self();
+  kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO, 
+                             &cpu_count,
+                             (processor_info_array_t *)&cpu_load,
+                             &cpu_msg_count);
+  if (kret != KERN_SUCCESS) {
+    GE_LOG_STRERROR(NULL,
+                    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+                    "host_processor_info");
+    return SYSERR;
+  }
+  prev_cpu_load = (processor_cpu_load_info_t)MALLOC(cpu_count *
+                                                    sizeof(*prev_cpu_load));
+  for (i = 0; i < cpu_count; i++) {
+    for (j = 0; j < CPU_STATE_MAX; j++) {
+      prev_cpu_load[i].cpu_ticks[j] = cpu_load[i].cpu_ticks[j];
+    }
+  }
+  vm_deallocate(mach_task_self(), 
+                (vm_address_t)cpu_load,
+                (vm_size_t)(cpu_msg_count * sizeof(*cpu_load)));
+  return OK;
+}
+#endif
 /**
  * The following routine returns a number between 0-100 (can be larger
  * than 100 if the load is > 1) which indicates the percentage CPU
@@ -131,6 +173,88 @@ static int updateCpuUsage(){
   }
 #endif
 
+#ifdef OSX
+  {
+    unsigned int cpu_count;
+    processor_cpu_load_info_t cpu_load;
+    mach_msg_type_number_t cpu_msg_count;
+    unsigned long long t_sys, t_user, t_nice, t_idle, t_total;
+    unsigned long long t_idle_all, t_total_all;
+    kern_return_t kret;
+    int i, j;   
+
+    t_idle_all = t_total_all = 0;
+    kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO, 
+                               &cpu_count,
+                               (processor_info_array_t *)&cpu_load,
+                               &cpu_msg_count);
+    if (kret == KERN_SUCCESS) {
+      for (i = 0; i < cpu_count; i++) {
+        if (cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] >= 
+            prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM]) {
+          t_sys = cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] -
+                  prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM];
+        } 
+        else {
+          t_sys = cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] +
+                  (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM]+1);
+        }
+
+        if (cpu_load[i].cpu_ticks[CPU_STATE_USER] >= 
+            prev_cpu_load[i].cpu_ticks[CPU_STATE_USER]) {
+          t_user = cpu_load[i].cpu_ticks[CPU_STATE_USER] -
+                   prev_cpu_load[i].cpu_ticks[CPU_STATE_USER];
+        } 
+        else {
+          t_user = cpu_load[i].cpu_ticks[CPU_STATE_USER] +
+                   (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_USER] + 1);
+        }
+
+        if (cpu_load[i].cpu_ticks[CPU_STATE_NICE] >= 
+            prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE]) {
+          t_nice = cpu_load[i].cpu_ticks[CPU_STATE_NICE] -
+                   prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE];
+        } 
+        else {
+          t_nice = cpu_load[i].cpu_ticks[CPU_STATE_NICE] +
+                   (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE] + 1);
+        }
+
+        if (cpu_load[i].cpu_ticks[CPU_STATE_IDLE] >= 
+            prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE]) {
+          t_idle = cpu_load[i].cpu_ticks[CPU_STATE_IDLE] -
+                   prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE];
+        } 
+        else {
+          t_idle = cpu_load[i].cpu_ticks[CPU_STATE_IDLE] +
+                   (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE] + 1);
+        }
+        t_total = t_sys + t_user + t_nice + t_idle;
+        t_idle_all += t_idle;
+        t_total_all += t_total;
+      }
+      for (i = 0; i < cpu_count; i++) {
+        for (j = 0; j < CPU_STATE_MAX; j++) {
+          prev_cpu_load[i].cpu_ticks[j] = cpu_load[i].cpu_ticks[j];
+        }
+      }
+      if (t_total_all > 0)
+        currentLoad = 100 - (100 * t_idle_all) / t_total_all;
+      else
+        currentLoad = -1;
+      vm_deallocate(mach_task_self(),
+                    (vm_address_t)cpu_load,
+                    (vm_size_t)(cpu_msg_count * sizeof(*cpu_load)));
+
+      return currentLoad;
+    }
+    else {
+      GE_LOG_STRERROR(NULL,
+                      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+                      "host_processor_info");
+    }
+  }
+#endif
   /* try kstat (Solaris only) */
 #if SOLARIS && HAVE_KSTAT_H && HAVE_SYS_SYSINFO_H
   {
@@ -421,6 +545,8 @@ void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			 "fopen",
 			 "/proc/stat");
+#elif OSX
+  initMachCpuStats();
 #elif MINGW
   InitWinEnv(NULL);
 #endif
@@ -436,6 +562,8 @@ void __attribute__ ((destructor)) gnunet_cpustats_ltdl_fini() {
     fclose(proc_stat);
     proc_stat = NULL;
   }
+#elif OSX
+  FREENONNULL(prev_cpu_load);
 #elif MINGW
   ShutdownWinEnv();
 #endif
