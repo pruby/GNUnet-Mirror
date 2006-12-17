@@ -133,11 +133,11 @@ getCollectionFileName() {
   char * fn;
   char * fnBase;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fnBase);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(COLLECTION) +
 	      4);
