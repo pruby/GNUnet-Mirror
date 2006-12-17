@@ -57,7 +57,7 @@
 #include <mach/mach_error.h>
 
 static host_name_port_t mhost;
-static processor_cpu_load_info_t prev_cpu_load = NULL;
+static processor_cpu_load_info_t prev_cpu_load;
 #endif
 
 #define DEBUG_STATUSCALLS NO
@@ -69,7 +69,7 @@ static FILE * proc_stat;
 static struct MUTEX * statusMutex;
 
 #ifdef OSX
-int initMachCpuStats() {
+static int initMachCpuStats() {
   unsigned int cpu_count;
   processor_cpu_load_info_t cpu_load;
   mach_msg_type_number_t cpu_msg_count;
@@ -312,9 +312,14 @@ static int updateCpuUsage(){
     deltaidle = idlecount - last_idlecount;
     deltatotal = totalcount - last_totalcount;
     if ( (deltatotal > 0) &&
-	 (last_totalcount > 0) )
-      currentLoad = (int) (100 * deltaidle / deltatotal);
-    else
+	 (last_totalcount > 0) ) {
+      currentLoad = (unsigned int) (100.0 * deltaidle / deltatotal);
+      if (currentLoad > 100)
+	currentLoad = 100; /* odd */
+      if (currentLoad < 0)
+	currentLoad = 0; /* odd */
+      currentLoad = 100 - currentLoad; /* computed idle-load before! */      
+    } else
       currentLoad = -1;
     last_idlecount = idlecount;
     last_totalcount = totalcount;
