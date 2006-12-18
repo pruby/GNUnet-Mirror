@@ -584,7 +584,7 @@ static int SEND_NONBLOCKING(int s,
     int __tmp = 1;
     if (setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
         (void *)&__tmp, sizeof(__tmp)) < 0)
-      GE_LOG_STRERROR(ectx,
+      GE_LOG_STRERROR(NULL,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "setsockopt");
     }
