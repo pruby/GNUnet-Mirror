@@ -68,7 +68,7 @@ typedef struct {
    * Iterate over the results for a particular key
    * in the datastore.
    *
-   * @param key 
+   * @param key
    * @param type entries of which type are relevant?
    * @param iter maybe NULL (to just count)
    * @return the number of results, SYSERR if the

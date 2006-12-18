@@ -206,6 +206,18 @@ However, active testing and qualified feedback of these features is always welco
  '()
  'advanced) )
 
+(define (daemon-config builder)
+ (builder
+ "DAEMON"
+ "CONFIGFILE"
+ (_ "What is the path to the configuration file for gnunetd?")
+ (_ "This option is used when clients need to start gnunetd.")
+ '()
+ #t
+ "/etc/gnunetd.conf"
+ '()
+ 'always) )
+
 
 (define (general builder)
  (builder
@@ -214,6 +226,7 @@ However, active testing and qualified feedback of these features is always welco
    (_ "General options")
    (nohelp)
    (list 
+     (daemon-config builder)
      (network-port builder)
      (network-host builder)
    )

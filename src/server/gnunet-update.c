@@ -265,10 +265,10 @@ int main(int argc,
 				    "GET",
 				    "",
 				    &get);
-  if (strlen(get) > 0) 
+  if (strlen(get) > 0)
     doGet(get);
-  else 
-    work(); 
+  else
+    work();
   FREE(get);
   GNUNET_fini(ectx, cfg);
   return 0;

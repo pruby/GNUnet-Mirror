@@ -32,7 +32,7 @@
  * - no "put" confirmation, try a get to confirm important put!
  * - modules:
  *   + table.c: DHT-peer table, peer discovery cron jobs;
- *     code tries to fill table "as much as possible" over time; 
+ *     code tries to fill table "as much as possible" over time;
  *     TODO: expose and improve reliabily metrics (to be added later)
  *   + dstore.c + plugin: SQL-based datastore: key, value, expiration
  *     (bounded FIFO-datastore, when full, kill oldest entry first)
@@ -72,7 +72,7 @@
 #define MAINTAIN_PEER_TIMEOUT MAINTAIN_FREQUENCY * MAINTAIN_CHANCE * 4
 
 /**
- * What is the maximum number of known DHT-enabled peers 
+ * What is the maximum number of known DHT-enabled peers
  * advertised for each DISCOVERY message?
  */
 #define MAINTAIN_ADV_CAP 8
@@ -198,7 +198,7 @@ static int stat_dht_route_looks;
  * be participating in the DHT.
  */
 typedef struct {
-  
+
   MESSAGE_HEADER header;
 
   unsigned int space_available;
@@ -211,7 +211,7 @@ typedef struct {
  * is being requested.
  */
 typedef struct {
-  
+
   MESSAGE_HEADER header;
 
   unsigned int reserved;
@@ -231,8 +231,8 @@ static unsigned int get_bit_distance(const HashCode512 * h1,
 
   for (i=0;i<sizeof(HashCode512)*8;i++) {
     diff = getHashCodeBit(h1, i) - getHashCodeBit(h2, i);
-    if (diff != 0) 
-      return i;    
+    if (diff != 0)
+      return i;
   }
   return sizeof(HashCode512)*8;
 }
@@ -240,7 +240,7 @@ static unsigned int get_bit_distance(const HashCode512 * h1,
 /**
  * @return NULL if peer is the current host
  */
-static PeerBucket * 
+static PeerBucket *
 findBucketFor(const PeerIdentity * peer) {
   unsigned int index;
   int i;
@@ -249,10 +249,10 @@ findBucketFor(const PeerIdentity * peer) {
 			   &coreAPI->myIdentity->hashPubKey);
   i = bucketCount-1;
   while ( (buckets[i].bstart >= index) &&
-	  (i > 0) ) 
+	  (i > 0) )
     i--;
   if ( (buckets[i].bstart <  index) &&
-       (buckets[i].bend   >= index) ) 
+       (buckets[i].bend   >= index) )
     return &buckets[i];
   return NULL;
 }
@@ -261,7 +261,7 @@ findBucketFor(const PeerIdentity * peer) {
  * Find the PeerInfo for the given peer. Returns NULL if peer is not
  * in our DHT routing table.
  */
-static PeerInfo * 
+static PeerInfo *
 findPeerEntryInBucket(PeerBucket * bucket,
 		      const PeerIdentity * peer) {
   unsigned int i;
@@ -280,7 +280,7 @@ findPeerEntryInBucket(PeerBucket * bucket,
  * Find the PeerInfo for the given peer. Returns NULL if peer is not
  * in our DHT routing table.
  */
-static PeerInfo * 
+static PeerInfo *
 findPeerEntry(const PeerIdentity * peer) {
   return findPeerEntryInBucket(findBucketFor(peer),
 			       peer);
@@ -288,7 +288,7 @@ findPeerEntry(const PeerIdentity * peer) {
 
 /**
  * Return a number that is the larger the closer the
- * "have" hash code is to the "target".  The basic 
+ * "have" hash code is to the "target".  The basic
  * idea is that if "have" would be in the n-th lowest
  * bucket of "target", the returned value should be
  * 2^n.  However, the largest number we can return
@@ -384,7 +384,7 @@ int select_dht_peer(PeerIdentity * set,
 	*set = pi->id;
 	MUTEX_UNLOCK(lock);
 	return OK;
-      } 
+      }
       selected -= distance;
     }
   }
@@ -413,7 +413,7 @@ static void broadcast_dht_discovery(const PeerIdentity * other,
     return;
   }
   pc = total_peers;
-  if (pc > MAINTAIN_ADV_CAP) 
+  if (pc > MAINTAIN_ADV_CAP)
     pc = MAINTAIN_ADV_CAP;
   if (pc == 0)
     pc = 1;
@@ -432,7 +432,7 @@ static void broadcast_dht_discovery(const PeerIdentity * other,
     if (OK != select_dht_peer(&pos[i],
 			      &other->hashPubKey,
 			      pos,
-			      i)) 
+			      i))
       pc--;
     else
       i++;
@@ -519,7 +519,7 @@ static int checkExpired(PeerInfo * pi) {
     return NO;
   if (now - pi->lastActivity > MAINTAIN_PEER_TIMEOUT)
     return YES;
-  if (now - pi->lastActivity > MAINTAIN_PEER_TIMEOUT / 2) 
+  if (now - pi->lastActivity > MAINTAIN_PEER_TIMEOUT / 2)
     pingPeer(pi);
   return NO;
 }
@@ -559,9 +559,9 @@ static void considerPeer(const PeerIdentity * sender,
   bucket = findBucketFor(peer);
   if (bucket == NULL)
     return; /* peers[i] == self */
-  if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE) 
+  if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     checkExpiration(bucket);
-  if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE) 
+  if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     return; /* do not care */
   if (NULL != findPeerEntryInBucket(bucket,
 				    peer))
@@ -571,7 +571,7 @@ static void considerPeer(const PeerIdentity * sender,
 				  ANY_PROTOCOL_NUMBER,
 				  NO);
   if (hello == NULL) {
-    /* if identity not known, ask sender for HELLO of other peer */    
+    /* if identity not known, ask sender for HELLO of other peer */
     ask.header.size = htons(sizeof(P2P_DHT_ASK_HELLO));
     ask.header.type = htons(sizeof(P2P_PROTO_DHT_ASK_HELLO));
     ask.reserved = 0;
@@ -637,7 +637,7 @@ static int handleDiscovery(const PeerIdentity * sender,
   MUTEX_LOCK(lock);
   considerPeer(sender, sender);
   peers = (const PeerIdentity*) &disco[1];
-  for (i=0;i<pc;i++) 
+  for (i=0;i<pc;i++)
     considerPeer(sender, &peers[i]);
   MUTEX_UNLOCK(lock);
   return OK;
@@ -650,7 +650,7 @@ static int handleAskHello(const PeerIdentity * sender,
 			  const MESSAGE_HEADER * msg) {
   const P2P_DHT_ASK_HELLO * ask;
   P2P_hello_MESSAGE * hello;
-  
+
   if (ntohs(msg->size) != sizeof(P2P_DHT_ASK_HELLO))
     return SYSERR;
   ask = (const P2P_DHT_ASK_HELLO *) msg;
@@ -722,7 +722,7 @@ int init_dht_table(CoreAPIForApplication * capi) {
 int done_dht_table() {
   unsigned int i;
   unsigned int j;
-  
+
   coreAPI->unregisterHandler(P2P_PROTO_DHT_DISCOVERY,
 			     &handleDiscovery);
   coreAPI->unregisterHandler(P2P_PROTO_DHT_ASK_HELLO,
@@ -739,7 +739,7 @@ int done_dht_table() {
   identity = NULL;
   coreAPI->releaseService(pingpong);
   pingpong = NULL;
-  for (i=0;i<bucketCount;i++) { 
+  for (i=0;i<bucketCount;i++) {
     for (j=0;j<buckets[i].peers_size;j++)
       FREE(buckets[i].peers[j]);
     GROW(buckets[i].peers,

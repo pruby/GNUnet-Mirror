@@ -142,9 +142,9 @@ activeMigrationCallback(const PeerIdentity * receiver,
 	 ntohl(content->type));
 #endif
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
-    if (ONDEMAND_getIndexed(datastore, 
+    if (ONDEMAND_getIndexed(datastore,
 			    content,
-			    &key, 
+			    &key,
 			    &enc) != OK) {
       FREE(content);
       content = NULL;
@@ -162,7 +162,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   if (size > padding) {
     MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Available content of size %u too big for available space (%u)\n",
 	   size,
@@ -198,7 +198,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
 			  padding);
     FREE(gw);
 #if DEBUG_MIGRATION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "gap's tryMigrate returned %u\n",
 	   ret);
@@ -240,7 +240,7 @@ void initMigration(CoreAPIForApplication * capi,
   if (stats != NULL) {
     stat_migration_count
       = stats->create(gettext_noop("# blocks migrated"));
-    stat_on_demand_migration_attempts 
+    stat_on_demand_migration_attempts
       = stats->create(gettext_noop("# on-demand block migration attempts"));
   }
 

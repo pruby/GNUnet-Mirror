@@ -43,7 +43,7 @@ static unsigned long long payload;
 
 /**
  * Maximum bytes available
- */ 
+ */
 static unsigned long long quota;
 
 /**
@@ -76,30 +76,30 @@ static void db_reset() {
   FREE(fn);
   fn = STRDUP("/tmp/dstoreXXXXXX");
   fd = mkstemp(fn);
-  if (fd != -1) 
+  if (fd != -1)
     CLOSE(fd);
 }
 
 static void db_init(sqlite3 * dbh) {
   sqlite3_exec(dbh,
-	       "PRAGMA temp_store=MEMORY", 
+	       "PRAGMA temp_store=MEMORY",
 	       NULL,
 	       NULL,
 	       NULL);
   sqlite3_exec(dbh,
-	       "PRAGMA synchronous=OFF", 
+	       "PRAGMA synchronous=OFF",
 	       NULL,
-	       NULL, 
+	       NULL,
 	       NULL);
   sqlite3_exec(dbh,
-	       "PRAGMA count_changes=OFF", 
-	       NULL, 
-	       NULL, 
+	       "PRAGMA count_changes=OFF",
+	       NULL,
+	       NULL,
 	       NULL);
   sqlite3_exec(dbh,
-	       "PRAGMA page_size=4092", 
+	       "PRAGMA page_size=4092",
 	       NULL,
-	       NULL, 
+	       NULL,
 	       NULL);
   sqlite3_exec(dbh,
 	       "CREATE TABLE ds071 ("
@@ -114,13 +114,13 @@ static void db_init(sqlite3 * dbh) {
 	       NULL);
   sqlite3_exec(dbh,
 	       "CREATE INDEX idx_key ON ds071 (key)",
-	       NULL, 
-	       NULL, 
+	       NULL,
+	       NULL,
 	       NULL);
   sqlite3_exec(dbh,
 	       "CREATE INDEX idx_puttime ON ds071 (puttime)",
-	       NULL, 
-	       NULL, 
+	       NULL,
+	       NULL,
 	       NULL);
 }
 
@@ -142,7 +142,7 @@ static int d_put(const HashCode512 * key,
   if (SQLITE_OK != sqlite3_open(fn,
 				&dbh)) {
     db_reset(dbh);
-    MUTEX_UNLOCK(lock);    
+    MUTEX_UNLOCK(lock);
     return SYSERR;
   }
   db_init(dbh);
@@ -213,7 +213,7 @@ static int d_put(const HashCode512 * key,
  * Iterate over the results for a particular key
  * in the datastore.
  *
- * @param key 
+ * @param key
  * @param type entries of which type are relevant?
  * @param iter maybe NULL (to just count)
  * @return the number of results, SYSERR if the
@@ -234,7 +234,7 @@ static int d_get(const HashCode512 * key,
   if (SQLITE_OK != sqlite3_open(fn,
 				&dbh)) {
     db_reset(dbh);
-    MUTEX_UNLOCK(lock);    
+    MUTEX_UNLOCK(lock);
     return SYSERR;
   }
   db_init(dbh);
@@ -261,7 +261,7 @@ static int d_get(const HashCode512 * key,
       continue;
     }
     expire = sqlite3_column_int64(stmt, 3);
-    if (expire < get_time()) 
+    if (expire < get_time())
       continue;
     dat = sqlite3_column_blob(stmt, 5);
     handler(key,

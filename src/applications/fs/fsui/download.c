@@ -88,7 +88,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   }
   fullName = MALLOC(strlen(parent->filename) + 2
 		    + strlen(filename));
-  strcpy(fullName, 
+  strcpy(fullName,
 	 parent->filename);
   strcat(fullName,
 	 filename);
@@ -194,7 +194,7 @@ downloadProgressCallback(unsigned long long totalBytes,
 static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
-  
+
   if ( (dl->state == FSUI_ERROR) ||
        (dl->state == FSUI_ABORTED) )
     return SYSERR; /* aborted - delete! */
@@ -212,7 +212,7 @@ void * downloadThread(void * cls) {
   FSUI_Event event;
   struct GE_Context * ectx;
   struct GE_Memory * mem;
-  struct GE_Context * ee; 
+  struct GE_Context * ee;
 
   dl->startTime = get_time() - dl->runTime;
   ectx = dl->ctx->ectx;
@@ -266,7 +266,7 @@ void * downloadThread(void * cls) {
     if (error == NULL)
       error = _("Download failed (no reason given)");
     event.data.DownloadError.message = error;
-    
+
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ABORTED) { /* aborted */
@@ -625,7 +625,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
     dl->ctx->activeDownloadThreads--;
     MUTEX_UNLOCK(ctx->lock);
     dl->handle = NULL;
-    if (dl->state == FSUI_ACTIVE) 
+    if (dl->state == FSUI_ACTIVE)
       dl->state = FSUI_PENDING;
     else
       dl->state++; /* add _JOINED */

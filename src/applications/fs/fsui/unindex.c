@@ -69,7 +69,7 @@ void * FSUI_unindexThread(void * cls) {
   int ret;
   unsigned long long size;
   struct GE_Memory * mem;
-  struct GE_Context * ee; 
+  struct GE_Context * ee;
 
   if (OK != disk_file_size(utc->ctx->ectx,
 			   utc->filename,

@@ -249,7 +249,7 @@ void * FSUI_searchThread(void * cls) {
   FSUI_Event event;
   int ret;
   struct GE_Memory * mem;
-  struct GE_Context * ee; 
+  struct GE_Context * ee;
 
   mem = GE_memory_create(2);
   ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
@@ -405,7 +405,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     ctx->activeSearches = pos->next;
   else
     prev->next = pos->next;
-  for (i=0;i<sl->my_downloads_size;i++) 
+  for (i=0;i<sl->my_downloads_size;i++)
     sl->my_downloads[i]->search = NULL;
   GROW(sl->my_downloads,
        sl->my_downloads_size,

@@ -132,7 +132,7 @@ void GE_memory_reset(struct GE_Memory * memory);
 /**
  * Get a particular log message from the store.
  */
-const char * 
+const char *
 GE_memory_get(struct GE_Memory * memory,
 	      unsigned int index);
 

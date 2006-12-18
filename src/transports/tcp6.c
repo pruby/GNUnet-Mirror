@@ -136,7 +136,7 @@ static int isRejected(const void * addr,
 		      unsigned int addr_len) {
   if ((YES == isBlacklisted(addr,
 			    addr_len)) ||
-      (YES != isWhitelisted(addr, 
+      (YES != isWhitelisted(addr,
 			    addr_len)))	
     return YES;
   return NO;
@@ -435,7 +435,7 @@ static int reloadConfiguration(void * ctx,
   else
     allowedNetworks_ = NULL;
   FREE(ch);
-  
+
   MUTEX_UNLOCK(tcpblacklistlock);
   return 0;
 }

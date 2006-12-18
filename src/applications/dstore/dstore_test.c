@@ -57,7 +57,7 @@ static int test(Dstore_ServiceAPI * api) {
   HashCode512 k;
   HashCode512 n;
   cron_t exp;
-  unsigned int i;  
+  unsigned int i;
 
   exp = get_time() + 5 * cronMINUTES;
   memset(&k,

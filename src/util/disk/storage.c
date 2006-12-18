@@ -404,7 +404,7 @@ int disk_file_read(struct GE_Context * ectx,
   int size;
 
   GE_ASSERT(ectx, fileName != NULL);
-  GE_ASSERT(ectx, len > 0);  
+  GE_ASSERT(ectx, len > 0);
   if (len == 0)
     return 0;
   GE_ASSERT(ectx, result != NULL);

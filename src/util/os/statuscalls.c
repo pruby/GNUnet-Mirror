@@ -132,7 +132,7 @@ typedef struct LoadMonitor {
 
 void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
 					    NetworkDirection dir,
-					    unsigned long long delta) {  
+					    unsigned long long delta) {
   MUTEX_LOCK(monitor->statusMutex);
   if (dir == Download)
     monitor->globalTrafficBetweenProc.last_in += delta;
@@ -446,7 +446,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     MUTEX_UNLOCK(monitor->statusMutex);
     return ret;
   }
-  
+
   currentLoadSum = currentTotal - di->lastSum + di->overload;
   di->lastSum = currentTotal;
   di->lastCall = now;

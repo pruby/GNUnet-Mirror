@@ -89,7 +89,7 @@ static void cs_put_abort(void * cls) {
   DHT_CLIENT_PUT_RECORD * record = cls;
   int i;
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Signaling client put completion: %d\n",
 	 record->replicas);
@@ -182,7 +182,7 @@ static int cs_get_result_callback(const HashCode512 * key,
   memcpy(&msg[1],
 	 value,
 	 ntohl(value->size));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' processes reply '%.*s'\n",
 	 __FUNCTION__,
@@ -212,7 +212,7 @@ static void cs_get_abort(void * cls) {
     if (OK != sendAck(record->client,
 		      &record->table,
 		      SYSERR)) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_ERROR | GE_IMMEDIATE | GE_USER,
 	     _("`%s' failed. Terminating connection to client.\n"),
 	     "sendAck");

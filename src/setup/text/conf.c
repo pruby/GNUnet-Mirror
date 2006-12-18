@@ -230,7 +230,7 @@ static int readValue(GNS_Type type,
 	if (buf[i] != '\n') {
 	  if (i < 1023) {
 	    printf("%c", buf[i]);
-	    fflush(stdout);  
+	    fflush(stdout);
 	    i++;
 	  }
 	  continue;
@@ -309,7 +309,7 @@ static int readValue(GNS_Type type,
       if (buf[i] != '\n') {
 	if (i < 1023) {
 	  printf("%c", buf[i]);
-	  fflush(stdout);  
+	  fflush(stdout);
 	  i++;
 	}
 	continue;
@@ -328,7 +328,7 @@ static int readValue(GNS_Type type,
       }
       i = 0;
       printf(_("\nInvalid entry, try again (use '?' for help): "));
-      fflush(stdout);  
+      fflush(stdout);
     }
     break;
   case GNS_UInt64:
@@ -361,7 +361,7 @@ static int readValue(GNS_Type type,
       if (buf[i] != '\n') {
 	if (i < 1023) {
 	  printf("%c", buf[i]);
-	  fflush(stdout);  
+	  fflush(stdout);
 	  i++;
 	}
 	continue;

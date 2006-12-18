@@ -108,7 +108,7 @@ typedef struct {
 
   /**
    * Who is the intended recipient?
-   */ 
+   */
   PeerIdentity target;
 
   /**
@@ -596,7 +596,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
     return SYSERR;
   }
   sessionkeySigned = (P2P_setkey_MESSAGE *) msg;
-  
+
   if ( (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE)) ||
        (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size) ||
        (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size * 2) ) {

@@ -147,7 +147,7 @@ static void * processReplies(void * cls) {
   return NULL;
 }
 
-SEARCH_CONTEXT * 
+SEARCH_CONTEXT *
 FS_SEARCH_makeContext(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
 		      struct MUTEX * lock) {
@@ -200,7 +200,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-SEARCH_HANDLE * 
+SEARCH_HANDLE *
 FS_start_search(SEARCH_CONTEXT * ctx,
 		unsigned int type,
 		unsigned int keyCount,

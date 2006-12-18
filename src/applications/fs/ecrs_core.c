@@ -56,7 +56,7 @@ int fileBlockEncode(const DBlock * data,
   GE_ASSERT(NULL, len >= sizeof(DBlock));
   GE_ASSERT(NULL, (data!=NULL) && (query != NULL));
   hash(&data[1],
-       len - sizeof(DBlock), 
+       len - sizeof(DBlock),
        &hc);
   hashToKey(&hc,
 	    &skey,
@@ -69,9 +69,9 @@ int fileBlockEncode(const DBlock * data,
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    len - sizeof(DBlock) < MAX_BUFFER_SIZE);
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    len - sizeof(DBlock)
 	    == encryptBlock(&data[1],
 			    len - sizeof(DBlock),
@@ -323,7 +323,7 @@ int isDatumApplicable(unsigned int type,
     if (! equalsHashCode512(&keys[1],
 			    &h))
       return SYSERR;
-    return OK;      
+    return OK;
   case D_BLOCK:
   case K_BLOCK:
   case KN_BLOCK:

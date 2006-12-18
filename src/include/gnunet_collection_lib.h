@@ -46,7 +46,7 @@ void CO_init(struct GE_Context * ectx,
  * Shutdown collection module.
  */
 void CO_done(void);
-		       
+		
 
 /**
  * Start a collection (also automatically stops
@@ -56,14 +56,14 @@ int CO_startCollection(unsigned int anonymityLevel,
 		       unsigned int priority,
 		       TIME_T updateInterval,
 		       const char * name,
-		       const struct ECRS_MetaData * meta); 
+		       const struct ECRS_MetaData * meta);
 
 /**
  * Stop collection.
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int CO_stopCollection(void); 
+int CO_stopCollection(void);
 
 /**
  * Are we using a collection?

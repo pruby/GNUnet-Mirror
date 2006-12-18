@@ -1255,7 +1255,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   struct stat buf;
 
 #if DEBUG_DOWNLOAD
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' running for file `%s'\n",
 	 __FUNCTION__,
@@ -1394,7 +1394,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     } else { /* delete empty directories */
       char * rdir;
       int len;
-      
+
       rdir = STRDUP(realFN);
       len = strlen(rdir);
       do {

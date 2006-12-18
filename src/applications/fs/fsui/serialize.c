@@ -131,7 +131,7 @@ static void writeDownloadList(struct GE_Context * ectx,
     pos = ctx->activeSearches;
     while (pos != list->search) {
       if ( (pos->sizeResultsReceived <= 1024 * 1024) &&
-	   (pos->sizeUnmatchedResultsReceived <= 1024 * 1024) ) 
+	   (pos->sizeUnmatchedResultsReceived <= 1024 * 1024) )
 	i++;
       pos = pos->next;
       if (pos == NULL) {

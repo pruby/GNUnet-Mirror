@@ -116,7 +116,7 @@ static int query_yesno(const char * title,
 						 section,
 						 option,
 						 ret == DLG_EXIT_OK
-						 ? "YES" 
+						 ? "YES"
 						 : "NO")) {
 	show_error(_("Internal error! (Choice invalid?)"));
 	break;
@@ -175,7 +175,7 @@ static int query_string(const char * title,
   while (ret == 2) {
     ret = dlg_form(title,
 		   "",
-		   20, 
+		   20,
 		   70,
 		   15,
 		   1,
@@ -195,7 +195,7 @@ static int query_string(const char * title,
       }
       break;
     case DLG_EXIT_CANCEL:
-    case DLG_EXIT_ESC: 
+    case DLG_EXIT_ESC:
       ret = 0; /* abort */
       break;
     case DLG_EXIT_HELP:
@@ -290,10 +290,10 @@ static int network_interface() {
       ret = dlg_menu(_("GNUnet configuration"),
 		     _("Choose the network interface that connects your computer to "
 		       "the internet from the list below."),
-		     20, 
-		     70, 
+		     20,
+		     70,
 		     10,
-		     total, 
+		     total,
 		     nic_items,
 		     &msel,
 		     NULL);
@@ -338,7 +338,7 @@ static int nat_limited() {
 		       "doing SNAT, a router or a \"hardware firewall\" and other computers "
 		       "on the internet cannot connect to this computer, say \"yes\" here. "
 		       "Answer \"no\" on direct connections through modems, ISDN cards and "
-		       "DNAT (also known as \"port forwarding\")."), 
+		       "DNAT (also known as \"port forwarding\")."),
 		     NULL,
 		     "NAT",
 		     "LIMITED");
@@ -364,7 +364,7 @@ static int ip_address() {
 
 static int network_load_up() {
   return query_string(_("Bandwidth configuration: upload"),
-		      _("How much upstream bandwidth (in bytes/s) may be used?"), 
+		      _("How much upstream bandwidth (in bytes/s) may be used?"),
 		      _("You can limit GNUnet's resource usage "
 			"here.\n\nThe \"upstream\" is the data channel through which data "
 			"is *sent* to the internet. The limit is the maximum amount"
@@ -378,7 +378,7 @@ static int network_load_up() {
 
 static int network_load_down() {
   return query_string(_("Bandwidth configuration: download"),
-		      _("How much downstream bandwidth (in bytes/s) may be used?"), 
+		      _("How much downstream bandwidth (in bytes/s) may be used?"),
 		      _("You can limit GNUnet's resource usage "
 			"here.\n\nThe \"downstream\" is the data channel through which data "
 			"is *received* from the internet. The limit is the maximum amount"
@@ -405,7 +405,7 @@ static int user() {
 			    YES,
 			    "gnunet",
 			    "gnunet"))
-    return last; /* ignore option */ 
+    return last; /* ignore option */
   return query_string(_("Daemon configuration: user account"),
 		      _("As which user should gnunetd be run?"),
 		      _("For security reasons, it is a good idea to let this setup create "
@@ -460,7 +460,7 @@ static int finish() {
   char * group_name;
 
   ret = OK;
-  
+
   if ( (0 != GC_test_dirty(cfg)) &&
        (0 != GC_write_configuration(cfg, cfg_fn)) ) {
     prefix = _("Unable to save configuration file `%s':");
@@ -479,7 +479,7 @@ static int finish() {
 				    "GNUNETD",
 				    "GROUP",
 				    "",
-				    &group_name);  
+				    &group_name);
   if ( ( (strlen(user_name) > 0) ||
 	 (strlen(group_name) > 0) ) &&
        (OK == os_modify_user(YES,
@@ -493,7 +493,7 @@ static int finish() {
     showCursErr(_("Unable to create user account for daemon."),
 		"");
     ret = SYSERR;
-  }	 
+  }	
   if ( (YES == GC_get_configuration_value_yesno(cfg,
 						"GNUNETD",
 						"AUTOSTART",
@@ -502,7 +502,7 @@ static int finish() {
 				   NO,
 				   YES,
 				   "gnunetd", /* specify full path? */
-				   user_name, 
+				   user_name,
 				   group_name)) ) {
     showCursErr(_("Unable to setup autostart for daemon."),
 		"");
@@ -603,7 +603,7 @@ int wizard_curs_mainsetup_curses(int argc,
     case 10:
       dir = save_config();
       break;
-    case 11: 
+    case 11:
       ret = OK;
       break;
     }
@@ -611,7 +611,7 @@ int wizard_curs_mainsetup_curses(int argc,
     last = dir;
     if (dir == 0)
       ret = SYSERR;
-  }  
+  }
   end_dialog();
 #ifndef MINGW
   tcsetattr(1, TCSAFLUSH, &ios_org);

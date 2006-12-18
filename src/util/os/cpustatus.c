@@ -75,10 +75,10 @@ static int initMachCpuStats() {
   processor_cpu_load_info_t cpu_load;
   mach_msg_type_number_t cpu_msg_count;
   kern_return_t kret;
-  int i,j;    
+  int i,j;
 
   mhost = mach_host_self();
-  kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO, 
+  kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO,
                              &cpu_count,
                              (processor_info_array_t *)&cpu_load,
                              &cpu_msg_count);
@@ -95,7 +95,7 @@ static int initMachCpuStats() {
       prev_cpu_load[i].cpu_ticks[j] = cpu_load[i].cpu_ticks[j];
     }
   }
-  vm_deallocate(mach_task_self(), 
+  vm_deallocate(mach_task_self(),
                 (vm_address_t)cpu_load,
                 (vm_size_t)(cpu_msg_count * sizeof(*cpu_load)));
   return OK;
@@ -182,50 +182,50 @@ static int updateCpuUsage(){
     unsigned long long t_sys, t_user, t_nice, t_idle, t_total;
     unsigned long long t_idle_all, t_total_all;
     kern_return_t kret;
-    int i, j;   
+    int i, j;
 
     t_idle_all = t_total_all = 0;
-    kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO, 
+    kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO,
                                &cpu_count,
                                (processor_info_array_t *)&cpu_load,
                                &cpu_msg_count);
     if (kret == KERN_SUCCESS) {
       for (i = 0; i < cpu_count; i++) {
-        if (cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] >= 
+        if (cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] >=
             prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM]) {
           t_sys = cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] -
                   prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM];
-        } 
+        }
         else {
           t_sys = cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM] +
                   (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_SYSTEM]+1);
         }
 
-        if (cpu_load[i].cpu_ticks[CPU_STATE_USER] >= 
+        if (cpu_load[i].cpu_ticks[CPU_STATE_USER] >=
             prev_cpu_load[i].cpu_ticks[CPU_STATE_USER]) {
           t_user = cpu_load[i].cpu_ticks[CPU_STATE_USER] -
                    prev_cpu_load[i].cpu_ticks[CPU_STATE_USER];
-        } 
+        }
         else {
           t_user = cpu_load[i].cpu_ticks[CPU_STATE_USER] +
                    (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_USER] + 1);
         }
 
-        if (cpu_load[i].cpu_ticks[CPU_STATE_NICE] >= 
+        if (cpu_load[i].cpu_ticks[CPU_STATE_NICE] >=
             prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE]) {
           t_nice = cpu_load[i].cpu_ticks[CPU_STATE_NICE] -
                    prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE];
-        } 
+        }
         else {
           t_nice = cpu_load[i].cpu_ticks[CPU_STATE_NICE] +
                    (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_NICE] + 1);
         }
 
-        if (cpu_load[i].cpu_ticks[CPU_STATE_IDLE] >= 
+        if (cpu_load[i].cpu_ticks[CPU_STATE_IDLE] >=
             prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE]) {
           t_idle = cpu_load[i].cpu_ticks[CPU_STATE_IDLE] -
                    prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE];
-        } 
+        }
         else {
           t_idle = cpu_load[i].cpu_ticks[CPU_STATE_IDLE] +
                    (ULONG_MAX - prev_cpu_load[i].cpu_ticks[CPU_STATE_IDLE] + 1);
@@ -319,7 +319,7 @@ static int updateCpuUsage(){
 	currentLoad = 100; /* odd */
       if (currentLoad < 0)
 	currentLoad = 0; /* odd */
-      currentLoad = 100 - currentLoad; /* computed idle-load before! */      
+      currentLoad = 100 - currentLoad; /* computed idle-load before! */
     } else
       currentLoad = -1;
     last_idlecount = idlecount;
@@ -515,7 +515,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
        than 500ms; this makes the smoothing (mostly) independent from
        the frequency at which getCPULoad is called (and we don't spend
        more time measuring CPU than actually computing something). */
-    currentLoad = updateCpuUsage();    
+    currentLoad = updateCpuUsage();
     lastCall = now;
     if (currentLoad == -1) {
       agedLoad = -1;
@@ -525,10 +525,10 @@ int os_cpu_get_load(struct GE_Context * ectx,
       } else {
 	/* for CPU, we don't do the 'fast increase' since CPU is much
 	   more jitterish to begin with */
-	agedLoad = (agedLoad * 31 + currentLoad) / 32; 
+	agedLoad = (agedLoad * 31 + currentLoad) / 32;
       }
     }
-  }  
+  }
   if (agedLoad == -1)
     ret = -1;
   else

@@ -194,7 +194,7 @@ void URITRACK_clearTrackedURIS(struct GE_Context * ectx,
   IPC_SEMAPHORE_DOWN(sem, YES);
   fn = getUriDbName(ectx, cfg);
   if (YES == disk_file_test(ectx,
-			    fn)) { 
+			    fn)) {
     if (0 != UNLINK(fn))
       GE_LOG_STRERROR_FILE(ectx,
 			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,

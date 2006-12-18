@@ -85,7 +85,7 @@ createDirectoryHelper(struct GE_Context * ectx,
   struct FSUI_UploadList * pos;
   int handle;
   struct GE_Memory * mem;
-  struct GE_Context * ee; 
+  struct GE_Context * ee;
 
   fis = NULL;
   size = 0;
@@ -222,7 +222,7 @@ void * FSUI_uploadThread(void * cls) {
   size_t tpos;
   char * error;
   struct GE_Memory * mem;
-  struct GE_Context * ee; 
+  struct GE_Context * ee;
 
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
@@ -588,7 +588,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 					"EXTRACTORS",
 					NULL,
 					&config);
-      if (config != NULL) 
+      if (config != NULL)
 	extractors = EXTRACTOR_loadConfigLibraries(extractors,
 						   config);
     }

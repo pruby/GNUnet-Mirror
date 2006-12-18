@@ -124,7 +124,7 @@ void terminateClientConnection(struct ClientHandle * sock);
  */
 unsigned int isCSHandlerRegistered(unsigned short type);
 
-struct GE_Context * 
+struct GE_Context *
 createClientLogContext(GE_KIND mask,
 		       struct ClientHandle * handle);
 

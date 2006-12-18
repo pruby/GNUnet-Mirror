@@ -92,7 +92,7 @@ int verifyCrypto() {
     goto error;
   }
 
-  if (SESSIONKEY_LEN != 
+  if (SESSIONKEY_LEN !=
       encryptBlock(plain,
 		   SESSIONKEY_LEN,
 		   &key,
@@ -103,7 +103,7 @@ int verifyCrypto() {
     goto error;
   }
 
-  if (memcmp(encrresult, 
+  if (memcmp(encrresult,
 	     result,
 	     SESSIONKEY_LEN) != 0) {
     printf("Encrypted result wrong.\n");
@@ -123,7 +123,7 @@ int verifyCrypto() {
     ret = 1;
     goto error;
   }
-      
+
   if (memcmp(res, plain, SESSIONKEY_LEN) != 0) {
     printf("Decrypted result does not match input.\n");
 

@@ -21,7 +21,7 @@
 /**
  * @file applications/fs/fsui/serializetest2.c
  * @brief testcase for fsui download persistence for recursive
- *        download linked to search 
+ *        download linked to search
  * @author Christian Grothoff
  */
 
@@ -68,7 +68,7 @@ static int no_check;
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
   if (no_check)
-    return NULL; 
+    return NULL;
   switch(event->type) {
   case FSUI_search_suspended:
     search = NULL;
@@ -93,7 +93,7 @@ static void * eventCallback(void * cls,
 	      download);
       have_error = 1;
     }
-    if (event->data.DownloadSuspended.dc.pos == download) 
+    if (event->data.DownloadSuspended.dc.pos == download)
       download = NULL;
     break;
   case FSUI_search_resumed:
@@ -309,7 +309,7 @@ int main(int argc, char * argv[]){
   struct FSUI_UnindexList * unindex = NULL;
   struct FSUI_UploadList * upload = NULL;
   int suspendRestart = 0;
- 
+
 
   ok = YES;
   cfg = GC_create_C_impl();
@@ -452,7 +452,7 @@ int main(int argc, char * argv[]){
   }
   /* END OF TEST CODE */
  FAILURE:
-  if (ctx != NULL) 
+  if (ctx != NULL)
     FSUI_stop(ctx);
   if (uri != NULL)
     ECRS_freeUri(uri);

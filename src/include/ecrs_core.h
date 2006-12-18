@@ -113,7 +113,7 @@ typedef struct {
 } KBlock;
 
 typedef struct {
-  
+
   /**
    * Type of the block (SBLOCK), in network byte order.
    */
@@ -122,7 +122,7 @@ typedef struct {
   /**
    * RSA signature (from pseudonym controlling the namespace)
    */
-  Signature signature; 
+  Signature signature;
 
   /**
    * Public key of the pseudonym; S = H(subspace);
@@ -130,7 +130,7 @@ typedef struct {
   PublicKey subspace;
 
   /* from here on signed */
-  
+
   /**
    * R = H(N-I)^S, used for routing!
    */
@@ -139,7 +139,7 @@ typedef struct {
 
   /**
    * Time at which this SBlock was created;
-   * in network byte order 
+   * in network byte order
    */
   TIME_T creationTime;
 
@@ -150,19 +150,19 @@ typedef struct {
    * for entries without a fixed update frequency; in network byte
    * order
    */
-  TIME_T updateInterval; 
+  TIME_T updateInterval;
 
   /**
    * N, the identifier that will be used for the
    * next revision of this SBlock.
    */
-  HashCode512 nextIdentifier; 
+  HashCode512 nextIdentifier;
 
   /**
    * I, the increment between identifiers (used to enable
    * skipping of blocks by appying multiple increments.
-   */ 
-  HashCode512 identifierIncrement; 
+   */
+  HashCode512 identifierIncrement;
 
   /* 0-terminated URI follows here! */
 

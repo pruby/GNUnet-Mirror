@@ -52,8 +52,8 @@ typedef struct {
  * @param vallen the length von val
  * @return OK on success
  */
-typedef int (*KVCallback)(void *closure, 
-			  void *val, 
+typedef int (*KVCallback)(void *closure,
+			  void *val,
 			  int vallen);
 
 
@@ -66,7 +66,7 @@ typedef struct {
    * @param table the name of the Key/Value-Table
    * @return a handle
    */
-  KVHandle *(*getTable)(const char *database, 
+  KVHandle *(*getTable)(const char *database,
 			const char *table);
 
   /**
@@ -80,7 +80,7 @@ typedef struct {
    * @param closure optional parameter for handler
    */
   void * (*get)(KVHandle *kv,
-		void *key, 
+		void *key,
 		int keylen,
 		unsigned int sort,
 		unsigned int limit,
@@ -98,7 +98,7 @@ typedef struct {
    * @return OK on success, SYSERR otherwise
    */
   int (* put)(KVHandle *kv,
-	      void *key, 
+	      void *key,
 	      int keylen,
 	      void *val,
 	      int vallen,

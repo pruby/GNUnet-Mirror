@@ -582,7 +582,7 @@ static int SEND_NONBLOCKING(int s,
 #elif OSX
     {
     int __tmp = 1;
-    if (setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, 
+    if (setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
         (void *)&__tmp, sizeof(__tmp)) < 0)
       GE_LOG_STRERROR(ectx,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
@@ -606,11 +606,11 @@ static int SEND_NONBLOCKING(int s,
 
   } while ( (*sent == -1) &&
 	    (errno == EINTR) );
-  
+
   setBlocking(s, YES);
 
-  if ( (*sent == SYSERR) && 
-       ( (errno == EWOULDBLOCK) 
+  if ( (*sent == SYSERR) &&
+       ( (errno == EWOULDBLOCK)
 	 || (errno == EAGAIN) ) )
     return NO;
   else if ( (*sent < 0) || (*sent > max) )

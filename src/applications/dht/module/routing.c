@@ -55,7 +55,7 @@ typedef struct {
 
   /**
    * If local peer is NOT interested in results, this callback
-   * will be NULL. 
+   * will be NULL.
    */
   ResultHandler receiver;
 
@@ -77,7 +77,7 @@ typedef struct {
 
   /**
    * Priority of requested content
-   */ 
+   */
   unsigned int prio;
 
   /**
@@ -113,7 +113,7 @@ typedef struct {
 
   /**
    * Key for the content.
-   */ 
+   */
   HashCode512 key;
 
 } DHT_PUT_MESSAGE;
@@ -134,7 +134,7 @@ typedef struct {
 
   /**
    * Key for the content.
-   */ 
+   */
   HashCode512 key;
 
 } DHT_RESULT_MESSAGE;
@@ -146,7 +146,7 @@ typedef struct {
 
   /**
    * Information about where to send the results back to.
-   */ 
+   */
   DHT_Source_Route source;
 
   /**
@@ -173,7 +173,7 @@ static unsigned int rt_pos;
 
 /**
  * rt_size records of active queries
- */ 
+ */
 static DHTQueryRecord ** records;
 
 /**
@@ -279,7 +279,7 @@ static void addRoute(const PeerIdentity * sender,
     FREE(records[rt_pos]->get);
     GROW(records[rt_pos]->results,
 	 records[rt_pos]->result_count,
-	 0); 
+	 0);
   } else {
     records[rt_pos] = MALLOC(sizeof(DHTQueryRecord));
   }
@@ -307,7 +307,7 @@ static void addRoute(const PeerIdentity * sender,
  * Larger factors will result in more aggressive routing of GET
  * operations (each peer will either forward to GET_TRIES peers that
  * are closer to the key).
- */ 
+ */
 #define GET_TRIES 4
 
 /**
@@ -337,7 +337,7 @@ static int handleGet(const PeerIdentity * sender,
     if (OK != select_dht_peer(&next[i],
 			      &get->key,
 			      &next[0],
-			      i)) 
+			      i))
       break;
     if (-1 == hashCodeCompareDistance(&next[i].hashPubKey,
 				      &coreAPI->myIdentity->hashPubKey,
@@ -360,10 +360,10 @@ static int handleGet(const PeerIdentity * sender,
 
 /**
  * Larger factors will result in more replication and
- * more aggressive routing of PUT operations (each 
+ * more aggressive routing of PUT operations (each
  * peer will either forward to PUT_TRIES peers that
  * are closer to the key, or replicate the content).
- */ 
+ */
 #define PUT_TRIES 2
 
 /**
@@ -394,7 +394,7 @@ static int handlePut(const PeerIdentity * sender,
 				     &coreAPI->myIdentity->hashPubKey,
 				     &put->key))
       store = 1; /* we're closer than the selected target */
-    else 
+    else
       coreAPI->unicast(&next[i],
 		       msg,
 		       0, /* FIXME: priority */
@@ -437,13 +437,13 @@ void dht_get_start(const HashCode512 * key,
 		   ResultHandler handler,
 		   void * cls) {
   DHT_GET_MESSAGE get;
-  
+
   get.header.size = htons(sizeof(DHT_GET_MESSAGE));
   get.header.type = htons(P2P_PROTO_DHT_GET);
   get.type = htonl(type);
   get.prio = htonl(0); /* FIXME */
   get.reserved = htonl(0);
-  get.key = *key;  
+  get.key = *key;
   handleGet(NULL,
 	    &get.header);
 }
@@ -457,7 +457,7 @@ void dht_get_stop(const HashCode512 * key,
 		  ResultHandler handler,
 		  void * cls) {
   int i;
-  
+
   MUTEX_LOCK(lock);
   for (i=0;i<rt_size;i++) {
     if (records[i] == NULL)
@@ -491,7 +491,7 @@ void dht_put(const HashCode512 * key,
 	     cron_t expirationTime,
 	     const char * data) {
   DHT_PUT_MESSAGE * put;
-  
+
   put = MALLOC(sizeof(DHT_PUT_MESSAGE) + size);
   put->header.size = htons(sizeof(DHT_PUT_MESSAGE) + size);
   put->header.type = htons(P2P_PROTO_DHT_PUT);
@@ -500,7 +500,7 @@ void dht_put(const HashCode512 * key,
   put->timeout = htonll(expirationTime - get_time());
   memcpy(&put[1],
 	 data,
-	 size);  
+	 size);
   handlePut(NULL,
 	    &put->header);
   FREE(put);

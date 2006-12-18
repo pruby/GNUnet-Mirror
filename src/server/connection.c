@@ -65,7 +65,7 @@
 #define DEBUG_CONNECTION NO
 
 /**
- * output knapsack priorities into a file? 
+ * output knapsack priorities into a file?
  */
 #define DEBUG_COLLECT_PRIO NO
 
@@ -283,38 +283,38 @@ typedef struct {
 typedef struct {
 
   /**
-   * how long is this message part expected to be? 
+   * how long is this message part expected to be?
    */
   unsigned short len;
 
   /**
-   * flags 
+   * flags
    */
   unsigned short flags;
 
   /**
-   * how important is this message part? 
+   * how important is this message part?
    */
   unsigned int pri;
 
   /**
-   * when do/did we intend to transmit? 
+   * when do/did we intend to transmit?
    */
   cron_t transmissionTime;
-  
+
   /**
-   * callback to call to create the message part 
+   * callback to call to create the message part
    */
   BuildMessageCallback callback;
 
   /**
    * argument to callback, call FREENONNULL(closure) if we
-   * can not transmit this MessagePart. 
+   * can not transmit this MessagePart.
    */
   void * closure;
 
   /**
-   * YES if selected by knapsack for sending 
+   * YES if selected by knapsack for sending
    */
   int knapsackSolution;
 } SendEntry;
@@ -348,77 +348,77 @@ typedef struct {
  */
 typedef struct BufferEntry_ {
   /**
-   * Session for the connection 
+   * Session for the connection
    */
   Session session;
 
   /**
-   * the current session key used for encryption 
+   * the current session key used for encryption
    */
   SESSIONKEY skey_local;
 
   /**
-   * at which time was the local sessionkey created 
+   * at which time was the local sessionkey created
    */
   TIME_T skey_local_created;
 
   /**
-   * the current session key used for decryption 
+   * the current session key used for decryption
    */
   SESSIONKEY skey_remote;
-  
+
   /**
-   * at which time was the remote sessionkey created 
+   * at which time was the remote sessionkey created
    */
   TIME_T skey_remote_created;
 
   /**
    * is this host alive? timestamp of the time of the last-active
    * point (as witnessed by some higher-level application, typically
-   * topology+pingpong) 
+   * topology+pingpong)
    */
   cron_t isAlive;
 
   /**
-   * Status of the connection (STAT_XXX) 
+   * Status of the connection (STAT_XXX)
    */
   unsigned int status;
 
   /**
-   * last sequence number received on this connection (highest) 
+   * last sequence number received on this connection (highest)
    */
   unsigned int lastSequenceNumberReceived;
 
   /**
    * bit map indicating which of the 32 sequence numbers before the last
    * were received (good for accepting out-of-order packets and
-   * estimating reliability of the connection) 
+   * estimating reliability of the connection)
    */
   unsigned int lastPacketsBitmap;
 
   /**
-   * last sequence number transmitted 
+   * last sequence number transmitted
    */
   unsigned int lastSequenceNumberSend;
 
   /**
-   * number of entries in the send buffer 
+   * number of entries in the send buffer
    */
   unsigned int sendBufferSize;
 
   /**
-   * buffer of entries waiting to be transmitted 
+   * buffer of entries waiting to be transmitted
    */
   SendEntry **sendBuffer;
 
   /**
    * time of the last send-attempt (to avoid
-   * solving knapsack's too often) 
+   * solving knapsack's too often)
    */
   cron_t lastSendAttempt;
 
   /**
-   * a hash collision overflow chain 
+   * a hash collision overflow chain
    */
   struct BufferEntry_ *overflowChain;
 
@@ -426,7 +426,7 @@ typedef struct BufferEntry_ {
   /* *********** outbound bandwidth limits ********** */
 
   /**
-   * byte-per-minute limit for this connection 
+   * byte-per-minute limit for this connection
    */
   unsigned int max_bpm;
 
@@ -438,7 +438,7 @@ typedef struct BufferEntry_ {
   long long available_send_window;
 
   /**
-   * time of the last increment of available_send_window 
+   * time of the last increment of available_send_window
    */
   cron_t last_bps_update;
 
@@ -446,23 +446,23 @@ typedef struct BufferEntry_ {
 
   /**
    * how much traffic (bytes) did we receive on this connection since
-   * the last update-round? 
+   * the last update-round?
    */
   long long recently_received;
 
   /**
-   * How valueable were the messages of this peer recently? 
+   * How valueable were the messages of this peer recently?
    */
   double current_connection_value;
 
   /**
    * the highest bandwidth limit that a well-behaved peer
-   * must have received by now 
+   * must have received by now
    */
   unsigned int max_transmitted_limit;
 
   /**
-   * what is the limit that we are currently shooting for? (bytes per minute) 
+   * what is the limit that we are currently shooting for? (bytes per minute)
    */
   unsigned int idealized_limit;
 
@@ -473,7 +473,7 @@ typedef struct BufferEntry_ {
   unsigned int violations;
 
   /**
-   * are we currently in "sendBuffer" for this entry? 
+   * are we currently in "sendBuffer" for this entry?
    */
   int inSendBuffer;
 
@@ -489,7 +489,7 @@ typedef struct {
  * @param be the buffer entry
  * @param data context for callee
  */
-typedef void (*BufferEntryCallback) (BufferEntry * be, 
+typedef void (*BufferEntryCallback) (BufferEntry * be,
 				     void *data);
 
 /* ***************** globals ********************** */
@@ -605,10 +605,10 @@ static int stat_total_allowed_recv;
 /* ******************** CODE ********************* */
 
 #if DEBUG_CONNECTION
-static void printMsg(const char *prefix, 
+static void printMsg(const char *prefix,
 		     const PeerIdentity * sender,
-                     const SESSIONKEY * key, 
-		     const INITVECTOR * iv, 
+                     const SESSIONKEY * key,
+		     const INITVECTOR * iv,
 		     int crc) {
   char skey[65];
   char *dst;
@@ -619,7 +619,7 @@ static void printMsg(const char *prefix,
 	   &enc);
   dst = skey;
   for(idx = 0; idx < SESSIONKEY_LEN; idx++) {
-    sprintf(dst, 
+    sprintf(dst,
 	    "%02x",
 	    key->key[idx]);
     dst += 2;
@@ -2075,7 +2075,7 @@ static void scheduleInboundTraffic() {
   entries = MALLOC(sizeof(BufferEntry *) * activePeerCount);
   utl.pos = 0;
   utl.e = entries;
-  forAllConnectedHosts(&gatherEntries, 
+  forAllConnectedHosts(&gatherEntries,
 		       &utl);
 
   /* compute latest shares based on traffic preferences */
@@ -2111,19 +2111,19 @@ static void scheduleInboundTraffic() {
   load = os_network_monitor_get_load(load_monitor,
 				     Download);
   if (load > 100) /* take counter measure */
-    schedulableBandwidth = schedulableBandwidth * 100 / load;  
+    schedulableBandwidth = schedulableBandwidth * 100 / load;
 #if 0
   printf("Scheduling %llu bytes per minute\n",
 	 schedulableBandwidth);
 #endif
   /* compute recent activity profile of the peer */
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    timeDifference != 0);
   for (u=0;u<activePeerCount;u++) {
-    adjustedRR[u] 
+    adjustedRR[u]
       = entries[u]->recently_received * cronMINUTES / timeDifference / 2;
- 
+
 #if DEBUG_CONNECTION
     if (adjustedRR[u] > entries[u]->idealized_limit) {
       IF_GELOG(ectx,
@@ -2161,7 +2161,7 @@ static void scheduleInboundTraffic() {
 	       adjustedRR[u],
 	       entries[u]->max_transmitted_limit, entries[u]->idealized_limit);
         identity->blacklistHost(&entries[u]->session.sender,
-                                1 / topology->getSaturation(), 
+                                1 / topology->getSaturation(),
 				YES);
         shutdownConnection(entries[u]);
         activePeerCount--;
@@ -2205,7 +2205,7 @@ static void scheduleInboundTraffic() {
   didAssign = YES;
   /* in the first round we cap by 2* previous utilization */
   firstRound = YES;
-  for (u = 0; u < activePeerCount; u++) 
+  for (u = 0; u < activePeerCount; u++)
     entries[u]->idealized_limit = 0;
   while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
 	  (activePeerCount > 0) &&
@@ -2234,7 +2234,7 @@ static void scheduleInboundTraffic() {
         }
         if (share > entries[u]->idealized_limit) {
           decrementSB += share - entries[u]->idealized_limit;
-          didAssign = YES;        
+          didAssign = YES;
 	  entries[u]->idealized_limit = share;
 	}
       }
@@ -2332,10 +2332,10 @@ static void scheduleInboundTraffic() {
     if ( (decrementSB == 0) &&
 	 (weak_randomi(timeDifference + 1) != 0) )
       decrementSB = 1;
-    if (entries[u]->recently_received >= decrementSB) 
+    if (entries[u]->recently_received >= decrementSB)
       entries[u]->recently_received -= decrementSB;
-    else 
-      entries[u]->recently_received = 0;    
+    else
+      entries[u]->recently_received = 0;
   }
 
   /* free memory */
@@ -2422,7 +2422,7 @@ static void cronDecreaseLiveness(void *unused) {
           /* switch state form UP to DOWN: too much inactivity */
           IF_GELOG(ectx,
 		   GE_DEBUG | GE_REQUEST | GE_USER,
-		   hash2enc(&root->session.sender.hashPubKey, 
+		   hash2enc(&root->session.sender.hashPubKey,
 			    &enc));
           GE_LOG(ectx,
 		 GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2437,7 +2437,7 @@ static void cronDecreaseLiveness(void *unused) {
         if ( (root->available_send_window >= 60000) &&
 	     (root->sendBufferSize < 4) &&
 	     (scl_nextHead != NULL) &&
-	     (os_network_monitor_get_load(load_monitor, 
+	     (os_network_monitor_get_load(load_monitor,
 					  Upload) < IDLE_LOAD_THRESHOLD) &&
 	     (os_cpu_get_load(ectx, cfg) < IDLE_LOAD_THRESHOLD) ) {
           /* create some traffic by force! */
@@ -2524,9 +2524,9 @@ int checkHeader(const PeerIdentity * sender,
   GE_ASSERT(ectx, sender != NULL);
   hash2enc(&sender->hashPubKey, &enc);
   if(size < sizeof(P2P_PACKET_HEADER)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Message from `%s' discarded: invalid format.\n"), 
+	   _("Message from `%s' discarded: invalid format.\n"),
 	   &enc);
     return SYSERR;
   }
@@ -2542,9 +2542,9 @@ int checkHeader(const PeerIdentity * sender,
     stats->change(stat_received, size);
 
 #if DEBUG_CONNECTION
-  GE_LOG(ectx, 
-	 GE_DEBUG | GE_REQUEST | GE_USER, 
-	 "Decrypting message from host `%s'\n", 
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Decrypting message from host `%s'\n",
 	 &enc);
 #endif
   MUTEX_LOCK(lock);
@@ -2570,7 +2570,7 @@ int checkHeader(const PeerIdentity * sender,
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
   if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
 	   "Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	   &enc);
@@ -2662,12 +2662,12 @@ static int handleHANGUP(const PeerIdentity * sender,
 		 &((P2P_hangup_MESSAGE *) msg)->sender,
 		 sizeof(PeerIdentity)))
     return SYSERR;
-  IF_GELOG(ectx, 
-	   GE_INFO | GE_BULK | GE_USER, 
-	   hash2enc(&sender->hashPubKey, 
+  IF_GELOG(ectx,
+	   GE_INFO | GE_BULK | GE_USER,
+	   hash2enc(&sender->hashPubKey,
 		    &enc));
-  GE_LOG(ectx, 
-	 GE_INFO | GE_BULK | GE_USER, 
+  GE_LOG(ectx,
+	 GE_INFO | GE_BULK | GE_USER,
 	 "received HANGUP from `%s'\n",
 	 &enc);
   MUTEX_LOCK(lock);
@@ -2693,7 +2693,7 @@ static int handleHANGUP(const PeerIdentity * sender,
  *                   YES if it is the key for sending
  */
 void assignSessionKey(const SESSIONKEY * key,
-                      const PeerIdentity * peer, 
+                      const PeerIdentity * peer,
 		      TIME_T age,
 		      int forSending) {
   BufferEntry *be;
@@ -3081,9 +3081,9 @@ void initConnection(struct GE_Context * e,
     stat_decrypted
       = stats->create(gettext_noop(/* bytes successfully decrypted */
 						"# bytes decrypted"));
-    stat_noise_sent 
+    stat_noise_sent
       = stats->create(gettext_noop("# bytes noise sent"));
-    stat_total_allowed_sent 
+    stat_total_allowed_sent
       = stats->create(gettext_noop("# total advertised bytes per second received limit"));
     stat_total_allowed_recv
       = stats->create(gettext_noop("# total allowed bytes per second transmission limit"));
@@ -3286,7 +3286,7 @@ int unregisterSendCallback(const unsigned int minimumPadding,
   MUTEX_LOCK(lock);
   pos = scl_nextHead;
   while(pos != NULL) {
-    if ( (pos->callback == callback) && 
+    if ( (pos->callback == callback) &&
 	 (pos->minimumPadding == minimumPadding) ) {
       if(prev == NULL)
         scl_nextHead = pos->next;
@@ -3412,7 +3412,7 @@ void unicastCallback(const PeerIdentity * hostId,
  */
 void unicast(const PeerIdentity * receiver,
              const MESSAGE_HEADER * msg,
-             unsigned int importance, 
+             unsigned int importance,
 	     unsigned int maxdelay) {
   char *closure;
   unsigned short len;
@@ -3435,9 +3435,9 @@ void unicast(const PeerIdentity * receiver,
   closure = MALLOC(len);
   memcpy(closure, msg, len);
   unicastCallback(receiver,
-                  &copyCallback, 
-		  closure, 
-		  len, 
+                  &copyCallback,
+		  closure,
+		  len,
 		  importance,
 		  maxdelay);
 }
@@ -3454,9 +3454,9 @@ int isConnected(const PeerIdentity * hi) {
   MUTEX_LOCK(lock);
   be = lookForHost(hi);
   MUTEX_UNLOCK(lock);
-  if (be == NULL) 
+  if (be == NULL)
     return NO;
-  return (be->status == STAT_UP);  
+  return (be->status == STAT_UP);
 }
 
 /**
@@ -3468,7 +3468,7 @@ int isConnected(const PeerIdentity * hi) {
 unsigned int computeIndex(const PeerIdentity * hostId) {
   unsigned int res = (((unsigned int) hostId->hashPubKey.bits[0]) &
                       ((unsigned int) (CONNECTION_MAX_HOSTS_ - 1)));
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    res < CONNECTION_MAX_HOSTS_);
   return res;
 }

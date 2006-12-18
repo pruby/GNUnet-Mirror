@@ -20,7 +20,7 @@
 
 /**
  * @file module/service.h
- * @brief internal GNUnet DHT service 
+ * @brief internal GNUnet DHT service
  * @author Christian Grothoff
  */
 

@@ -40,12 +40,12 @@ static struct GE_Context * ectx;
 
 typedef struct {
   /**
-   * the identifier itself 
+   * the identifier itself
    */
   HashCode512 id;
 
   /**
-   * reference counter 
+   * reference counter
    */
   unsigned int rc;
 } PID_Entry;

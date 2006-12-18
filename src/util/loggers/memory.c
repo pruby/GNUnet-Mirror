@@ -119,7 +119,7 @@ GE_memory_create(unsigned int maxSize) {
 /**
  * Get a particular log message from the store.
  */
-const char * 
+const char *
 GE_memory_get(struct GE_Memory * memory,
 	      unsigned int index) {
   if (index > memory->pos)

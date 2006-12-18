@@ -61,7 +61,7 @@ static int notified(const ECRS_FileInfo * fi,
 		       fi2.uri)) ) {
     notifications++;
     return OK;
-  }  
+  }
   return OK;
 }
 
@@ -115,7 +115,7 @@ static int testTracking() {
   ECRS_addToMetaData(fi2.meta,
 		     EXTRACTOR_MIMETYPE,
 		     "foo/bar");
-  
+
   URITRACK_clearTrackedURIS(NULL,
 			    cfg);
   URITRACK_registerTrackCallback(NULL,
@@ -181,7 +181,7 @@ static int testTracking() {
   return 0;
 }
 
-int main(int argc, 
+int main(int argc,
 	 char * argv[]) {
   int failureCount = 0;
 
@@ -192,7 +192,7 @@ int main(int argc,
     return -1;
   }
   failureCount += testTracking();
-  GC_free(cfg);  
+  GC_free(cfg);
   if (failureCount != 0)
     return 1;
   return 0;

@@ -20,7 +20,7 @@
 
 /**
  * @file module/service.c
- * @brief internal GNUnet DHT service 
+ * @brief internal GNUnet DHT service
  * @author Christian Grothoff
  *
  * TODO: support async get timeout (gap never stops otherwise!)
@@ -78,7 +78,7 @@ static void client_result_converter(const HashCode512 * key,
  * @param closure extra argument to callback
  * @return handle to stop the async get
  */
-static struct DHT_GET_RECORD * 
+static struct DHT_GET_RECORD *
 dht_get_async_start(unsigned int type,
 		    const HashCode512 * key,
 		    cron_t timeout,
@@ -105,7 +105,7 @@ dht_get_async_start(unsigned int type,
 /**
  * Stop async DHT-get.  Frees associated resources.
  */
-static int 
+static int
 dht_get_async_stop(struct DHT_GET_RECORD * record) {
   dht_get_stop(&record->key,
 	       record->type,

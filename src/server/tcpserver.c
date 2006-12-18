@@ -522,7 +522,7 @@ int sendTCPErrorToClient(struct ClientHandle * sock,
   if (msgLen > 60000)
     msgLen = 60000;
   rv = MALLOC(sizeof(RETURN_ERROR_MESSAGE) + msgLen);
-  memset(rv, 
+  memset(rv,
 	 0,
 	 sizeof(RETURN_ERROR_MESSAGE) + msgLen);
   rv->header.size
@@ -572,7 +572,7 @@ static void logClientLogContext(void * ctx,
 		       msg);
 }
 
-struct GE_Context * 
+struct GE_Context *
 createClientLogContext(GE_KIND mask,
 		       struct ClientHandle * handle) {
   return GE_create_context_callback(mask,

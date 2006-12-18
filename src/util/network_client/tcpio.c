@@ -361,7 +361,7 @@ int connection_read(struct ClientServerConnection * sock,
       connection_close_temporarily(sock);
       return SYSERR; /* invalid header */
     }
-    
+
     buf = MALLOC(size);
     if ( (OK != socket_recv(sock->sock,
 			    NC_Complete,
@@ -383,8 +383,8 @@ int connection_read(struct ClientServerConnection * sock,
     MUTEX_UNLOCK(sock->readlock);
     *buffer = (MESSAGE_HEADER*) buf;
     (*buffer)->size = htons(size);
-    
-    if (ntohs((*buffer)->type) != CS_PROTO_RETURN_ERROR) 
+
+    if (ntohs((*buffer)->type) != CS_PROTO_RETURN_ERROR)
       break; /* got actual message! */
     rem = (RETURN_ERROR_MESSAGE*) *buffer;
     if (ntohs(rem->header.size) < sizeof(RETURN_ERROR_MESSAGE)) {

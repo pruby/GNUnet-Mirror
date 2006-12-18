@@ -194,7 +194,7 @@ static int isRejected(const void * addr,
 		      unsigned int addr_len) {
   if ((YES == isBlacklisted(addr,
 			    addr_len)) ||
-      (YES != isWhitelisted(addr, 
+      (YES != isWhitelisted(addr,
 			    addr_len)))	
     return YES;
   return NO;
@@ -478,7 +478,7 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   ectx = core->ectx;
   cfg = core->cfg;
   configLock = MUTEX_CREATE(NO);
-  
+
   reloadConfiguration();
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP6",

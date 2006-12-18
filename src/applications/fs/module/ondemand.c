@@ -142,11 +142,11 @@ int ONDEMAND_initIndex(struct GE_Context * cectx,
   UNLINK(serverFN);
   if (0 != SYMLINK(fn, serverFN)) {
     GE_LOG_STRERROR_FILE(cectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 			 "symlink",
 			 fn);
-    GE_LOG_STRERROR_FILE(cectx, 
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+    GE_LOG_STRERROR_FILE(cectx,
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 			 "symlink",
 			 serverFN);
     FREE(serverFN);
@@ -369,7 +369,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   }
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
-  if ( (YES != disk_file_test(ectx, 
+  if ( (YES != disk_file_test(ectx,
 			      fn)) ||
        (-1 == (fileHandle = disk_file_open(ectx,
 					   fn,
@@ -674,7 +674,7 @@ int ONDEMAND_unindex(struct GE_Context * cectx,
 	       GE_WARNING | GE_BULK | GE_USER,
 	       hash2enc(&key,
 			&enc));
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     _("Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"),
 	     &enc,

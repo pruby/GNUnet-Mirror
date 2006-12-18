@@ -261,11 +261,11 @@ int os_modify_autostart(struct GE_Context *ectx,
   int ret;
 
   /* Unix */
-  if ((ACCESS("/usr/sbin/update-rc.d", 
+  if ((ACCESS("/usr/sbin/update-rc.d",
 	      X_OK) != 0)) {
     GE_LOG_STRERROR_FILE(ectx,
                          GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                         "access", 
+                         "access",
 			 "/usr/sbin/update-rc.d");
     return SYSERR;
   }
@@ -276,7 +276,7 @@ int os_modify_autostart(struct GE_Context *ectx,
     if (ACCESS(application, X_OK) != 0) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "access", 
+                           "access",
 			   application);
     }
     if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
@@ -285,7 +285,7 @@ int os_modify_autostart(struct GE_Context *ectx,
       if (f == NULL) {
         GE_LOG_STRERROR_FILE(ectx,
                              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                             "fopen", 
+                             "fopen",
 			     "/etc/init.d/gnunetd");
         return 2;
       }
@@ -321,15 +321,15 @@ int os_modify_autostart(struct GE_Context *ectx,
               "		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
               "		exit 1\n"
               "		;;\n"
-              "\n" "esac\n" "exit 0\n", 
-	      "gnunet-setup", 
+              "\n" "esac\n" "exit 0\n",
+	      "gnunet-setup",
 	      application);
       fclose(f);
       if (0 != CHMOD("/etc/init.d/gnunetd",
 		     S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) {
         GE_LOG_STRERROR_FILE(ectx,
                              GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                             "chmod", 
+                             "chmod",
 			     "/etc/init.d/gnunetd");
         return SYSERR;
       }
@@ -341,7 +341,7 @@ int os_modify_autostart(struct GE_Context *ectx,
 	if (errno != 0) {
 	  GE_LOG_STRERROR_FILE(ectx,
 			       GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-			       "system", 
+			       "system",
 			       "/usr/sbin/update-rc.d");
 	} else {
 	  GE_LOG(ectx,
@@ -359,7 +359,7 @@ int os_modify_autostart(struct GE_Context *ectx,
 	 (errno != ENOENT)) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "unlink", 
+                           "unlink",
 			   "/etc/init.d/gnunetd");
       return SYSERR;
     }

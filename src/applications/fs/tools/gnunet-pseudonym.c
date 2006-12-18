@@ -208,7 +208,7 @@ int main(int argc,
 
   /* stop collections */
   if (stop_collection && (! start_collection)) {
-    if (OK == CO_stopCollection()) 
+    if (OK == CO_stopCollection())
       printf(_("Collection stopped.\n"));
     else
       printf(_("Failed to stop collection (not active?).\n"));
@@ -300,7 +300,7 @@ int main(int argc,
     FREE(create_name);
     create_name = NULL;
   } else {
-    if (start_collection) 
+    if (start_collection)
       printf(_("You must specify a name for the collection (`%s' option).\n"),
 	     "-C");
   }

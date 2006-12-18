@@ -545,13 +545,13 @@ static void sendToSelected(const PeerIdentity * peer,
 
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(&peer->hashPubKey,
 		      &encp);
 	     hash2enc(&qr->msg->queries[0],
 		      &encq));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Sending query `%s' to `%s'\n",
 	   &encq,
@@ -696,7 +696,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     coreAPI->forAllConnectedNodes
       (&sendToSelected,
        qr);
-    if (qr == &dummy) {      
+    if (qr == &dummy) {
       change_pid_rc(dummy.noTarget, -1);
       FREE(dummy.msg);
     }
@@ -951,7 +951,7 @@ static int addToSlot(int mode,
 	if (ite->destination[i] == sender)
 	  return SYSERR;
       if (ite->hostsWaiting >= MAX_HOSTS_WAITING) {
-	decrement_pid_rcs(ite->destination, 
+	decrement_pid_rcs(ite->destination,
 			  ite->hostsWaiting);
 	if (stats != NULL)
 	  stats->change(stat_memory_destinations, - ite->hostsWaiting);
@@ -966,7 +966,7 @@ static int addToSlot(int mode,
       ite->primaryKey = *query;
       if (stats != NULL)
 	stats->change(stat_memory_destinations, - ite->hostsWaiting);
-      decrement_pid_rcs(ite->destination, 
+      decrement_pid_rcs(ite->destination,
 			ite->hostsWaiting);
       GROW(ite->destination,
 	   ite->hostsWaiting,
@@ -1315,11 +1315,11 @@ static void sendReply(IndirectionTableEntry * ite,
     resolve_pid(ite->destination[j],
 		&recv);
 #if DEBUG_GAP
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(&recv.hashPubKey,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "GAP sending reply to `%s'\n",
 	   &enc);

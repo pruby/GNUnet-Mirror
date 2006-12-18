@@ -121,7 +121,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
     }
     if ( (sizeof(CS_dht_reply_results_MESSAGE) > ntohs(reply->size)) ||
 	 (CS_PROTO_dht_REPLY_GET != ntohs(reply->type)) ) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     _("Unexpected reply to `%s' operation.\n"),
 	     "GET");

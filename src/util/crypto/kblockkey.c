@@ -181,13 +181,6 @@ static void mpz_randomize(mpz_t n,
 	 &tmp[i+1]);
   }
   *rnd = tmp[cnt-1];
-  /*
-  printf("RND: ");
-  for (i=0;i<cnt * sizeof(HashCode512);i++)
-    printf("%02x", ((unsigned char*) tmp)[i]);
-  printf("\n");
-  */
-
   mpz_import(n, cnt * sizeof(HashCode512) / sizeof(unsigned int),
 	     1, sizeof(unsigned int), 1, 0, tmp);
   FREE(tmp);

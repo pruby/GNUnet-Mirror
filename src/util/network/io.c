@@ -145,7 +145,7 @@ void socket_destroy(struct SocketHandle * s) {
 static int socket_set_nosigpipe(struct SocketHandle * s,
                                 int dontSigPipe) {
   return setsockopt(s->handle, SOL_SOCKET, SO_NOSIGPIPE,
-                    (void *)&dontSigPipe, 
+                    (void *)&dontSigPipe,
                     sizeof(dontSigPipe));
 }
 #endif

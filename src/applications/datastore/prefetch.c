@@ -212,7 +212,7 @@ int getRandom(const HashCode512 * receiver,
   if (minIdx == -1) {
     MUTEX_UNLOCK(lock);
 #if DEBUG_PREFETCH
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Failed to find content in prefetch buffer\n");
 #endif

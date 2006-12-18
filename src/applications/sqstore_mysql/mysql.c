@@ -506,7 +506,7 @@ static int iclose(mysqlHandle * dbhI) {
 
 
 /**
- * Iterate over the items in the datastore 
+ * Iterate over the items in the datastore
  * using the given query to select and order
  * the items.
  *
@@ -548,7 +548,7 @@ static int iterateHelper(unsigned int type,
   }
   scratch = MALLOC(256);
   SNPRINTF(scratch,
-	   256,	   
+	   256,	
 	   query,
 	   typestr);
   mysql_query(dbhI.dbf,
@@ -577,8 +577,8 @@ static int iterateHelper(unsigned int type,
       return count;
     }
     if ( (iter != NULL) &&
-	 (SYSERR == iter(&datum->key, 
-			 &datum->value, 
+	 (SYSERR == iter(&datum->key,
+			 &datum->value,
 			 closure) ) ) {
       count = SYSERR;
       FREE(datum);

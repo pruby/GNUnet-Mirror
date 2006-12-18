@@ -584,7 +584,7 @@ static int sqlite_iterate(unsigned int type,
     else
       strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
   } else {
-    if (inverseOrder) 
+    if (inverseOrder)
       strcat(scratch, " ORDER BY expire DESC, prio DESC, hash ASC");
     else
       strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
@@ -942,7 +942,7 @@ static int put(const HashCode512 * key,
   unsigned long long expir;
   sqliteHandle *dbh;
 #if DEBUG_SQLITE
-  EncName enc; 
+  EncName enc;
 
   IF_GELOG(ectx,
 	   GE_DEBUG | GE_BULK | GE_USER,

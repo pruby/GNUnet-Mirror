@@ -201,7 +201,7 @@ static int isRejected(const void * addr,
 		      unsigned int addr_len) {
   if ((YES == isBlacklisted(addr,
 			    addr_len)) ||
-      (YES != isWhitelisted(addr, 
+      (YES != isWhitelisted(addr,
 			    addr_len)))	
     return YES;
   return NO;
@@ -440,7 +440,7 @@ static int reloadConfiguration() {
 				    "WHITELIST",
 				    "",
 				    &ch);
-  if (strlen(ch) > 0) 
+  if (strlen(ch) > 0)
     allowedNetworks_ = parse_ipv4_network_specification(ectx,
 							ch);
   else

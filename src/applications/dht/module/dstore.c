@@ -62,7 +62,7 @@ void dht_store_put(unsigned int type,
 	      size,
 	      data);
 }
-  
+
 /**
  * Initialize dstore DHT component.
  *
