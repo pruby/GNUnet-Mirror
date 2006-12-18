@@ -333,6 +333,7 @@ int main(int argc,
     EXTRACTOR_KeywordList * list;
 	
     l = EXTRACTOR_loadDefaultLibraries();
+    ex = NULL;
     GC_get_configuration_value_string(cfg,
 				      "FS",
 				      "EXTRACTORS",
