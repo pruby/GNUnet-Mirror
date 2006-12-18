@@ -24,6 +24,7 @@
  * @author Tzvetan Horozov
  * @author Christian Grothoff
  * @author Igor Wronsky
+ * @author Heikki Lindholm
  *
  * Status calls implementation for load management.
  */
@@ -50,7 +51,11 @@
 #include <kvm.h>
 #endif
 #endif
-
+#if OSX
+#include <sys/sysctl.h>
+#include <net/if.h>
+#include <net/if_mib.h>
+#endif
 #define DEBUG_STATUSCALLS NO
 
 /**
@@ -189,7 +194,59 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
       }
     }
   }
+#elif OSX
+  int name[6];
+  size_t len;
+  int rows;
 
+  name[0] = CTL_NET;
+  name[1] = PF_LINK;
+  name[2] = NETLINK_GENERIC;
+  name[3] = IFMIB_SYSTEM;
+  name[4] = IFMIB_IFCOUNT;
+
+  len = sizeof(rows);
+
+  if (sysctl(name, 5, &rows, &len, (void *)0, 0) == 0) {
+    int j;
+    for (j=1;j<=rows;j++) {
+      struct ifmibdata ifmd;
+
+      name[0] = CTL_NET;
+      name[1] = PF_LINK;
+      name[2] = NETLINK_GENERIC;
+      name[3] = IFMIB_IFDATA;
+      name[4] = j;
+      name[5] = IFDATA_GENERAL;
+
+      len = sizeof(ifmd);
+      if (sysctl(name, 6, &ifmd, &len, (void*)0, 0) != 0) {
+        if (errno == ENOENT)
+          continue;
+        else {
+          GE_LOG_STRERROR(monitor->ectx,
+                          GE_ERROR | GE_ADMIN | GE_BULK,
+                         "sysctl");
+          break;
+        }
+      }
+      for (i=0;i<monitor->ifcsSize;i++) {
+        ifc = &monitor->ifcs[i];
+        if (strcmp(ifc->name, ifmd.ifmd_name) == 0) {
+          ifc->last_in  = ifmd.ifmd_data.ifi_ibytes;
+          ifc->last_out = ifmd.ifmd_data.ifi_obytes;
+          monitor->globalTrafficBetweenProc.last_in = 0;
+          monitor->globalTrafficBetweenProc.last_out = 0;
+          break;
+        }
+      }
+    }
+  }
+  else {
+    GE_LOG_STRERROR(monitor->ectx,
+                    GE_ERROR | GE_ADMIN | GE_BULK,
+                    "sysctl");
+  }
 #elif MINGW
   PMIB_IFTABLE pTable;
   DWORD dwIfIdx;
