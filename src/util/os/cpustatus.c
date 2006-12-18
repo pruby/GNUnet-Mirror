@@ -57,7 +57,6 @@
 #include <mach/mach.h>
 #include <mach/mach_error.h>
 
-static host_name_port_t mhost;
 static processor_cpu_load_info_t prev_cpu_load;
 #endif
 
@@ -77,15 +76,14 @@ static int initMachCpuStats() {
   kern_return_t kret;
   int i,j;
 
-  mhost = mach_host_self();
-  kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO,
+  kret = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO,
                              &cpu_count,
                              (processor_info_array_t *)&cpu_load,
                              &cpu_msg_count);
   if (kret != KERN_SUCCESS) {
-    GE_LOG_STRERROR(NULL,
-                    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-                    "host_processor_info");
+    GE_LOG(NULL,
+           GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+           "host_processor_info failed.");
     return SYSERR;
   }
   prev_cpu_load = (processor_cpu_load_info_t)MALLOC(cpu_count *
@@ -185,7 +183,7 @@ static int updateCpuUsage(){
     int i, j;
 
     t_idle_all = t_total_all = 0;
-    kret = host_processor_info(mhost, PROCESSOR_CPU_LOAD_INFO,
+    kret = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO,
                                &cpu_count,
                                (processor_info_array_t *)&cpu_load,
                                &cpu_msg_count);
@@ -250,9 +248,9 @@ static int updateCpuUsage(){
       return currentLoad;
     }
     else {
-      GE_LOG_STRERROR(NULL,
-                      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-                      "host_processor_info");
+      GE_LOG(NULL,
+             GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+             "host_processor_info failed.");
     }
   }
 #endif
