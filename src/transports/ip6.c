@@ -47,7 +47,7 @@ static int getAddress6FromHostname(struct GE_Context * ectx,
 				   IP6addr * identity) {
   char hostname[MAX_HOSTNAME];
   struct hostent * ip;
-  
+
   if (0 != gethostname(hostname, MAX_HOSTNAME)) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
@@ -63,7 +63,7 @@ static int getAddress6FromHostname(struct GE_Context * ectx,
     GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	   _("Could not find IP of host `%s': %s\n"),
-	   hostname, 
+	   hostname,
 	   hstrerror(h_errno));
     return SYSERR;
   }
@@ -108,7 +108,7 @@ static int getAddress6(struct GC_Configuration * cfg,
 	GE_LOG(ectx,
 	       GE_ERROR | GE_USER | GE_BULK,
 	       _("Could not resolve `%s': %s\n"),
-	       ipString, 
+	       ipString,
 	       hstrerror(h_errno));
       } else if (ip->h_addrtype != AF_INET6) {
 	GE_ASSERT(ectx,
@@ -123,7 +123,7 @@ static int getAddress6(struct GC_Configuration * cfg,
 	retval = OK;
       }
     }
-    FREE(ipString);      
+    FREE(ipString);
   }
   if (retval == SYSERR)
     retval = getAddress6FromHostname(ectx,

@@ -59,16 +59,16 @@ int SNPRINTF(char * buf,
  *          of course, the buffer size is zero). It does not pad
  *          out the result like strncpy() does.
  */
-size_t strlcpy(char * dest, 
-	       const char * src, 
+size_t strlcpy(char * dest,
+	       const char * src,
 	       size_t size) {
   size_t ret;
-  
+
   GE_ASSERT(NULL, dest != NULL);
   GE_ASSERT(NULL, size > 0);
   GE_ASSERT(NULL, src != NULL);
   ret = strlen(src);
-  
+
   if (size) {
     size_t len = (ret >= size) ? size-1 : ret;
     memcpy(dest, src, len);
@@ -86,13 +86,13 @@ size_t strlcpy(char * dest,
  * @param src The string to append to it
  * @param count The size of the destination buffer.
  */
-size_t strlcat(char * dest, 
-	       const char * src, 
+size_t strlcat(char * dest,
+	       const char * src,
 	       size_t count) {
   size_t dsize;
   size_t len;
   size_t res;
-  
+
   GE_ASSERT(NULL, dest != NULL);
   GE_ASSERT(NULL, src != NULL);
   GE_ASSERT(NULL, count > 0);
@@ -100,7 +100,7 @@ size_t strlcat(char * dest,
   len = strlen(src);
   res = dsize + len;
   GE_ASSERT(NULL, dsize < count);
-  
+
   dest += dsize;
   count -= dsize;
   if (len >= count)
@@ -220,7 +220,7 @@ char * string_convertToUtf8(struct GE_Context * ectx,
 	    &finSize) == (size_t)-1) {
     GE_LOG_STRERROR(ectx,
 		    GE_USER | GE_WARNING | GE_BULK,
-		    "iconv");    
+		    "iconv");
     iconv_close(cd);
     FREE(tmp);
     ret = MALLOC(len+1);
@@ -274,7 +274,7 @@ char * string_expandFileName(struct GE_Context * ectx,
     return NULL;
 
 #ifndef MINGW
-  if (fil[0] == DIR_SEPARATOR) 
+  if (fil[0] == DIR_SEPARATOR)
     /* absolute path, just copy */
     return STRDUP(fil);
   if (fil[0] == '~') {
@@ -290,9 +290,9 @@ char * string_expandFileName(struct GE_Context * ectx,
     fil_ptr = fil + 1;
 
     /* skip over dir seperator to be consistent */
-    if (fil_ptr[0] == DIR_SEPARATOR) 
+    if (fil_ptr[0] == DIR_SEPARATOR)
     	fil_ptr++;
-  } else { 
+  } else {
     /* relative path */
     fil_ptr = fil;
     len = 512;
@@ -309,7 +309,7 @@ char * string_expandFileName(struct GE_Context * ectx,
 			"getcwd");
 	FREE(buffer);
 	buffer = getenv("PWD"); /* alternative */
-	if (buffer == NULL) 
+	if (buffer == NULL)
 	  return NULL; /* fatal */
 	fm = STRDUP(buffer);
       }

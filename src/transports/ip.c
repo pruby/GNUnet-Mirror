@@ -23,14 +23,14 @@
  * @brief code to determine the IP of the local machine
  *
  *
- * Determine the IP of the local machine. We have many 
+ * Determine the IP of the local machine. We have many
  * ways to get that IP:
  * a) from the interface (ifconfig)
  * b) via DNS from our HOSTNAME (environment)
  * c) from the configuration (HOSTNAME specification or static IP)
  *
  * Which way applies depends on the OS, the configuration
- * (dynDNS? static IP? NAT?) and at the end what the user 
+ * (dynDNS? static IP? NAT?) and at the end what the user
  * needs.
  *
  * @author Christian Grothoff
@@ -99,18 +99,18 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   if (sockfd == -1) {
     FREE(interfaces);
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 		    "socket");
     return SYSERR;
   }
   memset(&ifc,
-	 0, 
+	 0,
 	 sizeof(struct ifconf));
   ifc.ifc_len = sizeof(ifr);
   ifc.ifc_buf = (char*)&ifr;
-  
-  if (ioctl(sockfd, 
-	    SIOCGIFCONF, 
+
+  if (ioctl(sockfd,
+	    SIOCGIFCONF,
 	    &ifc) == -1) {
     GE_LOG_STRERROR(ectx,
 		    GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
@@ -123,7 +123,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     return SYSERR;
   }
   ifCount = ifc.ifc_len / sizeof(struct ifreq);
-  
+
   /* first, try to find exatly matching interface */
   for (i=0;i<ifCount;i++){
     if (ioctl(sockfd, SIOCGIFADDR, &ifr[i]) != 0)
@@ -131,7 +131,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr[i]) != 0)
        continue;
     if (!(ifr[i].ifr_flags & IFF_UP))
-       continue; 
+       continue;
     if (strcmp((char*) interfaces,
 	       (char*) ifr[i].ifr_name) != 0)
       continue;
@@ -159,7 +159,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
        continue;
     if (!(ifr[i].ifr_flags & IFF_UP))
        continue;
-    if (strncmp("lo", 
+    if (strncmp("lo",
 		(char*) ifr[i].ifr_name, 2) == 0)
       continue;
     memcpy(identity,
@@ -185,7 +185,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   FREE(interfaces);
   return SYSERR;
 #else /* MinGW */
-  
+
   /* Win 98 or Win NT SP 4 */
   if (GNGetIpAddrTable)
   {
@@ -195,23 +195,23 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     unsigned int iAddrCount = 0;
 
     dwIP = 0;
-    
+
     EnumNICs(&pTable, &pAddrTable);
-    
+
     for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
       unsigned long long l;
       BYTE bPhysAddr[MAXLEN_PHYSADDR];
 
       l = _atoi64(interfaces);
 
-      memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+      memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
       memcpy(bPhysAddr,
         pTable->table[dwIfIdx].bPhysAddr,
         pTable->table[dwIfIdx].dwPhysAddrLen);
 
       if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
-        for(i = 0; i < pAddrTable->dwNumEntries; i++) {  
-          if (pAddrTable->table[i].dwIndex 
+        for(i = 0; i < pAddrTable->dwNumEntries; i++) {
+          if (pAddrTable->table[i].dwIndex
 	      == pTable->table[dwIfIdx].dwIndex) {
             iAddrCount++;
             dwIP = pAddrTable->table[i].dwAddr;
@@ -224,7 +224,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
       {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not find an IP address for "
-	    "interface `%s'.\n"), 
+	    "interface `%s'.\n"),
 	  interfaces);
 
       GlobalFree(pTable);
@@ -232,15 +232,15 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
       return SYSERR;
     }
     else if (iAddrCount > 1)
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, 
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("There is more than one IP address specified"
 	    " for interface `%s'.\nGNUnet will "
-	    "use %u.%u.%u.%u.\n"), 
-	  interfaces, 
+	    "use %u.%u.%u.%u.\n"),
+	  interfaces,
 	  PRIP(ntohl(dwIP)));
 
     identity->addr = dwIP;
-    
+
     GlobalFree(pTable);
     GlobalFree(pAddrTable);
   }
@@ -253,42 +253,42 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     s = SOCKET(PF_INET, SOCK_STREAM, 0);
     pHost = GETHOSTBYNAME("www.example.com");
     if (! pHost) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, 
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve `%s' to "
-	    "determine our IP address: %s\n"), 
+	    "determine our IP address: %s\n"),
 	  "www.example.com",
-	  STRERROR(errno));        
+	  STRERROR(errno));
       return SYSERR;
     }
-    
+
     theHost.sin_family = AF_INET;
     theHost.sin_port = htons(80);
-    theHost.sin_addr.S_un.S_addr 
+    theHost.sin_addr.S_un.S_addr
       = *((unsigned long *) pHost->h_addr_list[0]);
-    if (CONNECT(s, 
-		(SOCKADDR *) &theHost, 
+    if (CONNECT(s,
+		(SOCKADDR *) &theHost,
 		sizeof(theHost)) == SOCKET_ERROR) {
       GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
 		   "connect");
       return SYSERR;
     }
-    
+
     i = sizeof(theHost);
     if (GETSOCKNAME(s,
-		    (SOCKADDR *) &theHost, 
+		    (SOCKADDR *) &theHost,
 		    &i) == SOCKET_ERROR) {
-      GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER, 
+      GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
 		   "getsockname");
       return SYSERR;
-    }    
-    closesocket(s);    
+    }
+    closesocket(s);
     identity->addr = theHost.sin_addr.S_un.S_addr;
   }
 
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
       PRIP(ntohl(identity->addr)));
-  
+
   return OK;
 #endif
 }
