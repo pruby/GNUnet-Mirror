@@ -34,6 +34,7 @@
 #endif
 #ifdef OPENBSD
 #include <sys/types.h>
+#include <dlfcn.h>
 #endif
 
 #define ALLOW_EXTRA_CHECKS NO
