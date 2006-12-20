@@ -113,13 +113,14 @@ int main(int argc, char * argv[]) {
 			    "peer.conf",
 			    NO);
   GE_ASSERT(NULL, daemon > 0);
-  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
-						    cfg,
-						    30 * cronSECONDS));
-  PTHREAD_SLEEP(5 * cronSECONDS);
-
-  failureCount += testNamespace();
-
+  if (OK != connection_wait_for_running(NULL,
+					cfg,
+					30 * cronSECONDS)) {
+    failureCount++;
+  } else {
+    PTHREAD_SLEEP(5 * cronSECONDS);
+    failureCount += testNamespace();
+  }
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
 
   return (failureCount == 0) ? 0 : 1;

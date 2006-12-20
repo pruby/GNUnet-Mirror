@@ -267,9 +267,10 @@ int main(int argc, char * argv[]){
 			    "peer.conf",
 			    NO);
   GE_ASSERT(NULL, daemon > 0);
-  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
-						    cfg,
-						    30 * cronSECONDS));
+  sock = NULL;
+  CHECK(OK == connection_wait_for_running(NULL,
+					  cfg,
+					  30 * cronSECONDS));
   ok = YES;
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = client_connection_create(NULL, cfg);

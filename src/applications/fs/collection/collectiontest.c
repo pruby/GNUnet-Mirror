@@ -52,15 +52,16 @@ int main(int argc,
     GC_free(cfg);
     return -1;
   }
+  sock = NULL;
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
 			    NO);
   GE_ASSERT(NULL, daemon > 0);
-  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
-						    cfg,
-						    30 * cronSECONDS));
+  CHECK(OK == connection_wait_for_running(NULL,
+					  cfg,
+					  30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 #endif
   ok = YES;
