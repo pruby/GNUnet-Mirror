@@ -203,7 +203,7 @@ int socket_recv(struct SocketHandle * s,
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  socket_set_nosigpipe(s, 0 == (nc & NC_IgnoreInt));
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
@@ -279,7 +279,7 @@ int socket_recv_from(struct SocketHandle * s,
   if (0 == (nc & NC_IgnoreInt))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  socket_set_nosigpipe(s, 0 == (nc & NC_IgnoreInt));
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
@@ -355,7 +355,7 @@ int socket_send(struct SocketHandle * s,
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  socket_set_nosigpipe(s, 0 == (nc & NC_IgnoreInt));
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
@@ -432,7 +432,7 @@ int socket_send_to(struct SocketHandle * s,
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  socket_set_nosigpipe(s, 0 != (nc & NC_IgnoreInt));
+  socket_set_nosigpipe(s, 0 == (nc & NC_IgnoreInt));
   if (0 == (nc & NC_Blocking))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
