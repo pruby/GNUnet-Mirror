@@ -53,6 +53,8 @@ static struct ECRS_URI * uri;
 static struct FSUI_Context * ctx;
 
 static struct MUTEX * lock;
+s
+tatic volatile enum FSUI_EventType waitForEvent;
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
@@ -96,7 +98,8 @@ static void * eventCallback(void * cls,
   default:
     break;
   }
-  lastEvent = event->type;
+  if (lastEvent != waitForEvent)
+    lastEvent = event->type;
   MUTEX_UNLOCK(lock);
   return NULL;
 }
@@ -186,6 +189,7 @@ int main(int argc, char * argv[]){
   kuri = ECRS_parseListKeywordURI(NULL,
 				  2,
 				  (const char**)keywords);
+  waitForEvent = FSUI_upload_completed;
   upload =
 	FSUI_startUpload(ctx,
 			 fn,
@@ -232,6 +236,7 @@ int main(int argc, char * argv[]){
   CHECK(uri != NULL);
   fn = makeName(43);
   meta = ECRS_createMetaData();
+  waitForEvent = FSUI_download_completed;
   download = FSUI_startDownload(ctx,
 				0,
 				NO,
@@ -255,6 +260,7 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopDownload(ctx, download);
   fn = makeName(42);
+  waitForEvent = FSUI_unindex_completed;
   unindex = FSUI_startUnindex(ctx, fn);
   FREE(fn);
   fn = NULL;
