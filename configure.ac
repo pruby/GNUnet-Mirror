@@ -520,13 +520,17 @@ AC_ARG_WITH(guile,
     AC_CHECK_HEADERS(libguile.h,
      AC_CHECK_LIB([guile], [scm_sigaction_for_thread],
       guile=1))])
-if test "$guile" != 1
-then
- AC_MSG_ERROR([GNUnet requires libguile 1.8])
-fi
 
-AC_CHECK_LIB([guile], [scm_init_guile], [],
-	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]))
+if test "$guile" == 1
+then
+ AC_CHECK_LIB([guile], [scm_init_guile], [],
+    	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]))
+ AC_DEFINE_UNQUOTED([HAVE_GUILE], 1, [We have GUILE])
+else
+ AC_DEFINE_UNQUOTED([HAVE_GUILE], 0, [We do NOT have GUILE])
+fi
+AM_CONDITIONAL(HAVE_GUILE, test x$guile = x1)
+
 
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
@@ -607,12 +611,6 @@ then
   AC_MSG_NOTICE([NOTICE: MySQL found, but too old. MySQL support will not be compiled.])
 fi
 
-# guile
-if test "x$guile" = "x0"
-then
-  AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
-fi
-
 if test "$dialog" != 1
 then
  AC_MSG_NOTICE([NOTICE: curses based gnunet-setup frontends will not be installed.])
@@ -624,3 +622,15 @@ then
 fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])
+
+# guile
+if test "x$guile" = "x0"
+then
+  AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
+fi
+
+if test "$guile" != 1
+then
+ AC_MSG_NOTICE([WARNING: Guile not found, gnunet-setup will not be installed.])
+fi
+
