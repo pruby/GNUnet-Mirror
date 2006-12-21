@@ -41,6 +41,8 @@ check_PROGRAMS = \
   searchtest \
   serializetest \
   serializetest2 \
+  serializetest3 \
+  serializetest4 \
   downloadtest 
 
 TESTS = $(check_PROGRAMS)
@@ -93,6 +95,25 @@ serializetest_LDADD = \
 serializetest2_SOURCES = \
   serializetest2.c 
 serializetest2_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+serializetest3_SOURCES = \
+  serializetest3.c 
+serializetest3_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+
+serializetest4_SOURCES = \
+  serializetest4.c 
+serializetest4_LDADD = \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
