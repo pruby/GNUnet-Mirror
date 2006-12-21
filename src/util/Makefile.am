@@ -49,6 +49,7 @@ libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
  os/libos.la \
  threads/libthreads.la
 
+libgnunetutil_la_SOURCES = libgnunetutil.c
 
 EXTRA_DIST = \
   check.conf
