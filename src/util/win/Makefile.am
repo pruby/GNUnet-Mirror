@@ -21,6 +21,8 @@ if CYGWIN
   CYGFLAGS = -Wl,--no-undefined -Wl,--export-all-symbol
 endif
 
+libgnunetutil_la_SOURCES = libgnunetutil.c
+
 libwin_la_LDFLAGS = \
   -export-dynamic $(WINFLAGS) $(CYGFLAGS) $(LIBS)
 
