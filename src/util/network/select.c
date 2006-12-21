@@ -617,13 +617,13 @@ static void * selectThread(void * ctx) {
 			   &size,
 			   clientAddr,
 			   &lenOfIncomingAddr);
-	} else if (pending >= 70000) {
-	  /* allowing a bit more for OSX FIONREAD */
-	  GE_BREAK(sh->ectx, 0);
-	  socket_close(sh->listen_sock);
 	} else {
 	  char * msg;
-	
+
+	  if (pending >= 65536) 
+	    /* OS X includes size of all pending packets,
+	       so we must reduce pending in that case */
+	    pending = 65536;	
 	  msg = MALLOC(pending);
 	  size = 0;
 	  if (YES != socket_recv_from(sh->listen_sock,
