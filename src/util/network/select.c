@@ -617,7 +617,8 @@ static void * selectThread(void * ctx) {
 			   &size,
 			   clientAddr,
 			   &lenOfIncomingAddr);
-	} else if (pending >= 65536) {
+	} else if (pending >= 70000) {
+	  /* allowing a bit more for OSX FIONREAD */
 	  GE_BREAK(sh->ectx, 0);
 	  socket_close(sh->listen_sock);
 	} else {
@@ -626,7 +627,7 @@ static void * selectThread(void * ctx) {
 	  msg = MALLOC(pending);
 	  size = 0;
 	  if (YES != socket_recv_from(sh->listen_sock,
-				      NC_Blocking,
+				      NC_Nonblocking,
 				      msg,
 				      pending,
 				      &size,
@@ -644,6 +645,10 @@ static void * selectThread(void * ctx) {
 	    /* validate msg format! */
 	    const MESSAGE_HEADER * hdr;
 	
+	    /* on OSX, FIONREAD includes IP headers,
+	       thus if size < pending, set pending to size */
+	    if (size < pending)
+	      pending = size;
 	    hdr = (const MESSAGE_HEADER*) msg;
 	    if ( (size == pending) &&
 		 (size >= sizeof(MESSAGE_HEADER)) &&

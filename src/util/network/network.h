@@ -36,6 +36,8 @@ typedef struct SocketHandle {
 
   int handle;
 
+  int checksum;
+
 } SocketHandle;
 
 #endif

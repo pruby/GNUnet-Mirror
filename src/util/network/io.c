@@ -105,6 +105,7 @@ socket_create(struct GE_Context * ectx,
   ret->ectx = ectx;
   ret->mon = mon;
   ret->handle = osSocket;
+  ret->checksum = - ret->handle;
   return ret;
 }
 
@@ -121,6 +122,7 @@ void socket_close(struct SocketHandle * s) {
 		    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
 		    "close");
   s->handle = -1;
+  s->checksum = 1;
 }
 
 void socket_destroy(struct SocketHandle * s) {
@@ -144,7 +146,8 @@ void socket_destroy(struct SocketHandle * s) {
 #ifdef OSX
 static int socket_set_nosigpipe(struct SocketHandle * s,
                                 int dontSigPipe) {
-  return setsockopt(s->handle, SOL_SOCKET, SO_NOSIGPIPE,
+  return setsockopt(s->handle,
+		    SOL_SOCKET, SO_NOSIGPIPE,
                     (void *)&dontSigPipe,
                     sizeof(dontSigPipe));
 }
@@ -196,6 +199,7 @@ int socket_recv(struct SocketHandle * s,
   size_t pos;
   size_t ret;
 
+  GE_ASSERT(NULL, s->checksum == - s->handle);
   socket_set_blocking(s,
 		      0 != (nc & NC_Blocking));
   flags = 0;
@@ -219,10 +223,13 @@ int socket_recv(struct SocketHandle * s,
 #endif
   pos = 0;
   do {
+    GE_ASSERT(NULL, s->checksum == - s->handle);
+    GE_ASSERT(NULL, max > pos);
     ret = (size_t) RECV(s->handle,
 			&((char*)buf)[pos],
 			max - pos,
 			flags);
+    GE_ASSERT(NULL, s->checksum == - s->handle);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
@@ -254,6 +261,7 @@ int socket_recv(struct SocketHandle * s,
       os_network_monitor_notify_transmission(s->mon,
 					     Download,
 					     ret);
+    GE_ASSERT(NULL, pos + ret >= pos);
     pos += ret;
   } while ( (pos < max) &&
 	    (0 != (nc & NC_Blocking)) );
