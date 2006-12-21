@@ -137,6 +137,7 @@ client_connection_create(struct GE_Context * ectx,
 }
 
 void connection_close_temporarily(struct ClientServerConnection * sock) {
+  GE_ASSERT(NULL, sock != NULL);
   MUTEX_LOCK(sock->destroylock);
   if (sock->sock != NULL) {
     socket_close(sock->sock);
@@ -151,6 +152,7 @@ void connection_close_temporarily(struct ClientServerConnection * sock) {
 }
 
 void connection_close_forever(struct ClientServerConnection * sock) {
+  GE_ASSERT(NULL, sock != NULL);
   MUTEX_LOCK(sock->destroylock);
   if (sock->sock != NULL) {
     socket_close(sock->sock);
@@ -168,6 +170,7 @@ void connection_close_forever(struct ClientServerConnection * sock) {
 }
 
 void connection_destroy(struct ClientServerConnection * sock) {
+  GE_ASSERT(NULL, sock != NULL);
   connection_close_forever(sock);
   MUTEX_DESTROY(sock->readlock);
   MUTEX_DESTROY(sock->writelock);
@@ -194,6 +197,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   char * host;
   IPaddr ip;
 
+  GE_ASSERT(NULL, sock != NULL);
   if (sock->sock != NULL)
     return OK;
   if (sock->dead == YES)

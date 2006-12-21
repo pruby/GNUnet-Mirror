@@ -430,6 +430,13 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
+  rm->sctx = FS_SEARCH_makeContext(ectx,
+				   cfg,
+				   rm->lock);
+  if (rm->sctx == NULL) {
+    FREE(rm);
+    return NULL;
+  }
   rm->ectx
     = ectx;
   rm->cfg
@@ -442,9 +449,6 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
     = 0;
   rm->lock
     = MUTEX_CREATE(YES);
-  rm->sctx = FS_SEARCH_makeContext(ectx,
-				   cfg,
-				   rm->lock);
   rm->requestListIndex
     = 0;
   rm->requestListSize
@@ -1336,6 +1340,11 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   }
   rm = createRequestManager(ectx,
 			    cfg);
+  if (rm == NULL) {
+    freeIOC(&ioc, YES);
+    FREE(realFN);
+    return SYSERR;
+  }
   ctx.startTime = get_time();
   ctx.anonymityLevel = anonymityLevel;
   ctx.TTL_DECREMENT = 5 * cronSECONDS; /* HACK! */

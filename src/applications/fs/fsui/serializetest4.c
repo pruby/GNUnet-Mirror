@@ -409,7 +409,7 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopDownload(ctx,
 		    download);
-  for (j=4;j<256;j+=4) {
+  for (j=4;j<16;j+=4) {
     fn = makeName(j);
     unindex = FSUI_startUnindex(ctx, fn);
     FSUI_stopUnindex(ctx,

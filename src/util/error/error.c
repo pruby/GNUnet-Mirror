@@ -79,6 +79,10 @@ void GE_LOG(struct GE_Context * ctx,
   if ( (ctx != NULL)  &&
        (! GE_applies(kind, ctx->mask)) )
     return;
+  if ( (ctx == NULL) &&
+       ( ((kind & (GE_IMMEDIATE | GE_BULK)) == 0) ||
+	 ((kind & (GE_FATAL | GE_ERROR | GE_WARNING)) == 0) ) )
+    return;
   va_start(va, message);
   size = VSNPRINTF(NULL, 0, message, va) + 1;
   va_end(va);

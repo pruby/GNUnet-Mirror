@@ -158,13 +158,17 @@ FS_SEARCH_makeContext(struct GE_Context * ectx,
   ret->cfg = cfg;
   ret->lock = lock;
   ret->sock = client_connection_create(ectx, cfg);
+  if (ret->sock == NULL) {
+    FREE(ret);
+    return NULL;
+  }
   ret->handles = NULL;
   ret->handleCount = 0;
   ret->handleSize = 0;
   ret->abort = NO;
   ret->thread = PTHREAD_CREATE(&processReplies,
 			       ret,
-			       1028 * 1024);
+			       128 * 1024);
   if (ret->thread == NULL)
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_BULK,
@@ -175,6 +179,7 @@ FS_SEARCH_makeContext(struct GE_Context * ectx,
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   void * unused;
 
+  MUTEX_LOCK(ctx->lock);
   GE_ASSERT(ctx->ectx,
 	    ctx->handleCount == 0);
   ctx->abort = YES;
@@ -182,6 +187,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   PTHREAD_STOP_SLEEP(ctx->thread);
   PTHREAD_JOIN(ctx->thread,
 	       &unused);
+  MUTEX_UNLOCK(ctx->lock);
   ctx->lock = NULL;
   connection_destroy(ctx->sock);
   GROW(ctx->handles,
@@ -255,6 +261,7 @@ FS_start_search(SEARCH_CONTEXT * ctx,
 	 &enc,
 	 type);
 #endif
+  GE_ASSERT(NULL, ctx->sock != NULL);
   if (OK != connection_write(ctx->sock,
 			     &req->header)) {
     FS_stop_search(ctx,
@@ -284,6 +291,7 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
 	 handle);
 #endif
   handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
+  GE_ASSERT(NULL, ctx->sock != NULL);
   connection_write(ctx->sock,
 		   &handle->req->header);
   MUTEX_LOCK(ctx->lock);
@@ -381,8 +389,9 @@ int FS_initIndex(struct ClientServerConnection * sock,
   memcpy(&ri[1], fn, fnSize);
 
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Sending index initialization request to gnunetd\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Sending index initialization request to gnunetd\n");
 #endif
   if (OK != connection_write(sock,
         &ri->header)) {
@@ -391,11 +400,12 @@ int FS_initIndex(struct ClientServerConnection * sock,
   }
   FREE(ri);
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Waiting for confirmation of index initialization request by gnunetd\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Waiting for confirmation of index initialization request by gnunetd\n");
 #endif
   if (OK != connection_read_result(sock,
-        &ret))
+				   &ret))
     return SYSERR;
   return ret;
 }
