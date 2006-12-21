@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.1-pre0"
+!define PRODUCT_VERSION "0.7.1-pre2"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -176,6 +176,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\share\GNUnet\config-daemon.scm"
 		File "C:\GNUnet\share\GNUnet\gnunet-logo-color.png"
 		File "C:\GNUnet\share\GNUnet\wizard.glade"
+    File "C:\GNUnet\share\GNUnet\gnunet-setup.glade"
 	SectionEnd
 	
 	SectionGroup "Server"
@@ -188,6 +189,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
+      File "C:\GNUnet\bin\libgnunettransport_tcp_old.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_nat.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
@@ -338,10 +340,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 2 4
 		  SetOutPath "$INSTDIR\bin"
 
-			File "C:\GNUnet\bin\libgnunetdht_datastore_memory-0.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_dstore.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
 			File "C:\GNUnet\bin\libgnunetdht_api-0.dll"
-			File "C:\GNUnet\bin\gnunet-dht-join.exe"
 			File "C:\GNUnet\bin\gnunet-dht-query.exe"
 		SectionEnd
 
@@ -428,6 +429,8 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
 		File "C:\GNUnet\bin\pthreadGC2.dll"
 		File "C:\GNUnet\bin\zlib1.dll"
+
+    SetOutPath "$INSTDIR\share"
     File /r "C:\GNUnet\share\guile"
 	SectionEnd
 	
@@ -864,6 +867,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetcore-0.dll"
 	Delete "$INSTDIR\bin\libgnunetdht_api-0.dll"
 	Delete "$INSTDIR\bin\libgnunetdht_datastore_memory-0.dll"
+  Delete "$INSTDIR\bin\ibgnunetmodule_dstore.dll"
 	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
@@ -905,6 +909,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunettransport_http.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_nat.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_tcp.dll"
+  Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
 	Delete "$INSTDIR\bin\libgnunetutil-1.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
@@ -984,6 +989,7 @@ Section Uninstall
 	Delete "$INSTDIR\share\GNUnet\config-client.scm" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.scm"
 	Delete "$INSTDIR\share\GNUnet\wizard.glade"
+  Delete "$INSTDIR\share\GNUnet\gnunet-setup.glade"
 	Delete "$INSTDIR\share\GNUnet\gnunet-logo-color.png"
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
