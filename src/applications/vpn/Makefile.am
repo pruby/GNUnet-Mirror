@@ -21,8 +21,7 @@ gnunet_vpn_LDADD = \
 libgnunetmodule_vpn_la_SOURCES = \
   vpn.c 
 libgnunetmodule_vpn_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module \
-  $(LDADD)
+  -export-dynamic -avoid-version -module
 libgnunetmodule_vpn_la_LIBADD = \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
