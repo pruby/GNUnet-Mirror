@@ -1364,7 +1364,15 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 		dbh);
       content_size = 0;
     } else {
-      SSCANF(sql_row[0], "%llu", &content_size);
+      if ( (mysql_num_fields(sql_res) != 1) ||
+	   (sql_row[0] == NULL) ) {
+	GE_BREAK(ectx, mysql_num_fields(sql_res) == 1);
+	content_size = 0;
+      } else {
+	SSCANF(sql_row[0],
+	       "%llu",
+	       &content_size);
+      }
     }
     if (sql_res != NULL)
       mysql_free_result(sql_res);
