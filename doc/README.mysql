@@ -1,7 +1,8 @@
 How to setup the MySQL database for GNUnet.
 
-NOTE: This db module does NOT work with mysql before 4.1 since
-we need prepared statements.
+NOTE: This db module does NOT work with mysql before 4.1 since we need
+prepared statements.  We are generally testing the code against MySQL
+5.0 at this point.
  
 HIGHLIGHTS
 
@@ -61,10 +62,15 @@ MANUAL SETUP INSTRUCTIONS
      &quot;ln -s /var/run/mysqld/mysqld.sock /tmp/mysql.sock&quot;
      so there may be some additional trouble depending on your mysql setup.]
 
+ 5) If you want to run the testcases, you must create a second
+    database "gnunetcheck" with the same username and password.
+    This database will then be used for testing ("make check").
+
+
 REPAIRING TABLES 
 
 - Its probably healthy to check your tables for inconsistencies
-  every now and then.
+  every now and then, especially after system crashes.
 - If you get odd SEGVs on gnunetd startup, it might be that the mysql
   databases have been corrupted. 
 - The tables can be verified/fixed in two ways;

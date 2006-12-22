@@ -393,7 +393,7 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(upURI);
 
 #if START_DAEMON
-  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GE_BREAK(NULL, OK == os_daemon_stop(NULL, daemon));
 #endif
   GC_free(cfg);
   return (ok == YES) ? 0 : 1;

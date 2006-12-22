@@ -111,6 +111,7 @@ static void * eventCallback(void * cls,
   case FSUI_search_started:
   case FSUI_search_aborted:
   case FSUI_search_stopped:
+  case FSUI_search_completed:
   case FSUI_unindex_started:
   case FSUI_unindex_stopped:
     break;
@@ -227,8 +228,8 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(uri);
 
 #if START_DAEMON
-  GE_ASSERT(NULL,
-	    OK == os_daemon_stop(NULL, daemon));
+  GE_BREAK(NULL,
+	   OK == os_daemon_stop(NULL, daemon));
 #endif
   GC_free(cfg);
   if (have_error)

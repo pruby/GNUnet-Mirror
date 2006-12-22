@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-12-17 20:51-0700\n"
+"POT-Creation-Date: 2006-12-21 20:14-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -215,7 +215,7 @@ msgstr ""
 
 #: src/applications/fs/tools/gnunet-search.c:140
 #: src/applications/fs/tools/gnunet-download.c:65
-#: src/applications/fs/tools/gnunet-insert.c:229
+#: src/applications/fs/tools/gnunet-insert.c:271
 #: src/applications/fs/tools/gnunet-pseudonym.c:71
 msgid "set the desired LEVEL of sender-anonymity"
 msgstr "Gewünschten Grad an Sender-Anonymität festlegen"
@@ -342,24 +342,37 @@ msgstr ""
 "Der Eintrag konnte dem Namespace `%s' nicht hinzugefügt werden (existiert "
 "er?)\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:168
+#: src/applications/fs/tools/gnunet-insert.c:161
+#, c-format
+msgid "Keywords for file `%s':\n"
+msgstr "Schlüsselwörter für Datei `%s':\n"
+
+#: src/applications/fs/tools/gnunet-insert.c:170
+msgid "filename"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:173
+msgid "mimetype"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:210
 #, c-format
 msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
 msgstr ""
 "%16llu von %16llu Bytes eingefügt (geschätzte %6s bis Fertigstellung) - %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:180
+#: src/applications/fs/tools/gnunet-insert.c:222
 #, c-format
 msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
 msgstr ""
 "Upload von `%s' komplett, %llu Bytes brauchten %llu Sekunden (%8.3f KB/s).\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:191
+#: src/applications/fs/tools/gnunet-insert.c:233
 #, c-format
 msgid "File `%s' has URI: %s\n"
 msgstr "Datei `%s' hat URI: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:202
+#: src/applications/fs/tools/gnunet-insert.c:244
 #, c-format
 msgid ""
 "\n"
@@ -368,7 +381,7 @@ msgstr ""
 "\n"
 "Upload abgebrochen.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:207
+#: src/applications/fs/tools/gnunet-insert.c:249
 #, c-format
 msgid ""
 "\n"
@@ -377,14 +390,14 @@ msgstr ""
 "\n"
 "Fehler beim Uploaden der Datei: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:216
+#: src/applications/fs/tools/gnunet-insert.c:258
 #, c-format
 msgid ""
 "\n"
 "Unexpected event: %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:233
+#: src/applications/fs/tools/gnunet-insert.c:275
 msgid ""
 "even if gnunetd is running on the local machine, force the creation of a "
 "copy instead of making a link to the GNUnet share directory"
@@ -393,11 +406,11 @@ msgstr ""
 "anstelle der Erzeugung eines Links auf das GNUnet Share-Verzeichnis "
 "erzwingen."
 
-#: src/applications/fs/tools/gnunet-insert.c:237
+#: src/applications/fs/tools/gnunet-insert.c:279
 msgid "disable adding the creation time to the metadata of the uploaded file"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:240
+#: src/applications/fs/tools/gnunet-insert.c:282
 #, fuzzy
 msgid ""
 "do not use libextractor to add additional references to directory entries "
@@ -406,7 +419,7 @@ msgstr ""
 "benutze libextractor um weitere direkte Referenzen zu Dateien in "
 "Verzeichnissen zu erzeugen"
 
-#: src/applications/fs/tools/gnunet-insert.c:243
+#: src/applications/fs/tools/gnunet-insert.c:285
 msgid ""
 "print list of extracted keywords that would be used, but do not perform "
 "upload"
@@ -414,11 +427,11 @@ msgstr ""
 "Liste der extrahierten Schlüsselworte, die verwendet werden würden, "
 "ausgeben, aber keinen Upload durchführen"
 
-#: src/applications/fs/tools/gnunet-insert.c:245
+#: src/applications/fs/tools/gnunet-insert.c:287
 msgid "Make files available to GNUnet for sharing."
 msgstr "Dateien GNUnet zum Filesharing zur Verfügung stellen."
 
-#: src/applications/fs/tools/gnunet-insert.c:248
+#: src/applications/fs/tools/gnunet-insert.c:290
 msgid ""
 "set interval for availability of updates to SECONDS (for namespace "
 "insertions only)"
@@ -426,7 +439,7 @@ msgstr ""
 "Intervall der Verfügbarkeit von Updates auf SECONDS setzen (nur für das "
 "Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:252
+#: src/applications/fs/tools/gnunet-insert.c:294
 msgid ""
 "add an additional keyword for the top-level file or directory (this option "
 "can be specified multiple times)"
@@ -434,7 +447,7 @@ msgstr ""
 "Ein zusätzliches Schlüsselwort für die Datei oder das Verzeichnis auf der "
 "obersten Ebene hinzufügen (diese Option kann mehrmals angegeben werden)"
 
-#: src/applications/fs/tools/gnunet-insert.c:256
+#: src/applications/fs/tools/gnunet-insert.c:298
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
 "specified multiple times)"
@@ -442,13 +455,13 @@ msgstr ""
 "Ein zusätzliches Schlüsselwort für alle Dateien und Verzeichnisse hinzufügen "
 "(diese Option kann mehrmals angegeben werden)"
 
-#: src/applications/fs/tools/gnunet-insert.c:261
+#: src/applications/fs/tools/gnunet-insert.c:303
 msgid "set the meta-data for the given TYPE to the given VALUE"
 msgstr ""
 "Die Meta-Daten des angegebenen Typs TYPE auf den angegebenen Wert VALUE "
 "setzen"
 
-#: src/applications/fs/tools/gnunet-insert.c:264
+#: src/applications/fs/tools/gnunet-insert.c:306
 msgid ""
 "do not index, perform full insertion (stores entire file in encrypted form "
 "in GNUnet database)"
@@ -456,7 +469,7 @@ msgstr ""
 "Nicht indizieren, sondern komplett einfügen (speichert die gesamte Datei in "
 "verschlüsselter Form in der GNUnet Datenbank)"
 
-#: src/applications/fs/tools/gnunet-insert.c:268
+#: src/applications/fs/tools/gnunet-insert.c:310
 msgid ""
 "specify ID of an updated version to be published in the future (for "
 "namespace insertions only)"
@@ -464,17 +477,17 @@ msgstr ""
 "ID einer aktualisierten Version angeben, die in der Zukunft veröffentlich "
 "werden soll. (nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:272
+#: src/applications/fs/tools/gnunet-insert.c:314
 msgid "specify the priority of the content"
 msgstr "Die Priorität des Inhalts angeben"
 
-#: src/applications/fs/tools/gnunet-insert.c:275
+#: src/applications/fs/tools/gnunet-insert.c:317
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
 msgstr ""
 "Die Datei unter dem Pseudonym NAME veröffentlichen (platziert die Datei in "
 "einem Namespace)"
 
-#: src/applications/fs/tools/gnunet-insert.c:278
+#: src/applications/fs/tools/gnunet-insert.c:320
 msgid ""
 "specifies this as an aperiodic but updated publication (for namespace "
 "insertions only)"
@@ -482,47 +495,42 @@ msgstr ""
 "Dies als unregelmäßige aber aktualisierbare Veröffentlichung kennzeichnen "
 "(nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:282
+#: src/applications/fs/tools/gnunet-insert.c:324
 msgid ""
 "set the ID of this version of the publication (for namespace insertions only)"
 msgstr ""
 "die ID dieser Version der Veröffentlichung setzen (nur für das Einfügen in "
 "Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:286
+#: src/applications/fs/tools/gnunet-insert.c:328
 msgid "specify creation time for SBlock (see man-page for format)"
 msgstr "Erstellungszeit für den SBLOCK angeben (s. Manpage zum Format)"
 
-#: src/applications/fs/tools/gnunet-insert.c:289
+#: src/applications/fs/tools/gnunet-insert.c:331
 msgid "ID of the previous version of the content (for namespace update only)"
 msgstr ""
 "ID der vorherigen Version des Inhalts (nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:324
+#: src/applications/fs/tools/gnunet-insert.c:366
 #, c-format
 msgid "You must specify one and only one filename for insertion.\n"
 msgstr "Sie dürfen nur eine Datei zum Deindizieren angeben.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:348
-#, c-format
-msgid "Keywords for file `%s':\n"
-msgstr "Schlüsselwörter für Datei `%s':\n"
-
-#: src/applications/fs/tools/gnunet-insert.c:374
+#: src/applications/fs/tools/gnunet-insert.c:425
 #, c-format
 msgid "Could not access namespace `%s' (does not exist?).\n"
 msgstr "Konnte nicht auf den Namespace `%s' zugreifen (existiert nicht?).\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:394
+#: src/applications/fs/tools/gnunet-insert.c:445
 #, c-format
 msgid "Parsing time failed. Use `%s' format.\n"
 msgstr "Das Parsen der Zeit schlug fehl. Verwenden Sie das `%s' Format.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:403
-#: src/applications/fs/tools/gnunet-insert.c:409
-#: src/applications/fs/tools/gnunet-insert.c:415
-#: src/applications/fs/tools/gnunet-insert.c:421
-#: src/applications/fs/tools/gnunet-insert.c:427
+#: src/applications/fs/tools/gnunet-insert.c:454
+#: src/applications/fs/tools/gnunet-insert.c:460
+#: src/applications/fs/tools/gnunet-insert.c:466
+#: src/applications/fs/tools/gnunet-insert.c:472
+#: src/applications/fs/tools/gnunet-insert.c:478
 #, c-format
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr "Option `%s' macht keinen Sinn ohne die Option `%s'.\n"
@@ -700,8 +708,8 @@ msgstr "Keine Schlüsselwörter angegeben!\n"
 
 #: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
 #: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
-#: src/applications/fs/fsui/serializetest2.c:382
-#: src/applications/fs/fsui/searchtest.c:159
+#: src/applications/fs/fsui/serializetest2.c:402
+#: src/applications/fs/fsui/searchtest.c:162
 #: src/applications/fs/fsui/downloadtest.c:312
 #: src/applications/fs/fsui/fsuitest.c:193
 msgid "AND"
@@ -717,7 +725,7 @@ msgstr "Temporäre Datei `%s' konnte nicht gelöscht werden: %s\n"
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr "Write(%d, %p, %d) schlug fehl: %s\n"
 
-#: src/applications/fs/ecrs/download.c:964
+#: src/applications/fs/ecrs/download.c:967
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -726,7 +734,7 @@ msgstr ""
 "Bug oder eine mit bösen Absichten eingefügte Datei. Download wurde "
 "abgebrochen.\n"
 
-#: src/applications/fs/ecrs/download.c:1149
+#: src/applications/fs/ecrs/download.c:1152
 #, c-format
 msgid ""
 "Content `%s' seems to be not available on the network (tried %u times).\n"
@@ -814,7 +822,7 @@ msgstr "Initialisierung der Indizierung der Datei `%s' fehlgeschlagen.\n"
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufügen...\n"
 
-#: src/applications/fs/ecrs/upload.c:305
+#: src/applications/fs/ecrs/upload.c:308
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Indizierung der Daten schlug an Position %i fehl.\n"
@@ -841,13 +849,13 @@ msgstr "FSUI Statusdatei `%s' hatte einen Syntaxfehler bei Offset %u.\n"
 msgid "Failed to create temporary directory."
 msgstr "Dateiformat fehlerhaft (kein GNUnet Verzeichnis?)\n"
 
-#: src/applications/fs/module/ondemand.c:334
+#: src/applications/fs/module/ondemand.c:336
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr ""
 "Indizierte Datei ist verschwunden, Block für Anfrage `%s' wird gelöscht\n"
 
-#: src/applications/fs/module/ondemand.c:432
+#: src/applications/fs/module/ondemand.c:434
 #, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -858,7 +866,7 @@ msgstr ""
 "aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie "
 "löschen, da Ihr Index nun ungültige Referenzen enthält!\n"
 
-#: src/applications/fs/module/ondemand.c:459
+#: src/applications/fs/module/ondemand.c:461
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
@@ -867,11 +875,11 @@ msgstr ""
 "Die Konfigurationsdatei muss ein Verzeichnis für die Speicherung von FS "
 "Daten in der Sektion `%s' unter `%s' angeben.\n"
 
-#: src/applications/fs/module/ondemand.c:516
+#: src/applications/fs/module/ondemand.c:518
 msgid "Indexed content changed (does not match its hash).\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:679
+#: src/applications/fs/module/ondemand.c:681
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
@@ -2412,11 +2420,11 @@ msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
 msgid "Invalid process priority `%s'\n"
 msgstr "Ungültige Antwort auf `%s'.\n"
 
-#: src/util/os/cpustatus.c:404
+#: src/util/os/cpustatus.c:402
 msgid "Cannot query the CPU usage (Windows NT).\n"
 msgstr "CPU Nutzung kann nicht ermittelt werden (Windows NT).\n"
 
-#: src/util/os/cpustatus.c:423
+#: src/util/os/cpustatus.c:421
 msgid "Cannot query the CPU usage (Win 9x)\n"
 msgstr "CPU Nutzung kann nicht ermittelt werden (Win 9x).\n"
 
@@ -2425,12 +2433,12 @@ msgstr "CPU Nutzung kann nicht ermittelt werden (Win 9x).\n"
 msgid "Can't create semaphore: %i"
 msgstr "Semaphore konnte nicht angelegt werden: %i"
 
-#: src/util/os/statuscalls.c:179 src/util/os/statuscalls.c:257
+#: src/util/os/statuscalls.c:184 src/util/os/statuscalls.c:314
 #, fuzzy, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Fehler beim Parsen der Gerätedaten von `%s' bei %s:%d.\n"
 
-#: src/util/os/statuscalls.c:299 src/util/os/statuscalls.c:308
+#: src/util/os/statuscalls.c:356 src/util/os/statuscalls.c:365
 #, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -2519,66 +2527,66 @@ msgid ""
 "choices\n"
 msgstr ""
 
-#: src/util/error/error.c:121
+#: src/util/error/error.c:125
 #, c-format
 msgid ""
 "\n"
 "Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:189 src/util/error/error.c:233
+#: src/util/error/error.c:193 src/util/error/error.c:237
 msgid "DEBUG"
 msgstr "DEBUG"
 
-#: src/util/error/error.c:192 src/util/error/error.c:235
+#: src/util/error/error.c:196 src/util/error/error.c:239
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:195 src/util/error/error.c:239
+#: src/util/error/error.c:199 src/util/error/error.c:243
 msgid "WARNING"
 msgstr "WARNUNG"
 
-#: src/util/error/error.c:198 src/util/error/error.c:241
+#: src/util/error/error.c:202 src/util/error/error.c:245
 msgid "ERROR"
 msgstr "FEHLER"
 
-#: src/util/error/error.c:201 src/util/error/error.c:243
+#: src/util/error/error.c:205 src/util/error/error.c:247
 msgid "FATAL"
 msgstr "SCHWERWIEGEND"
 
-#: src/util/error/error.c:204 src/util/error/error.c:245
+#: src/util/error/error.c:208 src/util/error/error.c:249
 msgid "USER"
 msgstr ""
 
-#: src/util/error/error.c:207 src/util/error/error.c:247
+#: src/util/error/error.c:211 src/util/error/error.c:251
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:210 src/util/error/error.c:249
+#: src/util/error/error.c:214 src/util/error/error.c:253
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:213 src/util/error/error.c:251
+#: src/util/error/error.c:217 src/util/error/error.c:255
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:216 src/util/error/error.c:253
+#: src/util/error/error.c:220 src/util/error/error.c:257
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:219 src/util/error/error.c:255
+#: src/util/error/error.c:223 src/util/error/error.c:259
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:222
+#: src/util/error/error.c:226
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:237
+#: src/util/error/error.c:241
 msgid "INFO"
 msgstr "INFO"
 
-#: src/util/error/error.c:256
+#: src/util/error/error.c:260
 msgid "NOTHING"
 msgstr "NICHTS"
 
@@ -2745,12 +2753,12 @@ msgstr ""
 msgid "Could not find valid value for HOST in section NETWORK."
 msgstr ""
 
-#: src/util/network_client/tcpio.c:253 src/util/network_client/tcpio.c:283
+#: src/util/network_client/tcpio.c:257 src/util/network_client/tcpio.c:287
 #, fuzzy, c-format
 msgid "Cannot connect to %s:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
 
-#: src/util/network_client/tcpio.c:428
+#: src/util/network_client/tcpio.c:443
 #, c-format
 msgid "`%s' failed, reply invalid!\n"
 msgstr "`%s' fehlgeschlagen, Antwort ist ungültig!\n"

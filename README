@@ -9,11 +9,12 @@ primary application for GNUnet is anonymous file-sharing.  GNUnet is
 currently developed by a worldwide group of independent free software
 developers.  GNUnet is a part of the GNU project (http://www.gnu.org/).
 
-This is a BETA release.  The network has not been tested on a large
-scale yet.  While there are no known significant bugs, we are still
-changing significant aspects of the system in any other version.  Bugs
-are common and the documentation may not be adequate for unexperienced
-users.
+This is a BETA release.  While there are no known significant bugs, we
+are still changing significant aspects of the system in any other
+version.  While we believe that the system is usable, quite a few
+important features -- which would improve performance make the life of
+users easier -- are still missing.  Also, the documentation may not be
+adequate for inexperienced users.
 
 For a longer description of the GNUnet System see our webpages
 http://www.gnu.org/software/gnunet/ and http://gnunet.org/.
@@ -109,10 +110,6 @@ cause gnunetd to re-read the configuration file.  Note that not all
 options can be changed at runtime this way (e.g. to change any port
 number, you must fully restart gnunetd).
 
-In order to use the SMTP transport service, you should read
-http://gnunet.org/smtp.php3 first!  Note that SMTP should never
-be required, it is just a neat technical idea at this point.
-
 
 Usage
 =====
@@ -180,6 +177,11 @@ $ make
 $ make install
 $ export GNUNET_PREFIX=$SOMEWHERE
 $ make check
+
+If any testcases fail to pass on your system, run "contrib/report.sh"
+and report the output together with information about the failing
+testcase to the Mantis bugtracking system at
+https://gnunet.org/mantis/.
 
 
 

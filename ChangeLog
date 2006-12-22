@@ -1,3 +1,7 @@
+Thu Dec 21 20:03:07 MST 2006
+	Fixed gnunet-insert "-e" option.  Fixed various
+	crashes in client code.  Improved OS X portability.
+	
 Tue Dec 19 19:03:48 MST 2006
 	Allowing GNUnet (without gnunet-setup) to be build
 	on systems without guile.

@@ -8,6 +8,16 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.1pre2 to 0.7.1
+==================
+
+Run
+
+$ gnunet-update
+
+(as the same user that also runs gnunetd).
+
+
 0.7.1pre1 to 0.7.1pre2
 ======================
 
