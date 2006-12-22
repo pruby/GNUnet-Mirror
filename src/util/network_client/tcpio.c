@@ -314,10 +314,13 @@ int connection_write(struct ClientServerConnection * sock,
   size_t sent;
   int res;
 
-  if (SYSERR == connection_ensure_connected(sock))
-    return SYSERR;
-  size = ntohs(buffer->size);
   MUTEX_LOCK(sock->writelock);
+  if (SYSERR == connection_ensure_connected(sock)) { 
+    MUTEX_UNLOCK(sock->writelock);
+    return SYSERR;
+  }
+  GE_ASSERT(NULL, sock->sock != NULL);
+  size = ntohs(buffer->size);
   res = socket_send(sock->sock,
 		    NC_Complete,
 		    buffer,
@@ -341,10 +344,12 @@ int connection_read(struct ClientServerConnection * sock,
   unsigned short size;
   RETURN_ERROR_MESSAGE * rem;
 
-  if (OK != connection_ensure_connected(sock))
-    return SYSERR;
-
   MUTEX_LOCK(sock->readlock);
+  if (OK != connection_ensure_connected(sock)) {
+    MUTEX_UNLOCK(sock->readlock);
+    return SYSERR;
+  }
+  GE_ASSERT(NULL, sock->sock != NULL);
   while (1) {
     pos = 0;
     res = 0;
