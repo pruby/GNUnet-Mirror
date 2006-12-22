@@ -384,7 +384,6 @@ int connection_read(struct ClientServerConnection * sock,
 	   "Successfully received %d bytes from TCP socket.\n",
 	   size);
 #endif
-    MUTEX_UNLOCK(sock->readlock);
     *buffer = (MESSAGE_HEADER*) buf;
     (*buffer)->size = htons(size);
 
@@ -401,11 +400,12 @@ int connection_read(struct ClientServerConnection * sock,
     size = ntohs(rem->header.size) - sizeof(RETURN_ERROR_MESSAGE);
     GE_LOG(sock->ectx,
 	   ntohl(rem->kind),
-	   "%*s",
-	   size,
+	   "%.*s",
+	   (int) size,
 	   &rem[1]);
     FREE(rem);
   } /* while (1) */
+  MUTEX_UNLOCK(sock->readlock);
   return OK; /* success */
 }
 
