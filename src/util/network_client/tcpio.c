@@ -130,7 +130,7 @@ client_connection_create(struct GE_Context * ectx,
   result->sock = NULL;
   result->readlock = MUTEX_CREATE(NO);
   result->writelock = MUTEX_CREATE(NO);
-  result->destroylock = MUTEX_CREATE(NO);
+  result->destroylock = MUTEX_CREATE(YES);
   result->ectx = ectx;
   result->cfg = cfg;
   return result;
