@@ -339,6 +339,7 @@ int select_dht_peer(PeerIdentity * set,
   MUTEX_LOCK(lock);
   if (stats != NULL)
     stats->change(stat_dht_route_looks, 1);
+  total_distance = 0;
   for (bc=0;bc<bucketCount;bc++) {
     bucket = &buckets[bc];
     for (ec=0;ec<bucket->peers_size;ec++) {

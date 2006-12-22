@@ -645,7 +645,7 @@ static void * selectThread(void * ctx) {
 	    /* validate msg format! */
 	    const MESSAGE_HEADER * hdr;
 	
-	    /* on OSX, FIONREAD includes IP headers,
+	    /* on OS X, FIONREAD includes parts of UDP/IP headers,
 	       thus if size < pending, set pending to size */
 	    if (size < pending)
 	      pending = size;
