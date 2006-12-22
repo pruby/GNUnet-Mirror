@@ -14,7 +14,6 @@ Notes:
 
 0.7.1 [12'06] (aka "stabilization")
 - investigate #1156 (mysql crash?) [RC]
-- investigate #1100 (documentation)
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
