@@ -414,10 +414,6 @@ typedef struct RequestManager {
 
 } RequestManager;
 
-static int nodeReceive(const HashCode512 * query,
-		       const Datastore_Value * reply,
-		       NodeClosure * node);
-
 /**
  * Create a request manager.  Will create the request manager
  * datastructures. Use destroyRequestManager to abort and/or to free
