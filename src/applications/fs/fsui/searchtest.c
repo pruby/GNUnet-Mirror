@@ -53,8 +53,8 @@ static struct ECRS_URI * uri;
 static struct FSUI_Context * ctx;
 
 static struct MUTEX * lock;
-s
-tatic volatile enum FSUI_EventType waitForEvent;
+
+static volatile enum FSUI_EventType waitForEvent;
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
