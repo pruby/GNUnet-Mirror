@@ -153,6 +153,7 @@ FS_SEARCH_makeContext(struct GE_Context * ectx,
 		      struct MUTEX * lock) {
   SEARCH_CONTEXT * ret;
 
+  GE_ASSERT(ectx, lock != NULL);
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
   ret->ectx = ectx;
   ret->cfg = cfg;
@@ -376,17 +377,25 @@ int FS_initIndex(struct ClientServerConnection * sock,
 		 const HashCode512 * fileHc,
 		 const char * fn) {
   int ret;
-  CS_fs_request_init_index_MESSAGE *ri;
-  unsigned int size, fnSize;
+  CS_fs_request_init_index_MESSAGE * ri;
+  unsigned int size;
+  size_t fnSize;
 
   fnSize = strlen(fn);
+  fnSize = (fnSize + 7) & (~7); /* align */
   size = sizeof(CS_fs_request_init_index_MESSAGE) + fnSize;
+  GE_ASSERT(NULL, size < 65536);
   ri = MALLOC(size);
+  memset(ri,
+	 0,
+	 size);
   ri->header.size = htons(size);
   ri->header.type = htons(CS_PROTO_gap_INIT_INDEX);
   ri->reserved = htonl(0);
   ri->fileId = *fileHc;
-  memcpy(&ri[1], fn, fnSize);
+  memcpy(&ri[1], 
+	 fn, 
+	 strlen(fn));
 
 #if DEBUG_FSLIB
   GE_LOG(ectx, 
@@ -394,7 +403,7 @@ int FS_initIndex(struct ClientServerConnection * sock,
 	 "Sending index initialization request to gnunetd\n");
 #endif
   if (OK != connection_write(sock,
-        &ri->header)) {
+			     &ri->header)) {
     FREE(ri);
     return SYSERR;
   }

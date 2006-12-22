@@ -140,6 +140,8 @@ int ONDEMAND_initIndex(struct GE_Context * cectx,
   strcat(serverFN,
 	 (char*)&enc);
   UNLINK(serverFN);
+  disk_directory_create_for_file(cectx,
+				 serverFN);
   if (0 != SYMLINK(fn, serverFN)) {
     GE_LOG_STRERROR_FILE(cectx,
 			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,

@@ -219,6 +219,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 	     _("Indexing file `%s' failed. Trying to insert file...\n"),
 	     filename);
       doIndex = YES;
+      break;
+    default:
+      break;
     }
   }
   treedepth = computeDepth(filesize);

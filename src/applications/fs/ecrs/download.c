@@ -430,10 +430,13 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
+  rm->lock
+    = MUTEX_CREATE(YES);
   rm->sctx = FS_SEARCH_makeContext(ectx,
 				   cfg,
 				   rm->lock);
   if (rm->sctx == NULL) {
+    MUTEX_DESTROY(rm->lock);
     FREE(rm);
     return NULL;
   }
@@ -447,8 +450,6 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
     = NO;
   rm->lastDET
     = 0;
-  rm->lock
-    = MUTEX_CREATE(YES);
   rm->requestListIndex
     = 0;
   rm->requestListSize
@@ -506,8 +507,9 @@ static void destroyRequestManager(RequestManager * rm) {
   GROW(rm->requestList,
        rm->requestListSize,
        0);
-  MUTEX_UNLOCK(rm->lock);
   FS_SEARCH_destroyContext(rm->sctx);
+  rm->sctx = NULL;
+  MUTEX_UNLOCK(rm->lock);
   MUTEX_DESTROY(rm->lock);
   PTHREAD_REL_SELF(rm->requestThread);
   FREE(rm);
@@ -920,7 +922,8 @@ static int decryptContent(const char * data,
  */
 static int nodeReceive(const HashCode512 * query,
 		       const Datastore_Value * reply,
-		       NodeClosure * node) {
+		       void * cls) {
+  NodeClosure * node = cls;
   struct GE_Context * ectx = node->ctx->rm->ectx;
   HashCode512 hc;
   unsigned int size;
@@ -1123,7 +1126,7 @@ static void issueRequest(RequestManager * rm,
 		      entry->node->ctx->anonymityLevel,
 		      priority,
 		      timeout,
-		      (Datum_Iterator) &nodeReceive,
+		      &nodeReceive,
 		      entry->node);
   if (entry->searchHandle != NULL) {
     entry->lastPriority = priority;

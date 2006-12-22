@@ -205,12 +205,31 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_unindex_error:
+    fprintf(stderr,
+	    "Received ERROR: %d %s\n",
+	    event->type,
+	    event->data.UnindexError.message);
+    GE_BREAK(ectx, 0);
+    break;
   case FSUI_upload_error:
+    fprintf(stderr,
+	    "Received ERROR: %d %s\n",
+	    event->type,
+	    event->data.UploadError.message);
+    GE_BREAK(ectx, 0);
+    break;
   case FSUI_download_error:
+    fprintf(stderr,
+	    "Received ERROR: %d %s\n",
+	    event->type,
+	    event->data.DownloadError.message);
+    GE_BREAK(ectx, 0);
+    break;
   case FSUI_search_error:
     fprintf(stderr,
-	    "Received ERROR: %d\n",
-	    event->type);
+	    "Received ERROR: %d %s\n",
+	    event->type,
+	    event->data.SearchError.message);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_download_aborted:
@@ -375,6 +394,7 @@ int main(int argc, char * argv[]){
   ECRS_freeUri(kuri);
   kuri = NULL;
   FSUI_stopUpload(ctx, upload);
+  CHECK(upURI != NULL);
   SNPRINTF(keyword,
 	   40,
 	   "%s %s %s",
@@ -462,7 +482,7 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(upURI);
 
 #if START_DAEMON
-  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GE_BREAK(NULL, OK == os_daemon_stop(NULL, daemon));
 #endif
   GC_free(cfg);
   if (have_error)
