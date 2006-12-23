@@ -11,13 +11,10 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-
-0.7.1 [12'06] (aka "stabilization")
+0.7.2 [3'07]:
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
-
-0.7.2 [3'07]:
 - minor improvements:
   * Scheme (scm) specification of entire configuration;
     check options used in modules:
@@ -46,6 +43,11 @@ Notes:
   * ecrs_core
   * gap (incl. economy)
   * advertising
+- bugfixes:
+  Heikki reports:
+  Ran the current svn over 10 times under gdb (serializetest2)
+  One time it exited with status=1 and said
+  "Download suspended but search reference not set correctly."
 
 0.7.3 [6'07] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
