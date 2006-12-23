@@ -53,6 +53,7 @@ int main(int argc,
     return -1;
   }
   sock = NULL;
+  meta = NULL;
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
@@ -111,7 +112,8 @@ int main(int argc,
     CO_done();
     connection_destroy(sock);
   }
-  ECRS_freeMetaData(meta);
+  if (meta != NULL)
+    ECRS_freeMetaData(meta);
 #if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
 #endif
