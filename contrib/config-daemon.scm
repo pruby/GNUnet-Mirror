@@ -233,6 +233,19 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (cons 0 36500)
   'advanced) )
 
+(define (daemon-fdlimit builder)
+ (builder
+  "GNUNETD"
+  "FDLIMIT"
+  (_ "What maximum number of open file descriptors should be requested from the OS?")
+  (_ 
+"The default of 1024 should be fine for most systems.  If your system can support more, increasing the number might help support additional clients on machines with plenty of bandwidth.  For embedded systems, a smaller number might be acceptable.  This option is mostly for OS X systems where the default is too low.  Note that if gnunetd cannot obtain the desired number of file descriptors from the operating system, it will print a warning and try to run with what it is given." )
+  '()
+  #t
+  1024
+  (cons 64 65536)
+  'rare) )
+
 (define (log-logfile builder)
  (builder
   "GNUNETD"
@@ -515,6 +528,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (username builder) 
     (groupname builder) 
     (autostart builder) 
+    (daemon-fdlimit builder) 
     (fs-path builder) 
     (index-path builder) 
     (general-pidfile builder) 

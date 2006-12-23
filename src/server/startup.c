@@ -57,6 +57,25 @@ int changeUser(struct GE_Context * ectx,
   return OK;
 }
 
+int setFdLimit(struct GE_Context * ectx,
+               struct GC_Configuration * cfg) {
+  unsigned long long limit;
+
+  limit = 0;
+  if (0 == GC_get_configuration_value_number(cfg,
+					     "GNUNETD",
+					     "FDLIMIT",
+					     0,
+					     65536,
+					     1024,
+					     &limit)) {
+    if (OK != os_set_fd_limit(ectx,
+			      (int)limit)) {
+      return SYSERR;
+    }
+  }
+  return OK;
+}
 
 static char * getPIDFile(struct GC_Configuration * cfg) {
   char * pif;

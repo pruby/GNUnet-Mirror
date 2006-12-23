@@ -228,6 +228,7 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return 1;
   }
+  setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,
 			  cfg)) {
     GE_LOG(ectx,

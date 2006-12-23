@@ -34,6 +34,9 @@
 int changeUser(struct GE_Context * ectx,
 	       struct GC_Configuration * cfg);
 
+int setFdLimit(struct GE_Context * ectx,
+	       struct GC_Configuration * cfg);
+
 /**
  * Write our process ID to the pid file.
  */

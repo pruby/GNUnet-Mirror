@@ -23,6 +23,7 @@
  * @file util/os/osconfig.c
  * @brief functions to read or change the OS configuration
  * @author Nils Durner
+ * @author Heikki Lindholm
  */
 
 #include "platform.h"
@@ -91,6 +92,35 @@ void os_list_network_interfaces(struct GE_Context *ectx,
   }
   pclose(f);
 #endif
+}
+
+/**
+ * @brief Set maximum number of open file descriptors
+ * @return OK on success, SYSERR on error
+ */
+int os_set_fd_limit(struct GE_Context * ectx, 
+                    int n) {
+  if (n == 0)
+    return OK;
+#if HAVE_SETRLIMIT 
+  struct rlimit rlim;
+  int ret;
+
+  rlim.rlim_cur = n;
+  rlim.rlim_max = n;
+  ret = setrlimit(RLIMIT_NOFILE, &rlim);
+  if (ret != 0) {
+    GE_LOG_STRERROR(ectx,
+                    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                    "setrlimit");
+    return SYSERR;
+  }
+#else
+  GE_LOG(ectx,
+         GE_WARNING | GE_USER | GE_ADMIN,
+         _("Setting open descriptor limit not supported.\n"));
+#endif
+  return OK;
 }
 
 /**
