@@ -32,7 +32,12 @@
 #define HAVE_USED_CONFIG_H
 #include "config.h"
 #endif
+
+
 #ifdef OPENBSD
+/* force declaration of u_int, u_char, ... needed by netinet/tcp.h */
+#undef __BSD_VISIBLE
+#define __BSD_VISIBLE 1
 #include <sys/types.h>
 #include <dlfcn.h>
 #endif
