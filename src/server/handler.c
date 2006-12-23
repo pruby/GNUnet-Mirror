@@ -557,7 +557,7 @@ void core_receive(P2P_PACKET * mp) {
     FREE(mp);
     return;
   }
-  /* aquire buffer */
+  /* acquire buffer */
   if (SYSERR == transport->associate(mp->tsession))
     mp->tsession = NULL;
 

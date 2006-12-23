@@ -250,7 +250,7 @@ static void signalSelect() {
 
 /**
  * Disconnect from a remote node. May only be called
- * on sessions that were aquired by the caller first.
+ * on sessions that were acquired by the caller first.
  * For the core, aquiration means to call associate or
  * connect. The number of disconnects must match the
  * number of calls to connect+associate.

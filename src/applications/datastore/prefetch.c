@@ -90,7 +90,7 @@ static struct GE_Context * ectx;
 static struct GC_Configuration * cfg;
 		
 
-static int aquire(const HashCode512 * key,
+static int acquire(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  void * closure) {
   int load;
@@ -156,7 +156,7 @@ static int aquire(const HashCode512 * key,
 static void * rcbAcquire(void * unused) {
   int load;
   while (doneSignal == NO) {
-    sq->iterateMigrationOrder(&aquire,
+    sq->iterateMigrationOrder(&acquire,
 			      NULL);
     /* sleep here, too - otherwise we start looping immediately
        if there is no content in the DB! */

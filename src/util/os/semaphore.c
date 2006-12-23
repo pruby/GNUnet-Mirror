@@ -168,10 +168,14 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 			   initialValue);
   while ( (ret->internal == (void *) SEM_FAILED)
 	  && (errno == ENAMETOOLONG) ) {
+    char * halfBasename;
+    
     if (strlen(noslashBasename) < 4)
       break; /* definitely OS error... */
-    noslashBasename[strlen(noslashBasename)/2] = '\0'; /* cut in half */
-    ret->internal = sem_open(noslashBasename,
+    /* FIXME: this might cause unintended mapping to same names */
+    halfBasename = noslashBasename+strlen(noslashBasename)/2; /* cut in half */
+    halfBasename[0] = '/';
+    ret->internal = sem_open(halfBasename,
 			     O_CREAT,
 			     S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP, /* 660 */
 			     initialValue);			

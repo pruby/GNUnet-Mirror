@@ -950,7 +950,7 @@ static int forEachHost(cron_t now,
 		   data);
 	  MUTEX_LOCK(lock_);
 	  /* we gave up the lock,
-	     need to re-aquire entry (if possible)! */
+	     need to re-acquire entry (if possible)! */
 	  if (i >= numberOfHosts_)
 	    break;
 	  entry = hosts_[i];

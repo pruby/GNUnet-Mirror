@@ -233,7 +233,7 @@ static void checkComplete(FC * pep) {
  * See if the new fragment is a part of this entry and join them if
  * yes.  Return SYSERR if the fragments do not match.  Return OK if
  * the fragments do match and the fragment has been processed.  The
- * defragCacheLock is already aquired by the caller whenever this
+ * defragCacheLock is already acquired by the caller whenever this
  * method is called.<p>
  *
  * @param entry the entry in the cache
