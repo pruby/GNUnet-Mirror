@@ -185,10 +185,10 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
 	    ctx->handleCount == 0);
   ctx->abort = YES;
   connection_close_forever(ctx->sock);
+  MUTEX_UNLOCK(ctx->lock);
   PTHREAD_STOP_SLEEP(ctx->thread);
   PTHREAD_JOIN(ctx->thread,
 	       &unused);
-  MUTEX_UNLOCK(ctx->lock);
   ctx->lock = NULL;
   connection_destroy(ctx->sock);
   GROW(ctx->handles,
