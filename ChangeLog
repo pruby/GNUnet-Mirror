@@ -1,3 +1,8 @@
+Fri Dec 22 19:21:25 MST 2006
+	Added option to set maximum number of file descriptors
+	(convenience for OS X users where the default is too low).
+	Releasing GNUnet 0.7.1.
+
 Thu Dec 21 20:03:07 MST 2006
 	Fixed gnunet-insert "-e" option.  Fixed various
 	crashes in client code.  Improved OS X portability.
