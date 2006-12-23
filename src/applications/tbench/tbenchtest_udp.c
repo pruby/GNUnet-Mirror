@@ -146,6 +146,7 @@ int main(int argc, char ** argv) {
   int left;
   struct GC_Configuration * cfg;
 
+  ok = 1;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
