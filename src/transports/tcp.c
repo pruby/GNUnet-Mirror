@@ -93,12 +93,32 @@ static int isBlacklisted(const void * addr,
 	   addr,
 	   addr_len);
   } else {
+#if DEBUG_TCP
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_ADMIN | GE_BULK,
+	   "Rejecting connection (invalid address length %u)\n",
+	   addr_len);
+#endif
     return SYSERR;
   }
   MUTEX_LOCK(tcpblacklistlock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
+#if DEBUG_TCP
+  if (ret != OK) {
+    EncName enc;
+    
+    hash2enc(&helo->senderIdentity.hashPubKey,
+	     &enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_ADMIN | GE_BULK,
+	   "Rejecting connection from address %u.%u.%u.%u:%u (blacklisted)\n",
+	   PRIP(ntohl(*(int*)&haddr->ip)),
+	   ntohs(haddr->port));
+  }
+#endif
+
   return ret;
 }
 
@@ -119,6 +139,12 @@ static int isWhitelisted(const void * addr,
 	   addr,
 	   addr_len);
   } else {
+#if DEBUG_TCP
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_ADMIN | GE_BULK,
+	   "Rejecting connection (invalid address length %u)\n",
+	   addr_len);
+#endif
     return SYSERR;
   }
   ret = OK;
@@ -127,6 +153,15 @@ static int isWhitelisted(const void * addr,
     ret = check_ipv4_listed(allowedNetworks_,
 			    ip);
   MUTEX_UNLOCK(tcpblacklistlock);
+  if (ret != OK) {
+#if DEBUG_TCP
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_ADMIN | GE_BULK,
+	   "Rejecting HELLO from address %u.%u.%u.%u:%u (not whitelisted)\n",
+	   PRIP(ntohl(*(int*)&haddr->ip)),
+	   ntohs(haddr->port));
+#endif
+  }
   return ret;
 }
 
@@ -191,11 +226,9 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
     hash2enc(&helo->senderIdentity.hashPubKey,
 	     &enc);
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Rejecting HELLO from `%s' at address %u.%u.%u.%u:%u\n",
-	   &enc,
-	   PRIP(ntohl(*(int*)&haddr->ip)),
-	   ntohs(haddr->port));
+	   GE_DEBUG | GE_ADMIN | GE_BULK,
+	   "Rejecting HELLO from `%s'\n",
+	   &enc);
 #endif
     return SYSERR; /* obviously invalid */
   } 
@@ -318,7 +351,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 GE_DEBUG | GE_DEVELOPER | GE_USER | GE_BULK,
 	 "Establishing connection to %u.%u.%u.%u:%u\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)),
 	 ntohs(haddr->port));
