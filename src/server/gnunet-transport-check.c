@@ -149,7 +149,8 @@ static void testTAPI(TransportAPI * tapi,
   memcpy(&noise[1],
 	 expectedValue,
 	 expectedSize);
-  while (repeat > 0) {
+  while ( (repeat > 0) &&
+	  (GNUNET_SHUTDOWN_TEST() == NO) ) {
     repeat--;
     ok = NO;
     if (OK != sendPlaintext(tsession,
@@ -505,7 +506,8 @@ int main(int argc,
 	   stats[0] - stats[1]);
     releaseService(bootstrap);
   } else {
-    while (Xrepeat-- > 0)
+    while ( (Xrepeat-- > 0) &&
+	    (GNUNET_SHUTDOWN_INITIATE() == NO) )
       transport->forEach(&testTAPI,
 			 &res);
   }
