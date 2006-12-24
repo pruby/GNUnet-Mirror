@@ -266,7 +266,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     goto cleanup;
   }
   while ( (YES == termTest(targ)) &&
-	  (GNUNET_SHUTDOWN_INITIATE() == NO) ) {
+	  (GNUNET_SHUTDOWN_TEST() == NO) ) {
     max = 0;
     FD_ZERO(&rs);
     FD_ZERO(&ws);
