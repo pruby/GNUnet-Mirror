@@ -1,60 +1,35 @@
-.TH GNUNET-TBENCH "1" "08 May 2003" "GNUnet"
+.TH GNUNET-TBENCH "1" "23 Dec 2006" "GNUnet"
 .SH NAME
-gnunet-tbench \- transport profiling tool
+gnunet\-tbench \- transport profiling tool
 .SH SYNOPSIS
 .B gnunet\-tbench
 [\fIOPTIONS\fR]
 .SH DESCRIPTION
-gnunet-tbench can be used to test the performance of the GNUnet
-core (link-to-link encryption and the available transport services).
+gnunet\-tbench can be used to test the performance of the GNUnet
+core (link\-to\-link encryption and the available transport services).
 gnunet-tbench is useless to most ordinary users since its primary
 function is to test the performance and correctness
 of GNUnet transport service implementations.
 .PP
-gnunet-tbench sends a sequence of messages to another peer that
+gnunet\-tbench sends a sequence of messages to another peer that
 has the tbench module loaded. The service then measures the
 throughput, latency and loss of the messages round-trip.
-gnunet-tbench can only be used to test a direct peer-to-peer
+gnunet\-tbench can only be used to test a direct peer\-to\-peer
 connection. You must load the \fItbench\fR module (via
-the configuration gnunet.conf, section GNUNETD under APPLICATIONS)
-in each of the two peers before gnunet-tbench can be used.
+the configuration gnunetd.conf, section GNUNETD under APPLICATIONS)
+in each of the two peers before gnunet\-tbench can be used.
 .PP
 The two peers must know of each other and be connected (use
-gnunet-stats to test for connections). Typically, gnunet-tbench
+gnunet\-stats to test for connections). Typically, gnunet\-tbench
 reports the time it took to sent all specified messages and the
 percentage of messages lost.
 .PP
-\fb\-r \fIRECEIVER\fR, \fB\-\-rec=\fIRECEIVER\fR
-use this option to specify the identity of the
-RECEIVER peer that is used for the benchmark. This option is required.
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-print help page
+
 .TP
 \fB\-c \fIFILENAME\fR, \fB\-\-config=\fIFILENAME\fR
 load config file (defaults: ~/.gnunet/gnunet.conf)
+
 .TP
-\fB\-v\fR, \fB\-\-version\fR
-print the version number
-.TP
-\fB\-n\fI MESSAGES\fR, \fB\-\-msg=\fIMESSAGES\fR
-how many messages should be used in each iteration (used to
-compute average, min, max, etc.)
-.TP
-\fB\-s\fI SIZE \fB\-\-size=\fISIZE\fR
-test using the specified message size
-.TP
-\fB\-i\fI ITER \fB\-\-iterations=\fIITER\fR
-perform ITER iterations of the benchmark
-.TP
-\fB\-t\fI TIMEOUT \fB\-\-timeout=\fTIMEOUT\fR
-wait TIMEOUT milli-seconds for replies to arrive before aborting
-.TP
-\fB\-S\fI SPACE \fB\-\-space=\fSPACE\fR
-use SPACE milli-seconds of delays between trains of messages
-.TP
-\fB\-X\fI COUNT \fB\-\-xspace=\fCOUNT\fR
-use trains of COUNT messages
 \fB\-g \-\-gnuplot
 create output in two colums suitable for gnuplot.
 When using this option, concatenate the output of multiple
@@ -65,13 +40,54 @@ ratio:
 set xlabel "time"
 set ylabel "percent transmitted"
 plot "tbench" title 'Transport benchmarking' with points
+
 .TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
 
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
-change the loglevel. Possible values for \fILOGLEVEL\fR are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
+
+.TP
+\fB\-i\fI ITER \fB\-\-iterations=\fIITER\fR
+perform ITER iterations of the benchmark
+
+.TP
+\fB\-n\fI MESSAGES\fR, \fB\-\-msg=\fIMESSAGES\fR
+how many messages should be used in each iteration (used to
+compute average, min, max, etc.)
+
+.TP
+\fb\-r \fIRECEIVER\fR, \fB\-\-rec=\fIRECEIVER\fR
+use this option to specify the identity of the
+RECEIVER peer that is used for the benchmark. This option is required.
+
+.TP
+\fB\-s\fI SIZE \fB\-\-size=\fISIZE\fR
+test using the specified message size
+
+.TP
+\fB\-S\fI SPACE \fB\-\-space=\fSPACE\fR
+use SPACE milli\-seconds of delays between trains of messages
+
+.TP
+\fB\-t\fI TIMEOUT \fB\-\-timeout=\fTIMEOUT\fR
+wait TIMEOUT milli\-seconds for replies to arrive before aborting
+
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+
+.TP
+\fB\-X\fI COUNT \fB\-\-xspace=\fCOUNT\fR
+use trains of COUNT messages
+
 .SH NOTES
-gnunet-tbench can run for a long time, depending on
+gnunet\-tbench can run for a long time, depending on
 how high you have set the numbers. Run first with small numbers
 to get an initial estimate on the runtime.
 .SH FILES
@@ -79,6 +95,6 @@ to get an initial estimate on the runtime.
 ~/.gnunet/gnunet.conf
 Users GNUnet configuration file
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

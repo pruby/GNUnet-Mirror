@@ -1,4 +1,4 @@
-.TH GNUNET-UPDATE "1" "31 Jul 2004" "GNUnet"
+.TH GNUNET-UPDATE "1" "23 Dec 2006" "GNUnet"
 .SH NAME
 gnunet-update \- a tool to update GNUnet
 .SH SYNOPSIS
@@ -19,7 +19,10 @@ print the value from the configuration in section SECTION under entry ENTRY.  Us
 print help page
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
 .TP
 \fB\-U\fR, \fB\-\-client\fR
 run in client mode (required to get values from the client configuration).  This option must be used only together with the \-g option.

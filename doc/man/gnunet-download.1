@@ -1,4 +1,4 @@
-.TH GNUNET-DOWNLOAD "1" "11 Nov 2006" "GNUnet"
+.TH GNUNET-DOWNLOAD "1" "23 Dec 2006" "GNUnet"
 .SH NAME
 gnunet\-download \- a command line interface for downloading files from GNUnet
 .SH SYNOPSIS
@@ -21,7 +21,10 @@ print help page
 on which host is gnunetd running (default: localhost).  You can also specify a port using the syntax HOSTNAME:PORT.  The default port is 2087.
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, INFO, STATUS and DEBUG.
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
 .TP
 \fB\-o \fIFILENAME\fR, \fB\-\-output=FILENAME\fR
 write the file to FILENAME.  Hint: when recursively downloading a directory, append a '/' to the end of the FILENAME to create a directory of that name.  If no FILENAME is specified, gnunet\-download constructs a temporary ID from the URI of the file.  The final filename is constructed based on meta\-data extracted using libextractor (if available).

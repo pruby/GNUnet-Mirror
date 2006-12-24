@@ -177,7 +177,7 @@ int GNUNET_init(int argc,
   if (i == -1)
     return -1;
   if (0 != GC_parse_configuration(*cfg,
-				   *cfgFileName))
+				  *cfgFileName))
     return -1;
   if (configure_logging(ectx, *cfg) != 0)
     return -1;

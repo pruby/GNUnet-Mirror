@@ -1,4 +1,4 @@
-.TH gnunet-directory "1" "11 Nov 2006" "GNUnet"
+.TH gnunet-directory "1" "23 Dec 2006" "GNUnet"
 .SH NAME
 gnunet\-directory \- display directories and show or delete lists of encountered file identifiers
 
@@ -27,7 +27,11 @@ delete all entries from the file identifier database and stop tracking file iden
 display entries from the file identifier database
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, STATUS, INFO and DEBUG.
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
+
 .TP
 \fB\-t, \fB\-\-track\fR
 start tracking file identifiers
@@ -48,6 +52,6 @@ At the moment, directories can be created by \fBgnunet\-gtk\fP and \fBgnunet\-in
 GNUnet directories use the (unregistered) mimetype \fBapplication/gnunet\-directory\fP.  They can show up among normal search results.  The directory file can be downloaded to disk by \fBgnunet\-download\fP(1) for later processing or be handled more directly by \fBgnunet\-gtk\fP(1).
 
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunetd\fP(1)

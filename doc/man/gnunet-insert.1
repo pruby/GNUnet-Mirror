@@ -168,7 +168,9 @@ option.  This option can be specified multiple times.
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
 Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
-ERROR, WARNING, INFO, STATUS and DEBUG.
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
 
 .TP
 \fB\-m \fITYPE:VALUE\fR, \fB\-\-meta=\fITYPE:VALUE\fR

@@ -1,4 +1,4 @@
-.TH GNUNET-TRACEKIT "1" "25 Sept 2004" "GNUnet"
+.TH GNUNET-TRACEKIT "1" "23 Dec 2006" "GNUnet"
 .SH NAME
 gnunet\-tracekit \-\- overlay network traceing
 .SH SYNOPSIS
@@ -9,26 +9,39 @@ gnunet\-tracekit can be used to visualize the GNUnet overlay network.  This tool
 .PP
 gnunet\-tracekit is primarily useful for developers to determine the structure of the network.  End\-users will find little use for the tool itself (except to satisfy their curiosity) but should at the moment still enable this protocol to help the developers that trace the network.
 .PP
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-print help page
+
 .TP
 \fB\-c \fIFILENAME\fR, \fB\-\-config=\fIFILENAME\fR
 load config file (defaults: ~/.gnunet/gnunet.conf)
+
+.TP
 \fB\-D \fIDEPTH\fR, \fB\-\-depth=\fIDEPTH\fR
 until which depth should the network be traced (how many hops)
+
+.TP
 \fB\-F \fIFORMAT\fR, \fB\-\-format=\fIFORMAT\fR
 specifies the output format, 0 is human readable, 1 is dot, 2 is vcg
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
+
 \fB\-P \fIPRIORITY\fR, \fB\-\-priority=\fIPRIORITY\fR
 what should the priority of the probe be
-\fB\-W \fIWAIT\fR, \fB\-\-wait=\fIWAIT\fR
-set how many seconds to wait for replies
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
-.TP
-\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
-change the loglevel. Possible values for \fILOGLEVEL\fR are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+
+\fB\-W \fIWAIT\fR, \fB\-\-wait=\fIWAIT\fR
+set how many seconds to wait for replies
+
 .SH NOTES
 gnunet\-tracekit may not be supported by all GNUnet peers.  Peers that do not support tracekit will still be discovered and will be marked in the output as non-responding peers.
 .SH FILES
@@ -36,6 +49,6 @@ gnunet\-tracekit may not be supported by all GNUnet peers.  Peers that do not su
 ~/.gnunet/gnunet.conf
 Users GNUnet configuration file
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
