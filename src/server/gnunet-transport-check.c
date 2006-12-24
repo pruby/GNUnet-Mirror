@@ -73,7 +73,9 @@ static struct CronManager * cron;
 
 static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
-static void semUp(struct SEMAPHORE * sem) {
+static void semUp(void * arg) {
+  struct SEMAPHORE * sem = arg;
+
   terminate = YES;
   SEMAPHORE_UP(sem);
 }
@@ -166,14 +168,14 @@ static void testTAPI(TransportAPI * tapi,
       return;
     }
     cron_add_job(cron,
-		 (CronJob)&semUp,
+		 &semUp,
 		 timeout,
 		 0,
 		 sem);
     SEMAPHORE_DOWN(sem, YES);
     cron_suspend(cron, NO);
     cron_del_job(cron,
-		 (CronJob)&semUp,
+		 &semUp,
 		 0,
 		 sem);
     cron_resume_jobs(cron, NO);
@@ -283,7 +285,6 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
     fprintf(stderr, ".");
 
   sem = SEMAPHORE_CREATE(0);
-
   ping = pingpong->pingUser(&peer,
 			    &pingCallback,
 			    NULL,
@@ -314,12 +315,13 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
     fprintf(stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Waiting for PONG\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Waiting for PONG\n");
 #endif
   terminate = NO;
   cron_add_job(cron,
-	       (CronJob)&semUp,
+	       &semUp,
 	       timeout,
 	       5 * cronSECONDS,
 	       sem);
@@ -333,7 +335,7 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   cron_suspend(cron,
 	       NO);
   cron_del_job(cron,
-	       (CronJob)&semUp,
+	       &semUp,
 	       5 * cronSECONDS,
 	       sem);
   cron_resume_jobs(cron,
