@@ -507,7 +507,7 @@ int main(int argc,
     releaseService(bootstrap);
   } else {
     while ( (Xrepeat-- > 0) &&
-	    (GNUNET_SHUTDOWN_INITIATE() == NO) )
+	    (GNUNET_SHUTDOWN_TEST() == NO) )
       transport->forEach(&testTAPI,
 			 &res);
   }
