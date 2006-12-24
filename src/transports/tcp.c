@@ -184,10 +184,22 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (YES == isBlacklisted(&haddr->ip,
 			     sizeof(IPaddr))) ||
        (YES != isWhitelisted(&haddr->ip,
-			     sizeof(IPaddr))) )
+			     sizeof(IPaddr))) ) {
+#if DEBUG_TCP
+    EncName enc;
+
+    hash2enc(hello->senderIdentity.hashPubKey,
+	     &enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "Rejecting HELLO from `%s' at address %u.%u.%u.%u:%u\n",
+	   &enc,
+	   PRIP(ntohl(*(int*)&haddr->ip)),
+	   ntohs(haddr->port));
+#endif
     return SYSERR; /* obviously invalid */
-  else
-    return OK;
+  } 
+  return OK;
 }
 
 /**
@@ -207,9 +219,11 @@ static P2P_hello_MESSAGE * createhello() {
     static int once = 0;
     if (once == 0) {
       once = 1;
+#if DEBUG_TCP
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_BULK,
 	     "TCP port is 0, will only send using TCP.\n");
+#endif
     }
     return NULL; /* TCP transport is configured SEND-only! */
   }
