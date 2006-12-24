@@ -188,7 +188,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 #if DEBUG_TCP
     EncName enc;
 
-    hash2enc(hello->senderIdentity.hashPubKey,
+    hash2enc(helo->senderIdentity.hashPubKey,
 	     &enc);
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
