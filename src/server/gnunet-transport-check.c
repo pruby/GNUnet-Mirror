@@ -250,13 +250,18 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   } else
     fprintf(stderr, ".");
   helo = MALLOC(ntohs(xhelo->header.size));
-  memcpy(helo, xhelo, ntohs(xhelo->header.size));
+  memcpy(helo,
+	 xhelo, 
+	 ntohs(xhelo->header.size));
 
   myHelo = transport->createhello(ntohs(xhelo->protocol));
+  if (myHelo == NULL) 
+    /* try NAT */
+    myHelo = transport->createhello(NAT_PROTOCOL_NUMBER);
   if (myHelo == NULL) {
     FREE(helo);
     return;
-  }
+  }  
   if (verbose > 0)
     fprintf(stderr, ".");
   tsession = NULL;
