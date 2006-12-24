@@ -34,7 +34,7 @@ while true
 do
  echo -n HTTP/1.0 200 OK > /tmp/gnunet-hostlist-$$
  echo -e "\r\n\r" >> /tmp/gnunet-hostlist-$$
- cat $GNUNETD_HOME/data/hosts/$NODE.{6,8,12,17,23,25} >> /tmp/gnunet-hostlist-$$
+ cat $GNUNETD_HOME/data/hosts/$NODE.{2,3,4,5,6,8,12,17,23,25} >> /tmp/gnunet-hostlist-$$
  nc -q 1 -l -p $PORT < /tmp/gnunet-hostlist-$$ > /dev/null
  if test $? -ne 0; then
   rm -f /tmp/gnunet-hostlist*
