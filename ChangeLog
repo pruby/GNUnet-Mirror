@@ -2,6 +2,10 @@ Sat Dec 23 22:12:17 MST 2006
 	Updated various man pages and some configuration documentation.
 	Fixed TCP transport (did not work with NAT if port was set to 0).
 	Fixed verbose option for gnunet-transport-check.
+	Updated hostlist scripts in contrib/ to reflect new protocol IDs.
+	Allow aborting of gnunet-transport-check with CTRL-C.
+	Allow testing of bi-directional transports behind NAT with
+	gnunet-transport-check.
 	
 Fri Dec 22 19:21:25 MST 2006
 	Added option to set maximum number of file descriptors
