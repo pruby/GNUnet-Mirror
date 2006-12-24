@@ -234,7 +234,7 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   }
   stats[1]++; /* one more with transport 'available' */
   GC_get_configuration_value_number(cfg,
-				    "GNUNET-TRANSPORT-CHECK",
+				    "GNUNET",
 				    "VERBOSE",
 				    0,
 				    (unsigned long long) -1,
