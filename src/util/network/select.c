@@ -106,7 +106,7 @@ typedef struct SelectHandle {
 
   /**
    * sock is the tcp socket that we listen on for new inbound
-   * connections.
+   * connections.  Maybe NULL if we are not listening.
    */
   struct SocketHandle * listen_sock;
 
@@ -796,6 +796,7 @@ SelectHandle * select_create(const char * description,
   SelectHandle * sh;
 
   if ( (is_udp == NO) &&
+       (sock != -1) && 
        (0 != LISTEN(sock, 5)) ) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_IMMEDIATE,
@@ -837,9 +838,12 @@ SelectHandle * select_create(const char * description,
   sh->memory_quota = memory_quota;
   sh->timeout = timeout;
   sh->lock = MUTEX_CREATE(YES);
-  sh->listen_sock = socket_create(ectx,
-				  mon,
-				  sock);
+  if (sock != -1)
+    sh->listen_sock = socket_create(ectx,
+				    mon,
+				    sock);
+  else
+    sh->listen_sock = NULL;
   sh->thread = PTHREAD_CREATE(&selectThread,
 			      sh,
 			      4 * 1024);
@@ -847,7 +851,8 @@ SelectHandle * select_create(const char * description,
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
 		    "pthread_create");
-    socket_destroy(sh->listen_sock);
+    if (sh->listen_sock != NULL)
+      socket_destroy(sh->listen_sock);
     if ( (0 != CLOSE(sh->signal_pipe[0])) ||
 	 (0 != CLOSE(sh->signal_pipe[1])) )
       GE_LOG_STRERROR(ectx,

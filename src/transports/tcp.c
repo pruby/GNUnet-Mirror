@@ -322,7 +322,8 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	 sizeof(soaddr));
   soaddr.sin_family = AF_INET;
 
-  GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
+  GE_ASSERT(ectx, 
+	    sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
 	 &haddr->ip,
 	 sizeof(IPaddr));
@@ -369,48 +370,48 @@ static int startTransportServer(void) {
     return SYSERR;
   }
   port = getGNUnetTCPPort();
-  if (port == 0) {
-    /* read-only TCP */
-    return OK;
-  }
-  s = SOCKET(PF_INET,
-	     SOCK_STREAM,
-	     0);
-  if (s < 0) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "socket");
-    return SYSERR;
-  }
-  if (SETSOCKOPT(s,
-		 SOL_SOCKET,
-		 SO_REUSEADDR,
-		 &on,
-		 sizeof(on)) < 0 )
-    GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		    "setsockopt");
-  memset((char *) &serverAddr,
-	 0,
-	 sizeof(serverAddr));
-  serverAddr.sin_family      = AF_INET;
-  serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  serverAddr.sin_port        = htons(getGNUnetTCPPort());
-  if (BIND(s,
-	   (struct sockaddr *) &serverAddr,
-	   sizeof(serverAddr)) < 0) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-		    "bind");
-    GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-	   _("Failed to start transport service on port %d.\n"),
-	   getGNUnetTCPPort());
-    if (0 != CLOSE(s))
+  if (port != 0) {
+    s = SOCKET(PF_INET,
+	       SOCK_STREAM,
+	       0);
+    if (s < 0) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-		      "close");
-    return SYSERR;
+		      GE_ERROR | GE_ADMIN | GE_BULK,
+		      "socket");
+      return SYSERR;
+    }
+    if (SETSOCKOPT(s,
+		   SOL_SOCKET,
+		   SO_REUSEADDR,
+		   &on,
+		   sizeof(on)) < 0 )
+      GE_DIE_STRERROR(ectx,
+		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+		      "setsockopt");
+    memset((char *) &serverAddr,
+	   0,
+	   sizeof(serverAddr));
+    serverAddr.sin_family      = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port        = htons(getGNUnetTCPPort());
+    if (BIND(s,
+	     (struct sockaddr *) &serverAddr,
+	     sizeof(serverAddr)) < 0) {
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+		    "bind");
+      GE_LOG(ectx,
+	     GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+	   _("Failed to start transport service on port %d.\n"),
+	     getGNUnetTCPPort());
+      if (0 != CLOSE(s))
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			"close");
+      return SYSERR;
+    }
+  } else {
+    s = -1; /* no listening! */
   }
   selector = select_create("tcp",
 			   NO,

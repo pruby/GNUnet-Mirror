@@ -341,47 +341,49 @@ static int startTransportServer(void) {
     return SYSERR;
   }
   port = getGNUnetTCP6Port();
-  if (port == 0)
-    return OK; /* read-only TCP6 */
-  s = SOCKET(PF_INET6,
-	     SOCK_STREAM,
-	     0);
-  if (s < 0) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "socket");
-    return SYSERR;
-  }
-  if (SETSOCKOPT(s,
-		 SOL_SOCKET,
-		 SO_REUSEADDR,
-		 &on,
-		 sizeof(on)) < 0 )
-    GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		    "setsockopt");
-  memset((char *) &serverAddr,
-	 0,
-	 sizeof(serverAddr));
-  serverAddr.sin6_family   = AF_INET6;
-  serverAddr.sin6_flowinfo = 0;
-  serverAddr.sin6_addr     = in6addr_any;
-  serverAddr.sin6_port     = htons(getGNUnetTCP6Port());
-  if (BIND(s,
-	   (struct sockaddr *) &serverAddr,
-	   sizeof(serverAddr)) < 0) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-		    "bind");
-    GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-	   _("Failed to start transport service on port %d.\n"),
-	   getGNUnetTCP6Port());
-    if (0 != CLOSE(s))
+  if (port != 0) {
+    s = SOCKET(PF_INET6,
+	       SOCK_STREAM,
+	       0);
+    if (s < 0) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-		      "close");
-    return SYSERR;
+		      GE_ERROR | GE_ADMIN | GE_BULK,
+		      "socket");
+      return SYSERR;
+    }
+    if (SETSOCKOPT(s,
+		   SOL_SOCKET,
+		   SO_REUSEADDR,
+		   &on,
+		   sizeof(on)) < 0 )
+      GE_DIE_STRERROR(ectx,
+		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+		      "setsockopt");
+    memset((char *) &serverAddr,
+	   0,
+	   sizeof(serverAddr));
+    serverAddr.sin6_family   = AF_INET6;
+    serverAddr.sin6_flowinfo = 0;
+    serverAddr.sin6_addr     = in6addr_any;
+    serverAddr.sin6_port     = htons(getGNUnetTCP6Port());
+    if (BIND(s,
+	     (struct sockaddr *) &serverAddr,
+	     sizeof(serverAddr)) < 0) {
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+		      "bind");
+      GE_LOG(ectx,
+	     GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+	     _("Failed to start transport service on port %d.\n"),
+	     getGNUnetTCP6Port());
+      if (0 != CLOSE(s))
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			"close");
+      return SYSERR;
+    }
+  } else {
+    s = -1;
   }
   selector = select_create("tcp6",
 			   NO,
