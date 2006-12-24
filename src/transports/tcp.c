@@ -106,19 +106,12 @@ static int isBlacklisted(const void * addr,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
 #if DEBUG_TCP
-  if (ret != OK) {
-    EncName enc;
-    
-    hash2enc(&helo->senderIdentity.hashPubKey,
-	     &enc);
+  if (ret != OK) 
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting connection from address %u.%u.%u.%u:%u (blacklisted)\n",
-	   PRIP(ntohl(*(int*)&haddr->ip)),
-	   ntohs(haddr->port));
-  }
+	   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
+	   PRIP(ntohl(*(int*)addr)));
 #endif
-
   return ret;
 }
 
@@ -157,9 +150,8 @@ static int isWhitelisted(const void * addr,
 #if DEBUG_TCP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting HELLO from address %u.%u.%u.%u:%u (not whitelisted)\n",
-	   PRIP(ntohl(*(int*)&haddr->ip)),
-	   ntohs(haddr->port));
+	   "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
+	   PRIP(ntohl(*(int*)addr)));
 #endif
   }
   return ret;
