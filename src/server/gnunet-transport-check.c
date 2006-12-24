@@ -348,7 +348,9 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
 }
 
 static int testTerminate(void * arg) {
-  return YES;
+  if (GNUNET_SHUTDOWN_TEST() == NO)
+    return YES;
+  return NO;
 }
 
 /**
