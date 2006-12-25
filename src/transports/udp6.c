@@ -389,7 +389,7 @@ static int startTransportServer(void) {
 			     &isRejected,
 			     &select_close_handler,
 			     NULL,
-			     0 /* memory quota */ );
+			     64 * 1024);
     if (selector == NULL)
       return SYSERR;
   }

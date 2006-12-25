@@ -398,7 +398,7 @@ static int startTransportServer(void) {
 			   &isRejected,
 			   &select_close_handler,
 			   NULL,
-			   0 /* memory quota */ );
+			   128 * 1024);
   return OK;
 }
 

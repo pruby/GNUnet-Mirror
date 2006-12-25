@@ -944,6 +944,10 @@ int select_write(struct SelectHandle * sh,
     MUTEX_UNLOCK(sh->lock);
     return SYSERR;
   }
+  if (session->wsize + len > sh->memory_quota) {
+    MUTEX_UNLOCK(sh->lock);
+    return NO;
+  }
   fresh_write = (session->wsize == 0);
   GROW(session->wbuff,
        session->wsize,
