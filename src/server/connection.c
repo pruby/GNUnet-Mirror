@@ -997,7 +997,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
     /* assumes entries are sorted by priority! */
     while (i < be->sendBufferSize) {
       entry = be->sendBuffer[i];
-      if ( (totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
+      if ( (totalMessageSize + entry->len < MAX_BUFFER_SIZE - 64) &&
 	   (entry->pri >= EXTREME_PRIORITY)) {
         entry->knapsackSolution = YES;
 	if (entry->transmissionTime < deadline)
@@ -1027,7 +1027,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	    (be->available_send_window > totalMessageSize)) {
       entry = be->sendBuffer[i];
       if ( (entry->len + totalMessageSize <= be->available_send_window) &&
-	   (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
+	   (totalMessageSize + entry->len < MAX_BUFFER_SIZE - 64)) {
         entry->knapsackSolution = YES;
 	if (entry->transmissionTime < deadline)
 	  deadline = entry->transmissionTime;	
