@@ -22,8 +22,6 @@
  * @file util/network/select.c
  * @brief (network) input/output operations
  * @author Christian Grothoff
- *
- * TODO: memory management (pool allocation!)
  */
 
 #include "gnunet_util_network.h"
@@ -78,9 +76,14 @@ typedef struct {
   unsigned int rsize;
 
   /**
-   * Position in the write buffer
+   * Position in the write buffer (for sending)
    */
-  unsigned int wpos;
+  unsigned int wspos;
+
+  /**
+   * Position in the write buffer (for appending)
+   */
+  unsigned int wapos;
 
   /**
    * Size of the write buffer
@@ -360,8 +363,8 @@ static int writeAndProcess(SelectHandle * sh,
   while (sh->shutdown == NO) {
     ret = socket_send(sock,
 		      NC_Nonblocking,
-		      session->wbuff,
-		      session->wpos,
+		      &session->wbuff[session->wspos],
+		      session->wapos - session->wspos,
 		      &size);
 #if DEBUG_SELECT
     GE_LOG(sh->ectx,
@@ -387,17 +390,12 @@ static int writeAndProcess(SelectHandle * sh,
 	destroySession(sh, session);
 	return SYSERR;
       }
-      if (size == session->wpos) {
-	session->wpos = 0;
-	GROW(session->wbuff,
-	     session->wsize,
-	     0);
-	break;
+      session->wspos += size;
+      if (session->wspos == session->wapos) {
+	/* free compaction! */
+	session->wspos = 0;
+	session->wapos = 0;
       }
-      memmove(session->wbuff,
-	      &session->wbuff[size],
-	      session->wpos - size);
-      session->wpos -= size;
       break;
     }
     GE_ASSERT(sh->ectx, ret == NO);
@@ -482,7 +480,8 @@ static void * selectThread(void * ctx) {
 #endif
 	add_to_select_set(sock, &readSet, &max);
 	add_to_select_set(sock, &errorSet, &max);
-	if (session->wpos > 0)
+	GE_ASSERT(NULL, session->wapos >= session->wspos);
+	if (session->wapos > session->wspos)
 	  add_to_select_set(sock, &writeSet, &max); /* do we have a pending write request? */
       }
     }
@@ -558,7 +557,9 @@ static void * selectThread(void * ctx) {
 	    socket_destroy(sock);
 	  } else {
 	    session = MALLOC(sizeof(Session));
-	    memset(session, 0, sizeof(Session));
+	    memset(session,
+		   0,
+		   sizeof(Session));
 	    session->sock = sock;
 	    session->sock_ctx = sctx;
 	    session->lastUse = get_time();
@@ -923,6 +924,8 @@ int select_write(struct SelectHandle * sh,
   int i;
   unsigned short len;
   int fresh_write;
+  char * newBuffer;
+  unsigned int newBufferSize;
 
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
@@ -944,18 +947,52 @@ int select_write(struct SelectHandle * sh,
     MUTEX_UNLOCK(sh->lock);
     return SYSERR;
   }
-  if (session->wsize + len > sh->memory_quota) {
+  GE_ASSERT(NULL, session->wapos >= session->wspos);
+  if ( (sh->memory_quota > 0) &&
+       (session->wapos - session->wspos + len > sh->memory_quota) ) {
+    /* not enough free space, not allowed to grow that much */
     MUTEX_UNLOCK(sh->lock);
     return NO;
   }
-  fresh_write = (session->wsize == 0);
-  GROW(session->wbuff,
-       session->wsize,
-       session->wsize + len);
-  memcpy(&session->wbuff[session->wpos],
+  fresh_write = (session->wapos == session->wspos);
+  if (session->wsize - session->wapos < len) {
+    /* need to make space in some way or other */
+    if (session->wapos - session->wspos + len <= session->wsize) {
+      /* can compact buffer to get space */
+      memmove(session->wbuff,
+	      &session->wbuff[session->wspos],
+	      session->wapos - session->wspos);
+      session->wapos -= session->wspos;
+      session->wspos = 0;
+    } else {
+      /* need to grow buffer */
+      newBufferSize = session->wsize;
+      if (session->wsize == 0)
+	newBufferSize = 4092;
+      while (newBufferSize < len + session->wapos - session->wspos)
+	newBufferSize *= 2;
+      if ( (sh->memory_quota > 0) &&
+	   (newBufferSize > sh->memory_quota) )
+	newBufferSize = sh->memory_quota;
+      GE_ASSERT(NULL, 
+		newBufferSize >= len + session->wapos - session->wspos);
+      newBuffer = MALLOC(newBufferSize);
+      memcpy(newBuffer,
+	     &session->wbuff[session->wspos],
+	     session->wapos - session->wspos);
+      FREENONNULL(session->wbuff);
+      session->wbuff = newBuffer;
+      session->wsize = newBufferSize;
+      session->wapos = session->wapos - session->wspos;
+      session->wspos = 0;
+    }
+  }
+  GE_ASSERT(NULL,
+	    session->wapos + len <= session->wsize);
+  memcpy(&session->wbuff[session->wapos],
 	 msg,
-	 len);
-  session->wpos += len;
+	 len);  
+  session->wapos += len;
   MUTEX_UNLOCK(sh->lock);
   if (fresh_write)
     signalSelect(sh);
