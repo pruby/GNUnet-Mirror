@@ -62,6 +62,7 @@ notes:
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Chat support basics [RC]
+- better NAT traversal (STUN/STUNT inspired?)
 - Documentation:
   * LJ article
 - Testcases:
