@@ -42,11 +42,6 @@ typedef struct DHT_GET_RECORD {
   HashCode512 key;
 
   /**
-   * Semaphore used to signal completion of timeout cron job.
-   */
-  struct SEMAPHORE * sem;
-
-  /**
    * Function to call for each result.
    */
   DataProcessor callback;
@@ -99,7 +94,6 @@ static void timeout_callback(void * cls) {
   struct DHT_GET_RECORD * rec = cls;
 
   rec->callbackComplete(rec->closure);
-  SEMAPHORE_UP(rec->sem);
 }
 
 /**
@@ -113,9 +107,11 @@ static void timeout_callback(void * cls) {
  * @param table table to use for the lookup
  * @param key the key to look up
  * @param timeout how long to wait until this operation should
- *        automatically time-out -- FIXME: not yet supported!
+ *        automatically time-out
  * @param callback function to call on each result
  * @param closure extra argument to callback
+ * @param callbackComplete function called on time-out
+ *        (but not on explicit async_stop).
  * @return handle to stop the async get
  */
 static struct DHT_GET_RECORD *
@@ -130,7 +126,6 @@ dht_get_async_start(unsigned int type,
 
   ret = MALLOC(sizeof(DHT_GET_RECORD));
   ret->key = *key;
-  ret->sem = SEMAPHORE_CREATE(0);
   ret->callback = callback;
   ret->cls = cls;
   ret->callbackComplete = callbackComplete;
@@ -153,17 +148,18 @@ dht_get_async_start(unsigned int type,
  */
 static int
 dht_get_async_stop(struct DHT_GET_RECORD * record) {
+  cron_suspend(coreAPI->cron,
+	       YES);
+  cron_del_job(coreAPI->cron,
+	       &timeout_callback,
+	       0,
+	       record);		
+  cron_resume_jobs(coreAPI->cron,
+		   YES);
   dht_get_stop(&record->key,
 	       record->type,
 	       &client_result_converter,
 	       record);  
-  cron_advance_job(coreAPI->cron,
-		   &timeout_callback,
-		   0,
-		   record);		
-  /* wait for cron-job to complete! */
-  SEMAPHORE_DOWN(record->sem, YES);
-  SEMAPHORE_DESTROY(record->sem);
   FREE(record);
   return OK;
 }

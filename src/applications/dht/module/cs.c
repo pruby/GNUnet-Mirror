@@ -33,6 +33,8 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
+#define DEBUG_CS YES
+
 /**
  * Global core API.
  */
@@ -77,6 +79,16 @@ static int csPut(struct ClientHandle * client,
     - sizeof(CS_dht_request_put_MESSAGE);
   GE_ASSERT(NULL, 
 	    size < MAX_BUFFER_SIZE);
+#if DEBUG_CS
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "`%s' at %s:%d processes put '%.*s'\n",
+	 __FUNCTION__,
+	 __FILE__,
+	 __LINE__,
+	 size,
+	 &req[1]);
+#endif
   dhtAPI->put(&req->key,
 	      ntohl(req->type),
 	      size,
@@ -106,6 +118,7 @@ static int get_result(const HashCode512 * key,
   memcpy(&msg[1],
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));
+#if DEBUG_CS
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' at %s:%d processes reply '%.*s'\n",
@@ -114,6 +127,7 @@ static int get_result(const HashCode512 * key,
 	 __LINE__,
 	 ntohl(value->size) - sizeof(DataContainer),
 	 &value[1]);
+#endif
   if (OK != coreAPI->sendToClient(record->client,
 				  &msg->header)) {
     GE_LOG(coreAPI->ectx,
@@ -156,6 +170,14 @@ static int csGet(struct ClientHandle * client,
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+#if DEBUG_CS
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "`%s' at %s:%d processes get\n",
+	 __FUNCTION__,
+	 __FILE__,
+	 __LINE__);
+#endif
   get = (const CS_dht_request_get_MESSAGE *) message;
   cpc = MALLOC(sizeof(DHT_CLIENT_GET_RECORD));
   cpc->client = client;
