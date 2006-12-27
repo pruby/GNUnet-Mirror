@@ -67,22 +67,24 @@
  * </li><li>
  *
  * The last category identifies a datum on a specific machine.  The
- * format is "gnunet://ecrs/loc/PEER/QUERY.TYPE.KEY.SIZE".  MACHINE is
- * the EncName of the peer storing the datum, TYPE is the (block) type
- * of the datum and SIZE is the number of bytes.  KEY is used to decrypt
- * the data whereas QUERY is the request that should be transmitted to
- * the PEER.
+ * format is "gnunet://ecrs/loc/PEER/INFO/HEX1.HEX2.SIZE".  PEER is
+ * the EncName of the peer storing the datum, INFO contains HELLO
+ * information about peer and signatures for the URI content and the
+ * HELLO itself; HEX1, HEX2 and SIZE correspond to a 'chk' URI.
  *
  * </li></ul>
  *
  * The encoding for hexadecimal values is defined in the hashing.c
  * module (EncName) in the gnunet-util library and discussed there.
  * <p>
- *
+ * 
+ * TODO:
+ * - conversion of LOC URIs from and to strings!
  */
 
 #include "platform.h"
 #include "ecrs.h"
+#include "gnunet_protocols.h"
 #include "gnunet_ecrs_lib.h"
 
 /**
@@ -403,7 +405,8 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
 	 uri->data.ksk.keywordCount,
 	 0);
   }
-
+  if (uri->type == loc)
+    FREENONNULL(uri->data.loc.address);
   FREE(uri);
 }
 
@@ -483,8 +486,7 @@ int ECRS_isKeywordUri(const struct ECRS_URI * uri) {
 unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri) {
   if (uri->type != ksk)
     return 0;
-  else
-    return uri->data.ksk.keywordCount;
+  return uri->data.ksk.keywordCount;
 }
 
 /**
@@ -533,7 +535,7 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
   case chk:
     return ntohll(uri->data.chk.file_length);
   case loc:
-    return ntohll(uri->data.loc.size);
+    return ntohll(uri->data.loc.chk.file_length);
   default:
     GE_ASSERT(NULL, 0);
   }
@@ -722,8 +724,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
 		    &uri2->data.chk,
 		    sizeof(FileIdentifier)))
       return YES;
-    else
-      return NO;
+    return NO;
   case sks:
     if (equalsHashCode512(&uri1->data.sks.namespace,
 			  &uri2->data.sks.namespace) &&
@@ -731,8 +732,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
 			  &uri2->data.sks.identifier) )
 	
       return YES;
-    else
-      return NO;
+    return NO;
   case ksk:
     if (uri1->data.ksk.keywordCount !=
 	uri2->data.ksk.keywordCount)
@@ -750,9 +750,146 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
 	return NO;			
     }
     return YES;
+  case loc:
+    if (memcmp(&uri1->data.loc,
+	       &uri2->data.loc,
+	       sizeof(FileIdentifier) +
+	       sizeof(PublicKey) + 
+	       sizeof(TIME_T) +
+	       sizeof(unsigned short) +
+	       sizeof(unsigned short)) != 0)
+      return NO;
+    if (memcmp(&uri1->data.loc.helloSignature,
+	       &uri2->data.loc.helloSignature,
+	       sizeof(Signature) * 2) != 0)
+      return NO;
+    if (memcmp(uri1->data.loc.address,
+	       uri2->data.loc.address,
+	       uri1->data.loc.sas) != 0)
+      return NO;
+    return YES;	       
   default:
     return NO;
   }
+}
+
+/**
+ * Obtain the identity of the peer offering the data
+ * @return -1 if this is not a location URI, otherwise OK
+ */
+int ECRS_getPeerFromUri(const struct ECRS_URI * uri,
+			PeerIdentity * peer) {
+  if (uri->type != loc)
+    return -1;
+  hash(&uri->data.loc.peer,
+       sizeof(PublicKey),
+       &peer->hashPubKey);
+  return OK;
+}
+
+/**
+ * (re)construct the HELLO message of the peer offerin the data
+ *
+ * @return NULL if this is not a location URI
+ */
+P2P_hello_MESSAGE *
+ECRS_getHelloFromUri(const struct ECRS_URI * uri) {
+  P2P_hello_MESSAGE * hello;
+
+  if (uri->type != loc)
+    return NULL;
+  hello = MALLOC(sizeof(P2P_hello_MESSAGE) + uri->data.loc.sas);
+  hello->header.size = htons(sizeof(P2P_hello_MESSAGE) + uri->data.loc.sas);
+  hello->header.type = htons(p2p_PROTO_hello);
+  hello->MTU = htonl(uri->data.loc.mtu);
+  hello->senderAddressSize = htons(uri->data.loc.sas);
+  hello->protocol = htons(uri->data.loc.proto);
+  hello->expirationTime = htonl(uri->data.loc.expirationTime);
+  hello->publicKey = uri->data.loc.peer;
+  hash(&hello->publicKey,
+       sizeof(PublicKey),
+       &hello->senderIdentity.hashPubKey);
+  hello->signature = uri->data.loc.helloSignature;
+  memcpy(&hello[1],
+	 uri->data.loc.address,
+	 uri->data.loc.sas);
+  return hello;
+}
+
+/**
+ * Obtain the URI of the content itself.
+ *
+ * @return NULL if argument is not a location URI
+ */
+struct ECRS_URI *
+ECRS_getContentUri(const struct ECRS_URI * uri) {
+  struct ECRS_URI * ret;
+
+  if (uri->type != loc)
+    return NULL;
+   ret = MALLOC(sizeof(struct ECRS_URI));
+  ret->type = chk;
+  ret->data.chk = uri->data.loc.chk;
+  return ret;
+}
+
+/**
+ * Construct a location URI.
+ *
+ * @param baseURI content offered by the sender
+ * @param sender identity of the peer with the content
+ * @param expirationTime how long will the content be offered?
+ * @param proto transport protocol to reach the peer
+ * @param sas sender address size (for HELLO)
+ * @param address sas bytes of address information
+ * @param signer function to call for obtaining 
+ *        RSA signatures for "sender".
+ * @return the location URI
+ */
+struct ECRS_URI *
+ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
+		     const PublicKey * sender,
+		     TIME_T expirationTime,
+		     unsigned short proto,
+		     unsigned short sas,
+		     unsigned int mtu,
+		     char * address,
+		     ECRS_SignFunction signer) {
+  struct ECRS_URI * uri;
+  P2P_hello_MESSAGE * hello;
+  
+
+  if (baseUri->type != chk)
+    return NULL;
+
+  uri = MALLOC(sizeof(struct ECRS_URI));
+  uri->data.loc.chk = baseUri->data.chk;
+  uri->data.loc.peer = *sender;
+  uri->data.loc.expirationTime = expirationTime;
+  uri->data.loc.proto = proto;
+  uri->data.loc.sas = sas;
+  uri->data.loc.mtu = mtu;
+  if (sas > 0) {
+    uri->data.loc.address = MALLOC(sas);
+    memcpy(uri->data.loc.address,
+	   address,
+	   sas);
+  } else {
+    uri->data.loc.address = NULL;
+  }
+  hello = ECRS_getHelloFromUri(uri);
+  signer(&hello->senderIdentity,
+	 P2P_hello_MESSAGE_size(hello)
+	 - sizeof(Signature)
+	 - sizeof(PublicKey)
+	 - sizeof(MESSAGE_HEADER), 
+	 &uri->data.loc.helloSignature);
+  signer(&uri->data.loc.chk,
+	 sizeof(FileIdentifier) + 
+	 sizeof(PublicKey) +
+	 sizeof(TIME_T),
+	 &uri->data.loc.contentSignature);
+  return uri;
 }
 
 

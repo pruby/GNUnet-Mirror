@@ -28,6 +28,7 @@
 #define GNUNET_ECRS_LIB_H
 
 #include "gnunet_util.h"
+#include "gnunet_core.h"
 #include <extractor.h>
 
 #ifdef __cplusplus
@@ -50,9 +51,10 @@ extern "C" {
  * 3.2.x: with collections
  * 4.0.x: with expiration, variable meta-data, kblocks
  * 4.1.x: with new error and configuration handling
- * 5.x.x: who knows? :-)
+ * 5.0.x: with location URIs
+ * 6.x.x: who knows? :-)
  */
-#define AFS_VERSION "4.1.1"
+#define AFS_VERSION "5.0.0"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
@@ -296,6 +298,61 @@ int ECRS_getKeywordsFromUri(const struct ECRS_URI * uri,
 			    void * cls);
 
 /**
+ * Obtain the identity of the peer offering the data
+ * @return -1 if this is not a location URI, otherwise OK
+ */
+int ECRS_getPeerFromUri(const struct ECRS_URI * uri,
+			PeerIdentity * peer);
+
+/**
+ * (re)construct the HELLO message of the peer offerin the data
+ *
+ * @return NULL if this is not a location URI
+ */
+P2P_hello_MESSAGE *
+ECRS_getHelloFromUri(const struct ECRS_URI * uri);
+
+/**
+ * Obtain the URI of the content itself.
+ *
+ * @return NULL if argument is not a location URI
+ */
+struct ECRS_URI *
+ECRS_getContentUri(const struct ECRS_URI * uri);
+
+/**
+ * Function that produces a signature for
+ * a particular piece of content.
+ */
+typedef int (*ECRS_SignFunction)(const void * data,
+				 unsigned short size,
+				 Signature * result);
+
+/**
+ * Construct a location URI.
+ *
+ * @param baseURI content offered by the sender
+ * @param sender identity of the peer with the content
+ * @param expirationTime how long will the content be offered?
+ * @param proto transport protocol to reach the peer
+ * @param sas sender address size (for HELLO)
+ * @param address sas bytes of address information
+ * @param signer function to call for obtaining 
+ *        RSA signatures for "sender".
+ * @return the location URI
+ */
+struct ECRS_URI *
+ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
+		     const PublicKey * sender,
+		     TIME_T expirationTime,
+		     unsigned short proto,
+		     unsigned short sas,
+		     unsigned int mtu,
+		     char * address,
+		     ECRS_SignFunction signer);
+
+
+/**
  * Duplicate URI.
  */
 struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
@@ -344,7 +401,6 @@ struct ECRS_URI *
 ECRS_parseListKeywordURI(struct GE_Context * ectx,
 			 unsigned int num_keywords,
 			 const char ** keywords);
-
 
 /**
  * Test if two URIs are equal.
@@ -396,9 +452,11 @@ int ECRS_isFileUri(const struct ECRS_URI * uri);
 unsigned long long ECRS_fileSize(const struct ECRS_URI * uri);
 
 /**
- * Is this a location URI? (DHT specific!)
+ * Is this a location URI?
  */
 int ECRS_isLocationUri(const struct ECRS_URI * uri);
+
+
 
 /**
  * Construct a keyword-URI from meta-data (take all entries

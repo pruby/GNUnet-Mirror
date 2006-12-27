@@ -583,6 +583,7 @@ src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
 src/transports/Makefile
+src/transports/upnp/Makefile
 src/util/Makefile
 src/util/boot/Makefile
 src/util/config/Makefile

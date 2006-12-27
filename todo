@@ -32,8 +32,8 @@ notes:
 - new features:
   * XFS / support for location URIs [CG] 
     + dht/routing: handle routing loops [RC]
+    + ECRS-URI: toString/fromString for loc URIs [RC]
     + dht/gap integration [RC]
-    + ecrs/location URIs [RC]
     + fsui/location URI support [RC]
     + dht/routing: GET retries (optimization)
     + dstore bloomfilter (optimization)
@@ -61,7 +61,9 @@ notes:
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Chat support basics [RC]
-- better NAT traversal (STUN/STUNT inspired?)
+- better NAT traversal:
+  * UPnP
+  * NAT-PMP
 - old/new features:
   * SMTP transport (libesmtp)
   * SMTP logger
