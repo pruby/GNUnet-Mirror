@@ -96,7 +96,7 @@ static void do_get(struct ClientServerConnection * sock,
 		    &printCallback,
 		    (void*) key);
   if (ret == 0)
-    printf("%s(%s) operation returned no results.\n",
+    printf(_("%s(%s) operation returned no results.\n"),
 	   "get",
 	   key);
 }
@@ -115,7 +115,7 @@ static void do_put(struct ClientServerConnection * sock,
   memcpy(&dc[1], value, strlen(value));
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Issuing '%s(%s,%s)' command.\n",
+	 _("Issuing '%s(%s,%s)' command.\n"),
 	 "put",
 	 key,
 	 value);
