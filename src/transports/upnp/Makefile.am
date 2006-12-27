@@ -12,17 +12,19 @@ lib_LTLIBRARIES = \
 
 libgnunetupnp_la_SOURCES = \
  error.c error.h \
- upnp.c upnp.h \
  util.c util.h \
- xmlnode.c xmlnode.h
+ xmlnode.c xmlnode.h \
+ upnp.c upnp.h 
 
 libgnunetupnp_la_LDFLAGS = \
  $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ \
  -export-dynamic \
  -version-info 0:0:0
 
+# FIXME: detect libxml2 path properly!
 libgnunetupnp_la_CFLAGS = \
  -I$(top_scrdir)/include \
+ -I/usr/include/libxml2 \
  @GNUNETGTK_CFLAGS@ \
  @GTK_CFLAGS@ 
 

@@ -184,6 +184,7 @@ gaim_url_parse(const char *url, char **ret_host, int *ret_port,
 }
 
 
+gboolean
 gaim_str_has_prefix(const char *s, const char *p)
 {
 #if GLIB_CHECK_VERSION(2,2,0)

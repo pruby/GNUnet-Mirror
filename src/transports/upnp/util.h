@@ -29,6 +29,8 @@
 #define _GAIM_UTIL_H_
 
 #include <stdio.h>
+#include <string.h>
+#include <glib.h>
 
 #ifdef __cplusplus
 extern "C" {

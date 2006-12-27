@@ -1,0 +1,7 @@
+1) figure out which external GNUnet API we want to have
+2) figure out how control should work
+   (replace gaim_timeout/input_add/remove with
+    GNUnet-ish constructs)
+3) adjust configure to check for libxml2
+4) integrate with transports
+

@@ -29,9 +29,6 @@
 
 #include "platform.h"
 
-#include <libxml/parser.h>
-#include <string.h>
-#include <glib.h>
 #include "xmlnode.h"
 #include "util.h"
 
