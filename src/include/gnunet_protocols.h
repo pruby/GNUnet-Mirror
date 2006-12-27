@@ -248,33 +248,25 @@ extern "C" {
 #define CS_PROTO_chat_MSG 44
 
 
-/* ********** CS TESTBED application messages ********** */
-
-#define CS_PROTO_testbed_REQUEST 50
-#define CS_PROTO_testbed_REPLY   51
-
-
 /* ********** CS DHT application messages ********** */
 
 /**
  * Client to CS or CS to client: get from table
  */
-#define CS_PROTO_dht_REQUEST_GET      72
+#define CS_PROTO_dht_REQUEST_GET      48
 
 /**
  * Client to CS or CS to client: put into table
  */
-#define CS_PROTO_dht_REQUEST_PUT      73
+#define CS_PROTO_dht_REQUEST_PUT      49
 
-/**
- * Client to CS or CS to client: results from get
- */
-#define CS_PROTO_dht_REPLY_GET        74
 
-/**
- * Client to CS or CS to client: confirmed
- */
-#define CS_PROTO_dht_REPLY_ACK        75
+/* ********** CS TESTBED application messages ********** */
+
+#define CS_PROTO_testbed_REQUEST 50
+
+#define CS_PROTO_testbed_REPLY   51
+
 
 
 /* ************* CS VPN messages ************* */

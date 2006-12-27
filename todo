@@ -31,10 +31,11 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + dht/cs: not done yet [RC]
     + dht/tools: update clients [RC]
     + dht/gap integration [RC]
-    + dstore bloomfilter
+    + ecrs/location URIs [RC]
+    + fsui/location URI support [RC]
+    + dstore bloomfilter (optimization)
   * HTTP transport (libcurl, libmicrohttpd)
   * SMTP transport (libesmtp)
   * SMTP logger

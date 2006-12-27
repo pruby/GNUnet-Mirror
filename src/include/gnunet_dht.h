@@ -31,7 +31,6 @@
 #define GNUNET_DHT_H
 
 #include "gnunet_util.h"
-#include "gnunet_blockstore.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,48 +39,31 @@ extern "C" {
 #endif
 #endif
 
-
-/* ************* API specific errorcodes *********** */
-
-#define DHT_ERRORCODES__TIMEOUT -2
-#define DHT_ERRORCODES__OUT_OF_SPACE -3
-#define DHT_ERRORCODES__TABLE_NOT_FOUND -4
-
-
-/* ************************* CS messages ***************************** */
-/* these messages are exchanged between gnunetd and the clients (APIs) */
-
-/**
- * DHT table identifier.  A special identifier (all zeros) is
- * used internally by the DHT.  That table is used to lookup
- * tables.  The GNUnet DHT infrastructure supports multiple
- * tables, the table to lookup peers is just one of these.
- */
-typedef HashCode512 DHT_TableId;
-
-#define equalsDHT_TableId(a,b) equalsHashCode512(a,b)
-
 /**
  * TCP communication: put <key,value>-mapping to table.
- * Reply is an ACK.
+ * When send by a client to gnunetd, this message is
+ * used to initiate a PUT on the DHT.  gnunetd also
+ * uses this message to communicate results from a GET
+ * operation back to the client.<p>
+ *
+ * The given struct is followed by the value.
  */
 typedef struct {
 
   MESSAGE_HEADER header;
 
-  DHT_TableId table;
+  unsigned int type; /* nbo */
 
-  unsigned long long timeout;  /* nbo */
+  unsigned long long expire;  /* nbo */
 
   HashCode512 key;
-
-  unsigned int priority; /* nbo */
 
 } CS_dht_request_put_MESSAGE;
 
 /**
- * TCP communication: get <key,value>-mappings
- * for given key. Reply is a CS_dht_reply_results_MESSAGE message.
+ * TCP communication: get <key,value>-mappings for given key. Reply is
+ * a CS_dht_request_put_MESSAGE messages.  Clients can abort
+ * the GET operation early by closing the connection.
  */
 typedef struct {
 
@@ -91,46 +73,9 @@ typedef struct {
 
   unsigned long long timeout;  /* nbo */
 
-  DHT_TableId table;
-
-  unsigned int priority; /* nbo */
-
-  /* one or more keys */
-  HashCode512 keys;
-
-} CS_dht_request_get_MESSAGE;
-
-/**
- * TCP communication: Results for a request.  Uses a separate message
- * for each result; CS_dht_reply_results_MESSAGE maybe repeated many
- * times (the total number is given in totalResults).
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-  unsigned int totalResults;
-
-  DHT_TableId table;
-
   HashCode512 key;
 
-  DataContainer data;
-
-} CS_dht_reply_results_MESSAGE;
-
-/**
- * TCP communication: status response for a request
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-  int status; /* NBO */
-
-  DHT_TableId table;
-
-} CS_dht_reply_ack_MESSAGE;
+} CS_dht_request_get_MESSAGE;
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

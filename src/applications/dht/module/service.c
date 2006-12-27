@@ -28,7 +28,7 @@
 #include "dstore.h"
 #include "table.h"
 #include "routing.h"
-#include "service.h"
+#include "gnunet_dht_service.h"
 
 /**
  * Global core API.
