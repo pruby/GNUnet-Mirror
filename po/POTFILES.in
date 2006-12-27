@@ -245,7 +245,7 @@ src/include/gnunet_sqstore_service.h
 src/include/gnunet_util_error_loggers.h
 src/include/gnunet_getoption_lib.h
 src/include/gnunet_util_network_client.h
-src/include/gnunet_dht.h
+src/include/dht.h
 src/include/core.h
 src/include/winproc.h
 src/include/gnunet_util_config_impl.h
@@ -297,8 +297,6 @@ src/applications/fs/module/anonymity.h
 src/applications/fs/module/migration.h
 src/applications/datastore/prefetch.h
 src/applications/datastore/filter.h
-src/applications/dht/module/service.h
-src/applications/dht/module/dht.h
 src/applications/dht/module/dstore.h
 src/applications/dht/module/routing.h
 src/applications/dht/module/table.h
