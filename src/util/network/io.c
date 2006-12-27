@@ -28,6 +28,8 @@
 #include "platform.h"
 #include "network.h"
 
+#define DEBUG_IO NO
+
 /**
  * Global lock for gethostbyname.
  */
@@ -246,9 +248,11 @@ int socket_recv(struct SocketHandle * s,
 	*read = pos;
 	return (pos == 0) ? NO : YES;
       }
+#if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
 		      GE_DEBUG | GE_USER | GE_REQUEST,
 		      "recv");
+#endif
       *read = pos;
       return SYSERR;
     }
@@ -325,9 +329,11 @@ int socket_recv_from(struct SocketHandle * s,
 	*read = pos;
 	return (pos == 0) ? NO : YES;
       }
+#if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
 		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "recv");
+		      "recvfrom");
+#endif
       *read = pos;
       return SYSERR;
     }
@@ -400,9 +406,11 @@ int socket_send(struct SocketHandle * s,
 	*sent = pos;
 	return (pos == 0) ? NO : YES;
       }
+#if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
 		      GE_DEBUG | GE_USER | GE_REQUEST,
 		      "send");
+#endif
       *sent = pos;
       return SYSERR;
     }
@@ -479,9 +487,11 @@ int socket_send_to(struct SocketHandle * s,
 	*sent = pos;
 	return (pos == 0) ? NO : YES;
       }
+#if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
 		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "send");
+		      "sendto");
+#endif
       *sent = pos;
       return SYSERR;
     }

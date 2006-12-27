@@ -2417,6 +2417,7 @@ static void cronDecreaseLiveness(void *unused) {
 	total_allowed_recv += root->idealized_limit;
         if ( (now > root->isAlive) && /* concurrency might make this false... */
 	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS) ) {
+#if DEBUG_CONNECTION
           EncName enc;
 
           /* switch state form UP to DOWN: too much inactivity */
@@ -2430,6 +2431,7 @@ static void cronDecreaseLiveness(void *unused) {
 		 "too much inactivity (%llu ms)\n",
 		 &enc,
 		 now - root->isAlive);
+#endif
           shutdownConnection(root);
           /* the host may still be worth trying again soon: */
           identity->whitelistHost(&root->session.sender);
@@ -2656,7 +2658,9 @@ int checkHeader(const PeerIdentity * sender,
 static int handleHANGUP(const PeerIdentity * sender,
                         const MESSAGE_HEADER * msg) {
   BufferEntry *be;
+#if DEBUG_CONNECTION
   EncName enc;
+#endif
 
   ENTRY();
   if(ntohs(msg->size) != sizeof(P2P_hangup_MESSAGE))
@@ -2665,14 +2669,16 @@ static int handleHANGUP(const PeerIdentity * sender,
 		 &((P2P_hangup_MESSAGE *) msg)->sender,
 		 sizeof(PeerIdentity)))
     return SYSERR;
+#if DEBUG_CONNECTION
   IF_GELOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&sender->hashPubKey,
 		    &enc));
   GE_LOG(ectx,
-	 GE_INFO | GE_BULK | GE_USER,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "received HANGUP from `%s'\n",
 	 &enc);
+#endif
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if(be == NULL) {
