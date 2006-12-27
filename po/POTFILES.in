@@ -78,11 +78,9 @@ src/applications/dstore/dstore.c
 src/applications/dht/tools/dht_api.c
 src/applications/dht/tools/dhttest2.c
 src/applications/dht/tools/dht-query.c
-src/applications/dht/module/datastore_memory_test.c
 src/applications/dht/module/service.c
 src/applications/dht/module/routing.c
 src/applications/dht/module/table.c
-src/applications/dht/module/dht.c
 src/applications/dht/module/dstore.c
 src/applications/dht/module/cs.c
 src/applications/testbed/gnunet-testbed.c
