@@ -68,7 +68,7 @@ static int printCallback(const HashCode512 * hash,
   printf("%s(%s): '%.*s'\n",
 	 "get",
 	 key,
-	 ntohl(data->size),
+	 ntohl(data->size) - sizeof(DataContainer),
 	 (char*)&data[1]);
   return OK;
 }
