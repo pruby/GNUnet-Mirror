@@ -175,7 +175,8 @@ int main(int argc,
 		"key");
 	break;
       } else {
-	do_get(handle, argv[++i]);
+	do_get(handle, argv[i+1]);
+	i += 2;
       }
       continue;
     }
@@ -189,7 +190,7 @@ int main(int argc,
 	break;
       } else {
 	do_put(handle, argv[i+1], argv[i+2]);
-	i+=2;
+	i += 3;
       }
       continue;
     }
