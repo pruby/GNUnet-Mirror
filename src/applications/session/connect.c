@@ -333,7 +333,8 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 	 printSKEY(sk),
 	 size,
 	 ping != NULL ? "ping":"",
-	 pong != NULL ? "pong":"");
+	 pong != NULL ? "pong":"",
+	 &enc);
 #endif
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
