@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
@@ -42,7 +43,7 @@ static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-dht-query command line options

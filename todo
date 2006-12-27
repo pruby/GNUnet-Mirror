@@ -31,11 +31,11 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
+    + dht/routing: GET retries [RC]
+    + dht/routing: handle routing loops [RC]
     + dht/gap integration [RC]
     + ecrs/location URIs [RC]
     + fsui/location URI support [RC]
-    + dht/routing: GET retries [RC]
-    + dht/routing: handle routing loops [RC]
     + dstore bloomfilter (optimization)
   * HTTP transport (libcurl, libmicrohttpd)
 - minor improvements:
