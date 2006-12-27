@@ -196,10 +196,9 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
  *
  * @param table table to use for the lookup
  * @param key the key to store
- * @param timeout how long to wait until this operation should
- *        automatically time-out
+ * @param expire how long until the content should expire (absolute time)
  * @param value what to store
- * @return OK on success, SYSERR on error (or timeout)
+ * @return OK on success, SYSERR on error
  */
 int DHT_LIB_put(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,
@@ -210,7 +209,13 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   struct ClientServerConnection * sock;
   CS_dht_request_put_MESSAGE * req;
   int ret;
+  cron_t now;
 
+  now = get_time();
+  if (expire < now) {
+    GE_BREAK(ectx, 0); /* content already expired!? */
+    return SYSERR;
+  }
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "DHT_LIB_put called with value '%.*s'\n",
@@ -233,7 +238,7 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
     = htons(CS_PROTO_dht_REQUEST_PUT);
   req->key = *key;
   req->type = htonl(type);
-  req->expire = htonll(expire);
+  req->expire = htonll(expire - now); /* convert to relative time */
   memcpy(&req[1],
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));

@@ -41,7 +41,7 @@
 #include "querymanager.h"
 #include "fs.h"
 
-#define DEBUG_FS YES
+#define DEBUG_FS NO
 
 typedef struct {
   struct DHT_GET_RECORD * rec;

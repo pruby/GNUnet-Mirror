@@ -28,6 +28,8 @@
 #include "dstore.h"
 #include "gnunet_blockstore.h"
 
+#define DEBUG_DSTORE NO
+
 static Dstore_ServiceAPI * dstore;
 
 static CoreAPIForApplication * coreAPI;
@@ -54,8 +56,16 @@ void dht_store_put(unsigned int type,
 		   cron_t discard_time,
 		   unsigned int size,
 		   const char * data) {
-  if (discard_time < get_time())
+  if (discard_time < get_time()) {
+#if DEBUG_DSTORE
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   "Content already expired (%llu < %llu), will not keep.\n",
+	   discard_time,
+	   get_time());
+#endif
     return;
+  }
   dstore->put(key,
 	      type,
 	      discard_time,

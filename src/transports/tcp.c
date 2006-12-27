@@ -264,10 +264,12 @@ static P2P_hello_MESSAGE * createhello() {
 	   _("Could not determine my public IP address.\n"));
     return NULL;
   }
+#if DEBUG_TCP
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
 	 "TCP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)));
+#endif
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

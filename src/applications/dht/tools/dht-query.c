@@ -112,7 +112,9 @@ static void do_put(struct ClientServerConnection * sock,
 	      + strlen(value));
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
-  memcpy(&dc[1], value, strlen(value));
+  memcpy(&dc[1],
+	 value,
+	 strlen(value));
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("Issuing '%s(%s,%s)' command.\n"),
@@ -125,7 +127,7 @@ static void do_put(struct ClientServerConnection * sock,
 			ectx,
 			&hc,
 			DHT_STRING2STRING_BLOCK,
-			timeout,
+			timeout + get_time(), /* convert to absolute time */
 			dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "put",

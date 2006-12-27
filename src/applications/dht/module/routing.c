@@ -42,6 +42,8 @@
 #include "gnunet_protocols.h"
 #include "gnunet_stats_service.h"
 
+#define DEBUG_ROUTING NO
+
 /**
  * @brief record used for sending response back
  */
@@ -204,6 +206,8 @@ static void routeResult(const HashCode512 * key,
   int found;
   HashCode512 hc;
   DHT_RESULT_MESSAGE * result;
+  unsigned int routed;
+  unsigned int tracked;
 
   if (cls != NULL) {
     result = cls;
@@ -220,11 +224,14 @@ static void routeResult(const HashCode512 * key,
   hash(data,
        size,
        &hc);
+  routed = 0;
+  tracked = 0;
   MUTEX_LOCK(lock);
   for (i=0;i<rt_size;i++) {
     q = records[i];
     if (q == NULL)
       continue;
+    tracked++;
     if ( (ntohl(q->get->type) != type) ||
 	 (0 != memcmp(key,
 		      &q->get->key,
@@ -243,10 +250,16 @@ static void routeResult(const HashCode512 * key,
     GROW(q->results,
 	 q->result_count,
 	 q->result_count + 1);
+    routed++;
     q->results[q->result_count-1] = hc;
     if (0 != memcmp(&q->source.source,
 		    coreAPI->myIdentity,
 		    sizeof(PeerIdentity))) {
+#if DEBUG_ROUTING
+      GE_LOG(coreAPI->ectx,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	     "Routing result to other peer\n");
+#endif
       coreAPI->unicast(&q->source.source,
 		       &result->header,
 		       0, /* FIXME: priority */
@@ -254,6 +267,11 @@ static void routeResult(const HashCode512 * key,
       if (stats != NULL)
 	stats->change(stat_replies_routed, 1);
     } else if (q->source.receiver != NULL) {
+#if DEBUG_ROUTING
+      GE_LOG(coreAPI->ectx,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	     "Routing result to local client\n");
+#endif
       q->source.receiver(key,
 			 type,
 			 size,
@@ -263,7 +281,14 @@ static void routeResult(const HashCode512 * key,
 	stats->change(stat_replies_routed, 1);
     }
   }
-  MUTEX_UNLOCK(lock);
+  MUTEX_UNLOCK(lock); 
+#if DEBUG_ROUTING
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Routed result to %u out of %u pending requests\n",
+	 routed,
+	 tracked);
+#endif
   if (cls == NULL)
     FREE(result);
 }
@@ -297,6 +322,12 @@ static void addRoute(const PeerIdentity * sender,
     q->source.source = *coreAPI->myIdentity;
   q->source.receiver = handler;
   q->source.receiver_closure = cls;
+#if DEBUG_ROUTING
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Tracking request in slot %u\n",
+	 rt_pos);
+#endif 
   rt_pos = (rt_pos + 1) % rt_size;
   MUTEX_UNLOCK(lock);
   if (stats != NULL)
@@ -330,8 +361,16 @@ static int handleGet(const PeerIdentity * sender,
 			ntohl(get->type),
 			&routeResult,
 			NULL);
-  if (total > 0)
+  if ( (total > GET_TRIES) &&
+       (sender != NULL) ) {
+#if DEBUG_ROUTING
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   "Found %d results locally, will not route GET any further\n",
+	   total);
+#endif
     return OK;
+  }
   routed = 0;
   for (i=0;i<GET_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
@@ -373,6 +412,7 @@ static int handlePut(const PeerIdentity * sender,
 		     const MESSAGE_HEADER * msg) {
   PeerIdentity next[PUT_TRIES];
   const DHT_PUT_MESSAGE * put;
+  cron_t now;
   int store;
   int i;
 
@@ -400,12 +440,31 @@ static int handlePut(const PeerIdentity * sender,
 		       0, /* FIXME: priority */
 		       5 * cronSECONDS); /* FIXME */
   }
-  if (store != 0)
+  if (store != 0) {
+    now = get_time();
+#if DEBUG_ROUTING
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   "Decided to cache data `%.*s' locally until %llu (for %llu ms)\n",
+	   ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
+	   &put[1],
+	   ntohll(put->timeout) + now,
+	   ntohll(put->timeout));
+#endif
     dht_store_put(ntohl(put->type),
 		  &put->key,
-		  ntohll(put->timeout) + get_time(),
+		  ntohll(put->timeout) + now,
 		  ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
 		  (const char*) &put[1]);
+  } else {
+#if DEBUG_ROUTING
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Decided NOT to cache data `%.*s' locally\n",
+	 ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
+	 &put[1]);
+#endif
+  }      
   return OK;
 }
 
@@ -444,6 +503,10 @@ void dht_get_start(const HashCode512 * key,
   get.prio = htonl(0); /* FIXME */
   get.reserved = htonl(0);
   get.key = *key;
+  addRoute(NULL,
+	   handler,
+	   cls,
+	   &get);	      
   handleGet(NULL,
 	    &get.header);
 }
@@ -497,7 +560,7 @@ void dht_put(const HashCode512 * key,
   put->header.type = htons(P2P_PROTO_DHT_PUT);
   put->key = *key;
   put->type = htonl(type);
-  put->timeout = htonll(expirationTime - get_time());
+  put->timeout = htonll(expirationTime - get_time()); /* convert to relative time */
   memcpy(&put[1],
 	 data,
 	 size);
@@ -523,6 +586,13 @@ int init_dht_routing(CoreAPIForApplication * capi) {
     stat_replies_routed = stats->create(gettext_noop("# dht replies routed"));
     stat_requests_routed = stats->create(gettext_noop("# dht requests routed"));
   }
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("`%s' registering p2p handlers: %d %d %d\n"),
+	 "dht",
+	 P2P_PROTO_DHT_GET,
+	 P2P_PROTO_DHT_PUT,
+	 P2P_PROTO_DHT_RESULT);
   coreAPI->registerHandler(P2P_PROTO_DHT_GET,
 			   &handleGet);
   coreAPI->registerHandler(P2P_PROTO_DHT_PUT,

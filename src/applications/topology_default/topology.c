@@ -39,6 +39,8 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
+#define DEBUG_TOPOLOGY NO
+
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
@@ -161,7 +163,9 @@ static void scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
+#if DEBUG_TOPOLOGY
   EncName enc;
+#endif
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
@@ -175,10 +179,12 @@ static void scanForHosts(unsigned int index) {
 			&scanHelperCount,
 			&indexMatch);
   if (indexMatch.matchCount == 0) {
+#if DEBUG_TOPOLOGY
     GE_LOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	   "No peers found for slot %u\n",
 	   index);
+#endif
     return; /* no matching peers found! */
   }
   if (indexMatch.costSelector > 0)
@@ -196,6 +202,7 @@ static void scanForHosts(unsigned int index) {
     GE_BREAK(NULL, 0); /* should REALLY not happen */
     return;
   }
+#if DEBUG_TOPOLOGY
   IF_GELOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
 	   hash2enc(&indexMatch.match.hashPubKey,
@@ -204,6 +211,7 @@ static void scanForHosts(unsigned int index) {
 	 GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
 	 "Trying to connect to peer `%s'\n",
 	 &enc);
+#endif
   coreAPI->unicast(&indexMatch.match,
 		   NULL,
 		   0,

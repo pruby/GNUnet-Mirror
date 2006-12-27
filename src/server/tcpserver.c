@@ -185,10 +185,12 @@ static void select_close_handler(void * ch_cls,
  */
 int sendToClient(struct ClientHandle * handle,
 		 const MESSAGE_HEADER * message) {
+#if DEBUG_TCPHANDLER
   GE_LOG(ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	 "%s: sending reply to client\n",
 	 __FUNCTION__);
+#endif
   return select_write(selector,
 		      handle->sock,
 		      message,

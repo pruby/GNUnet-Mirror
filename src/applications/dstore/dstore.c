@@ -35,6 +35,8 @@
 #include "gnunet_dstore_service.h"
 #include <sqlite3.h>
 
+#define DEBUG_DSTORE NO
+
 /**
  * Maximum size for an individual item.
  */
@@ -151,6 +153,13 @@ static int d_put(const HashCode512 * key,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
+#if DEBUG_DSTORE
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "dstore processes put `%.*s\n",
+	 size,
+	 data);
+#endif
   db_init(dbh);
   if (sq_prepare(dbh,
 		 "INSERT INTO ds071 "
@@ -189,6 +198,11 @@ static int d_put(const HashCode512 * key,
   dstmt = NULL;
   payload += size;
   if (payload > quota) {
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   "DStore above qutoa (have %llu, allowed %llu), will delete some data.\n",
+	   payload,
+	   quota);
     if ( (sq_prepare(dbh,
 		     "SELECT size, type, puttime, expire, key, value FROM ds071 ORDER BY puttime ASC",
 		     &stmt) == SQLITE_OK) &&
@@ -206,7 +220,6 @@ static int d_put(const HashCode512 * key,
       dcontent = MALLOC(MAX_CONTENT_SIZE);
       while ( (payload > quota) &&
 	      (sqlite3_step(stmt) == SQLITE_ROW) ) {
-	sqlite3_reset(stmt);
 	dsize = sqlite3_column_int(stmt, 0);
 	dtype = sqlite3_column_int(stmt, 1);
 	dputtime = sqlite3_column_int64(stmt, 2);
@@ -298,6 +311,11 @@ static int d_get(const HashCode512 * key,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
+#if DEBUG_DSTORE
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "dstore processes get\n");
+#endif
   db_init(dbh);
   now = get_time();
   if (sq_prepare(dbh,
@@ -360,6 +378,7 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   coreAPI = capi;
   api.get = &d_get;
   api.put = &d_put;
+  quota = 1024 * 1024; /* FIXME: allow user to configure */
   return &api;
 }
 

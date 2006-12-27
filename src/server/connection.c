@@ -1914,12 +1914,12 @@ static int copyCallback(void *buf,
 static void shutdownConnection(BufferEntry * be) {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
   EncName enc;
 #endif
 
   ENTRY();
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
   IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&be->session.sender.hashPubKey,
@@ -2466,7 +2466,9 @@ static void cronDecreaseLiveness(void *unused) {
       default:                 /* not up, not down - partial SETKEY exchange */
         if ( (now > root->isAlive) &&
 	     (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS)) {
+#if DEBUG_CONNECTION
           EncName enc;
+
           IF_GELOG(ectx,
 		   GE_DEBUG | GE_REQUEST | GE_USER,
 		   hash2enc(&root->session.sender.hashPubKey,
@@ -2476,6 +2478,7 @@ static void cronDecreaseLiveness(void *unused) {
 		 "closing connection to %s: %s not answered.\n",
 		 &enc,
 		 (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
+#endif
           shutdownConnection(root);
         }
         break;
@@ -3114,7 +3117,11 @@ void doneConnection() {
     prev = NULL;
     be = CONNECTION_buffer_[i];
     while(be != NULL) {
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Closing connection: shutdown\n");
+#if DEBUG_CONNECTION
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER, 
+	     "Closing connection: shutdown\n");
+#endif
       shutdownConnection(be);
       prev = be;
       be = be->overflowChain;
@@ -3526,12 +3533,14 @@ void updateTrafficPreference(const PeerIdentity * node,
  */
 void disconnectFromPeer(const PeerIdentity * node) {
   BufferEntry *be;
-  EncName enc;
 
   ENTRY();
   MUTEX_LOCK(lock);
   be = lookForHost(node);
   if(be != NULL) {
+#if DEBUG_CONNECTION
+    EncName enc;
+
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(&node->hashPubKey,
@@ -3540,6 +3549,7 @@ void disconnectFromPeer(const PeerIdentity * node) {
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Closing connection to `%s' as requested by application.\n",
 	   &enc);
+#endif
     shutdownConnection(be);
   }
   MUTEX_UNLOCK(lock);

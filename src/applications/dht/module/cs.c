@@ -33,7 +33,7 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
-#define DEBUG_CS YES
+#define DEBUG_CS NO
 
 /**
  * Global core API.
@@ -92,12 +92,12 @@ static int csPut(struct ClientHandle * client,
   dhtAPI->put(&req->key,
 	      ntohl(req->type),
 	      size,
-	      ntohll(req->expire),
+	      ntohll(req->expire) + get_time(), /* convert to absolute time */
 	      (const char*) &req[1]);
   return OK;
 }
 
-static int get_result(const HashCode512 * key,
+ int get_result(const HashCode512 * key,
 		      const DataContainer * value,
 		      void * cls) {
   DHT_CLIENT_GET_RECORD * record = cls;
@@ -227,8 +227,8 @@ int initialize_module_dht(CoreAPIForApplication * capi) {
   coreAPI = capi;
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "DHT registering client handlers: "
-	 "%d %d %d %d\n",
+	 _("`%s' registering client handlers: %d %d\n"),
+	 "dht",
 	 CS_PROTO_dht_REQUEST_PUT,
 	 CS_PROTO_dht_REQUEST_GET);
   status = OK;
