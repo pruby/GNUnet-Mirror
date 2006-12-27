@@ -36,12 +36,11 @@
  *     TODO: expose and improve reliabily metrics (to be added later)
  *   + dstore.c + plugin: SQL-based datastore: key, value, expiration
  *     (bounded FIFO-datastore, when full, kill oldest entry first)
- *     [?: better replacement policy to guard against attacks?]
  *   + routing.c: tracking of get/put operations, retry, reply handling
  *     code tries best-match routing among entries in table
  *   + service.c: provide DHT services to rest of GNUnet process
  *     (i.e. register datastore with shared data, get/put operations)
- *   + cs.c: services to out-of-process DHT clients (via dht-lib) [mostly done]
+ *   + cs.c: services to out-of-process DHT clients (via dht-lib) 
  */
 
 #include "platform.h"

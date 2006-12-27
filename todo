@@ -34,6 +34,8 @@ notes:
     + dht/gap integration [RC]
     + ecrs/location URIs [RC]
     + fsui/location URI support [RC]
+    + dht/routing: GET retries [RC]
+    + dht/routing: handle routing loops [RC]
     + dstore bloomfilter (optimization)
   * HTTP transport (libcurl, libmicrohttpd)
 - minor improvements:
