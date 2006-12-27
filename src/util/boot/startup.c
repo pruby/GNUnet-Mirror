@@ -30,7 +30,9 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-#define DO_REQUEST YES
+#define DO_REQUEST NO
+
+#define DO_DEVELOPER NO
 
 static GE_KIND
 convertLogLevel(const char * level) {
@@ -117,6 +119,9 @@ static int configure_logging(struct GE_Context ** ectx,
 				    | GE_USERKIND
 #if DO_REQUEST
 				    | GE_REQUEST
+#endif
+#if DO_DEVELOPER
+                                    | GE_DEVELOPER | GE_DEBUG | GE_ADMIN
 #endif
 				    | GE_BULK
 				    | GE_IMMEDIATE);
