@@ -32,7 +32,11 @@
 #include "gnunet_util_boot.h"
 #include "gnunet_util_network_client.h"
 
-static unsigned int timeout;
+/**
+ * How long should a "GET" run (or how long should
+ * content last on the network).
+ */
+static cron_t timeout;
 
 static struct GE_Context * ectx;
 
@@ -49,8 +53,8 @@ static struct CommandLineOption gnunetqueryOptions[] = {
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'T', "timeout", "TIME",
-    gettext_noop("allow TIME ms to process each command"),
-    1, &gnunet_getopt_configure_set_uint, &timeout },
+    gettext_noop("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
+    1, &gnunet_getopt_configure_set_ulong, &timeout },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -79,7 +83,10 @@ static void do_get(struct ClientServerConnection * sock,
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s)' command.\n",
-	 "get", key);
+	 "get", 
+	 key);
+  if (timeout == 0)
+    timeout = 30 * cronSECONDS;
   ret = DHT_LIB_get(cfg,
 		    ectx,
 		    DHT_STRING2STRING_BLOCK,
@@ -111,6 +118,8 @@ static void do_put(struct ClientServerConnection * sock,
 	 "put",
 	 key,
 	 value);
+  if (timeout == 0)
+    timeout = 30 * cronMINUTES;
   if (OK == DHT_LIB_put(cfg,
 			ectx,
 			&hc,
@@ -119,11 +128,13 @@ static void do_put(struct ClientServerConnection * sock,
 			dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "put",
-	   key, value);
+	   key,
+	   value);
   } else {
     printf(_("'%s(%s,%s)' failed.\n"),
 	   "put",
-	   key, value);
+	   key, 
+	   value);
   }	
   FREE(dc);
 }

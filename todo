@@ -31,7 +31,7 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + dht/tools: update clients [RC]
+    + dht/tools/api: complete API get implementation [RC]
     + dht/gap integration [RC]
     + ecrs/location URIs [RC]
     + fsui/location URI support [RC]
