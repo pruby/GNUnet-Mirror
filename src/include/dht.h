@@ -54,9 +54,9 @@ typedef struct {
 
   unsigned int type; /* nbo */
 
-  unsigned long long expire;  /* nbo */
-
   HashCode512 key;
+
+  unsigned long long expire;  /* nbo */
 
 } CS_dht_request_put_MESSAGE;
 
@@ -71,9 +71,9 @@ typedef struct {
 
   unsigned int type; /* nbo */
 
-  unsigned long long timeout;  /* nbo */
-
   HashCode512 key;
+
+  unsigned long long timeout;  /* nbo */
 
 } CS_dht_request_get_MESSAGE;
 

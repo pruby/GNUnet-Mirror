@@ -30,6 +30,89 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_util_network_client.h"
 
+/**
+ * Data exchanged between main thread and GET thread.
+ */
+typedef struct {
+
+  /**
+   * Connection with gnunetd.
+   */
+  struct ClientServerConnection * sock;
+
+  /**
+   * Callback to call for each result.
+   */
+  DataProcessor processor;
+
+  /**
+   * Extra argument for processor.
+   */
+  void * closure;
+
+  /**
+   * Parent thread that is waiting for the
+   * timeout (used to notify if we are exiting
+   * early, i.e. because of gnunetd closing the
+   * connection or the processor callback requesting
+   * it).
+   */
+  struct PTHREAD * parent;
+
+  /**
+   * Are we done (for whichever reason)?
+   */
+  int aborted;
+
+  /**
+   * Total number of results obtained, or -1 on error.
+   */
+  int total;
+} GetInfo;
+
+
+static void * 
+poll_thread(void * cls) {
+  GetInfo * info = cls;
+  MESSAGE_HEADER * reply;
+  CS_dht_request_put_MESSAGE * put;
+  DataContainer * cont;
+  unsigned short size;
+
+  while (info->aborted == NO) {
+    if (connection_test_open(info->sock) == 0) 
+      break;
+    reply = NULL;
+    if (OK != connection_read(info->sock,
+			      &reply)) 
+      break;
+    if ( (sizeof(CS_dht_request_put_MESSAGE) > ntohs(reply->size)) ||
+	 (CS_PROTO_dht_REQUEST_PUT != ntohs(reply->type)) ) {
+      GE_BREAK(NULL, 0);
+      info->total = SYSERR;
+      break; /*  invalid reply */
+    }
+  
+    put = (CS_dht_request_put_MESSAGE*) reply;
+    /* re-use "expire" field of the reply (which is 0 anyway)
+       for the header of DataContainer (which fits) to avoid
+       copying -- go C pointer arithmetic! */
+    cont = (DataContainer*) &((char *) &put[1])[-sizeof(DataContainer)];
+    size = ntohs(reply->size) - sizeof(CS_dht_request_put_MESSAGE);
+    cont->size = htonl(size + sizeof(DataContainer));
+    if ( (info->processor != NULL) &&
+	 (OK != info->processor(&put->key,
+				cont,
+				info->closure)) )
+      info->aborted = YES;    
+    info->total++;
+    FREE(reply);
+  }
+  info->aborted = YES;
+  PTHREAD_STOP_SLEEP(info->parent);
+  return NULL;
+}
+
 
 /**
  * Perform a synchronous GET operation on the DHT identified by
@@ -59,7 +142,12 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
 		void * closure) {
   struct ClientServerConnection * sock;
   CS_dht_request_get_MESSAGE req;
-  int ret;
+  struct PTHREAD * thread;
+  cron_t start;
+  cron_t now;
+  cron_t delta;
+  GetInfo info;
+  void * unused;
 
   sock = client_connection_create(ectx,
 				  cfg);
@@ -75,50 +163,31 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
     connection_destroy(sock);
     return SYSERR;
   }
-#if 0
-  while (1) {
-    reply = NULL;
-    if (OK != connection_read(sock,
-			      &reply)) {
-      connection_destroy(sock);
-      return SYSERR;
-    }
-    if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
-	 (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) ) {
-      connection_destroy(sock);
-      ret = checkACK(reply);
-      FREE(reply);
-      break; /* termination message, end loop! */
-    }
-    if ( (sizeof(CS_dht_reply_results_MESSAGE) > ntohs(reply->size)) ||
-	 (CS_PROTO_dht_REPLY_GET != ntohs(reply->type)) ) {
-      GE_LOG(ectx,
-	     GE_WARNING | GE_BULK | GE_USER,
-	     _("Unexpected reply to `%s' operation.\n"),
-	     "GET");
-      connection_destroy(sock);
-      FREE(reply);
-      return SYSERR;
-    }
-    /* ok, we got some replies! */
-    res = (CS_dht_reply_results_MESSAGE*) reply;
-    ret = ntohl(res->totalResults);
-
-    size = ntohs(reply->size) - sizeof(CS_dht_reply_results_MESSAGE);
-    result = MALLOC(size + sizeof(DataContainer));
-    result->size = htonl(size + sizeof(DataContainer));
-    memcpy(&result[1],
-	   &res[1],
-	   size);
-    FREE(reply);
-    processor(&keys[0],
-	      result,
-	      closure);
-    FREE(result);
+  info.sock = sock;
+  info.processor = processor;
+  info.closure = closure;
+  info.parent = PTHREAD_GET_SELF();
+  info.aborted = NO;
+  info.total = 0;
+  thread = PTHREAD_CREATE(&poll_thread,
+			  &info,
+			  1024 * 8);
+  start = get_time();
+  while ( (start + timeout > (now = get_time())) &&
+	  (GNUNET_SHUTDOWN_TEST() == NO) &&
+	  (info.aborted == NO) ) {
+    delta =(start + timeout) - now;
+    if (delta > 100 * cronMILLIS)
+      delta = 100 * cronMILLIS; /* in case we miss SIGINT
+				   on CTRL-C */
+    PTHREAD_SLEEP(delta);
   }
-#endif
+  info.aborted = YES;
+  connection_close_forever(sock);
+  PTHREAD_JOIN(thread, &unused);
+  PTHREAD_REL_SELF(info.parent);
   connection_destroy(sock);
-  return ret;
+  return info.total;
 }
 	
 /**

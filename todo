@@ -31,14 +31,11 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + dht/tools/api: complete API get implementation [RC]
     + dht/gap integration [RC]
     + ecrs/location URIs [RC]
     + fsui/location URI support [RC]
     + dstore bloomfilter (optimization)
   * HTTP transport (libcurl, libmicrohttpd)
-  * SMTP transport (libesmtp)
-  * SMTP logger
 - minor improvements:
   * Scheme (scm) specification of entire configuration;
     check options used in modules:
@@ -63,6 +60,9 @@ notes:
   as keyword (to allow getting meta-data from URI only)
 - Chat support basics [RC]
 - better NAT traversal (STUN/STUNT inspired?)
+- old/new features:
+  * SMTP transport (libesmtp)
+  * SMTP logger
 - Documentation:
   * LJ article
 - Testcases:
