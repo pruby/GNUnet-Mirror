@@ -22,8 +22,6 @@
  * @file module/service.c
  * @brief internal GNUnet DHT service
  * @author Christian Grothoff
- *
- * TODO: support async get timeout (gap never stops otherwise!)
  */
 
 #include "platform.h"
@@ -38,12 +36,41 @@
 static CoreAPIForApplication * coreAPI;
 
 typedef struct DHT_GET_RECORD {
+  /**
+   * Key that we are looking for.
+   */  
   HashCode512 key;
+
+  /**
+   * Semaphore used to signal completion of timeout cron job.
+   */
+  struct SEMAPHORE * sem;
+
+  /**
+   * Function to call for each result.
+   */
   DataProcessor callback;
+
+  /**
+   * Extra argument to callback.
+   */
   void * cls;
+
+  /**
+   * Function to call once we are done
+   */
   DHT_OP_Complete callbackComplete;
+
+  /**
+   * Extra argument to callbackComplete
+   */
   void * closure;
+
+  /**
+   * Type of the content that we are looking for.
+   */
   unsigned int type;
+
 } DHT_GET_RECORD;
 
 static void client_result_converter(const HashCode512 * key,
@@ -66,9 +93,22 @@ static void client_result_converter(const HashCode512 * key,
 }
 
 /**
+ * Cron job that notifies the client.
+ */
+static void timeout_callback(void * cls) {
+  struct DHT_GET_RECORD * rec = cls;
+
+  rec->callbackComplete(rec->closure);
+  SEMAPHORE_UP(rec->sem);
+}
+
+/**
  * Perform an asynchronous GET operation on the DHT identified by
  * 'table' using 'key' as the key.  The peer does not have to be part
- * of the table (if so, we will attempt to locate a peer that is!)
+ * of the table (if so, we will attempt to locate a peer that is!).
+ *
+ * Even in the case of a time-out (once completion callback has been
+ * invoked), clients will still call the "stop" function explicitly.
  *
  * @param table table to use for the lookup
  * @param key the key to look up
@@ -89,12 +129,18 @@ dht_get_async_start(unsigned int type,
   struct DHT_GET_RECORD * ret;
 
   ret = MALLOC(sizeof(DHT_GET_RECORD));
+  ret->key = *key;
+  ret->sem = SEMAPHORE_CREATE(0);
   ret->callback = callback;
   ret->cls = cls;
   ret->callbackComplete = callbackComplete;
   ret->closure = closure;
   ret->type = type;
-  ret->key = *key;
+  cron_add_job(coreAPI->cron,
+	       &timeout_callback,
+	       timeout,
+	       0,
+	       ret);
   dht_get_start(key,
 		type,
 		&client_result_converter,
@@ -110,8 +156,14 @@ dht_get_async_stop(struct DHT_GET_RECORD * record) {
   dht_get_stop(&record->key,
 	       record->type,
 	       &client_result_converter,
-	       record);
-  record->callbackComplete(record->closure);
+	       record);  
+  cron_advance_job(coreAPI->cron,
+		   &timeout_callback,
+		   0,
+		   record);		
+  /* wait for cron-job to complete! */
+  SEMAPHORE_DOWN(record->sem, YES);
+  SEMAPHORE_DESTROY(record->sem);
   FREE(record);
   return OK;
 }
@@ -123,7 +175,8 @@ dht_get_async_stop(struct DHT_GET_RECORD * record) {
  * @param capi the core API
  * @return NULL on errors, DHT_API otherwise
  */
-DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
+DHT_ServiceAPI * 
+provide_module_dht(CoreAPIForApplication * capi) {
   static DHT_ServiceAPI api;
 
   if (OK != init_dht_store(1024 * 1024,

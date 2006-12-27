@@ -31,7 +31,6 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + dht/service.c: timeout [RC]
     + dht/cs: not done yet [RC]
     + dht/tools: update clients [RC]
     + dht/gap integration [RC]

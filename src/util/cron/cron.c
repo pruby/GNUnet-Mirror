@@ -347,20 +347,7 @@ void cron_advance_job(struct CronManager * cron,
   MUTEX_LOCK(cron->deltaListLock_);
   jobId = cron->firstUsed_;
   if (jobId == -1) {
-    /* not in queue; add if not running */
-    if ( (method != cron->runningJob_) ||
-         (data != cron->runningData_) ||
-	 (deltaRepeat != cron->runningRepeat_) ) {
-      GE_LOG(cron->ectx,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     _("`%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
-	     __FUNCTION__);
-      cron_add_job(cron,
-		   method,
-		   0,
-		   deltaRepeat,
-		   data);
-    }
+    /* not in queue - do nothing! */
     MUTEX_UNLOCK(cron->deltaListLock_);
     return;
   }
