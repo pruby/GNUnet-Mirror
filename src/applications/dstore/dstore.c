@@ -28,13 +28,17 @@
  *
  * TODO:
  * - add bloomfilter to reduce disk IO
- * - finish delete for quota maintenance
  */
 
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_dstore_service.h"
 #include <sqlite3.h>
+
+/**
+ * Maximum size for an individual item.
+ */
+#define MAX_CONTENT_SIZE 65536
 
 /**
  * Bytes used
@@ -138,6 +142,8 @@ static int d_put(const HashCode512 * key,
   sqlite3_stmt * stmt;
   sqlite3_stmt * dstmt;
 
+  if (size > MAX_CONTENT_SIZE)
+    return SYSERR;
   MUTEX_LOCK(lock);
   if (SQLITE_OK != sqlite3_open(fn,
 				&dbh)) {
@@ -190,10 +196,65 @@ static int d_put(const HashCode512 * key,
 		     "DELETE FROM ds071 "
 		     "WHERE size = ? AND type = ? AND puttime = ? AND expire = ? AND key = ? AND value = ?",
 		     &dstmt) == SQLITE_OK) ) {
-      while (payload > quota) {
-	/* FIMXE: delete until quota is satisfied again */
-	break; /* for now */
+      HashCode512 dkey;
+      unsigned int dsize;
+      unsigned int dtype;
+      cron_t dputtime;
+      cron_t dexpire;
+      char * dcontent;
+      
+      dcontent = MALLOC(MAX_CONTENT_SIZE);
+      while ( (payload > quota) &&
+	      (sqlite3_step(stmt) == SQLITE_ROW) ) {
+	sqlite3_reset(stmt);
+	dsize = sqlite3_column_int(stmt, 0);
+	dtype = sqlite3_column_int(stmt, 1);
+	dputtime = sqlite3_column_int64(stmt, 2);
+	dexpire = sqlite3_column_int64(stmt, 3);
+	GE_BREAK(NULL,
+		 sqlite3_column_bytes(stmt, 4) == sizeof(HashCode512));
+	GE_BREAK(NULL,
+		 dsize == sqlite3_column_bytes(stmt, 5));
+	memcpy(&dkey,
+	       sqlite3_column_blob(stmt, 4),
+	       sizeof(HashCode512));
+	if (dsize >= MAX_CONTENT_SIZE) {
+	  GE_BREAK(NULL, 0);
+	  dsize = MAX_CONTENT_SIZE;
+	}
+	memcpy(dcontent,
+	       sqlite3_column_blob(stmt, 5),
+	       dsize);
+	sqlite3_bind_int(dstmt,
+			 1,
+			 dsize);
+	sqlite3_bind_int(dstmt,
+			 2,
+			 dtype);
+	sqlite3_bind_int64(dstmt,
+			   3,
+			   dputtime);
+	sqlite3_bind_int64(dstmt,
+			   4,
+			   dexpire);
+	sqlite3_bind_blob(dstmt,
+			  5,
+			  &dkey,
+			  sizeof(HashCode512),
+			  SQLITE_TRANSIENT);
+	sqlite3_bind_blob(dstmt,
+			  6,
+			  dcontent,
+			  dsize,
+			  SQLITE_TRANSIENT);
+	if (sqlite3_step(dstmt) != SQLITE_ROW) {
+	  sqlite3_reset(dstmt);
+	  GE_BREAK(NULL, 0); /* should delete but cannot!? */
+	  break;
+	}
+	sqlite3_reset(dstmt);	  
       }
+      FREE(dcontent);
       sqlite3_finalize(dstmt);
       sqlite3_finalize(stmt);
     } else {
@@ -225,7 +286,7 @@ static int d_get(const HashCode512 * key,
 		 void * closure) {
   sqlite3 * dbh;
   sqlite3_stmt * stmt;
-  cron_t expire;
+  cron_t now;
   unsigned int size;
   const char * dat;
   unsigned int cnt;
@@ -238,8 +299,9 @@ static int d_get(const HashCode512 * key,
     return SYSERR;
   }
   db_init(dbh);
+  now = get_time();
   if (sq_prepare(dbh,
-		 "SELECT size, type, puttime, expire, key, value FROM ds071 WHERE key=? AND type=?",
+		 "SELECT size, value FROM ds071 WHERE key=? AND type=? AND expire >= ?",
 		 &stmt) != SQLITE_OK) {
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
@@ -253,17 +315,17 @@ static int d_get(const HashCode512 * key,
   sqlite3_bind_int(stmt,
 		   2,
 		   type);
+  sqlite3_bind_int(stmt,
+		   3,
+		   now);
   cnt = 0;
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     size = sqlite3_column_int(stmt, 0);
-    if (size != sqlite3_column_bytes(stmt, 5)) {
+    if (size != sqlite3_column_bytes(stmt, 1)) {
       GE_BREAK(NULL, 0);
       continue;
     }
-    expire = sqlite3_column_int64(stmt, 3);
-    if (expire < get_time())
-      continue;
-    dat = sqlite3_column_blob(stmt, 5);
+    dat = sqlite3_column_blob(stmt, 1);
     handler(key,
 	    type,
 	    size,
