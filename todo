@@ -1,4 +1,4 @@
-Notes:
+notes:
   RC == Release Critical 
 
   All issues that are targeted for the NEXT release
@@ -11,43 +11,52 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.2 [3'07]:
+0.7.1a [1'07]:
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
+- bugfixes:
+  Heikki reports:
+  Ran the current svn over 10 times under gdb (serializetest2)
+  One time it exited with status=1 and said
+  "Download suspended but search reference not set correctly."
+  DexterF reports:
+  gcc -fno-strict-aliasing -Wall -Os -march=i686 -mmmx -msse -m3dnow -o .libs/gnunet-setup gnunet-setup.o  ../../src/setup/lib/.libs/libgnunetsetup.so ../../src/util/.libs/libgnunetutil.so ../../src/util/loggers/.libs/libgnunetutil_logging.so ../../src/util/config_impl/.libs/libgnunetutil_config.so /usr/lib/libguile.so -lm -lnsl -lpthread 
+  ../../src/util/.libs/libgnunetutil.so: undefined reference to `libiconv_open' 
+  ../../src/util/.libs/libgnunetutil.so: undefined reference to `libiconv_close' 
+  ../../src/util/.libs/libgnunetutil.so: undefined reference to `libiconv' 
+  collect2: ld returned 1 exit status 
+
+
+0.7.2 [3'07]:
+- new features:
+  * XFS / support for location URIs [CG] 
+    + dstore deletion for quota maintenance [RC]
+    + dht/service.c: timeout [RC]
+    + dht/cs: not done yet [RC]
+    + dht/tools: update clients [RC]
+    + dht/gap integration [RC]
+    + dstore bloomfilter
+  * HTTP transport (libcurl, libmicrohttpd)
+  * SMTP transport (libesmtp)
+  * SMTP logger
 - minor improvements:
   * Scheme (scm) specification of entire configuration;
     check options used in modules:
     + DHT options
     + kvstore
-    + gnunet-gtk
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
     much space).  Needs some lookahead for size of remaining
     directory entries. (theoretically can compact some directories
     by 50% (?) -- incidentially 25% is what gzip can do on the
     current directories!) [ CG ]
-- new features:
-  * XFS / support for location URIs [CG] 
-    + dstore deletion for quota maintenance [RC]
-    + dstore bloomfilter
-    + dht/service.c: timeout [RC]
-    + dht/cs: not done yet [RC]
-    + dht/tools: update clients [RC]
-    + dht/gap integration [RC]
-  * HTTP transport (libcurl, libmicrohttpd)
-  * SMTP transport (libesmtp)
-  * SMTP logger
 - testcases (fix, add):
   * dht/tools
   * ecrs_core
   * gap (incl. economy)
   * advertising
-- bugfixes:
-  Heikki reports:
-  Ran the current svn over 10 times under gdb (serializetest2)
-  One time it exited with status=1 and said
-  "Download suspended but search reference not set correctly."
+
 
 0.7.3 [6'07] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)

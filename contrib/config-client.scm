@@ -263,6 +263,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   '()
   'advanced) )
 
+
 (define (fs builder)
  (builder 
   "File-Sharing"
@@ -272,6 +273,72 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (list 
     (fs-extractors builder)
     (fs-disable-creation-time builder)
+  )
+  #t 
+  #f 
+  #f 
+  'always) )
+
+(define (gnunet-gtk-plugins builder)
+ (builder 
+  "GNUNET-GTK"
+  "PLUGINS"
+  (_ "Which plugins should be loaded by gnunet-gtk?")
+  (_ "Load the about plugin for the about dialog.  The daemon plugin allows starting and stopping of gnunetd and displays information about gnunetd.  The fs plugin provides the file-sharing functionality.  The stats plugin displays various statistics about gnunetd.")
+  '()
+  #t 
+  "about daemon fs stats" 
+  '()
+  'advanced) )
+
+(define (gnunet-gtk-stats-interval builder)
+ (builder 
+  "GNUNET-GTK"
+  "STATS-INTERVAL"
+  (_ "How frequently (in milli-seconds) should the statistics update?")
+  (_ "Each pixel in the stats dialog corresponds to the time interval specified here.")
+  '()
+  #t 
+  30000
+  (cons 1 999999999)
+  'stats-loaded) )
+
+
+(define (gnunet-gtk-previews builder) 
+ (builder
+   "GNUNET-GTK"
+   "DISABLE-PREVIEWS"
+   (_ "Do not show thumbnail previews from meta-data in search results")
+   (_ "This option is useful for people who maybe offended by some previews or use gnunet-gtk at work and would like to avoid bad surprises.")
+   '()
+   #t
+   #f
+   #f
+   'fs-loaded) )
+
+(define (fs-incomingdir builder)
+ (builder
+  "FS"
+  "INCOMINGDIR"
+  (_ "To which directory should gnunet-gtk save downloads to?")
+  (nohelp)
+  '()
+  #t
+  "$HOME/gnunet-downloads"
+  '()
+  'fs-loaded) )
+
+(define (gnunet-gtk builder)
+ (builder 
+  "gnunet-gtk"
+  ""
+  (_ "Options related to gnunet-gtk")
+  (nohelp)
+  (list 
+    (gnunet-gtk-plugins builder)
+    (gnunet-gtk-previews builder)
+    (gnunet-gtk-incomingdir builder)
+    (gnunet-gtk-stats-interval builder)
   )
   #t 
   #f 
@@ -304,6 +371,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
     (logging builder)
     (general builder)
     (fs builder)
+    (gnunet-gtk builder)
   )
   #t 
   #f 
@@ -331,6 +399,8 @@ The default is to use filenames and to break larger words at spaces (and undersc
      (advanced (get-option ctx "Meta-client" "ADVANCED"))
      (rare (get-option ctx "Meta-client" "RARE"))
      (experimental (get-option ctx "Meta-client" "EXPERIMENTAL"))
+     (stats-loaded (list? (member "stats" (string-split (get-option ctx "GNUNET-GTK" "PLUGINS") #\  ) ) ) )
+     (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNET-GTK" "PLUGINS") #\  ) ) ) )
    )
   (begin 
     (main
@@ -340,6 +410,8 @@ The default is to use filenames and to break larger words at spaces (and undersc
             ((eq? i 'advanced)     (change-visible ctx a b advanced))
             ((eq? i 'rare)         (change-visible ctx a b rare))
             ((eq? i 'experimental) (change-visible ctx a b experimental))
+            ((eq? i 'fs-loaded) (change-visible ctx a b fs-loaded))
+            ((eq? i 'stats-loaded) (change-visible ctx a b stats-loaded))
             (else 'nothing)
           )
    ) ) ) )
