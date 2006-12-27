@@ -32,10 +32,6 @@
 #include "gnunet_util_boot.h"
 #include "gnunet_util_network_client.h"
 
-static DHT_TableId table;
-
-static char * table_id;
-
 static unsigned int timeout;
 
 static struct GE_Context * ectx;
@@ -49,12 +45,9 @@ static char * cfgFilename;
  */
 static struct CommandLineOption gnunetqueryOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE) a DHT table.")), /* -h */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE) DHT table.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 't', "table", "NAME",
-    gettext_noop("join table called NAME"),
-    1, &gnunet_getopt_configure_set_string, &table_id },
   { 'T', "timeout", "TIME",
     gettext_noop("allow TIME ms to process each command"),
     1, &gnunet_getopt_configure_set_uint, &timeout },
@@ -89,10 +82,7 @@ static void do_get(struct ClientServerConnection * sock,
 	 "get", key);
   ret = DHT_LIB_get(cfg,
 		    ectx,
-		    &table,
 		    DHT_STRING2STRING_BLOCK,
-		    1, /* prio */
-		    1, /* key count */
 		    &hc,
 		    timeout,
 		    &printCallback,
@@ -118,12 +108,13 @@ static void do_put(struct ClientServerConnection * sock,
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s,%s)' command.\n",
-	 "put", key, value);
+	 "put",
+	 key,
+	 value);
   if (OK == DHT_LIB_put(cfg,
 			ectx,
-			&table,
 			&hc,
-			1, /* prio */
+			DHT_STRING2STRING_BLOCK,
 			timeout,
 			dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
@@ -141,8 +132,6 @@ int main(int argc,
 	 char * const * argv) {
   int i;
   struct ClientServerConnection * handle;
-  HashCode512 table;
-
 
   i = GNUNET_init(argc,
 		  argv,
@@ -155,19 +144,6 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return -1;
   }
-  if (table_id == NULL) {
-    printf(_("No table name specified, using `%s'.\n"),
-	   "test");
-    table_id = STRDUP("test");
-  }
-  if (OK != enc2hash(table_id,
-		     &table)) {
-    hash(table_id,
-	 strlen(table_id),
-	 &table);
-  }
-  FREE(table_id);
-  table_id = NULL;
 
   handle = client_connection_create(ectx, cfg);
   if (handle == NULL) {

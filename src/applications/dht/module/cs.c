@@ -30,7 +30,7 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_rpc_service.h"
-#include "gnunet_dht.h"
+#include "dht.h"
 #include "gnunet_dht_service.h"
 
 /**

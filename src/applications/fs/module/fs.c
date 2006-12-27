@@ -88,11 +88,6 @@ static struct MUTEX * lock;
 
 static int migration;
 
-/**
- * ID of the FS table in the DHT infrastructure.
- */
-static DHT_TableId dht_table;
-
 static struct SEMAPHORE * ltgSignal;
 
 static struct PTHREAD * localGetProcessor;
@@ -1119,9 +1114,6 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 					       YES);
   if (migration == SYSERR)
     return SYSERR;
-  hash("GNUNET_FS",
-       strlen("GNUNET_FS"),
-       &dht_table);
   if (GC_get_configuration_value_number(capi->cfg,
 					"FS",
 					"QUOTA",

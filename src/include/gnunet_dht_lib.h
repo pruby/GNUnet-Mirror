@@ -38,51 +38,38 @@ extern "C" {
 #endif
 
 /**
- * Perform a synchronous GET operation on the DHT identified by
- * 'table' using 'key' as the key; store the result in 'result'.  If
- * result->dataLength == 0 the result size is unlimited and
- * result->data needs to be allocated; otherwise result->data refers
- * to dataLength bytes and the result is to be stored at that
- * location; dataLength is to be set to the actual size of the
- * result.
+ * Perform a synchronous GET operation on the DHT looking for
+ * key.
  *
- * The peer does not have to be part of the table!
- *
- * @param table table to use for the lookup
- * @param keys the keys to look up
+ * @param key the key to look up
  * @param timeout how long to wait until this operation should
  *        automatically time-out
- * @param resultCallback function to call for results
+ * @param resultCallback function to call for results,
+ *        the operation also aborts if the callback returns 
+ *        SYSERR
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
 int DHT_LIB_get(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,
-		const DHT_TableId * table,
 		unsigned int type,
-		unsigned int prio,
-		unsigned int keyCount,
-		const HashCode512 * keys,
+		const HashCode512 * key,
 		cron_t timeout,
 		DataProcessor resultCallback,
 		void * resCallbackClosure);
 	
 /**
- * Perform a synchronous put operation.   The peer does not have
- * to be part of the table!
+ * Perform a synchronous put operation.
  *
- * @param table table to use for the lookup
  * @param key the key to store
- * @param timeout how long to wait until this operation should
- *        automatically time-out
+ * @param expire when should the content expire
  * @param value what to store
- * @return OK on success, SYSERR on error (or timeout)
+ * @return OK on success, SYSERR on error 
  */
 int DHT_LIB_put(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,
-		const DHT_TableId * table,
 		const HashCode512 * key,
-		unsigned int prio,
-		cron_t timeout,
+		unsigned int type,
+		cron_t expire,
 		const DataContainer * value);
 
 #if 0 /* keep Emacsens' auto-indent happy */

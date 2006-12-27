@@ -19,30 +19,16 @@
  */
 
 /**
- * @file tools/dht_api.c
+ * @file dht/tools/dht_api.c
  * @brief DHT-module's core API's implementation.
  * @author Tomi Tukiainen, Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "dht.h"
 #include "gnunet_dht_lib.h"
-#include "gnunet_dht.h"
 #include "gnunet_util_network_client.h"
-
-/**
- * Check if the given message is an ACK.  If so,
- * return the status, otherwise SYSERR.
- */
-static int checkACK(MESSAGE_HEADER * reply) {
-  GE_LOG(NULL,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "received ACK from gnunetd\n");
- if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
-       (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) )
-    return ntohl(((CS_dht_reply_ack_MESSAGE*)reply)->status);
-  return SYSERR;
-}
 
 
 /**
@@ -66,49 +52,34 @@ static int checkACK(MESSAGE_HEADER * reply) {
  */
 int DHT_LIB_get(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,
-		const DHT_TableId * table,
 		unsigned int type,
-		unsigned int prio,
-		unsigned int keyCount,
-		const HashCode512 * keys,
+		const HashCode512 * key,
 		cron_t timeout,
 		DataProcessor processor,
 		void * closure) {
   struct ClientServerConnection * sock;
-  CS_dht_request_get_MESSAGE * req;
-  CS_dht_reply_results_MESSAGE * res;
-  MESSAGE_HEADER * reply;
+  CS_dht_request_get_MESSAGE req;
   int ret;
-  unsigned int size;
-  DataContainer * result;
 
   sock = client_connection_create(ectx,
 				  cfg);
   if (sock == NULL)
     return SYSERR;
-
-  req = MALLOC(sizeof(CS_dht_request_get_MESSAGE) +
-	       (keyCount-1) * sizeof(HashCode512));
-  req->header.size = htons(sizeof(CS_dht_request_get_MESSAGE) +
-			   (keyCount-1) * sizeof(HashCode512));
-  req->header.type = htons(CS_PROTO_dht_REQUEST_GET);
-  req->type = htonl(type);
-  req->timeout = htonll(timeout);
-  req->table = *table;
-  req->priority = htonl(prio);
-  memcpy(&req->keys,
-	 keys,
-	 keyCount * sizeof(HashCode512));
+  req.header.size = htons(sizeof(CS_dht_request_get_MESSAGE));
+  req.header.type = htons(CS_PROTO_dht_REQUEST_GET);
+  req.type = htonl(type);
+  req.timeout = htonll(timeout);
+  req.key = *key;
   if (OK != connection_write(sock,
-			     &req->header)) {
+			     &req.header)) {
     connection_destroy(sock);
     return SYSERR;
   }
-  FREE(req);
+#if 0
   while (1) {
     reply = NULL;
     if (OK != connection_read(sock,
-			     &reply)) {
+			      &reply)) {
       connection_destroy(sock);
       return SYSERR;
     }
@@ -145,6 +116,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
 	      closure);
     FREE(result);
   }
+#endif
   connection_destroy(sock);
   return ret;
 }
@@ -162,14 +134,12 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
  */
 int DHT_LIB_put(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,
-		const DHT_TableId * table,
 		const HashCode512 * key,
-		unsigned int prio,
-		cron_t timeout,
+		unsigned int type,
+		cron_t expire,
 		const DataContainer * value) {
   struct ClientServerConnection * sock;
   CS_dht_request_put_MESSAGE * req;
-  MESSAGE_HEADER * reply;
   int ret;
 
   GE_LOG(ectx,
@@ -177,15 +147,12 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
 	 "DHT_LIB_put called with value '%.*s'\n",
 	 ntohl(value->size),
 	 &value[1]);
-
   sock = client_connection_create(ectx,
 				  cfg);
-  if (sock == NULL) {
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Could not connect to gnunetd\n");
+  if (sock == NULL) 
     return SYSERR;
-  }
+  GE_ASSERT(NULL,
+	    ntohl(value->size) >= sizeof(DataContainer));
   req = MALLOC(sizeof(CS_dht_request_put_MESSAGE) +
 	       ntohl(value->size) -
 	       sizeof(DataContainer));
@@ -195,23 +162,14 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
 	    sizeof(DataContainer));
   req->header.type
     = htons(CS_PROTO_dht_REQUEST_PUT);
-  req->table = *table;
   req->key = *key;
-  req->priority = htonl(prio);
-  req->timeout = htonll(timeout);
+  req->type = htonl(type);
+  req->expire = htonll(expire);
   memcpy(&req[1],
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));
-  ret = SYSERR;
-  if (OK == connection_write(sock,
-			     &req->header))
-    reply = NULL;
-    if (OK == connection_read(sock,
-			     &reply)) {
-      if (OK == checkACK(reply))
-	ret = OK;
-      FREE(reply);
-    }
+  ret = connection_write(sock,
+			 &req->header);
   connection_destroy(sock);
   return ret;
 }

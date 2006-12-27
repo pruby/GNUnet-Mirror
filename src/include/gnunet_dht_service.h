@@ -22,7 +22,7 @@
  * @file include/gnunet_dht_service.h
  * @brief API to the DHT-module.  This API is what will be used by
  *     DHT clients that run as modules within gnunetd.  If you
- *     are writing a client look at either gnunet_dht.h (if you
+ *     are writing a client look at either dht.h (if you
  *     want to handle the communication with gnunetd yourself) or
  *     at gnunet_dht_lib to use the convenience library.
  * @author Christian Grothoff
@@ -32,7 +32,6 @@
 #define GNUNET_DHT_SERVICE_H
 
 #include "gnunet_core.h"
-#include "gnunet_dht.h"
 #include "gnunet_blockstore.h"
 
 #ifdef __cplusplus
