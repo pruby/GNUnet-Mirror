@@ -27,15 +27,13 @@
  * write my own stuff.  Also, re-writing this lets me be as lightweight
  * as I want to be.  Thank you libxode for giving me a good starting point */
 
-#include "internal.h"
+#include "platform.h"
 
 #include <libxml/parser.h>
 #include <string.h>
 #include <glib.h>
-
-#include "dbus-maybe.h"
-#include "util.h"
 #include "xmlnode.h"
+#include "util.h"
 
 #ifdef _WIN32
 # define NEWLINE_S "\r\n"
@@ -50,9 +48,9 @@ new_node(const char *name, XMLNodeType type)
 
 	node->name = g_strdup(name);
 	node->type = type;
-
+#if 0
 	GAIM_DBUS_REGISTER_POINTER(node, xmlnode);
-
+#endif
 	return node;
 }
 
@@ -277,8 +275,9 @@ xmlnode_free(xmlnode *node)
 	g_free(node->name);
 	g_free(node->data);
 	g_free(node->xmlns);
-
+#if 0
 	GAIM_DBUS_UNREGISTER_POINTER(node);
+#endif
 	g_free(node);
 }
 

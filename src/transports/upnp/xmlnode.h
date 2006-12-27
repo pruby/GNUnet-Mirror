@@ -29,6 +29,10 @@
 extern "C" {
 #endif
 
+#include <libxml/parser.h>
+#include <string.h>
+#include <glib.h>
+
 /**
  * The valid types for an xmlnode
  */

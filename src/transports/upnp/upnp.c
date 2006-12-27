@@ -22,16 +22,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#include "internal.h"
 
-#include "debug.h"
-#include "util.h"
-#include "proxy.h"
+#include "platform.h"
 #include "xmlnode.h"
-#include "network.h"
-#include "eventloop.h"
+#include "util.h"
 #include "upnp.h"
-
+#include "error.h"
 
 /***************************************************************
 ** General Defines                                             *
@@ -775,6 +771,7 @@ gaim_upnp_get_internal_ip()
 	return NULL;
 }
 
+#if 0
 static void
 looked_up_internal_ip_cb(gpointer data, gint source, const gchar *error_message)
 {
@@ -789,10 +786,12 @@ looked_up_internal_ip_cb(gpointer data, gint source, const gchar *error_message)
 		gaim_debug_info("upnp", "Unable to look up local IP\n");
 
 }
+#endif
 
 static void
 lookup_internal_ip()
 {
+#if 0
 	gchar* addressOfControl;
 	int port = 0;
 
@@ -814,6 +813,7 @@ lookup_internal_ip()
 	}
 
 	g_free(addressOfControl);
+#endif
 }
 
 static void
