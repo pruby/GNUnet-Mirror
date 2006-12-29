@@ -11,6 +11,11 @@ if HAVE_IPV6
  v6ip = \
   libip6.la
 endif
+#if HAVE_XML2
+  build_upnp=upnp
+#endif
+
+SUBDIRS = $(build_upnp) .
 
 noinst_LTLIBRARIES = \
   $(v6ip) \

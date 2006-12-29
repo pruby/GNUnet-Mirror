@@ -25,16 +25,24 @@
 
 #include "gnunet_util.h"
 #include "gnunet_util_config_impl.h"
-#include "gnunet_transport_upnp.h"
+#include "gnunet_upnp_service.h"
+#include "gnunet_core.h"
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
+
+
 int main(int argc,
 	 const char *argv[]) {
+  static CoreAPIForApplication capi;
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
   IPaddr addr;
   int i;
+  UPnP_ServiceAPI * upnp;
+  struct PluginHandle * plug;
+  ServiceInitMethod init;
+  ServiceDoneMethod done;
 
   ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
@@ -44,14 +52,36 @@ int main(int argc,
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   os_init(ectx);
-  gnunet_upnp_init(cfg, ectx);
-
+  capi.ectx = ectx;
+  capi.cfg = cfg;
+  plug = os_plugin_load(ectx, "libgnunet", "module_upnp");
+  if (plug == NULL) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  init = os_plugin_resolve_function(plug,
+				    "provide_",
+				    YES);
+  if (init == NULL) {
+    os_plugin_unload(plug);
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  upnp = init(&capi);
+  if (upnp == NULL) {
+    os_plugin_unload(plug);
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
   for (i=0;i<10;i++) {
     if (GNUNET_SHUTDOWN_TEST() != NO) 
       break;
-    if (OK == gnunet_upnp_get_ip(2086,
-				 "TCP",
-				 &addr)) {
+    if (OK == upnp->get_ip(2086,
+			   "TCP",
+			   &addr)) {
       printf("UPnP returned external IP %u.%u.%u.%u\n",
 	     PRIP(ntohl(*(int*)&addr)));
     } else {
@@ -62,7 +92,12 @@ int main(int argc,
     }
     PTHREAD_SLEEP(2 * cronSECONDS);
   }
-  gnunet_upnp_done();
+  done = os_plugin_resolve_function(plug,
+				    "release_",
+				    YES);
+  if (done != NULL)
+    done();
+  os_plugin_unload(plug);
   GC_free(cfg);
   GE_free_context(ectx);
   return 0;

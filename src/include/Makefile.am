@@ -45,6 +45,7 @@ gnunetinclude_HEADERS = \
   gnunet_traffic_service.h \
   gnunet_transport.h \
   gnunet_transport_service.h \
+  gnunet_upnp_service.h \
   gnunet_uritrack_lib.h \
   gnunet_util.h \
   gnunet_util_boot.h \

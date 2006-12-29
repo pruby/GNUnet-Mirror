@@ -28,6 +28,8 @@
 #include "gnunet_util.h"
 #include "gnunet_util_cron.h"
 #include "upnp.h"
+#include "gnunet_upnp_service.h"
+#include "gnunet_core.h"
 
 static struct GE_Context * ectx;
 
@@ -113,34 +115,12 @@ static void portmap(void * unused) {
 
 /**
  * Get the external IP address for the local machine.
- */
-void gnunet_upnp_init(struct GC_Configuration * c,
-		      struct GE_Context * e) {
-  ectx = e;
-  cfg = c;
-  cron = cron_create(ectx);
-  lock = MUTEX_CREATE(NO);
-  cron_start(cron);
-  cron_add_job(cron,
-	       &discover,
-	       0,
-	       5 * cronMINUTES,
-	       NULL);
-  cron_add_job(cron,
-	       &portmap,
-	       150 * cronSECONDS,
-	       5 * cronMINUTES,
-	       NULL);
-}
-
-/**
- * Get the external IP address for the local machine.
  *
  * @return SYSERR on error, OK on success
  */
-int gnunet_upnp_get_ip(unsigned short port,
-		       const char * protocol,
-		       IPaddr * address) {
+static int gnunet_upnp_get_ip(unsigned short port,
+			      const char * protocol,
+			      IPaddr * address) {
   unsigned int i;
 
   MUTEX_LOCK(lock);
@@ -165,14 +145,41 @@ int gnunet_upnp_get_ip(unsigned short port,
   return gnunet_upnp_get_public_ip(address);
 }
 
+
+/**
+ * Get the external IP address for the local machine.
+ */
+UPnP_ServiceAPI * 
+provide_module_upnp(CoreAPIForApplication * capi) {
+  static UPnP_ServiceAPI api;
+
+  ectx = capi->ectx;
+  cfg = capi->cfg;
+  cron = cron_create(ectx);
+  lock = MUTEX_CREATE(NO);
+  cron_start(cron);
+  cron_add_job(cron,
+	       &discover,
+	       0,
+	       5 * cronMINUTES,
+	       NULL);
+  cron_add_job(cron,
+	       &portmap,
+	       150 * cronSECONDS,
+	       5 * cronMINUTES,
+	       NULL);
+  api.get_ip = gnunet_upnp_get_ip;
+  return &api;
+}
+
 /**
  * Shutdown UPNP.
  */
-void gnunet_upnp_done() {
+int release_module_upnp() {
   unsigned int i;
 
   if (cron == NULL)
-    return; /* never used! */
+    return SYSERR; /* not loaded! */
   for (i=0;i<maps_size;i++) 
     gaim_upnp_change_port_mapping(ectx,
 				  cfg,
@@ -198,6 +205,7 @@ void gnunet_upnp_done() {
        0);
   ectx = NULL;
   cfg = NULL;
+  return OK;
 }
 
 
