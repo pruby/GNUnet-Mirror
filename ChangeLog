@@ -1,3 +1,6 @@
+Fri Dec 29 09:38:53 MST 2006
+	Added UPnP support to GNUnet (IPv4 only).
+
 Thu Dec 28 21:22:10 MST 2006
 	Hostname resolution with gnunet-peer-info implemented (#1076).
 	Proper linking of gnunet-pseudonym (#1161).
