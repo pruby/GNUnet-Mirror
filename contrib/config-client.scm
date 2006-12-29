@@ -316,7 +316,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
    #f
    'fs-loaded) )
 
-(define (fs-incomingdir builder)
+(define (gnunet-gtk-incomingdir builder)
  (builder
   "FS"
   "INCOMINGDIR"
