@@ -76,8 +76,10 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     *md = ECRS_deserializeMetaData(ectx,
 				   &data[8 + sizeof(unsigned int)],
 				   mdSize);
-    if (*md == NULL)
+    if (*md == NULL) {
+      GE_BREAK(ectx, 0);
       return SYSERR; /* malformed !*/
+    }
     pos = 8 + sizeof(unsigned int) + mdSize;
   }
   while (pos < len) {
@@ -89,6 +91,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
       pos = align;
       if (pos >= len) {
 	/* malformed */
+	GE_BREAK(ectx, 0);
 	break;
       }
     }
@@ -97,14 +100,17 @@ int ECRS_listDirectory(struct GE_Context * ectx,
 	    (data[epos] != '\0') )
       epos++;
     if (epos == len) {
+      GE_BREAK(ectx, 0);
       return SYSERR; /* malformed */
     }
 
     fi.uri = ECRS_stringToUri(ectx,
 			      &data[pos]);
     pos = epos+1;
-    if (fi.uri == NULL)
+    if (fi.uri == NULL) {
+      GE_BREAK(ectx, 0);
       return SYSERR; /* malformed! */
+    }
     if (ECRS_isKeywordUri(fi.uri)) {
       ECRS_freeUri(fi.uri);
       GE_BREAK(ectx, 0);
@@ -119,6 +125,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     pos += sizeof(unsigned int);
     if (pos + mdSize > len) {
       ECRS_freeUri(fi.uri);
+      GE_BREAK(ectx, 0);
       return SYSERR; /* malformed! */
     }
 
@@ -127,6 +134,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
 				       mdSize);
     if (fi.meta == NULL) {
       ECRS_freeUri(fi.uri);
+      GE_BREAK(ectx, 0);
       return SYSERR; /* malformed !*/
     }
     pos += mdSize;
