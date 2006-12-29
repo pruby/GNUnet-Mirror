@@ -739,7 +739,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  "NAT"
  "LIMITED"
  (_ "Is this machine unreachable behind a NAT?")
- (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port. Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports, you should set the option to NO.  Set this only to YES if other peers cannot contact you directly.")
+ (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port and that cannot be traversed using UPnP.  Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports or if GNUnet can open ports using UPnP, you should set the option to NO.  Set this only to YES if other peers cannot contact you directly.  You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You can also use gnunet-transport-check with the '-p' option in order to determine which setting results in more connections.  Use YES only if you get no connections otherwise.")
  '()
  #t
  #f
@@ -757,6 +757,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  2086
  (cons 0 65535)
  'nat-unlimited))
+
+(define (tcp-upnp builder)
+ (builder
+ "TCP"
+ "UPNP"
+ (_ "Should we try to determine our external IP using UPnP?")
+ (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.")
+ '()
+ #t
+ #t
+ #f
+ 'tcp-port-nz))
 
 (define (tcp-blacklist builder)
  (builder
@@ -790,6 +802,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (tcp-port builder)
+   (tcp-upnp builder)
    (tcp-blacklist builder)
    (tcp-whitelist builder)
  )
@@ -838,6 +851,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 65535)
  'advanced))
 
+(define (udp-upnp builder)
+ (builder
+ "UDP"
+ "UPNP"
+ (_ "Should we try to determine our external IP using UPnP?")
+ (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.")
+ '()
+ #t
+ #t
+ #f
+ 'udp-port-nz))
+
 (define (udp-mtu builder)
  (builder
  "UDP"
@@ -882,6 +907,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (udp-port builder)
+   (udp-upnp builder)
    (udp-mtu builder)
    (udp-blacklist builder)
    (udp-whitelist builder)
@@ -1243,6 +1269,8 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (nobasiclimit (not (get-option ctx "LOAD" "BASICLIMITING")))
      (experimental (get-option ctx "Meta" "EXPERIMENTAL"))
      (f2f (string= (get-option ctx "MODULES" "topology") "topology_f2f") )
+     (tcp-port-nz (int= (get-option ctx "TCP" "PORT") 0) )
+     (udp-port-nz (int= (get-option ctx "UDP" "PORT") 0) )
      (mysql (string= (get-option ctx "MODULES" "sqstore") "sqstore_mysql") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
@@ -1275,6 +1303,8 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
             ((eq? i 'nat-unlimited)(change-visible ctx a b nat-unlimited))
+            ((eq? i 'tcp-port-nz)  (change-visible ctx a b tdp-port-nz))
+            ((eq? i 'udp-port-nz)  (change-visible ctx a b udp-port-nz))
             ((eq? i 'nat-loaded)   (change-visible ctx a b nat-loaded))
             ((eq? i 'udp-loaded)   (change-visible ctx a b udp-loaded))
             ((eq? i 'tcp-loaded)   (change-visible ctx a b tcp-loaded))

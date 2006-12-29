@@ -547,7 +547,11 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
     return NULL;
   }
   coreAPI = core;
-  upnp = coreAPI->requestService("upnp");
+  if (GC_get_configuration_value_yesno(cfg,
+				       "TCP",
+				       "UPNP",
+				       YES) == YES)
+    upnp = coreAPI->requestService("upnp");
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived

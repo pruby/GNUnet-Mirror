@@ -534,7 +534,11 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
 	   _("MTU %llu for `%s' is probably too low!\n"),
 	   mtu,
 	   "UDP");
-  upnp = coreAPI->requestService("upnp");
+  if (GC_get_configuration_value_yesno(cfg,
+				       "UDP",
+				       "UPNP",
+				       YES) == YES)
+    upnp = coreAPI->requestService("upnp");
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
