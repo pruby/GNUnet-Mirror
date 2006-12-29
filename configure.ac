@@ -136,15 +136,6 @@ AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")
 AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
 AC_MSG_RESULT([$build_target])
 
-# We define the paths here, because MinGW/GCC expands paths
-# passed through the command line ("-DGNDATADIR=..."). This would
-# lead to hard-coded paths ("C:\mingw\mingw\bin...") that do
-# not contain the actual GNUnet installation. GNUnet usually lives in
-# "C:\Program Files\GNU\GNUnet\bin".
-#AC_DEFINE_DIR([GNDATADIR], [datadir/GNUnet/], [The directory for 
-#installing read-only architecture-independent data])
-#AC_DEFINE_DIR([LOCALEDIR], [datadir/locale/], [gettext catalogs])
-
 
 CHECK_PTHREAD
 LIBS="$PTHREAD_LIBS $LIBS"
@@ -424,6 +415,10 @@ fi
 AM_GNU_GETTEXT_VERSION(0.13)
 AM_GNU_GETTEXT([external])
 
+# check for iconv
+AM_ICONV
+
+
 
 # Checks for standard header files.
 AC_HEADER_DIRENT
@@ -433,7 +428,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h math.h errno.h limits.h stdio.h locale.h sys/stat.h sys/types.h pthread.h],,AC_MSG_ERROR([Compiling GNUnet requires standard UNIX headers files]))
 
 # Checks for headers that are only required on some systems or opional (and where we do NOT abort if they are not there)
-AC_CHECK_HEADERS([langinfo.h sys/param.h sys/mount.h sys/statvfs.h sys/vfs.h arpa/inet.h fcntl.h libintl.h netdb.h netinet/in.h sys/ioctl.h sys/socket.h sys/time.h unistd.h kstat.h sys/sysinfo.h kvm.h sys/file.h sys/resource.h])
+AC_CHECK_HEADERS([langinfo.h sys/param.h sys/mount.h sys/statvfs.h sys/vfs.h arpa/inet.h fcntl.h libintl.h netdb.h netinet/in.h sys/ioctl.h sys/socket.h sys/time.h unistd.h kstat.h sys/sysinfo.h kvm.h sys/file.h sys/resource.h iconv.h])
 
 # Check for GMP header (and abort if not present)
 AC_CHECK_HEADERS([gmp.h],,AC_MSG_ERROR([Compiling GNUnet requires gmp.h (from the GNU MP library, libgmp)]))
@@ -530,7 +525,6 @@ else
  AC_DEFINE_UNQUOTED([HAVE_GUILE], 0, [We do NOT have GUILE])
 fi
 AM_CONDITIONAL(HAVE_GUILE, test x$guile = x1)
-
 
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile

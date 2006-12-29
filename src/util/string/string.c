@@ -27,7 +27,9 @@
 
 #include "gnunet_util_string.h"
 #include "platform.h"
+#if HAVE_ICONV_H
 #include <iconv.h>
+#endif
 
 
 int SNPRINTF(char * buf,
@@ -192,7 +194,7 @@ char * string_convertToUtf8(struct GE_Context * ectx,
 			    size_t len,
 			    const char * charset) {
   char * ret;
-#if ENABLE_NLS
+#if ENABLE_NLS && HAVE_ICONV
   size_t tmpSize;
   size_t finSize;
   char * tmp;

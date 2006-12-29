@@ -14,7 +14,7 @@ AM_CFLAGS = \
   -DPLUGIN_PATH="\"${plugindir}\"" -DPREFIX_PATH="\"${prefix}\""
 
 # GNU Gettext support
-LIBS = @LIBINTL@ @LIBS@
+LIBS = @LIBINTL@ @LIBICONV@ @LIBS@
 
 if SOLARIS
  SOLFLAGS = -lrt
