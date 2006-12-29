@@ -27,7 +27,6 @@
 
 #include <libxml/parser.h>
 #include <string.h>
-#include <glib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,11 +35,10 @@ extern "C" {
 /**
  * The valid types for an xmlnode
  */
-typedef enum _XMLNodeType
-{
-	XMLNODE_TYPE_TAG,		/**< Just a tag */
-	XMLNODE_TYPE_ATTRIB,		/**< Has attributes */
-	XMLNODE_TYPE_DATA		/**< Has data */
+typedef enum _XMLNodeType {
+  XMLNODE_TYPE_TAG,		/**< Just a tag */
+  XMLNODE_TYPE_ATTRIB,		/**< Has attributes */
+  XMLNODE_TYPE_DATA		/**< Has data */
 } XMLNodeType;
 
 /**
@@ -49,15 +47,15 @@ typedef enum _XMLNodeType
 typedef struct _xmlnode xmlnode;
 struct _xmlnode
 {
-	char *name;			/**< The name of the node. */
-	char *xmlns;		/**< The namespace of the node */
-	XMLNodeType type;		/**< The type of the node. */
-	char *data;			/**< The data for the node. */
-	size_t data_sz;			/**< The size of the data. */
-	struct _xmlnode *parent;	/**< The parent node or @c NULL.*/
-	struct _xmlnode *child;		/**< The child node or @c NULL.*/
-	struct _xmlnode *lastchild;	/**< The last child node or @c NULL.*/
-	struct _xmlnode *next;		/**< The next node or @c NULL. */
+  char *name;			/**< The name of the node. */
+  char *xmlns;		/**< The namespace of the node */
+  XMLNodeType type;		/**< The type of the node. */
+  char *data;			/**< The data for the node. */
+  size_t data_sz;			/**< The size of the data. */
+  struct _xmlnode *parent;	/**< The parent node or @c NULL.*/
+  struct _xmlnode *child;		/**< The child node or @c NULL.*/
+  struct _xmlnode *lastchild;	/**< The last child node or @c NULL.*/
+  struct _xmlnode *next;		/**< The next node or @c NULL. */
 };
 
 /**
@@ -125,7 +123,7 @@ xmlnode *xmlnode_get_next_twin(xmlnode *node);
  * @param size   The size of the data to insert.  If data is
  *               null-terminated you can pass in -1.
  */
-void xmlnode_insert_data(xmlnode *node, const char *data, gssize size);
+void xmlnode_insert_data(xmlnode *node, const char *data, int size);
 
 /**
  * Gets data from a node.
@@ -146,16 +144,7 @@ char *xmlnode_get_data(xmlnode *node);
  */
 void xmlnode_set_attrib(xmlnode *node, const char *attr, const char *value);
 
-/**
- * Sets a namespaced attribute for a node
- *
- * @param node  The node to set an attribute for.
- * @param attr  The name of the attribute to set
- * @param xmlns The namespace of the attribute to ste
- * @param value The value of the attribute
- */
-void xmlnode_set_attrib_with_namespace(xmlnode *node, const char *attr, const char *xmlns, const char *value);
-
+#if 0
 /**
  * Gets an attribute from a node.
  *
@@ -176,62 +165,7 @@ const char *xmlnode_get_attrib(xmlnode *node, const char *attr);
  * @return The value of the attribute/
  */
 const char *xmlnode_get_attrib_with_namespace(xmlnode *node, const char *attr, const char *xmlns);
-
-/**
- * Removes an attribute from a node.
- *
- * @param node The node to remove an attribute from.
- * @param attr The attribute to remove.
- */
-void xmlnode_remove_attrib(xmlnode *node, const char *attr);
-
-/**
- * Removes a namespaced attribute from a node
- *
- * @param node  The node to remove an attribute from
- * @param attr  The attribute to remove
- * @param xmlns The namespace of the attribute to remove
- */
-void xmlnode_remove_attrib_with_namespace(xmlnode *node, const char *attr, const char *xmlns);
-
-/**
- * Sets the namespace of a node
- *
- * @param node The node to qualify
- * @param xmlns The namespace of the node
- */
-void xmlnode_set_namespace(xmlnode *node, const char *xmlns);
-
-/**
- * Returns the namespace of a node
- *
- * @param node The node to get the namepsace from
- * @return The namespace of this node
- */
-const char *xmlnode_get_namespace(xmlnode *node);
-
-/**
- * Returns the node in a string of xml.
- *
- * @param node The starting node to output.
- * @param len  Address for the size of the string.
- *
- * @return The node represented as a string.  You must
- *         g_free this string when finished using it.
- */
-char *xmlnode_to_str(xmlnode *node, int *len);
-
-/**
- * Returns the node in a string of human readable xml.
- *
- * @param node The starting node to output.
- * @param len  Address for the size of the string.
- *
- * @return The node as human readable string including
- *         tab and new line characters.  You must
- *         g_free this string when finished using it.
- */
-char *xmlnode_to_formatted_str(xmlnode *node, int *len);
+#endif
 
 /**
  * Creates a node from a string of XML.  Calling this on the
@@ -244,16 +178,7 @@ char *xmlnode_to_formatted_str(xmlnode *node, int *len);
  *
  * @return The new node.
  */
-xmlnode *xmlnode_from_str(const char *str, gssize size);
-
-/**
- * Creates a new node from the source node.
- *
- * @param src The node to copy.
- *
- * @return A new copy of the src node.
- */
-xmlnode *xmlnode_copy(xmlnode *src);
+xmlnode *xmlnode_from_str(const char *str, int size);
 
 /**
  * Frees a node and all of it's children.

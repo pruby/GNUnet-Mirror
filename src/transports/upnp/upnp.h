@@ -28,7 +28,6 @@
 
 #include <libxml/parser.h>
 #include <string.h>
-#include <glib.h>
 #include "gnunet_util.h"
 #include "gnunet_util_cron.h"
 
@@ -57,7 +56,7 @@ int gaim_upnp_discover(struct GE_Context * ectx,
  *
  * @return The IP address of the network, or NULL if something went wrong
  */
-const gchar * gaim_upnp_get_public_ip(void);
+const char * gaim_upnp_get_public_ip(void);
 
 /**
  * Maps Ports in a UPnP enabled IGD that sits on the local network to
@@ -75,7 +74,7 @@ int gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 				  struct GC_Configuration * cfg,
 				  int do_add,
 				  unsigned short portmap,
-				  const gchar* protocol);
+				  const char* protocol);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

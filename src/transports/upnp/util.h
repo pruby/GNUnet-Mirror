@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <glib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +56,10 @@ char *gaim_unescape_html(const char *html);
  *
  * @return   TRUE if p is a prefix of s, otherwise FALSE.
  */
-gboolean gaim_str_has_prefix(const char *s, const char *p);
+int gaim_str_has_prefix(const char *s, const char *p);
+
+char * g_strdup_printf(const char * fmt,
+		       ...);
 
 #ifdef __cplusplus
 }

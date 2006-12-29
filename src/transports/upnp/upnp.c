@@ -32,6 +32,20 @@
 
 #include <curl/curl.h>
 
+#define gchar char
+#define gboolean int
+#define TRUE YES
+#define FALSE NO
+#define gpointer void *
+#define g_free FREE
+#define gsize size_t
+#define g_strdup STRDUP
+#define g_strndup STRNDUP
+#define g_ascii_strcasecmp strcasecmp
+#define G_GSIZE_FORMAT "u"
+#define g_return_if_fail(a) if(!(a)) return;
+#define g_return_val_if_fail(a, val) if(!(a)) return (val);
+
 /**
  * The xmlnode code has a bunch of memory leaks which
  * occur with malformed XML input (i.e. XML input is
@@ -132,6 +146,41 @@ typedef size_t (*GaimUtilFetchUrlCallback)(void *url_data,
 					   gpointer user_data);
 
 
+
+static char * g_strstr_len (const gchar *haystack,
+			    int haystack_len,
+			    const gchar *needle) {
+  int i;
+
+  g_return_val_if_fail (haystack != NULL, NULL);
+  g_return_val_if_fail (needle != NULL, NULL);
+
+  if (haystack_len < 0)
+    return strstr (haystack, needle);
+  else
+    {
+      const char *p = haystack;
+      int needle_len = strlen (needle);
+      const char *end = haystack + haystack_len - needle_len;
+
+      if (needle_len == 0)
+       return (char *)haystack;
+
+      while (*p && p <= end)
+       {
+         for (i = 0; i < needle_len; i++)
+           if (p[i] != needle[i])
+             goto next;
+
+         return (char *)p;
+
+       next:
+         p++;
+       }
+    }
+
+  return NULL;
+}
 
 static gboolean
 gaim_upnp_compare_device(const xmlnode* device, 
