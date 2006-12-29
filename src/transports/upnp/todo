@@ -1,7 +1,4 @@
-1) Add code to determine internal IP
-2) change init to periodically re-add port mappings / rediscover
-   (use cron jobs for this).
-3) Look into upnp shutdown sequence!
-4) adjust configure to check for libxml2
-5) integrate with transports
-
+1) Look into upnp shutdown sequence (fix gaim_timeout_add!)
+2) adjust configure to check for libxml2
+3) integrate with transports -- tricky bit: making it optional!
+4) remove glib dependency from upnp code!

@@ -28,6 +28,7 @@
 #include "util.h"
 #include "upnp.h"
 #include "error.h"
+#include "ip.h"
 
 #include <curl/curl.h>
 
@@ -684,15 +685,16 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 			      const gchar* protocol) {
   const gchar * action_name;
   gchar * action_params;
-  const gchar * internal_ip;
+  char * internal_ip;
   char * proxy;
   int ret;
     
   if (control_info.status != GAIM_UPNP_STATUS_DISCOVERED) 
     return NO;	
   if (do_add) {
-    internal_ip = gaim_upnp_get_internal_ip();
-    if(internal_ip == NULL) {
+    internal_ip = gaim_upnp_get_internal_ip(cfg,
+					    ectx);
+    if (internal_ip == NULL) {
       gaim_debug_error("upnp",
 		       "gaim_upnp_set_port_mapping(): couldn't get local ip\n");
       return NO;
@@ -703,6 +705,7 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 				    protocol,
 				    portmap,
 				    internal_ip);
+    FREE(internal_ip);
   } else {
     action_name = "DeletePortMapping";
     action_params = g_strdup_printf(DELETE_PORT_MAPPING_PARAMS,
