@@ -1,4 +1,4 @@
-1) Look into upnp shutdown sequence (fix gaim_timeout_add!)
-2) adjust configure to check for libxml2
-3) integrate with transports -- tricky bit: making it optional!
-4) remove glib dependency from upnp code!
+1) write testcase
+2) integrate with transports -- tricky bit: making it optional!
+3) remove glib dependency from upnp code!
+4) adjust configure to check for libxml2

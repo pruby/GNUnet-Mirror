@@ -291,8 +291,10 @@ xmlnode_get_child_with_namespace(const xmlnode *parent, const char *name, const 
 	char **names;
 	char *parent_name, *child_name;
 
-	g_return_val_if_fail(parent != NULL, NULL);
-	g_return_val_if_fail(name != NULL, NULL);
+	if (parent == NULL)
+	  return NULL;
+	if (name == NULL)
+	  return NULL;
 
 	names = g_strsplit(name, "/", 2);
 	parent_name = names[0];
@@ -322,8 +324,9 @@ xmlnode_get_data(xmlnode *node)
 {
 	GString *str = NULL;
 	xmlnode *c;
-
-	g_return_val_if_fail(node != NULL, NULL);
+	
+	if (node == NULL)
+	  return NULL;
 
 	for(c = node->child; c; c = c->next) {
 		if(c->type == XMLNODE_TYPE_DATA) {
@@ -347,7 +350,8 @@ xmlnode_to_str_helper(xmlnode *node, int *len, gboolean formatting, int depth)
 	char *node_name, *esc, *esc2, *tab = NULL;
 	gboolean need_end = FALSE, pretty = formatting;
 
-	g_return_val_if_fail(node != NULL, NULL);
+	if (node == NULL)
+	  return NULL;
 
 	if(pretty && depth) {
 		tab = g_strnfill(depth, '\t');

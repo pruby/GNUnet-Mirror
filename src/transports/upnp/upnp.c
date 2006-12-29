@@ -32,24 +32,24 @@
 
 #include <curl/curl.h>
 
-/***************************************************************
-** General Defines                                             *
-****************************************************************/
+/**
+ * The xmlnode code has a bunch of memory leaks which
+ * occur with malformed XML input (i.e. XML input is
+ * incomplete).  Without this extra check, the code
+ * would frequently try to parse incomplete XML --
+ * with it, only if the response from the NAT box is
+ * odd or incorrect.  These leaks should be fixed
+ * eventually (best way I can think of is to make
+ * a memory pool for the xmlnodes and blow it away
+ * completely at the end).
+ */
+#define TEST_FOR_LEAKS NO
+
 #define HTTP_OK "200 OK"
-#define DEFAULT_HTTP_PORT 80
-#define DISCOVERY_TIMEOUT 1000
-
-/***************************************************************
-** Discovery/Description Defines                               *
-****************************************************************/
 #define NUM_UDP_ATTEMPTS 2
-
-/* Address and port of an SSDP request used for discovery */
 #define HTTPMU_HOST_ADDRESS "239.255.255.250"
 #define HTTPMU_HOST_PORT 1900
-
 #define SEARCH_REQUEST_DEVICE "urn:schemas-upnp-org:service:%s"
-
 #define SEARCH_REQUEST_STRING \
 	"M-SEARCH * HTTP/1.1\r\n" \
 	"MX: 2\r\n" \
@@ -57,19 +57,12 @@
 	"MAN: \"ssdp:discover\"\r\n" \
 	"ST: urn:schemas-upnp-org:service:%s\r\n" \
 	"\r\n"
-
 #define WAN_IP_CONN_SERVICE "WANIPConnection:1"
 #define WAN_PPP_CONN_SERVICE "WANPPPConnection:1"
-
-/******************************************************************
-** Action Defines                                                 *
-*******************************************************************/
-
-#define HTTP_POST_SOAP_ACTION \
-	"SOAPACTION: \"urn:schemas-upnp-org:service:%s#%s\"\r\n"	\
-	"CONTENT-TYPE: text/xml ; charset=\"utf-8\"\r\n" \
-	"CONTENT-LENGTH: %" G_GSIZE_FORMAT "\r\n\r\n%s"
-
+#define HTTP_POST_SOAP_HEADER \
+        "SOAPACTION: \"urn:schemas-upnp-org:service:%s#%s\""
+#define HTTP_POST_SIZE_HEADER \
+        "CONTENT-LENGTH: %" G_GSIZE_FORMAT ""
 #define SOAP_ACTION \
 	"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n" \
 	"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" " \
@@ -80,10 +73,8 @@
 	    "</u:%s>\r\n" \
 	  "</s:Body>\r\n" \
 	"</s:Envelope>"
-
 #define PORT_MAPPING_LEASE_TIME "0"
 #define PORT_MAPPING_DESCRIPTION "GNUNET_UPNP_PORT_FORWARD"
-
 #define ADD_PORT_MAPPING_PARAMS \
 	"<NewRemoteHost></NewRemoteHost>\r\n" \
 	"<NewExternalPort>%i</NewExternalPort>\r\n" \
@@ -97,7 +88,6 @@
 	"<NewLeaseDuration>" \
 	PORT_MAPPING_LEASE_TIME \
 	"</NewLeaseDuration>\r\n"
-
 #define DELETE_PORT_MAPPING_PARAMS \
 	"<NewRemoteHost></NewRemoteHost>\r\n" \
 	"<NewExternalPort>%i</NewExternalPort>\r\n" \
@@ -132,7 +122,6 @@ static GaimUPnPControlInfo control_info = {
   "",
 };
 
-
 /**
  * This is the signature used for functions that act as a callback
  * to CURL.
@@ -147,7 +136,7 @@ typedef size_t (*GaimUtilFetchUrlCallback)(void *url_data,
 static gboolean
 gaim_upnp_compare_device(const xmlnode* device, 
 			 const gchar* deviceType) {
-  xmlnode* deviceTypeNode = xmlnode_get_child(device, "deviceType");
+  xmlnode * deviceTypeNode = xmlnode_get_child(device, "deviceType");
   char * tmp;
   gboolean ret;
   
@@ -186,37 +175,30 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
   xmlnode *xmlRootNode, *serviceTypeNode, *controlURLNode, *baseURLNode;
   char *tmp;
   
-  /* make sure we have a valid http response */
-  if(g_strstr_len(httpResponse, len, HTTP_OK) == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): Failed In HTTP_OK\n");
-    return NULL;
-  }
-  
   /* find the root of the xml document */
-  if((xmlRoot = g_strstr_len(httpResponse, len, "<root")) == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): Failed finding root\n");
-    return NULL;
-  }
-  
+  xmlRoot = g_strstr_len(httpResponse, len, "<root");
+  if (xmlRoot == NULL)
+    return NULL;  
+#if TEST_FOR_LEAKS
+  if (g_strstr_len(httpResponse, len, "</root") == NULL) 
+    return NULL;  
+#endif
+
   /* create the xml root node */
-  if((xmlRootNode = xmlnode_from_str(xmlRoot,
-				     len - (xmlRoot - httpResponse))) == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): Could not parse xml root node\n");
-    return NULL;
-  }
+  xmlRootNode = xmlnode_from_str(xmlRoot,
+				 len - (xmlRoot - httpResponse));
+  if (xmlRootNode == NULL) 
+    return NULL;  
   
   /* get the baseURL of the device */
-  if((baseURLNode = xmlnode_get_child(xmlRootNode, "URLBase")) != NULL) {
+  baseURLNode = xmlnode_get_child(xmlRootNode, "URLBase");
+  if (baseURLNode != NULL) {
     baseURL = xmlnode_get_data(baseURLNode);
   } else {
     baseURL = g_strdup(httpURL);
   }
-  
-  /* get the serviceType child that has the service type as its data */
-  
+ 
+  /* get the serviceType child that has the service type as its data */  
   /* get urn:schemas-upnp-org:device:InternetGatewayDevice:1 and its devicelist */
   serviceTypeNode = xmlnode_get_child(xmlRootNode, "device");
   while(!gaim_upnp_compare_device(serviceTypeNode,
@@ -225,16 +207,12 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
     serviceTypeNode = xmlnode_get_next_twin(serviceTypeNode);
   }
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 1\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
   }
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "deviceList");
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 2\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
@@ -248,16 +226,12 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
     serviceTypeNode = xmlnode_get_next_twin(serviceTypeNode);
   }
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 3\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
   }
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "deviceList");
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 4\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
@@ -270,16 +244,12 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
     serviceTypeNode = xmlnode_get_next_twin(serviceTypeNode);
   }
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 5\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
   }
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "serviceList");
   if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 6\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
@@ -294,9 +264,7 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
   }
   
   g_free(service);
-  if(serviceTypeNode == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): could not get serviceTypeNode 7\n");
+  if (serviceTypeNode == NULL) {
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
@@ -305,8 +273,6 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
   /* get the controlURL of the service */
   if((controlURLNode = xmlnode_get_child(serviceTypeNode,
 					 "controlURL")) == NULL) {
-    gaim_debug_error("upnp",
-		     "parse_description_response(): Could not find controlURL\n");
     g_free(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
@@ -315,7 +281,23 @@ gaim_upnp_parse_description_response(const gchar* httpResponse,
   tmp = xmlnode_get_data(controlURLNode);
   if(baseURL && !gaim_str_has_prefix(tmp, "http://") &&
      !gaim_str_has_prefix(tmp, "HTTP://")) {
-    controlURL = g_strdup_printf("%s%s", baseURL, tmp);
+    if (tmp[0] == '/') {
+      size_t len;
+      const char * end;
+      /* absolute path */
+      end = strstr(&baseURL[strlen("http://")],
+		   "/");
+      if (end == NULL)
+	len = strlen(&baseURL[strlen("http://")]);
+      else
+	len = end - &baseURL[strlen("http://")];
+      controlURL = g_strdup_printf("http://%.*s%s",
+				   len,
+				   &baseURL[strlen("http://")],
+				   tmp);
+    } else {
+      controlURL = g_strdup_printf("%s%s", baseURL, tmp);
+    }
     g_free(tmp);
   } else{
     controlURL = tmp;
@@ -335,7 +317,6 @@ static int setup_curl(const char * proxy,
 		      CURL * curl) {
   int ret;
 
-  ret = CURLE_OK;
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_FAILONERROR,
 		   1);
@@ -355,8 +336,6 @@ static int setup_curl(const char * proxy,
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_NOSIGNAL,
 		   1);
-  if (ret != CURLE_OK)
-    return SYSERR;
   return OK;
 }
 
@@ -366,28 +345,29 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
 					   const gchar* actionParams, 
 					   GaimUtilFetchUrlCallback cb,
 					   gpointer cb_data) {
-  gchar * soapMessage;
   CURL * curl;	
-  gchar * postfields;
   int ret;
+  gchar * soapHeader;
+  gchar * sizeHeader;
+  gchar * soapMessage;
+  struct curl_slist * headers = NULL;
 
+  GE_ASSERT(NULL, cb != NULL);
   if (0 != curl_global_init(CURL_GLOBAL_WIN32)) 
     return SYSERR;
-  /* set the soap message */
+  /* set the soap message */  
   soapMessage = g_strdup_printf(SOAP_ACTION, 
 				actionName,
 				control_info.service_type, 
 				actionParams, 
 				actionName);
-  postfields = g_strdup_printf(HTTP_POST_SOAP_ACTION, 
+  soapHeader = g_strdup_printf(HTTP_POST_SOAP_HEADER,
 			       control_info.service_type, 
-			       actionName,
-			       strlen(soapMessage),
-			       soapMessage);
-  g_free(soapMessage);
+			       actionName);
+  sizeHeader = g_strdup_printf(HTTP_POST_SIZE_HEADER,
+			       strlen(soapMessage));
   curl = curl_easy_init();
   setup_curl(proxy, curl);
-  ret = CURLE_OK;
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_URL,
 		   control_info.control_url);
@@ -396,26 +376,45 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
 		   cb);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEDATA,
-		   cb_data);
+		   cb_data); 
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_POST,
 		   1);
+  headers = curl_slist_append(headers, 
+			      "CONTENT-TYPE: text/xml ; charset=\"utf-8\"");
+  headers = curl_slist_append(headers, 
+			      soapHeader);
+  headers = curl_slist_append(headers, 
+			      sizeHeader);
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_HTTPHEADER,
+		   headers);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_POSTFIELDS,
-		   postfields);
+		   soapMessage);
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_POSTFIELDSIZE,
+		   strlen(soapMessage));
   if (ret == CURLE_OK)
     ret = curl_easy_perform(curl);
+#if 0
   if (ret != CURLE_OK)
     GE_LOG(NULL,
 	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
+	   _("%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"),
 	   "curl_easy_perform",
+	   control_info.control_url,
+	   soapMessage,
 	   __FILE__,
 	   __LINE__,
 	   curl_easy_strerror(ret));
+#endif
+  curl_slist_free_all(headers);
   curl_easy_cleanup(curl);
   curl_global_cleanup();
-  g_free(postfields);
+  g_free(sizeHeader);
+  g_free(soapMessage);
+  g_free(soapHeader);
   if (ret != CURLE_OK)
     return SYSERR;
   return OK;
@@ -466,6 +465,15 @@ looked_up_public_ip_cb(void *url_data,
 	 _("upnp: NAT Returned IP: %s\n"),
 	 control_info.publicip);
   return len;
+}
+
+
+static size_t
+ignore_response(void *url_data, 
+		size_t size,
+		size_t nmemb,		      
+		gpointer user_data) {
+  return size * nmemb;
 }
 
 /**
@@ -539,7 +547,8 @@ gaim_upnp_parse_description(char * proxy,
 
 int
 gaim_upnp_discover(struct GE_Context * ectx,
-		   struct GC_Configuration * cfg) {
+		   struct GC_Configuration * cfg,
+		   int sock) {
   char * proxy;
   struct hostent* hp;
   struct sockaddr_in server;
@@ -559,9 +568,7 @@ gaim_upnp_discover(struct GE_Context * ectx,
 	 sizeof(UPnPDiscoveryData));
   if (control_info.status == GAIM_UPNP_STATUS_DISCOVERING) 
     return NO;
-  dd.sock = SOCKET(AF_INET, SOCK_DGRAM, 0);
-  if (dd.sock == -1) 
-    return SYSERR;
+  dd.sock = sock;
   hp = gethostbyname(HTTPMU_HOST_ADDRESS);
   if (hp == NULL) {
     CLOSE(dd.sock);
@@ -602,17 +609,11 @@ gaim_upnp_discover(struct GE_Context * ectx,
     } while ( ((errno == EINTR) || (errno == EAGAIN)) &&
 	      (GNUNET_SHUTDOWN_TEST() == NO));
     g_free(sendMessage);    
-    if (sentSuccess) {
-      gaim_timeout_add(DISCOVERY_TIMEOUT,
-		       gaim_upnp_discover_timeout, 
-		       &dd);
+    if (sentSuccess) 
       break;
-    }
   }
-  if (sentSuccess == FALSE) {
-    CLOSE(dd.sock);
-    return SYSERR;
-  }
+  if (sentSuccess == FALSE) 
+    return SYSERR;  
 
   /* try to read response */
   do {
@@ -628,7 +629,6 @@ gaim_upnp_discover(struct GE_Context * ectx,
     }
   } while ( (errno == EINTR) &&
 	    (GNUNET_SHUTDOWN_TEST() == NO) );
-  CLOSE(dd.sock);
 
   /* parse the response, and see if it was a success */
   if (g_strstr_len(buf, buf_len, HTTP_OK) == NULL) 
@@ -648,7 +648,12 @@ gaim_upnp_discover(struct GE_Context * ectx,
     return SYSERR;    
   dd.full_url = g_strndup(startDescURL,
 			  endDescURL - startDescURL); 
-  proxy = NULL; /* FIXME */
+  proxy = NULL; 
+  GC_get_configuration_value_string(cfg,
+				    "GNUNETD",
+				    "HTTP-PROXY",
+				    "",
+				    &proxy);
   ret = gaim_upnp_parse_description(proxy,
 				    &dd);  
   g_free(dd.full_url);
@@ -665,6 +670,7 @@ gaim_upnp_discover(struct GE_Context * ectx,
 	 dd.buf_len,
 	 0);
   }
+  FREE(proxy);
   return ret;
 }
 
@@ -712,13 +718,21 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 				    portmap, 
 				    protocol);
   }  
-  proxy = NULL; /* FIXME! */
+  proxy = NULL; 
+  GC_get_configuration_value_string(cfg,
+				    "GNUNETD",
+				    "HTTP-PROXY",
+				    "",
+				    &proxy);
   ret = gaim_upnp_generate_action_message_and_send(proxy,
 						   action_name,
 						   action_params,
-						   NULL,
+						   &ignore_response,
 						   NULL);
   
   g_free(action_params);
+  FREE(proxy);
   return ret; 
 }
+
+/* end of upnp.c */

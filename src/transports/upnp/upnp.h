@@ -46,7 +46,8 @@ extern "C" {
  * The result will be cached for further use.
  */
 int gaim_upnp_discover(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg);
+		       struct GC_Configuration * cfg,
+		       int sock);
 
 /**
  * Gets the IP address from a UPnP enabled IGD that sits on the local
