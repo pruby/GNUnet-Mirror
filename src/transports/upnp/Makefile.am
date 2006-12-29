@@ -12,6 +12,7 @@ lib_LTLIBRARIES = \
 
 libgnunetupnp_la_SOURCES = \
  error.c error.h \
+ init.c \
  util.c util.h \
  xmlnode.c xmlnode.h \
  upnp.c upnp.h 

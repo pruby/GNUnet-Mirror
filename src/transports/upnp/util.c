@@ -100,90 +100,6 @@ gaim_unescape_html(const char *html) {
 }
 
 
-/**************************************************************************
- * URI/URL Functions
- **************************************************************************/
-gboolean
-gaim_url_parse(const char *url, char **ret_host, int *ret_port,
-			   char **ret_path, char **ret_user, char **ret_passwd)
-{
-	char scan_info[255];
-	char port_str[6];
-	int f;
-	const char *at, *slash;
-	const char *turl;
-	char host[256], path[256], user[256], passwd[256];
-	int port = 0;
-	/* hyphen at end includes it in control set */
-	static char addr_ctrl[] = "A-Za-z0-9.-";
-	static char port_ctrl[] = "0-9";
-	static char page_ctrl[] = "A-Za-z0-9.~_/:*!@&%%?=+^-";
-	static char user_ctrl[] = "A-Za-z0-9.~_/*!&%%?=+^-";
-	static char passwd_ctrl[] = "A-Za-z0-9.~_/*!&%%?=+^-";
-
-	g_return_val_if_fail(url != NULL, FALSE);
-
-	if ((turl = strstr(url, "http://")) != NULL ||
-		(turl = strstr(url, "HTTP://")) != NULL)
-	{
-		turl += 7;
-		url = turl;
-	}
-
-	/* parse out authentication information if supplied */
-	/* Only care about @ char BEFORE the first / */
-	at = strchr(url, '@');
-	slash = strchr(url, '/');
-	if ((at != NULL) &&
-			(((slash != NULL) && (strlen(at) > strlen(slash))) ||
-			(slash == NULL))) {
-		g_snprintf(scan_info, sizeof(scan_info),
-					"%%255[%s]:%%255[%s]^@", user_ctrl, passwd_ctrl);
-		f = sscanf(url, scan_info, user, passwd);
-
-		if (f ==1 ) {
-			/* No passwd, possibly just username supplied */
-			g_snprintf(scan_info, sizeof(scan_info),
-						"%%255[%s]^@", user_ctrl);
-			f = sscanf(url, scan_info, user);
-			*passwd = '\0';
-		}
-
-		url = at+1; /* move pointer after the @ char */
-	} else {
-		*user = '\0';
-		*passwd = '\0';
-	}
-
-	g_snprintf(scan_info, sizeof(scan_info),
-			   "%%255[%s]:%%5[%s]/%%255[%s]", addr_ctrl, port_ctrl, page_ctrl);
-
-	f = sscanf(url, scan_info, host, port_str, path);
-
-	if (f == 1)
-	{
-		g_snprintf(scan_info, sizeof(scan_info),
-				   "%%255[%s]/%%255[%s]",
-				   addr_ctrl, page_ctrl);
-		f = sscanf(url, scan_info, host, path);
-		g_snprintf(port_str, sizeof(port_str), "80");
-	}
-
-	if (f == 1)
-		*path = '\0';
-
-	sscanf(port_str, "%d", &port);
-
-	if (ret_host != NULL) *ret_host = g_strdup(host);
-	if (ret_port != NULL) *ret_port = port;
-	if (ret_path != NULL) *ret_path = g_strdup(path);
-	if (ret_user != NULL) *ret_user = g_strdup(user);
-	if (ret_passwd != NULL) *ret_passwd = g_strdup(passwd);
-
-	return TRUE;
-}
-
-
 gboolean
 gaim_str_has_prefix(const char *s, const char *p)
 {
@@ -197,26 +113,4 @@ gaim_str_has_prefix(const char *s, const char *p)
 #endif
 }
 
-/**
- * Fetches the data from a URL, and passes it to a callback function.
- *
- * @param url        The URL.
- * @param full       TRUE if this is the full URL, or FALSE if it's a
- *                   partial URL.
- * @param user_agent The user agent field to use, or NULL.
- * @param http11     TRUE if HTTP/1.1 should be used to download the file.
- * @param request    A HTTP request to send to the server instead of the
- *                   standard GET
- * @param include_headers
- *                   If TRUE, include the HTTP headers in the response.
- * @param callback   The callback function.
- * @param data       The user data to pass to the callback function.
- */
-GaimUtilFetchUrlData *gaim_util_fetch_url_request(const gchar *url,
-		gboolean full, const gchar *user_agent, gboolean http11,
-		const gchar *request, gboolean include_headers,
-						  GaimUtilFetchUrlCallback callback, gpointer data) {
-  /* FIXME: implement using libcurl? */
-  return NULL;
-}
 

@@ -25,13 +25,13 @@
 #ifndef _GAIM_XMLNODE_H_
 #define _GAIM_XMLNODE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libxml/parser.h>
 #include <string.h>
 #include <glib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * The valid types for an xmlnode
