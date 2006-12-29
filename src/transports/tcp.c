@@ -27,6 +27,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "gnunet_upnp_service.h"
 #include "gnunet_stats_service.h"
 #include "platform.h"
 #include "ip.h"
@@ -67,6 +68,8 @@ typedef struct {
 /* *********** globals ************* */
 
 static TransportAPI tcpAPI;
+
+static UPnP_ServiceAPI * upnp;
 
 static struct CIDRNetwork * filteredNetworks_;
 
@@ -255,14 +258,18 @@ static P2P_hello_MESSAGE * createhello() {
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
-  if (SYSERR == getPublicIPAddress(cfg,
-				   ectx,
-				   &haddr->ip)) {
+  if (! ( ( (upnp != NULL) &&
+	    (OK == upnp->get_ip(port,
+				"TCP",
+				&haddr->ip)) ) ||
+	  (SYSERR != getPublicIPAddress(cfg,
+					ectx,
+					&haddr->ip)) ) ) {
     FREE(msg);
     GE_LOG(ectx,
 	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-	   _("Could not determine my public IP address.\n"));
-    return NULL;
+	   _("TCP: Could not determine my public IP address.\n"));
+    return NULL;  
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
@@ -540,6 +547,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
     return NULL;
   }
   coreAPI = core;
+  upnp = coreAPI->requestService("upnp");
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
@@ -569,8 +577,14 @@ void donetransport_tcp() {
   GC_detach_change_listener(cfg,
 			    &reloadConfiguration,
 			    NULL);
-  coreAPI->releaseService(stats);
-  stats = NULL;
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
+  if (upnp != NULL) {
+    coreAPI->releaseService(upnp);
+    upnp = NULL;
+  }
   FREENONNULL(filteredNetworks_);
   FREENONNULL(allowedNetworks_);
   MUTEX_DESTROY(tcplock);

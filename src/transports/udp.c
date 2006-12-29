@@ -28,10 +28,13 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
+#include "gnunet_upnp_service.h"
 #include "ip.h"
 #include "platform.h"
 
 #define DEBUG_UDP NO
+
+static UPnP_ServiceAPI * upnp;
 
 #include "udp_helper.c"
 
@@ -250,21 +253,28 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
+  unsigned short port;
 
-  if (getGNUnetUDPPort() == 0)
+  port = getGNUnetUDPPort();
+  if (port == 0)
     return NULL; /* UDP transport configured send-only */
 
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
-  if (SYSERR == getPublicIPAddress(cfg,
-				   ectx,
-				   &haddr->senderIP)) {
-    GE_LOG(ectx,
-	   GE_WARNING | GE_ADMIN | GE_BULK,
-	   _("UDP: Could not determine my public IP address.\n"));
+
+  if (! ( ( (upnp != NULL) &&
+	    (OK == upnp->get_ip(port,
+				"UDP",
+				&haddr->senderIP)) ) ||
+	  (SYSERR != getPublicIPAddress(cfg,
+					ectx,
+					&haddr->senderIP)) ) ) {
     FREE(msg);
-    return NULL;
+    GE_LOG(ectx,
+	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+	   _("UDP: Could not determine my public IP address.\n"));
+    return NULL;  
   }
 #if DEBUG_UDP
   GE_LOG(ectx,
@@ -272,7 +282,7 @@ static P2P_hello_MESSAGE * createhello() {
 	 "UDP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->senderIP)));
 #endif
-  haddr->senderPort      = htons(getGNUnetUDPPort());
+  haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(UDP_PROTOCOL_NUMBER);
@@ -524,6 +534,7 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
 	   _("MTU %llu for `%s' is probably too low!\n"),
 	   mtu,
 	   "UDP");
+  upnp = coreAPI->requestService("upnp");
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
@@ -552,7 +563,14 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
 }
 
 void donetransport_udp() {
-  coreAPI->releaseService(stats);
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
+  if (upnp != NULL) {
+    coreAPI->releaseService(upnp);
+    upnp = NULL;
+  }
   MUTEX_DESTROY(configLock);
   configLock = NULL;
   FREENONNULL(filteredNetworks_);
