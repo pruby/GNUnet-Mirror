@@ -43,6 +43,8 @@ static struct GE_Context * ectx;
 
 static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
+static int no_resolve = NO;
+
 /**
  * All gnunet-peer-info command line options
  */
@@ -51,6 +53,9 @@ static struct CommandLineOption gnunetpeerinfoOptions[] = {
   COMMAND_LINE_OPTION_HELP(gettext_noop("Print information about GNUnet peers.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'n', "numeric", NULL,
+    gettext_noop("don't resolve host names"),
+    0, &gnunet_getopt_configure_set_one, &no_resolve },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_END,
 };
@@ -86,7 +91,8 @@ static void printHostInfo(const PeerIdentity * id,
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("hello message invalid (signature invalid).\n"));
   }
-  info = transport->heloToString(helo);
+  info = transport->helloToString(helo,
+				  ! no_resolve);
   FREE(helo);
   if (info == NULL) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -94,7 +100,6 @@ static void printHostInfo(const PeerIdentity * id,
 	&enc);
     return;
   }
-
   printf(_("Peer `%s' with trust %8u and address `%s'\n"),
 	 (char*)&enc,
 	 identity->getHostTrust(id),

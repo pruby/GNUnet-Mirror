@@ -61,32 +61,32 @@ static struct GE_Context * ectx;
 static void createSignedhello(void * cls) {
   TransportAPI * tapi = cls;
   MUTEX_LOCK(tapis_lock);
-  FREENONNULL(tapi->helo);
-  tapi->helo = tapi->createhello();
-  if (NULL == tapi->helo) {
+  FREENONNULL(tapi->hello);
+  tapi->hello = tapi->createhello();
+  if (NULL == tapi->hello) {
     MUTEX_UNLOCK(tapis_lock);
     return;
   }
-  memcpy(&tapi->helo->publicKey,
+  memcpy(&tapi->hello->publicKey,
 	 identity->getPublicPrivateKey(),
 	 sizeof(PublicKey));
-  memcpy(&tapi->helo->senderIdentity,
+  memcpy(&tapi->hello->senderIdentity,
 	 coreAPI->myIdentity,
 	 sizeof(PeerIdentity));
-  tapi->helo->expirationTime
+  tapi->hello->expirationTime
     = htonl(TIME(NULL) + helo_live);
-  tapi->helo->header.type
+  tapi->hello->header.type
     = htons(p2p_PROTO_hello);
-  tapi->helo->header.size
-    = htons(P2P_hello_MESSAGE_size(tapi->helo));
-  if (SYSERR == identity->signData(&(tapi->helo)->senderIdentity,
-				   P2P_hello_MESSAGE_size(tapi->helo)
+  tapi->hello->header.size
+    = htons(P2P_hello_MESSAGE_size(tapi->hello));
+  if (SYSERR == identity->signData(&(tapi->hello)->senderIdentity,
+				   P2P_hello_MESSAGE_size(tapi->hello)
 				   - sizeof(Signature)
 				   - sizeof(PublicKey)
 				   - sizeof(MESSAGE_HEADER),
-				   &tapi->helo->signature)) {
-    FREE(tapi->helo);
-    tapi->helo = NULL;
+				   &tapi->hello->signature)) {
+    FREE(tapi->hello);
+    tapi->hello = NULL;
     GE_BREAK(ectx, 0);
   }
   MUTEX_UNLOCK(tapis_lock);
@@ -117,7 +117,7 @@ static int addTransport(TransportAPI * tapi) {
     return SYSERR;
   }
   tapis[tapi->protocolNumber] = tapi;
-  tapi->helo = NULL;
+  tapi->hello = NULL;
   cron_add_job(coreAPI->cron,
 	       &createSignedhello,
 	       HELLO_RECREATE_FREQ,
@@ -129,19 +129,21 @@ static int addTransport(TransportAPI * tapi) {
 /**
  * Convert hello to string.
  */
-static char * heloToString(const P2P_hello_MESSAGE * helo) {
+static char * 
+helloToString(const P2P_hello_MESSAGE * hello,
+	      int resolve_ip) {
   unsigned short prot;
 
-  prot = ntohs(helo->protocol);
-  if ( (ntohs(helo->protocol) >= tapis_count) ||
+  prot = ntohs(hello->protocol);
+  if ( (ntohs(hello->protocol) >= tapis_count) ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("Converting peer address to string failed, transport type %d not supported\n"),
-	   ntohs(helo->protocol));
+	   ntohs(hello->protocol));
     return NULL;
   }
-  return tapis[prot]->addressToString(helo);
+  return tapis[prot]->addressToString(hello, resolve_ip);
 }
 
 /**
@@ -354,7 +356,7 @@ transportCreatehello(unsigned short ttype) {
     while ( (ttype < tapis_count) &&
 	    ( (tapis[perm[ttype]] == NULL) ||
 	      (tapis[perm[ttype]] != NULL &&
-	       tapis[perm[ttype]]->helo == NULL) ) )
+	       tapis[perm[ttype]]->hello == NULL) ) )
       ttype--; /* unsigned, will wrap around! */
     if (ttype >= tapis_count) {
       FREE(perm);
@@ -374,14 +376,14 @@ transportCreatehello(unsigned short ttype) {
     return NULL;
   }
   tapi = tapis[ttype];
-  if (tapi->helo == NULL) {
+  if (tapi->hello == NULL) {
     MUTEX_UNLOCK(tapis_lock);
     return NULL; /* send-only transport */
   }
-  helo = MALLOC(P2P_hello_MESSAGE_size(tapi->helo));
+  helo = MALLOC(P2P_hello_MESSAGE_size(tapi->hello));
   memcpy(helo,
-	 tapi->helo,
-	 P2P_hello_MESSAGE_size(tapi->helo));
+	 tapi->hello,
+	 P2P_hello_MESSAGE_size(tapi->hello));
   MUTEX_UNLOCK(tapis_lock);
   return helo;
 }
@@ -489,8 +491,8 @@ static void unloadTransport(int i) {
   if (ptr != NULL)
     ptr();
   FREE(tapis[i]->transName);
-  FREENONNULL(tapis[i]->helo);
-  tapis[i]->helo = NULL;
+  FREENONNULL(tapis[i]->hello);
+  tapis[i]->hello = NULL;
   os_plugin_unload(tapis[i]->libHandle);
   tapis[i] = NULL;
 }
@@ -685,7 +687,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.send = &transportSend;
   ret.disconnect = &transportDisconnect;
   ret.verifyhello = &transportVerifyHelo;
-  ret.heloToString = &heloToString;
+  ret.helloToString = &helloToString;
   ret.getMTU = &transportGetMTU;
   ret.createhello = &transportCreatehello;
   ret.getAdvertisedhellos = &getAdvertisedhellos;

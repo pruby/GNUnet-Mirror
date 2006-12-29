@@ -173,7 +173,8 @@ static int stopTransportServer() {
 /**
  * Convert NAT address to a string.
  */
-static char * addressToString(const P2P_hello_MESSAGE * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * hello,
+			      int do_resolve) {
   return STRDUP("NAT");
 }
 

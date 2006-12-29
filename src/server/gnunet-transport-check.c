@@ -244,7 +244,9 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
 				    &verbose);
   if (verbose > 0) {
     char * str;
-    str = transport->heloToString(xhelo);
+
+    str = transport->helloToString(xhelo,
+				   NO);
     fprintf(stderr,
 	    _("\nContacting `%s'."),
 	    str);

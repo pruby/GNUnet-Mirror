@@ -199,7 +199,7 @@ typedef struct {
    * idea.  The field is updated by a cron job
    * periodically.
    */
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
 
   /**
    * The number of the protocol that is supported by this transport
@@ -226,11 +226,11 @@ typedef struct {
    * Verify that a hello-Message is correct (a node
    * is potentially reachable at that address). Core
    * will only play ping pong after this verification passed.
-   * @param helo the hello message to verify
+   * @param hello the hello message to verify
    *        (the signature/crc have been verified before)
    * @return OK if the helo is well-formed
    */
-  int (*verifyHelo)(const P2P_hello_MESSAGE * helo);
+  int (*verifyHelo)(const P2P_hello_MESSAGE * hello);
 
   /**
    * Create a hello-Message for the current node. The hello is
@@ -240,8 +240,6 @@ typedef struct {
    * responsible for filling in the protocol number,
    * senderAddressSize and the senderAddress itself.
    *
-   * @param helo address where to store the pointer to the hello
-   *        message
    * @return OK on success, SYSERR on error (e.g. send-only
    *  transports return SYSERR here)
    */
@@ -250,11 +248,11 @@ typedef struct {
   /**
    * Establish a connection to a remote node.
    *
-   * @param helo the hello-Message for the target node
+   * @param hello the hello-Message for the target node
    * @param tsession the session handle that is to be set
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*connect)(const P2P_hello_MESSAGE * helo,
+  int (*connect)(const P2P_hello_MESSAGE * hello,
 		 TSession ** tsession);
 
   /**
@@ -326,8 +324,11 @@ typedef struct {
 
   /**
    * Convert transport address to human readable string.
+   *
+   * @param resolve_ip should we try to resolve the IP?
    */
-  char * (*addressToString)(const P2P_hello_MESSAGE * helo);
+  char * (*addressToString)(const P2P_hello_MESSAGE * hello,
+			    int resolve_ip);
 
 } TransportAPI;
 

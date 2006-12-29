@@ -1423,19 +1423,40 @@ static int reloadConfiguration() {
 /**
  * Convert HTTP address to a string.
  */
-static char * addressToString(const P2P_hello_MESSAGE * helo) {
+static char * 
+addressToString(const P2P_hello_MESSAGE * hello,
+		int do_resolve) {
   char * ret;
-  HostAddress * haddr;
+  const HostAddress * haddr = (const HostAddress*) &hello[1];
   size_t n;
+  const char * hn = "";
+  struct hostent * ent;
 
-  haddr = (HostAddress*) &helo[1];
-  n = 4*4+6+16;
+#if HAVE_GETHOSTBYADDR
+  if (do_resolve) {
+    ent = gethostbyaddr(haddr,
+			sizeof(IPaddr),
+			AF_INET);
+    if (ent != NULL)
+      hn = ent->h_name;
+  }    
+#endif
+  n = 4*4+7+6 + strlen(hn) + 10;
   ret = MALLOC(n);
-  SNPRINTF(ret,
-	   n,
-	   "%u.%u.%u.%u:%u (HTTP)",
-	   PRIP(ntohl(*(int*)&haddr->ip.addr)),
-	   ntohs(haddr->port));
+  if (strlen(hn) > 0) {
+    SNPRINTF(ret,
+	     n,
+	     "%s (%u.%u.%u.%u) HTTP (%u)",
+	     hn,
+	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	     ntohs(haddr->port));
+  } else {
+    SNPRINTF(ret,
+	     n,
+	     "%u.%u.%u.%u HTTP (%u)",
+	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	     ntohs(haddr->port));
+  }
   return ret;
 }
 

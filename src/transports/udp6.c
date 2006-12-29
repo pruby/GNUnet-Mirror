@@ -442,21 +442,47 @@ static int reloadConfiguration(void) {
 /**
  * Convert UDP6 address to a string.
  */
-static char * addressToString(const P2P_hello_MESSAGE * helo) {
+static char * 
+addressToString(const P2P_hello_MESSAGE * hello,
+		int do_resolve) {
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
-  Host6Address * haddr;
+  const Host6Address * haddr = (const Host6Address*) &hello[1];
+  const char * hn = "";
+  struct hostent * ent;
+  size_t n;
 
-  haddr = (Host6Address*) &helo[1];
-  ret = MALLOC(INET6_ADDRSTRLEN+16);
-  SNPRINTF(ret,
-	   INET6_ADDRSTRLEN+16,
-	   "%s:%d (UDP6)",
-	   inet_ntop(AF_INET6,
-		     haddr,
-		     inet6,
-		     INET6_ADDRSTRLEN),
-	   ntohs(haddr->senderPort));
+#if HAVE_GETHOSTBYADDR
+  if (do_resolve) {
+    ent = gethostbyaddr(haddr,
+			sizeof(IPaddr),
+			AF_INET);
+    if (ent != NULL)
+      hn = ent->h_name;
+  }    
+#endif
+  n = INET6_ADDRSTRLEN + 16 + strlen(hn) + 10;
+  ret = MALLOC(n);
+  if (strlen(hn) > 0) {
+    SNPRINTF(ret,
+	     n,
+	     "%s (%s) UDP6 (%u)",
+	     hn,
+	     inet_ntop(AF_INET6,
+		       haddr,
+		       inet6,
+		       INET6_ADDRSTRLEN),
+	     ntohs(haddr->senderPort));
+  } else {
+    SNPRINTF(ret,
+	     n,
+	     "%s UDP6 (%u)",
+	     inet_ntop(AF_INET6,
+		       haddr,
+		       inet6,
+		       INET6_ADDRSTRLEN),
+	     ntohs(haddr->senderPort));
+  }
   return ret;
 }
 

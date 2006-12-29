@@ -15,12 +15,6 @@ notes:
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
-- bugfixes:
-  Heikki reports:
-  Ran the current svn over 10 times under gdb (serializetest2)
-  One time it exited with status=1 and said
-  "Download suspended but search reference not set correctly."
-
 
 0.7.2 [3'07]:
 - new features:

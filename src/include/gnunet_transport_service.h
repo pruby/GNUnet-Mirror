@@ -83,10 +83,10 @@ typedef struct {
    * layer. This may fail if the appropriate transport mechanism is
    * not available.
    *
-   * @param helo the hello of the target node
+   * @param hello the hello of the target node
    * @return session handle on success, NULL on error
    */
-  TSession * (*connect)(const P2P_hello_MESSAGE * helo);
+  TSession * (*connect)(const P2P_hello_MESSAGE * hello);
 
   /**
    * Connect to another peer, picking any transport that
@@ -149,12 +149,15 @@ typedef struct {
    * @return OK if the attempt to verify is on the way,
    *        SYSERR if the transport mechanism is not supported
    */
-  int (*verifyhello)(const P2P_hello_MESSAGE * helo);
+  int (*verifyhello)(const P2P_hello_MESSAGE * hello);
 
   /**
    * Convert hello to string.
+   *
+   * @param resolve_ip should we try to resovle the IP?
    */
-  char * (*heloToString)(const P2P_hello_MESSAGE * helo);
+  char * (*helloToString)(const P2P_hello_MESSAGE * hello,
+			  int resolve_ip);
 
   /**
    * Get the MTU for a given transport type.

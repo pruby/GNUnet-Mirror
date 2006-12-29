@@ -1,4 +1,4 @@
-.TH GNUNET-PEER-INFO 1 "April 30, 2005" "GNUnet"
+.TH GNUNET-PEER-INFO 1 "Dec 29, 2006" "GNUnet"
 
 .SH NAME
 gnunet\-peer\-info \- Display information about other known nodes.
@@ -14,11 +14,17 @@ gnunet\-peer\-info \- Display information about other known nodes.
 
 .SH OPTIONS
 .B
+.IP "\-c FILENAME, \-\-config=FILENAME"
+Load config file (default: /etc/gnunet.conf)
+.B
 .IP "\-h, \-\-help"
 Print help page
 .B
-.IP "\-c FILENAME, \-\-config=FILENAME"
-Load config file (default: /etc/gnunet.conf)
+.IP "\-H HOSTNAME, \-\-host=HOSTNAME"
+Specify host on which gnunetd is running
+.B
+.IP "\-n, \-\-numeric"
+Disable resolution of IPs to hostnames
 .B
 .IP "\-v, \-\-version"
 Print the version number
