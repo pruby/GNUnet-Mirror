@@ -763,7 +763,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  "TCP"
  "UPNP"
  (_ "Should we try to determine our external IP using UPnP?")
- (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.")
+ (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
  '()
  #t
  #t
@@ -856,7 +856,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  "UDP"
  "UPNP"
  (_ "Should we try to determine our external IP using UPnP?")
- (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.")
+ (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP. You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
  '()
  #t
  #t
