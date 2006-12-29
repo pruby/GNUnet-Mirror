@@ -256,10 +256,10 @@ However, active testing and qualified feedback of these features is always welco
   (_ "Which non-default extractors should GNUnet use for keyword extractors")
   (_ "Specify which additional extractor libraries should be used.  gnunet-insert uses libextractor to extract keywords from files. libextractor can be dynamically extended to handle additional file formats. If you want to use more than the default set of extractors, specify additional extractor libraries here.  The format is [[-]LIBRARYNAME[:[-]LIBRARYNAME]*].
 
-The default is to use filenames and to break larger words at spaces (and underscores, etc.).  This should be just fine for most people. The - before a library name indicates that this should be executed last and makes only sense for the split-library.")
+The default is to use filenames and to break larger words at spaces (and underscores, etc.).  This should be just fine for most people. The '-' before a library name indicates that this should be executed last and makes only sense for the split-library.")
   '()
   #t
-  "libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail"
+  "libextractor_filename:-libextractor_split:-libextractor_split(0123456789):-libextractor_lower:-libextractor_thumbnail"
   '()
   'advanced) )
 
