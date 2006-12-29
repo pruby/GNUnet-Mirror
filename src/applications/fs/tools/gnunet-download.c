@@ -69,7 +69,7 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'o', "output", "FILENAME",
-    gettext_noop("write encountered (decrypted) search results to FILENAME"),
+    gettext_noop("write the file to FILENAME"),
     1, &gnunet_getopt_configure_set_string, &filename },
   { 'R', "recursive", NULL,
     gettext_noop("download a GNUnet directory recursively"),
