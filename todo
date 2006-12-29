@@ -16,7 +16,6 @@ notes:
   * uninstall: Remove account
   * libcurl, guile
 - UPnP support:
-  * remove glib dependency from upnp code!
   * fix xmlnode memory leaks (for invalid / incomplete XML responses)
 
 0.7.2 [3'07]:
