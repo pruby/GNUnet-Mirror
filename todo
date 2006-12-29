@@ -53,8 +53,7 @@ notes:
   as keyword (to allow getting meta-data from URI only)
 - Chat support basics [RC]
 - better NAT traversal:
-  * UPnP
-  * NAT-PMP
+  * NAT-PMP (in addition to UPnP)
 - old/new features:
   * SMTP transport (libesmtp)
   * SMTP logger
