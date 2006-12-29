@@ -1,5 +1,6 @@
 Thu Dec 28 21:22:10 MST 2006
 	Hostname resolution with gnunet-peer-info implemented (#1076).
+	Proper linking of gnunet-pseudonym (#1161).
 
 Thu Dec 28 20:44:45 MST 2006
 	Hopefully fixing build problems on certain systems with
