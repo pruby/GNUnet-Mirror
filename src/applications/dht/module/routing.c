@@ -355,7 +355,6 @@ static int handleGet(const PeerIdentity * sender,
   PeerIdentity next[GET_TRIES];
   const DHT_GET_MESSAGE * get;
   int total;
-  int routed;
   int i;
 #if DEBUG_ROUTING
   EncName enc;
@@ -365,6 +364,7 @@ static int handleGet(const PeerIdentity * sender,
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+  get = (const DHT_GET_MESSAGE*) msg;
 #if DEBUG_ROUTING
   hash2enc(&get->key, &enc);
   GE_LOG(coreAPI->ectx,
@@ -374,8 +374,11 @@ static int handleGet(const PeerIdentity * sender,
 #endif
   if (stats != NULL)
     stats->change(stat_get_requests_received, 1);
-  get = (const DHT_GET_MESSAGE*) msg;
-  
+  if (sender != NULL)
+    addRoute(sender,
+	     NULL,
+	     NULL,
+	     get);  
   total = dht_store_get(&get->key,
 			ntohl(get->type),
 			&routeResult,
@@ -390,7 +393,6 @@ static int handleGet(const PeerIdentity * sender,
 #endif
     return OK;
   }
-  routed = 0;
   for (i=0;i<GET_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
 			      &get->key,
@@ -400,13 +402,6 @@ static int handleGet(const PeerIdentity * sender,
     if (-1 == hashCodeCompareDistance(&next[i].hashPubKey,
 				      &coreAPI->myIdentity->hashPubKey,
 				      &get->key)) {
-      if ( (routed == 0) &&
-	   (sender != NULL) )
-	addRoute(sender,
-		 NULL,
-		 NULL,
-		 get);
-      routed = 1;
       coreAPI->unicast(&next[i],
 		       msg,
 		       0, /* FIXME: priority */
