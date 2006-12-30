@@ -72,6 +72,7 @@ static void kill_discovery() {
   void * unused;
 
   if (discovery != NULL) {
+    SHUTDOWN(discovery_socket, SHUT_RDWR);
     CLOSE(discovery_socket);
     PTHREAD_JOIN(discovery, &unused);
     discovery = NULL;
