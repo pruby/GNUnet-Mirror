@@ -63,7 +63,7 @@
  * What is the chance (1 in XXX) that we send DISCOVERY messages
  * to another peer?
  */
-#define MAINTAIN_CHANCE 100
+#define MAINTAIN_CHANCE (10 + 100 * total_peers)
 
 /**
  * How long can a peer be inactive before we tiem it out?
@@ -190,6 +190,8 @@ static int stat_dht_total_peers;
 static int stat_dht_discoveries;
 
 static int stat_dht_route_looks;
+
+static int stat_dht_advertisements;
 
 /**
  * The struct is followed by zero or more
@@ -405,6 +407,8 @@ static void broadcast_dht_discovery(const PeerIdentity * other,
   unsigned int i;
   PeerIdentity * pos;
 
+  if (stats != NULL)
+    stats->change(stat_dht_advertisements, 1);
   if (disco != NULL) {
     coreAPI->unicast(other,
 		     &disco->header,
@@ -696,6 +700,7 @@ int init_dht_table(CoreAPIForApplication * capi) {
     stat_dht_total_peers = stats->create(gettext_noop("# dht connections"));
     stat_dht_discoveries = stats->create(gettext_noop("# dht discovery messages received"));
     stat_dht_route_looks = stats->create(gettext_noop("# dht route host lookups performed"));
+    stat_dht_advertisements = stats->create(gettext_noop("# dht discovery messages sent"));
   }
   identity = coreAPI->requestService("identity");
   GE_ASSERT(coreAPI->ectx, identity != NULL);

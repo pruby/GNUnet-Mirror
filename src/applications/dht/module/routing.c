@@ -189,6 +189,8 @@ static CoreAPIForApplication * coreAPI;
 
 static unsigned int stat_replies_routed;
 
+static unsigned int stat_results_received;
+
 static unsigned int stat_requests_routed;
 
 static unsigned int stat_get_requests_received;
@@ -355,14 +357,25 @@ static int handleGet(const PeerIdentity * sender,
   int total;
   int routed;
   int i;
+#if DEBUG_ROUTING
+  EncName enc;
+#endif
 
   if (ntohs(msg->size) != sizeof(DHT_GET_MESSAGE)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+#if DEBUG_ROUTING
+  hash2enc(&get->key, &enc);
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Received DHT GET for key `%s'.\n",
+	 &enc);
+#endif
   if (stats != NULL)
     stats->change(stat_get_requests_received, 1);
   get = (const DHT_GET_MESSAGE*) msg;
+  
   total = dht_store_get(&get->key,
 			ntohl(get->type),
 			&routeResult,
@@ -421,6 +434,9 @@ static int handlePut(const PeerIdentity * sender,
   cron_t now;
   int store;
   int i;
+#if DEBUG_ROUTING
+  EncName enc;
+#endif
 
   if (ntohs(msg->size) < sizeof(DHT_PUT_MESSAGE)) {
     GE_BREAK(NULL, 0);
@@ -429,6 +445,13 @@ static int handlePut(const PeerIdentity * sender,
   if (stats != NULL)
     stats->change(stat_put_requests_received, 1);
   put = (const DHT_PUT_MESSAGE*) msg;
+#if DEBUG_ROUTING
+  hash2enc(&put->key, &enc);
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Received DHT PUT for key `%s'.\n",
+	 &enc);
+#endif
   store = 0;
   for (i=0;i<PUT_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
@@ -482,12 +505,24 @@ static int handlePut(const PeerIdentity * sender,
 static int handleResult(const PeerIdentity * sender,
 			const MESSAGE_HEADER * msg) {
   const DHT_RESULT_MESSAGE * result;
+#if DEBUG_ROUTING
+  EncName enc;
+#endif
 
   if (ntohs(msg->size) < sizeof(DHT_RESULT_MESSAGE)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_results_received, 1);
   result = (const DHT_RESULT_MESSAGE*) msg;
+#if DEBUG_ROUTING
+  hash2enc(&result->key, &enc);
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Received DHT RESULT for key `%s'.\n",
+	 &enc);
+#endif
   routeResult(&result->key,
 	      ntohl(result->type),
 	      ntohs(result->header.size) - sizeof(DHT_RESULT_MESSAGE),
@@ -595,6 +630,7 @@ int init_dht_routing(CoreAPIForApplication * capi) {
     stat_requests_routed = stats->create(gettext_noop("# dht requests routed"));
     stat_get_requests_received = stats->create(gettext_noop("# dht get requests received"));
     stat_put_requests_received = stats->create(gettext_noop("# dht put requests received"));
+    stat_results_received = stats->create(gettext_noop("# dht results received"));
   }
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
