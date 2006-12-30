@@ -424,10 +424,12 @@ void injectMessage(const PeerIdentity * sender,
       while (NULL != (callback = handlers[ptyp][last])) {
 	if (SYSERR == callback(sender,
 			       part)) {
+#if DEBUG_HANDLER
 	  GE_LOG(ectx,
 		 GE_DEBUG | GE_USER | GE_BULK,
 		 "Handler aborted message processing after receiving message of type '%d'.\n",
 		 ptyp);
+#endif
 	  return; /* handler says: do not process the rest of the message */
 	}
 	last++;
@@ -448,10 +450,12 @@ void injectMessage(const PeerIdentity * sender,
 	if (SYSERR == callback(sender,
 			       part,
 			       session)) {
+#if DEBUG_HANDLER
 	  GE_LOG(ectx,
 		 GE_DEBUG | GE_USER | GE_BULK,
 	      "Handler aborted message processing after receiving message of type '%d'.\n",
 	      ptyp);
+#endif
 	  return; /* handler says: do not process the rest of the message */
 	}
 	last++;
