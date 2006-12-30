@@ -1,3 +1,7 @@
+Sat Dec 30 00:21:49 MST 2006
+	DHT routing now seems to work (not integrated with file-sharing,
+	only for gnunet-dht-query).
+
 Fri Dec 29 09:38:53 MST 2006
 	Added UPnP support to GNUnet (IPv4 only, #843).
 

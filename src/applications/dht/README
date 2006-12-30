@@ -1,10 +1,6 @@
 Design for the DHT (by Christian Grothoff):
 ===========================================
 
-WARNING: The code has not been sufficiently tested yet and probably
-has quite a few tricky bugs left in it.
-
-
 The DHT code consists of 3 parts.  First, there is the DHT module, a
 dynamically loaded plugin that provides DHT services to two different
 sets of clients.  The DHT module provides the routing facilities and
