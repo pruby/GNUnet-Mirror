@@ -676,12 +676,24 @@ Note that if you change the quota, you need to run gnunet-update afterwards.")
  (builder
   "GAP"
   "TABLESIZE"
-  (_ "Size of the routing table.")
+  (_ "Size of the routing table for anonymous routing.")
   (nohelp)
   '()
   #t
   65536
   (cons 1024 1048576)
+  'rare))
+
+(define (fs-gap-tablesize builder)
+ (builder
+  "DHT"
+  "TABLESIZE"
+  (_ "Size of the routing table for DHT routing.")
+  (nohelp)
+  '()
+  #t
+  1024
+  (cons 128 1048576)
   'rare))
 
 
@@ -699,6 +711,21 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
   #f
   #f
   'advanced))
+
+
+(define (dstore-quota builder)
+ (builder
+  "DSTORE"
+  "QUOTA"
+  (_ "MB of diskspace GNUnet can use for caching DHT index data (the data will be stored in /tmp)")
+  (_ "DHT index data is inherently small and expires comparatively quickly.  It is deleted whenever gnunetd is shut down.
+
+The size of the DSTORE QUOTA is specified in MB.")
+  '()
+  #t
+  1
+  (cons 1 1024)
+  'rare))
  
 
 (define (fs builder)
@@ -711,7 +738,9 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
     (fs-quota builder)
     (fs-activemigration builder)
     (fs-gap-tablesize builder)
+    (fs-dht-tablesize builder)
     (mysql builder)
+    (dstore-quota builder)
   )
   #t
   #t

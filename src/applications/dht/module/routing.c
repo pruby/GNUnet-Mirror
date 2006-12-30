@@ -614,10 +614,20 @@ void dht_put(const HashCode512 * key,
  * @return OK on success
  */
 int init_dht_routing(CoreAPIForApplication * capi) {
+  unsigned long long rts;
+  
   coreAPI = capi;
+  rts = 65536;
+  GC_get_configuration_value_number(coreAPI->cfg,
+				    "DHT",
+				    "TABLESIZE",
+				    128,
+				    1024 * 1024,
+				    1024,
+				    &rts);
   GROW(records,
        rt_size,
-       512);
+       rts);
   lock = MUTEX_CREATE(NO);
   stats = capi->requestService("stats");
   if (stats != NULL) {

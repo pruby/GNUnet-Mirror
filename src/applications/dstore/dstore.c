@@ -465,7 +465,16 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   coreAPI = capi;
   api.get = &d_get;
   api.put = &d_put;
-  quota = 1024 * 1024; /* FIXME: allow user to configure */
+  GC_get_configuration_value_number(coreAPI->cfg,
+				    "DSTORE",
+				    "QUOTA",
+				    1,
+				    1024,
+				    1,
+				    &quota);
+  if (quota == 0) /* error */
+    quota = 1;
+  quota *= 1024 * 1024; 
   stats = capi->requestService("stats");
   if (stats != NULL) 
     stat_dstore_size = stats->create(gettext_noop("# bytes in dstore"));
