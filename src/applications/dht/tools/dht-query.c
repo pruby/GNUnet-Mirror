@@ -33,6 +33,8 @@
 #include "gnunet_util_boot.h"
 #include "gnunet_util_network_client.h"
 
+#define DEBUG_DHT_QUERY NO
+
 /**
  * How long should a "GET" run (or how long should
  * content last on the network).
@@ -81,11 +83,13 @@ static void do_get(struct ClientServerConnection * sock,
   hash(key,
        strlen(key),
        &hc);
+#if DEBUG_DHT_QUERY
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s)' command.\n",
 	 "get", 
 	 key);
+#endif
   if (timeout == 0)
     timeout = 30 * cronSECONDS;
   ret = DHT_LIB_get(cfg,
@@ -115,12 +119,14 @@ static void do_put(struct ClientServerConnection * sock,
   memcpy(&dc[1],
 	 value,
 	 strlen(value));
+#if DEBUG_DHT_QUERY
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("Issuing '%s(%s,%s)' command.\n"),
 	 "put",
 	 key,
 	 value);
+#endif
   if (timeout == 0)
     timeout = 30 * cronMINUTES;
   if (OK == DHT_LIB_put(cfg,

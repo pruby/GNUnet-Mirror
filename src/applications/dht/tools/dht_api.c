@@ -30,6 +30,8 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_util_network_client.h"
 
+#define DEBUG_DHT_API NO
+
 /**
  * Data exchanged between main thread and GET thread.
  */
@@ -216,11 +218,13 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
     GE_BREAK(ectx, 0); /* content already expired!? */
     return SYSERR;
   }
+#if DEBUG_DHT_API
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "DHT_LIB_put called with value '%.*s'\n",
 	 ntohl(value->size),
 	 &value[1]);
+#endif
   sock = client_connection_create(ectx,
 				  cfg);
   if (sock == NULL) 
