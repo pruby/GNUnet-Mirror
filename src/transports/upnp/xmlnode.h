@@ -22,68 +22,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef _GAIM_XMLNODE_H_
-#define _GAIM_XMLNODE_H_
+#ifndef _GGAIM_XMLNODE_H_
+#define _GGAIM_XMLNODE_H_
 
-#include <libxml/parser.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * The valid types for an xmlnode
- */
-typedef enum _XMLNodeType {
-  XMLNODE_TYPE_TAG,		/**< Just a tag */
-  XMLNODE_TYPE_ATTRIB,		/**< Has attributes */
-  XMLNODE_TYPE_DATA		/**< Has data */
-} XMLNodeType;
-
-/**
  * An xmlnode.
  */
 typedef struct _xmlnode xmlnode;
-struct _xmlnode
-{
-  char *name;			/**< The name of the node. */
-  char *xmlns;		/**< The namespace of the node */
-  XMLNodeType type;		/**< The type of the node. */
-  char *data;			/**< The data for the node. */
-  size_t data_sz;			/**< The size of the data. */
-  struct _xmlnode *parent;	/**< The parent node or @c NULL.*/
-  struct _xmlnode *child;		/**< The child node or @c NULL.*/
-  struct _xmlnode *lastchild;	/**< The last child node or @c NULL.*/
-  struct _xmlnode *next;		/**< The next node or @c NULL. */
-};
-
-/**
- * Creates a new xmlnode.
- *
- * @param name The name of the node.
- *
- * @return The new node.
- */
-xmlnode *xmlnode_new(const char *name);
-
-/**
- * Creates a new xmlnode child.
- *
- * @param parent The parent node.
- * @param name   The name of the child node.
- *
- * @return The new child node.
- */
-xmlnode *xmlnode_new_child(xmlnode *parent, const char *name);
-
-/**
- * Inserts a node into a node as a child.
- *
- * @param parent The parent node to insert child into.
- * @param child  The child node to insert into parent.
- */
-void xmlnode_insert_child(xmlnode *parent, xmlnode *child);
 
 /**
  * Gets a child node named name.
@@ -93,18 +43,8 @@ void xmlnode_insert_child(xmlnode *parent, xmlnode *child);
  *
  * @return The child or NULL.
  */
-xmlnode *xmlnode_get_child(const xmlnode *parent, const char *name);
-
-/**
- * Gets a child node named name in a namespace.
- *
- * @param parent The parent node.
- * @param name   The child's name.
- * @param xmlns  The namespace.
- *
- * @return The child or NULL.
- */
-xmlnode *xmlnode_get_child_with_namespace(const xmlnode *parent, const char *name, const char *xmlns);
+xmlnode * xmlnode_get_child(const xmlnode *parent, 
+			    const char *name);
 
 /**
  * Gets the next node with the same name as node.
@@ -114,16 +54,6 @@ xmlnode *xmlnode_get_child_with_namespace(const xmlnode *parent, const char *nam
  * @return The twin of node or NULL.
  */
 xmlnode *xmlnode_get_next_twin(xmlnode *node);
-
-/**
- * Inserts data into a node.
- *
- * @param node   The node to insert data into.
- * @param data   The data to insert.
- * @param size   The size of the data to insert.  If data is
- *               null-terminated you can pass in -1.
- */
-void xmlnode_insert_data(xmlnode *node, const char *data, int size);
 
 /**
  * Gets data from a node.
@@ -136,38 +66,6 @@ void xmlnode_insert_data(xmlnode *node, const char *data, int size);
 char *xmlnode_get_data(xmlnode *node);
 
 /**
- * Sets an attribute for a node.
- *
- * @param node  The node to set an attribute for.
- * @param attr  The name of the attribute.
- * @param value The value of the attribute.
- */
-void xmlnode_set_attrib(xmlnode *node, const char *attr, const char *value);
-
-#if 0
-/**
- * Gets an attribute from a node.
- *
- * @param node The node to get an attribute from.
- * @param attr The attribute to get.
- *
- * @return The value of the attribute.
- */
-const char *xmlnode_get_attrib(xmlnode *node, const char *attr);
-
-/**
- * Gets a namespaced attribute from a node
- *
- * @param node  The node to get an attribute from.
- * @param attr  The attribute to get
- * @param xmlns The namespace of the attribute to get
- *
- * @return The value of the attribute/
- */
-const char *xmlnode_get_attrib_with_namespace(xmlnode *node, const char *attr, const char *xmlns);
-#endif
-
-/**
  * Creates a node from a string of XML.  Calling this on the
  * root node of an XML document will parse the entire document
  * into a tree of nodes, and return the xmlnode of the root.
@@ -178,7 +76,8 @@ const char *xmlnode_get_attrib_with_namespace(xmlnode *node, const char *attr, c
  *
  * @return The new node.
  */
-xmlnode *xmlnode_from_str(const char *str, int size);
+xmlnode *xmlnode_from_str(const char *str, 
+			  int size);
 
 /**
  * Frees a node and all of it's children.

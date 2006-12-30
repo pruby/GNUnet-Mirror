@@ -15,8 +15,6 @@ notes:
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
-- UPnP support:
-  * fix xmlnode memory leaks (for invalid / incomplete XML responses)
 
 0.7.2 [3'07]:
 - new features:

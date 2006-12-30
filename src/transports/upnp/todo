@@ -1,5 +1,0 @@
-1) adjust configure to check for libxml2
-2) remove glib dependency from upnp code!
-3) fix xmlnode memory leaks (for invalid / incomplete XML responses)
-4) integrate with transports -- tricky bit: making it optional!
-   (make it a module?)
