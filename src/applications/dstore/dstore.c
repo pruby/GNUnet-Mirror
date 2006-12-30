@@ -33,6 +33,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_dstore_service.h"
+#include "gnunet_stats_service.h"
 #include <sqlite3.h>
 
 #define DEBUG_DSTORE NO
@@ -60,6 +61,13 @@ static char * fn;
 static CoreAPIForApplication * coreAPI;
 
 static struct MUTEX * lock;
+
+/**
+ * Statistics service.
+ */
+static Stats_ServiceAPI * stats;
+
+static unsigned int stat_dstore_size;
 
 /**
  * @brief Prepare a SQL statement
@@ -280,6 +288,8 @@ static int d_put(const HashCode512 * key,
   }
   sqlite3_close(dbh);
   MUTEX_UNLOCK(lock);
+  if (stats != NULL)
+    stats->change(stat_dstore_size, payload);
   return OK;
 }
 
@@ -379,6 +389,9 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   api.get = &d_get;
   api.put = &d_put;
   quota = 1024 * 1024; /* FIXME: allow user to configure */
+  stats = capi->requestService("stats");
+  if (stats != NULL) 
+    stat_dstore_size = stats->create(gettext_noop("# bytes in dstore"));
   return &api;
 }
 
@@ -389,6 +402,10 @@ void release_module_dstore() {
   UNLINK(fn);
   FREE(fn);
   fn = NULL;
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
 #if DEBUG_SQLITE
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
