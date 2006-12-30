@@ -76,12 +76,21 @@ static void run_menu(struct GNS_Context * ctx,
   fitem.text_free = 0;
   fitem.help_free = 0;
 
-  dialog_vars.cancel_label = _("Cancel");
   msel = 0;
   while (1) {
     switch (pos->type & GNS_KindMask) {
     case GNS_Root:
       dialog_vars.cancel_label = _("Exit");
+      break;
+    case GNS_Node:
+      dialog_vars.cancel_label = _("Up");
+      break;
+    default:
+      dialog_vars.cancel_label = _("Cancel");
+      break;
+    }
+    switch (pos->type & GNS_KindMask) {
+    case GNS_Root:
       /* fall-through! */
     case GNS_Node:
       st = 0;
