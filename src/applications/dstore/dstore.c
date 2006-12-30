@@ -205,6 +205,13 @@ static int d_put(const HashCode512 * key,
   stmt = NULL;
   dstmt = NULL;
   payload += size;
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Storing %u bytes increases DStore payload to %llu out of %llu\n",
+	 size,
+	 payload,
+	 quota);
+
   if (payload > quota) {
     GE_LOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -289,7 +296,7 @@ static int d_put(const HashCode512 * key,
   sqlite3_close(dbh);
   MUTEX_UNLOCK(lock);
   if (stats != NULL)
-    stats->change(stat_dstore_size, payload);
+    stats->set(stat_dstore_size, payload);
   return OK;
 }
 
