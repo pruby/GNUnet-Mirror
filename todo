@@ -21,12 +21,9 @@ notes:
 0.7.2 [3'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + dht/routing: handle routing loops [RC]
     + ECRS-URI: toString/fromString for loc URIs [RC]
-    + dht/gap integration [RC]
-    + fsui/location URI support [RC]
-    + dht/routing: GET retries (optimization)
-    + dstore bloomfilter (optimization)
+    + dht/gap integration (search routing) [RC]
+    + fsui/fs/location URI support (download routing) [RC]
   * HTTP transport (libcurl, libmicrohttpd)
 - minor improvements:
   * directories can be compacted -- add heuristic to determine
@@ -47,11 +44,11 @@ notes:
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Chat support basics [RC]
-- better NAT traversal:
-  * NAT-PMP (in addition to UPnP)
 - old/new features:
   * SMTP transport (libesmtp)
   * SMTP logger
+  * support NAT-PMP (in addition to UPnP)?
+  * add bloomfilter to dstore?
 - Documentation:
   * LJ article
 - Testcases:
