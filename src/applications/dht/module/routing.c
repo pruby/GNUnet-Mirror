@@ -191,6 +191,10 @@ static unsigned int stat_replies_routed;
 
 static unsigned int stat_requests_routed;
 
+static unsigned int stat_get_requests_received;
+
+static unsigned int stat_put_requests_received;
+
 /**
  * Given a result, lookup in the routing table
  * where to send it next.
@@ -356,6 +360,8 @@ static int handleGet(const PeerIdentity * sender,
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_get_requests_received, 1);
   get = (const DHT_GET_MESSAGE*) msg;
   total = dht_store_get(&get->key,
 			ntohl(get->type),
@@ -420,6 +426,8 @@ static int handlePut(const PeerIdentity * sender,
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_put_requests_received, 1);
   put = (const DHT_PUT_MESSAGE*) msg;
   store = 0;
   for (i=0;i<PUT_TRIES;i++) {
@@ -585,6 +593,8 @@ int init_dht_routing(CoreAPIForApplication * capi) {
   if (stats != NULL) {
     stat_replies_routed = stats->create(gettext_noop("# dht replies routed"));
     stat_requests_routed = stats->create(gettext_noop("# dht requests routed"));
+    stat_get_requests_received = stats->create(gettext_noop("# dht get requests received"));
+    stat_put_requests_received = stats->create(gettext_noop("# dht put requests received"));
   }
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
