@@ -289,6 +289,7 @@ static int d_put(const HashCode512 * key,
 		 const char * data) {
   sqlite3 * dbh;
   sqlite3_stmt * stmt;
+  int ret;
 
   if (size > MAX_CONTENT_SIZE)
     return SYSERR;
@@ -307,6 +308,55 @@ static int d_put(const HashCode512 * key,
 	 size,
 	 data);
 #endif
+
+  /* first try UPDATE */
+  if (sq_prepare(dbh,
+		 "UPDATE ds071 SET puttime=?, expire=? "
+		 "WHERE key=? AND type=? AND size=? AND value=?",
+		 &stmt) != SQLITE_OK) {
+    GE_LOG(coreAPI->ectx, 
+	   GE_ERROR | GE_ADMIN | GE_BULK,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "sq_prepare",
+	   __FILE__,
+	   __LINE__, 
+	   sqlite3_errmsg(dbh));
+    sqlite3_close(dbh);
+    MUTEX_UNLOCK(lock);
+    return SYSERR;
+  }
+  sqlite3_bind_int64(stmt,
+		     1,
+		     get_time());
+  sqlite3_bind_int64(stmt,
+		     2,
+		     discard_time);
+  sqlite3_bind_blob(stmt,
+		    3,
+		    key,
+		    sizeof(HashCode512),
+		    SQLITE_TRANSIENT);
+  sqlite3_bind_int(stmt,
+		   4,
+		   type);
+  sqlite3_bind_int(stmt,
+		   5,
+		   size);
+  sqlite3_bind_blob(stmt,
+		    6,
+		    data,
+		    size,
+		    SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  ret = sqlite3_changes(dbh);
+  sqlite3_finalize(stmt);
+  if (ret > 0) {
+    sqlite3_close(dbh);
+    MUTEX_UNLOCK(lock);
+    return OK;
+  }
+
+
   if (OK != checkQuota(dbh)) {
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
