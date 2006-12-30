@@ -1303,7 +1303,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
             ((eq? i 'nat-unlimited)(change-visible ctx a b nat-unlimited))
-            ((eq? i 'tcp-port-nz)  (change-visible ctx a b tdp-port-nz))
+            ((eq? i 'tcp-port-nz)  (change-visible ctx a b tcp-port-nz))
             ((eq? i 'udp-port-nz)  (change-visible ctx a b udp-port-nz))
             ((eq? i 'nat-loaded)   (change-visible ctx a b nat-loaded))
             ((eq? i 'udp-loaded)   (change-visible ctx a b udp-loaded))
