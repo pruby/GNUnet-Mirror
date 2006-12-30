@@ -12,7 +12,7 @@ libgnunetmodule_dht_la_SOURCES = \
   service.c \
   table.c table.h 
 
-libgnunetmodule_dht_la_LIBADD = \
+libgnunetmodule_dht_la_LIBADD = -lm \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
  $(top_builddir)/src/util/libgnunetutil.la \

@@ -632,7 +632,6 @@ static int handleDiscovery(const PeerIdentity * sender,
     /* if peer has 0 connections, be sure to send discovery back */
     broadcast_dht_discovery(sender,
 			    NULL);
-    return OK;
   }
   MUTEX_LOCK(lock);
   considerPeer(sender, sender);
