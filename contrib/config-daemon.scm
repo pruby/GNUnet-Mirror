@@ -135,6 +135,18 @@ However, active testing and qualified feedback of these features is always welco
   '()
   'always) )
 
+(define (kv-path builder)
+ (builder
+  "KEYVALUE_DATABASE"
+  "DIR"
+  (_ "Full pathname to the directory with the key-value database")
+  (_ "Note that the kvstore is currently not used.") 
+  '()
+  #f
+  "/var/lib/GNUnet/kvstore/"
+  '()
+  'never) )
+
 (define (index-path builder)
  (builder
   "FS"

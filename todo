@@ -29,10 +29,6 @@ notes:
     + dstore bloomfilter (optimization)
   * HTTP transport (libcurl, libmicrohttpd)
 - minor improvements:
-  * Scheme (scm) specification of entire configuration;
-    check options used in modules:
-    + DHT options
-    + kvstore
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
     much space).  Needs some lookahead for size of remaining
