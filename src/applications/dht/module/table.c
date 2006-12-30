@@ -691,7 +691,7 @@ int init_dht_table(CoreAPIForApplication * capi) {
     buckets[i].bstart = 512 * i / bucketCount;
     buckets[i].bend = 512 * (i+1) / bucketCount;
   }
-  lock = MUTEX_CREATE(NO);
+  lock = MUTEX_CREATE(YES);
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_dht_total_peers = stats->create(gettext_noop("# dht connections"));
