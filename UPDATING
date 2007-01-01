@@ -8,7 +8,7 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
-0.7.1 to 0.7.1e
+0.7.1 to 0.7.1a
 ===============
 
 Run
