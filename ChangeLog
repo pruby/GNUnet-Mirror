@@ -1,3 +1,7 @@
+Sun Dec 31 23:56:31 MST 2006
+	ncurses may need "-lm" in order to link.
+	Releasing GNUnet 0.7.1a.
+
 Sat Dec 30 00:21:49 MST 2006
 	DHT routing now seems to work (not integrated with file-sharing,
 	only for gnunet-dht-query).

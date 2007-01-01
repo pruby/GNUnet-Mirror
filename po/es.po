@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0e\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-12-28 22:14-0700\n"
+"POT-Creation-Date: 2007-01-01 01:09-0700\n"
 "PO-Revision-Date: 2006-06-29 12:05+0200\n"
 "Last-Translator: Miguel Angel Arruga <miguel.13@telefonica.net>\n"
 "Language-Team: Spanish\n"
@@ -149,6 +149,10 @@ msgstr "Falló la verificación de la firma: firma no válida.\n"
 #: src/applications/sqstore_mysql/mysql.c:1163
 #: src/applications/sqstore_mysql/mysql.c:1211
 #: src/applications/sqstore_mysql/mysql.c:1226
+#: src/applications/dstore/dstore.c:91 src/applications/dstore/dstore.c:178
+#: src/applications/dstore/dstore.c:237 src/applications/dstore/dstore.c:260
+#: src/applications/dstore/dstore.c:319 src/applications/dstore/dstore.c:372
+#: src/applications/dstore/dstore.c:462
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
@@ -1041,6 +1045,11 @@ msgstr ""
 "Falló al cargar el modulo de la base de datos MySQL.  ¡Comprueba que MySQL "
 "esta ejecutandose y esta configurada correctamente!\n"
 
+#: src/applications/dstore/dstore.c:530
+#, fuzzy
+msgid "# bytes in dstore"
+msgstr "# bytes en la base de datos"
+
 #: src/applications/dht/tools/dhttest2.c:45 src/applications/gap/gaptest.c:49
 #: src/applications/session/sessiontest.c:42
 #: src/applications/stats/statistics.c:212
@@ -1061,82 +1070,102 @@ msgstr "Esperando a gnunetd para empezar (%u ciclos restantes)...\n"
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr "Esperando a los pares para conectar (%u ciclos restantes)...\n"
 
-#: src/applications/dht/tools/dht-query.c:53
+#: src/applications/dht/tools/dht-query.c:55
 #, fuzzy
 msgid "Query (get KEY, put KEY VALUE) DHT table."
 msgstr "Pregunta (coje KEY, pone KEY VALUE, borra KEY VALUE) a una tabla DHT."
 
-#: src/applications/dht/tools/dht-query.c:57
+#: src/applications/dht/tools/dht-query.c:59
 #, fuzzy
 msgid ""
 "allow TIME ms to process a GET command or expire PUT content after ms TIME"
 msgstr "Reserva TIME ms para procesar cada comando"
 
-#: src/applications/dht/tools/dht-query.c:99
+#: src/applications/dht/tools/dht-query.c:103
 #, c-format
 msgid "%s(%s) operation returned no results.\n"
 msgstr ""
 
-#: src/applications/dht/tools/dht-query.c:120
+#: src/applications/dht/tools/dht-query.c:125
 #, fuzzy, c-format
 msgid "Issuing '%s(%s,%s)' command.\n"
 msgstr "'%s(%s, %s)' falló.\n"
 
-#: src/applications/dht/tools/dht-query.c:132
+#: src/applications/dht/tools/dht-query.c:138
 #, c-format
 msgid "'%s(%s,%s)' succeeded\n"
 msgstr "'%s (%s, %s)' logrado satisfactoriamente\n"
 
-#: src/applications/dht/tools/dht-query.c:137
+#: src/applications/dht/tools/dht-query.c:143
 #, c-format
 msgid "'%s(%s,%s)' failed.\n"
 msgstr "'%s(%s, %s)' falló.\n"
 
-#: src/applications/dht/tools/dht-query.c:165
+#: src/applications/dht/tools/dht-query.c:171
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Fallo al conectar a gnunetd.\n"
 
-#: src/applications/dht/tools/dht-query.c:175
+#: src/applications/dht/tools/dht-query.c:181
 #, c-format
 msgid "Command `%s' requires an argument (`%s').\n"
 msgstr "El comando '%s' requiere un argumento ('%s').\n"
 
-#: src/applications/dht/tools/dht-query.c:188
+#: src/applications/dht/tools/dht-query.c:194
 #, c-format
 msgid "Command `%s' requires two arguments (`%s' and `%s').\n"
 msgstr "El comando '%s' requiere dos argumentos ('%s' y '%s').\n"
 
-#: src/applications/dht/tools/dht-query.c:200
+#: src/applications/dht/tools/dht-query.c:206
 #, c-format
 msgid "Unsupported command `%s'.  Aborting.\n"
 msgstr "Comando inesperado '%s'.   Abortando.\n"
 
-#: src/applications/dht/module/routing.c:586
+#: src/applications/dht/module/routing.c:748
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:587
+#: src/applications/dht/module/routing.c:749
 msgid "# dht requests routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:591
+#: src/applications/dht/module/routing.c:750
+#, fuzzy
+msgid "# dht get requests received"
+msgstr "# mensajes PONG encriptados recibidos"
+
+#: src/applications/dht/module/routing.c:751
+#, fuzzy
+msgid "# dht put requests received"
+msgstr "# bytes recibidos por TCP"
+
+#: src/applications/dht/module/routing.c:752
+#, fuzzy
+msgid "# dht results received"
+msgstr "# bytes recibidos por TCP"
+
+#: src/applications/dht/module/routing.c:756
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "'%s' registrando manejadores %d %d %d\n"
 
-#: src/applications/dht/module/table.c:697
+#: src/applications/dht/module/table.c:700
 msgid "# dht connections"
 msgstr ""
 
-#: src/applications/dht/module/table.c:698
+#: src/applications/dht/module/table.c:701
 #, fuzzy
 msgid "# dht discovery messages received"
 msgstr "# mensajes PONG encriptados recibidos"
 
-#: src/applications/dht/module/table.c:699
+#: src/applications/dht/module/table.c:702
 msgid "# dht route host lookups performed"
 msgstr ""
+
+#: src/applications/dht/module/table.c:703
+#, fuzzy
+msgid "# dht discovery messages sent"
+msgstr "# mensajes PONG encriptados recibidos"
 
 #: src/applications/dht/module/cs.c:135
 #, c-format
@@ -2792,60 +2821,64 @@ msgstr "Error: imposible acceder al servicio: %s\n"
 msgid "Error: can't delete service: %s\n"
 msgstr "Error: imposible borrar el servicio: %s\n"
 
-#: src/setup/ncurses/mconf.c:79
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: src/setup/ncurses/mconf.c:84
+#: src/setup/ncurses/mconf.c:83
 msgid "Exit"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:265
-#: src/setup/ncurses/mconf.c:370 src/setup/ncurses/wizard_curs.c:121
+#: src/setup/ncurses/mconf.c:86
+msgid "Up"
+msgstr "Arriba"
+
+#: src/setup/ncurses/mconf.c:89
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/setup/ncurses/mconf.c:170 src/setup/ncurses/mconf.c:274
+#: src/setup/ncurses/mconf.c:379 src/setup/ncurses/wizard_curs.c:121
 #: src/setup/ncurses/wizard_curs.c:191 src/setup/ncurses/wizard_curs.c:307
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:315
+#: src/setup/ncurses/mconf.c:209 src/setup/ncurses/mconf.c:324
 msgid "Internal error! (Value invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:306
+#: src/setup/ncurses/mconf.c:315
 msgid "Invalid input, expecting floating point value."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:355
+#: src/setup/ncurses/mconf.c:364
 msgid "Invalid input, expecting integer."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:361
+#: src/setup/ncurses/mconf.c:370
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:413 src/setup/ncurses/wizard_curs.c:562
+#: src/setup/ncurses/mconf.c:422 src/setup/ncurses/wizard_curs.c:562
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "Configuración de GNUnet"
 
-#: src/setup/ncurses/mconf.c:427 src/setup/text/conf.c:563
+#: src/setup/ncurses/mconf.c:436 src/setup/text/conf.c:563
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
 "La configuración o la versión de GNUnet cambiaron.  ¡Debes ejecutar '%s'!\n"
 
-#: src/setup/ncurses/mconf.c:431
+#: src/setup/ncurses/mconf.c:440
 #, fuzzy
 msgid "Do you wish to save your new configuration?"
 msgstr "¿Quieres guardar tu configuración?"
 
-#: src/setup/ncurses/mconf.c:442
+#: src/setup/ncurses/mconf.c:451
 #, fuzzy, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr " gconfig\tConfiguración GTK\n"
 
-#: src/setup/ncurses/mconf.c:445
+#: src/setup/ncurses/mconf.c:454
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3482,7 +3515,7 @@ msgstr "Imposible determinar mi dirección IPv6 pública.\n"
 msgid "`%s': unknown service: %s\n"
 msgstr "'%s': servicio desconocido: %s\n"
 
-#: src/transports/tcp6.c:377 src/transports/tcp.c:407
+#: src/transports/tcp6.c:377 src/transports/tcp.c:414
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr ""
@@ -3512,36 +3545,36 @@ msgstr "Imposible resolver '%s': %s\n"
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "¡Falló al obtener mi dirección IP (externa)!\n"
 
-#: src/transports/udp.c:134 src/transports/udp6.c:128
+#: src/transports/udp.c:137 src/transports/udp6.c:128
 #, c-format
 msgid "Failed to bind to UDP port %d.\n"
 msgstr ""
 
-#: src/transports/udp.c:265
+#: src/transports/udp.c:276
 msgid "UDP: Could not determine my public IP address.\n"
 msgstr "UDP: Imposible determinar mi dirección IP pública.\n"
 
-#: src/transports/udp.c:357
+#: src/transports/udp.c:367
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
 "Falló al mandar el mensaje de tamaño %d a través de UDP a %u.%u.%u.%u:%u: %"
 "s\n"
 
-#: src/transports/udp.c:524 src/transports/udp6.c:521
+#: src/transports/udp.c:534 src/transports/udp6.c:521
 #, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr ""
 
-#: src/transports/udp.c:530
+#: src/transports/udp.c:545
 msgid "# bytes received via UDP"
 msgstr "# bytes recibidos vía UDP"
 
-#: src/transports/udp.c:532
+#: src/transports/udp.c:547
 msgid "# bytes sent via UDP"
 msgstr "# bytes enviados vía UDP"
 
-#: src/transports/udp.c:534
+#: src/transports/udp.c:549
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# bytes omitidos por UDP (salientes)"
 
@@ -3665,7 +3698,7 @@ msgstr ""
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: Imposible determinar mi dirección IP pública.\n"
 
-#: src/transports/http.c:1190 src/transports/tcp.c:340
+#: src/transports/http.c:1190 src/transports/tcp.c:347
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr "Imposible conectar a %u.%u.%u.%u:%u: %s\n"
@@ -3688,19 +3721,20 @@ msgstr "# bytes mandados vía HTTP"
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "#bytes omitidos vía HTTP (salientes)"
 
-#: src/transports/tcp.c:264
-msgid "Could not determine my public IP address.\n"
-msgstr ""
+#: src/transports/tcp.c:271
+#, fuzzy
+msgid "TCP: Could not determine my public IP address.\n"
+msgstr "HTTP: Imposible determinar mi dirección IP pública.\n"
 
-#: src/transports/tcp.c:546
+#: src/transports/tcp.c:558
 msgid "# bytes received via TCP"
 msgstr "# bytes recibidos por TCP"
 
-#: src/transports/tcp.c:548
+#: src/transports/tcp.c:560
 msgid "# bytes sent via TCP"
 msgstr "# bytes enviados por TCP"
 
-#: src/transports/tcp.c:550
+#: src/transports/tcp.c:562
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# bytes omitidos por TCP (salientes)"
 
@@ -4908,9 +4942,6 @@ msgstr "especifica el host en el que gnunetd esta ejecutandose"
 
 #~ msgid "Goes up of one level (single view)"
 #~ msgstr "Sube un nivel (vista única)"
-
-#~ msgid "Up"
-#~ msgstr "Arriba"
 
 #~ msgid "Load"
 #~ msgstr "Cargar"

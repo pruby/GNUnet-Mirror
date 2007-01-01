@@ -13,7 +13,7 @@ libgnunetsetup_curses_la_SOURCES = \
  wizard_curs.c wizard_curs.h
 
 libgnunetsetup_curses_la_LDFLAGS = \
- -lncursesw -ldialog \
+ -lncursesw -ldialog -lm \
  -export-dynamic -avoid-version -module
 
 libgnunetsetup_curses_la_LIBADD = \

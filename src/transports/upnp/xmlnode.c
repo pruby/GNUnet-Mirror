@@ -116,6 +116,7 @@ new_node(const char *name,
 	 node->pool->size,
 	 node->pool->size * 2 + 64);
   node->pool->nodes[node->pool->pos++] = node;
+  node->free_pool = 0;
   return node;
 }
 

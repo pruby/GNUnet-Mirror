@@ -21,8 +21,8 @@
 #
 #
 AC_PREREQ(2.57)
-AC_INIT([GNUnet], [0.7.1],[bug-gnunet@gnu.org])
-AM_INIT_AUTOMAKE([GNUnet], [0.7.1])
+AC_INIT([GNUnet], [0.7.1a],[bug-gnunet@gnu.org])
+AM_INIT_AUTOMAKE([GNUnet], [0.7.1a])
 AM_CONFIG_HEADER([config.h])
 
 AH_TOP([#define _GNU_SOURCE  1])
@@ -371,6 +371,7 @@ fi
 
 # GNUnet Setup
 dialog=0
+LIBS="-lm $LIBS"
 AC_CHECK_LIB([ncursesw],[wmove])
 AC_MSG_CHECKING([for dialog 1.0-20051207])
 AC_ARG_WITH(dialog,
