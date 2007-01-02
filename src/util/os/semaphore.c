@@ -28,6 +28,8 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_error.h"
+#include "gnunet_util_threads.h"
+#include "gnunet_util_disk.h"
 #include "platform.h"
 
 #if SOLARIS || FREEBSD || OSX
@@ -513,7 +515,7 @@ int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
 	FLOCK(sem->fd,
 	      LOCK_UN);
 	MUTEX_UNLOCK(&sem->internalLock);
-	return;
+	return SYSERR;
       }
       if (htonl(cnt) == 0) {
 	/* busy wait! */

@@ -149,17 +149,15 @@ void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
 #define MAX_PROC_LINE 5000
 
 static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
+#ifdef LINUX
   unsigned long long rxnew;
   unsigned long long txnew;
   int i;
   char line[MAX_PROC_LINE];
   NetworkStats * ifc;
-#ifdef LINUX
   char * data;
-  int found;
 
   if (monitor->proc_net_dev != NULL) {
-    found = 0;
     rewind(monitor->proc_net_dev);
     fflush(monitor->proc_net_dev);
     /* Parse the line matching the interface ('eth0') */
@@ -198,6 +196,9 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
   int name[6];
   size_t len;
   int rows;
+  int j;
+  int i;
+  NetworkStats * ifc;
 
   name[0] = CTL_NET;
   name[1] = PF_LINK;
@@ -208,7 +209,6 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
   len = sizeof(rows);
 
   if (sysctl(name, 5, &rows, &len, (void *)0, 0) == 0) {
-    int j;
     for (j=1;j<=rows;j++) {
       struct ifmibdata ifmd;
 
@@ -254,6 +254,10 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
   BYTE bPhysAddr[MAXLEN_PHYSADDR];
   int iLine = 0;
   FILE * command;
+  unsigned long long rxnew;
+  unsigned long long txnew;
+  int i;
+  char line[MAX_PROC_LINE];
 
   /* Win 98 and NT SP 4 */
   if (GNGetIfEntry) {
