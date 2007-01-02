@@ -386,7 +386,7 @@ char * gaim_upnp_get_internal_ip(struct GC_Configuration * cfg,
   if (retval == SYSERR)
     if (OK == getAddressFromGetIfAddrs(cfg, 
                                        ectx,
-				       address))
+				       &address))
       retval = OK;
 #endif
   if (retval == SYSERR)
