@@ -132,9 +132,6 @@
 #ifdef OSX
 #include <semaphore.h>
 #include <net/if.h>
-#if HAVE_IFADDRS_H
-#include <ifaddrs.h>
-#endif
 #endif
 #ifdef LINUX
 #include <net/if.h>
@@ -147,6 +144,9 @@
 #ifdef CYGWIN
 #include <windows.h>
 #include <cygwin/if.h>
+#endif
+#if HAVE_IFADDRS_H
+#include <ifaddrs.h>
 #endif
 #include <errno.h>
 #include <limits.h>
