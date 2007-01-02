@@ -41,7 +41,6 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "ip.h"
-
 /* maximum length of hostname */
 #define MAX_HOSTNAME 1024
 
@@ -66,6 +65,59 @@ static int getAddressFromHostname(struct GE_Context * ectx,
 			 identity);
   return ret;
 }
+
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
+static int getAddressFromGetIfAddrs(struct GC_Configuration * cfg,
+			            struct GE_Context * ectx,
+			            IPaddr * identity) {
+  char * interfaces;
+  struct ifaddrs *ifa_first;
+
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "NETWORK",
+					      "INTERFACE",
+					      "eth0",
+					      &interfaces)) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("No interface specified in section `%s' under `%s'!\n"),
+	   "NETWORK",
+	   "INTERFACE");
+    return SYSERR; /* that won't work! */
+  }
+
+  if (getifaddrs(&ifa_first) == 0) {
+    struct ifaddrs *ifa_ptr;
+
+    ifa_ptr = ifa_first;
+    for (ifa_ptr = ifa_first; ifa_ptr != NULL; ifa_ptr = ifa_ptr->ifa_next) {
+      if (ifa_ptr->ifa_name != NULL && 
+          ifa_ptr->ifa_addr != NULL && 
+          (ifa_ptr->ifa_flags & IFF_UP) != 0) {
+        if (strcmp(interfaces, (char *)ifa_ptr->ifa_name) != 0)
+          continue;
+        if (ifa_ptr->ifa_addr->sa_family != AF_INET)
+          continue;
+        memcpy(identity,
+               &(((struct sockaddr_in *)ifa_ptr->ifa_addr)->sin_addr),
+               sizeof(struct in_addr));
+        freeifaddrs(ifa_first);
+        FREE(interfaces);
+        return OK;
+      }
+    }
+    freeifaddrs(ifa_first);
+  }
+  GE_LOG(ectx,
+	 GE_WARNING | GE_USER | GE_BULK,
+	 _("Could not obtain IP for interface `%s' using `%s'.\n"),
+	 interfaces,
+	 "getifaddrs");
+  FREE(interfaces);
+  return SYSERR;
+}
+#endif
+
 
 #if LINUX || SOMEBSD || MINGW
 #define MAX_INTERFACES 16
@@ -328,6 +380,13 @@ char * gaim_upnp_get_internal_ip(struct GC_Configuration * cfg,
     if (OK == getAddressFromIOCTL(cfg,
 				  ectx,
 				  &address))
+      retval = OK;
+#endif
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
+  if (retval == SYSERR)
+    if (OK == getAddressFromGetIfAddrs(cfg, 
+                                       ectx,
+				       address))
       retval = OK;
 #endif
   if (retval == SYSERR)

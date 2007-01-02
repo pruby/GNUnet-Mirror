@@ -42,12 +42,6 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "ip.h"
-#if HAVE_IFADDRS_H
-#if HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-#include <ifaddrs.h>
-#endif
 
 /* maximum length of hostname */
 #define MAX_HOSTNAME 1024

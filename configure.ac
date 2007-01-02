@@ -434,13 +434,6 @@ AC_CHECK_HEADERS([fcntl.h math.h errno.h limits.h stdio.h locale.h sys/stat.h sy
 # Checks for headers that are only required on some systems or opional (and where we do NOT abort if they are not there)
 AC_CHECK_HEADERS([langinfo.h sys/param.h sys/mount.h sys/statvfs.h sys/vfs.h arpa/inet.h fcntl.h libintl.h netdb.h netinet/in.h sys/ioctl.h sys/socket.h sys/time.h unistd.h kstat.h sys/sysinfo.h kvm.h sys/file.h sys/resource.h iconv.h ifaddrs.h])
 
-# Check for net/if.h, which on OS X requires sys/socket.h first
-AC_CHECK_HEADERS([sys/socket.h net/if.h], [], [],
-     [[#ifdef HAVE_SYS_SOCKET_H
-     # include <sys/socket.h>
-     #endif
-     ]])
-
 # Check for GMP header (and abort if not present)
 AC_CHECK_HEADERS([gmp.h],,AC_MSG_ERROR([Compiling GNUnet requires gmp.h (from the GNU MP library, libgmp)]))
 
