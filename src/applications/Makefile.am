@@ -22,7 +22,6 @@ SUBDIRS	= \
  fragmentation \
  getoption \
  fs \
- kvstore_sqlite \
  state \
  stats \
  gap \
