@@ -291,6 +291,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
       GE_LOG_STRERROR(ectx,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "socket");
+      sock = -1;
       continue;
     }
     s = socket_create(ectx,
@@ -312,6 +313,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
 		      "connect");
       socket_destroy(s);
       s = NULL;
+      sock = -1;
       continue;
     }
     break;
