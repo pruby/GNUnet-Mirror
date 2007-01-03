@@ -696,7 +696,7 @@ Note that if you change the quota, you need to run gnunet-update afterwards.")
   (cons 1024 1048576)
   'rare))
 
-(define (fs-gap-tablesize builder)
+(define (fs-dht-tablesize builder)
  (builder
   "DHT"
   "TABLESIZE"
