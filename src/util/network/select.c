@@ -747,6 +747,9 @@ static int makeNonblocking(struct GE_Context * ectx,
 		  FIONBIO,
 		  &l) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
+    GE_LOG_STRERROR(ectx,
+		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+		    "ioctlsocket");
     return SYSERR;
   } else {
     /* store the blocking mode */
