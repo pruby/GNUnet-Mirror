@@ -190,7 +190,12 @@ static void work() {
   uapi.cfg = cfg;
 
   cron = cron_create(ectx);
-  initCore(ectx, cfg, cron, NULL);
+  if (initCore(ectx, cfg, cron, NULL) != OK) {
+  	GE_LOG(ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
+  		_("Core initialization failed.\n"));
+  		
+  	return;
+  }
 
   /* force update of common modules (used by core) */
   updateModule("transport");

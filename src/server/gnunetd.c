@@ -119,6 +119,9 @@ int gnunet_main(struct GE_Context * ectx) {
 		     cfg,
 		     cron,
 		     mon)) {
+  	GE_LOG(ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
+  		_("Core initialization failed.\n"));
+  		
     cron_destroy(cron);
     os_network_monitor_destroy(mon);
 #ifndef WINDOWS
