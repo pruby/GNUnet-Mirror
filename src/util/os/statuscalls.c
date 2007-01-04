@@ -248,6 +248,7 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
                     "sysctl");
   }
 #elif MINGW
+  NetworkStats * ifc;
   PMIB_IFTABLE pTable;
   DWORD dwIfIdx;
   unsigned long long l;
