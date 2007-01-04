@@ -11,9 +11,9 @@ if HAVE_IPV6
  v6ip = \
   libip6.la
 endif
-#if HAVE_XML2
+if HAVE_XML2
   build_upnp=upnp
-#endif
+endif
 
 SUBDIRS = $(build_upnp) .
 
