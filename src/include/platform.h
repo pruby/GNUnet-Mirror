@@ -33,6 +33,11 @@
 #include "config.h"
 #endif
 
+#ifdef WINDOWS
+#define BREAKPOINT asm("int $3;");
+#else
+#define BREAKPOINT
+#endif
 
 #ifdef OPENBSD
 /* force declaration of u_int, u_char, ... needed by netinet/tcp.h */
