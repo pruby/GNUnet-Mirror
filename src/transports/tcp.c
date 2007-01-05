@@ -550,8 +550,18 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   if (GC_get_configuration_value_yesno(cfg,
 				       "TCP",
 				       "UPNP",
-				       YES) == YES)
+				       YES) == YES) {
     upnp = coreAPI->requestService("upnp");
+    
+    if (upnp == NULL)
+    {
+			GE_LOG(ectx,
+	   		GE_ERROR | GE_USER | GE_IMMEDIATE,
+	   		"The UPnP service could not be loaded. To disable UPnP, set the " \
+	   		"configuration option \"UPNP\" in section \"TCP\" to \"NO\"\n");	
+
+    }
+	}
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
