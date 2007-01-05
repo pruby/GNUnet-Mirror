@@ -379,7 +379,7 @@ int disk_directory_create_for_file(struct GE_Context * ectx,
     return SYSERR;
   len = strlen(rdir);
   while ( (len > 0) &&
-	  (rdir[len] != '/') )
+	  (rdir[len] != DIR_SEPARATOR) )
     len--;
   rdir[len] = '\0';
   ret = disk_directory_create(ectx, rdir);
