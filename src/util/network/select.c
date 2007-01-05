@@ -819,6 +819,8 @@ SelectHandle * select_create(const char * description,
     FREE(sh);
     return NULL;
   }
+  /* pipes are always blocking on Win32 */
+#ifndef MINGW
   if (OK != makeNonblocking(sh->ectx,
 			    sh->signal_pipe[0])) {
     if ( (0 != CLOSE(sh->signal_pipe[0])) ||
@@ -829,6 +831,7 @@ SelectHandle * select_create(const char * description,
     FREE(sh);
     return NULL;
   }
+#endif
   sh->shutdown = NO;
   sh->ectx = ectx;
   sh->load_monitor = mon;
