@@ -148,13 +148,23 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\libextractor.mo" 
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
-		Section "Swedish" SEC_LANG_SV
+		Section "Spanish" SEC_LANG_ES
 			SectionIn 1 2 3 4
-		  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
-			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
-			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
-			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\libextractor.mo" 
+		  SetOutPath "$INSTDIR\share\locale\es\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\es\LC_MESSAGES\GNUnet.mo" 
 		SectionEnd
+    Section "Swedish" SEC_LANG_SV
+      SectionIn 1 2 3 4
+      SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
+      File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+      File "C:\GNUnet\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
+      File "C:\GNUnet\share\locale\sv\LC_MESSAGES\libextractor.mo" 
+    SectionEnd
+    Section "Turkish" SEC_LANG_TR
+      SectionIn 1 2 3 4
+      SetOutPath "$INSTDIR\share\locale\tr\LC_MESSAGES"
+      File "C:\GNUnet\share\locale\tr\LC_MESSAGES\gnunet-gtk.mo" 
+    SectionEnd
 		Section "Vietnamese" SEC_LANG_VI
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
@@ -300,7 +310,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-chat.png"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-fs.png"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-general.png"
+        File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-notify.png"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-stats.png"
+        File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-tray.png"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-welcome.png"
 			SectionEnd
 		SectionGroupEnd
@@ -983,7 +995,9 @@ Section Uninstall
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-chat.png"
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-fs.png"
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-general.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-notify.png"
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-stats.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-tray.png"
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-welcome.png"
   RmDir /REBOOTOK "$INSTDIR\share\gnunet-gtk"
   
@@ -1018,6 +1032,12 @@ Section Uninstall
 	Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\gnunet-gtk.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\fr\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\fr"
+  Delete "$INSTDIR\share\locale\tr\LC_MESSAGES\gnunet-gtk.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\tr\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\tr"
+  Delete "$INSTDIR\share\locale\es\LC_MESSAGES\GNUnet.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\es\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\es"
   RmDir /REBOOTOK "$INSTDIR\share\locale"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
