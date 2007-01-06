@@ -129,8 +129,8 @@ void initPrivateKey(struct GE_Context * ectx,
   hostkeyfile = MALLOC(strlen(gnHome) + strlen(HOSTKEYFILE)+2);
   strcpy(hostkeyfile, gnHome);
   FREE(gnHome);
-  if (hostkeyfile[strlen(hostkeyfile)-1] != '/')
-    strcat(hostkeyfile, "/");
+  if (hostkeyfile[strlen(hostkeyfile)-1] != DIR_SEPARATOR)
+    strcat(hostkeyfile, DIR_SEPARATOR_STR);
   strcat(hostkeyfile, HOSTKEYFILE);
   res = 0;
   if (YES == disk_file_test(ectx,

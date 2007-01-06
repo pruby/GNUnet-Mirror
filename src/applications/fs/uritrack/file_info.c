@@ -72,7 +72,7 @@ static char * getUriDbName(struct GE_Context * ectx,
 				      &pfx);
   nw = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
   strcpy(nw, pfx);
-  strcat(nw, "/");
+  strcat(nw, DIR_SEPARATOR_STR);
   strcat(nw, STATE_NAME);
   FREE(pfx);
   disk_directory_create_for_file(ectx,
@@ -92,7 +92,7 @@ static char * getToggleName(struct GE_Context * ectx,
 				      &pfx);
   nw = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
   strcpy(nw, pfx);
-  strcat(nw, "/");
+  strcat(nw, DIR_SEPARATOR_STR);
   strcat(nw, TRACK_OPTION);
   FREE(pfx);
   disk_directory_create_for_file(ectx,

@@ -1278,11 +1278,11 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   strcpy(path, realFN);
   pos = path;
   while (*pos != '\0') {
-    if (*pos == '/') {
+    if (*pos == DIR_SEPARATOR) {
       *pos = '\0';
       if ( (0 == STAT(path, &buf)) &&
 	   (! S_ISDIR(buf.st_mode)) ) {
-	*pos = '/';
+	*pos = DIR_SEPARATOR;
 	memmove(pos + strlen(GNUNET_DIRECTORY_EXT),
 		pos,
 		strlen(pos));
@@ -1291,7 +1291,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 	       strlen(GNUNET_DIRECTORY_EXT));
 	pos += strlen(GNUNET_DIRECTORY_EXT);
       } else {
-	*pos = '/';
+	*pos = DIR_SEPARATOR;
       }
     }
     pos++;
@@ -1407,7 +1407,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
       len = strlen(rdir);
       do {
 	while ( (len > 0) &&
-		(rdir[len] != '/') )
+		(rdir[len] != DIR_SEPARATOR) )
 	  len--;
 	rdir[len] = '\0';
       } while ( (len > 0) && (0 == rmdir(rdir)) );

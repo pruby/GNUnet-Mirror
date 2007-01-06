@@ -281,7 +281,7 @@ static int parseSubspaceURI(struct GE_Context * ectx,
     return SYSERR;
   pos += strlen(ECRS_SUBSPACE_INFIX);
   if ( (slen < pos+sizeof(EncName)+1) ||
-       (uri[pos+sizeof(EncName)-1] != '/') )
+       (!(uri[pos+sizeof(EncName)-1] == '/') || (uri[pos+sizeof(EncName)-1] == '\\')) )
     return SYSERR;
 
   up = STRDUP(uri);

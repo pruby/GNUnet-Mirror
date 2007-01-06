@@ -298,8 +298,9 @@ void * downloadThread(void * cls) {
     totalBytes = ECRS_fileSize(dl->fi.uri);
     fn = MALLOC(strlen(dl->filename) + strlen(GNUNET_DIRECTORY_EXT) + 1);
     strcpy(fn, dl->filename);
-    if (fn[strlen(fn)-1] == '/') {
-      fn[strlen(fn)-1] = '\0';
+    fd = strlen(fn)-1;
+    if (fn[fd] == '/' || fn[fd] == '\\') {
+      fn[fd] = '\0';
       strcat(fn, GNUNET_DIRECTORY_EXT);
     }
     fd = disk_file_open(ectx,

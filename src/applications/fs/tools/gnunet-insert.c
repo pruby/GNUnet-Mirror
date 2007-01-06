@@ -155,8 +155,8 @@ static int listKeywords(const char * fn,
   
   fullName = MALLOC(strlen(dir) + strlen(fn) + 2);
   strcpy(fullName, dir);
-  if (dir[strlen(dir)-1] != '/')
-    strcat(fullName, "/");
+  if (dir[strlen(dir)-1] != DIR_SEPARATOR)
+    strcat(fullName, DIR_SEPARATOR_STR);
   strcat(fullName, fn);
   printf(_("Keywords for file `%s':\n"),
 	 fullName);
@@ -389,11 +389,11 @@ int main(int argc,
     dirname = string_expandFileName(ectx, filename);
     GE_ASSERT(ectx, dirname != NULL);
     while ( (strlen(dirname) > 0) &&
-	    (dirname[strlen(dirname)-1] == '/') )
+	    (dirname[strlen(dirname)-1] == DIR_SEPARATOR) )
       dirname[strlen(dirname)-1] = '\0';      
     fname = dirname;
-    while (strstr(fname, "/") != NULL)
-      fname = strstr(fname, "/") + 1;
+    while (strstr(fname, DIR_SEPARATOR_STR) != NULL)
+      fname = strstr(fname, DIR_SEPARATOR_STR) + 1;
     GE_ASSERT(ectx, 
 	      fname != dirname);
     fname[-1] = '\0';

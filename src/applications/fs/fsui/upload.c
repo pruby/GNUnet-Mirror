@@ -303,18 +303,18 @@ void * FSUI_uploadThread(void * cls) {
      -- we do not want to publish $HOME or similar
      trivially deanonymizing information */
   tpos = strlen(utc->filename) - 1;
-  if ( (utc->filename[tpos] == '/') &&
+  if ( (utc->filename[tpos] == DIR_SEPARATOR) &&
        (tpos > 0) )
     tpos--;
   while ( (tpos > 0) &&
-	  (utc->filename[tpos] != '/') )
+	  (utc->filename[tpos] != DIR_SEPARATOR) )
     tpos--;
   pfn = MALLOC(strlen(&utc->filename[tpos+1]) + 2);
   strcpy(pfn, &utc->filename[tpos+1]);
   if ( (utc->child != NULL) &&
        ( (strlen(pfn) == 0) ||
-	 (pfn[strlen(pfn)-1] != '/') ) )
-    strcat(pfn, "/");
+	 (pfn[strlen(pfn)-1] != DIR_SEPARATOR) ) )
+    strcat(pfn, DIR_SEPARATOR_STR);
   ECRS_addToMetaData(utc->meta,
 		     EXTRACTOR_FILENAME,
 		     pfn);

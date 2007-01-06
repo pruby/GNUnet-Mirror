@@ -82,7 +82,7 @@ static char * getOnDemandFile(const HashCode512 * fileId) {
 	   &enc);
   fn = MALLOC(strlen(index_directory) + sizeof(EncName) + 1);
   strcpy(fn, index_directory);
-  strcat(fn, "/");
+  strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, (char*) &enc);
   return fn;
 }

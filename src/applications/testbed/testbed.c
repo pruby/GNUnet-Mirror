@@ -511,7 +511,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
   tmp = getConfigurationString("TESTBED",
 			       "UPLOAD-DIR");
   if (tmp == NULL)
-    tmp = STRDUP("/");
+    tmp = STRDUP(DIR_SEPARATOR_STR);
   dir = expandFileName(tmp);
   disk_directory_create(ectx, dir);
   FREE(tmp);
@@ -848,7 +848,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 
   filename = MALLOC(strlen(filename) + strlen(gnHome) + 2); /*2: /, \0 */
   strcpy(filename, gnHome);
-  strcat(filename, "/");
+  strcat(filename, DIR_SEPARATOR_STR);
   strncat(filename,
 	  ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf,
 	  end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);

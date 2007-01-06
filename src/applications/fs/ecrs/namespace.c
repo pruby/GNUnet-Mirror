@@ -53,7 +53,7 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
   fileName = MALLOC(strlen(gnHome) + strlen(PSEUDODIR) + strlen(name) + 2);
   strcpy(fileName, gnHome);
   FREE(gnHome);
-  strcat(fileName, "/");
+  strcat(fileName, DIR_SEPARATOR_STR);
   strcat(fileName, PSEUDODIR);
   disk_directory_create(ectx,
 			fileName);
