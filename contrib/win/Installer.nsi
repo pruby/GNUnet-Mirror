@@ -117,6 +117,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
+    SetOutPath "$INSTDIR\var\run"
 		SetOutPath "$INSTDIR\tmp"
 		
 	  SetOutPath "$INSTDIR\bin"
@@ -188,6 +189,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\gnunetd.exe"
 			File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
+      File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
       File "C:\GNUnet\bin\libgnunettransport_tcp_old.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
@@ -911,6 +913,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunettransport_tcp.dll"
   Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_upnp.dll"
 	Delete "$INSTDIR\bin\libgnunetutil-1.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_config-0.dll"
