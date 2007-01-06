@@ -29,23 +29,8 @@
 
 static struct GC_Configuration * cfg;
 
-/**
- * Get the GNUnet UDP port from the configuration,
- * or from /etc/services if it is not specified in
- * the config file.
- */
 static unsigned short getGNUnetPort() {
-  unsigned long long port;
-
-  if (-1 == GC_get_configuration_value_number(cfg,
-					      "TCP",
-					      "PORT",
-					      1,
-					      65535,
-					      2087,
-					      &port))
-    port = 0;
-  return (unsigned short) port;
+  return 2087;
 }
 
 static int openServerSocket() {

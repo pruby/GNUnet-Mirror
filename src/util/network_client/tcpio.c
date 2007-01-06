@@ -79,21 +79,34 @@ typedef struct ClientServerConnection {
  */
 static unsigned short getGNUnetPort(struct GE_Context * ectx,
 				    struct GC_Configuration * cfg) {
-  unsigned long long port;
-
-  port = 2087;
-  if (-1 == GC_get_configuration_value_number(cfg,
+  char * res;
+  char * pos;
+  unsigned int port;
+  
+  res = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
 					      "NETWORK",
-					      "PORT",
-					      1,
-					      65535,
-					      2087,
-					      &port)) {
+					      "HOST",
+					      "localhost:2087",
+					      &res)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_USER | GE_BULK,
-	   _("Could not find valid value for PORT in section NETWORK."));
-    return 0;
+	   _("Could not find valid value for HOST in section NETWORK."));
+    return 2087;
   }
+  pos = strstr(res, ":");
+  if (pos == NULL)
+    return 2087;
+  pos++;
+  if (1 != SSCANF(pos, "%u", &port)) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_BULK,
+	   _("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
+	   pos);
+    FREE(pos);
+    return 2087;
+  }
+  FREE(pos);
   return (unsigned short) port;
 }
 
@@ -103,21 +116,26 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
  *
  * @return the name of the host, NULL on error
  */
-static char * getGNUnetdHost(struct GE_Context * ectx,
-			     struct GC_Configuration * cfg) {
+static char * 
+getGNUnetdHost(struct GE_Context * ectx,
+	       struct GC_Configuration * cfg) {
   char * res;
-
+  char * pos;
+  
   res = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "NETWORK",
 					      "HOST",
-					      "localhost",
+					      "localhost:2087",
 					      &res)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_USER | GE_BULK,
 	   _("Could not find valid value for HOST in section NETWORK."));
     return NULL;
   }
+  pos = strstr(res, ":");
+  if (pos != NULL)
+    *pos = '\0';
   return res;
 }
 

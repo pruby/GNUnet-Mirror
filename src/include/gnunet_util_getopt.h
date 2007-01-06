@@ -180,7 +180,7 @@ typedef struct CommandLineOption {
  * Set the configuration option for the configuration file.
  */
 #define COMMAND_LINE_OPTION_HOSTNAME \
-  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &gnunet_getopt_configure_set_option, "GNUNET:HOSTNAME" }
+  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &gnunet_getopt_configure_set_option, "NETWORK:HOST" }
 
 /**
  * Marker to end the list of options.

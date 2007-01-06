@@ -340,18 +340,18 @@ int main(int argc, char ** argv) {
   uri = uploadFile(12345);
   CHECK(NULL != uri);
   CHECK(OK == searchFile(&uri));
-  GC_set_configuration_value_number(cfg,
+  GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "PORT",
-				    12087);
+				    "HOSTNAME",
+				    "localhost:12087");
   CHECK(OK == downloadFile(12345, uri));
   ECRS_freeUri(uri);
-  GC_set_configuration_value_number(cfg,
+  GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "PORT",
-				    2087);
+				    "HOSTNAME",
+				    "localhost:2087");
   CHECK(OK == unindexFile(12345));
 
  FAILURE:
