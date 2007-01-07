@@ -140,7 +140,7 @@ static struct CommandLineOption gnunetsearchOptions[] = {
     gettext_noop("set the desired LEVEL of sender-anonymity"),
     1, &gnunet_getopt_configure_set_uint, &anonymity },
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")), /* -h */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Search GNUnet for files.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'm', "max", "LIMIT",
