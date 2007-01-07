@@ -158,8 +158,8 @@ int os_daemon_start(struct GE_Context * ectx,
     idx = 1;
 
     cp = GC_get_configuration_value_string(cfg,
-					   "GNUNET",
-					   "GNUNETD-CONFIG",
+					   "DAEMON",
+					   "CONFIGFILE",
 					   NULL,
 					   &cp);
     if (cp) {
