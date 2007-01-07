@@ -28,7 +28,7 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
 
-#if LINUX || OSX || SOLARIS || SOMEBSD
+#if LINUX || OSX || SOLARIS || SOMEBSD || MINGW
 /**
  * Fork a gnunetd process
  *
@@ -40,9 +40,12 @@ static pid_t launchWithExec(struct GE_Context * ectx,
 			    const char * cfgFile,
 			    int daemonize) {
   pid_t pid;
-
+  
+#ifndef MINGW
   pid = fork();
-  if (pid == 0) {
+  if (pid == 0)
+#endif
+  {
     const char * args[6];
     char * path;
     char * cp;
@@ -51,9 +54,12 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     path = NULL;
     cp = os_get_installation_path(IPK_BINDIR);
     i = strlen(cp);
-    path = MALLOC(i+2+strlen("gnunetd"));
+    path = MALLOC(i+2+strlen("gnunetd.exe"));
     strcpy(path, cp);
     strcat(path, "gnunetd");
+#ifdef MINGW
+    strcat(path, ".exe");
+#endif
     if (ACCESS(path, X_OK) == 0) {
       args[0] = path;
     } else {
@@ -79,24 +85,34 @@ static pid_t launchWithExec(struct GE_Context * ectx,
 	args[1] = NULL;
     }
     errno = 0;
+#ifndef MINGW
     nice(10); /* return value is not well-defined */
     if (errno != 0)
       GE_LOG_STRERROR(ectx,
 		      GE_WARNING | GE_USER | GE_BULK,
 		      "nice");
+
     if (path != NULL)
-      execv(path,
+      i = execv(path,
 	    (char**) args);
     else
-      execvp("gnunetd",
+      i = execvp("gnunetd",
 	     (char**) args);
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_BULK,
-			 "exec",
-			 path == NULL ? "gnunetd" : path);
+#else
+    pid = i = spawnvp(_P_NOWAIT, path, (const char *const *) args);
+#endif
     FREENONNULL(path);
+    if (i == -1)
+      GE_LOG_STRERROR_FILE(ectx,
+  			 GE_ERROR | GE_USER | GE_BULK,
+  			 "exec",
+  			 path == NULL ? "gnunetd" : path);
+#ifndef MINGW
     _exit(-1);
-  } else if (daemonize) {
+#endif
+  }
+#ifndef MINGW
+  else if (daemonize) {
     pid_t ret;
     int status;
 
@@ -122,6 +138,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     }
     return 0;
   }
+#endif /* MINGW */
   return pid;
 }
 #endif
@@ -137,47 +154,10 @@ int os_daemon_start(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg,
 		    const char * cfgFile,
 		    int daemonize) {
-#if LINUX || OSX || SOLARIS || SOMEBSD
+#if LINUX || OSX || SOLARIS || SOMEBSD || MINGW
   return launchWithExec(ectx,
 			cfgFile,
 			daemonize);
-#elif MINGW
-  char szCall[_MAX_PATH + 1], szWd[_MAX_PATH + 1], szCWd[_MAX_PATH + 1];
-  char *args[1], *cp = NULL;
-  int pid;
-  int idx = 0;
-
-  plibc_conv_to_win_path("/bin/gnunetd.exe", szCall);
-  plibc_conv_to_win_path("/bin", szWd);
-  _getcwd(szCWd, _MAX_PATH);
-
-  chdir(szWd);
-
-  if (daemonize == NO) {
-    args[0] = "-d";
-    idx = 1;
-
-    cp = GC_get_configuration_value_string(cfg,
-					   "DAEMON",
-					   "CONFIGFILE",
-					   NULL,
-					   &cp);
-    if (cp) {
-      args[1] = "-c";
-      args[2] = cp;
-      idx=3;
-    }		
-  }
-
-  args[idx] = NULL;
-  pid = spawnvp(_P_NOWAIT,
-		szCall,
-		(const char *const *) args);
-  chdir(szCWd);
-
-  FREENONNULL(cp);
-
-  return (daemonize == NO) ? pid : 0;
 #else
   /* any system out there that does not support THIS!? */
   if (-1 == system("gnunetd")) /* we may not have nice,
