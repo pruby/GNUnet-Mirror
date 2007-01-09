@@ -24,6 +24,7 @@ libgnunetutil_crypto_la_SOURCES = \
 check_PROGRAMS = \
  crctest \
  hashtest \
+ hashperf \
  hashingtest \
  hostkeytest \
  kblockkey_test \
@@ -59,6 +60,12 @@ hostkeytest_LDADD = \
 hashtest_SOURCES = \
  hashingtest.c
 hashtest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
+
+hashperf_SOURCES = \
+ hashperf.c
+hashperf_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
