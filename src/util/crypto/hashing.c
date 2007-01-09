@@ -114,40 +114,40 @@ const unsigned long long sha512_K[80] = {
 #define HP6 0xdb0c2e0d64f98fa7ULL
 #define HP7 0x47b5481dbefa4fa4ULL
 
-static void LOAD_OP(int I, unsigned long long *W, const unsigned char *input) {
-  unsigned long long t1  = input[(8*I)  ] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+1] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+2] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+3] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+4] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+5] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+6] & 0xff;
-  t1 <<= 8;
-  t1 |= input[(8*I)+7] & 0xff;
+#define LOAD_OP(t1, I, W, input) \
+  t1  = input[(8*I)  ] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+1] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+2] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+3] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+4] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+5] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+6] & 0xff;\
+  t1 <<= 8;\
+  t1 |= input[(8*I)+7] & 0xff;\
   W[I] = t1;
-}
 
-static void BLEND_OP(int I, unsigned long long *W) {
+
+#define BLEND_OP(I, W) \
   W[I] = s1(W[I-2]) + W[I-7] + s0(W[I-15]) + W[I-16];
-}
 
 static void
 sha512_transform(unsigned long long *state,
 		 const unsigned char *input) {
   unsigned long long a, b, c, d, e, f, g, h, t1, t2;
   unsigned long long W[80];
-
+  unsigned long long t0;
   int i;
 
   /* load the input */
-  for (i = 0; i < 16; i++)
-    LOAD_OP(i, W, input);
+  for (i = 0; i < 16; i++) {
+    LOAD_OP(t0, i, W, input);
+  }
 
   for (i = 16; i < 80; i++) {
     BLEND_OP(i, W);
