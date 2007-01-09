@@ -1,3 +1,9 @@
+Mon Jan  8 21:34:02 MST 2007
+	Forcing -O3 for crypto library (performance critical).
+	Enforcing message queue limit for daemon (somehow got lost 
+	on the way to 0.7.1, was responsible for high CPU load).
+	Fixing cron job deletion in core (clean shutdown).
+
 Sun Dec 31 23:56:31 MST 2006
 	ncurses may need "-lm" in order to link.
 	Releasing GNUnet 0.7.1a.

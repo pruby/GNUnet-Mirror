@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = \
 libnetwork_la_SOURCES = \
  endian.c network.h \
  io.c \
+ ip.c \
  ipcheck.c \
  select.c 
 

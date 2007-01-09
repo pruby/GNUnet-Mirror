@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -478,6 +478,17 @@ int select_connect(struct SelectHandle * sh,
  */
 int select_disconnect(struct SelectHandle * sh,
 		      struct SocketHandle * sock);
+
+
+/**
+ * Get the IP address for the local machine.
+ * @return NULL on error, IP as string otherwise
+ */
+char * network_get_local_ip(struct GC_Configuration * cfg,
+			    struct GE_Context * ectx,
+			    IPaddr * addr);
+ 
+
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

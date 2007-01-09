@@ -602,6 +602,8 @@ static int stat_total_allowed_sent;
 
 static int stat_total_allowed_recv;
 
+static int stat_total_send_buffer_size;
+
 /* ******************** CODE ********************* */
 
 #if DEBUG_CONNECTION
@@ -1080,8 +1082,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 		get_time(),
 		priority);
 #endif
-      }
-      else {
+      } else {
         (*priority) = solveKnapsack(be,
                                     be->session.mtu -
                                     sizeof(P2P_PACKET_HEADER));
@@ -1092,8 +1093,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 		priority);
 #endif
       }
-    }
-    else {                      /* never approximate < 50% CPU load */
+    } else {                      /* never approximate < 50% CPU load */
       (*priority) = solveKnapsack(be,
                                   be->session.mtu -
                                   sizeof(P2P_PACKET_HEADER));
@@ -1105,10 +1105,11 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 #endif
     }
     j = 0;
-    for(i = 0; i < be->sendBufferSize; i++)
-      if(be->sendBuffer[i]->knapsackSolution == YES)
+    for (i = 0; i < be->sendBufferSize; i++)
+      if (be->sendBuffer[i]->knapsackSolution == YES)
         j++;
     if (j == 0) {
+      GE_BREAK(ectx, 0);
       GE_LOG(ectx,
 	     GE_ERROR | GE_BULK | GE_DEVELOPER,
 	     _("`%s' selected %d out of %d messages (MTU: %d).\n"),
@@ -1117,7 +1118,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	     be->sendBufferSize,
 	     be->session.mtu - sizeof(P2P_PACKET_HEADER));
 
-      for(j = 0; j < be->sendBufferSize; j++)
+      for (j = 0; j < be->sendBufferSize; j++)
         GE_LOG(ectx,
 	       GE_ERROR | GE_BULK | GE_DEVELOPER,
 	       _("Message details: %u: length %d, priority: %d\n"),
@@ -1171,12 +1172,14 @@ static void expireSendBufferEntries(BufferEntry * be) {
 
   load = os_cpu_get_load(ectx, cfg);
   if (load < 0)
-    load = 50; /* failed to determine load, assume 50%* */
-  /* cleanup queue */
-  msgCap = be->max_bpm;         /* have minute of msgs, but at least one MTU */
-  if(msgCap < EXPECTED_MTU)
-    msgCap = EXPECTED_MTU;
-  if (load < 50) {                  /* afford more if CPU load is low */
+    load = 50; /* failed to determine load, assume 50% */
+  /* cleanup queue: keep enough buffer for one minute */
+  msgCap = be->max_bpm;         /* have minute of msgs */
+  if (msgCap < EXPECTED_MTU)
+    msgCap = EXPECTED_MTU; /* have at least one MTU */
+  if (msgCap > max_bpm_up)
+    msgCap = max_bpm_up; /* have no more than max-bpm for entire daemon */
+  if (load < 50) {  /* afford more if CPU load is low */
     if (load == 0)
       load = 1; /* avoid division by zero */
     msgCap += (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU) / load;
@@ -1184,15 +1187,13 @@ static void expireSendBufferEntries(BufferEntry * be) {
 
   usedBytes = 0;
   /* allow at least msgCap bytes in buffer */
-  for(i = 0; i < be->sendBufferSize; i++)
-    if(be->sendBuffer[i] != NULL)
-      usedBytes += be->sendBuffer[i]->len;
-
-  for(i = 0; i < be->sendBufferSize; i++) {
+  for (i = 0; i < be->sendBufferSize; i++) {
     entry = be->sendBuffer[i];
-    if(entry == NULL)
+    if (entry == NULL)
       continue;
-    if(entry->transmissionTime <= expired) {
+    
+    if ( (entry->transmissionTime <= expired) ||
+	 (usedBytes > msgCap) ) {
 #if DEBUG_CONNECTION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1205,18 +1206,20 @@ static void expireSendBufferEntries(BufferEntry * be) {
         stats->change(stat_sizeMessagesDropped, entry->len);
       }
       FREENONNULL(entry->closure);
-      usedBytes -= entry->len;
       FREE(entry);
       be->sendBuffer[i] = NULL;
     }
+    usedBytes += entry->len;
   }
 
   /* cleanup/compact sendBuffer */
   j = 0;
   for(i = 0; i < be->sendBufferSize; i++)
-    if(be->sendBuffer[i] != NULL)
+    if (be->sendBuffer[i] != NULL)
       be->sendBuffer[j++] = be->sendBuffer[i];
-  GROW(be->sendBuffer, be->sendBufferSize, j);
+  GROW(be->sendBuffer,
+       be->sendBufferSize,
+       j);
 }
 
 /**
@@ -1237,7 +1240,7 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
   SendEntry *entry;
 
   ret = 0;
-  for(i = 0; i < be->sendBufferSize; i++) {
+  for (i = 0; i < be->sendBufferSize; i++) {
     entry = be->sendBuffer[i];
 
     if(entry->knapsackSolution == YES) {
@@ -1255,8 +1258,7 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
           FREE(entry);
           be->sendBuffer[i] = NULL;
         }
-      }
-      else {
+      } else {
         ret++;
       }
 #if 0
@@ -1297,10 +1299,10 @@ static int *permuteSendBuffer(BufferEntry * be) {
   perm = permute(WEAK, be->sendBufferSize);
   headpos = 0;
   tailpos = be->sendBufferSize - 1;
-  for(i = 0; i < be->sendBufferSize; i++) {
-    if(be->sendBuffer[perm[i]] == NULL)
+  for (i = 0; i < be->sendBufferSize; i++) {
+    if (be->sendBuffer[perm[i]] == NULL)
       continue;
-    if(be->sendBuffer[perm[i]]->knapsackSolution == YES) {
+    if (be->sendBuffer[perm[i]]->knapsackSolution == YES) {
       switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
       case SE_FLAG_NONE:
         break;
@@ -1330,7 +1332,7 @@ static void freeSelectedEntries(BufferEntry * be) {
   int i;
   SendEntry *entry;
 
-  for(i = 0; i < be->sendBufferSize; i++) {
+  for (i = 0; i < be->sendBufferSize; i++) {
     entry = be->sendBuffer[i];
     GE_ASSERT(ectx, entry != NULL);
     if(entry->knapsackSolution == YES) {
@@ -1338,8 +1340,8 @@ static void freeSelectedEntries(BufferEntry * be) {
       FREENONNULL(entry->closure);
       FREE(entry);
       be->sendBuffer[i] = NULL;
-    }
-    else if((entry->callback == NULL) && (entry->closure == NULL)) {
+    } else if ( (entry->callback == NULL) && 
+		(entry->closure == NULL) ) {
       FREE(entry);
       be->sendBuffer[i] = NULL;
     }
@@ -1514,7 +1516,7 @@ static int sendBuffer(BufferEntry * be) {
   p2pHdr->bandwidth = htonl(be->idealized_limit);
   p = sizeof(P2P_PACKET_HEADER);
 
-  for(i = 0; i < be->sendBufferSize; i++) {
+  for (i = 0; i < be->sendBufferSize; i++) {
     SendEntry *entry = be->sendBuffer[perm[i]];
 
     if(entry == NULL)
@@ -1529,7 +1531,9 @@ static int sendBuffer(BufferEntry * be) {
 #endif
       GE_ASSERT(ectx, entry->callback == NULL);
       GE_ASSERT(ectx, p + entry->len <= totalMessageSize);
-      memcpy(&plaintextMsg[p], entry->closure, entry->len);
+      memcpy(&plaintextMsg[p],
+	     entry->closure, 
+	     entry->len);
       p += entry->len;
     }
   }
@@ -1708,7 +1712,7 @@ static void appendToBuffer(BufferEntry * be,
     return;
   }
   queueSize = 0;
-  for(i = 0; i < be->sendBufferSize; i++)
+  for (i = 0; i < be->sendBufferSize; i++)
     queueSize += be->sendBuffer[i]->len;
 
   if (queueSize >= MAX_SEND_BUFFER_SIZE) {
@@ -2377,6 +2381,15 @@ static void scheduleInboundTraffic() {
 
 /* ******** end of inbound bandwidth scheduling ************* */
 
+/**
+ * note: should we see that this cron job takes excessive amounts of
+ * CPU on some systems, we may consider adding an OPTION to reduce the
+ * frequency.  However, on my system, larger values significantly
+ * impact the performance of the UDP transport for large (fragmented)
+ * messages -- and 10ms does not cause any noticeable CPU load during
+ * testing.  
+ */
+#define CDL_FREQUENCY (10 * cronMILLIS)
 
 /**
  * Call this method periodically to drop dead connections.
@@ -2391,16 +2404,19 @@ static void cronDecreaseLiveness(void *unused) {
   int i;
   unsigned long long total_allowed_sent;
   unsigned long long total_allowed_recv;
-
+  unsigned long long total_send_buffer_size;
+  
   scheduleInboundTraffic();
   now = get_time();
   total_allowed_sent = 0;
   total_allowed_recv = 0;
+  total_send_buffer_size = 0;
   MUTEX_LOCK(lock);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
     root = CONNECTION_buffer_[i];
     prev = NULL;
     while (NULL != root) {
+      total_send_buffer_size += root->sendBufferSize;
       switch (root->status) {
       case STAT_DOWN:
         /* just compact linked list */
@@ -2498,6 +2514,8 @@ static void cronDecreaseLiveness(void *unused) {
 	       total_allowed_sent / 60); /* bpm to bps */
     stats->set(stat_total_allowed_recv,
 	       total_allowed_recv / 60); /* bpm to bps */
+    stats->set(stat_total_send_buffer_size,
+	       total_send_buffer_size);
   }
 }
 
@@ -3037,18 +3055,10 @@ void initConnection(struct GE_Context * e,
   GE_ASSERT(ectx,
 	    CONNECTION_MAX_HOSTS_ != 0);
   registerp2pHandler(P2P_PROTO_hangup, &handleHANGUP);
-  /* note: should we see that this cron job takes
-     excessive amounts of CPU on some systems, we
-     may consider adding an OPTION to reduce the
-     frequency.  However, on my system, larger
-     values significantly impact the performance
-     of the UDP transport for large (fragmented)
-     messages -- and 10ms does not cause any noticeable
-     CPU load during testing.  */
   cron_add_job(cron,
 	       &cronDecreaseLiveness,
-	       10 * cronMILLIS,
-	       10 * cronMILLIS,
+	       CDL_FREQUENCY,
+	       CDL_FREQUENCY,
 	       NULL);
 #if DEBUG_COLLECT_PRIO == YES
   prioFile = FOPEN("/tmp/knapsack_prio.txt", "w");
@@ -3096,6 +3106,8 @@ void initConnection(struct GE_Context * e,
       = stats->create(gettext_noop("# total advertised bytes per second received limit"));
     stat_total_allowed_recv
       = stats->create(gettext_noop("# total allowed bytes per second transmission limit"));
+    stat_total_send_buffer_size
+      = stats->create(gettext_noop("# total number of messages in send buffers"));
   }
   transport->start(&core_receive);
 }
@@ -3115,7 +3127,7 @@ void doneConnection() {
 			    NULL);
   cron_del_job(cron,
 	       &cronDecreaseLiveness,
-	       1 * cronSECONDS,
+	       CDL_FREQUENCY,
 	       NULL);
   for(i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
     BufferEntry *prev;
@@ -3214,20 +3226,21 @@ void printConnectionBuffer() {
         ttype = 0;
         if(tmp->session.tsession != NULL)
           ttype = tmp->session.tsession->ttype;
-        GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-            "CONNECTION-TABLE: %3d-%1d-%2d-%4ds"
-            " (of %ds) BPM %4llu %8ut-%3u: %s-%s-%s\n",
-            i,
-            tmp->status,
-            ttype,
-            (int) ((get_time() - tmp->isAlive) / cronSECONDS),
-            SECONDS_INACTIVE_DROP,
-            tmp->recently_received,
-            tmp->idealized_limit,
-            tmp->sendBufferSize,
-	    &hostName,
-	    &skey_local,
-	    &skey_remote);
+        GE_LOG(ectx, 
+	       GE_INFO | GE_REQUEST | GE_USER,
+	       "CONNECTION-TABLE: %3d-%1d-%2d-%4ds"
+	       " (of %ds) BPM %4llu %8ut-%3u: %s-%s-%s\n",
+	       i,
+	       tmp->status,
+	       ttype,
+	       (int) ((get_time() - tmp->isAlive) / cronSECONDS),
+	       SECONDS_INACTIVE_DROP,
+	       tmp->recently_received,
+	       tmp->idealized_limit,
+	       tmp->sendBufferSize,
+	       &hostName,
+	       &skey_local,
+	       &skey_remote);
       }
       tmp = tmp->overflowChain;
     }
