@@ -1288,39 +1288,68 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
  * Compute a random permuation of the send buffer
  * entry such that the selected messages obey
  * the SE flags.
+ *
+ * @param  selected_total set to the number of
+ *         entries returned
+ * @return allocated (caller-frees) buffer with
+ *         permuted SendEntries
  */
-static int *permuteSendBuffer(BufferEntry * be) {
-  int *perm;
-  int headpos;
-  int tailpos;
-  int i;
-  int j;
+static SendEntry ** 
+permuteSendBuffer(BufferEntry * be,
+		  unsigned int * selected_total) {
+  unsigned int tailpos;
+  unsigned int headpos;
+  unsigned int rnd;
+  unsigned int i;
+  unsigned int j;
+  unsigned int stotal;
+  SendEntry ** ret;
+  SendEntry * tmp;
 
-  perm = permute(WEAK, be->sendBufferSize);
-  headpos = 0;
-  tailpos = be->sendBufferSize - 1;
+  stotal = 0;
   for (i = 0; i < be->sendBufferSize; i++) {
-    if (be->sendBuffer[perm[i]] == NULL)
+    if (be->sendBuffer[i] == NULL)
       continue;
-    if (be->sendBuffer[perm[i]]->knapsackSolution == YES) {
-      switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
-      case SE_FLAG_NONE:
-        break;
-      case SE_FLAG_PLACE_HEAD:
-        /* swap slot with whoever is head now */
-        j = perm[headpos];
-        perm[headpos++] = perm[i];
-        perm[i] = j;
-        break;
-      case SE_FLAG_PLACE_TAIL:
-        /* swap slot with whoever is tail now */
-        j = perm[tailpos];
-        perm[tailpos--] = perm[i];
-        perm[i] = j;
-      }
+    if (be->sendBuffer[i]->knapsackSolution == YES)
+      stotal++;
+  }
+  *selected_total = stotal;
+  if (stotal == 0) 
+    return NULL;  
+  ret = MALLOC(stotal * sizeof(SendEntry *));
+  j = 0;
+  for (i = 0; i < be->sendBufferSize; i++) {
+    if (be->sendBuffer[i] == NULL)
+      continue;
+    if (be->sendBuffer[i]->knapsackSolution == YES)
+      ret[j++] = be->sendBuffer[i];
+  }
+  for (j=0;j<stotal;j++) {
+    rnd = weak_randomi(stotal);
+    tmp = ret[j];
+    ret[j] = ret[rnd];
+    ret[rnd] = tmp;    
+  }
+  tailpos = stotal - 1;
+  headpos = 0;
+  for (i = 0; i <= tailpos; i++) {
+    switch (ret[i]->flags & SE_PLACEMENT_FLAG) {
+    case SE_FLAG_NONE:
+      break;
+    case SE_FLAG_PLACE_HEAD:
+      /* swap slot with whoever is head now */
+      tmp = ret[headpos];
+      ret[headpos++] = ret[i];
+      ret[i] = tmp;
+      break;
+    case SE_FLAG_PLACE_TAIL:
+      /* swap slot with whoever is tail now */
+      tmp = ret[tailpos];
+      ret[tailpos--] = ret[i];
+      ret[i] = tmp;
     }
   }
-  return perm;
+  return ret;
 }
 
 /**
@@ -1433,11 +1462,12 @@ static int sendBuffer(BufferEntry * be) {
   SendCallbackList *pos;
   P2P_PACKET_HEADER *p2pHdr;
   unsigned int priority;
-  int *perm;
   char *plaintextMsg;
   void *encryptedMsg;
   unsigned int totalMessageSize;
   int ret;
+  SendEntry ** entries;
+  unsigned int stotal;
 
   ENTRY();
   /* fast ways out */
@@ -1506,9 +1536,15 @@ static int sendBuffer(BufferEntry * be) {
 
   /* get permutation of SendBuffer Entries
      such that SE_FLAGS are obeyed */
-  perm = permuteSendBuffer(be);
+  entries = permuteSendBuffer(be, &stotal);
+  if ( (stotal == 0) || (entries == NULL) ) {
+    /* no messages selected!? */
+    GE_BREAK(ectx, 0);
+    be->inSendBuffer = NO;
+    return NO;
+  }
 
-  /* build message (start with sequence number) */
+  /* build message */
   plaintextMsg = MALLOC(totalMessageSize);
   p2pHdr = (P2P_PACKET_HEADER *) plaintextMsg;
   p2pHdr->timeStamp = htonl(TIME(NULL));
@@ -1516,29 +1552,28 @@ static int sendBuffer(BufferEntry * be) {
   p2pHdr->bandwidth = htonl(be->idealized_limit);
   p = sizeof(P2P_PACKET_HEADER);
 
-  for (i = 0; i < be->sendBufferSize; i++) {
-    SendEntry *entry = be->sendBuffer[perm[i]];
+  for (i = 0; i < stotal; i++) {
+    SendEntry * entry = entries[i];
 
-    if(entry == NULL)
-      continue;
-    if(entry->knapsackSolution == YES) {
+    GE_ASSERT(ectx, 
+	      (entry != NULL) &&
+	      (entry->knapsackSolution == YES) &&
+	      (entry->callback == NULL) &&
+	      (p + entry->len <= totalMessageSize));
 #if DEBUG_CONNECTION
-      GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Queuing msg %u with length %u\n",
-	     perm[i],
-	     entry->len);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Queuing msg %u with length %u\n",
+	   i,
+	   entry->len);
 #endif
-      GE_ASSERT(ectx, entry->callback == NULL);
-      GE_ASSERT(ectx, p + entry->len <= totalMessageSize);
-      memcpy(&plaintextMsg[p],
-	     entry->closure, 
-	     entry->len);
-      p += entry->len;
-    }
+    memcpy(&plaintextMsg[p],
+	   entry->closure, 
+	   entry->len);
+    p += entry->len;  
   }
-  FREE(perm);
-  perm = NULL;
+  FREE(entries);
+  entries = NULL;
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;

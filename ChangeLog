@@ -1,3 +1,8 @@
+Mon Jan  8 22:21:15 MST 2007
+	Making computation of send buffer permuations more
+	efficient (in terms of calling weak_randomi) by only
+	computing permuations over the actually selected messages.
+
 Mon Jan  8 21:34:02 MST 2007
 	Forcing -O3 for crypto library (performance critical).
 	Enforcing message queue limit for daemon (somehow got lost 
