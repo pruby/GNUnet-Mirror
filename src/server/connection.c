@@ -1333,6 +1333,8 @@ permuteSendBuffer(BufferEntry * be,
   tailpos = stotal - 1;
   headpos = 0;
   for (i = 0; i <= tailpos; i++) {
+    if (i >= stotal)
+      break; /* corner case: integer underflow on tailpos */
     switch (ret[i]->flags & SE_PLACEMENT_FLAG) {
     case SE_FLAG_NONE:
       break;
