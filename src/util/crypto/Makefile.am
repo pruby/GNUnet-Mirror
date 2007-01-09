@@ -4,7 +4,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 lib_LTLIBRARIES = libgnunetutil_crypto.la
 
-AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS)
+AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS) -O3
 
 libgnunetutil_crypto_la_LIBADD = \
  $(GCLIBADD) \

@@ -38,7 +38,7 @@ static void perfHash() {
   buf = MALLOC(1024*64);
   memset(buf, 1, 1024 * 64);
   hash("foo", 3, &hc1);
-  for (i=0;i<1024*1024;i++) {
+  for (i=0;i<1024;i++) {
     hash(&hc1, 
 	 sizeof(HashCode512),
 	 &hc2);
@@ -52,12 +52,10 @@ static void perfHash() {
 }
 
 int main(int argc, char * argv[]) {
-  int i;
   cron_t start;
 
   start = get_time();
-  for (i=0;i<10;i++)
-    perfHash();
+  perfHash();
   printf("Hash perf took %llu ms\n",
 	 get_time() - start);
   return 0;
