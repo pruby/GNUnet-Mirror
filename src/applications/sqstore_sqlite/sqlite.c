@@ -36,7 +36,7 @@
 #include "gnunet_stats_service.h"
 #include <sqlite3.h>
 
-#define DEBUG_SQLITE NO
+#define DEBUG_SQLITE YES
 
 /**
  * Die with an error message that indicates
@@ -746,7 +746,7 @@ static void sqlite_shutdown() {
   unsigned int idx;
 
 #if DEBUG_SQLITE
-  GE_LOG(getDBHandle(),
+  GE_LOG(
 	 ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: closing database\n");
