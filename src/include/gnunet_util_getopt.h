@@ -147,7 +147,7 @@ typedef struct CommandLineOption {
  * @param about string with brief description of the application
  */
 #define COMMAND_LINE_OPTION_HELP(about) \
-  { 'h', "help", NULL, gettext_noop("print this help"), 0, &gnunet_getopt_format_help, about }
+  { 'h', "help", (const char *) NULL, gettext_noop("print this help"), 0, &gnunet_getopt_format_help, (void *) about }
 
 /**
  * Macro defining the option to print the version of
@@ -156,31 +156,31 @@ typedef struct CommandLineOption {
  * @param version string with the version number
  */
 #define COMMAND_LINE_OPTION_VERSION(version) \
-  { 'v', "version", NULL, gettext_noop("print the version number"), 0, &gnunet_getopt_print_version, version }
+  { 'v', "version", (const char *) NULL, gettext_noop("print the version number"), 0, &gnunet_getopt_print_version, (void *) version }
 
 /**
  * Set the configuration option for logging.
  */
 #define COMMAND_LINE_OPTION_LOGGING \
-  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, "LOGGING:USER-LEVEL" }
+  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, (void *) "LOGGING:USER-LEVEL" }
 
 /**
  * Set the configuration option for increasing verbosity.
  */
 #define COMMAND_LINE_OPTION_VERBOSE \
-  { 'V', "verbose", NULL, gettext_noop("be verbose"), 0, &gnunet_getopt_configure_increment_value, "GNUNET:VERBOSE" }
+  { 'V', "verbose", (const char *) NULL, gettext_noop("be verbose"), 0, &gnunet_getopt_configure_increment_value, (void *) "GNUNET:VERBOSE" }
 
 /**
  * Set the configuration option for the configuration file.
  */
 #define COMMAND_LINE_OPTION_CFG_FILE(fn)				\
-  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &gnunet_getopt_configure_set_string, fn }
+  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &gnunet_getopt_configure_set_string, (void *) fn }
 
 /**
  * Set the configuration option for the configuration file.
  */
 #define COMMAND_LINE_OPTION_HOSTNAME \
-  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &gnunet_getopt_configure_set_option, "NETWORK:HOST" }
+  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &gnunet_getopt_configure_set_option, (void *) "NETWORK:HOST" }
 
 /**
  * Marker to end the list of options.
