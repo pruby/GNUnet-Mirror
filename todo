@@ -18,6 +18,8 @@ notes:
 
 0.7.2 [3'07]:
 - new features:
+  * ECRS: 
+    + isIndexed database and query protocol
   * XFS / support for location URIs [CG] 
     + ECRS-URI: toString/fromString for loc URIs [RC]
     + dht/gap integration (search routing) [RC]
@@ -57,6 +59,9 @@ notes:
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97
+- better prediction for transport success (close gap between):
+  # bytes encrypted  :      70515980687
+  # bytes transmitted:       1432285587
 
 
 1.0.0 (aka "userfriendly"):
