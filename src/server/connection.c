@@ -1209,7 +1209,8 @@ static void expireSendBufferEntries(BufferEntry * be) {
       FREE(entry);
       be->sendBuffer[i] = NULL;
     }
-    usedBytes += entry->len;
+    else
+      usedBytes += entry->len;
   }
 
   /* cleanup/compact sendBuffer */
