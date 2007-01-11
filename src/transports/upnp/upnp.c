@@ -456,7 +456,7 @@ looked_up_public_ip_cb(void *url_data,
   const char * temp2;
 
   if (len + dd->buf_len > 1024 * 1024 * 4)
-    return len; /* refuse to process - too big! */
+    return 0; /* refuse to process - too big! */
   GROW(dd->buf,
        dd->buf_len,
        dd->buf_len + len);
