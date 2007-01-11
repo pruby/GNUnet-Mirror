@@ -437,7 +437,7 @@ void hash2enc(const HashCode512 * block,
       vbit += 8;
     }
     if (vbit < 5) {
-      bits = bits << (5 - vbit); /* zero-padding */
+      bits <<= (5 - vbit); /* zero-padding */
       GE_ASSERT(NULL, vbit == 2); /* padding by 3: 512+3 mod 5 == 0 */
       vbit = 5;
     }
@@ -478,7 +478,7 @@ int enc2hash(const char * enc,
     if (vbit >= 8) {
       ((unsigned char*)result)[--wpos]
 	= (unsigned char) bits;
-      bits = bits >> 8;
+      bits >>= 8;
       vbit -= 8;
     }
   }

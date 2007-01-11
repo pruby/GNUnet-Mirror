@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 
@@ -53,6 +54,68 @@ static int testKeyword() {
     ABORT();
   FREE(uri);
   ECRS_freeUri(ret);
+  return 0;
+}
+
+static int testLocation() {
+  struct ECRS_URI * uri;
+  char * uric;
+  struct ECRS_URI * uri2;
+  PublicKey pk;
+  struct PrivateKey * hk;
+  struct ECRS_URI * baseURI;
+
+  baseURI = ECRS_stringToUri(NULL, "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
+  hk = makePrivateKey();
+  getPublicKey(hk,
+	       &pk);
+  uri = ECRS_uriFromLocation(baseURI,
+			     &pk,
+			     TIME(NULL) + 60,
+			     42, /* PROTO */
+			     4, /* SAS */
+			     1500, /* MTU */
+			     "GNU!", /* location */
+			     (ECRS_SignFunction) &sign,
+			     hk);
+  freePrivateKey(hk);
+  if (uri == NULL) {
+    ECRS_freeUri(baseURI);
+    return 1;
+  }
+  if (! ECRS_isLocationUri(uri)) {
+    ECRS_freeUri(uri);
+    ECRS_freeUri(baseURI);
+    return 1;
+  }
+  uri2 = ECRS_getContentUri(uri);
+  if (! ECRS_equalsUri(baseURI,
+		       uri2)) {
+    ECRS_freeUri(uri);
+    ECRS_freeUri(uri2);
+    ECRS_freeUri(baseURI);
+    return 1;
+  }
+  ECRS_freeUri(baseURI);    
+  uric = ECRS_uriToString(uri);
+#if 1
+  /* not for the faint of heart: */
+  printf("URI: `%s'\n", uric);
+#endif
+  uri2 = ECRS_stringToUri(NULL, uric);
+  FREE(uric);
+  if (uri2 == NULL) {
+    ECRS_freeUri(uri);
+    return 1;
+  }
+  if (YES != ECRS_equalsUri(uri,
+			    uri2)) {
+    ECRS_freeUri(uri);
+    ECRS_freeUri(uri2);
+    return 1;
+  }
+  ECRS_freeUri(uri2);   
+  ECRS_freeUri(uri);
   return 0;
 }
 
@@ -100,7 +163,7 @@ static int testFile(int i) {
     ABORT();
   if (ECRS_isNamespaceUri(ret))
     ABORT();
-  if (ntohll(ret->data.chk.file_length) != 42)
+  if (ntohll(ret->data.fi.file_length) != 42)
     ABORT();
 
   uri = ECRS_uriToString(ret);
@@ -118,6 +181,7 @@ int main(int argc, char * argv[]) {
   int i;
 
   failureCount += testKeyword();
+  failureCount += testLocation();
   for (i=0;i<255;i++) {
     failureCount += testNamespace(i);
     failureCount += testFile(i);

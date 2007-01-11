@@ -269,13 +269,15 @@ char * ECRS_uriToString(const struct ECRS_URI * uri);
  * Convert a NULL-terminated array of keywords
  * to an ECRS URI.
  */
-struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]);
+struct ECRS_URI * 
+ECRS_keywordsToUri(const char * keyword[]);
 
 /**
  * Convert a UTF-8 String to a URI.
  */
-struct ECRS_URI * ECRS_stringToUri(struct GE_Context * ectx,
-				   const char * uri);
+struct ECRS_URI * 
+ECRS_stringToUri(struct GE_Context * ectx,
+		 const char * uri);
 
 /**
  * Free URI.
@@ -324,8 +326,9 @@ ECRS_getContentUri(const struct ECRS_URI * uri);
  * Function that produces a signature for
  * a particular piece of content.
  */
-typedef int (*ECRS_SignFunction)(const void * data,
+typedef int (*ECRS_SignFunction)(void * cls,
 				 unsigned short size,
+				 const void * data,
 				 Signature * result);
 
 /**
@@ -348,8 +351,9 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
 		     unsigned short proto,
 		     unsigned short sas,
 		     unsigned int mtu,
-		     char * address,
-		     ECRS_SignFunction signer);
+		     const char * address,
+		     ECRS_SignFunction signer,
+		     void * signer_cls);
 
 
 /**
@@ -362,7 +366,8 @@ struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
  * adding the current date (YYYY-MM-DD) after each
  * keyword.
  */
-struct ECRS_URI * ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
+struct ECRS_URI * 
+ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
 
 /**
  * Create an ECRS URI from a single user-supplied string of keywords.

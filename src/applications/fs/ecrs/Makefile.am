@@ -43,7 +43,8 @@ TESTS = $(check_PROGRAMS)
 uritest_SOURCES = \
   uritest.c 
 uritest_LDADD = \
-  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
 
 namespacetest_SOURCES = \
   namespacetest.c 

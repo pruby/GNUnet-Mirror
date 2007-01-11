@@ -1134,8 +1134,9 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
 		     unsigned short proto,
 		     unsigned short sas,
 		     unsigned int mtu,
-		     char * address,
-		     ECRS_SignFunction signer) {
+		     const char * address,
+		     ECRS_SignFunction signer,
+		     void * signer_cls) {
   struct ECRS_URI * uri;
   P2P_hello_MESSAGE * hello;
   
@@ -1159,16 +1160,18 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
     uri->data.loc.address = NULL;
   }
   hello = ECRS_getHelloFromUri(uri);
-  signer(&hello->senderIdentity,
+  signer(signer_cls,
 	 P2P_hello_MESSAGE_size(hello)
 	 - sizeof(Signature)
 	 - sizeof(PublicKey)
 	 - sizeof(MESSAGE_HEADER), 
+	 &hello->senderIdentity,
 	 &uri->data.loc.helloSignature);
-  signer(&uri->data.loc.fi,
+  signer(signer_cls,
 	 sizeof(FileIdentifier) + 
 	 sizeof(PublicKey) +
 	 sizeof(TIME_T),
+	 &uri->data.loc.fi,
 	 &uri->data.loc.contentSignature);
   return uri;
 }
