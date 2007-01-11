@@ -38,13 +38,6 @@ extern "C" {
 #include "gnunet_util.h"
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
-{
-#endif
-#ifdef __cplusplus
-}
-#endif
-
 /**
  * Run a standard GNUnet startup sequence
  * (initialize loggers and configuration,
@@ -70,6 +63,13 @@ int GNUNET_init(int argc,
  */
 void GNUNET_fini(struct GE_Context * ectx,
 		 struct GC_Configuration * cfg);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 		
 /* ifndef GNUNET_UTIL_GETOPT_H */
 #endif
