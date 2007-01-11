@@ -279,7 +279,7 @@ createLocURI(const Location * loc) {
            &keyhash);
   hash2enc(&loc->fi.chk.query,
            &queryhash);
-  n = 1024 + ntohs(loc->sas) * 2;
+  n = 2048 + ntohs(loc->sas) * 2;
   peerId = bin2enc(&loc->peer,
 		   sizeof(PublicKey));
   peerSig = bin2enc(&loc->contentSignature,
