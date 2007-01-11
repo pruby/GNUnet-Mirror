@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -79,7 +79,9 @@
  * <p>
  * 
  * TODO:
- * - conversion of LOC URIs from and to strings!
+ * - bin2enc, enc2bin
+ * - test conversion of LOC URIs from and to strings!
+ * - verify LOC signatures
  */
 
 #include "platform.h"
@@ -91,8 +93,9 @@
  * Generate a keyword URI.
  * @return NULL on error (i.e. keywordCount == 0)
  */
-static char * createKeywordURI(char ** keywords,
-			       unsigned int keywordCount) {
+static char * 
+createKeywordURI(char ** keywords,
+		 unsigned int keywordCount) {
   size_t n;
   char * ret;
   unsigned int i;
@@ -114,8 +117,9 @@ static char * createKeywordURI(char ** keywords,
 /**
  * Generate a subspace URI.
  */
-static char * createSubspaceURI(const HashCode512 * namespace,
-				const HashCode512 * identifier) {
+static char * 
+createSubspaceURI(const HashCode512 * namespace,
+		  const HashCode512 * identifier) {
   size_t n;
   char * ret;
   EncName ns;
@@ -137,7 +141,8 @@ static char * createSubspaceURI(const HashCode512 * namespace,
 /**
  * Generate a file URI.
  */
-char * createFileURI(const FileIdentifier * fi) {
+static char * 
+createFileURI(const FileIdentifier * fi) {
   char * ret;
   EncName keyhash;
   EncName queryhash;
@@ -162,6 +167,85 @@ char * createFileURI(const FileIdentifier * fi) {
 }
 
 /**
+ * Convert binary data to a string.
+ *
+ * @return converted data
+ */
+static char * 
+bin2enc(const void * data,
+	size_t size) {
+  /* FIXME */
+  return STRDUP("");
+}
+
+/**
+ * Convert string back to binary data.
+ *
+ * @param input '\0'-terminated string 
+ * @param data where to write binary data
+ * @param size how much data should be converted
+ * @return number of characters processed from input,
+ *        -1 on error
+ */
+static int
+enc2bin(const char * input,
+	void * data,
+	size_t size) {
+  /* FIXME */
+  return -1;
+}
+
+/**
+ * Create a (string) location URI from a Location.
+ */
+static char * 
+createLocURI(const Location * loc) {
+  size_t n;
+  char * ret;
+  EncName keyhash;
+  EncName queryhash;
+  char * peerId;
+  char * peerSig;
+  char * peerHSig;
+  char * peerAddr;
+
+  hash2enc(&loc->fi.chk.key,
+           &keyhash);
+  hash2enc(&loc->fi.chk.query,
+           &queryhash);
+  n = 1024 + ntohs(loc->sas) * 2;
+  peerId = bin2enc(&loc->peer,
+		   sizeof(PublicKey));
+  peerSig = bin2enc(&loc->contentSignature,
+		    sizeof(Signature));
+  peerHSig = bin2enc(&loc->helloSignature,
+		     sizeof(Signature));
+  peerAddr = bin2enc(loc->address,
+		     loc->sas);
+  ret = MALLOC(n);
+  SNPRINTF(ret,
+	   n,
+	   "%s%s%s.%s.%s.%llu@%s.%s.%s.%u.%u.%u.%s",
+	   ECRS_URI_PREFIX,
+	   ECRS_LOCATION_INFIX,
+	   (char*)&keyhash,
+	   (char*)&queryhash,
+	   ntohll(loc->fi.file_length),
+	   peerId,
+	   peerSig,
+	   peerHSig,
+	   loc->proto,
+	   loc->sas,
+	   loc->mtu,
+	   peerAddr);
+  FREE(peerId);
+  FREE(peerSig);
+  FREE(peerHSig);
+  FREE(peerAddr);
+  return ret;
+}
+
+/**
  * Convert a URI to a UTF-8 String.
  */
 char * ECRS_uriToString(const struct ECRS_URI * uri) {
@@ -177,9 +261,9 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
     return createSubspaceURI(&uri->data.sks.namespace,
 			     &uri->data.sks.identifier);
   case chk:
-    return createFileURI(&uri->data.chk);
+    return createFileURI(&uri->data.fi);
   case loc:
-    return "FIXME";
+    return createLocURI(&uri->data.loc);
   default:
     GE_BREAK(NULL, 0);
     return NULL;
@@ -356,6 +440,132 @@ static int parseFileURI(struct GE_Context * ectx,
 }
 
 /**
+ * Parses an URI that identifies a location (and file).
+ * Also verifies validity of the location URI.
+ *
+ * @param uri an uri string
+ * @param loc where to store the location
+ * @return OK on success, SYSERR if this is not a file URI
+ */
+static int parseLocationURI(struct GE_Context * ectx,
+			    const char * uri,
+			    Location * loc) {
+  unsigned int pos;
+  unsigned int npos;
+  unsigned int proto;
+  unsigned int sas;
+  unsigned int mtu;
+  int ret;
+  size_t slen;
+  char * dup;
+  char * addr;
+
+  GE_ASSERT(ectx, uri != NULL);
+  addr = NULL;
+  slen = strlen(uri);
+  pos = strlen(ECRS_URI_PREFIX);
+
+  if (0 != strncmp(uri,
+		   ECRS_URI_PREFIX,
+		   pos))
+    return SYSERR;
+  if (0 != strncmp(&uri[pos],
+		   ECRS_LOCATION_INFIX,
+		   strlen(ECRS_LOCATION_INFIX)))
+    return SYSERR;
+  pos += strlen(ECRS_LOCATION_INFIX);
+  if ( (slen < pos+2*sizeof(EncName)+1) ||
+       (uri[pos+sizeof(EncName)-1] != '.') ||
+       (uri[pos+sizeof(EncName)*2-1] != '.') )
+    return SYSERR;
+
+  dup = STRDUP(uri);
+  dup[pos+sizeof(EncName)-1]   = '\0';
+  dup[pos+sizeof(EncName)*2-1] = '\0';
+  npos = pos +sizeof(EncName)*2;
+  while ( (uri[npos] != '\0') &&
+	  (uri[npos] != '.') )
+    npos++;
+  if (dup[npos] == '\0') 
+    goto ERROR;
+  dup[npos++] = '\0';
+  if ( (OK != enc2hash(&dup[pos],
+		       &loc->fi.chk.key)) ||
+       (OK != enc2hash(&dup[pos+sizeof(EncName)],
+		       &loc->fi.chk.query)) ||
+       (1 != SSCANF(&dup[pos+sizeof(EncName)*2],
+		    "%llu",
+		    &loc->fi.file_length)) ) 
+    goto ERROR;
+  ret = enc2bin(&dup[npos],
+		&loc->peer,
+		sizeof(PublicKey));
+  if (ret == -1) 
+    goto ERROR;
+  npos += ret;
+  if (dup[npos++] != '.')
+    goto ERROR;
+  ret = enc2bin(&dup[npos],
+		&loc->contentSignature,
+		sizeof(Signature));
+  if (ret == -1) 
+    goto ERROR;
+  npos += ret;
+  if (dup[npos++] != '.')
+    goto ERROR;
+  ret = enc2bin(&dup[npos],
+		&loc->helloSignature,
+		sizeof(Signature));
+  if (ret == -1) 
+    goto ERROR;
+  npos += ret;
+  if (dup[npos++] != '.')
+    goto ERROR;
+  ret = 3;
+  pos = npos;
+  while ( (dup[npos] != '\0') &&
+	  (ret > 0) ) {
+    if (dup[npos] == '.')
+      ret--;    
+    npos++;
+  }
+  if (ret != 0)
+    goto ERROR;
+  dup[npos++] = '\0';
+  if (3 != SSCANF(&dup[pos],
+		  "%u.%u.%u",
+		  &proto,
+		  &sas,
+		  &mtu))
+    goto ERROR;
+  if ( (proto >= 65536) ||
+       (sas >= 65536) )
+    goto ERROR;
+  loc->proto = (unsigned short) proto;
+  loc->sas = (unsigned short) sas;
+  loc->mtu = mtu;
+  addr = MALLOC(sas);
+  loc->address = addr;
+  ret = enc2bin(&dup[npos],
+		addr,
+		sas);
+  if (ret == -1)
+    goto ERROR;
+  npos += ret;
+  if (dup[npos] != '\0')
+    goto ERROR;
+  loc->fi.file_length = htonll(loc->fi.file_length);
+  /* FIXME: verify sigs! */
+
+  FREE(dup);
+  return OK;
+ ERROR:
+  FREE(dup);
+  FREENONNULL(addr);
+  return SYSERR;
+}
+
+/**
  * Convert a UTF-8 String to a URI.
  */
 URI * ECRS_stringToUri(struct GE_Context * ectx,
@@ -366,7 +576,7 @@ URI * ECRS_stringToUri(struct GE_Context * ectx,
   ret = MALLOC(sizeof(URI));
   if (OK == parseFileURI(ectx,
 			 uri,
-			 &ret->data.chk)) {
+			 &ret->data.fi)) {
     ret->type = chk;
     return ret;
   }
@@ -377,7 +587,12 @@ URI * ECRS_stringToUri(struct GE_Context * ectx,
     ret->type = sks;
     return ret;
   }
-  /* FIXME: parse location! */
+  if (OK == parseLocationURI(ectx,
+			     uri,
+			     &ret->data.loc)) {
+    ret->type = loc;
+    return ret;
+  }
   len = parseKeywordURI(ectx,
 			uri,
 			&ret->data.ksk.keywords);
@@ -533,9 +748,9 @@ int ECRS_isLocationUri(const struct ECRS_URI * uri) {
 unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
   switch (uri->type) {
   case chk:
-    return ntohll(uri->data.chk.file_length);
+    return ntohll(uri->data.fi.file_length);
   case loc:
-    return ntohll(uri->data.loc.chk.file_length);
+    return ntohll(uri->data.loc.fi.file_length);
   default:
     GE_ASSERT(NULL, 0);
   }
@@ -720,8 +935,8 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
     return NO;
   switch(uri1->type) {
   case chk:
-    if (0 == memcmp(&uri1->data.chk,
-		    &uri2->data.chk,
+    if (0 == memcmp(&uri1->data.fi,
+		    &uri2->data.fi,
 		    sizeof(FileIdentifier)))
       return YES;
     return NO;
@@ -829,7 +1044,7 @@ ECRS_getContentUri(const struct ECRS_URI * uri) {
     return NULL;
    ret = MALLOC(sizeof(struct ECRS_URI));
   ret->type = chk;
-  ret->data.chk = uri->data.loc.chk;
+  ret->data.fi = uri->data.loc.fi;
   return ret;
 }
 
@@ -863,7 +1078,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
     return NULL;
 
   uri = MALLOC(sizeof(struct ECRS_URI));
-  uri->data.loc.chk = baseUri->data.chk;
+  uri->data.loc.fi = baseUri->data.fi;
   uri->data.loc.peer = *sender;
   uri->data.loc.expirationTime = expirationTime;
   uri->data.loc.proto = proto;
@@ -884,7 +1099,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
 	 - sizeof(PublicKey)
 	 - sizeof(MESSAGE_HEADER), 
 	 &uri->data.loc.helloSignature);
-  signer(&uri->data.loc.chk,
+  signer(&uri->data.loc.fi,
 	 sizeof(FileIdentifier) + 
 	 sizeof(PublicKey) +
 	 sizeof(TIME_T),

@@ -142,11 +142,10 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   Datastore_Value * value;
   struct ClientServerConnection * sock;
   HashCode512 fileId;
-  CHK chk;
+  CHK mchk;
   cron_t eta;
   cron_t start;
   cron_t now;
-  char * uris;
   FileIdentifier fid;
 #if DEBUG_UPLOAD
   EncName enc;
@@ -154,7 +153,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 
   GE_ASSERT(ectx, cfg != NULL);
   start = get_time();
-  memset(&chk, 0, sizeof(CHK));
+  memset(&mchk, 0, sizeof(CHK));
   if (YES != disk_file_test(ectx,
 			    filename)) {
     GE_LOG(ectx,
@@ -283,14 +282,14 @@ int ECRS_uploadFile(struct GE_Context * ectx,
         goto FAILURE;
     fileBlockGetKey(db,
                     size + sizeof(DBlock),
-                    &chk.key);
+                    &mchk.key);
     fileBlockGetQuery(db,
                       size + sizeof(DBlock),
-                      &chk.query);
+                      &mchk.query);
 #if DEBUG_UPLOAD
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     hash2enc(&chk.query,
+	     hash2enc(&mchk.query,
 		      &enc));
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -313,7 +312,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
       if (OK !=
           fileBlockEncode(db,
                           size + sizeof(DBlock),
-                          &chk.query,
+                          &mchk.query,
                           &value))
         goto FAILURE;
       GE_ASSERT(ectx, value != NULL);
@@ -333,7 +332,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                       * (double)filesize);
     }
     if (OK != pushBlock(sock,
-                        &chk,
+                        &mchk,
                         0, /* dblocks are on level 0 */
                         iblocks,
 			priority))
@@ -363,7 +362,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
                     size,
-                    &chk.key);
+                    &mchk.key);
 #if DEBUG_UPLOAD
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -372,11 +371,11 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 #endif
     fileBlockGetQuery(db,
                       size,
-                      &chk.query);
+                      &mchk.query);
 #if DEBUG_UPLOAD
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     hash2enc(&chk.query,
+	     hash2enc(&mchk.query,
 		      &enc));
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -385,14 +384,14 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 	   &enc);
 #endif
     if (OK != pushBlock(sock,
-                        &chk,
+                        &mchk,
                         i+1,
                         iblocks,
 			priority))
       goto FAILURE;
     fileBlockEncode(db,
                     size,
-                    &chk.query,
+                    &mchk.query,
                     &value);
     if (value == NULL) {
       GE_BREAK(ectx, 0);
@@ -410,7 +409,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   }
 #if DEBUG_UPLOAD
   IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        hash2enc(&chk.query,
+        hash2enc(&mchk.query,
                  &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Query for top block is %s\n",
@@ -421,9 +420,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   db = (DBlock*) &iblocks[treedepth][1];
 
   fid.chk = *(CHK*)&(db[1]);
-  uris = createFileURI(&fid);
-  *uri = ECRS_stringToUri(ectx, uris);
-  FREE(uris);
+  *uri = MALLOC(sizeof(URI));
+  (*uri)->type = chk;
+  (*uri)->data.fi = fid;
 
   /* free resources */
   FREENONNULL(iblocks[treedepth]);

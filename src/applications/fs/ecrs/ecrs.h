@@ -49,7 +49,7 @@ typedef struct Location {
   /**
    * Information about the shared file.
    */
-  FileIdentifier chk;
+  FileIdentifier fi;
 
   /**
    * Public key of the peer sharing the file.
@@ -113,7 +113,7 @@ typedef struct ECRS_URI {
       HashCode512 namespace;
       HashCode512 identifier;
     } sks;
-    FileIdentifier chk;
+    FileIdentifier fi;
     Location loc;
   } data;
 } URI;

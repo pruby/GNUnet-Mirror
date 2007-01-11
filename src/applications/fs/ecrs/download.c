@@ -1316,7 +1316,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     dpcb(0, 0, get_time(), 0, NULL, 0, dpcbClosure);
     return OK;
   }
-  fid = uri->data.chk;
+  fid = uri->data.fi;
   if (! ECRS_isFileUri(uri)) {
     GE_BREAK(ectx, 0);
     FREE(realFN);
