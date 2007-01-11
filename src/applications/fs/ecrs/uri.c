@@ -291,7 +291,7 @@ createLocURI(const Location * loc) {
   ret = MALLOC(n);
   SNPRINTF(ret,
 	   n,
-	   "%s%s%s.%s.%s.%llu@%s.%s.%s.%u.%u.%u.%s",
+	   "%s%s%s.%s.%s.%llu.%s.%s.%s.%u.%u.%u.%s",
 	   ECRS_URI_PREFIX,
 	   ECRS_LOCATION_INFIX,
 	   (char*)&keyhash,
