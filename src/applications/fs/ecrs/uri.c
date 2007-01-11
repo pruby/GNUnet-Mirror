@@ -1160,6 +1160,12 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
     uri->data.loc.address = NULL;
   }
   hello = ECRS_getHelloFromUri(uri);
+  if (hello == NULL) {
+    GE_BREAK(NULL, 0);
+    FREENONNULL(uri->data.loc.address);
+    FREE(uri);
+    return NULL;
+  }
   signer(signer_cls,
 	 P2P_hello_MESSAGE_size(hello)
 	 - sizeof(Signature)
