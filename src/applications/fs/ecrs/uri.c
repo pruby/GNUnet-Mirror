@@ -186,7 +186,7 @@ createLocURI(const Location * loc) {
            &keyhash);
   hash2enc(&loc->fi.chk.query,
            &queryhash);
-  n = 2048 + ntohs(loc->sas) * 2;
+  n = 2148 + ntohs(loc->sas) * 2;
   peerId = bin2enc(&loc->peer,
 		   sizeof(PublicKey));
   peerSig = bin2enc(&loc->contentSignature,
@@ -198,7 +198,7 @@ createLocURI(const Location * loc) {
   ret = MALLOC(n);
   SNPRINTF(ret,
 	   n,
-	   "%s%s%s.%s.%llu.%s.%s.%s.%u.%u.%u.%s",
+	   "%s%s%s.%s.%llu.%s.%s.%s.%u.%u.%u.%u.%s",
 	   ECRS_URI_PREFIX,
 	   ECRS_LOCATION_INFIX,
 	   (char*)&keyhash,
@@ -210,6 +210,7 @@ createLocURI(const Location * loc) {
 	   loc->proto,
 	   loc->sas,
 	   loc->mtu,
+	   loc->expirationTime,
 	   peerAddr);
   FREE(peerId);
   FREE(peerSig);
@@ -427,7 +428,6 @@ static int parseLocationURI(struct GE_Context * ectx,
   unsigned int npos;
   unsigned int proto;
   unsigned int sas;
-  unsigned int mtu;
   int ret;
   size_t slen;
   char * dup;
@@ -494,7 +494,7 @@ static int parseLocationURI(struct GE_Context * ectx,
   npos += ret;
   if (dup[npos++] != '.')
     goto ERROR;
-  ret = 3;
+  ret = 4;
   pos = npos;
   while ( (dup[npos] != '\0') &&
 	  (ret > 0) ) {
@@ -506,17 +506,17 @@ static int parseLocationURI(struct GE_Context * ectx,
     goto ERROR;
   dup[npos-1] = '\0';
   if (3 != SSCANF(&dup[pos],
-		  "%u.%u.%u",
+		  "%u.%u.%u.%u",
 		  &proto,
 		  &sas,
-		  &mtu))
+		  &loc->mtu,
+		  &loc->expirationTime))
     goto ERROR;
   if ( (proto >= 65536) ||
        (sas >= 65536) )
     goto ERROR;
   loc->proto = (unsigned short) proto;
   loc->sas = (unsigned short) sas;
-  loc->mtu = mtu;
   addr = MALLOC(sas);
   loc->address = addr;
   ret = enc2bin(&dup[npos],
