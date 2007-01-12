@@ -21,7 +21,6 @@ notes:
   * ECRS: 
     + isIndexed database and query protocol
   * XFS / support for location URIs [CG] 
-    + ECRS-URI: toString/fromString for loc URIs [RC]
     + dht/gap integration (search routing) [RC]
     + fsui/fs/location URI support (download routing) [RC]
   * HTTP transport (libcurl, libmicrohttpd)
