@@ -30,6 +30,7 @@ libgnunetecrs_la_LIBADD = \
 
 
 check_PROGRAMS = \
+  bincodertest \
   namespacetest \
   uritest \
   metatest \
@@ -39,6 +40,11 @@ check_PROGRAMS = \
   ecrstest 
 
 TESTS = $(check_PROGRAMS)
+
+bincodertest_SOURCES = \
+  bincodertest.c 
+bincodertest_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 uritest_SOURCES = \
   uritest.c 
@@ -86,4 +92,4 @@ directorytest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 EXTRA_DIST = \
-  check.conf peer.conf
+  check.conf peer.conf bincoder.c

@@ -80,10 +80,12 @@ static int testLocation() {
 			     hk);
   freePrivateKey(hk);
   if (uri == NULL) {
+    GE_BREAK(NULL, 0);
     ECRS_freeUri(baseURI);
     return 1;
   }
   if (! ECRS_isLocationUri(uri)) {
+    GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     ECRS_freeUri(baseURI);
     return 1;
@@ -91,6 +93,7 @@ static int testLocation() {
   uri2 = ECRS_getContentUri(uri);
   if (! ECRS_equalsUri(baseURI,
 		       uri2)) {
+    GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     ECRS_freeUri(uri2);
     ECRS_freeUri(baseURI);
@@ -106,11 +109,13 @@ static int testLocation() {
   uri2 = ECRS_stringToUri(NULL, uric);
   FREE(uric);
   if (uri2 == NULL) {
+    GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     return 1;
   }
   if (YES != ECRS_equalsUri(uri,
 			    uri2)) {
+    GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     ECRS_freeUri(uri2);
     return 1;
