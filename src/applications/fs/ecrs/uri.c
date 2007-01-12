@@ -291,7 +291,7 @@ createLocURI(const Location * loc) {
   ret = MALLOC(n);
   SNPRINTF(ret,
 	   n,
-	   "%s%s%s.%s.%s.%llu.%s.%s.%s.%u.%u.%u.%s",
+	   "%s%s%s.%s.%llu.%s.%s.%s.%u.%u.%u.%s",
 	   ECRS_URI_PREFIX,
 	   ECRS_LOCATION_INFIX,
 	   (char*)&keyhash,
@@ -1145,6 +1145,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
     return NULL;
 
   uri = MALLOC(sizeof(struct ECRS_URI));
+  uri->type = loc;
   uri->data.loc.fi = baseUri->data.fi;
   uri->data.loc.peer = *sender;
   uri->data.loc.expirationTime = expirationTime;
