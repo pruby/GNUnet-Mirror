@@ -102,7 +102,7 @@ static int testLocation() {
   ECRS_freeUri(uri2);
   ECRS_freeUri(baseURI);    
   uric = ECRS_uriToString(uri);
-#if 1
+#if 0
   /* not for the faint of heart: */
   printf("URI: `%s'\n", uric);
 #endif
