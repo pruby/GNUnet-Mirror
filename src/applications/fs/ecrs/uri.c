@@ -1174,6 +1174,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
 	 - sizeof(MESSAGE_HEADER), 
 	 &hello->senderIdentity,
 	 &uri->data.loc.helloSignature);
+  FREE(hello);
   signer(signer_cls,
 	 sizeof(FileIdentifier) + 
 	 sizeof(PublicKey) +

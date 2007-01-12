@@ -96,6 +96,7 @@ static int testLocation() {
     ECRS_freeUri(baseURI);
     return 1;
   }
+  ECRS_freeUri(uri2);
   ECRS_freeUri(baseURI);    
   uric = ECRS_uriToString(uri);
 #if 1
