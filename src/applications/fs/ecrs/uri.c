@@ -505,7 +505,7 @@ static int parseLocationURI(struct GE_Context * ectx,
   if (ret != 0)
     goto ERROR;
   dup[npos-1] = '\0';
-  if (3 != SSCANF(&dup[pos],
+  if (4 != SSCANF(&dup[pos],
 		  "%u.%u.%u.%u",
 		  &proto,
 		  &sas,
