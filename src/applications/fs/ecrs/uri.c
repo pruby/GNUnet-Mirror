@@ -67,21 +67,17 @@
  * </li><li>
  *
  * The last category identifies a datum on a specific machine.  The
- * format is "gnunet://ecrs/loc/PEER/INFO/HEX1.HEX2.SIZE".  PEER is
- * the EncName of the peer storing the datum, INFO contains HELLO
- * information about peer and signatures for the URI content and the
- * HELLO itself; HEX1, HEX2 and SIZE correspond to a 'chk' URI.
+ * format is "gnunet://ecrs/loc/HEX1.HEX2.SIZE.PEER.SIG1.SIG2.PROTO.SAS.MTU.EXPTIME.ADDR".  PEER is
+ * the BinName of the public key of the peer storing the datum, SIG1 certifies
+ * that this peer has this content; SIG2 is a signature for a HELLO
+ * about peer, which is encoded in PROTO, SAS, MTU, EXPTIME and ADDR.
+ * HEX1, HEX2 and SIZE correspond to a 'chk' URI.
  *
  * </li></ul>
  *
  * The encoding for hexadecimal values is defined in the hashing.c
  * module (EncName) in the gnunet-util library and discussed there.
  * <p>
- * 
- * TODO:
- * - test bin2enc, enc2bin
- * - test conversion of LOC URIs from and to strings!
- * - verify LOC signatures
  */
 
 #include "platform.h"
@@ -414,6 +410,33 @@ static int parseFileURI(struct GE_Context * ectx,
 }
 
 /**
+ * (re)construct the HELLO message of the peer offering the data
+ *
+ * @return HELLO message
+ */
+static P2P_hello_MESSAGE *
+getHelloFromLoc(const Location * loc) {
+  P2P_hello_MESSAGE * hello;
+
+  hello = MALLOC(sizeof(P2P_hello_MESSAGE) + loc->sas);
+  hello->header.size = htons(sizeof(P2P_hello_MESSAGE) + loc->sas);
+  hello->header.type = htons(p2p_PROTO_hello);
+  hello->MTU = htonl(loc->mtu);
+  hello->senderAddressSize = htons(loc->sas);
+  hello->protocol = htons(loc->proto);
+  hello->expirationTime = htonl(loc->expirationTime);
+  hello->publicKey = loc->peer;
+  hash(&hello->publicKey,
+       sizeof(PublicKey),
+       &hello->senderIdentity.hashPubKey);
+  hello->signature = loc->helloSignature;
+  memcpy(&hello[1],
+	 loc->address,
+	 loc->sas);
+  return hello;
+}
+
+/**
  * Parses an URI that identifies a location (and file).
  * Also verifies validity of the location URI.
  *
@@ -432,7 +455,8 @@ static int parseLocationURI(struct GE_Context * ectx,
   size_t slen;
   char * dup;
   char * addr;
-
+  P2P_hello_MESSAGE * hello;
+ 
   GE_ASSERT(ectx, uri != NULL);
   addr = NULL;
   slen = strlen(uri);
@@ -528,8 +552,29 @@ static int parseLocationURI(struct GE_Context * ectx,
   if (dup[npos] != '\0')
     goto ERROR;
   loc->fi.file_length = htonll(loc->fi.file_length);
-  /* FIXME: verify sigs! */
-
+  
+  /* Finally: verify sigs! */
+  if (OK != verifySig(&loc->fi,
+		      sizeof(FileIdentifier) + 
+		      sizeof(PublicKey) +
+		      sizeof(TIME_T),
+		      &loc->contentSignature,
+		      &loc->peer)) 
+    goto ERROR;
+  hello = getHelloFromLoc(loc);
+  if (hello == NULL) 
+    goto ERROR;
+  if (OK != verifySig(&hello->senderIdentity,
+		      P2P_hello_MESSAGE_size(hello) -
+		      sizeof(MESSAGE_HEADER) -
+		      sizeof(Signature) -
+		      sizeof(PublicKey),
+		      &loc->helloSignature,
+		      &hello->publicKey)) { 
+    FREE(hello);
+    goto ERROR;
+  }
+  FREE(hello);
   FREE(dup);
   return OK;
  ERROR:
@@ -976,32 +1021,15 @@ int ECRS_getPeerFromUri(const struct ECRS_URI * uri,
 }
 
 /**
- * (re)construct the HELLO message of the peer offerin the data
+ * (re)construct the HELLO message of the peer offering the data
  *
  * @return NULL if this is not a location URI
  */
 P2P_hello_MESSAGE *
 ECRS_getHelloFromUri(const struct ECRS_URI * uri) {
-  P2P_hello_MESSAGE * hello;
-
   if (uri->type != loc)
     return NULL;
-  hello = MALLOC(sizeof(P2P_hello_MESSAGE) + uri->data.loc.sas);
-  hello->header.size = htons(sizeof(P2P_hello_MESSAGE) + uri->data.loc.sas);
-  hello->header.type = htons(p2p_PROTO_hello);
-  hello->MTU = htonl(uri->data.loc.mtu);
-  hello->senderAddressSize = htons(uri->data.loc.sas);
-  hello->protocol = htons(uri->data.loc.proto);
-  hello->expirationTime = htonl(uri->data.loc.expirationTime);
-  hello->publicKey = uri->data.loc.peer;
-  hash(&hello->publicKey,
-       sizeof(PublicKey),
-       &hello->senderIdentity.hashPubKey);
-  hello->signature = uri->data.loc.helloSignature;
-  memcpy(&hello[1],
-	 uri->data.loc.address,
-	 uri->data.loc.sas);
-  return hello;
+  return getHelloFromLoc(&uri->data.loc);
 }
 
 /**
