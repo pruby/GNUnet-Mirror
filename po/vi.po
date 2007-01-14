@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-01-01 01:09-0700\n"
+"POT-Creation-Date: 2007-01-03 14:41-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -2398,17 +2398,17 @@ msgstr "Không hỏi được sự sử dụng CPU (Windows NT).\n"
 msgid "Cannot query the CPU usage (Win 9x)\n"
 msgstr "Không hỏi được sự sử dụng CPU (Windows 9x).\n"
 
-#: src/util/os/semaphore.c:217
+#: src/util/os/semaphore.c:219
 #, c-format
 msgid "Can't create semaphore: %i"
 msgstr "Không tạo được đèn tín hiệu: %i"
 
-#: src/util/os/statuscalls.c:184 src/util/os/statuscalls.c:314
+#: src/util/os/statuscalls.c:182 src/util/os/statuscalls.c:318
 #, fuzzy, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Thất bại khi phân tích dữ liệu giao diện từ '%s' tại %s:%d.\n"
 
-#: src/util/os/statuscalls.c:356 src/util/os/statuscalls.c:365
+#: src/util/os/statuscalls.c:360 src/util/os/statuscalls.c:369
 #, fuzzy, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -2462,7 +2462,7 @@ msgstr "Định dạng sai '%s' cho mặt nạ mạng: %s\n"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Định dạng sai '%s' cho mạng: %s\n"
 
-#: src/util/network/io.c:80 src/transports/ip6.c:65
+#: src/util/network/io.c:80 src/transports/ip6.c:72
 #, fuzzy, c-format
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "Không tìm thấy IP của máy '%s': %s\n"
@@ -3492,32 +3492,43 @@ msgstr "Không nhận ra địa chỉ IPv6 của tôi.\n"
 msgid "`%s': unknown service: %s\n"
 msgstr "'%s': không rõ dịch vụ: %s\n"
 
-#: src/transports/tcp6.c:377 src/transports/tcp.c:414
+#: src/transports/tcp6.c:379 src/transports/tcp.c:414
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr "Chạy dịch vụ truyền tải trên cổng %d thất bại.\n"
 
-#: src/transports/tcp6.c:517
+#: src/transports/tcp6.c:519
 #, fuzzy
 msgid "# bytes received via TCP6"
 msgstr "# byte nhận được qua TCP"
 
-#: src/transports/tcp6.c:519
+#: src/transports/tcp6.c:521
 #, fuzzy
 msgid "# bytes sent via TCP6"
 msgstr "# Byte gửi qua TCP"
 
-#: src/transports/tcp6.c:521
+#: src/transports/tcp6.c:523
 #, fuzzy
 msgid "# bytes dropped by TCP6 (outgoing)"
 msgstr "# byte loại đi bởi TCP (đi ra)"
 
-#: src/transports/ip6.c:110
+#: src/transports/ip6.c:104 src/transports/ip.c:85 src/transports/ip.c:145
+#, fuzzy, c-format
+msgid "No interface specified in section `%s' under `%s'!\n"
+msgstr ""
+"Không có giao diện mạng được xác định trong cấu hình phần '%s' dưới '%s'!\n"
+
+#: src/transports/ip6.c:134 src/transports/ip.c:115 src/transports/ip.c:235
+#, fuzzy, c-format
+msgid "Could not obtain IP for interface `%s' using `%s'.\n"
+msgstr "Không lấy được IP cho giao diện '%s' đang dùng '%s'.\n"
+
+#: src/transports/ip6.c:169
 #, fuzzy, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "Không tìm thấy '%s': %s\n"
 
-#: src/transports/ip6.c:156 src/transports/ip.c:359
+#: src/transports/ip6.c:222 src/transports/ip.c:419
 #, fuzzy, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Lấy địa chỉ IP (ngoài) của tôi không thành công!\n"
@@ -3616,13 +3627,7 @@ msgstr "# Byte gửi qua TCP"
 msgid "# bytes dropped by TCP-OLD (outgoing)"
 msgstr "# byte loại đi bởi TCP (đi ra)"
 
-#: src/transports/ip.c:92
-#, fuzzy, c-format
-msgid "No interface specified in section `%s' under `%s'!\n"
-msgstr ""
-"Không có giao diện mạng được xác định trong cấu hình phần '%s' dưới '%s'!\n"
-
-#: src/transports/ip.c:150
+#: src/transports/ip.c:203
 #, fuzzy, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
@@ -3630,17 +3635,12 @@ msgstr ""
 "Không tìm thấy giao diện '%s' trong '%s', đang thử kết gắn tới giao diện "
 "khác.\n"
 
-#: src/transports/ip.c:182
-#, fuzzy, c-format
-msgid "Could not obtain IP for interface `%s' using `%s'.\n"
-msgstr "Không lấy được IP cho giao diện '%s' đang dùng '%s'.\n"
-
-#: src/transports/ip.c:226
+#: src/transports/ip.c:279
 #, fuzzy, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Không tìm thấy một địa chỉ IP cho giao diện '%s'.\n"
 
-#: src/transports/ip.c:236
+#: src/transports/ip.c:289
 #, fuzzy, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -3649,12 +3649,12 @@ msgstr ""
 "Có vài địa chỉ IP chỉ ra cho giao diện '%s'.\n"
 "GNUnet sẽ dùng %u.%u.%u.%u.\n"
 
-#: src/transports/ip.c:257
+#: src/transports/ip.c:310
 #, fuzzy, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr "Không tìm thấy '%s' để nhận ra địa chỉ IP của chúng ta: %s\n"
 
-#: src/transports/ip.c:289
+#: src/transports/ip.c:342
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet bây giờ sử dụng địa chỉ IP %u.%u.%u.%u.\n"

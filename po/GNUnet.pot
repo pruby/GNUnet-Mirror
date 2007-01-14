@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-01-01 01:09-0700\n"
+"POT-Creation-Date: 2007-01-03 14:41-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2291,17 +2291,17 @@ msgstr ""
 msgid "Cannot query the CPU usage (Win 9x)\n"
 msgstr ""
 
-#: src/util/os/semaphore.c:217
+#: src/util/os/semaphore.c:219
 #, c-format
 msgid "Can't create semaphore: %i"
 msgstr ""
 
-#: src/util/os/statuscalls.c:184 src/util/os/statuscalls.c:314
+#: src/util/os/statuscalls.c:182 src/util/os/statuscalls.c:318
 #, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr ""
 
-#: src/util/os/statuscalls.c:356 src/util/os/statuscalls.c:365
+#: src/util/os/statuscalls.c:360 src/util/os/statuscalls.c:369
 #, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -2351,7 +2351,7 @@ msgstr ""
 msgid "Wrong format `%s' for network: %s\n"
 msgstr ""
 
-#: src/util/network/io.c:80 src/transports/ip6.c:65
+#: src/util/network/io.c:80 src/transports/ip6.c:72
 #, c-format
 msgid "Could not find IP of host `%s': %s\n"
 msgstr ""
@@ -3262,29 +3262,39 @@ msgstr ""
 msgid "`%s': unknown service: %s\n"
 msgstr ""
 
-#: src/transports/tcp6.c:377 src/transports/tcp.c:414
+#: src/transports/tcp6.c:379 src/transports/tcp.c:414
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr ""
 
-#: src/transports/tcp6.c:517
+#: src/transports/tcp6.c:519
 msgid "# bytes received via TCP6"
 msgstr ""
 
-#: src/transports/tcp6.c:519
+#: src/transports/tcp6.c:521
 msgid "# bytes sent via TCP6"
 msgstr ""
 
-#: src/transports/tcp6.c:521
+#: src/transports/tcp6.c:523
 msgid "# bytes dropped by TCP6 (outgoing)"
 msgstr ""
 
-#: src/transports/ip6.c:110
+#: src/transports/ip6.c:104 src/transports/ip.c:85 src/transports/ip.c:145
+#, c-format
+msgid "No interface specified in section `%s' under `%s'!\n"
+msgstr ""
+
+#: src/transports/ip6.c:134 src/transports/ip.c:115 src/transports/ip.c:235
+#, c-format
+msgid "Could not obtain IP for interface `%s' using `%s'.\n"
+msgstr ""
+
+#: src/transports/ip6.c:169
 #, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr ""
 
-#: src/transports/ip6.c:156 src/transports/ip.c:359
+#: src/transports/ip6.c:222 src/transports/ip.c:419
 #, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr ""
@@ -3376,40 +3386,30 @@ msgstr ""
 msgid "# bytes dropped by TCP-OLD (outgoing)"
 msgstr ""
 
-#: src/transports/ip.c:92
-#, c-format
-msgid "No interface specified in section `%s' under `%s'!\n"
-msgstr ""
-
-#: src/transports/ip.c:150
+#: src/transports/ip.c:203
 #, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
 msgstr ""
 
-#: src/transports/ip.c:182
-#, c-format
-msgid "Could not obtain IP for interface `%s' using `%s'.\n"
-msgstr ""
-
-#: src/transports/ip.c:226
+#: src/transports/ip.c:279
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr ""
 
-#: src/transports/ip.c:236
+#: src/transports/ip.c:289
 #, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
 "GNUnet will use %u.%u.%u.%u.\n"
 msgstr ""
 
-#: src/transports/ip.c:257
+#: src/transports/ip.c:310
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr ""
 
-#: src/transports/ip.c:289
+#: src/transports/ip.c:342
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr ""
