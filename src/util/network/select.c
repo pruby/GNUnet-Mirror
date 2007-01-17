@@ -1006,6 +1006,48 @@ int select_write(struct SelectHandle * sh,
 }
 
 /**
+ * Would select queue or send the given message at this time?
+ *
+ * @param mayBlock if YES, blocks this thread until message
+ *        has been sent
+ * @param size size of the message
+ * @param force message is important, queue even if
+ *        there is not enough space
+ * @return OK if the message would be sent or queued,
+ *         NO if there was not enough memory to queue it,
+ *         SYSERR if the sock does not belong with this select
+ */
+int select_would_try(struct SelectHandle * sh,
+		     struct SocketHandle * sock,
+		     unsigned int size,
+		     int mayBlock,
+		     int force) {
+  Session * session;
+  int i;
+
+  session = NULL;
+  MUTEX_LOCK(sh->lock);
+  for (i=0;i<sh->sessionCount;i++)
+    if (sh->sessions[i]->sock == sock) {
+      session = sh->sessions[i];
+      break;
+    }
+  if (session == NULL) {
+    MUTEX_UNLOCK(sh->lock);
+    return SYSERR;
+  }
+  GE_ASSERT(NULL, session->wapos >= session->wspos);
+  if ( (sh->memory_quota > 0) &&
+       (session->wapos - session->wspos + size > sh->memory_quota) ) {
+    /* not enough free space, not allowed to grow that much */
+    MUTEX_UNLOCK(sh->lock);
+    return NO;
+  }
+  MUTEX_UNLOCK(sh->lock);
+  return YES;
+}
+
+/**
  * Add another (already connected) socket to the set of
  * sockets managed by the select.
  */

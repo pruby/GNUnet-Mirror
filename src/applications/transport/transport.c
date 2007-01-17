@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -542,6 +542,32 @@ static void initHelper(TransportAPI * tapi,
 }
 
 /**
+ * Test if the transport would even try to send
+ * a message of the given size and importance
+ * for the given session.<br>
+ * This function is used to check if the core should
+ * even bother to construct (and encrypt) this kind
+ * of message.
+ *
+ * @return YES if the transport would try (i.e. queue
+ *         the message or call the OS to send),
+ *         NO if the transport would just drop the message,
+ *         SYSERR if the size/session is invalid
+ */
+static int testWouldTry(TSession * tsession,
+			unsigned int size,
+			int important) {
+  if (tsession == NULL) 
+    return SYSERR; 
+  if ( (tsession->ttype >= tapis_count) ||
+       (tapis[tsession->ttype] == NULL) ) 
+    return SYSERR;  
+  return tapis[tsession->ttype]->testWouldTry(tsession,
+					      size,
+					      important);
+}
+
+/**
  * Initialize the transport layer.
  */
 Transport_ServiceAPI *
@@ -691,6 +717,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.getMTU = &transportGetMTU;
   ret.createhello = &transportCreatehello;
   ret.getAdvertisedhellos = &getAdvertisedhellos;
+  ret.testWouldTry = &testWouldTry;
 
   return &ret;
 }

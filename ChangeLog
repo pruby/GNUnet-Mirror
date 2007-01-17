@@ -1,3 +1,8 @@
+Tue Jan 16 21:43:26 MST 2007
+	Expanded transport APIs to avoid building messages for
+	transmission just to have them rejected by blocking TCPs
+	with full transmission queues (happened quite a bit).
+
 Mon Jan  8 22:21:15 MST 2007
 	Making computation of send buffer permuations more
 	efficient (in terms of calling weak_randomi) by only

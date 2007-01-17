@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -976,8 +976,9 @@ static int checkSendFrequency(BufferEntry * be) {
  * @return total number of bytes of messages selected
  *   including P2P message header.
  */
-static unsigned int selectMessagesToSend(BufferEntry * be,
-                                         unsigned int *priority) {
+static unsigned int 
+selectMessagesToSend(BufferEntry * be,
+		     unsigned int *priority) {
   unsigned int totalMessageSize;
   SendEntry *entry;
   int i;
@@ -1520,8 +1521,17 @@ static int sendBuffer(BufferEntry * be) {
 #endif
     return NO;  /* deferr further */
   }
-  GE_ASSERT(ectx, totalMessageSize > sizeof(P2P_PACKET_HEADER));
-
+  GE_ASSERT(ectx,
+	    totalMessageSize > sizeof(P2P_PACKET_HEADER));
+  if (YES != transport->testWouldTry(be->session.tsession,				
+				     totalMessageSize,
+				     (priority >= EXTREME_PRIORITY) ? YES : NO)) {
+    /* transport's buffer full -- no point in
+       creating the actual message! */
+    expireSendBufferEntries(be);
+    be->inSendBuffer = NO;
+    return NO;
+  }
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
@@ -1609,7 +1619,8 @@ static int sendBuffer(BufferEntry * be) {
 
   encryptedMsg = MALLOC(p);
   hash(&p2pHdr->sequenceNumber,
-       p - sizeof(HashCode512), (HashCode512 *) encryptedMsg);
+       p - sizeof(HashCode512), 
+       (HashCode512 *) encryptedMsg);
   ret = encryptBlock(&p2pHdr->sequenceNumber,
 		     p - sizeof(HashCode512),
 		     &be->skey_local,
@@ -1624,7 +1635,8 @@ static int sendBuffer(BufferEntry * be) {
                   ret));
 #endif
   if(stats != NULL)
-    stats->change(stat_encrypted, p - sizeof(HashCode512));
+    stats->change(stat_encrypted, 
+		  p - sizeof(HashCode512));
   GE_ASSERT(ectx, be->session.tsession != NULL);
 #if DEBUG_CONNECTION
   GE_LOG(ectx,
@@ -1646,8 +1658,8 @@ static int sendBuffer(BufferEntry * be) {
   if (ret == YES) {
     if(stats != NULL)
       stats->change(stat_transmitted, p);
-    if (be->available_send_window > totalMessageSize)
-      be->available_send_window -= totalMessageSize;
+    if (be->available_send_window > p)
+      be->available_send_window -= p;
     else
       be->available_send_window = 0;  /* if we overrode limits,
                                          reset to 0 at least... */

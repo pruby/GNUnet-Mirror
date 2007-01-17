@@ -834,15 +834,12 @@ static int tcpDirectSend(TCPSession * tcpSession,
   size_t ret;
   int success;
 
-  if (tcp_shutdown == YES) {
-    return SYSERR;
-  }
-  if (tcpSession->sock == -1) {
-    return SYSERR;
-  }
-  if (ssize == 0) {
-    return SYSERR;
-  }
+  if (tcp_shutdown == YES) 
+    return SYSERR;  
+  if (tcpSession->sock == -1) 
+    return SYSERR;  
+  if (ssize == 0) 
+    return SYSERR;  
   MUTEX_LOCK(tcplock);
   if (tcpSession->wpos > 0) {
     /* select already pending... */
@@ -898,15 +895,12 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 				 unsigned int ssize) {
   int ok;
 
-  if (tcp_shutdown == YES) {
+  if (tcp_shutdown == YES) 
+    return SYSERR;  
+  if (tcpSession->sock == -1) 
+    return SYSERR;  
+  if (ssize == 0)
     return SYSERR;
-  }
-  if (tcpSession->sock == -1) {
-    return SYSERR;
-  }
-  if (ssize == 0) {
-    return SYSERR;
-  }
   MUTEX_LOCK(tcplock);
   if (tcpSession->wpos > 0) {
     unsigned int old = tcpSession->wpos;
@@ -1096,19 +1090,16 @@ static int tcpSend(TSession * tsession,
   TCPP2P_PACKET * mp;
   int ok;
 
-  if (size >= MAX_BUFFER_SIZE) {
-    return SYSERR;
-  }
-
+  if (size >= MAX_BUFFER_SIZE) 
+    return SYSERR; 
   if (tcp_shutdown == YES) {
     if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
     return SYSERR;
   }
-  if (size == 0) {
-    return SYSERR;
-  }
+  if (size == 0) 
+    return SYSERR;  
   if (((TCPSession*)tsession->internal)->sock == -1) {
     if (stats != NULL)
       stats->change(stat_bytesDropped,
@@ -1267,6 +1258,20 @@ addressToString(const P2P_hello_MESSAGE * hello,
   return ret;
 }
 
+static int testWouldTry(TSession * tsession,
+			unsigned int size,
+			int important) {
+  if (size >= MAX_BUFFER_SIZE) 
+    return SYSERR;
+  if (tcp_shutdown == YES) 
+    return SYSERR;  
+  if (size == 0) 
+    return SYSERR;
+  if ( (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE) ||
+       (((TCPSession*)tsession->internal)->wpos == 0) )
+    return YES;
+  return NO;
+}
 
 /* ******************** public API ******************** */
 
@@ -1303,6 +1308,7 @@ TransportAPI * inittransport_tcp_old(CoreAPIForTransport * core) {
   tcpAPI.startTransportServer = &startTransportServer;
   tcpAPI.stopTransportServer  = &stopTransportServer;
   tcpAPI.addressToString      = &addressToString;
+  tcpAPI.testWouldTry         = &testWouldTry;
 
   return &tcpAPI;
 }

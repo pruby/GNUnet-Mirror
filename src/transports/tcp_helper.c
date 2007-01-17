@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -352,6 +352,44 @@ static int tcpSend(TSession * tsession,
   FREE(mp);
   return ok;
 }
+
+/**
+ * Test if the transport would even try to send
+ * a message of the given size and importance
+ * for the given session.<br>
+ * This function is used to check if the core should
+ * even bother to construct (and encrypt) this kind
+ * of message.
+ *
+ * @return YES if the transport would try (i.e. queue
+ *         the message or call the OS to send),
+ *         NO if the transport would just drop the message,
+ *         SYSERR if the size/session is invalid
+ */
+static int tcpTestWouldTry(TSession * tsession,
+			   const unsigned int size,
+			   int important) {
+  TCPSession * tcpSession = tsession->internal;
+
+  if (size >= MAX_BUFFER_SIZE - sizeof(MESSAGE_HEADER)) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  if (selector == NULL) 
+    return SYSERR;
+  if (size == 0) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  if (tcpSession->sock == NULL) 
+    return SYSERR; /* other side closed connection */  
+  return select_would_try(selector,
+			  tcpSession->sock,
+			  size,
+			  NO,
+			  important);
+}
+
 
 /**
  * Establish a connection to a remote node.

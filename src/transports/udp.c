@@ -569,6 +569,7 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   udpAPI.startTransportServer = &startTransportServer;
   udpAPI.stopTransportServer  = &stopTransportServer;
   udpAPI.addressToString      = &addressToString;
+  udpAPI.testWouldTry         = &testWouldTry;
 
   return &udpAPI;
 }

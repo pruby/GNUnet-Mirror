@@ -253,7 +253,7 @@ typedef struct {
    * @return OK on success, SYSERR if the operation failed
    */
   int (*connect)(const P2P_hello_MESSAGE * hello,
-		 TSession ** tsession);
+		 TSession ** tsession);  
 
   /**
    * Send a message to the specified remote node.
@@ -330,6 +330,23 @@ typedef struct {
   char * (*addressToString)(const P2P_hello_MESSAGE * hello,
 			    int resolve_ip);
 
+  /**
+   * Test if the transport would even try to send
+   * a message of the given size and importance
+   * for the given session.<br>
+   * This function is used to check if the core should
+   * even bother to construct (and encrypt) this kind
+   * of message.
+   *
+   * @return YES if the transport would try (i.e. queue
+   *         the message or call the OS to send),
+   *         NO if the transport would just drop the message,
+   *         SYSERR if the size/session is invalid
+   */
+  int (*testWouldTry)(TSession * tsession,
+		      unsigned int size,
+		      int important);
+  
 } TransportAPI;
 
 /**

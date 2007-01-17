@@ -178,6 +178,11 @@ static char * addressToString(const P2P_hello_MESSAGE * hello,
   return STRDUP("NAT");
 }
 
+static int testWouldTry(TSession * tsession,
+			unsigned int size,
+			int important) {
+  return SYSERR;
+}
 
 /**
  * The exported method. Makes the core api available via a global and
@@ -197,6 +202,7 @@ TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
   natAPI.startTransportServer = &startTransportServer;
   natAPI.stopTransportServer  = &stopTransportServer;
   natAPI.addressToString      = &addressToString;
+  natAPI.testWouldTry         = &testWouldTry;
 
   return &natAPI;
 }
