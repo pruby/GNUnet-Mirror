@@ -586,6 +586,7 @@ void doneCore() {
 	FREE(pos);
 	pos = nxt;
       } else {
+	prev = pos;
 	pos = pos->next;
       }
     }

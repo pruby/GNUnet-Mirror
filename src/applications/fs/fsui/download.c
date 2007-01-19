@@ -462,9 +462,9 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
   void * unused;
   int ret;
 
-  ectx = list->ctx->ectx;
   if (list == NULL)
     return NO;
+  ectx = list->ctx->ectx;
 
 #if DEBUG_DTM
   GE_LOG(ectx,

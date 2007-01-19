@@ -299,6 +299,8 @@ static void ageRTD(void * unused) {
 	  rpos = rprev->next;
 	continue;
       }
+      rprev = rpos;
+      rpos = rprev->next;
     }
     /* if we have no counts for a peer anymore,
        free pos entry */

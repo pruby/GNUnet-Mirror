@@ -293,8 +293,12 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
 #endif
   handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
   GE_ASSERT(NULL, ctx->sock != NULL);
-  connection_write(ctx->sock,
-		   &handle->req->header);
+  if (OK != connection_write(ctx->sock,
+			     &handle->req->header)) { 
+    GE_LOG(ctx->ectx,
+	   GE_WARNING | GE_REQUEST | GE_DEVELOPER,
+	   "FSLIB: failed to request stop search with gnunetd\n");
+  }
   MUTEX_LOCK(ctx->lock);
   for (i=ctx->handleCount-1;i>=0;i--)
     if (ctx->handles[i] == handle) {

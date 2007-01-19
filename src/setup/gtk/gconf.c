@@ -498,8 +498,16 @@ gboolean on_main_window_delete_eventsetup_gtk() {
     gtk_widget_destroy(dialog);
     switch (ret) {
     case GTK_RESPONSE_YES:
-      GC_write_configuration(cfg,
-			     cfg_filename);
+      if (0 != GC_write_configuration(cfg,
+				      cfg_filename)) {	
+	dialog = gtk_message_dialog_new(NULL,
+					GTK_DIALOG_MODAL,
+					GTK_MESSAGE_ERROR,
+					GTK_BUTTONS_OK,
+					_("Error saving configuration."));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+      }
       return FALSE;
     case GTK_RESPONSE_NO:
       return FALSE;

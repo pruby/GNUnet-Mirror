@@ -614,6 +614,7 @@ void CO_publishCollectionNow() {
     MUTEX_UNLOCK(lock);
     return;
   }
+  FREE(dirData);
   CLOSE(fd);
   if (OK != ECRS_uploadFile(ectx,
 			    cfg,

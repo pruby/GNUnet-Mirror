@@ -98,6 +98,7 @@ static int updateModule(const char * rpos) {
 				    "update_",
 				    NO);
   if (mptr == NULL) {
+    os_plugin_unload(library);
     FREE(name);
     return OK; /* module needs no updates! */
   }

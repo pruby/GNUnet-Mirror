@@ -213,9 +213,10 @@ static sqliteHandle * getDBHandle() {
 		     "PRAGMA page_size=4092", NULL, NULL, ENULL));
 
   /* We have to do it here, because otherwise precompiling SQL might fail */
-  sq_prepare(ret->dbh,
-	     "Select 1 from sqlite_master where tbl_name = 'gn070'",
-	     &stmt);
+  CHECK(SQLITE_OK ==
+	sq_prepare(ret->dbh,
+		   "Select 1 from sqlite_master where tbl_name = 'gn070'",
+		   &stmt));
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     if (sqlite3_exec(ret->dbh,
 		     "CREATE TABLE gn070 ("

@@ -577,13 +577,15 @@ static int del(KVHandle *kv, void *key, int keylen, unsigned long long age)
 
   sprintf(del, "DELETE from %s where %s %s %s", kv->table, key_where, age ? "or" : "", age_where);
 
-  keyenc = MALLOC(keylen * 2);
-  keyenc_len = sqlite_encode_binary(key, keylen, keyenc);
 
   sq_prepare(dbh, del, &stmt);
   if (key) {
+    keyenc = MALLOC(keylen * 2);
+    keyenc_len = sqlite_encode_binary(key, keylen, keyenc);
     sqlite3_bind_blob(stmt, 1, keyenc, keyenc_len, SQLITE_STATIC);
     bind++;
+  } else {
+    keyenc = NULL;
   }
 
   if (age)
@@ -592,7 +594,7 @@ static int del(KVHandle *kv, void *key, int keylen, unsigned long long age)
   if (sqlite3_step(stmt) != SQLITE_DONE)
   {
     FREE(del);
-    FREE(keyenc);
+    FREENONNULL(keyenc);
     LOG_SQLITE(dbh->dbh,
 	       LOG_ERROR, "delete");
     sqlite3_finalize(stmt);
@@ -601,7 +603,7 @@ static int del(KVHandle *kv, void *key, int keylen, unsigned long long age)
   }
   sqlite3_finalize(stmt);
   FREE(del);
-  FREE(keyenc);
+  FREENONNULL(keyenc);
 
   return OK;
 }

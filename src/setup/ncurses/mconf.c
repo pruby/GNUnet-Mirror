@@ -322,7 +322,6 @@ static void run_menu(struct GNS_Context * ctx,
 						     fitem.text)) {
 	    show_help(pos->option,
 		      gettext_noop("Internal error! (Value invalid?)"));
-	    FREE(fitem.text);
 	    break;
 	  }
 	  FREE(fitem.text);

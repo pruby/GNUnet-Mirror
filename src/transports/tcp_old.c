@@ -581,9 +581,12 @@ static int SEND_NONBLOCKING(int s,
     flags = MSG_DONTWAIT;
 #elif OSX
     {
-    int __tmp = 1;
-    if (setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
-        (void *)&__tmp, sizeof(__tmp)) < 0)
+    const int __tmp = 1;
+    if (setsockopt(s, 
+		   SOL_SOCKET,
+		   SO_NOSIGPIPE,
+		   (void *)&__tmp, 
+		   sizeof(__tmp)) != 0)
       GE_LOG_STRERROR(NULL,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "setsockopt");
@@ -1159,11 +1162,14 @@ static int startTransportServer(void) {
       tcp_shutdown = YES;
       return SYSERR;
     }
-    SETSOCKOPT(tcp_sock,
-	       SOL_SOCKET,
-	       SO_REUSEADDR,
-	       &on,
-	       sizeof(on));
+    if (0 != SETSOCKOPT(tcp_sock,
+			SOL_SOCKET,
+			SO_REUSEADDR,
+			&on,
+			sizeof(on))) 
+      GE_LOG_STRERROR(NULL,
+		      GE_WARNING | GE_ADMIN | GE_BULK,
+		      "setsockopt");
     memset((char *) &serverAddr,
 	   0,
 	   sizeof(serverAddr));

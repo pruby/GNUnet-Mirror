@@ -461,6 +461,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
     if (mdsize == -1) {
       GE_BREAK(ectx, 0);
       FREE(dstURI);
+      freePrivateKey(hk);
       return NULL;
     }
     size = sizeof(SBlock) + mdsize;

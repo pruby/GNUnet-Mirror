@@ -113,8 +113,10 @@ static int dyn_config(const char * module,
   mptr = os_plugin_resolve_function(library,
 				    mainfunc,
 				    YES);
-  if (! mptr)
+  if (! mptr) {
+    os_plugin_unload(library);
     return SYSERR;
+  }
   mptr(argc,
        argv,
        library,

@@ -333,6 +333,7 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
     postsem = NULL;
   }
   MUTEX_UNLOCK(lock);
+  FREE(p2p);
 #if DEBUG_TBENCH
   GE_LOG(ectx,
 	 GE_DEBUG | GE_BULK | GE_USER,

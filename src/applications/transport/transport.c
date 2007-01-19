@@ -428,6 +428,7 @@ static int getAdvertisedhellos(unsigned int maxLen,
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   _("No transport succeeded in creating a hello!\n"));
+    FREE(helos);
     return SYSERR;
   }
   used = 0;

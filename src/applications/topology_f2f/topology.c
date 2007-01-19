@@ -359,6 +359,7 @@ static int rereadConfiguration(void * ctx,
 	   _("Failed to read friends list from `%s'\n"),
 	   fn);
     FREE(fn);
+    FREE(data);
     return SYSERR;
   }
   FREE(fn);

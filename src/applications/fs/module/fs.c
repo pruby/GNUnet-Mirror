@@ -171,6 +171,7 @@ static int gapPut(void * closure,
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
     GE_BREAK(ectx, 0); /* value failed verification! */
+    FREE(dv);
     return SYSERR;
   }
   if (YES != isDatumApplicable(ntohl(dv->type),

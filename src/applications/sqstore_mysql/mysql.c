@@ -1369,9 +1369,12 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 	GE_BREAK(ectx, mysql_num_fields(sql_res) == 1);
 	content_size = 0;
       } else {
-	SSCANF(sql_row[0],
-	       "%llu",
-	       &content_size);
+	if (1 != SSCANF(sql_row[0],
+			"%llu",
+			&content_size)) {
+	  GE_BREAK(ectx, 0);
+	  content_size = 0;
+	}
       }
     }
     if (sql_res != NULL)

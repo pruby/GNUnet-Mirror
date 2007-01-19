@@ -249,6 +249,7 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   ret = connection_write(sock,
 			 &req->header);
   connection_destroy(sock);
+  FREE(req);
   return ret;
 }
 

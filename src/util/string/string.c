@@ -298,24 +298,32 @@ char * string_expandFileName(struct GE_Context * ectx,
     /* relative path */
     fil_ptr = fil;
     len = 512;
-    errno = ERANGE;
     fm = NULL;
-    while (errno == ERANGE) {
+    while (1) {
       buffer = MALLOC(len);
       if (getcwd(buffer, len) != NULL) {
 	fm = buffer;
 	break;
-      } else {
-	GE_LOG_STRERROR(ectx,
-			GE_USER | GE_WARNING | GE_IMMEDIATE,
-			"getcwd");
-	FREE(buffer);
-	buffer = getenv("PWD"); /* alternative */
-	if (buffer == NULL)
-	  return NULL; /* fatal */
-	fm = STRDUP(buffer);
       }
+      if ( (errno == ERANGE) &&
+	   (len < 1024 * 1024 * 4) ) {
+	len *= 2;
+	FREE(buffer);
+	continue;
+      }
+      FREE(buffer);
+      break;
     }
+    if (fm == NULL) {
+      GE_LOG_STRERROR(ectx,
+		      GE_USER | GE_WARNING | GE_IMMEDIATE,
+		      "getcwd");
+      buffer = getenv("PWD"); /* alternative */
+      if (buffer != NULL)
+	fm = STRDUP(buffer);
+    }
+    if (fm == NULL)
+      fm = STRDUP("./"); /* give up */
   }
   n = strlen(fm) + 1 + strlen(fil_ptr) + 1;
   buffer = MALLOC(n);

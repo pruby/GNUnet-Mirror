@@ -117,6 +117,7 @@ static void * receiveThread(void * cls) {
     SEMAPHORE_UP(doneSem);
     FREE(peersResponding);
     FREE(peersSeen);
+    FREE(buffer);
     return NULL;
   }
   if (format == 1)

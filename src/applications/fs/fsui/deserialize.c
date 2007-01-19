@@ -340,16 +340,14 @@ static int readCollection(int fd,
 
   /* deserialize collection data */
   READINT(big);
-  if (big == 0)
+  if (big == 0) {
+    ctx->collectionData = NULL;
     return OK;
+  }
   if ( (big > 16 * 1024 * 1024) ||
        (big < sizeof(unsigned int) ) ) {
     GE_BREAK(NULL, 0);
     return SYSERR;
-  }
-  if (big == 0) {
-    ctx->collectionData = NULL;
-    return OK;
   }
   ctx->collectionData
     = MALLOC(big);

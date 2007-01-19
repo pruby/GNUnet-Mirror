@@ -139,7 +139,6 @@ static void testTAPI(TransportAPI * tapi,
 					      1,
 					      &repeat)) {
     *res = SYSERR;
-    FREE(helo);
     return;
   }
   total = repeat;

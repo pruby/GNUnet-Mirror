@@ -363,6 +363,8 @@ void injectMessage(const PeerIdentity * sender,
     unsigned short plen;
     unsigned short ptyp;
 
+    FREENONNULL(copy);
+    copy = NULL;
     memcpy(&cpart,
 	   &msg[pos],
 	   sizeof(MESSAGE_HEADER));
@@ -430,6 +432,8 @@ void injectMessage(const PeerIdentity * sender,
 		 "Handler aborted message processing after receiving message of type '%d'.\n",
 		 ptyp);
 #endif
+	  FREENONNULL(copy);
+	  copy = NULL;
 	  return; /* handler says: do not process the rest of the message */
 	}
 	last++;
@@ -456,14 +460,16 @@ void injectMessage(const PeerIdentity * sender,
 	      "Handler aborted message processing after receiving message of type '%d'.\n",
 	      ptyp);
 #endif
+	  FREENONNULL(copy);
+	  copy = NULL;
 	  return; /* handler says: do not process the rest of the message */
 	}
 	last++;
       }
     } /* if plaintext */
-    FREENONNULL(copy);
-    copy = NULL;
   } /* while loop */
+  FREENONNULL(copy);
+  copy = NULL;
 }
 
 /**

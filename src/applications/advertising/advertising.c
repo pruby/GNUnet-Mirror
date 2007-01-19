@@ -801,9 +801,10 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 			&ehelloHandler);
   capi->registerPlaintextHandler(p2p_PROTO_hello,
 				 &phelloHandler);
-  GC_attach_change_listener(capi->cfg,
-			    &configurationUpdateCallback,
-			    NULL);
+  if (0 != GC_attach_change_listener(capi->cfg,
+				     &configurationUpdateCallback,
+				     NULL)) 
+    GE_BREAK(capi->ectx, 0); 
   startBootstrap(capi);
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,

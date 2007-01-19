@@ -170,6 +170,11 @@ SCM change_visible(SCM smob,
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
   val = scm_is_true(yesno) ? 1 : 0;
+  if ( (opt == NULL) ||
+       (sec == NULL) ) {
+    GE_BREAK(NULL, 0);
+    return SCM_EOL;  
+  }
   t = tree_lookup(tc->root,
 		  sec,
 		  opt);
@@ -183,10 +188,8 @@ SCM change_visible(SCM smob,
 	    opt,
 	    sec);
   }
-  if (sec != NULL)
-    free(sec);
-  if (opt != NULL)
-    free(opt);
+  free(sec);
+  free(opt);
   return SCM_EOL;
 }
 

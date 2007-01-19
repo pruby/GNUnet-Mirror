@@ -88,6 +88,7 @@ static void printDirectory(const char * filename) {
 			     YES)) ||
        (len == 0) ) {
     printf(_("=\tError reading directory.\n"));
+    FREE(name);
     return;
   }
   md = NULL;

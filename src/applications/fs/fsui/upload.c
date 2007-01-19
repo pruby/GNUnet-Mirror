@@ -157,6 +157,7 @@ createDirectoryHelper(struct GE_Context * ectx,
     *error = STRDUP(GE_memory_get(mem, 0));
     GE_free_context(ee);
     GE_memory_free(mem);
+    FREE(data);
     return NULL;
   }
   GE_free_context(ee);

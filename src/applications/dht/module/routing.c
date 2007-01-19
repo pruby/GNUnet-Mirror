@@ -664,6 +664,8 @@ void dht_get_stop(const HashCode512 * key,
 	done = YES;
 	break;
       }
+      prev = pos;
+      pos = prev->next;
     }
     if (records[i]->sources == NULL) {
       FREE(records[i]->get);

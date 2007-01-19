@@ -352,7 +352,6 @@ FSUI_startSearch(struct FSUI_Context * ctx,
 		    "PTHREAD_CREATE");
     ECRS_freeUri(pos->uri);
     FREE(pos);
-    pos->state = FSUI_ERROR_JOINED;
     MUTEX_UNLOCK(ctx->lock);
     return NULL;
   }

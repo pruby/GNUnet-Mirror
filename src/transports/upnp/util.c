@@ -27,10 +27,12 @@
 
 /* Returns a NULL-terminated string after unescaping an entity
  * (eg. &amp;, &lt; &#38 etc.) starting at s. Returns NULL on failure.*/
-static const char *
-detect_entity(const char *text, int *length) {
+static char *
+detect_entity(const char *text, 
+	      int *length) {
   const char *pln;
-  int len, pound;
+  int len;
+  int pound;
   
   if (!text || *text != '&')
     return NULL;
@@ -66,14 +68,15 @@ detect_entity(const char *text, int *length) {
     pln = b;
     FREE(buf);
     len = 2;
-    while (isdigit((int) text[len])) len++;
-    if(text[len] == ';') len++;
+    while (isdigit((int) text[len]))
+      len++;
+    if (text[len] == ';') len++;
   } else
     return NULL;
   
   if (length)
     *length = len;
-  return pln;
+  return STRDUP(pln);
 }
 
 char * 
@@ -101,13 +104,14 @@ gaim_unescape_html(const char *html) {
     char *app;
     while (*c) {
       int len;
-      const char *ent;
+      char *ent;
       
       if ((ent = detect_entity(c, &len)) != NULL) {
 	app = g_strdup_printf("%s%s", ret, ent);
 	FREE(ret);
 	ret = app;
 	c += len;
+	FREE(ent);
       } else if (!strncmp(c, "<br>", 4)) {
 	app = g_strdup_printf("%s%s", ret, "\n");
 	FREE(ret);
