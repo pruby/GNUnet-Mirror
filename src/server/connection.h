@@ -32,9 +32,9 @@
 #include "gnunet_fragmentation_service.h"
 
 /**
- * @brief General message header for all encrypted peer-to-peer
- * messages.  This is the format that handler(.c) expects after
- * decrypting the message.  It provides a timestamp and sequence
+ * @brief General packet header for all encrypted peer-to-peer
+ * packets.  This is the format that handler(.c) expects after
+ * decrypting the packet.  It provides a timestamp and sequence
  * number (to guard against replay attacks).  The header is followed
  * by the 'data' which contains a sequence of GNUnet p2p messages,
  * each with its own MESSAGE_HEADER.
