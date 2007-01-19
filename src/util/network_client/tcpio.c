@@ -95,18 +95,20 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
     return 2087;
   }
   pos = strstr(res, ":");
-  if (pos == NULL)
+  if (pos == NULL) {
+    FREE(res);
     return 2087;
+  }
   pos++;
   if (1 != SSCANF(pos, "%u", &port)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_USER | GE_BULK,
 	   _("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
 	   pos);
-    FREE(pos);
+    FREE(res);
     return 2087;
   }
-  FREE(pos);
+  FREE(res);
   return (unsigned short) port;
 }
 
