@@ -320,14 +320,6 @@ void * FSUI_uploadThread(void * cls) {
 		     EXTRACTOR_FILENAME,
 		     pfn);
   FREE(pfn);
-  ECRS_delFromMetaData(utc->meta,
-		       EXTRACTOR_SPLIT,
-		       NULL);
-  fi.meta = utc->meta;
-  fi.uri = utc->uri;
-  URITRACK_trackURI(ectx,
-		    utc->shared->ctx->cfg,
-		    &fi);
   if (utc->shared->global_keywords != NULL)
     ECRS_addToKeyspace(ectx,
 		       utc->shared->ctx->cfg,
@@ -358,6 +350,14 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->meta);	
     ECRS_freeUri(uri);
   }
+  while (OK == ECRS_delFromMetaData(utc->meta,
+				    EXTRACTOR_SPLIT,
+				    NULL)) ;
+  fi.meta = utc->meta;
+  fi.uri = utc->uri;
+  URITRACK_trackURI(ectx,
+		    utc->shared->ctx->cfg,
+		    &fi);
   event.type = FSUI_upload_completed;
   event.data.UploadCompleted.uc.pos = utc;
   event.data.UploadCompleted.uc.cctx = utc->cctx;
