@@ -71,7 +71,7 @@ typedef struct {
 
 #define DEBUG_PINGPONG NO
 
-#define MAX_PING_PONG 64
+#define MAX_PING_PONG 256
 
 typedef struct {
   PeerIdentity receiverIdentity;
