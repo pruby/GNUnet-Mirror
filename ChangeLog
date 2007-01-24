@@ -1,3 +1,7 @@
+Tue Jan 23 19:48:37 MST 2007
+	Fixed problem with split-extractor keywords not being used
+	for uploads.
+
 Tue Jan 16 21:43:26 MST 2007
 	Expanded transport APIs to avoid building messages for
 	transmission just to have them rejected by blocking TCPs
