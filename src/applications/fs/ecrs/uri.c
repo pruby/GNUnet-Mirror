@@ -484,7 +484,7 @@ static int parseLocationURI(struct GE_Context * ectx,
 	  (uri[npos] != '.') )
     npos++;
   if (dup[npos] == '\0') 
-    goto ERROR;
+    goto ERR;
   dup[npos++] = '\0';
   if ( (OK != enc2hash(&dup[pos],
 		       &loc->fi.chk.key)) ||
@@ -493,31 +493,31 @@ static int parseLocationURI(struct GE_Context * ectx,
        (1 != SSCANF(&dup[pos+sizeof(EncName)*2],
 		    "%llu",
 		    &loc->fi.file_length)) ) 
-    goto ERROR;
+    goto ERR;
   ret = enc2bin(&dup[npos],
 		&loc->peer,
 		sizeof(PublicKey));
   if (ret == -1) 
-    goto ERROR;
+    goto ERR;
   npos += ret;
   if (dup[npos++] != '.')
-    goto ERROR;
+    goto ERR;
   ret = enc2bin(&dup[npos],
 		&loc->contentSignature,
 		sizeof(Signature));
   if (ret == -1) 
-    goto ERROR;
+    goto ERR;
   npos += ret;
   if (dup[npos++] != '.')
-    goto ERROR;
+    goto ERR;
   ret = enc2bin(&dup[npos],
 		&loc->helloSignature,
 		sizeof(Signature));
   if (ret == -1) 
-    goto ERROR;
+    goto ERR;
   npos += ret;
   if (dup[npos++] != '.')
-    goto ERROR;
+    goto ERR;
   ret = 4;
   pos = npos;
   while ( (dup[npos] != '\0') &&
@@ -527,7 +527,7 @@ static int parseLocationURI(struct GE_Context * ectx,
     npos++;
   }
   if (ret != 0)
-    goto ERROR;
+    goto ERR;
   dup[npos-1] = '\0';
   if (4 != SSCANF(&dup[pos],
 		  "%u.%u.%u.%u",
@@ -535,10 +535,10 @@ static int parseLocationURI(struct GE_Context * ectx,
 		  &sas,
 		  &loc->mtu,
 		  &loc->expirationTime))
-    goto ERROR;
+    goto ERR;
   if ( (proto >= 65536) ||
        (sas >= 65536) )
-    goto ERROR;
+    goto ERR;
   loc->proto = (unsigned short) proto;
   loc->sas = (unsigned short) sas;
   addr = MALLOC(sas);
@@ -547,10 +547,10 @@ static int parseLocationURI(struct GE_Context * ectx,
 		addr,
 		sas);
   if (ret == -1)
-    goto ERROR;
+    goto ERR;
   npos += ret;
   if (dup[npos] != '\0')
-    goto ERROR;
+    goto ERR;
   loc->fi.file_length = htonll(loc->fi.file_length);
   
   /* Finally: verify sigs! */
@@ -560,10 +560,10 @@ static int parseLocationURI(struct GE_Context * ectx,
 		      sizeof(TIME_T),
 		      &loc->contentSignature,
 		      &loc->peer)) 
-    goto ERROR;
+    goto ERR;
   hello = getHelloFromLoc(loc);
   if (hello == NULL) 
-    goto ERROR;
+    goto ERR;
   if (OK != verifySig(&hello->senderIdentity,
 		      P2P_hello_MESSAGE_size(hello) -
 		      sizeof(MESSAGE_HEADER) -
@@ -572,12 +572,12 @@ static int parseLocationURI(struct GE_Context * ectx,
 		      &loc->helloSignature,
 		      &hello->publicKey)) { 
     FREE(hello);
-    goto ERROR;
+    goto ERR;
   }
   FREE(hello);
   FREE(dup);
   return OK;
- ERROR:
+ ERR:
   FREE(dup);
   FREENONNULL(addr);
   return SYSERR;
