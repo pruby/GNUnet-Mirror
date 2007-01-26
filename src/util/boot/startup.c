@@ -156,6 +156,8 @@ int GNUNET_init(int argc,
   int i;
   char *path;
 
+  os_init();
+
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
   path = os_get_installation_path(IPK_LOCALEDIR);
