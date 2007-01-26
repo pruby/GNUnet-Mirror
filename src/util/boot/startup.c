@@ -156,7 +156,7 @@ int GNUNET_init(int argc,
   int i;
   char *path;
 
-  os_init();
+  os_init(NULL);
 
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
