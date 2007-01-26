@@ -18,7 +18,7 @@ libgcrypt.m4\
 lib-ld.m4\
 lib-link.m4\
 lib-prefix.m4\
-libxml2.m4\ 
+libxml2.m4\
 longdouble.m4\
 longlong.m4\
 nls.m4\
