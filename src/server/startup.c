@@ -50,49 +50,50 @@ static SERVICE_STATUS_HANDLE hService;
  * @param cfg configuration, may be NULL if in service mode
  * @param sig signal code that causes shutdown, optional
  */
-void shutdown_gnunetd(struct GC_Configuration * cfg, int sig) {
+void shutdown_gnunetd(struct GC_Configuration * cfg, 
+		      int sig) {
 #ifdef MINGW
-if (!cfg || GC_get_configuration_value_yesno(cfg, "GNUNETD", "WINSERVICE", NO) == YES)
-{
-  /* If GNUnet runs as service, only the
-     Service Control Manager is allowed
-     to kill us. */
-  if (sig != SERVICE_CONTROL_STOP)
-  {
-    SERVICE_STATUS theStat;
-
-    /* Init proper shutdown through the SCM */
-    if (GNControlService(hService, SERVICE_CONTROL_STOP, &theStat))
-    {
-      /* Success */
-
-      /* The Service Control Manager will call
-         gnunetd.c::ServiceCtrlHandler(), which calls
-         this function again. We then stop the gnunetd. */
-      return;
-    }
-    /* We weren't able to tell the SCM to stop the service,
-       but we don't care.
-       Just shut the gnunetd process down. */
+  if (!cfg || GC_get_configuration_value_yesno(cfg, 
+					       "GNUNETD", 
+					       "WINSERVICE", 
+					       NO) == YES) {
+    /* If GNUnet runs as service, only the
+       Service Control Manager is allowed
+       to kill us. */
+    if (sig != SERVICE_CONTROL_STOP)
+      {
+	SERVICE_STATUS theStat;
+	
+	/* Init proper shutdown through the SCM */
+	if (GNControlService(hService, SERVICE_CONTROL_STOP, &theStat))
+	  {
+	    /* Success */
+	    
+	    /* The Service Control Manager will call
+	       gnunetd.c::ServiceCtrlHandler(), which calls
+	       this function again. We then stop the gnunetd. */
+	    return;
+	  }
+	/* We weren't able to tell the SCM to stop the service,
+	   but we don't care.
+	   Just shut the gnunetd process down. */
+      }
+    
+    /* Acknowledge the shutdown request */
+    theServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+    GNSetServiceStatus(hService, &theServiceStatus);
   }
-
-  /* Acknowledge the shutdown request */
-  theServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-  GNSetServiceStatus(hService, &theServiceStatus);
-}
 #endif
 
   GNUNET_SHUTDOWN_INITIATE();
 }
 
 #ifdef MINGW
-void win_service_main();
-
 /**
  * This function is called from the Windows Service Control Manager
  * when a service has to shutdown
  */
-void WINAPI ServiceCtrlHandler(DWORD dwOpcode) {
+static void WINAPI ServiceCtrlHandler(DWORD dwOpcode) {
   if (dwOpcode == SERVICE_CONTROL_STOP)
     shutdown_gnunetd(NULL, dwOpcode);
 }
