@@ -65,7 +65,7 @@ static void run_shutdown() {
 
 /**
  * Stop the application under Windows.
- * @param signum is ignored
+ * @param dwCtrlType is ignored
  */
 #ifdef MINGW
 BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
@@ -76,7 +76,8 @@ BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
     case CTRL_CLOSE_EVENT:
     case CTRL_SHUTDOWN_EVENT:
     case CTRL_LOGOFF_EVENT:
-      run_shutdown();
+    case SERVICE_CONTROL_STOP:
+      GNUNET_SHUTDOWN_INITIATE();
   }
 
   return TRUE;

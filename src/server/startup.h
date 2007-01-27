@@ -49,5 +49,16 @@ void writePIDFile(struct GE_Context * ectx,
 void deletePIDFile(struct GE_Context * ectx,
 		   struct GC_Configuration * cfg);
 
+/**
+ * Shutdown gnunetd
+ * @param cfg configuration
+ * @param sig signal code that causes shutdown, optional
+ */
+void shutdown_gnunetd(struct GC_Configuration * cfg, int sig);
+
+
+#ifdef MINGW
+void win_service_main(void (*gnunet_main)());
+#endif
 #endif
 /* end of startup.h */

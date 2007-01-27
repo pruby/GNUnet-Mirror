@@ -41,6 +41,7 @@
 #include "version.h"
 
 static struct GC_Configuration * cfg;
+static struct GE_Context * ectx = NULL;
 
 static struct CronManager * cron;
 
@@ -91,7 +92,7 @@ static void waitForSignalHandler(struct GE_Context * ectx) {
 /**
  * The main method of gnunetd.
  */
-int gnunet_main(struct GE_Context * ectx) {
+int gnunet_main() {
   struct LoadMonitor * mon;
   struct SignalHandlerContext * shc_hup;
   int filedes[2]; /* pipe between client and parent */
@@ -162,6 +163,15 @@ int gnunet_main(struct GE_Context * ectx) {
   return OK;
 }
 
+#ifdef MINGW
+/**
+ * Main method of the windows service
+ */
+void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
+  win_service_main(gnunet_main);
+}
+#endif
+
 /**
  * All gnunetd command line options
  */
@@ -198,7 +208,6 @@ static struct CommandLineOption gnunetdOptions[] = {
 int main(int argc,
 	 char * const * argv) {
   int ret;
-  struct GE_Context * ectx;
 
   if ( (4 != sizeof(MESSAGE_HEADER)) ||
        (600 != sizeof(P2P_hello_MESSAGE)) ) {
@@ -241,7 +250,15 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return 1;
   }
-  ret = gnunet_main(ectx);
+  
+#ifdef MINGW
+  if (GC_get_configuration_value_yesno(cfg, "GNUNETD", "WINSERVICE", NO) == YES) {
+    SERVICE_TABLE_ENTRY DispatchTable[] =
+      {{"GNUnet", ServiceMain}, {NULL, NULL}};
+    ret = (GNStartServiceCtrlDispatcher(DispatchTable) != 0);
+  } else
+#endif
+  ret = gnunet_main();
   GNUNET_fini(ectx, cfg);
   if (ret != OK)
     return 1;

@@ -32,6 +32,7 @@
 
 #include "tcpserver.h"
 #include "handler.h"
+#include "startup.h"
 
 #define DEBUG_TCPHANDLER NO
 
@@ -108,7 +109,7 @@ static int shutdownHandler(struct ClientHandle * client,
 	 "shutdown request accepted from client\n");
   ret = sendTCPResultToClient(client,
 			      OK);
-  GNUNET_SHUTDOWN_INITIATE();
+  shutdown_gnunetd(cfg, 0);
   return ret;
 }
 
