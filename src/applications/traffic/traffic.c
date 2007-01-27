@@ -508,13 +508,13 @@ static int trafficSend(const PeerIdentity * receiver,
 		       const MESSAGE_HEADER * header) {
   unsigned short port;
 
-  port = ntohs(UNALIGNED(header->type));
+  port = ntohs(MAKE_UNALIGNED(header->type));
   updateTrafficSendCounter(port,
-			   ntohs(UNALIGNED(header->size)));
+			   ntohs(MAKE_UNALIGNED(header->size)));
   MUTEX_LOCK(lock);
   checkPort(port);
   updateUse(&counters[port]->send,
-	    ntohs(UNALIGNED(header->size)),
+	    ntohs(MAKE_UNALIGNED(header->size)),
 	    receiver->hashPubKey.bits[0],
 	    NO);
   MUTEX_UNLOCK(lock);

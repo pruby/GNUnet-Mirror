@@ -576,12 +576,12 @@ ECRS_deserializeMetaData(struct GE_Context * ectx,
   if (size < sizeof(MetaDataHeader))
     return NULL;
   hdr = (const MetaDataHeader*) input;
-  if ( (ntohl(UNALIGNED(hdr->version)) & HEADER_VERSION_MASK) != 0)
+  if ( (ntohl(MAKE_UNALIGNED(hdr->version)) & HEADER_VERSION_MASK) != 0)
     return NULL; /* unsupported version */
-  ic = ntohl(UNALIGNED(hdr->entries));
-  compressed = (ntohl(UNALIGNED(hdr->version)) & HEADER_COMPRESSED) != 0;
+  ic = ntohl(MAKE_UNALIGNED(hdr->entries));
+  compressed = (ntohl(MAKE_UNALIGNED(hdr->version)) & HEADER_COMPRESSED) != 0;
   if (compressed) {
-    dataSize = ntohl(UNALIGNED(hdr->size)) - sizeof(MetaDataHeader);
+    dataSize = ntohl(MAKE_UNALIGNED(hdr->size)) - sizeof(MetaDataHeader);
     if (dataSize > 2 * 1042 * 1024) {
       GE_BREAK(ectx, 0);
       return NULL; /* only 2 MB allowed [to make sure we don't blow
@@ -598,7 +598,7 @@ ECRS_deserializeMetaData(struct GE_Context * ectx,
   } else {
     data = (char*) &hdr[1];
     dataSize = size - sizeof(MetaDataHeader);
-    if (size != ntohl(UNALIGNED(hdr->size))) {
+    if (size != ntohl(MAKE_UNALIGNED(hdr->size))) {
       GE_BREAK(ectx, 0);
       return NULL;
     }
@@ -624,7 +624,7 @@ ECRS_deserializeMetaData(struct GE_Context * ectx,
           (i < ic) ) {
     len = strlen(&data[pos])+1;
     md->items[i].type = (EXTRACTOR_KeywordType)
-        ntohl(UNALIGNED(((unsigned int*)data)[i]));
+        ntohl(MAKE_UNALIGNED(((unsigned int*)data)[i]));
     md->items[i].data = STRDUP(&data[pos]);
     pos += len;
     i++;
