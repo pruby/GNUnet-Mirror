@@ -108,20 +108,22 @@ However, active testing and qualified feedback of these features is always welco
    #f
    'always) )
 
-;; General menu
+;; paths
 
-(define (general-path builder)
+(define (paths-home builder)
  (builder
-  "GNUNETD"
+  "PATHS"
   "GNUNETD_HOME"
   (_ "Full pathname of GNUnet HOME directory")
   (_ 
 "This gives the root-directory of the GNUnet installation. Make sure there is some space left in that directory. :-)  Users inserting or indexing files will be able to store data in this directory up to the (global) quota specified below.  Having a few gigabytes of free space is recommended." ) 
   '()
   #t
-  "/var/lib/GNUnet"
+  "/var/lib/gnunet"
   '()
   'always) )
+
+;; General menu
 
 (define (fs-path builder)
  (builder
@@ -131,7 +133,7 @@ However, active testing and qualified feedback of these features is always welco
   (nohelp) 
   '()
   #t
-  "/var/lib/GNUnet/data/fs"
+  "$GNUNETD_HOME/data/fs"
   '()
   'always) )
 
@@ -143,7 +145,7 @@ However, active testing and qualified feedback of these features is always welco
   (_ "Note that the kvstore is currently not used.") 
   '()
   #f
-  "/var/lib/GNUnet/kvstore/"
+  "$GNUNET_HOME/kvstore/"
   '()
   'never) )
 
@@ -155,7 +157,7 @@ However, active testing and qualified feedback of these features is always welco
   (nohelp) 
   '()
   #t
-  "/var/lib/GNUnet/data/shared"
+  "$GNUNET_HOME/data/shared"
   '()
   'always) )
 
@@ -266,7 +268,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (nohelp)
   '()
   #f
-  "/var/lib/GNUnet/daemon-logs"
+  "$GNUNET_HOME/daemon-logs"
   '()
   'rare) )
 
@@ -536,7 +538,6 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "General settings")
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
-    (general-path builder) 
     (username builder) 
     (groupname builder) 
     (autostart builder) 
@@ -551,6 +552,21 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (general-username builder) 
     (general-transports builder) 
     (general-applications builder) 
+  )
+  #t
+  #f
+  #f
+  'always) )
+
+
+(define (paths builder)
+ (builder
+  "PATHS"
+  ""
+  (_ "Path settings")
+  (_ "Prefixes for paths used by GNUnet")
+  (list 
+    (paths-home builder) 
   )
   #t
   #f
@@ -618,7 +634,7 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   (_ "Specifies the name of a file which contains a list of GNUnet peer IDs that are friends.  If used with the friend-to-friend topology, this will ensure that GNUnet only connects to these peers (via any available transport).")
   '()
   #f
-  "/var/lib/GNUnet/friends"
+  "$GNUNET_HOME/friends"
   '()
   'f2f) )
 
@@ -1273,6 +1289,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
   (nohelp)
   (list 
     (meta builder)
+    (paths builder)
     (general builder) 
     (logging builder)
     (load builder)

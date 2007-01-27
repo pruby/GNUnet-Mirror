@@ -423,8 +423,8 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   putenv(env);
   free(env);
 #endif
-
-	scm_init_guile();
+  
+  scm_init_guile();
 
   tc_tag = scm_make_smob_type ("tc", 0);
   scm_set_smob_mark (tc_tag, NULL);

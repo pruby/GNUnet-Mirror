@@ -29,10 +29,8 @@
 #define GNUNET_DIRECTORIES
 
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
-#define DEFAULT_DAEMON_DIR         "/etc"
-#define DEFAULT_DAEMON_CONFIG_FILE DEFAULT_DAEMON_DIR"/gnunetd.conf"
-#define VAR_DIRECTORY              "/var/lib"
-#define VAR_DAEMON_DIRECTORY       VAR_DIRECTORY"/gnunet"
-#define GNUNET_HOME_DIRECTORY      "~/.gnunet"
+#define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunetd.conf"
+#define VAR_DAEMON_DIRECTORY       "$GNUNETD_HOME"
+#define GNUNET_HOME_DIRECTORY      "$GNUNET_HOME"
 
 #endif

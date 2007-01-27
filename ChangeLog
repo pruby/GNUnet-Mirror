@@ -1,3 +1,8 @@
+Sat Jan 27 16:02:02 MST 2007
+	Changing $-expansion for interpretation of configuration file
+	(again).  Also, now the base-path for gnunetd defaults to
+	"/var/lib/gnunet" instead of "/var/lib/GNUnet".  
+
 Tue Jan 23 19:48:37 MST 2007
 	Fixed problem with split-extractor keywords not being used
 	for uploads.

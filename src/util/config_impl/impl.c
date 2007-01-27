@@ -696,15 +696,14 @@ _have_configuration_value(struct GC_Configuration * cfg,
 
 /**
  * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
- * where either in the current section or globally FOO is set to
- * DIRECTORY.
+ * where either in the "PATHS" section or the environtment
+ * "FOO" is set to "DIRECTORY".
  *
  * @param old string to $-expand (will be freed!)
  * @return $-expanded string
  */
 static char *
 _configuration_expand_dollar(struct GC_Configuration * cfg,
-			     const char * section,
 			     char * orig) {
   int i;
   char * prefix;
@@ -726,21 +725,16 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   }
   prefix = NULL;
   if (YES == _have_configuration_value(cfg,
-				       section,
+				       "PATHS",
 				       &orig[1])) {
-    _get_configuration_value_string(cfg,
-				    section,
-				    &orig[1],
-				    "",
-				    &prefix);
-  } else if (_have_configuration_value(cfg,
-				       "",
-				       &orig[1])) {
-    _get_configuration_value_string(cfg,
-				    "",
-				    &orig[1],
-				    "",
-				    &prefix);
+    if (0 != _get_configuration_value_string(cfg,
+					     "PATHS",
+					     &orig[1],
+					     NULL,
+					     &prefix)) {
+      GE_BREAK(NULL, 0);
+      return orig;
+    }
   } else {
     const char * env = getenv(&orig[1]);
 
@@ -754,7 +748,9 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   result = MALLOC(strlen(prefix) +
                   strlen(post) + 2);
   strcpy(result, prefix);
-  strcat(result, DIR_SEPARATOR_STR);
+  if ( (strlen(prefix) == 0) ||
+       (prefix[strlen(prefix)-1] != DIR_SEPARATOR) )
+    strcat(result, DIR_SEPARATOR_STR);
   strcat(result, post);
   FREE(prefix);
   FREE(orig);
@@ -788,7 +784,6 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
 					&tmp);
   if (tmp != NULL) {
     tmp = _configuration_expand_dollar(cfg,
-				       section,
 				       tmp);
     *value = string_expandFileName(data->ectx,
 				   tmp);

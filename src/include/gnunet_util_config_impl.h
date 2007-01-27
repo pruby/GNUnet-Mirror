@@ -96,8 +96,7 @@ typedef struct GC_Configuration {
    * @return $-expanded string
    */
   char * (*configuration_expand_dollar)(struct GC_Configuration * cfg,
-					   const char * section,
-					   char * old);
+					char * old);
 
   /**
    * Get a configuration value that should be a number.

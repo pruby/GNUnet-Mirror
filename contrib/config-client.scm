@@ -154,11 +154,11 @@ However, active testing and qualified feedback of these features is always welco
  (builder
   "GNUNETD"
   "LOGFILE"
-  (_ "Where should gnunetd write the logs?")
+  (_ "Where should gnunet-clients write their logs?")
   (nohelp)
   '()
   #f
-  "$HOME/.gnunet/logs"
+  "$GNUNET_HOME/logs"
   '()
   'rare) )
 
@@ -334,15 +334,15 @@ The default is to use filenames and to break larger words at spaces (and undersc
 
 ;; main-menu
 
-(define (general-path builder)
+(define (paths-home builder)
  (builder
-  "GNUNETD"
-  "GNUNETD_HOME"
+  "PATHS"
+  "GNUNET_HOME"
   (_ "Full pathname of GNUnet client HOME directory")
   (_ "The directory for GNUnet files that belong to the user.")
   '()
   #t
-  "$HOME/.gnunet"
+  "~/.gnunet"
   '()
   'always) )
 
@@ -353,7 +353,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (_ "Root node")
   (nohelp)
   (list 
-    (general-path builder)
+    (paths-home builder)
     (meta builder)
     (logging builder)
     (general builder)

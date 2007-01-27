@@ -186,6 +186,20 @@ int GNUNET_init(int argc,
   if (0 != GC_parse_configuration(*cfg,
 				  *cfgFileName))
     return -1;
+  /* if PATHS/GNUNETD_HOME is not set, set it to
+     the default value! */
+  GC_get_configuration_value_string(*cfg,
+				    "PATHS",
+				    "GNUNETD_HOME",
+				    "/var/lib/gnunet",
+				    &path);
+  FREE(path);
+  GC_get_configuration_value_string(*cfg,
+				    "PATHS",
+				    "GNUNET_HOME",
+				    "~/.gnunet",
+				    &path);
+  FREE(path);
   if (configure_logging(ectx, *cfg) != 0)
     return -1;
   return i;

@@ -117,9 +117,8 @@ int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
  * @return $-expanded string
  */
 char * GC_configuration_expand_dollar(struct GC_Configuration * cfg,
-				      const char * section,
 				      char * old) {
-  return cfg->configuration_expand_dollar(cfg, section, old);
+  return cfg->configuration_expand_dollar(cfg, old);
 }
 
 /**
