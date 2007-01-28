@@ -117,11 +117,13 @@ static int tcpDisconnect(TSession * tsession) {
 #endif
   select_disconnect(selector,
 		    tcpsession->sock);
-  MUTEX_UNLOCK(tcpsession->lock);
   if (tcpsession->in_select == NO) {
+    MUTEX_UNLOCK(tcpsession->lock);
     MUTEX_DESTROY(tcpsession->lock);
     FREE(tcpsession);
     FREE(tsession);
+  } else {
+    MUTEX_UNLOCK(tcpsession->lock);
   }
   return OK;
 }
