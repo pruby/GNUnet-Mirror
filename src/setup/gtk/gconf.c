@@ -68,9 +68,13 @@ static void addToTree(GtkTreeStore * model,
   GtkTreeIter it;
   GtkTreeIter it2;
   int i;
+  int j;
+  int k;
   GtkListStore * cmodel;
   char defStr[128];
   char valStr[128];
+  char * tmp;
+  size_t tmpl;
 
   if (! pos->visible)
     return;
@@ -139,32 +143,89 @@ static void addToTree(GtkTreeStore * model,
 			 SETUP_TEXT_VALUE, pos->value.String.val,
 			 SETUP_COMBO_MODEL, cmodel,
 			 -1);
-      if (pos->value.String.legalRange[0] == NULL) {
+      i = 0;
+      while (pos->value.String.legalRange[i] != NULL) {
 	gtk_list_store_insert_with_values(cmodel,
 					  &it2,
 					  -1,
-					  0, pos->value.String.val,
+					  0, pos->value.String.legalRange[i],
 					  -1);
-	gtk_tree_store_set(model,
-			   &it,
-			   SETUP_TEXT_VIS, TRUE,
-			   SETUP_COMBO_VIS, TRUE,
-			   -1);
-      } else {
-	i = 0;
-	while (pos->value.String.legalRange[i] != NULL) {
+	i++;
+      }
+      gtk_tree_store_set(model,
+			 &it,
+			 SETUP_TEXT_VIS, TRUE,
+			 SETUP_COMBO_VIS, TRUE,
+			 -1);    
+      break;
+    case GNS_MC:
+      cmodel = gtk_list_store_new(1,
+				  G_TYPE_STRING);
+      gtk_tree_store_set(model,
+			 &it,
+			 SETUP_DEFAULT_VALUE, pos->value.String.def,
+			 SETUP_TEXT_VALUE, pos->value.String.val,
+			 SETUP_COMBO_MODEL, cmodel,
+			 -1);
+      i = 0;
+      j = 1;
+      tmpl = 2;
+      while (pos->value.String.legalRange[i] != NULL) {
+	tmpl += strlen(pos->value.String.legalRange[i]) + 1;
+	i++;
+	j *= 2;
+      }
+      tmp = MALLOC(tmpl);
+      /* For now, only allow multiple choice for less than 10 entries... */
+      if (i < 10) {
+	while (--j >= 0) {
+	  tmp[0] = '\0';
+	  for (k=0;k<i;k++) {
+	    if ((j & (1 << k)) == 0)
+	      continue;
+	    strcat(tmp, pos->value.String.legalRange[k]);
+	    strcat(tmp, " ");
+	  }	
+	  if (strlen(tmp) > 0)
+	    tmp[strlen(tmp)-1] = '\0';
 	  gtk_list_store_insert_with_values(cmodel,
 					    &it2,
 					    -1,
-					    0, pos->value.String.legalRange[i],
+					    0, tmp,
 					    -1);
-	  i++;
 	}
-	gtk_tree_store_set(model,
-			   &it,
-			   SETUP_COMBO_VIS, TRUE,
-			   -1);
+      } else {
+	GE_BREAK(NULL, 0);
       }
+      FREE(tmp);
+      gtk_tree_store_set(model,
+			 &it,
+			 SETUP_TEXT_VIS, TRUE,
+			 SETUP_COMBO_VIS, TRUE,
+			 -1);    
+      break;
+    case GNS_SC:
+      cmodel = gtk_list_store_new(1,
+				  G_TYPE_STRING);
+      gtk_tree_store_set(model,
+			 &it,
+			 SETUP_DEFAULT_VALUE, pos->value.String.def,
+			 SETUP_TEXT_VALUE, pos->value.String.val,
+			 SETUP_COMBO_MODEL, cmodel,
+			 -1);
+      i = 0;
+      while (pos->value.String.legalRange[i] != NULL) {
+	gtk_list_store_insert_with_values(cmodel,
+					  &it2,
+					  -1,
+					  0, pos->value.String.legalRange[i],
+					  -1);
+	i++;
+      }
+      gtk_tree_store_set(model,
+			 &it,
+			 SETUP_COMBO_VIS, TRUE,
+			 -1);
       break;
     case GNS_Double:
       cmodel = gtk_list_store_new(1,

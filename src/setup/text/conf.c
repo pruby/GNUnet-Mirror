@@ -75,6 +75,8 @@ static char * getValueAsString(GNS_Type type,
       return STRDUP(_("yes"));
     return STRDUP(_("no"));
   case GNS_String:
+  case GNS_SC:
+  case GNS_MC:
     return STRDUP(val->String.val);
   case GNS_Double:
     SNPRINTF(buf, 92,
@@ -106,33 +108,44 @@ static void printChoice(int indent,
 	    "?");
     break;
   case GNS_String:
-    if (val->String.legalRange[0] == NULL) {
+  case GNS_MC:
+    i = 0;
+    defLet = '\0';
+    if (val->String.legalRange[0] != NULL)
       iprintf(indent,
-	      _("\tUse single space prefix to avoid conflicts with hotkeys!\n"));
+	      _("\tPossible choices:\n"));
+    while (val->String.legalRange[i] != NULL) {
       iprintf(indent,
-	      _("\tEnter string (type '%s' for default value `%s'): "),
-	      "d",
-	      val->String.def);
-    } else {
-      i = 0;
-      defLet = '\0';
-      while (val->String.legalRange[i] != NULL) {
-	iprintf(indent,
-		"\t (%c) %s\n",
-		(i < 10) ? '0' + i : 'a' + i - 10,
-		val->String.legalRange[i]);
-	if (0 == strcmp(val->String.legalRange[i],
-			val->String.def))
-	  defLet = (i < 10) ? '0' + i : 'a' + i - 10;
-	i++;
-      }
-      GE_ASSERT(NULL, defLet != '\0');
-      iprintf(indent,
-	      "\n\t (?) Help\n");
-      iprintf(indent,
-	      _("\t Enter choice (default is %c): "),
-	      defLet);
+	      "\t %s\n",
+	      val->String.legalRange[i]);
+      i++;
     }
+    iprintf(indent,
+	    _("\tUse single space prefix to avoid conflicts with hotkeys!\n"));
+    iprintf(indent,
+	    _("\tEnter string (type '%s' for default value `%s'): "),
+	    "d",
+	    val->String.def);
+    break;
+  case GNS_SC:
+    i = 0;
+    defLet = '\0';
+    while (val->String.legalRange[i] != NULL) {
+      iprintf(indent,
+	      "\t (%c) %s\n",
+	      (i < 10) ? '0' + i : 'a' + i - 10,
+	      val->String.legalRange[i]);
+      if (0 == strcmp(val->String.legalRange[i],
+		      val->String.def))
+	defLet = (i < 10) ? '0' + i : 'a' + i - 10;
+      i++;
+    }
+    GE_ASSERT(NULL, defLet != '\0');
+    iprintf(indent,
+	    "\n\t (?) Help\n");
+    iprintf(indent,
+	    _("\t Enter choice (default is %c): "),
+	    defLet);
     break;
   case GNS_Double:
     iprintf(indent,
@@ -194,91 +207,90 @@ static int readValue(GNS_Type type,
     }
     break;
   case GNS_String:
-    if (val->String.legalRange[0] == NULL) {
-      i = 0;
-      while (1) {
-	buf[i] = rd();
-	if (buf[i] == 'q') {
-	  printf(_("Abort\n"));
-	  return SYSERR;
-	}
-#if 0
-	if (buf[i] == '\b') {
-	  if (i > 0) {
-	    printf("\b"); /* this does not work */
-	    i--;
-	  }
-	continue;
-	}
-#endif	
-	if ( (buf[i] == 'd') && (i == 0) ) {
-	  printf("%s\n",
-		 val->String.def);
-	  FREE(val->String.val);
-	  val->String.val = STRDUP(val->String.def);
-	  return YES;
-	}
-	if ( (buf[i] == '?') && (i == 0) ) {
-	  printf(_("Help\n"));
-	  return NO;
-	}
-	if ( (buf[i] == '\n') && (i == 0) ) {
-	  printf("%s\n",
-		 val->String.val);
-	  return YES; /* keep */
-	}
-	if (buf[i] != '\n') {
-	  if (i < 1023) {
-	    printf("%c", buf[i]);
-	    fflush(stdout);
-	    i++;
-	  }
-	  continue;
-	}
-	break;
+  case GNS_MC:
+    i = 0;
+    while (1) {
+      buf[i] = rd();
+      if (buf[i] == 'q') {
+	printf(_("Abort\n"));
+	return SYSERR;
       }
-      FREE(val->String.val);
-      val->String.val = STRDUP(buf[0] == ' ' ? &buf[1] : buf);
-      printf("\n");
-      return OK;
-    } else {
-      while (1) {
-	c = rd();
-	if (c == '?') {
-	  printf(_("Help\n"));
-	  return NO;
+#if 0
+      if (buf[i] == '\b') {
+	if (i > 0) {
+	  printf("\b"); /* this does not work */
+	  i--;
 	}
-	if (c == '\n') {
-	  printf("%s\n",
-		 val->String.val);
-	  return YES;
-	}
-	if (c == 'q') {
-	  printf(_("Abort\n"));
-	  return SYSERR;
-	}
-	i = -1;
-	if ( (c >= '0') && (c <= '9') )
-	  i = c - '0';
-	else if ( (c >= 'a') && (c <= 'z') )
-	  i = c - 'a' + 10;
-	else
-	  continue; /* invalid entry */
-	for (j=0;j<=i;j++)
-	  if (val->String.legalRange[j] == NULL) {
-	    i = -1;
-	    break;
-	  }
-	if (i == -1)
-	  continue; /* invalid entry */
+	continue;
+      }
+#endif	
+      if ( (buf[i] == 'd') && (i == 0) ) {
+	printf("%s\n",
+	       val->String.def);
 	FREE(val->String.val);
-	val->String.val = STRDUP(val->String.legalRange[i]);
+	val->String.val = STRDUP(val->String.def);
+	return YES;
+      }
+      if ( (buf[i] == '?') && (i == 0) ) {
+	printf(_("Help\n"));
+	return NO;
+      }
+      if ( (buf[i] == '\n') && (i == 0) ) {
 	printf("%s\n",
 	       val->String.val);
-	return OK;
+	return YES; /* keep */
       }
+      if (buf[i] != '\n') {
+	if (i < 1023) {
+	  printf("%c", buf[i]);
+	  fflush(stdout);
+	  i++;
+	}
+	continue;
+      }
+      break;
     }
-    break;
+    FREE(val->String.val);
+    val->String.val = STRDUP(buf[0] == ' ' ? &buf[1] : buf);
+    printf("\n");
+    return OK;
+  case GNS_SC:
+    while (1) {
+      c = rd();
+      if (c == '?') {
+	printf(_("Help\n"));
+	return NO;
+      }
+      if (c == '\n') {
+	printf("%s\n",
+	       val->String.val);
+	return YES;
+      }
+      if (c == 'q') {
+	printf(_("Abort\n"));
+	return SYSERR;
+      }
+      i = -1;
+      if ( (c >= '0') && (c <= '9') )
+	i = c - '0';
+      else if ( (c >= 'a') && (c <= 'z') )
+	  i = c - 'a' + 10;
+      else
+	continue; /* invalid entry */
+      for (j=0;j<=i;j++)
+	if (val->String.legalRange[j] == NULL) {
+	  i = -1;
+	  break;
+	}
+      if (i == -1)
+	continue; /* invalid entry */
+      FREE(val->String.val);
+      val->String.val = STRDUP(val->String.legalRange[i]);
+      printf("%s\n",
+	     val->String.val);
+      return OK;
+    }
+    /* unreachable */
   case GNS_Double:
     i = 0;
     while (1) {

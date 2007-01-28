@@ -121,7 +121,7 @@ However, active testing and qualified feedback of these features is always welco
    '()
    #t
    "WARNING"
-   (list "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
+   (list "SC" "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
    'always))
 
 ;; option not supported / used at the moment (useful?)
@@ -275,7 +275,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   '()
   #t 
   "about daemon fs stats" 
-  '()
+  (list "MC" "about" "daemon" "fs" "stats")
   'advanced) )
 
 (define (gnunet-gtk-stats-interval builder)

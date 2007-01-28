@@ -53,11 +53,40 @@ typedef enum {
   GNS_Node     = 1,
   GNS_Leaf     = 2,
   GNS_KindMask = 3,
+
+  /**
+   * Binary type (yes/no).
+   */
   GNS_Boolean  = 4,
-  GNS_String   = 8,
+  
+  /**
+   * Unsigned integer type.
+   */
+  GNS_UInt64   = 8,
+  
+  /**
+   * Double value type.
+   */
   GNS_Double   = 16,
-  GNS_UInt64   = 32,
-  GNS_TypeMask = 60,
+
+  /**
+   * Free-form string (possibly with suggestions) 
+   */
+  GNS_String   = 32,
+
+  /** 
+   * Multiple choice (results in space-seperated
+   * strings, one for each choice).
+   */
+  GNS_MC       = 64,
+
+  /** 
+   * Single choice (results in individual string
+   * representing the choice).
+   */
+  GNS_SC       = 128,
+
+  GNS_TypeMask = 252,
 } GNS_Type;
 
 /**
@@ -86,6 +115,9 @@ typedef union {
     double def;
   } Double;
 
+  /**
+   * Data for GNS_String, GNS_MC and GNS_SC.
+   */
   struct {
     /**
      * 0-terminated string, never NULL
@@ -95,9 +127,8 @@ typedef union {
     char * def;
 
     /**
-     * Set of legal values for "val", NULL termianted;
-     * if the set is empty (legalSet[0] == NULL), then
-     * any string maybe legal
+     * Set of legal or suggested values for 
+     * "val", NULL termianted.
      */
     char ** legalRange;
 

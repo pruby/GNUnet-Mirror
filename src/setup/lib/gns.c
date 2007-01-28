@@ -166,30 +166,32 @@ int configChangeListener(void * ctx,
     }
     break;
   }
-  case GNS_String: {
+  case GNS_String: 
+  case GNS_MC: {
     char * val;
 
-    if (pos->value.String.legalRange[0] != NULL) {
-      const char * ival;
-      if (SYSERR == GC_get_configuration_value_choice(cfg,
-						      section,
-						      option,
-						      (const char**) pos->value.String.legalRange,
-						      pos->value.String.def,
-						      &ival)) {
-	return SYSERR;
-      }
-      val = STRDUP(ival);
-    } else {
-      if (SYSERR == GC_get_configuration_value_string(cfg,
-						      section,
-						      option,
-						      pos->value.String.def,
-						      &val))
-	return SYSERR;
-    }
+    if (SYSERR == GC_get_configuration_value_string(cfg,
+						    section,
+						    option,
+						    pos->value.String.def,
+						    &val))
+      return SYSERR;  
     FREE(pos->value.String.val);
     pos->value.String.val = val;
+    break;
+  }
+  case GNS_SC: {
+    const char * ival;
+
+    if (SYSERR == GC_get_configuration_value_choice(cfg,
+						    section,
+						    option,
+						    (const char**) pos->value.String.legalRange,
+						    pos->value.String.def,
+						    &ival)) 
+      return SYSERR;    
+    FREE(pos->value.String.val);
+    pos->value.String.val = STRDUP(ival);
     break;
   }
   }
@@ -223,6 +225,8 @@ static void free_tree(struct GNS_Tree * t) {
   case GNS_Double:
     break; /* nothing to free */
   case GNS_String:
+  case GNS_MC:
+  case GNS_SC:
     i = 0;
     while (t->value.String.legalRange[i] != NULL) {
       FREE(t->value.String.legalRange[i]);
@@ -371,6 +375,8 @@ GNS_get_default_value_as_string(GNS_Type type,
       return STRDUP("YES");
     return STRDUP("NO");
   case GNS_String:
+  case GNS_MC:
+  case GNS_SC:
     if (value->String.def == NULL)
       return NULL;
     return STRDUP(value->String.def);

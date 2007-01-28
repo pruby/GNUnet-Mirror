@@ -1,3 +1,7 @@
+Sun Jan 28 02:43:37 MST 2007
+	Improving support for multiple choice configuration items
+	in gnunet-setup.
+
 Sat Jan 27 16:02:02 MST 2007
 	Changing $-expansion for interpretation of configuration file
 	(again).  Also, now the base-path for gnunetd defaults to

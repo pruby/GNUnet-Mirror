@@ -253,9 +253,7 @@ static int select_message_handler(void * mh_cls,
 }
 
 /**
- * Get the GNUnet UDP port from the configuration,
- * or from /etc/services if it is not specified in
- * the config file.
+ * Get the GNUnet TCP port from the configuration.
  */
 static unsigned short getGNUnetPort() {
   unsigned long long port;

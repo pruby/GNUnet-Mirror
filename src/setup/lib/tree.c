@@ -140,7 +140,9 @@ SCM get_option(SCM smob,
     return scm_from_uint64(t->value.UInt64.val);
   case GNS_Double:
     return scm_from_double(t->value.Double.val);
-  case GNS_String:
+  case GNS_String:  
+  case GNS_MC:
+  case GNS_SC:
     return scm_from_locale_string(t->value.String.val);
   }
   GE_BREAK(NULL, 0);
@@ -248,6 +250,7 @@ SCM build_tree_node(SCM section,
   int i;
   int clen;
   int len;
+  char * type;
 
   /* verify arguments */
   SCM_ASSERT(scm_string_p(section), section, SCM_ARG1, "build_tree_node");
@@ -266,7 +269,8 @@ SCM build_tree_node(SCM section,
     SCM_ASSERT(scm_list_p(range), range, SCM_ARGn, "build_tree_node");
     len = scm_to_int(scm_length(range));
     for (i=0;i<len;i++)
-      SCM_ASSERT(scm_string_p(scm_list_ref(range, scm_from_signed_integer(i))),
+      SCM_ASSERT(scm_string_p(scm_list_ref(range, 
+					   scm_from_signed_integer(i))),
 		 range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_integer(value)) {
     SCM_ASSERT(scm_pair_p(range),
@@ -305,13 +309,32 @@ SCM build_tree_node(SCM section,
     tree->value.String.val = scm_to_locale_string(value);
     tree->value.String.def = scm_to_locale_string(value);
     len = scm_to_int(scm_length(range));
-    tree->value.String.legalRange = MALLOC(sizeof(char*) * (len + 1));
-    for (i=0;i<len;i++)
+    tree->value.String.legalRange = MALLOC(sizeof(char*) * (len+1));
+    for (i=0;i<len-1;i++)
       tree->value.String.legalRange[i]
 	= scm_to_locale_string(scm_list_ref(range,
-					    scm_from_signed_integer(i)));
-    tree->value.String.legalRange[len] = NULL;
-    tree->type |= GNS_String;
+					    scm_from_signed_integer(i+1)));
+    if (len == 0)
+      tree->value.String.legalRange[len] = NULL;
+    else
+      tree->value.String.legalRange[len-1] = NULL;
+    if (len > 0)
+      type = scm_to_locale_string(scm_list_ref(range,
+					       scm_from_signed_integer(0)));
+    else
+      type = STRDUP("*");
+    GE_ASSERT(NULL, type != NULL);
+    if (0 == strcasecmp(type,
+			"MC")) {
+      tree->type |= GNS_MC;
+    } else if (0 == strcasecmp(type,
+			       "SC")) {
+      tree->type |= GNS_SC;
+    } else {
+      GE_BREAK(NULL, 0 == strcasecmp(type, "*"));
+      tree->type |= GNS_String;
+    }
+    FREE(type);
   } else if (scm_is_integer(value)) {
     tree->value.UInt64.val = scm_to_uint64(value);
     tree->value.UInt64.def = scm_to_uint64(value);

@@ -27,10 +27,6 @@
 ;; Second, a function "gnunet-config-change" which is notified whenever
 ;; configuration options are changed; the script can then
 ;; change the visibility of other options.
-;;
-;;
-;; TODO:
-;; - complete conversion of *.in to *.scm
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -218,7 +214,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
    '()
    #t
    "WARNING"
-   (list "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
+   (list "SC" "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
    'always))
 
 ;; option not supported / used at the moment (useful?)
@@ -330,7 +326,7 @@ Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that 
   '()
   #t
   "udp tcp nat"
-  '()
+  (list "MC" "udp" "udp6" "tcp" "tcp6" "nat")
   'advanced) )
  
 
@@ -360,7 +356,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   '()
   #t
   "advertising getoption fs stats traffic"
-  '()
+  (list "MC" "advertising" "getoption" "fs" "stats" "traffic" "dht" "tracekit" "tbench" "vpn" "chat")
   'advanced) )
  
 
@@ -588,7 +584,7 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
   '()
   #t
   "sqstore_sqlite"
-  (list "sqstore_sqlite" "sqstore_mysql")
+  (list "SC" "sqstore_sqlite" "sqstore_mysql")
   'advanced) )
 
 (define (modules-topology builder)
@@ -603,7 +599,7 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   '()
   #t
   "topology_default"
-  (list "topology_default" "topology_f2f")
+  (list "SC" "topology_default" "topology_f2f")
   'advanced) )
 
 
@@ -1254,7 +1250,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
  '()
  #t
  "eth0"
- '()
+ (list "*" "eth0" "eth1" "eth2")
  'nobasiclimit))
 
 (define (load builder)

@@ -82,6 +82,10 @@ typedef struct {
 
   int lastValue;
 
+  /**
+   * Can we compute statistics (because we have a previous
+   * value)?  YES or NO.
+   */
   int have_last;
 
   /**
@@ -480,14 +484,14 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
       currentTotal += monitor->ifcs[i].last_in;
   }
   if ( (di->lastSum > currentTotal) ||
-       (di->have_last == 0) ||
+       (di->have_last == NO) ||
        (now < di->lastCall) ) {
     /* integer overflow or first datapoint; since we cannot tell where
        / by how much the overflow happened, all we can do is ignore
        this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
     di->lastSum = currentTotal;
     di->lastCall = now;
-    di->have_last = 1;
+    di->have_last = YES;
     MUTEX_UNLOCK(monitor->statusMutex);
     return -1;
   }

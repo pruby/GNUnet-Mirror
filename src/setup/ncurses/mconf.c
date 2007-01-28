@@ -62,6 +62,8 @@ static void run_menu(struct GNS_Context * ctx,
   unsigned long long lval;
   double dval;
   GNS_Value * val;
+  char * tmp;
+  size_t tlen;
 
   fitem.type = 0;
   fitem.name = pos->description;
@@ -109,8 +111,11 @@ static void run_menu(struct GNS_Context * ctx,
 	if (pos->children[i]->visible) {
 	  items[st].name = pos->children[i]->option;
 	  items[st].text = gettext(pos->children[i]->description);
-	  items[st].help = gettext(pos->children[i]->help);	
-	  items[st].state = 0;
+	  items[st].help = gettext(pos->children[i]->help);
+	  if (st == msel)
+	    items[st].state = 1;
+	  else
+	    items[st].state = 0;
 	  st++;
 	}
 	i++;
@@ -182,112 +187,189 @@ static void run_menu(struct GNS_Context * ctx,
 	}
 	break;
       case GNS_String:
-	if (pos->value.String.legalRange[0] == NULL) {
-	  /* free form */	
-	  fitem.text = MALLOC(65536);
-	  strcpy(fitem.text,
-		 pos->value.String.val);
-	  fitem.text_len = strlen(fitem.text);
-	  fitem.help = pos->help;
-	  msel = 0;
-	  st = dlg_form(pos->option,
-			"",
-			20,
-			70,
-			15,
-			1,
-			&fitem,
-			&msel);
-	  switch (st) {
-	  case DLG_EXIT_OK:
-	    if (0 != GC_set_configuration_value_string(cfg,
-						       ectx,
-						       pos->section,
-						       pos->option,
-						       fitem.text)) {
-	      show_help(pos->option,
-			gettext_noop("Internal error! (Value invalid?)"));
-	      break;
-	    }
-	    FREE(fitem.text);	
-	    return;
-	  case DLG_EXIT_HELP:
-	    show_help(pos->option, pos->help);
-	    break;
-	  case DLG_EXIT_CANCEL:
-	  case DLG_EXIT_ERROR:
-	  case DLG_EXIT_ESC:
-	    FREE(fitem.text);	
-	    return;
-	  default:
+	/* free form */	
+	fitem.text = MALLOC(65536);
+	strcpy(fitem.text,
+	       pos->value.String.val);
+	fitem.text_len = strlen(fitem.text);
+	fitem.help = pos->help;
+	msel = 0;
+	st = dlg_form(pos->option,
+		      "",
+		      20,
+		      70,
+		      15,
+		      1,
+		      &fitem,
+		      &msel);
+	switch (st) {
+	case DLG_EXIT_OK:
+	  if (0 != GC_set_configuration_value_string(cfg,
+						     ectx,
+						     pos->section,
+						     pos->option,
+						     fitem.text)) {
+	    show_help(pos->option,
+		      gettext_noop("Internal error! (Value invalid?)"));
 	    break;
 	  }
 	  FREE(fitem.text);	
-	  /* end free form */
-	} else {
-	  /* begin choice */
-
-	  val = &pos->value;
-	  i = 0;
-	  while (val->String.legalRange[i] != NULL)
-	    i++;
-	  GE_ASSERT(ectx, i != 0);
-	  items = MALLOC(sizeof(DIALOG_LISTITEM) * i);
-	  i = 0;
-	  msel = -1;
-	
-	  while (val->String.legalRange[i] != NULL) {	
-	    items[i].name = "";
-	    items[i].text = val->String.legalRange[i];
-	    items[i].help = "";
-	    items[i].state = 0;
-	    if (0 == strcmp(val->String.legalRange[i],
-			    val->String.val)) {
-	      items[i].state = 1;
-	      msel = i;
-	    }
-	    if ( (msel == -1) &&
-		 (0 == strcmp(val->String.legalRange[i],
-			      val->String.def)) )
-	      msel = i;
-	    i++;
-	  }
-	  st = dlg_checklist(gettext(pos->option),
-			     gettext(pos->description),
-			     20,
-			     70,
-			     13,
-			     i,
-			     items,
-			     " *",
-			     FLAG_RADIO,
-			     &msel);	
-	  FREE(items);
-	  switch (st) {
-	  case DLG_EXIT_OK:
-	    if (0 != GC_set_configuration_value_choice(cfg,
-						       ectx,
-						       pos->section,
-						       pos->option,
-						       val->String.legalRange[msel])) {
-	      show_help(pos->option,
-			gettext_noop("Internal error! (Choice invalid?)"));
-	      break;
-	    }	
-	    return;
-	  case DLG_EXIT_HELP:
-	    show_help(pos->option,
-		      pos->help);
-	    break;
-	  case DLG_EXIT_ESC:
-	  case DLG_EXIT_ERROR:
-	  case DLG_EXIT_CANCEL:
-	  default:
-	    return;
-	  }
-	} /* end choice */
+	  return;
+	case DLG_EXIT_HELP:
+	  show_help(pos->option, pos->help);
+	  break;
+	case DLG_EXIT_CANCEL:
+	case DLG_EXIT_ERROR:
+	case DLG_EXIT_ESC:
+	  FREE(fitem.text);	
+	  return;
+	default:
+	  break;
+	}
+	FREE(fitem.text);	
+	/* end free form */
 	break;
-
+      case GNS_SC:
+	/* begin single choice */
+	val = &pos->value;
+	i = 0;
+	while (val->String.legalRange[i] != NULL)
+	  i++;
+	GE_ASSERT(ectx, i != 0);
+	items = MALLOC(sizeof(DIALOG_LISTITEM) * i);
+	i = 0;
+	msel = -1;
+	
+	while (val->String.legalRange[i] != NULL) {	
+	  items[i].name = "";
+	  items[i].text = val->String.legalRange[i];
+	  items[i].help = "";
+	  items[i].state = 0;
+	  if (0 == strcmp(val->String.legalRange[i],
+			  val->String.val)) {
+	    items[i].state = 1;
+	    msel = i;
+	  }
+	  if ( (msel == -1) &&
+	       (0 == strcmp(val->String.legalRange[i],
+			    val->String.def)) )
+	    msel = i;
+	  i++;
+	}
+	st = dlg_checklist(gettext(pos->option),
+			   gettext(pos->description),
+			   20,
+			   70,
+			   13,
+			   i,
+			   items,
+			   " *",
+			   FLAG_RADIO,
+			   &msel);	
+	FREE(items);
+	switch (st) {
+	case DLG_EXIT_OK:
+	  if (0 != GC_set_configuration_value_choice(cfg,
+						     ectx,
+						     pos->section,
+						     pos->option,
+						     val->String.legalRange[msel])) {
+	    show_help(pos->option,
+		      gettext_noop("Internal error! (Choice invalid?)"));
+	    break;
+	  }	
+	  return;
+	case DLG_EXIT_HELP:
+	  show_help(pos->option,
+		    pos->help);
+	  break;
+	case DLG_EXIT_ESC:
+	case DLG_EXIT_ERROR:
+	case DLG_EXIT_CANCEL:
+	default:
+	  return;
+	}
+	break;      
+      case GNS_MC:
+	/* begin multiple choice */
+	val = &pos->value;
+	i = 0;
+	tlen = 2;
+	while (val->String.legalRange[i] != NULL)
+	  i++;
+	GE_ASSERT(ectx, i != 0);
+	items = MALLOC(sizeof(DIALOG_LISTITEM) * i);
+	i = 0;
+	msel = 0;	
+	while (val->String.legalRange[i] != NULL) {	
+	  items[i].name = "";
+	  items[i].text = val->String.legalRange[i];
+	  tlen += strlen(val->String.legalRange[i]) + 1;
+	  items[i].help = "";
+	  items[i].state = 0;
+	  
+	  tmp = val->String.val;
+	  while (NULL != (tmp = strstr(tmp, 
+				       val->String.legalRange[i]))) {
+	    if ( ( (tmp == val->String.val) ||
+		   (tmp[-1] == ' ') ) &&
+		 ( (strlen(tmp) == strlen(val->String.legalRange[i])) ||
+		   (tmp[strlen(val->String.legalRange[i])] == ' ') ) ) {
+	      items[i].state = 1;
+	      break;
+	    }
+	    tmp++; /* make sure strstr advances */
+	  }
+	  i++;
+	}
+	st = dlg_checklist(gettext(pos->option),
+			   gettext(pos->description),
+			   20,
+			   70,
+			   13,
+			   i,
+			   items,
+			   " *",
+			   FLAG_CHECK,
+			   &msel);	
+	FREE(items);
+	switch (st) {
+	case DLG_EXIT_OK:
+	  tmp = MALLOC(tlen);
+	  tmp[0] = '\0';	  
+	  i = 0;
+	  while (val->String.legalRange[i] != NULL) {	
+	    if (items[i].state == 1) {
+	      strcat(tmp, items[i].text);
+	      strcat(tmp, " ");
+	    }
+	    i++;
+	  }
+	  if (strlen(tmp) > 0)
+	    tmp[strlen(tmp)-1] = '\0';
+	  if (0 != GC_set_configuration_value_choice(cfg,
+						     ectx,
+						     pos->section,
+						     pos->option,
+						     tmp)) {
+	    FREE(tmp);
+	    show_help(pos->option,
+		      gettext_noop("Internal error! (Choice invalid?)"));
+	    break;
+	  }	
+	  FREE(tmp);
+	  return;
+	case DLG_EXIT_HELP:
+	  show_help(pos->option,
+		    pos->help);
+	  break;
+	case DLG_EXIT_ESC:
+	case DLG_EXIT_ERROR:
+	case DLG_EXIT_CANCEL:
+	default:
+	  return;
+	}
+	break;      
       case GNS_Double:
 	fitem.text = MALLOC(64);
 	SNPRINTF(fitem.text,

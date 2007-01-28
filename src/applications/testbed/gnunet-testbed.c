@@ -48,12 +48,13 @@ typedef void (*sighandler_t)(int);
 #define TESTBED_VERSION		"0.0.5"
 #define HELPER                  "==HELPER=="
 
+
 /* we may want to change SHELL and PORT into values
    obtained from the configuration... */
 
 #define SHELL	(NULL == getenv("BASH") ? "/bin/bash" : getenv("BASH"))
 
-#define PORT getConfigurationInt("GNUNET-TESTBED","PORT")
+#define PORT 4242
 
 /* TB_ALIASES should probably be forced to live somewhere
    under ~/.gnunet */
