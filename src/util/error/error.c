@@ -74,6 +74,10 @@ void GE_LOG(struct GE_Context * ctx,
        process, so we have to create a new one if we're logging to the
        default context. */
     AllocConsole();
+    if (ctx)
+      ctx->handler(ctx->cls, kind, date, _("Error log:"));
+    else
+      fprintf(stderr, "%s\n", _("Error log:"));
 #endif
   }
   if ( (ctx != NULL)  &&
