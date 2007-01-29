@@ -113,6 +113,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
     event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
     event.data.UploadResumed.completed = ret->completed;
     event.data.UploadResumed.total = ret->total;
+    event.data.UploadResumed.uri = ret->uri;
     event.data.UploadResumed.state = ret->state;
     now = get_time();
     if ( (ret->total == 0) || (ret->completed == 0) ) {

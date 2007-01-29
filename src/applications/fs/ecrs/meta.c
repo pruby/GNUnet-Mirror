@@ -307,6 +307,8 @@ int ECRS_extractMetaData(struct GE_Context * ectx,
     return 0;
   head = EXTRACTOR_getKeywords(extractors,
                                filename);
+  head = EXTRACTOR_removeDuplicateKeywords(head,
+					   EXTRACTOR_DUPLICATES_REMOVE_UNKNOWN);
   pos = head;
   ret = 0;
   while (pos != NULL) {

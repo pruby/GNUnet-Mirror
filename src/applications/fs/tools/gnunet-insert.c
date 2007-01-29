@@ -178,6 +178,8 @@ static int listKeywords(const char * fn,
 			cls);
   } else {
     list = EXTRACTOR_getKeywords(l, fullName);
+    list = EXTRACTOR_removeDuplicateKeywords(list,
+					     EXTRACTOR_DUPLICATES_TYPELESS);
     EXTRACTOR_printKeywords(stdout,
 			    list);
     EXTRACTOR_freeKeywords(list);

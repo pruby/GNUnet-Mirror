@@ -661,6 +661,12 @@ typedef struct {
 
       FSUI_State state;
 
+      /**
+       * Set to the URI of the upload if upload is
+       * complete.  Otherwise NULL.
+       */
+      struct ECRS_URI * uri;
+
     } UploadResumed;
 
 

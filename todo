@@ -11,10 +11,11 @@ notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.1a [1'07]:
+0.7.1a [2'07]:
 - Windows installer [Nils]
   * uninstall: Remove account
   * libcurl, guile
+
 
 0.7.2 [3'07]:
 - new features:
