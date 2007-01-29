@@ -43,11 +43,11 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
   char * gnHome;
   char * fileName;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fileName);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fileName);
   gnHome = string_expandFileName(ectx, fileName);
   FREE(fileName);
   fileName = MALLOC(strlen(gnHome) + strlen(PSEUDODIR) + strlen(name) + 2);
