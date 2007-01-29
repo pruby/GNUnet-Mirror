@@ -90,8 +90,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
       align = ((pos / BLOCK_ALIGN_SIZE)+1) * BLOCK_ALIGN_SIZE;
       pos = align;
       if (pos >= len) {
-	/* malformed */
-	GE_BREAK(ectx, 0);
+	/* malformed - or partial download... */
 	break;
       }
     }
@@ -100,8 +99,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
 	    (data[epos] != '\0') )
       epos++;
     if (epos == len) {
-      GE_BREAK(ectx, 0);
-      return SYSERR; /* malformed */
+      return SYSERR; /* malformed - or partial download */
     }
 
     fi.uri = ECRS_stringToUri(ectx,
@@ -125,8 +123,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     pos += sizeof(unsigned int);
     if (pos + mdSize > len) {
       ECRS_freeUri(fi.uri);
-      GE_BREAK(ectx, 0);
-      return SYSERR; /* malformed! */
+      return SYSERR; /* malformed - or partial download */
     }
 
     fi.meta = ECRS_deserializeMetaData(ectx,
