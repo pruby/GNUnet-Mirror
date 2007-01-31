@@ -208,7 +208,7 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     execpath[--n] = '\0';
 
   if ( (n > 3) &&
-       (0 == strcmp(&execpath[n-3], "bin")) ) {
+       (0 == strnicmp(&execpath[n-3], "bin", 3)) ) {
     /* good, strip of '/bin'! */
     execpath[n-3] = '\0';
     n -= 3;
@@ -218,16 +218,16 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     dirname = "";
     break;
   case IPK_BINDIR:
-    dirname = "/bin/";
+    dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
     break;
   case IPK_LIBDIR:
-    dirname = "/lib/GNUnet/";
+    dirname = DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
     break;
   case IPK_DATADIR:
-    dirname = "/share/GNUnet/";
+    dirname = DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
     break;
   case IPK_LOCALEDIR:
-    dirname = "/share/locale/";
+    dirname = DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "locale" DIR_SEPARATOR_STR ;
     break;
   default:
     FREE(execpath);
