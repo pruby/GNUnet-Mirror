@@ -24,9 +24,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util_threads.h"
 #include "gnunet_util_string.h"
-#include "platform.h"
 
 #ifndef MINGW
 typedef struct SignalHandlerContext {

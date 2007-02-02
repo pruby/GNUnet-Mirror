@@ -52,11 +52,11 @@
  * - the code is not really pretty
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
-#include "platform.h"
 #include "ip.h"
 
 #define DEBUG_HTTP NO

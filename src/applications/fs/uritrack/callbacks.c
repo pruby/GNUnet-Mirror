@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
-#include "platform.h"
 
 /**
  * @brief Struct for URITRACK callback.

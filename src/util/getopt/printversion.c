@@ -24,9 +24,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_getopt.h"
-#include "platform.h"
 
 int gnunet_getopt_print_version(CommandLineProcessorContext * ctx,
 				void * scls,

@@ -23,9 +23,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_cron.h"
-#include "platform.h"
 
 static int global;
 static int global2;

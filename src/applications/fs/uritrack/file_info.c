@@ -28,10 +28,10 @@
  * An IPC semaphore is used to guard the access.
  */
 
+#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
-#include "platform.h"
 #include "callbacks.h"
 
 #define DEBUG_FILE_INFO NO

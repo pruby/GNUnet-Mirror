@@ -28,9 +28,9 @@
  * @file util/hashtable.c
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
-#include "platform.h"
 
 typedef struct KeyValuePair {
   void *key;

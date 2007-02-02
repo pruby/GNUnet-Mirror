@@ -22,10 +22,10 @@
  * @brief testcase for util/network_client/tcpiotest.c
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_config_impl.h"
-#include "platform.h"
 
 static struct GC_Configuration * cfg;
 

@@ -31,8 +31,8 @@
  * @author Heikki Lindholm
  */
 
-#include <stdlib.h>
 #include "platform.h"
+#include <stdlib.h>
 #include "gnunet_util.h"
 #include "ip6.h"
 #if HAVE_IFADDRS_H

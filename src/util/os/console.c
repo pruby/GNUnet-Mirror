@@ -27,11 +27,11 @@
  * receives a SIGTERM/SIGHUP etc.
  */
 
+#include "platform.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_disk.h"
-#include "platform.h"
 
 /**
  * Fork and start a new session to go into the background

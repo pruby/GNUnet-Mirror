@@ -25,9 +25,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "hostkey.h"
 #include "gnunet_directories.h"
-#include "platform.h"
 
 #define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 

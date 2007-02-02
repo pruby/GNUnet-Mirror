@@ -25,8 +25,8 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util_config_impl.h"
 #include "platform.h"
+#include "gnunet_util_config_impl.h"
 
 void GC_free(struct GC_Configuration * cfg) {
   cfg->free(cfg);

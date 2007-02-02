@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
 #include "tree.h"
-#include "platform.h"
 
 #include <libguile.h>
 

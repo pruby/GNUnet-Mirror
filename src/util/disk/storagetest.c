@@ -24,8 +24,8 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 #define TESTSTRING "Hello World\0"
 

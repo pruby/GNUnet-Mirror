@@ -24,11 +24,11 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
-#include "platform.h"
 #include "ip6.h"
 
 #define DEBUG_UDP6 NO

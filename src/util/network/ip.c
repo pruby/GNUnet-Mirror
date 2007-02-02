@@ -37,8 +37,8 @@
  * @author Tzvetan Horozov
  */
 
-#include <stdlib.h>
 #include "platform.h"
+#include <stdlib.h>
 #include "gnunet_util_network.h"
 
 /* maximum length of hostname */

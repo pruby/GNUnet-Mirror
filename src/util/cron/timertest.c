@@ -22,9 +22,9 @@
  * @brief tests precision of timing for cron
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_cron.h"
-#include "platform.h"
 
 static void semaphore_up(void * ctx) {
   struct SEMAPHORE * sem = ctx;

@@ -25,8 +25,8 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util_string.h"
 #include "platform.h"
+#include "gnunet_util_string.h"
 #if HAVE_ICONV_H
 #include <iconv.h>
 #endif

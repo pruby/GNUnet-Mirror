@@ -25,10 +25,10 @@
  * @author Antti Salonen, Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
 #include "gnunet_rpc_service.h"
-#include "platform.h"
 
 /**
  * A parameter to/from an RPC call. These (and nothing else) are stored in
