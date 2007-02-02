@@ -113,6 +113,21 @@ size_t strlcat(char * dest,
 }
 #endif
 
+#if !HAVE_STRNICMP
+#if HAVE_STRNCASECMP
+/**
+ * @brief case-insensitive string comparisons
+ * @return see strcmp
+ */
+int strnicmp(const char *string1, const char *string2, int count)
+{
+  return strncasecmp(string1, string2, count);
+}
+#else
+#error PORT-ME: implement strnicmp (strncasecmp)
+#endif
+#endif
+
 /**
  * Give relative time in human-readable fancy format.
  * @param delta time in milli seconds

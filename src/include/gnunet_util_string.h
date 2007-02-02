@@ -214,6 +214,9 @@ size_t strlcat(char *dest,
 	       size_t count);
 #endif
 
+#if !HAVE_STRNICMP
+int strnicmp(const char *string1, const char *string2, int count);
+#endif
 
 /* ************** internal implementations, use macros above! ************** */
 
