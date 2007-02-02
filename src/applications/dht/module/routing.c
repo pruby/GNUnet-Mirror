@@ -354,8 +354,6 @@ static int addRoute(const PeerIdentity * sender,
       return SYSERR;
     }
     if (records[i] == NULL) {
-      records[i] = MALLOC(sizeof(DHTQueryRecord));
-      records[i]->get = NULL;
       rt_pos = i;
       expire = 0;
     } else if (records[i]->expires < expire) {
@@ -367,6 +365,10 @@ static int addRoute(const PeerIdentity * sender,
     /* do not route, expiration time too high */
     MUTEX_UNLOCK(lock);
     return SYSERR;
+  }
+  if (records[rt_pos] == NULL) {
+    records[rt_pos] = MALLOC(sizeof(DHTQueryRecord));
+    records[rt_pos]->get = NULL;
   }
   if (records[rt_pos]->get != NULL) {
     FREE(records[rt_pos]->get);
