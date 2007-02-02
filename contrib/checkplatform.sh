@@ -1,5 +1,5 @@
 #!/bin/sh
-for n in `find * -name "*.c"`
+for n in `grep -rl "#include.*platform\.h" * | grep \.c\$`
 do
   PF=`grep "#include" $n | head -n1 | grep platform.h | wc -l`
   if test $PF = 0
