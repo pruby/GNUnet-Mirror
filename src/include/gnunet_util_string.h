@@ -46,6 +46,7 @@ extern "C" {
 #endif
 #endif
 
+#include "platform.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_config.h"
 
