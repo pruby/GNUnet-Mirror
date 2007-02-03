@@ -208,7 +208,7 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     execpath[--n] = '\0';
 
   if ( (n > 3) &&
-       (0 == strcasecmp(&execpath[n-3], "bin", 3)) ) {
+       (0 == strcasecmp(&execpath[n-3], "bin")) ) {
     /* good, strip of '/bin'! */
     execpath[n-3] = '\0';
     n -= 3;
