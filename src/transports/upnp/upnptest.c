@@ -23,12 +23,12 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_upnp_service.h"
 #include "gnunet_core.h"
 #include "gnunet_util_error_loggers.h"
+#include "platform.h"
 
 
 

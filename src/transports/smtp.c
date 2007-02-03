@@ -25,10 +25,10 @@
  * @author Renaldo Ferreira
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "platform.h"
 #include <libesmtp.h>
 
 #define DEBUG_SMTP NO

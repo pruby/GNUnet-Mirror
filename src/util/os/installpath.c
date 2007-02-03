@@ -31,13 +31,12 @@ extern "C" {
 #endif
 #endif
 
-#include "platform.h"
-
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "platform.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_config.h"
 #include "gnunet_util_disk.h"
@@ -209,7 +208,7 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     execpath[--n] = '\0';
 
   if ( (n > 3) &&
-       (0 == strnicmp(&execpath[n-3], "bin", 3)) ) {
+       (0 == strcasecmp(&execpath[n-3], "bin", 3)) ) {
     /* good, strip of '/bin'! */
     execpath[n-3] = '\0';
     n -= 3;

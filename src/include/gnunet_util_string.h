@@ -22,7 +22,6 @@
  * @file include/gnunet_util_string.h
  * @brief string handling functions (including malloc,
  *        command line parsing and --help formatting)
- * @note include platform.h first
  *
  * @author Christian Grothoff
  * @author Krista Bennett
@@ -47,6 +46,7 @@ extern "C" {
 #endif
 #endif
 
+#include "platform.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_config.h"
 

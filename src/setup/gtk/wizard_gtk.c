@@ -25,8 +25,8 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
+#include "platform.h"
 #include "glade_support.h"
 
 #include "wizard_gtk.h"

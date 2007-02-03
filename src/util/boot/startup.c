@@ -24,11 +24,11 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
+#include "platform.h"
 
 #define DO_REQUEST NO
 

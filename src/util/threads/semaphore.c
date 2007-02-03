@@ -26,10 +26,10 @@
  * and thread creation are provided.
  */
 
-#include "platform.h"
 #include "gnunet_util_threads.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
+#include "platform.h"
 
 #if SOLARIS || FREEBSD || OSX
 #include <semaphore.h>

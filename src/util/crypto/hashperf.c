@@ -24,9 +24,9 @@
  * @file util/crypto/hashperf.c
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
+#include "platform.h"
 
 static void perfHash() {
   HashCode512 hc1;

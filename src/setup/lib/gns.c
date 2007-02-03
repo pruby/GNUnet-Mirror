@@ -24,9 +24,9 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_setup_lib.h"
 #include "gnunet_util.h"
+#include "platform.h"
 
 #include "tree.h"
 

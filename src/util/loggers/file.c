@@ -25,10 +25,10 @@
  * @author Christian Grothoff
  */
 #define _XOPEN_SOURCE /* glibc2 needs this */
-#include "platform.h"
 #include "gnunet_util_error_loggers.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util.h"
+#include "platform.h"
 #include <time.h>
 
 /**

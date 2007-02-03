@@ -24,8 +24,8 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util_network.h"
+#include "platform.h"
 #include "network.h"
 
 #define DEBUG_IO NO

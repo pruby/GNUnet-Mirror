@@ -31,7 +31,6 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
@@ -40,6 +39,7 @@
 #include "gnunet_stats_service.h"
 #include "gnunet_topology_service.h"
 #include "bootstrap.h"
+#include "platform.h"
 
 /**
  * Send our hello to a random connected host on a regular basis.

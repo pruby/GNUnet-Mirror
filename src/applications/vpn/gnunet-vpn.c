@@ -24,11 +24,11 @@
  * @author Michael John Wensley
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_protocols.h"
+#include "platform.h"
 
 #define TEMPLATE_VERSION "2006072900"
 

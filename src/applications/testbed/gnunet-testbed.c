@@ -34,8 +34,8 @@
  * - security: limit "exec" to certain processes
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
+#include "platform.h"
 #include "testbed.h"
 #include "socket.h"
 #include "commands.h"

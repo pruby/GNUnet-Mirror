@@ -25,8 +25,8 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include <stdlib.h>
+#include "platform.h"
 #include "gnunet_util.h"
 #include "ip.h"
 

@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_boot.h"
+#include "platform.h"
 
 #define TEMPLATE_VERSION "0.0.0"
 

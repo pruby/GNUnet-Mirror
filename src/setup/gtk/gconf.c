@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_setup_lib.h"
 #include "glade_support.h"
 #include "gconf.h"
+#include "platform.h"
 
 /**
  * @brief definition of the entries in the main model for

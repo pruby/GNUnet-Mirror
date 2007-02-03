@@ -37,11 +37,11 @@
  * provided in transports/tcp.c.
  */
 
-#include "platform.h"
 #include "gnunet_util_network.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_config.h"
 #include "gnunet_protocols.h"
+#include "platform.h"
 
 #define DEBUG_TCPIO NO
 

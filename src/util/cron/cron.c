@@ -34,9 +34,9 @@
  * then run the actual job.
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_cron.h"
+#include "platform.h"
 
 #define DEBUG_CRON NO
 
