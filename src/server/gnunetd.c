@@ -136,6 +136,10 @@ int gnunet_main() {
 				  NO);
     return SYSERR;
   }
+  
+  /* enforce filesystem limits */
+  capFSQuotaSize(ectx, cfg);
+  
   initConnection(ectx, cfg, mon, cron);
   loadApplicationModules();
   writePIDFile(ectx, cfg);

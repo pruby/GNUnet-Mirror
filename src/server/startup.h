@@ -50,6 +50,15 @@ void deletePIDFile(struct GE_Context * ectx,
 		   struct GC_Configuration * cfg);
 
 /**
+ * @brief Cap datastore limit to the filesystem's capabilities
+ * @notice FAT does not support files larger than 2/4 GB
+ * @param ectx error handler
+ * @param cfg configuration manager
+ */
+void capFSQuotaSize(struct GE_Context * ectx,
+               struct GC_Configuration * cfg);
+
+/**
  * Shutdown gnunetd
  * @param cfg configuration
  * @param sig signal code that causes shutdown, optional

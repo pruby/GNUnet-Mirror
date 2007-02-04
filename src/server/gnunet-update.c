@@ -197,6 +197,9 @@ static void work() {
   		
   	return;
   }
+  
+  /* enforce filesystem limits */
+  capFSQuotaSize(ectx, cfg);
 
   /* force update of common modules (used by core) */
   updateModule("transport");

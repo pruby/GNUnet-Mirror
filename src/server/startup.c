@@ -161,6 +161,95 @@ int setFdLimit(struct GE_Context * ectx,
   return OK;
 }
 
+/**
+ * @brief Cap datastore limit to the filesystem's capabilities
+ * @notice FAT does not support files larger than 2/4 GB
+ * @param ectx error handler
+ * @param cfg configuration manager
+ */
+void capFSQuotaSize(struct GE_Context * ectx,
+               struct GC_Configuration * cfg)
+{
+#ifdef WINDOWS
+  unsigned long long quota, cap;
+  char *afsdir, fs[MAX_PATH + 1];
+  DWORD flags;
+  
+  if (-1 == GC_get_configuration_value_number(cfg,
+                 "FS",
+                 "QUOTA",
+                 0,
+                 ((unsigned long long)-1)/1024/1024,
+                 1024,
+                 &quota))
+    return;
+
+  GC_get_configuration_value_filename(cfg,
+              "FS",
+              "DIR",
+              VAR_DAEMON_DIRECTORY "/data/fs/",
+              &afsdir);
+  GE_ASSERT(ectx, strlen(afsdir) > 2);
+  
+  /* get root directory */
+  afsdir[3] = '\0';
+
+  if (!GetVolumeInformation(afsdir,
+               NULL,
+               0,
+               NULL,
+               NULL,
+               &flags,
+               fs,
+               _MAX_PATH + 1)) {
+    GE_LOG(ectx,
+      GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      _("Unable to obtain filesystem information for `%s': %u\n"),
+      afsdir,
+      GetLastError());
+      
+    return;
+  }
+  
+  if (strncasecmp(fs, "NTFS", 4) == 0)
+    cap = 0;
+  else if (strcasecmp(fs, "FAT32") == 0)
+    cap = 4000;
+  else if (strcasecmp(fs, "FAT16") == 0)
+    cap = 2000;
+  else {
+    /* unknown FS */
+    GE_LOG(ectx,
+      GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      _("Filesystem `%s' of partition `%s' is unknown. Please "
+        "contact gnunet-developers@gnu.org!"),
+      fs,
+      afsdir);
+    
+    if (!(flags & FILE_PERSISTENT_ACLS))
+      cap = 2000;
+    else
+      cap = 0;
+  }
+  
+  if (cap != 0 && cap < quota) {
+    GE_LOG(ectx,
+      GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      _("Limiting datastore size to %llu GB, because the `%s' filesystem does "
+        "not support larger files. Please consider storing the database on "
+        "a NTFS partition!\n"),
+      cap / 1000,
+      fs);
+    
+    GC_set_configuration_value_number(cfg,
+               ectx,
+               "FS",
+               "QUOTA",
+               cap);
+  }
+#endif
+}
+
 static char * getPIDFile(struct GC_Configuration * cfg) {
   char * pif;
 
