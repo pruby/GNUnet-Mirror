@@ -19,6 +19,7 @@ notes:
 
 0.7.2 [3'07]:
 - new features:
+  * IO load detection
   * ECRS: 
     + isIndexed database and query protocol
   * XFS / support for location URIs [CG] 
