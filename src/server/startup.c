@@ -214,9 +214,9 @@ void capFSQuotaSize(struct GE_Context * ectx,
   if (strncasecmp(fs, "NTFS", 4) == 0)
     cap = 0;
   else if (strcasecmp(fs, "FAT32") == 0)
-    cap = 4000;
+    cap = 3000;
   else if (strcasecmp(fs, "FAT16") == 0)
-    cap = 2000;
+    cap = 1500;
   else {
     /* unknown FS */
     GE_LOG(ectx,
@@ -227,12 +227,12 @@ void capFSQuotaSize(struct GE_Context * ectx,
       afsdir);
     
     if (!(flags & FILE_PERSISTENT_ACLS))
-      cap = 2000;
+      cap = 1500;
     else
       cap = 0;
   }
   
-  if (cap != 0 && cap < quota) {
+  if ((cap != 0) && (cap < quota)) {
     GE_LOG(ectx,
       GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
       _("Limiting datastore size to %llu GB, because the `%s' filesystem does "

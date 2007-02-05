@@ -1235,7 +1235,8 @@ static void expireSendBufferEntries(BufferEntry * be) {
  * free it.
  * @return number of prepared entries
  */
-static unsigned int prepareSelectedMessages(BufferEntry * be) {
+static unsigned int
+prepareSelectedMessages(BufferEntry * be) {
   unsigned int ret;
   int i;
   char *tmpMsg;
@@ -1245,15 +1246,16 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
   for (i = 0; i < be->sendBufferSize; i++) {
     entry = be->sendBuffer[i];
 
-    if(entry->knapsackSolution == YES) {
-      if(entry->callback != NULL) {
+    if (entry->knapsackSolution == YES) {
+      if (entry->callback != NULL) {
         tmpMsg = MALLOC(entry->len);
-        if(OK == entry->callback(tmpMsg, entry->closure, entry->len)) {
+        if (OK == entry->callback(tmpMsg, 
+				  entry->closure,
+				  entry->len)) {
           entry->callback = NULL;
           entry->closure = tmpMsg;
           ret++;
-        }
-        else {
+        } else {
           FREE(tmpMsg);
           entry->callback = NULL;
           entry->closure = NULL;
@@ -1935,33 +1937,10 @@ static void fENHCallback(BufferEntry * be,
     wrap->method(&be->session.sender, wrap->arg);
 }
 
-
-/**
- * Copy the pre-build message part of lenth "len" in closure to the
- * buffer buf. Frees the closure.
- *
- * @param buf the target location where the message is assembled
- * @param closure the pre-build message
- * @param len the length of the pre-build message
- * @return OK (always successful)
- */
-static int copyCallback(void *buf,
-			void *closure,
-			unsigned short len) {
-  if(len > 0) {
-    memcpy(buf, closure, len);
-    FREE(closure);
-    return OK;
-  }
-  else {
-    FREE(closure);
-    return SYSERR;
-  }
-}
-
 /**
  * Shutdown the connection.  Send a HANGUP message to the other side
- * and mark the sessionkey as dead.
+ * and mark the sessionkey as dead.  Assumes access is already
+ * synchronized.
  *
  * @param be the connection to shutdown
  */
@@ -1986,7 +1965,7 @@ static void shutdownConnection(BufferEntry * be) {
   if(be->status == STAT_DOWN)
     return;                     /* nothing to do */
   if(be->status == STAT_UP) {
-    SendEntry *se;
+    SendEntry * se;
 
     hangup.header.type = htons(P2P_PROTO_hangup);
     hangup.header.size = htons(sizeof(P2P_hangup_MESSAGE));
@@ -1997,10 +1976,12 @@ static void shutdownConnection(BufferEntry * be) {
     se->flags = SE_FLAG_PLACE_TAIL;
     se->pri = EXTREME_PRIORITY;
     se->transmissionTime = get_time();  /* now */
-    se->callback = &copyCallback;
+    se->callback = NULL;
     se->closure = MALLOC(sizeof(P2P_hangup_MESSAGE));
     se->knapsackSolution = NO;
-    memcpy(se->closure, &hangup, sizeof(P2P_hangup_MESSAGE));
+    memcpy(se->closure, 
+	   &hangup, 
+	   sizeof(P2P_hangup_MESSAGE));
     appendToBuffer(be, se);
     if(stats != NULL)
       stats->change(stat_hangupSent, 1);
@@ -2014,11 +1995,11 @@ static void shutdownConnection(BufferEntry * be) {
   be->status = STAT_DOWN;
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
-  if(be->session.tsession != NULL) {
+  if (be->session.tsession != NULL) {
     transport->disconnect(be->session.tsession);
     be->session.tsession = NULL;
   }
-  for(i = 0; i < be->sendBufferSize; i++) {
+  for (i=0; i<be->sendBufferSize; i++) {
     FREENONNULL(be->sendBuffer[i]->closure);
     FREE(be->sendBuffer[i]);
   }
@@ -2470,7 +2451,7 @@ static void cronDecreaseLiveness(void *unused) {
       switch (root->status) {
       case STAT_DOWN:
         /* just compact linked list */
-        if(prev == NULL)
+        if (prev == NULL)
           CONNECTION_buffer_[i] = root->overflowChain;
         else
           prev->overflowChain = root->overflowChain;
@@ -3511,7 +3492,7 @@ void unicast(const PeerIdentity * receiver,
   closure = MALLOC(len);
   memcpy(closure, msg, len);
   unicastCallback(receiver,
-                  &copyCallback,
+                  NULL,
 		  closure,
 		  len,
 		  importance,
