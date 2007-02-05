@@ -111,13 +111,13 @@ int os_set_fd_limit(struct GE_Context * ectx,
   ret = setrlimit(RLIMIT_NOFILE, &rlim);
   if (ret != 0) {
     GE_LOG_STRERROR(ectx,
-                    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                    GE_INFO | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                     "setrlimit");
     return SYSERR;
   }
 #else
   GE_LOG(ectx,
-         GE_WARNING | GE_USER | GE_ADMIN,
+         GE_INFO | GE_USER | GE_ADMIN,
          _("Setting open descriptor limit not supported.\n"));
 #endif
   return OK;

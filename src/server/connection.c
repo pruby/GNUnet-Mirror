@@ -3417,7 +3417,7 @@ int sendPlaintext(TSession * tsession,
  */
 void unicastCallback(const PeerIdentity * hostId,
                      BuildMessageCallback callback,
-                     void *closure,
+                     void * closure,
                      unsigned short len,
                      unsigned int importance,
 		     unsigned int maxdelay) {
