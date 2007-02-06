@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -332,7 +332,6 @@ static void run_menu(struct GNS_Context * ctx,
 			   " *",
 			   FLAG_CHECK,
 			   &msel);	
-	FREE(items);
 	switch (st) {
 	case DLG_EXIT_OK:
 	  tmp = MALLOC(tlen);
@@ -358,6 +357,7 @@ static void run_menu(struct GNS_Context * ctx,
 	    break;
 	  }	
 	  FREE(tmp);
+	  FREE(items);
 	  return;
 	case DLG_EXIT_HELP:
 	  show_help(pos->option,
@@ -367,8 +367,10 @@ static void run_menu(struct GNS_Context * ctx,
 	case DLG_EXIT_ERROR:
 	case DLG_EXIT_CANCEL:
 	default:
+	  FREE(items);
 	  return;
 	}
+	FREE(items);
 	break;      
       case GNS_Double:
 	fitem.text = MALLOC(64);
