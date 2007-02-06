@@ -61,7 +61,7 @@ extern "C" {
  *        smaller than 40 MB.
  * @return pointer to size bytes of memory
  */
-#define MALLOC(size) xmalloc_(size, __FILE__,__LINE__,__FUNCTION__)
+#define MALLOC(size) xmalloc_(size, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * Wrapper around malloc. Allocates size bytes of memory.
@@ -69,7 +69,7 @@ extern "C" {
  * @param size the number of bytes to allocate
  * @return pointer to size bytes of memory
  */
-#define MALLOC_LARGE(size) xmalloc_unchecked_(size, __FILE__,__LINE__,__FUNCTION__)
+#define MALLOC_LARGE(size) xmalloc_unchecked_(size, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * Wrapper around realloc. Rellocates size bytes of memory.
@@ -78,7 +78,7 @@ extern "C" {
  * @param size the number of bytes to reallocate
  * @return pointer to size bytes of memory
  */
-#define REALLOC(ptr, size) xrealloc_(ptr, size, __FILE__,__LINE__,__FUNCTION__)
+#define REALLOC(ptr, size) xrealloc_(ptr, size, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * Wrapper around free. Frees the memory referred to by ptr.
@@ -88,7 +88,7 @@ extern "C" {
  * @param ptr location where to free the memory. ptr must have
  *     been returned by STRDUP, MALLOC or GROW earlier.
  */
-#define FREE(ptr) xfree_(ptr, __FILE__, __LINE__,__FUNCTION__)
+#define FREE(ptr) xfree_(ptr, __FILE__, __LINE__,  __FUNCTION__)
 
 /**
  * Free the memory pointed to by ptr if ptr is not NULL.
@@ -115,7 +115,7 @@ extern "C" {
  * @param n the maximum number of characters to copy (+1 for 0-termination)
  * @return a copy of the string including zero-termination
  */
-#define STRNDUP(a,n) xstrndup_(a,n,__FILE__,__LINE__,__FUNCTION__)
+#define STRNDUP(a,n) xstrndup_(a, n, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * Grow a well-typed (!) array.  This is a convenience
