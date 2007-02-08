@@ -10,13 +10,8 @@ LIBS = @LIBINTL@ @LIBS@
 plugin_LTLIBRARIES = \
   libgnunetsetup_gtk.la
 
-EXTRA_DIST = \
- gnunet-setup.glade 
-
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) gnunet-setup.glade $(DESTDIR)$(pkgdatadir)
-	@$(NORMAL_INSTALL)
+pkgdata_DATA = \
+  gnunet-setup.glade
 
 libgnunetsetup_gtk_la_SOURCES = \
  about.c \
