@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include -I../lib
+INCLUDES = -I$(top_srcdir)/src/include -I$(top_srcdir)/src/setup/lib
 
 AM_CFLAGS = $(GTK_CFLAGS)
 
