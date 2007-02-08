@@ -176,8 +176,9 @@ static void addToTree(GtkTreeStore * model,
 	j *= 2;
       }
       tmp = MALLOC(tmpl);
-      /* For now, only allow multiple choice for less than 10 entries... */
-      if (i < 10) {
+      /* For now, only allow multiple choice for less than 12 entries... 
+	 (10 are needed for applications!) */
+      if (i < 12) {
 	while (--j >= 0) {
 	  tmp[0] = '\0';
 	  for (k=0;k<i;k++) {
@@ -195,6 +196,10 @@ static void addToTree(GtkTreeStore * model,
 					    -1);
 	}
       } else {
+	fprintf(stderr,
+		"Too many choices in multiple choice for `%s': %d\n",
+		pos->option,
+		i);
 	GE_BREAK(NULL, 0);
       }
       FREE(tmp);
