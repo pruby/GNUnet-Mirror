@@ -78,11 +78,11 @@ static void setNamespaceRoot(struct GE_Context * ectx,
     return;
   }
   name = ECRS_getNamespaceName(&ns);
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &fnBase);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_ROOTS) +
 	      strlen(name) +
