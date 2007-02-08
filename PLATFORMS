@@ -2,9 +2,9 @@ This file lists the known problems with GNUnet on various platforms.
 
 Let us know if you know more about it then we do.  The test is quite
 easy.  Run "make check" and "gnunet-transport-check" *after*
-configuring GNUnet (including placing a valid gnunet.conf into
-~/.gnunet and /etc/gnunetd.conf).  That should yield all the
-information necessary (assuming it compiles).
+configuring GNUnet (including placing a valid configuration files at
+~/.gnunet/gnunet.conf and /etc/gnunetd.conf).  That should yield all
+the information necessary (assuming it compiles).
 
 
 GNU/Linux (x86):

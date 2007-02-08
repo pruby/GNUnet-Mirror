@@ -8,6 +8,24 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.1a to 0.7.1b
+================
+
+Run
+
+$ gnunet-update
+
+(as the same user that also runs gnunetd).  Check your configuration
+file for values with "$"-symbols.  If it contains any, you must add
+definitions for those paths into a special new section "PATHS" --
+otherwise GNUnet will not expand the "$"-variables.  Alternatively,
+reconfigure using gnunet-setup.  The default location for gnunetd's
+files changed from "/var/lib/GNUnet" to "/var/lib/gnunet".  If you
+create a new configuration file from scratch (or want to switch to
+the new default), you should rename the old directory at the time 
+of the change.
+
+
 0.7.1 to 0.7.1a
 ===============
 

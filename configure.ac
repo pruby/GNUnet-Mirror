@@ -417,7 +417,7 @@ then
 fi
 
 # check for gettext
-AM_GNU_GETTEXT_VERSION(0.13)
+AM_GNU_GETTEXT_VERSION([0.16.1])
 AM_GNU_GETTEXT([external])
 
 # check for iconv

@@ -1,4 +1,4 @@
-EXTRA_DIST = \
+EXTRA_DIST = glibc2.m4 intl.m4 intldir.m4 lock.m4 visibility.m4 \
 codeset.m4 \
 freetype2.m4\
 gettext.m4\
