@@ -1,5 +1,7 @@
 Thu Feb  8 13:21:34 MST 2007
 	Updating gettext to 0.16.1.
+	Minor bugfix in build process (#1180, #1181).
+	Minor bugfix in gnunet-search (#1179).
 
 Sun Jan 28 02:43:37 MST 2007
 	Improving support for multiple choice configuration items
