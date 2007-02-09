@@ -577,6 +577,7 @@ static void * selectThread(void * ctx) {
 	int pending;
 	int udp_sock;
 	int error;
+	socklen_t optlen;
 	
 	udp_sock = sh->listen_sock->handle;
 	lenOfIncomingAddr = sh->max_addr_len;
@@ -584,8 +585,14 @@ static void * selectThread(void * ctx) {
 	       0,
 	       lenOfIncomingAddr);
 	pending = 0;
-	/* @todo FIXME in PlibC */
-#ifdef MINGW
+	optlen = sizeof(pending);
+#ifdef OSX
+	error = GETSOCKOPT(udp_sock,
+			   SOL_SOCKET,
+			   SO_NREAD,
+			   &pending,
+			   &optlen);
+#elif MINGW
 	error = ioctlsocket(udp_sock,
 			    FIONREAD,
 			    &pending);
@@ -594,7 +601,8 @@ static void * selectThread(void * ctx) {
 		      FIONREAD,
 		      &pending);
 #endif
-	if (error != 0) {
+	if ( (error != 0) || 
+	     (optlen != sizeof(pending)) ) {
 	  GE_LOG_STRERROR(sh->ectx,
 			  GE_ERROR | GE_ADMIN | GE_BULK,
 			  "ioctl");
@@ -607,7 +615,10 @@ static void * selectThread(void * ctx) {
 	       sh,
 	       pending);
 #endif
-	GE_ASSERT(sh->ectx, pending >= 0);
+	GE_ASSERT(sh->ectx, 
+		  pending >= 0);
+	if (pending >= 65536) 
+	  pending = 65536;	
 	if (pending == 0) {
 	  /* maybe empty UDP packet was sent (see report on bug-gnunet,
 	     5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
@@ -621,10 +632,6 @@ static void * selectThread(void * ctx) {
 	} else {
 	  char * msg;
 
-	  if (pending >= 65536) 
-	    /* OS X includes size of all pending packets,
-	       so we must reduce pending in that case */
-	    pending = 65536;	
 	  msg = MALLOC(pending);
 	  size = 0;
 	  if (YES != socket_recv_from(sh->listen_sock,
@@ -646,8 +653,7 @@ static void * selectThread(void * ctx) {
 	    /* validate msg format! */
 	    const MESSAGE_HEADER * hdr;
 	
-	    /* on OS X, FIONREAD includes parts of UDP/IP headers,
-	       thus if size < pending, set pending to size */
+	    /* if size < pending, set pending to size */
 	    if (size < pending)
 	      pending = size;
 	    hdr = (const MESSAGE_HEADER*) msg;
