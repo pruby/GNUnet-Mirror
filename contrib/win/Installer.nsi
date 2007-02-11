@@ -179,7 +179,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
 		File "C:\GNUnet\bin\libgnunetsetup-0.dll"
-		File "C:\GNUnet\bin\libgnunetsetup_curses.dll"
 		File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
@@ -216,7 +215,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_topology_f2f.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_traffic.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
-			File "C:\GNUnet\bin\libgnunettransport_http.dll"
 		SectionEnd
 
 		Section "Filesharing" SEC_SERVER_FS
