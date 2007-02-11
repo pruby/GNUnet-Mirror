@@ -13,6 +13,9 @@ plugin_LTLIBRARIES = \
 pkgdata_DATA = \
   gnunet-setup.glade
 
+EXTRA_DIST = \
+	$(pkgdata_DATA)
+
 libgnunetsetup_gtk_la_SOURCES = \
  about.c \
  gconf.c gconf.h \
