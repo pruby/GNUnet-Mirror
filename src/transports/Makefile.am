@@ -15,6 +15,10 @@ if HAVE_XML2
   build_upnp=upnp
 endif
 
+if HAVE_MHD
+  httptransport = libgnunettransport_http.la
+endif
+
 SUBDIRS = $(build_upnp) .
 
 noinst_LTLIBRARIES = \
@@ -36,7 +40,7 @@ plugin_LTLIBRARIES = \
  libgnunettransport_udp.la \
  libgnunettransport_tcp_old.la \
  libgnunettransport_nat.la \
- $(v6transports) # libgnunettransport_http.la 
+ $(v6transports) $(httptransport)
 
 #libgnunettransport_smtp_la_SOURCES = smtp.c
 #libgnunettransport_smtp_la_LIBADD = \
@@ -44,12 +48,15 @@ plugin_LTLIBRARIES = \
 #libgnunettransport_smtp_la_LDFLAGS = \
 # -export-dynamic -avoid-version -module 
 
-#libgnunettransport_http_la_SOURCES = http.c
-#libgnunettransport_http_la_LIBADD = \
-# $(top_builddir)/src/util/libgnunetutil.la \
-# libip.la
-#libgnunettransport_http_la_LDFLAGS = \
-# -export-dynamic -avoid-version -module 
+libgnunettransport_http_la_SOURCES = http.c
+libgnunettransport_http_la_LIBADD = \
+ -lmicrohttpd @LIBCURL@ \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libip.la
+libgnunettransport_http_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+libgnunettransport_http_la_CPPFLAGS = \
+ @LIBCURL_CPPFLAGS@
 
 libgnunettransport_tcp_la_SOURCES = tcp.c
 libgnunettransport_tcp_la_LIBADD = \

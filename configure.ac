@@ -404,6 +404,40 @@ AC_ARG_WITH(dialog,
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
+
+# libmicrohttpd
+lmhd=0
+AC_CHECK_LIB([microhttpd],[MHD_start_daemon])
+AC_MSG_CHECKING([for libmicrohttpd])
+AC_ARG_WITH(microhttpd,
+   [  --with-microhttpd=PFX    Base of libmicrohttpd installation],
+   [AC_MSG_RESULT([$with_microhttpd])
+    case $with_microhttpd in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(microhttpd.h,
+          AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+            lmhd=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_microhttpd/lib $LDFLAGS"
+        CPPFLAGS="-I$with_microhttpd/include $CPPFLAGS"
+        AC_CHECK_HEADERS(microhttpd.h,
+          AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+            EXT_LIB_PATH="-L$with_microhttpd/lib $EXT_LIB_PATH"
+              lmhd=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-microhttpd not specified])
+    AC_CHECK_HEADERS(microhttpd.h,
+      AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
+          lmhd=1))])
+
+AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
+AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
+
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
 AM_PATH_GTK_2_0(2.6.0,without_gtk=false,without_gtk=true)
@@ -614,6 +648,11 @@ fi
 if test "$dialog" != 1
 then
  AC_MSG_NOTICE([NOTICE: curses based gnunet-setup frontends will not be installed.])
+fi
+
+if test "$lmhd" != 1
+then
+ AC_MSG_NOTICE([NOTICE: libmicrohttpd not found, http transport will not be installed.])
 fi
 
 if test "$ipv6" = "0"
