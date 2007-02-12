@@ -42,6 +42,9 @@
  */
 #define HTTP_TIMEOUT (30 * cronSECONDS)
 
+/**
+ * Default maximum size of the HTTP read and write buffer.
+ */
 #define HTTP_BUF_SIZE (64 * 1024)
  
 /**
@@ -76,9 +79,14 @@ typedef struct {
   struct MUTEX * lock;
 
   /**
+   * Read buffer for the header.
+   */
+  char rbuff1[sizeof(MESSAGE_HEADER)];
+
+  /**
    * The read buffer (used only for the actual data).
    */
-  char * rbuff;
+  char * rbuff2;
 
   /**
    * The write buffer.
@@ -102,19 +110,19 @@ typedef struct {
   unsigned int users;
 
   /**
-   * Current read position in rbuff.
+   * Number of valid bytes in rbuff1 
    */
-  unsigned int roff;
+  unsigned int rpos1;
 
   /**
-   * Number of valid bytes in rbuff (starting at roff)
+   * Number of valid bytes in rbuff2
    */
-  unsigned int rpos;
+  unsigned int rpos2;
 
   /**
-   * Current size of the read buffer.
+   * Current size of the read buffer rbuff2.
    */
-  unsigned int rsize;
+  unsigned int rsize2;
 
   /**
    * Current write position in wbuff
@@ -140,6 +148,11 @@ typedef struct {
    * Are we client or server?
    */
   int is_client;
+
+  /**
+   * TSession for this session.
+   */
+  TSession * tsession;
 
   /**
    * Data maintained for the http client-server connection
@@ -271,8 +284,8 @@ static void freeHttpSession(HTTPSession * httpsession) {
   } else {
     MHD_destroy_response(httpsession->cs.server.get);
   }
-  GROW(httpsession->rbuff,
-       httpsession->rsize,
+  GROW(httpsession->rbuff2,
+       httpsession->rsize2,
        0);
   GROW(httpsession->wbuff,
        httpsession->wsize,
@@ -491,6 +504,8 @@ static int contentReaderCallback(void * cls,
 
 static void contentReaderFreeCallback(void * cls) {
   HTTPSession * session = cls;
+
+
   /* FIXME: if last user, free! */
 }
 
@@ -516,10 +531,10 @@ static int accessHandlerCallback(void * cls,
   /* check if we already have a session for this */
   httpSession = MALLOC(sizeof(HTTPSession));
   httpSession->destroyed = NO;
-  httpSession->roff = 0;
-  httpSession->rpos = 0;
-  httpSession->rsize = 0;
-  httpSession->rbuff = NULL;
+  httpSession->rpos1 = 0;
+  httpSession->rpos2 = 0;
+  httpSession->rsize2 = 0;
+  httpSession->rbuff2 = NULL;
   httpSession->wsize = 0;
   httpSession->woff = 0;
   httpSession->wpos = 0;
@@ -540,6 +555,7 @@ static int accessHandlerCallback(void * cls,
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
+  httpSession->tsession = tsession;
   addTSession(tsession);
   return MHD_YES;
 }
@@ -553,8 +569,53 @@ receiveContentCallback(void * ptr,
 		       size_t nmemb,
 		       void * ctx) {
   HTTPSession * httpSession = ctx;
-
-
+  const char * inbuf = ptr;
+  size_t have = size * nmemb;
+  size_t poff = 0;
+  size_t cpy;
+  MESSAGE_HEADER * hdr;
+  P2P_PACKET * mp;
+  
+  while (have > 0) {
+    if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) {
+      cpy = sizeof(MESSAGE_HEADER) - httpSession->rpos1;
+      if (cpy > have)
+	cpy = have;
+      memcpy(&httpSession->rbuff1[httpSession->rpos1],
+	     &inbuf[poff],
+	     cpy);
+      httpSession->rpos1 += cpy;
+      have -= cpy;
+      poff += cpy;
+    }
+    if (httpSession->rpos1 < sizeof(MESSAGE_HEADER))
+      return size * nmemb;
+    hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
+    GROW(httpSession->rbuff2,
+	 httpSession->rsize2,
+	 ntohs(hdr->size));
+    if (httpSession->rpos2 < ntohs(hdr->size)) {
+      cpy = ntohs(hdr->size) - httpSession->rpos2;
+      if (cpy > have)
+	cpy = have;
+      memcpy(&httpSession->rbuff2[httpSession->rpos2],
+	     &inbuf[poff],
+	     cpy);
+      have -= cpy;
+      poff += cpy;
+    }
+    if (httpSession->rpos2 < ntohs(hdr->size)) 
+      return size * nmemb;
+    mp = MALLOC(sizeof(P2P_PACKET));
+    mp->msg = httpSession->rbuff2;
+    mp->sender = httpSession->sender;
+    mp->tsession = httpSession->tsession;
+    coreAPI->receive(mp);
+    httpSession->rbuff2 = NULL;
+    httpSession->rpos2 = 0;
+    httpSession->rsize2 = 0;
+    httpSession->rpos1 = 0;
+  }
   return size * nmemb;
 }
 
@@ -626,10 +687,10 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
     goto cleanup;
   }
   httpSession->destroyed = NO;
-  httpSession->roff = 0;
-  httpSession->rpos = 0;
-  httpSession->rsize = 0;
-  httpSession->rbuff = NULL;
+  httpSession->rpos1 = 0;
+  httpSession->rpos2 = 0;
+  httpSession->rsize2 = 0;
+  httpSession->rbuff2 = NULL;
   httpSession->wsize = 0;
   httpSession->woff = 0;
   httpSession->wpos = 0;
@@ -642,6 +703,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   httpSession->cs.client.get = curl;
   haddr = (const HostAddress*) &helo[1];
   tsession = MALLOC(sizeof(TSession));
+  httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
   addTSession(tsession);
