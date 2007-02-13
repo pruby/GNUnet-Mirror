@@ -19,6 +19,9 @@ notes:
 
 0.7.2 [3'07]:
 - new features:
+  * switch session to NEW struct
+  * cache signatures for session messages (large
+    CPU drain for under-connected machines!)
   * IO load detection
   * ECRS: 
     + isIndexed database and query protocol

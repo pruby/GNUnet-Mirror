@@ -313,7 +313,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   _("Cannot encrypt sessionkey, peer `%s' not known!\n"),
-	   enc);
+	   &enc);
     return NULL; /* other host not known */
   }
 

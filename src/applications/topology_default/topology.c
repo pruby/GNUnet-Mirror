@@ -217,7 +217,7 @@ static void scanForHosts(unsigned int index) {
 		   0,
 		   0);
   identity->blacklistHost(&indexMatch.match,
-			  300 + (int) saturation * 600,
+			  600 + (int) (saturation * 600),
 			  NO);
 }
 

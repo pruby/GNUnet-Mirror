@@ -810,12 +810,11 @@ static int blacklistHost(const PeerIdentity * identity,
     entry->delta = 1 * cronDAYS;
   } else {
     entry->delta
-      = entry->delta * 2 + weak_randomi((desperation+1)*cronSECONDS);
+      = entry->delta * 2 + weak_randomi(1+desperation*cronSECONDS);
     if (entry->delta > 4 * cronHOURS)
-      entry->delta = 4 *  weak_randomi(cronHOURS * (desperation+1));
+      entry->delta = 4 * cronHOURS;
   }
-  entry->until = get_time();
-  entry->until += entry->delta;
+  entry->until = get_time() + entry->delta;
   entry->strict = strict;
   hash2enc(&identity->hashPubKey,
 	   &hn);

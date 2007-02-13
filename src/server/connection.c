@@ -2758,19 +2758,20 @@ void assignSessionKey(const SESSIONKEY * key,
 
   MUTEX_LOCK(lock);
   be = lookForHost(peer);
-  if(be == NULL)
+  if (be == NULL)
     be = addHost(peer, NO);
-  if(be != NULL) {
+  if (be != NULL) {
     be->isAlive = get_time();
-    if(forSending == YES) {
+    if (forSending == YES) {
       be->skey_local = *key;
       be->skey_local_created = age;
       be->status = STAT_SETKEY_SENT | (be->status & STAT_SETKEY_RECEIVED);
-    }
-    else {                      /* for receiving */
-      if(((be->status & STAT_SETKEY_RECEIVED) == 0) ||
-         (be->skey_remote_created < age)) {
-        if(0 != memcmp(key, &be->skey_remote, sizeof(SESSIONKEY))) {
+    } else {                      /* for receiving */
+      if ( ((be->status & STAT_SETKEY_RECEIVED) == 0) ||
+	   (be->skey_remote_created < age) ) {
+        if (0 != memcmp(key, 
+		       &be->skey_remote, 
+		       sizeof(SESSIONKEY))) {
           be->skey_remote = *key;
           be->lastSequenceNumberReceived = 0;
         }
@@ -2880,6 +2881,7 @@ int getCurrentSessionKey(const PeerIdentity * peer,
 			 int forSending) {
   int ret;
   BufferEntry *be;
+
   ret = SYSERR;
   MUTEX_LOCK(lock);
   be = lookForHost(peer);
