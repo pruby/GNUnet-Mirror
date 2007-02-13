@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,18 +29,38 @@
 #include "locking_gcrypt.h"
 #include <gcrypt.h>
 
+/**
+ * Should we use a lock to avoid concurrent accesses
+ * to gcrypt or should we tell gcrypt that we use
+ * pthreads?
+ */ 
+#define USE_LOCK NO
+
+#if USE_LOCK
 static struct MUTEX * gcrypt_shared_lock;
+#else
+GCRY_THREAD_OPTION_PTHREAD_IMPL;
+#endif
+
 
 void lockGcrypt() {
+#if USE_LOCK
   MUTEX_LOCK(gcrypt_shared_lock);
+#endif
 }
 
 void unlockGcrypt() {
+#if USE_LOCK
   MUTEX_UNLOCK(gcrypt_shared_lock);
+#endif
 }
 
 void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
+#if USE_LOCK
   gcrypt_shared_lock = MUTEX_CREATE(YES);
+#else
+  gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+#endif
   gcry_control(GCRYCTL_DISABLE_SECMEM, 0);
   if (! gcry_check_version(GCRYPT_VERSION)) {
     fprintf(stderr,
@@ -57,7 +77,9 @@ void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
 }
 
 void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini() {
+#if USE_LOCK
   MUTEX_DESTROY(gcrypt_shared_lock);
   gcrypt_shared_lock = NULL;
+#endif
 }
 
