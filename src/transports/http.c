@@ -22,6 +22,10 @@
  * @file transports/http.c
  * @brief Implementation of the HTTP transport service
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - connection timeout (shutdown inactive connections)
+ * - proper connection shutdown (free resources)
  */
 
 #include "gnunet_util.h"
@@ -213,6 +217,10 @@ static struct MHD_Daemon * mhd_daemon;
  * Curl multi for managing client operations.
  */
 static CURLM * curl_multi;
+
+static int http_running;
+
+static struct PTHREAD * curl_thread;
 
 /**
  * Array of currently active HTTP sessions.
@@ -630,18 +638,26 @@ receiveContentCallback(void * ptr,
  */
 static int httpConnect(const P2P_hello_MESSAGE * helo,
 		       TSession ** tsessionPtr) {
-  const HostAddress * haddr;
+  const HostAddress * haddr = (const HostAddress*) &helo[1];
   TSession * tsession;
   HTTPSession * httpSession;
   CURL * curl;
   CURLcode ret;
   CURLMcode mret;
   char * url;
+  EncName enc;
 
   curl = curl_easy_init();
   if (curl == NULL)
     return SYSERR;
-  url = "FIXME";
+  hash2enc(&helo->senderIdentity.hashPubKey,
+	   &enc);
+  url = MALLOC(64 + sizeof(EncName));
+  SNPRINTF(url,
+	   64 + sizeof(EncName),
+	   "http://%u.%u.%u.%u/%s",
+	   PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	   &enc);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_FAILONERROR,
 		   1);
@@ -701,7 +717,6 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   httpSession->lastUse = get_time();
   httpSession->is_client = YES;
   httpSession->cs.client.get = curl;
-  haddr = (const HostAddress*) &helo[1];
   tsession = MALLOC(sizeof(TSession));
   httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
@@ -788,6 +803,55 @@ static int httpSend(TSession * tsession,
   return OK;
 }
 
+static void *
+curl_runner(void * unused) {
+  CURLM * multi;
+  CURLMcode mret;
+  fd_set rs;
+  fd_set ws;
+  fd_set es;
+  int max;
+  struct timeval tv;
+  int running;
+
+  while (YES == http_running) {
+    max = 0;
+    FD_ZERO(&rs);
+    FD_ZERO(&ws);
+    FD_ZERO(&es);
+    mret = curl_multi_fdset(multi,
+			    &rs,
+			    &ws,
+			    &es,
+			    &max);
+    if (mret != CURLM_OK) {
+      GE_LOG(coreAPI->ectx,
+	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	     _("%s failed at %s:%d: `%s'\n"),
+	     "curl_multi_fdset",
+	     __FILE__,
+	     __LINE__,
+	     curl_multi_strerror(mret));
+      break;
+    }
+    /* use timeout of 1s in case that SELECT is not interrupted by
+       signal (just to increase portability a bit) -- better a 1s
+       delay in the reaction than hanging... */
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    SELECT(max + 1,
+	   &rs,
+	   &ws,
+	   &es,
+	   &tv);
+    if (YES != http_running)
+      break;
+    running = 0;
+    curl_multi_perform(multi, &running);
+  }  
+  return NULL;
+}
+
 /**
  * Start the server process to receive inbound traffic.
  * @return OK on success, SYSERR if the operation failed
@@ -795,7 +859,8 @@ static int httpSend(TSession * tsession,
 static int startTransportServer() {
   unsigned short port;
 
-  if (curl_multi != NULL)
+  if ( (curl_multi != NULL) ||
+       (http_running == YES) )
     return SYSERR;
   curl_multi = curl_multi_init();
   if (curl_multi == NULL) 
@@ -810,7 +875,14 @@ static int startTransportServer() {
 				  &accessHandlerCallback,
 				  NULL);
   }
-  /* FIXME: start thread for libcurl-multi-processing */
+  http_running = YES;
+  curl_thread = PTHREAD_CREATE(&curl_runner,
+			       NULL,
+			       32 * 1024);
+  if (curl_thread == NULL)
+    GE_DIE_STRERROR(coreAPI->ectx,
+		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+		    "pthread_create");
   return OK;
 }
 
@@ -819,9 +891,14 @@ static int startTransportServer() {
  * traffic). May be restarted later!
  */
 static int stopTransportServer() {
-  if (curl_multi == NULL)
+  void * unused;
+
+  if ( (http_running == NO) ||
+       (curl_multi == NULL) )
     return SYSERR;
-  /* FIXME: shutdown thread for libcurl-multi-processing */
+  http_running = NO;
+  PTHREAD_STOP_SLEEP(curl_thread);
+  PTHREAD_JOIN(curl_thread, &unused);
   if (mhd_daemon != NULL) {
     MHD_stop_daemon(mhd_daemon);
     mhd_daemon = NULL;
