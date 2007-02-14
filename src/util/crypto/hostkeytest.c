@@ -32,6 +32,8 @@
 #define MAX_TESTVAL sizeof(SESSIONKEY)
 #define ITER 10
 
+#define PERF NO
+
 static int testEncryptDecrypt() {
   struct PrivateKey * hostkey;
   PublicKey pkey;
@@ -89,6 +91,43 @@ static int testEncryptDecrypt() {
     return SYSERR;
 }
 
+#if PERF
+static int testEncryptPerformance() {
+  struct PrivateKey * hostkey;
+  PublicKey pkey;
+  RSAEncryptedData target;
+  int i;
+  cron_t start;
+  int ok;
+
+  fprintf(stderr, "W");
+  hostkey = makePrivateKey();
+  getPublicKey(hostkey, &pkey);
+
+  ok = 0;
+  start = get_time();
+  for (i=0;i<ITER;i++) {
+    fprintf(stderr, ".");
+    if (SYSERR == encryptPrivateKey(TESTSTRING,
+				    strlen(TESTSTRING)+1,
+				    &pkey,
+				    &target)) {
+      fprintf(stderr,
+	      "encryptPrivateKey returned SYSERR\n");
+      ok++;
+      continue;
+    }
+  }
+  printf("%d RSA encrypt operations %llu ms (%d failures)\n",
+	 ITER,
+	 get_time() - start,
+	 ok);
+  freePrivateKey(hostkey);
+  if (ok != 0)
+    return SYSERR;
+  return OK;
+}
+#endif
 
 static int testEncryptDecryptSK() {
   struct PrivateKey * hostkey;
@@ -140,10 +179,9 @@ static int testEncryptDecryptSK() {
 	 (int) (TIME(NULL)-start),
 	 ok);
   freePrivateKey(hostkey);
-  if (ok == 0)
-    return OK;
-  else
+  if (ok != 0)
     return SYSERR;
+  return OK;
 }
 
 static int testSignVerify() {
@@ -184,6 +222,39 @@ static int testSignVerify() {
   freePrivateKey(hostkey);
   return ok;
 }
+
+#if PERF
+static int testSignPerformance() {
+  struct PrivateKey * hostkey;
+  Signature sig;
+  PublicKey pkey;
+  int i;
+  cron_t start;
+  int ok = OK;
+
+  fprintf(stderr, "W");
+  hostkey = makePrivateKey();
+  getPublicKey(hostkey, &pkey);
+  start = get_time();
+  for (i=0;i<ITER;i++) {
+    fprintf(stderr, ".");
+    if (SYSERR == sign(hostkey,
+		       strlen(TESTSTRING),
+		       TESTSTRING,
+		       &sig)) {
+      fprintf(stderr,
+	      "sign returned SYSERR\n");
+      ok = SYSERR;
+      continue;
+    }
+  }
+  printf("%d RSA sign operations %llu ms\n",
+	 ITER,
+	 get_time() - start);
+  freePrivateKey(hostkey);
+  return ok;
+}
+#endif
 
 static int testPrivateKeyEncoding() {
   struct PrivateKey * hostkey;
@@ -250,6 +321,12 @@ static int testPrivateKeyEncoding() {
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
+#if PERF
+  if (OK != testEncryptPerformance())
+     failureCount++;
+  if (OK != testSignPerformance())
+     failureCount++;
+#endif
   if (OK != testEncryptDecryptSK())
      failureCount++;
   if (OK != testEncryptDecrypt())
