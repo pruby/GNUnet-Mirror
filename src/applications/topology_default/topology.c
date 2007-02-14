@@ -256,9 +256,10 @@ static void checkNeedForPing(const PeerIdentity * peer,
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
     if (OK != pingpong->ping(peer,
-			     NO,
 			     &notifyPONG,
-			     hi))
+			     hi,
+			     NO,
+			     rand()))
       FREE(hi);
   }
 }

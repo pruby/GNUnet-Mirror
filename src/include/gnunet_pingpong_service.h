@@ -53,9 +53,10 @@ typedef struct {
    * @returns OK on success, SYSERR on error
    */
   int (*ping)(const PeerIdentity * receiver,
-	      int usePlaintext,
 	      CronJob method,
-	      void * data);
+	      void * data,
+	      int usePlaintext,
+	      int challenge);
 
   /**
    * Ping a host an call a method if a reply comes back.
@@ -72,7 +73,8 @@ typedef struct {
   MESSAGE_HEADER * (*pingUser)(const PeerIdentity * receiver,
 			       CronJob method,
 			       void * data,
-			       int plaintext);
+			       int plaintext,
+			       int challenge);
 
   unsigned int ping_size;
 

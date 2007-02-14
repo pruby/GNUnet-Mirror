@@ -290,7 +290,7 @@ static int verifySKS(const PeerIdentity * hostId,
  *        session key message
  * @return message on success, NULL on failure
  */
-static P2P_setkey_MESSAGE *
+static P2P_new_setkey_MESSAGE *
 makeSessionKeySigned(const PeerIdentity * hostId,
 		     const SESSIONKEY * sk,
 		     TIME_T created,
@@ -298,7 +298,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 		     const MESSAGE_HEADER * pong) {
   P2P_hello_MESSAGE * foreignHelo;
   int size;
-  P2P_setkey_MESSAGE * msg;
+  P2P_new_setkey_MESSAGE * msg;
   char * pt;
   EncName enc;
 
@@ -317,25 +317,13 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     return NULL; /* other host not known */
   }
 
-  size = sizeof(P2P_setkey_MESSAGE);
+  size = sizeof(P2P_new_setkey_MESSAGE);
   if (ping != NULL)
     size += ntohs(ping->size);
   if (pong != NULL)
     size += ntohs(pong->size);
   msg = MALLOC(size);
-  /* msg->target = *hostId; */
-#if DEBUG_SESSION
-  hash2enc(&hostId->hashPubKey,
-	   &enc);
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_REQUEST,
-	 "Sending setkey %s with %u bytes of data (%s, %s) to `%s'.\n",
-	 printSKEY(sk),
-	 size,
-	 ping != NULL ? "ping":"",
-	 pong != NULL ? "pong":"",
-	 &enc);
-#endif
+  msg->target = *hostId;
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
 				  &foreignHelo->publicKey,
@@ -354,7 +342,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   GE_ASSERT(ectx,
 	    SYSERR !=
 	    identity->signData(msg,
-			       sizeof(P2P_setkey_MESSAGE)
+			       sizeof(P2P_new_setkey_MESSAGE)
 			       - sizeof(Signature),
 			       &msg->signature));
 #if EXTRA_CHECKS
@@ -393,11 +381,12 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 	   printSKEY(sk),
 	   *(int*)&msg->signature);
 #endif
-    GE_ASSERT(ectx, -1 != encryptBlock(pt,
-				     size,
-				     sk,
-				     (const INITVECTOR*) &msg->signature,
-				     (char*)&msg[1]));
+    GE_ASSERT(ectx,
+	      -1 != encryptBlock(pt,
+				 size,
+				 sk,
+				 (const INITVECTOR*) &msg->signature,
+				 (char*)&msg[1]));
     FREE(pt);
   }
   return msg;
@@ -416,7 +405,7 @@ static int exchangeKey(const PeerIdentity * receiver,
 		       TSession * tsession,
 		       MESSAGE_HEADER * pong) {
   P2P_hello_MESSAGE * helo;
-  P2P_setkey_MESSAGE * skey;
+  P2P_new_setkey_MESSAGE * skey;
   char * sendBuffer;
   SESSIONKEY sk;
   TIME_T age;
@@ -453,7 +442,8 @@ static int exchangeKey(const PeerIdentity * receiver,
   ping = pingpong->pingUser(receiver,
 			    &notifyPONG,
 			    sndr,
-			    NO);
+			    NO,
+			    rand());
   if (ping == NULL) {
     FREE(sndr);
     transport->disconnect(tsession);

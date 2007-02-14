@@ -282,7 +282,8 @@ static int pongReceived(const PeerIdentity * sender,
 	 matched);
 #endif
   if (matched == 0) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_ADMIN,
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_ADMIN,
 	   _("Could not match PONG against any PING. "
 	     "Try increasing MAX_PING_PONG constant.\n"));
   }
@@ -368,7 +369,8 @@ static MESSAGE_HEADER *
 createPing(const PeerIdentity * receiver,
 	   CronJob method,	
 	   void * data,
-	   int plaintext) {
+	   int plaintext,
+	   int challenge) {
   int i;
   int j;
   TIME_T min;
@@ -386,9 +388,10 @@ createPing(const PeerIdentity * receiver,
       j = i;
     }
   if (j == -1) { /* all send this second!? */
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_ADMIN,
-	_("Cannot create PING, table full. "
-	  "Try increasing MAX_PING_PONG.\n"));
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_ADMIN,
+	   _("Cannot create PING, table full. "
+	     "Try increasing MAX_PING_PONG.\n"));
     MUTEX_UNLOCK(pingPongLock);
     return NULL;
   }
@@ -405,8 +408,8 @@ createPing(const PeerIdentity * receiver,
   memcpy(&pmsg->receiver,
 	 receiver,
 	 sizeof(PeerIdentity));
-  entry->challenge = rand();
-  pmsg->challenge = htonl(entry->challenge);
+  entry->challenge = challenge;
+  pmsg->challenge = htonl(challenge);
   MUTEX_UNLOCK(pingPongLock);
   if (stats != NULL)
     stats->change(stat_pingCreated, 1);
@@ -423,15 +426,17 @@ createPing(const PeerIdentity * receiver,
  * @returns OK on success, SYSERR on error
  */
 static int initiatePing(const PeerIdentity * receiver,
-			int usePlaintext,
 			CronJob method,
-			void * data) {
+			void * data,
+			int usePlaintext,
+			int challenge) {
   P2P_pingpong_MESSAGE * pmsg;
 
   pmsg = (P2P_pingpong_MESSAGE*) createPing(receiver,
-					method,
-					data,
-					usePlaintext);
+					    method,
+					    data,
+					    usePlaintext,
+					    challenge);
   if (pmsg == NULL)
     return SYSERR;
   if (usePlaintext == YES) {

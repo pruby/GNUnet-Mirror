@@ -501,9 +501,10 @@ static void pingPeer(PeerInfo * pi) {
   p = MALLOC(sizeof(PeerIdentity));
   *p = pi->id;
   if (OK == pingpong->ping(p,
-			   NO,
 			   &pongNotify,
-			   p)) {
+			   p,
+			   NO,
+			   rand())) {
     pi->lastTimePingSend = get_time();
     pi->request_count++;
   }

@@ -317,19 +317,22 @@ receivedhello(const MESSAGE_HEADER * message) {
   ping = pingpong->pingUser(&msg->senderIdentity,
 			    &callAddHost,
 			    copy,
-			    YES);
+			    YES,
+			    rand());
   if (ping == NULL) {
     res = SYSERR;
     FREE(buffer);
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	_("Could not send hellos+PING, ping buffer full.\n"));
+    GE_LOG(ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   _("Could not send hellos+PING, ping buffer full.\n"));
     transport->disconnect(tsession);
     return SYSERR;
   }
   if (mtu > ntohs(ping->size)) {
     heloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
-					    buffer);
-    GE_ASSERT(ectx, mtu - ntohs(ping->size) >= heloEnd);
+					     buffer);
+    GE_ASSERT(ectx, 
+	      mtu - ntohs(ping->size) >= heloEnd);
   } else {
     heloEnd = -2;
   }

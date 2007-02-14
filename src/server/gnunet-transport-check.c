@@ -289,7 +289,8 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   ping = pingpong->pingUser(&peer,
 			    &pingCallback,
 			    NULL,
-			    YES);
+			    YES,
+			    rand());
   len = ntohs(ping->size) + ntohs(myHelo->header.size);
   msg = MALLOC(len);
   memcpy(msg,
