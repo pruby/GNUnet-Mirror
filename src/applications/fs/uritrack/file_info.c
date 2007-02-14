@@ -23,8 +23,7 @@
  * @brief Helper functions for keeping track of files for building directories.
  * @author Christian Grothoff
  *
- * The "state" database (see util/state.c) is used to store the toggle
- * flag. An mmapped file (STATE_NAME) is used to store the actual URIs.
+ * An mmapped file (STATE_NAME) is used to store the URIs.
  * An IPC semaphore is used to guard the access.
  */
 
@@ -39,8 +38,9 @@
 #define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
-static struct IPC_SEMAPHORE * createIPC(struct GE_Context * ectx,
-					struct GC_Configuration * cfg) {
+static struct IPC_SEMAPHORE * 
+createIPC(struct GE_Context * ectx,
+	  struct GC_Configuration * cfg) {
   char * basename;
   char * ipcName;
   struct IPC_SEMAPHORE * sem;
@@ -60,8 +60,9 @@ static struct IPC_SEMAPHORE * createIPC(struct GE_Context * ectx,
   return sem;				
 }
 
-static char * getUriDbName(struct GE_Context * ectx,
-			   struct GC_Configuration * cfg) {
+static char * 
+getUriDbName(struct GE_Context * ectx,
+	     struct GC_Configuration * cfg) {
   char * nw;
   char * pfx;
 
@@ -80,8 +81,9 @@ static char * getUriDbName(struct GE_Context * ectx,
   return nw;
 }
 
-static char * getToggleName(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg) {
+static char *
+getToggleName(struct GE_Context * ectx,
+	      struct GC_Configuration * cfg) {
   char * nw;
   char * pfx;
 

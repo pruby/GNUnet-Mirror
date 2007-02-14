@@ -150,7 +150,6 @@ int FS_unindex(struct ClientServerConnection * sock,
 int FS_testIndexed(struct ClientServerConnection * sock,
 		   const HashCode512 * hc);
 
-
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

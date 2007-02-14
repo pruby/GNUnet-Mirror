@@ -19,12 +19,8 @@ notes:
 
 0.7.2 [3'07]:
 - new features:
-  * switch session to NEW struct
-  * cache signatures for session messages (large
-    CPU drain for under-connected machines!)
   * IO load detection
-  * ECRS: 
-    + isIndexed database and query protocol
+  * implement URITRACK_STATE database (and use it!)
   * XFS / support for location URIs [CG] 
     + dht/gap integration (search routing) [RC]
     + fsui/fs/location URI support (download routing) [RC]

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -97,6 +97,35 @@ int URITRACK_registerTrackCallback(struct GE_Context * ectx,
  */
 int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
 				     void * closure); /* callbacks.c */
+
+/**
+ * Possible ways in which a given URI has been used or encountered.
+ */
+enum URITRACK_STATE {
+  URITRACK_FRESH              =    0,
+  URITRACK_INSERTED           =    1,
+  URITRACK_INDEXED            =    2,
+  URITRACK_DIRECTORY_ADDED    =    4,
+
+  URITRACK_DOWNLOAD_STARTED   =   16,
+  URITRACK_DOWNLOAD_ABORTED   =   32,
+  URITRACK_DOWNLOAD_COMPLETED =   64,
+
+  URITRACK_SEARCH_RESULT      =  256,
+  URITRACK_DIRECTORY_FOUND    =  512,
+  URITRACK_USER_INPUT         = 1024,
+};
+
+/**
+ * Find out what we know about a given URI's past.
+ */
+enum URITRACK_STATE URITRACK_getState(const struct ECRS_URI * uri);
+
+/**
+ * Add additional information about a given URI's past.
+ */
+void URITRACK_addState(const struct ECRS_URI * uri,
+		       enum URITRACK_STATE state);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {
