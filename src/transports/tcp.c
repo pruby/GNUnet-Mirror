@@ -294,6 +294,7 @@ static P2P_hello_MESSAGE * createhello() {
  */
 static int tcpConnect(const P2P_hello_MESSAGE * helo,
 		      TSession ** tsessionPtr) {
+  static int zero = 0;
   HostAddress * haddr;
   int sock;
   struct sockaddr_in soaddr;
@@ -322,6 +323,15 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   s = socket_create(ectx,
 		    coreAPI->load_monitor,
 		    sock);
+#if TCP_SYNCNT
+  /* only try a single packet to establish connection,
+     if that does not work, abort instantly */
+  setsockopt(sock,
+	     IPPROTO_TCP,
+	     TCP_SYNCNT,
+	     &zero,
+	     sizeof(zero);
+#endif
   if (-1 == socket_set_blocking(s, NO)) {
     socket_destroy(s);
     return SYSERR;
