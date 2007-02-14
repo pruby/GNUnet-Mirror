@@ -330,7 +330,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	     IPPROTO_TCP,
 	     TCP_SYNCNT,
 	     &zero,
-	     sizeof(zero);
+	     sizeof(zero));
 #endif
   if (-1 == socket_set_blocking(s, NO)) {
     socket_destroy(s);
