@@ -479,7 +479,9 @@ static int exchangeKey(const PeerIdentity * receiver,
   }
 
   /* create hello */
-  helo = transport->createhello(ANY_PROTOCOL_NUMBER);
+  helo = transport->createhello(tsession->ttype);
+  if (NULL == helo) 
+    helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
