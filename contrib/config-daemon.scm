@@ -1192,11 +1192,11 @@ The size of the DSTORE QUOTA is specified in MB.")
  "MAXIOLOAD"
  (_ "What is the maximum IO load (permille)?")
  (_ 
-"Which IO load can be tolerated.  Load here refers to the permille of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 100 means that once the average number of cycles wasted waiting for IO is more than 10% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 5 and 500." )
+"Which IO load can be tolerated.  Load here refers to the percentage of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 10 means that once the average number of cycles wasted waiting for IO is more than 10% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 10 and 75." )
  '()
  #t
- 100
- (cons 0 100000)
+ 50
+ (cons 0 10000)
  'always))
 
 (define (load-cpu-hard builder)

@@ -75,7 +75,7 @@ static int currentCPULoad;
 static int agedCPULoad = -1;
 
 /**
- * Current IO load, as permille of CPU cycles blocked on IO.
+ * Current IO load, as percentage of CPU cycles blocked on IO.
  */
 static int currentIOLoad;
 
@@ -171,7 +171,7 @@ static int updateUsage(){
 	if ( (total_time > 0) &&
 	     (have_last_cpu == YES) ) {
 	  currentCPULoad = (int) (100L * usage_time / total_time);
-	  currentIOLoad  = (int) (1000L * iowait / total_time);
+	  currentIOLoad  = (int) (100L * iowait / total_time);
 	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
@@ -594,7 +594,7 @@ int os_disk_get_load(struct GE_Context * ectx,
 					      "LOAD",
 					      "MAXIOLOAD",
 					      0,
-					      100000, /* more than 1 CPU possible */
+					      10000, /* more than 1 CPU possible */
 					      100,
 					      &maxIOLoad))
     return SYSERR;
