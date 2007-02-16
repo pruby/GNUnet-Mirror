@@ -260,6 +260,9 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 			     NULL,
 			     osock);
   socket_set_blocking(sock->sock, NO);
+  memset(&soaddr,
+	 0,
+	 sizeof(soaddr));
   soaddr.sin_family = AF_INET;
   GE_ASSERT(sock->ectx,
 	    sizeof(struct in_addr) == sizeof(IPaddr));
@@ -270,7 +273,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   ret = CONNECT(osock,
 		(struct sockaddr*)&soaddr,
 		sizeof(soaddr));
-  if ( (ret < 0) &&
+  if ( (ret != 0) &&
        (errno != EINPROGRESS) ) {
     GE_LOG(sock->ectx,
 	   GE_WARNING | GE_USER | GE_BULK,
@@ -284,7 +287,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
     MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
-  /* we call select() first with a timeout of 5s to
+  /* we call select() first with a timeout of WAIT_SECONDS to
      avoid blocking on a later write indefinitely;
      Important if a local firewall decides to just drop
      the TCP handshake...*/
@@ -292,22 +295,48 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   FD_ZERO(&wset);
   FD_ZERO(&eset);
   FD_SET(osock, &wset);
-  timeout.tv_sec = 5;
+  FD_SET(osock, &eset);
+#define WAIT_SECONDS 1
+  timeout.tv_sec = WAIT_SECONDS;
   timeout.tv_usec = 0;
+  errno = 0;
   ret = SELECT(osock + 1,
 	       &rset,
 	       &wset,
 	       &eset,
 	       &timeout);
-  if ( (ret == -1) ||
-       (! FD_ISSET(osock,
-		   &wset)) ) {
+  if (ret == -1) {
+    if (errno != EINTR)
+      GE_LOG_STRERROR(sock->ectx,
+		      GE_WARNING | GE_USER | GE_BULK,
+		      "select");
+    socket_destroy(sock->sock);
+    sock->sock = NULL;
+    FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
+    return SYSERR;
+  }
+  if (FD_ISSET(osock,
+	       &eset)) {
     GE_LOG(sock->ectx,
 	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Cannot connect to %s:%u: %s\n"),
+	   _("Error connecting to %s:%u\n"),
+	   host,
+	   port);
+    socket_destroy(sock->sock);
+    sock->sock = NULL;
+    FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
+    return SYSERR;
+  }
+  if (! FD_ISSET(osock,
+		 &wset)) {
+    GE_LOG(sock->ectx,
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("Failed to connect to %s:%u in %ds\n"),
 	   host,
 	   port,
-	   STRERROR(errno));
+	   WAIT_SECONDS);
     socket_destroy(sock->sock);
     sock->sock = NULL;
     FREE(host);
