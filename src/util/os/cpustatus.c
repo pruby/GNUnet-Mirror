@@ -131,7 +131,7 @@ static int updateUsage(){
     char line[128];
     unsigned long long user_read, system_read, nice_read, idle_read, iowait_read;
     unsigned long long user, system, nice, idle, iowait;
-    unsigned long long io_time=0, usage_time=0, total_time=1;
+    unsigned long long usage_time=0, total_time=1;
 
     /* Get the first line with the data */
     rewind(proc_stat);
@@ -170,7 +170,7 @@ static int updateUsage(){
 	if ( (total_time > 0) &&
 	     (have_last_cpu == YES) ) {
 	  currentCPULoad = (int) ((100L * usage_time) / total_time);
-	  currentIOLoad = (int) ((1000L * io_time) / total_time);
+	  currentIOLoad = (int) ((1000L * iowait) / total_time);
 	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
