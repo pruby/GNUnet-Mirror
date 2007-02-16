@@ -13,7 +13,6 @@ notes:
 
 0.7.2 [3'07]:
 - new features:
-  * IO load detection
   * implement URITRACK_STATE database (and use it!)
   * track 0-anonymity indexed content (for DHT-advertising!)
   * XFS / support for location URIs [CG] 

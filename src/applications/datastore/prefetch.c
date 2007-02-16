@@ -93,6 +93,8 @@ static struct GC_Configuration * cfg;
 static int acquire(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  void * closure) {
+  int loadc;
+  int loadi;
   int load;
 
   if (doneSignal)
@@ -135,8 +137,14 @@ static int acquire(const HashCode512 * key,
 	 value,
 	 ntohl(value->size));
   MUTEX_UNLOCK(lock);
-  load = os_cpu_get_load(ectx,
-			 cfg); /* FIXME: should use 'IO load' here */
+  loadi = os_disk_get_load(ectx,
+			   cfg);
+  loadc = os_cpu_get_load(ectx,
+			  cfg);
+  if (loadi > loadc)
+    load = loadi;
+  else
+    load = loadc;
   if (load < 10)
     load = 10;    /* never sleep less than 500 ms */
   if (load > 100)

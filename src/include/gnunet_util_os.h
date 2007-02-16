@@ -247,10 +247,23 @@ int os_change_user(struct GE_Context * ectx,
  * Get the current CPU load.
  * @param ectx for error reporting
  * @param cfg to determine acceptable load level (LOAD::MAXCPULOAD)
- * @return -1 on error, otherwise load value
+ * @return -1 on error, otherwise load value (between 0 and 100,
+ *        (100 is equivalent to full load for one CPU)
  */
 int os_cpu_get_load(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg);
+
+/**
+ * Get the current IO load.
+ *
+ * @param ectx for error reporting
+ * @param cfg to determine acceptable load level (LOAD::MAXIOLOAD)
+ * @return -1 on error, otherwise load value (between 0 and 100,
+ *       100 means that we spend all of our cycles waiting for
+ *       the disk)
+ */
+int os_disk_get_load(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg);
 
 /**
  * Start gnunetd process

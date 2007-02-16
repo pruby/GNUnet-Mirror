@@ -20,13 +20,11 @@
 
 /**
  * @file util/os/cpustatus.c
- * @brief calls to determine current network and CPU load
+ * @brief calls to determine current CPU load
  * @author Tzvetan Horozov
  * @author Christian Grothoff
  * @author Igor Wronsky
  * @author Alex Harper (OS X portion)
- *
- * Status calls implementation for load management.
  */
 
 #include "platform.h"
@@ -68,6 +66,21 @@ static FILE * proc_stat;
 
 static struct MUTEX * statusMutex;
 
+/**
+ * Current CPU load, as percentage of CPU cycles not idle or
+ * blocked on IO.
+ */ 
+static int currentCPULoad;
+
+static int agedCPULoad = -1;
+
+/**
+ * Current IO load, as permille of CPU cycles blocked on IO.
+ */
+static int currentIOLoad;
+
+static int agedIOLoad = -1;
+
 #ifdef OSX
 static int initMachCpuStats() {
   unsigned int cpu_count;
@@ -100,26 +113,25 @@ static int initMachCpuStats() {
 }
 #endif
 /**
- * The following routine returns a number between 0-100 (can be larger
- * than 100 if the load is > 1) which indicates the percentage CPU
- * usage.
+ * Update the currentCPU and currentIO load values.
  *
  * Before its first invocation the method initStatusCalls() must be called.
- * If there is an error the method returns -1
+ * If there is an error the method returns -1.
  */
-static int updateCpuUsage(){
-  int currentLoad;
+static int updateUsage(){
+  currentIOLoad = -1;
+  currentCPULoad = -1;
 #ifdef LINUX
   /* under linux, first try %idle/usage using /proc/stat;
      if that does not work, disable /proc/stat for the future
      by closing the file and use the next-best method. */
   if (proc_stat != NULL) {
-    static unsigned long long last_cpu_results[4] = { 0, 0, 0, 0 };
+    static unsigned long long last_cpu_results[5] = { 0, 0, 0, 0, 0 };
     static int have_last_cpu = NO;
     char line[128];
-    unsigned long long user_read, system_read, nice_read, idle_read;
-    unsigned long long user, system, nice, idle;
-    unsigned long long usage_time=0, total_time=1;
+    unsigned long long user_read, system_read, nice_read, idle_read, iowait_read;
+    unsigned long long user, system, nice, idle, iowait;
+    unsigned long long io_time=0, usage_time=0, total_time=1;
 
     /* Get the first line with the data */
     rewind(proc_stat);
@@ -132,11 +144,12 @@ static int updateCpuUsage(){
       fclose(proc_stat);
       proc_stat = NULL; /* don't try again */
     } else {
-      if (sscanf(line, "%*s %llu %llu %llu %llu",
+      if (sscanf(line, "%*s %llu %llu %llu %llu %llu",
 		 &user_read,
 		 &system_read,
 		 &nice_read,
-		 &idle_read) != 4) {
+		 &idle_read,
+		 &iowait_read) != 5) {
 	GE_LOG_STRERROR_FILE(NULL,
 			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			     "fgets-sscanf",
@@ -150,23 +163,23 @@ static int updateCpuUsage(){
 	system = system_read - last_cpu_results[1];
 	nice   = nice_read - last_cpu_results[2];
 	idle   = idle_read - last_cpu_results[3];	
+	iowait = iowait_read - last_cpu_results[4];	
 	/* Calculate the % usage */
-	if ( (user + system + nice + idle) > 0) {
-	  usage_time = user + system + nice;
-	  total_time = usage_time + idle;
-	}
+	usage_time = user + system + nice;
+	total_time = usage_time + idle + iowait;
 	if ( (total_time > 0) &&
-	     (have_last_cpu == YES) )
-	  currentLoad = (100 * usage_time) / total_time;
-	else
-	  currentLoad = -1;
+	     (have_last_cpu == YES) ) {
+	  currentCPULoad = (int) ((100L * usage_time) / total_time);
+	  currentIOLoad = (int) ((1000L * io_time) / total_time);
+	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
 	last_cpu_results[1] = system_read;
 	last_cpu_results[2] = nice_read;
 	last_cpu_results[3] = idle_read;
+	last_cpu_results[4] = iowait_read;
 	have_last_cpu = YES;
-	return currentLoad;
+	return OK;
       }
     }
   }
@@ -238,19 +251,19 @@ static int updateCpuUsage(){
         }
       }
       if (t_total_all > 0)
-        currentLoad = 100 - (100 * t_idle_all) / t_total_all;
+        currentCPULoad = 100 - (100 * t_idle_all) / t_total_all;
       else
-        currentLoad = -1;
+        currentCPULoad = -1;
       vm_deallocate(mach_task_self(),
                     (vm_address_t)cpu_load,
                     (vm_size_t)(cpu_msg_count * sizeof(*cpu_load)));
-
-      return currentLoad;
-    }
-    else {
+      currentIOLoad = -1; /* FIXME! */
+      return OK;
+    } else {
       GE_LOG(NULL,
              GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
              "host_processor_info failed.");
+      return SYSERR;
     }
   }
 #endif
@@ -312,19 +325,21 @@ static int updateCpuUsage(){
     deltatotal = totalcount - last_totalcount;
     if ( (deltatotal > 0) &&
 	 (last_totalcount > 0) ) {
-      currentLoad = (unsigned int) (100.0 * deltaidle / deltatotal);
-      if (currentLoad > 100)
-	currentLoad = 100; /* odd */
-      if (currentLoad < 0)
-	currentLoad = 0; /* odd */
-      currentLoad = 100 - currentLoad; /* computed idle-load before! */
+      currentCPULoad = (unsigned int) (100.0 * deltaidle / deltatotal);
+      if (currentCPULoad > 100)
+	currentCPULoad = 100; /* odd */
+      if (currentCPULoad < 0)
+	currentCPULoad = 0; /* odd */
+      currentCPULoad = 100 - currentCPULoad; /* computed idle-load before! */
     } else
-      currentLoad = -1;
+      currentCPULoad = -1;
+    currentIOLoad = -1; /* FIXME! */
     last_idlecount = idlecount;
     last_totalcount = totalcount;
-    return currentLoad;
+    return OK;
   ABORT_KSTAT:
     kstat_once = 1; /* failed, don't try again */
+    return SYSERR;
   }
 #endif
 
@@ -345,11 +360,12 @@ static int updateCpuUsage(){
 			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			"getloadavg");
       }
-      currentLoad = -1;
+      return SYSERR;
     } else {
       /* success with getloadavg */
-      currentLoad = (int) (100 * loadavg);
-      return currentLoad;
+      currentCPULoad = (int) (100 * loadavg);
+      currentIOLoad = -1; /* FIXME */
+      return OK;
     }
   }
 #endif
@@ -382,15 +398,16 @@ static int updateCpuUsage(){
 
       if ( ( (dDiffKernel + dDiffUser) > 0) &&
 	   (dLastIdle + dLastKernel + dLastUser > 0) )
-        currentLoad = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
+        currentCPULoad = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
       else
-        currentLoad = -1; /* don't know (yet) */
+        currentCPULoad = -1; /* don't know (yet) */
 
       dLastKernel = dKernel;
       dLastIdle = dIdle;
       dLastUser = dUser;
-
-      return currentLoad;
+ 
+      currentIOLoad = -1; /* FIXME */
+      return OK;
     } else {
       /* only warn once, if there is a problem with
 	 NtQuery..., we're going to hit it frequently... */
@@ -401,6 +418,7 @@ static int updateCpuUsage(){
 	       GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 	       _("Cannot query the CPU usage (Windows NT).\n"));
       }
+      return SYSERR;
     }
   } else { /* Win 9x */
     HKEY hKey;
@@ -442,15 +460,16 @@ static int updateCpuUsage(){
 		 0,
 		 KEY_ALL_ACCESS,
                  &hKey);
-    dwDataSize = sizeof(currentLoad);
+    dwDataSize = sizeof(currentCPULoad);
     RegQueryValueEx(hKey,
 		    "KERNEL\\CPUUsage",
 		    NULL,
 		    &dwType,
-                    (LPBYTE) &currentLoad,
+                    (LPBYTE) &currentCPULoad,
 		    &dwDataSize);
     RegCloseKey(hKey);
-
+    currentIOLoad = -1; /* FIXME! */
+    
     /* Stop query */
     RegOpenKeyEx(HKEY_DYN_DATA,
 		 "PerfStats\\StopStat",
@@ -471,7 +490,7 @@ static int updateCpuUsage(){
                     &dwDataSize);
     RegCloseKey(hKey);
 
-    return currentLoad;
+    return OK;
   }
 #endif
 
@@ -479,9 +498,52 @@ static int updateCpuUsage(){
      specific alternative defined
      => default: error
   */
-  return -1;
+  return SYSERR;
 }
 
+/**
+ * Update load values (if enough time has expired),
+ * including computation of averages.  Code assumes
+ * that lock has already been obtained.
+ */
+static void updateAgedLoad(struct GE_Context * ectx,
+			   struct GC_Configuration * cfg) {
+  static cron_t lastCall;
+  cron_t now;
+
+  now = get_time();
+  if ( (agedCPULoad == -1) ||
+       (now - lastCall > 500 * cronMILLIS) ) {
+    /* use smoothing, but do NOT update lastRet at frequencies higher
+       than 500ms; this makes the smoothing (mostly) independent from
+       the frequency at which getCPULoad is called (and we don't spend
+       more time measuring CPU than actually computing something). */
+    lastCall = now;
+    updateUsage();
+    if (currentCPULoad == -1) {
+      agedCPULoad = -1;
+    } else {
+      if (agedCPULoad == -1) {
+	agedCPULoad = currentCPULoad;
+      } else {
+	/* for CPU, we don't do the 'fast increase' since CPU is much
+	   more jitterish to begin with */
+	agedCPULoad = (agedCPULoad * 31 + currentCPULoad) / 32;
+      }
+    }
+    if (currentIOLoad == -1) {
+      agedIOLoad = -1;
+    } else {
+      if (agedIOLoad == -1) {
+	agedIOLoad = currentIOLoad;
+      } else {
+	/* for IO, we don't do the 'fast increase' since IO is much
+	   more jitterish to begin with */
+	agedIOLoad = (agedIOLoad * 31 + currentIOLoad) / 32;
+      }
+    }
+  }
+}
 
 /**
  * Get the load of the CPU relative to what is allowed.
@@ -490,13 +552,15 @@ static int updateCpuUsage(){
  */
 int os_cpu_get_load(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg) {
-  static int currentLoad;
-  static int agedLoad = -1;
-  static cron_t lastCall;
   unsigned long long maxCPULoad;
   int ret;
-  cron_t now;
 
+  MUTEX_LOCK(statusMutex);
+  updateAgedLoad(ectx, cfg);
+  ret = agedCPULoad;
+  MUTEX_UNLOCK(statusMutex);
+  if (ret == -1)
+    return -1;
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "LOAD",
 					      "MAXCPULOAD",
@@ -504,35 +568,36 @@ int os_cpu_get_load(struct GE_Context * ectx,
 					      10000, /* more than 1 CPU possible */
 					      100,
 					      &maxCPULoad))
-    return -1;
+    return SYSERR;
+  return (100 * ret) / maxCPULoad;
+}
+
+
+/**
+ * Get the load of the CPU relative to what is allowed.
+ * @return the CPU load as a percentage of allowed
+ *        (100 is equivalent to full load)
+ */
+int os_disk_get_load(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg) {
+  unsigned long long maxIOLoad;
+  int ret;
+
   MUTEX_LOCK(statusMutex);
-  now = get_time();
-  if ( (agedLoad == -1) ||
-       (now - lastCall > 500 * cronMILLIS) ) {
-    /* use smoothing, but do NOT update lastRet at frequencies higher
-       than 500ms; this makes the smoothing (mostly) independent from
-       the frequency at which getCPULoad is called (and we don't spend
-       more time measuring CPU than actually computing something). */
-    currentLoad = updateCpuUsage();
-    lastCall = now;
-    if (currentLoad == -1) {
-      agedLoad = -1;
-    } else {
-      if (agedLoad == -1) {
-	agedLoad = currentLoad;
-      } else {
-	/* for CPU, we don't do the 'fast increase' since CPU is much
-	   more jitterish to begin with */
-	agedLoad = (agedLoad * 31 + currentLoad) / 32;
-      }
-    }
-  }
-  if (agedLoad == -1)
-    ret = -1;
-  else
-    ret = (100 * agedLoad) / maxCPULoad;
+  updateAgedLoad(ectx, cfg);
+  ret = agedIOLoad;
   MUTEX_UNLOCK(statusMutex);
-  return ret;
+  if (ret == -1)
+    return -1;
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "LOAD",
+					      "MAXIOLOAD",
+					      0,
+					      100000, /* more than 1 CPU possible */
+					      50,
+					      &maxIOLoad))
+    return SYSERR;
+  return (100 * ret) / maxIOLoad;
 }
 
 /**
@@ -554,7 +619,7 @@ void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
 #elif MINGW
   InitWinEnv(NULL);
 #endif
-  updateCpuUsage(); /* initialize */
+  updateUsage(); /* initialize */
 }
 
 /**

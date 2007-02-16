@@ -1,3 +1,6 @@
+Thu Feb 15 21:54:15 MST 2007
+	Added support for IO load detection.
+
 Thu Feb  8 13:21:34 MST 2007
 	Updating gettext to 0.16.1.
 	Minor bugfix in build process (#1180, #1181).

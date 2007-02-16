@@ -1186,6 +1186,19 @@ The size of the DSTORE QUOTA is specified in MB.")
  (cons 0 10000)
  'always))
 
+(define (load-io builder)
+ (builder
+ "LOAD"
+ "MAXIOLOAD"
+ (_ "What is the maximum IO load (permille)?")
+ (_ 
+"Which IO load can be tolerated.  Load here refers to the permille of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 50 means that once your 1 minute-load average goes over 5% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 5 and 500." )
+ '()
+ #t
+ 50
+ (cons 0 100000)
+ 'always))
+
 (define (load-cpu-hard builder)
  (builder
  "LOAD"
@@ -1264,6 +1277,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
     (load-maxup builder)
     (load-hard-up-limit builder)
     (load-cpu builder)
+    (load-io builder)
     (load-cpu-hard builder)
     (load-basiclimiting builder)
     (load-interfaces builder)

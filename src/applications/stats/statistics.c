@@ -198,6 +198,7 @@ Stats_ServiceAPI * provide_module_stats(CoreAPIForApplication * capi) {
 static int stat_handle_network_load_up;
 static int stat_handle_network_load_down;
 static int stat_handle_cpu_load;
+static int stat_handle_io_load;
 static int stat_bytes_noise_received;
 static int stat_connected;
 
@@ -208,6 +209,8 @@ static void initializeStats() {
     = statHandle(gettext_noop("% of allowed network load (down)"));
   stat_handle_cpu_load
     = statHandle(gettext_noop("% of allowed cpu load"));
+  stat_handle_io_load
+    = statHandle(gettext_noop("% of allowed io load"));
   stat_connected
     = statHandle(gettext_noop("# of connected peers"));
   stat_bytes_noise_received
@@ -218,6 +221,9 @@ static void immediateUpdates() {
   statSet(stat_handle_cpu_load,
 	  os_cpu_get_load(coreAPI->ectx,
 			  coreAPI->cfg));
+  statSet(stat_handle_io_load,
+	  os_disk_get_load(coreAPI->ectx,
+			   coreAPI->cfg));
   statSet(stat_handle_network_load_up,
 	  os_network_monitor_get_load(coreAPI->load_monitor,
 				      Upload));
