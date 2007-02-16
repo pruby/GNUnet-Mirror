@@ -11,16 +11,11 @@ notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.1a [2'07]:
-- Windows installer [Nils]
-  * uninstall: Remove account
-  * libcurl, guile
-
-
 0.7.2 [3'07]:
 - new features:
   * IO load detection
   * implement URITRACK_STATE database (and use it!)
+  * track 0-anonymity indexed content (for DHT-advertising!)
   * XFS / support for location URIs [CG] 
     + dht/gap integration (search routing) [RC]
     + fsui/fs/location URI support (download routing) [RC]
@@ -59,9 +54,6 @@ notes:
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97
-- better prediction for transport success (close gap between):
-  # bytes encrypted  :      70515980687
-  # bytes transmitted:       1432285587
 
 
 1.0.0 (aka "userfriendly"):
