@@ -77,7 +77,7 @@ However, active testing and qualified feedback of these features is always welco
 
 (define (meta-rare builder) 
  (builder
-   "Meta"
+  "Meta"
    "RARE"
    (_ "Show rarely used options")
    (_
@@ -1192,10 +1192,10 @@ The size of the DSTORE QUOTA is specified in MB.")
  "MAXIOLOAD"
  (_ "What is the maximum IO load (permille)?")
  (_ 
-"Which IO load can be tolerated.  Load here refers to the permille of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 50 means that once your 1 minute-load average goes over 5% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 5 and 500." )
+"Which IO load can be tolerated.  Load here refers to the permille of CPU cycles wasted waiting for IO for the entire system, that is it includes disk utilization by other processes.  A value of 100 means that once the average number of cycles wasted waiting for IO is more than 10% non-idle, GNUnet will try to reduce IO until the load goes under the threshold.  Reasonable values are typically between 5 and 500." )
  '()
  #t
- 50
+ 100
  (cons 0 100000)
  'always))
 

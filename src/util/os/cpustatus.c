@@ -89,7 +89,8 @@ static int initMachCpuStats() {
   kern_return_t kret;
   int i,j;
 
-  kret = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO,
+  kret = host_processor_info(mach_host_self(), 
+			     PROCESSOR_CPU_LOAD_INFO,
                              &cpu_count,
                              (processor_info_array_t *)&cpu_load,
                              &cpu_msg_count);
@@ -99,8 +100,7 @@ static int initMachCpuStats() {
            "host_processor_info failed.");
     return SYSERR;
   }
-  prev_cpu_load = (processor_cpu_load_info_t)MALLOC(cpu_count *
-                                                    sizeof(*prev_cpu_load));
+  prev_cpu_load = MALLOC(cpu_count * sizeof(*prev_cpu_load));
   for (i = 0; i < cpu_count; i++) {
     for (j = 0; j < CPU_STATE_MAX; j++) {
       prev_cpu_load[i].cpu_ticks[j] = cpu_load[i].cpu_ticks[j];
@@ -112,6 +112,7 @@ static int initMachCpuStats() {
   return OK;
 }
 #endif
+
 /**
  * Update the currentCPU and currentIO load values.
  *
@@ -128,7 +129,7 @@ static int updateUsage(){
   if (proc_stat != NULL) {
     static unsigned long long last_cpu_results[5] = { 0, 0, 0, 0, 0 };
     static int have_last_cpu = NO;
-    char line[128];
+    char line[256];
     unsigned long long user_read, system_read, nice_read, idle_read, iowait_read;
     unsigned long long user, system, nice, idle, iowait;
     unsigned long long usage_time=0, total_time=1;
@@ -136,7 +137,7 @@ static int updateUsage(){
     /* Get the first line with the data */
     rewind(proc_stat);
     fflush(proc_stat);
-    if (NULL == fgets(line, 128, proc_stat)) {
+    if (NULL == fgets(line, 256, proc_stat)) {
       GE_LOG_STRERROR_FILE(NULL,
 			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			   "fgets",
@@ -169,8 +170,8 @@ static int updateUsage(){
 	total_time = usage_time + idle + iowait;
 	if ( (total_time > 0) &&
 	     (have_last_cpu == YES) ) {
-	  currentCPULoad = (int) ((100L * usage_time) / total_time);
-	  currentIOLoad = (int) ((1000L * iowait) / total_time);
+	  currentCPULoad = (int) (100L * usage_time / total_time);
+	  currentIOLoad  = (int) (1000L * iowait / total_time);
 	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
@@ -594,7 +595,7 @@ int os_disk_get_load(struct GE_Context * ectx,
 					      "MAXIOLOAD",
 					      0,
 					      100000, /* more than 1 CPU possible */
-					      50,
+					      100,
 					      &maxIOLoad))
     return SYSERR;
   return (100 * ret) / maxIOLoad;
