@@ -607,11 +607,16 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   shared->anonymityLevel = anonymityLevel;
   shared->priority = priority;
   shared->individualKeywords = individualKeywords;
+  shared->handle = NULL;
   ul = addUploads(shared,
 		  filename,
 		  keyUri,
 		  md,
 		  &ctx->activeUploads);
+  if (ul == NULL) {
+    freeShared(shared);
+    return NULL;
+  }
   shared->handle = PTHREAD_CREATE(&FSUI_uploadThreadEvent,
 				  ul,
 				  128 * 1024);
