@@ -129,6 +129,7 @@ static int updateUsage(){
   if (proc_stat != NULL) {
     static unsigned long long last_cpu_results[5] = { 0, 0, 0, 0, 0 };
     static int have_last_cpu = NO;
+    int ret;
     char line[256];
     unsigned long long user_read, system_read, nice_read, idle_read, iowait_read;
     unsigned long long user, system, nice, idle, iowait;
@@ -145,12 +146,14 @@ static int updateUsage(){
       fclose(proc_stat);
       proc_stat = NULL; /* don't try again */
     } else {
-      if (sscanf(line, "%*s %llu %llu %llu %llu %llu",
-		 &user_read,
-		 &system_read,
-		 &nice_read,
-		 &idle_read,
-		 &iowait_read) != 5) {
+      iowait_read = 0;
+      ret = sscanf(line, "%*s %llu %llu %llu %llu %llu",
+		   &user_read,
+		   &system_read,
+		   &nice_read,
+		   &idle_read,
+		   &iowait_read);
+      if (ret < 4) {
 	GE_LOG_STRERROR_FILE(NULL,
 			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			     "fgets-sscanf",
@@ -171,7 +174,10 @@ static int updateUsage(){
 	if ( (total_time > 0) &&
 	     (have_last_cpu == YES) ) {
 	  currentCPULoad = (int) (100L * usage_time / total_time);
-	  currentIOLoad  = (int) (100L * iowait / total_time);
+	  if (ret > 4)
+	    currentIOLoad = (int) (100L * iowait / total_time);
+	  else
+	    currentIOLoad = -1;
 	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
