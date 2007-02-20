@@ -177,7 +177,7 @@ static int updateUsage(){
 	  if (ret > 4)
 	    currentIOLoad = (int) (100L * iowait / total_time);
 	  else
-	    currentIOLoad = -1;
+	    currentIOLoad = -1; /* 2.4 kernel */
 	}
 	/* Store the values for the next calculation*/
 	last_cpu_results[0] = user_read;
