@@ -737,7 +737,8 @@ static int dequeueQuery(const HashCode512 * query) {
 /**
  * Compute the hashtable index of a host id.
  */
-static unsigned int computeRoutingIndex(const HashCode512 * query) {
+static unsigned int
+computeRoutingIndex(const HashCode512 * query) {
   unsigned int res
     = (((unsigned int*)query)[0] ^
        ((unsigned int*)query)[1] / (1 + random_qsel))
@@ -1663,7 +1664,7 @@ static int useContent(const PeerIdentity * host,
     GE_BREAK(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */
-  }
+  }  
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
@@ -1741,7 +1742,7 @@ static int useContent(const PeerIdentity * host,
 	    prio);
   }
 
-  /* FIFTH: if unique reply, stopy querying */
+  /* FIFTH: if unique reply, stop querying */
   if (uri(value,
 	  ite->type,
 	  NO, /* already verified */

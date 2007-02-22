@@ -163,10 +163,16 @@ static int put(const HashCode512 * key,
   int ok;
 
   /* check if we have enough space / priority */
+  if (ntohll(value->expirationTime) < get_time()) {
+    GE_LOG(coreAPI->ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "Received content for put already expired!\n");
+    return NO;
+  }
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) ) {
     GE_LOG(coreAPI->ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
+	   GE_INFO | GE_REQUEST | GE_USER,
 	   "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
 	   sq->getSize(),
 	   quota);

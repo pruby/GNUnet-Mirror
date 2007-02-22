@@ -527,6 +527,7 @@ static int iterateHelper(unsigned int type,
   char typestr[32];
   int count = 0;
   mysqlHandle dbhI;
+  cron_t now;
 
   dbhI.cnffile = dbh->cnffile; /* shared */
   if (OK != iopen(&dbhI, NO))
@@ -546,11 +547,13 @@ static int iterateHelper(unsigned int type,
              "WHERE type=%u ",
 	     type);
   }
+  now = get_time();
   scratch = MALLOC(256);
   SNPRINTF(scratch,
 	   256,	
 	   query,
-	   typestr);
+	   typestr,
+	   now);
   mysql_query(dbhI.dbf,
 	      scratch);
   FREE(scratch);
@@ -656,7 +659,7 @@ static int iterateMigrationOrder(Datum_Iterator iter,
 			         void * closure) {
   return iterateHelper(0,
 		       "SELECT SQL_NO_CACHE * FROM gn070"
-		       " %s"
+		       " %s WHERE expire > %llu"
 		       " ORDER BY expire DESC",
 		       iter,
 		       closure);

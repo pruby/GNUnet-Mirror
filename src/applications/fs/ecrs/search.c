@@ -336,6 +336,8 @@ static int receiveReplies(const HashCode512 * key,
   int ret;
   HashCode512 query;
 
+  if (ntohll(value->expirationTime) < get_time())
+    return SYSERR; /* already expired */
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
 #if DEBUG_SEARCH

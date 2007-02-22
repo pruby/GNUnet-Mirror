@@ -533,7 +533,8 @@ static int sqlite_iterate(unsigned int type,
 			  Datum_Iterator iter,
 			  void * closure,
 			  int sortByPriority,
-			  int inverseOrder) {	
+			  int inverseOrder,
+			  int include_expired) {	
   sqlite3_stmt * stmt;
   int count;
   char scratch[512];
@@ -544,6 +545,7 @@ static int sqlite_iterate(unsigned int type,
   sqlite3 * dbh;
   sqliteHandle * handle;
   int ret;
+  cron_t now;
 
   handle = getDBHandle();
   dbh = handle->dbh;
@@ -579,6 +581,12 @@ static int sqlite_iterate(unsigned int type,
 	     RESERVED_BLOCK); /* otherwise we iterate over
 				 the stats entry, which would
 				 be bad */
+  if (NO == include_expired) {
+    if (type != 0)
+      strcat(scratch, " AND expire > :8");
+    else
+      strcat(scratch, " AND expire > :7");
+  }
   if (sortByPriority) {
     if (inverseOrder)
       strcat(scratch, " ORDER BY prio DESC, expire DESC, hash ASC");
@@ -646,6 +654,17 @@ static int sqlite_iterate(unsigned int type,
       sqlite3_bind_int(stmt,
 		       7,
 		       type);
+    if (NO == include_expired) {
+      now = get_time();
+      if (type)
+	sqlite3_bind_int64(stmt,
+			   8,
+			   now);
+      else
+	sqlite3_bind_int64(stmt,
+			   7,
+			   now);
+    }
     if ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
       datum = assembleDatum(handle,
 			    stmt);
@@ -696,7 +715,6 @@ static int sqlite_iterate(unsigned int type,
   return count;
 }
 
-
 /**
  * Call a method for each key in the database and
  * call the callback method on it.
@@ -711,7 +729,7 @@ static int sqlite_iterate(unsigned int type,
 static int iterateLowPriority(unsigned int type,
 			      Datum_Iterator iter,
 			      void * closure) {
-  return sqlite_iterate(type, iter, closure, 1, NO);
+  return sqlite_iterate(type, iter, closure, YES, NO, YES);
 }
 
 /**
@@ -726,7 +744,7 @@ static int iterateLowPriority(unsigned int type,
 static int iterateExpirationTime(unsigned int type,
 				 Datum_Iterator iter,
 				 void * closure) {
-  return sqlite_iterate(type, iter, closure, 0, NO);
+  return sqlite_iterate(type, iter, closure, NO, NO, YES);
 }
 
 /**
@@ -739,7 +757,7 @@ static int iterateExpirationTime(unsigned int type,
  */
 static int iterateMigrationOrder(Datum_Iterator iter,
 			         void * closure) {
-  return sqlite_iterate(0, iter, closure, 0, YES);
+  return sqlite_iterate(0, iter, closure, NO, YES, NO);
 }
 
 
