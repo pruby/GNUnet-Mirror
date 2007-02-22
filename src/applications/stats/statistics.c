@@ -41,6 +41,13 @@
 #include "gnunet_stats_service.h"
 #include "statistics.h"
 
+/**
+ * Should we generate *very* costly statistics about
+ * the SQStore?  Only set to YES for debugging, never
+ * in production!
+ */
+#define HAVE_SQSTATS NO
+
 /* *************** service *************** */
 
 /**
@@ -176,7 +183,8 @@ void release_module_stats() {
 /**
  * Initialize the statistics module.
  */
-Stats_ServiceAPI * provide_module_stats(CoreAPIForApplication * capi) {
+Stats_ServiceAPI *
+provide_module_stats(CoreAPIForApplication * capi) {
   static Stats_ServiceAPI api;
 
   coreAPI = capi;
@@ -201,6 +209,12 @@ static int stat_handle_cpu_load;
 static int stat_handle_io_load;
 static int stat_bytes_noise_received;
 static int stat_connected;
+static Stats_ServiceAPI * stats;
+static CoreAPIForApplication * myCoreAPI;
+
+#if HAVE_SQSTATS
+#include "sqstats.c"
+#endif
 
 static void initializeStats() {
   stat_handle_network_load_up
@@ -218,6 +232,9 @@ static void initializeStats() {
 }
 
 static void immediateUpdates() {
+#if HAVE_SQSTATS
+  update_sqstore_stats();
+#endif
   statSet(stat_handle_cpu_load,
 	  os_cpu_get_load(coreAPI->ectx,
 			  coreAPI->cfg));
@@ -351,15 +368,12 @@ static int processNoise(const PeerIdentity * sender,
 }
 
 
-static Stats_ServiceAPI * myApi;
-static CoreAPIForApplication * myCoreAPI;
-
 int initialize_module_stats(CoreAPIForApplication * capi) {
   GE_ASSERT(capi->ectx,
 	    myCoreAPI == NULL);
   myCoreAPI = capi;
-  myApi = capi->requestService("stats");
-  if (myApi == NULL) {
+  stats = capi->requestService("stats");
+  if (stats == NULL) {
     GE_BREAK(capi->ectx, 0);
     myCoreAPI = NULL;
     return SYSERR;
@@ -389,10 +403,16 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
 						   "ABOUT",
 						   "stats",
 						   gettext_noop("keeps statistics about gnunetd's operation")));
+#if HAVE_SQSTATS
+  init_sqstore_stats();
+#endif
   return OK;
 }
 
 int done_module_stats() {
+#if HAVE_SQSTATS
+  done_sqstore_stats();
+#endif
   GE_ASSERT(NULL, myCoreAPI != NULL);
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_STATISTICS,
 				   &sendStatistics);
@@ -404,8 +424,8 @@ int done_module_stats() {
 				   &processGetConnectionCountRequest);
   coreAPI->unregisterHandler(P2P_PROTO_noise,
 			     &processNoise);
-  myCoreAPI->releaseService(myApi);
-  myApi = NULL;
+  myCoreAPI->releaseService(stats);
+  stats = NULL;
   myCoreAPI = NULL;
   return OK;
 }

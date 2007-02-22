@@ -14,6 +14,8 @@ lib_LTLIBRARIES = \
 bin_PROGRAMS = \
  gnunet-stats
 
+EXTRA_DIST = \
+  sqstats.c
 
 gnunet_stats_SOURCES = \
  gnunet-stats.c 	
