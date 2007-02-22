@@ -241,6 +241,12 @@ int initialize_module_dht(CoreAPIForApplication * capi) {
     status = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&csClientExit))
     status = SYSERR;
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "dht",
+						   gettext_noop("Enables efficient non-anonymous routing")));
   return status;
 }
 
