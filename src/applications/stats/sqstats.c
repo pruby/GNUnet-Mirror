@@ -27,13 +27,6 @@
 #include "gnunet_sqstore_service.h"
 #include "gnunet_protocols.h"
 
-/**
- * The core API.
- */
-static CoreAPIForApplication * coreAPI;
-
-static Stats_ServiceAPI * stats;
-
 static SQstore_ServiceAPI * sq;
 
 /* block types */
@@ -153,7 +146,6 @@ static int init_sqstore_stats() {
   sq = myCoreAPI->requestService("sqstore");
   if (sq == NULL)
     return SYSERR;
-  stats = myCoreAPI->requestService("stats");
   stat_block[0]
     = stats->create(gettext_noop("# Any-Blocks"));
   stat_block[1]
@@ -198,8 +190,6 @@ static int init_sqstore_stats() {
 static void done_sqstore_stats() {
   if (sq == NULL)
     return;
-  myCoreAPI->releaseService(stats);
-  stats = NULL;
   myCoreAPI->releaseService(sq);
   sq = NULL;
 }
