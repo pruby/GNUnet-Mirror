@@ -145,7 +145,12 @@ void processResponse(const HashCode512 * key,
   EncName enc;
 #endif
 
-  GE_ASSERT(ectx, ntohl(value->size) > sizeof(Datastore_Value));
+  GE_ASSERT(ectx, 
+	    ntohl(value->size) > sizeof(Datastore_Value));
+  if ( (ntohll(valuev->expirationTime) < get_time()) &&
+       (ntohl(dv->type) != D_BLOCK) )
+    return; /* ignore expired, non-data responses! */
+
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
   IF_GELOG(ectx,

@@ -311,6 +311,8 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
   datum->size = htonl(sizeof(Datastore_Value) +
 		      ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
   datum->expirationTime = ri->expiration;
+  printf("New content put, expires in %llu ms\n",
+	 ntohll(ri->expiration) - get_time());
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
   if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
