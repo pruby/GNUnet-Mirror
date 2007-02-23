@@ -1,6 +1,6 @@
 /*
   This file is part of GNUnet.
-  (C) 2001, 2002, 2004, 2006 Christian Grothoff (and other contributing authors)
+  (C) 2001, 2002, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
@@ -46,7 +46,7 @@
  * the SQStore?  Only set to YES for debugging, never
  * in production!
  */
-#define HAVE_SQSTATS NO
+#define HAVE_SQSTATS YES
 
 /* *************** service *************** */
 

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -146,6 +146,19 @@ typedef struct {
    */
   int (*iterateMigrationOrder)(Datum_Iterator iter,
 			       void * closure);
+
+  /**
+   * Iterate over all the items in the datastore 
+   * as fast as possible in a single transaction
+   * (can lock datastore while this happens, focus
+   * is on doing it fast).
+   *
+   * @param iter never NULL
+   * @return the number of results, SYSERR if the
+   *   iter is non-NULL and aborted the iteration
+   */
+  int (*iterateAllNow)(Datum_Iterator iter,
+		       void * closure);
 
   /**
    * Delete an item from the datastore.

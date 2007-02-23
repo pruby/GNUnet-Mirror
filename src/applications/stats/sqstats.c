@@ -19,7 +19,7 @@
 */
 
 /**
- * @file sqlite.c
+ * @file sqstats.c
  * @brief get statistics from sqstore datastore
  * @author Christian Grothoff
  */
@@ -133,9 +133,8 @@ static void update_sqstore_stats() {
   memset(&data,
 	 0,
 	 sizeof(struct CD));
-  sq->iterateLowPriority(0,
-			 &iter,
-			 &data);
+  sq->iterateAllNow(&iter,
+		    &data);
   for (i=0;i<8;i++)
     stats->set(stat_block[i],
 	       data.stat_block[i]);

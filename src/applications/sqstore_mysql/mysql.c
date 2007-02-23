@@ -665,6 +665,22 @@ static int iterateMigrationOrder(Datum_Iterator iter,
 		       closure);
 }
 
+/**
+ * Iterate over the items in the datastore as
+ * quickly as possible (in any order).
+ *
+ * @param iter never NULL
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateAllNow(Datum_Iterator iter,
+			 void * closure) {
+  return iterateHelper(0,
+		       "SELECT SQL_NO_CACHE * FROM gn070",
+		       iter,
+		       closure);
+}
+
 #define MAX_DATUM_SIZE 65536
 
 /**
@@ -1397,6 +1413,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   api.iterateLowPriority = &iterateLowPriority;
   api.iterateExpirationTime = &iterateExpirationTime;
   api.iterateMigrationOrder = &iterateMigrationOrder;
+  api.iterateAllNow = &iterateAllNow;
   api.del = &del;
   api.drop = &drop;
   api.update = &update;
