@@ -50,7 +50,8 @@ static int pushBlock(struct ClientServerConnection * sock,
                      const CHK * chk,
                      unsigned int level,
                      Datastore_Value ** iblocks,
-		     unsigned int prio) {
+		     unsigned int prio,
+		     cron_t expirationTime) {
   unsigned int size;
   unsigned int present;
   Datastore_Value * value;
@@ -77,7 +78,8 @@ static int pushBlock(struct ClientServerConnection * sock,
                         &ichk,
                         level+1,
                         iblocks,
-			prio))
+			prio,
+			expirationTime))
       return SYSERR;
     fileBlockEncode(db,
                     size,
@@ -88,6 +90,7 @@ static int pushBlock(struct ClientServerConnection * sock,
       return SYSERR;
     }
     value->prio = htonl(prio);
+    value->expirationTime = htonll(expirationTime);
     if (OK != FS_insert(sock,
                         value)) {
       FREE(value);
@@ -335,7 +338,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                         &mchk,
                         0, /* dblocks are on level 0 */
                         iblocks,
-			priority))
+			priority,
+			expirationTime))
       goto FAILURE;
   }
   if (tt != NULL)
@@ -387,7 +391,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                         &mchk,
                         i+1,
                         iblocks,
-			priority))
+			priority,
+			expirationTime))
       goto FAILURE;
     fileBlockEncode(db,
                     size,
@@ -397,6 +402,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
+    value->expirationTime = htonll(expirationTime);
     value->prio = htonl(priority);
     if (OK != FS_insert(sock,
                         value)) {

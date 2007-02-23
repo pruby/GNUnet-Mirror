@@ -147,8 +147,8 @@ void processResponse(const HashCode512 * key,
 
   GE_ASSERT(ectx, 
 	    ntohl(value->size) > sizeof(Datastore_Value));
-  if ( (ntohll(valuev->expirationTime) < get_time()) &&
-       (ntohl(dv->type) != D_BLOCK) )
+  if ( (ntohll(value->expirationTime) < get_time()) &&
+       (ntohl(value->type) != D_BLOCK) )
     return; /* ignore expired, non-data responses! */
 
   matchCount = 0;

@@ -66,7 +66,7 @@ int fileBlockEncode(const DBlock * data,
   val->type = htonl(D_BLOCK);
   val->prio = htonl(0);
   val->anonymityLevel = htonl(0);
-  val->expirationTime = htonl(0);
+  val->expirationTime = htonll(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
   GE_ASSERT(NULL,
