@@ -760,6 +760,73 @@ static int iterateMigrationOrder(Datum_Iterator iter,
   return sqlite_iterate(0, iter, closure, NO, YES, NO);
 }
 
+/**
+ * Call a method for each key in the database and
+ * do so quickly in any order (can lock the 
+ * database until iteration is complete).
+ *
+ * @param callback the callback method
+ * @param data second argument to all callback calls
+ * @return the number of items stored in the content database
+ */
+static int iterateAllNow(Datum_Iterator iter,
+			 void * closure) {
+  sqlite3_stmt * stmt;
+  int count;
+  Datastore_Datum * datum;
+  sqlite3 * dbh;
+  sqliteHandle * handle;
+  int ret;
+
+  handle = getDBHandle();
+  dbh = handle->dbh;
+  MUTEX_LOCK(db->DATABASE_Lock_);
+
+  /* For the rowid trick see
+      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
+  if (sq_prepare(dbh,
+		 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070",
+		 &stmt) != SQLITE_OK) {
+    LOG_SQLITE(handle,
+	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	       "sqlite3_prepare");
+    MUTEX_UNLOCK(db->DATABASE_Lock_);
+    return SYSERR;
+  }
+  count = 0;
+  while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
+    datum = assembleDatum(handle,
+			  stmt);
+    if (datum == NULL)
+      continue;
+    if (iter != NULL) {
+      if (SYSERR == iter(&datum->key,
+			 &datum->value,
+			 closure) ) {
+	FREE(datum);
+	count = SYSERR;
+	break;
+      }
+    }
+    FREE(datum);
+    count++;
+  }
+  if (ret != SQLITE_DONE) {
+    LOG_SQLITE(handle,
+	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	       "sqlite_query");
+    sqlite3_finalize(stmt);
+    MUTEX_UNLOCK(db->DATABASE_Lock_);
+    return SYSERR;
+  }
+  sqlite3_finalize(stmt);
+  MUTEX_UNLOCK(db->DATABASE_Lock_);
+
+  return count;
+}
+
+
+
 
 static void sqlite_shutdown() {
   unsigned int idx;
@@ -1276,6 +1343,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   api.iterateLowPriority = &iterateLowPriority;
   api.iterateExpirationTime = &iterateExpirationTime;
   api.iterateMigrationOrder = &iterateMigrationOrder;
+  api.iterateAllNow = &iterateAllNow;
   api.del = &del;
   api.drop = &drop;
   api.update = &update;
