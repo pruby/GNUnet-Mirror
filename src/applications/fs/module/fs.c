@@ -184,7 +184,19 @@ static int gapPut(void * closure,
     FREE(dv);
     return SYSERR;
   }
+  if (ntohll(dv->expirationTime) < get_time()) {
+    /* do not do anything with expired data 
+       _except_ if it is pure content that one
+       of our clients has requested -- then we
+       should ignore expiration */
+    if (ntohl(dv->type) == D_BLOCK)
+      processResponse(query, dv);
+    FREE(dv);
+    return NO;
+  }
   processResponse(query, dv);
+
+
 #if DEBUG_FS
   IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
