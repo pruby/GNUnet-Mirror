@@ -202,5 +202,4 @@ static void done_sqstore_stats() {
   stats = NULL;
   myCoreAPI->releaseService(sq);
   sq = NULL;
-  myCoreAPI = NULL;
 }

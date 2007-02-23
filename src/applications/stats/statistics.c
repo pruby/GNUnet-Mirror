@@ -46,7 +46,7 @@
  * the SQStore?  Only set to YES for debugging, never
  * in production!
  */
-#define HAVE_SQSTATS YES
+#define HAVE_SQSTATS NO
 
 /* *************** service *************** */
 
