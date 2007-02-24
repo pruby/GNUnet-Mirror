@@ -411,6 +411,12 @@ typedef struct RequestManager {
    * to abort the RM as soon as possible.
    */
   int abortFlag;
+  
+  /**
+   * Is the request manager being destroyed?
+   * (if so, accessing the request list is illegal!)
+   */
+  int shutdown;
 
 } RequestManager;
 
@@ -426,6 +432,8 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
+  rm->shutdown
+    = NO;
   rm->lock
     = MUTEX_CREATE(YES);
   rm->sctx = FS_SEARCH_makeContext(ectx,
@@ -493,6 +501,12 @@ static void destroyRequestManager(RequestManager * rm) {
 	 rm);
 #endif
   MUTEX_LOCK(rm->lock);
+  /* cannot hold lock during shutdown since
+     fslib may have to aquire it; but we can
+     flag that we are in the shutdown process
+     and start to ignore fslib events! */
+  rm->shutdown = YES;
+  MUTEX_UNLOCK(rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     if (rm->requestList[i]->searchHandle != NULL)
       FS_stop_search(rm->sctx,
@@ -505,7 +519,6 @@ static void destroyRequestManager(RequestManager * rm) {
        0);
   FS_SEARCH_destroyContext(rm->sctx);
   rm->sctx = NULL;
-  MUTEX_UNLOCK(rm->lock);
   MUTEX_DESTROY(rm->lock);
   PTHREAD_REL_SELF(rm->requestThread);
   FREE(rm);
@@ -519,11 +532,13 @@ static void requestManagerEndgame(RequestManager * rm) {
   int i;
 
   MUTEX_LOCK(rm->lock);
-  for (i=0;i<rm->requestListIndex;i++) {
-    RequestEntry * entry = rm->requestList[i];
-    /* cut TTL in half */
-    entry->lasttime
-      += (entry->lasttime + entry->lastTimeout) / 2;
+  if (rm->shutdown == NO) {
+    for (i=0;i<rm->requestListIndex;i++) {
+      RequestEntry * entry = rm->requestList[i];
+      /* cut TTL in half */
+      entry->lasttime
+	+= (entry->lasttime + entry->lastTimeout) / 2;
+    }
   }
   MUTEX_UNLOCK(rm->lock);
 }
@@ -566,14 +581,19 @@ static void addRequest(RequestManager * rm,
     = 0;
   entry->searchHandle
     = NULL;
-  MUTEX_LOCK(rm->lock);
-  GE_ASSERT(rm->ectx,
-	    rm->requestListSize > 0);
-  if (rm->requestListSize == rm->requestListIndex)
-    GROW(rm->requestList,
-	 rm->requestListSize,
-	 rm->requestListSize*2);
-  rm->requestList[rm->requestListIndex++] = entry;
+  MUTEX_LOCK(rm->lock);  
+  if (rm->shutdown == NO) {
+    GE_ASSERT(rm->ectx,
+	      rm->requestListSize > 0);
+    if (rm->requestListSize == rm->requestListIndex)
+      GROW(rm->requestList,
+	   rm->requestListSize,
+	   rm->requestListSize*2);
+    rm->requestList[rm->requestListIndex++] = entry;
+  } else {
+    GE_BREAK(rm->ectx, 0);
+    FREE(entry);
+  }
   MUTEX_UNLOCK(rm->lock);
 }
 
@@ -590,19 +610,21 @@ static void delRequest(RequestManager * rm,
   RequestEntry * re;
 
   MUTEX_LOCK(rm->lock);
-  for (i=0;i<rm->requestListIndex;i++) {
-    re = rm->requestList[i];
-    if (re->node == node) {
-      rm->requestList[i]
-	= rm->requestList[--rm->requestListIndex];
-      rm->requestList[rm->requestListIndex]
-	= NULL;
-      MUTEX_UNLOCK(rm->lock);
-      if (NULL != re->searchHandle)
-	FS_stop_search(rm->sctx,
-		       re->searchHandle);
-      FREE(re);
-      return;
+  if (rm->shutdown == NO) {
+    for (i=0;i<rm->requestListIndex;i++) {
+      re = rm->requestList[i];
+      if (re->node == node) {
+	rm->requestList[i]
+	  = rm->requestList[--rm->requestListIndex];
+	rm->requestList[rm->requestListIndex]
+	  = NULL;
+	MUTEX_UNLOCK(rm->lock);
+	if (NULL != re->searchHandle)
+	  FS_stop_search(rm->sctx,
+			 re->searchHandle);
+	FREE(re);
+	return;
+      }
     }
   }
   MUTEX_UNLOCK(rm->lock);
@@ -711,6 +733,11 @@ static void updateProgress(const NodeClosure * node,
     }
   }
   rm = node->ctx->rm;
+  MUTEX_LOCK(rm->lock);
+  if (rm->shutdown == YES) {
+    MUTEX_UNLOCK(rm->lock);
+    return;
+  }
 
   /* check type of reply msg, fill in query */
   pos = -1;
@@ -721,6 +748,7 @@ static void updateProgress(const NodeClosure * node,
       pos = i;
   if (pos == -1) {
     /* GE_BREAK(ectx, 0); */ /* should never happen */
+    MUTEX_UNLOCK(rm->lock);
     return;
   }
   entry = rm->requestList[pos];
@@ -763,6 +791,7 @@ static void updateProgress(const NodeClosure * node,
       rm->lastDET = nowTT;
     }
   }
+  MUTEX_UNLOCK(rm->lock);
 }
 
 
@@ -804,7 +833,9 @@ static int checkPresent(NodeClosure * node) {
 	 &hc);
     if (equalsHashCode512(&hc,
 			  &node->chk.key)) {
-      updateProgress(node, data, size);
+      updateProgress(node, 
+		     data,
+		     size);
       if (node->level > 0)
 	iblock_download_children(node,
 				 data,
@@ -908,7 +939,11 @@ static int decryptContent(const char * data,
 
 
 /**
- * We received a CHK reply for a block. Decrypt.
+ * We received a CHK reply for a block. Decrypt.  Note
+ * that the caller (fslib) has already aquired the 
+ * RM lock (we sometimes aquire it again in callees,
+ * mostly because our callees could be also be theoretically
+ * called from elsewhere).
  *
  * @param node the node for which the reply is given, freed in
  *        this function!
@@ -937,7 +972,6 @@ static int nodeReceive(const HashCode512 * query,
 	 "Receiving reply to query `%s'\n",
 	 &enc);
 #endif
-
   GE_ASSERT(ectx,
 	    equalsHashCode512(query,
 			      &node->chk.query));
@@ -957,8 +991,8 @@ static int nodeReceive(const HashCode512 * query,
   hash(data,
        size,
        &hc);
-  if (!equalsHashCode512(&hc,
-			 &node->chk.key)) {
+  if (! equalsHashCode512(&hc,
+			  &node->chk.key)) {
     delRequest(node->ctx->rm,
 	       node);
     FREE(data);
@@ -1170,7 +1204,8 @@ static cron_t processRequests(RequestManager * rm) {
   unsigned int TTL_DECREMENT;
 
   MUTEX_LOCK(rm->lock);
-  if (rm->requestListIndex == 0) {
+  if ( (rm->shutdown == YES) ||
+       (rm->requestListIndex == 0) ) {
     MUTEX_UNLOCK(rm->lock);
     return 0;
   }

@@ -1,3 +1,6 @@
+Fri Feb 23 17:55:46 MST 2007
+	Fixed potential deadlock during download shutdown sequence.
+
 Thu Feb 15 21:54:15 MST 2007
 	Added support for IO load detection.
 
