@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -44,7 +44,8 @@ static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
  */
 static int printStatistics(const char * name,
 			   unsigned long long value,
-			   FILE * stream) {
+			   void * cls) {
+  FILE * stream = cls;
   FPRINTF(stream,
 	  "%-60s: %16llu\n",
 	  dgettext("GNUnet", name),
@@ -54,22 +55,24 @@ static int printStatistics(const char * name,
 
 static int printProtocols(unsigned short type,
 			  int isP2P,
-			  FILE * stream) {
+			  void * cls) {
+  FILE * stream = cls;
   const char *name = NULL;
 
   if (isP2P != lastIp2p) {
     if (isP2P)
       fprintf(stream,
 	      _("Supported peer-to-peer messages:\n"));
+
     else
       fprintf(stream,
 	      _("Supported client-server messages:\n"));
     lastIp2p = isP2P;
   }
   if (isP2P)
-    name = p2pMessageName(type);
+    name = STATS_p2pMessageName(type);
   else
-    name = csMessageName(type);
+    name = STATS_csMessageName(type);
   if (name == NULL)
     fprintf(stream,
 	    "\t%d\n",
@@ -130,19 +133,19 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     return 1;
   }
-  res = requestStatistics(ectx,
-			  sock,
-			  (StatisticsProcessor) &printStatistics,
-			  stdout);
+  res = STATS_getStatistics(ectx,
+			    sock,
+			    &printStatistics,
+			    stdout);
   if ( (YES == GC_get_configuration_value_yesno(cfg,
 						"STATS",
 						"PRINT-PROTOCOLS",
 						NO)) &&
        (res == OK) ) {
-    res = requestAvailableProtocols(ectx,
-				    sock,
-				    (ProtocolProcessor) &printProtocols,
-				    stdout);
+    res = STATS_getAvailableProtocols(ectx,
+				      sock,
+				      &printProtocols,
+				      stdout);
   }
   if (res != OK)
     fprintf(stderr,

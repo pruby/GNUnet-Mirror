@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      (C) 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -37,24 +37,24 @@ extern "C" {
 #endif
 #endif
 
-#define STATS_VERSION "3.0.0"
+#define STATS_VERSION "4.0.0"
 
 /**
  * Return a descriptive name for a p2p message type
  */
-const char * p2pMessageName(unsigned short type);
+const char * STATS_p2pMessageName(unsigned short type);
 
 /**
  * Return a descriptive name for a client server message type
  */
-const char * csMessageName(unsigned short type);
+const char * STATS_csMessageName(unsigned short type);
 
 /**
  * @param name the name of the datum
  * @param value the value
  * @return OK to continue, SYSERR to abort iteration
  */
-typedef int (*StatisticsProcessor)(const char * name,
+typedef int (*STATS_StatProcessor)(const char * name,
 				   unsigned long long value,
 				   void * cls);
 
@@ -64,19 +64,19 @@ typedef int (*StatisticsProcessor)(const char * name,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestStatistics(struct GE_Context * ectx,
-		      struct ClientServerConnection * sock,
-		      StatisticsProcessor processor,
-		      void * cls);
+int STATS_getStatistics(struct GE_Context * ectx,
+			struct ClientServerConnection * sock,
+			STATS_StatProcessor processor,
+			void * cls);
 
 /**
  * @param type the type ID of the message
  * @param isP2P YES for P2P, NO for CS types
  * @return OK to continue, SYSERR to abort iteration
  */
-typedef int (*ProtocolProcessor)(unsigned short type,
-				 int isP2P,
-				 void * cls);
+typedef int (*STATS_ProtocolProcessor)(unsigned short type,
+				       int isP2P,
+				       void * cls);
 
 /**
  * Request available protocols from TCP socket.
@@ -84,10 +84,10 @@ typedef int (*ProtocolProcessor)(unsigned short type,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestAvailableProtocols(struct GE_Context * ectx,
-			      struct ClientServerConnection * sock,
-			      ProtocolProcessor processor,
-			      void * cls);
+int STATS_getAvailableProtocols(struct GE_Context * ectx,
+				struct ClientServerConnection * sock,
+				STATS_ProtocolProcessor processor,
+				void * cls);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

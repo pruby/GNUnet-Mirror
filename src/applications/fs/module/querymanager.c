@@ -170,6 +170,8 @@ void processResponse(const HashCode512 * key,
       rc->header.size = htons(sizeof(CS_fs_reply_content_MESSAGE) +
 			      ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.type = htons(CS_PROTO_gap_RESULT);
+      rc->anonymityLevel = value->anonymityLevel;
+      rc->expirationTime = value->expirationTime;
       memcpy(&rc[1],
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
@@ -187,9 +189,10 @@ void processResponse(const HashCode512 * key,
   }
 #if DEBUG_QUERYMANAGER && 0
   if (matchCount == 0) {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Reply `%s' did not match any request.\n",
-	&enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Reply `%s' did not match any request.\n",
+	   &enc);
   }
 #endif
   MUTEX_UNLOCK(queryManagerLock);

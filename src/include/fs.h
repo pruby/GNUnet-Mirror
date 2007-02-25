@@ -74,6 +74,10 @@ typedef struct {
 typedef struct {
   MESSAGE_HEADER header;
 
+  unsigned int anonymityLevel;
+
+  cron_t expirationTime;
+
 } CS_fs_reply_content_MESSAGE;
 
 

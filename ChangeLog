@@ -1,3 +1,7 @@
+Sat Feb 24 15:43:14 MST 2007
+	Fixed various bugs related to content expiration.
+	Completed message covery in stats implementation.
+
 Fri Feb 23 17:55:46 MST 2007
 	Fixed potential deadlock during download shutdown sequence.
 

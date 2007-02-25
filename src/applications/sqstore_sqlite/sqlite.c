@@ -247,7 +247,7 @@ static sqliteHandle * getDBHandle() {
 		   "FROM gn070 WHERE hash=?",
 		   &ret->exists) != SQLITE_OK) ||
        (sq_prepare(ret->dbh,
-		   "UPDATE gn070 SET prio = prio + ? WHERE "
+		   "UPDATE gn070 SET prio = prio + ?, expire = MAX(expire,?) WHERE "
 		   "hash = ? AND value = ? AND prio + ? < ?",
 		   &ret->updPrio) != SQLITE_OK) ||
        (sq_prepare(ret->dbh,
@@ -1215,7 +1215,8 @@ static int del(const HashCode512 * key,
  */
 static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
-		  int delta) {
+		  int delta,
+		  cron_t expire) {
   int n;
   unsigned long contentSize;
   sqliteHandle *dbh;
@@ -1238,21 +1239,24 @@ static int update(const HashCode512 * key,
   sqlite3_bind_int(dbh->updPrio,
 		   1,
 		   delta);
+  sqlite3_bind_int64(dbh->updPrio,
+		     2,
+		     expire);
   sqlite3_bind_blob(dbh->updPrio,
-		    2,
+		    3,
 		    key,
 		    sizeof(HashCode512),
 		    SQLITE_TRANSIENT);
   sqlite3_bind_blob(dbh->updPrio,
-		    3,
+		    4,
 		    &value[1],
 		    contentSize,
 		    SQLITE_TRANSIENT);
   sqlite3_bind_int(dbh->updPrio,
-		   4,
+		   5,
 		   delta);
   sqlite3_bind_int(dbh->updPrio,
-		   5,
+		   6,
 		   MAX_PRIO);
 
   n = sqlite3_step(dbh->updPrio);

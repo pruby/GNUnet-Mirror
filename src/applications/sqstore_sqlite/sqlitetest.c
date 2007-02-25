@@ -196,7 +196,8 @@ static int test(SQstore_ServiceAPI * api) {
 					 &i));
   api->update(&key,
 	      value,
-	      4);
+	      4,
+	      0);
   i += 4;
   ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
 					 (Datum_Iterator) &priorityCheck,

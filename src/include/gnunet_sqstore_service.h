@@ -100,12 +100,16 @@ typedef struct {
    *     change?  If priority + delta < 0 the
    *     priority should be set to 0 (never go
    *     negative).
+   * @param expire new expiration time should be the
+   *     MAX of any existing expiration time and
+   *     this value
    * @return OK if a match was found and the update
    *     was successful, SYSERR on error
    */
   int (*update)(const HashCode512 * key,
 		const Datastore_Value * value,
-		int delta);
+		int delta,
+		cron_t expire);
 
   /**
    * Iterate over the items in the datastore in ascending

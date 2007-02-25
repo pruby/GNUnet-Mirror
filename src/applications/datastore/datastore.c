@@ -253,7 +253,8 @@ static int putUpdate(const HashCode512 * key,
     /* update prio */
     sq->update(key,
 	       cls.existing,
-	       ntohl(value->prio));
+	       ntohl(value->prio),
+	       ntohll(value->expirationTime));
     FREE(cls.existing);
     return OK;
   }
@@ -261,7 +262,8 @@ static int putUpdate(const HashCode512 * key,
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Migration: available %llu (need %u), min priority %u have %u\n",
-	 available, ntohl(value->size),
+	 available, 
+	 ntohl(value->size),
 	 minPriority,
 	 ntohl(value->prio));
 #endif

@@ -59,7 +59,7 @@ static void * processReplies(void * cls) {
   MESSAGE_HEADER * hdr;
   int i;
   int matched;
-  CS_fs_reply_content_MESSAGE * rep;
+  const CS_fs_reply_content_MESSAGE * rep;
   HashCode512 query;
   unsigned int size;
   cron_t delay;
@@ -84,7 +84,7 @@ static void * processReplies(void * cls) {
 	FREE(hdr);
 	continue;
       }
-      rep = (CS_fs_reply_content_MESSAGE*) hdr;
+      rep = (const CS_fs_reply_content_MESSAGE*) hdr;
       size = ntohs(hdr->size) - sizeof(CS_fs_reply_content_MESSAGE);
       if (OK != getQueryFor(size,
 			    (DBlock*)&rep[1],
@@ -108,8 +108,8 @@ static void * processReplies(void * cls) {
 	    value->type = htonl(getTypeOfBlock(size,
 					       (DBlock*) &rep[1]));
 	    value->prio = htonl(0);
-	    value->anonymityLevel = htonl(0);
-	    value->expirationTime = htonll(0);
+	    value->anonymityLevel = rep->anonymityLevel;
+	    value->expirationTime = rep->expirationTime;
 	    memcpy(&value[1],
 		   &rep[1],
 		   size);

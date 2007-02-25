@@ -194,7 +194,7 @@ typedef struct {
 
   MYSQL_STMT * update;
 
-  MYSQL_BIND ubind[3];
+  MYSQL_BIND ubind[4];
 
   struct MUTEX * DATABASE_Lock_;
 
@@ -219,7 +219,7 @@ typedef struct {
 
 #define DELETE_GENERIC_SAMPLE "DELETE FROM gn070 WHERE hash=? AND size=? AND type=? AND prio=? AND anonLevel=? AND expire=? AND value=? ORDER BY prio ASC LIMIT 1"
 
-#define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+? WHERE hash=? AND value=?"
+#define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+?,expire=MAX(expire,?) WHERE hash=? AND value=?"
 
 static mysqlHandle * dbh;
 
@@ -465,8 +465,9 @@ static int iopen(mysqlHandle * dbhI,
 	   0,
 	   sizeof(dbhI->ubind));
     dbhI->ubind[0].buffer_type = MYSQL_TYPE_LONG;
-    dbhI->ubind[1].buffer_type = MYSQL_TYPE_BLOB;
+    dbhI->ubind[1].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[2].buffer_type = MYSQL_TYPE_BLOB;
+    dbhI->ubind[3].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->prepare = YES;
   } else
     dbhI->prepare = NO;
@@ -1210,7 +1211,8 @@ static int del(const HashCode512 * key,
  */
 static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
-		  int delta) {
+		  int delta,
+		  cron_t expire) {
   unsigned long contentSize;
   unsigned long twenty;
 
@@ -1218,11 +1220,13 @@ static int update(const HashCode512 * key,
   MUTEX_LOCK(dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   dbh->ubind[0].buffer = (char*) &delta;
-  dbh->ubind[1].buffer = (char*) key;
-  dbh->ubind[1].length = &twenty;
-  dbh->ubind[2].buffer = (char*) &value[1];
-  dbh->ubind[2].length = &contentSize;
-  GE_ASSERT(ectx, mysql_stmt_param_count(dbh->update) <= 3);
+  dbh->ubind[1].buffer = (char*) &expire;
+  dbh->ubind[2].buffer = (char*) key;
+  dbh->ubind[2].length = &twenty;
+  dbh->ubind[3].buffer = (char*) &value[1];
+  dbh->ubind[3].length = &contentSize;
+  GE_ASSERT(ectx, 
+	    mysql_stmt_param_count(dbh->update) <= 4);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {
     GE_LOG(ectx,

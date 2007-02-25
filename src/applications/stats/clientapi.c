@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -34,7 +34,8 @@
 /**
  * Return a descriptive name for a p2p message type
  */
-const char * p2pMessageName(unsigned short type) {
+const char * 
+STATS_p2pMessageName(unsigned short type) {
   const char *name = NULL;
 
   switch( type ) {
@@ -50,27 +51,80 @@ const char * p2pMessageName(unsigned short type) {
   case p2p_PROTO_PONG :
     name = "p2p_PROTO_PONG";
     break;
-  case P2P_PROTO_noise :
-    name = "P2P_PROTO_noise";
-    break;
   case P2P_PROTO_hangup :
     name = "P2P_PROTO_hangup";
     break;
+  case P2P_PROTO_fragment :
+    name = "P2P_PROTO_fragment";
+    break;
+  case P2P_PROTO_noise :
+    name = "P2P_PROTO_noise";
+    break;
+
+  case P2P_PROTO_gap_QUERY :
+    name = "P2P_PROTO_gap_QUERY";
+    break;
+  case P2P_PROTO_gap_RESULT :
+    name = "P2P_PROTO_gap_RESULT";
+    break;
+
   case P2P_PROTO_chat_MSG :
     name = "P2P_PROTO_chat_MSG";
     break;
+
   case P2P_PROTO_tracekit_PROBE :
     name = "P2P_PROTO_tracekit_PROBE";
     break;
   case P2P_PROTO_tracekit_REPLY :
     name = "P2P_PROTO_tracekit_REPLY";
     break;
+
   case P2P_PROTO_tbench_REQUEST	:
     name = "P2P_PROTO_tbench_REQUEST";
     break;
   case P2P_PROTO_tbench_REPLY	:
     name = "P2P_PROTO_tbench_REPLY";
     break;
+
+  case P2P_PROTO_rpc_REQ	:
+    name = "P2P_PROTO_rpc_REQ";
+    break;
+  case P2P_PROTO_rpc_RES	:
+    name = "P2P_PROTO_rpc_RES";
+    break;
+  case P2P_PROTO_rpc_ACK	:
+    name = "P2P_PROTO_rpc_ACK";
+    break;
+
+  case P2P_PROTO_DHT_DISCOVERY	:
+    name = "P2P_PROTO_DHT_DISCOVERY";
+    break;
+  case P2P_PROTO_DHT_ASK_HELLO	:
+    name = "P2P_PROTO_DHT_ASK_HELLO";
+    break;
+  case P2P_PROTO_DHT_GET	:
+    name = "P2P_PROTO_DHT_GET";
+    break;
+  case P2P_PROTO_DHT_PUT	:
+    name = "P2P_PROTO_DHT_PUT";
+    break;
+  case P2P_PROTO_DHT_RESULT	:
+    name = "P2P_PROTO_DHT_RESULT";
+    break;
+
+  case P2P_PROTO_aip_IP	:
+    name = "P2P_PROTO_aip_IP";
+    break;
+  case P2P_PROTO_aip_ROUTE	:
+    name = "P2P_PROTO_aip_ROUTE";
+    break;
+  case P2P_PROTO_aip_ROUTES	:
+    name = "P2P_PROTO_aip_ROUTES";
+    break;
+  case P2P_PROTO_aip_GETROUTE	:
+    name = "P2P_PROTO_aip_GETROUTE";
+    break;
+
   default:
     name = NULL;
     break;
@@ -82,13 +136,56 @@ const char * p2pMessageName(unsigned short type) {
 /**
  * Return a descriptive name for a client server message type
  */
-const char *csMessageName(unsigned short type) {
+const char *
+STATS_csMessageName(unsigned short type) {
   const char *name = NULL;
 
   switch( type ) {
   case CS_PROTO_RETURN_VALUE :
     name = "CS_PROTO_RETURN_VALUE";
     break;
+  case CS_PROTO_SHUTDOWN_REQUEST :
+    name = "CS_PROTO_SHUTDOWN_REQUEST";
+    break;
+  case CS_PROTO_GET_OPTION_REQUEST :
+    name = "CS_PROTO_GET_OPTION_REQUEST";
+    break;
+  case CS_PROTO_GET_OPTION_REPLY :
+    name = "CS_PROTO_GET_OPTION_REPLY";
+    break;
+  case CS_PROTO_RETURN_ERROR :
+    name = "CS_PROTO_RETURN_ERROR";
+    break;
+
+  case CS_PROTO_gap_QUERY_START :
+    name = "CS_PROTO_gap_QUERY_START";
+    break;
+  case CS_PROTO_gap_QUERY_STOP :
+    /* case CS_PROTO_gap_RESULT : */
+    name = "CS_PROTO_gap_QUERY_STOP or CS_PROTO_gap_RESULT";
+    break;
+  case CS_PROTO_gap_INSERT :
+    name = "CS_PROTO_gap_INSERT";
+    break;
+  case CS_PROTO_gap_INDEX :
+    name = "CS_PROTO_gap_INDEX";
+    break;
+  case CS_PROTO_gap_DELETE :
+    name = "CS_PROTO_gap_DELETE";
+    break;
+  case CS_PROTO_gap_UNINDEX :
+    name = "CS_PROTO_gap_UNINDEX";
+    break;
+  case CS_PROTO_gap_TESTINDEX :
+    name = "CS_PROTO_gap_TESTINDEX";
+    break;
+  case CS_PROTO_gap_GET_AVG_PRIORITY :
+    name = "CS_PROTO_gap_GET_AVG_PRIORITY";
+    break;
+  case CS_PROTO_gap_INIT_INDEX :
+    name = "CS_PROTO_gap_INIT_INDEX";
+    break;
+
   case CS_PROTO_traffic_COUNT :
     name = "CS_PROTO_traffic_COUNT";
     break;
@@ -98,6 +195,7 @@ const char *csMessageName(unsigned short type) {
   case CS_PROTO_traffic_INFO :
     name = "CS_PROTO_traffic_INFO";
     break;
+
   case CS_PROTO_stats_GET_STATISTICS :
     name = "CS_PROTO_stats_GET_STATISTICS";
     break;
@@ -110,21 +208,70 @@ const char *csMessageName(unsigned short type) {
   case CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED :
     name = "CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED";
     break;
-  case CS_PROTO_chat_MSG :
-    name = "CS_PROTO_chat_MSG";
+
+  case CS_PROTO_tbench_REQUEST :
+    name = "CS_PROTO_tbench_REQUEST";
     break;
+  case CS_PROTO_tbench_REPLY :
+    name = "CS_PROTO_tbench_REPLY";
+    break; 
+
   case CS_PROTO_tracekit_PROBE :
     name = "CS_PROTO_tracekit_PROBE";
     break;
   case CS_PROTO_tracekit_REPLY :
     name = "CS_PROTO_tracekit_REPLY";
     break;
-  case CS_PROTO_tbench_REQUEST :
-    name = "CS_PROTO_tbench_REQUEST";
+
+  case CS_PROTO_chat_MSG :
+    name = "CS_PROTO_chat_MSG";
     break;
-  case CS_PROTO_tbench_REPLY :
-    name = "CS_PROTO_tbench_REPLY";
+
+  case CS_PROTO_dht_REQUEST_GET :
+    name = "CS_PROTO_dht_REQUEST_GET";
     break;
+  case CS_PROTO_dht_REQUEST_PUT :
+    name = "CS_PROTO_dht_REQUEST_PUT";
+    break;
+
+  case CS_PROTO_testbed_REQUEST :
+    name = "CS_PROTO_testbed_REQUEST";
+    break;
+  case CS_PROTO_testbed_REPLY :
+    name = "CS_PROTO_testbed_REPLY";
+    break;
+
+  case CS_PROTO_VPN_MSG :
+    name = "CS_PROTO_VPN_MSG";
+    break;
+  case CS_PROTO_VPN_REPLY :
+    name = "CS_PROTO_VPN_REPLY";
+    break;
+  case CS_PROTO_VPN_DEBUGOFF :
+    name = "CS_PROTO_VPN_DEBUGOFF";
+    break;
+  case CS_PROTO_VPN_TUNNELS :
+    name = "CS_PROTO_VPN_TUNNELS";
+    break;
+  case CS_PROTO_VPN_ROUTES :
+    name = "CS_PROTO_VPN_ROUTES";
+    break;
+  case CS_PROTO_VPN_REALISED :
+    name = "CS_PROTO_VPN_REALISED";
+    break;
+  case CS_PROTO_VPN_RESET :
+    name = "CS_PROTO_VPN_RESET";
+    break;
+  case CS_PROTO_VPN_REALISE :
+    name = "CS_PROTO_VPN_REALISE";
+    break;
+  case CS_PROTO_VPN_ADD :
+    name = "CS_PROTO_VPN_ADD";
+    break;
+  case CS_PROTO_VPN_TRUST :
+    name = "CS_PROTO_VPN_TRUST";
+    break;
+
   default:
     name = NULL;
     break;
@@ -138,10 +285,10 @@ const char *csMessageName(unsigned short type) {
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestStatistics(struct GE_Context * ectx,
-		      struct ClientServerConnection * sock,
-		      StatisticsProcessor processor,
-		      void * cls) {
+int STATS_getStatistics(struct GE_Context * ectx,
+			struct ClientServerConnection * sock,
+			STATS_StatProcessor processor,
+			void * cls) {
   CS_stats_reply_MESSAGE * statMsg;
   MESSAGE_HEADER csHdr;
   unsigned int count;
@@ -209,10 +356,10 @@ int requestStatistics(struct GE_Context * ectx,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestAvailableProtocols(struct GE_Context * ectx,
-			      struct ClientServerConnection * sock,
-			      ProtocolProcessor processor,
-			      void * cls) {
+int STATS_getAvailableProtocols(struct GE_Context * ectx,
+				struct ClientServerConnection * sock,
+				STATS_ProtocolProcessor processor,
+				void * cls) {
   CS_stats_get_supported_MESSAGE csStatMsg;
   unsigned short i;
   unsigned short j;

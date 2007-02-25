@@ -79,7 +79,8 @@ static void printHostInfo(const PeerIdentity * id,
 				 proto,
 				 NO);
   if (NULL == helo) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Could not get address of peer `%s'.\n"),
 	   &enc);
     return;
@@ -95,9 +96,10 @@ static void printHostInfo(const PeerIdentity * id,
 				  ! no_resolve);
   FREE(helo);
   if (info == NULL) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Could not get address of peer `%s'.\n"),
-	&enc);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Could not get address of peer `%s'.\n"),
+	   &enc);
     return;
   }
   printf(_("Peer `%s' with trust %8u and address `%s'\n"),
