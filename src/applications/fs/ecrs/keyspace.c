@@ -151,7 +151,6 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-
   mdsize = ECRS_sizeofMetaData(md,
 			       ECRS_SERIALIZE_PART);
   dstURI = ECRS_uriToString(dst);

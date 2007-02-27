@@ -589,9 +589,10 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 					"EXTRACTORS",
 					NULL,
 					&config);
-      if (config != NULL)
+      if (config != NULL) {
 	extractors = EXTRACTOR_loadConfigLibraries(extractors,
 						   config);
+      }
     }
   }
   shared = MALLOC(sizeof(FSUI_UploadShared));
