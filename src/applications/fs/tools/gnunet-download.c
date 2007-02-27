@@ -252,18 +252,31 @@ int main(int argc,
 
   try_rename = NO;
   if (filename == NULL) {
-    GE_ASSERT(ectx,
-	      strlen(argv[i]) >
-	      strlen(ECRS_URI_PREFIX) +
-	      strlen(ECRS_FILE_INFIX));
-    filename = string_expandFileName(ectx,
-				     &argv[i][strlen(ECRS_URI_PREFIX)+
-					      strlen(ECRS_FILE_INFIX)]);
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   _("No filename specified, using `%s' instead (for now).\n"),
-	   filename);
-    try_rename = YES;
+    if (do_directory) {
+      if (NULL != strstr(argv[i], GNUNET_DIRECTORY_EXT)) {
+	filename = STRDUP(argv[i]);
+	strstr(filename, GNUNET_DIRECTORY_EXT)[0] = '\0';
+      } else {
+	filename = MALLOC(strlen(argv[i]) + strlen(GNUNET_DIRECTORY_EXT) + 2);
+	strcpy(filename, argv[i]);
+	strcat(filename, DIR_SEPARATOR_STR);
+	strcat(filename, GNUNET_DIRECTORY_EXT);
+      }
+      try_rename = NO;
+    } else {
+      GE_ASSERT(ectx,
+		strlen(argv[i]) >
+		strlen(ECRS_URI_PREFIX) +
+		strlen(ECRS_FILE_INFIX));
+      filename = string_expandFileName(ectx,
+				       &argv[i][strlen(ECRS_URI_PREFIX)+
+						strlen(ECRS_FILE_INFIX)]);
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     _("No filename specified, using `%s' instead (for now).\n"),
+	     filename);
+      try_rename = YES;
+    }
   }
   ok = NO;
   lock = MUTEX_CREATE(NO);
