@@ -1,6 +1,10 @@
+Mon Feb 26 19:19:29 MST 2007
+	Fixed handling of -d option by gnunet-download 
+	if -f option is not given.
+
 Sat Feb 24 15:43:14 MST 2007
 	Fixed various bugs related to content expiration.
-	Completed message covery in stats implementation.
+	Completed message coverage in stats implementation.
 
 Fri Feb 23 17:55:46 MST 2007
 	Fixed potential deadlock during download shutdown sequence.
