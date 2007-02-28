@@ -65,10 +65,10 @@ static struct CommandLineOption gnunetpeerinfoOptions[] = {
  * Currently prints the PeerIdentity, trust and the IP.
  * Could of course do more (e.g. resolve via DNS).
  */
-static void printHostInfo(const PeerIdentity * id,
-			  const unsigned short proto,
-			  int verified,
-			  void * data) {
+static int printHostInfo(const PeerIdentity * id,
+			 const unsigned short proto,
+			 int verified,
+			 void * data) {
   P2P_hello_MESSAGE * helo;
   char * info;
   EncName enc;
@@ -83,14 +83,15 @@ static void printHostInfo(const PeerIdentity * id,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Could not get address of peer `%s'.\n"),
 	   &enc);
-    return;
+    return OK;
   }
   if (SYSERR == verifySig(&helo->senderIdentity,
 			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
 			  &helo->signature,
 			  &helo->publicKey)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("hello message invalid (signature invalid).\n"));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("hello message invalid (signature invalid).\n"));
   }
   info = transport->helloToString(helo,
 				  ! no_resolve);
@@ -100,13 +101,14 @@ static void printHostInfo(const PeerIdentity * id,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Could not get address of peer `%s'.\n"),
 	   &enc);
-    return;
+    return OK;
   }
   printf(_("Peer `%s' with trust %8u and address `%s'\n"),
 	 (char*)&enc,
 	 identity->getHostTrust(id),
 	 info);
   FREE(info);
+  return OK;
 }
 
 int main(int argc,

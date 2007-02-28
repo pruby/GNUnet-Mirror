@@ -925,8 +925,11 @@ static int forEachHost(cron_t now,
   PeerIdentity hi;
   unsigned short proto;
   HostEntry * entry;
+  int ret;
 
-  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  ret = OK;
+  GE_ASSERT(ectx, 
+	    numberOfHosts_ <= sizeOfHosts_);
   count = 0;
   MUTEX_LOCK(lock_);
   for (i=0;i<numberOfHosts_;i++) {
@@ -943,11 +946,13 @@ static int forEachHost(cron_t now,
 	for (j=0;j<entry->protocolCount;j++) {
 	  proto = entry->protocols[j];
 	  MUTEX_UNLOCK(lock_);
-	  callback(&hi,
-		   proto,
-		   YES,
-		   data);
+	  ret = callback(&hi,
+			 proto,
+			 YES,
+			 data);
 	  MUTEX_LOCK(lock_);
+	  if (ret != OK)
+	    break;
 	  /* we gave up the lock,
 	     need to re-acquire entry (if possible)! */
 	  if (i >= numberOfHosts_)
@@ -960,8 +965,13 @@ static int forEachHost(cron_t now,
 	}
       }
     }
+    if (ret != OK)
+      break;
+
   }
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
+    if (ret != OK)
+      break;
     entry = &tempHosts[i];
     if (entry->heloCount == 0)
       continue;
@@ -972,10 +982,10 @@ static int forEachHost(cron_t now,
 	hi = entry->identity;
 	proto = entry->protocols[0];
 	MUTEX_UNLOCK(lock_);
-	callback(&hi,
-		 proto,
-		 YES,
-		 data);
+	ret = callback(&hi,
+		       proto,
+		       YES,
+		       data);
 	MUTEX_LOCK(lock_);
       }
     }

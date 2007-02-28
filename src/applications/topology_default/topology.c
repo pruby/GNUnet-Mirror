@@ -101,24 +101,25 @@ typedef struct {
  * @param proto what transport protocol are we looking at
  * @param im updated structure used to select the peer
  */
-static void scanHelperCount(const PeerIdentity * id,
-			    unsigned short proto,	
-			    int confirmed,
-			    void * data) {
+static int scanHelperCount(const PeerIdentity * id,
+			   unsigned short proto,	
+			   int confirmed,
+			   void * data) {
   IndexMatch * im = data;
 
   if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
-    return;
+    return OK;
   if (coreAPI->computeIndex(id) != im->index)
-    return;
+    return OK;
   if (0 != coreAPI->queryBPMfromPeer(id))
-    return;
+    return OK;
   if (YES == transport->isAvailable(proto)) {
     im->matchCount++;
     im->costSelector += transport->getCost(proto);
   }
+  return OK;
 }
 
 /**
@@ -129,27 +130,30 @@ static void scanHelperCount(const PeerIdentity * id,
  * @param proto the protocol of the current peer
  * @param im structure responsible for the selection process
  */
-static void scanHelperSelect(const PeerIdentity * id,
-			     unsigned short proto,
-			     int confirmed,
-			     void * data) {
+static int scanHelperSelect(const PeerIdentity * id,
+			    unsigned short proto,
+			    int confirmed,
+			    void * data) {
   IndexMatch * im = data;
 
   if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
-    return;
+    return OK;
   if (coreAPI->computeIndex(id) != im->index)
-    return;
+    return OK;
   if (0 != coreAPI->queryBPMfromPeer(id))
-    return;
+    return OK;
   if (YES == transport->isAvailable(proto)) {
     im->costSelector -= transport->getCost(proto);
     if ( (im->matchCount == 0) ||
-	 (im->costSelector < 0) )
+	 (im->costSelector < 0) ) {
       im->match = *id;
+      return SYSERR;
+    }
     im->matchCount--;
   }
+  return OK;
 }
 
 /**

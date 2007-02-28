@@ -376,11 +376,12 @@ typedef struct {
   int n;
 } SendData;
 
-static void
+static int
 broadcastHelper(const PeerIdentity * hi,
 		const unsigned short proto,
 		int confirmed,
-		SendData * sd) {
+		void * cls) {
+  SendData * sd = cls;
   P2P_hello_MESSAGE * helo;
   TSession * tsession;
   int prio;
@@ -389,24 +390,26 @@ broadcastHelper(const PeerIdentity * hi,
 #endif
 
   if (confirmed == NO)
-    return;
+    return OK;
   if (proto == NAT_PROTOCOL_NUMBER)
-    return; /* don't advertise NAT addresses via broadcast */
+    return OK; /* don't advertise NAT addresses via broadcast */
   if (weak_randomi(sd->n) != 0)
-    return;
+    return OK;
 #if DEBUG_ADVERTISING
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&hi->hashPubKey,
-		 &other));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Entering `%s' with target `%s'.\n",
-      __FUNCTION__,
-      &other);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&hi->hashPubKey,
+		    &other));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Entering `%s' with target `%s'.\n",
+	 __FUNCTION__,
+	 &other);
 #endif
   if (0 == memcmp(hi,
 		  coreAPI->myIdentity,
 		  sizeof(PeerIdentity)))
-    return; /* never advertise to myself... */
+    return OK; /* never advertise to myself... */
   prio = (int) getConnectPriority();
   if (prio >= EXTREME_PRIORITY)
     prio = EXTREME_PRIORITY / 4;
@@ -418,7 +421,7 @@ broadcastHelper(const PeerIdentity * hi,
     if (stats != NULL)
       stats->change(stat_hello_out,
 		    1);
-    return;
+    return OK;
   }
   /* with even lower probability (with n peers
      trying to contact with a probability of 1/n^2,
@@ -426,7 +429,7 @@ broadcastHelper(const PeerIdentity * hi,
      is what we want: fewer attempts to contact fresh
      peers as the network grows): */
   if (weak_randomi(sd->n) != 0)
-    return;
+    return OK;
 
   /* establish short-lived connection, send, tear down */
   helo = identity->identity2Helo(hi,
@@ -439,18 +442,19 @@ broadcastHelper(const PeerIdentity * hi,
 	__FUNCTION__,
 	"identity2Helo");
 #endif
-    return;
+    return OK;
   }
   tsession = transport->connect(helo);
   FREE(helo);
   if (tsession == NULL) {
 #if DEBUG_ADVERTISING
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Exit from `%s' (%s error).\n",
-	__FUNCTION__,
-	"transportConnect");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Exit from `%s' (%s error).\n",
+	   __FUNCTION__,
+	   "transportConnect");
 #endif
-    return; /* could not connect */
+    return OK; /* could not connect */
   }
   if (stats != NULL)
     stats->change(stat_hello_out,
@@ -460,11 +464,13 @@ broadcastHelper(const PeerIdentity * hi,
 			 P2P_hello_MESSAGE_size(sd->m));
   transport->disconnect(tsession);
 #if DEBUG_ADVERTISING
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Exit from %s.\n",
-      __FUNCTION__);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Exit from %s.\n",
+	 __FUNCTION__);
 #endif
- }
+  return OK;
+}
 
 /**
  * Tell a couple of random hosts on the currentKnownHost list
@@ -565,7 +571,7 @@ static void forwardCallback(const PeerIdentity * peer,
 /**
  * Forward hellos from all known hosts to all connected hosts.
  */
-static void
+static int
 forwardhelloHelper(const PeerIdentity * peer,
 		  unsigned short protocol,
 		  int confirmed,
@@ -578,23 +584,19 @@ forwardhelloHelper(const PeerIdentity * peer,
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
-    return; /* network load too high... */
+    return SYSERR; /* network load too high... */
   if (confirmed == NO)
-    return;
+    return OK;
   if (protocol == NAT_PROTOCOL_NUMBER)
-    return; /* don't forward NAT addresses */
+    return OK; /* don't forward NAT addresses */
   if (weak_randomi((*probability)+1) != 0)
-    return; /* only forward with a certain chance,
+    return OK; /* only forward with a certain chance,
 	       (on average: 1 peer per run!) */
-#if DEBUG_ADVERTISING
-  LOG(LOG_CRON,
-      "forwarding hellos\n");
-#endif
   helo = identity->identity2Helo(peer,
 				 protocol,
 				 NO);
   if (NULL == helo)
-    return; /* this should not happen */
+    return OK; /* this should not happen */
   helo->header.type
     = htons(p2p_PROTO_hello);
   helo->header.size
@@ -613,7 +615,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 	now - ntohl(helo->expirationTime));
     identity->delHostFromKnown(peer, protocol);
     FREE(helo);
-    return;
+    return OK;
   }
   count = coreAPI->forAllConnectedNodes(NULL,
 					NULL);
@@ -625,6 +627,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 				  &fcc);
   }
   FREE(helo);
+  return OK;
 }
 
 /**

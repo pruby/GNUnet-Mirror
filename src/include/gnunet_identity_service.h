@@ -55,11 +55,12 @@ extern "C" {
  * @param confirmed is the address confirmed (YES),
  *        if NO the host is in the temporary list
  * @param data callback closure
+ * @return OK to continue iteration
  */
-typedef void (*HostIterator)(const PeerIdentity * identity,
-			     unsigned short protocol,
-			     int confirmed,
-			     void * data);
+typedef int (*HostIterator)(const PeerIdentity * identity,
+			    unsigned short protocol,
+			    int confirmed,
+			    void * data);
 
 /**
  * @brief Definition of the Identity API.

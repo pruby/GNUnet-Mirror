@@ -123,21 +123,24 @@ static int allowConnection(const PeerIdentity * peer) {
  * @param proto what transport protocol are we looking at
  * @param im updated structure used to select the peer
  */
-static void scanHelperCount(const PeerIdentity * id,
-			    const unsigned short proto,	
-			    int confirmed,
-			    IndexMatch * im) {
+static int scanHelperCount(const PeerIdentity * id,
+			   const unsigned short proto,	
+			   int confirmed,
+			   void * cls) {
+  IndexMatch * im = cls;
+
   if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
-    return;
+    return OK;
   if (coreAPI->computeIndex(id) != im->index)
-    return;
+    return OK;
   if ( (YES == transport->isAvailable(proto)) &&
        (OK == allowConnection(id)) ) {
     im->matchCount++;
     im->costSelector += transport->getCost(proto);
   }
+  return OK;
 }
 
 /**
@@ -148,24 +151,28 @@ static void scanHelperCount(const PeerIdentity * id,
  * @param proto the protocol of the current peer
  * @param im structure responsible for the selection process
  */
-static void scanHelperSelect(const PeerIdentity * id,
-			     const unsigned short proto,
-			     int confirmed,
-			     IndexMatch * im) {
+static int scanHelperSelect(const PeerIdentity * id,
+			    const unsigned short proto,
+			    int confirmed,
+			    void * cls) {
+  IndexMatch * im = cls;
   if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
-    return;
+    return OK;
   if (coreAPI->computeIndex(id) != im->index)
-    return;
+    return OK;
   if ( (OK == allowConnection(id)) &&
        (YES == transport->isAvailable(proto)) ) {
     im->costSelector -= transport->getCost(proto);
     if ( (im->matchCount == 0) ||
-	 (im->costSelector < 0) )
+	 (im->costSelector < 0) ) {
       im->match = *id;
+      return SYSERR; /* abort iteration */
+    }
     im->matchCount--;
   }
+  return OK;
 }
 
 /**
@@ -185,7 +192,7 @@ static void scanForHosts(unsigned int index) {
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
   identity->forEachHost(now,
-			(HostIterator)&scanHelperCount,
+			&scanHelperCount,
 			&indexMatch);
   if (indexMatch.matchCount == 0)
     return; /* no matching peers found! */
@@ -194,7 +201,7 @@ static void scanForHosts(unsigned int index) {
       = weak_randomi(indexMatch.costSelector/4)*4;
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost(now,
-			(HostIterator)&scanHelperSelect,
+			&scanHelperSelect,
 			&indexMatch);
   if (0 == memcmp(coreAPI->myIdentity,
 		  &indexMatch.match,
