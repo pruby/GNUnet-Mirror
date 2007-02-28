@@ -73,6 +73,8 @@ static int printHostInfo(const PeerIdentity * id,
   char * info;
   EncName enc;
 
+  if (GNUNET_SHUTDOWN_TEST()==YES)
+    return SYSERR;
   hash2enc(&id->hashPubKey,
 	   &enc);
   helo = identity->identity2Helo(id,
