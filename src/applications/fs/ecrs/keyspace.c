@@ -219,12 +219,14 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
 	 strlen(keywords[i]),
 	 &key);
 #if DEBUG_KEYSPACE
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  hash2enc(&key,
-		   &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Encrypting KBlock with key %s.\n",
-	&enc);
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(&key,
+		      &enc));
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Encrypting KBlock with key %s.\n",
+	   &enc);
 #endif
     ECRS_encryptInPlace(&key,
 			&kb[1],
@@ -232,16 +234,18 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     pk = makeKblockKey(&key);
     getPublicKey(pk,
 		 &kb->keyspace);
-    GE_ASSERT(ectx, OK == sign(pk,
-			     mdsize + strlen(dstURI) + 1,
-			     &kb[1],
-			     &kb->signature));
+    GE_ASSERT(ectx, 
+	      OK == sign(pk,
+			 mdsize + strlen(dstURI) + 1,
+			 &kb[1],
+			 &kb->signature));
 #if EXTRA_CHECKS
     /* extra check: verify sig */
-    GE_ASSERT(ectx, OK == getQueryFor(size,
-				    (DBlock*) kb,
-				    YES,
-				    &hc));
+    GE_ASSERT(ectx,
+	      OK == getQueryFor(size,
+				(DBlock*) kb,
+				YES,
+				&hc));
 #endif
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))

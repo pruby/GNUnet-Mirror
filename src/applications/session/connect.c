@@ -349,7 +349,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   /* verify signature/SKS */
   GE_ASSERT(ectx,
 	    SYSERR != verifySKS(coreAPI->myIdentity,
-				msg,
+				(const P2P_setkey_MESSAGE*) msg,
 				&msg->signature));
 #endif
 
