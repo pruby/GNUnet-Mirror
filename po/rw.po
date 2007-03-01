@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-01-03 14:41-0700\n"
+"POT-Creation-Date: 2007-02-28 21:35-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -24,980 +24,100 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/applications/transport/transport.c:142
-#, c-format
-msgid ""
-"Converting peer address to string failed, transport type %d not supported\n"
-msgstr ""
-
-#: src/applications/transport/transport.c:189
-#, c-format
-msgid "Transport connection attempt failed, transport type %d not supported\n"
-msgstr ""
-
-#: src/applications/transport/transport.c:284
-#, fuzzy, c-format
-msgid "Transmission attempt failed, transport type %d unknown.\n"
-msgstr "Bya Ubwoko"
-
-#: src/applications/transport/transport.c:373
-#, fuzzy, c-format
-msgid "No transport of type %d known.\n"
-msgstr "Bya Ubwoko"
-
-#: src/applications/transport/transport.c:430
-msgid "No transport succeeded in creating a hello!\n"
-msgstr ""
-
-#: src/applications/transport/transport.c:604
-#, fuzzy, c-format
-msgid "Loading transports `%s'\n"
-msgstr "S"
-
-#: src/applications/transport/transport.c:624
-#, fuzzy, c-format
-msgid "Could not load transport plugin `%s'\n"
-msgstr "OYA gutangiza Porogaramu"
-
-#: src/applications/transport/transport.c:634
-#, fuzzy, c-format
-msgid "Transport library `%s' did not provide required function '%s%s'.\n"
-msgstr "Isomero OYA Bya ngombwa Umumaro"
-
-#: src/applications/transport/transport.c:661
-#, fuzzy, c-format
-msgid "Loaded transport `%s'\n"
-msgstr "S"
-
-#: src/applications/transport/transport.c:674
-#, c-format
-msgid "I am peer `%s'.\n"
-msgstr ""
-
-#: src/applications/identity/hostkey.c:123
-#, fuzzy, c-format
-msgid "Failed to access GNUnet home directory `%s'\n"
-msgstr "OYA Gufungura bushyinguro"
-
-#: src/applications/identity/hostkey.c:157
-#, fuzzy, c-format
-msgid ""
-"Existing hostkey in file `%s' failed format check, creating new hostkey.\n"
-msgstr "in IDOSIYE Byanze Imiterere Kugenzura... Gishya"
-
-#: src/applications/identity/hostkey.c:165
+#: src/include/gnunet_util_getopt.h:150
 #, fuzzy
-msgid "Creating new hostkey (this may take a while).\n"
-msgstr "Gishya iyi Gicurasi a"
+msgid "print this help"
+msgstr "Gucapa iyi Ifashayobora"
 
-#: src/applications/identity/hostkey.c:178
-msgid "Done creating hostkey.\n"
+#: src/include/gnunet_util_getopt.h:159
+#, fuzzy
+msgid "print the version number"
+msgstr "Gucapa i Verisiyo Umubare"
+
+#: src/include/gnunet_util_getopt.h:165
+msgid "configure logging to use LOGLEVEL"
 msgstr ""
 
-#: src/applications/identity/identity.c:346
-#, fuzzy, c-format
-msgid ""
-"File `%s' in directory `%s' does not match naming convention. Removed.\n"
-msgstr "Idosiye in bushyinguro OYA BIHUYE"
+#: src/include/gnunet_util_getopt.h:171
+msgid "be verbose"
+msgstr ""
 
-#: src/applications/identity/identity.c:359
-#, fuzzy, c-format
-msgid ""
-"Directory `%s' in directory `%s' does not match naming convention. Removed.\n"
-msgstr "Idosiye in bushyinguro OYA BIHUYE"
-
-#: src/applications/identity/identity.c:396
-#, fuzzy, c-format
-msgid "Still no peers found in `%s'!\n"
-msgstr "OYA Kureka gufungura Serivisi"
-
-#: src/applications/identity/identity.c:686
-#: src/applications/identity/identity.c:706
-#, fuzzy, c-format
-msgid "Removed file `%s' containing invalid hello data.\n"
-msgstr "IDOSIYE Sibyo Ibyatanzwe"
-
-#: src/applications/identity/identity.c:759
-#, fuzzy, c-format
-msgid "Signature failed verification: peer `%s' not known.\n"
-msgstr "Shyiraho Umutekano Ikindi OYA"
-
-#: src/applications/identity/identity.c:768
+#: src/include/gnunet_util_getopt.h:177
 #, fuzzy
-msgid "Signature failed verification: signature invalid.\n"
-msgstr "Ubutumwa Sibyo Isinya Sibyo"
+msgid "use configuration file FILENAME"
+msgstr "Gukoresha Iboneza IDOSIYE"
 
-#: src/applications/sqstore_sqlite/sqlite.c:46
-#: src/applications/sqstore_sqlite/sqlite.c:53
-#: src/applications/sqstore_mysql/mysql.c:138
-#: src/applications/sqstore_mysql/mysql.c:145
-#: src/applications/sqstore_mysql/mysql.c:423
-#: src/applications/sqstore_mysql/mysql.c:734
-#: src/applications/sqstore_mysql/mysql.c:750
-#: src/applications/sqstore_mysql/mysql.c:760
-#: src/applications/sqstore_mysql/mysql.c:785
-#: src/applications/sqstore_mysql/mysql.c:796
-#: src/applications/sqstore_mysql/mysql.c:853
-#: src/applications/sqstore_mysql/mysql.c:940
-#: src/applications/sqstore_mysql/mysql.c:951
-#: src/applications/sqstore_mysql/mysql.c:1015
-#: src/applications/sqstore_mysql/mysql.c:1031
-#: src/applications/sqstore_mysql/mysql.c:1041
-#: src/applications/sqstore_mysql/mysql.c:1065
-#: src/applications/sqstore_mysql/mysql.c:1076
-#: src/applications/sqstore_mysql/mysql.c:1088
-#: src/applications/sqstore_mysql/mysql.c:1151
-#: src/applications/sqstore_mysql/mysql.c:1163
-#: src/applications/sqstore_mysql/mysql.c:1211
-#: src/applications/sqstore_mysql/mysql.c:1226
-#: src/applications/dstore/dstore.c:91 src/applications/dstore/dstore.c:178
-#: src/applications/dstore/dstore.c:237 src/applications/dstore/dstore.c:260
-#: src/applications/dstore/dstore.c:319 src/applications/dstore/dstore.c:372
-#: src/applications/dstore/dstore.c:462
-#: src/applications/kvstore_sqlite/kv_sqlite.c:44
-#: src/applications/kvstore_sqlite/kv_sqlite.c:51
-#: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
-#: src/util/crypto/hostkey_gcrypt.c:63 src/util/crypto/hostkey_gcrypt.c:70
+#: src/include/gnunet_util_getopt.h:183
+#, fuzzy
+msgid "specify host on which gnunetd is running"
+msgstr "Ubuturo ku ni"
+
+#: src/include/gnunet_util_error.h:175 src/include/gnunet_util_error.h:177
+#: src/include/gnunet_util_error.h:179 src/include/gnunet_util_error.h:181
 #, fuzzy, c-format
-msgid "`%s' failed at %s:%d with error: %s\n"
+msgid "Assertion failed at %s:%d in %s.\n"
+msgstr "Byanze ku"
+
+#: src/include/gnunet_util_error.h:188 src/include/gnunet_util_error.h:195
+#: src/include/gnunet_util_error.h:202 src/include/gnunet_util_error.h:209
+#, fuzzy, c-format
+msgid "`%s' failed at %s:%d in %s with error: %s\n"
 msgstr "`%s'Byanze ku Na: Ikosa"
 
-#: src/applications/sqstore_sqlite/sqlite.c:195
+#: src/include/gnunet_util_error.h:216 src/include/gnunet_util_error.h:223
 #, fuzzy, c-format
-msgid "Unable to initialize SQLite: %s.\n"
-msgstr "Kuri gutangiza"
+msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
+msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"
 
-#: src/applications/sqstore_sqlite/sqlite.c:356
-#: src/applications/sqstore_sqlite/sqlite.c:377
-#: src/applications/sqstore_mysql/mysql.c:260
-#: src/applications/sqstore_mysql/mysql.c:814
-#: src/applications/sqstore_mysql/mysql.c:1103
-#, c-format
-msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
-msgstr ""
+#: src/transports/ip6.c:72 src/util/network/io.c:80
+#, fuzzy, c-format
+msgid "Could not find IP of host `%s': %s\n"
+msgstr "OYA Gushaka Bya Ubuturo"
 
-#: src/applications/sqstore_sqlite/sqlite.c:357
-#: src/applications/sqstore_sqlite/sqlite.c:378
+#: src/transports/ip6.c:104 src/util/network/ip.c:83 src/util/network/ip.c:144
+#, fuzzy, c-format
+msgid "No interface specified in section `%s' under `%s'!\n"
+msgstr "urusobe in Iboneza Icyiciro"
+
+#: src/transports/ip6.c:134 src/util/network/ip.c:113
+#: src/util/network/ip.c:234
+#, fuzzy, c-format
+msgid "Could not obtain IP for interface `%s' using `%s'.\n"
+msgstr "OYA kugirango ikoresha"
+
+#: src/transports/ip6.c:169
+#, fuzzy, c-format
+msgid "Could not resolve `%s': %s\n"
+msgstr "OYA"
+
+#: src/transports/ip6.c:222 src/transports/ip.c:58
+#, fuzzy, c-format
+msgid "Failed to obtain my (external) %s address!\n"
+msgstr "OYA Rusange Aderesi"
+
+#: src/transports/udp6.c:128 src/transports/udp.c:137
+#, fuzzy, c-format
+msgid "Failed to bind to UDP port %d.\n"
+msgstr "Kuri Kuri Umuyoboro"
+
+#: src/transports/udp6.c:267
 #, fuzzy
-msgid "sqlite datastore"
-msgstr "#Bayite Bya BYAKIRIWE"
+msgid "UDP6: Could not determine my public IPv6 address.\n"
+msgstr "OYA Rusange Aderesi"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1252
-#: src/applications/sqstore_mysql/mysql.c:1287
+#: src/transports/udp6.c:521 src/transports/udp.c:534
+#, fuzzy, c-format
+msgid "MTU %llu for `%s' is probably too low!\n"
+msgstr "kugirango ni Byo hasi OYA"
+
+#: src/transports/http.c:447
 #, fuzzy
-msgid "# bytes in datastore"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/getoption/getoption.c:78
-#, c-format
-msgid "`%s' registering client handler %d\n"
-msgstr ""
-
-#: src/applications/getoption/getoption.c:88
-#, fuzzy
-msgid "allows clients to determine gnunetd's configuration"
-msgstr "Porogaramu in Iboneza"
-
-#: src/applications/fs/uritrack/file_info.c:129
-msgid "Collecting file identifiers disabled.\n"
-msgstr ""
-
-#: src/applications/fs/uritrack/file_info.c:371
-#, c-format
-msgid "Deleted corrupt URI database in `%s'."
-msgstr ""
-
-#: src/applications/fs/namespace/namespace_info.c:656
-msgid "Publication interval for periodic publication changed."
-msgstr ""
-
-#: src/applications/fs/namespace/namespace_info.c:677
-msgid ""
-"Publishing update for periodically updated content more than a week ahead of "
-"schedule.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-search.c:140
-#: src/applications/fs/tools/gnunet-download.c:67
-#: src/applications/fs/tools/gnunet-insert.c:271
-#: src/applications/fs/tools/gnunet-pseudonym.c:71
-#, fuzzy
-msgid "set the desired LEVEL of sender-anonymity"
-msgstr "Gushyiraho i Bya Mwakirizi"
-
-#: src/applications/fs/tools/gnunet-search.c:143
-#: src/applications/fs/tools/gnunet-pseudonym.c:86
-#, fuzzy
-msgid "Create new pseudonyms, delete pseudonyms or list existing pseudonyms."
-msgstr "Gishya Gusiba Cyangwa Urutonde"
-
-#: src/applications/fs/tools/gnunet-search.c:147
-#, fuzzy
-msgid "exit after receiving LIMIT results"
-msgstr "Gusohoka Nyuma Ibisubizo ku"
-
-#: src/applications/fs/tools/gnunet-search.c:150
-#, fuzzy
-msgid "write encountered (decrypted) search results to FILENAME"
-msgstr "Kwandika Gushaka Ibisubizo ku Kuri i IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-search.c:153
-#, fuzzy
-msgid "wait DELAY seconds for search results before aborting"
-msgstr "Tegereza amasogonda kugirango Gushaka Ibisubizo ku Mbere"
-
-#: src/applications/fs/tools/gnunet-search.c:191
-#, c-format
-msgid "Error converting arguments to URI!\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-unindex.c:57
-#, c-format
-msgid ""
-"%16llu of %16llu bytes unindexed (estimating %llu seconds to "
-"completion)                "
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-unindex.c:68
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Unindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
-msgstr "ku Inyuma Bya Bayite"
-
-#: src/applications/fs/tools/gnunet-unindex.c:80
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Error unindexing file: %s\n"
-msgstr "Kuri IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-unindex.c:100
-#, fuzzy
-msgid "Unindex files."
-msgstr "#Idosiye"
-
-#: src/applications/fs/tools/gnunet-unindex.c:137
-#, fuzzy
-msgid "Not enough arguments. You must specify a filename.\n"
-msgstr "ingingo a"
-
-# uui/source\ids.src:RID_UUI_ERRHDL.(ERRCODE_UUI_IO_NOTAFILE_&_ERRCODE_RES_MASK).text
-#: src/applications/fs/tools/gnunet-unindex.c:164
-#, fuzzy, c-format
-msgid "`%s' failed.  Is `%s' a file?\n"
-msgstr "`%s'ntabwo ari idosiye"
-
-#: src/applications/fs/tools/gnunet-download.c:71
-msgid ""
-"download a GNUnet directory that has already been downloaded.  Requires that "
-"a filename of an existing file is specified instead of the URI.  The "
-"download will only download the top-level files in the directory unless the "
-"`-R' option is also specified."
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-download.c:73
-#, fuzzy
-msgid "Download files from GNUnet."
-msgstr "Idosiye Bivuye"
-
-#: src/applications/fs/tools/gnunet-download.c:77
-#, fuzzy
-msgid "write the file to FILENAME"
-msgstr "Kwandika i IDOSIYE Kuri"
-
-#: src/applications/fs/tools/gnunet-download.c:80
-#, fuzzy
-msgid "download a GNUnet directory recursively"
-msgstr "Gufungura a bushyinguro"
-
-#: src/applications/fs/tools/gnunet-download.c:98
-#, fuzzy, c-format
-msgid "Download of file `%s' at %16llu out of %16llu bytes (%8.3f KiB/s)\n"
-msgstr "ku Inyuma Bya Bayite"
-
-#: src/applications/fs/tools/gnunet-download.c:111
-#, fuzzy, c-format
-msgid "Download aborted.\n"
-msgstr "/Byahiswemo"
-
-#: src/applications/fs/tools/gnunet-download.c:117
-#, c-format
-msgid "Error downloading: %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-download.c:123
-#, fuzzy, c-format
-msgid "Download of file `%s' complete.  Speed was %8.3f KiB per second.\n"
-msgstr "ISEGONDA"
-
-#: src/applications/fs/tools/gnunet-download.c:171
-msgid "no name given"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-download.c:177
-#, fuzzy, c-format
-msgid "Starting download `%s'\n"
-msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
-
-#: src/applications/fs/tools/gnunet-download.c:225
-#, fuzzy
-msgid "Not enough arguments. You must specify a GNUnet file URI\n"
-msgstr "ingingo a"
-
-#: src/applications/fs/tools/gnunet-download.c:246
-#, fuzzy, c-format
-msgid "URI `%s' invalid for gnunet-download.\n"
-msgstr "Sibyo"
-
-#: src/applications/fs/tools/gnunet-download.c:264
-#, fuzzy, c-format
-msgid "No filename specified, using `%s' instead (for now).\n"
-msgstr "imbonerahamwe# Izina: ikoresha"
-
-#: src/applications/fs/tools/gnunet-download.c:307
-#, fuzzy, c-format
-msgid "Could not access gnunet-directory file `%s'\n"
-msgstr "OYA Iboneza IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-download.c:327
-#, fuzzy, c-format
-msgid "Downloading %d files from directory `%s'.\n"
-msgstr "Idosiye Bivuye"
-
-#: src/applications/fs/tools/gnunet-download.c:331
-#, fuzzy, c-format
-msgid "Did not find any files in directory `%s'\n"
-msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
-
-#: src/applications/fs/tools/gnunet-download.c:372
-#, fuzzy, c-format
-msgid "File stored as `%s'.\n"
-msgstr "Idosiye Nka"
-
-#: src/applications/fs/tools/gnunet-insert.c:136
-#, fuzzy, c-format
-msgid "Created entry `%s' in namespace `%s'\n"
-msgstr "Ikiranga"
-
-#: src/applications/fs/tools/gnunet-insert.c:141
-#, fuzzy, c-format
-msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/fs/tools/gnunet-insert.c:161
-#, fuzzy, c-format
-msgid "Keywords for file `%s':\n"
-msgstr "kugirango IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-insert.c:170
-#, fuzzy
-msgid "filename"
-msgstr "Izina ry'idosiye"
-
-# framework/source\classes\fltdlg.src:DLG_FILTER_SELECT.FT_DLG_MIMETYPE.text
-#: src/applications/fs/tools/gnunet-insert.c:173
-#, fuzzy
-msgid "mimetype"
-msgstr "Ubwoko bwa MIME:"
-
-#: src/applications/fs/tools/gnunet-insert.c:210
-#, c-format
-msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:222
-#, fuzzy, c-format
-msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
-msgstr "ku Inyuma Bya Bayite"
-
-#: src/applications/fs/tools/gnunet-insert.c:233
-#, fuzzy, c-format
-msgid "File `%s' has URI: %s\n"
-msgstr "Idosiye Nka"
-
-#: src/applications/fs/tools/gnunet-insert.c:244
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Upload aborted.\n"
-msgstr "/Byahiswemo"
-
-#: src/applications/fs/tools/gnunet-insert.c:249
-#, c-format
-msgid ""
-"\n"
-"Error uploading file: %s\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:258
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Unexpected event: %d\n"
-msgstr "Ibikubiyemo Ubwoko"
-
-#: src/applications/fs/tools/gnunet-insert.c:275
-#, fuzzy
-msgid ""
-"even if gnunetd is running on the local machine, force the creation of a "
-"copy instead of making a link to the GNUnet share directory"
-msgstr "NIBA ni ku i Kurema a Ihuza Bya a Gukoporora in i bushyinguro"
-
-#: src/applications/fs/tools/gnunet-insert.c:279
-msgid "disable adding the creation time to the metadata of the uploaded file"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:282
-msgid ""
-"do not use libextractor to add additional references to directory entries "
-"and/or the published file"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:285
-#, fuzzy
-msgid ""
-"print list of extracted keywords that would be used, but do not perform "
-"upload"
-msgstr ""
-"Gucapa Urutonde Bya Amagambo fatizo OYA Iyinjizamo Cyangwa gushyiraho "
-"umugereka"
-
-#: src/applications/fs/tools/gnunet-insert.c:287
-#, fuzzy
-msgid "Make files available to GNUnet for sharing."
-msgstr "Idosiye Bihari Kuri kugirango Bisangiwe"
-
-#: src/applications/fs/tools/gnunet-insert.c:290
-#, fuzzy
-msgid ""
-"set interval for availability of updates to SECONDS (for namespace "
-"insertions only)"
-msgstr "Gushyiraho Intera kugirango Ukuboneka Bya Kuri kugirango Amayongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:294
-#, fuzzy
-msgid ""
-"add an additional keyword for the top-level file or directory (this option "
-"can be specified multiple times)"
-msgstr ""
-"Kongeramo Ijambo- banze kugirango i Hejuru: urwego IDOSIYE Cyangwa "
-"bushyinguro iyi Ihitamo Igikubo Times"
-
-#: src/applications/fs/tools/gnunet-insert.c:298
-#, fuzzy
-msgid ""
-"add an additional keyword for all files and directories (this option can be "
-"specified multiple times)"
-msgstr ""
-"Kongeramo Ijambo- banze kugirango Byose Idosiye Na ububiko bw'amaderese iyi "
-"Ihitamo Igikubo Times"
-
-#: src/applications/fs/tools/gnunet-insert.c:303
-msgid "set the meta-data for the given TYPE to the given VALUE"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-insert.c:306
-#, fuzzy
-msgid ""
-"do not index, perform full insertion (stores entire file in encrypted form "
-"in GNUnet database)"
-msgstr ""
-"OYA Umubarendanga Iyinjizamo IDOSIYE in Bishunzwe: Ifishi in Ububikoshingiro"
-
-#: src/applications/fs/tools/gnunet-insert.c:310
-#, fuzzy
-msgid ""
-"specify ID of an updated version to be published in the future (for "
-"namespace insertions only)"
-msgstr "Bya Verisiyo Kuri in i kugirango Amayongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:314
-#, fuzzy
-msgid "specify the priority of the content"
-msgstr "i By'ibanze Bya i Ibikubiyemo"
-
-#: src/applications/fs/tools/gnunet-insert.c:317
-#, fuzzy
-msgid "publish the files under the pseudonym NAME (place file into namespace)"
-msgstr "Tangaza i Idosiye i IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-insert.c:320
-#, fuzzy
-msgid ""
-"specifies this as an aperiodic but updated publication (for namespace "
-"insertions only)"
-msgstr "iyi Nka kugirango Amayongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:324
-#, fuzzy
-msgid ""
-"set the ID of this version of the publication (for namespace insertions only)"
-msgstr "Gushyiraho i Bya iyi Verisiyo Bya i kugirango Amayongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:328
-#, fuzzy
-msgid "specify creation time for SBlock (see man-page for format)"
-msgstr "Igihe kugirango Ipaji kugirango Imiterere"
-
-#: src/applications/fs/tools/gnunet-insert.c:331
-#, fuzzy
-msgid "ID of the previous version of the content (for namespace update only)"
-msgstr ""
-"Izina ry'idosiye: Bya i Bya a Ibanjirije Verisiyo Bya i Ibikubiyemo "
-"kugirango Amayongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:366
-#, fuzzy, c-format
-msgid "You must specify one and only one filename for insertion.\n"
-msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
-
-#: src/applications/fs/tools/gnunet-insert.c:425
-#, fuzzy, c-format
-msgid "Could not access namespace `%s' (does not exist?).\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/fs/tools/gnunet-insert.c:445
-#, fuzzy, c-format
-msgid "Parsing time failed. Use `%s' format.\n"
-msgstr "Igihe Byanze Imiterere"
-
-#: src/applications/fs/tools/gnunet-insert.c:454
-#: src/applications/fs/tools/gnunet-insert.c:460
-#: src/applications/fs/tools/gnunet-insert.c:466
-#: src/applications/fs/tools/gnunet-insert.c:472
-#: src/applications/fs/tools/gnunet-insert.c:478
-#, fuzzy, c-format
-msgid "Option `%s' makes no sense without option `%s'.\n"
-msgstr "Oya Ihitamo"
-
-#: src/applications/fs/tools/gnunet-directory.c:83
-#, fuzzy, c-format
-msgid "==> Directory `%s':\n"
-msgstr "==>ububiko"
-
-#: src/applications/fs/tools/gnunet-directory.c:90
-#, c-format
-msgid "=\tError reading directory.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-directory.c:124
-#, fuzzy, c-format
-msgid "File format error (not a GNUnet directory?)\n"
-msgstr "IDOSIYE Cyangwa Sibyo Imiterere kugirango bushyinguro"
-
-#: src/applications/fs/tools/gnunet-directory.c:126
-#, fuzzy, c-format
-msgid "%d files found in directory.\n"
-msgstr "IDOSIYE Kuri bushyinguro"
-
-#: src/applications/fs/tools/gnunet-directory.c:141
-#, fuzzy
-msgid "Perform directory related operations."
-msgstr "bushyinguro Ibikorwa:"
-
-#: src/applications/fs/tools/gnunet-directory.c:143
-#, fuzzy
-msgid "remove all entries from the directory database and stop tracking URIs"
-msgstr "Gukuraho... Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
-
-#: src/applications/fs/tools/gnunet-directory.c:147
-#, fuzzy
-msgid "list entries from the directory database"
-msgstr "Urutonde Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
-
-#: src/applications/fs/tools/gnunet-directory.c:150
-#, fuzzy
-msgid "start tracking entries for the directory database"
-msgstr "Urutonde Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
-
-#: src/applications/fs/tools/gnunet-directory.c:174
-#, fuzzy, c-format
-msgid "Listed %d matching entries.\n"
-msgstr "Ibyinjijwe"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:74
-#, fuzzy
-msgid "automate creation of a namespace by starting a collection"
-msgstr "Bya a ku a"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:78
-#, fuzzy
-msgid "create a new pseudonym under the given NICKNAME"
-msgstr "Gusiba i Na: i"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:81
-#, fuzzy
-msgid "delete the pseudonym with the given NICKNAME"
-msgstr "Gusiba i Na: i"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:84
-#, fuzzy
-msgid "end automated building of a namespace (ends collection)"
-msgstr "Impera Bya a"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:89
-#, fuzzy
-msgid ""
-"use the given keyword to advertise the namespace (use when creating a new "
-"pseudonym)"
-msgstr "Gukoresha i Ijambo- banze Kuri i Gukoresha Ryari: a Gishya"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:92
-#, fuzzy
-msgid "specify metadata describing the namespace or collection"
-msgstr "Impera Bya a"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:95
-#, fuzzy
-msgid ""
-"do not generate an advertisement for this namespace (use when creating a new "
-"pseudonym)"
-msgstr "OYA kugirango iyi Gukoresha Ryari: a Gishya"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:98
-#, fuzzy
-msgid "do not list the pseudonyms from the pseudonym database"
-msgstr "OYA Urutonde i Bivuye i Ububikoshingiro"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:101
-#, fuzzy
-msgid ""
-"specify IDENTIFIER to be the address of the entrypoint to content in the "
-"namespace (use when creating a new pseudonym)"
-msgstr "Kuri i Aderesi Bya i Kuri Ibikubiyemo in i Gukoresha Ryari: a Gishya"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:104
-msgid "set the rating of a namespace"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:138
-#, fuzzy, c-format
-msgid "Namespace `%s' has rating %d.\n"
-msgstr "Igisubizo ni i"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:142
-#, fuzzy, c-format
-msgid "Namespace `%s' (%s) has rating %d.\n"
-msgstr "Igisubizo ni i"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:178
-#, fuzzy, c-format
-msgid "\tRating (after update): %d\n"
-msgstr "Nyuma"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:212
-#, fuzzy, c-format
-msgid "Collection stopped.\n"
-msgstr "Kyahagariswe"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:214
-#, c-format
-msgid "Failed to stop collection (not active?).\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:222
-#, fuzzy, c-format
-msgid "Pseudonym `%s' deleted.\n"
-msgstr "Cyasibwe"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:226
-#, fuzzy, c-format
-msgid "Error deleting pseudonym `%s' (does not exist?).\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:243
-#, c-format
-msgid "Started collection `%s'.\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:246
-#, fuzzy, c-format
-msgid "Failed to start collection.\n"
-msgstr "Kuri Kwihuza Kuri"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:286
-#, fuzzy, c-format
-msgid "Could not create namespace `%s' (exists?).\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:291
-#, c-format
-msgid "Namespace `%s' created (root: %s).\n"
-msgstr ""
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:304
-#, fuzzy, c-format
-msgid "You must specify a name for the collection (`%s' option).\n"
-msgstr "a Izina: kugirango i IDOSIYE in Icyiciro"
-
-#: src/applications/fs/tools/gnunet-pseudonym.c:315
-#, fuzzy, c-format
-msgid "Could not access namespace information.\n"
-msgstr "OYA bushyinguro"
-
-#: src/applications/fs/ecrs/helper.c:67
-#, fuzzy
-msgid "No keywords specified!\n"
-msgstr "Amagambo fatizo"
-
-#: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
-#: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
-#: src/applications/fs/fsui/serializetest2.c:402
-#: src/applications/fs/fsui/searchtest.c:162
-#: src/applications/fs/fsui/downloadtest.c:312
-#: src/applications/fs/fsui/fsuitest.c:193
-msgid "AND"
-msgstr ""
-
-#: src/applications/fs/ecrs/download.c:124
-#, fuzzy, c-format
-msgid "Could not unlink temporary file `%s': %s\n"
-msgstr "OYA Kwandika Kuri IDOSIYE"
-
-#: src/applications/fs/ecrs/download.c:255
-#, fuzzy, c-format
-msgid "Write(%d, %p, %d) failed: %s\n"
-msgstr "`%s'%sByanze"
-
-#: src/applications/fs/ecrs/download.c:967
-#, fuzzy
-msgid ""
-"Decrypted content does not match key. This is either a bug or a maliciously "
-"inserted file. Download aborted.\n"
-msgstr "Ibikubiyemo OYA BIHUYE Urufunguzo ni a Cyangwa a Byinjijwemo IDOSIYE"
-
-#: src/applications/fs/ecrs/download.c:1152
-#, fuzzy, c-format
-msgid ""
-"Content `%s' seems to be not available on the network (tried %u times).\n"
-msgstr "Kuri OYA Bihari ku i urusobe"
-
-#: src/applications/fs/ecrs/search.c:167
-msgid "CHK URI not allowed for search.\n"
-msgstr ""
-
-#: src/applications/fs/ecrs/search.c:226
-msgid "LOC URI not allowed for search.\n"
-msgstr ""
-
-#: src/applications/fs/ecrs/namespace.c:154
-#, fuzzy, c-format
-msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
-msgstr "Kurema IDOSIYE"
-
-#: src/applications/fs/ecrs/namespace.c:339
-#: src/applications/fs/ecrs/namespace.c:420
-#: src/applications/fs/ecrs/namespace.c:574
-#, fuzzy, c-format
-msgid "File `%s' does not contain a pseudonym.\n"
-msgstr "Idosiye OYA a"
-
-#: src/applications/fs/ecrs/namespace.c:351
-#: src/applications/fs/ecrs/namespace.c:431
-#, fuzzy, c-format
-msgid "Format of pseudonym `%s' is invalid.\n"
-msgstr "Bya ni Sibyo Ijambobanga..."
-
-#: src/applications/fs/ecrs/namespace.c:588
-#: src/applications/fs/ecrs/namespace.c:599
-#, fuzzy, c-format
-msgid "Format of file `%s' is invalid.\n"
-msgstr "Bya ni Sibyo Ijambobanga..."
-
-#: src/applications/fs/ecrs/parser.c:122
-#, c-format
-msgid ""
-"Unknown metadata type in metadata option `%s'.  Using metadata type "
-"`unknown' instead.\n"
-msgstr ""
-
-#: src/applications/fs/ecrs/meta.c:852
-#, fuzzy, c-format
-msgid "Renaming of file `%s' to `%s' failed: %s\n"
-msgstr "Bya IDOSIYE Kuri Byanze"
-
-#: src/applications/fs/ecrs/meta.c:860
-#, fuzzy, c-format
-msgid "Could not rename file `%s' to `%s': file exists\n"
-msgstr "OYA Guhindura izina IDOSIYE Kuri IDOSIYE"
-
-#: src/applications/fs/ecrs/upload.c:162
-#, fuzzy, c-format
-msgid "`%s' is not a file.\n"
-msgstr "`%s'ni OYA a Ibisanzwe IDOSIYE"
-
-#: src/applications/fs/ecrs/upload.c:172
-#, fuzzy, c-format
-msgid "Cannot get size of file `%s'"
-msgstr "Gufungura Iboneza IDOSIYE"
-
-#: src/applications/fs/ecrs/upload.c:181
-#, fuzzy
-msgid "Failed to connect to gnunetd."
-msgstr "Kuri Kwihuza Kuri"
-
-#: src/applications/fs/ecrs/upload.c:193
-#, fuzzy, c-format
-msgid "Cannot hash `%s'.\n"
-msgstr "Ibirimo"
-
-#: src/applications/fs/ecrs/upload.c:212
-#, fuzzy, c-format
-msgid "Initialization for indexing file `%s' failed.\n"
-msgstr "Bya in IDOSIYE"
-
-#: src/applications/fs/ecrs/upload.c:219
-#, fuzzy, c-format
-msgid "Indexing file `%s' failed. Trying to insert file...\n"
-msgstr "Itangira... Modire Byanze Umukiriya"
-
-#: src/applications/fs/ecrs/upload.c:308
-#, c-format
-msgid "Indexing data failed at position %i.\n"
-msgstr ""
-
-#: src/applications/fs/fsui/download.c:267
-#, fuzzy
-msgid "Download failed (no reason given)"
-msgstr "OYA Gufungura IDOSIYE"
-
-#: src/applications/fs/fsui/search.c:275
-#, fuzzy
-msgid "Error running search (no reason given)."
-msgstr "Kuri Kongeramo"
-
-#: src/applications/fs/fsui/unindex.c:109
-msgid "Unindexing failed (no reason given)"
-msgstr ""
-
-#: src/applications/fs/fsui/deserialize.c:755
-#, c-format
-msgid "FSUI state file `%s' had syntax error at offset %u.\n"
-msgstr ""
-
-#: src/applications/fs/fsui/upload.c:245
-#, fuzzy
-msgid "Failed to create temporary directory."
-msgstr "Kuri Kurema"
-
-#: src/applications/fs/module/ondemand.c:336
-#, c-format
-msgid "Indexed file disappeared, deleting block for query `%s'\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:434
-#, c-format
-msgid ""
-"Because the file `%s' has been unavailable for 3 days it got removed from "
-"your share.  Please unindex files before deleting them as the index now "
-"contains invalid references!\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:461
-#, fuzzy, c-format
-msgid ""
-"Configuration file must specify directory for storage of FS data in section `"
-"%s' under `%s'.\n"
-msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
-
-#: src/applications/fs/module/ondemand.c:518
-msgid "Indexed content changed (does not match its hash).\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:681
-#, c-format
-msgid ""
-"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
-msgstr ""
-
-#: src/applications/fs/module/anonymity.c:67 src/applications/gap/gap.c:1846
-#, fuzzy
-msgid "Failed to get traffic stats.\n"
-msgstr "Kuri Ikibazo# Ibyerekeye"
-
-#: src/applications/fs/module/migration.c:242
-msgid "# blocks migrated"
-msgstr ""
-
-#: src/applications/fs/module/migration.c:244
-msgid "# on-demand block migration attempts"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1126
-#, fuzzy, c-format
-msgid ""
-"You must specify a postive number for `%s' in the configuration in section `%"
-"s'.\n"
-msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
-
-#: src/applications/fs/module/fs.c:1167
-#, c-format
-msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1207
-msgid "enables (anonymous) file-sharing"
-msgstr ""
-
-#: src/applications/datastore/datastore.c:120
-#, fuzzy, c-format
-msgid "Availability test failed for `%s' at %s:%d.\n"
-msgstr "kugirango ku"
-
-#: src/applications/datastore/datastore.c:146
-#, fuzzy, c-format
-msgid "Database failed to delete `%s'.\n"
-msgstr "Kuri Ibikubiyemo"
-
-#: src/applications/datastore/datastore.c:360
-#, fuzzy
-msgid "# bytes allowed in datastore"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/datastore/datastore.c:375
-#: src/applications/datastore/datastore.c:472
-#, fuzzy
-msgid "Failed to load state service. Trying to do without.\n"
-msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
-
-#: src/applications/bootstrap_http/http.c:100
-#, fuzzy, c-format
-msgid "Bootstrap data obtained from `%s' is invalid.\n"
-msgstr "Bya ni Sibyo Ijambobanga..."
-
+msgid "HTTP: Could not determine my public IP address.\n"
+msgstr "OYA Rusange Aderesi"
+
+#: src/transports/http.c:672 src/transports/http.c:750
+#: src/transports/http.c:799 src/transports/http.c:936
+#: src/transports/upnp/upnp.c:335 src/transports/upnp/upnp.c:560
 #: src/applications/bootstrap_http/http.c:121
 #: src/applications/bootstrap_http/http.c:261
 #: src/applications/bootstrap_http/http.c:282
@@ -1010,67 +130,234 @@ msgstr "Bya ni Sibyo Ijambobanga..."
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "`%s'Byanze ku Na: Ikosa"
 
-#: src/applications/bootstrap_http/http.c:173
-msgid "No hostlist URL specified in configuration, will not bootstrap.\n"
-msgstr ""
-
-#: src/applications/bootstrap_http/http.c:229
-#, fuzzy, c-format
-msgid "Trying to download hostlist from `%s'\n"
-msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
-
-#: src/applications/bootstrap_http/http.c:408
-#, fuzzy
-msgid "# hellos downloaded via http"
-msgstr "#KB Yimuwe ku"
-
-#: src/applications/template/gnunet-template.c:43
-#, fuzzy
-msgid "Template description."
-msgstr "/ku Isobanuramiterere"
-
-#: src/applications/template/gnunet-template.c:94
-#: src/applications/stats/gnunet-stats.c:130
-#: src/applications/tracekit/gnunet-tracekit.c:312
-#: src/applications/tbench/gnunet-tbench.c:128
-#: src/applications/vpn/gnunet-vpn.c:145
-#, fuzzy, c-format
-msgid "Error establishing connection with gnunetd.\n"
-msgstr "Zimya Iyemeza Bivuye"
-
-#: src/applications/template/template.c:62
-#, c-format
-msgid "`%s' registering client handler %d and %d\n"
-msgstr ""
-
-#: src/applications/sqstore_mysql/mysql.c:261
-#: src/applications/sqstore_mysql/mysql.c:815
-#: src/applications/sqstore_mysql/mysql.c:1104
-#, fuzzy
-msgid "mysql datastore"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/sqstore_mysql/mysql.c:1317
-#, fuzzy, c-format
-msgid "Trying to use file `%s' for MySQL configuration.\n"
-msgstr "Kuri Gukoresha IDOSIYE kugirango Iboneza"
-
-#: src/applications/sqstore_mysql/mysql.c:1340
+#: src/transports/http.c:1126
 msgid ""
-"Failed to load MySQL database module.  Check that MySQL is running and "
-"configured properly!\n"
+"The UPnP service could not be loaded. To disable UPnP, set the configuration "
+"option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/applications/dstore/dstore.c:530
+#: src/transports/http.c:1134
 #, fuzzy
-msgid "# bytes in dstore"
-msgstr "#Bayite Bya BYAKIRIWE"
+msgid "# bytes received via HTTP"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/applications/dht/tools/dhttest2.c:45 src/applications/gap/gaptest.c:49
+#: src/transports/http.c:1136
+#, fuzzy
+msgid "# bytes sent via HTTP"
+msgstr "#Bayite Yoherejwe:"
+
+#: src/transports/http.c:1138
+msgid "# bytes dropped by HTTP (outgoing)"
+msgstr ""
+
+#: src/transports/smtp.c:257
+#, fuzzy, c-format
+msgid ""
+"You must specify the name of a pipe for the SMTP transport in section `%s' "
+"under `%s'.\n"
+msgstr "i Izina: Bya a kugirango i in Icyiciro"
+
+#: src/transports/smtp.c:334
+#, fuzzy
+msgid "Received malformed message via SMTP (size mismatch).\n"
+msgstr "Ubutumwa Biturutse Ingano"
+
+#: src/transports/smtp.c:433
+#, fuzzy
+msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
+msgstr "Muyunguruzi... kugirango E Ubutumwa Kurema"
+
+#: src/transports/smtp.c:440
+#, fuzzy, c-format
+msgid "SMTP filter string to long, capped to `%s'\n"
+msgstr "Muyunguruzi... Ikurikiranyanyuguti Kuri Kuri"
+
+#: src/transports/smtp.c:546
+#, fuzzy, c-format
+msgid "Failed to initialize libesmtp: %s.\n"
+msgstr "Kuri gutangiza"
+
+#: src/transports/smtp.c:610
+#, fuzzy, c-format
+msgid "Sending E-mail to `%s' failed.\n"
+msgstr "E Ubutumwa Kuri Byanze"
+
+#: src/transports/smtp.c:678
+#, fuzzy, c-format
+msgid "%.*s filter %s (SMTP)"
+msgstr ""
+"%.*Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/transports/smtp.c:706
+#, fuzzy, c-format
+msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
+msgstr "kugirango ni Byo hasi OYA"
+
+#: src/transports/tcp.c:271
+#, fuzzy
+msgid "TCP: Could not determine my public IP address.\n"
+msgstr "OYA Rusange Aderesi"
+
+#: src/transports/tcp.c:357
+#, fuzzy, c-format
+msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/transports/tcp.c:424 src/transports/tcp6.c:379
+#, fuzzy, c-format
+msgid "Failed to start transport service on port %d.\n"
+msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
+
+#: src/transports/tcp.c:569
+msgid ""
+"The UPnP service could not be loaded. To disable UPnP, set the configuration "
+"option \"UPNP\" in section \"TCP\" to \"NO\"\n"
+msgstr ""
+
+#: src/transports/tcp.c:577
+#, fuzzy
+msgid "# bytes received via TCP"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/transports/tcp.c:579
+#, fuzzy
+msgid "# bytes sent via TCP"
+msgstr "#Bayite Yoherejwe:"
+
+#: src/transports/tcp.c:581
+msgid "# bytes dropped by TCP (outgoing)"
+msgstr ""
+
+#: src/transports/udp.c:276
+#, fuzzy
+msgid "UDP: Could not determine my public IP address.\n"
+msgstr "OYA Rusange Aderesi"
+
+#: src/transports/udp.c:367
+#, fuzzy, c-format
+msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/transports/udp.c:552
+#, fuzzy
+msgid "# bytes received via UDP"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/transports/udp.c:554
+#, fuzzy
+msgid "# bytes sent via UDP"
+msgstr "#Bayite Yoherejwe:"
+
+#: src/transports/udp.c:556
+msgid "# bytes dropped by UDP (outgoing)"
+msgstr ""
+
+#: src/transports/tcp6.c:223
+#, fuzzy
+msgid "Could not determine my public IPv6 address.\n"
+msgstr "OYA Rusange Aderesi"
+
+#: src/transports/tcp6.c:265
+#, fuzzy, c-format
+msgid "`%s': unknown service: %s\n"
+msgstr "`%s':Kitazwi Serivisi"
+
+#: src/transports/tcp6.c:519
+#, fuzzy
+msgid "# bytes received via TCP6"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/transports/tcp6.c:521
+#, fuzzy
+msgid "# bytes sent via TCP6"
+msgstr "#Bayite Yoherejwe:"
+
+#: src/transports/tcp6.c:523
+msgid "# bytes dropped by TCP6 (outgoing)"
+msgstr ""
+
+#: src/transports/upnp/upnp.c:428
+#, fuzzy, c-format
+msgid "%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"
+msgstr "`%s'Byanze ku Na: Ikosa"
+
+#: src/transports/upnp/upnp.c:489
+#, c-format
+msgid "upnp: NAT Returned IP: %s\n"
+msgstr ""
+
+#: src/transports/tcp_old.c:1299
+#, fuzzy
+msgid "# bytes received via TCP-OLD"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/transports/tcp_old.c:1301
+#, fuzzy
+msgid "# bytes sent via TCP-OLD"
+msgstr "#Bayite Yoherejwe:"
+
+#: src/transports/tcp_old.c:1303
+msgid "# bytes dropped by TCP-OLD (outgoing)"
+msgstr ""
+
+#: src/transports/tcp_helper.c:193
+#, fuzzy
+msgid "Received malformed message instead of welcome message. Closing.\n"
+msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
+
+#: src/transports/tcp_helper.c:204
+#, fuzzy
+msgid "Received malformed message from tcp-peer connection. Closing.\n"
+msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
+
+#: src/transports/udp_helper.c:91
+#, fuzzy
+msgid "Received malformed message from udp-peer connection. Closing.\n"
+msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
+
+#: src/applications/dht/tools/dhttest2.c:45
 #: src/applications/session/sessiontest.c:42
-#: src/applications/stats/statistics.c:212
-#: src/applications/tbench/tbenchtest_udp.c:100
+#: src/applications/stats/statistics.c:229
 #: src/applications/tbench/tbenchtest.c:101
+#: src/applications/tbench/tbenchtest_udp.c:100
+#: src/applications/gap/gaptest.c:49
 #, fuzzy
 msgid "# of connected peers"
 msgstr "#Bya"
@@ -1081,8 +368,8 @@ msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr ""
 
 #: src/applications/dht/tools/dhttest2.c:173
-#: src/applications/tbench/tbenchtest_udp.c:116
 #: src/applications/tbench/tbenchtest.c:117
+#: src/applications/tbench/tbenchtest_udp.c:116
 #, c-format
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr ""
@@ -1138,53 +425,6 @@ msgstr "Komandi: ingingo Na"
 msgid "Unsupported command `%s'.  Aborting.\n"
 msgstr "Komandi:"
 
-#: src/applications/dht/module/routing.c:748
-msgid "# dht replies routed"
-msgstr ""
-
-#: src/applications/dht/module/routing.c:749
-#, fuzzy
-msgid "# dht requests routed"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/dht/module/routing.c:750
-#, fuzzy
-msgid "# dht get requests received"
-msgstr "#Umukiriya BYAKIRIWE"
-
-#: src/applications/dht/module/routing.c:751
-#, fuzzy
-msgid "# dht put requests received"
-msgstr "#Umukiriya BYAKIRIWE"
-
-#: src/applications/dht/module/routing.c:752
-#, fuzzy
-msgid "# dht results received"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/applications/dht/module/routing.c:756
-#, c-format
-msgid "`%s' registering p2p handlers: %d %d %d\n"
-msgstr ""
-
-#: src/applications/dht/module/table.c:700
-msgid "# dht connections"
-msgstr ""
-
-#: src/applications/dht/module/table.c:701
-#, fuzzy
-msgid "# dht discovery messages received"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/dht/module/table.c:702
-msgid "# dht route host lookups performed"
-msgstr ""
-
-#: src/applications/dht/module/table.c:703
-#, fuzzy
-msgid "# dht discovery messages sent"
-msgstr "#Bayite Bya BYAKIRIWE"
-
 #: src/applications/dht/module/cs.c:135
 #, fuzzy, c-format
 msgid "`%s' failed. Terminating connection to client.\n"
@@ -1195,42 +435,594 @@ msgstr "`%s'Byanze."
 msgid "`%s' registering client handlers: %d %d\n"
 msgstr ""
 
-#: src/applications/testbed/gnunet-testbed.c:119
-#, fuzzy
-msgid "Start GNUnet-testbed helper."
-msgstr "Gutangira"
+#: src/applications/dht/module/cs.c:249
+msgid "Enables efficient non-anonymous routing"
+msgstr ""
 
-#: src/applications/testbed/gnunet-testbed.c:125
-#: src/applications/testbed/gnunet-testbed.c:546
-#: src/applications/chat/gnunet-chat.c:93 src/util/getopt/getopt.c:1067
-#: src/setup/gnunet-setup.c:284
+#: src/applications/dht/module/table.c:701
+msgid "# dht connections"
+msgstr ""
+
+#: src/applications/dht/module/table.c:702
+#, fuzzy
+msgid "# dht discovery messages received"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/dht/module/table.c:703
+msgid "# dht route host lookups performed"
+msgstr ""
+
+#: src/applications/dht/module/table.c:704
+#, fuzzy
+msgid "# dht discovery messages sent"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/dht/module/routing.c:752
+msgid "# dht replies routed"
+msgstr ""
+
+#: src/applications/dht/module/routing.c:753
+#, fuzzy
+msgid "# dht requests routed"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/dht/module/routing.c:754
+#, fuzzy
+msgid "# dht get requests received"
+msgstr "#Umukiriya BYAKIRIWE"
+
+#: src/applications/dht/module/routing.c:755
+#, fuzzy
+msgid "# dht put requests received"
+msgstr "#Umukiriya BYAKIRIWE"
+
+#: src/applications/dht/module/routing.c:756
+#, fuzzy
+msgid "# dht results received"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/applications/dht/module/routing.c:760
+#, c-format
+msgid "`%s' registering p2p handlers: %d %d %d\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:87
+#, fuzzy
+msgid "Message received from peer is invalid.\n"
+msgstr "BYAKIRIWE Bivuye ni Sibyo"
+
+#: src/applications/chat/chat.c:134
+#, fuzzy
+msgid "Message received from client is invalid\n"
+msgstr "BYAKIRIWE Bivuye Umukiriya ni"
+
+#: src/applications/chat/chat.c:156
+#, fuzzy
+msgid "Maximum number of chat clients reached.\n"
+msgstr "Umubare Bya"
+
+#: src/applications/chat/chat.c:160
+#, fuzzy, c-format
+msgid "Now %d of %d chat clients at this node.\n"
+msgstr "Bya ku iyi"
+
+#: src/applications/chat/chat.c:197
+#, c-format
+msgid "`%s' registering handlers %d and %d\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:216
+msgid "enables P2P-chat (incomplete)"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:82
+#, fuzzy
+msgid "specify nickname"
+msgstr "Irihimbano"
+
+#: src/applications/chat/gnunet-chat.c:87
+#, fuzzy
+msgid "Start GNUnet chat client."
+msgstr "Gutangira Umukiriya"
+
+#: src/applications/chat/gnunet-chat.c:93
+#: src/applications/testbed/gnunet-testbed.c:126
+#: src/applications/testbed/gnunet-testbed.c:547 src/util/getopt/getopt.c:1067
+#: src/setup/gnunet-setup.c:286
 #, fuzzy, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Ifashayobora Kuri Kubona a Urutonde Bya Amahitamo"
 
-#: src/applications/testbed/gnunet-testbed.c:183
+#: src/applications/chat/gnunet-chat.c:151
+#, fuzzy
+msgid "Could not connect to gnunetd.\n"
+msgstr "OYA Kwihuza Kuri"
+
+#: src/applications/chat/gnunet-chat.c:155
+#, fuzzy, c-format
+msgid "You must specify a nickname (use option `%s').\n"
+msgstr "a Irihimbano Gukoresha Ihitamo"
+
+#: src/applications/chat/gnunet-chat.c:182
+#, fuzzy
+msgid "Could not send join message to gnunetd\n"
+msgstr "OYA Kohereza Ubutumwa Kuri"
+
+#: src/applications/chat/gnunet-chat.c:191
+#, fuzzy
+msgid "Could not send message to gnunetd\n"
+msgstr "OYA Kohereza Ubutumwa Kuri"
+
+#: src/applications/advertising/advertising.c:168
+#, fuzzy, c-format
+msgid "hello message from `%s' invalid (signature invalid). Dropping.\n"
+msgstr "Ubutumwa Bivuye Sibyo Isinya Sibyo"
+
+#: src/applications/advertising/advertising.c:175
+#, fuzzy
+msgid ""
+"hello message received invalid (expiration time over limit). Dropping.\n"
+msgstr "Ubutumwa BYAKIRIWE Sibyo Igihe KURI"
+
+#: src/applications/advertising/advertising.c:182
+#, c-format
+msgid "hello transport verification failed (%u).\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:192
+#, fuzzy, c-format
+msgid "hello advertisement for protocol %d received.\n"
+msgstr "kugirango Porotokole BYAKIRIWE"
+
+#: src/applications/advertising/advertising.c:327
+#, fuzzy
+msgid "Could not send hellos+PING, ping buffer full.\n"
+msgstr "OYA Kohereza"
+
+#: src/applications/advertising/advertising.c:341
+#, fuzzy, c-format
+msgid "`%s' failed (%d, %u). Will not send PING.\n"
+msgstr "`%s'Byanze kugirango Umuyoboro in amasogonda"
+
+#: src/applications/advertising/advertising.c:504
+#, fuzzy, c-format
+msgid "Advertising my transport %d to selected peers.\n"
+msgstr "Kuri Byahiswemo"
+
+#: src/applications/advertising/advertising.c:511
+#, fuzzy
+msgid ""
+"Announcing ourselves pointless: no other peers are known to us so far.\n"
+msgstr "Oya Ikindi Kuri RW"
+
+#: src/applications/advertising/advertising.c:613
+#, fuzzy, c-format
+msgid "Removing hello from peer `%s' (expired %ds ago).\n"
+msgstr "Bivuye Byarengeje igihe"
+
+#: src/applications/advertising/advertising.c:794
+#, fuzzy
+msgid "# Peer advertisements received"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/advertising/advertising.c:795
+msgid "# Self advertisments transmitted"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:796
+msgid "# Foreign advertisements forwarded"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:798
+#: src/applications/pingpong/pingpong.c:493
+msgid "# plaintext PING messages sent"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:802
+#: src/applications/session/connect.c:892
+#, c-format
+msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:820
+msgid ""
+"ensures that this peer is known by other peers and discovers other peers"
+msgstr ""
+
+#: src/applications/topology_default/topology.c:447
+msgid "maintains GNUnet default mesh topology"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:123
+#: src/applications/pingpong/pingpong.c:191
+#: src/applications/pingpong/pingpong.c:244
+#: src/applications/pingpong/pingpong.c:314
+#, fuzzy, c-format
+msgid "Received malformed `%s' message. Dropping.\n"
+msgstr "Ubutumwa"
+
+#: src/applications/pingpong/pingpong.c:135
+#, fuzzy
+msgid "Received ping for another peer. Dropping.\n"
+msgstr "kugirango"
+
+#: src/applications/pingpong/pingpong.c:201
+#, fuzzy
+msgid "Received PING not destined for us!\n"
+msgstr "OYA kugirango RW"
+
+#: src/applications/pingpong/pingpong.c:287
+#: src/applications/pingpong/pingpong.c:350
+msgid ""
+"Could not match PONG against any PING. Try increasing MAX_PING_PONG "
+"constant.\n"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:393
+msgid "Cannot create PING, table full. Try increasing MAX_PING_PONG.\n"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:483
+#, fuzzy
+msgid "# encrypted PONG messages received"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/pingpong/pingpong.c:485
+#, fuzzy
+msgid "# plaintext PONG messages received"
+msgstr "#Umukiriya Ibibazo BYAKIRIWE"
+
+#: src/applications/pingpong/pingpong.c:487
+#, fuzzy
+msgid "# encrypted PING messages received"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/pingpong/pingpong.c:489
+#, fuzzy
+msgid "# PING messages created"
+msgstr "#Ubutumwa"
+
+#: src/applications/pingpong/pingpong.c:491
+#, fuzzy
+msgid "# encrypted PONG messages sent"
+msgstr "#Bishunzwe: Bayite Yoherejwe:"
+
+#: src/applications/pingpong/pingpong.c:495
+#, fuzzy
+msgid "# encrypted PING messages sent"
+msgstr "#Bishunzwe: Bayite Yoherejwe:"
+
+#: src/applications/pingpong/pingpong.c:505
+#, c-format
+msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
+msgstr ""
+
+#: src/applications/sqstore_sqlite/sqlite.c:46
+#: src/applications/sqstore_sqlite/sqlite.c:53
+#: src/applications/sqstore_mysql/mysql.c:138
+#: src/applications/sqstore_mysql/mysql.c:145
+#: src/applications/sqstore_mysql/mysql.c:423
+#: src/applications/sqstore_mysql/mysql.c:754
+#: src/applications/sqstore_mysql/mysql.c:770
+#: src/applications/sqstore_mysql/mysql.c:780
+#: src/applications/sqstore_mysql/mysql.c:805
+#: src/applications/sqstore_mysql/mysql.c:816
+#: src/applications/sqstore_mysql/mysql.c:873
+#: src/applications/sqstore_mysql/mysql.c:960
+#: src/applications/sqstore_mysql/mysql.c:971
+#: src/applications/sqstore_mysql/mysql.c:1035
+#: src/applications/sqstore_mysql/mysql.c:1051
+#: src/applications/sqstore_mysql/mysql.c:1061
+#: src/applications/sqstore_mysql/mysql.c:1085
+#: src/applications/sqstore_mysql/mysql.c:1096
+#: src/applications/sqstore_mysql/mysql.c:1108
+#: src/applications/sqstore_mysql/mysql.c:1171
+#: src/applications/sqstore_mysql/mysql.c:1183
+#: src/applications/sqstore_mysql/mysql.c:1234
+#: src/applications/sqstore_mysql/mysql.c:1249
+#: src/applications/kvstore_sqlite/kv_sqlite.c:44
+#: src/applications/kvstore_sqlite/kv_sqlite.c:51
+#: src/applications/dstore/dstore.c:91 src/applications/dstore/dstore.c:178
+#: src/applications/dstore/dstore.c:237 src/applications/dstore/dstore.c:260
+#: src/applications/dstore/dstore.c:319 src/applications/dstore/dstore.c:372
+#: src/applications/dstore/dstore.c:462 src/util/crypto/symcipher_gcrypt.c:46
+#: src/util/crypto/symcipher_gcrypt.c:53 src/util/crypto/hostkey_gcrypt.c:63
+#: src/util/crypto/hostkey_gcrypt.c:70
+#, fuzzy, c-format
+msgid "`%s' failed at %s:%d with error: %s\n"
+msgstr "`%s'Byanze ku Na: Ikosa"
+
+#: src/applications/sqstore_sqlite/sqlite.c:195
+#, fuzzy, c-format
+msgid "Unable to initialize SQLite: %s.\n"
+msgstr "Kuri gutangiza"
+
+#: src/applications/sqstore_sqlite/sqlite.c:357
+#: src/applications/sqstore_sqlite/sqlite.c:378
+#: src/applications/sqstore_mysql/mysql.c:260
+#: src/applications/sqstore_mysql/mysql.c:834
+#: src/applications/sqstore_mysql/mysql.c:1123
+#, c-format
+msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
+msgstr ""
+
+#: src/applications/sqstore_sqlite/sqlite.c:358
+#: src/applications/sqstore_sqlite/sqlite.c:379
+#, fuzzy
+msgid "sqlite datastore"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/sqstore_sqlite/sqlite.c:1342
+#: src/applications/sqstore_mysql/mysql.c:1310
+#, fuzzy
+msgid "# bytes in datastore"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/session/connect.c:257
+#: src/applications/session/connect.c:274
+#, fuzzy, c-format
+msgid "Session key from peer `%s' could not be verified.\n"
+msgstr "Urufunguzo Bivuye OYA Byagenzuwe"
+
+#: src/applications/session/connect.c:315
+#, fuzzy, c-format
+msgid "Cannot encrypt sessionkey, peer `%s' not known!\n"
+msgstr "Shyiraho Umutekano Ikindi OYA"
+
+#: src/applications/session/connect.c:587
+#, fuzzy, c-format
+msgid "Session key received from peer `%s' has invalid format (discarded).\n"
+msgstr "`%s'Ubutumwa BYAKIRIWE Bivuye"
+
+#: src/applications/session/connect.c:605
+#, fuzzy, c-format
+msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
+msgstr "`%s'Ubutumwa BYAKIRIWE Bivuye"
+
+#: src/applications/session/connect.c:637
+#, fuzzy, c-format
+msgid "Invalid `%s' message received from peer `%s'.\n"
+msgstr "Ubutumwa BYAKIRIWE Bivuye"
+
+#: src/applications/session/connect.c:647
+#, fuzzy, c-format
+msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
+msgstr "Bivuye Kugenzura..."
+
+#: src/applications/session/connect.c:716
+#, fuzzy, c-format
+msgid ""
+"Error parsing encrypted session key from `%s', given message part size is "
+"invalid.\n"
+msgstr "Bishunzwe: Umukoro Urufunguzo Ubutumwa Ingano ni Sibyo"
+
+#: src/applications/session/connect.c:728
+#, c-format
+msgid "Unknown type in embedded message from `%s': %u (size: %u)\n"
+msgstr ""
+
+#: src/applications/session/connect.c:881
+msgid "# session keys sent"
+msgstr ""
+
+#: src/applications/session/connect.c:883
+msgid "# session keys rejected"
+msgstr ""
+
+#: src/applications/session/connect.c:885
+msgid "# session keys accepted"
+msgstr ""
+
+#: src/applications/session/connect.c:887
+msgid "# sessions established"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:130 src/applications/rpc/rpc.c:170
+#, fuzzy, c-format
+msgid ""
+"%s::%s - RPC %s:%p could not be registered: another callback is already "
+"using this name (%p)\n"
+msgstr "%s::%s-OYA ni ikoresha iyi Izina:"
+
+#: src/applications/rpc/rpc.c:212 src/applications/rpc/rpc.c:259
+#, fuzzy, c-format
+msgid ""
+"%s::%s - RPC %s:%p could not be unregistered: another callback registered "
+"under that name: %p\n"
+msgstr "%s::%s-OYA Izina:"
+
+#: src/applications/rpc/rpc.c:233
+#, fuzzy, c-format
+msgid "%s::%s - RPC %s:%p could not be unregistered: not found\n"
+msgstr "%s::%s-OYA OYA"
+
+#: src/applications/rpc/rpc.c:280
+#, fuzzy, c-format
+msgid "%s::%s - async RPC %s:%p could not be unregistered: not found\n"
+msgstr "%s::%s-OYA OYA"
+
+#: src/applications/rpc/rpc.c:879 src/applications/rpc/rpc.c:1012
+#: src/applications/rpc/rpc.c:1101
+#, fuzzy, c-format
+msgid "Invalid message of type %u received.  Dropping.\n"
+msgstr "Ubutumwa Bya Ubwoko BYAKIRIWE"
+
+#: src/applications/rpc/rpc.c:946
+#, fuzzy, c-format
+msgid "Dropping RPC request %u: message malformed.\n"
+msgstr "Kubaza... Ubutumwa"
+
+#: src/applications/rpc/rpc.c:1291
+#, fuzzy, c-format
+msgid "`%s' called with timeout above 1 hour (bug?)\n"
+msgstr "`%s'Na: Igihe cyarenze: hejuru 1. ISAHA"
+
+#: src/applications/rpc/rpc.c:1415
+#, fuzzy, c-format
+msgid "RPC not unregistered: %s:%p\n"
+msgstr "OYA"
+
+#: src/applications/rpc/rpc.c:1442
+#, c-format
+msgid "`%s' registering handlers %d %d %d\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:1463
+#, fuzzy, c-format
+msgid "Failed to initialize `%s' service.\n"
+msgstr "Kuri gutangiza Serivisi"
+
+#: src/applications/rpc/rpc.c:1520
+#, fuzzy
+msgid "RPC async reply invalid.\n"
+msgstr "Subiza Sibyo"
+
+#: src/applications/rpc/rpc.c:1592
+#, fuzzy
+msgid "async RPC reply not received.\n"
+msgstr "Subiza OYA BYAKIRIWE"
+
+#: src/applications/sqstore_mysql/mysql.c:261
+#: src/applications/sqstore_mysql/mysql.c:835
+#: src/applications/sqstore_mysql/mysql.c:1124
+#, fuzzy
+msgid "mysql datastore"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/sqstore_mysql/mysql.c:1340
+#, fuzzy, c-format
+msgid "Trying to use file `%s' for MySQL configuration.\n"
+msgstr "Kuri Gukoresha IDOSIYE kugirango Iboneza"
+
+#: src/applications/sqstore_mysql/mysql.c:1363
+msgid ""
+"Failed to load MySQL database module.  Check that MySQL is running and "
+"configured properly!\n"
+msgstr ""
+
+#: src/applications/datastore/datastore.c:120
+#, fuzzy, c-format
+msgid "Availability test failed for `%s' at %s:%d.\n"
+msgstr "kugirango ku"
+
+#: src/applications/datastore/datastore.c:146
+#, fuzzy, c-format
+msgid "Database failed to delete `%s'.\n"
+msgstr "Kuri Ibikubiyemo"
+
+#: src/applications/datastore/datastore.c:377
+#, fuzzy
+msgid "# bytes allowed in datastore"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/datastore/datastore.c:392
+#: src/applications/datastore/datastore.c:501
+#, fuzzy
+msgid "Failed to load state service. Trying to do without.\n"
+msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
+
+#: src/applications/datastore/datastore.c:476
+#, fuzzy
+msgid "Deleting expired content.  This may take a while.\n"
+msgstr "Gishya iyi Gicurasi a"
+
+#: src/applications/datastore/datastore.c:482
+msgid "Completed deleting expired content.\n"
+msgstr ""
+
+#: src/applications/identity/hostkey.c:123
+#, fuzzy, c-format
+msgid "Failed to access GNUnet home directory `%s'\n"
+msgstr "OYA Gufungura bushyinguro"
+
+#: src/applications/identity/hostkey.c:157
+#, fuzzy, c-format
+msgid ""
+"Existing hostkey in file `%s' failed format check, creating new hostkey.\n"
+msgstr "in IDOSIYE Byanze Imiterere Kugenzura... Gishya"
+
+#: src/applications/identity/hostkey.c:165
+#, fuzzy
+msgid "Creating new hostkey (this may take a while).\n"
+msgstr "Gishya iyi Gicurasi a"
+
+#: src/applications/identity/hostkey.c:178
+msgid "Done creating hostkey.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:346
+#, fuzzy, c-format
+msgid ""
+"File `%s' in directory `%s' does not match naming convention. Removed.\n"
+msgstr "Idosiye in bushyinguro OYA BIHUYE"
+
+#: src/applications/identity/identity.c:359
+#, fuzzy, c-format
+msgid ""
+"Directory `%s' in directory `%s' does not match naming convention. Removed.\n"
+msgstr "Idosiye in bushyinguro OYA BIHUYE"
+
+#: src/applications/identity/identity.c:396
+#, fuzzy, c-format
+msgid "Still no peers found in `%s'!\n"
+msgstr "OYA Kureka gufungura Serivisi"
+
+#: src/applications/identity/identity.c:686
+#: src/applications/identity/identity.c:706
+#, fuzzy, c-format
+msgid "Removed file `%s' containing invalid hello data.\n"
+msgstr "IDOSIYE Sibyo Ibyatanzwe"
+
+#: src/applications/identity/identity.c:759
+#, fuzzy, c-format
+msgid "Signature failed verification: peer `%s' not known.\n"
+msgstr "Shyiraho Umutekano Ikindi OYA"
+
+#: src/applications/identity/identity.c:768
+#, fuzzy
+msgid "Signature failed verification: signature invalid.\n"
+msgstr "Ubutumwa Sibyo Isinya Sibyo"
+
+#: src/applications/testbed/commands.c:1130
+#: src/applications/stats/gnunet-stats.c:65
+#, fuzzy, c-format
+msgid "Supported peer-to-peer messages:\n"
+msgstr "Kuri Ubutumwa"
+
+#: src/applications/testbed/commands.c:1132
+#: src/applications/stats/gnunet-stats.c:69
+#, fuzzy, c-format
+msgid "Supported client-server messages:\n"
+msgstr "Umukiriya Seriveri Ubutumwa"
+
+#: src/applications/testbed/gnunet-testbed.c:120
+#, fuzzy
+msgid "Start GNUnet-testbed helper."
+msgstr "Gutangira"
+
+#: src/applications/testbed/gnunet-testbed.c:184
 #, fuzzy, c-format
 msgid "Cannot connect to LOOPBACK port %d: %s\n"
 msgstr "Kwihuza Kuri Umuyoboro"
 
-#: src/applications/testbed/gnunet-testbed.c:282
+#: src/applications/testbed/gnunet-testbed.c:283
 #, fuzzy, c-format
 msgid "Could not execute `%s': %s\n"
 msgstr "OYA Gukora"
 
-#: src/applications/testbed/gnunet-testbed.c:325
+#: src/applications/testbed/gnunet-testbed.c:326
 #, fuzzy
 msgid "No client service started. Trying again in 30 seconds.\n"
 msgstr "Umukiriya Serivisi in amasogonda"
 
-#: src/applications/testbed/gnunet-testbed.c:348
+#: src/applications/testbed/gnunet-testbed.c:349
 #, fuzzy, c-format
 msgid ""
 "Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
 "Trying again in %d seconds...\n"
 msgstr "Bifatanya i Kuri Umuyoboro Porogisi Serivisi in amasogonda"
 
-#: src/applications/testbed/gnunet-testbed.c:415
+#: src/applications/testbed/gnunet-testbed.c:416
 #, fuzzy, c-format
 msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
 msgstr ""
@@ -1257,22 +1049,22 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 "."
 
-#: src/applications/testbed/gnunet-testbed.c:428
+#: src/applications/testbed/gnunet-testbed.c:429
 #, fuzzy, c-format
 msgid "Protocol violation on socket. Expected command.\n"
 msgstr "ku Itegerejwe Komandi:"
 
-#: src/applications/testbed/gnunet-testbed.c:467
+#: src/applications/testbed/gnunet-testbed.c:468
 #, fuzzy, c-format
 msgid "Command `%s' not found!\n"
 msgstr "OYA Byabonetse"
 
-#: src/applications/testbed/gnunet-testbed.c:540
+#: src/applications/testbed/gnunet-testbed.c:541
 #, fuzzy
 msgid "Start GNUnet testbed controller."
 msgstr "Gutangira"
 
-#: src/applications/testbed/gnunet-testbed.c:594
+#: src/applications/testbed/gnunet-testbed.c:595
 #, fuzzy, c-format
 msgid "Malformed entry in the configuration in section %s under %s: %s\n"
 msgstr "Icyinjijwe in i Iboneza in Icyiciro"
@@ -1394,7 +1186,7 @@ msgstr "Ubutumwa Bya Ubwoko Ingano Ikitezwe:"
 msgid "No testbed URL given, not registered.\n"
 msgstr "OYA"
 
-#: src/applications/testbed/testbed.c:1054 src/transports/http.c:1490
+#: src/applications/testbed/testbed.c:1054
 #, fuzzy, c-format
 msgid "Could not resolve name of HTTP proxy `%s'.\n"
 msgstr "OYA Izina: Bya Porogisi"
@@ -1433,644 +1225,221 @@ msgstr "Kwiyandikisha Ikosa Oya HTTP Gusoma"
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr ""
 
-#: src/applications/testbed/commands.c:1130
-#: src/applications/stats/gnunet-stats.c:63
-#, fuzzy, c-format
-msgid "Supported peer-to-peer messages:\n"
-msgstr "Kuri Ubutumwa"
-
-#: src/applications/testbed/commands.c:1132
-#: src/applications/stats/gnunet-stats.c:66
-#, fuzzy, c-format
-msgid "Supported client-server messages:\n"
-msgstr "Umukiriya Seriveri Ubutumwa"
-
-#: src/applications/gap/pid_table.c:161
-msgid "# distinct interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/pid_table.c:163
-msgid "# total RC of interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/gap.c:1659
-#, fuzzy, c-format
-msgid "GAP received invalid content from `%s'\n"
-msgstr "Sibyo Ubutumwa Bivuye"
-
-#: src/applications/gap/gap.c:1660
-msgid "myself"
-msgstr ""
-
-#: src/applications/gap/gap.c:1834
-msgid ""
-"Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:1853 src/applications/gap/gap.c:1859
-#: src/applications/gap/gap.c:1866
-msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:2149
-#, fuzzy
-msgid "# gap requests total received"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2150
-msgid "# gap requests policy: immediate drop"
-msgstr ""
-
-#: src/applications/gap/gap.c:2151
-msgid "# gap requests policy: not routed"
-msgstr ""
-
-#: src/applications/gap/gap.c:2152
-msgid "# gap requests policy: not answered"
-msgstr ""
-
-#: src/applications/gap/gap.c:2153
-msgid "# gap requests processed: attempted add to RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2154
-msgid "# gap requests processed: local result"
-msgstr ""
-
-#: src/applications/gap/gap.c:2155
-msgid "# gap routing successes (total)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2156
-msgid "# gap requests dropped: collision in RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2157
-msgid "# gap requests forwarded (counting each peer)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2158
-msgid "# gap duplicate requests (pending)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2159
-#, fuzzy
-msgid "# gap duplicate requests that were re-tried"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2160
-msgid "# gap re-try ttl difference (cummulative)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2161
-msgid "# gap reply duplicates"
-msgstr ""
-
-#: src/applications/gap/gap.c:2162
-#, fuzzy
-msgid "# gap spurious replies"
-msgstr "#hejuru Ibibazo BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2163
-msgid "# gap routing slots currently in use"
-msgstr ""
-
-#: src/applications/gap/gap.c:2164
-msgid "# gap memory used for tracking seen content"
-msgstr ""
-
-#: src/applications/gap/gap.c:2165
-msgid "# gap memory used for tracking routing destinations"
-msgstr ""
-
-#: src/applications/gap/gap.c:2166
-msgid "# gap rewards pending"
-msgstr ""
-
-#: src/applications/gap/gap.c:2167
-#, fuzzy
-msgid "# gap response weights"
-msgstr "#hejuru Ibibazo BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2183
-msgid ""
-"Traffic service failed to load; gap cannot ensure cover-traffic "
-"availability.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:2211
+#: src/applications/transport/transport.c:142
 #, c-format
-msgid "`%s' registering handlers %d %d\n"
+msgid ""
+"Converting peer address to string failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/session/connect.c:257
-#: src/applications/session/connect.c:274
-#, fuzzy, c-format
-msgid "Session key from peer `%s' could not be verified.\n"
-msgstr "Urufunguzo Bivuye OYA Byagenzuwe"
-
-#: src/applications/session/connect.c:315
-#, fuzzy, c-format
-msgid "Cannot encrypt sessionkey, peer `%s' not known!\n"
-msgstr "Shyiraho Umutekano Ikindi OYA"
-
-#: src/applications/session/connect.c:595
-#, fuzzy, c-format
-msgid "Session key received from peer `%s' has invalid format (discarded).\n"
-msgstr "`%s'Ubutumwa BYAKIRIWE Bivuye"
-
-#: src/applications/session/connect.c:613
-#, fuzzy, c-format
-msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
-msgstr "`%s'Ubutumwa BYAKIRIWE Bivuye"
-
-#: src/applications/session/connect.c:645
-#, fuzzy, c-format
-msgid "Invalid `%s' message received from peer `%s'.\n"
-msgstr "Ubutumwa BYAKIRIWE Bivuye"
-
-#: src/applications/session/connect.c:655
-#, fuzzy, c-format
-msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
-msgstr "Bivuye Kugenzura..."
-
-#: src/applications/session/connect.c:724
-#, fuzzy, c-format
-msgid ""
-"Error parsing encrypted session key from `%s', given message part size is "
-"invalid.\n"
-msgstr "Bishunzwe: Umukoro Urufunguzo Ubutumwa Ingano ni Sibyo"
-
-#: src/applications/session/connect.c:736
+#: src/applications/transport/transport.c:189
 #, c-format
-msgid "Unknown type in embedded message from `%s': %u (size: %u)\n"
+msgid "Transport connection attempt failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/session/connect.c:889
-msgid "# session keys sent"
+#: src/applications/transport/transport.c:284
+#, fuzzy, c-format
+msgid "Transmission attempt failed, transport type %d unknown.\n"
+msgstr "Bya Ubwoko"
+
+#: src/applications/transport/transport.c:373
+#, fuzzy, c-format
+msgid "No transport of type %d known.\n"
+msgstr "Bya Ubwoko"
+
+#: src/applications/transport/transport.c:430
+msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/session/connect.c:891
-msgid "# session keys rejected"
-msgstr ""
+#: src/applications/transport/transport.c:631
+#, fuzzy, c-format
+msgid "Loading transports `%s'\n"
+msgstr "S"
 
-#: src/applications/session/connect.c:893
-msgid "# session keys accepted"
-msgstr ""
+#: src/applications/transport/transport.c:651
+#, fuzzy, c-format
+msgid "Could not load transport plugin `%s'\n"
+msgstr "OYA gutangiza Porogaramu"
 
-#: src/applications/session/connect.c:895
-msgid "# sessions established"
-msgstr ""
+#: src/applications/transport/transport.c:661
+#, fuzzy, c-format
+msgid "Transport library `%s' did not provide required function '%s%s'.\n"
+msgstr "Isomero OYA Bya ngombwa Umumaro"
 
-#: src/applications/session/connect.c:900
-#: src/applications/advertising/advertising.c:796
+#: src/applications/transport/transport.c:688
+#, fuzzy, c-format
+msgid "Loaded transport `%s'\n"
+msgstr "S"
+
+#: src/applications/transport/transport.c:701
 #, c-format
-msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
+msgid "I am peer `%s'.\n"
 msgstr ""
 
-#: src/applications/chat/chat.c:87
+#: src/applications/fragmentation/fragmentation.c:566
 #, fuzzy
-msgid "Message received from peer is invalid.\n"
-msgstr "BYAKIRIWE Bivuye ni Sibyo"
-
-#: src/applications/chat/chat.c:134
-#, fuzzy
-msgid "Message received from client is invalid\n"
-msgstr "BYAKIRIWE Bivuye Umukiriya ni"
-
-#: src/applications/chat/chat.c:156
-#, fuzzy
-msgid "Maximum number of chat clients reached.\n"
-msgstr "Umubare Bya"
-
-#: src/applications/chat/chat.c:160
-#, fuzzy, c-format
-msgid "Now %d of %d chat clients at this node.\n"
-msgstr "Bya ku iyi"
-
-#: src/applications/chat/chat.c:197
-#, c-format
-msgid "`%s' registering handlers %d and %d\n"
-msgstr ""
-
-#: src/applications/chat/chat.c:216
-msgid "enables P2P-chat (incomplete)"
-msgstr ""
-
-#: src/applications/chat/gnunet-chat.c:82
-#, fuzzy
-msgid "specify nickname"
-msgstr "Irihimbano"
-
-#: src/applications/chat/gnunet-chat.c:87
-#, fuzzy
-msgid "Start GNUnet chat client."
-msgstr "Gutangira Umukiriya"
-
-#: src/applications/chat/gnunet-chat.c:151
-#, fuzzy
-msgid "Could not connect to gnunetd.\n"
-msgstr "OYA Kwihuza Kuri"
-
-#: src/applications/chat/gnunet-chat.c:155
-#, fuzzy, c-format
-msgid "You must specify a nickname (use option `%s').\n"
-msgstr "a Irihimbano Gukoresha Ihitamo"
-
-#: src/applications/chat/gnunet-chat.c:182
-#, fuzzy
-msgid "Could not send join message to gnunetd\n"
-msgstr "OYA Kohereza Ubutumwa Kuri"
-
-#: src/applications/chat/gnunet-chat.c:191
-#, fuzzy
-msgid "Could not send message to gnunetd\n"
-msgstr "OYA Kohereza Ubutumwa Kuri"
-
-#: src/applications/topology_default/topology.c:442
-msgid "maintains GNUnet default mesh topology"
-msgstr ""
-
-#: src/applications/rpc/rpc.c:130 src/applications/rpc/rpc.c:170
-#, fuzzy, c-format
-msgid ""
-"%s::%s - RPC %s:%p could not be registered: another callback is already "
-"using this name (%p)\n"
-msgstr "%s::%s-OYA ni ikoresha iyi Izina:"
-
-#: src/applications/rpc/rpc.c:212 src/applications/rpc/rpc.c:259
-#, fuzzy, c-format
-msgid ""
-"%s::%s - RPC %s:%p could not be unregistered: another callback registered "
-"under that name: %p\n"
-msgstr "%s::%s-OYA Izina:"
-
-#: src/applications/rpc/rpc.c:233
-#, fuzzy, c-format
-msgid "%s::%s - RPC %s:%p could not be unregistered: not found\n"
-msgstr "%s::%s-OYA OYA"
-
-#: src/applications/rpc/rpc.c:280
-#, fuzzy, c-format
-msgid "%s::%s - async RPC %s:%p could not be unregistered: not found\n"
-msgstr "%s::%s-OYA OYA"
-
-#: src/applications/rpc/rpc.c:879 src/applications/rpc/rpc.c:1012
-#: src/applications/rpc/rpc.c:1101
-#, fuzzy, c-format
-msgid "Invalid message of type %u received.  Dropping.\n"
-msgstr "Ubutumwa Bya Ubwoko BYAKIRIWE"
-
-#: src/applications/rpc/rpc.c:946
-#, fuzzy, c-format
-msgid "Dropping RPC request %u: message malformed.\n"
-msgstr "Kubaza... Ubutumwa"
-
-#: src/applications/rpc/rpc.c:1291
-#, fuzzy, c-format
-msgid "`%s' called with timeout above 1 hour (bug?)\n"
-msgstr "`%s'Na: Igihe cyarenze: hejuru 1. ISAHA"
-
-#: src/applications/rpc/rpc.c:1415
-#, fuzzy, c-format
-msgid "RPC not unregistered: %s:%p\n"
-msgstr "OYA"
-
-#: src/applications/rpc/rpc.c:1442
-#, c-format
-msgid "`%s' registering handlers %d %d %d\n"
-msgstr ""
-
-#: src/applications/rpc/rpc.c:1463
-#, fuzzy, c-format
-msgid "Failed to initialize `%s' service.\n"
-msgstr "Kuri gutangiza Serivisi"
-
-#: src/applications/rpc/rpc.c:1520
-#, fuzzy
-msgid "RPC async reply invalid.\n"
-msgstr "Subiza Sibyo"
-
-#: src/applications/rpc/rpc.c:1592
-#, fuzzy
-msgid "async RPC reply not received.\n"
-msgstr "Subiza OYA BYAKIRIWE"
-
-#: src/applications/advertising/advertising.c:168
-#, fuzzy, c-format
-msgid "hello message from `%s' invalid (signature invalid). Dropping.\n"
-msgstr "Ubutumwa Bivuye Sibyo Isinya Sibyo"
-
-#: src/applications/advertising/advertising.c:175
-#, fuzzy
-msgid ""
-"hello message received invalid (expiration time over limit). Dropping.\n"
-msgstr "Ubutumwa BYAKIRIWE Sibyo Igihe KURI"
-
-#: src/applications/advertising/advertising.c:182
-#, c-format
-msgid "hello transport verification failed (%u).\n"
-msgstr ""
-
-#: src/applications/advertising/advertising.c:192
-#, fuzzy, c-format
-msgid "hello advertisement for protocol %d received.\n"
-msgstr "kugirango Porotokole BYAKIRIWE"
-
-#: src/applications/advertising/advertising.c:325
-#, fuzzy
-msgid "Could not send hellos+PING, ping buffer full.\n"
-msgstr "OYA Kohereza"
-
-#: src/applications/advertising/advertising.c:338
-#, fuzzy, c-format
-msgid "`%s' failed (%d, %u). Will not send PING.\n"
-msgstr "`%s'Byanze kugirango Umuyoboro in amasogonda"
-
-#: src/applications/advertising/advertising.c:495
-#, fuzzy, c-format
-msgid "Advertising my transport %d to selected peers.\n"
-msgstr "Kuri Byahiswemo"
-
-#: src/applications/advertising/advertising.c:502
-#, fuzzy
-msgid ""
-"Announcing ourselves pointless: no other peers are known to us so far.\n"
-msgstr "Oya Ikindi Kuri RW"
-
-#: src/applications/advertising/advertising.c:608
-#, fuzzy, c-format
-msgid "Removing hello from peer `%s' (expired %ds ago).\n"
-msgstr "Bivuye Byarengeje igihe"
-
-#: src/applications/advertising/advertising.c:788
-#, fuzzy
-msgid "# Peer advertisements received"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/advertising/advertising.c:789
-msgid "# Self advertisments transmitted"
-msgstr ""
-
-#: src/applications/advertising/advertising.c:790
-msgid "# Foreign advertisements forwarded"
-msgstr ""
-
-#: src/applications/advertising/advertising.c:792
-#: src/applications/pingpong/pingpong.c:488
-msgid "# plaintext PING messages sent"
-msgstr ""
-
-#: src/applications/advertising/advertising.c:813
-msgid ""
-"ensures that this peer is known by other peers and discovers other peers"
-msgstr ""
-
-#: src/applications/traffic/traffic.c:445
-#, fuzzy, c-format
-msgid "# bytes transmitted of type %d"
-msgstr "#Bayite Bya Ubwoko"
-
-#: src/applications/traffic/traffic.c:465
-#, fuzzy, c-format
-msgid "# bytes received of type %d"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/applications/traffic/traffic.c:609
-msgid "tracks bandwidth utilization by gnunetd"
-msgstr ""
-
-#: src/applications/pingpong/pingpong.c:123
-#: src/applications/pingpong/pingpong.c:191
-#: src/applications/pingpong/pingpong.c:244
-#: src/applications/pingpong/pingpong.c:313
-#, fuzzy, c-format
-msgid "Received malformed `%s' message. Dropping.\n"
-msgstr "Ubutumwa"
-
-#: src/applications/pingpong/pingpong.c:135
-#, fuzzy
-msgid "Received ping for another peer. Dropping.\n"
-msgstr "kugirango"
-
-#: src/applications/pingpong/pingpong.c:201
-#, fuzzy
-msgid "Received PING not destined for us!\n"
-msgstr "OYA kugirango RW"
-
-#: src/applications/pingpong/pingpong.c:286
-#: src/applications/pingpong/pingpong.c:349
-msgid ""
-"Could not match PONG against any PING. Try increasing MAX_PING_PONG "
-"constant.\n"
-msgstr ""
-
-#: src/applications/pingpong/pingpong.c:390
-msgid "Cannot create PING, table full. Try increasing MAX_PING_PONG.\n"
-msgstr ""
-
-#: src/applications/pingpong/pingpong.c:478
-#, fuzzy
-msgid "# encrypted PONG messages received"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/pingpong/pingpong.c:480
-#, fuzzy
-msgid "# plaintext PONG messages received"
-msgstr "#Umukiriya Ibibazo BYAKIRIWE"
-
-#: src/applications/pingpong/pingpong.c:482
-#, fuzzy
-msgid "# encrypted PING messages received"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/pingpong/pingpong.c:484
-#, fuzzy
-msgid "# PING messages created"
+msgid "# messages defragmented"
 msgstr "#Ubutumwa"
 
-#: src/applications/pingpong/pingpong.c:486
+#: src/applications/fragmentation/fragmentation.c:567
 #, fuzzy
-msgid "# encrypted PONG messages sent"
-msgstr "#Bishunzwe: Bayite Yoherejwe:"
+msgid "# messages fragmented"
+msgstr "#Ubutumwa"
 
-#: src/applications/pingpong/pingpong.c:490
-#, fuzzy
-msgid "# encrypted PING messages sent"
-msgstr "#Bishunzwe: Bayite Yoherejwe:"
-
-#: src/applications/pingpong/pingpong.c:500
-#, c-format
-msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
+#: src/applications/fragmentation/fragmentation.c:568
+msgid "# fragments discarded"
 msgstr ""
 
-#: src/applications/stats/statistics.c:206
-#, fuzzy, c-format
-msgid "% of allowed network load (up)"
-msgstr "%Bya urusobe Ibirimo Hejuru"
-
-#: src/applications/stats/statistics.c:208
-#, fuzzy, c-format
-msgid "% of allowed network load (down)"
-msgstr "%Bya urusobe Ibirimo Hasi"
-
-#: src/applications/stats/statistics.c:210
-#, fuzzy, c-format
-msgid "% of allowed cpu load"
-msgstr "%Bya CPU Ibirimo"
-
-#: src/applications/stats/statistics.c:214
-#, fuzzy
-msgid "# bytes of noise received"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/applications/stats/statistics.c:364
+#: src/applications/fragmentation/fragmentation.c:580
 #, c-format
-msgid "`%s' registering client handlers %d %d %d and p2p handler %d\n"
+msgid "`%s' registering handler %d\n"
 msgstr ""
 
-#: src/applications/stats/statistics.c:385
-#, fuzzy
-msgid "keeps statistics about gnunetd's operation"
-msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
-
-#: src/applications/stats/clientapi.c:180
-#, fuzzy
-msgid "Uptime (seconds)"
-msgstr "amasogonda"
-
-#: src/applications/stats/gnunet-stats.c:90
+#: src/applications/stats/gnunet-stats.c:93
 #: src/applications/vpn/gnunet-vpn.c:52
 #, fuzzy
 msgid "Print statistics about GNUnet operations."
 msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
 
-#: src/applications/stats/gnunet-stats.c:94
+#: src/applications/stats/gnunet-stats.c:97
 #, fuzzy
 msgid "prints supported protocol messages"
 msgstr "Porotokole Ubutumwa"
 
-#: src/applications/stats/gnunet-stats.c:149
+#: src/applications/stats/gnunet-stats.c:133
+#: src/applications/tbench/gnunet-tbench.c:128
+#: src/applications/tracekit/gnunet-tracekit.c:313
+#: src/applications/template/gnunet-template.c:94
+#: src/applications/vpn/gnunet-vpn.c:145
+#, fuzzy, c-format
+msgid "Error establishing connection with gnunetd.\n"
+msgstr "Zimya Iyemeza Bivuye"
+
+#: src/applications/stats/gnunet-stats.c:152
 #, fuzzy, c-format
 msgid "Error reading information from gnunetd.\n"
 msgstr "Zimya Iyemeza Bivuye"
 
-#: src/applications/tracekit/gnunet-tracekit.c:48
+#: src/applications/stats/clientapi.c:327
 #, fuzzy
-msgid "probe network to the given DEPTH"
-msgstr "urusobe Kuri i"
+msgid "Uptime (seconds)"
+msgstr "amasogonda"
 
-#: src/applications/tracekit/gnunet-tracekit.c:51
+#: src/applications/stats/statistics.c:221
+#, fuzzy, c-format
+msgid "% of allowed network load (up)"
+msgstr "%Bya urusobe Ibirimo Hejuru"
+
+#: src/applications/stats/statistics.c:223
+#, fuzzy, c-format
+msgid "% of allowed network load (down)"
+msgstr "%Bya urusobe Ibirimo Hasi"
+
+#: src/applications/stats/statistics.c:225
+#, fuzzy, c-format
+msgid "% of allowed cpu load"
+msgstr "%Bya CPU Ibirimo"
+
+#: src/applications/stats/statistics.c:227
+#, fuzzy, c-format
+msgid "% of allowed io load"
+msgstr "%Bya CPU Ibirimo"
+
+#: src/applications/stats/statistics.c:231
 #, fuzzy
-msgid ""
-"specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
+msgid "# bytes of noise received"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/stats/statistics.c:384
+#, c-format
+msgid "`%s' registering client handlers %d %d %d and p2p handler %d\n"
 msgstr ""
-"Ibisohoka Imiterere 0 kugirango Ibisohoka 1. kugirango Akadomo 2. kugirango"
 
-#: src/applications/tracekit/gnunet-tracekit.c:53
+#: src/applications/stats/statistics.c:405
+#, fuzzy
+msgid "keeps statistics about gnunetd's operation"
+msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
+
+#: src/applications/stats/sqstats.c:150
+msgid "# Any-Blocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:152
+msgid "# DBlocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:154
+msgid "# SBlocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:156
+msgid "# KBlocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:158
+msgid "# NBlocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:160
+msgid "# KNBlocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:162
+msgid "# OnDemand-Blocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:164
+msgid "# Unknown-Blocks"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:166
+msgid "# expired"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:168
+msgid "# expire in 1h"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:170
+msgid "# expire in 24h"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:172
+msgid "# expire in 1 week"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:174
+msgid "# expire in 1 month"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:176
+msgid "# zero priority"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:178
+msgid "# priority one"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:180
+msgid "# priority larger than one"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:182
+msgid "# no anonymity"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:184
+msgid "# anonymity one"
+msgstr ""
+
+#: src/applications/stats/sqstats.c:186
+msgid "# anonymity larger than one"
+msgstr ""
+
 #: src/applications/tbench/gnunet-tbench.c:64
+#: src/applications/tracekit/gnunet-tracekit.c:53
 #, fuzzy
 msgid "Start GNUnet transport benchmarking tool."
 msgstr "Gutangira"
-
-#: src/applications/tracekit/gnunet-tracekit.c:57
-#, fuzzy
-msgid "use PRIO for the priority of the trace request"
-msgstr "Gukoresha kugirango i By'ibanze Bya i Kubaza..."
-
-#: src/applications/tracekit/gnunet-tracekit.c:61
-#, fuzzy
-msgid "wait DELAY seconds for replies"
-msgstr "Tegereza amasogonda kugirango"
-
-#: src/applications/tracekit/gnunet-tracekit.c:115
-#, fuzzy, c-format
-msgid ""
-"Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for "
-"vcg.\n"
-msgstr "Sibyo 0 kugirango Ukoresha: 1. kugirango Akadomo 2. kugirango"
-
-#: src/applications/tracekit/gnunet-tracekit.c:162
-#, fuzzy, c-format
-msgid "`%s' is not connected to any peer.\n"
-msgstr "`%s'ni OYA Kuri"
-
-#: src/applications/tracekit/gnunet-tracekit.c:196
-#, fuzzy, c-format
-msgid "`%s' connected to `%s'.\n"
-msgstr "`%s'Kuri"
-
-#: src/applications/tracekit/gnunet-tracekit.c:211
-#, fuzzy, c-format
-msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
-msgstr "Sibyo 0 kugirango Ukoresha: 1. kugirango"
-
-#: src/applications/tracekit/gnunet-tracekit.c:234
-#, fuzzy, c-format
-msgid "Peer `%s' did not report back.\n"
-msgstr "OYA Icyegeranyo Inyuma"
-
-#: src/applications/tracekit/gnunet-tracekit.c:342
-#, fuzzy
-msgid "Could not send request to gnunetd.\n"
-msgstr "OYA Kohereza Kubaza... Kuri"
-
-#: src/applications/tracekit/tracekit.c:68
-#: src/applications/tracekit/tracekit.c:201
-#, fuzzy, c-format
-msgid "Received invalid `%s' message from `%s'.\n"
-msgstr "Sibyo Ubutumwa Bivuye"
-
-#: src/applications/tracekit/tracekit.c:263
-#, fuzzy
-msgid "TRACEKIT: routing table full, trace request dropped\n"
-msgstr "imbonerahamwe# Kubaza..."
-
-#: src/applications/tracekit/tracekit.c:354
-#, fuzzy, c-format
-msgid "TRACEKIT: received invalid `%s' message\n"
-msgstr "BYAKIRIWE Sibyo"
-
-#: src/applications/tracekit/tracekit.c:461
-#, fuzzy
-msgid "allows mapping of the network topology"
-msgstr "urusobe"
-
-#: src/applications/tbench/tbenchtest_udp.c:50
-#: src/applications/tbench/tbenchtest.c:51
-#, c-format
-msgid "Using %u messages of size %u for %u times.\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest_udp.c:77
-#: src/applications/tbench/tbenchtest.c:78
-#, c-format
-msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest_udp.c:82
-#: src/applications/tbench/tbenchtest.c:83
-#, c-format
-msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest_udp.c:88
-#: src/applications/tbench/tbenchtest.c:89
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Failed to receive reply from gnunetd.\n"
-msgstr "Kuri Akira Kuri Ubutumwa Bivuye"
-
-#: src/applications/tbench/tbenchtest_udp.c:211
-#: src/applications/tbench/tbenchtest.c:212
-#, c-format
-msgid "Running benchmark...\n"
-msgstr ""
-
-#: src/applications/tbench/tbench.c:420
-msgid "allows profiling of direct peer-to-peer connections"
-msgstr ""
 
 #: src/applications/tbench/gnunet-tbench.c:66
 #, fuzzy
@@ -2198,23 +1567,1084 @@ msgid ""
 "Did not receive the message from gnunetd. Is gnunetd running?\n"
 msgstr "OYA Akira i Ubutumwa Bivuye"
 
-#: src/applications/fragmentation/fragmentation.c:566
-#, fuzzy
-msgid "# messages defragmented"
-msgstr "#Ubutumwa"
-
-#: src/applications/fragmentation/fragmentation.c:567
-#, fuzzy
-msgid "# messages fragmented"
-msgstr "#Ubutumwa"
-
-#: src/applications/fragmentation/fragmentation.c:568
-msgid "# fragments discarded"
+#: src/applications/tbench/tbenchtest.c:51
+#: src/applications/tbench/tbenchtest_udp.c:50
+#, c-format
+msgid "Using %u messages of size %u for %u times.\n"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:580
+#: src/applications/tbench/tbenchtest.c:78
+#: src/applications/tbench/tbenchtest_udp.c:77
 #, c-format
-msgid "`%s' registering handler %d\n"
+msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
+msgstr ""
+
+#: src/applications/tbench/tbenchtest.c:83
+#: src/applications/tbench/tbenchtest_udp.c:82
+#, c-format
+msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
+msgstr ""
+
+#: src/applications/tbench/tbenchtest.c:89
+#: src/applications/tbench/tbenchtest_udp.c:88
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Failed to receive reply from gnunetd.\n"
+msgstr "Kuri Akira Kuri Ubutumwa Bivuye"
+
+#: src/applications/tbench/tbenchtest.c:212
+#: src/applications/tbench/tbenchtest_udp.c:211
+#, c-format
+msgid "Running benchmark...\n"
+msgstr ""
+
+#: src/applications/tbench/tbench.c:421
+msgid "allows profiling of direct peer-to-peer connections"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:48
+#, fuzzy
+msgid "probe network to the given DEPTH"
+msgstr "urusobe Kuri i"
+
+#: src/applications/tracekit/gnunet-tracekit.c:51
+#, fuzzy
+msgid ""
+"specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
+msgstr ""
+"Ibisohoka Imiterere 0 kugirango Ibisohoka 1. kugirango Akadomo 2. kugirango"
+
+#: src/applications/tracekit/gnunet-tracekit.c:57
+#, fuzzy
+msgid "use PRIO for the priority of the trace request"
+msgstr "Gukoresha kugirango i By'ibanze Bya i Kubaza..."
+
+#: src/applications/tracekit/gnunet-tracekit.c:61
+#, fuzzy
+msgid "wait DELAY seconds for replies"
+msgstr "Tegereza amasogonda kugirango"
+
+#: src/applications/tracekit/gnunet-tracekit.c:115
+#, fuzzy, c-format
+msgid ""
+"Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for "
+"vcg.\n"
+msgstr "Sibyo 0 kugirango Ukoresha: 1. kugirango Akadomo 2. kugirango"
+
+#: src/applications/tracekit/gnunet-tracekit.c:163
+#, fuzzy, c-format
+msgid "`%s' is not connected to any peer.\n"
+msgstr "`%s'ni OYA Kuri"
+
+#: src/applications/tracekit/gnunet-tracekit.c:197
+#, fuzzy, c-format
+msgid "`%s' connected to `%s'.\n"
+msgstr "`%s'Kuri"
+
+#: src/applications/tracekit/gnunet-tracekit.c:212
+#, fuzzy, c-format
+msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
+msgstr "Sibyo 0 kugirango Ukoresha: 1. kugirango"
+
+#: src/applications/tracekit/gnunet-tracekit.c:235
+#, fuzzy, c-format
+msgid "Peer `%s' did not report back.\n"
+msgstr "OYA Icyegeranyo Inyuma"
+
+#: src/applications/tracekit/gnunet-tracekit.c:343
+#, fuzzy
+msgid "Could not send request to gnunetd.\n"
+msgstr "OYA Kohereza Kubaza... Kuri"
+
+#: src/applications/tracekit/tracekit.c:68
+#: src/applications/tracekit/tracekit.c:201
+#, fuzzy, c-format
+msgid "Received invalid `%s' message from `%s'.\n"
+msgstr "Sibyo Ubutumwa Bivuye"
+
+#: src/applications/tracekit/tracekit.c:263
+#, fuzzy
+msgid "TRACEKIT: routing table full, trace request dropped\n"
+msgstr "imbonerahamwe# Kubaza..."
+
+#: src/applications/tracekit/tracekit.c:354
+#, fuzzy, c-format
+msgid "TRACEKIT: received invalid `%s' message\n"
+msgstr "BYAKIRIWE Sibyo"
+
+#: src/applications/tracekit/tracekit.c:461
+#, fuzzy
+msgid "allows mapping of the network topology"
+msgstr "urusobe"
+
+#: src/applications/gap/gap.c:1662
+#, fuzzy, c-format
+msgid "GAP received invalid content from `%s'\n"
+msgstr "Sibyo Ubutumwa Bivuye"
+
+#: src/applications/gap/gap.c:1663
+msgid "myself"
+msgstr ""
+
+#: src/applications/gap/gap.c:1837
+msgid ""
+"Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
+msgstr ""
+
+#: src/applications/gap/gap.c:1849 src/applications/fs/module/anonymity.c:67
+#, fuzzy
+msgid "Failed to get traffic stats.\n"
+msgstr "Kuri Ikibazo# Ibyerekeye"
+
+#: src/applications/gap/gap.c:1856 src/applications/gap/gap.c:1862
+#: src/applications/gap/gap.c:1869
+msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
+msgstr ""
+
+#: src/applications/gap/gap.c:2152
+#, fuzzy
+msgid "# gap requests total received"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/gap/gap.c:2153
+msgid "# gap requests policy: immediate drop"
+msgstr ""
+
+#: src/applications/gap/gap.c:2154
+msgid "# gap requests policy: not routed"
+msgstr ""
+
+#: src/applications/gap/gap.c:2155
+msgid "# gap requests policy: not answered"
+msgstr ""
+
+#: src/applications/gap/gap.c:2156
+msgid "# gap requests processed: attempted add to RT"
+msgstr ""
+
+#: src/applications/gap/gap.c:2157
+msgid "# gap requests processed: local result"
+msgstr ""
+
+#: src/applications/gap/gap.c:2158
+msgid "# gap routing successes (total)"
+msgstr ""
+
+#: src/applications/gap/gap.c:2159
+msgid "# gap requests dropped: collision in RT"
+msgstr ""
+
+#: src/applications/gap/gap.c:2160
+msgid "# gap requests forwarded (counting each peer)"
+msgstr ""
+
+#: src/applications/gap/gap.c:2161
+msgid "# gap duplicate requests (pending)"
+msgstr ""
+
+#: src/applications/gap/gap.c:2162
+#, fuzzy
+msgid "# gap duplicate requests that were re-tried"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/gap/gap.c:2163
+msgid "# gap re-try ttl difference (cummulative)"
+msgstr ""
+
+#: src/applications/gap/gap.c:2164
+msgid "# gap reply duplicates"
+msgstr ""
+
+#: src/applications/gap/gap.c:2165
+#, fuzzy
+msgid "# gap spurious replies"
+msgstr "#hejuru Ibibazo BYAKIRIWE"
+
+#: src/applications/gap/gap.c:2166
+msgid "# gap routing slots currently in use"
+msgstr ""
+
+#: src/applications/gap/gap.c:2167
+msgid "# gap memory used for tracking seen content"
+msgstr ""
+
+#: src/applications/gap/gap.c:2168
+msgid "# gap memory used for tracking routing destinations"
+msgstr ""
+
+#: src/applications/gap/gap.c:2169
+msgid "# gap rewards pending"
+msgstr ""
+
+#: src/applications/gap/gap.c:2170
+#, fuzzy
+msgid "# gap response weights"
+msgstr "#hejuru Ibibazo BYAKIRIWE"
+
+#: src/applications/gap/gap.c:2186
+msgid ""
+"Traffic service failed to load; gap cannot ensure cover-traffic "
+"availability.\n"
+msgstr ""
+
+#: src/applications/gap/gap.c:2214
+#, c-format
+msgid "`%s' registering handlers %d %d\n"
+msgstr ""
+
+#: src/applications/gap/pid_table.c:161
+msgid "# distinct interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/gap/pid_table.c:163
+msgid "# total RC of interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/getoption/getoption.c:78
+#, c-format
+msgid "`%s' registering client handler %d\n"
+msgstr ""
+
+#: src/applications/getoption/getoption.c:88
+#, fuzzy
+msgid "allows clients to determine gnunetd's configuration"
+msgstr "Porogaramu in Iboneza"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:71
+#: src/applications/fs/tools/gnunet-insert.c:273
+#: src/applications/fs/tools/gnunet-search.c:140
+#: src/applications/fs/tools/gnunet-download.c:67
+#, fuzzy
+msgid "set the desired LEVEL of sender-anonymity"
+msgstr "Gushyiraho i Bya Mwakirizi"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:74
+#, fuzzy
+msgid "automate creation of a namespace by starting a collection"
+msgstr "Bya a ku a"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:78
+#, fuzzy
+msgid "create a new pseudonym under the given NICKNAME"
+msgstr "Gusiba i Na: i"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:81
+#, fuzzy
+msgid "delete the pseudonym with the given NICKNAME"
+msgstr "Gusiba i Na: i"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:84
+#, fuzzy
+msgid "end automated building of a namespace (ends collection)"
+msgstr "Impera Bya a"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:86
+#, fuzzy
+msgid "Create new pseudonyms, delete pseudonyms or list existing pseudonyms."
+msgstr "Gishya Gusiba Cyangwa Urutonde"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:89
+#, fuzzy
+msgid ""
+"use the given keyword to advertise the namespace (use when creating a new "
+"pseudonym)"
+msgstr "Gukoresha i Ijambo- banze Kuri i Gukoresha Ryari: a Gishya"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:92
+#, fuzzy
+msgid "specify metadata describing the namespace or collection"
+msgstr "Impera Bya a"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:95
+#, fuzzy
+msgid ""
+"do not generate an advertisement for this namespace (use when creating a new "
+"pseudonym)"
+msgstr "OYA kugirango iyi Gukoresha Ryari: a Gishya"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:98
+#, fuzzy
+msgid "do not list the pseudonyms from the pseudonym database"
+msgstr "OYA Urutonde i Bivuye i Ububikoshingiro"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:101
+#, fuzzy
+msgid ""
+"specify IDENTIFIER to be the address of the entrypoint to content in the "
+"namespace (use when creating a new pseudonym)"
+msgstr "Kuri i Aderesi Bya i Kuri Ibikubiyemo in i Gukoresha Ryari: a Gishya"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:104
+msgid "set the rating of a namespace"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:138
+#, fuzzy, c-format
+msgid "Namespace `%s' has rating %d.\n"
+msgstr "Igisubizo ni i"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:142
+#, fuzzy, c-format
+msgid "Namespace `%s' (%s) has rating %d.\n"
+msgstr "Igisubizo ni i"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:178
+#, fuzzy, c-format
+msgid "\tRating (after update): %d\n"
+msgstr "Nyuma"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:212
+#, fuzzy, c-format
+msgid "Collection stopped.\n"
+msgstr "Kyahagariswe"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:214
+#, c-format
+msgid "Failed to stop collection (not active?).\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:222
+#, fuzzy, c-format
+msgid "Pseudonym `%s' deleted.\n"
+msgstr "Cyasibwe"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:226
+#, fuzzy, c-format
+msgid "Error deleting pseudonym `%s' (does not exist?).\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:243
+#, c-format
+msgid "Started collection `%s'.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:246
+#, fuzzy, c-format
+msgid "Failed to start collection.\n"
+msgstr "Kuri Kwihuza Kuri"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:286
+#, fuzzy, c-format
+msgid "Could not create namespace `%s' (exists?).\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:291
+#, c-format
+msgid "Namespace `%s' created (root: %s).\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:304
+#, fuzzy, c-format
+msgid "You must specify a name for the collection (`%s' option).\n"
+msgstr "a Izina: kugirango i IDOSIYE in Icyiciro"
+
+#: src/applications/fs/tools/gnunet-pseudonym.c:315
+#, fuzzy, c-format
+msgid "Could not access namespace information.\n"
+msgstr "OYA bushyinguro"
+
+#: src/applications/fs/tools/gnunet-directory.c:83
+#, fuzzy, c-format
+msgid "==> Directory `%s':\n"
+msgstr "==>ububiko"
+
+#: src/applications/fs/tools/gnunet-directory.c:90
+#, c-format
+msgid "=\tError reading directory.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-directory.c:125
+#, fuzzy, c-format
+msgid "File format error (not a GNUnet directory?)\n"
+msgstr "IDOSIYE Cyangwa Sibyo Imiterere kugirango bushyinguro"
+
+#: src/applications/fs/tools/gnunet-directory.c:127
+#, fuzzy, c-format
+msgid "%d files found in directory.\n"
+msgstr "IDOSIYE Kuri bushyinguro"
+
+#: src/applications/fs/tools/gnunet-directory.c:142
+#, fuzzy
+msgid "Perform directory related operations."
+msgstr "bushyinguro Ibikorwa:"
+
+#: src/applications/fs/tools/gnunet-directory.c:144
+#, fuzzy
+msgid "remove all entries from the directory database and stop tracking URIs"
+msgstr "Gukuraho... Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
+
+#: src/applications/fs/tools/gnunet-directory.c:148
+#, fuzzy
+msgid "list entries from the directory database"
+msgstr "Urutonde Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
+
+#: src/applications/fs/tools/gnunet-directory.c:151
+#, fuzzy
+msgid "start tracking entries for the directory database"
+msgstr "Urutonde Byose Ibyinjijwe Bivuye i bushyinguro Ububikoshingiro"
+
+#: src/applications/fs/tools/gnunet-directory.c:175
+#, fuzzy, c-format
+msgid "Listed %d matching entries.\n"
+msgstr "Ibyinjijwe"
+
+#: src/applications/fs/tools/gnunet-insert.c:136
+#, fuzzy, c-format
+msgid "Created entry `%s' in namespace `%s'\n"
+msgstr "Ikiranga"
+
+#: src/applications/fs/tools/gnunet-insert.c:141
+#, fuzzy, c-format
+msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/applications/fs/tools/gnunet-insert.c:161
+#, fuzzy, c-format
+msgid "Keywords for file `%s':\n"
+msgstr "kugirango IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-insert.c:170
+#, fuzzy
+msgid "filename"
+msgstr "Izina ry'idosiye"
+
+# framework/source\classes\fltdlg.src:DLG_FILTER_SELECT.FT_DLG_MIMETYPE.text
+#: src/applications/fs/tools/gnunet-insert.c:173
+#, fuzzy
+msgid "mimetype"
+msgstr "Ubwoko bwa MIME:"
+
+#: src/applications/fs/tools/gnunet-insert.c:212
+#, c-format
+msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:224
+#, fuzzy, c-format
+msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
+msgstr "ku Inyuma Bya Bayite"
+
+#: src/applications/fs/tools/gnunet-insert.c:235
+#, fuzzy, c-format
+msgid "File `%s' has URI: %s\n"
+msgstr "Idosiye Nka"
+
+#: src/applications/fs/tools/gnunet-insert.c:246
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Upload aborted.\n"
+msgstr "/Byahiswemo"
+
+#: src/applications/fs/tools/gnunet-insert.c:251
+#, c-format
+msgid ""
+"\n"
+"Error uploading file: %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:260
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Unexpected event: %d\n"
+msgstr "Ibikubiyemo Ubwoko"
+
+#: src/applications/fs/tools/gnunet-insert.c:277
+#, fuzzy
+msgid ""
+"even if gnunetd is running on the local machine, force the creation of a "
+"copy instead of making a link to the GNUnet share directory"
+msgstr "NIBA ni ku i Kurema a Ihuza Bya a Gukoporora in i bushyinguro"
+
+#: src/applications/fs/tools/gnunet-insert.c:281
+msgid "disable adding the creation time to the metadata of the uploaded file"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:284
+msgid ""
+"do not use libextractor to add additional references to directory entries "
+"and/or the published file"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:287
+#, fuzzy
+msgid ""
+"print list of extracted keywords that would be used, but do not perform "
+"upload"
+msgstr ""
+"Gucapa Urutonde Bya Amagambo fatizo OYA Iyinjizamo Cyangwa gushyiraho "
+"umugereka"
+
+#: src/applications/fs/tools/gnunet-insert.c:289
+#, fuzzy
+msgid "Make files available to GNUnet for sharing."
+msgstr "Idosiye Bihari Kuri kugirango Bisangiwe"
+
+#: src/applications/fs/tools/gnunet-insert.c:292
+#, fuzzy
+msgid ""
+"set interval for availability of updates to SECONDS (for namespace "
+"insertions only)"
+msgstr "Gushyiraho Intera kugirango Ukuboneka Bya Kuri kugirango Amayongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:296
+#, fuzzy
+msgid ""
+"add an additional keyword for the top-level file or directory (this option "
+"can be specified multiple times)"
+msgstr ""
+"Kongeramo Ijambo- banze kugirango i Hejuru: urwego IDOSIYE Cyangwa "
+"bushyinguro iyi Ihitamo Igikubo Times"
+
+#: src/applications/fs/tools/gnunet-insert.c:300
+#, fuzzy
+msgid ""
+"add an additional keyword for all files and directories (this option can be "
+"specified multiple times)"
+msgstr ""
+"Kongeramo Ijambo- banze kugirango Byose Idosiye Na ububiko bw'amaderese iyi "
+"Ihitamo Igikubo Times"
+
+#: src/applications/fs/tools/gnunet-insert.c:305
+msgid "set the meta-data for the given TYPE to the given VALUE"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:308
+#, fuzzy
+msgid ""
+"do not index, perform full insertion (stores entire file in encrypted form "
+"in GNUnet database)"
+msgstr ""
+"OYA Umubarendanga Iyinjizamo IDOSIYE in Bishunzwe: Ifishi in Ububikoshingiro"
+
+#: src/applications/fs/tools/gnunet-insert.c:312
+#, fuzzy
+msgid ""
+"specify ID of an updated version to be published in the future (for "
+"namespace insertions only)"
+msgstr "Bya Verisiyo Kuri in i kugirango Amayongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:316
+#, fuzzy
+msgid "specify the priority of the content"
+msgstr "i By'ibanze Bya i Ibikubiyemo"
+
+#: src/applications/fs/tools/gnunet-insert.c:319
+#, fuzzy
+msgid "publish the files under the pseudonym NAME (place file into namespace)"
+msgstr "Tangaza i Idosiye i IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-insert.c:322
+#, fuzzy
+msgid ""
+"specifies this as an aperiodic but updated publication (for namespace "
+"insertions only)"
+msgstr "iyi Nka kugirango Amayongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:326
+#, fuzzy
+msgid ""
+"set the ID of this version of the publication (for namespace insertions only)"
+msgstr "Gushyiraho i Bya iyi Verisiyo Bya i kugirango Amayongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:330
+#, fuzzy
+msgid "specify creation time for SBlock (see man-page for format)"
+msgstr "Igihe kugirango Ipaji kugirango Imiterere"
+
+#: src/applications/fs/tools/gnunet-insert.c:333
+#, fuzzy
+msgid "ID of the previous version of the content (for namespace update only)"
+msgstr ""
+"Izina ry'idosiye: Bya i Bya a Ibanjirije Verisiyo Bya i Ibikubiyemo "
+"kugirango Amayongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:368
+#, fuzzy, c-format
+msgid "You must specify one and only one filename for insertion.\n"
+msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
+
+#: src/applications/fs/tools/gnunet-insert.c:427
+#, fuzzy, c-format
+msgid "Could not access namespace `%s' (does not exist?).\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/applications/fs/tools/gnunet-insert.c:447
+#, fuzzy, c-format
+msgid "Parsing time failed. Use `%s' format.\n"
+msgstr "Igihe Byanze Imiterere"
+
+#: src/applications/fs/tools/gnunet-insert.c:456
+#: src/applications/fs/tools/gnunet-insert.c:462
+#: src/applications/fs/tools/gnunet-insert.c:468
+#: src/applications/fs/tools/gnunet-insert.c:474
+#: src/applications/fs/tools/gnunet-insert.c:480
+#, fuzzy, c-format
+msgid "Option `%s' makes no sense without option `%s'.\n"
+msgstr "Oya Ihitamo"
+
+#: src/applications/fs/tools/gnunet-search.c:143
+#, fuzzy
+msgid "Search GNUnet for files."
+msgstr "kugirango Idosiye"
+
+#: src/applications/fs/tools/gnunet-search.c:147
+#, fuzzy
+msgid "exit after receiving LIMIT results"
+msgstr "Gusohoka Nyuma Ibisubizo ku"
+
+#: src/applications/fs/tools/gnunet-search.c:150
+#, fuzzy
+msgid "write encountered (decrypted) search results to FILENAME"
+msgstr "Kwandika Gushaka Ibisubizo ku Kuri i IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-search.c:153
+#, fuzzy
+msgid "wait DELAY seconds for search results before aborting"
+msgstr "Tegereza amasogonda kugirango Gushaka Ibisubizo ku Mbere"
+
+#: src/applications/fs/tools/gnunet-search.c:191
+#, c-format
+msgid "Error converting arguments to URI!\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:71
+msgid ""
+"download a GNUnet directory that has already been downloaded.  Requires that "
+"a filename of an existing file is specified instead of the URI.  The "
+"download will only download the top-level files in the directory unless the "
+"`-R' option is also specified."
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:73
+#, fuzzy
+msgid "Download files from GNUnet."
+msgstr "Idosiye Bivuye"
+
+#: src/applications/fs/tools/gnunet-download.c:77
+#, fuzzy
+msgid "write the file to FILENAME"
+msgstr "Kwandika i IDOSIYE Kuri"
+
+#: src/applications/fs/tools/gnunet-download.c:80
+#, fuzzy
+msgid "download a GNUnet directory recursively"
+msgstr "Gufungura a bushyinguro"
+
+#: src/applications/fs/tools/gnunet-download.c:98
+#, fuzzy, c-format
+msgid "Download of file `%s' at %16llu out of %16llu bytes (%8.3f KiB/s)\n"
+msgstr "ku Inyuma Bya Bayite"
+
+#: src/applications/fs/tools/gnunet-download.c:111
+#, fuzzy, c-format
+msgid "Download aborted.\n"
+msgstr "/Byahiswemo"
+
+#: src/applications/fs/tools/gnunet-download.c:117
+#, c-format
+msgid "Error downloading: %s\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:123
+#, fuzzy, c-format
+msgid "Download of file `%s' complete.  Speed was %8.3f KiB per second.\n"
+msgstr "ISEGONDA"
+
+#: src/applications/fs/tools/gnunet-download.c:171
+msgid "no name given"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:177
+#, fuzzy, c-format
+msgid "Starting download `%s'\n"
+msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
+
+#: src/applications/fs/tools/gnunet-download.c:225
+#, fuzzy
+msgid "Not enough arguments. You must specify a GNUnet file URI\n"
+msgstr "ingingo a"
+
+#: src/applications/fs/tools/gnunet-download.c:246
+#, fuzzy, c-format
+msgid "URI `%s' invalid for gnunet-download.\n"
+msgstr "Sibyo"
+
+#: src/applications/fs/tools/gnunet-download.c:276
+#, fuzzy, c-format
+msgid "No filename specified, using `%s' instead (for now).\n"
+msgstr "imbonerahamwe# Izina: ikoresha"
+
+#: src/applications/fs/tools/gnunet-download.c:320
+#, fuzzy, c-format
+msgid "Could not access gnunet-directory file `%s'\n"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-download.c:340
+#, fuzzy, c-format
+msgid "Downloading %d files from directory `%s'.\n"
+msgstr "Idosiye Bivuye"
+
+#: src/applications/fs/tools/gnunet-download.c:344
+#, fuzzy, c-format
+msgid "Did not find any files in directory `%s'\n"
+msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
+
+#: src/applications/fs/tools/gnunet-download.c:385
+#, fuzzy, c-format
+msgid "File stored as `%s'.\n"
+msgstr "Idosiye Nka"
+
+#: src/applications/fs/tools/gnunet-unindex.c:57
+#, c-format
+msgid ""
+"%16llu of %16llu bytes unindexed (estimating %llu seconds to "
+"completion)                "
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-unindex.c:68
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Unindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
+msgstr "ku Inyuma Bya Bayite"
+
+#: src/applications/fs/tools/gnunet-unindex.c:80
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Error unindexing file: %s\n"
+msgstr "Kuri IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-unindex.c:100
+#, fuzzy
+msgid "Unindex files."
+msgstr "#Idosiye"
+
+#: src/applications/fs/tools/gnunet-unindex.c:137
+#, fuzzy
+msgid "Not enough arguments. You must specify a filename.\n"
+msgstr "ingingo a"
+
+# uui/source\ids.src:RID_UUI_ERRHDL.(ERRCODE_UUI_IO_NOTAFILE_&_ERRCODE_RES_MASK).text
+#: src/applications/fs/tools/gnunet-unindex.c:164
+#, fuzzy, c-format
+msgid "`%s' failed.  Is `%s' a file?\n"
+msgstr "`%s'ntabwo ari idosiye"
+
+#: src/applications/fs/module/ondemand.c:336
+#, c-format
+msgid "Indexed file disappeared, deleting block for query `%s'\n"
+msgstr ""
+
+#: src/applications/fs/module/ondemand.c:434
+#, c-format
+msgid ""
+"Because the file `%s' has been unavailable for 3 days it got removed from "
+"your share.  Please unindex files before deleting them as the index now "
+"contains invalid references!\n"
+msgstr ""
+
+#: src/applications/fs/module/ondemand.c:461
+#, fuzzy, c-format
+msgid ""
+"Configuration file must specify directory for storage of FS data in section `"
+"%s' under `%s'.\n"
+msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
+
+#: src/applications/fs/module/ondemand.c:518
+msgid "Indexed content changed (does not match its hash).\n"
+msgstr ""
+
+#: src/applications/fs/module/ondemand.c:681
+#, c-format
+msgid ""
+"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
+msgstr ""
+
+#: src/applications/fs/module/fs.c:1139
+#, fuzzy, c-format
+msgid ""
+"You must specify a postive number for `%s' in the configuration in section `%"
+"s'.\n"
+msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
+
+#: src/applications/fs/module/fs.c:1180
+#, c-format
+msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
+msgstr ""
+
+#: src/applications/fs/module/fs.c:1220
+msgid "enables (anonymous) file-sharing"
+msgstr ""
+
+#: src/applications/fs/module/migration.c:242
+msgid "# blocks migrated"
+msgstr ""
+
+#: src/applications/fs/module/migration.c:244
+msgid "# on-demand block migration attempts"
+msgstr ""
+
+#: src/applications/fs/fsui/searchtest.c:162
+#: src/applications/fs/fsui/fsuitest.c:193
+#: src/applications/fs/fsui/downloadtest.c:312
+#: src/applications/fs/fsui/serializetest3.c:178
+#: src/applications/fs/fsui/serializetest2.c:402
+#: src/applications/fs/fsui/serializetest4.c:367
+#: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
+#: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
+msgid "AND"
+msgstr ""
+
+#: src/applications/fs/fsui/search.c:275
+#, fuzzy
+msgid "Error running search (no reason given)."
+msgstr "Kuri Kongeramo"
+
+#: src/applications/fs/fsui/download.c:267
+#, fuzzy
+msgid "Download failed (no reason given)"
+msgstr "OYA Gufungura IDOSIYE"
+
+#: src/applications/fs/fsui/unindex.c:109
+msgid "Unindexing failed (no reason given)"
+msgstr ""
+
+#: src/applications/fs/fsui/upload.c:246
+#, fuzzy
+msgid "Failed to create temporary directory."
+msgstr "Kuri Kurema"
+
+#: src/applications/fs/fsui/deserialize.c:753
+#, c-format
+msgid "FSUI state file `%s' had syntax error at offset %u.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/search.c:167
+msgid "CHK URI not allowed for search.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/search.c:226
+msgid "LOC URI not allowed for search.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/download.c:124
+#, fuzzy, c-format
+msgid "Could not unlink temporary file `%s': %s\n"
+msgstr "OYA Kwandika Kuri IDOSIYE"
+
+#: src/applications/fs/ecrs/download.c:255
+#, fuzzy, c-format
+msgid "Write(%d, %p, %d) failed: %s\n"
+msgstr "`%s'%sByanze"
+
+#: src/applications/fs/ecrs/download.c:1001
+#, fuzzy
+msgid ""
+"Decrypted content does not match key. This is either a bug or a maliciously "
+"inserted file. Download aborted.\n"
+msgstr "Ibikubiyemo OYA BIHUYE Urufunguzo ni a Cyangwa a Byinjijwemo IDOSIYE"
+
+#: src/applications/fs/ecrs/download.c:1186
+#, fuzzy, c-format
+msgid ""
+"Content `%s' seems to be not available on the network (tried %u times).\n"
+msgstr "Kuri OYA Bihari ku i urusobe"
+
+#: src/applications/fs/ecrs/upload.c:164
+#, fuzzy, c-format
+msgid "`%s' is not a file.\n"
+msgstr "`%s'ni OYA a Ibisanzwe IDOSIYE"
+
+#: src/applications/fs/ecrs/upload.c:174
+#, fuzzy, c-format
+msgid "Cannot get size of file `%s'"
+msgstr "Gufungura Iboneza IDOSIYE"
+
+#: src/applications/fs/ecrs/upload.c:183
+#, fuzzy
+msgid "Failed to connect to gnunetd."
+msgstr "Kuri Kwihuza Kuri"
+
+#: src/applications/fs/ecrs/upload.c:195
+#, fuzzy, c-format
+msgid "Cannot hash `%s'.\n"
+msgstr "Ibirimo"
+
+#: src/applications/fs/ecrs/upload.c:214
+#, fuzzy, c-format
+msgid "Initialization for indexing file `%s' failed.\n"
+msgstr "Bya in IDOSIYE"
+
+#: src/applications/fs/ecrs/upload.c:221
+#, fuzzy, c-format
+msgid "Indexing file `%s' failed. Trying to insert file...\n"
+msgstr "Itangira... Modire Byanze Umukiriya"
+
+#: src/applications/fs/ecrs/upload.c:310
+#, c-format
+msgid "Indexing data failed at position %i.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/meta.c:854
+#, fuzzy, c-format
+msgid "Renaming of file `%s' to `%s' failed: %s\n"
+msgstr "Bya IDOSIYE Kuri Byanze"
+
+#: src/applications/fs/ecrs/meta.c:862
+#, fuzzy, c-format
+msgid "Could not rename file `%s' to `%s': file exists\n"
+msgstr "OYA Guhindura izina IDOSIYE Kuri IDOSIYE"
+
+#: src/applications/fs/ecrs/namespace.c:154
+#, fuzzy, c-format
+msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
+msgstr "Kurema IDOSIYE"
+
+#: src/applications/fs/ecrs/namespace.c:339
+#: src/applications/fs/ecrs/namespace.c:420
+#: src/applications/fs/ecrs/namespace.c:575
+#, fuzzy, c-format
+msgid "File `%s' does not contain a pseudonym.\n"
+msgstr "Idosiye OYA a"
+
+#: src/applications/fs/ecrs/namespace.c:351
+#: src/applications/fs/ecrs/namespace.c:431
+#, fuzzy, c-format
+msgid "Format of pseudonym `%s' is invalid.\n"
+msgstr "Bya ni Sibyo Ijambobanga..."
+
+#: src/applications/fs/ecrs/namespace.c:589
+#: src/applications/fs/ecrs/namespace.c:600
+#, fuzzy, c-format
+msgid "Format of file `%s' is invalid.\n"
+msgstr "Bya ni Sibyo Ijambobanga..."
+
+#: src/applications/fs/ecrs/helper.c:67
+#, fuzzy
+msgid "No keywords specified!\n"
+msgstr "Amagambo fatizo"
+
+#: src/applications/fs/ecrs/parser.c:122
+#, c-format
+msgid ""
+"Unknown metadata type in metadata option `%s'.  Using metadata type "
+"`unknown' instead.\n"
+msgstr ""
+
+#: src/applications/fs/uritrack/file_info.c:131
+msgid "Collecting file identifiers disabled.\n"
+msgstr ""
+
+#: src/applications/fs/uritrack/file_info.c:373
+#, c-format
+msgid "Deleted corrupt URI database in `%s'."
+msgstr ""
+
+#: src/applications/fs/namespace/namespace_info.c:656
+msgid "Publication interval for periodic publication changed."
+msgstr ""
+
+#: src/applications/fs/namespace/namespace_info.c:677
+msgid ""
+"Publishing update for periodically updated content more than a week ahead of "
+"schedule.\n"
+msgstr ""
+
+#: src/applications/topology_f2f/topology.c:368
+#, fuzzy, c-format
+msgid "Failed to read friends list from `%s'\n"
+msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
+
+#: src/applications/topology_f2f/topology.c:386
+msgid "Syntax error in topology specification, skipping bytes.\n"
+msgstr ""
+
+#: src/applications/topology_f2f/topology.c:399
+#, fuzzy, c-format
+msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
+msgstr "Ikosa in Iboneza IDOSIYE ku Umurongo"
+
+#: src/applications/topology_f2f/topology.c:493
+msgid "maintains a friend-to-friend restricted topology"
+msgstr ""
+
+#: src/applications/template/template.c:62
+#, c-format
+msgid "`%s' registering client handler %d and %d\n"
+msgstr ""
+
+#: src/applications/template/gnunet-template.c:43
+#, fuzzy
+msgid "Template description."
+msgstr "/ku Isobanuramiterere"
+
+#: src/applications/bootstrap_http/http.c:100
+#, fuzzy, c-format
+msgid "Bootstrap data obtained from `%s' is invalid.\n"
+msgstr "Bya ni Sibyo Ijambobanga..."
+
+#: src/applications/bootstrap_http/http.c:173
+msgid "No hostlist URL specified in configuration, will not bootstrap.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:229
+#, fuzzy, c-format
+msgid "Trying to download hostlist from `%s'\n"
+msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
+
+#: src/applications/bootstrap_http/http.c:408
+#, fuzzy
+msgid "# hellos downloaded via http"
+msgstr "#KB Yimuwe ku"
+
+#: src/applications/traffic/traffic.c:445
+#, fuzzy, c-format
+msgid "# bytes transmitted of type %d"
+msgstr "#Bayite Bya Ubwoko"
+
+#: src/applications/traffic/traffic.c:465
+#, fuzzy, c-format
+msgid "# bytes received of type %d"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/applications/traffic/traffic.c:609
+msgid "tracks bandwidth utilization by gnunetd"
 msgstr ""
 
 #: src/applications/vpn/gnunet-vpn.c:56
@@ -2468,23 +2898,480 @@ msgstr ""
 msgid "RFC4193 Closing tunnel %d fd %d\n"
 msgstr ""
 
-#: src/applications/topology_f2f/topology.c:359
-#, fuzzy, c-format
-msgid "Failed to read friends list from `%s'\n"
-msgstr "Kuri Ibirimo Ububikoshingiro Isomero"
+#: src/applications/dstore/dstore.c:530
+#, fuzzy
+msgid "# bytes in dstore"
+msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/applications/topology_f2f/topology.c:376
-msgid "Syntax error in topology specification, skipping bytes.\n"
+#: src/server/gnunet-update.c:143
+#, fuzzy, c-format
+msgid "Updating data for module `%s'\n"
+msgstr "Ibyatanzwe kugirango Modire"
+
+#: src/server/gnunet-update.c:148
+#, fuzzy, c-format
+msgid "Failed to update data for module `%s'\n"
+msgstr "Kuri Kuvugurura Ibyatanzwe kugirango Modire"
+
+#: src/server/gnunet-update.c:196 src/server/gnunetd.c:124
+#, fuzzy
+msgid "Core initialization failed.\n"
+msgstr "OYA Iyinjizamo Byanze"
+
+#: src/server/gnunet-update.c:237
+#, fuzzy
+msgid "print a value from the configuration file to stdout"
+msgstr "Gucapa a Agaciro Bivuye i Iboneza IDOSIYE Kuri"
+
+#: src/server/gnunet-update.c:239
+#, fuzzy
+msgid "Updates GNUnet datastructures after version change."
+msgstr "Nyuma Verisiyo Guhindura>>"
+
+#: src/server/gnunet-update.c:243 src/server/gnunet-transport-check.c:382
+#, fuzzy
+msgid "run as user LOGIN"
+msgstr "Gukoresha Nka Ukoresha:"
+
+#: src/server/gnunet-update.c:246
+#, fuzzy
+msgid "run in client mode (for getting client configuration values)"
+msgstr "Gukoresha in Ukoresha: Ubwoko kugirango Ukoresha: Iboneza Uduciro"
+
+#: src/server/connection.c:1116
+#, fuzzy, c-format
+msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
+msgstr "`%s'Byahiswemo Inyuma Bya Ubutumwa"
+
+#: src/server/connection.c:1125
+#, fuzzy, c-format
+msgid "Message details: %u: length %d, priority: %d\n"
+msgstr "Birambuye Uburebure By'ibanze"
+
+#: src/server/connection.c:2583
+#, fuzzy, c-format
+msgid "Message from `%s' discarded: invalid format.\n"
+msgstr "Bivuye Sibyo Imiterere"
+
+#: src/server/connection.c:2661
+#, fuzzy, c-format
+msgid "Invalid sequence number %u <= %u, dropping message.\n"
+msgstr "Umubare Bya"
+
+#: src/server/connection.c:2678
+#, fuzzy
+msgid "Message received more than one day old. Dropped.\n"
+msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
+
+#: src/server/connection.c:3115
+#, fuzzy
+msgid "# outgoing messages dropped"
+msgstr "#Ubutumwa"
+
+#: src/server/connection.c:3119
+#, fuzzy
+msgid "# bytes of outgoing messages dropped"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/server/connection.c:3121
+msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/applications/topology_f2f/topology.c:389
+#: src/server/connection.c:3124
+#, fuzzy
+msgid "# bytes encrypted"
+msgstr "#Bayite"
+
+#: src/server/connection.c:3128
+#, fuzzy
+msgid "# bytes transmitted"
+msgstr "#Bayite Bya Ubwoko"
+
+#: src/server/connection.c:3132
+#, fuzzy
+msgid "# bytes received"
+msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#: src/server/connection.c:3135
+#, fuzzy
+msgid "# bytes decrypted"
+msgstr "#Bayite"
+
+#: src/server/connection.c:3137
+#, fuzzy
+msgid "# bytes noise sent"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/server/connection.c:3139
+msgid "# total advertised bytes per second received limit"
+msgstr ""
+
+#: src/server/connection.c:3141
+msgid "# total allowed bytes per second transmission limit"
+msgstr ""
+
+#: src/server/connection.c:3143
+#, fuzzy
+msgid "# total number of messages in send buffers"
+msgstr "Umubare Bya Ubutumwa Kuri Gukoresha"
+
+#: src/server/startup.c:207
 #, fuzzy, c-format
-msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
+msgid "Unable to obtain filesystem information for `%s': %u\n"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/server/startup.c:224
+#, c-format
+msgid ""
+"Filesystem `%s' of partition `%s' is unknown. Please contact gnunet-"
+"developers@gnu.org!"
+msgstr ""
+
+#: src/server/startup.c:238
+#, c-format
+msgid ""
+"Limiting datastore size to %llu GB, because the `%s' filesystem does not "
+"support larger files. Please consider storing the database on a NTFS "
+"partition!\n"
+msgstr ""
+
+#: src/server/gnunetd.c:83
+#, fuzzy, c-format
+msgid "`%s' startup complete.\n"
+msgstr "`%s'Byuzuye"
+
+#: src/server/gnunetd.c:88
+#, fuzzy, c-format
+msgid "`%s' is shutting down.\n"
+msgstr "`%s'ni Hasi"
+
+#: src/server/gnunetd.c:187
+#, fuzzy
+msgid ""
+"run in debug mode; gnunetd will not daemonize and error messages will be "
+"written to stderr instead of a logfile"
+msgstr "Gukoresha in Kosora amakosa Ubwoko OYA Na Ikosa Ubutumwa Kuri Bya a"
+
+#: src/server/gnunetd.c:191
+#, fuzzy
+msgid "Starts the gnunetd daemon."
+msgstr "i"
+
+#: src/server/gnunetd.c:194
+msgid "disable padding with random data (experimental)"
+msgstr ""
+
+#: src/server/gnunetd.c:197
+msgid "run in quiet mode"
+msgstr ""
+
+#: src/server/gnunetd.c:201
+#, fuzzy
+msgid "specify username as which gnunetd should run"
+msgstr "Ubuturo ku ni"
+
+#: src/server/gnunetd.c:252
+#, fuzzy, c-format
+msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
+msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
+
+#: src/server/core.c:124
+#, fuzzy, c-format
+msgid "Application module `%s' already initialized!\n"
+msgstr "Modire"
+
+#: src/server/core.c:174
+#, c-format
+msgid "Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"
+msgstr ""
+
+#: src/server/core.c:217
+#, fuzzy, c-format
+msgid "Could not shutdown `%s': application not loaded\n"
+msgstr "OYA Zimya Porogaramu OYA"
+
+#: src/server/core.c:225
+#, fuzzy, c-format
+msgid "Could not shutdown application `%s': not initialized\n"
+msgstr "OYA Zimya Porogaramu OYA"
+
+#: src/server/core.c:235
+#, fuzzy, c-format
+msgid "Could not find '%s%s' method in library `%s'.\n"
+msgstr "OYA Gushaka Uburyo in Isomero"
+
+#: src/server/core.c:374
+#, fuzzy, c-format
+msgid "Could not release %p: service not loaded\n"
+msgstr "OYA Serivisi OYA"
+
+#: src/server/core.c:470
+#, fuzzy, c-format
+msgid "Could not properly shutdown application `%s'.\n"
+msgstr "OYA Zimya Porogaramu"
+
+#: src/server/core.c:598
+#, fuzzy, c-format
+msgid "Could not properly unload service `%s'!\n"
+msgstr "OYA Kureka gufungura Serivisi"
+
+#: src/server/gnunet-transport-check.c:118
+#, fuzzy, c-format
+msgid "`%s': Could not create hello.\n"
+msgstr "`%s':OYA Kurema"
+
+#: src/server/gnunet-transport-check.c:127
+#, fuzzy, c-format
+msgid "`%s': Could not connect.\n"
+msgstr "`%s':OYA Kwihuza"
+
+#: src/server/gnunet-transport-check.c:161
+#, fuzzy, c-format
+msgid "`%s': Could not send.\n"
+msgstr "`%s':OYA Kohereza"
+
+#: src/server/gnunet-transport-check.c:183
+#, fuzzy, c-format
+msgid "`%s': Did not receive message within %llu ms.\n"
+msgstr "`%s':OYA Akira Ubutumwa muri"
+
+#: src/server/gnunet-transport-check.c:197
+#, fuzzy, c-format
+msgid "`%s': Could not disconnect.\n"
+msgstr "`%s':OYA Gucomora"
+
+#: src/server/gnunet-transport-check.c:204
+#, fuzzy, c-format
+msgid ""
+"`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes "
+"each.\n"
+msgstr "`%s'Kuri Ubutumwa Bya Bayite"
+
+#: src/server/gnunet-transport-check.c:232
+#, c-format
+msgid " Transport %d is not being tested\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:250
+#, c-format
+msgid ""
+"\n"
+"Contacting `%s'."
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:276
+#, fuzzy, c-format
+msgid " Connection failed\n"
+msgstr "OYA Iyinjizamo Byanze"
+
+#: src/server/gnunet-transport-check.c:282
+#, c-format
+msgid " Connection failed (bug?)\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:335
+#, fuzzy, c-format
+msgid "No reply received within %llums.\n"
+msgstr "Subiza BYAKIRIWE muri"
+
+#: src/server/gnunet-transport-check.c:363
+#, fuzzy
+msgid "Tool to test if GNUnet transport services are operational."
+msgstr "Kuri Igerageza NIBA"
+
+#: src/server/gnunet-transport-check.c:367
+#, fuzzy
+msgid "ping peers from HOSTLISTURL that match transports"
+msgstr "Bivuye BIHUYE"
+
+#: src/server/gnunet-transport-check.c:370
+#, fuzzy
+msgid "send COUNT messages"
+msgstr "Kohereza Ubutumwa"
+
+#: src/server/gnunet-transport-check.c:373
+#, fuzzy
+msgid "send messages with SIZE bytes payload"
+msgstr "Kohereza Ubutumwa Na: Bayite"
+
+#: src/server/gnunet-transport-check.c:376
+msgid "specifies which TRANSPORT should be tested"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:379
+#, fuzzy
+msgid "specifies after how many MS to time-out"
+msgstr "Nyuma Kuri Igihe Inyuma"
+
+#: src/server/gnunet-transport-check.c:387
+msgid "repeat each test X times"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:451
+#, fuzzy, c-format
+msgid "Testing transport(s) %s\n"
+msgstr "S"
+
+#: src/server/gnunet-transport-check.c:454
+#, fuzzy, c-format
+msgid "Available transport(s): %s\n"
+msgstr "S"
+
+#: src/server/gnunet-transport-check.c:514
+#, fuzzy, c-format
+msgid ""
+"%d out of %d peers contacted successfully (%d times transport unavailable).\n"
+msgstr "%dInyuma Bya Times"
+
+#: src/server/tcpserver.c:103
+#, fuzzy, c-format
+msgid "The `%s' request received from client is malformed.\n"
+msgstr "Kubaza... BYAKIRIWE Bivuye Umukiriya ni"
+
+#: src/server/tcpserver.c:317
+#, fuzzy, c-format
+msgid "`%s' failed for port %d. Is gnunetd already running?\n"
+msgstr "OYA Kuri Umuyoboro"
+
+#: src/server/tcpserver.c:387
+#, fuzzy, c-format
+msgid ""
+"Malformed network specification in the configuration in section `%s' for "
+"entry `%s': %s\n"
+msgstr "urusobe in i Iboneza in Icyiciro kugirango Icyinjijwe"
+
+#: src/server/tcpserver.c:440
+#, fuzzy, c-format
+msgid "%s failed, message type %d already in use.\n"
+msgstr "%sByanze Ubutumwa Ubwoko in Gukoresha"
+
+#: src/server/handler.c:379
+#, fuzzy, c-format
+msgid "Received corrupt message from peer `%s'in %s:%d.\n"
+msgstr "Ubutumwa Bivuye in"
+
+#: src/server/version.c:152
+msgid ""
+"Failed to determine filename used to store GNUnet version information!\n"
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:53
+#, fuzzy
+msgid "Print information about GNUnet peers."
+msgstr "Ibisobanuro Ibyerekeye"
+
+#: src/server/gnunet-peer-info.c:57
+msgid "don't resolve host names"
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:86 src/server/gnunet-peer-info.c:104
+#, fuzzy, c-format
+msgid "Could not get address of peer `%s'.\n"
+msgstr "OYA Kubona Aderesi Bya"
+
+#: src/server/gnunet-peer-info.c:96
+#, fuzzy
+msgid "hello message invalid (signature invalid).\n"
+msgstr "Ubutumwa Sibyo Isinya Sibyo"
+
+#: src/server/gnunet-peer-info.c:108
+#, fuzzy, c-format
+msgid "Peer `%s' with trust %8u and address `%s'\n"
+msgstr "Na: Na Aderesi"
+
+#: src/util/network_client/tcpio.c:94 src/util/network_client/tcpio.c:135
+msgid "Could not find valid value for HOST in section NETWORK."
+msgstr ""
+
+#: src/util/network_client/tcpio.c:106
+#, fuzzy, c-format
+msgid "Syntax error in configuration entry HOST in section NETWORK: `%s'"
 msgstr "Ikosa in Iboneza IDOSIYE ku Umurongo"
 
-#: src/applications/topology_f2f/topology.c:483
-msgid "maintains a friend-to-friend restricted topology"
+#: src/util/network_client/tcpio.c:280
+#, fuzzy, c-format
+msgid "Cannot connect to %s:%u: %s\n"
 msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/util/network_client/tcpio.c:323
+#, fuzzy, c-format
+msgid "Error connecting to %s:%u\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/util/network_client/tcpio.c:336
+#, fuzzy, c-format
+msgid "Failed to connect to %s:%u in %ds\n"
+msgstr "Kuri Kwihuza Kuri"
+
+#: src/util/network_client/tcpio.c:492
+#, fuzzy, c-format
+msgid "`%s' failed, reply invalid!\n"
+msgstr "`%s'Byanze Subiza Sibyo"
+
+#: src/util/crypto/hostkey_gcrypt.c:1031
+#, fuzzy, c-format
+msgid "RSA signature verification failed at %s:%d: %s\n"
+msgstr "Isinya Byanze ku"
+
+#: src/util/crypto/locking_gcrypt.c:67
+#, fuzzy, c-format
+msgid "libgcrypt has not the expected version (version %s is required).\n"
+msgstr "OYA i Ikitezwe: Verisiyo Verisiyo ni Bya ngombwa"
+
+#: src/util/os/statuscalls.c:186 src/util/os/statuscalls.c:323
+#, fuzzy, c-format
+msgid "Failed to parse interface data from `%s'.\n"
+msgstr "Kuri Ibyatanzwe Bivuye ku"
+
+#: src/util/os/statuscalls.c:365 src/util/os/statuscalls.c:374
+#, fuzzy, c-format
+msgid ""
+"No network interfaces defined in configuration section `%s' under `%s'!\n"
+msgstr "urusobe in Iboneza Icyiciro"
+
+#: src/util/os/semaphore.c:219
+#, c-format
+msgid "Can't create semaphore: %i"
+msgstr ""
+
+#: src/util/os/osconfig.c:121
+msgid "Setting open descriptor limit not supported.\n"
+msgstr ""
+
+#: src/util/os/osconfig.c:379
+#, fuzzy, c-format
+msgid "Command `%s' failed with error code %u\n"
+msgstr "`%s'Byanze ku Na: Ikosa"
 
 #: src/util/os/dso.c:56
 #, fuzzy, c-format
@@ -2501,45 +3388,15 @@ msgstr "`%s'Byanze kugirango Isomero ku Na: Ikosa"
 msgid "`%s' failed to resolve method '%s' with error: %s\n"
 msgstr "`%s'Byanze Kuri Uburyo ku Na: Ikosa"
 
-#: src/util/os/osconfig.c:121
-msgid "Setting open descriptor limit not supported.\n"
-msgstr ""
-
-#: src/util/os/osconfig.c:379
-#, fuzzy, c-format
-msgid "Command `%s' failed with error code %u\n"
-msgstr "`%s'Byanze ku Na: Ikosa"
-
-#: src/util/os/priority.c:78
-#, fuzzy, c-format
-msgid "Invalid process priority `%s'\n"
-msgstr "Kuri"
-
-#: src/util/os/cpustatus.c:402
+#: src/util/os/cpustatus.c:426
 #, fuzzy
 msgid "Cannot query the CPU usage (Windows NT).\n"
 msgstr "Ikibazo# i Ikoresha:"
 
-#: src/util/os/cpustatus.c:421
+#: src/util/os/cpustatus.c:446
 #, fuzzy
 msgid "Cannot query the CPU usage (Win 9x)\n"
 msgstr "Ikibazo# i Ikoresha:"
-
-#: src/util/os/semaphore.c:219
-#, c-format
-msgid "Can't create semaphore: %i"
-msgstr ""
-
-#: src/util/os/statuscalls.c:182 src/util/os/statuscalls.c:318
-#, fuzzy, c-format
-msgid "Failed to parse interface data from `%s'.\n"
-msgstr "Kuri Ibyatanzwe Bivuye ku"
-
-#: src/util/os/statuscalls.c:360 src/util/os/statuscalls.c:369
-#, fuzzy, c-format
-msgid ""
-"No network interfaces defined in configuration section `%s' under `%s'!\n"
-msgstr "urusobe in Iboneza Icyiciro"
 
 #: src/util/os/user.c:124
 #, fuzzy, c-format
@@ -2550,6 +3407,11 @@ msgstr "OYA Guhindura>> Kuri"
 #, fuzzy, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Guhindura>> Ukoresha: Itsinda Kuri"
+
+#: src/util/os/priority.c:78
+#, fuzzy, c-format
+msgid "Invalid process priority `%s'\n"
+msgstr "Kuri"
 
 #: src/util/network/select.c:296
 #, fuzzy
@@ -2586,10 +3448,65 @@ msgstr "Imiterere kugirango"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Imiterere kugirango urusobe"
 
-#: src/util/network/io.c:80 src/transports/ip6.c:72
+#: src/util/network/ip.c:202
 #, fuzzy, c-format
-msgid "Could not find IP of host `%s': %s\n"
-msgstr "OYA Gushaka Bya Ubuturo"
+msgid ""
+"Could not find interface `%s' using `%s', trying to find another interface.\n"
+msgstr "OYA Gushaka in Kuri Gushaka"
+
+#: src/util/network/ip.c:278
+#, fuzzy, c-format
+msgid "Could not find an IP address for interface `%s'.\n"
+msgstr "OYA Gushaka Aderesi kugirango"
+
+#: src/util/network/ip.c:288
+#, fuzzy, c-format
+msgid ""
+"There is more than one IP address specified for interface `%s'.\n"
+"GNUnet will use %u.%u.%u.%u.\n"
+msgstr ""
+"Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+". Project- Id- Version: basctl\n"
+"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+"Content- Type: text/ plain; charset= UTF- 8\n"
+"Content- Transfer- Encoding: 8bit\n"
+"X- Generator: KBabel 1. 0\n"
+"."
+
+#: src/util/network/ip.c:309
+#, fuzzy, c-format
+msgid "Could not resolve `%s' to determine our IP address: %s\n"
+msgstr "OYA Kuri Aderesi"
+
+#: src/util/network/ip.c:341
+#, c-format
+msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
+msgstr ""
+
+#: src/util/disk/storage.c:201
+#, fuzzy, c-format
+msgid "`%s' failed for drive `%s': %u\n"
+msgstr "`%s'Byanze kugirango Porogaramu- shoboza"
+
+#: src/util/disk/storage.c:518
+#, fuzzy, c-format
+msgid "Expected `%s' to be a directory!\n"
+msgstr "`%s'Ikitezwe: Kuri a bushyinguro"
 
 #: src/util/config_impl/impl.c:275
 #, fuzzy, c-format
@@ -2620,125 +3537,73 @@ msgid ""
 "choices\n"
 msgstr ""
 
-#: src/util/error/error.c:125
+#: src/util/error/error.c:78 src/util/error/error.c:80
+msgid "Error log:"
+msgstr ""
+
+#: src/util/error/error.c:130
 #, c-format
 msgid ""
 "\n"
 "Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:193 src/util/error/error.c:237
+#: src/util/error/error.c:198 src/util/error/error.c:242
 msgid "DEBUG"
 msgstr ""
 
-#: src/util/error/error.c:196 src/util/error/error.c:239
+#: src/util/error/error.c:201 src/util/error/error.c:244
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:199 src/util/error/error.c:243
+#: src/util/error/error.c:204 src/util/error/error.c:248
 msgid "WARNING"
 msgstr ""
 
-#: src/util/error/error.c:202 src/util/error/error.c:245
+#: src/util/error/error.c:207 src/util/error/error.c:250
 msgid "ERROR"
 msgstr ""
 
-#: src/util/error/error.c:205 src/util/error/error.c:247
+#: src/util/error/error.c:210 src/util/error/error.c:252
 msgid "FATAL"
 msgstr ""
 
-#: src/util/error/error.c:208 src/util/error/error.c:249
+#: src/util/error/error.c:213 src/util/error/error.c:254
 #, fuzzy
 msgid "USER"
 msgstr "Umubare"
 
-#: src/util/error/error.c:211 src/util/error/error.c:251
+#: src/util/error/error.c:216 src/util/error/error.c:256
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:214 src/util/error/error.c:253
+#: src/util/error/error.c:219 src/util/error/error.c:258
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:217 src/util/error/error.c:255
+#: src/util/error/error.c:222 src/util/error/error.c:260
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:220 src/util/error/error.c:257
+#: src/util/error/error.c:225 src/util/error/error.c:262
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:223 src/util/error/error.c:259
+#: src/util/error/error.c:228 src/util/error/error.c:264
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:226
+#: src/util/error/error.c:231
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:241
+#: src/util/error/error.c:246
 msgid "INFO"
 msgstr ""
 
-#: src/util/error/error.c:260
+#: src/util/error/error.c:265
 msgid "NOTHING"
 msgstr ""
-
-#: src/util/string/string.c:121
-msgid "ms"
-msgstr ""
-
-#: src/util/string/string.c:126
-msgid "s"
-msgstr ""
-
-#: src/util/string/string.c:129
-msgid "m"
-msgstr ""
-
-#: src/util/string/string.c:132
-msgid "h"
-msgstr ""
-
-#: src/util/string/string.c:135
-#, fuzzy
-msgid " days"
-msgstr "7 Iminsi"
-
-#: src/util/string/string.c:153
-msgid "b"
-msgstr ""
-
-#: src/util/string/string.c:158
-msgid "KiB"
-msgstr ""
-
-#: src/util/string/string.c:161
-msgid "MiB"
-msgstr ""
-
-#: src/util/string/string.c:164
-msgid "GiB"
-msgstr ""
-
-#: src/util/string/string.c:167
-msgid "TiB"
-msgstr ""
-
-#: src/util/string/string.c:287
-msgid "Failed to expand `$HOME': environment variable `HOME' not set"
-msgstr ""
-
-#: src/util/threads/pthread.c:158 src/util/threads/pthread.c:166
-#: src/util/threads/pthread.c:173 src/util/threads/pthread.c:266
-#, fuzzy, c-format
-msgid "`%s' failed with error code %s: %s\n"
-msgstr "`%s'Byanze ku Na: Ikosa"
-
-#: src/util/threads/pthread.c:180 src/util/threads/pthread.c:277
-#, fuzzy, c-format
-msgid "`%s' failed with error code %d: %s\n"
-msgstr "`%s'Byanze ku Na: Ikosa"
 
 #: src/util/threads/mutex.c:145 src/util/threads/mutex.c:165
 #, fuzzy, c-format
@@ -2755,33 +3620,20 @@ msgstr "Kuri ku"
 msgid "Permission denied for `%s'.\n"
 msgstr "kugirango ku"
 
-#: src/util/disk/storage.c:201
+#: src/util/threads/pthread.c:158 src/util/threads/pthread.c:166
+#: src/util/threads/pthread.c:173 src/util/threads/pthread.c:266
 #, fuzzy, c-format
-msgid "`%s' failed for drive `%s': %u\n"
-msgstr "`%s'Byanze kugirango Porogaramu- shoboza"
+msgid "`%s' failed with error code %s: %s\n"
+msgstr "`%s'Byanze ku Na: Ikosa"
 
-#: src/util/disk/storage.c:518
+#: src/util/threads/pthread.c:180 src/util/threads/pthread.c:277
 #, fuzzy, c-format
-msgid "Expected `%s' to be a directory!\n"
-msgstr "`%s'Ikitezwe: Kuri a bushyinguro"
+msgid "`%s' failed with error code %d: %s\n"
+msgstr "`%s'Byanze ku Na: Ikosa"
 
-#: src/util/getopt/printhelp.c:50
-#, fuzzy, c-format
-msgid ""
-"Arguments mandatory for long options are also mandatory for short options.\n"
-msgstr "kugirango Amahitamo kugirango Amahitamo"
-
-#: src/util/getopt/setoption.c:58
-#, c-format
-msgid ""
-"Setting option `%s' in section `%s' to `%s' when processing command line "
-"option `%s' was denied.\n"
+#: src/util/loggers/memory.c:71
+msgid "Out of memory (for logging)"
 msgstr ""
-
-#: src/util/getopt/setoption.c:137 src/util/getopt/setoption.c:153
-#, fuzzy, c-format
-msgid "You must pass a number to the `%s' option.\n"
-msgstr "a Umubare Kuri i Ihitamo"
 
 #: src/util/getopt/getopt.c:681
 #, fuzzy, c-format
@@ -2838,52 +3690,96 @@ msgstr "%s:Ihitamo ni"
 msgid "%s: option `-W %s' does not allow an argument\n"
 msgstr "%s:Ihitamo OYA Kwemerera"
 
-#: src/util/network_client/tcpio.c:94
-msgid "Could not find valid value for PORT in section NETWORK."
+#: src/util/getopt/setoption.c:58
+#, c-format
+msgid ""
+"Setting option `%s' in section `%s' to `%s' when processing command line "
+"option `%s' was denied.\n"
 msgstr ""
 
-#: src/util/network_client/tcpio.c:118
-msgid "Could not find valid value for HOST in section NETWORK."
+#: src/util/getopt/setoption.c:137 src/util/getopt/setoption.c:153
+#, fuzzy, c-format
+msgid "You must pass a number to the `%s' option.\n"
+msgstr "a Umubare Kuri i Ihitamo"
+
+#: src/util/getopt/printhelp.c:50
+#, fuzzy, c-format
+msgid ""
+"Arguments mandatory for long options are also mandatory for short options.\n"
+msgstr "kugirango Amahitamo kugirango Amahitamo"
+
+#: src/util/string/string.c:121
+msgid "ms"
 msgstr ""
 
-#: src/util/network_client/tcpio.c:257 src/util/network_client/tcpio.c:287
-#, fuzzy, c-format
-msgid "Cannot connect to %s:%u: %s\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/util/network_client/tcpio.c:443
-#, fuzzy, c-format
-msgid "`%s' failed, reply invalid!\n"
-msgstr "`%s'Byanze Subiza Sibyo"
-
-#: src/util/loggers/memory.c:71
-msgid "Out of memory (for logging)"
+#: src/util/string/string.c:126
+msgid "s"
 msgstr ""
 
-#: src/util/crypto/locking_gcrypt.c:47
-#, fuzzy, c-format
-msgid "libgcrypt has not the expected version (version %s is required).\n"
-msgstr "OYA i Ikitezwe: Verisiyo Verisiyo ni Bya ngombwa"
+#: src/util/string/string.c:129
+msgid "m"
+msgstr ""
 
-#: src/util/crypto/hostkey_gcrypt.c:1031
+#: src/util/string/string.c:132
+msgid "h"
+msgstr ""
+
+#: src/util/string/string.c:135
+#, fuzzy
+msgid " days"
+msgstr "7 Iminsi"
+
+#: src/util/string/string.c:153
+msgid "b"
+msgstr ""
+
+#: src/util/string/string.c:158
+msgid "KiB"
+msgstr ""
+
+#: src/util/string/string.c:161
+msgid "MiB"
+msgstr ""
+
+#: src/util/string/string.c:164
+msgid "GiB"
+msgstr ""
+
+#: src/util/string/string.c:167
+msgid "TiB"
+msgstr ""
+
+#: src/util/string/string.c:287
+msgid "Failed to expand `$HOME': environment variable `HOME' not set"
+msgstr ""
+
+#: src/setup/gnunet-setup.c:60
+msgid "generate configuration for gnunetd, the GNUnet daemon"
+msgstr ""
+
+#: src/setup/gnunet-setup.c:62
+msgid "Tool to setup GNUnet."
+msgstr ""
+
+#: src/setup/gnunet-setup.c:187
 #, fuzzy, c-format
-msgid "RSA signature verification failed at %s:%d: %s\n"
-msgstr "Isinya Byanze ku"
+msgid "Too many arguments.\n"
+msgstr "Komandi: Umurongo ingingo"
+
+#: src/setup/gnunet-setup.c:192
+#, fuzzy
+msgid "No interface specified, using default\n"
+msgstr "imbonerahamwe# Izina: ikoresha"
+
+#: src/setup/gnunet-setup.c:267
+#, fuzzy, c-format
+msgid "`%s' is not available."
+msgstr "`%s'ni OYA a Ibisanzwe IDOSIYE"
+
+#: src/setup/gnunet-setup.c:283
+#, fuzzy, c-format
+msgid "Unknown operation `%s'\n"
+msgstr "Imiterere Verisiyo"
 
 #: src/setup/gnunet-win-tool.c:54
 msgid "list all network adapters"
@@ -2945,62 +3841,270 @@ msgstr ""
 msgid "Error: can't delete service: %s\n"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:83
-msgid "Exit"
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:86
-msgid "Up"
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:89
-msgid "Cancel"
-msgstr "Kureka"
-
-#: src/setup/ncurses/mconf.c:170 src/setup/ncurses/mconf.c:274
-#: src/setup/ncurses/mconf.c:379 src/setup/ncurses/wizard_curs.c:121
-#: src/setup/ncurses/wizard_curs.c:191 src/setup/ncurses/wizard_curs.c:307
-msgid "Internal error! (Choice invalid?)"
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:209 src/setup/ncurses/mconf.c:324
-msgid "Internal error! (Value invalid?)"
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:315
-msgid "Invalid input, expecting floating point value."
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:364
-msgid "Invalid input, expecting integer."
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:370
-msgid "Value is not in legal range."
-msgstr ""
-
-#: src/setup/ncurses/mconf.c:422 src/setup/ncurses/wizard_curs.c:562
+#: src/setup/gtk/gconf.c:430
 #, fuzzy
-msgid "GNUnet Configuration"
+msgid "Description"
+msgstr "Igaragaza Imiterere:"
+
+#: src/setup/gtk/gconf.c:448
+msgid "Value"
+msgstr "Agaciro"
+
+#: src/setup/gtk/gconf.c:469
+msgid "Default"
+msgstr ""
+
+# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
+#: src/setup/gtk/gconf.c:483 src/setup/ncurses/wizard_curs.c:77
+#, fuzzy
+msgid "Help"
+msgstr "/Kugoboka"
+
+#: src/setup/gtk/gconf.c:497
+#, fuzzy
+msgid "Section"
+msgstr "Insobanuramiterere"
+
+#: src/setup/gtk/gconf.c:509
+#, fuzzy
+msgid "Option"
+msgstr "ibirindiro"
+
+#: src/setup/gtk/gconf.c:531
+#, fuzzy
+msgid "Configuration saved."
 msgstr "A bushyinguro"
 
-#: src/setup/ncurses/mconf.c:436 src/setup/text/conf.c:563
+#: src/setup/gtk/gconf.c:539
+#, fuzzy
+msgid "Failed to save configuration."
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/setup/gtk/gconf.c:562
+#, fuzzy
+msgid "Configuration changed. Save?"
+msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
+
+#: src/setup/gtk/gconf.c:573
+#, fuzzy
+msgid "Error saving configuration."
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/setup/gtk/wizard_gtk.c:145
+#, fuzzy
+msgid "(unknown connection)"
+msgstr "Imiterere Verisiyo"
+
+#: src/setup/gtk/wizard_gtk.c:428 src/setup/ncurses/wizard_curs.c:466
+#, fuzzy, c-format
+msgid "Unable to save configuration file `%s':"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/setup/gtk/wizard_gtk.c:450
+#, fuzzy
+msgid "Do you want to save the new configuration?"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/setup/gtk/wizard_gtk.c:480
+msgid "Unable to create user account:"
+msgstr ""
+
+#: src/setup/gtk/wizard_gtk.c:490
+msgid "Unable to change startup process:"
+msgstr ""
+
+#: src/setup/gtk/wizard_gtk.c:505
+msgid ""
+"Running gnunet-update failed.\n"
+"This maybe due to insufficient permissions, please check your "
+"configuration.\n"
+"Finally, run gnunet-update manually."
+msgstr ""
+
+#: src/setup/text/conf.c:75
+#, fuzzy
+msgid "yes"
+msgstr "Yego"
+
+#: src/setup/text/conf.c:76
+msgid "no"
+msgstr ""
+
+#: src/setup/text/conf.c:104
+#, c-format
+msgid "\tEnter yes (%s), no (%s) or help (%s): "
+msgstr ""
+
+#: src/setup/text/conf.c:116
+msgid "\tPossible choices:\n"
+msgstr ""
+
+#: src/setup/text/conf.c:124
+msgid "\tUse single space prefix to avoid conflicts with hotkeys!\n"
+msgstr ""
+
+#: src/setup/text/conf.c:126
+#, c-format
+msgid "\tEnter string (type '%s' for default value `%s'): "
+msgstr ""
+
+#: src/setup/text/conf.c:147
+#, c-format
+msgid "\t Enter choice (default is %c): "
+msgstr ""
+
+#: src/setup/text/conf.c:152
+#, c-format
+msgid "\tEnter floating point (type '%s' for default value %f): "
+msgstr ""
+
+#: src/setup/text/conf.c:158
+#, c-format
+msgid ""
+"\tEnter unsigned integer in interval [%llu,%llu] (type '%s' for default "
+"value %llu): "
+msgstr ""
+
+#: src/setup/text/conf.c:191
+#, fuzzy, c-format
+msgid "Yes\n"
+msgstr "Yego"
+
+#: src/setup/text/conf.c:196
+#, fuzzy, c-format
+msgid "No\n"
+msgstr "Oya."
+
+# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
+#: src/setup/text/conf.c:199 src/setup/text/conf.c:235
+#: src/setup/text/conf.c:261 src/setup/text/conf.c:318
+#: src/setup/text/conf.c:370
+#, fuzzy, c-format
+msgid "Help\n"
+msgstr "/Kugoboka"
+
+# offmgr/source\offapp\intro\intro.hrc:TEXT_DEFAULTABOUT.text
+#: src/setup/text/conf.c:202 src/setup/text/conf.c:215
+#: src/setup/text/conf.c:270 src/setup/text/conf.c:299
+#: src/setup/text/conf.c:351
+#, fuzzy, c-format
+msgid "Abort\n"
+msgstr "Ibyerekeye"
+
+#: src/setup/text/conf.c:342 src/setup/text/conf.c:397
+#, c-format
+msgid ""
+"\n"
+"Invalid entry, try again (use '?' for help): "
+msgstr ""
+
+#: src/setup/text/conf.c:403
+#, c-format
+msgid "Unknown kind %x (internal error).  Skipping option.\n"
+msgstr ""
+
+#: src/setup/text/conf.c:477
+msgid "\tDescend? (y/n/?) "
+msgstr ""
+
+#: src/setup/text/conf.c:488
+msgid "Aborted.\n"
+msgstr ""
+
+#: src/setup/text/conf.c:510
+#, fuzzy
+msgid "Invalid entry.\n"
+msgstr "Inkoresha siyo"
+
+#: src/setup/text/conf.c:529
+#, c-format
+msgid "Unknown kind %x (internal error).  Aborting.\n"
+msgstr ""
+
+#: src/setup/text/conf.c:560
+#, c-format
+msgid "You can always press ENTER to keep the current value.\n"
+msgstr ""
+
+#: src/setup/text/conf.c:561
+#, c-format
+msgid "Use the '%s' key to abort.\n"
+msgstr ""
+
+#: src/setup/text/conf.c:575 src/setup/ncurses/mconf.c:519
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
 
-#: src/setup/ncurses/mconf.c:440
+#: src/setup/text/conf.c:580
+#, c-format
+msgid ""
+"Save configuration?  Answer 'y' for yes, 'n' for no, 'r' to repeat "
+"configuration. "
+msgstr ""
+
+#: src/setup/text/conf.c:592
+#, fuzzy, c-format
+msgid "Configuration was unchanged, no need to save.\n"
+msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
+
+#: src/setup/text/conf.c:597
+#, fuzzy, c-format
+msgid "Configuration file `%s' written.\n"
+msgstr "Gufungura Iboneza IDOSIYE"
+
+#: src/setup/ncurses/mconf.c:85
+msgid "Exit"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:88
+msgid "Up"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:91
+msgid "Cancel"
+msgstr "Kureka"
+
+#: src/setup/ncurses/mconf.c:175 src/setup/ncurses/mconf.c:278
+#: src/setup/ncurses/mconf.c:356 src/setup/ncurses/mconf.c:462
+#: src/setup/ncurses/wizard_curs.c:121 src/setup/ncurses/wizard_curs.c:191
+#: src/setup/ncurses/wizard_curs.c:307
+msgid "Internal error! (Choice invalid?)"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:213 src/setup/ncurses/mconf.c:408
+msgid "Internal error! (Value invalid?)"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:399
+msgid "Invalid input, expecting floating point value."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:447
+msgid "Invalid input, expecting integer."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:453
+msgid "Value is not in legal range."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:505 src/setup/ncurses/wizard_curs.c:562
+#, fuzzy
+msgid "GNUnet Configuration"
+msgstr "A bushyinguro"
+
+#: src/setup/ncurses/mconf.c:523
 msgid "Do you wish to save your new configuration?"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:451
+#: src/setup/ncurses/mconf.c:534
 #, fuzzy, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr "A bushyinguro"
 
-#: src/setup/ncurses/mconf.c:454
+#: src/setup/ncurses/mconf.c:537
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3011,12 +4115,6 @@ msgstr "Gufungura Iboneza IDOSIYE"
 #: src/setup/lib/wizard_util.c:176
 msgid "Error"
 msgstr ""
-
-# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/setup/ncurses/wizard_curs.c:77 src/setup/gtk/gconf.c:417
-#, fuzzy
-msgid "Help"
-msgstr "/Kugoboka"
 
 #: src/setup/ncurses/wizard_curs.c:86
 msgid "Error!"
@@ -3223,11 +4321,6 @@ msgid ""
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:466 src/setup/gtk/wizard_gtk.c:428
-#, fuzzy, c-format
-msgid "Unable to save configuration file `%s':"
-msgstr "OYA Iboneza IDOSIYE"
-
 #: src/setup/ncurses/wizard_curs.c:493
 msgid "Unable to create user account for daemon."
 msgstr ""
@@ -3250,227 +4343,18 @@ msgstr "A bushyinguro"
 msgid "Back"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:145
-#, fuzzy
-msgid "(unknown connection)"
-msgstr "Imiterere Verisiyo"
-
-#: src/setup/gtk/wizard_gtk.c:450
-#, fuzzy
-msgid "Do you want to save the new configuration?"
-msgstr "OYA Iboneza IDOSIYE"
-
-#: src/setup/gtk/wizard_gtk.c:480
-msgid "Unable to create user account:"
-msgstr ""
-
-#: src/setup/gtk/wizard_gtk.c:490
-msgid "Unable to change startup process:"
-msgstr ""
-
-#: src/setup/gtk/wizard_gtk.c:505
-msgid ""
-"Running gnunet-update failed.\n"
-"This maybe due to insufficient permissions, please check your "
-"configuration.\n"
-"Finally, run gnunet-update manually."
-msgstr ""
-
-#: src/setup/gtk/gconf.c:364
-#, fuzzy
-msgid "Description"
-msgstr "Igaragaza Imiterere:"
-
-#: src/setup/gtk/gconf.c:382
-msgid "Value"
-msgstr "Agaciro"
-
-#: src/setup/gtk/gconf.c:403
-msgid "Default"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:431
-#, fuzzy
-msgid "Section"
-msgstr "Insobanuramiterere"
-
-#: src/setup/gtk/gconf.c:443
-#, fuzzy
-msgid "Option"
-msgstr "ibirindiro"
-
-#: src/setup/gtk/gconf.c:465
-#, fuzzy
-msgid "Configuration saved."
-msgstr "A bushyinguro"
-
-#: src/setup/gtk/gconf.c:473
-#, fuzzy
-msgid "Failed to save configuration."
-msgstr "OYA Iboneza IDOSIYE"
-
-#: src/setup/gtk/gconf.c:496
-#, fuzzy
-msgid "Configuration changed. Save?"
-msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
-
-#: src/setup/gnunet-setup.c:60
-msgid "generate configuration for gnunetd, the GNUnet daemon"
-msgstr ""
-
-#: src/setup/gnunet-setup.c:62
-msgid "Tool to setup GNUnet."
-msgstr ""
-
-#: src/setup/gnunet-setup.c:185
-#, fuzzy, c-format
-msgid "Too many arguments.\n"
-msgstr "Komandi: Umurongo ingingo"
-
-#: src/setup/gnunet-setup.c:190
-#, fuzzy
-msgid "No interface specified, using default\n"
-msgstr "imbonerahamwe# Izina: ikoresha"
-
-#: src/setup/gnunet-setup.c:265
-#, fuzzy, c-format
-msgid "`%s' is not available."
-msgstr "`%s'ni OYA a Ibisanzwe IDOSIYE"
-
-#: src/setup/gnunet-setup.c:281
-#, fuzzy, c-format
-msgid "Unknown operation `%s'\n"
-msgstr "Imiterere Verisiyo"
-
-#: src/setup/text/conf.c:75
-#, fuzzy
-msgid "yes"
-msgstr "Yego"
-
-#: src/setup/text/conf.c:76
-msgid "no"
-msgstr ""
-
-#: src/setup/text/conf.c:102
-#, c-format
-msgid "\tEnter yes (%s), no (%s) or help (%s): "
-msgstr ""
-
-#: src/setup/text/conf.c:111
-msgid "\tUse single space prefix to avoid conflicts with hotkeys!\n"
-msgstr ""
-
-#: src/setup/text/conf.c:113
-#, c-format
-msgid "\tEnter string (type '%s' for default value `%s'): "
-msgstr ""
-
-#: src/setup/text/conf.c:133
-#, c-format
-msgid "\t Enter choice (default is %c): "
-msgstr ""
-
-#: src/setup/text/conf.c:139
-#, c-format
-msgid "\tEnter floating point (type '%s' for default value %f): "
-msgstr ""
-
-#: src/setup/text/conf.c:145
-#, c-format
-msgid ""
-"\tEnter unsigned integer in interval [%llu,%llu] (type '%s' for default "
-"value %llu): "
-msgstr ""
-
-#: src/setup/text/conf.c:178
-#, fuzzy, c-format
-msgid "Yes\n"
-msgstr "Yego"
-
-#: src/setup/text/conf.c:183
-#, fuzzy, c-format
-msgid "No\n"
-msgstr "Oya."
-
-# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/setup/text/conf.c:186 src/setup/text/conf.c:222
-#: src/setup/text/conf.c:248 src/setup/text/conf.c:306
-#: src/setup/text/conf.c:358
-#, fuzzy, c-format
-msgid "Help\n"
-msgstr "/Kugoboka"
-
-# offmgr/source\offapp\intro\intro.hrc:TEXT_DEFAULTABOUT.text
-#: src/setup/text/conf.c:189 src/setup/text/conf.c:202
-#: src/setup/text/conf.c:257 src/setup/text/conf.c:287
-#: src/setup/text/conf.c:339
-#, fuzzy, c-format
-msgid "Abort\n"
-msgstr "Ibyerekeye"
-
-#: src/setup/text/conf.c:330 src/setup/text/conf.c:385
-#, c-format
-msgid ""
-"\n"
-"Invalid entry, try again (use '?' for help): "
-msgstr ""
-
-#: src/setup/text/conf.c:391
-#, c-format
-msgid "Unknown kind %x (internal error).  Skipping option.\n"
-msgstr ""
-
-#: src/setup/text/conf.c:465
-msgid "\tDescend? (y/n/?) "
-msgstr ""
-
-#: src/setup/text/conf.c:476
-msgid "Aborted.\n"
-msgstr ""
-
-#: src/setup/text/conf.c:498
-#, fuzzy
-msgid "Invalid entry.\n"
-msgstr "Inkoresha siyo"
-
-#: src/setup/text/conf.c:517
-#, c-format
-msgid "Unknown kind %x (internal error).  Aborting.\n"
-msgstr ""
-
-#: src/setup/text/conf.c:548
-#, c-format
-msgid "You can always press ENTER to keep the current value.\n"
-msgstr ""
-
-#: src/setup/text/conf.c:549
-#, c-format
-msgid "Use the '%s' key to abort.\n"
-msgstr ""
-
-#: src/setup/text/conf.c:568
-#, c-format
-msgid ""
-"Save configuration?  Answer 'y' for yes, 'n' for no, 'r' to repeat "
-"configuration. "
-msgstr ""
-
-#: src/setup/text/conf.c:580
-#, fuzzy, c-format
-msgid "Configuration was unchanged, no need to save.\n"
-msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
-
-#: src/setup/text/conf.c:585
-#, fuzzy, c-format
-msgid "Configuration file `%s' written.\n"
-msgstr "Gufungura Iboneza IDOSIYE"
-
-#: src/setup/lib/gns.c:274
+#: src/setup/lib/gns.c:278
 #, fuzzy, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
 "file `%s'!\n"
 msgstr "bushyinguro kugirango Ibyatanzwe in Icyiciro"
+
+#: src/setup/lib/tree.c:189
+#, c-format
+msgid ""
+"Internal error: entry `%s' in section `%s' not found for visibility change!\n"
+msgstr ""
 
 #: src/setup/lib/wizard_util.c:101
 msgid "Can't open Service Control Manager"
@@ -3524,730 +4408,42 @@ msgstr "Ivugurura Verisiyo"
 msgid "Unknown error while creating a new user"
 msgstr "Ivugurura Verisiyo"
 
-#: src/setup/lib/tree.c:182
-#, c-format
-msgid ""
-"Internal error: entry `%s' in section `%s' not found for visibility change!\n"
-msgstr ""
-
-#: src/transports/tcp_helper.c:191
 #, fuzzy
-msgid "Received malformed message instead of welcome message. Closing.\n"
-msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
+#~ msgid ""
+#~ "Expected welcome on http connection, got garbage. Closing connection.\n"
+#~ msgstr "Itegerejwe Urakaza neza ku HTTP Ukwihuza Ukwihuza"
 
-#: src/transports/tcp_helper.c:202
 #, fuzzy
-msgid "Received malformed message from tcp-peer connection. Closing.\n"
-msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
+#~ msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
+#~ msgstr ""
+#~ "Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ "."
 
-#: src/transports/tcp6.c:223
 #, fuzzy
-msgid "Could not determine my public IPv6 address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/tcp6.c:265
-#, fuzzy, c-format
-msgid "`%s': unknown service: %s\n"
-msgstr "`%s':Kitazwi Serivisi"
-
-#: src/transports/tcp6.c:379 src/transports/tcp.c:414
-#, fuzzy, c-format
-msgid "Failed to start transport service on port %d.\n"
-msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
-
-#: src/transports/tcp6.c:519
-#, fuzzy
-msgid "# bytes received via TCP6"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/tcp6.c:521
-#, fuzzy
-msgid "# bytes sent via TCP6"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/tcp6.c:523
-msgid "# bytes dropped by TCP6 (outgoing)"
-msgstr ""
-
-#: src/transports/ip6.c:104 src/transports/ip.c:85 src/transports/ip.c:145
-#, fuzzy, c-format
-msgid "No interface specified in section `%s' under `%s'!\n"
-msgstr "urusobe in Iboneza Icyiciro"
-
-#: src/transports/ip6.c:134 src/transports/ip.c:115 src/transports/ip.c:235
-#, fuzzy, c-format
-msgid "Could not obtain IP for interface `%s' using `%s'.\n"
-msgstr "OYA kugirango ikoresha"
-
-#: src/transports/ip6.c:169
-#, fuzzy, c-format
-msgid "Could not resolve `%s': %s\n"
-msgstr "OYA"
-
-#: src/transports/ip6.c:222 src/transports/ip.c:419
-#, fuzzy, c-format
-msgid "Failed to obtain my (external) %s address!\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/udp.c:137 src/transports/udp6.c:128
-#, fuzzy, c-format
-msgid "Failed to bind to UDP port %d.\n"
-msgstr "Kuri Kuri Umuyoboro"
-
-#: src/transports/udp.c:276
-#, fuzzy
-msgid "UDP: Could not determine my public IP address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/udp.c:367
-#, fuzzy, c-format
-msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/transports/udp.c:534 src/transports/udp6.c:521
-#, fuzzy, c-format
-msgid "MTU %llu for `%s' is probably too low!\n"
-msgstr "kugirango ni Byo hasi OYA"
-
-#: src/transports/udp.c:545
-#, fuzzy
-msgid "# bytes received via UDP"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/udp.c:547
-#, fuzzy
-msgid "# bytes sent via UDP"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/udp.c:549
-msgid "# bytes dropped by UDP (outgoing)"
-msgstr ""
-
-#: src/transports/udp6.c:267
-#, fuzzy
-msgid "UDP6: Could not determine my public IPv6 address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/smtp.c:257
-#, fuzzy, c-format
-msgid ""
-"You must specify the name of a pipe for the SMTP transport in section `%s' "
-"under `%s'.\n"
-msgstr "i Izina: Bya a kugirango i in Icyiciro"
-
-#: src/transports/smtp.c:334
-#, fuzzy
-msgid "Received malformed message via SMTP (size mismatch).\n"
-msgstr "Ubutumwa Biturutse Ingano"
-
-#: src/transports/smtp.c:433
-#, fuzzy
-msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
-msgstr "Muyunguruzi... kugirango E Ubutumwa Kurema"
-
-#: src/transports/smtp.c:440
-#, fuzzy, c-format
-msgid "SMTP filter string to long, capped to `%s'\n"
-msgstr "Muyunguruzi... Ikurikiranyanyuguti Kuri Kuri"
-
-#: src/transports/smtp.c:546
-#, fuzzy, c-format
-msgid "Failed to initialize libesmtp: %s.\n"
-msgstr "Kuri gutangiza"
-
-#: src/transports/smtp.c:610
-#, fuzzy, c-format
-msgid "Sending E-mail to `%s' failed.\n"
-msgstr "E Ubutumwa Kuri Byanze"
-
-#: src/transports/smtp.c:678
-#, fuzzy, c-format
-msgid "%.*s filter %s (SMTP)"
-msgstr ""
-"%.*Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/transports/smtp.c:706
-#, fuzzy, c-format
-msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
-msgstr "kugirango ni Byo hasi OYA"
-
-#: src/transports/tcp_old.c:1288
-#, fuzzy
-msgid "# bytes received via TCP-OLD"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/tcp_old.c:1290
-#, fuzzy
-msgid "# bytes sent via TCP-OLD"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/tcp_old.c:1292
-msgid "# bytes dropped by TCP-OLD (outgoing)"
-msgstr ""
-
-#: src/transports/ip.c:203
-#, fuzzy, c-format
-msgid ""
-"Could not find interface `%s' using `%s', trying to find another interface.\n"
-msgstr "OYA Gushaka in Kuri Gushaka"
-
-#: src/transports/ip.c:279
-#, fuzzy, c-format
-msgid "Could not find an IP address for interface `%s'.\n"
-msgstr "OYA Gushaka Aderesi kugirango"
-
-#: src/transports/ip.c:289
-#, fuzzy, c-format
-msgid ""
-"There is more than one IP address specified for interface `%s'.\n"
-"GNUnet will use %u.%u.%u.%u.\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/transports/ip.c:310
-#, fuzzy, c-format
-msgid "Could not resolve `%s' to determine our IP address: %s\n"
-msgstr "OYA Kuri Aderesi"
-
-#: src/transports/ip.c:342
-#, c-format
-msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
-msgstr ""
-
-#: src/transports/udp_helper.c:91
-#, fuzzy
-msgid "Received malformed message from udp-peer connection. Closing.\n"
-msgstr "Ubutumwa Bivuye HTTP Ukwihuza"
-
-#: src/transports/http.c:614
-#, fuzzy
-msgid "Expected welcome on http connection, got garbage. Closing connection.\n"
-msgstr "Itegerejwe Urakaza neza ku HTTP Ukwihuza Ukwihuza"
-
-#: src/transports/http.c:830
-#, fuzzy, c-format
-msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/transports/http.c:1114
-#, fuzzy
-msgid "HTTP: Could not determine my public IP address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/http.c:1190 src/transports/tcp.c:347
-#, fuzzy, c-format
-msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/transports/http.c:1346
-#, fuzzy, c-format
-msgid ""
-"Could not bind the HTTP listener to port %d. No transport service started.\n"
-msgstr "OYA i Kuri Umuyoboro Serivisi"
-
-#: src/transports/http.c:1513
-#, fuzzy
-msgid "# bytes received via HTTP"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/http.c:1515
-#, fuzzy
-msgid "# bytes sent via HTTP"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/http.c:1517
-msgid "# bytes dropped by HTTP (outgoing)"
-msgstr ""
-
-#: src/transports/tcp.c:271
-#, fuzzy
-msgid "TCP: Could not determine my public IP address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/tcp.c:558
-#, fuzzy
-msgid "# bytes received via TCP"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/tcp.c:560
-#, fuzzy
-msgid "# bytes sent via TCP"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/tcp.c:562
-msgid "# bytes dropped by TCP (outgoing)"
-msgstr ""
-
-#: src/server/tcpserver.c:102
-#, fuzzy, c-format
-msgid "The `%s' request received from client is malformed.\n"
-msgstr "Kubaza... BYAKIRIWE Bivuye Umukiriya ni"
-
-#: src/server/tcpserver.c:318
-#, fuzzy, c-format
-msgid "`%s' failed for port %d. Is gnunetd already running?\n"
-msgstr "OYA Kuri Umuyoboro"
-
-#: src/server/tcpserver.c:388
-#, fuzzy, c-format
-msgid ""
-"Malformed network specification in the configuration in section `%s' for "
-"entry `%s': %s\n"
-msgstr "urusobe in i Iboneza in Icyiciro kugirango Icyinjijwe"
-
-#: src/server/tcpserver.c:441
-#, fuzzy, c-format
-msgid "%s failed, message type %d already in use.\n"
-msgstr "%sByanze Ubutumwa Ubwoko in Gukoresha"
-
-#: src/server/connection.c:1114
-#, fuzzy, c-format
-msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
-msgstr "`%s'Byahiswemo Inyuma Bya Ubutumwa"
-
-#: src/server/connection.c:1123
-#, fuzzy, c-format
-msgid "Message details: %u: length %d, priority: %d\n"
-msgstr "Birambuye Uburebure By'ibanze"
-
-#: src/server/connection.c:2534
-#, fuzzy, c-format
-msgid "Message from `%s' discarded: invalid format.\n"
-msgstr "Bivuye Sibyo Imiterere"
-
-#: src/server/connection.c:2612
-#, fuzzy, c-format
-msgid "Invalid sequence number %u <= %u, dropping message.\n"
-msgstr "Umubare Bya"
-
-#: src/server/connection.c:2629
-#, fuzzy
-msgid "Message received more than one day old. Dropped.\n"
-msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
-
-#: src/server/connection.c:3072
-#, fuzzy
-msgid "# outgoing messages dropped"
-msgstr "#Ubutumwa"
-
-#: src/server/connection.c:3076
-#, fuzzy
-msgid "# bytes of outgoing messages dropped"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/server/connection.c:3078
-msgid "# connections closed (HANGUP sent)"
-msgstr ""
-
-#: src/server/connection.c:3081
-#, fuzzy
-msgid "# bytes encrypted"
-msgstr "#Bayite"
-
-#: src/server/connection.c:3085
-#, fuzzy
-msgid "# bytes transmitted"
-msgstr "#Bayite Bya Ubwoko"
-
-#: src/server/connection.c:3089
-#, fuzzy
-msgid "# bytes received"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/server/connection.c:3092
-#, fuzzy
-msgid "# bytes decrypted"
-msgstr "#Bayite"
-
-#: src/server/connection.c:3094
-#, fuzzy
-msgid "# bytes noise sent"
-msgstr "#Bayite Bya BYAKIRIWE"
-
-#: src/server/connection.c:3096
-msgid "# total advertised bytes per second received limit"
-msgstr ""
-
-#: src/server/connection.c:3098
-msgid "# total allowed bytes per second transmission limit"
-msgstr ""
-
-#: src/server/version.c:152
-msgid ""
-"Failed to determine filename used to store GNUnet version information!\n"
-msgstr ""
-
-#: src/server/gnunetd.c:82
-#, fuzzy, c-format
-msgid "`%s' startup complete.\n"
-msgstr "`%s'Byuzuye"
-
-#: src/server/gnunetd.c:87
-#, fuzzy, c-format
-msgid "`%s' is shutting down.\n"
-msgstr "`%s'ni Hasi"
-
-#: src/server/gnunetd.c:170
-#, fuzzy
-msgid ""
-"run in debug mode; gnunetd will not daemonize and error messages will be "
-"written to stderr instead of a logfile"
-msgstr "Gukoresha in Kosora amakosa Ubwoko OYA Na Ikosa Ubutumwa Kuri Bya a"
-
-#: src/server/gnunetd.c:174
-#, fuzzy
-msgid "Starts the gnunetd daemon."
-msgstr "i"
-
-#: src/server/gnunetd.c:177
-msgid "disable padding with random data (experimental)"
-msgstr ""
-
-#: src/server/gnunetd.c:180
-msgid "run in quiet mode"
-msgstr ""
-
-#: src/server/gnunetd.c:184
-#, fuzzy
-msgid "specify username as which gnunetd should run"
-msgstr "Ubuturo ku ni"
-
-#: src/server/gnunetd.c:236
-#, fuzzy, c-format
-msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
-msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
-
-#: src/server/core.c:124
-#, fuzzy, c-format
-msgid "Application module `%s' already initialized!\n"
-msgstr "Modire"
-
-#: src/server/core.c:174
-#, c-format
-msgid "Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"
-msgstr ""
-
-#: src/server/core.c:217
-#, fuzzy, c-format
-msgid "Could not shutdown `%s': application not loaded\n"
-msgstr "OYA Zimya Porogaramu OYA"
-
-#: src/server/core.c:225
-#, fuzzy, c-format
-msgid "Could not shutdown application `%s': not initialized\n"
-msgstr "OYA Zimya Porogaramu OYA"
-
-#: src/server/core.c:235
-#, fuzzy, c-format
-msgid "Could not find '%s%s' method in library `%s'.\n"
-msgstr "OYA Gushaka Uburyo in Isomero"
-
-#: src/server/core.c:374
-#, fuzzy, c-format
-msgid "Could not release %p: service not loaded\n"
-msgstr "OYA Serivisi OYA"
-
-#: src/server/core.c:470
-#, fuzzy, c-format
-msgid "Could not properly shutdown application `%s'.\n"
-msgstr "OYA Zimya Porogaramu"
-
-#: src/server/core.c:597
-#, fuzzy, c-format
-msgid "Could not properly unload service `%s'!\n"
-msgstr "OYA Kureka gufungura Serivisi"
-
-#: src/server/gnunet-peer-info.c:53
-#, fuzzy
-msgid "Print information about GNUnet peers."
-msgstr "Ibisobanuro Ibyerekeye"
-
-#: src/server/gnunet-peer-info.c:57
-msgid "don't resolve host names"
-msgstr ""
-
-#: src/server/gnunet-peer-info.c:83 src/server/gnunet-peer-info.c:99
-#, fuzzy, c-format
-msgid "Could not get address of peer `%s'.\n"
-msgstr "OYA Kubona Aderesi Bya"
-
-#: src/server/gnunet-peer-info.c:92
-#, fuzzy
-msgid "hello message invalid (signature invalid).\n"
-msgstr "Ubutumwa Sibyo Isinya Sibyo"
-
-#: src/server/gnunet-peer-info.c:103
-#, fuzzy, c-format
-msgid "Peer `%s' with trust %8u and address `%s'\n"
-msgstr "Na: Na Aderesi"
-
-#: src/server/gnunet-transport-check.c:118
-#, fuzzy, c-format
-msgid "`%s': Could not create hello.\n"
-msgstr "`%s':OYA Kurema"
-
-#: src/server/gnunet-transport-check.c:127
-#, fuzzy, c-format
-msgid "`%s': Could not connect.\n"
-msgstr "`%s':OYA Kwihuza"
-
-#: src/server/gnunet-transport-check.c:162
-#, fuzzy, c-format
-msgid "`%s': Could not send.\n"
-msgstr "`%s':OYA Kohereza"
-
-#: src/server/gnunet-transport-check.c:184
-#, fuzzy, c-format
-msgid "`%s': Did not receive message within %llu ms.\n"
-msgstr "`%s':OYA Akira Ubutumwa muri"
-
-#: src/server/gnunet-transport-check.c:198
-#, fuzzy, c-format
-msgid "`%s': Could not disconnect.\n"
-msgstr "`%s':OYA Gucomora"
-
-#: src/server/gnunet-transport-check.c:205
-#, fuzzy, c-format
-msgid ""
-"`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes "
-"each.\n"
-msgstr "`%s'Kuri Ubutumwa Bya Bayite"
-
-#: src/server/gnunet-transport-check.c:233
-#, c-format
-msgid " Transport %d is not being tested\n"
-msgstr ""
-
-#: src/server/gnunet-transport-check.c:251
-#, c-format
-msgid ""
-"\n"
-"Contacting `%s'."
-msgstr ""
-
-#: src/server/gnunet-transport-check.c:277
-#, fuzzy, c-format
-msgid " Connection failed\n"
-msgstr "OYA Iyinjizamo Byanze"
-
-#: src/server/gnunet-transport-check.c:283
-#, c-format
-msgid " Connection failed (bug?)\n"
-msgstr ""
-
-#: src/server/gnunet-transport-check.c:335
-#, fuzzy, c-format
-msgid "No reply received within %llums.\n"
-msgstr "Subiza BYAKIRIWE muri"
-
-#: src/server/gnunet-transport-check.c:363
-#, fuzzy
-msgid "Tool to test if GNUnet transport services are operational."
-msgstr "Kuri Igerageza NIBA"
-
-#: src/server/gnunet-transport-check.c:367
-#, fuzzy
-msgid "ping peers from HOSTLISTURL that match transports"
-msgstr "Bivuye BIHUYE"
-
-#: src/server/gnunet-transport-check.c:370
-#, fuzzy
-msgid "send COUNT messages"
-msgstr "Kohereza Ubutumwa"
-
-#: src/server/gnunet-transport-check.c:373
-#, fuzzy
-msgid "send messages with SIZE bytes payload"
-msgstr "Kohereza Ubutumwa Na: Bayite"
-
-#: src/server/gnunet-transport-check.c:376
-msgid "specifies which TRANSPORT should be tested"
-msgstr ""
-
-#: src/server/gnunet-transport-check.c:379
-#, fuzzy
-msgid "specifies after how many MS to time-out"
-msgstr "Nyuma Kuri Igihe Inyuma"
-
-#: src/server/gnunet-transport-check.c:382 src/server/gnunet-update.c:234
-#, fuzzy
-msgid "run as user LOGIN"
-msgstr "Gukoresha Nka Ukoresha:"
-
-#: src/server/gnunet-transport-check.c:387
-msgid "repeat each test X times"
-msgstr ""
-
-#: src/server/gnunet-transport-check.c:451
-#, fuzzy, c-format
-msgid "Testing transport(s) %s\n"
-msgstr "S"
-
-#: src/server/gnunet-transport-check.c:454
-#, fuzzy, c-format
-msgid "Available transport(s): %s\n"
-msgstr "S"
-
-#: src/server/gnunet-transport-check.c:514
-#, fuzzy, c-format
-msgid ""
-"%d out of %d peers contacted successfully (%d times transport unavailable).\n"
-msgstr "%dInyuma Bya Times"
-
-#: src/server/handler.c:377
-#, fuzzy, c-format
-msgid "Received corrupt message from peer `%s'in %s:%d.\n"
-msgstr "Ubutumwa Bivuye in"
-
-#: src/server/gnunet-update.c:142
-#, fuzzy, c-format
-msgid "Updating data for module `%s'\n"
-msgstr "Ibyatanzwe kugirango Modire"
-
-#: src/server/gnunet-update.c:147
-#, fuzzy, c-format
-msgid "Failed to update data for module `%s'\n"
-msgstr "Kuri Kuvugurura Ibyatanzwe kugirango Modire"
-
-#: src/server/gnunet-update.c:228
-#, fuzzy
-msgid "print a value from the configuration file to stdout"
-msgstr "Gucapa a Agaciro Bivuye i Iboneza IDOSIYE Kuri"
-
-#: src/server/gnunet-update.c:230
-#, fuzzy
-msgid "Updates GNUnet datastructures after version change."
-msgstr "Nyuma Verisiyo Guhindura>>"
-
-#: src/server/gnunet-update.c:237
-#, fuzzy
-msgid "run in client mode (for getting client configuration values)"
-msgstr "Gukoresha in Ukoresha: Ubwoko kugirango Ukoresha: Iboneza Uduciro"
-
-#: src/include/gnunet_util_error.h:175 src/include/gnunet_util_error.h:177
-#: src/include/gnunet_util_error.h:179 src/include/gnunet_util_error.h:181
-#, fuzzy, c-format
-msgid "Assertion failed at %s:%d in %s.\n"
-msgstr "Byanze ku"
-
-#: src/include/gnunet_util_error.h:188 src/include/gnunet_util_error.h:195
-#: src/include/gnunet_util_error.h:202 src/include/gnunet_util_error.h:209
-#, fuzzy, c-format
-msgid "`%s' failed at %s:%d in %s with error: %s\n"
-msgstr "`%s'Byanze ku Na: Ikosa"
-
-#: src/include/gnunet_util_error.h:216 src/include/gnunet_util_error.h:223
-#, fuzzy, c-format
-msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
-msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"
-
-#: src/include/gnunet_util_getopt.h:150
-#, fuzzy
-msgid "print this help"
-msgstr "Gucapa iyi Ifashayobora"
-
-#: src/include/gnunet_util_getopt.h:159
-#, fuzzy
-msgid "print the version number"
-msgstr "Gucapa i Verisiyo Umubare"
-
-#: src/include/gnunet_util_getopt.h:165
-msgid "configure logging to use LOGLEVEL"
-msgstr ""
-
-#: src/include/gnunet_util_getopt.h:171
-msgid "be verbose"
-msgstr ""
-
-#: src/include/gnunet_util_getopt.h:177
-#, fuzzy
-msgid "use configuration file FILENAME"
-msgstr "Gukoresha Iboneza IDOSIYE"
-
-#: src/include/gnunet_util_getopt.h:183
-#, fuzzy
-msgid "specify host on which gnunetd is running"
-msgstr "Ubuturo ku ni"
+#~ msgid ""
+#~ "Could not bind the HTTP listener to port %d. No transport service "
+#~ "started.\n"
+#~ msgstr "OYA i Kuri Umuyoboro Serivisi"
 
 #, fuzzy
 #~ msgid "Could not determine my public IP address.\n"
@@ -4702,10 +4898,6 @@ msgstr "Ubuturo ku ni"
 #~ msgstr "Gushyiraho i Bya Mwakirizi"
 
 #, fuzzy
-#~ msgid "Search GNUnet for files."
-#~ msgstr "kugirango Idosiye"
-
-#, fuzzy
 #~ msgid "Not enough arguments. You must specify a keyword or identifier.\n"
 #~ msgstr "ingingo a Ijambo- banze Cyangwa Ikiranga"
 
@@ -4835,10 +5027,6 @@ msgstr "Ubuturo ku ni"
 
 #, fuzzy
 #~ msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
-#~ msgstr "OYA Iboneza IDOSIYE"
-
-#, fuzzy
-#~ msgid "Unable to save configuration file `%s': %s.\n"
 #~ msgstr "OYA Iboneza IDOSIYE"
 
 #, fuzzy
