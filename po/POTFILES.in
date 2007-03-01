@@ -1,3 +1,6 @@
+contrib/config-daemon.scm
+contrib/config-client.scm
+src/setup/gtk/gnunet-setup.glade
 src/transports/ip6.h
 src/transports/ip.h
 src/transports/upnp/upnp.h
