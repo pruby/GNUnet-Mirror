@@ -65,9 +65,9 @@ static long long available;
 static unsigned long long quota;
 
 /**
- * Require 1/10th of quota to be 'free' space.
+ * Require 1/100th of quota to be 'free' space.
  */
-#define MIN_FREE (quota / 10)
+#define MIN_FREE (quota / 100)
 
 static unsigned long long getSize() {
   return sq->getSize();
@@ -246,7 +246,8 @@ static int putUpdate(const HashCode512 * key,
 	    &cls);
 
   if (cls.exists) {
-    if (htonl(value->prio) == 0) {
+    if ( (ntohl(value->prio) == 0) &&
+	 (ntohll(value->expirationTime) <= ntohll(cls.existing->expirationTime)) ) {
       FREE(cls.existing);
       return OK;
     }
