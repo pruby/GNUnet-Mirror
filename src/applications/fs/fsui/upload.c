@@ -152,8 +152,8 @@ createDirectoryHelper(struct GE_Context * ectx,
 		   len)) {
     GE_LOG_STRERROR_FILE(ee,
 			 GE_ERROR | GE_USER | GE_BULK,
-			 tempName,
-			 "write");
+       "write",
+			 tempName);
     *error = STRDUP(GE_memory_get(mem, 0));
     GE_free_context(ee);
     GE_memory_free(mem);
