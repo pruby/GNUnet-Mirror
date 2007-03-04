@@ -138,8 +138,8 @@ createDirectoryHelper(struct GE_Context * ectx,
   if (handle == -1) {
     GE_LOG_STRERROR_FILE(ee,
 			 GE_ERROR | GE_USER | GE_BULK,
-			 tempName,
-			 "mkstemp");
+			 "mkstemp",
+       tempName);
     FREE(tempName);
     FREE(data);
     *error = STRDUP(GE_memory_get(mem, 0));
