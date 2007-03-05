@@ -49,7 +49,7 @@
  * charge at all? (should be larger than IDLE_LOAD_THRESHOLD used
  * by server/connection.c!)
  */
-#define IDLE_LOAD_THRESHOLD 75
+#define IDLE_LOAD_THRESHOLD 85
 
 /**
  * For how many different hosts can we have a query pending (at most).

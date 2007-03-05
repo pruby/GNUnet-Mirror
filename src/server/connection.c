@@ -73,11 +73,11 @@
  * Until which load do we consider the peer overly idle
  * (which means that we would like to use more resources).<p>
  *
- * Note that we use 50 to leave some room for applications
- * to consume resources "idly" (i.e. up to 75%) and then
+ * Note that we use 70 to leave some room for applications
+ * to consume resources "idly" (i.e. up to 85%) and then
  * still have some room for "paid for" resource consumption.
  */
-#define IDLE_LOAD_THRESHOLD 50
+#define IDLE_LOAD_THRESHOLD 70
 
 /**
  * If an attempt to establish a connection is not answered
@@ -140,7 +140,7 @@
 /**
  * How often do we expect to re-run the traffic allocation
  * code? (depends on MINIMUM_SAMPLE_COUNT and MIN_BPM_PER_PEER
- * and MTU size). [2 * 32 M / 50 = 78s ]
+ * and MTU size). [2 * 32 M / 50 = 75s ]
  */
 #define MIN_SAMPLE_TIME (MINIMUM_SAMPLE_COUNT * cronMINUTES * EXPECTED_MTU / MIN_BPM_PER_PEER)
 
@@ -431,10 +431,12 @@ typedef struct BufferEntry_ {
   unsigned int max_bpm;
 
   /**
-   * current bps (actually bytes per minute) for this connection
-   * (incremented every minute by max_bpm, bounded by max_bpm *
-   * secondsInactive/2; may get negative if we have VERY high priority
-   * content) */
+   * Size of the available send window in bytes for this connection
+   * (incremented every minute by max_bpm, bounded by max_bpm (no
+   * back-log larger than MAX_BUF_FACT minutes, bandwidth-hogs are sampled at a
+   * frequency of about 78s!); may get negative if we have VERY high
+   * priority content
+   */
   long long available_send_window;
 
   /**
@@ -600,6 +602,12 @@ static int stat_noise_sent;
 
 static int stat_total_allowed_sent;
 
+static int stat_total_allowed_inc;
+
+static int stat_total_allowed_now;
+
+static int stat_total_lost_sent;
+
 static int stat_total_allowed_recv;
 
 static int stat_total_send_buffer_size;
@@ -673,17 +681,35 @@ static BufferEntry * initBufferEntry() {
 void updateCurBPS(BufferEntry * be) {
   cron_t now;
   cron_t delta;
+  long long increment;
+  long long limit;
 
   now = get_time();
-  if(now <= be->last_bps_update)
+  if (now <= be->last_bps_update)
     return;
   delta = now - be->last_bps_update;
-  if(be->max_bpm * delta < cronMINUTES)
-    return;
-  be->available_send_window =
-    be->available_send_window + be->max_bpm * delta / cronMINUTES;
-  if(be->available_send_window > (long long) be->max_bpm * MAX_BUF_FACT)
-    be->available_send_window = (long long) be->max_bpm * MAX_BUF_FACT;
+  increment = (long long) be->max_bpm * delta / cronMINUTES;
+  if (increment < 100)
+    return; /* avoid loosing > 1% due to rounding */
+  if (stats != NULL)
+    stats->change(stat_total_allowed_inc,
+		  increment);
+  be->available_send_window 
+    += increment;
+#if 0
+  printf("Have %u bpm over %llu ms, adding %lld bytes\n",
+	 be->max_bpm,
+	 delta,
+	 increment);
+#endif
+  limit = (long long) be->max_bpm * MAX_BUF_FACT;
+  if (be->available_send_window > limit) {
+    if (stats != NULL)
+      stats->change(stat_total_lost_sent,
+		    be->available_send_window 
+		    - limit);
+    be->available_send_window = limit;
+  }
   be->last_bps_update = now;
 }
 
@@ -833,19 +859,19 @@ static unsigned int solveKnapsack(BufferEntry * be,
       }
       else
         VARR(i, j) = leave_val;
-      /*
-         printf("i: %d j: %d (of %d) efflen: %d take: %d "
-         "leave %d e[i-1]->pri %d VAR(i-1,j-eff) %lld VAR(i,j) %lld\n",
-         i,
-         j,
-         available,
-         efflen[i-1],
-         take_val,
-         leave_val,
-         entries[i-1]->pri,
-         VARR(i-1,j-efflen[i-1]),
-         VARR(i,j));
-       */
+#if 0      
+      printf("i: %d j: %d (of %d) efflen: %d take: %d "
+	     "leave %d e[i-1]->pri %d VAR(i-1,j-eff) %lld VAR(i,j) %lld\n",
+	     i,
+	     j,
+	     available,
+	     efflen[i-1],
+	     take_val,
+	     leave_val,
+	     entries[i-1]->pri,
+	     VARR(i-1,j-efflen[i-1]),
+	     VARR(i,j));
+#endif
     }
   }
 
@@ -1660,11 +1686,7 @@ static int sendBuffer(BufferEntry * be) {
   if (ret == YES) {
     if(stats != NULL)
       stats->change(stat_transmitted, p);
-    if (be->available_send_window > p)
-      be->available_send_window -= p;
-    else
-      be->available_send_window = 0;  /* if we overrode limits,
-                                         reset to 0 at least... */
+    be->available_send_window -= p;
     be->lastSequenceNumberSend++;
     if (be->idealized_limit > be->max_transmitted_limit)
       be->max_transmitted_limit = be->idealized_limit;
@@ -1848,6 +1870,7 @@ static BufferEntry *addHost(const PeerIdentity * hostId,
 			    int establishSession) {
   BufferEntry *root;
   BufferEntry *prev;
+  unsigned int index;
 #if DEBUG_CONNECTION
   EncName enc;
 
@@ -1863,8 +1886,9 @@ static BufferEntry *addHost(const PeerIdentity * hostId,
 
   ENTRY();
   root = lookForHost(hostId);
+  index = computeIndex(hostId);
   if (root == NULL) {
-    root = CONNECTION_buffer_[computeIndex(hostId)];
+    root = CONNECTION_buffer_[index];
     prev = NULL;
     while (NULL != root) {
       /* settle for entry in the linked list that is down */
@@ -1878,7 +1902,7 @@ static BufferEntry *addHost(const PeerIdentity * hostId,
     if(root == NULL) {
       root = initBufferEntry();
       if(prev == NULL)
-        CONNECTION_buffer_[computeIndex(hostId)] = root;
+        CONNECTION_buffer_[index] = root;
       else
         prev->overflowChain = root;
     }
@@ -2147,10 +2171,6 @@ static void scheduleInboundTraffic() {
 				     Download);
   if (load > 100) /* take counter measure */
     schedulableBandwidth = schedulableBandwidth * 100 / load;
-#if 0
-  printf("Scheduling %llu bytes per minute\n",
-	 schedulableBandwidth);
-#endif
   /* compute recent activity profile of the peer */
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
   GE_ASSERT(ectx,
@@ -2173,7 +2193,7 @@ static void scheduleInboundTraffic() {
 	     entries[u]->idealized_limit);
     }
 #endif
-    /* Check for peers grossly exceeding send limits. Be a bit
+    /* Check for peers grossly exceeding send limits.  Be a bit
      * reasonable and make the check against the max value we have
      * sent to this peer (assume announcements may have got lost).
      */
@@ -2242,7 +2262,7 @@ static void scheduleInboundTraffic() {
   firstRound = YES;
   for (u = 0; u < activePeerCount; u++)
     entries[u]->idealized_limit = 0;
-  while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
+  while ( (schedulableBandwidth > activePeerCount * 100) &&
 	  (activePeerCount > 0) &&
 	  (didAssign == YES) ) {
     didAssign = NO;
@@ -2319,7 +2339,7 @@ static void scheduleInboundTraffic() {
        (activePeerCount > 0) ) {
     /* assign rest disregarding traffic limits */
     perm = permute(WEAK, activePeerCount);
-    for(u = 0; u < activePeerCount; u++) {
+    for (u = 0; u < activePeerCount; u++) {
       unsigned int share;
       unsigned int v = perm[u]; /* use perm to avoid preference to low-numbered slots */
 
@@ -2358,6 +2378,11 @@ static void scheduleInboundTraffic() {
 	   "inbound limit for peer %u: %s set to %u bpm\n",
 	   u,
 	   &enc,
+	   entries[u]->idealized_limit);
+#endif
+#if 0
+    printf("New inbound limit for peer #%u set to %u bpm\n",
+	   u,
 	   entries[u]->idealized_limit);
 #endif
     if ( (timeDifference > 50) &&
@@ -2434,13 +2459,20 @@ static void cronDecreaseLiveness(void *unused) {
   cron_t now;
   int i;
   unsigned long long total_allowed_sent;
+  unsigned long long total_allowed_now;
   unsigned long long total_allowed_recv;
   unsigned long long total_send_buffer_size;
+  int load_nup;
+  int load_cpu;
   
+  load_cpu = os_cpu_get_load(ectx, cfg);
+  load_nup = os_network_monitor_get_load(load_monitor,
+					 Upload);
   scheduleInboundTraffic();
   now = get_time();
   total_allowed_sent = 0;
   total_allowed_recv = 0;
+  total_allowed_now = 0;
   total_send_buffer_size = 0;
   MUTEX_LOCK(lock);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
@@ -2460,8 +2492,10 @@ static void cronDecreaseLiveness(void *unused) {
         FREE(tmp);
         continue;               /* no need to call 'send buffer' */
       case STAT_UP:
+	updateCurBPS(root);
 	total_allowed_sent += root->max_bpm;
 	total_allowed_recv += root->idealized_limit;
+	total_allowed_now  += root->available_send_window;
         if ( (now > root->isAlive) && /* concurrency might make this false... */
 	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS) ) {
 #if DEBUG_CONNECTION
@@ -2483,34 +2517,45 @@ static void cronDecreaseLiveness(void *unused) {
           /* the host may still be worth trying again soon: */
           identity->whitelistHost(&root->session.sender);
         }
-        if ( (root->available_send_window >= 60000) &&
+        if ( (root->available_send_window > 35 * 1024) &&
 	     (root->sendBufferSize < 4) &&
 	     (scl_nextHead != NULL) &&
-	     (os_network_monitor_get_load(load_monitor,
-					  Upload) < IDLE_LOAD_THRESHOLD) &&
-	     (os_cpu_get_load(ectx, cfg) < IDLE_LOAD_THRESHOLD) ) {
+	     (load_nup < IDLE_LOAD_THRESHOLD) &&
+	     (load_cpu < IDLE_LOAD_THRESHOLD) ) {
           /* create some traffic by force! */
           char * msgBuf;
           unsigned int mSize;
           SendCallbackList *pos;
+	  unsigned int hSize;
 
-          msgBuf = MALLOC(60000);
+	  hSize = root->available_send_window;
+	  if (hSize > 63 * 1024)
+	    hSize = 63 * 1024;
+          msgBuf = MALLOC(hSize);
           pos = scl_nextHead;
-          while (pos != NULL) {
-            if (pos->minimumPadding <= 60000) {
+          while ( (pos != NULL) &&
+		  (hSize > 0) ) {
+            if (pos->minimumPadding <= hSize) {
               mSize = pos->callback(&root->session.sender,
 				    msgBuf,
-				    60000);
-              if (mSize > 0)
+				    hSize);
+              if (mSize > 0) {
                 unicast(&root->session.sender,
                         (MESSAGE_HEADER *) msgBuf,
 			0,
 			5 * cronMINUTES);
+		if (mSize > hSize) {
+		  GE_BREAK(ectx, 0);
+		  hSize = 0;
+		} else {
+		  hSize -= mSize;
+		}
+	      }
             }
             pos = pos->next;
           }
           FREE(msgBuf);
-        }
+        } 
         break;
       default:                 /* not up, not down - partial SETKEY exchange */
         if ( (now > root->isAlive) &&
@@ -2545,6 +2590,8 @@ static void cronDecreaseLiveness(void *unused) {
 	       total_allowed_sent / 60); /* bpm to bps */
     stats->set(stat_total_allowed_recv,
 	       total_allowed_recv / 60); /* bpm to bps */
+    stats->set(stat_total_allowed_now,
+	       total_allowed_now);
     stats->set(stat_total_send_buffer_size,
 	       total_send_buffer_size);
   }
@@ -2644,18 +2691,18 @@ int checkHeader(const PeerIdentity * sender,
   FREE(tmp);
   res = YES;
   sequenceNumber = ntohl(msg->sequenceNumber);
-  if(be->lastSequenceNumberReceived >= sequenceNumber) {
+  if (be->lastSequenceNumberReceived >= sequenceNumber) {
     res = SYSERR;
-    if((be->lastSequenceNumberReceived - sequenceNumber <= 32) &&
-       (be->lastSequenceNumberReceived != sequenceNumber)) {
+    if ( (be->lastSequenceNumberReceived - sequenceNumber <= 32) &&
+	 (be->lastSequenceNumberReceived != sequenceNumber) ) {
       unsigned int rotbit =
         1 << (be->lastSequenceNumberReceived - sequenceNumber - 1);
-      if((be->lastPacketsBitmap & rotbit) == 0) {
+      if ((be->lastPacketsBitmap & rotbit) == 0) {
         be->lastPacketsBitmap |= rotbit;
         res = OK;
       }
     }
-    if(res == SYSERR) {
+    if (res == SYSERR) {
       GE_LOG(ectx,
 	     GE_WARNING | GE_REQUEST | GE_USER,
 	     _("Invalid sequence number"
@@ -2687,8 +2734,12 @@ int checkHeader(const PeerIdentity * sender,
 	 "Received bandwidth cap of %u bpm\n",
 	 be->max_bpm);
 #endif
-  if(be->available_send_window >= be->max_bpm) {
-    be->available_send_window = be->max_bpm;
+  if (be->available_send_window > (long long) be->max_bpm * MAX_BUF_FACT) {
+    if (stats != NULL)
+      stats->change(stat_total_lost_sent,
+		    be->available_send_window 
+		    - (long long) be->max_bpm * MAX_BUF_FACT);
+    be->available_send_window = (long long) be->max_bpm * MAX_BUF_FACT;
     be->last_bps_update = get_time();
   }
   be->recently_received += size;
@@ -2998,7 +3049,7 @@ static int connectionConfigChangeCallback(void * ctx,
     unsigned int newMAXHOSTS = 0;
 
     max_bpm = new_max_bpm;
-    newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 2);
+    newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 4);
     /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
     if (newMAXHOSTS < 4)
       newMAXHOSTS = 4;    /* strict minimum is 4 (must match bootstrap.c!) */
@@ -3136,11 +3187,17 @@ void initConnection(struct GE_Context * e,
     stat_noise_sent
       = stats->create(gettext_noop("# bytes noise sent"));
     stat_total_allowed_sent
-      = stats->create(gettext_noop("# total advertised bytes per second received limit"));
+      = stats->create(gettext_noop("# total bytes per second send limit"));
     stat_total_allowed_recv
-      = stats->create(gettext_noop("# total allowed bytes per second transmission limit"));
+      = stats->create(gettext_noop("# total bytes per second receive limit"));
     stat_total_send_buffer_size
       = stats->create(gettext_noop("# total number of messages in send buffers"));
+    stat_total_lost_sent
+      = stats->create(gettext_noop("# total number of bytes we were allowed to sent but did not"));
+    stat_total_allowed_inc
+      = stats->create(gettext_noop("# total number of bytes we were allowed to sent"));
+    stat_total_allowed_now
+      = stats->create(gettext_noop("# total number of bytes we are currently allowed to send"));
   }
   transport->start(&core_receive);
 }
