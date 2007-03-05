@@ -172,13 +172,13 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  */
 #define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0);
 
-#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0);
+#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0);
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0);
+#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0);
 
-#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0);
+#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0);
 
-#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0);
+#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
