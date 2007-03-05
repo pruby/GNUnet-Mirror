@@ -272,7 +272,7 @@ static int putUpdate(const HashCode512 * key,
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) )
     return NO; /* new content has such a low priority that
-		      we should not even bother! */
+		  we should not even bother! */
   if (ntohl(value->prio) < minPriority)
     minPriority = ntohl(value->prio);
 
@@ -286,9 +286,15 @@ static int putUpdate(const HashCode512 * key,
   return ok;
 }
 
+/**
+ * @return *closure if we are below quota,
+ *         SYSERR if we have deleted all of the expired content
+ *         OK if we deleted expired content and are above quota
+ */
 static int freeSpaceExpired(const HashCode512 * key,
 			    const Datastore_Value * value,
 			    void * closure) {
+  int * icls = closure;
   int ret;
 
   if (get_time() < ntohll(value->expirationTime))
@@ -298,7 +304,7 @@ static int freeSpaceExpired(const HashCode512 * key,
     available += ntohl(value->size);
   if ( (available > 0) &&
        (available >= MIN_FREE) )
-    return SYSERR;
+    return *icls;
   return OK;
 }
 
@@ -324,12 +330,14 @@ static int freeSpaceLow(const HashCode512 * key,
  * Also updates available and minPriority.
  */
 static void cronMaintenance(void * unused) {
+  int syserr = SYSERR;
+
   available = quota - sq->getSize();
   if ( (available < 0) ||
        (available < MIN_FREE) ) {
     sq->iterateExpirationTime(ANY_BLOCK,
 			      &freeSpaceExpired,
-			      NULL);
+			      &syserr);
     if ( (available < 0) ||
 	 (available < MIN_FREE) ) {
       sq->iterateLowPriority(ANY_BLOCK,
@@ -452,6 +460,7 @@ void update_module_datastore(UpdateAPI * uapi) {
   unsigned int lastQuota;
   int * lq;
   State_ServiceAPI * state;
+  int ok = OK;
 
   if (-1 == GC_get_configuration_value_number(uapi->cfg,
 					      "FS",
@@ -461,6 +470,16 @@ void update_module_datastore(UpdateAPI * uapi) {
 					      1024,
 					      &quota))
     return; /* OOPS */
+  sq = uapi->requestService("sqstore");
+  GE_LOG(uapi->ectx,
+	 GE_USER | GE_ADMIN | GE_INFO | GE_IMMEDIATE,
+	 _("Deleting expired content.  This may take a while.\n"));
+  sq->iterateExpirationTime(ANY_BLOCK,
+			    &freeSpaceExpired,
+			    &ok);
+  GE_LOG(uapi->ectx,
+	 GE_USER | GE_ADMIN | GE_INFO | GE_IMMEDIATE,
+	 _("Completed deleting expired content.\n"));
   state = uapi->requestService("state");
   if (state != NULL) {
     lq = NULL;
@@ -473,6 +492,7 @@ void update_module_datastore(UpdateAPI * uapi) {
     uapi->releaseService(state);
     lastQuota = ntohl(*lq);
     FREE(lq);
+    uapi->releaseService(sq);
     if (lastQuota == quota)
       return; /* unchanged */
   } else {
@@ -486,8 +506,8 @@ void update_module_datastore(UpdateAPI * uapi) {
 	       uapi->cfg);
   initFilters(uapi->ectx,
 	      uapi->cfg);
-  sq = uapi->requestService("sqstore");
-  sq->get(NULL, ANY_BLOCK,
+  sq->get(NULL, 
+	  ANY_BLOCK,
 	  &filterAddAll,
 	  NULL);
   uapi->releaseService(sq);
