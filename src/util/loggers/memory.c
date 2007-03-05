@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -122,7 +122,7 @@ GE_memory_create(unsigned int maxSize) {
 const char *
 GE_memory_get(struct GE_Memory * memory,
 	      unsigned int index) {
-  if (index > memory->pos)
+  if (index > memory->pos || memory->messages == NULL)
     return NULL;
   return memory->messages[index].msg;
 }
