@@ -254,6 +254,7 @@ static int getBit(const QueryRecord * qr,
   return (qr->bitmap[bit>>3] & theBit) > 0;
 }
 
+
 /* ************* tracking replies, routing queries ********** */
 
 /**
@@ -1497,8 +1498,9 @@ static int execQuery(const PeerIdentity * sender,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&query->queries[0],
 		    &enc));
+  ((char*)&enc)[6] = '\0';
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 GE_INFO | GE_IMMEDIATE | GE_USER,
 	 "GAP is executing request for `%s':%s%s (%d)\n",
 	 &enc,
 	 doForward ? " forwarding" : "",
@@ -1611,22 +1613,32 @@ static int useContent(const PeerIdentity * host,
   PID_INDEX hostId;
 #if DEBUG_GAP
   EncName enc;
-
-  IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   if (host != NULL)
-	     hash2enc(&host->hashPubKey,
-		      &enc));
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "GAP received content from `%s'\n",
-	 (host != NULL) ? (const char*)&enc : "myself");
+  EncName enc2;
 #endif
+
+  if (host == NULL)
+    return 0; /* IGNORE local replies! */
+
   if (ntohs(pmsg->size) < sizeof(P2P_gap_reply_MESSAGE)) {
     GE_BREAK(ectx, 0);
     return SYSERR; /* invalid! */
   }
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
+#if DEBUG_GAP
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   if (host != NULL)
+	     hash2enc(&host->hashPubKey,
+		      &enc));
+  hash2enc(&msg->primaryKey,
+	   &enc2);
+  ((char*)&enc2)[6] = '\0';
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "GAP received content %s from `%s'\n",
+	 &enc2,
+	 (host != NULL) ? (const char*)&enc : "myself");
+#endif
 	
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   ite->successful_local_lookup_in_delay_loop = NO;
