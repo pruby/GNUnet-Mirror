@@ -1,22 +1,22 @@
 /*
-      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
-
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
-      option) any later version.
-
-      GNUnet is distributed in the hope that it will be useful, but
-      WITHOUT ANY WARRANTY; without even the implied warranty of
-      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-      Boston, MA 02110-1301, USA.
- */
+  This file is part of GNUnet
+  (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+  
+  GNUnet is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published
+  by the Free Software Foundation; either version 2, or (at your
+  option) any later version.
+  
+  GNUnet is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with GNUnet; see the file COPYING.  If not, write to the
+  Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+  Boston, MA 02110-1301, USA.
+*/
 
 /**
  * @file gap/gap.c
@@ -238,8 +238,8 @@ evaluateQuery(const PeerIdentity * sender,
 /**
  * Map the id to an index into the bitmap array.
  */
-static unsigned int getIndex(PID_INDEX id) {
-  return id % (8*BITMAP_SIZE);
+static unsigned int getIndex(const PeerIdentity * peer) {
+  return ((unsigned int*)peer)[0] % (8*BITMAP_SIZE);
 }
 
 static void setBit(QueryRecord * qr,
@@ -423,13 +423,13 @@ fillInQuery(const PeerIdentity * receiver,
   while (padding - delta > sizeof(P2P_gap_query_MESSAGE)) {
     qr = &queries[pos];
     if ( (qr->expires > now) &&
-	 (0 == getBit(qr, getIndex(receiverId))) &&
+	 (0 == getBit(qr, getIndex(receiver))) &&
 	 (receiverId != qr->noTarget) &&
 	 (! (equalsHashCode512(&receiver->hashPubKey,
 			       &qr->msg->returnTo.hashPubKey)) ) &&
 	 (padding - delta >= ntohs(qr->msg->header.size) ) ) {
       setBit(&queries[pos],
-	     getIndex(receiverId));
+	     getIndex(receiver));
       memcpy(&((char*)position)[delta],
 	     qr->msg,
 	     ntohs(qr->msg->header.size));
@@ -460,6 +460,10 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
   int distance;
   PID_INDEX id;
   unsigned int idx;
+#if DEBUG_GAP
+  EncName enc;
+  EncName enc2;
+#endif
 
   id = intern_pid(peer);
   /* compute some basic ranking based on historical
@@ -470,6 +474,7 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
       break;
     pos = pos->next;
   }
+  rp = NULL;
   if (pos != NULL) {
     rp = pos->responseList;
     while (rp != NULL) {
@@ -493,13 +498,24 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
   ranking += weak_randomi(0xFFFF); /* 2 "response equivalents" random chance for everyone */
   if (id == qr->noTarget)
     ranking = 0; /* no chance for blocked peers */
-  idx = getIndex(id);
+  idx = getIndex(peer);
 #if DEBUG_GAP
+  hash2enc(&qr->msg->queries[0],
+	   &enc);
+  ((char*)&enc)[6] = '\0';
+  hash2enc(&peer->hashPubKey,
+	   &enc2);
+  ((char*)&enc2)[6] = '\0';
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Ranking for %u: %u\n",
+	 "Q %s peer %2u (%s) ranks (responses: %2u, distance %4d): %u%s\n",
+	 &enc,
 	 idx,
-	 ranking);
+	 &enc2,
+	 rp == NULL ? 0 : rp->responseCount,
+	 distance,
+	 ranking,
+	 id == qr->noTarget ? " (no target)" : "");
 #endif
   qr->rankings[idx] = ranking;
   change_pid_rc(id, -1);
@@ -545,7 +561,7 @@ static void sendToSelected(const PeerIdentity * peer,
     return; /* never send back to source */
   }
 
-  if (getBit(qr, getIndex(id)) == 1) {
+  if (getBit(qr, getIndex(peer)) == 1) {
 #if DEBUG_GAP
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1977,9 +1993,10 @@ static int handleQuery(const PeerIdentity * sender,
   if (loadTooHigh()) {
 #if DEBUG_GAP
     if (sender != NULL) {
-      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    hash2enc(&sender->hashPubKey,
-		     &enc));
+      IF_GELOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       hash2enc(&sender->hashPubKey,
+			&enc));
     }
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
