@@ -231,6 +231,12 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 		      filename,
 		      O_RDONLY | O_LARGEFILE);
   if (fd == -1) {
+    GE_LOG(ectx,
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Cannot open file `%s': `%s'"),
+     filename,
+     STRERROR(errno));
+
     connection_destroy(sock);
     return SYSERR;
   }
@@ -301,7 +307,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 	   &enc);
 #endif
     if (doIndex) {
-      if (SYSERR == FS_index(sock,
+      if (OK != FS_index(sock,
                              &fileId,
                              dblock,
                              pos)) {
@@ -316,12 +322,16 @@ int ECRS_uploadFile(struct GE_Context * ectx,
           fileBlockEncode(db,
                           size + sizeof(DBlock),
                           &mchk.query,
-                          &value))
+                          &value)) {
+        GE_BREAK(ectx, 0);
         goto FAILURE;
+      }
       GE_ASSERT(ectx, value != NULL);
       *value = *dblock; /* copy options! */
-      if (SYSERR == FS_insert(sock,
+
+      if (OK != FS_insert(sock,
                               value)) {
+        GE_BREAK(ectx, 0);
         FREE(value);
         goto FAILURE;
       }
@@ -339,8 +349,10 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                         0, /* dblocks are on level 0 */
                         iblocks,
 			priority,
-			expirationTime))
+			expirationTime)) {
+      GE_BREAK(ectx, 0);
       goto FAILURE;
+    }
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
@@ -392,8 +404,10 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                         i+1,
                         iblocks,
 			priority,
-			expirationTime))
+			expirationTime)) {
+      GE_BREAK(ectx, 0);
       goto FAILURE;
+    }
     fileBlockEncode(db,
                     size,
                     &mchk.query,
@@ -406,6 +420,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     value->prio = htonl(priority);
     if (OK != FS_insert(sock,
                         value)) {
+      GE_BREAK(ectx, 0);
       FREE(value);
       goto FAILURE;
     }
