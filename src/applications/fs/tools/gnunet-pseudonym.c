@@ -55,7 +55,7 @@ static unsigned int anonymity;
 
 static unsigned int priority;
 
-static unsigned int expiration;
+static cron_t expiration = 2 * cronYEARS;
 
 static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
@@ -277,7 +277,7 @@ int main(int argc,
 				   cfg,
 				   anonymity,
 				   priority,
-				   expiration,
+				   expiration + get_time(),
 				   create_name,
 				   meta,
 				   advertisement,

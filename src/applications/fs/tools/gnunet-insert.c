@@ -122,7 +122,7 @@ static void postProcess(const struct ECRS_URI * uri) {
 			    cfg,
 			    anonymity,
 			    priority,
-			    1024, /* FIXME: expiration */
+			    get_time() + 2 * cronYEARS,
 			    pseudonym,
 			    (TIME_T) interval,
 			    prev_id == NULL ? NULL : &prevId,
