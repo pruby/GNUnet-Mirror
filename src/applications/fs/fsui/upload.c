@@ -270,11 +270,11 @@ void * FSUI_uploadThread(void * cls) {
 			&utc->uri);
   if (ret != OK) {
     if (utc->state == FSUI_ACTIVE) {
-      char *err;
+      const char *err;
       
       err = GE_memory_get(mem, 0);
       signalError(utc,
-		    err ? err : "");
+		  err ? err : "");
     } else if (utc->state == FSUI_ABORTED) {
       event.type = FSUI_upload_aborted;
       event.data.UploadAborted.uc.pos = utc;
