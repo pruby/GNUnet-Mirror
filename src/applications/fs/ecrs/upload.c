@@ -307,7 +307,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 	   &enc);
 #endif
     if (doIndex) {
-      if (OK != FS_index(sock,
+      if (SYSERR == FS_index(sock,
                              &fileId,
                              dblock,
                              pos)) {
@@ -329,7 +329,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
       GE_ASSERT(ectx, value != NULL);
       *value = *dblock; /* copy options! */
 
-      if (OK != FS_insert(sock,
+      if (SYSERR == FS_insert(sock,
                               value)) {
         GE_BREAK(ectx, 0);
         FREE(value);
