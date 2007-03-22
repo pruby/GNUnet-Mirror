@@ -1,6 +1,6 @@
 /*
      This file is part of PlibC.
-     (C) 2005, 2006 Nils Durner (and other contributing authors)
+     (C) 2005, 2006, 2007 Nils Durner (and other contributing authors)
 
 	   This library is free software; you can redistribute it and/or
 	   modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.37 $
  */
 
 #ifndef _PLIBC_H_
@@ -34,6 +34,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef Q_OS_WIN32
+ #define WINDOWS 1
 #endif
 
 #ifdef WINDOWS
@@ -432,6 +436,8 @@ size_t strnlen (const char *str, size_t maxlen);
 #ifndef WINDOWS
  #define DIR_SEPARATOR '/'
  #define DIR_SEPARATOR_STR "/"
+ #define PATH_SEPARATOR ';'
+ #define PATH_SEPARATOR_STR ";"
  #define NEWLINE "\n"
 
 #ifdef ENABLE_NLS
@@ -501,6 +507,8 @@ size_t strnlen (const char *str, size_t maxlen);
 #else
  #define DIR_SEPARATOR '\\'
  #define DIR_SEPARATOR_STR "\\"
+ #define PATH_SEPARATOR ':'
+ #define PATH_SEPARATOR_STR ":"
  #define NEWLINE "\r\n"
 
 #ifdef ENABLE_NLS
