@@ -99,7 +99,10 @@ static pid_t launchWithExec(struct GE_Context * ectx,
       i = execvp("gnunetd",
 	     (char**) args);
 #else
-    pid = i = spawnvp(_P_NOWAIT, path, (const char *const *) args);
+    if (path != NULL)
+      pid = i = spawnv(_P_NOWAIT, path, (const char *const *) args);
+    else
+      pid = i = spawnvp(_P_NOWAIT, "gnunetd", (const char *const *) args);
 #endif
     FREENONNULL(path);
     if (i == -1)
