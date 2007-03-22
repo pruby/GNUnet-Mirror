@@ -38,6 +38,8 @@
 
 extern "C" {
 
+int plibc_conv_to_win_path(const char *pszUnix, char *pszWindows);
+
 /**
  * Enumerate all network adapters
  */

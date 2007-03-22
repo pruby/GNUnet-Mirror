@@ -45,7 +45,6 @@
    but "stdlib.h" should be portable 'enough' to be
    unconditionally available... */
 #include <stdlib.h>
-#include <plibc.h>
 
 /* add prototypes of sublibraries */
 #include "gnunet_util_error.h"

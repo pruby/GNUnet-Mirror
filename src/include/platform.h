@@ -49,8 +49,6 @@
 
 #define ALLOW_EXTRA_CHECKS NO
 
-#include "plibc.h"
-
 /**
  * For strptime (glibc2 needs this).
  */
@@ -162,6 +160,8 @@
 #if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
+
+#include "plibc.h"
 
 #include <locale.h>
 #include "gettext.h"
