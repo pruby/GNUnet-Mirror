@@ -247,7 +247,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		 cp_conf:
 		  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
 		  SetOutPath $USR_PROF
-		  File "C:\GNUnet\etc\gnunetd.conf"
+		  File "C:\GNUnet\etc\gnunet.conf"
 		SectionEnd
 	
 		SectionGroup "Filesharing" SEC_CLIENT_FS
@@ -313,6 +313,24 @@ SectionGroup "GNUnet" SEC_GNUNET
         File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-tray.png"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-welcome.png"
 			SectionEnd
+      
+      Section "New graphical interface" SEC_CLIENT_QT
+        SectionIn 1 3 4
+        SetOutPath "$INSTDIR\bin"
+        
+        File "C:\GNUnet\bin\gnunet-qt.exe"
+        File "C:\GNUnet\bin\libgnunetqt_common.dll"
+        File "C:\GNUnet\bin\libgnunetqtmodule_about.dll"
+        File "C:\GNUnet\bin\libgnunetqtmodule_fs.dll"
+        File "C:\GNUnet\bin\libgnunetqtmodule_general.dll"
+        File "C:\GNUnet\bin\libgnunetqtmodule_stats.dll"
+        File "C:\GNUnet\bin\QtCore4.dll"
+        File "C:\GNUnet\bin\QtGui4.dll"
+        File "C:\GNUnet\bin\QtSvg4.dll"
+        File "C:\GNUnet\bin\QtXml4.dll"
+        
+        CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet Qt.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
+      SectionEnd
 		SectionGroupEnd
 
 		Section "Statistics" SEC_STATS
@@ -746,6 +764,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_BASE} "3rd party software required by GNUnet"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_GTK} "3rd party software required by GNUnet Setup and the GUI"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_QT} "Graphical user interface (gnunet-qt)"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -957,6 +976,18 @@ Section Uninstall
 	Delete "$INSTDIR\bin\pthreadGC1.dll"
 	Delete "$INSTDIR\bin\pthreadGC2.dll"
 	Delete "$INSTDIR\bin\zlib1.dll"
+  
+  Delete "$INSTDIR\bin\gnunet-qt.exe"
+  Delete "$INSTDIR\bin\libgnunetqt_common.dll"
+  Delete "$INSTDIR\bin\libgnunetqtmodule_about.dll"
+  Delete "$INSTDIR\bin\libgnunetqtmodule_fs.dll"
+  Delete "$INSTDIR\bin\libgnunetqtmodule_general.dll"
+  Delete "$INSTDIR\bin\libgnunetqtmodule_stats.dll"
+  Delete "$INSTDIR\bin\QtCore4.dll"
+  Delete "$INSTDIR\bin\QtGui4.dll"
+  Delete "$INSTDIR\bin\QtSvg4.dll"
+  Delete "$INSTDIR\bin\QtXml4.dll"
+  
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
 	Delete "$INSTDIR\etc\gnunetd.conf.old"
@@ -1043,7 +1074,8 @@ Section Uninstall
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default\gtk-2.0"
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default"
   RmDir /REBOOTOK "$INSTDIR\share\themes"
-  RmDir /REBOOTOK "$INSTDIR\share"
+  RmDir /REBOOTOK "$INSTDIR\share"
+
 	RmDir /r /REBOOTOK $INSTDIR\share\icons
 	RmDir /REBOOTOK $INSTDIR\share
 
