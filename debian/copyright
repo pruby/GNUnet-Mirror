@@ -1,0 +1,30 @@
+This package was debianized by Arnaud Kyheng <Arnaud.Kyheng@free.fr> on
+Sun, 29 Aug 2004 23:07:45 +0200.
+
+It was downloaded from http://www.ovmj.org/GNUnet/download.php3 
+
+Upstream Author:  
+ Primary developers:
+  Blake Matheny <bmatheny@purdue.edu>
+  Christian Grothoff <grothoff@cs.purdue.edu>
+  Igor Wronsky <iwronsky@users.sourceforge.net>
+  Krista Bennett <kbennett@cerias.purdue.edu>
+ For other contributors refer to the AUTHORS file in the source code.
+
+Copyright: GPL
+  This package is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; version 2 dated June, 1991.
+
+  This package is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this package; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+  02111-1307, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.

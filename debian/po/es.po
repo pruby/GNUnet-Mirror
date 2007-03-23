@@ -1,0 +1,251 @@
+# GNUnet translation to spanish
+# Copyright (C) 2007 Free Software Foundation, Inc.
+# This file is distributed under the same license as the package.
+#
+# Changes:
+# - Initial translation
+#     Javier Ruano Ruano , 2007
+#
+#
+#  Traductores, si no conoce el formato PO, merece la pena leer la
+#  documentación de gettext, especialmente las secciones dedicadas a este
+#  formato, por ejemplo ejecutando:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+# Equipo de traducción al español, por favor lean antes de traducir
+# los siguientes documentos:
+#
+# - El proyecto de traducción de Debian al español
+#   http://www.debian.org/intl/spanish/
+#   especialmente las notas y normas de traducción en
+#   http://www.debian.org/intl/spanish/notas
+#
+# - La guía de traducción de po's de debconf:
+#   /usr/share/doc/po-debconf/README-trans
+#   o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+# Si tiene dudas o consultas sobre esta traducción consulte con el último
+# traductor (campo Last-Translator) y ponga en copia a la lista de
+# traducción de Debian al español (<debian-l10n-spanish@lists.debian.org>)
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GNUnet\n"
+"Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
+"POT-Creation-Date: 2006-10-03 00:52+0200\n"
+"PO-Revision-Date: 2007-01-11 01:17+0100\n"
+"Last-Translator: Javier Ruano Ruano <javier.ruano@estudiante.uam.es>\n"
+"Language-Team: Debian L10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:1001
+msgid "Former installation of GNUnet detected"
+msgstr "Se ha encontrado una instalación previa de GNUnet."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:1001
+msgid ""
+"Since there are important changes in this version, we will need to modify "
+"your GNUnet configuration file (/etc/gnunet.conf)."
+msgstr ""
+"Es necesario modificar el fichero de configuración de GNUnet "
+"(/etc/gnunet.conf) ya que hay cambios importantes en esta versión."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:1001
+msgid ""
+"The installation process will backup /etc/gnunet.conf to /etc/gnunet.conf."
+"old, and will automatically build a new configuration file."
+msgstr ""
+"El proceso de instalación hará un copia de seguridad de /etc/gnunet.conf "
+"en /etc/gnunet.conf.old y creará un nuevo fichero de configuración."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:1001
+msgid "Your personal settings will be preserved as much as possible."
+msgstr "Se mantendrán sus cambios personales en la medida de lo posible."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:2001
+msgid "Warning"
+msgstr "Advertencia"
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:2001
+msgid ""
+"For some obscure reason, we have failed to discover your configuration "
+"settings in /etc/gnunet.conf."
+msgstr ""
+"No hemos encontrado su fichero de opciones en /etc/gnunet.conf, "
+"por alguna razón desconocida."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:2001
+msgid "Your old configuration file will be moved to /etc/gnunet.conf.old."
+msgstr "Se guardará su fichero de configuración anterior como /etc/gnunet.conf.old."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:2001
+msgid ""
+"Since some changes are *mandatory* in this file, a fresh default "
+"configuration file will now be installed"
+msgstr ""
+"Se instalará un nuevo fichero nuevo de configuración,"
+" dado que algunos cambios son *obligatorios* en este fichero."
+
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:2001
+msgid ""
+"Please take a look and make necessary changes in it if needed after "
+"installation."
+msgstr ""
+"Consulte el fichero y haga los cambios pertinentes, si fuera necesario,"
+" después de la instalación."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:3001
+msgid "Upgrade from a version prior to 0.7.0"
+msgstr "Actualizar desde una versión anterior a 0.7.0"
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:3001
+msgid ""
+"It seems that you are upgrading GNUnet from a version prior to 0.7.x. GNUnet "
+"0.7.x introduced new configuration files and a new database storage format "
+"which is not compatible with versions prior to 0.7.x."
+msgstr ""
+"Parece que está actualizando GNUnet desde una versión anterior a 0.7.x. GNUnet"
+" 0.7.x introdujo nuevos ficheros de configuración y un nuevo formato en la base"
+" de datos que son incompatibles con las versiones anteriores a la 0.7.x."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:3001
+msgid "GNUnet cannot convert your database format to the new format."
+msgstr "GNUnet no puede transformar el formato de su base de datos al nuevo formato."
+		
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:3001
+msgid ""
+"Your database storage will be automatically moved to /var/lib/GNUnet."
+"prior07, and the gnunet package will build a new empty storage for you."
+msgstr ""
+"Su base de datos se trasladará automáticamente a /var/lib/GNUnet."
+"prior07, y el paquete gnunet le construirá una nueva base de datos."
+
+#. Type: note
+#. Description
+#: ../gnunet.templates:3001
+msgid ""
+"Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07 "
+"and replaced by /etc/gnunetd.conf which you can modify later by running "
+"\"gnunet-setup -d -c /etc/gnunetd.conf\", as root."
+msgstr ""
+"Su fichero /etc/gnunet.conf será también trasladado a /etc/gnunet.conf.prior07 "
+"y remplazado por /etc/gnunetd.conf, que podrá modificar más tarde ejecutando "
+", como root, «gnunet-setup -d -c /etc/gnunetd.conf»."
+
+#. Type: boolean
+#. Description
+#: ../gnunet.templates:4001
+msgid "Launch at startup?"
+msgstr "¿Desea ejecutarlo en el arranque?"
+
+#. Type: boolean
+#. Description
+#: ../gnunet.templates:4001
+msgid "Do you want to launch GNUnet as a system service ?"
+msgstr "¿Desea ejecutar GNUnet como un servicio del sistema?"
+
+#. Type: boolean
+#. Description
+#: ../gnunet.templates:4001
+msgid ""
+"If you accept here, a GNUnet server will be started each time your machine "
+"starts.  If you decline this option, you need to launch GNUnet each time you "
+"want to use it."
+msgstr ""
+"Si responde afirmativamente aquí, se iniciará un servidor GNUnet" 
+" cada vez que su máquina arranque. Si rechaza esta opción, deberá "
+"ejecutar GNUnet usted mismo cada vez."
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:5001
+msgid "GNUnet user:"
+msgstr "Usuario para GNUnet:"
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:5001
+msgid "Define the user owning the GNUnet daemon process."
+msgstr "Especifique el usuario al que pertenecerá el proceso demonio GNUnet"
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:5001
+msgid ""
+"For security reasons, it's best to create a new user exclusively for  GNUnet."
+msgstr ""
+"Por razones de seguridad, lo mejor sería crear un nuevo usurio sólo para GNUnet."
+#. Type: string
+#. Description
+#: ../gnunet.templates:5001
+msgid ""
+"If you choose this option, that user will automatically be created  as a "
+"system user, for whom no login will be allowed."
+msgstr ""
+"Si elige esta opción, se creará el usuario automáticamente como un usuario"
+" del sistema. Este usuario no tendrá permisos para acceder de forma "
+"interactiva al sistema."
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:6001
+msgid "GNUnet group:"
+msgstr "Grupo de GNUnet:"
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:6001
+msgid "Define the group owning the GNUnet daemon process."
+msgstr "Especifique el grupo al que pertenecerá el proceso demonio GNUnet."
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:6001
+msgid ""
+"For security reason, the best is to create a new group for this, and make "
+"sure that it owns no data beside GNUnet's ones."
+msgstr ""
+"Por razones de seguridad, lo mejor sería crear un nuevo grupo sólo para esto,"
+" y estar seguros que este no posee más datos de los que a GNUnet le corresponden."
+
+#. Type: string
+#. Description
+#: ../gnunet.templates:6001
+msgid ""
+"Only the members of this group are allowed to start and stop the GNUnet "
+"server and  have access to GNUnet data."
+msgstr ""
+"Sólo los miembros de este grupo podrán iniciar o parar el servidor GNUnet"
+" y tendrán acceso a los datos de GNUnet."

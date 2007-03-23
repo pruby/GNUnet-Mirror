@@ -1,0 +1,74 @@
+Template: gnunet/warning
+Type: note
+_Description: Former installation of GNUnet detected
+ Since there are important changes in this version, we will need to modify
+ your GNUnet configuration file (/etc/gnunet.conf).
+ .
+ The installation process will backup /etc/gnunet.conf to
+ /etc/gnunet.conf.old, and will automatically build a new configuration
+ file.
+ .
+ Your personal settings will be preserved as much as possible.
+
+Template: gnunet/failed
+Type: note
+_Description: Warning
+ For some obscure reason, we have failed to discover your configuration
+ settings in /etc/gnunet.conf.
+ .
+ Your old configuration file will be moved to /etc/gnunet.conf.old.
+ .
+ Since some changes are *mandatory* in this file, a
+ fresh default configuration file will now be installed
+ .
+ Please take a look and make necessary changes in it if needed after
+ installation.
+
+Template: gnunet/prior_07
+Type: note
+_Description: Upgrade from a version prior to 0.7.0
+ It seems that you are upgrading GNUnet from a version prior to 0.7.x.
+ GNUnet 0.7.x introduced new configuration files and a new database
+ storage format which is not compatible with versions prior to 0.7.x.
+ .
+ GNUnet cannot convert your database format to the new format.
+ .
+ Your database storage will be automatically moved to /var/lib/GNUnet.prior07,
+ and the gnunet package will build a new empty storage for you.
+ .
+ Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07
+ and replaced by /etc/gnunetd.conf which you can modify later by running
+ "gnunet-setup -d -c /etc/gnunetd.conf", as root.
+
+Template: gnunet/launch_at_startup
+Type: boolean
+Default: true
+_Description: Launch at startup?
+ Do you want to launch GNUnet as a system service ?
+ .
+ If you accept here, a GNUnet server will be started each time your machine
+ starts.  If you decline this option, you need to launch GNUnet each time
+ you want to use it.
+
+Template: gnunet/gnunet_user
+Type: string
+Default: gnunet
+_Description: GNUnet user:
+ Define the user owning the GNUnet daemon process.
+ .
+ For security reasons, it's best to create a new user exclusively for  GNUnet.
+ .
+ If you choose this option, that user will automatically be created  as a system user,
+ for whom no login will be allowed.
+
+Template: gnunet/gnunet_group
+Type: string
+Default: gnunet
+_Description: GNUnet group:
+ Define the group owning the GNUnet daemon process.
+ .
+ For security reason, the best is to create a new group for this, and make
+ sure that it owns no data beside GNUnet's ones.
+ .
+ Only the members of this group are allowed to start and stop the GNUnet server and 
+ have access to GNUnet data.
