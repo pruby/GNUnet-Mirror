@@ -1,3 +1,9 @@
+gnunet (0.7.1b-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Nils Durner <durner@gnunet.org>  Fri, 23 Mar 2007 13:45:00 +0100
+
 gnunet (0.7.0e-5) unstable; urgency=medium
 
   * Added German debconf translation from Helge Kreutzmann

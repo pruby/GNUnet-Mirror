@@ -1,14 +1,13 @@
-This package was debianized by Arnaud Kyheng <Arnaud.Kyheng@free.fr> on
+This package was originally debianized by Arnaud Kyheng <Arnaud.Kyheng@free.fr> on
 Sun, 29 Aug 2004 23:07:45 +0200.
 
-It was downloaded from http://www.ovmj.org/GNUnet/download.php3 
+GNUnet's latest source is always available at http://www.gnunet.org/download.php3
 
 Upstream Author:  
  Primary developers:
-  Blake Matheny <bmatheny@purdue.edu>
-  Christian Grothoff <grothoff@cs.purdue.edu>
-  Igor Wronsky <iwronsky@users.sourceforge.net>
-  Krista Bennett <kbennett@cerias.purdue.edu>
+	Christian Grothoff <christian@grothoff.org>
+	Nils Durner <durner@gnunet.org>
+	Michael John Wensley <michael@wensley.org.uk>
  For other contributors refer to the AUTHORS file in the source code.
 
 Copyright: GPL
