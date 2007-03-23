@@ -335,6 +335,6 @@ void GE_setDefaultContext(struct GE_Context * ctx) {
   defaultContext = ctx;
 }
 
-char *GE_strerror(int errnum) {
+const char *GE_strerror(int errnum) {
   return STRERROR(errnum);
 }

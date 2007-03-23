@@ -166,7 +166,7 @@ struct GE_Context *
 GE_create_context_multiplexer(struct GE_Context * ctx1,
 			      struct GE_Context * ctx2);
 
-char *GE_strerror(int errnum);
+const char *GE_strerror(int errnum);
 
 /**
  * If this context would log an event of the given kind,
