@@ -69,7 +69,6 @@
  #define _REENT_ONLY
 #endif
 
-#include <pthread.h>
 #ifdef CYGWIN
  #undef _REENT_ONLY
 #endif
@@ -163,6 +162,7 @@
 
 #include "plibc.h"
 
+#include <pthread.h>
 #include <locale.h>
 #include "gettext.h"
 
