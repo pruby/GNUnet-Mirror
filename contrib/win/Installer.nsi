@@ -329,6 +329,9 @@ SectionGroup "GNUnet" SEC_GNUNET
         File "C:\GNUnet\bin\QtSvg4.dll"
         File "C:\GNUnet\bin\QtXml4.dll"
         
+        SetOutPath "$INSTDIR\share\gnunet-qt\locale"
+        File "C:\GNUnet\bin\share\gnunet-qt\locale\gnunet-qt_de.qm"
+        
         CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet Qt.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
       SectionEnd
 		SectionGroupEnd
