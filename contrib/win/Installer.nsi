@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.1b"
+!define PRODUCT_VERSION "0.7.1c"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -324,13 +324,20 @@ SectionGroup "GNUnet" SEC_GNUNET
         File "C:\GNUnet\bin\libgnunetqtmodule_fs.dll"
         File "C:\GNUnet\bin\libgnunetqtmodule_general.dll"
         File "C:\GNUnet\bin\libgnunetqtmodule_stats.dll"
+        File "C:\GNUnet\bin\mingwm10.dll"
         File "C:\GNUnet\bin\QtCore4.dll"
         File "C:\GNUnet\bin\QtGui4.dll"
         File "C:\GNUnet\bin\QtSvg4.dll"
         File "C:\GNUnet\bin\QtXml4.dll"
         
+        SetOutPath "$INSTDIR\bin\imageformats"
+        File "C:\GNUnet\bin\imageformats\qgif1.dll"
+        File "C:\GNUnet\bin\imageformats\qjpeg1.dll"
+        File "C:\GNUnet\bin\imageformats\qmng1.dll"
+        File "C:\GNUnet\bin\imageformats\qsvg1.dll"
+        
         SetOutPath "$INSTDIR\share\gnunet-qt\locale"
-        File "C:\GNUnet\bin\share\gnunet-qt\locale\gnunet-qt_de.qm"
+        File "C:\GNUnet\share\gnunet-qt\locale\gnunet-qt_de.qm"
         
         CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet Qt.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
       SectionEnd
@@ -398,9 +405,8 @@ SectionGroup "GNU libextractor"
 		File "C:\GNUnet\bin\bzip2.dll"
 		File "C:\GNUnet\bin\libextractor-1.dll"
 		File "C:\GNUnet\bin\libmpeg2.dll"
-; FIXME
-;		File "C:\GNUnet\bin\libgsf-1-114.dll"
-;		File "C:\GNUnet\bin\libgsf-win32-1-114.dll"
+		File "C:\GNUnet\bin\libgsf-1-114.dll"
+		File "C:\GNUnet\bin\libgsf-win32-1-114.dll"
 		File "C:\GNUnet\bin\libogg-0.dll"
 		File "C:\GNUnet\bin\libvorbis-0.dll"
 		File "C:\GNUnet\bin\libvorbisfile-3.dll"
@@ -423,9 +429,7 @@ SectionGroup "GNU libextractor"
 		File "C:\GNUnet\bin\libextractor_mp3.dll"
 		File "C:\GNUnet\bin\libextractor_mpeg.dll"
 		File "C:\GNUnet\bin\libextractor_ogg.dll"
-; FIXME
-		Delete "$INSTDIR\bin\libextractor_ole2.dll"
-;		File "C:\GNUnet\bin\libextractor_ole2.dll"
+		File "C:\GNUnet\bin\libextractor_ole2.dll"
 		File "C:\GNUnet\bin\libextractor_oo.dll"
 		File "C:\GNUnet\bin\libextractor_pdf.dll"
 		File "C:\GNUnet\bin\libextractor_png.dll"
