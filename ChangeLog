@@ -1,3 +1,6 @@
+Sun Mar 25 13:47:08 MDT 2007
+	Releasing GNUnet 0.7.1c.
+
 Wed Feb 28 15:29:05 MST 2007
 	Enabled abortion of gnunet-peer-info with CTRL-C.
 
@@ -14,6 +17,9 @@ Fri Feb 23 17:55:46 MST 2007
 
 Thu Feb 15 21:54:15 MST 2007
 	Added support for IO load detection.
+
+Sun Feb 11 13:53:13 MST 2007
+	Releasing GNUnet 0.7.1b.
 
 Thu Feb  8 13:21:34 MST 2007
 	Updating gettext to 0.16.1.

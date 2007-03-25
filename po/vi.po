@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-02-28 21:37-0700\n"
+"POT-Creation-Date: 2007-03-25 14:12-0600\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -1558,19 +1558,19 @@ msgstr "dùng tập tin cấu hình FILENAME"
 msgid "specify host on which gnunetd is running"
 msgstr "chỉ ra máy đang chạy gnunetd"
 
-#: src/include/gnunet_util_error.h:175 src/include/gnunet_util_error.h:177
-#: src/include/gnunet_util_error.h:179 src/include/gnunet_util_error.h:181
+#: src/include/gnunet_util_error.h:177 src/include/gnunet_util_error.h:179
+#: src/include/gnunet_util_error.h:181 src/include/gnunet_util_error.h:183
 #, fuzzy, c-format
-msgid "Assertion failed at %s:%d in %s.\n"
+msgid "Internal error: assertion failed at %s:%d in %s.\n"
 msgstr "Xác nhận thất bại tại %s:%d.\n"
 
-#: src/include/gnunet_util_error.h:188 src/include/gnunet_util_error.h:195
-#: src/include/gnunet_util_error.h:202 src/include/gnunet_util_error.h:209
+#: src/include/gnunet_util_error.h:190 src/include/gnunet_util_error.h:197
+#: src/include/gnunet_util_error.h:204 src/include/gnunet_util_error.h:211
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d in %s with error: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/include/gnunet_util_error.h:216 src/include/gnunet_util_error.h:223
+#: src/include/gnunet_util_error.h:218 src/include/gnunet_util_error.h:225
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
 msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
@@ -3071,110 +3071,110 @@ msgstr "TRACEKIT: nhận được thông báo sai '%s'\n"
 msgid "allows mapping of the network topology"
 msgstr "Theo dấu vết trace hình học của mạng GNUnet."
 
-#: src/applications/gap/gap.c:1662
+#: src/applications/gap/gap.c:1690
 #, fuzzy, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "Nhận được thông báo sai '%s' từ '%s'.\n"
 
-#: src/applications/gap/gap.c:1663
+#: src/applications/gap/gap.c:1691
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1837
+#: src/applications/gap/gap.c:1865
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Đã yêu cầu che truyền tải nhưng chưa nạp dịch vụ truyền tải.  Đang nhả ra "
 "yêu cầu.\n"
 
-#: src/applications/gap/gap.c:1849 src/applications/fs/module/anonymity.c:67
+#: src/applications/gap/gap.c:1877 src/applications/fs/module/anonymity.c:67
 msgid "Failed to get traffic stats.\n"
 msgstr "Lấy các thông tin truyền tải không thành công.\n"
 
-#: src/applications/gap/gap.c:1856 src/applications/gap/gap.c:1862
-#: src/applications/gap/gap.c:1869
+#: src/applications/gap/gap.c:1884 src/applications/gap/gap.c:1890
+#: src/applications/gap/gap.c:1897
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr "Không thể thỏa mãn mức độ dấu tên mong muốn, đang lờ đi yêu cầu.\n"
 
-#: src/applications/gap/gap.c:2152
+#: src/applications/gap/gap.c:2181
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:2153
+#: src/applications/gap/gap.c:2182
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2154
+#: src/applications/gap/gap.c:2183
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2155
+#: src/applications/gap/gap.c:2184
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2156
+#: src/applications/gap/gap.c:2185
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2157
+#: src/applications/gap/gap.c:2186
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2158
+#: src/applications/gap/gap.c:2187
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2159
+#: src/applications/gap/gap.c:2188
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2160
+#: src/applications/gap/gap.c:2189
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2161
+#: src/applications/gap/gap.c:2190
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2162
+#: src/applications/gap/gap.c:2191
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:2163
+#: src/applications/gap/gap.c:2192
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2164
+#: src/applications/gap/gap.c:2193
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2165
+#: src/applications/gap/gap.c:2194
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2166
+#: src/applications/gap/gap.c:2195
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2167
+#: src/applications/gap/gap.c:2196
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2168
+#: src/applications/gap/gap.c:2197
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2169
+#: src/applications/gap/gap.c:2198
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2170
+#: src/applications/gap/gap.c:2199
 msgid "# gap response weights"
 msgstr ""
 
-#: src/applications/gap/gap.c:2186
+#: src/applications/gap/gap.c:2215
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -3182,7 +3182,7 @@ msgstr ""
 "Nạp dịch vụ truyền tải không thành công; lỗ hổng không thể chắc chắn khả "
 "năng truyền tải.\n"
 
-#: src/applications/gap/gap.c:2214
+#: src/applications/gap/gap.c:2243
 #, fuzzy, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d %d\n"
@@ -3870,7 +3870,12 @@ msgstr "Nạp để đánh chỉ mục tập tin '%s' thất bại.\n"
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "nạp môđun '%s' không thành công.  Đang cho máy khách biết.\n"
 
-#: src/applications/fs/ecrs/upload.c:310
+#: src/applications/fs/ecrs/upload.c:236
+#, fuzzy, c-format
+msgid "Cannot open file `%s': `%s'"
+msgstr "Không mở được tập tin cấu hình '%s'\n"
+
+#: src/applications/fs/ecrs/upload.c:316
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Đánh chỉ mục dữ liệu thất bại tại vị trí %i.\n"
@@ -4286,79 +4291,93 @@ msgstr "chạy dưới người dùng LOGIN"
 msgid "run in client mode (for getting client configuration values)"
 msgstr "chạy trong chế độ người dùng (để lấy giá trị cấu hình của người dùng)"
 
-#: src/server/connection.c:1116
+#: src/server/connection.c:1142
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s' đã chọn %d vượt quá %d thông báo (MTU: %d).\n"
 
-#: src/server/connection.c:1125
+#: src/server/connection.c:1151
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Chi tiết về thông báo: %u: dài %d, ưu tiên: %d\n"
 
-#: src/server/connection.c:2583
+#: src/server/connection.c:2630
 #, fuzzy, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bỏ đi thông báo từ '%s': định dạng sai.\n"
 
-#: src/server/connection.c:2661
+#: src/server/connection.c:2708
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Số của chuỗi sai %u <= %u, đang bỏ đi thông báo.\n"
 
-#: src/server/connection.c:2678
+#: src/server/connection.c:2725
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Thông báo nhận được cũ hơn một ngày. Đã loại bỏ.\n"
 
-#: src/server/connection.c:3115
+#: src/server/connection.c:3166
 msgid "# outgoing messages dropped"
 msgstr "# thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:3119
+#: src/server/connection.c:3170
 msgid "# bytes of outgoing messages dropped"
 msgstr "# byte của các thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:3121
+#: src/server/connection.c:3172
 msgid "# connections closed (HANGUP sent)"
 msgstr "# các kết nối đã đóng (gửi HANGUP)"
 
-#: src/server/connection.c:3124
+#: src/server/connection.c:3175
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:3128
+#: src/server/connection.c:3179
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# byte đã truyền của dạng %d"
 
-#: src/server/connection.c:3132
+#: src/server/connection.c:3183
 #, fuzzy
 msgid "# bytes received"
 msgstr "# byte nhận được qua TCP"
 
-#: src/server/connection.c:3135
+#: src/server/connection.c:3186
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:3137
+#: src/server/connection.c:3188
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "# byte nhận được do nhiễu đường truyền"
 
-#: src/server/connection.c:3139
-msgid "# total advertised bytes per second received limit"
+#: src/server/connection.c:3190
+msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3141
-msgid "# total allowed bytes per second transmission limit"
-msgstr ""
+#: src/server/connection.c:3192
+#, fuzzy
+msgid "# total bytes per second receive limit"
+msgstr "# byte nhận được do nhiễu đường truyền"
 
-#: src/server/connection.c:3143
+#: src/server/connection.c:3194
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "số thông báo trong một khối tin nhắn"
+
+#: src/server/connection.c:3196
+msgid "# total number of bytes we were allowed to sent but did not"
+msgstr ""
+
+#: src/server/connection.c:3198
+#, fuzzy
+msgid "# total number of bytes we were allowed to sent"
+msgstr "số thông báo trong một khối tin nhắn"
+
+#: src/server/connection.c:3200
+msgid "# total number of bytes we are currently allowed to send"
+msgstr ""
 
 #: src/server/startup.c:207
 #, fuzzy, c-format
@@ -6475,10 +6494,6 @@ msgstr "Lỗi không rõ khi tạo một người dùng mới"
 #~ msgstr ""
 #~ "Không tìm thấy tập tin cấu hình '%s'. Chương trình sẽ thử tạo tập tin cấu "
 #~ "hình mặc định tại vị trí đó.\n"
-
-#, fuzzy
-#~ msgid "Cannot open configuration file `%s'.\n"
-#~ msgstr "Không mở được tập tin cấu hình '%s'\n"
 
 #~ msgid "Cron stopped\n"
 #~ msgstr "Đã dừng cron\n"

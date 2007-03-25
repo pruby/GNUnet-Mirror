@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-02-28 21:37-0700\n"
+"POT-Creation-Date: 2007-03-25 14:12-0600\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -1512,19 +1512,19 @@ msgstr "Gukoresha Iboneza IDOSIYE"
 msgid "specify host on which gnunetd is running"
 msgstr "Ubuturo ku ni"
 
-#: src/include/gnunet_util_error.h:175 src/include/gnunet_util_error.h:177
-#: src/include/gnunet_util_error.h:179 src/include/gnunet_util_error.h:181
+#: src/include/gnunet_util_error.h:177 src/include/gnunet_util_error.h:179
+#: src/include/gnunet_util_error.h:181 src/include/gnunet_util_error.h:183
 #, fuzzy, c-format
-msgid "Assertion failed at %s:%d in %s.\n"
+msgid "Internal error: assertion failed at %s:%d in %s.\n"
 msgstr "Byanze ku"
 
-#: src/include/gnunet_util_error.h:188 src/include/gnunet_util_error.h:195
-#: src/include/gnunet_util_error.h:202 src/include/gnunet_util_error.h:209
+#: src/include/gnunet_util_error.h:190 src/include/gnunet_util_error.h:197
+#: src/include/gnunet_util_error.h:204 src/include/gnunet_util_error.h:211
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d in %s with error: %s\n"
 msgstr "`%s'Byanze ku Na: Ikosa"
 
-#: src/include/gnunet_util_error.h:216 src/include/gnunet_util_error.h:223
+#: src/include/gnunet_util_error.h:218 src/include/gnunet_util_error.h:225
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
 msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"
@@ -3138,117 +3138,117 @@ msgstr "BYAKIRIWE Sibyo"
 msgid "allows mapping of the network topology"
 msgstr "urusobe"
 
-#: src/applications/gap/gap.c:1662
+#: src/applications/gap/gap.c:1690
 #, fuzzy, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "Sibyo Ubutumwa Bivuye"
 
-#: src/applications/gap/gap.c:1663
+#: src/applications/gap/gap.c:1691
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1837
+#: src/applications/gap/gap.c:1865
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1849 src/applications/fs/module/anonymity.c:67
+#: src/applications/gap/gap.c:1877 src/applications/fs/module/anonymity.c:67
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
 
-#: src/applications/gap/gap.c:1856 src/applications/gap/gap.c:1862
-#: src/applications/gap/gap.c:1869
+#: src/applications/gap/gap.c:1884 src/applications/gap/gap.c:1890
+#: src/applications/gap/gap.c:1897
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2152
+#: src/applications/gap/gap.c:2181
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2153
+#: src/applications/gap/gap.c:2182
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2154
+#: src/applications/gap/gap.c:2183
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2155
+#: src/applications/gap/gap.c:2184
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2156
+#: src/applications/gap/gap.c:2185
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2157
+#: src/applications/gap/gap.c:2186
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2158
+#: src/applications/gap/gap.c:2187
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2159
+#: src/applications/gap/gap.c:2188
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2160
+#: src/applications/gap/gap.c:2189
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2161
+#: src/applications/gap/gap.c:2190
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2162
+#: src/applications/gap/gap.c:2191
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2163
+#: src/applications/gap/gap.c:2192
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2164
+#: src/applications/gap/gap.c:2193
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2165
+#: src/applications/gap/gap.c:2194
 #, fuzzy
 msgid "# gap spurious replies"
 msgstr "#hejuru Ibibazo BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2166
+#: src/applications/gap/gap.c:2195
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2167
+#: src/applications/gap/gap.c:2196
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2168
+#: src/applications/gap/gap.c:2197
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2169
+#: src/applications/gap/gap.c:2198
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2170
+#: src/applications/gap/gap.c:2199
 #, fuzzy
 msgid "# gap response weights"
 msgstr "#hejuru Ibibazo BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2186
+#: src/applications/gap/gap.c:2215
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2214
+#: src/applications/gap/gap.c:2243
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -3976,7 +3976,12 @@ msgstr "Bya in IDOSIYE"
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "Itangira... Modire Byanze Umukiriya"
 
-#: src/applications/fs/ecrs/upload.c:310
+#: src/applications/fs/ecrs/upload.c:236
+#, fuzzy, c-format
+msgid "Cannot open file `%s': `%s'"
+msgstr "Gufungura Iboneza IDOSIYE"
+
+#: src/applications/fs/ecrs/upload.c:316
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr ""
@@ -4398,82 +4403,96 @@ msgstr "Gukoresha Nka Ukoresha:"
 msgid "run in client mode (for getting client configuration values)"
 msgstr "Gukoresha in Ukoresha: Ubwoko kugirango Ukoresha: Iboneza Uduciro"
 
-#: src/server/connection.c:1116
+#: src/server/connection.c:1142
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "`%s'Byahiswemo Inyuma Bya Ubutumwa"
 
-#: src/server/connection.c:1125
+#: src/server/connection.c:1151
 #, fuzzy, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Birambuye Uburebure By'ibanze"
 
-#: src/server/connection.c:2583
+#: src/server/connection.c:2630
 #, fuzzy, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bivuye Sibyo Imiterere"
 
-#: src/server/connection.c:2661
+#: src/server/connection.c:2708
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Umubare Bya"
 
-#: src/server/connection.c:2678
+#: src/server/connection.c:2725
 #, fuzzy
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
 
-#: src/server/connection.c:3115
+#: src/server/connection.c:3166
 #, fuzzy
 msgid "# outgoing messages dropped"
 msgstr "#Ubutumwa"
 
-#: src/server/connection.c:3119
+#: src/server/connection.c:3170
 #, fuzzy
 msgid "# bytes of outgoing messages dropped"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3121
+#: src/server/connection.c:3172
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:3124
+#: src/server/connection.c:3175
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:3128
+#: src/server/connection.c:3179
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "#Bayite Bya Ubwoko"
 
-#: src/server/connection.c:3132
+#: src/server/connection.c:3183
 #, fuzzy
 msgid "# bytes received"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/server/connection.c:3135
+#: src/server/connection.c:3186
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:3137
+#: src/server/connection.c:3188
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3139
-msgid "# total advertised bytes per second received limit"
+#: src/server/connection.c:3190
+msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3141
-msgid "# total allowed bytes per second transmission limit"
-msgstr ""
+#: src/server/connection.c:3192
+#, fuzzy
+msgid "# total bytes per second receive limit"
+msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3143
+#: src/server/connection.c:3194
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "Umubare Bya Ubutumwa Kuri Gukoresha"
+
+#: src/server/connection.c:3196
+msgid "# total number of bytes we were allowed to sent but did not"
+msgstr ""
+
+#: src/server/connection.c:3198
+#, fuzzy
+msgid "# total number of bytes we were allowed to sent"
+msgstr "Umubare Bya Ubutumwa Kuri Gukoresha"
+
+#: src/server/connection.c:3200
+msgid "# total number of bytes we are currently allowed to send"
+msgstr ""
 
 #: src/server/startup.c:207
 #, fuzzy, c-format
@@ -6471,10 +6490,6 @@ msgstr "Ivugurura Verisiyo"
 
 #, fuzzy
 #~ msgid "Configuration file `%s' not found.  Run `gnunet-setup -d'!\n"
-#~ msgstr "Gufungura Iboneza IDOSIYE"
-
-#, fuzzy
-#~ msgid "Cannot open configuration file `%s'.\n"
 #~ msgstr "Gufungura Iboneza IDOSIYE"
 
 #, fuzzy

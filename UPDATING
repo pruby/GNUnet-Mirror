@@ -8,6 +8,21 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+
+0.7.1b to 0.7.1c
+================
+
+Run
+
+$ gnunet-update
+
+This may take a bit longer than usual (depending on your
+database size, it may take a few hours!).  You may also
+want to manually re-run gnunet-insert (due to bugfixes
+related to content expiration and preview-generation
+bugs in an older libextractor version).
+
+
 0.7.1a to 0.7.1b
 ================
 
