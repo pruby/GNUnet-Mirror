@@ -310,6 +310,8 @@ _write_configuration(struct GC_Configuration * cfg,
   int error;
   int ret;
   char * fn;
+  char * val;
+  char * pos;
 
   fn = string_expandFileName(NULL, filename);
   disk_directory_create_for_file(NULL, fn);
@@ -339,13 +341,24 @@ _write_configuration(struct GC_Configuration * cfg,
       GE_ASSERT(data->ectx,
 		e->dirty_val == NULL);
       if (e->val != NULL) {
+	val = MALLOC(strlen(e->val) * 2 + 1);
+	strcpy(val, e->val);
+	while (NULL != (pos = strstr(val, "\n"))) {
+	  memmove(&pos[2],
+		  &pos[1],
+		  strlen(&pos[1]));
+	  pos[0] = '\\';
+	  pos[1] = 'n';
+	}
 	if (0 > fprintf(fp,
 			"%s = %s\n",
 			e->key,
-			e->val)) {
+			val)) {
 	  error = 1;
+	  FREE(val);
 	  break;
 	}
+	FREE(val);
       }
     }
     if (error != 0)
