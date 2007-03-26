@@ -121,32 +121,25 @@ SectionGroup "GNUnet" SEC_GNUNET
 		SetOutPath "$INSTDIR\tmp"
 		
 	  SetOutPath "$INSTDIR\bin"
-	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-gtk" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "gconfig" "$INSTDIR\bin\config.ico"
-	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
 	SectionEnd
 	
 	SectionGroup "Language Support" SEC_LANG
-		Section "French" SEC_LANG_FR
-			SectionIn 1 2 3 4
-		  SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
-			File "C:\GNUnet\share\locale\fr\LC_MESSAGES\gnunet-gtk.mo" 
-		SectionEnd
 		Section "German" SEC_LANG_DE
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\de\LC_MESSAGES\libextractor.mo" 
-			File "C:\GNUnet\share\locale\de\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
 		Section "Kinyarwanda" SEC_LANG_RW
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\rw\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\libextractor.mo" 
-			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
 		Section "Spanish" SEC_LANG_ES
 			SectionIn 1 2 3 4
@@ -157,19 +150,12 @@ SectionGroup "GNUnet" SEC_GNUNET
       SectionIn 1 2 3 4
       SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
       File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
-      File "C:\GNUnet\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
       File "C:\GNUnet\share\locale\sv\LC_MESSAGES\libextractor.mo" 
-    SectionEnd
-    Section "Turkish" SEC_LANG_TR
-      SectionIn 1 2 3 4
-      SetOutPath "$INSTDIR\share\locale\tr\LC_MESSAGES"
-      File "C:\GNUnet\share\locale\tr\LC_MESSAGES\gnunet-gtk.mo" 
     SectionEnd
 		Section "Vietnamese" SEC_LANG_VI
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
-			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\libextractor.mo" 
 		SectionEnd
 	SectionGroupEnd
@@ -287,34 +273,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 				File "C:\GNUnet\bin\gnunet-unindex.exe"
 			SectionEnd			
 
-			Section "Graphical Interface" SEC_CLIENT_GUI
-				SectionIn 1 3 4
-			  SetOutPath "$INSTDIR\bin"
-
-			  File "C:\GNUnet\bin\libpng13.dll"			  
-			  
-			  File "C:\GNUnet\bin\gnunet-gtk.exe"
-			  File "C:\GNUnet\bin\libgnunetgtk_common-0.dll"
-			  File "C:\GNUnet\bin\libgnunetgtkmodule_stats.dll"
-			  File "C:\GNUnet\bin\libgnunetgtkmodule_fs.dll"
-			  File "C:\GNUnet\bin\libgnunetgtkmodule_daemon.dll"
-			  File "C:\GNUnet\bin\libgnunetgtkmodule_about.dll"
-
-			  SetOutPath "$INSTDIR\share\gnunet-gtk"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet_logo.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk.glade"
-			  File "C:\GNUnet\share\gnunet-gtk\info.png"
-			  File "C:\GNUnet\share\gnunet-gtk\up.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-chat.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-fs.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-general.png"
-        File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-notify.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-stats.png"
-        File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-tray.png"
-			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-welcome.png"
-			SectionEnd
-      
-      Section "New graphical interface" SEC_CLIENT_QT
+      Section "Graphical Interface" SEC_CLIENT_GUI
         SectionIn 1 3 4
         SetOutPath "$INSTDIR\bin"
         
@@ -338,8 +297,6 @@ SectionGroup "GNUnet" SEC_GNUNET
         
         SetOutPath "$INSTDIR\share\gnunet-qt\locale"
         File "C:\GNUnet\share\gnunet-qt\locale\gnunet-qt_de.qm"
-        
-        CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet Qt.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
       SectionEnd
 		SectionGroupEnd
 
@@ -498,11 +455,8 @@ SectionGroup "Dependencies"
 		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
 		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"		
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-bmp.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-gif.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-jpeg.dll"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-pcx.dll"
-		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-tiff.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
 		SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
@@ -761,7 +715,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_FS} "Client tools for filesharing"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_LE} "Basic keyword extractors"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_TUI} "Textbased user interfaces"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_GUI} "Graphical user interface (gnunet-gtk)"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_GUI} "Graphical user interface (gnunet-qt)"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STATS} "Tool to display server statistics"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIAG} "Advanced diagnostic tools"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TRACE} "Tracekit"
@@ -771,7 +725,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_BASE} "3rd party software required by GNUnet"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_GTK} "3rd party software required by GNUnet Setup and the GUI"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_QT} "Graphical user interface (gnunet-qt)"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
