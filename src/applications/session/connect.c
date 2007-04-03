@@ -404,14 +404,12 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 static int exchangeKey(const PeerIdentity * receiver,
 		       TSession * tsession,
 		       MESSAGE_HEADER * pong) {
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   P2P_new_setkey_MESSAGE * skey;
-  char * sendBuffer;
   SESSIONKEY sk;
   TIME_T age;
   MESSAGE_HEADER * ping;
   PeerIdentity * sndr;
-  int size;
   EncName enc;
 
   GE_ASSERT(ectx, receiver != NULL);
@@ -450,7 +448,7 @@ static int exchangeKey(const PeerIdentity * receiver,
     return SYSERR;
   }
 
-  /* get or create out session key */
+  /* get or create our session key */
   if (OK != coreAPI->getCurrentSessionKey(receiver,
 					  &sk,
 					  &age,
@@ -479,34 +477,14 @@ static int exchangeKey(const PeerIdentity * receiver,
   }
 
   /* create hello */
-  helo = transport->createhello(tsession->ttype);
-  if (NULL == helo) 
-    helo = transport->createhello(ANY_PROTOCOL_NUMBER);
-  if (NULL == helo) {
+  hello = transport->createhello(tsession->ttype);
+  if (NULL == hello) 
+    hello = transport->createhello(ANY_PROTOCOL_NUMBER);
+  if (NULL == hello) {
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   "Could not create any hello advertisement.  Not good.");
   }
-  size = ntohs(skey->header.size);
-  if (helo != NULL)
-    size += P2P_hello_MESSAGE_size(helo);
-  sendBuffer = MALLOC(size);
-  if (helo != NULL) {
-    size = P2P_hello_MESSAGE_size(helo);
-    memcpy(sendBuffer,
-	   helo,
-	   size);
-    FREE(helo);
-    helo = NULL;
-  } else {
-    size = 0;
-  }
-
-  memcpy(&sendBuffer[size],
-	 skey,
-	 ntohs(skey->header.size));
-  size += ntohs(skey->header.size);
-  FREE(skey);
 #if DEBUG_SESSION
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
@@ -516,10 +494,17 @@ static int exchangeKey(const PeerIdentity * receiver,
 #endif
   if (stats != NULL)
     stats->change(stat_skeySent, 1);
-  coreAPI->sendPlaintext(tsession,
-			 sendBuffer,
-			 size);
-  FREE(sendBuffer);
+  if (hello != NULL) {
+    coreAPI->sendPlaintext(tsession,
+			   (const char*) hello,
+			   P2P_hello_MESSAGE_size(hello));
+    FREE(hello);
+    hello = NULL;
+    coreAPI->sendPlaintext(tsession,
+			   (const char*) skey,
+			   ntohs(skey->header.size));
+  }
+  FREE(skey);
   coreAPI->offerTSessionFor(receiver,
 			    tsession);
   coreAPI->assignSessionKey(&sk,
