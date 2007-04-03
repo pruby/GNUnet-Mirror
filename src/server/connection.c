@@ -2976,7 +2976,7 @@ void considerTakeover(const PeerIdentity * sender,
   unsigned int cost;
 
   ENTRY();
-  if(tsession == NULL)
+  if (tsession == NULL)
     return;
   MUTEX_LOCK(lock);
   be = addHost(sender, NO);
@@ -3441,9 +3441,9 @@ int sendPlaintext(TSession * tsession,
   P2P_PACKET_HEADER *hdr;
 
   GE_ASSERT(ectx, tsession != NULL);
-  if((transport->getMTU(tsession->ttype) > 0) &&
-     (transport->getMTU(tsession->ttype) <
-      size + sizeof(P2P_PACKET_HEADER))) {
+  if ( (transport->getMTU(tsession->ttype) > 0) &&
+       (transport->getMTU(tsession->ttype) <
+	size + sizeof(P2P_PACKET_HEADER)) ) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }

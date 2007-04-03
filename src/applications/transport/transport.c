@@ -177,30 +177,32 @@ static int forEachTransport(TransportCallback callback,
  *        if SYSERR is returned!
  * @return OK on success, SYSERR on error
  */
-static TSession * transportConnect(const P2P_hello_MESSAGE * helo) {
+static TSession * 
+transportConnect(const P2P_hello_MESSAGE * hello) {
   unsigned short prot;
   TSession * tsession;
 
-  prot = ntohs(helo->protocol);
-  if ( (ntohs(helo->protocol) >= tapis_count)  ||
+  prot = ntohs(hello->protocol);
+  if ( (prot >= tapis_count)  ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
 	   _("Transport connection attempt failed, transport type %d not supported\n"),
-	   ntohs(helo->protocol));
+	   prot);
     return NULL;
   }
-  if (OK != tapis[prot]->connect(helo,
+  if (OK != tapis[prot]->connect(hello,
 				 &tsession))
     return NULL;
   tsession->ttype = prot;
   return tsession;
 }
 
-static TSession * transportConnectFreely(const PeerIdentity * peer,
-					 int useTempList) {
+static TSession * 
+transportConnectFreely(const PeerIdentity * peer,
+		       int useTempList) {
   int i;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   int * perm;
   TSession * ret;
 
@@ -210,22 +212,19 @@ static TSession * transportConnectFreely(const PeerIdentity * peer,
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
       continue;
-    helo = identity->identity2Helo(peer,
-				   perm[i],
-				   useTempList);
-    if (helo != NULL) {
-      ret = transportConnect(helo);
-      FREE(helo);
-      if (ret != NULL) {
-	FREE(perm);
-	MUTEX_UNLOCK(tapis_lock);
-	return ret;
-      }
-    }
+    hello = identity->identity2Helo(peer,
+				    perm[i],
+				    useTempList);
+    if (hello == NULL) 
+      continue;
+    ret = transportConnect(hello);
+    FREE(hello);
+    if (ret != NULL) 
+      break;
   }
   FREE(perm);
   MUTEX_UNLOCK(tapis_lock);
-  return NULL;
+  return ret;
 }
 
 /**

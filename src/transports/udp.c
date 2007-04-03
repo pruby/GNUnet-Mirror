@@ -510,9 +510,10 @@ addressToString(const P2P_hello_MESSAGE * hello,
  * The exported method. Makes the core api available via a global and
  * returns the udp transport API.
  */
-TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
+TransportAPI * 
+inittransport_udp(CoreAPIForTransport * core) {
   unsigned long long mtu;
-
+  
   ectx = core->ectx;
   cfg = core->cfg;
   load_monitor = core->load_monitor;
