@@ -460,7 +460,6 @@ void update_module_datastore(UpdateAPI * uapi) {
   unsigned int lastQuota;
   int * lq;
   State_ServiceAPI * state;
-  int ok = OK;
 
   if (-1 == GC_get_configuration_value_number(uapi->cfg,
 					      "FS",
