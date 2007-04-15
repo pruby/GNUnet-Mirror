@@ -50,7 +50,7 @@ static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 static int debug_flag;
 
-static int quiet_flag;
+static int loud_flag;
 
 #ifndef WINDOWS
 /**
@@ -212,9 +212,9 @@ static struct CommandLineOption gnunetdOptions[] = {
   { 'p', "padding-disable", "YES/NO",
     gettext_noop("disable padding with random data (experimental)"), 0,
     &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
-  { 'q', "quiet", NULL,
-    gettext_noop("run in quiet mode"),
-    0, &gnunet_getopt_configure_set_one, &quiet_flag },
+  { 'l', "loud", NULL,
+    gettext_noop("print all log messages to the console (only works together with -d)"),
+    0, &gnunet_getopt_configure_set_one, &loud_flag },
 #ifndef MINGW
   { 'u', "user", "USERNAME",
     gettext_noop("specify username as which gnunetd should run"), 1,
@@ -249,15 +249,13 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return 1;
   }
-  if (YES == debug_flag) {
-    if (quiet_flag == 0) {
-      ectx = GE_create_context_multiplexer(ectx,
-					   GE_create_context_stderr(NO,
-								    GE_USERKIND |
-								    GE_EVENTKIND |
-								    GE_BULK |
-								    GE_IMMEDIATE));
-    }
+  if ( (YES == debug_flag) &&
+       (loud_flag == 1) ) {
+    GE_setDefaultContext(NULL);
+    GE_free_context(ectx);
+    ectx = GE_create_context_stderr(YES,
+				    GE_ALL);
+    GE_setDefaultContext(ectx);   
   }
   setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,

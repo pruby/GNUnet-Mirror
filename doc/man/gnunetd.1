@@ -17,6 +17,9 @@ do not detach from the console (for debugging); log messages are written to stde
 \fB\-h\fR, \fB\-\-help\fR
 print help page
 .TP
+\fB\-l\fR, \fB\-\-loud\fR
+print all log messages (to stderr).  Only works together with the \-d option.  Also disables logging to files.
+.TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
 change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the configuration file take precedence over this option (the argument will be ignored in that case).
 .TP

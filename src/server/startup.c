@@ -282,7 +282,7 @@ int checkPermission(struct GE_Context * ectx,
   if (0 != ACCESS(fn, mode)) {
     GE_LOG(ectx,
 	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Insufficient access permissions for `%s': %s"),
+	   _("Insufficient access permissions for `%s': %s\n"),
 	   fn,
 	   STRERROR(errno));
     FREE(fn);

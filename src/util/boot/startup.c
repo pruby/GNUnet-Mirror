@@ -30,10 +30,6 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-#define DO_REQUEST NO
-
-#define DO_DEVELOPER NO
-
 static GE_KIND
 convertLogLevel(const char * level) {
   GE_KIND ret;
@@ -114,15 +110,9 @@ static int configure_logging(struct GE_Context ** ectx,
   }
   FREE(admin_log_file);
   if (ull != 0) {
-    tetx = GE_create_context_stderr(NO,
+    tetx = GE_create_context_stderr(YES,
 				    ull
 				    | GE_USERKIND
-#if DO_REQUEST
-				    | GE_REQUEST
-#endif
-#if DO_DEVELOPER
-                                    | GE_DEVELOPER | GE_DEBUG | GE_ADMIN
-#endif
 				    | GE_BULK
 				    | GE_IMMEDIATE);
     if (nctx == NULL)
@@ -167,7 +157,7 @@ int GNUNET_init(int argc,
 #endif
   /* during startup, log all warnings and higher
      for anybody to stderr */
-  *ectx = GE_create_context_stderr(NO,
+  *ectx = GE_create_context_stderr(YES,
 				   GE_WARNING | GE_ERROR | GE_FATAL |
 				   GE_USER | GE_ADMIN | GE_DEVELOPER |
 				   GE_IMMEDIATE | GE_BULK);
@@ -211,6 +201,7 @@ int GNUNET_init(int argc,
 void GNUNET_fini(struct GE_Context * ectx,
 		 struct GC_Configuration * cfg) {
   GC_free(cfg);
+  GE_setDefaultContext(NULL);
   GE_free_context(ectx);
 }
 		
