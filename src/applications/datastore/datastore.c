@@ -470,16 +470,6 @@ void update_module_datastore(UpdateAPI * uapi) {
 					      1024,
 					      &quota))
     return; /* OOPS */
-  sq = uapi->requestService("sqstore");
-  GE_LOG(uapi->ectx,
-	 GE_USER | GE_ADMIN | GE_INFO | GE_IMMEDIATE,
-	 _("Deleting expired content.  This may take a while.\n"));
-  sq->iterateExpirationTime(ANY_BLOCK,
-			    &freeSpaceExpired,
-			    &ok);
-  GE_LOG(uapi->ectx,
-	 GE_USER | GE_ADMIN | GE_INFO | GE_IMMEDIATE,
-	 _("Completed deleting expired content.\n"));
   state = uapi->requestService("state");
   if (state != NULL) {
     lq = NULL;
@@ -492,7 +482,6 @@ void update_module_datastore(UpdateAPI * uapi) {
     uapi->releaseService(state);
     lastQuota = ntohl(*lq);
     FREE(lq);
-    uapi->releaseService(sq);
     if (lastQuota == quota)
       return; /* unchanged */
   } else {
@@ -506,6 +495,7 @@ void update_module_datastore(UpdateAPI * uapi) {
 	       uapi->cfg);
   initFilters(uapi->ectx,
 	      uapi->cfg);
+  sq = uapi->requestService("sqstore");
   sq->get(NULL, 
 	  ANY_BLOCK,
 	  &filterAddAll,
