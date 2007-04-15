@@ -109,6 +109,7 @@ int os_modify_user(int testCapability,
 }
 
 
+
 /**
  * @brief Change user ID
  */
@@ -120,9 +121,10 @@ int os_change_user(struct GE_Context * ectx,
   pws = getpwnam(user);
   if (pws == NULL) {
     GE_LOG(ectx,
-	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("User `%s' not known, cannot change UID to it.\n"),
-	   user);
+	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	   _("Cannot obtain information about user `%s': %s\n"),
+	   user,
+	   STRERROR(errno));
     return SYSERR;
   }
   if((0 != setgid(pws->pw_gid)) ||
@@ -143,6 +145,37 @@ int os_change_user(struct GE_Context * ectx,
   }
 #endif
 
+  return OK;
+}
+
+
+
+/**
+ * @brief Change owner of a file
+ */
+int os_change_owner(struct GE_Context * ectx,
+		    const char * filename,
+		    const char * user) {
+#ifndef MINGW
+  struct passwd * pws;
+
+  pws = getpwnam(user);
+  if (pws == NULL) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	   _("Cannot obtain information about user `%s': %s\n"),
+	   user,
+	   STRERROR(errno));
+    return SYSERR;
+  }
+  if (0 != chown(filename,
+		 pws->pw_uid,
+		 pws->pw_gid))
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+			 "chown",
+			 filename);
+#endif
   return OK;
 }
 

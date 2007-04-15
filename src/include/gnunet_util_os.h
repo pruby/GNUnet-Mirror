@@ -244,6 +244,13 @@ int os_change_user(struct GE_Context * ectx,
 		   const char * user);
 
 /**
+ * @brief Change owner of a file
+ */
+int os_change_owner(struct GE_Context * ectx,
+		    const char * filename,
+		    const char * user);
+
+/**
  * Get the current CPU load.
  * @param ectx for error reporting
  * @param cfg to determine acceptable load level (LOAD::MAXCPULOAD)
@@ -312,16 +319,35 @@ enum InstallPathKind {
  */
 char * os_get_installation_path(enum InstallPathKind dirkind);
 
+/**
+ * Write our process ID to the pid file.  Use only
+ * if you are not calling os_terminal_detach, since
+ * os_terminal_detach will already write the pid file.
+ *
+ * @return OK on success, SYSERR on error
+ */
+int os_write_pid_file(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      unsigned int pid);
+
+/**
+ * Delete the PID file (to be called when the daemon
+ * shuts down)
+ */
+int os_delete_pid_file(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg);
 
 
 /**
  * Fork and start a new session to go into the background
- * in the way a good deamon should.
+ * in the way a good deamon should.  Also writes the PID
+ * file.
  *
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
  */
 int os_terminal_detach(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
 		       int * filedes);
 
 /**

@@ -27,11 +27,126 @@
  * receives a SIGTERM/SIGHUP etc.
  */
 
+#include "gnunet_directories.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_disk.h"
 #include "platform.h"
+
+
+static char * 
+getPIDFile(struct GC_Configuration * cfg) {
+  char * pif;
+  
+  if (0 != GC_get_configuration_value_filename(cfg,
+					       "GNUNETD",
+					       "PIDFILE",
+					       VAR_DAEMON_DIRECTORY "/gnunetd/pid",
+					       &pif))
+    return NULL;
+  return pif;
+}
+
+
+/**
+ * Write our process ID to the pid file.
+ *
+ * @return OK on success, SYSERR on error
+ */
+int os_write_pid_file(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      unsigned int pid) {
+  FILE * pidfd;
+  char * pif;
+  char * user;
+  char * rdir;
+  int len;
+
+  pif = getPIDFile(cfg);
+  if (pif == NULL)
+    return OK; /* no PID file */
+  GC_get_configuration_value_string(cfg,
+				    "GNUNETD",
+				    "USER",
+				    "",
+				    &user);
+  rdir = STRDUP(pif);
+  len = strlen(rdir);
+  while ( (len > 0) &&
+	  (rdir[len] != DIR_SEPARATOR) )
+    len--;
+  rdir[len] = '\0';
+  if (0 != ACCESS(rdir, F_OK)) {
+    /* we get to create a directory -- and claim it
+       as ours! */
+    disk_directory_create(ectx, rdir);
+    if (strlen(user)) 
+      os_change_owner(ectx,
+		      rdir, 
+		      user);
+  }
+  if (0 != ACCESS(rdir, W_OK | X_OK)) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 "access",
+			 rdir);
+    FREE(rdir);
+    FREE(user);
+    return SYSERR;
+  }
+  FREE(rdir);
+  pidfd = FOPEN(pif, "w");
+  if (pidfd == NULL) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_ADMIN | GE_BULK,
+			 "fopen",
+			 pif);
+    FREE(pif);
+    FREE(user);
+    return SYSERR;
+  }
+  if (0 > FPRINTF(pidfd,
+		  "%u",
+		  pid)) 
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_ADMIN | GE_BULK,
+			 "fprintf",
+			 pif);
+  if (0 != fclose(pidfd))
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_ADMIN | GE_BULK,
+			 "fclose",
+			 pif);
+  if (strlen(user)) 
+    os_change_owner(ectx,
+		    pif, 
+		    user);
+  FREE(user);  
+  FREE(pif);
+  return OK;
+}
+
+int os_delete_pid_file(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg) {
+  char * pif = getPIDFile(cfg);
+  if (pif == NULL)
+    return OK; /* no PID file */
+  if (YES == disk_file_test(ectx,
+			    pif)) {
+    if (0 != UNLINK(pif)) {
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_WARNING | GE_ADMIN | GE_BULK,
+			   "unlink",
+			   pif);
+      FREE(pif);
+      return SYSERR;
+    }
+  }
+  FREE(pif);
+  return OK;
+}
+
 
 /**
  * Fork and start a new session to go into the background
@@ -41,6 +156,7 @@
  *        to complete the detachment protocol (handshake)
  */
 int os_terminal_detach(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
 		       int * filedes) {
   pid_t pid;
   int nullfd;
@@ -78,10 +194,14 @@ int os_terminal_detach(struct GE_Context * ectx,
 	ok = OK;
     }
     fflush(stdout);
-    if (ok == OK)
+    if (ok == OK) {
+      os_write_pid_file(ectx, 
+			cfg,
+			pid);
       exit(0);
-    else
+    } else {
       exit(1); /* child reported error */
+    }
   }
   if (0 != CLOSE(filedes[0]))
     GE_LOG_STRERROR(ectx,

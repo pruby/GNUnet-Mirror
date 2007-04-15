@@ -44,6 +44,7 @@ static struct GC_Configuration * cfg;
 static struct GE_Context * ectx = NULL;
 
 static struct CronManager * cron;
+static struct LoadMonitor * mon;
 
 static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
@@ -89,38 +90,57 @@ static void waitForSignalHandler(struct GE_Context * ectx) {
 	 "gnunetd");
 }
 
+
+static int post_detach() {
+  if (OK != changeUser(ectx, cfg)) 
+    return SYSERR; 
+  if (OK != checkPermissions(ectx, cfg)) 
+    return SYSERR;  
+  mon = os_network_monitor_create(ectx,
+				  cfg);
+  if (mon == NULL) 
+    return SYSERR;  
+  return OK;
+}
+
 /**
  * The main method of gnunetd.
  */
 int gnunet_main() {
-  struct LoadMonitor * mon;
   struct SignalHandlerContext * shc_hup;
   int filedes[2]; /* pipe between client and parent */
 
   if ( (NO == debug_flag) &&
        (OK != os_terminal_detach(ectx,
+				 cfg,
 				 filedes)) )
     return SYSERR;
-  mon = os_network_monitor_create(ectx,
-				  cfg);
-  if (mon == NULL) {
-   if (NO == debug_flag)
-     os_terminal_detach_complete(ectx,
-				filedes,
-				 NO);
-   return SYSERR;
+  if (NO != debug_flag) 
+    os_write_pid_file(ectx,
+		      cfg,
+		      (unsigned int)getpid());
+  if (OK != post_detach()) {
+    if (NO == debug_flag)
+      os_terminal_detach_complete(ectx,
+				  filedes,
+				  NO);
+    else
+      os_delete_pid_file(ectx, cfg);
+    return SYSERR;
   }
   cron = cron_create(ectx);
   GE_ASSERT(ectx,
 	    cron != NULL);
 #ifndef WINDOWS
-  shc_hup = signal_handler_install(SIGHUP, &reread_config);
+  shc_hup = signal_handler_install(SIGHUP, 
+				   &reread_config);
 #endif
   if (OK != initCore(ectx,
 		     cfg,
 		     cron,
 		     mon)) {
-  	GE_LOG(ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
+  	GE_LOG(ectx, 
+	       GE_FATAL | GE_USER | GE_IMMEDIATE,
   		_("Core initialization failed.\n"));
   		
     cron_destroy(cron);
@@ -142,7 +162,6 @@ int gnunet_main() {
   
   initConnection(ectx, cfg, mon, cron);
   loadApplicationModules();
-  writePIDFile(ectx, cfg);
   if (NO == debug_flag)
     os_terminal_detach_complete(ectx,
 				filedes,
@@ -152,7 +171,7 @@ int gnunet_main() {
   waitForSignalHandler(ectx);
   disableCoreProcessing();
   cron_stop(cron);
-  deletePIDFile(ectx, cfg);
+  os_delete_pid_file(ectx, cfg);
   stopTCPServer();
   unloadApplicationModules();
   doneConnection();
@@ -240,10 +259,6 @@ int main(int argc,
 								    GE_IMMEDIATE));
     }
   }
-  if (OK != changeUser(ectx, cfg)) {
-    GNUNET_fini(ectx, cfg);
-    return 1;
-  }
   setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,
 			  cfg)) {
@@ -256,13 +271,16 @@ int main(int argc,
   }
   
 #ifdef MINGW
-  if (GC_get_configuration_value_yesno(cfg, "GNUNETD", "WINSERVICE", NO) == YES) {
+  if (GC_get_configuration_value_yesno(cfg, 
+				       "GNUNETD",
+				       "WINSERVICE", 
+				       NO) == YES) {
     SERVICE_TABLE_ENTRY DispatchTable[] =
       {{"GNUnet", ServiceMain}, {NULL, NULL}};
     ret = (GNStartServiceCtrlDispatcher(DispatchTable) != 0);
   } else
 #endif
-  ret = gnunet_main();
+    ret = gnunet_main();
   GNUNET_fini(ectx, cfg);
   if (ret != OK)
     return 1;

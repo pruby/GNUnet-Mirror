@@ -250,67 +250,80 @@ void capFSQuotaSize(struct GE_Context * ectx,
 #endif
 }
 
-static char * getPIDFile(struct GC_Configuration * cfg) {
-  char * pif;
-
-  if (0 != GC_get_configuration_value_filename(cfg,
-					       "GNUNETD",
-					       "PIDFILE",
-					       VAR_DAEMON_DIRECTORY "/gnunetd.pid",
-					       &pif))
-    return NULL;
-  return pif;
+int checkPermission(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    const char * section,
+		    const char * option,
+		    const char * def,
+		    int is_directory,
+		    int mode) {
+  char * fn;
+  int i;
+  
+  GC_get_configuration_value_filename(cfg,
+				      section,
+				      option,
+				      def,
+				      &fn);
+  if (is_directory)
+    disk_directory_create(ectx, fn);
+  else
+    disk_directory_create_for_file(ectx, fn);
+  if ( (0 != ACCESS(fn, F_OK)) &&
+       (mode == W_OK) ) {
+    /* adjust check to see if directory is writable */
+    i = strlen(fn);
+    while ( (i > 1) &&
+	    (fn[i] != DIR_SEPARATOR) )
+      i--;
+    fn[i] = '\0';    
+    mode = X_OK | W_OK;
+  }
+  if (0 != ACCESS(fn, mode)) {
+    GE_LOG(ectx,
+	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	   _("Insufficient access permissions for `%s': %s"),
+	   fn,
+	   STRERROR(errno));
+    FREE(fn);
+    return SYSERR;
+  }
+  FREE(fn);
+  return OK;
 }
 
-/**
- * Write our process ID to the pid file.
- */
-void writePIDFile(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg) {
-  FILE * pidfd;
-  char * pif;
+#define CHECK(a,b,c,d,e) if (OK != checkPermission(ectx, cfg, a, b, c, d, e)) return SYSERR;	
 
-  pif = getPIDFile(cfg);
-  if (pif == NULL)
-    return; /* no PID file */
-  pidfd = FOPEN(pif, "w");
-  if (pidfd == NULL) {
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_ADMIN | GE_BULK,
-			 "fopen",
-			 pif);
-    FREE(pif);
-    return;
-  }
-  if (0 > FPRINTF(pidfd,
-		  "%u",
-		  (unsigned int) getpid()))
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_ADMIN | GE_BULK,
-			 "fprintf",
-			 pif);
-  if (0 != fclose(pidfd))
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_ADMIN | GE_BULK,
-			 "fclose",
-			 pif);
-  FREE(pif);
-}
-
-void deletePIDFile(struct GE_Context * ectx,
-		   struct GC_Configuration * cfg) {
-  char * pif = getPIDFile(cfg);
-  if (pif == NULL)
-    return; /* no PID file */
-  if (YES == disk_file_test(ectx,
-			    pif)) {
-    if (0 != UNLINK(pif))
-      GE_LOG_STRERROR_FILE(ectx,
-			   GE_WARNING | GE_ADMIN | GE_BULK,
-			   "unlink",
-			   pif);
-  }
-  FREE(pif);
+int checkPermissions(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg) {
+  CHECK("PATHS",
+	"GNUNETD_HOME",
+	"/var/lib/gnunet",
+	YES,
+	W_OK | X_OK);  
+  CHECK("GNUNETD",
+	"LOGFILE",
+	"$GNUNETD_HOME/daemon-logs",
+	NO,
+	W_OK);
+  /* these should only be checked if "fs" is actually
+     loaded; we clearly should not check everything here
+     that just might be used (MYSQL-CONFIG, F2F-FRIENDS),
+     OTOH, late messages in the startup sequence are also
+     not great.  Would be nice if we could find a way to
+     keep things decentralized and still do a nice job
+     with reporting errors... */
+  CHECK("FS",
+	"DIR",
+	"$GNUNETD_HOME/data/fs",
+	YES,
+	W_OK | X_OK);
+  CHECK("FS",
+	"INDEX-DIRECTORY",
+	"$GNUNETD_HOME/data/shared",
+	YES,
+	W_OK | X_OK);
+  return OK;
 }
 
 /* end of startup.c */
