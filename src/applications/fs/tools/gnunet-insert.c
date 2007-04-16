@@ -248,7 +248,7 @@ static void * printstatus(void * ctx,
     GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_upload_error:
-    printf(_("\nError uploading file: %s\n"),
+    printf(_("\nError uploading file: %s"),
 	   event->data.UploadError.message);
     errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();

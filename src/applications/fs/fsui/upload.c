@@ -44,6 +44,10 @@ static void progressCallback(unsigned long long totalBytes,
 			     void * ptr) {
   FSUI_UploadList * utc = ptr;
   FSUI_Event event;
+  unsigned long long subtotal;
+  FSUI_UploadList * pos;
+  cron_t xeta;
+  cron_t now;
 
   event.type = FSUI_upload_progress;
   event.data.UploadProgress.uc.pos = utc;
@@ -57,6 +61,25 @@ static void progressCallback(unsigned long long totalBytes,
   utc->completed = completedBytes;
   utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
 			&event);
+  if (utc->parent != &utc->shared->ctx->activeUploads) {
+    subtotal = 0;
+    pos = utc->parent->child;
+    while (pos != NULL) {
+      subtotal += pos->completed;
+      pos = pos->next;
+    }
+    now = get_time();
+    xeta = now;
+    if (subtotal > 0) {
+      xeta = (cron_t) (utc->parent->start_time +
+		       (((double)(now - utc->parent->start_time)/(double)subtotal))
+		       * (double)utc->parent->total);
+    }
+    progressCallback(utc->parent->total,
+		     subtotal,
+		     xeta,
+		     utc->parent);
+  }
 }
 
 static int testTerminate(void * cls) {
@@ -152,7 +175,7 @@ createDirectoryHelper(struct GE_Context * ectx,
 		   len)) {
     GE_LOG_STRERROR_FILE(ee,
 			 GE_ERROR | GE_USER | GE_BULK,
-       "write",
+			 "write",
 			 tempName);
     *error = STRDUP(GE_memory_get(mem, 0));
     GE_free_context(ee);
@@ -248,7 +271,7 @@ void * FSUI_uploadThread(void * cls) {
 		  error);
       FREE(error);
       return NULL;
-    }
+    }    
   } else {
     filename = STRDUP(utc->filename);
   }
@@ -461,6 +484,7 @@ static int addChildUpload(const char * name,
   ECRS_freeMetaData(md);
   if (child == NULL)
     return SYSERR;
+  parent->total += child->total;
   return OK;
 }
 
