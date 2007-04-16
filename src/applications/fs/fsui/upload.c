@@ -499,7 +499,7 @@ addUploads(struct FSUI_UploadShared * shared,
   utc = MALLOC(sizeof(FSUI_UploadList));
   utc->completed = 0;
   utc->total = 0; /* to be set later */
-  utc->start_time = 0;
+  utc->start_time = get_time();
   utc->shared = shared;
   utc->next = NULL;
   utc->child = NULL;
