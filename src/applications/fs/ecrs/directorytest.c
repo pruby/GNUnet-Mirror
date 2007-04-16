@@ -35,6 +35,7 @@
 struct PCLS {
   ECRS_FileInfo * fi;
   unsigned int pos;
+  unsigned int max;
 };
 
 static int processor(const ECRS_FileInfo * fi,
@@ -42,17 +43,19 @@ static int processor(const ECRS_FileInfo * fi,
 		     int isRoot,
 		     void * cls) {
   struct PCLS * p = cls;
+  int i;
 
-  if (ECRS_equalsMetaData(p->fi[p->pos].meta,
-			  fi->meta) &&
-      ECRS_equalsUri(p->fi[p->pos].uri,
-		     fi->uri)) {
-    p->pos++;
-    return OK;
-  } else {
-    fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__);
-    return SYSERR;
+  for (i=0;i<p->max;i++) {
+    if (ECRS_equalsMetaData(p->fi[i].meta,
+			    fi->meta) &&
+	ECRS_equalsUri(p->fi[i].uri,
+		       fi->uri)) {
+      p->pos++;
+      return OK;
+    }
   }
+  fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__);
+  return SYSERR;
 }
 
 static int testDirectory(unsigned int i) {
@@ -67,6 +70,7 @@ static int testDirectory(unsigned int i) {
   char uri[512];
   char txt[128];
 
+  cls.max = i;
   fis = MALLOC(sizeof(ECRS_FileInfo) * i);
   for (p=0;p<i;p++) {
     fis[p].meta = ECRS_createMetaData();

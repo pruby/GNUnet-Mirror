@@ -69,7 +69,9 @@ int ECRS_listDirectory(struct GE_Context * ectx,
        (0 == memcmp(data,
 		    GNUNET_DIRECTORY_MAGIC,
 		    8)) ) {
-    memcpy(&mdSize, &data[8], sizeof(unsigned int));
+    memcpy(&mdSize,
+	   &data[8], 
+	   sizeof(unsigned int));
     mdSize = ntohl(mdSize);
     if (mdSize > len - 8 - sizeof(unsigned int) )
       return SYSERR; /* invalid size */
@@ -88,6 +90,10 @@ int ECRS_listDirectory(struct GE_Context * ectx,
       /* URI is never empty, must be end of block,
 	 skip to next alignment */
       align = ((pos / BLOCK_ALIGN_SIZE)+1) * BLOCK_ALIGN_SIZE;
+      if (align == pos) {
+	/* if we were already aligned, still skip a block! */
+	align += BLOCK_ALIGN_SIZE;
+      }
       pos = align;
       if (pos >= len) {
 	/* malformed - or partial download... */
@@ -98,16 +104,15 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     while ( (epos < len) &&
 	    (data[epos] != '\0') )
       epos++;
-    if (epos == len) {
+    if (epos >= len) 
       return SYSERR; /* malformed - or partial download */
-    }
 
     fi.uri = ECRS_stringToUri(ectx,
 			      &data[pos]);
     pos = epos+1;
     if (fi.uri == NULL) {
-      GE_BREAK(ectx, 0);
-      return SYSERR; /* malformed! */
+      pos--; /* go back to '\0' to force going to next alignment */
+      continue;
     }
     if (ECRS_isKeywordUri(fi.uri)) {
       ECRS_freeUri(fi.uri);
@@ -137,11 +142,88 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     pos += mdSize;
     count++;
     if (spcb != NULL)
-      spcb(&fi, NULL, NO, spcbClosure);
+      spcb(&fi,
+	   NULL,
+	   NO, 
+	   spcbClosure);
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }
   return count;
+}
+
+/**
+ * Given the start and end position of a block of
+ * data, return the end position of that data
+ * after alignment to the BLOCK_ALIGN_SIZE.
+ */
+static unsigned long long 
+do_align(unsigned long long start_position,
+	 unsigned long long end_position) {
+  unsigned long long align;
+    
+  align = (end_position / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
+  if ( (start_position < align) &&
+       (end_position > align) ) 
+    return align + end_position - start_position; 
+  return end_position;
+}
+
+/**
+ * Compute a permuation of the blocks to
+ * minimize the cost of alignment.  Greedy packer.
+ *
+ * @param start starting position for the first block
+ * @param count size of the two arrays
+ * @param sizes the sizes of the individual blocks
+ * @param perm the permutation of the blocks (updated)
+ */
+static void block_align(unsigned long long start,
+			unsigned int count,
+			const unsigned long long * sizes,
+			int * perm) {
+  int i;
+  int j;
+  int tmp;
+  int best;
+  long long badness;
+  unsigned long long cpos;
+  unsigned long long cend;
+  long long cbad;
+  int cval;
+
+  cpos = start;
+  for (i=0;i<count;i++) {
+    start = cpos;
+    badness = 0x7FFFFFFF;
+    best = -1;
+    for (j=i;j<count;j++) {
+      cval = perm[j];
+      cend = cpos + sizes[cval];
+      if (cpos % BLOCK_ALIGN_SIZE == 0) {
+	/* prefer placing the largest blocks first */
+	cbad = - (cend % BLOCK_ALIGN_SIZE); 
+      } else {
+	if (cpos / BLOCK_ALIGN_SIZE == cend / BLOCK_ALIGN_SIZE) {
+	  /* Data fits into the same block! Prefer small left-overs! */
+	  cbad = BLOCK_ALIGN_SIZE - cend % BLOCK_ALIGN_SIZE; 
+	} else {
+	  /* Would have to waste space to re-align, add big factor, this 
+	     case is a real loss (proportional to space wasted)! */
+	  cbad = BLOCK_ALIGN_SIZE * (BLOCK_ALIGN_SIZE - cpos % BLOCK_ALIGN_SIZE);
+	}	  
+      }
+      if (cbad < badness) {
+	best = j;
+	badness = cbad;
+      }
+    }
+    tmp = perm[i];
+    perm[i] = perm[best];
+    perm[best] = tmp;
+    cpos += sizes[perm[i]];
+    cpos = do_align(start, cpos);
+  }
 }
 
 /**
@@ -175,12 +257,14 @@ int ECRS_createDirectory(struct GE_Context * ectx,
 			 const ECRS_FileInfo * fis,
 			 struct ECRS_MetaData * meta) {
   int i;
+  int j;
   unsigned long long psize;
   unsigned long long size;
   unsigned long long pos;
-  unsigned long long align;
   char ** ucs;
   int ret;
+  unsigned long long * sizes;
+  int * perm;
 
   for (i=0;i<count;i++) {
     if (ECRS_isKeywordUri(fis[i].uri)) {
@@ -192,23 +276,35 @@ int ECRS_createDirectory(struct GE_Context * ectx,
   size = 8 + sizeof(unsigned int);
   size += ECRS_sizeofMetaData(meta,
 			      ECRS_SERIALIZE_FULL);
-
+  sizes = MALLOC(count * sizeof(unsigned long long));
+  perm = MALLOC(count * sizeof(int));
   for (i=0;i<count;i++) {
-    psize = size;
-
+    perm[i] = i;
     ucs[i] = ECRS_uriToString(fis[i].uri);
     GE_ASSERT(ectx, ucs[i] != NULL);
-    size += strlen(ucs[i]) + 1;
-    size += sizeof(unsigned int);
-    size += ECRS_sizeofMetaData(fis[i].meta,
+    psize = ECRS_sizeofMetaData(fis[i].meta,
 				ECRS_SERIALIZE_FULL);
-    align = (size / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
-    if ( (psize < align) &&
-	 (size > align) ) {
-       size = align + size - psize;
-    }
+    if (psize == -1) {
+      GE_BREAK(ectx, 0);
+      FREE(sizes);
+      FREE(perm);
+      return SYSERR;
+    }      
+    sizes[i] = psize + sizeof(unsigned int) + strlen(ucs[i]) + 1;
   }
+  /* permutate entries to minimize alignment cost */
+  block_align(size,
+	      count,
+	      sizes,
+	      perm);
 
+  /* compute final size with alignment */
+  for (i=0;i<count;i++) {
+    psize = size;
+    size += sizes[perm[i]];
+    size = do_align(psize,
+		    size);
+  }
   *len = size;
   *data = MALLOC(size);
   memset(*data, 0, size);
@@ -230,25 +326,17 @@ int ECRS_createDirectory(struct GE_Context * ectx,
 	 sizeof(unsigned int));
   pos += ntohl(ret) + sizeof(unsigned int);
 
-  for (i=0;i<count;i++) {
+  for (j=0;j<count;j++) {
+    i = perm[j];
     psize = pos;
-
-    pos += strlen(ucs[i]) + 1 +
-      ECRS_sizeofMetaData(fis[i].meta,
-			  ECRS_SERIALIZE_FULL);
-    pos += sizeof(unsigned int);
-    align = (pos / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
-    if ( (psize < align) &&
-	 (pos > align) ) {
-      pos = align;
-    } else
-      pos = psize;
+    pos += sizes[i];
+    pos = do_align(psize, pos);
+    pos -= sizes[i]; /* go back to beginning */
     memcpy(&(*data)[pos],
 	   ucs[i],
 	   strlen(ucs[i]) + 1);
     pos += strlen(ucs[i]) + 1;
     FREE(ucs[i]);
-
     ret = ECRS_serializeMetaData(ectx,
 				 fis[i].meta,
 				 &(*data)[pos + sizeof(unsigned int)],
@@ -261,6 +349,8 @@ int ECRS_createDirectory(struct GE_Context * ectx,
 	   sizeof(unsigned int));
     pos += ntohl(ret) + sizeof(unsigned int);
   }
+  FREE(sizes);
+  FREE(perm);
   FREE(ucs);
   GE_ASSERT(ectx, pos == size);
 

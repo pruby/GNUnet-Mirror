@@ -19,13 +19,6 @@ notes:
     + dht/gap integration (search routing) [RC]
     + fsui/fs/location URI support (download routing) [RC]
   * HTTP transport (libcurl, libmicrohttpd)
-- minor improvements:
-  * directories can be compacted -- add heuristic to determine
-    if we should NOT padd with zeros (if we would waste too
-    much space).  Needs some lookahead for size of remaining
-    directory entries. (theoretically can compact some directories
-    by 50% (?) -- incidentially 25% is what gzip can do on the
-    current directories!) [ CG ]
 - testcases (fix, add):
   * dht/tools
   * ecrs_core
