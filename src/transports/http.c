@@ -24,7 +24,6 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - handle PUT (when server using microhttpd)
  * - connection timeout (shutdown inactive connections)
  * - proper connection shutdown (free resources, especially
  *   check completed CURL puts)
@@ -535,6 +534,11 @@ static int accessHandlerCallback(void * cls,
   HTTPSession * httpSession;
   HashCode512 client;
   int i;
+  unsigned int have;
+  MESSAGE_HEADER * hdr;
+  P2P_PACKET * mp;
+  unsigned int cpy;
+  unsigned int poff;
 
   if ( (strlen(url) < 2) ||
        (OK != enc2hash(&url[1],
@@ -585,6 +589,7 @@ static int accessHandlerCallback(void * cls,
     addTSession(tsession);
   }
   if (0 == strcmp("get", method)) {
+    /* handle get */
     response = MHD_create_response_from_callback(-1,
 						 contentReaderCallback,
 						 httpSession,
@@ -593,9 +598,59 @@ static int accessHandlerCallback(void * cls,
     MHD_queue_response(session,
 		       MHD_HTTP_OK,
 		       response);
-  } else {    
-    /* FIXME: handle put (upload_data!) */
-  }
+  } else if (0 == strcmp("put", method)) {
+    /* handle put (upload_data!) */
+    MUTEX_LOCK(httpSession->lock);
+    poff = 0;
+    have = *upload_data_size;
+    *upload_data_size = 0; /* we will always process everything */
+    while (have > 0) {
+      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) {
+	cpy = sizeof(MESSAGE_HEADER) - httpSession->rpos1;
+	if (cpy > have)
+	  cpy = have;
+	memcpy(&httpSession->rbuff1[httpSession->rpos1],
+	       &upload_data[poff],
+	       cpy);
+	httpSession->rpos1 += cpy;
+	have -= cpy;
+	poff += cpy;
+      }
+      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) 
+	break;            
+      hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
+      GROW(httpSession->rbuff2,
+	   httpSession->rsize2,
+	   ntohs(hdr->size));
+      memcpy(httpSession->rbuff2,
+	     httpSession->rbuff1,
+	     sizeof(MESSAGE_HEADER));
+      GE_ASSERT(NULL,
+		httpSession->rpos2 <= ntohs(hdr->size));
+      if (httpSession->rpos2 < ntohs(hdr->size)) {
+	cpy = ntohs(hdr->size) - httpSession->rpos2;
+	if (cpy > have)
+	  cpy = have;
+	memcpy(&httpSession->rbuff2[httpSession->rpos2],
+	       &upload_data[poff],
+	       cpy);
+	have -= cpy;
+	poff += cpy;
+      }
+      if (httpSession->rpos2 < ntohs(hdr->size)) 
+	break;
+      mp = MALLOC(sizeof(P2P_PACKET));
+      mp->msg = httpSession->rbuff2;
+      mp->sender = httpSession->sender;
+      mp->tsession = httpSession->tsession;
+      coreAPI->receive(mp);
+      httpSession->rbuff2 = NULL;
+      httpSession->rpos2 = 0;
+      httpSession->rsize2 = 0;
+      httpSession->rpos1 = 0;
+    }
+  } else 
+    return MHD_NO; /* must be get or put! */
   return MHD_YES;
 }
 
@@ -633,6 +688,11 @@ receiveContentCallback(void * ptr,
     GROW(httpSession->rbuff2,
 	 httpSession->rsize2,
 	 ntohs(hdr->size));
+    memcpy(httpSession->rbuff2,
+	   httpSession->rbuff1,
+	   sizeof(MESSAGE_HEADER));
+    GE_ASSERT(NULL,
+	      httpSession->rpos2 <= ntohs(hdr->size));
     if (httpSession->rpos2 < ntohs(hdr->size)) {
       cpy = ntohs(hdr->size) - httpSession->rpos2;
       if (cpy > have)
