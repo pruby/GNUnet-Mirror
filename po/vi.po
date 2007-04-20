@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-03-25 14:12-0600\n"
+"POT-Creation-Date: 2007-04-15 15:35-0600\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -209,28 +209,27 @@ msgstr ""
 msgid "Where should gnunetd write the PID?"
 msgstr ""
 
-#: contrib/config-daemon.scm:295
+#: contrib/config-daemon.scm:294
 msgid ""
-"In which file should gnunetd write the process-id of the server?  If you run "
-"gnunetd as root, you may want to choose /var/run/gnunetd.pid. It's not the "
-"default since gnunetd may not have write rights at that location."
+"The default is no longer /var/run/gnunetd.pid since we could not delete the "
+"file on shutdown at that location."
 msgstr ""
 
-#: contrib/config-daemon.scm:307
+#: contrib/config-daemon.scm:306
 msgid "As which user should gnunetd run?"
 msgstr ""
 
-#: contrib/config-daemon.scm:309
+#: contrib/config-daemon.scm:308
 msgid ""
 "Empty means \"current user\". On computer startup, it is root/SYSTEM.  Under "
 "Windows, this setting affects the creation of a new system service only."
 msgstr ""
 
-#: contrib/config-daemon.scm:321
+#: contrib/config-daemon.scm:320
 msgid "Which transport mechanisms should GNUnet use?"
 msgstr ""
 
-#: contrib/config-daemon.scm:323
+#: contrib/config-daemon.scm:322
 msgid ""
 "Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The "
 "available transports are udp, tcp, http, smtp, tcp6, udp6 and nat.\n"
@@ -244,11 +243,11 @@ msgid ""
 "itself."
 msgstr ""
 
-#: contrib/config-daemon.scm:337
+#: contrib/config-daemon.scm:336
 msgid "Which applications should gnunetd support?"
 msgstr ""
 
-#: contrib/config-daemon.scm:339
+#: contrib/config-daemon.scm:338
 msgid ""
 "Whenever this option is changed, you MUST run gnunet-update. Currently, the "
 "available applications are:\n"
@@ -285,15 +284,15 @@ msgid ""
 "compromise your anonymity."
 msgstr ""
 
-#: contrib/config-daemon.scm:368
+#: contrib/config-daemon.scm:367
 msgid "Disable client-server connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:380
+#: contrib/config-daemon.scm:379
 msgid "Disable peer discovery"
 msgstr ""
 
-#: contrib/config-daemon.scm:381
+#: contrib/config-daemon.scm:380
 msgid ""
 "The option 'PRIVATE-NETWORK' can be used to limit the connections of this "
 "peer to peers of which the hostkey has been copied by hand to data/hosts;  "
@@ -305,15 +304,15 @@ msgid ""
 "lines above would need some minor editing :-)."
 msgstr ""
 
-#: contrib/config-daemon.scm:392
+#: contrib/config-daemon.scm:391
 msgid "Disable advertising this peer to other peers"
 msgstr ""
 
-#: contrib/config-daemon.scm:404
+#: contrib/config-daemon.scm:403
 msgid "Disable automatic establishment of connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:405
+#: contrib/config-daemon.scm:404
 msgid ""
 "If this option is enabled, GNUnet will not automatically establish "
 "connections to other peers, but instead wait for applications to "
@@ -321,15 +320,15 @@ msgid ""
 "connect to us)."
 msgstr ""
 
-#: contrib/config-daemon.scm:416
+#: contrib/config-daemon.scm:415
 msgid "Disable advertising of other peers by this peer"
 msgstr ""
 
-#: contrib/config-daemon.scm:428
+#: contrib/config-daemon.scm:427
 msgid "Client/Server Port"
 msgstr ""
 
-#: contrib/config-daemon.scm:429
+#: contrib/config-daemon.scm:428
 msgid ""
 "Which is the client-server port that is used between gnunetd and the clients "
 "(TCP only).  You may firewall this port for non-local machines (but you do "
@@ -337,11 +336,11 @@ msgid ""
 "connections from machines that are listed under TRUSTED)."
 msgstr ""
 
-#: contrib/config-daemon.scm:440
+#: contrib/config-daemon.scm:439
 msgid "IPs allowed to use gnunetd server"
 msgstr ""
 
-#: contrib/config-daemon.scm:441
+#: contrib/config-daemon.scm:440
 msgid ""
 "This option specifies which hosts are trusted enough to connect as clients "
 "(to the TCP port).  This is useful if you run gnunetd on one host of your "
@@ -352,73 +351,73 @@ msgid ""
 "separated by a semicolon, spaces are not allowed."
 msgstr ""
 
-#: contrib/config-daemon.scm:453
+#: contrib/config-daemon.scm:452
 msgid "Limit connections to the specfied set of peers."
 msgstr ""
 
-#: contrib/config-daemon.scm:454
+#: contrib/config-daemon.scm:453
 msgid ""
 "If this option is not set, any peer is allowed to connect.  If it is set, "
 "only the specified peers are allowed."
 msgstr ""
 
-#: contrib/config-daemon.scm:465
+#: contrib/config-daemon.scm:464
 msgid "Run gnunetd as this user."
 msgstr ""
 
-#: contrib/config-daemon.scm:466
+#: contrib/config-daemon.scm:465
 msgid ""
 "When started as root, gnunetd will change permissions to the given user."
 msgstr ""
 
-#: contrib/config-daemon.scm:477
+#: contrib/config-daemon.scm:476
 msgid "Run gnunetd as this group."
 msgstr ""
 
-#: contrib/config-daemon.scm:478
+#: contrib/config-daemon.scm:477
 msgid ""
 "When started as root, gnunetd will change permissions to the given group."
 msgstr ""
 
-#: contrib/config-daemon.scm:489
+#: contrib/config-daemon.scm:488
 msgid "Run gnunetd during system startup?"
 msgstr ""
 
-#: contrib/config-daemon.scm:502
+#: contrib/config-daemon.scm:501
 msgid "Prevent the specfied set of peers from connecting."
 msgstr ""
 
-#: contrib/config-daemon.scm:503
+#: contrib/config-daemon.scm:502
 msgid "If this option is not set, any peer is allowed to connect."
 msgstr ""
 
-#: contrib/config-daemon.scm:514
+#: contrib/config-daemon.scm:513
 msgid "Rarely used settings for peer advertisements and connections"
 msgstr ""
 
-#: contrib/config-daemon.scm:534
+#: contrib/config-daemon.scm:533
 #, fuzzy
 msgid "General settings"
 msgstr "Thiết lập khác"
 
-#: contrib/config-daemon.scm:535
+#: contrib/config-daemon.scm:534
 msgid "Settings that change the behavior of GNUnet in general"
 msgstr ""
 
-#: contrib/config-daemon.scm:562
+#: contrib/config-daemon.scm:561
 #, fuzzy
 msgid "Path settings"
 msgstr "Thiết lập khác"
 
-#: contrib/config-daemon.scm:563
+#: contrib/config-daemon.scm:562
 msgid "Prefixes for paths used by GNUnet"
 msgstr ""
 
-#: contrib/config-daemon.scm:579
+#: contrib/config-daemon.scm:578
 msgid "Which database should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:581
+#: contrib/config-daemon.scm:580
 msgid ""
 "Which database should be used?  The options are \"sqstore_sqlite\" and "
 "\"sqstore_mysql\".  You must run gnunet-update after changing this value!\n"
@@ -427,11 +426,11 @@ msgid ""
 "is relatively simple.  Read the file doc/README.mysql for how to setup mysql."
 msgstr ""
 
-#: contrib/config-daemon.scm:594
+#: contrib/config-daemon.scm:593
 msgid "Which topology should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:596
+#: contrib/config-daemon.scm:595
 msgid ""
 "Which topology should be used?  The only options at the moment are "
 "\"topology_default\" and \"topology_f2f\".  In default mode, GNUnet will try "
@@ -444,46 +443,46 @@ msgid ""
 "afraid of establishing (direct) connections to unknown peers."
 msgstr ""
 
-#: contrib/config-daemon.scm:611
+#: contrib/config-daemon.scm:610
 msgid "Modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:612
+#: contrib/config-daemon.scm:611
 msgid "Settings that select specific implementations for GNUnet modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:629
+#: contrib/config-daemon.scm:628
 msgid "List of friends for friend-to-friend topology"
 msgstr ""
 
-#: contrib/config-daemon.scm:630
+#: contrib/config-daemon.scm:629
 msgid ""
 "Specifies the name of a file which contains a list of GNUnet peer IDs that "
 "are friends.  If used with the friend-to-friend topology, this will ensure "
 "that GNUnet only connects to these peers (via any available transport)."
 msgstr ""
 
-#: contrib/config-daemon.scm:644
+#: contrib/config-daemon.scm:643
 msgid "Name of the MySQL database GNUnet should use"
 msgstr ""
 
-#: contrib/config-daemon.scm:656
+#: contrib/config-daemon.scm:655
 #, fuzzy
 msgid "Configuration file that specifies the MySQL username and password"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
 
-#: contrib/config-daemon.scm:668
+#: contrib/config-daemon.scm:667
 #, fuzzy
 msgid "Configuration of the MySQL database"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
 
-#: contrib/config-daemon.scm:687
+#: contrib/config-daemon.scm:686
 msgid "MB of diskspace GNUnet can use for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:689
+#: contrib/config-daemon.scm:688
 msgid ""
 "How much disk space (MB) is GNUnet allowed to use for anonymous file "
 "sharing?  This does not take indexed files into account, only the space "
@@ -494,19 +493,19 @@ msgid ""
 "Note that if you change the quota, you need to run gnunet-update afterwards."
 msgstr ""
 
-#: contrib/config-daemon.scm:703
+#: contrib/config-daemon.scm:702
 msgid "Size of the routing table for anonymous routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:715
+#: contrib/config-daemon.scm:714
 msgid "Size of the routing table for DHT routing."
 msgstr ""
 
-#: contrib/config-daemon.scm:728
+#: contrib/config-daemon.scm:727
 msgid "Allow migrating content to this peer."
 msgstr ""
 
-#: contrib/config-daemon.scm:730
+#: contrib/config-daemon.scm:729
 msgid ""
 "If you say yes here, GNUnet will migrate content to your server, and you "
 "will not be able to control what data is stored on your machine. \n"
@@ -518,13 +517,13 @@ msgid ""
 "can be considered liable for it."
 msgstr ""
 
-#: contrib/config-daemon.scm:744
+#: contrib/config-daemon.scm:743
 msgid ""
 "MB of diskspace GNUnet can use for caching DHT index data (the data will be "
 "stored in /tmp)"
 msgstr ""
 
-#: contrib/config-daemon.scm:745
+#: contrib/config-daemon.scm:744
 msgid ""
 "DHT index data is inherently small and expires comparatively quickly.  It is "
 "deleted whenever gnunetd is shut down.\n"
@@ -532,20 +531,20 @@ msgid ""
 "The size of the DSTORE QUOTA is specified in MB."
 msgstr ""
 
-#: contrib/config-daemon.scm:759
+#: contrib/config-daemon.scm:758
 msgid "Options for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:778
+#: contrib/config-daemon.scm:777
 #, fuzzy
 msgid "Applications"
 msgstr "Tùy _chọn"
 
-#: contrib/config-daemon.scm:794
+#: contrib/config-daemon.scm:793
 msgid "Is this machine unreachable behind a NAT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:795
+#: contrib/config-daemon.scm:794
 msgid ""
 "Set to YES if this machine is behind a NAT that limits connections from the "
 "outside to the GNUnet port and that cannot be traversed using UPnP.  Note "
@@ -558,15 +557,15 @@ msgid ""
 "connections.  Use YES only if you get no connections otherwise."
 msgstr ""
 
-#: contrib/config-daemon.scm:806
+#: contrib/config-daemon.scm:805
 msgid "Which port should be used by the TCP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:818 contrib/config-daemon.scm:911
+#: contrib/config-daemon.scm:817 contrib/config-daemon.scm:910
 msgid "Should we try to determine our external IP using UPnP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:819
+#: contrib/config-daemon.scm:818
 msgid ""
 "You can use 'make check' in src/transports/upnp/ to find out if your NAT "
 "supports UPnP.  You should disable this option if you are sure that you are "
@@ -574,34 +573,34 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:830 contrib/config-daemon.scm:935
-#: contrib/config-daemon.scm:990 contrib/config-daemon.scm:1055
+#: contrib/config-daemon.scm:829 contrib/config-daemon.scm:934
+#: contrib/config-daemon.scm:989 contrib/config-daemon.scm:1054
 msgid "Which IPs are not allowed to connect?"
 msgstr ""
 
-#: contrib/config-daemon.scm:842 contrib/config-daemon.scm:947
+#: contrib/config-daemon.scm:841 contrib/config-daemon.scm:946
 msgid ""
 "Which IPs are allowed to connect? Leave empty to allow connections from any "
 "IP."
 msgstr ""
 
-#: contrib/config-daemon.scm:854
+#: contrib/config-daemon.scm:853
 msgid "TCP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:872
+#: contrib/config-daemon.scm:871
 msgid "Which port should be used by the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:884
+#: contrib/config-daemon.scm:883
 msgid "HTTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:899
+#: contrib/config-daemon.scm:898
 msgid "Which port should be used by the UDP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:912
+#: contrib/config-daemon.scm:911
 msgid ""
 "You can use 'make check' in src/transports/upnp/ to find out if your NAT "
 "supports UPnP. You should disable this option if you are sure that you are "
@@ -609,69 +608,69 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:923
+#: contrib/config-daemon.scm:922
 msgid "What is the maximum transfer unit for UDP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:959
+#: contrib/config-daemon.scm:958
 msgid "UDP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:978
+#: contrib/config-daemon.scm:977
 msgid "Which port should be used by the TCP IPv6 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1002 contrib/config-daemon.scm:1067
+#: contrib/config-daemon.scm:1001 contrib/config-daemon.scm:1066
 msgid ""
 "Which IPs are allowed to connect? Leave empty to allow any IP to connect."
 msgstr ""
 
-#: contrib/config-daemon.scm:1014
+#: contrib/config-daemon.scm:1013
 msgid "TCP6 transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1031
+#: contrib/config-daemon.scm:1030
 msgid "Which port should be used by the UDP IPv6 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1043
+#: contrib/config-daemon.scm:1042
 msgid "What is the maximum transfer unit for UDP 6?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1079
+#: contrib/config-daemon.scm:1078
 msgid "UDP6 transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1097
+#: contrib/config-daemon.scm:1096
 #, fuzzy
 msgid "Network interface"
 msgstr "Giao diện mạng:"
 
-#: contrib/config-daemon.scm:1109
+#: contrib/config-daemon.scm:1108
 msgid "External IP address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1121
+#: contrib/config-daemon.scm:1120
 msgid "External IPv6 address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1133
+#: contrib/config-daemon.scm:1132
 msgid "Transports"
 msgstr ""
 
-#: contrib/config-daemon.scm:1156
+#: contrib/config-daemon.scm:1155
 msgid "What is the maximum number of bytes per second that we may receive?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1168
+#: contrib/config-daemon.scm:1167
 msgid "What is the maximum number of bytes per second that we may send?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1180
+#: contrib/config-daemon.scm:1179
 msgid "What is the maximum CPU load (percentage)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1182
+#: contrib/config-daemon.scm:1181
 msgid ""
 "Which CPU load can be tolerated.  Load here always refers to the total "
 "system load, that is it includes CPU utilization by other processes.  A "
@@ -681,11 +680,11 @@ msgid ""
 "Multiprocessors may use values above 100."
 msgstr ""
 
-#: contrib/config-daemon.scm:1193
+#: contrib/config-daemon.scm:1192
 msgid "What is the maximum IO load (permille)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1195
+#: contrib/config-daemon.scm:1194
 msgid ""
 "Which IO load can be tolerated.  Load here refers to the percentage of CPU "
 "cycles wasted waiting for IO for the entire system, that is it includes disk "
@@ -695,36 +694,36 @@ msgid ""
 "values are typically between 10 and 75."
 msgstr ""
 
-#: contrib/config-daemon.scm:1206
+#: contrib/config-daemon.scm:1205
 msgid "What is the maximum CPU load (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1207
+#: contrib/config-daemon.scm:1206
 msgid ""
 "Which CPU load can be tolerated.  This is the hard limit, so once it is "
 "reached, gnunetd will start to massively drop data to reduce the load.  Use "
 "with caution."
 msgstr ""
 
-#: contrib/config-daemon.scm:1218
+#: contrib/config-daemon.scm:1217
 msgid "What is the maximum upstream bandwidth (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1219
+#: contrib/config-daemon.scm:1218
 msgid ""
 "The limit is given as a percentage of the MAXNETUPBPS limit.  Use 100 to "
 "have MAXNETUPBPS be the hard limit.  Use zero for no limit."
 msgstr ""
 
-#: contrib/config-daemon.scm:1230
+#: contrib/config-daemon.scm:1229
 msgid "Should we disable random padding (experimental option)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1242
+#: contrib/config-daemon.scm:1241
 msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
 msgstr ""
 
-#: contrib/config-daemon.scm:1244
+#: contrib/config-daemon.scm:1243
 msgid ""
 "Basic bandwidth limitation (YES) means simply that the bandwidth limits "
 "specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
@@ -769,12 +768,12 @@ msgid ""
 "since it is irrelevant)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1261
+#: contrib/config-daemon.scm:1260
 #, fuzzy
 msgid "Network interface to monitor"
 msgstr "Giao diện mạng:"
 
-#: contrib/config-daemon.scm:1262
+#: contrib/config-daemon.scm:1261
 msgid ""
 "For which interfaces should we do accounting?  GNUnet will evaluate the "
 "total traffic (not only the GNUnet related traffic) and adjust its bandwidth "
@@ -785,12 +784,12 @@ msgid ""
 "number reported by  'gnunet-win-tool -n'."
 msgstr ""
 
-#: contrib/config-daemon.scm:1273
+#: contrib/config-daemon.scm:1272
 #, fuzzy
 msgid "Load management"
 msgstr "Sai tham số dòng lệnh.\n"
 
-#: contrib/config-daemon.scm:1298 contrib/config-client.scm:353
+#: contrib/config-daemon.scm:1297 contrib/config-client.scm:353
 msgid "Root node"
 msgstr ""
 
@@ -1611,7 +1610,7 @@ msgstr "Không kết gắn được tới cổng UDP %d.\n"
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr "UDP6: Không nhận ra địa chỉ IP công cộng của tôi.\n"
 
-#: src/transports/udp6.c:521 src/transports/udp.c:534
+#: src/transports/udp6.c:521 src/transports/udp.c:535
 #, fuzzy, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr "MTU cho '%s' có thể quá thấp (chưa phát triển sự phân mảnh!)\n"
@@ -1739,15 +1738,15 @@ msgstr ""
 "Gửi thông báo với kích thước %d qua UDP tới %u.%u.%u.%u:%u không thành công: "
 "%s\n"
 
-#: src/transports/udp.c:552
+#: src/transports/udp.c:553
 msgid "# bytes received via UDP"
 msgstr "# byte nhận được qua UDP"
 
-#: src/transports/udp.c:554
+#: src/transports/udp.c:555
 msgid "# bytes sent via UDP"
 msgstr "# byte gửi qua UDP"
 
-#: src/transports/udp.c:556
+#: src/transports/udp.c:557
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# byte loại bỏ bởi UDP (đi ra)"
 
@@ -2079,7 +2078,7 @@ msgid "# plaintext PING messages sent"
 msgstr "# đã gửi các thông báo PING dạng văn bản thông thường"
 
 #: src/applications/advertising/advertising.c:802
-#: src/applications/session/connect.c:892
+#: src/applications/session/connect.c:877
 #, fuzzy, c-format
 msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
@@ -2226,27 +2225,27 @@ msgid "Cannot encrypt sessionkey, peer `%s' not known!\n"
 msgstr ""
 "Không mã hóa được chìa khóa buổi làm việc, không biết đến đầu peer khác!\n"
 
-#: src/applications/session/connect.c:587
+#: src/applications/session/connect.c:572
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' has invalid format (discarded).\n"
 msgstr "Thông báo nhận được từ một đầu là sai.\n"
 
-#: src/applications/session/connect.c:605
+#: src/applications/session/connect.c:590
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
 msgstr "Thông báo nhận được từ một đầu là sai.\n"
 
-#: src/applications/session/connect.c:637
+#: src/applications/session/connect.c:622
 #, fuzzy, c-format
 msgid "Invalid `%s' message received from peer `%s'.\n"
 msgstr "Nhận được thông báo '%s' sai từ đầu peer '%s'.\n"
 
-#: src/applications/session/connect.c:647
+#: src/applications/session/connect.c:632
 #, fuzzy, c-format
 msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
 msgstr "Kiểm tra CRC của SKEY từ '%s' không thành công (có: %u, muốn %u).\n"
 
-#: src/applications/session/connect.c:716
+#: src/applications/session/connect.c:701
 #, fuzzy, c-format
 msgid ""
 "Error parsing encrypted session key from `%s', given message part size is "
@@ -2255,24 +2254,24 @@ msgstr ""
 "Lỗi phân tích chìa khóa buổi làm việc đã mã hóa, kích thước của phần thông "
 "báo đưa ra là sai.\n"
 
-#: src/applications/session/connect.c:728
+#: src/applications/session/connect.c:713
 #, c-format
 msgid "Unknown type in embedded message from `%s': %u (size: %u)\n"
 msgstr ""
 
-#: src/applications/session/connect.c:881
+#: src/applications/session/connect.c:866
 msgid "# session keys sent"
 msgstr "# đã gửi các phím buổi làm việc"
 
-#: src/applications/session/connect.c:883
+#: src/applications/session/connect.c:868
 msgid "# session keys rejected"
 msgstr "# đã nhả ra các phím buổi làm việc"
 
-#: src/applications/session/connect.c:885
+#: src/applications/session/connect.c:870
 msgid "# session keys accepted"
 msgstr "# đã chấp nhận các phím buổi làm việc"
 
-#: src/applications/session/connect.c:887
+#: src/applications/session/connect.c:872
 msgid "# sessions established"
 msgstr "# đã thiết lập buổi làm việc"
 
@@ -2654,46 +2653,46 @@ msgid ""
 "Converting peer address to string failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:189
+#: src/applications/transport/transport.c:190
 #, c-format
 msgid "Transport connection attempt failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:284
+#: src/applications/transport/transport.c:283
 #, fuzzy, c-format
 msgid "Transmission attempt failed, transport type %d unknown.\n"
 msgstr "Không biết đến giao thông dạng %d.\n"
 
-#: src/applications/transport/transport.c:373
+#: src/applications/transport/transport.c:372
 #, c-format
 msgid "No transport of type %d known.\n"
 msgstr "Không biết đến giao thông dạng %d.\n"
 
-#: src/applications/transport/transport.c:430
+#: src/applications/transport/transport.c:429
 msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:631
+#: src/applications/transport/transport.c:630
 #, fuzzy, c-format
 msgid "Loading transports `%s'\n"
 msgstr "Đang thử nghiệm (các) truyền tải %s\n"
 
-#: src/applications/transport/transport.c:651
+#: src/applications/transport/transport.c:650
 #, fuzzy, c-format
 msgid "Could not load transport plugin `%s'\n"
 msgstr "Không chạy được ứng dụng '%s'\n"
 
-#: src/applications/transport/transport.c:661
+#: src/applications/transport/transport.c:660
 #, fuzzy, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
 msgstr "Thư viện giao thông '%s' không cung cấp chức năng yêu cầu '%s%s'.\n"
 
-#: src/applications/transport/transport.c:688
+#: src/applications/transport/transport.c:687
 #, fuzzy, c-format
 msgid "Loaded transport `%s'\n"
 msgstr "(Các) truyền tải có: %s\n"
 
-#: src/applications/transport/transport.c:701
+#: src/applications/transport/transport.c:700
 #, fuzzy, c-format
 msgid "I am peer `%s'.\n"
 msgstr "Tôi là một đầu peer '%s'.\n"
@@ -4269,7 +4268,7 @@ msgstr "Đang cập nhật dữ liệu cho môđun '%s'\n"
 msgid "Failed to update data for module `%s'\n"
 msgstr "Cập nhật dữ liệu cho môđun '%s' không thành công\n"
 
-#: src/server/gnunet-update.c:196 src/server/gnunetd.c:124
+#: src/server/gnunet-update.c:196 src/server/gnunetd.c:144
 #, fuzzy
 msgid "Core initialization failed.\n"
 msgstr " Kết nối không thành công\n"
@@ -4399,17 +4398,22 @@ msgid ""
 "partition!\n"
 msgstr ""
 
-#: src/server/gnunetd.c:83
+#: src/server/startup.c:285
+#, c-format
+msgid "Insufficient access permissions for `%s': %s"
+msgstr ""
+
+#: src/server/gnunetd.c:84
 #, fuzzy, c-format
 msgid "`%s' startup complete.\n"
 msgstr "'%s' khởi động thành công.\n"
 
-#: src/server/gnunetd.c:88
+#: src/server/gnunetd.c:89
 #, fuzzy, c-format
 msgid "`%s' is shutting down.\n"
 msgstr "'%s' đang tắt.\n"
 
-#: src/server/gnunetd.c:187
+#: src/server/gnunetd.c:206
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -4417,24 +4421,24 @@ msgstr ""
 "chạy trong chế độ tìm sửa lỗi debug; gnunetd sẽ không tạo daemon và sẽ ghi "
 "thông báo lỗi ra stderr thay vì vào một tập tin bản ghi log"
 
-#: src/server/gnunetd.c:191
+#: src/server/gnunetd.c:210
 msgid "Starts the gnunetd daemon."
 msgstr "Chạy daemon gnunetd."
 
-#: src/server/gnunetd.c:194
+#: src/server/gnunetd.c:213
 msgid "disable padding with random data (experimental)"
 msgstr ""
 
-#: src/server/gnunetd.c:197
+#: src/server/gnunetd.c:216
 msgid "run in quiet mode"
 msgstr ""
 
-#: src/server/gnunetd.c:201
+#: src/server/gnunetd.c:220
 #, fuzzy
 msgid "specify username as which gnunetd should run"
 msgstr "chỉ ra máy đang chạy gnunetd"
 
-#: src/server/gnunetd.c:252
+#: src/server/gnunetd.c:267
 #, fuzzy, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -4733,12 +4737,12 @@ msgstr "Không hỏi được sự sử dụng CPU (Windows NT).\n"
 msgid "Cannot query the CPU usage (Win 9x)\n"
 msgstr "Không hỏi được sự sử dụng CPU (Windows 9x).\n"
 
-#: src/util/os/user.c:124
+#: src/util/os/user.c:125 src/util/os/user.c:166
 #, fuzzy, c-format
-msgid "User `%s' not known, cannot change UID to it.\n"
-msgstr "Người dùng '%s' không rõ, không thay đổi được UID thành nó."
+msgid "Cannot obtain information about user `%s': %s\n"
+msgstr "Không ghi được các tập tin cấu hình: %s.\n"
 
-#: src/util/os/user.c:138
+#: src/util/os/user.c:140
 #, fuzzy, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Không thay đổi được người dùng/nhóm thành '%s': %s"
@@ -4832,95 +4836,95 @@ msgstr "'%s' mong đợi '%s' là một thư mục!\n"
 msgid "Syntax error in configuration file `%s' at line %d.\n"
 msgstr "Lỗi cú pháp trong tập tin cấu hình '%s' trên dòng %d.\n"
 
-#: src/util/config_impl/impl.c:505
+#: src/util/config_impl/impl.c:518
 #, c-format
 msgid "Setting option `%s' in section `%s' to value `%s' was refused.\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:551
+#: src/util/config_impl/impl.c:564
 #, c-format
 msgid ""
 "Configuration value '%llu' for '%s' in section '%s' is out of legal bounds [%"
 "llu,%llu]\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:563
+#: src/util/config_impl/impl.c:576
 #, c-format
 msgid "Configuration value '%s' for '%s' in section '%s' should be a number\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:653
+#: src/util/config_impl/impl.c:666
 #, c-format
 msgid ""
 "Configuration value '%s' for '%s' in section '%s' is not in set of legal "
 "choices\n"
 msgstr ""
 
-#: src/util/error/error.c:78 src/util/error/error.c:80
+#: src/util/error/error.c:93 src/util/error/error.c:95
 #, fuzzy
-msgid "Error log:"
+msgid "Error log:\n"
 msgstr "Lỗi"
 
-#: src/util/error/error.c:130
+#: src/util/error/error.c:138
 #, c-format
 msgid ""
 "\n"
 "Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:198 src/util/error/error.c:242
+#: src/util/error/error.c:206 src/util/error/error.c:250
 msgid "DEBUG"
 msgstr "TÌMLỖI"
 
-#: src/util/error/error.c:201 src/util/error/error.c:244
+#: src/util/error/error.c:209 src/util/error/error.c:252
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:204 src/util/error/error.c:248
+#: src/util/error/error.c:212 src/util/error/error.c:256
 msgid "WARNING"
 msgstr "CẢNH BÁO"
 
-#: src/util/error/error.c:207 src/util/error/error.c:250
+#: src/util/error/error.c:215 src/util/error/error.c:258
 msgid "ERROR"
 msgstr "LỖI"
 
-#: src/util/error/error.c:210 src/util/error/error.c:252
+#: src/util/error/error.c:218 src/util/error/error.c:260
 msgid "FATAL"
 msgstr "LỖI NẶNG"
 
-#: src/util/error/error.c:213 src/util/error/error.c:254
+#: src/util/error/error.c:221 src/util/error/error.c:262
 msgid "USER"
 msgstr ""
 
-#: src/util/error/error.c:216 src/util/error/error.c:256
+#: src/util/error/error.c:224 src/util/error/error.c:264
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:219 src/util/error/error.c:258
+#: src/util/error/error.c:227 src/util/error/error.c:266
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:222 src/util/error/error.c:260
+#: src/util/error/error.c:230 src/util/error/error.c:268
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:225 src/util/error/error.c:262
+#: src/util/error/error.c:233 src/util/error/error.c:270
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:228 src/util/error/error.c:264
+#: src/util/error/error.c:236 src/util/error/error.c:272
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:231
+#: src/util/error/error.c:239
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:246
+#: src/util/error/error.c:254
 msgid "INFO"
 msgstr "THÔNGTIN"
 
-#: src/util/error/error.c:265
+#: src/util/error/error.c:273
 msgid "NOTHING"
 msgstr "KHÔNGCÓGÌ"
 
@@ -5797,6 +5801,10 @@ msgstr "Lỗi chuyển quyền hạn dịch vụ tới cho người dùng"
 #: src/setup/lib/wizard_util.c:172
 msgid "Unknown error while creating a new user"
 msgstr "Lỗi không rõ khi tạo một người dùng mới"
+
+#, fuzzy
+#~ msgid "User `%s' not known, cannot change UID to it.\n"
+#~ msgstr "Người dùng '%s' không rõ, không thay đổi được UID thành nó."
 
 #~ msgid ""
 #~ "Expected welcome on http connection, got garbage. Closing connection.\n"

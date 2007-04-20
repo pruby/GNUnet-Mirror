@@ -24,8 +24,10 @@
  * @author Christian Grothoff
  *
  * TODO:
+ * - handle PUT (when server using microhttpd)
  * - connection timeout (shutdown inactive connections)
- * - proper connection shutdown (free resources)
+ * - proper connection shutdown (free resources, especially
+ *   check completed CURL puts)
  */
 
 #include "gnunet_util.h"
@@ -525,7 +527,9 @@ static void contentReaderFreeCallback(void * cls) {
 static int accessHandlerCallback(void * cls,
 				 struct MHD_Session * session,
 				 const char * url,
-				 const char * method) {
+				 const char * method,
+				 const char * upload_data,
+				 unsigned int * upload_data_size) {
   TSession * tsession;
   struct MHD_Response * response;
   HTTPSession * httpSession;
@@ -589,8 +593,8 @@ static int accessHandlerCallback(void * cls,
     MHD_queue_response(session,
 		       MHD_HTTP_OK,
 		       response);
-  } else {
-    /* FIXME: handle put! */
+  } else {    
+    /* FIXME: handle put (upload_data!) */
   }
   return MHD_YES;
 }
@@ -663,10 +667,27 @@ sendContentCallback(void * ptr,
 		    size_t nmemb,
 		    void * ctx) {
   HTTPSession * httpSession = ctx;
+  size_t max = size * nmemb;
 
-  /* FIXME: find data to send, if none left, add
-     dummy response AND unqueue! */
-  return 0;
+  MUTEX_LOCK(httpSession->lock);
+  if (max > httpSession->wpos)
+    max = httpSession->wpos;
+  memcpy(ptr,
+	 &httpSession->wbuff[httpSession->woff],
+	 max);
+  httpSession->woff += max;
+  httpSession->wpos -= max;
+  if (httpSession->woff == httpSession->wpos) {
+    httpSession->woff = 0;
+    httpSession->wpos = 0;
+  }
+  if (max == 0) {
+    /* if we have nothing to sent, this will terminate
+       the session (CURL API requires this) */
+    httpSession->cs.client.put = NULL; 
+  }
+  MUTEX_UNLOCK(httpSession->lock);
+  return max;
 }
 
 #define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GE_LOG(coreAPI->ectx, GE_WARNING | GE_USER | GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
@@ -684,7 +705,6 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   TSession * tsession;
   HTTPSession * httpSession;
   CURL * curl_get;
-  CURL * curl_put;
   CURLcode ret;
   CURLMcode mret;
   char * url;
@@ -693,11 +713,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   curl_get = curl_easy_init();
   if (curl_get == NULL)
     return SYSERR;
-  curl_put = curl_easy_init();
-  if (curl_put == NULL) {
-    curl_easy_cleanup(curl_get);
-    return SYSERR;
-  }
+
   hash2enc(&helo->senderIdentity.hashPubKey,
 	   &enc);
   url = MALLOC(64 + sizeof(EncName));
@@ -755,13 +771,52 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
     goto cleanup;
   }
 
-  /* create PUT */
+  /* create SESSION */
+  httpSession->destroyed = NO;
+  httpSession->rpos1 = 0;
+  httpSession->rpos2 = 0;
+  httpSession->rsize2 = 0;
+  httpSession->rbuff2 = NULL;
+  httpSession->wsize = 0;
+  httpSession->woff = 0;
+  httpSession->wpos = 0;
+  httpSession->wbuff = NULL;
+  httpSession->sender = helo->senderIdentity;
+  httpSession->lock = MUTEX_CREATE(YES);
+  httpSession->users = 1; /* us only, core has not seen this tsession! */
+  httpSession->lastUse = get_time();
+  httpSession->is_client = YES;
+  httpSession->cs.client.get = curl_get;
+  httpSession->cs.client.put = NULL;
+  tsession = MALLOC(sizeof(TSession));
+  httpSession->tsession = tsession;
+  tsession->ttype = HTTP_PROTOCOL_NUMBER;
+  tsession->internal = httpSession;
+  addTSession(tsession);
+  *tsessionPtr = tsession;
+  return OK;
+ cleanup:
+  curl_easy_cleanup(curl_get);
+  FREE(url);
+  FREE(proxy);
+  FREE(httpSession);
+  return SYSERR;
+}
+
+static CURL * 
+create_curl_put(HTTPSession * httpSession) {
+  CURL * curl_put;
+  CURLcode ret;
+
+  curl_put = curl_easy_init();
+  if (curl_put == NULL) 
+    return NULL;
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_FAILONERROR,
 		   1);
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_URL,
-		   url);
+		   httpSession->cs.client.url);
   if (strlen(proxy) > 0)
     CURL_EASY_SETOPT(curl_put,
 		     CURLOPT_PROXY,
@@ -769,7 +824,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_BUFFERSIZE,
 		   32 * 1024);
-  if (0 == strncmp(url,
+  if (0 == strncmp(httpSession->cs.client.url,
 		   "http", 
 		   4))
     CURL_EASY_SETOPT(curl_put,
@@ -790,51 +845,11 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_READDATA,
 		   httpSession);
-  if (ret != CURLE_OK) 
-    goto cleanup;
-  mret = curl_multi_add_handle(curl_multi, curl_put);
-  if (mret != CURLM_OK) {
-    GE_LOG(coreAPI->ectx,
-	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
-	   "curl_multi_add_handle",
-	   __FILE__,
-	   __LINE__,
-	   curl_multi_strerror(mret));
-    goto cleanup;
+  if (ret != CURLE_OK) {
+    curl_easy_cleanup(curl_put);
+    return NULL;
   }
-
-  /* create SESSION */
-  httpSession->destroyed = NO;
-  httpSession->rpos1 = 0;
-  httpSession->rpos2 = 0;
-  httpSession->rsize2 = 0;
-  httpSession->rbuff2 = NULL;
-  httpSession->wsize = 0;
-  httpSession->woff = 0;
-  httpSession->wpos = 0;
-  httpSession->wbuff = NULL;
-  httpSession->sender = helo->senderIdentity;
-  httpSession->lock = MUTEX_CREATE(YES);
-  httpSession->users = 1; /* us only, core has not seen this tsession! */
-  httpSession->lastUse = get_time();
-  httpSession->is_client = YES;
-  httpSession->cs.client.get = curl_get;
-  httpSession->cs.client.put = curl_put;
-  tsession = MALLOC(sizeof(TSession));
-  httpSession->tsession = tsession;
-  tsession->ttype = HTTP_PROTOCOL_NUMBER;
-  tsession->internal = httpSession;
-  addTSession(tsession);
-  *tsessionPtr = tsession;
-  return OK;
- cleanup:
-  curl_easy_cleanup(curl_get);
-  curl_easy_cleanup(curl_put);
-  FREE(url);
-  FREE(proxy);
-  FREE(httpSession);
-  return SYSERR;
+  return curl_put;
 }
 
 /**
@@ -850,6 +865,8 @@ static int httpSend(TSession * tsession,
 		    const unsigned int size,
 		    int important) {
   HTTPSession * httpSession = tsession->internal;
+  CURL * curl_put;
+  CURLMcode mret;
 
   if (size >= MAX_BUFFER_SIZE)
     return SYSERR;
@@ -857,8 +874,31 @@ static int httpSend(TSession * tsession,
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
-  /* FIXME: if first data to send, add PUT to multi set! */
   MUTEX_LOCK(httpSession->lock);
+  if (httpSession->cs.client.put == NULL) {
+    /* first data to send, add PUT to multi set! */    
+    curl_put = create_curl_put(httpSession);
+    if (curl_put == NULL) {
+      MUTEX_UNLOCK(httpSession->lock);
+      return SYSERR;
+    }
+    httpSession->cs.client.put = curl_put;
+    mret = curl_multi_add_handle(curl_multi, curl_put);
+    if (mret != CURLM_OK) {
+      GE_LOG(coreAPI->ectx,
+	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	     _("%s failed at %s:%d: `%s'\n"),
+	     "curl_multi_add_handle",
+	     __FILE__,
+	     __LINE__,
+	     curl_multi_strerror(mret));
+      curl_easy_cleanup(curl_put);
+      httpSession->cs.client.put = NULL;
+      MUTEX_UNLOCK(httpSession->lock);
+      return SYSERR;
+    }
+  }
+     
   if ( (httpSession->wsize > HTTP_BUF_SIZE) &&
        (important == NO) ) {
     if (stats != NULL)
