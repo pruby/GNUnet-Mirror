@@ -249,12 +249,17 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return 1;
   }
-  if ( (YES == debug_flag) &&
-       (loud_flag == 1) ) {
+  if (YES == debug_flag) {
     GE_setDefaultContext(NULL);
     GE_free_context(ectx);
-    ectx = GE_create_context_stderr(YES,
-				    GE_ALL);
+    if (loud_flag == 1)    
+      ectx = GE_create_context_stderr(YES,
+				      GE_ALL);
+    else
+      ectx = GE_create_context_stderr(YES,
+				      GE_USER | GE_ADMIN 
+				      | GE_WARNING | GE_ERROR | GE_FATAL 
+				      | GE_BULK | GE_IMMEDIATE);
     GE_setDefaultContext(ectx);   
   }
   setFdLimit(ectx, cfg);
