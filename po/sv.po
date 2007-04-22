@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-04-15 15:35-0600\n"
+"POT-Creation-Date: 2007-04-22 11:48-0600\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -90,23 +90,20 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:128
-#, fuzzy
 msgid "Full pathname of GNUnet directory for file-sharing data"
-msgstr "Filformatsfel (inte en GNUnet-katalog?)\n"
+msgstr ""
 
 #: contrib/config-daemon.scm:140
-#, fuzzy
 msgid "Full pathname to the directory with the key-value database"
-msgstr "Filformatsfel (inte en GNUnet-katalog?)\n"
+msgstr ""
 
 #: contrib/config-daemon.scm:141
 msgid "Note that the kvstore is currently not used."
 msgstr ""
 
 #: contrib/config-daemon.scm:152
-#, fuzzy
 msgid "Full pathname of GNUnet directory for indexed files symbolic links"
-msgstr "Filformatsfel (inte en GNUnet-katalog?)\n"
+msgstr ""
 
 #: contrib/config-daemon.scm:164
 msgid "How many minutes should peer advertisements last?"
@@ -188,10 +185,8 @@ msgid "Where should gnunetd write the logs?"
 msgstr ""
 
 #: contrib/config-daemon.scm:275 contrib/config-client.scm:169
-#, fuzzy
 msgid "Configuration of the logging system"
 msgstr ""
-"Konfiguration eller version av GNUnet ändrad.  Du behöver köra \"%s\"!\n"
 
 #: contrib/config-daemon.scm:276 contrib/config-client.scm:170
 msgid "Specify which system messages should be logged how"
@@ -382,9 +377,8 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:488
-#, fuzzy
 msgid "Run gnunetd during system startup?"
-msgstr "Kör gnunet-update"
+msgstr ""
 
 #: contrib/config-daemon.scm:501
 msgid "Prevent the specfied set of peers from connecting."
@@ -470,21 +464,17 @@ msgid "Name of the MySQL database GNUnet should use"
 msgstr ""
 
 #: contrib/config-daemon.scm:655
-#, fuzzy
 msgid "Configuration file that specifies the MySQL username and password"
 msgstr ""
-"Konfiguration eller version av GNUnet ändrad.  Du behöver köra \"%s\"!\n"
 
 #: contrib/config-daemon.scm:667
 #, fuzzy
 msgid "Configuration of the MySQL database"
-msgstr ""
-"Konfiguration eller version av GNUnet ändrad.  Du behöver köra \"%s\"!\n"
+msgstr "Konfigurationsfil \"%s\" skapad.\n"
 
 #: contrib/config-daemon.scm:686
-#, fuzzy
 msgid "MB of diskspace GNUnet can use for anonymous file sharing"
-msgstr "aktiverar (anonym) fildelning"
+msgstr ""
 
 #: contrib/config-daemon.scm:688
 msgid ""
@@ -790,9 +780,8 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:1272
-#, fuzzy
 msgid "Load management"
-msgstr "Ogiltiga kommandoradsargument.\n"
+msgstr ""
 
 #: contrib/config-daemon.scm:1297 contrib/config-client.scm:353
 msgid "Root node"
@@ -807,9 +796,8 @@ msgid "On which machine and port is gnunetd running (for clients)?"
 msgstr ""
 
 #: contrib/config-client.scm:190
-#, fuzzy
 msgid "This is equivalent to the -H option.  The format is IP:PORT."
-msgstr "Visa värde av alternativet"
+msgstr ""
 
 #: contrib/config-client.scm:201
 #, fuzzy
@@ -823,7 +811,7 @@ msgstr ""
 #: contrib/config-client.scm:214
 #, fuzzy
 msgid "General options"
-msgstr "Andra inställningar"
+msgstr "Visa alla alternativ"
 
 #: contrib/config-client.scm:231
 msgid "Do not add metadata listing the creation time for inserted content"
@@ -848,8 +836,9 @@ msgid ""
 msgstr ""
 
 #: contrib/config-client.scm:258
+#, fuzzy
 msgid "File-Sharing options"
-msgstr ""
+msgstr "Visa alla alternativ"
 
 #: contrib/config-client.scm:273
 msgid "Which plugins should be loaded by gnunet-gtk?"
@@ -893,9 +882,8 @@ msgid "Options related to gnunet-gtk"
 msgstr "Ej ansluten till gnunetd."
 
 #: contrib/config-client.scm:341
-#, fuzzy
 msgid "Full pathname of GNUnet client HOME directory"
-msgstr "Filformatsfel (inte en GNUnet-katalog?)\n"
+msgstr ""
 
 #: contrib/config-client.scm:342
 msgid "The directory for GNUnet files that belong to the user."
@@ -904,9 +892,8 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:10 src/setup/gtk/gnunet-setup.glade:259
 #: src/setup/gtk/gnunet-setup.glade:711 src/setup/gtk/gnunet-setup.glade:1436
 #: src/setup/gtk/gnunet-setup.glade:1970
-#, fuzzy
 msgid "GNUnet configuration assistant"
-msgstr "GNUnet-konfiguration"
+msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:56
 #, fuzzy
@@ -974,7 +961,6 @@ msgid ""
 msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:372
-#, fuzzy
 msgid "Network interface:"
 msgstr "Nätverksgränssnitt:"
 
@@ -987,9 +973,8 @@ msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
 msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:514
-#, fuzzy
 msgid "Network connection"
-msgstr "GNUnet-konfiguration"
+msgstr "Nätverksanslutning"
 
 #: src/setup/gtk/gnunet-setup.glade:770
 msgid ""
@@ -1036,9 +1021,8 @@ msgid "CPU usage"
 msgstr "CPU-användning"
 
 #: src/setup/gtk/gnunet-setup.glade:1164
-#, fuzzy
 msgid "Load limitation"
-msgstr "Bandbreddsbegränsning"
+msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:1244 src/setup/gtk/gnunet-setup.glade:1778
 #: src/setup/gtk/gnunet-setup.glade:2259 src/setup/ncurses/wizard_curs.c:566
@@ -1079,17 +1063,14 @@ msgid "Start the GNUnet background process on computer startup"
 msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:1642
-#, fuzzy
 msgid "Open the enhanced configurator"
-msgstr "Kunde inte spara konfiguration!"
+msgstr ""
 
 #: src/setup/gtk/gnunet-setup.glade:1663
-#, fuzzy
 msgid "Run gnunet-update"
-msgstr "gnunet-update misslyckades!"
+msgstr "Kör gnunet-update"
 
 #: src/setup/gtk/gnunet-setup.glade:1698 src/setup/gtk/gnunet-setup.glade:2179
-#, fuzzy
 msgid "Other settings"
 msgstr "Andra inställningar"
 
@@ -1519,19 +1500,19 @@ msgstr "använd konfigurationsfil FILNAMN"
 msgid "specify host on which gnunetd is running"
 msgstr "ange värd på vilken gnunetd körs"
 
-#: src/include/gnunet_util_error.h:177 src/include/gnunet_util_error.h:179
-#: src/include/gnunet_util_error.h:181 src/include/gnunet_util_error.h:183
-#, fuzzy, c-format
+#: src/include/gnunet_util_error.h:215 src/include/gnunet_util_error.h:217
+#: src/include/gnunet_util_error.h:219 src/include/gnunet_util_error.h:221
+#, c-format
 msgid "Internal error: assertion failed at %s:%d in %s.\n"
-msgstr "\"%s\" misslyckades vid %s:%d med fel: %s\n"
+msgstr ""
 
-#: src/include/gnunet_util_error.h:190 src/include/gnunet_util_error.h:197
-#: src/include/gnunet_util_error.h:204 src/include/gnunet_util_error.h:211
+#: src/include/gnunet_util_error.h:228 src/include/gnunet_util_error.h:235
+#: src/include/gnunet_util_error.h:242 src/include/gnunet_util_error.h:249
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d in %s with error: %s\n"
 msgstr "\"%s\" misslyckades vid %s:%d med fel: %s\n"
 
-#: src/include/gnunet_util_error.h:218 src/include/gnunet_util_error.h:225
+#: src/include/gnunet_util_error.h:256 src/include/gnunet_util_error.h:263
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
 msgstr "\"%s\" misslyckades för fil \"%s\" vid %s:%d med fel: %s\n"
@@ -1578,12 +1559,12 @@ msgstr ""
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr ""
 
-#: src/transports/http.c:447
+#: src/transports/http.c:448
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: Kunde inte fastställa min publika IP-adress.\n"
 
-#: src/transports/http.c:672 src/transports/http.c:750
-#: src/transports/http.c:799 src/transports/http.c:936
+#: src/transports/http.c:753 src/transports/http.c:826
+#: src/transports/http.c:950 src/transports/http.c:1036
 #: src/transports/upnp/upnp.c:335 src/transports/upnp/upnp.c:560
 #: src/applications/bootstrap_http/http.c:121
 #: src/applications/bootstrap_http/http.c:261
@@ -1597,21 +1578,21 @@ msgstr "HTTP: Kunde inte fastställa min publika IP-adress.\n"
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr "\"%s\" misslyckades vid %s:%d med fel: \"%s\".\n"
 
-#: src/transports/http.c:1126
+#: src/transports/http.c:1226
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:1134
+#: src/transports/http.c:1234
 msgid "# bytes received via HTTP"
 msgstr "# byte mottagna via HTTP"
 
-#: src/transports/http.c:1136
+#: src/transports/http.c:1236
 msgid "# bytes sent via HTTP"
 msgstr "# byte skickade via HTTP"
 
-#: src/transports/http.c:1138
+#: src/transports/http.c:1238
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# byte kastade via HTTP (utgående)"
 
@@ -1641,7 +1622,7 @@ msgstr "SMTP-filtersträng för lång, kapad till \"%s\"\n"
 #: src/transports/smtp.c:546
 #, fuzzy, c-format
 msgid "Failed to initialize libesmtp: %s.\n"
-msgstr "Kunde inte initiera SQLite.\n"
+msgstr "Misslyckades att initiera tjänsten \"%s\".\n"
 
 #: src/transports/smtp.c:610
 #, c-format
@@ -1739,7 +1720,7 @@ msgstr "# byte kastade via TCP (utgående)"
 #: src/transports/upnp/upnp.c:428
 #, fuzzy, c-format
 msgid "%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"
-msgstr "\"%s\" misslyckades vid %s:%d med fel: \"%s\".\n"
+msgstr "\"%s\" misslyckades för fil \"%s\" vid %s:%d med fel: %s\n"
 
 #: src/transports/upnp/upnp.c:489
 #, c-format
@@ -1861,8 +1842,9 @@ msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
 #: src/applications/dht/module/table.c:701
+#, fuzzy
 msgid "# dht connections"
-msgstr ""
+msgstr "Nätverksanslutning"
 
 #: src/applications/dht/module/table.c:702
 #, fuzzy
@@ -1876,7 +1858,7 @@ msgstr ""
 #: src/applications/dht/module/table.c:704
 #, fuzzy
 msgid "# dht discovery messages sent"
-msgstr "# krypterade PING-meddelanden mottagna"
+msgstr "# krypterade PING-meddelanden skickade"
 
 #: src/applications/dht/module/routing.c:752
 msgid "# dht replies routed"
@@ -1887,14 +1869,12 @@ msgid "# dht requests routed"
 msgstr ""
 
 #: src/applications/dht/module/routing.c:754
-#, fuzzy
 msgid "# dht get requests received"
-msgstr "# krypterade PING-meddelanden mottagna"
+msgstr ""
 
 #: src/applications/dht/module/routing.c:755
-#, fuzzy
 msgid "# dht put requests received"
-msgstr "# byte mottogs via TCP"
+msgstr ""
 
 #: src/applications/dht/module/routing.c:756
 #, fuzzy
@@ -2173,9 +2153,9 @@ msgid "Session key received from peer `%s' has invalid format (discarded).\n"
 msgstr "Meddelande mottaget från motpart är ogiltig.\n"
 
 #: src/applications/session/connect.c:590
-#, fuzzy, c-format
+#, c-format
 msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
-msgstr "Meddelande mottaget från motpart är ogiltig.\n"
+msgstr ""
 
 #: src/applications/session/connect.c:622
 #, c-format
@@ -2310,17 +2290,8 @@ msgid "# bytes allowed in datastore"
 msgstr ""
 
 #: src/applications/datastore/datastore.c:392
-#: src/applications/datastore/datastore.c:501
+#: src/applications/datastore/datastore.c:489
 msgid "Failed to load state service. Trying to do without.\n"
-msgstr ""
-
-#: src/applications/datastore/datastore.c:476
-#, fuzzy
-msgid "Deleting expired content.  This may take a while.\n"
-msgstr "Skapar ny värdnyckel (det här kan ta en stund).\n"
-
-#: src/applications/datastore/datastore.c:482
-msgid "Completed deleting expired content.\n"
 msgstr ""
 
 #: src/applications/identity/hostkey.c:123
@@ -2368,9 +2339,9 @@ msgid "Removed file `%s' containing invalid hello data.\n"
 msgstr ""
 
 #: src/applications/identity/identity.c:759
-#, fuzzy, c-format
+#, c-format
 msgid "Signature failed verification: peer `%s' not known.\n"
-msgstr "Kan inte kryptera sessionsnyckel, andra parten är inte känd!\n"
+msgstr ""
 
 #: src/applications/identity/identity.c:768
 msgid "Signature failed verification: signature invalid.\n"
@@ -3326,10 +3297,10 @@ msgid ""
 msgstr "Nedladdning avbruten."
 
 #: src/applications/fs/tools/gnunet-insert.c:251
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "\n"
-"Error uploading file: %s\n"
+"Error uploading file: %s"
 msgstr ""
 "\n"
 "Fel vid uppladdning av fil: %s\n"
@@ -3556,7 +3527,7 @@ msgstr "Ladda ner filer från GNUnet."
 #: src/applications/fs/tools/gnunet-download.c:344
 #, fuzzy, c-format
 msgid "Did not find any files in directory `%s'\n"
-msgstr "Misslyckades att läsa kompislista från \"%s\"\n"
+msgstr "%d filer hittades i katalog.\n"
 
 #: src/applications/fs/tools/gnunet-download.c:385
 #, c-format
@@ -3685,10 +3656,9 @@ msgstr "Ladda ner filer från GNUnet."
 msgid "Unindexing failed (no reason given)"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:246
-#, fuzzy
+#: src/applications/fs/fsui/upload.c:269
 msgid "Failed to create temporary directory."
-msgstr "Filformatsfel (inte en GNUnet-katalog?)\n"
+msgstr ""
 
 #: src/applications/fs/fsui/deserialize.c:753
 #, c-format
@@ -4141,7 +4111,7 @@ msgstr ""
 #: src/applications/dstore/dstore.c:530
 #, fuzzy
 msgid "# bytes in dstore"
-msgstr "# byte skickade av typen %d"
+msgstr "# byte krypterade"
 
 #: src/server/gnunet-update.c:143
 #, c-format
@@ -4250,9 +4220,8 @@ msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
 #: src/server/connection.c:3198
-#, fuzzy
 msgid "# total number of bytes we were allowed to sent"
-msgstr "antal meddelanden i ett meddelandeblock"
+msgstr ""
 
 #: src/server/connection.c:3200
 msgid "# total number of bytes we are currently allowed to send"
@@ -4280,7 +4249,7 @@ msgstr ""
 
 #: src/server/startup.c:285
 #, c-format
-msgid "Insufficient access permissions for `%s': %s"
+msgid "Insufficient access permissions for `%s': %s\n"
 msgstr ""
 
 #: src/server/gnunetd.c:84
@@ -4308,7 +4277,7 @@ msgid "disable padding with random data (experimental)"
 msgstr ""
 
 #: src/server/gnunetd.c:216
-msgid "run in quiet mode"
+msgid "print all log messages to the console (only works together with -d)"
 msgstr ""
 
 #: src/server/gnunetd.c:220
@@ -4316,7 +4285,7 @@ msgstr ""
 msgid "specify username as which gnunetd should run"
 msgstr "ange värd på vilken gnunetd körs"
 
-#: src/server/gnunetd.c:267
+#: src/server/gnunetd.c:270
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -4540,7 +4509,9 @@ msgstr "Kan inte ansluta till %u.%u.%u.%u:%u: %s\n"
 #: src/util/network_client/tcpio.c:323
 #, fuzzy, c-format
 msgid "Error connecting to %s:%u\n"
-msgstr "Kan inte ansluta till %u.%u.%u.%u:%u: %s\n"
+msgstr ""
+"\n"
+"Fel vid avindexering av fil: %s\n"
 
 #: src/util/network_client/tcpio.c:336
 #, fuzzy, c-format
@@ -5063,7 +5034,7 @@ msgstr "_Alternativ"
 #: src/setup/gtk/gconf.c:531
 #, fuzzy
 msgid "Configuration saved."
-msgstr "GNUnet-konfiguration"
+msgstr "Konfigurationsfil \"%s\" skapad.\n"
 
 #: src/setup/gtk/gconf.c:539
 #, fuzzy
@@ -5073,8 +5044,7 @@ msgstr "Kunde inte spara konfiguration!"
 #: src/setup/gtk/gconf.c:562
 #, fuzzy
 msgid "Configuration changed. Save?"
-msgstr ""
-"Konfiguration eller version av GNUnet ändrad.  Du behöver köra \"%s\"!\n"
+msgstr "Konfigurationsfil \"%s\" skapad.\n"
 
 #: src/setup/gtk/gconf.c:573
 #, fuzzy
@@ -5203,7 +5173,7 @@ msgstr ""
 #: src/setup/text/conf.c:510
 #, fuzzy
 msgid "Invalid entry.\n"
-msgstr "Ogiltigt argument: \"%s\"\n"
+msgstr "Ogiltiga argument: "
 
 #: src/setup/text/conf.c:529
 #, c-format
@@ -5293,11 +5263,11 @@ msgid ""
 msgstr " gconfig\tGTK-konfiguration\n"
 
 #: src/setup/ncurses/mconf.c:537
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Your configuration changes were NOT saved.\n"
-msgstr "Konfigurationsfil \"%s\" skapad.\n"
+msgstr ""
 
 #: src/setup/ncurses/wizard_curs.c:67 src/setup/lib/wizard_util.c:131
 #: src/setup/lib/wizard_util.c:176
@@ -5418,7 +5388,7 @@ msgstr ""
 #: src/setup/ncurses/wizard_curs.c:366
 #, fuzzy
 msgid "Bandwidth configuration: upload"
-msgstr "GNUnet-konfiguration"
+msgstr "Bandbreddsbegränsning"
 
 #: src/setup/ncurses/wizard_curs.c:367
 #, fuzzy
@@ -5439,7 +5409,7 @@ msgstr ""
 #: src/setup/ncurses/wizard_curs.c:380
 #, fuzzy
 msgid "Bandwidth configuration: download"
-msgstr "GNUnet-konfiguration"
+msgstr "Bandbreddsbegränsning"
 
 #: src/setup/ncurses/wizard_curs.c:381
 #, fuzzy
@@ -5543,13 +5513,11 @@ msgid "Save configuration now?"
 msgstr "GNUnet-konfiguration"
 
 #: src/setup/lib/gns.c:278
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
 "file `%s'!\n"
 msgstr ""
-"Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
-"under %s\\%s.\n"
 
 #: src/setup/lib/tree.c:189
 #, c-format
@@ -5598,39 +5566,46 @@ msgid "Error accessing local security policy"
 msgstr "Fel vid åtkomst av lokal säkerhetspolicy"
 
 #: src/setup/lib/wizard_util.c:169
-#, fuzzy
 msgid "Error granting service right to user"
-msgstr "Fel vid skapandet av användare"
+msgstr ""
 
 #: src/setup/lib/wizard_util.c:172
 msgid "Unknown error while creating a new user"
 msgstr "Okänt fel vid skapandet av ny användare"
 
-#~ msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
-#~ msgstr "%s: Vägrade anslutning från svartlistad adress %u.%u.%u.%u.\n"
-
-#~ msgid "Unexpected reply to `%s' operation.\n"
-#~ msgstr "Oväntat svar till \"%s\" operation.\n"
-
 #, fuzzy
-#~ msgid "Malformed optional field `%s' received from peer `%s'.\n"
-#~ msgstr "Ogiltigt svar till \"%s\" från motpart \"%s\".\n"
+#~ msgid "Deleting expired content.  This may take a while.\n"
+#~ msgstr "Skapar ny värdnyckel (det här kan ta en stund).\n"
+
+#~ msgid "Network advertisements disabled by configuration!\n"
+#~ msgstr "Nätverksannonsering avstängd i konfigurationen!\n"
+
+#~ msgid "`%s' to `%s' failed at %s:%d with error: %s\n"
+#~ msgstr "\"%s\" till \"%s\" misslyckades vid %s:%d med fel: %s\n"
+
+#~ msgid "Parsing HTTP response for URL `%s' failed.\n"
+#~ msgstr "Tolkning av HTTP-svar för URL \"%s\" misslyckades.\n"
+
+#~ msgid "Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"
+#~ msgstr ""
+#~ "Kunde inte slå upp namn för HTTP-proxy \"%s\". Försöker utan proxy.\n"
+
+#~ msgid "`%s' failed: table not found!\n"
+#~ msgstr "\"%s\" misslyckades: tabell hittades inte!\n"
+
+#~ msgid "`%s' failed.  Terminating connection to client.\n"
+#~ msgstr "\"%s\" misslyckades.  Terminerar anslutning till klient.\n"
+
+#~ msgid "sendAck failed.  Terminating connection to client.\n"
+#~ msgstr "sendAck misslyckades.  Terminerar anslutning till klient.\n"
+
+#~ msgid "Failed to deliver `%s' message.\n"
+#~ msgstr "Misslyckades att leverera \"%s\" meddelande.\n"
 
 #~ msgid "Could not find peer `%s' in routing table!\n"
 #~ msgstr "Kunde inte hitta motpart \"%s\" i routingtabell!\n"
 
-#, fuzzy
-#~ msgid "Received malformed response to `%s' from peer `%s'.\n"
-#~ msgstr "Ogiltigt svar till \"%s\" från motpart \"%s\".\n"
-
 #~ msgid "Invalid response to `%s' from peer `%s'.\n"
-#~ msgstr "Ogiltigt svar till \"%s\" från motpart \"%s\".\n"
-
-#~ msgid "Invalid response to `%s'.\n"
-#~ msgstr "Ogiltigt svar på \"%s\".\n"
-
-#, fuzzy
-#~ msgid "Malformed response to `%s' on master table.\n"
 #~ msgstr "Ogiltigt svar till \"%s\" från motpart \"%s\".\n"
 
 #~ msgid "Invalid response to `%s' from `%s'\n"
@@ -5639,17 +5614,29 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "Received invalid RPC `%s'.\n"
 #~ msgstr "Mottog ogiltig RPC \"%s\".\n"
 
-#~ msgid "`%s' failed.  Terminating connection to client.\n"
-#~ msgstr "\"%s\" misslyckades.  Terminerar anslutning till klient.\n"
+#~ msgid "allow SIZE bytes of memory for the local table"
+#~ msgstr "tillåt STORLEK byte av minne för lokaltabellen"
 
-#~ msgid ""
-#~ "You can limit GNUnet's resource usage here.\n"
-#~ "\n"
-#~ "This is the percentage of processor time GNUnet is allowed to use."
-#~ msgstr ""
-#~ "Du kan begränsa GNUnets resursanvändning här.\n"
-#~ "\n"
-#~ "Det här är det procenttal som GNUnet tillåts använda av processortiden."
+#~ msgid "Superflous arguments (ignored).\n"
+#~ msgstr "Onödiga argument (ignorerade).\n"
+
+#~ msgid "Call to `%s' returns %d.\n"
+#~ msgstr "Anrop till \"%s\" returnerade %d.\n"
+
+#~ msgid "Call to `%s' with key `%s'.\n"
+#~ msgstr "Anrop till \"%s\" med nyckel \"%s\".\n"
+
+#~ msgid "Call to `%s' with value '%.*s' (%d bytes).\n"
+#~ msgstr "Anrop till \"%s\" med värde \"%.*s\" (%d byte).\n"
+
+#~ msgid "Error leaving DHT.\n"
+#~ msgstr "Fel vid lämning av DHT.\n"
+
+#~ msgid "query table called NAME"
+#~ msgstr "fråga tabell kallad NAME"
+
+#~ msgid "No commands specified.\n"
+#~ msgstr "Inga kommandon angivna.\n"
 
 #~ msgid "Failed to send `%s'.  Closing connection.\n"
 #~ msgstr "Misslyckades att skicka \"%s\".  Stänger anslutning.\n"
@@ -5672,94 +5659,14 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "Failed to send `%s' message to gnunetd\n"
 #~ msgstr "Misslyckades att skicka \"%s\" meddelande till gnunetd\n"
 
-#~ msgid "allow SIZE bytes of memory for the local table"
-#~ msgstr "tillåt STORLEK byte av minne för lokaltabellen"
-
-#~ msgid "Call to `%s' returns %d.\n"
-#~ msgstr "Anrop till \"%s\" returnerade %d.\n"
-
-#~ msgid "Call to `%s' with key `%s'.\n"
-#~ msgstr "Anrop till \"%s\" med nyckel \"%s\".\n"
-
-#~ msgid "Call to `%s' with value '%.*s' (%d bytes).\n"
-#~ msgstr "Anrop till \"%s\" med värde \"%.*s\" (%d byte).\n"
-
-#~ msgid "Error leaving DHT.\n"
-#~ msgstr "Fel vid lämning av DHT.\n"
-
-#~ msgid "`%s' failed: table not found!\n"
-#~ msgstr "\"%s\" misslyckades: tabell hittades inte!\n"
-
-#~ msgid "sendAck failed.  Terminating connection to client.\n"
-#~ msgstr "sendAck misslyckades.  Terminerar anslutning till klient.\n"
-
-#~ msgid "Failed to deliver `%s' message.\n"
-#~ msgstr "Misslyckades att leverera \"%s\" meddelande.\n"
+#~ msgid "Unexpected reply to `%s' operation.\n"
+#~ msgstr "Oväntat svar till \"%s\" operation.\n"
 
 #~ msgid "Unindex failed."
 #~ msgstr "Avindexering misslyckades."
 
-#, fuzzy
-#~ msgid "Upload failed (consult logs)."
+#~ msgid "Upload failed.\n"
 #~ msgstr "Uppladdning misslyckades.\n"
-
-#~ msgid "Could not resolve name of SMTP server `%s': %s"
-#~ msgstr "Kunde inte slå upp namnet för SMTP-server \"%s\": %s"
-
-#~ msgid "query table called NAME"
-#~ msgstr "fråga tabell kallad NAME"
-
-#~ msgid "No commands specified.\n"
-#~ msgstr "Inga kommandon angivna.\n"
-
-#~ msgid "Superflous arguments (ignored).\n"
-#~ msgstr "Onödiga argument (ignorerade).\n"
-
-#, fuzzy
-#~ msgid "Expected `%s' to be a regular file\n"
-#~ msgstr "\"%s\" är inte en vanlig fil.\n"
-
-#, fuzzy
-#~ msgid "expected `%s' to be a directory!\n"
-#~ msgstr "\"%s\" förväntade att \"%s\" skulle vara en katalog!\n"
-
-#~ msgid "Sorry, no help is available for this option.\n"
-#~ msgstr "Tyvärr, ingen hjälp är tillgänglig för den här flaggan.\n"
-
-#, fuzzy
-#~ msgid "Failed to open `%s'.\n"
-#~ msgstr "Fil lagrad som \"%s\".\n"
-
-#~ msgid "Failed to bind to UDP6 port %d.\n"
-#~ msgstr "Misslyckades att binda till UDP6-port %d.\n"
-
-#~ msgid "Network advertisements disabled by configuration!\n"
-#~ msgstr "Nätverksannonsering avstängd i konfigurationen!\n"
-
-#~ msgid "Could not initialize libgnunetutil!\n"
-#~ msgstr "Kunde inte initiera libgnunetutil!\n"
-
-#~ msgid ""
-#~ "Configuration file must specify a directory for GNUnet to store per-peer "
-#~ "data under %s%s\n"
-#~ msgstr ""
-#~ "Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
-#~ "under %s%s\n"
-
-#~ msgid "Could not create hostkey!\n"
-#~ msgstr "Kunde inte skapa värdnyckel!\n"
-
-#~ msgid "%s `%s' returned no known hosts!\n"
-#~ msgstr "%s \"%s\" returnerade inga kända värdar!\n"
-
-#~ msgid "Trace GNUnet network topology."
-#~ msgstr "Spåra GNUnets nätverkstopologi."
-
-#~ msgid "Invalid argument: `%s'\n"
-#~ msgstr "Ogiltigt argument: \"%s\"\n"
-
-#~ msgid "Invalid arguments. Exiting.\n"
-#~ msgstr "Ogiltiga argument. Avslutar.\n"
 
 #~ msgid "%8u of %8u bytes deleted."
 #~ msgstr "%8u av %8u byte togs bort."
@@ -5781,8 +5688,13 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "gnunet-directory [OPTIONS] [FILENAMES]"
 #~ msgstr "gnunet-directory [FLAGGOR] [FILNAMN]"
 
-#, fuzzy
-#~ msgid "Upload of `%s' complete, current average speed is %8.3f KiB/s.\n"
+#~ msgid "LEVEL"
+#~ msgstr "NIVÅ"
+
+#~ msgid "FILENAME"
+#~ msgstr "FILNAMN"
+
+#~ msgid "Upload of `%s' complete, current average speed is %8.3f kbps.\n"
 #~ msgstr ""
 #~ "Uppladdning av \"%s\" klar, aktuell genomsnittshastighet är %8.3f kbps.\n"
 
@@ -5798,16 +5710,29 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "You must specify a file or directory to upload.\n"
 #~ msgstr "Du måste ange en fil eller katalog att ladda upp.\n"
 
+#~ msgid "Invalid arguments. Exiting.\n"
+#~ msgstr "Ogiltiga argument. Avslutar.\n"
+
 #~ msgid "Not enough arguments. You must specify a keyword or identifier.\n"
 #~ msgstr ""
 #~ "Inte tillräckligt med argument. Du måste ange ett nyckelord eller "
 #~ "identifierare.\n"
 
-#~ msgid "LEVEL"
-#~ msgstr "NIVÅ"
+#~ msgid ""
+#~ "Configuration file must specify a directory for GNUnet to store per-peer "
+#~ "data under %s%s\n"
+#~ msgstr ""
+#~ "Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
+#~ "under %s%s\n"
 
-#~ msgid "FILENAME"
-#~ msgstr "FILNAMN"
+#~ msgid "Could not create hostkey!\n"
+#~ msgstr "Kunde inte skapa värdnyckel!\n"
+
+#~ msgid "%s `%s' returned no known hosts!\n"
+#~ msgstr "%s \"%s\" returnerade inga kända värdar!\n"
+
+#~ msgid "Could not initialize libgnunetutil!\n"
+#~ msgstr "Kunde inte initiera libgnunetutil!\n"
 
 #~ msgid "helptext for -t"
 #~ msgstr "hjälptext för -t"
@@ -5815,123 +5740,50 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "Template for gnunet-clients."
 #~ msgstr "Mall för gnunet-clients."
 
-#~ msgid "`%s' to `%s' failed at %s:%d with error: %s\n"
-#~ msgstr "\"%s\" till \"%s\" misslyckades vid %s:%d med fel: %s\n"
-
-#~ msgid "Parsing HTTP response for URL `%s' failed.\n"
-#~ msgstr "Tolkning av HTTP-svar för URL \"%s\" misslyckades.\n"
-
-#~ msgid "Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"
-#~ msgstr ""
-#~ "Kunde inte slå upp namn för HTTP-proxy \"%s\". Försöker utan proxy.\n"
-
-#, fuzzy
-#~ msgid "Unable to initialize SQLite KVStore.\n"
-#~ msgstr "Kunde inte initiera SQLite.\n"
-
-#~ msgid ""
-#~ "Configuration file must specify a directory for GNUnet to store per-peer "
-#~ "data under %s\\%s.\n"
-#~ msgstr ""
-#~ "Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
-#~ "under %s\\%s.\n"
-
-#~ msgid "Invalid arguments: "
-#~ msgstr "Ogiltiga argument: "
-
-#~ msgid ""
-#~ "\n"
-#~ "Exiting.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Avslutar.\n"
-
-#~ msgid "No applications defined in configuration!\n"
-#~ msgstr "Inga applikationer definierade i konfiguration!\n"
-
-#~ msgid "Updated data for %d applications.\n"
-#~ msgstr "Uppdaterade data för %d program.\n"
-
-#~ msgid "Invalid command-line arguments:\n"
-#~ msgstr "Ogiltiga kommandoradsargument:\n"
-
-#~ msgid "Argument %d: `%s'\n"
-#~ msgstr "Argument %d: \"%s\"\n"
-
-#~ msgid "`%s' starting\n"
-#~ msgstr "\"%s\" startar\n"
-
-#~ msgid "You must specify a non-empty set of transports to test!\n"
-#~ msgstr "Du måste ange en icke-tom uppsättning av transporter att testa!\n"
-
-#~ msgid "Available MODEs:\n"
-#~ msgstr "Tillgängliga lägen:\n"
-
-#~ msgid " config\t\ttext-based configuration\n"
-#~ msgstr " config\t\ttextbaserad konfiguration\n"
-
-#~ msgid " menuconfig\ttext-based menu\n"
-#~ msgstr " menuconfig\ttextbaserad meny\n"
-
-#~ msgid " wizard-curses\tBasic text-based graphical configuration\n"
-#~ msgstr " wizard-curses\tEnkel textbaserad grafisk konfiguration\n"
-
-#~ msgid ""
-#~ " wizard-gtk\tBasic GTK configuration\n"
-#~ "\n"
-#~ msgstr ""
-#~ " wizard-gtk\tEnkel GTK-konfiguration\n"
-#~ "\n"
-
-#~ msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
-#~ msgstr ""
-#~ "gnunet-setup måste ha skrivrättighet till konfigurationsfilen \"%s\"\n"
-
-#~ msgid ""
-#~ "Can only run wizard to configure gnunetd.\n"
-#~ "Did you forget the `%s' option?\n"
-#~ msgstr ""
-#~ "Kan endast köra vägvisaren för att konfigurera gnunetd.\n"
-#~ "Glömde du flaggan \"%s\"?\n"
+#~ msgid "Trace GNUnet network topology."
+#~ msgstr "Spåra GNUnets nätverkstopologi."
 
 #~ msgid "%s: symbol value `%s' invalid for %s\n"
 #~ msgstr "%s: symbolvärde \"%s\" ogiltigt för %s\n"
 
-#~ msgid "OK"
-#~ msgstr "OK"
+#~ msgid "Sorry, no help is available for this option.\n"
+#~ msgstr "Tyvärr, ingen hjälp är tillgänglig för den här flaggan.\n"
 
 #~ msgid "_File"
 #~ msgstr "_Fil"
 
-#~ msgid "Load a config file"
-#~ msgstr "Läs in en konfigurationsfil"
-
 #~ msgid "_Load"
 #~ msgstr "_Läs in"
 
-#~ msgid "Save the config in .config"
-#~ msgstr "Spara konfigurationen i .config"
+#~ msgid "Load a config file"
+#~ msgstr "Läs in en konfigurationsfil"
 
 #~ msgid "_Save"
 #~ msgstr "_Spara"
 
+#~ msgid "Save the config in .config"
+#~ msgstr "Spara konfigurationen i .config"
+
 #~ msgid "_Quit"
 #~ msgstr "_Avsluta"
-
-#~ msgid "Show name"
-#~ msgstr "Visa namn"
 
 #~ msgid "Show _name"
 #~ msgstr "Visa _namn"
 
-#~ msgid "Show range (Y/M/N)"
-#~ msgstr "Visa omfång (Y/M/N)"
+#~ msgid "Show name"
+#~ msgstr "Visa namn"
 
 #~ msgid "Show _range"
 #~ msgstr "Visa _omfång"
 
+#~ msgid "Show range (Y/M/N)"
+#~ msgstr "Visa omfång (Y/M/N)"
+
 #~ msgid "Show _data"
 #~ msgstr "Visa _data"
+
+#~ msgid "Show value of the option"
+#~ msgstr "Visa värde av alternativet"
 
 #~ msgid "Show all _options"
 #~ msgstr "Visa alla a_lternativ"
@@ -5941,6 +5793,9 @@ msgstr "Okänt fel vid skapandet av ny användare"
 
 #~ msgid "_Introduction"
 #~ msgstr "_Introduktion"
+
+#~ msgid "_License"
+#~ msgstr "_Licens"
 
 #~ msgid "Goes up of one level (single view)"
 #~ msgstr "Går upp en nivå (enkel vy)"
@@ -5978,9 +5833,119 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ msgid "Expand"
 #~ msgstr "Expandera"
 
-#, fuzzy
-#~ msgid "Introduction"
-#~ msgstr "_Introduktion"
+#~ msgid "Sorry, no help available for this option yet."
+#~ msgstr "Tyvärr, ingen hjälp tillgänglig för den här flaggan ännu."
+
+#~ msgid "Couldn't find pixmap file: %s"
+#~ msgstr "Kunde inte htta bildfil: %s"
+
+#~ msgid "Available MODEs:\n"
+#~ msgstr "Tillgängliga lägen:\n"
+
+#~ msgid " config\t\ttext-based configuration\n"
+#~ msgstr " config\t\ttextbaserad konfiguration\n"
+
+#~ msgid " menuconfig\ttext-based menu\n"
+#~ msgstr " menuconfig\ttextbaserad meny\n"
+
+#~ msgid " wizard-curses\tBasic text-based graphical configuration\n"
+#~ msgstr " wizard-curses\tEnkel textbaserad grafisk konfiguration\n"
+
+#~ msgid ""
+#~ " wizard-gtk\tBasic GTK configuration\n"
+#~ "\n"
+#~ msgstr ""
+#~ " wizard-gtk\tEnkel GTK-konfiguration\n"
+#~ "\n"
+
+#~ msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
+#~ msgstr ""
+#~ "gnunet-setup måste ha skrivrättighet till konfigurationsfilen \"%s\"\n"
+
+#~ msgid ""
+#~ "Can only run wizard to configure gnunetd.\n"
+#~ "Did you forget the `%s' option?\n"
+#~ msgstr ""
+#~ "Kan endast köra vägvisaren för att konfigurera gnunetd.\n"
+#~ "Glömde du flaggan \"%s\"?\n"
+
+#~ msgid ""
+#~ "You can limit GNUnet's resource usage here.\n"
+#~ "\n"
+#~ "This is the percentage of processor time GNUnet is allowed to use."
+#~ msgstr ""
+#~ "Du kan begränsa GNUnets resursanvändning här.\n"
+#~ "\n"
+#~ "Det här är det procenttal som GNUnet tillåts använda av processortiden."
+
+#~ msgid ""
+#~ "Welcome to GNUnet!\n"
+#~ "\n"
+#~ "This assistant will ask you a few basic questions in order to configure "
+#~ "GNUnet.\n"
+#~ "\n"
+#~ "Please visit our homepage at\n"
+#~ "\thttp://www.gnunet.org\n"
+#~ "and join our community at\n"
+#~ "\thttp://www.gnunet.org/drupal/\n"
+#~ "\n"
+#~ "Have a lot of fun,\n"
+#~ "\n"
+#~ "the GNUnet team"
+#~ msgstr ""
+#~ "Välkommen till GNUnet!\n"
+#~ "\n"
+#~ "Denna assistant kommer att fråga dig några enkla frågor för att "
+#~ "konfigurera GNUnet.\n"
+#~ "\n"
+#~ "Besök på webbplats på\n"
+#~ "\thttp://gnunet.org/\n"
+#~ "och gå med i vår gemenskap på\n"
+#~ "\thttp://www.gnunet.org/drupal/\n"
+#~ "\n"
+#~ "Ha det så kul,\n"
+#~ "\n"
+#~ "GNUnet-laget"
+
+#~ msgid "OK"
+#~ msgstr "OK"
+
+#~ msgid "gnunet-update failed!"
+#~ msgstr "gnunet-update misslyckades!"
+
+#~ msgid "No applications defined in configuration!\n"
+#~ msgstr "Inga applikationer definierade i konfiguration!\n"
+
+#~ msgid "You must specify a non-empty set of transports to test!\n"
+#~ msgstr "Du måste ange en icke-tom uppsättning av transporter att testa!\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Exiting.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Avslutar.\n"
+
+#~ msgid "Updated data for %d applications.\n"
+#~ msgstr "Uppdaterade data för %d program.\n"
+
+#~ msgid "`%s' starting\n"
+#~ msgstr "\"%s\" startar\n"
+
+#~ msgid "Invalid command-line arguments:\n"
+#~ msgstr "Ogiltiga kommandoradsargument:\n"
+
+#~ msgid "Argument %d: `%s'\n"
+#~ msgstr "Argument %d: \"%s\"\n"
+
+#~ msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
+#~ msgstr "%s: Vägrade anslutning från svartlistad adress %u.%u.%u.%u.\n"
+
+#~ msgid "Could not resolve name of SMTP server `%s': %s"
+#~ msgstr "Kunde inte slå upp namnet för SMTP-server \"%s\": %s"
+
+#~ msgid "Failed to bind to UDP6 port %d.\n"
+#~ msgstr "Misslyckades att binda till UDP6-port %d.\n"
 
 #~ msgid "Configuration file `%s' not found.  Run gnunet-setup!\n"
 #~ msgstr "Konfigurationsfil \"%s\" hittades inte.  Kör gnunet-setup!\n"
@@ -6034,15 +5999,21 @@ msgstr "Okänt fel vid skapandet av ny användare"
 #~ "%s\n"
 #~ "\n"
 
+#~ msgid ""
+#~ "Configuration file must specify a directory for GNUnet to store per-peer "
+#~ "data under %s\\%s.\n"
+#~ msgstr ""
+#~ "Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
+#~ "under %s\\%s.\n"
+
+#~ msgid "`%s' is not a regular file.\n"
+#~ msgstr "\"%s\" är inte en vanlig fil.\n"
+
 #~ msgid "g"
 #~ msgstr "g"
 
 #~ msgid "t"
 #~ msgstr "t"
-
-#, fuzzy
-#~ msgid "unknown"
-#~ msgstr "Okänt fel"
 
 #~ msgid "`%s' failed, other side closed connection.\n"
 #~ msgstr "\"%s\" misslyckades, andra sidan har stängt anslutningen.\n"
@@ -6055,41 +6026,3 @@ msgstr "Okänt fel vid skapandet av ny användare"
 
 #~ msgid "set verbosity to LEVEL"
 #~ msgstr "sätt informationsnivå till NIVÅ"
-
-#~ msgid "_License"
-#~ msgstr "_Licens"
-
-#~ msgid "Sorry, no help available for this option yet."
-#~ msgstr "Tyvärr, ingen hjälp tillgänglig för den här flaggan ännu."
-
-#~ msgid "Couldn't find pixmap file: %s"
-#~ msgstr "Kunde inte htta bildfil: %s"
-
-#~ msgid ""
-#~ "Welcome to GNUnet!\n"
-#~ "\n"
-#~ "This assistant will ask you a few basic questions in order to configure "
-#~ "GNUnet.\n"
-#~ "\n"
-#~ "Please visit our homepage at\n"
-#~ "\thttp://www.gnunet.org\n"
-#~ "and join our community at\n"
-#~ "\thttp://www.gnunet.org/drupal/\n"
-#~ "\n"
-#~ "Have a lot of fun,\n"
-#~ "\n"
-#~ "the GNUnet team"
-#~ msgstr ""
-#~ "Välkommen till GNUnet!\n"
-#~ "\n"
-#~ "Denna assistant kommer att fråga dig några enkla frågor för att "
-#~ "konfigurera GNUnet.\n"
-#~ "\n"
-#~ "Besök på webbplats på\n"
-#~ "\thttp://gnunet.org/\n"
-#~ "och gå med i vår gemenskap på\n"
-#~ "\thttp://www.gnunet.org/drupal/\n"
-#~ "\n"
-#~ "Ha det så kul,\n"
-#~ "\n"
-#~ "GNUnet-laget"
