@@ -1011,7 +1011,6 @@ static int httpSend(TSession * tsession,
 
 static void *
 curl_runner(void * unused) {
-  CURLM * multi;
   CURLMcode mret;
   fd_set rs;
   fd_set ws;
@@ -1025,7 +1024,7 @@ curl_runner(void * unused) {
     FD_ZERO(&rs);
     FD_ZERO(&ws);
     FD_ZERO(&es);
-    mret = curl_multi_fdset(multi,
+    mret = curl_multi_fdset(curl_multi,
 			    &rs,
 			    &ws,
 			    &es,
@@ -1053,7 +1052,7 @@ curl_runner(void * unused) {
     if (YES != http_running)
       break;
     running = 0;
-    curl_multi_perform(multi, &running);
+    curl_multi_perform(curl_multi, &running);
   }  
   return NULL;
 }
