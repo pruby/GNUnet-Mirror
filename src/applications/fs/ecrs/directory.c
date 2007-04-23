@@ -281,13 +281,17 @@ int ECRS_createDirectory(struct GE_Context * ectx,
   for (i=0;i<count;i++) {
     perm[i] = i;
     ucs[i] = ECRS_uriToString(fis[i].uri);
-    GE_ASSERT(ectx, ucs[i] != NULL);
+    GE_ASSERT(ectx, 
+	      ucs[i] != NULL);
     psize = ECRS_sizeofMetaData(fis[i].meta,
 				ECRS_SERIALIZE_FULL);
     if (psize == -1) {
       GE_BREAK(ectx, 0);
       FREE(sizes);
       FREE(perm);
+      while (i>=0) 
+	FREE(ucs[i--]);
+      FREE(ucs);
       return SYSERR;
     }      
     sizes[i] = psize + sizeof(unsigned int) + strlen(ucs[i]) + 1;

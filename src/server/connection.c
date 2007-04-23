@@ -1582,6 +1582,7 @@ static int sendBuffer(BufferEntry * be) {
     /* no messages selected!? */
     GE_BREAK(ectx, 0);
     be->inSendBuffer = NO;
+    FREE(entries);
     return NO;
   }
 
