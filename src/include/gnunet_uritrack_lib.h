@@ -100,31 +100,41 @@ int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
 
 /**
  * Possible ways in which a given URI has been used or encountered.
+ * Note that we only have 8-bits when storing this on the disk,
+ * so do not add additional entries (without changing uri_info).
  */
 enum URITRACK_STATE {
   URITRACK_FRESH              =    0,
   URITRACK_INSERTED           =    1,
   URITRACK_INDEXED            =    2,
   URITRACK_DIRECTORY_ADDED    =    4,
-
-  URITRACK_DOWNLOAD_STARTED   =   16,
-  URITRACK_DOWNLOAD_ABORTED   =   32,
-  URITRACK_DOWNLOAD_COMPLETED =   64,
-
-  URITRACK_SEARCH_RESULT      =  256,
-  URITRACK_DIRECTORY_FOUND    =  512,
-  URITRACK_USER_INPUT         = 1024,
+  URITRACK_DOWNLOAD_STARTED   =    8,
+  URITRACK_DOWNLOAD_ABORTED   =   16,
+  URITRACK_DOWNLOAD_COMPLETED =   32,
+  URITRACK_SEARCH_RESULT      =   64,
+  URITRACK_DIRECTORY_FOUND    =  128,
 };
 
 /**
- * Find out what we know about a given URI's past.
+ * Find out what we know about a given URI's past.  Note that we only
+ * track the states for a (finite) number of URIs and that the
+ * information that we give back maybe inaccurate (returning
+ * URITRACK_FRESH if the URI did not fit into our bounded-size map,
+ * even if the URI is not fresh anymore; also, if the URI has a
+ * hash-collision in the map, there is a 1:256 chance that we will
+ * return information from the wrong URI without detecting it).
  */
-enum URITRACK_STATE URITRACK_getState(const struct ECRS_URI * uri);
+enum URITRACK_STATE 
+URITRACK_getState(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg,
+		  const struct ECRS_URI * uri);
 
 /**
  * Add additional information about a given URI's past.
  */
-void URITRACK_addState(const struct ECRS_URI * uri,
+void URITRACK_addState(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const struct ECRS_URI * uri,
 		       enum URITRACK_STATE state);
 
 #if 0 /* keep Emacsens' auto-indent happy */

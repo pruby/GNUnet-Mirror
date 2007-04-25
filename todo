@@ -11,9 +11,9 @@ notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.2 [3'07]:
+0.7.2 [4'07]:
 - new features:
-  * implement URITRACK_STATE database (and use it!)
+  * USE new URITRACK_STATE database 
   * track 0-anonymity indexed content (for DHT-advertising!)
   * XFS / support for location URIs [CG] 
     + dht/gap integration (search routing) [RC]

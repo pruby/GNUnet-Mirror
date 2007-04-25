@@ -250,6 +250,17 @@ The default is to use filenames and to break larger words at spaces (and undersc
   '()
   'advanced) )
 
+(define (fs-uri-db-size builder)
+ (builder
+  "FS"
+  "URI_DB_SIZE"
+  (_ "How many entries should the URI DB table have?")
+  (_ "GNUnet uses two bytes per entry on the disk.  This database is used to keep track of how a particular URI has been used in the past.  For example, GNUnet may remember that a particular URI has been found in a search previously or corresponds to a file uploaded by the user.  This information can then be used by user-interfaces to filter URI lists, such as search results.  If the database is full, older entries will be discarded.  The default value should be sufficient without causing undue disk utilization." )
+  '()
+  #t
+  1024*1024
+  (cons 1 1024*1024*1024)
+  'rare) )
 
 (define (fs builder)
  (builder 
@@ -260,6 +271,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (list 
     (fs-extractors builder)
     (fs-disable-creation-time builder)
+    (fs-uri-db-size builder)
   )
   #t 
   #f 

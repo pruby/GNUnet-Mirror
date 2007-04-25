@@ -23,8 +23,9 @@
  * @brief information about URIs
  * @author Christian Grothoff
  *
- * An mmapped file (STATE_NAME) is used to store the URIs.
- * An IPC semaphore is used to guard the access.
+ * Note that the information is only accurate with "high 
+ * probability" but not at all guaranteed (this is done
+ * to bound disk size of the DB and to get high performance).
  */
 
 #include "gnunet_directories.h"
@@ -32,18 +33,147 @@
 #include "gnunet_uritrack_lib.h"
 #include "platform.h"
 
+static char * 
+getDBName(struct GC_Configuration * cfg) {
+  char * basename;
+  char * ipcName;
+  size_t n;
+
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &basename);
+  n = strlen(basename) + 512;
+  ipcName = MALLOC(n);
+  SNPRINTF(ipcName, 
+	   n, 
+	   "%s/uri_info.db", 
+	   basename);
+  FREE(basename);
+  return ipcName;
+}
+
+static unsigned long long
+getDBSize(struct GC_Configuration * cfg) {
+  unsigned long long value;
+
+  value = 1024 * 1024;
+  GC_get_configuration_value_number(cfg,
+				    "FS",
+				    "URI_DB_SIZE",
+				    1,
+				    1024 * 1024 * 1024,
+				    1024 * 1024,
+				    &value);
+  return value;
+}
+
 /**
- * Find out what we know about a given URI's past.
+ * Find out what we know about a given URI's past.  Note that we only
+ * track the states for a (finite) number of URIs and that the
+ * information that we give back maybe inaccurate (returning
+ * URITRACK_FRESH if the URI did not fit into our bounded-size map,
+ * even if the URI is not fresh anymore; also, if the URI has a
+ * hash-collision in the map, there is a 1:256 chance that we will
+ * return information from the wrong URI without detecting it).
  */
-enum URITRACK_STATE URITRACK_getState(const struct ECRS_URI * uri) {
+enum URITRACK_STATE
+URITRACK_getState(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg,
+		  const struct ECRS_URI * uri) {
+  char * s;
+  int crc;
+  int fd;
+  unsigned long long size;
+  unsigned char io[2];
+  off_t o;
+
+  s = ECRS_uriToString(uri);
+  crc = crc32N(s, strlen(s));  
+  FREE(s);
+  s = getDBName(cfg);
+  size = getDBSize(cfg);
+  fd = disk_file_open(ectx,
+		      s, 
+		      O_RDONLY);
+  FREE(s);
+  if (fd == -1) 
+    return URITRACK_FRESH;  
+  o = 2 * (crc % size);
+  if (o != lseek(fd, o, SEEK_SET)) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+			 "lseek",
+			 s);
+    CLOSE(fd);
+    FREE(s);
+  }
+  if (2 != read(fd, io, 2))
+    return URITRACK_FRESH;
+  if (io[0] == (unsigned char) crc) 
+    return (enum URITRACK_STATE) io[1];
   return URITRACK_FRESH;
 }
 
 /**
  * Add additional information about a given URI's past.
  */
-void URITRACK_addState(const struct ECRS_URI * uri,
+void URITRACK_addState(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const struct ECRS_URI * uri,
 		       enum URITRACK_STATE state) {
+  char * s;
+  int crc;
+  int fd;
+  unsigned long long size;
+  unsigned char io[2];
+  off_t o;
+
+  s = ECRS_uriToString(uri);
+  crc = crc32N(s, strlen(s));  
+  FREE(s);
+  s = getDBName(cfg);
+  size = getDBSize(cfg);
+  fd = disk_file_open(ectx, 
+		      s,
+		      O_RDWR | O_CREAT,
+		      S_IRUSR | S_IWUSR);
+  if (fd == -1) {
+    FREE(s);
+    return;
+  }
+  o = 2 * (crc % size);
+  if (o != lseek(fd, o, SEEK_SET)) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+			 "lseek",
+			 s);
+    CLOSE(fd);
+    FREE(s);
+    return;
+  }
+  if (2 != read(fd, io, 2))
+    io[1] = URITRACK_FRESH;
+  if (io[0] == (unsigned char) crc) 
+    io[1] = URITRACK_FRESH;
+  io[1] |= state;
+  if (o != lseek(fd, o, SEEK_SET)) {
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+			 "lseek",
+			 s);
+    CLOSE(fd);
+    FREE(s);
+    return;
+  } 
+  if (2 != write(fd, io, 2)) 
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+			 "write",
+			 s);
+  disk_file_close(ectx, s, fd);
+  FREE(s);
 }
 
 /* end of uri_info.c */
