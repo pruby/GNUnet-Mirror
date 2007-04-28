@@ -77,6 +77,7 @@ case "$host_os" in
      ;;
 linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
+     build_target="linux"
      ;;
 freebsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
@@ -88,6 +89,7 @@ openbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(OPENBSD,1,[This is an OpenBSD system])
      LIBS=`echo $LIBS | sed -e "s/-ldl//"`
+     build_target="openbsd"
      ;;
 netbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
@@ -103,6 +105,7 @@ netbsd*)
 *arm-linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
      CFLAGS="-D_REENTRANT -fPIC -pipe $CFLAGS"
+     build_target="linux"
      ;;
 *cygwin*)
      AC_DEFINE_UNQUOTED(CYGWIN,1,[This is a Cygwin system])
@@ -135,6 +138,8 @@ AM_CONDITIONAL(CYGWIN,  test "$build_target" = "cygwin")
 AM_CONDITIONAL(MINGW,   test "$build_target" = "mingw")
 AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")
 AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
+AM_CONDITIONAL(OPENBSD, test "$build_target" = "openbsd")
+AM_CONDITIONAL(LINUX, test "$build_target" = "linux")
 AC_MSG_RESULT([$build_target])
 
 

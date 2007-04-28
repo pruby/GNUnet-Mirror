@@ -9,9 +9,8 @@ endif
 
 if !MINGW
 # TESTBED_DIR = testbed
-if !MACOSX
+if LINUX
  VPN_DIR = vpn
-endif
 endif
 
 SUBDIRS	= \
