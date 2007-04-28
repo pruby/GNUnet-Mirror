@@ -382,7 +382,7 @@ again:
   FLOCK(fd, LOCK_UN);
   ret->fd = fd;
   ret->initialValue = initialValue;
-  return rret;
+  return ret;
 #else
  #ifndef _MSC_VER
    #warning Port IPC.
