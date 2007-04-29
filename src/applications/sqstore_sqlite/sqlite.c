@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -438,21 +438,18 @@ static double getStat(sqliteHandle * handle,
     if (i == SQLITE_DONE) {
       ret = 0;
       i = SQLITE_OK;
-    }
-    else if (i == SQLITE_ROW) {
+    } else if (i == SQLITE_ROW) {
       ret = sqlite3_column_double(stmt, 0);
       i = SQLITE_OK;
     }
   }
   sqlite3_finalize(stmt);
-
   if (i != SQLITE_OK) {
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_getStat");
     return SYSERR;
   }
-
   return ret;
 }
 
@@ -482,30 +479,29 @@ static int setStat(sqliteHandle * handle,
 
   if (sq_prepare(dbh,
 		 "INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
-		 &stmt) == SQLITE_OK) {
-    sqlite3_bind_text(stmt,
-		      1,
-		      key,
-		      strlen(key),
-		      SQLITE_STATIC);
-    sqlite3_bind_double(stmt,
-			2,
-			val);
-    sqlite3_bind_int(stmt,
-		     3,
-		     RESERVED_BLOCK);
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-      LOG_SQLITE(handle,
-		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		 "sqlite_setStat");
-      sqlite3_finalize(stmt);
-      return SYSERR;
-    }
-    sqlite3_finalize(stmt);
-
-    return OK;
-  } else
+		 &stmt) != SQLITE_OK) 
     return SYSERR;
+  sqlite3_bind_text(stmt,
+		    1,
+		    key,
+		    strlen(key),
+		    SQLITE_STATIC);
+  sqlite3_bind_double(stmt,
+		      2,
+		      val);
+  sqlite3_bind_int(stmt,
+		   3,
+		   RESERVED_BLOCK);
+  if (sqlite3_step(stmt) != SQLITE_DONE) {
+    LOG_SQLITE(handle,
+	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	       "sqlite_setStat");
+    sqlite3_finalize(stmt);
+    return SYSERR;
+  }
+  sqlite3_finalize(stmt);
+  
+  return OK;
 }
 
 /**
@@ -1196,7 +1192,7 @@ static int del(const HashCode512 * key,
     MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
-
+  db->lastSync++;
   MUTEX_UNLOCK(db->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
