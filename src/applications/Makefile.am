@@ -9,6 +9,7 @@ endif
 
 if !MINGW
 # TESTBED_DIR = testbed
+endif
 if LINUX
  VPN_DIR = vpn
 endif
