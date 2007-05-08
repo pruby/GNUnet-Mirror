@@ -1,0 +1,4 @@
+var/lib/GNUnet
+var/run/gnunetd
+var/log/gnunetd
+usr/lib/GNUnet

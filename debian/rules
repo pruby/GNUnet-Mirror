@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+
+DEB_CONFIGURE_EXTRA_FLAGS := --disable-rpath \
+	--enable-ipv6 \
+	--enable-guile \
+	--with-libcurl=/usr \
+	--with-guile=/usr \
+	--with-libgcrypt=/usr \
+	--with-libcurl=/usr \
+	--with-sqlite=/usr \
+	--with-mysql=/usr \
+	--with-extractor=/usr
+
+DEB_DH_INSTALLINIT_ARGS := --noscripts
+
+DEB_DH_MAKESHLIBS_ARGS_ALL := --version-info
+
+install/gnunet-daemon::
+	mkdir -p $(CURDIR)/debian/gnunet-daemon/etc
+	cp $(CURDIR)/debian/gnunetd.conf $(CURDIR)/debian/gnunet-daemon/etc/gnunetd.conf
+
+clean::
+	debconf-updatepo
