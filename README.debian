@@ -21,7 +21,7 @@ libgmp3-dev
 libltdl3-dev
 guile-1.8-dev (etch or higher!)
 libextractor-dev (etch or higher!)
-libcurl3-gnutls-dev
+libcurl3-gnutls-dev or libcurl4-gnutls-dev
 libsqlite3-dev (recommended)
 libmysqlclient15-dev (optional)
 libncursesw5-dev (optional)
