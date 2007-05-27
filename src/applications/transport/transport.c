@@ -368,7 +368,7 @@ transportCreatehello(unsigned short ttype) {
   if ( (ttype >= tapis_count) ||
        (tapis[ttype] == NULL) ) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
+	   GE_DEBUG | GE_BULK | GE_USER,
 	   _("No transport of type %d known.\n"),
 	   ttype);
     MUTEX_UNLOCK(tapis_lock);

@@ -41,6 +41,7 @@ gnunetinclude_HEADERS = \
   gnunet_state_service.h \
   gnunet_stats_lib.h \
   gnunet_stats_service.h \
+  gnunet_testing_lib.h \
   gnunet_topology_service.h \
   gnunet_traffic_lib.h \
   gnunet_traffic_service.h \

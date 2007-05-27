@@ -393,7 +393,7 @@ void * FSUI_uploadThread(void * cls) {
 	   (address != NULL) )
 	FREE(address);
     } else {
-      GE_BREAK(ectx, 0);
+      /* may happen if no transports are available... */
       loc = ECRS_dupUri(utc->uri);
     }
     connection_destroy(sock);
