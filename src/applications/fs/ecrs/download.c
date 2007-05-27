@@ -449,8 +449,9 @@ typedef struct RequestManager {
  *
  * @return NULL on error
  */
-static RequestManager * createRequestManager(struct GE_Context * ectx,
-					     struct GC_Configuration * cfg) {
+static RequestManager * 
+createRequestManager(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg) {
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
@@ -665,6 +666,8 @@ static void delRequest(RequestManager * rm,
 typedef struct CommonCtx {
   unsigned long long total;
   unsigned long long completed;
+  unsigned long long offset;
+  unsigned long long length;
   cron_t startTime;
   cron_t TTL_DECREMENT;
   RequestManager * rm;
@@ -744,10 +747,10 @@ static void updateProgress(const NodeClosure * node,
     if (node->ctx->completed > 0) {
       eta = (cron_t) (node->ctx->startTime +
 		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed))
-		      * (double)node->ctx->total);
+		      * (double)node->ctx->length);
     }
     if (node->ctx->dpcb != NULL) {
-      node->ctx->dpcb(node->ctx->total,
+      node->ctx->dpcb(node->ctx->length,
 		      node->ctx->completed,
 		      eta,
 		      node->offset,
@@ -834,6 +837,11 @@ static void iblock_download_children(NodeClosure * node,
  * block is present and it is an iblock, downloading the children is
  * triggered.
  *
+ * Also checks if the block is within the range of blocks
+ * that we are supposed to download.  If not, the method
+ * returns as if the block is present but does NOT signal
+ * progress.
+ *
  * @param node that is checked for presence
  * @return YES if present, NO if not.
  */
@@ -845,6 +853,15 @@ static int checkPresent(NodeClosure * node) {
   HashCode512 hc;
 
   size = getNodeSize(node);
+
+  /* first check if node is within range.
+     For now, keeping it simple, we only do
+     this for level-0 nodes */
+  if ( (node->level == 0) &&
+       ( (node->offset + size < node->ctx->offset) ||
+	 (node->offset > node->ctx->offset + node->ctx->length) ) )
+    return YES;
+
   data = MALLOC(size);
   res = readFromIOC(node->ctx->ioc,
 		    node->level,
@@ -1052,9 +1069,9 @@ static int nodeReceive(const HashCode512 * query,
 
   for (i=0;i<10;i++) {
     if ( (node->ctx->completed * 10000L >
-	  node->ctx->total * (10000L - (1024 >> i)) ) &&
+	  node->ctx->length * (10000L - (1024 >> i)) ) &&
 	 ( (node->ctx->completed-size) * 10000L <=
-	   node->ctx->total * (10000L - (1024 >> i)) ) ) {
+	   node->ctx->length * (10000L - (1024 >> i)) ) ) {
       /* end-game boundary crossed, slaughter TTLs */
       requestManagerEndgame(node->ctx->rm);
     }
@@ -1477,6 +1494,8 @@ int ECRS_downloadPartialFile(struct GE_Context * ectx,
 
   ctx.startTime = get_time();
   ctx.anonymityLevel = anonymityLevel;
+  ctx.offset = offset;
+  ctx.length = length;
   ctx.TTL_DECREMENT = 5 * cronSECONDS; /* HACK! */
   ctx.rm = rm;
   ctx.ioc = &ioc;
@@ -1504,7 +1523,9 @@ int ECRS_downloadPartialFile(struct GE_Context * ectx,
   }
 
   if ( (rm->requestListIndex == 0) &&
-       (ctx.completed == ctx.total) &&
+       ( (ctx.completed == ctx.total) ||
+	 ( (ctx.total != ctx.length) &&
+	   (ctx.completed >= ctx.length) ) ) &&
        (rm->abortFlag == NO) ) {
     ret = OK;
   } else {
