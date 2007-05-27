@@ -469,6 +469,8 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
     = 0;
   rm->requestList
     = NULL;
+  rm->have_target
+    = NO;
   GROW(rm->requestList,
        rm->requestListSize,
        256);
@@ -1363,9 +1365,8 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   }
   fid = uri->data.fi;
   
-  /* FIXME: if location URI, set rm->target/have_target
-     and give HELLO to identity library! */
-  if (! ECRS_isFileUri(uri)) {
+  if ( (! ECRS_isFileUri(uri)) &&
+       (! ECRS_isLocationUri(uri))) {
     GE_BREAK(ectx, 0);
     FREE(realFN);
     return SYSERR;
@@ -1392,6 +1393,28 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     FREE(realFN);
     return SYSERR;
   }
+  if (ECRS_isLocationUri(uri)) {
+    const Location * loc = &uri->data.loc;
+    struct ClientServerConnection * sock;
+
+    sock = client_connection_create(rm->ectx,
+				    rm->cfg);
+
+    gnunet_identity_peer_add(sock,
+			     &loc->peer,
+			     loc->expirationTime,
+			     loc->proto,
+			     loc->sas,
+			     loc->mtu,
+			     loc->address,
+			     &loc->helloSignature);
+    connection_destroy(sock);
+    hash(&loc->peer,
+	 sizeof(PublicKey),
+	 &rm->target.hashPubKey);
+    rm->have_target = YES;
+  }
+
   ctx.startTime = get_time();
   ctx.anonymityLevel = anonymityLevel;
   ctx.TTL_DECREMENT = 5 * cronSECONDS; /* HACK! */

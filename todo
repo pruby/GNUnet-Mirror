@@ -14,9 +14,6 @@ notes:
 0.7.2 [5'07]:
 - new features:
   * XFS / support for location URIs [CG] 
-    + fsui/fs/location URI support (download routing) [RC]
-      - ECRS download file -- use new identity lib to give HELLO to gnunetd
-      - ECRS download file -- set RM target iff Location URI given
     + location URI generation (for search routing) [RC]
       => ECRS needs to generate location URIs for *indexed* non-anonymous content!
       - extend identity API to allow creation of (certain) signatures by clients!
