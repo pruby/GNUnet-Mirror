@@ -334,7 +334,9 @@ static int startTCPServer() {
 			   NULL,
 			   0 /* no memory quota */);
   if (selector == NULL) {
-    CLOSE(listenerFD);
+    CLOSE(listenerFD); /* maybe closed already
+			  depending on how select_create
+			  failed... */
     return SYSERR;
   }
   return OK;

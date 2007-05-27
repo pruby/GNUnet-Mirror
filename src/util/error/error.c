@@ -100,6 +100,8 @@ void GE_LOG(struct GE_Context * ctx,
   size = VSNPRINTF(NULL, 0, message, va) + 1;
   va_end(va);
   buf = malloc(size);
+  if (buf == NULL)
+    return; /* oops */
   va_start(va, message);
   VSNPRINTF(buf, size, message, va);
   va_end(va);

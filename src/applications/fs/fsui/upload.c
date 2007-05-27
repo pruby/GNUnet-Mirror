@@ -27,9 +27,11 @@
 
 #include "platform.h"
 #include "gnunet_util_error_loggers.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_identity_lib.h"
 #include "fsui.h"
 #include <extractor.h>
 
@@ -253,10 +255,12 @@ void * FSUI_uploadThread(void * cls) {
   char * filename;
   char * pfn;
   struct ECRS_URI * uri;
+  struct ECRS_URI * loc;
   size_t tpos;
   char * error;
   struct GE_Memory * mem;
   struct GE_Context * ee;
+
 
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
@@ -357,15 +361,59 @@ void * FSUI_uploadThread(void * cls) {
 		     EXTRACTOR_FILENAME,
 		     pfn);
   FREE(pfn);
-  if (utc->shared->global_keywords != NULL)
+  if ( (utc->shared->anonymityLevel == 0) &&
+       (utc->shared->doIndex == YES) ) {
+    /* generate location URI for non-anonymous download */
+    struct ClientServerConnection  * sock;
+    PublicKey my_publicKey;
+    unsigned short proto;
+    TIME_T expirationTime;
+    unsigned short sas;
+    unsigned int mtu;
+    char * address;
+    
+    sock = client_connection_create(utc->shared->ctx->ectx,
+				    utc->shared->ctx->cfg);
+				    
+    address = NULL;
+    if (OK == gnunet_identity_get_self(sock,
+				       &my_publicKey,
+				       &expirationTime,
+				       &proto,
+				       &sas,
+				       &mtu,
+				       &address)) {
+      loc = ECRS_uriFromLocation(utc->uri,
+				 &my_publicKey,
+				 expirationTime,
+				 proto,
+				 sas,
+				 mtu,
+				 address,
+				 (ECRS_SignFunction) &gnunet_identity_sign_function,
+				 sock);
+      if ( (sas > 0) &&
+	   (address != NULL) )
+	FREE(address);
+    } else {
+      GE_BREAK(ectx, 0);
+      loc = ECRS_dupUri(utc->uri);
+    }
+    connection_destroy(sock);
+  } else {
+    /* no location URI, use standard URI 
+       (copied here to allow free later) */
+    loc = ECRS_dupUri(utc->uri);
+  }
+  if (utc->shared->global_keywords != NULL) 
     ECRS_addToKeyspace(ectx,
 		       utc->shared->ctx->cfg,
 		       utc->shared->global_keywords,
 		       utc->shared->anonymityLevel,
 		       utc->shared->priority,
 		       utc->shared->expiration,
-		       utc->uri,
-		       utc->meta);	
+		       loc,
+		       utc->meta);	  
   if (utc->keywords != NULL)
     ECRS_addToKeyspace(ectx,
 		       utc->shared->ctx->cfg,
@@ -373,7 +421,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->anonymityLevel,
 		       utc->shared->priority,
 		       utc->shared->expiration,
-		       utc->uri,
+		       loc,
 		       utc->meta);	
   if (utc->shared->individualKeywords == YES) {
     uri = ECRS_metaDataToUri(utc->meta);
@@ -383,10 +431,12 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->anonymityLevel,
 		       utc->shared->priority,
 		       utc->shared->expiration,
-		       utc->uri,
+		       loc,
 		       utc->meta);	
     ECRS_freeUri(uri);
   }
+  ECRS_freeUri(loc);   
+  loc = NULL;
   while (OK == ECRS_delFromMetaData(utc->meta,
 				    EXTRACTOR_SPLIT,
 				    NULL)) ;

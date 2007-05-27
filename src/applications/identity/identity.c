@@ -36,6 +36,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_directories.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_transport_service.h"
 #include "identity.h"
 #include "hostkey.h"
 
@@ -1107,17 +1108,82 @@ static int identityHelloHandler(struct ClientHandle * sock,
 
   if (sizeof(CS_identity_hello_MESSAGE) < ntohs(message->size))
     return SYSERR;
+  GE_ASSERT(NULL,
+	    sizeof(CS_identity_hello_MESSAGE)
+	    == sizeof(P2P_hello_MESSAGE));
   msg = (const CS_identity_hello_MESSAGE*) message;
-  hello = MALLOC(ntohs(msg->header.size));
-  memcpy(hello, msg, ntohs(msg->header.size));
+  hello = MALLOC(ntohs(msg->m.header.size));
+  memcpy(hello, msg, ntohs(msg->m.header.size));
   hello->header.type = htons(p2p_PROTO_hello);
   coreAPI->injectMessage(NULL,
 			 (const char*) hello,
-			 ntohs(msg->header.size),
+			 ntohs(msg->m.header.size),
 			 NO,
 			 NULL);
   FREE(hello);
   return OK;
+}
+
+static int identityRequestHelloHandler(struct ClientHandle * sock,
+				       const MESSAGE_HEADER * message) {
+  /* transport types in order of preference
+     for location URIs (by best guess at what
+     people are most likely to actually run) */
+  static unsigned short types[] = { 
+    TCP_PROTOCOL_NUMBER,
+    UDP_PROTOCOL_NUMBER,
+    HTTP_PROTOCOL_NUMBER,
+    TCP6_PROTOCOL_NUMBER,
+    UDP6_PROTOCOL_NUMBER,
+    SMTP_PROTOCOL_NUMBER,
+    NAT_PROTOCOL_NUMBER,
+    0,
+  };
+  Transport_ServiceAPI * tapi;
+  P2P_hello_MESSAGE * hello;
+  int pos;
+  int ret;
+  CS_identity_hello_MESSAGE * reply;
+
+  /* we cannot permanently load transport
+     since that would cause a cyclic dependency;
+     however, we can request it briefly here */
+  tapi = coreAPI->requestService("transport");
+  if (tapi == NULL)
+    return SYSERR;
+  hello = NULL;
+  pos = 0;
+  while ( (hello == NULL) &&
+	  (types[pos] != 0) ) 
+    hello = tapi->createhello(types[pos++]);
+  coreAPI->releaseService(tapi);
+  if (hello == NULL)
+    return SYSERR;
+  GE_ASSERT(NULL,
+	    sizeof(CS_identity_hello_MESSAGE)
+	    == sizeof(P2P_hello_MESSAGE));
+  reply = (CS_identity_hello_MESSAGE*) hello;
+  reply->m.header.type = htons(CS_PROTO_identity_HELLO);
+  ret = coreAPI->sendToClient(sock,
+			      &reply->m.header);
+  FREE(reply);
+  return ret;
+}
+
+static int identityRequestSignatureHandler(struct ClientHandle * sock,
+					   const MESSAGE_HEADER * message) {
+  CS_identity_signature_MESSAGE reply;
+  
+  if (ntohs(message->size) <= sizeof(MESSAGE_HEADER))
+    return SYSERR;
+  reply.header.size = htons(sizeof(CS_identity_signature_MESSAGE));
+  reply.header.type = htons(CS_PROTO_identity_SIGNATURE);
+  if (OK != signData(&message[1],
+		     ntohs(message->size) - sizeof(MESSAGE_HEADER),
+		     &reply.sig))
+    return SYSERR;
+  return coreAPI->sendToClient(sock,
+			       &reply.header);
 }
 
 
@@ -1214,6 +1280,10 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	       NULL);
   coreAPI->registerClientHandler(CS_PROTO_identity_HELLO,
 				 &identityHelloHandler);
+  coreAPI->registerClientHandler(CS_PROTO_identity_request_HELLO,
+				 &identityRequestHelloHandler);
+  coreAPI->registerClientHandler(CS_PROTO_identity_request_SIGN,
+				 &identityRequestSignatureHandler);
   return &id;
 }
 
@@ -1227,6 +1297,10 @@ void release_module_identity() {
 
   coreAPI->unregisterClientHandler(CS_PROTO_identity_HELLO,
 				   &identityHelloHandler);
+  coreAPI->unregisterClientHandler(CS_PROTO_identity_request_HELLO,
+				   &identityRequestHelloHandler);
+  coreAPI->unregisterClientHandler(CS_PROTO_identity_request_SIGN,
+				   &identityRequestSignatureHandler);
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
     entry = &tempHosts[i];
     for (j=0;j<entry->heloCount;j++)

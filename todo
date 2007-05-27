@@ -13,11 +13,7 @@ notes:
 
 0.7.2 [5'07]:
 - new features:
-  * XFS / support for location URIs [CG] 
-    + location URI generation (for search routing) [RC]
-      => ECRS needs to generate location URIs for *indexed* non-anonymous content!
-      - extend identity API to allow creation of (certain) signatures by clients!
-      - generate and publish location URI
+  * XFS / support for location URIs -- TEST!!! [CG] 
   * HTTP transport (libcurl, libmicrohttpd)
 - testcases (fix, add):
   * identity/clientapi.c: add (sanity) check for valid signature!

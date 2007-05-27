@@ -184,7 +184,7 @@ typedef struct {
    * @return the number of bytes written to buff, -1 on error
    */
   int (*getAdvertisedhellos)(unsigned int maxLen,
-			    char * buff);
+			     char * buff);
 
   /**
    * Test if the transport would even try to send

@@ -21,11 +21,11 @@ SUBDIRS	= \
  rpc \
  fragmentation \
  getoption \
+ identity \
  fs \
  state \
  stats \
  gap \
- identity \
  pingpong \
  session \
  $(MYSQL_DIR) \

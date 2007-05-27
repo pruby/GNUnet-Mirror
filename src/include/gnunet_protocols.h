@@ -135,11 +135,6 @@ extern "C" {
  */
 #define CS_PROTO_RETURN_ERROR 4
 
-/**
- * Client informs the Daemon about how to contact
- * a particular peer.
- */
-#define CS_PROTO_identity_HELLO 5
 
 /* ********** CS FS application messages ********** */
 
@@ -193,6 +188,32 @@ extern "C" {
  * client to gnunetd: initialize to index file
  */
 #define CS_PROTO_gap_INIT_INDEX 16
+
+
+/* *********** messages for identity module ************* */
+
+/**
+ * Client informs the Daemon about how to contact
+ * a particular peer -- or daemon informs client
+ * about how other peers should contact it.
+ */
+#define CS_PROTO_identity_HELLO 28
+
+/**
+ * Client asks the Daemon to sign a message.
+ */
+#define CS_PROTO_identity_SIGNATURE 29
+
+/**
+ * Client asks the Daemon about how to contact
+ * it.
+ */
+#define CS_PROTO_identity_request_HELLO 30
+
+/**
+ * Client asks the Daemon to sign a message.
+ */
+#define CS_PROTO_identity_request_SIGN 31
 
 /* *********** messages for traffic module ************* */
 

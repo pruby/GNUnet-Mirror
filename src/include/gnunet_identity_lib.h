@@ -53,6 +53,32 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
 			     const char * address,
 			     const Signature * signature);
 
+/**
+ * Function to request the peer to sign something
+ * with the private key of the peer.
+ */
+int gnunet_identity_sign_function(struct ClientServerConnection * sock,
+				  unsigned short size,
+				  const void * data,
+				  Signature * result);
+
+/**
+ * Function to request one of the peer's identities 
+ * (that is, external addresses).
+ * Except for the "sock" argument, all arguments are
+ * set by the function.
+ * @return SYSERR on error, OK on success
+ */
+int gnunet_identity_get_self(struct ClientServerConnection * sock,
+			     PublicKey * key,
+			     TIME_T * expirationTime,
+			     unsigned short * proto,
+			     unsigned short * sas,
+			     unsigned int * mtu,
+			     char ** address);
+
+
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

@@ -24,57 +24,32 @@
 #ifndef IDENTITY_H
 #define IDENTITY_H
 
+#include "gnunet_core.h"
+
 /**
  * Format of the message to inform gnunetd about a 
- * HELLO from the client-side.  
- *
- * @see P2P_hello_MESSAGE!
+ * HELLO from the client-side.  Just another name
+ * for the P2P_hello_MESSAGE -- except that in this
+ * struct the "type" will be different!  Note that
+ * the code depends on the structual (and size-wise)
+ * equality of CS_identity_hello_MESSAGE and
+ * P2P_hello_MESSAGE.
+ */
+typedef struct {
+
+  P2P_hello_MESSAGE m;
+
+} CS_identity_hello_MESSAGE;
+
+
+/**
+ * Format of the signature response.
  */
 typedef struct {
   MESSAGE_HEADER header;
 
-  /**
-   * The signature
-   */
-  Signature signature;
-
-  /**
-   * The public key
-   */
-  PublicKey publicKey;
-
-  /**
-   * Whose identity follows? No, this is NOT a duplicate
-   * as a node may send us the identity of ANOTHER node!
-   */
-  PeerIdentity senderIdentity;
-
-  /**
-   * time this address expires  (network byte order)
-   */
-  TIME_T expirationTime;
-
-  /**
-   * advertised MTU for sending (replies can have a different
-   * MTU!)
-   */
-  unsigned int MTU;
-
-  /**
-   * size of the sender address
-   */
-  unsigned short senderAddressSize;
-
-  /**
-   * protocol supported by the node (only one protocol
-   * can be advertised by the same hello)
-   * Examples are UDP, TCP, etc. This field is
-   * in network byte order
-   */
-  unsigned short protocol;
-
-
-} CS_identity_hello_MESSAGE;
+  Signature sig;
+} CS_identity_signature_MESSAGE;
 
 
 #endif
