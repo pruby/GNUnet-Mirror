@@ -48,9 +48,7 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
-#define START_PEERS 0
-
-#define DO_FORK 0
+#define START_PEERS 1
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
@@ -66,17 +64,12 @@ int main(int argc,
   pid_t daemon1;
   pid_t daemon2;
 #endif
-  pid_t sto2;
   int ret;
-#if DO_FORK
-  int status;
-#endif
   struct ClientServerConnection * sock;
   int left;
   DHT_TableId table;
   DHT_TableId key;
   DataContainer * value;
-  Blockstore * store;
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
 
@@ -183,73 +176,6 @@ int main(int argc,
   store = create_blockstore_memory(65536);
 
   /* actual test code */
-#if DO_FORK
-  sto2 = fork();
-#else
-  sto2 = argc == 1;
-#endif
-  if (sto2 == 0) {
-    /* switch to peer2 */
-    GC_set_configuration_value_number(cfg,
-				      ectx,
-				      "NETWORK",
-				      "PORT",
-				      12087);
-    printf("Peer2 joins DHT\n");
-    DHT_LIB_join(store,
-		 cfg,
-		 ectx,
-		 &table);
-    hash("key", 3, &key);
-    value = MALLOC(8);
-    value->size = ntohl(8);
-    memset(&value[1],
-	   'B',
-	   4);
-    printf("Peer2 stores key.\n");
-    CHECK2(OK == DHT_LIB_put(cfg,
-			     ectx,
-			     &table,
-			     &key,
-			     0,
-			     5 * cronSECONDS,
-			     value));
-    printf("Peer2 gets key.\n");
-    CHECK2(1 == DHT_LIB_get(cfg,
-			    ectx,
-			    &table,
-			    0,
-			    0,
-			    1,
-			    &key,
-			    10 * cronSECONDS,
-			    NULL,
-			    NULL));
-
-    hash("key2", 4, &key);
-    printf("Peer2 gets key2.\n");
-    CHECK2(1 == DHT_LIB_get(cfg,
-			    ectx,
-			    &table,
-			    0,
-			    0,
-			    1,
-			    &key,
-			    60 * cronSECONDS,
-			    NULL,
-			    NULL));
-    printf("Peer2 tests successful.\n");
-    PTHREAD_SLEEP(30 * cronSECONDS);
-  FAILURE2:
-    DHT_LIB_leave(&table);
-    destroy_blockstore_memory(store);
-    exit(ret);
-  }
-  printf("Peer1 joints DHT\n");
-  DHT_LIB_join(store,
-	       cfg,
-	       ectx,
-	       &table);
   hash("key2", 4, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
@@ -276,6 +202,59 @@ int main(int argc,
 			 NULL,
 			 NULL));
   hash("key", 3, &key);
+  
+  /* switch to peer2 */
+  GC_set_configuration_value_number(cfg,
+				    ectx,
+				    "NETWORK",
+				    "PORT",
+				    12087);
+  hash("key", 3, &key);
+  value = MALLOC(8);
+  value->size = ntohl(8);
+  memset(&value[1],
+	 'B',
+	 4);
+  printf("Peer2 stores key.\n");
+  CHECK2(OK == DHT_LIB_put(cfg,
+			   ectx,
+			   &table,
+			   &key,
+			   0,
+			   5 * cronSECONDS,
+			   value));
+  printf("Peer2 gets key.\n");
+  CHECK2(1 == DHT_LIB_get(cfg,
+			  ectx,
+			  &table,
+			  0,
+			  0,
+			  1,
+			  &key,
+			  10 * cronSECONDS,
+			  NULL,
+			  NULL));
+  
+  hash("key2", 4, &key);
+  printf("Peer2 gets key2.\n");
+  CHECK2(1 == DHT_LIB_get(cfg,
+			  ectx,
+			  &table,
+			  0,
+			  0,
+			  1,
+			  &key,
+			  60 * cronSECONDS,
+			  NULL,
+			  NULL));
+  printf("Peer2 tests successful.\n");
+
+  /* switch to peer1 */
+  GC_set_configuration_value_number(cfg,
+				    ectx,
+				    "NETWORK",
+				    "PORT",
+				    2087);
   printf("Peer1 gets key\n");
   CHECK(1 == DHT_LIB_get(cfg,
 			 ectx,
@@ -288,14 +267,6 @@ int main(int argc,
 			 NULL,
 			 NULL));
   printf("Peer1 tests successful, shutting down.\n");
-  DHT_LIB_leave(&table);
-  destroy_blockstore_memory(store);
-#if DO_FORK
-  if (sto2 != waitpid(sto2, &status, 0))
-    GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_USER | GE_IMMEDIATE,
-		    "waitpid");
-#endif
   /* end of actual test code */
 
  FAILURE:

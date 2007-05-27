@@ -16,9 +16,10 @@ notes:
   * XFS / support for location URIs -- TEST!!! [CG] 
   * HTTP transport (libcurl, libmicrohttpd)
 - testcases (fix, add):
-  * identity/clientapi.c: add (sanity) check for valid signature!
-  * dht/tools
-  * ecrs_core
+  * design and write general testcase API for forking / connecting of daemons
+    (the amount of shared identical code is becoming ridiculous)
+  * dht/tools -- make sure dhttest2 compiles & runs!
+  * ecrs_core -- implement actual testcase, harness is there!
   * gap (incl. economy)
   * advertising
 
