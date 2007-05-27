@@ -27,6 +27,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_fs_lib.h"
+#include "gnunet_identity_lib.h"
 #include "ecrs_core.h"
 #include "ecrs.h"
 #include "tree.h"
@@ -1362,7 +1363,8 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   }
   fid = uri->data.fi;
   
-  
+  /* FIXME: if location URI, set rm->target/have_target
+     and give HELLO to identity library! */
   if (! ECRS_isFileUri(uri)) {
     GE_BREAK(ectx, 0);
     FREE(realFN);

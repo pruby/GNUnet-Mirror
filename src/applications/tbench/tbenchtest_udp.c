@@ -109,10 +109,10 @@ static int checkConnected(struct ClientServerConnection * sock) {
 
   ret = 0;
   left = 30; /* how many iterations should we wait? */
-  while (OK == requestStatistics(NULL,
-				 sock,
-				 &waitForConnect,
-				 NULL)) {
+  while (OK == STATS_getStatistics(NULL,
+				   sock,
+				   &waitForConnect,
+				   NULL)) {
     printf(_("Waiting for peers to connect (%u iterations left)...\n"),
 	   left);
     sleep(5);
@@ -194,10 +194,10 @@ int main(int argc, char ** argv) {
     sock = client_connection_create(NULL,
 				    cfg);
     left = 30; /* how many iterations should we wait? */
-    while (OK == requestStatistics(NULL,
-				   sock,
-				   &waitForConnect,
-				   NULL)) {
+    while (OK == STATS_getStatistics(NULL,
+				     sock,
+				     &waitForConnect,
+				     NULL)) {
       printf("Waiting for peers to connect (%u iterations left)...\n",
 	     left);
       sleep(5);
