@@ -135,12 +135,14 @@ static void freeIOC(IOContext * this,
  * Initialize an IOContext.
  *
  * @param this the context to initialize
+ * @param no_temporaries disallow creation of temp files
  * @param filesize the size of the file
  * @param filename the name of the level-0 file
  * @return OK on success, SYSERR on failure
  */
 static int createIOContext(struct GE_Context * ectx,
 			   IOContext * this,
+			   int no_temporaries,
 			   unsigned long long filesize,
 			   const char * filename) {
   int i;
@@ -168,23 +170,25 @@ static int createIOContext(struct GE_Context * ectx,
   for (i=0;i<=this->treedepth;i++)
     this->handles[i] = -1;
 
-  for (i=0;i<=this->treedepth;i++) {
-    fn = MALLOC(strlen(filename) + 3);
-    strcpy(fn, filename);
-    if (i > 0) {
-      strcat(fn, ".A");
-      fn[strlen(fn)-1] += i;
-    }
-    this->handles[i] = disk_file_open(ectx,
-				      fn,
-				      O_CREAT|O_RDWR,
-				      S_IRUSR|S_IWUSR );
-    if (this->handles[i] < 0) {
-      freeIOC(this, YES);
+  if (no_temporaries != YES) {
+    for (i=0;i<=this->treedepth;i++) {
+      fn = MALLOC(strlen(filename) + 3);
+      strcpy(fn, filename);
+      if (i > 0) {
+	strcat(fn, ".A");
+	fn[strlen(fn)-1] += i;
+      }
+      this->handles[i] = disk_file_open(ectx,
+					fn,
+					O_CREAT|O_RDWR,
+					S_IRUSR|S_IWUSR );
+      if (this->handles[i] < 0) {
+	freeIOC(this, YES);
+	FREE(fn);
+	return SYSERR;
+      }
       FREE(fn);
-      return SYSERR;
     }
-    FREE(fn);
   }
   return OK;
 }
@@ -207,6 +211,10 @@ int readFromIOC(IOContext * this,
   int ret;
 
   MUTEX_LOCK(this->lock);
+  if (this->handles[level] == -1) {
+    MUTEX_UNLOCK(this->lock);
+    return SYSERR;
+  }
   lseek(this->handles[level],
 	pos,
 	SEEK_SET);
@@ -244,6 +252,11 @@ int writeToIOC(IOContext * this,
   int ret;
 
   MUTEX_LOCK(this->lock);
+  if ( (this->handles[level] == -1) &&
+       (level > 0) ) {
+    MUTEX_UNLOCK(this->lock);
+    return len; /* lie -- no temps allowed... */
+  }
   lseek(this->handles[level],
 	pos,
 	SEEK_SET);
@@ -1292,6 +1305,52 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 		      void * dpcbClosure,
 		      ECRS_TestTerminate tt,
 		      void * ttClosure) {
+  return ECRS_downloadPartialFile(ectx,
+				  cfg,
+				  uri,
+				  filename,
+				  0,
+				  ECRS_fileSize(uri),
+				  anonymityLevel,
+				  NO,
+				  dpcb,
+				  dpcbClosure,
+				  tt,
+				  ttClosure);
+}
+
+
+/**
+ * Download parts of a file.  Note that this will store 
+ * the blocks at the respective offset in the given file.
+ * Also, the download is still using the blocking of the
+ * underlying ECRS encoding.  As a result, the download
+ * may *write* outside of the given boundaries (if offset
+ * and length do not match the 32k ECRS block boundaries).
+ * <p>
+ *
+ * This function should be used to focus a download towards a
+ * particular portion of the file (optimization), not to strictly
+ * limit the download to exactly those bytes.
+ *
+ * @param uri the URI of the file (determines what to download)
+ * @param filename where to store the file 
+ * @param no_temporaries set to YES to disallow generation of temporary files
+ * @param start starting offset
+ * @param length length of the download (starting at offset)
+ */
+int ECRS_downloadPartialFile(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     const struct ECRS_URI * uri,
+			     const char * filename,
+			     unsigned long long offset,
+			     unsigned long long length,
+			     unsigned int anonymityLevel,
+			     int no_temporaries,
+			     ECRS_DownloadProgressCallback dpcb,
+			     void * dpcbClosure,
+			     ECRS_TestTerminate tt,
+			     void * ttClosure) {
   IOContext ioc;
   RequestManager * rm;
   int ret;
@@ -1374,6 +1433,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 
   if (OK != createIOContext(ectx,
 			    &ioc,
+			    no_temporaries,
 			    ntohll(fid.file_length),
 			    realFN)) {
 #if DEBUG_DOWNLOAD

@@ -791,6 +791,38 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 		      void * ttClosure); /* download.c */
 
 /**
+ * Download parts of a file.  Note that this will store 
+ * the blocks at the respective offset in the given file.
+ * Also, the download is still using the blocking of the
+ * underlying ECRS encoding.  As a result, the download
+ * may *write* outside of the given boundaries (if offset
+ * and length do not match the 32k ECRS block boundaries).
+ * <p>
+ *
+ * This function should be used to focus a download towards a
+ * particular portion of the file (optimization), not to strictly
+ * limit the download to exactly those bytes.
+ *
+ * @param uri the URI of the file (determines what to download)
+ * @param filename where to store the file 
+ * @param no_temporaries set to YES to disallow generation of temporary files
+ * @param start starting offset
+ * @param length length of the download (starting at offset)
+ */
+int ECRS_downloadPartialFile(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     const struct ECRS_URI * uri,
+			     const char * filename,
+			     unsigned long long offset,
+			     unsigned long long length,
+			     unsigned int anonymityLevel,
+			     int no_temporaries,
+			     ECRS_DownloadProgressCallback dpcb,
+			     void * dpcbClosure,
+			     ECRS_TestTerminate tt,
+			     void * ttClosure); /* download.c */
+
+/**
  * Iterate over all entries in a directory.  Note that directories
  * are structured such that it is possible to iterate over the
  * individual blocks as well as over the entire directory.  Thus
