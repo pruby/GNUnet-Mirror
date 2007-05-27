@@ -73,8 +73,6 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
     FREE(msg);
     return SYSERR;
   } 
-  fprintf(stderr, "Yepee!\n");
-
   if (SYSERR == connection_write(sock,
 				 &msg->m.header)) {
     FREE(msg);
