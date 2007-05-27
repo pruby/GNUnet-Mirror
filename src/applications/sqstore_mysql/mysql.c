@@ -122,6 +122,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_protocols.h"
 #include "gnunet_sqstore_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_state_service.h"
@@ -194,7 +195,7 @@ typedef struct {
 
   MYSQL_STMT * update;
 
-  MYSQL_BIND ubind[4];
+  MYSQL_BIND ubind[5];
 
   struct MUTEX * DATABASE_Lock_;
 
@@ -219,7 +220,7 @@ typedef struct {
 
 #define DELETE_GENERIC_SAMPLE "DELETE FROM gn070 WHERE hash=? AND size=? AND type=? AND prio=? AND anonLevel=? AND expire=? AND value=? ORDER BY prio ASC LIMIT 1"
 
-#define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+?,expire=MAX(expire,?) WHERE hash=? AND value=?"
+#define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+?,expire=IF(expire>=?,expire,?) WHERE hash=? AND value=?"
 
 static mysqlHandle * dbh;
 
@@ -420,10 +421,17 @@ static int iopen(mysqlHandle * dbhI,
 			   DELETE_GENERIC_SAMPLE,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("`%s' failed at %s:%d with error: %s\n"),
-	  "mysql_stmt_prepare",
-	  __FILE__, __LINE__,
-	  mysql_stmt_error(dbhI->insert));
+	  _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s\n"),
+	     "mysql_stmt_prepare",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(dbhI->insert),
+	     mysql_stmt_error(dbhI->select),
+	     mysql_stmt_error(dbhI->selectc),
+	     mysql_stmt_error(dbhI->selects),
+	     mysql_stmt_error(dbhI->selectsc),
+	     mysql_stmt_error(dbhI->update),
+	     mysql_stmt_error(dbhI->deleteh),
+	     mysql_stmt_error(dbhI->deleteg));
       mysql_stmt_close(dbhI->insert);
       mysql_stmt_close(dbhI->select);
       mysql_stmt_close(dbhI->selectc);
@@ -466,8 +474,9 @@ static int iopen(mysqlHandle * dbhI,
 	   sizeof(dbhI->ubind));
     dbhI->ubind[0].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[1].buffer_type = MYSQL_TYPE_LONG;
-    dbhI->ubind[2].buffer_type = MYSQL_TYPE_BLOB;
+    dbhI->ubind[2].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[3].buffer_type = MYSQL_TYPE_BLOB;
+    dbhI->ubind[4].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->prepare = YES;
   } else
     dbhI->prepare = NO;
@@ -623,6 +632,38 @@ static int iterateLowPriority(unsigned int type,
 		       "SELECT SQL_NO_CACHE * FROM gn070"
 		       " %s"
 		       "ORDER BY prio ASC",
+		       iter,
+		       closure);
+}
+
+/**
+ * Iterate over the items in the datastore that 
+ * have anonymity level 0.
+ *
+ * @param type entries of which type should be considered?
+ *        Use 0 for any type.
+ * @param iter never NULL
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateNonAnonymous(unsigned int type,
+			       int on_demand,
+			       Datum_Iterator iter,
+			       void * closure) {
+  char limit[512];
+
+  if (on_demand == YES) 
+    SNPRINTF(limit,
+	     512,
+	     "SELECT SQL_NO_CACHE * FROM gn070"
+	     " %s WHERE expire > %llu AND anonLevel == 0 AND type != %d",
+	     ONDEMAND_BLOCK);
+  else
+    strcpy(limit,
+	   "SELECT SQL_NO_CACHE * FROM gn070"
+	   " %s WHERE expire > %llu AND anonLevel == 0");
+  return iterateHelper(type,
+		       limit,
 		       iter,
 		       closure);
 }
@@ -1221,12 +1262,13 @@ static int update(const HashCode512 * key,
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   dbh->ubind[0].buffer = (char*) &delta;
   dbh->ubind[1].buffer = (char*) &expire;
-  dbh->ubind[2].buffer = (char*) key;
-  dbh->ubind[2].length = &twenty;
-  dbh->ubind[3].buffer = (char*) &value[1];
-  dbh->ubind[3].length = &contentSize;
+  dbh->ubind[2].buffer = (char*) &expire;
+  dbh->ubind[3].buffer = (char*) key;
+  dbh->ubind[3].length = &twenty;
+  dbh->ubind[4].buffer = (char*) &value[1];
+  dbh->ubind[4].length = &contentSize;
   GE_ASSERT(ectx, 
-	    mysql_stmt_param_count(dbh->update) <= 4);
+	    mysql_stmt_param_count(dbh->update) <= 5);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {
     GE_LOG(ectx,
@@ -1415,6 +1457,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   api.put = &put;
   api.get = &get;
   api.iterateLowPriority = &iterateLowPriority;
+  api.iterateNonAnonymous = &iterateNonAnonymous;
   api.iterateExpirationTime = &iterateExpirationTime;
   api.iterateMigrationOrder = &iterateMigrationOrder;
   api.iterateAllNow = &iterateAllNow;

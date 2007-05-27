@@ -35,6 +35,28 @@
 #define DEBUG_DTM NO
 
 /**
+ * Mark the given URI as found in a directory 
+ * in URITRACK.
+ */
+static int listURIfoundDirectory(const ECRS_FileInfo * fi,
+				 const HashCode512 * key,
+				 int isRoot,
+				 void * prnt) {
+  FSUI_DownloadList * dl = prnt;
+
+  if (isRoot == YES)
+    return OK; /* namespace ad, ignore */
+  URITRACK_addState(dl->ctx->ectx,
+		    dl->ctx->cfg,
+		    fi->uri,
+		    URITRACK_DIRECTORY_FOUND);
+  
+  return OK;
+}
+
+
+
+/**
  * Start to download a file.
  */
 static FSUI_DownloadList *
@@ -47,6 +69,10 @@ startDownload(struct FSUI_Context * ctx,
 	      struct FSUI_SearchList * psearch,
 	      FSUI_DownloadList * parent);
 
+/**
+ * Initiate a (recursive) download of the given
+ * directory entry.
+ */
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				    const HashCode512 * key,
 				    int isRoot,
@@ -172,6 +198,17 @@ downloadProgressCallback(unsigned long long totalBytes,
     else
       dl->is_directory = NO;
   }
+  if (dl->is_directory == YES) {
+    md = NULL;
+    ECRS_listDirectory(dl->ctx->ectx,
+		       lastBlock,
+		       lastBlockSize,
+		       &md,
+		       &listURIfoundDirectory,
+		       dl);
+    if (md != NULL)
+      ECRS_freeMetaData(md);
+  }
   if ( (dl->is_recursive == YES) &&
        (dl->is_directory == YES) ) {
     md = NULL;
@@ -248,6 +285,10 @@ void * downloadThread(void * cls) {
     event.data.DownloadCompleted.total = dl->total;
     event.data.DownloadCompleted.filename = dl->filename;
     event.data.DownloadCompleted.uri = dl->fi.uri;
+    URITRACK_addState(dl->ctx->ectx,
+		      dl->ctx->cfg,
+		      dl->fi.uri,
+		      URITRACK_DOWNLOAD_COMPLETED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ACTIVE) {
@@ -266,7 +307,10 @@ void * downloadThread(void * cls) {
     if (error == NULL)
       error = _("Download failed (no reason given)");
     event.data.DownloadError.message = error;
-
+    URITRACK_addState(dl->ctx->ectx,
+		      dl->ctx->cfg,
+		      dl->fi.uri,
+		      URITRACK_DOWNLOAD_ABORTED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ABORTED) { /* aborted */
@@ -277,6 +321,10 @@ void * downloadThread(void * cls) {
     event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
     event.data.DownloadAborted.dc.spos = dl->search;
     event.data.DownloadAborted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
+    URITRACK_addState(dl->ctx->ectx,
+		      dl->ctx->cfg,
+		      dl->fi.uri,
+		      URITRACK_DOWNLOAD_ABORTED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else {
@@ -286,7 +334,6 @@ void * downloadThread(void * cls) {
 
 
   if ( (ret == OK) &&
-       (dl->is_recursive) &&
        (dl->is_directory == YES) &&
        (ECRS_fileSize(dl->fi.uri) > 0) ) {
     char * dirBlock;
@@ -319,18 +366,30 @@ void * downloadThread(void * cls) {
 			     "mmap",
 			     fn);	
       } else {
-	/* load directory, start downloads */
 	md = NULL;
-	MUTEX_LOCK(dl->ctx->lock);
 	ECRS_listDirectory(dl->ctx->ectx,
 			   dirBlock,
 			   totalBytes,
 			   &md,
-			   &triggerRecursiveDownload,
+			   &listURIfoundDirectory,
 			   dl);
-	MUTEX_UNLOCK(dl->ctx->lock);
-	ECRS_freeMetaData(md);
-	MUNMAP(dirBlock, totalBytes);
+	if (md != NULL)
+	  ECRS_freeMetaData(md);
+ 	
+	if (dl->is_recursive) {
+	  /* load directory, start downloads */
+	  md = NULL;
+	  MUTEX_LOCK(dl->ctx->lock);
+	  ECRS_listDirectory(dl->ctx->ectx,
+			     dirBlock,
+			     totalBytes,
+			     &md,
+			     &triggerRecursiveDownload,
+			     dl);
+	  MUTEX_UNLOCK(dl->ctx->lock);
+	  ECRS_freeMetaData(md);
+	  MUNMAP(dirBlock, totalBytes);
+	}
       }
       CLOSE(fd);
     }
@@ -403,6 +462,10 @@ startDownload(struct FSUI_Context * ctx,
   event.data.DownloadStarted.fi.uri = dl->fi.uri;
   event.data.DownloadStarted.fi.meta = dl->fi.meta;
   event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
+  URITRACK_addState(ctx->ectx,
+		    ctx->cfg,
+		    uri,
+		    URITRACK_DOWNLOAD_STARTED);
   dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
 			  &event);
   dl->next = parent->child;

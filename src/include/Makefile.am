@@ -28,6 +28,7 @@ gnunetinclude_HEADERS = \
   gnunet_fsui_lib.h \
   gnunet_gap_service.h \
   gnunet_getoption_lib.h \
+  gnunet_identity_lib.h \
   gnunet_identity_service.h \
   gnunet_kvstore_service.h \
   gnunet_namespace_lib.h \

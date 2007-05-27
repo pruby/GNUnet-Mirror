@@ -591,6 +591,7 @@ static void sendToSelected(const PeerIdentity * peer,
  * (depending on load, queue, etc).
  */
 static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
+			 const PeerIdentity * target,
 			 const PeerIdentity * excludePeer) {
   cron_t now;
   QueryRecord * qr;
@@ -604,7 +605,15 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   unsigned long long rankingSum;
   unsigned long long sel;
   unsigned long long pos;
+  PID_INDEX tpid;
 
+  if (target != NULL) {
+    /* connect to target host -- if known */
+    coreAPI->unicast(target,
+		     NULL,
+		     ntohl(msg->priority),
+		     0);
+  }
   now = get_time();
   MUTEX_LOCK(lock);
 
@@ -669,56 +678,61 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   memcpy(qr->msg,
 	 msg,
 	 ntohs(msg->header.size));
-  if (noclear == NO) {
+  if (noclear == NO) 
     memset(&qr->bitmap[0],
 	   0,
 	   BITMAP_SIZE);
-    if (qr->noTarget != 0)
-      change_pid_rc(qr->noTarget, -1);
-    if (excludePeer != NULL)
-      qr->noTarget = intern_pid(excludePeer);
-    else
-      qr->noTarget = intern_pid(coreAPI->myIdentity);
-    qr->totalDistance = 0;
-    qr->rankings = MALLOC(sizeof(int)*8*BITMAP_SIZE);
-    qr->activeConnections
-      = coreAPI->forAllConnectedNodes
-      (&hotpathSelectionCode,
-       qr);
-    /* actual selection, proportional to rankings
-       assigned by hotpathSelectionCode ... */
-    rankingSum = 0;
-    for (i=0;i<8*BITMAP_SIZE;i++)
-      rankingSum += qr->rankings[i];
-    if (qr->activeConnections > 0) {
-      /* select 4 peers for forwarding */
-      for (i=0;i<4;i++) {
-	if (rankingSum == 0)
+
+  if (qr->noTarget != 0)
+    change_pid_rc(qr->noTarget, -1);
+  if (excludePeer != NULL)
+    qr->noTarget = intern_pid(excludePeer);
+  else
+    qr->noTarget = intern_pid(coreAPI->myIdentity);
+  qr->totalDistance = 0;
+  qr->rankings = MALLOC(sizeof(int)*8*BITMAP_SIZE);
+  qr->activeConnections
+    = coreAPI->forAllConnectedNodes
+    (&hotpathSelectionCode,
+     qr);
+  /* actual selection, proportional to rankings
+     assigned by hotpathSelectionCode ... */
+  rankingSum = 0;
+  for (i=0;i<8*BITMAP_SIZE;i++)
+    rankingSum += qr->rankings[i];
+  if (qr->activeConnections > 0) {
+    /* select 4 peers for forwarding */
+    for (i=0;i<4;i++) {
+      if (rankingSum == 0)
+	break;
+      sel = weak_randomi64(rankingSum);
+      pos = 0;	
+      for (j=0;j<8*BITMAP_SIZE;j++) {
+	pos += qr->rankings[j];
+	if (pos > sel) {
+	  setBit(qr, j);
+	  GE_ASSERT(ectx, rankingSum >= qr->rankings[j]);
+	  rankingSum -= qr->rankings[j];
+	  qr->rankings[j] = 0;
 	  break;
-	sel = weak_randomi64(rankingSum);
-	pos = 0;	
-	for (j=0;j<8*BITMAP_SIZE;j++) {
-	  pos += qr->rankings[j];
-	  if (pos > sel) {
-	    setBit(qr, j);
-	    GE_ASSERT(ectx, rankingSum >= qr->rankings[j]);
-	    rankingSum -= qr->rankings[j];
-	    qr->rankings[j] = 0;
-	    break;
-	  }
 	}
       }
     }
-    FREE(qr->rankings);
-    qr->rankings = NULL;
-    /* now forward to a couple of selected nodes */
-    coreAPI->forAllConnectedNodes
-      (&sendToSelected,
-       qr);
-    if (qr == &dummy) {
-      change_pid_rc(dummy.noTarget, -1);
-      FREE(dummy.msg);
-    }
+  }
+  FREE(qr->rankings);  
+  qr->rankings = NULL;
+  if (target != NULL) {
+    tpid = intern_pid(target);
+    setBit(qr, tpid);
+    change_pid_rc(tpid, -1);
+  }
+  /* now forward to a couple of selected nodes */
+  coreAPI->forAllConnectedNodes
+    (&sendToSelected,
+     qr);
+  if (qr == &dummy) {
+    change_pid_rc(dummy.noTarget, -1);
+    FREE(dummy.msg);
   }
   MUTEX_UNLOCK(lock);
 }
@@ -1431,6 +1445,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
  * subsequently be routed to other peers.
  *
  * @param sender next hop in routing of the reply, NULL for us
+ * @param target peer to ask primarily (maybe NULL)
  * @param prio the effective priority of the query
  * @param ttl the relative ttl of the query
  * @param query the query itself
@@ -1439,6 +1454,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
  *         SYSERR if not (out of resources)
  */
 static int execQuery(const PeerIdentity * sender,
+		     const PeerIdentity * target,
 		     unsigned int prio,
 		     QUERY_POLICY policy,
 		     int ttl,
@@ -1579,6 +1595,7 @@ static int execQuery(const PeerIdentity * sender,
   MUTEX_UNLOCK(lookup_exclusion);
   if (doForward) {
     forwardQuery(query,
+		 target,
 		 sender);
   }
   change_pid_rc(senderID, -1);
@@ -1824,6 +1841,7 @@ static int init(Blockstore * datastore,
  * datastore on anything that is received, and the caller will be
  * listening for these puts.
  *
+ * @param target peer to ask primarily (maybe NULL)
  * @param type the type of the block that we're looking for
  * @param anonymityLevel how much cover traffic is required? 1 for none
  *        (0 does not require GAP, 1 requires GAP but no cover traffic)
@@ -1834,7 +1852,8 @@ static int init(Blockstore * datastore,
  *  buffers are full or other error, NO if we already
  *  returned the one and only reply (local hit)
  */
-static int get_start(unsigned int type,
+static int get_start(const PeerIdentity * target,
+		     unsigned int type,
 		     unsigned int anonymityLevel,
 		     unsigned int keyCount,
 		     const HashCode512 * keys,
@@ -1919,6 +1938,7 @@ static int get_start(unsigned int type,
   msg->returnTo
     = *coreAPI->myIdentity;
   ret = execQuery(NULL,
+		  target,
 		  prio,
 		  QUERY_ANSWER|QUERY_FORWARD|QUERY_INDIRECT,
 		  timeout - get_time(),
@@ -2112,6 +2132,7 @@ static int handleQuery(const PeerIdentity * sender,
   if (ttl < 0)
     ttl = 0;
   execQuery(sender,	
+	    NULL,
 	    prio,
 	    policy,
 	    ttl,

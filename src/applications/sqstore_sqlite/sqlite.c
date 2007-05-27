@@ -530,7 +530,9 @@ static int sqlite_iterate(unsigned int type,
 			  void * closure,
 			  int sortByPriority,
 			  int inverseOrder,
-			  int include_expired) {	
+			  int include_expired,
+			  int limit_nonanonymous,
+			  int limit_ondemand) {	
   sqlite3_stmt * stmt;
   int count;
   char scratch[512];
@@ -568,15 +570,22 @@ static int sqlite_iterate(unsigned int type,
       strcat(scratch,
 	     "(prio > :4 AND expire == :5) OR expire > :6)");
   }
-  if (type != 0)
+  if (type != 0) {
     strcat(scratch, " AND type = :7");
-  else
+  } else if (limit_ondemand == YES) {
+    SNPRINTF(&scratch[strlen(scratch)],
+	     512 - strlen(scratch),
+	     " AND type != %d AND type != %d",
+	     RESERVED_BLOCK,
+	     ONDEMAND_BLOCK); 
+  } else {
     SNPRINTF(&scratch[strlen(scratch)],
 	     512 - strlen(scratch),
 	     " AND type != %d",
 	     RESERVED_BLOCK); /* otherwise we iterate over
 				 the stats entry, which would
 				 be bad */
+  }
   if (NO == include_expired) {
     if (type != 0)
       strcat(scratch, " AND expire > :8");
@@ -675,23 +684,26 @@ static int sqlite_iterate(unsigned int type,
 	     lastPrio,
 	     lastExp);
 #endif
-      if (iter != NULL) {
-	MUTEX_UNLOCK(db->DATABASE_Lock_);
-	if (SYSERR == iter(&datum->key,
-			   &datum->value,
-			   closure) ) {
-	  FREE(datum);
+      if ( (NO == limit_nonanonymous) ||
+	   (ntohl(datum->value.anonymityLevel) == 0) ) {
+	count++;
+	if (iter != NULL) {
+	  MUTEX_UNLOCK(db->DATABASE_Lock_);
+	  if (SYSERR == iter(&datum->key,
+			     &datum->value,
+			     closure) ) {
+	    FREE(datum);
+	    MUTEX_LOCK(db->DATABASE_Lock_);
+	    count = SYSERR;
+	    break;
+	  }
 	  MUTEX_LOCK(db->DATABASE_Lock_);
-	  count = SYSERR;
-	  break;
 	}
-	MUTEX_LOCK(db->DATABASE_Lock_);
       }
       key = datum->key;
       lastPrio = ntohl(datum->value.prio);
       lastExp  = ntohll(datum->value.expirationTime);
       FREE(datum);
-      count++;
     } else {
       if (ret != SQLITE_DONE) {
 	LOG_SQLITE(handle,
@@ -725,7 +737,26 @@ static int sqlite_iterate(unsigned int type,
 static int iterateLowPriority(unsigned int type,
 			      Datum_Iterator iter,
 			      void * closure) {
-  return sqlite_iterate(type, iter, closure, YES, NO, YES);
+  return sqlite_iterate(type, iter, closure, YES, NO, YES, NO, NO);
+}
+
+/**
+ * Call a method on content with zero anonymity.
+ *
+ * @param type limit the iteration to entries of this
+ *   type. 0 for all entries.
+ * @param on_demand limit the iteration to entries 
+ *        that not on-demand? 
+ * @param iter the callback method
+ * @param closure argument to all callback calls
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateNonAnonymous(unsigned int type,
+			       int on_demand,
+			       Datum_Iterator iter,
+			       void * closure) {
+  return sqlite_iterate(0, iter, closure, NO, NO, NO, YES, on_demand);
 }
 
 /**
@@ -740,7 +771,7 @@ static int iterateLowPriority(unsigned int type,
 static int iterateExpirationTime(unsigned int type,
 				 Datum_Iterator iter,
 				 void * closure) {
-  return sqlite_iterate(type, iter, closure, NO, NO, YES);
+  return sqlite_iterate(type, iter, closure, NO, NO, YES, NO, NO);
 }
 
 /**
@@ -753,7 +784,7 @@ static int iterateExpirationTime(unsigned int type,
  */
 static int iterateMigrationOrder(Datum_Iterator iter,
 			         void * closure) {
-  return sqlite_iterate(0, iter, closure, NO, YES, NO);
+  return sqlite_iterate(0, iter, closure, NO, YES, NO, NO, NO);
 }
 
 /**
@@ -1341,6 +1372,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   api.put = &put;
   api.get = &get;
   api.iterateLowPriority = &iterateLowPriority;
+  api.iterateNonAnonymous = &iterateNonAnonymous;
   api.iterateExpirationTime = &iterateExpirationTime;
   api.iterateMigrationOrder = &iterateMigrationOrder;
   api.iterateAllNow = &iterateAllNow;

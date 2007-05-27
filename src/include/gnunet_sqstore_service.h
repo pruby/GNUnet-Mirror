@@ -126,6 +126,22 @@ typedef struct {
 			    void * closure);
 
   /**
+   * Iterate over content with anonymity zero.
+   *
+   * @param type entries of which type should be considered?
+   *        Use 0 for any type.
+   * @param on_demand limit the iteration to entries 
+   *        that not on-demand? 
+   * @param iter never NULL
+   * @return the number of results, SYSERR if the
+   *   iter is non-NULL and aborted the iteration
+   */
+  int (*iterateNonAnonymous)(unsigned int type,
+			     int on_demand,
+			     Datum_Iterator iter,
+			     void * closure);
+
+  /**
    * Iterate over the items in the datastore in ascending
    * order of expiration time.
    *

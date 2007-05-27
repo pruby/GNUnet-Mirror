@@ -1,3 +1,17 @@
+Sat May 26 18:24:15 MDT 2007
+	Fixed bugs with testcases (changes in names and
+	structure of options were not reflected in .conf 
+	files for various testcases).
+	Fixed issues with command-line option handling (failed to 
+	override configuration file options).
+	Fixed bogus nesting in GAP routing algorithm (caused
+	random request drops).
+
+Fri May 25 12:23:38 MDT 2007
+	Finished extended URITRACK API.
+	Renamed various (minor) libraries and function calls to
+	get somewhat more consistent naming conventions.
+
 Sun Apr 15 22:15:37 MDT 2007
 	Implemented heuristic for better packing of gnunet-directories.
 

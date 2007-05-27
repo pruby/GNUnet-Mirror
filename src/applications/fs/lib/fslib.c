@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -209,6 +209,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
  */
 SEARCH_HANDLE *
 FS_start_search(SEARCH_CONTEXT * ctx,
+		const PeerIdentity * target,
 		unsigned int type,
 		unsigned int keyCount,
 		const HashCode512 * keys,
@@ -237,6 +238,12 @@ FS_start_search(SEARCH_CONTEXT * ctx,
   req->anonymityLevel = htonl(anonymityLevel);
   req->expiration = htonll(timeout);
   req->type = htonl(type);
+  if (target != NULL)
+    req->target = *target;
+  else
+    memset(&req->target,
+	   0,
+	   sizeof(PeerIdentity));
   memcpy(&req->query[0],
 	 keys,
 	 keyCount * sizeof(HashCode512));

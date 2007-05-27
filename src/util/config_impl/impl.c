@@ -252,21 +252,35 @@ _parse_configuration(struct GC_Configuration * cfg,
 	} else
 	  i = 0;
       }
-      if (0 != GC_set_configuration_value_string(cfg,
-						 cfg->data->ectx,
-						 section,
-						 tag,
-						 &value[i]))
+      /* first check if we have this value already;
+	 this could happen if the value was changed
+	 using a command-line option; only set it
+	 if we do not have a value already... */
+      if ( (NO == GC_have_configuration_value(cfg,
+					      section,
+					      tag)) &&
+	   (0 != GC_set_configuration_value_string(cfg,
+						   cfg->data->ectx,
+						   section,
+						   tag,
+						   &value[i])) )
 	ret = -1; /* could not set value */
     } else if (1 == sscanf(line,
 			   " %63[^= ] =[^\n]",
 			   tag)) {
       /* tag = */
-      if (0 != GC_set_configuration_value_string(cfg,
-						 cfg->data->ectx,
-						 section,
-						 tag,
-						 ""))
+      /* first check if we have this value already;
+	 this could happen if the value was changed
+	 using a command-line option; only set it
+	 if we do not have a value already... */
+      if ( (NO == GC_have_configuration_value(cfg,
+					      section,
+					      tag)) &&
+	   (0 != GC_set_configuration_value_string(cfg,
+						   cfg->data->ectx,
+						   section,
+						   tag,
+						   "")) )
 	ret = -1; /* could not set value */
     } else {
       /* parse error */

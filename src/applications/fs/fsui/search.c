@@ -62,6 +62,10 @@ static void processResult(const ECRS_FileInfo * fi,
   event.data.SearchResult.searchURI = pos->uri;
   pos->ctx->ecb(pos->ctx->ecbClosure,
 		&event);
+  URITRACK_addState(pos->ctx->ectx,
+		    pos->ctx->cfg,
+		    pos->uri,
+		    URITRACK_SEARCH_RESULT);
 }
 
 static void setNamespaceRoot(struct GE_Context * ectx,
@@ -252,7 +256,9 @@ void * FSUI_searchThread(void * cls) {
   struct GE_Context * ee;
 
   mem = GE_memory_create(2);
-  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN |
+				GE_ERROR | GE_WARNING | GE_FATAL |
+				GE_BULK | GE_IMMEDIATE,
 				mem);
   ret = ECRS_search(ee,
 		    pos->ctx->cfg,

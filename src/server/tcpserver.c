@@ -348,8 +348,6 @@ int doneTCPServer() {
 			not gnunetd */
   unregisterCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
 		      &shutdownHandler);
-  MUTEX_DESTROY(handlerlock);
-  handlerlock = NULL;
   GROW(handlers,
        max_registeredType,
        0);
@@ -358,6 +356,15 @@ int doneTCPServer() {
        0);
   FREE(trustedNetworks_);
   return OK;
+}
+
+void __attribute__ ((constructor)) gnunet_tcpserver_ltdl_init() {
+  handlerlock = MUTEX_CREATE(YES);
+}
+
+void __attribute__ ((destructor)) gnunet_tcpserver_ltdl_fini() {
+  MUTEX_DESTROY(handlerlock);
+  handlerlock = NULL;
 }
 
 /**
@@ -392,7 +399,6 @@ int initTCPServer(struct GE_Context * e,
     return SYSERR;
   }
   FREE(ch);
-  handlerlock = MUTEX_CREATE(YES);
 
   registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
 		    &shutdownHandler);

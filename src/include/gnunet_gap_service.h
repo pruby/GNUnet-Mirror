@@ -87,6 +87,7 @@ typedef struct {
    * datastore on anything that is received, and the caller will be
    * listening for these puts.
    *
+   * @param target peer to ask primarily (maybe NULL)
    * @param type the type of the block that we're looking for
    * @param keys the keys to query for
    * @param timeout how long to wait until this operation should
@@ -94,7 +95,8 @@ typedef struct {
    * @return OK if we will start to query, SYSERR if all of our
    *  buffers are full or other error
    */
-  int (*get_start)(unsigned int type,
+  int (*get_start)(const PeerIdentity * target,
+		   unsigned int type,
 		   unsigned int anonymityLevel,
 		   unsigned int keyCount,
 		   const HashCode512 * keys,

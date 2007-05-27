@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -58,6 +59,13 @@ typedef struct {
    * sharing / DHT routing).
    */
   unsigned int anonymityLevel;
+
+  /**
+   * Identity of the peer that is known to have the
+   * response.  Set to all-zeros if target is not
+   * known.
+   */
+  PeerIdentity target;
 
   /**
    * What are the queries?

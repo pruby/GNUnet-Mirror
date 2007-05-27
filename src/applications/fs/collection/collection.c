@@ -453,7 +453,7 @@ int CO_startCollection(unsigned int anonymityLevel,
 				 meta,
 				 anonymityLevel,
 				 prio,
-				 now + COLLECTION_ADV_LIFETIME,
+				 get_time() + COLLECTION_ADV_LIFETIME,
 				 advertisement,
 				 &nextId);
   if (rootURI == NULL) {
@@ -622,7 +622,7 @@ void CO_publishCollectionNow() {
 			    NO, /* indexing */
 			    ntohl(collectionData->data.anonymityLevel),
 			    ntohl(collectionData->data.priority),
-			    now + COLLECTION_ADV_LIFETIME,
+			    get_time() + COLLECTION_ADV_LIFETIME,
 			    NULL,
 			    NULL,
 			    NULL,
@@ -640,7 +640,7 @@ void CO_publishCollectionNow() {
 			    collectionData->name,
 			    ntohl(collectionData->data.anonymityLevel),
 			    ntohl(collectionData->data.priority),
-			    now + COLLECTION_ADV_LIFETIME,
+			    get_time() + COLLECTION_ADV_LIFETIME,
 			    now,
 			    ntohl(collectionData->data.updateInterval),
 			    &collectionData->data.lastId,

@@ -405,6 +405,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   char * dst;
   unsigned long long len;
   HashCode512 hc;
+  int ret;
 
   /* FIRST: read pseudonym! */
   fileName = getPseudonymFileName(ectx, cfg, name);
@@ -518,17 +519,19 @@ ECRS_addToNamespace(struct GE_Context * ectx,
 		      - sizeof(PublicKey)
 		      - sizeof(HashCode512));
   /* FINALLY: sign & publish SBlock */
-  GE_ASSERT(ectx, OK == sign(hk,
-			   size
-			   - sizeof(Signature)
-			   - sizeof(PublicKey)
-			   - sizeof(unsigned int),
-			   &sb->identifier,
-			   &sb->signature));
+  GE_ASSERT(ectx, 
+	    OK == sign(hk,
+		       size
+		       - sizeof(Signature)
+		       - sizeof(PublicKey)
+		       - sizeof(unsigned int),
+		       &sb->identifier,
+		       &sb->signature));
   freePrivateKey(hk);
 
   sock = client_connection_create(ectx, cfg);
-  if (OK != FS_insert(sock, value)) {
+  ret = FS_insert(sock, value);
+  if (ret != OK) {
     FREE(uri);
     uri = NULL;
   }

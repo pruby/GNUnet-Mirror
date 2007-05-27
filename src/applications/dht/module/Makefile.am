@@ -17,7 +17,7 @@ libgnunetmodule_dht_la_LIBADD = -lm \
  $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
- $(top_builddir)/src/applications/rpc/libgnunetmodule_rpc_util.la
+ $(top_builddir)/src/applications/rpc/libgnunetrpc_util.la
 libgnunetmodule_dht_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 

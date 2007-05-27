@@ -45,9 +45,10 @@ extern "C" {
 
 struct FS_SEARCH_CONTEXT;
 
-struct FS_SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
-						 struct GC_Configuration * cfg,
-						 struct MUTEX * lock);
+struct FS_SEARCH_CONTEXT * 
+FS_SEARCH_makeContext(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      struct MUTEX * lock);
 
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx);
 
@@ -56,6 +57,8 @@ struct FS_SEARCH_HANDLE;
 /**
  * Search for blocks matching the given key and type.
  *
+ * @param target identity of host known to have the
+ *        content, NULL if no such identity is known
  * @param timeout how long to search
  * @param anonymityLevel what are the anonymity
  *        requirements for this request? 0 for no
@@ -63,15 +66,17 @@ struct FS_SEARCH_HANDLE;
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-struct FS_SEARCH_HANDLE * FS_start_search(struct FS_SEARCH_CONTEXT * ctx,
-					  unsigned int type,
-					  unsigned int keyCount,
-					  const HashCode512 * keys,
-					  unsigned int anonymityLevel,
-					  unsigned int prio,
-					  cron_t timeout,
-					  Datum_Iterator callback,
-					  void * closure);
+struct FS_SEARCH_HANDLE * 
+FS_start_search(struct FS_SEARCH_CONTEXT * ctx,
+		const PeerIdentity * target,
+		unsigned int type,
+		unsigned int keyCount,
+		const HashCode512 * keys,
+		unsigned int anonymityLevel,
+		unsigned int prio,
+		cron_t timeout,
+		Datum_Iterator callback,
+		void * closure);
 
 /**
  * Stop searching.

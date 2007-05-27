@@ -629,6 +629,7 @@ int ECRS_search(struct GE_Context * ectx,
 #endif
       ps->handle
 	= FS_start_search(ctx.sctx,
+			  NULL,
 			  ps->type,
 			  ps->keyCount,
 			  ps->keys,

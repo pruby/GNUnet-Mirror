@@ -95,6 +95,7 @@ static int testTerminate(void * cls) {
  */
 static char *
 createDirectoryHelper(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
 		      struct FSUI_UploadList * children,
 		      struct ECRS_MetaData * meta,
 		      char ** error) {
@@ -154,6 +155,15 @@ createDirectoryHelper(struct GE_Context * ectx,
     GE_free_context(ee);
     GE_memory_free(mem);
     return NULL;
+  }
+  pos = children;
+  while (pos != NULL) {
+    if (pos->uri != NULL) 
+      URITRACK_addState(ectx,
+			cfg,
+			pos->uri,
+			URITRACK_DIRECTORY_ADDED);
+    pos = pos->next;
   }
   GE_memory_reset(mem);
   tempName = STRDUP("/tmp/gnunet-upload-dir.XXXXXX");
@@ -261,6 +271,7 @@ void * FSUI_uploadThread(void * cls) {
   if (utc->child != NULL) {
     error = NULL;
     filename = createDirectoryHelper(ectx,
+				     utc->shared->ctx->cfg,
 				     utc->child,
 				     utc->meta,
 				     &error);
@@ -384,6 +395,10 @@ void * FSUI_uploadThread(void * cls) {
   URITRACK_trackURI(ectx,
 		    utc->shared->ctx->cfg,
 		    &fi);
+  URITRACK_addState(ectx,
+		    utc->shared->ctx->cfg,
+		    utc->uri,
+		    utc->shared->doIndex == YES ? URITRACK_INDEXED : URITRACK_INSERTED);
   event.type = FSUI_upload_completed;
   event.data.UploadCompleted.uc.pos = utc;
   event.data.UploadCompleted.uc.cctx = utc->cctx;

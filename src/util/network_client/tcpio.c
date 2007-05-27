@@ -362,7 +362,7 @@ int connection_write(struct ClientServerConnection * sock,
   size_t size;
   size_t sent;
   int res;
- 
+
   MUTEX_LOCK(sock->destroylock);
   MUTEX_LOCK(sock->writelock);
   if (SYSERR == connection_ensure_connected(sock)) { 

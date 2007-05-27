@@ -87,7 +87,7 @@ void initMigration(CoreAPIForApplication * capi,
 		   DHT_ServiceAPI * d,
 		   Traffic_ServiceAPI * t);
 
-void doneMigration();
+void doneMigration(void);
 
 /* end of migration.h */
 #endif

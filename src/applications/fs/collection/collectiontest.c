@@ -62,7 +62,7 @@ int main(int argc,
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
 					  cfg,
-					  30 * cronSECONDS));
+					  60 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 #endif
   ok = YES;

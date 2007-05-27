@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -43,14 +43,14 @@
  * @param peers set to number of peers involved
  * @return OK on success, SYSERR on error
  */
-int pollSocket(struct ClientServerConnection * sock,
-	       unsigned int timeframe,
-	       unsigned short type,
-	       unsigned short direction,
-	       unsigned int * count,
-	       unsigned int * avg_size,
-	       unsigned int * peers,
-	       unsigned int * time) {
+int gnunet_traffic_poll(struct ClientServerConnection * sock,
+			unsigned int timeframe,
+			unsigned short type,
+			unsigned short direction,
+			unsigned int * count,
+			unsigned int * avg_size,
+			unsigned int * peers,
+			unsigned int * time) {
   CS_traffic_info_MESSAGE * info;
   CS_traffic_request_MESSAGE req;
   int i;
@@ -77,7 +77,7 @@ int pollSocket(struct ClientServerConnection * sock,
   }
 
   for (i=ntohl(info->count)-1;i>=0;i--) {
-    TRAFFIC_COUNTER * tc = &((CS_traffic_info_MESSAGE_GENERIC*)info)->counters[i];
+    const TRAFFIC_COUNTER * tc = &((CS_traffic_info_MESSAGE_GENERIC*)info)->counters[i];
     if ((tc->flags & TC_TYPE_MASK) == direction) {
       *count = ntohl(tc->count);
       *avg_size = ntohl(tc->avrg_size);

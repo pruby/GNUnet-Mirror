@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -36,7 +36,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_directories.h"
 #include "gnunet_identity_service.h"
-
+#include "identity.h"
 #include "hostkey.h"
 
 #define DEBUG_IDENTITY NO
@@ -1100,6 +1100,27 @@ static void cronDiscardHosts(void *unused) {
 }
 
 
+static int identityHelloHandler(struct ClientHandle * sock,
+				const MESSAGE_HEADER * message) {
+  const CS_identity_hello_MESSAGE * msg;
+  P2P_hello_MESSAGE * hello;
+
+  if (sizeof(CS_identity_hello_MESSAGE) < ntohs(message->size))
+    return SYSERR;
+  msg = (const CS_identity_hello_MESSAGE*) message;
+  hello = MALLOC(ntohs(msg->header.size));
+  memcpy(hello, msg, ntohs(msg->header.size));
+  hello->header.type = htons(p2p_PROTO_hello);
+  coreAPI->injectMessage(NULL,
+			 (const char*) hello,
+			 ntohs(msg->header.size),
+			 NO,
+			 NULL);
+  FREE(hello);
+  return OK;
+}
+
+
 /**
  * Provide the Identity service.
  *
@@ -1191,6 +1212,8 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	       0,
 	       CRON_DISCARD_HOSTS_INTERVAL,
 	       NULL);
+  coreAPI->registerClientHandler(CS_PROTO_identity_HELLO,
+				 &identityHelloHandler);
   return &id;
 }
 
@@ -1202,6 +1225,8 @@ void release_module_identity() {
   int j;
   HostEntry * entry;
 
+  coreAPI->unregisterClientHandler(CS_PROTO_identity_HELLO,
+				   &identityHelloHandler);
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
     entry = &tempHosts[i];
     for (j=0;j<entry->heloCount;j++)

@@ -131,9 +131,6 @@ static int searchResultCB(const HashCode512 * key,
   int ret;
 
   blk = makeBlock(cls->i);
-  blk->prio = htonl(0);
-  blk->anonymityLevel = htonl(0);
-  blk->expirationTime = htonll(0);
   fileBlockGetQuery((DBlock*) &blk[1],
 		    ntohl(blk->size) - sizeof(Datastore_Value),
 		    &ekey);
@@ -145,9 +142,9 @@ static int searchResultCB(const HashCode512 * key,
   if ( (equalsHashCode512(&ekey,
 			  key)) &&
        (value->size == blk->size) &&
-       (0 == memcmp(value,
-		    eblk,
-		    ntohl(value->size))) ) {
+       (0 == memcmp(&value[1],
+		    &eblk[1],
+		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
     cls->found = YES;
     SEMAPHORE_UP(cls->sem);
     ret = SYSERR;
@@ -181,6 +178,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   closure.sem = SEMAPHORE_CREATE(0);
   now = get_time();
   handle = FS_start_search(ctx,
+			   NULL,
 			   D_BLOCK,
 			   1,
 			   &query,
@@ -266,6 +264,8 @@ int main(int argc, char * argv[]){
 				ntohl(block->size) - sizeof(Datastore_Value),
 				&query,
 				&eblock));
+    eblock->expirationTime = block->expirationTime;
+    eblock->prio = block->prio;
     CHECK(OK == FS_insert(sock,
 			  eblock));
     CHECK(OK == trySearch(ctx, i));
@@ -317,6 +317,8 @@ int main(int argc, char * argv[]){
 				ntohl(block->size) - sizeof(Datastore_Value),
 				&query,
 				&eblock));
+    eblock->expirationTime = block->expirationTime;
+    eblock->prio = block->prio;
     CHECK(OK == FS_insert(sock,
 			  eblock));
     CHECK(OK == trySearch(ctx, i));
@@ -351,6 +353,7 @@ int main(int argc, char * argv[]){
   i = 2;
   mainThread = PTHREAD_GET_SELF();
   hnd = FS_start_search(ctx,
+			NULL,
 			ANY_BLOCK,
 			1,
 			&query,

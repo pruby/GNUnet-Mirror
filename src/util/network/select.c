@@ -789,20 +789,21 @@ static int makeNonblocking(struct GE_Context * ectx,
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-SelectHandle * select_create(const char * description,
-			     int is_udp,
-			     struct GE_Context * ectx,
-			     struct LoadMonitor * mon,
-			     int sock,
-			     unsigned int max_addr_len,
-			     cron_t timeout,
-			     SelectMessageHandler mh,
-			     void * mh_cls,
-			     SelectAcceptHandler ah,
-			     void * ah_cls,
-			     SelectCloseHandler ch,
-			     void * ch_cls,
-			     unsigned int memory_quota) {
+SelectHandle * 
+select_create(const char * description,
+	      int is_udp,
+	      struct GE_Context * ectx,
+	      struct LoadMonitor * mon,
+	      int sock,
+	      unsigned int max_addr_len,
+	      cron_t timeout,
+	      SelectMessageHandler mh,
+	      void * mh_cls,
+	      SelectAcceptHandler ah,
+	      void * ah_cls,
+	      SelectCloseHandler ch,
+	      void * ch_cls,
+	      unsigned int memory_quota) {
   SelectHandle * sh;
 
   if ( (is_udp == NO) &&
@@ -859,7 +860,7 @@ SelectHandle * select_create(const char * description,
     sh->listen_sock = NULL;
   sh->thread = PTHREAD_CREATE(&selectThread,
 			      sh,
-			      4 * 1024);
+			      16 * 1024);
   if (sh->thread == NULL) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,

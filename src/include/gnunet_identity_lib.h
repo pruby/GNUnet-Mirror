@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+      (C) 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -19,17 +19,17 @@
  */
 
 /**
- * @file include/gnunet_traffic_lib.h
- * @brief convenience API to the TRAFFIC service
+ * @file include/gnunet_identity_lib.h
+ * @brief convenience API to the IDENTITIY service
  * @author Christian Grothoff
  */
 
-#ifndef GNUNET_TRAFFIC_LIB_H
-#define GNUNET_TRAFFIC_LIB_H
+#ifndef GNUNET_IDENTITY_LIB_H
+#define GNUNET_IDENTITY_LIB_H
 
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
-#include "gnunet_traffic_service.h"
+#include "gnunet_util_crypto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,28 +39,19 @@ extern "C" {
 #endif
 
 /**
- * Poll gnunetd via TCP about traffic information.
+ * Inform gnunetd about another peer.
  *
- * @param sock socket to query gnunetd over
- * @param timeframe what time interval should be considered
- * @param type what type of message do we care about?
- * @param direction TC_RECEIVED of TC_SEND?
- * @param count set to number of messages
- * @param avg_size set to average size
- * @param peers set to number of peers involved
- * @param time set to the time distribution
- *        bit-vector giving times of interactions,
- *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
+ * @param sock socket to talk to gnunetd over
  * @return OK on success, SYSERR on error
  */
-int gnunet_traffic_poll(struct ClientServerConnection * sock,
-			unsigned int timeframe,
-			unsigned short type,
-			unsigned short direction,
-			unsigned int * count,
-			unsigned int * avg_size,
-			unsigned int * peers,
-			unsigned int * time);
+int gnunet_identity_peer_add(struct ClientServerConnection * sock,
+			     const PublicKey * key,
+			     TIME_T expirationTime,
+			     unsigned short proto,
+			     unsigned short sas,
+			     unsigned int mtu,
+			     const char * address,
+			     const Signature * signature);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

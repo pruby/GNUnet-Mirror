@@ -127,6 +127,7 @@ static int getSizeRec(const char * filename,
        (gfsd->include_sym_links == YES) )
     gfsd->total += buf.st_size;
   if ( (S_ISDIR(buf.st_mode)) &&
+       (0 == ACCESS(fn, X_OK)) &&
        ( (!S_ISLNK(buf.st_mode)) ||
 	 (gfsd->include_sym_links == YES) ) ) {
     if (SYSERR ==

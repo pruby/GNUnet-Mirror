@@ -135,8 +135,13 @@ extern "C" {
  */
 #define CS_PROTO_RETURN_ERROR 4
 
+/**
+ * Client informs the Daemon about how to contact
+ * a particular peer.
+ */
+#define CS_PROTO_identity_HELLO 5
 
-/* ********** CS AFS application messages ********** */
+/* ********** CS FS application messages ********** */
 
 /**
  * client to gnunetd: send queries

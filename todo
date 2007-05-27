@@ -11,13 +11,22 @@ notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.2 [4'07]:
+0.7.2 [5'07]:
 - new features:
-  * USE new URITRACK_STATE database 
-  * track 0-anonymity indexed content (for DHT-advertising!)
   * XFS / support for location URIs [CG] 
-    + dht/gap integration (search routing) [RC]
     + fsui/fs/location URI support (download routing) [RC]
+      => FSUI/ECRS/FS need to support passing of LOC URI with request
+
+      - ECRS download file -- use new identity lib to give HELLO to gnunetd
+      - ECRS download file -- set RM target iff Location URI given
+      - fslib: pass target through to other side
+      - FS/routing code should *use* target if given (and available) during routing     
+
+      - identity/clientapi.c: add (sanity) check for valid signature!
+    + location URI generation (for search routing) [RC]
+      => ECRS needs to generate location URI for *indexed* non-anonymous content!
+      - extend identity API to allow creation of (certain) signatures by clients!
+      - generate and publish location URI
   * HTTP transport (libcurl, libmicrohttpd)
 - testcases (fix, add):
   * dht/tools

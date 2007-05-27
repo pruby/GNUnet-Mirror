@@ -375,6 +375,8 @@ typedef struct RequestManager {
 
   struct GC_Configuration * cfg;
 
+  PeerIdentity target;
+
   /**
    * Number of pending requests (highest used index)
    */
@@ -417,6 +419,12 @@ typedef struct RequestManager {
    * (if so, accessing the request list is illegal!)
    */
   int shutdown;
+
+  /**
+   * Do we have a specific peer from which we download
+   * from?
+   */
+  int have_target;
 
 } RequestManager;
 
@@ -1150,6 +1158,7 @@ static void issueRequest(RequestManager * rm,
 		   entry->searchHandle);
   entry->searchHandle
     = FS_start_search(rm->sctx,
+		      rm->have_target == NO ? NULL : &rm->target,
 		      D_BLOCK,
 		      1,
 		      &entry->node->chk.query,
@@ -1352,6 +1361,8 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     return OK;
   }
   fid = uri->data.fi;
+  
+  
   if (! ECRS_isFileUri(uri)) {
     GE_BREAK(ectx, 0);
     FREE(realFN);
