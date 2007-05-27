@@ -153,10 +153,13 @@ void URITRACK_addState(struct GE_Context * ectx,
     FREE(s);
     return;
   }
-  if (2 != read(fd, io, 2))
+  if (2 != read(fd, io, 2)) {
+    io[0] = crc;
+    io[1] = URITRACK_FRESH;  
+  } else if (io[0] != (unsigned char) crc) {
+    io[0] = (unsigned char) crc;
     io[1] = URITRACK_FRESH;
-  if (io[0] == (unsigned char) crc) 
-    io[1] = URITRACK_FRESH;
+  }
   io[1] |= state;
   if (o != lseek(fd, o, SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
