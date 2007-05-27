@@ -122,10 +122,6 @@ createDirectoryHelper(struct GE_Context * ectx,
       count++;
     pos = pos->next;
   }
-  if (count == 0) {
-    GE_BREAK(ectx, 0);
-    return NULL;
-  }
   GROW(fis,
        size,
        count);
@@ -272,7 +268,8 @@ void * FSUI_uploadThread(void * cls) {
   }
   if (utc->state != FSUI_ACTIVE)
     return NULL; /* aborted or suspended */
-  if (utc->child != NULL) {
+  if (YES == disk_directory_test(ectx,
+				 utc->filename)) {
     error = NULL;
     filename = createDirectoryHelper(ectx,
 				     utc->shared->ctx->cfg,
