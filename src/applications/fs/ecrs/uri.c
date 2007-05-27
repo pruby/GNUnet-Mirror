@@ -631,15 +631,21 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
   int i;
 
   GE_ASSERT(NULL, uri != NULL);
-  if (uri->type == ksk) {
+  switch(uri->type) {
+  case ksk:
     for (i=0;i<uri->data.ksk.keywordCount;i++)
       FREE(uri->data.ksk.keywords[i]);
     GROW(uri->data.ksk.keywords,
 	 uri->data.ksk.keywordCount,
 	 0);
-  }
-  if (uri->type == loc)
+    break;
+  case loc:
     FREENONNULL(uri->data.loc.address);
+    break;
+  default:
+    /* do nothing */
+    break;
+  }
   FREE(uri);
 }
 
@@ -798,10 +804,12 @@ URI * ECRS_dupUri(const URI * uri) {
     }
     break;
   case loc:
-    ret->data.loc.address = MALLOC(ret->data.loc.sas);
-    memcpy(ret->data.loc.address,
-	   uri->data.loc.address,
-	   ret->data.loc.sas);
+    if (ret->data.loc.sas > 0) {
+      ret->data.loc.address = MALLOC(ret->data.loc.sas);
+      memcpy(ret->data.loc.address,
+	     uri->data.loc.address,
+	     ret->data.loc.sas);
+    }
     break;
   default:
     break;

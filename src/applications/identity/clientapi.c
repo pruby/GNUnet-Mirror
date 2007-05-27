@@ -53,10 +53,10 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
   hash(key,
        sizeof(PublicKey),
        &msg->m.senderIdentity.hashPubKey);
-  msg->m.expirationTime = expirationTime;
-  msg->m.MTU = mtu;
-  msg->m.senderAddressSize = sas;
-  msg->m.protocol = proto;
+  msg->m.expirationTime = htonl(expirationTime);
+  msg->m.MTU = htonl(mtu);
+  msg->m.senderAddressSize = htons(sas);
+  msg->m.protocol = htons(proto);
   memcpy(&msg[1],
 	 address,
 	 sas);
