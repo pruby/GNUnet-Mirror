@@ -60,7 +60,21 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
   memcpy(&msg[1],
 	 address,
 	 sas);
-  /* FIXME: check that signature is valid! */
+  /* check that signature is valid -- internal
+     sanity check... */
+  if (SYSERR == verifySig(&msg->m.senderIdentity,
+			  P2P_hello_MESSAGE_size(&msg->m)
+			  - sizeof(Signature)
+			  - sizeof(PublicKey)
+			  - sizeof(MESSAGE_HEADER),
+			  &msg->m.signature,
+			  key)) {
+    GE_BREAK(NULL, 0);
+    FREE(msg);
+    return SYSERR;
+  } 
+  fprintf(stderr, "Yepee!\n");
+
   if (SYSERR == connection_write(sock,
 				 &msg->m.header)) {
     FREE(msg);

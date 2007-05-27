@@ -797,6 +797,12 @@ URI * ECRS_dupUri(const URI * uri) {
 	  = STRDUP(uri->data.ksk.keywords[i]);
     }
     break;
+  case loc:
+    ret->data.loc.address = MALLOC(ret->data.loc.sas);
+    memcpy(ret->data.loc.address,
+	   uri->data.loc.address,
+	   ret->data.loc.sas);
+    break;
   default:
     break;
   }
