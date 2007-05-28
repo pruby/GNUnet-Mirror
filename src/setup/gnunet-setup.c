@@ -130,7 +130,7 @@ static int dyn_config(const char * module,
 }
 
 static const char * INFO =
-  "gnunet-setup [OPTIONS] config generate-defaults "
+  "gnunet-setup [OPTIONS] config|generate-defaults"
 #if HAVE_DIALOG
   "|menuconfig|wizard-curses"
 #endif
