@@ -4,6 +4,7 @@ Sun May 27 22:39:48 MDT 2007
 	gnunetd.  API is now used everywhere and the
 	ugly peer.conf files and directories are gone.
 	Fixed a bug with inserting empty directories.
+	Extended ECRS API to allow partial file download.
 
 Sat May 26 18:24:15 MDT 2007
 	Fixed bugs with testcases (changes in names and
