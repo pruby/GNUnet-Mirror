@@ -251,6 +251,7 @@ int main(int argc, char ** argv) {
   int ret;
   struct ECRS_URI * uri;
 
+  ret = 0;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
@@ -265,6 +266,8 @@ int main(int argc, char ** argv) {
 				       10000,
 				       2);
   if (peers == NULL) {
+    fprintf(stderr,
+	    "Failed to start the gnunetd daemons!\n");
     GC_free(cfg);
     return -1;
   }
@@ -282,12 +285,12 @@ int main(int argc, char ** argv) {
 
   uri = uploadFile(12345);
   CHECK(NULL != uri);
-  CHECK(OK == searchFile(&uri));
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
 				    "HOSTNAME",
 				    "localhost:12087");
+  CHECK(OK == searchFile(&uri));
   CHECK(OK == downloadFile(12345, uri));
   ECRS_freeUri(uri);
   GC_set_configuration_value_string(cfg,
