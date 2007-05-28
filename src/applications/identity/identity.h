@@ -27,22 +27,6 @@
 #include "gnunet_core.h"
 
 /**
- * Format of the message to inform gnunetd about a 
- * HELLO from the client-side.  Just another name
- * for the P2P_hello_MESSAGE -- except that in this
- * struct the "type" will be different!  Note that
- * the code depends on the structual (and size-wise)
- * equality of CS_identity_hello_MESSAGE and
- * P2P_hello_MESSAGE.
- */
-typedef struct {
-
-  P2P_hello_MESSAGE m;
-
-} CS_identity_hello_MESSAGE;
-
-
-/**
  * Format of the signature response.
  */
 typedef struct {
@@ -50,6 +34,16 @@ typedef struct {
 
   Signature sig;
 } CS_identity_signature_MESSAGE;
+
+
+/**
+ * Format of the connection request.
+ */
+typedef struct {
+  MESSAGE_HEADER header;
+
+  PeerIdentity other;
+} CS_identity_connect_MESSAGE;
 
 
 #endif

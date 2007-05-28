@@ -21,6 +21,11 @@
 /**
  * @file include/gnunet_testing_lib.h
  * @brief convenience API for writing testcases for GNUnet
+ *        Many testcases need to start and stop gnunetd,
+ *        and this library is supposed to make that easier
+ *        for TESTCASES.  Normal programs should always
+ *        use functions from gnunet_util_os.h.  This API is
+ *        ONLY for writing testcases!
  * @author Christian Grothoff
  */
 
@@ -39,7 +44,8 @@ extern "C" {
 /**
  * Starts a gnunet daemon.
  *
- * @param port port to listen on for local clients
+ * @param app_port port to listen on for local clients
+ * @param tra_offset offset to add to transport ports
  * @param gnunetd_home directory to use for the home directory
  * @param transports transport services that should be loaded
  * @param applications application services that should be loaded
@@ -47,7 +53,8 @@ extern "C" {
  * @param peer identity of the peer (set)
  * @return OK on success, SYSERR on error
  */
-int gnunet_testing_start_daemon(unsigned short port,
+int gnunet_testing_start_daemon(unsigned short app_port,
+				unsigned short tra_offset,
 				const char * gnunetd_home,
 				const char * transports,
 				const char * applications,

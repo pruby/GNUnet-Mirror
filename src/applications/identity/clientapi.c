@@ -36,45 +36,29 @@
  * @return OK on success, SYSERR on error
  */
 int gnunet_identity_peer_add(struct ClientServerConnection * sock,
-			     const PublicKey * key,
-			     TIME_T expirationTime,
-			     unsigned short proto,
-			     unsigned short sas,
-			     unsigned int mtu,
-			     const char * address,
-			     const Signature * signature) {
-  CS_identity_hello_MESSAGE * msg;
+			     const P2P_hello_MESSAGE * hello) {
+  P2P_hello_MESSAGE * msg;
 
-  msg = MALLOC(sizeof(CS_identity_hello_MESSAGE) + sas);
-  msg->m.header.type = htons(CS_PROTO_identity_HELLO);
-  msg->m.header.size = htons(sizeof(CS_identity_hello_MESSAGE) + sas);
-  msg->m.signature = *signature;
-  msg->m.publicKey = *key;
-  hash(key,
-       sizeof(PublicKey),
-       &msg->m.senderIdentity.hashPubKey);
-  msg->m.expirationTime = htonl(expirationTime);
-  msg->m.MTU = htonl(mtu);
-  msg->m.senderAddressSize = htons(sas);
-  msg->m.protocol = htons(proto);
-  memcpy(&msg[1],
-	 address,
-	 sas);
+  msg = MALLOC(P2P_hello_MESSAGE_size(hello));
+  memcpy(msg,
+	 hello,
+	 P2P_hello_MESSAGE_size(hello));
+  msg->header.type = htons(CS_PROTO_identity_HELLO);
   /* check that signature is valid -- internal
      sanity check... */
-  if (SYSERR == verifySig(&msg->m.senderIdentity,
-			  P2P_hello_MESSAGE_size(&msg->m)
+  if (SYSERR == verifySig(&msg->senderIdentity,
+			  P2P_hello_MESSAGE_size(msg)
 			  - sizeof(Signature)
 			  - sizeof(PublicKey)
 			  - sizeof(MESSAGE_HEADER),
-			  &msg->m.signature,
-			  key)) {
+			  &msg->signature,
+			  &msg->publicKey)) {
     GE_BREAK(NULL, 0);
     FREE(msg);
     return SYSERR;
   } 
   if (SYSERR == connection_write(sock,
-				 &msg->m.header)) {
+				 &msg->header)) {
     FREE(msg);
     return SYSERR;
   }
@@ -129,14 +113,9 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
  * @return SYSERR on error, OK on success
  */
 int gnunet_identity_get_self(struct ClientServerConnection * sock,
-			     PublicKey * key,
-			     TIME_T * expirationTime,
-			     unsigned short * proto,
-			     unsigned short * sas,
-			     unsigned int * mtu,
-			     char ** address) {
+			     P2P_hello_MESSAGE ** msg) {
   MESSAGE_HEADER req;
-  CS_identity_hello_MESSAGE * reply;
+  P2P_hello_MESSAGE * reply;
 
   req.size = htons(sizeof(MESSAGE_HEADER));
   req.type = htons(CS_PROTO_identity_request_HELLO);
@@ -148,28 +127,43 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
     connection_close_temporarily(sock);
     return SYSERR;
   }
-  if ( (ntohs(reply->m.header.size) < sizeof(CS_identity_hello_MESSAGE)) ||
-       (ntohs(reply->m.header.type) != CS_PROTO_identity_HELLO) ||
-       (ntohs(reply->m.header.size) != ntohs(reply->m.senderAddressSize) + sizeof(CS_identity_hello_MESSAGE)) ) {
+  if ( (ntohs(reply->header.size) < sizeof(P2P_hello_MESSAGE)) ||
+       (ntohs(reply->header.type) != CS_PROTO_identity_HELLO) ||
+       (ntohs(reply->header.size) != P2P_hello_MESSAGE_size(reply)) ) {
     FREE(reply);
     return SYSERR;
   }
-  *key = reply->m.publicKey;
-  *expirationTime = ntohl(reply->m.expirationTime);
-  *proto = ntohs(reply->m.protocol);
-  *sas = ntohs(reply->m.senderAddressSize);
-  *mtu = ntohl(reply->m.MTU);
-  if (*sas > 0) {
-    *address = MALLOC(*sas);
-    memcpy(*address,
-	   &reply[1],
-	   *sas);
-  } 
-  FREE(reply);
+  reply->header.type = htons(p2p_PROTO_hello);
+  *msg = reply;
   return OK;
 }
 
 
+/**
+ * Request the peer to connect to another peer
+ * @return SYSERR on error, YES if connection is now there
+ *         NO if connection is not yet present
+ */
+int gnunet_identity_request_connect(struct ClientServerConnection * sock,
+				    const PeerIdentity * peer) {
+  
+  CS_identity_connect_MESSAGE msg;
+  int result;
+
+  msg.header.type
+    = htons(CS_PROTO_identity_CONNECT);
+  msg.header.size
+    = htons(sizeof(CS_identity_connect_MESSAGE));
+  msg.other 
+    = *peer;
+  if (SYSERR == connection_write(sock,
+				 &msg.header))
+    return SYSERR;
+  if (SYSERR == connection_read_result(sock,
+				       &result))
+    return SYSERR;
+  return result;
+}
 
 
 /* end of clientapi.c */

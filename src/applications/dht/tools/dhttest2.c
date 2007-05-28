@@ -204,11 +204,11 @@ int main(int argc,
   hash("key", 3, &key);
   
   /* switch to peer2 */
-  GC_set_configuration_value_number(cfg,
+  GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "PORT",
-				    12087);
+				    "HOST",
+				    "localhost:12087");
   hash("key", 3, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
@@ -250,11 +250,11 @@ int main(int argc,
   printf("Peer2 tests successful.\n");
 
   /* switch to peer1 */
-  GC_set_configuration_value_number(cfg,
+  GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "PORT",
-				    2087);
+				    "HOST",
+				    "localhost:2087");
   printf("Peer1 gets key\n");
   CHECK(1 == DHT_LIB_get(cfg,
 			 ectx,

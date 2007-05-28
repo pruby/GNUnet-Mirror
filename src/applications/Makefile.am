@@ -15,13 +15,14 @@ if LINUX
 endif
 
 SUBDIRS	= \
+ identity \
+ testing \
  advertising \
  bootstrap_http \
  datastore \
  rpc \
  fragmentation \
  getoption \
- identity \
  fs \
  state \
  stats \

@@ -1078,14 +1078,15 @@ ECRS_getContentUri(const struct ECRS_URI * uri) {
  */
 struct ECRS_URI *
 ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
-		     const PublicKey * sender,
-		     TIME_T expirationTime,
-		     unsigned short proto,
-		     unsigned short sas,
-		     unsigned int mtu,
-		     const char * address,
+		     const P2P_hello_MESSAGE * helloa,
 		     ECRS_SignFunction signer,
-		     void * signer_cls) {
+		     void * signer_cls) { 
+  const PublicKey * sender = &helloa->publicKey;
+  TIME_T expirationTime = ntohl(helloa->expirationTime);
+  unsigned short proto = ntohs(helloa->protocol);
+  unsigned short sas = ntohs(helloa->senderAddressSize);
+  unsigned int mtu = ntohl(helloa->MTU);
+  const char * address = (const char*) &helloa[1];
   struct ECRS_URI * uri;
   P2P_hello_MESSAGE * hello;
   

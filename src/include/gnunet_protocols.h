@@ -193,6 +193,12 @@ extern "C" {
 /* *********** messages for identity module ************* */
 
 /**
+ * Client asks the daemon to try to connect to
+ * a particular peer.
+ */
+#define CS_PROTO_identity_CONNECT 27
+
+/**
  * Client informs the Daemon about how to contact
  * a particular peer -- or daemon informs client
  * about how other peers should contact it.

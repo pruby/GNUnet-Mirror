@@ -608,6 +608,7 @@ src/applications/state/Makefile
 src/applications/stats/Makefile
 src/applications/tbench/Makefile
 src/applications/template/Makefile
+src/applications/testing/Makefile
 src/applications/topology_default/Makefile
 src/applications/topology_f2f/Makefile
 src/applications/tracekit/Makefile

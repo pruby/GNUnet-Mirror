@@ -32,7 +32,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_util.h"
+#include "gnunet_util_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_directories.h"
 #include "gnunet_identity_service.h"
@@ -1101,23 +1101,37 @@ static void cronDiscardHosts(void *unused) {
 }
 
 
+static int identityRequestConnectHandler(struct ClientHandle * sock,
+					 const MESSAGE_HEADER * message) {
+  const CS_identity_connect_MESSAGE * msg;
+  unsigned int bpm;
+
+  if (sizeof(CS_identity_connect_MESSAGE) != ntohs(message->size))
+    return SYSERR;
+  msg = (const CS_identity_connect_MESSAGE*) message;
+  coreAPI->unicast(&msg->other,
+		   NULL,
+		   0,
+		   0);
+  bpm = coreAPI->queryBPMfromPeer(&msg->other);
+  return coreAPI->sendValueToClient(sock,
+				    bpm == 0 ? NO : YES);
+}
+
 static int identityHelloHandler(struct ClientHandle * sock,
 				const MESSAGE_HEADER * message) {
-  const CS_identity_hello_MESSAGE * msg;
+  const P2P_hello_MESSAGE * msg;
   P2P_hello_MESSAGE * hello;
 
-  if (sizeof(CS_identity_hello_MESSAGE) < ntohs(message->size))
+  if (sizeof(P2P_hello_MESSAGE) < ntohs(message->size))
     return SYSERR;
-  GE_ASSERT(NULL,
-	    sizeof(CS_identity_hello_MESSAGE)
-	    == sizeof(P2P_hello_MESSAGE));
-  msg = (const CS_identity_hello_MESSAGE*) message;
-  hello = MALLOC(ntohs(msg->m.header.size));
-  memcpy(hello, msg, ntohs(msg->m.header.size));
+  msg = (const P2P_hello_MESSAGE*) message;
+  hello = MALLOC(ntohs(msg->header.size));
+  memcpy(hello, msg, ntohs(msg->header.size));
   hello->header.type = htons(p2p_PROTO_hello);
   coreAPI->injectMessage(NULL,
 			 (const char*) hello,
-			 ntohs(msg->m.header.size),
+			 ntohs(msg->header.size),
 			 NO,
 			 NULL);
   FREE(hello);
@@ -1143,7 +1157,6 @@ static int identityRequestHelloHandler(struct ClientHandle * sock,
   P2P_hello_MESSAGE * hello;
   int pos;
   int ret;
-  CS_identity_hello_MESSAGE * reply;
 
   /* we cannot permanently load transport
      since that would cause a cyclic dependency;
@@ -1159,14 +1172,10 @@ static int identityRequestHelloHandler(struct ClientHandle * sock,
   coreAPI->releaseService(tapi);
   if (hello == NULL)
     return SYSERR;
-  GE_ASSERT(NULL,
-	    sizeof(CS_identity_hello_MESSAGE)
-	    == sizeof(P2P_hello_MESSAGE));
-  reply = (CS_identity_hello_MESSAGE*) hello;
-  reply->m.header.type = htons(CS_PROTO_identity_HELLO);
+  hello->header.type = htons(CS_PROTO_identity_HELLO);
   ret = coreAPI->sendToClient(sock,
-			      &reply->m.header);
-  FREE(reply);
+			      &hello->header);
+  FREE(hello);
   return ret;
 }
 
@@ -1277,7 +1286,9 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	       &cronDiscardHosts,
 	       0,
 	       CRON_DISCARD_HOSTS_INTERVAL,
-	       NULL);
+	       NULL); 
+  coreAPI->registerClientHandler(CS_PROTO_identity_CONNECT,
+				   &identityRequestConnectHandler);
   coreAPI->registerClientHandler(CS_PROTO_identity_HELLO,
 				 &identityHelloHandler);
   coreAPI->registerClientHandler(CS_PROTO_identity_request_HELLO,
@@ -1295,6 +1306,8 @@ void release_module_identity() {
   int j;
   HostEntry * entry;
 
+  coreAPI->unregisterClientHandler(CS_PROTO_identity_CONNECT,
+				   &identityRequestConnectHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_identity_HELLO,
 				   &identityHelloHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_identity_request_HELLO,

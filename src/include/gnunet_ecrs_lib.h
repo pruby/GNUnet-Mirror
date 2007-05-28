@@ -27,7 +27,7 @@
 #ifndef GNUNET_ECRS_LIB_H
 #define GNUNET_ECRS_LIB_H
 
-#include "gnunet_util.h"
+#include "gnunet_util_core.h"
 #include "gnunet_core.h"
 #include <extractor.h>
 
@@ -346,12 +346,7 @@ typedef int (*ECRS_SignFunction)(void * cls,
  */
 struct ECRS_URI *
 ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
-		     const PublicKey * sender,
-		     TIME_T expirationTime,
-		     unsigned short proto,
-		     unsigned short sas,
-		     unsigned int mtu,
-		     const char * address,
+		     const P2P_hello_MESSAGE * hello,
 		     ECRS_SignFunction signer,
 		     void * signer_cls);
 

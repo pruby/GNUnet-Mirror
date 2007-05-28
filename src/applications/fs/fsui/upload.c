@@ -362,36 +362,18 @@ void * FSUI_uploadThread(void * cls) {
        (utc->shared->doIndex == YES) ) {
     /* generate location URI for non-anonymous download */
     struct ClientServerConnection  * sock;
-    PublicKey my_publicKey;
-    unsigned short proto;
-    TIME_T expirationTime;
-    unsigned short sas;
-    unsigned int mtu;
-    char * address;
+    P2P_hello_MESSAGE * hello;
     
     sock = client_connection_create(utc->shared->ctx->ectx,
 				    utc->shared->ctx->cfg);
 				    
-    address = NULL;
     if (OK == gnunet_identity_get_self(sock,
-				       &my_publicKey,
-				       &expirationTime,
-				       &proto,
-				       &sas,
-				       &mtu,
-				       &address)) {
+				       &hello)) {
       loc = ECRS_uriFromLocation(utc->uri,
-				 &my_publicKey,
-				 expirationTime,
-				 proto,
-				 sas,
-				 mtu,
-				 address,
+				 hello,
 				 (ECRS_SignFunction) &gnunet_identity_sign_function,
 				 sock);
-      if ( (sas > 0) &&
-	   (address != NULL) )
-	FREE(address);
+      FREE(hello);
     } else {
       /* may happen if no transports are available... */
       loc = ECRS_dupUri(utc->uri);

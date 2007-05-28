@@ -27,9 +27,8 @@
 #ifndef GNUNET_IDENTITY_LIB_H
 #define GNUNET_IDENTITY_LIB_H
 
-#include "gnunet_util.h"
+#include "gnunet_util_core.h"
 #include "gnunet_util_network_client.h"
-#include "gnunet_util_crypto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +37,7 @@ extern "C" {
 #endif
 #endif
 
+
 /**
  * Inform gnunetd about another peer.
  *
@@ -45,13 +45,7 @@ extern "C" {
  * @return OK on success, SYSERR on error
  */
 int gnunet_identity_peer_add(struct ClientServerConnection * sock,
-			     const PublicKey * key,
-			     TIME_T expirationTime,
-			     unsigned short proto,
-			     unsigned short sas,
-			     unsigned int mtu,
-			     const char * address,
-			     const Signature * signature);
+			     const P2P_hello_MESSAGE * hello);
 
 /**
  * Function to request the peer to sign something
@@ -65,19 +59,20 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
 /**
  * Function to request one of the peer's identities 
  * (that is, external addresses).
- * Except for the "sock" argument, all arguments are
- * set by the function.
+ *
  * @return SYSERR on error, OK on success
  */
 int gnunet_identity_get_self(struct ClientServerConnection * sock,
-			     PublicKey * key,
-			     TIME_T * expirationTime,
-			     unsigned short * proto,
-			     unsigned short * sas,
-			     unsigned int * mtu,
-			     char ** address);
+			     P2P_hello_MESSAGE ** hello);
 
 
+/**
+ * Request the peer to connect to another peer
+ * @return SYSERR on error, YES if connection is now there
+ *         NO if connection is not yet present
+ */
+int gnunet_identity_request_connect(struct ClientServerConnection * sock,
+				    const PeerIdentity * peer);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {
