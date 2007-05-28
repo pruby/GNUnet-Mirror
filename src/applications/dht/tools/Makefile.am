@@ -24,20 +24,20 @@ gnunet_dht_query_LDADD =  \
 
 
 
-#check_PROGRAMS = \
-#  dhttest2 
+check_PROGRAMS = \
+  dhttest2 
 
-#TESTS = $(check_PROGRAMS)
+TESTS = $(check_PROGRAMS)
 
-#dhttest2_SOURCES = \
-#  dhttest2.c 
-#dhttest2_LDADD = \
-#  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
-#  $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
-#  $(top_builddir)/src/applications/dht/module/libgnunetdht_datastore_memory.la \
-#  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
-#  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
-#  $(top_builddir)/src/util/libgnunetutil.la 
+dhttest2_SOURCES = \
+  dhttest2.c 
+dhttest2_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
   check.conf \

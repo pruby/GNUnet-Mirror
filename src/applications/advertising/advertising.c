@@ -685,7 +685,7 @@ ehelloHandler(const PeerIdentity * sender,
 static int
 phelloHandler(const PeerIdentity * sender,
 	      const MESSAGE_HEADER * message,
-	     TSession * session) {
+	      TSession * session) {
   receivedhello(message);
   return OK;
 }

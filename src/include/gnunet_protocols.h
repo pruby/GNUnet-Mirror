@@ -463,7 +463,7 @@ extern "C" {
 #define KN_BLOCK 5
 
 /**
- * DHT String2String (for dht-query/dht-join).
+ * DHT String2String (for dht-testing)
  */
 #define DHT_STRING2STRING_BLOCK 7
 

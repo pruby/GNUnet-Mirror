@@ -44,7 +44,7 @@ int main(int argc,
 					10000,
 					"/tmp/gnunet-testing-1",
 					"tcp",
-					"stats",
+					"advertising stats",
 					&daemon1,
 					&p1))
     ret |= 1;
@@ -52,7 +52,7 @@ int main(int argc,
 					20000,
 					"/tmp/gnunet-testing-2",
 					"tcp",
-					"stats",
+					"advertising stats",
 					&daemon2,
 					&p2))
     ret |= 2;

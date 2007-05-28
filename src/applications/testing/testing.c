@@ -93,6 +93,9 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   dpath)) {
+    fprintf(stderr,
+	    "Failed to read default configuration file `%s'\n",
+	    dpath);
     GC_free(cfg);
     FREE(dpath);
     return SYSERR;
@@ -140,6 +143,9 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   CLOSE(ret);  
   if (0 != GC_write_configuration(cfg,
 				  dpath)) {
+    fprintf(stderr,
+	    "Failed to write peer configuration file `%s'\n",
+	    dpath);
     FREE(dpath);
     GC_free(cfg);
     return SYSERR;
@@ -163,6 +169,8 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 			dpath,
 			NO);
   if (ret == -1) {
+    fprintf(stderr,
+	    "Failed to start daemon!\n");
     GC_free(cfg);
     return SYSERR; 
   } 
@@ -171,13 +179,15 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   /* now get peer ID */
   if (OK != connection_wait_for_running(NULL,
 					cfg,
-					30 * cronSECONDS)) {
+					60 * cronSECONDS)) {
+    fprintf(stderr,
+	    "Failed to confirm daemon running!\n");
     GC_free(cfg);
     UNLINK(dpath);
     FREE(dpath);
     return SYSERR;
   }
-  // UNLINK(dpath);
+  UNLINK(dpath);
   FREE(dpath);
   sock = client_connection_create(NULL,
 				  cfg);
@@ -188,6 +198,9 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 	 sizeof(PublicKey),
 	 &peer->hashPubKey);
     FREE(hello);
+  } else {
+    fprintf(stderr,
+	    "Failed to obtain daemon's identity (is a transport loaded?)!\n");
   }
   connection_destroy(sock);
   GC_free(cfg);
@@ -253,15 +266,25 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 					 h2)) &&
 	 (OK == gnunet_identity_peer_add(sock2,
 					 h1)) ) {
-      ret = 10;
-      while (ret-- >= 0) {
+      ret = - 30;
+      fprintf(stderr, 
+	      _("Waiting for peers to connect"));
+      while ( (ret++ < -1) &&
+	      (GNUNET_SHUTDOWN_TEST() == NO) ) {
+	fprintf(stderr, ".");
 	if (YES == gnunet_identity_request_connect(sock1,
 						   &h2->senderIdentity)) {
 	  ret = OK;
 	  break;
 	}
+	if (YES == gnunet_identity_request_connect(sock2,
+						   &h1->senderIdentity)) {
+	  ret = OK;
+	  break;
+	}
 	PTHREAD_SLEEP(2 * cronSECONDS);
       }
+      fprintf(stderr, "%s\n", ret == OK ? "!" : "?");
     }
     FREENONNULL(h1);
     FREENONNULL(h2);
@@ -271,6 +294,8 @@ int gnunet_testing_connect_daemons(unsigned short port1,
     fprintf(stderr,
 	    "Failed to establish connection with peers.\n");
   }
+  GC_free(cfg1);
+  GC_free(cfg2);
   return ret;
 }
 

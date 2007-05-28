@@ -1123,11 +1123,19 @@ static int identityHelloHandler(struct ClientHandle * sock,
   const P2P_hello_MESSAGE * msg;
   P2P_hello_MESSAGE * hello;
 
-  if (sizeof(P2P_hello_MESSAGE) < ntohs(message->size))
+  if (sizeof(P2P_hello_MESSAGE) > ntohs(message->size)) {
+    GE_BREAK(NULL, 0);
     return SYSERR;
+  }
   msg = (const P2P_hello_MESSAGE*) message;
+  if (P2P_hello_MESSAGE_size(msg) != ntohs(message->size)) {
+    GE_BREAK(NULL, 0);
+    return SYSERR;
+  }
   hello = MALLOC(ntohs(msg->header.size));
-  memcpy(hello, msg, ntohs(msg->header.size));
+  memcpy(hello,
+	 msg, 
+	 ntohs(msg->header.size));
   hello->header.type = htons(p2p_PROTO_hello);
   coreAPI->injectMessage(NULL,
 			 (const char*) hello,
