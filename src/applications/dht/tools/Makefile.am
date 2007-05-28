@@ -40,8 +40,4 @@ dhttest2_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
-  check.conf \
-  peer1.conf \
-  peer2.conf \
-  peer1/.hostkey \
-  peer2/.hostkey 
+  check.conf 

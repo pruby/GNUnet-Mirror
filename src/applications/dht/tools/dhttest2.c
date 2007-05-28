@@ -45,10 +45,7 @@
 int main(int argc,
 	 const char ** argv) {
 #if START_PEERS
-  pid_t daemon1;
-  pid_t daemon2;
-  PeerIdentity peer1;
-  PeerIdentity peer2;
+  struct DaemonContext * peers;
 #endif
   int ret;
   HashCode512 key;
@@ -64,28 +61,19 @@ int main(int argc,
     return -1;
   }
 #if START_PEERS
-  if ( (OK != gnunet_testing_start_daemon(12087,
-					  10000,
-					  "/tmp/dht-test-1",
-					  "tcp",
-					  "advertising dht",
-					  &daemon1,
-					  &peer1)) ||
-       (OK != gnunet_testing_start_daemon(22087,
-					  20000,
-					  "/tmp/dht-test-2",
-					  "tcp",
-					  "advertising dht",
-					  &daemon2,
-					  &peer2)) ||
-       (OK != gnunet_testing_connect_daemons(12087,
-					     22087)) ) {
-    gnunet_testing_stop_daemon(12087, daemon1);
-    gnunet_testing_stop_daemon(12087, daemon2);
+  peers = gnunet_testing_start_daemons("tcp",
+				       "advertising dht stats",				       
+				       "/tmp/dht-test",
+				       2087,
+				       10000,
+				       2);
+  if (peers == NULL) {
     GC_free(cfg);
     return -1;
   }
 #endif
+  gnunet_testing_connect_daemons(2087,
+				 12087);
 
   /* actual test code */
   hash("key2", 4, &key);
@@ -169,8 +157,7 @@ int main(int argc,
 
  FAILURE:
 #if START_PEERS
-  gnunet_testing_stop_daemon(12087, daemon1);
-  gnunet_testing_stop_daemon(12087, daemon2);
+  gnunet_testing_stop_daemons(peers);
 #endif
   GC_free(cfg);
   return ret;
