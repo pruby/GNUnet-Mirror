@@ -227,10 +227,11 @@ ECRS_createNamespace(struct GE_Context * ectx,
 
   nb->rootEntry = *rootEntry;
 
-  GE_ASSERT(ectx, OK == sign(hk,
-			   mdsize + 3 * sizeof(HashCode512),
-			   &nb->identifier,
-			   &nb->signature));
+  GE_ASSERT(ectx, 
+	    OK == sign(hk,
+		       mdsize + 3 * sizeof(HashCode512),
+		       &nb->identifier,
+		       &nb->signature));
   if (OK != FS_insert(sock, value)) {
     FREE(rootURI);
     FREE(value);
@@ -280,6 +281,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
       /* extra check: verify sig */
       freePrivateKey(pk);
       if (OK != FS_insert(sock, knvalue)) {
+	GE_BREAK(ectx, 0);
 	FREE(rootURI);
 	ECRS_deleteNamespace(ectx, cfg, name);
 	FREE(cpy);

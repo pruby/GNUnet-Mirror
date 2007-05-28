@@ -41,17 +41,24 @@ static int testKeyword() {
   ret = ECRS_stringToUri(NULL, "gnunet://ecrs/ksk/foo+bar");
   if (ret == NULL)
     ABORT();
-  if (! ECRS_isKeywordUri(ret))
+  if (! ECRS_isKeywordUri(ret)) {
+    ECRS_freeUri(ret);
     ABORT();
+  }
   if ( (2 != ret->data.ksk.keywordCount) ||
        (0 != strcmp("foo", ret->data.ksk.keywords[0])) ||
-       (0 != strcmp("bar", ret->data.ksk.keywords[1])) )
+       (0 != strcmp("bar", ret->data.ksk.keywords[1])) ) {
+    ECRS_freeUri(ret);
     ABORT();
+  }
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/ksk/foo+bar"))
+		  "gnunet://ecrs/ksk/foo+bar")) {
+    FREE(uri);
+    ECRS_freeUri(ret);
     ABORT();
+  }
   FREE(uri);
   ECRS_freeUri(ret);
   return 0;
@@ -144,15 +151,22 @@ static int testNamespace(int i) {
   ret = ECRS_stringToUri(NULL, "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   if (ret == NULL)
     ABORT();
-  if (ECRS_isKeywordUri(ret))
+  if (ECRS_isKeywordUri(ret)) {
+    ECRS_freeUri(ret);
     ABORT();
-  if (! ECRS_isNamespaceUri(ret))
+  }
+  if (! ECRS_isNamespaceUri(ret)) {
+    ECRS_freeUri(ret);
     ABORT();
+  }
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO"))
+		  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO")) {
+    ECRS_freeUri(ret);
+    FREE(uri);
     ABORT();
+  }
   FREE(uri);
   ECRS_freeUri(ret);
   return 0;
@@ -171,16 +185,24 @@ static int testFile(int i) {
   ret = ECRS_stringToUri(NULL, "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   if (ret == NULL)
     ABORT();
-  if (ECRS_isKeywordUri(ret))
+  if (ECRS_isKeywordUri(ret)) {
+    ECRS_freeUri(ret);
     ABORT();
-  if (ECRS_isNamespaceUri(ret))
+  }
+  if (ECRS_isNamespaceUri(ret)) {
+    ECRS_freeUri(ret);
     ABORT();
-  if (ntohll(ret->data.fi.file_length) != 42)
+  }
+  if (ntohll(ret->data.fi.file_length) != 42) {
+    ECRS_freeUri(ret);
     ABORT();
+  }
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
 		  "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42")) {
+    FREE(uri);
+    ECRS_freeUri(ret);
     ABORT();
   }
   FREE(uri);

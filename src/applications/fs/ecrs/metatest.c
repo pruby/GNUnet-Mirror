@@ -30,7 +30,7 @@
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 
-#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
+#define ABORT(m) { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); if (m != NULL) ECRS_freeMetaData(m); return 1; }
 
 static int testMeta(int i) {
   struct ECRS_MetaData * m;
@@ -41,42 +41,42 @@ static int testMeta(int i) {
   m = ECRS_createMetaData();
   if (OK != ECRS_addToMetaData(m,
 			       EXTRACTOR_TITLE,
-			       "TestTitle"))
-    ABORT();
+			       "TestTitle")) 
+    ABORT(m);  
   if (OK != ECRS_addToMetaData(m,
 			       EXTRACTOR_AUTHOR,
-			       "TestTitle"))
-    ABORT();
+			       "TestTitle")) 
+    ABORT(m);  
   if (OK == ECRS_addToMetaData(m,
 			       EXTRACTOR_TITLE,
 			       "TestTitle")) /* dup! */
-    ABORT();
+    ABORT(m);
   if (OK == ECRS_addToMetaData(m,
 			       EXTRACTOR_AUTHOR,
 			       "TestTitle")) /* dup! */
-    ABORT();
+    ABORT(m);
   if (2 != ECRS_getMetaData(m, NULL, NULL))
-    ABORT();
+    ABORT(m);
   if (OK != ECRS_delFromMetaData(m,
 				 EXTRACTOR_AUTHOR,
 				 "TestTitle"))
-    ABORT();
+    ABORT(m);
   if (OK == ECRS_delFromMetaData(m,
 				 EXTRACTOR_AUTHOR,
 				 "TestTitle")) /* already gone */
-    ABORT();
+    ABORT(m);
   if (1 != ECRS_getMetaData(m, NULL, NULL))
-    ABORT();
+    ABORT(m);
   if (OK != ECRS_delFromMetaData(m,
 				 EXTRACTOR_TITLE,
 				 "TestTitle"))
-    ABORT();
+    ABORT(m);
   if (OK == ECRS_delFromMetaData(m,
 				 EXTRACTOR_TITLE,
 				 "TestTitle")) /* already gone */
-    ABORT();
+    ABORT(m);
   if (0 != ECRS_getMetaData(m, NULL, NULL))
-    ABORT();
+    ABORT(m);
   val = MALLOC(256);
   for (j=0;j<i;j++) {
     SNPRINTF(val, 256, "%s.%d",
@@ -85,11 +85,11 @@ static int testMeta(int i) {
     if (OK != ECRS_addToMetaData(m,
 				 EXTRACTOR_UNKNOWN,
 				 val))
-      ABORT();
+      ABORT(m);
   }
   FREE(val);
   if (i != ECRS_getMetaData(m, NULL, NULL))
-    ABORT();
+    ABORT(m);
 
   size = ECRS_sizeofMetaData(m,
 			     ECRS_SERIALIZE_FULL);
@@ -98,15 +98,17 @@ static int testMeta(int i) {
 				     m,
 				     val,
 				     size,
-				     ECRS_SERIALIZE_FULL))
-    ABORT();
+				     ECRS_SERIALIZE_FULL)) {
+    FREE(val);
+    ABORT(m);
+  }
   ECRS_freeMetaData(m);
   m = ECRS_deserializeMetaData(NULL,
 			       val,
 			       size);
-  if (m == NULL)
-    ABORT();
   FREE(val);
+  if (m == NULL) 
+    ABORT(m);
   val = MALLOC(256);
   for (j=0;j<i;j++) {
     SNPRINTF(val, 256, "%s.%d",
@@ -114,13 +116,15 @@ static int testMeta(int i) {
 	     j);
     if (OK != ECRS_delFromMetaData(m,
 				   EXTRACTOR_UNKNOWN,
-				   val))
-      ABORT();
+				   val)) {
+      FREE(val);
+      ABORT(m);
+    }
   }
   FREE(val);
-  if (0 != ECRS_getMetaData(m, NULL, NULL))
-    ABORT();
-
+  if (0 != ECRS_getMetaData(m, NULL, NULL)) {
+    ABORT(m);
+  }
   ECRS_freeMetaData(m);
   return 0;
 }
@@ -149,8 +153,12 @@ int testMetaMore(int i) {
 				     meta,
 				     data,
 				     size * 4,
-				     ECRS_SERIALIZE_FULL))
+				     ECRS_SERIALIZE_FULL)) {
+    ECRS_freeMetaData(meta);
+    FREE(data);
     ABORT();
+  }
+  ECRS_freeMetaData(meta);
   FREE(data);
   return 0;
 }

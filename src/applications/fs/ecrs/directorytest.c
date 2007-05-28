@@ -69,7 +69,8 @@ static int testDirectory(unsigned int i) {
   int q;
   char uri[512];
   char txt[128];
-
+  int ret = 0;
+  
   cls.max = i;
   fis = MALLOC(sizeof(ECRS_FileInfo) * i);
   for (p=0;p<i;p++) {
@@ -88,8 +89,15 @@ static int testDirectory(unsigned int i) {
 	     "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
 	     p);
     fis[p].uri = ECRS_stringToUri(NULL, uri);
-    if (fis[p].uri == NULL)
+    if (fis[p].uri == NULL) {
+      ECRS_freeMetaData(fis[p].meta);
+      while (--p > 0) {
+	ECRS_freeMetaData(fis[p].meta);
+	ECRS_freeUri(fis[p].uri);
+      }
+      FREE(fis);
       ABORT(); /* error in testcase */
+    }
   }
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
@@ -103,8 +111,15 @@ static int testDirectory(unsigned int i) {
 				 &dlen,
 				 i,
 				 fis,
-				 meta))
+				 meta)) {
+    ECRS_freeMetaData(meta);
+    for (p=0;p<i;p++) {
+      ECRS_freeMetaData(fis[p].meta);
+      ECRS_freeUri(fis[p].uri);
+    }
+    FREE(fis);  
     ABORT();
+  }
   cls.pos = 0;
   cls.fi = fis;
   if (i != ECRS_listDirectory(NULL,
@@ -113,12 +128,16 @@ static int testDirectory(unsigned int i) {
 			      &meta2,
 			      &processor,
 			      &cls)) {
-    printf("expected %u\n", i);
-    ABORT();
+    printf("expected %u\n", i); 
+    ret = 1;
+    goto END;
   }
   if (! ECRS_equalsMetaData(meta,
-			    meta2))
-    ABORT();
+			    meta2)) {
+    ret = 1;
+    goto END;
+  }
+ END:
   ECRS_freeMetaData(meta);
   ECRS_freeMetaData(meta2);
   for (p=0;p<i;p++) {
@@ -126,7 +145,7 @@ static int testDirectory(unsigned int i) {
     ECRS_freeUri(fis[p].uri);
   }
   FREE(fis);
-  return 0;
+  return ret;
 }
 
 int main(int argc, char * argv[]) {
