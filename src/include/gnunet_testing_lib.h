@@ -59,7 +59,8 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 				const char * transports,
 				const char * applications,
 				pid_t * pid,
-				PeerIdentity * peer);
+				PeerIdentity * peer,
+				char ** configFile);
 
 /**
  * Establish a connection between two GNUnet daemons
@@ -82,6 +83,41 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 int gnunet_testing_stop_daemon(unsigned short port,
 			       pid_t pid);
 
+
+/**
+ * Linked list of information about daemon processes.
+ */
+struct DaemonContext {
+  struct DaemonContext * next;
+  PeerIdentity peer;
+  pid_t pid;
+  unsigned short port;
+  char * configFile;
+};
+
+
+/**
+ * Start count gnunetd processes with the same set of
+ * transports and applications.  The port numbers will
+ * be computed by adding delta each time (zero
+ * times for the first peer).
+ *
+ * @return handle used to stop the daemons, NULL on error
+ */
+struct DaemonContext * 
+gnunet_testing_start_daemons(const char * transports,
+			     const char * applications,
+			     const char * gnunetd_home_prefix,
+			     unsigned short app_baseport,
+			     unsigned short delta,
+			     unsigned int count);
+
+/**
+ * Stop all of the daemons started with the start function.
+ * @return OK on success, SYSERR on error
+ */
+int gnunet_testing_stop_daemons(struct DaemonContext * peers);
+			     
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

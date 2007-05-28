@@ -73,7 +73,8 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 				const char * transports,
 				const char * applications,
 				pid_t * pid,
-				PeerIdentity * peer) {
+				PeerIdentity * peer,
+				char ** configFile) {
   int ret;
   char * ipath;
   char * dpath;
@@ -82,7 +83,14 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   struct ClientServerConnection * sock;
   P2P_hello_MESSAGE * hello;
 
+  fprintf(stderr,
+	  "Starting peer on port %u\n",
+	  app_port);
+#if 0
+  /* do not usually do this -- may easily
+     exhaust entropy pool for hostkey generation... */
   disk_directory_remove(NULL, gnunetd_home);
+#endif
   ipath = os_get_installation_path(IPK_DATADIR);
   if (ipath == NULL)
     return SYSERR;
@@ -179,7 +187,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   /* now get peer ID */
   if (OK != connection_wait_for_running(NULL,
 					cfg,
-					60 * cronSECONDS)) {
+					120 * cronSECONDS)) {
     fprintf(stderr,
 	    "Failed to confirm daemon running!\n");
     GC_free(cfg);
@@ -187,8 +195,8 @@ int gnunet_testing_start_daemon(unsigned short app_port,
     FREE(dpath);
     return SYSERR;
   }
-  UNLINK(dpath);
-  FREE(dpath);
+  *configFile = dpath;
+  dpath = NULL;
   sock = client_connection_create(NULL,
 				  cfg);
   ret = gnunet_identity_get_self(sock,
@@ -312,5 +320,83 @@ int gnunet_testing_stop_daemon(unsigned short port,
     return SYSERR;
   return OK;
 }
+
+/**
+ * Start count gnunetd processes with the same set of
+ * transports and applications.  The port numbers will
+ * be computed by adding "delta" each time (zero
+ * times for the first peer).
+ *
+ * @return handle used to stop the daemons, NULL on error
+ */
+struct DaemonContext * 
+gnunet_testing_start_daemons(const char * transports,
+			     const char * applications,
+			     const char * gnunetd_home_prefix,
+			     unsigned short app_baseport,
+			     unsigned short delta,
+			     unsigned int count) {
+  struct DaemonContext * ret;
+  struct DaemonContext * nxt;
+  unsigned int pos;
+  char * home;
+  size_t max;
+  pid_t pid;
+  PeerIdentity peer;
+  char * cf;
+
+  ret = NULL;
+  max = strlen(gnunetd_home_prefix) + 14;
+  home = MALLOC(max);
+  for (pos=0;pos<count;pos++) {
+    SNPRINTF(home,
+	     max,
+	     "%s.%u",
+	     gnunetd_home_prefix,
+	     pos);
+    if (OK != gnunet_testing_start_daemon(app_baseport + pos * delta,
+					  delta * pos,
+					  home,
+					  transports,
+					  applications,
+					  &pid,
+					  &peer,
+					  &cf)) {
+      gnunet_testing_stop_daemons(ret);
+      ret = NULL;
+      break;
+    }
+    nxt = MALLOC(sizeof(struct DaemonContext));
+    nxt->next = ret;
+    nxt->pid = pid;
+    nxt->peer = peer;
+    nxt->configFile = cf;
+    nxt->port = app_baseport + pos * delta;
+    ret = nxt;
+  }
+  FREE(home);
+  return ret;
+}
+
+int gnunet_testing_stop_daemons(struct DaemonContext * peers) {
+  struct DaemonContext * next;
+  int ret;
+
+  ret = OK;
+  while (peers != NULL) {
+    next = peers->next;
+    if (OK != gnunet_testing_stop_daemon(peers->port,
+					 peers->pid))
+      ret = SYSERR;
+    UNLINK(peers->configFile);
+    FREE(peers->configFile);
+    FREE(peers);
+    peers = next;   
+  }
+  return ret;
+}
+			     
+
+
 
 /* end of testing.c */

@@ -73,7 +73,7 @@ int main(int argc, char ** argv) {
 #if START_PEERS
   peers = gnunet_testing_start_daemons("tcp",
 				       "advertising stats",				       
-				       "/tmp/session-test",
+				       "/tmp/gnunet-session-test",
 				       2087,
 				       10000,
 				       2);

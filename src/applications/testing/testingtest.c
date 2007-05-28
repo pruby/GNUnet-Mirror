@@ -38,6 +38,8 @@ int main(int argc,
   pid_t daemon2;
   PeerIdentity p1;
   PeerIdentity p2;
+  char * c1 = NULL;
+  char * c2 = NULL;
   int ret = 0;
 
   if (OK != gnunet_testing_start_daemon(12087,
@@ -46,7 +48,8 @@ int main(int argc,
 					"tcp",
 					"advertising stats",
 					&daemon1,
-					&p1))
+					&p1,
+					&c1))
     ret |= 1;
   if (OK != gnunet_testing_start_daemon(22087,
 					20000,
@@ -54,7 +57,8 @@ int main(int argc,
 					"tcp",
 					"advertising stats",
 					&daemon2,
-					&p2))
+					&p2,
+					&c2))
     ret |= 2;
   if (OK != gnunet_testing_connect_daemons(12087,
 					   22087))
@@ -65,6 +69,14 @@ int main(int argc,
   if (OK != gnunet_testing_stop_daemon(22087,
 				       daemon2))
     ret |= 16;
+  if (c1 != NULL) {
+    UNLINK(c1);
+    FREE(c1);
+  }
+  if (c2 != NULL) {
+    UNLINK(c2);
+    FREE(c2);
+  }
   return ret;
 }
 

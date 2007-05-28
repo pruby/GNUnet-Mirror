@@ -1,3 +1,10 @@
+Sun May 27 22:39:48 MDT 2007
+	Added new API gnunet_testing_lib.h to make it
+	easier to write testcases that need to start 
+	gnunetd.  API is now used everywhere and the
+	ugly peer.conf files and directories are gone.
+	Fixed a bug with inserting empty directories.
+
 Sat May 26 18:24:15 MDT 2007
 	Fixed bugs with testcases (changes in names and
 	structure of options were not reflected in .conf 

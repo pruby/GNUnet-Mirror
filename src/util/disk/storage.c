@@ -583,6 +583,10 @@ static int rmHelper(const char * fil,
  */
 int disk_directory_remove(struct GE_Context * ectx,
 			  const char * fileName) {
+  struct stat istat;
+
+  if (0 != STAT(fileName, &istat)) 
+    return NO; /* file may not exist... */
   if (UNLINK(fileName) == 0)
     return OK;
   if ( (errno != EISDIR) &&

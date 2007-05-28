@@ -139,10 +139,7 @@ void initPrivateKey(struct GE_Context * ectx,
 			 hostkeyfile,
 			 sizeof(unsigned short),
 			 &len);
-  } else {
-    printf("Could not read host key at `%s', generating fresh key.\n",
-	   hostkeyfile);
-  }
+  } 
   encPrivateKey = NULL;
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));

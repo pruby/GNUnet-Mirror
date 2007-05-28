@@ -41,6 +41,7 @@ tbenchtest_SOURCES = \
   tbenchtest.c 
 tbenchtest_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
   $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
@@ -51,6 +52,7 @@ tbenchtest_udp_SOURCES = \
   tbenchtest_udp.c 
 tbenchtest_udp_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
   $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
@@ -58,12 +60,4 @@ tbenchtest_udp_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
-  check.conf \
-  peer1.conf \
-  peer2.conf \
-  peer1/.hostkey \
-  peer2/.hostkey \
-  peer1udp.conf \
-  peer2udp.conf \
-  peer1-udp/.hostkey \
-  peer2-udp/.hostkey 
+  check.conf 

@@ -35,6 +35,8 @@
  */
 static CoreAPIForApplication * coreAPI;
 
+static struct CronManager * cron;
+
 typedef struct DHT_GET_RECORD {
   /**
    * Key that we are looking for.
@@ -131,7 +133,7 @@ dht_get_async_start(unsigned int type,
   ret->callbackComplete = callbackComplete;
   ret->closure = closure;
   ret->type = type;
-  cron_add_job(coreAPI->cron,
+  cron_add_job(cron,
 	       &timeout_callback,
 	       timeout,
 	       0,
@@ -148,13 +150,13 @@ dht_get_async_start(unsigned int type,
  */
 static int
 dht_get_async_stop(struct DHT_GET_RECORD * record) {
-  cron_suspend(coreAPI->cron,
+  cron_suspend(cron,
 	       YES);
-  cron_del_job(coreAPI->cron,
+  cron_del_job(cron,
 	       &timeout_callback,
 	       0,
 	       record);		
-  cron_resume_jobs(coreAPI->cron,
+  cron_resume_jobs(cron,
 		   YES);
   dht_get_stop(&record->key,
 	       record->type,
@@ -175,6 +177,8 @@ DHT_ServiceAPI *
 provide_module_dht(CoreAPIForApplication * capi) {
   static DHT_ServiceAPI api;
 
+  cron = cron_create(capi->ectx);
+  cron_start(cron);
   if (OK != init_dht_store(1024 * 1024,
 			   capi))
     return NULL;
@@ -198,9 +202,11 @@ provide_module_dht(CoreAPIForApplication * capi) {
  * Shutdown DHT service.
  */
 int release_module_dht() {
+  cron_stop(cron);
   done_dht_routing();
   done_dht_table();
   done_dht_store();
+  cron_destroy(cron);
   return OK;
 }
 
