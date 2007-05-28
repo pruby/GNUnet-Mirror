@@ -195,7 +195,7 @@ struct CronManager * cron_create(struct GE_Context * ectx) {
   cron->firstUsed_  = -1;
   cron->cron_signal_up = SEMAPHORE_CREATE(0);
   cron->ectx = ectx;
-  cron->cron_shutdown = NO;
+  cron->cron_shutdown = YES;
   cron->sig = NULL;
   return cron;
 }
