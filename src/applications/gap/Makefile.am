@@ -28,6 +28,7 @@ TESTS = $(check_PROGRAMS)
 gaptest_SOURCES = \
   gaptest.c 
 gaptest_LDADD = \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
@@ -37,8 +38,4 @@ gaptest_LDADD = \
 
 
 EXTRA_DIST = \
-  peer1.conf \
-  peer2.conf \
-  peer1/.hostkey \
-  peer2/.hostkey \
   check.conf
