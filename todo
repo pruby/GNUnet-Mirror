@@ -13,12 +13,12 @@ notes:
 
 0.7.2 [5'07]:
 - new features:
-  * XFS / support for location URIs -- TEST!!! [CG] 
+  * XFS -- TEST more! [RC] 
   * HTTP transport (libcurl, libmicrohttpd)
 - testcases (fix, add):
-  * ecrs_core -- implement actual testcase, harness is there!
-  * gap (incl. economy)
-  * advertising
+  * ecrs_core -- implement actual testcase, harness is there! [RC]
+  * gap (incl. economy) [RC]
+  * advertising [RC]
 
 
 0.7.3 [6'07] (aka "features"):
@@ -47,29 +47,30 @@ notes:
 - implement testbed for profiling
 
 
-FreeServices
-	- onion routing
-		- application service
-		- unreliable connection through GNUnet core
-		- initiator chooses path, other ORs suggest some (!) ORs for next hop
-		  (choose path often according to suggestions, but route randomly
-		   sometimes)
-		- accounting
-			- each predecessor ist reposible (accountable) for its predecessor
-			  and has to reject connections from untrusted nodes because
-			  misbehaving nodes harm own trust
-		  - tell predecessor about MIN(own limits, successor's limits)
-		- onion routing based transport
-			- use introduction point instead of IP in HELO
-			- => integrate NATed hosts
-	- subnet advertising (DHT, chat, GAP, ...)
-		- applications register subnets, core advertises subnets
-	- anonymous DHT
-		- create OR tunnel to ADHT node that performs DHT operation
-		- check success of DHT operation through another tunnel
-		- => OR and FreeService advertisements
-		- Hostlist?
 
+
+FreeServices
+- onion routing
+	- application service
+	- unreliable connection through GNUnet core
+	- initiator chooses path, other ORs suggest some (!) ORs for next hop
+	  (choose path often according to suggestions, but route randomly
+	   sometimes)
+	- accounting
+		- each predecessor ist reposible (accountable) for its predecessor
+		  and has to reject connections from untrusted nodes because
+		  misbehaving nodes harm own trust
+	  - tell predecessor about MIN(own limits, successor's limits)
+	- onion routing based transport
+		- use introduction point instead of IP in HELO
+		- => integrate NATed hosts
+- subnet advertising (DHT, chat, GAP, ...)
+	- applications register subnets, core advertises subnets
+- anonymous DHT
+	- create OR tunnel to ADHT node that performs DHT operation
+	- check success of DHT operation through another tunnel
+	- => OR and FreeService advertisements
+	- Hostlist?
 
 
 
