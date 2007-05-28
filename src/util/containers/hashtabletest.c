@@ -41,6 +41,7 @@ static int testHT()
     HT_PUT(ht, "USA", "Washington") != YES)
   {
     puts("ht_put failed\n");
+    ht_destroy(ht);
     return 1;
   }
 
@@ -48,6 +49,7 @@ static int testHT()
     HT_CONTAINS_KEY(ht, "Iceland") != NO)
   {
     puts("ht_contains_key failed!\n");
+    ht_destroy(ht);
     return 1;
   }
 
@@ -55,18 +57,21 @@ static int testHT()
     HT_CONTAINS_VALUE(ht, "London") != NO)
   {
     puts("ht_contains_value failed!\n");
+    ht_destroy(ht);
     return 1;
   }
 
   if (HT_GET(ht, "USA", &val, &vallen) != YES)
   {
     puts("ht_get failed!\n");
+    ht_destroy(ht);
     return 1;
   }
 
   if (strcmp((char *) val, "Washington") != 0)
   {
     puts("ht_get result invalid!\n");
+    ht_destroy(ht);
     return 1;
   }
 
@@ -74,12 +79,14 @@ static int testHT()
   if (HT_CONTAINS_KEY(ht, "Spain") != NO)
   {
     puts("ht_remove failed!\n");
+    ht_destroy(ht);  
     return 1;
   }
 
   if (ht_size(ht) != 5)
   {
     puts("ht_size failed!\n");
+    ht_destroy(ht);
     return 1;
   }
 
@@ -87,6 +94,7 @@ static int testHT()
   if (ht_size(ht) != 0)
   {
     puts("ht_size#2 failed!\n");
+    ht_destroy(ht);
     return 1;
   }
 

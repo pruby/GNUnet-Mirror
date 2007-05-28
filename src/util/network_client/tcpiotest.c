@@ -148,6 +148,7 @@ static int testTransmission(struct ClientServerConnection * a,
     }
     if (pos != i + sizeof(MESSAGE_HEADER)) {
       FREE(buf);
+      FREE(hdr);
       return 3;
     }
     if (0 != memcmp(buf, hdr, i+sizeof(MESSAGE_HEADER))) {

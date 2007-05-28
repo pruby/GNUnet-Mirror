@@ -49,6 +49,7 @@ static void perfHash() {
 	 1024 * 64,
 	 &hc3);
   }
+  FREE(buf);
 }
 
 int main(int argc, char * argv[]) {

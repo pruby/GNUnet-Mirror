@@ -26,7 +26,7 @@
 #include "gnunet_util_containers.h"
 #include "platform.h"
 
-#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); vectorDump(v);
+#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); vectorDump(v); vectorFree(v);
 
 static int test(int size) {
   struct Vector * v;
