@@ -24,13 +24,10 @@ sessiontest_SOURCES = \
   sessiontest.c 
 sessiontest_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
-  check.conf \
-  peer1.conf \
-  peer2.conf \
-  peer1/.hostkey \
-  peer2/.hostkey 
+  check.conf 
