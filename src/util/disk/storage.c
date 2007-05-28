@@ -530,7 +530,8 @@ int disk_directory_scan(struct GE_Context * ectx,
     return SYSERR;
   }
   while ((finfo = readdir(dinfo)) != NULL) {
-    if (finfo->d_name[0] == '.')
+    if ( (0 == strcmp(finfo->d_name, ".")) ||
+	 (0 == strcmp(finfo->d_name, "..")) )	 
       continue;
     if (callback != NULL) {
       if (OK != callback(finfo->d_name,
