@@ -10,6 +10,7 @@ debian/tmp/usr/bin/gnunet-tbench
 debian/tmp/usr/bin/gnunet-template
 debian/tmp/usr/bin/gnunet-tracekit
 debian/tmp/usr/bin/gnunet-vpn
+debian/tmp/usr/lib/libgnunetidentity_api.so.*
 debian/tmp/usr/lib/libgnunetdht_api.so.*
 debian/tmp/usr/lib/libgnuneturitrack.so.*
 debian/tmp/usr/lib/libgnunetfsui.so.*
