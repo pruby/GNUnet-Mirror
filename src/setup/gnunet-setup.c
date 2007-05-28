@@ -130,7 +130,7 @@ static int dyn_config(const char * module,
 }
 
 static const char * INFO =
-  "gnunet-setup [OPTIONS] config"
+  "gnunet-setup [OPTIONS] config generate-defaults "
 #if HAVE_DIALOG
   "|menuconfig|wizard-curses"
 #endif
@@ -150,6 +150,7 @@ static const char * modules[] = {
    "config", "setup_text", "main_" ,
    "wizard-curses", "setup_curses", "wizard_curs_main",
    "wizard-gtk", "setup_gtk", "gtk_wizard_main",
+   "generate-defaults", "setup_text", "dump_",
    NULL,
 };
 

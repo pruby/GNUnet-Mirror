@@ -40,4 +40,13 @@ int main_setup_text(int argc,
 		    const char * filename,
 		    int is_daemon);
 
+int dump_setup_text(int argc,
+		    const char ** argv,
+		    struct PluginHandle * self,
+		    struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    struct GNS_Context * gns,
+		    const char * filename,
+		    int is_daemon);
+
 #endif

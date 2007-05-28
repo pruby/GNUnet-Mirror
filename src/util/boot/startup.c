@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -144,7 +144,9 @@ int GNUNET_init(int argc,
 		struct GE_Context ** ectx,
 		struct GC_Configuration ** cfg) {
   int i;
-  char *path;
+  char * path;
+  int is_daemon;
+  int ret;
 
   os_init(NULL);
 
@@ -155,6 +157,8 @@ int GNUNET_init(int argc,
   FREE(path);
   textdomain("GNUnet");
 #endif
+  is_daemon = 0 == strcmp(DEFAULT_DAEMON_CONFIG_FILE, *cfgFileName);
+
   /* during startup, log all warnings and higher
      for anybody to stderr */
   *ectx = GE_create_context_stderr(YES,
@@ -173,6 +177,26 @@ int GNUNET_init(int argc,
 			   argv);
   if (i == -1)
     return -1;
+  if ( (YES != disk_file_test(*ectx, 
+			      *cfgFileName)) &&
+       (! is_daemon) ) {
+    char * run;
+    size_t max;
+    
+    max = 128 + strlen(*cfgFileName);
+    run = MALLOC(max);
+    SNPRINTF(run,
+	     max,
+	     "gnunet-setup -c %s generate-defaults");
+    if (0 != system(run)) 
+      GE_LOG(*ectx,
+	     GE_ERROR | GE_USER | GE_IMMEDIATE,
+	     _("Failed to run %s: %s %d\n"),
+	     run,
+	     strerror(errno),
+	     WEXITSTATUS(ret));
+    FREE(run);  
+  }
   if (0 != GC_parse_configuration(*cfg,
 				  *cfgFileName))
     return -1;

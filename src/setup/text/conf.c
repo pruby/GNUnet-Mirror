@@ -601,3 +601,19 @@ int main_setup_text(int argc,
   ioctl(0, TCSETS, &oldT);
   return 0;
 }
+
+
+/**
+ * Generate defaults, runs without user interaction.
+ */
+int dump_setup_text(int argc,
+		    const char **argv,
+		    struct PluginHandle * self,
+		    struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    struct GNS_Context * gns,
+		    const char * filename,
+		    int is_daemon) {
+  return GC_write_configuration(cfg,
+				filename);
+}
