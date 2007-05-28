@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-04-22 11:48-0600\n"
+"POT-Creation-Date: 2007-05-27 22:50-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -771,7 +771,7 @@ msgstr ""
 msgid "Load management"
 msgstr ""
 
-#: contrib/config-daemon.scm:1297 contrib/config-client.scm:353
+#: contrib/config-daemon.scm:1297 contrib/config-client.scm:365
 msgid "Root node"
 msgstr ""
 
@@ -821,15 +821,30 @@ msgid ""
 "only sense for the split-library."
 msgstr ""
 
+#: contrib/config-client.scm:257
+msgid "How many entries should the URI DB table have?"
+msgstr ""
+
 #: contrib/config-client.scm:258
+msgid ""
+"GNUnet uses two bytes per entry on the disk.  This database is used to keep "
+"track of how a particular URI has been used in the past.  For example, "
+"GNUnet may remember that a particular URI has been found in a search "
+"previously or corresponds to a file uploaded by the user.  This information "
+"can then be used by user-interfaces to filter URI lists, such as search "
+"results.  If the database is full, older entries will be discarded.  The "
+"default value should be sufficient without causing undue disk utilization."
+msgstr ""
+
+#: contrib/config-client.scm:269
 msgid "File-Sharing options"
 msgstr ""
 
-#: contrib/config-client.scm:273
+#: contrib/config-client.scm:285
 msgid "Which plugins should be loaded by gnunet-gtk?"
 msgstr ""
 
-#: contrib/config-client.scm:274
+#: contrib/config-client.scm:286
 msgid ""
 "Load the about plugin for the about dialog.  The daemon plugin allows "
 "starting and stopping of gnunetd and displays information about gnunetd.  "
@@ -837,39 +852,39 @@ msgid ""
 "displays various statistics about gnunetd."
 msgstr ""
 
-#: contrib/config-client.scm:285
+#: contrib/config-client.scm:297
 msgid "How frequently (in milli-seconds) should the statistics update?"
 msgstr ""
 
-#: contrib/config-client.scm:286
+#: contrib/config-client.scm:298
 msgid ""
 "Each pixel in the stats dialog corresponds to the time interval specified "
 "here."
 msgstr ""
 
-#: contrib/config-client.scm:298
+#: contrib/config-client.scm:310
 msgid "Do not show thumbnail previews from meta-data in search results"
 msgstr ""
 
-#: contrib/config-client.scm:299
+#: contrib/config-client.scm:311
 msgid ""
 "This option is useful for people who maybe offended by some previews or use "
 "gnunet-gtk at work and would like to avoid bad surprises."
 msgstr ""
 
-#: contrib/config-client.scm:310
+#: contrib/config-client.scm:322
 msgid "To which directory should gnunet-gtk save downloads to?"
 msgstr ""
 
-#: contrib/config-client.scm:322
+#: contrib/config-client.scm:334
 msgid "Options related to gnunet-gtk"
 msgstr ""
 
-#: contrib/config-client.scm:341
+#: contrib/config-client.scm:353
 msgid "Full pathname of GNUnet client HOME directory"
 msgstr ""
 
-#: contrib/config-client.scm:342
+#: contrib/config-client.scm:354
 msgid "The directory for GNUnet files that belong to the user."
 msgstr ""
 
@@ -1530,7 +1545,7 @@ msgid "HTTP: Could not determine my public IP address.\n"
 msgstr ""
 
 #: src/transports/http.c:753 src/transports/http.c:826
-#: src/transports/http.c:950 src/transports/http.c:1036
+#: src/transports/http.c:950 src/transports/http.c:1035
 #: src/transports/upnp/upnp.c:335 src/transports/upnp/upnp.c:560
 #: src/applications/bootstrap_http/http.c:121
 #: src/applications/bootstrap_http/http.c:261
@@ -1544,21 +1559,21 @@ msgstr ""
 msgid "%s failed at %s:%d: `%s'\n"
 msgstr ""
 
-#: src/transports/http.c:1226
+#: src/transports/http.c:1225
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:1234
+#: src/transports/http.c:1233
 msgid "# bytes received via HTTP"
 msgstr ""
 
-#: src/transports/http.c:1236
+#: src/transports/http.c:1235
 msgid "# bytes sent via HTTP"
 msgstr ""
 
-#: src/transports/http.c:1238
+#: src/transports/http.c:1237
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr ""
 
@@ -1710,25 +1725,9 @@ msgstr ""
 msgid "Received malformed message from udp-peer connection. Closing.\n"
 msgstr ""
 
-#: src/applications/dht/tools/dhttest2.c:45
-#: src/applications/session/sessiontest.c:42
-#: src/applications/stats/statistics.c:229
-#: src/applications/tbench/tbenchtest.c:101
-#: src/applications/tbench/tbenchtest_udp.c:100
-#: src/applications/gap/gaptest.c:49
-msgid "# of connected peers"
-msgstr ""
-
-#: src/applications/dht/tools/dhttest2.c:160
-#, c-format
-msgid "Waiting for gnunetd to start (%u iterations left)...\n"
-msgstr ""
-
-#: src/applications/dht/tools/dhttest2.c:173
-#: src/applications/tbench/tbenchtest.c:117
-#: src/applications/tbench/tbenchtest_udp.c:116
-#, c-format
-msgid "Waiting for peers to connect (%u iterations left)...\n"
+#: src/applications/dht/tools/dhttest2.c:46
+#: src/applications/dht/module/table.c:701
+msgid "# dht connections"
 msgstr ""
 
 #: src/applications/dht/tools/dht-query.c:55
@@ -1792,10 +1791,6 @@ msgstr ""
 
 #: src/applications/dht/module/cs.c:249
 msgid "Enables efficient non-anonymous routing"
-msgstr ""
-
-#: src/applications/dht/module/table.c:701
-msgid "# dht connections"
 msgstr ""
 
 #: src/applications/dht/module/table.c:702
@@ -2028,27 +2023,26 @@ msgstr ""
 
 #: src/applications/sqstore_sqlite/sqlite.c:46
 #: src/applications/sqstore_sqlite/sqlite.c:53
-#: src/applications/sqstore_mysql/mysql.c:138
-#: src/applications/sqstore_mysql/mysql.c:145
-#: src/applications/sqstore_mysql/mysql.c:423
-#: src/applications/sqstore_mysql/mysql.c:754
-#: src/applications/sqstore_mysql/mysql.c:770
-#: src/applications/sqstore_mysql/mysql.c:780
-#: src/applications/sqstore_mysql/mysql.c:805
-#: src/applications/sqstore_mysql/mysql.c:816
-#: src/applications/sqstore_mysql/mysql.c:873
-#: src/applications/sqstore_mysql/mysql.c:960
-#: src/applications/sqstore_mysql/mysql.c:971
-#: src/applications/sqstore_mysql/mysql.c:1035
-#: src/applications/sqstore_mysql/mysql.c:1051
-#: src/applications/sqstore_mysql/mysql.c:1061
-#: src/applications/sqstore_mysql/mysql.c:1085
-#: src/applications/sqstore_mysql/mysql.c:1096
-#: src/applications/sqstore_mysql/mysql.c:1108
-#: src/applications/sqstore_mysql/mysql.c:1171
-#: src/applications/sqstore_mysql/mysql.c:1183
-#: src/applications/sqstore_mysql/mysql.c:1234
-#: src/applications/sqstore_mysql/mysql.c:1249
+#: src/applications/sqstore_mysql/mysql.c:139
+#: src/applications/sqstore_mysql/mysql.c:146
+#: src/applications/sqstore_mysql/mysql.c:795
+#: src/applications/sqstore_mysql/mysql.c:811
+#: src/applications/sqstore_mysql/mysql.c:821
+#: src/applications/sqstore_mysql/mysql.c:846
+#: src/applications/sqstore_mysql/mysql.c:857
+#: src/applications/sqstore_mysql/mysql.c:914
+#: src/applications/sqstore_mysql/mysql.c:1001
+#: src/applications/sqstore_mysql/mysql.c:1012
+#: src/applications/sqstore_mysql/mysql.c:1076
+#: src/applications/sqstore_mysql/mysql.c:1092
+#: src/applications/sqstore_mysql/mysql.c:1102
+#: src/applications/sqstore_mysql/mysql.c:1126
+#: src/applications/sqstore_mysql/mysql.c:1137
+#: src/applications/sqstore_mysql/mysql.c:1149
+#: src/applications/sqstore_mysql/mysql.c:1212
+#: src/applications/sqstore_mysql/mysql.c:1224
+#: src/applications/sqstore_mysql/mysql.c:1276
+#: src/applications/sqstore_mysql/mysql.c:1291
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/applications/dstore/dstore.c:91 src/applications/dstore/dstore.c:178
@@ -2068,9 +2062,9 @@ msgstr ""
 
 #: src/applications/sqstore_sqlite/sqlite.c:357
 #: src/applications/sqstore_sqlite/sqlite.c:378
-#: src/applications/sqstore_mysql/mysql.c:260
-#: src/applications/sqstore_mysql/mysql.c:834
-#: src/applications/sqstore_mysql/mysql.c:1123
+#: src/applications/sqstore_mysql/mysql.c:261
+#: src/applications/sqstore_mysql/mysql.c:875
+#: src/applications/sqstore_mysql/mysql.c:1164
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
@@ -2080,9 +2074,14 @@ msgstr ""
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1342
-#: src/applications/sqstore_mysql/mysql.c:1310
+#: src/applications/sqstore_sqlite/sqlite.c:1369
+#: src/applications/sqstore_mysql/mysql.c:1352
 msgid "# bytes in datastore"
+msgstr ""
+
+#: src/applications/session/sessiontest.c:43
+#: src/applications/stats/statistics.c:229
+msgid "# of connected peers"
 msgstr ""
 
 #: src/applications/session/connect.c:257
@@ -2207,18 +2206,25 @@ msgstr ""
 msgid "async RPC reply not received.\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:261
-#: src/applications/sqstore_mysql/mysql.c:835
-#: src/applications/sqstore_mysql/mysql.c:1124
+#: src/applications/sqstore_mysql/mysql.c:262
+#: src/applications/sqstore_mysql/mysql.c:876
+#: src/applications/sqstore_mysql/mysql.c:1165
 msgid "mysql datastore"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:1340
+#: src/applications/sqstore_mysql/mysql.c:424
+#, c-format
+msgid ""
+"`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%"
+"s\n"
+msgstr ""
+
+#: src/applications/sqstore_mysql/mysql.c:1382
 #, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:1363
+#: src/applications/sqstore_mysql/mysql.c:1405
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
@@ -2248,49 +2254,49 @@ msgstr ""
 msgid "Failed to access GNUnet home directory `%s'\n"
 msgstr ""
 
-#: src/applications/identity/hostkey.c:157
+#: src/applications/identity/hostkey.c:154
 #, c-format
 msgid ""
 "Existing hostkey in file `%s' failed format check, creating new hostkey.\n"
 msgstr ""
 
-#: src/applications/identity/hostkey.c:165
+#: src/applications/identity/hostkey.c:162
 msgid "Creating new hostkey (this may take a while).\n"
 msgstr ""
 
-#: src/applications/identity/hostkey.c:178
+#: src/applications/identity/hostkey.c:175
 msgid "Done creating hostkey.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:346
+#: src/applications/identity/identity.c:347
 #, c-format
 msgid ""
 "File `%s' in directory `%s' does not match naming convention. Removed.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:359
+#: src/applications/identity/identity.c:360
 #, c-format
 msgid ""
 "Directory `%s' in directory `%s' does not match naming convention. Removed.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:396
+#: src/applications/identity/identity.c:397
 #, c-format
 msgid "Still no peers found in `%s'!\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:686
-#: src/applications/identity/identity.c:706
+#: src/applications/identity/identity.c:687
+#: src/applications/identity/identity.c:707
 #, c-format
 msgid "Removed file `%s' containing invalid hello data.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:759
+#: src/applications/identity/identity.c:760
 #, c-format
 msgid "Signature failed verification: peer `%s' not known.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:768
+#: src/applications/identity/identity.c:769
 msgid "Signature failed verification: signature invalid.\n"
 msgstr ""
 
@@ -2802,34 +2808,34 @@ msgid ""
 "Did not receive the message from gnunetd. Is gnunetd running?\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:51
-#: src/applications/tbench/tbenchtest_udp.c:50
+#: src/applications/tbench/tbenchtest.c:53
+#: src/applications/tbench/tbenchtest_udp.c:55
 #, c-format
 msgid "Using %u messages of size %u for %u times.\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:78
-#: src/applications/tbench/tbenchtest_udp.c:77
+#: src/applications/tbench/tbenchtest.c:80
+#: src/applications/tbench/tbenchtest_udp.c:82
 #, c-format
 msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:83
-#: src/applications/tbench/tbenchtest_udp.c:82
+#: src/applications/tbench/tbenchtest.c:85
+#: src/applications/tbench/tbenchtest_udp.c:87
 #, c-format
 msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:89
-#: src/applications/tbench/tbenchtest_udp.c:88
+#: src/applications/tbench/tbenchtest.c:91
+#: src/applications/tbench/tbenchtest_udp.c:93
 #, c-format
 msgid ""
 "\n"
 "Failed to receive reply from gnunetd.\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:212
-#: src/applications/tbench/tbenchtest_udp.c:211
+#: src/applications/tbench/tbenchtest.c:148
+#: src/applications/tbench/tbenchtest_udp.c:152
 #, c-format
 msgid "Running benchmark...\n"
 msgstr ""
@@ -2905,112 +2911,112 @@ msgstr ""
 msgid "allows mapping of the network topology"
 msgstr ""
 
-#: src/applications/gap/gap.c:1690
+#: src/applications/gap/gap.c:1707
 #, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1691
+#: src/applications/gap/gap.c:1708
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1865
+#: src/applications/gap/gap.c:1884
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1877 src/applications/fs/module/anonymity.c:67
+#: src/applications/gap/gap.c:1896 src/applications/fs/module/anonymity.c:67
 msgid "Failed to get traffic stats.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1884 src/applications/gap/gap.c:1890
-#: src/applications/gap/gap.c:1897
+#: src/applications/gap/gap.c:1903 src/applications/gap/gap.c:1909
+#: src/applications/gap/gap.c:1916
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2181
+#: src/applications/gap/gap.c:2202
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/gap/gap.c:2182
+#: src/applications/gap/gap.c:2203
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2183
+#: src/applications/gap/gap.c:2204
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2184
+#: src/applications/gap/gap.c:2205
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2185
+#: src/applications/gap/gap.c:2206
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2186
+#: src/applications/gap/gap.c:2207
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2187
+#: src/applications/gap/gap.c:2208
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2188
+#: src/applications/gap/gap.c:2209
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2189
+#: src/applications/gap/gap.c:2210
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2190
+#: src/applications/gap/gap.c:2211
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2191
+#: src/applications/gap/gap.c:2212
 msgid "# gap duplicate requests that were re-tried"
 msgstr ""
 
-#: src/applications/gap/gap.c:2192
+#: src/applications/gap/gap.c:2213
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2193
+#: src/applications/gap/gap.c:2214
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2194
+#: src/applications/gap/gap.c:2215
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2195
+#: src/applications/gap/gap.c:2216
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2196
+#: src/applications/gap/gap.c:2217
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2197
+#: src/applications/gap/gap.c:2218
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2198
+#: src/applications/gap/gap.c:2219
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2199
+#: src/applications/gap/gap.c:2220
 msgid "# gap response weights"
 msgstr ""
 
-#: src/applications/gap/gap.c:2215
+#: src/applications/gap/gap.c:2236
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2243
+#: src/applications/gap/gap.c:2264
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -3533,19 +3539,19 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1139
+#: src/applications/fs/module/fs.c:1146
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
 "s'.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1180
+#: src/applications/fs/module/fs.c:1188
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1220
+#: src/applications/fs/module/fs.c:1228
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -3568,11 +3574,11 @@ msgstr ""
 msgid "AND"
 msgstr ""
 
-#: src/applications/fs/fsui/search.c:275
+#: src/applications/fs/fsui/search.c:281
 msgid "Error running search (no reason given)."
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:267
+#: src/applications/fs/fsui/download.c:308
 msgid "Download failed (no reason given)"
 msgstr ""
 
@@ -3580,7 +3586,7 @@ msgstr ""
 msgid "Unindexing failed (no reason given)"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:269
+#: src/applications/fs/fsui/upload.c:281
 msgid "Failed to create temporary directory."
 msgstr ""
 
@@ -3597,23 +3603,23 @@ msgstr ""
 msgid "LOC URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:124
+#: src/applications/fs/ecrs/download.c:125
 #, c-format
 msgid "Could not unlink temporary file `%s': %s\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:255
+#: src/applications/fs/ecrs/download.c:269
 #, c-format
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:1001
+#: src/applications/fs/ecrs/download.c:1042
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:1186
+#: src/applications/fs/ecrs/download.c:1228
 #, c-format
 msgid ""
 "Content `%s' seems to be not available on the network (tried %u times).\n"
@@ -3674,20 +3680,20 @@ msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
 msgstr ""
 
 #: src/applications/fs/ecrs/namespace.c:339
-#: src/applications/fs/ecrs/namespace.c:420
-#: src/applications/fs/ecrs/namespace.c:575
+#: src/applications/fs/ecrs/namespace.c:421
+#: src/applications/fs/ecrs/namespace.c:578
 #, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr ""
 
 #: src/applications/fs/ecrs/namespace.c:351
-#: src/applications/fs/ecrs/namespace.c:431
+#: src/applications/fs/ecrs/namespace.c:432
 #, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/namespace.c:589
-#: src/applications/fs/ecrs/namespace.c:600
+#: src/applications/fs/ecrs/namespace.c:592
+#: src/applications/fs/ecrs/namespace.c:603
 #, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr ""
@@ -3777,7 +3783,7 @@ msgstr ""
 msgid "# bytes received of type %d"
 msgstr ""
 
-#: src/applications/traffic/traffic.c:609
+#: src/applications/traffic/traffic.c:610
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr ""
 
@@ -4072,73 +4078,73 @@ msgstr ""
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr ""
 
-#: src/server/connection.c:2630
+#: src/server/connection.c:2631
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:2708
+#: src/server/connection.c:2709
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:2725
+#: src/server/connection.c:2726
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:3166
+#: src/server/connection.c:3167
 msgid "# outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:3170
+#: src/server/connection.c:3171
 msgid "# bytes of outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:3172
+#: src/server/connection.c:3173
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:3175
+#: src/server/connection.c:3176
 msgid "# bytes encrypted"
 msgstr ""
 
-#: src/server/connection.c:3179
+#: src/server/connection.c:3180
 msgid "# bytes transmitted"
 msgstr ""
 
-#: src/server/connection.c:3183
+#: src/server/connection.c:3184
 msgid "# bytes received"
 msgstr ""
 
-#: src/server/connection.c:3186
+#: src/server/connection.c:3187
 msgid "# bytes decrypted"
 msgstr ""
 
-#: src/server/connection.c:3188
+#: src/server/connection.c:3189
 msgid "# bytes noise sent"
 msgstr ""
 
-#: src/server/connection.c:3190
+#: src/server/connection.c:3191
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3192
+#: src/server/connection.c:3193
 msgid "# total bytes per second receive limit"
 msgstr ""
 
-#: src/server/connection.c:3194
+#: src/server/connection.c:3195
 msgid "# total number of messages in send buffers"
 msgstr ""
 
-#: src/server/connection.c:3196
+#: src/server/connection.c:3197
 msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
-#: src/server/connection.c:3198
+#: src/server/connection.c:3199
 msgid "# total number of bytes we were allowed to sent"
 msgstr ""
 
-#: src/server/connection.c:3200
+#: src/server/connection.c:3201
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
@@ -4357,14 +4363,14 @@ msgstr ""
 msgid "`%s' failed for port %d. Is gnunetd already running?\n"
 msgstr ""
 
-#: src/server/tcpserver.c:387
+#: src/server/tcpserver.c:396
 #, c-format
 msgid ""
 "Malformed network specification in the configuration in section `%s' for "
 "entry `%s': %s\n"
 msgstr ""
 
-#: src/server/tcpserver.c:440
+#: src/server/tcpserver.c:448
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr ""
@@ -4565,39 +4571,39 @@ msgstr ""
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr ""
 
-#: src/util/disk/storage.c:201
+#: src/util/disk/storage.c:202
 #, c-format
 msgid "`%s' failed for drive `%s': %u\n"
 msgstr ""
 
-#: src/util/disk/storage.c:518
+#: src/util/disk/storage.c:519
 #, c-format
 msgid "Expected `%s' to be a directory!\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:275
+#: src/util/config_impl/impl.c:289
 #, c-format
 msgid "Syntax error in configuration file `%s' at line %d.\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:518
+#: src/util/config_impl/impl.c:532
 #, c-format
 msgid "Setting option `%s' in section `%s' to value `%s' was refused.\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:564
+#: src/util/config_impl/impl.c:578
 #, c-format
 msgid ""
 "Configuration value '%llu' for '%s' in section '%s' is out of legal bounds [%"
 "llu,%llu]\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:576
+#: src/util/config_impl/impl.c:590
 #, c-format
 msgid "Configuration value '%s' for '%s' in section '%s' should be a number\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:666
+#: src/util/config_impl/impl.c:680
 #, c-format
 msgid ""
 "Configuration value '%s' for '%s' in section '%s' is not in set of legal "
@@ -4608,66 +4614,66 @@ msgstr ""
 msgid "Error log:\n"
 msgstr ""
 
-#: src/util/error/error.c:138
+#: src/util/error/error.c:140
 #, c-format
 msgid ""
 "\n"
 "Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:206 src/util/error/error.c:250
+#: src/util/error/error.c:208 src/util/error/error.c:252
 msgid "DEBUG"
 msgstr ""
 
-#: src/util/error/error.c:209 src/util/error/error.c:252
+#: src/util/error/error.c:211 src/util/error/error.c:254
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:212 src/util/error/error.c:256
+#: src/util/error/error.c:214 src/util/error/error.c:258
 msgid "WARNING"
 msgstr ""
 
-#: src/util/error/error.c:215 src/util/error/error.c:258
+#: src/util/error/error.c:217 src/util/error/error.c:260
 msgid "ERROR"
 msgstr ""
 
-#: src/util/error/error.c:218 src/util/error/error.c:260
+#: src/util/error/error.c:220 src/util/error/error.c:262
 msgid "FATAL"
 msgstr ""
 
-#: src/util/error/error.c:221 src/util/error/error.c:262
+#: src/util/error/error.c:223 src/util/error/error.c:264
 msgid "USER"
 msgstr ""
 
-#: src/util/error/error.c:224 src/util/error/error.c:264
+#: src/util/error/error.c:226 src/util/error/error.c:266
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:227 src/util/error/error.c:266
+#: src/util/error/error.c:229 src/util/error/error.c:268
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:230 src/util/error/error.c:268
+#: src/util/error/error.c:232 src/util/error/error.c:270
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:233 src/util/error/error.c:270
+#: src/util/error/error.c:235 src/util/error/error.c:272
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:236 src/util/error/error.c:272
+#: src/util/error/error.c:238 src/util/error/error.c:274
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:239
+#: src/util/error/error.c:241
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:254
+#: src/util/error/error.c:256
 msgid "INFO"
 msgstr ""
 
-#: src/util/error/error.c:273
+#: src/util/error/error.c:275
 msgid "NOTHING"
 msgstr ""
 

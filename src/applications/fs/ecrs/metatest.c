@@ -154,9 +154,8 @@ int testMetaMore(int i) {
 				     data,
 				     size * 4,
 				     ECRS_SERIALIZE_FULL)) {
-    ECRS_freeMetaData(meta);
     FREE(data);
-    ABORT();
+    ABORT(meta);
   }
   ECRS_freeMetaData(meta);
   FREE(data);
