@@ -313,6 +313,20 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   'advanced) )
  
 
+
+(define (general-autostart builder)
+ (builder
+ "GNUNETD"
+ "AUTOSTART"
+ (_ "Should gnunetd be automatically started when the system boots?")
+ (_ "Set to YES if gnunetd should be automatically started on boot.  If this option is set, gnunet-setup will install a script to start the daemon upon completion.  This option may not work on all systems.")
+ '()
+ #t
+ #f
+ #f
+ 'rare) )
+
+
 (define (general-transports builder)
  (builder
   "GNUNETD"
@@ -545,6 +559,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (network-port builder) 
     (network-trusted builder) 
     (general-username builder) 
+    (general-autostart builder) 
     (general-transports builder) 
     (general-applications builder) 
   )
