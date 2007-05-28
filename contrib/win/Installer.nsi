@@ -245,6 +245,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetecrs-0.dll"
 			File "C:\GNUnet\bin\libgnunetfs-0.dll"
 			File "C:\GNUnet\bin\libgnunetfsui-0.dll"
+      File "C:\GNUnet\bin\libgnunetidentity_api-0.dll"
 			File "C:\GNUnet\bin\libgnunetnamespace-0.dll"
 			File "C:\GNUnet\bin\libgnuneturitrack-0.dll"			
 			SectionEnd
@@ -861,7 +862,8 @@ Section Uninstall
   Delete "$INSTDIR\bin\ibgnunetmodule_dstore.dll"
 	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
-	Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
+  Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
+  Delete "$INSTDIR\bin\libgnunetidentity_api-0.dll"
 	Delete "$INSTDIR\bin\libgnuneturitrack-0.dll"
 	Delete "$INSTDIR\bin\libgnunetnamespace-0.dll"
 	Delete "$INSTDIR\bin\libgnunetcollection-0.dll"
