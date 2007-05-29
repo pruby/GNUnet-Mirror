@@ -22,6 +22,7 @@ libxml2.m4\
 longdouble.m4\
 longlong.m4\
 mkdir.m4\
+mkdirp.m4\
 nls.m4\
 pkg.m4\
 po.m4\
