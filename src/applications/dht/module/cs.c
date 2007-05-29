@@ -202,18 +202,18 @@ static int csGet(struct ClientHandle * client,
  */
 static void csClientExit(struct ClientHandle * client) {
   unsigned int i;
-  DHT_CLIENT_GET_RECORD * gr;
+  struct DHT_GET_RECORD * gr;
 
   MUTEX_LOCK(lock);
   for (i=0;i<getRecordsSize;i++) {
     if (getRecords[i]->client == client) {
-      gr = getRecords[i];
+      gr = getRecords[i]->get_record;
       getRecords[i] = getRecords[getRecordsSize-1];
       GROW(getRecords,
 	   getRecordsSize,
 	   getRecordsSize-1);
       MUTEX_UNLOCK(lock);
-      dhtAPI->get_stop(gr->get_record);
+      dhtAPI->get_stop(gr);
       MUTEX_LOCK(lock);
     }
   }
