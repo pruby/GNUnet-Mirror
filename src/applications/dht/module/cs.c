@@ -97,9 +97,9 @@ static int csPut(struct ClientHandle * client,
   return OK;
 }
 
- int get_result(const HashCode512 * key,
-		      const DataContainer * value,
-		      void * cls) {
+int get_result(const HashCode512 * key,
+	       const DataContainer * value,
+	       void * cls) {
   DHT_CLIENT_GET_RECORD * record = cls;
   CS_dht_request_put_MESSAGE * msg;
   size_t n;
@@ -143,8 +143,9 @@ static int csPut(struct ClientHandle * client,
 static void get_timeout(void * cls) {
   DHT_CLIENT_GET_RECORD * record = cls;
   int i;
+  int found;
 
-  dhtAPI->get_stop(record->get_record);
+  found = NO;
   MUTEX_LOCK(lock);
   for (i=getRecordsSize-1;i>=0;i--)
     if (getRecords[i] == record) {
@@ -152,10 +153,14 @@ static void get_timeout(void * cls) {
       GROW(getRecords,
 	   getRecordsSize,
 	   getRecordsSize-1);
+      found = YES;
       break;
     }
   MUTEX_UNLOCK(lock);
-  FREE(record);
+  if (found == YES) {
+    dhtAPI->get_stop(record->get_record);
+    FREE(record);
+  }
 }
 
 /**
@@ -201,20 +206,23 @@ static int csGet(struct ClientHandle * client,
  * get_stop for all operations that rely on this client.
  */
 static void csClientExit(struct ClientHandle * client) {
-  unsigned int i;
+  int i;
   struct DHT_GET_RECORD * gr;
-
+  DHT_CLIENT_GET_RECORD * cgr;
   MUTEX_LOCK(lock);
   for (i=0;i<getRecordsSize;i++) {
-    if (getRecords[i]->client == client) {
-      gr = getRecords[i]->get_record;
+    cgr = getRecords[i]; 
+    if (cgr->client == client) {
+      gr = cgr->get_record;
       getRecords[i] = getRecords[getRecordsSize-1];
       GROW(getRecords,
 	   getRecordsSize,
 	   getRecordsSize-1);
       MUTEX_UNLOCK(lock);
       dhtAPI->get_stop(gr);
+      FREE(cgr);
       MUTEX_LOCK(lock);
+      i--;
     }
   }
   MUTEX_UNLOCK(lock);
