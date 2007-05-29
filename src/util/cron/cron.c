@@ -521,7 +521,7 @@ static void runJob(struct CronManager * cron) {
 		 data);
   }
   /* run */
-#if DEBUG_CRON
+#if DEBUG_CRON 
   GE_LOG(cron->ectx,
 	 GE_STATUS | GE_DEVELOPER | GE_BULK,
 	 "running job %p-%p\n",
@@ -530,13 +530,13 @@ static void runJob(struct CronManager * cron) {
 #endif
   method(data);
   MUTEX_LOCK(cron->deltaListLock_);
-  cron->runningJob_ = NULL;
-#if DEBUG_CRON
+  cron->runningJob_ = NULL;  
+#if DEBUG_CRON 
   GE_LOG(cron->ectx,
 	 GE_STATUS | GE_DEVELOPER | GE_BULK,
 	 "job %p-%p done\n",
 	 method,
-	 data);
+	 data);  
 #endif
 }
 

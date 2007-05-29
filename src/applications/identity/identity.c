@@ -787,7 +787,8 @@ static int blacklistHost(const PeerIdentity * identity,
   HostEntry * entry;
   int i;
 
-  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx,
+	    numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(lock_);
   entry = findHost(identity);
   if (entry == NULL) {
@@ -1069,8 +1070,12 @@ static int discardHostsHelper(const char *filename,
   struct stat hostStat;
   int hostFile;
 
-  fn = (char *) MALLOC(strlen(filename) + strlen(dirname) + 2);
-  sprintf(fn, "%s%s%s", dirname, DIR_SEPARATOR_STR, filename);
+  fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
+  sprintf(fn, 
+	  "%s%s%s",
+	  dirname,
+	  DIR_SEPARATOR_STR,
+	  filename);
   hostFile = disk_file_open(ectx,
 			    fn,
 			    O_WRONLY);

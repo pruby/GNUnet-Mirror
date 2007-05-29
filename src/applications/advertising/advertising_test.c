@@ -33,7 +33,7 @@
 
 #define NUM_PEERS 12
 
-#define NUM_ROUNDS 3000
+#define NUM_ROUNDS 10
 
 static int countConnections(const char * name,
 			    unsigned long long value,
@@ -129,7 +129,7 @@ int main(int argc,
 	    found, 
 	    k,
 	    min);
-    PTHREAD_SLEEP(15 * cronSECONDS);
+    PTHREAD_SLEEP(45 * cronSECONDS); /* one hello-forward round is 45s! */
   }
   gnunet_testing_stop_daemons(peers);
   GC_free(cfg);

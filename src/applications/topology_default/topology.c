@@ -39,7 +39,7 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
-#define DEBUG_TOPOLOGY NO
+#define DEBUG_TOPOLOGY YES
 
 /**
  * After 2 minutes on an inactive connection, probe the other
@@ -221,7 +221,7 @@ static void scanForHosts(unsigned int index) {
 		   0,
 		   0);
   identity->blacklistHost(&indexMatch.match,
-			  600 + (int) (saturation * 600),
+			  (int) (saturation * 300),
 			  NO);
 }
 
@@ -291,12 +291,13 @@ static void cronCheckLiveness(void * unused) {
     minint = 10;
   if (minint == 0)
     minint = 1;
-  for (i=slotCount-1;i>=0;i--) {
-    if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
-      continue;
-    if ( (minint > coreAPI->isSlotUsed(i)) &&
-	 (NO == autoconnect) )
-      scanForHosts(i);
+  if (NO == autoconnect) {
+    for (i=slotCount-1;i>=0;i--) {
+      if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
+	continue;
+      if (minint > coreAPI->isSlotUsed(i))	
+	scanForHosts(i);
+    }
   }
   active = coreAPI->forAllConnectedNodes
     (&checkNeedForPing,

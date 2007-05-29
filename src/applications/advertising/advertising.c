@@ -48,9 +48,9 @@
 
 /**
  * From time to time, forward one hello from one peer to
- * a random other peer.
+ * a random other peer. 
  */
-#define HELLO_FORWARD_FREQUENCY (4 * cronMINUTES)
+#define HELLO_FORWARD_FREQUENCY (45 * cronSECONDS) 
 
 /**
  * Meanings of the bits in activeCronJobs (ACJ).
@@ -555,8 +555,8 @@ static void forwardCallback(const PeerIdentity * peer,
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
-  if (weak_randomi(fcc->prob) != 0)
-    return; /* only forward with a certain chance */
+  if (weak_randomi(fcc->prob) != 0) 
+    return; /* only forward with a certain chance */  
   if (equalsHashCode512(&peer->hashPubKey,
 			&fcc->msg->senderIdentity.hashPubKey))
     return; /* do not bounce the hello of a peer back
@@ -735,22 +735,24 @@ configurationUpdateCallback(void * ctx,
     if (YES != GC_get_configuration_value_yesno(cfg,
 						"NETWORK",
 						"HELLOEXCHANGE",
-						YES))
+						YES)) {
       cron_del_job(coreAPI->cron,
 		   &forwardhello,
 		   HELLO_FORWARD_FREQUENCY,
 		   NULL); /* seven minutes: exchange */
+    }
     activeCronJobs -= ACJ_FORWARD;
   } else {
     if (YES == GC_get_configuration_value_yesno(cfg,
 						"NETWORK",
 						"HELLOEXCHANGE",
-						YES))
+						YES)) {
       cron_add_job(coreAPI->cron,
 		   &forwardhello,
 		   15 * cronSECONDS,
 		   HELLO_FORWARD_FREQUENCY,
 		   NULL);
+    }
     activeCronJobs += ACJ_FORWARD;
   }
   return 0;
