@@ -853,7 +853,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  (builder
  "TCP"
  "WHITELIST"
- (_ "Which IPs are allowed to connect? Leave empty to allow connections from any IP.")
+ (_ "Which IPs are allowed to connect? Leave empty to use the IP of your primary network interface.")
  (nohelp)
  '()
  #t
