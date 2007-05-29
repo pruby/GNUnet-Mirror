@@ -165,5 +165,61 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
   return result;
 }
 
+/**
+ * Request information about all known peers
+ *
+ * @return SYSERR if iteration was aborted, 
+ *         otherwise number of peers known
+ */
+int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
+				       GNUnetIdentityPeerInfoCallback callback,
+				       void * cls) {
+  MESSAGE_HEADER req;
+  MESSAGE_HEADER * reply;
+  CS_identity_peer_info_MESSAGE * info;
+  unsigned int count;
+
+  req.size = htons(sizeof(MESSAGE_HEADER));
+  req.type = htons(CS_PROTO_identity_request_INFO);
+  if (SYSERR == connection_write(sock,
+				 &req))
+    return SYSERR;
+  count = 0;
+  while (OK == connection_read(sock,
+			       &reply)) {
+    if (ntohs(reply->size) < sizeof(MESSAGE_HEADER)) {
+      GE_BREAK(NULL, 0);
+      FREE(reply);
+      return SYSERR;
+    }
+    if (ntohs(reply->type) == CS_PROTO_RETURN_VALUE) {
+      FREE(reply);
+      return count;
+    }
+    count++;
+    if ( (ntohs(reply->type) != CS_PROTO_identity_INFO) ||
+	 (ntohs(reply->size) <= sizeof(CS_identity_peer_info_MESSAGE)) ||
+	 ( ((char*)reply)[ntohs(reply->size)-1] != '\0') ) {
+      GE_BREAK(NULL, 0);
+      FREE(reply);
+      return SYSERR;
+    }
+    if (callback != NULL) {
+      info = (CS_identity_peer_info_MESSAGE *) reply;
+      if (OK != callback(cls,
+			 &info->peer,
+			 (const char*) &info[1],
+			 ntohl(info->trust),
+			 ntohl(info->bpm))) {
+	FREE(reply);
+	return SYSERR;
+      }
+    }
+    FREE(reply);    
+  }
+  return SYSERR;
+}
+
+
 
 /* end of clientapi.c */

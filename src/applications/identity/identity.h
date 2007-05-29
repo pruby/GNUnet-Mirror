@@ -35,7 +35,6 @@ typedef struct {
   Signature sig;
 } CS_identity_signature_MESSAGE;
 
-
 /**
  * Format of the connection request.
  */
@@ -44,6 +43,24 @@ typedef struct {
 
   PeerIdentity other;
 } CS_identity_connect_MESSAGE;
+
+/**
+ * Format of the peer information response.
+ *
+ * Note that the struct is followed by a zero-terminated,
+ * variable-size string with the peer's address as given by the
+ * transport.
+ */
+typedef struct {
+  MESSAGE_HEADER header;
+
+  PeerIdentity peer;
+
+  unsigned int trust;
+
+  unsigned int bpm;
+} CS_identity_peer_info_MESSAGE;
+
 
 
 #endif

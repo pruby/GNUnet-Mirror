@@ -33,7 +33,7 @@
 
 #define NUM_PEERS 12
 
-#define NUM_ROUNDS 30
+#define NUM_ROUNDS 3000
 
 static int countConnections(const char * name,
 			    unsigned long long value,
@@ -90,11 +90,14 @@ int main(int argc,
 					     2087 + 10* ( (i+1) % NUM_PEERS))) {
       gnunet_testing_stop_daemons(peers);
       fprintf(stderr,
-	      "Failed to connect the peers!\n");
+	      "Failed to connect peers %d and %d!\n",
+	      i,
+	      (i+1) % NUM_PEERS);
       GC_free(cfg);
       return -1;    
     }
   }
+  PTHREAD_SLEEP(15 * cronSECONDS);
 
   /* check loops */
   for (k=0;k<NUM_ROUNDS;k++) {

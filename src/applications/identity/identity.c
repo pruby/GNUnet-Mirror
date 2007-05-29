@@ -1203,6 +1203,59 @@ static int identityRequestSignatureHandler(struct ClientHandle * sock,
 			       &reply.header);
 }
 
+static int hostInfoIterator(const PeerIdentity * identity,
+			    unsigned short protocol,
+			    int confirmed,
+			    void * data) {
+  struct ClientHandle * sock = data;
+  Transport_ServiceAPI * transport;
+  CS_identity_peer_info_MESSAGE * reply;
+  P2P_hello_MESSAGE * hello;
+  char * address;
+  int ret;
+  
+  if (confirmed == NO)
+    return OK;
+  hello = identity2Helo(identity,
+			protocol,
+			YES);
+  if (hello == NULL)
+    return OK;
+  transport = coreAPI->requestService("transport");
+  address = transport->helloToString(hello,
+				     YES);
+  coreAPI->releaseService(transport);
+  if (address == NULL)
+    address = STRDUP("");
+  if (strlen(address)+1 >= MAX_BUFFER_SIZE - sizeof(CS_identity_peer_info_MESSAGE) ) {
+    FREE(address);
+    address = STRDUP("invalid");
+  }
+  reply = MALLOC(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
+  reply->header.size = htons(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
+  reply->header.type = htons(CS_PROTO_identity_INFO);
+  reply->peer = *identity;
+  reply->trust = htonl(getHostTrust(identity));
+  reply->bpm = htonl(coreAPI->queryBPMfromPeer(identity));
+  memcpy(&reply[1],
+	 address,
+	 strlen(address) + 1);
+  FREE(address);
+  ret = coreAPI->sendToClient(sock,
+			      &reply->header);
+  FREE(reply); 
+  return ret;
+}
+
+static int identityRequestInfoHandler(struct ClientHandle * sock,
+				      const MESSAGE_HEADER * message) {
+  forEachHost(get_time(),
+	      &hostInfoIterator,
+	      sock);
+  return coreAPI->sendValueToClient(sock,
+				    OK);
+}
+
 
 /**
  * Provide the Identity service.
@@ -1303,6 +1356,8 @@ provide_module_identity(CoreAPIForApplication * capi) {
 				 &identityRequestHelloHandler);
   coreAPI->registerClientHandler(CS_PROTO_identity_request_SIGN,
 				 &identityRequestSignatureHandler);
+  coreAPI->registerClientHandler(CS_PROTO_identity_request_INFO,
+				 &identityRequestInfoHandler);
   return &id;
 }
 
@@ -1322,6 +1377,8 @@ void release_module_identity() {
 				   &identityRequestHelloHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_identity_request_SIGN,
 				   &identityRequestSignatureHandler);
+  coreAPI->unregisterClientHandler(CS_PROTO_identity_request_INFO,
+				   &identityRequestInfoHandler);
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
     entry = &tempHosts[i];
     for (j=0;j<entry->heloCount;j++)

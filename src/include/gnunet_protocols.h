@@ -193,10 +193,21 @@ extern "C" {
 /* *********** messages for identity module ************* */
 
 /**
- * Client asks the daemon to try to connect to
- * a particular peer.
+ * Client asks daemon for information about
+ * all known peers
  */
-#define CS_PROTO_identity_CONNECT 27
+#define CS_PROTO_identity_request_INFO 25
+
+/**
+ * Deamon responds with information about a peer.
+ */
+#define CS_PROTO_identity_INFO 26
+
+/**
+ * Client asks the Daemon about how to contact
+ * it.
+ */
+#define CS_PROTO_identity_request_HELLO 27
 
 /**
  * Client informs the Daemon about how to contact
@@ -208,18 +219,19 @@ extern "C" {
 /**
  * Client asks the Daemon to sign a message.
  */
-#define CS_PROTO_identity_SIGNATURE 29
+#define CS_PROTO_identity_request_SIGN 29
 
 /**
- * Client asks the Daemon about how to contact
- * it.
+ * Daemon sends client a signature
  */
-#define CS_PROTO_identity_request_HELLO 30
+#define CS_PROTO_identity_SIGNATURE 30
 
 /**
- * Client asks the Daemon to sign a message.
+ * Client asks the daemon to try to connect to
+ * a particular peer.
  */
-#define CS_PROTO_identity_request_SIGN 31
+#define CS_PROTO_identity_CONNECT 31
+
 
 /* *********** messages for traffic module ************* */
 

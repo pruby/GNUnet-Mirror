@@ -74,6 +74,38 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
 int gnunet_identity_request_connect(struct ClientServerConnection * sock,
 				    const PeerIdentity * peer);
 
+
+/**
+ * Callback called to give information about all known peers
+ *
+ * @param trust amount of trust that this peer has earned
+ *        with us
+ * @param address address of the peer (as given by the
+ *        transport; likely to be an IP+PORT, but could
+ *        be anything!)
+ * @param bpmFromPeer 0 if peer is not connected, otherwise 
+ *        number of bytes per minute that we currently allow
+ *        this peer to sent to us
+ * @param identity the id of the node
+ * @return OK to continue to iterate, SYSERR to abort
+ */
+typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
+					      const PeerIdentity * identity,
+					      const char * address,
+					      unsigned int trust,
+					      unsigned int bpmFromPeer);
+
+/**
+ * Request information about all known peers
+ *
+ * @return SYSERR if iteration was aborted, 
+ *         otherwise number of peers known
+ */
+int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
+				       GNUnetIdentityPeerInfoCallback callback,
+				       void * cls);
+
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

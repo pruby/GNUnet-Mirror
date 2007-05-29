@@ -90,6 +90,8 @@ typedef struct {
 #define P2P_hello_MESSAGE_size(hello) ((sizeof(P2P_hello_MESSAGE) + ntohs((hello)->senderAddressSize)))
 
 
+
+
 /* ifndef GNUNET_UTIL_CORE_H */
 #endif
 /* end of gnunet_util_core.h */
