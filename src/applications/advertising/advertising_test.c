@@ -26,7 +26,7 @@
  *        time (more than what is given by default),
  *        the number should approach 100.
  *
- *        Note that data in /tmp (esp. data/hosts/*)
+ *        Note that data in /tmp (esp. data/hosts/ *)
  *        will mess with the results...
  * @author Christian Grothoff
  */
