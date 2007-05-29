@@ -27,7 +27,6 @@
 #include "gnunet_util_string.h"
 #include "gnunet_util_getopt.h"
 #include "platform.h"
-#include <ctype.h>
 
 #define BORDER 29
 

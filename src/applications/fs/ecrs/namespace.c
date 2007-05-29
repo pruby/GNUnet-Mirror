@@ -233,6 +233,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
 		       &nb->identifier,
 		       &nb->signature));
   if (OK != FS_insert(sock, value)) {
+    GE_BREAK(ectx, 0);
     FREE(rootURI);
     FREE(value);
     connection_destroy(sock);

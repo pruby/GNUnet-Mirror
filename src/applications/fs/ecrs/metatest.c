@@ -84,8 +84,10 @@ static int testMeta(int i) {
 	     j);
     if (OK != ECRS_addToMetaData(m,
 				 EXTRACTOR_UNKNOWN,
-				 val))
+				 val)) {
+      FREE(val);
       ABORT(m);
+    }
   }
   FREE(val);
   if (i != ECRS_getMetaData(m, NULL, NULL))

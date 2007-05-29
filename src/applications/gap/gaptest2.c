@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -260,8 +260,8 @@ int main(int argc, char ** argv) {
 				       "advertising topology fs stats",
 				       "/tmp/gnunet-gap-test",
 				       2087,
-				       10000,
-				       2);
+				       5000,
+				       8);
   if (peers == NULL) {
     fprintf(stderr,
 	    "Failed to start the gnunetd daemons!\n");
@@ -269,8 +269,18 @@ int main(int argc, char ** argv) {
     return -1;
   }
 #endif
-  if (OK != gnunet_testing_connect_daemons(2087,
-					   12087)) {
+  if ( (OK != gnunet_testing_connect_daemons(2087,
+					     7087)) ||
+       (OK != gnunet_testing_connect_daemons(7087,
+					     12087)) ||
+       (OK != gnunet_testing_connect_daemons(12087, 
+					     17087)) || 
+       (OK != gnunet_testing_connect_daemons(17087, 
+					     22087)) || 
+       (OK != gnunet_testing_connect_daemons(22087, 
+					     27087)) || 
+       (OK != gnunet_testing_connect_daemons(27087,
+					     32087)) ) {
     gnunet_testing_stop_daemons(peers);
     fprintf(stderr,
 	    "Failed to connect the peers!\n");
@@ -284,7 +294,7 @@ int main(int argc, char ** argv) {
 				    ectx,
 				    "NETWORK",
 				    "HOSTNAME",
-				    "localhost:12087");
+				    "localhost:32087");
   CHECK(OK == searchFile(&uri));
   CHECK(OK == downloadFile(12345, uri));
   ECRS_freeUri(uri);
@@ -304,4 +314,4 @@ int main(int argc, char ** argv) {
   return ret;
 }
 
-/* end of gaptest.c */
+/* end of gaptest2.c */

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -54,7 +54,7 @@ static int waitForConnect(const char * name,
 #define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
- * Testcase to test gap routing (2 peers only).
+ * Testcase to test DHT routing (many peers).
  * @return 0: ok, -1: error
  */
 int main(int argc,
@@ -148,7 +148,7 @@ int main(int argc,
 			    ectx,
 			    &key,
 			    DHT_STRING2STRING_BLOCK,
-			    get_time() + 15 * cronMINUTES,
+			    get_time() + 15 * cronMINUTES * NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
 			    value));
   }
 
@@ -177,7 +177,7 @@ int main(int argc,
 			    ectx,
 			    DHT_STRING2STRING_BLOCK,
 			     &key,
-			    5 * cronSECONDS,
+			    (NUM_ROUNDS - k) * cronSECONDS,
 			    NULL,
 			    NULL)) {
 	  fprintf(stderr,

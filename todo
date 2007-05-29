@@ -16,9 +16,7 @@ notes:
   * XFS -- TEST more! [RC] 
   * HTTP transport (libcurl, libmicrohttpd)
 - testcases (fix, add):
-  * ecrs_core -- implement actual testcase, harness is there! [RC]
   * gap (incl. economy) [RC]
-  * advertising [RC]
 
 
 0.7.3 [6'07] (aka "features"):

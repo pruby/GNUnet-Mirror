@@ -20,6 +20,7 @@ TESTS = $(check_PROGRAMS)
 ecrs_core_test_SOURCES = \
   ecrs_core_test.c 
 ecrs_core_test_LDADD = \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
   $(top_builddir)/src/applications/fs/libecrs_core.la 
 

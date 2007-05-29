@@ -188,7 +188,8 @@ int GNUNET_init(int argc,
     SNPRINTF(run,
 	     max,
 	     "gnunet-setup -c %s generate-defaults");
-    if (0 != system(run)) 
+    ret = system(run);
+    if (0 != ret) 
       GE_LOG(*ectx,
 	     GE_ERROR | GE_USER | GE_IMMEDIATE,
 	     _("Failed to run %s: %s %d\n"),

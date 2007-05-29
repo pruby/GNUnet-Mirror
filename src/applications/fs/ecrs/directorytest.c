@@ -138,6 +138,7 @@ static int testDirectory(unsigned int i) {
     goto END;
   }
  END:
+  FREE(data);
   ECRS_freeMetaData(meta);
   ECRS_freeMetaData(meta2);
   for (p=0;p<i;p++) {
