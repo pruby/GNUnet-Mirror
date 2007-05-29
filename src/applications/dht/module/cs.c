@@ -208,11 +208,13 @@ static void csClientExit(struct ClientHandle * client) {
   for (i=0;i<getRecordsSize;i++) {
     if (getRecords[i]->client == client) {
       gr = getRecords[i];
-      dhtAPI->get_stop(gr->get_record);
       getRecords[i] = getRecords[getRecordsSize-1];
       GROW(getRecords,
 	   getRecordsSize,
 	   getRecordsSize-1);
+      MUTEX_UNLOCK(lock);
+      dhtAPI->get_stop(gr->get_record);
+      MUTEX_LOCK(lock);
     }
   }
   MUTEX_UNLOCK(lock);

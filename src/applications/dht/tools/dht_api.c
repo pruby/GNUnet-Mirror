@@ -189,7 +189,6 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   PTHREAD_JOIN(thread, &unused);
   PTHREAD_REL_SELF(info.parent);
   connection_destroy(sock);
-  printf("Returning %d\n", info.total);
   return info.total;
 }
 	
