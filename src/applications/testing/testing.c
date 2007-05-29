@@ -82,6 +82,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   char host[128];
   struct ClientServerConnection * sock;
   P2P_hello_MESSAGE * hello;
+  int round;
 
   fprintf(stderr,
 	  "Starting peer on port %u\n",
@@ -197,21 +198,29 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   }
   *configFile = dpath;
   dpath = NULL;
-  sock = client_connection_create(NULL,
-				  cfg);
-  ret = gnunet_identity_get_self(sock,
-				 &hello);
-  if (ret == OK) {
-    hash(&hello->publicKey,
-	 sizeof(PublicKey),
-	 &peer->hashPubKey);
-    FREE(hello);
-  } else {
+  round = 0;
+  ret = SYSERR;
+  while ( (round++ < 10) &&
+	  (ret == SYSERR) ) {
+    sock = client_connection_create(NULL,
+				    cfg);
+    ret = gnunet_identity_get_self(sock,
+				   &hello);
+    if (ret == OK) {
+      hash(&hello->publicKey,
+	   sizeof(PublicKey),
+	   &peer->hashPubKey);
+      FREE(hello);
+    } else {
+      PTHREAD_SLEEP(2 * cronSECONDS);
+    }
+    connection_destroy(sock);
+  }
+  GC_free(cfg);
+  if (ret == SYSERR)
     fprintf(stderr,
 	    "Failed to obtain daemon's identity (is a transport loaded?)!\n");
-  }
-  connection_destroy(sock);
-  GC_free(cfg);
+
 
   return ret;
 }
