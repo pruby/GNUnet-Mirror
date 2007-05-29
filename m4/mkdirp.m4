@@ -5,7 +5,7 @@
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# AM_PROG_MKDIR_P
+# AC_PROG_MKDIR_P
 # ---------------
 # Check whether `mkdir -p' is supported, fallback to mkinstalldirs otherwise.
 #
@@ -27,7 +27,7 @@
 # one can create it and the other will error out.  Consequently we
 # restrict ourselves to GNU make (using the --version option ensures
 # this.)
-AC_DEFUN([AM_PROG_MKDIR_P],
+AC_DEFUN([AC_PROG_MKDIR_P],
 [if mkdir -p --version . >/dev/null 2>&1 && test ! -d ./--version; then
   # We used to keeping the `.' as first argument, in order to
   # allow $(mkdir_p) to be used without argument.  As in
