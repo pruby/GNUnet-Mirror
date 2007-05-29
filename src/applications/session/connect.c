@@ -63,6 +63,8 @@ static int stat_skeyAccepted;
 
 static int stat_sessionEstablished;
 
+static int stat_pongSent;
+
 /**
  * @brief message for session key exchange.
  */
@@ -741,6 +743,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	     &enc);
 #endif
       ping->type = htons(p2p_PROTO_PONG);
+      if (stats != NULL)
+	stats->change(stat_pongSent, 1);  
       coreAPI->unicast(sender,
 		       ping,
 		       EXTREME_PRIORITY,
@@ -756,6 +760,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	     &enc);
 #endif
       ping->type = htons(p2p_PROTO_PONG);
+      if (stats != NULL)
+	stats->change(stat_pongSent, 1);  
       exchangeKey(sender,
 		  tsession,
 		  ping); /* ping is now pong */
@@ -870,6 +876,8 @@ provide_module_session(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# session keys accepted"));
     stat_sessionEstablished
       = stats->create(gettext_noop("# sessions established"));
+    stat_pongSent
+      = stats->create(gettext_noop("# encrypted PONG messages sent"));
   }
 
   GE_LOG(ectx,
