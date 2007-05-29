@@ -20,7 +20,14 @@
 
 /**
  * @file applications/advertising/advertising_test.c
- * @brief testcase to show advertising works
+ * @brief testcase to show advertising works; mostly,
+ *        the test should display a roughly increasing
+ *        number of overall connections; given enough
+ *        time (more than what is given by default),
+ *        the number should approach 100.
+ *
+ *        Note that data in /tmp (esp. data/hosts/*)
+ *        will mess with the results...
  * @author Christian Grothoff
  */
 
@@ -129,7 +136,8 @@ int main(int argc,
 	    found, 
 	    k,
 	    min);
-    PTHREAD_SLEEP(45 * cronSECONDS); /* one hello-forward round is 45s! */
+    if (k < NUM_ROUNDS - 1)
+      PTHREAD_SLEEP(45 * cronSECONDS); /* one hello-forward round is 45s! */
   }
   gnunet_testing_stop_daemons(peers);
   GC_free(cfg);
