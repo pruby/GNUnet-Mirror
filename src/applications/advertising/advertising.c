@@ -550,7 +550,8 @@ typedef struct {
 } FCC;
 
 static void forwardCallback(const PeerIdentity * peer,
-			    FCC * fcc) {
+			    void * cls) {
+  FCC * fcc = cls;
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
@@ -577,7 +578,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 		  int confirmed,
 		  void * data) {
   int * probability = data;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   TIME_T now;
   int count;
   FCC fcc;
@@ -589,44 +590,48 @@ forwardhelloHelper(const PeerIdentity * peer,
     return OK;
   if (protocol == NAT_PROTOCOL_NUMBER)
     return OK; /* don't forward NAT addresses */
-  if (weak_randomi((*probability)+1) != 0)
-    return OK; /* only forward with a certain chance,
-	       (on average: 1 peer per run!) */
-  helo = identity->identity2Helo(peer,
+  hello = identity->identity2Helo(peer,
 				 protocol,
 				 NO);
-  if (NULL == helo)
+  if (NULL == hello)
     return OK; /* this should not happen */
-  helo->header.type
+  hello->header.type
     = htons(p2p_PROTO_hello);
-  helo->header.size
-    = htons(P2P_hello_MESSAGE_size(helo));
+  hello->header.size
+    = htons(P2P_hello_MESSAGE_size(hello));
   /* do not forward expired hellos */
   TIME(&now);
-  if ((TIME_T)ntohl(helo->expirationTime) < now) {
+  if ((TIME_T)ntohl(hello->expirationTime) < now) {
     EncName enc;
     /* remove hellos that expired */
-    IF_GELOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	  hash2enc(&peer->hashPubKey,
-		   &enc));
+    IF_GELOG(ectx, 
+	     GE_INFO | GE_REQUEST | GE_USER,
+	     hash2enc(&peer->hashPubKey,
+		      &enc));
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	_("Removing hello from peer `%s' (expired %ds ago).\n"),
-	&enc,
-	now - ntohl(helo->expirationTime));
+	   _("Removing hello from peer `%s' (expired %ds ago).\n"),
+	   &enc,
+	   now - ntohl(hello->expirationTime));
     identity->delHostFromKnown(peer, protocol);
-    FREE(helo);
+    FREE(hello);
+    (*probability)--;
     return OK;
+  }
+  if (weak_randomi((*probability)+1) != 0) {
+    FREE(hello);
+    return OK; /* only forward with a certain chance,
+	       (on average: 1 peer per run!) */
   }
   count = coreAPI->forAllConnectedNodes(NULL,
 					NULL);
   if (count > 0) {
     fcc.delay = (*probability) * HELLO_BROADCAST_FREQUENCY;  /* send before the next round */
-    fcc.msg  = helo;
+    fcc.msg  = hello;
     fcc.prob = count;
-    coreAPI->forAllConnectedNodes((PerNodeCallback) &forwardCallback,
+    coreAPI->forAllConnectedNodes(&forwardCallback,
 				  &fcc);
   }
-  FREE(helo);
+  FREE(hello);
   return OK;
 }
 
@@ -653,9 +658,10 @@ forwardhello(void * unused) {
   count = identity->forEachHost(0,
 				NULL,
 				NULL);
-  identity->forEachHost(0, /* ignore blacklisting */
-			&forwardhelloHelper,
-			&count);
+  if (count > 0) 
+    identity->forEachHost(0, /* ignore blacklisting */
+			  &forwardhelloHelper,
+			  &count);
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Exit `%s'.\n",
@@ -714,10 +720,10 @@ configurationUpdateCallback(void * ctx,
 		   NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
-    if (YES == GC_get_configuration_value_yesno(cfg,
+    if (YES != GC_get_configuration_value_yesno(cfg,
 						"NETWORK",
-						"HELLOEXCHANGE",
-						YES))
+						"DISABLE-ADVERTISEMENTS",
+						NO))
       cron_add_job(coreAPI->cron,
 		   &broadcasthello,
 		   15 * cronSECONDS,
@@ -736,14 +742,14 @@ configurationUpdateCallback(void * ctx,
 		   NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   } else {
-    if (YES != GC_get_configuration_value_yesno(cfg,
+    if (YES == GC_get_configuration_value_yesno(cfg,
 						"NETWORK",
-						"DISABLE-ADVERTISEMENTS",
-						NO))
+						"HELLOEXCHANGE",
+						YES))
       cron_add_job(coreAPI->cron,
-		   &broadcasthello,
+		   &forwardhello,
 		   15 * cronSECONDS,
-		   HELLO_BROADCAST_FREQUENCY,
+		   HELLO_FORWARD_FREQUENCY,
 		   NULL);
     activeCronJobs += ACJ_FORWARD;
   }

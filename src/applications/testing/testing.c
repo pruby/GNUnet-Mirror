@@ -186,9 +186,12 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   *pid = ret;
 
   /* now get peer ID */
+  /* we need to wait quite a while since the peers
+     maybe creating public keys and waiting for
+     entropy! */
   if (OK != connection_wait_for_running(NULL,
 					cfg,
-					120 * cronSECONDS)) {
+					5 * cronMINUTES)) {
     fprintf(stderr,
 	    "Failed to confirm daemon running!\n");
     GC_free(cfg);
