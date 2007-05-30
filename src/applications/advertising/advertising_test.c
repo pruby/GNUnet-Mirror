@@ -106,6 +106,8 @@ int main(int argc,
 
   /* check loops */
   for (k=0;k<NUM_ROUNDS;k++) {
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
     found = 0;
     min = NUM_PEERS;
     for (i=0;i<NUM_PEERS;i++) {
