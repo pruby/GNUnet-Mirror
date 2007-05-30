@@ -12,11 +12,6 @@ notes:
 
 
 0.7.2 [5'07]:
-- bugs: 
-  * transport needs a way to signal core persistent
-    transport errors (i.e., tcp connection closed)
-  * TCP connections are lost after 30 due to time out!
-    => connection timeout should be LONGER than timeout in core!
 - new features:
   * XFS -- TEST more! [RC] 
   * HTTP transport (libcurl, libmicrohttpd)
