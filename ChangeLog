@@ -1,3 +1,11 @@
+Tue May 29 23:15:27 MDT 2007
+	Fixed a major bug which resulted in peers without
+	traffic between them disconnecting (even if that
+	session was their only connection).  
+	Fixed another major bug where nodes would not
+	properly forward HELLOs from other peers (given
+	certain common/default configuration options).
+
 Sun May 27 22:39:48 MDT 2007
 	Added new API gnunet_testing_lib.h to make it
 	easier to write testcases that need to start 

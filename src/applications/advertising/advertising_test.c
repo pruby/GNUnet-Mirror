@@ -40,7 +40,7 @@
 
 #define NUM_PEERS 12
 
-#define NUM_ROUNDS 10
+#define NUM_ROUNDS 100
 
 static int countConnections(const char * name,
 			    unsigned long long value,
@@ -53,8 +53,6 @@ static int countConnections(const char * name,
   }
   return OK;
 }
-
-#define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
  * Testcase to test advertising

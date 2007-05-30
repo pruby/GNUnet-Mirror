@@ -37,8 +37,11 @@
 /**
  * after how much time of the core not being associated with a tcp
  * connection anymore do we close it?
+ * 
+ * Needs to be larger than SECONDS_INACTIVE_DROP in
+ * core's connection.s
  */
-#define TCP_TIMEOUT (30 * cronSECONDS)
+#define TCP_TIMEOUT (600 * cronSECONDS)
 
 #define TARGET_BUFFER_SIZE 4092
 

@@ -427,7 +427,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "NETWORK"
  "HELLOEXCHANGE"
  (_ "Disable advertising of other peers by this peer")
- (nohelp)
+ (_ "This option maybe useful during testing, but turning it off is dangerous! If in any doubt, set it to YES (which is the default).")
  '()
  #t
  #f

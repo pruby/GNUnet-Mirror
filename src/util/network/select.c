@@ -395,6 +395,14 @@ static int writeAndProcess(SelectHandle * sh,
 	/* free compaction! */
 	session->wspos = 0;
 	session->wapos = 0;
+	if (session->wsize > sh->memory_quota) {
+	  /* if we went over quota before because of
+	     force, use this opportunity to shrink
+	     back to size! */
+	  GROW(session->wbuff,
+	       session->wsize,
+	       sh->memory_quota);
+	}
       }
       break;
     }
@@ -962,7 +970,8 @@ int select_write(struct SelectHandle * sh,
   }
   GE_ASSERT(NULL, session->wapos >= session->wspos);
   if ( (sh->memory_quota > 0) &&
-       (session->wapos - session->wspos + len > sh->memory_quota) ) {
+       (session->wapos - session->wspos + len > sh->memory_quota) &&
+       (force == NO) ) {
     /* not enough free space, not allowed to grow that much */
     MUTEX_UNLOCK(sh->lock);
     return NO;
@@ -985,7 +994,8 @@ int select_write(struct SelectHandle * sh,
       while (newBufferSize < len + session->wapos - session->wspos)
 	newBufferSize *= 2;
       if ( (sh->memory_quota > 0) &&
-	   (newBufferSize > sh->memory_quota) )
+	   (newBufferSize > sh->memory_quota) &&
+	   (force == NO) )
 	newBufferSize = sh->memory_quota;
       GE_ASSERT(NULL, 
 		newBufferSize >= len + session->wapos - session->wspos);
@@ -1045,7 +1055,8 @@ int select_would_try(struct SelectHandle * sh,
   }
   GE_ASSERT(NULL, session->wapos >= session->wspos);
   if ( (sh->memory_quota > 0) &&
-       (session->wapos - session->wspos + size > sh->memory_quota) ) {
+       (session->wapos - session->wspos + size > sh->memory_quota) &&
+       (force == NO) ) {
     /* not enough free space, not allowed to grow that much */
     MUTEX_UNLOCK(sh->lock);
     return NO;

@@ -87,7 +87,8 @@
 
 /**
  * If an established connection is inactive for 5 minutes,
- * drop.
+ * drop.  Needs to be smaller than timeouts in the
+ * transports.
  */
 #define SECONDS_INACTIVE_DROP 300
 
@@ -1551,9 +1552,19 @@ static int sendBuffer(BufferEntry * be) {
   }
   GE_ASSERT(ectx,
 	    totalMessageSize > sizeof(P2P_PACKET_HEADER));
-  if (YES != transport->testWouldTry(be->session.tsession,				
-				     totalMessageSize,
-				     (priority >= EXTREME_PRIORITY) ? YES : NO)) {
+  ret = transport->testWouldTry(be->session.tsession,				
+				totalMessageSize,
+				(priority >= EXTREME_PRIORITY) ? YES : NO);
+  /* ret: YES: ok to send, NO: not ready yet, SYSERR: session down 
+          or serious internal error */
+  if (ret == SYSERR) {
+    /* transport session is gone! re-establish! */
+    transport->disconnect(be->session.tsession);
+    be->session.tsession = NULL;
+    if (OK == ensureTransportConnected(be)) 
+      ret = YES;
+  } 
+  if (YES != ret) {
     /* transport's buffer full -- no point in
        creating the actual message! */
     expireSendBufferEntries(be);
