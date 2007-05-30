@@ -233,7 +233,7 @@ static int pongReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
-
+  
   pmsg = (P2P_pingpong_MESSAGE *) msg;
   if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        (0 != memcmp(sender,
@@ -248,9 +248,10 @@ static int pongReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   hash2enc(&sender->hashPubKey,
 	   &enc);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Received PONG from `%s'.\n",
-      &enc);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received PONG from `%s'.\n",
+	 &enc);
 #endif
   matched = 0;
   if (stats != NULL)
@@ -405,9 +406,7 @@ createPing(const PeerIdentity * receiver,
   pmsg = MALLOC(sizeof(P2P_pingpong_MESSAGE));
   pmsg->header.size = htons(sizeof(P2P_pingpong_MESSAGE));
   pmsg->header.type = htons(p2p_PROTO_PING);
-  memcpy(&pmsg->receiver,
-	 receiver,
-	 sizeof(PeerIdentity));
+  pmsg->receiver = *receiver;
   entry->challenge = challenge;
   pmsg->challenge = htonl(challenge);
   MUTEX_UNLOCK(pingPongLock);
@@ -430,22 +429,23 @@ static int initiatePing(const PeerIdentity * receiver,
 			void * data,
 			int usePlaintext,
 			int challenge) {
-  P2P_pingpong_MESSAGE * pmsg;
+  MESSAGE_HEADER * pmsg;
 
-  pmsg = (P2P_pingpong_MESSAGE*) createPing(receiver,
-					    method,
-					    data,
-					    usePlaintext,
-					    challenge);
+  pmsg = createPing(receiver,
+		    method,
+		    data,
+		    usePlaintext,
+		    challenge);
   if (pmsg == NULL)
     return SYSERR;
   if (usePlaintext == YES) {
-    sendPlaintext(receiver, pmsg);
+    sendPlaintext(receiver, 
+		  (const P2P_pingpong_MESSAGE*) pmsg);
     if (stats != NULL)
       stats->change(stat_plaintextPingSent, 1);
   } else {
     coreAPI->unicast(receiver,
-		     &pmsg->header,
+		     pmsg,
 		     EXTREME_PRIORITY,
 		     0);
     if (stats != NULL)
