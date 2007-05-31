@@ -370,9 +370,11 @@ void * FSUI_uploadThread(void * cls) {
     if (OK == gnunet_identity_get_self(sock,
 				       &hello)) {
       loc = ECRS_uriFromLocation(utc->uri,
-				 hello,
+				 &hello->publicKey,
+				 ntohl(hello->expirationTime),
 				 (ECRS_SignFunction) &gnunet_identity_sign_function,
 				 sock);
+				 
       FREE(hello);
     } else {
       /* may happen if no transports are available... */

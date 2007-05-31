@@ -19,8 +19,8 @@
 */
 
 /**
- * @file applications/gap/gaptest2.c
- * @brief GAP routing testcase
+ * @file applications/gap/gaptest3.c
+ * @brief GAP economy testcase
  * @author Christian Grothoff
  */
 
@@ -28,11 +28,20 @@
 #include "gnunet_protocols.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_testing_lib.h"
+#include "gnunet_identity_lib.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_util_crypto.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_stats_lib.h"
+
+
+
+#define PEER_COUNT 10
+
+#define START_PEERS 1
+
+#define SIZE 1024*1024*100
 
 static struct GE_Context * ectx;
 
@@ -66,7 +75,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   fd = disk_file_open(ectx,
 		      name,
 		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
-  buf = MALLOC(size);
+  buf = MALLOC_LARGE(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
     hash(&buf[i+sizeof(HashCode512)],
@@ -86,82 +95,11 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			NULL,
 			&testTerminate,
 			NULL,
-			&uri);
-  if (ret != SYSERR) {
-    struct ECRS_MetaData * meta;
-    struct ECRS_URI * key;
-    const char * keywords[2];
-
-    keywords[0] = name;
-    keywords[1] = NULL;
-
-    meta = ECRS_createMetaData();
-    key = ECRS_keywordsToUri(keywords);
-    ret = ECRS_addToKeyspace(ectx,
-			     cfg,
-			     key,
-			     0,
-			     0,
-			     get_time() + 10 * cronMINUTES, /* expire */
-			     uri,
-			     meta);
-    ECRS_freeMetaData(meta);
-    ECRS_freeUri(uri);
-    FREE(name);
-    if (ret == OK) {
-      return key;
-    } else {
-      ECRS_freeUri(key);
-      return NULL;
-    }
-  } else {
-    FREE(name);
-    return NULL;
-  }
-}
-
-static int searchCB(const ECRS_FileInfo * fi,
-		    const HashCode512 * key,
-		    int isRoot,
-		    void * closure) {
-  struct ECRS_URI ** my = closure;
-  char * tmp;
-
-  tmp = ECRS_uriToString(fi->uri);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Search found URI `%s'\n",
-      tmp);
-  FREE(tmp);
-  GE_ASSERT(ectx, NULL == *my);
-  *my = ECRS_dupUri(fi->uri);
-  return SYSERR; /* abort search */
-}
-
-/**
- * @param *uri In: keyword URI, out: file URI
- * @return OK on success
- */
-static int searchFile(struct ECRS_URI ** uri) {
-  int ret;
-  struct ECRS_URI * myURI;
-
-  myURI = NULL;
-  ret = ECRS_search(ectx,
-		    cfg,
-		    *uri,
-		    1,
-		    15 * cronSECONDS,
-		    &searchCB,
-		    &myURI,
-		    &testTerminate,
-		    NULL);
-  ECRS_freeUri(*uri);
-  *uri = myURI;
-  if ( (ret != SYSERR) &&
-       (myURI != NULL) )
-    return OK;
-  else
-    return SYSERR;
+			&uri);  
+  FREE(name);
+  if (ret != SYSERR) 
+    return uri;
+  return NULL;  
 }
 
 static int downloadFile(unsigned int size,
@@ -217,27 +155,40 @@ static int downloadFile(unsigned int size,
   return ret;
 }
 
-static int unindexFile(unsigned int size) {
-  int ret;
-  char * name;
-
-  name = makeName(size);
-  ret = ECRS_unindexFile(ectx,
-			 cfg,
-			 name,
-			 NULL,
-			 NULL,
-			 &testTerminate,
-			 NULL);
-  if (0 != UNLINK(name))
-    ret = SYSERR;
-  FREE(name);
-  return ret;
-}
-
 #define CHECK(a) if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; }
 
-#define START_PEERS 1
+static PeerIdentity goodPeers[PEER_COUNT];
+static unsigned int goodPeerPos;
+
+static int infoCallback(void * data,
+			const PeerIdentity * identity,
+			const char * address,
+			unsigned int trust,
+			unsigned int bpmFromPeer) {
+  int i;
+  int good;
+  EncName enc;
+  
+  good = 0;
+  for (i=0;i<goodPeerPos;i++)
+    if (0 == memcmp(&goodPeers[i],
+		    identity,
+		    sizeof(PeerIdentity)))
+      good = 1;
+  hash2enc(&identity->hashPubKey,
+	   &enc);
+  if (good) 
+    printf("Good peer `%s' has trust %u and bandwidth %u\n", 
+	   (const char*) &enc,
+	   trust,
+	   bpmFromPeer);
+  else
+    printf("Poor peer `%s' has trust %u and bandwidth %u\n",
+	   (const char*) &enc,
+	   trust,
+	   bpmFromPeer);
+  return OK;
+}
 
 /**
  * Testcase to test gap routing (2 peers only).
@@ -247,7 +198,13 @@ int main(int argc, char ** argv) {
   struct DaemonContext * peers;
   int ret;
   struct ECRS_URI * uri;
-
+  int i;
+  char buf[128];
+  P2P_hello_MESSAGE * hello;
+  struct ClientServerConnection * sock;
+  cron_t start;
+  EncName enc;
+ 
   ret = 0;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -258,10 +215,10 @@ int main(int argc, char ** argv) {
 #if START_PEERS
   peers = gnunet_testing_start_daemons("tcp",
 				       "advertising topology fs stats",
-				       "/tmp/gnunet-gap-test2",
+				       "/tmp/gnunet-gap-test3",
 				       2087,
-				       5000,
-				       8);
+				       10,
+				       PEER_COUNT);
   if (peers == NULL) {
     fprintf(stderr,
 	    "Failed to start the gnunetd daemons!\n");
@@ -269,49 +226,77 @@ int main(int argc, char ** argv) {
     return -1;
   }
 #endif
-  if ( (OK != gnunet_testing_connect_daemons(2087,
-					     7087)) ||
-       (OK != gnunet_testing_connect_daemons(7087,
-					     12087)) ||
-       (OK != gnunet_testing_connect_daemons(12087, 
-					     17087)) || 
-       (OK != gnunet_testing_connect_daemons(17087, 
-					     22087)) || 
-       (OK != gnunet_testing_connect_daemons(22087, 
-					     27087)) || 
-       (OK != gnunet_testing_connect_daemons(27087,
-					     32087)) ) {
-    gnunet_testing_stop_daemons(peers);
-    fprintf(stderr,
-	    "Failed to connect the peers!\n");
-    GC_free(cfg);
-    return -1;
+  /* connect as star-topology */
+  for (i=1;i<PEER_COUNT;i++) {
+    if (OK != gnunet_testing_connect_daemons(2087,
+					     2087 + 10*i)) {
+      gnunet_testing_stop_daemons(peers);
+      fprintf(stderr,
+	      "Failed to connect the peers!\n");
+      GC_free(cfg);
+      return -1;
+    }
   }
 
-  uri = uploadFile(12345);
-  CHECK(NULL != uri);
-  GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:32087");
-  CHECK(OK == searchFile(&uri));
-  CHECK(OK == downloadFile(12345, uri));
-  ECRS_freeUri(uri);
+  uri = NULL;
+  goodPeerPos = 0;
+  for (i=1;i<PEER_COUNT;i+=2) {
+    SNPRINTF(buf,
+	     128,
+	     "localhost:%u",
+	     2087 + i * 10);   
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "NETWORK",
+				      "HOST",
+				      buf);
+    sock = client_connection_create(NULL,
+				    cfg);
+    if (OK != gnunet_identity_get_self(sock,
+				       &hello)) {
+      connection_destroy(sock);
+      GE_BREAK(NULL, 0);
+      break;
+    }
+    connection_destroy(sock);
+    if (uri != NULL)
+      ECRS_freeUri(uri);
+    hash2enc(&hello->senderIdentity.hashPubKey,
+	     &enc);
+    printf("Uploading to peer `%s'\n", 
+	   (const char*)&enc);
+    uri = uploadFile(SIZE);
+    CHECK(NULL != uri);
+
+    goodPeers[goodPeerPos++] = hello->senderIdentity;
+    FREE(hello);
+
+  }
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
 				    "HOST",
 				    "localhost:2087");
-  CHECK(OK == unindexFile(12345));
+  printf("Downloading...\n");
+  start = get_time();
+  CHECK(OK == downloadFile(SIZE, uri));
+  printf("Download complete - %f kbps.\n",
+	 SIZE/1024 * 1.0 * cronSECONDS / (1 + get_time() - start));
+  /* verify trust values have developed as expected */
+
+  sock = client_connection_create(NULL,
+				  cfg);
+  gnunet_identity_request_peer_infos(sock,
+				     &infoCallback,
+				     NULL);
+  connection_destroy(sock);
 
  FAILURE:
 #if START_PEERS
   gnunet_testing_stop_daemons(peers);
 #endif
-
   GC_free(cfg);
   return ret;
 }
 
-/* end of gaptest2.c */
+/* end of gaptest3.c */

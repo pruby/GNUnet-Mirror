@@ -71,26 +71,16 @@ static int testLocation() {
   PublicKey pk;
   struct PrivateKey * hk;
   struct ECRS_URI * baseURI;
-  P2P_hello_MESSAGE * fake;
 
   baseURI = ECRS_stringToUri(NULL, "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   hk = makePrivateKey();
   getPublicKey(hk,
 	       &pk);
-  fake = MALLOC(sizeof(P2P_hello_MESSAGE) + 4);
-  memcpy(&fake[1],
-	 "GNU!",
-	 4);
-  fake->senderAddressSize = htons(4);
-  fake->expirationTime = htonl(TIME(NULL) + 60);
-  fake->protocol = htons(42);
-  fake->MTU = htonl(1500);
-  fake->publicKey = pk;
   uri = ECRS_uriFromLocation(baseURI,
-			     fake,
+			     &pk,
+			     43,
 			     (ECRS_SignFunction) &sign,
 			     hk);
-  FREE(fake);
   freePrivateKey(hk);
   if (uri == NULL) {
     GE_BREAK(NULL, 0);

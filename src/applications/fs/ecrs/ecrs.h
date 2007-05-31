@@ -52,7 +52,7 @@ typedef struct Location {
   FileIdentifier fi;
 
   /**
-   * Public key of the peer sharing the file.
+   * Identity of the peer sharing the file.
    */
   PublicKey peer;
 
@@ -61,35 +61,6 @@ typedef struct Location {
    * expire (they expire together!).
    */
   TIME_T expirationTime;
-
-  /**
-   * Transport protocol to use to contact the peer.
-   */
-  unsigned short proto;
-
-  /**
-   * Size of the address.
-   */
-  unsigned short sas;
-
-  /**
-   * MTU of the transport.
-   */
-  unsigned int mtu;
-
-  /**
-   * Address of the peer.
-   */
-  char * address;
-
-  /**
-   * RSA signature of the HELLO information
-   * (as constructed from the rest of the info
-   * in this struct).  This allows anyone to
-   * reconstruct a valid HELLO message from 
-   * the location URI.
-   */
-  Signature helloSignature;
 
   /**
    * RSA signature over the FileIdentifier,

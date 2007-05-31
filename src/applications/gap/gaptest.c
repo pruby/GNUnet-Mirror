@@ -283,7 +283,7 @@ int main(int argc, char ** argv) {
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "HOSTNAME",
+				    "HOST",
 				    "localhost:12087");
   CHECK(OK == searchFile(&uri));
   CHECK(OK == downloadFile(12345, uri));
@@ -291,7 +291,7 @@ int main(int argc, char ** argv) {
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
-				    "HOSTNAME",
+				    "HOST",
 				    "localhost:2087");
   CHECK(OK == unindexFile(12345));
 

@@ -21,7 +21,7 @@ libgnunetmodule_gap_la_LDFLAGS = \
 
 
 check_PROGRAMS = \
-  gaptest gaptest2
+  gaptest gaptest2 gaptest3
 
 TESTS = $(check_PROGRAMS)
 
@@ -40,6 +40,19 @@ gaptest_LDADD = \
 gaptest2_SOURCES = \
   gaptest2.c 
 gaptest2_LDADD = \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+
+gaptest3_SOURCES = \
+  gaptest3.c 
+gaptest3_LDADD = \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
   $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \

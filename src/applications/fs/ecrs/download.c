@@ -1472,16 +1472,6 @@ int ECRS_downloadPartialFile(struct GE_Context * ectx,
     return SYSERR;
   }
   if (ECRS_isLocationUri(uri)) {
-    struct ClientServerConnection * sock;
-    P2P_hello_MESSAGE * hello;
-
-    sock = client_connection_create(rm->ectx,
-				    rm->cfg);
-    hello = ECRS_getHelloFromUri(uri);
-    gnunet_identity_peer_add(sock,
-			     hello);
-    FREE(hello);
-    connection_destroy(sock);
     hash(&uri->data.loc.peer,
 	 sizeof(PublicKey),
 	 &rm->target.hashPubKey);

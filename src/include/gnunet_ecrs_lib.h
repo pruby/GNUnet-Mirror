@@ -307,14 +307,6 @@ int ECRS_getPeerFromUri(const struct ECRS_URI * uri,
 			PeerIdentity * peer);
 
 /**
- * (re)construct the HELLO message of the peer offerin the data
- *
- * @return NULL if this is not a location URI
- */
-P2P_hello_MESSAGE *
-ECRS_getHelloFromUri(const struct ECRS_URI * uri);
-
-/**
  * Obtain the URI of the content itself.
  *
  * @return NULL if argument is not a location URI
@@ -346,7 +338,8 @@ typedef int (*ECRS_SignFunction)(void * cls,
  */
 struct ECRS_URI *
 ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
-		     const P2P_hello_MESSAGE * hello,
+		     const PublicKey * peer,
+		     TIME_T expirationTime,
 		     ECRS_SignFunction signer,
 		     void * signer_cls);
 
@@ -463,7 +456,8 @@ int ECRS_isLocationUri(const struct ECRS_URI * uri);
  * in the meta-data and construct one large keyword URI
  * that lists all keywords that can be found in the meta-data).
  */
-struct ECRS_URI * ECRS_metaDataToUri(const struct ECRS_MetaData * md);
+struct ECRS_URI * 
+ECRS_metaDataToUri(const struct ECRS_MetaData * md);
 
 
 typedef struct {

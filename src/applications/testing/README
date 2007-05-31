@@ -1,0 +1,5 @@
+This is really just a helper library.
+
+It could equally well live in util/,
+but since it is only used for testing
+of application's, it is here for now.
