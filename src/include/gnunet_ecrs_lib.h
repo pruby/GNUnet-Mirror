@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -329,9 +329,6 @@ typedef int (*ECRS_SignFunction)(void * cls,
  * @param baseURI content offered by the sender
  * @param sender identity of the peer with the content
  * @param expirationTime how long will the content be offered?
- * @param proto transport protocol to reach the peer
- * @param sas sender address size (for HELLO)
- * @param address sas bytes of address information
  * @param signer function to call for obtaining 
  *        RSA signatures for "sender".
  * @return the location URI
