@@ -170,8 +170,9 @@ static int createIOContext(struct GE_Context * ectx,
   for (i=0;i<=this->treedepth;i++)
     this->handles[i] = -1;
 
-  if (no_temporaries != YES) {
-    for (i=0;i<=this->treedepth;i++) {
+  for (i=0;i<=this->treedepth;i++) {
+    if ( (i == 0) ||
+	 (no_temporaries != YES) ) {
       fn = MALLOC(strlen(filename) + 3);
       strcpy(fn, filename);
       if (i > 0) {
