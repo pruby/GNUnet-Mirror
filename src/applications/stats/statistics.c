@@ -406,6 +406,7 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
 #if HAVE_SQSTATS
   init_sqstore_stats();
 #endif
+  immediateUpdates();
   return OK;
 }
 
