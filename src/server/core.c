@@ -514,7 +514,7 @@ int initCore(struct GE_Context * ectx,
   applicationCore.getCurrentSessionKey = &getCurrentSessionKey; /* connection.c */
   applicationCore.confirmSessionUp = &confirmSessionUp; /* connection.c */
   applicationCore.preferTrafficFrom = &updateTrafficPreference; /* connection.c */
-  applicationCore.queryBPMfromPeer = &getBandwidthAssignedTo; /* connection.c */
+  applicationCore.queryPeerStatus = &getBandwidthAssignedTo; /* connection.c */
   applicationCore.disconnectFromPeer = &disconnectFromPeer; /* connection.c */
 
   applicationCore.sendValueToClient = &sendTCPResultToClient; /* tcpserver.c */

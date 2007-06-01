@@ -1109,7 +1109,7 @@ static void cronDiscardHosts(void *unused) {
 static int identityRequestConnectHandler(struct ClientHandle * sock,
 					 const MESSAGE_HEADER * message) {
   const CS_identity_connect_MESSAGE * msg;
-  unsigned int bpm;
+  int ret;
 
   if (sizeof(CS_identity_connect_MESSAGE) != ntohs(message->size))
     return SYSERR;
@@ -1118,9 +1118,11 @@ static int identityRequestConnectHandler(struct ClientHandle * sock,
 		   NULL,
 		   0,
 		   0);
-  bpm = coreAPI->queryBPMfromPeer(&msg->other);
+  ret = coreAPI->queryPeerStatus(&msg->other,
+				 NULL,
+				 NULL);
   return coreAPI->sendValueToClient(sock,
-				    bpm == 0 ? NO : YES);
+				    ret != OK ? NO : YES);
 }
 
 static int identityHelloHandler(struct ClientHandle * sock,
@@ -1218,6 +1220,8 @@ static int hostInfoIterator(const PeerIdentity * identity,
   P2P_hello_MESSAGE * hello;
   char * address;
   int ret;
+  unsigned int bpm;
+  cron_t last;
   
   if (confirmed == NO)
     return OK;
@@ -1236,12 +1240,19 @@ static int hostInfoIterator(const PeerIdentity * identity,
     FREE(address);
     address = STRDUP("invalid");
   }
+  if (OK != coreAPI->queryPeerStatus(identity,
+				     &bpm,
+				     &last)) {
+    last = 0;
+    bpm = 0;
+  }
   reply = MALLOC(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
   reply->header.size = htons(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
   reply->header.type = htons(CS_PROTO_identity_INFO);
   reply->peer = *identity;
+  reply->last_message = htonll(last);
   reply->trust = htonl(getHostTrust(identity));
-  reply->bpm = htonl(coreAPI->queryBPMfromPeer(identity));
+  reply->bpm = htonl(bpm);
   memcpy(&reply[1],
 	 address,
 	 strlen(address) + 1);

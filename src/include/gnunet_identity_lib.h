@@ -83,6 +83,8 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
  * @param address address of the peer (as given by the
  *        transport; likely to be an IP+PORT, but could
  *        be anything!)
+ * @param last_message if currently connected, when did we
+ *        hear last from this peer (estimate)
  * @param bpmFromPeer 0 if peer is not connected, otherwise 
  *        number of bytes per minute that we currently allow
  *        this peer to sent to us
@@ -92,6 +94,7 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
 typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
 					      const PeerIdentity * identity,
 					      const char * address,
+					      cron_t last_message,
 					      unsigned int trust,
 					      unsigned int bpmFromPeer);
 

@@ -800,11 +800,11 @@ static int tryConnect(const PeerIdentity * peer) {
 #endif
     return SYSERR;
   }
-  if (coreAPI->queryBPMfromPeer(peer) != 0) {
+  if (coreAPI->queryPeerStatus(peer, NULL, NULL) == OK) {
 #if DEBUG_SESSION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
-	   "Connection to `%s' already up (have BPM limit)\n",
+	   "Connection to `%s' already up\n",
 	   &enc);
 #endif
     return YES; /* trivial case */

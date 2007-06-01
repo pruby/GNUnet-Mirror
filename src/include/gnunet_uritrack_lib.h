@@ -105,13 +105,13 @@ int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
  */
 enum URITRACK_STATE {
   URITRACK_FRESH              =    0,
-  URITRACK_INSERTED           =    1, // done, FSUI
-  URITRACK_INDEXED            =    2, // done, FSUI
-  URITRACK_DIRECTORY_ADDED    =    4, // done, FSUI
-  URITRACK_DOWNLOAD_STARTED   =    8, // done, FSUI
-  URITRACK_DOWNLOAD_ABORTED   =   16, // done, FSUI
-  URITRACK_DOWNLOAD_COMPLETED =   32, // done, FSUI
-  URITRACK_SEARCH_RESULT      =   64, // done, FSUI
+  URITRACK_INSERTED           =    1,
+  URITRACK_INDEXED            =    2,
+  URITRACK_DIRECTORY_ADDED    =    4,
+  URITRACK_DOWNLOAD_STARTED   =    8,
+  URITRACK_DOWNLOAD_ABORTED   =   16,
+  URITRACK_DOWNLOAD_COMPLETED =   32,
+  URITRACK_SEARCH_RESULT      =   64,
   URITRACK_DIRECTORY_FOUND    =  128,
 };
 

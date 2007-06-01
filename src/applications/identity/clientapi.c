@@ -209,6 +209,7 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
       if (OK != callback(cls,
 			 &info->peer,
 			 (const char*) &info[1],
+			 ntohll(info->last_message),
 			 ntohl(info->trust),
 			 ntohl(info->bpm))) {
 	FREE(reply);

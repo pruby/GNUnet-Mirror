@@ -286,8 +286,8 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (_ "Load the about plugin for the about dialog.  The daemon plugin allows starting and stopping of gnunetd and displays information about gnunetd.  The fs plugin provides the file-sharing functionality.  The stats plugin displays various statistics about gnunetd.")
   '()
   #t 
-  "about daemon fs stats" 
-  (list "MC" "about" "daemon" "fs" "stats")
+  "about daemon fs peers stats" 
+  (list "MC" "about" "daemon" "fs" "peers" "stats")
   'advanced) )
 
 (define (gnunet-gtk-stats-interval builder)
@@ -314,6 +314,19 @@ The default is to use filenames and to break larger words at spaces (and undersc
    #f
    #f
    'fs-loaded) )
+
+(define (gnunet-gtk-previews builder) 
+ (builder
+   "GNUNET-GTK"
+   "DISABLE-OWN"
+   (_ "Do not show search results for files that were uploaded by us")
+   (_ "This option is useful to eliminate files that the user already has from the search.  Naturally, enabling this option maybe confusing because some obviously expected search results would no longer show up.  This option only works if the URI_DB_SIZE option under FS is not zero (since the URI DB is used to determine which files the user is sharing)")
+   '()
+   #t
+   #t
+   #f
+   'fs-loaded) )
+
 
 (define (gnunet-gtk-incomingdir builder)
  (builder

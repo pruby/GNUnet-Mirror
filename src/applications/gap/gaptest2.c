@@ -150,7 +150,7 @@ static int searchFile(struct ECRS_URI ** uri) {
 		    cfg,
 		    *uri,
 		    1,
-		    15 * cronSECONDS,
+		    150 * cronSECONDS,
 		    &searchCB,
 		    &myURI,
 		    &testTerminate,
@@ -296,7 +296,9 @@ int main(int argc, char ** argv) {
 				    "HOST",
 				    "localhost:32087");
   CHECK(OK == searchFile(&uri));
+  printf("Search successful!\n");
   CHECK(OK == downloadFile(12345, uri));
+  printf("Download successful!\n");
   ECRS_freeUri(uri);
   GC_set_configuration_value_string(cfg,
 				    ectx,

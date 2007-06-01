@@ -486,12 +486,14 @@ typedef struct {
    * Query how much bandwidth is availabe FROM the given node to
    * this node in bpm (at the moment).
    *
-   * @return 0 only if we are NOT connected at all,
-   *  this way, this method can be used to test if we
-   *  are currently connected to a peer.
+   * @param bpm set to the bandwidth
+   * @param last_seen set to last time peer was confirmed up
+   * @return OK on success, SYSERR if if we are NOT connected
    */
-  unsigned int (*queryBPMfromPeer)(const PeerIdentity * node);
-
+  int (*queryPeerStatus)(const PeerIdentity * node,
+			 unsigned int * bpm,
+			 cron_t * last_seen);
+  
   /**
    * Disconnect a particular peer. Sends a HANGUP message to the other
    * side and marks all sessionkeys as dead.

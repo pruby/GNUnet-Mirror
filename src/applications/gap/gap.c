@@ -543,7 +543,7 @@ static void sendToSelected(const PeerIdentity * peer,
 			   void * cls) {
   const QueryRecord * qr = cls;
   PID_INDEX id;
-#if DEBUG_GAP
+#if DEBUG_GAP 
   EncName encq;
   EncName encp;
 #endif
@@ -1338,7 +1338,8 @@ static void sendReply(IndirectionTableEntry * ite,
 #endif
 
   if (stats != NULL)
-    stats->change(stat_routing_successes, 1);
+    stats->change(stat_routing_successes, 
+		  1);
   now = get_time();
   if (now < ite->ttl)
     maxDelay = ite->ttl - now;
@@ -1472,8 +1473,8 @@ static int execQuery(const PeerIdentity * sender,
 #endif
 
   /* Load above hard limit? */
-  if (loadTooHigh())
-    return SYSERR;
+  if (loadTooHigh()) 
+    return SYSERR;  
 
   senderID = intern_pid(sender);
   GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );

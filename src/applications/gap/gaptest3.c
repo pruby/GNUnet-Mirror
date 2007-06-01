@@ -37,11 +37,11 @@
 
 
 
-#define PEER_COUNT 10
+#define PEER_COUNT 4
 
 #define START_PEERS 1
 
-#define SIZE 1024*1024*100
+#define SIZE 1024*1024*1
 
 static struct GE_Context * ectx;
 
@@ -178,12 +178,12 @@ static int infoCallback(void * data,
   hash2enc(&identity->hashPubKey,
 	   &enc);
   if (good) 
-    printf("Good peer `%s' has trust %u and bandwidth %u\n", 
+    printf("Good peer `%8s' has trust %u and bandwidth %u\n", 
 	   (const char*) &enc,
 	   trust,
 	   bpmFromPeer);
   else
-    printf("Poor peer `%s' has trust %u and bandwidth %u\n",
+    printf("Poor peer `%8s' has trust %u and bandwidth %u\n",
 	   (const char*) &enc,
 	   trust,
 	   bpmFromPeer);
@@ -263,7 +263,7 @@ int main(int argc, char ** argv) {
       ECRS_freeUri(uri);
     hash2enc(&hello->senderIdentity.hashPubKey,
 	     &enc);
-    printf("Uploading to peer `%s'\n", 
+    printf("Uploading to peer `%8s'\n", 
 	   (const char*)&enc);
     uri = uploadFile(SIZE);
     CHECK(NULL != uri);

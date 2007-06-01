@@ -413,7 +413,7 @@ broadcastHelper(const PeerIdentity * hi,
   prio = (int) getConnectPriority();
   if (prio >= EXTREME_PRIORITY)
     prio = EXTREME_PRIORITY / 4;
-  if (0 != coreAPI->queryBPMfromPeer(hi)) {
+  if (OK == coreAPI->queryPeerStatus(hi, NULL, NULL)) {
     coreAPI->unicast(hi,
 		     &sd->m->header,
 		     prio,
@@ -643,7 +643,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 static void
 forwardhello(void * unused) {
   int count;
-
+  
   if (os_cpu_get_load(coreAPI->ectx,
 		      coreAPI->cfg) > 100)
     return; /* CPU load too high... */

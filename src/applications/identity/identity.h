@@ -54,10 +54,12 @@ typedef struct {
 typedef struct {
   MESSAGE_HEADER header;
 
-  PeerIdentity peer;
-
   unsigned int trust;
 
+  PeerIdentity peer;
+
+  cron_t last_message;
+  
   unsigned int bpm;
 } CS_identity_peer_info_MESSAGE;
 

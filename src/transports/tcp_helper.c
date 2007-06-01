@@ -349,7 +349,7 @@ static int tcpSend(TSession * tsession,
   if ( (OK == ok) &&
        (stats != NULL) )
     stats->change(stat_bytesSent,
-		  size);
+		  size + sizeof(MESSAGE_HEADER));
 
   FREE(mp);
   return ok;

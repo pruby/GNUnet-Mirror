@@ -375,7 +375,7 @@ typedef struct BufferEntry_ {
 
   /**
    * is this host alive? timestamp of the time of the last-active
-   * point (as witnessed by some higher-level application, typically
+  * point (as witnessed by some higher-level application, typically
    * topology+pingpong)
    */
   cron_t isAlive;
@@ -3549,7 +3549,7 @@ void unicast(const PeerIdentity * receiver,
     /* little hack for topology,
        which cannot do this directly
        due to cyclic dependencies! */
-    if (getBandwidthAssignedTo(receiver) == 0)
+    if (getBandwidthAssignedTo(receiver, NULL, NULL) != OK)
       session->tryConnect(receiver);
     return;
   }
@@ -3610,7 +3610,9 @@ struct MUTEX * getConnectionModuleLock() {
   return lock;
 }
 
-unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
+int getBandwidthAssignedTo(const PeerIdentity * node,
+			   unsigned int * bpm,
+			   cron_t * last_seen) {
   BufferEntry *be;
   unsigned int ret;
 
@@ -3619,11 +3621,13 @@ unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
   be = lookForHost(node);
   if ( (be != NULL) &&
        (be->status == STAT_UP) ) {
-    ret = be->idealized_limit;
-    if(ret == 0)
-      ret = 1;
+    if (bpm != NULL)
+      *bpm = be->idealized_limit;
+    if (last_seen != NULL)
+      *last_seen = be->isAlive;
+    ret = OK;
   } else {
-    ret = 0;
+    ret = SYSERR;
   }
   MUTEX_UNLOCK(lock);
   return ret;

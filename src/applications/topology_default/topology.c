@@ -113,7 +113,7 @@ static int scanHelperCount(const PeerIdentity * id,
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
     return OK;
-  if (0 != coreAPI->queryBPMfromPeer(id))
+  if (OK == coreAPI->queryPeerStatus(id, NULL, NULL))
     return OK;
   if (YES == transport->isAvailable(proto)) {
     im->matchCount++;
@@ -142,7 +142,7 @@ static int scanHelperSelect(const PeerIdentity * id,
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
     return OK;
-  if (0 != coreAPI->queryBPMfromPeer(id))
+  if (OK == coreAPI->queryPeerStatus(id, NULL, NULL))
     return OK;
   if (YES == transport->isAvailable(proto)) {
     im->costSelector -= transport->getCost(proto);

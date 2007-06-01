@@ -209,7 +209,9 @@ struct MUTEX * getConnectionModuleLock(void);
  * How many bpm did we assign this peer (how much traffic
  * may the given peer send to us per minute?)
  */
-unsigned int getBandwidthAssignedTo(const PeerIdentity * hostId);
+int getBandwidthAssignedTo(const PeerIdentity * hostId,
+			   unsigned int * bpm,
+			   cron_t * last_seen);
 
 /**
  * Increase the preference for traffic from some other peer.

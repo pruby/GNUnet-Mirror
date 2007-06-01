@@ -589,7 +589,7 @@ static void considerPeer(const PeerIdentity * sender,
   }
   FREE(hello);
   /* check if connected, if not, send discovery */
-  if (0 == coreAPI->queryBPMfromPeer(peer)) {
+  if (OK != coreAPI->queryPeerStatus(peer, NULL, NULL)) {
     /* not yet connected; connect sending DISCOVERY */
     broadcast_dht_discovery(peer,
 			    NULL);

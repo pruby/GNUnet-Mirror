@@ -13,10 +13,9 @@ notes:
 
 0.7.2 [5'07]:
 - new features:
-  * XFS -- TEST more! [RC] 
-  * HTTP transport (libcurl, libmicrohttpd)
-- testcases (fix, add):
-  * implement gap economy testcase [RC]
+  * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
+- Testcases:
+  * XFS -- more testing would be good...    [likely 0.7.2a]
 
 
 0.7.3 [7'07] (aka "features"):
@@ -39,7 +38,8 @@ notes:
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97
-
+- guard friendly connection count (#1018)
+- power insert [#854?]
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
