@@ -187,7 +187,8 @@ int GNUNET_init(int argc,
     run = MALLOC(max);
     SNPRINTF(run,
 	     max,
-	     "gnunet-setup -c %s generate-defaults");
+	     "gnunet-setup -c %s generate-defaults",
+	     *cfgFileName);
     ret = system(run);
     if (0 != ret) 
       GE_LOG(*ectx,
