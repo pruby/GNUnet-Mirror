@@ -153,13 +153,14 @@ void URITRACK_trackURI(struct GE_Context * ectx,
   if (NO == URITRACK_trackStatus(ectx, cfg))
     return;
   size = ECRS_sizeofMetaData(fi->meta,
-			     ECRS_SERIALIZE_FULL);
+			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
   data = MALLOC(size);
-  GE_ASSERT(ectx, size == ECRS_serializeMetaData(ectx,
-						 fi->meta,
-						 data,
-						 size,
-						 ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS));
+  GE_ASSERT(ectx,
+	    size == ECRS_serializeMetaData(ectx,
+					   fi->meta,
+					   data,
+					   size,
+					   ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS));
   size = htonl(size);
   suri = ECRS_uriToString(fi->uri);
   sem = createIPC(ectx, cfg);
