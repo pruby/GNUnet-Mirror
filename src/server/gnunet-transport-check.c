@@ -213,26 +213,29 @@ static void pingCallback(void * unused) {
   SEMAPHORE_UP(sem);
 }
 
-static void testPING(const P2P_hello_MESSAGE * xhelo,
+static void testPING(const P2P_hello_MESSAGE * xhello,
 		     void * arg) {
   int * stats = arg;
   TSession * tsession;
-  P2P_hello_MESSAGE * helo;
-  P2P_hello_MESSAGE * myHelo;
+  P2P_hello_MESSAGE * hello;
+  P2P_hello_MESSAGE * myHello;
   MESSAGE_HEADER * ping;
   char * msg;
   int len;
   PeerIdentity peer;
   unsigned long long verbose;
-
+  
   stats[0]++; /* one more seen */
-  if (NO == transport->isAvailable(ntohs(xhelo->protocol))) {
+  if (NO == transport->isAvailable(ntohs(xhello->protocol))) {
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   _(" Transport %d is not being tested\n"),
-	   ntohs(xhelo->protocol));
+	   ntohs(xhello->protocol));
     return;
   }
+  if (ntohs(xhello->protocol) == NAT_PROTOCOL_NUMBER) 
+    return; /* NAT cannot be tested */  
+
   stats[1]++; /* one more with transport 'available' */
   GC_get_configuration_value_number(cfg,
 				    "GNUNET",
@@ -244,33 +247,33 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   if (verbose > 0) {
     char * str;
 
-    str = transport->helloToString(xhelo,
-				   NO);
+    str = transport->helloToString(xhello,
+				   YES);
     fprintf(stderr,
 	    _("\nContacting `%s'."),
 	    str);
     FREE(str);
   } else
     fprintf(stderr, ".");
-  helo = MALLOC(ntohs(xhelo->header.size));
-  memcpy(helo,
-	 xhelo, 
-	 ntohs(xhelo->header.size));
+  hello = MALLOC(ntohs(xhello->header.size));
+  memcpy(hello,
+	 xhello, 
+	 ntohs(xhello->header.size));
 
-  myHelo = transport->createhello(ntohs(xhelo->protocol));
-  if (myHelo == NULL) 
+  myHello = transport->createhello(ntohs(xhello->protocol));
+  if (myHello == NULL) 
     /* try NAT */
-    myHelo = transport->createhello(NAT_PROTOCOL_NUMBER);
-  if (myHelo == NULL) {
-    FREE(helo);
+    myHello = transport->createhello(NAT_PROTOCOL_NUMBER);
+  if (myHello == NULL) {
+    FREE(hello);
     return;
   }  
   if (verbose > 0)
     fprintf(stderr, ".");
   tsession = NULL;
-  peer = helo->senderIdentity;
-  tsession = transport->connect(helo);
-  FREE(helo);
+  peer = hello->senderIdentity;
+  tsession = transport->connect(hello);
+  FREE(hello);
   if (tsession == NULL) {
     fprintf(stderr,
 	    _(" Connection failed\n"));
@@ -291,15 +294,15 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
 			    NULL,
 			    YES,
 			    rand());
-  len = ntohs(ping->size) + ntohs(myHelo->header.size);
+  len = ntohs(ping->size) + ntohs(myHello->header.size);
   msg = MALLOC(len);
   memcpy(msg,
-	 myHelo,
-	 ntohs(myHelo->header.size));
-  memcpy(&msg[ntohs(myHelo->header.size)],
+	 myHello,
+	 ntohs(myHello->header.size));
+  memcpy(&msg[ntohs(myHello->header.size)],
 	 ping,
 	 ntohs(ping->size));
-  FREE(myHelo);
+  FREE(myHello);
   FREE(ping);
   /* send ping */
   ok = NO;
@@ -329,11 +332,15 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
 	       sem);
   SEMAPHORE_DOWN(sem, YES);
 
-  if ( (verbose > 0) &&
-       (ok != YES) )
-    FPRINTF(stderr,
-	    _("No reply received within %llums.\n"),
-	    timeout);
+  if (verbose > 0) {
+    if (ok != YES) 
+      FPRINTF(stderr,
+	      _("Timeout after %llums.\n"),
+	      timeout);
+    else
+      FPRINTF(stderr,
+	      _("OK!\n"));
+  }
   cron_suspend(cron,
 	       NO);
   cron_del_job(cron,
@@ -424,7 +431,7 @@ int main(int argc,
 					      "TRANSPORT-CHECK",
 					      "TIMEOUT",
 					      1,
-					      60000,
+					      3000,
 					      60 * cronSECONDS,
 					      &timeout)) {
     GNUNET_fini(ectx, cfg);
@@ -511,7 +518,7 @@ int main(int argc,
 			 &stats[0],
 			 &testTerminate,
 			 NULL);
-    printf(_("%d out of %d peers contacted successfully (%d times transport unavailable).\n"),
+    printf(_("\n%d out of %d peers contacted successfully (%d times transport unavailable).\n"),
 	   stats[2],
 	   stats[1],
 	   stats[0] - stats[1]);
