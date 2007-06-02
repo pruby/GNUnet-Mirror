@@ -13,5 +13,14 @@ libnetwork_la_SOURCES = \
  select.c 
 
 
+check_PROGRAMS = \
+ selecttest 
+
+TESTS = $(check_PROGRAMS)
+
+selecttest_SOURCES = \
+ selecttest.c 
+selecttest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 

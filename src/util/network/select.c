@@ -217,6 +217,16 @@ static void destroySession(SelectHandle * sh,
 	 s->rsize,
 	 s->wsize);	
 #endif
+#if 0
+  if ( (s->pos > 0) ||
+       (s->wapos > s->wspos) )
+    fprintf(stderr,
+	    "Destroying session %p of select %p with loss of %u in read and %u in write buffer.\n",
+	    s,
+	    sh,
+	    s->pos,
+	    s->wapos - s->wspos);	
+#endif
   MUTEX_UNLOCK(sh->lock);
   sh->ch(sh->ch_cls,
 	 sh,
