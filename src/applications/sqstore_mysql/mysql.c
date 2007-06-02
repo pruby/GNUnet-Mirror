@@ -205,7 +205,7 @@ typedef struct {
 
 #define INSERT_SAMPLE "INSERT INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
 
-#define SELECT_SAMPLE "SELECT * FROM gn070 WHERE hash=?"
+#define SELECT_SAMPLE "SELECT * FROM gn070 WHERE hash=? ORDER BY expire DESC"
 
 #define SELECT_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=?"
 
