@@ -921,7 +921,7 @@ static int get(const HashCode512 * key,
 	       void * closure) {
   int ret, count = 0;
   sqlite3_stmt *stmt;
-  char scratch[97];
+  char scratch[256];
   int bind = 1;
   Datastore_Datum *datum;
   sqlite3 * dbh;
@@ -959,6 +959,7 @@ static int get(const HashCode512 * key,
     if (key)
       strcat(scratch, "hash = :2");
   }
+  strcat(scratch, " ORDER BY expire DESC");
 
   if (sq_prepare(dbh,
 		 scratch,
