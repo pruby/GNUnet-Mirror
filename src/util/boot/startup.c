@@ -66,6 +66,7 @@ static int configure_logging(struct GE_Context ** ectx,
   struct GE_Context * nctx;
   struct GE_Context * tetx;
   unsigned long long logrotate;
+  int dev;
 
   nctx = NULL;
   admin_log_file = NULL;
@@ -97,13 +98,24 @@ static int configure_logging(struct GE_Context ** ectx,
 				    "USER-LEVEL",
 				    "WARNING",
 				    &user_log_level);
+  dev = GC_get_configuration_value_yesno(cfg,
+					 "LOGGING",
+					 "DEVELOPER",
+					 NO);
   all = convertLogLevel(admin_log_level);
   ull = convertLogLevel(user_log_level);
+  if (dev == YES) {
+    all |= GE_DEVELOPER | GE_REQUEST;
+    ull |= GE_DEVELOPER | GE_REQUEST;
+  }
   FREE(admin_log_level);
   FREE(user_log_level);
   if (all != 0) {
     nctx = GE_create_context_logfile(NULL,
-				     all | GE_ADMIN | GE_BULK | GE_IMMEDIATE,
+				     all 
+				     | GE_ADMIN 
+				     | GE_BULK
+				     | GE_IMMEDIATE,
 				     admin_log_file,
 				     YES,
 				     (int) logrotate);

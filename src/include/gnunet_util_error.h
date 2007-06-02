@@ -50,12 +50,12 @@ struct GE_Context;
 typedef enum {
   GE_NOTHING   = 0x00000000,
   /* type of event */
-  GE_DEBUG     = 0x00000001, /* DEBUG/CRON/EVERYTHING */
-  GE_STATUS    = 0x00000002, /* status message */
-  GE_INFO      = 0x00000004, /* normal program response */
-  GE_WARNING   = 0x00000008,
-  GE_ERROR     = 0x00000010,
-  GE_FATAL     = 0x00000020, /* FATAL/FAILURE/NOTHING */
+  GE_FATAL     = 0x00000001, /* FATAL/FAILURE/NOTHING */
+  GE_ERROR     = 0x00000002,
+  GE_WARNING   = 0x00000004,
+  GE_INFO      = 0x00000008, /* normal program response */
+  GE_STATUS    = 0x00000010, /* status message */
+  GE_DEBUG     = 0x00000020, /* DEBUG/CRON/EVERYTHING */
   GE_EVENTKIND = 0x000000FF, /* bitmask */
 
   /* who should see the message? */

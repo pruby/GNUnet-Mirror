@@ -250,15 +250,32 @@ int main(int argc,
     return 1;
   }
   if (YES == debug_flag) {
+    int dev;
+    char * user_log_level;
+    GE_KIND ull;
+
     GE_setDefaultContext(NULL);
     GE_free_context(ectx);
+    GC_get_configuration_value_string(cfg,
+				      "LOGGING",
+				      "USER-LEVEL",
+				      "WARNING",
+				      &user_log_level);
+    dev = GC_get_configuration_value_yesno(cfg,
+					   "LOGGING",
+					   "DEVELOPER",
+					   NO);
+    ull = GE_getKIND(user_log_level);
+    ull |= (ull - 1); /* set bits for all lower log-levels */
+    if (dev == YES) 
+      ull |= GE_DEVELOPER | GE_REQUEST;    
     if (loud_flag == 1)    
       ectx = GE_create_context_stderr(YES,
 				      GE_ALL);
     else
       ectx = GE_create_context_stderr(YES,
 				      GE_USER | GE_ADMIN 
-				      | GE_WARNING | GE_ERROR | GE_FATAL 
+				      | ull 
 				      | GE_BULK | GE_IMMEDIATE);
     GE_setDefaultContext(ectx);   
   }
