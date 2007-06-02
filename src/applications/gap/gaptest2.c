@@ -34,6 +34,13 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_stats_lib.h"
 
+
+#define START_PEERS 1
+
+#define PEER_COUNT 10
+
+#define SIZE 1024 * 1024 * 10
+
 static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
@@ -68,10 +75,10 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
-  for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
-    hash(&buf[i+sizeof(HashCode512)],
-	 42,
-	 (HashCode512*) &buf[i]);
+  for (i=0;i<size - sizeof(HashCode512);i+=sizeof(HashCode512))
+    hash(&buf[i],
+	 sizeof(HashCode512),
+	 (HashCode512*) &buf[i+sizeof(HashCode512)]);
   WRITE(fd, buf, size);
   FREE(buf);
   disk_file_close(ectx, name, fd);
@@ -81,7 +88,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			YES, /* index */
 			1, /* anon */
 			0, /* prio */
-			get_time() + 10 * cronMINUTES, /* expire */
+			get_time() + 100 * cronMINUTES, /* expire */
 			NULL, /* progress */
 			NULL,
 			&testTerminate,
@@ -102,7 +109,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			     key,
 			     0,
 			     0,
-			     get_time() + 10 * cronMINUTES, /* expire */
+			     get_time() + 100 * cronMINUTES, /* expire */
 			     uri,
 			     meta);
     ECRS_freeMetaData(meta);
@@ -150,7 +157,7 @@ static int searchFile(struct ECRS_URI ** uri) {
 		    cfg,
 		    *uri,
 		    1,
-		    150 * cronSECONDS,
+		    1450 * cronSECONDS,
 		    &searchCB,
 		    &myURI,
 		    &testTerminate,
@@ -237,8 +244,6 @@ static int unindexFile(unsigned int size) {
 
 #define CHECK(a) if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; }
 
-#define START_PEERS 1
-
 /**
  * Testcase to test gap routing (2 peers only).
  * @return 0: ok, -1: error
@@ -247,6 +252,8 @@ int main(int argc, char ** argv) {
   struct DaemonContext * peers;
   int ret;
   struct ECRS_URI * uri;
+  int i;
+  char buf[128];
 
   ret = 0;
   cfg = GC_create_C_impl();
@@ -260,8 +267,8 @@ int main(int argc, char ** argv) {
 				       "advertising topology fs stats",
 				       "/tmp/gnunet-gap-test2",
 				       2087,
-				       5000,
-				       8);
+				       10,
+				       PEER_COUNT);
   if (peers == NULL) {
     fprintf(stderr,
 	    "Failed to start the gnunetd daemons!\n");
@@ -269,35 +276,32 @@ int main(int argc, char ** argv) {
     return -1;
   }
 #endif
-  if ( (OK != gnunet_testing_connect_daemons(2087,
-					     7087)) ||
-       (OK != gnunet_testing_connect_daemons(7087,
-					     12087)) ||
-       (OK != gnunet_testing_connect_daemons(12087, 
-					     17087)) || 
-       (OK != gnunet_testing_connect_daemons(17087, 
-					     22087)) || 
-       (OK != gnunet_testing_connect_daemons(22087, 
-					     27087)) || 
-       (OK != gnunet_testing_connect_daemons(27087,
-					     32087)) ) {
-    gnunet_testing_stop_daemons(peers);
-    fprintf(stderr,
-	    "Failed to connect the peers!\n");
-    GC_free(cfg);
-    return -1;
+  for (i=1;i<PEER_COUNT;i++) {
+    if (OK != gnunet_testing_connect_daemons(2077 + (10*i),
+					     2087 + (10*i))) {
+      gnunet_testing_stop_daemons(peers);
+      fprintf(stderr,
+	      "Failed to connect the peers!\n");
+      GC_free(cfg);
+      return -1;
+    }
   }
 
-  uri = uploadFile(12345);
+  printf("Uploading...\n");
+  uri = uploadFile(SIZE);
   CHECK(NULL != uri);
+  SNPRINTF(buf,
+	   128,
+	   "localhost:%u",
+	   2077 + PEER_COUNT * 10); 
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",
 				    "HOST",
-				    "localhost:32087");
+				    buf);
   CHECK(OK == searchFile(&uri));
   printf("Search successful!\n");
-  CHECK(OK == downloadFile(12345, uri));
+  CHECK(OK == downloadFile(SIZE, uri));
   printf("Download successful!\n");
   ECRS_freeUri(uri);
   GC_set_configuration_value_string(cfg,
@@ -305,7 +309,7 @@ int main(int argc, char ** argv) {
 				    "NETWORK",
 				    "HOST",
 				    "localhost:2087");
-  CHECK(OK == unindexFile(12345));
+  CHECK(OK == unindexFile(SIZE));
 
  FAILURE:
 #if START_PEERS

@@ -1611,7 +1611,7 @@ static int execQuery(const PeerIdentity * sender,
  * sure that we do not send the same reply back on the same route more
  * than once.
  *
- * @param hostId who sent the content? NULL
+ * @param host who sent the content? NULL
  *        for locally found content.
  * @param msg the p2p reply that was received
  * @return how good this content was (effective
@@ -1633,9 +1633,6 @@ static int useContent(const PeerIdentity * host,
   EncName enc;
   EncName enc2;
 #endif
-
-  if (host == NULL)
-    return 0; /* IGNORE local replies! */
 
   if (ntohs(pmsg->size) < sizeof(P2P_gap_reply_MESSAGE)) {
     GE_BREAK(ectx, 0);
@@ -2213,7 +2210,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_routing_request_repeat     = stats->create(gettext_noop("# gap duplicate requests that were re-tried"));
     stat_routing_request_repeat_dttl= stats->create(gettext_noop("# gap re-try ttl difference (cummulative)"));
     stat_routing_reply_dups         = stats->create(gettext_noop("# gap reply duplicates"));
-    stat_routing_reply_drops        = stats->create(gettext_noop("# gap spurious replies"));
+    stat_routing_reply_drops        = stats->create(gettext_noop("# gap spurious replies (dropped)"));
     stat_routing_slots_used         = stats->create(gettext_noop("# gap routing slots currently in use"));
     stat_memory_seen                = stats->create(gettext_noop("# gap memory used for tracking seen content"));
     stat_memory_destinations        = stats->create(gettext_noop("# gap memory used for tracking routing destinations"));

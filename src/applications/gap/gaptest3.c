@@ -37,11 +37,11 @@
 
 
 
-#define PEER_COUNT 4
+#define PEER_COUNT 10
 
 #define START_PEERS 1
 
-#define SIZE 1024*1024*1
+#define SIZE 1024*1024*10
 
 static struct GE_Context * ectx;
 
@@ -163,6 +163,7 @@ static unsigned int goodPeerPos;
 static int infoCallback(void * data,
 			const PeerIdentity * identity,
 			const char * address,
+			cron_t last_seen,
 			unsigned int trust,
 			unsigned int bpmFromPeer) {
   int i;
