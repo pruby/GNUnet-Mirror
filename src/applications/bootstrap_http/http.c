@@ -60,6 +60,8 @@ typedef struct {
 
   const char * url;
 
+  unsigned long long total;
+
 } BootstrapContext;
 
 #define USE_MULTI YES
@@ -78,6 +80,7 @@ downloadHostlistHelper(void * ptr,
   P2P_hello_MESSAGE * helo;
   unsigned int hs;
 
+  bctx->total += size * nmemb;
   if (size * nmemb == 0)
     return 0; /* ok, no data */
   osize = bctx->bsize;
@@ -96,7 +99,7 @@ downloadHostlistHelper(void * ptr,
     if ( (ntohs(helo->header.type) != p2p_PROTO_hello) ||
 	 (P2P_hello_MESSAGE_size(helo) >= MAX_BUFFER_SIZE) ) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_REQUEST,
+	     GE_WARNING | GE_USER | GE_IMMEDIATE,
 	     _("Bootstrap data obtained from `%s' is invalid.\n"),
 	     bctx->url);
       return 0; /* Error: invalid format! */
@@ -203,7 +206,12 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     }
     pos--;
   }
+  GE_LOG(ectx,
+	 GE_INFO | GE_BULK | GE_USER,
+	 _("Bootstrapping using `%s'.\n"),
+	 url);
   bctx.url = url;
+  bctx.total = 0;
   proxy = NULL;
   GC_get_configuration_value_string(coreAPI->cfg,
 				    "GNUNETD",
@@ -375,6 +383,11 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   __LINE__,
 	   curl_multi_strerror(mret));
 #endif
+  GE_LOG(ectx,
+	 GE_INFO | GE_BULK | GE_USER,
+	 _("Downloaded %llu bytes from `%s'.\n"),
+	 bctx.total,
+	 url);
   FREE(url);
   FREE(proxy);
   curl_global_cleanup();
