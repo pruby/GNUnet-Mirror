@@ -376,8 +376,10 @@ int FS_insert(struct ClientServerConnection * sock,
   FREE(ri);
 
   if (OK != connection_read_result(sock,
-				   &ret))
+				   &ret)) {
+    GE_BREAK(NULL, 0);
     return SYSERR;
+  }
   return ret;
 }
 
