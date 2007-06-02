@@ -315,7 +315,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
    #f
    'fs-loaded) )
 
-(define (gnunet-gtk-previews builder) 
+(define (gnunet-gtk-own builder) 
  (builder
    "GNUNET-GTK"
    "DISABLE-OWN"
@@ -349,6 +349,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (list 
     (gnunet-gtk-plugins builder)
     (gnunet-gtk-previews builder)
+    (gnunet-gtk-own builder)
     (gnunet-gtk-incomingdir builder)
     (gnunet-gtk-stats-interval builder)
   )
