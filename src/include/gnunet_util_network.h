@@ -426,20 +426,21 @@ int socket_test_valid(struct SocketHandle * s);
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-struct SelectHandle * select_create(const char * desc,
-				    int is_udp,
-				    struct GE_Context * ectx,
-				    struct LoadMonitor * mon,
-				    int sock,
-				    unsigned int max_addr_len,
-				    cron_t timeout,
-				    SelectMessageHandler mh,
-				    void * mh_cls,
-				    SelectAcceptHandler ah,
-				    void * ah_cls,
-				    SelectCloseHandler ch,
-				    void * ch_cls,
-				    unsigned int memory_quota);
+struct SelectHandle * 
+select_create(const char * desc,
+	      int is_udp,
+	      struct GE_Context * ectx,
+	      struct LoadMonitor * mon,
+	      int sock,
+	      unsigned int max_addr_len,
+	      cron_t timeout,
+	      SelectMessageHandler mh,
+	      void * mh_cls,
+	      SelectAcceptHandler ah,
+	      void * ah_cls,
+	      SelectCloseHandler ch,
+	      void * ch_cls,
+	      unsigned int memory_quota);
 
 /**
  * Terminate the select thread, close the socket and
