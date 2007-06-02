@@ -37,9 +37,9 @@
 
 #define START_PEERS 1
 
-#define PEER_COUNT 10
+#define PEER_COUNT 4
 
-#define SIZE 1024 * 1024 * 10
+#define SIZE 1024 * 1024 * 2
 
 static struct GE_Context * ectx;
 
@@ -74,7 +74,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 		      name,
 		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
-  memset(buf, size + size / 253, size);
+  memset(buf, size / 253, sizeof(HashCode512));
   for (i=0;i<size - sizeof(HashCode512);i+=sizeof(HashCode512))
     hash(&buf[i],
 	 sizeof(HashCode512),
@@ -204,11 +204,11 @@ static int downloadFile(unsigned int size,
 			O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
-    memset(buf, size + size / 253, size);
-    for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
-      hash(&buf[i+sizeof(HashCode512)],
-	   42,
-	   (HashCode512*) &buf[i]);
+    memset(buf, size / 253, sizeof(HashCode512));
+    for (i=0;i<size - sizeof(HashCode512);i+=sizeof(HashCode512))
+      hash(&buf[i],
+	   sizeof(HashCode512),
+	   (HashCode512*) &buf[i+sizeof(HashCode512)]);
     if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,
@@ -254,6 +254,7 @@ int main(int argc, char ** argv) {
   struct ECRS_URI * uri;
   int i;
   char buf[128];
+  cron_t start;
 
   ret = 0;
   cfg = GC_create_C_impl();
@@ -301,8 +302,10 @@ int main(int argc, char ** argv) {
 				    buf);
   CHECK(OK == searchFile(&uri));
   printf("Search successful!\n");
+  start = get_time();
   CHECK(OK == downloadFile(SIZE, uri));
-  printf("Download successful!\n");
+  printf("Download successful at %llu kbps!\n",
+	 (SIZE / 1024) / ((get_time() - start) / cronSECONDS));
   ECRS_freeUri(uri);
   GC_set_configuration_value_string(cfg,
 				    ectx,
