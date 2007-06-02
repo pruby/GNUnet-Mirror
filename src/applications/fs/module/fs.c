@@ -34,6 +34,7 @@
 #include "gnunet_dht_service.h"
 #include "gnunet_datastore_service.h"
 #include "gnunet_traffic_service.h"
+#include "gnunet_stats_service.h"
 #include "anonymity.h"
 #include "dht_push.h"
 #include "ecrs_core.h"
@@ -80,6 +81,15 @@ static Datastore_ServiceAPI * datastore;
  * Traffic service.
  */
 static Traffic_ServiceAPI * traffic;
+
+/**
+ * Stats service.
+ */
+static Stats_ServiceAPI * stats;
+
+static int stat_expired_replies_dropped;
+
+static int stat_valid_replies_received;
 
 static struct MUTEX * lock;
 
@@ -181,6 +191,8 @@ static int gapPut(void * closure,
     FREE(dv);
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_valid_replies_received, 1);
   if (ntohll(dv->expirationTime) < get_time()) {
     /* do not do anything with expired data 
        _except_ if it is pure content that one
@@ -188,6 +200,9 @@ static int gapPut(void * closure,
        should ignore expiration */
     if (ntohl(dv->type) == D_BLOCK)
       processResponse(query, dv);
+    else if (stats != NULL)
+      stats->change(stat_expired_replies_dropped, 1);
+      
     FREE(dv);
     return NO;
   }
@@ -695,6 +710,14 @@ static int gapGetConverter(const HashCode512 * key,
 	 "Converting reply for query `%s' for gap.\n",
 	 &enc);
 #endif
+  et = ntohll(value->expirationTime);
+  now = get_time();
+  if ( (et <= now) &&
+       (ntohl(value->type) != D_BLOCK) ) {
+    /* content expired and not just data -- drop! */
+    return OK;
+  }
+
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
     if (OK != ONDEMAND_getIndexed(datastore,
 				  invalue,
@@ -763,9 +786,7 @@ static int gapGetConverter(const HashCode512 * key,
   }
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
-  et = ntohll(value->expirationTime);
   /* expiration time normalization and randomization */
-  now = get_time();
   if (et > now) {
     et -= now;
     et = et % MAX_MIGRATION_EXP;
@@ -1153,10 +1174,20 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     return SYSERR;
   }
   traffic = capi->requestService("traffic");
+  stats = capi->requestService("stats");
+  if (stats != NULL) {
+    stat_expired_replies_dropped
+      = stats->create(gettext_noop("# FS expired replies dropped"));
+    stat_valid_replies_received
+      = stats->create(gettext_noop("# FS valid replies received"));
+  }
   gap = capi->requestService("gap");
   if (gap == NULL) {
     GE_BREAK(ectx, 0);
     capi->releaseService(datastore);
+    if (stats != NULL)
+      capi->releaseService(stats);
+    capi->releaseService(traffic);
     return SYSERR;
   }
   dht = capi->requestService("dht"); 
@@ -1264,6 +1295,10 @@ void done_module_fs() {
 	       &unused);
   coreAPI->releaseService(datastore);
   datastore = NULL;
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
   coreAPI->releaseService(gap);
   gap = NULL;
   if (dht != NULL) {
