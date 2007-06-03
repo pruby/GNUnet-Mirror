@@ -470,9 +470,31 @@ addressToString(const P2P_hello_MESSAGE * hello,
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   size_t n;
   const char * hn = "";
-  struct hostent * ent;
 
+#if HAVE_GETNAMEINFO
+  char hostname[256];
+  struct sockaddr_in serverAddr;
+
+  if (do_resolve) {
+    memset((char *) &serverAddr,
+	   0,
+	   sizeof(serverAddr));
+    serverAddr.sin_family   = AF_INET;
+    memcpy(&serverAddr.sin_addr,
+	   haddr,
+	   sizeof(IPaddr));  
+    serverAddr.sin_port = haddr->senderPort;
+    if (0 == getnameinfo((const struct sockaddr* ) &serverAddr,
+			 sizeof(struct sockaddr_in),
+			 hostname,
+			 255,
+			 NULL, 0,
+			 NI_NAMEREQD))
+      hn = hostname;	
+  }
+#else
 #if HAVE_GETHOSTBYADDR
+  struct hostent * ent;
   if (do_resolve) {
     ent = gethostbyaddr(haddr,
 			sizeof(IPaddr),
@@ -480,6 +502,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
     if (ent != NULL)
       hn = ent->h_name;
   }    
+#endif
 #endif
   n = 4*4+6+6 + strlen(hn) + 10;
   ret = MALLOC(n);

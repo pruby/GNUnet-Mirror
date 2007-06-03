@@ -238,7 +238,7 @@ filelogger(void * cls,
   }
   if (fctx->logdate) {
     ret = fprintf(fctx->handle,
-		  "%s: %s %s",
+		  "%s %s: %s",
 		  date,
 		  GE_kindToString(kind & GE_EVENTKIND),
 		  msg);

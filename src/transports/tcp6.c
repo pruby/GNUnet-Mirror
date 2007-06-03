@@ -453,21 +453,46 @@ static int reloadConfiguration(void * ctx,
 static char * 
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
+  
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
   const Host6Address * haddr = (const Host6Address*) &hello[1];
   const char * hn = "";
-  struct hostent * ent;
   size_t n;
 
+#if HAVE_GETNAMEINFO
+  struct sockaddr_in6 serverAddr;
+  char hostname[256];
+
+  if (do_resolve) {
+    memset((char *) &serverAddr,
+	   0,
+	   sizeof(serverAddr));
+    serverAddr.sin6_family   = AF_INET6;
+    memcpy(&serverAddr.sin6_addr,
+	   haddr,
+	   sizeof(IP6addr));
+    serverAddr.sin6_port     = haddr->port;
+    if (0 == getnameinfo((const struct sockaddr* ) haddr,
+			 sizeof(struct sockaddr_in6),
+			 hostname,
+			 255,
+			 NULL, 0,
+			 NI_NAMEREQD))
+      hn = hostname;	
+  }
+#else
 #if HAVE_GETHOSTBYADDR
+  struct hostent * ent;
+
   if (do_resolve) {
     ent = gethostbyaddr(haddr,
-			sizeof(IPaddr),
-			AF_INET);
+			sizeof(IP6addr),
+			AF_INET6);
     if (ent != NULL)
       hn = ent->h_name;
   }    
+#endif
 #endif
   n = INET6_ADDRSTRLEN + 16 + strlen(hn) + 10;
   ret = MALLOC(n);

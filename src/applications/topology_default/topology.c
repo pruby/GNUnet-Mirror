@@ -39,7 +39,7 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
-#define DEBUG_TOPOLOGY YES
+#define DEBUG_TOPOLOGY NO
 
 /**
  * After 2 minutes on an inactive connection, probe the other

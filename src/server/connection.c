@@ -3107,7 +3107,7 @@ static int connectionConfigChangeCallback(void * ctx,
 
       GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "connection goal is %s%d peers (%llu BPS bandwidth downstream)\n",
+	     "connection goal is %s%d peers (%llu BPM bandwidth downstream)\n",
 	     (olen == 0) ? "" : "now ",
 	     CONNECTION_MAX_HOSTS_,
 	     max_bpm);
