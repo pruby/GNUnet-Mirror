@@ -123,7 +123,7 @@ void init_dht_push(CoreAPIForApplication * capi,
       = stats->create(gettext_noop("# blocks pushed into DHT"));
   thread = PTHREAD_CREATE(&push_thread,
 			  NULL,
-			  1024 * 16);
+			  1024 * 64);
 }
 
 void done_dht_push(void) {
