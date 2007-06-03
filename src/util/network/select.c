@@ -878,7 +878,7 @@ select_create(const char * description,
     sh->listen_sock = NULL;
   sh->thread = PTHREAD_CREATE(&selectThread,
 			      sh,
-			      16 * 1024);
+			      64 * 1024);
   if (sh->thread == NULL) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
