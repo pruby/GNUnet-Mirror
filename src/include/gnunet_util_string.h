@@ -168,6 +168,7 @@ int SNPRINTF(char * buf,
 
 /**
  * Give relative time in human-readable fancy format.
+ * @param delta time in milli seconds
  */
 char * string_get_fancy_time_interval(unsigned long long delta);
 

@@ -111,8 +111,8 @@ int NS_rankNamespace(struct GE_Context * ectx,
 
 /**
  * Add a namespace to the set of known namespaces.  For all namespace
- * advertisements that we discover NS should automatically call this
- * function.
+ * advertisements that we discover this function should be
+ * callled.
  *
  * @param ns the namespace identifier
  */
@@ -139,10 +139,27 @@ int NS_getNamespaceRoot(struct GE_Context * ectx,
  *   non-local known namespaces are listed)
  */
 int NS_listNamespaces(struct GE_Context * ectx,
-			struct GC_Configuration * cfg,
-			int local,
-			NS_NamespaceIterator iterator,
-			void * closure); /* namespace_info.c */
+		      struct GC_Configuration * cfg,
+		      int local,
+		      NS_NamespaceIterator iterator,
+		      void * closure); /* namespace_info.c */
+/**
+ * Register callback to be invoked whenever we discover
+ * a new namespace.
+ */
+int NS_registerDiscoveryCallback(struct GE_Context * ectx,
+				 struct GC_Configuration * cfg,
+				 int local,
+				 NS_NamespaceIterator iterator,
+				 void * closure);
+
+/**
+ * Unregister namespace discovery callback.
+ */
+int NS_unregisterDiscoveryCallback(NS_NamespaceIterator iterator,
+				   void * closure);
+
+
 
 /**
  * Add an entry into a namespace (also for publishing

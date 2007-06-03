@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -35,6 +35,41 @@
 #define NS_DIR "data" DIR_SEPARATOR_STR "namespaces" DIR_SEPARATOR_STR
 #define NS_UPDATE_DIR "data" DIR_SEPARATOR_STR "namespace-updates" DIR_SEPARATOR_STR
 #define NS_ROOTS "data" DIR_SEPARATOR_STR "namespace-root" DIR_SEPARATOR_STR
+
+struct DiscoveryCallback {
+  struct DiscoveryCallback * next;
+  NS_NamespaceIterator callback;
+  void * closure;
+  int local;
+};
+
+static struct DiscoveryCallback * head;
+
+static struct MUTEX * lock;
+
+/**
+ * Internal notification about new tracked URI.
+ */
+static void internal_notify(const char * name,
+			    const HashCode512 * id,
+			    const struct ECRS_MetaData * md,
+			    int rating,
+			    int local) {
+  struct DiscoveryCallback * pos;
+
+  MUTEX_LOCK(lock);
+  pos = head;
+  while (pos != NULL) {
+    if (pos->local == local)
+      pos->callback(pos->closure,
+		    name,
+		    id,
+		    md,
+		    rating);
+    pos = pos->next;
+  }
+  MUTEX_UNLOCK(lock);
+}
 
 static void writeNamespaceInfo(struct GE_Context * ectx,
 			       struct GC_Configuration * cfg,
@@ -206,6 +241,11 @@ NS_createNamespace(struct GE_Context * ectx,
 		       name,
 		       meta,
 		       0);
+    internal_notify(namespaceName,
+		    &id,
+		    meta,
+		    0,
+		    YES);
     FREE(name);
   }
   return ret;
@@ -939,6 +979,11 @@ void NS_addNamespaceInfo(struct GE_Context * ectx,
 		       ranking);
     ECRS_freeMetaData(old);
   } else {
+    internal_notify(name,
+		    &id,
+		    meta,
+		    ranking,
+		    NO);
     writeNamespaceInfo(ectx,
 		       cfg,
 		       name,
@@ -987,6 +1032,73 @@ int NS_getNamespaceRoot(struct GE_Context * ectx,
     ret = SYSERR;
   FREE(fn);
   return ret;
+}
+
+/**
+ * Register callback to be invoked whenever we discover
+ * a new namespace.
+ */
+int NS_registerDiscoveryCallback(struct GE_Context * ectx,
+				 struct GC_Configuration * cfg,
+				 int local,
+				 NS_NamespaceIterator iterator,
+				 void * closure) {
+  struct DiscoveryCallback * list;
+  
+  list = MALLOC(sizeof(struct DiscoveryCallback));
+  list->callback = iterator;
+  list->closure = closure;
+  list->local = local;
+  MUTEX_LOCK(lock);
+  list->next = head;
+  head = list;
+  NS_listNamespaces(ectx,
+		    cfg,
+		    local,
+		    iterator,
+		    closure);
+  MUTEX_UNLOCK(lock);
+  return OK;
+}
+
+/**
+ * Unregister namespace discovery callback.
+ */
+int NS_unregisterDiscoveryCallback(NS_NamespaceIterator iterator,
+				   void * closure) {
+  struct DiscoveryCallback * prev;
+  struct DiscoveryCallback * pos;
+
+  prev = NULL;
+  MUTEX_LOCK(lock);
+  pos = head;
+  while ( (pos != NULL) &&
+	  ( (pos->callback != iterator) ||
+	    (pos->closure != closure) ) ) {
+    prev = pos;
+    pos = pos->next;
+  }
+  if (pos == NULL) {
+    MUTEX_UNLOCK(lock);
+    return SYSERR;
+  }
+  if (prev == NULL)
+    head = pos->next;
+  else
+    prev->next = pos->next;
+  FREE(pos);
+  MUTEX_UNLOCK(lock);
+  return OK;
+}
+
+
+void __attribute__ ((constructor)) gnunet_namespace_ltdl_init() {
+  lock = MUTEX_CREATE(NO);
+}
+
+void __attribute__ ((destructor)) gnunet_namespace_ltdl_fini() {
+  MUTEX_DESTROY(lock);
+  lock = NULL;
 }
 
 

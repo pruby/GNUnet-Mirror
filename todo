@@ -1,26 +1,18 @@
-notes:
-  RC == Release Critical 
+This is just the current plan, plans change.
 
-  All issues that are targeted for the NEXT release
-  should also be filed on Mantis, except for "more testcases"
-  which is always an ongoing issue. 
-
-  Features that are targeted for future releases do not have
-  to be filed on Mantis (no need to bloat the database).
-
-  Oh, and this is of course just a plan.  And plans always change.
+Annotations:
+  RC == Release Critical
 
 
 0.7.2 [5'07]:
 - new features:
   * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
 - RC bugs:
-  * UDP assertion failure (mtu < size)
-  * gethostbyaddr crash (stack overflow? non-reentrant?)
-  * low connectivity (NAT?)
+  * UDP assertion failure (mtu < size) [#1209]
+  * low connectivity (NAT? real issue?)
 
 0.7.3 [7'07] (aka "features"):
-- Chat support basics [RC]
+- chat support basics [RC]
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only) [RC]
 - old/new features:
