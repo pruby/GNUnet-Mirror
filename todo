@@ -14,6 +14,10 @@ notes:
 0.7.2 [5'07]:
 - new features:
   * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
+- RC bugs:
+  * UDP assertion failure (mtu < size)
+  * gethostbyaddr crash (stack overflow? non-reentrant?)
+  * low connectivity (NAT?)
 
 0.7.3 [7'07] (aka "features"):
 - Chat support basics [RC]

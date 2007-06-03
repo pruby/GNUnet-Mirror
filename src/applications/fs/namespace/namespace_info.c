@@ -211,6 +211,40 @@ NS_createNamespace(struct GE_Context * ectx,
   return ret;
 }
 
+
+/**
+ * Delete a local namespace.  
+ *
+ * @return OK on success, SYSERR on error
+ */
+int NS_deleteNamespace(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const char * namespaceName) {
+  int ret;
+  char * tmp;
+  char * fn;
+
+  ret = ECRS_deleteNamespace(ectx, cfg, namespaceName);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &tmp);
+  fn = MALLOC(strlen(tmp) + strlen(NS_UPDATE_DIR) +
+	      strlen(namespaceName) + 20);
+  strcpy(fn, tmp);
+  FREE(tmp);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, NS_UPDATE_DIR);
+  strcat(fn, namespaceName);
+  strcat(fn, DIR_SEPARATOR_STR);
+  disk_directory_remove(ectx, fn);
+  FREE(fn);
+  return ret;
+}
+
+
+
 /**
  * Change the ranking of a (non-local) namespace.
  *
@@ -730,19 +764,19 @@ NS_addToNamespace(struct GE_Context * ectx,
 			    &nid,
 			    dst,
 			    md);
-  if (uri != NULL) {
-    if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
-      fi.uri = uri;
-      fi.meta = (struct ECRS_MetaData*) md;
-      writeUpdateData(ectx,
-		      cfg,
-		      name,
-		      &tid,
-		      &nid,
-		      &fi,
-		      updateInterval,
-		      creationTime);
-    }
+  if ( (uri != NULL) &&
+       (dst != NULL) ) {
+    fi.uri = ECRS_dupUri(dst);
+    fi.meta = (struct ECRS_MetaData*) md;
+    writeUpdateData(ectx,
+		    cfg,
+		    name,
+		    &tid,
+		    &nid,
+		    &fi,
+		    updateInterval,
+		    creationTime); 
+    ECRS_freeUri(fi.uri);
     if (lastId != NULL) {
       old = getUpdateDataFilename(ectx,
 				  cfg,

@@ -91,7 +91,9 @@ NS_createNamespace(struct GE_Context * ectx,
  *
  * @return OK on success, SYSERR on error
  */
-#define NS_deleteNamespace ECRS_deleteNamespace
+int NS_deleteNamespace(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const char * namespaceName); /* namespace.c */
 
 /**
  * Change the ranking of a (non-local) namespace.
