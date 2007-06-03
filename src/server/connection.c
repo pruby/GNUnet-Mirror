@@ -1542,6 +1542,12 @@ static int sendBuffer(BufferEntry * be) {
   }
   GE_ASSERT(ectx,
 	    totalMessageSize > sizeof(P2P_PACKET_HEADER));
+  if ( (be->session.mtu != 0) &&
+       (totalMessageSize > be->session.mtu) ) {
+    GE_BREAK(ectx, 0);
+    be->inSendBuffer = NO;
+    return NO;
+  }
   ret = transport->testWouldTry(be->session.tsession,				
 				totalMessageSize,
 				(priority >= EXTREME_PRIORITY) ? YES : NO);
@@ -1617,6 +1623,12 @@ static int sendBuffer(BufferEntry * be) {
   }
   FREE(entries);
   entries = NULL;
+  if (p > totalMessageSize) {
+    GE_BREAK(ectx, 0);
+    FREE(plaintextMsg);    
+    be->inSendBuffer = NO;
+    return NO;
+  }
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
@@ -1646,7 +1658,13 @@ static int sendBuffer(BufferEntry * be) {
     if (stats != NULL)
       stats->change(stat_noise_sent, noiseLen);
   }
-
+  if ( (be->session.mtu != 0) &&
+       (p > be->session.mtu) ) {
+    GE_BREAK(ectx, 0);
+    FREE(plaintextMsg);    
+    be->inSendBuffer = NO;
+    return NO;
+  }
   encryptedMsg = MALLOC(p);
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512), 
