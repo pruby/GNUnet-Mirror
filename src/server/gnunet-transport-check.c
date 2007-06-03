@@ -431,8 +431,8 @@ int main(int argc,
 					      "TRANSPORT-CHECK",
 					      "TIMEOUT",
 					      1,
-					      3000,
 					      60 * cronSECONDS,
+					      3 * cronSECONDS,
 					      &timeout)) {
     GNUNET_fini(ectx, cfg);
     return 1;
