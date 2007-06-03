@@ -760,12 +760,11 @@ approximateKnapsack(BufferEntry * be,
   max = 0;
 
   for(i = 0; i < count; i++) {
-    if(entries[i]->len <= left) {
+    if (entries[i]->len <= left) {
       entries[i]->knapsackSolution = YES;
       left -= entries[i]->len;
       max += entries[i]->pri;
-    }
-    else {
+    } else {
       entries[i]->knapsackSolution = NO;
     }
   }
@@ -792,28 +791,21 @@ static unsigned int solveKnapsack(BufferEntry * be,
   int max;
   long long *v;
   int *efflen;
-  cron_t startTime;
-  cron_t endTime;
   SendEntry ** entries;
   unsigned int count;
 #define VARR(i,j) v[(i)+(j)*(count+1)]
 
-  if(available < 0) {
-    GE_BREAK(ectx, 0);
-    return -1;
-  }
   ENTRY();
   entries = be->sendBuffer;
   count = be->sendBufferSize;
-  startTime = get_time();
 
   /* fast test: schedule everything? */
   max = 0;
-  for(i = 0; i < count; i++)
+  for (i=0;i<count;i++)
     max += entries[i]->len;
-  if(max <= available) {
+  if (max <= available) {
     /* short cut: take everything! */
-    for(i = 0; i < count; i++)
+    for (i = 0; i < count; i++)
       entries[i]->knapsackSolution = YES;
     max = 0;
     for(i = 0; i < count; i++)
@@ -827,10 +819,9 @@ static unsigned int solveKnapsack(BufferEntry * be,
      4, this is probably a good idea (TM)  :-) */
   efflen = MALLOC(sizeof(int) * count);
   max = available;
-  for(i = 0; i < count; i++) {
-    if(entries[i]->len > 0)
-      max = gcd(max, entries[i]->len);
-  }
+  for(i = 0; i < count; i++) 
+    if (entries[i]->len > 0)
+      max = gcd(max, entries[i]->len);  
   GE_ASSERT(ectx, max != 0);
   available = available / max;
   for(i = 0; i < count; i++)
@@ -860,19 +851,6 @@ static unsigned int solveKnapsack(BufferEntry * be,
       }
       else
         VARR(i, j) = leave_val;
-#if 0      
-      printf("i: %d j: %d (of %d) efflen: %d take: %d "
-	     "leave %d e[i-1]->pri %d VAR(i-1,j-eff) %lld VAR(i,j) %lld\n",
-	     i,
-	     j,
-	     available,
-	     efflen[i-1],
-	     take_val,
-	     leave_val,
-	     entries[i-1]->pri,
-	     VARR(i-1,j-efflen[i-1]),
-	     VARR(i,j));
-#endif
     }
   }
 
@@ -900,7 +878,6 @@ static unsigned int solveKnapsack(BufferEntry * be,
   GE_ASSERT(ectx, j == 0);
   FREE(v);
   FREE(efflen);
-  endTime = get_time();
 
   return max;
 }
@@ -942,17 +919,25 @@ static int outgoingCheck(unsigned int priority) {
   delta = load - 50;            /* now delta is in [1,50] with 50 == 100% load */
   if(delta * delta * delta > priority) {
 #if DEBUG_POLICY
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        "Network load is too high (%d%%, priority is %u, require %d), "
-        "dropping outgoing.\n", load, priority, delta * delta * delta);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Network load is too high (%d%%, priority is %u, require %d), "
+	   "dropping outgoing.\n", 
+	   load,
+	   priority,
+	   delta * delta * delta);
 #endif
     return SYSERR;              /* drop */
   }
   else {
 #if DEBUG_POLICY
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        "Network load is ok (%d%%, priority is %u >= %d), "
-        "sending outgoing.\n", load, priority, delta * delta * delta);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Network load is ok (%d%%, priority is %u >= %d), "
+	   "sending outgoing.\n", 
+	   load, 
+	   priority, 
+	   delta * delta * delta);
 #endif
     return OK;                  /* allow */
   }
@@ -1133,10 +1118,15 @@ selectMessagesToSend(BufferEntry * be,
 #endif
     }
     j = 0;
-    for (i = 0; i < be->sendBufferSize; i++)
-      if (be->sendBuffer[i]->knapsackSolution == YES)
+    totalMessageSize = 0;
+    for (i = 0; i < be->sendBufferSize; i++) {
+      if (be->sendBuffer[i]->knapsackSolution == YES) {
+	totalMessageSize += be->sendBuffer[i]->len;
         j++;
-    if (j == 0) {
+      }
+    }
+    if ( (j == 0) ||
+	 (totalMessageSize > be->session.mtu - sizeof(P2P_PACKET_HEADER)) ) {
       GE_BREAK(ectx, 0);
       GE_LOG(ectx,
 	     GE_ERROR | GE_BULK | GE_DEVELOPER,
