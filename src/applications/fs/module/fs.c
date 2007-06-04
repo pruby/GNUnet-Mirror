@@ -710,10 +710,10 @@ static int gapGetConverter(const HashCode512 * key,
 	 "Converting reply for query `%s' for gap.\n",
 	 &enc);
 #endif
-  et = ntohll(value->expirationTime);
+  et = ntohll(invalue->expirationTime);
   now = get_time();
   if ( (et <= now) &&
-       (ntohl(value->type) != D_BLOCK) ) {
+       (ntohl(invalue->type) != D_BLOCK) ) {
     /* content expired and not just data -- drop! */
     return OK;
   }
