@@ -336,7 +336,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
     if (ok != YES) 
       FPRINTF(stderr,
 	      _("Timeout after %llums.\n"),
-	      timeout);
+	      timeout)
     else
       FPRINTF(stderr,
 	      _("OK!\n"));
