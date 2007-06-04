@@ -55,6 +55,13 @@ void unlockGcrypt() {
 #endif
 }
 
+static void dummy_logger(void * arg,
+			 int level,
+			 const char * format,
+			 va_list args) {
+  /* do nothing -- ignore libgcyrpt errors */
+}
+
 void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
 #if USE_LOCK
   gcrypt_shared_lock = MUTEX_CREATE(YES);
@@ -69,6 +76,7 @@ void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
     abort();
   }
   srand((unsigned int)time(NULL));
+  gcry_set_log_handler(&dummy_logger, NULL);
 #ifdef gcry_fast_random_poll
   lockGcrypt();
   gcry_fast_random_poll ();
