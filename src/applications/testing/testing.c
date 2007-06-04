@@ -191,7 +191,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
      entropy! */
   if (OK != connection_wait_for_running(NULL,
 					cfg,
-					5 * cronMINUTES)) {
+					15 * cronMINUTES)) {
     fprintf(stderr,
 	    "Failed to confirm daemon running!\n");
     GC_free(cfg);
@@ -268,29 +268,29 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 				    host);
   if ( (OK == connection_wait_for_running(NULL,
 					  cfg1,
-					  30 * cronSECONDS) ) &&
+					  300 * cronSECONDS) ) &&
        (OK == connection_wait_for_running(NULL,
 					  cfg2,
-					  30 * cronSECONDS) ) ) {    
+					  300 * cronSECONDS) ) ) {    
     sock1 = client_connection_create(NULL,
 				     cfg1);
     sock2 = client_connection_create(NULL,
 				     cfg2);
-    h1 = NULL;
-    h2 = NULL;
-    if ( (OK == gnunet_identity_get_self(sock1,
-					 &h1)) &&
-	 (OK == gnunet_identity_get_self(sock2,
-					 &h2)) &&
-	 (OK == gnunet_identity_peer_add(sock1,
-					 h2)) &&
-	 (OK == gnunet_identity_peer_add(sock2,
-					 h1)) ) {
-      ret = - 30;
-      fprintf(stderr, 
-	      _("Waiting for peers to connect"));
-      while ( (ret++ < -1) &&
-	      (GNUNET_SHUTDOWN_TEST() == NO) ) {
+    ret = - 10;
+    fprintf(stderr, 
+	    _("Waiting for peers to connect"));
+    while ( (ret++ < -1) &&
+	    (GNUNET_SHUTDOWN_TEST() == NO) ) {
+      h1 = NULL;
+      h2 = NULL;
+      if ( (OK == gnunet_identity_get_self(sock1,
+					   &h1)) &&
+	   (OK == gnunet_identity_get_self(sock2,
+					   &h2)) &&
+	   (OK == gnunet_identity_peer_add(sock1,
+					   h2)) &&
+	   (OK == gnunet_identity_peer_add(sock2,
+					   h1)) ) {
 	fprintf(stderr, ".");
 	if (YES == gnunet_identity_request_connect(sock1,
 						   &h2->senderIdentity)) {
@@ -304,12 +304,12 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 	}
 	PTHREAD_SLEEP(2 * cronSECONDS);
       }
-      fprintf(stderr, "%s\n", ret == OK ? "!" : "?");
+      FREENONNULL(h1);
+      FREENONNULL(h2);
     }
-    FREENONNULL(h1);
-    FREENONNULL(h2);
+    fprintf(stderr, "%s\n", ret == OK ? "!" : "?");
     connection_destroy(sock1);
-    connection_destroy(sock2);
+    connection_destroy(sock2);    
   } else {
     fprintf(stderr,
 	    "Failed to establish connection with peers.\n");
