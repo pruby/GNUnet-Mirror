@@ -338,7 +338,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
 	      _("Timeout after %llums.\n"),
 	      timeout);
     else
-      FPRINTF(stderr,
+      fprintf(stderr,
 	      _("OK!\n"));
   }
   cron_suspend(cron,
