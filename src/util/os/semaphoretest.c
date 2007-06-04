@@ -57,7 +57,7 @@ static int testIPCSemaphore() {
 	IPC_SEMAPHORE_DOWN(ipc,
 			   YES);
 	fd = FOPEN("/tmp/gnunet_ipc_xchange",
-		       "a+");
+		   "a+");
 	if (fd == NULL) {
 	  printf("Could not open testfile for reading: %s\n",
 		 STRERROR(errno));
@@ -66,8 +66,6 @@ static int testIPCSemaphore() {
 	}
 	fseek(fd, 4*i, SEEK_SET);
 	si = GN_FREAD(&j, 4, 1, fd);
-	while (si == 0)
-	  si = GN_FREAD(&j, 4, 1, fd);
 	if (si != 1) {
 	  printf("Could not read from testfile: %d - %s at %s:%d\n",
 		 si,
@@ -90,9 +88,9 @@ static int testIPCSemaphore() {
       sw = 1;
     } else {
       for (i=0;i<6;i++) {
-	sleep(1);
+	PTHREAD_SLEEP(50 + i*50);
 	fd = FOPEN("/tmp/gnunet_ipc_xchange",
-		       "w+");
+		   "a+");
 	if (fd == NULL) {
 	  printf("Could not open testfile for writing: %s\n",
 		 STRERROR(errno));
@@ -111,7 +109,7 @@ static int testIPCSemaphore() {
 	IPC_SEMAPHORE_UP(ipc);
       }
       fprintf(stderr, ".");
-      sleep(2); /* give reader ample time to finish */
+      sleep(1); /* give reader ample time to finish */
       sw = 0;
     }
   }
@@ -121,12 +119,14 @@ static int testIPCSemaphore() {
   if (me == 0) {
     exit(ret);
   } else {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	" waiting for other process to exit.\n");
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "waiting for other process to exit.\n");
     if (-1 == waitpid(me, &j, 0))
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  " waitpid failed: %s\n",
-	  STRERROR(errno));
+      GE_LOG(ectx,
+	     GE_ERROR | GE_BULK | GE_USER,
+	     "waitpid failed: %s\n",
+	     STRERROR(errno));
     if ((! WIFEXITED(j)) || WEXITSTATUS(j) == 1)
       ret = 1; /* error in child */
   }
