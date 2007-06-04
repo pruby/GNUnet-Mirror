@@ -40,7 +40,7 @@
 
 #define NUM_PEERS 12
 
-#define NUM_ROUNDS 100
+#define NUM_ROUNDS 10
 
 static int countConnections(const char * name,
 			    unsigned long long value,
