@@ -1019,6 +1019,11 @@ int verifySig(const void * block,
 		     0);
   FREE(buff);
   hostkey = public2PrivateKey(publicKey);
+  if (hostkey == NULL) {
+    gcry_sexp_release(data);
+    gcry_sexp_release(sigdata);
+    return SYSERR;
+  }
   rc = gcry_pk_verify(sigdata,
 		      data,
 		      hostkey->sexp);
