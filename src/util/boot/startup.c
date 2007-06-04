@@ -193,14 +193,18 @@ int GNUNET_init(int argc,
 			      *cfgFileName)) &&
        (! is_daemon) ) {
     char * run;
+    char * bindir;
     size_t max;
     
-    max = 128 + strlen(*cfgFileName);
+    bindir = os_get_installation_path(IPK_BINDIR);
+    max = 128 + strlen(*cfgFileName) + strlen(bindir);
     run = MALLOC(max);
     SNPRINTF(run,
 	     max,
-	     "gnunet-setup -c %s generate-defaults",
+	     "%sgnunet-setup -c %s generate-defaults",
+	     bindir,
 	     *cfgFileName);
+    FREE(bindir);
     ret = system(run);
     if (0 != ret) 
       GE_LOG(*ectx,
