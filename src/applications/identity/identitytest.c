@@ -121,8 +121,6 @@ static int hcb(void * data,
 	       cron_t last_message,
 	       unsigned int trust,
 	       unsigned int bpmFromPeer) {
-  int * ret = data;
-
   /* TODO: do something meaningful */
   return OK;
 }
