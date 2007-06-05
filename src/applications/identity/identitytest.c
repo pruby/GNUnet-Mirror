@@ -28,12 +28,17 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_identity_lib.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_core.h"
 #include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 #include "core.h"
 
 static struct CronManager * cron;
+
+static struct GC_Configuration * cfg;
+
 
 #define ASSERT(cond) do { \
   if (!cond) { \
@@ -52,24 +57,24 @@ static int runTest() {
   PeerIdentity pid;
   const PublicKey * pkey;
   Signature sig;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
 
   transport = requestService("transport");
   identity = requestService("identity");
   cron_start(cron);
   /* give cron job chance to run */
   PTHREAD_SLEEP(5 * cronSECONDS);
-  helo = transport->createhello(ANY_PROTOCOL_NUMBER);
-  if (NULL == helo) {
+  hello = transport->createhello(ANY_PROTOCOL_NUMBER);
+  if (NULL == hello) {
     printf("Cannot run test, failed to create any hello.\n");
     cron_stop(cron);
     releaseService(identity);
     releaseService(transport);
     return SYSERR;
   }
-  identity->addHost(helo);
-  pid = helo->senderIdentity;
-  FREE(helo);
+  identity->addHost(hello);
+  pid = hello->senderIdentity;
+  FREE(hello);
 
   identity->changeHostTrust
     (&pid,
@@ -110,9 +115,33 @@ static int runTest() {
   return OK;
 }
 
+static int hcb(void * data,
+	       const PeerIdentity * identity,
+	       const char * address,
+	       cron_t last_message,
+	       unsigned int trust,
+	       unsigned int bpmFromPeer) {
+  int * ret = data;
+
+  /* TODO: do something meaningful */
+  return OK;
+}
+
+static int runClientTest() {
+  struct ClientServerConnection * sock;
+  int ret;
+
+  ret = OK;
+  sock = client_connection_create(NULL, cfg);
+  gnunet_identity_request_peer_infos(sock,
+				     &hcb,
+				     &ret);
+  connection_destroy(sock);
+  return ret;
+}
+
 int main(int argc, char *argv[]) {
   int err;
-  struct GC_Configuration * cfg;
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -127,6 +156,8 @@ int main(int argc, char *argv[]) {
 	   NULL);
   err = 0;
   if (OK != runTest())
+    err = 1;
+  if (OK != runClientTest())
     err = 1;
   doneCore();
   cron_destroy(cron);

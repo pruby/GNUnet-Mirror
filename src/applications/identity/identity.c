@@ -1265,7 +1265,7 @@ static int hostInfoIterator(const PeerIdentity * identity,
 
 static int identityRequestInfoHandler(struct ClientHandle * sock,
 				      const MESSAGE_HEADER * message) {
-  forEachHost(get_time(),
+  forEachHost(0,
 	      &hostInfoIterator,
 	      sock);
   return coreAPI->sendValueToClient(sock,

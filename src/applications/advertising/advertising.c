@@ -78,6 +78,22 @@ static struct GE_Context * ectx;
 
 static int stat_hello_in;
 
+static int stat_hello_nat_in;
+
+static int stat_hello_verified;
+
+static int stat_hello_update;
+
+static int stat_hello_discard;
+
+static int stat_hello_no_transport;
+
+static int stat_hello_ping_busy;
+
+static int stat_hello_noselfad;
+
+static int stat_hello_send_error;
+
 static int stat_hello_out;
 
 static int stat_hello_fwd;
@@ -114,6 +130,8 @@ static double getConnectPriority() {
 static void callAddHost(void * cls) {
   P2P_hello_MESSAGE * helo = cls;
 
+  if (stats != NULL)
+    stats->change(stat_hello_verified, 1);
   identity->addHost(helo);
   FREE(helo);
 }
@@ -140,7 +158,8 @@ receivedhello(const MESSAGE_HEADER * message) {
 
   /* first verify that it is actually a valid hello */
   msg = (P2P_hello_MESSAGE* ) message;
-  if (ntohs(msg->header.size) != P2P_hello_MESSAGE_size(msg)) {
+  if ( (ntohs(msg->header.size) < sizeof(P2P_hello_MESSAGE)) ||
+       (ntohs(msg->header.size) != P2P_hello_MESSAGE_size(msg)) ) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
@@ -204,6 +223,8 @@ receivedhello(const MESSAGE_HEADER * message) {
        (which is OK since we never attempt to
        connect to a NAT). */
     identity->addHost(msg);
+    if (stats != NULL)
+      stats->change(stat_hello_nat_in, 1);
     return OK;
   }
 
@@ -224,6 +245,8 @@ receivedhello(const MESSAGE_HEADER * message) {
 	 TTL has changed); thus we can 'trust' it without playing
 	 ping-pong */
       identity->addHost(msg);
+      if (stats != NULL)
+	stats->change(stat_hello_update, 1);
       FREE(copy);
       return OK;
     }
@@ -285,6 +308,8 @@ receivedhello(const MESSAGE_HEADER * message) {
 						       Download),
 	   (unsigned int) P2P_hello_MESSAGE_size(msg));
 #endif
+    if (stats != NULL)
+      stats->change(stat_hello_discard, 1);
     return SYSERR;
   }
   lasthelloMsg = now;
@@ -297,8 +322,11 @@ receivedhello(const MESSAGE_HEADER * message) {
 
   /* Establish session as advertised in the hello */
   tsession = transport->connect(msg);
-  if (tsession == NULL)
+  if (tsession == NULL) {
+    if (stats != NULL)
+      stats->change(stat_hello_no_transport, 1);
     return SYSERR; /* could not connect */
+  }
 
   /* build message to send, ping must contain return-information,
      such as a selection of our hellos... */
@@ -309,7 +337,6 @@ receivedhello(const MESSAGE_HEADER * message) {
     GE_ASSERT(ectx, mtu > P2P_MESSAGE_OVERHEAD);
     mtu -= P2P_MESSAGE_OVERHEAD;
   }
-  buffer = MALLOC(mtu);
   copy = MALLOC(P2P_hello_MESSAGE_size(msg));
   memcpy(copy,
 	 msg,
@@ -321,13 +348,15 @@ receivedhello(const MESSAGE_HEADER * message) {
 			    rand());
   if (ping == NULL) {
     res = SYSERR;
-    FREE(buffer);
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("Could not send hellos+PING, ping buffer full.\n"));
     transport->disconnect(tsession);
+    if (stats != NULL)
+      stats->change(stat_hello_ping_busy, 1);
     return SYSERR;
   }
+  buffer = MALLOC(mtu);
   if (mtu > ntohs(ping->size)) {
     heloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
 					     buffer);
@@ -337,12 +366,15 @@ receivedhello(const MESSAGE_HEADER * message) {
     heloEnd = -2;
   }
   if (heloEnd <= 0) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("`%s' failed (%d, %u). Will not send PING.\n"),
-	"getAdvertisedhellos",
-	heloEnd,
-	mtu - ntohs(ping->size));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("`%s' failed (%d, %u). Will not send PING.\n"),
+	   "getAdvertisedhellos",
+	   heloEnd,
+	   mtu - ntohs(ping->size));
     FREE(buffer);
+    if (stats != NULL)
+      stats->change(stat_hello_noselfad, 1);
     transport->disconnect(tsession);
     return SYSERR;
   }
@@ -357,8 +389,12 @@ receivedhello(const MESSAGE_HEADER * message) {
   if ( (res == OK) &&
        (SYSERR == coreAPI->sendPlaintext(tsession,
 					 buffer,
-					 heloEnd)) )
+					 heloEnd)) ) {
+    
+    if (stats != NULL)
+      stats->change(stat_hello_send_error, 1);
     res = SYSERR;
+  }
   if (res == OK) {
     if (stats != NULL)
       stats->change(stat_plaintextPingSent, 1);
@@ -800,6 +836,14 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_hello_in = stats->create(gettext_noop("# Peer advertisements received"));
+    stat_hello_nat_in = stats->create(gettext_noop("# Peer advertisements of type NAT received"));
+    stat_hello_verified = stats->create(gettext_noop("# Peer advertisements confirmed via PONG"));
+    stat_hello_update = stats->create(gettext_noop("# Peer advertisements updating earlier HELLOs"));
+    stat_hello_discard = stats->create(gettext_noop("# Peer advertisements discarded due to load"));
+    stat_hello_no_transport = stats->create(gettext_noop("# Peer advertisements for unsupported transport"));
+    stat_hello_ping_busy = stats->create(gettext_noop("# Peer advertisements not confirmed due to ping busy"));
+    stat_hello_noselfad = stats->create(gettext_noop("# Peer advertisements not confirmed due to lack of self ad"));
+    stat_hello_send_error = stats->create(gettext_noop("# Peer advertisements not confirmed due to send error"));
     stat_hello_out = stats->create(gettext_noop("# Self advertisments transmitted"));
     stat_hello_fwd = stats->create(gettext_noop("# Foreign advertisements forwarded"));
     stat_plaintextPingSent

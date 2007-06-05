@@ -39,7 +39,9 @@ extern "C" {
 
 
 /**
- * Inform gnunetd about another peer.
+ * Inform gnunetd about another peer.  The given
+ * HELLO will be subjected to evaluation for validity
+ * just like HELLOs received from other peers.
  *
  * @param sock socket to talk to gnunetd over
  * @return OK on success, SYSERR on error
