@@ -35,13 +35,11 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_stats_lib.h"
 
-
-
 #define PEER_COUNT 10
 
 #define START_PEERS 1
 
-#define SIZE 1024*1024*10
+#define SIZE 1024*1024*2
 
 static struct GE_Context * ectx;
 
@@ -90,7 +88,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			YES, /* index */
 			1, /* anon */
 			0, /* prio */
-			get_time() + 10 * cronMINUTES, /* expire */
+			get_time() + 100 * cronMINUTES, /* expire */
 			NULL, /* progress */
 			NULL,
 			&testTerminate,
