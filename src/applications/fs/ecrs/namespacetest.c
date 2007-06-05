@@ -66,7 +66,7 @@ static int testNamespace() {
 			 meta,
 			 0,
 			 0,
-			 get_time() + 5 * cronMINUTES,
+			 get_time() + 15 * cronMINUTES,
 			 adv,
 			 &root);
   CHECK(NULL != rootURI);

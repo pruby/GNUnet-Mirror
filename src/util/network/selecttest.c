@@ -285,6 +285,7 @@ static int check() {
 #endif
   select_disconnect(sh, out);
   select_destroy(sh);
+  FREE(m);
   fprintf(stderr,
 	  "\nTransmitted %u test messages - received %u (performance: %llu kbps)\n",
 	  msg,
