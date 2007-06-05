@@ -144,7 +144,8 @@ static void callAddHost(void * cls) {
  * @return SYSERR on error, OK on success
  */
 static int
-receivedhello(const MESSAGE_HEADER * message) {
+receivedhello(const PeerIdentity * sender,
+	      const MESSAGE_HEADER * message) {
   TSession * tsession;
   P2P_hello_MESSAGE * copy;
   PeerIdentity foreignId;
@@ -234,7 +235,8 @@ receivedhello(const MESSAGE_HEADER * message) {
 				 ntohs(msg->protocol),
 				 NO);
   if (NULL != copy) {
-    if ( (ntohs(copy->senderAddressSize) ==
+    if ( (sender != NULL) &&
+	 (ntohs(copy->senderAddressSize) ==
 	  ntohs(msg->senderAddressSize)) &&
 	 (0 == memcmp(&msg->MTU,
 		      &copy->MTU,
@@ -711,7 +713,8 @@ forwardhello(void * unused) {
 static int
 ehelloHandler(const PeerIdentity * sender,
 	      const MESSAGE_HEADER * message) {
-  if (OK == receivedhello(message)) {
+  if (OK == receivedhello(sender,
+			  message)) {
     /* if the hello was ok, update traffic preference
        for the peer (depending on how much we like
        to learn about other peers) */
@@ -728,7 +731,8 @@ static int
 phelloHandler(const PeerIdentity * sender,
 	      const MESSAGE_HEADER * message,
 	      TSession * session) {
-  receivedhello(message);
+  receivedhello(sender,
+		message);
   return OK;
 }
 
