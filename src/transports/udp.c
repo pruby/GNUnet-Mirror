@@ -220,13 +220,13 @@ static int isRejected(const void * addr,
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
-  HostAddress * haddr;
+static int verifyHelo(const P2P_hello_MESSAGE * hello) {
+  const HostAddress * haddr;
 
-  haddr = (HostAddress*) &helo[1];
-  if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
+  haddr = (const HostAddress*) &hello[1];
+  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
        (YES == isBlacklisted(&haddr->senderIP,
 			     sizeof(IPaddr))) ||
        (YES != isWhitelisted(&haddr->senderIP,
@@ -235,7 +235,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   else {
 #if DEBUG_UDP
     GE_LOG(ectx, GE_DEBUG | GE_USER | GE_BULK,
-	"Verified UDP helo from %u.%u.%u.%u:%u.\n",
+	"Verified UDP hello from %u.%u.%u.%u:%u.\n",
 	PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
 	ntohs(haddr->senderPort));
 #endif
@@ -303,7 +303,7 @@ static int udpSend(TSession * tsession,
 		   const unsigned int size,
 		   int important) {
   UDPMessage * mp;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   HostAddress * haddr;
   struct sockaddr_in sin; /* an Internet endpoint address */
   int ok;
@@ -320,11 +320,11 @@ static int udpSend(TSession * tsession,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  helo = (P2P_hello_MESSAGE*)tsession->internal;
-  if (helo == NULL)
+  hello = (P2P_hello_MESSAGE*)tsession->internal;
+  if (hello == NULL)
     return SYSERR;
 
-  haddr = (HostAddress*) &helo[1];
+  haddr = (HostAddress*) &hello[1];
   ssize = size + sizeof(UDPMessage);
   mp = MALLOC(ssize);
   mp->header.size = htons(ssize);
@@ -546,7 +546,9 @@ inittransport_udp(CoreAPIForTransport * core) {
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP",
 					      "MTU",
-					      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 32,
+					      sizeof(UDPMessage) 
+					      + P2P_MESSAGE_OVERHEAD 
+					      + sizeof(MESSAGE_HEADER) + 32,
 					      65500,
 					      MESSAGE_SIZE,
 					      &mtu)) {

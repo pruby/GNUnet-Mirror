@@ -439,8 +439,11 @@ static int initiatePing(const PeerIdentity * receiver,
   if (pmsg == NULL)
     return SYSERR;
   if (usePlaintext == YES) {
-    sendPlaintext(receiver, 
-		  (const P2P_pingpong_MESSAGE*) pmsg);
+    if (OK != sendPlaintext(receiver, 
+			    (const P2P_pingpong_MESSAGE*) pmsg)) {
+      FREE(pmsg);
+      return SYSERR;
+    }
     if (stats != NULL)
       stats->change(stat_plaintextPingSent, 1);
   } else {

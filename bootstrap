@@ -1,5 +1,6 @@
 #!/bin/sh
 export WANT_AUTOMAKE="1.8"
+automake -fi
 cd libltdl
 autoreconf -f -i
 cd ..

@@ -205,9 +205,12 @@ transportConnectFreely(const PeerIdentity * peer,
   P2P_hello_MESSAGE * hello;
   int * perm;
   TSession * ret;
+  unsigned int hc;
+  EncName enc;
 
-  MUTEX_LOCK(tapis_lock);
+  hc = 0;
   ret = NULL;
+  MUTEX_LOCK(tapis_lock);
   perm = permute(WEAK, tapis_count);
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
@@ -217,6 +220,7 @@ transportConnectFreely(const PeerIdentity * peer,
 				    useTempList);
     if (hello == NULL) 
       continue;
+    hc++;
     ret = transportConnect(hello);
     FREE(hello);
     if (ret != NULL) 
@@ -224,6 +228,15 @@ transportConnectFreely(const PeerIdentity * peer,
   }
   FREE(perm);
   MUTEX_UNLOCK(tapis_lock);
+  if (ret == NULL) {
+    hash2enc(&peer->hashPubKey,
+	     &enc);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_ADMIN,
+	   _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)"),
+	   &enc,
+	   hc);
+  }
   return ret;
 }
 

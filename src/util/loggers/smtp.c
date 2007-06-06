@@ -23,7 +23,7 @@
  * @brief logging via email
  * @author Christian Grothoff
  */
-#include "gnunet_error_loging.h"
+#include "gnunet_util_error_loggers.h"
 
 #if FICTION
 /**

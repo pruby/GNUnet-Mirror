@@ -82,7 +82,7 @@ static int testCron() {
   return 0;
 }
 
-static void delJob() {
+static void delJob(void * unused) {
   cron_del_job(cron,
 	       &cronJob, 42, NULL);
 }

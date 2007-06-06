@@ -10,6 +10,8 @@ Annotations:
 - RC bugs:
   * UDP assertion failure (mtu < size) [#1209]
   * low connectivity (NAT? real issue?)
+    - gnunet-transport-check -t udp -p fails consistently even in ideal network!?
+    - possibly related: gnunet.org's Decrypting message failed errors!?
 
 0.7.3 [7'07] (aka "features"):
 - chat support basics [RC]
