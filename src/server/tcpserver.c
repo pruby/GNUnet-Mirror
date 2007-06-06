@@ -317,6 +317,7 @@ static int startTCPServer() {
 	   _("`%s' failed for port %d. Is gnunetd already running?\n"),
 	   "bind",
 	   listenerPort);
+    CLOSE(listenerFD);
     return SYSERR;
   }
   selector = select_create("tcpserver",

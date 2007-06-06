@@ -450,6 +450,7 @@ int main(int argc,
 					      "TRANSPORTS",
 					      "udp tcp http",
 					      &trans)) {
+    FREE(expectedValue);
     GNUNET_fini(ectx, cfg);
     return 1;
   }
@@ -490,7 +491,12 @@ int main(int argc,
 				      "");
   }
   cron = cron_create(ectx);
-  initCore(ectx, cfg, cron, NULL);
+  if (OK != initCore(ectx, cfg, cron, NULL)) {
+    FREE(expectedValue);
+    cron_destroy(cron);
+    GNUNET_fini(ectx, cfg);
+    return 1;
+  }
   initConnection(ectx, cfg, NULL, cron);
   registerPlaintextHandler(P2P_PROTO_noise,
 			   &noiseHandler);
