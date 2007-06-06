@@ -235,8 +235,7 @@ receivedhello(const PeerIdentity * sender,
 				 ntohs(msg->protocol),
 				 NO);
   if (NULL != copy) {
-    if ( (sender != NULL) &&
-	 (ntohs(copy->senderAddressSize) ==
+    if ( (ntohs(copy->senderAddressSize) ==
 	  ntohs(msg->senderAddressSize)) &&
 	 (0 == memcmp(&msg->MTU,
 		      &copy->MTU,
@@ -288,7 +287,8 @@ receivedhello(const PeerIdentity * sender,
   }
 
   now = get_time();
-  if ( ( (now - lasthelloMsg) / cronSECONDS) *
+  if ( (sender != NULL) &&
+       ( (now - lasthelloMsg) / cronSECONDS) *
        (os_network_monitor_get_limit(coreAPI->load_monitor,
 				     Download))
 	< P2P_hello_MESSAGE_size(msg) * 100 ) {
