@@ -1632,17 +1632,39 @@ static int sendBuffer(BufferEntry * be) {
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
-  while (pos != NULL) {
-    if (pos->minimumPadding + p <= totalMessageSize) {
-      p += pos->callback(&be->session.sender,
-                         &plaintextMsg[p],
-			 be->session.mtu - p);
+  while ( (pos != NULL) &&
+	  (p < totalMessageSize) ) {
+    if ( (pos->minimumPadding + p >= p) &&
+	 (pos->minimumPadding + p <= totalMessageSize) ) {
+      rsi = pos->callback(&be->session.sender,
+			  &plaintextMsg[p],
+			  totalMessageSize - p);
+      GE_BREAK(ectx,
+	       rsi + p <= totalMessageSize);
+      if ( (rsi + p < p) ||
+	   (rsi + p > totalMessageSize) ) {
+	GE_BREAK(ectx, 0);
+	FREE(plaintextMsg);    
+	be->inSendBuffer = NO;
+	return NO;	
+      }
+      p += rsi;
     }
     pos = pos->next;
+  }
+  if ( ( (be->session.mtu != 0) &&
+	 (p > be->session.mtu) ) 
+       || (p > totalMessageSize) ) {
+    GE_BREAK(ectx, 0);
+    FREE(plaintextMsg);    
+    be->inSendBuffer = NO;
+    return NO;
   }
 
   /* finally padd with noise */
   if ( (p + sizeof(MESSAGE_HEADER) <= totalMessageSize) &&
+       (p < totalMessageSize) &&
+       (p + sizeof(MESSAGE_HEADER) > p) && 
        (disable_random_padding == NO) ) {
     MESSAGE_HEADER part;
     unsigned short noiseLen = totalMessageSize - p;
@@ -1658,13 +1680,15 @@ static int sendBuffer(BufferEntry * be) {
     if (stats != NULL)
       stats->change(stat_noise_sent, noiseLen);
   }
-  if ( (be->session.mtu != 0) &&
-       (p > be->session.mtu) ) {
+  if ( ( (be->session.mtu != 0) &&
+	 (p > be->session.mtu) )
+       || (p > totalMessageSize) ) {
     GE_BREAK(ectx, 0);
     FREE(plaintextMsg);    
     be->inSendBuffer = NO;
     return NO;
   }
+
   encryptedMsg = MALLOC(p);
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512), 
