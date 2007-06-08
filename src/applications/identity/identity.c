@@ -580,12 +580,14 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
 			  fn,
 			  MAX_BUFFER_SIZE,
 			  buffer);
-    oldMsg = (P2P_hello_MESSAGE*) buffer;
-    if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
-      if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
-	FREE(fn);
-	FREE(buffer);
-	return; /* have more recent hello in stock */
+    if (size >= sizeof(P2P_hello_MESSAGE)) {
+      oldMsg = (P2P_hello_MESSAGE*) buffer;
+      if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
+	if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
+	  FREE(fn);
+	  FREE(buffer);
+	  return; /* have more recent hello in stock */
+	}
       }
     }
   }
