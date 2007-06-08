@@ -16,7 +16,8 @@ libgnunetmodule_session_la_LDFLAGS = \
 
 
 check_PROGRAMS = \
-  sessiontest 
+  sessiontest \
+  sessiontest2
 
 TESTS = $(check_PROGRAMS)
 
@@ -29,5 +30,16 @@ sessiontest_LDADD = \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+sessiontest2_SOURCES = \
+  sessiontest2.c 
+sessiontest2_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
 EXTRA_DIST = \
-  check.conf 
+  check.conf \
+  tcp-peer.conf \
+  nat-peer.conf
