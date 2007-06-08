@@ -49,7 +49,7 @@ tbenchtest_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 tbenchtest_udp_SOURCES = \
-  tbenchtest_udp.c 
+  tbenchtest.c 
 tbenchtest_udp_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/testing/libgnunettesting_api.la \

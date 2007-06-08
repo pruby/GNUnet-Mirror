@@ -122,7 +122,7 @@ int main(int argc, char ** argv) {
     return -1;
   }
 #if START_PEERS
-  peers = gnunet_testing_start_daemons("tcp",
+  peers = gnunet_testing_start_daemons(NULL == strstr(argv[0], "_udp") ? "tcp" : "udp",
 				       "advertising tbench topology stats",
 				       "/tmp/gnunet-tbench-test",
 				       2087,
