@@ -44,9 +44,9 @@ static State_ServiceAPI * state;
 static struct PTHREAD * pt;
 
 typedef struct {
-  P2P_hello_MESSAGE ** helos;
-  unsigned int helosCount;
-  unsigned int helosLen;
+  P2P_hello_MESSAGE ** hellos;
+  unsigned int hellosCount;
+  unsigned int hellosLen;
   int do_shutdown;
 } HelloListClosure;
 
@@ -67,30 +67,30 @@ static void processhellos(HelloListClosure * hcq) {
     return;
   }
   while ( (! hcq->do_shutdown) &&
-	  (hcq->helosCount > 0) ) {
+	  (hcq->hellosCount > 0) ) {
     /* select hellos in random order */
-    rndidx = weak_randomi(hcq->helosCount);
+    rndidx = weak_randomi(hcq->hellosCount);
 #if DEBUG_BOOTSTRAP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "%s chose hello %d of %d\n",
 	   __FUNCTION__,
-	   rndidx, hcq->helosCount);
+	   rndidx, hcq->hellosCount);
 #endif
-    msg = (P2P_hello_MESSAGE*) hcq->helos[rndidx];
-    hcq->helos[rndidx]
-      = hcq->helos[hcq->helosCount-1];
-    GROW(hcq->helos,
-	 hcq->helosCount,
-	 hcq->helosCount-1);
+    msg = (P2P_hello_MESSAGE*) hcq->hellos[rndidx];
+    hcq->hellos[rndidx]
+      = hcq->hellos[hcq->hellosCount-1];
+    GROW(hcq->hellos,
+	 hcq->hellosCount,
+	 hcq->hellosCount-1);
 
     coreAPI->injectMessage(NULL,
-			   (char*)msg,
-			   P2P_hello_MESSAGE_size(msg),
+			   (const char*)msg,
+			   ntohs(msg->header.size),
 			   NO,
 			   NULL);
     FREE(msg);
-    if ( (hcq->helosCount > 0) &&
+    if ( (hcq->hellosCount > 0) &&
 	 (! hlc.do_shutdown) ) {
       /* wait a bit */
       unsigned int load;
@@ -113,25 +113,25 @@ static void processhellos(HelloListClosure * hcq) {
       PTHREAD_SLEEP(50 + weak_randomi((load+1)*(load+1)));
     }
   }
-  for (i=0;i<hcq->helosCount;i++)
-    FREE(hcq->helos[i]);
-  GROW(hcq->helos,
-       hcq->helosCount,
+  for (i=0;i<hcq->hellosCount;i++)
+    FREE(hcq->hellos[i]);
+  GROW(hcq->hellos,
+       hcq->hellosCount,
        0);
 }
 
-static void downloadHostlistCallback(const P2P_hello_MESSAGE * helo,
+static void downloadHostlistCallback(const P2P_hello_MESSAGE * hello,
 				     void * c) {
   HelloListClosure * cls = c;
-  if (cls->helosCount >= cls->helosLen) {
-    GROW(cls->helos,
-	 cls->helosLen,
-	 cls->helosLen + hello_HELPER_TABLE_START_SIZE);
+  if (cls->hellosCount >= cls->hellosLen) {
+    GROW(cls->hellos,
+	 cls->hellosLen,
+	 cls->hellosLen + hello_HELPER_TABLE_START_SIZE);
   }
-  cls->helos[cls->helosCount++] = MALLOC(P2P_hello_MESSAGE_size(helo));
-  memcpy(cls->helos[cls->helosCount-1],
-	 helo,
-	 P2P_hello_MESSAGE_size(helo));
+  cls->hellos[cls->hellosCount++] = MALLOC(ntohs(hello->header.size));
+  memcpy(cls->hellos[cls->hellosCount-1],
+	 hello,
+	 ntohs(hello->header.size));
 }
 
 #define BOOTSTRAP_INFO "bootstrap-info"
@@ -184,7 +184,7 @@ static int needBootstrap() {
 }
 
 static void * processThread(void * unused) {
-  hlc.helos = NULL;
+  hlc.hellos = NULL;
   while (NO == hlc.do_shutdown) {
     while (NO == hlc.do_shutdown) {
       PTHREAD_SLEEP(2 * cronSECONDS);
@@ -198,15 +198,15 @@ static void * processThread(void * unused) {
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Starting bootstrap.\n");
 #endif
-    hlc.helosLen = 0;
-    hlc.helosCount = 0;
+    hlc.hellosLen = 0;
+    hlc.hellosCount = 0;
     bootstrap->bootstrap(&downloadHostlistCallback,
 			 &hlc,
 			 &testTerminate,
 			 &hlc);
-    GROW(hlc.helos,
-	 hlc.helosLen,
-	 hlc.helosCount);
+    GROW(hlc.hellos,
+	 hlc.hellosLen,
+	 hlc.hellosCount);
     processhellos(&hlc);
   }
   return NULL;
