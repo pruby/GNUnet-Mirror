@@ -657,7 +657,7 @@ identity2Hello(const PeerIdentity *  hostId,
     /* ok, then first try temporary hosts
        (in memory, cheapest!) */
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
-      host = &tempHosts[j];
+      host = &tempHosts[i];
       if ( (host->helloCount > 0) &&
 	   (0 == memcmp(hostId,
 			&host->identity,
