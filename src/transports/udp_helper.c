@@ -91,6 +91,12 @@ static int select_message_handler(void * mh_cls,
 	   _("Received malformed message from udp-peer connection. Closing.\n"));
     return SYSERR;
   }
+#if DEBUG_UDP
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "Received %d bytes via UDP\n",
+	 len);
+#endif
   um = (const UDPMessage*) msg;
   mp      = MALLOC(sizeof(P2P_PACKET));
   mp->msg = MALLOC(len - sizeof(UDPMessage));
@@ -117,6 +123,12 @@ static void * select_accept_handler(void * ah_cls,
   if (NO != blt(addr,
 		addr_len))
     return NULL;
+#if DEBUG_UDP
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "Accepting UDP message from %u.%u.%u.%u\n",
+	 PRIP(ntohl(*(int*)addr)));
+#endif
   return &nonnullpointer;
 }
 

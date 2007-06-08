@@ -205,8 +205,15 @@ static int isRejected(const void * addr,
   if ((YES == isBlacklisted(addr,
 			    addr_len)) ||
       (YES != isWhitelisted(addr,
-			    addr_len)))	
+			    addr_len))) {
+#if DEBUG_UDP
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "Rejecting traffic from %u.%u.%u.%u.\n",
+	   PRIP(ntohl(*(int*)addr)));
+#endif
     return YES;
+  }
   return NO;
 }
 
@@ -381,7 +388,7 @@ static int udpSend(TSession * tsession,
  *
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer(void) {
+static int startTransportServer() {
   int sock;
   unsigned short port;
 
