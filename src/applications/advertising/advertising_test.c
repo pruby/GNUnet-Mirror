@@ -79,7 +79,7 @@ int main(int argc,
     GC_free(cfg);
     return -1;
   }
-  peers = gnunet_testing_start_daemons("tcp",
+  peers = gnunet_testing_start_daemons(NULL == strstr(argv[0], "_udp") ? "tcp" : "udp",
 				       "advertising stats",
 				       "/tmp/gnunet-advertising-test",
 				       2087,

@@ -178,10 +178,9 @@ static int needBootstrap() {
        Sure, in the end it goes to the topology, so
        probably that API should be extended here... */
     return YES;
-  } else {
-    /* wait a bit longer */
-    return NO;
   }
+  /* wait a bit longer */
+  return NO;  
 }
 
 static void * processThread(void * unused) {

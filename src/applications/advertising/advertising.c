@@ -149,7 +149,7 @@ receivedhello(const PeerIdentity * sender,
   TSession * tsession;
   P2P_hello_MESSAGE * copy;
   PeerIdentity foreignId;
-  P2P_hello_MESSAGE * msg;
+  const P2P_hello_MESSAGE * msg;
   MESSAGE_HEADER * ping;
   char * buffer;
   int helloEnd;
@@ -158,7 +158,7 @@ receivedhello(const PeerIdentity * sender,
   cron_t now;
 
   /* first verify that it is actually a valid hello */
-  msg = (P2P_hello_MESSAGE* ) message;
+  msg = (const P2P_hello_MESSAGE* ) message;
   if ( (ntohs(msg->header.size) < sizeof(P2P_hello_MESSAGE)) ||
        (ntohs(msg->header.size) != P2P_hello_MESSAGE_size(msg)) ) {
     GE_BREAK(ectx, 0);
@@ -291,8 +291,8 @@ receivedhello(const PeerIdentity * sender,
        ( (now - lasthelloMsg) / cronSECONDS) *
        (os_network_monitor_get_limit(coreAPI->load_monitor,
 				     Download))
-	< P2P_hello_MESSAGE_size(msg) * 100 ) {
-    /* do not use more than about 1% of the
+	< P2P_hello_MESSAGE_size(msg) * 10 ) {
+    /* do not use more than about 10% of the
        available bandwidth to VERIFY hellos (by sending
        our own with a PING).  This does not affect
        the hello advertising.  Sure, we should not
