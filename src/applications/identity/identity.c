@@ -439,43 +439,44 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
     GE_BREAK(NULL, 0);
     return;
   }
+  MUTEX_LOCK(lock_);
+  entry = findHost(&msg->senderIdentity);
+  if ( (entry != NULL) &&
+       (entry->helloCount > 0) ) {
+    MUTEX_UNLOCK(lock_);
+    return;
+  }
   msg = MALLOC(P2P_hello_MESSAGE_size(tmp));
   memcpy(msg,
 	 tmp,
 	 P2P_hello_MESSAGE_size(tmp));
-  MUTEX_LOCK(lock_);
-  entry = findHost(&msg->senderIdentity);
-  if (entry == NULL) {
-    slot = tempHostsNextSlot;
-    for (i=0;i<MAX_TEMP_HOSTS;i++)
-      if (0 == memcmp(&tmp->senderIdentity,
-		      &tempHosts[i].identity,
-		      sizeof(PeerIdentity)))
-	slot = i;
-    if (slot == tempHostsNextSlot) {
-      tempHostsNextSlot++;
-      if (tempHostsNextSlot >= MAX_TEMP_HOSTS)
-	tempHostsNextSlot = 0;
-    }
-    entry = &tempHosts[slot];
-    entry->identity = msg->senderIdentity;
-    entry->until = 0;
-    entry->delta = 0;
-    for (i=0;i<entry->helloCount;i++)
-      FREE(entry->hellos[i]);
-    GROW(entry->hellos,
-	 entry->helloCount,
-	 1);
-    GROW(entry->protocols,
-	 entry->protocolCount,
-	 1);
-    entry->hellos[0] = msg;
-    entry->protocols[0] = ntohs(msg->protocol);
-    entry->strict = NO;
-    entry->trust = 0;
-  } else {
-    FREE(msg);
+  slot = tempHostsNextSlot;
+  for (i=0;i<MAX_TEMP_HOSTS;i++)
+    if (0 == memcmp(&tmp->senderIdentity,
+		    &tempHosts[i].identity,
+		    sizeof(PeerIdentity)))
+      slot = i;
+  if (slot == tempHostsNextSlot) {
+    tempHostsNextSlot++;
+    if (tempHostsNextSlot >= MAX_TEMP_HOSTS)
+      tempHostsNextSlot = 0;
   }
+  entry = &tempHosts[slot];
+  entry->identity = msg->senderIdentity;
+  entry->until = 0;
+  entry->delta = 0;
+  for (i=0;i<entry->helloCount;i++)
+    FREE(entry->hellos[i]);
+  GROW(entry->hellos,
+       entry->helloCount,
+       1);
+  GROW(entry->protocols,
+       entry->protocolCount,
+       1);
+  entry->hellos[0] = msg;
+  entry->protocols[0] = ntohs(msg->protocol);
+  entry->strict = NO;
+  entry->trust = 0;  
   MUTEX_UNLOCK(lock_);
 }
 
@@ -1330,7 +1331,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   id.addHostTemporarily  = &addHostTemporarily;
   id.addHost             = &bindAddress;
   id.forEachHost         = &forEachHost;
-  id.identity2Hello       = &identity2Hello;
+  id.identity2Hello      = &identity2Hello;
   id.verifyPeerSignature = &verifyPeerSignature;
   id.blacklistHost       = &blacklistHost;
   id.isBlacklistedStrict = &isBlacklistedStrict;

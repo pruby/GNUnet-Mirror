@@ -216,8 +216,8 @@ transportConnectFreely(const PeerIdentity * peer,
     if (tapis[perm[i]] == NULL)
       continue;
     hello = identity->identity2Hello(peer,
-				    perm[i],
-				    useTempList);
+				     perm[i],
+				     useTempList);
     if (hello == NULL)
       continue;
     hc++;

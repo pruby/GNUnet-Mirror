@@ -60,7 +60,7 @@
 #define ACJ_FORWARD 2
 #define ACJ_ALL (ACJ_ANNOUNCE | ACJ_FORWARD)
 
-#define DEBUG_ADVERTISING NO
+#define DEBUG_ADVERTISING YES
 
 static CoreAPIForApplication * coreAPI;
 
@@ -156,7 +156,8 @@ receivedhello(const PeerIdentity * sender,
   int mtu;
   int res;
   cron_t now;
-
+  EncName enc;
+    
   /* first verify that it is actually a valid hello */
   msg = (const P2P_hello_MESSAGE* ) message;
   if ( (ntohs(msg->header.size) < sizeof(P2P_hello_MESSAGE)) ||
@@ -178,7 +179,6 @@ receivedhello(const PeerIdentity * sender,
 			  - sizeof(MESSAGE_HEADER),
 			  &msg->signature,
 			  &msg->publicKey)) {
-    EncName enc;
     IF_GELOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(&msg->senderIdentity.hashPubKey,
@@ -187,12 +187,14 @@ receivedhello(const PeerIdentity * sender,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("HELLO message from `%s' has an invalid signature. Dropping.\n"),
 	   (char*)&enc);
+    GE_BREAK(ectx, 0);
     return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
      GE_LOG(ectx,
 	    GE_WARNING | GE_BULK | GE_USER,
-	    _("HELLO message received is expired. Dropping.\n"));
+	    _("HELLO message has expiration too far in the future. Dropping.\n"));
+     GE_BREAK(ectx, 0);
      return SYSERR;
   }
   if (SYSERR == transport->verifyhello(msg)) {
@@ -207,9 +209,14 @@ receivedhello(const PeerIdentity * sender,
   if (stats != NULL)
     stats->change(stat_hello_in, 1);
 #if DEBUG_ADVERTISING
+  IF_GELOG(ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   hash2enc(&msg->senderIdentity.hashPubKey,
+		    &enc));
   GE_LOG(ectx,
 	 GE_INFO | GE_REQUEST | GE_USER,
-	 "HELLO advertisement for protocol %d received.\n",
+	 "HELLO advertisement from `%s' for protocol %d received.\n",
+	 &enc,
 	 ntohs(msg->protocol));
 #endif
   if (ntohs(msg->protocol) == NAT_PROTOCOL_NUMBER) {
@@ -286,6 +293,11 @@ receivedhello(const PeerIdentity * sender,
     return SYSERR;
   }
 
+  /* Ok, must play PING-PONG. Add the hello to the temporary
+     (in-memory only) buffer to make it available for a short
+     time in order to play PING-PONG */
+  identity->addHostTemporarily(msg);
+
   now = get_time();
   if ( (sender != NULL) &&
        ( (now - lasthelloMsg) / cronSECONDS) *
@@ -304,7 +316,7 @@ receivedhello(const PeerIdentity * sender,
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
-	   "Not enough resources to verify HELLO message at this time (%u * %u < %u * 100)\n",
+	   "Not enough resources to verify HELLO message at this time (%u * %u < %u * 10)\n",
 	   (unsigned int) ((now - lasthelloMsg) / cronSECONDS),
 	   (unsigned int) os_network_monitor_get_limit(coreAPI->load_monitor,
 						       Download),
@@ -312,14 +324,9 @@ receivedhello(const PeerIdentity * sender,
 #endif
     if (stats != NULL)
       stats->change(stat_hello_discard, 1);
-    return SYSERR;
+   return SYSERR;
   }
   lasthelloMsg = now;
-
-  /* Ok, must play PING-PONG. Add the hello to the temporary
-     (in-memory only) buffer to make it available for a short
-     time in order to play PING-PONG */
-  identity->addHostTemporarily(msg);
 
 
   /* Establish session as advertised in the hello */
@@ -522,11 +529,6 @@ broadcasthelloTransport(TransportAPI * tapi,
     return; /* network load too high... */
   if (0 != weak_randomi(*prob))
     return; /* ignore */
-#if DEBUG_ADVERTISING
-  LOG(LOG_CRON,
-      "Enter `%s'.\n",
-      __FUNCTION__);
-#endif
   now = get_time();
   sd.n = identity->forEachHost(now,
 			       NULL,
@@ -535,9 +537,10 @@ broadcasthelloTransport(TransportAPI * tapi,
   if (sd.m == NULL)
     return;
 #if DEBUG_ADVERTISING
-  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-      _("Advertising my transport %d to selected peers.\n"),
-      tapi->protocolNumber);
+  GE_LOG(ectx,
+	 GE_INFO | GE_REQUEST | GE_USER,
+	 _("Advertising my transport %d to selected peers.\n"),
+	 tapi->protocolNumber);
 #endif
   identity->addHost(sd.m);
   if (sd.n < 1) {
@@ -552,11 +555,6 @@ broadcasthelloTransport(TransportAPI * tapi,
 		       (HostIterator)&broadcastHelper,
 		       &sd);
   FREE(sd.m);
-#if DEBUG_ADVERTISING
-  LOG(LOG_CRON,
-      "Exit `%s'.\n",
-      __FUNCTION__);
-#endif
 }
 
 /**
@@ -687,11 +685,6 @@ forwardhello(void * unused) {
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
-#if DEBUG_ADVERTISING
-  LOG(LOG_CRON,
-      "Enter `%s'.\n",
-      __FUNCTION__);
-#endif
   count = identity->forEachHost(0,
 				NULL,
 				NULL);
@@ -699,11 +692,6 @@ forwardhello(void * unused) {
     identity->forEachHost(0, /* ignore blacklisting */
 			  &forwardhelloHelper,
 			  &count);
-#if DEBUG_ADVERTISING
-  LOG(LOG_CRON,
-      "Exit `%s'.\n",
-      __FUNCTION__);
-#endif
 }
 
 /**
