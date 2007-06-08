@@ -516,7 +516,7 @@ static int exchangeKey(const PeerIdentity * receiver,
   if (NULL == hello) {
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
-	   "Could not create any hello advertisement.  Not good.");
+	   "Could not create any HELLO.  Not good.");
   }
 #if DEBUG_SESSION
   GE_LOG(ectx,
