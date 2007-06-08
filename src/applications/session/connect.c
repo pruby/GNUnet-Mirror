@@ -65,6 +65,8 @@ static int stat_sessionEstablished;
 
 static int stat_pongSent;
 
+static int stat_pingSent;
+
 /**
  * @brief message for session key exchange.
  */
@@ -523,8 +525,12 @@ static int exchangeKey(const PeerIdentity * receiver,
 	 printSKEY(&sk),
 	 &enc);
 #endif
-  if (stats != NULL)
+  if (stats != NULL) {
+    stats->change(stat_pingSent, 1);
     stats->change(stat_skeySent, 1);
+    /* pong, if present, is accounted for 
+       by caller */
+  }
   if (hello != NULL) {
     coreAPI->sendPlaintext(tsession,
 			   (const char*) hello,
@@ -916,6 +922,8 @@ provide_module_session(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# session keys accepted"));
     stat_sessionEstablished
       = stats->create(gettext_noop("# sessions established"));
+    stat_pingSent
+      = stats->create(gettext_noop("# encrypted PING messages sent"));
     stat_pongSent
       = stats->create(gettext_noop("# encrypted PONG messages sent"));
   }

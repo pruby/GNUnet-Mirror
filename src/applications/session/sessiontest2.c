@@ -194,4 +194,4 @@ int main(int argc, char ** argv) {
   return (ok == 0) ? 1 : 0;
 }
 
-/* end of sessiontest.c */
+/* end of sessiontest2.c */
