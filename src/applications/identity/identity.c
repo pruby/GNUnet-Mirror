@@ -649,41 +649,42 @@ identity2Hello(const PeerIdentity *  hostId,
   int size;
   int i;
   int j;
-  int * perm;
 
   GE_ASSERT(ectx,
 	    numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(lock_);
   if (YES == tryTemporaryList) {
-    if (protocol == ANY_PROTOCOL_NUMBER)
-      perm = permute(WEAK, MAX_TEMP_HOSTS);
-    else
-      perm = NULL;
     /* ok, then first try temporary hosts
        (in memory, cheapest!) */
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
-      if (perm == NULL)
-	j = i;
-      else
-	j = perm[i];
-      if ( (tempHosts[j].helloCount > 0) &&
+      host = &tempHosts[j];
+      if ( (host->helloCount > 0) &&
 	   (0 == memcmp(hostId,
-			&tempHosts[j].identity,
-			sizeof(PeerIdentity))) &&
-	   ( (tempHosts[j].protocols[0] == protocol) ||
-	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].hellos[0]));
+			&host->identity,
+			sizeof(PeerIdentity))) ) {
+	if (protocol == ANY_PROTOCOL_NUMBER) {
+	  j = weak_randomi(host->helloCount);
+	} else {
+	  j = 0;
+	  while ( (j < host->helloCount) &&
+		  (host->protocols[j] != protocol) )
+	    j++;
+	}
+	if (j == host->helloCount) {
+	  /* not found */
+	  MUTEX_UNLOCK(lock_);
+	  return NULL;	  
+	}
+	result = MALLOC(P2P_hello_MESSAGE_size(host->hellos[j]));
 	memcpy(result,
-	       tempHosts[j].hellos[0],
-	       P2P_hello_MESSAGE_size(tempHosts[j].hellos[0]));	
+	       host->hellos[j],
+	       P2P_hello_MESSAGE_size(host->hellos[j]));
 	MUTEX_UNLOCK(lock_);
-	FREENONNULL(perm);
 	return result;
       }
     }
-    FREENONNULL(perm);
   }
-
+  
   host = findHost(hostId);
   if ( (host == NULL) ||
        (host->protocolCount == 0) ) {
