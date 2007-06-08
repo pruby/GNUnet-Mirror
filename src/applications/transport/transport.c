@@ -224,7 +224,7 @@ transportConnectFreely(const PeerIdentity * peer,
     ret = transportConnect(hello);
     FREE(hello);
     if (ret != NULL) {
-      ret->type = perm[i];
+      ret->ttype = perm[i];
       break;
     }
   }
