@@ -418,7 +418,7 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_hellodownloaded
-      = stats->create(gettext_noop("# hellos downloaded via http"));
+      = stats->create(gettext_noop("# HELLOs downloaded via http"));
   }
   api.bootstrap = &downloadHostlist;
   return &api;

@@ -220,7 +220,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 	 "Received plaintext ping from peer %s.\n",
 	 &enc);
 #endif
-  pong = *ping;
+  pong = *pmsg;
   pong.header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
