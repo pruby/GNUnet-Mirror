@@ -106,6 +106,10 @@ static int stat_pingCreated;
 
 static int stat_pongSent;
 
+static int stat_plaintextPongSent;
+
+static int stat_plaintextPongFailed;
+
 static int stat_plaintextPingSent;
 
 static int stat_ciphertextPingSent;
@@ -184,6 +188,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   EncName enc;
 #endif
   P2P_pingpong_MESSAGE * pmsg;
+  int ret;
 
   if (ntohs(hmsg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     GE_LOG(ectx,
@@ -213,12 +218,21 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   pmsg->header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
-  if ( (tsession != NULL) &&
-       (OK == coreAPI->sendPlaintext(tsession,
-				     (char*) pmsg,
-				     sizeof(P2P_pingpong_MESSAGE))) )
-    return OK;
-  return sendPlaintext(sender, pmsg);
+  ret = SYSERR;
+  if (tsession != NULL)
+    ret = coreAPI->sendPlaintext(tsession,
+				 (char*) pmsg,
+				 sizeof(P2P_pingpong_MESSAGE));
+  if (ret != OK)
+    ret = sendPlaintext(sender, pmsg);
+  if (ret == OK) {
+    if (stats != NULL)
+      stats->change(stat_plaintextPongSent, 1);
+  } else {
+    if (stats != NULL)
+      stats->change(stat_plaintextPongFailed, 1);
+  }
+  return ret;    
 }
 
 /**
@@ -496,6 +510,10 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# plaintext PING messages sent"));
     stat_ciphertextPingSent
       = stats->create(gettext_noop("# encrypted PING messages sent"));
+    stat_plaintextPongSent
+      = stats->create(gettext_noop("# plaintext PONG messages sent"));
+    stat_plaintextPongFailed
+      = stats->create(gettext_noop("# plaintext PONG transmissions failed"));
 
   }
   pingPongLock = capi->getConnectionModuleLock();
