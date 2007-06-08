@@ -69,7 +69,7 @@ static int printHostInfo(const PeerIdentity * id,
 			 const unsigned short proto,
 			 int verified,
 			 void * data) {
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   char * info;
   EncName enc;
 
@@ -77,27 +77,27 @@ static int printHostInfo(const PeerIdentity * id,
     return SYSERR;
   hash2enc(&id->hashPubKey,
 	   &enc);
-  helo = identity->identity2Helo(id,
-				 proto,
-				 NO);
-  if (NULL == helo) {
+  hello = identity->identity2Hello(id,
+				   proto,
+				   NO);
+  if (NULL == hello) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Could not get address of peer `%s'.\n"),
 	   &enc);
     return OK;
   }
-  if (SYSERR == verifySig(&helo->senderIdentity,
-			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
-			  &helo->signature,
-			  &helo->publicKey)) {
+  if (SYSERR == verifySig(&hello->senderIdentity,
+			  P2P_hello_MESSAGE_size(hello) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
+			  &hello->signature,
+			  &hello->publicKey)) {
     GE_LOG(ectx, 
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("hello message invalid (signature invalid).\n"));
   }
-  info = transport->helloToString(helo,
+  info = transport->helloToString(hello,
 				  ! no_resolve);
-  FREE(helo);
+  FREE(hello);
   if (info == NULL) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,

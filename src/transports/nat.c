@@ -53,14 +53,14 @@ static CoreAPIForTransport * coreAPI;
  * Verify that a hello-Message is correct (a node is reachable at that
  * address).
  *
- * @param helo the hello message to verify
+ * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
-  if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
+  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ) {
     return SYSERR; /* obviously invalid */
   } else {
     if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
@@ -70,7 +70,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
       /* if WE are a NAT and this is not our hello,
 	 it is invalid since NAT-to-NAT is not possible! */
       if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
-		      &helo->senderIdentity.hashPubKey,
+		      &hello->senderIdentity.hashPubKey,
 		      sizeof(HashCode512)))
 	return OK;
       else
@@ -104,11 +104,11 @@ static P2P_hello_MESSAGE * createhello() {
 
 /**
  * Establish a connection to a remote node.
- * @param helo the hello-Message for the target node
+ * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
  * @return always fails (returns SYSERR)
  */
-static int natConnect(const P2P_hello_MESSAGE * helo,
+static int natConnect(const P2P_hello_MESSAGE * hello,
 		      TSession ** tsessionPtr) {
   return SYSERR;
 }
@@ -193,8 +193,8 @@ TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
   natAPI.protocolNumber       = NAT_PROTOCOL_NUMBER;
   natAPI.mtu                  = 0;
   natAPI.cost                 = 30000;
-  natAPI.verifyHelo           = &verifyHelo;
-  natAPI.createhello           = &createhello;
+  natAPI.verifyHello          = &verifyHello;
+  natAPI.createhello          = &createhello;
   natAPI.connect              = &natConnect;
   natAPI.send                 = &natSend;
   natAPI.associate            = &natAssociate;

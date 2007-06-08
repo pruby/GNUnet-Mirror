@@ -220,7 +220,7 @@ static int isRejected(const void * addr,
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHelo(const P2P_hello_MESSAGE * hello) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
   const HostAddress * haddr;
 
   haddr = (const HostAddress*) &hello[1];
@@ -232,15 +232,14 @@ static int verifyHelo(const P2P_hello_MESSAGE * hello) {
        (YES != isWhitelisted(&haddr->senderIP,
 			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
-  else {
 #if DEBUG_UDP
-    GE_LOG(ectx, GE_DEBUG | GE_USER | GE_BULK,
-	"Verified UDP hello from %u.%u.%u.%u:%u.\n",
-	PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-	ntohs(haddr->senderPort));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "Verified UDP HELLO from %u.%u.%u.%u:%u.\n",
+	 PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
+	 ntohs(haddr->senderPort));
 #endif
-    return OK;
-  }
+  return OK;
 }
 
 /**
@@ -586,7 +585,7 @@ inittransport_udp(CoreAPIForTransport * core) {
   udpAPI.protocolNumber       = UDP_PROTOCOL_NUMBER;
   udpAPI.mtu                  = mtu - sizeof(UDPMessage);
   udpAPI.cost                 = 20000;
-  udpAPI.verifyHelo           = &verifyHelo;
+  udpAPI.verifyHello          = &verifyHello;
   udpAPI.createhello          = &createhello;
   udpAPI.connect              = &udpConnect;
   udpAPI.send                 = &udpSend;

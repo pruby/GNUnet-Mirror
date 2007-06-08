@@ -128,12 +128,12 @@ static double getConnectPriority() {
 }
 
 static void callAddHost(void * cls) {
-  P2P_hello_MESSAGE * helo = cls;
+  P2P_hello_MESSAGE * hello = cls;
 
   if (stats != NULL)
     stats->change(stat_hello_verified, 1);
-  identity->addHost(helo);
-  FREE(helo);
+  identity->addHost(hello);
+  FREE(hello);
 }
 
 /**
@@ -152,7 +152,7 @@ receivedhello(const PeerIdentity * sender,
   P2P_hello_MESSAGE * msg;
   MESSAGE_HEADER * ping;
   char * buffer;
-  int heloEnd;
+  int helloEnd;
   int mtu;
   int res;
   cron_t now;
@@ -231,9 +231,9 @@ receivedhello(const PeerIdentity * sender,
 
   /* Then check if we have seen this hello before, if it is identical
      except for the TTL, we trust it and do not play PING-PONG */
-  copy = identity->identity2Helo(&foreignId,
-				 ntohs(msg->protocol),
-				 NO);
+  copy = identity->identity2Hello(&foreignId,
+				  ntohs(msg->protocol),
+				  NO);
   if (NULL != copy) {
     if ( (ntohs(copy->senderAddressSize) ==
 	  ntohs(msg->senderAddressSize)) &&
@@ -360,14 +360,14 @@ receivedhello(const PeerIdentity * sender,
   }
   buffer = MALLOC(mtu);
   if (mtu > ntohs(ping->size)) {
-    heloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
+    helloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
 					     buffer);
     GE_ASSERT(ectx, 
-	      mtu - ntohs(ping->size) >= heloEnd);
+	      mtu - ntohs(ping->size) >= helloEnd);
   } else {
-    heloEnd = -2;
+    helloEnd = -2;
   }
-  if (heloEnd <= 0) {
+  if (helloEnd <= 0) {
     GE_LOG(ectx, 
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Failed to create an advertisement for this peer. Will not send PING.\n"));
@@ -378,17 +378,17 @@ receivedhello(const PeerIdentity * sender,
     return SYSERR;
   }
   res = OK;
-  memcpy(&buffer[heloEnd],
+  memcpy(&buffer[helloEnd],
 	 ping,
 	 ntohs(ping->size));
-  heloEnd += ntohs(ping->size);
+  helloEnd += ntohs(ping->size);
   FREE(ping);
 
   /* ok, finally we can send! */
   if ( (res == OK) &&
        (SYSERR == coreAPI->sendPlaintext(tsession,
 					 buffer,
-					 heloEnd)) ) {
+					 helloEnd)) ) {
     
     if (stats != NULL)
       stats->change(stat_hello_send_error, 1);
@@ -417,7 +417,7 @@ broadcastHelper(const PeerIdentity * hi,
 		int confirmed,
 		void * cls) {
   SendData * sd = cls;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   TSession * tsession;
   int prio;
 #if DEBUG_ADVERTISING
@@ -467,20 +467,20 @@ broadcastHelper(const PeerIdentity * hi,
     return OK;
 
   /* establish short-lived connection, send, tear down */
-  helo = identity->identity2Helo(hi,
-				 proto,
-				 NO);
-  if (NULL == helo) {
+  hello = identity->identity2Hello(hi,
+				  proto,
+				  NO);
+  if (NULL == hello) {
 #if DEBUG_ADVERTISING
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Exit from `%s' (error: `%s' failed).\n",
 	__FUNCTION__,
-	"identity2Helo");
+	"identity2Hello");
 #endif
     return OK;
   }
-  tsession = transport->connect(helo);
-  FREE(helo);
+  tsession = transport->connect(hello);
+  FREE(hello);
   if (tsession == NULL) {
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
@@ -625,9 +625,9 @@ forwardhelloHelper(const PeerIdentity * peer,
     return OK;
   if (protocol == NAT_PROTOCOL_NUMBER)
     return OK; /* don't forward NAT addresses */
-  hello = identity->identity2Helo(peer,
-				 protocol,
-				 NO);
+  hello = identity->identity2Hello(peer,
+				   protocol,
+				   NO);
   if (NULL == hello)
     return OK; /* this should not happen */
   hello->header.type

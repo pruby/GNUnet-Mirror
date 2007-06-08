@@ -44,7 +44,7 @@ static TransportAPI ** tapis = NULL;
 
 static unsigned int tapis_count = 0;
 
-static unsigned long long helo_live;
+static unsigned long long hello_live;
 
 static struct MUTEX * tapis_lock;
 
@@ -56,7 +56,7 @@ static struct GE_Context * ectx;
 
 /**
  * Create signed hello for this transport and put it into
- * the cache tapi->helo.
+ * the cache tapi->hello.
  */
 static void createSignedhello(void * cls) {
   TransportAPI * tapi = cls;
@@ -74,7 +74,7 @@ static void createSignedhello(void * cls) {
 	 coreAPI->myIdentity,
 	 sizeof(PeerIdentity));
   tapi->hello->expirationTime
-    = htonl(TIME(NULL) + helo_live);
+    = htonl(TIME(NULL) + hello_live);
   tapi->hello->header.type
     = htons(p2p_PROTO_hello);
   tapi->hello->header.size
@@ -172,7 +172,7 @@ static int forEachTransport(TransportCallback callback,
  * transport layer. This may fail if the appropriate
  * transport mechanism is not available.
  *
- * @param helo the hello of the target node. The
+ * @param hello the hello of the target node. The
  *        callee is responsible for freeing the hello (!), except
  *        if SYSERR is returned!
  * @return OK on success, SYSERR on error
@@ -215,7 +215,7 @@ transportConnectFreely(const PeerIdentity * peer,
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
       continue;
-    hello = identity->identity2Helo(peer,
+    hello = identity->identity2Hello(peer,
 				    perm[i],
 				    useTempList);
     if (hello == NULL) 
@@ -326,18 +326,18 @@ static int transportDisconnect(TSession * tsession) {
  * @return OK if the attempt to verify is on the way,
  *        SYSERR if the transport mechanism is not supported
  */
-static int transportVerifyHelo(const P2P_hello_MESSAGE * helo) {
+static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
   unsigned short prot;
 
-  prot = ntohs(helo->protocol);
+  prot = ntohs(hello->protocol);
   if ( (prot == NAT_PROTOCOL_NUMBER) &&
-       ( (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-	 (ntohs(helo->header.type) != p2p_PROTO_hello) ) )
+       ( (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+	 (ntohs(hello->header.type) != p2p_PROTO_hello) ) )
     return SYSERR; /* invalid */
-  if ( (ntohs(helo->protocol) >= tapis_count) ||
+  if ( (ntohs(hello->protocol) >= tapis_count) ||
        (tapis[prot] == NULL) )
     return SYSERR; /* not supported */
-  return tapis[prot]->verifyHelo(helo);
+  return tapis[prot]->verifyHello(hello);
 }
 
 /**
@@ -357,7 +357,7 @@ static int transportGetMTU(unsigned short ttype) {
 static P2P_hello_MESSAGE *
 transportCreatehello(unsigned short ttype) {
   TransportAPI * tapi;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
 
   MUTEX_LOCK(tapis_lock);
   if (ttype == ANY_PROTOCOL_NUMBER) {
@@ -392,12 +392,12 @@ transportCreatehello(unsigned short ttype) {
     MUTEX_UNLOCK(tapis_lock);
     return NULL; /* send-only transport */
   }
-  helo = MALLOC(P2P_hello_MESSAGE_size(tapi->hello));
-  memcpy(helo,
+  hello = MALLOC(P2P_hello_MESSAGE_size(tapi->hello));
+  memcpy(hello,
 	 tapi->hello,
 	 P2P_hello_MESSAGE_size(tapi->hello));
   MUTEX_UNLOCK(tapis_lock);
-  return helo;
+  return hello;
 }
 
 /**
@@ -417,7 +417,7 @@ static int getAdvertisedhellos(unsigned int maxLen,
 			       char * buff) {
   int i;
   int tcount;
-  P2P_hello_MESSAGE ** helos;
+  P2P_hello_MESSAGE ** hellos;
   int used;
 
   MUTEX_LOCK(tapis_lock);
@@ -426,12 +426,12 @@ static int getAdvertisedhellos(unsigned int maxLen,
     if (tapis[i] != NULL)
       tcount++;
 
-  helos = MALLOC(tcount * sizeof(P2P_hello_MESSAGE*));
+  hellos = MALLOC(tcount * sizeof(P2P_hello_MESSAGE*));
   tcount = 0;
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
-      helos[tcount] = transportCreatehello(i);
-      if (NULL != helos[tcount])
+      hellos[tcount] = transportCreatehello(i);
+      if (NULL != hellos[tcount])
 	tcount++;
     }
   }
@@ -440,24 +440,24 @@ static int getAdvertisedhellos(unsigned int maxLen,
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   _("No transport succeeded in creating a hello!\n"));
-    FREE(helos);
+    FREE(hellos);
     return SYSERR;
   }
   used = 0;
   while (tcount > 0) {
     i = weak_randomi(tcount); /* select a hello at random */
-    if ((unsigned int)P2P_hello_MESSAGE_size(helos[i]) <= maxLen - used) {
+    if ((unsigned int)P2P_hello_MESSAGE_size(hellos[i]) <= maxLen - used) {
       memcpy(&buff[used],
-	     helos[i],
-	     P2P_hello_MESSAGE_size(helos[i]));
-      used += P2P_hello_MESSAGE_size(helos[i]);
+	     hellos[i],
+	     P2P_hello_MESSAGE_size(hellos[i]));
+      used += P2P_hello_MESSAGE_size(hellos[i]);
     }
-    FREE(helos[i]);
-    helos[i] = helos[--tcount];
+    FREE(hellos[i]);
+    hellos[i] = hellos[--tcount];
   }
   for (i=0;i<tcount;i++)
-    FREE(helos[i]);
-  FREE(helos);
+    FREE(hellos[i]);
+  FREE(hellos);
   if (used == 0)
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
@@ -468,13 +468,13 @@ static int getAdvertisedhellos(unsigned int maxLen,
 
 static void initHello(void * cls) {
   TransportAPI * tapi = cls;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
 
   createSignedhello(tapi);
-  helo = transportCreatehello(tapi->protocolNumber);
-  if (NULL != helo) {
-    identity->addHost(helo);
-    FREE(helo);
+  hello = transportCreatehello(tapi->protocolNumber);
+  if (NULL != hello) {
+    identity->addHost(hello);
+    FREE(hello);
   }
 }
 
@@ -601,9 +601,9 @@ provide_module_transport(CoreAPIForApplication * capi) {
 					      1,
 					      MAX_HELLO_EXPIRES / 60,
 					      60,
-					      &helo_live))
+					      &hello_live))
     return NULL;
-  helo_live *= 60;
+  hello_live *= 60;
 
   GE_ASSERT(ectx,
 	    sizeof(P2P_hello_MESSAGE) == 600);
@@ -725,7 +725,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.getCost = &transportGetCost;
   ret.send = &transportSend;
   ret.disconnect = &transportDisconnect;
-  ret.verifyhello = &transportVerifyHelo;
+  ret.verifyhello = &transportVerifyHello;
   ret.helloToString = &helloToString;
   ret.getMTU = &transportGetMTU;
   ret.createhello = &transportCreatehello;

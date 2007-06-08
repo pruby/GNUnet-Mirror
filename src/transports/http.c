@@ -398,14 +398,14 @@ static int httpAssociate(TSession * tsession) {
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
   const HostAddress * haddr;
 
-  haddr = (const HostAddress*) &helo[1];
-  if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-       (ntohs(helo->protocol) != HTTP_PROTOCOL_NUMBER) ||
+  haddr = (const HostAddress*) &hello[1];
+  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
+       (ntohs(hello->protocol) != HTTP_PROTOCOL_NUMBER) ||
        (MHD_NO == acceptPolicyCallback(NULL,
 				       (const struct sockaddr*) haddr,
 				       sizeof(IPaddr))) )
@@ -756,13 +756,13 @@ sendContentCallback(void * ptr,
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the hello-Message for the target node
+ * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int httpConnect(const P2P_hello_MESSAGE * helo,
+static int httpConnect(const P2P_hello_MESSAGE * hello,
 		       TSession ** tsessionPtr) {
-  const HostAddress * haddr = (const HostAddress*) &helo[1];
+  const HostAddress * haddr = (const HostAddress*) &hello[1];
   TSession * tsession;
   HTTPSession * httpSession;
   CURL * curl_get;
@@ -775,7 +775,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   if (curl_get == NULL)
     return SYSERR;
 
-  hash2enc(&helo->senderIdentity.hashPubKey,
+  hash2enc(&hello->senderIdentity.hashPubKey,
 	   &enc);
   url = MALLOC(64 + sizeof(EncName));
   SNPRINTF(url,
@@ -842,7 +842,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
   httpSession->woff = 0;
   httpSession->wpos = 0;
   httpSession->wbuff = NULL;
-  httpSession->sender = helo->senderIdentity;
+  httpSession->sender = hello->senderIdentity;
   httpSession->lock = MUTEX_CREATE(YES);
   httpSession->users = 1; /* us only, core has not seen this tsession! */
   httpSession->lastUse = get_time();
@@ -1268,7 +1268,7 @@ inittransport_http(CoreAPIForTransport * core) {
   httpAPI.protocolNumber       = HTTP_PROTOCOL_NUMBER;
   httpAPI.mtu                  = 0;
   httpAPI.cost                 = 20000; /* about equal to udp */
-  httpAPI.verifyHelo           = &verifyHelo;
+  httpAPI.verifyHello          = &verifyHello;
   httpAPI.createhello          = &createhello;
   httpAPI.connect              = &httpConnect;
   httpAPI.associate            = &httpAssociate;

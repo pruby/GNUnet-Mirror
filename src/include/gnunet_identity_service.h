@@ -146,9 +146,9 @@ typedef struct {
    *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
    * @return NULL on failure, the hello on success
    */
-  P2P_hello_MESSAGE * (*identity2Helo)(const PeerIdentity *  hostId,
-				       unsigned short protocol,
-				       int tryTemporaryList);
+  P2P_hello_MESSAGE * (*identity2Hello)(const PeerIdentity *  hostId,
+					unsigned short protocol,
+					int tryTemporaryList);
 
   /**
    *

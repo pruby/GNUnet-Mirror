@@ -608,7 +608,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
   tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
-  tcpAPI.verifyHelo           = &verifyHelo;
+  tcpAPI.verifyHello          = &verifyHelo;
   tcpAPI.createhello          = &createhello;
   tcpAPI.connect              = &tcpConnect;
   tcpAPI.associate            = &tcpAssociate;

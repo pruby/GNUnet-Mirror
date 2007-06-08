@@ -306,9 +306,9 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   PeerIdentity hc;
 
   GE_ASSERT(ectx, sk != NULL);
-  foreignHello = identity->identity2Helo(hostId,
-					 ANY_PROTOCOL_NUMBER,
-					 YES);
+  foreignHello = identity->identity2Hello(hostId,
+					  ANY_PROTOCOL_NUMBER,
+					  YES);
   /* create and encrypt sessionkey */
   if (NULL == foreignHello) {
     hash2enc(&hostId->hashPubKey,
@@ -319,15 +319,22 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 	   &enc);
     return NULL; /* other host not known */
   }
-  hash(&foreignHello->publicKey,
-       sizeof(PublicKey),
-       &hc.hashPubKey);
+  identity->getPeerIdentity(&foreignHello->publicKey,
+			    &hc);
   if ( (0 != memcmp(&hc,
 		    &hostId,
 		    sizeof(PeerIdentity))) ||
        (0 != memcmp(&hc,
 		    &foreignHello->senderIdentity,
 		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(NULL, 
+	     (0 != memcmp(&hc,
+			  &foreignHello->senderIdentity,
+			  sizeof(PeerIdentity))));
+    GE_BREAK(NULL, 
+	     0 == memcmp(&hc,
+			 &hostId,
+			 sizeof(PeerIdentity)));
     GE_BREAK(NULL, 0);
     FREE(foreignHello);
     return NULL;

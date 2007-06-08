@@ -230,7 +230,7 @@ typedef struct {
    *        (the signature/crc have been verified before)
    * @return OK if the helo is well-formed
    */
-  int (*verifyHelo)(const P2P_hello_MESSAGE * hello);
+  int (*verifyHello)(const P2P_hello_MESSAGE * hello);
 
   /**
    * Create a hello-Message for the current node. The hello is

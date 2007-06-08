@@ -82,9 +82,9 @@ typedef struct {
   /**
    * hellos for the peer (maybe NULL)!
    */
-  P2P_hello_MESSAGE ** helos;
+  P2P_hello_MESSAGE ** hellos;
 
-  unsigned int heloCount;
+  unsigned int helloCount;
 
   /**
    * for which protocols is this host known?
@@ -213,8 +213,8 @@ static void addHostToKnown(const PeerIdentity * identity,
     entry->protocols = NULL;
     entry->protocolCount = 0;
     entry->strict    = NO;
-    entry->helos     = NULL;
-    entry->heloCount = 0;
+    entry->hellos     = NULL;
+    entry->helloCount = 0;
     hash2enc(&identity->hashPubKey,
 	     &fil);
     fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
@@ -401,6 +401,25 @@ static void cronScanDirectoryDataHosts(void * unused) {
   GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
 }
 
+
+/**
+ * Obtain identity from publicPrivateKey.
+ * @param pubKey the public key of the host
+ * @param result address where to write the identity of the node
+ */
+static void getPeerIdentity(const PublicKey * pubKey,
+			    PeerIdentity * result) {
+  if (pubKey == NULL) {
+    memset(&result,
+	   0,
+	   sizeof(PeerIdentity));
+  } else {
+    hash(pubKey,
+	 sizeof(PublicKey),
+	 &result->hashPubKey);
+  }
+}
+
 /**
  * Add a host to the temporary list.
  */
@@ -410,7 +429,16 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   HostEntry * entry;
   int i;
   int slot;
+  PeerIdentity have;
 
+  getPeerIdentity(&msg->publicKey,
+		  &have);
+  if (0 != memcmp(&have,
+		  &msg->senderIdentity,
+		  sizeof(PeerIdentity))) {
+    GE_BREAK(NULL, 0);
+    return;
+  }
   msg = MALLOC(P2P_hello_MESSAGE_size(tmp));
   memcpy(msg,
 	 tmp,
@@ -433,15 +461,15 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
     entry->identity = msg->senderIdentity;
     entry->until = 0;
     entry->delta = 0;
-    for (i=0;i<entry->heloCount;i++)
-      FREE(entry->helos[i]);
-    GROW(entry->helos,
-	 entry->heloCount,
+    for (i=0;i<entry->helloCount;i++)
+      FREE(entry->hellos[i]);
+    GROW(entry->hellos,
+	 entry->helloCount,
 	 1);
     GROW(entry->protocols,
 	 entry->protocolCount,
 	 1);
-    entry->helos[0] = msg;
+    entry->hellos[0] = msg;
     entry->protocols[0] = ntohs(msg->protocol);
     entry->strict = NO;
     entry->trust = 0;
@@ -478,14 +506,14 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	       entry->protocolCount-1);
 	}
       }
-      for (j=0;j<entry->heloCount;j++) {
-	if (protocol == ntohs(entry->helos[j]->protocol)) {
-	  FREE(entry->helos[j]);
-	  entry->helos[j]
-	    = entry->helos[entry->heloCount-1];
-	  GROW(entry->helos,
-	       entry->heloCount,
-	       entry->heloCount-1);
+      for (j=0;j<entry->helloCount;j++) {
+	if (protocol == ntohs(entry->hellos[j]->protocol)) {
+	  FREE(entry->hellos[j]);
+	  entry->hellos[j]
+	    = entry->hellos[entry->helloCount-1];
+	  GROW(entry->hellos,
+	       entry->helloCount,
+	       entry->helloCount-1);
 	}
       }
       /* also remove hello file itself */
@@ -499,11 +527,11 @@ static void delHostFromKnown(const PeerIdentity * identity,
       FREE(fn);
 
       if (entry->protocolCount == 0) {
-	if (entry->heloCount > 0) {
-	  for (j=0;j<entry->heloCount;j++)
-	    FREE(entry->helos[j]);
-	  GROW(entry->helos,
-	       entry->heloCount,
+	if (entry->helloCount > 0) {
+	  for (j=0;j<entry->helloCount;j++)
+	    FREE(entry->hellos[j]);
+	  GROW(entry->hellos,
+	       entry->helloCount,
 	       0);
 	}
 	hosts_[i] = hosts_[--numberOfHosts_];
@@ -519,7 +547,7 @@ static void delHostFromKnown(const PeerIdentity * identity,
 }
 
 /**
- * Bind a host address (helo) to a hostId.
+ * Bind a host address (hello) to a hostId.
  * @param msg the verified (!) hello message
  */
 static void bindAddress(const P2P_hello_MESSAGE * msg) {
@@ -529,7 +557,16 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   int size;
   HostEntry * host;
   int i;
+  PeerIdentity have;
 
+  getPeerIdentity(&msg->publicKey,
+		  &have);
+  if (0 != memcmp(&have,
+		  &msg->senderIdentity,
+		  sizeof(PeerIdentity))) {
+    GE_BREAK(NULL, 0);
+    return;
+  }
   GE_ASSERT(ectx,
 	    numberOfHosts_ <= sizeOfHosts_);
   GE_ASSERT(ectx,
@@ -567,20 +604,20 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   GE_ASSERT(ectx,
 	    host != NULL);
 
-  for (i=0;i<host->heloCount;i++) {
-    if (msg->protocol == host->helos[i]->protocol) {
-      FREE(host->helos[i]);
-      host->helos[i] = NULL;
+  for (i=0;i<host->helloCount;i++) {
+    if (msg->protocol == host->hellos[i]->protocol) {
+      FREE(host->hellos[i]);
+      host->hellos[i] = NULL;
       break;
     }
   }
-  if (i == host->heloCount)
-    GROW(host->helos,
-	 host->heloCount,
-	 host->heloCount+1);
-  host->helos[i]
+  if (i == host->helloCount)
+    GROW(host->hellos,
+	 host->helloCount,
+	 host->helloCount+1);
+  host->hellos[i]
     = MALLOC(P2P_hello_MESSAGE_size(msg));
-  memcpy(host->helos[i],
+  memcpy(host->hellos[i],
 	 msg,
 	 P2P_hello_MESSAGE_size(msg));
   MUTEX_UNLOCK(lock_);
@@ -600,13 +637,14 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
  * @param result where to store the result
  * @returns SYSERR on failure, OK on success
  */
-static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
+static P2P_hello_MESSAGE * identity2Hello(const PeerIdentity *  hostId,
 					 unsigned short protocol,
 					 int tryTemporaryList) {
   P2P_hello_MESSAGE * result;
   HostEntry * host;
   char * fn;
   P2P_hello_MESSAGE buffer;
+  PeerIdentity have;
   int size;
   int i;
   int j;
@@ -627,16 +665,16 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 	j = i;
       else
 	j = perm[i];
-      if ( (tempHosts[j].heloCount > 0) &&
+      if ( (tempHosts[j].helloCount > 0) &&
 	   (0 == memcmp(hostId,
 			&tempHosts[j].identity,
 			sizeof(PeerIdentity))) &&
 	   ( (tempHosts[j].protocols[0] == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));
+	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].hellos[0]));
 	memcpy(result,
-	       tempHosts[j].helos[0],
-	       P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));	
+	       tempHosts[j].hellos[0],
+	       P2P_hello_MESSAGE_size(tempHosts[j].hellos[0]));	
 	MUTEX_UNLOCK(lock_);
 	FREENONNULL(perm);
 	return result;
@@ -655,13 +693,13 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   if (protocol == ANY_PROTOCOL_NUMBER)
     protocol = host->protocols[weak_randomi(host->protocolCount)];
 
-  for (i=0;i<host->heloCount;i++) {
-    if (ntohs(host->helos[i]->protocol) == protocol) {
+  for (i=0;i<host->helloCount;i++) {
+    if (ntohs(host->hellos[i]->protocol) == protocol) {
       result
-	= MALLOC(P2P_hello_MESSAGE_size(host->helos[i]));
+	= MALLOC(P2P_hello_MESSAGE_size(host->hellos[i]));
       memcpy(result,
-	     host->helos[i],
-	     P2P_hello_MESSAGE_size(host->helos[i]));
+	     host->hellos[i],
+	     P2P_hello_MESSAGE_size(host->hellos[i]));
       MUTEX_UNLOCK(lock_);
       return result;
     }
@@ -684,7 +722,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
     if (0 == UNLINK(fn))
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Removed file `%s' containing invalid hello data.\n"),
+	     _("Removed file `%s' containing invalid HELLO data.\n"),
 	     fn);
     else
       GE_LOG_STRERROR_FILE(ectx,
@@ -700,11 +738,19 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 			fn,
 			P2P_hello_MESSAGE_size(&buffer),
 			result);
-  if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
+  getPeerIdentity(&result->publicKey,
+		  &have);
+  if ( ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) ||
+       (0 != memcmp(&have,
+		    hostId,
+		    sizeof(PeerIdentity))) ||
+       (0 != memcmp(&have,
+		    &result->senderIdentity,
+		    sizeof(PeerIdentity))) ) {
     if (0 == UNLINK(fn))
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Removed file `%s' containing invalid hello data.\n"),
+	     _("Removed file `%s' containing invalid HELLO data.\n"),
 	     fn);
     else
       GE_LOG_STRERROR_FILE(ectx,
@@ -717,12 +763,12 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
     return NULL;
   }
   FREE(fn);
-  GROW(host->helos,
-       host->heloCount,
-       host->heloCount+1);
-  host->helos[host->heloCount-1]
+  GROW(host->hellos,
+       host->helloCount,
+       host->helloCount+1);
+  host->hellos[host->helloCount-1]
     = MALLOC(P2P_hello_MESSAGE_size(&buffer));
-  memcpy(host->helos[host->heloCount-1],
+  memcpy(host->hellos[host->helloCount-1],
 	 result,
 	 P2P_hello_MESSAGE_size(&buffer));
   MUTEX_UNLOCK(lock_);
@@ -742,13 +788,13 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 			       const void * message,
 			       int size,
 			       const Signature * sig) {
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   int res;
 
-  helo = identity2Helo(signer,
+  hello = identity2Hello(signer,
 		       ANY_PROTOCOL_NUMBER,
 		       YES);
-  if (helo == NULL) {
+  if (hello == NULL) {
     EncName enc;
 
     IF_GELOG(ectx,
@@ -762,12 +808,12 @@ static int verifyPeerSignature(const PeerIdentity * signer,
     return SYSERR;
   }
   res = verifySig(message, size, sig,
-		  &helo->publicKey);
+		  &hello->publicKey);
   if (res == SYSERR)
     GE_LOG(ectx,
 	   GE_ERROR | GE_REQUEST | GE_DEVELOPER | GE_USER,
 	   _("Signature failed verification: signature invalid.\n"));
-  FREE(helo);
+  FREE(hello);
   return res;
 }
 
@@ -975,7 +1021,7 @@ static int forEachHost(cron_t now,
     if (ret != OK)
       break;
     entry = &tempHosts[i];
-    if (entry->heloCount == 0)
+    if (entry->helloCount == 0)
       continue;
     if ( (now == 0) ||
 	 (now >= entry->until) ) {
@@ -1043,25 +1089,7 @@ static void cronFlushTrustBuffer(void * unused) {
 }
 
 /**
- * Obtain identity from publicPrivateKey.
- * @param pubKey the public key of the host
- * @param result address where to write the identity of the node
- */
-static void getPeerIdentity(const PublicKey * pubKey,
-			    PeerIdentity * result) {
-  if (pubKey == NULL) {
-    memset(&result,
-	   0,
-	   sizeof(PeerIdentity));
-  } else {
-    hash(pubKey,
-	 sizeof(PublicKey),
-	 &result->hashPubKey);
-  }
-}
-
-/**
- * @brief Delete expired hosts
+ * @brief delete expired HELLO entries in data/hosts/
  */
 static int discardHostsHelper(const char *filename,
 			      const char *dirname,
@@ -1225,9 +1253,9 @@ static int hostInfoIterator(const PeerIdentity * identity,
   
   if (confirmed == NO)
     return OK;
-  hello = identity2Helo(identity,
-			protocol,
-			YES);
+  hello = identity2Hello(identity,
+			 protocol,
+			 YES);
   if (hello == NULL)
     return OK;
   transport = coreAPI->requestService("transport");
@@ -1296,7 +1324,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   id.addHostTemporarily  = &addHostTemporarily;
   id.addHost             = &bindAddress;
   id.forEachHost         = &forEachHost;
-  id.identity2Helo       = &identity2Helo;
+  id.identity2Hello       = &identity2Hello;
   id.verifyPeerSignature = &verifyPeerSignature;
   id.blacklistHost       = &blacklistHost;
   id.isBlacklistedStrict = &isBlacklistedStrict;
@@ -1397,10 +1425,10 @@ void release_module_identity() {
 				   &identityRequestInfoHandler);
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
     entry = &tempHosts[i];
-    for (j=0;j<entry->heloCount;j++)
-      FREE(entry->helos[j]);
-    GROW(entry->helos,
-	 entry->heloCount,
+    for (j=0;j<entry->helloCount;j++)
+      FREE(entry->hellos[j]);
+    GROW(entry->hellos,
+	 entry->helloCount,
 	 0);
     GROW(entry->protocols,
 	 entry->protocolCount,
@@ -1423,10 +1451,10 @@ void release_module_identity() {
   lock_ = NULL;
   for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
-    for (j=0;j<entry->heloCount;j++)
-      FREE(entry->helos[j]);
-    GROW(entry->helos,
-	 entry->heloCount,
+    for (j=0;j<entry->helloCount;j++)
+      FREE(entry->hellos[j]);
+    GROW(entry->hellos,
+	 entry->helloCount,
 	 0);
     GROW(entry->protocols,
 	 entry->protocolCount,

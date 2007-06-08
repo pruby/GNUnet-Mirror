@@ -208,17 +208,17 @@ static int isRejected(const void * addr,
  * address). Since the reply will be asynchronous, a method must be
  * called on success.
  *
- * @param helo the hello message to verify
+ * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &helo[1];
-  if ( (ntohs(helo->senderAddressSize) != sizeof(Host6Address)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
+  haddr = (Host6Address*) &hello[1];
+  if ( (ntohs(hello->senderAddressSize) != sizeof(Host6Address)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
        (YES == isBlacklisted(&haddr->senderIP,
 			     sizeof(IP6addr))) ||
        (YES != isWhitelisted(&haddr->senderIP,
@@ -228,7 +228,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 #if DEBUG_UDP6
     char inet6[INET6_ADDRSTRLEN];
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Verified UDP6 helo from %u.%u.%u.%u:%u.\n",
+	"Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
 	inet_ntop(AF_INET6,
 		  &haddr->senderIP,
 		  inet6,
@@ -288,7 +288,7 @@ static int udp6Send(TSession * tsession,
 		    const unsigned int size,
 		    int importance) {
   UDPMessage * mp;
-  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * hello;
   Host6Address * haddr;
   struct sockaddr_in6 sin; /* an Internet endpoint address */
   int ok;
@@ -307,11 +307,11 @@ static int udp6Send(TSession * tsession,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  helo = (P2P_hello_MESSAGE*)tsession->internal;
-  if (helo == NULL)
+  hello = (P2P_hello_MESSAGE*)tsession->internal;
+  if (hello == NULL)
     return SYSERR;
 
-  haddr = (Host6Address*) &helo[1];
+  haddr = (Host6Address*) &hello[1];
   ssize = size + sizeof(UDPMessage);
   mp = MALLOC(ssize);
   mp->header.size = htons(ssize);
@@ -548,7 +548,7 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   udpAPI.protocolNumber       = UDP6_PROTOCOL_NUMBER;
   udpAPI.mtu                  = mtu - sizeof(UDPMessage);
   udpAPI.cost                 = 19950;
-  udpAPI.verifyHelo           = &verifyHelo;
+  udpAPI.verifyHello           = &verifyHello;
   udpAPI.createhello          = &createhello;
   udpAPI.connect              = &udpConnect;
   udpAPI.send                 = &udp6Send;

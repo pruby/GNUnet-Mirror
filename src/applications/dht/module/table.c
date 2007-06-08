@@ -572,9 +572,9 @@ static void considerPeer(const PeerIdentity * sender,
 				    peer))
     return; /* already have this peer in buckets */
   /* do we know how to contact this peer? */
-  hello = identity->identity2Helo(peer,
-				  ANY_PROTOCOL_NUMBER,
-				  NO);
+  hello = identity->identity2Hello(peer,
+				   ANY_PROTOCOL_NUMBER,
+				   NO);
   if (hello == NULL) {
     /* if identity not known, ask sender for HELLO of other peer */
     ask.header.size = htons(sizeof(P2P_DHT_ASK_HELLO));
@@ -660,9 +660,9 @@ static int handleAskHello(const PeerIdentity * sender,
   ask = (const P2P_DHT_ASK_HELLO *) msg;
   if (NULL == findBucketFor(&ask->peer))
     return OK;
-  hello = identity->identity2Helo(&ask->peer,
-				  ANY_PROTOCOL_NUMBER,
-				  NO);
+  hello = identity->identity2Hello(&ask->peer,
+				   ANY_PROTOCOL_NUMBER,
+				   NO);
   if (hello == NULL)
     return OK;
   coreAPI->unicast(sender,

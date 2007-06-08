@@ -174,18 +174,18 @@ static unsigned short getGNUnetTCP6Port() {
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
  * success.
- * @param helo the hello message to verify
+ * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &helo[1];
-  if ( (ntohs(helo->senderAddressSize) != sizeof(Host6Address)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-       (ntohs(helo->protocol) != TCP6_PROTOCOL_NUMBER) ||
+  haddr = (Host6Address*) &hello[1];
+  if ( (ntohs(hello->senderAddressSize) != sizeof(Host6Address)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
+       (ntohs(hello->protocol) != TCP6_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip,
 			     sizeof(IP6addr))) ||
        (YES != isWhitelisted(&haddr->ip,
@@ -237,11 +237,11 @@ static P2P_hello_MESSAGE * createhello() {
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the hello-Message for the target node
+ * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcp6Connect(const P2P_hello_MESSAGE * helo,
+static int tcp6Connect(const P2P_hello_MESSAGE * hello,
 		       TSession ** tsessionPtr) {
   int i;
   Host6Address * haddr;
@@ -253,7 +253,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
 
   if (selector == NULL)
     return SYSERR;
-  haddr = (Host6Address*) &helo[1];
+  haddr = (Host6Address*) &hello[1];
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_INET6;
   hints.ai_socktype = SOCK_STREAM;
@@ -325,7 +325,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
   if (sock == -1)
     return SYSERR;
   GE_ASSERT(ectx, s != NULL);
-  return tcpConnectHelper(helo,
+  return tcpConnectHelper(hello,
 			  s,
 			  tcp6API.protocolNumber,
 			  tsessionPtr);
@@ -553,7 +553,7 @@ TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
  tcp6API.protocolNumber       = TCP6_PROTOCOL_NUMBER;
   tcp6API.mtu                  = 0;
   tcp6API.cost                 = 19950; /* about equal to udp6 */
-  tcp6API.verifyHelo           = &verifyHelo;
+  tcp6API.verifyHello           = &verifyHello;
   tcp6API.createhello          = &createhello;
   tcp6API.connect              = &tcp6Connect;
   tcp6API.associate            = &tcpAssociate;
