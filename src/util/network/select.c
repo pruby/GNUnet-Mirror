@@ -489,13 +489,6 @@ static void * selectThread(void * ctx) {
 #endif
 	destroySession(sh, session);
       } else {
-#if DEBUG_SELECT
-	GE_LOG(sh->ectx,
-	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	       "Select %p adds to select set connection %p\n",
-	       sh,
-	       session);	
-#endif
 	add_to_select_set(sock, &readSet, &max);
 	add_to_select_set(sock, &errorSet, &max);
 	GE_ASSERT(NULL, session->wapos >= session->wspos);
