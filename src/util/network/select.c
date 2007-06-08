@@ -380,7 +380,7 @@ static int writeAndProcess(SelectHandle * sh,
     GE_LOG(sh->ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	   "Sending %d bytes from session %p of select %p return %d.\n",
-	   session->wpos,
+	   session->wapos - session->wspos,
 	   sh,
 	   session,
 	   ret);	
