@@ -322,18 +322,18 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   identity->getPeerIdentity(&foreignHello->publicKey,
 			    &hc);
   if ( (0 != memcmp(&hc,
-		    &hostId,
+		    hostId,
 		    sizeof(PeerIdentity))) ||
        (0 != memcmp(&hc,
 		    &foreignHello->senderIdentity,
 		    sizeof(PeerIdentity))) ) {
     GE_BREAK(NULL, 
-	     (0 != memcmp(&hc,
-			  &foreignHello->senderIdentity,
-			  sizeof(PeerIdentity))));
+	     0 == memcmp(&hc,
+			 &foreignHello->senderIdentity,
+			 sizeof(PeerIdentity)));
     GE_BREAK(NULL, 
 	     0 == memcmp(&hc,
-			 &hostId,
+			 hostId,
 			 sizeof(PeerIdentity)));
     GE_BREAK(NULL, 0);
     FREE(foreignHello);
