@@ -223,8 +223,10 @@ transportConnectFreely(const PeerIdentity * peer,
     hc++;
     ret = transportConnect(hello);
     FREE(hello);
-    if (ret != NULL)
+    if (ret != NULL) {
+      ret->type = perm[i];
       break;
+    }
   }
   FREE(perm);
   MUTEX_UNLOCK(tapis_lock);
