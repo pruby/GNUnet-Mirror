@@ -145,8 +145,8 @@ static void callAddHost(void * cls) {
  */
 static int
 receivedhello(const PeerIdentity * sender,
-	      const MESSAGE_HEADER * message) {
-  TSession * tsession;
+	      const MESSAGE_HEADER * message,
+	      TSession * tsession) {
   P2P_hello_MESSAGE * copy;
   PeerIdentity foreignId;
   const P2P_hello_MESSAGE * msg;
@@ -155,6 +155,7 @@ receivedhello(const PeerIdentity * sender,
   int helloEnd;
   int mtu;
   int res;
+  int disconnect;
   cron_t now;
 
   /* first verify that it is actually a valid hello */
@@ -323,7 +324,11 @@ receivedhello(const PeerIdentity * sender,
 
 
   /* Establish session as advertised in the hello */
-  tsession = transport->connect(msg);
+  disconnect = NO;
+  if (tsession == NULL) {
+    tsession = transport->connect(msg);
+    disconnect = YES;
+  }
   if (tsession == NULL) {
     if (stats != NULL)
       stats->change(stat_hello_no_transport, 1);
@@ -353,7 +358,8 @@ receivedhello(const PeerIdentity * sender,
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("Could not send HELLO+PING, ping buffer full.\n"));
-    transport->disconnect(tsession);
+    if (disconnect == YES)
+      transport->disconnect(tsession);
     if (stats != NULL)
       stats->change(stat_hello_ping_busy, 1);
     return SYSERR;
@@ -374,7 +380,8 @@ receivedhello(const PeerIdentity * sender,
     FREE(buffer);
     if (stats != NULL)
       stats->change(stat_hello_noselfad, 1);
-    transport->disconnect(tsession);
+    if (disconnect == YES)
+      transport->disconnect(tsession);
     return SYSERR;
   }
   res = OK;
@@ -399,7 +406,8 @@ receivedhello(const PeerIdentity * sender,
       stats->change(stat_plaintextPingSent, 1);
   }
   FREE(buffer);
-  if (SYSERR == transport->disconnect(tsession))
+  if ( (disconnect == YES) &&
+       (SYSERR == transport->disconnect(tsession)) )
     res = SYSERR;
   return res;
 }
@@ -713,7 +721,8 @@ static int
 ehelloHandler(const PeerIdentity * sender,
 	      const MESSAGE_HEADER * message) {
   if (OK == receivedhello(sender,
-			  message)) {
+			  message,
+			  NULL)) {
     /* if the hello was ok, update traffic preference
        for the peer (depending on how much we like
        to learn about other peers) */
@@ -731,7 +740,8 @@ phelloHandler(const PeerIdentity * sender,
 	      const MESSAGE_HEADER * message,
 	      TSession * session) {
   receivedhello(sender,
-		message);
+		message,
+		session);
   return OK;
 }
 
