@@ -218,7 +218,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   if ( (ret > 0)&&
        (stats != NULL) )
       stats->change(stat_migration_count, 1);
-
+  GE_BREAK(NULL, ret <= padding);
   return ret;
 }
 

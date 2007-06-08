@@ -3022,6 +3022,12 @@ void considerTakeover(const PeerIdentity * sender,
   ENTRY();
   if (tsession == NULL)
     return;
+  if (0 != memcmp(sender,
+		  &tsession->peer,
+		  sizeof(PeerIdentity))) {
+    GE_BREAK(NULL, 0);
+    return;
+  }
   MUTEX_LOCK(lock);
   be = addHost(sender, NO);
   if (be == NULL) {

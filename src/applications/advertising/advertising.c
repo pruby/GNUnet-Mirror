@@ -185,21 +185,21 @@ receivedhello(const PeerIdentity * sender,
 		      &enc));
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
-	   _("hello message from `%s' invalid (signature invalid). Dropping.\n"),
+	   _("HELLO message from `%s' has an invalid signature. Dropping.\n"),
 	   (char*)&enc);
     return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
      GE_LOG(ectx,
 	    GE_WARNING | GE_BULK | GE_USER,
-	    _("hello message received invalid (expiration time over limit). Dropping.\n"));
+	    _("HELLO message received is expired. Dropping.\n"));
      return SYSERR;
   }
   if (SYSERR == transport->verifyhello(msg)) {
 #if DEBUG_ADVERTISING
-   GE_LOG(ectx,
+    GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
-	   _("hello transport verification failed (%u).\n"),
+	   "Transport verification of HELLO message failed (%u).\n",
 	   ntohs(msg->protocol));
 #endif
     return OK; /* not good, but do process rest of message */
@@ -209,7 +209,7 @@ receivedhello(const PeerIdentity * sender,
 #if DEBUG_ADVERTISING
   GE_LOG(ectx,
 	 GE_INFO | GE_REQUEST | GE_USER,
-	 _("hello advertisement for protocol %d received.\n"),
+	 "HELLO advertisement for protocol %d received.\n",
 	 ntohs(msg->protocol));
 #endif
   if (ntohs(msg->protocol) == NAT_PROTOCOL_NUMBER) {
@@ -254,7 +254,7 @@ receivedhello(const PeerIdentity * sender,
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "advertised hello differs from prior knowledge,"
+	   "HELLO advertisement differs from prior knowledge,"
 	   " requireing ping-pong confirmation.\n");
 #endif
     FREE(copy);
@@ -304,7 +304,7 @@ receivedhello(const PeerIdentity * sender,
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
-	   "Not enough resources to verify hello at this time (%u * %u < %u * 100)\n",
+	   "Not enough resources to verify HELLO message at this time (%u * %u < %u * 100)\n",
 	   (unsigned int) ((now - lasthelloMsg) / cronSECONDS),
 	   (unsigned int) os_network_monitor_get_limit(coreAPI->load_monitor,
 						       Download),
@@ -352,7 +352,7 @@ receivedhello(const PeerIdentity * sender,
     res = SYSERR;
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
-	   _("Could not send hellos+PING, ping buffer full.\n"));
+	   _("Could not send HELLO+PING, ping buffer full.\n"));
     transport->disconnect(tsession);
     if (stats != NULL)
       stats->change(stat_hello_ping_busy, 1);
@@ -370,10 +370,7 @@ receivedhello(const PeerIdentity * sender,
   if (heloEnd <= 0) {
     GE_LOG(ectx, 
 	   GE_WARNING | GE_BULK | GE_USER,
-	   _("`%s' failed (%d, %u). Will not send PING.\n"),
-	   "getAdvertisedhellos",
-	   heloEnd,
-	   mtu - ntohs(ping->size));
+	   _("Failed to create an advertisement for this peer. Will not send PING.\n"));
     FREE(buffer);
     if (stats != NULL)
       stats->change(stat_hello_noselfad, 1);
@@ -640,6 +637,7 @@ forwardhelloHelper(const PeerIdentity * peer,
   /* do not forward expired hellos */
   TIME(&now);
   if ((TIME_T)ntohl(hello->expirationTime) < now) {
+#if DEBUG_ADVERTISING
     EncName enc;
     /* remove hellos that expired */
     IF_GELOG(ectx, 
@@ -647,9 +645,10 @@ forwardhelloHelper(const PeerIdentity * peer,
 	     hash2enc(&peer->hashPubKey,
 		      &enc));
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	   _("Removing hello from peer `%s' (expired %ds ago).\n"),
+	   "Removing HELLO from peer `%s' (expired %ds ago).\n",
 	   &enc,
 	   now - ntohl(hello->expirationTime));
+#endif
     identity->delHostFromKnown(peer, protocol);
     FREE(hello);
     (*probability)--;
@@ -854,10 +853,11 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# plaintext PING messages sent"));
   }
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("`%s' registering handler %d (plaintext and ciphertext)\n"),
-      "advertising",
-      p2p_PROTO_hello);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("`%s' registering handler %d (plaintext and ciphertext)\n"),
+	 "advertising",
+	 p2p_PROTO_hello);
 
   capi->registerHandler(p2p_PROTO_hello,
 			&ehelloHandler);

@@ -1976,7 +1976,8 @@ tryMigrate(const DataContainer * data,
   unsigned int size;
 
   size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
-  if ( (size > padding) || (size >= MAX_BUFFER_SIZE) )
+  if ( (size > padding) || 
+       (size >= MAX_BUFFER_SIZE) )
     return 0;
   reply = (P2P_gap_reply_MESSAGE*) position;
   reply->header.type
@@ -1990,10 +1991,11 @@ tryMigrate(const DataContainer * data,
 	 size - sizeof(P2P_gap_reply_MESSAGE));
 #if EXTRA_CHECKS
   /* verify content integrity */
-  GE_ASSERT(ectx, SYSERR != bs->put(bs->closure,
-				  primaryKey,
-				  data,
-				  0));
+  GE_ASSERT(ectx,
+	    SYSERR != bs->put(bs->closure,
+			      primaryKey,
+			      data,
+			      0));
 #endif
   return size;
 }

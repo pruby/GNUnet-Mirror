@@ -133,20 +133,22 @@ static void select_close_handler(void * ch_cls,
 
 /**
  * Establish a connection to a remote node.
- * @param helo the hello-Message for the target node
+ *
+ * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int udpConnect(const P2P_hello_MESSAGE * helo,
+static int udpConnect(const P2P_hello_MESSAGE * hello,
 		      TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
+  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(hello));
   memcpy(tsession->internal,
-	 helo,
-	 P2P_hello_MESSAGE_size(helo));
+	 hello,
+	 P2P_hello_MESSAGE_size(hello));
   tsession->ttype = udpAPI.protocolNumber;
+  tsession->peer = hello->senderIdentity;
    (*tsessionPtr) = tsession;
   return OK;
 }

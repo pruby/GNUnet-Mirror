@@ -56,8 +56,7 @@ typedef struct {
   PublicKey publicKey;
 
   /**
-   * Whose identity follows? No, this is NOT a duplicate
-   * as a node may send us the identity of ANOTHER node!
+   * Whose identity follows? Must be hash of PublicKey.
    */
   PeerIdentity senderIdentity;
 

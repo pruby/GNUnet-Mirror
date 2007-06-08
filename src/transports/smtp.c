@@ -471,15 +471,16 @@ static P2P_hello_MESSAGE * createhello() {
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int smtpConnect(const P2P_hello_MESSAGE * helo,
+static int smtpConnect(const P2P_hello_MESSAGE * hello,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
+  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(hello));
+  tsession->peer = hello->senderIdentity;
   memcpy(tsession->internal,
-	 helo,
-	 P2P_hello_MESSAGE_size(helo));
+	 hello,
+	 P2P_hello_MESSAGE_size(hello));
   tsession->ttype = smtpAPI.protocolNumber;
   (*tsessionPtr) = tsession;
   return OK;

@@ -75,8 +75,11 @@ extern "C" {
  * layer side
  */
 typedef struct {
-  unsigned short ttype;
   void * internal;
+
+  PeerIdentity peer;
+
+  unsigned short ttype;
 } TSession;
 
 /**

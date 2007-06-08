@@ -298,18 +298,19 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 		     TIME_T created,
 		     const MESSAGE_HEADER * ping,
 		     const MESSAGE_HEADER * pong) {
-  P2P_hello_MESSAGE * foreignHelo;
+  P2P_hello_MESSAGE * foreignHello;
   int size;
   P2P_new_setkey_MESSAGE * msg;
   char * pt;
   EncName enc;
+  PeerIdentity hc;
 
   GE_ASSERT(ectx, sk != NULL);
-  foreignHelo = identity->identity2Helo(hostId,
-					ANY_PROTOCOL_NUMBER,
-					YES);
+  foreignHello = identity->identity2Helo(hostId,
+					 ANY_PROTOCOL_NUMBER,
+					 YES);
   /* create and encrypt sessionkey */
-  if (NULL == foreignHelo) {
+  if (NULL == foreignHello) {
     hash2enc(&hostId->hashPubKey,
 	     &enc);
     GE_LOG(ectx,
@@ -318,6 +319,20 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 	   &enc);
     return NULL; /* other host not known */
   }
+  hash(&foreignHello->publicKey,
+       sizeof(PublicKey),
+       &hc.hashPubKey);
+  if ( (0 != memcmp(&hc,
+		    &hostId,
+		    sizeof(PeerIdentity))) ||
+       (0 != memcmp(&hc,
+		    &foreignHello->senderIdentity,
+		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(NULL, 0);
+    FREE(foreignHello);
+    return NULL;
+  }
+  
 
   size = sizeof(P2P_new_setkey_MESSAGE);
   if (ping != NULL)
@@ -328,14 +343,14 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   msg->target = *hostId;
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
-				  &foreignHelo->publicKey,
+				  &foreignHello->publicKey,
 				  &msg->key)) {
     GE_BREAK(ectx, 0);
-    FREE(foreignHelo);
+    FREE(foreignHello);
     FREE(msg);
     return NULL; /* encrypt failed */
   }
-  FREE(foreignHelo);
+  FREE(foreignHello);
 
   /* complete header */
   msg->header.size = htons(size);
@@ -414,7 +429,15 @@ static int exchangeKey(const PeerIdentity * receiver,
   PeerIdentity * sndr;
   EncName enc;
 
-  GE_ASSERT(ectx, receiver != NULL);
+  GE_ASSERT(ectx, 
+	    receiver != NULL);
+  if ( (tsession != NULL) &&
+       (0 != memcmp(&tsession->peer,
+		    receiver,
+		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(ectx, 0);
+    tsession = NULL;
+  }
   if ( (topology != NULL) &&
        (topology->allowConnectionFrom(receiver) == SYSERR) )
     return SYSERR;
@@ -422,18 +445,17 @@ static int exchangeKey(const PeerIdentity * receiver,
 	   &enc);
   /* then try to connect on the transport level */
   if ( (tsession == NULL) ||
-       (transport->associate(tsession) == SYSERR) ) {
+       (transport->associate(tsession) == SYSERR) ) 
     tsession = transport->connectFreely(receiver,
 					YES);
-    if (tsession == NULL) {
+  if (tsession == NULL) {
 #if DEBUG_SESSION
-      GE_LOG(ectx,
-	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Key exchange with `%s' failed: could not connect.\n",
-	     &enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_REQUEST,
+	   "Key exchange with `%s' failed: could not connect.\n",
+	   &enc);
 #endif
-      return SYSERR; /* failed to connect */
-    }
+    return SYSERR; /* failed to connect */    
   }
 
   /* create our ping */
@@ -544,6 +566,10 @@ static int acceptSessionKey(const PeerIdentity * sender,
   P2P_new_setkey_MESSAGE * newMsg;
   const void * end;
 
+  if (sender == NULL) {
+    GE_BREAK(NULL, 0);
+    return SYSERR;
+  }
   hash2enc(&sender->hashPubKey,
 	   &enc);
   if ( (topology != NULL) &&
@@ -725,7 +751,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
-	   "Received pong in session key from `%s', injecting!\n",
+	   "Received PONG in session key from `%s', injecting!\n",
 	   &enc);
 #endif
     coreAPI->injectMessage(sender,
@@ -738,8 +764,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Received ping in session key from `%s', "
-	     "sending pong over normal encrypted session!\n",
+	     "Received PING in session key from `%s', "
+	     "sending PONG over normal encrypted session!\n",
 	     &enc);
 #endif
       ping->type = htons(p2p_PROTO_PONG);

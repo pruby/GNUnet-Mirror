@@ -585,6 +585,7 @@ static int accessHandlerCallback(void * cls,
     tsession = MALLOC(sizeof(TSession));
     tsession->ttype = HTTP_PROTOCOL_NUMBER;
     tsession->internal = httpSession;
+    tsession->peer = *(coreAPI->myIdentity);
     httpSession->tsession = tsession;
     addTSession(tsession);
   }

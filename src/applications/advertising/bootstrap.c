@@ -68,7 +68,7 @@ static void processhellos(HelloListClosure * hcq) {
   }
   while ( (! hcq->do_shutdown) &&
 	  (hcq->helosCount > 0) ) {
-    /* select hello by random */
+    /* select hellos in random order */
     rndidx = weak_randomi(hcq->helosCount);
 #if DEBUG_BOOTSTRAP
     GE_LOG(ectx,
@@ -84,7 +84,7 @@ static void processhellos(HelloListClosure * hcq) {
 	 hcq->helosCount,
 	 hcq->helosCount-1);
 
-    coreAPI->injectMessage(&msg->senderIdentity,
+    coreAPI->injectMessage(NULL,
 			   (char*)msg,
 			   P2P_hello_MESSAGE_size(msg),
 			   NO,

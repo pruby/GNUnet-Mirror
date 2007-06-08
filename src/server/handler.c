@@ -370,15 +370,19 @@ void injectMessage(const PeerIdentity * sender,
 	   sizeof(MESSAGE_HEADER));
     plen = htons(cpart.size);
     if (pos + plen > size) {
-      IF_GELOG(ectx,
+      if (sender != NULL) {
+	IF_GELOG(ectx,
+		 GE_WARNING | GE_USER | GE_BULK,
+		 hash2enc(&sender->hashPubKey,
+			  &enc));
+	GE_LOG(ectx,
 	       GE_WARNING | GE_USER | GE_BULK,
-	       hash2enc(&sender->hashPubKey,
-			&enc));
-      GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Received corrupt message from peer `%s'in %s:%d.\n"),
-	     &enc,
-	     __FILE__, __LINE__);
+	       _("Received corrupt message from peer `%s'in %s:%d.\n"),
+	       &enc,
+	       __FILE__, __LINE__);
+      } else {
+	GE_BREAK(ectx, 0);
+      }
       return;
     }
     if ( (pos % sizeof(int)) != 0) {
@@ -400,16 +404,18 @@ void injectMessage(const PeerIdentity * sender,
 
     ptyp = htons(part->type);
 #if DEBUG_HANDLER
-    IF_GELOG(ectx,
+    if (sender != NULL) {
+      IF_GELOG(ectx,
+	       GE_DEBUG,
+	       hash2enc(&sender->hashPubKey,
+			&enc));
+      GE_LOG(ectx,
 	     GE_DEBUG,
-	     hash2enc(&sender->hashPubKey,
-		      &enc));
-    GE_LOG(ectx,
-	   GE_DEBUG,
-	   "Received %s message of type %u from peer `%s'\n",
-	   wasEncrypted ? "encrypted" : "plaintext",
-	   ptyp,
-	   &enc);
+	     "Received %s message of type %u from peer `%s'\n",
+	     wasEncrypted ? "encrypted" : "plaintext",
+	     ptyp,
+	     &enc);
+    }
 #endif
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
@@ -486,7 +492,8 @@ static void handleMessage(TSession * tsession,
 			  unsigned int size) {
   int ret;
 
-  if (YES == identity->isBlacklistedStrict(sender) ) {
+  if ( (sender != NULL) &&
+       (YES == identity->isBlacklistedStrict(sender) ) ) {
     EncName enc;
     IF_GELOG(ectx,
 	     GE_DEBUG,
@@ -503,7 +510,9 @@ static void handleMessage(TSession * tsession,
 		    size);
   if (ret == SYSERR)
     return; /* message malformed */
-  if ( (ret == YES) && (tsession != NULL) )
+  if ( (ret == YES) &&
+       (tsession != NULL) &&
+       (sender != NULL) )
     if (OK == transport->associate(tsession))
       considerTakeover(sender, tsession);
   injectMessage(sender,
@@ -511,8 +520,8 @@ static void handleMessage(TSession * tsession,
 		size - sizeof(P2P_PACKET_HEADER),
 		ret,
 		tsession);
-
-  confirmSessionUp(sender);
+  if (sender != NULL)
+    confirmSessionUp(sender);
 }
 
 /**

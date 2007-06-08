@@ -196,6 +196,7 @@ static int select_message_handler(void * mh_cls,
     }
     tcpSession->expectingWelcome = NO;
     tcpSession->sender = welcome->clientIdentity;
+    tsession->peer = welcome->clientIdentity;
   } else {
     /* send msg to core! */
     if (len <= sizeof(MESSAGE_HEADER)) {
@@ -259,6 +260,7 @@ static void * select_accept_handler(void * ah_cls,
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
+  tsession->peer = *(coreAPI->myIdentity);
 
   return tsession;
 }					
@@ -400,7 +402,7 @@ static int tcpTestWouldTry(TSession * tsession,
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
+static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
 			    struct SocketHandle * s,
 			    unsigned int protocolNumber,
 			    TSession ** tsessionPtr) {
@@ -413,10 +415,11 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
+  tsession->peer = hello->senderIdentity;
   tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 1; /* caller */
   tcpSession->in_select = NO;
-  tcpSession->sender = helo->senderIdentity;
+  tcpSession->sender = hello->senderIdentity;
   tcpSession->expectingWelcome = NO;
   MUTEX_LOCK(tcplock);
   if (OK ==
