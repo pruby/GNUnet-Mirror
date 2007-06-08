@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -119,7 +119,8 @@ static int stat_ciphertextPingSent;
  */	
 static int pingReceived(const PeerIdentity * sender,
 			const MESSAGE_HEADER * msg) {
-  P2P_pingpong_MESSAGE * pmsg;
+  const P2P_pingpong_MESSAGE * pmsg;
+  P2P_pingpong_MESSAGE pong;
 
   if (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     GE_LOG(ectx,
@@ -130,7 +131,7 @@ static int pingReceived(const PeerIdentity * sender,
   }
   if (stats != NULL)
     stats->change(stat_pingReceived, 1);
-  pmsg = (P2P_pingpong_MESSAGE *) msg;
+  pmsg = (const P2P_pingpong_MESSAGE *) msg;
   if (0 != memcmp(coreAPI->myIdentity,
 		  &pmsg->receiver,
 		  sizeof(PeerIdentity))) {
@@ -143,18 +144,19 @@ static int pingReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   EncName enc;
 
-  hash2enc(&sender->hashPubKey, &enc);
+  hash2enc(&sender->hashPubKey, 
+	   &enc);
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Received ping from peer %s.\n",
 	 &enc);
 #endif
-
-  pmsg->header.type = htons(p2p_PROTO_PONG);
+  pong = *pmsg;
+  pong.header.type = htons(p2p_PROTO_PONG);
   if (stats != NULL)
     stats->change(stat_pingReceived, 1);
   coreAPI->unicast(sender,
-		   &pmsg->header,
+		   &pong.header,
 		   EXTREME_PRIORITY,
 		   0); /* send now! */
   if (stats != NULL)
@@ -187,7 +189,8 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
-  P2P_pingpong_MESSAGE * pmsg;
+  const P2P_pingpong_MESSAGE * pmsg;
+  P2P_pingpong_MESSAGE pong;
   int ret;
 
   if (ntohs(hmsg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
@@ -195,36 +198,39 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 	   GE_WARNING | GE_BULK | GE_USER | GE_DEVELOPER,
 	   _("Received malformed `%s' message. Dropping.\n"),
 	   "ping");
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
-  pmsg = (P2P_pingpong_MESSAGE *) hmsg;
+  pmsg = (const P2P_pingpong_MESSAGE *) hmsg;
   if (0 != memcmp(coreAPI->myIdentity,
 		  &pmsg->receiver,
 		  sizeof(PeerIdentity))) {
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_ADMIN,
 	   _("Received PING not destined for us!\n"));
+    GE_BREAK(NULL, 0);
     return SYSERR; /* not for us */
   }
 
 #if DEBUG_PINGPONG
-  hash2enc(&sender->hashPubKey, &enc);
+  hash2enc(&sender->hashPubKey, 
+	   &enc);
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Received plaintext ping from peer %s.\n",
 	 &enc);
 #endif
-
-  pmsg->header.type = htons(p2p_PROTO_PONG);
+  pong = *ping;
+  pong.header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
   ret = SYSERR;
   if (tsession != NULL)
     ret = coreAPI->sendPlaintext(tsession,
-				 (char*) pmsg,
+				 (char*) &pong,
 				 sizeof(P2P_pingpong_MESSAGE));
   if (ret != OK)
-    ret = sendPlaintext(sender, pmsg);
+    ret = sendPlaintext(sender, &pong);
   if (ret == OK) {
     if (stats != NULL)
       stats->change(stat_plaintextPongSent, 1);
@@ -241,14 +247,14 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 static int pongReceived(const PeerIdentity * sender,
 			const MESSAGE_HEADER * msg) {
   int i;
-  P2P_pingpong_MESSAGE * pmsg;
+  const P2P_pingpong_MESSAGE * pmsg;
   PingPongEntry * entry;
   int matched;
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
 
-  pmsg = (P2P_pingpong_MESSAGE *) msg;
+  pmsg = (const P2P_pingpong_MESSAGE *) msg;
   if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        (0 != memcmp(sender,
 		    &pmsg->receiver,
@@ -312,14 +318,14 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 				 const MESSAGE_HEADER * msg,
 				 TSession * session) {
   int i;
-  P2P_pingpong_MESSAGE * pmsg;
+  const P2P_pingpong_MESSAGE * pmsg;
   PingPongEntry * entry;
   int matched;
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
 
-  pmsg = (P2P_pingpong_MESSAGE *) msg;
+  pmsg = (const P2P_pingpong_MESSAGE *) msg;
   if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        (0 != memcmp(sender,
 		    &pmsg->receiver,
