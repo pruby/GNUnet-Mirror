@@ -233,7 +233,7 @@ transportConnectFreely(const PeerIdentity * peer,
 	     &enc);
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_ADMIN,
-	   _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)"),
+	   _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
 	   &enc,
 	   hc);
   }
