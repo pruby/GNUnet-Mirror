@@ -149,7 +149,7 @@ static int udpConnect(const P2P_hello_MESSAGE * hello,
 	 P2P_hello_MESSAGE_size(hello));
   tsession->ttype = udpAPI.protocolNumber;
   tsession->peer = hello->senderIdentity;
-   (*tsessionPtr) = tsession;
+  *tsessionPtr = tsession;
   return OK;
 }
 

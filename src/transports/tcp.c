@@ -202,18 +202,18 @@ static unsigned short getGNUnetTCPPort() {
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
  * success.
- * @param helo the Hello message to verify
+ * @param hello the Hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const P2P_hello_MESSAGE * helo) {
+static int verifyHello(const P2P_hello_MESSAGE * hello) {
   HostAddress * haddr;
 
-  haddr = (HostAddress*) &helo[1];
-  if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-       (ntohs(helo->protocol) != TCP_PROTOCOL_NUMBER) ||
+  haddr = (HostAddress*) &hello[1];
+  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
+       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
+       (ntohs(hello->protocol) != TCP_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip,
 			     sizeof(IPaddr))) ||
        (YES != isWhitelisted(&haddr->ip,
@@ -221,7 +221,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 #if DEBUG_TCP
     EncName enc;
 
-    hash2enc(&helo->senderIdentity.hashPubKey,
+    hash2enc(&hello->senderIdentity.hashPubKey,
 	     &enc);
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
@@ -291,11 +291,11 @@ static P2P_hello_MESSAGE * createhello() {
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the hello-Message for the target node
+ * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcpConnect(const P2P_hello_MESSAGE * helo,
+static int tcpConnect(const P2P_hello_MESSAGE * hello,
 		      TSession ** tsessionPtr) {
   static int zero = 0;
   HostAddress * haddr;
@@ -306,7 +306,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 
   if (selector == NULL)
     return SYSERR;
-  haddr = (HostAddress*) &helo[1];
+  haddr = (HostAddress*) &hello[1];
 #if DEBUG_TCP
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
@@ -371,7 +371,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	 PRIP(ntohl(*(int*)&haddr->ip)),
 	 ntohs(haddr->port));
 #endif
-  return tcpConnectHelper(helo,
+  return tcpConnectHelper(hello,
 			  s,
 			  tcpAPI.protocolNumber,
 			  tsessionPtr);
@@ -381,7 +381,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
  * Start the server process to receive inbound traffic.
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer(void) {
+static int startTransportServer() {
   struct sockaddr_in serverAddr;
   const int on = 1;
   unsigned short port;
@@ -608,7 +608,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
   tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
-  tcpAPI.verifyHello          = &verifyHelo;
+  tcpAPI.verifyHello          = &verifyHello;
   tcpAPI.createhello          = &createhello;
   tcpAPI.connect              = &tcpConnect;
   tcpAPI.associate            = &tcpAssociate;

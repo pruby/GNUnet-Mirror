@@ -172,10 +172,8 @@ static int forEachTransport(TransportCallback callback,
  * transport layer. This may fail if the appropriate
  * transport mechanism is not available.
  *
- * @param hello the hello of the target node. The
- *        callee is responsible for freeing the hello (!), except
- *        if SYSERR is returned!
- * @return OK on success, SYSERR on error
+ * @param hello the hello of the target node
+ * @return session on success, NULL on error
  */
 static TSession *
 transportConnect(const P2P_hello_MESSAGE * hello) {
@@ -191,6 +189,7 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
 	   prot);
     return NULL;
   }
+  tsession = NULL;
   if (OK != tapis[prot]->connect(hello,
 				 &tsession))
     return NULL;
