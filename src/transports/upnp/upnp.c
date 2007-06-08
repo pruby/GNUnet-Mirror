@@ -107,7 +107,7 @@ typedef struct {
 } UPnPDiscoveryData;
 
 static GaimUPnPControlInfo control_info = {
-  GAIM_UPNP_STATUS_UNDISCOVERED, 
+  GAIM_UPNP_STATUS_UNDISCOVERED,
   NULL,
   NULL,
   "",
@@ -160,60 +160,60 @@ static char * g_strstr_len (const char *haystack,
 }
 
 static int
-gaim_upnp_compare_device(const xmlnode* device, 
+gaim_upnp_compare_device(const xmlnode* device,
 			 const char* deviceType) {
   xmlnode * deviceTypeNode = xmlnode_get_child(device, "deviceType");
   char * tmp;
   int ret;
-  
-  if (deviceTypeNode == NULL) 
+
+  if (deviceTypeNode == NULL)
     return FALSE;	
   tmp = xmlnode_get_data(deviceTypeNode);
   ret = !strcasecmp(tmp, deviceType);
-  FREE(tmp);  
+  FREE(tmp);
   return ret;
 }
 
 static int
-gaim_upnp_compare_service(const xmlnode* service, 
+gaim_upnp_compare_service(const xmlnode* service,
 			  const char* serviceType) {
   xmlnode * serviceTypeNode;
   char *tmp;
   int ret;
-  
-  if (service == NULL) 
+
+  if (service == NULL)
     return FALSE;	
   serviceTypeNode = xmlnode_get_child(service, "serviceType");
-  if(serviceTypeNode == NULL) 
+  if(serviceTypeNode == NULL)
     return FALSE;
   tmp = xmlnode_get_data(serviceTypeNode);
   ret = !strcasecmp(tmp, serviceType);
-  FREE(tmp); 
+  FREE(tmp);
   return ret;
 }
 
 static char*
-gaim_upnp_parse_description_response(const char* httpResponse, 
+gaim_upnp_parse_description_response(const char* httpResponse,
 				     size_t len,
 				     const char* httpURL,
 				     const char* serviceType) {
   char *xmlRoot, *baseURL, *controlURL, *service;
   xmlnode *xmlRootNode, *serviceTypeNode, *controlURLNode, *baseURLNode;
   char *tmp;
-  
+
   /* find the root of the xml document */
   xmlRoot = g_strstr_len(httpResponse, len, "<root");
   if (xmlRoot == NULL)
-    return NULL;  
-  if (g_strstr_len(httpResponse, len, "</root") == NULL) 
-    return NULL;  
+    return NULL;
+  if (g_strstr_len(httpResponse, len, "</root") == NULL)
+    return NULL;
 
   /* create the xml root node */
   xmlRootNode = xmlnode_from_str(xmlRoot,
 				 len - (xmlRoot - httpResponse));
-  if (xmlRootNode == NULL) 
-    return NULL;  
-  
+  if (xmlRootNode == NULL)
+    return NULL;
+
   /* get the baseURL of the device */
   baseURLNode = xmlnode_get_child(xmlRootNode, "URLBase");
   if (baseURLNode != NULL) {
@@ -221,8 +221,8 @@ gaim_upnp_parse_description_response(const char* httpResponse,
   } else {
     baseURL = STRDUP(httpURL);
   }
- 
-  /* get the serviceType child that has the service type as its data */  
+
+  /* get the serviceType child that has the service type as its data */
   /* get urn:schemas-upnp-org:device:InternetGatewayDevice:1 and its devicelist */
   serviceTypeNode = xmlnode_get_child(xmlRootNode, "device");
   while(!gaim_upnp_compare_device(serviceTypeNode,
@@ -241,7 +241,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
     xmlnode_free(xmlRootNode);
     return NULL;
   }
-  
+
   /* get urn:schemas-upnp-org:device:WANDevice:1 and its devicelist */
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "device");
   while(!gaim_upnp_compare_device(serviceTypeNode,
@@ -260,7 +260,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
     xmlnode_free(xmlRootNode);
     return NULL;
   }
-  
+
   /* get urn:schemas-upnp-org:device:WANConnectionDevice:1 and its servicelist */
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "device");
   while(serviceTypeNode && !gaim_upnp_compare_device(serviceTypeNode,
@@ -278,7 +278,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
     xmlnode_free(xmlRootNode);
     return NULL;
   }
-  
+
   /* get the serviceType variable passed to this function */
   service = g_strdup_printf(SEARCH_REQUEST_DEVICE, serviceType);
   serviceTypeNode = xmlnode_get_child(serviceTypeNode, "service");
@@ -286,14 +286,14 @@ gaim_upnp_parse_description_response(const char* httpResponse,
 	serviceTypeNode != NULL) {
     serviceTypeNode = xmlnode_get_next_twin(serviceTypeNode);
   }
-  
+
   FREE(service);
   if (serviceTypeNode == NULL) {
     FREE(baseURL);
     xmlnode_free(xmlRootNode);
     return NULL;
   }
-  
+
   /* get the controlURL of the service */
   if((controlURLNode = xmlnode_get_child(serviceTypeNode,
 					 "controlURL")) == NULL) {
@@ -301,7 +301,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
     xmlnode_free(xmlRootNode);
     return NULL;
   }
-  
+
   tmp = xmlnode_get_data(controlURLNode);
   if(baseURL && !gaim_str_has_prefix(tmp, "http://") &&
      !gaim_str_has_prefix(tmp, "HTTP://")) {
@@ -328,7 +328,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
   }
   FREE(baseURL);
   xmlnode_free(xmlRootNode);
-  
+
   return controlURL;
 }
 
@@ -366,7 +366,7 @@ static int setup_curl(const char * proxy,
 static int
 gaim_upnp_generate_action_message_and_send(const char * proxy,
 					   const char* actionName,
-					   const char* actionParams, 
+					   const char* actionParams,
 					   GaimUtilFetchUrlCallback cb,
 					   void * cb_data) {
   CURL * curl;	
@@ -377,16 +377,16 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
   struct curl_slist * headers = NULL;
 
   GE_ASSERT(NULL, cb != NULL);
-  if (0 != curl_global_init(CURL_GLOBAL_WIN32)) 
+  if (0 != curl_global_init(CURL_GLOBAL_WIN32))
     return SYSERR;
-  /* set the soap message */  
-  soapMessage = g_strdup_printf(SOAP_ACTION, 
+  /* set the soap message */
+  soapMessage = g_strdup_printf(SOAP_ACTION,
 				actionName,
-				control_info.service_type, 
-				actionParams, 
+				control_info.service_type,
+				actionParams,
 				actionName);
   soapHeader = g_strdup_printf(HTTP_POST_SOAP_HEADER,
-			       control_info.service_type, 
+			       control_info.service_type,
 			       actionName);
   sizeHeader = g_strdup_printf(HTTP_POST_SIZE_HEADER,
 			       strlen(soapMessage));
@@ -400,15 +400,15 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
 		   cb);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEDATA,
-		   cb_data); 
+		   cb_data);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_POST,
 		   1);
-  headers = curl_slist_append(headers, 
+  headers = curl_slist_append(headers,
 			      "CONTENT-TYPE: text/xml ; charset=\"utf-8\"");
-  headers = curl_slist_append(headers, 
+  headers = curl_slist_append(headers,
 			      soapHeader);
-  headers = curl_slist_append(headers, 
+  headers = curl_slist_append(headers,
 			      sizeHeader);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_HTTPHEADER,
@@ -446,9 +446,9 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
 
 
 static size_t
-looked_up_public_ip_cb(void *url_data, 
+looked_up_public_ip_cb(void *url_data,
 		       size_t size,
-		       size_t nmemb,		      
+		       size_t nmemb,		
 		       void * user_data) {
   UPnPDiscoveryData * dd = user_data;
   size_t len = size * nmemb;
@@ -468,20 +468,20 @@ looked_up_public_ip_cb(void *url_data,
   /* extract the ip, or see if there is an error */
   if ((temp = g_strstr_len(dd->buf,
 			   dd->buf_len,
-			   "<NewExternalIPAddress")) == NULL) 
-    return len;  
-  if (!(temp = g_strstr_len(temp, 
-			    dd->buf_len - (temp - dd->buf), ">"))) 
+			   "<NewExternalIPAddress")) == NULL)
     return len;
-  if (!(temp2 = g_strstr_len(temp, 
-			     dd->buf_len - (temp - dd->buf), "<"))) 
+  if (!(temp = g_strstr_len(temp,
+			    dd->buf_len - (temp - dd->buf), ">")))
     return len;
-  memset(control_info.publicip, 
+  if (!(temp2 = g_strstr_len(temp,
+			     dd->buf_len - (temp - dd->buf), "<")))
+    return len;
+  memset(control_info.publicip,
 	 0,
 	 sizeof(control_info.publicip));
   if (temp2 - temp >= sizeof(control_info.publicip))
     temp2 = temp + sizeof(control_info.publicip) - 1;
-  memcpy(control_info.publicip, 
+  memcpy(control_info.publicip,
 	 temp + 1,
 	 temp2 - (temp + 1));
   GE_LOG(NULL,
@@ -493,9 +493,9 @@ looked_up_public_ip_cb(void *url_data,
 
 
 static size_t
-ignore_response(void *url_data, 
+ignore_response(void *url_data,
 		size_t size,
-		size_t nmemb,		      
+		size_t nmemb,		
 		void * user_data) {
   return size * nmemb;
 }
@@ -511,7 +511,7 @@ upnp_parse_description_cb(void * httpResponse,
   UPnPDiscoveryData * dd = user_data;
   size_t len = size * nmemb;
   char * control_url = NULL;
-  
+
   if (len + dd->buf_len > 1024 * 1024 * 4)
     return len; /* refuse to process - too big! */
   GROW(dd->buf,
@@ -538,8 +538,8 @@ gaim_upnp_parse_description(char * proxy,
 			    UPnPDiscoveryData * dd) {
   CURL * curl;	
   int ret;
-  
-  if (0 != curl_global_init(CURL_GLOBAL_WIN32)) 
+
+  if (0 != curl_global_init(CURL_GLOBAL_WIN32))
     return SYSERR;
   curl = curl_easy_init();
   setup_curl(proxy, curl);
@@ -588,42 +588,42 @@ gaim_upnp_discover(struct GE_Context * ectx,
   UPnPDiscoveryData dd;
 
   memset(&dd,
-	 0, 
+	 0,
 	 sizeof(UPnPDiscoveryData));
-  if (control_info.status == GAIM_UPNP_STATUS_DISCOVERING) 
+  if (control_info.status == GAIM_UPNP_STATUS_DISCOVERING)
     return NO;
   dd.sock = sock;
   hp = gethostbyname(HTTPMU_HOST_ADDRESS);
   if (hp == NULL) {
     CLOSE(dd.sock);
-    return SYSERR; 
-  } 
+    return SYSERR;
+  }
   memset(&server,
-	 0, 
+	 0,
 	 sizeof(struct sockaddr));
   server.sin_family = AF_INET;
   memcpy(&server.sin_addr,
 	 hp->h_addr_list[0],
 	 hp->h_length);
-  server.sin_port = htons(HTTPMU_HOST_PORT);  
+  server.sin_port = htons(HTTPMU_HOST_PORT);
   control_info.status = GAIM_UPNP_STATUS_DISCOVERING;
-  
+
   /* because we are sending over UDP, if there is a failure
      we should retry the send NUM_UDP_ATTEMPTS times. Also,
      try different requests for WANIPConnection and WANPPPConnection*/
   for (retry_count=0;retry_count<NUM_UDP_ATTEMPTS;retry_count++) {
-    sentSuccess = FALSE;    
-    if((retry_count % 2) == 0) 
+    sentSuccess = FALSE;
+    if((retry_count % 2) == 0)
       dd.service_type = WAN_IP_CONN_SERVICE;
-    else 
-      dd.service_type = WAN_PPP_CONN_SERVICE;    
-    sendMessage = g_strdup_printf(SEARCH_REQUEST_STRING, 
+    else
+      dd.service_type = WAN_PPP_CONN_SERVICE;
+    sendMessage = g_strdup_printf(SEARCH_REQUEST_STRING,
 				  dd.service_type);
     totalSize = strlen(sendMessage);
     do {
       if (SENDTO(dd.sock,
-		 sendMessage, 
-		 totalSize, 
+		 sendMessage,
+		 totalSize,
 		 0,
 		 (struct sockaddr*) &server,
 		 sizeof(struct sockaddr_in)) == totalSize) {
@@ -632,19 +632,19 @@ gaim_upnp_discover(struct GE_Context * ectx,
       }
     } while ( ((errno == EINTR) || (errno == EAGAIN)) &&
 	      (GNUNET_SHUTDOWN_TEST() == NO));
-    FREE(sendMessage);    
-    if (sentSuccess) 
+    FREE(sendMessage);
+    if (sentSuccess)
       break;
   }
-  if (sentSuccess == FALSE) 
-    return SYSERR;  
+  if (sentSuccess == FALSE)
+    return SYSERR;
 
   /* try to read response */
   do {
     buf_len = recv(dd.sock,
 		   buf,
-		   sizeof(buf) - 1, 
-		   0);   
+		   sizeof(buf) - 1,
+		   0);
     if (buf_len > 0) {
       buf[buf_len] = '\0';
       break;
@@ -655,40 +655,40 @@ gaim_upnp_discover(struct GE_Context * ectx,
 	    (GNUNET_SHUTDOWN_TEST() == NO) );
 
   /* parse the response, and see if it was a success */
-  if (g_strstr_len(buf, buf_len, HTTP_OK) == NULL) 
-    return SYSERR; 
-  if ( (startDescURL = g_strstr_len(buf, buf_len, "http://")) == NULL) 
-    return SYSERR;  
-  
+  if (g_strstr_len(buf, buf_len, HTTP_OK) == NULL)
+    return SYSERR;
+  if ( (startDescURL = g_strstr_len(buf, buf_len, "http://")) == NULL)
+    return SYSERR;
+
   endDescURL = g_strstr_len(startDescURL,
 			    buf_len - (startDescURL - buf),
 			    "\r");
-  if (endDescURL == NULL) 
+  if (endDescURL == NULL)
     endDescURL = g_strstr_len(startDescURL,
 			      buf_len - (startDescURL - buf), "\n");
-  if(endDescURL == NULL) 
-    return SYSERR;  
-  if (endDescURL == startDescURL) 
-    return SYSERR;    
+  if(endDescURL == NULL)
+    return SYSERR;
+  if (endDescURL == startDescURL)
+    return SYSERR;
   dd.full_url = STRNDUP(startDescURL,
-			  endDescURL - startDescURL); 
-  proxy = NULL; 
+			  endDescURL - startDescURL);
+  proxy = NULL;
   GC_get_configuration_value_string(cfg,
 				    "GNUNETD",
 				    "HTTP-PROXY",
 				    "",
 				    &proxy);
   ret = gaim_upnp_parse_description(proxy,
-				    &dd);  
+				    &dd);
   FREE(dd.full_url);
   GROW(dd.buf,
        dd.buf_len,
        0);
   if (ret == OK) {
     ret = gaim_upnp_generate_action_message_and_send(proxy,
-						     "GetExternalIPAddress", 
+						     "GetExternalIPAddress",
 						     "",
-						     looked_up_public_ip_cb, 
+						     looked_up_public_ip_cb,
 						     &dd);
     GROW(dd.buf,
 	 dd.buf_len,
@@ -711,15 +711,15 @@ int
 gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 			      struct GC_Configuration * cfg,
 			      int do_add,
-			      unsigned short portmap, 
+			      unsigned short portmap,
 			      const char* protocol) {
   const char * action_name;
   char * action_params;
   char * internal_ip;
   char * proxy;
   int ret;
-    
-  if (control_info.status != GAIM_UPNP_STATUS_DISCOVERED) 
+
+  if (control_info.status != GAIM_UPNP_STATUS_DISCOVERED)
     return NO;	
   if (do_add) {
     internal_ip = gaim_upnp_get_internal_ip(cfg,
@@ -731,7 +731,7 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
     }
     action_name = "AddPortMapping";
     action_params = g_strdup_printf(ADD_PORT_MAPPING_PARAMS,
-				    portmap, 
+				    portmap,
 				    protocol,
 				    portmap,
 				    internal_ip);
@@ -739,10 +739,10 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
   } else {
     action_name = "DeletePortMapping";
     action_params = g_strdup_printf(DELETE_PORT_MAPPING_PARAMS,
-				    portmap, 
+				    portmap,
 				    protocol);
-  }  
-  proxy = NULL; 
+  }
+  proxy = NULL;
   GC_get_configuration_value_string(cfg,
 				    "GNUNETD",
 				    "HTTP-PROXY",
@@ -753,10 +753,10 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
 						   action_params,
 						   &ignore_response,
 						   NULL);
-  
+
   FREE(action_params);
   FREE(proxy);
-  return ret; 
+  return ret;
 }
 
 /* end of upnp.c */

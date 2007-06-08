@@ -69,7 +69,7 @@ int main(int argc,
   struct GC_Configuration * cfg;
   struct ClientServerConnection * sock;
   int left;
- 
+
   ectx = NULL;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -110,8 +110,8 @@ int main(int argc,
 	   left);
     sleep(5);
     left--;
-    if (left == 0) 
-      break;    
+    if (left == 0)
+      break;
   }
   connection_destroy(sock);
   if (ok == 0) {
@@ -141,8 +141,8 @@ int main(int argc,
 	   left);
     sleep(5);
     left--;
-    if (left == 0) 
-      break;    
+    if (left == 0)
+      break;
   }
   connection_destroy(sock);
   if (ok == 0) {
@@ -210,7 +210,7 @@ int main(int argc,
 			 2 * cronSECONDS,
 			 NULL,
 			 NULL));
-  
+
   hash("key2", 4, &key);
   printf("Peer2 gets key2.\n");
   CHECK(1 == DHT_LIB_get(cfg,

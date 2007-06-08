@@ -65,7 +65,7 @@ typedef struct Location {
   /**
    * RSA signature over the FileIdentifier,
    * hash of the peer and expiration time.
-   * (everything until proto).  
+   * (everything until proto).
    */
   Signature contentSignature;
 

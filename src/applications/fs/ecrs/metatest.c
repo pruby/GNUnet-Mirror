@@ -41,12 +41,12 @@ static int testMeta(int i) {
   m = ECRS_createMetaData();
   if (OK != ECRS_addToMetaData(m,
 			       EXTRACTOR_TITLE,
-			       "TestTitle")) 
-    ABORT(m);  
+			       "TestTitle"))
+    ABORT(m);
   if (OK != ECRS_addToMetaData(m,
 			       EXTRACTOR_AUTHOR,
-			       "TestTitle")) 
-    ABORT(m);  
+			       "TestTitle"))
+    ABORT(m);
   if (OK == ECRS_addToMetaData(m,
 			       EXTRACTOR_TITLE,
 			       "TestTitle")) /* dup! */
@@ -109,7 +109,7 @@ static int testMeta(int i) {
 			       val,
 			       size);
   FREE(val);
-  if (m == NULL) 
+  if (m == NULL)
     ABORT(m);
   val = MALLOC(256);
   for (j=0;j<i;j++) {

@@ -40,7 +40,7 @@ static struct CronManager * cron;
 typedef struct DHT_GET_RECORD {
   /**
    * Key that we are looking for.
-   */  
+   */
   HashCode512 key;
 
   /**
@@ -161,7 +161,7 @@ dht_get_async_stop(struct DHT_GET_RECORD * record) {
   dht_get_stop(&record->key,
 	       record->type,
 	       &client_result_converter,
-	       record);  
+	       record);
   FREE(record);
   return OK;
 }
@@ -173,7 +173,7 @@ dht_get_async_stop(struct DHT_GET_RECORD * record) {
  * @param capi the core API
  * @return NULL on errors, DHT_API otherwise
  */
-DHT_ServiceAPI * 
+DHT_ServiceAPI *
 provide_module_dht(CoreAPIForApplication * capi) {
   static DHT_ServiceAPI api;
 

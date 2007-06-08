@@ -43,7 +43,7 @@ extern "C" {
  * @param name the name of the peer
  * @param id identity of the peer
  * @param trust trust we have in the peer
- * 
+ *
  * @return OK to continue, SYSERR to abort iteration
  */
 typedef int (*PEERINFO_PeerProcessor)(const char * name,

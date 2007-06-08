@@ -103,7 +103,7 @@ static int testLocation() {
     return 1;
   }
   ECRS_freeUri(uri2);
-  ECRS_freeUri(baseURI);    
+  ECRS_freeUri(baseURI);
   uric = ECRS_uriToString(uri);
 #if 0
   /* not for the faint of heart: */
@@ -123,7 +123,7 @@ static int testLocation() {
     ECRS_freeUri(uri2);
     return 1;
   }
-  ECRS_freeUri(uri2);   
+  ECRS_freeUri(uri2);
   ECRS_freeUri(uri);
   return 0;
 }

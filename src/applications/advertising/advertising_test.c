@@ -71,7 +71,7 @@ int main(int argc,
   int found;
   char buf[128];
   int min;
- 
+
   ectx = NULL;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -99,7 +99,7 @@ int main(int argc,
 	      i,
 	      (i+1) % NUM_PEERS);
       GC_free(cfg);
-      return -1;    
+      return -1;
     }
   }
   PTHREAD_SLEEP(15 * cronSECONDS);
@@ -133,7 +133,7 @@ int main(int argc,
     }
     fprintf(stderr,
 	    "Have %d connections total in round %d, minimum number was %d\n",
-	    found, 
+	    found,
 	    k,
 	    min);
     if (k < NUM_ROUNDS - 1)

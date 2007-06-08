@@ -152,7 +152,7 @@ static int listKeywords(const char * fn,
   char * fullName;
   struct stat buf;
   EXTRACTOR_KeywordList * list;
-  
+
   fullName = MALLOC(strlen(dir) + strlen(fn) + 2);
   strcpy(fullName, dir);
   if (dir[strlen(dir)-1] != DIR_SEPARATOR)
@@ -187,7 +187,7 @@ static int listKeywords(const char * fn,
   FREE(fullName);
   return OK;
 }
-		      
+		
 
 /**
  * Print progess message.
@@ -384,23 +384,23 @@ int main(int argc,
 				      "EXTRACTORS",
 				      "",
 				      &ex);
-    if (strlen(ex) > 0) 
+    if (strlen(ex) > 0)
       l = EXTRACTOR_loadConfigLibraries(l,
-					ex);    
+					ex);
     FREE(ex);
     dirname = string_expandFileName(ectx, filename);
     GE_ASSERT(ectx, dirname != NULL);
     while ( (strlen(dirname) > 0) &&
 	    (dirname[strlen(dirname)-1] == DIR_SEPARATOR) )
-      dirname[strlen(dirname)-1] = '\0';      
+      dirname[strlen(dirname)-1] = '\0';
     fname = dirname;
     while (strstr(fname, DIR_SEPARATOR_STR) != NULL)
       fname = strstr(fname, DIR_SEPARATOR_STR) + 1;
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      fname != dirname);
     fname[-1] = '\0';
     listKeywords(fname,
-		 dirname,		 
+		 dirname,		
 		 l);
     FREE(dirname);
     EXTRACTOR_removeAll(l);

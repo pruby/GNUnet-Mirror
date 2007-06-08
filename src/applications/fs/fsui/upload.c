@@ -156,7 +156,7 @@ createDirectoryHelper(struct GE_Context * ectx,
   }
   pos = children;
   while (pos != NULL) {
-    if (pos->uri != NULL) 
+    if (pos->uri != NULL)
       URITRACK_addState(ectx,
 			cfg,
 			pos->uri,
@@ -283,7 +283,7 @@ void * FSUI_uploadThread(void * cls) {
 		  error);
       FREE(error);
       return NULL;
-    }    
+    }
   } else {
     filename = STRDUP(utc->filename);
   }
@@ -306,7 +306,7 @@ void * FSUI_uploadThread(void * cls) {
   if (ret != OK) {
     if (utc->state == FSUI_ACTIVE) {
       const char *err;
-      
+
       err = GE_memory_get(mem, 0);
       signalError(utc,
 		  err ? err : "");
@@ -363,10 +363,10 @@ void * FSUI_uploadThread(void * cls) {
     /* generate location URI for non-anonymous download */
     struct ClientServerConnection  * sock;
     P2P_hello_MESSAGE * hello;
-    
+
     sock = client_connection_create(utc->shared->ctx->ectx,
 				    utc->shared->ctx->cfg);
-				    
+				
     if (OK == gnunet_identity_get_self(sock,
 				       &hello)) {
       loc = ECRS_uriFromLocation(utc->uri,
@@ -374,7 +374,7 @@ void * FSUI_uploadThread(void * cls) {
 				 ntohl(hello->expirationTime),
 				 (ECRS_SignFunction) &gnunet_identity_sign_function,
 				 sock);
-				 
+				
       FREE(hello);
     } else {
       /* may happen if no transports are available... */
@@ -382,11 +382,11 @@ void * FSUI_uploadThread(void * cls) {
     }
     connection_destroy(sock);
   } else {
-    /* no location URI, use standard URI 
+    /* no location URI, use standard URI
        (copied here to allow free later) */
     loc = ECRS_dupUri(utc->uri);
   }
-  if (utc->shared->global_keywords != NULL) 
+  if (utc->shared->global_keywords != NULL)
     ECRS_addToKeyspace(ectx,
 		       utc->shared->ctx->cfg,
 		       utc->shared->global_keywords,
@@ -394,7 +394,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->priority,
 		       utc->shared->expiration,
 		       loc,
-		       utc->meta);	  
+		       utc->meta);	
   if (utc->keywords != NULL)
     ECRS_addToKeyspace(ectx,
 		       utc->shared->ctx->cfg,
@@ -416,7 +416,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->meta);	
     ECRS_freeUri(uri);
   }
-  ECRS_freeUri(loc);   
+  ECRS_freeUri(loc);
   loc = NULL;
   while (OK == ECRS_delFromMetaData(utc->meta,
 				    EXTRACTOR_SPLIT,

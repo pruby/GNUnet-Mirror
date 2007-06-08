@@ -49,7 +49,7 @@ static unsigned int getValue__(unsigned char a) {
  *
  * @return converted data
  */
-static char * 
+static char *
 bin2enc(const void * data,
 	size_t size) {
   size_t len;
@@ -76,7 +76,7 @@ bin2enc(const void * data,
       hbits -= 6;
     }
   }
-  if (hbits > 0) 
+  if (hbits > 0)
     ret[len++] = encTable__[bits & 63];
   return ret;
 }
@@ -85,7 +85,7 @@ bin2enc(const void * data,
 /**
  * Convert string back to binary data.
  *
- * @param input '\0'-terminated string 
+ * @param input '\0'-terminated string
  * @param data where to write binary data
  * @param size how much data should be converted
  * @return number of characters processed from input,

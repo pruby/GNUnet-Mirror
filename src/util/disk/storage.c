@@ -531,7 +531,7 @@ int disk_directory_scan(struct GE_Context * ectx,
   }
   while ((finfo = readdir(dinfo)) != NULL) {
     if ( (0 == strcmp(finfo->d_name, ".")) ||
-	 (0 == strcmp(finfo->d_name, "..")) )	 
+	 (0 == strcmp(finfo->d_name, "..")) )	
       continue;
     if (callback != NULL) {
       if (OK != callback(finfo->d_name,
@@ -585,7 +585,7 @@ int disk_directory_remove(struct GE_Context * ectx,
 			  const char * fileName) {
   struct stat istat;
 
-  if (0 != STAT(fileName, &istat)) 
+  if (0 != STAT(fileName, &istat))
     return NO; /* file may not exist... */
   if (UNLINK(fileName) == 0)
     return OK;

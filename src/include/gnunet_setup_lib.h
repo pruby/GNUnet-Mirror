@@ -58,29 +58,29 @@ typedef enum {
    * Binary type (yes/no).
    */
   GNS_Boolean  = 4,
-  
+
   /**
    * Unsigned integer type.
    */
   GNS_UInt64   = 8,
-  
+
   /**
    * Double value type.
    */
   GNS_Double   = 16,
 
   /**
-   * Free-form string (possibly with suggestions) 
+   * Free-form string (possibly with suggestions)
    */
   GNS_String   = 32,
 
-  /** 
+  /**
    * Multiple choice (results in space-seperated
    * strings, one for each choice).
    */
   GNS_MC       = 64,
 
-  /** 
+  /**
    * Single choice (results in individual string
    * representing the choice).
    */
@@ -127,7 +127,7 @@ typedef union {
     char * def;
 
     /**
-     * Set of legal or suggested values for 
+     * Set of legal or suggested values for
      * "val", NULL termianted.
      */
     char ** legalRange;

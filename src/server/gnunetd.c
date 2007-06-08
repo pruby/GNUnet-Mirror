@@ -92,14 +92,14 @@ static void waitForSignalHandler(struct GE_Context * ectx) {
 
 
 static int post_detach() {
-  if (OK != changeUser(ectx, cfg)) 
-    return SYSERR; 
-  if (OK != checkPermissions(ectx, cfg)) 
-    return SYSERR;  
+  if (OK != changeUser(ectx, cfg))
+    return SYSERR;
+  if (OK != checkPermissions(ectx, cfg))
+    return SYSERR;
   mon = os_network_monitor_create(ectx,
 				  cfg);
-  if (mon == NULL) 
-    return SYSERR;  
+  if (mon == NULL)
+    return SYSERR;
   return OK;
 }
 
@@ -115,7 +115,7 @@ int gnunet_main() {
 				 cfg,
 				 filedes)) )
     return SYSERR;
-  if (NO != debug_flag) 
+  if (NO != debug_flag)
     os_write_pid_file(ectx,
 		      cfg,
 		      (unsigned int)getpid());
@@ -132,14 +132,14 @@ int gnunet_main() {
   GE_ASSERT(ectx,
 	    cron != NULL);
 #ifndef WINDOWS
-  shc_hup = signal_handler_install(SIGHUP, 
+  shc_hup = signal_handler_install(SIGHUP,
 				   &reread_config);
 #endif
   if (OK != initCore(ectx,
 		     cfg,
 		     cron,
 		     mon)) {
-  	GE_LOG(ectx, 
+  	GE_LOG(ectx,
 	       GE_FATAL | GE_USER | GE_IMMEDIATE,
   		_("Core initialization failed.\n"));
   		
@@ -156,10 +156,10 @@ int gnunet_main() {
 				  NO);
     return SYSERR;
   }
-  
+
   /* enforce filesystem limits */
   capFSQuotaSize(ectx, cfg);
-  
+
   initConnection(ectx, cfg, mon, cron);
   loadApplicationModules();
   if (NO == debug_flag)
@@ -267,17 +267,17 @@ int main(int argc,
 					   NO);
     ull = GE_getKIND(user_log_level);
     ull |= (ull - 1); /* set bits for all lower log-levels */
-    if (dev == YES) 
-      ull |= GE_DEVELOPER | GE_REQUEST;    
-    if (loud_flag == 1)    
+    if (dev == YES)
+      ull |= GE_DEVELOPER | GE_REQUEST;
+    if (loud_flag == 1)
       ectx = GE_create_context_stderr(YES,
 				      GE_ALL);
     else
       ectx = GE_create_context_stderr(YES,
-				      GE_USER | GE_ADMIN 
-				      | ull 
+				      GE_USER | GE_ADMIN
+				      | ull
 				      | GE_BULK | GE_IMMEDIATE);
-    GE_setDefaultContext(ectx);   
+    GE_setDefaultContext(ectx);
   }
   setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,
@@ -289,11 +289,11 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return 1;
   }
-  
+
 #ifdef MINGW
-  if (GC_get_configuration_value_yesno(cfg, 
+  if (GC_get_configuration_value_yesno(cfg,
 				       "GNUNETD",
-				       "WINSERVICE", 
+				       "WINSERVICE",
 				       NO) == YES) {
     SERVICE_TABLE_ENTRY DispatchTable[] =
       {{"GNUnet", ServiceMain}, {NULL, NULL}};

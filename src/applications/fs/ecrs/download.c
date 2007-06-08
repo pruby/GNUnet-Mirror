@@ -428,7 +428,7 @@ typedef struct RequestManager {
    * to abort the RM as soon as possible.
    */
   int abortFlag;
-  
+
   /**
    * Is the request manager being destroyed?
    * (if so, accessing the request list is illegal!)
@@ -450,7 +450,7 @@ typedef struct RequestManager {
  *
  * @return NULL on error
  */
-static RequestManager * 
+static RequestManager *
 createRequestManager(struct GE_Context * ectx,
 		     struct GC_Configuration * cfg) {
   RequestManager * rm;
@@ -607,7 +607,7 @@ static void addRequest(RequestManager * rm,
     = 0;
   entry->searchHandle
     = NULL;
-  MUTEX_LOCK(rm->lock);  
+  MUTEX_LOCK(rm->lock);
   if (rm->shutdown == NO) {
     GE_ASSERT(rm->ectx,
 	      rm->requestListSize > 0);
@@ -875,7 +875,7 @@ static int checkPresent(NodeClosure * node) {
 	 &hc);
     if (equalsHashCode512(&hc,
 			  &node->chk.key)) {
-      updateProgress(node, 
+      updateProgress(node,
 		     data,
 		     size);
       if (node->level > 0)
@@ -982,7 +982,7 @@ static int decryptContent(const char * data,
 
 /**
  * We received a CHK reply for a block. Decrypt.  Note
- * that the caller (fslib) has already aquired the 
+ * that the caller (fslib) has already aquired the
  * RM lock (we sometimes aquire it again in callees,
  * mostly because our callees could be also be theoretically
  * called from elsewhere).
@@ -1339,7 +1339,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 
 
 /**
- * Download parts of a file.  Note that this will store 
+ * Download parts of a file.  Note that this will store
  * the blocks at the respective offset in the given file.
  * Also, the download is still using the blocking of the
  * underlying ECRS encoding.  As a result, the download
@@ -1352,7 +1352,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
  * limit the download to exactly those bytes.
  *
  * @param uri the URI of the file (determines what to download)
- * @param filename where to store the file 
+ * @param filename where to store the file
  * @param no_temporaries set to YES to disallow generation of temporary files
  * @param start starting offset
  * @param length length of the download (starting at offset)
@@ -1441,7 +1441,7 @@ int ECRS_downloadPartialFile(struct GE_Context * ectx,
     return OK;
   }
   fid = uri->data.fi;
-  
+
   if ( (! ECRS_isFileUri(uri)) &&
        (! ECRS_isLocationUri(uri))) {
     GE_BREAK(ectx, 0);

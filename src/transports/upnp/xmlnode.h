@@ -43,7 +43,7 @@ typedef struct _xmlnode xmlnode;
  *
  * @return The child or NULL.
  */
-xmlnode * xmlnode_get_child(const xmlnode *parent, 
+xmlnode * xmlnode_get_child(const xmlnode *parent,
 			    const char *name);
 
 /**
@@ -76,7 +76,7 @@ char *xmlnode_get_data(xmlnode *node);
  *
  * @return The new node.
  */
-xmlnode *xmlnode_from_str(const char *str, 
+xmlnode *xmlnode_from_str(const char *str,
 			  int size);
 
 /**

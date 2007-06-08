@@ -327,11 +327,11 @@ makeSessionKeySigned(const PeerIdentity * hostId,
        (0 != memcmp(&hc,
 		    &foreignHello->senderIdentity,
 		    sizeof(PeerIdentity))) ) {
-    GE_BREAK(NULL, 
+    GE_BREAK(NULL,
 	     0 == memcmp(&hc,
 			 &foreignHello->senderIdentity,
 			 sizeof(PeerIdentity)));
-    GE_BREAK(NULL, 
+    GE_BREAK(NULL,
 	     0 == memcmp(&hc,
 			 hostId,
 			 sizeof(PeerIdentity)));
@@ -339,7 +339,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     FREE(foreignHello);
     return NULL;
   }
-  
+
 
   size = sizeof(P2P_new_setkey_MESSAGE);
   if (ping != NULL)
@@ -436,7 +436,7 @@ static int exchangeKey(const PeerIdentity * receiver,
   PeerIdentity * sndr;
   EncName enc;
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    receiver != NULL);
   if ( (tsession != NULL) &&
        (0 != memcmp(&tsession->peer,
@@ -452,7 +452,7 @@ static int exchangeKey(const PeerIdentity * receiver,
 	   &enc);
   /* then try to connect on the transport level */
   if ( (tsession == NULL) ||
-       (transport->associate(tsession) == SYSERR) ) 
+       (transport->associate(tsession) == SYSERR) )
     tsession = transport->connectFreely(receiver,
 					YES);
   if (tsession == NULL) {
@@ -462,7 +462,7 @@ static int exchangeKey(const PeerIdentity * receiver,
 	   "Key exchange with `%s' failed: could not connect.\n",
 	   &enc);
 #endif
-    return SYSERR; /* failed to connect */    
+    return SYSERR; /* failed to connect */
   }
 
   /* create our ping */
@@ -509,7 +509,7 @@ static int exchangeKey(const PeerIdentity * receiver,
 
   /* create hello */
   hello = transport->createhello(tsession->ttype);
-  if (NULL == hello) 
+  if (NULL == hello)
     hello = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == hello) {
     GE_LOG(ectx,
@@ -777,7 +777,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #endif
       ping->type = htons(p2p_PROTO_PONG);
       if (stats != NULL)
-	stats->change(stat_pongSent, 1);  
+	stats->change(stat_pongSent, 1);
       coreAPI->unicast(sender,
 		       ping,
 		       EXTREME_PRIORITY,
@@ -794,7 +794,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #endif
       ping->type = htons(p2p_PROTO_PONG);
       if (stats != NULL)
-	stats->change(stat_pongSent, 1);  
+	stats->change(stat_pongSent, 1);
       exchangeKey(sender,
 		  tsession,
 		  ping); /* ping is now pong */

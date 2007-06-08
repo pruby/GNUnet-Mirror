@@ -234,7 +234,7 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     pk = makeKblockKey(&key);
     getPublicKey(pk,
 		 &kb->keyspace);
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      OK == sign(pk,
 			 mdsize + strlen(dstURI) + 1,
 			 &kb[1],

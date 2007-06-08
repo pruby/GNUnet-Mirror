@@ -379,14 +379,14 @@ static int tcpTestWouldTry(TSession * tsession,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  if (selector == NULL) 
+  if (selector == NULL)
     return SYSERR;
   if (size == 0) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  if (tcpSession->sock == NULL) 
-    return SYSERR; /* other side closed connection */  
+  if (tcpSession->sock == NULL)
+    return SYSERR; /* other side closed connection */
   return select_would_try(selector,
 			  tcpSession->sock,
 			  size,

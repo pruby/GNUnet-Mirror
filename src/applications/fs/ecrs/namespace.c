@@ -227,7 +227,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
 
   nb->rootEntry = *rootEntry;
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    OK == sign(hk,
 		       mdsize + 3 * sizeof(HashCode512),
 		       &nb->identifier,
@@ -522,7 +522,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
 		      - sizeof(PublicKey)
 		      - sizeof(HashCode512));
   /* FINALLY: sign & publish SBlock */
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    OK == sign(hk,
 		       size
 		       - sizeof(Signature)

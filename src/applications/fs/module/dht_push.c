@@ -55,7 +55,7 @@ static struct PTHREAD * thread;
  * Total number of entries with anonymity 0.
  * Used to calculate how long we should wait
  * between iterations.
- */ 
+ */
 static int total;
 
 static Stats_ServiceAPI * stats;
@@ -88,14 +88,14 @@ static int push_callback(const HashCode512 * key,
   return OK;
 }
 
-static void * push_thread(void * cls) {  
+static void * push_thread(void * cls) {
   while ( (dht != NULL) &&
 	  (sqstore != NULL) ) {
     if (total == 0)
       total = 1;
-    total = sqstore->iterateNonAnonymous(0, 
+    total = sqstore->iterateNonAnonymous(0,
 					 YES,
-					 &push_callback, 
+					 &push_callback,
 					 NULL);
     if ( (dht != NULL) &&
 	 (total == 0) )
@@ -112,13 +112,13 @@ void init_dht_push(CoreAPIForApplication * capi,
 		   DHT_ServiceAPI * d) {
   coreAPI = capi;
   dht = d;
-  sqstore = capi->requestService("sqstore");  
+  sqstore = capi->requestService("sqstore");
   if (sqstore == NULL) {
     GE_BREAK(capi->ectx, 0);
     return;
   }
   stats = capi->requestService("stats");
-  if (stats != NULL) 
+  if (stats != NULL)
     stat_push_count
       = stats->create(gettext_noop("# blocks pushed into DHT"));
   thread = PTHREAD_CREATE(&push_thread,

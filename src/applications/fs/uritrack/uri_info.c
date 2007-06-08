@@ -23,7 +23,7 @@
  * @brief information about URIs
  * @author Christian Grothoff
  *
- * Note that the information is only accurate with "high 
+ * Note that the information is only accurate with "high
  * probability" but not at all guaranteed (this is done
  * to bound disk size of the DB and to get high performance).
  */
@@ -33,7 +33,7 @@
 #include "gnunet_uritrack_lib.h"
 #include "platform.h"
 
-static char * 
+static char *
 getDBName(struct GC_Configuration * cfg) {
   char * basename;
   char * ipcName;
@@ -46,9 +46,9 @@ getDBName(struct GC_Configuration * cfg) {
 				      &basename);
   n = strlen(basename) + 512;
   ipcName = MALLOC(n);
-  SNPRINTF(ipcName, 
-	   n, 
-	   "%s/uri_info.db", 
+  SNPRINTF(ipcName,
+	   n,
+	   "%s/uri_info.db",
 	   basename);
   FREE(basename);
   return ipcName;
@@ -90,16 +90,16 @@ URITRACK_getState(struct GE_Context * ectx,
   off_t o;
 
   s = ECRS_uriToString(uri);
-  crc = crc32N(s, strlen(s));  
+  crc = crc32N(s, strlen(s));
   FREE(s);
   s = getDBName(cfg);
   size = getDBSize(cfg);
   fd = disk_file_open(ectx,
-		      s, 
+		      s,
 		      O_RDONLY);
   FREE(s);
-  if (fd == -1) 
-    return URITRACK_FRESH;  
+  if (fd == -1)
+    return URITRACK_FRESH;
   o = 2 * (crc % size);
   if (o != lseek(fd, o, SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
@@ -111,7 +111,7 @@ URITRACK_getState(struct GE_Context * ectx,
   }
   if (2 != read(fd, io, 2))
     return URITRACK_FRESH;
-  if (io[0] == (unsigned char) crc) 
+  if (io[0] == (unsigned char) crc)
     return (enum URITRACK_STATE) io[1];
   return URITRACK_FRESH;
 }
@@ -131,11 +131,11 @@ void URITRACK_addState(struct GE_Context * ectx,
   off_t o;
 
   s = ECRS_uriToString(uri);
-  crc = crc32N(s, strlen(s));  
+  crc = crc32N(s, strlen(s));
   FREE(s);
   s = getDBName(cfg);
   size = getDBSize(cfg);
-  fd = disk_file_open(ectx, 
+  fd = disk_file_open(ectx,
 		      s,
 		      O_RDWR | O_CREAT,
 		      S_IRUSR | S_IWUSR);
@@ -155,7 +155,7 @@ void URITRACK_addState(struct GE_Context * ectx,
   }
   if (2 != read(fd, io, 2)) {
     io[0] = crc;
-    io[1] = URITRACK_FRESH;  
+    io[1] = URITRACK_FRESH;
   } else if (io[0] != (unsigned char) crc) {
     io[0] = (unsigned char) crc;
     io[1] = URITRACK_FRESH;
@@ -169,8 +169,8 @@ void URITRACK_addState(struct GE_Context * ectx,
     CLOSE(fd);
     FREE(s);
     return;
-  } 
-  if (2 != write(fd, io, 2)) 
+  }
+  if (2 != write(fd, io, 2))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
 			 "write",

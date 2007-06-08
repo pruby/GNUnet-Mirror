@@ -51,7 +51,7 @@
  * Default maximum size of the HTTP read and write buffer.
  */
 #define HTTP_BUF_SIZE (64 * 1024)
- 
+
 /**
  * Host-Address in a HTTP network.
  */
@@ -115,7 +115,7 @@ typedef struct {
   unsigned int users;
 
   /**
-   * Number of valid bytes in rbuff1 
+   * Number of valid bytes in rbuff1
    */
   unsigned int rpos1;
 
@@ -171,7 +171,7 @@ typedef struct {
        * GET session response handle
        */
       struct MHD_Response * get;
-      
+
     } server;
 
     struct {
@@ -188,7 +188,7 @@ typedef struct {
 
       /**
        * URL of the get and put operations.
-       */ 
+       */
       char * url;
 
     } client;
@@ -238,7 +238,7 @@ static unsigned int tsessionCount;
 static unsigned int tsessionArrayLength;
 
 /**
- * Blacklist configuration 
+ * Blacklist configuration
  */
 static struct CIDRNetwork * filteredNetworks_;
 
@@ -302,7 +302,7 @@ static int acceptPolicyCallback(void * cls,
  */
 static int httpDisconnect(TSession * tsession) {
   HTTPSession * httpsession = tsession->internal;
-  
+
   if (httpsession != NULL) {
     MUTEX_LOCK(httpsession->lock);
     httpsession->users--;
@@ -346,7 +346,7 @@ static unsigned short getGNUnetHTTPPort() {
 					      0,
 					      65535,
 					      1080,
-					      &port)) 
+					      &port))
     port = 1080;
   return (unsigned short) port;
 }
@@ -446,10 +446,10 @@ static P2P_hello_MESSAGE * createhello() {
     GE_LOG(coreAPI->ectx,
 	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
 	   _("HTTP: Could not determine my public IP address.\n"));
-    return NULL;  
+    return NULL;
   }
 #if DEBUG_HTTP
-  GE_LOG(coreAPI->ectx, 
+  GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "HTTP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)));
@@ -502,7 +502,7 @@ static int contentReaderCallback(void * cls,
   session->wpos -= max;
   session->woff += max;
   session->lastUse = get_time();
-  if (session->wpos == 0) 
+  if (session->wpos == 0)
     session->woff  = 0;
   MUTEX_UNLOCK(session->lock);
   return max;
@@ -617,8 +617,8 @@ static int accessHandlerCallback(void * cls,
 	have -= cpy;
 	poff += cpy;
       }
-      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) 
-	break;            
+      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER))
+	break;
       hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
       GROW(httpSession->rbuff2,
 	   httpSession->rsize2,
@@ -638,7 +638,7 @@ static int accessHandlerCallback(void * cls,
 	have -= cpy;
 	poff += cpy;
       }
-      if (httpSession->rpos2 < ntohs(hdr->size)) 
+      if (httpSession->rpos2 < ntohs(hdr->size))
 	break;
       mp = MALLOC(sizeof(P2P_PACKET));
       mp->msg = httpSession->rbuff2;
@@ -650,13 +650,13 @@ static int accessHandlerCallback(void * cls,
       httpSession->rsize2 = 0;
       httpSession->rpos1 = 0;
     }
-  } else 
+  } else
     return MHD_NO; /* must be get or put! */
   return MHD_YES;
 }
 
 /**
- * Process downloaded bits 
+ * Process downloaded bits
  */
 static size_t
 receiveContentCallback(void * ptr,
@@ -670,7 +670,7 @@ receiveContentCallback(void * ptr,
   size_t cpy;
   MESSAGE_HEADER * hdr;
   P2P_PACKET * mp;
-  
+
   while (have > 0) {
     if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) {
       cpy = sizeof(MESSAGE_HEADER) - httpSession->rpos1;
@@ -704,7 +704,7 @@ receiveContentCallback(void * ptr,
       have -= cpy;
       poff += cpy;
     }
-    if (httpSession->rpos2 < ntohs(hdr->size)) 
+    if (httpSession->rpos2 < ntohs(hdr->size))
       return size * nmemb;
     mp = MALLOC(sizeof(P2P_PACKET));
     mp->msg = httpSession->rbuff2;
@@ -745,7 +745,7 @@ sendContentCallback(void * ptr,
   if (max == 0) {
     /* if we have nothing to sent, this will terminate
        the session (CURL API requires this) */
-    httpSession->cs.client.put = NULL; 
+    httpSession->cs.client.put = NULL;
   }
   MUTEX_UNLOCK(httpSession->lock);
   return max;
@@ -797,9 +797,9 @@ static int httpConnect(const P2P_hello_MESSAGE * hello,
 		     proxy);
   CURL_EASY_SETOPT(curl_get,
 		   CURLOPT_BUFFERSIZE,
-		   32 * 1024); 
+		   32 * 1024);
   if (0 == strncmp(url,
-		   "http", 
+		   "http",
 		   4))
     CURL_EASY_SETOPT(curl_get,
 		     CURLOPT_USERAGENT,
@@ -816,7 +816,7 @@ static int httpConnect(const P2P_hello_MESSAGE * hello,
   CURL_EASY_SETOPT(curl_get,
 		   CURLOPT_WRITEDATA,
 		   httpSession);
-  if (ret != CURLE_OK) 
+  if (ret != CURLE_OK)
     goto cleanup;
 
   /* FIXME: should we queue here or wait until we have data!? */
@@ -864,13 +864,13 @@ static int httpConnect(const P2P_hello_MESSAGE * hello,
   return SYSERR;
 }
 
-static CURL * 
+static CURL *
 create_curl_put(HTTPSession * httpSession) {
   CURL * curl_put;
   CURLcode ret;
 
   curl_put = curl_easy_init();
-  if (curl_put == NULL) 
+  if (curl_put == NULL)
     return NULL;
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_FAILONERROR,
@@ -886,7 +886,7 @@ create_curl_put(HTTPSession * httpSession) {
 		   CURLOPT_BUFFERSIZE,
 		   32 * 1024);
   if (0 == strncmp(httpSession->cs.client.url,
-		   "http", 
+		   "http",
 		   4))
     CURL_EASY_SETOPT(curl_put,
 		     CURLOPT_USERAGENT,
@@ -898,7 +898,7 @@ create_curl_put(HTTPSession * httpSession) {
 		   CURLOPT_CONNECTTIMEOUT,
 		   150L);
   CURL_EASY_SETOPT(curl_put,
-		   CURLOPT_INFILESIZE_LARGE, 
+		   CURLOPT_INFILESIZE_LARGE,
 		   0);
   CURL_EASY_SETOPT(curl_put,
 		   CURLOPT_READFUNCTION,
@@ -937,7 +937,7 @@ static int httpSend(TSession * tsession,
   }
   MUTEX_LOCK(httpSession->lock);
   if (httpSession->cs.client.put == NULL) {
-    /* first data to send, add PUT to multi set! */    
+    /* first data to send, add PUT to multi set! */
     curl_put = create_curl_put(httpSession);
     if (curl_put == NULL) {
       MUTEX_UNLOCK(httpSession->lock);
@@ -959,13 +959,13 @@ static int httpSend(TSession * tsession,
       return SYSERR;
     }
   }
-     
+
   if ( (httpSession->wsize > HTTP_BUF_SIZE) &&
        (important == NO) ) {
     if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
-    MUTEX_UNLOCK(httpSession->lock); 
+    MUTEX_UNLOCK(httpSession->lock);
     return NO;
   }
   if (httpSession->wsize >= httpSession->wpos + size) {
@@ -1054,7 +1054,7 @@ curl_runner(void * unused) {
       break;
     running = 0;
     curl_multi_perform(curl_multi, &running);
-  }  
+  }
   return NULL;
 }
 
@@ -1069,7 +1069,7 @@ static int startTransportServer() {
        (http_running == YES) )
     return SYSERR;
   curl_multi = curl_multi_init();
-  if (curl_multi == NULL) 
+  if (curl_multi == NULL)
     return SYSERR;
   port = getGNUnetHTTPPort();
   if ( (mhd_daemon == NULL) &&
@@ -1145,7 +1145,7 @@ static int reloadConfiguration(void * ctx,
 /**
  * Convert HTTP address to a string.
  */
-static char * 
+static char *
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
   char * ret;
@@ -1163,7 +1163,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
     serverAddr.sin_family   = AF_INET;
     memcpy(&serverAddr.sin_addr,
 	   haddr,
-	   sizeof(IPaddr));  
+	   sizeof(IPaddr));
     serverAddr.sin_port = haddr->port;
     if (0 == getnameinfo((const struct sockaddr*) &serverAddr,
 			 sizeof(struct sockaddr_in),
@@ -1182,7 +1182,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 			AF_INET);
     if (ent != NULL)
       hn = ent->h_name;
-  }    
+  }
 #endif
 #endif
   n = 4*4+7+6 + strlen(hn) + 10;
@@ -1211,7 +1211,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
  */
-TransportAPI * 
+TransportAPI *
 inittransport_http(CoreAPIForTransport * core) {
   static TransportAPI httpAPI;
 
@@ -1241,12 +1241,12 @@ inittransport_http(CoreAPIForTransport * core) {
 				       "UPNP",
 				       YES) == YES) {
     upnp = coreAPI->requestService("upnp");
-    
+
     if (upnp == NULL) {
       GE_LOG(coreAPI->ectx,
 	     GE_ERROR | GE_USER | GE_IMMEDIATE,
 	     _("The UPnP service could not be loaded. To disable UPnP, set the " \
-	       "configuration option \"UPNP\" in section \"HTTP\" to \"NO\"\n"));	      
+	       "configuration option \"UPNP\" in section \"HTTP\" to \"NO\"\n"));	
     }
   }
 

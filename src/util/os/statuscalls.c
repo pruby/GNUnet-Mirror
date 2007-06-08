@@ -423,7 +423,7 @@ static int resetStatusCalls(void * cls,
 				    &monitor->upload_info.max);
   monitor->last_ifc_update = get_time();
   updateInterfaceTraffic(monitor);
-  MUTEX_UNLOCK(monitor->statusMutex);  
+  MUTEX_UNLOCK(monitor->statusMutex);
   return 0;
 }
 

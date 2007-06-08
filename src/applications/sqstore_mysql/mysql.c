@@ -637,7 +637,7 @@ static int iterateLowPriority(unsigned int type,
 }
 
 /**
- * Iterate over the items in the datastore that 
+ * Iterate over the items in the datastore that
  * have anonymity level 0.
  *
  * @param type entries of which type should be considered?
@@ -652,7 +652,7 @@ static int iterateNonAnonymous(unsigned int type,
 			       void * closure) {
   char limit[512];
 
-  if (on_demand == YES) 
+  if (on_demand == YES)
     SNPRINTF(limit,
 	     512,
 	     "SELECT SQL_NO_CACHE * FROM gn070"
@@ -1267,7 +1267,7 @@ static int update(const HashCode512 * key,
   dbh->ubind[3].length = &twenty;
   dbh->ubind[4].buffer = (char*) &value[1];
   dbh->ubind[4].length = &contentSize;
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    mysql_stmt_param_count(dbh->update) <= 5);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {

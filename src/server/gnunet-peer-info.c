@@ -91,7 +91,7 @@ static int printHostInfo(const PeerIdentity * id,
 			  P2P_hello_MESSAGE_size(hello) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
 			  &hello->signature,
 			  &hello->publicKey)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("hello message invalid (signature invalid).\n"));
   }

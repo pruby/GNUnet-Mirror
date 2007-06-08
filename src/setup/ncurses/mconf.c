@@ -289,7 +289,7 @@ static void run_menu(struct GNS_Context * ctx,
 	default:
 	  return;
 	}
-	break;      
+	break;
       case GNS_MC:
 	/* begin multiple choice */
 	val = &pos->value;
@@ -307,9 +307,9 @@ static void run_menu(struct GNS_Context * ctx,
 	  tlen += strlen(val->String.legalRange[i]) + 1;
 	  items[i].help = "";
 	  items[i].state = 0;
-	  
+	
 	  tmp = val->String.val;
-	  while (NULL != (tmp = strstr(tmp, 
+	  while (NULL != (tmp = strstr(tmp,
 				       val->String.legalRange[i]))) {
 	    if ( ( (tmp == val->String.val) ||
 		   (tmp[-1] == ' ') ) &&
@@ -335,7 +335,7 @@ static void run_menu(struct GNS_Context * ctx,
 	switch (st) {
 	case DLG_EXIT_OK:
 	  tmp = MALLOC(tlen);
-	  tmp[0] = '\0';	  
+	  tmp[0] = '\0';	
 	  i = 0;
 	  while (val->String.legalRange[i] != NULL) {	
 	    if (items[i].state == 1) {
@@ -371,7 +371,7 @@ static void run_menu(struct GNS_Context * ctx,
 	  return;
 	}
 	FREE(items);
-	break;      
+	break;
       case GNS_Double:
 	fitem.text = MALLOC(64);
 	SNPRINTF(fitem.text,

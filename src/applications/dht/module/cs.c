@@ -77,7 +77,7 @@ static int csPut(struct ClientHandle * client,
   req = (const CS_dht_request_put_MESSAGE*) message;
   size = ntohs(req->header.size)
     - sizeof(CS_dht_request_put_MESSAGE);
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    size < MAX_BUFFER_SIZE);
 #if DEBUG_CS
   GE_LOG(coreAPI->ectx,
@@ -114,7 +114,7 @@ int get_result(const HashCode512 * key,
   msg->header.size = htons(n);
   msg->header.type = htons(CS_PROTO_dht_REQUEST_PUT);
   msg->expire = 0; /* unknown */
-  msg->key = *key;  
+  msg->key = *key;
   memcpy(&msg[1],
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));
@@ -211,7 +211,7 @@ static void csClientExit(struct ClientHandle * client) {
   DHT_CLIENT_GET_RECORD * cgr;
   MUTEX_LOCK(lock);
   for (i=0;i<getRecordsSize;i++) {
-    cgr = getRecords[i]; 
+    cgr = getRecords[i];
     if (cgr->client == client) {
       gr = cgr->get_record;
       getRecords[i] = getRecords[getRecordsSize-1];
@@ -279,7 +279,7 @@ int done_module_dht() {
   if (OK != coreAPI->unregisterClientExitHandler(&csClientExit))
     status = SYSERR;
 
-  while (getRecordsSize > 0) 
+  while (getRecordsSize > 0)
     get_timeout(getRecords[0]);
   coreAPI->releaseService(dhtAPI);
   dhtAPI = NULL;

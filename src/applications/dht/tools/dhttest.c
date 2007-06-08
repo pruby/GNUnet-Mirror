@@ -72,7 +72,7 @@ int main(int argc,
   int k;
   int found;
   char buf[128];
- 
+
   ectx = NULL;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -115,8 +115,8 @@ int main(int argc,
 	   left);
     sleep(5);
     left--;
-    if (left == 0) 
-      break;    
+    if (left == 0)
+      break;
   }
   connection_destroy(sock);
   if (ok == 0) {
@@ -191,7 +191,7 @@ int main(int argc,
     /* end of actual test code */
     fprintf(stderr,
 	    "Found %u out of %u attempts in round %u.\n",
-	    found, 
+	    found,
 	    NUM_PEERS * NUM_PEERS,
 	    k);
   }

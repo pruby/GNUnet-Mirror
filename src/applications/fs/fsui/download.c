@@ -35,7 +35,7 @@
 #define DEBUG_DTM NO
 
 /**
- * Mark the given URI as found in a directory 
+ * Mark the given URI as found in a directory
  * in URITRACK.
  */
 static int listURIfoundDirectory(const ECRS_FileInfo * fi,
@@ -50,7 +50,7 @@ static int listURIfoundDirectory(const ECRS_FileInfo * fi,
 		    dl->ctx->cfg,
 		    fi->uri,
 		    URITRACK_DIRECTORY_FOUND);
-  
+
   return OK;
 }
 

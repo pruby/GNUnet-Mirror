@@ -156,7 +156,7 @@ static void addToTree(GtkTreeStore * model,
 			 &it,
 			 SETUP_TEXT_VIS, TRUE,
 			 SETUP_COMBO_VIS, TRUE,
-			 -1);    
+			 -1);
       break;
     case GNS_MC:
       cmodel = gtk_list_store_new(1,
@@ -176,7 +176,7 @@ static void addToTree(GtkTreeStore * model,
 	j *= 2;
       }
       tmp = MALLOC(tmpl);
-      /* For now, only allow multiple choice for less than 12 entries... 
+      /* For now, only allow multiple choice for less than 12 entries...
 	 (10 are needed for applications!) */
       if (i < 12) {
 	while (--j >= 0) {
@@ -207,7 +207,7 @@ static void addToTree(GtkTreeStore * model,
 			 &it,
 			 SETUP_TEXT_VIS, TRUE,
 			 SETUP_COMBO_VIS, TRUE,
-			 -1);    
+			 -1);
       break;
     case GNS_SC:
       cmodel = gtk_list_store_new(1,

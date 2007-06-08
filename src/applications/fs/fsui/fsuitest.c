@@ -222,7 +222,7 @@ int main(int argc, char * argv[]){
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
-  if (lastEvent != FSUI_unindex_completed) 
+  if (lastEvent != FSUI_unindex_completed)
     FSUI_abortUnindex(ctx, unindex);
   FSUI_stopUnindex(ctx, unindex);
 

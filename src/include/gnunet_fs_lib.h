@@ -45,7 +45,7 @@ extern "C" {
 
 struct FS_SEARCH_CONTEXT;
 
-struct FS_SEARCH_CONTEXT * 
+struct FS_SEARCH_CONTEXT *
 FS_SEARCH_makeContext(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
 		      struct MUTEX * lock);
@@ -66,7 +66,7 @@ struct FS_SEARCH_HANDLE;
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-struct FS_SEARCH_HANDLE * 
+struct FS_SEARCH_HANDLE *
 FS_start_search(struct FS_SEARCH_CONTEXT * ctx,
 		const PeerIdentity * target,
 		unsigned int type,

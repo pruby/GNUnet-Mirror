@@ -253,7 +253,7 @@ NS_createNamespace(struct GE_Context * ectx,
 
 
 /**
- * Delete a local namespace.  
+ * Delete a local namespace.
  *
  * @return OK on success, SYSERR on error
  */
@@ -815,7 +815,7 @@ NS_addToNamespace(struct GE_Context * ectx,
 		    &nid,
 		    &fi,
 		    updateInterval,
-		    creationTime); 
+		    creationTime);
     ECRS_freeUri(fi.uri);
     if (lastId != NULL) {
       old = getUpdateDataFilename(ectx,
@@ -1044,7 +1044,7 @@ int NS_registerDiscoveryCallback(struct GE_Context * ectx,
 				 NS_NamespaceIterator iterator,
 				 void * closure) {
   struct DiscoveryCallback * list;
-  
+
   list = MALLOC(sizeof(struct DiscoveryCallback));
   list->callback = iterator;
   list->closure = closure;

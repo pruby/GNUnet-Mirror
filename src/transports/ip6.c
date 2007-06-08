@@ -112,8 +112,8 @@ static int getAddress6FromGetIfAddrs(struct GC_Configuration * cfg,
 
     ifa_ptr = ifa_first;
     for (ifa_ptr = ifa_first; ifa_ptr != NULL; ifa_ptr = ifa_ptr->ifa_next) {
-      if (ifa_ptr->ifa_name != NULL && 
-          ifa_ptr->ifa_addr != NULL && 
+      if (ifa_ptr->ifa_name != NULL &&
+          ifa_ptr->ifa_addr != NULL &&
           (ifa_ptr->ifa_flags & IFF_UP) != 0) {
         if (strcmp(interfaces, (char *)ifa_ptr->ifa_name) != 0)
           continue;
@@ -186,7 +186,7 @@ static int getAddress6(struct GC_Configuration * cfg,
   }
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
   if (retval == SYSERR)
-    if (OK == getAddress6FromGetIfAddrs(cfg, 
+    if (OK == getAddress6FromGetIfAddrs(cfg,
                                         ectx,
                                         address))
       retval = OK;

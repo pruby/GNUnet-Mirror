@@ -263,7 +263,7 @@ static int putUpdate(const HashCode512 * key,
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Migration: available %llu (need %u), min priority %u have %u\n",
-	 available, 
+	 available,
 	 ntohl(value->size),
 	 minPriority,
 	 ntohl(value->prio));
@@ -495,7 +495,7 @@ void update_module_datastore(UpdateAPI * uapi) {
   initFilters(uapi->ectx,
 	      uapi->cfg);
   sq = uapi->requestService("sqstore");
-  sq->get(NULL, 
+  sq->get(NULL,
 	  ANY_BLOCK,
 	  &filterAddAll,
 	  NULL);

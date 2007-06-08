@@ -479,7 +479,7 @@ static int setStat(sqliteHandle * handle,
 
   if (sq_prepare(dbh,
 		 "INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
-		 &stmt) != SQLITE_OK) 
+		 &stmt) != SQLITE_OK)
     return SYSERR;
   sqlite3_bind_text(stmt,
 		    1,
@@ -500,7 +500,7 @@ static int setStat(sqliteHandle * handle,
     return SYSERR;
   }
   sqlite3_finalize(stmt);
-  
+
   return OK;
 }
 
@@ -577,7 +577,7 @@ static int sqlite_iterate(unsigned int type,
 	     512 - strlen(scratch),
 	     " AND type != %d AND type != %d",
 	     RESERVED_BLOCK,
-	     ONDEMAND_BLOCK); 
+	     ONDEMAND_BLOCK);
   } else {
     SNPRINTF(&scratch[strlen(scratch)],
 	     512 - strlen(scratch),
@@ -745,8 +745,8 @@ static int iterateLowPriority(unsigned int type,
  *
  * @param type limit the iteration to entries of this
  *   type. 0 for all entries.
- * @param on_demand limit the iteration to entries 
- *        that not on-demand? 
+ * @param on_demand limit the iteration to entries
+ *        that not on-demand?
  * @param iter the callback method
  * @param closure argument to all callback calls
  * @return the number of results, SYSERR if the
@@ -789,7 +789,7 @@ static int iterateMigrationOrder(Datum_Iterator iter,
 
 /**
  * Call a method for each key in the database and
- * do so quickly in any order (can lock the 
+ * do so quickly in any order (can lock the
  * database until iteration is complete).
  *
  * @param callback the callback method

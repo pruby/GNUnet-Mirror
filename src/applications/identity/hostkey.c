@@ -139,7 +139,7 @@ void initPrivateKey(struct GE_Context * ectx,
 			 hostkeyfile,
 			 sizeof(unsigned short),
 			 &len);
-  } 
+  }
   encPrivateKey = NULL;
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));

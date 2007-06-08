@@ -70,7 +70,7 @@ static int testDirectory(unsigned int i) {
   char uri[512];
   char txt[128];
   int ret = 0;
-  
+
   cls.max = i;
   fis = MALLOC(sizeof(ECRS_FileInfo) * i);
   for (p=0;p<i;p++) {
@@ -117,7 +117,7 @@ static int testDirectory(unsigned int i) {
       ECRS_freeMetaData(fis[p].meta);
       ECRS_freeUri(fis[p].uri);
     }
-    FREE(fis);  
+    FREE(fis);
     ABORT();
   }
   cls.pos = 0;
@@ -128,7 +128,7 @@ static int testDirectory(unsigned int i) {
 			      &meta2,
 			      &processor,
 			      &cls)) {
-    printf("expected %u\n", i); 
+    printf("expected %u\n", i);
     ret = 1;
     goto END;
   }

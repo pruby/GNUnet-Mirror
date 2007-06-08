@@ -301,7 +301,7 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
   GE_ASSERT(NULL, ctx->sock != NULL);
   if (OK != connection_write(ctx->sock,
-			     &handle->req->header)) { 
+			     &handle->req->header)) {
     GE_LOG(ctx->ectx,
 	   GE_WARNING | GE_REQUEST | GE_DEVELOPER,
 	   "FSLIB: failed to request stop search with gnunetd\n");
@@ -406,12 +406,12 @@ int FS_initIndex(struct ClientServerConnection * sock,
   ri->header.type = htons(CS_PROTO_gap_INIT_INDEX);
   ri->reserved = htonl(0);
   ri->fileId = *fileHc;
-  memcpy(&ri[1], 
-	 fn, 
+  memcpy(&ri[1],
+	 fn,
 	 strlen(fn));
 
 #if DEBUG_FSLIB
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Sending index initialization request to gnunetd\n");
 #endif

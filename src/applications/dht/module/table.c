@@ -40,7 +40,7 @@
  *     code tries best-match routing among entries in table
  *   + service.c: provide DHT services to rest of GNUnet process
  *     (i.e. register datastore with shared data, get/put operations)
- *   + cs.c: services to out-of-process DHT clients (via dht-lib) 
+ *   + cs.c: services to out-of-process DHT clients (via dht-lib)
  */
 
 #include "platform.h"

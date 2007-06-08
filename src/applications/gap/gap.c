@@ -1,17 +1,17 @@
 /*
   This file is part of GNUnet
   (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
-  
+
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
   by the Free Software Foundation; either version 2, or (at your
   option) any later version.
-  
+
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with GNUnet; see the file COPYING.  If not, write to the
   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
@@ -543,7 +543,7 @@ static void sendToSelected(const PeerIdentity * peer,
 			   void * cls) {
   const QueryRecord * qr = cls;
   PID_INDEX id;
-#if DEBUG_GAP 
+#if DEBUG_GAP
   EncName encq;
   EncName encp;
 #endif
@@ -678,7 +678,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   memcpy(qr->msg,
 	 msg,
 	 ntohs(msg->header.size));
-  if (noclear == NO) 
+  if (noclear == NO)
     memset(&qr->bitmap[0],
 	   0,
 	   BITMAP_SIZE);
@@ -719,7 +719,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
       }
     }
   }
-  FREE(qr->rankings);  
+  FREE(qr->rankings);
   qr->rankings = NULL;
   if (target != NULL) {
     tpid = intern_pid(target);
@@ -1338,7 +1338,7 @@ static void sendReply(IndirectionTableEntry * ite,
 #endif
 
   if (stats != NULL)
-    stats->change(stat_routing_successes, 
+    stats->change(stat_routing_successes,
 		  1);
   now = get_time();
   if (now < ite->ttl)
@@ -1473,8 +1473,8 @@ static int execQuery(const PeerIdentity * sender,
 #endif
 
   /* Load above hard limit? */
-  if (loadTooHigh()) 
-    return SYSERR;  
+  if (loadTooHigh())
+    return SYSERR;
 
   senderID = intern_pid(sender);
   GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );
@@ -1707,7 +1707,7 @@ static int useContent(const PeerIdentity * host,
     GE_BREAK(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */
-  }  
+  }
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
@@ -1976,7 +1976,7 @@ tryMigrate(const DataContainer * data,
   unsigned int size;
 
   size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
-  if ( (size > padding) || 
+  if ( (size > padding) ||
        (size >= MAX_BUFFER_SIZE) )
     return 0;
   reply = (P2P_gap_reply_MESSAGE*) position;
@@ -2025,7 +2025,7 @@ static int handleQuery(const PeerIdentity * sender,
   if (loadTooHigh()) {
 #if DEBUG_GAP
     if (sender != NULL) {
-      IF_GELOG(ectx, 
+      IF_GELOG(ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
 	       hash2enc(&sender->hashPubKey,
 			&enc));

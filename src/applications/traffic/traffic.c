@@ -530,7 +530,7 @@ static int trafficSend(const PeerIdentity * receiver,
 /**
  * Initialize the traffic module.
  */
-Traffic_ServiceAPI * 
+Traffic_ServiceAPI *
 provide_module_traffic(CoreAPIForApplication * capi) {
   static Traffic_ServiceAPI api;
 #if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
@@ -538,7 +538,7 @@ provide_module_traffic(CoreAPIForApplication * capi) {
 #endif
 
   coreAPI = capi;
-#if DEBUG 
+#if DEBUG
   GC_get_configuration_value_number(capi->cfg,
 				    "NETWORK",
 				    "PORT",

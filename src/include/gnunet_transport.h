@@ -253,7 +253,7 @@ typedef struct {
    * @return OK on success, SYSERR if the operation failed
    */
   int (*connect)(const P2P_hello_MESSAGE * hello,
-		 TSession ** tsession);  
+		 TSession ** tsession);
 
   /**
    * Send a message to the specified remote node.
@@ -346,7 +346,7 @@ typedef struct {
   int (*testWouldTry)(TSession * tsession,
 		      unsigned int size,
 		      int important);
-  
+
 } TransportAPI;
 
 /**

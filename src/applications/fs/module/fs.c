@@ -194,7 +194,7 @@ static int gapPut(void * closure,
   if (stats != NULL)
     stats->change(stat_valid_replies_received, 1);
   if (ntohll(dv->expirationTime) < get_time()) {
-    /* do not do anything with expired data 
+    /* do not do anything with expired data
        _except_ if it is pure content that one
        of our clients has requested -- then we
        should ignore expiration */
@@ -202,7 +202,7 @@ static int gapPut(void * closure,
       processResponse(query, dv);
     else if (stats != NULL)
       stats->change(stat_expired_replies_dropped, 1);
-      
+
     FREE(dv);
     return NO;
   }
@@ -1190,9 +1190,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     capi->releaseService(traffic);
     return SYSERR;
   }
-  dht = capi->requestService("dht"); 
-  if (dht != NULL) 
-    init_dht_push(capi, dht);  
+  dht = capi->requestService("dht");
+  if (dht != NULL)
+    init_dht_push(capi, dht);
   ltgSignal = SEMAPHORE_CREATE(0);
   localGetProcessor = PTHREAD_CREATE(&localGetter,
 				     NULL,

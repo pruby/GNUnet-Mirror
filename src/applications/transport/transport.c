@@ -129,7 +129,7 @@ static int addTransport(TransportAPI * tapi) {
 /**
  * Convert hello to string.
  */
-static char * 
+static char *
 helloToString(const P2P_hello_MESSAGE * hello,
 	      int resolve_ip) {
   unsigned short prot;
@@ -177,7 +177,7 @@ static int forEachTransport(TransportCallback callback,
  *        if SYSERR is returned!
  * @return OK on success, SYSERR on error
  */
-static TSession * 
+static TSession *
 transportConnect(const P2P_hello_MESSAGE * hello) {
   unsigned short prot;
   TSession * tsession;
@@ -198,7 +198,7 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
   return tsession;
 }
 
-static TSession * 
+static TSession *
 transportConnectFreely(const PeerIdentity * peer,
 		       int useTempList) {
   int i;
@@ -218,12 +218,12 @@ transportConnectFreely(const PeerIdentity * peer,
     hello = identity->identity2Hello(peer,
 				    perm[i],
 				    useTempList);
-    if (hello == NULL) 
+    if (hello == NULL)
       continue;
     hc++;
     ret = transportConnect(hello);
     FREE(hello);
-    if (ret != NULL) 
+    if (ret != NULL)
       break;
   }
   FREE(perm);
@@ -570,11 +570,11 @@ static void initHelper(TransportAPI * tapi,
 static int testWouldTry(TSession * tsession,
 			unsigned int size,
 			int important) {
-  if (tsession == NULL) 
-    return SYSERR; 
+  if (tsession == NULL)
+    return SYSERR;
   if ( (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) ) 
-    return SYSERR;  
+       (tapis[tsession->ttype] == NULL) )
+    return SYSERR;
   return tapis[tsession->ttype]->testWouldTry(tsession,
 					      size,
 					      important);

@@ -496,7 +496,7 @@ typedef struct {
   int (*queryPeerStatus)(const PeerIdentity * node,
 			 unsigned int * bpm,
 			 cron_t * last_seen);
-  
+
   /**
    * Disconnect a particular peer. Sends a HANGUP message to the other
    * side and marks all sessionkeys as dead.

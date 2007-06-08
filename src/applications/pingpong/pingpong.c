@@ -233,7 +233,7 @@ static int pongReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
-  
+
   pmsg = (P2P_pingpong_MESSAGE *) msg;
   if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        (0 != memcmp(sender,
@@ -439,7 +439,7 @@ static int initiatePing(const PeerIdentity * receiver,
   if (pmsg == NULL)
     return SYSERR;
   if (usePlaintext == YES) {
-    if (OK != sendPlaintext(receiver, 
+    if (OK != sendPlaintext(receiver,
 			    (const P2P_pingpong_MESSAGE*) pmsg)) {
       FREE(pmsg);
       return SYSERR;

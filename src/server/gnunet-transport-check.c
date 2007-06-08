@@ -224,7 +224,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
   int len;
   PeerIdentity peer;
   unsigned long long verbose;
-  
+
   stats[0]++; /* one more seen */
   if (NO == transport->isAvailable(ntohs(xhello->protocol))) {
     GE_LOG(ectx,
@@ -233,8 +233,8 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
 	   ntohs(xhello->protocol));
     return;
   }
-  if (ntohs(xhello->protocol) == NAT_PROTOCOL_NUMBER) 
-    return; /* NAT cannot be tested */  
+  if (ntohs(xhello->protocol) == NAT_PROTOCOL_NUMBER)
+    return; /* NAT cannot be tested */
 
   stats[1]++; /* one more with transport 'available' */
   GC_get_configuration_value_number(cfg,
@@ -257,17 +257,17 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
     fprintf(stderr, ".");
   hello = MALLOC(ntohs(xhello->header.size));
   memcpy(hello,
-	 xhello, 
+	 xhello,
 	 ntohs(xhello->header.size));
 
   myHello = transport->createhello(ntohs(xhello->protocol));
-  if (myHello == NULL) 
+  if (myHello == NULL)
     /* try NAT */
     myHello = transport->createhello(NAT_PROTOCOL_NUMBER);
   if (myHello == NULL) {
     FREE(hello);
     return;
-  }  
+  }
   if (verbose > 0)
     fprintf(stderr, ".");
   tsession = NULL;
@@ -333,7 +333,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
   SEMAPHORE_DOWN(sem, YES);
 
   if (verbose > 0) {
-    if (ok != YES) 
+    if (ok != YES)
       FPRINTF(stderr,
 	      _("Timeout after %llums.\n"),
 	      timeout);

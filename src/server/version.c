@@ -199,8 +199,8 @@ void upToDate(struct GE_Context * ectx,
   memcpy(version, VERSION, strlen(VERSION)+1);
   getVersionHash(cfg,
 		 &enc);
-  memcpy(&version[strlen(VERSION)+1], 
-	 &enc, 
+  memcpy(&version[strlen(VERSION)+1],
+	 &enc,
 	 sizeof(EncName));
   UNLINK(fn);
   disk_file_write(ectx,

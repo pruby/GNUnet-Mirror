@@ -79,7 +79,7 @@ static int testHT()
   if (HT_CONTAINS_KEY(ht, "Spain") != NO)
   {
     puts("ht_remove failed!\n");
-    ht_destroy(ht);  
+    ht_destroy(ht);
     return 1;
   }
 

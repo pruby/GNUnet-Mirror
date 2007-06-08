@@ -124,7 +124,7 @@ enum URITRACK_STATE {
  * hash-collision in the map, there is a 1:256 chance that we will
  * return information from the wrong URI without detecting it).
  */
-enum URITRACK_STATE 
+enum URITRACK_STATE
 URITRACK_getState(struct GE_Context * ectx,
 		  struct GC_Configuration * cfg,
 		  const struct ECRS_URI * uri);

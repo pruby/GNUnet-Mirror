@@ -38,7 +38,7 @@
 #define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
-static struct IPC_SEMAPHORE * 
+static struct IPC_SEMAPHORE *
 createIPC(struct GE_Context * ectx,
 	  struct GC_Configuration * cfg) {
   char * basename;
@@ -60,7 +60,7 @@ createIPC(struct GE_Context * ectx,
   return sem;				
 }
 
-static char * 
+static char *
 getUriDbName(struct GE_Context * ectx,
 	     struct GC_Configuration * cfg) {
   char * nw;

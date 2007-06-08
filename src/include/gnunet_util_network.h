@@ -426,7 +426,7 @@ int socket_test_valid(struct SocketHandle * s);
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-struct SelectHandle * 
+struct SelectHandle *
 select_create(const char * desc,
 	      int is_udp,
 	      struct GE_Context * ectx,
@@ -507,7 +507,7 @@ int select_disconnect(struct SelectHandle * sh,
 char * network_get_local_ip(struct GC_Configuration * cfg,
 			    struct GE_Context * ectx,
 			    IPaddr * addr);
- 
+
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

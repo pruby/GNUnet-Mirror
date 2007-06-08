@@ -197,7 +197,7 @@ static void work() {
   		
   	return;
   }
-  
+
   /* enforce filesystem limits */
   capFSQuotaSize(ectx, cfg);
 

@@ -304,7 +304,7 @@ static void routeResult(const HashCode512 * key,
       pos = pos->next;
     }
   }
-  MUTEX_UNLOCK(lock); 
+  MUTEX_UNLOCK(lock);
 #if DEBUG_ROUTING
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -346,7 +346,7 @@ static int addRoute(const PeerIdentity * sender,
 		      sizeof(HashCode512))) &&
 	 (records[i]->get->type == get->type) &&
 	 (records[i]->expires > now - MAX_TTL) ) {
-      /* do not route, same request already (recently) 
+      /* do not route, same request already (recently)
 	 active (possibly from other initiator) */
       /* FIXME: support sending replies back to
 	 multiple peers!? */
@@ -359,7 +359,7 @@ static int addRoute(const PeerIdentity * sender,
     } else if (records[i]->expires < expire) {
       expire = records[i]->expires;
       rt_pos = i;
-    } 
+    }
   }
   if (rt_pos == rt_size) {
     /* do not route, expiration time too high */
@@ -401,7 +401,7 @@ static int addRoute(const PeerIdentity * sender,
 	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	 "Tracking request in slot %u\n",
 	 rt_pos);
-#endif 
+#endif
   rt_pos = (rt_pos + 1) % rt_size;
   MUTEX_UNLOCK(lock);
   if (stats != NULL)
@@ -523,7 +523,7 @@ static int handlePut(const PeerIdentity * sender,
     stats->change(stat_put_requests_received, 1);
   put = (const DHT_PUT_MESSAGE*) msg;
 #if DEBUG_ROUTING
-  hash2enc(&put->key, 
+  hash2enc(&put->key,
 	   &enc);
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -573,7 +573,7 @@ static int handlePut(const PeerIdentity * sender,
 	 ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
 	 &put[1]);
 #endif
-  }      
+  }
   return OK;
 }
 
@@ -627,7 +627,7 @@ void dht_get_start(const HashCode512 * key,
   if (OK == addRoute(NULL,
 		     handler,
 		     cls,
-		     &get))     
+		     &get))
     handleGet(NULL,
 	      &get.header);
 }
@@ -718,7 +718,7 @@ void dht_put(const HashCode512 * key,
  * @param padding maximum number of bytes available
  * @return number of bytes added at position
  */
-static unsigned int 
+static unsigned int
 extra_get_callback(const PeerIdentity * receiver,
 		   void * position,
 		   unsigned int padding) {
@@ -733,7 +733,7 @@ extra_get_callback(const PeerIdentity * receiver,
  */
 int init_dht_routing(CoreAPIForApplication * capi) {
   unsigned long long rts;
-  
+
   coreAPI = capi;
   rts = 65536;
   GC_get_configuration_value_number(coreAPI->cfg,

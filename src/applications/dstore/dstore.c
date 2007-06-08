@@ -133,8 +133,8 @@ static int db_reset() {
   }
   CLOSE(fd);
   if (SQLITE_OK != sqlite3_open(fn,
-				&dbh)) 
-    return SYSERR;  
+				&dbh))
+    return SYSERR;
   db_init(dbh);
   sqlite3_close(dbh);
   return OK;
@@ -154,8 +154,8 @@ static int checkQuota(sqlite3 * dbh) {
   sqlite3_stmt * stmt;
   sqlite3_stmt * dstmt;
   int err;
-  
-  if (payload * 10 <= quota * 9) 
+
+  if (payload * 10 <= quota * 9)
     return OK; /* we seem to be about 10% off */
 #if DEBUG_DSTORE
   GE_LOG(coreAPI->ectx,
@@ -172,13 +172,13 @@ static int checkQuota(sqlite3 * dbh) {
        (sq_prepare(dbh,
 		   "DELETE FROM ds071 "
 		   "WHERE size = ? AND type = ? AND puttime = ? AND expire = ? AND key = ? AND value = ?",
-		   &dstmt) != SQLITE_OK) ) {      
-    GE_LOG(coreAPI->ectx, 
+		   &dstmt) != SQLITE_OK) ) {
+    GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_ADMIN | GE_BULK,
 	   _("`%s' failed at %s:%d with error: %s\n"),
 	   "sq_prepare",
 	   __FILE__,
-	   __LINE__, 
+	   __LINE__,
 	   sqlite3_errmsg(dbh));
     GE_BREAK(NULL, 0);
     if (dstmt != NULL)
@@ -208,7 +208,7 @@ static int checkQuota(sqlite3 * dbh) {
     memcpy(dcontent,
 	   sqlite3_column_blob(stmt, 5),
 	   dsize);
-    sqlite3_reset(stmt); 
+    sqlite3_reset(stmt);
     sqlite3_bind_int(dstmt,
 		     1,
 		     dsize);
@@ -232,12 +232,12 @@ static int checkQuota(sqlite3 * dbh) {
 		      dsize,
 		      SQLITE_TRANSIENT);
     if ((err = sqlite3_step(dstmt)) != SQLITE_DONE) {
-      GE_LOG(coreAPI->ectx, 
+      GE_LOG(coreAPI->ectx,
 	     GE_ERROR | GE_ADMIN | GE_BULK,
 	     _("`%s' failed at %s:%d with error: %s\n"),
 	     "sqlite3_step",
 	     __FILE__,
-	     __LINE__, 
+	     __LINE__,
 	     sqlite3_errmsg(dbh));
       sqlite3_reset(dstmt);
       GE_BREAK(NULL, 0); /* should delete but cannot!? */
@@ -252,15 +252,15 @@ static int checkQuota(sqlite3 * dbh) {
 	   payload,
 	   quota);
 #endif
-    sqlite3_reset(dstmt);	  
+    sqlite3_reset(dstmt);	
   }
   if (err != SQLITE_DONE) {
-    GE_LOG(coreAPI->ectx, 
+    GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_ADMIN | GE_BULK,
 	   _("`%s' failed at %s:%d with error: %s\n"),
 	   "sqlite3_step",
 	   __FILE__,
-	   __LINE__, 
+	   __LINE__,
 	   sqlite3_errmsg(dbh));
   }
   FREE(dcontent);
@@ -294,7 +294,7 @@ static int d_put(const HashCode512 * key,
   if (size > MAX_CONTENT_SIZE)
     return SYSERR;
   MUTEX_LOCK(lock);
-  if ( (fn == NULL) ||  
+  if ( (fn == NULL) ||
        (SQLITE_OK != sqlite3_open(fn,
 				  &dbh)) ) {
     db_reset(dbh);
@@ -314,12 +314,12 @@ static int d_put(const HashCode512 * key,
 		 "UPDATE ds071 SET puttime=?, expire=? "
 		 "WHERE key=? AND type=? AND size=? AND value=?",
 		 &stmt) != SQLITE_OK) {
-    GE_LOG(coreAPI->ectx, 
+    GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_ADMIN | GE_BULK,
 	   _("`%s' failed at %s:%d with error: %s\n"),
 	   "sq_prepare",
 	   __FILE__,
-	   __LINE__, 
+	   __LINE__,
 	   sqlite3_errmsg(dbh));
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
@@ -367,12 +367,12 @@ static int d_put(const HashCode512 * key,
 		 "(size, type, puttime, expire, key, value) "
 		 "VALUES (?, ?, ?, ?, ?, ?)",
 		 &stmt) != SQLITE_OK) {
-    GE_LOG(coreAPI->ectx, 
+    GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_ADMIN | GE_BULK,
 	   _("`%s' failed at %s:%d with error: %s\n"),
 	   "sq_prepare",
 	   __FILE__,
-	   __LINE__, 
+	   __LINE__,
 	   sqlite3_errmsg(dbh));
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
@@ -441,7 +441,7 @@ static int d_get(const HashCode512 * key,
   unsigned int cnt;
 
   MUTEX_LOCK(lock);
-  if ( (fn == NULL) ||  
+  if ( (fn == NULL) ||
        (SQLITE_OK != sqlite3_open(fn,
 				  &dbh)) ) {
     db_reset(dbh);
@@ -457,12 +457,12 @@ static int d_get(const HashCode512 * key,
   if (sq_prepare(dbh,
 		 "SELECT size, value FROM ds071 WHERE key=? AND type=? AND expire >= ?",
 		 &stmt) != SQLITE_OK) {
-    GE_LOG(coreAPI->ectx, 
+    GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_ADMIN | GE_BULK,
 	   _("`%s' failed at %s:%d with error: %s\n"),
 	   "sq_prepare",
 	   __FILE__,
-	   __LINE__, 
+	   __LINE__,
 	   sqlite3_errmsg(dbh));
     sqlite3_close(dbh);
     MUTEX_UNLOCK(lock);
@@ -524,9 +524,9 @@ provide_module_dstore(CoreAPIForApplication * capi) {
 				    &quota);
   if (quota == 0) /* error */
     quota = 1;
-  quota *= 1024 * 1024; 
+  quota *= 1024 * 1024;
   stats = capi->requestService("stats");
-  if (stats != NULL) 
+  if (stats != NULL)
     stat_dstore_size = stats->create(gettext_noop("# bytes in dstore"));
   return &api;
 }

@@ -37,7 +37,7 @@
 /**
  * after how much time of the core not being associated with a tcp
  * connection anymore do we close it?
- * 
+ *
  * Needs to be larger than SECONDS_INACTIVE_DROP in
  * core's connection.s
  */
@@ -112,7 +112,7 @@ static int isBlacklisted(const void * addr,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
 #if DEBUG_TCP
-  if (ret != OK) 
+  if (ret != OK)
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
 	   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
@@ -229,7 +229,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 	   &enc);
 #endif
     return SYSERR; /* obviously invalid */
-  } 
+  }
   return OK;
 }
 
@@ -272,7 +272,7 @@ static P2P_hello_MESSAGE * createhello() {
     GE_LOG(ectx,
 	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
 	   _("TCP: Could not determine my public IP address.\n"));
-    return NULL;  
+    return NULL;
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
@@ -344,7 +344,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	 sizeof(soaddr));
   soaddr.sin_family = AF_INET;
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
 	 &haddr->ip,
@@ -498,7 +498,7 @@ static int reloadConfiguration(void * ctx,
 /**
  * Convert TCP address to a string.
  */
-static char * 
+static char *
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
   char * ret;
@@ -516,7 +516,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
     serverAddr.sin_family   = AF_INET;
     memcpy(&serverAddr.sin_addr,
 	   haddr,
-	   sizeof(IPaddr));  
+	   sizeof(IPaddr));
     serverAddr.sin_port = haddr->port;
     if (0 == getnameinfo((const struct sockaddr*) &serverAddr,
 			 sizeof(struct sockaddr_in),
@@ -535,7 +535,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 			AF_INET);
     if (ent != NULL)
       hn = ent->h_name;
-  }    
+  }
 #endif
 #endif
   n = 4*4+6+6 + strlen(hn) + 10;
@@ -587,7 +587,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
 				       "UPNP",
 				       YES) == YES) {
     upnp = coreAPI->requestService("upnp");
-    
+
     if (upnp == NULL) {
       GE_LOG(ectx,
 	     GE_ERROR | GE_USER | GE_IMMEDIATE,

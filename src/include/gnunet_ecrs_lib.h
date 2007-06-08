@@ -269,13 +269,13 @@ char * ECRS_uriToString(const struct ECRS_URI * uri);
  * Convert a NULL-terminated array of keywords
  * to an ECRS URI.
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_keywordsToUri(const char * keyword[]);
 
 /**
  * Convert a UTF-8 String to a URI.
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_stringToUri(struct GE_Context * ectx,
 		 const char * uri);
 
@@ -329,7 +329,7 @@ typedef int (*ECRS_SignFunction)(void * cls,
  * @param baseURI content offered by the sender
  * @param sender identity of the peer with the content
  * @param expirationTime how long will the content be offered?
- * @param signer function to call for obtaining 
+ * @param signer function to call for obtaining
  *        RSA signatures for "sender".
  * @return the location URI
  */
@@ -351,7 +351,7 @@ struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
  * adding the current date (YYYY-MM-DD) after each
  * keyword.
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
 
 /**
@@ -453,7 +453,7 @@ int ECRS_isLocationUri(const struct ECRS_URI * uri);
  * in the meta-data and construct one large keyword URI
  * that lists all keywords that can be found in the meta-data).
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_metaDataToUri(const struct ECRS_MetaData * md);
 
 
@@ -777,7 +777,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 		      void * ttClosure); /* download.c */
 
 /**
- * Download parts of a file.  Note that this will store 
+ * Download parts of a file.  Note that this will store
  * the blocks at the respective offset in the given file.
  * Also, the download is still using the blocking of the
  * underlying ECRS encoding.  As a result, the download
@@ -790,7 +790,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
  * limit the download to exactly those bytes.
  *
  * @param uri the URI of the file (determines what to download)
- * @param filename where to store the file 
+ * @param filename where to store the file
  * @param no_temporaries set to YES to disallow generation of temporary files
  * @param start starting offset
  * @param length length of the download (starting at offset)

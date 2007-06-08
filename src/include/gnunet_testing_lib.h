@@ -65,7 +65,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 /**
  * Establish a connection between two GNUnet daemons
  * (both must run on this machine).
- * 
+ *
  * @param port1 client port of the first daemon
  * @param port2 client port of the second daemon
  * @return OK on success, SYSERR on failure
@@ -104,7 +104,7 @@ struct DaemonContext {
  *
  * @return handle used to stop the daemons, NULL on error
  */
-struct DaemonContext * 
+struct DaemonContext *
 gnunet_testing_start_daemons(const char * transports,
 			     const char * applications,
 			     const char * gnunetd_home_prefix,
@@ -117,7 +117,7 @@ gnunet_testing_start_daemons(const char * transports,
  * @return OK on success, SYSERR on error
  */
 int gnunet_testing_stop_daemons(struct DaemonContext * peers);
-			     
+			
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

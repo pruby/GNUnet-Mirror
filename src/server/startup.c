@@ -50,12 +50,12 @@ static SERVICE_STATUS_HANDLE hService;
  * @param cfg configuration, may be NULL if in service mode
  * @param sig signal code that causes shutdown, optional
  */
-void shutdown_gnunetd(struct GC_Configuration * cfg, 
+void shutdown_gnunetd(struct GC_Configuration * cfg,
 		      int sig) {
 #ifdef MINGW
-  if (!cfg || GC_get_configuration_value_yesno(cfg, 
-					       "GNUNETD", 
-					       "WINSERVICE", 
+  if (!cfg || GC_get_configuration_value_yesno(cfg,
+					       "GNUNETD",
+					       "WINSERVICE",
 					       NO) == YES) {
     /* If GNUnet runs as service, only the
        Service Control Manager is allowed
@@ -68,7 +68,7 @@ void shutdown_gnunetd(struct GC_Configuration * cfg,
 	if (GNControlService(hService, SERVICE_CONTROL_STOP, &theStat))
 	  {
 	    /* Success */
-	    
+	
 	    /* The Service Control Manager will call
 	       gnunetd.c::ServiceCtrlHandler(), which calls
 	       this function again. We then stop the gnunetd. */
@@ -78,7 +78,7 @@ void shutdown_gnunetd(struct GC_Configuration * cfg,
 	   but we don't care.
 	   Just shut the gnunetd process down. */
       }
-    
+
     /* Acknowledge the shutdown request */
     theServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
     GNSetServiceStatus(hService, &theServiceStatus);
@@ -174,7 +174,7 @@ void capFSQuotaSize(struct GE_Context * ectx,
   unsigned long long quota, cap;
   char *afsdir, fs[MAX_PATH + 1];
   DWORD flags;
-  
+
   if (-1 == GC_get_configuration_value_number(cfg,
                  "FS",
                  "QUOTA",
@@ -190,7 +190,7 @@ void capFSQuotaSize(struct GE_Context * ectx,
               VAR_DAEMON_DIRECTORY "/data/fs/",
               &afsdir);
   GE_ASSERT(ectx, strlen(afsdir) > 2);
-  
+
   /* get root directory */
   afsdir[3] = '\0';
 
@@ -207,10 +207,10 @@ void capFSQuotaSize(struct GE_Context * ectx,
       _("Unable to obtain filesystem information for `%s': %u\n"),
       afsdir,
       GetLastError());
-      
+
     return;
   }
-  
+
   if (strncasecmp(fs, "NTFS", 4) == 0)
     cap = 0;
   else if (strcasecmp(fs, "FAT32") == 0)
@@ -225,13 +225,13 @@ void capFSQuotaSize(struct GE_Context * ectx,
         "contact gnunet-developers@gnu.org!"),
       fs,
       afsdir);
-    
+
     if (!(flags & FILE_PERSISTENT_ACLS))
       cap = 1500;
     else
       cap = 0;
   }
-  
+
   if ((cap != 0) && (cap < quota)) {
     GE_LOG(ectx,
       GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
@@ -240,7 +240,7 @@ void capFSQuotaSize(struct GE_Context * ectx,
         "a NTFS partition!\n"),
       cap / 1000,
       fs);
-    
+
     GC_set_configuration_value_number(cfg,
                ectx,
                "FS",
@@ -259,7 +259,7 @@ int checkPermission(struct GE_Context * ectx,
 		    int mode) {
   char * fn;
   int i;
-  
+
   GC_get_configuration_value_filename(cfg,
 				      section,
 				      option,
@@ -276,7 +276,7 @@ int checkPermission(struct GE_Context * ectx,
     while ( (i > 1) &&
 	    (fn[i] != DIR_SEPARATOR) )
       i--;
-    fn[i] = '\0';    
+    fn[i] = '\0';
     mode = X_OK | W_OK;
   }
   if (0 != ACCESS(fn, mode)) {
@@ -300,7 +300,7 @@ int checkPermissions(struct GE_Context * ectx,
 	"GNUNETD_HOME",
 	"/var/lib/gnunet",
 	YES,
-	W_OK | X_OK);  
+	W_OK | X_OK);
   CHECK("GNUNETD",
 	"LOGFILE",
 	"$GNUNETD_HOME/daemon-logs",

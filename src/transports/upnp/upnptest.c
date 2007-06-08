@@ -77,7 +77,7 @@ int main(int argc,
     return 1;
   }
   for (i=0;i<10;i++) {
-    if (GNUNET_SHUTDOWN_TEST() != NO) 
+    if (GNUNET_SHUTDOWN_TEST() != NO)
       break;
     if (OK == upnp->get_ip(2086,
 			   "TCP",

@@ -119,7 +119,7 @@ static int testIPCSemaphore() {
   if (me == 0) {
     exit(ret);
   } else {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "waiting for other process to exit.\n");
     if (-1 == waitpid(me, &j, 0))

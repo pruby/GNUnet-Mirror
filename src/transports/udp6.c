@@ -442,7 +442,7 @@ static int reloadConfiguration(void) {
 /**
  * Convert UDP6 address to a string.
  */
-static char * 
+static char *
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
   char * ret;
@@ -481,7 +481,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 			AF_INET);
     if (ent != NULL)
       hn = ent->h_name;
-  }    
+  }
 #endif
 #endif
   n = INET6_ADDRSTRLEN + 16 + strlen(hn) + 10;

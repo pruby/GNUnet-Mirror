@@ -166,7 +166,7 @@ int configChangeListener(void * ctx,
     }
     break;
   }
-  case GNS_String: 
+  case GNS_String:
   case GNS_MC: {
     char * val;
 
@@ -175,7 +175,7 @@ int configChangeListener(void * ctx,
 						    option,
 						    pos->value.String.def,
 						    &val))
-      return SYSERR;  
+      return SYSERR;
     FREE(pos->value.String.val);
     pos->value.String.val = val;
     break;
@@ -188,8 +188,8 @@ int configChangeListener(void * ctx,
 						    option,
 						    (const char**) pos->value.String.legalRange,
 						    pos->value.String.def,
-						    &ival)) 
-      return SYSERR;    
+						    &ival))
+      return SYSERR;
     FREE(pos->value.String.val);
     pos->value.String.val = STRDUP(ival);
     break;

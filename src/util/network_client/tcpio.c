@@ -82,7 +82,7 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
   char * res;
   char * pos;
   unsigned int port;
-  
+
   res = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "NETWORK",
@@ -118,12 +118,12 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
  *
  * @return the name of the host, NULL on error
  */
-static char * 
+static char *
 getGNUnetdHost(struct GE_Context * ectx,
 	       struct GC_Configuration * cfg) {
   char * res;
   char * pos;
-  
+
   res = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "NETWORK",
@@ -365,9 +365,9 @@ int connection_write(struct ClientServerConnection * sock,
 
   MUTEX_LOCK(sock->destroylock);
   MUTEX_LOCK(sock->writelock);
-  if (SYSERR == connection_ensure_connected(sock)) { 
+  if (SYSERR == connection_ensure_connected(sock)) {
     MUTEX_UNLOCK(sock->writelock);
-    MUTEX_UNLOCK(sock->destroylock);  
+    MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
   MUTEX_UNLOCK(sock->destroylock);

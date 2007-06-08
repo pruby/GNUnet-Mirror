@@ -48,9 +48,9 @@
 
 /**
  * From time to time, forward one hello from one peer to
- * a random other peer. 
+ * a random other peer.
  */
-#define HELLO_FORWARD_FREQUENCY (45 * cronSECONDS) 
+#define HELLO_FORWARD_FREQUENCY (45 * cronSECONDS)
 
 /**
  * Meanings of the bits in activeCronJobs (ACJ).
@@ -362,13 +362,13 @@ receivedhello(const PeerIdentity * sender,
   if (mtu > ntohs(ping->size)) {
     helloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
 					     buffer);
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      mtu - ntohs(ping->size) >= helloEnd);
   } else {
     helloEnd = -2;
   }
   if (helloEnd <= 0) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Failed to create an advertisement for this peer. Will not send PING.\n"));
     FREE(buffer);
@@ -389,7 +389,7 @@ receivedhello(const PeerIdentity * sender,
        (SYSERR == coreAPI->sendPlaintext(tsession,
 					 buffer,
 					 helloEnd)) ) {
-    
+
     if (stats != NULL)
       stats->change(stat_hello_send_error, 1);
     res = SYSERR;
@@ -435,7 +435,7 @@ broadcastHelper(const PeerIdentity * hi,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&hi->hashPubKey,
 		    &other));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Entering `%s' with target `%s'.\n",
 	 __FUNCTION__,
@@ -499,7 +499,7 @@ broadcastHelper(const PeerIdentity * hi,
 			 P2P_hello_MESSAGE_size(sd->m));
   transport->disconnect(tsession);
 #if DEBUG_ADVERTISING
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Exit from %s.\n",
 	 __FUNCTION__);
@@ -590,8 +590,8 @@ static void forwardCallback(const PeerIdentity * peer,
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
-  if (weak_randomi(fcc->prob) != 0) 
-    return; /* only forward with a certain chance */  
+  if (weak_randomi(fcc->prob) != 0)
+    return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
 			&fcc->msg->senderIdentity.hashPubKey))
     return; /* do not bounce the hello of a peer back
@@ -640,7 +640,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 #if DEBUG_ADVERTISING
     EncName enc;
     /* remove hellos that expired */
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_INFO | GE_REQUEST | GE_USER,
 	     hash2enc(&peer->hashPubKey,
 		      &enc));
@@ -680,7 +680,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 static void
 forwardhello(void * unused) {
   int count;
-  
+
   if (os_cpu_get_load(coreAPI->ectx,
 		      coreAPI->cfg) > 100)
     return; /* CPU load too high... */
@@ -695,7 +695,7 @@ forwardhello(void * unused) {
   count = identity->forEachHost(0,
 				NULL,
 				NULL);
-  if (count > 0) 
+  if (count > 0)
     identity->forEachHost(0, /* ignore blacklisting */
 			  &forwardhelloHelper,
 			  &count);
@@ -853,7 +853,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# plaintext PING messages sent"));
   }
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("`%s' registering handler %d (plaintext and ciphertext)\n"),
 	 "advertising",
@@ -865,8 +865,8 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 				 &phelloHandler);
   if (0 != GC_attach_change_listener(capi->cfg,
 				     &configurationUpdateCallback,
-				     NULL)) 
-    GE_BREAK(capi->ectx, 0); 
+				     NULL))
+    GE_BREAK(capi->ectx, 0);
   startBootstrap(capi);
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,

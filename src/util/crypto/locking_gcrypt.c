@@ -33,7 +33,7 @@
  * Should we use a lock to avoid concurrent accesses
  * to gcrypt or should we tell gcrypt that we use
  * pthreads?
- */ 
+ */
 #define USE_LOCK NO
 
 #if USE_LOCK

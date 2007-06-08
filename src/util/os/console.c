@@ -35,10 +35,10 @@
 #include "platform.h"
 
 
-static char * 
+static char *
 getPIDFile(struct GC_Configuration * cfg) {
   char * pif;
-  
+
   if (0 != GC_get_configuration_value_filename(cfg,
 					       "GNUNETD",
 					       "PIDFILE",
@@ -81,9 +81,9 @@ int os_write_pid_file(struct GE_Context * ectx,
     /* we get to create a directory -- and claim it
        as ours! */
     disk_directory_create(ectx, rdir);
-    if (strlen(user)) 
+    if (strlen(user))
       os_change_owner(ectx,
-		      rdir, 
+		      rdir,
 		      user);
   }
   if (0 != ACCESS(rdir, W_OK | X_OK)) {
@@ -108,7 +108,7 @@ int os_write_pid_file(struct GE_Context * ectx,
   }
   if (0 > FPRINTF(pidfd,
 		  "%u",
-		  pid)) 
+		  pid))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fprintf",
@@ -118,11 +118,11 @@ int os_write_pid_file(struct GE_Context * ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fclose",
 			 pif);
-  if (strlen(user)) 
+  if (strlen(user))
     os_change_owner(ectx,
-		    pif, 
+		    pif,
 		    user);
-  FREE(user);  
+  FREE(user);
   FREE(pif);
   return OK;
 }
@@ -195,7 +195,7 @@ int os_terminal_detach(struct GE_Context * ectx,
     }
     fflush(stdout);
     if (ok == OK) {
-      os_write_pid_file(ectx, 
+      os_write_pid_file(ectx,
 			cfg,
 			pid);
       exit(0);

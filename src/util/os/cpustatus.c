@@ -69,7 +69,7 @@ static struct MUTEX * statusMutex;
 /**
  * Current CPU load, as percentage of CPU cycles not idle or
  * blocked on IO.
- */ 
+ */
 static int currentCPULoad;
 
 static int agedCPULoad = -1;
@@ -89,7 +89,7 @@ static int initMachCpuStats() {
   kern_return_t kret;
   int i,j;
 
-  kret = host_processor_info(mach_host_self(), 
+  kret = host_processor_info(mach_host_self(),
 			     PROCESSOR_CPU_LOAD_INFO,
                              &cpu_count,
                              (processor_info_array_t *)&cpu_load,
@@ -412,7 +412,7 @@ static int updateUsage(){
       dLastKernel = dKernel;
       dLastIdle = dIdle;
       dLastUser = dUser;
- 
+
       currentIOLoad = -1; /* FIXME */
       return OK;
     } else {
@@ -476,7 +476,7 @@ static int updateUsage(){
 		    &dwDataSize);
     RegCloseKey(hKey);
     currentIOLoad = -1; /* FIXME! */
-    
+
     /* Stop query */
     RegOpenKeyEx(HKEY_DYN_DATA,
 		 "PerfStats\\StopStat",

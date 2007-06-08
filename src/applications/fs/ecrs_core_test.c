@@ -36,17 +36,17 @@ static int testEC() {
   HashCode512 query;
   HashCode512 key;
   unsigned int len;
-  
+
   len = sizeof(DBlock) + 42;
   data = MALLOC(len);
   memset(&data[1], rand(), len - sizeof(DBlock));
   data->type = htonl(D_BLOCK);
   CHECK(D_BLOCK == getTypeOfBlock(len,
-				  data), 
+				  data),
 	data);
   fileBlockGetKey(data, len, &key);
   fileBlockGetQuery(data, len, &query);
-  CHECK(OK == fileBlockEncode(data, 
+  CHECK(OK == fileBlockEncode(data,
 			      len,
 			      &query,
 			      &value),

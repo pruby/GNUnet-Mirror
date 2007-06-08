@@ -104,12 +104,12 @@ static void portmap(void * unused) {
   unsigned int i;
 
   MUTEX_LOCK(lock);
-  for (i=0;i<maps_size;i++) 
+  for (i=0;i<maps_size;i++)
     gaim_upnp_change_port_mapping(ectx,
 				  cfg,
 				  NO,
 				  maps[i].port,
-				  maps[i].proto);  
+				  maps[i].proto);
   MUTEX_UNLOCK(lock);
 }
 
@@ -125,11 +125,11 @@ static int gnunet_upnp_get_ip(unsigned short port,
   unsigned int i;
 
   MUTEX_LOCK(lock);
-  for (i=0;i<maps_size;i++) 
+  for (i=0;i<maps_size;i++)
     if ( (0 == strcmp(maps[i].proto, protocol)) &&
 	 (maps[i].port == port) )
       break;
-  if (i == maps_size) { 
+  if (i == maps_size) {
     /* new entry! */
     GROW(maps,
 	 maps_size,
@@ -150,7 +150,7 @@ static int gnunet_upnp_get_ip(unsigned short port,
 /**
  * Get the external IP address for the local machine.
  */
-UPnP_ServiceAPI * 
+UPnP_ServiceAPI *
 provide_module_upnp(CoreAPIForApplication * capi) {
   static UPnP_ServiceAPI api;
 
@@ -181,12 +181,12 @@ int release_module_upnp() {
 
   if (cron == NULL)
     return SYSERR; /* not loaded! */
-  for (i=0;i<maps_size;i++) 
+  for (i=0;i<maps_size;i++)
     gaim_upnp_change_port_mapping(ectx,
 				  cfg,
 				  NO,
 				  maps[i].port,
-				  maps[i].proto);  
+				  maps[i].proto);
   cron_stop(cron);
   cron_del_job(cron,
 	       &discover,

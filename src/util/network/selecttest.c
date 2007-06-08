@@ -31,7 +31,7 @@
 /**
  * With sleeping, the kbps throughput is kind-of meaningless;
  * without sleeping, the simulation is not as real-world
- * and performance is still erratic due to the sender 
+ * and performance is still erratic due to the sender
  * doing busy-waiting (and thus possibly burning CPU).
  */
 #define DO_SLEEP YES
@@ -41,7 +41,7 @@
  * this kills part of the test (proper select buffer
  * management) and is not always portable, it can be
  * useful to show the theoretical performance
- * (on my system about 100 mbps).  
+ * (on my system about 100 mbps).
  */
 #define DO_YIELD NO
 
@@ -85,7 +85,7 @@ static int test_smh(void * mh_cls,
   static int sleeper;
   char * expect;
   unsigned short size;
-  
+
   size = ntohs(msg->size);
   throughput += size;
   expect = MALLOC(size);
@@ -135,9 +135,9 @@ static void * test_sah(void * ah_cls,
 		       struct SelectHandle * sh,
 		       struct SocketHandle * sock,
 		       const void * addr,
-		       unsigned int addr_len) {  
+		       unsigned int addr_len) {
   static int ret_addr;
-  
+
   GE_BREAK(NULL, in == NULL);
   in = sock;
   return &ret_addr; /* dummy value for accept */
@@ -172,7 +172,7 @@ static int check() {
   MESSAGE_HEADER * h;
   cron_t start;
 
-  listen_sock = SOCKET(PF_INET, 
+  listen_sock = SOCKET(PF_INET,
 		       SOCK_STREAM,
 		       6); /* 6: TCP */
   if (listen_sock == -1) {
@@ -217,7 +217,7 @@ static int check() {
 		     NULL,
 		     128 * 1024); /* memory quota */
 
-  write_sock = SOCKET(PF_INET, 
+  write_sock = SOCKET(PF_INET,
 		      SOCK_STREAM,
 		      6);
 
@@ -238,16 +238,16 @@ static int check() {
   }
   out = socket_create(NULL,
 		      NULL,
-		      write_sock);  
+		      write_sock);
   if (-1 == socket_set_blocking(out, NO)) {
     socket_destroy(out);
     select_destroy(sh);
     return 1;
   }
   msg = 0;
-  m = MALLOC(65536); 
+  m = MALLOC(65536);
   h = (MESSAGE_HEADER*) m;
-  select_connect(sh, 
+  select_connect(sh,
 		 out,
 		 NULL);
   start = get_time();

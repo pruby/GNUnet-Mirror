@@ -73,7 +73,7 @@ typedef struct {
 } GetInfo;
 
 
-static void * 
+static void *
 poll_thread(void * cls) {
   GetInfo * info = cls;
   MESSAGE_HEADER * reply;
@@ -82,11 +82,11 @@ poll_thread(void * cls) {
   unsigned short size;
 
   while (info->aborted == NO) {
-    if (connection_test_open(info->sock) == 0) 
+    if (connection_test_open(info->sock) == 0)
       break;
     reply = NULL;
     if (OK != connection_read(info->sock,
-			      &reply)) 
+			      &reply))
       break;
     if ( (sizeof(CS_dht_request_put_MESSAGE) > ntohs(reply->size)) ||
 	 (CS_PROTO_dht_REQUEST_PUT != ntohs(reply->type)) ) {
@@ -94,7 +94,7 @@ poll_thread(void * cls) {
       info->total = SYSERR;
       break; /*  invalid reply */
     }
-  
+
     put = (CS_dht_request_put_MESSAGE*) reply;
     /* re-use "expire" field of the reply (which is 0 anyway)
        for the header of DataContainer (which fits) to avoid
@@ -106,7 +106,7 @@ poll_thread(void * cls) {
 	 (OK != info->processor(&put->key,
 				cont,
 				info->closure)) )
-      info->aborted = YES;    
+      info->aborted = YES;
     info->total++;
     FREE(reply);
   }
@@ -227,7 +227,7 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
 #endif
   sock = client_connection_create(ectx,
 				  cfg);
-  if (sock == NULL) 
+  if (sock == NULL)
     return SYSERR;
   GE_ASSERT(NULL,
 	    ntohl(value->size) >= sizeof(DataContainer));

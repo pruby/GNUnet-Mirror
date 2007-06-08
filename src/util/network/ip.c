@@ -91,8 +91,8 @@ static int getAddressFromGetIfAddrs(struct GC_Configuration * cfg,
 
     ifa_ptr = ifa_first;
     for (ifa_ptr = ifa_first; ifa_ptr != NULL; ifa_ptr = ifa_ptr->ifa_next) {
-      if (ifa_ptr->ifa_name != NULL && 
-          ifa_ptr->ifa_addr != NULL && 
+      if (ifa_ptr->ifa_name != NULL &&
+          ifa_ptr->ifa_addr != NULL &&
           (ifa_ptr->ifa_flags & IFF_UP) != 0) {
         if (strcmp(interfaces, (char *)ifa_ptr->ifa_name) != 0)
           continue;
@@ -385,7 +385,7 @@ char * network_get_local_ip(struct GC_Configuration * cfg,
 #endif
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
   if (retval == SYSERR)
-    if (OK == getAddressFromGetIfAddrs(cfg, 
+    if (OK == getAddressFromGetIfAddrs(cfg,
                                        ectx,
 				       &address))
       retval = OK;
@@ -397,7 +397,7 @@ char * network_get_local_ip(struct GC_Configuration * cfg,
     return NULL;
   SNPRINTF(buf,
 	   64,
-	   "%u.%u.%u.%u",	   
+	   "%u.%u.%u.%u",	
   	   PRIP(ntohl(*(int*)&address)));
   if (addr != NULL)
     *addr = address;

@@ -70,7 +70,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
 		    GNUNET_DIRECTORY_MAGIC,
 		    8)) ) {
     memcpy(&mdSize,
-	   &data[8], 
+	   &data[8],
 	   sizeof(unsigned int));
     mdSize = ntohl(mdSize);
     if (mdSize > len - 8 - sizeof(unsigned int) )
@@ -104,7 +104,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     while ( (epos < len) &&
 	    (data[epos] != '\0') )
       epos++;
-    if (epos >= len) 
+    if (epos >= len)
       return SYSERR; /* malformed - or partial download */
 
     fi.uri = ECRS_stringToUri(ectx,
@@ -144,7 +144,7 @@ int ECRS_listDirectory(struct GE_Context * ectx,
     if (spcb != NULL)
       spcb(&fi,
 	   NULL,
-	   NO, 
+	   NO,
 	   spcbClosure);
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
@@ -157,15 +157,15 @@ int ECRS_listDirectory(struct GE_Context * ectx,
  * data, return the end position of that data
  * after alignment to the BLOCK_ALIGN_SIZE.
  */
-static unsigned long long 
+static unsigned long long
 do_align(unsigned long long start_position,
 	 unsigned long long end_position) {
   unsigned long long align;
-    
+
   align = (end_position / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
   if ( (start_position < align) &&
-       (end_position > align) ) 
-    return align + end_position - start_position; 
+       (end_position > align) )
+    return align + end_position - start_position;
   return end_position;
 }
 
@@ -202,16 +202,16 @@ static void block_align(unsigned long long start,
       cend = cpos + sizes[cval];
       if (cpos % BLOCK_ALIGN_SIZE == 0) {
 	/* prefer placing the largest blocks first */
-	cbad = - (cend % BLOCK_ALIGN_SIZE); 
+	cbad = - (cend % BLOCK_ALIGN_SIZE);
       } else {
 	if (cpos / BLOCK_ALIGN_SIZE == cend / BLOCK_ALIGN_SIZE) {
 	  /* Data fits into the same block! Prefer small left-overs! */
-	  cbad = BLOCK_ALIGN_SIZE - cend % BLOCK_ALIGN_SIZE; 
+	  cbad = BLOCK_ALIGN_SIZE - cend % BLOCK_ALIGN_SIZE;
 	} else {
-	  /* Would have to waste space to re-align, add big factor, this 
+	  /* Would have to waste space to re-align, add big factor, this
 	     case is a real loss (proportional to space wasted)! */
 	  cbad = BLOCK_ALIGN_SIZE * (BLOCK_ALIGN_SIZE - cpos % BLOCK_ALIGN_SIZE);
-	}	  
+	}	
       }
       if (cbad < badness) {
 	best = j;
@@ -281,7 +281,7 @@ int ECRS_createDirectory(struct GE_Context * ectx,
   for (i=0;i<count;i++) {
     perm[i] = i;
     ucs[i] = ECRS_uriToString(fis[i].uri);
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      ucs[i] != NULL);
     psize = ECRS_sizeofMetaData(fis[i].meta,
 				ECRS_SERIALIZE_FULL);
@@ -289,11 +289,11 @@ int ECRS_createDirectory(struct GE_Context * ectx,
       GE_BREAK(ectx, 0);
       FREE(sizes);
       FREE(perm);
-      while (i>=0) 
+      while (i>=0)
 	FREE(ucs[i--]);
       FREE(ucs);
       return SYSERR;
-    }      
+    }
     sizes[i] = psize + sizeof(unsigned int) + strlen(ucs[i]) + 1;
   }
   /* permutate entries to minimize alignment cost */

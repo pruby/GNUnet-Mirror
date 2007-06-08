@@ -280,7 +280,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
   "Sending ping to `%s' to prevent connection timeout.\n",
   (char*)&enc);
 #endif
-    if (OK != pingpong->ping(peer,			     
+    if (OK != pingpong->ping(peer,			
 			     &notifyPONG,
 			     hi,
 			     NO,

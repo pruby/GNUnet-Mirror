@@ -45,7 +45,7 @@ extern "C" {
  * @param timeout how long to wait until this operation should
  *        automatically time-out
  * @param resultCallback function to call for results,
- *        the operation also aborts if the callback returns 
+ *        the operation also aborts if the callback returns
  *        SYSERR
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
@@ -63,7 +63,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
  * @param key the key to store
  * @param expire when should the content expire
  * @param value what to store
- * @return OK on success, SYSERR on error 
+ * @return OK on success, SYSERR on error
  */
 int DHT_LIB_put(struct GC_Configuration * cfg,
 		struct GE_Context * ectx,

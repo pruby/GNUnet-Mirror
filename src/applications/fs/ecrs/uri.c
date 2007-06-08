@@ -89,7 +89,7 @@
  * Generate a keyword URI.
  * @return NULL on error (i.e. keywordCount == 0)
  */
-static char * 
+static char *
 createKeywordURI(char ** keywords,
 		 unsigned int keywordCount) {
   size_t n;
@@ -113,7 +113,7 @@ createKeywordURI(char ** keywords,
 /**
  * Generate a subspace URI.
  */
-static char * 
+static char *
 createSubspaceURI(const HashCode512 * namespace,
 		  const HashCode512 * identifier) {
   size_t n;
@@ -137,7 +137,7 @@ createSubspaceURI(const HashCode512 * namespace,
 /**
  * Generate a file URI.
  */
-static char * 
+static char *
 createFileURI(const FileIdentifier * fi) {
   char * ret;
   EncName keyhash;
@@ -167,7 +167,7 @@ createFileURI(const FileIdentifier * fi) {
 /**
  * Create a (string) location URI from a Location.
  */
-static char * 
+static char *
 createLocURI(const Location * loc) {
   size_t n;
   char * ret;
@@ -414,7 +414,7 @@ static int parseLocationURI(struct GE_Context * ectx,
   char * dup;
   char * addr;
 
- 
+
   GE_ASSERT(ectx, uri != NULL);
   addr = NULL;
   slen = strlen(uri);
@@ -441,7 +441,7 @@ static int parseLocationURI(struct GE_Context * ectx,
   while ( (uri[npos] != '\0') &&
 	  (uri[npos] != '.') )
     npos++;
-  if (dup[npos] == '\0') 
+  if (dup[npos] == '\0')
     goto ERR;
   dup[npos++] = '\0';
   if ( (OK != enc2hash(&dup[pos],
@@ -464,7 +464,7 @@ static int parseLocationURI(struct GE_Context * ectx,
   ret = enc2bin(&dup[npos],
 		&loc->contentSignature,
 		sizeof(Signature));
-  if (ret == -1) 
+  if (ret == -1)
     goto ERR;
   npos += ret;
   if (dup[npos++] != '.')
@@ -475,11 +475,11 @@ static int parseLocationURI(struct GE_Context * ectx,
     goto ERR;
   /* Finally: verify sigs! */
   if (OK != verifySig(&loc->fi,
-		      sizeof(FileIdentifier) + 
+		      sizeof(FileIdentifier) +
 		      sizeof(PeerIdentity) +
 		      sizeof(TIME_T),
 		      &loc->contentSignature,
-		      &loc->peer)) 
+		      &loc->peer))
     goto ERR;
   FREE(dup);
   return OK;
@@ -900,12 +900,12 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
     if (memcmp(&uri1->data.loc,
 	       &uri2->data.loc,
 	       sizeof(FileIdentifier) +
-	       sizeof(PublicKey) + 
+	       sizeof(PublicKey) +
 	       sizeof(TIME_T) +
 	       sizeof(unsigned short) +
 	       sizeof(unsigned short)) != 0)
       return NO;
-    return YES;	       
+    return YES;	
   default:
     return NO;
   }
@@ -951,7 +951,7 @@ ECRS_getContentUri(const struct ECRS_URI * uri) {
  * @param proto transport protocol to reach the peer
  * @param sas sender address size (for HELLO)
  * @param address sas bytes of address information
- * @param signer function to call for obtaining 
+ * @param signer function to call for obtaining
  *        RSA signatures for "sender".
  * @return the location URI
  */
@@ -960,7 +960,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
 		     const PublicKey * sender,
 		     TIME_T expirationTime,
 		     ECRS_SignFunction signer,
-		     void * signer_cls) { 
+		     void * signer_cls) {
   struct ECRS_URI * uri;
 
   if (baseUri->type != chk)
@@ -972,7 +972,7 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
   uri->data.loc.peer = *sender;
   uri->data.loc.expirationTime = expirationTime;
   signer(signer_cls,
-	 sizeof(FileIdentifier) + 
+	 sizeof(FileIdentifier) +
 	 sizeof(PeerIdentity) +
 	 sizeof(TIME_T),
 	 &uri->data.loc.fi,

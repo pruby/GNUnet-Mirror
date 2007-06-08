@@ -639,7 +639,7 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
  * @param result where to store the result
  * @returns SYSERR on failure, OK on success
  */
-static P2P_hello_MESSAGE * 
+static P2P_hello_MESSAGE *
 identity2Hello(const PeerIdentity *  hostId,
 	       unsigned short protocol,
 	       int tryTemporaryList) {
@@ -675,7 +675,7 @@ identity2Hello(const PeerIdentity *  hostId,
 	if (j == host->helloCount) {
 	  /* not found */
 	  MUTEX_UNLOCK(lock_);
-	  return NULL;	  
+	  return NULL;	
 	}
 	result = MALLOC(P2P_hello_MESSAGE_size(host->hellos[j]));
 	memcpy(result,
@@ -686,7 +686,7 @@ identity2Hello(const PeerIdentity *  hostId,
       }
     }
   }
-  
+
   host = findHost(hostId);
   if ( (host == NULL) ||
        (host->protocolCount == 0) ) {
@@ -980,7 +980,7 @@ static int forEachHost(cron_t now,
   int ret;
 
   ret = OK;
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    numberOfHosts_ <= sizeOfHosts_);
   count = 0;
   MUTEX_LOCK(lock_);
@@ -1103,7 +1103,7 @@ static int discardHostsHelper(const char *filename,
   int hostFile;
 
   fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
-  sprintf(fn, 
+  sprintf(fn,
 	  "%s%s%s",
 	  dirname,
 	  DIR_SEPARATOR_STR,
@@ -1173,7 +1173,7 @@ static int identityHelloHandler(struct ClientHandle * sock,
   }
   hello = MALLOC(ntohs(msg->header.size));
   memcpy(hello,
-	 msg, 
+	 msg,
 	 ntohs(msg->header.size));
   hello->header.type = htons(p2p_PROTO_hello);
   coreAPI->injectMessage(NULL,
@@ -1190,7 +1190,7 @@ static int identityRequestHelloHandler(struct ClientHandle * sock,
   /* transport types in order of preference
      for location URIs (by best guess at what
      people are most likely to actually run) */
-  static unsigned short types[] = { 
+  static unsigned short types[] = {
     TCP_PROTOCOL_NUMBER,
     UDP_PROTOCOL_NUMBER,
     HTTP_PROTOCOL_NUMBER,
@@ -1214,7 +1214,7 @@ static int identityRequestHelloHandler(struct ClientHandle * sock,
   hello = NULL;
   pos = 0;
   while ( (hello == NULL) &&
-	  (types[pos] != 0) ) 
+	  (types[pos] != 0) )
     hello = tapi->createhello(types[pos++]);
   coreAPI->releaseService(tapi);
   if (hello == NULL)
@@ -1229,7 +1229,7 @@ static int identityRequestHelloHandler(struct ClientHandle * sock,
 static int identityRequestSignatureHandler(struct ClientHandle * sock,
 					   const MESSAGE_HEADER * message) {
   CS_identity_signature_MESSAGE reply;
-  
+
   if (ntohs(message->size) <= sizeof(MESSAGE_HEADER))
     return SYSERR;
   reply.header.size = htons(sizeof(CS_identity_signature_MESSAGE));
@@ -1254,7 +1254,7 @@ static int hostInfoIterator(const PeerIdentity * identity,
   int ret;
   unsigned int bpm;
   cron_t last;
-  
+
   if (confirmed == NO)
     return OK;
   hello = identity2Hello(identity,
@@ -1291,7 +1291,7 @@ static int hostInfoIterator(const PeerIdentity * identity,
   FREE(address);
   ret = coreAPI->sendToClient(sock,
 			      &reply->header);
-  FREE(reply); 
+  FREE(reply);
   return ret;
 }
 
@@ -1395,7 +1395,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	       &cronDiscardHosts,
 	       0,
 	       CRON_DISCARD_HOSTS_INTERVAL,
-	       NULL); 
+	       NULL);
   coreAPI->registerClientHandler(CS_PROTO_identity_CONNECT,
 				   &identityRequestConnectHandler);
   coreAPI->registerClientHandler(CS_PROTO_identity_HELLO,

@@ -56,7 +56,7 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
     GE_BREAK(NULL, 0);
     FREE(msg);
     return SYSERR;
-  } 
+  }
   if (SYSERR == connection_write(sock,
 				 &msg->header)) {
     FREE(msg);
@@ -77,7 +77,7 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
 				  Signature * result) {
   MESSAGE_HEADER * req;
   CS_identity_signature_MESSAGE * reply;
-  
+
   req = MALLOC(sizeof(MESSAGE_HEADER) + size);
   req->size = htons(sizeof(MESSAGE_HEADER) + size);
   req->type = htons(CS_PROTO_identity_request_SIGN);
@@ -106,7 +106,7 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
 }
 
 /**
- * Function to request one of the peer's identities 
+ * Function to request one of the peer's identities
  * (that is, external addresses).
  * Except for the "sock" argument, all arguments are
  * set by the function.
@@ -120,8 +120,8 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
   req.size = htons(sizeof(MESSAGE_HEADER));
   req.type = htons(CS_PROTO_identity_request_HELLO);
   if (SYSERR == connection_write(sock,
-				 &req)) 
-    return SYSERR;  
+				 &req))
+    return SYSERR;
   if (OK != connection_read(sock,
 			    (MESSAGE_HEADER**)&reply)) {
     connection_close_temporarily(sock);
@@ -146,7 +146,7 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
  */
 int gnunet_identity_request_connect(struct ClientServerConnection * sock,
 				    const PeerIdentity * peer) {
-  
+
   CS_identity_connect_MESSAGE msg;
   int result;
 
@@ -154,7 +154,7 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
     = htons(CS_PROTO_identity_CONNECT);
   msg.header.size
     = htons(sizeof(CS_identity_connect_MESSAGE));
-  msg.other 
+  msg.other
     = *peer;
   if (SYSERR == connection_write(sock,
 				 &msg.header))
@@ -168,7 +168,7 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
 /**
  * Request information about all known peers
  *
- * @return SYSERR if iteration was aborted, 
+ * @return SYSERR if iteration was aborted,
  *         otherwise number of peers known
  */
 int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
@@ -216,7 +216,7 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
 	return SYSERR;
       }
     }
-    FREE(reply);    
+    FREE(reply);
   }
   return SYSERR;
 }

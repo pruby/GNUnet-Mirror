@@ -98,11 +98,11 @@ void os_list_network_interfaces(struct GE_Context *ectx,
  * @brief Set maximum number of open file descriptors
  * @return OK on success, SYSERR on error
  */
-int os_set_fd_limit(struct GE_Context * ectx, 
+int os_set_fd_limit(struct GE_Context * ectx,
                     int n) {
   if (n == 0)
     return OK;
-#if HAVE_SETRLIMIT 
+#if HAVE_SETRLIMIT
   struct rlimit rlim;
   int ret;
 

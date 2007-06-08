@@ -40,7 +40,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
 			    const char * cfgFile,
 			    int daemonize) {
   pid_t pid;
-  
+
 #ifndef MINGW
   pid = fork();
   if (pid == 0)

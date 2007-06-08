@@ -149,7 +149,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
     GC_free(cfg);
     return SYSERR;
   }
-  CLOSE(ret);  
+  CLOSE(ret);
   if (0 != GC_write_configuration(cfg,
 				  dpath)) {
     fprintf(stderr,
@@ -158,7 +158,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
     FREE(dpath);
     GC_free(cfg);
     return SYSERR;
-  }  
+  }
   GC_free(cfg);
 
   cfg = GC_create_C_impl();
@@ -181,8 +181,8 @@ int gnunet_testing_start_daemon(unsigned short app_port,
     fprintf(stderr,
 	    "Failed to start daemon!\n");
     GC_free(cfg);
-    return SYSERR; 
-  } 
+    return SYSERR;
+  }
   *pid = ret;
 
   /* now get peer ID */
@@ -231,7 +231,7 @@ int gnunet_testing_start_daemon(unsigned short app_port,
 /**
  * Establish a connection between two GNUnet daemons
  * (both must run on this machine).
- * 
+ *
  * @param port1 client port of the first daemon
  * @param port2 client port of the second daemon
  * @return OK on success, SYSERR on failure
@@ -271,13 +271,13 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 					  300 * cronSECONDS) ) &&
        (OK == connection_wait_for_running(NULL,
 					  cfg2,
-					  300 * cronSECONDS) ) ) {    
+					  300 * cronSECONDS) ) ) {
     sock1 = client_connection_create(NULL,
 				     cfg1);
     sock2 = client_connection_create(NULL,
 				     cfg2);
     ret = - 10;
-    fprintf(stderr, 
+    fprintf(stderr,
 	    _("Waiting for peers to connect"));
     while ( (ret++ < -1) &&
 	    (GNUNET_SHUTDOWN_TEST() == NO) ) {
@@ -309,7 +309,7 @@ int gnunet_testing_connect_daemons(unsigned short port1,
     }
     fprintf(stderr, "%s\n", ret == OK ? "!" : "?");
     connection_destroy(sock1);
-    connection_destroy(sock2);    
+    connection_destroy(sock2);
   } else {
     fprintf(stderr,
 	    "Failed to establish connection with peers.\n");
@@ -341,7 +341,7 @@ int gnunet_testing_stop_daemon(unsigned short port,
  *
  * @return handle used to stop the daemons, NULL on error
  */
-struct DaemonContext * 
+struct DaemonContext *
 gnunet_testing_start_daemons(const char * transports,
 			     const char * applications,
 			     const char * gnunetd_home_prefix,
@@ -403,11 +403,11 @@ int gnunet_testing_stop_daemons(struct DaemonContext * peers) {
     UNLINK(peers->configFile);
     FREE(peers->configFile);
     FREE(peers);
-    peers = next;   
+    peers = next;
   }
   return ret;
 }
-			     
+			
 
 
 

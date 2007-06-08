@@ -429,7 +429,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     iblocks[i] = NULL;
   }
 #if DEBUG_UPLOAD
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&mchk.query,
 		    &enc));

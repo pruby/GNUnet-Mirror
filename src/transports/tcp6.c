@@ -36,7 +36,7 @@
 /**
  * after how much time of the core not being associated with a tcp6
  * connection anymore do we close it?
- * 
+ *
  * Needs to be larger than SECONDS_INACTIVE_DROP in
  * core's connection.s
  */
@@ -450,10 +450,10 @@ static int reloadConfiguration(void * ctx,
 /**
  * Convert TCP6 address to a string.
  */
-static char * 
+static char *
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
-  
+
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
   const Host6Address * haddr = (const Host6Address*) &hello[1];
@@ -491,7 +491,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 			AF_INET6);
     if (ent != NULL)
       hn = ent->h_name;
-  }    
+  }
 #endif
 #endif
   n = INET6_ADDRSTRLEN + 16 + strlen(hn) + 10;

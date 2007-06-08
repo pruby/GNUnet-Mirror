@@ -294,7 +294,7 @@ int main(int argc, char ** argv) {
   SNPRINTF(buf,
 	   128,
 	   "localhost:%u",
-	   2077 + PEER_COUNT * 10); 
+	   2077 + PEER_COUNT * 10);
   GC_set_configuration_value_string(cfg,
 				    ectx,
 				    "NETWORK",

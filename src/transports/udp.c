@@ -233,7 +233,7 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
 			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
 #if DEBUG_UDP
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
 	 "Verified UDP HELLO from %u.%u.%u.%u:%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
@@ -273,7 +273,7 @@ static P2P_hello_MESSAGE * createhello() {
     GE_LOG(ectx,
 	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
 	   _("UDP: Could not determine my public IP address.\n"));
-    return NULL;  
+    return NULL;
   }
 #if DEBUG_UDP
   GE_LOG(ectx,
@@ -462,7 +462,7 @@ static int reloadConfiguration() {
 /**
  * Convert UDP address to a string.
  */
-static char * 
+static char *
 addressToString(const P2P_hello_MESSAGE * hello,
 		int do_resolve) {
   char * ret;
@@ -481,7 +481,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
     serverAddr.sin_family   = AF_INET;
     memcpy(&serverAddr.sin_addr,
 	   haddr,
-	   sizeof(IPaddr));  
+	   sizeof(IPaddr));
     serverAddr.sin_port = haddr->senderPort;
     if (0 == getnameinfo((const struct sockaddr* ) &serverAddr,
 			 sizeof(struct sockaddr_in),
@@ -500,7 +500,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 			AF_INET);
     if (ent != NULL)
       hn = ent->h_name;
-  }    
+  }
 #endif
 #endif
   n = 4*4+6+6 + strlen(hn) + 10;
@@ -532,10 +532,10 @@ addressToString(const P2P_hello_MESSAGE * hello,
  * The exported method. Makes the core api available via a global and
  * returns the udp transport API.
  */
-TransportAPI * 
+TransportAPI *
 inittransport_udp(CoreAPIForTransport * core) {
   unsigned long long mtu;
-  
+
   ectx = core->ectx;
   cfg = core->cfg;
   load_monitor = core->load_monitor;
@@ -545,8 +545,8 @@ inittransport_udp(CoreAPIForTransport * core) {
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP",
 					      "MTU",
-					      sizeof(UDPMessage) 
-					      + P2P_MESSAGE_OVERHEAD 
+					      sizeof(UDPMessage)
+					      + P2P_MESSAGE_OVERHEAD
 					      + sizeof(MESSAGE_HEADER) + 32,
 					      65500,
 					      MESSAGE_SIZE,
@@ -564,7 +564,7 @@ inittransport_udp(CoreAPIForTransport * core) {
 				       "UPNP",
 				       YES) == YES) {
     upnp = coreAPI->requestService("upnp");
-    
+
     if (upnp == NULL)
 			GE_LOG(ectx,
 	   		GE_ERROR | GE_USER | GE_IMMEDIATE,

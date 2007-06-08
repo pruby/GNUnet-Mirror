@@ -87,7 +87,7 @@ static void do_get(struct ClientServerConnection * sock,
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s)' command.\n",
-	 "get", 
+	 "get",
 	 key);
 #endif
   if (timeout == 0)
@@ -142,7 +142,7 @@ static void do_put(struct ClientServerConnection * sock,
   } else {
     printf(_("'%s(%s,%s)' failed.\n"),
 	   "put",
-	   key, 
+	   key,
 	   value);
   }	
   FREE(dc);

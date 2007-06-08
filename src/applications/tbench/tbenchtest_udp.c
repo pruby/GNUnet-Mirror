@@ -148,7 +148,7 @@ int main(int argc, char ** argv) {
   }
   sock = client_connection_create(NULL,
                                  cfg);
-  
+
   printf(_("Running benchmark...\n"));
   /* 'slow' pass: wait for bandwidth negotiation! */
   if (ret == 0)
@@ -161,7 +161,7 @@ int main(int argc, char ** argv) {
   ret = test(sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
   connection_destroy(sock);
 #if START_PEERS
-  gnunet_testing_stop_daemons(peers); 
+  gnunet_testing_stop_daemons(peers);
 #endif
   if (ok == 0)
     ret = 1;

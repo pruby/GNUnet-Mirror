@@ -619,7 +619,7 @@ static void * selectThread(void * ctx) {
 		      FIONREAD,
 		      &pending);
 #endif
-	if ( (error != 0) || 
+	if ( (error != 0) ||
 	     (optlen != sizeof(pending)) ) {
 	  GE_LOG_STRERROR(sh->ectx,
 			  GE_ERROR | GE_ADMIN | GE_BULK,
@@ -633,9 +633,9 @@ static void * selectThread(void * ctx) {
 	       sh,
 	       pending);
 #endif
-	GE_ASSERT(sh->ectx, 
+	GE_ASSERT(sh->ectx,
 		  pending >= 0);
-	if (pending >= 65536) 
+	if (pending >= 65536)
 	  pending = 65536;	
 	if (pending == 0) {
 	  /* maybe empty UDP packet was sent (see report on bug-gnunet,
@@ -807,7 +807,7 @@ static int makeNonblocking(struct GE_Context * ectx,
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-SelectHandle * 
+SelectHandle *
 select_create(const char * description,
 	      int is_udp,
 	      struct GE_Context * ectx,
@@ -825,7 +825,7 @@ select_create(const char * description,
   SelectHandle * sh;
 
   if ( (is_udp == NO) &&
-       (sock != -1) && 
+       (sock != -1) &&
        (0 != LISTEN(sock, 5)) ) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_IMMEDIATE,
@@ -1007,7 +1007,7 @@ int select_write(struct SelectHandle * sh,
 	   (newBufferSize > sh->memory_quota) &&
 	   (force == NO) )
 	newBufferSize = sh->memory_quota;
-      GE_ASSERT(NULL, 
+      GE_ASSERT(NULL,
 		newBufferSize >= len + session->wapos - session->wspos);
       newBuffer = MALLOC(newBufferSize);
       memcpy(newBuffer,
@@ -1024,7 +1024,7 @@ int select_write(struct SelectHandle * sh,
 	    session->wapos + len <= session->wsize);
   memcpy(&session->wbuff[session->wapos],
 	 msg,
-	 len);  
+	 len);
   session->wapos += len;
   MUTEX_UNLOCK(sh->lock);
   if (fresh_write)

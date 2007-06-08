@@ -50,7 +50,7 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
     if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     ips = network_get_local_ip(cfg,
-			       ectx,			       
+			       ectx,			
 			       &myAddress);
     if (ips == NULL) {
       GE_LOG(ectx,

@@ -202,7 +202,7 @@ typedef struct {
   int (*testWouldTry)(TSession * tsession,
 		      unsigned int size,
 		      int important);
-  
+
 
 } Transport_ServiceAPI;
 

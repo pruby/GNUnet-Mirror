@@ -93,11 +93,11 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			NULL,
 			&testTerminate,
 			NULL,
-			&uri);  
+			&uri);
   FREE(name);
-  if (ret != SYSERR) 
+  if (ret != SYSERR)
     return uri;
-  return NULL;  
+  return NULL;
 }
 
 static int downloadFile(unsigned int size,
@@ -167,7 +167,7 @@ static int infoCallback(void * data,
   int i;
   int good;
   EncName enc;
-  
+
   good = 0;
   for (i=0;i<goodPeerPos;i++)
     if (0 == memcmp(&goodPeers[i],
@@ -176,8 +176,8 @@ static int infoCallback(void * data,
       good = 1;
   hash2enc(&identity->hashPubKey,
 	   &enc);
-  if (good) 
-    printf("Good peer `%8s' has trust %u and bandwidth %u\n", 
+  if (good)
+    printf("Good peer `%8s' has trust %u and bandwidth %u\n",
 	   (const char*) &enc,
 	   trust,
 	   bpmFromPeer);
@@ -203,7 +203,7 @@ int main(int argc, char ** argv) {
   struct ClientServerConnection * sock;
   cron_t start;
   EncName enc;
- 
+
   ret = 0;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -243,7 +243,7 @@ int main(int argc, char ** argv) {
     SNPRINTF(buf,
 	     128,
 	     "localhost:%u",
-	     2087 + i * 10);   
+	     2087 + i * 10);
     GC_set_configuration_value_string(cfg,
 				      ectx,
 				      "NETWORK",
@@ -262,7 +262,7 @@ int main(int argc, char ** argv) {
       ECRS_freeUri(uri);
     hash2enc(&hello->senderIdentity.hashPubKey,
 	     &enc);
-    printf("Uploading to peer `%8s'\n", 
+    printf("Uploading to peer `%8s'\n",
 	   (const char*)&enc);
     uri = uploadFile(SIZE);
     CHECK(NULL != uri);

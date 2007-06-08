@@ -154,7 +154,7 @@ void processResponse(const HashCode512 * key,
   EncName enc;
 #endif
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    ntohl(value->size) > sizeof(Datastore_Value));
   if ( (ntohll(value->expirationTime) < get_time()) &&
        (ntohl(value->type) != D_BLOCK) )

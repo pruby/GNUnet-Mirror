@@ -140,7 +140,7 @@ SCM get_option(SCM smob,
     return scm_from_uint64(t->value.UInt64.val);
   case GNS_Double:
     return scm_from_double(t->value.Double.val);
-  case GNS_String:  
+  case GNS_String:
   case GNS_MC:
   case GNS_SC:
     return scm_from_locale_string(t->value.String.val);
@@ -175,7 +175,7 @@ SCM change_visible(SCM smob,
   if ( (opt == NULL) ||
        (sec == NULL) ) {
     GE_BREAK(NULL, 0);
-    return SCM_EOL;  
+    return SCM_EOL;
   }
   t = tree_lookup(tc->root,
 		  sec,
@@ -269,7 +269,7 @@ SCM build_tree_node(SCM section,
     SCM_ASSERT(scm_list_p(range), range, SCM_ARGn, "build_tree_node");
     len = scm_to_int(scm_length(range));
     for (i=0;i<len;i++)
-      SCM_ASSERT(scm_string_p(scm_list_ref(range, 
+      SCM_ASSERT(scm_string_p(scm_list_ref(range,
 					   scm_from_signed_integer(i))),
 		 range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_integer(value)) {
@@ -446,7 +446,7 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   putenv(env);
   free(env);
 #endif
-  
+
   scm_init_guile();
 
   tc_tag = scm_make_smob_type ("tc", 0);

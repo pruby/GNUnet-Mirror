@@ -59,7 +59,7 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
 				  Signature * result);
 
 /**
- * Function to request one of the peer's identities 
+ * Function to request one of the peer's identities
  * (that is, external addresses).
  *
  * @return SYSERR on error, OK on success
@@ -87,7 +87,7 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
  *        be anything!)
  * @param last_message if currently connected, when did we
  *        hear last from this peer (estimate)
- * @param bpmFromPeer 0 if peer is not connected, otherwise 
+ * @param bpmFromPeer 0 if peer is not connected, otherwise
  *        number of bytes per minute that we currently allow
  *        this peer to sent to us
  * @param identity the id of the node
@@ -103,7 +103,7 @@ typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
 /**
  * Request information about all known peers
  *
- * @return SYSERR if iteration was aborted, 
+ * @return SYSERR if iteration was aborted,
  *         otherwise number of peers known
  */
 int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,

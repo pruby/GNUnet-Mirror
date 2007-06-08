@@ -112,8 +112,8 @@ static int configure_logging(struct GE_Context ** ectx,
   FREE(user_log_level);
   if (all != 0) {
     nctx = GE_create_context_logfile(NULL,
-				     all 
-				     | GE_ADMIN 
+				     all
+				     | GE_ADMIN
 				     | GE_BULK
 				     | GE_IMMEDIATE,
 				     admin_log_file,
@@ -189,13 +189,13 @@ int GNUNET_init(int argc,
 			   argv);
   if (i == -1)
     return -1;
-  if ( (YES != disk_file_test(*ectx, 
+  if ( (YES != disk_file_test(*ectx,
 			      *cfgFileName)) &&
        (! is_daemon) ) {
     char * run;
     char * bindir;
     size_t max;
-    
+
     bindir = os_get_installation_path(IPK_BINDIR);
     max = 128 + strlen(*cfgFileName) + strlen(bindir);
     run = MALLOC(max);
@@ -206,14 +206,14 @@ int GNUNET_init(int argc,
 	     *cfgFileName);
     FREE(bindir);
     ret = system(run);
-    if (0 != ret) 
+    if (0 != ret)
       GE_LOG(*ectx,
 	     GE_ERROR | GE_USER | GE_IMMEDIATE,
 	     _("Failed to run %s: %s %d\n"),
 	     run,
 	     strerror(errno),
 	     WEXITSTATUS(ret));
-    FREE(run);  
+    FREE(run);
   }
   if (0 != GC_parse_configuration(*cfg,
 				  *cfgFileName))
