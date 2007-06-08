@@ -431,10 +431,10 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   int slot;
   PeerIdentity have;
 
-  getPeerIdentity(&msg->publicKey,
+  getPeerIdentity(&tmp->publicKey,
 		  &have);
   if (0 != memcmp(&have,
-		  &msg->senderIdentity,
+		  &tmp->senderIdentity,
 		  sizeof(PeerIdentity))) {
     GE_BREAK(NULL, 0);
     return;
@@ -637,9 +637,10 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
  * @param result where to store the result
  * @returns SYSERR on failure, OK on success
  */
-static P2P_hello_MESSAGE * identity2Hello(const PeerIdentity *  hostId,
-					 unsigned short protocol,
-					 int tryTemporaryList) {
+static P2P_hello_MESSAGE * 
+identity2Hello(const PeerIdentity *  hostId,
+	       unsigned short protocol,
+	       int tryTemporaryList) {
   P2P_hello_MESSAGE * result;
   HostEntry * host;
   char * fn;
