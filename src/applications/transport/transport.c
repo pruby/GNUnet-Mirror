@@ -331,9 +331,8 @@ static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
   unsigned short prot;
 
   prot = ntohs(hello->protocol);
-  if ( (prot == NAT_PROTOCOL_NUMBER) &&
-       ( (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-	 (ntohs(hello->header.type) != p2p_PROTO_hello) ) )
+  if ( (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
+       (ntohs(hello->header.type) != p2p_PROTO_hello) )
     return SYSERR; /* invalid */
   if ( (ntohs(hello->protocol) >= tapis_count) ||
        (tapis[prot] == NULL) )

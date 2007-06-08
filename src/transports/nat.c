@@ -62,22 +62,21 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
        (ntohs(hello->header.type) != p2p_PROTO_hello) ) {
     return SYSERR; /* obviously invalid */
-  } else {
-    if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
-						"NAT",
-						"LIMITED",
-						NO)) {
-      /* if WE are a NAT and this is not our hello,
-	 it is invalid since NAT-to-NAT is not possible! */
-      if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
-		      &hello->senderIdentity.hashPubKey,
-		      sizeof(HashCode512)))
-	return OK;
-      else
-	return SYSERR;
-    }
-    return OK;
   }
+  if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
+					      "NAT",
+					      "LIMITED",
+					      NO)) {
+    /* if WE are a NAT and this is not our hello,
+       it is invalid since NAT-to-NAT is not possible! */
+    if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
+		    &hello->senderIdentity.hashPubKey,
+		    sizeof(HashCode512)))
+      return OK;
+    else
+      return SYSERR;
+  }
+  return OK;  
 }
 
 /**
