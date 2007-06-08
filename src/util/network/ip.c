@@ -362,11 +362,11 @@ char * network_get_local_ip(struct GC_Configuration * cfg,
   retval = SYSERR;
   if (GC_have_configuration_value(cfg,
 				  "NETWORK",
-				  "IP-LOCAL")) {	
+				  "IP")) {	
     ipString = NULL;
     GC_get_configuration_value_string(cfg,
 				      "NETWORK",
-				      "IP-LOCAL",
+				      "IP",
 				      "",
 				      &ipString);
     if (strlen(ipString) > 0) {

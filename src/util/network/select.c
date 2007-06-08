@@ -679,6 +679,13 @@ static void * selectThread(void * ctx) {
 			    clientAddr,
 			    lenOfIncomingAddr);
 	      if (sctx != NULL) {
+#if DEBUG_SELECT
+		GE_LOG(sh->ectx,
+		       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+		       "Select %p is passing %u bytes from UDP to handler\n",
+		       sh,
+		       size);
+#endif
 		sh->mh(sh->mh_cls,
 		       sh,
 		       NULL,

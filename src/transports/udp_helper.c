@@ -123,12 +123,6 @@ static void * select_accept_handler(void * ah_cls,
   if (NO != blt(addr,
 		addr_len))
     return NULL;
-#if DEBUG_UDP
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
-	 "Accepting UDP message from %u.%u.%u.%u\n",
-	 PRIP(ntohl(*(int*)addr)));
-#endif
   return &nonnullpointer;
 }
 
