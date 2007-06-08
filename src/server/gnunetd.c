@@ -278,6 +278,7 @@ int main(int argc,
 				      | ull
 				      | GE_BULK | GE_IMMEDIATE);
     GE_setDefaultContext(ectx);
+    FREE(user_log_level);
   }
   setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,

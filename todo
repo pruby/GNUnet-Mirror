@@ -8,6 +8,7 @@ Annotations:
 - new features:
   * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
 - RC bugs:
+  * huge number % allowed network load down in stats
   * UDP assertion failure (mtu < size) [#1209]
   * low connectivity (NAT? real issue?)
     - session keys sent to wrong peers?
