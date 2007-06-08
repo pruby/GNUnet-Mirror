@@ -77,7 +77,7 @@ downloadHostlistHelper(void * ptr,
   BootstrapContext * bctx = ctx;
   size_t osize;
   unsigned int total;
-  P2P_hello_MESSAGE * helo;
+  const P2P_hello_MESSAGE * hello;
   unsigned int hs;
 
   bctx->total += size * nmemb;
@@ -91,25 +91,25 @@ downloadHostlistHelper(void * ptr,
   memcpy(&bctx->buf[osize],
 	 ptr,
 	 size * nmemb);
-  while ( (bctx->bsize > sizeof(P2P_hello_MESSAGE)) &&
+  while ( (bctx->bsize >= sizeof(P2P_hello_MESSAGE)) &&
 	  (bctx->termTest(bctx->targ)) ) {
-    helo = (P2P_hello_MESSAGE*) &bctx->buf[0];
-    if (bctx->bsize < P2P_hello_MESSAGE_size(helo))
-      break;
-    if ( (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-	 (P2P_hello_MESSAGE_size(helo) >= MAX_BUFFER_SIZE) ) {
+    hello = (const P2P_hello_MESSAGE*) &bctx->buf[0];
+    hs = ntohs(hello->header.size);
+    if (bctx->bsize < hs)
+      break; /* incomplete */
+    if ( (ntohs(hello->header.type) != p2p_PROTO_hello) ||
+	 (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello) ) ||
+	 (P2P_hello_MESSAGE_size(hello) >= MAX_BUFFER_SIZE) ) {
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_IMMEDIATE,
 	     _("Bootstrap data obtained from `%s' is invalid.\n"),
 	     bctx->url);
       return 0; /* Error: invalid format! */
     }
-    hs = P2P_hello_MESSAGE_size(helo);
-    helo->header.size = htons(hs);
     if (stats != NULL)
       stats->change(stat_hellodownloaded,
 		    1);
-    bctx->callback(helo,
+    bctx->callback(hello,
 		   bctx->arg);
     memmove(&bctx->buf[0],
 	    &bctx->buf[hs],
