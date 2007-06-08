@@ -1260,8 +1260,10 @@ static int hostInfoIterator(const PeerIdentity * identity,
   hello = identity2Hello(identity,
 			 protocol,
 			 YES);
-  if (hello == NULL)
+  if (hello == NULL) {
+    GE_BREAK(NULL, 0); /* odd */
     return OK;
+  }
   transport = coreAPI->requestService("transport");
   address = transport->helloToString(hello,
 				     YES);
@@ -1270,7 +1272,7 @@ static int hostInfoIterator(const PeerIdentity * identity,
     address = STRDUP("");
   if (strlen(address)+1 >= MAX_BUFFER_SIZE - sizeof(CS_identity_peer_info_MESSAGE) ) {
     FREE(address);
-    address = STRDUP("invalid");
+    address = STRDUP(_("invalid"));
   }
   if (OK != coreAPI->queryPeerStatus(identity,
 				     &bpm,

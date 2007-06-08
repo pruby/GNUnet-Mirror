@@ -505,6 +505,14 @@ static void handleMessage(TSession * tsession,
 	   (char*)&enc);
     return;
   }
+  if ( (tsession != NULL) &&
+       (sender != NULL) &&
+       (0 != memcmp(sender,
+		    &tsession->peer,
+		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(NULL, 0);
+    return;
+  }
   ret = checkHeader(sender,
 		    (P2P_PACKET_HEADER*) msg,
 		    size);
@@ -576,6 +584,16 @@ void core_receive(P2P_PACKET * mp) {
     FREE(mp);
     return;
   }
+  if ( (mp->tsession != NULL) &&
+       (0 != memcmp(&mp->sender,
+		    &mp->tsession->peer,
+		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(NULL, 0);
+    FREE(mp->msg);
+    FREE(mp);
+    return;
+  }
+
   /* acquire buffer */
   if (SYSERR == transport->associate(mp->tsession))
     mp->tsession = NULL;

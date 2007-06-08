@@ -536,8 +536,15 @@ static int exchangeKey(const PeerIdentity * receiver,
 			   ntohs(skey->header.size));
   }
   FREE(skey);
-  coreAPI->offerTSessionFor(receiver,
-			    tsession);
+  if (0 != memcmp(receiver,
+		  &tsession->peer,
+		  sizeof(PeerIdentity))) {
+    GE_BREAK(NULL, 0);
+    transport->disconnect(tsession);
+  } else {
+    coreAPI->offerTSessionFor(receiver,
+			      tsession);
+  }
   coreAPI->assignSessionKey(&sk,
 			    receiver,
 			    age,

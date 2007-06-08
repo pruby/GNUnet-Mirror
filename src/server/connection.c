@@ -1387,7 +1387,7 @@ static void freeSelectedEntries(BufferEntry * be) {
   for (i = 0; i < be->sendBufferSize; i++) {
     entry = be->sendBuffer[i];
     GE_ASSERT(ectx, entry != NULL);
-    if(entry->knapsackSolution == YES) {
+    if (entry->knapsackSolution == YES) {
       GE_ASSERT(ectx, entry->callback == NULL);
       FREENONNULL(entry->closure);
       FREE(entry);
@@ -1742,7 +1742,7 @@ static int sendBuffer(BufferEntry * be) {
       j = sizeof(P2P_PACKET_HEADER);
       while (j < p) {
         MESSAGE_HEADER * part = (MESSAGE_HEADER *) &plaintextMsg[j];
-        unsigned short plen = htons(MAKE_UNALIGNED(part->size));
+        unsigned short plen = ntohs(MAKE_UNALIGNED(part->size));
         if (plen < sizeof(MESSAGE_HEADER)) {
           GE_BREAK(ectx, 0);
           break;
@@ -1910,8 +1910,9 @@ static BufferEntry *lookForHost(const PeerIdentity * hostId) {
  * @param hostId for which peer should we get/create a connection
  * @return the table entry for the host
  */
-static BufferEntry *addHost(const PeerIdentity * hostId,
-			    int establishSession) {
+static BufferEntry *
+addHost(const PeerIdentity * hostId,
+	int establishSession) {
   BufferEntry *root;
   BufferEntry *prev;
   unsigned int index;
@@ -1973,13 +1974,13 @@ static int forAllConnectedHosts(BufferEntryCallback method,
 				void *arg) {
   unsigned int i;
   int count = 0;
-  BufferEntry *be;
+  BufferEntry * be;
 
   for(i=0;i<CONNECTION_MAX_HOSTS_;i++) {
     be = CONNECTION_buffer_[i];
     while (be != NULL) {
-      if(be->status == STAT_UP) {
-        if(method != NULL)
+      if (be->status == STAT_UP) {
+        if (method != NULL)
           method(be, arg);
         count++;
       }
