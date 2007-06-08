@@ -622,7 +622,7 @@ static void * selectThread(void * ctx) {
 #if DEBUG_SELECT
 	GE_LOG(sh->ectx,
 	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	       "Select %p is preparing to receive %u bytes\n",
+	       "Select %p is preparing to receive %u bytes from UDP\n",
 	       sh,
 	       pending);
 #endif
