@@ -1,3 +1,8 @@
+Fri Jun  8 23:44:01 MDT 2007
+	Fixed bugs preventing namespace search from
+	working.  Also extended testcase to cover
+	namespace search.
+
 Tue May 29 23:15:27 MDT 2007
 	Fixed a major bug which resulted in peers without
 	traffic between them disconnecting (even if that

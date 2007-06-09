@@ -11,8 +11,8 @@ Annotations:
   * huge number % allowed network load down in stats
   * UDP assertion failure (mtu < size) [#1209]
   * low connectivity (NAT? real issue?)
-    - session keys sent to wrong peers?
-    - likely related: gnunet.org's Decrypting message failed errors!?
+    - session keys sent to wrong peers? => assertions added
+      - related: gnunet.org's Decrypting message failed errors!?
     - gnunet-transport-check -t udp -p fails consistently even in ideal network!?
 
 0.7.3 [7'07] (aka "features"):
