@@ -3,16 +3,13 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-
 0.7.2 [5'07]:
 - new features:
   * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
 - RC bugs:
   * UDP assertion failure (mtu < size) [#1209]
-  * low connectivity (NAT? real issue?)
-    - session keys sent to wrong peers? => assertions added
-      - related: gnunet.org's Decrypting message failed errors!?
-    - gnunet-transport-check -t udp -p fails consistently even in ideal network!?
+  * low connectivity (still an issue?)
+  * session keys sent to wrong peers? => assertions added
 
 0.7.3 [7'07] (aka "features"):
 - chat support basics [RC]
