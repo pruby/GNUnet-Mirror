@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -433,8 +433,10 @@ broadcastHelper(const PeerIdentity * hi,
 
   if (confirmed == NO)
     return OK;
-  if (proto == NAT_PROTOCOL_NUMBER)
+  if (proto == NAT_PROTOCOL_NUMBER) {
+    sd->n--;
     return OK; /* don't advertise NAT addresses via broadcast */
+  }
   if (weak_randomi(sd->n) != 0)
     return OK;
 #if DEBUG_ADVERTISING
@@ -520,7 +522,7 @@ broadcastHelper(const PeerIdentity * hi,
  */
 static void
 broadcasthelloTransport(TransportAPI * tapi,
-		       const int * prob) {
+			const int * prob) {
   SendData sd;
   cron_t now;
 
@@ -545,15 +547,16 @@ broadcasthelloTransport(TransportAPI * tapi,
   identity->addHost(sd.m);
   if (sd.n < 1) {
     if (identity->forEachHost(0, NULL, NULL) == 0)
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Announcing ourselves pointless: "
-	    "no other peers are known to us so far.\n"));
+      GE_LOG(ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Announcing ourselves pointless: "
+	       "no other peers are known to us so far.\n"));
     FREE(sd.m);
     return; /* no point in trying... */
   }
   identity->forEachHost(now,
-		       (HostIterator)&broadcastHelper,
-		       &sd);
+			&broadcastHelper,
+			&sd);
   FREE(sd.m);
 }
 
@@ -577,7 +580,6 @@ static void broadcasthello(void * unused) {
 }
 
 typedef struct {
-  unsigned int delay;
   P2P_hello_MESSAGE * msg;
   int prob;
 } FCC;
@@ -599,7 +601,7 @@ static void forwardCallback(const PeerIdentity * peer,
   coreAPI->unicast(peer,
 		   &fcc->msg->header,
 		   0, /* priority */
-		   fcc->delay);
+		   HELLO_BROADCAST_FREQUENCY);
 }
 
 /**
@@ -607,9 +609,9 @@ static void forwardCallback(const PeerIdentity * peer,
  */
 static int
 forwardhelloHelper(const PeerIdentity * peer,
-		  unsigned short protocol,
-		  int confirmed,
-		  void * data) {
+		   unsigned short protocol,
+		   int confirmed,
+		   void * data) {
   int * probability = data;
   P2P_hello_MESSAGE * hello;
   TIME_T now;
@@ -628,10 +630,6 @@ forwardhelloHelper(const PeerIdentity * peer,
 				   NO);
   if (NULL == hello)
     return OK; /* this should not happen */
-  hello->header.type
-    = htons(p2p_PROTO_hello);
-  hello->header.size
-    = htons(P2P_hello_MESSAGE_size(hello));
   /* do not forward expired hellos */
   TIME(&now);
   if ((TIME_T)ntohl(hello->expirationTime) < now) {
@@ -642,7 +640,8 @@ forwardhelloHelper(const PeerIdentity * peer,
 	     GE_INFO | GE_REQUEST | GE_USER,
 	     hash2enc(&peer->hashPubKey,
 		      &enc));
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
+    GE_LOG(ectx, 
+	   GE_INFO | GE_REQUEST | GE_USER,
 	   "Removing HELLO from peer `%s' (expired %ds ago).\n",
 	   &enc,
 	   now - ntohl(hello->expirationTime));
@@ -660,7 +659,6 @@ forwardhelloHelper(const PeerIdentity * peer,
   count = coreAPI->forAllConnectedNodes(NULL,
 					NULL);
   if (count > 0) {
-    fcc.delay = (*probability) * HELLO_BROADCAST_FREQUENCY;  /* send before the next round */
     fcc.msg  = hello;
     fcc.prob = count;
     coreAPI->forAllConnectedNodes(&forwardCallback,
