@@ -555,7 +555,8 @@ static void * cron_main_method(void * ctx) {
     now = get_time();
     next = now + 0xFFFFFFFF;
     MUTEX_LOCK(cron->deltaListLock_);
-    while (cron->firstUsed_ != -1) {
+    while ( (cron->cron_shutdown == NO) &&
+	    (cron->firstUsed_ != -1) ) {
       now = get_time();
       next = cron->deltaList_[cron->firstUsed_].delta;
       if (next <= now) {
