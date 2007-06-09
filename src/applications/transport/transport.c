@@ -683,7 +683,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
        tapis_count,
        UDP_PROTOCOL_NUMBER+1);
 
-  tapis_lock = MUTEX_CREATE(YES);
+  tapis_lock = coreAPI->getConnectionModuleLock();
 
   /* now load transports */
   dso = NULL;
@@ -802,7 +802,7 @@ int release_module_transport() {
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL)
       unloadTransport(i);
-  MUTEX_DESTROY(tapis_lock);
+  tapis_lock = NULL;
   tapis_lock = NULL;
   GROW(tapis,
        tapis_count,
