@@ -538,7 +538,7 @@ void xorHashCodes(const HashCode512 * a,
 		  HashCode512 * result) {
   int i;
   for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
-    result->bits[i] = a->bits[i] ^ a->bits[i];
+    result->bits[i] = a->bits[i] ^ b->bits[i];
 }
 
 /**
