@@ -205,7 +205,9 @@ transportConnectFreely(const PeerIdentity * peer,
   int * perm;
   TSession * ret;
   unsigned int hc;
+#if DEBUG_TRANSPORT
   EncName enc;
+#endif
 
   hc = 0;
   ret = NULL;
