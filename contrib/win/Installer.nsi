@@ -186,6 +186,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
       File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
+      Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_nat.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
