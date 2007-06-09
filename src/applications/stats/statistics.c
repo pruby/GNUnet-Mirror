@@ -232,21 +232,35 @@ static void initializeStats() {
 }
 
 static void immediateUpdates() {
+  int load;
+
 #if HAVE_SQSTATS
   update_sqstore_stats();
 #endif
+  load = os_cpu_get_load(coreAPI->ectx,
+			 coreAPI->cfg);
+  if (load == -1)
+    load = 0;
   statSet(stat_handle_cpu_load,
-	  os_cpu_get_load(coreAPI->ectx,
-			  coreAPI->cfg));
+	  load);
+  load = os_disk_get_load(coreAPI->ectx,
+			  coreAPI->cfg);
+  if (load == -1)
+    load = 0;
   statSet(stat_handle_io_load,
-	  os_disk_get_load(coreAPI->ectx,
-			   coreAPI->cfg));
+	  load);
+  load = os_network_monitor_get_load(coreAPI->load_monitor,
+				     Upload);
+  if (load == -1)
+    load = 0;
   statSet(stat_handle_network_load_up,
-	  os_network_monitor_get_load(coreAPI->load_monitor,
-				      Upload));
+	  load);
+  load = os_network_monitor_get_load(coreAPI->load_monitor,
+				     Download);
+  if (load == -1)
+    load = 0;
   statSet(stat_handle_network_load_down,
-	  os_network_monitor_get_load(coreAPI->load_monitor,
-				      Download));
+	  load);
   statSet(stat_connected,
 	  coreAPI->forAllConnectedNodes(NULL, NULL));
 }
