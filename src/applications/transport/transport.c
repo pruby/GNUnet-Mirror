@@ -40,6 +40,11 @@ static CoreAPIForApplication * coreAPI;
 
 static Identity_ServiceAPI * identity;
 
+/**
+ * Note that this array MUST not be modified
+ * (in size/NULLs) after gnunetd has started
+ * to go multi-threaded!
+ */
 static TransportAPI ** tapis = NULL;
 
 static unsigned int tapis_count = 0;
@@ -108,14 +113,12 @@ static int isTransportAvailable(unsigned short ttype) {
  * Add an implementation of a transport protocol.
  */
 static int addTransport(TransportAPI * tapi) {
-  MUTEX_LOCK(tapis_lock);
   if (tapi->protocolNumber >= tapis_count)
     GROW(tapis,
 	 tapis_count,
 	 tapi->protocolNumber+1);
   if (tapis[tapi->protocolNumber] != NULL) {
     GE_BREAK(ectx, 0);
-    MUTEX_UNLOCK(tapis_lock);
     return SYSERR;
   }
   tapis[tapi->protocolNumber] = tapi;
@@ -125,7 +128,6 @@ static int addTransport(TransportAPI * tapi) {
 	       HELLO_RECREATE_FREQ,
 	       HELLO_RECREATE_FREQ,
 	       tapi);
-  MUTEX_UNLOCK(tapis_lock);
   return OK;
 }
 
@@ -136,22 +138,17 @@ static char *
 helloToString(const P2P_hello_MESSAGE * hello,
 	      int resolve_ip) {
   unsigned short prot;
-  char * ret;
 
   prot = ntohs(hello->protocol);
-  MUTEX_LOCK(tapis_lock);
   if ( (prot >= tapis_count) ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("Converting peer address to string failed, transport type %d not supported\n"),
 	   ntohs(hello->protocol));
-    MUTEX_UNLOCK(tapis_lock);
     return NULL;
   }
-  ret = tapis[prot]->addressToString(hello, resolve_ip);
-  MUTEX_UNLOCK(tapis_lock);
-  return ret;
+  return tapis[prot]->addressToString(hello, resolve_ip);
 }
 
 /**
@@ -165,7 +162,6 @@ static int forEachTransport(TransportCallback callback,
   int ret;
 
   ret = 0;
-  MUTEX_LOCK(tapis_lock);
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
       ret++;
@@ -173,7 +169,6 @@ static int forEachTransport(TransportCallback callback,
 	callback(tapis[i], data);
     }
   }
-  MUTEX_UNLOCK(tapis_lock);
   return ret;
 }
 
@@ -191,23 +186,18 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
   TSession * tsession;
 
   prot = ntohs(hello->protocol);
-  MUTEX_LOCK(tapis_lock);
   if ( (prot >= tapis_count)  ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
 	   _("Transport connection attempt failed, transport type %d not supported\n"),
 	   prot);
-    MUTEX_UNLOCK(tapis_lock);
     return NULL;
   }
   tsession = NULL;
   if (OK != tapis[prot]->connect(hello,
-				 &tsession)) {
-    MUTEX_UNLOCK(tapis_lock);
-    return NULL;
-  }
-  MUTEX_UNLOCK(tapis_lock);
+				 &tsession)) 
+    return NULL;  
   tsession->ttype = prot;
   return tsession;
 }
@@ -226,7 +216,6 @@ transportConnectFreely(const PeerIdentity * peer,
 
   hc = 0;
   ret = NULL;
-  MUTEX_LOCK(tapis_lock);
   perm = permute(WEAK, tapis_count);
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
@@ -245,7 +234,6 @@ transportConnectFreely(const PeerIdentity * peer,
     }
   }
   FREE(perm);
-  MUTEX_UNLOCK(tapis_lock);
   if (ret == NULL) {
 #if DEBUG_TRANSPORT
     hash2enc(&peer->hashPubKey,
@@ -272,35 +260,21 @@ transportConnectFreely(const PeerIdentity * peer,
  *         SYSERR if not.
  */
 static int transportAssociate(TSession * tsession) {
-  int ret;
-
-  if (tsession == NULL) 
+  if ( (tsession == NULL) ||
+       (tsession->ttype >= tapis_count) ||
+       (tapis[tsession->ttype] == NULL) ) 
     return SYSERR;
-  MUTEX_LOCK(tapis_lock);
-  if ( (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) ) {
-    MUTEX_UNLOCK(tapis_lock);
-    return SYSERR;
-  }
-  ret = tapis[tsession->ttype]->associate(tsession);
-  MUTEX_UNLOCK(tapis_lock);
-  return ret;
+  return tapis[tsession->ttype]->associate(tsession);
 }
 
 /**
  * Get the cost of a message in for the given transport mechanism.
  */
 static unsigned int transportGetCost(int ttype) {
-  unsigned int ret;
-  MUTEX_LOCK(tapis_lock);
   if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) ) {
-    MUTEX_UNLOCK(tapis_lock);
+       (tapis[ttype] == NULL) ) 
     return SYSERR; /* -1 = INFTY */
-  }
-  ret = tapis[ttype]->cost;
-  MUTEX_UNLOCK(tapis_lock);
-  return ret;
+  return tapis[ttype]->cost;
 }
 
 /**
@@ -316,7 +290,6 @@ static int transportSend(TSession * tsession,
 			 const void * msg,
 			 unsigned int size,
 			 int important) {
-  int ret;
   if (tsession == NULL) {
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
@@ -324,22 +297,18 @@ static int transportSend(TSession * tsession,
     return SYSERR; /* can't do that, can happen for unidirectional pipes
 		      that call core with TSession being NULL. */
   }
-  MUTEX_LOCK(tapis_lock);
   if ( (tsession->ttype >= tapis_count) ||
        (tapis[tsession->ttype] == NULL) ) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Transmission attempt failed, transport type %d unknown.\n"),
 	   tsession->ttype);
-    MUTEX_UNLOCK(tapis_lock);
     return SYSERR;
   }
-  ret = tapis[tsession->ttype]->send(tsession,
-				     msg,
-				     size,
-				     important);
-  MUTEX_UNLOCK(tapis_lock);
-  return ret;
+  return tapis[tsession->ttype]->send(tsession,
+				      msg,
+				      size,
+				      important);
 }
 
 /**
@@ -347,21 +316,16 @@ static int transportSend(TSession * tsession,
  * @return OK on success, SYSERR on error
  */
 static int transportDisconnect(TSession * tsession) {
-  int ret;
   if (tsession == NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  MUTEX_LOCK(tapis_lock);
   if ( (tsession->ttype >= tapis_count) ||
        (tapis[tsession->ttype] == NULL) ) {
     GE_BREAK(ectx, 0);
-    MUTEX_UNLOCK(tapis_lock);
     return SYSERR;
   }
-  ret = tapis[tsession->ttype]->disconnect(tsession);
-  MUTEX_UNLOCK(tapis_lock);
-  return ret;
+  return tapis[tsession->ttype]->disconnect(tsession);
 }
 
 /**
@@ -372,38 +336,25 @@ static int transportDisconnect(TSession * tsession) {
  */
 static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
   unsigned short prot;
-  int ret;
 
   if ( (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
        (ntohs(hello->header.type) != p2p_PROTO_hello) )
     return SYSERR; /* invalid */
   prot = ntohs(hello->protocol);
-  MUTEX_LOCK(tapis_lock);
   if ( (prot >= tapis_count) ||
-       (tapis[prot] == NULL) ) {
-    MUTEX_UNLOCK(tapis_lock);
+       (tapis[prot] == NULL) ) 
     return SYSERR; /* not supported */
-  }
-  ret = tapis[prot]->verifyHello(hello);
-  MUTEX_UNLOCK(tapis_lock);  
-  return ret;
+  return tapis[prot]->verifyHello(hello);
 }
 
 /**
  * Get the MTU for a given transport type.
  */
 static int transportGetMTU(unsigned short ttype) {
-  int mtu;
-
-  MUTEX_LOCK(tapis_lock);
   if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) ) {
-    MUTEX_UNLOCK(tapis_lock);
+       (tapis[ttype] == NULL) ) 
     return SYSERR;
-  }
-  mtu = tapis[ttype]->mtu;
-  MUTEX_UNLOCK(tapis_lock);
-  return mtu;
+  return tapis[ttype]->mtu;
 }
 
 /**
@@ -683,7 +634,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
        tapis_count,
        UDP_PROTOCOL_NUMBER+1);
 
-  tapis_lock = coreAPI->getConnectionModuleLock();
+  tapis_lock = MUTEX_CREATE(YES);
 
   /* now load transports */
   dso = NULL;
@@ -802,7 +753,7 @@ int release_module_transport() {
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL)
       unloadTransport(i);
-  tapis_lock = NULL;
+  MUTEX_DESTROY(tapis_lock);
   tapis_lock = NULL;
   GROW(tapis,
        tapis_count,
