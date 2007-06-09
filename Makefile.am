@@ -4,7 +4,7 @@ SUBDIRS  = m4 po libltdl src doc contrib
 EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath \
- install.sh \
+ install-sh \
  mkinstalldirs \
  README.fr \
  README.win32 \
