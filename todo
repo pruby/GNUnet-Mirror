@@ -8,7 +8,6 @@ Annotations:
   * HTTP transport (libcurl, libmicrohttpd) [#765] [likely 0.7.2a]
 - RC bugs:
   * UDP assertion failure (mtu < size) [#1209]
-  * low connectivity (still an issue?)
   * session keys sent to wrong peers? => assertions added
 
 0.7.3 [7'07] (aka "features"):

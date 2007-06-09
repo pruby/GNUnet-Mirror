@@ -3179,7 +3179,6 @@ void initConnection(struct GE_Context * e,
   ENTRY();
   scl_nextHead = NULL;
   scl_nextTail = NULL;
-  lock = MUTEX_CREATE(YES);
   connectionConfigChangeCallback(NULL,
 				 cfg,
 				 ectx,
@@ -3289,7 +3288,6 @@ void doneConnection() {
       FREE(prev);
     }
   }
-  MUTEX_DESTROY(lock);
   FREENONNULL(CONNECTION_buffer_);
   CONNECTION_buffer_ = NULL;
   CONNECTION_MAX_HOSTS_ = 0;
@@ -3648,6 +3646,7 @@ unsigned int computeIndex(const PeerIdentity * hostId) {
  * @return the lock
  */
 struct MUTEX * getConnectionModuleLock() {
+  GE_ASSERT(NULL, lock != NULL);
   return lock;
 }
 
@@ -3761,6 +3760,18 @@ int unregisterSendNotify(MessagePartHandler callback) {
   MUTEX_UNLOCK(lock);
   return SYSERR;
 }
+
+
+
+
+void __attribute__ ((constructor)) gnunet_connection_ltdl_init() {
+  lock = MUTEX_CREATE(YES);
+}
+
+void __attribute__ ((destructor)) gnunet_connection_ltdl_fini() {
+  MUTEX_DESTROY(lock);
+}
+
 
 
 /* end of connection.c */
