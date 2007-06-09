@@ -60,7 +60,7 @@
 #define ACJ_FORWARD 2
 #define ACJ_ALL (ACJ_ANNOUNCE | ACJ_FORWARD)
 
-#define DEBUG_ADVERTISING YES
+#define DEBUG_ADVERTISING NO
 
 static CoreAPIForApplication * coreAPI;
 
@@ -199,9 +199,14 @@ receivedhello(const PeerIdentity * sender,
   }
   if (SYSERR == transport->verifyhello(msg)) {
 #if DEBUG_ADVERTISING
+    IF_GELOG(ectx,
+	     GE_INFO | GE_BULK | GE_USER,
+	     hash2enc(&msg->senderIdentity.hashPubKey,
+		      &enc));    
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
-	   "Transport verification of HELLO message failed (%u).\n",
+	   GE_DEBUG | GE_BULK | GE_USER,
+	   "Transport verification of HELLO message from `%s' failed (%u).\n",
+	   &enc,
 	   ntohs(msg->protocol));
 #endif
     return OK; /* not good, but do process rest of message */

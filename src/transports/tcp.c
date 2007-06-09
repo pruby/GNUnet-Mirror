@@ -258,7 +258,7 @@ static P2P_hello_MESSAGE * createhello() {
     }
     return NULL; /* TCP transport is configured SEND-only! */
   }
-  msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
+  msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
   if (! ( ( (upnp != NULL) &&
@@ -274,12 +274,10 @@ static P2P_hello_MESSAGE * createhello() {
 	   _("TCP: Could not determine my public IP address.\n"));
     return NULL;
   }
-#if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_REQUEST,
+	 GE_INFO | GE_USER | GE_BULK,
 	 "TCP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)));
-#endif
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

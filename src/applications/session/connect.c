@@ -262,11 +262,11 @@ static int verifySKS(const PeerIdentity * hostId,
 	   &enc);
     return SYSERR;
   }
-  if (OK != identity->verifyPeerSignature
-      (hostId,
-       sks,
-       rsize - sizeof(Signature),
-       signature)) {
+  if (OK != identity->verifyPeerSignature(hostId,
+					  sks,
+					  rsize - sizeof(Signature),
+					  signature)) {
+#if DEBUG_SESSION
     EncName enc;
 
     IF_GELOG(ectx,
@@ -277,6 +277,7 @@ static int verifySKS(const PeerIdentity * hostId,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   _("Session key from peer `%s' could not be verified.\n"),
 	   &enc);
+#endif
     return SYSERR; /*reject!*/
   }
   return OK; /* ok */
@@ -515,8 +516,8 @@ static int exchangeKey(const PeerIdentity * receiver,
     hello = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == hello) {
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_REQUEST,
-	   "Could not create any HELLO.  Not good.");
+	   GE_ERROR | GE_USER | GE_IMMEDIATE,
+	   _("Could not create any HELLO for myself!\n"));
   }
 #if DEBUG_SESSION
   GE_LOG(ectx,
@@ -649,12 +650,14 @@ static int acceptSessionKey(const PeerIdentity * sender,
 		  sessionkeySigned,
 		  sig);
   if (OK != ret) {
+#if DEBUG_SESSION
     if (ret == SYSERR)
       GE_LOG(ectx,
 	     GE_INFO | GE_USER | GE_REQUEST | GE_DEVELOPER,
 	     "Signature of session key from `%s' failed"
 	     " verification (discarded).\n",
 	     &enc);
+#endif
     if (stats != NULL)
       stats->change(stat_skeyRejected,
 		    1);

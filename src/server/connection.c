@@ -2697,10 +2697,12 @@ int checkHeader(const PeerIdentity * sender,
   be = lookForHost(sender);
   if((be == NULL) ||
      (be->status == STAT_DOWN) || (be->status == STAT_SETKEY_SENT)) {
+#if DEBUG_CONNECTION
     GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
 	   "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
 	   &enc);
+#endif
     /* try to establish a connection, that way, we don't keep
        getting bogus messages until the other one times out. */
     if((be == NULL) || (be->status == STAT_DOWN))

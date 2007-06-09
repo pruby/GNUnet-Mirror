@@ -233,12 +233,23 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
   haddr = (const HostAddress*) &hello[1];
   if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
-       (YES == isBlacklisted(&haddr->senderIP,
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ) {
+    GE_BREAK(NULL, 0);
+    return SYSERR;
+  }
+  if ( (YES == isBlacklisted(&haddr->senderIP,
 			     sizeof(IPaddr))) ||
        (YES != isWhitelisted(&haddr->senderIP,
-			     sizeof(IPaddr))) )
+			     sizeof(IPaddr))) ) {
+#if DEBUG_UDP
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "Rejecting UDP HELLO from %u.%u.%u.%u:%u due to configuration.\n",
+	   PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
+	   ntohs(haddr->senderPort));
+#endif
     return SYSERR; /* obviously invalid */
+  }
 #if DEBUG_UDP
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
@@ -282,12 +293,10 @@ static P2P_hello_MESSAGE * createhello() {
 	   _("UDP: Could not determine my public IP address.\n"));
     return NULL;
   }
-#if DEBUG_UDP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
+	 GE_INFO | GE_USER | GE_BULK,
 	 "UDP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->senderIP)));
-#endif
   haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

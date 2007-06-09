@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -60,9 +60,8 @@ static CoreAPIForTransport * coreAPI;
 static int verifyHello(const P2P_hello_MESSAGE * hello) {
   if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) ) {
-    return SYSERR; /* obviously invalid */
-  }
+       (ntohs(hello->header.type) != p2p_PROTO_hello) ) 
+    return SYSERR; /* obviously invalid */  
   if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
 					      "NAT",
 					      "LIMITED",
@@ -73,8 +72,7 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
 		    &hello->senderIdentity.hashPubKey,
 		    sizeof(HashCode512)))
       return OK;
-    else
-      return SYSERR;
+    return SYSERR;
   }
   return OK;  
 }
@@ -157,7 +155,7 @@ static int natDisconnect(TSession * tsession) {
  *
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer(void) {
+static int startTransportServer() {
   return OK;
 }
 

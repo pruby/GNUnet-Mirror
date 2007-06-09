@@ -800,6 +800,7 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 		       ANY_PROTOCOL_NUMBER,
 		       YES);
   if (hello == NULL) {
+#if DEBUG_IDENTITY
     EncName enc;
 
     IF_GELOG(ectx,
@@ -810,6 +811,7 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 	   GE_INFO | GE_USER | GE_BULK,
 	   _("Signature failed verification: peer `%s' not known.\n"),
 	   &enc);
+#endif
     return SYSERR;
   }
   res = verifySig(message, size, sig,

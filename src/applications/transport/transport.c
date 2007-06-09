@@ -230,6 +230,7 @@ transportConnectFreely(const PeerIdentity * peer,
   FREE(perm);
   MUTEX_UNLOCK(tapis_lock);
   if (ret == NULL) {
+#if DEBUG_TRANSPORT
     hash2enc(&peer->hashPubKey,
 	     &enc);
     GE_LOG(ectx,
@@ -237,6 +238,7 @@ transportConnectFreely(const PeerIdentity * peer,
 	   _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
 	   &enc,
 	   hc);
+#endif
   }
   return ret;
 }
