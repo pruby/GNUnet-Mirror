@@ -177,10 +177,10 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 		 &uri->data.sks.namespace,
 		 &keys[0]); /* compute routing key r = H(identifier) ^ namespace */
     keys[1] = uri->data.sks.namespace;
-    addPS(K_BLOCK,
+    addPS(S_BLOCK,
 	  2,
 	  &keys[0],
-	  &uri->data.sks.identifier,
+	  &uri->data.sks.identifier, /* identifier = decryption key */
 	  sqc);
     break;
   }
@@ -471,25 +471,27 @@ static int receiveReplies(const HashCode512 * key,
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &sb->creationTime,
 			    size
+			    - sizeof(unsigned int)
 			    - sizeof(Signature)
 			    - sizeof(PublicKey)
 			    - sizeof(HashCode512));
-	j = sizeof(SBlock);
-	while ( (j < size) &&
-		(((char*) &sb[1])[j] != '\0') )
+	j = 0;
+	dstURI = (const char*) &sb[1];
+	while ( (j < size - sizeof(SBlock)) &&
+		(dstURI[j] != '\0') )
 	  j++;
-	if (j == size) {
+	if (j == size - sizeof(SBlock)) {
 	  GE_BREAK(ectx, 0); /* sblock malformed */
 	  FREE(sb);
 	  return SYSERR;
-	}
-	dstURI = (const char*) &sb[1];
+	}	
 	j++;
+	/* j == strlen(dstURI) + 1 */
 	fi.meta = ECRS_deserializeMetaData(ectx,
 					   &dstURI[j],
-					   size - j);
+					   size - j - sizeof(SBlock));
 	if (fi.meta == NULL) {
-	  GE_BREAK(ectx, 0); /* kblock malformed */
+	  GE_BREAK(ectx, 0); /* sblock malformed */
 	  FREE(sb);
 	  return SYSERR;
 	}
@@ -589,7 +591,8 @@ int ECRS_search(struct GE_Context * ectx,
 				   ctx.lock);
   addQueryForURI(uri,
 		 &ctx);
-  while ( (OK == tt(ttClosure)) &&
+  while ( ( (NULL == tt) ||
+	    (OK == tt(ttClosure)) ) &&
 	  (NO == GNUNET_SHUTDOWN_TEST())  &&
 	  (timeout > now) &&
 	  (ctx.aborted == NO) ) {
@@ -640,9 +643,10 @@ int ECRS_search(struct GE_Context * ectx,
 			  &ctx);
     }
     MUTEX_UNLOCK(ctx.lock);
-    if (! ( (OK == tt(ttClosure)) &&
-	    (timeout > now) &&
-	    (ctx.aborted == NO) ) )
+    if ( ( (NULL != tt) &&
+	   (OK != tt(ttClosure))) ||
+	 (timeout <= now) ||
+	 (ctx.aborted != NO) )
       break;
     PTHREAD_SLEEP(100 * cronMILLIS);
     now = get_time();

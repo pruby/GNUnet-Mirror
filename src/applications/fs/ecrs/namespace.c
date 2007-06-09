@@ -403,6 +403,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   SBlock * sb;
   HashCode512 namespace;
   char * dstURI;
+  char * destPos;
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
@@ -446,20 +447,21 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   dstURI = ECRS_uriToString(dstU);
   mdsize = ECRS_sizeofMetaData(md,
 			       ECRS_SERIALIZE_PART);
-  size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;
+  size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;  
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
-    memcpy(&sb[1],
+    destPos = (char*) &sb[1];
+    memcpy(destPos,
 	   dstURI,
 	   strlen(dstURI) + 1);
     mdsize = size - sizeof(SBlock) - strlen(dstURI) - 1;
     mdsize = ECRS_serializeMetaData(ectx,
 				    md,
-				    &((char*)&sb[1])[strlen(dstURI)+1],
+				    &destPos[strlen(dstURI)+1],
 				    mdsize,
 				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
@@ -468,18 +470,19 @@ ECRS_addToNamespace(struct GE_Context * ectx,
       freePrivateKey(hk);
       return NULL;
     }
-    size = sizeof(SBlock) + mdsize;
+    size = sizeof(SBlock) + mdsize + strlen(dstURI) + 1;
   } else {
     value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
-    memcpy(&sb[1],
+    destPos = (char*) &sb[1];
+    memcpy(destPos,
 	   dstURI,
 	   strlen(dstURI) + 1);
     ECRS_serializeMetaData(ectx,
 			   md,
-			   &((char*)&sb[1])[strlen(dstURI)+1],
+			   &destPos[strlen(dstURI)+1],
 			   mdsize,
 			   ECRS_SERIALIZE_FULL);
   }
