@@ -411,7 +411,8 @@ static int readSearches(int fd,
       GE_BREAK(NULL, 0);
       break;
     }
-    if (! ECRS_isKeywordUri(list->uri)) {
+    if (! ( ECRS_isKeywordUri(list->uri) ||
+	    ECRS_isNamespaceUri(list->uri)) ) {
       GE_BREAK(NULL, 0);		
       break;
     }

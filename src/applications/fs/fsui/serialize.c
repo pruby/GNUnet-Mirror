@@ -198,7 +198,8 @@ static void writeSearches(int fd,
       continue;
     }
     GE_ASSERT(ctx->ectx,
-	      ECRS_isKeywordUri(spos->uri));
+	      ECRS_isKeywordUri(spos->uri) ||
+	      ECRS_isNamespaceUri(spos->uri));
     WRITEINT(fd, 1);
     WRITEINT(fd, spos->state);
     WRITEINT(fd, spos->maxResults);
