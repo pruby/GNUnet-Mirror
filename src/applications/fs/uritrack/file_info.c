@@ -137,6 +137,24 @@ int URITRACK_trackStatus(struct GE_Context * ectx,
   }
 }
 
+struct CheckPresentClosure {
+  const ECRS_FileInfo * fi;
+  int present;
+};
+
+static int checkPresent(const ECRS_FileInfo * fi,
+			const HashCode512 * key,
+			int isRoot,
+			void * closure) {
+  struct CheckPresentClosure * cpc = closure;
+  if (ECRS_equalsUri(fi->uri,
+		     cpc->fi->uri)) {
+    cpc->present = 1;
+    return SYSERR;
+  }
+  return OK;
+}
+
 /**
  * Makes a URI available for directory building.
  */
@@ -149,8 +167,18 @@ void URITRACK_trackURI(struct GE_Context * ectx,
   char * suri;
   int fh;
   char * fn;
+  struct CheckPresentClosure cpc;
 
   if (NO == URITRACK_trackStatus(ectx, cfg))
+    return;
+  cpc.present = 0;
+  cpc.fi = fi;
+  URITRACK_listURIs(ectx,
+		    cfg,
+		    NO,
+		    &checkPresent,
+		    &cpc);
+  if (cpc.present == 1)
     return;
   size = ECRS_sizeofMetaData(fi->meta,
 			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
