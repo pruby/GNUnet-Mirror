@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -21,6 +21,7 @@
 /**
  * @file transports/ip.c
  * @brief code to determine the IP of the local machine
+ *        and to do DNS resolution (with caching)
  *
  * @author Christian Grothoff
  * @author Tzvetan Horozov
@@ -68,5 +69,135 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
 	 sizeof(IPaddr));
   return OK;
 }
+
+struct IPCache {
+  struct IPCache * next;
+  char * addr;
+  struct sockaddr * sa;
+  cron_t last_refresh;
+  cron_t last_request;
+  unsigned int salen;
+};
+
+static struct IPCache * head;
+
+static struct MUTEX * lock;
+
+static void cache_resolve(struct IPCache * cache) {
+#if HAVE_GETNAMEINFO
+  char hostname[256];
+
+  if (0 == getnameinfo(cache->sa,
+		       cache->salen,
+		       hostname,
+		       255,
+		       NULL, 0,
+		       NI_NAMEREQD))
+    cache->addr = STRDUP(hostname);
+#else
+#if HAVE_GETHOSTBYADDR
+  struct hostent * ent;
+  
+  switch (cache->sa->sa_family) {
+  case AF_INET:
+    ent = gethostbyaddr(&((struct sockaddr_in*) cache->sa)->sin_addr,
+			sizeof(IPaddr),
+			AF_INET);
+    break;
+  case AF_INET6:
+    ent = gethostbyaddr(&((struct sockaddr_in6*) cache->sa)->sin6_addr,
+			sizeof(IPaddr6),
+			AF_INET6);
+    break;
+  default:
+    ent = NULL;
+  }
+  if (ent != NULL)
+    cache->addr = STRDUP(ent->h_name); 
+#endif
+#endif
+}
+
+static struct IPCache * resolve(const struct sockaddr * sa,
+				unsigned int salen) {
+  struct IPCache * ret;
+
+  ret = MALLOC(sizeof(struct IPCache));
+  ret->next = head;
+  ret->salen = salen;
+  ret->sa = salen == 0 ? NULL : MALLOC(salen);
+  memcpy(ret->sa,
+	 sa,
+	 salen);
+  ret->last_request = get_time();
+  ret->last_refresh = get_time();
+  cache_resolve(ret);
+  head = ret;
+  return ret;
+}
+
+
+/**
+ * Get an IP address as a string
+ * (works for both IPv4 and IPv6).
+ */ 
+char * getIPaddressAsString(const void * sav,
+			    unsigned int salen) {
+  const struct sockaddr * sa = sav;
+  char * ret;
+  struct IPCache * cache; 
+  struct IPCache * prev;
+  cron_t now;
+
+  now = get_time();  
+  MUTEX_LOCK(lock);
+  cache = head;
+  prev = NULL;
+  while ( (cache != NULL) &&
+	  ( (cache->salen != salen) ||
+	    (0 != memcmp(cache->sa,
+			 sa,
+			 salen) ) ) ) {
+    if (cache->last_request + 60 * cronMINUTES < now) {
+      prev->next = cache->next;
+      FREENONNULL(cache->addr);
+      FREE(cache->sa);
+      FREE(cache);
+      cache = prev;
+    }    
+    prev = cache;
+    cache = cache->next;
+  }
+  if (cache != NULL) {
+    cache->last_request = now;
+    if (cache->last_refresh + 12 * cronHOURS < now) {
+      FREENONNULL(cache->addr);
+      cache->addr = NULL;
+      cache_resolve(cache);
+    }
+  } else
+    cache = resolve(sa, salen);  
+  ret = (cache->addr == NULL) ? NULL : STRDUP(cache->addr);
+  MUTEX_UNLOCK(lock);
+  return ret;
+}
+
+
+void __attribute__ ((constructor)) gnunet_ip_ltdl_init() {
+  lock = MUTEX_CREATE(YES);
+}
+
+void __attribute__ ((destructor)) gnunet_ip_ltdl_fini() {
+  struct IPCache * pos;
+  MUTEX_DESTROY(lock);
+  while (head != NULL) {
+    pos = head->next;
+    FREENONNULL(head->addr);
+    FREE(head->sa);
+    FREE(head);
+    head = pos;
+  }
+}
+
 
 /* end of ip.c */

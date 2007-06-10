@@ -45,12 +45,12 @@ typedef struct {
   /**
    * claimed IP of the sender, network byte order
    */
-  IPaddr senderIP;
+  IPaddr ip;
 
   /**
    * claimed port of the sender, network byte order
    */
-  unsigned short senderPort;
+  unsigned short port;
 
   /**
    * reserved (set to 0 for signature verification)
@@ -237,16 +237,16 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
-  if ( (YES == isBlacklisted(&haddr->senderIP,
+  if ( (YES == isBlacklisted(&haddr->ip,
 			     sizeof(IPaddr))) ||
-       (YES != isWhitelisted(&haddr->senderIP,
+       (YES != isWhitelisted(&haddr->ip,
 			     sizeof(IPaddr))) ) {
 #if DEBUG_UDP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_BULK,
 	   "Rejecting UDP HELLO from %u.%u.%u.%u:%u due to configuration.\n",
-	   PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-	   ntohs(haddr->senderPort));
+	   PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	   ntohs(haddr->port));
 #endif
     return SYSERR; /* obviously invalid */
   }
@@ -254,8 +254,8 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
 	 "Verified UDP HELLO from %u.%u.%u.%u:%u.\n",
-	 PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-	 ntohs(haddr->senderPort));
+	 PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	 ntohs(haddr->port));
 #endif
   return OK;
 }
@@ -283,10 +283,10 @@ static P2P_hello_MESSAGE * createhello() {
   if (! ( ( (upnp != NULL) &&
 	    (OK == upnp->get_ip(port,
 				"UDP",
-				&haddr->senderIP)) ) ||
+				&haddr->ip)) ) ||
 	  (SYSERR != getPublicIPAddress(cfg,
 					ectx,
-					&haddr->senderIP)) ) ) {
+					&haddr->ip)) ) ) {
     FREE(msg);
     GE_LOG(ectx,
 	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
@@ -296,8 +296,8 @@ static P2P_hello_MESSAGE * createhello() {
   GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_BULK,
 	 "UDP uses IP address %u.%u.%u.%u.\n",
-	 PRIP(ntohl(*(int*)&haddr->senderIP)));
-  haddr->senderPort      = htons(port);
+	 PRIP(ntohl(*(int*)&haddr->ip)));
+  haddr->port      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(UDP_PROTOCOL_NUMBER);
@@ -351,11 +351,11 @@ static int udpSend(TSession * tsession,
   ok = SYSERR;
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
-  sin.sin_port = haddr->senderPort;
+  sin.sin_port = haddr->port;
 
   GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&sin.sin_addr,
-	 &haddr->senderIP,
+	 &haddr->ip,
 	 sizeof(IPaddr));
 #if DEBUG_UDP
   GE_LOG(ectx,
@@ -484,12 +484,9 @@ addressToString(const P2P_hello_MESSAGE * hello,
   char * ret;
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   size_t n;
-  const char * hn = "";
-
-#if HAVE_GETNAMEINFO
-  char hostname[256];
+  char * hn;
   struct sockaddr_in serverAddr;
-
+    
   if (do_resolve) {
     memset((char *) &serverAddr,
 	   0,
@@ -498,43 +495,28 @@ addressToString(const P2P_hello_MESSAGE * hello,
     memcpy(&serverAddr.sin_addr,
 	   haddr,
 	   sizeof(IPaddr));
-    serverAddr.sin_port = haddr->senderPort;
-    if (0 == getnameinfo((const struct sockaddr* ) &serverAddr,
-			 sizeof(struct sockaddr_in),
-			 hostname,
-			 255,
-			 NULL, 0,
-			 NI_NAMEREQD))
-      hn = hostname;	
-  }
-#else
-#if HAVE_GETHOSTBYADDR
-  struct hostent * ent;
-  if (do_resolve) {
-    ent = gethostbyaddr(haddr,
-			sizeof(IPaddr),
-			AF_INET);
-    if (ent != NULL)
-      hn = ent->h_name;
-  }
-#endif
-#endif
-  n = 4*4+6+6 + strlen(hn) + 10;
+    serverAddr.sin_port = haddr->port;
+    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
+			      sizeof(struct sockaddr_in));
+  } else
+    hn = NULL;
+  n = 4*4+6+6 + (hn == NULL ? 0 : strlen(hn)) + 10;
   ret = MALLOC(n);
-  if (strlen(hn) > 0) {
+  if (hn != NULL) {
     SNPRINTF(ret,
 	     n,
 	     "%s (%u.%u.%u.%u) UDP (%u)",
 	     hn,
-	     PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-	     ntohs(haddr->senderPort));
+	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	     ntohs(haddr->port));
   } else {
     SNPRINTF(ret,
 	     n,
 	     "%u.%u.%u.%u UDP (%u)",
-	     PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-	     ntohs(haddr->senderPort));
+	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	     ntohs(haddr->port));
   }
+  FREENONNULL(hn);
   return ret;
 }
 

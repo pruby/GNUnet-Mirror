@@ -80,6 +80,7 @@ libgnunettransport_udp_la_LDFLAGS = \
 libgnunettransport_tcp6_la_SOURCES = tcp6.c
 libgnunettransport_tcp6_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
+ libip.la \
  libip6.la
 libgnunettransport_tcp6_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 
@@ -87,6 +88,7 @@ libgnunettransport_tcp6_la_LDFLAGS = \
 libgnunettransport_udp6_la_SOURCES = udp6.c
 libgnunettransport_udp6_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
+ libip.la \
  libip6.la
 libgnunettransport_udp6_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 

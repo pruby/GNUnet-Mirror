@@ -29,6 +29,7 @@
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
 #include "platform.h"
+#include "ip.h"
 #include "ip6.h"
 
 #define DEBUG_UDP6 NO
@@ -42,12 +43,12 @@ typedef struct {
   /**
    * claimed IP of the sender, network byte order
    */
-  IP6addr senderIP;
+  IP6addr ip;
 
   /**
    * claimed port of the sender, network byte order
    */
-  unsigned short senderPort;
+  unsigned short port;
 
   /**
    * reserved (set to 0 for signature verification)
@@ -219,9 +220,9 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
   if ( (ntohs(hello->senderAddressSize) != sizeof(Host6Address)) ||
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
        (ntohs(hello->header.type) != p2p_PROTO_hello) ||
-       (YES == isBlacklisted(&haddr->senderIP,
+       (YES == isBlacklisted(&haddr->ip,
 			     sizeof(IP6addr))) ||
-       (YES != isWhitelisted(&haddr->senderIP,
+       (YES != isWhitelisted(&haddr->ip,
 			     sizeof(IP6addr))) )
     return SYSERR; /* obviously invalid */
   else {
@@ -230,10 +231,10 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
 	inet_ntop(AF_INET6,
-		  &haddr->senderIP,
+		  &haddr->ip,
 		  inet6,
 		  INET6_ADDRSTRLEN),
-	ntohs(haddr->senderPort));
+	ntohs(haddr->port));
 #endif
     return OK;
   }
@@ -260,14 +261,14 @@ static P2P_hello_MESSAGE * createhello() {
 
   if (SYSERR == getPublicIP6Address(cfg,
 				    ectx,				
-				    &haddr->senderIP)) {
+				    &haddr->ip)) {
     FREE(msg);
     GE_LOG(ectx,
 	   GE_WARNING,
 	   _("UDP6: Could not determine my public IPv6 address.\n"));
     return NULL;
   }
-  haddr->senderPort      = htons(port);
+  haddr->port      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
   msg->protocol          = htons(UDP6_PROTOCOL_NUMBER);
@@ -323,9 +324,9 @@ static int udp6Send(TSession * tsession,
   ok = SYSERR;
   memset(&sin, 0, sizeof(sin));
   sin.sin6_family = AF_INET6;
-  sin.sin6_port = haddr->senderPort;
+  sin.sin6_port = haddr->port;
   memcpy(&sin.sin6_addr,
-	 &haddr->senderIP.addr,
+	 &haddr->ip.addr,
 	 sizeof(IP6addr));
 #if DEBUG_UDP6
   GE_LOG(ectx,
@@ -366,7 +367,7 @@ static int udp6Send(TSession * tsession,
  *
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer(void) {
+static int startTransportServer() {
   int sock;
   unsigned short port;
 
@@ -411,7 +412,7 @@ static int startTransportServer(void) {
 /**
  * Reload the configuration. Should never fail.
  */
-static int reloadConfiguration(void) {
+static int reloadConfiguration() {
   char * ch;
 
   MUTEX_LOCK(configLock);
@@ -448,12 +449,9 @@ addressToString(const P2P_hello_MESSAGE * hello,
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
   const Host6Address * haddr = (const Host6Address*) &hello[1];
-  const char * hn = "";
+  char * hn;
   size_t n;
-
-#if HAVE_GETNAMEINFO
   struct sockaddr_in6 serverAddr;
-  char hostname[256];
 
   if (do_resolve) {
     memset((char *) &serverAddr,
@@ -463,49 +461,34 @@ addressToString(const P2P_hello_MESSAGE * hello,
     memcpy(&serverAddr.sin6_addr,
 	   haddr,
 	   sizeof(IP6addr));
-    serverAddr.sin6_port     = haddr->senderPort;
-    if (0 == getnameinfo((const struct sockaddr*  ) haddr,
-			 sizeof(struct sockaddr_in6),
-			 hostname,
-			 255,
-			 NULL, 0,
-			 NI_NAMEREQD))
-      hn = hostname;	
-  }
-#else
-#if HAVE_GETHOSTBYADDR
-  struct hostent * ent;
-  if (do_resolve) {
-    ent = gethostbyaddr(haddr,
-			sizeof(IPaddr),
-			AF_INET);
-    if (ent != NULL)
-      hn = ent->h_name;
-  }
-#endif
-#endif
-  n = INET6_ADDRSTRLEN + 16 + strlen(hn) + 10;
+    serverAddr.sin6_port = haddr->port;
+    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
+			      sizeof(struct sockaddr_in));
+  } else
+    hn = NULL;
+  n = INET6_ADDRSTRLEN + 16 +  (hn == NULL ? 0 : strlen(hn)) + 10;
   ret = MALLOC(n);
-  if (strlen(hn) > 0) {
+  if (hn != NULL) {
     SNPRINTF(ret,
 	     n,
-	     "%s (%s) UDP6 (%u)",
+	     "%s (%s) TCP6 (%u)",
 	     hn,
 	     inet_ntop(AF_INET6,
 		       haddr,
 		       inet6,
 		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->senderPort));
+	     ntohs(haddr->port));
   } else {
     SNPRINTF(ret,
 	     n,
-	     "%s UDP6 (%u)",
+	     "%s TCP6 (%u)",
 	     inet_ntop(AF_INET6,
 		       haddr,
 		       inet6,
 		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->senderPort));
+	     ntohs(haddr->port));
   }
+  FREENONNULL(hn);
   return ret;
 }
 

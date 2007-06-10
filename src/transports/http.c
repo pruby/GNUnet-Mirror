@@ -1151,11 +1151,9 @@ addressToString(const P2P_hello_MESSAGE * hello,
   char * ret;
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   size_t n;
-  const char * hn = "";
-#if HAVE_GETNAMEINFO
-  char hostname[256];
+  char * hn;
   struct sockaddr_in serverAddr;
-
+    
   if (do_resolve) {
     memset((char *) &serverAddr,
 	   0,
@@ -1165,29 +1163,13 @@ addressToString(const P2P_hello_MESSAGE * hello,
 	   haddr,
 	   sizeof(IPaddr));
     serverAddr.sin_port = haddr->port;
-    if (0 == getnameinfo((const struct sockaddr*) &serverAddr,
-			 sizeof(struct sockaddr_in),
-			 hostname,
-			 255,
-			 NULL, 0,
-			 NI_NAMEREQD))
-      hn = hostname;	
-  }
-#else
-#if HAVE_GETHOSTBYADDR
-  struct hostent * ent;
-  if (do_resolve) {
-    ent = gethostbyaddr(haddr,
-			sizeof(IPaddr),
-			AF_INET);
-    if (ent != NULL)
-      hn = ent->h_name;
-  }
-#endif
-#endif
-  n = 4*4+7+6 + strlen(hn) + 10;
+    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
+			      sizeof(struct sockaddr_in));
+  } else
+    hn = NULL;
+  n = 4*4+6+6 + (hn == NULL ? 0 : strlen(hn)) + 10;
   ret = MALLOC(n);
-  if (strlen(hn) > 0) {
+  if (hn != NULL) {
     SNPRINTF(ret,
 	     n,
 	     "%s (%u.%u.%u.%u) HTTP (%u)",
@@ -1201,6 +1183,7 @@ addressToString(const P2P_hello_MESSAGE * hello,
 	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
 	     ntohs(haddr->port));
   }
+  FREENONNULL(hn);
   return ret;
 }
 
