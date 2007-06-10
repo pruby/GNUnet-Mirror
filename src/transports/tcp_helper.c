@@ -75,6 +75,10 @@ typedef struct {
    */
   int in_select;
 
+  void * accept_addr;
+
+  unsigned int addr_len;
+
 } TCPSession;
 
 /* *********** globals ************* */
@@ -120,6 +124,7 @@ static int tcpDisconnect(TSession * tsession) {
   if (tcpsession->in_select == NO) {
     MUTEX_UNLOCK(tcpsession->lock);
     MUTEX_DESTROY(tcpsession->lock);
+    FREENONNULL(tcpsession->accept_addr);
     FREE(tcpsession);
     FREE(tsession);
   } else {
@@ -174,6 +179,7 @@ static int select_message_handler(void * mh_cls,
   unsigned int len;
   P2P_PACKET * mp;
   const TCPWelcome * welcome;
+  char * addr;
 
   if (SYSERR == tcpAssociate(tsession)) {
     GE_BREAK(ectx, 0);
@@ -197,6 +203,15 @@ static int select_message_handler(void * mh_cls,
     tcpSession->expectingWelcome = NO;
     tcpSession->sender = welcome->clientIdentity;
     tsession->peer = welcome->clientIdentity;
+    if (tcpSession->accept_addr != NULL) {
+      addr = getIPaddressAsString(tcpSession->accept_addr,
+				  tcpSession->addr_len);
+      if (addr != NULL) {
+	setIPaddressFromPID(&welcome->clientIdentity,
+			    addr);
+	FREE(addr);
+      }
+    }
   } else {
     /* send msg to core! */
     if (len <= sizeof(MESSAGE_HEADER)) {
@@ -257,11 +272,22 @@ static void * select_accept_handler(void * ah_cls,
   tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 0;
   tcpSession->in_select = YES;
+  
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
   tsession->peer = *(coreAPI->myIdentity);
-
+  if (addr_len > sizeof(IPaddr)) {
+    tcpSession->accept_addr = MALLOC(addr_len);
+    memcpy(tcpSession->accept_addr,
+	   (struct sockaddr_in*) addr,
+	   sizeof(struct sockaddr_in));
+    tcpSession->addr_len = addr_len;
+  } else {
+    GE_BREAK(NULL, 0);
+    tcpSession->addr_len = 0;
+    tcpSession->accept_addr = NULL; 
+  }
   return tsession;
 }					
 
@@ -277,6 +303,7 @@ static void select_close_handler(void * ch_cls,
   if (tcpSession->users == 0) {
     MUTEX_UNLOCK(tcpSession->lock);
     MUTEX_DESTROY(tcpSession->lock);
+    FREENONNULL(tcpSession->accept_addr);
     FREE(tcpSession);
     FREE(tsession);
   } else {
@@ -411,6 +438,8 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
   TCPSession * tcpSession;
 
   tcpSession = MALLOC(sizeof(TCPSession));
+  tcpSession->addr_len = 0;
+  tcpSession->accept_addr = NULL;
   tcpSession->sock = s;
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcpSession;

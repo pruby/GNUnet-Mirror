@@ -28,6 +28,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "platform.h"
+#include "ip.h"
 
 #define DEBUG_NAT NO
 
@@ -172,7 +173,21 @@ static int stopTransportServer() {
  */
 static char * addressToString(const P2P_hello_MESSAGE * hello,
 			      int do_resolve) {
-  return STRDUP("NAT");
+  char * addr;
+  char * ret;
+  size_t n;
+
+  addr = getIPaddressFromPID(&hello->senderIdentity);
+  if (addr == NULL)
+    return STRDUP("NAT");
+  n = strlen(addr) + 10;
+  ret = MALLOC(n);
+  SNPRINTF(ret,
+	   n,
+	   "%s NAT",
+	   addr);
+  FREE(addr);
+  return ret;
 }
 
 static int testWouldTry(TSession * tsession,

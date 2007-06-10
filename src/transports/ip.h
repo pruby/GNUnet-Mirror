@@ -58,4 +58,23 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
 char * getIPaddressAsString(const void * sa,
 			    unsigned int salen);
 
+/**
+ * We only have the PeerIdentity.  Do we have any
+ * clue about the address (as a string) based on 
+ * the "accept" of the connection?  Note that the
+ * response is just the best guess.
+ */
+char * getIPaddressFromPID(const PeerIdentity * peer);
+
+/**
+ * We have accepted a connection from a particular
+ * address (here given as a string) and received
+ * a welcome message that claims that this connection
+ * came from a particular peer.  This information is
+ * NOT validated (and it may well be impossible for
+ * us to validate the address).  
+ */
+void setIPaddressFromPID(const PeerIdentity * peer,
+			 const char * address);
+
 #endif

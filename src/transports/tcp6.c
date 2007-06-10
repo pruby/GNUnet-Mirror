@@ -336,7 +336,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * hello,
  * Start the server process to receive inbound traffic.
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer(void) {
+static int startTransportServer() {
   struct sockaddr_in6 serverAddr;
   const int on = 1;
   unsigned short port;

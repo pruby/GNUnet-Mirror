@@ -22,7 +22,7 @@
  * @file transports/ip.c
  * @brief code to determine thep IP of the local machine
  *        and to do DNS resolution (with caching)
- *
+ * 
  * @author Christian Grothoff
  * @author Tzvetan Horozov
  * @author Heikki Lindholm
@@ -191,6 +191,109 @@ char * getIPaddressAsString(const void * sav,
   return ret;
 }
 
+struct PICache {
+  struct PICache * next;
+  char * address;
+  PeerIdentity peer;
+  cron_t expire;
+};
+
+static struct PICache * pi_head;
+
+static void expirePICache() {
+  struct PICache * pos; 
+  struct PICache * next; 
+  struct PICache * prev; 
+  cron_t now;
+  
+  now = get_time();
+  pos = pi_head;
+  prev = NULL;
+  while (pos != NULL) {
+    next = pos->next;
+    if (pos->expire < now) {
+      FREE(pos->address);
+      FREE(pos);
+      if (prev == NULL)
+	pi_head = next;
+      else
+	prev->next = next;
+    }
+    prev = pos;
+    pos = next;
+  }
+}
+
+/**
+ * We only have the PeerIdentity.  Do we have any
+ * clue about the address (as a string) based on 
+ * the "accept" of the connection?  Note that the
+ * response is just the best guess.
+ */
+char * getIPaddressFromPID(const PeerIdentity * peer) {
+  char * ret;
+  struct PICache * cache; 
+
+  ret = NULL;
+  MUTEX_LOCK(lock);
+  expirePICache();
+  cache = pi_head;
+  while (cache != NULL) {
+    if (0 == memcmp(peer,
+		    &cache->peer,
+		    sizeof(PeerIdentity))) {      
+      ret = STRDUP(cache->address);
+      break;
+    }
+    cache = cache->next;
+  }
+  MUTEX_UNLOCK(lock);
+  return ret;
+}
+
+/**
+ * We have accepted a connection from a particular
+ * address (here given as a string) and received
+ * a welcome message that claims that this connection
+ * came from a particular peer.  This information is
+ * NOT validated (and it may well be impossible for
+ * us to validate the address).  
+ */
+void setIPaddressFromPID(const PeerIdentity * peer,
+			 const char * address) {
+  struct PICache * next;
+
+  MUTEX_LOCK(lock);
+  next = pi_head;
+  while (next != NULL) {
+    if (0 == memcmp(peer,
+		    &next->peer,
+		    sizeof(PeerIdentity))) {
+      next->expire = get_time() + 12 * cronHOURS;
+      if (0 == strcmp(address,
+		      next->address)) {
+	MUTEX_UNLOCK(lock);  
+	return;
+      }
+      FREE(next->address);
+      next->address = STRDUP(address);
+      MUTEX_UNLOCK(lock);  
+      return;      
+    }
+    next = next->next;
+  }
+  next = MALLOC(sizeof(struct PICache));
+  next->peer = *peer;
+  next->address = STRDUP(address);
+  next->expire = get_time() + 12 * cronHOURS;
+  expirePICache();
+  next->next = pi_head;  
+  pi_head = next;
+  MUTEX_UNLOCK(lock);  
+  
+}
+
+
 
 void __attribute__ ((constructor)) gnunet_ip_ltdl_init() {
   lock = MUTEX_CREATE(YES);
@@ -198,6 +301,7 @@ void __attribute__ ((constructor)) gnunet_ip_ltdl_init() {
 
 void __attribute__ ((destructor)) gnunet_ip_ltdl_fini() {
   struct IPCache * pos;
+  struct PICache * ppos;
   MUTEX_DESTROY(lock);
   while (head != NULL) {
     pos = head->next;
@@ -205,6 +309,12 @@ void __attribute__ ((destructor)) gnunet_ip_ltdl_fini() {
     FREE(head->sa);
     FREE(head);
     head = pos;
+  }
+  while (pi_head != NULL) {
+    ppos = pi_head->next;
+    FREE(pi_head->address);
+    FREE(pi_head);
+    pi_head = ppos;
   }
 }
 
