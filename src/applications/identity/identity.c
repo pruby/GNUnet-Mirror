@@ -70,7 +70,7 @@ typedef struct {
   PeerIdentity identity;
 
   /**
-   *how long is this host blacklisted? (if at all)
+   * How long is this host blacklisted? (if at all)
    */
   cron_t until;
 
@@ -1263,10 +1263,8 @@ static int hostInfoIterator(const PeerIdentity * identity,
   hello = identity2Hello(identity,
 			 protocol,
 			 YES);
-  if (hello == NULL) {
-    GE_BREAK(NULL, 0); /* odd */
-    return OK;
-  }
+  if (hello == NULL) 
+    return OK; /* ignore -- happens if HELLO just expired */
   transport = coreAPI->requestService("transport");
   address = transport->helloToString(hello,
 				     YES);
