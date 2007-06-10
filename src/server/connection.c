@@ -1491,6 +1491,7 @@ static int sendBuffer(BufferEntry * be) {
   int ret;
   SendEntry ** entries;
   unsigned int stotal;
+  unsigned int mtu;
 
   ENTRY();
   /* fast ways out */
@@ -1527,7 +1528,7 @@ static int sendBuffer(BufferEntry * be) {
 	 be->available_send_window,
 	 be->session.mtu);
 #endif
-
+  mtu = be->session.mtu;
   totalMessageSize = selectMessagesToSend(be, &priority);
   if (totalMessageSize == 0) {
     expireSendBufferEntries(be);
@@ -1542,6 +1543,9 @@ static int sendBuffer(BufferEntry * be) {
   }
   GE_ASSERT(ectx,
 	    totalMessageSize > sizeof(P2P_PACKET_HEADER));
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
   if ( (be->session.mtu != 0) &&
        (totalMessageSize > be->session.mtu) ) {
     GE_BREAK(ectx, 0);
@@ -1581,6 +1585,9 @@ static int sendBuffer(BufferEntry * be) {
     be->inSendBuffer = NO;
     return NO;             /* deferr further */
   }
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
 
   /* get permutation of SendBuffer Entries
      such that SE_FLAGS are obeyed */
@@ -1600,6 +1607,9 @@ static int sendBuffer(BufferEntry * be) {
   p2pHdr->sequenceNumber = htonl(be->lastSequenceNumberSend);
   p2pHdr->bandwidth = htonl(be->idealized_limit);
   p = sizeof(P2P_PACKET_HEADER);
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
 
   for (i = 0; i < stotal; i++) {
     SendEntry * entry = entries[i];
@@ -1629,6 +1639,9 @@ static int sendBuffer(BufferEntry * be) {
     be->inSendBuffer = NO;
     return NO;
   }
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
@@ -1660,6 +1673,9 @@ static int sendBuffer(BufferEntry * be) {
     be->inSendBuffer = NO;
     return NO;
   }
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
 
   /* finally padd with noise */
   if ( (p + sizeof(MESSAGE_HEADER) <= totalMessageSize) &&
@@ -1680,6 +1696,9 @@ static int sendBuffer(BufferEntry * be) {
     if (stats != NULL)
       stats->change(stat_noise_sent, noiseLen);
   }
+  GE_BREAK(ectx, mtu == be->session.mtu);
+  GE_BREAK(ectx, 
+	   (be->session.mtu == 0) || (mtu >= totalMessageSize));
   if ( ( (be->session.mtu != 0) &&
 	 (p > be->session.mtu) )
        || (p > totalMessageSize) ) {

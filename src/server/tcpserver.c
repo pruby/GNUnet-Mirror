@@ -36,6 +36,8 @@
 
 #define DEBUG_TCPHANDLER NO
 
+#define TIME_HANDLERS NO
+
 /**
  * Array of the message handlers.
  */
@@ -212,6 +214,9 @@ static int select_message_handler(void * mh_cls,
   struct ClientHandle * sender = sock_ctx;
   unsigned short ptyp;
   CSHandler callback;
+#if TIME_HANDLERS
+  cron_t start;
+#endif
 
   ptyp = htons(msg->type);
   MUTEX_LOCK(handlerlock);
@@ -235,6 +240,9 @@ static int select_message_handler(void * mh_cls,
     MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   } else {
+#if TIME_HANDLERS
+    start = get_time();
+#endif
     if (OK != callback(sender,
 		       msg)) {
 #if 0
@@ -247,6 +255,14 @@ static int select_message_handler(void * mh_cls,
       MUTEX_UNLOCK(handlerlock);
       return SYSERR;
     }
+#if TIME_HANDLERS
+    if (get_time() - start > cronSECONDS)
+      GE_LOG(ectx,
+	     GE_INFO | GE_DEVELOPER | GE_IMMEDIATE,
+	     "Handling message of type %u took %llu s\n",
+	     ptyp,
+	     (get_time()-start) / cronSECONDS);
+#endif
   }
   MUTEX_UNLOCK(handlerlock);
   return OK;
