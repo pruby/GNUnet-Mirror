@@ -440,7 +440,7 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
     return;
   }
   MUTEX_LOCK(lock_);
-  entry = findHost(&msg->senderIdentity);
+  entry = findHost(&tmp->senderIdentity);
   if ( (entry != NULL) &&
        (entry->helloCount > 0) ) {
     MUTEX_UNLOCK(lock_);
