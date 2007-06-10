@@ -34,6 +34,14 @@
 #include "ip.h"
 
 /**
+ * Disable DNS resolutions.  The existing DNS resolution
+ * code is synchronous and introduces ~500ms delays while
+ * holding an important lock.  As a result, it makes
+ * GNUnet laggy.  This should be fixed in the future.
+ */
+#define NO_RESOLVE YES
+
+/**
  * Get the IP address for the local machine.
  * @return SYSERR on error, OK on success
  */
@@ -84,6 +92,17 @@ static struct IPCache * head;
 static struct MUTEX * lock;
 
 static void cache_resolve(struct IPCache * cache) {
+#if NO_RESOLVE
+  if (cache->sa->sa_family == AF_INET) {
+    cache->addr = STRDUP("255.255.255.255");
+    SNPRINTF(cache->addr,
+	     strlen("255.255.255.255")+1,
+	     "%u.%u.%u.%u",
+	     PRIP(ntohl(*(int*)&((struct sockaddr_in*) cache->sa)->sin_addr)));
+  } else {
+    cache->addr = STRDUP("IPv6");
+  }
+#else
 #if HAVE_GETNAMEINFO
   char hostname[256];
 
@@ -92,7 +111,7 @@ static void cache_resolve(struct IPCache * cache) {
 		       hostname,
 		       255,
 		       NULL, 0,
-		       NI_NAMEREQD))
+		       0))
     cache->addr = STRDUP(hostname);
 #else
 #if HAVE_GETHOSTBYADDR
@@ -116,10 +135,12 @@ static void cache_resolve(struct IPCache * cache) {
     cache->addr = STRDUP(ent->h_name); 
 #endif
 #endif
+#endif
 }
 
-static struct IPCache * resolve(const struct sockaddr * sa,
-				unsigned int salen) {
+static struct IPCache * 
+resolve(const struct sockaddr * sa,
+	unsigned int salen) {
   struct IPCache * ret;
 
   ret = MALLOC(sizeof(struct IPCache));
@@ -131,6 +152,7 @@ static struct IPCache * resolve(const struct sockaddr * sa,
 	 salen);
   ret->last_request = get_time();
   ret->last_refresh = get_time();
+  ret->addr = NULL;
   cache_resolve(ret);
   head = ret;
   return ret;
