@@ -218,8 +218,8 @@ static void expirePICache() {
 	pi_head = next;
       else
 	prev->next = next;
-    }
-    prev = pos;
+    } else
+      prev = pos;
     pos = next;
   }
 }
