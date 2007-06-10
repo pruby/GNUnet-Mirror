@@ -20,7 +20,7 @@
 
 /**
  * @file transports/ip.c
- * @brief code to determine the IP of the local machine
+ * @brief code to determine thep IP of the local machine
  *        and to do DNS resolution (with caching)
  *
  * @author Christian Grothoff
@@ -159,11 +159,20 @@ char * getIPaddressAsString(const void * sav,
 			 sa,
 			 salen) ) ) ) {
     if (cache->last_request + 60 * cronMINUTES < now) {
-      prev->next = cache->next;
-      FREENONNULL(cache->addr);
-      FREE(cache->sa);
-      FREE(cache);
-      cache = prev;
+      if (prev != NULL) {
+	prev->next = cache->next;
+	FREENONNULL(cache->addr);
+	FREE(cache->sa);
+	FREE(cache);      
+	cache = prev->next;
+      } else {
+	head = cache->next;
+	FREENONNULL(cache->addr);
+	FREE(cache->sa);
+	FREE(cache);      
+	cache = head;	
+      }
+      continue;
     }    
     prev = cache;
     cache = cache->next;
