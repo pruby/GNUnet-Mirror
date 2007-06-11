@@ -37,9 +37,6 @@
 
 #define DEBUG_SEARCH NO
 
-/* must match namespace_info.c */
-#define NS_ROOTS "data" DIR_SEPARATOR_STR "namespace-root" DIR_SEPARATOR_STR
-
 /**
  * Pass the result to the client and note it as shown.
  */
@@ -68,47 +65,6 @@ static void processResult(const ECRS_FileInfo * fi,
 		    URITRACK_SEARCH_RESULT);
 }
 
-static void setNamespaceRoot(struct GE_Context * ectx,
-			     struct GC_Configuration * cfg,
-			     const ECRS_FileInfo * fi) {
-  char * fn;
-  char * fnBase;
-  HashCode512 ns;
-  char * name;
-
-  if (OK != ECRS_getNamespaceId(fi->uri,
-				&ns)) {
-    GE_BREAK(ectx, 0);
-    return;
-  }
-  name = ECRS_getNamespaceName(&ns);
-  GC_get_configuration_value_filename(cfg,
-				      "GNUNET",
-				      "GNUNET_HOME",
-				      GNUNET_HOME_DIRECTORY,
-				      &fnBase);
-  fn = MALLOC(strlen(fnBase) +
-	      strlen(NS_ROOTS) +
-	      strlen(name) +
-	      6);
-  strcpy(fn, fnBase);
-  strcat(fn, DIR_SEPARATOR_STR);
-  strcat(fn, NS_ROOTS);
-  disk_directory_create(ectx, fn);
-  strcat(fn, DIR_SEPARATOR_STR);
-  strcat(fn, name);
-  FREE(name);
-  FREE(fnBase);
-  if (OK == ECRS_getSKSContentHash(fi->uri,
-				   &ns)) {
-    disk_file_write(ectx,
-		    fn,
-		    &ns,
-		    sizeof(HashCode512),
-		    "644");
-  }
-  FREE(fn);
-}
 
 /**
  * Process results found by ECRS.
@@ -129,9 +85,9 @@ static int spcb(const ECRS_FileInfo * fi,
 		    pos->ctx->cfg,
 		    fi);
   if (isRoot) {
-    setNamespaceRoot(ectx,
-		     pos->ctx->cfg,
-		     fi);
+    NS_setNamespaceRoot(ectx,
+			pos->ctx->cfg,
+			fi->uri);
     NS_addNamespaceInfo(ectx,
 			pos->ctx->cfg,
 			fi->uri,
@@ -198,9 +154,10 @@ static int spcb(const ECRS_FileInfo * fi,
 	       rp->matchingKeyCount+1);
 	  rp->matchingKeys[rp->matchingKeyCount-1] = *key;
 #if DEBUG_SEARCH
-	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	      "Received search result (waiting for more %u keys before showing client).\n",
-	      pos->numberOfURIKeys - rp->matchingKeyCount);
+	  GE_LOG(ectx,
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 "Received search result (waiting for more %u keys before showing client).\n",
+		 pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
 	  return OK;
 	}	

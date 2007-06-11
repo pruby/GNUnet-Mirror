@@ -131,16 +131,15 @@ int NS_getNamespaceRoot(struct GE_Context * ectx,
 			const char * ns,
 			HashCode512 * root);
 
+void NS_setNamespaceRoot(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
+			 const struct ECRS_URI * uri);
 
 /**
  * List all available (local or non-local) namespaces.
- *
- * @param local only list local namespaces (if NO, only
- *   non-local known namespaces are listed)
  */
 int NS_listNamespaces(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
-		      int local,
 		      NS_NamespaceIterator iterator,
 		      void * closure); /* namespace_info.c */
 /**
@@ -149,7 +148,6 @@ int NS_listNamespaces(struct GE_Context * ectx,
  */
 int NS_registerDiscoveryCallback(struct GE_Context * ectx,
 				 struct GC_Configuration * cfg,
-				 int local,
 				 NS_NamespaceIterator iterator,
 				 void * closure);
 

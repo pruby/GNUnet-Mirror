@@ -308,7 +308,6 @@ int main(int argc,
   /* print information about pseudonyms */
     cnt = NS_listNamespaces(ectx,
 			    cfg,
-			    NO,
 			    &namespacePrinter,
 			    NULL);
     if (cnt == -1)

@@ -275,10 +275,11 @@ ECRS_createNamespace(struct GE_Context * ectx,
 			  &knb->nblock,
 			  size - sizeof(KBlock) - sizeof(unsigned int));
 
-      GE_ASSERT(ectx, OK == sign(pk,
-			       sizeof(NBlock) + mdsize,
-			       &knb->nblock,
-			       &knb->kblock.signature));
+      GE_ASSERT(ectx, 
+		OK == sign(pk,
+			   sizeof(NBlock) + mdsize,
+			   &knb->nblock,
+			   &knb->kblock.signature));
       /* extra check: verify sig */
       freePrivateKey(pk);
       if (OK != FS_insert(sock, knvalue)) {

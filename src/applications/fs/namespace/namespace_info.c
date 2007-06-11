@@ -40,7 +40,6 @@ struct DiscoveryCallback {
   struct DiscoveryCallback * next;
   NS_NamespaceIterator callback;
   void * closure;
-  int local;
 };
 
 static struct DiscoveryCallback * head;
@@ -53,19 +52,17 @@ static struct MUTEX * lock;
 static void internal_notify(const char * name,
 			    const HashCode512 * id,
 			    const struct ECRS_MetaData * md,
-			    int rating,
-			    int local) {
+			    int rating) {
   struct DiscoveryCallback * pos;
 
   MUTEX_LOCK(lock);
   pos = head;
   while (pos != NULL) {
-    if (pos->local == local)
-      pos->callback(pos->closure,
-		    name,
-		    id,
-		    md,
-		    rating);
+    pos->callback(pos->closure,
+		  name,
+		  id,
+		  md,
+		  rating);
     pos = pos->next;
   }
   MUTEX_UNLOCK(lock);
@@ -205,7 +202,7 @@ static int readNamespaceInfo(struct GE_Context * ectx,
  * for a while since it must create a public-private key pair!
  *
  * @param meta meta-data about the namespace (maybe NULL)
- * @return URI on success, NULL on error (namespace already exists)
+ * @return namespace root URI on success, NULL on error (namespace already exists)
  */
 struct ECRS_URI *
 NS_createNamespace(struct GE_Context * ectx,
@@ -232,7 +229,10 @@ NS_createNamespace(struct GE_Context * ectx,
   if (ret != NULL) {
     HashCode512 id;
     char * name;
-
+ 
+    NS_setNamespaceRoot(ectx,
+			cfg,
+			ret);
     ECRS_getNamespaceId(ret,
 			&id);
     name = ECRS_getNamespaceName(&id);
@@ -244,8 +244,7 @@ NS_createNamespace(struct GE_Context * ectx,
     internal_notify(namespaceName,
 		    &id,
 		    meta,
-		    0,
-		    YES);
+		    0);
     FREE(name);
   }
   return ret;
@@ -388,52 +387,50 @@ static int listNamespaceHelper(const char * fn,
 }
 
 /**
- * List all available (local or non-local) namespaces.
+ * List all available (local and non-local) namespaces.
  *
- * @param local only list local namespaces (if NO, only
- *   non-local known namespaces are listed)
  */
 int NS_listNamespaces(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
-		      int local,
 		      NS_NamespaceIterator iterator,
 		      void * closure) {
   LNClosure cls;
-  int ret;
+  char * fn;
+  char * fnBase;
+  int ret1;
+  int ret2;
 
   cls.iterator = iterator;
   cls.closure = closure;
   cls.ectx = ectx;
   cls.cfg = cfg;
-  if (local == YES) {
-    ret = ECRS_listNamespaces(ectx,
-			      cfg,
-			      &localListNamespaceHelper,
-			      &cls);
-  } else {
-    char * fn;
-    char * fnBase;
-
-    GC_get_configuration_value_filename(cfg,
-					"GNUNET",
-					"GNUNET_HOME",
-					GNUNET_HOME_DIRECTORY,
-					&fnBase);
-    fn = MALLOC(strlen(fnBase) +
-		strlen(NS_DIR) +
-		4);
-    strcpy(fn, fnBase);
-    FREE(fnBase);
-    strcat(fn, DIR_SEPARATOR_STR);
-    strcat(fn, NS_DIR);
-    disk_directory_create(ectx, fn);
-    ret = disk_directory_scan(ectx,
-			      fn,
-			      &listNamespaceHelper,
-			      &cls);
-    FREE(fn);
-  }
-  return ret;
+  ret1 = ECRS_listNamespaces(ectx,
+			     cfg,
+			     &localListNamespaceHelper,
+			     &cls);
+  if (ret1 == -1)
+    return ret1;
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_DIR) +
+	      4);
+  strcpy(fn, fnBase);
+  FREE(fnBase);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, NS_DIR);
+  disk_directory_create(ectx, fn);
+  ret2 = disk_directory_scan(ectx,
+			     fn,
+			     &listNamespaceHelper,
+			     &cls);
+  FREE(fn);
+  if (ret2 == -1)
+    return ret2;
+  return ret1 + ret2;
 }
 
 /**
@@ -961,8 +958,10 @@ void NS_addNamespaceInfo(struct GE_Context * ectx,
   ECRS_getNamespaceId(uri,
 		      &id);
   name = ECRS_getNamespaceName(&id);
-  if (name == NULL)
+  if (name == NULL) {
+    GE_BREAK(ectx, 0);
     return;
+  }
   ranking = 0;
   if (OK == readNamespaceInfo(ectx,
 			      cfg,
@@ -979,17 +978,16 @@ void NS_addNamespaceInfo(struct GE_Context * ectx,
 		       ranking);
     ECRS_freeMetaData(old);
   } else {
-    internal_notify(name,
-		    &id,
-		    meta,
-		    ranking,
-		    NO);
     writeNamespaceInfo(ectx,
 		       cfg,
 		       name,
 		       meta,
 		       ranking);
   }
+  internal_notify(name,
+		  &id,
+		  meta,
+		  ranking);
   FREE(name);
 }
 
@@ -1034,13 +1032,54 @@ int NS_getNamespaceRoot(struct GE_Context * ectx,
   return ret;
 }
 
+void NS_setNamespaceRoot(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
+			 const struct ECRS_URI * uri) {
+  char * fn;
+  char * fnBase;
+  HashCode512 ns;
+  char * name;
+
+  if (OK != ECRS_getNamespaceId(uri,
+				&ns)) {
+    GE_BREAK(ectx, 0);
+    return;
+  }
+  name = ECRS_getNamespaceName(&ns);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_ROOTS) +
+	      strlen(name) +
+	      6);
+  strcpy(fn, fnBase);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, NS_ROOTS);
+  disk_directory_create(ectx, fn);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, name);
+  FREE(name);
+  FREE(fnBase);
+  if (OK == ECRS_getSKSContentHash(uri,
+				   &ns)) {
+    disk_file_write(ectx,
+		    fn,
+		    &ns,
+		    sizeof(HashCode512),
+		    "644");
+  }
+  FREE(fn);
+}
+
 /**
  * Register callback to be invoked whenever we discover
  * a new namespace.
  */
 int NS_registerDiscoveryCallback(struct GE_Context * ectx,
 				 struct GC_Configuration * cfg,
-				 int local,
 				 NS_NamespaceIterator iterator,
 				 void * closure) {
   struct DiscoveryCallback * list;
@@ -1048,13 +1087,11 @@ int NS_registerDiscoveryCallback(struct GE_Context * ectx,
   list = MALLOC(sizeof(struct DiscoveryCallback));
   list->callback = iterator;
   list->closure = closure;
-  list->local = local;
   MUTEX_LOCK(lock);
   list->next = head;
   head = list;
   NS_listNamespaces(ectx,
 		    cfg,
-		    local,
 		    iterator,
 		    closure);
   MUTEX_UNLOCK(lock);

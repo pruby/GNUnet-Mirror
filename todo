@@ -19,6 +19,7 @@ Annotations:
   * support NAT-PMP (in addition to UPnP)
   * add bloomfilter to dstore
   * asynchronous (or client-side?) DNS resolution (for peer-info stuff)
+    => use GNU adns library?
 - Documentation:
   * LJ article
 - Testcases:
@@ -33,6 +34,7 @@ Annotations:
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
 - guard friendly connection count (#1018) [RC]
 - power insert [#854]
+- have a way to clean up namespace information
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
