@@ -1268,6 +1268,7 @@ static int hostInfoIterator(const PeerIdentity * identity,
   transport = coreAPI->requestService("transport");
   address = transport->helloToString(hello,
 				     YES);
+  FREE(hello);
   coreAPI->releaseService(transport);
   if (address == NULL)
     address = STRDUP("");
