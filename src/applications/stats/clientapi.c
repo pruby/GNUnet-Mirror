@@ -317,7 +317,8 @@ int STATS_getStatistics(struct GE_Context * ectx,
     if (SYSERR == connection_read(sock,
 				  (MESSAGE_HEADER**)&statMsg))
       return SYSERR;
-    if (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) {
+    if ( (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) ||
+	 (((char*)statMsg)[ntohs(statMsg->header.size)-1] != '\0') ) {
       GE_BREAK(ectx, 0);
       ret = SYSERR;
       break;
