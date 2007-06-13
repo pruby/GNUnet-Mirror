@@ -236,6 +236,16 @@ filelogger(void * cls,
       FREE(name);
     }
   }
+
+#ifdef WINDOWS
+    /* Most tools disband the console window early in the initialization
+       process, so we have to create a new one if we're logging to the console. */
+    if ((fctx->handle == stderr || fctx->handle == stdout)) {
+      AllocConsole();
+      SetConsoleTitle(_("GNUnet error log"));
+    }
+#endif  
+  
   if (fctx->logdate) {
     ret = fprintf(fctx->handle,
 		  "%s %s: %s",
