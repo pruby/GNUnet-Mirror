@@ -295,7 +295,7 @@ gaim_upnp_parse_description_response(const char* httpResponse,
   }
 
   /* get the controlURL of the service */
-  if((controlURLNode = xmlnode_get_child(serviceTypeNode,
+  if ((controlURLNode = xmlnode_get_child(serviceTypeNode,
 					 "controlURL")) == NULL) {
     FREE(baseURL);
     xmlnode_free(xmlRootNode);
@@ -303,7 +303,9 @@ gaim_upnp_parse_description_response(const char* httpResponse,
   }
 
   tmp = xmlnode_get_data(controlURLNode);
-  if(baseURL && !gaim_str_has_prefix(tmp, "http://") &&
+  fprintf(stderr,
+	  "Got control %s\n", tmp);
+  if (baseURL && !gaim_str_has_prefix(tmp, "http://") &&
      !gaim_str_has_prefix(tmp, "HTTP://")) {
     if (tmp[0] == '/') {
       size_t len;
@@ -419,7 +421,16 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_POSTFIELDSIZE,
 		   strlen(soapMessage));
-  if (ret == CURLE_OK)
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_CONNECTTIMEOUT,
+		   2L);
+  /* NOTE: use of CONNECTTIMEOUT without also
+     setting NOSIGNAL results in really weird
+     crashes on my system! */
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_NOSIGNAL,
+		   1);
+ if (ret == CURLE_OK)
     ret = curl_easy_perform(curl);
 #if 0
   if (ret != CURLE_OK)
@@ -544,6 +555,9 @@ gaim_upnp_parse_description(char * proxy,
   curl = curl_easy_init();
   setup_curl(proxy, curl);
   ret = CURLE_OK;
+  fprintf(stderr,
+	  "Requesting UPnP info from %s\n",
+	  dd->full_url);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_URL,
 		   dd->full_url);
@@ -553,6 +567,15 @@ gaim_upnp_parse_description(char * proxy,
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEDATA,
 		   dd);
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_CONNECTTIMEOUT,
+		   2L);
+  /* NOTE: use of CONNECTTIMEOUT without also
+     setting NOSIGNAL results in really weird
+     crashes on my system! */
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_NOSIGNAL,
+		   1);
   ret = curl_easy_perform(curl);
   if (ret != CURLE_OK)
     GE_LOG(NULL,
