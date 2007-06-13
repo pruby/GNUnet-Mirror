@@ -426,6 +426,9 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
 		   1L);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_CONNECTTIMEOUT,
+		   1L);
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_TIMEOUT,
 		   2L);
   /* NOTE: use of CONNECTTIMEOUT without also
      setting NOSIGNAL results in really weird
@@ -575,7 +578,11 @@ gaim_upnp_parse_description(char * proxy,
 		   1L);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_CONNECTTIMEOUT,
+		   1L);
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_TIMEOUT,
 		   2L);
+
   /* NOTE: use of CONNECTTIMEOUT without also
      setting NOSIGNAL results in really weird
      crashes on my system! */
