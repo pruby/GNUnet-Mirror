@@ -577,14 +577,14 @@ static int acceptSessionKey(const PeerIdentity * sender,
   SESSIONKEY key;
   MESSAGE_HEADER * ping;
   MESSAGE_HEADER * pong;
-  P2P_setkey_MESSAGE * sessionkeySigned;
+  const P2P_setkey_MESSAGE * sessionkeySigned;
   int size;
   int pos;
   char * plaintext;
   EncName enc;
   int ret;
-  Signature * sig;
-  P2P_new_setkey_MESSAGE * newMsg;
+  const Signature * sig;
+  const P2P_new_setkey_MESSAGE * newMsg;
   const void * end;
 
   if (sender == NULL) {
@@ -622,12 +622,12 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	   &enc);
     return SYSERR;
   }
-  sessionkeySigned = (P2P_setkey_MESSAGE *) msg;
+  sessionkeySigned = (const P2P_setkey_MESSAGE *) msg;
 
   if ( (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE)) ||
        (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size) ||
        (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size * 2) ) {
-    newMsg = (P2P_new_setkey_MESSAGE *) msg;
+    newMsg = (const P2P_new_setkey_MESSAGE *) msg;
 
     if (!equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			   &newMsg->target.hashPubKey)) {
