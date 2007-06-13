@@ -303,8 +303,6 @@ gaim_upnp_parse_description_response(const char* httpResponse,
   }
 
   tmp = xmlnode_get_data(controlURLNode);
-  fprintf(stderr,
-	  "Got control %s\n", tmp);
   if (baseURL && !gaim_str_has_prefix(tmp, "http://") &&
      !gaim_str_has_prefix(tmp, "HTTP://")) {
     if (tmp[0] == '/') {
@@ -561,9 +559,6 @@ gaim_upnp_parse_description(char * proxy,
   curl = curl_easy_init();
   setup_curl(proxy, curl);
   ret = CURLE_OK;
-  fprintf(stderr,
-	  "Requesting UPnP info from %s\n",
-	  dd->full_url);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_URL,
 		   dd->full_url);
