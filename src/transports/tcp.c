@@ -112,7 +112,7 @@ static int isBlacklisted(const void * addr,
 			  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
 #if DEBUG_TCP
-  if (ret != OK)
+  if (ret != NO)
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
 	   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
@@ -146,13 +146,13 @@ static int isWhitelisted(const void * addr,
 #endif
     return SYSERR;
   }
-  ret = OK;
+  ret = YES;
   MUTEX_LOCK(tcpblacklistlock);
   if (allowedNetworks_ != NULL)
     ret = check_ipv4_listed(allowedNetworks_,
 			    ip);
   MUTEX_UNLOCK(tcpblacklistlock);
-  if (ret != OK) {
+  if (ret != YES) {
 #if DEBUG_TCP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_ADMIN | GE_BULK,
@@ -165,7 +165,7 @@ static int isWhitelisted(const void * addr,
 
 static int isRejected(const void * addr,
 		      unsigned int addr_len) {
-  if ((YES == isBlacklisted(addr,
+  if ((NO != isBlacklisted(addr,
 			    addr_len)) ||
       (YES != isWhitelisted(addr,
 			    addr_len)))	

@@ -302,7 +302,7 @@ int gnunet_testing_connect_daemons(unsigned short port1,
 	  ret = OK;
 	  break;
 	}
-	PTHREAD_SLEEP(2 * cronSECONDS);
+	PTHREAD_SLEEP(100 * cronMILLIS);
       }
       FREENONNULL(h1);
       FREENONNULL(h2);
