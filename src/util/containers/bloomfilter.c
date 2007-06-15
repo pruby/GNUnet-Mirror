@@ -50,7 +50,6 @@ typedef struct Bloomfilter {
    */
   struct MUTEX * lock;
 
-
   /**
    * The actual bloomfilter bit array
    */
@@ -60,6 +59,11 @@ typedef struct Bloomfilter {
    * For error handling.
    */
   struct GE_Context * ectx;
+
+  /**
+   * Filename of the filter
+   */
+  char * filename;
 
   /**
    * The bit counter file on disk
@@ -418,7 +422,7 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
     ui*=2;
   size = ui; /* make sure it's a power of 2 */
 
-  bf = (Bloomfilter *) MALLOC(sizeof(Bloomfilter));
+  bf = MALLOC(sizeof(Bloomfilter));
   bf->ectx = ectx;
   /* Try to open a bloomfilter file */
 #ifndef _MSC_VER
@@ -470,6 +474,7 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
     pos += BUFFSIZE * 2; /* 2 bits per byte in the buffer */
   }
   FREE(rbuff);
+  bf->filename = STRDUP(filename);
   return bf;
 }
 
@@ -485,8 +490,9 @@ void freeBloomfilter(Bloomfilter * bf) {
     return;
   MUTEX_DESTROY(bf->lock);
   disk_file_close(bf->ectx,
-		  NULL, /* FIXME: keep filename around! */
+		  bf->filename,
 		  bf->fd);
+  FREENONNULL(bf->filename);
   FREE(bf->bitArray);
   FREE(bf);
 }
@@ -597,7 +603,7 @@ void resizeBloomfilter(Bloomfilter * bf,
   size = i; /* make sure it's a power of 2 */
 
   bf->bitArraySize = size;
-  bf->bitArray = (char*)MALLOC(size);
+  bf->bitArray = MALLOC(size);
   memset(bf->bitArray,
 	 0,
 	 bf->bitArraySize);
