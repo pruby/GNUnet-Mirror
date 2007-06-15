@@ -20,7 +20,7 @@
 
 /**
  * @file applications/gap/gaptest3.c
- * @brief GAP economy testcase
+ * @brief GAP economy testcase, download from star topology
  * @author Christian Grothoff
  */
 
@@ -47,6 +47,25 @@ static struct GC_Configuration * cfg;
 
 static int testTerminate(void * unused) {
   return OK;
+}
+
+static void uprogress(unsigned long long totalBytes,
+		      unsigned long long completedBytes,
+		      cron_t eta,
+		      void * closure) {
+  fprintf(stderr,
+	  totalBytes == completedBytes ? "\n" : ".");
+}
+
+static void dprogress(unsigned long long totalBytes,
+		      unsigned long long completedBytes,
+		      cron_t eta,
+		      unsigned long long lastBlockOffset,
+		      const char * lastBlock,
+		      unsigned int lastBlockSize,
+		      void * closure) {
+  fprintf(stderr,
+	  totalBytes == completedBytes ? "\n" : ".");
 }
 
 static char * makeName(unsigned int i) {
@@ -89,7 +108,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			1, /* anon */
 			0, /* prio */
 			get_time() + 100 * cronMINUTES, /* expire */
-			NULL, /* progress */
+			&uprogress,
 			NULL,
 			&testTerminate,
 			NULL,
@@ -123,7 +142,7 @@ static int downloadFile(unsigned int size,
 			      uri,
 			      tmpName,
 			      1,
-			      NULL,
+			      &dprogress,
 			      NULL,
 			      &testTerminate,
 			      NULL)) {

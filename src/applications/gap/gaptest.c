@@ -42,6 +42,27 @@ static int testTerminate(void * unused) {
   return OK;
 }
 
+
+static void uprogress(unsigned long long totalBytes,
+		      unsigned long long completedBytes,
+		      cron_t eta,
+		      void * closure) {
+  fprintf(stderr,
+	  totalBytes == completedBytes ? "\n" : ".");
+}
+
+static void dprogress(unsigned long long totalBytes,
+		      unsigned long long completedBytes,
+		      cron_t eta,
+		      unsigned long long lastBlockOffset,
+		      const char * lastBlock,
+		      unsigned int lastBlockSize,
+		      void * closure) {
+  fprintf(stderr,
+	  totalBytes == completedBytes ? "\n" : ".");
+}
+
+
 static char * makeName(unsigned int i) {
   char * fn;
 
@@ -82,7 +103,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			0, /* anon */
 			0, /* prio */
 			get_time() + 10 * cronMINUTES, /* expire */
-			NULL, /* progress */
+			&uprogress, 
 			NULL,
 			&testTerminate,
 			NULL,
@@ -128,9 +149,10 @@ static int searchCB(const ECRS_FileInfo * fi,
   char * tmp;
 
   tmp = ECRS_uriToString(fi->uri);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Search found URI `%s'\n",
-      tmp);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Search found URI `%s'\n",
+	 tmp);
   FREE(tmp);
   GE_ASSERT(ectx, NULL == *my);
   *my = ECRS_dupUri(fi->uri);
@@ -187,7 +209,7 @@ static int downloadFile(unsigned int size,
 			      uri,
 			      tmpName,
 			      0,
-			      NULL,
+			      &dprogress,
 			      NULL,
 			      &testTerminate,
 			      NULL)) {
