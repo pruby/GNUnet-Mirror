@@ -108,7 +108,7 @@
 #define ITERATIONS 100
 
 /**
- * Name of the database on disk.  FIXME!
+ * Name of the database on disk. 
  * You may have to adjust this path and the access
  * permission to the respective directory in order
  * to obtain all of the performance information.
