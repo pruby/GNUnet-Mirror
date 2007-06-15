@@ -161,13 +161,13 @@ static struct MUTEX * lock;
  * Linked list tracking reply statistics.  Synchronize access using
  * the lock!
  */
-static ReplyTrackData * rtdList = NULL;
+static ReplyTrackData * rtdList;
 
-static RewardEntry * rewards = NULL;
+static RewardEntry * rewards;
 
-static unsigned int rewardSize = 0;
+static unsigned int rewardSize;
 
-static unsigned int rewardPos = 0;
+static unsigned int rewardPos;
 
 /**
  * Hard CPU limit
@@ -929,6 +929,23 @@ static unsigned int claimReward(const HashCode512 * query) {
   return ret;
 }
 
+static void resetSeen(IndirectionTableEntry * ite) {
+  if (stats != NULL)
+    stats->change(stat_memory_seen, - ite->seenIndex);
+  GROW(ite->seen,
+       ite->seenIndex,
+       0);
+}
+
+static void resetDestinations(IndirectionTableEntry * ite) {
+  decrement_pid_rcs(ite->destination,
+		    ite->hostsWaiting);
+  if (stats != NULL)
+    stats->change(stat_memory_destinations, - ite->hostsWaiting);
+  GROW(ite->destination,
+       ite->hostsWaiting,
+       0);
+}
 
 /**
  * Add an entry to the routing table. The lock on the ite
@@ -971,11 +988,7 @@ static int addToSlot(int mode,
        stats->change(stat_routing_slots_used, 1);
 
   if (mode == ITE_REPLACE) {
-    if (stats != NULL)
-      stats->change(stat_memory_seen, - ite->seenIndex);
-    GROW(ite->seen,
-	 ite->seenIndex,
-	 0);
+    resetSeen(ite);
     ite->seenReplyWasUnique = NO;
     if (equalsHashCode512(query,
 			  &ite->primaryKey)) {
@@ -984,27 +997,14 @@ static int addToSlot(int mode,
       for (i=0;i<ite->hostsWaiting;i++)
 	if (ite->destination[i] == sender)
 	  return SYSERR;
-      if (ite->hostsWaiting >= MAX_HOSTS_WAITING) {
-	decrement_pid_rcs(ite->destination,
-			  ite->hostsWaiting);
-	if (stats != NULL)
-	  stats->change(stat_memory_destinations, - ite->hostsWaiting);
-	GROW(ite->destination,
-	     ite->hostsWaiting,
-	     0); /* RESET to avoid unbounded growth (#1014) */
-      }
+      if (ite->hostsWaiting >= MAX_HOSTS_WAITING) 
+	resetDestinations(ite);      
     } else {
       ite->successful_local_lookup_in_delay_loop = NO;
       /* different request, flush pending queues */
       dequeueQuery(&ite->primaryKey);
       ite->primaryKey = *query;
-      if (stats != NULL)
-	stats->change(stat_memory_destinations, - ite->hostsWaiting);
-      decrement_pid_rcs(ite->destination,
-			ite->hostsWaiting);
-      GROW(ite->destination,
-	   ite->hostsWaiting,
-	   0);
+      resetDestinations(ite);
       ite->ttl = now + ttl;
       ite->priority = priority;
     }
@@ -1027,11 +1027,7 @@ static int addToSlot(int mode,
   ite->destination[ite->hostsWaiting-1] = sender;
   change_pid_rc(sender, 1);
   /* again: new listener, flush seen list */
-  if (stats != NULL)
-    stats->change(stat_memory_seen, - ite->seenIndex);
-  GROW(ite->seen,
-       ite->seenIndex,
-       0);
+  resetSeen(ite);
   ite->seenReplyWasUnique = NO;
   return OK;
 }
@@ -1112,11 +1108,7 @@ static int needsForwarding(const HashCode512 * query,
        longer expired than new query */
     /* previous entry relatively expired, start using the slot --
        and kill the old seen list!*/
-    if (stats != NULL)
-      stats->change(stat_memory_seen, - ite->seenIndex);
-    GROW(ite->seen,
-	 ite->seenIndex,
-	 0);
+    resetSeen(ite);
     ite->seenReplyWasUnique = NO;
     if ( (equal_to_pending) &&
 	 (YES == ite-> successful_local_lookup_in_delay_loop) ) {
@@ -1193,11 +1185,7 @@ static int needsForwarding(const HashCode512 * query,
     if (ite->seenReplyWasUnique) {
       if (ite->ttl < new_ttl) { /* ttl of new is longer? */
 	/* go again */
-	if (stats != NULL)
-	  stats->change(stat_memory_seen, - ite->seenIndex);
-	GROW(ite->seen,
-	     ite->seenIndex,
-	     0);
+	resetSeen(ite);
 	ite->seenReplyWasUnique = NO;
 	if (YES == ite->successful_local_lookup_in_delay_loop) {
 	  *isRouted = NO;
@@ -1753,17 +1741,8 @@ static int useContent(const PeerIdentity * host,
       /* kill routing entry -- we have seen so many different
 	 replies already that we cannot afford to continue
 	 to keep track of all of the responses seen (#1014) */
-      if (stats != NULL)
-	stats->change(stat_memory_destinations, - ite->hostsWaiting);
-      decrement_pid_rcs(ite->destination, ite->hostsWaiting);
-      GROW(ite->destination,
-	   ite->hostsWaiting,
-	   0);
-      if (stats != NULL)
-	stats->change(stat_memory_seen, - ite->seenIndex);
-      GROW(ite->seen,
-	   ite->seenIndex,
-	   0);
+      resetDestinations(ite);
+      resetSeen(ite);
       ite->priority = 0;
       ite->type = 0;
       ite->ttl = 0;
@@ -2300,18 +2279,9 @@ void release_module_gap() {
 
   for (i=0;i<indirectionTableSize;i++) {
     ite = &ROUTING_indTable_[i];
-    if (stats != NULL)
-      stats->change(stat_memory_seen, - ite->seenIndex);
-    GROW(ite->seen,
-	 ite->seenIndex,
-	 0);
+    resetSeen(ite);
     ite->seenReplyWasUnique = NO;
-    if (stats != NULL)
-      stats->change(stat_memory_destinations, - ite->hostsWaiting);
-    decrement_pid_rcs(ite->destination, ite->hostsWaiting);
-    GROW(ite->destination,
-	 ite->hostsWaiting,
-	 0);
+    resetDestinations(ite);
   }
 
   MUTEX_DESTROY(lookup_exclusion);
