@@ -332,7 +332,7 @@ static KVHandle *getTable(const char *database,
   unsigned int len;
   KVHandle *ret;
   sqliteHandle *dbh;
-  char *idx;
+  char * idx;
 
   dbh = getDBHandle(database);
   if (dbh == NULL)
@@ -343,7 +343,7 @@ static KVHandle *getTable(const char *database,
   len = strlen(table);
   sqlite3_bind_text(stmt, 1, table, len, SQLITE_STATIC);
   if (sqlite3_step(stmt) == SQLITE_DONE) {
-    char *create = malloc(len + 58);
+    char * create = MALLOC(len + 58);
 
     sprintf(create,
 	    "CREATE TABLE %s (gn_key BLOB, gn_val BLOB, gn_age BIGINT)",
@@ -355,21 +355,21 @@ static KVHandle *getTable(const char *database,
 		 LOG_ERROR,
 		 "sqlite_create");
       sqlite3_finalize(stmt);
-      free(create);
+      FREE(create);
       return NULL;
     }
 
-    free(create);
+    FREE(create);
   }
   sqlite3_finalize(stmt);
 
   /* FIXME: more indexes */
-  idx = (char *) malloc(len + 34);
+  idx = MALLOC(len + 34);
   sprintf(idx,
 	  "CREATE INDEX idx_key ON %s (gn_key)",
 	  table);
   sqlite3_exec(dbh->dbh, idx, NULL, NULL, NULL);
-
+  FREE(idx);
   ret = MALLOC(sizeof(KVHandle));
   ret->table = STRDUP(table);
   ret->db = STRDUP(database);
