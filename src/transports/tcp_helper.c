@@ -465,11 +465,11 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
     = htons(0);
   welcome.clientIdentity
     = *(coreAPI->myIdentity);
-  if (SYSERR == select_write(selector,
-			     s,			
-			     &welcome.header,
-			     NO,
-			     YES)) {
+  if (OK != select_write(selector,
+			 s,			
+			 &welcome.header,
+			 NO,
+			 YES)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_BULK,

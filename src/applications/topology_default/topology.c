@@ -193,7 +193,7 @@ static void scanForHosts(unsigned int index) {
   }
   if (indexMatch.costSelector > 0)
     indexMatch.costSelector
-      = weak_randomi(indexMatch.costSelector/4)*4;
+      = weak_randomi64(indexMatch.costSelector);
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost(now,
 			&scanHelperSelect,

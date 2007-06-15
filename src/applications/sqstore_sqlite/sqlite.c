@@ -1094,14 +1094,15 @@ static int put(const HashCode512 * key,
   sqlite3_bind_blob(stmt, 6, key, sizeof(HashCode512), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 7, &value[1], contentSize, SQLITE_TRANSIENT);
   n = sqlite3_step(stmt);
-  sqlite3_reset(stmt);
   if (n != SQLITE_DONE) {
     LOG_SQLITE(dbh,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
+    sqlite3_reset(stmt);
     MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
+  sqlite3_reset(stmt);
   db->lastSync++;
   db->payload += getContentDatastoreSize(value);
   MUTEX_UNLOCK(db->DATABASE_Lock_);

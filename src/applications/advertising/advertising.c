@@ -442,7 +442,8 @@ broadcastHelper(const PeerIdentity * hi,
     sd->n--;
     return OK; /* don't advertise NAT addresses via broadcast */
   }
-  if (weak_randomi(sd->n) != 0)
+  if ( (sd->n != 0) &&
+       (weak_randomi(sd->n) != 0) )
     return OK;
 #if DEBUG_ADVERTISING
   IF_GELOG(ectx,
@@ -477,7 +478,8 @@ broadcastHelper(const PeerIdentity * hi,
      we get a probability of 1/n for this, which
      is what we want: fewer attempts to contact fresh
      peers as the network grows): */
-  if (weak_randomi(sd->n) != 0)
+  if ( (sd->n != 0) &&
+       (weak_randomi(sd->n) != 0) )
     return OK;
 
   /* establish short-lived connection, send, tear down */
@@ -527,14 +529,16 @@ broadcastHelper(const PeerIdentity * hi,
  */
 static void
 broadcasthelloTransport(TransportAPI * tapi,
-			const int * prob) {
+			void * cls) {
+  const int * prob = cls;
   SendData sd;
   cron_t now;
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
-  if (0 != weak_randomi(*prob))
+  if ( ((*prob) != 0) &&
+       (0 != weak_randomi(*prob)) )
     return; /* ignore */
   now = get_time();
   sd.n = identity->forEachHost(now,
@@ -580,8 +584,9 @@ static void broadcasthello(void * unused) {
     return; /* CPU load too high... */
   i = transport->forEach(NULL,
 			 NULL);
-  transport->forEach((TransportCallback)&broadcasthelloTransport,
-		     &i);
+  if (i > 0) 
+    transport->forEach(&broadcasthelloTransport,
+		       &i);
 }
 
 typedef struct {
@@ -595,7 +600,8 @@ static void forwardCallback(const PeerIdentity * peer,
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
-  if (weak_randomi(fcc->prob) != 0)
+  if ( (fcc->prob != 0) &&
+       (weak_randomi(fcc->prob) != 0) )
     return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
 			&fcc->msg->senderIdentity.hashPubKey))
