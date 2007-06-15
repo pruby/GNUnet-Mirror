@@ -45,6 +45,8 @@ static char * filename;
 
 static unsigned int anonymity = 1;
 
+static unsigned int parallelism = 32;
+
 static cron_t start_time;
 
 static struct FSUI_DownloadList * dl;
@@ -76,6 +78,8 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
   { 'o', "output", "FILENAME",
     gettext_noop("write the file to FILENAME"),
     1, &gnunet_getopt_configure_set_string, &filename },
+  { 'p', "parallelism", "DOWNLOADS",
+    gettext_noop("set the maximum number of parallel downloads that are allowed"),
   { 'R', "recursive", NULL,
     gettext_noop("download a GNUnet directory recursively"),
     0, &gnunet_getopt_configure_set_one, &do_recursive },
@@ -283,7 +287,7 @@ int main(int argc,
   ctx = FSUI_start(ectx,
 		   cfg,
 		   "gnunet-download",
-		   32, /* FIXME: support option! */
+		   parallelism == 0 ? 1 : parallelism,
 		   NO,
 		   &progressModel,
 		   NULL);
