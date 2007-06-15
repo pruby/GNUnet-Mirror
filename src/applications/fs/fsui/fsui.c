@@ -178,6 +178,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   FSUI_UnindexList * xlist;
   char * fn;
   char * gh;
+  unsigned long long size;
 
   GE_ASSERT(ectx, cfg != NULL);
   ret = MALLOC(sizeof(FSUI_Context));
@@ -256,12 +257,17 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 2d) signal unindex restarts */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
+    if (OK != disk_file_size(ectx,
+			     xlist->filename,
+			     &size,
+			     YES))
+      size = 0;
     event.type = FSUI_unindex_resumed;
     event.data.UnindexResumed.uc.pos = xlist;
     event.data.UnindexResumed.uc.cctx = NULL;
-    event.data.UnindexResumed.completed = 0; /* FIXME */
-    event.data.UnindexResumed.total = 0; /* FIXME */
-    event.data.UnindexResumed.eta = 0; /* FIXME: use start_time for estimate! */
+    event.data.UnindexResumed.completed = (xlist->state == FSUI_COMPLETED_JOINED) ? size : 0;
+    event.data.UnindexResumed.total = size;
+    event.data.UnindexResumed.eta = get_time();
     event.data.UnindexResumed.filename = xlist->filename;
     event.data.UnindexResumed.state = xlist->state;
     xlist->cctx = cb(closure, &event);	
