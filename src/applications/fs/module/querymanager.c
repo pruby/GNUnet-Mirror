@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -72,7 +72,7 @@ static void removeEntry(unsigned int off) {
   GE_ASSERT(ectx, off < trackerCount);
   FREE(trackers[off]);
   if (stats != NULL)
-    stats->change(stat_queries_tracked, 1);
+    stats->change(stat_queries_tracked, -1);
   trackers[off] = trackers[--trackerCount];
   trackers[trackerCount] = NULL;
   if ( (trackerSize > 64) &&
@@ -233,16 +233,20 @@ int initQueryManager(CoreAPIForApplication * capi) {
 
 void doneQueryManager() {
   int i;
+
+  for (i=trackerCount-1;i>=0;i--) 
+    FREE(trackers[i]);
+  
+  GROW(trackers,
+       trackerSize,
+       0); 
+  trackerCount = 0;
   if (stats != NULL) {
+    stats->set(stat_queries_tracked, 0);
     coreAPI->releaseService(stats);
     stats = NULL;
   }
-  for (i=trackerCount-1;i>=0;i--)
-    FREE(trackers[i]);
-  GROW(trackers,
-       trackerSize,
-       0);
-  trackerCount = 0;
+
   coreAPI->unregisterClientExitHandler(&ceh);
   MUTEX_DESTROY(queryManagerLock);
   coreAPI = NULL;
