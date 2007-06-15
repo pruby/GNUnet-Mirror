@@ -1,4 +1,4 @@
-.TH GNUNET-DOWNLOAD "1" "23 Dec 2006" "GNUnet"
+.TH GNUNET-DOWNLOAD "1" "16 Jun 2007" "GNUnet"
 .SH NAME
 gnunet\-download \- a command line interface for downloading files from GNUnet
 .SH SYNOPSIS
@@ -31,6 +31,9 @@ will be ignored in that case).
 .TP
 \fB\-o \fIFILENAME\fR, \fB\-\-output=FILENAME\fR
 write the file to FILENAME.  Hint: when recursively downloading a directory, append a '/' to the end of the FILENAME to create a directory of that name.  If no FILENAME is specified, gnunet\-download constructs a temporary ID from the URI of the file.  The final filename is constructed based on meta\-data extracted using libextractor (if available).
+.TP
+\fB\-p \fIDOWNLOADS\fR, \fB\-\-parallelism=DOWNLOADS\fR
+set the maximum number of parallel downloads that is allowed.  More parallel downloads can, to some extent, improve the overall time to download content.  However, parallel downloads also take more memory.  The specified number is the number of files that are downloaded in parallel, not the number of blocks that are concurrently requested.  As a result, the number only matters for recursive downloads.  The default value is 32.
 .TP
 \fB\-R\fR, \fB\-\-recursive\fR
 download directories recursively (and in parallel)
