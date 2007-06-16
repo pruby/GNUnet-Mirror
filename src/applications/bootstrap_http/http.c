@@ -297,8 +297,8 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     /* use timeout of 1s in case that SELECT is not interrupted by
        signal (just to increase portability a bit) -- better a 1s
        delay in the reaction than hanging... */
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1000;
     SELECT(max + 1,
 	   &rs,
 	   &ws,
