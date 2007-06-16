@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Arnaud Kyheng <Arnaud.Kyheng@free.fr>
 Uploaders: Daniel Baumann <daniel@debian.org>
-Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5.0.0), libltdl3-dev, libsqlite3-dev, libmysqlclient15-dev, libgcrypt11-dev, guile-1.8, guile-1.8-dev, libgmp3-dev (>= 4.0.0), libextractor-dev (>= 0.5.16-1), libgtk2.0-dev (>= 2.6.0-1), libncurses5-dev, gettext (>=0.14.1-1), libglade2-dev, zlib1g-dev, libcurl3-dev, dialog (>=1.0-200602), libxml2-dev
+Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5.0.0), libltdl3-dev, libsqlite3-dev, libmysqlclient15-dev, libgcrypt11-dev, guile-1.8, guile-1.8-dev, libgmp3-dev (>= 4.0.0), libextractor-dev (>= 0.5.16-1), libgtk2.0-dev (>= 2.6.0-1), libncurses5-dev, gettext (>=0.14.1-1), libglade2-dev, zlib1g-dev, libcurl3-dev, dialog (>=1.0-200602), libxml2-dev, libadns1-dev (>=1.4)
 Standards-Version: 3.7.2
 
 Package: gnunet-common
@@ -17,7 +17,7 @@ Description: Secure, trust-based peer-to-peer framework
  .
  This package contains base files for the GNUnet packages.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
 
 Package: gnunet-daemon
 Architecture: any
@@ -30,7 +30,7 @@ Description: Secure, trust-based peer-to-peer framework
  .
  This package contains the GNUnet Daemon necessary to run a GNUnet node.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
 
 Package: gnunet-client
 Architecture: any
@@ -45,7 +45,7 @@ Description: Secure, trust-based peer-to-peer framework
  This package contains the GNUnet command line client applications as
  gnunet-search and gnunet-download.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
 
 Package: gnunet-tools
 Architecture: any
@@ -59,7 +59,7 @@ Description: Secure, trust-based peer-to-peer framework
  This package contains the gnunet additional tools for GNUnet like the
  gnunet-setup graphical tool.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
 
 Package: gnunet
 Architecture: all
@@ -73,7 +73,7 @@ Description: Secure, trust-based peer-to-peer framework
  This package is a meta package for GNUnet and depends upon gnunet-daemon,
  gnunet-client and gnunet-tools.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
 
 Package: gnunet-dev
 Section: libdevel
@@ -87,4 +87,4 @@ Description: Secure, trust-based peer-to-peer framework
  .
  This package contains the development files of GNUnet.
  .
-  Homepage: <http://www.gnunet.org/>
+  Homepage: <http://gnunet.org/>
