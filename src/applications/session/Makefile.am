@@ -13,12 +13,14 @@ libgnunetmodule_session_la_LIBADD = \
 libgnunetmodule_session_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 
-
+if HAVE_MHD
+  httptest = sessiontest_http
+endif
 
 check_PROGRAMS = \
   sessiontest \
   sessiontest_udp \
-  sessiontest2
+  sessiontest2 $(httptest)
 
 TESTS = $(check_PROGRAMS)
 
@@ -49,7 +51,19 @@ sessiontest2_LDADD = \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+
+sessiontest_http_SOURCES = \
+  sessiontest_http.c 
+sessiontest_http_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
 EXTRA_DIST = \
   check.conf \
   tcp-peer.conf \
-  nat-peer.conf
+  nat-peer.conf \
+  http-peer.conf \
+  nat-http-peer.conf
