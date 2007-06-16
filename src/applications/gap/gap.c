@@ -1009,15 +1009,16 @@ static int addToSlot(int mode,
       ite->priority = priority;
     }
   } else { /* GROW mode */
-    GE_ASSERT(ectx, equalsHashCode512(query,
-				    &ite->primaryKey));
-    for (i=0;i<ite->hostsWaiting;i++)
-      if (sender == ite->destination[i])
-	return SYSERR; /* already there! */
+    GE_ASSERT(ectx, 
+	      equalsHashCode512(query,
+				&ite->primaryKey));
     /* extend lifetime */
     if (ite->ttl < now + ttl)
       ite->ttl = now + ttl;
     ite->priority += priority;
+    for (i=0;i<ite->hostsWaiting;i++)
+      if (sender == ite->destination[i])
+	return SYSERR; /* already there! */
   }
   if (stats != NULL)
     stats->change(stat_memory_destinations, 1);
@@ -1638,7 +1639,7 @@ static int useContent(const PeerIdentity * host,
   ((char*)&enc2)[6] = '\0';
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "GAP received content %s from `%s'\n",
+	 "GAP received content `%s' from `%s'\n",
 	 &enc2,
 	 (host != NULL) ? (const char*)&enc : "myself");
 #endif
@@ -1661,21 +1662,7 @@ static int useContent(const PeerIdentity * host,
   rhf(value,
       &contentHC);
 
-  /* FIRST: check if seen */
-  MUTEX_LOCK(lookup_exclusion);
-  for (i=0;i<ite->seenIndex;i++) {
-    if (equalsHashCode512(&contentHC,
-			  &ite->seen[i])) {
-      MUTEX_UNLOCK(lookup_exclusion);
-      FREE(value);
-      if (stats != NULL)
-	stats->change(stat_routing_reply_dups, 1);
-      return 0; /* seen before, useless */
-    }
-  }
-  MUTEX_UNLOCK(lookup_exclusion);
-
-  /* SECOND: check if valid */
+  /* FIRST: check if valid */
   ret = bs->put(bs->closure,
 		&msg->primaryKey,
 		value,
@@ -1696,6 +1683,21 @@ static int useContent(const PeerIdentity * host,
     FREE(value);
     return SYSERR; /* invalid */
   }
+
+  /* SECOND: check if seen */
+  MUTEX_LOCK(lookup_exclusion);
+  for (i=0;i<ite->seenIndex;i++) {
+    if (equalsHashCode512(&contentHC,
+			  &ite->seen[i])) {
+      MUTEX_UNLOCK(lookup_exclusion);
+      FREE(value);
+      if (stats != NULL)
+	stats->change(stat_routing_reply_dups, 1);
+      return 0; /* seen before, useless */
+    }
+  }
+  MUTEX_UNLOCK(lookup_exclusion);
+
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
