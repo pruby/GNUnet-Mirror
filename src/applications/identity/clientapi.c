@@ -198,7 +198,7 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
     }
     count++;
     if ( (ntohs(reply->type) != CS_PROTO_identity_INFO) ||
-	 (ntohs(reply->size) <= sizeof(CS_identity_peer_info_MESSAGE)) ) {
+	 (ntohs(reply->size) < sizeof(CS_identity_peer_info_MESSAGE)) ) {
       GE_BREAK(NULL, 0);
       FREE(reply);
       return SYSERR;

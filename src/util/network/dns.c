@@ -196,6 +196,8 @@ char * network_get_ip_as_string(const void * sav,
   struct IPCache * prev;
   cron_t now;
 
+  if (salen < sizeof(struct sockaddr))
+    return NULL;
   now = get_time();  
   MUTEX_LOCK(lock);
   cache = head;
