@@ -28,6 +28,9 @@
  * - proper connection re-establishment
  * - nothing copies TO wbuff, only from (see FIXMEs)
  * - free resources allocated for PUT!
+ * - integrate MHD thread into CURL thread
+ * - why does valgrind show "conditional jump depends on uninit values" for curl_multi_perform?
+ * - where does the 1s loopback-ping latency come from?
  */
 
 #include "gnunet_util.h"
@@ -821,6 +824,9 @@ static int httpConnect(const P2P_hello_MESSAGE * hello,
 		     "GNUnet-http");
   CURL_EASY_SETOPT(curl_get,
 		   CURLOPT_CONNECTTIMEOUT,
+		   150L);
+  CURL_EASY_SETOPT(curl_get,
+		   CURLOPT_TIMEOUT,
 		   150L);
   CURL_EASY_SETOPT(curl_get,
 		   CURLOPT_WRITEFUNCTION,
