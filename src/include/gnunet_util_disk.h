@@ -192,6 +192,12 @@ int disk_directory_remove(struct GE_Context * ectx,
 int disk_directory_create(struct GE_Context * ectx,
 			  const char * dir);
 
+/**
+ * @brief Removes special characters as ':' from a filename.
+ * @param fn the filename to canonicalize
+ */
+void disk_filename_canonicalize(char *fn);
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

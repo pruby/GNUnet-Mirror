@@ -191,6 +191,10 @@ getLogFileName(struct GE_Context * fctx,
 			  datefmt,
 			  &lcltime));
   FREE(datefmt);
+
+  /* Remove special chars */
+  disk_filename_canonicalize(date);
+  
   size = strlen(name) + 82;
   ret = MALLOC(size);
   SNPRINTF(ret,

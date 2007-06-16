@@ -731,4 +731,25 @@ int disk_file_copy(struct GE_Context * ectx,
   return SYSERR;
 }
 
+/**
+ * @brief Removes special characters as ':' from a filename.
+ * @param fn the filename to canonicalize
+ */
+void disk_filename_canonicalize(char *fn) {
+  char *idx;
+  char c;
+  
+  idx = fn;
+  while (*idx) {
+    c = *idx;
+    
+    if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' ||
+      c == '"' || c == '<' || c == '>' || c == '|') {
+        *idx = '_';
+    }
+    
+    idx++;
+  }
+}
+
 /* end of storage.c */
