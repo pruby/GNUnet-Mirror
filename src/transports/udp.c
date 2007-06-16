@@ -476,48 +476,27 @@ static int reloadConfiguration() {
 }
 
 /**
- * Convert UDP address to a string.
+ * Convert UDP hello to IP address
  */
 static char *
-addressToString(const P2P_hello_MESSAGE * hello,
-		int do_resolve) {
-  char * ret;
+helloToAddress(const P2P_hello_MESSAGE * hello,
+	       void ** sa,
+	       unsigned int * sa_len) {
   const HostAddress * haddr = (const HostAddress*) &hello[1];
-  size_t n;
-  char * hn;
-  struct sockaddr_in serverAddr;
-    
-  if (do_resolve) {
-    memset((char *) &serverAddr,
-	   0,
-	   sizeof(serverAddr));
-    serverAddr.sin_family   = AF_INET;
-    memcpy(&serverAddr.sin_addr,
-	   haddr,
-	   sizeof(IPaddr));
-    serverAddr.sin_port = haddr->port;
-    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
-			      sizeof(struct sockaddr_in));
-  } else
-    hn = NULL;
-  n = 4*4+6+6 + (hn == NULL ? 0 : strlen(hn)) + 10;
-  ret = MALLOC(n);
-  if (hn != NULL) {
-    SNPRINTF(ret,
-	     n,
-	     "%s (%u.%u.%u.%u) UDP (%u)",
-	     hn,
-	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
-	     ntohs(haddr->port));
-  } else {
-    SNPRINTF(ret,
-	     n,
-	     "%u.%u.%u.%u UDP (%u)",
-	     PRIP(ntohl(*(int*)&haddr->ip.addr)),
-	     ntohs(haddr->port));
-  }
-  FREENONNULL(hn);
-  return ret;
+  struct sockaddr_in * serverAddr;
+  
+  *sa_len = sizeof(struct sockaddr_in);
+  serverAddr = MALLOC(sizeof(struct sockaddr_in));
+  *sa = serverAddr;
+  memset(serverAddr,
+	 0,
+	 sizeof(struct sockaddr_in));
+  serverAddr->sin_family   = AF_INET;
+  memcpy(&serverAddr->sin_addr,
+	 haddr,
+	 sizeof(IPaddr));
+  serverAddr->sin_port = haddr->port;
+  return OK;
 }
 
 /**
@@ -591,7 +570,7 @@ inittransport_udp(CoreAPIForTransport * core) {
   udpAPI.disconnect           = &udpDisconnect;
   udpAPI.startTransportServer = &startTransportServer;
   udpAPI.stopTransportServer  = &stopTransportServer;
-  udpAPI.addressToString      = &addressToString;
+  udpAPI.helloToAddress       = &helloToAddress;
   udpAPI.testWouldTry         = &testWouldTry;
 
   return &udpAPI;

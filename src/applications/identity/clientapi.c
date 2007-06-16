@@ -198,8 +198,7 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
     }
     count++;
     if ( (ntohs(reply->type) != CS_PROTO_identity_INFO) ||
-	 (ntohs(reply->size) <= sizeof(CS_identity_peer_info_MESSAGE)) ||
-	 ( ((char*)reply)[ntohs(reply->size)-1] != '\0') ) {
+	 (ntohs(reply->size) <= sizeof(CS_identity_peer_info_MESSAGE)) ) {
       GE_BREAK(NULL, 0);
       FREE(reply);
       return SYSERR;
@@ -208,7 +207,8 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
       info = (CS_identity_peer_info_MESSAGE *) reply;
       if (OK != callback(cls,
 			 &info->peer,
-			 (const char*) &info[1],
+			 &info[1],
+			 ntohs(reply->size) - sizeof(CS_identity_peer_info_MESSAGE),
 			 ntohll(info->last_message),
 			 ntohl(info->trust),
 			 ntohl(info->bpm))) {

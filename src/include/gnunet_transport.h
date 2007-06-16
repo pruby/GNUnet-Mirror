@@ -323,12 +323,12 @@ typedef struct {
   int (*stopTransportServer)(void);
 
   /**
-   * Convert transport address to human readable string.
-   *
-   * @param resolve_ip should we try to resolve the IP?
+   * Convert hello to network address.
+   * @return OK on success, SYSERR on error
    */
-  char * (*addressToString)(const P2P_hello_MESSAGE * hello,
-			    int resolve_ip);
+  int (*helloToAddress)(const P2P_hello_MESSAGE * hello,
+			void ** sa,
+			unsigned int * sa_len);
 
   /**
    * Test if the transport would even try to send

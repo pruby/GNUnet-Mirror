@@ -49,22 +49,18 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
 		       struct GE_Context * ectx,
 		       IPaddr  * address);
 
-
-/**
- * Get an IP address as a string
- * (works for both IPv4 and IPv6).
- * @param sa should be of type "struct sockaddr*"
- */ 
-char * getIPaddressAsString(const void * sa,
-			    unsigned int salen);
-
 /**
  * We only have the PeerIdentity.  Do we have any
- * clue about the address (as a string) based on 
+ * clue about the address based on 
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
+ * 
+ * @param sa set to the address
+ * @return OK if we found an address, SYSERR if not
  */
-char * getIPaddressFromPID(const PeerIdentity * peer);
+int getIPaddressFromPID(const PeerIdentity * peer,
+			void ** sa,
+			unsigned int * salen);
 
 /**
  * We have accepted a connection from a particular
@@ -75,6 +71,7 @@ char * getIPaddressFromPID(const PeerIdentity * peer);
  * us to validate the address).  
  */
 void setIPaddressFromPID(const PeerIdentity * peer,
-			 const char * address);
+			 const void * sa,
+			 unsigned int salen);
 
 #endif

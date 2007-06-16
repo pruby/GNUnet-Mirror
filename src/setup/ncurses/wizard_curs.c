@@ -604,7 +604,12 @@ int wizard_curs_mainsetup_curses(int argc,
       dir = save_config();
       break;
     case 11:
+      dir = 0;
       ret = OK;
+      break;
+    default:
+      GE_BREAK(NULL, 0);
+      dir = 0;
       break;
     }
     phase += dir;

@@ -449,56 +449,27 @@ static int reloadConfiguration(void * ctx,
 }
 
 /**
- * Convert TCP6 address to a string.
+ * Convert TCP6  hello to IPv6 address
  */
-static char *
-addressToString(const P2P_hello_MESSAGE * hello,
-		int do_resolve) {
-
-  char * ret;
-  char inet6[INET6_ADDRSTRLEN];
+static int
+helloToAddress(const P2P_hello_MESSAGE * hello,
+	       void ** sa,
+	       unsigned int * sa_len) {
   const Host6Address * haddr = (const Host6Address*) &hello[1];
-  char * hn;
-  size_t n;
-  struct sockaddr_in6 serverAddr;
-
-  if (do_resolve) {
-    memset((char *) &serverAddr,
-	   0,
-	   sizeof(serverAddr));
-    serverAddr.sin6_family   = AF_INET6;
-    memcpy(&serverAddr.sin6_addr,
-	   haddr,
-	   sizeof(IP6addr));
-    serverAddr.sin6_port = haddr->port;
-    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
-			      sizeof(struct sockaddr_in));
-  } else
-    hn = NULL;
-  n = INET6_ADDRSTRLEN + 16 +  (hn == NULL ? 0 : strlen(hn)) + 10;
-  ret = MALLOC(n);
-  if (hn != NULL) {
-    SNPRINTF(ret,
-	     n,
-	     "%s (%s) TCP6 (%u)",
-	     hn,
-	     inet_ntop(AF_INET6,
-		       haddr,
-		       inet6,
-		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->port));
-  } else {
-    SNPRINTF(ret,
-	     n,
-	     "%s TCP6 (%u)",
-	     inet_ntop(AF_INET6,
-		       haddr,
-		       inet6,
-		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->port));
-  }
-  FREENONNULL(hn);
-  return ret;
+  struct sockaddr_in6 * serverAddr;
+  
+  *sa_len = sizeof(struct sockaddr_in6);
+  serverAddr = MALLOC(sizeof(struct sockaddr_in6));
+  *sa = serverAddr;
+  memset(serverAddr,
+	 0,
+	 sizeof(struct sockaddr_in6));
+  serverAddr->sin6_family   = AF_INET6;
+  memcpy(&serverAddr->sin6_addr,
+	 haddr,
+	 sizeof(IP6addr));
+  serverAddr->sin6_port = haddr->port;
+  return OK;
 }
 
 
@@ -543,7 +514,7 @@ TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
   tcp6API.disconnect           = &tcpDisconnect;
   tcp6API.startTransportServer = &startTransportServer;
   tcp6API.stopTransportServer  = &stopTransportServer;
-  tcp6API.addressToString      = &addressToString;
+  tcp6API.helloToAddress       = &helloToAddress;
   tcp6API.testWouldTry         = &tcpTestWouldTry;
 
   return &tcp6API;

@@ -80,6 +80,7 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
     1, &gnunet_getopt_configure_set_string, &filename },
   { 'p', "parallelism", "DOWNLOADS",
     gettext_noop("set the maximum number of parallel downloads that are allowed"),
+    1, &gnunet_getopt_configure_set_uint, &parallelism },
   { 'R', "recursive", NULL,
     gettext_noop("download a GNUnet directory recursively"),
     0, &gnunet_getopt_configure_set_one, &do_recursive },

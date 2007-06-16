@@ -246,9 +246,21 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
 				    &verbose);
   if (verbose > 0) {
     char * str;
-
-    str = transport->helloToString(xhello,
-				   YES);
+    void * addr;
+    unsigned int addr_len;
+    int have_addr;
+    
+    have_addr = transport->helloToAddress(xhello,
+					  &addr,
+					  &addr_len);
+    if (have_addr == NO) {
+      str = STRDUP("NAT"); /* most likely */
+    } else {
+      str = network_get_ip_as_string(addr,
+				     addr_len,
+				     YES);
+      FREE(addr);
+    }    
     fprintf(stderr,
 	    _("\nContacting `%s'."),
 	    str);

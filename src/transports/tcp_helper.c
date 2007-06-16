@@ -179,7 +179,6 @@ static int select_message_handler(void * mh_cls,
   unsigned int len;
   P2P_PACKET * mp;
   const TCPWelcome * welcome;
-  char * addr;
 
   if (SYSERR == tcpAssociate(tsession)) {
     GE_BREAK(ectx, 0);
@@ -203,15 +202,10 @@ static int select_message_handler(void * mh_cls,
     tcpSession->expectingWelcome = NO;
     tcpSession->sender = welcome->clientIdentity;
     tsession->peer = welcome->clientIdentity;
-    if (tcpSession->accept_addr != NULL) {
-      addr = getIPaddressAsString(tcpSession->accept_addr,
-				  tcpSession->addr_len);
-      if (addr != NULL) {
-	setIPaddressFromPID(&welcome->clientIdentity,
-			    addr);
-	FREE(addr);
-      }
-    }
+    if (tcpSession->accept_addr != NULL) 
+      setIPaddressFromPID(&welcome->clientIdentity,
+			  tcpSession->accept_addr,
+			  tcpSession->addr_len);
   } else {
     /* send msg to core! */
     if (len <= sizeof(MESSAGE_HEADER)) {

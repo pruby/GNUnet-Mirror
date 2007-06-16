@@ -1253,8 +1253,9 @@ static int hostInfoIterator(const PeerIdentity * identity,
   Transport_ServiceAPI * transport;
   CS_identity_peer_info_MESSAGE * reply;
   P2P_hello_MESSAGE * hello;
-  char * address;
+  void * address;
   int ret;
+  unsigned int len;
   unsigned int bpm;
   cron_t last;
 
@@ -1266,15 +1267,17 @@ static int hostInfoIterator(const PeerIdentity * identity,
   if (hello == NULL) 
     return OK; /* ignore -- happens if HELLO just expired */
   transport = coreAPI->requestService("transport");
-  address = transport->helloToString(hello,
-				     YES);
+  len = 0;
+  address = NULL;
+  transport->helloToAddress(hello,
+			    &address,
+			    &len);
   FREE(hello);
   coreAPI->releaseService(transport);
-  if (address == NULL)
-    address = STRDUP("");
-  if (strlen(address)+1 >= MAX_BUFFER_SIZE - sizeof(CS_identity_peer_info_MESSAGE) ) {
+  if (len >= MAX_BUFFER_SIZE - sizeof(CS_identity_peer_info_MESSAGE) ) {
     FREE(address);
-    address = STRDUP(_("invalid"));
+    address = NULL;
+    len = 0;
   }
   if (OK != coreAPI->queryPeerStatus(identity,
 				     &bpm,
@@ -1282,8 +1285,8 @@ static int hostInfoIterator(const PeerIdentity * identity,
     last = 0;
     bpm = 0;
   }
-  reply = MALLOC(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
-  reply->header.size = htons(sizeof(CS_identity_peer_info_MESSAGE) + strlen(address) + 1);
+  reply = MALLOC(sizeof(CS_identity_peer_info_MESSAGE) + len);
+  reply->header.size = htons(sizeof(CS_identity_peer_info_MESSAGE) + len);
   reply->header.type = htons(CS_PROTO_identity_INFO);
   reply->peer = *identity;
   reply->last_message = htonll(last);
@@ -1291,8 +1294,8 @@ static int hostInfoIterator(const PeerIdentity * identity,
   reply->bpm = htonl(bpm);
   memcpy(&reply[1],
 	 address,
-	 strlen(address) + 1);
-  FREE(address);
+	 len);
+  FREENONNULL(address);
   ret = coreAPI->sendToClient(sock,
 			      &reply->header);
   FREE(reply);

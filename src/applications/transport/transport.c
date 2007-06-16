@@ -134,9 +134,10 @@ static int addTransport(TransportAPI * tapi) {
 /**
  * Convert hello to string.
  */
-static char *
-helloToString(const P2P_hello_MESSAGE * hello,
-	      int resolve_ip) {
+static int
+helloToAddress(const P2P_hello_MESSAGE * hello,
+	       void ** sa,
+	       unsigned int * sa_len) {
   unsigned short prot;
 
   prot = ntohs(hello->protocol);
@@ -146,9 +147,11 @@ helloToString(const P2P_hello_MESSAGE * hello,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("Converting peer address to string failed, transport type %d not supported\n"),
 	   ntohs(hello->protocol));
-    return NULL;
+    return SYSERR;
   }
-  return tapis[prot]->addressToString(hello, resolve_ip);
+  return tapis[prot]->helloToAddress(hello,
+				     sa,
+				     sa_len);
 }
 
 /**
@@ -733,7 +736,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.send = &transportSend;
   ret.disconnect = &transportDisconnect;
   ret.verifyhello = &transportVerifyHello;
-  ret.helloToString = &helloToString;
+  ret.helloToAddress = &helloToAddress;
   ret.getMTU = &transportGetMTU;
   ret.createhello = &transportCreatehello;
   ret.getAdvertisedhellos = &getAdvertisedhellos;

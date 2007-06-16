@@ -70,7 +70,10 @@ static int printHostInfo(const PeerIdentity * id,
 			 int verified,
 			 void * data) {
   P2P_hello_MESSAGE * hello;
+  void * addr;
+  unsigned int addr_len;
   char * info;
+  int have_addr;
   EncName enc;
 
   if (GNUNET_SHUTDOWN_TEST()==YES)
@@ -95,9 +98,18 @@ static int printHostInfo(const PeerIdentity * id,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("hello message invalid (signature invalid).\n"));
   }
-  info = transport->helloToString(hello,
-				  ! no_resolve);
+  have_addr = transport->helloToAddress(hello,
+					&addr,
+					&addr_len);
   FREE(hello);
+  if (have_addr == NO) {
+    info = STRDUP("NAT"); /* most likely */
+  } else {
+    info = network_get_ip_as_string(addr,
+				    addr_len,
+				    ! no_resolve);
+    FREE(addr);
+  }
   if (info == NULL) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,

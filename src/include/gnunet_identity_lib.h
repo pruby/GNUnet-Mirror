@@ -95,7 +95,8 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
  */
 typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
 					      const PeerIdentity * identity,
-					      const char * address,
+					      const void * address,
+					      unsigned int addr_len,
 					      cron_t last_message,
 					      unsigned int trust,
 					      unsigned int bpmFromPeer);

@@ -501,6 +501,18 @@ int select_disconnect(struct SelectHandle * sh,
 
 
 /**
+ * Get an IP address as a string (works for both IPv4 and IPv6).  Note
+ * that the resolution happens asynchronously and that the first call
+ * may not immediately result in the FQN (but instead in a
+ * human-readable IP address).
+ *
+ * @param sa should be of type "struct sockaddr*"
+ */ 
+char * network_get_ip_as_string(const void * sa,
+				unsigned int salen,
+				int do_resolve);
+
+/**
  * Get the IP address for the local machine.
  * @return NULL on error, IP as string otherwise
  */

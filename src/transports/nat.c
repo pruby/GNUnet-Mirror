@@ -171,23 +171,12 @@ static int stopTransportServer() {
 /**
  * Convert NAT address to a string.
  */
-static char * addressToString(const P2P_hello_MESSAGE * hello,
-			      int do_resolve) {
-  char * addr;
-  char * ret;
-  size_t n;
-
-  addr = getIPaddressFromPID(&hello->senderIdentity);
-  if (addr == NULL)
-    return STRDUP("NAT");
-  n = strlen(addr) + 10;
-  ret = MALLOC(n);
-  SNPRINTF(ret,
-	   n,
-	   "%s NAT",
-	   addr);
-  FREE(addr);
-  return ret;
+static int helloToAddress(const P2P_hello_MESSAGE * hello,
+			  void ** sa,
+			  unsigned int * sa_len) {
+  return getIPaddressFromPID(&hello->senderIdentity,
+			     sa,
+			     sa_len);
 }
 
 static int testWouldTry(TSession * tsession,
@@ -213,7 +202,7 @@ TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
   natAPI.disconnect           = &natDisconnect;
   natAPI.startTransportServer = &startTransportServer;
   natAPI.stopTransportServer  = &stopTransportServer;
-  natAPI.addressToString      = &addressToString;
+  natAPI.helloToAddress       = &helloToAddress;
   natAPI.testWouldTry         = &testWouldTry;
 
   return &natAPI;

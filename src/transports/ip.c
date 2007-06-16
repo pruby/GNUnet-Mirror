@@ -34,14 +34,6 @@
 #include "ip.h"
 
 /**
- * Disable DNS resolutions.  The existing DNS resolution
- * code is synchronous and introduces ~500ms delays while
- * holding an important lock.  As a result, it makes
- * GNUnet laggy.  This should be fixed in the future.
- */
-#define NO_RESOLVE YES
-
-/**
  * Get the IP address for the local machine.
  * @return SYSERR on error, OK on success
  */
@@ -78,149 +70,17 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
   return OK;
 }
 
-struct IPCache {
-  struct IPCache * next;
-  char * addr;
-  struct sockaddr * sa;
-  cron_t last_refresh;
-  cron_t last_request;
-  unsigned int salen;
-};
-
-static struct IPCache * head;
-
-static struct MUTEX * lock;
-
-static void cache_resolve(struct IPCache * cache) {
-#if NO_RESOLVE
-  if (cache->sa->sa_family == AF_INET) {
-    cache->addr = STRDUP("255.255.255.255");
-    SNPRINTF(cache->addr,
-	     strlen("255.255.255.255")+1,
-	     "%u.%u.%u.%u",
-	     PRIP(ntohl(*(int*)&((struct sockaddr_in*) cache->sa)->sin_addr)));
-  } else {
-    cache->addr = STRDUP("IPv6");
-  }
-#else
-#if HAVE_GETNAMEINFO
-  char hostname[256];
-
-  if (0 == getnameinfo(cache->sa,
-		       cache->salen,
-		       hostname,
-		       255,
-		       NULL, 0,
-		       0))
-    cache->addr = STRDUP(hostname);
-#else
-#if HAVE_GETHOSTBYADDR
-  struct hostent * ent;
-  
-  switch (cache->sa->sa_family) {
-  case AF_INET:
-    ent = gethostbyaddr(&((struct sockaddr_in*) cache->sa)->sin_addr,
-			sizeof(IPaddr),
-			AF_INET);
-    break;
-  case AF_INET6:
-    ent = gethostbyaddr(&((struct sockaddr_in6*) cache->sa)->sin6_addr,
-			sizeof(IPaddr6),
-			AF_INET6);
-    break;
-  default:
-    ent = NULL;
-  }
-  if (ent != NULL)
-    cache->addr = STRDUP(ent->h_name); 
-#endif
-#endif
-#endif
-}
-
-static struct IPCache * 
-resolve(const struct sockaddr * sa,
-	unsigned int salen) {
-  struct IPCache * ret;
-
-  ret = MALLOC(sizeof(struct IPCache));
-  ret->next = head;
-  ret->salen = salen;
-  ret->sa = salen == 0 ? NULL : MALLOC(salen);
-  memcpy(ret->sa,
-	 sa,
-	 salen);
-  ret->last_request = get_time();
-  ret->last_refresh = get_time();
-  ret->addr = NULL;
-  cache_resolve(ret);
-  head = ret;
-  return ret;
-}
-
-
-/**
- * Get an IP address as a string
- * (works for both IPv4 and IPv6).
- */ 
-char * getIPaddressAsString(const void * sav,
-			    unsigned int salen) {
-  const struct sockaddr * sa = sav;
-  char * ret;
-  struct IPCache * cache; 
-  struct IPCache * prev;
-  cron_t now;
-
-  now = get_time();  
-  MUTEX_LOCK(lock);
-  cache = head;
-  prev = NULL;
-  while ( (cache != NULL) &&
-	  ( (cache->salen != salen) ||
-	    (0 != memcmp(cache->sa,
-			 sa,
-			 salen) ) ) ) {
-    if (cache->last_request + 60 * cronMINUTES < now) {
-      if (prev != NULL) {
-	prev->next = cache->next;
-	FREENONNULL(cache->addr);
-	FREE(cache->sa);
-	FREE(cache);      
-	cache = prev->next;
-      } else {
-	head = cache->next;
-	FREENONNULL(cache->addr);
-	FREE(cache->sa);
-	FREE(cache);      
-	cache = head;	
-      }
-      continue;
-    }    
-    prev = cache;
-    cache = cache->next;
-  }
-  if (cache != NULL) {
-    cache->last_request = now;
-    if (cache->last_refresh + 12 * cronHOURS < now) {
-      FREENONNULL(cache->addr);
-      cache->addr = NULL;
-      cache_resolve(cache);
-    }
-  } else
-    cache = resolve(sa, salen);  
-  ret = (cache->addr == NULL) ? NULL : STRDUP(cache->addr);
-  MUTEX_UNLOCK(lock);
-  return ret;
-}
-
 struct PICache {
   struct PICache * next;
-  char * address;
+  void * address;
+  unsigned int len;
   PeerIdentity peer;
   cron_t expire;
 };
 
 static struct PICache * pi_head;
+
+static struct MUTEX * lock;
 
 static void expirePICache() {
   struct PICache * pos; 
@@ -246,17 +106,21 @@ static void expirePICache() {
   }
 }
 
+
 /**
  * We only have the PeerIdentity.  Do we have any
- * clue about the address (as a string) based on 
+ * clue about the address based on 
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
+ * 
+ * @param sa set to the address
+ * @return OK if we found an address, SYSERR if not
  */
-char * getIPaddressFromPID(const PeerIdentity * peer) {
-  char * ret;
+int getIPaddressFromPID(const PeerIdentity * peer,
+			void ** sa,
+			unsigned int * salen) {
   struct PICache * cache; 
 
-  ret = NULL;
   MUTEX_LOCK(lock);
   expirePICache();
   cache = pi_head;
@@ -264,13 +128,18 @@ char * getIPaddressFromPID(const PeerIdentity * peer) {
     if (0 == memcmp(peer,
 		    &cache->peer,
 		    sizeof(PeerIdentity))) {      
-      ret = STRDUP(cache->address);
-      break;
+      *salen = cache->len;
+      *sa = MALLOC(cache->len);
+      memcpy(*sa,
+	     cache->address,
+	     cache->len);
+      MUTEX_UNLOCK(lock);
+      return OK;
     }
     cache = cache->next;
   }
   MUTEX_UNLOCK(lock);
-  return ret;
+  return SYSERR;
 }
 
 /**
@@ -282,7 +151,8 @@ char * getIPaddressFromPID(const PeerIdentity * peer) {
  * us to validate the address).  
  */
 void setIPaddressFromPID(const PeerIdentity * peer,
-			 const char * address) {
+			 const void * sa,
+			 unsigned int salen) {
   struct PICache * next;
 
   MUTEX_LOCK(lock);
@@ -292,13 +162,19 @@ void setIPaddressFromPID(const PeerIdentity * peer,
 		    &next->peer,
 		    sizeof(PeerIdentity))) {
       next->expire = get_time() + 12 * cronHOURS;
-      if (0 == strcmp(address,
-		      next->address)) {
+      if ( (salen == next->len) &&
+	   (0 == memcmp(sa,
+			next->address,
+			salen)) )  {
 	MUTEX_UNLOCK(lock);  
 	return;
       }
       FREE(next->address);
-      next->address = STRDUP(address);
+      next->address = MALLOC(salen);
+      next->len = salen;
+      memcpy(next->address,
+	     sa,
+	     salen);
       MUTEX_UNLOCK(lock);  
       return;      
     }
@@ -306,7 +182,11 @@ void setIPaddressFromPID(const PeerIdentity * peer,
   }
   next = MALLOC(sizeof(struct PICache));
   next->peer = *peer;
-  next->address = STRDUP(address);
+  next->address = MALLOC(salen);
+  memcpy(next->address,
+	 sa,
+	 salen);
+  next->len = salen;
   next->expire = get_time() + 12 * cronHOURS;
   expirePICache();
   next->next = pi_head;  
@@ -322,16 +202,8 @@ void __attribute__ ((constructor)) gnunet_ip_ltdl_init() {
 }
 
 void __attribute__ ((destructor)) gnunet_ip_ltdl_fini() {
-  struct IPCache * pos;
   struct PICache * ppos;
   MUTEX_DESTROY(lock);
-  while (head != NULL) {
-    pos = head->next;
-    FREENONNULL(head->addr);
-    FREE(head->sa);
-    FREE(head);
-    head = pos;
-  }
   while (pi_head != NULL) {
     ppos = pi_head->next;
     FREE(pi_head->address);

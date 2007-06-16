@@ -6,6 +6,7 @@ noinst_LTLIBRARIES = \
   libnetwork.la
 
 libnetwork_la_SOURCES = \
+ dns.c \
  endian.c network.h \
  io.c \
  ip.c \
