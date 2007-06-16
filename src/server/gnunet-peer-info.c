@@ -60,6 +60,46 @@ static struct CommandLineOption gnunetpeerinfoOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
+#if HAVE_ADNS
+/**
+ * Prepass just to resolve DNS entries.
+ */
+static int resolveHostInfo(const PeerIdentity * id,
+			   const unsigned short proto,
+			   int verified,
+			   void * data) {
+  P2P_hello_MESSAGE * hello;
+  void * addr;
+  unsigned int addr_len;
+  char * info;
+  int have_addr;
+
+  if (GNUNET_SHUTDOWN_TEST()==YES)
+    return SYSERR;
+  hello = identity->identity2Hello(id,
+				   proto,
+				   NO);
+  if (NULL == hello) 
+    return OK;
+  addr = NULL;
+  addr_len = 0;
+  have_addr = transport->helloToAddress(hello,
+					&addr,
+					&addr_len);
+  FREE(hello);
+  if (have_addr == OK) {
+    info = network_get_ip_as_string(addr,
+				    addr_len,
+				    ! no_resolve);
+    FREE(addr);    
+    addr = NULL;
+    FREENONNULL(info);
+  }  
+  return OK;
+}
+
+#endif
+
 /**
  * Print information about the peer.
  * Currently prints the PeerIdentity, trust and the IP.
@@ -158,9 +198,15 @@ int main(int argc,
   initCore(ectx, cfg, cron, NULL);
   identity = requestService("identity");
   transport = requestService("transport");
-  identity->forEachHost(0, /* no timeout */
-			&printHostInfo,
-			NULL);
+  if (no_resolve != YES) {
+#if HAVE_ADNS
+    identity->forEachHost(0, /* no timeout */
+			  &resolveHostInfo,
+			  NULL);
+    /* give GNU ADNS time to resolve... */
+    PTHREAD_SLEEP(2 * cronSECONDS);
+#endif
+  }
   identity->forEachHost(0, /* no timeout */
 			&printHostInfo,
 			NULL);

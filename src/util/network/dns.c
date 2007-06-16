@@ -29,9 +29,6 @@
 #include "platform.h"
 #include "gnunet_util_network.h"
 
-#undef HAVE_ADNS
-#define HAVE_ADNS YES
-
 #if HAVE_ADNS
 #include <adns.h>
 #endif
@@ -61,8 +58,9 @@ static adns_state a_state;
 static void cache_resolve(struct IPCache * cache) {
 #if HAVE_ADNS
   adns_answer * answer;
-  void * unused;
   adns_status ret;
+  struct IPCache * rec;
+  int reti;
   
   if (cache->posted == NO) {
     ret = adns_submit_reverse(a_state,
@@ -73,23 +71,22 @@ static void cache_resolve(struct IPCache * cache) {
 			      &cache->query);
     if (adns_s_ok == ret)
       cache->posted = YES;    
-    else
-      fprintf(stderr,
-	      "Oops: %s\n",
-	      adns_strerror(ret));
   }
   adns_processany(a_state);
   answer = NULL; 
-  adns_check(a_state,
-	     &cache->query,
-	     &answer,
-	     &unused);
-  if (answer != NULL) {
-    printf("HAVE ANSWER!\n");
-    if (answer->owner != NULL)
-      cache->addr = STRDUP(answer->owner);
-    free(answer);
-  }
+  reti = adns_check(a_state,
+		    &cache->query,
+		    &answer,
+		    (void**)&rec);
+  if (reti == 0) {
+    if (answer != NULL) {
+      if ( (answer->rrs.str != NULL) &&
+	   (*(answer->rrs.str) != NULL) )
+	cache->addr = STRDUP(*(answer->rrs.str));
+      free(answer);
+    }
+    cache->posted = NO;
+  }  
 #else
 #if HAVE_GETNAMEINFO
   char hostname[256];
@@ -241,6 +238,11 @@ char * network_get_ip_as_string(const void * sav,
       cache->salen = 0;
       cache_resolve(cache);
     }
+#if HAVE_ADNS
+    if (cache->posted == YES) {
+      cache_resolve(cache);
+    }
+#endif
   } else if (do_resolve == NO) {
     MUTEX_UNLOCK(lock);
     return no_resolve(sav, salen);
