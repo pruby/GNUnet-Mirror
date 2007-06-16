@@ -478,7 +478,7 @@ static int reloadConfiguration() {
 /**
  * Convert UDP hello to IP address
  */
-static char *
+static int
 helloToAddress(const P2P_hello_MESSAGE * hello,
 	       void ** sa,
 	       unsigned int * sa_len) {

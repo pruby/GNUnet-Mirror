@@ -98,23 +98,29 @@ static int printHostInfo(const PeerIdentity * id,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("hello message invalid (signature invalid).\n"));
   }
+  addr = NULL;
+  addr_len = 0;
   have_addr = transport->helloToAddress(hello,
 					&addr,
 					&addr_len);
   FREE(hello);
-  if (have_addr == NO) {
+  if (have_addr != OK) {
     info = STRDUP("NAT"); /* most likely */
   } else {
     info = network_get_ip_as_string(addr,
 				    addr_len,
 				    ! no_resolve);
     FREE(addr);
-  }
+    addr = NULL;
+  }  
   if (info == NULL) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
+	   GE_DEBUG | GE_BULK | GE_USER,
 	   _("Could not get address of peer `%s'.\n"),
 	   &enc);
+    printf(_("Peer `%s' with trust %8u\n"),
+	   (char*)&enc,
+	   identity->getHostTrust(id));
     return OK;
   }
   printf(_("Peer `%s' with trust %8u and address `%s'\n"),
@@ -152,6 +158,9 @@ int main(int argc,
   initCore(ectx, cfg, cron, NULL);
   identity = requestService("identity");
   transport = requestService("transport");
+  identity->forEachHost(0, /* no timeout */
+			&printHostInfo,
+			NULL);
   identity->forEachHost(0, /* no timeout */
 			&printHostInfo,
 			NULL);

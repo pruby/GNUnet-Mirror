@@ -29,14 +29,12 @@
 #include "platform.h"
 #include "gnunet_util_network.h"
 
+#undef HAVE_ADNS
+#define HAVE_ADNS YES
 
-/**
- * Disable DNS resolutions.  The existing DNS resolution
- * code is synchronous and introduces ~500ms delays while
- * holding an important lock.  As a result, it makes
- * GNUnet laggy.  This should be fixed in the future.
- */
-#define NO_RESOLVE YES
+#if HAVE_ADNS
+#include <adns.h>
+#endif
 
 
 struct IPCache {
@@ -46,22 +44,51 @@ struct IPCache {
   cron_t last_refresh;
   cron_t last_request;
   unsigned int salen;
+#if HAVE_ADNS
+  int posted;
+  adns_query query;
+#endif
 };
 
 static struct IPCache * head;
 
 static struct MUTEX * lock;
 
+#if HAVE_ADNS
+static adns_state a_state;
+#endif
+
 static void cache_resolve(struct IPCache * cache) {
-#if NO_RESOLVE
-  if (cache->sa->sa_family == AF_INET) {
-    cache->addr = STRDUP("255.255.255.255");
-    SNPRINTF(cache->addr,
-	     strlen("255.255.255.255")+1,
-	     "%u.%u.%u.%u",
-	     PRIP(ntohl(*(int*)&((struct sockaddr_in*) cache->sa)->sin_addr)));
-  } else {
-    cache->addr = STRDUP("IPv6");
+#if HAVE_ADNS
+  adns_answer * answer;
+  void * unused;
+  adns_status ret;
+  
+  if (cache->posted == NO) {
+    ret = adns_submit_reverse(a_state,
+			      cache->sa,
+			      adns_r_ptr,
+			      adns_qf_none,
+			      cache,
+			      &cache->query);
+    if (adns_s_ok == ret)
+      cache->posted = YES;    
+    else
+      fprintf(stderr,
+	      "Oops: %s\n",
+	      adns_strerror(ret));
+  }
+  adns_processany(a_state);
+  answer = NULL; 
+  adns_check(a_state,
+	     &cache->query,
+	     &answer,
+	     &unused);
+  if (answer != NULL) {
+    printf("HAVE ANSWER!\n");
+    if (answer->owner != NULL)
+      cache->addr = STRDUP(answer->owner);
+    free(answer);
   }
 #else
 #if HAVE_GETNAMEINFO
@@ -105,6 +132,9 @@ resolve(const struct sockaddr * sa,
   struct IPCache * ret;
 
   ret = MALLOC(sizeof(struct IPCache));
+#if HAVE_ADNS
+  ret->posted = NO;
+#endif
   ret->next = head;
   ret->salen = salen;
   ret->sa = salen == 0 ? NULL : MALLOC(salen);
@@ -119,54 +149,38 @@ resolve(const struct sockaddr * sa,
   return ret;
 }
 
-#if IPV6_STUFF
+static char * no_resolve(const struct sockaddr * sa,
+			 unsigned int salen) {
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
-  const Host6Address * haddr = (const Host6Address*) &hello[1];
-  char * hn;
-  size_t n;
-  struct sockaddr_in6 serverAddr;
 
-  if (do_resolve) {
-    memset((char *) &serverAddr,
-	   0,
-	   sizeof(serverAddr));
-    serverAddr.sin6_family   = AF_INET6;
-    memcpy(&serverAddr.sin6_addr,
-	   haddr,
-	   sizeof(IP6addr));
-    serverAddr.sin6_port = haddr->port;
-    hn = getIPaddressAsString((const struct sockaddr*) &serverAddr,
-			      sizeof(struct sockaddr_in));
-  } else
-    hn = NULL;
-  n = INET6_ADDRSTRLEN + 16 +  (hn == NULL ? 0 : strlen(hn)) + 10;
-  ret = MALLOC(n);
-  if (hn != NULL) {
+  if (salen < sizeof(struct sockaddr))
+    return NULL;
+  switch (sa->sa_family) {
+  case AF_INET:
+    if (salen != sizeof(struct sockaddr_in))
+      return NULL;
+    ret = STRDUP("255.255.255.255");
     SNPRINTF(ret,
-	     n,
-	     "%s (%s) TCP6 (%u)",
-	     hn,
-	     inet_ntop(AF_INET6,
-		       haddr,
-		       inet6,
-		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->port));
-  } else {
-    SNPRINTF(ret,
-	     n,
-	     "%s TCP6 (%u)",
-	     inet_ntop(AF_INET6,
-		       haddr,
-		       inet6,
-		       INET6_ADDRSTRLEN),
-	     ntohs(haddr->port));
+	     strlen("255.255.255.255")+1,
+	     "%u.%u.%u.%u",
+	     PRIP(ntohl(*(int*)&((struct sockaddr_in*)sa)->sin_addr)));
+    break;
+  case AF_INET6:
+    if (salen != sizeof(struct sockaddr_in6))
+      return NULL;
+    inet_ntop(AF_INET6,
+	      &((struct sockaddr_in6*) sa)->sin6_addr,
+	      inet6,
+	      INET6_ADDRSTRLEN);
+    ret = STRDUP(inet6);
+    break;
+  default:
+    ret = NULL;
+    break;
   }
-  FREENONNULL(hn);
   return ret;
 }
-#endif
-
 
 /**
  * Get an IP address as a string (works for both IPv4 and IPv6).  Note
@@ -195,6 +209,12 @@ char * network_get_ip_as_string(const void * sav,
 			 sa,
 			 salen) ) ) ) {
     if (cache->last_request + 60 * cronMINUTES < now) {
+#if HAVE_ADNS
+      if (cache->posted == YES) {
+	adns_cancel(cache->query);
+	cache->posted = NO;
+      }
+#endif
       if (prev != NULL) {
 	prev->next = cache->next;
 	FREENONNULL(cache->addr);
@@ -218,11 +238,17 @@ char * network_get_ip_as_string(const void * sav,
     if (cache->last_refresh + 12 * cronHOURS < now) {
       FREENONNULL(cache->addr);
       cache->addr = NULL;
+      cache->salen = 0;
       cache_resolve(cache);
     }
+  } else if (do_resolve == NO) {
+    MUTEX_UNLOCK(lock);
+    return no_resolve(sav, salen);
   } else
     cache = resolve(sa, salen);  
   ret = (cache->addr == NULL) ? NULL : STRDUP(cache->addr);
+  if (ret == NULL)
+    ret = no_resolve(sa, salen);
   MUTEX_UNLOCK(lock);
   return ret;
 }
@@ -232,6 +258,11 @@ char * network_get_ip_as_string(const void * sav,
 
 void __attribute__ ((constructor)) gnunet_dns_ltdl_init() {
   lock = MUTEX_CREATE(YES);
+#if HAVE_ADNS
+  adns_init(&a_state,
+	    adns_if_none, // adns_if_noerrprint,
+	    NULL);
+#endif
 }
 
 void __attribute__ ((destructor)) gnunet_dns_ltdl_fini() {
@@ -239,9 +270,18 @@ void __attribute__ ((destructor)) gnunet_dns_ltdl_fini() {
   MUTEX_DESTROY(lock);
   while (head != NULL) {
     pos = head->next;
+#if HAVE_ADNS
+      if (head->posted == YES) {
+	adns_cancel(head->query);
+	head->posted = NO;
+      }
+#endif
     FREENONNULL(head->addr);
     FREE(head->sa);
     FREE(head);
     head = pos;
   }
+#if HAVE_ADNS
+  adns_finish(a_state);
+#endif
 }

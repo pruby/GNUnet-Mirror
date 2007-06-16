@@ -444,6 +444,41 @@ AC_ARG_WITH(microhttpd,
 AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
 
+
+
+# GNU adns
+adns=0
+AC_CHECK_LIB([adns],[adns_init])
+AC_MSG_CHECKING([for GNU adns])
+AC_ARG_WITH(adns,
+   [  --with-adns=PFX    Base of GNU adns installation],
+   [AC_MSG_RESULT([$with_adns])
+    case $with_adns in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(adns.h,
+          AC_CHECK_LIB([adns], [adns_init],
+            adns=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_adns/lib $LDFLAGS"
+        CPPFLAGS="-I$with_adns/include $CPPFLAGS"
+        AC_CHECK_HEADERS(adns.h,
+          AC_CHECK_LIB([adns], [adns_init],
+            EXT_LIB_PATH="-L$with_adns/lib $EXT_LIB_PATH"
+              adns=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-adns not specified])
+    AC_CHECK_HEADERS(adns.h,
+      AC_CHECK_LIB([adns], [adns_init],
+          adns=1))])
+
+AM_CONDITIONAL(HAVE_ADNS, test x$adns = x1)
+AC_DEFINE_UNQUOTED([HAVE_ADNS], $adns, [We have GNU adns])
+
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
 AM_PATH_GTK_2_0(2.6.0,without_gtk=false,without_gtk=true)
@@ -678,5 +713,11 @@ fi
 if test "$guile" != 1
 then
  AC_MSG_NOTICE([WARNING: Guile not found, gnunet-setup will not be installed.])
+fi
+
+
+if test "$adns" != 1
+then
+ AC_MSG_NOTICE([WARNING: GNU adns not found, will use synchronous DNS resolution.])
 fi
 

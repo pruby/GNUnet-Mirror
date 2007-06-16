@@ -5,6 +5,10 @@ SUBDIRS = .
 noinst_LTLIBRARIES = \
   libnetwork.la
 
+if HAVE_ADNS
+ADNS_LINK=-ladns
+endif
+
 libnetwork_la_SOURCES = \
  dns.c \
  endian.c network.h \
@@ -12,7 +16,7 @@ libnetwork_la_SOURCES = \
  ip.c \
  ipcheck.c \
  select.c 
-
+libnetwork_la_LIBADD = $(ADNS_LINK)
 
 check_PROGRAMS = \
  selecttest 
