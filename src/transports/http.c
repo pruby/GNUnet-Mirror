@@ -336,44 +336,55 @@ static int httpDisconnect(TSession * tsession) {
   HTTPSession * httpsession = tsession->internal;
   struct HTTPPutData * pos;
   struct HTTPPutData * next;
+  int i;
 
-  if (httpsession != NULL) {
-    MUTEX_LOCK(httpsession->lock);
-    httpsession->users--;
-    if (httpsession->users > 0) {
-      MUTEX_UNLOCK(httpsession->lock);
-      return OK;
-    }
-    httpsession->destroyed = YES;
-    MUTEX_UNLOCK(httpsession->lock);
-    if (httpsession->is_client) {
-      curl_multi_remove_handle(curl_multi,
-			       httpsession->cs.client.get);
-      curl_easy_cleanup(httpsession->cs.client.get);
-      FREE(httpsession->cs.client.url);
-      pos = httpsession->cs.client.puts;
-      while (pos != NULL) {
-	next = pos->next;
-	curl_multi_remove_handle(curl_multi,
-				 pos->curl_put);
-	curl_easy_cleanup(pos->curl_put);
-	FREE(pos->msg);
-	FREE(pos);
-	pos = next;
-      }
-
-    } else {
-      MHD_destroy_response(httpsession->cs.server.get);
-    }
-    GROW(httpsession->rbuff2,
-	 httpsession->rsize2,
-	 0);
-    GROW(httpsession->wbuff,
-	 httpsession->wsize,
-	 0);
-    MUTEX_DESTROY(httpsession->lock);
-    FREE(httpsession);
+  if (httpsession == NULL) {
+    FREE(tsession);
+    return OK;
   }
+  MUTEX_LOCK(httpsession->lock);
+  httpsession->users--;
+  if (httpsession->users > 0) {
+    MUTEX_UNLOCK(httpsession->lock);
+    return OK;
+  }
+  httpsession->destroyed = YES;
+  MUTEX_UNLOCK(httpsession->lock);
+  MUTEX_LOCK(httplock);
+  for (i=0;i<tsessionCount;i++) {
+    if (tsessions[i] == tsession) {
+      tsessions[i] = tsessions[--tsessionCount];
+      break;
+    }
+  }
+  MUTEX_UNLOCK(httplock);    
+  if (httpsession->is_client) {
+    curl_multi_remove_handle(curl_multi,
+			     httpsession->cs.client.get);
+    curl_easy_cleanup(httpsession->cs.client.get);
+    FREE(httpsession->cs.client.url);
+    pos = httpsession->cs.client.puts;
+    while (pos != NULL) {
+      next = pos->next;
+      curl_multi_remove_handle(curl_multi,
+			       pos->curl_put);
+      curl_easy_cleanup(pos->curl_put);
+      FREE(pos->msg);
+      FREE(pos);
+      pos = next;
+    }
+    
+  } else {
+    MHD_destroy_response(httpsession->cs.server.get);
+  }
+  GROW(httpsession->rbuff2,
+       httpsession->rsize2,
+       0);
+  GROW(httpsession->wbuff,
+       httpsession->wsize,
+       0);
+  MUTEX_DESTROY(httpsession->lock);
+  FREE(httpsession);
   FREE(tsession);
   return OK;
 }
@@ -1083,6 +1094,7 @@ cleanup_connections() {
   MUTEX_LOCK(httplock);
   for (i=0;i<tsessionCount;i++) {
     s = tsessions[i]->internal;
+    MUTEX_LOCK(s->lock);
     if (s->is_client) {
       prev = NULL;
       pos = s->cs.client.puts;
@@ -1120,6 +1132,7 @@ cleanup_connections() {
 	 B) destroy response object
       */
     }
+    MUTEX_UNLOCK(s->lock);
   }
   MUTEX_UNLOCK(httplock);  
 }
