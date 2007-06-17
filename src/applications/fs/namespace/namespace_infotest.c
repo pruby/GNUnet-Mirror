@@ -71,7 +71,6 @@ int main(int argc, char * argv[]){
   /* ACTUAL TEST CODE */
   old = NS_listNamespaces(ectx,
 			  cfg,
-			  YES,
 			  NULL,
 			  NULL);
 				
@@ -92,7 +91,6 @@ int main(int argc, char * argv[]){
   CHECK(uri != NULL);
   CHECK(old + 1 == NS_listNamespaces(ectx,
 				     cfg,
-				     YES,
 				     NULL,
 				     NULL));
   old = NS_listNamespaceContent(ectx,
