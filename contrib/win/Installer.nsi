@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.1c"
+!define PRODUCT_VERSION "0.7.2"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -104,7 +104,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 	  File "gnu.ico"	
 	  File "config.ico"	
-    File "C:\GNUnet\bin\libgnunetip-0.dll" 
 		File "C:\GNUnet\bin\libgnunetmodule_state.dll" 
 		File "C:\GNUnet\bin\libgnunetutil-1.dll" 
 		File "C:\GNUnet\bin\libgnunetutil_boot-0.dll" 
@@ -114,7 +113,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\libgnunetutil_containers-0.dll" 
 		File "C:\GNUnet\bin\libgnunetutil_logging-0.dll" 
 		File "C:\GNUnet\bin\libgnunetutil_network_client-0.dll" 
-		File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
+    File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
+    ; Fixme: client only
+    File "C:\GNUnet\bin\libgnunettraffic_api-0.dll"
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
@@ -183,6 +184,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 			File "C:\GNUnet\bin\libgnunetcore-0.dll"
 			File "C:\GNUnet\bin\gnunetd.exe"
+      File "C:\GNUnet\bin\libgnunetip-0.dll" 
 			File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
       File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
@@ -349,7 +351,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 2 4
 		  SetOutPath "$INSTDIR\bin"
 
-			File "C:\GNUnet\bin\libgnunetmodule_rpc_util-0.dll"
+			File "C:\GNUnet\bin\libgnunetrpc_util-0.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
 		SectionEnd
 	SectionGroupEnd
@@ -886,7 +888,8 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetmodule_identity.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_pingpong.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_rpc.dll"
-	Delete "$INSTDIR\bin\libgnunetmodule_rpc_util-0.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_rpc_util-0.dll"
+  Delete "$INSTDIR\bin\libgnunetrpc_util-0.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_session.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_mysql.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_sqlite.dll"
@@ -909,6 +912,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetutil-1.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
   Delete "$INSTDIR\bin\libgnunetip-0.dll"
+  Delete "$INSTDIR\bin\libgnunettraffic_api-0.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_config-0.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_cron-0.dll"
 	Delete "$INSTDIR\bin\libgnunetutil_crypto-0.dll"
