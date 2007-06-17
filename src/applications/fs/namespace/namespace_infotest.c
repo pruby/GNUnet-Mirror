@@ -89,10 +89,11 @@ int main(int argc, char * argv[]){
 			   NULL,
 			   &root);
   CHECK(uri != NULL);
-  CHECK(old + 1 == NS_listNamespaces(ectx,
-				     cfg,
-				     NULL,
-				     NULL));
+  newVal = NS_listNamespaces(ectx,
+			     cfg,
+			     NULL,
+			     NULL);
+  CHECK(old < newVal);
   old = NS_listNamespaceContent(ectx,
 				cfg,
 				"test",
@@ -116,7 +117,7 @@ int main(int argc, char * argv[]){
 				   "test",
 				   NULL,
 				   NULL);
-  CHECK(old + 1 == newVal);
+  CHECK(old < newVal);
   CHECK(OK == NS_deleteNamespace(ectx,
 				 cfg,
 				 "test"));

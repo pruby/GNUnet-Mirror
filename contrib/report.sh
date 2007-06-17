@@ -178,6 +178,14 @@ else
 fi
 
 
+TEST=`grep "Id:" /usr/include/adns.h 2> /dev/null`
+if test -n "$TEST"; then
+  echo "$TEST" | awk '{print "GNU adns       : "$4}'
+else
+  echo "GNU adns       : Not found"
+fi
+
+
 
 
 

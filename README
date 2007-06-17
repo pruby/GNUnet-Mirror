@@ -26,13 +26,14 @@ Dependencies:
 For the impatient, here is the list of immediate dependencies for
 running GNUnet:
 
-- libextractor >= 0.5.16
+- libextractor >= 0.5.18
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
+- libcurl      >= 7.x
 - mysql        >= 5.0  OR  sqlite >= 3.0
 - libltdl      >= 1.5 (part of GNU libtool)
-- libguile     >= 1.8
-- libcurl      >= 7.x
+- libguile     >= 1.8 (strongly recommended)
+- GNU adns     >= 1.0 (recommended)
 
 
 Recommended autotools for compiling the SVN version are:
@@ -102,13 +103,23 @@ usually ok, you may want to adjust the limitations (space consumption,
 bandwidth, etc.) though.  The configuration files are human-readable;
 gnunetd's configuration is typically located at "/etc/gnunetd.conf".
 The per-user configuration file should be at "~/.gnunet/gnunet.conf".
+A default version of the per-user configuration will automatically
+be created whenever you run any tool that needs that particular
+cofniguration file.
+
+You MUST create /etc/gnunetd.conf explicitly before starting gnunetd,
+and the recommended way to do this is to run gnunet-setup -d (plus
+possibly options to specify which user interface you would perfer).
 
 If you want to use a different configuration file, pass the name of
 the configuration file as an argument with the option "-c" to any
-GNUnet application.  Sending a SIGHUP to the gnunetd process will
+GNUnet application.   Sending a SIGHUP to the gnunetd process will
 cause gnunetd to re-read the configuration file.  Note that not all
 options can be changed at runtime this way (e.g. to change any port
 number, you must fully restart gnunetd).
+
+After changing certain options (or updating GNUnet) you must re-run 
+gnunet-update.
 
 
 Usage
@@ -147,7 +158,7 @@ $ gnunet-search KEYWORD
 
 This will display a list of results to the console. Then use
 
-$ gnunet-download -o FILENAME -- GNUNET_URI
+$ gnunet-download -o FILENAME GNUNET_URI
 
 to retrieve a file.  The GNUNET_URI is printed by gnunet-search
 together with a description.

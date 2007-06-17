@@ -8,6 +8,18 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.1c to 0.7.2
+===============
+
+Stop gnunetd.  Remove "tcp_old" and "http" from the TRANSPORTS line in
+/etc/gnunetd.conf (should they exist).  Failure to do so will cause
+problems.  Then run
+
+$ gnunet-update
+
+and restart gnunetd.  Note that you must update gnunet-gtk and/or
+gnunet-qt as well.
+
 
 0.7.1b to 0.7.1c
 ================
