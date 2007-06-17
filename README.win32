@@ -42,9 +42,6 @@ cause gnunetd to re-read the configuration file.  Note that not all
 options can be changed at runtime this way (e.g. to change any port
 number, you must fully restart gnunetd).
 
-In order to use the SMTP transport service, you should read
-http://gnunet.org/smtp.php3 first!  Note that SMTP should never
-be required, it is just a neat technical idea at this point.
 
 
 Usage
@@ -82,7 +79,7 @@ $ gnunet-search KEYWORD
 
 This will display a list of results to the console. Then use
 
-$ gnunet-download -o FILENAME -- GNUNET_URI
+$ gnunet-download -o FILENAME GNUNET_URI
 
 to retrieve a file.  The GNUNET_URI is printed by gnunet-search
 together with a description.
