@@ -141,7 +141,7 @@ However, active testing and qualified feedback of these features is always welco
   (_ "Note that the kvstore is currently not used.") 
   '()
   #f
-  "$GNUNET_HOME/kvstore/"
+  "$GNUNETD_HOME/kvstore/"
   '()
   'never) )
 
@@ -264,7 +264,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (nohelp)
   '()
   #f
-  "$GNUNET_HOME/daemon-logs"
+  "$GNUNETD_HOME/daemon-logs"
   '()
   'rare) )
 
@@ -644,7 +644,7 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   (_ "Specifies the name of a file which contains a list of GNUnet peer IDs that are friends.  If used with the friend-to-friend topology, this will ensure that GNUnet only connects to these peers (via any available transport).")
   '()
   #f
-  "$GNUNET_HOME/friends"
+  "$GNUNETD_HOME/friends"
   '()
   'f2f) )
 
