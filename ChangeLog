@@ -1,3 +1,9 @@
+Sat Jun 16 04:43:20 MDT 2007
+	http transport is amost back, now needing the
+	new libmicrohttpd.  However, the code is still
+	highly experimental and not ready for production
+	use.
+
 Fri Jun  8 23:44:01 MDT 2007
 	Fixed bugs preventing namespace search from
 	working.  Also extended testcase to cover
