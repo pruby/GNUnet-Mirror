@@ -656,12 +656,12 @@ static int iterateNonAnonymous(unsigned int type,
     SNPRINTF(limit,
 	     512,
 	     "SELECT SQL_NO_CACHE * FROM gn070"
-	     " %s WHERE expire > %llu AND anonLevel == 0 AND type != %d",
+	     " %%s WHERE expire > %%llu AND anonLevel = 0 AND type != %d",
 	     ONDEMAND_BLOCK);
   else
     strcpy(limit,
 	   "SELECT SQL_NO_CACHE * FROM gn070"
-	   " %s WHERE expire > %llu AND anonLevel == 0");
+	   " %s WHERE expire > %llu AND anonLevel = 0");
   return iterateHelper(type,
 		       limit,
 		       iter,
