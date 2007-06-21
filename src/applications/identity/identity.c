@@ -1267,6 +1267,11 @@ static int hostInfoIterator(const PeerIdentity * identity,
   if (hello == NULL) 
     return OK; /* ignore -- happens if HELLO just expired */
   transport = coreAPI->requestService("transport");
+  if (transport == NULL) {
+    FREE(hello);
+    return OK;
+  }
+    
   len = 0;
   address = NULL;
   transport->helloToAddress(hello,
