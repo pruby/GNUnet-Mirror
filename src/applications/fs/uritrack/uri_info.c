@@ -109,8 +109,12 @@ URITRACK_getState(struct GE_Context * ectx,
     CLOSE(fd);
     FREE(s);
   }
-  if (2 != read(fd, io, 2))
+  FREE(s);
+  if (2 != read(fd, io, 2)) {
+    CLOSE(fd);
     return URITRACK_FRESH;
+  }
+  CLOSE(fd);
   if (io[0] == (unsigned char) crc)
     return (enum URITRACK_STATE) io[1];
   return URITRACK_FRESH;
