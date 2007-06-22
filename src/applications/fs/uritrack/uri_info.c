@@ -107,9 +107,8 @@ URITRACK_getState(struct GE_Context * ectx,
 			 "lseek",
 			 s);
     CLOSE(fd);
-    FREE(s);
+    return URITRACK_FRESH;
   }
-  FREE(s);
   if (2 != read(fd, io, 2)) {
     CLOSE(fd);
     return URITRACK_FRESH;
