@@ -164,7 +164,8 @@ activeMigrationCallback(const PeerIdentity * receiver,
       entry = i;
       break;
     } else {
-      if (content[i].sentCount > discard_match) {
+      if ( (content[i].sentCount > discard_match) ||
+	   (discard_match == -1) ) {
 	discard_match = content[i].sentCount;
 	discard_entry = i;
       }
