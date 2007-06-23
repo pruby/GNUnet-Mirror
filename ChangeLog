@@ -1,3 +1,9 @@
+Sat Jun 23 16:56:03 MDT 2007
+	Improved CPU consumption from content migration code
+	by querying the DB less often, using the same content
+	for more peers (at the expense of 1 MB extra memory
+	utilization).  Fixed a deadlock.
+
 Wed Jun 20 17:10:38 MDT 2007
 	Fixed bug in MySQL module.
 
