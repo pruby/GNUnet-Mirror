@@ -562,7 +562,7 @@ static void considerPeer(const PeerIdentity * sender,
   P2P_hello_MESSAGE * hello;
 
   bucket = findBucketFor(peer);
-  if (bucket == NULL)
+  if (bucket == NULL) 
     return; /* peers[i] == self */
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     checkExpiration(bucket);
@@ -695,7 +695,7 @@ int init_dht_table(CoreAPIForApplication * capi) {
     buckets[i].bstart = 512 * i / bucketCount;
     buckets[i].bend = 512 * (i+1) / bucketCount;
   }
-  lock = MUTEX_CREATE(YES);
+  lock = capi->getConnectionModuleLock();
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_dht_total_peers = stats->create(gettext_noop("# dht connections"));
@@ -754,7 +754,7 @@ int done_dht_table() {
   GROW(buckets,
        bucketCount,
        0);
-  MUTEX_DESTROY(lock);
+  lock = NULL;
   return OK;
 }
 
