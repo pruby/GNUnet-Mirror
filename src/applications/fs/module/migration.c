@@ -148,6 +148,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
       discard_match = MAX_RECEIVERS + 1;
       continue;
     }
+    match = 1;
     if (ntohl(content[i].value->size) + sizeof(GapWrapper) - sizeof(Datastore_Value) <= padding) {
       match = 0;
       for (j=0;j<content[i].sentCount;j++) {
@@ -156,18 +157,18 @@ activeMigrationCallback(const PeerIdentity * receiver,
 	  break;
 	}
       }
-      if (match == 0) {
-	/* TODO: consider key proximity in matching as 
-	   well! */
-	entry = i;
-	break;
-      } else {
-	if (content[i].sentCount > discard_match) {
-	  discard_match = content[i].sentCount;
-	  discard_entry = i;
-	}
-      }
     }
+    if (match == 0) {
+      /* TODO: consider key proximity in matching as 
+	 well! */
+      entry = i;
+      break;
+    } else {
+      if (content[i].sentCount > discard_match) {
+	discard_match = content[i].sentCount;
+	discard_entry = i;
+      }
+    }    
   }
   if (entry == -1) {
     entry = discard_entry;
