@@ -31,6 +31,16 @@
 #include "gnunet_sqstore_service.h"
 
 /**
+ * Disable DHT pushing?  Set to 1 to essentially disable
+ * the code in this file.  Used to study its performance
+ * impact.  Useful also for users that do not want to 
+ * use non-anonymous file-sharing (since it eliminates
+ * some of the processing cost which would otherwise go
+ * to waste).
+ */
+#define NO_PUSH 1
+
+/**
  * DHT service.  Set to NULL to terminate
  */
 static DHT_ServiceAPI * dht;
@@ -75,6 +85,8 @@ static int push_callback(const HashCode512 * key,
   delay = 6 * cronHOURS / total;
   if (delay < 5 * cronSECONDS)
     delay = 5 * cronSECONDS;
+  if (delay > 60 * cronSECONDS)
+    delay = 60 * cronSECONDS;
   PTHREAD_SLEEP(delay);
   if (dht == NULL)
     return SYSERR;
@@ -121,9 +133,11 @@ void init_dht_push(CoreAPIForApplication * capi,
   if (stats != NULL)
     stat_push_count
       = stats->create(gettext_noop("# blocks pushed into DHT"));
-  thread = PTHREAD_CREATE(&push_thread,
-			  NULL,
-			  1024 * 64);
+  if (! NO_PUSH) {
+    thread = PTHREAD_CREATE(&push_thread,
+			    NULL,
+			    1024 * 64);
+  }
 }
 
 void done_dht_push(void) {
