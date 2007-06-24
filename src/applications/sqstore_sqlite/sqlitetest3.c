@@ -127,43 +127,43 @@ static int test(SQstore_ServiceAPI * api) {
 	break;
     }
     end = get_time();
-    printf("\n%3u insertion              took %20llums\n", i, end-start);
+    printf("%3u insertion              took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateLowPriority(0, &iterateDummy, api);
     end = get_time();
-    printf("\n%3u low priority iteration took %20llums\n", i, end-start);
+    printf("%3u low priority iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateExpirationTime(0, &iterateDummy, api);
     end = get_time();
-    printf("\n%3u expiration t iteration took %20llums\n", i, end-start);
+    printf("%3u expiration t iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateNonAnonymous(0, NO, &iterateDummy, api);
     end = get_time();
-    printf("\n%3u non anonymou iteration took %20llums\n", i, end-start);
+    printf("%3u non anonymou iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateNonAnonymous(0, YES, &iterateDummy, api);
     end = get_time();
-    printf("\n%3u non anon YES iteration took %20llums\n", i, end-start);
+    printf("%3u non anon YES iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateMigrationOrder(&iterateDummy, api);
     end = get_time();
-    printf("\n%3u migration or iteration took %20llums\n", i, end-start);
+    printf("%3u migration or iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     start = get_time();
     api->iterateAllNow(&iterateDummy, api);
     end = get_time();
-    printf("\n%3u all now      iteration took %20llums\n", i, end-start);
+    printf("%3u all now      iteration took %20llums\n", i, end-start);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
