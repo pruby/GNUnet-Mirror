@@ -10,7 +10,8 @@ plugin_LTLIBRARIES = \
 
 check_PROGRAMS = \
   sqlitetest \
-  sqlitetest2
+  sqlitetest2 \
+  sqlitetest3
 
 TESTS = $(check_PROGRAMS)
 
@@ -38,6 +39,15 @@ sqlitetest_LDADD = \
 sqlitetest2_SOURCES = \
  sqlitetest2.c 
 sqlitetest2_LDADD = \
+ $(top_builddir)/src/server/libgnunetcore.la  \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+
+
+sqlitetest3_SOURCES = \
+ sqlitetest3.c 
+sqlitetest3_LDADD = \
  $(top_builddir)/src/server/libgnunetcore.la  \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
  $(top_builddir)/src/util/libgnunetutil.la  
