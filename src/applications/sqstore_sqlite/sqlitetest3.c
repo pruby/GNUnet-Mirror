@@ -83,7 +83,7 @@ static int putValue(SQstore_ServiceAPI * api,
   value->type = htonl(i);
   value->prio = htonl(weak_randomi(100));
   value->anonymityLevel = htonl(i);
-  value->expirationTime = htonll(get_time() + weak_randomi(1000));
+  value->expirationTime = htonll(get_time() + 60 * cronHOURS + weak_randomi(1000));
   memset(&value[1],
 	 i,
 	 size - sizeof(Datastore_Value));
