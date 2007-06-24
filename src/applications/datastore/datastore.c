@@ -495,11 +495,17 @@ void update_module_datastore(UpdateAPI * uapi) {
   initFilters(uapi->ectx,
 	      uapi->cfg);
   sq = uapi->requestService("sqstore");
-  sq->get(NULL,
-	  ANY_BLOCK,
-	  &filterAddAll,
-	  NULL);
-  uapi->releaseService(sq);
+  if (sq != NULL) {
+    sq->get(NULL,
+	    ANY_BLOCK,
+	    &filterAddAll,
+	    NULL);
+    uapi->releaseService(sq);
+  } else {
+    GE_LOG(uapi->ectx,
+	   GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+	   _("Failed to load sqstore service.  Check your configuration!\n"));
+  }
   sq = NULL;
   doneFilters();
 }
