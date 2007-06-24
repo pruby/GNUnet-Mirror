@@ -119,25 +119,26 @@ void MUTEX_DESTROY(Mutex * mutex) {
   FREE(mutex);
 }
 
-#define DEBUG_LOCK_DELAY NO
-
-void MUTEX_LOCK(Mutex * mutex) {
+void MUTEX_LOCK_FL(Mutex * mutex,
+		   const char * file,
+		   unsigned int line) {
   int ret;
-#if DEBUG_LOCK_DELAY
   cron_t start;
-#endif
+  cron_t end;
 
   GE_ASSERT(NULL, mutex != NULL);
-#if DEBUG_LOCK_DELAY
   start = get_time();
-#endif
   ret = pthread_mutex_lock(&mutex->pt);
-#if DEBUG_LOCK_DELAY
-  start = get_time() - start;
-  if (start > 10)
-    printf("Locking took %llu ms!\n",
-	   start);
-#endif
+  end = get_time();
+  if ( (end - start > REALTIME_LIMIT) &&
+       (REALTIME_LIMIT != 0) ) {
+    GE_LOG(NULL,
+	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+	   _("Real-time delay violation (%llu ms) at %s:%u\n"),
+	   end - start,
+	   file,
+	   line);
+  }  
   if (ret != 0) {
     if (ret == EINVAL)
       GE_LOG(NULL,

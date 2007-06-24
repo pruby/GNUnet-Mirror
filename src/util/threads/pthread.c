@@ -120,34 +120,30 @@ PThread * PTHREAD_CREATE(PThreadMain main,
   return handle;
 }
 
-/**
- * Should we debug the time a join takes?
- * Useful for detecting missing PTHREAD_STOP_SLEEPS
- * and similar signaling operations.
- */
-#define DEBUG_JOIN_DELAY NO
-
-void PTHREAD_JOIN(PThread * handle,
-		  void ** ret) {
-#if DEBUG_JOIN_DELAY
+void PTHREAD_JOIN_FL(PThread * handle,
+		     void ** ret,
+		     const char * file,
+		     unsigned int line) {
   cron_t start;
-#endif
+  cron_t end;
   int k;
 
   GE_ASSERT(NULL,
 	    handle != NULL);
   GE_ASSERT(NULL,
 	    NO == PTHREAD_TEST_SELF(handle));
-#if DEBUG_JOIN_DELAY
   start = get_time();
-#endif
   k = pthread_join(handle->pt, ret);
-#if DEBUG_JOIN_DELAY
-  start = get_time() - start;
-  if (start > 10)
-    printf("Join took %llu ms\n",
-	   start);
-#endif
+  end = get_time();
+  if ( (end - start > REALTIME_LIMIT) &&
+       (REALTIME_LIMIT != 0) ) {
+    GE_LOG(NULL,
+	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+	   _("Real-time delay violation (%llu ms) at %s:%u\n"),
+	   end - start,
+	   file,
+	   line);
+  }
   FREE(handle);
   switch (k) {
   case 0:

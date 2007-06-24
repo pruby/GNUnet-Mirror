@@ -142,11 +142,17 @@ int SEMAPHORE_UP(Semaphore * s) {
   return ret;
 }
 
-int SEMAPHORE_DOWN(Semaphore * s,
-		   int mayblock) {
+int SEMAPHORE_DOWN_FL(Semaphore * s,
+		      int mayblock,
+		      int longwait,
+		      const char * file,
+		      unsigned int line) {
   int ret;
-
+  cron_t start;
+  cron_t end;
+  
   GE_ASSERT(NULL, s != NULL);
+  start = get_time();
   GE_ASSERT(NULL,
 	    0 == pthread_mutex_lock(&s->mutex));
   while ( (s->v <= 0) && mayblock)
@@ -159,6 +165,17 @@ int SEMAPHORE_DOWN(Semaphore * s,
     ret = SYSERR;
   GE_ASSERT(NULL,
 	    0 == pthread_mutex_unlock(&s->mutex));
+  end = get_time();
+  if ( (longwait == NO) &&
+       (end - start > REALTIME_LIMIT) &&
+       (REALTIME_LIMIT != 0) ) {
+    GE_LOG(NULL,
+	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+	   _("Real-time delay violation (%llu ms) at %s:%u\n"),
+	   end - start,
+	   file,
+	   line);
+  }  
   return ret;
 }
 
