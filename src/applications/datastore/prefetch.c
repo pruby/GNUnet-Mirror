@@ -174,7 +174,8 @@ static void * rcbAcquire(void * unused) {
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)
       load = 100;   /* never sleep longer than 5 seconds */
-    PTHREAD_SLEEP(50 * cronMILLIS * load);
+    if (doneSignal == NO)
+      PTHREAD_SLEEP(50 * cronMILLIS * load);
   }
   return NULL;
 }
