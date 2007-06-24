@@ -118,7 +118,7 @@ struct PTHREAD * PTHREAD_CREATE(PThreadMain main,
  *
  * @param ret set to the return value of the other thread.
  */
-void PTHREAD_JOIN_FL_(struct PTHREAD * handle,
+void PTHREAD_JOIN_FL(struct PTHREAD * handle,
 		      void ** ret,
 		      const char * file,
 		      unsigned int line);
@@ -129,7 +129,7 @@ void PTHREAD_JOIN_FL_(struct PTHREAD * handle,
  *
  * @param ret set to the return value of the other thread.
  */
-#define PTHREAD_JOIN(handle,ret) PTHREAD_JOIN_FL(a,b,__FILE__,__LINE__)
+#define PTHREAD_JOIN(handle,ret) PTHREAD_JOIN_FL(handle,ret,__FILE__,__LINE__)
 
 /**
  * Sleep for the specified time interval.  PTHREAD_STOP_SLEEP can be
