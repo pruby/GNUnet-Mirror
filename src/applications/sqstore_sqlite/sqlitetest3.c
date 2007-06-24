@@ -47,12 +47,6 @@
  */
 #define PUT_10 (MAX_SIZE / 32 / 1024 / ITERATIONS)
 
-
-/**
- * Name of the database on disk.
- */
-#define DB_NAME "/tmp/gnunet-sqlite-sqstore-perf/data/fs/content/gnunet.dat"
-
 static unsigned long long stored_bytes;
 
 static unsigned long long stored_entries;
@@ -108,6 +102,8 @@ static int
 iterateDummy(const HashCode512 * key,
 	     const Datastore_Value * val,
 	     void * cls) {
+  if (GNUNET_SHUTDOWN_TEST() == YES)
+    return SYSERR;
   return OK;
 }
 

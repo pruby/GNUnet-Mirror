@@ -15,6 +15,9 @@ Pros
    (gnunet-check cannot fix problems internal to the dbmgr!). 
    For example, we have seen several cases where power failure 
    has ruined a gdbm database beyond repair. 
+ + much faster (for one of the key benchmarks -- content migration
+   -- we have measure mysql taking 2s for an operation where
+   sqlite takes 150s).
 Cons 
  - Memory usage (Comment: "I have 1G and it never caused me trouble")
  - Manual setup

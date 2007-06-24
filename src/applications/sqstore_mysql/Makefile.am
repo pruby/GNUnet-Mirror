@@ -10,7 +10,8 @@ plugin_LTLIBRARIES = \
 
 check_PROGRAMS = \
   mysqltest \
-  mysqltest2 
+  mysqltest2 \
+  mysqltest3
 
 TESTS = $(check_PROGRAMS)
 
@@ -41,6 +42,13 @@ mysqltest_LDADD = \
 mysqltest2_SOURCES = \
  mysqltest2.c 
 mysqltest2_LDADD = \
+ $(top_builddir)/src/server/libgnunetcore.la  \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+mysqltest3_SOURCES = \
+ mysqltest3.c 
+mysqltest3_LDADD = \
  $(top_builddir)/src/server/libgnunetcore.la  \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
  $(top_builddir)/src/util/libgnunetutil.la  
