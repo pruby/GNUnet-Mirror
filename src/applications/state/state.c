@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -72,25 +72,17 @@ static int stateReadContent(struct GE_Context * ectx,
 	   "%s/%s",
 	   dbh,
 	   name);
-  if (OK != disk_file_size(ectx,
-			   fil,
-			   &fsize,
-			   YES)) {
-    FREE(fil);
-    return -1;
-  }
-  fd = disk_file_open(ectx,
-		      fil,
-		      O_RDONLY,
-		      S_IRUSR);
-  if (fd == -1) {
-    FREE(fil);
-    return -1;
-  }
-  if (fsize == 0) { /* also invalid! */
-    disk_file_close(ectx,
-		    fil,
-		    fd);
+  if ( (OK != disk_file_test(ectx,
+			     fil)) ||
+       (OK != disk_file_size(ectx,
+			     fil,
+			     &fsize,
+			     YES)) ||
+       (fsize == 0) ||
+       (-1 == (fd = disk_file_open(ectx,
+				   fil,
+				   O_RDONLY,
+				   S_IRUSR) )) ) {
     FREE(fil);
     return -1;
   }
