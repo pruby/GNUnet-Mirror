@@ -57,7 +57,7 @@ typedef unsigned long long cron_t;
 #define cronMONTHS ((cron_t)(30 * cronDAYS))
 #define cronYEARS ((cron_t)(365 * cronDAYS))
 
-#define REALTIME_LIMIT (100 * cronMILLIS)
+#define REALTIME_LIMIT (1000 * cronMILLIS)
 
 /**
  * Main method of a thread.
