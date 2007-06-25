@@ -185,7 +185,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetcore-0.dll"
 			File "C:\GNUnet\bin\gnunetd.exe"
       File "C:\GNUnet\bin\libgnunetip-0.dll" 
-			File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
       File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
