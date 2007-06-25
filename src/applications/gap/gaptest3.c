@@ -179,7 +179,8 @@ static unsigned int goodPeerPos;
 
 static int infoCallback(void * data,
 			const PeerIdentity * identity,
-			const char * address,
+			const void * address,
+			unsigned int addr_len,
 			cron_t last_seen,
 			unsigned int trust,
 			unsigned int bpmFromPeer) {

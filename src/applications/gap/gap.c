@@ -1360,8 +1360,6 @@ static void sendReply(IndirectionTableEntry * ite,
 struct qLRC {
   DataContainer ** values;
   unsigned int valueCount;
-  HashCode512 * hashes;
-  unsigned int hashCount;
 };
 
 /**
@@ -1381,9 +1379,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
 			 const DataContainer * value,
 			 void * closure) {
   struct qLRC * cls = closure;
-  HashCode512 hc;
   int i;
-  IndirectionTableEntry * ite;
 
 #if EXTRA_CHECKS
   /* verify data is valid */
@@ -1392,24 +1388,15 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
       YES,
       primaryKey);
 #endif
-
-  if (rhf == NULL)
-    return OK; /* drop, not fully initialized! */
   /* check seen */
-  ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
-  rhf(value,
-      &hc);
-  for (i=0;i<ite->seenIndex;i++)
-    if (equalsHashCode512(&hc,
-			  &ite->seen[i]))
-      return OK; /* drop, duplicate result! */
-  for (i=0;i<cls->valueCount;i++)
-    if (equalsHashCode512(&hc,
-			  &cls->hashes[i]))
-      return OK; /* drop, duplicate entry in DB! */
   if ( (cls->valueCount > MAX_SEEN_VALUES) &&
        (weak_randomi(cls->valueCount) > 8) )
       return OK; /* statistical drop, too many replies to keep in memory */
+  for (i=0;i<cls->valueCount;i++)
+    if (0 == memcmp(value,
+		    cls->values[i],
+		    ntohl(value->size)))
+      return OK; /* drop, duplicate entry in DB! */
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1418,11 +1405,6 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   memcpy(cls->values[cls->valueCount-1],
 	 value,
 	 ntohl(value->size));
-  if (cls->hashCount < cls->valueCount)
-    GROW(cls->hashes,
-	 cls->hashCount,
-	 cls->hashCount * 2 + 8);
-  cls->hashes[cls->valueCount-1] = hc;
   return OK;
 }
 
@@ -1464,6 +1446,8 @@ static int execQuery(const PeerIdentity * sender,
   /* Load above hard limit? */
   if (loadTooHigh())
     return SYSERR;
+  if (rhf == NULL)
+    return SYSERR; /* not fully initialized */
 
   senderID = intern_pid(sender);
   GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );
@@ -1518,8 +1502,6 @@ static int execQuery(const PeerIdentity * sender,
     stats->change(stat_routing_processed, 1);
   cls.values = NULL;
   cls.valueCount = 0;
-  cls.hashes = NULL;
-  cls.hashCount = 0;
   if ( (isRouted == YES) && /* if we can't route, lookup useless! */
        ( (policy & QUERY_ANSWER) > 0) ) {
     bs->get(bs->closure,
@@ -1558,18 +1540,18 @@ static int execQuery(const PeerIdentity * sender,
 	 (at least to give back results to local client &
 	 to update priority; but only do this for
 	 the first result */
-      bs->put(bs->closure,
-	      &query->queries[0],
-	      cls.values[perm[i]],
-	      ite->priority);
+      if (i == 0) 
+	bs->put(bs->closure,
+		&query->queries[0],
+		cls.values[perm[i]],
+		ite->priority);
 
       if (uri(cls.values[perm[i]],
 	      ite->type,
 	      NO, /* no need to verify local results! */
 	      &query->queries[0]))
 	doForward = NO; /* we have the one and only answer,
-				do not bother to forward... */
-
+			   do not bother to forward... */
       FREE(cls.values[perm[i]]);
     }
     FREE(perm);
@@ -1577,17 +1559,11 @@ static int execQuery(const PeerIdentity * sender,
   GROW(cls.values,
        cls.valueCount,
        0);
-  GROW(cls.hashes,
-       cls.hashCount,
-       0);
-
-
   MUTEX_UNLOCK(lookup_exclusion);
-  if (doForward) {
+  if (doForward) 
     forwardQuery(query,
 		 target,
-		 sender);
-  }
+		 sender);  
   change_pid_rc(senderID, -1);
   return doForward;
 }
