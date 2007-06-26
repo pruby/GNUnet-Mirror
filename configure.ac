@@ -640,6 +640,7 @@ src/applications/pingpong/Makefile
 src/applications/rpc/Makefile
 src/applications/session/Makefile
 src/applications/sqstore_mysql/Makefile
+src/applications/sqstore_mysql_embedded/Makefile
 src/applications/sqstore_sqlite/Makefile
 src/applications/state/Makefile
 src/applications/stats/Makefile
@@ -704,6 +705,12 @@ then
 fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])
+
+# sqlite
+if test "x$sqlite" = "x0"
+then
+  AC_MSG_NOTICE([WARNING: sqlite not found, this will cause problems with file-sharing.]
+fi
 
 # guile
 if test "x$guile" = "x0"
