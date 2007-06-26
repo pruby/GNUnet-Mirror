@@ -6,7 +6,7 @@ LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 plugin_LTLIBRARIES = \
-  libgnunetmodule_sqstore_mysql.la
+  libgnunetmodule_sqstore_mysql_embedded.la
 
 check_PROGRAMS = \
   mysqltest \
@@ -21,12 +21,12 @@ endif
 
 AM_CPPFLAGS = $(CPPFLAGS) $(MYSQL_CPPFLAGS)
 
-libgnunetmodule_sqstore_mysql_la_SOURCES = \
+libgnunetmodule_sqstore_mysql_embedded_la_SOURCES = \
   mysql.c 
-libgnunetmodule_sqstore_mysql_la_LDFLAGS = \
+libgnunetmodule_sqstore_mysql_embedded_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(MYSQL_LDFLAGS)
-libgnunetmodule_sqstore_mysql_la_LIBADD = \
+libgnunetmodule_sqstore_mysql_embedded_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  -lmysqld $(ZLIB_LNK)
 

@@ -706,26 +706,20 @@ fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])
 
-# sqlite
-if test "x$sqlite" = "x0"
-then
-  AC_MSG_NOTICE([WARNING: sqlite not found, this will cause problems with file-sharing.]
-fi
-
 # guile
 if test "x$guile" = "x0"
 then
-  AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
-fi
-
-if test "$guile" != 1
-then
+ AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
  AC_MSG_NOTICE([WARNING: Guile not found, gnunet-setup will not be installed.])
 fi
-
 
 if test "$adns" != 1
 then
  AC_MSG_NOTICE([WARNING: GNU adns not found, will use synchronous DNS resolution.])
 fi
 
+# sqlite
+if test "x$sqlite" = "x0"
+then
+  AC_MSG_NOTICE([WARNING: sqlite not found, this will cause problems with file-sharing.])
+fi
