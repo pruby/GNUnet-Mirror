@@ -1364,7 +1364,7 @@ static void drop() {
 }
 
 SQstore_ServiceAPI *
-provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
+provide_module_sqstore_mysql_embedded(CoreAPIForApplication * capi) {
   static SQstore_ServiceAPI api;
   State_ServiceAPI * state;
   char * cnffile;
@@ -1501,7 +1501,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 /**
  * Shutdown the module.
  */
-void release_module_sqstore_mysql() {
+void release_module_sqstore_mysql_embedded() {
   State_ServiceAPI * state;
   iclose(dbh);
   FREE(dbh->cnffile);
