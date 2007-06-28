@@ -52,6 +52,18 @@
  */
 #define LOG_SQLITE(db, level, cmd) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0);
 
+/**
+ * After how many ms "busy" should a DB operation fail for good?
+ * A low value makes sure that we are more responsive to requests
+ * (especially PUTs).  A high value guarantees a higher success
+ * rate (SELECTs in iterate can take several seconds despite LIMIT=1).
+ *
+ * The default value of 250ms should ensure that users do not experience
+ * huge latencies while at the same time allowing operations to succeed
+ * with reasonable probability.
+ */
+#define BUSY_TIMEOUT_MS 250
+
 static Stats_ServiceAPI * stats;
 
 static CoreAPIForApplication * coreAPI;
@@ -211,6 +223,11 @@ static sqliteHandle * getDBHandle() {
   CHECK(SQLITE_OK ==
 	sqlite3_exec(ret->dbh,
 		     "PRAGMA page_size=4092", NULL, NULL, ENULL));
+  
+  CHECK(SQLITE_OK ==
+	sqlite3_busy_timeout(ret->dbh,
+			     BUSY_TIMEOUT_MS));
+  
 
   /* We have to do it here, because otherwise precompiling SQL might fail */
   CHECK(SQLITE_OK ==
@@ -444,6 +461,8 @@ static double getStat(sqliteHandle * handle,
     }
   }
   sqlite3_finalize(stmt);
+  if (i == SQLITE_BUSY) 
+    return SYSERR;
   if (i != SQLITE_OK) {
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
@@ -547,8 +566,6 @@ static int sqlite_iterate(unsigned int type,
 
   handle = getDBHandle();
   dbh = handle->dbh;
-  MUTEX_LOCK(db->DATABASE_Lock_);
-
   /* For the rowid trick see
       http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   strcpy(scratch,
@@ -610,7 +627,6 @@ static int sqlite_iterate(unsigned int type,
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite3_prepare");
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
   count    = 0;
@@ -688,16 +704,13 @@ static int sqlite_iterate(unsigned int type,
 	   (ntohl(datum->value.anonymityLevel) == 0) ) {
 	count++;
 	if (iter != NULL) {
-	  MUTEX_UNLOCK(db->DATABASE_Lock_);
 	  if (SYSERR == iter(&datum->key,
 			     &datum->value,
 			     closure) ) {
 	    FREE(datum);
-	    MUTEX_LOCK(db->DATABASE_Lock_);
 	    count = SYSERR;
 	    break;
 	  }
-	  MUTEX_LOCK(db->DATABASE_Lock_);
 	}
       }
       key = datum->key;
@@ -710,7 +723,6 @@ static int sqlite_iterate(unsigned int type,
 		   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 		   "sqlite_query");
 	sqlite3_finalize(stmt);
-	MUTEX_UNLOCK(db->DATABASE_Lock_);
 	return SYSERR;
       }
       sqlite3_reset(stmt);
@@ -718,8 +730,6 @@ static int sqlite_iterate(unsigned int type,
     }
   }
   sqlite3_finalize(stmt);
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
-
   return count;
 }
 
@@ -807,8 +817,6 @@ static int iterateAllNow(Datum_Iterator iter,
 
   handle = getDBHandle();
   dbh = handle->dbh;
-  MUTEX_LOCK(db->DATABASE_Lock_);
-
   /* For the rowid trick see
       http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   if (sq_prepare(dbh,
@@ -817,7 +825,6 @@ static int iterateAllNow(Datum_Iterator iter,
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite3_prepare");
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
   count = 0;
@@ -843,12 +850,9 @@ static int iterateAllNow(Datum_Iterator iter,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
     sqlite3_finalize(stmt);
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
   sqlite3_finalize(stmt);
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
-
   return count;
 }
 
@@ -940,8 +944,6 @@ static int get(const HashCode512 * key,
 #endif
   handle = getDBHandle();
   dbh = handle->dbh;
-  MUTEX_LOCK(db->DATABASE_Lock_);
-
   strcpy(scratch, "SELECT ");
   if (iter == NULL)
     strcat(scratch, "count(*)");
@@ -967,7 +969,6 @@ static int get(const HashCode512 * key,
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
 
@@ -1015,12 +1016,15 @@ static int get(const HashCode512 * key,
       } else
 	count += sqlite3_column_int(stmt, 0);
     }
+    if (ret == SQLITE_BUSY) {
+      sqlite3_finalize(stmt);
+      return count;
+    }
     if (ret != SQLITE_DONE) {
       LOG_SQLITE(handle,
 		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 		 "sqlite_query");
       sqlite3_finalize(stmt);
-      MUTEX_UNLOCK(db->DATABASE_Lock_);
       return SYSERR;
     }
 
@@ -1029,8 +1033,6 @@ static int get(const HashCode512 * key,
     LOG_SQLITE(handle,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
-
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
   GE_LOG(ectx,
@@ -1045,7 +1047,7 @@ static int get(const HashCode512 * key,
  * Write content to the db.  Always adds a new record
  * (does NOT overwrite existing data).
  *
- * @return SYSERR on error, OK if ok.
+ * @return SYSERR on error, NO on temporary error, OK if ok.
  */
 static int put(const HashCode512 * key,
 	       const Datastore_Value * value) {
@@ -1076,7 +1078,6 @@ static int put(const HashCode512 * key,
     return SYSERR;
   }
   dbh = getDBHandle();
-  MUTEX_LOCK(db->DATABASE_Lock_);
   if (db->lastSync > 1000)
     syncStats(dbh);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
@@ -1095,17 +1096,19 @@ static int put(const HashCode512 * key,
   sqlite3_bind_blob(stmt, 7, &value[1], contentSize, SQLITE_TRANSIENT);
   n = sqlite3_step(stmt);
   if (n != SQLITE_DONE) {
+    if (n == SQLITE_BUSY) {
+      sqlite3_reset(stmt);    
+      return NO;
+    }
     LOG_SQLITE(dbh,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
-    sqlite3_reset(stmt);
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
+    sqlite3_reset(stmt);    
     return SYSERR;
   }
   sqlite3_reset(stmt);
   db->lastSync++;
   db->payload += getContentDatastoreSize(value);
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
 #if DEBUG_SQLITE
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1149,7 +1152,6 @@ static int del(const HashCode512 * key,
 #endif
 
   dbh = getDBHandle();
-  MUTEX_LOCK(db->DATABASE_Lock_);
   if (db->lastSync > 1000)
     syncStats(dbh);
 
@@ -1161,7 +1163,6 @@ static int del(const HashCode512 * key,
       LOG_SQLITE(dbh,
 		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 		 "sqlite_query");
-      MUTEX_UNLOCK(db->DATABASE_Lock_);
       return SYSERR;
     }
     sqlite3_bind_blob(stmt,
@@ -1171,14 +1172,12 @@ static int del(const HashCode512 * key,
 		      SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) != SQLITE_ROW) {
       sqlite3_finalize(stmt);
-      MUTEX_UNLOCK(db->DATABASE_Lock_);
       return NO;
     }
     dvalue = assembleDatum(dbh,
 			   stmt);
     if (dvalue == NULL) {
       sqlite3_finalize(stmt);
-      MUTEX_UNLOCK(db->DATABASE_Lock_);
       return SYSERR;
     }
     sqlite3_finalize(stmt);
@@ -1222,11 +1221,9 @@ static int del(const HashCode512 * key,
     LOG_SQLITE(dbh,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_query");
-    MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
   db->lastSync++;
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
   GE_LOG(ectx,
@@ -1263,7 +1260,6 @@ static int update(const HashCode512 * key,
 #endif
 
   dbh = getDBHandle();
-  MUTEX_LOCK(db->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   sqlite3_bind_int(dbh->updPrio,
 		   1,
@@ -1291,14 +1287,13 @@ static int update(const HashCode512 * key,
   n = sqlite3_step(dbh->updPrio);
   sqlite3_reset(dbh->updPrio);
 
-  MUTEX_UNLOCK(db->DATABASE_Lock_);
-
 #if DEBUG_SQLITE
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: block updated\n");
 #endif
-
+  if (n == SQLITE_BUSY) 
+    return NO;
   return n == SQLITE_OK ? OK : SYSERR;
 }
 
