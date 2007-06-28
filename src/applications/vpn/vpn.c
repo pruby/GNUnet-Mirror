@@ -1334,10 +1334,9 @@ static void clientExitHandler(struct ClientHandle * c) {
 
 static int makeNonblocking(int handle) {
 #if MINGW
-  u_long l = 1;
   if (ioctlsocket(handle,
 		  FIONBIO,
-		  &l) == SOCKET_ERROR) {
+		  (u_long FAR*) 1) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
     return SYSERR;
   } else {

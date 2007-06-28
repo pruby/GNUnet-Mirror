@@ -766,10 +766,9 @@ static void * selectThread(void * ctx) {
 static int makeNonblocking(struct GE_Context * ectx,
 			    int handle) {
 #if MINGW
-  u_long l = 1;
   if (ioctlsocket(handle,
 		  FIONBIO,
-		  &l) == SOCKET_ERROR) {
+		  (u_long FAR*) 1) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
     GE_LOG_STRERROR(ectx,
 		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
