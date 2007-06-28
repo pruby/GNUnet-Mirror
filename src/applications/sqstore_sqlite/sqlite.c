@@ -362,6 +362,11 @@ assembleDatum(sqliteHandle * handle,
   Datastore_Value * value;
   int contentSize;
   sqlite3 * dbh;
+  unsigned int type;
+
+  type = sqlite3_column_int(stmt, 1);
+  if (type == RESERVED_BLOCK)
+    return NULL;
 
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
 
@@ -371,7 +376,7 @@ assembleDatum(sqliteHandle * handle,
 
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	   _("Invalid data in %s (NCS).  Trying to fix (by deletion).\n"),
 	   _("sqlite datastore"));
     if (sq_prepare(dbh,
 		   "DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK) {
@@ -416,7 +421,7 @@ assembleDatum(sqliteHandle * handle,
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
   value = &datum->value;
   value->size = htonl(contentSize + sizeof(Datastore_Value));
-  value->type = htonl(sqlite3_column_int(stmt, 1));
+  value->type = htonl(type);
   value->prio = htonl(sqlite3_column_int(stmt, 2));
   value->anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
   value->expirationTime = htonll(sqlite3_column_int64(stmt, 4));

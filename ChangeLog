@@ -1,3 +1,9 @@
+Thu Jun 28 01:10:01 MDT 2007
+	Fixed high-latency problems for certain SQLite operations.
+	Also improved SQLite performance (but not scalability) a
+	bit.  Resolved MySQL disconnect crash (gnunetd would crash
+	if mysqld was stopped).
+
 Sat Jun 23 16:56:03 MDT 2007
 	Improved CPU consumption from content migration code
 	by querying the DB less often, using the same content

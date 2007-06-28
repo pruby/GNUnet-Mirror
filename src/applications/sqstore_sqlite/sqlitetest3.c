@@ -67,7 +67,8 @@ static int putValue(SQstore_ServiceAPI * api,
   if (weak_randomi(16) == 0) /* but some of it is less! */
     size = sizeof(Datastore_Value) + weak_randomi(32 * 1024);
   size = size - (size & 7); /* always multiple of 8 */
-
+  GE_ASSERT(NULL,
+	    size >= sizeof(Datastore_Value));
   /* generate random key */
   hash(&key,
        sizeof(HashCode512),

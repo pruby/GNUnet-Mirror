@@ -60,7 +60,7 @@ typedef struct {
   /**
    * Store an item in the datastore.
    *
-   * @return OK on success, SYSERR on error
+   * @return OK on success, SYSERR on error, NO on temporary error
    */
   int (*put)(const HashCode512 * key,
 	     const Datastore_Value * value);
