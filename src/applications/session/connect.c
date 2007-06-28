@@ -891,7 +891,7 @@ provide_module_session(CoreAPIForApplication * capi) {
   static Session_ServiceAPI ret;
 
   ectx = capi->ectx;
-  GE_ASSERT(ectx, sizeof(P2P_setkey_MESSAGE) == 520)
+  GE_ASSERT(ectx, sizeof(P2P_setkey_MESSAGE) == 520);
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {

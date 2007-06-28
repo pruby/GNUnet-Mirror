@@ -210,57 +210,57 @@ const char *GE_strerror(int errnum);
  * If this context would log an event of the given kind,
  * execute statement "a".
  */
-#define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0);
+#define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0)
 
-#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0);
+#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0)
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0);
+#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0)
 
-#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0);
+#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
-#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0);
-
-/**
- * Log an error message at log-level 'level' that indicates
- * a failure of the command 'cmd' with the message given
- * by strerror(errno).
- */
-#define GE_LOG_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0);
+#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
+#define GE_LOG_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
+#define GE_DIE_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0);
+#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0);
+#define GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0)
+
+/**
+ * Log an error message at log-level 'level' that indicates
+ * a failure of the command 'cmd' with the message given
+ * by strerror(errno).
+ */
+#define GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
+#define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

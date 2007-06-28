@@ -393,6 +393,6 @@ GE_create_context_stdout(int logDate,
 				    &filelogger,
 				    fctx,
 				    &fileclose,
-            NULL);
+				    NULL);
 
 }
