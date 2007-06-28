@@ -19,13 +19,13 @@
 */
 
 /**
- * @file applications/sqstore_mysql/mysql.c
+ * @file applications/sqstore_mysql/mysql_embedded.c
  * @author Igor Wronsky and Christian Grothoff
  *
  * Database: MySQL
  *
- * NOTE: This db module does NOT work with mysql prior to 4.1 since
- * it uses prepared statements.
+ * NOTE: This db module does NOT work with mysql prior to 5.1 since
+ * it uses prepared statements and the embedded server.
  *
  * HIGHLIGHTS
  *
