@@ -38,7 +38,7 @@
  * some of the processing cost which would otherwise go
  * to waste).
  */
-#define NO_PUSH 1
+#define NO_PUSH NO
 
 /**
  * DHT service.  Set to NULL to terminate

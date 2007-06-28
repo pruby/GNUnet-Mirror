@@ -51,6 +51,12 @@ typedef struct FS_SEARCH_CONTEXT {
 } SEARCH_CONTEXT;
 
 /**
+ * How often should we automatically retry if we
+ * get a transient error back from gnunetd?
+ */
+#define AUTO_RETRY 4
+
+/**
  * Thread that processes replies from gnunetd and
  * calls the appropriate callback.
  */
@@ -346,13 +352,14 @@ int FS_getAveragePriority(struct ClientServerConnection * sock) {
  * Insert a block.
  *
  * @param block the block (properly encoded and all)
- * @return OK on success, SYSERR on error
+ * @return OK on success, SYSERR on error, NO on transient error
  */
 int FS_insert(struct ClientServerConnection * sock,
 	      const Datastore_Value * block) {
   int ret;
   CS_fs_request_insert_MESSAGE * ri;
   unsigned int size;
+  int retry;
 
   if (ntohl(block->size) <= sizeof(Datastore_Value)) {
     GE_BREAK(NULL, 0);
@@ -368,18 +375,22 @@ int FS_insert(struct ClientServerConnection * sock,
   memcpy(&ri[1],
 	 &block[1],
 	 size);
-  if (OK != connection_write(sock,
-			     &ri->header)) {
-    FREE(ri);
-    return SYSERR;
-  }
+  retry = AUTO_RETRY;
+  do {
+    if (OK != connection_write(sock,
+			       &ri->header)) {
+      FREE(ri);
+      return SYSERR;
+    }
+    if (OK != connection_read_result(sock,
+				     &ret)) {
+      GE_BREAK(NULL, 0);
+      FREE(ri);
+      return SYSERR;
+    }
+  } while ( (ret == NO) &&
+	    (retry-- > 0) );
   FREE(ri);
-
-  if (OK != connection_read_result(sock,
-				   &ret)) {
-    GE_BREAK(NULL, 0);
-    return SYSERR;
-  }
   return ret;
 }
 
@@ -447,6 +458,7 @@ int FS_index(struct ClientServerConnection * sock,
   int ret;
   CS_fs_request_index_MESSAGE * ri;
   unsigned int size;
+  int retry;
 
   size = ntohl(block->size) - sizeof(Datastore_Value);
   ri = MALLOC(sizeof(CS_fs_request_index_MESSAGE) + size);
@@ -465,20 +477,26 @@ int FS_index(struct ClientServerConnection * sock,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Sending index request to gnunetd\n");
 #endif
-  if (OK != connection_write(sock,
-			  &ri->header)) {
-    FREE(ri);
-    return SYSERR;
-  }
-  FREE(ri);
+  retry = AUTO_RETRY;
+  do {
+    if (OK != connection_write(sock,
+			       &ri->header)) {
+      FREE(ri);
+      return SYSERR;
+    }
 #if DEBUG_FSLIB
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Waiting for confirmation of index request by gnunetd\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Waiting for confirmation of index request by gnunetd\n");
 #endif
-  if (OK != connection_read_result(sock,
-			  &ret))
-    return SYSERR;
+    if (OK != connection_read_result(sock,
+				     &ret)) {
+      FREE(ri);
+      return SYSERR;
+    }
+  } while ( (ret == NO) &&
+	    (retry-- > 0) );
+  FREE(ri);
   return ret;
 }
 
@@ -495,6 +513,7 @@ int FS_delete(struct ClientServerConnection * sock,
   int ret;
   CS_fs_request_delete_MESSAGE * rd;
   unsigned int size;
+  int retry;
 
   size = ntohl(block->size) - sizeof(Datastore_Value);
   rd = MALLOC(sizeof(CS_fs_request_delete_MESSAGE) + size);
@@ -503,18 +522,23 @@ int FS_delete(struct ClientServerConnection * sock,
   memcpy(&rd[1],
 	 &block[1],
 	 size);
-  if (OK != connection_write(sock,
-			  &rd->header)) {
-    FREE(rd);
-    GE_BREAK(NULL, 0);
-    return SYSERR;
-  }
+  retry = AUTO_RETRY;
+  do {
+    if (OK != connection_write(sock,
+			       &rd->header)) {
+      FREE(rd);
+      GE_BREAK(NULL, 0);
+      return SYSERR;
+    }
+    if (OK != connection_read_result(sock,
+				     &ret)) {
+      GE_BREAK(NULL, 0);
+      FREE(rd);
+      return SYSERR;
+    }
+  } while ( (ret == NO) &&
+	    (retry-- > 0) );
   FREE(rd);
-  if (OK != connection_read_result(sock,
-			  &ret)) {
-    GE_BREAK(NULL, 0);
-    return SYSERR;
-  }
   return ret;
 }
 
@@ -535,10 +559,10 @@ int FS_unindex(struct ClientServerConnection * sock,
   ru.blocksize = htonl(blocksize);
   ru.fileId = *hc;
   if (OK != connection_write(sock,
-			  &ru.header))
+			     &ru.header))
     return SYSERR;
   if (OK != connection_read_result(sock,
-			  &ret))
+				   &ret))
     return SYSERR;
   return ret;
 }
@@ -559,10 +583,10 @@ int FS_testIndexed(struct ClientServerConnection * sock,
   ri.reserved = htonl(0);
   ri.fileId = *hc;
   if (OK != connection_write(sock,
-			  &ri.header))
+			     &ri.header))
     return SYSERR;
   if (OK != connection_read_result(sock,
-			  &ret))
+				   &ret))
     return SYSERR;
   return ret;
 }

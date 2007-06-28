@@ -418,8 +418,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     }
     value->expirationTime = htonll(expirationTime);
     value->prio = htonl(priority);
-    if (OK != FS_insert(sock,
-                        value)) {
+    if (SYSERR == FS_insert(sock,
+			    value)) {
       GE_BREAK(ectx, 0);
       FREE(value);
       goto FAILURE;
