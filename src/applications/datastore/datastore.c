@@ -64,6 +64,8 @@ static long long available;
  */
 static unsigned long long quota;
 
+static struct CronManager * cron;
+
 /**
  * Require 1/100th of quota to be 'free' space.
  */
@@ -176,8 +178,8 @@ static int put(const HashCode512 * key,
 	   "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
 	   sq->getSize(),
 	   quota);
-    return SYSERR; /* new content has such a low priority that
-		      we should not even bother! */
+    return NO; /* new content has such a low priority that
+		  we should not even bother! */
   }
   if (ntohl(value->prio) < minPriority)
     minPriority = ntohl(value->prio);
@@ -408,11 +410,13 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     return NULL;
   }
   available = quota - sq->getSize();
-  cron_add_job(capi->cron,
+  cron = cron_create(capi->ectx);
+  cron_add_job(cron,
 	       &cronMaintenance,
 	       10 * cronSECONDS,
 	       10 * cronSECONDS,
 	       NULL);
+  cron_start(cron);
   api.getSize = &getSize;
   api.put = &put;
   api.fast_get = &fastGet;
@@ -428,10 +432,13 @@ provide_module_datastore(CoreAPIForApplication * capi) {
  * Shutdown the manager module.
  */
 void release_module_datastore() {
-  cron_del_job(coreAPI->cron,
+  cron_stop(cron);
+  cron_del_job(cron,
 	       &cronMaintenance,
 	       10 * cronSECONDS,
 	       NULL);
+  cron_destroy(cron);
+  cron = NULL;
   donePrefetch();
   doneFilters();
   coreAPI->releaseService(sq);

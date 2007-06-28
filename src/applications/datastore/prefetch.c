@@ -91,8 +91,8 @@ static struct GC_Configuration * cfg;
 		
 
 static int acquire(const HashCode512 * key,
-		  const Datastore_Value * value,
-		  void * closure) {
+		   const Datastore_Value * value,
+		   void * closure) {
   int loadc;
   int loadi;
   int load;
