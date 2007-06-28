@@ -763,21 +763,16 @@ static void * selectThread(void * ctx) {
   return NULL;
 }
 
-static int makeNonblocking(struct GE_Context * ectx,
+static int makePipeNonblocking(struct GE_Context * ectx,
 			    int handle) {
 #if MINGW
-  if (ioctlsocket(handle,
-		  FIONBIO,
-		  (u_long FAR*) 1) == SOCKET_ERROR) {
-    SetErrnoFromWinsockError(WSAGetLastError());
-    GE_LOG_STRERROR(ectx,
-		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-		    "ioctlsocket");
-    return SYSERR;
-  } else {
-    /* store the blocking mode */
+  DWORD mode;
+  
+  mode = PIPE_NOWAIT;
+
+  if (SetNamedPipeHandleState((HANDLE) handle, &mode, NULL, NULL))
     __win_SetHandleBlockingMode(handle, 0);
-  }
+  /* don't report errors because Win9x doesn't support SetNamedPipeHandleState() */
 #else
   int flags = fcntl(handle, F_GETFL);
   flags |= O_NONBLOCK;
@@ -843,9 +838,7 @@ select_create(const char * description,
     FREE(sh);
     return NULL;
   }
-  /* pipes are always blocking on Win32 */
-#ifndef MINGW
-  if (OK != makeNonblocking(sh->ectx,
+  if (OK != makePipeNonblocking(sh->ectx,
 			    sh->signal_pipe[0])) {
     if ( (0 != CLOSE(sh->signal_pipe[0])) ||
 	 (0 != CLOSE(sh->signal_pipe[1])) )
@@ -855,7 +848,7 @@ select_create(const char * description,
     FREE(sh);
     return NULL;
   }
-#endif
+
   sh->shutdown = NO;
   sh->ectx = ectx;
   sh->load_monitor = mon;
