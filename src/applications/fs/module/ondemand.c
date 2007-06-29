@@ -285,7 +285,7 @@ int ONDEMAND_index(struct GE_Context * cectx,
 		       ONDEMAND_BLOCK,
 		       &checkPresent,
 		       &odb.header);
-  if (ret <= 0) {
+  if (ret >= 0) {
     ret = datastore->put(&key,
 			 &odb.header);
   } else {
