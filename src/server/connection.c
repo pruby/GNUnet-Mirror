@@ -2670,7 +2670,7 @@ int checkHeader(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey, &enc);
   if(size < sizeof(P2P_PACKET_HEADER)) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
+	   GE_WARNING | GE_BULK | GE_DEVELOPER,
 	   _("Message from `%s' discarded: invalid format.\n"),
 	   &enc);
     return SYSERR;
@@ -2698,7 +2698,7 @@ int checkHeader(const PeerIdentity * sender,
      (be->status == STAT_DOWN) || (be->status == STAT_SETKEY_SENT)) {
 #if DEBUG_CONNECTION
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
+	   GE_INFO | GE_BULK | GE_DEVELOPER,
 	   "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
 	   &enc);
 #endif
@@ -2718,7 +2718,7 @@ int checkHeader(const PeerIdentity * sender,
   hash(tmp, size - sizeof(HashCode512), &hc);
   if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
+	   GE_INFO | GE_BULK | GE_DEVELOPER,
 	   "Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	   &enc);
 #if DEBUG_CONNECTION
@@ -2750,7 +2750,7 @@ int checkHeader(const PeerIdentity * sender,
     }
     if (res == SYSERR) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_REQUEST | GE_USER,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	     _("Invalid sequence number"
 	       " %u <= %u, dropping message.\n"),
 	     sequenceNumber, be->lastSequenceNumberReceived);
