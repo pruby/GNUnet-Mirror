@@ -131,8 +131,6 @@ void untrackQuery(const HashCode512 * query,
 	 (equalsHashCode512(&trackers[i]->query,
 			    query)) ) {
       removeEntry(i);
-      if (stats != NULL)
-	stats->change(stat_queries_tracked, -1);
       MUTEX_UNLOCK(queryManagerLock);
       return;
     }
