@@ -353,8 +353,15 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
 	 &ri[1],
 	 ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
   MUTEX_LOCK(lock);
-  ret = datastore->put(&query,
-		       datum);
+  if ( (type != D_BLOCK) ||
+       (0 == datastore->get(&query,
+			    type,
+			    NULL,
+			    NULL)) )
+    ret = datastore->put(&query,
+			 datum);
+  else
+    ret = OK;
   MUTEX_UNLOCK(lock);
   if ( (ntohl(ri->anonymityLevel) == 0) &&
        (dht != NULL) ) {
