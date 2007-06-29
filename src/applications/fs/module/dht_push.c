@@ -136,7 +136,7 @@ void init_dht_push(CoreAPIForApplication * capi,
   if (! NO_PUSH) {
     thread = PTHREAD_CREATE(&push_thread,
 			    NULL,
-			    1024 * 64);
+			    1024 * 128);
   }
 }
 

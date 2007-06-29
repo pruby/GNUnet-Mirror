@@ -626,7 +626,7 @@ void enableCoreProcessing() {
   for (i=0;i<THREAD_COUNT;i++) {
     threads_[i] = PTHREAD_CREATE(&threadMain,
 				 &i,
-				 8 * 1024);
+				 128 * 1024);
     if (threads_[i] == NULL)
       GE_LOG_STRERROR(ectx,
 		      GE_ERROR,

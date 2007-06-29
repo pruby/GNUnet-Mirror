@@ -1196,7 +1196,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   ltgSignal = SEMAPHORE_CREATE(0);
   localGetProcessor = PTHREAD_CREATE(&localGetter,
 				     NULL,
-				     32 * 1024);
+				     128 * 1024);
   if (localGetProcessor == NULL)
     GE_DIE_STRERROR(ectx,
 		    GE_ADMIN | GE_FATAL | GE_BULK,
