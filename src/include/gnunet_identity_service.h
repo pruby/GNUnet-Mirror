@@ -168,9 +168,14 @@ typedef struct {
    * Blacklist a host. This method is called if a host
    * failed to respond to a connection attempt.
    *
-   * @param desparation how desperate are we to connect? [0,MAXHOSTS]
-   *        determines how long the blacklist will be in effect
+   * @param desparation how long the blacklist will be in effect
+   *                    (in seconds)
    * @param strict should we reject incoming connections?
+   *               (and also not possibly attempt to connect
+   *                to this peer from our side)?
+   *               If set to YES, the desperation value
+   *               is also definite, otherwise an algorithm
+   *               for back-off and limiting is applied.
    * @return OK on success SYSERR on error
    */
   int (*blacklistHost)(const PeerIdentity * identity,

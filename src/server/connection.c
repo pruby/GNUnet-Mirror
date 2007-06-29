@@ -2260,7 +2260,7 @@ static void scheduleInboundTraffic() {
 	       adjustedRR[u],
 	       entries[u]->max_transmitted_limit, entries[u]->idealized_limit);
         identity->blacklistHost(&entries[u]->session.sender,
-                                1 / topology->getSaturation(),
+                                24 * 60 * 60, /* 1 day */
 				YES);
         shutdownConnection(entries[u]);
         activePeerCount--;
@@ -2831,6 +2831,10 @@ static int handleHANGUP(const PeerIdentity * sender,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
+  /* do not try to reconnect any time soon! */
+  identity->blacklistHost(sender,
+			  60 * 60, /* wait at least 1h */
+			  YES);
   shutdownConnection(be);
   MUTEX_UNLOCK(lock);
   return OK;

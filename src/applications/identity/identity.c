@@ -859,10 +859,7 @@ static int blacklistHost(const PeerIdentity * identity,
     return SYSERR;
   }
   if (strict == YES) {
-    /* Presumably runs a broken version of GNUnet;
-       blacklist for 1 day (we hope the other peer
-       updates the software eventually...) */
-    entry->delta = 1 * cronDAYS;
+    entry->delta = desperation;
   } else {
     entry->delta
       = entry->delta + weak_randomi(1+desperation*cronSECONDS);
