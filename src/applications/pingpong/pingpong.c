@@ -198,7 +198,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 	   GE_WARNING | GE_BULK | GE_USER | GE_DEVELOPER,
 	   _("Received malformed `%s' message. Dropping.\n"),
 	   "ping");
-    GE_BREAK(NULL, 0);
+    GE_BREAK_OP(NULL, 0);
     return SYSERR;
   }
   pmsg = (const P2P_pingpong_MESSAGE *) hmsg;
@@ -208,7 +208,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_ADMIN,
 	   _("Received PING not destined for us!\n"));
-    GE_BREAK(NULL, 0);
+    GE_BREAK_OP(NULL, 0);
     return SYSERR; /* not for us */
   }
 

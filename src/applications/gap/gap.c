@@ -1600,7 +1600,7 @@ static int useContent(const PeerIdentity * host,
 #endif
 
   if (ntohs(pmsg->size) < sizeof(P2P_gap_reply_MESSAGE)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     return SYSERR; /* invalid! */
   }
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
@@ -1655,7 +1655,7 @@ static int useContent(const PeerIdentity * host,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("GAP received invalid content from `%s'\n"),
 	   (host != NULL) ? (const char*)&enc : _("myself"));
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */
   }
@@ -2000,7 +2000,7 @@ static int handleQuery(const PeerIdentity * sender,
        (ntohs(msg->size) < sizeof(P2P_gap_query_MESSAGE)) ||
        (ntohs(msg->size) != sizeof(P2P_gap_query_MESSAGE) +
 	(queries-1) * sizeof(HashCode512)) ) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     return SYSERR; /* malformed query */
   }
 
@@ -2013,7 +2013,7 @@ static int handleQuery(const PeerIdentity * sender,
        (or B directly back to A; also should not happen)
        in this case, A must just drop; however, this
        should not happen (peers should check). */
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     FREE(qmsg);
     return OK;
   }

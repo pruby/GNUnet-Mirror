@@ -251,7 +251,7 @@ static int verifySKS(const PeerIdentity * hostId,
   if (rsize < sizeof(P2P_setkey_MESSAGE)) {
     EncName enc;
 
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     IF_GELOG(ectx,
 	     GE_INFO | GE_USER | GE_REQUEST,
 	     hash2enc(&hostId->hashPubKey,
@@ -330,15 +330,15 @@ makeSessionKeySigned(const PeerIdentity * hostId,
        (0 != memcmp(&hc,
 		    &foreignHello->senderIdentity,
 		    sizeof(PeerIdentity))) ) {
-    GE_BREAK(NULL,
-	     0 == memcmp(&hc,
-			 &foreignHello->senderIdentity,
-			 sizeof(PeerIdentity)));
-    GE_BREAK(NULL,
-	     0 == memcmp(&hc,
-			 hostId,
-			 sizeof(PeerIdentity)));
-    GE_BREAK(NULL, 0);
+    GE_BREAK_OP(NULL,
+		0 == memcmp(&hc,
+			    &foreignHello->senderIdentity,
+			    sizeof(PeerIdentity)));
+    GE_BREAK_OP(NULL,
+		0 == memcmp(&hc,
+			    hostId,
+			    sizeof(PeerIdentity)));
+    GE_BREAK_OP(NULL, 0);
     FREE(foreignHello);
     return NULL;
   }
@@ -355,7 +355,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 				  sizeof(SESSIONKEY),
 				  &foreignHello->publicKey,
 				  &msg->key)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     FREE(foreignHello);
     FREE(msg);
     return NULL; /* encrypt failed */
@@ -686,7 +686,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	   ntohl(key.crc32),
 	   crc32N(&key, SESSIONKEY_LEN));
 #endif
-    GE_BREAK(ectx, 0);
+    GE_BREAK_OP(ectx, 0);
     stats->change(stat_skeyRejected,
 		  1);
     return SYSERR;
@@ -815,7 +815,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 		  tsession,
 		  ping); /* ping is now pong */
     } else {
-      GE_BREAK(ectx, 0);
+      GE_BREAK_OP(ectx, 0);
       /* PING not included in SKEY - bug (in other peer!?) */
     }
   }
