@@ -264,7 +264,7 @@ void __attribute__ ((constructor)) gnunet_dns_ltdl_init() {
   lock = MUTEX_CREATE(YES);
 #if HAVE_ADNS
   adns_init(&a_state,
-	    adns_if_none, // adns_if_noerrprint,
+	    adns_if_noerrprint,
 	    NULL);
 #endif
 }

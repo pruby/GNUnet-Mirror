@@ -67,6 +67,7 @@ typedef struct MUTEX {
   const char * locked_file;
   cron_t       locked_time;
   unsigned int locked_line;
+  unsigned int locked_depth;
 } Mutex;
 
 Mutex * MUTEX_CREATE(int isRecursive) {
@@ -108,6 +109,9 @@ Mutex * MUTEX_CREATE(int isRecursive) {
 #endif
   }
   mut = MALLOC(sizeof(Mutex));
+  memset(mut,
+	 0,
+	 sizeof(Mutex));
   GE_ASSERT(NULL,
 	    0 == pthread_mutex_init(&mut->pt,
 				    &attr));
@@ -155,9 +159,11 @@ void MUTEX_LOCK_FL(Mutex * mutex,
 	      "pthread_mutex_lock");
     GE_ASSERT(NULL, 0);
   }
-  mutex->locked_file = file;
-  mutex->locked_line = line;
-  mutex->locked_time = end;
+  if (mutex->locked_depth++ == 0) {
+    mutex->locked_file = file;
+    mutex->locked_line = line;
+    mutex->locked_time = end;
+  } 
 }
 
 void MUTEX_UNLOCK(Mutex * mutex) {
@@ -165,15 +171,20 @@ void MUTEX_UNLOCK(Mutex * mutex) {
   cron_t now;
 
   GE_ASSERT(NULL, mutex != NULL);
-  now = get_time();
-  if ( (now - mutex->locked_time > REALTIME_LIMIT) &&
-       (REALTIME_LIMIT != 0) )
-    GE_LOG(NULL,
-	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
-	   _("Lock aquired for too long (%llu ms) at %s:%u\n"),
-	   now - mutex->locked_time,
-	   mutex->locked_file,
-	   mutex->locked_line);
+  if (0 == --mutex->locked_depth) {
+    now = get_time();
+    if ( (now - mutex->locked_time > REALTIME_LIMIT) &&
+	 (REALTIME_LIMIT != 0) )
+      GE_LOG(NULL,
+	     GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+	     _("Lock aquired for too long (%llu ms) at %s:%u\n"),
+	     now - mutex->locked_time,
+	     mutex->locked_file,
+	     mutex->locked_line);
+    mutex->locked_file = NULL;
+    mutex->locked_line = 0;
+    mutex->locked_time = 0;
+  }
   ret = pthread_mutex_unlock(&mutex->pt);
   if (ret != 0) {
     if (ret == EINVAL)
