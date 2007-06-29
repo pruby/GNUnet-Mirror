@@ -441,7 +441,7 @@ int socket_send_to(struct SocketHandle * s,
   size_t ret;
 
   socket_set_blocking(s,
-		      0 != (nc & NC_Blocking));
+		      0 == (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
