@@ -297,6 +297,8 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
 static int iopen(mysqlHandle * dbhI,
 		 int prepare) {
   char * dbname;
+  my_bool reconnect = 0;
+  unsigned int timeout = 5; /* in seconds */
 
   if (dbhI->cnffile == NULL)
     return SYSERR;
@@ -309,6 +311,19 @@ static int iopen(mysqlHandle * dbhI,
   mysql_options(dbhI->dbf,
 		MYSQL_READ_DEFAULT_GROUP,
 		"client");
+  mysql_options(dbhI->dbf,
+		MYSQL_OPT_RECONNECT, 
+		&reconnect);
+  mysql_options(dbhI->dbf,
+		MYSQL_OPT_CONNECT_TIMEOUT,
+		(const void*) &timeout);
+  mysql_options(dbhI->dbf,
+		MYSQL_OPT_READ_TIMEOUT,
+		(const void*) &timeout);
+  mysql_options(dbhI->dbf,
+		MYSQL_OPT_WRITE_TIMEOUT,
+		(const void*) &timeout);
+
   dbname = NULL;
   GC_get_configuration_value_string(coreAPI->cfg,
 				    "MYSQL",
@@ -1434,7 +1449,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   unsigned long long * sb;
   MYSQL_RES *sql_res;
   MYSQL_ROW sql_row;
-
+  
   ectx = capi->ectx;
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
