@@ -552,11 +552,13 @@ static void * selectThread(void * ctx) {
 	  sock = socket_create(sh->ectx,
 			       sh->load_monitor,
 			       s);
+	  MUTEX_UNLOCK(sh->lock);
 	  sctx = sh->ah(sh->ah_cls,
 			sh,
 			sock,
 			clientAddr,
 			lenOfIncomingAddr);
+	  MUTEX_LOCK(sh->lock);
 #if DEBUG_SELECT
 	  GE_LOG(sh->ectx,
 		 GE_DEBUG | GE_DEVELOPER | GE_BULK,
@@ -673,11 +675,13 @@ static void * selectThread(void * ctx) {
 		 (ntohs(hdr->size) == size) ) {
 	      void * sctx;
 	
+	      MUTEX_UNLOCK(sh->lock);
 	      sctx = sh->ah(sh->ah_cls,
 			    sh,
 			    NULL,
 			    clientAddr,
 			    lenOfIncomingAddr);
+	      MUTEX_LOCK(sh->lock);
 	      if (sctx != NULL) {
 #if DEBUG_SELECT
 		GE_LOG(sh->ectx,
