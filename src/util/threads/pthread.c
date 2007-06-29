@@ -99,18 +99,26 @@ PThread * PTHREAD_CREATE(PThreadMain main,
 			 void * arg,
 			 unsigned int stackSize) {
   PThread * handle;
+#ifndef LINUX
   pthread_attr_t stack_size_custom_attr;
+#endif
   int ret;
 
   handle = MALLOC(sizeof(PThread));
 #ifdef MINGW
   memset(handle, 0, sizeof(PThread));
 #endif
+#ifndef LINUX
   pthread_attr_init(&stack_size_custom_attr);
   pthread_attr_setstacksize(&stack_size_custom_attr,
 			    stackSize);
+#endif
   ret = pthread_create(&handle->pt,
+#ifndef LINUX
 		       &stack_size_custom_attr,
+#else
+		       NULL,
+#endif
 		       main,
 		       arg);
   if (ret != 0) {
