@@ -1222,11 +1222,15 @@ static int del(const HashCode512 * key,
   deleted = ( (n == SQLITE_DONE) || (n == SQLITE_ROW) ) ? sqlite3_changes(dbh->dbh) : SYSERR;
   sqlite3_finalize(stmt);
 
-  if(n != SQLITE_DONE) {
-    LOG_SQLITE(dbh,
-	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	       "sqlite_query");
-    return SYSERR;
+  if (n != SQLITE_DONE) {
+    if (n != SQLITE_BUSY) {
+      LOG_SQLITE(dbh,
+		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		 "sqlite_query");
+      return SYSERR;
+    } else {
+      return NO;
+    }
   }
   db->lastSync++;
 
