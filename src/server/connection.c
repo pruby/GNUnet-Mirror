@@ -2465,6 +2465,10 @@ static void scheduleInboundTraffic() {
 	 would indicate a plaintex msg).  So we set the limit to the
 	 minimum value AND try to shutdown the connection. */
       be->idealized_limit = MIN_BPM_PER_PEER;
+      /* do not try to reconnect any time soon! */
+      identity->blacklistHost(&be->session.sender,
+			      60 * 60, /* wait at least 1h */
+			      YES);
       shutdownConnection(be);
     } else {
 #if 0
@@ -2557,9 +2561,12 @@ static void cronDecreaseLiveness(void *unused) {
 		 &enc,
 		 now - root->isAlive);
 #endif
+	  /* do not try to reconnect any time soon! */
+	  identity->blacklistHost(&root->session.sender,
+				  60 * 60, /* wait at least 1h */
+				  YES);
           shutdownConnection(root);
-          /* the host may still be worth trying again soon: */
-          identity->whitelistHost(&root->session.sender);
+
         }
         if ( (root->available_send_window > 35 * 1024) &&
 	     (root->sendBufferSize < 4) &&
@@ -2617,6 +2624,10 @@ static void cronDecreaseLiveness(void *unused) {
 		 &enc,
 		 (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
 #endif
+	  /* do not try to reconnect any time soon! */
+	  identity->blacklistHost(&root->session.sender,
+				  60 * 60, /* wait at least 1h */
+				  YES);
           shutdownConnection(root);
         }
         break;
@@ -2809,7 +2820,7 @@ static int handleHANGUP(const PeerIdentity * sender,
 #endif
 
   ENTRY();
-  if(ntohs(msg->size) != sizeof(P2P_hangup_MESSAGE))
+  if (ntohs(msg->size) != sizeof(P2P_hangup_MESSAGE))
     return SYSERR;
   if(0 != memcmp(sender,
 		 &((P2P_hangup_MESSAGE *) msg)->sender,
@@ -2832,7 +2843,7 @@ static int handleHANGUP(const PeerIdentity * sender,
     return SYSERR;
   }
   /* do not try to reconnect any time soon! */
-  identity->blacklistHost(sender,
+  identity->blacklistHost(&be->session.sender,
 			  60 * 60, /* wait at least 1h */
 			  YES);
   shutdownConnection(be);
@@ -3705,7 +3716,7 @@ void disconnectFromPeer(const PeerIdentity * node) {
   ENTRY();
   MUTEX_LOCK(lock);
   be = lookForHost(node);
-  if(be != NULL) {
+  if (be != NULL) {
 #if DEBUG_CONNECTION
     EncName enc;
 
@@ -3718,6 +3729,10 @@ void disconnectFromPeer(const PeerIdentity * node) {
 	   "Closing connection to `%s' as requested by application.\n",
 	   &enc);
 #endif
+    /* do not try to reconnect any time soon! */
+    identity->blacklistHost(&be->session.sender,
+			    60 * 60, /* wait at least 1h */
+			    YES);
     shutdownConnection(be);
   }
   MUTEX_UNLOCK(lock);
