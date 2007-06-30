@@ -1000,6 +1000,14 @@ static int get(const HashCode512 * key,
 	
 	if (datum == NULL)
 	  continue;
+	if ( (key != NULL) &&
+	     (0 != memcmp(&datum->key,
+			  key,
+			  sizeof(HashCode512))) ) {
+	  GE_BREAK(NULL, 0);
+	  FREE(datum);
+	  continue;
+	}
 
 #if DEBUG_SQLITE
 	GE_LOG(ectx,
