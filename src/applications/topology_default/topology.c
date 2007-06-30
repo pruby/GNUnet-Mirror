@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -268,6 +268,8 @@ static void checkNeedForPing(const PeerIdentity * peer,
   }
 }
 
+#define MAX_PEERS_PER_SLOT 10
+
 /**
  * Call this method periodically to decrease liveness of hosts.
  *
@@ -285,13 +287,12 @@ static void cronCheckLiveness(void * unused) {
 						 "DISABLE-AUTOCONNECT",
 						 NO);
   slotCount = coreAPI->getSlotCount();
-  if (saturation > 0.001)
-    minint = (int) 1 / saturation;
-  else
-    minint = 10;
-  if (minint == 0)
-    minint = 1;
-  if (NO == autoconnect) {
+  if ( (NO == autoconnect) &&
+       (saturation < 1) ) {
+    if (saturation * MAX_PEERS_PER_SLOT >= 1)
+      minint = (unsigned int) (1 / saturation);
+    else
+      minint = MAX_PEERS_PER_SLOT; /* never put more than 10 peers into a slot */
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
 	continue;
@@ -299,9 +300,8 @@ static void cronCheckLiveness(void * unused) {
 	scanForHosts(i);
     }
   }
-  active = coreAPI->forAllConnectedNodes
-    (&checkNeedForPing,
-     NULL);
+  active = coreAPI->forAllConnectedNodes(&checkNeedForPing,
+					 NULL);
   saturation = 1.0 * active / slotCount;
 }
 

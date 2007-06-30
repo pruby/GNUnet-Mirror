@@ -143,9 +143,9 @@ static int needBootstrap() {
   char * data;
 
   now = get_time();
-  if (coreAPI->forAllConnectedNodes(NULL, NULL) >= 4) {
+  if (coreAPI->forAllConnectedNodes(NULL, NULL) >= 3) {
     /* still change delta and lastTest; even
-       if the peer _briefly_ drops below 5
+       if the peer _briefly_ drops below 3
        connections, we don't want it to immediately
        go for the hostlist... */
     delta = 5 * cronMINUTES;

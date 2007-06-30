@@ -298,27 +298,19 @@ static void cronCheckLiveness(void * unused) {
   int i;
   int slotCount;
   int active;
-  unsigned int minint;
 
   slotCount = coreAPI->getSlotCount();
-  if (saturation > 0.001)
-    minint = (int) 1 / saturation;
-  else
-    minint = 10;
-  if (minint == 0)
-    minint = 1;
-  for (i=slotCount-1;i>=0;i--) {
-    if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
-      continue;
-
-    if ( (minint > coreAPI->isSlotUsed(i)) &&
-	 (0 == coreAPI->isSlotUsed(i)) )
-      scanForHosts(i);
+  if (saturation < 1) {
+    for (i=slotCount-1;i>=0;i--) {
+      if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
+	continue;
+      if (0 == coreAPI->isSlotUsed(i))	
+	scanForHosts(i);
+    }
   }
-  active = coreAPI->forAllConnectedNodes
-    (&checkNeedForPing,
-     NULL);
-  saturation = 1.0 * slotCount / active;
+  active = coreAPI->forAllConnectedNodes(&checkNeedForPing,
+					 NULL);
+  saturation = 1.0 * active / slotCount;
 }
 
 static int estimateNetworkSize() {
