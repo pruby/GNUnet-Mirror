@@ -576,7 +576,7 @@ void core_receive(P2P_PACKET * mp) {
     EncName enc;
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	     hash2enc(&sender->hashPubKey,
+	     hash2enc(&mp->sender.hashPubKey,
 		      &enc));
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
