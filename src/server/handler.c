@@ -492,19 +492,6 @@ static void handleMessage(TSession * tsession,
 			  unsigned int size) {
   int ret;
 
-  if ( (sender != NULL) &&
-       (YES == identity->isBlacklistedStrict(sender) ) ) {
-    EncName enc;
-    IF_GELOG(ectx,
-	     GE_DEBUG,
-	     hash2enc(&sender->hashPubKey,
-		      &enc));
-    GE_LOG(ectx,
-	   GE_DEBUG,
-	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
-	   (char*)&enc);
-    return;
-  }
   if ( (tsession != NULL) &&
        (sender != NULL) &&
        (0 != memcmp(sender,
@@ -584,6 +571,21 @@ void core_receive(P2P_PACKET * mp) {
     FREE(mp);
     return;
   }
+  /* check for blacklisting */
+  if (YES == identity->isBlacklistedStrict(&mp->sender)) {
+    EncName enc;
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	     hash2enc(&sender->hashPubKey,
+		      &enc));
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
+	   (char*)&enc);
+    FREE(mp->msg);
+    FREE(mp);
+    return;
+  }
   if ( (mp->tsession != NULL) &&
        (0 != memcmp(&mp->sender,
 		    &mp->tsession->peer,
@@ -594,7 +596,7 @@ void core_receive(P2P_PACKET * mp) {
     return;
   }
 
-  /* acquire buffer */
+  /* try to increment session reference count */
   if (SYSERR == transport->associate(mp->tsession))
     mp->tsession = NULL;
 
