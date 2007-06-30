@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -66,6 +66,13 @@ static unsigned long long quota;
 
 static struct CronManager * cron;
 
+static Stats_ServiceAPI * stats;
+
+static int stat_filtered;
+
+static int stat_filter_failed;
+
+
 /**
  * Require 1/100th of quota to be 'free' space.
  */
@@ -75,14 +82,12 @@ static unsigned long long getSize() {
   return sq->getSize();
 }
 
-static int fastGet(const HashCode512 * query) {
-  return testAvailable(query);
-}
-
 static int get(const HashCode512 * query,
 	       unsigned int type,
 	       Datum_Iterator iter,
 	       void * closure) {
+  int ret;
+
   if (! testAvailable(query)) {
 #if DEBUG_DATASTORE
     EncName enc;
@@ -96,12 +101,18 @@ static int get(const HashCode512 * query,
 	   "Datastore availability pre-test failed for `%s'.\n",
 	   &enc);
 #endif
+    if (stats != NULL)
+      stats->change(stat_filtered, 1);
     return 0;
   }
-  return sq->get(query,
-		 type,
-		 iter,
-		 closure);
+  ret = sq->get(query,
+		type,
+		iter,
+		closure);
+  if ( (ret == 0) &&
+       (stats != NULL) )
+    stats->change(stat_filter_failed, 1);
+  return ret;
 }
 
 /**
@@ -358,9 +369,8 @@ Datastore_ServiceAPI *
 provide_module_datastore(CoreAPIForApplication * capi) {
   static Datastore_ServiceAPI api;
   unsigned long long lquota;
-  unsigned int sqot;
+  unsigned long long sqot;
   State_ServiceAPI * state;
-  Stats_ServiceAPI * stats;
 
   if (-1 == GC_get_configuration_value_number(capi->cfg,
 					      "FS",
@@ -376,16 +386,18 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     = lquota * 1024 * 1024; /* MB to bytes */
   stats = capi->requestService("stats");
   if (stats != NULL) {
+    stat_filtered = stats->create(gettext_noop("# requests filtered by bloom filter"));
+    stat_filter_failed = stats->create(gettext_noop("# bloom filter false positives"));
+    
     stats->set(stats->create(gettext_noop("# bytes allowed in datastore")),
 	       quota);
-    capi->releaseService(stats);
   }
   state = capi->requestService("state");
   if (state != NULL) {
-    sqot = htonl(lquota);
+    sqot = htonll(lquota);
     state->write(capi->ectx,
 		 "FS-LAST-QUOTA",
-		 sizeof(unsigned int),
+		 sizeof(unsigned long long),
 		 &sqot);
     capi->releaseService(state);
   } else {
@@ -395,6 +407,10 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   }
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
+    if (stats != NULL) {
+      capi->releaseService(stats);
+      stats = NULL;
+    }
     GE_BREAK(capi->ectx, 0);
     return NULL;
   }
@@ -407,6 +423,10 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     GE_BREAK(capi->ectx, 0);
     donePrefetch();
     capi->releaseService(sq);
+    if (stats != NULL) {
+      capi->releaseService(stats);
+      stats = NULL;
+    }
     return NULL;
   }
   available = quota - sq->getSize();
@@ -419,7 +439,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   cron_start(cron);
   api.getSize = &getSize;
   api.put = &put;
-  api.fast_get = &fastGet;
+  api.fast_get = &testAvailable;
   api.putUpdate = &putUpdate;
   api.get = &get;
   api.getRandom = &getRandom; /* in prefetch.c */
@@ -442,6 +462,10 @@ void release_module_datastore() {
   donePrefetch();
   doneFilters();
   coreAPI->releaseService(sq);
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
   sq = NULL;
   coreAPI = NULL;
 }
@@ -464,8 +488,8 @@ static int filterAddAll(const HashCode512 * key,
  */
 void update_module_datastore(UpdateAPI * uapi) {
   unsigned long long quota;
-  unsigned int lastQuota;
-  int * lq;
+  unsigned long long lastQuota;
+  unsigned long long * lq;
   State_ServiceAPI * state;
 
   if (-1 == GC_get_configuration_value_number(uapi->cfg,
@@ -477,25 +501,17 @@ void update_module_datastore(UpdateAPI * uapi) {
 					      &quota))
     return; /* OOPS */
   state = uapi->requestService("state");
-  if (state != NULL) {
-    lq = NULL;
-    if (sizeof(int) != state->read(uapi->ectx,
-				   "FS-LAST-QUOTA",
-				   (void**)&lq)) {
-      uapi->releaseService(state);
-      return; /* first start? */
-    }
+  lq = NULL;
+  if ( (state != NULL) &&
+       (sizeof(unsigned long long) != state->read(uapi->ectx,
+						  "FS-LAST-QUOTA",
+						  (void**)&lq)) &&
+       (ntohll(*lq) == quota) ) {    
     uapi->releaseService(state);
-    lastQuota = ntohl(*lq);
     FREE(lq);
-    if (lastQuota == quota)
-      return; /* unchanged */
-  } else {
-    GE_LOG(uapi->ectx,
-	   GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
-	   _("Failed to load state service. Trying to do without.\n"));
+    return; /* no change */
   }
-
+  FREENONNULL(lq);
   /* ok, need to convert! */
   deleteFilter(uapi->ectx,
 	       uapi->cfg);
@@ -503,10 +519,8 @@ void update_module_datastore(UpdateAPI * uapi) {
 	      uapi->cfg);
   sq = uapi->requestService("sqstore");
   if (sq != NULL) {
-    sq->get(NULL,
-	    ANY_BLOCK,
-	    &filterAddAll,
-	    NULL);
+    sq->iterateAllNow(&filterAddAll,
+		      NULL);
     uapi->releaseService(sq);
   } else {
     GE_LOG(uapi->ectx,
@@ -515,6 +529,14 @@ void update_module_datastore(UpdateAPI * uapi) {
   }
   sq = NULL;
   doneFilters();
+  if (state != NULL) {
+    lastQuota = htonll(quota);
+    state->write(uapi->ectx,
+		 "FS-LAST-QUOTA",
+		 sizeof(unsigned long long),
+		 &lastQuota);
+    uapi->releaseService(state);
+  }
 }
 
 

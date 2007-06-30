@@ -156,9 +156,9 @@ static void incrementBit(char * bitArray,
   unsigned int targetLoc;
 
   setBit(bitArray, bitIdx);
-  /* Update the counter file on disk */
-  GE_ASSERT(NULL,
-	    fd != -1);
+  if (fd == -1)
+    return;
+  /* Update the counter file on disk */  
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
 
@@ -210,24 +210,25 @@ static void decrementBit(char * bitArray,
   unsigned int low;
   unsigned int targetLoc;
 
+  if (fd == -1) 
+    return; /* cannot decrement! */
   GE_ASSERT(NULL, fd != -1);
   /* Each char slot in the counter file holds two 4 bit counters */
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
-
   lseek(fd, fileSlot, SEEK_SET);
   value = 0;
   READ(fd, &value, 1);
-
+  
   low  = value & 0xF;
   high = (value & 0xF0) >> 4;
-
+  
   /* decrement, but once we have reached the max, never go back! */
   if (targetLoc == 0) {
     if ( (low > 0) && (low < 0xF) )
       low--;
     if (low == 0) {
-       clearBit(bitArray, bitIdx);
+      clearBit(bitArray, bitIdx);
     }
   } else {
     if ( (high > 0) && (high < 0xF) )
@@ -411,8 +412,7 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
   int i;
   unsigned int ui;
 
-  if ( (filename == NULL) ||
-       (k==0) ||
+  if ( (k==0) ||
        (size==0) )
     return NULL;
   if (size < BUFFSIZE)
@@ -425,22 +425,27 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
   bf = MALLOC(sizeof(Bloomfilter));
   bf->ectx = ectx;
   /* Try to open a bloomfilter file */
+  if (filename != NULL) {
 #ifndef _MSC_VER
-  bf->fd = disk_file_open(ectx,
-			  filename,
-			  O_RDWR|O_CREAT,
-			  S_IRUSR|S_IWUSR);
+    bf->fd = disk_file_open(ectx,
+			    filename,
+			    O_RDWR|O_CREAT,
+			    S_IRUSR|S_IWUSR);
 #else
-  bf->fd = disk_file_open(ectx,
-			  filename,
-			  O_WRONLY|O_CREAT,
-			  S_IREAD|S_IWRITE);
+    bf->fd = disk_file_open(ectx,
+			    filename,
+			    O_WRONLY|O_CREAT,
+			    S_IREAD|S_IWRITE);
 #endif
-  if (-1 == bf->fd) {
-    FREE(bf);
-    return NULL;
+    if (-1 == bf->fd) {
+      FREE(bf);
+      return NULL;
+    } 
+    bf->filename = STRDUP(filename);
+  } else {
+    bf->fd = -1;
+    bf->filename = NULL;
   }
-
   /* Alloc block */
   bf->lock = MUTEX_CREATE(YES);
   bf->bitArray = MALLOC_LARGE(size);
@@ -450,31 +455,32 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
 	 0,
 	 bf->bitArraySize);
 
-  /* Read from the file what bits we can */
-  rbuff = MALLOC(BUFFSIZE);
-  pos = 0;
-  while (pos < size*8) {
-    int res;
-
-    res = READ(bf->fd,
-	       rbuff,
-	       BUFFSIZE);
-    if (res == 0)
-      break; /* is ok! we just did not use that many bits yet */
-    for (i=0;i<res;i++) {
-      if ( (rbuff[i] & 0x0F) != 0)
-	setBit(bf->bitArray,
-	       pos + i*2);
-      if ( (rbuff[i] & 0xF0) != 0)
-	setBit(bf->bitArray,
-	       pos + i*2 + 1);
+  if (bf->fd != -1) {
+    /* Read from the file what bits we can */
+    rbuff = MALLOC(BUFFSIZE);
+    pos = 0;
+    while (pos < size*8) {
+      int res;
+      
+      res = READ(bf->fd,
+		 rbuff,
+		 BUFFSIZE);
+      if (res == 0)
+	break; /* is ok! we just did not use that many bits yet */
+      for (i=0;i<res;i++) {
+	if ( (rbuff[i] & 0x0F) != 0)
+	  setBit(bf->bitArray,
+		 pos + i*2);
+	if ( (rbuff[i] & 0xF0) != 0)
+	  setBit(bf->bitArray,
+		 pos + i*2 + 1);
+      }
+      if (res < BUFFSIZE)
+	break;
+      pos += BUFFSIZE * 2; /* 2 bits per byte in the buffer */
     }
-    if (res < BUFFSIZE)
-      break;
-    pos += BUFFSIZE * 2; /* 2 bits per byte in the buffer */
+    FREE(rbuff);
   }
-  FREE(rbuff);
-  bf->filename = STRDUP(filename);
   return bf;
 }
 
@@ -489,9 +495,10 @@ void freeBloomfilter(Bloomfilter * bf) {
   if (NULL == bf)
     return;
   MUTEX_DESTROY(bf->lock);
-  disk_file_close(bf->ectx,
-		  bf->filename,
-		  bf->fd);
+  if (bf->fd != -1) 
+    disk_file_close(bf->ectx,
+		    bf->filename,
+		    bf->fd);
   FREENONNULL(bf->filename);
   FREE(bf->bitArray);
   FREE(bf);
@@ -510,8 +517,9 @@ void resetBloomfilter(Bloomfilter * bf) {
   memset(bf->bitArray,
 	 0,
 	 bf->bitArraySize);
-  makeEmptyFile(bf->fd,
-		bf->bitArraySize * 4);
+  if (bf->fd != -1) 
+    makeEmptyFile(bf->fd,
+		  bf->bitArraySize * 4);
   MUTEX_UNLOCK(bf->lock);
 }
 
@@ -607,8 +615,9 @@ void resizeBloomfilter(Bloomfilter * bf,
   memset(bf->bitArray,
 	 0,
 	 bf->bitArraySize);
-  makeEmptyFile(bf->fd,
-		bf->bitArraySize * 4);
+  if (bf->fd != -1) 
+    makeEmptyFile(bf->fd,
+		  bf->bitArraySize * 4);
   e = iterator(iterator_arg);
   while (e != NULL) {
     addToBloomfilter(bf,

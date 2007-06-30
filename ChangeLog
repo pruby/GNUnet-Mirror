@@ -1,3 +1,8 @@
+Sat Jun 30 01:55:34 MDT 2007
+	Improved bloomfilter recomputation after quota change.
+	Fixed bloomfilter size computation.  You must run
+	gnunet-update (will take a while).
+
 Fri Jun 29 00:56:03 MDT 2007
 	Avoid re-connecting shortly after connection was shutdown.
 

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2006 Christian Grothoff (and other contributing authors)
+     (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -25,13 +25,11 @@
  * @todo Indexes, statistics
  *
  * Database: SQLite
- *
- * TODO:
- * - add bloomfilter to reduce disk IO
  */
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
 #include "gnunet_dstore_service.h"
 #include "gnunet_stats_service.h"
 #include <sqlite3.h>
@@ -73,6 +71,10 @@ static unsigned int stat_dstore_size;
  * Estimate of the per-entry overhead (including indices).
  */
 #define OVERHEAD ((4+4+8+8*2+sizeof(HashCode512)*2+32))
+
+struct Bloomfilter * bloom;
+
+static char * bloom_name;
 
 /**
  * @brief Prepare a SQL statement
@@ -188,6 +190,7 @@ static int checkQuota(sqlite3 * dbh) {
     return SYSERR;
   }
   dcontent = MALLOC(MAX_CONTENT_SIZE);
+  err = SQLITE_DONE;
   while ( (payload * 10 > quota * 9) && /* we seem to be about 10% off */
 	  ((err = sqlite3_step(stmt)) == SQLITE_ROW) ) {
     dsize = sqlite3_column_int(stmt, 0);
@@ -267,12 +270,13 @@ static int checkQuota(sqlite3 * dbh) {
   sqlite3_finalize(dstmt);
   sqlite3_finalize(stmt);
   if (payload * 10 > quota * 9) {
+    /* we seem to be about 10% off */
     GE_LOG(coreAPI->ectx,
 	   GE_ERROR | GE_BULK | GE_DEVELOPER,
 	   "Failed to delete content to drop below quota (bug?).\n",
 	   payload,
 	   quota);
-    return SYSERR; /* we seem to be about 10% off */
+    return SYSERR;
   }
   return OK;
 }
@@ -355,7 +359,9 @@ static int d_put(const HashCode512 * key,
     MUTEX_UNLOCK(lock);
     return OK;
   }
-
+  if (bloom != NULL)
+    addToBloomfilter(bloom,
+		     key);
 
   if (OK != checkQuota(dbh)) {
     sqlite3_close(dbh);
@@ -441,6 +447,12 @@ static int d_get(const HashCode512 * key,
   unsigned int cnt;
 
   MUTEX_LOCK(lock);
+  if ( (bloom != NULL) &&
+       (NO == testBloomfilter(bloom,
+			      key)) ) {
+    MUTEX_UNLOCK(lock);
+    return 0;
+  }
   if ( (fn == NULL) ||
        (SQLITE_OK != sqlite3_open(fn,
 				  &dbh)) ) {
@@ -503,6 +515,7 @@ static int d_get(const HashCode512 * key,
 Dstore_ServiceAPI *
 provide_module_dstore(CoreAPIForApplication * capi) {
   static Dstore_ServiceAPI api;
+  int fd;
 
 #if DEBUG_SQLITE
   GE_LOG(capi->ectx,
@@ -512,6 +525,8 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   if (OK != db_reset())
     return NULL;
   lock = MUTEX_CREATE(NO);
+
+
   coreAPI = capi;
   api.get = &d_get;
   api.put = &d_put;
@@ -525,6 +540,16 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   if (quota == 0) /* error */
     quota = 1;
   quota *= 1024 * 1024;
+
+  bloom_name = STRDUP("/tmp/dbloomXXXXXX");
+  fd = mkstemp(fn);
+  bloom = loadBloomfilter(coreAPI->ectx,
+			  fn,
+			  quota / (OVERHEAD + 1024), /* 8 bit per entry in DB, expect 1k entries */
+			  5);
+  CLOSE(fd);
+
+
   stats = capi->requestService("stats");
   if (stats != NULL)
     stat_dstore_size = stats->create(gettext_noop("# bytes in dstore"));
@@ -538,6 +563,13 @@ void release_module_dstore() {
   UNLINK(fn);
   FREE(fn);
   fn = NULL;
+  if (bloom != NULL) {
+    freeBloomfilter(bloom);
+    bloom = NULL;
+  }
+  UNLINK(bloom_name);
+  FREE(bloom_name);
+  bloom_name = NULL;
   if (stats != NULL) {
     coreAPI->releaseService(stats);
     stats = NULL;

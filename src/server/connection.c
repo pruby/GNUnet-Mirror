@@ -106,6 +106,14 @@
 #define ADMIN_PRIORITY 0xFFFF
 
 /**
+ * How long should we blacklist a peer after a
+ * disconnect?  This value should probably be
+ * increased in the future (once more peers
+ * run versions beyond 0.7.2a.
+ */
+#define SECONDS_BLACKLIST_AFTER_DISCONNECT 300
+
+/**
  * If we under-shoot our bandwidth limitation in one time period, how
  * much of that limit are we allowed to 'roll-over' into the next
  * period?  The number given here is a factor of the total per-minute
@@ -2467,7 +2475,7 @@ static void scheduleInboundTraffic() {
       be->idealized_limit = MIN_BPM_PER_PEER;
       /* do not try to reconnect any time soon! */
       identity->blacklistHost(&be->session.sender,
-			      60 * 60, /* wait at least 1h */
+			      SECONDS_BLACKLIST_AFTER_DISCONNECT,
 			      YES);
       shutdownConnection(be);
     } else {
@@ -2563,7 +2571,7 @@ static void cronDecreaseLiveness(void *unused) {
 #endif
 	  /* do not try to reconnect any time soon! */
 	  identity->blacklistHost(&root->session.sender,
-				  60 * 60, /* wait at least 1h */
+				  SECONDS_BLACKLIST_AFTER_DISCONNECT, 
 				  YES);
           shutdownConnection(root);
 
@@ -2626,7 +2634,7 @@ static void cronDecreaseLiveness(void *unused) {
 #endif
 	  /* do not try to reconnect any time soon! */
 	  identity->blacklistHost(&root->session.sender,
-				  60 * 60, /* wait at least 1h */
+				  SECONDS_BLACKLIST_AFTER_DISCONNECT,
 				  YES);
           shutdownConnection(root);
         }
@@ -2844,7 +2852,7 @@ static int handleHANGUP(const PeerIdentity * sender,
   }
   /* do not try to reconnect any time soon! */
   identity->blacklistHost(&be->session.sender,
-			  60 * 60, /* wait at least 1h */
+			  SECONDS_BLACKLIST_AFTER_DISCONNECT,
 			  YES);
   shutdownConnection(be);
   MUTEX_UNLOCK(lock);
@@ -3731,7 +3739,7 @@ void disconnectFromPeer(const PeerIdentity * node) {
 #endif
     /* do not try to reconnect any time soon! */
     identity->blacklistHost(&be->session.sender,
-			    60 * 60, /* wait at least 1h */
+			    SECONDS_BLACKLIST_AFTER_DISCONNECT,
 			    YES);
     shutdownConnection(be);
   }

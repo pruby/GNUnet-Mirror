@@ -30,9 +30,10 @@ running GNUnet:
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
 - libcurl      >= 7.x
-- mysql        >= 5.0  OR  sqlite >= 3.0
+- sqlite       >= 3.0
 - libltdl      >= 1.5 (part of GNU libtool)
 - libguile     >= 1.8 (strongly recommended)
+- mysql        >= 5.0 (recommended)
 - GNU adns     >= 1.0 (recommended)
 
 

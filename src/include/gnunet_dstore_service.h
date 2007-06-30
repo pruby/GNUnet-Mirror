@@ -20,13 +20,12 @@
 
 /**
  * @file include/gnunet_dstore_service.h
- * @brief An SQ store is responsible for storing blocks with
- *   additional indices that allow traversing the store in
- *   order of expiration time or priority, in addition to
- *   queries by key and block type.  The name comes from SQL,
- *   because using an SQL database to do this should be
- *   particularly easy.  But that is of course not the only
- *   way to implement an dstore.
+ * @brief dstore is a simple persistent hash table
+ *        of bounded size with content expiration
+ *        In contrast to the sqstore there is
+ *        no prioritization, deletion or iteration.
+ *        Furthermore, all of the data is
+ *        discarded when the peer shuts down!
  * @author Christian Grothoff
  */
 

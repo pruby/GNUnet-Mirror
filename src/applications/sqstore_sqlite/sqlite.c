@@ -113,7 +113,7 @@ typedef struct {
   /**
    * bytes used
    */
-  double payload;
+  unsigned long long payload;
 
   unsigned int lastSync;
 
@@ -485,7 +485,7 @@ static double getStat(sqliteHandle * handle,
  */
 static int setStat(sqliteHandle * handle,
 		   const char *key,
-		   double val) {
+		   unsigned long long val) {
   sqlite3_stmt *stmt;
   sqlite3 * dbh;
 
@@ -510,9 +510,9 @@ static int setStat(sqliteHandle * handle,
 		    key,
 		    strlen(key),
 		    SQLITE_STATIC);
-  sqlite3_bind_double(stmt,
-		      2,
-		      val);
+  sqlite3_bind_int64(stmt,
+		     2,
+		     val);
   sqlite3_bind_int(stmt,
 		   3,
 		   RESERVED_BLOCK);
@@ -819,7 +819,9 @@ static int iterateAllNow(Datum_Iterator iter,
   sqlite3 * dbh;
   sqliteHandle * handle;
   int ret;
+  unsigned long long payload;
 
+  payload = 0;
   handle = getDBHandle();
   dbh = handle->dbh;
   /* For the rowid trick see
@@ -838,6 +840,7 @@ static int iterateAllNow(Datum_Iterator iter,
 			  stmt);
     if (datum == NULL)
       continue;
+    payload += getContentDatastoreSize(&datum->value);
     if (iter != NULL) {
       if (SYSERR == iter(&datum->key,
 			 &datum->value,
@@ -858,6 +861,16 @@ static int iterateAllNow(Datum_Iterator iter,
     return SYSERR;
   }
   sqlite3_finalize(stmt);
+  if (count != SYSERR) {
+    /* re-computed payload! */
+    GE_LOG(ectx,
+	   GE_INFO | GE_IMMEDIATE | GE_USER | GE_ADMIN,
+	   "SQLite database size recomputed.  New estimate is %llu, old estimate was %llu\n",
+	   payload,
+	   db->payload);
+    db->payload = payload;
+    syncStats(handle);
+  }
   return count;
 }
 
@@ -868,8 +881,7 @@ static void sqlite_shutdown() {
   unsigned int idx;
 
 #if DEBUG_SQLITE
-  GE_LOG(
-	 ectx,
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: closing database\n");
 #endif

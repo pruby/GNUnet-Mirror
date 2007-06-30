@@ -8,6 +8,19 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.2 to 0.7.2a
+===============
+
+Run
+
+$ gnunet-update
+
+This may take a bit longer than usual (depending on your database
+size, it may take a few hours -- gnunet-update will iterate once over
+all entries in the database).  You will have to upgrade gnunet-gtk
+and/or gnunet-qt as well.
+
+
 0.7.1c to 0.7.2
 ===============
 
@@ -53,38 +66,8 @@ the new default), you should rename the old directory at the time
 of the change.
 
 
-0.7.1 to 0.7.1a
-===============
-
-Run
-
-$ gnunet-update
-
-(as the same user that also runs gnunetd).
-
-
-0.7.1pre2 to 0.7.1
-==================
-
-Run
-
-$ gnunet-update
-
-(as the same user that also runs gnunetd).
-
-
-0.7.1pre1 to 0.7.1pre2
-======================
-
-Run
-
-$ gnunet-update
-
-(as the same user that also runs gnunetd).
-
-
-0.7.1pre0 to 0.7.1pre1
-======================
+0.7.1pre0, 0.7.1pre1, 0.7.1pre2 and 0.7.1 to 0.7.1a
+===================================================
 
 Run
 

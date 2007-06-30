@@ -75,7 +75,7 @@ int initFilters(struct GE_Context * ectx,
 					      &quota))
     return SYSERR;
   quota *= 1024;
-  bf_size = quota/8/32; /* 8 bit per entry, 1 bit per 32 kb in DB */
+  bf_size = quota / 32; /* 8 bit per entry, 1 bit per 32 kb in DB */
   bf = getFilterName(ectx, cfg);
   if (bf == NULL)
     return SYSERR;

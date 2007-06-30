@@ -3,18 +3,15 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
+0.7.2a [7'07] (aka "bugfixes"):
+- fix memory/socket leak in gnunetd
+
+
 0.7.3 [8'07] (aka "features"):
 - chat support basics [RC]
-- insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
-  as keyword (to allow getting meta-data from URI only) [RC]
 - old/new features:
   * HTTP transport (libcurl, libmicrohttpd) [#765]
   * SMTP transport (libesmtp)
-  * SMTP logger
-  * support NAT-PMP (in addition to UPnP)
-  * add bloomfilter to dstore
-  * asynchronous (or client-side?) DNS resolution (for peer-info stuff)
-    => use GNU adns library?
 - Documentation:
   * LJ article
 - Testcases:
@@ -29,10 +26,17 @@ Annotations:
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
 - guard friendly connection count (#1018) [RC]
 - power insert [#854]
-- have a way to clean up namespace information
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
+
+
+Small extensions (that could be done any time):
+- insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
+  as keyword (to allow getting meta-data from URI only) [RC]
+- support NAT-PMP (in addition to UPnP)
+- SMTP logger 
+- mysql implementation of dstore
 
 
 
