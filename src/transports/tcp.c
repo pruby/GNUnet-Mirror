@@ -321,6 +321,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
       }
       MUTEX_UNLOCK(session->lock);
     }    
+    session = session->next;
   }  
   MUTEX_UNLOCK(tcplock);
   haddr = (HostAddress*) &hello[1];

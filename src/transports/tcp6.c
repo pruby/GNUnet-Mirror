@@ -265,12 +265,13 @@ static int tcp6Connect(const P2P_hello_MESSAGE * hello,
       if (session->in_select) {
 	session->users++;
 	MUTEX_UNLOCK(session->lock);
-	MUTEX_LOCK(tcplock);
+	MUTEX_UNLOCK(tcplock);
 	*tsessionPtr = session->tsession;
 	return OK;
       }
       MUTEX_UNLOCK(session->lock);
     }    
+    session = session->next;
   }  
   MUTEX_UNLOCK(tcplock);
   haddr = (Host6Address*) &hello[1];
