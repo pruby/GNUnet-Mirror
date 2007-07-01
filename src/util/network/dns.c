@@ -66,7 +66,11 @@ static void cache_resolve(struct IPCache * cache) {
     ret = adns_submit_reverse(a_state,
 			      cache->sa,
 			      adns_r_ptr,
+#ifdef adns_qf_none
 			      adns_qf_none,
+#else
+ 			      0,
+#endif	
 			      cache,
 			      &cache->query);
     if (adns_s_ok == ret)
