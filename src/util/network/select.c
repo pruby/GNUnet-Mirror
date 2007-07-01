@@ -762,6 +762,7 @@ static void * selectThread(void * ctx) {
       }
     }
   }
+  sh->description = "DEAD";
   MUTEX_UNLOCK(sh->lock);
   FREE(clientAddr);
   return NULL;
@@ -900,7 +901,7 @@ select_create(const char * description,
 void select_destroy(struct SelectHandle * sh) {
   void * unused;
 
-#if DEBUG_SELECT
+#if DEBUG_SELECT || 1
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	 "Destroying select %p\n",
@@ -910,6 +911,7 @@ void select_destroy(struct SelectHandle * sh) {
   signalSelect(sh);
   PTHREAD_STOP_SLEEP(sh->thread);
   PTHREAD_JOIN(sh->thread, &unused);
+  sh->thread = NULL;
   MUTEX_LOCK(sh->lock);
   while (sh->sessionCount > 0)
     destroySession(sh, sh->sessions[0]);
