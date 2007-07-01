@@ -225,6 +225,13 @@ filelogger(void * cls,
       fctx->first_start = NO;
       fclose(fctx->handle);
       fctx->handle = FOPEN(name, "a+");
+      if (fctx->handle == NULL) {
+	fctx->handle = stderr;
+	fprintf(stderr,
+		_("Failed to open log-file `%s': %s\n"),
+		name,
+		STRERROR(errno));
+      }
       FREE(fctx->filename);
       fctx->filename = name;
       dirname = STRDUP(name);
