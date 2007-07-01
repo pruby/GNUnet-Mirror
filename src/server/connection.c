@@ -95,7 +95,8 @@
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
- * connectivity goal.
+ * connectivity goal.  Also, messages that are older than 
+ * this value are discarded as too old.
  */
 #define SECONDS_PINGATTEMPT 120
 
@@ -112,6 +113,13 @@
  * run versions beyond 0.7.2a.
  */
 #define SECONDS_BLACKLIST_AFTER_DISCONNECT 300
+
+/**
+ * How long should we blacklist a peer after a
+ * failed connect?  For now, 2 minutes (should
+ * probably be much higher).
+ */
+#define SECONDS_BLACKLIST_AFTER_FAILED_CONNECT 120
 
 /**
  * If we under-shoot our bandwidth limitation in one time period, how
@@ -2470,7 +2478,7 @@ static void scheduleInboundTraffic() {
 	     be->idealized_limit);
 #endif
       /* We need to avoid giving a too low limit (especially 0, which
-	 would indicate a plaintex msg).  So we set the limit to the
+	 would indicate a plaintext msg).  So we set the limit to the
 	 minimum value AND try to shutdown the connection. */
       be->idealized_limit = MIN_BPM_PER_PEER;
       /* do not try to reconnect any time soon! */
@@ -2569,10 +2577,10 @@ static void cronDecreaseLiveness(void *unused) {
 		 &enc,
 		 now - root->isAlive);
 #endif
-	  /* do not try to reconnect any time soon! */
-	  identity->blacklistHost(&root->session.sender,
-				  SECONDS_BLACKLIST_AFTER_DISCONNECT, 
-				  YES);
+	  /* this was a valuable peer except for the timeout,
+	     let's keep it as a possibility for the near
+	     future! */
+	  identity->whitelistHost(&root->session.sender);
           shutdownConnection(root);
 
         }
@@ -2634,7 +2642,7 @@ static void cronDecreaseLiveness(void *unused) {
 #endif
 	  /* do not try to reconnect any time soon! */
 	  identity->blacklistHost(&root->session.sender,
-				  SECONDS_BLACKLIST_AFTER_DISCONNECT,
+				  SECONDS_BLACKLIST_AFTER_FAILED_CONNECT,
 				  YES);
           shutdownConnection(root);
         }

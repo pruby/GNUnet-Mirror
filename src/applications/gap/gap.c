@@ -1603,6 +1603,8 @@ static int useContent(const PeerIdentity * host,
     GE_BREAK_OP(ectx, 0);
     return SYSERR; /* invalid! */
   }
+  if (host != NULL)
+    coreAPI->confirmSessionUp(host);
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
 #if DEBUG_GAP
   IF_GELOG(ectx,
@@ -1977,7 +1979,8 @@ static int handleQuery(const PeerIdentity * sender,
     GE_BREAK(ectx, 0);
     return 0;
   }
-
+  if (sender != NULL)
+    coreAPI->confirmSessionUp(sender);
   /* Load above hard limit? */
   if (loadTooHigh()) {
 #if DEBUG_GAP

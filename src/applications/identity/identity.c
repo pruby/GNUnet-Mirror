@@ -839,6 +839,7 @@ static int blacklistHost(const PeerIdentity * identity,
   EncName hn;
   HostEntry * entry;
   int i;
+  cron_t now;
 
   GE_ASSERT(ectx,
 	    numberOfHosts_ <= sizeOfHosts_);
@@ -858,15 +859,24 @@ static int blacklistHost(const PeerIdentity * identity,
     MUTEX_UNLOCK(lock_);
     return SYSERR;
   }
-  if (strict == YES) {
-    entry->delta = desperation;
+  now = get_time();
+  if (entry->until < now) {
+    if (strict)
+      entry->delta = desperation;
+    else
+      entry->delta
+	= weak_randomi(1+desperation*cronSECONDS);
   } else {
-    entry->delta
-      = entry->delta + weak_randomi(1+desperation*cronSECONDS);
-    if (entry->delta > 4 * cronHOURS)
-      entry->delta = 4 * cronHOURS;
+    if (strict)
+      entry->delta
+	+= desperation;
+    else
+      entry->delta
+	+= weak_randomi(1+desperation*cronSECONDS);
   }
-  entry->until = get_time() + entry->delta;
+  if (entry->delta > 4 * cronHOURS)
+    entry->delta = 4 * cronHOURS;
+  entry->until = now + entry->delta;
   entry->strict = strict;
   hash2enc(&identity->hashPubKey,
 	   &hn);
