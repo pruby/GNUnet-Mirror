@@ -301,9 +301,28 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
   struct sockaddr_in soaddr;
   struct SocketHandle * s;
   int i;
+  TCPSession * session;
 
   if (selector == NULL)
     return SYSERR;
+  MUTEX_LOCK(tcplock);
+  session = sessions;
+  while (session != NULL) {
+    if (0 == memcmp(&session->sender,
+		    &hello->senderIdentity,
+		    sizeof(PeerIdentity))) {
+      MUTEX_LOCK(session->lock);
+      if (session->in_select) {
+	session->users++;
+	MUTEX_UNLOCK(session->lock);
+	MUTEX_LOCK(tcplock);
+	*tsessionPtr = session->tsession;
+	return OK;
+      }
+      MUTEX_UNLOCK(session->lock);
+    }    
+  }  
+  MUTEX_UNLOCK(tcplock);
   haddr = (HostAddress*) &hello[1];
 #if DEBUG_TCP
   GE_LOG(ectx,

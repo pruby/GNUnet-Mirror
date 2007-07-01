@@ -251,9 +251,28 @@ static int tcp6Connect(const P2P_hello_MESSAGE * hello,
   struct addrinfo hints, *res, *res0;
   int rtn;
   struct SocketHandle * s;
+  TCPSession * session;
 
   if (selector == NULL)
     return SYSERR;
+  MUTEX_LOCK(tcplock);
+  session = sessions;
+  while (session != NULL) {
+    if (0 == memcmp(&session->sender,
+		    &hello->senderIdentity,
+		    sizeof(PeerIdentity))) {
+      MUTEX_LOCK(session->lock);
+      if (session->in_select) {
+	session->users++;
+	MUTEX_UNLOCK(session->lock);
+	MUTEX_LOCK(tcplock);
+	*tsessionPtr = session->tsession;
+	return OK;
+      }
+      MUTEX_UNLOCK(session->lock);
+    }    
+  }  
+  MUTEX_UNLOCK(tcplock);
   haddr = (Host6Address*) &hello[1];
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_INET6;

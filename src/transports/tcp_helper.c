@@ -43,11 +43,19 @@ typedef struct {
 /**
  * Transport Session handle.
  */
-typedef struct {
+typedef struct TCPSession {
+
+  struct TCPSession * next;
+
   /**
    * the tcp socket (used to identify this connection with selector)
    */
   struct SocketHandle * sock;
+
+  /**
+   * Our tsession.
+   */
+  TSession * tsession;
 
   /**
    * mutex for synchronized access to 'users'
@@ -102,16 +110,49 @@ static struct GE_Context * ectx;
 
 static struct MUTEX * tcplock;
 
+static struct TCPSession * sessions;
+
+
+/**
+ * You must hold the tcplock when calling this
+ * function (and should not hold the tcpsession's lock
+ * any more).
+ */
+static void freeTCPSession(TCPSession * tcpsession) {
+  TCPSession * pos;
+  TCPSession * prev;
+  
+  MUTEX_DESTROY(tcpsession->lock);
+  FREENONNULL(tcpsession->accept_addr);
+  pos = sessions;
+  prev = NULL;
+  while (pos != NULL) {
+    if (pos == tcpsession) {
+      if (prev == NULL)
+	sessions = pos->next;
+      else
+	prev->next = pos->next;
+      break;
+    }
+    prev = pos;
+    pos = pos->next;
+  }
+  FREE(tcpsession->tsession);
+  FREE(tcpsession);
+}
+
 static int tcpDisconnect(TSession * tsession) {
   TCPSession * tcpsession = tsession->internal;
 
   GE_ASSERT(ectx, selector != NULL);
+  MUTEX_LOCK(tcplock);
   MUTEX_LOCK(tcpsession->lock);
   GE_ASSERT(ectx, tcpsession->users > 0);
   tcpsession->users--;
   if ( (tcpsession->users > 0) ||
        (tcpsession->in_select == YES) ) {
     MUTEX_UNLOCK(tcpsession->lock);
+    MUTEX_UNLOCK(tcplock);
     return OK;
   }
 #if DEBUG_TCP
@@ -123,12 +164,11 @@ static int tcpDisconnect(TSession * tsession) {
 		    tcpsession->sock);
   if (tcpsession->in_select == NO) {
     MUTEX_UNLOCK(tcpsession->lock);
-    MUTEX_DESTROY(tcpsession->lock);
-    FREENONNULL(tcpsession->accept_addr);
-    FREE(tcpsession);
-    FREE(tsession);
+    freeTCPSession(tcpsession);
+    MUTEX_UNLOCK(tcplock);
   } else {
     MUTEX_UNLOCK(tcpsession->lock);
+    MUTEX_UNLOCK(tcplock);
   }
   return OK;
 }
@@ -270,6 +310,7 @@ static void * select_accept_handler(void * ah_cls,
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
+  tcpSession->tsession = tsession;
   tsession->peer = *(coreAPI->myIdentity);
   if (addr_len > sizeof(IPaddr)) {
     tcpSession->accept_addr = MALLOC(addr_len);
@@ -282,6 +323,10 @@ static void * select_accept_handler(void * ah_cls,
     tcpSession->addr_len = 0;
     tcpSession->accept_addr = NULL; 
   }
+  MUTEX_LOCK(tcplock);
+  tcpSession->next = sessions;
+  sessions = tcpSession;
+  MUTEX_UNLOCK(tcplock);
   return tsession;
 }					
 
@@ -292,17 +337,16 @@ static void select_close_handler(void * ch_cls,
   TSession * tsession = sock_ctx;
   TCPSession * tcpSession = tsession->internal;
 
+  MUTEX_LOCK(tcplock);
   MUTEX_LOCK(tcpSession->lock);
   tcpSession->in_select = NO;
   if (tcpSession->users == 0) {
     MUTEX_UNLOCK(tcpSession->lock);
-    MUTEX_DESTROY(tcpSession->lock);
-    FREENONNULL(tcpSession->accept_addr);
-    FREE(tcpSession);
-    FREE(tsession);
+    freeTCPSession(tcpSession);
   } else {
     MUTEX_UNLOCK(tcpSession->lock);
   }
+  MUTEX_UNLOCK(tcplock);
 }
 
 /**
@@ -439,6 +483,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tsession->peer = hello->senderIdentity;
+  tcpSession->tsession = tsession;
   tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 1; /* caller */
   tcpSession->in_select = NO;
@@ -476,6 +521,8 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
   } else if (stats != NULL)
     stats->change(stat_bytesSent,
 		  sizeof(TCPWelcome));
+  tcpSession->next = sessions;
+  sessions = tcpSession;
   MUTEX_UNLOCK(tcplock);
   *tsessionPtr = tsession;
   return OK;
