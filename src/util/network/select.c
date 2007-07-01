@@ -1073,6 +1073,34 @@ int select_would_try(struct SelectHandle * sh,
   return YES;
 }
 
+
+/**
+ */
+int select_update_closure(struct SelectHandle * sh,
+			  struct SocketHandle * sock,
+			  void * old_sock_ctx,
+			  void * new_sock_ctx) {
+  Session * session;	
+  int i;
+
+  session = NULL;
+  MUTEX_LOCK(sh->lock);
+  for (i=0;i<sh->sessionCount;i++)
+    if (sh->sessions[i]->sock == sock) {
+      session = sh->sessions[i];
+      break;
+    }
+  if (session == NULL) {
+    MUTEX_UNLOCK(sh->lock);
+    return SYSERR;
+  }
+  GE_ASSERT(NULL,
+	    session->sock_ctx == old_sock_ctx);
+  session->sock_ctx = new_sock_ctx;
+  MUTEX_UNLOCK(sh->lock);  
+  return OK;
+}
+
 /**
  * Add another (already connected) socket to the set of
  * sockets managed by the select.

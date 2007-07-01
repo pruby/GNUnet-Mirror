@@ -493,6 +493,13 @@ int select_connect(struct SelectHandle * sh,
 		   void * sock_ctx);
 
 /**
+ */
+int select_update_closure(struct SelectHandle * sh,
+			  struct SocketHandle * sock,
+			  void * old_sock_ctx,
+			  void * new_sock_ctx);
+
+/**
  * Close the associated socket and remove it from the
  * set of sockets managed by select.
  */

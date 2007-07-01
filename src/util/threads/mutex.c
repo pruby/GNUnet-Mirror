@@ -119,10 +119,11 @@ Mutex * MUTEX_CREATE(int isRecursive) {
 }
 
 void MUTEX_DESTROY(Mutex * mutex) {
+  int ret;
   GE_ASSERT(NULL, mutex != NULL);
   errno = 0;
-  GE_ASSERT(NULL,
-	    0 == pthread_mutex_destroy(&mutex->pt));
+  ret = pthread_mutex_destroy(&mutex->pt);
+  GE_ASSERT(NULL, 0 == ret);
   FREE(mutex);
 }
 

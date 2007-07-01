@@ -122,6 +122,8 @@ static void freeTCPSession(TCPSession * tcpsession) {
   TCPSession * pos;
   TCPSession * prev;
   
+  printf("FTCP: %p\n",
+	 tcpsession->lock);
   MUTEX_DESTROY(tcpsession->lock);
   FREENONNULL(tcpsession->accept_addr);
   pos = sessions;
@@ -162,14 +164,9 @@ static int tcpDisconnect(TSession * tsession) {
 #endif
   select_disconnect(selector,
 		    tcpsession->sock);
-  if (tcpsession->in_select == NO) {
-    MUTEX_UNLOCK(tcpsession->lock);
-    freeTCPSession(tcpsession);
-    MUTEX_UNLOCK(tcplock);
-  } else {
-    MUTEX_UNLOCK(tcpsession->lock);
-    MUTEX_UNLOCK(tcplock);
-  }
+  MUTEX_UNLOCK(tcpsession->lock);
+  freeTCPSession(tcpsession);
+  MUTEX_UNLOCK(tcplock);
   return OK;
 }
 
@@ -216,6 +213,7 @@ static int select_message_handler(void * mh_cls,
 				  const MESSAGE_HEADER * msg) {
   TSession * tsession = sock_ctx;
   TCPSession * tcpSession;
+  TCPSession * pos;
   unsigned int len;
   P2P_PACKET * mp;
   const TCPWelcome * welcome;
@@ -246,6 +244,55 @@ static int select_message_handler(void * mh_cls,
       setIPaddressFromPID(&welcome->clientIdentity,
 			  tcpSession->accept_addr,
 			  tcpSession->addr_len);
+    /* check that we do not already have
+       a connection from this peer; if so,
+       close the old one! */
+    MUTEX_LOCK(tcplock);
+    pos = sessions;
+    while (pos != NULL) {
+      if (pos == tcpSession) {
+	pos = pos->next;
+	continue;
+      }
+      if (0 == memcmp(&pos->sender,
+		      &tcpSession->sender,
+		      sizeof(PeerIdentity))) {
+	/* replace existing socket in pos with
+	   the new socket in tcpSession; then
+	   delete the new tcpSession -- we have
+	   the old one! */
+	MUTEX_LOCK(pos->lock);
+	if (SYSERR == tcpAssociate(pos->tsession)) {
+	  GE_BREAK(ectx, 0);
+	  MUTEX_UNLOCK(pos->lock);
+	  MUTEX_UNLOCK(tcplock);
+	  return SYSERR;
+	}	
+	if (pos->in_select) 
+	  select_disconnect(sh,
+			    pos->sock);
+	pos->in_select = YES;
+	pos->sock = tcpSession->sock;
+	select_update_closure(sh,
+			      pos->sock,
+			      tsession,
+			      pos->tsession);
+	FREENONNULL(pos->accept_addr);
+	pos->accept_addr = tcpSession->accept_addr;
+	pos->addr_len = tcpSession->addr_len;
+	tcpSession->accept_addr = NULL;
+	tcpSession->addr_len = 0;
+	tcpDisconnect(tsession);
+	tcpSession->in_select = NO; 
+	freeTCPSession(tcpSession);
+	tcpSession = pos;
+	tsession = pos->tsession;
+	MUTEX_UNLOCK(pos->lock);
+      }    
+      pos = pos->next;
+    }  
+    MUTEX_UNLOCK(tcplock);
+
   } else {
     /* send msg to core! */
     if (len <= sizeof(MESSAGE_HEADER)) {
