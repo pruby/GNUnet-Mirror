@@ -50,21 +50,13 @@
  */
 #define HISTORY_SIZE 32
 
-#define KEEP_TRANSMITTED_STATS YES
-
-#define KEEP_RECEIVE_STATS YES
-
-#if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
 static Stats_ServiceAPI * stats;
-#endif
 
-#if KEEP_RECEIVE_STATS
 static int stat_traffic_received_by_type[P2P_PROTO_MAX_USED];
-#endif
 
-#if KEEP_TRANSMITTED_STATS
+static int stat_pt_traffic_received_by_type[P2P_PROTO_MAX_USED];
+
 static int stat_traffic_transmitted_by_type[P2P_PROTO_MAX_USED];
-#endif
 
 /**
  * Macro to access the slot at time "t" in the history.
@@ -439,7 +431,6 @@ static void checkPort(unsigned short port) {
 
 static void updateTrafficSendCounter(unsigned short ptyp,
 				     unsigned short plen) {
-#if KEEP_TRANSMITTED_STATS
   if (ptyp >= P2P_PROTO_MAX_USED)
     return; /* not tracked */
   if (0 == stat_traffic_transmitted_by_type[ptyp]) {
@@ -455,12 +446,10 @@ static void updateTrafficSendCounter(unsigned short ptyp,
   }
   stats->change(stat_traffic_transmitted_by_type[ptyp],
 		plen);
-#endif
 }
 
 static void updateTrafficReceiveCounter(unsigned short ptyp,
 					unsigned short plen) {
-#if KEEP_RECEIVE_STATS
   if (ptyp < P2P_PROTO_MAX_USED) {
     if (0 == stat_traffic_received_by_type[ptyp]) {
       char * s;
@@ -476,9 +465,26 @@ static void updateTrafficReceiveCounter(unsigned short ptyp,
     stats->change(stat_traffic_received_by_type[ptyp],
 		  plen);
   }
-#endif
 }
 
+static void updatePlaintextTrafficReceiveCounter(unsigned short ptyp,
+						 unsigned short plen) {
+  if (ptyp < P2P_PROTO_MAX_USED) {
+    if (0 == stat_pt_traffic_received_by_type[ptyp]) {
+      char * s;
+      s = MALLOC(256);
+      SNPRINTF(s,
+	       256,
+	       _("# bytes received in plaintext of type %d"),
+	       ptyp);
+      stat_pt_traffic_received_by_type[ptyp]
+	= stats->create(s);
+      FREE(s);
+    }
+    stats->change(stat_pt_traffic_received_by_type[ptyp],
+		  plen);
+  }
+}
 
 /**
  * A message was received.  Update traffic stats.
@@ -503,6 +509,7 @@ static int trafficReceive(const PeerIdentity * sender,
   return OK;
 }
 
+
 /**
  * A message is send.  Update traffic stats.
  *
@@ -526,6 +533,23 @@ static int trafficSend(const PeerIdentity * receiver,
   return OK;
 }
 
+/**
+ * A message is send.  Update traffic stats.
+ *
+ * @param header the header of the message
+ * @param receiver the identity of the receiver
+ */
+static int plaintextReceive(const PeerIdentity * receiver,
+			    const MESSAGE_HEADER * header,
+			    TSession * session) {
+  unsigned short port;
+
+  port = ntohs(MAKE_UNALIGNED(header->type));
+  updatePlaintextTrafficReceiveCounter(port,
+				       ntohs(MAKE_UNALIGNED(header->size)));
+  return OK;
+}
+
 
 /**
  * Initialize the traffic module.
@@ -533,9 +557,7 @@ static int trafficSend(const PeerIdentity * receiver,
 Traffic_ServiceAPI *
 provide_module_traffic(CoreAPIForApplication * capi) {
   static Traffic_ServiceAPI api;
-#if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   int i;
-#endif
 
   coreAPI = capi;
 #if DEBUG
@@ -548,25 +570,21 @@ provide_module_traffic(CoreAPIForApplication * capi) {
 				    &server_port);
 #endif
   api.get = &getTrafficStats;
-#if KEEP_TRANSMITTED_STATS
   for (i=0;i<P2P_PROTO_MAX_USED;i++)
     stat_traffic_transmitted_by_type[i] = 0;
   coreAPI->registerSendNotify(&trafficSend);
-#endif
-#if KEEP_RECEIVE_STATS
   for (i=0;i<P2P_PROTO_MAX_USED;i++) {
     stat_traffic_received_by_type[i] = 0;
     coreAPI->registerHandler(i,
 			     &trafficReceive);
+    coreAPI->registerPlaintextHandler(i,
+				      &plaintextReceive);
   }
-#endif
 
   GE_ASSERT(coreAPI->ectx, counters == NULL);
   lock = MUTEX_CREATE(NO);
-#if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   stats = capi->requestService("stats");
-#endif
- return &api;
+  return &api;
 }
 
 /**
@@ -575,18 +593,15 @@ provide_module_traffic(CoreAPIForApplication * capi) {
 void release_module_traffic() {
   unsigned int i;
 
-#if KEEP_RECEIVE_STATS
-  for (i=0;i<P2P_PROTO_MAX_USED;i++)
+  for (i=0;i<P2P_PROTO_MAX_USED;i++) {
     coreAPI->unregisterHandler(i,
 			     &trafficReceive);
-#endif
-#if KEEP_TRANSMITTED_STATS
+    coreAPI->unregisterPlaintextHandler(i,
+					&plaintextReceive);
+  }
   coreAPI->unregisterSendNotify(&trafficSend);
-#endif
-#if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   coreAPI->releaseService(stats);
   stats = NULL;
-#endif
   for (i=0;i<max_message_type;i++)
     FREENONNULL(counters[i]);
   GROW(counters,

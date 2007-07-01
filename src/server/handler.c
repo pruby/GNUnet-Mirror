@@ -40,7 +40,7 @@
  * How many incoming packages do we have in the buffer
  * (max.). Must be >= THREAD_COUNT to make sense.
  */
-#define QUEUE_LENGTH 16
+#define QUEUE_LENGTH 64
 
 /**
  * How many threads do we start?
@@ -106,6 +106,14 @@ static unsigned int plaintextmax_registeredType = 0;
 static struct MUTEX * handlerLock;
 
 static struct GE_Context * ectx;
+
+#define MEASURE_TIME YES
+
+#if MEASURE_TIME
+static cron_t time_by_type[P2P_PROTO_MAX_USED];
+static unsigned int count_by_type[P2P_PROTO_MAX_USED];
+#endif
+
 
 /**
  * Register a method as a handler for specific message types.  Note
@@ -356,6 +364,9 @@ void injectMessage(const PeerIdentity * sender,
   MESSAGE_HEADER * copy;
   int last;
   EncName enc;
+#if MEASURE_TIME
+  cron_t now;
+#endif
 
   pos = 0;
   copy = NULL;
@@ -428,6 +439,9 @@ void injectMessage(const PeerIdentity * sender,
 	       ptyp);
 	continue; /* no handler registered, go to next part */
       }
+#if MEASURE_TIME
+      now = get_time();
+#endif
       last = 0;
       while (NULL != (callback = handlers[ptyp][last])) {
 	if (SYSERR == callback(sender,
@@ -444,6 +458,12 @@ void injectMessage(const PeerIdentity * sender,
 	}
 	last++;
       }
+#if MEASURE_TIME
+      if (ptyp < P2P_PROTO_MAX_USED) {
+	time_by_type[ptyp] += get_time() - now;
+	count_by_type[ptyp]++;
+      }
+#endif
     } else { /* isEncrypted == NO */
       PlaintextMessagePartHandler callback;
 
@@ -455,6 +475,9 @@ void injectMessage(const PeerIdentity * sender,
 	       ptyp);
 	continue; /* no handler registered, go to next part */
       }
+#if MEASURE_TIME
+      now = get_time();
+#endif
       last = 0;
       while (NULL != (callback = plaintextHandlers[ptyp][last])) {
 	if (SYSERR == callback(sender,
@@ -463,8 +486,8 @@ void injectMessage(const PeerIdentity * sender,
 #if DEBUG_HANDLER
 	  GE_LOG(ectx,
 		 GE_DEBUG | GE_USER | GE_BULK,
-	      "Handler aborted message processing after receiving message of type '%d'.\n",
-	      ptyp);
+		 "Handler aborted message processing after receiving message of type '%d'.\n",
+		 ptyp);
 #endif
 	  FREENONNULL(copy);
 	  copy = NULL;
@@ -472,6 +495,13 @@ void injectMessage(const PeerIdentity * sender,
 	}
 	last++;
       }
+#if MEASURE_TIME
+      if (ptyp < P2P_PROTO_MAX_USED) {
+	time_by_type[ptyp] += get_time() - now;
+	count_by_type[ptyp]++;
+      }
+#endif
+
     } /* if plaintext */
   } /* while loop */
   FREENONNULL(copy);
@@ -503,13 +533,13 @@ static void handleMessage(TSession * tsession,
   ret = checkHeader(sender,
 		    (P2P_PACKET_HEADER*) msg,
 		    size);
-  if (ret == SYSERR)
-    return; /* message malformed */
+  if (ret == SYSERR) 
+    return; /* message malformed */  
   if ( (ret == YES) &&
        (tsession != NULL) &&
-       (sender != NULL) )
-    if (OK == transport->associate(tsession))
-      considerTakeover(sender, tsession);
+       (sender != NULL) &&
+       (OK == transport->associate(tsession)) )
+    considerTakeover(sender, tsession);
   injectMessage(sender,
 		&msg[sizeof(P2P_PACKET_HEADER)],
 		size - sizeof(P2P_PACKET_HEADER),
@@ -562,9 +592,13 @@ static void * threadMain(void * cls) {
 void core_receive(P2P_PACKET * mp) {
   if ( (threads_running == NO) ||
        (mainShutdownSignal != NULL) ||
-       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
+       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, YES)) ) {
     /* discard message, buffer is full or
        we're shut down! */
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	   "Discarding message of size %u -- buffer full!\n",
+	   mp->size);
     FREE(mp->msg);
     FREE(mp);
     return;
@@ -725,6 +759,18 @@ void doneHandler() {
   transport = NULL;
   releaseService(identity);
   identity = NULL;
+#if MEASURE_TIME
+  for (i=0;i<P2P_PROTO_MAX_USED;i++) {
+    if (count_by_type[i] == 0)
+      continue;
+    fprintf(stderr,
+	    "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
+	    count_by_type[i],
+	    i,
+	    time_by_type[i],
+	    time_by_type[i] / count_by_type[i]);
+  }	     
+#endif
 }
 
 

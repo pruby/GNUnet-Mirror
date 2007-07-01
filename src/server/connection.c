@@ -2580,16 +2580,19 @@ int checkHeader(const PeerIdentity * sender,
 	   &enc);
     return SYSERR;
   }
-  hash2enc(&sender->hashPubKey, &enc);
-  hash(&msg->sequenceNumber, size - sizeof(HashCode512), &hc);
+  if (stats != NULL)
+    stats->change(stat_received, size);
+  hash2enc(&sender->hashPubKey, 
+	   &enc);
+  hash(&msg->sequenceNumber, 
+       size - sizeof(HashCode512), 
+       &hc);
   if (equalsHashCode512(&hc,
 			&msg->hash) &&
       (msg->sequenceNumber == 0) &&
       (msg->bandwidth == 0) &&
       (msg->timeStamp == 0) )
     return NO;                  /* plaintext */
-  if (stats != NULL)
-    stats->change(stat_received, size);
 
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
@@ -3476,14 +3479,11 @@ void unicast(const PeerIdentity * receiver,
   char *closure;
   unsigned short len;
 
-  if (msg == NULL) {
-    /* little hack for topology,
-       which cannot do this directly
-       due to cyclic dependencies! */
-    if (getBandwidthAssignedTo(receiver, NULL, NULL) != OK)
-      session->tryConnect(receiver);
-    return;
-  }
+  if ( (getBandwidthAssignedTo(receiver, NULL, NULL) != OK) &&
+       (identity->isBlacklistedStrict(receiver) == NO) )
+    session->tryConnect(receiver);
+  if (msg == NULL) 
+    return; 
   len = ntohs(msg->size);
   if (len == 0) {
     GE_LOG(ectx,
