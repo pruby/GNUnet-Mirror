@@ -315,7 +315,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
       if (session->in_select) {
 	session->users++;
 	MUTEX_UNLOCK(session->lock);
-	MUTEX_LOCK(tcplock);
+	MUTEX_UNLOCK(tcplock);
 	*tsessionPtr = session->tsession;
 	return OK;
       }
