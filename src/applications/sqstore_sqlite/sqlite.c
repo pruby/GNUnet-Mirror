@@ -347,7 +347,7 @@ static unsigned long long getSize() {
   if (stats)
     stats->set(stat_size, ret);
   MUTEX_UNLOCK(db->DATABASE_Lock_);
-  return ret * 1.06;
+  return (unsigned long long) (ret * 1.06);
   /* benchmarking shows 2-12% overhead */
 }
 
@@ -440,14 +440,14 @@ assembleDatum(sqliteHandle * handle,
  * @param key kind of stat to retrieve
  * @return SYSERR on error, the value otherwise
  */
-static double getStat(sqliteHandle * handle,
-		      const char * key) {
+static unsigned long long getStat(sqliteHandle * handle,
+				  const char * key) {
   int i;
   sqlite3_stmt *stmt;
-  double ret = SYSERR;
+  unsigned long long ret = SYSERR;
 
   i = sq_prepare(handle->dbh,
-		 "SELECT anonLevel FROM gn070 WHERE hash = ?",
+		 "SELECT expire FROM gn070 WHERE hash = ?",
 		 &stmt);
   if (i == SQLITE_OK) {
     sqlite3_bind_text(stmt,
@@ -461,7 +461,7 @@ static double getStat(sqliteHandle * handle,
       ret = 0;
       i = SQLITE_OK;
     } else if (i == SQLITE_ROW) {
-      ret = sqlite3_column_double(stmt, 0);
+      ret = sqlite3_column_int64(stmt, 0);
       i = SQLITE_OK;
     }
   }
@@ -502,7 +502,7 @@ static int setStat(sqliteHandle * handle,
   }
 
   if (sq_prepare(dbh,
-		 "INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
+		 "INSERT INTO gn070(hash, expire, type) VALUES (?, ?, ?)",
 		 &stmt) != SQLITE_OK)
     return SYSERR;
   sqlite3_bind_text(stmt,
