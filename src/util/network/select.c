@@ -509,13 +509,14 @@ static void * selectThread(void * ctx) {
     if (ret == -1) {
       if (errno == EBADF) {
 	GE_LOG_STRERROR(sh->ectx,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			GE_DEBUG | GE_DEVELOPER | GE_BULK,
 			"select");
       } else {
 	GE_DIE_STRERROR(sh->ectx,
 			GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
 			"select");
       }
+      continue;
     }
     if (sh->is_udp == NO) {
       if ( (sh->listen_sock != NULL) &&
