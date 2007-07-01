@@ -542,14 +542,14 @@ provide_module_dstore(CoreAPIForApplication * capi) {
   quota *= 1024 * 1024;
 
   bloom_name = STRDUP("/tmp/dbloomXXXXXX");
-  fd = mkstemp(fn);
-  bloom = loadBloomfilter(coreAPI->ectx,
-			  fn,
-			  quota / (OVERHEAD + 1024), /* 8 bit per entry in DB, expect 1k entries */
-			  5);
-  CLOSE(fd);
-
-
+  fd = mkstemp(bloom_name);
+  if (fd != -1) {
+    bloom = loadBloomfilter(coreAPI->ectx,
+			    bloom_name,
+			    quota / (OVERHEAD + 1024), /* 8 bit per entry in DB, expect 1k entries */
+			    5);
+    CLOSE(fd);
+  }
   stats = capi->requestService("stats");
   if (stats != NULL)
     stat_dstore_size = stats->create(gettext_noop("# bytes in dstore"));
