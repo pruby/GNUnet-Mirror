@@ -115,6 +115,9 @@ void socket_close(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
   if ( (0 != SHUTDOWN(s->handle,
 		      SHUT_RDWR)) &&
+#ifdef OSX
+       (errno != EINVAL) && /* OS X returns EINVAL instead of ENOTCONN */
+#endif
        (errno != ENOTCONN) )
     GE_LOG_STRERROR(s->ectx,
 		    GE_WARNING | GE_ADMIN | GE_BULK,
@@ -132,7 +135,10 @@ void socket_destroy(struct SocketHandle * s) {
   if (s->handle != -1) {
     if ( (0 != SHUTDOWN(s->handle,
 			SHUT_RDWR)) &&
-	 (errno != ENOTCONN) )
+#ifdef OSX
+         (errno != EINVAL) && /* OS X returns EINVAL instead of ENOTCONN */
+#endif
+         (errno != ENOTCONN) )
       GE_LOG_STRERROR(s->ectx,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "shutdown");
