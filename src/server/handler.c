@@ -132,12 +132,11 @@ int registerp2pHandler(unsigned short type,
 		       MessagePartHandler callback) {
   unsigned int last;
 
-  MUTEX_LOCK(handlerLock);
   if (threads_running == YES) {
     GE_BREAK(ectx, NULL);
-    MUTEX_UNLOCK(handlerLock);
     return SYSERR;
   }
+  MUTEX_LOCK(handlerLock);
   if (type >= max_registeredType) {
     unsigned int ort = max_registeredType;
     GROW(handlers,
@@ -176,12 +175,11 @@ int unregisterp2pHandler(unsigned short type,
   unsigned int pos;
   unsigned int last;
 
-  MUTEX_LOCK(handlerLock);
   if (threads_running == YES) {
     GE_BREAK(ectx, 0);
-    MUTEX_UNLOCK(handlerLock);
     return SYSERR;
   }
+  MUTEX_LOCK(handlerLock);
   if (type < max_registeredType) {
     pos = 0;
     while ( (handlers[type][pos] != NULL) &&
@@ -223,12 +221,11 @@ int registerPlaintextHandler(unsigned short type,
 			     PlaintextMessagePartHandler callback) {
   unsigned int last;
 
-  MUTEX_LOCK(handlerLock);
   if (threads_running == YES) {
-    MUTEX_UNLOCK(handlerLock);
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
+  MUTEX_LOCK(handlerLock);
   if (type >= plaintextmax_registeredType) {
     unsigned int ort = plaintextmax_registeredType;
     GROW(plaintextHandlers,
@@ -267,12 +264,11 @@ int unregisterPlaintextHandler(unsigned short type,
   unsigned int pos;
   unsigned int last;
 
-  MUTEX_LOCK(handlerLock);
   if (threads_running == YES) {
     GE_BREAK(ectx, 0);
-    MUTEX_UNLOCK(handlerLock);
     return SYSERR;
   }
+  MUTEX_LOCK(handlerLock);
   if (type < plaintextmax_registeredType) {
     pos = 0;
     while ( (plaintextHandlers[type][pos] != NULL) &&
@@ -592,7 +588,7 @@ static void * threadMain(void * cls) {
 void core_receive(P2P_PACKET * mp) {
   if ( (threads_running == NO) ||
        (mainShutdownSignal != NULL) ||
-       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, YES)) ) {
+       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
     /* discard message, buffer is full or
        we're shut down! */
     GE_LOG(ectx,
@@ -657,9 +653,7 @@ void enableCoreProcessing() {
   bq_firstFull_ = 0;
 
   /* create message handling threads */
-  MUTEX_LOCK(handlerLock);
   threads_running = YES;
-  MUTEX_UNLOCK(handlerLock);
   for (i=0;i<THREAD_COUNT;i++) {
     threads_[i] = PTHREAD_CREATE(&threadMain,
 				 &i,
@@ -679,6 +673,7 @@ void disableCoreProcessing() {
   void * unused;
 
   /* shutdown processing of inbound messages... */
+  threads_running = NO;
   mainShutdownSignal = SEMAPHORE_CREATE(0);
   for (i=0;i<THREAD_COUNT;i++) {
     SEMAPHORE_UP(bufferQueueRead_);
@@ -688,9 +683,6 @@ void disableCoreProcessing() {
     PTHREAD_JOIN(threads_[i], &unused);
     threads_[i] = NULL;
   }
-  MUTEX_LOCK(handlerLock);
-  threads_running = NO;
-  MUTEX_UNLOCK(handlerLock);
   SEMAPHORE_DESTROY(mainShutdownSignal);
   mainShutdownSignal = NULL;
   MUTEX_DESTROY(globalLock_);
