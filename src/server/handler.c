@@ -580,6 +580,9 @@ void core_receive(P2P_PACKET * mp) {
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
 	   (char*)&enc);
+    if (OK == getBandwidthAssignedTo(&mp->sender, NULL, NULL)) {
+      abort();
+    }
     FREE(mp->msg);
     FREE(mp);
     return;

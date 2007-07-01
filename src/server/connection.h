@@ -104,12 +104,6 @@ void considerTakeover(const PeerIdentity * sender,
 /* ***************** CORE API methods ************* */
 
 /**
- * Are we connected to this host?
- * @return YES or NO.
- */
-int isConnected(const PeerIdentity * hi);
-
-/**
  * Call method for every connected node.
  */
 int forEachConnectedNode(PerNodeCallback method,

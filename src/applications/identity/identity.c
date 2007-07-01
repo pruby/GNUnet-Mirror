@@ -867,7 +867,7 @@ static int blacklistHost(const PeerIdentity * identity,
     return OK;
   }
   if (strict) {
-      entry->delta = desperation * cronSECONDS;
+    entry->delta = desperation * cronSECONDS;
   } else {
     if (entry->until < now) 
       entry->delta

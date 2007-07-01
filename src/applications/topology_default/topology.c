@@ -41,7 +41,7 @@
 
 #define DEBUG_TOPOLOGY NO
 
-#define DEBUG_LIVENESS NO
+#define DEBUG_LIVENESS YES
 
 /**
  * After 2 minutes on an inactive connection, probe the other
@@ -169,7 +169,7 @@ static int scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
-#if DEBUG_TOPOLOGY
+#if DEBUG_TOPOLOGY || 1
   EncName enc;
 #endif
 
@@ -213,7 +213,7 @@ static void scanForHosts(unsigned int index) {
     return;
   }
 
-#if DEBUG_TOPOLOGY
+#if DEBUG_TOPOLOGY || 1
   IF_GELOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
 	   hash2enc(&indexMatch.match.hashPubKey,

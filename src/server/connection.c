@@ -62,7 +62,7 @@
 
 /* tuning parameters */
 
-#define DEBUG_CONNECTION NO
+#define DEBUG_CONNECTION YES
 
 /**
  * output knapsack priorities into a file?
@@ -2453,9 +2453,7 @@ static void cronDecreaseLiveness(void *unused) {
 		 &enc,
 		 now - root->isAlive);
 #endif
-	  /* this was a valuable peer except for the timeout,
-	     let's keep it as a possibility for the near
-	     future! */
+	  /* peer timed out -- shutdown connection */
 	  identity->blacklistHost(&root->session.sender,
 				  SECONDS_BLACKLIST_AFTER_DISCONNECT,
 				  YES);
@@ -2517,10 +2515,13 @@ static void cronDecreaseLiveness(void *unused) {
 		 &enc,
 		 (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
 #endif
-	  /* do not try to reconnect any time soon! */
+	  /* do not try to reconnect any time soon,
+	     but allow the other peer to connect to
+	     us -- after all, we merely failed to
+	     establish a session in the first place! */
 	  identity->blacklistHost(&root->session.sender,
 				  SECONDS_BLACKLIST_AFTER_FAILED_CONNECT,
-				  YES);
+				  NO);
           shutdownConnection(root);
         }
         break;
@@ -3498,23 +3499,6 @@ void unicast(const PeerIdentity * receiver,
 		  len,
 		  importance,
 		  maxdelay);
-}
-
-/**
- * Are we connected to this peer?
- *
- * @param hi the peer in question
- * @return NO if we are not connected, YES if we are
- */
-int isConnected(const PeerIdentity * hi) {
-  BufferEntry *be;
-
-  MUTEX_LOCK(lock);
-  be = lookForHost(hi);
-  MUTEX_UNLOCK(lock);
-  if (be == NULL)
-    return NO;
-  return (be->status == STAT_UP);
 }
 
 /**
