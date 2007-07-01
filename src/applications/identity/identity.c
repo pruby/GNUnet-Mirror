@@ -40,7 +40,7 @@
 #include "identity.h"
 #include "hostkey.h"
 
-#define DEBUG_IDENTITY NO
+#define DEBUG_IDENTITY YES
 
 #define MAX_TEMP_HOSTS 32
 
@@ -860,16 +860,18 @@ static int blacklistHost(const PeerIdentity * identity,
     return SYSERR;
   }
   now = get_time();
-  if (entry->until < now) {
-    if (strict)
-      entry->delta = desperation;
-    else
+  if ( (entry->strict == YES) &&
+       (strict == NO) ) {
+    /* stronger blacklisting in place! */
+    MUTEX_UNLOCK(lock_);
+    return OK;
+  }
+  if (strict) {
+      entry->delta = desperation * cronSECONDS;
+  } else {
+    if (entry->until < now) 
       entry->delta
 	= weak_randomi(1+desperation*cronSECONDS);
-  } else {
-    if (strict)
-      entry->delta
-	+= desperation;
     else
       entry->delta
 	+= weak_randomi(1+desperation*cronSECONDS);
@@ -882,7 +884,7 @@ static int blacklistHost(const PeerIdentity * identity,
 	   &hn);
 #if DEBUG_IDENTITY
   GE_LOG(ectx,
-	 GE_INFO | GE_REQUEST | GE_USER,
+	 GE_INFO | GE_REQUEST | GE_DEVELOPER,
 	 "Blacklisting host `%s' for %llu seconds"
 	 " until %llu (strict=%d).\n",
 	 &hn,
@@ -914,6 +916,19 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
   now = get_time();
   if ( (now < entry->until) &&
        (entry->strict == YES) ) {
+#if DEBUG_IDENTITY
+    EncName enc;
+
+    IF_GELOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     hash2enc(&identity->hashPubKey,
+		      &enc));
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_BULK,
+	   _("Peer `%s' is currently strictly blacklisted (for another %llums).\n"),
+	   &enc,
+	   entry->until - now);
+#endif
     MUTEX_UNLOCK(lock_);
     return YES;
   } else {
@@ -931,9 +946,6 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
 static int whitelistHost(const PeerIdentity * identity) {
   HostEntry * entry;
   int i;
-#if DEBUG_IDENTITY
-  EncName enc;
-#endif
 
   GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(lock_);
@@ -952,15 +964,6 @@ static int whitelistHost(const PeerIdentity * identity) {
     MUTEX_UNLOCK(lock_);
     return SYSERR;
   }
-#if DEBUG_IDENTITY
-  IF_GELOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	hash2enc(&identity->hashPubKey,
-		 &enc));
-  GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 "Whitelisting host `%s'\n",
-	 &enc);
-#endif
   entry->delta = 30 * cronSECONDS;
   entry->until = 0;
   entry->strict = NO;
@@ -1026,6 +1029,22 @@ static int forEachHost(cron_t now,
 	    break;
 	}
       }
+    } else {
+#if DEBUG_IDENTITY
+      EncName enc;
+      
+      IF_GELOG(ectx,
+	       GE_INFO | GE_USER | GE_BULK,
+	       hash2enc(&entry->identity.hashPubKey,
+			&enc));
+      GE_LOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     entry->strict ? 
+	     _("Peer `%s' is currently strictly blacklisted (for another %llums).\n") :
+	     _("Peer `%s' is currently blacklisted (for another %llums).\n"),
+	     &enc,
+	     entry->until - now);
+#endif
     }
     if (ret != OK)
       break;

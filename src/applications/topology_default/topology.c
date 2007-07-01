@@ -41,6 +41,8 @@
 
 #define DEBUG_TOPOLOGY NO
 
+#define DEBUG_LIVENESS NO
+
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
@@ -206,6 +208,11 @@ static void scanForHosts(unsigned int index) {
     GE_BREAK(NULL, 0); /* should REALLY not happen */
     return;
   }
+  if (OK == coreAPI->queryPeerStatus(&indexMatch.match, NULL, NULL)) {
+    GE_BREAK(NULL, 0); /* should REALLY not happen */
+    return;
+  }
+
 #if DEBUG_TOPOLOGY
   IF_GELOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
@@ -216,13 +223,15 @@ static void scanForHosts(unsigned int index) {
 	 "Trying to connect to peer `%s'\n",
 	 &enc);
 #endif
-  coreAPI->unicast(&indexMatch.match,
-		   NULL,
-		   0,
-		   0);
-  identity->blacklistHost(&indexMatch.match,
-			  (unsigned int) (saturation * 5 * 60 * 60), /* 5 hours at full saturation */
-			  NO);
+  if (NO == identity->isBlacklistedStrict(&indexMatch.match)) {
+    coreAPI->unicast(&indexMatch.match,
+		     NULL,
+		     0,
+		     0);
+    identity->blacklistHost(&indexMatch.match,
+			    (unsigned int) (saturation * 5 * 60 * 60), /* 5 hours at full saturation */
+			    NO);
+  }
 }
 
 /**
@@ -232,6 +241,19 @@ static void scanForHosts(unsigned int index) {
  */
 static void notifyPONG(void * cls) {
   PeerIdentity * hostId = cls;
+#if DEBUG_TOPOLOGY || DEBUG_LIVENESS
+  EncName enc;
+  
+  IF_GELOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   hash2enc(&hostId->hashPubKey,
+		    &enc));
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "Received liveness confirmation from `%s'.\n",
+	 &enc);
+#endif
+
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
@@ -244,8 +266,10 @@ static void checkNeedForPing(const PeerIdentity * peer,
   cron_t now;
   cron_t act;
   PeerIdentity * hi;
+  int ran;
 
-  if (weak_randomi(LIVE_PING_EFFECTIVENESS) != 0)
+  ran = weak_randomi(LIVE_PING_EFFECTIVENESS);
+  if (ran != 0)
     return;
   now = get_time();
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
@@ -257,6 +281,21 @@ static void checkNeedForPing(const PeerIdentity * peer,
     /* if we have less than 75% of the number of connections
        that we would like to have, try ping-ing the other side
        to keep the connection open instead of hanging up */
+#if DEBUG_TOPOLOGY || DEBUG_LIVENESS
+    EncName enc;
+    
+    IF_GELOG(coreAPI->ectx,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	     hash2enc(&peer->hashPubKey,
+		      &enc));
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	   "Peer `%s' was inactive for %llus.  Sending PING.\n",
+	   &enc,
+	   (now-act)/cronSECONDS);
+#endif
+
+
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
     if (OK != pingpong->ping(peer,

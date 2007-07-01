@@ -515,8 +515,6 @@ static void handleMessage(TSession * tsession,
 		size - sizeof(P2P_PACKET_HEADER),
 		ret,
 		tsession);
-  if (sender != NULL)
-    confirmSessionUp(sender);
 }
 
 /**

@@ -631,39 +631,6 @@ static int stat_total_send_buffer_size;
 
 /* ******************** CODE ********************* */
 
-#if DEBUG_CONNECTION
-static void printMsg(const char *prefix,
-		     const PeerIdentity * sender,
-                     const SESSIONKEY * key,
-		     const INITVECTOR * iv,
-		     int crc) {
-  char skey[65];
-  char *dst;
-  int idx;
-  EncName enc;
-
-  hash2enc(&sender->hashPubKey,
-	   &enc);
-  dst = skey;
-  for(idx = 0; idx < SESSIONKEY_LEN; idx++) {
-    sprintf(dst,
-	    "%02x",
-	    key->key[idx]);
-    dst += 2;
-  }
-  *dst = 0;
-
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "%s: Sender `%s', key `%s', IV %u msg CRC %u\n",
-	 prefix,
-	 &enc,
-	 skey,
-	 *((const int *) iv),
-	 crc);
-}
-#endif
-
 /**
  * This allocates and initializes a BufferEntry.
  * @return the initialized BufferEntry
@@ -1034,13 +1001,6 @@ selectMessagesToSend(BufferEntry * be,
 	if (entry->transmissionTime < deadline)
 	  deadline = entry->transmissionTime;
         (*priority) += entry->pri;
-#if DEBUG_CONNECTION
-        GE_LOG(ectx,
-	       GE_DEBUG | GE_REQUEST | GE_USER,
-	       "Selecting msg %u with length %u\n",
-	       i,
-	       entry->len);
-#endif
         totalMessageSize += entry->len;
       } else {
         entry->knapsackSolution = NO;
@@ -1062,11 +1022,6 @@ selectMessagesToSend(BufferEntry * be,
         entry->knapsackSolution = YES;
 	if (entry->transmissionTime < deadline)
 	  deadline = entry->transmissionTime;	
-#if DEBUG_CONNECTION
-        GE_LOG(ectx,
-	       GE_DEBUG | GE_REQUEST | GE_USER,
-	       "Selecting msg %u with length %u\n", i, entry->len);
-#endif
         totalMessageSize += entry->len;
         (*priority) += entry->pri;
       } else {
@@ -1198,12 +1153,6 @@ static void expireSendBufferEntries(BufferEntry * be) {
   /* if it's more than one connection "lifetime" old, always kill it! */
   be->lastSendAttempt = get_time();
   expired = be->lastSendAttempt - SECONDS_PINGATTEMPT * cronSECONDS;
-#if DEBUG_CONNECTION
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "policy prevents sending message\n");
-#endif
-
   load = os_cpu_get_load(ectx, cfg);
   if (load < 0)
     load = 50; /* failed to determine load, assume 50% */
@@ -1524,35 +1473,15 @@ static int sendBuffer(BufferEntry * be) {
   if ( (OK != ensureTransportConnected(be)) ||
        (OK != checkSendFrequency(be)) ){
     be->inSendBuffer = NO;
-#if 0
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Will not try to send: %d %d\n",
-	   (OK != ensureTransportConnected(be)),
-	   (OK != checkSendFrequency(be)));
-#endif
     return NO;
   }
 
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS(be);
-#if DEBUG_CONNECTION
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "receiver window available: %lld bytes (MTU: %u)\n",
-	 be->available_send_window,
-	 be->session.mtu);
-#endif
   totalMessageSize = selectMessagesToSend(be, &priority);
   if (totalMessageSize == 0) {
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
-#if DEBUG_CONNECTION
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "No messages selected for sending (%d)\n",
-	   be->available_send_window);
-#endif
     return NO;  /* deferr further */
   }
   GE_ASSERT(ectx,
@@ -1591,11 +1520,6 @@ static int sendBuffer(BufferEntry * be) {
      fails, return (but clean up garbage) */
   if ( (SYSERR == outgoingCheck(priority)) ||
        (0 == prepareSelectedMessages(be)) ) {
-#if DEBUG_CONNECTION
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Insufficient bandwidth or priority to send message\n");
-#endif
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
     return NO;             /* deferr further */
@@ -1626,13 +1550,6 @@ static int sendBuffer(BufferEntry * be) {
 	      (entry->knapsackSolution == YES) &&
 	      (entry->callback == NULL) &&
 	      (p + entry->len <= totalMessageSize));
-#if DEBUG_CONNECTION
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Queuing msg %u with length %u\n",
-	   i,
-	   entry->len);
-#endif
     memcpy(&plaintextMsg[p],
 	   entry->closure,
 	   entry->len);
@@ -1713,24 +1630,10 @@ static int sendBuffer(BufferEntry * be) {
 		     &be->skey_local,
 		     (const INITVECTOR *) encryptedMsg,  /* IV */
                      &((P2P_PACKET_HEADER *) encryptedMsg)->sequenceNumber);
-#if DEBUG_CONNECTION
-  printMsg("Encrypting P2P data",
-	   &be->session.sender,
-           &be->skey_local,
-	   (const INITVECTOR *) encryptedMsg,
-           crc32N(&((P2P_PACKET_HEADER *) encryptedMsg)->sequenceNumber,
-                  ret));
-#endif
   if(stats != NULL)
     stats->change(stat_encrypted,
 		  p - sizeof(HashCode512));
   GE_ASSERT(ectx, be->session.tsession != NULL);
-#if DEBUG_CONNECTION
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Asking transport to send message with priority %u\n",
-	 priority);
-#endif
   ret = transport->send(be->session.tsession,
 			encryptedMsg,
 			p,
@@ -1819,22 +1722,15 @@ static void appendToBuffer(BufferEntry * be,
     return;
   }
 
-#if DEBUG_CONNECTION
-  IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&be->session.sender.hashPubKey,
-		    &enc));
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "adding message of size %d to buffer of host `%s'\n",
-	 se->len,
-	 &enc);
-#endif
   if ( (be->sendBufferSize > 0) &&
        (be->status != STAT_UP) ) {
     /* as long as we do not have a confirmed
        connection, do NOT queue messages! */
 #if DEBUG_CONNECTION
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(&be->session.sender.hashPubKey,
+		      &enc));
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "not connected to `%s', message dropped\n",
@@ -1860,13 +1756,6 @@ static void appendToBuffer(BufferEntry * be,
     if (queueSize >= MAX_SEND_BUFFER_SIZE) {
       /* we need to enforce some hard limit here, otherwise we may take
          FAR too much memory (200 MB easily) */
-#if DEBUG_CONNECTION
-      GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "queueSize (%llu) >= %d, refusing to queue message.\n",
-	     queueSize,
-	     MAX_SEND_BUFFER_SIZE);
-#endif
       FREE(se->closure);
       FREE(se);
       return;
@@ -1931,18 +1820,6 @@ addHost(const PeerIdentity * hostId,
   BufferEntry *root;
   BufferEntry *prev;
   unsigned int index;
-#if DEBUG_CONNECTION
-  EncName enc;
-
-  GE_IFLOG(ectx,
-	   GE_DEBUG,
-	   hash2enc(&hostId->hashPubKey,
-		    &enc));
-  GE_LOG(ectx,
-	 GE_DEBUG,
-	 "Adding host `%s' to the connection table.\n",
-	 &enc);
-#endif
 
   ENTRY();
   root = lookForHost(hostId);
@@ -2153,7 +2030,9 @@ static void scheduleInboundTraffic() {
   int earlyRun;
   int load;
   int * perm;
+#if DEBUG_CONNECTION
   EncName enc;
+#endif
 
   MUTEX_LOCK(lock);
   now = get_time();
@@ -2264,17 +2143,19 @@ static void scheduleInboundTraffic() {
       entries[u]->violations++;
       entries[u]->recently_received = 0;  /* "clear" slate */
       if (entries[u]->violations > 10) {
+#if DEBUG_CONNECTION
         IF_GELOG(ectx,
-		 GE_INFO | GE_BULK | GE_USER,
+		 GE_INFO | GE_BULK | GE_DEVELOPER,
 		 hash2enc(&entries[u]->session.sender.hashPubKey,
 			  &enc));
         GE_LOG(ectx,
-	       GE_INFO | GE_BULK | GE_USER,
+	       GE_INFO | GE_BULK | GE_DEVELOPER,
 	       "blacklisting `%s': sent repeatedly %llu bpm "
 	       "(limit %u bpm, target %u bpm)\n",
 	       &enc,
 	       adjustedRR[u],
 	       entries[u]->max_transmitted_limit, entries[u]->idealized_limit);
+#endif
         identity->blacklistHost(&entries[u]->session.sender,
                                 24 * 60 * 60, /* 1 day */
 				YES);
@@ -2440,11 +2321,6 @@ static void scheduleInboundTraffic() {
 	   &enc,
 	   entries[u]->idealized_limit);
 #endif
-#if 0
-    printf("New inbound limit for peer #%u set to %u bpm\n",
-	   u,
-	   entries[u]->idealized_limit);
-#endif
     if ( (timeDifference > 50) &&
 	 (weak_randomi(timeDifference + 1) > 50) )
       entries[u]->current_connection_value *= 0.9; /* age */
@@ -2468,11 +2344,11 @@ static void scheduleInboundTraffic() {
     if (be->idealized_limit < MIN_BPM_PER_PEER) {
 #if DEBUG_CONNECTION
       IF_GELOG(ectx,
-	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	       hash2enc(&be->session.sender.hashPubKey,
 			&enc));
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	     "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
 	     &enc,
 	     be->idealized_limit);
@@ -2567,12 +2443,12 @@ static void cronDecreaseLiveness(void *unused) {
 
           /* switch state form UP to DOWN: too much inactivity */
           IF_GELOG(ectx,
-		   GE_DEBUG | GE_REQUEST | GE_USER,
+		   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 		   hash2enc(&root->session.sender.hashPubKey,
 			    &enc));
           GE_LOG(ectx,
-		 GE_DEBUG | GE_REQUEST | GE_USER,
-		 "closing connection with `%s': "
+		 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+		 "Closing connection with `%s': "
 		 "too much inactivity (%llu ms)\n",
 		 &enc,
 		 now - root->isAlive);
@@ -2580,9 +2456,10 @@ static void cronDecreaseLiveness(void *unused) {
 	  /* this was a valuable peer except for the timeout,
 	     let's keep it as a possibility for the near
 	     future! */
-	  identity->whitelistHost(&root->session.sender);
+	  identity->blacklistHost(&root->session.sender,
+				  SECONDS_BLACKLIST_AFTER_DISCONNECT,
+				  YES);
           shutdownConnection(root);
-
         }
         if ( (root->available_send_window > 35 * 1024) &&
 	     (root->sendBufferSize < 4) &&
@@ -2631,11 +2508,11 @@ static void cronDecreaseLiveness(void *unused) {
           EncName enc;
 
           IF_GELOG(ectx,
-		   GE_DEBUG | GE_REQUEST | GE_USER,
+		   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 		   hash2enc(&root->session.sender.hashPubKey,
 			    &enc));
           GE_LOG(ectx,
-		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 		 "closing connection to %s: %s not answered.\n",
 		 &enc,
 		 (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
@@ -2713,12 +2590,6 @@ int checkHeader(const PeerIdentity * sender,
   if (stats != NULL)
     stats->change(stat_received, size);
 
-#if DEBUG_CONNECTION
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Decrypting message from host `%s'\n",
-	 &enc);
-#endif
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if((be == NULL) ||
@@ -2748,11 +2619,6 @@ int checkHeader(const PeerIdentity * sender,
 	   GE_INFO | GE_BULK | GE_DEVELOPER,
 	   "Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	   &enc);
-#if DEBUG_CONNECTION
-    printMsg("Wrong sessionkey", sender,
-             &be->skey_remote, (const INITVECTOR *) &msg->hash,
-             crc32N(&msg->sequenceNumber, size - sizeof(HashCode512)));
-#endif
     addHost(sender, YES);
     MUTEX_UNLOCK(lock);
     FREE(tmp);
@@ -2801,12 +2667,6 @@ int checkHeader(const PeerIdentity * sender,
   }
 
   be->max_bpm = ntohl(msg->bandwidth);
-#if DEBUG_CONNECTION
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Received bandwidth cap of %u bpm\n",
-	 be->max_bpm);
-#endif
   if (be->available_send_window > (long long) be->max_bpm * MAX_BUF_FACT) {
     if (stats != NULL)
       stats->change(stat_total_lost_sent,
@@ -2844,11 +2704,11 @@ static int handleHANGUP(const PeerIdentity * sender,
     return SYSERR;
 #if DEBUG_CONNECTION
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	   hash2enc(&sender->hashPubKey,
 		    &enc));
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	 "received HANGUP from `%s'\n",
 	 &enc);
 #endif
@@ -2928,6 +2788,17 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	((be->status & STAT_SETKEY_RECEIVED) > 0) &&
 	(OK == ensureTransportConnected(be)) &&
 	(be->status != STAT_UP) ) {
+#if DEBUG_CONNECTION
+      EncName enc;
+      IF_GELOG(ectx,
+	       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	       hash2enc(&peer->hashPubKey,
+			&enc));
+      GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	     "Received confirmation that session is UP for `%s'\n",
+	     &enc);
+#endif
       be->status = STAT_UP;
       be->lastSequenceNumberReceived = 0;
       be->lastSequenceNumberSend = 1;
@@ -2973,7 +2844,8 @@ int isSlotUsed(int slot) {
  * @param time updated with the time
  * @return SYSERR if we are not connected to the peer at the moment
  */
-int getLastActivityOf(const PeerIdentity * peer, cron_t * time) {
+int getLastActivityOf(const PeerIdentity * peer, 
+		      cron_t * time) {
   int ret;
   BufferEntry *be;
 
@@ -2983,8 +2855,7 @@ int getLastActivityOf(const PeerIdentity * peer, cron_t * time) {
   if((be != NULL) && (be->status == STAT_UP)) {
     *time = be->isAlive;
     ret = OK;
-  }
-  else {
+  } else {
     *time = 0;
     ret = SYSERR;
   }
@@ -3226,7 +3097,7 @@ void initConnection(struct GE_Context * e,
 	       CDL_FREQUENCY,
 	       CDL_FREQUENCY,
 	       NULL);
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
   prioFile = FOPEN("/tmp/knapsack_prio.txt", "w");
 #endif
 
@@ -3341,7 +3212,10 @@ void doneConnection() {
   releaseService(stats);
   stats = NULL;
 #if DEBUG_COLLECT_PRIO == YES
-  fclose(prioFile);
+  if (prioFile != NULL) {
+    fclose(prioFile);
+    prioFile = NULL;
+  }
 #endif
   ectx = NULL;
   cfg = NULL;
@@ -3562,20 +3436,7 @@ void unicastCallback(const PeerIdentity * hostId,
                      unsigned int importance,
 		     unsigned int maxdelay) {
   BufferEntry *be;
-#if DEBUG_CONNECTION
-  EncName enc;
 
-  IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&hostId->hashPubKey,
-		    &enc));
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "%s: sending message to host %s message of size %d\n",
-	 __FUNCTION__,
-	 &enc,
-	 len);
-#endif
   ENTRY();
   MUTEX_LOCK(lock);
   be = addHost(hostId, YES);
@@ -3737,11 +3598,11 @@ void disconnectFromPeer(const PeerIdentity * node) {
     EncName enc;
 
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	     hash2enc(&node->hashPubKey,
 		      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	   "Closing connection to `%s' as requested by application.\n",
 	   &enc);
 #endif
