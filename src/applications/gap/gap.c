@@ -802,33 +802,6 @@ static int useContent(const PeerIdentity * hostId,
  */
 static void useContentLater(void * data) {
   MESSAGE_HEADER * pmsg = data;
-
-#if EXTRA_CHECKS
-  const P2P_gap_reply_MESSAGE * msg = data;
-  DataContainer * value;
-  unsigned int size;
-
-  if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
-    GE_BREAK(NULL, 0);
-    FREE(pmsg);
-    return;
-  }
-  size = ntohs(msg->header.size) - sizeof(P2P_gap_reply_MESSAGE);
-  value = MALLOC(size + sizeof(DataContainer));
-  value->size = htonl(size + sizeof(DataContainer));
-  memcpy(&value[1],
-	 &msg[1],
-	 size);
-  if (SYSERR == bs->put(bs->closure,
-			&msg->primaryKey,
-			value,
-			0)) {
-    GE_BREAK(NULL, 0);
-    FREE(pmsg);
-    return;
-  }
-#endif
-
   useContent(NULL,
 	     pmsg);
   FREE(pmsg);
@@ -1409,7 +1382,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   struct qLRC * cls = closure;
   int i;
 
-#if EXTRA_CHECKS || 1
+#if EXTRA_CHECKS
   /* verify data is valid */
   uri(value,
       ANY_BLOCK,
@@ -1425,19 +1398,6 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
 		    cls->values[i],
 		    ntohl(value->size)))
       return OK; /* drop, duplicate entry in DB! */
-#if EXTRA_CHECKS
-  if ( (0 != memcmp(primaryKey,
-		    &cls->query,
-		    sizeof(HashCode512))) ||
-       (SYSERR == bs->put(bs->closure,
-			  &cls->query,
-			  value,
-			  0)) ) {
-    GE_BREAK(NULL, 0);
-    return OK;
-  }
-#endif
-
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1580,16 +1540,6 @@ static int execQuery(const PeerIdentity * sender,
 	FREE(cls.values[perm[i]]);
 	continue;
       } 
-#if EXTRA_CHECKS
-      if (SYSERR == bs->put(bs->closure,
-			    &query->queries[0],
-			    cls.values[perm[i]],
-			    0)) {
-	GE_BREAK(NULL, 0);
-	FREE(cls.values[perm[i]]);
-	continue;
-      }
-#endif
       if ( (i < max) &&
 	   (sender != NULL) &&
 	   (YES == queueReply(sender,
@@ -2001,14 +1951,6 @@ tryMigrate(const DataContainer * data,
   memcpy(&reply[1],
 	 &data[1],
 	 size - sizeof(P2P_gap_reply_MESSAGE));
-#if EXTRA_CHECKS
-  /* verify content integrity */
-  GE_ASSERT(ectx,
-	    SYSERR != bs->put(bs->closure,
-			      primaryKey,
-			      data,
-			      0));
-#endif
   return size;
 }
 
