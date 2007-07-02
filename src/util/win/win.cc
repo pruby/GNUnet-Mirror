@@ -29,7 +29,10 @@
 
 #include "winproc.h"
 #include "gnunet_util.h"
+#include "../network/network.h"
 
+#include <list>
+using namespace std;
 #include <ntdef.h>
 
 #ifndef INHERITED_ACE
@@ -38,7 +41,20 @@
 
 extern "C" {
 
+typedef list<WSAOVERLAPPED *> TOLList;
+
+static HANDLE hOLLock;
+static TOLList lstOL;
+
 int plibc_conv_to_win_path(const char *pszUnix, char *pszWindows);
+
+void __attribute__ ((constructor)) gnunet_win_init() {
+  hOLLock = CreateMutex(NULL, FALSE, NULL);
+}
+
+void __attribute__ ((destructor)) gnunet_win_fini() {
+  CloseHandle(hOLLock);
+}
 
 /**
  * Enumerate all network adapters
@@ -800,6 +816,78 @@ char *winErrorStr(const char *prefix, int dwErr)
   LocalFree(err);
 
   return ret;
+}
+
+SOCKET win_ols_socket(int af, int type, int protocol)
+{
+  SOCKET s;
+  
+  s = WSASocket(af, type, protocol, NULL, 0, WSA_FLAG_OVERLAPPED);
+  SetErrnoFromWinsockError(WSAGetLastError());
+
+  return s;
+}
+
+int win_ols_sendto(struct SocketHandle *s, const char *buf, int len,
+                const struct sockaddr *to, int tolen)
+{
+  int iRet;
+  WSABUF wbuf;
+  WSAOVERLAPPED *ol;
+  DWORD err;
+  DWORD lockRes;
+  unsigned int pending;
+  
+  wbuf.buf = (char *) buf;
+  wbuf.len = len;
+  ol = (WSAOVERLAPPED *) MALLOC(sizeof(WSAOVERLAPPED));
+  memset(ol, 0, sizeof(WSAOVERLAPPED));
+  ol->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  
+  pending = 0;
+  
+  iRet = WSASendTo(s->handle, &wbuf, 1, NULL, 0, to, tolen, ol, NULL);
+  err = WSAGetLastError();
+  if (iRet == SOCKET_ERROR) {
+    if (err == WSA_IO_PENDING) {
+      iRet = len;
+      lockRes = WaitForSingleObject(hOLLock, INFINITE);
+      if (lockRes == WAIT_OBJECT_0) {
+        lstOL.push_back(ol);
+        pending = lstOL.size();
+        ReleaseMutex(hOLLock);
+      }
+    }
+  }
+  else if (iRet == 0) {
+    iRet = len;
+  }
+  
+  // Try to cleanup
+  lockRes = WaitForSingleObject(hOLLock, pending > 25 ? INFINITE : 0);
+  if (lockRes == WAIT_OBJECT_0) {
+    DWORD sign;
+    TOLList::iterator it;
+    for (it = lstOL.begin(); it != lstOL.end(); it++) {
+      sign = WaitForSingleObject((*it)->hEvent, 0);      
+      if (sign == WSA_WAIT_EVENT_0) {
+        TOLList::iterator next;
+        
+        ol = *it;
+        CloseHandle(ol->hEvent);
+        FREE(ol);
+        next = it;
+        next++;
+        lstOL.erase(it);
+        if (next == lstOL.end())
+          next--;
+        it = next;
+      }
+    }
+    ReleaseMutex(hOLLock);
+  }
+
+  return iRet;
 }
 
 } /* extern "C" */

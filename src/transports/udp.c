@@ -365,13 +365,19 @@ static int udpSend(TSession * tsession,
 	 PRIP(ntohl(*(int*)&sin.sin_addr)),
 	 ntohs(sin.sin_port));
 #endif
+#ifndef MINGW
   if (YES == socket_send_to(udp_sock,
 			    NC_Nonblocking,
 			    mp,
 			    ssize,
 			    &sent,
 			    (const char *) &sin,
-			    sizeof(sin))) {
+			    sizeof(sin)))
+#else
+  sent = win_ols_sendto(udp_sock, mp, ssize, (const char *) &sin, sizeof(sin));
+  if (sent != SOCKET_ERROR)
+#endif
+  {
     ok = OK;
     if (stats != NULL)
       stats->change(stat_bytesSent,
@@ -425,7 +431,11 @@ static int startTransportServer() {
     if (selector == NULL)
       return SYSERR;
   }
+#ifndef MINGW
   sock = SOCKET(PF_INET, SOCK_DGRAM, 17);
+#else
+  sock = win_ols_socket(PF_INET, SOCK_DGRAM, 17);
+#endif
   if (sock == -1) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_ADMIN | GE_BULK,
