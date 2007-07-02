@@ -264,27 +264,39 @@ int disk_file_test(struct GE_Context * ectx,
 		   const char * fil) {
   struct stat filestat;
   int ret;
+  char * rdir;
 
-  ret = STAT(fil, &filestat);
+  rdir = string_expandFileName(ectx,
+			       fil);
+  if (rdir == NULL)
+    return SYSERR;
+
+  ret = STAT(rdir, &filestat);
   if (ret != 0) {
     if (errno != ENOENT) {
       GE_LOG_STRERROR_FILE(ectx,
 			   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
 			   "stat",
-			   fil);
+			   rdir);
+      FREE(rdir);
       return SYSERR;
     }
+    FREE(rdir);
     return NO;
   }
-  if (! S_ISREG(filestat.st_mode))
+  if (! S_ISREG(filestat.st_mode)) {
+    FREE(rdir);
     return NO;
-  if (ACCESS(fil, R_OK) < 0 ) {
+  }
+  if (ACCESS(rdir, R_OK) < 0 ) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
 			 "access",
-			 fil);
+			 rdir);
+    FREE(rdir);
     return SYSERR;
   }
+  FREE(rdir);
   return YES;
 }
 
