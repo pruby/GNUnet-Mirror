@@ -660,10 +660,12 @@ void core_receive(P2P_PACKET * mp) {
        (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
     /* discard message, buffer is full or
        we're shut down! */
+#if 0
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	   "Discarding message of size %u -- buffer full!\n",
 	   mp->size);
+#endif
     FREE(mp->msg);
     FREE(mp);
 #if TRACK_DISCARD
