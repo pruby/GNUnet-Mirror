@@ -62,7 +62,7 @@
 
 /* tuning parameters */
 
-#define DEBUG_CONNECTION YES
+#define DEBUG_CONNECTION NO
 
 /**
  * output knapsack priorities into a file?
@@ -871,36 +871,39 @@ static unsigned int solveKnapsack(BufferEntry * be,
  * <p>
  *
  * @param priority the highest priority of contents in the packet
+ * @param overhead how much is the header-overhead? 1 for just
+ *                 the header, 2 for header is 50%, 3 for header is 33%, etc.
+ *                 (the higher the better)
  * @return OK if the packet should be handled, SYSERR if the packet should be dropped.
  */
-static int outgoingCheck(unsigned int priority) {
+static int outgoingCheck(unsigned int priority,
+			 unsigned int overhead) {
   int load;
   unsigned int delta;
 
   load = os_network_monitor_get_load(load_monitor, Upload);  /* how much free bandwidth do we have? */
-  if(load >= 150) {
-    return SYSERR;              /* => always drop */
-  }
-  if(load > 100) {
-    if(priority >= EXTREME_PRIORITY) {
+  if (load >= 150) 
+    return SYSERR;              /* => always drop */  
+  if (load > 100) {
+    if (priority >= EXTREME_PRIORITY) 
       return OK;                /* allow administrative msgs */
-    }
-    else {
-      return SYSERR;            /* but nothing else */
-    }
+    else 
+      return SYSERR;            /* but nothing else */    
   }
-  if(load <= 50) {              /* everything goes */
-    return OK;                  /* allow */
-  }
-  /* Now load in [51, 100].  Between 51% and 100% load:
+  if (overhead > 50)
+    overhead = 50; /* bound */
+  if (load <= overhead) 
+    return OK;     
+  /* Suppose overhead = 50, then:
+     Now load in [51, 100].  Between 51% and 100% load:
      at 51% require priority >= 1 = (load-50)^3
      at 52% require priority >= 8 = (load-50)^3
      at 75% require priority >= 15626 = (load-50)^3
      at 100% require priority >= 125000 = (load-50)^3
      (cubic function)
    */
-  delta = load - 50;            /* now delta is in [1,50] with 50 == 100% load */
-  if(delta * delta * delta > priority) {
+  delta = load - overhead;            /* now delta is in [1,50] with 50 == 100% load */
+  if (delta * delta * delta > priority) {
 #if DEBUG_POLICY
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -911,8 +914,7 @@ static int outgoingCheck(unsigned int priority) {
 	   delta * delta * delta);
 #endif
     return SYSERR;              /* drop */
-  }
-  else {
+  } else {
 #if DEBUG_POLICY
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -934,25 +936,35 @@ static int outgoingCheck(unsigned int priority) {
  */
 static int checkSendFrequency(BufferEntry * be) {
   cron_t msf;
+  int load;
+  unsigned int i;
+
+  for (i=0;i<be->sendBufferSize;i++)
+    if (be->sendBuffer[i]->pri >= EXTREME_PRIORITY)
+      return OK;
 
   if (be->max_bpm == 0)
     be->max_bpm = 1;
 
   if (be->session.mtu == 0) {
     msf =    /* ms per message */
-      EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
-      /2;
+      EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS); /* bytes per ms */
   } else {
     msf =    /* ms per message */
       be->session.mtu           /* byte per message */
-      / (be->max_bpm * cronMINUTES / cronMILLIS)  /* bytes per ms */
-      / 2;                       /* some head-room */
+      / (be->max_bpm * cronMINUTES / cronMILLIS);  /* bytes per ms */
   }
   /* Also: allow at least 2 * MINIMUM_SAMPLE_COUNT knapsack
      solutions for any MIN_SAMPLE_TIME! */
   if (msf > 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
     msf = 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
-
+  load = os_cpu_get_load(ectx, cfg);
+  if (load == -1)
+    load = 50;
+  /* adjust send frequency; if load is smaller
+     than 25%, decrease frequency, otherwise
+     increase it (quadratically)! */
+  msf = msf * load * load / 25 / 25;
   if (be->lastSendAttempt + msf > get_time()) {
 #if DEBUG_CONNECTION
     GE_LOG(ectx,
@@ -1469,7 +1481,6 @@ static int sendBuffer(BufferEntry * be) {
     return NO;                     /* must not run */
   }
   be->inSendBuffer = YES;
-
   if ( (OK != ensureTransportConnected(be)) ||
        (OK != checkSendFrequency(be)) ){
     be->inSendBuffer = NO;
@@ -1518,7 +1529,8 @@ static int sendBuffer(BufferEntry * be) {
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
-  if ( (SYSERR == outgoingCheck(priority)) ||
+  if ( (SYSERR == outgoingCheck(priority,
+				totalMessageSize / sizeof(P2P_PACKET_HEADER))) ||
        (0 == prepareSelectedMessages(be)) ) {
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;

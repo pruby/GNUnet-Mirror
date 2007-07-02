@@ -37,6 +37,18 @@
 #define DEBUG_HANDLER NO
 
 /**
+ * Track how many messages we are discarding?
+ */
+#define TRACK_DISCARD YES
+
+/**
+ * Track how much time was spent on each
+ * type of message?
+ */
+#define MEASURE_TIME YES
+
+
+/**
  * How many incoming packages do we have in the buffer
  * (max.). Must be >= THREAD_COUNT to make sense.
  */
@@ -106,8 +118,6 @@ static unsigned int plaintextmax_registeredType = 0;
 static struct MUTEX * handlerLock;
 
 static struct GE_Context * ectx;
-
-#define MEASURE_TIME YES
 
 #if MEASURE_TIME
 static cron_t time_by_type[P2P_PROTO_MAX_USED];
@@ -586,6 +596,12 @@ static void * threadMain(void * cls) {
  * (receive implementation).
  */
 void core_receive(P2P_PACKET * mp) {
+#if TRACK_DISCARD
+  static unsigned int discarded;
+  static unsigned int blacklisted;
+  static unsigned int accepted;
+#endif
+
   if ( (threads_running == NO) ||
        (mainShutdownSignal != NULL) ||
        (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
@@ -597,6 +613,13 @@ void core_receive(P2P_PACKET * mp) {
 	   mp->size);
     FREE(mp->msg);
     FREE(mp);
+#if TRACK_DISCARD
+    if (globalLock_ != NULL)
+      MUTEX_LOCK(globalLock_);
+    discarded++;
+    if (globalLock_ != NULL)
+      MUTEX_UNLOCK(globalLock_);
+#endif
     return;
   }
   /* check for blacklisting */
@@ -610,9 +633,11 @@ void core_receive(P2P_PACKET * mp) {
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
 	   (char*)&enc);
-    if (OK == getBandwidthAssignedTo(&mp->sender, NULL, NULL)) {
-      abort();
-    }
+#if TRACK_DISCARD
+    MUTEX_LOCK(globalLock_);
+    blacklisted++;
+    MUTEX_UNLOCK(globalLock_);
+#endif
     FREE(mp->msg);
     FREE(mp);
     return;
@@ -635,6 +660,17 @@ void core_receive(P2P_PACKET * mp) {
   if (bq_firstFree_ == QUEUE_LENGTH)
     bq_firstFree_ = 0;
   bufferQueue_[bq_firstFree_++] = mp;
+#if TRACK_DISCARD
+  accepted++;
+  if (0 == accepted % 64)
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	   "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+	   accepted,
+	   discarded,
+	   blacklisted,
+	   1.0 * accepted / (blacklisted + discarded + 1)); 
+#endif
   MUTEX_UNLOCK(globalLock_);
   SEMAPHORE_UP(bufferQueueRead_);
 }
@@ -755,12 +791,13 @@ void doneHandler() {
   for (i=0;i<P2P_PROTO_MAX_USED;i++) {
     if (count_by_type[i] == 0)
       continue;
-    fprintf(stderr,
-	    "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
-	    count_by_type[i],
-	    i,
-	    time_by_type[i],
-	    time_by_type[i] / count_by_type[i]);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	   "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
+	   count_by_type[i],
+	   i,
+	   time_by_type[i],
+	   time_by_type[i] / count_by_type[i]);
   }	     
 #endif
 }
