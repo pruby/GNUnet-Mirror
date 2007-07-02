@@ -90,6 +90,12 @@ static struct SEMAPHORE * mainShutdownSignal;
 
 static struct PTHREAD * threads_[THREAD_COUNT];
 
+#if TRACK_DISCARD
+static unsigned int discarded;
+static unsigned int blacklisted;
+static unsigned int accepted;
+#endif
+
 /**
  * Array of arrays of message handlers.
  */
@@ -596,12 +602,6 @@ static void * threadMain(void * cls) {
  * (receive implementation).
  */
 void core_receive(P2P_PACKET * mp) {
-#if TRACK_DISCARD
-  static unsigned int discarded;
-  static unsigned int blacklisted;
-  static unsigned int accepted;
-#endif
-
   if ( (threads_running == NO) ||
        (mainShutdownSignal != NULL) ||
        (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
@@ -617,6 +617,14 @@ void core_receive(P2P_PACKET * mp) {
     if (globalLock_ != NULL)
       MUTEX_LOCK(globalLock_);
     discarded++;
+    if (0 == discarded % 64)
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+	     accepted,
+	     discarded,
+	     blacklisted,
+	     1.0 * accepted / (blacklisted + discarded + 1)); 
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
@@ -636,6 +644,14 @@ void core_receive(P2P_PACKET * mp) {
 #if TRACK_DISCARD
     MUTEX_LOCK(globalLock_);
     blacklisted++;
+    if (0 == blacklisted % 64)
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+	     accepted,
+	     discarded,
+	     blacklisted,
+	     1.0 * accepted / (blacklisted + discarded + 1)); 
     MUTEX_UNLOCK(globalLock_);
 #endif
     FREE(mp->msg);
