@@ -169,7 +169,7 @@ static int scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
-#if DEBUG_TOPOLOGY || 1
+#if DEBUG_TOPOLOGY 
   EncName enc;
 #endif
 
