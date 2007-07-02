@@ -627,6 +627,7 @@ void core_receive(P2P_PACKET * mp) {
   }
   /* check for blacklisting */
   if (YES == identity->isBlacklistedStrict(&mp->sender)) {
+#if DEBUG_HANDLER
     EncName enc;
     IF_GELOG(ectx,
 	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
@@ -636,6 +637,7 @@ void core_receive(P2P_PACKET * mp) {
 	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
 	   (char*)&enc);
+#endif
 #if TRACK_DISCARD
     MUTEX_LOCK(globalLock_);
     blacklisted++;

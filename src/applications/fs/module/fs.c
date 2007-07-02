@@ -165,11 +165,6 @@ static int gapPut(void * closure,
   EncName enc;
 #endif
 
-  dv = gapWrapperToDatastoreValue(value, prio);
-  if (dv == NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
   gw = (const GapWrapper*) value;
   size = ntohl(gw->dc.size) - sizeof(GapWrapper);
   if ( (OK != getQueryFor(size,
@@ -177,8 +172,12 @@ static int gapPut(void * closure,
 			  YES,
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
-    GE_BREAK(ectx, 0); /* value failed verification! */
-    FREE(dv);
+    GE_BREAK_OP(ectx, 0); /* value failed verification! */
+    return SYSERR;
+  }
+  dv = gapWrapperToDatastoreValue(value, prio);
+  if (dv == NULL) {
+    GE_BREAK_OP(ectx, 0);
     return SYSERR;
   }
   if (YES != isDatumApplicable(ntohl(dv->type),
@@ -232,6 +231,9 @@ static int get_result_callback(const HashCode512 * query,
 			       const DataContainer * value,
 			       void * ctx) {
   DHT_GET_CLS * cls = ctx;
+  const GapWrapper * gw;
+  unsigned int size;
+  HashCode512 hc;
 #if DEBUG_FS
   EncName enc;
 
@@ -244,6 +246,17 @@ static int get_result_callback(const HashCode512 * query,
 	 "Found reply to query `%s'.\n",
 	 &enc);
 #endif
+  gw = (const GapWrapper*) value;
+  size = ntohl(gw->dc.size) - sizeof(GapWrapper);
+  if ( (OK != getQueryFor(size,
+			  (const DBlock*) &gw[1],
+			  YES,
+			  &hc)) ||
+       (! equalsHashCode512(&hc, query)) ) {
+    GE_BREAK(NULL, 0);
+    return OK;
+  }
+ 
   gapPut(NULL,
 	 query,
 	 value,
@@ -369,6 +382,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
     unsigned int size;
     cron_t now;
     cron_t et;
+    HashCode512 hc;
 
     size = sizeof(GapWrapper) +
       ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE);
@@ -389,11 +403,20 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
     memcpy(&gw[1],
 	   &ri[1],
 	   size - sizeof(GapWrapper));
-    dht->put(&query,
-	     type,
-	     size,
-	     et,
-	     (const char*) gw);
+    /* sanity check */
+    if ( (OK != getQueryFor(size - sizeof(GapWrapper),
+			    (const DBlock*) &gw[1],
+			    YES,
+			    &hc)) ||
+	 (! equalsHashCode512(&hc, &query)) ) {
+      GE_BREAK(NULL, 0);
+    } else {
+      dht->put(&query,
+	       type,
+	       size,
+	       et,
+	       (const char*) gw);
+    }
     FREE(gw);
   }
   FREE(datum);
@@ -706,6 +729,9 @@ static int gapGetConverter(const HashCode512 * key,
   Datastore_Value * xvalue;
   unsigned int level;
   EncName enc;
+#if EXTRA_CHECKS
+  HashCode512 hc;
+#endif
 
 #if DEBUG_FS
   IF_GELOG(ectx,
@@ -736,6 +762,16 @@ static int gapGetConverter(const HashCode512 * key,
     xvalue = NULL;
     value = invalue;
   }
+#if EXTRA_CHECKS
+  if ( (OK != getQueryFor(ntohl(value->size) - sizeof(Datastore_Value),
+			  (const DBlock*) &value[1],
+			  YES,
+			  &hc)) ||
+       (! equalsHashCode512(&hc, key)) ) {
+    GE_BREAK(ectx, 0); /* value failed verification! */
+    return SYSERR;
+  }
+#endif
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const DBlock*) &value[1],
@@ -805,6 +841,7 @@ static int gapGetConverter(const HashCode512 * key,
   memcpy(&gw[1],
 	 &value[1],
 	 size - sizeof(GapWrapper));
+
   if (ggc->resultCallback != NULL)
     ret = ggc->resultCallback(key,
 			      &gw->dc,

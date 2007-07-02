@@ -38,6 +38,8 @@
 
 #define DEBUG_SQLITE NO
 
+#define EXTRA_CHECKS YES
+
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' with the message given
@@ -351,6 +353,10 @@ static unsigned long long getSize() {
   /* benchmarking shows 2-12% overhead */
 }
 
+#if EXTRA_CHECKS
+#include "ecrs_core.h"
+#endif
+
 /**
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
  * assemble it into a Datastore_Datum representation.
@@ -431,6 +437,24 @@ assembleDatum(sqliteHandle * handle,
   memcpy(&value[1],
 	 sqlite3_column_blob(stmt, 6),
 	 contentSize);
+#if EXTRA_CHECKS
+  if (ntohl(value->type) == D_BLOCK) {
+    HashCode512 hc;
+    DBlock * db;
+
+    db = (DBlock*) &value[1];
+    GE_BREAK(NULL,
+	     ntohl(db->type) == D_BLOCK);
+    hash(&db[1],
+	 contentSize - sizeof(DBlock),
+	 &hc);
+    GE_BREAK(NULL,
+	     0 == memcmp(&hc,
+			 &datum->key,
+			 sizeof(HashCode512)));
+  }
+#endif
+
   return datum;
 }
 
@@ -1102,6 +1126,27 @@ static int put(const HashCode512 * key,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
+
+#if EXTRA_CHECKS
+  if (ntohl(value->type) == D_BLOCK) {
+    HashCode512 hc;
+    DBlock * db;
+
+    contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+    db = (DBlock*) &value[1];
+    GE_BREAK(NULL,
+	     ntohl(db->type) == D_BLOCK);
+    hash(&db[1],
+	 contentSize - sizeof(DBlock),
+	 &hc);
+    if (0 != memcmp(&hc,
+		    key,
+		    sizeof(HashCode512))) {
+      GE_BREAK(NULL, 0);
+    }
+  }
+#endif
+
   dbh = getDBHandle();
   if (db->lastSync > 1000)
     syncStats(dbh);

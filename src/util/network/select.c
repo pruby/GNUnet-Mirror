@@ -902,7 +902,7 @@ select_create(const char * description,
 void select_destroy(struct SelectHandle * sh) {
   void * unused;
 
-#if DEBUG_SELECT || 1
+#if DEBUG_SELECT
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	 "Destroying select %p\n",
