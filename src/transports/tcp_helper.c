@@ -226,6 +226,10 @@ static int select_message_handler(void * mh_cls,
 		  len);
   tcpSession = tsession->internal;
   if (YES == tcpSession->expectingWelcome) {
+    /* at this point, we should be the only user! */
+    GE_ASSERT(NULL,
+	      tcpSession->users == 1);
+
     welcome = (const TCPWelcome*) msg;
     if ( (ntohs(welcome->header.type) != 0) ||
 	 (len != sizeof(TCPWelcome)) ) {
@@ -286,6 +290,7 @@ static int select_message_handler(void * mh_cls,
 	tcpSession = pos;
 	tsession = pos->tsession;
 	MUTEX_UNLOCK(pos->lock);
+	break;
       }    
       pos = pos->next;
     }  
