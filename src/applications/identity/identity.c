@@ -1030,6 +1030,7 @@ static int forEachHost(cron_t now,
 	}
       }
     } else {
+#if 0
 #if DEBUG_IDENTITY
       EncName enc;
       
@@ -1044,6 +1045,7 @@ static int forEachHost(cron_t now,
 	     _("Peer `%s' is currently blacklisted (for another %llums).\n"),
 	     &enc,
 	     entry->until - now);
+#endif
 #endif
     }
     if (ret != OK)
