@@ -862,6 +862,7 @@ static int get(const HashCode512 * query,
   }
   if (iter == NULL) {
     count = mysql_stmt_affected_rows(stmt);
+    mysql_stmt_reset(stmt);
     mysql_thread_end();    
     MUTEX_UNLOCK(lock);
     return count;
