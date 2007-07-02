@@ -1,3 +1,9 @@
+Sun Jul  1 20:35:00 MDT 2007
+	Fixed issue with too many TCP connections being
+	created.  Reduced CPU overheads by increasing
+	requirements for grouping of messages.  Improved
+	various error messages.  
+
 Sat Jun 30 01:55:34 MDT 2007
 	Improved bloomfilter recomputation after quota change.
 	Fixed bloomfilter size computation.  You must run
