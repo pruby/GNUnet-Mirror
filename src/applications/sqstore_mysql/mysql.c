@@ -1316,7 +1316,6 @@ static int del(const HashCode512 * key,
   }
   count = mysql_stmt_affected_rows(stmt);
   mysql_thread_end();
-  MUTEX_UNLOCK(lock);
 #if DEBUG_MYSQL
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
