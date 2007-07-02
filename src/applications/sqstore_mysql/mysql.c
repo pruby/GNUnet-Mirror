@@ -827,7 +827,8 @@ static int get(const HashCode512 * query,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
-  if (7 != mysql_num_fields(sql_res)) {
+  if ( (iter != NULL) &&
+       (7 != mysql_num_fields(sql_res)) ) {
     GE_BREAK(ectx, 0);
     iclose(dbh);
     mysql_thread_end();       
@@ -859,7 +860,12 @@ static int get(const HashCode512 * query,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
-
+  if (iter == NULL) {
+    count = mysql_stmt_affected_rows(stmt);
+    mysql_thread_end();    
+    MUTEX_UNLOCK(lock);
+    return count;
+  }
   datum = MALLOC(sizeof(Datastore_Value) + MAX_DATUM_SIZE);
   twenty = sizeof(HashCode512);
   dbh->bind[0].buffer = (char*) &size;
@@ -929,25 +935,23 @@ static int get(const HashCode512 * query,
       return count;
     }
     count++;
-    if (iter != NULL) {
-      datum->size = htonl(size);
-      datum->type = htonl(rtype);
-      datum->prio = htonl(prio);
-      datum->anonymityLevel = htonl(level);
-      datum->expirationTime = htonll(expiration);
+    datum->size = htonl(size);
+    datum->type = htonl(rtype);
+    datum->prio = htonl(prio);
+    datum->anonymityLevel = htonl(level);
+    datum->expirationTime = htonll(expiration);
 #if DEBUG_MYSQL
-      GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Found in database block with type %u.\n",
-	     ntohl(*(int*)&datum[1]));
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Found in database block with type %u.\n",
+	   ntohl(*(int*)&datum[1]));
 #endif
-      if( SYSERR == iter(&key,
-			 datum,
-			 closure) ) {
-        count = SYSERR;
-	break;
-      }
-    }
+    if (SYSERR == iter(&key,
+		       datum,
+		       closure) ) {
+      count = SYSERR;
+      break;
+    }    
     datasize = MAX_DATUM_SIZE;
   }
   if (mysql_stmt_errno(stmt)) {
