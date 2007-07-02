@@ -41,7 +41,7 @@
 
 #define DEBUG_TOPOLOGY NO
 
-#define DEBUG_LIVENESS YES
+#define DEBUG_LIVENESS NO
 
 /**
  * After 2 minutes on an inactive connection, probe the other

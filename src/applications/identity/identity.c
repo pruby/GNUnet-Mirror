@@ -40,7 +40,7 @@
 #include "identity.h"
 #include "hostkey.h"
 
-#define DEBUG_IDENTITY YES
+#define DEBUG_IDENTITY NO
 
 #define MAX_TEMP_HOSTS 32
 

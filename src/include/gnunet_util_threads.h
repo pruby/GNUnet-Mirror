@@ -184,8 +184,6 @@ int SEMAPHORE_DOWN_FL(struct SEMAPHORE * sem,
 /**
  * @param block set to NO to never block (and
  *        thus fail if semaphore counter is 0)
- * @param longwait it is expected that this operation
- *        may cause a long wait
  * @return SYSERR if would block, otherwise
  *  new count value after change
  */

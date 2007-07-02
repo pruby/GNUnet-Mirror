@@ -39,13 +39,13 @@
 /**
  * Track how many messages we are discarding?
  */
-#define TRACK_DISCARD YES
+#define TRACK_DISCARD NO
 
 /**
  * Track how much time was spent on each
  * type of message?
  */
-#define MEASURE_TIME YES
+#define MEASURE_TIME NO
 
 
 /**
