@@ -74,8 +74,6 @@ static P2P_PACKET * bufferQueue_[QUEUE_LENGTH];
 
 static int bq_firstFree_;
 
-static int bq_lastFree_;
-
 static int bq_firstFull_;
 
 static int threads_running = NO;
@@ -574,12 +572,10 @@ static void * threadMain(void * cls) {
     if (mainShutdownSignal != NULL)
       break;
     MUTEX_LOCK(globalLock_);
-    mp = bufferQueue_[bq_firstFull_++];
-    bufferQueue_[bq_lastFree_++] = NULL;
+    mp = bufferQueue_[bq_firstFull_];
+    bufferQueue_[bq_firstFull_++] = NULL;
     if (bq_firstFull_ == QUEUE_LENGTH)
       bq_firstFull_ = 0;
-    if (bq_lastFree_ == QUEUE_LENGTH)
-      bq_lastFree_ = 0;
     MUTEX_UNLOCK(globalLock_);
     /* end of sync */
     SEMAPHORE_UP(bufferQueueWrite_);
@@ -602,17 +598,17 @@ static void * threadMain(void * cls) {
  * (receive implementation).
  */
 void core_receive(P2P_PACKET * mp) {
-  if ( (threads_running == NO) ||
-       (mainShutdownSignal != NULL) ||
-       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
-    /* discard message, buffer is full or
-       we're shut down! */
-    GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "Discarding message of size %u -- buffer full!\n",
-	   mp->size);
+  if ( (mp->tsession != NULL) &&
+       (0 != memcmp(&mp->sender,
+		    &mp->tsession->peer,
+		    sizeof(PeerIdentity))) ) {
+    GE_BREAK(NULL, 0);
     FREE(mp->msg);
     FREE(mp);
+    return;
+  }
+  if ( (threads_running == NO) ||
+       (mainShutdownSignal != NULL) ) {
 #if TRACK_DISCARD
     if (globalLock_ != NULL)
       MUTEX_LOCK(globalLock_);
@@ -628,7 +624,6 @@ void core_receive(P2P_PACKET * mp) {
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
-    return;
   }
   /* check for blacklisting */
   if (YES == identity->isBlacklistedStrict(&mp->sender)) {
@@ -658,16 +653,34 @@ void core_receive(P2P_PACKET * mp) {
     FREE(mp);
     return;
   }
-  if ( (mp->tsession != NULL) &&
-       (0 != memcmp(&mp->sender,
-		    &mp->tsession->peer,
-		    sizeof(PeerIdentity))) ) {
-    GE_BREAK(NULL, 0);
+  if ( (threads_running == NO) ||
+       (mainShutdownSignal != NULL) ||
+       (SYSERR == SEMAPHORE_DOWN(bufferQueueWrite_, NO)) ) {
+    /* discard message, buffer is full or
+       we're shut down! */
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	   "Discarding message of size %u -- buffer full!\n",
+	   mp->size);
     FREE(mp->msg);
     FREE(mp);
+#if TRACK_DISCARD
+    if (globalLock_ != NULL)
+      MUTEX_LOCK(globalLock_);
+    discarded++;
+    if (0 == discarded % 64)
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+	     accepted,
+	     discarded,
+	     blacklisted,
+	     1.0 * accepted / (blacklisted + discarded + 1)); 
+    if (globalLock_ != NULL)
+      MUTEX_UNLOCK(globalLock_);
+#endif
     return;
   }
-
   /* try to increment session reference count */
   if (SYSERR == transport->associate(mp->tsession))
     mp->tsession = NULL;
@@ -701,7 +714,6 @@ void enableCoreProcessing() {
   for (i=0;i<QUEUE_LENGTH;i++)
     bufferQueue_[i] = NULL;
   bq_firstFree_ = 0;
-  bq_lastFree_ = 0;
   bq_firstFull_ = 0;
 
   /* create message handling threads */
@@ -768,9 +780,8 @@ void doneHandler() {
   SEMAPHORE_DESTROY(bufferQueueWrite_);
   bufferQueueWrite_ = NULL;
   for (i=0;i<QUEUE_LENGTH;i++) {
-    if (bufferQueue_[i] != NULL) {
-      FREENONNULL(bufferQueue_[i]->msg);
-    }
+    if (bufferQueue_[i] != NULL) 
+      FREENONNULL(bufferQueue_[i]->msg);    
     FREENONNULL(bufferQueue_[i]);
   }
 
