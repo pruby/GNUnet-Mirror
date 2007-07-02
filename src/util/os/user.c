@@ -118,23 +118,24 @@ int os_change_user(struct GE_Context * ectx,
 #ifndef MINGW
   struct passwd * pws;
 
+  errno = 0;
   pws = getpwnam(user);
   if (pws == NULL) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	   _("Cannot obtain information about user `%s': %s\n"),
 	   user,
-	   STRERROR(errno));
+	   errno == 0 ? _("No such user") : STRERROR(errno));
     return SYSERR;
   }
-  if((0 != setgid(pws->pw_gid)) ||
-     (0 != setegid(pws->pw_gid)) ||
+  if ( (0 != setgid(pws->pw_gid)) ||
+       (0 != setegid(pws->pw_gid)) ||
 #if HAVE_INITGROUPS
-     (0 != initgroups(user, pws->pw_gid)) ||
+       (0 != initgroups(user, pws->pw_gid)) ||
 #endif
-     (0 != setuid(pws->pw_uid)) || (0 != seteuid(pws->pw_uid))) {
-    if((0 != setregid(pws->pw_gid, pws->pw_gid)) ||
-       (0 != setreuid(pws->pw_uid, pws->pw_uid))) {
+       (0 != setuid(pws->pw_uid)) || (0 != seteuid(pws->pw_uid))) {
+    if ( (0 != setregid(pws->pw_gid, pws->pw_gid)) ||
+	 (0 != setreuid(pws->pw_uid, pws->pw_uid)) ) {
       GE_LOG(ectx,
 	     GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	     _("Cannot change user/group to `%s': %s\n"),
