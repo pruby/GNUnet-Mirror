@@ -213,7 +213,7 @@ static void scanForHosts(unsigned int index) {
     return;
   }
 
-#if DEBUG_TOPOLOGY || 1
+#if DEBUG_TOPOLOGY
   IF_GELOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
 	   hash2enc(&indexMatch.match.hashPubKey,
