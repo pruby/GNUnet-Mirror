@@ -116,7 +116,9 @@ void socket_close(struct SocketHandle * s) {
   if ( (0 != SHUTDOWN(s->handle,
 		      SHUT_RDWR)) &&
 #ifdef OSX
-       (errno != EINVAL) && /* OS X returns EINVAL instead of ENOTCONN */
+       (errno != EINVAL) && /* OS X returns these instead of ENOTCONN */
+       (errno != EHOSTDOWN) &&
+       (errno != EHOSTUNREACH) &&
 #endif
        (errno != ENOTCONN) )
     GE_LOG_STRERROR(s->ectx,
@@ -136,7 +138,9 @@ void socket_destroy(struct SocketHandle * s) {
     if ( (0 != SHUTDOWN(s->handle,
 			SHUT_RDWR)) &&
 #ifdef OSX
-         (errno != EINVAL) && /* OS X returns EINVAL instead of ENOTCONN */
+         (errno != EINVAL) && /* OS X returns these instead of ENOTCONN */
+         (errno != EHOSTDOWN) &&
+         (errno != EHOSTUNREACH) &&
 #endif
          (errno != ENOTCONN) )
       GE_LOG_STRERROR(s->ectx,
