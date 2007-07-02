@@ -122,8 +122,6 @@ static void freeTCPSession(TCPSession * tcpsession) {
   TCPSession * pos;
   TCPSession * prev;
   
-  printf("FTCP: %p\n",
-	 tcpsession->lock);
   MUTEX_DESTROY(tcpsession->lock);
   FREENONNULL(tcpsession->accept_addr);
   pos = sessions;
@@ -384,6 +382,18 @@ static void select_close_handler(void * ch_cls,
   TSession * tsession = sock_ctx;
   TCPSession * tcpSession = tsession->internal;
 
+#if DEBUG_TCP
+  EncName enc;
+
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   hash2enc(&tcpSession->sender.hashPubKey,
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Closed TCP socket of `%s'.\n",
+	 &enc);
+#endif
   MUTEX_LOCK(tcplock);
   MUTEX_LOCK(tcpSession->lock);
   tcpSession->in_select = NO;
@@ -406,7 +416,7 @@ static void select_close_handler(void * ch_cls,
  */
 static int tcpSend(TSession * tsession,
 		   const void * msg,
-		   const unsigned int size,
+		   unsigned int size,
 		   int important) {
   TCPSession * tcpSession;
   MESSAGE_HEADER * mp;
@@ -416,6 +426,21 @@ static int tcpSend(TSession * tsession,
   if (size >= MAX_BUFFER_SIZE - sizeof(MESSAGE_HEADER)) {
     GE_BREAK(ectx, 0);
     return SYSERR; /* too big */
+  }
+  if (tcpSession->in_select == NO) {
+#if DEBUG_TCP
+    EncName enc;
+    
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	     hash2enc(&tcpSession->sender.hashPubKey,
+		      &enc));
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "Cannot send message - TCP socket of `%s' already closed!\n",
+	   &enc);
+#endif
+    return SYSERR;
   }
   if (selector == NULL) {
     if (stats != NULL)
