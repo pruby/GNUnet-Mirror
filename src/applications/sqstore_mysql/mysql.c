@@ -1537,6 +1537,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 		"mysql_query",
 		dbh);
       content_size = 0;
+      iclose(dbh);
     } else {
       if ( (mysql_num_fields(sql_res) != 1) ||
 	   (sql_row[0] == NULL) ) {
