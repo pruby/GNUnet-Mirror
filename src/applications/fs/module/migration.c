@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -47,11 +47,11 @@
 /**
  * How many migration records do we keep in memory
  * at the same time?  Each record is about 32k, so
- * 32 records will use about 1 MB of memory.
+ * 64 records will use about 2 MB of memory.
  * We might want to allow users to specify larger
  * values in the configuration file some day.
  */
-#define MAX_RECORDS 32
+#define MAX_RECORDS 64
 
 /**
  * Datastore service.
@@ -136,12 +136,15 @@ activeMigrationCallback(const PeerIdentity * receiver,
   int i;
   int j;
   int match;
+  unsigned int dist;
+  unsigned int minDist;
 
   index = coreAPI->computeIndex(receiver);
   MUTEX_LOCK(lock);
   entry = -1;
   discard_entry = -1;
   discard_match = -1;
+  minDist = -1; /* max */
   for (i=0;i<MAX_RECORDS;i++) {
     if (content[i].value == NULL) {
       discard_entry = i;
@@ -159,10 +162,13 @@ activeMigrationCallback(const PeerIdentity * receiver,
       }
     }
     if (match == 0) {
-      /* TODO: consider key proximity in matching as 
-	 well! */
-      entry = i;
-      break;
+      dist = distanceHashCode512(&content[i]->key,
+				 &receiver->hashPubKey);
+      if (dist <= minDist) {
+	entry = i;
+	minDist = dist;
+	break;
+      }
     } else {
       if ( (content[i].sentCount > discard_match) ||
 	   (discard_match == -1) ) {
@@ -183,6 +189,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
 				   &content[entry].key,
 				   &content[entry].value,
 				   0)) {
+      content[entry] = NULL; /* just to be sure...*/
       MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
       GE_LOG(ectx,
@@ -266,9 +273,8 @@ activeMigrationCallback(const PeerIdentity * receiver,
 	   "gap's tryMigrate returned %u\n",
 	   ret);
 #endif
-    if (ret != 0) {
-      content[entry].receiverIndices[content[entry].sentCount++] = index;
-    }
+    if (ret != 0) 
+      content[entry].receiverIndices[content[entry].sentCount++] = index;    
   }
   MUTEX_UNLOCK(lock);
   if ( (ret > 0)&&
