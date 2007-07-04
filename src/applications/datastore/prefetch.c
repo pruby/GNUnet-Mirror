@@ -115,9 +115,6 @@ int getRandom(const HashCode512 * receiver,
 	      HashCode512 * key,
 	      Datastore_Value ** value,
 	      unsigned int type) {
-  int minIdx;
-  int i;
-
   MUTEX_LOCK(lock);
   if (rvalue == NULL) {
     MUTEX_UNLOCK(lock);
@@ -150,7 +147,6 @@ void initPrefetch(struct GE_Context * e,
 }
 
 void donePrefetch() {
-  int i;
   void * unused;
 
   doneSignal = YES;
