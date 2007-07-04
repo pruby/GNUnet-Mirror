@@ -445,6 +445,7 @@ static void * selectThread(void * ctx) {
   SocketHandle * sock;
   Session * session;	
   size_t size;
+  int old_errno;
 
   clientAddr = MALLOC(sh->max_addr_len);
   MUTEX_LOCK(sh->lock);
@@ -502,11 +503,13 @@ static void * selectThread(void * ctx) {
 		 &writeSet,
 		 &errorSet,
 		 NULL);
+    old_errno = errno;
     MUTEX_LOCK(sh->lock);
     if ( (ret == -1) &&
-	 ( (errno == EAGAIN) || (errno == EINTR) ) )
+	 ( (old_errno == EAGAIN) || (old_errno == EINTR) ) )
       continue;
     if (ret == -1) {
+      errno = old_errno;
       if (errno == EBADF) {
 	GE_LOG_STRERROR(sh->ectx,
 			GE_DEBUG | GE_DEVELOPER | GE_BULK,
