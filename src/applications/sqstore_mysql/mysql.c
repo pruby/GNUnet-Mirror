@@ -359,7 +359,8 @@ static int iopen(mysqlHandle * dbhI,
 		" value BLOB NOT NULL DEFAULT '',"
 		" INDEX (hash(64)),"
 		" INDEX (prio),"
-		" INDEX (expire)"
+		" INDEX (expire),"
+		" INDEX (expire,anonLevel,type)"
 		") TYPE=InnoDB");
     if (mysql_error(dbhI->dbf)[0]) {
       LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
@@ -494,8 +495,11 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->ubind[3].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->ubind[4].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->prepare = YES;
-  } else
+  } else {
     dbhI->prepare = NO;
+    mysql_query(dbhI->dbf,
+		"SET SESSION net_read_timeout=28800, SESSION net_write_timeout=28800");
+  }
   dbhI->valid = YES;
   return OK;
 }
