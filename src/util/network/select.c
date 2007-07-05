@@ -1190,3 +1190,30 @@ int select_disconnect(struct SelectHandle * sh,
   signalSelect(sh);
   return OK;
 }
+
+/**
+ * Change the timeout for this socket to a custom
+ * value.  Use 0 to use the default timeout for
+ * this select.
+ */
+int select_change_timeout(struct SelectHandle * sh,
+			  struct SocketHandle * sock,
+			  cron_t timeout) {
+  Session * session;
+  int i;
+  
+  session = NULL;
+  MUTEX_LOCK(sh->lock);
+  for (i=0;i<sh->sessionCount;i++)
+    if (sh->sessions[i]->sock == sock) {
+      session = sh->sessions[i];
+      break;
+    }
+  if (session == NULL) {
+    MUTEX_UNLOCK(sh->lock);
+    return SYSERR;
+  }
+  session->timeout = timeout;
+  MUTEX_UNLOCK(sh->lock);
+  return OK;
+}
