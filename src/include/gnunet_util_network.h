@@ -424,6 +424,8 @@ int socket_test_valid(struct SocketHandle * s);
  * @param mon maybe NULL
  * @param memory_quota amount of memory available for
  *        queueing messages (in bytes)
+ * @param socket_quota how many connections do we
+ *        accept at most? 0 for unbounded
  * @return NULL on error
  */
 struct SelectHandle *
@@ -440,7 +442,8 @@ select_create(const char * desc,
 	      void * ah_cls,
 	      SelectCloseHandler ch,
 	      void * ch_cls,
-	      unsigned int memory_quota);
+	      unsigned int memory_quota,
+	      int socket_quota);
 
 /**
  * Terminate the select thread, close the socket and

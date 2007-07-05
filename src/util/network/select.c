@@ -161,6 +161,8 @@ typedef struct SelectHandle {
 
   unsigned int memory_quota;
 
+  int socket_quota;
+
 } SelectHandle;
 
 static void add_to_select_set(struct SocketHandle * s,
@@ -240,6 +242,7 @@ static void destroySession(SelectHandle * sh,
 	 s->sock_ctx);
   MUTEX_LOCK(sh->lock);
   socket_destroy(s->sock);
+  sh->socket_quota++;
   GROW(s->rbuff,
        s->rsize,
        0);
@@ -551,49 +554,56 @@ static void * selectThread(void * ctx) {
 	  if ( (errno == EAGAIN) || (errno == EWOULDBLOCK))
 	    continue; /* not good, but not fatal either */
 	  break;
-	} else {
-#if DEBUG_SELECT
-	  GE_LOG(sh->ectx,
-		 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-		 "Select %p is accepting connection: %d\n",
-		 sh,
-		 s);
-#endif
-	  sock = socket_create(sh->ectx,
-			       sh->load_monitor,
-			       s);
-	  MUTEX_UNLOCK(sh->lock);
-	  sctx = sh->ah(sh->ah_cls,
-			sh,
-			sock,
-			clientAddr,
-			lenOfIncomingAddr);
-	  MUTEX_LOCK(sh->lock);
-#if DEBUG_SELECT
-	  GE_LOG(sh->ectx,
-		 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-		 "Select %p is accepting connection: %p\n",
-		 sh,
-		 sctx);	
-#endif
-	  if (sctx == NULL) {
-	    socket_destroy(sock);
-	  } else {
-	    session = MALLOC(sizeof(Session));
-	    memset(session,
-		   0,
-		   sizeof(Session));
-	    session->sock = sock;
-	    session->sock_ctx = sctx;
-	    session->lastUse = get_time();
-	    if (sh->sessionArrayLength == sh->sessionCount)
-	      GROW(sh->sessions,
-		   sh->sessionArrayLength,
-		   sh->sessionArrayLength + 4);
-	    sh->sessions[sh->sessionCount++] = session;
-	  }
+	}	
+	if (sh->socket_quota <= 0) {
+	  SHUTDOWN(s, SHUT_WR);
+	  CLOSE(s);
+	  s = -1;
+	  continue;
 	}
-      }
+	sh->socket_quota--;
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p is accepting connection: %d\n",
+	       sh,
+	       s);
+#endif
+	sock = socket_create(sh->ectx,
+			     sh->load_monitor,
+			     s);
+	MUTEX_UNLOCK(sh->lock);
+	sctx = sh->ah(sh->ah_cls,
+		      sh,
+		      sock,
+		      clientAddr,
+		      lenOfIncomingAddr);
+	MUTEX_LOCK(sh->lock);
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p is accepting connection: %p\n",
+	       sh,
+	       sctx);	
+#endif
+	if (sctx == NULL) {
+	  socket_destroy(sock);
+	  sh->socket_quota++;
+	} else {
+	  session = MALLOC(sizeof(Session));
+	  memset(session,
+		 0,
+		 sizeof(Session));
+	  session->sock = sock;
+	  session->sock_ctx = sctx;
+	  session->lastUse = get_time();
+	  if (sh->sessionArrayLength == sh->sessionCount)
+	    GROW(sh->sessions,
+		 sh->sessionArrayLength,
+		 sh->sessionArrayLength + 4);
+	  sh->sessions[sh->sessionCount++] = session;
+	}
+      }      
     } else {  /* is_udp == YES */
       if ( (sh->listen_sock != NULL) &&
 	   (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
@@ -832,7 +842,8 @@ select_create(const char * description,
 	      void * ah_cls,
 	      SelectCloseHandler ch,
 	      void * ch_cls,
-	      unsigned int memory_quota) {
+	      unsigned int memory_quota,
+	      int socket_quota) {
   SelectHandle * sh;
 
   if ( (is_udp == NO) &&
@@ -877,6 +888,7 @@ select_create(const char * description,
   sh->ch = ch;
   sh->ch_cls = ch_cls;
   sh->memory_quota = memory_quota;
+  sh->socket_quota = socket_quota;
   sh->timeout = timeout;
   sh->lock = MUTEX_CREATE(YES);
   if (sock != -1)
@@ -1140,6 +1152,7 @@ int select_connect(struct SelectHandle * sh,
 	 sh->sessionArrayLength,
 	 sh->sessionArrayLength + 4);
   sh->sessions[sh->sessionCount++] = session;
+  sh->socket_quota--;
   MUTEX_UNLOCK(sh->lock);
   signalSelect(sh);
   return OK;

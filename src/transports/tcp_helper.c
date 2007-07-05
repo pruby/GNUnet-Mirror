@@ -201,7 +201,7 @@ static int tcpAssociate(TSession * tsession) {
        (tcpSession->in_select == YES) )
     select_change_timeout(selector,
 			  tcpSession->sock,
-			  0 /* default */);
+			  TCP_TIMEOUT);
   tcpSession->users++;
   
   MUTEX_UNLOCK(tcpSession->lock);

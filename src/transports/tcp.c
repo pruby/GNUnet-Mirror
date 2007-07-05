@@ -468,14 +468,15 @@ static int startTransportServer() {
 			   coreAPI->load_monitor,
 			   s,
 			   sizeof(struct sockaddr_in),
-			   TCP_TIMEOUT,
+			   TCP_FAST_TIMEOUT,
 			   &select_message_handler,
 			   NULL,
 			   &select_accept_handler,
 			   &isRejected,
 			   &select_close_handler,
 			   NULL,
-			   128 * 1024);
+			   128 * 1024 /* max memory */, 
+			   128 /* max sockets */);
   return OK;
 }
 

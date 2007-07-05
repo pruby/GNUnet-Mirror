@@ -427,7 +427,8 @@ static int startTransportServer() {
 			     &isRejected,
 			     &select_close_handler,
 			     NULL,
-			     64 * 1024);
+			     64 * 1024,
+			     16 /* max sockets */);
     if (selector == NULL)
       return SYSERR;
   }

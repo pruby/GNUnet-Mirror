@@ -349,7 +349,8 @@ static int startTCPServer() {
 			   NULL,
 			   &select_close_handler,
 			   NULL,
-			   0 /* no memory quota */);
+			   0 /* no memory quota */,
+			   256 /* max sockets */);
   if (selector == NULL) {
     CLOSE(listenerFD); /* maybe closed already
 			  depending on how select_create
