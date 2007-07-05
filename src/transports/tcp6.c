@@ -41,7 +41,7 @@
  * Needs to be larger than SECONDS_INACTIVE_DROP in
  * core's connection.s
  */
-#define TCP6_TIMEOUT 600 * cronSECONDS
+#define TCP_TIMEOUT 600 * cronSECONDS
 
 /**
  * after how much time of the core not being associated with a tcp
