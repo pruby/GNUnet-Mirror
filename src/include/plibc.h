@@ -2,19 +2,19 @@
      This file is part of PlibC.
      (C) 2005, 2006, 2007 Nils Durner (and other contributing authors)
 
-     This library is free software; you can redistribute it and/or
-     modify it under the terms of the GNU Lesser General Public
-     License as published by the Free Software Foundation; either
-     version 2.1 of the License, or (at your option) any later version.
-  
-     This library is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     Lesser General Public License for more details.
-  
-     You should have received a copy of the GNU Lesser General Public
-     License along with this library; if not, write to the Free Software
-     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	   This library is free software; you can redistribute it and/or
+	   modify it under the terms of the GNU Lesser General Public
+	   License as published by the Free Software Foundation; either
+	   version 2.1 of the License, or (at your option) any later version.
+	
+	   This library is distributed in the hope that it will be useful,
+	   but WITHOUT ANY WARRANTY; without even the implied warranty of
+	   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	   Lesser General Public License for more details.
+	
+	   You should have received a copy of the GNU Lesser General Public
+	   License along with this library; if not, write to the Free Software
+	   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /**
@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  */
 
 #ifndef _PLIBC_H_
@@ -91,108 +91,108 @@ struct stat64
 };
 
 #ifndef pid_t
-  #define pid_t int
+	#define pid_t int
 #endif
 
 #ifndef WEXITSTATUS
-  #define WEXITSTATUS(status) (((status) & 0xff00) >> 8)
+	#define WEXITSTATUS(status) (((status) & 0xff00) >> 8)
 #endif
 
 /* Thanks to the Cygwin project */
-#define ENOCSI 43 /* No CSI structure available */
-#define EL2HLT 44 /* Level 2 halted */
+#define ENOCSI 43	/* No CSI structure available */
+#define EL2HLT 44	/* Level 2 halted */
 #ifndef  EDEADLK
-  #define EDEADLK 45  /* Deadlock condition */
+	#define EDEADLK 45	/* Deadlock condition */
 #endif
 #ifndef  ENOLCK
-  #define ENOLCK 46 /* No record locks available */
+	#define ENOLCK 46	/* No record locks available */
 #endif
-#define EBADE 50  /* Invalid exchange */
-#define EBADR 51  /* Invalid request descriptor */
-#define EXFULL 52 /* Exchange full */
-#define ENOANO 53 /* No anode */
-#define EBADRQC 54  /* Invalid request code */
-#define EBADSLT 55  /* Invalid slot */
+#define EBADE 50	/* Invalid exchange */
+#define EBADR 51	/* Invalid request descriptor */
+#define EXFULL 52	/* Exchange full */
+#define ENOANO 53	/* No anode */
+#define EBADRQC 54	/* Invalid request code */
+#define EBADSLT 55	/* Invalid slot */
 #ifndef  EDEADLOCK
-  #define EDEADLOCK EDEADLK /* File locking deadlock error */
+	#define EDEADLOCK EDEADLK	/* File locking deadlock error */
 #endif
-#define EBFONT 57 /* Bad font file fmt */
-#define ENOSTR 60 /* Device not a stream */
-#define ENODATA 61  /* No data (for no delay io) */
-#define ETIME 62  /* Timer expired */
-#define ENOSR 63  /* Out of streams resources */
-#define ENONET 64 /* Machine is not on the network */
-#define ENOPKG 65 /* Package not installed */
-#define EREMOTE 66  /* The object is remote */
-#define ENOLINK 67  /* The link has been severed */
-#define EADV 68   /* Advertise error */
-#define ESRMNT 69 /* Srmount error */
-#define ECOMM 70  /* Communication error on send */
-#define EPROTO 71 /* Protocol error */
-#define EMULTIHOP 74  /* Multihop attempted */
-#define ELBIN 75  /* Inode is remote (not really error) */
-#define EDOTDOT 76  /* Cross mount point (not really error) */
-#define EBADMSG 77  /* Trying to read unreadable message */
-#define ENOTUNIQ 80 /* Given log. name not unique */
-#define EBADFD 81 /* f.d. invalid for this operation */
-#define EREMCHG 82  /* Remote address changed */
-#define ELIBACC 83  /* Can't access a needed shared lib */
-#define ELIBBAD 84  /* Accessing a corrupted shared lib */
-#define ELIBSCN 85  /* .lib section in a.out corrupted */
-#define ELIBMAX 86  /* Attempting to link in too many libs */
-#define ELIBEXEC 87 /* Attempting to exec a shared library */
+#define EBFONT 57	/* Bad font file fmt */
+#define ENOSTR 60	/* Device not a stream */
+#define ENODATA 61	/* No data (for no delay io) */
+#define ETIME 62	/* Timer expired */
+#define ENOSR 63	/* Out of streams resources */
+#define ENONET 64	/* Machine is not on the network */
+#define ENOPKG 65	/* Package not installed */
+#define EREMOTE 66	/* The object is remote */
+#define ENOLINK 67	/* The link has been severed */
+#define EADV 68		/* Advertise error */
+#define ESRMNT 69	/* Srmount error */
+#define ECOMM 70	/* Communication error on send */
+#define EPROTO 71	/* Protocol error */
+#define EMULTIHOP 74	/* Multihop attempted */
+#define ELBIN 75	/* Inode is remote (not really error) */
+#define EDOTDOT 76	/* Cross mount point (not really error) */
+#define EBADMSG 77	/* Trying to read unreadable message */
+#define ENOTUNIQ 80	/* Given log. name not unique */
+#define EBADFD 81	/* f.d. invalid for this operation */
+#define EREMCHG 82	/* Remote address changed */
+#define ELIBACC 83	/* Can't access a needed shared lib */
+#define ELIBBAD 84	/* Accessing a corrupted shared lib */
+#define ELIBSCN 85	/* .lib section in a.out corrupted */
+#define ELIBMAX 86	/* Attempting to link in too many libs */
+#define ELIBEXEC 87	/* Attempting to exec a shared library */
 #ifndef  ENOSYS
-  #define ENOSYS 88 /* Function not implemented */
+	#define ENOSYS 88	/* Function not implemented */
 #endif
 #define ENMFILE 89      /* No more files */
 #ifndef  ENOTEMPTY
-  #define ENOTEMPTY 90  /* Directory not empty */
+	#define ENOTEMPTY 90	/* Directory not empty */
 #endif
 #ifndef  ENAMETOOLONG
-  #define ENAMETOOLONG 91 /* File or path name too long */
+	#define ENAMETOOLONG 91	/* File or path name too long */
 #endif
-#define ELOOP 92  /* Too many symbolic links */
-#define EOPNOTSUPP 95 /* Operation not supported on transport endpoint */
+#define ELOOP 92	/* Too many symbolic links */
+#define EOPNOTSUPP 95	/* Operation not supported on transport endpoint */
 #define EPFNOSUPPORT 96 /* Protocol family not supported */
 #define ECONNRESET 104  /* Connection reset by peer */
-#define ENOBUFS 105 /* No buffer space available */
+#define ENOBUFS 105	/* No buffer space available */
 #define EAFNOSUPPORT 106 /* Address family not supported by protocol family */
-#define EPROTOTYPE 107  /* Protocol wrong type for socket */
-#define ENOTSOCK 108  /* Socket operation on non-socket */
-#define ENOPROTOOPT 109 /* Protocol not available */
-#define ESHUTDOWN 110 /* Can't send after socket shutdown */
-#define ECONNREFUSED 111  /* Connection refused */
-#define EADDRINUSE 112    /* Address already in use */
-#define ECONNABORTED 113  /* Connection aborted */
-#define ENETUNREACH 114   /* Network is unreachable */
-#define ENETDOWN 115    /* Network interface is not configured */
+#define EPROTOTYPE 107	/* Protocol wrong type for socket */
+#define ENOTSOCK 108	/* Socket operation on non-socket */
+#define ENOPROTOOPT 109	/* Protocol not available */
+#define ESHUTDOWN 110	/* Can't send after socket shutdown */
+#define ECONNREFUSED 111	/* Connection refused */
+#define EADDRINUSE 112		/* Address already in use */
+#define ECONNABORTED 113	/* Connection aborted */
+#define ENETUNREACH 114		/* Network is unreachable */
+#define ENETDOWN 115		/* Network interface is not configured */
 #ifndef  ETIMEDOUT
-  #define ETIMEDOUT 116   /* Connection timed out */
+	#define ETIMEDOUT 116		/* Connection timed out */
 #endif
-#define EHOSTDOWN 117   /* Host is down */
-#define EHOSTUNREACH 118  /* Host is unreachable */
-#define EINPROGRESS 119   /* Connection already in progress */
-#define EALREADY 120    /* Socket already connected */
-#define EDESTADDRREQ 121  /* Destination address required */
-#define EMSGSIZE 122    /* Message too long */
-#define EPROTONOSUPPORT 123 /* Unknown protocol */
-#define ESOCKTNOSUPPORT 124 /* Socket type not supported */
-#define EADDRNOTAVAIL 125 /* Address not available */
-#define ENETRESET 126   /* Connection aborted by network */
-#define EISCONN 127       /* Socket is already connected */
-#define ENOTCONN 128    /* Socket is not connected */
-#define ETOOMANYREFS 129  /* Too many references: cannot splice */
-#define EPROCLIM 130    /* Too many processes */
-#define EUSERS 131      /* Too many users */
-#define EDQUOT 132      /* Disk quota exceeded */
+#define EHOSTDOWN 117		/* Host is down */
+#define EHOSTUNREACH 118	/* Host is unreachable */
+#define EINPROGRESS 119		/* Connection already in progress */
+#define EALREADY 120		/* Socket already connected */
+#define EDESTADDRREQ 121	/* Destination address required */
+#define EMSGSIZE 122		/* Message too long */
+#define EPROTONOSUPPORT 123	/* Unknown protocol */
+#define ESOCKTNOSUPPORT 124	/* Socket type not supported */
+#define EADDRNOTAVAIL 125	/* Address not available */
+#define ENETRESET 126		/* Connection aborted by network */
+#define EISCONN 127		    /* Socket is already connected */
+#define ENOTCONN 128		/* Socket is not connected */
+#define ETOOMANYREFS 129	/* Too many references: cannot splice */
+#define EPROCLIM 130		/* Too many processes */
+#define EUSERS 131			/* Too many users */
+#define EDQUOT 132			/* Disk quota exceeded */
 #define ESTALE 133          /* Unknown error */
 #ifndef  ENOTSUP
-  #define ENOTSUP 134       /* Not supported */
+	#define ENOTSUP 134		    /* Not supported */
 #endif
 #define ENOMEDIUM 135       /* No medium (in tape drive) */
 #define ENOSHARE 136        /* No such host or network path */
 #define ECASECLASH 137      /* Filename exists with different case */
-#define EWOULDBLOCK EAGAIN  /* Operation would block */
+#define EWOULDBLOCK EAGAIN	/* Operation would block */
 #define EOVERFLOW 139 /* Value too large for defined data type */
 
 #undef HOST_NOT_FOUND
@@ -301,6 +301,10 @@ typedef struct
 #define S_IRWXG 0
 #define S_IRWXO 0
 
+#define SHUT_WR SD_SEND
+#define SHUT_RD SD_RECEIVE
+#define SHUT_RDWR SD_BOTH
+
 #define SetErrnoFromWinError(e) _SetErrnoFromWinError(e, __FILE__, __LINE__)
 
 /**
@@ -403,7 +407,7 @@ int _win_getpeername(SOCKET s, struct sockaddr *name,
 int _win_getsockname(SOCKET s, struct sockaddr *name,
                 int *namelen);
 int _win_getsockopt(SOCKET s, int level, int optname, char *optval,
-        int *optlen);
+				int *optlen);
 int _win_listen(SOCKET s, int backlog);
 int _win_recv(SOCKET s, char *buf, int len, int flags);
 int _win_recvfrom(SOCKET s, void *buf, int len, int flags,
