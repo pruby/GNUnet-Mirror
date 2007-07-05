@@ -43,6 +43,15 @@
  */
 #define TCP6_TIMEOUT 600 * cronSECONDS
 
+/**
+ * after how much time of the core not being associated with a tcp
+ * connection anymore do we close it?
+ *
+ * Needs to be larger than SECONDS_INACTIVE_DROP in
+ * core's connection.s
+ */
+#define TCP_FAST_TIMEOUT (5 * cronSECONDS)
+
 #define TARGET_BUFFER_SIZE 4092
 
 #include "tcp_helper.c"

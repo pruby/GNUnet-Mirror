@@ -197,10 +197,10 @@ static int tcpAssociate(TSession * tsession) {
   GE_ASSERT(ectx, tsession != NULL);
   tcpSession = tsession->internal;
   MUTEX_LOCK(tcpSession->lock);
-  if ( (tcpsession->users == 0) &&
-       (tcpsession->in_select == YES) )
+  if ( (tcpSession->users == 0) &&
+       (tcpSession->in_select == YES) )
     select_change_timeout(selector,
-			  tcpsession->sock,
+			  tcpSession->sock,
 			  0 /* default */);
   tcpSession->users++;
   
