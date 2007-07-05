@@ -381,7 +381,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr));
   if ( (i < 0) &&
-       (errno != EINPROGRESS) ) {
+       (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	   _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),

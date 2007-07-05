@@ -231,7 +231,7 @@ static int check() {
 	      (struct sockaddr*)&serverAddr,
 	      sizeof(serverAddr));
   if ( (i < 0) &&
-       (errno != EINPROGRESS) ) {
+       (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
     CLOSE(write_sock);
     select_destroy(sh);
     return 1;

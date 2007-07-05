@@ -169,8 +169,11 @@ static int socket_set_nosigpipe(struct SocketHandle * s,
 int socket_set_blocking(struct SocketHandle * s,
 			int doBlock) {
 #if MINGW
+  u_long mode;
+  
+  mode = !doBlock;
   if (ioctlsocket(s->handle,
-		  FIONBIO, (u_long FAR*) !doBlock) == SOCKET_ERROR) {
+		  FIONBIO, &mode) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
 
     return -1;

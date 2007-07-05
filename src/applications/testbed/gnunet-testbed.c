@@ -179,7 +179,7 @@ static int helper_main(int argc,
 		(struct sockaddr*)&soaddr,
 		sizeof(soaddr));
   if ( (res < 0) &&
-       (errno != EINPROGRESS) ) {
+       (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	_("Cannot connect to LOOPBACK port %d: %s\n"),
 	PORT,

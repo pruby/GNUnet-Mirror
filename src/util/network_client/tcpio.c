@@ -274,7 +274,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 		(struct sockaddr*)&soaddr,
 		sizeof(soaddr));
   if ( (ret != 0) &&
-       (errno != EINPROGRESS) ) {
+       (errno != EINPROGRESS) && (errno != EWOULDBLOCK)) {
     GE_LOG(sock->ectx,
 	   GE_WARNING | GE_USER | GE_BULK,
 	   _("Cannot connect to %s:%u: %s\n"),

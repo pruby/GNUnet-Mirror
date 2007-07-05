@@ -319,7 +319,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
       = *((unsigned long *) pHost->h_addr_list[0]);
     if (CONNECT(s,
 		(SOCKADDR *) &theHost,
-		sizeof(theHost)) == SOCKET_ERROR) {
+		sizeof(theHost)) == SOCKET_ERROR && errno != EWOULDBLOCK) {
       GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
 		   "connect");
       return SYSERR;

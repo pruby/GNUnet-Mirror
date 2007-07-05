@@ -1172,7 +1172,7 @@ static void httpRegister(char * cmd) {
   soaddr.sin_family = AF_INET;
   if (CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
-	      sizeof(soaddr)) < 0) {
+	      sizeof(soaddr)) < 0 && errno != EWOULDBLOCK) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to send HTTP request to host `%s': %s\n"),
 	hostname,

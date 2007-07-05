@@ -1601,7 +1601,7 @@ static int addAvailable(int argc,
   soaddr.sin_family = AF_INET;
   if (CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
-	      sizeof(soaddr)) < 0) {
+	      sizeof(soaddr)) < 0 && errno != EWOULDBLOCK) {
     XPRINTF(" failed to send HTTP request to host %s: %s\n",
 	   hostname,
 	   STRERROR(errno));

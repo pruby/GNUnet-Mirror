@@ -340,7 +340,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * hello,
 		res->ai_addr,
 		res->ai_addrlen);
     if ( (i < 0) &&
-	 (errno != EINPROGRESS) ) {
+	 (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
       GE_LOG_STRERROR(ectx,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "connect");
