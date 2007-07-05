@@ -46,7 +46,7 @@ static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
  * Print progess message.
  */
 static void * printstatus(void * cls,
-			  const FSUI_Event * event) {
+  		  const FSUI_Event * event) {
   unsigned long long * verboselevel = cls;
   unsigned long long delta;
 
@@ -55,9 +55,9 @@ static void * printstatus(void * cls,
     if (*verboselevel) {
       delta = event->data.UnindexProgress.eta - get_time();
       PRINTF(_("%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "),
-	     event->data.UnindexProgress.completed,
-	     event->data.UnindexProgress.total,
-	     delta / cronSECONDS);
+       event->data.UnindexProgress.completed,
+       event->data.UnindexProgress.total,
+       delta / cronSECONDS);
       printf("\r");
     }
     break;
@@ -78,7 +78,7 @@ static void * printstatus(void * cls,
     break;
   case FSUI_unindex_error:
     printf(_("\nError unindexing file: %s\n"),
-	   event->data.UnindexError.message);
+     event->data.UnindexError.message);
     errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
     break;
@@ -113,7 +113,7 @@ static struct CommandLineOption gnunetunindexOptions[] = {
  * @return return 0 for ok, -1 on error
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   static struct FSUI_Context * ctx;
   char * filename;
   int i;
@@ -121,49 +121,49 @@ int main(int argc,
   struct FSUI_UnindexList * ul;
 
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-unindex [OPTIONS] FILENAME",
-		  &cfgFilename,
-		  gnunetunindexOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-unindex [OPTIONS] FILENAME",
+  	  &cfgFilename,
+  	  gnunetunindexOptions,
+  	  &ectx,
+  	  &cfg);
   if (i == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
   }
   if (i == argc) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Not enough arguments. "
-	     "You must specify a filename.\n"));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("Not enough arguments. "
+       "You must specify a filename.\n"));
     GNUNET_fini(ectx, cfg);
     return -1;
   }
   GC_get_configuration_value_number(cfg,
-				    "GNUNET",
-				    "VERBOSE",
-				    0,
-				    9999,
-				    0,
-				    &verbose);
+  			    "GNUNET",
+  			    "VERBOSE",
+  			    0,
+  			    9999,
+  			    0,
+  			    &verbose);
   /* fundamental init */
   ctx = FSUI_start(ectx,
-		   cfg,
-		   "gnunet-unindex",
-		   2,
-		   NO,
-		   &printstatus,
-		   &verbose);
+  	   cfg,
+  	   "gnunet-unindex",
+  	   2,
+  	   NO,
+  	   &printstatus,
+  	   &verbose);
   errorCode = 1;
   start_time = get_time();
   filename = string_expandFileName(ectx,
-				   argv[i]);
+  			   argv[i]);
   ul = FSUI_startUnindex(ctx,
-			 filename);
+  		 filename);
   if (ul == NULL) {
     printf(_("`%s' failed.  Is `%s' a file?\n"),
-	   "FSUI_unindex",
-	   filename);
+     "FSUI_unindex",
+     filename);
     errorCode = 2;
   } else {
     GNUNET_SHUTDOWN_WAITFOR();

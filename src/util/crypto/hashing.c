@@ -43,19 +43,19 @@ struct sha512_ctx {
 };
 
 static unsigned long long Ch(unsigned long long x,
-			     unsigned long long y,
-			     unsigned long long z) {
+  		     unsigned long long y,
+  		     unsigned long long z) {
   return z ^ (x & (y ^ z));
 }
 
 static unsigned long long Maj(unsigned long long x,
-			      unsigned long long y,
-			      unsigned long long z) {
+  		      unsigned long long y,
+  		      unsigned long long z) {
   return (x & y) | (z & (x | y));
 }
 
 static unsigned long long RORu64(unsigned long long x,
-				 unsigned long long y) {
+  			 unsigned long long y) {
   return (x >> y) | (x << (64 - y));
 }
 
@@ -138,7 +138,7 @@ const unsigned long long sha512_K[80] = {
 
 static void
 sha512_transform(unsigned long long *state,
-		 const unsigned char *input) {
+  	 const unsigned char *input) {
   unsigned long long a, b, c, d, e, f, g, h, t1, t2;
   unsigned long long W[80];
   unsigned long long t0;
@@ -201,8 +201,8 @@ sha512_init(struct sha512_ctx * sctx) {
 
 static void
 sha512_update(struct sha512_ctx * sctx,
-	      const unsigned char *data,
-	      unsigned int len) {
+        const unsigned char *data,
+        unsigned int len) {
   unsigned int i, index, part_len;
 
   /* Compute number of bytes mod 128 */
@@ -212,7 +212,7 @@ sha512_update(struct sha512_ctx * sctx,
   if ((sctx->count[0] += (len << 3)) < (len << 3)) {
     if ((sctx->count[1] += 1) < 1)
       if ((sctx->count[2] += 1) < 1)
-	sctx->count[3]++;
+  sctx->count[3]++;
     sctx->count[1] += (len >> 29);
   }
 
@@ -237,7 +237,7 @@ sha512_update(struct sha512_ctx * sctx,
 
 static void
 sha512_final(struct sha512_ctx * sctx,
-	     unsigned char *hash) {
+       unsigned char *hash) {
   static unsigned char padding[128] = { 0x80, };
 
   unsigned int t;
@@ -304,8 +304,8 @@ sha512_final(struct sha512_ctx * sctx,
  * @param ret pointer to where to write the hashcode
  */
 void hash(const void * block,
-	  unsigned int size,
-	  HashCode512 * ret) {
+    unsigned int size,
+    HashCode512 * ret) {
   struct sha512_ctx ctx;
 
   sha512_init(&ctx);
@@ -321,8 +321,8 @@ void hash(const void * block,
  * @return OK on success, SYSERR on error
  */
 int getFileHash(struct GE_Context * ectx,
-		const char * filename,
-		HashCode512 * ret) {
+  	const char * filename,
+  	HashCode512 * ret) {
   unsigned char * buf;
   unsigned long long len;
   unsigned long long pos;
@@ -331,21 +331,21 @@ int getFileHash(struct GE_Context * ectx,
   struct sha512_ctx ctx;
 
   if (OK != disk_file_test(ectx,
-			   filename))
+  		   filename))
     return SYSERR;
   if (OK != disk_file_size(ectx,
-			   filename,
-			   &len,
-			   NO))
+  		   filename,
+  		   &len,
+  		   NO))
     return SYSERR;
   fh = disk_file_open(ectx,
-		      filename,
-		      O_RDONLY | O_LARGEFILE);
+  	      filename,
+  	      O_RDONLY | O_LARGEFILE);
   if (fh == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
-			 "open",
-			 filename);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
+  		 "open",
+  		 filename);
     return SYSERR;
   }
   sha512_init(&ctx);
@@ -356,23 +356,23 @@ int getFileHash(struct GE_Context * ectx,
     if (len - pos < delta)
       delta = len-pos;
     if (delta != READ(fh,
-		      buf,
-		      delta)) {
+  	      buf,
+  	      delta)) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			   "read",
-			   filename);
+  		   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		   "read",
+  		   filename);
       if (0 != CLOSE(fh))
-	GE_LOG_STRERROR_FILE(ectx,
-			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			     "close",
-			     filename);
+  GE_LOG_STRERROR_FILE(ectx,
+  		     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		     "close",
+  		     filename);
       FREE(buf);
       return SYSERR;
     }
     sha512_update(&ctx,
-		  buf,
-		  delta);
+  	  buf,
+  	  delta);
     if (pos + delta > pos)
       pos += delta;
     else
@@ -380,11 +380,11 @@ int getFileHash(struct GE_Context * ectx,
   }
   if (0 != CLOSE(fh))
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			 "close",
-			 filename);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		 "close",
+  		 filename);
   sha512_final(&ctx,
-	       (unsigned char*) ret);
+         (unsigned char*) ret);
   FREE(buf);
   return OK;
 }
@@ -417,7 +417,7 @@ static unsigned int getValue__(unsigned char a) {
  *  safely cast to char*, a '\0' termination is set).
  */
 void hash2enc(const HashCode512 * block,
-	      EncName * result) {
+        EncName * result) {
   unsigned int wpos;
   unsigned int rpos;
   unsigned int bits;
@@ -430,9 +430,9 @@ void hash2enc(const HashCode512 * block,
   rpos = 0;
   bits = 0;
   while ( (rpos < sizeof(HashCode512)) ||
-	  (vbit > 0) ) {
+    (vbit > 0) ) {
     if ( (rpos < sizeof(HashCode512)) &&
-	 (vbit < 5) ) {
+   (vbit < 5) ) {
       bits = (bits << 8) | ((unsigned char*)block)[rpos++]; /* eat 8 more bits */
       vbit += 8;
     }
@@ -458,7 +458,7 @@ void hash2enc(const HashCode512 * block,
  * @return OK on success, SYSERR if result has the wrong encoding
  */
 int enc2hash(const char * enc,
-	     HashCode512 * result) {
+       HashCode512 * result) {
   unsigned int rpos;
   unsigned int wpos;
   unsigned int bits;
@@ -477,7 +477,7 @@ int enc2hash(const char * enc,
     vbit += 5;
     if (vbit >= 8) {
       ((unsigned char*)result)[--wpos]
-	= (unsigned char) bits;
+  = (unsigned char) bits;
       bits >>= 8;
       vbit -= 8;
     }
@@ -497,7 +497,7 @@ int enc2hash(const char * enc,
  *  hashcode proximity.
  */
 unsigned int distanceHashCode512(const HashCode512 * a,
-				 const HashCode512 * b) {
+  			 const HashCode512 * b) {
   unsigned int x = (a->bits[1] - b->bits[1])>>16;
   return ((x*x)>>16);
 }
@@ -507,7 +507,7 @@ unsigned int distanceHashCode512(const HashCode512 * a,
  * @return 1 if they are equal, 0 if not.
  */
 int equalsHashCode512(const HashCode512 * a,
-		      const HashCode512 * b) {
+  	      const HashCode512 * b) {
   return (0 == memcmp(a,b,sizeof(HashCode512)));
 }
 
@@ -518,24 +518,24 @@ void makeRandomId(HashCode512 * result) {
 }
 
 void deltaId(const HashCode512 * a,
-	     const HashCode512 * b,
-	     HashCode512 * result) {
+       const HashCode512 * b,
+       HashCode512 * result) {
   int i;
   for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = b->bits[i] - a->bits[i];
 }
 
 void addHashCodes(const HashCode512 * a,
-		  const HashCode512 * delta,
-		  HashCode512 * result) {
+  	  const HashCode512 * delta,
+  	  HashCode512 * result) {
   int i;
   for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = delta->bits[i] + a->bits[i];
 }
 
 void xorHashCodes(const HashCode512 * a,
-		  const HashCode512 * b,
-		  HashCode512 * result) {
+  	  const HashCode512 * b,
+  	  HashCode512 * result) {
   int i;
   for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = a->bits[i] ^ b->bits[i];
@@ -545,20 +545,20 @@ void xorHashCodes(const HashCode512 * a,
  * Convert a hashcode into a key.
  */
 void hashToKey(const HashCode512 * hc,
-	       SESSIONKEY * skey,
-	       INITVECTOR * iv) {
+         SESSIONKEY * skey,
+         INITVECTOR * iv) {
   GE_ASSERT(NULL,
-	    sizeof(HashCode512) >=
-	    SESSIONKEY_LEN +
-	    sizeof(INITVECTOR));
+      sizeof(HashCode512) >=
+      SESSIONKEY_LEN +
+      sizeof(INITVECTOR));
   memcpy(skey,
-	 hc,
-	 SESSIONKEY_LEN);
+   hc,
+   SESSIONKEY_LEN);
   skey->crc32 = htonl(crc32N(skey,
-			     SESSIONKEY_LEN));
+  		     SESSIONKEY_LEN));
   memcpy(iv,
-	 &((char *)hc)[SESSIONKEY_LEN],
-	 sizeof(INITVECTOR));
+   &((char *)hc)[SESSIONKEY_LEN],
+   sizeof(INITVECTOR));
 }
 
 /**
@@ -568,10 +568,10 @@ void hashToKey(const HashCode512 * hc,
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
 int getHashCodeBit(const HashCode512 * code,
-		   unsigned int bit) {
+  	   unsigned int bit) {
   if (bit >= 8 * sizeof(HashCode512)) {
     GE_ASSERT(NULL,
-	      0);
+        0);
     return -1; /* error */
   }
   return (((unsigned char*)code)[bit >> 3] & (1 << bit & 7)) > 0;
@@ -583,7 +583,7 @@ int getHashCodeBit(const HashCode512 * code,
  * @return 1 if h1 > h2, -1 if h1 < h2 and 0 if h1 == h2.
  */
 int hashCodeCompare(const HashCode512 * h1,
-		    const HashCode512 * h2) {
+  	    const HashCode512 * h2) {
   unsigned int * i1;
   unsigned int * i2;
   int i;
@@ -605,8 +605,8 @@ int hashCodeCompare(const HashCode512 * h1,
  * @return -1 if h1 is closer, 1 if h2 is closer and 0 if h1==h2.
  */
 int hashCodeCompareDistance(const HashCode512 * h1,
-			    const HashCode512 * h2,
-			    const HashCode512 * target) {
+  		    const HashCode512 * h2,
+  		    const HashCode512 * target) {
   int i;
   unsigned int d1;
   unsigned int d2;

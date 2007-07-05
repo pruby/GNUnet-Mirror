@@ -90,7 +90,7 @@ static int initMachCpuStats() {
   int i,j;
 
   kret = host_processor_info(mach_host_self(),
-			     PROCESSOR_CPU_LOAD_INFO,
+  		     PROCESSOR_CPU_LOAD_INFO,
                              &cpu_count,
                              (processor_info_array_t *)&cpu_load,
                              &cpu_msg_count);
@@ -140,53 +140,53 @@ static int updateUsage(){
     fflush(proc_stat);
     if (NULL == fgets(line, 256, proc_stat)) {
       GE_LOG_STRERROR_FILE(NULL,
-			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			   "fgets",
-			   "/proc/stat");
+  		   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		   "fgets",
+  		   "/proc/stat");
       fclose(proc_stat);
       proc_stat = NULL; /* don't try again */
     } else {
       iowait_read = 0;
       ret = sscanf(line, "%*s %llu %llu %llu %llu %llu",
-		   &user_read,
-		   &system_read,
-		   &nice_read,
-		   &idle_read,
-		   &iowait_read);
+  	   &user_read,
+  	   &system_read,
+  	   &nice_read,
+  	   &idle_read,
+  	   &iowait_read);
       if (ret < 4) {
-	GE_LOG_STRERROR_FILE(NULL,
-			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			     "fgets-sscanf",
-			     "/proc/stat");
-	fclose(proc_stat);
-	proc_stat = NULL; /* don't try again */
-	have_last_cpu = NO;
+  GE_LOG_STRERROR_FILE(NULL,
+  		     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		     "fgets-sscanf",
+  		     "/proc/stat");
+  fclose(proc_stat);
+  proc_stat = NULL; /* don't try again */
+  have_last_cpu = NO;
       } else {
-	/* Store the current usage*/
-	user   = user_read - last_cpu_results[0];
-	system = system_read - last_cpu_results[1];
-	nice   = nice_read - last_cpu_results[2];
-	idle   = idle_read - last_cpu_results[3];	
-	iowait = iowait_read - last_cpu_results[4];	
-	/* Calculate the % usage */
-	usage_time = user + system + nice;
-	total_time = usage_time + idle + iowait;
-	if ( (total_time > 0) &&
-	     (have_last_cpu == YES) ) {
-	  currentCPULoad = (int) (100L * usage_time / total_time);
-	  if (ret > 4)
-	    currentIOLoad = (int) (100L * iowait / total_time);
-	  else
-	    currentIOLoad = -1; /* 2.4 kernel */
-	}
-	/* Store the values for the next calculation*/
-	last_cpu_results[0] = user_read;
-	last_cpu_results[1] = system_read;
-	last_cpu_results[2] = nice_read;
-	last_cpu_results[3] = idle_read;
-	last_cpu_results[4] = iowait_read;
-	have_last_cpu = YES;
-	return OK;
+  /* Store the current usage*/
+  user   = user_read - last_cpu_results[0];
+  system = system_read - last_cpu_results[1];
+  nice   = nice_read - last_cpu_results[2];
+  idle   = idle_read - last_cpu_results[3];	
+  iowait = iowait_read - last_cpu_results[4];	
+  /* Calculate the % usage */
+  usage_time = user + system + nice;
+  total_time = usage_time + idle + iowait;
+  if ( (total_time > 0) &&
+       (have_last_cpu == YES) ) {
+    currentCPULoad = (int) (100L * usage_time / total_time);
+    if (ret > 4)
+      currentIOLoad = (int) (100L * iowait / total_time);
+    else
+      currentIOLoad = -1; /* 2.4 kernel */
+  }
+  /* Store the values for the next calculation*/
+  last_cpu_results[0] = user_read;
+  last_cpu_results[1] = system_read;
+  last_cpu_results[2] = nice_read;
+  last_cpu_results[3] = idle_read;
+  last_cpu_results[4] = iowait_read;
+  have_last_cpu = YES;
+  return OK;
       }
     }
   }
@@ -280,7 +280,7 @@ static int updateUsage(){
     static long long last_idlecount;
     static long long last_totalcount;
     static int kstat_once; /* if open fails, don't keep
-			      trying */
+  		      trying */
     kstat_ctl_t * kc;
     kstat_t * khelper;
     long long idlecount;
@@ -293,50 +293,50 @@ static int updateUsage(){
     kc = kstat_open();
     if (kc == NULL) {
       GE_LOG_STRERROR(NULL,
-		      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-		      "kstat_open");
+  	      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  	      "kstat_open");
       goto ABORT_KSTAT;
     }
 
     idlecount = 0;
     totalcount = 0;
     for (khelper = kc->kc_chain;
-	 khelper != NULL;
-	 khelper = khelper->ks_next) {
+   khelper != NULL;
+   khelper = khelper->ks_next) {
       cpu_stat_t stats;
 
       if (0 != strncmp(khelper->ks_name,
-		       "cpu_stat",
-		       strlen("cpu_stat")) )
-	continue;
+  	       "cpu_stat",
+  	       strlen("cpu_stat")) )
+  continue;
       if (khelper->ks_data_size > sizeof(cpu_stat_t))
-	continue; /* better save then sorry! */
+  continue; /* better save then sorry! */
       if (-1 != kstat_read(kc, khelper, &stats)) {
-	idlecount
-	  += stats.cpu_sysinfo.cpu[CPU_IDLE];
-	totalcount
-	  += stats.cpu_sysinfo.cpu[CPU_IDLE] +
-	  stats.cpu_sysinfo.cpu[CPU_USER] +
-	  stats.cpu_sysinfo.cpu[CPU_KERNEL] +
-	  stats.cpu_sysinfo.cpu[CPU_WAIT];
+  idlecount
+    += stats.cpu_sysinfo.cpu[CPU_IDLE];
+  totalcount
+    += stats.cpu_sysinfo.cpu[CPU_IDLE] +
+    stats.cpu_sysinfo.cpu[CPU_USER] +
+    stats.cpu_sysinfo.cpu[CPU_KERNEL] +
+    stats.cpu_sysinfo.cpu[CPU_WAIT];
       }
     }
     if (0 != kstat_close(kc))
       GE_LOG_STRERROR(NULL,
-		      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		      "kstat_close");
+  	      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  	      "kstat_close");
     if ( (idlecount == 0) &&
-	 (totalcount == 0) )
+   (totalcount == 0) )
       goto ABORT_KSTAT; /* no stats found => abort */
     deltaidle = idlecount - last_idlecount;
     deltatotal = totalcount - last_totalcount;
     if ( (deltatotal > 0) &&
-	 (last_totalcount > 0) ) {
+   (last_totalcount > 0) ) {
       currentCPULoad = (unsigned int) (100.0 * deltaidle / deltatotal);
       if (currentCPULoad > 100)
-	currentCPULoad = 100; /* odd */
+  currentCPULoad = 100; /* odd */
       if (currentCPULoad < 0)
-	currentCPULoad = 0; /* odd */
+  currentCPULoad = 0; /* odd */
       currentCPULoad = 100 - currentCPULoad; /* computed idle-load before! */
     } else
       currentCPULoad = -1;
@@ -360,12 +360,12 @@ static int updateUsage(){
     double loadavg;
     if (1 != getloadavg(&loadavg, 1)) {
       /* only warn once, if there is a problem with
-	 getloadavg, we're going to hit it frequently... */
+   getloadavg, we're going to hit it frequently... */
       if (warnOnce == 0) {
-	warnOnce = 1;
-	GE_LOG_STRERROR(NULL,
-			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			"getloadavg");
+  warnOnce = 1;
+  GE_LOG_STRERROR(NULL,
+  		GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		"getloadavg");
       }
       return SYSERR;
     } else {
@@ -392,9 +392,9 @@ static int updateUsage(){
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION theInfo;
 
     if (GNNtQuerySystemInformation(SystemProcessorPerformanceInformation,
-				   &theInfo,
-				   sizeof(theInfo),
-				   NULL) == NO_ERROR) {
+  			   &theInfo,
+  			   sizeof(theInfo),
+  			   NULL) == NO_ERROR) {
       /* PORT-ME MINGW: Multi-processor? */
       dKernel = Li2Double(theInfo.KernelTime);
       dIdle = Li2Double(theInfo.IdleTime);
@@ -404,7 +404,7 @@ static int updateUsage(){
       dDiffUser = dUser - dLastUser;
 
       if ( ( (dDiffKernel + dDiffUser) > 0) &&
-	   (dLastIdle + dLastKernel + dLastUser > 0) )
+     (dLastIdle + dLastKernel + dLastUser > 0) )
         currentCPULoad = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
       else
         currentCPULoad = -1; /* don't know (yet) */
@@ -417,13 +417,13 @@ static int updateUsage(){
       return OK;
     } else {
       /* only warn once, if there is a problem with
-	 NtQuery..., we're going to hit it frequently... */
+   NtQuery..., we're going to hit it frequently... */
       static int once;
       if (once == 0) {
-	once = 1;
-	GE_LOG(NULL,
-	       GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-	       _("Cannot query the CPU usage (Windows NT).\n"));
+  once = 1;
+  GE_LOG(NULL,
+         GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+         _("Cannot query the CPU usage (Windows NT).\n"));
       }
       return SYSERR;
     }
@@ -433,67 +433,67 @@ static int updateUsage(){
 
     /* Start query */
     if (RegOpenKeyEx(HKEY_DYN_DATA,
-		     "PerfStats\\StartSrv",
-		     0,
-		     KEY_ALL_ACCESS,
+  	     "PerfStats\\StartSrv",
+  	     0,
+  	     KEY_ALL_ACCESS,
                      &hKey) != ERROR_SUCCESS) {
       /* only warn once */
       static int once = 0;
       if (once == 0) {
-	once = 1;
-	GE_LOG(NULL,
-	       GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
-	       _("Cannot query the CPU usage (Win 9x)\n"));
+  once = 1;
+  GE_LOG(NULL,
+         GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+         _("Cannot query the CPU usage (Win 9x)\n"));
       }
     }
 
     RegOpenKeyEx(HKEY_DYN_DATA,
-		 "PerfStats\\StartStat",
-		 0,
-		 KEY_ALL_ACCESS,
-		 &hKey);
+  	 "PerfStats\\StartStat",
+  	 0,
+  	 KEY_ALL_ACCESS,
+  	 &hKey);
     dwDataSize = sizeof(dwDummy);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage",
-		    NULL,
-		    &dwType,
-		    (LPBYTE) &dwDummy,
+  	    "KERNEL\\CPUUsage",
+  	    NULL,
+  	    &dwType,
+  	    (LPBYTE) &dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
 
     /* Get CPU usage */
     RegOpenKeyEx(HKEY_DYN_DATA,
-		 "PerfStats\\StatData",
-		 0,
-		 KEY_ALL_ACCESS,
+  	 "PerfStats\\StatData",
+  	 0,
+  	 KEY_ALL_ACCESS,
                  &hKey);
     dwDataSize = sizeof(currentCPULoad);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage",
-		    NULL,
-		    &dwType,
+  	    "KERNEL\\CPUUsage",
+  	    NULL,
+  	    &dwType,
                     (LPBYTE) &currentCPULoad,
-		    &dwDataSize);
+  	    &dwDataSize);
     RegCloseKey(hKey);
     currentIOLoad = -1; /* FIXME-MINGW! */
 
     /* Stop query */
     RegOpenKeyEx(HKEY_DYN_DATA,
-		 "PerfStats\\StopStat",
-		 0,
-		 KEY_ALL_ACCESS,
+  	 "PerfStats\\StopStat",
+  	 0,
+  	 KEY_ALL_ACCESS,
                  &hKey);
     RegOpenKeyEx(HKEY_DYN_DATA,
-		 "PerfStats\\StopSrv",
-		 0,
-		 KEY_ALL_ACCESS,
+  	 "PerfStats\\StopSrv",
+  	 0,
+  	 KEY_ALL_ACCESS,
                  &hKey);
     dwDataSize = sizeof(dwDummy);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage",
-		    NULL,
-		    &dwType,
-		    (LPBYTE)&dwDummy,
+  	    "KERNEL\\CPUUsage",
+  	    NULL,
+  	    &dwType,
+  	    (LPBYTE)&dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
 
@@ -514,7 +514,7 @@ static int updateUsage(){
  * that lock has already been obtained.
  */
 static void updateAgedLoad(struct GE_Context * ectx,
-			   struct GC_Configuration * cfg) {
+  		   struct GC_Configuration * cfg) {
   static cron_t lastCall;
   cron_t now;
 
@@ -531,22 +531,22 @@ static void updateAgedLoad(struct GE_Context * ectx,
       agedCPULoad = -1;
     } else {
       if (agedCPULoad == -1) {
-	agedCPULoad = currentCPULoad;
+  agedCPULoad = currentCPULoad;
       } else {
-	/* for CPU, we don't do the 'fast increase' since CPU is much
-	   more jitterish to begin with */
-	agedCPULoad = (agedCPULoad * 31 + currentCPULoad) / 32;
+  /* for CPU, we don't do the 'fast increase' since CPU is much
+     more jitterish to begin with */
+  agedCPULoad = (agedCPULoad * 31 + currentCPULoad) / 32;
       }
     }
     if (currentIOLoad == -1) {
       agedIOLoad = -1;
     } else {
       if (agedIOLoad == -1) {
-	agedIOLoad = currentIOLoad;
+  agedIOLoad = currentIOLoad;
       } else {
-	/* for IO, we don't do the 'fast increase' since IO is much
-	   more jitterish to begin with */
-	agedIOLoad = (agedIOLoad * 31 + currentIOLoad) / 32;
+  /* for IO, we don't do the 'fast increase' since IO is much
+     more jitterish to begin with */
+  agedIOLoad = (agedIOLoad * 31 + currentIOLoad) / 32;
       }
     }
   }
@@ -558,7 +558,7 @@ static void updateAgedLoad(struct GE_Context * ectx,
  *        (100 is equivalent to full load)
  */
 int os_cpu_get_load(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg) {
+  	    struct GC_Configuration * cfg) {
   unsigned long long maxCPULoad;
   int ret;
 
@@ -569,12 +569,12 @@ int os_cpu_get_load(struct GE_Context * ectx,
   if (ret == -1)
     return -1;
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "LOAD",
-					      "MAXCPULOAD",
-					      0,
-					      10000, /* more than 1 CPU possible */
-					      100,
-					      &maxCPULoad))
+  				      "LOAD",
+  				      "MAXCPULOAD",
+  				      0,
+  				      10000, /* more than 1 CPU possible */
+  				      100,
+  				      &maxCPULoad))
     return SYSERR;
   return (100 * ret) / maxCPULoad;
 }
@@ -586,7 +586,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
  *        (100 is equivalent to full load)
  */
 int os_disk_get_load(struct GE_Context * ectx,
-		     struct GC_Configuration * cfg) {
+  	     struct GC_Configuration * cfg) {
   unsigned long long maxIOLoad;
   int ret;
 
@@ -597,12 +597,12 @@ int os_disk_get_load(struct GE_Context * ectx,
   if (ret == -1)
     return -1;
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "LOAD",
-					      "MAXIOLOAD",
-					      0,
-					      10000, /* more than 1 CPU possible */
-					      100,
-					      &maxIOLoad))
+  				      "LOAD",
+  				      "MAXIOLOAD",
+  				      0,
+  				      10000, /* more than 1 CPU possible */
+  				      100,
+  				      &maxIOLoad))
     return SYSERR;
   return (100 * ret) / maxIOLoad;
 }
@@ -618,9 +618,9 @@ void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
   proc_stat = fopen("/proc/stat", "r");
   if (NULL == proc_stat)
     GE_LOG_STRERROR_FILE(NULL,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			 "fopen",
-			 "/proc/stat");
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		 "fopen",
+  		 "/proc/stat");
 #elif OSX
   initMachCpuStats();
 #elif MINGW

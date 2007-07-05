@@ -86,14 +86,14 @@ void plibc_panic(int err, char *msg)
 */
 int InitWinEnv(struct GE_Context *ectx)
 {
-	int ret, init;
+  int ret, init;
 
   if (ectx)
     pEctx = ectx;
-	
+  
   init = plibc_initialized();
   plibc_set_panic_proc(plibc_panic);
-	ret = plibc_init("GNU", PACKAGE);
+  ret = plibc_init("GNU", PACKAGE);
 
   /* don't load other DLLs twice */
   if (init)
@@ -123,7 +123,7 @@ int InitWinEnv(struct GE_Context *ectx)
     GNGetBestInterface = (TGetBestInterface) GetProcAddress(hIphlpapi,
       "GetBestInterface");
     GGetAdaptersInfo = (TGetAdaptersInfo) GetProcAddress(hIphlpapi,
-    	"GetAdaptersInfo");
+      "GetAdaptersInfo");
   }
   else
   {
@@ -157,37 +157,37 @@ int InitWinEnv(struct GE_Context *ectx)
     GNOpenService = (TOpenService)
       GetProcAddress(hAdvapi, "OpenServiceA");
 
-  	GNLsaOpenPolicy = (TLsaOpenPolicy)
-  		GetProcAddress(hAdvapi, "LsaOpenPolicy");
-  	GNLsaAddAccountRights = (TLsaAddAccountRights)
-  		GetProcAddress(hAdvapi, "LsaAddAccountRights");
-  	GNLsaRemoveAccountRights = (TLsaRemoveAccountRights)
-  		GetProcAddress(hAdvapi, "LsaRemoveAccountRights");
-  	GNLsaClose = (TLsaClose)
-  		GetProcAddress(hAdvapi, "LsaClose");
-  	GNLookupAccountName = (TLookupAccountName)
-  		GetProcAddress(hAdvapi, "LookupAccountNameA");
+    GNLsaOpenPolicy = (TLsaOpenPolicy)
+    	GetProcAddress(hAdvapi, "LsaOpenPolicy");
+    GNLsaAddAccountRights = (TLsaAddAccountRights)
+    	GetProcAddress(hAdvapi, "LsaAddAccountRights");
+    GNLsaRemoveAccountRights = (TLsaRemoveAccountRights)
+    	GetProcAddress(hAdvapi, "LsaRemoveAccountRights");
+    GNLsaClose = (TLsaClose)
+    	GetProcAddress(hAdvapi, "LsaClose");
+    GNLookupAccountName = (TLookupAccountName)
+    	GetProcAddress(hAdvapi, "LookupAccountNameA");
 
-  	GNGetFileSecurity = (TGetFileSecurity)
-  		GetProcAddress(hAdvapi, "GetFileSecurityA");
-  	GNInitializeSecurityDescriptor = (TInitializeSecurityDescriptor)
-  		GetProcAddress(hAdvapi, "InitializeSecurityDescriptor");
-  	GNGetSecurityDescriptorDacl = (TGetSecurityDescriptorDacl)
-  		GetProcAddress(hAdvapi, "GetSecurityDescriptorDacl");
-  	GNGetAclInformation = (TGetAclInformation)
-  		GetProcAddress(hAdvapi, "GetAclInformation");
-  	GNInitializeAcl = (TInitializeAcl)
-  		GetProcAddress(hAdvapi, "InitializeAcl");
-  	GNGetAce = (TGetAce)
-  		GetProcAddress(hAdvapi, "GetAce");
-  	GNEqualSid = (TEqualSid)
-  		GetProcAddress(hAdvapi, "EqualSid");
-  	GNAddAce = (TAddAce)
-  		GetProcAddress(hAdvapi, "AddAce");
-  	GNAddAccessAllowedAce = (TAddAccessAllowedAce)
-  		GetProcAddress(hAdvapi, "AddAccessAllowedAce");
-  	GNSetNamedSecurityInfo = (TSetNamedSecurityInfo)
-  		GetProcAddress(hAdvapi, "SetNamedSecurityInfoA");
+    GNGetFileSecurity = (TGetFileSecurity)
+    	GetProcAddress(hAdvapi, "GetFileSecurityA");
+    GNInitializeSecurityDescriptor = (TInitializeSecurityDescriptor)
+    	GetProcAddress(hAdvapi, "InitializeSecurityDescriptor");
+    GNGetSecurityDescriptorDacl = (TGetSecurityDescriptorDacl)
+    	GetProcAddress(hAdvapi, "GetSecurityDescriptorDacl");
+    GNGetAclInformation = (TGetAclInformation)
+    	GetProcAddress(hAdvapi, "GetAclInformation");
+    GNInitializeAcl = (TInitializeAcl)
+    	GetProcAddress(hAdvapi, "InitializeAcl");
+    GNGetAce = (TGetAce)
+    	GetProcAddress(hAdvapi, "GetAce");
+    GNEqualSid = (TEqualSid)
+    	GetProcAddress(hAdvapi, "EqualSid");
+    GNAddAce = (TAddAce)
+    	GetProcAddress(hAdvapi, "AddAce");
+    GNAddAccessAllowedAce = (TAddAccessAllowedAce)
+    	GetProcAddress(hAdvapi, "AddAccessAllowedAce");
+    GNSetNamedSecurityInfo = (TSetNamedSecurityInfo)
+    	GetProcAddress(hAdvapi, "SetNamedSecurityInfoA");
   }
   else
   {
@@ -201,37 +201,37 @@ int InitWinEnv(struct GE_Context *ectx)
     GNControlService = NULL;
     GNOpenService = NULL;
 
-  	GNLsaOpenPolicy = NULL;
-  	GNLsaAddAccountRights = NULL;
-  	GNLsaRemoveAccountRights = NULL;
-  	GNLsaClose = NULL;
-  	GNLookupAccountName = NULL;
+    GNLsaOpenPolicy = NULL;
+    GNLsaAddAccountRights = NULL;
+    GNLsaRemoveAccountRights = NULL;
+    GNLsaClose = NULL;
+    GNLookupAccountName = NULL;
 
-  	GNGetFileSecurity = NULL;
-  	GNInitializeSecurityDescriptor = NULL;
-  	GNGetSecurityDescriptorDacl = NULL;
-  	GNGetAclInformation = NULL;
-  	GNInitializeAcl = NULL;
-  	GNGetAce = NULL;
-  	GNEqualSid = NULL;
-  	GNAddAce = NULL;
-  	GNAddAccessAllowedAce = NULL;
-  	GNSetNamedSecurityInfo = NULL;
+    GNGetFileSecurity = NULL;
+    GNInitializeSecurityDescriptor = NULL;
+    GNGetSecurityDescriptorDacl = NULL;
+    GNGetAclInformation = NULL;
+    GNInitializeAcl = NULL;
+    GNGetAce = NULL;
+    GNEqualSid = NULL;
+    GNAddAce = NULL;
+    GNAddAccessAllowedAce = NULL;
+    GNSetNamedSecurityInfo = NULL;
   }
 
   /* Account function */
   hNetapi = LoadLibrary("netapi32.dll");
   if (hNetapi)
   {
-  	GNNetUserAdd = (TNetUserAdd)
-  		GetProcAddress(hNetapi, "NetUserAdd");
-  	GNNetUserSetInfo = (TNetUserSetInfo)
-  		GetProcAddress(hNetapi, "NetUserSetInfo");
+    GNNetUserAdd = (TNetUserAdd)
+    	GetProcAddress(hNetapi, "NetUserAdd");
+    GNNetUserSetInfo = (TNetUserSetInfo)
+    	GetProcAddress(hNetapi, "NetUserSetInfo");
   }
   else
   {
-  	GNNetUserAdd = NULL;
-  	GNNetUserSetInfo = NULL;
+    GNNetUserAdd = NULL;
+    GNNetUserSetInfo = NULL;
   }
 
   return ret;
@@ -242,7 +242,7 @@ int InitWinEnv(struct GE_Context *ectx)
  */
 void ShutdownWinEnv()
 {
-	plibc_shutdown();
+  plibc_shutdown();
 
   FreeLibrary(hNTDLL);
   FreeLibrary(hIphlpapi);

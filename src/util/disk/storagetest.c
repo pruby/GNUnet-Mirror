@@ -33,22 +33,22 @@ static int testReadWrite() {
   char tmp[100];
 
   disk_file_write(NULL,
-		  ".testfile",
-		  TESTSTRING,
-		  strlen(TESTSTRING),
-		  "644");
+  	  ".testfile",
+  	  TESTSTRING,
+  	  strlen(TESTSTRING),
+  	  "644");
   tmp[disk_file_read(NULL,
-		     ".testfile",
-		     100,
-		     tmp)] = '\0';
+  	     ".testfile",
+  	     100,
+  	     tmp)] = '\0';
   if (0 != memcmp(tmp,
-		  TESTSTRING,
-		  strlen(TESTSTRING)+1)) {
+  	  TESTSTRING,
+  	  strlen(TESTSTRING)+1)) {
     fprintf(stderr,
-	    "Error in testReadWrite: *%s* != *%s* for file %s\n",
-	    tmp,
-	    TESTSTRING,
-	    ".testfile");
+      "Error in testReadWrite: *%s* != *%s* for file %s\n",
+      tmp,
+      TESTSTRING,
+      ".testfile");
     return 1;
   }
   UNLINK(".testfile");

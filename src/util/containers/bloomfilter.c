@@ -91,7 +91,7 @@ typedef struct Bloomfilter {
  * @param bitIdx which bit to set
  */
 static void setBit(char * bitArray,
-		   unsigned int bitIdx) {
+  	   unsigned int bitIdx) {
   unsigned int arraySlot;
   unsigned int targetBit;
 
@@ -108,7 +108,7 @@ static void setBit(char * bitArray,
  * @param bitIdx which bit to unset
  */
 static void clearBit(char * bitArray,
-		     unsigned int bitIdx) {
+  	     unsigned int bitIdx) {
   unsigned int slot;
   unsigned int targetBit;
 
@@ -125,7 +125,7 @@ static void clearBit(char * bitArray,
  * @return YES if the bit is set, NO if not.
  */
 static int testBit(char * bitArray,
-		   unsigned int bitIdx) {
+  	   unsigned int bitIdx) {
   unsigned int slot;
   unsigned int targetBit;
 
@@ -147,8 +147,8 @@ static int testBit(char * bitArray,
  * @param fd A file to keep the 4 bit address usage counters in
  */
 static void incrementBit(char * bitArray,
-			 unsigned int bitIdx,
-			 int fd) {
+  		 unsigned int bitIdx,
+  		 int fd) {
   unsigned int fileSlot;
   unsigned char value;
   unsigned int high;
@@ -164,8 +164,8 @@ static void incrementBit(char * bitArray,
 
   if (fileSlot != (unsigned int) lseek(fd, fileSlot, SEEK_SET))
     GE_DIE_STRERROR(NULL,
-		    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
-		    "lseek");
+  	    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+  	    "lseek");
   value = 0;
   READ(fd,
        &value,
@@ -184,12 +184,12 @@ static void incrementBit(char * bitArray,
   value = ((high<<4) | low);
   if (fileSlot != (unsigned int) lseek(fd, fileSlot, SEEK_SET))
     GE_DIE_STRERROR(NULL,
-		    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
-		    "lseek");
+  	    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+  	    "lseek");
   if (1 != WRITE(fd, &value, 1))
     GE_DIE_STRERROR(NULL,
-		    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
-		    "write");
+  	    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+  	    "write");
 
 }
 
@@ -202,8 +202,8 @@ static void incrementBit(char * bitArray,
  * @param fd A file to keep the 4bit address usage counters in
  */
 static void decrementBit(char * bitArray,
-			 unsigned int bitIdx,
-			 int fd) {
+  		 unsigned int bitIdx,
+  		 int fd) {
   unsigned int fileSlot;
   unsigned char value;
   unsigned int high;
@@ -241,8 +241,8 @@ static void decrementBit(char * bitArray,
   lseek(fd, fileSlot, SEEK_SET);
   if (1 != WRITE(fd, &value, 1))
     GE_DIE_STRERROR(NULL,
-		    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
-		    "write");
+  	    GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+  	    "write");
 }
 
 #define BUFFSIZE 65536
@@ -255,7 +255,7 @@ static void decrementBit(char * bitArray,
  * @return OK if created ok, SYSERR otherwise
  */
 static int makeEmptyFile(int fd,
-			 unsigned int size) {
+  		 unsigned int size) {
   char * buffer;
   unsigned int bytesleft=size;
   int res = 0;
@@ -276,8 +276,8 @@ static int makeEmptyFile(int fd,
     }
     if(res == -1) {
       GE_DIE_STRERROR(NULL,
-		      GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
-		      "write");
+  	      GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+  	      "write");
       FREE(buffer);
       return SYSERR;
     }
@@ -298,9 +298,9 @@ static int makeEmptyFile(int fd,
  * @param additional context specific argument
  */
 typedef void (*BitIterator)(Bloomfilter * bf,
-			    unsigned int bit,
-			    void * arg);
-			
+  		    unsigned int bit,
+  		    void * arg);
+  		
 /**
  * Call an iterator for each bit that the bloomfilter
  * must test or set for this element.
@@ -311,9 +311,9 @@ typedef void (*BitIterator)(Bloomfilter * bf,
  * @param key the key for which we iterate over the BF bits
  */
 static void iterateBits(Bloomfilter * bf,
-			BitIterator callback,
-			void * arg,
-			const HashCode512 * key) {
+  		BitIterator callback,
+  		void * arg,
+  		const HashCode512 * key) {
   HashCode512 tmp[2];
   int bitCount;
   int round;
@@ -321,23 +321,23 @@ static void iterateBits(Bloomfilter * bf,
 
   bitCount = bf->addressesPerElement;
   memcpy(&tmp[0],
-	 key,
-	 sizeof(HashCode512));
+   key,
+   sizeof(HashCode512));
   round = 0;
   while (bitCount > 0) {
     while (slot < (sizeof(HashCode512)/sizeof(unsigned int))) {
       callback(bf,
-	       (((unsigned int*)&tmp[round&1])[slot]) & ((bf->bitArraySize*8)-1),
-	       arg);
+         (((unsigned int*)&tmp[round&1])[slot]) & ((bf->bitArraySize*8)-1),
+         arg);
       slot++;
       bitCount--;
       if (bitCount == 0)
-	break;
+  break;
     }
     if (bitCount > 0) {
       hash(&tmp[round & 1],
-	   sizeof(HashCode512),
-	   &tmp[(round+1) & 1]);
+     sizeof(HashCode512),
+     &tmp[(round+1) & 1]);
       round++;
       slot = 0;
     }
@@ -352,11 +352,11 @@ static void iterateBits(Bloomfilter * bf,
  * @param arg not used
  */
 static void incrementBitCallback(Bloomfilter * bf,
-				 unsigned int bit,
-				 void * arg) {
+  			 unsigned int bit,
+  			 void * arg) {
   incrementBit(bf->bitArray,
-	       bit,
-	       bf->fd);
+         bit,
+         bf->fd);
 }
 
 /**
@@ -367,11 +367,11 @@ static void incrementBitCallback(Bloomfilter * bf,
  * @param arg not used
  */
 static void decrementBitCallback(Bloomfilter * bf,
-				 unsigned int bit,
-				 void * arg) {
+  			 unsigned int bit,
+  			 void * arg) {
   decrementBit(bf->bitArray,
-	       bit,
-	       bf->fd);
+         bit,
+         bf->fd);
 }
 
 /**
@@ -382,11 +382,11 @@ static void decrementBitCallback(Bloomfilter * bf,
  * @param arg pointer set to NO if bit is not set
  */
 static void testBitCallback(Bloomfilter * bf,
-			    unsigned int bit,
-			    void * cls) {
+  		    unsigned int bit,
+  		    void * cls) {
   int * arg = cls;
   if (NO == testBit(bf->bitArray,
-		    bit))
+  	    bit))
     *arg = NO;
 }
 
@@ -403,9 +403,9 @@ static void testBitCallback(Bloomfilter * bf,
  * @return the bloomfilter
  */
 Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
-			      const char * filename,
-			      unsigned int size,
-			      unsigned int k) {
+  		      const char * filename,
+  		      unsigned int size,
+  		      unsigned int k) {
   Bloomfilter * bf;
   char * rbuff;
   unsigned int pos;
@@ -428,14 +428,14 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
   if (filename != NULL) {
 #ifndef _MSC_VER
     bf->fd = disk_file_open(ectx,
-			    filename,
-			    O_RDWR|O_CREAT,
-			    S_IRUSR|S_IWUSR);
+  		    filename,
+  		    O_RDWR|O_CREAT,
+  		    S_IRUSR|S_IWUSR);
 #else
     bf->fd = disk_file_open(ectx,
-			    filename,
-			    O_WRONLY|O_CREAT,
-			    S_IREAD|S_IWRITE);
+  		    filename,
+  		    O_WRONLY|O_CREAT,
+  		    S_IREAD|S_IWRITE);
 #endif
     if (-1 == bf->fd) {
       FREE(bf);
@@ -452,8 +452,8 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
   bf->bitArraySize = size;
   bf->addressesPerElement = k;
   memset(bf->bitArray,
-	 0,
-	 bf->bitArraySize);
+   0,
+   bf->bitArraySize);
 
   if (bf->fd != -1) {
     /* Read from the file what bits we can */
@@ -463,20 +463,20 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
       int res;
       
       res = READ(bf->fd,
-		 rbuff,
-		 BUFFSIZE);
+  	 rbuff,
+  	 BUFFSIZE);
       if (res == 0)
-	break; /* is ok! we just did not use that many bits yet */
+  break; /* is ok! we just did not use that many bits yet */
       for (i=0;i<res;i++) {
-	if ( (rbuff[i] & 0x0F) != 0)
-	  setBit(bf->bitArray,
-		 pos + i*2);
-	if ( (rbuff[i] & 0xF0) != 0)
-	  setBit(bf->bitArray,
-		 pos + i*2 + 1);
+  if ( (rbuff[i] & 0x0F) != 0)
+    setBit(bf->bitArray,
+  	 pos + i*2);
+  if ( (rbuff[i] & 0xF0) != 0)
+    setBit(bf->bitArray,
+  	 pos + i*2 + 1);
       }
       if (res < BUFFSIZE)
-	break;
+  break;
       pos += BUFFSIZE * 2; /* 2 bits per byte in the buffer */
     }
     FREE(rbuff);
@@ -497,8 +497,8 @@ void freeBloomfilter(Bloomfilter * bf) {
   MUTEX_DESTROY(bf->lock);
   if (bf->fd != -1) 
     disk_file_close(bf->ectx,
-		    bf->filename,
-		    bf->fd);
+  	    bf->filename,
+  	    bf->fd);
   FREENONNULL(bf->filename);
   FREE(bf->bitArray);
   FREE(bf);
@@ -515,11 +515,11 @@ void resetBloomfilter(Bloomfilter * bf) {
 
   MUTEX_LOCK(bf->lock);
   memset(bf->bitArray,
-	 0,
-	 bf->bitArraySize);
+   0,
+   bf->bitArraySize);
   if (bf->fd != -1) 
     makeEmptyFile(bf->fd,
-		  bf->bitArraySize * 4);
+  	  bf->bitArraySize * 4);
   MUTEX_UNLOCK(bf->lock);
 }
 
@@ -532,7 +532,7 @@ void resetBloomfilter(Bloomfilter * bf) {
  * @return YES if the element is in the filter, NO if not
  */
 int testBloomfilter(Bloomfilter * bf,
-		    const HashCode512 * e) {
+  	    const HashCode512 * e) {
   int res;
 
   if (NULL == bf)
@@ -540,9 +540,9 @@ int testBloomfilter(Bloomfilter * bf,
   MUTEX_LOCK(bf->lock);
   res = YES;
   iterateBits(bf,
-	      &testBitCallback,
-	      &res,
-	      e);
+        &testBitCallback,
+        &res,
+        e);
   MUTEX_UNLOCK(bf->lock);
   return res;
 }
@@ -554,15 +554,15 @@ int testBloomfilter(Bloomfilter * bf,
  * @param e the element
  */
 void addToBloomfilter(Bloomfilter * bf,
-		      const HashCode512 * e) {
+  	      const HashCode512 * e) {
 
   if (NULL == bf)
     return;
   MUTEX_LOCK(bf->lock);
   iterateBits(bf,
-	      &incrementBitCallback,
-	      NULL,
-	      e);
+        &incrementBitCallback,
+        NULL,
+        e);
   MUTEX_UNLOCK(bf->lock);
 }
 
@@ -573,14 +573,14 @@ void addToBloomfilter(Bloomfilter * bf,
  * @param e the element to remove
  */
 void delFromBloomfilter(Bloomfilter * bf,
-			const HashCode512 * e) {
+  		const HashCode512 * e) {
   if(NULL == bf)
     return;
   MUTEX_LOCK(bf->lock);
   iterateBits(bf,
-	      &decrementBitCallback,
-	      NULL,
-	      e);
+        &decrementBitCallback,
+        NULL,
+        e);
   MUTEX_UNLOCK(bf->lock);
 }
 
@@ -596,10 +596,10 @@ void delFromBloomfilter(Bloomfilter * bf,
  * @param k the new number of hash-function to apply per element
  */
 void resizeBloomfilter(Bloomfilter * bf,
-		       ElementIterator iterator,
-		       void * iterator_arg,
-		       unsigned int size,
-		       unsigned int k) {
+  	       ElementIterator iterator,
+  	       void * iterator_arg,
+  	       unsigned int size,
+  	       unsigned int k) {
   HashCode512 * e;
   unsigned int i;
 
@@ -613,15 +613,15 @@ void resizeBloomfilter(Bloomfilter * bf,
   bf->bitArraySize = size;
   bf->bitArray = MALLOC(size);
   memset(bf->bitArray,
-	 0,
-	 bf->bitArraySize);
+   0,
+   bf->bitArraySize);
   if (bf->fd != -1) 
     makeEmptyFile(bf->fd,
-		  bf->bitArraySize * 4);
+  	  bf->bitArraySize * 4);
   e = iterator(iterator_arg);
   while (e != NULL) {
     addToBloomfilter(bf,
-		     e);
+  	     e);
     FREE(e);
     e = iterator(iterator_arg);
   }

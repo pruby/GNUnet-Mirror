@@ -29,7 +29,7 @@
 #include "gnunet_util_config_impl.h"
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
 #if 0
   switch(event->type) {
   case FSUI_search_result:
@@ -53,7 +53,7 @@ static void * eventCallback(void * cls,
 }
 
 int main(int argc,
-	 char * argv[]) {
+   char * argv[]) {
   struct FSUI_Context * ctx;
   struct GC_Configuration * cfg;
 
@@ -61,21 +61,21 @@ int main(int argc,
   cfg = GC_create_C_impl();
   if (argc != 2) {
     fprintf(stderr,
-	    "Call with name of FSUI resource file!\n");
+      "Call with name of FSUI resource file!\n");
     return -1;
   }
   ctx = FSUI_start(NULL,
-		   cfg,
-		   argv[1],
-		   16,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   argv[1],
+  	   16,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   if (ctx != NULL)
     FSUI_stop(ctx);
   else
     fprintf(stderr,
-	    "FSUI_start failed!\n");
+      "FSUI_start failed!\n");
   GC_free(cfg);
   return (ctx == NULL);
 }

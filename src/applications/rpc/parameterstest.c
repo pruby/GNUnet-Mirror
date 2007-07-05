@@ -35,34 +35,34 @@ int main(int argc, char * argv[]){
   p = RPC_paramNew();
 
   if (SYSERR != RPC_paramValueByPosition(p,
-					 0,
-					 &len,
-					 &buf))
+  				 0,
+  				 &len,
+  				 &buf))
     return 1;
 
   if (SYSERR != RPC_paramValueByName(p,
-				     "not there",
-				     &len,
-				     &buf))
+  			     "not there",
+  			     &len,
+  			     &buf))
     return 1;
 
   if (RPC_paramCount(p) != 0)
     return 1;
   RPC_paramAdd(p,
-	       "foo",
-	       4,
-	       "bar");
+         "foo",
+         4,
+         "bar");
   RPC_paramAdd(p,
-	       "bar",
-	       4,
-	       "foo");
+         "bar",
+         4,
+         "foo");
   if (RPC_paramCount(p) != 2)
     return 1;
   if (0 != strcmp(RPC_paramName(p, 0),
-		  "foo"))
+  	  "foo"))
     return 1;
   if (0 != strcmp(RPC_paramName(p, 1),
-		  "bar"))
+  	  "bar"))
     return 1;
 
   size = RPC_paramSize(p);
@@ -70,15 +70,15 @@ int main(int argc, char * argv[]){
   RPC_paramSerialize(p, buf);
   RPC_paramFree(p);
   p = RPC_paramDeserialize(buf,
-			   size);
+  		   size);
   FREE(buf);
   if (p == NULL)
     return 1;
   buf = NULL;
   if (OK != RPC_paramValueByName(p,
-				 "foo",
-				 &len,
-				 &buf))
+  			 "foo",
+  			 &len,
+  			 &buf))
     return 1;
   if (strcmp("bar", buf) != 0)
     return 1;
@@ -86,24 +86,24 @@ int main(int argc, char * argv[]){
   if (4 != len)
     return 1;
   if (OK != RPC_paramValueByPosition(p,
-				     1,
-				     &len,
-				     &buf))
+  			     1,
+  			     &len,
+  			     &buf))
     return 1;
   if (strcmp("foo", buf) != 0)
     return 1;
   if (4 != len)
     return 1;
   if (SYSERR != RPC_paramValueByPosition(p,
-					 2,
-					 &len,
-					 &buf))
+  				 2,
+  				 &len,
+  				 &buf))
     return 1;
 
   if (SYSERR != RPC_paramValueByName(p,
-				     "not there",
-				     &len,
-				     &buf))
+  			     "not there",
+  			     &len,
+  			     &buf))
     return 1;
   RPC_paramFree(p);
 

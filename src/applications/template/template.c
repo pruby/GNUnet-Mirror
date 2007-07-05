@@ -34,12 +34,12 @@ static struct ClientHandle * client;
 static struct MUTEX * lock;
 
 static int handlep2pMSG(const PeerIdentity * sender,
-		        const MESSAGE_HEADER * message) {
+  	        const MESSAGE_HEADER * message) {
   return OK;
 }
 
 static int csHandle(struct ClientHandle * client,
-		    const MESSAGE_HEADER * message) {
+  	    const MESSAGE_HEADER * message) {
   return OK;
 }
 
@@ -58,28 +58,28 @@ int initialize_module_template(CoreAPIForApplication * capi) {
   coreAPI = capi;
 
   GE_LOG(capi->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 _("`%s' registering client handler %d and %d\n"),
-	 "template",
-	 CS_PROTO_MAX_USED,
-	 P2P_PROTO_MAX_USED);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   _("`%s' registering client handler %d and %d\n"),
+   "template",
+   CS_PROTO_MAX_USED,
+   P2P_PROTO_MAX_USED);
   if (SYSERR == capi->registerHandler(P2P_PROTO_MAX_USED,
-				      &handlep2pMSG))
+  			      &handlep2pMSG))
     ok = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&clientExitHandler))
     ok = SYSERR;
   if (SYSERR == capi->registerClientHandler(CS_PROTO_MAX_USED,
-					    &csHandle))
+  				    &csHandle))
     ok = SYSERR;
   return ok;
 }
 
 void done_module_template() {
   coreAPI->unregisterHandler(P2P_PROTO_MAX_USED,
-			     &handlep2pMSG);
+  		     &handlep2pMSG);
   coreAPI->unregisterClientExitHandler(&clientExitHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_MAX_USED,
-				   &csHandle);
+  			   &csHandle);
   MUTEX_DESTROY(lock);
   coreAPI = NULL;
 }

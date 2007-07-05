@@ -41,19 +41,19 @@ static struct GC_Configuration * cfg;
 static int match;
 
 static int spcb(const ECRS_FileInfo * fi,
-		const HashCode512 * key,
-		int isRoot,
-		void * closure) {
+  	const HashCode512 * key,
+  	int isRoot,
+  	void * closure) {
   struct ECRS_URI * want = closure;
 
   if (ECRS_equalsUri(want,
-		     fi->uri))
+  	     fi->uri))
     match = 1;
   else
     fprintf(stderr,
-	    "Namespace search returned unexpected result: \nHAVE: %s\nWANT: %s...\n",
-	    ECRS_uriToString(fi->uri),
-	    ECRS_uriToString(want));
+      "Namespace search returned unexpected result: \nHAVE: %s\nWANT: %s...\n",
+      ECRS_uriToString(fi->uri),
+      ECRS_uriToString(want));
   return OK;
 }
 
@@ -73,57 +73,57 @@ static int testNamespace() {
 
 
   ECRS_deleteNamespace(NULL,
-		       cfg,
-		       CHECKNAME); /* make sure old one is deleted */
+  	       cfg,
+  	       CHECKNAME); /* make sure old one is deleted */
   meta = ECRS_createMetaData();
   adv = ECRS_keywordsToUri(keys);
   hash("root", 4, &root);
   rootURI =
     ECRS_createNamespace(NULL,
-			 cfg,
-			 CHECKNAME,
-			 meta,
-			 0,
-			 0,
-			 get_time() + 15 * cronMINUTES,
-			 adv,
-			 &root);
+  		 cfg,
+  		 CHECKNAME,
+  		 meta,
+  		 0,
+  		 0,
+  		 get_time() + 15 * cronMINUTES,
+  		 adv,
+  		 &root);
   CHECK(NULL != rootURI);
   hash("this", 4, &thisId);
   hash("next", 4, &nextId);
   uri = rootURI; /* just for fun: NS::this advertises NS::root */
   advURI = ECRS_addToNamespace(NULL,
-			       cfg,
-			       CHECKNAME,
-			       1, /* anonymity */
-			       1000, /* priority */
-			       5 * cronMINUTES + get_time(),
-			       TIME(NULL) + 300,
-			       0,
-			       &thisId,
-			       &nextId,
-			       uri,
-			       meta);
+  		       cfg,
+  		       CHECKNAME,
+  		       1, /* anonymity */
+  		       1000, /* priority */
+  		       5 * cronMINUTES + get_time(),
+  		       TIME(NULL) + 300,
+  		       0,
+  		       &thisId,
+  		       &nextId,
+  		       uri,
+  		       meta);
   CHECK(NULL != advURI);
   fprintf(stderr,
-	  "Starting namespace search...\n");
+    "Starting namespace search...\n");
   CHECK(OK == ECRS_search(NULL,
-			  cfg,
-			  advURI,
-			  1,
-			  60 * cronSECONDS,
-			  &spcb,
-			  uri,
-			  NULL,
-			  NULL));
+  		  cfg,
+  		  advURI,
+  		  1,
+  		  60 * cronSECONDS,
+  		  &spcb,
+  		  uri,
+  		  NULL,
+  		  NULL));
   fprintf(stderr,
-	  "Completed namespace search...\n");
+    "Completed namespace search...\n");
   CHECK(OK == ECRS_deleteNamespace(NULL,
-				   cfg,
-				   CHECKNAME));
+  			   cfg,
+  			   CHECKNAME));
   CHECK(SYSERR == ECRS_deleteNamespace(NULL,
-				       cfg,
-				       CHECKNAME));
+  			       cfg,
+  			       CHECKNAME));
   ECRS_freeMetaData(meta);
   ECRS_freeUri(rootURI);
   ECRS_freeUri(advURI);
@@ -137,18 +137,18 @@ int main(int argc, char * argv[]) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   if (OK != connection_wait_for_running(NULL,
-					cfg,
-					60 * cronSECONDS)) {
+  				cfg,
+  				60 * cronSECONDS)) {
     failureCount++;
   } else {
     PTHREAD_SLEEP(5 * cronSECONDS);

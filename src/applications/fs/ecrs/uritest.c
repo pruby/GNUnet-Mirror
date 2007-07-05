@@ -54,7 +54,7 @@ static int testKeyword() {
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/ksk/foo+bar")) {
+  	  "gnunet://ecrs/ksk/foo+bar")) {
     FREE(uri);
     ECRS_freeUri(ret);
     ABORT();
@@ -75,12 +75,12 @@ static int testLocation() {
   baseURI = ECRS_stringToUri(NULL, "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   hk = makePrivateKey();
   getPublicKey(hk,
-	       &pk);
+         &pk);
   uri = ECRS_uriFromLocation(baseURI,
-			     &pk,
-			     43,
-			     (ECRS_SignFunction) &sign,
-			     hk);
+  		     &pk,
+  		     43,
+  		     (ECRS_SignFunction) &sign,
+  		     hk);
   freePrivateKey(hk);
   if (uri == NULL) {
     GE_BREAK(NULL, 0);
@@ -95,7 +95,7 @@ static int testLocation() {
   }
   uri2 = ECRS_getContentUri(uri);
   if (! ECRS_equalsUri(baseURI,
-		       uri2)) {
+  	       uri2)) {
     GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     ECRS_freeUri(uri2);
@@ -117,7 +117,7 @@ static int testLocation() {
     return 1;
   }
   if (YES != ECRS_equalsUri(uri,
-			    uri2)) {
+  		    uri2)) {
     GE_BREAK(NULL, 0);
     ECRS_freeUri(uri);
     ECRS_freeUri(uri2);
@@ -152,7 +152,7 @@ static int testNamespace(int i) {
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO")) {
+  	  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO")) {
     ECRS_freeUri(ret);
     FREE(uri);
     ABORT();
@@ -190,7 +190,7 @@ static int testFile(int i) {
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42")) {
+  	  "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42")) {
     FREE(uri);
     ECRS_freeUri(ret);
     ABORT();

@@ -36,7 +36,7 @@ cron_t get_time() {
   struct timeval tv;
 #ifndef WINDOWS
   struct timezone tz; /* man page says it's obsolete, but
-			 I'd rather not pass a NULL pointer */
+  		 I'd rather not pass a NULL pointer */
 
   gettimeofday(&tv, &tz);
 #else

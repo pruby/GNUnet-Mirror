@@ -116,7 +116,7 @@ static int test2(int size) {
 
 
 int main(int argc,
-	 char * argv[]) {
+   char * argv[]) {
   if (NULL != vectorNew(0))
     { printf("At %d\n", __LINE__); return 1; }
   if (NULL != vectorNew(1))

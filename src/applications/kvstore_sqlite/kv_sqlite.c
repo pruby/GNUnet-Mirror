@@ -119,8 +119,8 @@ static struct MUTEX * lock;
  * @param out output
  */
 static int sqlite_encode_binary(const unsigned char *in,
-				int n,
-				unsigned char *out){
+  			int n,
+  			unsigned char *out){
   char c;
   unsigned char *start = out;
 
@@ -149,8 +149,8 @@ static int sqlite_encode_binary(const unsigned char *in,
  * @return number of output bytes, -1 on error
  */
 static int sqlite_decode_binary_n(const unsigned char *in,
-				  unsigned char *out,
-				  unsigned int num){
+  			  unsigned char *out,
+  			  unsigned int num){
   unsigned char *start = out;
   unsigned char *stop = (unsigned char *) (in + num);
 
@@ -170,15 +170,15 @@ static int sqlite_decode_binary_n(const unsigned char *in,
  * @brief Prepare a SQL statement
  */
 static int sq_prepare(sqliteHandle *dbh,
-		      const char *zSql,       /* SQL statement, UTF-8 encoded */
-		      sqlite3_stmt **ppStmt) {  /* OUT: Statement handle */
+  	      const char *zSql,       /* SQL statement, UTF-8 encoded */
+  	      sqlite3_stmt **ppStmt) {  /* OUT: Statement handle */
   char * dummy;
 
   return sqlite3_prepare(dbh->dbh,
-			 zSql,
-			 strlen(zSql),
-			 ppStmt,
-			 (const char**) &dummy);
+  		 zSql,
+  		 strlen(zSql),
+  		 ppStmt,
+  		 (const char**) &dummy);
 }
 
 /**
@@ -190,18 +190,18 @@ static char * getDBFileName(const char * name) {
   size_t mem;
 
   GC_get_configuration_value_filename(coreAPI->cfg,
-				      "KEYVALUE_DATABASE",
-				      "DIR",
-				      VAR_DAEMON_DIRECTORY "/kvstore/",
-				      &dir);
+  			      "KEYVALUE_DATABASE",
+  			      "DIR",
+  			      VAR_DAEMON_DIRECTORY "/kvstore/",
+  			      &dir);
   disk_directory_create(ectx, dir);
   mem = strlen(dir) + strlen(name) + 6;
   fn = MALLOC(mem);
   SNPRINTF(fn,
-	   mem,
-	   "%s/%s.dat",
-	   dir,
-	   name);
+     mem,
+     "%s/%s.dat",
+     dir,
+     name);
   FREE(dir);
   return fn;
 }
@@ -219,13 +219,13 @@ static sqliteDatabase * getDB(const char *name) {
       return dbs[idx];
   db = MALLOC(sizeof(sqliteDatabase));
   memset(db,
-	 0,
-	 sizeof(sqliteDatabase));
+   0,
+   sizeof(sqliteDatabase));
   db->fn = getDBFileName(name);
   db->name = STRDUP(name);
   APPEND(dbs,
-	 databases,
-	 db);
+   databases,
+   db);
   return db;
 }
 
@@ -253,11 +253,11 @@ static sqliteHandle * getDBHandle(const char *name) {
   dbh = MALLOC(sizeof(sqliteHandle));
   dbh->tid = PTHREAD_GET_SELF();
   if (sqlite3_open(db->fn,
-		   &dbh->dbh) != SQLITE_OK) {
+  	   &dbh->dbh) != SQLITE_OK) {
     printf("FN: %s\n", db->fn);
-    LOG_SQLITE(dbh->dbh,	
-	       GE_ERROR | GE_BULK | GE_USER,
-	       "sqlite3_open");
+    LOG_SQLITE(dbh->dbh,  
+         GE_ERROR | GE_BULK | GE_USER,
+         "sqlite3_open");
     sqlite3_close(dbh->dbh);
     MUTEX_UNLOCK(lock);
     PTHREAD_REL_SELF(dbh->tid);
@@ -265,8 +265,8 @@ static sqliteHandle * getDBHandle(const char *name) {
     return NULL;
   }
   APPEND(db->handles,
-  	 db->handle_count,
-  	 dbh);
+     db->handle_count,
+     dbh);
   sqlite3_exec(dbh->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
   sqlite3_exec(dbh->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
   sqlite3_exec(dbh->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
@@ -283,8 +283,8 @@ static void close_database(sqliteDatabase *db) {
     PTHREAD_REL_SELF(dbh->tid);
     if (sqlite3_close(dbh->dbh) != SQLITE_OK)
       LOG_SQLITE(dbh->dbh,
-		 LOG_ERROR,
-		 "sqlite_close");
+  	 LOG_ERROR,
+  	 "sqlite_close");
     FREE(dbh);
   }
   GROW(db->handles,
@@ -310,8 +310,8 @@ static void dropDatabase(const char * name) {
       close_database(db);
       dbs[idx] = dbs[databases-1];
       GROW(dbs,
-	   databases,
-	   databases - 1);
+     databases,
+     databases - 1);
       break;
     }
   }
@@ -327,7 +327,7 @@ static void dropDatabase(const char * name) {
  * @return a handle
  */
 static KVHandle *getTable(const char *database,
-			  const char *table) {
+  		  const char *table) {
   sqlite3_stmt *stmt;
   unsigned int len;
   KVHandle *ret;
@@ -338,22 +338,22 @@ static KVHandle *getTable(const char *database,
   if (dbh == NULL)
     return NULL;
   sq_prepare(dbh,
-	     "Select 1 from sqlite_master where tbl_name = ?",
-	     &stmt);
+       "Select 1 from sqlite_master where tbl_name = ?",
+       &stmt);
   len = strlen(table);
   sqlite3_bind_text(stmt, 1, table, len, SQLITE_STATIC);
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     char * create = MALLOC(len + 58);
 
     sprintf(create,
-	    "CREATE TABLE %s (gn_key BLOB, gn_val BLOB, gn_age BIGINT)",
-	    table);
+      "CREATE TABLE %s (gn_key BLOB, gn_val BLOB, gn_age BIGINT)",
+      table);
 
     if (sqlite3_exec(dbh->dbh, create, NULL, NULL, NULL) != SQLITE_OK)
     {
       LOG_SQLITE(dbh->dbh,
-		 LOG_ERROR,
-		 "sqlite_create");
+  	 LOG_ERROR,
+  	 "sqlite_create");
       sqlite3_finalize(stmt);
       FREE(create);
       return NULL;
@@ -366,8 +366,8 @@ static KVHandle *getTable(const char *database,
   /* FIXME: more indexes */
   idx = MALLOC(len + 34);
   sprintf(idx,
-	  "CREATE INDEX idx_key ON %s (gn_key)",
-	  table);
+    "CREATE INDEX idx_key ON %s (gn_key)",
+    table);
   sqlite3_exec(dbh->dbh, idx, NULL, NULL, NULL);
   FREE(idx);
   ret = MALLOC(sizeof(KVHandle));
@@ -388,12 +388,12 @@ static KVHandle *getTable(const char *database,
  * @param closure optional parameter for handler
  */
 static void *get(KVHandle *kv,
-		 void *key,
-		 int keylen,
-		 unsigned int sort,
-		 unsigned int limit,
-		 KVCallback handler,
-		 void *closure) {
+  	 void *key,
+  	 int keylen,
+  	 unsigned int sort,
+  	 unsigned int limit,
+  	 KVCallback handler,
+  	 void *closure) {
   unsigned int len, enclen, retlen;
   char *sel, *order, *where, limit_spec[30];
   sqlite3_stmt *stmt;
@@ -443,11 +443,11 @@ static void *get(KVHandle *kv,
     *limit_spec = 0;
 
   sprintf(sel,
-	  "SELECT gn_val FROM %s %s %s %s",
-	  kv->table,
-	  where,
-	  order,
-	  limit_spec);
+    "SELECT gn_val FROM %s %s %s %s",
+    kv->table,
+    where,
+    order,
+    limit_spec);
 
   sq_prepare(dbh, sel, &stmt);
   if (key)
@@ -468,7 +468,7 @@ static void *get(KVHandle *kv,
       if (handler(closure, ret, retlen) != OK)
       {
         FREE(sel);
-	FREENONNULL(key_enc);
+  FREENONNULL(key_enc);
         FREE(ret_dec);
         sqlite3_finalize(stmt);
 
@@ -508,8 +508,8 @@ static int put(KVHandle *kv, void *key, int keylen, void *val, int vallen,
   ins = MALLOC(len + 68);
 
   sprintf(ins,
-	  "INSERT INTO %s(gn_key, gn_val, gn_age) values (?, ?, ?)",
-	  kv->table);
+    "INSERT INTO %s(gn_key, gn_val, gn_age) values (?, ?, ?)",
+    kv->table);
 
   key_enc = MALLOC(keylen * 2);
   keyenc_len = sqlite_encode_binary(key, keylen, key_enc);
@@ -527,8 +527,8 @@ static int put(KVHandle *kv, void *key, int keylen, void *val, int vallen,
     FREE(key_enc);
     FREE(val_enc);
     LOG_SQLITE(dbh->dbh,
-	       LOG_ERROR,
-	       "put");
+         LOG_ERROR,
+         "put");
     sqlite3_finalize(stmt);
     return SYSERR;
   }
@@ -596,7 +596,7 @@ static int del(KVHandle *kv, void *key, int keylen, unsigned long long age)
     FREE(del);
     FREENONNULL(keyenc);
     LOG_SQLITE(dbh->dbh,
-	       LOG_ERROR, "delete");
+         LOG_ERROR, "delete");
     sqlite3_finalize(stmt);
 
     return SYSERR;
@@ -637,7 +637,7 @@ static int dropTable(KVHandle *kv)
   if (sqlite3_step(stmt) != SQLITE_DONE) {
     FREE(drop);
     LOG_SQLITE(dbh->dbh,
-	       LOG_ERROR, "drop");
+         LOG_ERROR, "drop");
     sqlite3_finalize(stmt);
     return SYSERR;
   }
@@ -654,8 +654,8 @@ provide_module_kvstore_sqlite(CoreAPIForApplication * capi) {
   ectx = capi->ectx;
 #if DEBUG_SQLITE
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "KV-SQLite: initializing database\n");
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "KV-SQLite: initializing database\n");
 #endif
 
   lock = MUTEX_CREATE(NO);
@@ -682,8 +682,8 @@ void release_module_kvstore_sqlite() {
 
 #if DEBUG_SQLITE
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "SQLite KVStore: database shutdown\n");
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "SQLite KVStore: database shutdown\n");
 #endif
 
   MUTEX_DESTROY(lock);

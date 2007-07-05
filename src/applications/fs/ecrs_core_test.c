@@ -42,32 +42,32 @@ static int testEC() {
   memset(&data[1], rand(), len - sizeof(DBlock));
   data->type = htonl(D_BLOCK);
   CHECK(D_BLOCK == getTypeOfBlock(len,
-				  data),
-	data);
+  			  data),
+  data);
   fileBlockGetKey(data, len, &key);
   fileBlockGetQuery(data, len, &query);
   CHECK(OK == fileBlockEncode(data,
-			      len,
-			      &query,
-			      &value),
-	data);
+  		      len,
+  		      &query,
+  		      &value),
+  data);
   memcpy(data,
-	 &value[1],
-	 len);
+   &value[1],
+   len);
   FREE(value);
   CHECK(YES == isDatumApplicable(D_BLOCK,
-				 len,
-				 data,
-				 &query,
-				 1,
-				 &query),
-	data);
+  			 len,
+  			 data,
+  			 &query,
+  			 1,
+  			 &query),
+  data);
   FREE(data);
   return 0;
 }
 
 int main(int argc,
-	 char * argv[]) {
+   char * argv[]) {
   int failureCount = 0;
 
   failureCount += testEC();

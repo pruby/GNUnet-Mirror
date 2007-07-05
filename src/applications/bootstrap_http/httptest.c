@@ -45,7 +45,7 @@ static unsigned int count;
 
 
 static void hello(const P2P_hello_MESSAGE * m,
-		  void * arg) {
+  	  void * arg) {
   count++;
 }
 
@@ -59,14 +59,14 @@ static void * pt(void * b) {
   Bootstrap_ServiceAPI * boot = b;
 
   boot->bootstrap(&hello,
-		  NULL,
-		  &terminate,
-		  NULL);
+  	  NULL,
+  	  &terminate,
+  	  NULL);
   return NULL;
 }
 
 int main(int argc,
-	 char ** argv) {
+   char ** argv) {
   static CoreAPIForApplication capi;
   struct GC_Configuration * cfg;
   struct PluginHandle * plugin;
@@ -79,30 +79,30 @@ int main(int argc,
   count = 0;
   cfg = GC_create_C_impl();
   GC_set_configuration_value_string(cfg,
-				    NULL,
-				    "GNUNETD",
-				    "HOSTLISTURL",
-				    "http://gnunet.org/hostlist");
+  			    NULL,
+  			    "GNUNETD",
+  			    "HOSTLISTURL",
+  			    "http://gnunet.org/hostlist");
   memset(&capi,
-	 0,
-	 sizeof(CoreAPIForApplication));
+   0,
+   sizeof(CoreAPIForApplication));
   capi.cfg = cfg;
   capi.requestService = &rs;
   capi.releaseService = &rsx;
   plugin = os_plugin_load(NULL,
-			  "libgnunetmodule_",
-			  "bootstrap");
+  		  "libgnunetmodule_",
+  		  "bootstrap");
   init = os_plugin_resolve_function(plugin,
-				    "provide_module_",
-				    YES);
+  			    "provide_module_",
+  			    YES);
   boot = init(&capi);
   p = PTHREAD_CREATE(&pt,
-		     boot,
-		     1024 * 64);
+  	     boot,
+  	     1024 * 64);
   PTHREAD_JOIN(p, &unused);
   done = os_plugin_resolve_function(plugin,
-				    "release_module_",
-				    YES);
+  			    "release_module_",
+  			    YES);
   done();
   os_plugin_unload(plugin);
   GC_free(cfg);

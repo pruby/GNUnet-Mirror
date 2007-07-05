@@ -53,7 +53,7 @@ static void * receiveThread(void * cls) {
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (OK == connection_read(sock,
-			       (MESSAGE_HEADER**)&buffer)) {
+  		       (MESSAGE_HEADER**)&buffer)) {
     /* process */
   }
   FREE(buffer);
@@ -67,7 +67,7 @@ static void * receiveThread(void * cls) {
  * @return return value from gnunet-template: 0: ok, -1: error
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
   void * unused;
@@ -76,32 +76,32 @@ int main(int argc,
   int i;
 
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-template",
-		  &cfgFilename,
-		  gnunettemplateOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-template",
+  	  &cfgFilename,
+  	  gnunettemplateOptions,
+  	  &ectx,
+  	  &cfg);
   if (-1 == i) {
     GNUNET_fini(ectx, cfg);
     return -1;
   }
 
   sock = client_connection_create(ectx,
-				  cfg);
+  			  cfg);
   if (sock == NULL) {
     fprintf(stderr,
-	    _("Error establishing connection with gnunetd.\n"));
+      _("Error establishing connection with gnunetd.\n"));
     GNUNET_fini(ectx, cfg);
     return 1;
   }
   messageReceiveThread = PTHREAD_CREATE(&receiveThread,
-					sock,
-					128 * 1024);
+  				sock,
+  				128 * 1024);
   if (messageReceiveThread == NULL) {
     GE_DIE_STRERROR(ectx,
-		    GE_IMMEDIATE | GE_FATAL | GE_USER | GE_ADMIN,
-		    "pthread_create");
+  	    GE_IMMEDIATE | GE_FATAL | GE_USER | GE_ADMIN,
+  	    "pthread_create");
   }
 
   /* wait for shutdown... */

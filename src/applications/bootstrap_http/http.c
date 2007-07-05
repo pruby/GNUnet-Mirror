@@ -71,9 +71,9 @@ typedef struct {
  */
 static size_t
 downloadHostlistHelper(void * ptr,
-		       size_t size,
-		       size_t nmemb,
-		       void * ctx) {
+  	       size_t size,
+  	       size_t nmemb,
+  	       void * ctx) {
   BootstrapContext * bctx = ctx;
   size_t osize;
   unsigned int total;
@@ -89,34 +89,34 @@ downloadHostlistHelper(void * ptr,
        bctx->bsize,
        total);
   memcpy(&bctx->buf[osize],
-	 ptr,
-	 size * nmemb);
+   ptr,
+   size * nmemb);
   while ( (bctx->bsize >= sizeof(P2P_hello_MESSAGE)) &&
-	  (bctx->termTest(bctx->targ)) ) {
+    (bctx->termTest(bctx->targ)) ) {
     hello = (const P2P_hello_MESSAGE*) &bctx->buf[0];
     hs = ntohs(hello->header.size);
     if (bctx->bsize < hs)
       break; /* incomplete */
     if ( (ntohs(hello->header.type) != p2p_PROTO_hello) ||
-	 (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello) ) ||
-	 (P2P_hello_MESSAGE_size(hello) >= MAX_BUFFER_SIZE) ) {
+   (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello) ) ||
+   (P2P_hello_MESSAGE_size(hello) >= MAX_BUFFER_SIZE) ) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_IMMEDIATE,
-	     _("Bootstrap data obtained from `%s' is invalid.\n"),
-	     bctx->url);
+       GE_WARNING | GE_USER | GE_IMMEDIATE,
+       _("Bootstrap data obtained from `%s' is invalid.\n"),
+       bctx->url);
       return 0; /* Error: invalid format! */
     }
     if (stats != NULL)
       stats->change(stat_hellodownloaded,
-		    1);
+  	    1);
     bctx->callback(hello,
-		   bctx->arg);
+  	   bctx->arg);
     memmove(&bctx->buf[0],
-	    &bctx->buf[hs],
-	    bctx->bsize - hs);
+      &bctx->buf[hs],
+      bctx->bsize - hs);
     GROW(bctx->buf,
-	 bctx->bsize,
-	 bctx->bsize - hs);
+   bctx->bsize,
+   bctx->bsize - hs);
   }
   return size * nmemb;
 }
@@ -125,9 +125,9 @@ downloadHostlistHelper(void * ptr,
 
 
 static void downloadHostlist(bootstrap_hello_callback callback,
-			     void * arg,
-			     bootstrap_terminate_callback termTest,
-			     void * targ) {
+  		     void * arg,
+  		     bootstrap_terminate_callback termTest,
+  		     void * targ) {
   BootstrapContext bctx;
   char * url;
   char * proxy;
@@ -167,13 +167,13 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   }
   url = NULL;
   if (0 != GC_get_configuration_value_string(coreAPI->cfg,
-					     "GNUNETD",
-					     "HOSTLISTURL",
-					     "",
-					     &url)) {
+  				     "GNUNETD",
+  				     "HOSTLISTURL",
+  				     "",
+  				     &url)) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("No hostlist URL specified in configuration, will not bootstrap.\n"));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("No hostlist URL specified in configuration, will not bootstrap.\n"));
     FREE(url);
     curl_easy_cleanup(curl);
     return;
@@ -184,7 +184,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     pos = strlen(url) - 1;
     while (pos > 0) {
       if (url[pos] == ' ')
-	urls++;
+  urls++;
       pos--;
     }
   }
@@ -207,55 +207,55 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     pos--;
   }
   GE_LOG(ectx,
-	 GE_INFO | GE_BULK | GE_USER,
-	 _("Bootstrapping using `%s'.\n"),
-	 url);
+   GE_INFO | GE_BULK | GE_USER,
+   _("Bootstrapping using `%s'.\n"),
+   url);
   bctx.url = url;
   bctx.total = 0;
   proxy = NULL;
   GC_get_configuration_value_string(coreAPI->cfg,
-				    "GNUNETD",
-				    "HTTP-PROXY",
-				    "",
-				    &proxy);
+  			    "GNUNETD",
+  			    "HTTP-PROXY",
+  			    "",
+  			    &proxy);
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_WRITEFUNCTION,
-		   &downloadHostlistHelper);
+  	   CURLOPT_WRITEFUNCTION,
+  	   &downloadHostlistHelper);
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_WRITEDATA,
-		   &bctx);
+  	   CURLOPT_WRITEDATA,
+  	   &bctx);
   if (ret != CURLE_OK)
     goto cleanup;
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_FAILONERROR,
-		   1);
+  	   CURLOPT_FAILONERROR,
+  	   1);
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_URL,
-		   &url[pos]);
+  	   CURLOPT_URL,
+  	   &url[pos]);
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_BULK,
-	 _("Trying to download hostlist from `%s'\n"),
-	 &url[pos]);
+   GE_INFO | GE_USER | GE_BULK,
+   _("Trying to download hostlist from `%s'\n"),
+   &url[pos]);
   if (strlen(proxy) > 0)
     CURL_EASY_SETOPT(curl,
-		     CURLOPT_PROXY,
-		     proxy);
+  	     CURLOPT_PROXY,
+  	     proxy);
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_BUFFERSIZE,
-		   1024); /* a bit more than one HELLO */
+  	   CURLOPT_BUFFERSIZE,
+  	   1024); /* a bit more than one HELLO */
   if (0 == strncmp(&url[pos], "http", 4))
     CURL_EASY_SETOPT(curl,
-		     CURLOPT_USERAGENT,
-		     "GNUnet");
+  	     CURLOPT_USERAGENT,
+  	     "GNUnet");
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_CONNECTTIMEOUT,
-		   150L);
+  	   CURLOPT_CONNECTTIMEOUT,
+  	   150L);
   /* NOTE: use of CONNECTTIMEOUT without also
      setting NOSIGNAL results in really weird
      crashes on my system! */
   CURL_EASY_SETOPT(curl,
-		   CURLOPT_NOSIGNAL,
-		   1);
+  	   CURLOPT_NOSIGNAL,
+  	   1);
 #if USE_MULTI
   multi = curl_multi_init();
   if (multi == NULL) {
@@ -265,33 +265,33 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   mret = curl_multi_add_handle(multi, curl);
   if (mret != CURLM_OK) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
-	   "curl_multi_add_handle",
-	   __FILE__,
-	   __LINE__,
-	   curl_multi_strerror(mret));
+     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+     _("%s failed at %s:%d: `%s'\n"),
+     "curl_multi_add_handle",
+     __FILE__,
+     __LINE__,
+     curl_multi_strerror(mret));
     goto cleanup;
   }
   while ( (YES == termTest(targ)) &&
-	  (GNUNET_SHUTDOWN_TEST() == NO) ) {
+    (GNUNET_SHUTDOWN_TEST() == NO) ) {
     max = 0;
     FD_ZERO(&rs);
     FD_ZERO(&ws);
     FD_ZERO(&es);
     mret = curl_multi_fdset(multi,
-			    &rs,
-			    &ws,
-			    &es,
-			    &max);
+  		    &rs,
+  		    &ws,
+  		    &es,
+  		    &max);
     if (mret != CURLM_OK) {
       GE_LOG(ectx,
-	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	     _("%s failed at %s:%d: `%s'\n"),
-	     "curl_multi_fdset",
-	     __FILE__,
-	     __LINE__,
-	     curl_multi_strerror(mret));
+       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+       _("%s failed at %s:%d: `%s'\n"),
+       "curl_multi_fdset",
+       __FILE__,
+       __LINE__,
+       curl_multi_strerror(mret));
       goto cleanup;
     }
     /* use timeout of 1s in case that SELECT is not interrupted by
@@ -300,50 +300,50 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     tv.tv_sec = 0;
     tv.tv_usec = 1000;
     SELECT(max + 1,
-	   &rs,
-	   &ws,
-	   &es,
-	   &tv);
+     &rs,
+     &ws,
+     &es,
+     &tv);
     if (YES != termTest(targ))
       break;
     do {
       running = 0;
       mret = curl_multi_perform(multi, &running);
       if (running == 0) {
-	do {
-	  msg = curl_multi_info_read(multi,
-				     &running);
-	  GE_BREAK(ectx, msg != NULL);
-	  if (msg == NULL)
-	    break;
-	  switch (msg->msg) {
-	  case CURLMSG_DONE:
-	    if (msg->data.result != CURLE_OK)
-	      GE_LOG(ectx,
-		     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		     _("%s failed at %s:%d: `%s'\n"),
-		     "curl_multi_perform",
-		     __FILE__,
-		     __LINE__,
-		   curl_easy_strerror(msg->data.result));
-	    break;
-	  default:
-	    break;
-	  }	
-	} while (running > 0);
-	break;
+  do {
+    msg = curl_multi_info_read(multi,
+  			     &running);
+    GE_BREAK(ectx, msg != NULL);
+    if (msg == NULL)
+      break;
+    switch (msg->msg) {
+    case CURLMSG_DONE:
+      if (msg->data.result != CURLE_OK)
+        GE_LOG(ectx,
+  	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  	     _("%s failed at %s:%d: `%s'\n"),
+  	     "curl_multi_perform",
+  	     __FILE__,
+  	     __LINE__,
+  	   curl_easy_strerror(msg->data.result));
+      break;
+    default:
+      break;
+    }	
+  } while (running > 0);
+  break;
       }
     } while ( (mret == CURLM_CALL_MULTI_PERFORM) &&
-	      (YES == termTest(targ)) );
+        (YES == termTest(targ)) );
     if ( (mret != CURLM_OK) &&
-	 (mret != CURLM_CALL_MULTI_PERFORM) ) {
+   (mret != CURLM_CALL_MULTI_PERFORM) ) {
       GE_LOG(ectx,
-	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	     _("%s failed at %s:%d: `%s'\n"),
-	     "curl_multi_perform",
-	     __FILE__,
-	     __LINE__,
-	     curl_multi_strerror(mret));
+       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+       _("%s failed at %s:%d: `%s'\n"),
+       "curl_multi_perform",
+       __FILE__,
+       __LINE__,
+       curl_multi_strerror(mret));
       goto cleanup;
     }
     if (running == 0)
@@ -352,42 +352,42 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   mret = curl_multi_remove_handle(multi, curl);
   if (mret != CURLM_OK) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
-	   "curl_multi_remove_handle",
-	   __FILE__,
-	   __LINE__,
-	   curl_multi_strerror(mret));
+     GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+     _("%s failed at %s:%d: `%s'\n"),
+     "curl_multi_remove_handle",
+     __FILE__,
+     __LINE__,
+     curl_multi_strerror(mret));
     goto cleanup;
   }
 #else
   ret = curl_easy_perform(curl);
   if (ret != CURLE_OK)
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
-	   "curl_easy_perform",
-	   __FILE__,
-	   __LINE__,
-	   curl_easy_strerror(ret));
+     GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+     _("%s failed at %s:%d: `%s'\n"),
+     "curl_easy_perform",
+     __FILE__,
+     __LINE__,
+     curl_easy_strerror(ret));
 #endif
   curl_easy_cleanup(curl);
 #if USE_MULTI
   mret = curl_multi_cleanup(multi);
   if (mret != CURLM_OK)
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"),
-	   "curl_multi_cleanup",
-	   __FILE__,
-	   __LINE__,
-	   curl_multi_strerror(mret));
+     GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+     _("%s failed at %s:%d: `%s'\n"),
+     "curl_multi_cleanup",
+     __FILE__,
+     __LINE__,
+     curl_multi_strerror(mret));
 #endif
   GE_LOG(ectx,
-	 GE_INFO | GE_BULK | GE_USER,
-	 _("Downloaded %llu bytes from `%s'.\n"),
-	 bctx.total,
-	 url);
+   GE_INFO | GE_BULK | GE_USER,
+   _("Downloaded %llu bytes from `%s'.\n"),
+   bctx.total,
+   url);
   FREE(url);
   FREE(proxy);
   curl_global_cleanup();

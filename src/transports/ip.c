@@ -38,8 +38,8 @@
  * @return SYSERR on error, OK on success
  */
 int getPublicIPAddress(struct GC_Configuration * cfg,
-		       struct GE_Context * ectx,
-		       IPaddr * address) {
+  	       struct GE_Context * ectx,
+  	       IPaddr * address) {
   static IPaddr myAddress;
   static cron_t last;
   static cron_t lastError;
@@ -51,13 +51,13 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
     if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     ips = network_get_local_ip(cfg,
-			       ectx,			
-			       &myAddress);
+  		       ectx,			
+  		       &myAddress);
     if (ips == NULL) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Failed to obtain my (external) %s address!\n"),
-	     "IP");
+       GE_WARNING | GE_USER | GE_BULK,
+       _("Failed to obtain my (external) %s address!\n"),
+       "IP");
       lastError = now;
       return SYSERR;
     }
@@ -65,8 +65,8 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
     last = now;
   }
   memcpy(address,
-	 &myAddress,
-	 sizeof(IPaddr));
+   &myAddress,
+   sizeof(IPaddr));
   return OK;
 }
 
@@ -97,9 +97,9 @@ static void expirePICache() {
       FREE(pos->address);
       FREE(pos);
       if (prev == NULL)
-	pi_head = next;
+  pi_head = next;
       else
-	prev->next = next;
+  prev->next = next;
     } else
       prev = pos;
     pos = next;
@@ -117,8 +117,8 @@ static void expirePICache() {
  * @return OK if we found an address, SYSERR if not
  */
 int getIPaddressFromPID(const PeerIdentity * peer,
-			void ** sa,
-			unsigned int * salen) {
+  		void ** sa,
+  		unsigned int * salen) {
   struct PICache * cache; 
 
   MUTEX_LOCK(lock);
@@ -126,13 +126,13 @@ int getIPaddressFromPID(const PeerIdentity * peer,
   cache = pi_head;
   while (cache != NULL) {
     if (0 == memcmp(peer,
-		    &cache->peer,
-		    sizeof(PeerIdentity))) {      
+  	    &cache->peer,
+  	    sizeof(PeerIdentity))) {      
       *salen = cache->len;
       *sa = MALLOC(cache->len);
       memcpy(*sa,
-	     cache->address,
-	     cache->len);
+       cache->address,
+       cache->len);
       MUTEX_UNLOCK(lock);
       return OK;
     }
@@ -151,30 +151,30 @@ int getIPaddressFromPID(const PeerIdentity * peer,
  * us to validate the address).  
  */
 void setIPaddressFromPID(const PeerIdentity * peer,
-			 const void * sa,
-			 unsigned int salen) {
+  		 const void * sa,
+  		 unsigned int salen) {
   struct PICache * next;
 
   MUTEX_LOCK(lock);
   next = pi_head;
   while (next != NULL) {
     if (0 == memcmp(peer,
-		    &next->peer,
-		    sizeof(PeerIdentity))) {
+  	    &next->peer,
+  	    sizeof(PeerIdentity))) {
       next->expire = get_time() + 12 * cronHOURS;
       if ( (salen == next->len) &&
-	   (0 == memcmp(sa,
-			next->address,
-			salen)) )  {
-	MUTEX_UNLOCK(lock);  
-	return;
+     (0 == memcmp(sa,
+  		next->address,
+  		salen)) )  {
+  MUTEX_UNLOCK(lock);  
+  return;
       }
       FREE(next->address);
       next->address = MALLOC(salen);
       next->len = salen;
       memcpy(next->address,
-	     sa,
-	     salen);
+       sa,
+       salen);
       MUTEX_UNLOCK(lock);  
       return;      
     }
@@ -184,8 +184,8 @@ void setIPaddressFromPID(const PeerIdentity * peer,
   next->peer = *peer;
   next->address = MALLOC(salen);
   memcpy(next->address,
-	 sa,
-	 salen);
+   sa,
+   salen);
   next->len = salen;
   next->expire = get_time() + 12 * cronHOURS;
   expirePICache();

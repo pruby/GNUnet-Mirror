@@ -45,7 +45,7 @@ static int check() {
   for (i=MAX_TESTVAL-1;i>=1;i--) {
     for (j=i-1;j>=0;j--)
       if (ptrs[i][j] != (char) --k)
-	return 1;
+  return 1;
     FREE(ptrs[i]);
   }
 
@@ -107,13 +107,13 @@ static int check() {
 }
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   int ret;
   ret = check();
   if (ret != 0)
     fprintf(stderr,
-	    "ERROR %d.\n",
-	    ret);
+      "ERROR %d.\n",
+      ret);
   return ret;
 }
 

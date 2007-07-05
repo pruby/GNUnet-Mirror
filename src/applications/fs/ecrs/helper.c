@@ -37,7 +37,7 @@
  *  if keywords is not legal (i.e. empty).
  */
 struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
-					   const char * input) {
+  				   const char * input) {
   char ** keywords;
   unsigned int num_Words;
   int inWord;
@@ -63,8 +63,8 @@ struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
   if (num_Words == 0) {
     FREENONNULL(searchString);
     GE_LOG(ectx,
-	   GE_ERROR | GE_IMMEDIATE | GE_USER,
-	   _("No keywords specified!\n"));
+     GE_ERROR | GE_IMMEDIATE | GE_USER,
+     _("No keywords specified!\n"));
     return NULL;
   }
   keywords = MALLOC(num_Words * sizeof(char *));
@@ -80,8 +80,8 @@ struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
     }
   }
   uri = ECRS_parseArgvKeywordURI(ectx,
-				 num_Words,
-				 (const char**) keywords);
+  			 num_Words,
+  			 (const char**) keywords);
   FREE(keywords);
   FREE(searchString);
   return uri;
@@ -96,8 +96,8 @@ struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
  *  if keywords is not legal (i.e. empty).
  */
 struct ECRS_URI * ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
-					   unsigned int num_keywords,
-					   const char ** keywords) {
+  				   unsigned int num_keywords,
+  				   const char ** keywords) {
   unsigned int i;
   unsigned int uriLen;
   char * uriString;
@@ -117,19 +117,19 @@ struct ECRS_URI * ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
   for (i=0;i<num_keywords;i++) {
     if (uriSize < uriLen + strlen(_("AND")) + 1 + strlen(keywords[i]))
       GROW(uriString,
-	   uriSize,
-	   uriSize + 4096 + strlen(keywords[i]));
+     uriSize,
+     uriSize + 4096 + strlen(keywords[i]));
     if ( (i > 0) &&
-	 (0 == strcmp(keywords[i], _("AND"))) ) {
+   (0 == strcmp(keywords[i], _("AND"))) ) {
       strcat(uriString, "+");
       if (i == num_keywords-1)
-	strcat(uriString, _("AND")); /* last keyword 'AND'? keep it! */
+  strcat(uriString, _("AND")); /* last keyword 'AND'? keep it! */
       uriLen += 1;
     } else {
       if ( (i > 0) &&
-	   (0 != strcmp(keywords[i-1], _("AND"))) ) {
-	strcat(uriString, " ");
-	uriLen += 1;
+     (0 != strcmp(keywords[i-1], _("AND"))) ) {
+  strcat(uriString, " ");
+  uriLen += 1;
       }
       strcat(uriString, keywords[i]);
       uriLen += strlen(keywords[i]);
@@ -151,8 +151,8 @@ struct ECRS_URI * ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
  *  if keywords is not legal (i.e. empty).
  */
 struct ECRS_URI * ECRS_parseListKeywordURI(struct GE_Context * ectx,
-					   unsigned int num_keywords,
-					   const char ** keywords) {
+  				   unsigned int num_keywords,
+  				   const char ** keywords) {
   unsigned int i;
   unsigned int uriLen;
   char * uriString;
@@ -172,8 +172,8 @@ struct ECRS_URI * ECRS_parseListKeywordURI(struct GE_Context * ectx,
   for (i=0;i<num_keywords;i++) {
     if (uriSize < uriLen + 1 + strlen(keywords[i]))
       GROW(uriString,
-	   uriSize,
-	   uriSize + 4096 + strlen(keywords[i]));
+     uriSize,
+     uriSize + 4096 + strlen(keywords[i]));
     if (i > 0) {
       strcat(uriString, "+");
       uriLen++;

@@ -36,29 +36,29 @@
  * @return OK on success, SYSERR on error
  */
 int gnunet_identity_peer_add(struct ClientServerConnection * sock,
-			     const P2P_hello_MESSAGE * hello) {
+  		     const P2P_hello_MESSAGE * hello) {
   P2P_hello_MESSAGE * msg;
 
   msg = MALLOC(P2P_hello_MESSAGE_size(hello));
   memcpy(msg,
-	 hello,
-	 P2P_hello_MESSAGE_size(hello));
+   hello,
+   P2P_hello_MESSAGE_size(hello));
   msg->header.type = htons(CS_PROTO_identity_HELLO);
   /* check that signature is valid -- internal
      sanity check... */
   if (SYSERR == verifySig(&msg->senderIdentity,
-			  P2P_hello_MESSAGE_size(msg)
-			  - sizeof(Signature)
-			  - sizeof(PublicKey)
-			  - sizeof(MESSAGE_HEADER),
-			  &msg->signature,
-			  &msg->publicKey)) {
+  		  P2P_hello_MESSAGE_size(msg)
+  		  - sizeof(Signature)
+  		  - sizeof(PublicKey)
+  		  - sizeof(MESSAGE_HEADER),
+  		  &msg->signature,
+  		  &msg->publicKey)) {
     GE_BREAK(NULL, 0);
     FREE(msg);
     return SYSERR;
   }
   if (SYSERR == connection_write(sock,
-				 &msg->header)) {
+  			 &msg->header)) {
     FREE(msg);
     return SYSERR;
   }
@@ -72,9 +72,9 @@ int gnunet_identity_peer_add(struct ClientServerConnection * sock,
  * with the private key of the peer.
  */
 int gnunet_identity_sign_function(struct ClientServerConnection * sock,
-				  unsigned short size,
-				  const void * data,
-				  Signature * result) {
+  			  unsigned short size,
+  			  const void * data,
+  			  Signature * result) {
   MESSAGE_HEADER * req;
   CS_identity_signature_MESSAGE * reply;
 
@@ -82,16 +82,16 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
   req->size = htons(sizeof(MESSAGE_HEADER) + size);
   req->type = htons(CS_PROTO_identity_request_SIGN);
   memcpy(&req[1],
-	 data,
-	 size);
+   data,
+   size);
   if (SYSERR == connection_write(sock,
-				 req)) {
+  			 req)) {
     FREE(req);
     return SYSERR;
   }
   FREE(req);
   if (OK != connection_read(sock,
-			    (MESSAGE_HEADER**)&reply)) {
+  		    (MESSAGE_HEADER**)&reply)) {
     connection_close_temporarily(sock);
     return SYSERR;
   }
@@ -113,17 +113,17 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
  * @return SYSERR on error, OK on success
  */
 int gnunet_identity_get_self(struct ClientServerConnection * sock,
-			     P2P_hello_MESSAGE ** msg) {
+  		     P2P_hello_MESSAGE ** msg) {
   MESSAGE_HEADER req;
   P2P_hello_MESSAGE * reply;
 
   req.size = htons(sizeof(MESSAGE_HEADER));
   req.type = htons(CS_PROTO_identity_request_HELLO);
   if (SYSERR == connection_write(sock,
-				 &req))
+  			 &req))
     return SYSERR;
   if (OK != connection_read(sock,
-			    (MESSAGE_HEADER**)&reply)) {
+  		    (MESSAGE_HEADER**)&reply)) {
     connection_close_temporarily(sock);
     return SYSERR;
   }
@@ -145,7 +145,7 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
  *         NO if connection is not yet present
  */
 int gnunet_identity_request_connect(struct ClientServerConnection * sock,
-				    const PeerIdentity * peer) {
+  			    const PeerIdentity * peer) {
 
   CS_identity_connect_MESSAGE msg;
   int result;
@@ -157,10 +157,10 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
   msg.other
     = *peer;
   if (SYSERR == connection_write(sock,
-				 &msg.header))
+  			 &msg.header))
     return SYSERR;
   if (SYSERR == connection_read_result(sock,
-				       &result))
+  			       &result))
     return SYSERR;
   return result;
 }
@@ -172,8 +172,8 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
  *         otherwise number of peers known
  */
 int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
-				       GNUnetIdentityPeerInfoCallback callback,
-				       void * cls) {
+  			       GNUnetIdentityPeerInfoCallback callback,
+  			       void * cls) {
   MESSAGE_HEADER req;
   MESSAGE_HEADER * reply;
   CS_identity_peer_info_MESSAGE * info;
@@ -182,11 +182,11 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
   req.size = htons(sizeof(MESSAGE_HEADER));
   req.type = htons(CS_PROTO_identity_request_INFO);
   if (SYSERR == connection_write(sock,
-				 &req))
+  			 &req))
     return SYSERR;
   count = 0;
   while (OK == connection_read(sock,
-			       &reply)) {
+  		       &reply)) {
     if (ntohs(reply->size) < sizeof(MESSAGE_HEADER)) {
       GE_BREAK(NULL, 0);
       FREE(reply);
@@ -198,7 +198,7 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
     }
     count++;
     if ( (ntohs(reply->type) != CS_PROTO_identity_INFO) ||
-	 (ntohs(reply->size) < sizeof(CS_identity_peer_info_MESSAGE)) ) {
+   (ntohs(reply->size) < sizeof(CS_identity_peer_info_MESSAGE)) ) {
       GE_BREAK(NULL, 0);
       FREE(reply);
       return SYSERR;
@@ -206,14 +206,14 @@ int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
     if (callback != NULL) {
       info = (CS_identity_peer_info_MESSAGE *) reply;
       if (OK != callback(cls,
-			 &info->peer,
-			 &info[1],
-			 ntohs(reply->size) - sizeof(CS_identity_peer_info_MESSAGE),
-			 ntohll(info->last_message),
-			 ntohl(info->trust),
-			 ntohl(info->bpm))) {
-	FREE(reply);
-	return SYSERR;
+  		 &info->peer,
+  		 &info[1],
+  		 ntohs(reply->size) - sizeof(CS_identity_peer_info_MESSAGE),
+  		 ntohll(info->last_message),
+  		 ntohl(info->trust),
+  		 ntohl(info->bpm))) {
+  FREE(reply);
+  return SYSERR;
       }
     }
     FREE(reply);

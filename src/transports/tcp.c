@@ -95,37 +95,37 @@ static struct MUTEX * tcpblacklistlock;
  * Check if we are allowed to connect to the given IP.
  */
 static int isBlacklisted(const void * addr,
-			 unsigned int addr_len) {
+  		 unsigned int addr_len) {
   IPaddr ip;
   int ret;
 
   if (addr_len == sizeof(struct sockaddr_in)) {
     memcpy(&ip,
-	   &((struct sockaddr_in*) addr)->sin_addr,
-	   sizeof(IPaddr));
+     &((struct sockaddr_in*) addr)->sin_addr,
+     sizeof(IPaddr));
   } else if (addr_len == sizeof(IPaddr)) {
     memcpy(&ip,
-	   addr,
-	   addr_len);
+     addr,
+     addr_len);
   } else {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting connection (invalid address length %u)\n",
-	   addr_len);
+     GE_DEBUG | GE_ADMIN | GE_BULK,
+     "Rejecting connection (invalid address length %u)\n",
+     addr_len);
 #endif
     return SYSERR;
   }
   MUTEX_LOCK(tcpblacklistlock);
   ret = check_ipv4_listed(filteredNetworks_,
-			  ip);
+  		  ip);
   MUTEX_UNLOCK(tcpblacklistlock);
 #if DEBUG_TCP
   if (ret != NO)
     GE_LOG(ectx,
-	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
-	   PRIP(ntohl(*(int*)addr)));
+     GE_DEBUG | GE_ADMIN | GE_BULK,
+     "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
+     PRIP(ntohl(*(int*)addr)));
 #endif
   return ret;
 }
@@ -134,24 +134,24 @@ static int isBlacklisted(const void * addr,
  * Check if we are allowed to connect to the given IP.
  */
 static int isWhitelisted(const void * addr,
-			 unsigned int addr_len) {
+  		 unsigned int addr_len) {
   IPaddr ip;
   int ret;
 
   if (addr_len == sizeof(struct sockaddr_in)) {
     memcpy(&ip,
-	   &((struct sockaddr_in*) addr)->sin_addr,
-	   sizeof(IPaddr));
+     &((struct sockaddr_in*) addr)->sin_addr,
+     sizeof(IPaddr));
   } else if (addr_len == sizeof(IPaddr)) {
     memcpy(&ip,
-	   addr,
-	   addr_len);
+     addr,
+     addr_len);
   } else {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting connection (invalid address length %u)\n",
-	   addr_len);
+     GE_DEBUG | GE_ADMIN | GE_BULK,
+     "Rejecting connection (invalid address length %u)\n",
+     addr_len);
 #endif
     return SYSERR;
   }
@@ -159,25 +159,25 @@ static int isWhitelisted(const void * addr,
   MUTEX_LOCK(tcpblacklistlock);
   if (allowedNetworks_ != NULL)
     ret = check_ipv4_listed(allowedNetworks_,
-			    ip);
+  		    ip);
   MUTEX_UNLOCK(tcpblacklistlock);
   if (ret != YES) {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
-	   PRIP(ntohl(*(int*)addr)));
+     GE_DEBUG | GE_ADMIN | GE_BULK,
+     "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
+     PRIP(ntohl(*(int*)addr)));
 #endif
   }
   return ret;
 }
 
 static int isRejected(const void * addr,
-		      unsigned int addr_len) {
+  	      unsigned int addr_len) {
   if ((NO != isBlacklisted(addr,
-			    addr_len)) ||
+  		    addr_len)) ||
       (YES != isWhitelisted(addr,
-			    addr_len)))	
+  		    addr_len)))	
     return YES;
   return NO;
 }
@@ -188,16 +188,16 @@ static int isRejected(const void * addr,
  * the config file.
  */
 static unsigned short getGNUnetTCPPort() {
-  struct servent * pse;	/* pointer to service information entry	*/
+  struct servent * pse;  /* pointer to service information entry	*/
   unsigned long long port;
 
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "TCP",
-					      "PORT",
-					      0,
-					      65535,
-					      2086,
-					      &port)) {
+  				      "TCP",
+  				      "PORT",
+  				      0,
+  				      65535,
+  				      2086,
+  				      &port)) {
     if ((pse = getservbyname("gnunet", "tcp")))
       port = htons(pse->s_port);
     else
@@ -224,18 +224,18 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
        (ntohs(hello->header.type) != p2p_PROTO_hello) ||
        (ntohs(hello->protocol) != TCP_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip,
-			     sizeof(IPaddr))) ||
+  		     sizeof(IPaddr))) ||
        (YES != isWhitelisted(&haddr->ip,
-			     sizeof(IPaddr))) ) {
+  		     sizeof(IPaddr))) ) {
 #if DEBUG_TCP
     EncName enc;
 
     hash2enc(&hello->senderIdentity.hashPubKey,
-	     &enc);
+       &enc);
     GE_LOG(ectx,
-	   GE_DEBUG | GE_ADMIN | GE_BULK,
-	   "Rejecting HELLO from `%s'\n",
-	   &enc);
+     GE_DEBUG | GE_ADMIN | GE_BULK,
+     "Rejecting HELLO from `%s'\n",
+     &enc);
 #endif
     return SYSERR; /* obviously invalid */
   }
@@ -261,8 +261,8 @@ static P2P_hello_MESSAGE * createhello() {
       once = 1;
 #if DEBUG_TCP
       GE_LOG(ectx,
-	     GE_DEBUG | GE_USER | GE_BULK,
-	     "TCP port is 0, will only send using TCP.\n");
+       GE_DEBUG | GE_USER | GE_BULK,
+       "TCP port is 0, will only send using TCP.\n");
 #endif
     }
     return NULL; /* TCP transport is configured SEND-only! */
@@ -271,22 +271,22 @@ static P2P_hello_MESSAGE * createhello() {
   haddr = (HostAddress*) &msg[1];
 
   if (! ( ( (upnp != NULL) &&
-	    (OK == upnp->get_ip(port,
-				"TCP",
-				&haddr->ip)) ) ||
-	  (SYSERR != getPublicIPAddress(cfg,
-					ectx,
-					&haddr->ip)) ) ) {
+      (OK == upnp->get_ip(port,
+  			"TCP",
+  			&haddr->ip)) ) ||
+    (SYSERR != getPublicIPAddress(cfg,
+  				ectx,
+  				&haddr->ip)) ) ) {
     FREE(msg);
     GE_LOG(ectx,
-	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-	   _("TCP: Could not determine my public IP address.\n"));
+     GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+     _("TCP: Could not determine my public IP address.\n"));
     return NULL;
   }
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_BULK,
-	 "TCP uses IP address %u.%u.%u.%u.\n",
-	 PRIP(ntohl(*(int*)&haddr->ip)));
+   GE_INFO | GE_USER | GE_BULK,
+   "TCP uses IP address %u.%u.%u.%u.\n",
+   PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
@@ -303,7 +303,7 @@ static P2P_hello_MESSAGE * createhello() {
  * @return OK on success, SYSERR if the operation failed
  */
 static int tcpConnect(const P2P_hello_MESSAGE * hello,
-		      TSession ** tsessionPtr) {
+  	      TSession ** tsessionPtr) {
   static int zero = 0;
   HostAddress * haddr;
   int sock;
@@ -318,15 +318,15 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
   session = sessions;
   while (session != NULL) {
     if (0 == memcmp(&session->sender,
-		    &hello->senderIdentity,
-		    sizeof(PeerIdentity))) {
+  	    &hello->senderIdentity,
+  	    sizeof(PeerIdentity))) {
       MUTEX_LOCK(session->lock);
       if (session->in_select) {
-	session->users++;
-	MUTEX_UNLOCK(session->lock);
-	MUTEX_UNLOCK(tcplock);
-	*tsessionPtr = session->tsession;
-	return OK;
+  session->users++;
+  MUTEX_UNLOCK(session->lock);
+  MUTEX_UNLOCK(tcplock);
+  *tsessionPtr = session->tsession;
+  return OK;
       }
       MUTEX_UNLOCK(session->lock);
     }    
@@ -336,72 +336,72 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
   haddr = (HostAddress*) &hello[1];
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
-	 "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-	 PRIP(ntohl(*(int*)&haddr->ip.addr)),
-	 ntohs(haddr->port));
+   GE_DEBUG | GE_USER | GE_BULK,
+   "Creating TCP connection to %u.%u.%u.%u:%u.\n",
+   PRIP(ntohl(*(int*)&haddr->ip.addr)),
+   ntohs(haddr->port));
 #endif
   sock = SOCKET(PF_INET,
-		SOCK_STREAM,
-		6); /* 6: TCP */
+  	SOCK_STREAM,
+  	6); /* 6: TCP */
   if (sock == -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "socket");
+  	    GE_ERROR | GE_ADMIN | GE_BULK,
+  	    "socket");
     return SYSERR;
   }
   s = socket_create(ectx,
-		    coreAPI->load_monitor,
-		    sock);
+  	    coreAPI->load_monitor,
+  	    sock);
 #if TCP_SYNCNT
   /* only try a single packet to establish connection,
      if that does not work, abort instantly */
   setsockopt(sock,
-	     IPPROTO_TCP,
-	     TCP_SYNCNT,
-	     &zero,
-	     sizeof(zero));
+       IPPROTO_TCP,
+       TCP_SYNCNT,
+       &zero,
+       sizeof(zero));
 #endif
   if (-1 == socket_set_blocking(s, NO)) {
     socket_destroy(s);
     return SYSERR;
   }
   memset(&soaddr,
-	 0,
-	 sizeof(soaddr));
+   0,
+   sizeof(soaddr));
   soaddr.sin_family = AF_INET;
 
   GE_ASSERT(ectx,
-	    sizeof(struct in_addr) == sizeof(IPaddr));
+      sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
-	 &haddr->ip,
-	 sizeof(IPaddr));
+   &haddr->ip,
+   sizeof(IPaddr));
   soaddr.sin_port = haddr->port;
   i = CONNECT(sock,
-	      (struct sockaddr*)&soaddr,
-	      sizeof(soaddr));
+        (struct sockaddr*)&soaddr,
+        sizeof(soaddr));
   if ( (i < 0) &&
        (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	   _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-	   PRIP(ntohl(*(int*)&haddr->ip)),
-	   ntohs(haddr->port),
-	   STRERROR(errno));
+     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+     _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
+     PRIP(ntohl(*(int*)&haddr->ip)),
+     ntohs(haddr->port),
+     STRERROR(errno));
     socket_destroy(s);
     return SYSERR;
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_USER | GE_BULK,
-	 "Establishing connection to %u.%u.%u.%u:%u\n",
-	 PRIP(ntohl(*(int*)&haddr->ip)),
-	 ntohs(haddr->port));
+   GE_DEBUG | GE_DEVELOPER | GE_USER | GE_BULK,
+   "Establishing connection to %u.%u.%u.%u:%u\n",
+   PRIP(ntohl(*(int*)&haddr->ip)),
+   ntohs(haddr->port));
 #endif
   return tcpConnectHelper(hello,
-			  s,
-			  tcpAPI.protocolNumber,
-			  tsessionPtr);
+  		  s,
+  		  tcpAPI.protocolNumber,
+  		  tsessionPtr);
 }
 
 /**
@@ -421,62 +421,62 @@ static int startTransportServer() {
   port = getGNUnetTCPPort();
   if (port != 0) {
     s = SOCKET(PF_INET,
-	       SOCK_STREAM,
-	       0);
+         SOCK_STREAM,
+         0);
     if (s < 0) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_ADMIN | GE_BULK,
-		      "socket");
+  	      GE_ERROR | GE_ADMIN | GE_BULK,
+  	      "socket");
       return SYSERR;
     }
     if (SETSOCKOPT(s,
-		   SOL_SOCKET,
-		   SO_REUSEADDR,
-		   &on,
-		   sizeof(on)) < 0 )
+  	   SOL_SOCKET,
+  	   SO_REUSEADDR,
+  	   &on,
+  	   sizeof(on)) < 0 )
       GE_DIE_STRERROR(ectx,
-		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		      "setsockopt");
+  	      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  	      "setsockopt");
     memset((char *) &serverAddr,
-	   0,
-	   sizeof(serverAddr));
+     0,
+     sizeof(serverAddr));
     serverAddr.sin_family      = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port        = htons(getGNUnetTCPPort());
     if (BIND(s,
-	     (struct sockaddr *) &serverAddr,
-	     sizeof(serverAddr)) < 0) {
+       (struct sockaddr *) &serverAddr,
+       sizeof(serverAddr)) < 0) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-		    "bind");
+  	      GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+  	    "bind");
       GE_LOG(ectx,
-	     GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-	   _("Failed to start transport service on port %d.\n"),
-	     getGNUnetTCPPort());
+       GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+     _("Failed to start transport service on port %d.\n"),
+       getGNUnetTCPPort());
       if (0 != CLOSE(s))
-	GE_LOG_STRERROR(ectx,
-			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			"close");
+  GE_LOG_STRERROR(ectx,
+  		GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		"close");
       return SYSERR;
     }
   } else {
     s = -1; /* no listening! */
   }
   selector = select_create("tcp",
-			   NO,
-			   ectx,
-			   coreAPI->load_monitor,
-			   s,
-			   sizeof(struct sockaddr_in),
-			   TCP_FAST_TIMEOUT,
-			   &select_message_handler,
-			   NULL,
-			   &select_accept_handler,
-			   &isRejected,
-			   &select_close_handler,
-			   NULL,
-			   128 * 1024 /* max memory */, 
-			   128 /* max sockets */);
+  		   NO,
+  		   ectx,
+  		   coreAPI->load_monitor,
+  		   s,
+  		   sizeof(struct sockaddr_in),
+  		   TCP_FAST_TIMEOUT,
+  		   &select_message_handler,
+  		   NULL,
+  		   &select_accept_handler,
+  		   &isRejected,
+  		   &select_close_handler,
+  		   NULL,
+  		   128 * 1024 /* max memory */, 
+  		   128 /* max sockets */);
   return OK;
 }
 
@@ -485,36 +485,36 @@ static int startTransportServer() {
  * configuration on error, syslog errors!)
  */
 static int reloadConfiguration(void * ctx,
-			       struct GC_Configuration * cfg,
-			       struct GE_Context * ectx,
-			       const char * section,
-			       const char * option) {
+  		       struct GC_Configuration * cfg,
+  		       struct GE_Context * ectx,
+  		       const char * section,
+  		       const char * option) {
   char * ch;
 
   if (0 != strcmp(section, "TCP"))
     return 0; /* fast path */
-	
+  
   MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
   FREENONNULL(allowedNetworks_);
   ch = NULL;
   GC_get_configuration_value_string(cfg,
-				    "TCP",
-				    "BLACKLIST",
-				    "",
-				    &ch);
+  			    "TCP",
+  			    "BLACKLIST",
+  			    "",
+  			    &ch);
   filteredNetworks_ = parse_ipv4_network_specification(ectx,
-						       ch);
+  					       ch);
   FREE(ch);
   ch = NULL;
   GC_get_configuration_value_string(cfg,
-				    "TCP",
-				    "WHITELIST",
-				    "",
-				    &ch);
+  			    "TCP",
+  			    "WHITELIST",
+  			    "",
+  			    &ch);
   if (strlen(ch) > 0)
     allowedNetworks_ = parse_ipv4_network_specification(ectx,
-							ch);
+  						ch);
   else
     allowedNetworks_ = NULL;
   FREE(ch);
@@ -528,8 +528,8 @@ static int reloadConfiguration(void * ctx,
  */
 static int
 helloToAddress(const P2P_hello_MESSAGE * hello,
-	       void ** sa,
-	       unsigned int * sa_len) {
+         void ** sa,
+         unsigned int * sa_len) {
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   struct sockaddr_in * serverAddr;
   
@@ -537,12 +537,12 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
   serverAddr = MALLOC(sizeof(struct sockaddr_in));
   *sa = serverAddr;
   memset(serverAddr,
-	 0,
-	 sizeof(struct sockaddr_in));
+   0,
+   sizeof(struct sockaddr_in));
   serverAddr->sin_family   = AF_INET;
   memcpy(&serverAddr->sin_addr,
-	 haddr,
-	 sizeof(IPaddr));
+   haddr,
+   sizeof(IPaddr));
   serverAddr->sin_port = haddr->port;
   return OK;
 }
@@ -563,8 +563,8 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   tcplock = MUTEX_CREATE(YES);
   tcpblacklistlock = MUTEX_CREATE(YES);
   if (0 != GC_attach_change_listener(cfg,
-				     &reloadConfiguration,
-				     NULL)) {
+  			     &reloadConfiguration,
+  			     NULL)) {
     MUTEX_DESTROY(tcplock);
     MUTEX_DESTROY(tcpblacklistlock);
     tcplock = NULL;
@@ -573,16 +573,16 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   }
   coreAPI = core;
   if (GC_get_configuration_value_yesno(cfg,
-				       "TCP",
-				       "UPNP",
-				       YES) == YES) {
+  			       "TCP",
+  			       "UPNP",
+  			       YES) == YES) {
     upnp = coreAPI->requestService("upnp");
 
     if (upnp == NULL) {
       GE_LOG(ectx,
-	     GE_ERROR | GE_USER | GE_IMMEDIATE,
-	     _("The UPnP service could not be loaded. To disable UPnP, set the " \
-	       "configuration option \"UPNP\" in section \"TCP\" to \"NO\"\n"));	
+       GE_ERROR | GE_USER | GE_IMMEDIATE,
+       _("The UPnP service could not be loaded. To disable UPnP, set the " \
+         "configuration option \"UPNP\" in section \"TCP\" to \"NO\"\n"));	
 
     }
   }
@@ -614,8 +614,8 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
 
 void donetransport_tcp() {
   GC_detach_change_listener(cfg,
-			    &reloadConfiguration,
-			    NULL);
+  		    &reloadConfiguration,
+  		    NULL);
   if (stats != NULL) {
     coreAPI->releaseService(stats);
     stats = NULL;

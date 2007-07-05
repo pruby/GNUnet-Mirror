@@ -71,21 +71,21 @@ typedef struct DHT_GET_RECORD {
 } DHT_GET_RECORD;
 
 static void client_result_converter(const HashCode512 * key,
-				    unsigned int type,
-				    unsigned int size,
-				    const char * data,
-				    void * cls) {
+  			    unsigned int type,
+  			    unsigned int size,
+  			    const char * data,
+  			    void * cls) {
   struct DHT_GET_RECORD * get = cls;
   DataContainer * dc;
 
   dc = MALLOC(sizeof(DataContainer) + size);
   dc->size = ntohl(sizeof(DataContainer) + size);
   memcpy(&dc[1],
-	 data,
-	 size);
+   data,
+   size);
   get->callback(key,
-		dc,
-		get->cls);
+  	dc,
+  	get->cls);
   FREE(dc);
 }
 
@@ -118,12 +118,12 @@ static void timeout_callback(void * cls) {
  */
 static struct DHT_GET_RECORD *
 dht_get_async_start(unsigned int type,
-		    const HashCode512 * key,
-		    cron_t timeout,
-		    DataProcessor callback,
-		    void * cls,
-		    DHT_OP_Complete callbackComplete,
-		    void * closure) {
+  	    const HashCode512 * key,
+  	    cron_t timeout,
+  	    DataProcessor callback,
+  	    void * cls,
+  	    DHT_OP_Complete callbackComplete,
+  	    void * closure) {
   struct DHT_GET_RECORD * ret;
 
   ret = MALLOC(sizeof(DHT_GET_RECORD));
@@ -134,14 +134,14 @@ dht_get_async_start(unsigned int type,
   ret->closure = closure;
   ret->type = type;
   cron_add_job(cron,
-	       &timeout_callback,
-	       timeout,
-	       0,
-	       ret);
+         &timeout_callback,
+         timeout,
+         0,
+         ret);
   dht_get_start(key,
-		type,
-		&client_result_converter,
-		ret);
+  	type,
+  	&client_result_converter,
+  	ret);
   return ret;
 }
 
@@ -151,17 +151,17 @@ dht_get_async_start(unsigned int type,
 static int
 dht_get_async_stop(struct DHT_GET_RECORD * record) {
   cron_suspend(cron,
-	       YES);
+         YES);
   cron_del_job(cron,
-	       &timeout_callback,
-	       0,
-	       record);		
+         &timeout_callback,
+         0,
+         record);		
   cron_resume_jobs(cron,
-		   YES);
+  	   YES);
   dht_get_stop(&record->key,
-	       record->type,
-	       &client_result_converter,
-	       record);
+         record->type,
+         &client_result_converter,
+         record);
   FREE(record);
   return OK;
 }
@@ -180,7 +180,7 @@ provide_module_dht(CoreAPIForApplication * capi) {
   cron = cron_create(capi->ectx);
   cron_start(cron);
   if (OK != init_dht_store(1024 * 1024,
-			   capi))
+  		   capi))
     return NULL;
   if (OK != init_dht_table(capi)) {
     done_dht_store();

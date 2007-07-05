@@ -43,25 +43,25 @@ static int do_track;
 static struct GE_Context * ectx;
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
-		       const char * data,
-		       void * closure) {
+  	       const char * data,
+  	       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor",
-		  EXTRACTOR_getKeywordTypeAsString(type)),
-	 data);
+   dgettext("libextractor",
+  	  EXTRACTOR_getKeywordTypeAsString(type)),
+   data);
   return OK;
 }
 
 static void printMeta(const struct ECRS_MetaData * meta) {
   ECRS_getMetaData(meta,
-		   &itemPrinter,
-		   NULL);
+  	   &itemPrinter,
+  	   NULL);
 }
 
 static int printNode(const ECRS_FileInfo * fi,
-		     const HashCode512 * key,
-		     int isRoot,
-		     void * unused) {
+  	     const HashCode512 * key,
+  	     int isRoot,
+  	     void * unused) {
   char * string;
 
   string = ECRS_uriToString(fi->uri);
@@ -81,11 +81,11 @@ static void printDirectory(const char * filename) {
 
   name = string_expandFileName(ectx, filename);
   printf(_("==> Directory `%s':\n"),
-	 name);
+   name);
   if ( (OK != disk_file_size(ectx,
-			     name,
-			     &len,
-			     YES)) ||
+  		     name,
+  		     &len,
+  		     YES)) ||
        (len == 0) ) {
     printf(_("=\tError reading directory.\n"));
     FREE(name);
@@ -93,30 +93,30 @@ static void printDirectory(const char * filename) {
   }
   md = NULL;
   fd = disk_file_open(ectx,
-		      name,
-		      O_LARGEFILE | O_RDONLY);
+  	      name,
+  	      O_LARGEFILE | O_RDONLY);
   if (fd == -1) {
     ret = -1;
   } else {
     data = MMAP(NULL,
-		len,
-		PROT_READ,
-		MAP_SHARED,
-		fd,
-		0);
+  	len,
+  	PROT_READ,
+  	MAP_SHARED,
+  	fd,
+  	0);
     if (data == MAP_FAILED) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_ADMIN | GE_BULK,
-			   "mmap",
-			   name);
+  		   GE_ERROR | GE_ADMIN | GE_BULK,
+  		   "mmap",
+  		   name);
       ret = -1;
     } else {
       ret = ECRS_listDirectory(ectx,
-			       data,
-			       len,
-			       &md,
-			       &printNode,
-			       NULL);
+  		       data,
+  		       len,
+  		       &md,
+  		       &printNode,
+  		       NULL);
       MUNMAP(data, len);
     }
     CLOSE(fd);
@@ -125,7 +125,7 @@ static void printDirectory(const char * filename) {
     printf(_("File format error (not a GNUnet directory?)\n"));
   else
     printf(_("%d files found in directory.\n"),
-	   ret);
+     ret);
   if (md != NULL) {
     printMeta(md);
     ECRS_freeMetaData(md);
@@ -156,28 +156,28 @@ static struct CommandLineOption gnunetdirectoryOptions[] = {
 };
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   int i;
   struct GC_Configuration * cfg;
 
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-directory [OPTIONS] [FILENAMES]",
-		  &cfgFilename,
-		  gnunetdirectoryOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-directory [OPTIONS] [FILENAMES]",
+  	  &cfgFilename,
+  	  gnunetdirectoryOptions,
+  	  &ectx,
+  	  &cfg);
   if (i == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
   }
   if (do_list)
     printf(_("Listed %d matching entries.\n"),
-	   URITRACK_listURIs(ectx,
-			     cfg,
-			     YES,
-			     &printNode,
-			     NULL));
+     URITRACK_listURIs(ectx,
+  		     cfg,
+  		     YES,
+  		     &printNode,
+  		     NULL));
   if (do_kill) {
     URITRACK_trackURIS(ectx, cfg, NO);
     URITRACK_clearTrackedURIS(ectx, cfg);

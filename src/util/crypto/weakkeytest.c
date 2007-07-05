@@ -39,7 +39,7 @@ static void printWeakKey(SESSIONKEY* key) {
   int i;
   for (i = 0; i < SESSIONKEY_LEN; i++) {
     printf("%x ",
-	   (int)(key->key[i]));
+     (int)(key->key[i]));
   }
 }
 
@@ -87,7 +87,7 @@ static int testWeakKey() {
   weak_key.key[31]= (char)(0xaa);
   /* memset(&weak_key, 0, 32); */
   weak_key.crc32 = htonl(crc32N(&weak_key,
-				SESSIONKEY_LEN));
+  			SESSIONKEY_LEN));
 
   size = encryptBlock(WEAK_KEY_TESTSTRING,
                       strlen(WEAK_KEY_TESTSTRING)+1,
@@ -111,7 +111,7 @@ static int testWeakKey() {
     return 1;
   }
   if (0 != strcmp(res,
-		  WEAK_KEY_TESTSTRING)) {
+  	  WEAK_KEY_TESTSTRING)) {
     GE_BREAK(NULL, 0);
     return 1;
   } else
@@ -135,21 +135,21 @@ static int getWeakKeys() {
     makeSessionkey(&sessionkey);
 
     rc = gcry_cipher_open(&handle,
-			  GCRY_CIPHER_AES256,
-			  GCRY_CIPHER_MODE_CFB,
-			  0);
+  		  GCRY_CIPHER_AES256,
+  		  GCRY_CIPHER_MODE_CFB,
+  		  0);
 
     if (rc) {
       printf("testweakkey: gcry_cipher_open failed on trial %d. %s\n",
-	     number_of_runs,
-	     gcry_strerror(rc));
+       number_of_runs,
+       gcry_strerror(rc));
       rc = 0;
       continue;
     }
 
     rc = gcry_cipher_setkey(handle,
-			    &sessionkey,
-			    SESSIONKEY_LEN);
+  		    &sessionkey,
+  		    SESSIONKEY_LEN);
 
     if ((char)rc == GPG_ERR_WEAK_KEY) {
       printf("\nWeak key (in hex): ");
@@ -163,7 +163,7 @@ static int getWeakKeys() {
     }
 
     gcry_cipher_close(handle);
-	
+  
   }
 
   return number_of_weak_keys;
@@ -177,12 +177,12 @@ int main(int argc, char * argv[]) {
 
     if (weak_keys == 0) {
       printf("\nNo weak keys found in %d runs.\n",
-	     MAX_WEAK_KEY_TRIALS);
+       MAX_WEAK_KEY_TRIALS);
     }
     else {
       printf("\n%d weak keys found in %d runs.\n",
-	     weak_keys,
-	     MAX_WEAK_KEY_TRIALS);
+       weak_keys,
+       MAX_WEAK_KEY_TRIALS);
     }
   }
 

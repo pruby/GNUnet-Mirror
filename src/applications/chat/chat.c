@@ -45,8 +45,8 @@ static void markSeen(HashCode512 * hc) {
   if (++ringIndex >= MAX_LAST_MESSAGES)
     ringIndex = 0;
   memcpy(&lastMsgs[ringIndex],
-	 hc,
-	 sizeof(HashCode512));
+   hc,
+   sizeof(HashCode512));
 }
 
 typedef struct {
@@ -56,26 +56,26 @@ typedef struct {
 } BCC;
 
 static void bccHelper(const PeerIdentity * peer,
-		      BCC * bcc) {
+  	      BCC * bcc) {
   coreAPI->unicast(peer,
-		   bcc->message,
-		   bcc->prio,
-		   bcc->delay);
+  	   bcc->message,
+  	   bcc->prio,
+  	   bcc->delay);
 }
 
 static void broadcastToConnected(const MESSAGE_HEADER * message,
-				 unsigned int prio,
-				 unsigned int delay) {
+  			 unsigned int prio,
+  			 unsigned int delay) {
   BCC bcc;
   bcc.message = message;
   bcc.prio = prio;
   bcc.delay = delay;
   coreAPI->forAllConnectedNodes((PerNodeCallback)bccHelper,
-				&bcc);
+  			&bcc);
 }
 
 static int handleChatMSG(const PeerIdentity * sender,
-			 const MESSAGE_HEADER * message) {
+  		 const MESSAGE_HEADER * message) {
   int i;
   int j;
   CS_chat_MESSAGE * cmsg;
@@ -84,7 +84,7 @@ static int handleChatMSG(const PeerIdentity * sender,
 
   if (ntohs(message->size) != sizeof(P2P_chat_MESSAGE)) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Message received from peer is invalid.\n"));
+  _("Message received from peer is invalid.\n"));
     return SYSERR;
   }
   pmsg = (P2P_chat_MESSAGE*)message;
@@ -107,14 +107,14 @@ static int handleChatMSG(const PeerIdentity * sender,
     cmsg->header.type = htons(CS_PROTO_chat_MSG);
     for (j=0;j<clientCount;j++)
       coreAPI->sendToClient(clients[j],
-		    &cmsg->header);
+  	    &cmsg->header);
     pmsg->nick[CHAT_NICK_LENGTH-1] = '\0';
     pmsg->message[CHAT_MSG_LENGTH-1] = '\0';
     /*
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	" CHAT: received new message from %s: %s\n",
-	&pmsg->nick[0],
-	&pmsg->message[0]);
+  " CHAT: received new message from %s: %s\n",
+  &pmsg->nick[0],
+  &pmsg->message[0]);
     */
   }
   MUTEX_UNLOCK(&chatMutex);
@@ -122,7 +122,7 @@ static int handleChatMSG(const PeerIdentity * sender,
 }
 
 static int csHandleChatRequest(ClientHandle client,
-			       const CS_MESSAGE_HEADER * message) {
+  		       const CS_MESSAGE_HEADER * message) {
   int i;
   int j;
   CS_chat_MESSAGE * cmsg;
@@ -131,7 +131,7 @@ static int csHandleChatRequest(ClientHandle client,
 
   if (ntohs(message->size) != sizeof(CS_chat_MESSAGE)) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Message received from client is invalid\n"));
+  _("Message received from client is invalid\n"));
     return SYSERR; /* invalid message */
   }
   pmsg = (P2P_chat_MESSAGE*)message;
@@ -149,16 +149,16 @@ static int csHandleChatRequest(ClientHandle client,
       j = i;
     else
       coreAPI->sendToClient(clients[i],
-		    message);
+  	    message);
   if (j == -1) {
     if (clientCount == MAX_CLIENTS)
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Maximum number of chat clients reached.\n"));
+    _("Maximum number of chat clients reached.\n"));
     else {
       clients[clientCount++] = client;
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  _("Now %d of %d chat clients at this node.\n"),
-	  clientCount, MAX_CLIENTS);
+    _("Now %d of %d chat clients at this node.\n"),
+    clientCount, MAX_CLIENTS);
     }
   }
   /* forward to all other nodes in the network */
@@ -174,7 +174,7 @@ static void chatClientExitHandler(ClientHandle client) {
   for (i=0;i<clientCount;i++)
     if (clients[i] == client) {
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Chat client exits.\n");
+    "Chat client exits.\n");
       clients[i] = clients[--clientCount];
       break;
     }
@@ -200,29 +200,29 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
       CS_PROTO_chat_MSG);
 
   if (SYSERR == capi->registerHandler(P2P_PROTO_chat_MSG,
-				      &handleChatMSG))
+  			      &handleChatMSG))
     ok = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&chatClientExitHandler))
     ok = SYSERR;
   if (SYSERR == capi->registerClientHandler(CS_PROTO_chat_MSG,
-					    &csHandleChatRequest))
+  				    &csHandleChatRequest))
     ok = SYSERR;
 
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						  "ABOUT",
-						   "chat",
-						   _("enables P2P-chat (incomplete)")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					  "ABOUT",
+  					   "chat",
+  					   _("enables P2P-chat (incomplete)")));
   return ok;
 }
 
 void done_module_chat() {
   coreAPI->unregisterHandler(P2P_PROTO_chat_MSG,
-			   &handleChatMSG);
+  		   &handleChatMSG);
   coreAPI->unregisterClientExitHandler(&chatClientExitHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_chat_MSG,
-				   &csHandleChatRequest);
+  			   &csHandleChatRequest);
   MUTEX_DESTROY(&chatMutex);
   coreAPI = NULL;
 }

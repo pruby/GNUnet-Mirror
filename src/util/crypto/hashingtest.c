@@ -34,8 +34,8 @@ static int test(int number) {
   EncName enc;
 
   memset(&h1,
-	 number,
-	 sizeof(HashCode512));
+   number,
+   sizeof(HashCode512));
   hash2enc(&h1, &enc);
   if (OK != enc2hash((char*)&enc, &h2)) {
     printf("enc2hash failed!\n");

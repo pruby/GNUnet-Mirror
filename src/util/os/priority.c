@@ -32,11 +32,11 @@
  * Set our process priority
  */
 int os_set_process_priority(struct GE_Context * ectx,
-			    const char * str) {
+  		    const char * str) {
   int prio = 0;
 
   GE_ASSERT(ectx,
-	    str != NULL);
+      str != NULL);
   /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
    * and the usual numeric nice() increments */
   if (strcmp(str, "NORMAL") == 0)
@@ -71,12 +71,12 @@ int os_set_process_priority(struct GE_Context * ectx,
 #endif
   else {
     if (1 != sscanf(str,
-		    "%d",
-		    &prio)) {
+  	    "%d",
+  	    &prio)) {
       GE_LOG(ectx,
-	     GE_USER | GE_BULK | GE_ERROR,
-	     _("Invalid process priority `%s'\n"),
-	     str);
+       GE_USER | GE_BULK | GE_ERROR,
+       _("Invalid process priority `%s'\n"),
+       str);
       return SYSERR;
     }
 
@@ -103,8 +103,8 @@ int os_set_process_priority(struct GE_Context * ectx,
   nice(prio);
   if (errno != 0) {
     GE_LOG_STRERROR(ectx,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "nice");
+  	    GE_WARNING | GE_ADMIN | GE_BULK,
+  	    "nice");
     return SYSERR;
   }
 #endif

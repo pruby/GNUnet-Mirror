@@ -36,9 +36,9 @@
  * Transform an ECRS progress callback into an FSUI event.
  */
 static void progressCallback(unsigned long long totalBytes,
-			     unsigned long long completedBytes,
-			     cron_t eta,
-			     void * cls) {
+  		     unsigned long long completedBytes,
+  		     cron_t eta,
+  		     void * cls) {
   FSUI_UnindexList * utc = cls;
   FSUI_Event event;
 
@@ -50,7 +50,7 @@ static void progressCallback(unsigned long long totalBytes,
   event.data.UnindexProgress.eta = eta;
   event.data.UnindexProgress.filename = utc->filename;
   utc->ctx->ecb(utc->ctx->ecbClosure,
-		&event);
+  	&event);
 }
 
 static int tt(void * cls) {
@@ -72,22 +72,22 @@ void * FSUI_unindexThread(void * cls) {
   struct GE_Context * ee;
 
   if (OK != disk_file_size(utc->ctx->ectx,
-			   utc->filename,
-			   &size,
-			   YES)) {
+  		   utc->filename,
+  		   &size,
+  		   YES)) {
     GE_BREAK(utc->ctx->ectx, 0);
     size = 0;
   }
   mem = GE_memory_create(2);
   ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
-				mem);
+  			mem);
   ret = ECRS_unindexFile(ee,
-			 utc->ctx->cfg,
-			 utc->filename,
-			 &progressCallback,
-			 utc,
-			 &tt,
-			 utc);
+  		 utc->ctx->cfg,
+  		 utc->filename,
+  		 &progressCallback,
+  		 utc,
+  		 &tt,
+  		 utc);
   if (ret == OK) {
     utc->state = FSUI_COMPLETED;
     event.type = FSUI_unindex_completed;
@@ -96,7 +96,7 @@ void * FSUI_unindexThread(void * cls) {
     event.data.UnindexCompleted.total = size;
     event.data.UnindexCompleted.filename = utc->filename;
     utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else if (utc->state == FSUI_ACTIVE) {
     const char * error;
 
@@ -109,23 +109,23 @@ void * FSUI_unindexThread(void * cls) {
       error = _("Unindexing failed (no reason given)");
     event.data.UnindexError.message = error;
     utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else if (utc->state == FSUI_ABORTED) {
     event.type = FSUI_unindex_aborted;
     event.data.UnindexAborted.uc.pos = utc;
     event.data.UnindexAborted.uc.cctx = utc->cctx;
     utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else {
     /* must be suspending */
     GE_BREAK(NULL,
-	     utc->state == FSUI_PENDING);
+       utc->state == FSUI_PENDING);
   }
 #if 0
   GE_LOG(utc->ctx->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI unindexThread exits in state %u.\n",
-	 utc->state);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "FSUI unindexThread exits in state %u.\n",
+   utc->state);
 #endif
   GE_free_context(ee);
   GE_memory_free(mem);
@@ -141,9 +141,9 @@ static void * FSUI_unindexThreadEvent(void * cls) {
   unsigned long long size;
 
   if (OK != disk_file_size(utc->ctx->ectx,
-			   utc->filename,
-			   &size,
-			   YES)) {
+  		   utc->filename,
+  		   &size,
+  		   YES)) {
     GE_BREAK(utc->ctx->ectx, 0);
     size = 0;
   }
@@ -153,7 +153,7 @@ static void * FSUI_unindexThreadEvent(void * cls) {
   event.data.UnindexStarted.total = size;
   event.data.UnindexStarted.filename = utc->filename;
   utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
-			    &event);
+  		    &event);
   return FSUI_unindexThread(utc);
 }
 
@@ -169,16 +169,16 @@ static void * FSUI_unindexThreadEvent(void * cls) {
  */
 struct FSUI_UnindexList *
 FSUI_startUnindex(struct FSUI_Context * ctx,
-		  const char * filename) {
+  	  const char * filename) {
   FSUI_UnindexList * utc;
 
   if (YES == disk_directory_test(ctx->ectx,
-				 filename)) {
+  			 filename)) {
     GE_BREAK(ctx->ectx, 0);
     return NULL;
   }
   if (YES != disk_file_test(ctx->ectx,
-			    filename)) {
+  		    filename)) {
     GE_BREAK(ctx->ectx, 0);
     return NULL;
   }
@@ -188,12 +188,12 @@ FSUI_startUnindex(struct FSUI_Context * ctx,
   utc->start_time = get_time();
   utc->state = FSUI_ACTIVE;
   utc->handle = PTHREAD_CREATE(&FSUI_unindexThreadEvent,
-			       utc,
-			       32 * 1024);
+  		       utc,
+  		       32 * 1024);
   if (utc->handle == NULL) {
     GE_LOG_STRERROR(ctx->ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-		    "PTHREAD_CREATE");
+  	    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+  	    "PTHREAD_CREATE");
     FREE(utc->filename);
     FREE(utc);
     return NULL;
@@ -212,7 +212,7 @@ FSUI_startUnindex(struct FSUI_Context * ctx,
  * @return SYSERR if no such unindex is pending
  */
 int FSUI_abortUnindex(struct FSUI_Context * ctx,
-		      struct FSUI_UnindexList * ul) {
+  	      struct FSUI_UnindexList * ul) {
   if ( (ul->state != FSUI_ACTIVE) &&
        (ul->state != FSUI_PENDING) )
     return NO;
@@ -232,7 +232,7 @@ int FSUI_abortUnindex(struct FSUI_Context * ctx,
  * @return SYSERR if no such unindex is pending
  */
 int FSUI_stopUnindex(struct FSUI_Context * ctx,
-		     struct FSUI_UnindexList * dl) {
+  	     struct FSUI_UnindexList * dl) {
   FSUI_UnindexList * prev;
   struct GE_Context * ectx;
   void * unused;
@@ -245,20 +245,20 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
   }
 #if 0
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI_stopUnindex called.\n");
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "FSUI_stopUnindex called.\n");
 #endif
   MUTEX_LOCK(ctx->lock);
   prev = ctx->unindexOperations;
   while ( (prev != dl) &&
-	  (prev != NULL) &&
-	  (prev->next != dl) )
+    (prev != NULL) &&
+    (prev->next != dl) )
     prev = prev->next;
   if (prev == NULL) {
     MUTEX_UNLOCK(ctx->lock);
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI_stopUnindex failed to locate deletion operation.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "FSUI_stopUnindex failed to locate deletion operation.\n");
     return SYSERR;
   }
   if (prev == dl) {
@@ -273,7 +273,7 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
        (dl->state == FSUI_ERROR) ) {
     GE_ASSERT(ctx->ectx, dl->handle != NULL);
     PTHREAD_JOIN(dl->handle,
-		 &unused);
+  	 &unused);
     dl->handle = NULL;
     if (dl->state == FSUI_ACTIVE)
       dl->state = FSUI_PENDING;
@@ -286,7 +286,7 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
   event.data.UnindexStopped.uc.pos = dl;
   event.data.UnindexStopped.uc.cctx = dl->cctx;
   dl->ctx->ecb(dl->ctx->ecbClosure,
-	       &event);
+         &event);
   FREE(dl->filename);
   FREE(dl);
   return OK;

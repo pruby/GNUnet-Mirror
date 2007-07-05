@@ -73,7 +73,7 @@ void RPC_paramFree(RPC_Param *param) {
  * RPC_paramSize(param) bytes of memory.
  */
 void RPC_paramSerialize(RPC_Param * param,
-			char * target) {
+  		char * target) {
   int i;
   const char * paramName;
   unsigned int dataLength;
@@ -90,18 +90,18 @@ void RPC_paramSerialize(RPC_Param * param,
     paramName = RPC_paramName(param, i);
     paramValue = NULL;
     RPC_paramValueByPosition(param,
-			     i,
-			     &dataLength,
-			     &paramValue);
+  		     i,
+  		     &dataLength,
+  		     &paramValue);
     memcpy(&target[pos],
-	   paramName,
-	   strlen(paramName)+1);
+     paramName,
+     strlen(paramName)+1);
     pos += strlen(paramName)+1;
     *(unsigned int*) &target[pos] = htonl(dataLength);
     pos += sizeof(unsigned int);
     memcpy(&target[pos],
-	   paramValue,
-	   dataLength);
+     paramValue,
+     dataLength);
     pos += dataLength;
   }
 }
@@ -110,7 +110,7 @@ void RPC_paramSerialize(RPC_Param * param,
  * Deserialize parameters from buffer.
  */
 RPC_Param * RPC_paramDeserialize(char * buffer,
-				 size_t size) {
+  			 size_t size) {
   RPC_Param * ret;
   size_t pos;
   size_t xpos;
@@ -123,7 +123,7 @@ RPC_Param * RPC_paramDeserialize(char * buffer,
   while (pos < size) {
     xpos = pos;
     while ( (pos < size) &&
-	    (buffer[pos] != '\0') )
+      (buffer[pos] != '\0') )
       pos++;
     pos++;
     if (pos + sizeof(unsigned int) > size) {
@@ -133,15 +133,15 @@ RPC_Param * RPC_paramDeserialize(char * buffer,
     dataLength = ntohl(*(unsigned int*)&buffer[pos]);
     pos += sizeof(unsigned int);
     if ( (pos + dataLength < pos) ||
-	 (pos + dataLength > size) ) {
+   (pos + dataLength > size) ) {
       RPC_paramFree(ret);
       return NULL;
     }
 
     RPC_paramAdd(ret,
-		 &buffer[xpos],
-		 dataLength,
-		 &buffer[pos]);
+  	 &buffer[xpos],
+  	 dataLength,
+  	 &buffer[pos]);
     pos += dataLength;
   }
   return ret;
@@ -165,9 +165,9 @@ size_t RPC_paramSize(RPC_Param * param) {
     paramName = RPC_paramName(param, i);
     paramValue = NULL;
     RPC_paramValueByPosition(param,
-			     i,
-			     &dataLength,
-			     &paramValue);
+  		     i,
+  		     &dataLength,
+  		     &paramValue);
     if (pos + strlen(paramName)+1+sizeof(unsigned int) < pos)
       return 0;
     pos += strlen(paramName)+1;
@@ -206,9 +206,9 @@ unsigned int RPC_paramCount(RPC_Param *param) {
  */
 
 void RPC_paramAdd(RPC_Param *param,
-		  const char *name,
-		  unsigned int dataLength,
-		  const void *data) {
+  	  const char *name,
+  	  unsigned int dataLength,
+  	  const void *data) {
   Parameter * new;
 
   if (param == NULL)
@@ -238,8 +238,8 @@ void RPC_paramAdd(RPC_Param *param,
  * @param data Value of the parameter
  */
 void RPC_paramAddDataContainer(RPC_Param *param,
-			       const char *name,
-			       const DataContainer * data) {
+  		       const char *name,
+  		       const DataContainer * data) {
   Parameter * new;
 
   if (param == NULL)
@@ -252,8 +252,8 @@ void RPC_paramAddDataContainer(RPC_Param *param,
   } else {
     new->data = MALLOC(new->dataLength);
     memcpy(new->data,
-	   &data[1],
-	   new->dataLength);
+     &data[1],
+     new->dataLength);
   }
   vectorInsertLast(param, new);
 }
@@ -266,7 +266,7 @@ void RPC_paramAddDataContainer(RPC_Param *param,
  * @return Name of the parameter
  */
 const char * RPC_paramName(RPC_Param *param,
-			   unsigned int i) {
+  		   unsigned int i) {
   Parameter * p;
 
   if (param == NULL)
@@ -287,9 +287,9 @@ const char * RPC_paramName(RPC_Param *param,
  * @return SYSERR on error
  */
 int RPC_paramValueByName(RPC_Param *param,
-			 const char *name,
-			 unsigned int * dataLength,
-			 void ** value) {
+  		 const char *name,
+  		 unsigned int * dataLength,
+  		 void ** value) {
   Parameter *p;
 
   if (param == NULL)
@@ -303,7 +303,7 @@ int RPC_paramValueByName(RPC_Param *param,
     }
     p = vectorGetNext(param);
   }
-		
+  	
   return SYSERR;
 }
 
@@ -315,7 +315,7 @@ int RPC_paramValueByName(RPC_Param *param,
  * @return SYSERR on error
  */
 DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
-					     const char *name) {
+  				     const char *name) {
   Parameter * p;
   DataContainer * ret;
 
@@ -325,17 +325,17 @@ DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
   while (p != NULL) {
     if (!strcmp (p->name, name)) {
       ret = MALLOC(sizeof(DataContainer)
-		   + p->dataLength);
+  	   + p->dataLength);
       ret->size = htonl(sizeof(DataContainer)
-			+ p->dataLength);
+  		+ p->dataLength);
       memcpy(&ret[1],
-	     p->data,
-	     p->dataLength);
+       p->data,
+       p->dataLength);
       return ret;
     }
     p = vectorGetNext(param);
   }
-		
+  	
   return NULL;
 }
 
@@ -346,9 +346,9 @@ DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
  * @param value set to the value of the parameter
  */
 int RPC_paramValueByPosition(RPC_Param *param,
-			     unsigned int i,
-			     unsigned int * dataLength,
-			     void ** value) {
+  		     unsigned int i,
+  		     unsigned int * dataLength,
+  		     void ** value) {
   Parameter * p;
 
   if (param == NULL)
@@ -370,7 +370,7 @@ int RPC_paramValueByPosition(RPC_Param *param,
  */
 DataContainer *
 RPC_paramDataContainerByPosition(RPC_Param *param,
-				 unsigned int i) {
+  			 unsigned int i) {
   Parameter * p;
   DataContainer * ret;
 
@@ -379,12 +379,12 @@ RPC_paramDataContainerByPosition(RPC_Param *param,
   p = vectorGetAt(param, i);
   if (p != NULL) {
     ret = MALLOC(sizeof(DataContainer)
-		 + p->dataLength);
+  	 + p->dataLength);
     ret->size = htonl(sizeof(DataContainer)
-		      + p->dataLength);
+  	      + p->dataLength);
     memcpy(&ret[1],
-	   p->data,
-	   p->dataLength);
+     p->data,
+     p->dataLength);
     return ret;
   }
   return NULL;

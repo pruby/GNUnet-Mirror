@@ -61,11 +61,11 @@ static struct PTHREAD * gather_thread;
 static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
-		
+  	
 
 static int acquire(const HashCode512 * key,
-		   const Datastore_Value * value,
-		   void * closure) {
+  	   const Datastore_Value * value,
+  	   void * closure) {
   if (doneSignal)
     return SYSERR;
   SEMAPHORE_DOWN(acquireMoreSignal, YES);
@@ -76,8 +76,8 @@ static int acquire(const HashCode512 * key,
   rkey = *key;
   rvalue = MALLOC(ntohl(value->size));
   memcpy(rvalue,
-	 value,
-	 ntohl(value->size));
+   value,
+   ntohl(value->size));
   MUTEX_UNLOCK(lock);
   if (doneSignal)
     return SYSERR;
@@ -91,11 +91,11 @@ static void * rcbAcquire(void * unused) {
   int load;
   while (doneSignal == NO) {
     sq->iterateMigrationOrder(&acquire,
-			      NULL);
+  		      NULL);
     /* sleep here - otherwise we may start looping immediately
        if there is no content in the DB! */
     load = os_cpu_get_load(ectx,
-			   cfg);
+  		   cfg);
     if (load < 10)
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)
@@ -113,10 +113,10 @@ static void * rcbAcquire(void * unused) {
  * @return SYSERR if the RCB is empty
  */
 int getRandom(const HashCode512 * receiver,
-	      unsigned int sizeLimit,
-	      HashCode512 * key,
-	      Datastore_Value ** value,
-	      unsigned int type) {
+        unsigned int sizeLimit,
+        HashCode512 * key,
+        Datastore_Value ** value,
+        unsigned int type) {
   MUTEX_LOCK(lock);
   if (rvalue == NULL) {
     MUTEX_UNLOCK(lock);
@@ -129,10 +129,10 @@ int getRandom(const HashCode512 * receiver,
   SEMAPHORE_UP(acquireMoreSignal);
   return OK;
 }
-				
+  			
 void initPrefetch(struct GE_Context * e,
-		  struct GC_Configuration * c,
-		  SQstore_ServiceAPI * s) {
+  	  struct GC_Configuration * c,
+  	  SQstore_ServiceAPI * s) {
   ectx = e;
   cfg = c;
   sq = s;
@@ -140,12 +140,12 @@ void initPrefetch(struct GE_Context * e,
   doneSignal = NO;
   lock = MUTEX_CREATE(NO);
   gather_thread = PTHREAD_CREATE(&rcbAcquire,
-				 NULL,
-				 64*1024);
+  			 NULL,
+  			 64*1024);
   if (gather_thread == NULL) 
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-		    "pthread_create");  
+  	    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+  	    "pthread_create");  
 }
 
 void donePrefetch() {

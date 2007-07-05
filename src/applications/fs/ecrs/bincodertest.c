@@ -39,8 +39,8 @@ static int testBC(int i) {
   memset(orig, i, i);
   enc = bin2enc(orig, i);
   ret = enc2bin(enc,
-		dec,
-		i);
+  	dec,
+  	i);
   if ( (ret != strlen(enc)) ||
        (0 != memcmp(orig, dec, i)) ) {
     printf("Failed in iteration %d\n", i);

@@ -67,26 +67,26 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
   MUTEX_LOCK(lock);
   for (ret=1;ret<size;ret++) {
     if (0 == memcmp(&pid->hashPubKey,
-		    &table[ret].id,
-		    sizeof(HashCode512))) {
+  	    &table[ret].id,
+  	    sizeof(HashCode512))) {
       table[ret].rc++;
       if (stats != NULL) {
-	stats->change(stat_pid_rc, 1);
-	if (table[ret].rc == 1)
-	  stats->change(stat_pid_entries, 1);
+  stats->change(stat_pid_rc, 1);
+  if (table[ret].rc == 1)
+    stats->change(stat_pid_entries, 1);
       }
       MUTEX_UNLOCK(lock);
       return ret;
     } else if ( (zero == size) &&
-		(table[ret].rc == 0) ) {
+  	(table[ret].rc == 0) ) {
       zero = ret;
     }
   }
   ret = zero;
   if (ret == size) {
     GROW(table,
-	 size,
-	 size + 16);
+   size,
+   size + 16);
   }
   if (ret == 0)
     ret = 1;
@@ -102,7 +102,7 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
 }
 
 void decrement_pid_rcs(const PID_INDEX * ids,
-		       unsigned int count) {
+  	       unsigned int count) {
   int i;
   PID_INDEX id;
   if (count == 0)
@@ -114,7 +114,7 @@ void decrement_pid_rcs(const PID_INDEX * ids,
     GE_ASSERT(ectx, table[id].rc > 0);
     table[id].rc--;
     if ( (table[id].rc == 0) &&
-	 (stats != NULL) )
+   (stats != NULL) )
       stats->change(stat_pid_entries, -1);
   }
   MUTEX_UNLOCK(lock);
@@ -138,7 +138,7 @@ void change_pid_rc(PID_INDEX id, int delta) {
 }
 
 void resolve_pid(PID_INDEX id,
-		 PeerIdentity * pid) {
+  	 PeerIdentity * pid) {
   if (id == 0) {
     memset(pid, 0, sizeof(PeerIdentity));
     GE_BREAK(ectx, 0);
@@ -153,7 +153,7 @@ void resolve_pid(PID_INDEX id,
 
 
 void init_pid_table(struct GE_Context * e,
-		    Stats_ServiceAPI * s) {
+  	    Stats_ServiceAPI * s) {
   ectx = e;
   stats = s;
   if (stats != NULL) {

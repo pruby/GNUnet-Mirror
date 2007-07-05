@@ -292,11 +292,11 @@ int os_modify_autostart(struct GE_Context *ectx,
 
   /* Unix */
   if ((ACCESS("/usr/sbin/update-rc.d",
-	      X_OK) != 0)) {
+        X_OK) != 0)) {
     GE_LOG_STRERROR_FILE(ectx,
                          GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                          "access",
-			 "/usr/sbin/update-rc.d");
+  		 "/usr/sbin/update-rc.d");
     return SYSERR;
   }
 
@@ -307,7 +307,7 @@ int os_modify_autostart(struct GE_Context *ectx,
       GE_LOG_STRERROR_FILE(ectx,
                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                            "access",
-			   application);
+  		   application);
     }
     if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
       /* create init file */
@@ -316,7 +316,7 @@ int os_modify_autostart(struct GE_Context *ectx,
         GE_LOG_STRERROR_FILE(ectx,
                              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                              "fopen",
-			     "/etc/init.d/gnunetd");
+  		     "/etc/init.d/gnunetd");
         return 2;
       }
 
@@ -329,38 +329,38 @@ int os_modify_autostart(struct GE_Context *ectx,
               "PIDFILE=/var/run/gnunetd/gnunetd.pid\n"
               "\n"
               "case \"$1\" in\n"
-              "	start)\n"
-              "		echo -n \"Starting GNUnet: \"\n"
-              "		%s\n && echo ok || echo failed\n"
-              "		;;\n"
-              "	stop)\n"
-              "		echo -n \"Stopping GNUnet: \"\n"
-              "		kill `cat $PIDFILE`\n && echo ok || echo failed\n"
-              "		;;\n"
-              "	reload)\n"
-              "		echo -n \"Reloading GNUnet: \"\n"
-              "		kill -HUP `cat $PIDFILE`\n && echo ok || echo failed\n"
-              "		;;\n"
-              "	restart|force-reload)\n"
-              "		echo \"Restarting GNUnet: gnunetd...\"\n"
-              "		$0 stop\n"
-              "		sleep 1\n"
-              "		$0 start\n"
-              "		;;\n"
-              "	*)\n"
-              "		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
-              "		exit 1\n"
-              "		;;\n"
+              "  start)\n"
+              "  	echo -n \"Starting GNUnet: \"\n"
+              "  	%s\n && echo ok || echo failed\n"
+              "  	;;\n"
+              "  stop)\n"
+              "  	echo -n \"Stopping GNUnet: \"\n"
+              "  	kill `cat $PIDFILE`\n && echo ok || echo failed\n"
+              "  	;;\n"
+              "  reload)\n"
+              "  	echo -n \"Reloading GNUnet: \"\n"
+              "  	kill -HUP `cat $PIDFILE`\n && echo ok || echo failed\n"
+              "  	;;\n"
+              "  restart|force-reload)\n"
+              "  	echo \"Restarting GNUnet: gnunetd...\"\n"
+              "  	$0 stop\n"
+              "  	sleep 1\n"
+              "  	$0 start\n"
+              "  	;;\n"
+              "  *)\n"
+              "  	echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
+              "  	exit 1\n"
+              "  	;;\n"
               "\n" "esac\n" "exit 0\n",
-	      "gnunet-setup",
-	      application);
+        "gnunet-setup",
+        application);
       fclose(f);
       if (0 != CHMOD("/etc/init.d/gnunetd",
-		     S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) {
+  	     S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) {
         GE_LOG_STRERROR_FILE(ectx,
                              GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                              "chmod",
-			     "/etc/init.d/gnunetd");
+  		     "/etc/init.d/gnunetd");
         return SYSERR;
       }
     }
@@ -368,29 +368,29 @@ int os_modify_autostart(struct GE_Context *ectx,
       errno = 0;
       ret = system("/usr/sbin/update-rc.d gnunetd defaults");
       if (ret != 0) {
-	if (errno != 0) {
-	  GE_LOG_STRERROR_FILE(ectx,
-			       GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-			       "system",
-			       "/usr/sbin/update-rc.d");
-	} else {
-	  GE_LOG(ectx,
-		 GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-		 _("Command `%s' failed with error code %u\n"),
-		 "/usr/sbin/update-rc.d gnunetd defaults",
-		 WEXITSTATUS(ret));
-	}
-	return SYSERR;
+  if (errno != 0) {
+    GE_LOG_STRERROR_FILE(ectx,
+  		       GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+  		       "system",
+  		       "/usr/sbin/update-rc.d");
+  } else {
+    GE_LOG(ectx,
+  	 GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+  	 _("Command `%s' failed with error code %u\n"),
+  	 "/usr/sbin/update-rc.d gnunetd defaults",
+  	 WEXITSTATUS(ret));
+  }
+  return SYSERR;
       }
     }
     return YES;
   } else {  /* REMOVE autostart */
     if ( (UNLINK("/etc/init.d/gnunetd") == -1) &&
-	 (errno != ENOENT)) {
+   (errno != ENOENT)) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                            "unlink",
-			   "/etc/init.d/gnunetd");
+  		   "/etc/init.d/gnunetd");
       return SYSERR;
     }
     errno = 0;
@@ -398,7 +398,7 @@ int os_modify_autostart(struct GE_Context *ectx,
       GE_LOG_STRERROR_FILE(ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                            "system",
-			   "/usr/sbin/update-rc.d");
+  		   "/usr/sbin/update-rc.d");
       return SYSERR;
     }
     return YES;

@@ -33,7 +33,7 @@
  * @return 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+   const char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
   PeerIdentity p1;
@@ -43,31 +43,31 @@ int main(int argc,
   int ret = 0;
 
   if (OK != gnunet_testing_start_daemon(12087,
-					10000,
-					"/tmp/gnunet-testing-1",
-					"tcp",
-					"advertising stats",
-					&daemon1,
-					&p1,
-					&c1))
+  				10000,
+  				"/tmp/gnunet-testing-1",
+  				"tcp",
+  				"advertising stats",
+  				&daemon1,
+  				&p1,
+  				&c1))
     ret |= 1;
   if (OK != gnunet_testing_start_daemon(22087,
-					20000,
-					"/tmp/gnunet-testing-2",
-					"tcp",
-					"advertising stats",
-					&daemon2,
-					&p2,
-					&c2))
+  				20000,
+  				"/tmp/gnunet-testing-2",
+  				"tcp",
+  				"advertising stats",
+  				&daemon2,
+  				&p2,
+  				&c2))
     ret |= 2;
   if (OK != gnunet_testing_connect_daemons(12087,
-					   22087))
+  				   22087))
     ret |= 4;
   if (OK != gnunet_testing_stop_daemon(12087,
-				       daemon1))
+  			       daemon1))
     ret |= 8;
   if (OK != gnunet_testing_stop_daemon(22087,
-				       daemon2))
+  			       daemon2))
     ret |= 16;
   if (c1 != NULL) {
     UNLINK(c1);

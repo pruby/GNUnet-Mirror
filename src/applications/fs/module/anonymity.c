@@ -43,8 +43,8 @@
  * @return OK if cover traffic is sufficient
  */
 int checkCoverTraffic(struct GE_Context * ectx,
-		      Traffic_ServiceAPI * traffic,		
-		      unsigned int level) {
+  	      Traffic_ServiceAPI * traffic,		
+  	      unsigned int level) {
   unsigned int count;
   unsigned int peers;
   unsigned int sizes;
@@ -56,48 +56,48 @@ int checkCoverTraffic(struct GE_Context * ectx,
   if (traffic == NULL)
     return SYSERR;
   if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
-			 P2P_PROTO_gap_RESULT,
-			 TC_RECEIVED,
-			 &count,
-			 &peers,
-			 &sizes,
-			 &timevect)) {
+  		 P2P_PROTO_gap_RESULT,
+  		 TC_RECEIVED,
+  		 &count,
+  		 &peers,
+  		 &sizes,
+  		 &timevect)) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Failed to get traffic stats.\n"));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("Failed to get traffic stats.\n"));
     return SYSERR;
   }
   if (level > 1000) {
     if (peers < level / 1000) {
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
-	     "Result dropped.\n",
-	     level,
-	     peers);
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
+       "Result dropped.\n",
+       level,
+       peers);
       return SYSERR;
     }
     if (count < level % 1000) {
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
-	     "Result dropped.\n",
-	     level,
-	     count);
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+       "Result dropped.\n",
+       level,
+       count);
       return SYSERR;
     }
   } else {
     if (count < level) {
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
-	     "Result dropped.\n",
-	     level,
-	     count);
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+       "Result dropped.\n",
+       level,
+       count);
       return SYSERR;
     }
   }
   return OK;
 }
-		
+  	
 /* end of anonymity.c */

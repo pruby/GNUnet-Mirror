@@ -11,7 +11,7 @@
  * Perform option parsing from the command line.
  */
 static int parseCommandLine(int argc,
-			    char * argv[]) {
+  		    char * argv[]) {
   char c;
 
   while (1) {
@@ -22,10 +22,10 @@ static int parseCommandLine(int argc,
     };
 
     c = GNgetopt_long(argc,
-		      argv,
-		      "c:",
-		      long_options,
-		      &option_index);
+  	      argv,
+  	      "c:",
+  	      long_options,
+  	      &option_index);
 
     if (c == -1)
       break;  /* No more flags to process */
@@ -33,14 +33,14 @@ static int parseCommandLine(int argc,
     switch(c) {
     case 'c':
       FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
+  				 "gnunet.conf",
+  				 GNoptarg));
       break;
     } /* end of parsing commandline */
   }
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "NOTHING"));
+  			     "LOGLEVEL",
+  			     "NOTHING"));
   return OK;
 }
 
@@ -52,16 +52,16 @@ int testState() {
 
   stateUnlinkFromDB(TH); /* go to defined state */
   if (SYSERR == stateWriteContent(TH,
-				  5,
-				  testString))
+  			  5,
+  			  testString))
     return 1;
   if (SYSERR == stateAppendContent(TH,
-				   6,
-				   &testString[5]))
+  			   6,
+  			   &testString[5]))
     return 2;
   ret = NULL;
   if (SYSERR == stateReadContent(TH,
-				 (void**)&ret))
+  			 (void**)&ret))
     return 3;
   if (0 != strncmp(ret, testString, 11))
     return 4;

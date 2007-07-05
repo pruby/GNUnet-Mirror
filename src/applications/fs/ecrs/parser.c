@@ -32,9 +32,9 @@
  * @param scls must be of type "struct ECRS_URI **"
  */
 int gnunet_getopt_configure_set_keywords(CommandLineProcessorContext * ctx,
-					 void * scls,
-					 const char * option,
-					 const char * value) {
+  				 void * scls,
+  				 const char * option,
+  				 const char * value) {
   struct ECRS_URI ** uri = scls;
   struct ECRS_URI * u = *uri;
 
@@ -59,9 +59,9 @@ int gnunet_getopt_configure_set_keywords(CommandLineProcessorContext * ctx,
  * @param scls must be of type "struct ECRS_MetaData **"
  */
 int gnunet_getopt_configure_set_metadata(CommandLineProcessorContext * ctx,
-					 void * scls,
-					 const char * option,
-					 const char * value) {
+  				 void * scls,
+  				 const char * option,
+  				 const char * value) {
   struct ECRS_MetaData ** mm = scls;
   EXTRACTOR_KeywordType type;
   const char * typename;
@@ -76,39 +76,39 @@ int gnunet_getopt_configure_set_metadata(CommandLineProcessorContext * ctx,
   }
 
   tmp = string_convertToUtf8(NULL,
-			     value,
-			     strlen(value),
+  		     value,
+  		     strlen(value),
 #if ENABLE_NLS
-			     nl_langinfo(CODESET)
+  		     nl_langinfo(CODESET)
 #else
-			     "utf-8"
+  		     "utf-8"
 #endif
-		      );
+  	      );
   type = EXTRACTOR_getHighestKeywordTypeNumber();
   while (type > 0) {
     type--;
     typename = EXTRACTOR_getKeywordTypeAsString(type);
     typename_i18n = dgettext("libextractor", typename);
     if  ( (strlen(tmp) >= strlen(typename)+1) &&
-	  (tmp[strlen(typename)] == ':') &&
-	  (0 == strncmp(typename,
-			tmp,
-			strlen(typename))) ) {
+    (tmp[strlen(typename)] == ':') &&
+    (0 == strncmp(typename,
+  		tmp,
+  		strlen(typename))) ) {
       ECRS_addToMetaData(meta,
-			 type,
-			 &tmp[strlen(typename)+1]);
+  		 type,
+  		 &tmp[strlen(typename)+1]);
       FREE(tmp);
       tmp = NULL;
       break;
     }
     if ( (strlen(tmp) >= strlen(typename_i18n)+1) &&
-	 (tmp[strlen(typename_i18n)] == ':') &&
-	 (0 == strncmp(typename_i18n,
-		       tmp,
-		       strlen(typename_i18n))) ) {
+   (tmp[strlen(typename_i18n)] == ':') &&
+   (0 == strncmp(typename_i18n,
+  	       tmp,
+  	       strlen(typename_i18n))) ) {
       ECRS_addToMetaData(meta,
-			 type,
-			 &tmp[strlen(typename_i18n)+1]);
+  		 type,
+  		 &tmp[strlen(typename_i18n)+1]);
       FREE(tmp);
       tmp = NULL;
       break;
@@ -116,11 +116,11 @@ int gnunet_getopt_configure_set_metadata(CommandLineProcessorContext * ctx,
   }
   if (tmp != NULL) {
     ECRS_addToMetaData(meta,
-		       EXTRACTOR_UNKNOWN,
-		       tmp);
+  	       EXTRACTOR_UNKNOWN,
+  	       tmp);
     FREE(tmp);
     printf(_("Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),
-	   value);
+     value);
   }
   return OK;
 }

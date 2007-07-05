@@ -10,7 +10,7 @@
  * Perform option parsing from the command line.
  */
 static int parseCommandLine(int argc,
-			    char * argv[]) {
+  		    char * argv[]) {
   return OK;
 }
 
@@ -25,11 +25,11 @@ int main(int argc, char * argv[]){
        (hc.bits[3] != ntohl(-234043098)) ||
        (hc.bits[4] != ntohl(-182141268)) ) {
     printf("Hash of TEST wrong (%d, %d, %d, %d, %d).\n",
-	   ntohl(hc.bits[0]),
-	   ntohl(hc.bits[1]),
-	   ntohl(hc.bits[2]),
-	   ntohl(hc.bits[3]),
-	   ntohl(hc.bits[4]));
+     ntohl(hc.bits[0]),
+     ntohl(hc.bits[1]),
+     ntohl(hc.bits[2]),
+     ntohl(hc.bits[3]),
+     ntohl(hc.bits[4]));
     return -1;
   }
   hash(NULL, 0, &hc);
@@ -39,11 +39,11 @@ int main(int argc, char * argv[]){
        (hc.bits[3] != ntohl(-697466873)) ||
        (hc.bits[4] != ntohl(-702487547)) ) {
     printf("Hash of nothing (0-size) wrong  (%d, %d, %d, %d, %d).\n",
-	   ntohl(hc.bits[0]),
-	   ntohl(hc.bits[1]),
-	   ntohl(hc.bits[2]),
-	   ntohl(hc.bits[3]),
-	   ntohl(hc.bits[4]));
+     ntohl(hc.bits[0]),
+     ntohl(hc.bits[1]),
+     ntohl(hc.bits[2]),
+     ntohl(hc.bits[3]),
+     ntohl(hc.bits[4]));
     return -1;
   }
   doneUtil();

@@ -75,8 +75,8 @@ void __attribute__ ((constructor)) crc32_init(void) {
  * property of detecting all burst errors of length 32 bits or less.
  */
 static uLong crc32(uLong crc,
-		   const char *buf,
-		   size_t len) {
+  	   const char *buf,
+  	   size_t len) {
   GE_ASSERT(NULL, crc_table[255] != 0);
   crc ^= 0xffffffff;
   while (len--)

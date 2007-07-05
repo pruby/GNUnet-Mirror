@@ -116,7 +116,7 @@ static FC * defragmentationCache[DEFRAG_BUCKET_COUNT];
 static struct MUTEX * defragCacheLock;
 
 static void freeFL(FL * fl,
-		   int c) {
+  	   int c) {
   while (fl != NULL) {
     FL * link = fl->link;
     if (stats != NULL)
@@ -149,18 +149,18 @@ static void defragmentationPurgeCron(void * unused) {
     smf = defragmentationCache[i];
     while (smf != NULL) {
       if (smf->ttl < get_time()) {
-	/* free linked list of fragments */
-	freeFL(smf->head, 1);
-	next = smf->next;
-	FREE(smf);	
-	if (last == NULL)
-	  defragmentationCache[i] = next;
-	else
-	  last->next = next;	
-	smf = next;
+  /* free linked list of fragments */
+  freeFL(smf->head, 1);
+  next = smf->next;
+  FREE(smf);	
+  if (last == NULL)
+    defragmentationCache[i] = next;
+  else
+    last->next = next;	
+  smf = next;
       } else {
-	last = smf;
-	smf = smf->next;
+  last = smf;
+  smf = smf->next;
       }
     } /* while smf != NULL */
   } /* for all buckets */
@@ -190,7 +190,7 @@ static void checkComplete(FC * pep) {
     goto CLEANUP; /* really bad error! */
   off = 0;
   while ( (pos != NULL) &&
-	  (ntohs(pos->frag->off) <= off) ) {
+    (ntohs(pos->frag->off) <= off) ) {
     if (off >= off + FRAGSIZE(pos))
       goto CLEANUP; /* error! */
     if (ntohs(pos->frag->off) + FRAGSIZE(pos) > off)
@@ -206,8 +206,8 @@ static void checkComplete(FC * pep) {
   pos = pep->head;
   while (pos != NULL) {
     memcpy(&msg[ntohs(pos->frag->off)],
-	   &pos->frag[1],
-	   FRAGSIZE(pos));
+     &pos->frag[1],
+     FRAGSIZE(pos));
     pos = pos->link;
   }
   if (stats != NULL)
@@ -217,10 +217,10 @@ static void checkComplete(FC * pep) {
 #endif
   /* handle message! */
   coreAPI->injectMessage(&pep->sender,
-			 msg,			
-			 len,
-			 YES,
-			 NULL);
+  		 msg,			
+  		 len,
+  		 YES,
+  		 NULL);
   FREE(msg);
  CLEANUP:
   /* free fragment buffers */
@@ -241,8 +241,8 @@ static void checkComplete(FC * pep) {
  * @param packet the ip part in the new entry
  */
 static int tryJoin(FC * entry,
-		   const PeerIdentity * sender,
-		   const P2P_fragmentation_MESSAGE * packet) {
+  	   const PeerIdentity * sender,
+  	   const P2P_fragmentation_MESSAGE * packet) {
   /* frame before ours; may end in the middle of
      our frame or before it starts; NULL if we are
      the earliest position we have received so far */
@@ -260,16 +260,16 @@ static int tryJoin(FC * entry,
 
   GE_ASSERT(NULL, entry != NULL);
   if (0 != memcmp(sender,
-		  &entry->sender,
-		  sizeof(PeerIdentity)))
+  	  &entry->sender,
+  	  sizeof(PeerIdentity)))
     return SYSERR; /* wrong fragment list, try another! */
   if (ntohl(packet->id) != entry->id)
     return SYSERR; /* wrong fragment list, try another! */
 #if 0
   printf("Received fragment %u from %u to %u\n",
-	 ntohl(packet->id),
-	 ntohs(packet->off),
-	 ntohs(packet->off) + ntohs(packet->header.size) - sizeof(P2P_fragmentation_MESSAGE));
+   ntohl(packet->id),
+   ntohs(packet->off),
+   ntohs(packet->off) + ntohs(packet->header.size) - sizeof(P2P_fragmentation_MESSAGE));
 #endif
   pos = entry->head;
   if ( (pos != NULL) &&
@@ -279,8 +279,8 @@ static int tryJoin(FC * entry,
   before = NULL;
   /* find the before-frame */
   while ( (pos != NULL) &&
-	  (ntohs(pos->frag->off) <
-	   ntohs(packet->off)) ) {
+    (ntohs(pos->frag->off) <
+     ntohs(packet->off)) ) {
     before = pos;
     pos = pos->link;
   }
@@ -289,9 +289,9 @@ static int tryJoin(FC * entry,
   end = ntohs(packet->off) + ntohs(packet->header.size) - sizeof(P2P_fragmentation_MESSAGE);
   if (end <= ntohs(packet->off)) {
     GE_LOG(NULL,
-	   GE_DEVELOPER | GE_DEBUG | GE_BULK,
-	   "Received invalid fragment at %s:%d\n",
-	   __FILE__, __LINE__);
+     GE_DEVELOPER | GE_DEBUG | GE_BULK,
+     "Received invalid fragment at %s:%d\n",
+     __FILE__, __LINE__);
     return SYSERR; /* yuck! integer overflow! */
   }
 
@@ -300,7 +300,7 @@ static int tryJoin(FC * entry,
   else
     after = entry->head;
   while ( (after != NULL) &&
-	  (ntohs(after->frag->off)<end) )
+    (ntohs(after->frag->off)<end) )
     after = after->link;
 
   if ( (before != NULL) &&
@@ -316,8 +316,8 @@ static int tryJoin(FC * entry,
   if ( (before != NULL) &&
        (after != NULL) &&
        ( (htons(before->frag->off) +
-	  FRAGSIZE(before))
-	 >= htons(after->frag->off)) ) {
+    FRAGSIZE(before))
+   >= htons(after->frag->off)) ) {
     /* this implies that the fragment that starts before us and the
        fragment that comes after this one leave no space in the middle
        or even overlap; thus we can drop this redundant piece */
@@ -330,8 +330,8 @@ static int tryJoin(FC * entry,
   pep = MALLOC(sizeof(FC));
   pep->frag = MALLOC(ntohs(packet->header.size));
   memcpy(pep->frag,
-	 packet,
-	 ntohs(packet->header.size));
+   packet,
+   ntohs(packet->header.size));
   pep->link = NULL;
 
   if (before == NULL) {
@@ -383,7 +383,7 @@ static int tryJoin(FC * entry,
  * @return SYSERR if the fragment is invalid
  */
 static int processFragment(const PeerIdentity * sender,
-			   const MESSAGE_HEADER * frag) {
+  		   const MESSAGE_HEADER * frag) {
   unsigned int hash;
   FC * smf;
 
@@ -395,14 +395,14 @@ static int processFragment(const PeerIdentity * sender,
   smf = defragmentationCache[hash];
   while (smf != NULL) {
     if (OK == tryJoin(smf,
-		      sender,
-		      (P2P_fragmentation_MESSAGE*) frag)) {
+  	      sender,
+  	      (P2P_fragmentation_MESSAGE*) frag)) {
       MUTEX_UNLOCK(defragCacheLock);
       return OK;
     }
     if (0 == memcmp(sender,
-		    &smf->sender,
-		    sizeof(PeerIdentity))) {
+  	    &smf->sender,
+  	    sizeof(PeerIdentity))) {
       freeFL(smf->head, 1);
       break;
     }
@@ -420,8 +420,8 @@ static int processFragment(const PeerIdentity * sender,
   smf->head->link = NULL;
   smf->head->frag = MALLOC(ntohs(frag->size));
   memcpy(smf->head->frag,
-	 frag,
-	 ntohs(frag->size));
+   frag,
+   ntohs(frag->size));
 
   MUTEX_UNLOCK(defragCacheLock);
   return OK;
@@ -451,8 +451,8 @@ typedef struct {
  * such a great idea (i.e. would just waste bandwidth).
  */
 static int fragmentBMC(void * buf,
-		       void * cls,
-		       unsigned short len) {
+  	       void * cls,
+  	       unsigned short len) {
   FragmentBMC * ctx = cls;
   static int idGen = 0;
   P2P_fragmentation_MESSAGE * frag;
@@ -476,8 +476,8 @@ static int fragmentBMC(void * buf,
   frag->off = htons(0);
   frag->len = htons(ctx->len);
   memcpy(&frag[1],
-	 &ctx[1],
-	 len - sizeof(P2P_fragmentation_MESSAGE));
+   &ctx[1],
+   len - sizeof(P2P_fragmentation_MESSAGE));
 
   /* create remaining fragments, add to queue! */
   pos = len - sizeof(P2P_fragmentation_MESSAGE);
@@ -493,12 +493,12 @@ static int fragmentBMC(void * buf,
     frag->off = htons(pos);
     frag->len = htons(ctx->len);
     memcpy(&frag[1],
-	   &((char*)(&ctx[1]))[pos],
-	   mlen - sizeof(P2P_fragmentation_MESSAGE));
+     &((char*)(&ctx[1]))[pos],
+     mlen - sizeof(P2P_fragmentation_MESSAGE));
     coreAPI->unicast(&ctx->sender,
-		     &frag->header,
-		     EXTREME_PRIORITY,
-		     ctx->transmissionTime - get_time());
+  	     &frag->header,
+  	     EXTREME_PRIORITY,
+  	     ctx->transmissionTime - get_time());
     pos += mlen - sizeof(P2P_fragmentation_MESSAGE);
   }
   GE_ASSERT(NULL, pos == ctx->len);
@@ -514,12 +514,12 @@ static int fragmentBMC(void * buf,
  * the other fragments (with very high priority).
  */
 void fragment(const PeerIdentity * peer,
-	      unsigned int mtu,
-	      unsigned int prio,
-	      unsigned int targetTime,
-	      unsigned int len,
-	      BuildMessageCallback bmc,
-	      void * bmcClosure) {
+        unsigned int mtu,
+        unsigned int prio,
+        unsigned int targetTime,
+        unsigned int len,
+        BuildMessageCallback bmc,
+        void * bmcClosure) {
   FragmentBMC * fbmc;
   int xlen;
 
@@ -532,24 +532,24 @@ void fragment(const PeerIdentity * peer,
   fbmc->len = len;
   if (bmc == NULL) {
     memcpy(&fbmc[1],
-	   bmcClosure,
-	   len);
+     bmcClosure,
+     len);
     FREE(bmcClosure);
   } else {
     if (SYSERR == bmc(&fbmc[1],
-		      bmcClosure,
-		      len)) {
+  	      bmcClosure,
+  	      len)) {
       FREE(fbmc);
       return;
     }
   }
   xlen = mtu - sizeof(P2P_fragmentation_MESSAGE);
   coreAPI->unicastCallback(peer,
-			   &fragmentBMC,
-			   fbmc,
-			   mtu,
-			   prio * xlen / len, /* compute new prio */
-			   targetTime);
+  		   &fragmentBMC,
+  		   fbmc,
+  		   mtu,
+  		   prio * xlen / len, /* compute new prio */
+  		   targetTime);
 }
 
 /**
@@ -571,17 +571,17 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
     defragmentationCache[i] = NULL;
   defragCacheLock = MUTEX_CREATE(NO);
   cron_add_job(coreAPI->cron,
-	       &defragmentationPurgeCron,
-	       60 * cronSECONDS,
-	       60 * cronSECONDS,
-	       NULL);
+         &defragmentationPurgeCron,
+         60 * cronSECONDS,
+         60 * cronSECONDS,
+         NULL);
   GE_LOG(capi->ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' registering handler %d\n"),
-	 "fragmentation",
-	 P2P_PROTO_fragment);
+   GE_INFO | GE_USER | GE_REQUEST,
+   _("`%s' registering handler %d\n"),
+   "fragmentation",
+   P2P_PROTO_fragment);
   capi->registerHandler(P2P_PROTO_fragment,
-			&processFragment);
+  		&processFragment);
 
   ret.fragment = &fragment;
   return &ret;
@@ -594,11 +594,11 @@ void release_module_fragmentation() {
   int i;
 
   coreAPI->unregisterHandler(P2P_PROTO_fragment,
-			     &processFragment);
+  		     &processFragment);
   cron_del_job(coreAPI->cron,
-	       &defragmentationPurgeCron,
-	       60 * cronSECONDS,
-	       NULL);
+         &defragmentationPurgeCron,
+         60 * cronSECONDS,
+         NULL);
   for (i=0;i<DEFRAG_BUCKET_COUNT;i++) {
     FC * pos = defragmentationCache[i];
     while (pos != NULL) {

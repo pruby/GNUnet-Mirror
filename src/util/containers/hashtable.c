@@ -148,7 +148,7 @@ void ht_destroy(struct HashTable *hashTable) {
     for (i=0; i < hashTable->numOfBuckets; i++) {
         KeyValuePair *pair = hashTable->bucketArray[i];
         while (pair != NULL) {
-	    KeyValuePair *nextPair = pair->next;
+      KeyValuePair *nextPair = pair->next;
             FREE(pair->key);
             FREE(pair->value);
             FREE(pair);
@@ -168,8 +168,8 @@ void ht_destroy(struct HashTable *hashTable) {
  *         specified key
  */
 int ht_containsKey(const struct HashTable *hashTable,
-		   const void *key,
-		   const unsigned int keylen) {
+  	   const void *key,
+  	   const unsigned int keylen) {
     void *ret;
     unsigned int retlen;
 
@@ -184,15 +184,15 @@ int ht_containsKey(const struct HashTable *hashTable,
  *         specified value
  */
 int ht_containsValue(const struct HashTable *hashTable,
-		     const void *value,
-		     const unsigned int valuelen) {
+  	     const void *value,
+  	     const unsigned int valuelen) {
     int i;
 
     for (i=0; i<hashTable->numOfBuckets; i++) {
         KeyValuePair *pair = hashTable->bucketArray[i];
         while (pair != NULL) {
-	  if ( (pair->valuelen == valuelen) &&
-	       (memcmp(value, pair->value, valuelen) == 0) )
+    if ( (pair->valuelen == valuelen) &&
+         (memcmp(value, pair->value, valuelen) == 0) )
                 return 1;
             pair = pair->next;
         }
@@ -209,10 +209,10 @@ int ht_containsValue(const struct HashTable *hashTable,
  * @return YES if successful, NO if an error was encountered
  */
 int ht_put(struct HashTable *hashTable,
-	   const void *key,
-	   const unsigned int keylen,
-	   void *value,
-	   const unsigned int valuelen) {
+     const void *key,
+     const unsigned int keylen,
+     void *value,
+     const unsigned int valuelen) {
     long hashValue;
     KeyValuePair *pair;
 
@@ -271,10 +271,10 @@ int ht_put(struct HashTable *hashTable,
  * @return YES if found, NO otherwise
  */
 int ht_get(const struct HashTable *hashTable,
-	   const void *key,
-	   const unsigned int keylen,
-	   void **value,
-	   unsigned int *valuelen) {
+     const void *key,
+     const unsigned int keylen,
+     void **value,
+     unsigned int *valuelen) {
     long hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
     KeyValuePair *pair = hashTable->bucketArray[hashValue];
 
@@ -296,8 +296,8 @@ int ht_get(const struct HashTable *hashTable,
  * @param key the key specifying the key/value pair to be removed
  */
 void ht_remove(struct HashTable *hashTable,
-	       const void *key,
-	       const unsigned int keylen) {
+         const void *key,
+         const unsigned int keylen) {
     long hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
     KeyValuePair *pair = hashTable->bucketArray[hashValue];
     KeyValuePair *previousPair = NULL;
@@ -446,9 +446,9 @@ void ht_rehash(struct HashTable *hashTable, long numOfBuckets) {
  *                     be specified.
  */
 void ht_setIdealRatio(struct HashTable *hashTable,
-		      float idealRatio,
-		      float lowerRehashThreshold,
-		      float upperRehashThreshold) {
+  	      float idealRatio,
+  	      float lowerRehashThreshold,
+  	      float upperRehashThreshold) {
 
     if (idealRatio <= 0.0 || lowerRehashThreshold >= idealRatio ||
           (upperRehashThreshold != 0.0 || upperRehashThreshold <= idealRatio))

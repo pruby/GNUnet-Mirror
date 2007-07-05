@@ -53,26 +53,26 @@ static unsigned int fiCount;
 
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
-		       const char * data,
-		       void * closure) {
+  	       const char * data,
+  	       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor",
-		  EXTRACTOR_getKeywordTypeAsString(type)),
-	 data);
+   dgettext("libextractor",
+  	  EXTRACTOR_getKeywordTypeAsString(type)),
+   data);
   return OK;
 }
 
 static void printMeta(const struct ECRS_MetaData * meta) {
   ECRS_getMetaData(meta,
-		   &itemPrinter,
-		   NULL);
+  	   &itemPrinter,
+  	   NULL);
 }
 
 /**
  * Handle the search result.
  */
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   char * uri;
   char * filename;
 
@@ -92,8 +92,8 @@ static void * eventCallback(void * cls,
   case FSUI_search_result:
     /* retain URIs for possible directory dump later */
     GROW(fis,
-	 fiCount,
-	 fiCount+1);
+   fiCount,
+   fiCount+1);
     fis[fiCount-1].uri
       = ECRS_dupUri(event->data.SearchResult.fi.uri);
     fis[fiCount-1].meta
@@ -101,22 +101,22 @@ static void * eventCallback(void * cls,
 
     uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
     printf("%s:\n",
-	   uri);
+     uri);
     filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
-				    EXTRACTOR_FILENAME);
+  			    EXTRACTOR_FILENAME);
     if (filename != NULL) {
       char * dotdot;
 
       while (NULL != (dotdot = strstr(filename, "..")))
-	dotdot[0] = dotdot[1] = '_';
+  dotdot[0] = dotdot[1] = '_';
 
       printf("gnunet-download -o \"%s\" %s\n",
-	     filename,
-	     uri);
+       filename,
+       uri);
     }
     else
       printf("gnunet-download %s\n",
-	     uri);
+       uri);
     printMeta(event->data.SearchResult.fi.meta);
     printf("\n");
     FREENONNULL(filename);
@@ -165,28 +165,28 @@ static struct CommandLineOption gnunetsearchOptions[] = {
  * @return return value from gnunet-search: 0: ok, -1: error
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   struct ECRS_URI * uri;
   int i;
   struct FSUI_Context * ctx;
   struct FSUI_SearchList * s;
 
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-search [OPTIONS] [KEYWORDS]",
-		  &cfgFilename,
-		  gnunetsearchOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-search [OPTIONS] [KEYWORDS]",
+  	  &cfgFilename,
+  	  gnunetsearchOptions,
+  	  &ectx,
+  	  &cfg);
   if (i == SYSERR) {
     GNUNET_fini(ectx,
-		cfg);
+  	cfg);
     return -1;
   }
   /* convert args to URI */
  uri = ECRS_parseArgvKeywordURI(ectx,
-				 argc - i,
-				 (const char**) &argv[i]);
+  			 argc - i,
+  			 (const char**) &argv[i]);
   if (uri == NULL) {
     printf(_("Error converting arguments to URI!\n"));
     errorCode = -1;
@@ -195,12 +195,12 @@ int main(int argc,
   if (max_results == 0)
     max_results = (unsigned int)-1; /* infty */
   ctx = FSUI_start(ectx,
-		   cfg,
-		   "gnunet-search",
-		   4,
-		   NO,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "gnunet-search",
+  	   4,
+  	   NO,
+  	   &eventCallback,
+  	   NULL);
   if (ctx == NULL) {
     ECRS_freeUri(uri);
     GNUNET_fini(ectx, cfg);
@@ -208,10 +208,10 @@ int main(int argc,
   }
   errorCode = 1;
   s = FSUI_startSearch(ctx,
-		       anonymity,
-		       max_results,
-		       delay * cronSECONDS,
-		       uri);
+  	       anonymity,
+  	       max_results,
+  	       delay * cronSECONDS,
+  	       uri);
   ECRS_freeUri(uri);
   if (s == NULL) {
     errorCode = 2;
@@ -221,9 +221,9 @@ int main(int argc,
   GNUNET_SHUTDOWN_WAITFOR();
   if (errorCode == 1)
     FSUI_abortSearch(ctx,
-		     s);
+  	     s);
   FSUI_stopSearch(ctx,
-		    s);
+  	    s);
   FSUI_stop(ctx);
 
   if (output_filename != NULL) {
@@ -235,18 +235,18 @@ int main(int argc,
     meta = ECRS_createMetaData();
     /* ?: anything here to put into meta? */
     if (OK == ECRS_createDirectory(ectx,
-				   &data,
-				   &n,
-				   fiCount,
-				   fis,
-				   meta)) {
+  			   &data,
+  			   &n,
+  			   fiCount,
+  			   fis,
+  			   meta)) {
       outfile = string_expandFileName(ectx,
-				      output_filename);
+  			      output_filename);
       disk_file_write(ectx,
-		      outfile,
-		      data,
-		      n,
-		      "600");
+  	      outfile,
+  	      data,
+  	      n,
+  	      "600");
       FREE(outfile);
       FREE(data);
     }

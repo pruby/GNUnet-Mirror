@@ -33,7 +33,7 @@
 
 
 int main(int argc,
-	 const char *argv[]) {
+   const char *argv[]) {
   static CoreAPIForApplication capi;
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
@@ -45,9 +45,9 @@ int main(int argc,
   ServiceDoneMethod done;
 
   ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
+  			  GE_WARNING | GE_ERROR | GE_FATAL |
+  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
+  			  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
@@ -61,8 +61,8 @@ int main(int argc,
     return 1;
   }
   init = os_plugin_resolve_function(plug,
-				    "provide_",
-				    YES);
+  			    "provide_",
+  			    YES);
   if (init == NULL) {
     os_plugin_unload(plug);
     GC_free(cfg);
@@ -80,21 +80,21 @@ int main(int argc,
     if (GNUNET_SHUTDOWN_TEST() != NO)
       break;
     if (OK == upnp->get_ip(2086,
-			   "TCP",
-			   &addr)) {
+  		   "TCP",
+  		   &addr)) {
       printf("UPnP returned external IP %u.%u.%u.%u\n",
-	     PRIP(ntohl(*(int*)&addr)));
+       PRIP(ntohl(*(int*)&addr)));
     } else {
       /* we cannot be sure that there is a UPnP-capable
-	 NAT-box out there, so test should not fail
-	 just because of this! */
+   NAT-box out there, so test should not fail
+   just because of this! */
       printf("No UPnP response (yet).\n");
     }
     PTHREAD_SLEEP(2 * cronSECONDS);
   }
   done = os_plugin_resolve_function(plug,
-				    "release_",
-				    YES);
+  			    "release_",
+  			    YES);
   if (done != NULL)
     done();
   os_plugin_unload(plug);

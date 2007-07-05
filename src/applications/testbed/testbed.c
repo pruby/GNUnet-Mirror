@@ -44,10 +44,10 @@ static CoreAPIForApplication * coreAPI;
 static Identity_ServiceAPI * identity;
 
 static void sendAcknowledgement(ClientHandle client,
-				int ack) {
+  			int ack) {
   if (OK != coreAPI->sendValueToClient(client, ack)) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Could not send acknowledgement back to client.\n"));
+  _("Could not send acknowledgement back to client.\n"));
   }
 }
 
@@ -55,7 +55,7 @@ static void sendAcknowledgement(ClientHandle client,
  * Handler that is called for "message not understood" cases.
  */
 static void tb_undefined(ClientHandle client,
-			 TESTBED_CS_MESSAGE * msg) {
+  		 TESTBED_CS_MESSAGE * msg) {
   GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("Received unknown testbed message of type %u.\n"),
       ntohl(msg->msgType));
@@ -65,7 +65,7 @@ static void tb_undefined(ClientHandle client,
  * Connect to another peer.
  */
 static void tb_ADD_PEER(ClientHandle client,
-			TESTBED_CS_MESSAGE * msg) {
+  		TESTBED_CS_MESSAGE * msg) {
   MESSAGE_HEADER noise;
   TESTBED_ADD_PEER_MESSAGE * hm
     = (TESTBED_ADD_PEER_MESSAGE*) msg;
@@ -75,15 +75,15 @@ static void tb_ADD_PEER(ClientHandle client,
   if (sizeof(TESTBED_ADD_PEER_MESSAGE) >
       ntohs(msg->header.size) ) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("size of `%s' message is too short. Ignoring.\n"),
-	"ADD_PEER");
+  _("size of `%s' message is too short. Ignoring.\n"),
+  "ADD_PEER");
     return;
   }
   if (P2P_hello_MESSAGE_size(&hm->helo) !=
       ntohs(msg->header.size) - sizeof(TESTBED_CS_MESSAGE) ) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("size of `%s' message is wrong. Ignoring.\n"),
-	"_ADD_PEER");
+  _("size of `%s' message is wrong. Ignoring.\n"),
+  "_ADD_PEER");
     return;
   }
 
@@ -91,9 +91,9 @@ static void tb_ADD_PEER(ClientHandle client,
   noise.size = htons(sizeof(MESSAGE_HEADER));
   noise.type = htons(P2P_PROTO_noise);
   coreAPI->unicast(&hm->helo.senderIdentity,
-		   &noise,
-		   EXTREME_PRIORITY,
-		   0);
+  	   &noise,
+  	   EXTREME_PRIORITY,
+  	   0);
   sendAcknowledgement(client, OK);
 }
 
@@ -101,13 +101,13 @@ static void tb_ADD_PEER(ClientHandle client,
  * Disconnect from another peer.
  */
 static void tb_DEL_PEER(ClientHandle client,
-			TESTBED_DEL_PEER_MESSAGE * msg) {
+  		TESTBED_DEL_PEER_MESSAGE * msg) {
   coreAPI->disconnectFromPeer(&msg->host);
   sendAcknowledgement(client, OK);
 }
 
 static void doDisconnect(const PeerIdentity * id,
-			 void * unused) {
+  		 void * unused) {
   coreAPI->disconnectFromPeer(id);
 }
 
@@ -115,9 +115,9 @@ static void doDisconnect(const PeerIdentity * id,
  * Disconnect from all other peers.
  */
 static void tb_DEL_ALL_PEERS(ClientHandle client,
-			     TESTBED_DEL_ALL_PEERS_MESSAGE * msg) {
+  		     TESTBED_DEL_ALL_PEERS_MESSAGE * msg) {
   coreAPI->forAllConnectedNodes(&doDisconnect,
-				NULL);
+  			NULL);
   sendAcknowledgement(client, OK);
 }
 
@@ -125,17 +125,17 @@ static void tb_DEL_ALL_PEERS(ClientHandle client,
  * Get a hello message for this peer.
  */
 static void tb_GET_hello(ClientHandle client,
-			TESTBED_GET_hello_MESSAGE * msg) {
+  		TESTBED_GET_hello_MESSAGE * msg) {
   P2P_hello_MESSAGE * helo;
   unsigned int proto = ntohs(msg->proto);
 
   helo = identity->identity2Helo(coreAPI->myIdentity,
-				 proto,
-				 NO);
+  			 proto,
+  			 NO);
   if (NULL == helo) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("TESTBED could not generate hello message for protocol %u\n"),
-	proto);
+  _("TESTBED could not generate hello message for protocol %u\n"),
+  proto);
     sendAcknowledgement(client, SYSERR);
   } else {
     TESTBED_hello_MESSAGE * reply
@@ -147,13 +147,13 @@ static void tb_GET_hello(ClientHandle client,
     reply->header.msgType
       = htonl(TESTBED_hello_RESPONSE);
     memcpy(&reply->helo,
-	   helo,
-	   ntohs(helo->header.size));
+     helo,
+     ntohs(helo->header.size));
     coreAPI->sendToClient(client,
-			  &reply->header.header);
+  		  &reply->header.header);
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"%s: returning from sendToClient\n",
-	__FUNCTION__);
+  "%s: returning from sendToClient\n",
+  __FUNCTION__);
     FREE(helo);
     FREE(reply);
   }
@@ -163,48 +163,48 @@ static void tb_GET_hello(ClientHandle client,
  * Set a trust value.
  */
 static void tb_SET_TVALUE(ClientHandle client,
-			  TESTBED_SET_TVALUE_MESSAGE * msg) {
+  		  TESTBED_SET_TVALUE_MESSAGE * msg) {
   int trust;
 
   trust = ntohl(msg->trust);
   identity->changeHostTrust(&msg->otherPeer,
-			    trust);
+  		    trust);
   sendAcknowledgement(client, OK);
-}	
-		
+}  
+  	
 /**
  * Get a trust value.
  */
 static void tb_GET_TVALUE(ClientHandle client,
-			  TESTBED_GET_TVALUE_MESSAGE * msg) {
+  		  TESTBED_GET_TVALUE_MESSAGE * msg) {
   unsigned int trust;
 
   trust = identity->getHostTrust(&msg->otherPeer);
   sendAcknowledgement(client, trust);
-}	
+}  
 
 /**
  * Change the bandwidth limitations.
  */
 static void tb_SET_BW(ClientHandle client,
-		      TESTBED_SET_BW_MESSAGE * msg) {
+  	      TESTBED_SET_BW_MESSAGE * msg) {
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "gnunet-testbed: tb_SET_BW\n");
   setConfigurationInt("LOAD",
-		      "MAXNETDOWNBPSTOTAL",
-		      ntohl(msg->in_bw));
+  	      "MAXNETDOWNBPSTOTAL",
+  	      ntohl(msg->in_bw));
   setConfigurationInt("LOAD",
-		      "MAXNETUPBPSTOTAL",
-		      ntohl(msg->out_bw));
+  	      "MAXNETUPBPSTOTAL",
+  	      ntohl(msg->out_bw));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
-}		
+}  	
 
 /**
  * Load an application module.
  */
 static void tb_LOAD_MODULE(ClientHandle client,
-			   TESTBED_CS_MESSAGE * msg) {
+  		   TESTBED_CS_MESSAGE * msg) {
   unsigned short size;
   char * name;
   int ok;
@@ -212,31 +212,31 @@ static void tb_LOAD_MODULE(ClientHandle client,
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"LOAD_MODULE");
+  _("received invalid `%s' message\n"),
+  "LOAD_MODULE");
     return;
   }
 
   if (! testConfigurationString("TESTBED",
-				"ALLOW_MODULE_LOADING",
-				"YES")) {
+  			"ALLOW_MODULE_LOADING",
+  			"YES")) {
     sendAcknowledgement(client, SYSERR);
     return;
   }
 
   name = STRNDUP(&((TESTBED_LOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
-		 size - sizeof(TESTBED_CS_MESSAGE));
+  	 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message (empty module name)\n"),
-	"LOAD_MODULE");
+  _("received invalid `%s' message (empty module name)\n"),
+  "LOAD_MODULE");
     return;
   }
   ok = coreAPI->loadApplicationModule(name);
   if (ok != OK)
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("loading module `%s' failed.  Notifying client.\n"),
-	name);
+  _("loading module `%s' failed.  Notifying client.\n"),
+  name);
   FREE(name);
   sendAcknowledgement(client, ok);
 }
@@ -245,7 +245,7 @@ static void tb_LOAD_MODULE(ClientHandle client,
  * Unload an application module.
  */
 static void tb_UNLOAD_MODULE(ClientHandle client,
-			     TESTBED_CS_MESSAGE * msg) {
+  		     TESTBED_CS_MESSAGE * msg) {
   unsigned short size;
   char * name;
   int ok;
@@ -253,29 +253,29 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"UNLOAD_MODULE");
+  _("received invalid `%s' message\n"),
+  "UNLOAD_MODULE");
     return;
   }
   if (! testConfigurationString("TESTBED",
-				"ALLOW_MODULE_LOADING",
-				"YES")) {
+  			"ALLOW_MODULE_LOADING",
+  			"YES")) {
     sendAcknowledgement(client, SYSERR);
     return;
   }
 
   name = STRNDUP(&((TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
-		 size - sizeof(TESTBED_CS_MESSAGE));
+  	 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message (empty module name)\n"),
-	"UNLOAD_MODULE");
+  _("received invalid `%s' message (empty module name)\n"),
+  "UNLOAD_MODULE");
     return;
   }
   ok = coreAPI->unloadApplicationModule(name);
   if (ok != OK)
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("unloading module failed.  Notifying client.\n"));
+  _("unloading module failed.  Notifying client.\n"));
   FREE(name);
   sendAcknowledgement(client, ok);
 }
@@ -286,10 +286,10 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
  * random).
  */
 static void tb_DISABLE_AUTOCONNECT(ClientHandle client,
-				   TESTBED_DISABLE_AUTOCONNECT_MESSAGE * msg) {
+  			   TESTBED_DISABLE_AUTOCONNECT_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "DISABLE-AUTOCONNECT",
-				     "YES"));
+  			     "DISABLE-AUTOCONNECT",
+  			     "YES"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
 }
@@ -300,10 +300,10 @@ static void tb_DISABLE_AUTOCONNECT(ClientHandle client,
  * random).
  */
 static void tb_ENABLE_AUTOCONNECT(ClientHandle client,
-				  TESTBED_ENABLE_AUTOCONNECT_MESSAGE * msg) {
+  			  TESTBED_ENABLE_AUTOCONNECT_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "DISABLE-AUTOCONNECT",
-				     "NO"));
+  			     "DISABLE-AUTOCONNECT",
+  			     "NO"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
 }
@@ -314,13 +314,13 @@ static void tb_ENABLE_AUTOCONNECT(ClientHandle client,
  * random).
  */
 static void tb_DISABLE_hello(ClientHandle client,
-			    TESTBED_DISABLE_hello_MESSAGE * msg) {
+  		    TESTBED_DISABLE_hello_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("NETWORK",
-				     "DISABLE-ADVERTISEMENTS",
-				     "YES"));
+  			     "DISABLE-ADVERTISEMENTS",
+  			     "YES"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "HELLOEXCHANGE",
-				     "NO"));
+  			     "HELLOEXCHANGE",
+  			     "NO"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
 }
@@ -331,13 +331,13 @@ static void tb_DISABLE_hello(ClientHandle client,
  * random).
  */
 static void tb_ENABLE_hello(ClientHandle client,
-			   TESTBED_ENABLE_hello_MESSAGE * msg) {
+  		   TESTBED_ENABLE_hello_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("NETWORK",
-				     "DISABLE-ADVERTISEMENTS",
-				     "NO"));
+  			     "DISABLE-ADVERTISEMENTS",
+  			     "NO"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "HELLOEXCHANGE",
-				     "YES"));
+  			     "HELLOEXCHANGE",
+  			     "YES"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
 }
@@ -346,7 +346,7 @@ static void tb_ENABLE_hello(ClientHandle client,
  * Allow only certain peers to connect.
  */
 static void tb_ALLOW_CONNECT(ClientHandle client,
-			     TESTBED_ALLOW_CONNECT_MESSAGE * msg) {
+  		     TESTBED_ALLOW_CONNECT_MESSAGE * msg) {
   char * value;
   unsigned short size;
   unsigned int count;
@@ -356,15 +356,15 @@ static void tb_ALLOW_CONNECT(ClientHandle client,
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"ALLOW_CONNECT");
+  _("received invalid `%s' message\n"),
+  "ALLOW_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"ALLOW_CONNECT");
+  _("received invalid `%s' message\n"),
+  "ALLOW_CONNECT");
     return;
   }
   if (count == 0) {
@@ -374,13 +374,13 @@ static void tb_ALLOW_CONNECT(ClientHandle client,
     value[0] = '\0';
     for (i=0;i<count;i++) {
       hash2enc(&((TESTBED_ALLOW_CONNECT_MESSAGE_GENERIC*)msg)->peers[i].hashPubKey,
-	       &enc);
+         &enc);
       strcat(value, (char*)&enc);
     }
   }
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "LIMIT-ALLOW",
-				     value));
+  			     "LIMIT-ALLOW",
+  			     value));
   FREENONNULL(value);
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -390,7 +390,7 @@ static void tb_ALLOW_CONNECT(ClientHandle client,
  * Deny certain peers the right to connect.
  */
 static void tb_DENY_CONNECT(ClientHandle client,
-			    TESTBED_DENY_CONNECT_MESSAGE * msg) {
+  		    TESTBED_DENY_CONNECT_MESSAGE * msg) {
   char * value;
   unsigned short size;
   unsigned int count;
@@ -400,15 +400,15 @@ static void tb_DENY_CONNECT(ClientHandle client,
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"DENY_CONNECT");
+  _("received invalid `%s' message\n"),
+  "DENY_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message\n"),
-	"DENY_CONNECT");
+  _("received invalid `%s' message\n"),
+  "DENY_CONNECT");
     return;
   }
   if (count == 0) {
@@ -418,13 +418,13 @@ static void tb_DENY_CONNECT(ClientHandle client,
     value[0] = '\0';
     for (i=0;i<count;i++) {
       hash2enc(&((TESTBED_DENY_CONNECT_MESSAGE_GENERIC*)msg)->peers[i].hashPubKey,
-	       &enc);
+         &enc);
       strcat(value, (char*)&enc);
     }
   }
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "LIMIT-DENY",
-				     value));
+  			     "LIMIT-DENY",
+  			     value));
   FREENONNULL(value);
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -506,10 +506,10 @@ static int pipeReaderThread(ProcessInfo * pi) {
       pi->argc-1);
   for (i=1;i<pi->argc;i++)
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"exec argument %d is %s\n",
-	i, pi->argv[i]);
+  "exec argument %d is %s\n",
+  i, pi->argv[i]);
   tmp = getConfigurationString("TESTBED",
-			       "UPLOAD-DIR");
+  		       "UPLOAD-DIR");
   if (tmp == NULL)
     tmp = STRDUP(DIR_SEPARATOR_STR);
   dir = expandFileName(tmp);
@@ -533,13 +533,13 @@ static int pipeReaderThread(ProcessInfo * pi) {
     CHDIR(dir);
     FREE(dir);
     execvp(pi->argv[0],
-	   &pi->argv[0]);
+     &pi->argv[0]);
     GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "execvp", pi->argv[0]);
     fprintf(stderr,
-	    _("`%s' %s failed: %s\n"),
-	    "execvp",
-	    pi->argv[0],
-	    STRERROR(errno));
+      _("`%s' %s failed: %s\n"),
+      "execvp",
+      pi->argv[0],
+      STRERROR(errno));
     exit(errno);
   } /* end pi->pid == 0 */
   FREE(dir);
@@ -571,8 +571,8 @@ static int pipeReaderThread(ProcessInfo * pi) {
   buffer = MALLOC(PRT_BUFSIZE);
   while (ret > 0) {
     ret = READ(pi->outputPipe,
-	       buffer,
-	       PRT_BUFSIZE);
+         buffer,
+         PRT_BUFSIZE);
     if (ret <= 0)
       break;
     MUTEX_LOCK(&lock);
@@ -581,19 +581,19 @@ static int pipeReaderThread(ProcessInfo * pi) {
       break;
     }
     GROW(pi->output,
-	 pi->outputSize,
-	 pi->outputSize + ret);
+   pi->outputSize,
+   pi->outputSize + ret);
     memcpy(&pi->output[pi->outputSize-ret],
-	   buffer,
-	   ret);
+     buffer,
+     ret);
     MUTEX_UNLOCK(&lock);
   }
   closefile(pi->outputPipe);
   MUTEX_LOCK(&lock);
 
   ret = waitpid(pi->pid,
-		&pi->exitStatus,
-		0);
+  	&pi->exitStatus,
+  	0);
   if (ret != pi->pid) {
     LOG_STRERROR(LOG_WARNING, "waitpid");
     pi->exitStatus = errno;
@@ -607,7 +607,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
  * Execute a command.
  */
 static void tb_EXEC(ClientHandle client,
-		    TESTBED_CS_MESSAGE * msg) {
+  	    TESTBED_CS_MESSAGE * msg) {
   int argc2;
   unsigned short size;
   unsigned int uid;
@@ -622,11 +622,11 @@ static void tb_EXEC(ClientHandle client,
   if ( (size <= sizeof(TESTBED_CS_MESSAGE)) ||
        (((TESTBED_EXEC_MESSAGE_GENERIC*)emsg)->commandLine[size-sizeof(TESTBED_CS_MESSAGE)-1] != '\0') ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid `%s' message: %s.\n"),
-	"EXEC",
-	(size <= sizeof(TESTBED_CS_MESSAGE))
-	? "size smaller or equal than TESTBED_CS_MESSAGE"
-	: "last character in command line is not zero-terminator");
+  _("received invalid `%s' message: %s.\n"),
+  "EXEC",
+  (size <= sizeof(TESTBED_CS_MESSAGE))
+  ? "size smaller or equal than TESTBED_CS_MESSAGE"
+  : "last character in command line is not zero-terminator");
     sendAcknowledgement(client, SYSERR);
     return;
   }
@@ -639,10 +639,10 @@ static void tb_EXEC(ClientHandle client,
   mainName = STRDUP(&((TESTBED_EXEC_MESSAGE_GENERIC*)emsg)->commandLine[0]);
   clientConfig = NULL;
   if (0 == strncmp("gnunet",
-		   mainName,
-		   strlen("gnunet")))
+  	   mainName,
+  	   strlen("gnunet")))
     clientConfig = getConfigurationString("TESTBED",
-					  "CLIENTCONFIG");
+  				  "CLIENTCONFIG");
   if (clientConfig != NULL)
     pi->argc +=2;
   argc2 = pi->argc;
@@ -660,9 +660,9 @@ static void tb_EXEC(ClientHandle client,
 
   pi->sem = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&pi->reader,
-			  (PThreadMain) &pipeReaderThread,
-			  pi,
-			  8*1024)) {
+  		  (PThreadMain) &pipeReaderThread,
+  		  pi,
+  		  8*1024)) {
     LOG_STRERROR(LOG_WARNING, "pthread_create");
     SEMAPHORE_DESTROY(pi->sem);
     MUTEX_UNLOCK(&lock);
@@ -688,7 +688,7 @@ static void tb_EXEC(ClientHandle client,
  * process on exit.
  */
 static void tb_SIGNAL(ClientHandle client,
-		      TESTBED_SIGNAL_MESSAGE * msg) {
+  	      TESTBED_SIGNAL_MESSAGE * msg) {
   int ret;
   int i;
   unsigned int uid;
@@ -704,30 +704,30 @@ static void tb_SIGNAL(ClientHandle client,
     pi = pt[i];
     if (pi->uid != uid)
       continue;
-    if (sig == -1) {	
+    if (sig == -1) {  
       if (pi->hasExited == NO) {
-	ret = SYSERR;
-      } else {	
-	ret = WEXITSTATUS(pi->exitStatus);
-	/* free resources... */
-	GROW(pi->output,
-	     pi->outputSize,
-	     0);
-	PTHREAD_JOIN(&pi->reader,
-		     &unused);
-	FREE(pi);
-	pt[i] = pt[ptSize-1];
-	GROW(pt,
-	     ptSize,
-	     ptSize-1);
+  ret = SYSERR;
+      } else {  
+  ret = WEXITSTATUS(pi->exitStatus);
+  /* free resources... */
+  GROW(pi->output,
+       pi->outputSize,
+       0);
+  PTHREAD_JOIN(&pi->reader,
+  	     &unused);
+  FREE(pi);
+  pt[i] = pt[ptSize-1];
+  GROW(pt,
+       ptSize,
+       ptSize-1);
       }
     } else {
       if (pi->hasExited == NO) {
-	if (0 == kill(pi->pid,
-		      ntohl(msg->signal)))
-	  ret = OK;
-	else
-	  LOG_STRERROR(LOG_WARNING, "kill");
+  if (0 == kill(pi->pid,
+  	      ntohl(msg->signal)))
+    ret = OK;
+  else
+    LOG_STRERROR(LOG_WARNING, "kill");
       }
     }
     break;
@@ -740,7 +740,7 @@ static void tb_SIGNAL(ClientHandle client,
  * Get the output of a process.
  */
 static void tb_GET_OUTPUT(ClientHandle client,
-			  TESTBED_GET_OUTPUT_MESSAGE * msg) {
+  		  TESTBED_GET_OUTPUT_MESSAGE * msg) {
   int i;
   unsigned int uid;
 
@@ -756,30 +756,30 @@ static void tb_GET_OUTPUT(ClientHandle client,
 
       msg = MALLOC(65532);
       msg->header.header.type
-	= htons(CS_PROTO_testbed_REPLY);
+  = htons(CS_PROTO_testbed_REPLY);
       msg->header.msgType
-	= htonl(TESTBED_OUTPUT_RESPONSE);
+  = htonl(TESTBED_OUTPUT_RESPONSE);
 
       sendAcknowledgement(client, pi->outputSize);
       pos = 0;
-      while (pos < pi->outputSize) {	
-	unsigned int run = pi->outputSize - pos;
-	if (run > 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE))
-	  run = 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE);
-	msg->header.header.size
-	  = htons(run+sizeof(TESTBED_OUTPUT_REPLY_MESSAGE));
-	memcpy(&((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC*)msg)->data[0],
-	       &pi->output[pos],
-	       run);
-	coreAPI->sendToClient(client,
-			      &msg->header.header);
-	pos += run;
+      while (pos < pi->outputSize) {  
+  unsigned int run = pi->outputSize - pos;
+  if (run > 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE))
+    run = 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE);
+  msg->header.header.size
+    = htons(run+sizeof(TESTBED_OUTPUT_REPLY_MESSAGE));
+  memcpy(&((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC*)msg)->data[0],
+         &pi->output[pos],
+         run);
+  coreAPI->sendToClient(client,
+  		      &msg->header.header);
+  pos += run;
       }
       FREE(msg);
       /* reset output buffer */
       GROW(pi->output,
-	   pi->outputSize,
-	   0);
+     pi->outputSize,
+     0);
       MUTEX_UNLOCK(&lock);
       return;
     }
@@ -792,7 +792,7 @@ static void tb_GET_OUTPUT(ClientHandle client,
  * The client is uploading a file to this peer.
  */
 static void tb_UPLOAD_FILE(ClientHandle client,
-			   TESTBED_UPLOAD_FILE_MESSAGE * msg) {
+  		   TESTBED_UPLOAD_FILE_MESSAGE * msg) {
   int ack;
   unsigned int size;
   char * filename, *gnHome, *s;
@@ -804,8 +804,8 @@ static void tb_UPLOAD_FILE(ClientHandle client,
       "tb_UPLOAD_FILE\n");
   if (sizeof(TESTBED_UPLOAD_FILE_MESSAGE) > ntohs(msg->header.header.size)) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("size of `%s' message is too short. Ignoring.\n"),
-	"UPLOAD_FILE");
+  _("size of `%s' message is too short. Ignoring.\n"),
+  "UPLOAD_FILE");
     sendAcknowledgement(client, SYSERR);
     return;
   }
@@ -814,8 +814,8 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   while ( (*s) && (s != end) ) {
     if (*s == '.' && *(s+1) == '.') {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("\'..\' is not allowed in file name (%s).\n"),
-	  filename);
+    _("\'..\' is not allowed in file name (%s).\n"),
+    filename);
       return;
     }
     s++;
@@ -823,22 +823,22 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   if (s == filename) {
     /* filename empty, not allowed! */
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Empty filename for UPLOAD_FILE message is invalid!\n"));
+  _("Empty filename for UPLOAD_FILE message is invalid!\n"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
   if (s == end) {
     /* filename empty, not allowed! */
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"));
+  _("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
   tmp = getConfigurationString("TESTBED",
-			       "UPLOAD-DIR");
+  		       "UPLOAD-DIR");
   if (tmp == NULL) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Upload refused!"));
+  _("Upload refused!"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
@@ -850,8 +850,8 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   strcpy(filename, gnHome);
   strcat(filename, DIR_SEPARATOR_STR);
   strncat(filename,
-	  ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf,
-	  end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);
+    ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf,
+    end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);
   if (htonl(msg->type) == TESTBED_FILE_DELETE) {
     if (REMOVE(filename) && errno != ENOENT) {
       GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "remove", filename);
@@ -864,9 +864,9 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   }
   if (htonl(msg->type) != TESTBED_FILE_APPEND) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Invalid message received at %s:%d."),
-	__FILE__,
-	__LINE__);
+  _("Invalid message received at %s:%d."),
+  __FILE__,
+  __LINE__);
     FREE(filename);
     return;
   }
@@ -894,9 +894,9 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 
 /**
  * General type of a message handler.
- */			
+ */  		
 typedef void (*THandler)(ClientHandle client,
-			 TESTBED_CS_MESSAGE * msg);
+  		 TESTBED_CS_MESSAGE * msg);
 
 /**
  * @brief Entry in the handlers array that describes a testbed message handler.
@@ -931,14 +931,14 @@ typedef struct HD_ {
 
 #define TBDENTRY(a)  {(THandler)&tb_##a, 0, "##a##", TESTBED_##a }
 #define TBSENTRY(a)  {(THandler)&tb_##a, sizeof(TESTBED_##a##_MESSAGE),\
-		      "##a##", TESTBED_##a}
+  	      "##a##", TESTBED_##a}
 
 /**
  * The array of message handlers.  Add new handlers here.
  */
 static HD handlers[] = {
-  TBSENTRY(undefined),	/* For IDs that should never be received */
-  TBDENTRY(ADD_PEER),	/* RF: Why was this as TBDENTRY? Because hello is variable size! */
+  TBSENTRY(undefined),  /* For IDs that should never be received */
+  TBDENTRY(ADD_PEER),  /* RF: Why was this as TBDENTRY? Because hello is variable size! */
   TBSENTRY(DEL_PEER),
   TBSENTRY(DEL_ALL_PEERS),
   TBSENTRY(GET_hello),
@@ -958,10 +958,10 @@ static HD handlers[] = {
   TBDENTRY(EXEC),
   TBSENTRY(SIGNAL),
   TBSENTRY(GET_OUTPUT),
-  { NULL, 0, NULL, 0 },	/* this entry is used to ensure that
-			   a wrong TESTBED_MAX_MSG will abort
-			   insted of possibly segfaulting.
-			   This must always be the LAST entry. */
+  { NULL, 0, NULL, 0 },  /* this entry is used to ensure that
+  		   a wrong TESTBED_MAX_MSG will abort
+  		   insted of possibly segfaulting.
+  		   This must always be the LAST entry. */
 };
 
 
@@ -970,7 +970,7 @@ static HD handlers[] = {
  * on the testbed-message type.
  */
 static void csHandleTestbedRequest(ClientHandle client,
-				   CS_MESSAGE_HEADER * message) {
+  			   CS_MESSAGE_HEADER * message) {
   TESTBED_CS_MESSAGE * msg;
   unsigned short size;
   unsigned int id;
@@ -982,27 +982,27 @@ static void csHandleTestbedRequest(ClientHandle client,
   size = ntohs(message->size);
   if (size < sizeof(TESTBED_CS_MESSAGE)) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("received invalid testbed message of size %u\n"),
-	size);
+  _("received invalid testbed message of size %u\n"),
+  size);
     return;
   }
   msg = (TESTBED_CS_MESSAGE *)message;
   id = ntohl(msg->msgType);
   if (id < TESTBED_MAX_MSG) {
     if ( (handlers[id].expectedSize == 0) ||
-	 (handlers[id].expectedSize == size) ) {
+   (handlers[id].expectedSize == size) ) {
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "TESTBED received message of type %u.\n",
-	  id);
+    "TESTBED received message of type %u.\n",
+    id);
 
       handlers[id].handler(client, msg);
 
     } else {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("Received testbed message of type %u but unexpected size %u, expected %u\n"),
-	  id,
-	  size,
-	  handlers[id].expectedSize);
+    _("Received testbed message of type %u but unexpected size %u, expected %u\n"),
+    id,
+    size,
+    handlers[id].expectedSize);
     }
   } else {
     tb_undefined(client, msg);
@@ -1039,32 +1039,32 @@ static void httpRegister(char * cmd) {
   size_t n;
 
   reg = getConfigurationString("TESTBED",
-			       "REGISTERURL");
+  		       "REGISTERURL");
   if (reg == NULL) {
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	_("No testbed URL given, not registered.\n"));
+  _("No testbed URL given, not registered.\n"));
     return;
   }
 
   proxy = getConfigurationString("GNUNETD",
-				 "HTTP-PROXY");
+  			 "HTTP-PROXY");
   if (proxy != NULL) {
     if (OK != get_host_by_name(ectx, proxy, &ip_info)) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("Could not resolve name of HTTP proxy `%s'.\n"),
-	  proxy);
+    _("Could not resolve name of HTTP proxy `%s'.\n"),
+    proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
       memcpy(&theProxy.sin_addr.s_addr,
-	     &ip_info,
-	     sizeof(IPaddr));
+       &ip_info,
+       sizeof(IPaddr));
       proxyPort = getConfigurationString("GNUNETD",
-					 "HTTP-PROXY-PORT");
+  				 "HTTP-PROXY-PORT");
       if (proxyPort == NULL) {
-	theProxy.sin_port = htons(8080);
+  theProxy.sin_port = htons(8080);
       } else {
-	theProxy.sin_port = htons(atoi(proxyPort));
-	FREE(proxyPort);
+  theProxy.sin_port = htons(atoi(proxyPort));
+  FREE(proxyPort);
       }
     }
     FREE(proxy);
@@ -1073,12 +1073,12 @@ static void httpRegister(char * cmd) {
   }
 
   if (0 != strncmp(HTTP_URL,
-		   reg,
-		   strlen(HTTP_URL)) ) {
+  	   reg,
+  	   strlen(HTTP_URL)) ) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Invalid URL `%s' (must begin with `%s')\n"),
-	reg,
-	HTTP_URL);
+  _("Invalid URL `%s' (must begin with `%s')\n"),
+  reg,
+  HTTP_URL);
     return;
   }
   port = 80; /* default http port */
@@ -1093,7 +1093,7 @@ static void httpRegister(char * cmd) {
     if (hostname[i] == '/') {
       k = i;
       if (j == -1)
-	j = i;
+  j = i;
       break;
     }
   }
@@ -1102,22 +1102,22 @@ static void httpRegister(char * cmd) {
     if (k == -1) {
       pstring = MALLOC(strlen(hostname)-j+1);
       memcpy(pstring,
-	     &hostname[j],
-	     strlen(hostname)-j+1);
+       &hostname[j],
+       strlen(hostname)-j+1);
       pstring[strlen(hostname)-j] = '\0';
     } else {
       pstring = MALLOC(k-j+1);
       memcpy(pstring,
-	     &hostname[j],
-	     k-j);
+       &hostname[j],
+       k-j);
       pstring[k-j] = '\0';
     }
     port = strtol(pstring, &buffer, 10);
     if ( (port < 0) || (port > 65536) ) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"),
-	  reg,
-	  buffer);
+    _("Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"),
+    reg,
+    buffer);
       FREE(hostname);
       FREE(reg);
       FREE(pstring);
@@ -1136,8 +1136,8 @@ static void httpRegister(char * cmd) {
 
 
   sock = SOCKET(PF_INET,
-		SOCK_STREAM,
-		0);
+  	SOCK_STREAM,
+  	0);
   if (sock < 0) {
     LOG_STRERROR(LOG_ERROR, "socket");
     FREE(hostname);
@@ -1149,17 +1149,17 @@ static void httpRegister(char * cmd) {
   if (theProxy.sin_addr.s_addr == 0) {
     /* no proxy */
     if (OK != get_host_by_name(ectx, hostname,
-			       &ip_info)) {
+  		       &ip_info)) {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Could not register testbed, host `%s' unknown\n"),
-	  hostname);
+    _("Could not register testbed, host `%s' unknown\n"),
+    hostname);
       FREE(reg);
       FREE(hostname);
       return;
     }
     memcpy(&soaddr.sin_addr.s_addr,
-	   &ip_info,
-	   sizeof(IPaddr));
+     &ip_info,
+     sizeof(IPaddr));
     soaddr.sin_port
       = htons((unsigned short)port);
   } else {
@@ -1171,12 +1171,12 @@ static void httpRegister(char * cmd) {
   }
   soaddr.sin_family = AF_INET;
   if (CONNECT(sock,
-	      (struct sockaddr*)&soaddr,
-	      sizeof(soaddr)) < 0 && errno != EWOULDBLOCK) {
+        (struct sockaddr*)&soaddr,
+        sizeof(soaddr)) < 0 && errno != EWOULDBLOCK) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Failed to send HTTP request to host `%s': %s\n"),
-	hostname,
-	STRERROR(errno));
+  _("Failed to send HTTP request to host `%s': %s\n"),
+  hostname,
+  STRERROR(errno));
     FREE(reg);
     FREE(hostname);
     closefile(sock);
@@ -1185,7 +1185,7 @@ static void httpRegister(char * cmd) {
 
 
   trusted = getConfigurationString("NETWORK",
-				   "TRUSTED");
+  			   "TRUSTED");
   if (trusted == NULL)
     trusted = STRDUP("127.0.0.0/8;");
   i = 0;
@@ -1196,11 +1196,11 @@ static void httpRegister(char * cmd) {
   }
   tport = getGNUnetPort();
   SNPRINTF(sport,
-	   6,
-	   "%u",
-	   tport);
+     6,
+     "%u",
+     tport);
   secure = getConfigurationString("TESTBED",
-				  "LOGIN");
+  			  "LOGIN");
   if (secure == NULL)
     secure = STRDUP("");
   n = strlen(GET_COMMAND)
@@ -1211,26 +1211,26 @@ static void httpRegister(char * cmd) {
     + strlen(secure) + 1;
   command = MALLOC(n);
   SNPRINTF(command,
-	   n,
-	   GET_COMMAND,
-	   reg,
-	   cmd,
-	   trusted,
-	   sport,
-	   secure);
+     n,
+     GET_COMMAND,
+     reg,
+     cmd,
+     trusted,
+     sport,
+     secure);
   FREE(trusted);
   FREE(secure);
   FREE(reg);
   curpos = strlen(command)+1;
   curpos = SEND_BLOCKING_ALL(sock,
-			     command,
-			     curpos);
+  		     command,
+  		     curpos);
   if (SYSERR == (int)curpos) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Failed so send HTTP request `%s' to host `%s': %s\n"),
-	command,
-	hostname,
-	STRERROR(errno));
+  _("Failed so send HTTP request `%s' to host `%s': %s\n"),
+  command,
+  hostname,
+  STRERROR(errno));
     FREE(command);
     FREE(hostname);
     closefile(sock);
@@ -1249,9 +1249,9 @@ static void httpRegister(char * cmd) {
     if (start + 5 * cronMINUTES < get_time())
       break; /* exit after 5m */
     success = RECV_NONBLOCKING(sock,
-			       &c,
-			       sizeof(c),
-			       &ret);
+  		       &c,
+  		       sizeof(c),
+  		       &ret);
     if ( success == NO ) {
       PTHREAD_SLEEP(100 * cronMILLIS);
       continue;
@@ -1266,7 +1266,7 @@ static void httpRegister(char * cmd) {
   closefile(sock);
   if (curpos < 4) { /* invalid response */
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Exit register (error: no http response read).\n"));
+  _("Exit register (error: no http response read).\n"));
   }
 #if DEBUG_TESTBED
   GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
@@ -1290,7 +1290,7 @@ static void testbedClientExitHandler(ClientHandle client) {
     if (pt[i]->client == client) {
       pding++;
       if (pt[i]->hasExited == NO)
-	kill(pt[i]->pid, SIGKILL); /* die NOW */
+  kill(pt[i]->pid, SIGKILL); /* die NOW */
     }
   }
   MUTEX_UNLOCK(&lock);
@@ -1305,20 +1305,20 @@ static void testbedClientExitHandler(ClientHandle client) {
     MUTEX_LOCK(&lock);
     for (i=ptSize-1;i>=0;i--) {
       if (pt[i]->client == client) {
-	if (pt[i]->hasExited == YES) {
-	  PTHREAD_JOIN(&pt[i]->reader,
-		       &unused);
-	  GROW(pt[i]->output,
-	       pt[i]->outputSize,
-	       0);
-	  FREE(pt[i]);
-	  pt[i] = pt[ptSize-1];
-	  GROW(pt,
-	       ptSize,
-	       ptSize-1);
-	} else {
-	  pding++;
-	}
+  if (pt[i]->hasExited == YES) {
+    PTHREAD_JOIN(&pt[i]->reader,
+  	       &unused);
+    GROW(pt[i]->output,
+         pt[i]->outputSize,
+         0);
+    FREE(pt[i]);
+    pt[i] = pt[ptSize-1];
+    GROW(pt,
+         ptSize,
+         ptSize-1);
+  } else {
+    pding++;
+  }
       }
     }
     MUTEX_UNLOCK(&lock);
@@ -1336,7 +1336,7 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   /* some checks */
   for (i=0;i<TESTBED_MAX_MSG;i++)
     if ( (handlers[i].msgId != i) &&
-	 (handlers[i].handler != &tb_undefined) )
+   (handlers[i].handler != &tb_undefined) )
       GE_ASSERT(ectx, 0);
   GE_ASSERT(ectx, handlers[TESTBED_MAX_MSG].handler == NULL);
   identity = capi->requestService("identity");
@@ -1350,16 +1350,16 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   coreAPI = capi;
   GE_ASSERT(ectx, SYSERR != capi->registerClientExitHandler(&testbedClientExitHandler));
   GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
-						      (CSHandler)&csHandleTestbedRequest));
+  					      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
 
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						   "ABOUT",
-						   "testbed",
-						   gettext_noop("allows construction of a P2P-testbed"
-								" (incomplete)")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					   "ABOUT",
+  					   "testbed",
+  					   gettext_noop("allows construction of a P2P-testbed"
+  							" (incomplete)")));
   return OK;
 }
 
@@ -1378,7 +1378,7 @@ void done_module_testbed() {
     if (pi->hasExited != NO)
       kill(pi->pid, SIGKILL);
     PTHREAD_JOIN(&pi->reader,
-		 &unused);
+  	 &unused);
     FREENONNULL(pi->output);
     FREE(pi);
   }
@@ -1392,7 +1392,7 @@ void done_module_testbed() {
       "TESTBED unregistering handler %d\n",
       CS_PROTO_testbed_REQUEST);
   coreAPI->unregisterClientHandler(CS_PROTO_testbed_REQUEST,
-				   (CSHandler)&csHandleTestbedRequest);
+  			   (CSHandler)&csHandleTestbedRequest);
   coreAPI->unregisterClientExitHandler(&testbedClientExitHandler);
   coreAPI->releaseService(identity);
   identity = NULL;

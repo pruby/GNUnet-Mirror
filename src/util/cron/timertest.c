@@ -49,10 +49,10 @@ static int check() {
   for (i=50;i<MAXV2+50;i+=INCR2) {
     last = get_time();
     cron_add_job(cron,
-		 &semaphore_up,
-		 i * cronMILLIS,
-		 0,
-		 sem);
+  	 &semaphore_up,
+  	 i * cronMILLIS,
+  	 0,
+  	 sem);
     SEMAPHORE_DOWN(sem, YES);
     now = get_time();
     if (now < last + i)
@@ -62,26 +62,26 @@ static int check() {
     cumDelta += now;
 #if VERBOSE
     FPRINTF(stderr,
-	    "Sleep interrupted by signal within %llu ms of deadline (intended delay: %d ms).\n",
-	    now,
-	    i);
+      "Sleep interrupted by signal within %llu ms of deadline (intended delay: %d ms).\n",
+      now,
+      i);
 #endif
   }
   FPRINTF(stdout,
-	  "Sleep interrupt precision is %llums. ",
-	  cumDelta / (MAXV2/INCR2) );
+    "Sleep interrupt precision is %llums. ",
+    cumDelta / (MAXV2/INCR2) );
   if (cumDelta <= 10 * cronMILLIS * MAXV2 / INCR2)
     fprintf(stdout,
-	    "Timer precision is excellent.\n");
+      "Timer precision is excellent.\n");
   else if (cumDelta <= 50 * cronMILLIS * MAXV2 / INCR2) /* 50ms average deviation */
     fprintf(stdout,
-	    "Timer precision is good.\n");
+      "Timer precision is good.\n");
   else if (cumDelta > 250 * cronMILLIS * MAXV2 / INCR2)
     fprintf(stdout,
-	    "Timer precision is awful.\n");
+      "Timer precision is awful.\n");
   else
     fprintf(stdout,
-	    "Timer precision is acceptable.\n");
+      "Timer precision is acceptable.\n");
 
   SEMAPHORE_DESTROY(sem);
   return 0;

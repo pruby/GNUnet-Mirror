@@ -38,12 +38,12 @@
 #include <gmp.h>
 
 typedef struct {
-  mpz_t n;	    /* public modulus */
-  mpz_t e;	    /* public exponent */
-  mpz_t d;	    /* exponent */
-  mpz_t p;	    /* prime  p. */
-  mpz_t q;	    /* prime  q. */
-  mpz_t u;	    /* inverse of p mod q. */
+  mpz_t n;      /* public modulus */
+  mpz_t e;      /* public exponent */
+  mpz_t d;      /* exponent */
+  mpz_t p;      /* prime  p. */
+  mpz_t q;      /* prime  q. */
+  mpz_t u;      /* inverse of p mod q. */
 } KBlock_secret_key;
 
 /* Note: 2 is not included because it can be tested more easily by
@@ -155,7 +155,7 @@ static unsigned int get_trailing_zeros(mpz_t a) {
  * Set bit N of A. and clear all bits above
  */
 static void set_highbit(mpz_t a,
-			unsigned int n) {
+  		unsigned int n) {
   unsigned int nbits;
 
   nbits = get_nbits(a);
@@ -165,8 +165,8 @@ static void set_highbit(mpz_t a,
 }
 
 static void mpz_randomize(mpz_t n,
-			  unsigned int nbits,
-			  HashCode512 * rnd) {
+  		  unsigned int nbits,
+  		  HashCode512 * rnd) {
   HashCode512 * tmp;
   int cnt;
   int i;
@@ -177,12 +177,12 @@ static void mpz_randomize(mpz_t n,
   tmp[0] = *rnd;
   for (i=0;i<cnt-1;i++) {
     hash(&tmp[i],
-	 sizeof(HashCode512),
-	 &tmp[i+1]);
+   sizeof(HashCode512),
+   &tmp[i+1]);
   }
   *rnd = tmp[cnt-1];
   mpz_import(n, cnt * sizeof(HashCode512) / sizeof(unsigned int),
-	     1, sizeof(unsigned int), 1, 0, tmp);
+       1, sizeof(unsigned int), 1, 0, tmp);
   FREE(tmp);
   i = get_nbits(n);
   while (i > nbits)
@@ -193,8 +193,8 @@ static void mpz_randomize(mpz_t n,
  * Return true if n is probably a prime
  */
 static int is_prime (mpz_t n,
-		     int steps,
-		     HashCode512 * hc) {
+  	     int steps,
+  	     HashCode512 * hc) {
   mpz_t x;
   mpz_t y;
   mpz_t z;
@@ -225,25 +225,25 @@ static int is_prime (mpz_t n,
       mpz_randomize( x, nbits, hc );
 
       /* Make sure that the number is smaller than the prime and
-	 keep the randomness of the high bit. */
+   keep the randomness of the high bit. */
       if (mpz_tstbit(x, nbits-2) ) {
-	set_highbit(x, nbits-2); /* Clear all higher bits. */
+  set_highbit(x, nbits-2); /* Clear all higher bits. */
       } else {
-	set_highbit(x, nbits-2 );
-	mpz_clrbit( x, nbits-2 );
+  set_highbit(x, nbits-2 );
+  mpz_clrbit( x, nbits-2 );
       }
       GE_ASSERT(NULL,
-		mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 );
+  	mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 );
     }
     mpz_powm ( y, x, q, n);
     if ( mpz_cmp_ui(y, 1) && mpz_cmp( y, nminus1 ) ) {
       for ( j=1; j < k && mpz_cmp( y, nminus1 ); j++ ) {
-	mpz_powm(y, y, a2, n);
-	if( !mpz_cmp_ui( y, 1 ) )
-	  goto leave; /* Not a prime. */
+  mpz_powm(y, y, a2, n);
+  if( !mpz_cmp_ui( y, 1 ) )
+    goto leave; /* Not a prime. */
       }
       if (mpz_cmp( y, nminus1 ) )
-	goto leave; /* Not a prime. */
+  goto leave; /* Not a prime. */
     }
   }
   rc = 1; /* May be a prime. */
@@ -260,8 +260,8 @@ static int is_prime (mpz_t n,
 }
 
 static void gen_prime(mpz_t ptest,
-		      unsigned int nbits,
-		      HashCode512 * hc) {
+  	      unsigned int nbits,
+  	      HashCode512 * hc) {
   mpz_t prime, pminus1, val_2, val_3, result;
   int i;
   unsigned x, step;
@@ -298,31 +298,31 @@ static void gen_prime(mpz_t ptest,
     for (step=0; step < 20000; step += 2 ) {
       /* Check against all the small primes we have in mods. */
       for (i=0; (x = small_prime_numbers[i]); i++ ) {
-	while ( mods[i] + step >= x )
-	  mods[i] -= x;
-	if ( !(mods[i] + step) )
-	  break;
+  while ( mods[i] + step >= x )
+    mods[i] -= x;
+  if ( !(mods[i] + step) )
+    break;
       }
       if (x)
-	continue;   /* Found a multiple of an already known prime. */
-	
+  continue;   /* Found a multiple of an already known prime. */
+  
       mpz_add_ui( ptest, prime, step );
       if (! mpz_tstbit( ptest, nbits-2 ))
-	break;
+  break;
 
       /* Do a fast Fermat test now. */
       mpz_sub_ui( pminus1, ptest, 1);
       mpz_powm( result, val_2, pminus1, ptest );
-      if ( ( !mpz_cmp_ui( result, 1 ) ) &&	
-	   (is_prime(ptest, 5, hc) ) ) {		
-	/* Got it. */
-	mpz_clear(val_2);
-	mpz_clear(val_3);
-	mpz_clear(result);
-	mpz_clear(pminus1);
-	mpz_clear(prime);
-	FREE(mods);
-	return;
+      if ( ( !mpz_cmp_ui( result, 1 ) ) &&  
+     (is_prime(ptest, 5, hc) ) ) {		
+  /* Got it. */
+  mpz_clear(val_2);
+  mpz_clear(val_3);
+  mpz_clear(result);
+  mpz_clear(pminus1);
+  mpz_clear(prime);
+  FREE(mods);
+  return;
       }
     }
   }
@@ -333,8 +333,8 @@ static void gen_prime(mpz_t ptest,
  * Return: 1 if this 1, 0 in all other cases
  */
 static int test_gcd(mpz_t g,
-		    mpz_t xa,
-		    mpz_t xb) {
+  	    mpz_t xa,
+  	    mpz_t xb) {
   mpz_t a, b;
 
   mpz_init_set(a, xa);
@@ -360,8 +360,8 @@ static int test_gcd(mpz_t g,
  * @param hc the HC to use for PRNG (modified!)
  */
 static void generate_kblock_key(KBlock_secret_key *sk,
-				unsigned int nbits,
-				HashCode512 * hc) {
+  			unsigned int nbits,
+  			HashCode512 * hc) {
   mpz_t t1, t2;
   mpz_t phi;  /* helper: (p-1)(q-1) */
   mpz_t g;
@@ -392,7 +392,7 @@ static void generate_kblock_key(KBlock_secret_key *sk,
       gen_prime(sk->q, nbits/2, hc);
 
       if (mpz_cmp (sk->p, sk->q) > 0 ) /* p shall be smaller than q (for calc of u)*/
-	mpz_swap(sk->p, sk->q);
+  mpz_swap(sk->p, sk->q);
       /* calculate the modulus */
       mpz_mul(sk->n, sk->p, sk->q );
     } while (get_nbits(sk->n) != nbits);
@@ -410,7 +410,7 @@ static void generate_kblock_key(KBlock_secret_key *sk,
 
     /* calculate the secret key d = e^1 mod phi */
   } while ( (0 == mpz_invert(sk->d, sk->e, f )) ||
-	    (0 == mpz_invert(sk->u, sk->p, sk->q )) );
+      (0 == mpz_invert(sk->u, sk->p, sk->q )) );
 
   mpz_clear(t1);
   mpz_clear(t2);
@@ -436,16 +436,16 @@ makeKblockKeyInternal(const HashCode512 * hc) {
 
   hx = *hc;
   generate_kblock_key(&sk,
-		      1024, /* at least 10x as fast than 2048 bits
-			       -- we simply cannot afford 2048 bits
-			       even on modern hardware, and especially
-			       not since clearly a dictionary attack
-			       will still be much cheaper
-			       than breaking a 1024 bit RSA key.
-			       If an adversary can spend the time to
-			       break a 1024 bit RSA key just to forge
-			       a signature -- SO BE IT. [ CG, 6/2005 ] */
-		      &hx);
+  	      1024, /* at least 10x as fast than 2048 bits
+  		       -- we simply cannot afford 2048 bits
+  		       even on modern hardware, and especially
+  		       not since clearly a dictionary attack
+  		       will still be much cheaper
+  		       than breaking a 1024 bit RSA key.
+  		       If an adversary can spend the time to
+  		       break a 1024 bit RSA key just to forge
+  		       a signature -- SO BE IT. [ CG, 6/2005 ] */
+  	      &hx);
   pkv[0] = &sk.n;
   pkv[1] = &sk.e;
   pkv[2] = &sk.d;
@@ -455,12 +455,12 @@ makeKblockKeyInternal(const HashCode512 * hc) {
   size = sizeof(PrivateKeyEncoded);
   for (i=0;i<6;i++) {
     pbu[i] = mpz_export(NULL,
-			&sizes[i],
-			1, /* most significant word first */
-			1, /* unit is bytes */
-			1, /* big endian */
-			0, /* nails */
-			*pkv[i]);
+  		&sizes[i],
+  		1, /* most significant word first */
+  		1, /* unit is bytes */
+  		1, /* big endian */
+  		0, /* nails */
+  		*pkv[i]);
     size += sizes[i];
   }
   GE_ASSERT(NULL, size < 65536);
@@ -469,35 +469,35 @@ makeKblockKeyInternal(const HashCode512 * hc) {
   i = 0;
   retval->sizen = htons(sizes[0]);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[0],
-	 sizes[0]);
+   pbu[0],
+   sizes[0]);
   i += sizes[0];
   retval->sizee = htons(sizes[1]);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[1],
-	 sizes[1]);
+   pbu[1],
+   sizes[1]);
   i += sizes[1];
   retval->sized = htons(sizes[2]);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[2],
-	 sizes[2]);
+   pbu[2],
+   sizes[2]);
   i += sizes[2];
   /* swap p and q! */
   retval->sizep = htons(sizes[4]);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[4],
-	 sizes[4]);
+   pbu[4],
+   sizes[4]);
   i += sizes[4];
   retval->sizeq = htons(sizes[3]);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[3],
-	 sizes[3]);
+   pbu[3],
+   sizes[3]);
   i += sizes[3];
   retval->sizedmp1 = htons(0);
   retval->sizedmq1 = htons(0);
   memcpy(&((char*)&retval[1])[i],
-	 pbu[5],
-	 sizes[5]);
+   pbu[5],
+   sizes[5]);
   for (i=0;i<6;i++) {
     mpz_clear(*pkv[i]);
     free(pbu[i]);
@@ -526,7 +526,7 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
   MUTEX_LOCK(lock);
   for (i=0;i<cacheSize;i++) {
     if (equalsHashCode512(hc,
-			  &cache[i]->hc)) {
+  		  &cache[i]->hc)) {
       ret = decodePrivateKey(cache[i]->pke);
       MUTEX_UNLOCK(lock);
       return ret;

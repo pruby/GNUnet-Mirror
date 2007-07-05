@@ -103,10 +103,10 @@ static int loadApplicationModule(const char * rpos) {
 
   pos = NULL;
   if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
-					      "MODULES",
-					      rpos,
-					      rpos,
-					      &pos))
+  				      "MODULES",
+  				      rpos,
+  				      rpos,
+  				      &pos))
     return SYSERR;
   GE_ASSERT(applicationCore.ectx, pos != NULL);
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
@@ -117,42 +117,42 @@ static int loadApplicationModule(const char * rpos) {
   nxt = shutdownList;
   while (nxt != NULL) {
     if (0 == strcmp(name,
-		    nxt->dsoName)) {
+  	    nxt->dsoName)) {
       if (nxt->applicationInitialized == YES) {
-	GE_LOG(applicationCore.ectx,
-	       GE_WARNING | GE_DEVELOPER | GE_BULK,
-	       _("Application module `%s' already initialized!\n"),
-	       name);
-	FREE(name);
-	return SYSERR;
+  GE_LOG(applicationCore.ectx,
+         GE_WARNING | GE_DEVELOPER | GE_BULK,
+         _("Application module `%s' already initialized!\n"),
+         name);
+  FREE(name);
+  return SYSERR;
       } else {
-	mptr = os_plugin_resolve_function(nxt->library,
-					  "initialize_",
-					  YES);
-	if (mptr == NULL) {
-	  FREE(name);
-	  return SYSERR;
-	}
-	ok = mptr(&applicationCore);
-	if (ok == OK)
-	  nxt->applicationInitialized = YES;
-	FREE(name);
-	return ok;
+  mptr = os_plugin_resolve_function(nxt->library,
+  				  "initialize_",
+  				  YES);
+  if (mptr == NULL) {
+    FREE(name);
+    return SYSERR;
+  }
+  ok = mptr(&applicationCore);
+  if (ok == OK)
+    nxt->applicationInitialized = YES;
+  FREE(name);
+  return ok;
       }
     }
     nxt = nxt->next;
   }
 
   library = os_plugin_load(applicationCore.ectx,
-			   DSO_PREFIX,
-			   name);
+  		   DSO_PREFIX,
+  		   name);
   if (library == NULL) {
     FREE(name);
     return SYSERR;
   }
   mptr = os_plugin_resolve_function(library,
-				    "initialize_",
-				    YES);
+  			    "initialize_",
+  			    YES);
   if (mptr == NULL) {
     os_plugin_unload(library);
     FREE(name);
@@ -170,9 +170,9 @@ static int loadApplicationModule(const char * rpos) {
   if (OK != ok) {
     /* undo loading */
     GE_LOG(applicationCore.ectx,
-	   GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-	   _("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
-	   name, __FILE__, __LINE__);
+     GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+     _("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
+     name, __FILE__, __LINE__);
     /* Note: we cannot assert that shutdownList == nxt here,
        so we have to traverse the list again! */
     nxt->applicationInitialized = NO;
@@ -181,11 +181,11 @@ static int loadApplicationModule(const char * rpos) {
     } else {
       spos = shutdownList;
       while (spos->next != nxt) {
-	spos = spos->next;
-	if (spos == NULL) {
-	  GE_BREAK(applicationCore.ectx, 0); /* should never happen! */
-	  return ok;
-	}
+  spos = spos->next;
+  if (spos == NULL) {
+    GE_BREAK(applicationCore.ectx, 0); /* should never happen! */
+    return ok;
+  }
       }
     }
     if (spos == NULL)
@@ -207,35 +207,35 @@ static int unloadApplicationModule(const char * name) {
   prev = NULL;
   pos = shutdownList;
   while ( (pos != NULL) &&
-	  (0 != strcmp(name,
-		       pos->dsoName) ) )
+    (0 != strcmp(name,
+  	       pos->dsoName) ) )
     pos = pos->next;
 
   if (pos == NULL) {
     GE_LOG(applicationCore.ectx,
-	   GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
-	   _("Could not shutdown `%s': application not loaded\n"),
-	   name);
+     GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
+     _("Could not shutdown `%s': application not loaded\n"),
+     name);
     return SYSERR;
   }
 
   if (pos->applicationInitialized != YES) {
     GE_LOG(applicationCore.ectx,
-	   GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
-	   _("Could not shutdown application `%s': not initialized\n"),
-	   name);
+     GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
+     _("Could not shutdown application `%s': not initialized\n"),
+     name);
     return SYSERR;
   }
   mptr = os_plugin_resolve_function(pos->library,
-				    "done_",
-				    YES);
+  			    "done_",
+  			    YES);
   if (mptr == NULL) {
     GE_LOG(applicationCore.ectx,
-	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	   _("Could not find '%s%s' method in library `%s'.\n"),
-	   "done_",
-	   pos->dsoName,
-	   pos->dsoName);
+     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+     _("Could not find '%s%s' method in library `%s'.\n"),
+     "done_",
+     pos->dsoName,
+     pos->dsoName);
     return SYSERR;
   }
   mptr();
@@ -272,10 +272,10 @@ void * requestService(const char * rpos) {
   /* subtyping, GNUnet style */
   pos = NULL;
   if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
-					      "MODULES",
-					      rpos,
-					      rpos,
-					      &pos))
+  				      "MODULES",
+  				      rpos,
+  				      rpos,
+  				      &pos))
     return NULL;
   GE_ASSERT(applicationCore.ectx, pos != NULL);
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
@@ -285,44 +285,44 @@ void * requestService(const char * rpos) {
   nxt = shutdownList;
   while (nxt != NULL) {
     if (0 == strcmp(name,
-		    nxt->dsoName)) {
+  	    nxt->dsoName)) {
       if (nxt->serviceCount > 0) {
-	if (nxt->servicePTR != NULL)
-	  nxt->serviceCount++;
-	FREE(name);
-	FREE(pos);
-	return nxt->servicePTR;
+  if (nxt->servicePTR != NULL)
+    nxt->serviceCount++;
+  FREE(name);
+  FREE(pos);
+  return nxt->servicePTR;
       } else {
-	mptr = os_plugin_resolve_function(nxt->library,
-					  "provide_",
-					  YES);
-	if (mptr == NULL) {
-	  FREE(name);
-	  FREE(pos);
-	  return NULL;
-	}
-	nxt->servicePTR = mptr(&applicationCore);
-	if (nxt->servicePTR != NULL)
-	  nxt->serviceCount++;
-	FREE(name);
-	FREE(pos);
-	return nxt->servicePTR;
+  mptr = os_plugin_resolve_function(nxt->library,
+  				  "provide_",
+  				  YES);
+  if (mptr == NULL) {
+    FREE(name);
+    FREE(pos);
+    return NULL;
+  }
+  nxt->servicePTR = mptr(&applicationCore);
+  if (nxt->servicePTR != NULL)
+    nxt->serviceCount++;
+  FREE(name);
+  FREE(pos);
+  return nxt->servicePTR;
       }
     }
     nxt = nxt->next;
   }
 
   library = os_plugin_load(applicationCore.ectx,
-			   DSO_PREFIX,
-			   name);
+  		   DSO_PREFIX,
+  		   name);
   if (library == NULL) {
     FREE(name);
     FREE(pos);
     return NULL;
   }
   mptr = os_plugin_resolve_function(library,
-				    "provide_",
-				    YES);
+  			    "provide_",
+  			    YES);
   if (mptr == NULL) {
     os_plugin_unload(library);
     FREE(name);
@@ -338,17 +338,17 @@ void * requestService(const char * rpos) {
   nxt->servicePTR = NULL;
   shutdownList = nxt;
   GE_LOG(applicationCore.ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 "Loading service `%s'\n",
-	 pos);
+   GE_INFO | GE_USER | GE_REQUEST,
+   "Loading service `%s'\n",
+   pos);
   api = mptr(&applicationCore);
   if (api != NULL) {
     nxt->servicePTR = api;
   } else {
     GE_LOG(applicationCore.ectx,
-	   GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-	   "Failed to load service `%s'\n",
-	   pos);
+     GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+     "Failed to load service `%s'\n",
+     pos);
     nxt->serviceCount = 0;
   }
   FREE(pos);
@@ -365,14 +365,14 @@ int releaseService(void * service) {
   prev = NULL;
   pos = shutdownList;
   while ( (pos != NULL) &&
-	  (pos->servicePTR != service) )
+    (pos->servicePTR != service) )
     pos = pos->next;
 
   if (pos == NULL) {
     GE_LOG(applicationCore.ectx,
-	   GE_BULK | GE_DEVELOPER | GE_ERROR,
-	   _("Could not release %p: service not loaded\n"),
-	   service);
+     GE_BULK | GE_DEVELOPER | GE_ERROR,
+     _("Could not release %p: service not loaded\n"),
+     service);
     return SYSERR;
   }
   if (pos->serviceCount > 1) {
@@ -380,12 +380,12 @@ int releaseService(void * service) {
     return OK; /* service still in use elsewhere! */
   }
   GE_LOG(applicationCore.ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 "Unloading service `%s'.\n",
-	 pos->dsoName);
+   GE_INFO | GE_USER | GE_REQUEST,
+   "Unloading service `%s'.\n",
+   pos->dsoName);
   mptr = os_plugin_resolve_function(pos->library,
-				    "release_",
-				    YES);
+  			    "release_",
+  			    YES);
   if (mptr == NULL)
     return SYSERR;
   mptr();
@@ -421,10 +421,10 @@ int loadApplicationModules() {
   ok = OK;
   dso = NULL;
   if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
-					      "GNUNETD",
-					      "APPLICATIONS",
-					      "advertising fs getoption stats traffic",
-					      &dso))
+  				      "GNUNETD",
+  				      "APPLICATIONS",
+  				      "advertising fs getoption stats traffic",
+  				      &dso))
     return SYSERR;
   GE_ASSERT(applicationCore.ectx, dso != NULL);
   next = dso;
@@ -433,7 +433,7 @@ int loadApplicationModules() {
       next++;
     pos = next;
     while ( (*next != '\0') &&
-	    (*next != ' ') )
+      (*next != ' ') )
       next++;
     if (*next == '\0') {
       next = NULL; /* terminate! */
@@ -443,11 +443,11 @@ int loadApplicationModules() {
     }
     if (strlen(pos) > 0) {
       GE_LOG(applicationCore.ectx,
-	     GE_INFO | GE_USER | GE_BULK,
-	     "Loading application `%s'\n",
-	     pos);
+       GE_INFO | GE_USER | GE_BULK,
+       "Loading application `%s'\n",
+       pos);
       if (OK != loadApplicationModule(pos))
-	ok = SYSERR;
+  ok = SYSERR;
     }
   } while (next != NULL);
   FREE(dso);
@@ -464,11 +464,11 @@ int unloadApplicationModules() {
   while (pos != NULL) {
     nxt = pos->next;
     if ( (pos->applicationInitialized == YES) &&
-	 (OK != unloadApplicationModule(pos->dsoName)) ) {
+   (OK != unloadApplicationModule(pos->dsoName)) ) {
       GE_LOG(applicationCore.ectx,
-	     GE_ERROR | GE_DEVELOPER | GE_BULK,
-	     _("Could not properly shutdown application `%s'.\n"),
-	     pos->dsoName);
+       GE_ERROR | GE_DEVELOPER | GE_BULK,
+       _("Could not properly shutdown application `%s'.\n"),
+       pos->dsoName);
       ok = SYSERR;
     }
     pos = nxt;
@@ -480,9 +480,9 @@ int unloadApplicationModules() {
  * Initialize the CORE's globals.
  */
 int initCore(struct GE_Context * ectx,
-	     struct GC_Configuration * cfg,
-	     struct CronManager * cron,
-	     struct LoadMonitor * monitor) {
+       struct GC_Configuration * cfg,
+       struct CronManager * cron,
+       struct LoadMonitor * monitor) {
   applicationCore.ectx = ectx;
   applicationCore.cfg = cfg;
   applicationCore.load_monitor = monitor;
@@ -539,10 +539,10 @@ int initCore(struct GE_Context * ectx,
   if (identity == NULL)
     return SYSERR;
   identity->getPeerIdentity(identity->getPublicPrivateKey(),
-			    &myIdentity);
+  		    &myIdentity);
   applicationCore.myIdentity = &myIdentity; /* core.c */
   if (initTCPServer(ectx,
-		    cfg) != OK) {
+  	    cfg) != OK) {
     releaseService(identity);
     return SYSERR;
   }
@@ -574,29 +574,29 @@ void doneCore() {
     change = 0;
     while (pos != NULL) {
       if ( (pos->applicationInitialized == NO) &&
-	   (pos->serviceCount == 0) ) {
-	change = 1;
-	os_plugin_unload(pos->library);		
-	nxt = pos->next;
-	if (prev == NULL)
-	  shutdownList = nxt;
-	else
-	  prev->next = nxt;
-	FREE(pos->dsoName);
-	FREE(pos);
-	pos = nxt;
+     (pos->serviceCount == 0) ) {
+  change = 1;
+  os_plugin_unload(pos->library);		
+  nxt = pos->next;
+  if (prev == NULL)
+    shutdownList = nxt;
+  else
+    prev->next = nxt;
+  FREE(pos->dsoName);
+  FREE(pos);
+  pos = nxt;
       } else {
-	prev = pos;
-	pos = pos->next;
+  prev = pos;
+  pos = pos->next;
       }
     }
   }
   pos = shutdownList;
   while (pos != NULL) {
     GE_LOG(applicationCore.ectx,
-	   GE_ERROR | GE_DEVELOPER | GE_BULK,
-	   _("Could not properly unload service `%s'!\n"),
-	   pos->dsoName);
+     GE_ERROR | GE_DEVELOPER | GE_BULK,
+     _("Could not properly unload service `%s'!\n"),
+     pos->dsoName);
     pos = pos->next;
   }
   doneTCPServer();

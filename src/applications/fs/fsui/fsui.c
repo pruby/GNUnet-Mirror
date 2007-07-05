@@ -47,8 +47,8 @@ static void updateDownloadThreads(void * c) {
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
     GE_LOG(ctx->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread manager schedules pending downloads...\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Download thread manager schedules pending downloads...\n");
 #endif
   while (dpos != NULL) {
     FSUI_updateDownloadThread(dpos);
@@ -60,7 +60,7 @@ static void updateDownloadThreads(void * c) {
 /* ******************* START code *********************** */
 
 static void signalDownloadResume(struct FSUI_DownloadList * ret,
-				 FSUI_Context * ctx) {
+  			 FSUI_Context * ctx) {
   FSUI_Event event;
   cron_t now;
   cron_t eta;
@@ -81,10 +81,10 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
       eta = now;
     } else {
       eta = (cron_t) (now - ret->runTime +
-		      (((double)(ret->runTime)/(double)ret->completed))
-		      * (double)ret->total);
+  	      (((double)(ret->runTime)/(double)ret->completed))
+  	      * (double)ret->total);
       if (eta < now)
-	eta = now;
+  eta = now;
     }
     event.data.DownloadResumed.eta = eta;
     event.data.DownloadResumed.filename = ret->filename;
@@ -94,13 +94,13 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
     ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
     if (ret->child != NULL)
       signalDownloadResume(ret->child,
-			   ctx);
+  		   ctx);
     ret = ret->next;
   }
 }
 
 static void signalUploadResume(struct FSUI_UploadList * ret,
-			       FSUI_Context * ctx) {
+  		       FSUI_Context * ctx) {
   FSUI_Event event;
   cron_t now;
   cron_t eta;
@@ -120,10 +120,10 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
       eta = now;
     } else {
       eta = (cron_t) (ret->start_time +
-		      (((double)(now - ret->start_time)/(double)ret->completed))
-		      * (double)ret->total);
+  	      (((double)(now - ret->start_time)/(double)ret->completed))
+  	      * (double)ret->total);
       if (eta < now)
-	eta = now;
+  eta = now;
     }
     event.data.UploadResumed.eta = eta;
     event.data.UploadResumed.anonymityLevel = ret->shared->anonymityLevel;
@@ -131,7 +131,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
     ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
     if (ret->child != NULL)
       signalUploadResume(ret->child,
-			 ctx);
+  		 ctx);
     ret = ret->next;
   }
 }
@@ -142,16 +142,16 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
  * threads below are controlled by the parent.
  */
 static void doResumeUploads(struct FSUI_UploadList * ret,
-			    FSUI_Context * ctx) {
+  		    FSUI_Context * ctx) {
   while (ret != NULL) {
     if (ret->state == FSUI_ACTIVE) {
       ret->shared->handle = PTHREAD_CREATE(&FSUI_uploadThread,
-					   ret,
-					   128 * 1024);
+  				   ret,
+  				   128 * 1024);
       if (ret->shared->handle == NULL)
-	GE_DIE_STRERROR(ctx->ectx,
-			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-			"pthread_create");
+  GE_DIE_STRERROR(ctx->ectx,
+  		GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  		"pthread_create");
     }
     ret = ret->next;
   }
@@ -166,12 +166,12 @@ static void doResumeUploads(struct FSUI_UploadList * ret,
  * @return NULL on error
  */
 struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
-				 struct GC_Configuration * cfg,
-				 const char * name,
-				 unsigned int threadPoolSize,
-				 int doResume,
-				 FSUI_EventCallback cb,
-				 void * closure) {
+  			 struct GC_Configuration * cfg,
+  			 const char * name,
+  			 unsigned int threadPoolSize,
+  			 int doResume,
+  			 FSUI_EventCallback cb,
+  			 void * closure) {
   FSUI_Event event;
   FSUI_Context * ret;
   FSUI_SearchList * list;
@@ -183,8 +183,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   GE_ASSERT(ectx, cfg != NULL);
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret,
-	 0,
-	 sizeof(FSUI_Context));
+   0,
+   sizeof(FSUI_Context));
   ret->activeDownloads.state
     = FSUI_PENDING; /* !? */
   ret->activeDownloads.ctx = ret;
@@ -197,10 +197,10 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   ret->activeDownloadThreads = 0;
 
   GC_get_configuration_value_filename(cfg,
-				      "GNUNET",
-				      "GNUNET_HOME",
-				      GNUNET_HOME_DIRECTORY,
-				      &gh);
+  			      "GNUNET",
+  			      "GNUNET_HOME",
+  			      GNUNET_HOME_DIRECTORY,
+  			      &gh);
   disk_directory_create(ectx, gh);
   fn = MALLOC(strlen(gh) + strlen(name) + 2 + 5);
   strcpy(fn, gh);
@@ -212,19 +212,19 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 1) read state  in */
   if (doResume) {
     ret->ipc = IPC_SEMAPHORE_CREATE(ectx,
-				    fn,
-				    1);
+  			    fn,
+  			    1);
 #if DEBUG_PERSISTENCE
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   "Getting IPC lock for FSUI (%s).\n",
-	   fn);
+     GE_INFO | GE_REQUEST | GE_USER,
+     "Getting IPC lock for FSUI (%s).\n",
+     fn);
 #endif
     IPC_SEMAPHORE_DOWN(ret->ipc, YES);
 #if DEBUG_PERSISTENCE
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   "Aquired IPC lock.\n");
+     GE_INFO | GE_REQUEST | GE_USER,
+     "Aquired IPC lock.\n");
 #endif
     strcat(fn, ".res");
     FSUI_deserialize(ret);
@@ -236,7 +236,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 2) do resume events */
   /* 2a) signal download restarts */
   signalDownloadResume(ret->activeDownloads.child,
-		       ret);
+  	       ret);
   /* 2b) signal search restarts */
   list = ret->activeSearches;
   while (list != NULL) {
@@ -253,14 +253,14 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   }
   /* 2c) signal upload restarts */
   signalUploadResume(ret->activeUploads.child,
-		     ret);
+  	     ret);
   /* 2d) signal unindex restarts */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
     if (OK != disk_file_size(ectx,
-			     xlist->filename,
-			     &size,
-			     YES))
+  		     xlist->filename,
+  		     &size,
+  		     YES))
       size = 0;
     event.type = FSUI_unindex_resumed;
     event.data.UnindexResumed.uc.pos = xlist;
@@ -270,7 +270,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.data.UnindexResumed.eta = get_time();
     event.data.UnindexResumed.filename = xlist->filename;
     event.data.UnindexResumed.state = xlist->state;
-    xlist->cctx = cb(closure, &event);	
+    xlist->cctx = cb(closure, &event);  
     xlist = xlist->next;
   }
 
@@ -278,26 +278,26 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   ret->cron = cron_create(ectx);
   /* 3a) resume downloads */
   cron_add_job(ret->cron,
-	       &updateDownloadThreads,
-	       0,
-	       FSUI_UDT_FREQUENCY,
-	       ret);
+         &updateDownloadThreads,
+         0,
+         FSUI_UDT_FREQUENCY,
+         ret);
   cron_start(ret->cron);
   /* 3b) resume uploads */
   doResumeUploads(ret->activeUploads.child,
-		  ret);
+  	  ret);
   /* 3c) resume unindexing */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
     if (xlist->state == FSUI_PENDING) {
       xlist->state = FSUI_ACTIVE;
       xlist->handle = PTHREAD_CREATE(&FSUI_unindexThread,
-				     xlist,
-				     32 * 1024);
+  			     xlist,
+  			     32 * 1024);
       if (xlist->handle == NULL)
-	GE_DIE_STRERROR(ectx,
-			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-			"pthread_create");
+  GE_DIE_STRERROR(ectx,
+  		GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  		"pthread_create");
     }
     xlist = xlist->next;
   }
@@ -307,12 +307,12 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     if (list->state == FSUI_PENDING) {
       list->state = FSUI_ACTIVE;
       list->handle = PTHREAD_CREATE(&FSUI_searchThread,
-				    list,
-				    32 * 1024);
+  			    list,
+  			    32 * 1024);
       if (list->handle == NULL)
-	GE_DIE_STRERROR(ectx,
-			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-			"pthread_create");
+  GE_DIE_STRERROR(ectx,
+  		GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  		"pthread_create");
     }
     list = list->next;
   }
@@ -326,13 +326,13 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
  * (recursively) signal download suspension.
  */
 static void signalDownloadSuspend(struct GE_Context * ectx,
-				  FSUI_Context * ctx,
-				  FSUI_DownloadList * list) {
+  			  FSUI_Context * ctx,
+  			  FSUI_DownloadList * list) {
   FSUI_Event event;
   while (list != NULL) {
     signalDownloadSuspend(ectx,
-			  ctx,
-			  list->child);
+  		  ctx,
+  		  list->child);
     event.type = FSUI_download_suspended;
     event.data.DownloadSuspended.dc.pos = list;
     event.data.DownloadSuspended.dc.cctx = list->cctx;
@@ -349,13 +349,13 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
  * (recursively) signal upload suspension.
  */
 static void signalUploadSuspend(struct GE_Context * ectx,
-				FSUI_Context * ctx,
-				FSUI_UploadList * upos) {
+  			FSUI_Context * ctx,
+  			FSUI_UploadList * upos) {
   FSUI_Event event;
   while (upos != NULL) {
     signalUploadSuspend(ectx,
-			ctx,
-			upos->child);
+  		ctx,
+  		upos->child);
     event.type = FSUI_upload_suspended;
     event.data.UploadSuspended.uc.pos = upos;
     event.data.UploadSuspended.uc.cctx = upos->cctx;
@@ -381,8 +381,8 @@ static void freeDownloadList(FSUI_DownloadList * list) {
     for (i=0;i<list->completedDownloadsCount;i++)
       ECRS_freeUri(list->completedDownloads[i]);
     GROW(list->completedDownloads,
-	 list->completedDownloadsCount,
-	 0);
+   list->completedDownloadsCount,
+   0);
     next = list->next;
     FREE(list);
     list = next;
@@ -393,7 +393,7 @@ static void freeDownloadList(FSUI_DownloadList * list) {
  * (recursively) free upload list
  */
 static void freeUploadList(struct FSUI_Context * ctx,
-			   FSUI_UploadList * list) {
+  		   FSUI_UploadList * list) {
   FSUI_UploadList *  next;
   FSUI_UploadShared * shared;
 
@@ -411,7 +411,7 @@ static void freeUploadList(struct FSUI_Context * ctx,
       shared = list->shared;
       EXTRACTOR_removeAll(shared->extractors);
       if (shared->global_keywords != NULL)
-	ECRS_freeUri(shared->global_keywords);
+  ECRS_freeUri(shared->global_keywords);
       FREENONNULL(shared->extractor_config);
       FREE(shared);
     }
@@ -437,15 +437,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI shutdown.  This may take a while.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "FSUI shutdown.  This may take a while.\n");
 
   /* 1) stop everything */
   cron_stop(ctx->cron);
   cron_del_job(ctx->cron,
-	       &updateDownloadThreads,
-	       FSUI_UDT_FREQUENCY,
-	       ctx);
+         &updateDownloadThreads,
+         FSUI_UDT_FREQUENCY,
+         ctx);
   cron_destroy(ctx->cron);
 
   /* 1a) stop downloading */
@@ -459,15 +459,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   spos = ctx->activeSearches;
   while (spos != NULL) {
     if ( (spos->state == FSUI_ACTIVE) ||
-	 (spos->state == FSUI_ABORTED) ||
-	 (spos->state == FSUI_ERROR) ||
-	 (spos->state == FSUI_COMPLETED) ) {
+   (spos->state == FSUI_ABORTED) ||
+   (spos->state == FSUI_ERROR) ||
+   (spos->state == FSUI_COMPLETED) ) {
       if (spos->state == FSUI_ACTIVE)
-	spos->state = FSUI_PENDING;
+  spos->state = FSUI_PENDING;
       PTHREAD_STOP_SLEEP(spos->handle);
       PTHREAD_JOIN(spos->handle, &unused);
       if (spos->state != FSUI_PENDING)
-	spos->state++; /* _JOINED */
+  spos->state++; /* _JOINED */
     }
     spos = spos->next;
   }
@@ -475,15 +475,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   xpos = ctx->unindexOperations;
   while (xpos != NULL) {
     if ( (xpos->state == FSUI_ACTIVE) ||
-	 (xpos->state == FSUI_ABORTED) ||
-	 (xpos->state == FSUI_ERROR) ||
-	 (xpos->state == FSUI_COMPLETED) ) {
+   (xpos->state == FSUI_ABORTED) ||
+   (xpos->state == FSUI_ERROR) ||
+   (xpos->state == FSUI_COMPLETED) ) {
       if (xpos->state == FSUI_ACTIVE)
-	xpos->state = FSUI_PENDING;
+  xpos->state = FSUI_PENDING;
       PTHREAD_STOP_SLEEP(xpos->handle);
       PTHREAD_JOIN(xpos->handle, &unused);
       if (xpos->state != FSUI_PENDING)
-	xpos->state++; /* _JOINED */
+  xpos->state++; /* _JOINED */
     }
     xpos = xpos->next;
   }
@@ -491,17 +491,17 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   upos = ctx->activeUploads.child;
   while (upos != NULL) {
     if ( (upos->state == FSUI_ACTIVE) ||
-	 (upos->state == FSUI_ABORTED) ||
-	 (upos->state == FSUI_ERROR) ||
-	 (upos->state == FSUI_COMPLETED) ) {
+   (upos->state == FSUI_ABORTED) ||
+   (upos->state == FSUI_ERROR) ||
+   (upos->state == FSUI_COMPLETED) ) {
       /* NOTE: will force transitive termination
-	 of rest of tree! */
+   of rest of tree! */
       if (upos->state == FSUI_ACTIVE)
-	upos->state = FSUI_PENDING;
+  upos->state = FSUI_PENDING;
       PTHREAD_STOP_SLEEP(upos->shared->handle);
       PTHREAD_JOIN(upos->shared->handle, &unused);
       if (upos->state != FSUI_PENDING)
-	upos->state++; /* _JOINED */
+  upos->state++; /* _JOINED */
     }
     upos = upos->next;
   }
@@ -518,12 +518,12 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
   /* 2b) signal uploads suspension */
   signalUploadSuspend(ectx,
-		      ctx,
-		      ctx->activeUploads.child);
+  	      ctx,
+  	      ctx->activeUploads.child);
   /* 2c) signal downloads suspension */
   signalDownloadSuspend(ectx,
-			ctx,
-			ctx->activeDownloads.child);
+  		ctx,
+  		ctx->activeDownloads.child);
   /* 2d) signal unindex suspension */
   xpos = ctx->unindexOperations;
   while (xpos != NULL) {
@@ -551,21 +551,21 @@ void FSUI_stop(struct FSUI_Context * ctx) {
       ECRS_freeUri(fi->uri);
     }
     GROW(spos->resultsReceived,
-	 spos->sizeResultsReceived,
-	 0);
+   spos->sizeResultsReceived,
+   0);
     for (i=spos->sizeUnmatchedResultsReceived-1;i>=0;i--) {
       ResultPending * rp;
 
       rp = &spos->unmatchedResultsReceived[i];
       GROW(rp->matchingKeys,
-	   rp->matchingKeyCount,
-	   0);
+     rp->matchingKeyCount,
+     0);
       ECRS_freeMetaData(rp->fi.meta);
       ECRS_freeUri(rp->fi.uri);
     }
     GROW(spos->unmatchedResultsReceived,
-	 spos->sizeUnmatchedResultsReceived,
-	 0);
+   spos->sizeUnmatchedResultsReceived,
+   0);
     FREE(spos);
   }
   /* 4b) free unindex memory */
@@ -577,7 +577,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
   /* 4c) free upload memory */
   freeUploadList(ctx,
-		 ctx->activeUploads.child);
+  	 ctx->activeUploads.child);
   /* 4d) free download memory */
   freeDownloadList(ctx->activeDownloads.child);
 
@@ -590,8 +590,8 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   FREE(ctx->name);
   if (ctx->ipc != NULL)
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI shutdown complete.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "FSUI shutdown complete.\n");
   FREE(ctx);
 }
 

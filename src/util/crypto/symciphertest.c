@@ -39,29 +39,29 @@ static int testSymcipher() {
 
   makeSessionkey(&key);
   size = encryptBlock(TESTSTRING,
-		      strlen(TESTSTRING)+1,
-		      &key,
-		      (const INITVECTOR*) INITVALUE,
-		      result);
+  	      strlen(TESTSTRING)+1,
+  	      &key,
+  	      (const INITVECTOR*) INITVALUE,
+  	      result);
   if (size == -1) {
     printf("symciphertest failed: encryptBlock returned %d\n",
-	  size);
+    size);
     return 1;
   }
   size = decryptBlock(&key,
-		      result,
-		      size,
-		      (const INITVECTOR*) INITVALUE,
-		      res);
+  	      result,
+  	      size,
+  	      (const INITVECTOR*) INITVALUE,
+  	      res);
   if (strlen(TESTSTRING)+1
       != size) {
     printf("symciphertest failed: decryptBlock returned %d\n",
-	  size);
+    size);
     return 1;
   }
   if (0 != strcmp(res,TESTSTRING)) {
     printf("symciphertest failed: %s != %s\n",
-	   res, TESTSTRING);
+     res, TESTSTRING);
     return 1;
   } else
     return 0;
@@ -85,8 +85,8 @@ int verifyCrypto() {
 
   if (ntohl(key.crc32) != (unsigned int) 38125195LL) {
     printf("Static key has different CRC: %u - %u\n",
-	   ntohl(key.crc32),
-	   key.crc32);
+     ntohl(key.crc32),
+     key.crc32);
 
     ret = 1;
     goto error;
@@ -94,18 +94,18 @@ int verifyCrypto() {
 
   if (SESSIONKEY_LEN !=
       encryptBlock(plain,
-		   SESSIONKEY_LEN,
-		   &key,
-		   (const INITVECTOR*) "testtesttesttest",
-		   result)) {
+  	   SESSIONKEY_LEN,
+  	   &key,
+  	   (const INITVECTOR*) "testtesttesttest",
+  	   result)) {
     printf("Wrong return value from encrypt block.\n");
     ret = 1;
     goto error;
   }
 
   if (memcmp(encrresult,
-	     result,
-	     SESSIONKEY_LEN) != 0) {
+       result,
+       SESSIONKEY_LEN) != 0) {
     printf("Encrypted result wrong.\n");
     ret = 1;
     goto error;
@@ -115,10 +115,10 @@ int verifyCrypto() {
 
   if (SESSIONKEY_LEN !=
       decryptBlock(&key,
-		   result,
-		   SESSIONKEY_LEN,
-		   (const INITVECTOR*) "testtesttesttest",
-		   res)) {
+  	   result,
+  	   SESSIONKEY_LEN,
+  	   (const INITVECTOR*) "testtesttesttest",
+  	   res)) {
     printf("Wrong return value from decrypt block.\n");
     ret = 1;
     goto error;

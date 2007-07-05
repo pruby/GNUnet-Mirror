@@ -44,37 +44,37 @@ static int openServerSocket() {
   listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (listenerFD < 0) {
     GE_LOG_STRERROR(NULL,
-		    GE_BULK | GE_ERROR | GE_USER,
-		    "socket");
+  	    GE_BULK | GE_ERROR | GE_USER,
+  	    "socket");
     return -1;
   }
 
   /* fill in the inet address structure */
   memset((char *) &serverAddr,
-	 0,
-	 sizeof(serverAddr));
+   0,
+   sizeof(serverAddr));
   serverAddr.sin_family = AF_INET;
   serverAddr.sin_addr.s_addr=htonl(INADDR_ANY);
   serverAddr.sin_port=htons(listenerPort);
 
   if ( SETSOCKOPT(listenerFD,
-		  SOL_SOCKET,
-		  SO_REUSEADDR,
-		  &on, sizeof(on)) < 0 ) {
+  	  SOL_SOCKET,
+  	  SO_REUSEADDR,
+  	  &on, sizeof(on)) < 0 ) {
     GE_LOG_STRERROR(NULL,
-		    GE_BULK | GE_ERROR | GE_USER,
-		    "setsockopt");
+  	    GE_BULK | GE_ERROR | GE_USER,
+  	    "setsockopt");
     CLOSE(listenerFD);
     return -1;
   }
 
   /* bind the socket */
   if (BIND (listenerFD,
-	   (struct sockaddr *) &serverAddr,
-	    sizeof(serverAddr)) < 0) {
+     (struct sockaddr *) &serverAddr,
+      sizeof(serverAddr)) < 0) {
     GE_LOG_STRERROR(NULL,
-		    GE_BULK | GE_ERROR | GE_USER,
-		    "bind");
+  	    GE_BULK | GE_ERROR | GE_USER,
+  	    "bind");
     CLOSE(listenerFD);
     return -1;
   }
@@ -82,8 +82,8 @@ static int openServerSocket() {
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
     GE_LOG_STRERROR(NULL,
-		    GE_BULK | GE_ERROR | GE_USER,
-		    "listen");
+  	    GE_BULK | GE_ERROR | GE_USER,
+  	    "listen");
     CLOSE(listenerFD);
     return -1;
   }
@@ -99,12 +99,12 @@ static int doAccept(int serverSocket) {
   while (incomingFD < 0) {
     lenOfIncomingAddr = sizeof(clientAddr);
     incomingFD = ACCEPT(serverSocket,
-			(struct sockaddr *)&clientAddr,
-			&lenOfIncomingAddr);
+  		(struct sockaddr *)&clientAddr,
+  		&lenOfIncomingAddr);
     if (incomingFD < 0) {
       GE_LOG_STRERROR(NULL,
-		      GE_BULK | GE_ERROR | GE_USER,
-		      "accept");
+  	      GE_BULK | GE_ERROR | GE_USER,
+  	      "accept");
       continue;
     }
   }
@@ -112,7 +112,7 @@ static int doAccept(int serverSocket) {
 }
 
 static int testTransmission(struct ClientServerConnection * a,
-			    struct SocketHandle * b) {
+  		    struct SocketHandle * b) {
   MESSAGE_HEADER * hdr;
   MESSAGE_HEADER * buf;
   int i;
@@ -136,13 +136,13 @@ static int testTransmission(struct ClientServerConnection * a,
     while (pos < i + sizeof(MESSAGE_HEADER)) {
       rd = 0;
       if (SYSERR == socket_recv(b,
-				NC_Nonblocking,
-				&buf[pos],
-				2048 - pos,
-				&rd)) {
-	FREE(hdr);
-	FREE(buf);
-	return 2;
+  			NC_Nonblocking,
+  			&buf[pos],
+  			2048 - pos,
+  			&rd)) {
+  FREE(hdr);
+  FREE(buf);
+  return 2;
       }
       pos += rd;
     }
@@ -172,7 +172,7 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
@@ -180,7 +180,7 @@ int main(int argc, char * argv[]){
   if (serverSocket == -1)
     return 1;
   clientSocket = client_connection_create(NULL,
-					  cfg);
+  				  cfg);
   ret = 0;
   for (i=0;i<2;i++) {
     if (OK != connection_ensure_connected(clientSocket)) {
@@ -201,8 +201,8 @@ int main(int argc, char * argv[]){
   CLOSE(serverSocket);
   if (ret > 0)
     fprintf(stderr,
-	    "Error %d\n",
-	    ret);
+      "Error %d\n",
+      ret);
   GC_free(cfg);
   return ret;
 }

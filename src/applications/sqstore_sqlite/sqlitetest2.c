@@ -88,7 +88,7 @@ static unsigned long long stored_ops;
 static cron_t start_time;
 
 static int putValue(SQstore_ServiceAPI * api,
-		    int i) {
+  	    int i) {
   Datastore_Value * value;
   size_t size;
   static HashCode512 key;
@@ -111,8 +111,8 @@ static int putValue(SQstore_ServiceAPI * api,
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(get_time() + weak_randomi(1000));
   memset(&value[1],
-	 i,
-	 size - sizeof(Datastore_Value));
+   i,
+   size - sizeof(Datastore_Value));
   if (OK != api->put(&key, value)) {
     FREE(value);
     fprintf(stderr, "E");
@@ -132,8 +132,8 @@ static int putValue(SQstore_ServiceAPI * api,
 
 static int
 iterateDelete(const HashCode512 * key,
-	      const Datastore_Value * val,
-	      void * cls) {
+        const Datastore_Value * val,
+        void * cls) {
   SQstore_ServiceAPI * api = cls;
   static int dc;
 
@@ -164,7 +164,7 @@ static int test(SQstore_ServiceAPI * api) {
 
   lops = 0;
   have_file = OK == disk_file_test(NULL,
-				   DB_NAME);
+  			   DB_NAME);
 
   for (i=0;i<ITERATIONS;i++) {
 #if REPORT_ID
@@ -174,7 +174,7 @@ static int test(SQstore_ServiceAPI * api) {
     for (j=0;j<PUT_10;j++) {
       ASSERT(OK == putValue(api, j));
       if (GNUNET_SHUTDOWN_TEST() == YES)
-	break;
+  break;
     }
 
     /* trim down below MAX_SIZE again */
@@ -187,21 +187,21 @@ static int test(SQstore_ServiceAPI * api) {
     size = 0;
     if (have_file)
       disk_file_size(NULL,
-		     DB_NAME,
-		     &size,
-		     NO);
+  	     DB_NAME,
+  	     &size,
+  	     NO);
     printf(
 #if REPORT_ID
-	   "\n"
+     "\n"
 #endif
-	   "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
-	   i,
-	   stored_bytes / 1024,  /* used size in k */
-	   api->getSize() / 1024, /* API-reported size in k */
-	   size / 1024, /* disk size in kb */
-	   (100.0 * size / stored_bytes) - 100, /* overhead */
-	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	   1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */
+     "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+     i,
+     stored_bytes / 1024,  /* used size in k */
+     api->getSize() / 1024, /* API-reported size in k */
+     size / 1024, /* disk size in kb */
+     (100.0 * size / stored_bytes) - 100, /* overhead */
+     (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
+     1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */
     lops = stored_ops * 2 - stored_entries;
     start_time = get_time();
     if (GNUNET_SHUTDOWN_TEST() == YES)
@@ -223,15 +223,15 @@ int main(int argc, char *argv[]) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,
-	   cfg,
-	   cron,
-	   NULL);
+     cfg,
+     cron,
+     NULL);
   api = requestService("sqstore");
   if (api != NULL) {
     start_time = get_time();

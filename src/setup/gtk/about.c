@@ -33,7 +33,7 @@
  * This displays an about window
  */
 void on_aboutButton_activatesetup_gtk(GtkWidget * dummy,
-				      gpointer data) {
+  			      gpointer data) {
   GtkWidget * ad;
   GladeXML * axml;
 
@@ -41,7 +41,7 @@ void on_aboutButton_activatesetup_gtk(GtkWidget * dummy,
     = load_xml("aboutdialog");
   ad
     = glade_xml_get_widget(axml,
-			   "aboutdialog");
+  		   "aboutdialog");
   gtk_dialog_run(GTK_DIALOG(ad));
   g_object_unref(axml);
 }

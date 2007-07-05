@@ -63,8 +63,8 @@ static int testPTHREAD_CREATE() {
   sv = -1; tv = 0;
   lock = MUTEX_CREATE(NO);
   pt = PTHREAD_CREATE(&lockIt,
-		      NULL,
-		      1024);
+  	      NULL,
+  	      1024);
   while (tv != 2) {
     sv = 1;
     PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
@@ -72,8 +72,8 @@ static int testPTHREAD_CREATE() {
   PTHREAD_JOIN(pt, &unused);
   MUTEX_DESTROY(lock);
   pt = PTHREAD_CREATE(&bigStack,
-		      NULL,
-		      1024*100 + 25000); /* fails by segfault */
+  	      NULL,
+  	      1024*100 + 25000); /* fails by segfault */
   PTHREAD_JOIN(pt, &unused);
   return 0;
 }
@@ -87,13 +87,13 @@ static int testMutex() {
   sv = 1;
   tv = 0;
   pt = PTHREAD_CREATE(&lockIt,
-		      NULL,
-		      1024);
+  	      NULL,
+  	      1024);
   while (sv == 1)
     PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
   MUTEX_LOCK(lock);
   sv = 5; /* release lockIt from while sv==0 loop,
-	     blocks it on lock */
+       blocks it on lock */
 
   if (sv != 5) {
     MUTEX_UNLOCK(lock);
@@ -101,7 +101,7 @@ static int testMutex() {
       PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
     MUTEX_DESTROY(lock);
     printf("MUTEX test failed at %s:%u\n",
-	   __FILE__, __LINE__);
+     __FILE__, __LINE__);
     return 1; /* error */
   } else {
     MUTEX_UNLOCK(lock);
@@ -133,8 +133,8 @@ static void * semUpDown(void * unused) {
   if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n"
-	   "Testcase deadlocked.\n",
-	   __FILE__, __LINE__);
+     "Testcase deadlocked.\n",
+     __FILE__, __LINE__);
     return NULL; /* will halt testcase! */
   }
   for (i=0;i<42;i++)
@@ -153,7 +153,7 @@ static int testSemaphore() {
   if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
-	   __FILE__, __LINE__);
+     __FILE__, __LINE__);
     return 1;
   }
   for (i=0;i<42;i++)
@@ -162,18 +162,18 @@ static int testSemaphore() {
     if (SYSERR == SEMAPHORE_DOWN(sem, NO)) {
       SEMAPHORE_DESTROY(sem);
       printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u iteration %d\n",
-	     __FILE__, __LINE__, i);
+       __FILE__, __LINE__, i);
       return 1;
     }
   if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
-	   __FILE__, __LINE__);
+     __FILE__, __LINE__);
     return 1;
   }
   pt = PTHREAD_CREATE(&semUpDown,
-		      NULL,
-		      1024);
+  	      NULL,
+  	      1024);
   for (i=0;i<42;i++)
     SEMAPHORE_UP(sem);
   PTHREAD_JOIN(pt, &unused);
@@ -182,14 +182,14 @@ static int testSemaphore() {
   if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
-	   __FILE__, __LINE__);
+     __FILE__, __LINE__);
     return 1;
   }
   return 0;
 }
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   int ret = 0;
 
   ret += testPTHREAD_CREATE();

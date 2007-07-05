@@ -37,8 +37,8 @@
 int sock = -1;
 
 static void writeAll(int fd,
-		     char * data,
-		     unsigned int len) {
+  	     char * data,
+  	     unsigned int len) {
   unsigned int pos;
   int ret;
   pos = 0;
@@ -61,8 +61,8 @@ typedef struct {
 } ExchangeBuffer;
 
 void socketSend(unsigned int len,
-		unsigned int type,
-		void * data) {
+  	unsigned int type,
+  	void * data) {
   ExchangeBuffer * buf;
   unsigned int tlen;
 #if DEBUG
@@ -92,7 +92,7 @@ void socketSend(unsigned int len,
  * @return the type of the message
  */
 unsigned int readSocket(char ** rbuf,
-			unsigned int * len) {
+  		unsigned int * len) {
   unsigned int type;
   ExchangeBuffer * buf;
   unsigned int pos;
@@ -143,8 +143,8 @@ unsigned int readSocket(char ** rbuf,
  * Print a message in the testbed-shell.
  */
 void XPRINTF(const char * fmt,
-	     ...) {
-  va_list	args;
+       ...) {
+  va_list  args;
   int n;
   unsigned int size = 1024;
   char * p;

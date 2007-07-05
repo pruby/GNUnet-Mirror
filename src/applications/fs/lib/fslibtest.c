@@ -45,9 +45,9 @@ static Datastore_Value * makeBlock(int i) {
   DBlock * db;
 
   block = MALLOC(sizeof(Datastore_Value) +
-		 sizeof(DBlock) + i);
+  	 sizeof(DBlock) + i);
   block->size = htonl(sizeof(Datastore_Value) +
-		      sizeof(DBlock) + i);
+  	      sizeof(DBlock) + i);
   block->type = htonl(D_BLOCK);
   block->prio = htonl(0);
   block->anonymityLevel = htonl(0);
@@ -55,22 +55,22 @@ static Datastore_Value * makeBlock(int i) {
   db = (DBlock*) &block[1];
   db->type = htonl(D_BLOCK);
   memset(&db[1],
-	 i + (i /253),
-	 i);
+   i + (i /253),
+   i);
   return block;
 }
 
 static Datastore_Value * makeKBlock(unsigned int i,
-				    const HashCode512 * key,
-				    HashCode512 * query) {
+  			    const HashCode512 * key,
+  			    HashCode512 * query) {
   Datastore_Value * block;
   KBlock * db;
   struct PrivateKey * kkey;
 
   block = MALLOC(sizeof(Datastore_Value) +
-		 sizeof(KBlock) + i);
+  	 sizeof(KBlock) + i);
   block->size = htonl(sizeof(Datastore_Value) +
-		      sizeof(KBlock) + i);
+  	      sizeof(KBlock) + i);
   block->type = htonl(K_BLOCK);
   block->prio = htonl(0);
   block->anonymityLevel = htonl(0);
@@ -78,15 +78,15 @@ static Datastore_Value * makeKBlock(unsigned int i,
   db = (KBlock*) &block[1];
   db->type = htonl(K_BLOCK);
   memset(&db[1],
-	 i + (i /253),
-	 i);
+   i + (i /253),
+   i);
   kkey = makeKblockKey(key);
   sign(kkey,
        i,
        &db[1],
        &db->signature);
   getPublicKey(kkey,
-	       &db->keyspace);
+         &db->keyspace);
   hash(&db->keyspace,
        sizeof(PublicKey),
        query);
@@ -111,8 +111,8 @@ static void abortSem(void * cls) {
  * a counter.
  */
 static int countCallback(const HashCode512 * key,
-			 const Datastore_Value * value,
-			 void * cls) {
+  		 const Datastore_Value * value,
+  		 void * cls) {
   int * cnt = cls;
   (*cnt)--;
   fprintf(stderr, "*");
@@ -123,8 +123,8 @@ static int countCallback(const HashCode512 * key,
 
 
 static int searchResultCB(const HashCode512 * key,
-			  const Datastore_Value * value,
-			  TSC * cls) {
+  		  const Datastore_Value * value,
+  		  TSC * cls) {
   HashCode512 ekey;
   Datastore_Value * blk;
   Datastore_Value * eblk;
@@ -132,19 +132,19 @@ static int searchResultCB(const HashCode512 * key,
 
   blk = makeBlock(cls->i);
   fileBlockGetQuery((DBlock*) &blk[1],
-		    ntohl(blk->size) - sizeof(Datastore_Value),
-		    &ekey);
+  	    ntohl(blk->size) - sizeof(Datastore_Value),
+  	    &ekey);
   GE_ASSERT(NULL, OK ==
-	    fileBlockEncode((DBlock*) &blk[1],
-			    ntohl(blk->size) - sizeof(Datastore_Value),
-			    &ekey,
-			    &eblk));
+      fileBlockEncode((DBlock*) &blk[1],
+  		    ntohl(blk->size) - sizeof(Datastore_Value),
+  		    &ekey,
+  		    &eblk));
   if ( (equalsHashCode512(&ekey,
-			  key)) &&
+  		  key)) &&
        (value->size == blk->size) &&
        (0 == memcmp(&value[1],
-		    &eblk[1],
-		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
+  	    &eblk[1],
+  	    ntohl(value->size) - sizeof(Datastore_Value))) ) {
     cls->found = YES;
     SEMAPHORE_UP(cls->sem);
     ret = SYSERR;
@@ -159,7 +159,7 @@ static int searchResultCB(const HashCode512 * key,
 }
 
 static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
-		     int i) {
+  	     int i) {
   struct FS_SEARCH_HANDLE * handle;
   cron_t now;
   HashCode512 query;
@@ -170,34 +170,34 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   dv = makeBlock(i);
   db = (DBlock*) &dv[1];
   fileBlockGetQuery(db,
-		    ntohl(dv->size) - sizeof(Datastore_Value),
-		    &query);
+  	    ntohl(dv->size) - sizeof(Datastore_Value),
+  	    &query);
   FREE(dv);
   closure.found = NO;
   closure.i = i;
   closure.sem = SEMAPHORE_CREATE(0);
   now = get_time();
   handle = FS_start_search(ctx,
-			   NULL,
-			   D_BLOCK,
-			   1,
-			   &query,
-			   0,
-			   0,
-			   now + 30 * cronSECONDS,
-			   (Datum_Iterator)&searchResultCB,
-			   &closure);
+  		   NULL,
+  		   D_BLOCK,
+  		   1,
+  		   &query,
+  		   0,
+  		   0,
+  		   now + 30 * cronSECONDS,
+  		   (Datum_Iterator)&searchResultCB,
+  		   &closure);
   cron_add_job(cron,
-	       &abortSem,
-	       30 * cronSECONDS,
-	       0,
-	       closure.sem);
+         &abortSem,
+         30 * cronSECONDS,
+         0,
+         closure.sem);
   SEMAPHORE_DOWN(closure.sem, YES);
   FS_stop_search(ctx,
-		 handle);
+  	 handle);
   cron_suspend(cron, NO);
   cron_del_job(cron,
-	       &abortSem, 0, closure.sem);
+         &abortSem, 0, closure.sem);
   cron_resume_jobs(cron, NO);
   SEMAPHORE_DESTROY(closure.sem);
   return closure.found;
@@ -225,7 +225,7 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
@@ -233,24 +233,24 @@ int main(int argc, char * argv[]){
   cron = cron_create(NULL);
 #if START_DAEMON
   daemon = os_daemon_start(NULL,
-			   cfg,
-			   "peer.conf",
-			   NO);
+  		   cfg,
+  		   "peer.conf",
+  		   NO);
   GE_ASSERT(NULL, daemon > 0);
 #endif
   ok = YES;
   cron_start(cron);
   lock = MUTEX_CREATE(NO);
   GE_ASSERT(NULL,
-	    OK == connection_wait_for_running(NULL,
-					      cfg,
-					      60 * cronSECONDS));
+      OK == connection_wait_for_running(NULL,
+  				      cfg,
+  				      60 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = client_connection_create(NULL, cfg);
   CHECK(sock != NULL);
   ctx = FS_SEARCH_makeContext(NULL,
-			      cfg,
-			      lock);
+  		      cfg,
+  		      lock);
   CHECK(ctx != NULL);
 
   /* ACTUAL TEST CODE */
@@ -258,50 +258,50 @@ int main(int argc, char * argv[]){
     fprintf(stderr, ".");
     block = makeBlock(i);
     fileBlockGetQuery((DBlock*) &block[1],
-		      ntohl(block->size) - sizeof(Datastore_Value),
-		      &query);
+  	      ntohl(block->size) - sizeof(Datastore_Value),
+  	      &query);
     CHECK(OK == fileBlockEncode((DBlock*) &block[1],
-				ntohl(block->size) - sizeof(Datastore_Value),
-				&query,
-				&eblock));
+  			ntohl(block->size) - sizeof(Datastore_Value),
+  			&query,
+  			&eblock));
     eblock->expirationTime = block->expirationTime;
     eblock->prio = block->prio;
     CHECK(OK == FS_insert(sock,
-			  eblock));
+  		  eblock));
     CHECK(OK == trySearch(ctx, i));
     CHECK(SYSERR != FS_delete(sock,
-			      eblock));
+  		      eblock));
     FREE(eblock);
     hash(&((DBlock*)&block[1])[1],
-	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
-	 &hc);
+   ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
+   &hc);
     /* indexing without symlink */
     CHECK(OK == FS_index(sock,
-			 &hc,
-			 block,
-			 0));
+  		 &hc,
+  		 block,
+  		 0));
     CHECK(OK == trySearch(ctx, i));
     CHECK(OK == FS_unindex(sock,
-			   MAX_BUFFER_SIZE,
-			   &hc));
+  		   MAX_BUFFER_SIZE,
+  		   &hc));
     /* indexing with symlink */
     tmpName = STRDUP("/tmp/symlinkTestXXXXXX");
     CHECK(-1 != (fd = mkstemp(tmpName)));
     CHECK(-1 != WRITE(fd,
-		      &((DBlock*)&block[1])[1],
-		      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
+  	      &((DBlock*)&block[1])[1],
+  	      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
     CLOSE(fd);
     CHECK(FS_initIndex(sock,
-		       &hc,
-		       tmpName) == YES);
+  	       &hc,
+  	       tmpName) == YES);
     CHECK(OK == FS_index(sock,
-			 &hc,
-			 block,
-			 0));
+  		 &hc,
+  		 block,
+  		 0));
     CHECK(OK == trySearch(ctx, i));
     CHECK(OK == FS_unindex(sock,
-			   MAX_BUFFER_SIZE,
-			   &hc));
+  		   MAX_BUFFER_SIZE,
+  		   &hc));
     UNLINK(tmpName);
     FREE(tmpName);
     FREE(block);
@@ -311,31 +311,31 @@ int main(int argc, char * argv[]){
     fprintf(stderr, ".");
     block = makeBlock(i);
     fileBlockGetQuery((DBlock*) &block[1],
-		      ntohl(block->size) - sizeof(Datastore_Value),
-		      &query);
+  	      ntohl(block->size) - sizeof(Datastore_Value),
+  	      &query);
     CHECK(OK == fileBlockEncode((DBlock*) &block[1],
-				ntohl(block->size) - sizeof(Datastore_Value),
-				&query,
-				&eblock));
+  			ntohl(block->size) - sizeof(Datastore_Value),
+  			&query,
+  			&eblock));
     eblock->expirationTime = block->expirationTime;
     eblock->prio = block->prio;
     CHECK(OK == FS_insert(sock,
-			  eblock));
+  		  eblock));
     CHECK(OK == trySearch(ctx, i));
     CHECK(1 == FS_delete(sock,
-			 eblock));
+  		 eblock));
     FREE(eblock);
     hash(&((DBlock*)&block[1])[1],
-	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
-	 &hc);
+   ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
+   &hc);
     CHECK(OK == FS_index(sock,
-			 &hc,
-			 block,
-			 0));
+  		 &hc,
+  		 block,
+  		 0));
     CHECK(OK == trySearch(ctx, i));
     CHECK(OK == FS_unindex(sock,
-			   MAX_BUFFER_SIZE,
-			   &hc));
+  		   MAX_BUFFER_SIZE,
+  		   &hc));
     FREE(block);
   }
   fprintf(stderr, "\n");
@@ -344,30 +344,30 @@ int main(int argc, char * argv[]){
   makeRandomId(&hc);
   block = makeKBlock(40, &hc, &query);
   CHECK(OK == FS_insert(sock,
-			block));
+  		block));
   FREE(block);
   block = makeKBlock(60, &hc, &query);
   CHECK(OK == FS_insert(sock,
-			block));
+  		block));
   FREE(block);
   i = 2;
   mainThread = PTHREAD_GET_SELF();
   hnd = FS_start_search(ctx,
-			NULL,
-			ANY_BLOCK,
-			1,
-			&query,
-			0,
-			0,
-			10 * cronSECONDS,
-			&countCallback,
-			&i);
+  		NULL,
+  		ANY_BLOCK,
+  		1,
+  		&query,
+  		0,
+  		0,
+  		10 * cronSECONDS,
+  		&countCallback,
+  		&i);
   CHECK(hnd != NULL);
   PTHREAD_SLEEP(10 * cronSECONDS);
   FS_stop_search(ctx, hnd);
   PTHREAD_REL_SELF(mainThread);
   CHECK(i <= 0);
-		
+  	
 
   /* just to check if it crashes... */
   FS_getAveragePriority(sock);

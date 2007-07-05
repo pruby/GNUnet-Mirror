@@ -35,12 +35,12 @@
  * @return NULL on error
  */
 char * gaim_upnp_get_internal_ip(struct GC_Configuration * cfg,
-				 struct GE_Context * ectx) {
+  			 struct GE_Context * ectx) {
   IPaddr address;
 
   return network_get_local_ip(cfg,
-			      ectx,
-			      &address);
+  		      ectx,
+  		      &address);
 }
 
 

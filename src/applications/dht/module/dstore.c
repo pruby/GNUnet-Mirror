@@ -39,38 +39,38 @@ static CoreAPIForApplication * coreAPI;
  * @return total number of results found
  */
 int dht_store_get(const HashCode512 * key,
-		  unsigned int type,
-		  ResultHandler handler,
-		  void * cls) {
+  	  unsigned int type,
+  	  ResultHandler handler,
+  	  void * cls) {
   return dstore->get(key,
-		     type,
-		     handler,
-		     cls);
+  	     type,
+  	     handler,
+  	     cls);
 }
 
 /**
  * Store the given data in the local datastore.
  */
 void dht_store_put(unsigned int type,
-		   const HashCode512 * key,
-		   cron_t discard_time,
-		   unsigned int size,
-		   const char * data) {
+  	   const HashCode512 * key,
+  	   cron_t discard_time,
+  	   unsigned int size,
+  	   const char * data) {
   if (discard_time < get_time()) {
 #if DEBUG_DSTORE
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   "Content already expired (%llu < %llu), will not keep.\n",
-	   discard_time,
-	   get_time());
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     "Content already expired (%llu < %llu), will not keep.\n",
+     discard_time,
+     get_time());
 #endif
     return;
   }
   dstore->put(key,
-	      type,
-	      discard_time,
-	      size,
-	      data);
+        type,
+        discard_time,
+        size,
+        data);
 }
 
 /**
@@ -80,7 +80,7 @@ void dht_store_put(unsigned int type,
  * @return OK on success
  */
 int init_dht_store(size_t max_size,
-		   CoreAPIForApplication * capi) {
+  	   CoreAPIForApplication * capi) {
   coreAPI = capi;
   dstore = coreAPI->requestService("dstore");
   if (dstore == NULL)

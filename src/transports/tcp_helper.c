@@ -25,7 +25,7 @@
  */
 
 typedef int (*BlacklistedTester)(const void * addr,
-				 unsigned int addr_len);
+  			 unsigned int addr_len);
 
 /**
  * Initial handshake message. Note that the beginning
@@ -129,9 +129,9 @@ static void freeTCPSession(TCPSession * tcpsession) {
   while (pos != NULL) {
     if (pos == tcpsession) {
       if (prev == NULL)
-	sessions = pos->next;
+  sessions = pos->next;
       else
-	prev->next = pos->next;
+  prev->next = pos->next;
       break;
     }
     prev = pos;
@@ -153,19 +153,19 @@ static int tcpDisconnect(TSession * tsession) {
        (tcpsession->in_select == YES) ) {
     if (tcpsession->users == 0)
       select_change_timeout(selector,
-			    tcpsession->sock,
-			    TCP_FAST_TIMEOUT);
+  		    tcpsession->sock,
+  		    TCP_FAST_TIMEOUT);
     MUTEX_UNLOCK(tcpsession->lock);
     MUTEX_UNLOCK(tcplock);
     return OK;
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
-	 "TCP disconnect closes socket session.\n");
+   GE_DEBUG | GE_USER | GE_BULK,
+   "TCP disconnect closes socket session.\n");
 #endif
   select_disconnect(selector,
-		    tcpsession->sock);
+  	    tcpsession->sock);
   MUTEX_UNLOCK(tcpsession->lock);
   freeTCPSession(tcpsession);
   MUTEX_UNLOCK(tcplock);
@@ -200,8 +200,8 @@ static int tcpAssociate(TSession * tsession) {
   if ( (tcpSession->users == 0) &&
        (tcpSession->in_select == YES) )
     select_change_timeout(selector,
-			  tcpSession->sock,
-			  TCP_TIMEOUT);
+  		  tcpSession->sock,
+  		  TCP_TIMEOUT);
   tcpSession->users++;
   
   MUTEX_UNLOCK(tcpSession->lock);
@@ -215,10 +215,10 @@ static int tcpAssociate(TSession * tsession) {
  * already held by the caller.
  */
 static int select_message_handler(void * mh_cls,
-				  struct SelectHandle * sh,
-				  struct SocketHandle * sock,
-				  void * sock_ctx,
-				  const MESSAGE_HEADER * msg) {
+  			  struct SelectHandle * sh,
+  			  struct SocketHandle * sock,
+  			  void * sock_ctx,
+  			  const MESSAGE_HEADER * msg) {
   TSession * tsession = sock_ctx;
   TCPSession * tcpSession;
   TCPSession * pos;
@@ -233,19 +233,19 @@ static int select_message_handler(void * mh_cls,
   len = ntohs(msg->size);
   if (stats != NULL)
     stats->change(stat_bytesReceived,
-		  len);
+  	  len);
   tcpSession = tsession->internal;
   if (YES == tcpSession->expectingWelcome) {
     /* at this point, we should be the only user! */
     GE_ASSERT(NULL,
-	      tcpSession->users == 1);
+        tcpSession->users == 1);
 
     welcome = (const TCPWelcome*) msg;
     if ( (ntohs(welcome->header.type) != 0) ||
-	 (len != sizeof(TCPWelcome)) ) {
+   (len != sizeof(TCPWelcome)) ) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Received malformed message instead of welcome message. Closing.\n"));
+       GE_WARNING | GE_USER | GE_BULK,
+       _("Received malformed message instead of welcome message. Closing.\n"));
       tcpDisconnect(tsession);
       return SYSERR;
     }
@@ -254,8 +254,8 @@ static int select_message_handler(void * mh_cls,
     tsession->peer = welcome->clientIdentity;
     if (tcpSession->accept_addr != NULL) 
       setIPaddressFromPID(&welcome->clientIdentity,
-			  tcpSession->accept_addr,
-			  tcpSession->addr_len);
+  		  tcpSession->accept_addr,
+  		  tcpSession->addr_len);
     /* check that we do not already have
        a connection from this peer; if so,
        close the old one! */
@@ -263,44 +263,44 @@ static int select_message_handler(void * mh_cls,
     pos = sessions;
     while (pos != NULL) {
       if (pos == tcpSession) {
-	pos = pos->next;
-	continue;
+  pos = pos->next;
+  continue;
       }
       if (0 == memcmp(&pos->sender,
-		      &tcpSession->sender,
-		      sizeof(PeerIdentity))) {
-	/* replace existing socket in pos with
-	   the new socket in tcpSession; then
-	   delete the new tcpSession -- we have
-	   the old one! */
-	MUTEX_LOCK(pos->lock);
-	if (SYSERR == tcpAssociate(pos->tsession)) {
-	  GE_BREAK(ectx, 0);
-	  MUTEX_UNLOCK(pos->lock);
-	  MUTEX_UNLOCK(tcplock);
-	  return SYSERR;
-	}	
-	if (pos->in_select) 
-	  select_disconnect(sh,
-			    pos->sock);
-	pos->in_select = YES;
-	pos->sock = tcpSession->sock;
-	select_update_closure(sh,
-			      pos->sock,
-			      tsession,
-			      pos->tsession);
-	FREENONNULL(pos->accept_addr);
-	pos->accept_addr = tcpSession->accept_addr;
-	pos->addr_len = tcpSession->addr_len;
-	tcpSession->accept_addr = NULL;
-	tcpSession->addr_len = 0;
-	tcpDisconnect(tsession);
-	tcpSession->in_select = NO; 
-	freeTCPSession(tcpSession);
-	tcpSession = pos;
-	tsession = pos->tsession;
-	MUTEX_UNLOCK(pos->lock);
-	break;
+  	      &tcpSession->sender,
+  	      sizeof(PeerIdentity))) {
+  /* replace existing socket in pos with
+     the new socket in tcpSession; then
+     delete the new tcpSession -- we have
+     the old one! */
+  MUTEX_LOCK(pos->lock);
+  if (SYSERR == tcpAssociate(pos->tsession)) {
+    GE_BREAK(ectx, 0);
+    MUTEX_UNLOCK(pos->lock);
+    MUTEX_UNLOCK(tcplock);
+    return SYSERR;
+  }	
+  if (pos->in_select) 
+    select_disconnect(sh,
+  		    pos->sock);
+  pos->in_select = YES;
+  pos->sock = tcpSession->sock;
+  select_update_closure(sh,
+  		      pos->sock,
+  		      tsession,
+  		      pos->tsession);
+  FREENONNULL(pos->accept_addr);
+  pos->accept_addr = tcpSession->accept_addr;
+  pos->addr_len = tcpSession->addr_len;
+  tcpSession->accept_addr = NULL;
+  tcpSession->addr_len = 0;
+  tcpDisconnect(tsession);
+  tcpSession->in_select = NO; 
+  freeTCPSession(tcpSession);
+  tcpSession = pos;
+  tsession = pos->tsession;
+  MUTEX_UNLOCK(pos->lock);
+  break;
       }    
       pos = pos->next;
     }  
@@ -310,16 +310,16 @@ static int select_message_handler(void * mh_cls,
     /* send msg to core! */
     if (len <= sizeof(MESSAGE_HEADER)) {
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Received malformed message from tcp-peer connection. Closing.\n"));
+       GE_WARNING | GE_USER | GE_BULK,
+       _("Received malformed message from tcp-peer connection. Closing.\n"));
       tcpDisconnect(tsession);
       return SYSERR;
     }
     mp      = MALLOC(sizeof(P2P_PACKET));
     mp->msg = MALLOC(len - sizeof(MESSAGE_HEADER));
     memcpy(mp->msg,
-	   &msg[1],
-	   len - sizeof(MESSAGE_HEADER));
+     &msg[1],
+     len - sizeof(MESSAGE_HEADER));
     mp->sender   = tcpSession->sender;
     mp->size     = len - sizeof(MESSAGE_HEADER);
     mp->tsession = tsession;
@@ -336,10 +336,10 @@ static int select_message_handler(void * mh_cls,
  * by the select thread.
  */
 static void * select_accept_handler(void * ah_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    const void * addr,
-				    unsigned int addr_len) {
+  			    struct SelectHandle * sh,
+  			    struct SocketHandle * sock,
+  			    const void * addr,
+  			    unsigned int addr_len) {
   BlacklistedTester blt = ah_cls;
   TSession * tsession;
   TCPSession * tcpSession;
@@ -347,15 +347,15 @@ static void * select_accept_handler(void * ah_cls,
   if (NO != blt(addr, addr_len)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK,
-	   "Rejecting TCP connection (blacklisted).\n");
+     GE_DEBUG | GE_USER | GE_BULK,
+     "Rejecting TCP connection (blacklisted).\n");
 #endif
     return NULL;
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
-	 "Accepting TCP connection.\n");
+   GE_DEBUG | GE_USER | GE_BULK,
+   "Accepting TCP connection.\n");
 #endif
   tcpSession = MALLOC(sizeof(TCPSession));
   tcpSession->sock = sock;
@@ -375,8 +375,8 @@ static void * select_accept_handler(void * ah_cls,
   if (addr_len > sizeof(IPaddr)) {
     tcpSession->accept_addr = MALLOC(addr_len);
     memcpy(tcpSession->accept_addr,
-	   (struct sockaddr_in*) addr,
-	   sizeof(struct sockaddr_in));
+     (struct sockaddr_in*) addr,
+     sizeof(struct sockaddr_in));
     tcpSession->addr_len = addr_len;
   } else {
     GE_BREAK(NULL, 0);
@@ -388,12 +388,12 @@ static void * select_accept_handler(void * ah_cls,
   sessions = tcpSession;
   MUTEX_UNLOCK(tcplock);
   return tsession;
-}					
+}  				
 
 static void select_close_handler(void * ch_cls,
-				 struct SelectHandle * sh,
-				 struct SocketHandle * sock,
-				 void * sock_ctx) {
+  			 struct SelectHandle * sh,
+  			 struct SocketHandle * sock,
+  			 void * sock_ctx) {
   TSession * tsession = sock_ctx;
   TCPSession * tcpSession = tsession->internal;
 
@@ -401,13 +401,13 @@ static void select_close_handler(void * ch_cls,
   EncName enc;
 
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   hash2enc(&tcpSession->sender.hashPubKey,
-		    &enc));
+     GE_DEBUG | GE_DEVELOPER | GE_BULK,
+     hash2enc(&tcpSession->sender.hashPubKey,
+  	    &enc));
   GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Closed TCP socket of `%s'.\n",
-	 &enc);
+   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+   "Closed TCP socket of `%s'.\n",
+   &enc);
 #endif
   MUTEX_LOCK(tcplock);
   MUTEX_LOCK(tcpSession->lock);
@@ -430,9 +430,9 @@ static void select_close_handler(void * ch_cls,
  * @return SYSERR on error, OK on success
  */
 static int tcpSend(TSession * tsession,
-		   const void * msg,
-		   unsigned int size,
-		   int important) {
+  	   const void * msg,
+  	   unsigned int size,
+  	   int important) {
   TCPSession * tcpSession;
   MESSAGE_HEADER * mp;
   int ok;
@@ -447,24 +447,24 @@ static int tcpSend(TSession * tsession,
     EncName enc;
     
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	     hash2enc(&tcpSession->sender.hashPubKey,
-		      &enc));
+       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+       hash2enc(&tcpSession->sender.hashPubKey,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Cannot send message - TCP socket of `%s' already closed!\n",
-	   &enc);
+     GE_DEBUG | GE_DEVELOPER | GE_BULK,
+     "Cannot send message - TCP socket of `%s' already closed!\n",
+     &enc);
 #endif
     return SYSERR;
   }
   if (selector == NULL) {
     if (stats != NULL)
       stats->change(stat_bytesDropped,
-		    size);
+  	    size);
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK,
-	   "Could not sent TCP message -- tcp transport is down.\n");
+     GE_DEBUG | GE_USER | GE_BULK,
+     "Could not sent TCP message -- tcp transport is down.\n");
 #endif
     return SYSERR;
   }
@@ -475,11 +475,11 @@ static int tcpSend(TSession * tsession,
   if (tcpSession->sock == NULL) {
     if (stats != NULL)
       stats->change(stat_bytesDropped,
-		    size);
+  	    size);
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK,
-	   "Could not sent TCP message -- other side closed connection.\n");
+     GE_DEBUG | GE_USER | GE_BULK,
+     "Could not sent TCP message -- other side closed connection.\n");
 #endif
     return SYSERR; /* other side closed connection */
   }
@@ -487,23 +487,23 @@ static int tcpSend(TSession * tsession,
   mp->size = htons(size + sizeof(MESSAGE_HEADER));
   mp->type = 0;
   memcpy(&mp[1],
-	 msg,
-	 size);
+   msg,
+   size);
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Transport asks select to queue message of size %u\n",
-	 size);
+   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+   "Transport asks select to queue message of size %u\n",
+   size);
 #endif
   ok = select_write(selector,
-		    tcpSession->sock,
-		    mp,
-		    NO,
-		    important);
+  	    tcpSession->sock,
+  	    mp,
+  	    NO,
+  	    important);
   if ( (OK == ok) &&
        (stats != NULL) )
     stats->change(stat_bytesSent,
-		  size + sizeof(MESSAGE_HEADER));
+  	  size + sizeof(MESSAGE_HEADER));
 
   FREE(mp);
   return ok;
@@ -523,8 +523,8 @@ static int tcpSend(TSession * tsession,
  *         SYSERR if the size/session is invalid
  */
 static int tcpTestWouldTry(TSession * tsession,
-			   const unsigned int size,
-			   int important) {
+  		   const unsigned int size,
+  		   int important) {
   TCPSession * tcpSession = tsession->internal;
 
   if (size >= MAX_BUFFER_SIZE - sizeof(MESSAGE_HEADER)) {
@@ -540,10 +540,10 @@ static int tcpTestWouldTry(TSession * tsession,
   if (tcpSession->sock == NULL)
     return SYSERR; /* other side closed connection */
   return select_would_try(selector,
-			  tcpSession->sock,
-			  size,
-			  NO,
-			  important);
+  		  tcpSession->sock,
+  		  size,
+  		  NO,
+  		  important);
 }
 
 
@@ -555,9 +555,9 @@ static int tcpTestWouldTry(TSession * tsession,
  * @return OK on success, SYSERR if the operation failed
  */
 static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
-			    struct SocketHandle * s,
-			    unsigned int protocolNumber,
-			    TSession ** tsessionPtr) {
+  		    struct SocketHandle * s,
+  		    unsigned int protocolNumber,
+  		    TSession ** tsessionPtr) {
   TCPWelcome welcome;
   TSession * tsession;
   TCPSession * tcpSession;
@@ -579,8 +579,8 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
   MUTEX_LOCK(tcplock);
   if (OK ==
       select_connect(selector,
-		     tcpSession->sock,
-		     tsession))
+  	     tcpSession->sock,
+  	     tsession))
     tcpSession->in_select = YES;
 
   /* send our node identity to the other side to fully establish the
@@ -592,14 +592,14 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
   welcome.clientIdentity
     = *(coreAPI->myIdentity);
   if (OK != select_write(selector,
-			 s,			
-			 &welcome.header,
-			 NO,
-			 YES)) {
+  		 s,			
+  		 &welcome.header,
+  		 NO,
+  		 YES)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK,
-	   "Could not sent TCP welcome message, closing connection.\n");
+     GE_DEBUG | GE_USER | GE_BULK,
+     "Could not sent TCP welcome message, closing connection.\n");
 #endif
     /* disconnect caller -- error! */
     tcpDisconnect(tsession);
@@ -607,7 +607,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * hello,
     return SYSERR;
   } else if (stats != NULL)
     stats->change(stat_bytesSent,
-		  sizeof(TCPWelcome));
+  	  sizeof(TCPWelcome));
   tcpSession->next = sessions;
   sessions = tcpSession;
   MUTEX_UNLOCK(tcplock);

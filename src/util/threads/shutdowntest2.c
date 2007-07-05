@@ -41,7 +41,7 @@ static int check() {
 }
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   int ret;
 
   ret = check();

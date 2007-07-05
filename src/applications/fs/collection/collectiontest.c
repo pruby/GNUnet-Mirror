@@ -35,7 +35,7 @@
 #define START_DAEMON 1
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   struct GC_Configuration * cfg;
 #if START_DAEMON
   pid_t daemon;
@@ -48,7 +48,7 @@ int main(int argc,
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
@@ -56,20 +56,20 @@ int main(int argc,
   meta = NULL;
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  300 * cronSECONDS));
+  				  cfg,
+  				  300 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 #endif
   ok = YES;
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
-		     EXTRACTOR_MIMETYPE,
-		     "test/foo");
+  	     EXTRACTOR_MIMETYPE,
+  	     "test/foo");
   sock = client_connection_create(NULL, cfg);
   CHECK(sock != NULL);
   CO_init(NULL, cfg);
@@ -77,14 +77,14 @@ int main(int argc,
   /* ACTUAL TEST CODE */
   CO_stopCollection();
   ECRS_deleteNamespace(NULL,
-		       cfg,
-		       "test-collection");
+  	       cfg,
+  	       "test-collection");
   CHECK(NULL == CO_getCollection());
   CHECK(OK == CO_startCollection(1,
-				 100,
-				 60, /* 60s */
-				 "test-collection",
-				 meta));
+  			 100,
+  			 60, /* 60s */
+  			 "test-collection",
+  			 meta));
   have = CO_getCollection();
   CHECK(NULL != have);
   CHECK(0 == strcmp(have, "test-collection"));
@@ -102,10 +102,10 @@ int main(int argc,
   CO_publishCollectionNow();
   CO_stopCollection();
   ECRS_deleteNamespace(NULL,
-		       cfg,
-		       "test-collection");
+  	       cfg,
+  	       "test-collection");
   CHECK(NULL == CO_getCollection());
-	
+  
   /* END OF TEST CODE */
  FAILURE:
   if (sock != NULL) {

@@ -49,17 +49,17 @@ typedef struct GE_Context {
  * @param mask the filter mask
  */
 int GE_applies(GE_KIND have,
-	       GE_KIND mask) {
+         GE_KIND mask) {
   GE_KIND both = mask & have;
   return ( (both & GE_EVENTKIND) &&
-	   (both & GE_USERKIND) &&
-	   (both & GE_ROUTEKIND) );
+     (both & GE_USERKIND) &&
+     (both & GE_ROUTEKIND) );
 }
 
 void GE_LOG(struct GE_Context * ctx,
-	    GE_KIND kind,
-	    const char * message,
-	    ...) {
+      GE_KIND kind,
+      const char * message,
+      ...) {
   va_list va;
   char date[64];
   time_t timetmp;
@@ -75,7 +75,7 @@ void GE_LOG(struct GE_Context * ctx,
     return;
   if ( (ctx == NULL) &&
        ( ((kind & (GE_IMMEDIATE | GE_BULK)) == 0) ||
-	 ((kind & (GE_FATAL | GE_ERROR | GE_WARNING)) == 0) ) )
+   ((kind & (GE_FATAL | GE_ERROR | GE_WARNING)) == 0) ) )
     return;
 
   va_start(va, message);
@@ -91,19 +91,19 @@ void GE_LOG(struct GE_Context * ctx,
   memset(date, 0, 64);
   tmptr = localtime(&timetmp);
   strftime(date,
-	   64,
-	   "%b %d %H:%M:%S",
-	   tmptr);
+     64,
+     "%b %d %H:%M:%S",
+     tmptr);
   if (ctx != NULL)
     ctx->handler(ctx->cls,
-		 kind,
-		 date,
-		 buf);
+  	 kind,
+  	 date,
+  	 buf);
   else
     fprintf(stderr,
-	    "%s %s",
-	    date,
-	    buf);
+      "%s %s",
+      date,
+      buf);
   free(buf);
 }
 
@@ -119,7 +119,7 @@ void GE_CONFIRM(struct GE_Context * ctx) {
     /* Console open? */
     if (GetStdHandle(STD_ERROR_HANDLE) != NULL) {
       fprintf(stderr,
-	      _("\nPress any key to continue\n"));
+        _("\nPress any key to continue\n"));
       getch();
     }
 #endif
@@ -137,9 +137,9 @@ void GE_CONFIRM(struct GE_Context * ctx) {
  */
 struct GE_Context *
 GE_create_context_callback(GE_KIND mask,
-			   GE_LogHandler handler,
-			   void * ctx,
-			   GE_CtxFree liberator,
+  		   GE_LogHandler handler,
+  		   void * ctx,
+  		   GE_CtxFree liberator,
          GE_Confirm confirm) {
   GE_Context * ret;
 
@@ -173,11 +173,11 @@ void GE_free_context(GE_Context * ctx) {
  * @param have the kind of event
  */
 int GE_isLogged(GE_Context * ctx,
-		GE_KIND kind) {
+  	GE_KIND kind) {
   if (ctx == NULL)
     return YES;
   return GE_applies(kind,
-		    ctx->mask);
+  	    ctx->mask);
 }
 
 /**
@@ -187,40 +187,40 @@ int GE_isLogged(GE_Context * ctx,
  */
 GE_KIND GE_getKIND(const char * log) {
   if (0 == strcasecmp(log,
-		      _("DEBUG")))
+  	      _("DEBUG")))
     return GE_DEBUG;
   if (0 == strcasecmp(log,
-		      _("STATUS")))
+  	      _("STATUS")))
     return GE_STATUS;
   if (0 == strcasecmp(log,
-		      _("WARNING")))
+  	      _("WARNING")))
     return GE_WARNING;
   if (0 == strcasecmp(log,
-		      _("ERROR")))
+  	      _("ERROR")))
     return GE_ERROR;
   if (0 == strcasecmp(log,
-		      _("FATAL")))
+  	      _("FATAL")))
     return GE_FATAL;
   if (0 == strcasecmp(log,
-		      _("USER")))
+  	      _("USER")))
     return GE_USER;
   if (0 == strcasecmp(log,
-		      _("ADMIN")))
+  	      _("ADMIN")))
     return GE_ADMIN;
   if (0 == strcasecmp(log,
-		      _("DEVELOPER")))
+  	      _("DEVELOPER")))
     return GE_DEVELOPER;
   if (0 == strcasecmp(log,
-		      _("REQUEST")))
+  	      _("REQUEST")))
     return GE_REQUEST;
   if (0 == strcasecmp(log,
-		      _("BULK")))
+  	      _("BULK")))
     return GE_BULK;
   if (0 == strcasecmp(log,
-		      _("IMMEDIATE")))
+  	      _("IMMEDIATE")))
     return GE_IMMEDIATE;
   if (0 == strcasecmp(log,
-		      _("ALL")))
+  	      _("ALL")))
     return GE_ALL;
 
   return GE_INVALID;
@@ -264,9 +264,9 @@ typedef struct {
 } CPair;
 
 static void multiplexer(void * ctx,
-			GE_KIND kind,
-			const char * date,
-			const char * msg) {
+  		GE_KIND kind,
+  		const char * date,
+  		const char * msg) {
   CPair * pair = ctx;
 
   if (GE_applies(kind, pair->c1->mask))
@@ -299,7 +299,7 @@ static void pairdestruct(void * ctx) {
  */
 struct GE_Context *
 GE_create_context_multiplexer(struct GE_Context * ctx1,
-			      struct GE_Context * ctx2) {
+  		      struct GE_Context * ctx2) {
   CPair * cls;
   GE_Context * ret;
 

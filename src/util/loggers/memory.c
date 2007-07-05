@@ -45,26 +45,26 @@ typedef struct GE_Memory {
 
 static void
 memorylogger(void * cls,
-	     GE_KIND kind,
-	     const char * date,
-	     const char * msg) {
+       GE_KIND kind,
+       const char * date,
+       const char * msg) {
   GE_Memory * ctx = cls;
   unsigned int max;
 
   MUTEX_LOCK(ctx->lock);
   if (ctx->pos == ctx->size) {
     if ( (ctx->maxSize != 0) &&
-	 (ctx->size == ctx->maxSize) ) {
+   (ctx->size == ctx->maxSize) ) {
       MUTEX_UNLOCK(ctx->lock);
       return;
     }
     max = ctx->pos * 2 + 16;
     if ( (ctx->maxSize == 0) &&
-	 (max > ctx->maxSize) )
+   (max > ctx->maxSize) )
       max = ctx->maxSize;
     GROW(ctx->messages,
-	 ctx->size,
-	 max);
+   ctx->size,
+   max);
   }
   ctx->messages[ctx->pos].date = STRDUP(date);
   if (ctx->pos == ctx->maxSize-1) {
@@ -84,12 +84,12 @@ memorylogger(void * cls,
  */
 struct GE_Context *
 GE_create_context_memory(GE_KIND mask,
-			 struct GE_Memory * memory) {
+  		 struct GE_Memory * memory) {
   return GE_create_context_callback(mask,
-				    &memorylogger,
-				    memory,
-				    NULL,
-				    NULL);
+  			    &memorylogger,
+  			    memory,
+  			    NULL,
+  			    NULL);
 }
 
 /**
@@ -121,7 +121,7 @@ GE_memory_create(unsigned int maxSize) {
  */
 const char *
 GE_memory_get(struct GE_Memory * memory,
-	      unsigned int index) {
+        unsigned int index) {
   if (index > memory->pos || memory->messages == NULL)
     return NULL;
   return memory->messages[index].msg;
@@ -132,16 +132,16 @@ GE_memory_get(struct GE_Memory * memory,
  * Also clears the memory.
  */
 void GE_memory_poll(struct GE_Memory * memory,
-		    GE_LogHandler handler,
-		    void * ctx) {
+  	    GE_LogHandler handler,
+  	    void * ctx) {
   int i;
 
   MUTEX_LOCK(memory->lock);
   for (i=0;i<memory->pos;i++) {
     handler(ctx,
-	    memory->messages[i].mask,
-	    memory->messages[i].date,
-	    memory->messages[i].msg);
+      memory->messages[i].mask,
+      memory->messages[i].date,
+      memory->messages[i].msg);
     FREE(memory->messages[i].date);
     FREE(memory->messages[i].msg);
   }

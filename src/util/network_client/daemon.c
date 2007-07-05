@@ -31,7 +31,7 @@
 #include "gnunet_util_threads.h"
 
 int connection_test_running(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg) {
+  		    struct GC_Configuration * cfg) {
   struct ClientServerConnection * sock;
   MESSAGE_HEADER csHdr;
   int ret;
@@ -44,12 +44,12 @@ int connection_test_running(struct GE_Context * ectx,
   csHdr.type
     = htons(CS_PROTO_traffic_COUNT);
   if (SYSERR == connection_write(sock,
-				 &csHdr)) {
+  			 &csHdr)) {
     connection_destroy(sock);
     return SYSERR;
   }
   if (SYSERR == connection_read_result(sock,
-				       &ret)) {
+  			       &ret)) {
     connection_destroy(sock);
     return SYSERR;
   }
@@ -66,12 +66,12 @@ int connection_request_shutdown(struct ClientServerConnection * sock) {
   csHdr.type
     = htons(CS_PROTO_SHUTDOWN_REQUEST);
   if (SYSERR == connection_write(sock,
-				 &csHdr)) {
+  			 &csHdr)) {
     connection_close_temporarily(sock);
     return SYSERR;
   }
   if (SYSERR == connection_read_result(sock,
-				       &ret)) {
+  			       &ret)) {
     connection_close_temporarily(sock);
     return SYSERR;
   }
@@ -86,15 +86,15 @@ int connection_request_shutdown(struct ClientServerConnection * sock) {
  * @return OK if gnunetd is now running
  */
 int connection_wait_for_running(struct GE_Context * ectx,
-				struct GC_Configuration * cfg,
-				cron_t timeout) {
+  			struct GC_Configuration * cfg,
+  			cron_t timeout) {
   cron_t min;
   int ret;
 
   timeout += get_time();
   while (GNUNET_SHUTDOWN_TEST() == 0) {
     ret = connection_test_running(ectx,
-				  cfg);
+  			  cfg);
     if (ret == OK)
       return OK;
     if (timeout < get_time())

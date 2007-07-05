@@ -76,10 +76,10 @@ static int updateModule(const char * rpos) {
 
   pos = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "MODULES",
-					      rpos,
-					      rpos,
-					      &pos))
+  				      "MODULES",
+  				      rpos,
+  				      rpos,
+  				      &pos))
     return SYSERR;
   GE_ASSERT(ectx, pos != NULL);
 
@@ -88,15 +88,15 @@ static int updateModule(const char * rpos) {
   strcat(name, pos);
   FREE(pos);
   library = os_plugin_load(ectx,
-			   DSO_PREFIX,
-			   name);
+  		   DSO_PREFIX,
+  		   name);
   if (library == NULL) {
     FREE(name);
     return SYSERR;
   }
   mptr = os_plugin_resolve_function(library,
-				    "update_",
-				    NO);
+  			    "update_",
+  			    NO);
   if (mptr == NULL) {
     os_plugin_unload(library);
     FREE(name);
@@ -119,17 +119,17 @@ static void updateApplicationModules() {
 
   dso = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "GNUNETD",
-					      "APPLICATIONS",
-					      "advertising fs getoption stats traffic",
-					      &dso))
+  				      "GNUNETD",
+  				      "APPLICATIONS",
+  				      "advertising fs getoption stats traffic",
+  				      &dso))
     return;
   GE_ASSERT(ectx, dso != NULL);
   next = dso;
   do {
     pos = next;
     while ( (*next != '\0') &&
-	    (*next != ' ') )
+      (*next != ' ') )
       next++;
     if (*next == '\0') {
       next = NULL; /* terminate! */
@@ -139,14 +139,14 @@ static void updateApplicationModules() {
     }
     if (strlen(pos) > 0) {
       GE_LOG(ectx,
-	     GE_INFO | GE_USER | GE_BULK,
-	     _("Updating data for module `%s'\n"),
-	     pos);
+       GE_INFO | GE_USER | GE_BULK,
+       _("Updating data for module `%s'\n"),
+       pos);
       if (OK != updateModule(pos))
-	GE_LOG(ectx,
-	       GE_ERROR | GE_DEVELOPER | GE_BULK | GE_USER,
-	       _("Failed to update data for module `%s'\n"),
-	       pos);
+  GE_LOG(ectx,
+         GE_ERROR | GE_DEVELOPER | GE_BULK | GE_USER,
+         _("Failed to update data for module `%s'\n"),
+         pos);
     }
   } while (next != NULL);
   FREE(dso);
@@ -160,22 +160,22 @@ static void doGet(char * get) {
   sec = get;
   ent = get;
   while ( ( (*ent) != ':') &&
-	  ( (*ent) != '\0') )
+    ( (*ent) != '\0') )
     ent++;
   if (*ent == ':') {
     *ent = '\0';
     ent++;
   }
   if (YES == GC_have_configuration_value(cfg,
-					 sec,
-					 ent)) {
+  				 sec,
+  				 ent)) {
     GC_get_configuration_value_string(cfg,
-				      sec,
-				      ent,
-				      NULL,
-				      &val);
+  			      sec,
+  			      ent,
+  			      NULL,
+  			      &val);
     printf("%s\n",
-	   val);
+     val);
     FREE(val);
   }
 }
@@ -192,10 +192,10 @@ static void work() {
 
   cron = cron_create(ectx);
   if (initCore(ectx, cfg, cron, NULL) != OK) {
-  	GE_LOG(ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
-  		_("Core initialization failed.\n"));
-  		
-  	return;
+    GE_LOG(ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
+    	_("Core initialization failed.\n"));
+    	
+    return;
   }
 
   /* enforce filesystem limits */
@@ -220,13 +220,13 @@ static void work() {
 }
 
 static int set_client_config(CommandLineProcessorContext * ctx,
-			     void * scls,
-			     const char * option,
-			     const char * value) {
+  		     void * scls,
+  		     const char * option,
+  		     const char * value) {
   cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
   return OK;
 }
-	
+  
 
 /**
  * All gnunet-update command line options
@@ -241,10 +241,10 @@ static struct CommandLineOption gnunetupdateOptions[] = {
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'u', "user", "LOGIN",
     gettext_noop("run as user LOGIN"),
-    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },	
+    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },  
   { 'U', "client", NULL,
     gettext_noop("run in client mode (for getting client configuration values)"),
-    0, &set_client_config, NULL },	
+    0, &set_client_config, NULL },  
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -252,17 +252,17 @@ static struct CommandLineOption gnunetupdateOptions[] = {
 
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   char * get;
   int ret;
 
   ret = GNUNET_init(argc,
-		    argv,
-		    "gnunet-update",
-		    &cfgFilename,
-		    gnunetupdateOptions,
-		    &ectx,
-		    &cfg);
+  	    argv,
+  	    "gnunet-update",
+  	    &cfgFilename,
+  	    gnunetupdateOptions,
+  	    &ectx,
+  	    &cfg);
   if ( (ret == -1) ||
        (OK != changeUser(ectx, cfg)) ) {
     GNUNET_fini(ectx, cfg);
@@ -270,10 +270,10 @@ int main(int argc,
   }
   get = NULL;
   GC_get_configuration_value_string(cfg,
-				    "GNUNET-UPDATE",
-				    "GET",
-				    "",
-				    &get);
+  			    "GNUNET-UPDATE",
+  			    "GET",
+  			    "",
+  			    &get);
   if (strlen(get) > 0)
     doGet(get);
   else

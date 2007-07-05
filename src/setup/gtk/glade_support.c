@@ -56,24 +56,24 @@ char * get_glade_filename() {
 
 
 static void connector(const gchar *handler_name,
-		      GObject *object,
-		      const gchar *signal_name,
-		      const gchar *signal_data,
-		      GObject *connect_object,
-		      gboolean after,
-		      gpointer user_data) {
+  	      GObject *object,
+  	      const gchar *signal_name,
+  	      const gchar *signal_data,
+  	      GObject *connect_object,
+  	      gboolean after,
+  	      gpointer user_data) {
   GladeXML * xml = user_data;
   void * method;
 
   GE_ASSERT(NULL, xml != NULL);
   method = os_plugin_resolve_function(library,
-				      handler_name,
-				      YES);
+  			      handler_name,
+  			      YES);
   if (method == NULL)
     return;
   glade_xml_signal_connect(xml,
-			   handler_name,
-			   (GCallback) method);
+  		   handler_name,
+  		   (GCallback) method);
 }
 
 GladeXML * load_xml(const char * dialog_name) {
@@ -82,13 +82,13 @@ GladeXML * load_xml(const char * dialog_name) {
 
   gladeFile = get_glade_filename();
   ret = glade_xml_new(gladeFile,
-		      dialog_name,
-		      PACKAGE_NAME);
+  	      dialog_name,
+  	      PACKAGE_NAME);
   if (ret == NULL)
     GE_DIE_STRERROR_FILE(NULL,
-			 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
-			 "open",
-			 gladeFile);
+  		 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+  		 "open",
+  		 gladeFile);
   FREE(gladeFile);
   glade_xml_signal_autoconnect_full(ret, &connector, ret);
   return ret;
@@ -101,7 +101,7 @@ GtkWidget * lookup_widget(const char * name) {
 GtkWidget * get_xml(const char * dialog_name) {
   mainXML_ = load_xml(dialog_name);
   return glade_xml_get_widget(mainXML_,
-			      dialog_name);
+  		      dialog_name);
 }
 
 /**
@@ -115,17 +115,17 @@ void showDialog(const char * name) {
 
   gladeFile = get_glade_filename();
   myXML = glade_xml_new(gladeFile,
-			name,
-			PACKAGE_NAME);
+  		name,
+  		PACKAGE_NAME);
   if (mainXML_ == NULL)
     GE_DIE_STRERROR_FILE(NULL,
-			 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
-			 "open",
-			 gladeFile);
+  		 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+  		 "open",
+  		 gladeFile);
   FREE(gladeFile);
   glade_xml_signal_autoconnect_full(myXML, &connector, myXML);
   msgSave = glade_xml_get_widget(myXML,
-				 name);
+  			 name);
   gtk_widget_show(msgSave);
   g_object_unref(myXML);
 }

@@ -38,16 +38,16 @@
 #define MAX_SBLOCK_SIZE 32000
 
 static char * getPseudonymFileName(struct GE_Context * ectx,
-				   struct GC_Configuration * cfg,
-				   const char * name) {
+  			   struct GC_Configuration * cfg,
+  			   const char * name) {
   char * gnHome;
   char * fileName;
 
   GC_get_configuration_value_filename(cfg,
-				      "GNUNET",
-				      "GNUNET_HOME",
-				      GNUNET_HOME_DIRECTORY,
-				      &fileName);
+  			      "GNUNET",
+  			      "GNUNET_HOME",
+  			      GNUNET_HOME_DIRECTORY,
+  			      &fileName);
   gnHome = string_expandFileName(ectx, fileName);
   FREE(fileName);
   fileName = MALLOC(strlen(gnHome) + strlen(PSEUDODIR) + strlen(name) + 2);
@@ -56,7 +56,7 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
   strcat(fileName, DIR_SEPARATOR_STR);
   strcat(fileName, PSEUDODIR);
   disk_directory_create(ectx,
-			fileName);
+  		fileName);
   strcat(fileName, name);
   return fileName;
 }
@@ -67,21 +67,21 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
  * @return OK on success, SYSERR on error
  */
 int ECRS_deleteNamespace(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg,
-			 const char * name) {
+  		 struct GC_Configuration * cfg,
+  		 const char * name) {
   char * fileName;
 
   fileName = getPseudonymFileName(ectx, cfg, name);
   if (YES != disk_file_test(ectx,
-			    fileName)) {
+  		    fileName)) {
     FREE(fileName);
     return SYSERR; /* no such namespace */
   }
   if (0 != UNLINK(fileName)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_BULK,
-			 "unlink",
-			 fileName);
+  		 GE_WARNING | GE_USER | GE_BULK,
+  		 "unlink",
+  		 fileName);
     FREE(fileName);
     return SYSERR;
   }
@@ -111,14 +111,14 @@ int ECRS_deleteNamespace(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 ECRS_createNamespace(struct GE_Context * ectx,
-		     struct GC_Configuration * cfg,
-		     const char * name,
-		     const struct ECRS_MetaData * meta,
-		     unsigned int anonymityLevel,
-		     unsigned int priority,
-		     cron_t expiration,
-		     const struct ECRS_URI * advertisementURI,
-		     const HashCode512 * rootEntry) {
+  	     struct GC_Configuration * cfg,
+  	     const char * name,
+  	     const struct ECRS_MetaData * meta,
+  	     unsigned int anonymityLevel,
+  	     unsigned int priority,
+  	     cron_t expiration,
+  	     const struct ECRS_URI * advertisementURI,
+  	     const HashCode512 * rootEntry) {
   struct ECRS_URI * rootURI;
   char * fileName;
   struct PrivateKey * hk;
@@ -145,15 +145,15 @@ ECRS_createNamespace(struct GE_Context * ectx,
     return NULL;
   }
   fileName = getPseudonymFileName(ectx,
-				  cfg,
-				  name);
+  			  cfg,
+  			  name);
   if (YES == disk_file_test(ectx,
-			    fileName)) {
+  		    fileName)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Cannot create pseudonym `%s', file `%s' exists.\n"),
-	   name,
-	   fileName);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Cannot create pseudonym `%s', file `%s' exists.\n"),
+     name,
+     fileName);
     FREE(fileName);
     return NULL;
   }
@@ -162,49 +162,49 @@ ECRS_createNamespace(struct GE_Context * ectx,
   len = ntohs(hke->len);
   dst = (char*) hke;
   disk_file_write(ectx,
-		  fileName,
-		  dst,
-		  len,
-		  "600");
+  	  fileName,
+  	  dst,
+  	  len,
+  	  "600");
   FREE(fileName);
   FREE(dst);
 
   /* create advertisements */
 
   mdsize = ECRS_sizeofMetaData(meta,
-			       ECRS_SERIALIZE_PART);
+  		       ECRS_SERIALIZE_PART);
   size = mdsize + sizeof(NBlock);
   if (size > MAX_NBLOCK_SIZE) {
     size = MAX_NBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     nb = (NBlock*) &value[1];
     nb->type = htonl(N_BLOCK);
     mdsize = size - sizeof(NBlock);
     mdsize = ECRS_serializeMetaData(ectx,
-				    meta,
-				    (char*)&nb[1],
-				    mdsize,
-				    ECRS_SERIALIZE_PART);
+  			    meta,
+  			    (char*)&nb[1],
+  			    mdsize,
+  			    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       GE_BREAK(ectx, 0);
       ECRS_deleteNamespace(ectx,
-			   cfg,
-			   name);
+  		   cfg,
+  		   name);
       freePrivateKey(hk);
       return NULL;
     }
     size = sizeof(NBlock) + mdsize;
   } else {
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     nb = (NBlock*) &value[1];
     nb->type = htonl(N_BLOCK);
     ECRS_serializeMetaData(ectx,
-			   meta,
-			   (char*)&nb[1],
-			   mdsize,
-			   ECRS_SERIALIZE_FULL);
+  		   meta,
+  		   (char*)&nb[1],
+  		   mdsize,
+  		   ECRS_SERIALIZE_FULL);
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(N_BLOCK);
@@ -216,7 +216,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
   /* publish NBlock */
   memset(&nb->identifier, 0, sizeof(HashCode512));
   getPublicKey(hk,
-	       &nb->subspace);
+         &nb->subspace);
   hash(&nb->subspace,
        sizeof(PublicKey),
        &nb->namespace);
@@ -228,10 +228,10 @@ ECRS_createNamespace(struct GE_Context * ectx,
   nb->rootEntry = *rootEntry;
 
   GE_ASSERT(ectx,
-	    OK == sign(hk,
-		       mdsize + 3 * sizeof(HashCode512),
-		       &nb->identifier,
-		       &nb->signature));
+      OK == sign(hk,
+  	       mdsize + 3 * sizeof(HashCode512),
+  	       &nb->identifier,
+  	       &nb->signature));
   if (OK != FS_insert(sock, value)) {
     GE_BREAK(ectx, 0);
     FREE(rootURI);
@@ -252,51 +252,51 @@ ECRS_createNamespace(struct GE_Context * ectx,
   knb = (KNBlock*) &knvalue[1];
   knb->type = htonl(KN_BLOCK);
   memcpy(&knb->nblock,
-	 nb,
-	 sizeof(NBlock) + mdsize);
+   nb,
+   sizeof(NBlock) + mdsize);
 
   if (advertisementURI != NULL) {
     keywords = advertisementURI->data.ksk.keywords;
     keywordCount = advertisementURI->data.ksk.keywordCount;
     cpy = MALLOC(size - sizeof(KBlock) - sizeof(unsigned int));
     memcpy(cpy,
-	   &knb->nblock,
-	   size - sizeof(KBlock) - sizeof(unsigned int));
+     &knb->nblock,
+     size - sizeof(KBlock) - sizeof(unsigned int));
     for (i=0;i<keywordCount;i++) {
       hash(keywords[i],
-	   strlen(keywords[i]),
-	   &hc);
+     strlen(keywords[i]),
+     &hc);
       pk = makeKblockKey(&hc);
       getPublicKey(pk,
-		   &knb->kblock.keyspace);
+  	   &knb->kblock.keyspace);
       GE_ASSERT(ectx, size - sizeof(KBlock) - sizeof(unsigned int)
-		    == sizeof(NBlock) + mdsize);
+  	    == sizeof(NBlock) + mdsize);
       ECRS_encryptInPlace(&hc,
-			  &knb->nblock,
-			  size - sizeof(KBlock) - sizeof(unsigned int));
+  		  &knb->nblock,
+  		  size - sizeof(KBlock) - sizeof(unsigned int));
 
       GE_ASSERT(ectx, 
-		OK == sign(pk,
-			   sizeof(NBlock) + mdsize,
-			   &knb->nblock,
-			   &knb->kblock.signature));
+  	OK == sign(pk,
+  		   sizeof(NBlock) + mdsize,
+  		   &knb->nblock,
+  		   &knb->kblock.signature));
       /* extra check: verify sig */
       freePrivateKey(pk);
       if (OK != FS_insert(sock, knvalue)) {
-	GE_BREAK(ectx, 0);
-	FREE(rootURI);
-	ECRS_deleteNamespace(ectx, cfg, name);
-	FREE(cpy);
-	FREE(knvalue);
-	FREE(value);
-	connection_destroy(sock);
-	freePrivateKey(hk);
-	return NULL;
+  GE_BREAK(ectx, 0);
+  FREE(rootURI);
+  ECRS_deleteNamespace(ectx, cfg, name);
+  FREE(cpy);
+  FREE(knvalue);
+  FREE(value);
+  connection_destroy(sock);
+  freePrivateKey(hk);
+  return NULL;
       }
       /* restore nblock to avoid re-encryption! */
       memcpy(&knb->nblock,
-	     cpy, 	
-	     size - sizeof(KBlock) - sizeof(unsigned int));
+       cpy, 	
+       size - sizeof(KBlock) - sizeof(unsigned int));
     }
     FREE(cpy);
   }
@@ -316,9 +316,9 @@ ECRS_createNamespace(struct GE_Context * ectx,
  * @return OK if the namespace exists, SYSERR if not
  */
 int ECRS_testNamespaceExists(struct GE_Context * ectx,
-			     struct GC_Configuration * cfg,
-			     const char * name,
-			     const HashCode512 * hc) {
+  		     struct GC_Configuration * cfg,
+  		     const char * name,
+  		     const HashCode512 * hc) {
   struct PrivateKey * hk;
   char * fileName;
   PrivateKeyEncoded * hke;
@@ -329,12 +329,12 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
 
   /* FIRST: read and decrypt pseudonym! */
   fileName = getPseudonymFileName(ectx,
-				  cfg,
-				  name);
+  			  cfg,
+  			  name);
   if (OK != disk_file_size(ectx,
-			   fileName,
-			   &len,
-			   YES)) {
+  		   fileName,
+  		   &len,
+  		   YES)) {
     FREE(fileName);
     return SYSERR;
   }
@@ -351,9 +351,9 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Format of pseudonym `%s' is invalid.\n"),
-	   name);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Format of pseudonym `%s' is invalid.\n"),
+     name);
     FREE(hke);
     return SYSERR;
   }
@@ -362,12 +362,12 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
   if (hk == NULL)
     return SYSERR;
   getPublicKey(hk,
-	       &pk);
+         &pk);
   freePrivateKey(hk);
   hash(&pk, sizeof(PublicKey), &namespace);
   if ( (hc == NULL) ||
        (equalsHashCode512(hc,
-			  &namespace)))
+  		  &namespace)))
     return OK;
   else
     return SYSERR;
@@ -384,17 +384,17 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 ECRS_addToNamespace(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    const char * name,
-		    unsigned int anonymityLevel,
-		    unsigned int priority,
-		    cron_t expiration,
-		    TIME_T creationTime,
-		    TIME_T updateInterval,
-		    const HashCode512 * thisId,
-		    const HashCode512 * nextId,
-		    const struct ECRS_URI * dstU,
-		    const struct ECRS_MetaData * md) {
+  	    struct GC_Configuration * cfg,
+  	    const char * name,
+  	    unsigned int anonymityLevel,
+  	    unsigned int priority,
+  	    cron_t expiration,
+  	    TIME_T creationTime,
+  	    TIME_T updateInterval,
+  	    const HashCode512 * thisId,
+  	    const HashCode512 * nextId,
+  	    const struct ECRS_URI * dstU,
+  	    const struct ECRS_MetaData * md) {
   struct ECRS_URI * uri;
   struct ClientServerConnection * sock;
   Datastore_Value * value;
@@ -415,9 +415,9 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   /* FIRST: read pseudonym! */
   fileName = getPseudonymFileName(ectx, cfg, name);
   if (OK != disk_file_size(ectx,
-			   fileName,
-			   &len,
-			   YES)) {
+  		   fileName,
+  		   &len,
+  		   YES)) {
     FREE(fileName);
     return NULL;
   }
@@ -447,24 +447,24 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   /* THEN: construct SBlock */
   dstURI = ECRS_uriToString(dstU);
   mdsize = ECRS_sizeofMetaData(md,
-			       ECRS_SERIALIZE_PART);
+  		       ECRS_SERIALIZE_PART);
   size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;  
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
     destPos = (char*) &sb[1];
     memcpy(destPos,
-	   dstURI,
-	   strlen(dstURI) + 1);
+     dstURI,
+     strlen(dstURI) + 1);
     mdsize = size - sizeof(SBlock) - strlen(dstURI) - 1;
     mdsize = ECRS_serializeMetaData(ectx,
-				    md,
-				    &destPos[strlen(dstURI)+1],
-				    mdsize,
-				    ECRS_SERIALIZE_PART);
+  			    md,
+  			    &destPos[strlen(dstURI)+1],
+  			    mdsize,
+  			    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       GE_BREAK(ectx, 0);
       FREE(dstURI);
@@ -474,18 +474,18 @@ ECRS_addToNamespace(struct GE_Context * ectx,
     size = sizeof(SBlock) + mdsize + strlen(dstURI) + 1;
   } else {
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
     destPos = (char*) &sb[1];
     memcpy(destPos,
-	   dstURI,
-	   strlen(dstURI) + 1);
+     dstURI,
+     strlen(dstURI) + 1);
     ECRS_serializeMetaData(ectx,
-			   md,
-			   &destPos[strlen(dstURI)+1],
-			   mdsize,
-			   ECRS_SERIALIZE_FULL);
+  		   md,
+  		   &destPos[strlen(dstURI)+1],
+  		   mdsize,
+  		   ECRS_SERIALIZE_FULL);
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(S_BLOCK);
@@ -499,19 +499,19 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   sb->nextIdentifier = *nextId;
 
   deltaId(thisId,
-	  nextId,	
-	  &sb->identifierIncrement);
+    nextId,	
+    &sb->identifierIncrement);
   hash(thisId,
        sizeof(HashCode512),
        &hc);
   getPublicKey(hk,
-	       &sb->subspace);
+         &sb->subspace);
   hash(&sb->subspace,
        sizeof(PublicKey),
        &namespace);
   xorHashCodes(&hc,
-	       &namespace,
-	       &sb->identifier); /* sb->identifier = primary key in query! */
+         &namespace,
+         &sb->identifier); /* sb->identifier = primary key in query! */
 
   uri = MALLOC(sizeof(URI));
   uri->type = sks;
@@ -519,21 +519,21 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   uri->data.sks.identifier = *thisId;
 
   ECRS_encryptInPlace(thisId,
-		      &sb->creationTime,
-		      size
-		      - sizeof(unsigned int)
-		      - sizeof(Signature)
-		      - sizeof(PublicKey)
-		      - sizeof(HashCode512));
+  	      &sb->creationTime,
+  	      size
+  	      - sizeof(unsigned int)
+  	      - sizeof(Signature)
+  	      - sizeof(PublicKey)
+  	      - sizeof(HashCode512));
   /* FINALLY: sign & publish SBlock */
   GE_ASSERT(ectx,
-	    OK == sign(hk,
-		       size
-		       - sizeof(Signature)
-		       - sizeof(PublicKey)
-		       - sizeof(unsigned int),
-		       &sb->identifier,
-		       &sb->signature));
+      OK == sign(hk,
+  	       size
+  	       - sizeof(Signature)
+  	       - sizeof(PublicKey)
+  	       - sizeof(unsigned int),
+  	       &sb->identifier,
+  	       &sb->signature));
   freePrivateKey(hk);
 
   sock = client_connection_create(ectx, cfg);
@@ -550,7 +550,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
 }
 
 struct lNCLS {
-  struct GE_Context * ectx;			
+  struct GE_Context * ectx;  		
   struct GC_Configuration * cfg;
   ECRS_NamespaceInfoCallback cb;
   void * cls;
@@ -558,8 +558,8 @@ struct lNCLS {
 };
 
 static int processFile_(const char * name,
-			const char * dirName,
-			void * cls) {
+  		const char * dirName,
+  		void * cls) {
   struct lNCLS * c = cls;
   struct PrivateKey * hk;
   char * fileName;
@@ -570,34 +570,34 @@ static int processFile_(const char * name,
   PublicKey pk;
 
   fileName = getPseudonymFileName(c->ectx,
-				  c->cfg,
-				  name);
+  			  c->cfg,
+  			  name);
   if (OK != disk_file_size(c->ectx,
-			   fileName,
-			   &len,
-			   YES)) {
+  		   fileName,
+  		   &len,
+  		   YES)) {
     FREE(fileName);
     return OK;
   }
   if (len < 2) {
     GE_LOG(c->ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("File `%s' does not contain a pseudonym.\n"),
-	   fileName);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("File `%s' does not contain a pseudonym.\n"),
+     fileName);
     FREE(fileName);
     return OK;
   }
   dst = MALLOC(len);
   len = disk_file_read(c->ectx,
-		       fileName,
-		       len,
-		       dst);
+  	       fileName,
+  	       len,
+  	       dst);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
     GE_LOG(c->ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Format of file `%s' is invalid.\n"),
-	   fileName);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Format of file `%s' is invalid.\n"),
+     fileName);
     FREE(hke);
     FREE(fileName);
     return OK;
@@ -606,22 +606,22 @@ static int processFile_(const char * name,
   FREE(hke);
   if (hk == NULL) {
     GE_LOG(c->ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Format of file `%s' is invalid.\n"),
-	   fileName);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Format of file `%s' is invalid.\n"),
+     fileName);
     FREE(fileName);
     GE_BREAK(c->ectx, 0);
     return SYSERR;
   }
   FREE(fileName);
   getPublicKey(hk,
-	       &pk);
+         &pk);
   freePrivateKey(hk);
   hash(&pk, sizeof(PublicKey), &namespace);
   if (NULL != c->cb) {
     if (OK == c->cb(&namespace,
-		    name,
-		    c->cls))
+  	    name,
+  	    c->cls))
       c->cnt++;
     else
       c->cnt = SYSERR;
@@ -637,9 +637,9 @@ static int processFile_(const char * name,
  * @return SYSERR on error, otherwise the number of pseudonyms in list
  */
 int ECRS_listNamespaces(struct GE_Context * ectx,
-			struct GC_Configuration * cfg,
-			ECRS_NamespaceInfoCallback cb,
-			void * cls) {
+  		struct GC_Configuration * cfg,
+  		ECRS_NamespaceInfoCallback cb,
+  		void * cls) {
   char * dirName;
   struct lNCLS myCLS;
 
@@ -650,9 +650,9 @@ int ECRS_listNamespaces(struct GE_Context * ectx,
   myCLS.cfg = cfg;
   dirName = getPseudonymFileName(ectx, cfg, "");
   disk_directory_scan(ectx,
-		      dirName,
-		      &processFile_,
-		      &myCLS);
+  	      dirName,
+  	      &processFile_,
+  	      &myCLS);
   FREE(dirName);
   return myCLS.cnt;
 }

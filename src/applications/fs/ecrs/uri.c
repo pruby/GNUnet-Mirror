@@ -91,7 +91,7 @@
  */
 static char *
 createKeywordURI(char ** keywords,
-		 unsigned int keywordCount) {
+  	 unsigned int keywordCount) {
   size_t n;
   char * ret;
   unsigned int i;
@@ -115,7 +115,7 @@ createKeywordURI(char ** keywords,
  */
 static char *
 createSubspaceURI(const HashCode512 * namespace,
-		  const HashCode512 * identifier) {
+  	  const HashCode512 * identifier) {
   size_t n;
   char * ret;
   EncName ns;
@@ -126,11 +126,11 @@ createSubspaceURI(const HashCode512 * namespace,
   hash2enc(namespace, &ns);
   hash2enc(identifier, &id);
   SNPRINTF(ret, n,
-	   "%s%s%s/%s",
-	   ECRS_URI_PREFIX,
-	   ECRS_SUBSPACE_INFIX,
-	   (char*) &ns,
-	   (char*) &id);
+     "%s%s%s/%s",
+     ECRS_URI_PREFIX,
+     ECRS_SUBSPACE_INFIX,
+     (char*) &ns,
+     (char*) &id);
   return ret;
 }
 
@@ -152,13 +152,13 @@ createFileURI(const FileIdentifier * fi) {
   n = strlen(ECRS_URI_PREFIX)+2*sizeof(EncName)+8+16+32+strlen(ECRS_FILE_INFIX);
   ret = MALLOC(n);
   SNPRINTF(ret,
-	   n,
-	   "%s%s%s.%s.%llu",
-	   ECRS_URI_PREFIX,
-	   ECRS_FILE_INFIX,
-	   (char*)&keyhash,
-	   (char*)&queryhash,
-	   ntohll(fi->file_length));	
+     n,
+     "%s%s%s.%s.%llu",
+     ECRS_URI_PREFIX,
+     ECRS_FILE_INFIX,
+     (char*)&keyhash,
+     (char*)&queryhash,
+     ntohll(fi->file_length));	
   return ret;
 }
 
@@ -182,21 +182,21 @@ createLocURI(const Location * loc) {
            &queryhash);
   n = 2148;
   peerId = bin2enc(&loc->peer,
-		    sizeof(PublicKey));
+  	    sizeof(PublicKey));
   peerSig = bin2enc(&loc->contentSignature,
-		    sizeof(Signature));
+  	    sizeof(Signature));
   ret = MALLOC(n);
   SNPRINTF(ret,
-	   n,
-	   "%s%s%s.%s.%llu.%s.%s.%u",
-	   ECRS_URI_PREFIX,
-	   ECRS_LOCATION_INFIX,
-	   (char*)&keyhash,
-	   (char*)&queryhash,
-	   ntohll(loc->fi.file_length),
-	   peerId,
-	   peerSig,
-	   loc->expirationTime);
+     n,
+     "%s%s%s.%s.%llu.%s.%s.%u",
+     ECRS_URI_PREFIX,
+     ECRS_LOCATION_INFIX,
+     (char*)&keyhash,
+     (char*)&queryhash,
+     ntohll(loc->fi.file_length),
+     peerId,
+     peerSig,
+     loc->expirationTime);
   FREE(peerSig);
   FREE(peerId);
   return ret;
@@ -213,10 +213,10 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
   switch (uri->type) {
   case ksk:
     return createKeywordURI(uri->data.ksk.keywords,
-			    uri->data.ksk.keywordCount);
+  		    uri->data.ksk.keywordCount);
   case sks:
     return createSubspaceURI(&uri->data.sks.namespace,
-			     &uri->data.sks.identifier);
+  		     &uri->data.sks.identifier);
   case chk:
     return createFileURI(&uri->data.fi);
   case loc:
@@ -236,8 +236,8 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
  *  the number of keywords placed in the array
  */
 static int parseKeywordURI(struct GE_Context * ectx,
-			   const char * uri,
-			   char *** keywords) {
+  		   const char * uri,
+  		   char *** keywords) {
   unsigned int pos;
   int ret;
   int iret;
@@ -251,12 +251,12 @@ static int parseKeywordURI(struct GE_Context * ectx,
   pos = strlen(ECRS_URI_PREFIX);
 
   if (0 != strncmp(uri,
-		   ECRS_URI_PREFIX,
-		   pos))
+  	   ECRS_URI_PREFIX,
+  	   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
-		   ECRS_SEARCH_INFIX,
-		   strlen(ECRS_SEARCH_INFIX)))
+  	   ECRS_SEARCH_INFIX,
+  	   strlen(ECRS_SEARCH_INFIX)))
     return SYSERR;
   pos += strlen(ECRS_SEARCH_INFIX);
   if (slen == pos) {
@@ -273,7 +273,7 @@ static int parseKeywordURI(struct GE_Context * ectx,
     if (uri[i] == '+') {
       ret++;
       if (uri[i-1] == '+')
-	return SYSERR; /* "++" not allowed */
+  return SYSERR; /* "++" not allowed */
     }
   }
   iret = ret;
@@ -300,9 +300,9 @@ static int parseKeywordURI(struct GE_Context * ectx,
  * @return OK on success, SYSERR if this is not a namespace URI
  */
 static int parseSubspaceURI(struct GE_Context * ectx,
-			    const char * uri,
-			    HashCode512 * namespace,
-			    HashCode512 * identifier) {
+  		    const char * uri,
+  		    HashCode512 * namespace,
+  		    HashCode512 * identifier) {
   unsigned int pos;
   size_t slen;
   char * up;
@@ -313,34 +313,34 @@ static int parseSubspaceURI(struct GE_Context * ectx,
   pos = strlen(ECRS_URI_PREFIX);
 
   if (0 != strncmp(uri,
-		   ECRS_URI_PREFIX,
-		   pos))
+  	   ECRS_URI_PREFIX,
+  	   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
-		   ECRS_SUBSPACE_INFIX,
-		   strlen(ECRS_SUBSPACE_INFIX)))
+  	   ECRS_SUBSPACE_INFIX,
+  	   strlen(ECRS_SUBSPACE_INFIX)))
     return SYSERR;
   pos += strlen(ECRS_SUBSPACE_INFIX);
   if ( (slen < pos+sizeof(EncName)+1) ||
        (! ( (uri[pos+sizeof(EncName)-1] == '/') || 
-	    (uri[pos+sizeof(EncName)-1] == '\\') ) ) )
+      (uri[pos+sizeof(EncName)-1] == '\\') ) ) )
     return SYSERR;
 
   up = STRDUP(uri);
   up[pos+sizeof(EncName)-1] = '\0';
   if ( (OK != enc2hash(&up[pos],
-		       namespace)) ) {
+  	       namespace)) ) {
     FREE(up);
     return SYSERR;
   }
   if ( (slen != pos+2*sizeof(EncName)-1) ||
        (OK != enc2hash(&up[pos+sizeof(EncName)],
-		       identifier)) ) {
+  	       identifier)) ) {
     if (up[slen-1] == '\\')
       up[--slen] = '\0';
     hash(&up[pos+sizeof(EncName)],
-	 slen - (pos+sizeof(EncName)),
-	 identifier);
+   slen - (pos+sizeof(EncName)),
+   identifier);
   }
   FREE(up);
   return OK;
@@ -354,8 +354,8 @@ static int parseSubspaceURI(struct GE_Context * ectx,
  * @return OK on success, SYSERR if this is not a file URI
  */
 static int parseFileURI(struct GE_Context * ectx,
-			const char * uri,
-			FileIdentifier * fi) {
+  		const char * uri,
+  		FileIdentifier * fi) {
   unsigned int pos;
   size_t slen;
   char * dup;
@@ -366,12 +366,12 @@ static int parseFileURI(struct GE_Context * ectx,
   pos = strlen(ECRS_URI_PREFIX);
 
   if (0 != strncmp(uri,
-		   ECRS_URI_PREFIX,
-		   pos))
+  	   ECRS_URI_PREFIX,
+  	   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
-		   ECRS_FILE_INFIX,
-		   strlen(ECRS_FILE_INFIX)))
+  	   ECRS_FILE_INFIX,
+  	   strlen(ECRS_FILE_INFIX)))
     return SYSERR;
   pos += strlen(ECRS_FILE_INFIX);
   if ( (slen < pos+2*sizeof(EncName)+1) ||
@@ -383,12 +383,12 @@ static int parseFileURI(struct GE_Context * ectx,
   dup[pos+sizeof(EncName)-1]   = '\0';
   dup[pos+sizeof(EncName)*2-1] = '\0';
   if ( (OK != enc2hash(&dup[pos],
-		       &fi->chk.key)) ||
+  	       &fi->chk.key)) ||
        (OK != enc2hash(&dup[pos+sizeof(EncName)],
-		       &fi->chk.query)) ||
+  	       &fi->chk.query)) ||
        (1 != SSCANF(&dup[pos+sizeof(EncName)*2],
-		    "%llu",
-		    &fi->file_length)) ) {
+  	    "%llu",
+  	    &fi->file_length)) ) {
     FREE(dup);
     return SYSERR;
   }
@@ -406,8 +406,8 @@ static int parseFileURI(struct GE_Context * ectx,
  * @return OK on success, SYSERR if this is not a file URI
  */
 static int parseLocationURI(struct GE_Context * ectx,
-			    const char * uri,
-			    Location * loc) {
+  		    const char * uri,
+  		    Location * loc) {
   unsigned int pos;
   unsigned int npos;
   int ret;
@@ -422,12 +422,12 @@ static int parseLocationURI(struct GE_Context * ectx,
   pos = strlen(ECRS_URI_PREFIX);
 
   if (0 != strncmp(uri,
-		   ECRS_URI_PREFIX,
-		   pos))
+  	   ECRS_URI_PREFIX,
+  	   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
-		   ECRS_LOCATION_INFIX,
-		   strlen(ECRS_LOCATION_INFIX)))
+  	   ECRS_LOCATION_INFIX,
+  	   strlen(ECRS_LOCATION_INFIX)))
     return SYSERR;
   pos += strlen(ECRS_LOCATION_INFIX);
   if ( (slen < pos+2*sizeof(EncName)+1) ||
@@ -440,22 +440,22 @@ static int parseLocationURI(struct GE_Context * ectx,
   dup[pos+sizeof(EncName)*2-1] = '\0';
   npos = pos +sizeof(EncName)*2;
   while ( (uri[npos] != '\0') &&
-	  (uri[npos] != '.') )
+    (uri[npos] != '.') )
     npos++;
   if (dup[npos] == '\0')
     goto ERR;
   dup[npos++] = '\0';
   if ( (OK != enc2hash(&dup[pos],
-		       &loc->fi.chk.key)) ||
+  	       &loc->fi.chk.key)) ||
        (OK != enc2hash(&dup[pos+sizeof(EncName)],
-		       &loc->fi.chk.query)) ||
+  	       &loc->fi.chk.query)) ||
        (1 != SSCANF(&dup[pos+sizeof(EncName)*2],
-		    "%llu",
-		    &loc->fi.file_length)) )
+  	    "%llu",
+  	    &loc->fi.file_length)) )
     goto ERR;
   loc->fi.file_length = htonll(loc->fi.file_length);
   ret = enc2bin(&dup[npos],
-		&loc->peer,
+  	&loc->peer,
                sizeof(PublicKey));
   if (ret == -1)
     goto ERR;
@@ -463,24 +463,24 @@ static int parseLocationURI(struct GE_Context * ectx,
   if (dup[npos++] != '.')
     goto ERR;
   ret = enc2bin(&dup[npos],
-		&loc->contentSignature,
-		sizeof(Signature));
+  	&loc->contentSignature,
+  	sizeof(Signature));
   if (ret == -1)
     goto ERR;
   npos += ret;
   if (dup[npos++] != '.')
     goto ERR;
   if (1 != SSCANF(&dup[npos],
-		  "%u",
-		  &loc->expirationTime))
+  	  "%u",
+  	  &loc->expirationTime))
     goto ERR;
   /* Finally: verify sigs! */
   if (OK != verifySig(&loc->fi,
-		      sizeof(FileIdentifier) +
-		      sizeof(PeerIdentity) +
-		      sizeof(TIME_T),
-		      &loc->contentSignature,
-		      &loc->peer))
+  	      sizeof(FileIdentifier) +
+  	      sizeof(PeerIdentity) +
+  	      sizeof(TIME_T),
+  	      &loc->contentSignature,
+  	      &loc->peer))
     goto ERR;
   FREE(dup);
   return OK;
@@ -494,33 +494,33 @@ static int parseLocationURI(struct GE_Context * ectx,
  * Convert a UTF-8 String to a URI.
  */
 URI * ECRS_stringToUri(struct GE_Context * ectx,
-		       const char * uri) {
+  	       const char * uri) {
   URI * ret;
   int len;
 
   ret = MALLOC(sizeof(URI));
   if (OK == parseFileURI(ectx,
-			 uri,
-			 &ret->data.fi)) {
+  		 uri,
+  		 &ret->data.fi)) {
     ret->type = chk;
     return ret;
   }
   if (OK == parseSubspaceURI(ectx,
-			     uri,
-			     &ret->data.sks.namespace,
-			     &ret->data.sks.identifier)) {
+  		     uri,
+  		     &ret->data.sks.namespace,
+  		     &ret->data.sks.identifier)) {
     ret->type = sks;
     return ret;
   }
   if (OK == parseLocationURI(ectx,
-			     uri,
-			     &ret->data.loc)) {
+  		     uri,
+  		     &ret->data.loc)) {
     ret->type = loc;
     return ret;
   }
   len = parseKeywordURI(ectx,
-			uri,
-			&ret->data.ksk.keywords);
+  		uri,
+  		&ret->data.ksk.keywords);
   if (len < 0) {
     FREE(ret);
     return NULL;
@@ -543,8 +543,8 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
     for (i=0;i<uri->data.ksk.keywordCount;i++)
       FREE(uri->data.ksk.keywords[i]);
     GROW(uri->data.ksk.keywords,
-	 uri->data.ksk.keywordCount,
-	 0);
+   uri->data.ksk.keywordCount,
+   0);
     break;
   case loc:
     break;
@@ -573,7 +573,7 @@ char * ECRS_getNamespaceName(const HashCode512 * id) {
 
   ret = MALLOC(sizeof(EncName));
   hash2enc(id,
-	   (EncName*)ret);
+     (EncName*)ret);
   return ret;
 }
 
@@ -584,7 +584,7 @@ char * ECRS_getNamespaceName(const HashCode512 * id) {
  * @return OK on success
  */
 int ECRS_getNamespaceId(const struct ECRS_URI * uri,
-			HashCode512 * id) {
+  		HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
@@ -599,7 +599,7 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
  * @return OK on success
  */
 int ECRS_getSKSContentHash(const struct ECRS_URI * uri,
-			   HashCode512 * id) {
+  		   HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
@@ -640,17 +640,17 @@ unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri) {
  *   keywords iterated over until iterator aborted
  */
 int ECRS_getKeywordsFromUri(const struct ECRS_URI * uri,
-			    ECRS_KeywordIterator iterator,
-			    void * cls) {
+  		    ECRS_KeywordIterator iterator,
+  		    void * cls) {
   int i;
   if (uri->type != ksk) {
     return -1;
   } else {
     for (i=0;i<uri->data.ksk.keywordCount;i++)
       if (iterator != NULL)
-	if (OK != iterator(uri->data.ksk.keywords[i],
-			   cls))
-	  return i;
+  if (OK != iterator(uri->data.ksk.keywords[i],
+  		   cls))
+    return i;
     return i;
   }
 }
@@ -697,16 +697,16 @@ URI * ECRS_dupUri(const URI * uri) {
 
   ret = MALLOC(sizeof(URI));
   memcpy(ret,
-	 uri,
-	 sizeof(URI));
+   uri,
+   sizeof(URI));
   switch (ret->type) {
   case ksk:
     if (ret->data.ksk.keywordCount > 0) {
       ret->data.ksk.keywords
-	= MALLOC(ret->data.ksk.keywordCount * sizeof(char*));
+  = MALLOC(ret->data.ksk.keywordCount * sizeof(char*));
       for (i=0;i<ret->data.ksk.keywordCount;i++)
-	ret->data.ksk.keywords[i]
-	  = STRDUP(uri->data.ksk.keywords[i]);
+  ret->data.ksk.keywords[i]
+    = STRDUP(uri->data.ksk.keywords[i]);
     }
     break;
   case loc:
@@ -749,16 +749,16 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
       key = uri->data.ksk.keywords[i];
       GE_ASSERT(NULL, key != NULL);
       ret->data.ksk.keywords[2*i]
-	= STRDUP(key);
+  = STRDUP(key);
       kd = MALLOC(strlen(key) + 13);
       memset(kd, 0, strlen(key) + 13);
       strcpy(kd, key);
       strftime(&kd[strlen(key)],
-	       13,
-	       "-%Y-%m-%d",
-	       &t);
+         13,
+         "-%Y-%m-%d",
+         &t);
       ret->data.ksk.keywords[2*i+1]
-	= kd;
+  = kd;
     }
   } else
     ret->data.ksk.keywords = NULL;
@@ -791,11 +791,11 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
       havePreview++;
     } else {
       for (j=md->itemCount-1;j>i;j--) {
-	if (0 == strcmp(md->items[i].data,
-			md->items[j].data)) {
-	  havePreview++; /* duplicate! */
-	  break;
-	}
+  if (0 == strcmp(md->items[i].data,
+  		md->items[j].data)) {
+    havePreview++; /* duplicate! */
+    break;
+  }
       }
     }
   }
@@ -808,17 +808,17 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
     } else {
       add = 1;
       for (j=md->itemCount-1;j>i;j--) {
-	if (0 == strcmp(md->items[i].data,
-			md->items[j].data)) {
-	  havePreview--;
-	  add = 0;
-	  break;
-	}
+  if (0 == strcmp(md->items[i].data,
+  		md->items[j].data)) {
+    havePreview--;
+    add = 0;
+    break;
+  }
       }
       if (add == 1) {
-	GE_ASSERT(NULL, md->items[i].data != NULL);
-	ret->data.ksk.keywords[i-havePreview]
-	  = STRDUP(md->items[i].data);
+  GE_ASSERT(NULL, md->items[i].data != NULL);
+  ret->data.ksk.keywords[i-havePreview]
+    = STRDUP(md->items[i].data);
       }
     }
   }
@@ -856,7 +856,7 @@ struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]) {
  * Are these two URIs equal?
  */
 int ECRS_equalsUri(const struct ECRS_URI * uri1,
-		   const struct ECRS_URI * uri2) {
+  	   const struct ECRS_URI * uri2) {
   int ret;
   int i;
   int j;
@@ -868,45 +868,45 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   switch(uri1->type) {
   case chk:
     if (0 == memcmp(&uri1->data.fi,
-		    &uri2->data.fi,
-		    sizeof(FileIdentifier)))
+  	    &uri2->data.fi,
+  	    sizeof(FileIdentifier)))
       return YES;
     return NO;
   case sks:
     if (equalsHashCode512(&uri1->data.sks.namespace,
-			  &uri2->data.sks.namespace) &&
-	equalsHashCode512(&uri1->data.sks.identifier,
-			  &uri2->data.sks.identifier) )
-	
+  		  &uri2->data.sks.namespace) &&
+  equalsHashCode512(&uri1->data.sks.identifier,
+  		  &uri2->data.sks.identifier) )
+  
       return YES;
     return NO;
   case ksk:
     if (uri1->data.ksk.keywordCount !=
-	uri2->data.ksk.keywordCount)
+  uri2->data.ksk.keywordCount)
       return NO;
     for (i=0;i<uri1->data.ksk.keywordCount;i++) {
       ret = NO;
       for (j=0;j<uri2->data.ksk.keywordCount;j++) {
-	if (0 == strcmp(uri1->data.ksk.keywords[i],
-			uri2->data.ksk.keywords[j])) {
-	  ret = YES;
-	  break;
-	}
+  if (0 == strcmp(uri1->data.ksk.keywords[i],
+  		uri2->data.ksk.keywords[j])) {
+    ret = YES;
+    break;
+  }
       }
       if (ret == NO)
-	return NO;			
+  return NO;			
     }
     return YES;
   case loc:
     if (memcmp(&uri1->data.loc,
-	       &uri2->data.loc,
-	       sizeof(FileIdentifier) +
-	       sizeof(PublicKey) +
-	       sizeof(TIME_T) +
-	       sizeof(unsigned short) +
-	       sizeof(unsigned short)) != 0)
+         &uri2->data.loc,
+         sizeof(FileIdentifier) +
+         sizeof(PublicKey) +
+         sizeof(TIME_T) +
+         sizeof(unsigned short) +
+         sizeof(unsigned short)) != 0)
       return NO;
-    return YES;	
+    return YES;  
   default:
     return NO;
   }
@@ -917,7 +917,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
  * @return -1 if this is not a location URI, otherwise OK
  */
 int ECRS_getPeerFromUri(const struct ECRS_URI * uri,
-			PeerIdentity * peer) {
+  		PeerIdentity * peer) {
   if (uri->type != loc)
     return -1;
   hash(&uri->data.loc.peer,
@@ -958,10 +958,10 @@ ECRS_getContentUri(const struct ECRS_URI * uri) {
  */
 struct ECRS_URI *
 ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
-		     const PublicKey * sender,
-		     TIME_T expirationTime,
-		     ECRS_SignFunction signer,
-		     void * signer_cls) {
+  	     const PublicKey * sender,
+  	     TIME_T expirationTime,
+  	     ECRS_SignFunction signer,
+  	     void * signer_cls) {
   struct ECRS_URI * uri;
 
   if (baseUri->type != chk)
@@ -973,11 +973,11 @@ ECRS_uriFromLocation(const struct ECRS_URI * baseUri,
   uri->data.loc.peer = *sender;
   uri->data.loc.expirationTime = expirationTime;
   signer(signer_cls,
-	 sizeof(FileIdentifier) +
-	 sizeof(PeerIdentity) +
-	 sizeof(TIME_T),
-	 &uri->data.loc.fi,
-	 &uri->data.loc.contentSignature);
+   sizeof(FileIdentifier) +
+   sizeof(PeerIdentity) +
+   sizeof(TIME_T),
+   &uri->data.loc.fi,
+   &uri->data.loc.contentSignature);
   return uri;
 }
 

@@ -50,22 +50,22 @@ static int testTerminate(void * unused) {
 }
 
 static void uprogress(unsigned long long totalBytes,
-		      unsigned long long completedBytes,
-		      cron_t eta,
-		      void * closure) {
+  	      unsigned long long completedBytes,
+  	      cron_t eta,
+  	      void * closure) {
   fprintf(stderr,
-	  totalBytes == completedBytes ? "\n" : ".");
+    totalBytes == completedBytes ? "\n" : ".");
 }
 
 static void dprogress(unsigned long long totalBytes,
-		      unsigned long long completedBytes,
-		      cron_t eta,
-		      unsigned long long lastBlockOffset,
-		      const char * lastBlock,
-		      unsigned int lastBlockSize,
-		      void * closure) {
+  	      unsigned long long completedBytes,
+  	      cron_t eta,
+  	      unsigned long long lastBlockOffset,
+  	      const char * lastBlock,
+  	      unsigned int lastBlockSize,
+  	      void * closure) {
   fprintf(stderr,
-	  totalBytes == completedBytes ? "\n" : ".");
+    totalBytes == completedBytes ? "\n" : ".");
 }
 
 static char * makeName(unsigned int i) {
@@ -73,9 +73,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen("/tmp/gnunet-gaptest/GAPTEST") + 14);
   SNPRINTF(fn,
-	   strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
-	   "/tmp/gnunet-gaptest/GAPTEST%u",
-	   i);
+     strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
+     "/tmp/gnunet-gaptest/GAPTEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -90,29 +90,29 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
   name = makeName(size);
   fd = disk_file_open(ectx,
-		      name,
-		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  	      name,
+  	      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC_LARGE(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
     hash(&buf[i+sizeof(HashCode512)],
-	 42,
-	 (HashCode512*) &buf[i]);
+   42,
+   (HashCode512*) &buf[i]);
   WRITE(fd, buf, size);
   FREE(buf);
   disk_file_close(ectx, name, fd);
   ret = ECRS_uploadFile(ectx,
-			cfg,
-			name,
-			YES, /* index */
-			1, /* anon */
-			0, /* prio */
-			get_time() + 100 * cronMINUTES, /* expire */
-			&uprogress,
-			NULL,
-			&testTerminate,
-			NULL,
-			&uri);
+  		cfg,
+  		name,
+  		YES, /* index */
+  		1, /* anon */
+  		0, /* prio */
+  		get_time() + 100 * cronMINUTES, /* expire */
+  		&uprogress,
+  		NULL,
+  		&testTerminate,
+  		NULL,
+  		&uri);
   FREE(name);
   if (ret != SYSERR)
     return uri;
@@ -120,7 +120,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 }
 
 static int downloadFile(unsigned int size,
-			const struct ECRS_URI * uri) {
+  		const struct ECRS_URI * uri) {
   int ret;
   char * tmpName;
   int fd;
@@ -131,37 +131,37 @@ static int downloadFile(unsigned int size,
 
   tmp = ECRS_uriToString(uri);
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Starting download of `%s'\n",
-	 tmp);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Starting download of `%s'\n",
+   tmp);
   FREE(tmp);
   tmpName = makeName(0);
   ret = SYSERR;
   if (OK == ECRS_downloadFile(ectx,
-			      cfg,
-			      uri,
-			      tmpName,
-			      1,
-			      &dprogress,
-			      NULL,
-			      &testTerminate,
-			      NULL)) {
+  		      cfg,
+  		      uri,
+  		      tmpName,
+  		      1,
+  		      &dprogress,
+  		      NULL,
+  		      &testTerminate,
+  		      NULL)) {
 
     fd = disk_file_open(ectx,
-			tmpName,
-			O_RDONLY);
+  		tmpName,
+  		O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
     for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
       hash(&buf[i+sizeof(HashCode512)],
-	   42,
-	   (HashCode512*) &buf[i]);
+     42,
+     (HashCode512*) &buf[i]);
     if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,
-			 in,
-			 size))
+  		 in,
+  		 size))
       ret = OK;
     FREE(buf);
     FREE(in);
@@ -178,12 +178,12 @@ static PeerIdentity goodPeers[PEER_COUNT];
 static unsigned int goodPeerPos;
 
 static int infoCallback(void * data,
-			const PeerIdentity * identity,
-			const void * address,
-			unsigned int addr_len,
-			cron_t last_seen,
-			unsigned int trust,
-			unsigned int bpmFromPeer) {
+  		const PeerIdentity * identity,
+  		const void * address,
+  		unsigned int addr_len,
+  		cron_t last_seen,
+  		unsigned int trust,
+  		unsigned int bpmFromPeer) {
   int i;
   int good;
   EncName enc;
@@ -191,21 +191,21 @@ static int infoCallback(void * data,
   good = 0;
   for (i=0;i<goodPeerPos;i++)
     if (0 == memcmp(&goodPeers[i],
-		    identity,
-		    sizeof(PeerIdentity)))
+  	    identity,
+  	    sizeof(PeerIdentity)))
       good = 1;
   hash2enc(&identity->hashPubKey,
-	   &enc);
+     &enc);
   if (good)
     printf("Good peer `%8s' has trust %u and bandwidth %u\n",
-	   (const char*) &enc,
-	   trust,
-	   bpmFromPeer);
+     (const char*) &enc,
+     trust,
+     bpmFromPeer);
   else
     printf("Poor peer `%8s' has trust %u and bandwidth %u\n",
-	   (const char*) &enc,
-	   trust,
-	   bpmFromPeer);
+     (const char*) &enc,
+     trust,
+     bpmFromPeer);
   return OK;
 }
 
@@ -227,20 +227,20 @@ int main(int argc, char ** argv) {
   ret = 0;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_PEERS
   peers = gnunet_testing_start_daemons("tcp",
-				       "advertising topology fs stats",
-				       "/tmp/gnunet-gap-test3",
-				       2087,
-				       10,
-				       PEER_COUNT);
+  			       "advertising topology fs stats",
+  			       "/tmp/gnunet-gap-test3",
+  			       2087,
+  			       10,
+  			       PEER_COUNT);
   if (peers == NULL) {
     fprintf(stderr,
-	    "Failed to start the gnunetd daemons!\n");
+      "Failed to start the gnunetd daemons!\n");
     GC_free(cfg);
     return -1;
   }
@@ -248,10 +248,10 @@ int main(int argc, char ** argv) {
   /* connect as star-topology */
   for (i=1;i<PEER_COUNT;i++) {
     if (OK != gnunet_testing_connect_daemons(2087,
-					     2087 + 10*i)) {
+  				     2087 + 10*i)) {
       gnunet_testing_stop_daemons(peers);
       fprintf(stderr,
-	      "Failed to connect the peers!\n");
+        "Failed to connect the peers!\n");
       GC_free(cfg);
       return -1;
     }
@@ -261,18 +261,18 @@ int main(int argc, char ** argv) {
   goodPeerPos = 0;
   for (i=1;i<PEER_COUNT;i+=2) {
     SNPRINTF(buf,
-	     128,
-	     "localhost:%u",
-	     2087 + i * 10);
+       128,
+       "localhost:%u",
+       2087 + i * 10);
     GC_set_configuration_value_string(cfg,
-				      ectx,
-				      "NETWORK",
-				      "HOST",
-				      buf);
+  			      ectx,
+  			      "NETWORK",
+  			      "HOST",
+  			      buf);
     sock = client_connection_create(NULL,
-				    cfg);
+  			    cfg);
     if (OK != gnunet_identity_get_self(sock,
-				       &hello)) {
+  			       &hello)) {
       connection_destroy(sock);
       GE_BREAK(NULL, 0);
       break;
@@ -281,9 +281,9 @@ int main(int argc, char ** argv) {
     if (uri != NULL)
       ECRS_freeUri(uri);
     hash2enc(&hello->senderIdentity.hashPubKey,
-	     &enc);
+       &enc);
     printf("Uploading to peer `%8s'\n",
-	   (const char*)&enc);
+     (const char*)&enc);
     uri = uploadFile(SIZE);
     CHECK(NULL != uri);
 
@@ -292,22 +292,22 @@ int main(int argc, char ** argv) {
 
   }
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:2087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:2087");
   printf("Downloading...\n");
   start = get_time();
   CHECK(OK == downloadFile(SIZE, uri));
   printf("Download complete - %f kbps.\n",
-	 SIZE/1024 * 1.0 * cronSECONDS / (1 + get_time() - start));
+   SIZE/1024 * 1.0 * cronSECONDS / (1 + get_time() - start));
   /* verify trust values have developed as expected */
 
   sock = client_connection_create(NULL,
-				  cfg);
+  			  cfg);
   gnunet_identity_request_peer_infos(sock,
-				     &infoCallback,
-				     NULL);
+  			     &infoCallback,
+  			     NULL);
   connection_destroy(sock);
 
  FAILURE:

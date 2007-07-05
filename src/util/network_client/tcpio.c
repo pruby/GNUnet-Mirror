@@ -78,20 +78,20 @@ typedef struct ClientServerConnection {
  * @return 0 on error
  */
 static unsigned short getGNUnetPort(struct GE_Context * ectx,
-				    struct GC_Configuration * cfg) {
+  			    struct GC_Configuration * cfg) {
   char * res;
   char * pos;
   unsigned int port;
 
   res = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "HOST",
-					      "localhost:2087",
-					      &res)) {
+  				      "NETWORK",
+  				      "HOST",
+  				      "localhost:2087",
+  				      &res)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("Could not find valid value for HOST in section NETWORK."));
+     GE_ERROR | GE_USER | GE_BULK,
+     _("Could not find valid value for HOST in section NETWORK."));
     return 2087;
   }
   pos = strstr(res, ":");
@@ -102,9 +102,9 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
   pos++;
   if (1 != SSCANF(pos, "%u", &port)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
-	   pos);
+     GE_ERROR | GE_USER | GE_BULK,
+     _("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
+     pos);
     FREE(res);
     return 2087;
   }
@@ -120,19 +120,19 @@ static unsigned short getGNUnetPort(struct GE_Context * ectx,
  */
 static char *
 getGNUnetdHost(struct GE_Context * ectx,
-	       struct GC_Configuration * cfg) {
+         struct GC_Configuration * cfg) {
   char * res;
   char * pos;
 
   res = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "HOST",
-					      "localhost:2087",
-					      &res)) {
+  				      "NETWORK",
+  				      "HOST",
+  				      "localhost:2087",
+  				      &res)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("Could not find valid value for HOST in section NETWORK."));
+     GE_ERROR | GE_USER | GE_BULK,
+     _("Could not find valid value for HOST in section NETWORK."));
     return NULL;
   }
   pos = strstr(res, ":");
@@ -143,7 +143,7 @@ getGNUnetdHost(struct GE_Context * ectx,
 
 struct ClientServerConnection *
 client_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg) {
+  		 struct GC_Configuration * cfg) {
   ClientServerConnection * result;
 
   result = MALLOC(sizeof(ClientServerConnection));
@@ -223,16 +223,16 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   if (sock->dead == YES)
     return SYSERR;
   port = getGNUnetPort(sock->ectx,
-		       sock->cfg);
+  	       sock->cfg);
   if (port == 0)
     return SYSERR;
   host = getGNUnetdHost(sock->ectx,
-			sock->cfg);
+  		sock->cfg);
   if (host == NULL)
     return SYSERR;
   if (SYSERR == get_host_by_name(sock->ectx,
-				 host,
-				 &ip)) {
+  			 host,
+  			 &ip)) {
     FREE(host);
     return SYSERR;
   }
@@ -250,37 +250,37 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   osock = SOCKET(PF_INET, SOCK_STREAM, 6); /* 6: TCP */
   if (osock == -1) {
     GE_LOG_STRERROR(sock->ectx,
-		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-		    "socket");
+  	    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  	    "socket");
     FREE(host);
     MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
   sock->sock = socket_create(sock->ectx,
-			     NULL,
-			     osock);
+  		     NULL,
+  		     osock);
   socket_set_blocking(sock->sock, NO);
   memset(&soaddr,
-	 0,
-	 sizeof(soaddr));
+   0,
+   sizeof(soaddr));
   soaddr.sin_family = AF_INET;
   GE_ASSERT(sock->ectx,
-	    sizeof(struct in_addr) == sizeof(IPaddr));
+      sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
-	 &ip,
-	 sizeof(struct in_addr));
+   &ip,
+   sizeof(struct in_addr));
   soaddr.sin_port = htons(port);
   ret = CONNECT(osock,
-		(struct sockaddr*)&soaddr,
-		sizeof(soaddr));
+  	(struct sockaddr*)&soaddr,
+  	sizeof(soaddr));
   if ( (ret != 0) &&
        (errno != EINPROGRESS) && (errno != EWOULDBLOCK)) {
     GE_LOG(sock->ectx,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Cannot connect to %s:%u: %s\n"),
-	   host,
-	   port,
-	   STRERROR(errno));
+     GE_WARNING | GE_USER | GE_BULK,
+     _("Cannot connect to %s:%u: %s\n"),
+     host,
+     port,
+     STRERROR(errno));
     socket_destroy(sock->sock);
     sock->sock = NULL;
     FREE(host);
@@ -301,15 +301,15 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   timeout.tv_usec = 0;
   errno = 0;
   ret = SELECT(osock + 1,
-	       &rset,
-	       &wset,
-	       &eset,
-	       &timeout);
+         &rset,
+         &wset,
+         &eset,
+         &timeout);
   if (ret == -1) {
     if (errno != EINTR)
       GE_LOG_STRERROR(sock->ectx,
-		      GE_WARNING | GE_USER | GE_BULK,
-		      "select");
+  	      GE_WARNING | GE_USER | GE_BULK,
+  	      "select");
     socket_destroy(sock->sock);
     sock->sock = NULL;
     FREE(host);
@@ -317,12 +317,12 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
     return SYSERR;
   }
   if (FD_ISSET(osock,
-	       &eset)) {
+         &eset)) {
     GE_LOG(sock->ectx,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Error connecting to %s:%u\n"),
-	   host,
-	   port);
+     GE_WARNING | GE_USER | GE_BULK,
+     _("Error connecting to %s:%u\n"),
+     host,
+     port);
     socket_destroy(sock->sock);
     sock->sock = NULL;
     FREE(host);
@@ -330,13 +330,13 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
     return SYSERR;
   }
   if (! FD_ISSET(osock,
-		 &wset)) {
+  	 &wset)) {
     GE_LOG(sock->ectx,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Failed to connect to %s:%u in %ds\n"),
-	   host,
-	   port,
-	   WAIT_SECONDS);
+     GE_WARNING | GE_USER | GE_BULK,
+     _("Failed to connect to %s:%u in %ds\n"),
+     host,
+     port,
+     WAIT_SECONDS);
     socket_destroy(sock->sock);
     sock->sock = NULL;
     FREE(host);
@@ -358,7 +358,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
  * @return OK if the write was sucessful, otherwise SYSERR.
  */
 int connection_write(struct ClientServerConnection * sock,
-		     const MESSAGE_HEADER * buffer) {
+  	     const MESSAGE_HEADER * buffer) {
   size_t size;
   size_t sent;
   int res;
@@ -374,10 +374,10 @@ int connection_write(struct ClientServerConnection * sock,
   GE_ASSERT(NULL, sock->sock != NULL);
   size = ntohs(buffer->size);
   res = socket_send(sock->sock,
-		    NC_Complete,
-		    buffer,
-		    size,
-		    &sent);
+  	    NC_Complete,
+  	    buffer,
+  	    size,
+  	    &sent);
   if ( (res != YES) ||
        (sent != size) ) {
     MUTEX_UNLOCK(sock->writelock);
@@ -389,7 +389,7 @@ int connection_write(struct ClientServerConnection * sock,
 }
 
 int connection_read(struct ClientServerConnection * sock,
-		    MESSAGE_HEADER ** buffer) {
+  	    MESSAGE_HEADER ** buffer) {
   int res;
   size_t pos;
   char * buf;
@@ -409,11 +409,11 @@ int connection_read(struct ClientServerConnection * sock,
     pos = 0;
     res = 0;
     if ( (OK != socket_recv(sock->sock,
-			    NC_Complete,
-			    &size,
-			    sizeof(unsigned short),
-			    &pos)) ||
-	 (pos != sizeof(unsigned short)) ) {
+  		    NC_Complete,
+  		    &size,
+  		    sizeof(unsigned short),
+  		    &pos)) ||
+   (pos != sizeof(unsigned short)) ) {
       MUTEX_UNLOCK(sock->readlock);
       connection_close_temporarily(sock);
       return SYSERR;
@@ -428,11 +428,11 @@ int connection_read(struct ClientServerConnection * sock,
 
     buf = MALLOC(size);
     if ( (OK != socket_recv(sock->sock,
-			    NC_Complete,
-			    &buf[pos],
-			    size - pos,
-			    &pos)) ||
-	 (pos + sizeof(unsigned short) != size) ) {
+  		    NC_Complete,
+  		    &buf[pos],
+  		    size - pos,
+  		    &pos)) ||
+   (pos + sizeof(unsigned short) != size) ) {
       FREE(buf);
       MUTEX_UNLOCK(sock->readlock);
       connection_close_temporarily(sock);
@@ -440,9 +440,9 @@ int connection_read(struct ClientServerConnection * sock,
     }
 #if DEBUG_TCPIO
     GE_LOG(sock->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Successfully received %d bytes from TCP socket.\n",
-	   size);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Successfully received %d bytes from TCP socket.\n",
+     size);
 #endif
     *buffer = (MESSAGE_HEADER*) buf;
     (*buffer)->size = htons(size);
@@ -459,10 +459,10 @@ int connection_read(struct ClientServerConnection * sock,
     }
     size = ntohs(rem->header.size) - sizeof(RETURN_ERROR_MESSAGE);
     GE_LOG(sock->ectx,
-	   ntohl(rem->kind),
-	   "%.*s",
-	   (int) size,
-	   &rem[1]);
+     ntohl(rem->kind),
+     "%.*s",
+     (int) size,
+     &rem[1]);
     FREE(rem);
   } /* while (1) */
   MUTEX_UNLOCK(sock->readlock);
@@ -478,19 +478,19 @@ int connection_read(struct ClientServerConnection * sock,
  * successfully
  */
 int connection_read_result(struct ClientServerConnection * sock,
-			   int * ret) {
+  		   int * ret) {
   RETURN_VALUE_MESSAGE * rv;
 
   rv = NULL;
   if (SYSERR == connection_read(sock,
-				(MESSAGE_HEADER **) &rv))
+  			(MESSAGE_HEADER **) &rv))
     return SYSERR;
   if ( (ntohs(rv->header.size) != sizeof(RETURN_VALUE_MESSAGE)) ||
        (ntohs(rv->header.type) != CS_PROTO_RETURN_VALUE) ) {
     GE_LOG(sock->ectx,
-	   GE_WARNING | GE_DEVELOPER | GE_BULK,
-	   _("`%s' failed, reply invalid!\n"),
-	   __FUNCTION__);
+     GE_WARNING | GE_DEVELOPER | GE_BULK,
+     _("`%s' failed, reply invalid!\n"),
+     __FUNCTION__);
     FREE(rv);
     return SYSERR;
   }
@@ -508,7 +508,7 @@ int connection_read_result(struct ClientServerConnection * sock,
  *         send successfully
  */
 int connection_write_result(struct ClientServerConnection * sock,
-			    int ret) {
+  		    int ret) {
   RETURN_VALUE_MESSAGE rv;
 
   rv.header.size
@@ -518,7 +518,7 @@ int connection_write_result(struct ClientServerConnection * sock,
   rv.return_value
     = htonl(ret);
   return connection_write(sock,
-			  &rv.header);
+  		  &rv.header);
 }
 
 /*  end of tcpio.c */

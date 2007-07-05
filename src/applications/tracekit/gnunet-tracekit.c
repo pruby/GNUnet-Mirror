@@ -65,17 +65,17 @@ static struct CommandLineOption gnunettracekitOptions[] = {
 
 static unsigned int
 getConfigurationInt(const char * sec,
-		    const char * opt,
-		    unsigned int max) {
+  	    const char * opt,
+  	    unsigned int max) {
   unsigned long long val;
 
   GC_get_configuration_value_number(cfg,
-				    sec,
-				    opt,
-				    0,
-				    max,
-				    0,
-				    &val);
+  			    sec,
+  			    opt,
+  			    0,
+  			    max,
+  			    0,
+  			    &val);
   return (unsigned int) val;
 }
 
@@ -106,14 +106,14 @@ static void * receiveThread(void * cls) {
   buffer = MALLOC(MAX_BUFFER_SIZE);
   if (-1 ==
       GC_get_configuration_value_number(cfg,
-					"GNUNET-TRACEKIT",
-					"FORMAT",
-					0,
-					2,
-					0,
-					&format)) {
+  				"GNUNET-TRACEKIT",
+  				"FORMAT",
+  				0,
+  				2,
+  				0,
+  				&format)) {
     printf(_("Format specification invalid. "
-	     "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
+       "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
     SEMAPHORE_UP(doneSem);
     FREE(peersResponding);
     FREE(peersSeen);
@@ -125,7 +125,7 @@ static void * receiveThread(void * cls) {
   if (format == 2)
     printf("graph: {\n");
   while (OK == connection_read(sock,
-			       (MESSAGE_HEADER**)&buffer)) {
+  		       (MESSAGE_HEADER**)&buffer)) {
     int count;
     EncName enc;
 
@@ -135,84 +135,84 @@ static void * receiveThread(void * cls) {
       break; /* faulty reply */
     }
     hash2enc(&buffer->responderId.hashPubKey,
-	     &enc);
+       &enc);
     match = NO;
     for (j=0;j<prCount;j++)
       if (equalsHashCode512(&buffer->responderId.hashPubKey,
-			    &peersResponding[j].hashPubKey))
-	match = YES;
+  		    &peersResponding[j].hashPubKey))
+  match = YES;
     if (match == NO) {
       if (prCount == prSize)
-	GROW(peersResponding,
-	     prSize,
-	     prSize*2);
+  GROW(peersResponding,
+       prSize,
+       prSize*2);
       memcpy(&peersResponding[prCount++],
-	     &buffer->responderId.hashPubKey,
-	     sizeof(PeerIdentity));
+       &buffer->responderId.hashPubKey,
+       sizeof(PeerIdentity));
     }
     count = count / sizeof(PeerIdentity);
     if (ntohs(buffer->header.size) !=
-	sizeof(CS_tracekit_reply_MESSAGE) +
-	count * sizeof(PeerIdentity)) {
+  sizeof(CS_tracekit_reply_MESSAGE) +
+  count * sizeof(PeerIdentity)) {
       GE_BREAK(ectx, 0);
       break;
     }
     if (count == 0) {
       switch (format) {
       case 0:
-	printf(_("`%s' is not connected to any peer.\n"),
-	       (char*)&enc);
-	break;
+  printf(_("`%s' is not connected to any peer.\n"),
+         (char*)&enc);
+  break;
       case 1:
-	printf("  %.*s;\n",
-	       4, (char*)&enc);
-	break;
+  printf("  %.*s;\n",
+         4, (char*)&enc);
+  break;
       case 2:
-	/* deferred -- vcg needs all node data in one line */
-	break;
+  /* deferred -- vcg needs all node data in one line */
+  break;
       }
     } else {
       EncName other;
 
       for (i=0;i<count;i++) {
-	match = NO;
-	for (j=0;j<psCount;j++)
-	  if (equalsHashCode512(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
-				&peersSeen[j].hashPubKey))
-	    match = YES;
-	if (match == NO) {
-	  if (psCount == psSize)
-	    GROW(peersSeen,
-		 psSize,
-		 psSize * 2);
-	  memcpy(&peersSeen[psCount++],
-		 &((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
-		 sizeof(PeerIdentity));
-	}
+  match = NO;
+  for (j=0;j<psCount;j++)
+    if (equalsHashCode512(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
+  			&peersSeen[j].hashPubKey))
+      match = YES;
+  if (match == NO) {
+    if (psCount == psSize)
+      GROW(peersSeen,
+  	 psSize,
+  	 psSize * 2);
+    memcpy(&peersSeen[psCount++],
+  	 &((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
+  	 sizeof(PeerIdentity));
+  }
 
-	hash2enc(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
-		 &other);
-	switch (format) {
-	case 0:
-	  printf(_("`%s' connected to `%s'.\n"),
-		 (char*)&enc,
-		 (char*)&other);
-	  break;
-	case 1: /* dot */
-	  printf("  \"%.*s\" -> \"%.*s\";\n",
-		 4, (char*)&enc,
-		 4, (char*)&other);
-	  break;
-	case 2: /* vcg */
-	  printf("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
-		 (char*)&enc,
-		 (char*)&other);
-	  break;
-	default: /* undef */
-	  printf(_("Format specification invalid. "
-		   "Use 0 for user-readable, 1 for dot\n"));
-	  break;
-	}
+  hash2enc(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
+  	 &other);
+  switch (format) {
+  case 0:
+    printf(_("`%s' connected to `%s'.\n"),
+  	 (char*)&enc,
+  	 (char*)&other);
+    break;
+  case 1: /* dot */
+    printf("  \"%.*s\" -> \"%.*s\";\n",
+  	 4, (char*)&enc,
+  	 4, (char*)&other);
+    break;
+  case 2: /* vcg */
+    printf("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
+  	 (char*)&enc,
+  	 (char*)&other);
+    break;
+  default: /* undef */
+    printf(_("Format specification invalid. "
+  	   "Use 0 for user-readable, 1 for dot\n"));
+    break;
+  }
       }
     }
   }
@@ -223,41 +223,41 @@ static void * receiveThread(void * cls) {
     match = NO;
     for (j=0;j<prCount;j++)
       if (equalsHashCode512(&peersResponding[j].hashPubKey,
-			    &peersSeen[i].hashPubKey)) {
-	match = YES;
-	break;
+  		    &peersSeen[i].hashPubKey)) {
+  match = YES;
+  break;
       }
     if (match == NO) {
       hash2enc(&peersSeen[i].hashPubKey,
-	       &enc);
+         &enc);
       switch (format) {
       case 0:
-	printf(_("Peer `%s' did not report back.\n"),
-	       (char*)&enc);
-	break;
+  printf(_("Peer `%s' did not report back.\n"),
+         (char*)&enc);
+  break;
       case 1:
-	printf("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
-	       4,
-	       (char*)&enc);
-	break;
+  printf("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
+         4,
+         (char*)&enc);
+  break;
       case 2:
-	printf("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
-	       (char*)&enc,
-	       4, (char*) &enc);
-	break;
+  printf("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
+         (char*)&enc,
+         4, (char*) &enc);
+  break;
       default:
-	break;
+  break;
       }
     } else {
       switch (format) {
       case 2:
-	hash2enc(&peersSeen[i].hashPubKey,
-		 &enc);
-	printf("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
-	       (char*)&enc, 4, (char*)&enc);
-	break;
+  hash2enc(&peersSeen[i].hashPubKey,
+  	 &enc);
+  printf("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
+         (char*)&enc, 4, (char*)&enc);
+  break;
       default:
-	break;
+  break;
       }
     }
   }
@@ -286,7 +286,7 @@ static void * receiveThread(void * cls) {
  * @return return value from gnunet-tracekit: 0: ok, -1: error
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
   void * unused;
@@ -297,12 +297,12 @@ int main(int argc,
   int res;
 
   res = GNUNET_init(argc,
-		    argv,
-		    "gnunet-tracekit",
-		    &cfgFilename,
-		    gnunettracekitOptions,
-		    &ectx,
-		    &cfg);
+  	    argv,
+  	    "gnunet-tracekit",
+  	    &cfgFilename,
+  	    gnunettracekitOptions,
+  	    &ectx,
+  	    &cfg);
   if (res == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
@@ -310,19 +310,19 @@ int main(int argc,
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL) {
     fprintf(stderr,
-	    _("Error establishing connection with gnunetd.\n"));
+      _("Error establishing connection with gnunetd.\n"));
     GNUNET_fini(ectx, cfg);
     return 1;
   }
 
   doneSem = SEMAPHORE_CREATE(0);
   messageReceiveThread = PTHREAD_CREATE(&receiveThread,
-					sock,
-					128 * 1024);
+  				sock,
+  				128 * 1024);
   if (messageReceiveThread == NULL)
     GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_IMMEDIATE | GE_ADMIN,
-		    "pthread_create");
+  	    GE_FATAL | GE_IMMEDIATE | GE_ADMIN,
+  	    "pthread_create");
 
   probe.header.size
     = htons(sizeof(CS_tracekit_probe_MESSAGE));
@@ -330,31 +330,31 @@ int main(int argc,
     = htons(CS_PROTO_tracekit_PROBE);
   probe.hops
     = htonl(getConfigurationInt("GNUNET-TRACEKIT",
-				"HOPS",
-				0xFFFFFFFF));
+  			"HOPS",
+  			0xFFFFFFFF));
   probe.priority
     = htonl(getConfigurationInt("GNUNET-TRACEKIT",
-				"PRIORITY",
-				0xFFFFFFFF));
+  			"PRIORITY",
+  			0xFFFFFFFF));
   if (SYSERR == connection_write(sock,
-				 &probe.header)) {
+  			 &probe.header)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Could not send request to gnunetd.\n"));
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Could not send request to gnunetd.\n"));
     return -1;
   }
   cron = cron_create(ectx);
   cron_start(cron);
   sleepTime = getConfigurationInt("GNUNET-TRACEKIT",
                                   "WAIT",
-				  0xFFFFFFFF);
+  			  0xFFFFFFFF);
   if (sleepTime == 0)
     sleepTime = 5;
   cron_add_job(cron,
-	       &run_shutdown,
-	       cronSECONDS * sleepTime,
-	       0,
-	       NULL);
+         &run_shutdown,
+         cronSECONDS * sleepTime,
+         0,
+         NULL);
   GNUNET_SHUTDOWN_WAITFOR();
   connection_close_forever(sock);
   SEMAPHORE_DOWN(doneSem, YES);

@@ -64,8 +64,8 @@ static int gnunet_upnp_get_public_ip(IPaddr * address) {
   if (ip == NULL)
     return SYSERR;
   return get_host_by_name(ectx,
-			  ip,
-			  address);
+  		  ip,
+  		  address);
 }
 
 static void kill_discovery() {
@@ -93,8 +93,8 @@ static void discover(void * unused) {
   if (discovery_socket == -1)
     return;
   discovery = PTHREAD_CREATE(&discover_thread,
-			     NULL,
-			     1024 * 128);
+  		     NULL,
+  		     1024 * 128);
 }
 
 /**
@@ -106,10 +106,10 @@ static void portmap(void * unused) {
   MUTEX_LOCK(lock);
   for (i=0;i<maps_size;i++)
     gaim_upnp_change_port_mapping(ectx,
-				  cfg,
-				  NO,
-				  maps[i].port,
-				  maps[i].proto);
+  			  cfg,
+  			  NO,
+  			  maps[i].port,
+  			  maps[i].proto);
   MUTEX_UNLOCK(lock);
 }
 
@@ -120,27 +120,27 @@ static void portmap(void * unused) {
  * @return SYSERR on error, OK on success
  */
 static int gnunet_upnp_get_ip(unsigned short port,
-			      const char * protocol,
-			      IPaddr * address) {
+  		      const char * protocol,
+  		      IPaddr * address) {
   unsigned int i;
 
   MUTEX_LOCK(lock);
   for (i=0;i<maps_size;i++)
     if ( (0 == strcmp(maps[i].proto, protocol)) &&
-	 (maps[i].port == port) )
+   (maps[i].port == port) )
       break;
   if (i == maps_size) {
     /* new entry! */
     GROW(maps,
-	 maps_size,
-	 maps_size + 1);
+   maps_size,
+   maps_size + 1);
     maps[i].proto = protocol;
     maps[i].port = port;
     gaim_upnp_change_port_mapping(ectx,
-				  cfg,
-				  YES,
-				  port,
-				  protocol);
+  			  cfg,
+  			  YES,
+  			  port,
+  			  protocol);
   }
   MUTEX_UNLOCK(lock);
   return gnunet_upnp_get_public_ip(address);
@@ -160,15 +160,15 @@ provide_module_upnp(CoreAPIForApplication * capi) {
   lock = MUTEX_CREATE(NO);
   cron_start(cron);
   cron_add_job(cron,
-	       &discover,
-	       0,
-	       5 * cronMINUTES,
-	       NULL);
+         &discover,
+         0,
+         5 * cronMINUTES,
+         NULL);
   cron_add_job(cron,
-	       &portmap,
-	       150 * cronSECONDS,
-	       5 * cronMINUTES,
-	       NULL);
+         &portmap,
+         150 * cronSECONDS,
+         5 * cronMINUTES,
+         NULL);
   api.get_ip = gnunet_upnp_get_ip;
   return &api;
 }
@@ -183,19 +183,19 @@ int release_module_upnp() {
     return SYSERR; /* not loaded! */
   for (i=0;i<maps_size;i++)
     gaim_upnp_change_port_mapping(ectx,
-				  cfg,
-				  NO,
-				  maps[i].port,
-				  maps[i].proto);
+  			  cfg,
+  			  NO,
+  			  maps[i].port,
+  			  maps[i].proto);
   cron_stop(cron);
   cron_del_job(cron,
-	       &discover,
-	       5 * cronMINUTES,
-	       NULL);
+         &discover,
+         5 * cronMINUTES,
+         NULL);
   cron_del_job(cron,
-	       &portmap,
-	       5 * cronMINUTES,
-	       NULL);
+         &portmap,
+         5 * cronMINUTES,
+         NULL);
   cron_destroy(cron);
   kill_discovery();
   cron = NULL;

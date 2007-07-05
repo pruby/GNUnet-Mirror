@@ -109,40 +109,40 @@ static struct CommandLineOption gnunetpseudonymOptions[] = {
 };
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
-		       const char * data,
-		       void * closure) {
+  	       const char * data,
+  	       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor",
-		  EXTRACTOR_getKeywordTypeAsString(type)),
-	 data);
+   dgettext("libextractor",
+  	  EXTRACTOR_getKeywordTypeAsString(type)),
+   data);
   return OK;
 }
 
 static void printMeta(const struct ECRS_MetaData * m) {
   ECRS_getMetaData(m,
-		   &itemPrinter,
-		   NULL);
+  	   &itemPrinter,
+  	   NULL);
 }
 
 static int namespacePrinter(void * unused,
-			    const char * namespaceName,
-			    const HashCode512 * id,
-			    const struct ECRS_MetaData * md,
-			    int rating) {
+  		    const char * namespaceName,
+  		    const HashCode512 * id,
+  		    const struct ECRS_MetaData * md,
+  		    int rating) {
   EncName enc;
   int cpos;
 
   hash2enc(id,
-	   &enc);
+     &enc);
   if (0 == strcmp(namespaceName, (char*)&enc))
     printf(_("Namespace `%s' has rating %d.\n"),
-	   namespaceName,
-	   rating);
+     namespaceName,
+     rating);
   else
     printf(_("Namespace `%s' (%s) has rating %d.\n"),
-	   namespaceName,
-	   (char*) &enc,
-	   rating);
+     namespaceName,
+     (char*) &enc,
+     rating);
   printMeta(md);
 
   if (set_rating != NULL) {
@@ -153,30 +153,30 @@ static int namespacePrinter(void * unused,
     delta = 0;
     cpos = 0;
     while ( (set[cpos] != '\0') &&
-	    (set[cpos] != ':') )
+      (set[cpos] != ':') )
       cpos++;
     if ( ( ( ( (strlen((char*)&enc)+1 == cpos) &&
-	       (0 == strncmp(set,
-			     (char*)&enc,
-			     cpos)) ) ) ||
-	   ( (namespaceName != NULL) &&
-	     (strlen(namespaceName) == cpos) &&
-	     (0 == strncmp(set,
-			   namespaceName,
-			   cpos)) ) ) &&
-	 (set[cpos] == ':') ) {
+         (0 == strncmp(set,
+  		     (char*)&enc,
+  		     cpos)) ) ) ||
+     ( (namespaceName != NULL) &&
+       (strlen(namespaceName) == cpos) &&
+       (0 == strncmp(set,
+  		   namespaceName,
+  		   cpos)) ) ) &&
+   (set[cpos] == ':') ) {
       delta = strtol(&set[cpos+1],
-		     NULL, /* no error handling yet */
-		     10);	
+  	     NULL, /* no error handling yet */
+  	     10);	
     }
 
     if (delta != 0) {
       rating = NS_rankNamespace(ectx,
-				cfg,
-				namespaceName,
-				delta);
+  			cfg,
+  			namespaceName,
+  			delta);
       printf(_("\tRating (after update): %d\n"),
-	     rating);
+       rating);
     }
   }
   printf("\n");
@@ -184,7 +184,7 @@ static int namespacePrinter(void * unused,
 }
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   int cnt;
   int success;
   int i;
@@ -192,12 +192,12 @@ int main(int argc,
 
   meta = ECRS_createMetaData();
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-pseudonym [OPTIONS]",
-		  &cfgFilename,
-		  gnunetpseudonymOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-pseudonym [OPTIONS]",
+  	  &cfgFilename,
+  	  gnunetpseudonymOptions,
+  	  &ectx,
+  	  &cfg);
   if (i == -1) {
     ECRS_freeMetaData(meta);
     GNUNET_fini(ectx, cfg);
@@ -217,14 +217,14 @@ int main(int argc,
   /* delete pseudonyms */
   if (delete_name != NULL) {
     if (OK == NS_deleteNamespace(ectx,
-				 cfg,
-				 delete_name)) {
+  			 cfg,
+  			 delete_name)) {
       printf(_("Pseudonym `%s' deleted.\n"),
-	     delete_name);
+       delete_name);
     } else {
       success += 2;
       printf(_("Error deleting pseudonym `%s' (does not exist?).\n"),
-	     delete_name);
+       delete_name);
     }
     FREE(delete_name);
   }
@@ -233,83 +233,83 @@ int main(int argc,
   if (create_name != NULL) {
     if (start_collection) {
       ECRS_addToMetaData(meta,
-			 EXTRACTOR_OWNER,
-			 create_name);
+  		 EXTRACTOR_OWNER,
+  		 create_name);
       if (OK == CO_startCollection(anonymity,
-				   priority,
-				   ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
-				   create_name,
-				   meta)) {
-	printf(_("Started collection `%s'.\n"),
-	       create_name);
+  			   priority,
+  			   ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
+  			   create_name,
+  			   meta)) {
+  printf(_("Started collection `%s'.\n"),
+         create_name);
       } else {
-	printf(_("Failed to start collection.\n"));
-	success++;
+  printf(_("Failed to start collection.\n"));
+  success++;
       }
 
       ECRS_delFromMetaData(meta,
-			   EXTRACTOR_OWNER,
-			   create_name);
+  		   EXTRACTOR_OWNER,
+  		   create_name);
     } else { /* no collection */
       HashCode512 rootEntry;
       struct ECRS_URI * rootURI;
       char * root;
 
       if (root_name == NULL) {
-	memset(&rootEntry, 0, sizeof(HashCode512));
+  memset(&rootEntry, 0, sizeof(HashCode512));
       } else {
-	if (SYSERR == enc2hash(root_name,
-			       &hc))
-	  hash(root_name,
-	       strlen(root_name),
-	       &hc);
+  if (SYSERR == enc2hash(root_name,
+  		       &hc))
+    hash(root_name,
+         strlen(root_name),
+         &hc);
       }
       if (no_advertisement) {
-	if (advertisement != NULL)
-	  ECRS_freeUri(advertisement);
-	advertisement = NULL;
+  if (advertisement != NULL)
+    ECRS_freeUri(advertisement);
+  advertisement = NULL;
       } else {
-	if (advertisement == NULL)
-	  advertisement = ECRS_parseCharKeywordURI(ectx,
-						   "namespace");
+  if (advertisement == NULL)
+    advertisement = ECRS_parseCharKeywordURI(ectx,
+  					   "namespace");
       }
       rootURI = NS_createNamespace(ectx,
-				   cfg,
-				   anonymity,
-				   priority,
-				   expiration + get_time(),
-				   create_name,
-				   meta,
-				   advertisement,
-				   &rootEntry);
+  			   cfg,
+  			   anonymity,
+  			   priority,
+  			   expiration + get_time(),
+  			   create_name,
+  			   meta,
+  			   advertisement,
+  			   &rootEntry);
       if (rootURI == NULL) {
-	printf(_("Could not create namespace `%s' (exists?).\n"),
-	       create_name);
-	success += 1;
+  printf(_("Could not create namespace `%s' (exists?).\n"),
+         create_name);
+  success += 1;
       } else {
-	root = ECRS_uriToString(rootURI);
-	printf(_("Namespace `%s' created (root: %s).\n"),
-	       create_name,
-	       root);
-	FREE(root);
-	ECRS_freeUri(rootURI);
+  root = ECRS_uriToString(rootURI);
+  printf(_("Namespace `%s' created (root: %s).\n"),
+         create_name,
+         root);
+  FREE(root);
+  ECRS_freeUri(rootURI);
       }
       if (NULL != advertisement)
-	ECRS_freeUri(advertisement);
+  ECRS_freeUri(advertisement);
     }
     FREE(create_name);
     create_name = NULL;
   } else {
     if (start_collection)
       printf(_("You must specify a name for the collection (`%s' option).\n"),
-	     "-C");
+       "-C");
   }
   if (0 == be_quiet) {
   /* print information about pseudonyms */
     cnt = NS_listNamespaces(ectx,
-			    cfg,
-			    &namespacePrinter,
-			    NULL);
+  		    cfg,
+  		    &namespacePrinter,
+  		    NULL);
     if (cnt == -1)
       printf(_("Could not access namespace information.\n"));
   }

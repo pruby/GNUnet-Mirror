@@ -77,15 +77,15 @@ struct PrivateKey {
  * first target-size bytes.
  */
 static void adjust(unsigned char * buf,
-		   size_t size,
-		   size_t target) {
+  	   size_t size,
+  	   size_t target) {
   if (size < target) {
     memmove(&buf[target-size],
-	    buf,
-	    size);
+      buf,
+      size);
     memset(buf,
-	   0,
-	   target-size);
+     0,
+     target-size);
   }
 }
 
@@ -100,25 +100,25 @@ struct PrivateKey * makePrivateKey() {
 
   lockGcrypt();
   rc = gcry_sexp_build(&s_keyparam,
-		       NULL,
-		       "(genkey(rsa(nbits %d)(rsa-use-e 3:257)))",
-		       HOSTKEY_LEN);
+  	       NULL,
+  	       "(genkey(rsa(nbits %d)(rsa-use-e 3:257)))",
+  	       HOSTKEY_LEN);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_build",
-	     rc);
+       LOG_ERROR,
+       "gcry_sexp_build",
+       rc);
     unlockGcrypt();
     return NULL;
   }
   rc = gcry_pk_genkey(&s_key,
-		      s_keyparam);
+  	      s_keyparam);
   gcry_sexp_release(s_keyparam);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_genkey",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_genkey",
+       rc);
     unlockGcrypt();
     return NULL;
   }
@@ -126,9 +126,9 @@ struct PrivateKey * makePrivateKey() {
 #if EXTRA_CHECKS
   if ((rc=gcry_pk_testkey(s_key))) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_testkey",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_testkey",
+       rc);
     unlockGcrypt();
     return NULL;
   }
@@ -150,9 +150,9 @@ void freePrivateKey(struct PrivateKey * hostkey) {
 }
 
 static int key_from_sexp( gcry_mpi_t *array,
-			  gcry_sexp_t sexp,
-			  const char *topname,
-			  const char *elems ) {
+  		  gcry_sexp_t sexp,
+  		  const char *topname,
+  		  const char *elems ) {
   gcry_sexp_t list, l2;
   const char *s;
   int i, idx;
@@ -176,8 +176,8 @@ static int key_from_sexp( gcry_mpi_t *array,
     l2 = gcry_sexp_find_token( list, s, 1 );
     if( !l2 ) {
       for(i=0; i<idx; i++) {
-	gcry_free( array[i] );
-	array[i] = NULL;
+  gcry_free( array[i] );
+  array[i] = NULL;
       }
       gcry_sexp_release ( list );
       unlockGcrypt();
@@ -187,8 +187,8 @@ static int key_from_sexp( gcry_mpi_t *array,
     gcry_sexp_release ( l2 );
     if( !array[idx] ) {
       for(i=0; i<idx; i++) {
-	gcry_free( array[i] );
-	array[i] = NULL;
+  gcry_free( array[i] );
+  array[i] = NULL;
       }
       gcry_sexp_release ( list );
       unlockGcrypt();
@@ -206,26 +206,26 @@ static int key_from_sexp( gcry_mpi_t *array,
  * @param result where to write the result.
  */
 void getPublicKey(const struct PrivateKey * hostkey,
-		  PublicKey * result) {
+  	  PublicKey * result) {
   gcry_mpi_t skey[2];
   size_t size;
   int rc;
 
   lockGcrypt();
   rc = key_from_sexp(skey,
-		     hostkey->sexp,
-		     "public-key",
-		     "ne");
+  	     hostkey->sexp,
+  	     "public-key",
+  	     "ne");
   if (rc)
     rc = key_from_sexp(skey,
-		       hostkey->sexp,
-		       "private-key",
-		       "ne");
+  	       hostkey->sexp,
+  	       "private-key",
+  	       "ne");
   if (rc)
     rc = key_from_sexp(skey,
-		       hostkey->sexp,
-		       "rsa",
-		       "ne");
+  	       hostkey->sexp,
+  	       "rsa",
+  	       "ne");
   if (rc)
     DIE_GCRY(NULL, "key_from_sexp", rc);
 
@@ -234,24 +234,24 @@ void getPublicKey(const struct PrivateKey * hostkey,
   result->padding = 0;
   size = RSA_ENC_LEN;
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      &result->key[0],
-		      size,
-		      &size,
-		      skey[0]);
+  	      &result->key[0],
+  	      size,
+  	      &size,
+  	      skey[0]);
   if (rc)
     DIE_GCRY(NULL, "gcry_mpi_print", rc);
   adjust(&result->key[0], size, RSA_ENC_LEN);
   size = RSA_KEY_LEN - RSA_ENC_LEN;
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      &result->key[RSA_ENC_LEN],
-		      size,
-		      &size,
-		      skey[1]);
+  	      &result->key[RSA_ENC_LEN],
+  	      size,
+  	      &size,
+  	      skey[1]);
   if (rc)
     DIE_GCRY(NULL, "gcry_mpi_print", rc);
   adjust(&result->key[RSA_ENC_LEN],
-	 size,
-	 RSA_KEY_LEN - RSA_ENC_LEN);
+   size,
+   RSA_KEY_LEN - RSA_ENC_LEN);
   gcry_mpi_release(skey[0]);
   gcry_mpi_release(skey[1]);
   unlockGcrypt();
@@ -282,10 +282,10 @@ public2PrivateKey(const PublicKey * publicKey) {
   size = RSA_ENC_LEN;
   lockGcrypt();
   rc = gcry_mpi_scan(&n,
-		     GCRYMPI_FMT_USG,
-		     &publicKey->key[0],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &publicKey->key[0],
+  	     size,
+  	     &size);
   if (rc) {
     LOG_GCRY(NULL, LOG_ERROR, "gcry_mpi_scan", rc);
     unlockGcrypt();
@@ -293,10 +293,10 @@ public2PrivateKey(const PublicKey * publicKey) {
   }
   size = RSA_KEY_LEN - RSA_ENC_LEN;
   rc = gcry_mpi_scan(&e,
-		     GCRYMPI_FMT_USG,
-		     &publicKey->key[RSA_ENC_LEN],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &publicKey->key[RSA_ENC_LEN],
+  	     size,
+  	     &size);
   if (rc) {
     LOG_GCRY(NULL, LOG_ERROR, "gcry_mpi_scan", rc);
     gcry_mpi_release(n);
@@ -304,10 +304,10 @@ public2PrivateKey(const PublicKey * publicKey) {
     return NULL;
   }
   rc = gcry_sexp_build(&result,
-		       &erroff,
- 		       "(public-key(rsa(n %m)(e %m)))",
-		       n,
-		       e);
+  	       &erroff,
+   	       "(public-key(rsa(n %m)(e %m)))",
+  	       n,
+  	       e);
   gcry_mpi_release(n);
   gcry_mpi_release(e);
   if (rc) {
@@ -348,39 +348,39 @@ encodePrivateKey(const struct PrivateKey * hostkey) {
 
   memset(pkv, 0, sizeof(gcry_mpi_t) * 6);
   rc = key_from_sexp(pkv,
-		     hostkey->sexp,
-		     "private-key",
-		     "nedpqu");
+  	     hostkey->sexp,
+  	     "private-key",
+  	     "nedpqu");
   if (rc)
     rc = key_from_sexp(pkv,
-		       hostkey->sexp,
-		       "rsa",
-		       "nedpqu");
+  	       hostkey->sexp,
+  	       "rsa",
+  	       "nedpqu");
   if (rc)
     rc = key_from_sexp(pkv,
-		       hostkey->sexp,
-		       "private-key",
-		       "nedpq");
+  	       hostkey->sexp,
+  	       "private-key",
+  	       "nedpq");
   if (rc)
     rc = key_from_sexp(pkv,
-		       hostkey->sexp,
-		       "rsa",
-		       "nedpq");
+  	       hostkey->sexp,
+  	       "rsa",
+  	       "nedpq");
   if (rc)
     rc = key_from_sexp(pkv,
-		       hostkey->sexp,
-		       "private-key",
-		       "ned");
+  	       hostkey->sexp,
+  	       "private-key",
+  	       "ned");
   if (rc)
     rc = key_from_sexp(pkv,
-		       hostkey->sexp,
-		       "rsa",
-		       "ned");
+  	       hostkey->sexp,
+  	       "rsa",
+  	       "ned");
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "key_from_sexp",
-	     rc);
+       LOG_ERROR,
+       "key_from_sexp",
+       rc);
     unlockGcrypt();
     return NULL;
   }
@@ -388,23 +388,23 @@ encodePrivateKey(const struct PrivateKey * hostkey) {
   for (i=0;i<6;i++) {
     if (pkv[i] != NULL) {
       rc = gcry_mpi_aprint(GCRYMPI_FMT_USG,
-			   (unsigned char**) &pbu[i],
-			   &sizes[i],
-			   pkv[i]);
+  		   (unsigned char**) &pbu[i],
+  		   &sizes[i],
+  		   pkv[i]);
       size += sizes[i];
       if (rc) {
-	LOG_GCRY(NULL,
-		 LOG_ERROR,
-		 "gcry_mpi_aprint",
-		 rc);
-	while (i>0)
-	  if (pbu[i] != NULL)
-	    free(pbu[--i]);	
-	for (i=0;i<6;i++)
-	  if (pkv[i] != NULL)
-	    gcry_mpi_release(pkv[i]);
-	unlockGcrypt();
-	return NULL;
+  LOG_GCRY(NULL,
+  	 LOG_ERROR,
+  	 "gcry_mpi_aprint",
+  	 rc);
+  while (i>0)
+    if (pbu[i] != NULL)
+      free(pbu[--i]);	
+  for (i=0;i<6;i++)
+    if (pkv[i] != NULL)
+      gcry_mpi_release(pkv[i]);
+  unlockGcrypt();
+  return NULL;
       }
     } else {
       pbu[i] = NULL;
@@ -417,35 +417,35 @@ encodePrivateKey(const struct PrivateKey * hostkey) {
   i = 0;
   retval->sizen = htons(sizes[0]);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[0],
-	 sizes[0]);
+   pbu[0],
+   sizes[0]);
   i += sizes[0];
   retval->sizee = htons(sizes[1]);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[1],
-	 sizes[1]);
+   pbu[1],
+   sizes[1]);
   i += sizes[1];
   retval->sized = htons(sizes[2]);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[2],
-	 sizes[2]);
+   pbu[2],
+   sizes[2]);
   i += sizes[2];
   /* swap p and q! */
   retval->sizep = htons(sizes[4]);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[4],
-	 sizes[4]);
+   pbu[4],
+   sizes[4]);
   i += sizes[4];
   retval->sizeq = htons(sizes[3]);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[3],
-	 sizes[3]);
+   pbu[3],
+   sizes[3]);
   i += sizes[3];
   retval->sizedmp1 = htons(0);
   retval->sizedmq1 = htons(0);
   memcpy(&((char*)(&retval[1]))[i],
-	 pbu[5],
-	 sizes[5]);
+   pbu[5],
+   sizes[5]);
   for (i=0;i<6;i++) {
     if (pkv[i] != NULL)
       gcry_mpi_release(pkv[i]);
@@ -473,47 +473,47 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sizen);
   lockGcrypt();
   rc = gcry_mpi_scan(&n,
-		     GCRYMPI_FMT_USG,
-		     &((const unsigned char*)(&encoding[1]))[pos],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &((const unsigned char*)(&encoding[1]))[pos],
+  	     size,
+  	     &size);
   pos += ntohs(encoding->sizen);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_scan",
+       rc);
     unlockGcrypt();
     return NULL;
   }
   size = ntohs(encoding->sizee);
   rc = gcry_mpi_scan(&e,
-		     GCRYMPI_FMT_USG,
-		     &((const unsigned char*)(&encoding[1]))[pos],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &((const unsigned char*)(&encoding[1]))[pos],
+  	     size,
+  	     &size);
   pos += ntohs(encoding->sizee);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_scan",
+       rc);
     gcry_mpi_release(n);
     unlockGcrypt();
     return NULL;
   }
   size = ntohs(encoding->sized);
   rc = gcry_mpi_scan(&d,
-		     GCRYMPI_FMT_USG,
-		     &((const unsigned char*)(&encoding[1]))[pos],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &((const unsigned char*)(&encoding[1]))[pos],
+  	     size,
+  	     &size);
   pos += ntohs(encoding->sized);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_scan",
+       rc);
     gcry_mpi_release(n);
     gcry_mpi_release(e);
     unlockGcrypt();
@@ -523,16 +523,16 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sizep);
   if (size > 0) {
     rc = gcry_mpi_scan(&q,
-		       GCRYMPI_FMT_USG,
-		       &((const unsigned char*)(&encoding[1]))[pos],
-		       size,
-		       &size);
+  	       GCRYMPI_FMT_USG,
+  	       &((const unsigned char*)(&encoding[1]))[pos],
+  	       size,
+  	       &size);
     pos += ntohs(encoding->sizep);
     if (rc) {
       LOG_GCRY(NULL,
-	       LOG_ERROR,
-	       "gcry_mpi_scan",
-	       rc);
+         LOG_ERROR,
+         "gcry_mpi_scan",
+         rc);
       gcry_mpi_release(n);
       gcry_mpi_release(e);
       gcry_mpi_release(d);
@@ -544,21 +544,21 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sizeq);
   if (size > 0) {
     rc = gcry_mpi_scan(&p,
-		       GCRYMPI_FMT_USG,
-		       &((const unsigned char*)(&encoding[1]))[pos],
-		       size,
-		       &size);
+  	       GCRYMPI_FMT_USG,
+  	       &((const unsigned char*)(&encoding[1]))[pos],
+  	       size,
+  	       &size);
     pos += ntohs(encoding->sizeq);
     if (rc) {
       LOG_GCRY(NULL,
-	       LOG_ERROR,
-	       "gcry_mpi_scan",
-	       rc);
+         LOG_ERROR,
+         "gcry_mpi_scan",
+         rc);
       gcry_mpi_release(n);
       gcry_mpi_release(e);
       gcry_mpi_release(d);
       if (q != NULL)
-	gcry_mpi_release(q);
+  gcry_mpi_release(q);
       unlockGcrypt();
       return NULL;
     }
@@ -569,22 +569,22 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->len) - sizeof(PrivateKeyEncoded) - pos;
   if (size > 0) {
     rc = gcry_mpi_scan(&u,
-		       GCRYMPI_FMT_USG,
-		       &((const unsigned char*)(&encoding[1]))[pos],
-		       size,
-		       &size);
+  	       GCRYMPI_FMT_USG,
+  	       &((const unsigned char*)(&encoding[1]))[pos],
+  	       size,
+  	       &size);
     if (rc) {
       LOG_GCRY(NULL,
-	       LOG_ERROR,
-	       "gcry_mpi_scan",
-	       rc);
+         LOG_ERROR,
+         "gcry_mpi_scan",
+         rc);
       gcry_mpi_release(n);
       gcry_mpi_release(e);
       gcry_mpi_release(d);
       if (p != NULL)
-	gcry_mpi_release(p);
+  gcry_mpi_release(p);
       if (q != NULL)
-	gcry_mpi_release(q);
+  gcry_mpi_release(q);
       unlockGcrypt();
       return NULL;
     }
@@ -595,21 +595,21 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
        (q != NULL) &&
        (u != NULL) ) {
     rc = gcry_sexp_build(&res,
-			 &size, /* erroff */
-			 "(private-key(rsa(n %m)(e %m)(d %m)(p %m)(q %m)(u %m)))",
-			 n, e, d, p, q, u);
+  		 &size, /* erroff */
+  		 "(private-key(rsa(n %m)(e %m)(d %m)(p %m)(q %m)(u %m)))",
+  		 n, e, d, p, q, u);
   } else {
     if ( (p != NULL) &&
-	 (q != NULL) ) {
+   (q != NULL) ) {
       rc = gcry_sexp_build(&res,
-			   &size, /* erroff */
-			   "(private-key(rsa(n %m)(e %m)(d %m)(p %m)(q %m)))",
-			   n, e, d, p, q);
+  		   &size, /* erroff */
+  		   "(private-key(rsa(n %m)(e %m)(d %m)(p %m)(q %m)))",
+  		   n, e, d, p, q);
     } else {
       rc = gcry_sexp_build(&res,
-			   &size, /* erroff */
-			   "(private-key(rsa(n %m)(e %m)(d %m)))",
-			   n, e, d);
+  		   &size, /* erroff */
+  		   "(private-key(rsa(n %m)(e %m)(d %m)))",
+  		   n, e, d);
     }
   }
   gcry_mpi_release(n);
@@ -624,13 +624,13 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
 
   if (rc)
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_build", rc);
+       LOG_ERROR,
+       "gcry_sexp_build", rc);
 #if EXTRA_CHECKS
   if (gcry_pk_testkey(res)) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_testkey", rc);
+       LOG_ERROR,
+       "gcry_pk_testkey", rc);
     unlockGcrypt();
     return NULL;
   }
@@ -652,9 +652,9 @@ decodePrivateKey(const PrivateKeyEncoded * encoding) {
  * @returns SYSERR on error, OK if ok
  */
 int encryptPrivateKey(const void * block,
-		      unsigned short size,
-		      const PublicKey * publicKey,
-		      RSAEncryptedData * target) {
+  	      unsigned short size,
+  	      const PublicKey * publicKey,
+  	      RSAEncryptedData * target) {
   gcry_sexp_t result;
   gcry_sexp_t data;
   struct PrivateKey * pubkey;
@@ -669,28 +669,28 @@ int encryptPrivateKey(const void * block,
   isize = size;
   lockGcrypt();
   rc = gcry_mpi_scan(&val,
-		     GCRYMPI_FMT_USG,
-		     block,
-		     isize,
-		     &isize);
+  	     GCRYMPI_FMT_USG,
+  	     block,
+  	     isize,
+  	     &isize);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan", rc);
+       LOG_ERROR,
+       "gcry_mpi_scan", rc);
     freePrivateKey(pubkey);
     unlockGcrypt();
     return SYSERR;
   }
   rc = gcry_sexp_build(&data,
-		       &erroff,
-		       "(data (flags pkcs1)(value %m))",
-		       val);
+  	       &erroff,
+  	       "(data (flags pkcs1)(value %m))",
+  	       val);
   gcry_mpi_release(val);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_build",
-	     rc); /* more info in erroff */
+       LOG_ERROR,
+       "gcry_sexp_build",
+       rc); /* more info in erroff */
     freePrivateKey(pubkey);
     unlockGcrypt();
     return SYSERR;
@@ -699,9 +699,9 @@ int encryptPrivateKey(const void * block,
   rc = gcry_pk_encrypt(&result, data, pubkey->sexp);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_encrypt",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_encrypt",
+       rc);
     gcry_sexp_release(data);
     freePrivateKey(pubkey);
     unlockGcrypt();
@@ -711,36 +711,36 @@ int encryptPrivateKey(const void * block,
   freePrivateKey(pubkey);
 
   rc = key_from_sexp(&rval,
-		     result,
-		     "rsa",
-		     "a");
+  	     result,
+  	     "rsa",
+  	     "a");
   gcry_sexp_release(result);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "key_from_sexp",
-	     rc);
+       LOG_ERROR,
+       "key_from_sexp",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   isize = sizeof(RSAEncryptedData);
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      (unsigned char*)target,
-		      isize,
-		      &isize,
-		      rval);
+  	      (unsigned char*)target,
+  	      isize,
+  	      &isize,
+  	      rval);
   gcry_mpi_release(rval);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_print",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_print",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   adjust(&target->encoding[0],
-	 isize,
-	 sizeof(RSAEncryptedData));
+   isize,
+   sizeof(RSAEncryptedData));
   unlockGcrypt();
   return OK;
 }
@@ -756,9 +756,9 @@ int encryptPrivateKey(const void * block,
  * @returns the size of the decrypted block, -1 on error
  */
 int decryptPrivateKey(const struct PrivateKey * hostkey,
-		      const RSAEncryptedData * block,
-		      void * result,
-		      unsigned short max) {
+  	      const RSAEncryptedData * block,
+  	      void * result,
+  	      unsigned short max) {
   gcry_sexp_t resultsexp;
   gcry_sexp_t data;
   size_t erroff;
@@ -773,49 +773,49 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
   rc = gcry_pk_testkey(hostkey->sexp);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_testkey",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_testkey",
+       rc);
     unlockGcrypt();
     return -1;
   }
 #endif
   size = sizeof(RSAEncryptedData);
   rc = gcry_mpi_scan(&val,
-		     GCRYMPI_FMT_USG,
-		     &block->encoding[0],
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     &block->encoding[0],
+  	     size,
+  	     &size);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_scan",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   rc = gcry_sexp_build(&data,
-		       &erroff,
-		       "(enc-val(flags)(rsa(a %m)))",
-		       val);
+  	       &erroff,
+  	       "(enc-val(flags)(rsa(a %m)))",
+  	       val);
   gcry_mpi_release(val);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_build",
-	     rc); /* more info in erroff */
+       LOG_ERROR,
+       "gcry_sexp_build",
+       rc); /* more info in erroff */
     unlockGcrypt();
     return SYSERR;
   }
   rc = gcry_pk_decrypt(&resultsexp,
-		       data,
-		       hostkey->sexp);
+  	       data,
+  	       hostkey->sexp);
   gcry_sexp_release(data);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_decrypt",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_decrypt",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
@@ -825,25 +825,25 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
   gcry_sexp_release(resultsexp);
   if (val == NULL) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_nth_mpi",
-	     rc);
+       LOG_ERROR,
+       "gcry_sexp_nth_mpi",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   tmp = MALLOC(max + HOSTKEY_LEN/8);
   size = max+HOSTKEY_LEN/8;
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      tmp,
-		      size,
-		      &size,
-		      val);
+  	      tmp,
+  	      size,
+  	      &size,
+  	      val);
   gcry_mpi_release(val);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_print",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_print",
+       rc);
     FREE(tmp);
     unlockGcrypt();
     return SYSERR;
@@ -853,8 +853,8 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
   endp += (size - max);
   size = max;
   memcpy(result,
-	 endp,
-	 size);
+   endp,
+   size);
   FREE(tmp);
   unlockGcrypt();
   return size;
@@ -870,9 +870,9 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
  * @return SYSERR on error, OK on success
  */
 int sign(const struct PrivateKey * hostkey,
-	 unsigned short size,
-	 const void * block,
-	 Signature * sig) {
+   unsigned short size,
+   const void * block,
+   Signature * sig) {
   gcry_sexp_t result;
   gcry_sexp_t data;
   size_t ssize;
@@ -887,22 +887,22 @@ int sign(const struct PrivateKey * hostkey,
   bufSize = strlen(FORMATSTRING) + 1;
   buff = MALLOC(bufSize);
   memcpy(buff,
-	 FORMATSTRING,
-	 bufSize);
+   FORMATSTRING,
+   bufSize);
   memcpy(&buff[bufSize - strlen("0123456789012345678901234567890123456789012345678901234567890123))") - 1],
-	 &hc,
-	 sizeof(HashCode512));
+   &hc,
+   sizeof(HashCode512));
   lockGcrypt();
   rc = gcry_sexp_new(&data,
-		     buff,
-		     bufSize,
-		     0);
+  	     buff,
+  	     bufSize,
+  	     0);
   FREE(buff);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_new",
-	     rc);
+       LOG_ERROR,
+       "gcry_sexp_new",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
@@ -910,43 +910,43 @@ int sign(const struct PrivateKey * hostkey,
   gcry_sexp_release(data);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_pk_sign",
-	     rc);
+       LOG_ERROR,
+       "gcry_pk_sign",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   rc = key_from_sexp(&rval,
-		     result,
-		     "rsa",
-		     "s");
+  	     result,
+  	     "rsa",
+  	     "s");
   gcry_sexp_release(result);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "key_from_sexp",
-	     rc);
+       LOG_ERROR,
+       "key_from_sexp",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   ssize = sizeof(Signature);
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      (unsigned char*)sig,
-		      ssize,
-		      &ssize,
-		      rval);
+  	      (unsigned char*)sig,
+  	      ssize,
+  	      &ssize,
+  	      rval);
   gcry_mpi_release(rval);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_print",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_print",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   adjust(&sig->sig[0],
-	 ssize,
-	 sizeof(Signature));
+   ssize,
+   sizeof(Signature));
   unlockGcrypt();
   return OK;
 }
@@ -961,9 +961,9 @@ int sign(const struct PrivateKey * hostkey,
  * @returns OK if ok, SYSERR if invalid
  */
 int verifySig(const void * block,
-	      unsigned short len,
-	      const Signature * sig,	
-	      const PublicKey * publicKey) {
+        unsigned short len,
+        const Signature * sig,	
+        const PublicKey * publicKey) {
   gcry_sexp_t data;
   gcry_sexp_t sigdata;
   size_t size;
@@ -978,28 +978,28 @@ int verifySig(const void * block,
   size = sizeof(Signature);
   lockGcrypt();
   rc = gcry_mpi_scan(&val,
-		     GCRYMPI_FMT_USG,
-		     (const unsigned char*)sig,
-		     size,
-		     &size);
+  	     GCRYMPI_FMT_USG,
+  	     (const unsigned char*)sig,
+  	     size,
+  	     &size);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_mpi_scan",
-	     rc);
+       LOG_ERROR,
+       "gcry_mpi_scan",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
   rc = gcry_sexp_build(&sigdata,
-		       &erroff,
-		       "(sig-val(rsa(s %m)))",
-		       val);
+  	       &erroff,
+  	       "(sig-val(rsa(s %m)))",
+  	       val);
   gcry_mpi_release(val);
   if (rc) {
     LOG_GCRY(NULL,
-	     LOG_ERROR,
-	     "gcry_sexp_build",
-	     rc);
+       LOG_ERROR,
+       "gcry_sexp_build",
+       rc);
     unlockGcrypt();
     return SYSERR;
   }
@@ -1007,16 +1007,16 @@ int verifySig(const void * block,
   bufSize = strlen(FORMATSTRING) + 1;
   buff = MALLOC(bufSize);
   memcpy(buff,
-	 FORMATSTRING,
-	 bufSize);
+   FORMATSTRING,
+   bufSize);
   memcpy(&buff[strlen(FORMATSTRING) -
-	       strlen("0123456789012345678901234567890123456789012345678901234567890123))")],
-	 &hc,
-	 sizeof(HashCode512));
+         strlen("0123456789012345678901234567890123456789012345678901234567890123))")],
+   &hc,
+   sizeof(HashCode512));
   rc = gcry_sexp_new(&data,
-		     buff,
-		     bufSize,
-		     0);
+  	     buff,
+  	     bufSize,
+  	     0);
   FREE(buff);
   hostkey = public2PrivateKey(publicKey);
   if (hostkey == NULL) {
@@ -1025,17 +1025,17 @@ int verifySig(const void * block,
     return SYSERR;
   }
   rc = gcry_pk_verify(sigdata,
-		      data,
-		      hostkey->sexp);
+  	      data,
+  	      hostkey->sexp);
   freePrivateKey(hostkey);
   gcry_sexp_release(data);
   gcry_sexp_release(sigdata);
   if (rc) {
     GE_LOG(NULL,
-	   GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
-	   _("RSA signature verification failed at %s:%d: %s\n"),
-	   __FILE__, __LINE__,
-	   gcry_strerror(rc));
+     GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
+     _("RSA signature verification failed at %s:%d: %s\n"),
+     __FILE__, __LINE__,
+     gcry_strerror(rc));
     unlockGcrypt();
     return SYSERR;
   } else {

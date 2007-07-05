@@ -32,21 +32,21 @@
 #include "fsui.h"
 
 static void WRITEINT(int fd,
-		     int val) {
+  	     int val) {
   int big;
   big = htonl(val);
   WRITE(fd, &big, sizeof(int));
 }
 
 static void WRITELONG(int fd,
-		      long long val) {
+  	      long long val) {
   long long big;
   big = htonll(val);
   WRITE(fd, &big, sizeof(long long));
 }
 
 static void writeURI(int fd,
-		     const struct ECRS_URI * uri) {
+  	     const struct ECRS_URI * uri) {
   char * buf;
   unsigned int size;
 
@@ -54,48 +54,48 @@ static void writeURI(int fd,
   size = strlen(buf);
   WRITEINT(fd, size);
   WRITE(fd,
-	buf,
-	size);
+  buf,
+  size);
   FREE(buf);
 }
 
 static void WRITESTRING(int fd,
-			const char * name) {
+  		const char * name) {
   GE_BREAK(NULL, name != NULL);
   WRITEINT(fd,
-	   strlen(name));
+     strlen(name));
   WRITE(fd,
-	name,
-	strlen(name));
+  name,
+  strlen(name));
 }
 
 static void writeMetaData(struct GE_Context * ectx,
-			  int fd,
-			  const struct ECRS_MetaData * meta) {
+  		  int fd,
+  		  const struct ECRS_MetaData * meta) {
   unsigned int size;
   char * buf;
 
   size = ECRS_sizeofMetaData(meta,
-			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
+  		     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
   if (size > 1024 * 1024)
     size = 1024 * 1024;
   buf = MALLOC(size);
   ECRS_serializeMetaData(ectx,
-			 meta,
-			 buf,
-			 size,
-			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
+  		 meta,
+  		 buf,
+  		 size,
+  		 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
   WRITEINT(fd, size);
   WRITE(fd,
-	buf,
-	size);
+  buf,
+  size);
   FREE(buf);
 }
 
 
 static void writeFileInfo(struct GE_Context * ectx,
-			  int fd,
-			  const ECRS_FileInfo * fi) {
+  		  int fd,
+  		  const ECRS_FileInfo * fi) {
   writeMetaData(ectx, fd, fi->meta);
   writeURI(fd, fi->uri);
 }
@@ -105,9 +105,9 @@ static void writeFileInfo(struct GE_Context * ectx,
  * (recursively) write a download list.
  */
 static void writeDownloadList(struct GE_Context * ectx,
-			      int fd,
-			      FSUI_Context * ctx,
-			      FSUI_DownloadList * list) {
+  		      int fd,
+  		      FSUI_Context * ctx,
+  		      FSUI_DownloadList * list) {
   int i;
   FSUI_SearchList * pos;
 
@@ -117,11 +117,11 @@ static void writeDownloadList(struct GE_Context * ectx,
   }
 #if DEBUG_PERSISTENCE
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Serializing download state of download `%s': (%llu, %llu)\n",
-	 list->filename,
-	 list->completed,
-	 list->total);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Serializing download state of download `%s': (%llu, %llu)\n",
+   list->filename,
+   list->completed,
+   list->total);
 #endif
   WRITEINT(fd, 1);
   if (list->search == NULL) {
@@ -131,18 +131,18 @@ static void writeDownloadList(struct GE_Context * ectx,
     pos = ctx->activeSearches;
     while (pos != list->search) {
       if ( (pos->sizeResultsReceived <= 1024 * 1024) &&
-	   (pos->sizeUnmatchedResultsReceived <= 1024 * 1024) )
-	i++;
+     (pos->sizeUnmatchedResultsReceived <= 1024 * 1024) )
+  i++;
       pos = pos->next;
       if (pos == NULL) {
-	GE_BREAK(ectx, 0);
-	i = 0;
-	break;
+  GE_BREAK(ectx, 0);
+  i = 0;
+  break;
       }
     }
     if ( (pos != NULL) &&
-	 ( (pos->sizeResultsReceived < 1024 * 1024) ||
-	   (pos->sizeUnmatchedResultsReceived < 1024 * 1024) ) )
+   ( (pos->sizeResultsReceived < 1024 * 1024) ||
+     (pos->sizeUnmatchedResultsReceived < 1024 * 1024) ) )
       i = 0;
     WRITEINT(fd, i);
   }
@@ -157,22 +157,22 @@ static void writeDownloadList(struct GE_Context * ectx,
 
   WRITESTRING(fd, list->filename);
   writeFileInfo(ectx,
-		fd,
-		&list->fi);
+  	fd,
+  	&list->fi);
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);
   writeDownloadList(ectx,
-		    fd,
-		    ctx,
-		    list->next);
+  	    fd,
+  	    ctx,
+  	    list->next);
   writeDownloadList(ectx,
-		    fd,
-		    ctx,
-		    list->child);
+  	    fd,
+  	    ctx,
+  	    list->child);
 }
 
 static void writeCollection(int fd,
-			    struct FSUI_Context * ctx) {
+  		    struct FSUI_Context * ctx) {
   if ( (ctx->collectionData == NULL) ||
        (ctx->collectionData->size > 16 * 1024 * 1024) ) {
     WRITEINT(fd, 0);
@@ -180,26 +180,26 @@ static void writeCollection(int fd,
   }
   /* serialize collection data */
   WRITE(fd,
-	ctx->collectionData,
-	ntohl(ctx->collectionData->size));
+  ctx->collectionData,
+  ntohl(ctx->collectionData->size));
 }
 
 static void writeSearches(int fd,
-			  struct FSUI_Context * ctx) {
+  		  struct FSUI_Context * ctx) {
   FSUI_SearchList * spos;
   int i;
 
   spos = ctx->activeSearches;
   while (spos != NULL) {
     if ( (spos->sizeResultsReceived > 1024 * 1024) ||
-	 (spos->sizeUnmatchedResultsReceived > 1024 * 1024) ) {
+   (spos->sizeUnmatchedResultsReceived > 1024 * 1024) ) {
       /* too large to serialize - skip! */
       spos = spos->next;
       continue;
     }
     GE_ASSERT(ctx->ectx,
-	      ECRS_isKeywordUri(spos->uri) ||
-	      ECRS_isNamespaceUri(spos->uri));
+        ECRS_isKeywordUri(spos->uri) ||
+        ECRS_isNamespaceUri(spos->uri));
     WRITEINT(fd, 1);
     WRITEINT(fd, spos->state);
     WRITEINT(fd, spos->maxResults);
@@ -212,25 +212,25 @@ static void writeSearches(int fd,
     writeURI(fd, spos->uri);
     for (i=0;i<spos->sizeResultsReceived;i++)
       writeFileInfo(ctx->ectx,
-		    fd,
-		    &spos->resultsReceived[i]);
+  	    fd,
+  	    &spos->resultsReceived[i]);
     for (i=0;i<spos->sizeUnmatchedResultsReceived;i++) {
       ResultPending * rp;
 
       rp = &spos->unmatchedResultsReceived[i];
       writeFileInfo(ctx->ectx,
-		    fd,
-		    &rp->fi);
+  	    fd,
+  	    &rp->fi);
       GE_ASSERT(ctx->ectx,
-		rp->matchingKeyCount < spos->numberOfURIKeys);
+  	rp->matchingKeyCount < spos->numberOfURIKeys);
       if (rp->matchingKeyCount > 1024) {
-	WRITEINT(fd, 0); /* too large to serialize */
-	continue;
+  WRITEINT(fd, 0); /* too large to serialize */
+  continue;
       }
       WRITEINT(fd, rp->matchingKeyCount);
       WRITE(fd,
-	    rp->matchingKeys,
-	    sizeof(HashCode512) * rp->matchingKeyCount);
+      rp->matchingKeys,
+      sizeof(HashCode512) * rp->matchingKeyCount);
     }
     spos = spos->next;
   }
@@ -238,7 +238,7 @@ static void writeSearches(int fd,
 }
 
 static void writeUnindexing(int fd,
-			    struct FSUI_Context * ctx) {
+  		    struct FSUI_Context * ctx) {
   FSUI_UnindexList * xpos;
 
 
@@ -254,9 +254,9 @@ static void writeUnindexing(int fd,
 }
 
 static void writeUploadList(int fd,
-			    struct FSUI_Context * ctx,
-			    struct FSUI_UploadList * upos,
-			    int top) {
+  		    struct FSUI_Context * ctx,
+  		    struct FSUI_UploadList * upos,
+  		    int top) {
   int bits;
 
   while (upos != NULL) {
@@ -290,8 +290,8 @@ static void writeUploadList(int fd,
 }
 
 static void writeUploads(int fd,
-			 struct FSUI_Context * ctx,
-			 struct FSUI_UploadList * upos) {
+  		 struct FSUI_Context * ctx,
+  		 struct FSUI_UploadList * upos) {
   struct FSUI_UploadShared * shared;
   int bits;
 
@@ -307,17 +307,17 @@ static void writeUploads(int fd,
     WRITEINT(fd, shared->doIndex);
     WRITEINT(fd, shared->anonymityLevel);
     WRITEINT(fd, shared->priority);
-    WRITEINT(fd, shared->individualKeywords);	
+    WRITEINT(fd, shared->individualKeywords);  
     WRITELONG(fd, shared->expiration);
     if (shared->extractor_config != NULL)
       WRITESTRING(fd,
-		  shared->extractor_config);
+  	  shared->extractor_config);
     if (shared->global_keywords != NULL)
       writeURI(fd, shared->global_keywords);
     writeUploadList(fd,
-		    ctx,
-		    upos,
-		    YES);
+  	    ctx,
+  	    upos,
+  	    YES);
     upos = upos->next;
   }
   WRITEINT(fd, 0);
@@ -327,24 +327,24 @@ void FSUI_serialize(struct FSUI_Context * ctx) {
   int fd;
 
   fd = disk_file_open(ctx->ectx,
-		      ctx->name,
-		      O_CREAT|O_TRUNC|O_WRONLY,
-		      S_IRUSR|S_IWUSR);
+  	      ctx->name,
+  	      O_CREAT|O_TRUNC|O_WRONLY,
+  	      S_IRUSR|S_IWUSR);
   if (fd == -1)
     return;
   WRITE(fd,
-	"FSUI01\n\0",
-	8); /* magic */
+  "FSUI01\n\0",
+  8); /* magic */
   writeCollection(fd, ctx);
   writeSearches(fd, ctx);
   writeDownloadList(ctx->ectx,
-		    fd,
-		    ctx,
-		    ctx->activeDownloads.child);
+  	    fd,
+  	    ctx,
+  	    ctx->activeDownloads.child);
   writeUnindexing(fd, ctx);
   writeUploads(fd,
-	       ctx,
-	       ctx->activeUploads.child);
+         ctx,
+         ctx->activeUploads.child);
   CLOSE(fd);
 }
 

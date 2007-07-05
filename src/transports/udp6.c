@@ -76,16 +76,16 @@ static struct MUTEX * configLock;
  * @return the port in host byte order
  */
 static unsigned short getGNUnetUDP6Port() {
-  struct servent * pse;	/* pointer to service information entry	*/
+  struct servent * pse;  /* pointer to service information entry	*/
   unsigned long long port;
 
  if (-1 == GC_get_configuration_value_number(cfg,
-					      "UDP6",
-					      "PORT",
-					      1,
-					      65535,
-					      2086,
-					      &port)) {
+  				      "UDP6",
+  				      "PORT",
+  				      1,
+  				      65535,
+  				      2086,
+  				      &port)) {
     if ((pse = getservbyname("gnunet", "udp")))
       port = htons(pse->s_port);
     else
@@ -103,34 +103,34 @@ static int passivesock(unsigned short port) {
   const int on = 1;
 
   sock = SOCKET(PF_INET6,
-		SOCK_DGRAM,
-		17);
+  	SOCK_DGRAM,
+  	17);
   if (sock < 0)
     GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		    "socket");
+  	    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  	    "socket");
   if ( SETSOCKOPT(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0 )
     GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		    "setsockopt");
+  	    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  	    "setsockopt");
   if (port != 0) {
     memset(&sin, 0, sizeof(sin));
     sin.sin6_family = AF_INET6;
     sin.sin6_port   = htons(port);
     memcpy(&sin.sin6_addr,
-	   &in6addr_any,
-	   sizeof(IP6addr));
+     &in6addr_any,
+     sizeof(IP6addr));
     if (BIND(sock, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
       GE_LOG_STRERROR(ectx,
-		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		      "bind");
+  	      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+  	      "bind");
       GE_LOG(ectx,
-	     GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-	     _("Failed to bind to UDP port %d.\n"),
-	     port);
+       GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+       _("Failed to bind to UDP port %d.\n"),
+       port);
       GE_DIE_STRERROR(ectx,
-		      GE_FATAL | GE_USER | GE_IMMEDIATE,
-		      "bind");
+  	      GE_FATAL | GE_USER | GE_IMMEDIATE,
+  	      "bind");
     }
   } /* do not bind if port == 0, then we use send-only! */
   return sock;
@@ -140,24 +140,24 @@ static int passivesock(unsigned short port) {
  * Check if we are explicitly forbidden to communicate with this IP.
  */
 static int isBlacklisted(const void * addr,
-			 unsigned int addr_len) {
+  		 unsigned int addr_len) {
   IP6addr ip;
   int ret;
 
   if (addr_len == sizeof(IP6addr)) {
     memcpy(&ip,
-	   addr,
-	   sizeof(IP6addr));
+     addr,
+     sizeof(IP6addr));
   } else if (addr_len == sizeof(struct sockaddr_in6)) {
     memcpy(&ip,
-	   &((struct sockaddr_in6*) addr)->sin6_addr,
-	   sizeof(IP6addr));
+     &((struct sockaddr_in6*) addr)->sin6_addr,
+     sizeof(IP6addr));
   } else {
     return SYSERR;
   }
   MUTEX_LOCK(configLock);
   ret = check_ipv6_listed(filteredNetworks_,
-			  ip);
+  		  ip);
   MUTEX_UNLOCK(configLock);
   return ret;
 }
@@ -166,18 +166,18 @@ static int isBlacklisted(const void * addr,
  * Check if we are allowed to connect to the given IP.
  */
 static int isWhitelisted(const void * addr,
-			 unsigned int addr_len) {
+  		 unsigned int addr_len) {
   IP6addr ip;
   int ret;
 
   if (addr_len == sizeof(IP6addr)) {
     memcpy(&ip,
-	   addr,
-	   sizeof(IP6addr));
+     addr,
+     sizeof(IP6addr));
   } else if (addr_len == sizeof(struct sockaddr_in6)) {
     memcpy(&ip,
-	   &((struct sockaddr_in6*) addr)->sin6_addr,
-	   sizeof(IP6addr));
+     &((struct sockaddr_in6*) addr)->sin6_addr,
+     sizeof(IP6addr));
   } else {
     return SYSERR;
   }
@@ -185,18 +185,18 @@ static int isWhitelisted(const void * addr,
   MUTEX_LOCK(configLock);
   if (allowedNetworks_ != NULL)
     ret = check_ipv6_listed(filteredNetworks_,
-			    ip);
+  		    ip);
   MUTEX_UNLOCK(configLock);
   return ret;
 }
 
 
 static int isRejected(const void * addr,
-		      unsigned int addr_len) {
+  	      unsigned int addr_len) {
   if ((YES == isBlacklisted(addr,
-			    addr_len)) ||
+  		    addr_len)) ||
       (YES != isWhitelisted(addr,
-			    addr_len)))	
+  		    addr_len)))	
     return YES;
   return NO;
 }
@@ -221,20 +221,20 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
        (ntohs(hello->header.type) != p2p_PROTO_hello) ||
        (YES == isBlacklisted(&haddr->ip,
-			     sizeof(IP6addr))) ||
+  		     sizeof(IP6addr))) ||
        (YES != isWhitelisted(&haddr->ip,
-			     sizeof(IP6addr))) )
+  		     sizeof(IP6addr))) )
     return SYSERR; /* obviously invalid */
   else {
 #if DEBUG_UDP6
     char inet6[INET6_ADDRSTRLEN];
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
-	inet_ntop(AF_INET6,
-		  &haddr->ip,
-		  inet6,
-		  INET6_ADDRSTRLEN),
-	ntohs(haddr->port));
+  "Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
+  inet_ntop(AF_INET6,
+  	  &haddr->ip,
+  	  inet6,
+  	  INET6_ADDRSTRLEN),
+  ntohs(haddr->port));
 #endif
     return OK;
   }
@@ -260,12 +260,12 @@ static P2P_hello_MESSAGE * createhello() {
   haddr = (Host6Address*) &msg[1];
 
   if (SYSERR == getPublicIP6Address(cfg,
-				    ectx,				
-				    &haddr->ip)) {
+  			    ectx,				
+  			    &haddr->ip)) {
     FREE(msg);
     GE_LOG(ectx,
-	   GE_WARNING,
-	   _("UDP6: Could not determine my public IPv6 address.\n"));
+     GE_WARNING,
+     _("UDP6: Could not determine my public IPv6 address.\n"));
     return NULL;
   }
   haddr->port      = htons(port);
@@ -285,9 +285,9 @@ static P2P_hello_MESSAGE * createhello() {
  * @return SYSERR on error, OK on success
  */
 static int udp6Send(TSession * tsession,
-		    const void * message,
-		    const unsigned int size,
-		    int importance) {
+  	    const void * message,
+  	    const unsigned int size,
+  	    int importance) {
   UDPMessage * mp;
   P2P_hello_MESSAGE * hello;
   Host6Address * haddr;
@@ -319,44 +319,44 @@ static int udp6Send(TSession * tsession,
   mp->header.type = 0;
   mp->sender   = *coreAPI->myIdentity;
   memcpy(&mp[1],
-	 message,
-	 size);
+   message,
+   size);
   ok = SYSERR;
   memset(&sin, 0, sizeof(sin));
   sin.sin6_family = AF_INET6;
   sin.sin6_port = haddr->port;
   memcpy(&sin.sin6_addr,
-	 &haddr->ip.addr,
-	 sizeof(IP6addr));
+   &haddr->ip.addr,
+   sizeof(IP6addr));
 #if DEBUG_UDP6
   GE_LOG(ectx,
-	 GE_DEBUG,
-	 "Sending message of %u bytes via UDP6 to %s:%d..\n",
-	 ssize,
-	 inet_ntop(AF_INET6,
-		   &sin,
-		   inet6,
-		   INET6_ADDRSTRLEN),
-	 ntohs(sin.sin_port));
+   GE_DEBUG,
+   "Sending message of %u bytes via UDP6 to %s:%d..\n",
+   ssize,
+   inet_ntop(AF_INET6,
+  	   &sin,
+  	   inet6,
+  	   INET6_ADDRSTRLEN),
+   ntohs(sin.sin_port));
 #endif
   if (YES == socket_send_to(udp_sock,
-			    NC_Nonblocking,
-			    mp,
-			    ssize,
-			    &ssize,
-			    (const char*) &sin,
-			    sizeof(sin))) {
+  		    NC_Nonblocking,
+  		    mp,
+  		    ssize,
+  		    &ssize,
+  		    (const char*) &sin,
+  		    sizeof(sin))) {
     ok = OK;
     if (stats != NULL)
       stats->change(stat_bytesSent,
-		    ssize);
+  	    ssize);
   } else {
     GE_LOG_STRERROR(ectx,
-		    GE_WARNING,
-		    "sendto");
+  	    GE_WARNING,
+  	    "sendto");
     if (stats != NULL)
       stats->change(stat_bytesDropped,
-		    ssize);
+  	    ssize);
   }
   FREE(mp);
   return ok;
@@ -378,35 +378,35 @@ static int startTransportServer() {
     if (sock == -1)
       return SYSERR;
     selector = select_create("udp6",
-			     YES,
-			     ectx,
-			     load_monitor,
-			     sock,
-			     sizeof(struct sockaddr_in6),
-			     0, /* timeout */
-			     &select_message_handler,
-			     NULL,
-			     &select_accept_handler,
-			     &isRejected,
-			     &select_close_handler,
-			     NULL,
-			     64 * 1024,
-			     16 /* max sockets */);
+  		     YES,
+  		     ectx,
+  		     load_monitor,
+  		     sock,
+  		     sizeof(struct sockaddr_in6),
+  		     0, /* timeout */
+  		     &select_message_handler,
+  		     NULL,
+  		     &select_accept_handler,
+  		     &isRejected,
+  		     &select_close_handler,
+  		     NULL,
+  		     64 * 1024,
+  		     16 /* max sockets */);
     if (selector == NULL)
       return SYSERR;
   }
   sock = SOCKET(PF_INET, SOCK_DGRAM, 17);
   if (sock == -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "socket");
+  	    GE_ERROR | GE_ADMIN | GE_BULK,
+  	    "socket");
     select_destroy(selector);
     selector = NULL;
     return SYSERR;
   }
   udp_sock = socket_create(ectx,
-			   load_monitor,
-			   sock);
+  		   load_monitor,
+  		   sock);
   return OK;
 }
 
@@ -419,21 +419,21 @@ static int reloadConfiguration() {
   MUTEX_LOCK(configLock);
   FREENONNULL(filteredNetworks_);
   GC_get_configuration_value_string(cfg,
-				    "UDP6",
-				    "BLACKLIST",
-				    "",
-				    &ch);
+  			    "UDP6",
+  			    "BLACKLIST",
+  			    "",
+  			    &ch);
   filteredNetworks_ = parse_ipv6_network_specification(ectx,
-						       ch);
+  					       ch);
   FREE(ch);
   GC_get_configuration_value_string(cfg,
-				    "UDP6",
-				    "WHITELIST",
-				    "",
-				    &ch);
+  			    "UDP6",
+  			    "WHITELIST",
+  			    "",
+  			    &ch);
   if (strlen(ch) > 0)
     allowedNetworks_ = parse_ipv6_network_specification(ectx,
-							ch);
+  						ch);
   else
     allowedNetworks_ = NULL;
   FREE(ch);
@@ -446,8 +446,8 @@ static int reloadConfiguration() {
  */
 static int
 helloToAddress(const P2P_hello_MESSAGE * hello,
-	       void ** sa,
-	       unsigned int * sa_len) {
+         void ** sa,
+         unsigned int * sa_len) {
   const Host6Address * haddr = (const Host6Address*) &hello[1];
   struct sockaddr_in6 * serverAddr;
   
@@ -455,12 +455,12 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
   serverAddr = MALLOC(sizeof(struct sockaddr_in6));
   *sa = serverAddr;
   memset(serverAddr,
-	 0,
-	 sizeof(struct sockaddr_in6));
+   0,
+   sizeof(struct sockaddr_in6));
   serverAddr->sin6_family   = AF_INET6;
   memcpy(&serverAddr->sin6_addr,
-	 haddr,
-	 sizeof(IP6addr));
+   haddr,
+   sizeof(IP6addr));
   serverAddr->sin6_port = haddr->port;
   return OK;
 }
@@ -486,20 +486,20 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
 
   reloadConfiguration();
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "UDP6",
-					      "MTU",
-					      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 32,
-					      65500,
-					      MESSAGE_SIZE,
-					      &mtu)) {
+  				      "UDP6",
+  				      "MTU",
+  				      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 32,
+  				      65500,
+  				      MESSAGE_SIZE,
+  				      &mtu)) {
     return NULL;
   }
   if (mtu < 1200)
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_IMMEDIATE,
-	   _("MTU %llu for `%s' is probably too low!\n"),
-	   mtu,
-	   "UDP6");
+     GE_ERROR | GE_USER | GE_IMMEDIATE,
+     _("MTU %llu for `%s' is probably too low!\n"),
+     mtu,
+     "UDP6");
 
   udpAPI.protocolNumber       = UDP6_PROTOCOL_NUMBER;
   udpAPI.mtu                  = mtu - sizeof(UDPMessage);

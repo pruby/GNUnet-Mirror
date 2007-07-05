@@ -104,14 +104,14 @@ typedef struct {
  * @param im updated structure used to select the peer
  */
 static int scanHelperCount(const PeerIdentity * id,
-			   unsigned short proto,	
-			   int confirmed,
-			   void * data) {
+  		   unsigned short proto,	
+  		   int confirmed,
+  		   void * data) {
   IndexMatch * im = data;
 
   if (0 == memcmp(coreAPI->myIdentity,
-		  id,
-		  sizeof(PeerIdentity)))
+  	  id,
+  	  sizeof(PeerIdentity)))
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
     return OK;
@@ -133,14 +133,14 @@ static int scanHelperCount(const PeerIdentity * id,
  * @param im structure responsible for the selection process
  */
 static int scanHelperSelect(const PeerIdentity * id,
-			    unsigned short proto,
-			    int confirmed,
-			    void * data) {
+  		    unsigned short proto,
+  		    int confirmed,
+  		    void * data) {
   IndexMatch * im = data;
 
   if (0 == memcmp(coreAPI->myIdentity,
-		  id,
-		  sizeof(PeerIdentity)))
+  	  id,
+  	  sizeof(PeerIdentity)))
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
     return OK;
@@ -149,7 +149,7 @@ static int scanHelperSelect(const PeerIdentity * id,
   if (YES == transport->isAvailable(proto)) {
     im->costSelector -= transport->getCost(proto);
     if ( (im->matchCount == 0) ||
-	 (im->costSelector < 0) ) {
+   (im->costSelector < 0) ) {
       im->match = *id;
       return SYSERR;
     }
@@ -174,22 +174,22 @@ static void scanForHosts(unsigned int index) {
 #endif
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return; /* bandwidth saturated, do not
-	       push it higher! */
+         push it higher! */
   now = get_time();
   indexMatch.index = index;
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
   identity->forEachHost(now,
-			&scanHelperCount,
-			&indexMatch);
+  		&scanHelperCount,
+  		&indexMatch);
   if (indexMatch.matchCount == 0) {
 #if DEBUG_TOPOLOGY
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   "No peers found for slot %u\n",
-	   index);
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     "No peers found for slot %u\n",
+     index);
 #endif
     return; /* no matching peers found! */
   }
@@ -198,11 +198,11 @@ static void scanForHosts(unsigned int index) {
       = weak_randomi64(indexMatch.costSelector);
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost(now,
-			&scanHelperSelect,
-			&indexMatch);
+  		&scanHelperSelect,
+  		&indexMatch);
   if (0 == memcmp(coreAPI->myIdentity,
-		  &indexMatch.match,
-		  sizeof(PeerIdentity)))
+  	  &indexMatch.match,
+  	  sizeof(PeerIdentity)))
     return; /* should happen really rarely */
   if (coreAPI->computeIndex(&indexMatch.match) != index) {
     GE_BREAK(NULL, 0); /* should REALLY not happen */
@@ -215,22 +215,22 @@ static void scanForHosts(unsigned int index) {
 
 #if DEBUG_TOPOLOGY
   IF_GELOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
-	   hash2enc(&indexMatch.match.hashPubKey,
-		    &enc));
+     GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
+     hash2enc(&indexMatch.match.hashPubKey,
+  	    &enc));
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
-	 "Trying to connect to peer `%s'\n",
-	 &enc);
+   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
+   "Trying to connect to peer `%s'\n",
+   &enc);
 #endif
   if (NO == identity->isBlacklistedStrict(&indexMatch.match)) {
     coreAPI->unicast(&indexMatch.match,
-		     NULL,
-		     0,
-		     0);
+  	     NULL,
+  	     0,
+  	     0);
     identity->blacklistHost(&indexMatch.match,
-			    (unsigned int) (saturation * 5 * 60 * 60), /* 5 hours at full saturation */
-			    NO);
+  		    (unsigned int) (saturation * 5 * 60 * 60), /* 5 hours at full saturation */
+  		    NO);
   }
 }
 
@@ -245,13 +245,13 @@ static void notifyPONG(void * cls) {
   EncName enc;
   
   IF_GELOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   hash2enc(&hostId->hashPubKey,
-		    &enc));
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     hash2enc(&hostId->hashPubKey,
+  	    &enc));
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Received liveness confirmation from `%s'.\n",
-	 &enc);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Received liveness confirmation from `%s'.\n",
+   &enc);
 #endif
 
   coreAPI->confirmSessionUp(hostId);
@@ -262,7 +262,7 @@ static void notifyPONG(void * cls) {
  * Check the liveness of the peer and possibly ping it.
  */
 static void checkNeedForPing(const PeerIdentity * peer,
-			     void * unused) {
+  		     void * unused) {
   cron_t now;
   cron_t act;
   PeerIdentity * hi;
@@ -285,24 +285,24 @@ static void checkNeedForPing(const PeerIdentity * peer,
     EncName enc;
     
     IF_GELOG(coreAPI->ectx,
-	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	     hash2enc(&peer->hashPubKey,
-		      &enc));
+       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+       hash2enc(&peer->hashPubKey,
+  	      &enc));
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   "Peer `%s' was inactive for %llus.  Sending PING.\n",
-	   &enc,
-	   (now-act)/cronSECONDS);
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     "Peer `%s' was inactive for %llus.  Sending PING.\n",
+     &enc,
+     (now-act)/cronSECONDS);
 #endif
 
 
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
     if (OK != pingpong->ping(peer,
-			     &notifyPONG,
-			     hi,
-			     NO,
-			     rand()))
+  		     &notifyPONG,
+  		     hi,
+  		     NO,
+  		     rand()))
       FREE(hi);
   }
 }
@@ -322,9 +322,9 @@ static void cronCheckLiveness(void * unused) {
   int autoconnect;
 
   autoconnect = GC_get_configuration_value_yesno(coreAPI->cfg,
-						 "GNUNETD",
-						 "DISABLE-AUTOCONNECT",
-						 NO);
+  					 "GNUNETD",
+  					 "DISABLE-AUTOCONNECT",
+  					 NO);
   slotCount = coreAPI->getSlotCount();
   if ( (NO == autoconnect) &&
        (saturation < 1) ) {
@@ -334,13 +334,13 @@ static void cronCheckLiveness(void * unused) {
       minint = MAX_PEERS_PER_SLOT; /* never put more than 10 peers into a slot */
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
-	continue;
-      if (minint > coreAPI->isSlotUsed(i))	
-	scanForHosts(i);
+  continue;
+      if (minint > coreAPI->isSlotUsed(i))  
+  scanForHosts(i);
     }
   }
   active = coreAPI->forAllConnectedNodes(&checkNeedForPing,
-					 NULL);
+  				 NULL);
   saturation = 1.0 * active / slotCount;
 }
 
@@ -352,8 +352,8 @@ static int estimateNetworkSize() {
   if (active == 0)
     return 0;
   known = identity->forEachHost(0,
-				NULL,
-				NULL);
+  			NULL,
+  			NULL);
   if (active > known)
     return active; /* should not be possible */
   /* Assumption:
@@ -386,8 +386,8 @@ static double estimateSaturation() {
 static int allowConnection(const PeerIdentity * peer) {
   if ( (coreAPI->myIdentity != NULL) &&
        (0 == memcmp(coreAPI->myIdentity,
-		    peer,
-		    sizeof(PeerIdentity))) )
+  	    peer,
+  	    sizeof(PeerIdentity))) )
     return SYSERR; /* disallow connections to self */
   return OK; /* allow everything else */
 }
@@ -419,10 +419,10 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     return NULL;
   }
   cron_add_job(capi->cron,
-	       &cronCheckLiveness,
-	       LIVE_SCAN_FREQUENCY,
-	       LIVE_SCAN_FREQUENCY,
-	       NULL);
+         &cronCheckLiveness,
+         LIVE_SCAN_FREQUENCY,
+         LIVE_SCAN_FREQUENCY,
+         NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -431,9 +431,9 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 
 int release_module_topology_default() {
   cron_del_job(coreAPI->cron,
-	       &cronCheckLiveness,
-	       LIVE_SCAN_FREQUENCY,
-	       NULL);
+         &cronCheckLiveness,
+         LIVE_SCAN_FREQUENCY,
+         NULL);
   coreAPI->releaseService(identity);
   identity = NULL;
   coreAPI->releaseService(transport);
@@ -465,7 +465,7 @@ void update_module_topology_default(UpdateAPI * uapi) {
      anyway) */
   state = uapi->requestService("state");
   state->unlink(NULL,
-		TOPOLOGY_TAG_FILE);
+  	TOPOLOGY_TAG_FILE);
   uapi->releaseService(state);
   state = NULL;
 }
@@ -478,13 +478,13 @@ int initialize_module_topology_default(CoreAPIForApplication * capi) {
   myCapi = capi;
   myTopology = capi->requestService("topology");
   GE_ASSERT(capi->ectx,
-	    myTopology != NULL);
+      myTopology != NULL);
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						   "ABOUT",
-						   "topology",
-						   gettext_noop("maintains GNUnet default mesh topology")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					   "ABOUT",
+  					   "topology",
+  					   gettext_noop("maintains GNUnet default mesh topology")));
   return OK;
 }
 

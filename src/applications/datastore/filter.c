@@ -36,24 +36,24 @@
 static struct Bloomfilter * filter;
 
 static char * getFilterName(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg) {
+  		    struct GC_Configuration * cfg) {
   char * fn;
   char * bf;
 
   fn = NULL;
   if (-1 == GC_get_configuration_value_filename(cfg,
-					      "FS",
-					      "DIR",
-					      VAR_DAEMON_DIRECTORY "/fs",
-					      &fn))
+  				      "FS",
+  				      "DIR",
+  				      VAR_DAEMON_DIRECTORY "/fs",
+  				      &fn))
     return NULL;
   if (OK != disk_directory_create(ectx,
-				  fn)) {
+  			  fn)) {
     FREE(fn);
     return NULL;
   }
   bf = MALLOC(strlen(fn)+
-	      strlen("/bloomfilter")+1);
+        strlen("/bloomfilter")+1);
   strcpy(bf, fn);
   strcat(bf, "/bloomfilter");
   FREE(fn);
@@ -61,18 +61,18 @@ static char * getFilterName(struct GE_Context * ectx,
 }
 
 int initFilters(struct GE_Context * ectx,
-		struct GC_Configuration * cfg) {
+  	struct GC_Configuration * cfg) {
   char * bf;
   unsigned long long quota; /* in kb */
   unsigned int bf_size;
 
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "FS",
-					      "QUOTA",
-					      0,
-					      ((unsigned long long)-1)/1024/1024,
-					      1024,
-					      &quota))
+  				      "FS",
+  				      "QUOTA",
+  				      0,
+  				      ((unsigned long long)-1)/1024/1024,
+  				      1024,
+  				      &quota))
     return SYSERR;
   quota *= 1024;
   bf_size = quota / 32; /* 8 bit per entry, 1 bit per 32 kb in DB */
@@ -81,9 +81,9 @@ int initFilters(struct GE_Context * ectx,
     return SYSERR;
   filter
     = loadBloomfilter(ectx,
-		      bf,
-		      bf_size,
-		      5); /* approx. 3% false positives at max use */
+  	      bf,
+  	      bf_size,
+  	      5); /* approx. 3% false positives at max use */
   FREE(bf);
   if (filter == NULL)
     return SYSERR;
@@ -96,7 +96,7 @@ void doneFilters() {
 }
 
 void deleteFilter(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg) {
+  	  struct GC_Configuration * cfg) {
   char * fn;
 
   GE_ASSERT(ectx, filter == NULL);
@@ -115,7 +115,7 @@ void makeUnavailable(const HashCode512 * key) {
 
 int testAvailable(const HashCode512 * key) {
   return testBloomfilter(filter,
-			 key);
+  		 key);
 }
 
 /* end of filter.c */

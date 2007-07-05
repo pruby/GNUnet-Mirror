@@ -53,9 +53,9 @@
  * The valid types for an xmlnode
  */
 typedef enum _XMLNodeType {
-  XMLNODE_TYPE_TAG,		/**< Just a tag */
-  XMLNODE_TYPE_ATTRIB,		/**< Has attributes */
-  XMLNODE_TYPE_DATA		/**< Has data */
+  XMLNODE_TYPE_TAG,  	/**< Just a tag */
+  XMLNODE_TYPE_ATTRIB,  	/**< Has attributes */
+  XMLNODE_TYPE_DATA  	/**< Has data */
 } XMLNodeType;
 
 typedef struct {
@@ -66,22 +66,22 @@ typedef struct {
 } XMLNodePool;
 
 struct _xmlnode {
-  char *name;			/**< The name of the node. */
-  char *xmlns;		/**< The namespace of the node */
-  XMLNodeType type;		/**< The type of the node. */
-  char *data;			/**< The data for the node. */
-  size_t data_sz;			/**< The size of the data. */
-  struct _xmlnode *parent;	/**< The parent node or @c NULL.*/
-  struct _xmlnode *child;		/**< The child node or @c NULL.*/
-  struct _xmlnode *lastchild;	/**< The last child node or @c NULL.*/
-  struct _xmlnode *next;		/**< The next node or @c NULL. */
+  char *name;  		/**< The name of the node. */
+  char *xmlns;  	/**< The namespace of the node */
+  XMLNodeType type;  	/**< The type of the node. */
+  char *data;  		/**< The data for the node. */
+  size_t data_sz;  		/**< The size of the data. */
+  struct _xmlnode *parent;  /**< The parent node or @c NULL.*/
+  struct _xmlnode *child;  	/**< The child node or @c NULL.*/
+  struct _xmlnode *lastchild;  /**< The last child node or @c NULL.*/
+  struct _xmlnode *next;  	/**< The next node or @c NULL. */
   XMLNodePool * pool;
   int free_pool; /* set to YES for the root node, which must free the pool */
 };
 
 
 static void * g_memdup(const void * data,
-		       size_t s) {
+  	       size_t s) {
   void * ret;
 
   ret = MALLOC(s);
@@ -90,22 +90,22 @@ static void * g_memdup(const void * data,
 }
 
 static char * g_string_append_len(char * prefix,
-				  const void * data,
-				  size_t s) {
+  			  const void * data,
+  			  size_t s) {
   char * ret;
 
   ret = g_strdup_printf("%s%.*s",
-			prefix,
-			s,
-			data);
+  		prefix,
+  		s,
+  		data);
   FREE(prefix);
   return ret;
 }
 
 static xmlnode*
 new_node(const char *name,
-	 XMLNodeType type,
-	 void * user_data) {
+   XMLNodeType type,
+   void * user_data) {
   xmlnode *node = MALLOC(sizeof(xmlnode));
 
   node->name = name == NULL ? NULL : STRDUP(name);
@@ -113,8 +113,8 @@ new_node(const char *name,
   node->pool = user_data;
   if (node->pool->size == node->pool->pos)
     GROW(node->pool->nodes,
-	 node->pool->size,
-	 node->pool->size * 2 + 64);
+   node->pool->size,
+   node->pool->size * 2 + 64);
   node->pool->nodes[node->pool->pos++] = node;
   node->free_pool = 0;
   return node;
@@ -122,16 +122,16 @@ new_node(const char *name,
 
 static xmlnode*
 xmlnode_new(const char *name,
-	    void * user_data) {
+      void * user_data) {
   g_return_val_if_fail(name != NULL, NULL);
   return new_node(name,
-		  XMLNODE_TYPE_TAG,
-		  user_data);
+  	  XMLNODE_TYPE_TAG,
+  	  user_data);
 }
 
 static void
 xmlnode_insert_child(xmlnode *parent,
-		     xmlnode *child) {
+  	     xmlnode *child) {
   g_return_if_fail(parent != NULL);
   g_return_if_fail(child != NULL);
 
@@ -145,8 +145,8 @@ xmlnode_insert_child(xmlnode *parent,
 
 static xmlnode *
 xmlnode_new_child(xmlnode *parent,
-		  const char *name,
-		  void * user_data) {
+  	  const char *name,
+  	  void * user_data) {
   xmlnode *node;
 
   g_return_val_if_fail(parent != NULL, NULL);
@@ -158,9 +158,9 @@ xmlnode_new_child(xmlnode *parent,
 
 static void
 xmlnode_insert_data(xmlnode *node,
-		    const char *data,
-		    int size,
-		    void * user_data) {
+  	    const char *data,
+  	    int size,
+  	    void * user_data) {
   xmlnode *child;
   size_t real_size;
 
@@ -176,7 +176,7 @@ xmlnode_insert_data(xmlnode *node,
 
 static void
 xmlnode_remove_attrib(xmlnode *node,
-		      const char *attr) {
+  	      const char *attr) {
   xmlnode *attr_node, *sibling = NULL;
 
   g_return_if_fail(node != NULL);
@@ -186,12 +186,12 @@ xmlnode_remove_attrib(xmlnode *node,
     if(attr_node->type == XMLNODE_TYPE_ATTRIB &&
        !strcmp(attr_node->name, attr)) {
       if(node->child == attr_node) {
-	node->child = attr_node->next;
+  node->child = attr_node->next;
       } else {
-	sibling->next = attr_node->next;
+  sibling->next = attr_node->next;
       }
       if (node->lastchild == attr_node) {
-	node->lastchild = sibling;
+  node->lastchild = sibling;
       }
       xmlnode_free(attr_node);
       return;
@@ -202,9 +202,9 @@ xmlnode_remove_attrib(xmlnode *node,
 
 static void
 xmlnode_set_attrib(xmlnode *node,
-		   const char *attr,
-		   const char *value,
-		   void * user_data) {
+  	   const char *attr,
+  	   const char *value,
+  	   void * user_data) {
   xmlnode *attrib_node;
 
   g_return_if_fail(node != NULL);
@@ -217,7 +217,7 @@ xmlnode_set_attrib(xmlnode *node,
 }
 
 static void xmlnode_set_namespace(xmlnode *node,
-				  const char *xmlns) {
+  			  const char *xmlns) {
   g_return_if_fail(node != NULL);
   FREENONNULL(node->xmlns);
   node->xmlns = STRDUP(xmlns);
@@ -256,8 +256,8 @@ xmlnode_free(xmlnode *node) {
 
 static xmlnode *
 xmlnode_get_child_with_namespace(const xmlnode *parent,
-				 const char *name,
-				 const char *ns) {
+  			 const char *name,
+  			 const char *ns) {
   xmlnode *x;
   xmlnode *ret = NULL;
   char *parent_name;
@@ -273,7 +273,7 @@ xmlnode_get_child_with_namespace(const xmlnode *parent,
   if (child_name != NULL) {
     child_name[0] = '\0';
     child_name++;
-  }	
+  }  
 
   for(x = parent->child; x; x = x->next) {
     const char *xmlns = NULL;
@@ -296,10 +296,10 @@ xmlnode_get_child_with_namespace(const xmlnode *parent,
 
 xmlnode*
 xmlnode_get_child(const xmlnode *parent,
-		  const char *name) {
+  	  const char *name) {
   return xmlnode_get_child_with_namespace(parent,
-					  name,
-					  NULL);
+  				  name,
+  				  NULL);
 }
 
 char *
@@ -312,7 +312,7 @@ xmlnode_get_data(xmlnode *node) {
   for(c = node->child; c; c = c->next) {
     if(c->type == XMLNODE_TYPE_DATA) {
       if(!str)
-	str = STRDUP("");
+  str = STRDUP("");
       str = g_string_append_len(str, c->data, c->data_sz);
     }
   }
@@ -324,14 +324,14 @@ xmlnode_get_data(xmlnode *node) {
 
 static void
 xmlnode_parser_element_start_libxml(void *user_data,
-				    const xmlChar *element_name,
-				    const xmlChar *prefix,
-				    const xmlChar *xmlns,
-				    int nb_namespaces,
-				    const xmlChar **namespaces,
-				    int nb_attributes,
-				    int nb_defaulted,
-				    const xmlChar **attributes) {
+  			    const xmlChar *element_name,
+  			    const xmlChar *prefix,
+  			    const xmlChar *xmlns,
+  			    int nb_namespaces,
+  			    const xmlChar **namespaces,
+  			    int nb_attributes,
+  			    int nb_defaulted,
+  			    const xmlChar **attributes) {
   XMLNodePool *xpd = user_data;
   xmlnode *node;
   int i;
@@ -362,9 +362,9 @@ xmlnode_parser_element_start_libxml(void *user_data,
 
 static void
 xmlnode_parser_element_end_libxml(void *user_data,
-				  const xmlChar *element_name,
-				  const xmlChar *prefix,
-				  const xmlChar *xmlns) {
+  			  const xmlChar *element_name,
+  			  const xmlChar *prefix,
+  			  const xmlChar *xmlns) {
   XMLNodePool *xpd = user_data;
 
   if(!element_name || !xpd->current)
@@ -377,56 +377,56 @@ xmlnode_parser_element_end_libxml(void *user_data,
 
 static void
 xmlnode_parser_element_text_libxml(void *user_data,
-				   const xmlChar *text,
-				   int text_len) {
+  			   const xmlChar *text,
+  			   int text_len) {
   XMLNodePool *xpd = user_data;
 
   if (!xpd->current || !text || !text_len)
     return;
   xmlnode_insert_data(xpd->current,
-		      (const char*) text,
-		      text_len,
-		      user_data);
+  	      (const char*) text,
+  	      text_len,
+  	      user_data);
 }
 
 static xmlSAXHandler xmlnode_parser_libxml = {
-	.internalSubset         = NULL,
-	.isStandalone           = NULL,
-	.hasInternalSubset      = NULL,
-	.hasExternalSubset      = NULL,
-	.resolveEntity          = NULL,
-	.getEntity              = NULL,
-	.entityDecl             = NULL,
-	.notationDecl           = NULL,
-	.attributeDecl          = NULL,
-	.elementDecl            = NULL,
-	.unparsedEntityDecl     = NULL,
-	.setDocumentLocator     = NULL,
-	.startDocument          = NULL,
-	.endDocument            = NULL,
-	.startElement           = NULL,
-	.endElement             = NULL,
-	.reference              = NULL,
-	.characters             = xmlnode_parser_element_text_libxml,
-	.ignorableWhitespace    = NULL,
-	.processingInstruction  = NULL,
-	.comment                = NULL,
-	.warning                = NULL,
-	.error                  = NULL,
-	.fatalError             = NULL,
-	.getParameterEntity     = NULL,
-	.cdataBlock             = NULL,
-	.externalSubset         = NULL,
-	.initialized            = XML_SAX2_MAGIC,
-	._private               = NULL,
-	.startElementNs         = xmlnode_parser_element_start_libxml,
-	.endElementNs           = xmlnode_parser_element_end_libxml,
-	.serror                 = NULL
+  .internalSubset         = NULL,
+  .isStandalone           = NULL,
+  .hasInternalSubset      = NULL,
+  .hasExternalSubset      = NULL,
+  .resolveEntity          = NULL,
+  .getEntity              = NULL,
+  .entityDecl             = NULL,
+  .notationDecl           = NULL,
+  .attributeDecl          = NULL,
+  .elementDecl            = NULL,
+  .unparsedEntityDecl     = NULL,
+  .setDocumentLocator     = NULL,
+  .startDocument          = NULL,
+  .endDocument            = NULL,
+  .startElement           = NULL,
+  .endElement             = NULL,
+  .reference              = NULL,
+  .characters             = xmlnode_parser_element_text_libxml,
+  .ignorableWhitespace    = NULL,
+  .processingInstruction  = NULL,
+  .comment                = NULL,
+  .warning                = NULL,
+  .error                  = NULL,
+  .fatalError             = NULL,
+  .getParameterEntity     = NULL,
+  .cdataBlock             = NULL,
+  .externalSubset         = NULL,
+  .initialized            = XML_SAX2_MAGIC,
+  ._private               = NULL,
+  .startElementNs         = xmlnode_parser_element_start_libxml,
+  .endElementNs           = xmlnode_parser_element_end_libxml,
+  .serror                 = NULL
 };
 
 xmlnode *
 xmlnode_from_str(const char *str,
-		 int size) {
+  	 int size) {
   XMLNodePool *xpd;
   xmlnode *ret;
   size_t real_size;
@@ -436,12 +436,12 @@ xmlnode_from_str(const char *str,
   real_size = size < 0 ? strlen(str) : size;
   xpd = MALLOC(sizeof(XMLNodePool));
   memset(xpd,
-	 0,
-	 sizeof(XMLNodePool));
+   0,
+   sizeof(XMLNodePool));
   if (xmlSAXUserParseMemory(&xmlnode_parser_libxml,
-			    xpd,
-			    str,
-			    real_size) < 0) {
+  		    xpd,
+  		    str,
+  		    real_size) < 0) {
     freePool(xpd);
     return NULL;
   }

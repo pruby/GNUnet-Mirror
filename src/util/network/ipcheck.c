@@ -58,7 +58,7 @@ typedef struct CIDR6Network {
  * @return the converted list, NULL if the synatx is flawed
  */
 CIDRNetwork * parse_ipv4_network_specification(struct GE_Context * ectx,
-					       const char * routeList) {
+  				       const char * routeList) {
   unsigned int count;
   unsigned int i;
   unsigned int j;
@@ -81,96 +81,96 @@ CIDRNetwork * parse_ipv4_network_specification(struct GE_Context * ectx,
   result = MALLOC(sizeof(CIDRNetwork) * (count+1));
   /* add termination */
   memset(result,
-	 0,
-	 sizeof(CIDRNetwork)*(count+1));
+   0,
+   sizeof(CIDRNetwork)*(count+1));
   i=0;
   pos = 0;
   while (i < count) {
     cnt = sscanf(&routeList[pos],
-		 "%u.%u.%u.%u/%u.%u.%u.%u;",
-		 &temps[0],
-		 &temps[1],
-		 &temps[2],
-		 &temps[3],
-		 &temps[4],
-		 &temps[5],
-		 &temps[6],
-		 &temps[7]);
+  	 "%u.%u.%u.%u/%u.%u.%u.%u;",
+  	 &temps[0],
+  	 &temps[1],
+  	 &temps[2],
+  	 &temps[3],
+  	 &temps[4],
+  	 &temps[5],
+  	 &temps[6],
+  	 &temps[7]);
     if (cnt == 8) {
       for (j=0;j<8;j++)
-	if (temps[j] > 0xFF) {
-	  GE_LOG(ectx,
-		 GE_ERROR | GE_USER | GE_IMMEDIATE,
-		 _("Invalid format for IP: `%s'\n"),
-		 &routeList[pos]);
-	  FREE(result);
-	  return NULL;
-	}
+  if (temps[j] > 0xFF) {
+    GE_LOG(ectx,
+  	 GE_ERROR | GE_USER | GE_IMMEDIATE,
+  	 _("Invalid format for IP: `%s'\n"),
+  	 &routeList[pos]);
+    FREE(result);
+    return NULL;
+  }
       result[i].network.addr
-	= htonl((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) + temps[3]);
+  = htonl((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) + temps[3]);
       result[i].netmask.addr
-	= htonl((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) + temps[7]);
+  = htonl((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) + temps[7]);
       while (routeList[pos] != ';')
-	pos++;
+  pos++;
       pos++;
       i++;
       continue;
     }
     /* try second notation */
     cnt = sscanf(&routeList[pos],
-		 "%u.%u.%u.%u/%u;",
-		 &temps[0],
-		 &temps[1],
-		 &temps[2],
-		 &temps[3],
-		 &slash);
+  	 "%u.%u.%u.%u/%u;",
+  	 &temps[0],
+  	 &temps[1],
+  	 &temps[2],
+  	 &temps[3],
+  	 &slash);
     if (cnt == 5) {
       for (j=0;j<4;j++)
-	if (temps[j] > 0xFF) {
-	  GE_LOG(ectx,
-		 GE_ERROR | GE_USER | GE_IMMEDIATE,
-		 _("Invalid format for IP: `%s'\n"),
-		 &routeList[pos]);
-	  FREE(result);
-	  return NULL;
-	}
+  if (temps[j] > 0xFF) {
+    GE_LOG(ectx,
+  	 GE_ERROR | GE_USER | GE_IMMEDIATE,
+  	 _("Invalid format for IP: `%s'\n"),
+  	 &routeList[pos]);
+    FREE(result);
+    return NULL;
+  }
       result[i].network.addr
-	= htonl((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) + temps[3]);
+  = htonl((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) + temps[3]);
       if ( (slash <= 32) && (slash > 0) ) {
-	result[i].netmask.addr = 0;
-	while (slash > 0) {
-	  result[i].netmask.addr
-	    = (result[i].netmask.addr >> 1) + 0x80000000;
-	  slash--;
-	}
-	result[i].netmask.addr
-	  = htonl(result[i].netmask.addr);
-	while (routeList[pos] != ';')
-	  pos++;
-	pos++;
- 	i++;
-	continue;
+  result[i].netmask.addr = 0;
+  while (slash > 0) {
+    result[i].netmask.addr
+      = (result[i].netmask.addr >> 1) + 0x80000000;
+    slash--;
+  }
+  result[i].netmask.addr
+    = htonl(result[i].netmask.addr);
+  while (routeList[pos] != ';')
+    pos++;
+  pos++;
+   i++;
+  continue;
       } else {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_USER | GE_IMMEDIATE,
-	       _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
-	       slash);
-	FREE(result);
-	return NULL; /* error */
+  GE_LOG(ectx,
+         GE_ERROR | GE_USER | GE_IMMEDIATE,
+         _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
+         slash);
+  FREE(result);
+  return NULL; /* error */
       }
     }
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_IMMEDIATE,
-	   _("Invalid format for IP: `%s'\n"),
-	   &routeList[pos]);
+     GE_ERROR | GE_USER | GE_IMMEDIATE,
+     _("Invalid format for IP: `%s'\n"),
+     &routeList[pos]);
     FREE(result);
     return NULL; /* error */
   }
   if (pos < strlen(routeList)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_IMMEDIATE,
-	   _("Invalid format for IP: `%s'\n"),
-	   &routeList[pos]);
+     GE_ERROR | GE_USER | GE_IMMEDIATE,
+     _("Invalid format for IP: `%s'\n"),
+     &routeList[pos]);
     FREE(result);
     return NULL; /* oops */
   }
@@ -190,7 +190,7 @@ CIDRNetwork * parse_ipv4_network_specification(struct GE_Context * ectx,
  * @return the converted list, NULL if the synatx is flawed
  */
 CIDR6Network * parse_ipv6_network_specification(struct GE_Context * ectx,
-						const char * routeListX) {
+  					const char * routeListX) {
   unsigned int count;
   unsigned int i;
   unsigned int len;
@@ -213,17 +213,17 @@ CIDR6Network * parse_ipv6_network_specification(struct GE_Context * ectx,
       count++;
   if (routeList[len-1] != ';') {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_IMMEDIATE,
-	   _("Invalid network notation (does not end with ';': `%s')\n"),
-	   routeList);
+     GE_ERROR | GE_USER | GE_IMMEDIATE,
+     _("Invalid network notation (does not end with ';': `%s')\n"),
+     routeList);
     FREE(routeList);
     return NULL;
   }
 
   result = MALLOC(sizeof(CIDR6Network) * (count+1));
   memset(result,
-	 0,
-	 sizeof(CIDR6Network) * (count+1));
+   0,
+   sizeof(CIDR6Network) * (count+1));
   i=0;
   pos = 0;
   while (i < count) {
@@ -232,39 +232,39 @@ CIDR6Network * parse_ipv6_network_specification(struct GE_Context * ectx,
       pos++;
     slash = pos;
     while ( (slash >= start) &&
-	    (routeList[slash] != '/') )
+      (routeList[slash] != '/') )
       slash--;
     if (slash < start) {
       memset(&result[i].netmask,
-	     0xFF,
-	     sizeof(IP6addr));	
+       0xFF,
+       sizeof(IP6addr));	
       slash = pos;
     } else {
       routeList[pos] = '\0';
       ret = inet_pton(AF_INET6,
-		      &routeList[slash+1],
-		      &result[i].netmask);
+  	      &routeList[slash+1],
+  	      &result[i].netmask);
       if (ret <= 0) {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_USER | GE_IMMEDIATE,
-	       _("Wrong format `%s' for netmask: %s\n"),
-	       &routeList[slash+1],
-	       STRERROR(errno));
-	FREE(result);
-	FREE(routeList);
-	return NULL;
+  GE_LOG(ectx,
+         GE_ERROR | GE_USER | GE_IMMEDIATE,
+         _("Wrong format `%s' for netmask: %s\n"),
+         &routeList[slash+1],
+         STRERROR(errno));
+  FREE(result);
+  FREE(routeList);
+  return NULL;
       }
     }
     routeList[slash] = '\0';
     ret = inet_pton(AF_INET6,
-		    &routeList[start],
-		    &result[i].network);
+  	    &routeList[start],
+  	    &result[i].network);
     if (ret <= 0) {
       GE_LOG(ectx,
-	     GE_ERROR | GE_USER | GE_IMMEDIATE,
-	     _("Wrong format `%s' for network: %s\n"),
-	     &routeList[slash+1],
-	       STRERROR(errno));
+       GE_ERROR | GE_USER | GE_IMMEDIATE,
+       _("Wrong format `%s' for network: %s\n"),
+       &routeList[slash+1],
+         STRERROR(errno));
       FREE(result);
       FREE(routeList);
       return NULL;
@@ -284,7 +284,7 @@ CIDR6Network * parse_ipv6_network_specification(struct GE_Context * ectx,
  * @return NO if the IP is not in the list, YES if it it is
  */
 int check_ipv4_listed(const CIDRNetwork * list,
-		      IPaddr ip) {
+  	      IPaddr ip) {
   int i;
   IPaddr add;
 
@@ -294,9 +294,9 @@ int check_ipv4_listed(const CIDRNetwork * list,
     return NO;
 
   while ( (list[i].network.addr != 0) ||
-	  (list[i].netmask.addr != 0) ) {
+    (list[i].netmask.addr != 0) ) {
     if ( (add.addr & list[i].netmask.addr) ==
-	 (list[i].network.addr & list[i].netmask.addr) )
+   (list[i].network.addr & list[i].netmask.addr) )
       return YES;
     i++;
   }
@@ -311,7 +311,7 @@ int check_ipv4_listed(const CIDRNetwork * list,
  * @return NO if the IP is not in the list, YES if it it is
  */
 int check_ipv6_listed(const CIDR6Network * list,
-		      IP6addr ip) {
+  	      IP6addr ip) {
   unsigned int i;
   unsigned int j;
   struct in6_addr zero;
@@ -322,10 +322,10 @@ int check_ipv6_listed(const CIDR6Network * list,
 
   memset(&zero, 0, sizeof(struct in6_addr));
   while ( (memcmp(&zero, &list[i].network, sizeof(struct in6_addr)) != 0) ||
-	  (memcmp(&zero, &list[i].netmask, sizeof(struct in6_addr)) != 0) ) {
+    (memcmp(&zero, &list[i].netmask, sizeof(struct in6_addr)) != 0) ) {
     for (j=0;j<sizeof(struct in6_addr)/sizeof(int);j++)
       if ( ((((int*)&ip)[j] & ((int*)&list[i].netmask)[j])) !=
-	   (((int*)&list[i].network)[j] & ((int*)&list[i].netmask)[j]) ) {
+     (((int*)&list[i].network)[j] & ((int*)&list[i].netmask)[j]) ) {
       i++;
       continue;
     }

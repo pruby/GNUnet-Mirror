@@ -145,7 +145,7 @@ static void callAddHost(void * cls) {
  */
 static int
 receivedhello(const PeerIdentity * sender,
-	      const MESSAGE_HEADER * message) {
+        const MESSAGE_HEADER * message) {
   TSession * tsession;
   P2P_hello_MESSAGE * copy;
   PeerIdentity foreignId;
@@ -166,48 +166,48 @@ receivedhello(const PeerIdentity * sender,
     return SYSERR;
   }
   identity->getPeerIdentity(&msg->publicKey,
-			    &foreignId);
+  		    &foreignId);
   if (! equalsHashCode512(&msg->senderIdentity.hashPubKey,
-			  &foreignId.hashPubKey)) {
+  		  &foreignId.hashPubKey)) {
     GE_BREAK(ectx, 0);
     return SYSERR; /* public key and host hash do not match */
   }
   if (SYSERR == verifySig(&msg->senderIdentity,
-			  P2P_hello_MESSAGE_size(msg)
-			  - sizeof(Signature)
-			  - sizeof(PublicKey)
-			  - sizeof(MESSAGE_HEADER),
-			  &msg->signature,
-			  &msg->publicKey)) {
+  		  P2P_hello_MESSAGE_size(msg)
+  		  - sizeof(Signature)
+  		  - sizeof(PublicKey)
+  		  - sizeof(MESSAGE_HEADER),
+  		  &msg->signature,
+  		  &msg->publicKey)) {
     IF_GELOG(ectx,
-	     GE_WARNING | GE_BULK | GE_USER,
-	     hash2enc(&msg->senderIdentity.hashPubKey,
-		      &enc));
+       GE_WARNING | GE_BULK | GE_USER,
+       hash2enc(&msg->senderIdentity.hashPubKey,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("HELLO message from `%s' has an invalid signature. Dropping.\n"),
-	   (char*)&enc);
+     GE_WARNING | GE_BULK | GE_USER,
+     _("HELLO message from `%s' has an invalid signature. Dropping.\n"),
+     (char*)&enc);
     GE_BREAK(ectx, 0);
     return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
      GE_LOG(ectx,
-	    GE_WARNING | GE_BULK | GE_USER,
-	    _("HELLO message has expiration too far in the future. Dropping.\n"));
+      GE_WARNING | GE_BULK | GE_USER,
+      _("HELLO message has expiration too far in the future. Dropping.\n"));
      GE_BREAK(ectx, 0);
      return SYSERR;
   }
   if (SYSERR == transport->verifyhello(msg)) {
 #if DEBUG_ADVERTISING
     IF_GELOG(ectx,
-	     GE_INFO | GE_BULK | GE_USER,
-	     hash2enc(&msg->senderIdentity.hashPubKey,
-		      &enc));    
+       GE_INFO | GE_BULK | GE_USER,
+       hash2enc(&msg->senderIdentity.hashPubKey,
+  	      &enc));    
     GE_LOG(ectx,
-	   GE_DEBUG | GE_BULK | GE_USER,
-	   "Transport verification of HELLO message from `%s' failed (%u).\n",
-	   &enc,
-	   ntohs(msg->protocol));
+     GE_DEBUG | GE_BULK | GE_USER,
+     "Transport verification of HELLO message from `%s' failed (%u).\n",
+     &enc,
+     ntohs(msg->protocol));
 #endif
     return OK; /* not good, but do process rest of message */
   }
@@ -215,14 +215,14 @@ receivedhello(const PeerIdentity * sender,
     stats->change(stat_hello_in, 1);
 #if DEBUG_ADVERTISING
   IF_GELOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   hash2enc(&msg->senderIdentity.hashPubKey,
-		    &enc));
+     GE_INFO | GE_REQUEST | GE_USER,
+     hash2enc(&msg->senderIdentity.hashPubKey,
+  	    &enc));
   GE_LOG(ectx,
-	 GE_INFO | GE_REQUEST | GE_USER,
-	 "HELLO advertisement from `%s' for protocol %d received.\n",
-	 &enc,
-	 ntohs(msg->protocol));
+   GE_INFO | GE_REQUEST | GE_USER,
+   "HELLO advertisement from `%s' for protocol %d received.\n",
+   &enc,
+   ntohs(msg->protocol));
 #endif
   if (ntohs(msg->protocol) == NAT_PROTOCOL_NUMBER) {
     /* We *can* not verify NAT.  Ever.  So all we
@@ -244,38 +244,38 @@ receivedhello(const PeerIdentity * sender,
   /* Then check if we have seen this hello before, if it is identical
      except for the TTL, we trust it and do not play PING-PONG */
   copy = identity->identity2Hello(&foreignId,
-				  ntohs(msg->protocol),
-				  NO);
+  			  ntohs(msg->protocol),
+  			  NO);
   if (NULL != copy) {
     if ( (ntohs(copy->senderAddressSize) ==
-	  ntohs(msg->senderAddressSize)) &&
-	 (0 == memcmp(&msg->MTU,
-		      &copy->MTU,
-		      sizeof(unsigned short)*2+
-		      sizeof(unsigned int) +
-		      ntohs(copy->senderAddressSize)) ) ) {
+    ntohs(msg->senderAddressSize)) &&
+   (0 == memcmp(&msg->MTU,
+  	      &copy->MTU,
+  	      sizeof(unsigned short)*2+
+  	      sizeof(unsigned int) +
+  	      ntohs(copy->senderAddressSize)) ) ) {
       /* ok, we've seen this one exactly like this before (at most the
-	 TTL has changed); thus we can 'trust' it without playing
-	 ping-pong */
+   TTL has changed); thus we can 'trust' it without playing
+   ping-pong */
       identity->addHost(msg);
       if (stats != NULL)
-	stats->change(stat_hello_update, 1);
+  stats->change(stat_hello_update, 1);
       FREE(copy);
       return OK;
     }
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "HELLO advertisement differs from prior knowledge,"
-	   " requireing ping-pong confirmation.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "HELLO advertisement differs from prior knowledge,"
+     " requireing ping-pong confirmation.\n");
 #endif
     FREE(copy);
   }
 
   if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
-					      "GNUNETD",
-					      "PRIVATE-NETWORK",
-					      NO)) {
+  				      "GNUNETD",
+  				      "PRIVATE-NETWORK",
+  				      NO)) {
     /* the option 'PRIVATE-NETWORK' can be used
        to limit the connections of this peer to
        peers of which the hostkey has been copied
@@ -292,8 +292,8 @@ receivedhello(const PeerIdentity * sender,
        editing :-). */
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
-	   "Private network, discarding unknown advertisements\n");
+     GE_INFO | GE_BULK | GE_USER,
+     "Private network, discarding unknown advertisements\n");
 #endif
     return SYSERR;
   }
@@ -307,8 +307,8 @@ receivedhello(const PeerIdentity * sender,
   if ( (sender != NULL) &&
        ( (now - lasthelloMsg) / cronSECONDS) *
        (os_network_monitor_get_limit(coreAPI->load_monitor,
-				     Download))
-	< P2P_hello_MESSAGE_size(msg) * 10 ) {
+  			     Download))
+  < P2P_hello_MESSAGE_size(msg) * 10 ) {
     /* do not use more than about 10% of the
        available bandwidth to VERIFY hellos (by sending
        our own with a PING).  This does not affect
@@ -320,12 +320,12 @@ receivedhello(const PeerIdentity * sender,
        hello-ing by ourselves. */
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER,
-	   "Not enough resources to verify HELLO message at this time (%u * %u < %u * 10)\n",
-	   (unsigned int) ((now - lasthelloMsg) / cronSECONDS),
-	   (unsigned int) os_network_monitor_get_limit(coreAPI->load_monitor,
-						       Download),
-	   (unsigned int) P2P_hello_MESSAGE_size(msg));
+     GE_INFO | GE_BULK | GE_USER,
+     "Not enough resources to verify HELLO message at this time (%u * %u < %u * 10)\n",
+     (unsigned int) ((now - lasthelloMsg) / cronSECONDS),
+     (unsigned int) os_network_monitor_get_limit(coreAPI->load_monitor,
+  					       Download),
+     (unsigned int) P2P_hello_MESSAGE_size(msg));
 #endif
     if (stats != NULL)
       stats->change(stat_hello_discard, 1);
@@ -353,18 +353,18 @@ receivedhello(const PeerIdentity * sender,
   }
   copy = MALLOC(P2P_hello_MESSAGE_size(msg));
   memcpy(copy,
-	 msg,
-	 P2P_hello_MESSAGE_size(msg));
+   msg,
+   P2P_hello_MESSAGE_size(msg));
   ping = pingpong->pingUser(&msg->senderIdentity,
-			    &callAddHost,
-			    copy,
-			    YES,
-			    rand());
+  		    &callAddHost,
+  		    copy,
+  		    YES,
+  		    rand());
   if (ping == NULL) {
     res = SYSERR;
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   _("Could not send HELLO+PING, ping buffer full.\n"));
+     GE_INFO | GE_REQUEST | GE_USER,
+     _("Could not send HELLO+PING, ping buffer full.\n"));
     transport->disconnect(tsession);
     if (stats != NULL)
       stats->change(stat_hello_ping_busy, 1);
@@ -373,16 +373,16 @@ receivedhello(const PeerIdentity * sender,
   buffer = MALLOC(mtu);
   if (mtu > ntohs(ping->size)) {
     helloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
-					     buffer);
+  				     buffer);
     GE_ASSERT(ectx,
-	      mtu - ntohs(ping->size) >= helloEnd);
+        mtu - ntohs(ping->size) >= helloEnd);
   } else {
     helloEnd = -2;
   }
   if (helloEnd <= 0) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Failed to create an advertisement for this peer. Will not send PING.\n"));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("Failed to create an advertisement for this peer. Will not send PING.\n"));
     FREE(buffer);
     if (stats != NULL)
       stats->change(stat_hello_noselfad, 1);
@@ -391,16 +391,16 @@ receivedhello(const PeerIdentity * sender,
   }
   res = OK;
   memcpy(&buffer[helloEnd],
-	 ping,
-	 ntohs(ping->size));
+   ping,
+   ntohs(ping->size));
   helloEnd += ntohs(ping->size);
   FREE(ping);
 
   /* ok, finally we can send! */
   if ( (res == OK) &&
        (SYSERR == coreAPI->sendPlaintext(tsession,
-					 buffer,
-					 helloEnd)) ) {
+  				 buffer,
+  				 helloEnd)) ) {
 
     if (stats != NULL)
       stats->change(stat_hello_send_error, 1);
@@ -425,9 +425,9 @@ typedef struct {
 
 static int
 broadcastHelper(const PeerIdentity * hi,
-		const unsigned short proto,
-		int confirmed,
-		void * cls) {
+  	const unsigned short proto,
+  	int confirmed,
+  	void * cls) {
   SendData * sd = cls;
   P2P_hello_MESSAGE * hello;
   TSession * tsession;
@@ -447,30 +447,30 @@ broadcastHelper(const PeerIdentity * hi,
     return OK;
 #if DEBUG_ADVERTISING
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&hi->hashPubKey,
-		    &other));
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     hash2enc(&hi->hashPubKey,
+  	    &other));
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Entering `%s' with target `%s'.\n",
-	 __FUNCTION__,
-	 &other);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Entering `%s' with target `%s'.\n",
+   __FUNCTION__,
+   &other);
 #endif
   if (0 == memcmp(hi,
-		  coreAPI->myIdentity,
-		  sizeof(PeerIdentity)))
+  	  coreAPI->myIdentity,
+  	  sizeof(PeerIdentity)))
     return OK; /* never advertise to myself... */
   prio = (int) getConnectPriority();
   if (prio >= EXTREME_PRIORITY)
     prio = EXTREME_PRIORITY / 4;
   if (OK == coreAPI->queryPeerStatus(hi, NULL, NULL)) {
     coreAPI->unicast(hi,
-		     &sd->m->header,
-		     prio,
-		     HELLO_BROADCAST_FREQUENCY);
+  	     &sd->m->header,
+  	     prio,
+  	     HELLO_BROADCAST_FREQUENCY);
     if (stats != NULL)
       stats->change(stat_hello_out,
-		    1);
+  	    1);
     return OK;
   }
   /* with even lower probability (with n peers
@@ -484,14 +484,14 @@ broadcastHelper(const PeerIdentity * hi,
 
   /* establish short-lived connection, send, tear down */
   hello = identity->identity2Hello(hi,
-				  proto,
-				  NO);
+  			  proto,
+  			  NO);
   if (NULL == hello) {
 #if DEBUG_ADVERTISING
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Exit from `%s' (error: `%s' failed).\n",
-	__FUNCTION__,
-	"identity2Hello");
+  "Exit from `%s' (error: `%s' failed).\n",
+  __FUNCTION__,
+  "identity2Hello");
 #endif
     return OK;
   }
@@ -500,25 +500,25 @@ broadcastHelper(const PeerIdentity * hi,
   if (tsession == NULL) {
 #if DEBUG_ADVERTISING
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Exit from `%s' (%s error).\n",
-	   __FUNCTION__,
-	   "transportConnect");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Exit from `%s' (%s error).\n",
+     __FUNCTION__,
+     "transportConnect");
 #endif
     return OK; /* could not connect */
   }
   if (stats != NULL)
     stats->change(stat_hello_out,
-		  1);
+  	  1);
   coreAPI->sendPlaintext(tsession,
-			 (char*)&sd->m->header,
-			 P2P_hello_MESSAGE_size(sd->m));
+  		 (char*)&sd->m->header,
+  		 P2P_hello_MESSAGE_size(sd->m));
   transport->disconnect(tsession);
 #if DEBUG_ADVERTISING
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Exit from %s.\n",
-	 __FUNCTION__);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Exit from %s.\n",
+   __FUNCTION__);
 #endif
   return OK;
 }
@@ -529,43 +529,43 @@ broadcastHelper(const PeerIdentity * hi,
  */
 static void
 broadcasthelloTransport(TransportAPI * tapi,
-			void * cls) {
+  		void * cls) {
   const int * prob = cls;
   SendData sd;
   cron_t now;
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return; /* network load too high... */
   if ( ((*prob) != 0) &&
        (0 != weak_randomi(*prob)) )
     return; /* ignore */
   now = get_time();
   sd.n = identity->forEachHost(now,
-			       NULL,
-			       NULL); /* just count */
+  		       NULL,
+  		       NULL); /* just count */
   sd.m = transport->createhello(tapi->protocolNumber);
   if (sd.m == NULL)
     return;
 #if DEBUG_ADVERTISING
   GE_LOG(ectx,
-	 GE_INFO | GE_REQUEST | GE_USER,
-	 _("Advertising my transport %d to selected peers.\n"),
-	 tapi->protocolNumber);
+   GE_INFO | GE_REQUEST | GE_USER,
+   _("Advertising my transport %d to selected peers.\n"),
+   tapi->protocolNumber);
 #endif
   identity->addHost(sd.m);
   if (sd.n < 1) {
     if (identity->forEachHost(0, NULL, NULL) == 0)
       GE_LOG(ectx, 
-	     GE_WARNING | GE_BULK | GE_USER,
-	     _("Announcing ourselves pointless: "
-	       "no other peers are known to us so far.\n"));
+       GE_WARNING | GE_BULK | GE_USER,
+       _("Announcing ourselves pointless: "
+         "no other peers are known to us so far.\n"));
     FREE(sd.m);
     return; /* no point in trying... */
   }
   identity->forEachHost(now,
-			&broadcastHelper,
-			&sd);
+  		&broadcastHelper,
+  		&sd);
   FREE(sd.m);
 }
 
@@ -577,16 +577,16 @@ static void broadcasthello(void * unused) {
   unsigned int i;
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return; /* network load too high... */
   if (os_cpu_get_load(coreAPI->ectx,
-		      coreAPI->cfg) > 100)
+  	      coreAPI->cfg) > 100)
     return; /* CPU load too high... */
   i = transport->forEach(NULL,
-			 NULL);
+  		 NULL);
   if (i > 0) 
     transport->forEach(&broadcasthelloTransport,
-		       &i);
+  	       &i);
 }
 
 typedef struct {
@@ -595,24 +595,24 @@ typedef struct {
 } FCC;
 
 static void forwardCallback(const PeerIdentity * peer,
-			    void * cls) {
+  		    void * cls) {
   FCC * fcc = cls;
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return; /* network load too high... */
   if ( (fcc->prob != 0) &&
        (weak_randomi(fcc->prob) != 0) )
     return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
-			&fcc->msg->senderIdentity.hashPubKey))
+  		&fcc->msg->senderIdentity.hashPubKey))
     return; /* do not bounce the hello of a peer back
-	       to the same peer! */
+         to the same peer! */
   if (stats != NULL)
     stats->change(stat_hello_fwd, 1);
   coreAPI->unicast(peer,
-		   &fcc->msg->header,
-		   0, /* priority */
-		   HELLO_BROADCAST_FREQUENCY);
+  	   &fcc->msg->header,
+  	   0, /* priority */
+  	   HELLO_BROADCAST_FREQUENCY);
 }
 
 /**
@@ -620,9 +620,9 @@ static void forwardCallback(const PeerIdentity * peer,
  */
 static int
 forwardhelloHelper(const PeerIdentity * peer,
-		   unsigned short protocol,
-		   int confirmed,
-		   void * data) {
+  	   unsigned short protocol,
+  	   int confirmed,
+  	   void * data) {
   int * probability = data;
   P2P_hello_MESSAGE * hello;
   TIME_T now;
@@ -630,15 +630,15 @@ forwardhelloHelper(const PeerIdentity * peer,
   FCC fcc;
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return SYSERR; /* network load too high... */
   if (confirmed == NO)
     return OK;
   if (protocol == NAT_PROTOCOL_NUMBER)
     return OK; /* don't forward NAT addresses */
   hello = identity->identity2Hello(peer,
-				   protocol,
-				   NO);
+  			   protocol,
+  			   NO);
   if (NULL == hello)
     return OK; /* this should not happen */
   /* do not forward expired hellos */
@@ -648,14 +648,14 @@ forwardhelloHelper(const PeerIdentity * peer,
     EncName enc;
     /* remove hellos that expired */
     IF_GELOG(ectx,
-	     GE_INFO | GE_REQUEST | GE_USER,
-	     hash2enc(&peer->hashPubKey,
-		      &enc));
+       GE_INFO | GE_REQUEST | GE_USER,
+       hash2enc(&peer->hashPubKey,
+  	      &enc));
     GE_LOG(ectx, 
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   "Removing HELLO from peer `%s' (expired %ds ago).\n",
-	   &enc,
-	   now - ntohl(hello->expirationTime));
+     GE_INFO | GE_REQUEST | GE_USER,
+     "Removing HELLO from peer `%s' (expired %ds ago).\n",
+     &enc,
+     now - ntohl(hello->expirationTime));
 #endif
     identity->delHostFromKnown(peer, protocol);
     FREE(hello);
@@ -665,15 +665,15 @@ forwardhelloHelper(const PeerIdentity * peer,
   if (weak_randomi((*probability)+1) != 0) {
     FREE(hello);
     return OK; /* only forward with a certain chance,
-	       (on average: 1 peer per run!) */
+         (on average: 1 peer per run!) */
   }
   count = coreAPI->forAllConnectedNodes(NULL,
-					NULL);
+  				NULL);
   if (count > 0) {
     fcc.msg  = hello;
     fcc.prob = count;
     coreAPI->forAllConnectedNodes(&forwardCallback,
-				  &fcc);
+  			  &fcc);
   }
   FREE(hello);
   return OK;
@@ -689,18 +689,18 @@ forwardhello(void * unused) {
   int count;
 
   if (os_cpu_get_load(coreAPI->ectx,
-		      coreAPI->cfg) > 100)
+  	      coreAPI->cfg) > 100)
     return; /* CPU load too high... */
   if (os_network_monitor_get_load(coreAPI->load_monitor,
-				  Upload) > 100)
+  			  Upload) > 100)
     return; /* network load too high... */
   count = identity->forEachHost(0,
-				NULL,
-				NULL);
+  			NULL,
+  			NULL);
   if (count > 0)
     identity->forEachHost(0, /* ignore blacklisting */
-			  &forwardhelloHelper,
-			  &count);
+  		  &forwardhelloHelper,
+  		  &count);
 }
 
 /**
@@ -708,14 +708,14 @@ forwardhello(void * unused) {
  */
 static int
 ehelloHandler(const PeerIdentity * sender,
-	      const MESSAGE_HEADER * message) {
+        const MESSAGE_HEADER * message) {
   if (OK == receivedhello(sender,
-			  message)) {
+  		  message)) {
     /* if the hello was ok, update traffic preference
        for the peer (depending on how much we like
        to learn about other peers) */
     coreAPI->preferTrafficFrom(sender,
-			       getConnectPriority());
+  		       getConnectPriority());
   }
   return OK; /* even if we had errors processing the hello, keep going */
 }
@@ -725,10 +725,10 @@ ehelloHandler(const PeerIdentity * sender,
  */
 static int
 phelloHandler(const PeerIdentity * sender,
-	      const MESSAGE_HEADER * message,
-	      TSession * session) {
+        const MESSAGE_HEADER * message,
+        TSession * session) {
   receivedhello(sender,
-		message);
+  	message);
   return OK;
 }
 
@@ -739,55 +739,55 @@ phelloHandler(const PeerIdentity * sender,
  */
 static int
 configurationUpdateCallback(void * ctx,
-			    struct GC_Configuration * cfg,
-			    struct GE_Context * ectx,
-			    const char * section,
-			    const char * option) {
+  		    struct GC_Configuration * cfg,
+  		    struct GE_Context * ectx,
+  		    const char * section,
+  		    const char * option) {
   if (0 != strcmp(section, "NETWORK"))
     return 0;
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
     if (YES == GC_get_configuration_value_yesno(cfg,
-						"NETWORK",
-						"DISABLE-ADVERTISEMENTS",
-						NO))
+  					"NETWORK",
+  					"DISABLE-ADVERTISEMENTS",
+  					NO))
       cron_del_job(coreAPI->cron,
-		   &broadcasthello,
-		   HELLO_BROADCAST_FREQUENCY,
-		   NULL);
+  	   &broadcasthello,
+  	   HELLO_BROADCAST_FREQUENCY,
+  	   NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
     if (YES != GC_get_configuration_value_yesno(cfg,
-						"NETWORK",
-						"DISABLE-ADVERTISEMENTS",
-						NO))
+  					"NETWORK",
+  					"DISABLE-ADVERTISEMENTS",
+  					NO))
       cron_add_job(coreAPI->cron,
-		   &broadcasthello,
-		   15 * cronSECONDS,
-		   HELLO_BROADCAST_FREQUENCY,
-		   NULL);
+  	   &broadcasthello,
+  	   15 * cronSECONDS,
+  	   HELLO_BROADCAST_FREQUENCY,
+  	   NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     if (YES != GC_get_configuration_value_yesno(cfg,
-						"NETWORK",
-						"HELLOEXCHANGE",
-						YES)) {
+  					"NETWORK",
+  					"HELLOEXCHANGE",
+  					YES)) {
       cron_del_job(coreAPI->cron,
-		   &forwardhello,
-		   HELLO_FORWARD_FREQUENCY,
-		   NULL); /* seven minutes: exchange */
+  	   &forwardhello,
+  	   HELLO_FORWARD_FREQUENCY,
+  	   NULL); /* seven minutes: exchange */
     }
     activeCronJobs -= ACJ_FORWARD;
   } else {
     if (YES == GC_get_configuration_value_yesno(cfg,
-						"NETWORK",
-						"HELLOEXCHANGE",
-						YES)) {
+  					"NETWORK",
+  					"HELLOEXCHANGE",
+  					YES)) {
       cron_add_job(coreAPI->cron,
-		   &forwardhello,
-		   15 * cronSECONDS,
-		   HELLO_FORWARD_FREQUENCY,
-		   NULL);
+  	   &forwardhello,
+  	   15 * cronSECONDS,
+  	   HELLO_FORWARD_FREQUENCY,
+  	   NULL);
     }
     activeCronJobs += ACJ_FORWARD;
   }
@@ -851,27 +851,27 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   }
 
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 _("`%s' registering handler %d (plaintext and ciphertext)\n"),
-	 "advertising",
-	 p2p_PROTO_hello);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   _("`%s' registering handler %d (plaintext and ciphertext)\n"),
+   "advertising",
+   p2p_PROTO_hello);
 
   capi->registerHandler(p2p_PROTO_hello,
-			&ehelloHandler);
+  		&ehelloHandler);
   capi->registerPlaintextHandler(p2p_PROTO_hello,
-				 &phelloHandler);
+  			 &phelloHandler);
   if (0 != GC_attach_change_listener(capi->cfg,
-				     &configurationUpdateCallback,
-				     NULL))
+  			     &configurationUpdateCallback,
+  			     NULL))
     GE_BREAK(capi->ectx, 0);
   startBootstrap(capi);
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						   "ABOUT",
-						   "advertising",
-						   _("ensures that this peer is known by other"
-						     " peers and discovers other peers")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					   "ABOUT",
+  					   "advertising",
+  					   _("ensures that this peer is known by other"
+  					     " peers and discovers other peers")));
   return OK;
 }
 
@@ -881,26 +881,26 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 void done_module_advertising() {
   stopBootstrap();
   GC_detach_change_listener(coreAPI->cfg,
-			    &configurationUpdateCallback,
-			    NULL);
+  		    &configurationUpdateCallback,
+  		    NULL);
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
     cron_del_job(coreAPI->cron,
-		 &broadcasthello,
-		 HELLO_BROADCAST_FREQUENCY,
-		 NULL);
+  	 &broadcasthello,
+  	 HELLO_BROADCAST_FREQUENCY,
+  	 NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     cron_del_job(coreAPI->cron,
-		 &forwardhello,
-		 HELLO_FORWARD_FREQUENCY,
-		 NULL); /* seven minutes: exchange */
+  	 &forwardhello,
+  	 HELLO_FORWARD_FREQUENCY,
+  	 NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   }
   coreAPI->unregisterHandler(p2p_PROTO_hello,
-			     &ehelloHandler);
+  		     &ehelloHandler);
   coreAPI->unregisterPlaintextHandler(p2p_PROTO_hello,
-				      &phelloHandler);
+  			      &phelloHandler);
   coreAPI->releaseService(transport);
   transport = NULL;
   coreAPI->releaseService(identity);

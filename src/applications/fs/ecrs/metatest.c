@@ -40,51 +40,51 @@ static int testMeta(int i) {
 
   m = ECRS_createMetaData();
   if (OK != ECRS_addToMetaData(m,
-			       EXTRACTOR_TITLE,
-			       "TestTitle"))
+  		       EXTRACTOR_TITLE,
+  		       "TestTitle"))
     ABORT(m);
   if (OK != ECRS_addToMetaData(m,
-			       EXTRACTOR_AUTHOR,
-			       "TestTitle"))
+  		       EXTRACTOR_AUTHOR,
+  		       "TestTitle"))
     ABORT(m);
   if (OK == ECRS_addToMetaData(m,
-			       EXTRACTOR_TITLE,
-			       "TestTitle")) /* dup! */
+  		       EXTRACTOR_TITLE,
+  		       "TestTitle")) /* dup! */
     ABORT(m);
   if (OK == ECRS_addToMetaData(m,
-			       EXTRACTOR_AUTHOR,
-			       "TestTitle")) /* dup! */
+  		       EXTRACTOR_AUTHOR,
+  		       "TestTitle")) /* dup! */
     ABORT(m);
   if (2 != ECRS_getMetaData(m, NULL, NULL))
     ABORT(m);
   if (OK != ECRS_delFromMetaData(m,
-				 EXTRACTOR_AUTHOR,
-				 "TestTitle"))
+  			 EXTRACTOR_AUTHOR,
+  			 "TestTitle"))
     ABORT(m);
   if (OK == ECRS_delFromMetaData(m,
-				 EXTRACTOR_AUTHOR,
-				 "TestTitle")) /* already gone */
+  			 EXTRACTOR_AUTHOR,
+  			 "TestTitle")) /* already gone */
     ABORT(m);
   if (1 != ECRS_getMetaData(m, NULL, NULL))
     ABORT(m);
   if (OK != ECRS_delFromMetaData(m,
-				 EXTRACTOR_TITLE,
-				 "TestTitle"))
+  			 EXTRACTOR_TITLE,
+  			 "TestTitle"))
     ABORT(m);
   if (OK == ECRS_delFromMetaData(m,
-				 EXTRACTOR_TITLE,
-				 "TestTitle")) /* already gone */
+  			 EXTRACTOR_TITLE,
+  			 "TestTitle")) /* already gone */
     ABORT(m);
   if (0 != ECRS_getMetaData(m, NULL, NULL))
     ABORT(m);
   val = MALLOC(256);
   for (j=0;j<i;j++) {
     SNPRINTF(val, 256, "%s.%d",
-	     "A teststring that should compress well.",
-	     j);
+       "A teststring that should compress well.",
+       j);
     if (OK != ECRS_addToMetaData(m,
-				 EXTRACTOR_UNKNOWN,
-				 val)) {
+  			 EXTRACTOR_UNKNOWN,
+  			 val)) {
       FREE(val);
       ABORT(m);
     }
@@ -94,31 +94,31 @@ static int testMeta(int i) {
     ABORT(m);
 
   size = ECRS_sizeofMetaData(m,
-			     ECRS_SERIALIZE_FULL);
+  		     ECRS_SERIALIZE_FULL);
   val = MALLOC(size);
   if (size != ECRS_serializeMetaData(NULL,
-				     m,
-				     val,
-				     size,
-				     ECRS_SERIALIZE_FULL)) {
+  			     m,
+  			     val,
+  			     size,
+  			     ECRS_SERIALIZE_FULL)) {
     FREE(val);
     ABORT(m);
   }
   ECRS_freeMetaData(m);
   m = ECRS_deserializeMetaData(NULL,
-			       val,
-			       size);
+  		       val,
+  		       size);
   FREE(val);
   if (m == NULL)
     ABORT(m);
   val = MALLOC(256);
   for (j=0;j<i;j++) {
     SNPRINTF(val, 256, "%s.%d",
-	     "A teststring that should compress well.",
-	     j);
+       "A teststring that should compress well.",
+       j);
     if (OK != ECRS_delFromMetaData(m,
-				   EXTRACTOR_UNKNOWN,
-				   val)) {
+  			   EXTRACTOR_UNKNOWN,
+  			   val)) {
       FREE(val);
       ABORT(m);
     }
@@ -141,21 +141,21 @@ int testMetaMore(int i) {
   meta = ECRS_createMetaData();
   for (q=0;q<=i;q++) {
     SNPRINTF(txt,
-	     128,
-	     "%u -- %u\n",
-	     i, q);
+       128,
+       "%u -- %u\n",
+       i, q);
     ECRS_addToMetaData(meta,
-		       q % EXTRACTOR_getHighestKeywordTypeNumber(),
-		       txt);
+  	       q % EXTRACTOR_getHighestKeywordTypeNumber(),
+  	       txt);
   }
   size = ECRS_sizeofMetaData(meta,
-			     ECRS_SERIALIZE_FULL);
+  		     ECRS_SERIALIZE_FULL);
   data = MALLOC(size * 4);
   if (size != ECRS_serializeMetaData(NULL,
-				     meta,
-				     data,
-				     size * 4,
-				     ECRS_SERIALIZE_FULL)) {
+  			     meta,
+  			     data,
+  			     size * 4,
+  			     ECRS_SERIALIZE_FULL)) {
     FREE(data);
     ABORT(meta);
   }

@@ -101,7 +101,7 @@ struct MigrationRecord {
 static struct MigrationRecord content[MAX_RECORDS];
 
 static struct GE_Context * ectx;
-	
+  
 /**
  * Callback method for pushing content into the network.
  * The method chooses either a "recently" deleted block
@@ -119,8 +119,8 @@ static struct GE_Context * ectx;
  */
 static unsigned int
 activeMigrationCallback(const PeerIdentity * receiver,
-			void * position,
-			unsigned int padding) {
+  		void * position,
+  		unsigned int padding) {
   unsigned int ret;
   GapWrapper * gw;
   unsigned int size;
@@ -155,46 +155,46 @@ activeMigrationCallback(const PeerIdentity * receiver,
     if (ntohl(content[i].value->size) + sizeof(GapWrapper) - sizeof(Datastore_Value) <= padding) {
       match = 0;
       for (j=0;j<content[i].sentCount;j++) {
-	if (content[i].receiverIndices[j] == index) {
-	  match = 1;
-	  break;
-	}
+  if (content[i].receiverIndices[j] == index) {
+    match = 1;
+    break;
+  }
       }
     }
     if (match == 0) {
       dist = distanceHashCode512(&content[i].key,
-				 &receiver->hashPubKey);
+  			 &receiver->hashPubKey);
       if (dist <= minDist) {
-	entry = i;
-	minDist = dist;
-	break;
+  entry = i;
+  minDist = dist;
+  break;
       }
     } else {
       if ( (content[i].sentCount > discard_match) ||
-	   (discard_match == -1) ) {
-	discard_match = content[i].sentCount;
-	discard_entry = i;
+     (discard_match == -1) ) {
+  discard_match = content[i].sentCount;
+  discard_entry = i;
       }
     }    
   }
   if (entry == -1) {
     entry = discard_entry;
     GE_ASSERT(NULL,
-	      entry != -1);
+        entry != -1);
     FREENONNULL(content[entry].value);    
     content[entry].value = NULL;
     content[entry].sentCount = 0;
     if (OK != datastore->getRandom(&receiver->hashPubKey,
-				   padding,
-				   &content[entry].key,
-				   &content[entry].value,
-				   0)) {
+  			   padding,
+  			   &content[entry].key,
+  			   &content[entry].value,
+  			   0)) {
       content[entry].value = NULL; /* just to be sure...*/
       MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Migration: random lookup in datastore failed.\n");
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Migration: random lookup in datastore failed.\n");
 #endif
       return 0;
     }    
@@ -214,15 +214,15 @@ activeMigrationCallback(const PeerIdentity * receiver,
   }
 #if DEBUG_MIGRATION
   GE_LOG(ectx,
-	 GE_DEBUG | GE_BULK | GE_USER,
-	 "Migration: random lookup in datastore returned type %d.\n",
-	 ntohl(value->type));
+   GE_DEBUG | GE_BULK | GE_USER,
+   "Migration: random lookup in datastore returned type %d.\n",
+   ntohl(value->type));
 #endif
   if (ntohl(value->type) == ONDEMAND_BLOCK) {
     if (ONDEMAND_getIndexed(datastore,
-			    value,
-			    &content[entry].key,
-			    &enc) != OK) {
+  		    value,
+  		    &content[entry].key,
+  		    &enc) != OK) {
       FREENONNULL(value);    
       content[entry].value = NULL;
       MUTEX_UNLOCK(lock);
@@ -254,24 +254,24 @@ activeMigrationCallback(const PeerIdentity * receiver,
     anonymity = 1;
   }
   if (OK == checkCoverTraffic(ectx,
-			      traffic,
-			      anonymity)) {
+  		      traffic,
+  		      anonymity)) {
     gw = MALLOC(size);
     gw->dc.size = htonl(size);
     gw->timeout = htonll(et);
     memcpy(&gw[1],
-	   &value[1],
-	   size - sizeof(GapWrapper));
+     &value[1],
+     size - sizeof(GapWrapper));
     ret = gap->tryMigrate(&gw->dc,
-			  &content[entry].key,
-			  position,
-			  padding);
+  		  &content[entry].key,
+  		  position,
+  		  padding);
     FREE(gw);
 #if DEBUG_MIGRATION
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "gap's tryMigrate returned %u\n",
-	   ret);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "gap's tryMigrate returned %u\n",
+     ret);
 #endif
     if (ret != 0) 
       content[entry].receiverIndices[content[entry].sentCount++] = index;    
@@ -285,10 +285,10 @@ activeMigrationCallback(const PeerIdentity * receiver,
 }
 
 void initMigration(CoreAPIForApplication * capi,
-		   Datastore_ServiceAPI * ds,
-		   GAP_ServiceAPI * g,
-		   DHT_ServiceAPI * d,
-		   Traffic_ServiceAPI * t) {
+  	   Datastore_ServiceAPI * ds,
+  	   GAP_ServiceAPI * g,
+  	   DHT_ServiceAPI * d,
+  	   Traffic_ServiceAPI * t) {
   ectx = capi->ectx;
   lock = MUTEX_CREATE(NO);
   coreAPI = capi;
@@ -297,7 +297,7 @@ void initMigration(CoreAPIForApplication * capi,
   dht = d;
   traffic = t;
   coreAPI->registerSendCallback(GAP_ESTIMATED_DATA_SIZE,
-				&activeMigrationCallback);
+  			&activeMigrationCallback);
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_migration_count
@@ -313,7 +313,7 @@ void initMigration(CoreAPIForApplication * capi,
 void doneMigration() {
   int i;
   coreAPI->unregisterSendCallback(GAP_ESTIMATED_DATA_SIZE,
-				  &activeMigrationCallback);
+  			  &activeMigrationCallback);
   if (stats != NULL) {
     coreAPI->releaseService(stats);
     stats = NULL;

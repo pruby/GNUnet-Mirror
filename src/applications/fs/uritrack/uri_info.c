@@ -40,16 +40,16 @@ getDBName(struct GC_Configuration * cfg) {
   size_t n;
 
   GC_get_configuration_value_filename(cfg,
-				      "GNUNET",
-				      "GNUNET_HOME",
-				      GNUNET_HOME_DIRECTORY,
-				      &basename);
+  			      "GNUNET",
+  			      "GNUNET_HOME",
+  			      GNUNET_HOME_DIRECTORY,
+  			      &basename);
   n = strlen(basename) + 512;
   ipcName = MALLOC(n);
   SNPRINTF(ipcName,
-	   n,
-	   "%s/uri_info.db",
-	   basename);
+     n,
+     "%s/uri_info.db",
+     basename);
   FREE(basename);
   return ipcName;
 }
@@ -60,12 +60,12 @@ getDBSize(struct GC_Configuration * cfg) {
 
   value = 1024 * 1024;
   GC_get_configuration_value_number(cfg,
-				    "FS",
-				    "URI_DB_SIZE",
-				    1,
-				    1024 * 1024 * 1024,
-				    1024 * 1024,
-				    &value);
+  			    "FS",
+  			    "URI_DB_SIZE",
+  			    1,
+  			    1024 * 1024 * 1024,
+  			    1024 * 1024,
+  			    &value);
   return value;
 }
 
@@ -80,8 +80,8 @@ getDBSize(struct GC_Configuration * cfg) {
  */
 enum URITRACK_STATE
 URITRACK_getState(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg,
-		  const struct ECRS_URI * uri) {
+  	  struct GC_Configuration * cfg,
+  	  const struct ECRS_URI * uri) {
   char * s;
   int crc;
   int fd;
@@ -94,21 +94,21 @@ URITRACK_getState(struct GE_Context * ectx,
   FREE(s);
   s = getDBName(cfg);
   if (NO == disk_file_test(ectx,
-			   s))
-    return URITRACK_FRESH;		     
+  		   s))
+    return URITRACK_FRESH;  	     
   size = getDBSize(cfg);
   fd = disk_file_open(ectx,
-		      s,
-		      O_RDONLY);
+  	      s,
+  	      O_RDONLY);
   FREE(s);
   if (fd == -1)
     return URITRACK_FRESH;
   o = 2 * (crc % size);
   if (o != lseek(fd, o, SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-			 "lseek",
-			 s);
+  		 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+  		 "lseek",
+  		 s);
     CLOSE(fd);
     return URITRACK_FRESH;
   }
@@ -126,9 +126,9 @@ URITRACK_getState(struct GE_Context * ectx,
  * Add additional information about a given URI's past.
  */
 void URITRACK_addState(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const struct ECRS_URI * uri,
-		       enum URITRACK_STATE state) {
+  	       struct GC_Configuration * cfg,
+  	       const struct ECRS_URI * uri,
+  	       enum URITRACK_STATE state) {
   char * s;
   int crc;
   int fd;
@@ -142,9 +142,9 @@ void URITRACK_addState(struct GE_Context * ectx,
   s = getDBName(cfg);
   size = getDBSize(cfg);
   fd = disk_file_open(ectx,
-		      s,
-		      O_RDWR | O_CREAT,
-		      S_IRUSR | S_IWUSR);
+  	      s,
+  	      O_RDWR | O_CREAT,
+  	      S_IRUSR | S_IWUSR);
   if (fd == -1) {
     FREE(s);
     return;
@@ -152,9 +152,9 @@ void URITRACK_addState(struct GE_Context * ectx,
   o = 2 * (crc % size);
   if (o != lseek(fd, o, SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-			 "lseek",
-			 s);
+  		 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+  		 "lseek",
+  		 s);
     CLOSE(fd);
     FREE(s);
     return;
@@ -169,18 +169,18 @@ void URITRACK_addState(struct GE_Context * ectx,
   io[1] |= state;
   if (o != lseek(fd, o, SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-			 "lseek",
-			 s);
+  		 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+  		 "lseek",
+  		 s);
     CLOSE(fd);
     FREE(s);
     return;
   }
   if (2 != write(fd, io, 2))
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-			 "write",
-			 s);
+  		 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+  		 "write",
+  		 s);
   disk_file_close(ectx, s, fd);
   FREE(s);
 }

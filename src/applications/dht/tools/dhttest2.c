@@ -58,7 +58,7 @@ static int waitForConnect(const char * name,
  * @return 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+   const char ** argv) {
 #if START_PEERS
   struct DaemonContext * peers;
 #endif
@@ -73,41 +73,41 @@ int main(int argc,
   ectx = NULL;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_PEERS
   peers = gnunet_testing_start_daemons("tcp",
-				       "advertising dht stats",
-				       "/tmp/gnunet-dht-test",
-				       2087,
-				       10000,
-				       2);
+  			       "advertising dht stats",
+  			       "/tmp/gnunet-dht-test",
+  			       2087,
+  			       10000,
+  			       2);
   if (peers == NULL) {
     GC_free(cfg);
     return -1;
   }
 #endif
   if (OK != gnunet_testing_connect_daemons(2087,
-					   12087)) {
+  				   12087)) {
     gnunet_testing_stop_daemons(peers);
     fprintf(stderr,
-	    "Failed to connect the peers!\n");
+      "Failed to connect the peers!\n");
     GC_free(cfg);
     return -1;
   }
 
   /* wait for DHT's to find each other! */
   sock = client_connection_create(NULL,
-				  cfg);
+  			  cfg);
   left = 30; /* how many iterations should we wait? */
   while (OK == STATS_getStatistics(NULL,
-				   sock,
-				   &waitForConnect,
-				   NULL)) {
+  			   sock,
+  			   &waitForConnect,
+  			   NULL)) {
     printf("Waiting for peers to DHT-connect (%u iterations left)...\n",
-	   left);
+     left);
     sleep(5);
     left--;
     if (left == 0)
@@ -117,28 +117,28 @@ int main(int argc,
   if (ok == 0) {
     gnunet_testing_stop_daemons(peers);
     fprintf(stderr,
-	    "Peers' DHTs failed to DHT-connect!\n");
+      "Peers' DHTs failed to DHT-connect!\n");
     GC_free(cfg);
     return -1;
   }
 
   /* switch to peer2 */
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:12087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:12087");
   /* verify that peer2 also sees the other DHT! */
   ok = 0;
   sock = client_connection_create(NULL,
-				  cfg);
+  			  cfg);
   left = 30; /* how many iterations should we wait? */
   while (OK == STATS_getStatistics(NULL,
-				   sock,
-				   &waitForConnect,
-				   NULL)) {
+  			   sock,
+  			   &waitForConnect,
+  			   NULL)) {
     printf("Waiting for peers to DHT-connect (%u iterations left)...\n",
-	   left);
+     left);
     sleep(5);
     left--;
     if (left == 0)
@@ -148,7 +148,7 @@ int main(int argc,
   if (ok == 0) {
     gnunet_testing_stop_daemons(peers);
     fprintf(stderr,
-	    "Peers' DHTs failed to DHT-connect!\n");
+      "Peers' DHTs failed to DHT-connect!\n");
     GC_free(cfg);
     return -1;
   }
@@ -156,84 +156,84 @@ int main(int argc,
 
   /* switch to peer1 */
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:2087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:2087");
 
   /* actual test code */
   hash("key2", 4, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
   memset(&value[1],
-	 'A',
-	 4);
+   'A',
+   4);
   printf("Peer1 stores key2\n");
   CHECK(OK == DHT_LIB_put(cfg,
-			  ectx,
-			  &key,
-			  DHT_STRING2STRING_BLOCK,
-			  get_time() + 5 * cronMINUTES,
-			  value));
+  		  ectx,
+  		  &key,
+  		  DHT_STRING2STRING_BLOCK,
+  		  get_time() + 5 * cronMINUTES,
+  		  value));
   printf("Peer1 gets key2\n");
   CHECK(1 == DHT_LIB_get(cfg,
-			 ectx,
-			 DHT_STRING2STRING_BLOCK,
-			 &key,
-			 2 * cronSECONDS,
-			 NULL,
-			 NULL));
+  		 ectx,
+  		 DHT_STRING2STRING_BLOCK,
+  		 &key,
+  		 2 * cronSECONDS,
+  		 NULL,
+  		 NULL));
   /* switch to peer2 */
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:12087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:12087");
   hash("key", 3, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
   memset(&value[1],
-	 'B',
-	 4);
+   'B',
+   4);
   printf("Peer2 stores key.\n");
   CHECK(OK == DHT_LIB_put(cfg,
-			  ectx,
-			  &key,
-			  DHT_STRING2STRING_BLOCK,
-			  get_time() + 5 * cronMINUTES,
-			  value));
+  		  ectx,
+  		  &key,
+  		  DHT_STRING2STRING_BLOCK,
+  		  get_time() + 5 * cronMINUTES,
+  		  value));
   printf("Peer2 gets key.\n");
   CHECK(1 == DHT_LIB_get(cfg,
-			 ectx,
-			 DHT_STRING2STRING_BLOCK,
-			 &key,
-			 2 * cronSECONDS,
-			 NULL,
-			 NULL));
+  		 ectx,
+  		 DHT_STRING2STRING_BLOCK,
+  		 &key,
+  		 2 * cronSECONDS,
+  		 NULL,
+  		 NULL));
 
   hash("key2", 4, &key);
   printf("Peer2 gets key2.\n");
   CHECK(1 == DHT_LIB_get(cfg,
-			 ectx,
-			 DHT_STRING2STRING_BLOCK,
-			 &key,
-			 30 * cronSECONDS,
-			 NULL,
-			 NULL));
+  		 ectx,
+  		 DHT_STRING2STRING_BLOCK,
+  		 &key,
+  		 30 * cronSECONDS,
+  		 NULL,
+  		 NULL));
   /* switch to peer1 */
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:2087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:2087");
   printf("Peer1 gets key\n");
   CHECK(1 == DHT_LIB_get(cfg,
-			 ectx,
-			 DHT_STRING2STRING_BLOCK,
-			 &key,
-			 30 * cronSECONDS,
-			 NULL,
-			 NULL));
+  		 ectx,
+  		 DHT_STRING2STRING_BLOCK,
+  		 &key,
+  		 30 * cronSECONDS,
+  		 NULL,
+  		 NULL));
   /* end of actual test code */
 
  FAILURE:

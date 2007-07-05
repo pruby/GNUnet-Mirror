@@ -50,77 +50,77 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   ok = YES;
   NS_deleteNamespace(ectx,
-		     cfg,
-		     "test");
+  	     cfg,
+  	     "test");
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   old = NS_listNamespaces(ectx,
-			  cfg,
-			  NULL,
-			  NULL);
-				
+  		  cfg,
+  		  NULL,
+  		  NULL);
+  			
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
-		     0,
-		     "test");
+  	     0,
+  	     "test");
   makeRandomId(&root);
   uri = NS_createNamespace(ectx,
-			   cfg,
-			   1,
-			   1,
-			   get_time() + 10 * cronMINUTES,
-			   "test",
-			   meta,
-			   NULL,
-			   &root);
+  		   cfg,
+  		   1,
+  		   1,
+  		   get_time() + 10 * cronMINUTES,
+  		   "test",
+  		   meta,
+  		   NULL,
+  		   &root);
   CHECK(uri != NULL);
   newVal = NS_listNamespaces(ectx,
-			     cfg,
-			     NULL,
-			     NULL);
+  		     cfg,
+  		     NULL,
+  		     NULL);
   CHECK(old < newVal);
   old = NS_listNamespaceContent(ectx,
-				cfg,
-				"test",
-				NULL,
-				NULL);
+  			cfg,
+  			"test",
+  			NULL,
+  			NULL);
   euri = NS_addToNamespace(ectx,
-			   cfg,
-			   1,
-			   1,
-			   get_time() + 10 * cronMINUTES,
-			   "test",
-			   42,
-			   NULL,
-			   &root,
-			   NULL,
-			   uri,
-			   meta);
+  		   cfg,
+  		   1,
+  		   1,
+  		   get_time() + 10 * cronMINUTES,
+  		   "test",
+  		   42,
+  		   NULL,
+  		   &root,
+  		   NULL,
+  		   uri,
+  		   meta);
   CHECK(euri != NULL);
   newVal = NS_listNamespaceContent(ectx,
-				   cfg,
-				   "test",
-				   NULL,
-				   NULL);
+  			   cfg,
+  			   "test",
+  			   NULL,
+  			   NULL);
   CHECK(old < newVal);
   CHECK(OK == NS_deleteNamespace(ectx,
-				 cfg,
-				 "test"));
+  			 cfg,
+  			 "test"));
   /* END OF TEST CODE */
  FAILURE:
   if (uri != NULL)
@@ -130,8 +130,8 @@ int main(int argc, char * argv[]){
   if (meta != NULL)
     ECRS_freeMetaData(meta);
   ECRS_deleteNamespace(ectx,
-		       cfg,
-		       "test");
+  	       cfg,
+  	       "test");
 
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
   GC_free(cfg);

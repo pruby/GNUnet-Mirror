@@ -51,7 +51,7 @@ static unsigned int getValue__(unsigned char a) {
  */
 static char *
 bin2enc(const void * data,
-	size_t size) {
+  size_t size) {
   size_t len;
   size_t pos;
   unsigned int bits;
@@ -93,8 +93,8 @@ bin2enc(const void * data,
  */
 static int
 enc2bin(const char * input,
-	void * data,
-	size_t size) {
+  void * data,
+  size_t size) {
   size_t len;
   size_t pos;
   unsigned int bits;

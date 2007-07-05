@@ -33,11 +33,11 @@
 
 
 static int read_int(int fd,
-		    int * val) {
+  	    int * val) {
   int big;
 
   if (sizeof(int) != READ(fd, &big, sizeof(int))) \
-    return SYSERR;				  \
+    return SYSERR;  			  \
   *val = ntohl(big);
   return OK;
 }
@@ -45,11 +45,11 @@ static int read_int(int fd,
 #define READINT(a) if (OK != read_int(fd, (int*) &a)) return SYSERR;
 
 static int read_long(int fd,
-		     long long * val) {
+  	     long long * val) {
   long long big;
 
   if (sizeof(long long) != READ(fd, &big, sizeof(long long))) \
-    return SYSERR;				  \
+    return SYSERR;  			  \
   *val = ntohll(big);
   return OK;
 }
@@ -57,7 +57,7 @@ static int read_long(int fd,
 #define READLONG(a) if (OK != read_long(fd, (long long*) &a)) return SYSERR;
 
 static struct ECRS_URI * read_uri(struct GE_Context * ectx,
-				  int fd) {
+  			  int fd) {
   char * buf;
   struct ECRS_URI * ret;
   unsigned int size;
@@ -67,8 +67,8 @@ static struct ECRS_URI * read_uri(struct GE_Context * ectx,
   buf = MALLOC(size+1);
   buf[size] = '\0';
   if (size != READ(fd,
-		   buf,
-		   size)) {
+  	   buf,
+  	   size)) {
     FREE(buf);
     return NULL;
   }
@@ -81,7 +81,7 @@ static struct ECRS_URI * read_uri(struct GE_Context * ectx,
 #define READURI(u) if (NULL == (u = read_uri(ectx, fd))) return SYSERR;
 
 static char * read_string(int fd,
-			  unsigned int maxLen) {
+  		  unsigned int maxLen) {
   char * buf;
   unsigned int big;
 
@@ -133,7 +133,7 @@ static void fixState(FSUI_State * state) {
  */
 static struct ECRS_MetaData *
 read_meta(struct GE_Context * ectx,
-	  int fd) {
+    int fd) {
   unsigned int size;
   char * buf;
   struct ECRS_MetaData * meta;
@@ -148,15 +148,15 @@ read_meta(struct GE_Context * ectx,
   }
   buf = MALLOC(size);
   if (size != READ(fd,
-		   buf,
-		   size)) {
+  	   buf,
+  	   size)) {
     FREE(buf);
     GE_BREAK(ectx, 0);
     return NULL;
   }
   meta = ECRS_deserializeMetaData(ectx,
-				  buf,
-				  size);
+  			  buf,
+  			  size);
   if (meta == NULL) {
     FREE(buf);
     GE_BREAK(ectx, 0);
@@ -172,8 +172,8 @@ read_meta(struct GE_Context * ectx,
  * @return OK on success, SYSERR on error
  */
 static int readFileInfo(struct GE_Context * ectx,
-			int fd,
-			ECRS_FileInfo * fi) {
+  		int fd,
+  		ECRS_FileInfo * fi) {
   fi->meta = read_meta(ectx, fd);
   if (fi->meta == NULL) {
     GE_BREAK(ectx, 0);
@@ -203,9 +203,9 @@ static int readFileInfo(struct GE_Context * ectx,
  */
 static FSUI_DownloadList *
 readDownloadList(struct GE_Context * ectx,
-		 int fd,
-		 FSUI_Context * ctx,
-		 FSUI_DownloadList * parent) {
+  	 int fd,
+  	 FSUI_Context * ctx,
+  	 FSUI_DownloadList * parent) {
   FSUI_DownloadList * ret;
   FSUI_SearchList * pos;
   unsigned int big;
@@ -219,8 +219,8 @@ readDownloadList(struct GE_Context * ectx,
     return NULL;
   ret = MALLOC(sizeof(FSUI_DownloadList));
   memset(ret,
-	 0,
-	 sizeof(FSUI_DownloadList));
+   0,
+   sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
   if ( (OK != read_int(fd, (int*) &soff)) ||
        (OK != read_int(fd, (int*) &ret->state)) ||
@@ -247,8 +247,8 @@ readDownloadList(struct GE_Context * ectx,
     return NULL;
   }
   if (OK != readFileInfo(ectx,
-			 fd,
-			 &ret->fi)) {
+  		 fd,
+  		 &ret->fi)) {
     GE_BREAK(NULL, 0);
     FREE(ret->filename);
     FREE(ret);
@@ -257,7 +257,7 @@ readDownloadList(struct GE_Context * ectx,
   if (ret->completedDownloadsCount > 0)
     ret->completedDownloads
       = MALLOC(sizeof(struct ECRS_URI *) *
-	       ret->completedDownloadsCount);
+         ret->completedDownloadsCount);
   ok = YES;
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i] = read_uri(ectx, fd);
@@ -272,7 +272,7 @@ readDownloadList(struct GE_Context * ectx,
     ECRS_freeMetaData(ret->fi.meta);
     for (i=0;i<ret->completedDownloadsCount;i++) {
       if (ret->completedDownloads[i] != NULL)
-	ECRS_freeUri(ret->completedDownloads[i]);
+  ECRS_freeUri(ret->completedDownloads[i]);
     }
     FREE(ret->completedDownloads);
     FREE(ret);
@@ -286,34 +286,34 @@ readDownloadList(struct GE_Context * ectx,
     pos = ctx->activeSearches;
     while (--soff > 0) {
       if (pos == NULL) {
-	GE_BREAK(NULL, 0);
-	break;
+  GE_BREAK(NULL, 0);
+  break;
       }
       pos = pos->next;
     }
     ret->search = pos;
     if (pos != NULL) {
       GROW(pos->my_downloads,
-	   pos->my_downloads_size,
-	   pos->my_downloads_size + 1);
+     pos->my_downloads_size,
+     pos->my_downloads_size + 1);
       pos->my_downloads[pos->my_downloads_size -1] = ret;
     }
   }
   ret->next = readDownloadList(ectx,
-			       fd,
-			       ctx,
-			       parent);
+  		       fd,
+  		       ctx,
+  		       parent);
   ret->child = readDownloadList(ectx,
-				fd,
-				ctx,
-				ret);
+  			fd,
+  			ctx,
+  			ret);
 #if DEBUG_PERSISTENCE
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
-	 ret->filename,
-	 ret->completed,
-	 ret->total);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
+   ret->filename,
+   ret->completed,
+   ret->total);
 #endif
   return ret;
 }
@@ -326,8 +326,8 @@ static int checkMagic(int fd) {
     return SYSERR;
   }
   if (0 != memcmp(magic,
-		  "FSUI01\n\0",
-		  8)) {
+  	  "FSUI01\n\0",
+  	  8)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
   }
@@ -335,7 +335,7 @@ static int checkMagic(int fd) {
 }
 
 static int readCollection(int fd,
-			  struct FSUI_Context * ctx) {
+  		  struct FSUI_Context * ctx) {
   int big;
 
   /* deserialize collection data */
@@ -353,8 +353,8 @@ static int readCollection(int fd,
     = MALLOC(big);
   if (big - sizeof(unsigned int) !=
       READ(fd,
-	   &ctx->collectionData[1],
-	   big - sizeof(unsigned int))) {
+     &ctx->collectionData[1],
+     big - sizeof(unsigned int))) {
     FREE(ctx->collectionData);
     ctx->collectionData = NULL;
     GE_BREAK(NULL, 0);
@@ -364,7 +364,7 @@ static int readCollection(int fd,
 }
 
 static int readSearches(int fd,
-			struct FSUI_Context * ctx) {
+  		struct FSUI_Context * ctx) {
   int big;
   FSUI_SearchList * list;
   FSUI_SearchList * last;
@@ -378,21 +378,21 @@ static int readSearches(int fd,
     if (big == 0)
       return OK;
     list
-      = MALLOC(sizeof(FSUI_SearchList));	
+      = MALLOC(sizeof(FSUI_SearchList));  
     memset(list,
-	   0,
-	   sizeof(FSUI_SearchList));
+     0,
+     sizeof(FSUI_SearchList));
     if ( (OK != read_int(fd, (int*) &list->state)) ||
-	 (OK != read_int(fd, (int*) &list->maxResults)) ||
-	 (OK != read_long(fd, (long long*) &list->timeout)) ||
-	 (OK != read_long(fd, (long long*) &list->start_time)) ||
-	 (OK != read_long(fd, (long long*) &stime)) ||
-	 (OK != read_int(fd, (int*) &list->anonymityLevel)) ||
-	 (OK != read_int(fd, (int*) &list->sizeResultsReceived)) ||
-	 (OK != read_int(fd, (int*) &list->sizeUnmatchedResultsReceived)) ||
-	 (list->sizeResultsReceived > 1024*1024) ||	
-	 (list->sizeUnmatchedResultsReceived > 1024*1024) ) {
-      GE_BREAK(NULL, 0);	
+   (OK != read_int(fd, (int*) &list->maxResults)) ||
+   (OK != read_long(fd, (long long*) &list->timeout)) ||
+   (OK != read_long(fd, (long long*) &list->start_time)) ||
+   (OK != read_long(fd, (long long*) &stime)) ||
+   (OK != read_int(fd, (int*) &list->anonymityLevel)) ||
+   (OK != read_int(fd, (int*) &list->sizeResultsReceived)) ||
+   (OK != read_int(fd, (int*) &list->sizeUnmatchedResultsReceived)) ||
+   (list->sizeResultsReceived > 1024*1024) ||	
+   (list->sizeUnmatchedResultsReceived > 1024*1024) ) {
+      GE_BREAK(NULL, 0);  
       break;
     }
     fixState(&list->state);
@@ -412,69 +412,69 @@ static int readSearches(int fd,
       break;
     }
     if (! ( ECRS_isKeywordUri(list->uri) ||
-	    ECRS_isNamespaceUri(list->uri)) ) {
-      GE_BREAK(NULL, 0);		
+      ECRS_isNamespaceUri(list->uri)) ) {
+      GE_BREAK(NULL, 0);  	
       break;
     }
     list->numberOfURIKeys
       = ECRS_countKeywordsOfUri(list->uri);
     if (list->sizeResultsReceived > 0) {
       list->resultsReceived
-	= MALLOC(list->sizeResultsReceived *
-		 sizeof(ECRS_FileInfo));
+  = MALLOC(list->sizeResultsReceived *
+  	 sizeof(ECRS_FileInfo));
       memset(list->resultsReceived,
-	     0,
-	     list->sizeResultsReceived *
-	     sizeof(ECRS_FileInfo));
+       0,
+       list->sizeResultsReceived *
+       sizeof(ECRS_FileInfo));
     }
     if (list->sizeUnmatchedResultsReceived > 0) {
       list->unmatchedResultsReceived
-	= MALLOC(list->sizeUnmatchedResultsReceived *
-		 sizeof(ResultPending));
+  = MALLOC(list->sizeUnmatchedResultsReceived *
+  	 sizeof(ResultPending));
       memset(list->unmatchedResultsReceived,
-	     0,
-	     list->sizeUnmatchedResultsReceived *
-	     sizeof(ResultPending));	
+       0,
+       list->sizeUnmatchedResultsReceived *
+       sizeof(ResultPending));	
     }
     for (i=0;i<list->sizeResultsReceived;i++)
       if (OK != readFileInfo(ctx->ectx,
-			     fd,
-			     &list->resultsReceived[i])) {
-	GE_BREAK(NULL, 0);
-	goto ERR;
+  		     fd,
+  		     &list->resultsReceived[i])) {
+  GE_BREAK(NULL, 0);
+  goto ERR;
       }
     for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
       rp = &list->unmatchedResultsReceived[i];
       if (OK != readFileInfo(ctx->ectx,
-			     fd,
-			     &rp->fi)) {
-	GE_BREAK(NULL, 0);	
-	goto ERR;
+  		     fd,
+  		     &rp->fi)) {
+  GE_BREAK(NULL, 0);	
+  goto ERR;
       }
       if (OK != read_int(fd, (int*) &rp->matchingKeyCount)) {
-	GE_BREAK(NULL, 0);	
-	goto ERR;
+  GE_BREAK(NULL, 0);	
+  goto ERR;
       }
       if ( (rp->matchingKeyCount > 1024) ||
-	   (rp->matchingKeyCount >= list->numberOfURIKeys) ) {
-	GE_BREAK(NULL, 0);	
-	goto ERR;
+     (rp->matchingKeyCount >= list->numberOfURIKeys) ) {
+  GE_BREAK(NULL, 0);	
+  goto ERR;
       }
       if (rp->matchingKeyCount > 0) {
-	rp->matchingKeys
-	  = MALLOC(sizeof(HashCode512) *
-		   rp->matchingKeyCount);
-	if (sizeof(HashCode512) *
-	    rp->matchingKeyCount !=
-	    READ(fd,
-		 rp->matchingKeys,
-		 sizeof(HashCode512) *
-		 rp->matchingKeyCount)) {
-	  GE_BREAK(NULL, 0);
-	  goto ERR;
-	}
+  rp->matchingKeys
+    = MALLOC(sizeof(HashCode512) *
+  	   rp->matchingKeyCount);
+  if (sizeof(HashCode512) *
+      rp->matchingKeyCount !=
+      READ(fd,
+  	 rp->matchingKeys,
+  	 sizeof(HashCode512) *
+  	 rp->matchingKeyCount)) {
+    GE_BREAK(NULL, 0);
+    goto ERR;
+  }
       }
-    }	
+    }  
     list->ctx
       = ctx;
     list->next
@@ -486,7 +486,7 @@ static int readSearches(int fd,
     } else {
       last = ctx->activeSearches;
       while (last->next != NULL)
-	last = last->next;
+  last = last->next;
       last->next = list;
     }
   } /* end OUTER: 'while(1)' */
@@ -495,27 +495,27 @@ static int readSearches(int fd,
   if (list->resultsReceived != NULL) {
     for (i=0;i<list->sizeResultsReceived;i++) {
       if (list->resultsReceived[i].uri != NULL)
-	ECRS_freeUri(list->resultsReceived[i].uri);
+  ECRS_freeUri(list->resultsReceived[i].uri);
       if (list->resultsReceived[i].meta != NULL)
-	ECRS_freeMetaData(list->resultsReceived[i].meta);	
+  ECRS_freeMetaData(list->resultsReceived[i].meta);	
     }
     GROW(list->resultsReceived,
-	 list->sizeResultsReceived,
-	 0);
+   list->sizeResultsReceived,
+   0);
   }
   if (list->unmatchedResultsReceived != NULL) {
     for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
       rp = &list->unmatchedResultsReceived[i];
 
       if (rp->fi.uri != NULL)
-	ECRS_freeUri(rp->fi.uri);
+  ECRS_freeUri(rp->fi.uri);
       if (rp->fi.meta != NULL)
-	ECRS_freeMetaData(rp->fi.meta);
+  ECRS_freeMetaData(rp->fi.meta);
       FREENONNULL(rp->matchingKeys);
     }
     GROW(list->resultsReceived,
-	 list->sizeResultsReceived,
-	 0);
+   list->sizeResultsReceived,
+   0);
   }
   if (list->uri != NULL)
     ECRS_freeUri(list->uri);
@@ -524,23 +524,23 @@ static int readSearches(int fd,
 }
 
 static int readDownloads(int fd,
-			 struct FSUI_Context * ctx) {
+  		 struct FSUI_Context * ctx) {
   memset(&ctx->activeDownloads,
-	 0,
-	 sizeof(FSUI_DownloadList));
+   0,
+   sizeof(FSUI_DownloadList));
   ctx->activeDownloads.child
     = readDownloadList(ctx->ectx,
-		       fd,
-		       ctx,
-		       &ctx->activeDownloads);
+  	       fd,
+  	       ctx,
+  	       &ctx->activeDownloads);
   return OK;
 }
 
 static int readUploadList(struct FSUI_Context * ctx,
-			  struct FSUI_UploadList * parent,
-			  int fd,
-			  struct FSUI_UploadShared * shared,
-			  int top) {
+  		  struct FSUI_UploadList * parent,
+  		  int fd,
+  		  struct FSUI_UploadShared * shared,
+  		  int top) {
   struct FSUI_UploadList * list;
   struct FSUI_UploadList l;
   unsigned long long stime;
@@ -564,8 +564,8 @@ static int readUploadList(struct FSUI_Context * ctx,
       return SYSERR;
     }
     memset(&l,
-	   0,
-	   sizeof(FSUI_UploadList));
+     0,
+     sizeof(FSUI_UploadList));
     READINT(l.state);
     fixState(&l.state);
     if (l.state == FSUI_PENDING)
@@ -584,47 +584,47 @@ static int readUploadList(struct FSUI_Context * ctx,
     if ( (big & 4) == 4) {
       l.keywords = read_uri(ctx->ectx, fd);
       if (l.keywords == NULL) {
-	if (l.uri != NULL)
-	  ECRS_freeUri(l.uri);
-	GE_BREAK(NULL, 0);
-	break;
+  if (l.uri != NULL)
+    ECRS_freeUri(l.uri);
+  GE_BREAK(NULL, 0);
+  break;
       }
     }
     if ( (big & 8) == 8) {
       l.meta = read_meta(ctx->ectx, fd);
       if (l.meta == NULL) {
-	if (l.uri != NULL)
-	  ECRS_freeUri(l.uri);
-	if (l.keywords != NULL)
-	  ECRS_freeUri(l.keywords);
-	GE_BREAK(NULL, 0);
-	break;
+  if (l.uri != NULL)
+    ECRS_freeUri(l.uri);
+  if (l.keywords != NULL)
+    ECRS_freeUri(l.keywords);
+  GE_BREAK(NULL, 0);
+  break;
       }
     }
     l.filename = read_string(fd, 1024*1024);
     if (l.filename == NULL) {
       if (l.uri != NULL)
-	ECRS_freeUri(l.uri);
+  ECRS_freeUri(l.uri);
       if (l.meta != NULL)
-	ECRS_freeMetaData(l.meta);
+  ECRS_freeMetaData(l.meta);
       if (l.keywords != NULL)
-	ECRS_freeUri(l.keywords);
+  ECRS_freeUri(l.keywords);
       GE_BREAK(NULL, 0);
       break;
     }
     list = MALLOC(sizeof(struct FSUI_UploadList));
     memcpy(list,
-	   &l,
-	   sizeof(struct FSUI_UploadList));
+     &l,
+     sizeof(struct FSUI_UploadList));
     list->shared = shared;
     list->parent = parent;
     if (OK != readUploadList(ctx,
-			     list,
-			     fd,
-			     shared,
-			     NO)) {
+  		     list,
+  		     fd,
+  		     shared,
+  		     NO)) {
       if (l.uri != NULL)
-	ECRS_freeUri(l.uri);
+  ECRS_freeUri(l.uri);
       FREE(l.filename);
       FREE(list);
       GE_BREAK(NULL, 0);
@@ -640,15 +640,15 @@ static int readUploadList(struct FSUI_Context * ctx,
 
 
 static int readUploads(int fd,
-		       struct FSUI_Context * ctx) {
+  	       struct FSUI_Context * ctx) {
   int big;
   int bag;
   struct FSUI_UploadShared * shared;
   struct FSUI_UploadShared sshared;
 
   memset(&ctx->activeUploads,
-	 0,
-	 sizeof(FSUI_UploadList));
+   0,
+   sizeof(FSUI_UploadList));
   while (1) {
     READINT(big);
     if (big == 0)
@@ -663,8 +663,8 @@ static int readUploads(int fd,
       return SYSERR;
     }
     memset(&sshared,
-	   0,
-	   sizeof(FSUI_UploadShared));
+     0,
+     sizeof(FSUI_UploadShared));
     READINT(sshared.doIndex);
     READINT(sshared.anonymityLevel);
     READINT(sshared.priority);
@@ -675,29 +675,29 @@ static int readUploads(int fd,
     if ((big & 4) == 4) {
       sshared.global_keywords = read_uri(ctx->ectx, fd);
       if (sshared.global_keywords == NULL) {
-	FREENONNULL(sshared.extractor_config);
-	GE_BREAK(NULL, 0);
-	return SYSERR;
+  FREENONNULL(sshared.extractor_config);
+  GE_BREAK(NULL, 0);
+  return SYSERR;
       }
     }
     shared = MALLOC(sizeof(FSUI_UploadShared));
     memcpy(shared,
-	   &sshared,
-	   sizeof(FSUI_UploadShared));
+     &sshared,
+     sizeof(FSUI_UploadShared));
     shared->ctx = ctx;
     if (OK != readUploadList(ctx,
-			     &ctx->activeUploads,
-			     fd,
-			     shared,
-			     YES)) {
+  		     &ctx->activeUploads,
+  		     fd,
+  		     shared,
+  		     YES)) {
       GE_BREAK(NULL, 0);
 #if 0
       /* cannot do this, readUploadList
-	 may have added *some* uploads that
-	 still reference shared -- need to
-	 find and cleanup those first,
-	 or at least detect their presence
-	 and not free */
+   may have added *some* uploads that
+   still reference shared -- need to
+   find and cleanup those first,
+   or at least detect their presence
+   and not free */
       FREE(shared->extractor_config);
       FREE(shared);
 #endif
@@ -708,7 +708,7 @@ static int readUploads(int fd,
 }
 
 static int readUnindex(int fd,
-		       struct FSUI_Context * ctx) {
+  	       struct FSUI_Context * ctx) {
   int big;
   char * name;
   struct FSUI_UnindexList * ul;
@@ -737,8 +737,8 @@ void FSUI_deserialize(struct FSUI_Context * ctx) {
   if (0 != ACCESS(ctx->name, R_OK))
     return;
   fd = disk_file_open(ctx->ectx,
-		      ctx->name,
-		      O_RDONLY);
+  	      ctx->name,
+  	      O_RDONLY);
   if (fd == -1)
     return;
 
@@ -750,10 +750,10 @@ void FSUI_deserialize(struct FSUI_Context * ctx) {
        (OK != readUploads(fd, ctx) ) ) {
     GE_BREAK(ctx->ectx, 0);
     GE_LOG(ctx->ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("FSUI state file `%s' had syntax error at offset %u.\n"),
-	   ctx->name,
-	   lseek(fd, 0, SEEK_CUR));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("FSUI state file `%s' had syntax error at offset %u.\n"),
+     ctx->name,
+     lseek(fd, 0, SEEK_CUR));
   }
   CLOSE(fd);
   UNLINK(ctx->name);

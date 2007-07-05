@@ -36,7 +36,7 @@ typedef struct {
   struct GE_Context * ectx;
 
   struct GC_Configuration * cfg;
-		
+  	
   ECRS_SearchProgressCallback iterator;
 
   void * closure;
@@ -53,15 +53,15 @@ static Callback ** callbacks;
 static unsigned int callbacks_size;
 
 static int init_iterator(const ECRS_FileInfo * fi,
-			 const HashCode512 * key,
-			 int isRoot,
-			 void * closure) {
+  		 const HashCode512 * key,
+  		 int isRoot,
+  		 void * closure) {
  Callback * c = closure;
 
  c->iterator(fi,
-	     key,
-	     isRoot,
-	     c->closure);
+       key,
+       isRoot,
+       c->closure);
  if (c->abort_init)
    return SYSERR;
  return OK;
@@ -70,10 +70,10 @@ static int init_iterator(const ECRS_FileInfo * fi,
 static void * init_thread(void * arg) {
   Callback * c = arg;
   URITRACK_listURIs(c->ectx,
-		    c->cfg,
-		    YES,
-		    &init_iterator,
-		    arg);
+  	    c->cfg,
+  	    YES,
+  	    &init_iterator,
+  	    arg);
   return NULL;
 }
 
@@ -84,9 +84,9 @@ static void * init_thread(void * arg) {
  * for all existing URIs as well.
  */
 int URITRACK_registerTrackCallback(struct GE_Context * ectx,
-				   struct GC_Configuration * cfg,
-				   ECRS_SearchProgressCallback iterator,
-				   void * closure) {
+  			   struct GC_Configuration * cfg,
+  			   ECRS_SearchProgressCallback iterator,
+  			   void * closure) {
   Callback * c;
 
   c = MALLOC(sizeof(Callback));
@@ -96,8 +96,8 @@ int URITRACK_registerTrackCallback(struct GE_Context * ectx,
   c->closure = closure;
   c->abort_init = NO;
   c->init = PTHREAD_CREATE(&init_thread,
-			   c,
-			   16 * 1024);
+  		   c,
+  		   16 * 1024);
   MUTEX_LOCK(lock);
   GROW(callbacks,
        callbacks_size,
@@ -111,7 +111,7 @@ int URITRACK_registerTrackCallback(struct GE_Context * ectx,
  * Unregister a URI callback.
  */
 int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
-				     void * closure) {
+  			     void * closure) {
   int i;
   void * unused;
   Callback * c;
@@ -120,13 +120,13 @@ int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
   for (i=0;i<callbacks_size;i++) {
     c = callbacks[i];
     if ( (c->iterator == iterator) &&
-	 (c->closure == closure) ) {
+   (c->closure == closure) ) {
       c->abort_init = YES;
       PTHREAD_JOIN(c->init, &unused);
       callbacks[i] = callbacks[callbacks_size-1];
       GROW(callbacks,
-	   callbacks_size,
-	   callbacks_size - 1);
+     callbacks_size,
+     callbacks_size - 1);
       FREE(c);
       MUTEX_UNLOCK(lock);
       return OK;
@@ -145,9 +145,9 @@ void URITRACK_internal_notify(const ECRS_FileInfo * fi) {
   MUTEX_LOCK(lock);
   for (i=0;i<callbacks_size;i++)
     callbacks[i]->iterator(fi,
-			   NULL,
-			   NO,
-			   callbacks[i]->closure);
+  		   NULL,
+  		   NO,
+  		   callbacks[i]->closure);
   MUTEX_UNLOCK(lock);
 }
 

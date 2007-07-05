@@ -59,7 +59,7 @@ static int loud_flag;
 static void reread_config_helper(void * unused) {
   GE_ASSERT(NULL, cfgFilename != NULL);
   GC_parse_configuration(cfg,
-			 cfgFilename);
+  		 cfgFilename);
 }
 
 /**
@@ -68,10 +68,10 @@ static void reread_config_helper(void * unused) {
  */
 static void reread_config() {
   cron_add_job(cron,
-	       &reread_config_helper,
-	       1 * cronSECONDS,
-	       0,
-	       NULL);
+         &reread_config_helper,
+         1 * cronSECONDS,
+         0,
+         NULL);
 }
 #endif
 
@@ -80,14 +80,14 @@ static void reread_config() {
  */
 static void waitForSignalHandler(struct GE_Context * ectx) {
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' startup complete.\n"),
-	 "gnunetd");
+   GE_INFO | GE_USER | GE_REQUEST,
+   _("`%s' startup complete.\n"),
+   "gnunetd");
   GNUNET_SHUTDOWN_WAITFOR();
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' is shutting down.\n"),
-	 "gnunetd");
+   GE_INFO | GE_USER | GE_REQUEST,
+   _("`%s' is shutting down.\n"),
+   "gnunetd");
 }
 
 
@@ -97,7 +97,7 @@ static int post_detach() {
   if (OK != checkPermissions(ectx, cfg))
     return SYSERR;
   mon = os_network_monitor_create(ectx,
-				  cfg);
+  			  cfg);
   if (mon == NULL)
     return SYSERR;
   return OK;
@@ -112,48 +112,48 @@ int gnunet_main() {
 
   if ( (NO == debug_flag) &&
        (OK != os_terminal_detach(ectx,
-				 cfg,
-				 filedes)) )
+  			 cfg,
+  			 filedes)) )
     return SYSERR;
   if (NO != debug_flag)
     os_write_pid_file(ectx,
-		      cfg,
-		      (unsigned int)getpid());
+  	      cfg,
+  	      (unsigned int)getpid());
   if (OK != post_detach()) {
     if (NO == debug_flag)
       os_terminal_detach_complete(ectx,
-				  filedes,
-				  NO);
+  			  filedes,
+  			  NO);
     else
       os_delete_pid_file(ectx, cfg);
     return SYSERR;
   }
   cron = cron_create(ectx);
   GE_ASSERT(ectx,
-	    cron != NULL);
+      cron != NULL);
 #ifndef WINDOWS
   shc_hup = signal_handler_install(SIGHUP,
-				   &reread_config);
+  			   &reread_config);
 #endif
   if (OK != initCore(ectx,
-		     cfg,
-		     cron,
-		     mon)) {
-  	GE_LOG(ectx,
-	       GE_FATAL | GE_USER | GE_IMMEDIATE,
-  		_("Core initialization failed.\n"));
-  		
+  	     cfg,
+  	     cron,
+  	     mon)) {
+    GE_LOG(ectx,
+         GE_FATAL | GE_USER | GE_IMMEDIATE,
+    	_("Core initialization failed.\n"));
+    	
     cron_destroy(cron);
     os_network_monitor_destroy(mon);
 #ifndef WINDOWS
     signal_handler_uninstall(SIGHUP,
-			     &reread_config,
-			     shc_hup);
+  		     &reread_config,
+  		     shc_hup);
 #endif
     if (NO == debug_flag)
       os_terminal_detach_complete(ectx,
-				  filedes,
-				  NO);
+  			  filedes,
+  			  NO);
     return SYSERR;
   }
 
@@ -164,8 +164,8 @@ int gnunet_main() {
   loadApplicationModules();
   if (NO == debug_flag)
     os_terminal_detach_complete(ectx,
-				filedes,
-				YES);
+  			filedes,
+  			YES);
   cron_start(cron);
   enableCoreProcessing();
   waitForSignalHandler(ectx);
@@ -179,8 +179,8 @@ int gnunet_main() {
   os_network_monitor_destroy(mon);
 #ifndef WINDOWS
   signal_handler_uninstall(SIGHUP,
-			   &reread_config,
-			   shc_hup);
+  		   &reread_config,
+  		   shc_hup);
 #endif
   cron_destroy(cron);
   return OK;
@@ -204,8 +204,8 @@ static struct CommandLineOption gnunetdOptions[] = {
     &gnunet_getopt_configure_set_option, "GNUNETD:WINSERVICE" },
   { 'd', "debug", NULL,
     gettext_noop("run in debug mode; gnunetd will "
-		 "not daemonize and error messages will "
-		 "be written to stderr instead of a logfile"),
+  	 "not daemonize and error messages will "
+  	 "be written to stderr instead of a logfile"),
     0, &gnunet_getopt_configure_set_one, &debug_flag },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
@@ -229,22 +229,22 @@ static struct CommandLineOption gnunetdOptions[] = {
  * call the main routine.
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   int ret;
 
   if ( (4 != sizeof(MESSAGE_HEADER)) ||
        (600 != sizeof(P2P_hello_MESSAGE)) ) {
     fprintf(stderr,
-	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
+      "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
     return -1;
   }
   ret = GNUNET_init(argc,
-		    argv,
-		    "gnunetd [OPTIONS]",
-		    &cfgFilename,
-		    gnunetdOptions,
-		    &ectx,
-		    &cfg);
+  	    argv,
+  	    "gnunetd [OPTIONS]",
+  	    &cfgFilename,
+  	    gnunetdOptions,
+  	    &ectx,
+  	    &cfg);
   if (ret == -1) {
     GNUNET_fini(ectx, cfg);
     return 1;
@@ -257,45 +257,45 @@ int main(int argc,
     GE_setDefaultContext(NULL);
     GE_free_context(ectx);
     GC_get_configuration_value_string(cfg,
-				      "LOGGING",
-				      "USER-LEVEL",
-				      "WARNING",
-				      &user_log_level);
+  			      "LOGGING",
+  			      "USER-LEVEL",
+  			      "WARNING",
+  			      &user_log_level);
     dev = GC_get_configuration_value_yesno(cfg,
-					   "LOGGING",
-					   "DEVELOPER",
-					   NO);
+  				   "LOGGING",
+  				   "DEVELOPER",
+  				   NO);
     ull = GE_getKIND(user_log_level);
     ull |= (ull - 1); /* set bits for all lower log-levels */
     if (dev == YES)
       ull |= GE_DEVELOPER | GE_REQUEST;
     if (loud_flag == 1)
       ectx = GE_create_context_stderr(YES,
-				      GE_ALL);
+  			      GE_ALL);
     else
       ectx = GE_create_context_stderr(YES,
-				      GE_USER | GE_ADMIN
-				      | ull
-				      | GE_BULK | GE_IMMEDIATE);
+  			      GE_USER | GE_ADMIN
+  			      | ull
+  			      | GE_BULK | GE_IMMEDIATE);
     GE_setDefaultContext(ectx);
     FREE(user_log_level);
   }
   setFdLimit(ectx, cfg);
   if (OK != checkUpToDate(ectx,
-			  cfg)) {
+  		  cfg)) {
     GE_LOG(ectx,
-	   GE_USER | GE_FATAL | GE_IMMEDIATE,
-	   _("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
-	   "gnunet-update");
+     GE_USER | GE_FATAL | GE_IMMEDIATE,
+     _("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
+     "gnunet-update");
     GNUNET_fini(ectx, cfg);
     return 1;
   }
 
 #ifdef MINGW
   if (GC_get_configuration_value_yesno(cfg,
-				       "GNUNETD",
-				       "WINSERVICE",
-				       NO) == YES) {
+  			       "GNUNETD",
+  			       "WINSERVICE",
+  			       NO) == YES) {
     SERVICE_TABLE_ENTRY DispatchTable[] =
       {{"GNUnet", ServiceMain}, {NULL, NULL}};
     ret = (GNStartServiceCtrlDispatcher(DispatchTable) != 0);

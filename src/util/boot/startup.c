@@ -57,7 +57,7 @@ convertLogLevel(const char * level) {
  * @return 0 on success, 1 on error
  */
 static int configure_logging(struct GE_Context ** ectx,
-			     struct GC_Configuration * cfg) {
+  		     struct GC_Configuration * cfg) {
   char * admin_log_file;
   char * admin_log_level;
   char * user_log_level;
@@ -74,34 +74,34 @@ static int configure_logging(struct GE_Context ** ectx,
   user_log_level = NULL;
   logrotate = 7;
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "GNUNETD",
-					      "KEEPLOG",
-					      0,
-					      36500,
-					      3,
-					      &logrotate))
+  				      "GNUNETD",
+  				      "KEEPLOG",
+  				      0,
+  				      36500,
+  				      3,
+  				      &logrotate))
     return 1; /* error! */
   GC_get_configuration_value_filename(cfg,
-				      "GNUNETD",
-				      "LOGFILE",
-				      VAR_DAEMON_DIRECTORY "/logs",
-				      &admin_log_file);
+  			      "GNUNETD",
+  			      "LOGFILE",
+  			      VAR_DAEMON_DIRECTORY "/logs",
+  			      &admin_log_file);
   disk_directory_create_for_file(*ectx,
-				 admin_log_file);
+  			 admin_log_file);
   GC_get_configuration_value_string(cfg,
-				    "LOGGING",
-				    "ADMIN-LEVEL",
-				    "WARNING",
-				    &admin_log_level);
+  			    "LOGGING",
+  			    "ADMIN-LEVEL",
+  			    "WARNING",
+  			    &admin_log_level);
   GC_get_configuration_value_string(cfg,
-				    "LOGGING",
-				    "USER-LEVEL",
-				    "WARNING",
-				    &user_log_level);
+  			    "LOGGING",
+  			    "USER-LEVEL",
+  			    "WARNING",
+  			    &user_log_level);
   dev = GC_get_configuration_value_yesno(cfg,
-					 "LOGGING",
-					 "DEVELOPER",
-					 NO);
+  				 "LOGGING",
+  				 "DEVELOPER",
+  				 NO);
   all = convertLogLevel(admin_log_level);
   ull = convertLogLevel(user_log_level);
   if (dev == YES) {
@@ -112,26 +112,26 @@ static int configure_logging(struct GE_Context ** ectx,
   FREE(user_log_level);
   if (all != 0) {
     nctx = GE_create_context_logfile(NULL,
-				     all
-				     | GE_ADMIN
-				     | GE_BULK
-				     | GE_IMMEDIATE,
-				     admin_log_file,
-				     YES,
-				     (int) logrotate);
+  			     all
+  			     | GE_ADMIN
+  			     | GE_BULK
+  			     | GE_IMMEDIATE,
+  			     admin_log_file,
+  			     YES,
+  			     (int) logrotate);
   }
   FREE(admin_log_file);
   if (ull != 0) {
     tetx = GE_create_context_stderr(YES,
-				    ull
-				    | GE_USERKIND
-				    | GE_BULK
-				    | GE_IMMEDIATE);
+  			    ull
+  			    | GE_USERKIND
+  			    | GE_BULK
+  			    | GE_IMMEDIATE);
     if (nctx == NULL)
       nctx = tetx;
     else
       nctx = GE_create_context_multiplexer(nctx,
-					   tetx);
+  				   tetx);
   }
   GE_setDefaultContext(nctx);
   GE_free_context(*ectx);
@@ -149,12 +149,12 @@ static int configure_logging(struct GE_Context ** ectx,
  *  otherwise
  */
 int GNUNET_init(int argc,
-		char * const * argv,
-		const char * binaryName,
-		char ** cfgFileName,
-		const struct CommandLineOption * options,
-		struct GE_Context ** ectx,
-		struct GC_Configuration ** cfg) {
+  	char * const * argv,
+  	const char * binaryName,
+  	char ** cfgFileName,
+  	const struct CommandLineOption * options,
+  	struct GE_Context ** ectx,
+  	struct GC_Configuration ** cfg) {
   int i;
   char * path;
   int is_daemon;
@@ -174,23 +174,23 @@ int GNUNET_init(int argc,
   /* during startup, log all warnings and higher
      for anybody to stderr */
   *ectx = GE_create_context_stderr(YES,
-				   GE_WARNING | GE_ERROR | GE_FATAL |
-				   GE_USER | GE_ADMIN | GE_DEVELOPER |
-				   GE_IMMEDIATE | GE_BULK);
+  			   GE_WARNING | GE_ERROR | GE_FATAL |
+  			   GE_USER | GE_ADMIN | GE_DEVELOPER |
+  			   GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(*ectx);
   os_init(*ectx);
   *cfg = GC_create_C_impl();
   GE_ASSERT(*ectx, *cfg != NULL);
   i = gnunet_parse_options(binaryName,
-			   *ectx,
-			   *cfg,
-			   options,
-			   (unsigned int) argc,
-			   argv);
+  		   *ectx,
+  		   *cfg,
+  		   options,
+  		   (unsigned int) argc,
+  		   argv);
   if (i == -1)
     return -1;
   if ( (YES != disk_file_test(*ectx,
-			      *cfgFileName)) &&
+  		      *cfgFileName)) &&
        (! is_daemon) ) {
     char * run;
     char * bindir;
@@ -200,37 +200,37 @@ int GNUNET_init(int argc,
     max = 128 + strlen(*cfgFileName) + strlen(bindir);
     run = MALLOC(max);
     SNPRINTF(run,
-	     max,
-	     "%sgnunet-setup -c %s generate-defaults",
-	     bindir,
-	     *cfgFileName);
+       max,
+       "%sgnunet-setup -c %s generate-defaults",
+       bindir,
+       *cfgFileName);
     FREE(bindir);
     ret = system(run);
     if (0 != ret)
       GE_LOG(*ectx,
-	     GE_ERROR | GE_USER | GE_IMMEDIATE,
-	     _("Failed to run %s: %s %d\n"),
-	     run,
-	     strerror(errno),
-	     WEXITSTATUS(ret));
+       GE_ERROR | GE_USER | GE_IMMEDIATE,
+       _("Failed to run %s: %s %d\n"),
+       run,
+       strerror(errno),
+       WEXITSTATUS(ret));
     FREE(run);
   }
   if (0 != GC_parse_configuration(*cfg,
-				  *cfgFileName))
+  			  *cfgFileName))
     return -1;
   /* if PATHS/GNUNETD_HOME is not set, set it to
      the default value! */
   GC_get_configuration_value_string(*cfg,
-				    "PATHS",
-				    "GNUNETD_HOME",
-				    "/var/lib/gnunet",
-				    &path);
+  			    "PATHS",
+  			    "GNUNETD_HOME",
+  			    "/var/lib/gnunet",
+  			    &path);
   FREE(path);
   GC_get_configuration_value_string(*cfg,
-				    "PATHS",
-				    "GNUNET_HOME",
-				    "~/.gnunet",
-				    &path);
+  			    "PATHS",
+  			    "GNUNET_HOME",
+  			    "~/.gnunet",
+  			    &path);
   FREE(path);
   if (configure_logging(ectx, *cfg) != 0)
     return -1;
@@ -241,10 +241,10 @@ int GNUNET_init(int argc,
  * Free resources allocated during GNUnet_init.
  */
 void GNUNET_fini(struct GE_Context * ectx,
-		 struct GC_Configuration * cfg) {
+  	 struct GC_Configuration * cfg) {
   GC_free(cfg);
   GE_setDefaultContext(NULL);
   GE_free_context(ectx);
 }
-		
+  	
 /* end of startup.c */

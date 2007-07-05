@@ -39,9 +39,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen("/tmp/gnunet-fsui-test/FSUITEST") + 14,
-	   "/tmp/gnunet-fsui-test/FSUITEST%u",
-	   i);
+     strlen("/tmp/gnunet-fsui-test/FSUITEST") + 14,
+     "/tmp/gnunet-fsui-test/FSUITEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -53,7 +53,7 @@ static struct FSUI_Context * ctx;
 static struct FSUI_DownloadList * download;
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   static char unused;
   char * fn;
 
@@ -69,13 +69,13 @@ static void * eventCallback(void * cls,
 #endif
     fn = makeName(43);
     download = FSUI_startDownload(ctx,
-				  0,
-				  NO,
-				  event->data.SearchResult.fi.uri,
-				  event->data.SearchResult.fi.meta,
-				  fn,
-				  NULL,
-				  NULL);
+  			  0,
+  			  NO,
+  			  event->data.SearchResult.fi.uri,
+  			  event->data.SearchResult.fi.meta,
+  			  fn,
+  			  NULL,
+  			  NULL);
     FREE(fn);
     break;
   case FSUI_upload_completed:
@@ -125,55 +125,55 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  60 * cronSECONDS));
+  				  cfg,
+  				  60 * cronSECONDS));
 #endif
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   ok = YES;
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "fsuitest",
-		   32, /* thread pool size */
-		   NO, /* no resume */
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "fsuitest",
+  	   32, /* thread pool size */
+  	   NO, /* no resume */
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
   filename = makeName(42);
   disk_file_write(NULL,
-		  filename,
-		  "foo bar test!",
-		  strlen("foo bar test!"),
-		  "600");
+  	  filename,
+  	  "foo bar test!",
+  	  strlen("foo bar test!"),
+  	  "600");
   meta = ECRS_createMetaData();
   kuri = ECRS_parseListKeywordURI(NULL,
-				  2,
-				  (const char**)keywords);
+  			  2,
+  			  (const char**)keywords);
   upload = FSUI_startUpload(ctx,
-			    filename,
-			    (DirectoryScanCallback) &disk_directory_scan,
-			    NULL,
-			    0, /* anonymity */
-			    0, /* priority */
-			    YES,
-			    NO,
-			    NO,
-			    get_time() + 5 * cronHOURS,
-			    meta,
-			    kuri,
-			    kuri);
+  		    filename,
+  		    (DirectoryScanCallback) &disk_directory_scan,
+  		    NULL,
+  		    0, /* anonymity */
+  		    0, /* priority */
+  		    YES,
+  		    NO,
+  		    NO,
+  		    get_time() + 5 * cronHOURS,
+  		    meta,
+  		    kuri,
+  		    kuri);
   CHECK(upload != NULL);
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
@@ -187,18 +187,18 @@ int main(int argc, char * argv[]){
       break;
   }
   SNPRINTF(keyword,
-	   40,
-	   "%s %s %s",
-	   keywords[0],
-	   _("AND"),
-	   keywords[1]);
+     40,
+     "%s %s %s",
+     keywords[0],
+     _("AND"),
+     keywords[1]);
   uri = ECRS_parseCharKeywordURI(NULL,
-				 keyword);
+  			 keyword);
   search = FSUI_startSearch(ctx,
-			    0,
-			    100,
-			    240 * cronSECONDS,
-			    uri);
+  		    0,
+  		    100,
+  		    240 * cronSECONDS,
+  		    uri);
   ECRS_freeUri(uri);
   CHECK(search != NULL);
   prog = 0;
@@ -210,9 +210,9 @@ int main(int argc, char * argv[]){
       break;
   }
   FSUI_abortSearch(ctx,
-		   search);
+  	   search);
   FSUI_stopSearch(ctx,
-		  search);
+  	  search);
   unindex = FSUI_startUnindex(ctx, filename);
   prog = 0;
   while (lastEvent != FSUI_unindex_completed) {

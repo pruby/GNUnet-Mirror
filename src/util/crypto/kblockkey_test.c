@@ -42,8 +42,8 @@ static int testMultiKey(const char * word) {
   int i;
 
   fprintf(stderr,
-	  "Testing KBlock key uniqueness (%s) ",
-	  word);
+    "Testing KBlock key uniqueness (%s) ",
+    word);
   hash(word, strlen(word), &in);
   hostkey = makeKblockKey(&in);
   if (hostkey == NULL) {
@@ -67,7 +67,7 @@ static int testMultiKey(const char * word) {
     getPublicKey(hostkey, &pkey1);
     freePrivateKey(hostkey);
     if (0 != memcmp(&pkey, &pkey1,
-		    sizeof(PublicKey))) {
+  	    sizeof(PublicKey))) {
       GE_BREAK(NULL, 0);
       fprintf(stderr, " ERROR\n");
       return SYSERR;
@@ -94,37 +94,37 @@ static int testEncryptDecrypt(struct PrivateKey * hostkey) {
   for (i=0;i<ITER;i++) {
     fprintf(stderr, ".");
     if (SYSERR == encryptPrivateKey(TESTSTRING,
-				    strlen(TESTSTRING)+1,
-				    &pkey,
-				    &target)) {
+  			    strlen(TESTSTRING)+1,
+  			    &pkey,
+  			    &target)) {
       fprintf(stderr,
-	      "encryptPrivateKey returned SYSERR\n");
+        "encryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (-1 == decryptPrivateKey(hostkey,
-				&target,
-				result,
-				strlen(TESTSTRING)+1)) {
+  			&target,
+  			result,
+  			strlen(TESTSTRING)+1)) {
      fprintf(stderr,
-	      "decryptPrivateKey returned SYSERR\n");
+        "decryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (strncmp(TESTSTRING, result,
-		strlen(TESTSTRING)) != 0) {
+  	strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING,
-	     MAX_TESTVAL,
-	     result);
+       TESTSTRING,
+       MAX_TESTVAL,
+       result);
       ok++;
       continue;
     }
   }
   printf("%d RSA encrypt/decrypt operations %ds (%d failures)\n",
-	 ITER,
-	 (int) (TIME(NULL)-start),
-	 ok);
+   ITER,
+   (int) (TIME(NULL)-start),
+   ok);
   if (ok == 0)
     return OK;
   else
@@ -144,25 +144,25 @@ static int testSignVerify(struct PrivateKey * hostkey) {
   for (i=0;i<ITER;i++) {
     fprintf(stderr, ".");
     if (SYSERR == sign(hostkey,
-		       strlen(TESTSTRING),
-		       TESTSTRING, &sig)) {
+  	       strlen(TESTSTRING),
+  	       TESTSTRING, &sig)) {
       fprintf(stderr,
-	      "sign returned SYSERR\n");
+        "sign returned SYSERR\n");
       ok = SYSERR;
       continue;
     }
     if (SYSERR == verifySig(TESTSTRING,
-			    strlen(TESTSTRING),
-			    &sig,
-			    &pkey)) {
+  		    strlen(TESTSTRING),
+  		    &sig,
+  		    &pkey)) {
       printf("testSignVerify failed!\n");
       ok = SYSERR;
       continue;
     }
   }
   printf("%d RSA sign/verify operations %ds\n",
-	 ITER,
-	 (int) (TIME(NULL)-start));
+   ITER,
+   (int) (TIME(NULL)-start));
   return ok;
 }
 
@@ -183,47 +183,47 @@ static int testPrivateKeyEncoding(const struct PrivateKey * hostkey) {
     fprintf(stderr, ".");
     getPublicKey(hostkey, &pkey);
     if (SYSERR == encryptPrivateKey(TESTSTRING,
-				    strlen(TESTSTRING)+1,
-				    &pkey,
-				    &target)) {
+  			    strlen(TESTSTRING)+1,
+  			    &pkey,
+  			    &target)) {
       fprintf(stderr,
-	      "encryptPrivateKey returned SYSERR\n");
+        "encryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
       continue;
     }
     encoding = encodePrivateKey(hostkey);
     if (encoding == NULL) {
       fprintf(stderr,
-	      "encodePrivateKey returned NULL\n");
+        "encodePrivateKey returned NULL\n");
       ok = SYSERR;
       continue;
     }
     hostkey2 = decodePrivateKey(encoding);
     FREE(encoding);
     if (SYSERR == decryptPrivateKey(hostkey2,
-				    &target,
-				    result,
-				    strlen(TESTSTRING)+1)) {
+  			    &target,
+  			    result,
+  			    strlen(TESTSTRING)+1)) {
       fprintf(stderr,
-	      "decryptPrivateKey returned SYSERR\n");
+        "decryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
       freePrivateKey(hostkey2);
       continue;
     }
     freePrivateKey(hostkey2);
     if (strncmp(TESTSTRING, result,
-		strlen(TESTSTRING)) != 0) {
+  	strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING,
-	     (int) strlen(TESTSTRING),
-	     result);
+       TESTSTRING,
+       (int) strlen(TESTSTRING),
+       result);
       ok = SYSERR;
       continue;
     }
   }
   printf("%d RSA encrypt/encode/decode/decrypt operations %ds\n",
-	 ITER,
-	 (int) (TIME(NULL)-start));
+   ITER,
+   (int) (TIME(NULL)-start));
   return ok;
 }
 
@@ -253,7 +253,7 @@ int main(int argc, char * argv[]) {
 
   if (failureCount != 0) {
     printf("\n\n%d TESTS FAILED!\n\n",
-	   failureCount);
+     failureCount);
     return -1;
   }
   return 0;

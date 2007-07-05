@@ -96,8 +96,8 @@ void PTHREAD_REL_SELF(PThread * handle) {
  * @return see pthread_create
  */
 PThread * PTHREAD_CREATE(PThreadMain main,
-			 void * arg,
-			 unsigned int stackSize) {
+  		 void * arg,
+  		 unsigned int stackSize) {
   PThread * handle;
 #ifndef LINUX
   pthread_attr_t stack_size_custom_attr;
@@ -111,16 +111,16 @@ PThread * PTHREAD_CREATE(PThreadMain main,
 #ifndef LINUX
   pthread_attr_init(&stack_size_custom_attr);
   pthread_attr_setstacksize(&stack_size_custom_attr,
-			    stackSize);
+  		    stackSize);
 #endif
   ret = pthread_create(&handle->pt,
 #ifndef LINUX
-		       &stack_size_custom_attr,
+  	       &stack_size_custom_attr,
 #else
-		       NULL,
+  	       NULL,
 #endif
-		       main,
-		       arg);
+  	       main,
+  	       arg);
   if (ret != 0) {
     FREE(handle);
     return NULL;
@@ -129,28 +129,28 @@ PThread * PTHREAD_CREATE(PThreadMain main,
 }
 
 void PTHREAD_JOIN_FL(PThread * handle,
-		     void ** ret,
-		     const char * file,
-		     unsigned int line) {
+  	     void ** ret,
+  	     const char * file,
+  	     unsigned int line) {
   cron_t start;
   cron_t end;
   int k;
 
   GE_ASSERT(NULL,
-	    handle != NULL);
+      handle != NULL);
   GE_ASSERT(NULL,
-	    NO == PTHREAD_TEST_SELF(handle));
+      NO == PTHREAD_TEST_SELF(handle));
   start = get_time();
   k = pthread_join(handle->pt, ret);
   end = get_time();
   if ( (end - start > REALTIME_LIMIT) &&
        (REALTIME_LIMIT != 0) ) {
     GE_LOG(NULL,
-	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
-	   _("Real-time delay violation (%llu ms) at %s:%u\n"),
-	   end - start,
-	   file,
-	   line);
+     GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+     _("Real-time delay violation (%llu ms) at %s:%u\n"),
+     end - start,
+     file,
+     line);
   }
   FREE(handle);
   switch (k) {
@@ -158,33 +158,33 @@ void PTHREAD_JOIN_FL(PThread * handle,
     return;
   case ESRCH:
     GE_LOG(NULL,
-	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	   _("`%s' failed with error code %s: %s\n"),
-	   "pthread_join",
-	   "ESRCH",
-	   STRERROR(errno));
+     GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+     _("`%s' failed with error code %s: %s\n"),
+     "pthread_join",
+     "ESRCH",
+     STRERROR(errno));
     break;
   case EINVAL:
     GE_LOG(NULL,
-	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	   _("`%s' failed with error code %s: %s\n"),
-	   "pthread_join",
-	   "EINVAL",
-	   STRERROR(errno));
+     GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+     _("`%s' failed with error code %s: %s\n"),
+     "pthread_join",
+     "EINVAL",
+     STRERROR(errno));
   case EDEADLK:
     GE_LOG(NULL,
-	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	   _("`%s' failed with error code %s: %s\n"),
-	   "pthread_join",
-	   "EDEADLK",
-	   STRERROR(errno));
+     GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+     _("`%s' failed with error code %s: %s\n"),
+     "pthread_join",
+     "EDEADLK",
+     STRERROR(errno));
   default:
     GE_LOG(NULL,
-	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	   _("`%s' failed with error code %d: %s\n"),
-	   "pthread_join",
-	   k,
-	   STRERROR(errno));
+     GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+     _("`%s' failed with error code %d: %s\n"),
+     "pthread_join",
+     k,
+     STRERROR(errno));
   }
   GE_ASSERT(NULL, 0);
 }
@@ -227,8 +227,8 @@ void PTHREAD_SLEEP(unsigned long long delay) {
   if ( (0 != nanosleep(&req, &rem)) &&
        (errno != EINTR) )
       GE_LOG_STRERROR(NULL,
-		      GE_WARNING | GE_USER | GE_BULK,
-		      "nanosleep");
+  	      GE_WARNING | GE_USER | GE_BULK,
+  	      "nanosleep");
 
 #elif WINDOWS
   SleepEx(delay, TRUE);
@@ -243,8 +243,8 @@ void PTHREAD_SLEEP(unsigned long long delay) {
   if ( (ret == -1) &&
        (errno != EINTR) )
     GE_LOG_STRERROR(NULL,
-		    GE_WARNING | GE_USER | GE_BULK,
-		    "select");
+  	    GE_WARNING | GE_USER | GE_BULK,
+  	    "select");
 #endif
 
 }
@@ -256,8 +256,8 @@ void PTHREAD_STOP_SLEEP(PThread * handle) {
     return;
 #ifdef WINDOWS
   ret = QueueUserAPC((PAPCFUNC) __PTHREAD_SIGNALED,
-		     pthread_getw32threadhandle_np(handle->pt),
-		     0) != 0 ? 0 : EINVAL;
+  	     pthread_getw32threadhandle_np(handle->pt),
+  	     0) != 0 ? 0 : EINVAL;
 #else
   ret = pthread_kill(handle->pt, SIGALRM);
 #endif
@@ -266,22 +266,22 @@ void PTHREAD_STOP_SLEEP(PThread * handle) {
     break; /* ok */
   case EINVAL:
     GE_LOG(NULL,
-	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	   _("`%s' failed with error code %s: %s\n"),
-	   "pthread_kill",
-	   "EINVAL",
-	   STRERROR(ret));
+     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+     _("`%s' failed with error code %s: %s\n"),
+     "pthread_kill",
+     "EINVAL",
+     STRERROR(ret));
     break;
   case ESRCH:
     /* ignore, thread might have already exited by chance */
     break;
   default:
     GE_LOG(NULL,
-	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	   _("`%s' failed with error code %d: %s\n"),
-	   "pthread_kill",
-	   ret,
-	   STRERROR(ret));
+     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+     _("`%s' failed with error code %d: %s\n"),
+     "pthread_kill",
+     ret,
+     STRERROR(ret));
     break;
   }
 }
@@ -304,10 +304,10 @@ void __attribute__ ((constructor)) pthread_handlers_ltdl_init() {
   sig.sa_handler =  &sigalrmHandler;
   if (0 != sigaction(SIGALRM, &sig, &old))
     GE_LOG_STRERROR(NULL,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");
+  	    GE_WARNING | GE_ADMIN | GE_BULK,
+  	    "sigaction");
 #else
-  InitWinEnv(NULL);		
+  InitWinEnv(NULL);  	
 #endif
 }
 
@@ -315,10 +315,10 @@ void __attribute__ ((destructor)) pthread_handlers_ltdl_fini() {
 #ifndef MINGW
   if (0 != sigaction(SIGALRM, &old, &sig))
     GE_LOG_STRERROR(NULL,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");
+  	    GE_WARNING | GE_ADMIN | GE_BULK,
+  	    "sigaction");
 #else
-  ShutdownWinEnv();		
+  ShutdownWinEnv();  	
 #endif
 }
 

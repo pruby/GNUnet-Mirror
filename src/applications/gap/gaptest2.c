@@ -50,22 +50,22 @@ static int testTerminate(void * unused) {
 }
 
 static void uprogress(unsigned long long totalBytes,
-		      unsigned long long completedBytes,
-		      cron_t eta,
-		      void * closure) {
+  	      unsigned long long completedBytes,
+  	      cron_t eta,
+  	      void * closure) {
   fprintf(stderr,
-	  totalBytes == completedBytes ? "\n" : ".");
+    totalBytes == completedBytes ? "\n" : ".");
 }
 
 static void dprogress(unsigned long long totalBytes,
-		      unsigned long long completedBytes,
-		      cron_t eta,
-		      unsigned long long lastBlockOffset,
-		      const char * lastBlock,
-		      unsigned int lastBlockSize,
-		      void * closure) {
+  	      unsigned long long completedBytes,
+  	      cron_t eta,
+  	      unsigned long long lastBlockOffset,
+  	      const char * lastBlock,
+  	      unsigned int lastBlockSize,
+  	      void * closure) {
   fprintf(stderr,
-	  totalBytes == completedBytes ? "\n" : ".");
+    totalBytes == completedBytes ? "\n" : ".");
 }
 
 static char * makeName(unsigned int i) {
@@ -73,9 +73,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen("/tmp/gnunet-gaptest/GAPTEST") + 14);
   SNPRINTF(fn,
-	   strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
-	   "/tmp/gnunet-gaptest/GAPTEST%u",
-	   i);
+     strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
+     "/tmp/gnunet-gaptest/GAPTEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -90,29 +90,29 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
   name = makeName(size);
   fd = disk_file_open(ectx,
-		      name,
-		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  	      name,
+  	      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size / 253, sizeof(HashCode512));
   for (i=0;i<size - sizeof(HashCode512);i+=sizeof(HashCode512))
     hash(&buf[i],
-	 sizeof(HashCode512),
-	 (HashCode512*) &buf[i+sizeof(HashCode512)]);
+   sizeof(HashCode512),
+   (HashCode512*) &buf[i+sizeof(HashCode512)]);
   WRITE(fd, buf, size);
   FREE(buf);
   disk_file_close(ectx, name, fd);
   ret = ECRS_uploadFile(ectx,
-			cfg,
-			name,
-			YES, /* index */
-			1, /* anon */
-			0, /* prio */
-			get_time() + 100 * cronMINUTES, /* expire */
-			&uprogress, /* progress */
-			NULL,
-			&testTerminate,
-			NULL,
-			&uri);
+  		cfg,
+  		name,
+  		YES, /* index */
+  		1, /* anon */
+  		0, /* prio */
+  		get_time() + 100 * cronMINUTES, /* expire */
+  		&uprogress, /* progress */
+  		NULL,
+  		&testTerminate,
+  		NULL,
+  		&uri);
   if (ret != SYSERR) {
     struct ECRS_MetaData * meta;
     struct ECRS_URI * key;
@@ -124,13 +124,13 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
     meta = ECRS_createMetaData();
     key = ECRS_keywordsToUri(keywords);
     ret = ECRS_addToKeyspace(ectx,
-			     cfg,
-			     key,
-			     0,
-			     0,
-			     get_time() + 100 * cronMINUTES, /* expire */
-			     uri,
-			     meta);
+  		     cfg,
+  		     key,
+  		     0,
+  		     0,
+  		     get_time() + 100 * cronMINUTES, /* expire */
+  		     uri,
+  		     meta);
     ECRS_freeMetaData(meta);
     ECRS_freeUri(uri);
     FREE(name);
@@ -147,9 +147,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 }
 
 static int searchCB(const ECRS_FileInfo * fi,
-		    const HashCode512 * key,
-		    int isRoot,
-		    void * closure) {
+  	    const HashCode512 * key,
+  	    int isRoot,
+  	    void * closure) {
   struct ECRS_URI ** my = closure;
   char * tmp;
 
@@ -173,14 +173,14 @@ static int searchFile(struct ECRS_URI ** uri) {
 
   myURI = NULL;
   ret = ECRS_search(ectx,
-		    cfg,
-		    *uri,
-		    1,
-		    1450 * cronSECONDS,
-		    &searchCB,
-		    &myURI,
-		    &testTerminate,
-		    NULL);
+  	    cfg,
+  	    *uri,
+  	    1,
+  	    1450 * cronSECONDS,
+  	    &searchCB,
+  	    &myURI,
+  	    &testTerminate,
+  	    NULL);
   ECRS_freeUri(*uri);
   *uri = myURI;
   if ( (ret != SYSERR) &&
@@ -191,7 +191,7 @@ static int searchFile(struct ECRS_URI ** uri) {
 }
 
 static int downloadFile(unsigned int size,
-			const struct ECRS_URI * uri) {
+  		const struct ECRS_URI * uri) {
   int ret;
   char * tmpName;
   int fd;
@@ -202,37 +202,37 @@ static int downloadFile(unsigned int size,
 
   tmp = ECRS_uriToString(uri);
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Starting download of `%s'\n",
-	 tmp);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Starting download of `%s'\n",
+   tmp);
   FREE(tmp);
   tmpName = makeName(0);
   ret = SYSERR;
   if (OK == ECRS_downloadFile(ectx,
-			      cfg,
-			      uri,
-			      tmpName,
-			      1,
-			      &dprogress,
-			      NULL,
-			      &testTerminate,
-			      NULL)) {
+  		      cfg,
+  		      uri,
+  		      tmpName,
+  		      1,
+  		      &dprogress,
+  		      NULL,
+  		      &testTerminate,
+  		      NULL)) {
 
     fd = disk_file_open(ectx,
-			tmpName,
-			O_RDONLY);
+  		tmpName,
+  		O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size / 253, sizeof(HashCode512));
     for (i=0;i<size - sizeof(HashCode512);i+=sizeof(HashCode512))
       hash(&buf[i],
-	   sizeof(HashCode512),
-	   (HashCode512*) &buf[i+sizeof(HashCode512)]);
+     sizeof(HashCode512),
+     (HashCode512*) &buf[i+sizeof(HashCode512)]);
     if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,
-			 in,
-			 size))
+  		 in,
+  		 size))
       ret = OK;
     FREE(buf);
     FREE(in);
@@ -249,12 +249,12 @@ static int unindexFile(unsigned int size) {
 
   name = makeName(size);
   ret = ECRS_unindexFile(ectx,
-			 cfg,
-			 name,
-			 NULL,
-			 NULL,
-			 &testTerminate,
-			 NULL);
+  		 cfg,
+  		 name,
+  		 NULL,
+  		 NULL,
+  		 &testTerminate,
+  		 NULL);
   if (0 != UNLINK(name))
     ret = SYSERR;
   FREE(name);
@@ -278,30 +278,30 @@ int main(int argc, char ** argv) {
   ret = 0;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_PEERS
   peers = gnunet_testing_start_daemons("tcp",
-				       "advertising topology fs stats",
-				       "/tmp/gnunet-gap-test2",
-				       2087,
-				       10,
-				       PEER_COUNT);
+  			       "advertising topology fs stats",
+  			       "/tmp/gnunet-gap-test2",
+  			       2087,
+  			       10,
+  			       PEER_COUNT);
   if (peers == NULL) {
     fprintf(stderr,
-	    "Failed to start the gnunetd daemons!\n");
+      "Failed to start the gnunetd daemons!\n");
     GC_free(cfg);
     return -1;
   }
 #endif
   for (i=1;i<PEER_COUNT;i++) {
     if (OK != gnunet_testing_connect_daemons(2077 + (10*i),
-					     2087 + (10*i))) {
+  				     2087 + (10*i))) {
       gnunet_testing_stop_daemons(peers);
       fprintf(stderr,
-	      "Failed to connect the peers!\n");
+        "Failed to connect the peers!\n");
       GC_free(cfg);
       return -1;
     }
@@ -311,27 +311,27 @@ int main(int argc, char ** argv) {
   uri = uploadFile(SIZE);
   CHECK(NULL != uri);
   SNPRINTF(buf,
-	   128,
-	   "localhost:%u",
-	   2077 + PEER_COUNT * 10);
+     128,
+     "localhost:%u",
+     2077 + PEER_COUNT * 10);
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    buf);
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    buf);
   CHECK(OK == searchFile(&uri));
   printf("Search successful!\n");
   start = get_time();
   printf("Downloading...\n");
   CHECK(OK == downloadFile(SIZE, uri));
   printf("Download successful at %llu kbps!\n",
-	 (SIZE / 1024) / ((get_time() - start) / cronSECONDS));
+   (SIZE / 1024) / ((get_time() - start) / cronSECONDS));
   ECRS_freeUri(uri);
   GC_set_configuration_value_string(cfg,
-				    ectx,
-				    "NETWORK",
-				    "HOST",
-				    "localhost:2087");
+  			    ectx,
+  			    "NETWORK",
+  			    "HOST",
+  			    "localhost:2087");
   CHECK(OK == unindexFile(SIZE));
 
  FAILURE:

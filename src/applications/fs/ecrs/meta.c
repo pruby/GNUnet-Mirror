@@ -294,7 +294,7 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
  *   of meta-data items obtained
  */
 int ECRS_extractMetaData(struct GE_Context * ectx,
-			 MetaData * md,
+  		 MetaData * md,
                          const char * filename,
                          EXTRACTOR_ExtractorList * extractors) {
   EXTRACTOR_KeywordList * head;
@@ -308,7 +308,7 @@ int ECRS_extractMetaData(struct GE_Context * ectx,
   head = EXTRACTOR_getKeywords(extractors,
                                filename);
   head = EXTRACTOR_removeDuplicateKeywords(head,
-					   EXTRACTOR_DUPLICATES_REMOVE_UNKNOWN);
+  				   EXTRACTOR_DUPLICATES_REMOVE_UNKNOWN);
   pos = head;
   ret = 0;
   while (pos != NULL) {
@@ -336,10 +336,10 @@ static unsigned int tryCompression(char * data,
 #endif
   tmp = MALLOC(dlen);
   if (Z_OK == compress2((Bytef*) tmp,
-			&dlen,
-			(const Bytef*) data,
-			oldSize,
-			9)) {
+  		&dlen,
+  		(const Bytef*) data,
+  		oldSize,
+  		9)) {
     if (dlen < oldSize) {
       memcpy(data, tmp, dlen);
       FREE(tmp);
@@ -425,7 +425,7 @@ typedef struct {
  *         space)
  */
 int ECRS_serializeMetaData(struct GE_Context * ectx,
-			   const MetaData * md,
+  		   const MetaData * md,
                            char * target,
                            unsigned int max,
                            int part) {
@@ -465,7 +465,7 @@ int ECRS_serializeMetaData(struct GE_Context * ectx,
     hdr->size = htonl(size);
     if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0) {
       pos = tryCompression((char*)&hdr[1],
-			   size - sizeof(MetaDataHeader));
+  		   size - sizeof(MetaDataHeader));
     } else {
       pos = size - sizeof(MetaDataHeader);
     }
@@ -497,7 +497,7 @@ int ECRS_serializeMetaData(struct GE_Context * ectx,
   {
     MetaData * mdx;
     mdx = ECRS_deserializeMetaData(ectx,
-				   target,
+  			   target,
                                    size);
     GE_ASSERT(ectx, NULL != mdx);
     ECRS_freeMetaData(mdx);
@@ -512,7 +512,7 @@ int ECRS_serializeMetaData(struct GE_Context * ectx,
  * than what is strictly needed.
  */
 unsigned int ECRS_sizeofMetaData(const MetaData * md,
-				 int part) {
+  			 int part) {
   MetaDataHeader * hdr;
   size_t size;
   size_t pos;
@@ -543,7 +543,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md,
   }
   if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0) {
     pos = tryCompression((char*)&hdr[1],
-			 size - sizeof(MetaDataHeader));
+  		 size - sizeof(MetaDataHeader));
   } else {
     pos = size - sizeof(MetaDataHeader);
   }
@@ -563,7 +563,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md,
  */
 struct ECRS_MetaData *
 ECRS_deserializeMetaData(struct GE_Context * ectx,
-			 const char * input,
+  		 const char * input,
                          unsigned int size) {
   MetaData * md;
   const MetaDataHeader * hdr;
@@ -735,7 +735,7 @@ static char * mimeMap[][2] = {
  * @return the new filename
  */
 char * ECRS_suggestFilename(struct GE_Context * ectx,
-			    const char * filename) {
+  		    const char * filename) {
   EXTRACTOR_ExtractorList * l;
   EXTRACTOR_KeywordList * list;
   const char * key;

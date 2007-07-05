@@ -134,13 +134,13 @@ getCollectionFileName() {
   char * fnBase;
 
   GC_get_configuration_value_filename(cfg,
-				      "GNUNET",
-				      "GNUNET_HOME",
-				      GNUNET_HOME_DIRECTORY,
-				      &fnBase);
+  			      "GNUNET",
+  			      "GNUNET_HOME",
+  			      GNUNET_HOME_DIRECTORY,
+  			      &fnBase);
   fn = MALLOC(strlen(fnBase) +
-	      strlen(COLLECTION) +
-	      4);
+        strlen(COLLECTION) +
+        4);
   strcpy(fn, fnBase);
   disk_directory_create(ectx, fn);
   strcat(fn, DIR_SEPARATOR_STR);
@@ -153,7 +153,7 @@ getCollectionFileName() {
  * Initialize collection module.
  */
 void CO_init(struct GE_Context * e,
-	     struct GC_Configuration * c) {
+       struct GC_Configuration * c) {
   char * fn;
   int len;
   unsigned int mlen;
@@ -175,9 +175,9 @@ void CO_init(struct GE_Context * e,
   }
   /* read collection data */
   if (OK != disk_file_size(ectx,
-			   fn,
-			   &size,
-			   YES)) {
+  		   fn,
+  		   &size,
+  		   YES)) {
     FREE(fn);
     return;
   }
@@ -197,24 +197,24 @@ void CO_init(struct GE_Context * e,
   }
   rsize = (size_t) size;
   buf = MMAP(NULL,
-	     rsize,
-	     PROT_READ,
-	     MAP_SHARED,
-	     fd,
-	     0);
+       rsize,
+       PROT_READ,
+       MAP_SHARED,
+       fd,
+       0);
   if (buf == MAP_FAILED) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-			 "mmap",
-			 fn);
+  		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  		 "mmap",
+  		 fn);
     CLOSE(fd);
     FREE(fn);
     return;
   }
   collectionData = MALLOC(sizeof(CollectionInfo));
   memcpy(&collectionData->data,
-	 buf,
-	 sizeof(CollectionData));
+   buf,
+   sizeof(CollectionData));
   pos = &buf[sizeof(CollectionData)];
   rsize -= sizeof(CollectionData);
   len = ntohl(*(int*)pos);
@@ -243,8 +243,8 @@ void CO_init(struct GE_Context * e,
     len = rsize;
   }
   memcpy(collectionData->name,
-	 pos,
-	 len);
+   pos,
+   len);
   rsize -= len;
   pos += len;
   if (mlen > rsize) {
@@ -253,12 +253,12 @@ void CO_init(struct GE_Context * e,
   }
   collectionData->meta
     = ECRS_deserializeMetaData(ectx,
-			       pos,
-			       mlen);
+  		       pos,
+  		       mlen);
   rsize -= mlen;
   pos += mlen;
   GE_BREAK(ectx,
-	   collectionData->meta != NULL);
+     collectionData->meta != NULL);
   for (i=0;i<collectionData->file_count;i++) {
     if (rsize < 2 * sizeof(int)) {
       GE_BREAK(ectx, 0);
@@ -280,22 +280,22 @@ void CO_init(struct GE_Context * e,
     tmp = MALLOC(len + 1);
     tmp[len] = '\0';
     memcpy(tmp,
-	   pos,
-	   len);
+     pos,
+     len);
     pos += len;
     rsize -= len;
     collectionData->files[i].uri
       = ECRS_stringToUri(ectx,
-			 tmp);
+  		 tmp);
     GE_ASSERT(ectx,
-	      collectionData->files[i].uri != NULL);
+        collectionData->files[i].uri != NULL);
     FREE(tmp);
     collectionData->files[i].meta
        = ECRS_deserializeMetaData(ectx,
-				  pos,
-				  mlen);
+  			  pos,
+  			  mlen);
     GE_ASSERT(ectx,
-	      collectionData->files[i].meta != NULL);
+        collectionData->files[i].meta != NULL);
     pos += mlen;
     rsize -= mlen;
   }
@@ -306,7 +306,7 @@ void CO_init(struct GE_Context * e,
   /* kill invalid entries (meta or uri == NULL) */
   for (i=0;i<collectionData->file_count;i++) {
     if ( (collectionData->files[i].uri != NULL) &&
-	 (collectionData->files[i].meta != NULL) )
+   (collectionData->files[i].meta != NULL) )
       continue;
     if (collectionData->files[i].uri != NULL)
       ECRS_freeUri(collectionData->files[i].uri);
@@ -315,19 +315,19 @@ void CO_init(struct GE_Context * e,
     collectionData->files[i]
       = collectionData->files[collectionData->file_count-1];
     GROW(collectionData->files,
-	 collectionData->file_count,
-	 collectionData->file_count-1);
+   collectionData->file_count,
+   collectionData->file_count-1);
   }
 }
 
 static void WRITEINT(int fd,
-		     int val) {
+  	     int val) {
   int bval;
 
   bval = htonl(val);
   WRITE(fd,
-	&bval,
-	sizeof(int));
+  &bval,
+  sizeof(int));
 }
 
 static void writeCO() {
@@ -343,13 +343,13 @@ static void writeCO() {
 
   /* write collection data */
   mlen = ECRS_sizeofMetaData(collectionData->meta,
-			     NO);
+  		     NO);
   buf = MALLOC(mlen);
   if (mlen != ECRS_serializeMetaData(ectx,
-				     collectionData->meta,
-				     buf,
-				     mlen,
-				     NO)) {
+  			     collectionData->meta,
+  			     buf,
+  			     mlen,
+  			     NO)) {
     GE_BREAK(ectx, 0);
     FREE(buf);
     return;
@@ -357,22 +357,22 @@ static void writeCO() {
 
   fn = getCollectionFileName();
   fd = open(fn,
-	    O_CREAT | O_LARGEFILE | O_WRONLY | O_TRUNC,
-	    S_IRUSR | S_IWUSR);
+      O_CREAT | O_LARGEFILE | O_WRONLY | O_TRUNC,
+      S_IRUSR | S_IWUSR);
   if (fd == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
-			 "open",
-			 fn);
+  		 GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+  		 "open",
+  		 fn);
     FREE(fn);
     FREE(buf);
     return;
   }
   GE_BREAK(ectx,
-	   collectionData->file_count <= 1024 * 1024 * 4);
+     collectionData->file_count <= 1024 * 1024 * 4);
   WRITE(fd,
-	collectionData,
-	sizeof(CollectionData));
+  collectionData,
+  sizeof(CollectionData));
   WRITEINT(fd, collectionData->file_count);
   WRITEINT(fd, collectionData->changed);
   WRITEINT(fd, mlen);
@@ -383,13 +383,13 @@ static void writeCO() {
   FREE(buf);
   for (i=0;i<collectionData->file_count;i++) {
     mlen = ECRS_sizeofMetaData(collectionData->files[i].meta,
-			       NO);
+  		       NO);
     buf = MALLOC(mlen);
     if (mlen != ECRS_serializeMetaData(ectx,
-				       collectionData->files[i].meta,
-				       buf,
-				       mlen,
-				       NO)) {
+  			       collectionData->files[i].meta,
+  			       buf,
+  			       mlen,
+  			       NO)) {
       GE_BREAK(ectx, 0);
       FREE(buf);
       break;
@@ -418,7 +418,7 @@ void CO_done() {
   ectx = NULL;
   cfg = NULL;
 }
-	
+  
 
 /**
  * Start collection.
@@ -430,10 +430,10 @@ void CO_done() {
  *        is destroyed (i.e. on exit from the UI).
  */
 int CO_startCollection(unsigned int anonymityLevel,
-		       unsigned int prio,
-		       TIME_T updateInterval,
-		       const char * name,
-		       const struct ECRS_MetaData * meta) {
+  	       unsigned int prio,
+  	       TIME_T updateInterval,
+  	       const char * name,
+  	       const struct ECRS_MetaData * meta) {
   struct ECRS_URI * advertisement;
   struct ECRS_URI * rootURI;
   HashCode512 nextId;
@@ -443,19 +443,19 @@ int CO_startCollection(unsigned int anonymityLevel,
   CO_stopCollection(); /* cancel old collection */
   GE_ASSERT(ectx, name != NULL);
   advertisement = ECRS_parseCharKeywordURI(ectx,
-					   COLLECTION);
+  				   COLLECTION);
   GE_ASSERT(ectx, advertisement != NULL);
   TIME(&now);
   makeRandomId(&nextId);
   rootURI = ECRS_createNamespace(ectx,
-				 cfg,
-				 name,
-				 meta,
-				 anonymityLevel,
-				 prio,
-				 get_time() + COLLECTION_ADV_LIFETIME,
-				 advertisement,
-				 &nextId);
+  			 cfg,
+  			 name,
+  			 meta,
+  			 anonymityLevel,
+  			 prio,
+  			 get_time() + COLLECTION_ADV_LIFETIME,
+  			 advertisement,
+  			 &nextId);
   if (rootURI == NULL) {
     ECRS_freeUri(advertisement);
     MUTEX_UNLOCK(lock);
@@ -465,8 +465,8 @@ int CO_startCollection(unsigned int anonymityLevel,
   ECRS_freeUri(rootURI);
   collectionData = MALLOC(sizeof(CollectionInfo));
   memset(collectionData,
-	 0,
-	 sizeof(CollectionInfo));
+   0,
+   sizeof(CollectionInfo));
   makeRandomId(&collectionData->data.lastId);
   collectionData->data.nextId = nextId;
   collectionData->data.updateInterval
@@ -497,8 +497,8 @@ int CO_stopCollection() {
     return SYSERR;
   }
   ECRS_deleteNamespace(ectx,
-		       cfg,
-		       collectionData->name);
+  	       cfg,
+  	       collectionData->name);
   ECRS_freeMetaData(collectionData->meta);
   for (i=0;i<collectionData->file_count;i++) {
     ECRS_freeMetaData(collectionData->files[i].meta);
@@ -575,12 +575,12 @@ void CO_publishCollectionNow() {
   if ( (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
        (ntohl(collectionData->data.updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
     deltaId(&collectionData->data.nextId,
-	    &collectionData->data.lastId,
-	    &delta);
+      &collectionData->data.lastId,
+      &delta);
     collectionData->data.lastId = collectionData->data.nextId;
     addHashCodes(&collectionData->data.nextId,
-		 &delta,
-		 &collectionData->data.nextId);
+  	 &delta,
+  	 &collectionData->data.nextId);
   } else {
     collectionData->data.lastId = collectionData->data.nextId;
     makeRandomId(&collectionData->data.nextId);
@@ -589,26 +589,26 @@ void CO_publishCollectionNow() {
   fd = mkstemp(tmpName);
   if (fd == -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "mkstemp");
+  	    GE_ERROR | GE_ADMIN | GE_BULK,
+  	    "mkstemp");
     FREE(tmpName);
     MUTEX_UNLOCK(lock);
     return;
   }
   dirData = NULL;
   GE_ASSERT(ectx,
-	    OK == ECRS_createDirectory(ectx,
-				       &dirData,
-				       &dirLen,
-				       collectionData->file_count,
-				       collectionData->files,
-				       collectionData->meta));
+      OK == ECRS_createDirectory(ectx,
+  			       &dirData,
+  			       &dirLen,
+  			       collectionData->file_count,
+  			       collectionData->files,
+  			       collectionData->meta));
   if (-1 == WRITE(fd,
-		  dirData,
-		  dirLen)) {
+  	  dirData,
+  	  dirLen)) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "write");
+  	    GE_ERROR | GE_ADMIN | GE_BULK,
+  	    "write");
     FREE(tmpName);
     FREE(dirData);
     MUTEX_UNLOCK(lock);
@@ -617,17 +617,17 @@ void CO_publishCollectionNow() {
   FREE(dirData);
   CLOSE(fd);
   if (OK != ECRS_uploadFile(ectx,
-			    cfg,
-			    tmpName,
-			    NO, /* indexing */
-			    ntohl(collectionData->data.anonymityLevel),
-			    ntohl(collectionData->data.priority),
-			    get_time() + COLLECTION_ADV_LIFETIME,
-			    NULL,
-			    NULL,
-			    NULL,
-			    NULL,
-			    &directoryURI)) {
+  		    cfg,
+  		    tmpName,
+  		    NO, /* indexing */
+  		    ntohl(collectionData->data.anonymityLevel),
+  		    ntohl(collectionData->data.priority),
+  		    get_time() + COLLECTION_ADV_LIFETIME,
+  		    NULL,
+  		    NULL,
+  		    NULL,
+  		    NULL,
+  		    &directoryURI)) {
     UNLINK(tmpName);
     FREE(tmpName);
     MUTEX_UNLOCK(lock);
@@ -636,17 +636,17 @@ void CO_publishCollectionNow() {
   UNLINK(tmpName);
   FREE(tmpName);
   uri = ECRS_addToNamespace(ectx,
-			    cfg,
-			    collectionData->name,
-			    ntohl(collectionData->data.anonymityLevel),
-			    ntohl(collectionData->data.priority),
-			    get_time() + COLLECTION_ADV_LIFETIME,
-			    now,
-			    ntohl(collectionData->data.updateInterval),
-			    &collectionData->data.lastId,
-			    &collectionData->data.nextId,
-			    directoryURI,
-			    collectionData->meta);
+  		    cfg,
+  		    collectionData->name,
+  		    ntohl(collectionData->data.anonymityLevel),
+  		    ntohl(collectionData->data.priority),
+  		    get_time() + COLLECTION_ADV_LIFETIME,
+  		    now,
+  		    ntohl(collectionData->data.updateInterval),
+  		    &collectionData->data.lastId,
+  		    &collectionData->data.nextId,
+  		    directoryURI,
+  		    collectionData->meta);
   if (uri != NULL) {
     collectionData->data.lastPublication = htonl(now);
     collectionData->changed = NO;
@@ -687,7 +687,7 @@ void CO_publishToCollection(const ECRS_FileInfo * fi) {
   }
   for (i=0;i<collectionData->file_count;i++) {
     if (ECRS_equalsUri(fi->uri,
-		       collectionData->files[i].uri)) {
+  	       collectionData->files[i].uri)) {
       MUTEX_UNLOCK(lock);
       return;
     }
@@ -695,8 +695,8 @@ void CO_publishToCollection(const ECRS_FileInfo * fi) {
   fc.uri = ECRS_dupUri(fi->uri);
   fc.meta = ECRS_dupMetaData(fi->meta);
   APPEND(collectionData->files,
-	 collectionData->file_count,
-	 fc);
+   collectionData->file_count,
+   fc);
   collectionData->changed = YES;
   if (ntohl(collectionData->data.updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
     CO_publishCollectionNow();

@@ -38,10 +38,10 @@ int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int sugge
 
 #ifdef WINDOWS
   /* default NIC for unixes */
-	if (strcmp(nic, "eth0") == 0)
+  if (strcmp(nic, "eth0") == 0)
   {
     FREE(nic);
-		nic = NULL;
+  	nic = NULL;
   }
 #endif
 
@@ -116,20 +116,20 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
         break;
       case 5:
         err = winErrorStr(_("Can't access the service"),
-  			GetLastError());
-  	  break;
+    		GetLastError());
+      break;
       case 6:
         err = winErrorStr(_("Can't delete the service"),
-  			GetLastError());
+    		GetLastError());
         break;
       default:
         err = winErrorStr(_("Unknown error"), GetLastError());
     }
     if (err) {
       MessageBox(GetActiveWindow(),
-  	       err,
-  	       _("Error"),
-  	       MB_ICONSTOP | MB_OK);
+           err,
+           _("Error"),
+           MB_ICONSTOP | MB_OK);
       free(err);
     }
 #endif
@@ -157,7 +157,7 @@ int wiz_createGroupUser(char *group_name, char *user_name) {
     switch(ret) {
     case 1:
       err = _("This version of Windows does not support "
-	      "multiple users.");
+        "multiple users.");
       break;
     case 2:
       err = winErrorStr(_("Error creating user"), GetLastError());

@@ -140,8 +140,8 @@ typedef struct LoadMonitor {
 } LoadMonitor;
 
 void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
-					    NetworkDirection dir,
-					    unsigned long long delta) {
+  				    NetworkDirection dir,
+  				    unsigned long long delta) {
   MUTEX_LOCK(monitor->statusMutex);
   if (dir == Download)
     monitor->globalTrafficBetweenProc.last_in += delta;
@@ -167,32 +167,32 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
     /* Parse the line matching the interface ('eth0') */
     while (! feof(monitor->proc_net_dev) ) {
       if (NULL == fgets(line,
-			MAX_PROC_LINE,
-			monitor->proc_net_dev))
-	break;
+  		MAX_PROC_LINE,
+  		monitor->proc_net_dev))
+  break;
       for (i=0;i<monitor->ifcsSize;i++) {
-	ifc = &monitor->ifcs[i];
-	if (NULL != strstr(line, ifc->name) ) {
-	  data = strchr(line, ':');
-	  if (data == NULL)
-	    continue;
-	  data++;	
-	  if (2 != SSCANF(data,
-			  "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
-			  &rxnew,
-			  &txnew)) {
-	    GE_LOG(monitor->ectx,
-		   GE_ERROR | GE_ADMIN | GE_BULK,
-		   _("Failed to parse interface data from `%s'.\n"),
-		   PROC_NET_DEV);
-	    continue;
-	  }
-	  ifc->last_in  = rxnew;
-	  ifc->last_out = txnew;
-	  monitor->globalTrafficBetweenProc.last_in = 0;
-	  monitor->globalTrafficBetweenProc.last_out = 0;
-	  break;
-	}
+  ifc = &monitor->ifcs[i];
+  if (NULL != strstr(line, ifc->name) ) {
+    data = strchr(line, ':');
+    if (data == NULL)
+      continue;
+    data++;	
+    if (2 != SSCANF(data,
+  		  "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
+  		  &rxnew,
+  		  &txnew)) {
+      GE_LOG(monitor->ectx,
+  	   GE_ERROR | GE_ADMIN | GE_BULK,
+  	   _("Failed to parse interface data from `%s'.\n"),
+  	   PROC_NET_DEV);
+      continue;
+    }
+    ifc->last_in  = rxnew;
+    ifc->last_out = txnew;
+    monitor->globalTrafficBetweenProc.last_in = 0;
+    monitor->globalTrafficBetweenProc.last_out = 0;
+    break;
+  }
       }
     }
   }
@@ -272,20 +272,20 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
       for (dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
         l = _atoi64(ifc->name);
         memset(bPhysAddr,
-	       0,
-	       MAXLEN_PHYSADDR);
+         0,
+         MAXLEN_PHYSADDR);
         memcpy(bPhysAddr,
-	       pTable->table[dwIfIdx].bPhysAddr,
-	       pTable->table[dwIfIdx].dwPhysAddrLen);
+         pTable->table[dwIfIdx].bPhysAddr,
+         pTable->table[dwIfIdx].dwPhysAddrLen);
         if (0 == memcmp(bPhysAddr,
-			&l,
-			sizeof(unsigned long long))) {
-	  ifc->last_in
-	    = pTable->table[dwIfIdx].dwInOctets;
-	  ifc->last_out
-	    = pTable->table[dwIfIdx].dwOutOctets;
-	  monitor->globalTrafficBetweenProc.last_in = 0;
-	  monitor->globalTrafficBetweenProc.last_out = 0;
+  		&l,
+  		sizeof(unsigned long long))) {
+    ifc->last_in
+      = pTable->table[dwIfIdx].dwInOctets;
+    ifc->last_out
+      = pTable->table[dwIfIdx].dwOutOctets;
+    monitor->globalTrafficBetweenProc.last_in = 0;
+    monitor->globalTrafficBetweenProc.last_out = 0;
           break;
         }
       }
@@ -295,34 +295,34 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
     if ( ( command = popen("netstat -e", "rt") ) == NULL ) {
       GE_LOG_STRERROR_FILE(monitor->ectx,
         GE_ERROR | GE_ADMIN | GE_BULK,
-  			"popen",
-  			"netstat -e");
+    		"popen",
+    		"netstat -e");
       return;
     }
     ifc = &monitor->ifcs[0];
     while (!feof(command)) {
       if (NULL == fgets(line,
-			MAX_PROC_LINE,
-			command))
-	break;
+  		MAX_PROC_LINE,
+  		command))
+  break;
       /* PORT-ME: any way to do this per-ifc? */
       if (iLine == 1) {
         if (2 == sscanf("%*s%i%i",
-			&rxnew,
-			&txnew)) {
-	  ifc->last_in
-	    = rxnew;
-	  ifc->last_out
-	    = txnew;
-	  monitor->globalTrafficBetweenProc.last_in = 0;
-	  monitor->globalTrafficBetweenProc.last_out = 0;
-	  break;
-	} else {
-	  GE_LOG(monitor->ectx,
-		 GE_ERROR | GE_ADMIN | GE_BULK,
-		 _("Failed to parse interface data from `%s'.\n"),
-		 PROC_NET_DEV);
-	}
+  		&rxnew,
+  		&txnew)) {
+    ifc->last_in
+      = rxnew;
+    ifc->last_out
+      = txnew;
+    monitor->globalTrafficBetweenProc.last_in = 0;
+    monitor->globalTrafficBetweenProc.last_out = 0;
+    break;
+  } else {
+    GE_LOG(monitor->ectx,
+  	 GE_ERROR | GE_ADMIN | GE_BULK,
+  	 _("Failed to parse interface data from `%s'.\n"),
+  	 PROC_NET_DEV);
+  }
       }
       iLine++;
     }
@@ -337,10 +337,10 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
  * Re-read the configuration for statuscalls.
  */
 static int resetStatusCalls(void * cls,
-			    struct GC_Configuration * cfg,
-			    struct GE_Context * ectx,
-			    const char * sect,
-			    const char * op) {
+  		    struct GC_Configuration * cfg,
+  		    struct GE_Context * ectx,
+  		    const char * sect,
+  		    const char * op) {
   struct LoadMonitor * monitor = cls;
   char * interfaces;
   int i;
@@ -348,32 +348,32 @@ static int resetStatusCalls(void * cls,
   int basic;
 
   basic = GC_get_configuration_value_yesno(cfg,
-					   "LOAD",
-					   "BASICLIMITING",
-					   YES);
+  				   "LOAD",
+  				   "BASICLIMITING",
+  				   YES);
   if (basic == SYSERR)
     return SYSERR;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "LOAD",
-					      "INTERFACES",
-					      "eth0",
-					      &interfaces))
+  				      "LOAD",
+  				      "INTERFACES",
+  				      "eth0",
+  				      &interfaces))
     return SYSERR;
   if (interfaces == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("No network interfaces defined in configuration section `%s' under `%s'!\n"),
-	   "LOAD",
-	   "INTERFACES");
+     GE_ERROR | GE_USER | GE_BULK,
+     _("No network interfaces defined in configuration section `%s' under `%s'!\n"),
+     "LOAD",
+     "INTERFACES");
     return SYSERR;
   }
   if (strlen(interfaces) == 0) {
     FREE(interfaces);
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("No network interfaces defined in configuration section `%s' under `%s'!\n"),
-	   "LOAD",
-	   "INTERFACES");
+     GE_ERROR | GE_USER | GE_BULK,
+     _("No network interfaces defined in configuration section `%s' under `%s'!\n"),
+     "LOAD",
+     "INTERFACES");
     return SYSERR;
   }
   MUTEX_LOCK(monitor->statusMutex);
@@ -408,19 +408,19 @@ static int resetStatusCalls(void * cls,
   FREE(interfaces);
   monitor->useBasicMethod = basic;
   GC_get_configuration_value_number(cfg,
-				    "LOAD",
-				    "MAXNETDOWNBPSTOTAL",
-				    0,
-				    (unsigned long long)-1,
-				    50000,
-				    &monitor->download_info.max);
+  			    "LOAD",
+  			    "MAXNETDOWNBPSTOTAL",
+  			    0,
+  			    (unsigned long long)-1,
+  			    50000,
+  			    &monitor->download_info.max);
   GC_get_configuration_value_number(cfg,
-				    "LOAD",
-				    "MAXNETUPBPSTOTAL",
-				    0,
-				    (unsigned long long)-1,
-				    50000,
-				    &monitor->upload_info.max);
+  			    "LOAD",
+  			    "MAXNETUPBPSTOTAL",
+  			    0,
+  			    (unsigned long long)-1,
+  			    50000,
+  			    &monitor->upload_info.max);
   monitor->last_ifc_update = get_time();
   updateInterfaceTraffic(monitor);
   MUTEX_UNLOCK(monitor->statusMutex);
@@ -434,7 +434,7 @@ static int resetStatusCalls(void * cls,
  * @return the maximum bandwidth in bytes per second, -1 for no limit
  */
 unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
-						NetworkDirection dir) {
+  					NetworkDirection dir) {
   if (monitor == NULL)
     return -1;
   if (dir == Upload)
@@ -452,7 +452,7 @@ unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
  *        (100 is equivalent to full load)
  */
 int os_network_monitor_get_load(struct LoadMonitor * monitor,
-				NetworkDirection dir) {
+  			NetworkDirection dir) {
   DirectionInfo * di;
   cron_t now;
   unsigned long long maxExpect;
@@ -530,27 +530,27 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
 
 struct LoadMonitor *
 os_network_monitor_create(struct GE_Context * ectx,
-			  struct GC_Configuration * cfg) {
+  		  struct GC_Configuration * cfg) {
   struct LoadMonitor * monitor;
 
   monitor = MALLOC(sizeof(struct LoadMonitor));
   memset(monitor,
-	 0,
-	 sizeof(struct LoadMonitor));
+   0,
+   sizeof(struct LoadMonitor));
   monitor->ectx = ectx;
   monitor->cfg = cfg;
 #ifdef LINUX
   monitor->proc_net_dev = fopen(PROC_NET_DEV, "r");
   if (NULL == monitor->proc_net_dev)
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-			 "fopen",
-			 PROC_NET_DEV);
+  		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  		 "fopen",
+  		 PROC_NET_DEV);
 #endif
   monitor->statusMutex = MUTEX_CREATE(NO);
   if (-1 == GC_attach_change_listener(cfg,
-				      &resetStatusCalls,
-				      monitor)) {
+  			      &resetStatusCalls,
+  			      monitor)) {
     os_network_monitor_destroy(monitor);
     return NULL;
   }
@@ -561,8 +561,8 @@ void os_network_monitor_destroy(struct LoadMonitor * monitor) {
   int i;
 
   GC_detach_change_listener(monitor->cfg,
-			    &resetStatusCalls,
-			    monitor);
+  		    &resetStatusCalls,
+  		    monitor);
 #ifdef LINUX
   if (monitor->proc_net_dev != NULL)
     fclose(monitor->proc_net_dev);

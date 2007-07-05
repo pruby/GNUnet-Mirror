@@ -86,10 +86,10 @@ poll_thread(void * cls) {
       break;
     reply = NULL;
     if (OK != connection_read(info->sock,
-			      &reply))
+  		      &reply))
       break;
     if ( (sizeof(CS_dht_request_put_MESSAGE) > ntohs(reply->size)) ||
-	 (CS_PROTO_dht_REQUEST_PUT != ntohs(reply->type)) ) {
+   (CS_PROTO_dht_REQUEST_PUT != ntohs(reply->type)) ) {
       GE_BREAK(NULL, 0);
       info->total = SYSERR;
       break; /*  invalid reply */
@@ -103,9 +103,9 @@ poll_thread(void * cls) {
     size = ntohs(reply->size) - sizeof(CS_dht_request_put_MESSAGE);
     cont->size = htonl(size + sizeof(DataContainer));
     if ( (info->processor != NULL) &&
-	 (OK != info->processor(&put->key,
-				cont,
-				info->closure)) )
+   (OK != info->processor(&put->key,
+  			cont,
+  			info->closure)) )
       info->aborted = YES;
     info->total++;
     FREE(reply);
@@ -136,12 +136,12 @@ poll_thread(void * cls) {
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
 int DHT_LIB_get(struct GC_Configuration * cfg,
-		struct GE_Context * ectx,
-		unsigned int type,
-		const HashCode512 * key,
-		cron_t timeout,
-		DataProcessor processor,
-		void * closure) {
+  	struct GE_Context * ectx,
+  	unsigned int type,
+  	const HashCode512 * key,
+  	cron_t timeout,
+  	DataProcessor processor,
+  	void * closure) {
   struct ClientServerConnection * sock;
   CS_dht_request_get_MESSAGE req;
   struct PTHREAD * thread;
@@ -152,7 +152,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   void * unused;
 
   sock = client_connection_create(ectx,
-				  cfg);
+  			  cfg);
   if (sock == NULL)
     return SYSERR;
   req.header.size = htons(sizeof(CS_dht_request_get_MESSAGE));
@@ -161,7 +161,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   req.timeout = htonll(timeout);
   req.key = *key;
   if (OK != connection_write(sock,
-			     &req.header)) {
+  		     &req.header)) {
     connection_destroy(sock);
     return SYSERR;
   }
@@ -172,16 +172,16 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   info.aborted = NO;
   info.total = 0;
   thread = PTHREAD_CREATE(&poll_thread,
-			  &info,
-			  1024 * 8);
+  		  &info,
+  		  1024 * 8);
   start = get_time();
   while ( (start + timeout > (now = get_time())) &&
-	  (GNUNET_SHUTDOWN_TEST() == NO) &&
-	  (info.aborted == NO) ) {
+    (GNUNET_SHUTDOWN_TEST() == NO) &&
+    (info.aborted == NO) ) {
     delta =(start + timeout) - now;
     if (delta > 100 * cronMILLIS)
       delta = 100 * cronMILLIS; /* in case we miss SIGINT
-				   on CTRL-C */
+  			   on CTRL-C */
     PTHREAD_SLEEP(delta);
   }
   info.aborted = YES;
@@ -191,7 +191,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   connection_destroy(sock);
   return info.total;
 }
-	
+  
 /**
  * Perform a synchronous put operation.   The peer does not have
  * to be part of the table!
@@ -203,11 +203,11 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
  * @return OK on success, SYSERR on error
  */
 int DHT_LIB_put(struct GC_Configuration * cfg,
-		struct GE_Context * ectx,
-		const HashCode512 * key,
-		unsigned int type,
-		cron_t expire,
-		const DataContainer * value) {
+  	struct GE_Context * ectx,
+  	const HashCode512 * key,
+  	unsigned int type,
+  	cron_t expire,
+  	const DataContainer * value) {
   struct ClientServerConnection * sock;
   CS_dht_request_put_MESSAGE * req;
   int ret;
@@ -220,34 +220,34 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   }
 #if DEBUG_DHT_API
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "DHT_LIB_put called with value '%.*s'\n",
-	 ntohl(value->size),
-	 &value[1]);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "DHT_LIB_put called with value '%.*s'\n",
+   ntohl(value->size),
+   &value[1]);
 #endif
   sock = client_connection_create(ectx,
-				  cfg);
+  			  cfg);
   if (sock == NULL)
     return SYSERR;
   GE_ASSERT(NULL,
-	    ntohl(value->size) >= sizeof(DataContainer));
+      ntohl(value->size) >= sizeof(DataContainer));
   req = MALLOC(sizeof(CS_dht_request_put_MESSAGE) +
-	       ntohl(value->size) -
-	       sizeof(DataContainer));
+         ntohl(value->size) -
+         sizeof(DataContainer));
   req->header.size
     = htons(sizeof(CS_dht_request_put_MESSAGE) +
-	    ntohl(value->size) -
-	    sizeof(DataContainer));
+      ntohl(value->size) -
+      sizeof(DataContainer));
   req->header.type
     = htons(CS_PROTO_dht_REQUEST_PUT);
   req->key = *key;
   req->type = htonl(type);
   req->expire = htonll(expire - now); /* convert to relative time */
   memcpy(&req[1],
-	 &value[1],
-	 ntohl(value->size) - sizeof(DataContainer));
+   &value[1],
+   ntohl(value->size) - sizeof(DataContainer));
   ret = connection_write(sock,
-			 &req->header);
+  		 &req->header);
   connection_destroy(sock);
   FREE(req);
   return ret;

@@ -60,9 +60,9 @@ static int check() {
     now = get_time();
 #if VERBOSE
     fprintf(stderr,
-	    "%4llu ms requested, got: %4llu ms\n",
-	    i * cronMILLIS,
-	    (now - last));
+      "%4llu ms requested, got: %4llu ms\n",
+      i * cronMILLIS,
+      (now - last));
 #endif
     if (last + cronMILLIS * i < now)
       cumDelta += (now - (last+cronMILLIS*i));
@@ -70,25 +70,25 @@ static int check() {
       cumDelta += ((last+cronMILLIS*i) - now);
   }
   FPRINTF(stdout,
-	  "Sleep precision: %llu ms. ",
-	  cumDelta / cronMILLIS / (MAXV/INCR));
+    "Sleep precision: %llu ms. ",
+    cumDelta / cronMILLIS / (MAXV/INCR));
   if (cumDelta <= 10 * cronMILLIS * MAXV / INCR)
     fprintf(stdout,
-	    "Timer precision is excellent.\n");
+      "Timer precision is excellent.\n");
   else if (cumDelta <= 50 * cronMILLIS * MAXV / INCR) /* 50 ms average deviation */
     fprintf(stdout,
-	    "Timer precision is good.\n");
+      "Timer precision is good.\n");
   else if (cumDelta > 250 * cronMILLIS * MAXV / INCR)
     fprintf(stdout,
-	    "Timer precision is awful.\n");
+      "Timer precision is awful.\n");
   else
     fprintf(stdout,
-	    "Timer precision is acceptable.\n");
+      "Timer precision is acceptable.\n");
   return 0;
 }
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   int ret;
 
   ret = check();

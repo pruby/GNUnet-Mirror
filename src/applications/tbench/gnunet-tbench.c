@@ -31,9 +31,9 @@
 #include "gnunet_util_crypto.h"
 #include "tbench.h"
 
-#define DEFAULT_MESSAGE_SIZE	10
-#define DEFAULT_TIMEOUT		(2 * cronSECONDS)
-#define DEFAULT_SPACING		0
+#define DEFAULT_MESSAGE_SIZE  10
+#define DEFAULT_TIMEOUT  	(2 * cronSECONDS)
+#define DEFAULT_SPACING  	0
 
 #define OF_HUMAN_READABLE 0
 #define OF_GNUPLOT_INPUT 1
@@ -101,7 +101,7 @@ static struct CommandLineOption gnunettbenchOptions[] = {
  * @return return value from gnunetsearch: 0: ok, -1: error
  */
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   struct ClientServerConnection * sock;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;
@@ -111,21 +111,21 @@ int main(int argc,
   int res;
 
   res = GNUNET_init(argc,
-		    argv,
-		    "gnunet-tbench",
-		    &cfgFilename,
-		    gnunettbenchOptions,
-		    &ectx,
-		    &cfg);
+  	    argv,
+  	    "gnunet-tbench",
+  	    &cfgFilename,
+  	    gnunettbenchOptions,
+  	    &ectx,
+  	    &cfg);
   if (res == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
   }
   sock = client_connection_create(ectx,
-				  cfg);
+  			  cfg);
   if (sock == NULL) {
     fprintf(stderr,
-	    _("Error establishing connection with gnunetd.\n"));
+      _("Error establishing connection with gnunetd.\n"));
     GNUNET_fini(ectx, cfg);
     return 1;
   }
@@ -141,16 +141,16 @@ int main(int argc,
   msg.priority    = htonl(5);
   if (messageReceiver == NULL) {
     fprintf(stderr,
-	    _("You must specify a receiver!\n"));
+      _("You must specify a receiver!\n"));
     connection_destroy(sock);
     GNUNET_fini(ectx, cfg);
     return 1;
   }
   if (OK != enc2hash(messageReceiver,
-		     &msg.receiverId.hashPubKey)) {
+  	     &msg.receiverId.hashPubKey)) {
     fprintf(stderr,
-	    _("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
-	    messageReceiver);
+      _("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
+      messageReceiver);
     FREE(messageReceiver);
     connection_destroy(sock);
     GNUNET_fini(ectx, cfg);
@@ -159,7 +159,7 @@ int main(int argc,
   FREE(messageReceiver);
 
   if (SYSERR == connection_write(sock,
-				 &msg.header)) {
+  			 &msg.header)) {
     connection_destroy(sock);
     GNUNET_fini(ectx, cfg);
     return -1;
@@ -167,10 +167,10 @@ int main(int argc,
 
   buffer = NULL;
   if (OK == connection_read(sock,
-			    (MESSAGE_HEADER**)&buffer)) {
+  		    (MESSAGE_HEADER**)&buffer)) {
     GE_ASSERT(ectx,
-	      ntohs(buffer->header.size) ==
-	      sizeof(CS_tbench_reply_MESSAGE));
+        ntohs(buffer->header.size) ==
+        sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss < 0){
       GE_BREAK(ectx, 0);
       messagesPercentLoss = 0.0;
@@ -181,28 +181,28 @@ int main(int argc,
     case OF_HUMAN_READABLE:
       printf(_("Time:\n"));
       PRINTF(_("\tmax      %llums\n"),
-	     ntohll(buffer->max_time));
+       ntohll(buffer->max_time));
       PRINTF(_("\tmin      %llums\n"),
-	     ntohll(buffer->min_time));
+       ntohll(buffer->min_time));
       printf(_("\tmean     %8.4fms\n"),
-	     buffer->mean_time);
+       buffer->mean_time);
       printf(_("\tvariance %8.4fms\n"),
-	     buffer->variance_time);
+       buffer->variance_time);
 
       printf(_("Loss:\n"));
       printf(_("\tmax      %u\n"),
-	     ntohl(buffer->max_loss));
+       ntohl(buffer->max_loss));
       printf(_("\tmin      %u\n"),
-	     ntohl(buffer->min_loss));
+       ntohl(buffer->min_loss));
       printf(_("\tmean     %8.4f\n"),
-	     buffer->mean_loss);
+       buffer->mean_loss);
       printf(_("\tvariance %8.4f\n"),
-	     buffer->variance_loss);
+       buffer->variance_loss);
       break;
     case OF_GNUPLOT_INPUT:
       printf("%f %f\n",
-	     buffer->mean_time,
-	     1.0-messagesPercentLoss);
+       buffer->mean_time,
+       1.0-messagesPercentLoss);
       break;
     default:
       printf(_("Output format not known, this should not happen.\n"));

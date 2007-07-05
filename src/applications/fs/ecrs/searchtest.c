@@ -40,16 +40,16 @@ static int testTerminate(void * unused) {
 static struct GC_Configuration * cfg;
 
 static int searchCB(const ECRS_FileInfo * fi,
-		    const HashCode512 * key,
-		    int isRoot,
-		    void * closure) {
+  	    const HashCode512 * key,
+  	    int isRoot,
+  	    void * closure) {
   int * cnt = closure;
 #if 1
   char * st;
 
   st = ECRS_uriToString(fi->uri);
   printf("Got result `%s'\n",
-	 st);
+   st);
   FREE(st);
 #endif
   (*cnt)--;
@@ -63,16 +63,16 @@ static int searchCB(const ECRS_FileInfo * fi,
  * @return OK on success, SYSERR on error
  */
 static int searchFile(const struct ECRS_URI * uri,
-		      int resultCount) {
+  	      int resultCount) {
   ECRS_search(NULL,
-	      cfg,
-	      uri,
-	      0,
-	      60 * 15 * cronSECONDS,
-	      &searchCB,
-	      &resultCount,
-	      &testTerminate,
-	      NULL);
+        cfg,
+        uri,
+        0,
+        60 * 15 * cronSECONDS,
+        &searchCB,
+        &resultCount,
+        &testTerminate,
+        NULL);
   if (resultCount > 0)
     return SYSERR;
   return OK;
@@ -90,19 +90,19 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   sock = NULL;
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   ok = YES;
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = client_connection_create(NULL, cfg);
@@ -113,22 +113,22 @@ int main(int argc, char * argv[]){
   printf("Testing search for 'XXtest' with one result.\n");
 #endif
   uri = ECRS_stringToUri(NULL,
-			 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
+  		 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   meta = ECRS_createMetaData();
   keywords[0] = "XXtest";
   keywords[1] = NULL;
 
   key = ECRS_keywordsToUri(keywords);
   CHECK(OK == ECRS_addToKeyspace(NULL,
-				 cfg,
-				 key,
-				 0,
-				 0,
-				 get_time() + 10 * cronMINUTES, /* expire */
-				 uri,
-				 meta));
+  			 cfg,
+  			 key,
+  			 0,
+  			 0,
+  			 get_time() + 10 * cronMINUTES, /* expire */
+  			 uri,
+  			 meta));
   CHECK(OK == searchFile(key,
-			 1));
+  		 1));
   ECRS_freeUri(key);
   ECRS_freeUri(uri);
 
@@ -138,20 +138,20 @@ int main(int argc, char * argv[]){
   printf("Testing search for 'XXtest AND binary' with two results.\n");
 #endif
   uri = ECRS_stringToUri(NULL,
-			 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
+  		 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
   keywords[1] = "binary";
   keywords[2] = NULL;
   key = ECRS_keywordsToUri(keywords);
   CHECK(OK == ECRS_addToKeyspace(NULL,
-				 cfg,
-				 key,
-				 0,
-				 0,
-				 get_time() + 10 * cronMINUTES, /* expire */
-				 uri,
-				 meta));
+  			 cfg,
+  			 key,
+  			 0,
+  			 0,
+  			 get_time() + 10 * cronMINUTES, /* expire */
+  			 uri,
+  			 meta));
   CHECK(OK == searchFile(key,
-			 2));
+  		 2));
   ECRS_freeUri(key);
   ECRS_freeUri(uri);
   ECRS_freeMetaData(meta);
@@ -163,7 +163,7 @@ int main(int argc, char * argv[]){
   keywords[1] = NULL;
   key = ECRS_keywordsToUri(keywords);
   CHECK(OK == searchFile(key,
-			 2));
+  		 2));
   ECRS_freeUri(key);
 
   /* END OF TEST CODE */

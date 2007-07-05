@@ -40,14 +40,14 @@ static void perfHash() {
   hash("foo", 3, &hc1);
   for (i=0;i<1024;i++) {
     hash(&hc1,
-	 sizeof(HashCode512),
-	 &hc2);
+   sizeof(HashCode512),
+   &hc2);
     hash(&hc2,
-	 sizeof(HashCode512),
-	 &hc1);
+   sizeof(HashCode512),
+   &hc1);
     hash(buf,
-	 1024 * 64,
-	 &hc3);
+   1024 * 64,
+   &hc3);
   }
   FREE(buf);
 }
@@ -58,7 +58,7 @@ int main(int argc, char * argv[]) {
   start = get_time();
   perfHash();
   printf("Hash perf took %llu ms\n",
-	 get_time() - start);
+   get_time() - start);
   return 0;
 }
 

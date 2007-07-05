@@ -44,9 +44,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen("/tmp/gnunet-ecrstest/ECRSTEST") + 14);
   SNPRINTF(fn,
-	   strlen("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
-	   "/tmp/gnunet-ecrstest/ECRSTEST%u",
-	   i);
+     strlen("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
+     "/tmp/gnunet-ecrstest/ECRSTEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -61,29 +61,29 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
   name = makeName(size);
   fd = disk_file_open(NULL,
-		      name,
-		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  	      name,
+  	      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
     hash(&buf[i],
-	 42,
-	 (HashCode512*) &buf[i+sizeof(HashCode512)]);
+   42,
+   (HashCode512*) &buf[i+sizeof(HashCode512)]);
   WRITE(fd, buf, size);
   FREE(buf);
   CLOSE(fd);
   ret = ECRS_uploadFile(NULL,
-			cfg,
-			name,
-			YES, /* index */
-			0, /* anon */
-			0, /* prio */
-			get_time() + 10 * cronMINUTES, /* expire */
-			NULL, /* progress */
-			NULL,
-			&testTerminate,
-			NULL,
-			&uri);
+  		cfg,
+  		name,
+  		YES, /* index */
+  		0, /* anon */
+  		0, /* prio */
+  		get_time() + 10 * cronMINUTES, /* expire */
+  		NULL, /* progress */
+  		NULL,
+  		&testTerminate,
+  		NULL,
+  		&uri);
   if (ret != SYSERR) {
     struct ECRS_MetaData * meta;
     struct ECRS_URI * key;
@@ -95,13 +95,13 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
     meta = ECRS_createMetaData();
     key = ECRS_keywordsToUri(keywords);
     ret = ECRS_addToKeyspace(NULL,
-			     cfg,
-			     key,
-			     0,
-			     0,
-			     get_time() + 10 * cronMINUTES, /* expire */
-			     uri,
-			     meta);
+  		     cfg,
+  		     key,
+  		     0,
+  		     0,
+  		     get_time() + 10 * cronMINUTES, /* expire */
+  		     uri,
+  		     meta);
     ECRS_freeMetaData(meta);
     ECRS_freeUri(uri);
     FREE(name);
@@ -118,17 +118,17 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 }
 
 static int searchCB(const ECRS_FileInfo * fi,
-		    const HashCode512 * key,
-		    int isRoot,
-		    void * closure) {
+  	    const HashCode512 * key,
+  	    int isRoot,
+  	    void * closure) {
   struct ECRS_URI ** my = closure;
   char * tmp;
 
   tmp = ECRS_uriToString(fi->uri);
   GE_LOG(NULL,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Search found URI `%s'\n",
-	 tmp);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Search found URI `%s'\n",
+   tmp);
   FREE(tmp);
   GE_ASSERT(NULL, NULL == *my);
   *my = ECRS_dupUri(fi->uri);
@@ -145,14 +145,14 @@ static int searchFile(struct ECRS_URI ** uri) {
 
   myURI = NULL;
   ret = ECRS_search(NULL,
-		    cfg,
-		    *uri,
-		    0,
-		    15 * cronSECONDS,
-		    &searchCB,
-		    &myURI,
-		    &testTerminate,
-		    NULL);
+  	    cfg,
+  	    *uri,
+  	    0,
+  	    15 * cronSECONDS,
+  	    &searchCB,
+  	    &myURI,
+  	    &testTerminate,
+  	    NULL);
   ECRS_freeUri(*uri);
   *uri = myURI;
   if ( (ret != SYSERR) &&
@@ -163,7 +163,7 @@ static int searchFile(struct ECRS_URI ** uri) {
 }
 
 static int downloadFile(unsigned int size,
-			const struct ECRS_URI * uri) {
+  		const struct ECRS_URI * uri) {
   int ret;
   char * tmpName;
   int fd;
@@ -174,37 +174,37 @@ static int downloadFile(unsigned int size,
 
   tmp = ECRS_uriToString(uri);
   GE_LOG(NULL,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Starting download of `%s'\n",
-	 tmp);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Starting download of `%s'\n",
+   tmp);
   FREE(tmp);
   tmpName = makeName(0);
   ret = SYSERR;
   if (OK == ECRS_downloadFile(NULL,
-			      cfg,
-			      uri,
-			      tmpName,
-			      0,
-			      NULL,
-			      NULL,
-			      &testTerminate,
-			      NULL)) {
+  		      cfg,
+  		      uri,
+  		      tmpName,
+  		      0,
+  		      NULL,
+  		      NULL,
+  		      &testTerminate,
+  		      NULL)) {
 
     fd = disk_file_open(NULL,
-			tmpName,
-			O_RDONLY);
+  		tmpName,
+  		O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
     for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
       hash(&buf[i],
-	   42,
-	   (HashCode512*) &buf[i+sizeof(HashCode512)]);
+     42,
+     (HashCode512*) &buf[i+sizeof(HashCode512)]);
     if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,
-			 in,
-			 size))
+  		 in,
+  		 size))
       ret = OK;
     FREE(buf);
     FREE(in);
@@ -222,12 +222,12 @@ static int unindexFile(unsigned int size) {
 
   name = makeName(size);
   ret = ECRS_unindexFile(NULL,
-			 cfg,
-			 name,
-			 NULL,
-			 NULL,
-			 &testTerminate,
-			 NULL);
+  		 cfg,
+  		 name,
+  		 NULL,
+  		 NULL,
+  		 &testTerminate,
+  		 NULL);
   if (0 != UNLINK(name))
     ret = SYSERR;
   FREE(name);
@@ -258,19 +258,19 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   sock = NULL;
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   ok = YES;
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = client_connection_create(NULL, cfg);
@@ -280,8 +280,8 @@ int main(int argc, char * argv[]){
   i = 0;
   while (filesizes[i] != 0) {
     fprintf(stderr,
-	    "Testing filesize %u",
-	    filesizes[i]);
+      "Testing filesize %u",
+      filesizes[i]);
     uri = uploadFile(filesizes[i]);
     CHECK(NULL != uri);
     CHECK(OK == searchFile(&uri));
@@ -289,7 +289,7 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(uri);
     CHECK(OK == unindexFile(filesizes[i]));
     fprintf(stderr,
-	    " Ok.\n");
+      " Ok.\n");
     i++;
   }
 

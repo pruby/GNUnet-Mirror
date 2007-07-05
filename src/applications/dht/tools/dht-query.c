@@ -64,19 +64,19 @@ static struct CommandLineOption gnunetqueryOptions[] = {
 };
 
 static int printCallback(const HashCode512 * hash,
-			 const DataContainer * data,
-			 void * cls) {
+  		 const DataContainer * data,
+  		 void * cls) {
   char * key = cls;
   printf("%s(%s): '%.*s'\n",
-	 "get",
-	 key,
-	 ntohl(data->size) - sizeof(DataContainer),
-	 (char*)&data[1]);
+   "get",
+   key,
+   ntohl(data->size) - sizeof(DataContainer),
+   (char*)&data[1]);
   return OK;
 }
 
 static void do_get(struct ClientServerConnection * sock,
-		   const char * key) {
+  	   const char * key) {
   int ret;
   HashCode512 hc;
 
@@ -85,81 +85,81 @@ static void do_get(struct ClientServerConnection * sock,
        &hc);
 #if DEBUG_DHT_QUERY
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Issuing '%s(%s)' command.\n",
-	 "get",
-	 key);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Issuing '%s(%s)' command.\n",
+   "get",
+   key);
 #endif
   if (timeout == 0)
     timeout = 30 * cronSECONDS;
   ret = DHT_LIB_get(cfg,
-		    ectx,
-		    DHT_STRING2STRING_BLOCK,
-		    &hc,
-		    timeout,
-		    &printCallback,
-		    (void*) key);
+  	    ectx,
+  	    DHT_STRING2STRING_BLOCK,
+  	    &hc,
+  	    timeout,
+  	    &printCallback,
+  	    (void*) key);
   if (ret == 0)
     printf(_("%s(%s) operation returned no results.\n"),
-	   "get",
-	   key);
+     "get",
+     key);
 }
 
 static void do_put(struct ClientServerConnection * sock,
-		   const char * key,
-		   const char * value) {
+  	   const char * key,
+  	   const char * value) {
   DataContainer * dc;
   HashCode512 hc;
 
   hash(key, strlen(key), &hc);
   dc = MALLOC(sizeof(DataContainer)
-	      + strlen(value));
+        + strlen(value));
   dc->size = htonl(strlen(value)
-		   + sizeof(DataContainer));
+  	   + sizeof(DataContainer));
   memcpy(&dc[1],
-	 value,
-	 strlen(value));
+   value,
+   strlen(value));
 #if DEBUG_DHT_QUERY
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 _("Issuing '%s(%s,%s)' command.\n"),
-	 "put",
-	 key,
-	 value);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   _("Issuing '%s(%s,%s)' command.\n"),
+   "put",
+   key,
+   value);
 #endif
   if (timeout == 0)
     timeout = 30 * cronMINUTES;
   if (OK == DHT_LIB_put(cfg,
-			ectx,
-			&hc,
-			DHT_STRING2STRING_BLOCK,
-			timeout + get_time(), /* convert to absolute time */
-			dc)) {
+  		ectx,
+  		&hc,
+  		DHT_STRING2STRING_BLOCK,
+  		timeout + get_time(), /* convert to absolute time */
+  		dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
-	   "put",
-	   key,
-	   value);
+     "put",
+     key,
+     value);
   } else {
     printf(_("'%s(%s,%s)' failed.\n"),
-	   "put",
-	   key,
-	   value);
-  }	
+     "put",
+     key,
+     value);
+  }  
   FREE(dc);
 }
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   int i;
   struct ClientServerConnection * handle;
 
   i = GNUNET_init(argc,
-		  argv,
-		  "gnunet-dht-query",
-		  &cfgFilename,
-		  gnunetqueryOptions,
-		  &ectx,
-		  &cfg);
+  	  argv,
+  	  "gnunet-dht-query",
+  	  &cfgFilename,
+  	  gnunetqueryOptions,
+  	  &ectx,
+  	  &cfg);
   if (i == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
@@ -168,7 +168,7 @@ int main(int argc,
   handle = client_connection_create(ectx, cfg);
   if (handle == NULL) {
     fprintf(stderr,
-	    _("Failed to connect to gnunetd.\n"));
+      _("Failed to connect to gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
     return 1;
@@ -177,34 +177,34 @@ int main(int argc,
   while (i < argc) {
     if (0 == strcmp("get", argv[i])) {
       if (i+2 > argc) {
-	fprintf(stderr,
-		_("Command `%s' requires an argument (`%s').\n"),
-		"get",
-		"key");
-	break;
+  fprintf(stderr,
+  	_("Command `%s' requires an argument (`%s').\n"),
+  	"get",
+  	"key");
+  break;
       } else {
-	do_get(handle, argv[i+1]);
-	i += 2;
+  do_get(handle, argv[i+1]);
+  i += 2;
       }
       continue;
     }
     if (0 == strcmp("put", argv[i])) {
       if (i+3 > argc) {
-	fprintf(stderr,
-		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
-		"put",
-		"key",
-		"value");
-	break;
+  fprintf(stderr,
+  	_("Command `%s' requires two arguments (`%s' and `%s').\n"),
+  	"put",
+  	"key",
+  	"value");
+  break;
       } else {
-	do_put(handle, argv[i+1], argv[i+2]);
-	i += 3;
+  do_put(handle, argv[i+1], argv[i+2]);
+  i += 3;
       }
       continue;
     }
     fprintf(stderr,
-	    _("Unsupported command `%s'.  Aborting.\n"),
-	    argv[i]);
+      _("Unsupported command `%s'.  Aborting.\n"),
+      argv[i]);
     break;
   }
   connection_destroy(handle);

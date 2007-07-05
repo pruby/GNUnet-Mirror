@@ -30,8 +30,8 @@
 #include "ecrs.h"
 
 void ECRS_encryptInPlace(const HashCode512 * hc,
-			 void * data,
-			 unsigned int len) {
+  		 void * data,
+  		 unsigned int len) {
   char * tmp;
   SESSIONKEY skey;
   INITVECTOR iv;
@@ -39,19 +39,19 @@ void ECRS_encryptInPlace(const HashCode512 * hc,
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
   GE_ASSERT(NULL,
-	    len ==
-	    encryptBlock(data,
-			 len,
-			 &skey,
-			 &iv,
-			 tmp));
+      len ==
+      encryptBlock(data,
+  		 len,
+  		 &skey,
+  		 &iv,
+  		 tmp));
   memcpy(data, tmp, len);
   FREE(tmp);
 }
 
 void ECRS_decryptInPlace(const HashCode512 * hc,
-			 void * data,
-			 unsigned int len) {
+  		 void * data,
+  		 unsigned int len) {
   char * tmp;
   SESSIONKEY skey;
   INITVECTOR iv;
@@ -59,12 +59,12 @@ void ECRS_decryptInPlace(const HashCode512 * hc,
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
   GE_ASSERT(NULL,
-	    len ==
-	    decryptBlock(&skey,
-			 data,
-			 len,
-			 &iv,
-			 tmp));
+      len ==
+      decryptBlock(&skey,
+  		 data,
+  		 len,
+  		 &iv,
+  		 tmp));
   memcpy(data, tmp, len);
   FREE(tmp);
 }

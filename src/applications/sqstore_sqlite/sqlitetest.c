@@ -49,8 +49,8 @@ static Datastore_Value * initValue(int i) {
 }
 
 static int checkValue(const HashCode512 * key,
-		      const Datastore_Value * val,
-		      void * closure) {
+  	      const Datastore_Value * val,
+  	      void * closure) {
   int i;
   int ret;
   Datastore_Value * value;
@@ -59,15 +59,15 @@ static int checkValue(const HashCode512 * key,
   value = initValue(i);
   if ( ( value->size == val->size) &&
        (0 == memcmp(val,
-		    value,
-		    ntohl(val->size)) ) )
+  	    value,
+  	    ntohl(val->size)) ) )
     ret = OK;
   else {
     /*
     printf("Wanted: %u, %llu; got %u, %llu - %d\n",
-	   ntohl(value->size), ntohll(value->expirationTime),
-	   ntohl(val->size), ntohll(val->expirationTime),
-	   memcmp(val, value, ntohl(val->size))); */
+     ntohl(value->size), ntohll(value->expirationTime),
+     ntohl(val->size), ntohll(val->expirationTime),
+     memcmp(val, value, ntohl(val->size))); */
     ret = SYSERR;
   }
   FREE(value);
@@ -75,8 +75,8 @@ static int checkValue(const HashCode512 * key,
 }
 
 static int iterateUp(const HashCode512 * key,
-		     const Datastore_Value * val,
-		     int * closure) {
+  	     const Datastore_Value * val,
+  	     int * closure) {
   int ret;
 
   ret = checkValue(key, val, closure);
@@ -85,8 +85,8 @@ static int iterateUp(const HashCode512 * key,
 }
 
 static int iterateDown(const HashCode512 * key,
-		       const Datastore_Value * val,
-		       int * closure) {
+  	       const Datastore_Value * val,
+  	       int * closure) {
   int ret;
 
   (*closure) -= 2;
@@ -95,17 +95,17 @@ static int iterateDown(const HashCode512 * key,
 }
 
 static int iterateDelete(const HashCode512 * key,
-			 const Datastore_Value * val,
-			 SQstore_ServiceAPI * api) {
+  		 const Datastore_Value * val,
+  		 SQstore_ServiceAPI * api) {
   if (1 == api->del(key, val))
-	return OK;
+  return OK;
   else
-	return SYSERR;
+  return SYSERR;
 }
 
 static int priorityCheck(const HashCode512 * key,
-			 const Datastore_Value * val,
-			 int * closure) {
+  		 const Datastore_Value * val,
+  		 int * closure) {
   int id;
 
   id = (*closure);
@@ -116,20 +116,20 @@ static int priorityCheck(const HashCode512 * key,
 }
 
 static int multipleCheck(const HashCode512 * key,
-			 const Datastore_Value * val,
-			 Datastore_Value ** last) {
+  		 const Datastore_Value * val,
+  		 Datastore_Value ** last) {
   if (*last != NULL) {
     if ( ((*last)->size == val->size) &&
-	 (0 == memcmp(*last,
-		      val,
-		      ntohl(val->size)) ) )
+   (0 == memcmp(*last,
+  	      val,
+  	      ntohl(val->size)) ) )
       return SYSERR; /* duplicate! */
     FREE(*last);
   }
   *last = MALLOC(ntohl(val->size));
   memcpy(*last,
-	 val,
-	 ntohl(val->size));
+   val,
+   ntohl(val->size));
   return OK;
 }
 
@@ -153,11 +153,11 @@ static int test(SQstore_ServiceAPI * api) {
   }
   ASSERT(oldSize < api->getSize());
   ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
-					NULL,
-					NULL));
+  				NULL,
+  				NULL));
   ASSERT(256 == api->iterateExpirationTime(ANY_BLOCK,
-					   NULL,
-					   NULL));
+  				   NULL,
+  				   NULL));
   for (i=255;i>=0;i--) {
     memset(&key, 256-i, sizeof(HashCode512));
     ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
@@ -173,35 +173,35 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(oldSize > api->getSize());
   i = 0;
   ASSERT(128 == api->iterateLowPriority(ANY_BLOCK,
-					(Datum_Iterator) &iterateUp,
-					&i));
+  				(Datum_Iterator) &iterateUp,
+  				&i));
   ASSERT(256 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-					   (Datum_Iterator) &iterateDown,
-					   &i));
+  				   (Datum_Iterator) &iterateDown,
+  				   &i));
   ASSERT(0 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-					   (Datum_Iterator) &iterateDelete,
-					   api));
+  				   (Datum_Iterator) &iterateDelete,
+  				   api));
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-					 (Datum_Iterator) &iterateDown,
-					 &i));
+  				 (Datum_Iterator) &iterateDown,
+  				 &i));
 
   i = 42;
   value = initValue(i);
   memset(&key, 256-i, sizeof(HashCode512));
   api->put(&key, value);
   ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
-					 (Datum_Iterator) &priorityCheck,
-					 &i));
+  				 (Datum_Iterator) &priorityCheck,
+  				 &i));
   api->update(&key,
-	      value,
-	      4,
-	      0);
+        value,
+        4,
+        0);
   i += 4;
   ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
-					 (Datum_Iterator) &priorityCheck,
-					 &i));
+  				 (Datum_Iterator) &priorityCheck,
+  				 &i));
   FREE(value);
 
   /* test multiple results */
@@ -211,16 +211,16 @@ static int test(SQstore_ServiceAPI * api) {
 
   value = NULL;
   ASSERT(2 == api->iterateExpirationTime(ANY_BLOCK,
-					 (Datum_Iterator) &multipleCheck,
-					 &value));
+  				 (Datum_Iterator) &multipleCheck,
+  				 &value));
   FREE(value);
   api->del(&key,
-	   NULL);
+     NULL);
   api->del(&key,
-	   NULL);
+     NULL);
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-					 NULL,
-					 NULL));
+  				 NULL,
+  				 NULL));
   api->drop();
 
   return OK;
@@ -238,15 +238,15 @@ int main(int argc, char *argv[]) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,
-	   cfg,
-	   cron,
-	   NULL);
+     cfg,
+     cron,
+     NULL);
   api = requestService("sqstore");
   if (api != NULL) {
     ok = test(api);

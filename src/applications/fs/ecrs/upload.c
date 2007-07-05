@@ -50,8 +50,8 @@ static int pushBlock(struct ClientServerConnection * sock,
                      const CHK * chk,
                      unsigned int level,
                      Datastore_Value ** iblocks,
-		     unsigned int prio,
-		     cron_t expirationTime) {
+  	     unsigned int prio,
+  	     cron_t expirationTime) {
   unsigned int size;
   unsigned int present;
   Datastore_Value * value;
@@ -78,8 +78,8 @@ static int pushBlock(struct ClientServerConnection * sock,
                         &ichk,
                         level+1,
                         iblocks,
-			prio,
-			expirationTime))
+  		prio,
+  		expirationTime))
       return SYSERR;
     fileBlockEncode(db,
                     size,
@@ -122,8 +122,8 @@ static int pushBlock(struct ClientServerConnection * sock,
  *  or gnunetd not running)
  */
 int ECRS_uploadFile(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    const char * filename,
+  	    struct GC_Configuration * cfg,
+  	    const char * filename,
                     int doIndex,
                     unsigned int anonymityLevel,
                     unsigned int priority,
@@ -158,29 +158,29 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   start = get_time();
   memset(&mchk, 0, sizeof(CHK));
   if (YES != disk_file_test(ectx,
-			    filename)) {
+  		    filename)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("`%s' is not a file.\n"),
-	   filename);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("`%s' is not a file.\n"),
+     filename);
     return SYSERR;
   }
   if (OK != disk_file_size(ectx,
-			   filename,
-			   &filesize,
-			   YES)) {
+  		   filename,
+  		   &filesize,
+  		   YES)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Cannot get size of file `%s'"),
-	   filename);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Cannot get size of file `%s'"),
+     filename);
 
     return SYSERR;
   }
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Failed to connect to gnunetd."));
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Failed to connect to gnunetd."));
     return SYSERR;
   }
   eta = 0;
@@ -188,12 +188,12 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     upcb(filesize, 0, eta, upcbClosure);
   if (doIndex) {
     if (SYSERR == getFileHash(ectx,
-			      filename,
+  		      filename,
                               &fileId)) {
       GE_LOG(ectx,
-	     GE_ERROR | GE_BULK | GE_USER,
-	     _("Cannot hash `%s'.\n"),
-	     filename);
+       GE_ERROR | GE_BULK | GE_USER,
+       _("Cannot hash `%s'.\n"),
+       filename);
       connection_destroy(sock);
       return SYSERR;
     }
@@ -210,16 +210,16 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     switch (FS_initIndex(sock, &fileId, filename)) {
     case SYSERR:
       GE_LOG(ectx,
-	     GE_ERROR | GE_BULK | GE_USER,
-	     _("Initialization for indexing file `%s' failed.\n"),
-	     filename);
+       GE_ERROR | GE_BULK | GE_USER,
+       _("Initialization for indexing file `%s' failed.\n"),
+       filename);
       connection_destroy(sock);
       return SYSERR;
     case NO:
       GE_LOG(ectx,
-	     GE_ERROR | GE_BULK | GE_USER,
-	     _("Indexing file `%s' failed. Trying to insert file...\n"),
-	     filename);
+       GE_ERROR | GE_BULK | GE_USER,
+       _("Indexing file `%s' failed. Trying to insert file...\n"),
+       filename);
       doIndex = YES;
       break;
     default:
@@ -228,8 +228,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   }
   treedepth = computeDepth(filesize);
   fd = disk_file_open(ectx,
-		      filename,
-		      O_RDONLY | O_LARGEFILE);
+  	      filename,
+  	      O_RDONLY | O_LARGEFILE);
   if (fd == -1) {
     GE_LOG(ectx,
      GE_ERROR | GE_BULK | GE_USER,
@@ -275,15 +275,15 @@ int ECRS_uploadFile(struct GE_Context * ectx,
              DBLOCK_SIZE);
     }
     GE_ASSERT(ectx,
-	      sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
+        sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd,
                      &db[1],
                      size)) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
-			   "READ",
-			   filename);
+  		   GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
+  		   "READ",
+  		   filename);
       goto FAILURE;
     }
     if (tt != NULL)
@@ -297,24 +297,24 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                       &mchk.query);
 #if DEBUG_UPLOAD
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     hash2enc(&mchk.query,
-		      &enc));
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       hash2enc(&mchk.query,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Query for current block of size %u is %s\n",
-	   size,
-	   &enc);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Query for current block of size %u is %s\n",
+     size,
+     &enc);
 #endif
     if (doIndex) {
       if (SYSERR == FS_index(sock,
                              &fileId,
                              dblock,
                              pos)) {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_BULK | GE_USER,
-	       _("Indexing data failed at position %i.\n"), pos);
-	goto FAILURE;
+  GE_LOG(ectx,
+         GE_ERROR | GE_BULK | GE_USER,
+         _("Indexing data failed at position %i.\n"), pos);
+  goto FAILURE;
       }
     } else {
       value = NULL;
@@ -348,8 +348,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                         &mchk,
                         0, /* dblocks are on level 0 */
                         iblocks,
-			priority,
-			expirationTime)) {
+  		priority,
+  		expirationTime)) {
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
@@ -359,9 +359,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
       goto FAILURE;
 #if DEBUG_UPLOAD
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Tree depth is %u, walking up tree.\n",
-	 treedepth);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Tree depth is %u, walking up tree.\n",
+   treedepth);
 #endif
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
@@ -369,9 +369,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     if (size == sizeof(DBlock)) {
 #if DEBUG_UPLOAD
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Level %u is empty\n",
-	     i);
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Level %u is empty\n",
+       i);
 #endif
       continue;
     }
@@ -381,30 +381,30 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                     &mchk.key);
 #if DEBUG_UPLOAD
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Computing query for %u bytes content.\n",
-	   size);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Computing query for %u bytes content.\n",
+     size);
 #endif
     fileBlockGetQuery(db,
                       size,
                       &mchk.query);
 #if DEBUG_UPLOAD
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     hash2enc(&mchk.query,
-		      &enc));
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       hash2enc(&mchk.query,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Query for current block at level %u is `%s'.\n",
-	   i,
-	   &enc);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Query for current block at level %u is `%s'.\n",
+     i,
+     &enc);
 #endif
     if (OK != pushBlock(sock,
                         &mchk,
                         i+1,
                         iblocks,
-			priority,
-			expirationTime)) {
+  		priority,
+  		expirationTime)) {
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
@@ -419,7 +419,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     value->expirationTime = htonll(expirationTime);
     value->prio = htonl(priority);
     if (SYSERR == FS_insert(sock,
-			    value)) {
+  		    value)) {
       GE_BREAK(ectx, 0);
       FREE(value);
       goto FAILURE;
@@ -430,9 +430,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   }
 #if DEBUG_UPLOAD
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&mchk.query,
-		    &enc));
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     hash2enc(&mchk.query,
+  	    &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Query for top block is %s\n",
       &enc);

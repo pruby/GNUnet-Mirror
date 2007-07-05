@@ -73,11 +73,11 @@ static void createSignedhello(void * cls) {
     return;
   }
   memcpy(&tapi->hello->publicKey,
-	 identity->getPublicPrivateKey(),
-	 sizeof(PublicKey));
+   identity->getPublicPrivateKey(),
+   sizeof(PublicKey));
   memcpy(&tapi->hello->senderIdentity,
-	 coreAPI->myIdentity,
-	 sizeof(PeerIdentity));
+   coreAPI->myIdentity,
+   sizeof(PeerIdentity));
   tapi->hello->expirationTime
     = htonl(TIME(NULL) + hello_live);
   tapi->hello->header.type
@@ -85,11 +85,11 @@ static void createSignedhello(void * cls) {
   tapi->hello->header.size
     = htons(P2P_hello_MESSAGE_size(tapi->hello));
   if (SYSERR == identity->signData(&(tapi->hello)->senderIdentity,
-				   P2P_hello_MESSAGE_size(tapi->hello)
-				   - sizeof(Signature)
-				   - sizeof(PublicKey)
-				   - sizeof(MESSAGE_HEADER),
-				   &tapi->hello->signature)) {
+  			   P2P_hello_MESSAGE_size(tapi->hello)
+  			   - sizeof(Signature)
+  			   - sizeof(PublicKey)
+  			   - sizeof(MESSAGE_HEADER),
+  			   &tapi->hello->signature)) {
     FREE(tapi->hello);
     tapi->hello = NULL;
     GE_BREAK(ectx, 0);
@@ -115,8 +115,8 @@ static int isTransportAvailable(unsigned short ttype) {
 static int addTransport(TransportAPI * tapi) {
   if (tapi->protocolNumber >= tapis_count)
     GROW(tapis,
-	 tapis_count,
-	 tapi->protocolNumber+1);
+   tapis_count,
+   tapi->protocolNumber+1);
   if (tapis[tapi->protocolNumber] != NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
@@ -124,10 +124,10 @@ static int addTransport(TransportAPI * tapi) {
   tapis[tapi->protocolNumber] = tapi;
   tapi->hello = NULL;
   cron_add_job(coreAPI->cron,
-	       &createSignedhello,
-	       HELLO_RECREATE_FREQ,
-	       HELLO_RECREATE_FREQ,
-	       tapi);
+         &createSignedhello,
+         HELLO_RECREATE_FREQ,
+         HELLO_RECREATE_FREQ,
+         tapi);
   return OK;
 }
 
@@ -136,22 +136,22 @@ static int addTransport(TransportAPI * tapi) {
  */
 static int
 helloToAddress(const P2P_hello_MESSAGE * hello,
-	       void ** sa,
-	       unsigned int * sa_len) {
+         void ** sa,
+         unsigned int * sa_len) {
   unsigned short prot;
 
   prot = ntohs(hello->protocol);
   if ( (prot >= tapis_count) ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   _("Converting peer address to string failed, transport type %d not supported\n"),
-	   ntohs(hello->protocol));
+     GE_INFO | GE_REQUEST | GE_USER,
+     _("Converting peer address to string failed, transport type %d not supported\n"),
+     ntohs(hello->protocol));
     return SYSERR;
   }
   return tapis[prot]->helloToAddress(hello,
-				     sa,
-				     sa_len);
+  			     sa,
+  			     sa_len);
 }
 
 /**
@@ -160,7 +160,7 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
  * @param data second argument to callback
  */
 static int forEachTransport(TransportCallback callback,
-			    void * data) {
+  		    void * data) {
   int i;
   int ret;
 
@@ -169,7 +169,7 @@ static int forEachTransport(TransportCallback callback,
     if (tapis[i] != NULL) {
       ret++;
       if (callback != NULL)
-	callback(tapis[i], data);
+  callback(tapis[i], data);
     }
   }
   return ret;
@@ -192,14 +192,14 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
   if ( (prot >= tapis_count)  ||
        (tapis[prot] == NULL) ) {
     GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
-	   _("Transport connection attempt failed, transport type %d not supported\n"),
-	   prot);
+     GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
+     _("Transport connection attempt failed, transport type %d not supported\n"),
+     prot);
     return NULL;
   }
   tsession = NULL;
   if (OK != tapis[prot]->connect(hello,
-				 &tsession)) 
+  			 &tsession)) 
     return NULL;  
   tsession->ttype = prot;
   return tsession;
@@ -207,7 +207,7 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
 
 static TSession *
 transportConnectFreely(const PeerIdentity * peer,
-		       int useTempList) {
+  	       int useTempList) {
   int i;
   P2P_hello_MESSAGE * hello;
   int * perm;
@@ -224,8 +224,8 @@ transportConnectFreely(const PeerIdentity * peer,
     if (tapis[perm[i]] == NULL)
       continue;
     hello = identity->identity2Hello(peer,
-				     perm[i],
-				     useTempList);
+  			     perm[i],
+  			     useTempList);
     if (hello == NULL)
       continue;
     hc++;
@@ -240,12 +240,12 @@ transportConnectFreely(const PeerIdentity * peer,
   if (ret == NULL) {
 #if DEBUG_TRANSPORT
     hash2enc(&peer->hashPubKey,
-	     &enc);
+       &enc);
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_ADMIN,
-	   _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
-	   &enc,
-	   hc);
+     GE_WARNING | GE_BULK | GE_ADMIN,
+     _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
+     &enc,
+     hc);
 #endif
   }
   return ret;
@@ -290,28 +290,28 @@ static unsigned int transportGetCost(int ttype) {
  *         temporary error
  */
 static int transportSend(TSession * tsession,
-			 const void * msg,
-			 unsigned int size,
-			 int important) {
+  		 const void * msg,
+  		 unsigned int size,
+  		 int important) {
   if (tsession == NULL) {
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Transmission attempted on uni-directional pipe, failing.\n");
+     GE_DEBUG | GE_DEVELOPER | GE_BULK,
+     "Transmission attempted on uni-directional pipe, failing.\n");
     return SYSERR; /* can't do that, can happen for unidirectional pipes
-		      that call core with TSession being NULL. */
+  	      that call core with TSession being NULL. */
   }
   if ( (tsession->ttype >= tapis_count) ||
        (tapis[tsession->ttype] == NULL) ) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Transmission attempt failed, transport type %d unknown.\n"),
-	   tsession->ttype);
+     GE_ERROR | GE_BULK | GE_USER,
+     _("Transmission attempt failed, transport type %d unknown.\n"),
+     tsession->ttype);
     return SYSERR;
   }
   return tapis[tsession->ttype]->send(tsession,
-				      msg,
-				      size,
-				      important);
+  			      msg,
+  			      size,
+  			      important);
 }
 
 /**
@@ -376,9 +376,9 @@ transportCreatehello(unsigned short ttype) {
     perm = permute(WEAK, tapis_count);
     ttype = tapis_count-1;
     while ( (ttype < tapis_count) &&
-	    ( (tapis[perm[ttype]] == NULL) ||
-	      (tapis[perm[ttype]] != NULL &&
-	       tapis[perm[ttype]]->hello == NULL) ) )
+      ( (tapis[perm[ttype]] == NULL) ||
+        (tapis[perm[ttype]] != NULL &&
+         tapis[perm[ttype]]->hello == NULL) ) )
       ttype--; /* unsigned, will wrap around! */
     if (ttype >= tapis_count) {
       FREE(perm);
@@ -391,9 +391,9 @@ transportCreatehello(unsigned short ttype) {
   if ( (ttype >= tapis_count) ||
        (tapis[ttype] == NULL) ) {
     GE_LOG(ectx,
-	   GE_DEBUG | GE_BULK | GE_USER,
-	   _("No transport of type %d known.\n"),
-	   ttype);
+     GE_DEBUG | GE_BULK | GE_USER,
+     _("No transport of type %d known.\n"),
+     ttype);
     MUTEX_UNLOCK(tapis_lock);
     return NULL;
   }
@@ -404,8 +404,8 @@ transportCreatehello(unsigned short ttype) {
   }
   hello = MALLOC(P2P_hello_MESSAGE_size(tapi->hello));
   memcpy(hello,
-	 tapi->hello,
-	 P2P_hello_MESSAGE_size(tapi->hello));
+   tapi->hello,
+   P2P_hello_MESSAGE_size(tapi->hello));
   MUTEX_UNLOCK(tapis_lock);
   return hello;
 }
@@ -424,7 +424,7 @@ transportCreatehello(unsigned short ttype) {
  * @return the number of bytes written to buff, -1 on error
  */
 static int getAdvertisedhellos(unsigned int maxLen,
-			       char * buff) {
+  		       char * buff) {
   int i;
   int tcount;
   P2P_hello_MESSAGE ** hellos;
@@ -442,14 +442,14 @@ static int getAdvertisedhellos(unsigned int maxLen,
     if (tapis[i] != NULL) {
       hellos[tcount] = transportCreatehello(i);
       if (NULL != hellos[tcount])
-	tcount++;
+  tcount++;
     }
   }
   MUTEX_UNLOCK(tapis_lock);
   if (tcount == 0) {
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_REQUEST,
-	   _("No transport succeeded in creating a hello!\n"));
+     GE_INFO | GE_USER | GE_REQUEST,
+     _("No transport succeeded in creating a hello!\n"));
     FREE(hellos);
     return SYSERR;
   }
@@ -458,8 +458,8 @@ static int getAdvertisedhellos(unsigned int maxLen,
     i = weak_randomi(tcount); /* select a hello at random */
     if ((unsigned int)P2P_hello_MESSAGE_size(hellos[i]) <= maxLen - used) {
       memcpy(&buff[used],
-	     hellos[i],
-	     P2P_hello_MESSAGE_size(hellos[i]));
+       hellos[i],
+       P2P_hello_MESSAGE_size(hellos[i]));
       used += P2P_hello_MESSAGE_size(hellos[i]);
     }
     FREE(hellos[i]);
@@ -470,9 +470,9 @@ static int getAdvertisedhellos(unsigned int maxLen,
   FREE(hellos);
   if (used == 0)
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "No HELLOs fit in %u bytes.\n",
-	   maxLen);
+     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+     "No HELLOs fit in %u bytes.\n",
+     maxLen);
   return used;
 }
 
@@ -490,14 +490,14 @@ static void initHello(void * cls) {
 
 
 static void doneHelper(TransportAPI * tapi,
-		       void * unused) {
+  	       void * unused) {
   /* In the (rare) case that we shutdown transports
      before the cron-jobs had a chance to run, stop
      the cron-jobs */
   cron_del_job(coreAPI->cron,
-	       &initHello,
-	       0,
-	       tapi);
+         &initHello,
+         0,
+         tapi);
 }
 
 static void unloadTransport(int i) {
@@ -505,12 +505,12 @@ static void unloadTransport(int i) {
 
   doneHelper(tapis[i], NULL);
   cron_del_job(coreAPI->cron,
-	       &createSignedhello,
-	       HELLO_RECREATE_FREQ,
-	       tapis[i]);
+         &createSignedhello,
+         HELLO_RECREATE_FREQ,
+         tapis[i]);
   ptr = os_plugin_resolve_function(tapis[i]->libHandle,
-				   "donetransport_",
-				   NO);
+  			   "donetransport_",
+  			   NO);
   if (ptr != NULL)
     ptr();
   FREE(tapis[i]->transName);
@@ -532,7 +532,7 @@ static void startTransports(P2P_PACKETProcessor mpp) {
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL) {
       if (OK != tapis[i]->startTransportServer())
-	unloadTransport(i);
+  unloadTransport(i);
     }
 }
 
@@ -549,7 +549,7 @@ static void stopTransports() {
 }
 
 static void initHelper(TransportAPI * tapi,
-		       void * unused) {
+  	       void * unused) {
   /* Creation of HELLOs takes longer if a locally
      unresolvable hostname ((Dyn)DNS) was specified
      as this host's address and we have no network
@@ -558,10 +558,10 @@ static void initHelper(TransportAPI * tapi,
      This is why we create the HELLOs in another
      thread. */
   cron_add_job(coreAPI->cron,
-	       &initHello,
-	       0,
-	       0,
-	       tapi);
+         &initHello,
+         0,
+         0,
+         tapi);
 }
 
 /**
@@ -578,16 +578,16 @@ static void initHelper(TransportAPI * tapi,
  *         SYSERR if the size/session is invalid
  */
 static int testWouldTry(TSession * tsession,
-			unsigned int size,
-			int important) {
+  		unsigned int size,
+  		int important) {
   if (tsession == NULL)
     return SYSERR;
   if ( (tsession->ttype >= tapis_count) ||
        (tapis[tsession->ttype] == NULL) )
     return SYSERR;
   return tapis[tsession->ttype]->testWouldTry(tsession,
-					      size,
-					      important);
+  				      size,
+  				      important);
 }
 
 /**
@@ -606,17 +606,17 @@ provide_module_transport(CoreAPIForApplication * capi) {
 
   ectx = capi->ectx;
   if (-1 == GC_get_configuration_value_number(capi->cfg,
-					      "GNUNETD",
-					      "HELLOEXPIRES",
-					      1,
-					      MAX_HELLO_EXPIRES / 60,
-					      60,
-					      &hello_live))
+  				      "GNUNETD",
+  				      "HELLOEXPIRES",
+  				      1,
+  				      MAX_HELLO_EXPIRES / 60,
+  				      60,
+  				      &hello_live))
     return NULL;
   hello_live *= 60;
 
   GE_ASSERT(ectx,
-	    sizeof(P2P_hello_MESSAGE) == 600);
+      sizeof(P2P_hello_MESSAGE) == 600);
   identity = capi->requestService("identity");
   if (identity == NULL) {
     GE_BREAK(ectx, 0);
@@ -642,86 +642,86 @@ provide_module_transport(CoreAPIForApplication * capi) {
   /* now load transports */
   dso = NULL;
   GE_ASSERT(ectx,
-	    -1 != GC_get_configuration_value_string(capi->cfg,
-						    "GNUNETD",
-						    "TRANSPORTS",
-						    "udp tcp nat",
-						    &dso));
+      -1 != GC_get_configuration_value_string(capi->cfg,
+  					    "GNUNETD",
+  					    "TRANSPORTS",
+  					    "udp tcp nat",
+  					    &dso));
   if (strlen(dso) != 0) {
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK,
-	   _("Loading transports `%s'\n"),
-	   dso);
+     GE_INFO | GE_USER | GE_BULK,
+     _("Loading transports `%s'\n"),
+     dso);
     next = dso;
     do {
       pos = next;
       while ( (*next != '\0') &&
-	      (*next != ' ') )
-	next++;
+        (*next != ' ') )
+  next++;
       if (*next == '\0')
-	next = NULL; /* terminate! */
+  next = NULL; /* terminate! */
       else {
-	*next = '\0'; /* add 0-termination for pos */
-	next++;
+  *next = '\0'; /* add 0-termination for pos */
+  next++;
       }
       lib = os_plugin_load(ectx,
-			   "libgnunettransport_",
-			   pos);
+  		   "libgnunettransport_",
+  		   pos);
       if (lib == NULL) {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	       _("Could not load transport plugin `%s'\n"),
-	       pos);
-	continue;
+  GE_LOG(ectx,
+         GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+         _("Could not load transport plugin `%s'\n"),
+         pos);
+  continue;
       }
       tptr = os_plugin_resolve_function(lib,
-					"inittransport_",
-					YES);
+  				"inittransport_",
+  				YES);
       if (tptr == NULL) {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	       _("Transport library `%s' did not provide required function '%s%s'.\n"),
-	       pos,
-	       "inittransport_",
-	       pos);
-	os_plugin_unload(lib);
-	continue;
+  GE_LOG(ectx,
+         GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+         _("Transport library `%s' did not provide required function '%s%s'.\n"),
+         pos,
+         "inittransport_",
+         pos);
+  os_plugin_unload(lib);
+  continue;
       }
       tapi = tptr(&ctapi);
       if (tapi == NULL) {
-	os_plugin_unload(lib);
-	continue;
+  os_plugin_unload(lib);
+  continue;
       }
       tapi->libHandle = lib;
       tapi->transName = STRDUP(pos);
       if (OK != addTransport(tapi)) {
-	void (*ptr)();
+  void (*ptr)();
 
-	FREE(tapi->transName);
-	ptr = os_plugin_resolve_function(lib,
-					 "donetransport_",
-					 NO);
-	if (ptr != NULL)
-	  ptr();
-	os_plugin_unload(lib);	
+  FREE(tapi->transName);
+  ptr = os_plugin_resolve_function(lib,
+  				 "donetransport_",
+  				 NO);
+  if (ptr != NULL)
+    ptr();
+  os_plugin_unload(lib);	
       } else {
-	GE_LOG(ectx,
-	       GE_INFO | GE_USER | GE_BULK,
-	       _("Loaded transport `%s'\n"),
-	       pos);
+  GE_LOG(ectx,
+         GE_INFO | GE_USER | GE_BULK,
+         _("Loaded transport `%s'\n"),
+         pos);
       }
     } while (next != NULL);
   }
   FREE(dso);
 
   IF_GELOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   hash2enc(&coreAPI->myIdentity->hashPubKey,
-		    &myself));
+     GE_INFO | GE_REQUEST | GE_USER,
+     hash2enc(&coreAPI->myIdentity->hashPubKey,
+  	    &myself));
   GE_LOG(ectx,
-	 GE_INFO | GE_REQUEST | GE_USER,
-	 _("I am peer `%s'.\n"),
-	 &myself);
+   GE_INFO | GE_REQUEST | GE_USER,
+   _("I am peer `%s'.\n"),
+   &myself);
   forEachTransport(&initHelper, NULL);
 
   ret.start = &startTransports;
@@ -769,4 +769,4 @@ int release_module_transport() {
 }
 
 
-/* end of transport.c */			
+/* end of transport.c */  		

@@ -58,7 +58,7 @@ struct GNS_Context {
 };
 
 static void notify_listeners(void * ctx,
-			     struct GNS_Tree * tree) {
+  		     struct GNS_Tree * tree) {
   struct GNS_Context * g = ctx;
   GNS_TCL * lpos;
 
@@ -84,31 +84,31 @@ static void notify_listeners(void * ctx,
  *         refused
  */
 int configChangeListener(void * ctx,
-			 struct GC_Configuration * cfg,
-			 struct GE_Context * ectx,
-			 const char * section,
-			 const char * option) {
+  		 struct GC_Configuration * cfg,
+  		 struct GE_Context * ectx,
+  		 const char * section,
+  		 const char * option) {
   struct GNS_Context * g = ctx;
   struct GNS_Tree * pos;
 
   pos = tree_lookup(g->root,
-		    section,
-		    option);
+  	    section,
+  	    option);
   if (pos == NULL) {
     GE_LOG(g->ectx,
-	   GE_DEVELOPER | GE_BULK | GE_ERROR,
-	   "Tree lookup for unknown option `%s' in section `%s'!\n",
-	   option,
-	   section);
+     GE_DEVELOPER | GE_BULK | GE_ERROR,
+     "Tree lookup for unknown option `%s' in section `%s'!\n",
+     option,
+     section);
     return 0; /* or refuse? */
   }
   /* first, check if value is valid */
   if ((pos->type & GNS_KindMask) != GNS_Leaf) {
     GE_LOG(g->ectx,
-	   GE_DEVELOPER | GE_BULK | GE_ERROR,
-	   "Tree value change for non-leaf option `%s' in section `%s'!\n",
-	   option,
-	   section);
+     GE_DEVELOPER | GE_BULK | GE_ERROR,
+     "Tree value change for non-leaf option `%s' in section `%s'!\n",
+     option,
+     section);
     return 0;
   }
   switch (pos->type & GNS_TypeMask) {
@@ -116,9 +116,9 @@ int configChangeListener(void * ctx,
     int val;
 
     val = GC_get_configuration_value_yesno(cfg,
-					   section,
-					   option,
-					   pos->value.Boolean.def);
+  				   section,
+  				   option,
+  				   pos->value.Boolean.def);
     if (val == SYSERR) {
       return SYSERR;
     }
@@ -129,12 +129,12 @@ int configChangeListener(void * ctx,
     unsigned long long val;
 
     if (SYSERR == GC_get_configuration_value_number(cfg,
-						    section,
-						    option,
-						    pos->value.UInt64.min,
-						    pos->value.UInt64.max,
-						    pos->value.UInt64.def,
-						    &val)) {
+  					    section,
+  					    option,
+  					    pos->value.UInt64.min,
+  					    pos->value.UInt64.max,
+  					    pos->value.UInt64.def,
+  					    &val)) {
       return SYSERR;
     }
     pos->value.UInt64.val = val;
@@ -146,20 +146,20 @@ int configChangeListener(void * ctx,
 
     s = NULL;
     GC_get_configuration_value_string(cfg,
-				      section,
-				      option,
-				      NULL,
-				      &s);
+  			      section,
+  			      option,
+  			      NULL,
+  			      &s);
     if (s == NULL) {
       pos->value.Double.val = pos->value.Double.def;
     } else {
       if (1 != sscanf(s, "%lf", &d)) {
-	GE_LOG(ectx,
-	       GE_USER | GE_ERROR | GE_IMMEDIATE,
-	       "`%s' is not a valid double-precision floating point number.\n",
-	       s);
-	FREE(s);
-	return SYSERR;
+  GE_LOG(ectx,
+         GE_USER | GE_ERROR | GE_IMMEDIATE,
+         "`%s' is not a valid double-precision floating point number.\n",
+         s);
+  FREE(s);
+  return SYSERR;
       }
       pos->value.Double.val = d;
       FREE(s);
@@ -171,10 +171,10 @@ int configChangeListener(void * ctx,
     char * val;
 
     if (SYSERR == GC_get_configuration_value_string(cfg,
-						    section,
-						    option,
-						    pos->value.String.def,
-						    &val))
+  					    section,
+  					    option,
+  					    pos->value.String.def,
+  					    &val))
       return SYSERR;
     FREE(pos->value.String.val);
     pos->value.String.val = val;
@@ -184,11 +184,11 @@ int configChangeListener(void * ctx,
     const char * ival;
 
     if (SYSERR == GC_get_configuration_value_choice(cfg,
-						    section,
-						    option,
-						    (const char**) pos->value.String.legalRange,
-						    pos->value.String.def,
-						    &ival))
+  					    section,
+  					    option,
+  					    (const char**) pos->value.String.legalRange,
+  					    pos->value.String.def,
+  					    &ival))
       return SYSERR;
     FREE(pos->value.String.val);
     pos->value.String.val = STRDUP(ival);
@@ -201,11 +201,11 @@ int configChangeListener(void * ctx,
 
   /* allow tree to update visibility */
   tree_notify_change(cfg,
-		     &notify_listeners,
-		     g,
-		     g->ectx,
-		     g->root,
-		     pos);
+  	     &notify_listeners,
+  	     g,
+  	     g->ectx,
+  	     g->root,
+  	     pos);
   return 0;
 }
 
@@ -257,8 +257,8 @@ static void free_tree(struct GNS_Tree * t) {
  */
 struct GNS_Context *
 GNS_load_specification(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const char * specification) {
+  	       struct GC_Configuration * cfg,
+  	       const char * specification) {
   struct GNS_Context * ctx;
   struct GNS_Tree * root;
 
@@ -271,12 +271,12 @@ GNS_load_specification(struct GE_Context * ectx,
   ctx->root = root;
   ctx->in_notify = 0;
   if (-1 == GC_attach_change_listener(cfg,
-				      &configChangeListener,
-				      ctx)) {
+  			      &configChangeListener,
+  			      ctx)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_IMMEDIATE,
-	   _("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
-	   specification);
+     GE_ERROR | GE_USER | GE_IMMEDIATE,
+     _("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
+     specification);
     FREE(ctx);
     free_tree(root);
     return NULL;
@@ -303,8 +303,8 @@ GNS_get_tree(struct GNS_Context * ctx) {
 void
 GNS_free_specification(struct GNS_Context * ctx) {
   GC_detach_change_listener(ctx->cfg,
-			    &configChangeListener,
-			    ctx);
+  		    &configChangeListener,
+  		    ctx);
   free_tree(ctx->root);
   GE_ASSERT(ctx->ectx, ctx->listeners == NULL);
   FREE(ctx);
@@ -317,8 +317,8 @@ GNS_free_specification(struct GNS_Context * ctx) {
  */
 void
 GNS_register_tree_change_listener(struct GNS_Context * ctx,
-				  GNS_TreeChangeListener listener,
-				  void * cls) {
+  			  GNS_TreeChangeListener listener,
+  			  void * cls) {
   GNS_TCL  * n;
 
   n = MALLOC(sizeof(GNS_TCL));
@@ -334,8 +334,8 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
  */
 void
 GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
-				    GNS_TreeChangeListener listener,
-				    void * cls) {
+  			    GNS_TreeChangeListener listener,
+  			    void * cls) {
   GNS_TCL * pos;
   GNS_TCL * prev;
 
@@ -343,11 +343,11 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
   pos = ctx->listeners;
   while (pos != NULL) {
     if ( (pos->l == listener) &&
-	 (pos->c == cls)) {
+   (pos->c == cls)) {
       if (prev == NULL)
-	ctx->listeners = pos->next;
+  ctx->listeners = pos->next;
       else
-	prev->next = pos->next;
+  prev->next = pos->next;
       FREE(pos);
       return; /* only unregister one! */
     }
@@ -364,7 +364,7 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
  */
 char *
 GNS_get_default_value_as_string(GNS_Type type,
-				const GNS_Value * value) {
+  			const GNS_Value * value) {
   char buf[48];
 
   if (value == NULL)

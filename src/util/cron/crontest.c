@@ -52,11 +52,11 @@ static int testCron() {
   global2 = -1;
   global3 = -1;
   cron_add_job(cron,
-	       &cronJob, cronSECONDS*1, cronSECONDS*1, NULL);
+         &cronJob, cronSECONDS*1, cronSECONDS*1, NULL);
   cron_add_job(cron,
-	       &cronJob2, cronSECONDS*4, cronSECONDS*4, NULL);
+         &cronJob2, cronSECONDS*4, cronSECONDS*4, NULL);
   cron_add_job(cron,
-	       &cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
+         &cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
   for (i=0;i<10;i++) {
     /*    fprintf(stderr,"."); */
     sleep(1);
@@ -74,29 +74,29 @@ static int testCron() {
     }
   }
   cron_del_job(cron,
-	       &cronJob, cronSECONDS*1, NULL);
+         &cronJob, cronSECONDS*1, NULL);
   cron_del_job(cron,
-	       &cronJob2, cronSECONDS*4, NULL);
+         &cronJob2, cronSECONDS*4, NULL);
   cron_del_job(cron,
-	       &cronJob3, cronSECONDS*16, NULL);
+         &cronJob3, cronSECONDS*16, NULL);
   return 0;
 }
 
 static void delJob(void * unused) {
   cron_del_job(cron,
-	       &cronJob, 42, NULL);
+         &cronJob, 42, NULL);
 }
 
 static int testDelCron() {
   global = 0;
   cron_add_job(cron,
-	       &cronJob, cronSECONDS*1, 42, NULL);
+         &cronJob, cronSECONDS*1, 42, NULL);
   cron_add_job(cron,
-	       &delJob, 500 * cronMILLIS, 0, NULL);
+         &delJob, 500 * cronMILLIS, 0, NULL);
   PTHREAD_SLEEP(1 * cronSECONDS);
   if (global != 0) {
     fprintf(stderr,
-	    "cron job was supposed to be deleted, but ran anyway!\n");
+      "cron job was supposed to be deleted, but ran anyway!\n");
     return 1;
   }
   return 0;

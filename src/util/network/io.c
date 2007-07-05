@@ -67,7 +67,7 @@ void __attribute__ ((destructor)) gnunet_network_io_fini() {
  * @return OK on success, SYSERR on error
  */
 int get_host_by_name(struct GE_Context * ectx,
-		     const char * hostname,
+  	     const char * hostname,
                      IPaddr * ip) {
   struct hostent * he;
 
@@ -76,10 +76,10 @@ int get_host_by_name(struct GE_Context * ectx,
   he = GETHOSTBYNAME(hostname);
   if (he == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_BULK,
-	   _("Could not find IP of host `%s': %s\n"),
-	   hostname,
-	   hstrerror(h_errno));
+     GE_ERROR | GE_ADMIN | GE_BULK,
+     _("Could not find IP of host `%s': %s\n"),
+     hostname,
+     hstrerror(h_errno));
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
@@ -99,8 +99,8 @@ int get_host_by_name(struct GE_Context * ectx,
 
 struct SocketHandle *
 socket_create(struct GE_Context * ectx,
-	      struct LoadMonitor * mon,
-	      int osSocket) {
+        struct LoadMonitor * mon,
+        int osSocket) {
   SocketHandle * ret;
 
   ret = MALLOC(sizeof(SocketHandle));
@@ -114,7 +114,7 @@ socket_create(struct GE_Context * ectx,
 void socket_close(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
   if ( (0 != SHUTDOWN(s->handle,
-		      SHUT_RDWR)) &&
+  	      SHUT_RDWR)) &&
 #ifdef OSX
        (errno != EINVAL) && /* OS X returns these instead of ENOTCONN */
        (errno != EHOSTDOWN) &&
@@ -122,12 +122,12 @@ void socket_close(struct SocketHandle * s) {
 #endif
        (errno != ENOTCONN) )
     GE_LOG_STRERROR(s->ectx,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "shutdown");
+  	    GE_WARNING | GE_ADMIN | GE_BULK,
+  	    "shutdown");
   if (0 != CLOSE(s->handle))
     GE_LOG_STRERROR(s->ectx,
-		    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
-		    "close");
+  	    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
+  	    "close");
   s->handle = -1;
   s->checksum = 1;
 }
@@ -136,7 +136,7 @@ void socket_destroy(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
   if (s->handle != -1) {
     if ( (0 != SHUTDOWN(s->handle,
-			SHUT_RDWR)) &&
+  		SHUT_RDWR)) &&
 #ifdef OSX
          (errno != EINVAL) && /* OS X returns these instead of ENOTCONN */
          (errno != EHOSTDOWN) &&
@@ -144,12 +144,12 @@ void socket_destroy(struct SocketHandle * s) {
 #endif
          (errno != ENOTCONN) )
       GE_LOG_STRERROR(s->ectx,
-		      GE_WARNING | GE_ADMIN | GE_BULK,
-		      "shutdown");
+  	      GE_WARNING | GE_ADMIN | GE_BULK,
+  	      "shutdown");
     if (0 != CLOSE(s->handle))
       GE_LOG_STRERROR(s->ectx,
-		      GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
-		      "close");
+  	      GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
+  	      "close");
   }
   FREE(s);
 }
@@ -159,7 +159,7 @@ void socket_destroy(struct SocketHandle * s) {
 static int socket_set_nosigpipe(struct SocketHandle * s,
                                 int dontSigPipe) {
   return setsockopt(s->handle,
-		    SOL_SOCKET, SO_NOSIGPIPE,
+  	    SOL_SOCKET, SO_NOSIGPIPE,
                     (void *)&dontSigPipe,
                     sizeof(dontSigPipe));
 }
@@ -167,13 +167,13 @@ static int socket_set_nosigpipe(struct SocketHandle * s,
 
 /* TODO: log errors! */
 int socket_set_blocking(struct SocketHandle * s,
-			int doBlock) {
+  		int doBlock) {
 #if MINGW
   u_long mode;
   
   mode = !doBlock;
   if (ioctlsocket(s->handle,
-		  FIONBIO, &mode) == SOCKET_ERROR) {
+  	  FIONBIO, &mode) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
 
     return -1;
@@ -189,8 +189,8 @@ int socket_set_blocking(struct SocketHandle * s,
   else
     flags |= O_NONBLOCK;
   return fcntl(s->handle,
-	       F_SETFL,
-	       flags);
+         F_SETFL,
+         flags);
 #endif
 }
 
@@ -198,24 +198,24 @@ int socket_test_blocking(struct SocketHandle * s)
 {
 #ifndef MINGW
  return (fcntl(s->handle,
-	       F_GETFL) & O_NONBLOCK) ? NO : YES;
+         F_GETFL) & O_NONBLOCK) ? NO : YES;
 #else
   return __win_IsHandleMarkedAsBlocking(s->handle);
 #endif
 }
 
 int socket_recv(struct SocketHandle * s,
-		NC_KIND nc,
-		void * buf,
-		size_t max,
-		size_t * read) {
+  	NC_KIND nc,
+  	void * buf,
+  	size_t max,
+  	size_t * read) {
   int flags;
   size_t pos;
   size_t ret;
 
   GE_ASSERT(NULL, s->checksum == - s->handle);
   socket_set_blocking(s,
-		      0 != (nc & NC_Blocking));
+  	      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
   if (0 == (nc & NC_IgnoreInt))
@@ -240,30 +240,30 @@ int socket_recv(struct SocketHandle * s,
     GE_ASSERT(NULL, s->checksum == - s->handle);
     GE_ASSERT(NULL, max > pos);
     ret = (size_t) RECV(s->handle,
-			&((char*)buf)[pos],
-			max - pos,
-			flags);
+  		&((char*)buf)[pos],
+  		max - pos,
+  		flags);
     GE_ASSERT(NULL, s->checksum == - s->handle);
     if ( (ret == (size_t) -1) &&
-	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) )
+   (errno == EINTR) &&
+   (0 != (nc & NC_IgnoreInt)) )
       continue;
     if ( (ret == (size_t) -1) ||
-	 (ret > max - pos) ) {
+   (ret > max - pos) ) {
       if (errno == EINTR) {
-	*read = pos;
-	return YES;
+  *read = pos;
+  return YES;
       }
       if (errno == EWOULDBLOCK) {
-	if (0 != (nc & NC_Blocking))
-	  continue;	
-	*read = pos;
-	return (pos == 0) ? NO : YES;
+  if (0 != (nc & NC_Blocking))
+    continue;	
+  *read = pos;
+  return (pos == 0) ? NO : YES;
       }
 #if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
-		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "recv");
+  	      GE_DEBUG | GE_USER | GE_REQUEST,
+  	      "recv");
 #endif
       *read = pos;
       return SYSERR;
@@ -275,29 +275,29 @@ int socket_recv(struct SocketHandle * s,
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
-					     Download,
-					     ret);
+  				     Download,
+  				     ret);
     GE_ASSERT(NULL, pos + ret >= pos);
     pos += ret;
   } while ( (pos < max) &&
-	    (0 != (nc & NC_Blocking)) );
+      (0 != (nc & NC_Blocking)) );
   *read = pos;
   return YES;
 }
 
 int socket_recv_from(struct SocketHandle * s,
-		     NC_KIND nc,
-		     void * buf,
-		     size_t max,
-		     size_t * read,
-		     char * from,
-		     unsigned int * fromlen) {
+  	     NC_KIND nc,
+  	     void * buf,
+  	     size_t max,
+  	     size_t * read,
+  	     char * from,
+  	     unsigned int * fromlen) {
   int flags;
   size_t pos;
   size_t ret;
 
   socket_set_blocking(s,
-		      0 != (nc & NC_Blocking));
+  	      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
   if (0 == (nc & NC_IgnoreInt))
@@ -320,31 +320,31 @@ int socket_recv_from(struct SocketHandle * s,
   pos = 0;
   do {
     ret = (size_t) RECVFROM(s->handle,
-			    &((char*)buf)[pos],
-			    max - pos,
-			    flags,
-			    (struct sockaddr*) from,
-			    fromlen);
+  		    &((char*)buf)[pos],
+  		    max - pos,
+  		    flags,
+  		    (struct sockaddr*) from,
+  		    fromlen);
     if ( (ret == (size_t) -1) &&
-	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) )
+   (errno == EINTR) &&
+   (0 != (nc & NC_IgnoreInt)) )
       continue;
     if ( (ret == (size_t) -1) ||
-	 (ret > max - pos) ) {
+   (ret > max - pos) ) {
       if (errno == EINTR) {
-	*read = pos;
-	return YES;
+  *read = pos;
+  return YES;
       }
       if (errno == EWOULDBLOCK) {
-	if (0 != (nc & NC_Blocking))
-	  continue;
-	*read = pos;
-	return (pos == 0) ? NO : YES;
+  if (0 != (nc & NC_Blocking))
+    continue;
+  *read = pos;
+  return (pos == 0) ? NO : YES;
       }
 #if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
-		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "recvfrom");
+  	      GE_DEBUG | GE_USER | GE_REQUEST,
+  	      "recvfrom");
 #endif
       *read = pos;
       return SYSERR;
@@ -356,26 +356,26 @@ int socket_recv_from(struct SocketHandle * s,
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
-					     Download,
-					     ret);
+  				     Download,
+  				     ret);
     pos += ret;
   } while ( (pos < max) &&
-	    (0 != (nc & NC_Blocking)) );
+      (0 != (nc & NC_Blocking)) );
   *read = pos;
   return YES;
 }
 
 int socket_send(struct SocketHandle * s,
-		NC_KIND nc,
-		const void * buf,
-		size_t max,
-		size_t * sent) {
+  	NC_KIND nc,
+  	const void * buf,
+  	size_t max,
+  	size_t * sent) {
   int flags;
   size_t pos;
   size_t ret;
 
   socket_set_blocking(s,
-		      0 != (nc & NC_Blocking));
+  	      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
@@ -399,29 +399,29 @@ int socket_send(struct SocketHandle * s,
   pos = 0;
   do {
     ret = (size_t) SEND(s->handle,
-			&((char*)buf)[pos],
-			max - pos,
-			flags);
+  		&((char*)buf)[pos],
+  		max - pos,
+  		flags);
     if ( (ret == (size_t) -1) &&
-	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) )
+   (errno == EINTR) &&
+   (0 != (nc & NC_IgnoreInt)) )
       continue;
     if ( (ret == (size_t) -1) ||
-	 (ret > max - pos) ) {
+   (ret > max - pos) ) {
       if (errno == EINTR) {
-	*sent = pos;
-	return YES;
+  *sent = pos;
+  return YES;
       }
       if (errno == EWOULDBLOCK) {
-	if (0 != (nc & NC_Blocking))
-	  continue;
-	*sent = pos;
-	return (pos == 0) ? NO : YES;
+  if (0 != (nc & NC_Blocking))
+    continue;
+  *sent = pos;
+  return (pos == 0) ? NO : YES;
       }
 #if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
-		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "send");
+  	      GE_DEBUG | GE_USER | GE_REQUEST,
+  	      "send");
 #endif
       *sent = pos;
       return SYSERR;
@@ -433,28 +433,28 @@ int socket_send(struct SocketHandle * s,
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
-					     Upload,
-					     ret);
+  				     Upload,
+  				     ret);
     pos += ret;
   } while ( (pos < max) &&
-	    (0 != (nc & NC_Blocking)) );
+      (0 != (nc & NC_Blocking)) );
   *sent = pos;
   return YES;
 }
 
 int socket_send_to(struct SocketHandle * s,
-		   NC_KIND nc,
-		   const void * buf,
-		   size_t max,
-		   size_t * sent,
-		   const char * dst,
-		   unsigned int dstlen) {
+  	   NC_KIND nc,
+  	   const void * buf,
+  	   size_t max,
+  	   size_t * sent,
+  	   const char * dst,
+  	   unsigned int dstlen) {
   int flags;
   size_t pos;
   size_t ret;
 
   socket_set_blocking(s,
-		      0 != (nc & NC_Blocking));
+  	      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
@@ -478,31 +478,31 @@ int socket_send_to(struct SocketHandle * s,
   pos = 0;
   do {
     ret = (size_t) SENDTO(s->handle,
-			  &((char*)buf)[pos],
-			  max - pos,
-			  flags,
-			  (const struct sockaddr*) dst,
-			  dstlen);
+  		  &((char*)buf)[pos],
+  		  max - pos,
+  		  flags,
+  		  (const struct sockaddr*) dst,
+  		  dstlen);
     if ( (ret == (size_t) -1) &&
-	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) )
+   (errno == EINTR) &&
+   (0 != (nc & NC_IgnoreInt)) )
       continue;
     if ( (ret == (size_t) -1) ||
-	 (ret > max - pos) ) {
+   (ret > max - pos) ) {
       if (errno == EINTR) {
-	*sent = pos;
-	return YES;
+  *sent = pos;
+  return YES;
       }
       if (errno == EWOULDBLOCK) {
-	if (0 != (nc & NC_Blocking))
-	  continue;
-	*sent = pos;
-	return (pos == 0) ? NO : YES;
+  if (0 != (nc & NC_Blocking))
+    continue;
+  *sent = pos;
+  return (pos == 0) ? NO : YES;
       }
 #if DEBUG_IO
       GE_LOG_STRERROR(s->ectx,
-		      GE_DEBUG | GE_USER | GE_REQUEST,
-		      "sendto");
+  	      GE_DEBUG | GE_USER | GE_REQUEST,
+  	      "sendto");
 #endif
       *sent = pos;
       return SYSERR;
@@ -514,11 +514,11 @@ int socket_send_to(struct SocketHandle * s,
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
-					     Upload,
-					     ret);
+  				     Upload,
+  				     ret);
     pos += ret;
   } while ( (pos < max) &&
-	    (0 != (nc & NC_Blocking)) );
+      (0 != (nc & NC_Blocking)) );
   *sent = pos;
   return YES;
 }
@@ -531,12 +531,12 @@ int socket_test_valid(struct SocketHandle * s) {
 #ifndef MINGW
   struct stat buf;
   return -1 != fstat(s->handle,
-		     &buf);
+  	     &buf);
 #else
   long l;
   return ioctlsocket(s->handle,
-		     FIONREAD,
-		     &l) != SOCKET_ERROR;
+  	     FIONREAD,
+  	     &l) != SOCKET_ERROR;
 #endif
 }
 

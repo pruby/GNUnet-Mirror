@@ -39,9 +39,9 @@
  * configuration file.
  */
 static void dyncat(struct GC_Configuration * cfg,
-		   char ** string,
-		   const char * section,
-		   const char * part) {
+  	   char ** string,
+  	   const char * section,
+  	   const char * part) {
   int len;
   char * tmp;
   char * val;
@@ -51,10 +51,10 @@ static void dyncat(struct GC_Configuration * cfg,
   len += strlen(part) + 1;
   val = NULL;
   GC_get_configuration_value_string(cfg,
-				    section,
-				    part,
-				    "",
-				    &val);
+  			    section,
+  			    part,
+  			    "",
+  			    &val);
   if (val == NULL)
     val = STRDUP("");
   len += strlen(val) + 2;
@@ -80,7 +80,7 @@ static void dyncat(struct GC_Configuration * cfg,
  * require us to run gnunet-update!
  */
 static void getVersionHash(struct GC_Configuration * cfg,
-			   EncName * enc) {
+  		   EncName * enc) {
   HashCode512 hc;
   char * string;
 
@@ -91,17 +91,17 @@ static void getVersionHash(struct GC_Configuration * cfg,
      simple alternative would be to require gnunet-update for any
      configuration change, but that again would be too strict. */
   dyncat(cfg,
-	 &string,
-	 "GNUNETD",
-	 "APPLICATIONS");
+   &string,
+   "GNUNETD",
+   "APPLICATIONS");
   dyncat(cfg,
-	 &string,
-	 "FS",
-	 "QUOTA");
+   &string,
+   "FS",
+   "QUOTA");
   dyncat(cfg,
-	 &string,
-	 "MODULES",
-	 "sqstore");
+   &string,
+   "MODULES",
+   "sqstore");
   hash(string,
        strlen(string),
        &hc);
@@ -110,16 +110,16 @@ static void getVersionHash(struct GC_Configuration * cfg,
 }
 
 static char * getVersionFileName(struct GE_Context * ectx,
-				 struct GC_Configuration * cfg) {
+  			 struct GC_Configuration * cfg) {
   char * en;
   char * cn;
 
   en = NULL;
   if (-1 == GC_get_configuration_value_filename(cfg,
-						"GNUNETD",
-						"GNUNETD_HOME",
-						VAR_DAEMON_DIRECTORY,
-						&en))
+  					"GNUNETD",
+  					"GNUNETD_HOME",
+  					VAR_DAEMON_DIRECTORY,
+  					&en))
     return NULL;
   GE_ASSERT(ectx, en != NULL);
   cn = MALLOC(strlen(en) + strlen(VERSIONFILE) + 1);
@@ -139,7 +139,7 @@ static char * getVersionFileName(struct GE_Context * ectx,
  * @return OK if we are
  */
 int checkUpToDate(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg) {
+  	  struct GC_Configuration * cfg) {
   char version[MAX_VS];
   int len;
   EncName enc;
@@ -148,36 +148,36 @@ int checkUpToDate(struct GE_Context * ectx,
   fn = getVersionFileName(ectx, cfg);
   if (fn == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_BULK,
-	   _("Failed to determine filename used to store GNUnet version information!\n"));
+     GE_ERROR | GE_USER | GE_BULK,
+     _("Failed to determine filename used to store GNUnet version information!\n"));
     return OK; /* uh uh */
   }
   if (disk_file_test(ectx,
-		     fn) != YES) {
+  	     fn) != YES) {
     FREE(fn);
     upToDate(ectx, cfg); /* first start */
     return OK;
   }
   len = disk_file_read(ectx,
-		       fn,
-		       MAX_VS,
-		       version);
+  	       fn,
+  	       MAX_VS,
+  	       version);
   FREE(fn);
   if (len == -1) { /* should never happen -- file should exist */
     upToDate(ectx,
-	     cfg); /* first start */
+       cfg); /* first start */
     return OK;
   }
   if ( (len != strlen(VERSION) + 1 + sizeof(EncName)) ||
        (0 != memcmp(VERSION,
-		    version,
-		    strlen(VERSION)+1)) )
+  	    version,
+  	    strlen(VERSION)+1)) )
     return SYSERR; /* wrong version */
   getVersionHash(cfg,
-		 &enc);
+  	 &enc);
   if (0 != memcmp(&enc,
-		  &version[strlen(VERSION)+1],
-		  sizeof(EncName)))
+  	  &version[strlen(VERSION)+1],
+  	  sizeof(EncName)))
     return SYSERR; /* wrong hash */
   return OK;
 }
@@ -187,7 +187,7 @@ int checkUpToDate(struct GE_Context * ectx,
  * Writes the version tag
  */
 void upToDate(struct GE_Context * ectx,
-	      struct GC_Configuration * cfg) {
+        struct GC_Configuration * cfg) {
   char version[MAX_VS];
   int len;
   EncName enc;
@@ -198,17 +198,17 @@ void upToDate(struct GE_Context * ectx,
   GE_ASSERT(ectx, len < MAX_VS);
   memcpy(version, VERSION, strlen(VERSION)+1);
   getVersionHash(cfg,
-		 &enc);
+  	 &enc);
   memcpy(&version[strlen(VERSION)+1],
-	 &enc,
-	 sizeof(EncName));
+   &enc,
+   sizeof(EncName));
   UNLINK(fn);
   disk_file_write(ectx,
-		  fn,
-		  version,
-		  len,
-		  "600");
+  	  fn,
+  	  version,
+  	  len,
+  	  "600");
   FREE(fn);
 }
-		
+  	
 /* end of version.c */

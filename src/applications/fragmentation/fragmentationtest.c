@@ -55,14 +55,14 @@ static char masterBuffer[65536];
 static char resultBuffer[65536];
 
 static void handleHelper(const PeerIdentity * sender,
-			 const char * msg,		
-			 const unsigned int len,
-			 int wasEncrypted,
-			 TSession  * ts) {
+  		 const char * msg,		
+  		 const unsigned int len,
+  		 int wasEncrypted,
+  		 TSession  * ts) {
   GE_ASSERT(NULL,
-	    0 == memcmp(sender,
-			&mySender,
-			sizeof(PeerIdentity)));
+      0 == memcmp(sender,
+  		&mySender,
+  		sizeof(PeerIdentity)));
   myMsg = resultBuffer;
   memcpy(resultBuffer, msg, len);
   myMsgLen = len;
@@ -87,9 +87,9 @@ static void makeTimeout() {
  * @param id the identity of the fragment
  */
 static MESSAGE_HEADER * makeFragment(unsigned short start,
-					 unsigned short size,
-					 unsigned short tot,
-					 int id) {
+  				 unsigned short size,
+  				 unsigned short tot,
+  				 int id) {
   P2P_fragmentation_MESSAGE * frag;
   int i;
 
@@ -113,7 +113,7 @@ static MESSAGE_HEADER * makeFragment(unsigned short start,
  * @param len the expected length
  */
 static void checkPacket(int id,
-			unsigned int len) {
+  		unsigned int len) {
   int i;
 
   GE_ASSERT(NULL, myMsg != NULL);
@@ -327,12 +327,12 @@ static void testManyFragmentsMultiIdCollisions() {
 /* ************* driver ****************** */
 
 static int registerp2pHandler(const unsigned short type,
-		       MessagePartHandler callback) {
+  	       MessagePartHandler callback) {
   return OK;
 }
 
 static int unregisterp2pHandler(const unsigned short type,
-			 MessagePartHandler callback) {
+  		 MessagePartHandler callback) {
   return OK;
 }
 

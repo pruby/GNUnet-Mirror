@@ -44,7 +44,7 @@ static struct FSUI_SearchList * search;
 static int have_error;
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   switch(event->type) {
   case FSUI_search_suspended:
     search = NULL;
@@ -63,8 +63,8 @@ static void * eventCallback(void * cls,
   case FSUI_upload_progress:
 #if DEBUG_VERBOSE
     printf("Upload is progressing (%llu/%llu)...\n",
-	   event->data.UploadProgress.completed,
-	   event->data.UploadProgress.total);
+     event->data.UploadProgress.completed,
+     event->data.UploadProgress.total);
 #endif
     break;
   case FSUI_upload_completed:
@@ -75,8 +75,8 @@ static void * eventCallback(void * cls,
   case FSUI_unindex_progress:
 #if DEBUG_VERBOSE
     printf("Unindex is progressing (%llu/%llu)...\n",
-	   event->data.UnindexProgress.completed,
-	   event->data.UnindexProgress.total);
+     event->data.UnindexProgress.completed,
+     event->data.UnindexProgress.total);
 #endif
     break;
   case FSUI_unindex_completed:
@@ -89,8 +89,8 @@ static void * eventCallback(void * cls,
   case FSUI_download_error:
   case FSUI_search_error:
     fprintf(stderr,
-	    "Received ERROR: %d\n",
-	    event->type);
+      "Received ERROR: %d\n",
+      event->type);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_download_aborted:
@@ -102,8 +102,8 @@ static void * eventCallback(void * cls,
   case FSUI_upload_suspended:
 #if DEBUG_VERBOSE
     fprintf(stderr,
-	    "Received SUSPENDING: %d\n",
-	    event->type);
+      "Received SUSPENDING: %d\n",
+      event->type);
 #endif
     break;
   case FSUI_upload_started:
@@ -117,7 +117,7 @@ static void * eventCallback(void * cls,
     break;
   default:
     printf("Unexpected event: %d\n",
-	   event->type);
+     event->type);
     break;
   }
   return NULL;
@@ -147,43 +147,43 @@ int main(int argc, char * argv[]){
   ok = YES;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "serializetest3",
-		   32,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "serializetest3",
+  	   32,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
   SNPRINTF(keyword,
-	   40,
-	   "%s %s %s",
-	   keywords[0],
-	   _("AND"),
-	   keywords[1]);
+     40,
+     "%s %s %s",
+     keywords[0],
+     _("AND"),
+     keywords[1]);
   uri = ECRS_parseCharKeywordURI(ectx,
-				 keyword);
+  			 keyword);
   search = FSUI_startSearch(ctx,
-			    0,
-			    100,
-			    240 * cronSECONDS,
-			    uri);
+  		    0,
+  		    100,
+  		    240 * cronSECONDS,
+  		    uri);
   CHECK(search != NULL);
   prog = 0;
   suspendRestart = 10;
@@ -191,21 +191,21 @@ int main(int argc, char * argv[]){
     prog++;
     PTHREAD_SLEEP(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
-	 (weak_randomi(100) == 0) ) {
+   (weak_randomi(100) == 0) ) {
 #if 1
 #if DEBUG_VERBOSE
       printf("Testing FSUI suspend-resume\n");
 #endif
       FSUI_stop(ctx); /* download possibly incomplete
-			 at this point, thus testing resume */
+  		 at this point, thus testing resume */
       CHECK(search == NULL);
       ctx = FSUI_start(NULL,
-		       cfg,
-		       "serializetest3",
-		       32,
-		       YES,
-		       &eventCallback,
-		       NULL);
+  	       cfg,
+  	       "serializetest3",
+  	       32,
+  	       YES,
+  	       &eventCallback,
+  	       NULL);
 #if DEBUG_VERBOSE
       printf("Resumed...\n");
 #endif
@@ -216,9 +216,9 @@ int main(int argc, char * argv[]){
       break;
   }
   FSUI_abortSearch(ctx,
-		   search);
+  	   search);
   FSUI_stopSearch(ctx,
-		  search);
+  	  search);
   search = NULL;
   /* END OF TEST CODE */
  FAILURE:
@@ -229,7 +229,7 @@ int main(int argc, char * argv[]){
 
 #if START_DAEMON
   GE_BREAK(NULL,
-	   OK == os_daemon_stop(NULL, daemon));
+     OK == os_daemon_stop(NULL, daemon));
 #endif
   GC_free(cfg);
   if (have_error)

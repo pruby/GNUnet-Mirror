@@ -39,33 +39,33 @@ static int testMeta() {
 
   m = ECRS_createMetaData();
   if (OK != ECRS_addToMetaData(m,
-			       EXTRACTOR_UNKNOWN,
-			       "link")) {
+  		       EXTRACTOR_UNKNOWN,
+  		       "link")) {
     ECRS_freeMetaData(m);
     ABORT();
   }
   if (OK != ECRS_addToMetaData(m,
-			       EXTRACTOR_FILENAME,
-			       "lib-link.m4")) {
+  		       EXTRACTOR_FILENAME,
+  		       "lib-link.m4")) {
     ECRS_freeMetaData(m);
     ABORT();
   }
   size = ECRS_sizeofMetaData(m,
-			     ECRS_SERIALIZE_FULL);
+  		     ECRS_SERIALIZE_FULL);
   val = MALLOC(size);
   if (size != ECRS_serializeMetaData(NULL,
-				     m,
-				     val,
-				     size,
-				     ECRS_SERIALIZE_FULL)) {
+  			     m,
+  			     val,
+  			     size,
+  			     ECRS_SERIALIZE_FULL)) {
     ECRS_freeMetaData(m);
     FREE(val);
     ABORT();
   }
   ECRS_freeMetaData(m);
   m = ECRS_deserializeMetaData(NULL,
-			       val,
-			       size);
+  		       val,
+  		       size);
   FREE(val);
   if (m == NULL)
     ABORT();

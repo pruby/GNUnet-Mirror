@@ -50,39 +50,39 @@
  * @return SYSERR on failure, OK on success
  */
 static int getAddressFromHostname(struct GE_Context * ectx,
-				  IPaddr * identity) {
+  			  IPaddr * identity) {
   char hostname[MAX_HOSTNAME];
   int ret;
 
   if (0 != gethostname(hostname, MAX_HOSTNAME)) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		    "gethostname");
+  	    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  	    "gethostname");
     return SYSERR;
   }
   ret = get_host_by_name(ectx,
-			 hostname,
-			 identity);
+  		 hostname,
+  		 identity);
   return ret;
 }
 
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
 static int getAddressFromGetIfAddrs(struct GC_Configuration * cfg,
-			            struct GE_Context * ectx,
-			            IPaddr * identity) {
+  		            struct GE_Context * ectx,
+  		            IPaddr * identity) {
   char * interfaces;
   struct ifaddrs *ifa_first;
 
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "INTERFACE",
-					      "eth0",
-					      &interfaces)) {
+  				      "NETWORK",
+  				      "INTERFACE",
+  				      "eth0",
+  				      &interfaces)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("No interface specified in section `%s' under `%s'!\n"),
-	   "NETWORK",
-	   "INTERFACE");
+     GE_ERROR | GE_BULK | GE_USER,
+     _("No interface specified in section `%s' under `%s'!\n"),
+     "NETWORK",
+     "INTERFACE");
     return SYSERR; /* that won't work! */
   }
 
@@ -109,10 +109,10 @@ static int getAddressFromGetIfAddrs(struct GC_Configuration * cfg,
     freeifaddrs(ifa_first);
   }
   GE_LOG(ectx,
-	 GE_WARNING | GE_USER | GE_BULK,
-	 _("Could not obtain IP for interface `%s' using `%s'.\n"),
-	 interfaces,
-	 "getifaddrs");
+   GE_WARNING | GE_USER | GE_BULK,
+   _("Could not obtain IP for interface `%s' using `%s'.\n"),
+   interfaces,
+   "getifaddrs");
   FREE(interfaces);
   return SYSERR;
 }
@@ -122,8 +122,8 @@ static int getAddressFromGetIfAddrs(struct GC_Configuration * cfg,
 #if LINUX || SOMEBSD || MINGW
 #define MAX_INTERFACES 16
 static int getAddressFromIOCTL(struct GC_Configuration * cfg,
-			       struct GE_Context * ectx,
-			       IPaddr * identity) {
+  		       struct GE_Context * ectx,
+  		       IPaddr * identity) {
   char * interfaces;
 #ifndef MINGW
   struct ifreq ifr[MAX_INTERFACES];
@@ -135,15 +135,15 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   int i;
 
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "INTERFACE",
-					      "eth0",
-					      &interfaces)) {
+  				      "NETWORK",
+  				      "INTERFACE",
+  				      "eth0",
+  				      &interfaces)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("No interface specified in section `%s' under `%s'!\n"),
-	   "NETWORK",
-	   "INTERFACE");
+     GE_ERROR | GE_BULK | GE_USER,
+     _("No interface specified in section `%s' under `%s'!\n"),
+     "NETWORK",
+     "INTERFACE");
     return SYSERR; /* that won't work! */
   }
 #ifndef MINGW
@@ -151,26 +151,26 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   if (sockfd == -1) {
     FREE(interfaces);
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		    "socket");
+  	    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  	    "socket");
     return SYSERR;
   }
   memset(&ifc,
-	 0,
-	 sizeof(struct ifconf));
+   0,
+   sizeof(struct ifconf));
   ifc.ifc_len = sizeof(ifr);
   ifc.ifc_buf = (char*)&ifr;
 
   if (ioctl(sockfd,
-	    SIOCGIFCONF,
-	    &ifc) == -1) {
+      SIOCGIFCONF,
+      &ifc) == -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-		    "ioctl");
+  	    GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+  	    "ioctl");
     if (0 != CLOSE(sockfd))
       GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_ADMIN | GE_BULK,
-		      "close");
+  	      GE_WARNING | GE_ADMIN | GE_BULK,
+  	      "close");
     FREE(interfaces);
     return SYSERR;
   }
@@ -185,24 +185,24 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (!(ifr[i].ifr_flags & IFF_UP))
        continue;
     if (strcmp((char*) interfaces,
-	       (char*) ifr[i].ifr_name) != 0)
+         (char*) ifr[i].ifr_name) != 0)
       continue;
     memcpy(identity,
-	   &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
-	   sizeof(struct in_addr));
+     &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
+     sizeof(struct in_addr));
     if (0 != CLOSE(sockfd))
       GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_ADMIN | GE_BULK,
-		      "close");
+  	      GE_WARNING | GE_ADMIN | GE_BULK,
+  	      "close");
     FREE(interfaces);
     return OK;
   }
   GE_LOG(ectx,
-	 GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-	 _("Could not find interface `%s' using `%s', "
-	   "trying to find another interface.\n"),
-	 interfaces,
-	 "ioctl");
+   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+   _("Could not find interface `%s' using `%s', "
+     "trying to find another interface.\n"),
+   interfaces,
+   "ioctl");
   /* if no such interface exists, take any interface but loopback */
   for (i=0;i<ifCount;i++){
     if (ioctl(sockfd, SIOCGIFADDR, &ifr[i]) != 0)
@@ -212,28 +212,28 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (!(ifr[i].ifr_flags & IFF_UP))
        continue;
     if (strncmp("lo",
-		(char*) ifr[i].ifr_name, 2) == 0)
+  	(char*) ifr[i].ifr_name, 2) == 0)
       continue;
     memcpy(identity,
-	   &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
-	   sizeof(struct in_addr));
+     &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
+     sizeof(struct in_addr));
     if (0 != CLOSE(sockfd))
       GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_ADMIN | GE_BULK,
-		      "close");
+  	      GE_WARNING | GE_ADMIN | GE_BULK,
+  	      "close");
     FREE(interfaces);
     return OK;
   }
 
   if (0 != CLOSE(sockfd))
     GE_LOG_STRERROR(ectx,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "close");
+  	    GE_WARNING | GE_ADMIN | GE_BULK,
+  	    "close");
   GE_LOG(ectx,
-	 GE_WARNING | GE_USER | GE_BULK,
-	 _("Could not obtain IP for interface `%s' using `%s'.\n"),
-	 interfaces,
-	 "ioctl");
+   GE_WARNING | GE_USER | GE_BULK,
+   _("Could not obtain IP for interface `%s' using `%s'.\n"),
+   interfaces,
+   "ioctl");
   FREE(interfaces);
   return SYSERR;
 #else /* MinGW */
@@ -264,7 +264,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
       if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
         for(i = 0; i < pAddrTable->dwNumEntries; i++) {
           if (pAddrTable->table[i].dwIndex
-	      == pTable->table[dwIfIdx].dwIndex) {
+        == pTable->table[dwIfIdx].dwIndex) {
             iAddrCount++;
             dwIP = pAddrTable->table[i].dwAddr;
           }
@@ -275,9 +275,9 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (! iAddrCount)
       {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Could not find an IP address for "
-	    "interface `%s'.\n"),
-	  interfaces);
+    _("Could not find an IP address for "
+      "interface `%s'.\n"),
+    interfaces);
 
       GlobalFree(pTable);
       GlobalFree(pAddrTable);
@@ -285,11 +285,11 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     }
     else if (iAddrCount > 1)
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("There is more than one IP address specified"
-	    " for interface `%s'.\nGNUnet will "
-	    "use %u.%u.%u.%u.\n"),
-	  interfaces,
-	  PRIP(ntohl(dwIP)));
+    _("There is more than one IP address specified"
+      " for interface `%s'.\nGNUnet will "
+      "use %u.%u.%u.%u.\n"),
+    interfaces,
+    PRIP(ntohl(dwIP)));
 
     identity->addr = dwIP;
 
@@ -306,10 +306,10 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     pHost = GETHOSTBYNAME("www.example.com");
     if (! pHost) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("Could not resolve `%s' to "
-	    "determine our IP address: %s\n"),
-	  "www.example.com",
-	  STRERROR(errno));
+    _("Could not resolve `%s' to "
+      "determine our IP address: %s\n"),
+    "www.example.com",
+    STRERROR(errno));
       return SYSERR;
     }
 
@@ -318,19 +318,19 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     theHost.sin_addr.S_un.S_addr
       = *((unsigned long *) pHost->h_addr_list[0]);
     if (CONNECT(s,
-		(SOCKADDR *) &theHost,
-		sizeof(theHost)) == SOCKET_ERROR && errno != EWOULDBLOCK) {
+  	(SOCKADDR *) &theHost,
+  	sizeof(theHost)) == SOCKET_ERROR && errno != EWOULDBLOCK) {
       GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
-		   "connect");
+  	   "connect");
       return SYSERR;
     }
 
     i = sizeof(theHost);
     if (GETSOCKNAME(s,
-		    (SOCKADDR *) &theHost,
-		    &i) == SOCKET_ERROR) {
+  	    (SOCKADDR *) &theHost,
+  	    &i) == SOCKET_ERROR) {
       GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
-		   "getsockname");
+  	   "getsockname");
       return SYSERR;
     }
     closesocket(s);
@@ -352,8 +352,8 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
  * @return NULL on error, IP as string otherwise
  */
 char * network_get_local_ip(struct GC_Configuration * cfg,
-			    struct GE_Context * ectx,
-			    IPaddr * addr) {
+  		    struct GE_Context * ectx,
+  		    IPaddr * addr) {
   IPaddr address;
   char * ipString;
   int retval;
@@ -361,44 +361,44 @@ char * network_get_local_ip(struct GC_Configuration * cfg,
 
   retval = SYSERR;
   if (GC_have_configuration_value(cfg,
-				  "NETWORK",
-				  "IP")) {	
+  			  "NETWORK",
+  			  "IP")) {	
     ipString = NULL;
     GC_get_configuration_value_string(cfg,
-				      "NETWORK",
-				      "IP",
-				      "",
-				      &ipString);
+  			      "NETWORK",
+  			      "IP",
+  			      "",
+  			      &ipString);
     if (strlen(ipString) > 0) {
       retval = get_host_by_name(ectx,
-				ipString,
-				&address);
+  			ipString,
+  			&address);
     }
     FREE(ipString);
   }
 #if LINUX || SOMEBSD || MINGW
   if (retval == SYSERR)
     if (OK == getAddressFromIOCTL(cfg,
-				  ectx,
-				  &address))
+  			  ectx,
+  			  &address))
       retval = OK;
 #endif
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
   if (retval == SYSERR)
     if (OK == getAddressFromGetIfAddrs(cfg,
                                        ectx,
-				       &address))
+  			       &address))
       retval = OK;
 #endif
   if (retval == SYSERR)
     retval = getAddressFromHostname(ectx,
-				    &address);
+  			    &address);
   if (retval == SYSERR)
     return NULL;
   SNPRINTF(buf,
-	   64,
-	   "%u.%u.%u.%u",	
-  	   PRIP(ntohl(*(int*)&address)));
+     64,
+     "%u.%u.%u.%u",	
+       PRIP(ntohl(*(int*)&address)));
   if (addr != NULL)
     *addr = address;
   return STRDUP(buf);

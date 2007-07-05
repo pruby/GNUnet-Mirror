@@ -52,8 +52,8 @@
  * @return SYSERR if the entry is malformed
  */
 static int verifyKBlock(struct GE_Context * ectx,
-			const HashCode512 * key,
-			Datastore_Value * value) {
+  		const HashCode512 * key,
+  		Datastore_Value * value) {
   unsigned int type;
   ECRS_FileInfo fi;
   unsigned int size;
@@ -65,9 +65,9 @@ static int verifyKBlock(struct GE_Context * ectx,
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
   if (OK != getQueryFor(size,
-			(DBlock*) &value[1],
-			YES,
-			&query))
+  		(DBlock*) &value[1],
+  		YES,
+  		&query))
     return SYSERR;
   GE_ASSERT(ectx, type == K_BLOCK);
 
@@ -75,11 +75,11 @@ static int verifyKBlock(struct GE_Context * ectx,
     return SYSERR;
   kb = (KBlock*) &value[1];
   ECRS_decryptInPlace(key,
-		      &kb[1],
-		      size - sizeof(KBlock));
+  	      &kb[1],
+  	      size - sizeof(KBlock));
   j = sizeof(KBlock);
   while ( (j < size) &&
-	  (((const char*)kb)[j] != '\0') )
+    (((const char*)kb)[j] != '\0') )
     j++;
   if (j == size) {
     GE_BREAK(NULL, 0); /* kblock malformed */
@@ -88,14 +88,14 @@ static int verifyKBlock(struct GE_Context * ectx,
   dstURI = (const char*) &kb[1];
   j++;
   fi.meta = ECRS_deserializeMetaData(ectx,
-				     &((const char*)kb)[j],
-				     size - j);
+  			     &((const char*)kb)[j],
+  			     size - j);
   if (fi.meta == NULL) {
     GE_BREAK(ectx, 0); /* kblock malformed */
     return SYSERR;
   }
   fi.uri = ECRS_stringToUri(ectx,
-			    dstURI);
+  		    dstURI);
   if (fi.uri == NULL) {
     GE_BREAK(ectx, 0); /* kblock malformed */
     ECRS_freeMetaData(fi.meta);
@@ -119,13 +119,13 @@ static int verifyKBlock(struct GE_Context * ectx,
  *        entry?
  */
 int ECRS_addToKeyspace(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const struct ECRS_URI * uri,
-		       unsigned int anonymityLevel,
-		       unsigned int priority,
-		       cron_t expirationTime,
-		       const struct ECRS_URI * dst,
-		       const struct ECRS_MetaData * md) {
+  	       struct GC_Configuration * cfg,
+  	       const struct ECRS_URI * uri,
+  	       unsigned int anonymityLevel,
+  	       unsigned int priority,
+  	       cron_t expirationTime,
+  	       const struct ECRS_URI * dst,
+  	       const struct ECRS_MetaData * md) {
   struct ClientServerConnection * sock;
   Datastore_Value * value;
   int ret;
@@ -152,24 +152,24 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     return SYSERR;
   }
   mdsize = ECRS_sizeofMetaData(md,
-			       ECRS_SERIALIZE_PART);
+  		       ECRS_SERIALIZE_PART);
   dstURI = ECRS_uriToString(dst);
   size = mdsize + sizeof(KBlock) + strlen(dstURI) + 1;
   if (size > MAX_KBLOCK_SIZE) {
     size = MAX_KBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     kb = (KBlock*) &value[1];
     kb->type = htonl(K_BLOCK);
     memcpy(&kb[1],
-	   dstURI,
-	   strlen(dstURI)+1);
+     dstURI,
+     strlen(dstURI)+1);
     mdsize = size - sizeof(KBlock) - strlen(dstURI) - 1;
     mdsize = ECRS_serializeMetaData(ectx,
-				    md,
-				    &((char*)&kb[1])[strlen(dstURI)+1],
-				    mdsize,
-				    ECRS_SERIALIZE_PART);
+  			    md,
+  			    &((char*)&kb[1])[strlen(dstURI)+1],
+  			    mdsize,
+  			    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       GE_BREAK(ectx, 0);
       FREE(dstURI);
@@ -178,19 +178,19 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     size = sizeof(KBlock) + strlen(dstURI) + 1 + mdsize;
   } else {
     value = MALLOC(sizeof(Datastore_Value) +
-		   size);
+  	   size);
     kb = (KBlock*) &value[1];
     kb->type = htonl(K_BLOCK);
     memcpy(&kb[1],
-	   dstURI,
-	   strlen(dstURI)+1);
+     dstURI,
+     strlen(dstURI)+1);
     GE_ASSERT(ectx,
-	      mdsize ==
-	      ECRS_serializeMetaData(ectx,
-				     md,
-				     &((char*)&kb[1])[strlen(dstURI)+1],
-				     mdsize,
-				     ECRS_SERIALIZE_FULL));
+        mdsize ==
+        ECRS_serializeMetaData(ectx,
+  			     md,
+  			     &((char*)&kb[1])[strlen(dstURI)+1],
+  			     mdsize,
+  			     ECRS_SERIALIZE_FULL));
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(K_BLOCK);
@@ -201,9 +201,9 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
   ret = OK;
 
   if (GC_get_configuration_value_yesno(cfg,
-				       "FS",
-				       "DISABLE-CREATION-TIME",
-				       NO) == YES)
+  			       "FS",
+  			       "DISABLE-CREATION-TIME",
+  			       NO) == YES)
     xuri = ECRS_dupUri(uri);
   else
     xuri = ECRS_dateExpandKeywordUri(uri);
@@ -211,50 +211,50 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
   keywordCount = xuri->data.ksk.keywordCount;
   cpy = MALLOC(mdsize + strlen(dstURI) + 1);
   memcpy(cpy,
-	 &kb[1],
-	 mdsize + strlen(dstURI) + 1);
+   &kb[1],
+   mdsize + strlen(dstURI) + 1);
   for (i=0;i<keywordCount;i++) {
     memcpy(&kb[1], cpy, mdsize + strlen(dstURI) + 1);
     hash(keywords[i],
-	 strlen(keywords[i]),
-	 &key);
+   strlen(keywords[i]),
+   &key);
 #if DEBUG_KEYSPACE
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     hash2enc(&key,
-		      &enc));
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       hash2enc(&key,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Encrypting KBlock with key %s.\n",
-	   &enc);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Encrypting KBlock with key %s.\n",
+     &enc);
 #endif
     ECRS_encryptInPlace(&key,
-			&kb[1],
-			mdsize + strlen(dstURI) + 1);
+  		&kb[1],
+  		mdsize + strlen(dstURI) + 1);
     pk = makeKblockKey(&key);
     getPublicKey(pk,
-		 &kb->keyspace);
+  	 &kb->keyspace);
     GE_ASSERT(ectx,
-	      OK == sign(pk,
-			 mdsize + strlen(dstURI) + 1,
-			 &kb[1],
-			 &kb->signature));
+        OK == sign(pk,
+  		 mdsize + strlen(dstURI) + 1,
+  		 &kb[1],
+  		 &kb->signature));
 #if EXTRA_CHECKS
     /* extra check: verify sig */
     GE_ASSERT(ectx,
-	      OK == getQueryFor(size,
-				(DBlock*) kb,
-				YES,
-				&hc));
+        OK == getQueryFor(size,
+  			(DBlock*) kb,
+  			YES,
+  			&hc));
 #endif
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
 #if EXTRA_CHECKS
     GE_ASSERT(ectx,
-	      OK == verifyKBlock(ectx,
-				 &key,
-				 value))
+        OK == verifyKBlock(ectx,
+  			 &key,
+  			 value))
 #endif
   }
   ECRS_freeUri(xuri);

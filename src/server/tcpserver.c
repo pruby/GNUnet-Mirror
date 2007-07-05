@@ -92,7 +92,7 @@ static struct CIDRNetwork * trustedNetworks_ = NULL;
  */
 static int isWhitelisted(IPaddr ip) {
   return check_ipv4_listed(trustedNetworks_,
-			   ip);
+  		   ip);
 }
 
 static int shutdownHandler(struct ClientHandle * client,
@@ -101,16 +101,16 @@ static int shutdownHandler(struct ClientHandle * client,
 
   if (ntohs(msg->size) != sizeof(MESSAGE_HEADER)) {
     GE_LOG(NULL,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("The `%s' request received from client is malformed.\n"),
-	   "shutdown");
+     GE_WARNING | GE_USER | GE_BULK,
+     _("The `%s' request received from client is malformed.\n"),
+     "shutdown");
     return SYSERR;
   }
   GE_LOG(NULL,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 "shutdown request accepted from client\n");
+   GE_INFO | GE_USER | GE_REQUEST,
+   "shutdown request accepted from client\n");
   ret = sendTCPResultToClient(client,
-			      OK);
+  		      OK);
   shutdown_gnunetd(cfg, 0);
   return ret;
 }
@@ -133,8 +133,8 @@ int unregisterClientExitHandler(ClientExitHandler callback) {
     if (exitHandlers[i] == callback) {
       exitHandlers[i] = exitHandlers[exitHandlerCount-1];
       GROW(exitHandlers,
-	   exitHandlerCount,
-	   exitHandlerCount-1);
+     exitHandlerCount,
+     exitHandlerCount-1);
       MUTEX_UNLOCK(handlerlock);
       return OK;
     }
@@ -144,10 +144,10 @@ int unregisterClientExitHandler(ClientExitHandler callback) {
 }
 
 static void * select_accept_handler(void * ah_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    const void * addr,
-				    unsigned int addr_len) {
+  			    struct SelectHandle * sh,
+  			    struct SocketHandle * sock,
+  			    const void * addr,
+  			    unsigned int addr_len) {
   struct ClientHandle * session;
   IPaddr ip;
   struct sockaddr_in * a;
@@ -156,8 +156,8 @@ static void * select_accept_handler(void * ah_cls,
     return NULL;
   a = (struct sockaddr_in *) addr;
   memcpy(&ip,
-	 &a->sin_addr,
-	 sizeof(IPaddr));
+   &a->sin_addr,
+   sizeof(IPaddr));
   if (! isWhitelisted(ip))
     return NULL;
   session = MALLOC(sizeof(ClientHandle));
@@ -166,9 +166,9 @@ static void * select_accept_handler(void * ah_cls,
 }
 
 static void select_close_handler(void * ch_cls,
-				 struct SelectHandle * sh,
-				 struct SocketHandle * sock,
-				 void * sock_ctx) {
+  			 struct SelectHandle * sh,
+  			 struct SocketHandle * sock,
+  			 void * sock_ctx) {
   ClientHandle * session = sock_ctx;
   int i;
 
@@ -187,30 +187,30 @@ static void select_close_handler(void * ch_cls,
  * transfer happens asynchronously.
  */
 int sendToClient(struct ClientHandle * handle,
-		 const MESSAGE_HEADER * message) {
+  	 const MESSAGE_HEADER * message) {
 #if DEBUG_TCPHANDLER
   GE_LOG(ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	 "%s: sending reply to client\n",
-	 __FUNCTION__);
+   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+   "%s: sending reply to client\n",
+   __FUNCTION__);
 #endif
   return select_write(selector,
-		      handle->sock,
-		      message,
-		      NO,
-		      YES);
+  	      handle->sock,
+  	      message,
+  	      NO,
+  	      YES);
 }
 
 void terminateClientConnection(struct ClientHandle * sock) {
   select_disconnect(selector,
-		    sock->sock);
+  	    sock->sock);
 }
 
 static int select_message_handler(void * mh_cls,
-				  struct SelectHandle * sh,
-				  struct SocketHandle * sock,
-				  void * sock_ctx,
-				  const MESSAGE_HEADER * msg) {
+  			  struct SelectHandle * sh,
+  			  struct SocketHandle * sock,
+  			  void * sock_ctx,
+  			  const MESSAGE_HEADER * msg) {
   struct ClientHandle * sender = sock_ctx;
   unsigned short ptyp;
   CSHandler callback;
@@ -222,21 +222,21 @@ static int select_message_handler(void * mh_cls,
   MUTEX_LOCK(handlerlock);
   if (ptyp >= max_registeredType) {
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK,
-	   "%s: Message of type %d not understood: no handler registered\n",
-	   __FUNCTION__,
-	   ptyp,
-	   max_registeredType);
+     GE_INFO | GE_USER | GE_BULK,
+     "%s: Message of type %d not understood: no handler registered\n",
+     __FUNCTION__,
+     ptyp,
+     max_registeredType);
     MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   }
   callback = handlers[ptyp];
   if (callback == NULL) {
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK,
-	   "%s: Message of type %d not understood: no handler registered\n",
-	   __FUNCTION__,
-	   ptyp);
+     GE_INFO | GE_USER | GE_BULK,
+     "%s: Message of type %d not understood: no handler registered\n",
+     __FUNCTION__,
+     ptyp);
     MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   } else {
@@ -244,13 +244,13 @@ static int select_message_handler(void * mh_cls,
     start = get_time();
 #endif
     if (OK != callback(sender,
-		       msg)) {
+  	       msg)) {
 #if 0
       GE_LOG(ectx,
-	     GE_INFO | GE_USER | GE_BULK,
-	     "%s: Message of type %d caused error in handler\n",
-	     __FUNCTION__,
-	     ptyp);
+       GE_INFO | GE_USER | GE_BULK,
+       "%s: Message of type %d caused error in handler\n",
+       __FUNCTION__,
+       ptyp);
 #endif
       MUTEX_UNLOCK(handlerlock);
       return SYSERR;
@@ -258,10 +258,10 @@ static int select_message_handler(void * mh_cls,
 #if TIME_HANDLERS
     if (get_time() - start > cronSECONDS)
       GE_LOG(ectx,
-	     GE_INFO | GE_DEVELOPER | GE_IMMEDIATE,
-	     "Handling message of type %u took %llu s\n",
-	     ptyp,
-	     (get_time()-start) / cronSECONDS);
+       GE_INFO | GE_DEVELOPER | GE_IMMEDIATE,
+       "Handling message of type %u took %llu s\n",
+       ptyp,
+       (get_time()-start) / cronSECONDS);
 #endif
   }
   MUTEX_UNLOCK(handlerlock);
@@ -275,12 +275,12 @@ static unsigned short getGNUnetPort() {
   unsigned long long port;
 
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "NETWORK",
-					      "PORT",
-					      1,
-					      65535,
-					      2087,
-					      &port))
+  				      "NETWORK",
+  				      "PORT",
+  				      1,
+  				      65535,
+  				      2087,
+  				      &port))
     port = 0;
   return (unsigned short) port;
 }
@@ -295,18 +295,18 @@ static int startTCPServer() {
   if (listenerPort == 0)
     return SYSERR;
   listenerFD = SOCKET(PF_INET,
-		      SOCK_STREAM,
-		      0);
+  	      SOCK_STREAM,
+  	      0);
   if (listenerFD < 0) {
     GE_LOG_STRERROR(ectx,
-		    GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-		    "socket");
+  	    GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+  	    "socket");
     return SYSERR;
   }
   /* fill in the inet address structure */
   memset(&serverAddr,
-	 0,
-	 sizeof(serverAddr));
+   0,
+   sizeof(serverAddr));
   serverAddr.sin_family
     = AF_INET;
   serverAddr.sin_addr.s_addr
@@ -314,47 +314,47 @@ static int startTCPServer() {
   serverAddr.sin_port
     = htons(listenerPort);
   if ( SETSOCKOPT(listenerFD,
-		  SOL_SOCKET,
-		  SO_REUSEADDR,
-		  &on,
-		  sizeof(on)) < 0 )
+  	  SOL_SOCKET,
+  	  SO_REUSEADDR,
+  	  &on,
+  	  sizeof(on)) < 0 )
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "setsockopt");
+  	    GE_ERROR | GE_ADMIN | GE_BULK,
+  	    "setsockopt");
   /* bind the socket */
   if (BIND(listenerFD,
-	   (struct sockaddr *) &serverAddr,
-	   sizeof(serverAddr)) < 0) {
+     (struct sockaddr *) &serverAddr,
+     sizeof(serverAddr)) < 0) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
-		    "bind");
+  	    GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+  	    "bind");
     GE_LOG(ectx,
-	   GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-	   _("`%s' failed for port %d. Is gnunetd already running?\n"),
-	   "bind",
-	   listenerPort);
+     GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+     _("`%s' failed for port %d. Is gnunetd already running?\n"),
+     "bind",
+     listenerPort);
     CLOSE(listenerFD);
     return SYSERR;
   }
   selector = select_create("tcpserver",
-			   NO,
-			   ectx,
-			   NULL,
-			   listenerFD,
-			   sizeof(struct sockaddr_in),
-			   0, /* no timeout */
-			   &select_message_handler,
-			   NULL,
-			   &select_accept_handler,
-			   NULL,
-			   &select_close_handler,
-			   NULL,
-			   0 /* no memory quota */,
-			   256 /* max sockets */);
+  		   NO,
+  		   ectx,
+  		   NULL,
+  		   listenerFD,
+  		   sizeof(struct sockaddr_in),
+  		   0, /* no timeout */
+  		   &select_message_handler,
+  		   NULL,
+  		   &select_accept_handler,
+  		   NULL,
+  		   &select_close_handler,
+  		   NULL,
+  		   0 /* no memory quota */,
+  		   256 /* max sockets */);
   if (selector == NULL) {
     CLOSE(listenerFD); /* maybe closed already
-			  depending on how select_create
-			  failed... */
+  		  depending on how select_create
+  		  failed... */
     return SYSERR;
   }
   return OK;
@@ -363,11 +363,11 @@ static int startTCPServer() {
 int doneTCPServer() {
   if (selector != NULL)
     stopTCPServer(); /* just to be sure; used mostly
-			for the benefit of gnunet-update
-			and other gnunet-tools that are
-			not gnunetd */
+  		for the benefit of gnunet-update
+  		and other gnunet-tools that are
+  		not gnunetd */
   unregisterCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
-		      &shutdownHandler);
+  	      &shutdownHandler);
   GROW(handlers,
        max_registeredType,
        0);
@@ -391,7 +391,7 @@ void __attribute__ ((destructor)) gnunet_tcpserver_ltdl_fini() {
  * Initialize the TCP port and listen for incoming client connections.
  */
 int initTCPServer(struct GE_Context * e,
-		  struct GC_Configuration * c) {
+  	  struct GC_Configuration * c) {
   char * ch;
 
   cfg = c;
@@ -400,32 +400,32 @@ int initTCPServer(struct GE_Context * e,
   /* move to reload-configuration method! */
   ch = NULL;
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "TRUSTED",
-					      "127.0.0.0/8;",
-					      &ch))
+  				      "NETWORK",
+  				      "TRUSTED",
+  				      "127.0.0.0/8;",
+  				      &ch))
     return SYSERR;
   GE_ASSERT(ectx, ch != NULL);
   trustedNetworks_ = parse_ipv4_network_specification(ectx,
-						      ch);
+  					      ch);
   if (trustedNetworks_ == NULL) {
     GE_LOG(ectx,
-	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
-	   "NETWORK",
-	   "TRUSTED",
-	   ch);
+     GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+     _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+     "NETWORK",
+     "TRUSTED",
+     ch);
     FREE(ch);
     return SYSERR;
   }
   FREE(ch);
 
   registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
-		    &shutdownHandler);
+  	    &shutdownHandler);
   if ( (NO == GC_get_configuration_value_yesno(cfg,
-					       "TCPSERVER",
-					       "DISABLE",
-					       NO)) &&
+  				       "TCPSERVER",
+  				       "DISABLE",
+  				       NO)) &&
        (OK != startTCPServer()) ) {
     doneTCPServer();
     return SYSERR;
@@ -456,22 +456,22 @@ int stopTCPServer() {
  *         handler for that type
  */
 int registerCSHandler(unsigned short type,
-		      CSHandler callback) {
+  	      CSHandler callback) {
   MUTEX_LOCK(handlerlock);
   if (type < max_registeredType) {
     if (handlers[type] != NULL) {
       MUTEX_UNLOCK(handlerlock);
       GE_LOG(ectx,
-	     GE_WARNING | GE_DEVELOPER | GE_BULK,
-	     _("%s failed, message type %d already in use.\n"),
-	     __FUNCTION__,
-	     type);
+       GE_WARNING | GE_DEVELOPER | GE_BULK,
+       _("%s failed, message type %d already in use.\n"),
+       __FUNCTION__,
+       type);
       return SYSERR;
     }
   } else
     GROW(handlers,
-	 max_registeredType,
-	 type + 8);
+   max_registeredType,
+   type + 8);
   handlers[type] = callback;
   MUTEX_UNLOCK(handlerlock);
   return OK;
@@ -490,7 +490,7 @@ int registerCSHandler(unsigned short type,
  *         handler for that type
  */
 int unregisterCSHandler(unsigned short type,
-			CSHandler callback) {
+  		CSHandler callback) {
   MUTEX_LOCK(handlerlock);
   if (type < max_registeredType) {
     if (handlers[type] != callback) {
@@ -516,7 +516,7 @@ int unregisterCSHandler(unsigned short type,
  *         send successfully
  */
 int sendTCPResultToClient(struct ClientHandle * sock,
-			  int ret) {
+  		  int ret) {
   RETURN_VALUE_MESSAGE rv;
 
   rv.header.size
@@ -526,7 +526,7 @@ int sendTCPResultToClient(struct ClientHandle * sock,
   rv.return_value
     = htonl(ret);
   return sendToClient(sock,
-		      &rv.header);
+  	      &rv.header);
 }
 
 /**
@@ -538,8 +538,8 @@ int sendTCPResultToClient(struct ClientHandle * sock,
  *         send successfully
  */
 int sendTCPErrorToClient(struct ClientHandle * sock,
-			 GE_KIND kind,
-			 const char * message) {
+  		 GE_KIND kind,
+  		 const char * message) {
   RETURN_ERROR_MESSAGE * rv;
   size_t msgLen;
   int ret;
@@ -550,8 +550,8 @@ int sendTCPErrorToClient(struct ClientHandle * sock,
     msgLen = 60000;
   rv = MALLOC(sizeof(RETURN_ERROR_MESSAGE) + msgLen);
   memset(rv,
-	 0,
-	 sizeof(RETURN_ERROR_MESSAGE) + msgLen);
+   0,
+   sizeof(RETURN_ERROR_MESSAGE) + msgLen);
   rv->header.size
     = htons(sizeof(MESSAGE_HEADER) + msgLen);
   rv->header.type
@@ -559,14 +559,14 @@ int sendTCPErrorToClient(struct ClientHandle * sock,
   rv->kind
     = htonl(kind);
   memcpy(&rv[1],
-	 message,
-	 strlen(message));
+   message,
+   strlen(message));
   ret = sendToClient(sock,
-		     &rv->header);
+  	     &rv->header);
   FREE(rv);
   return ret;
 }
-			
+  		
 /**
  * Check if a handler is registered for a given
  * message type.
@@ -591,22 +591,22 @@ static void freeClientLogContext(void * ctx) { }
 static void confirmClientLogContext(void * ctx) { }
 
 static void logClientLogContext(void * ctx,
-				GE_KIND kind,
-				const char * date,
-				const char * msg) {
+  			GE_KIND kind,
+  			const char * date,
+  			const char * msg) {
   sendTCPErrorToClient(ctx,
-		       kind,
-		       msg);
+  	       kind,
+  	       msg);
 }
 
 struct GE_Context *
 createClientLogContext(GE_KIND mask,
-		       struct ClientHandle * handle) {
+  	       struct ClientHandle * handle) {
   return GE_create_context_callback(mask,
-				    &logClientLogContext,
-				    handle,
-				    &freeClientLogContext,
-				    &confirmClientLogContext);
+  			    &logClientLogContext,
+  			    handle,
+  			    &freeClientLogContext,
+  			    &confirmClientLogContext);
 }
 
 /* end of tcpserver.c */

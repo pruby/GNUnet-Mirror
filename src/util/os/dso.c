@@ -53,8 +53,8 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
   err = lt_dlinit();
   if (err > 0) {
     fprintf(stderr,
-	    _("Initialization of plugin mechanism failed: %s!\n"),
-	    lt_dlerror());
+      _("Initialization of plugin mechanism failed: %s!\n"),
+      lt_dlerror());
     return;
   }
   opath = lt_dlgetsearchpath();
@@ -93,24 +93,24 @@ void __attribute__ ((destructor)) gnc_ltdl_fini() {
 
 struct PluginHandle *
 os_plugin_load(struct GE_Context * ectx,
-	       const char * libprefix,
-	       const char * dsoname) {
+         const char * libprefix,
+         const char * dsoname) {
   void * libhandle;
   char * libname;
   Plugin * plug;
 
   libname = MALLOC(strlen(dsoname) +
-		   strlen(libprefix) + 1);
+  	   strlen(libprefix) + 1);
   strcpy(libname, libprefix);
   strcat(libname, dsoname);
   libhandle = lt_dlopenext(libname);
   if (libhandle == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("`%s' failed for library `%s' with error: %s\n"),
-	   "lt_dlopenext",
-	   libname,
-	   lt_dlerror());
+     GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+     _("`%s' failed for library `%s' with error: %s\n"),
+     "lt_dlopenext",
+     libname,
+     lt_dlerror());
     FREE(libname);
     return NULL;
   }
@@ -132,13 +132,13 @@ void os_plugin_unload(struct PluginHandle * plugin) {
 
 void *
 os_plugin_resolve_function(struct PluginHandle * plug,
-			   const char * methodprefix,
-			   int logError) {
+  		   const char * methodprefix,
+  		   int logError) {
   char * initName;
   void * mptr;
 
   initName = MALLOC(strlen(plug->dsoname) +
-		    strlen(methodprefix) + 2);
+  	    strlen(methodprefix) + 2);
   strcpy(initName, "_");
   strcat(initName, methodprefix);
   strcat(initName, plug->dsoname);
@@ -148,13 +148,13 @@ os_plugin_resolve_function(struct PluginHandle * plug,
   if ( (mptr == NULL) &&
        (logError) )
     GE_LOG(plug->ectx,
-	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	   _("`%s' failed to resolve method '%s' with error: %s\n"),
-	   "lt_dlsym",
-	   &initName[1],
-	   lt_dlerror());
+     GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+     _("`%s' failed to resolve method '%s' with error: %s\n"),
+     "lt_dlsym",
+     &initName[1],
+     lt_dlerror());
   FREE(initName);
   return mptr;
 }
 
-/* end of dso.c */			
+/* end of dso.c */  		

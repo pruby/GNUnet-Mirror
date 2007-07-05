@@ -50,8 +50,8 @@ struct CD {
 };
 
 static int iter(const HashCode512 * key,
-		const Datastore_Value * value,
-		void * cls) {
+  	const Datastore_Value * value,
+  	void * cls) {
   struct CD * data = cls;
   cron_t expire;
   cron_t now;
@@ -124,22 +124,22 @@ static void update_sqstore_stats() {
   int i;
 
   memset(&data,
-	 0,
-	 sizeof(struct CD));
+   0,
+   sizeof(struct CD));
   sq->iterateAllNow(&iter,
-		    &data);
+  	    &data);
   for (i=0;i<8;i++)
     stats->set(stat_block[i],
-	       data.stat_block[i]);
+         data.stat_block[i]);
   for (i=0;i<5;i++)
     stats->set(stat_expire[i],
-	       data.stat_expire[i]);
+         data.stat_expire[i]);
   for (i=0;i<6;i++)
     stats->set(stat_prio[i],
-	       data.stat_prio[i]);
+         data.stat_prio[i]);
   for (i=0;i<3;i++)
     stats->set(stat_anon[i],
-	       data.stat_anon[i]);
+         data.stat_anon[i]);
 }
 
 static int init_sqstore_stats() {

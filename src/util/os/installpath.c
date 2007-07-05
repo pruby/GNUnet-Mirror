@@ -53,22 +53,22 @@ get_path_from_proc_exe() {
   size_t size;
 
   SNPRINTF(fn,
-	   64,
-	   "/proc/%u/exe",
-	   getpid());
+     64,
+     "/proc/%u/exe",
+     getpid());
   lnk = MALLOC(1024);
   size = readlink(fn, lnk, 1023);
   if ( (size == 0) || (size >= 1024) ) {
     GE_LOG_STRERROR_FILE(NULL,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-			 "readlink",
-			 fn);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+  		 "readlink",
+  		 fn);
     FREE(lnk);
     return NULL;
   }
   lnk[size] = '\0';
   while ( (lnk[size] != '/') &&
-	  (size > 0) )
+    (size > 0) )
     size--;
   if ( (size < 4) ||
        (lnk[size-4] != '/') ) {
@@ -93,8 +93,8 @@ static char * get_path_from_module_filename() {
   GetModuleFileName(NULL, path, 4096);
   idx = path + strlen(path);
   while ( (idx > path) &&
-	  (*idx != '\\') &&
-	  (*idx != '/') )
+    (*idx != '\\') &&
+    (*idx != '/') )
     idx--;
   *idx = '\0';
   return path;
@@ -235,9 +235,9 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
   }
   tmp = MALLOC(strlen(execpath)+strlen(dirname)+1);
   sprintf(tmp,
-	  "%s%s",
-	  execpath,
-	  dirname);
+    "%s%s",
+    execpath,
+    dirname);
   FREE(execpath);
   return tmp;
 }

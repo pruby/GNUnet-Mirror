@@ -67,48 +67,48 @@ static void processhellos(HelloListClosure * hcq) {
     return;
   }
   while ( (! hcq->do_shutdown) &&
-	  (hcq->hellosCount > 0) ) {
+    (hcq->hellosCount > 0) ) {
     /* select hellos in random order */
     rndidx = weak_randomi(hcq->hellosCount);
 #if DEBUG_BOOTSTRAP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "%s chose hello %d of %d\n",
-	   __FUNCTION__,
-	   rndidx, hcq->hellosCount);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "%s chose hello %d of %d\n",
+     __FUNCTION__,
+     rndidx, hcq->hellosCount);
 #endif
     msg = (P2P_hello_MESSAGE*) hcq->hellos[rndidx];
     hcq->hellos[rndidx]
       = hcq->hellos[hcq->hellosCount-1];
     GROW(hcq->hellos,
-	 hcq->hellosCount,
-	 hcq->hellosCount-1);
+   hcq->hellosCount,
+   hcq->hellosCount-1);
 
     coreAPI->injectMessage(NULL,
-			   (const char*)msg,
-			   ntohs(msg->header.size),
-			   NO,
-			   NULL);
+  		   (const char*)msg,
+  		   ntohs(msg->header.size),
+  		   NO,
+  		   NULL);
     FREE(msg);
     if ( (hcq->hellosCount > 0) &&
-	 (! hlc.do_shutdown) ) {
+   (! hlc.do_shutdown) ) {
       /* wait a bit */
       unsigned int load;
       int nload;
       load = os_cpu_get_load(coreAPI->ectx,
-			     coreAPI->cfg);
+  		     coreAPI->cfg);
       if (load == (unsigned int)-1)
-	load = 50;
+  load = 50;
       nload = os_network_monitor_get_load(coreAPI->load_monitor,
-					  Upload);
+  				  Upload);
       if (nload > load)
-	load = nload;
+  load = nload;
       nload = os_network_monitor_get_load(coreAPI->load_monitor,
-					  Download);
+  				  Download);
       if (nload > load)
-	load = nload;
+  load = nload;
       if (load > 100)
-	load = 100;
+  load = 100;
 
       PTHREAD_SLEEP(50 + weak_randomi((load+1)*(load+1)));
     }
@@ -121,17 +121,17 @@ static void processhellos(HelloListClosure * hcq) {
 }
 
 static void downloadHostlistCallback(const P2P_hello_MESSAGE * hello,
-				     void * c) {
+  			     void * c) {
   HelloListClosure * cls = c;
   if (cls->hellosCount >= cls->hellosLen) {
     GROW(cls->hellos,
-	 cls->hellosLen,
-	 cls->hellosLen + hello_HELPER_TABLE_START_SIZE);
+   cls->hellosLen,
+   cls->hellosLen + hello_HELPER_TABLE_START_SIZE);
   }
   cls->hellos[cls->hellosCount++] = MALLOC(ntohs(hello->header.size));
   memcpy(cls->hellos[cls->hellosCount-1],
-	 hello,
-	 ntohs(hello->header.size));
+   hello,
+   ntohs(hello->header.size));
 }
 
 #define BOOTSTRAP_INFO "bootstrap-info"
@@ -155,8 +155,8 @@ static int needBootstrap() {
   if (lastTest == 0) {
     /* first run in this process */
     if (-1 != state->read(coreAPI->ectx,
-			  BOOTSTRAP_INFO,
-			  (void**)&data)) {
+  		  BOOTSTRAP_INFO,
+  		  (void**)&data)) {
       /* but not first on this machine */
       lastTest = now;
       delta = 2 * cronMINUTES; /* wait 2 minutes */
@@ -164,9 +164,9 @@ static int needBootstrap() {
     } else {
       /* first on this machine, too! */
       state->write(coreAPI->ectx,
-		   BOOTSTRAP_INFO,
-		   1,
-		   "X");
+  	   BOOTSTRAP_INFO,
+  	   1,
+  	   "X");
       delta = 60 * cronSECONDS;
     }
   }
@@ -189,24 +189,24 @@ static void * processThread(void * unused) {
     while (NO == hlc.do_shutdown) {
       PTHREAD_SLEEP(2 * cronSECONDS);
       if (needBootstrap())
-	break;
+  break;
     }
     if (YES == hlc.do_shutdown)
       break;
 #if DEBUG_BOOTSTRAP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Starting bootstrap.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Starting bootstrap.\n");
 #endif
     hlc.hellosLen = 0;
     hlc.hellosCount = 0;
     bootstrap->bootstrap(&downloadHostlistCallback,
-			 &hlc,
-			 &testTerminate,
-			 &hlc);
+  		 &hlc,
+  		 &testTerminate,
+  		 &hlc);
     GROW(hlc.hellos,
-	 hlc.hellosLen,
-	 hlc.hellosCount);
+   hlc.hellosLen,
+   hlc.hellosCount);
     processhellos(&hlc);
   }
   return NULL;
@@ -220,16 +220,16 @@ void startBootstrap(CoreAPIForApplication * capi) {
   coreAPI = capi;
   state = capi->requestService("state");
   GE_ASSERT(capi->ectx,
-	    state != NULL);
+      state != NULL);
   bootstrap = capi->requestService("bootstrap");
   GE_ASSERT(capi->ectx,
-	    bootstrap != NULL);
+      bootstrap != NULL);
   hlc.do_shutdown = NO;
   pt = PTHREAD_CREATE(&processThread,
-		      NULL,
-		      64 * 1024);
+  	      NULL,
+  	      64 * 1024);
   GE_ASSERT(capi->ectx,
-	    pt != NULL);
+      pt != NULL);
 }
 
 /**

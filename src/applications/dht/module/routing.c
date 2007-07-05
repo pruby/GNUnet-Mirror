@@ -214,10 +214,10 @@ static unsigned int stat_put_requests_received;
  * where to send it next.
  */
 static void routeResult(const HashCode512 * key,
-			unsigned int type,
-			unsigned int size,
-			const char * data,
-			void * cls) {
+  		unsigned int type,
+  		unsigned int size,
+  		const char * data,
+  		void * cls) {
   DHTQueryRecord * q;
   int i;
   int j;
@@ -237,8 +237,8 @@ static void routeResult(const HashCode512 * key,
     result->type = htonl(type);
     result->key = *key;
     memcpy(&result[1],
-	   data,
-	   size);
+     data,
+     size);
   }
   hash(data,
        size,
@@ -252,54 +252,54 @@ static void routeResult(const HashCode512 * key,
       continue;
     tracked++;
     if ( (ntohl(q->get->type) != type) ||
-	 (0 != memcmp(key,
-		      &q->get->key,
-		      sizeof(HashCode512))) )
+   (0 != memcmp(key,
+  	      &q->get->key,
+  	      sizeof(HashCode512))) )
       continue;
     found = NO;
     for (j=0;j<q->result_count;j++)
       if (0 == memcmp(&hc,
-		      &q->results[j],
-		      sizeof(HashCode512))) {
-	found = YES;
-	break;
+  	      &q->results[j],
+  	      sizeof(HashCode512))) {
+  found = YES;
+  break;
       }
     if (found == YES)
       continue;
     GROW(q->results,
-	 q->result_count,
-	 q->result_count + 1);
+   q->result_count,
+   q->result_count + 1);
     routed++;
     q->results[q->result_count-1] = hc;
     pos = q->sources;
     while (pos != NULL) {
       if (0 != memcmp(&pos->source,
-		      coreAPI->myIdentity,
-		      sizeof(PeerIdentity))) {
+  	      coreAPI->myIdentity,
+  	      sizeof(PeerIdentity))) {
 #if DEBUG_ROUTING
-	GE_LOG(coreAPI->ectx,
-	       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	       "Routing result to other peer\n");
+  GE_LOG(coreAPI->ectx,
+         GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+         "Routing result to other peer\n");
 #endif
-	coreAPI->unicast(&pos->source,
-			 &result->header,
-			 0, /* FIXME: priority */
-			 5 * cronSECONDS); /* FIXME */
-	if (stats != NULL)
-	  stats->change(stat_replies_routed, 1);
+  coreAPI->unicast(&pos->source,
+  		 &result->header,
+  		 0, /* FIXME: priority */
+  		 5 * cronSECONDS); /* FIXME */
+  if (stats != NULL)
+    stats->change(stat_replies_routed, 1);
       } else if (pos->receiver != NULL) {
 #if DEBUG_ROUTING
-	GE_LOG(coreAPI->ectx,
-	       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	       "Routing result to local client\n");
+  GE_LOG(coreAPI->ectx,
+         GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+         "Routing result to local client\n");
 #endif
-	pos->receiver(key,
-		      type,
-		      size,
-		      data,
-		      pos->receiver_closure);
-	if (stats != NULL)
-	  stats->change(stat_replies_routed, 1);
+  pos->receiver(key,
+  	      type,
+  	      size,
+  	      data,
+  	      pos->receiver_closure);
+  if (stats != NULL)
+    stats->change(stat_replies_routed, 1);
       }
       pos = pos->next;
     }
@@ -307,10 +307,10 @@ static void routeResult(const HashCode512 * key,
   MUTEX_UNLOCK(lock);
 #if DEBUG_ROUTING
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Routed result to %u out of %u pending requests\n",
-	 routed,
-	 tracked);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Routed result to %u out of %u pending requests\n",
+   routed,
+   tracked);
 #endif
   if (cls == NULL)
     FREE(result);
@@ -320,9 +320,9 @@ static void routeResult(const HashCode512 * key,
  * @return OK if route was added, SYSERR if not
  */
 static int addRoute(const PeerIdentity * sender,
-		    ResultHandler handler,
-		    void * cls,
-		    const DHT_GET_MESSAGE * get) {
+  	    ResultHandler handler,
+  	    void * cls,
+  	    const DHT_GET_MESSAGE * get) {
   DHTQueryRecord * q;
   unsigned int i;
   unsigned int rt_pos;
@@ -340,16 +340,16 @@ static int addRoute(const PeerIdentity * sender,
   rt_pos = rt_size;
   for (i=0;i<rt_size;i++) {
     if ( (sender != NULL) &&
-	 (records[i] != NULL) &&
-	 (0 == memcmp(&records[i]->get->key,
-		      &get->key,
-		      sizeof(HashCode512))) &&
-	 (records[i]->get->type == get->type) &&
-	 (records[i]->expires > now - MAX_TTL) ) {
+   (records[i] != NULL) &&
+   (0 == memcmp(&records[i]->get->key,
+  	      &get->key,
+  	      sizeof(HashCode512))) &&
+   (records[i]->get->type == get->type) &&
+   (records[i]->expires > now - MAX_TTL) ) {
       /* do not route, same request already (recently)
-	 active (possibly from other initiator) */
+   active (possibly from other initiator) */
       /* FIXME: support sending replies back to
-	 multiple peers!? */
+   multiple peers!? */
       MUTEX_UNLOCK(lock);
       return SYSERR;
     }
@@ -380,13 +380,13 @@ static int addRoute(const PeerIdentity * sender,
   }
   q = records[rt_pos];
   memset(q,
-	 0,
-	 sizeof(DHTQueryRecord));
+   0,
+   sizeof(DHTQueryRecord));
   q->expires = now + ttl;
   q->get = MALLOC(ntohs(get->header.size));
   memcpy(q->get,
-	 get,
-	 ntohs(get->header.size));
+   get,
+   ntohs(get->header.size));
   pos = MALLOC(sizeof(DHT_Source_Route));
   pos->next = q->sources;
   q->sources = pos;
@@ -398,9 +398,9 @@ static int addRoute(const PeerIdentity * sender,
   pos->receiver_closure = cls;
 #if DEBUG_ROUTING
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Tracking request in slot %u\n",
-	 rt_pos);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Tracking request in slot %u\n",
+   rt_pos);
 #endif
   rt_pos = (rt_pos + 1) % rt_size;
   MUTEX_UNLOCK(lock);
@@ -420,7 +420,7 @@ static int addRoute(const PeerIdentity * sender,
  * Handle GET message.
  */
 static int handleGet(const PeerIdentity * sender,
-		     const MESSAGE_HEADER * msg) {
+  	     const MESSAGE_HEADER * msg) {
   PeerIdentity next[GET_TRIES];
   const DHT_GET_MESSAGE * get;
   DHT_GET_MESSAGE aget;
@@ -439,55 +439,55 @@ static int handleGet(const PeerIdentity * sender,
 #if DEBUG_ROUTING
   hash2enc(&get->key, &enc);
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Received DHT GET for key `%s'.\n",
-	 &enc);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Received DHT GET for key `%s'.\n",
+   &enc);
 #endif
   if (stats != NULL)
     stats->change(stat_get_requests_received, 1);
   if ( (sender != NULL) &&
        (OK != addRoute(sender,
-		       NULL,
-		       NULL,
-		       get)) )
+  	       NULL,
+  	       NULL,
+  	       get)) )
     return OK; /* could not route */
   total = dht_store_get(&get->key,
-			ntohl(get->type),
-			&routeResult,
-			NULL);
+  		ntohl(get->type),
+  		&routeResult,
+  		NULL);
   if ( (total > GET_TRIES) &&
        (sender != NULL) ) {
 #if DEBUG_ROUTING
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   "Found %d results locally, will not route GET any further\n",
-	   total);
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     "Found %d results locally, will not route GET any further\n",
+     total);
 #endif
     return OK;
   }
   total = 0;
   for (i=0;i<GET_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
-			      &get->key,
-			      &next[0],
-			      i))
+  		      &get->key,
+  		      &next[0],
+  		      i))
       break;
     if (-1 == hashCodeCompareDistance(&next[i].hashPubKey,
-				      &coreAPI->myIdentity->hashPubKey,
-				      &get->key)) {
+  			      &coreAPI->myIdentity->hashPubKey,
+  			      &get->key)) {
       if (total == 0) {
-	aget = *get;
-	ttl = ntohl(get->ttl);
-	if (ttl > MAX_TTL)
-	  ttl = MAX_TTL;
-	ttl -= 5 * cronSECONDS;
-	aget.ttl = htonl(ttl);
-	total = 1;
+  aget = *get;
+  ttl = ntohl(get->ttl);
+  if (ttl > MAX_TTL)
+    ttl = MAX_TTL;
+  ttl -= 5 * cronSECONDS;
+  aget.ttl = htonl(ttl);
+  total = 1;
       }
       coreAPI->unicast(&next[i],
-		       msg,
-		       0, /* FIXME: priority */
-		       5 * cronSECONDS); /* FIXME */
+  	       msg,
+  	       0, /* FIXME: priority */
+  	       5 * cronSECONDS); /* FIXME */
     }
   }
   return OK;
@@ -505,7 +505,7 @@ static int handleGet(const PeerIdentity * sender,
  * Handle PUT message.
  */
 static int handlePut(const PeerIdentity * sender,
-		     const MESSAGE_HEADER * msg) {
+  	     const MESSAGE_HEADER * msg) {
   PeerIdentity next[PUT_TRIES];
   const DHT_PUT_MESSAGE * put;
   cron_t now;
@@ -524,54 +524,54 @@ static int handlePut(const PeerIdentity * sender,
   put = (const DHT_PUT_MESSAGE*) msg;
 #if DEBUG_ROUTING
   hash2enc(&put->key,
-	   &enc);
+     &enc);
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Received DHT PUT for key `%s'.\n",
-	 &enc);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Received DHT PUT for key `%s'.\n",
+   &enc);
 #endif
   store = 0;
   for (i=0;i<PUT_TRIES;i++) {
     if (OK != select_dht_peer(&next[i],
-			      &put->key,
-			      &next[0],
-			      i)) {
+  		      &put->key,
+  		      &next[0],
+  		      i)) {
       store = 1;
       break;
     }
     if (1 == hashCodeCompareDistance(&next[i].hashPubKey,
-				     &coreAPI->myIdentity->hashPubKey,
-				     &put->key))
+  			     &coreAPI->myIdentity->hashPubKey,
+  			     &put->key))
       store = 1; /* we're closer than the selected target */
     else
       coreAPI->unicast(&next[i],
-		       msg,
-		       0, /* FIXME: priority */
-		       5 * cronSECONDS); /* FIXME */
+  	       msg,
+  	       0, /* FIXME: priority */
+  	       5 * cronSECONDS); /* FIXME */
   }
   if (store != 0) {
     now = get_time();
 #if DEBUG_ROUTING
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	   "Decided to cache data `%.*s' locally until %llu (for %llu ms)\n",
-	   ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
-	   &put[1],
-	   ntohll(put->timeout) + now,
-	   ntohll(put->timeout));
+     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+     "Decided to cache data `%.*s' locally until %llu (for %llu ms)\n",
+     ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
+     &put[1],
+     ntohll(put->timeout) + now,
+     ntohll(put->timeout));
 #endif
     dht_store_put(ntohl(put->type),
-		  &put->key,
-		  ntohll(put->timeout) + now,
-		  ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
-		  (const char*) &put[1]);
+  	  &put->key,
+  	  ntohll(put->timeout) + now,
+  	  ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
+  	  (const char*) &put[1]);
   } else {
 #if DEBUG_ROUTING
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Decided NOT to cache data `%.*s' locally\n",
-	 ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
-	 &put[1]);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Decided NOT to cache data `%.*s' locally\n",
+   ntohs(put->header.size) - sizeof(DHT_PUT_MESSAGE),
+   &put[1]);
 #endif
   }
   return OK;
@@ -581,7 +581,7 @@ static int handlePut(const PeerIdentity * sender,
  * Handle RESULT message.
  */
 static int handleResult(const PeerIdentity * sender,
-			const MESSAGE_HEADER * msg) {
+  		const MESSAGE_HEADER * msg) {
   const DHT_RESULT_MESSAGE * result;
 #if DEBUG_ROUTING
   EncName enc;
@@ -597,15 +597,15 @@ static int handleResult(const PeerIdentity * sender,
 #if DEBUG_ROUTING
   hash2enc(&result->key, &enc);
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-	 "Received DHT RESULT for key `%s'.\n",
-	 &enc);
+   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+   "Received DHT RESULT for key `%s'.\n",
+   &enc);
 #endif
   routeResult(&result->key,
-	      ntohl(result->type),
-	      ntohs(result->header.size) - sizeof(DHT_RESULT_MESSAGE),
-	      (const char*) &result[1],
-	      (void*) msg);
+        ntohl(result->type),
+        ntohs(result->header.size) - sizeof(DHT_RESULT_MESSAGE),
+        (const char*) &result[1],
+        (void*) msg);
   return OK;
 }
 
@@ -613,9 +613,9 @@ static int handleResult(const PeerIdentity * sender,
  * Start a DHT get operation.
  */
 void dht_get_start(const HashCode512 * key,
-		   unsigned int type,
-		   ResultHandler handler,
-		   void * cls) {
+  	   unsigned int type,
+  	   ResultHandler handler,
+  	   void * cls) {
   DHT_GET_MESSAGE get;
 
   get.header.size = htons(sizeof(DHT_GET_MESSAGE));
@@ -625,11 +625,11 @@ void dht_get_start(const HashCode512 * key,
   get.ttl = htonl(MAX_TTL); /* FIXME? */
   get.key = *key;
   if (OK == addRoute(NULL,
-		     handler,
-		     cls,
-		     &get))
+  	     handler,
+  	     cls,
+  	     &get))
     handleGet(NULL,
-	      &get.header);
+        &get.header);
 }
 
 /**
@@ -637,9 +637,9 @@ void dht_get_start(const HashCode512 * key,
  * the given iterator).
  */
 void dht_get_stop(const HashCode512 * key,
-		  unsigned int type,
-		  ResultHandler handler,
-		  void * cls) {
+  	  unsigned int type,
+  	  ResultHandler handler,
+  	  void * cls) {
   int i;
   struct DHT_Source_Route * pos;
   struct DHT_Source_Route * prev;
@@ -654,17 +654,17 @@ void dht_get_stop(const HashCode512 * key,
     pos = records[i]->sources;
     while (pos != NULL) {
       if ( (pos->receiver == handler) &&
-	   (pos->receiver_closure == cls) &&
-	   (0 == memcmp(key,
-			&records[i]->get->key,
-			sizeof(HashCode512))) ) {
-	if (prev == NULL)
-	  records[i]->sources = pos->next;
-	else
-	  prev->next = pos->next;
-	FREE(pos);
-	done = YES;
-	break;
+     (pos->receiver_closure == cls) &&
+     (0 == memcmp(key,
+  		&records[i]->get->key,
+  		sizeof(HashCode512))) ) {
+  if (prev == NULL)
+    records[i]->sources = pos->next;
+  else
+    prev->next = pos->next;
+  FREE(pos);
+  done = YES;
+  break;
       }
       prev = pos;
       pos = prev->next;
@@ -690,10 +690,10 @@ void dht_get_stop(const HashCode512 * key,
  * @param expirationTime absolute expiration time
  */
 void dht_put(const HashCode512 * key,
-	     unsigned int type,
-	     unsigned int size,
-	     cron_t expirationTime,
-	     const char * data) {
+       unsigned int type,
+       unsigned int size,
+       cron_t expirationTime,
+       const char * data) {
   DHT_PUT_MESSAGE * put;
 
   put = MALLOC(sizeof(DHT_PUT_MESSAGE) + size);
@@ -703,10 +703,10 @@ void dht_put(const HashCode512 * key,
   put->type = htonl(type);
   put->timeout = htonll(expirationTime - get_time()); /* convert to relative time */
   memcpy(&put[1],
-	 data,
-	 size);
+   data,
+   size);
   handlePut(NULL,
-	    &put->header);
+      &put->header);
   FREE(put);
 }
 
@@ -720,8 +720,8 @@ void dht_put(const HashCode512 * key,
  */
 static unsigned int
 extra_get_callback(const PeerIdentity * receiver,
-		   void * position,
-		   unsigned int padding) {
+  	   void * position,
+  	   unsigned int padding) {
   return 0;
 }
 
@@ -737,12 +737,12 @@ int init_dht_routing(CoreAPIForApplication * capi) {
   coreAPI = capi;
   rts = 65536;
   GC_get_configuration_value_number(coreAPI->cfg,
-				    "DHT",
-				    "TABLESIZE",
-				    128,
-				    1024 * 1024,
-				    1024,
-				    &rts);
+  			    "DHT",
+  			    "TABLESIZE",
+  			    128,
+  			    1024 * 1024,
+  			    1024,
+  			    &rts);
   GROW(records,
        rt_size,
        rts);
@@ -756,20 +756,20 @@ int init_dht_routing(CoreAPIForApplication * capi) {
     stat_results_received = stats->create(gettext_noop("# dht results received"));
   }
   GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 _("`%s' registering p2p handlers: %d %d %d\n"),
-	 "dht",
-	 P2P_PROTO_DHT_GET,
-	 P2P_PROTO_DHT_PUT,
-	 P2P_PROTO_DHT_RESULT);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   _("`%s' registering p2p handlers: %d %d %d\n"),
+   "dht",
+   P2P_PROTO_DHT_GET,
+   P2P_PROTO_DHT_PUT,
+   P2P_PROTO_DHT_RESULT);
   coreAPI->registerHandler(P2P_PROTO_DHT_GET,
-			   &handleGet);
+  		   &handleGet);
   coreAPI->registerHandler(P2P_PROTO_DHT_PUT,
-			   &handlePut);
+  		   &handlePut);
   coreAPI->registerHandler(P2P_PROTO_DHT_RESULT,
-			   &handleResult);
+  		   &handleResult);
   coreAPI->registerSendCallback(sizeof(DHT_GET_MESSAGE),
-				&extra_get_callback);
+  			&extra_get_callback);
   return OK;
 }
 
@@ -782,13 +782,13 @@ int done_dht_routing() {
   unsigned int i;
 
   coreAPI->unregisterSendCallback(sizeof(DHT_GET_MESSAGE),
-				  &extra_get_callback);
+  			  &extra_get_callback);
   coreAPI->unregisterHandler(P2P_PROTO_DHT_GET,
-			     &handleGet);
+  		     &handleGet);
   coreAPI->unregisterHandler(P2P_PROTO_DHT_PUT,
-			     &handlePut);
+  		     &handlePut);
   coreAPI->unregisterHandler(P2P_PROTO_DHT_RESULT,
-			     &handleResult);
+  		     &handleResult);
   if (stats != NULL) {
     coreAPI->releaseService(stats);
     stats = NULL;

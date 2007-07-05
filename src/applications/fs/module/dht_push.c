@@ -74,8 +74,8 @@ static int stat_push_count;
 
 
 static int push_callback(const HashCode512 * key,
-			 const Datastore_Value * value,
-			 void * closure) {
+  		 const Datastore_Value * value,
+  		 void * closure) {
   cron_t delay;
 
   if (dht == NULL)
@@ -91,10 +91,10 @@ static int push_callback(const HashCode512 * key,
   if (dht == NULL)
     return SYSERR;
   dht->put(key,
-	   ntohl(value->type),
-	   ntohl(value->size) - sizeof(Datastore_Value),
-	   ntohll(value->expirationTime),
-	   (const char*) &value[1]);
+     ntohl(value->type),
+     ntohl(value->size) - sizeof(Datastore_Value),
+     ntohll(value->expirationTime),
+     (const char*) &value[1]);
   if (stats != NULL)
     stats->change(stat_push_count, 1);
   return OK;
@@ -102,15 +102,15 @@ static int push_callback(const HashCode512 * key,
 
 static void * push_thread(void * cls) {
   while ( (dht != NULL) &&
-	  (sqstore != NULL) ) {
+    (sqstore != NULL) ) {
     if (total == 0)
       total = 1;
     total = sqstore->iterateNonAnonymous(0,
-					 YES,
-					 &push_callback,
-					 NULL);
+  				 YES,
+  				 &push_callback,
+  				 NULL);
     if ( (dht != NULL) &&
-	 (total == 0) )
+   (total == 0) )
       PTHREAD_SLEEP(15 * cronMINUTES);
   }
   return NULL;
@@ -121,7 +121,7 @@ static void * push_thread(void * cls) {
  * Initialize the migration module.
  */
 void init_dht_push(CoreAPIForApplication * capi,
-		   DHT_ServiceAPI * d) {
+  	   DHT_ServiceAPI * d) {
   coreAPI = capi;
   dht = d;
   sqstore = capi->requestService("sqstore");
@@ -135,8 +135,8 @@ void init_dht_push(CoreAPIForApplication * capi,
       = stats->create(gettext_noop("# blocks pushed into DHT"));
   if (! NO_PUSH) {
     thread = PTHREAD_CREATE(&push_thread,
-			    NULL,
-			    1024 * 128);
+  		    NULL,
+  		    1024 * 128);
   }
 }
 

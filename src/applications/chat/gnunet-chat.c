@@ -39,13 +39,13 @@ static Semaphore * doneSem;
  * @return OK on error, SYSERR if we should exit
  */
 static int parseOptions(int argc,
-			char ** argv) {
+  		char ** argv) {
   int option_index;
   int c;
 
   FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
+  			     "LOGFILE",
+  			     NULL));
   while (1) {
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
@@ -54,10 +54,10 @@ static int parseOptions(int argc,
     };
     option_index=0;
     c = GNgetopt_long(argc,
-		      argv,
-		      "vhdc:L:H:n:",
-		      long_options,
-		      &option_index);
+  	      argv,
+  	      "vhdc:L:H:n:",
+  	      long_options,
+  	      &option_index);
     if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
@@ -65,32 +65,32 @@ static int parseOptions(int argc,
     switch(c) {
     case 'n':
       FREENONNULL(setConfigurationString("GNUNET-CHAT",
-					 "NICK",
-					 GNoptarg));
+  				 "NICK",
+  				 GNoptarg));
       break;
     case 'v':
       printf("GNUnet v%s, gnunet-chat v%s\n",
-	     VERSION,
-	     CHAT_VERSION);
+       VERSION,
+       CHAT_VERSION);
       return SYSERR;
     case 'h': {
       static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	{ 'n', "nickname", NULL,
-	  gettext_noop("specify nickname") },
-	HELP_VERSION,
-	HELP_END,
+  HELP_CONFIG,
+  HELP_HELP,
+  HELP_LOGLEVEL,
+  { 'n', "nickname", NULL,
+    gettext_noop("specify nickname") },
+  HELP_VERSION,
+  HELP_END,
       };
       formatHelp("gnunet-chat [OPTIONS]",
-		 _("Start GNUnet chat client."),
-		 help);
+  	 _("Start GNUnet chat client."),
+  	 help);
       return SYSERR;
     }
     default:
       GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
+    _("Use --help to get a list of options.\n"));
       return -1;
     } /* end of parsing commandline */
   } /* while (1) */
@@ -103,18 +103,18 @@ static void * receiveThread(void * arg) {
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (OK == connection_read(sock,
-			      (CS_MESSAGE_HEADER **)&buffer)) {
+  		      (CS_MESSAGE_HEADER **)&buffer)) {
     char timebuf[64];
     time_t timetmp;
     struct tm * tmptr;
-	
+  
     time(&timetmp);
     tmptr = localtime(&timetmp);
     strftime(timebuf,
              64,
              "%b %e %H:%M ",
              tmptr);
-			
+  		
    if ( (ntohs(buffer->header.size) != sizeof(CS_chat_MESSAGE)) ||
         (ntohs(buffer->header.type) != CS_PROTO_chat_MSG) )
       continue;
@@ -122,8 +122,8 @@ static void * receiveThread(void * arg) {
     buffer->message[CHAT_MSG_LENGTH-1] = '\0';
     printf("[%s][%s]: %s",
            timebuf,
-	   &buffer->nick[0],
-	   &buffer->message[0]);
+     &buffer->nick[0],
+     &buffer->message[0]);
   }
   FREE(buffer);
   SEMAPHORE_UP(doneSem);
@@ -153,32 +153,32 @@ int main(int argc, char ** argv) {
   nick = getConfigurationString("GNUNET-CHAT", "NICK");
   if (nick == NULL)
     errexit(_("You must specify a nickname (use option `%s').\n"),
-	    "-n");
+      "-n");
 
   doneSem = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&messageReceiveThread,
-			  &receiveThread,
-			  sock,
-			  128 * 1024))
+  		  &receiveThread,
+  		  sock,
+  		  128 * 1024))
     DIE_STRERROR("pthread_create");
 
   memset(&msg,
-	 0,
-	 sizeof(CS_chat_MESSAGE));
+   0,
+   sizeof(CS_chat_MESSAGE));
   memcpy(&msg.message[0],
-	 "Hi!\n",
-	 strlen("Hi!\n"));
+   "Hi!\n",
+   strlen("Hi!\n"));
   msg.header.size
     = htons(sizeof(CS_chat_MESSAGE));
   msg.header.type
     = htons(CS_PROTO_chat_MSG);
   memcpy(&msg.nick[0],
-	 nick,
-	 strlen(nick));
+   nick,
+   strlen(nick));
 
   /* send first "Hi!" message to gnunetd to indicate "join" */
   if (SYSERR == connection_write(sock,
-			      &msg.header))
+  		      &msg.header))
     errexit(_("Could not send join message to gnunetd\n"));
 
   /* read messages from command line and send */
@@ -187,7 +187,7 @@ int main(int argc, char ** argv) {
     if (NULL == fgets(&msg.message[0], 1024, stdin))
       break;
     if (SYSERR == connection_write(sock,
-				&msg.header))
+  			&msg.header))
       errexit(_("Could not send message to gnunetd\n"));
   }
   closeSocketTemporarily(sock);

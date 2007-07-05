@@ -45,9 +45,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen(UPLOAD_PREFIX "/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen(UPLOAD_PREFIX "/FSUITEST") + 14,
-	   UPLOAD_PREFIX "/FSUITEST%u",
-	   i);
+     strlen(UPLOAD_PREFIX "/FSUITEST") + 14,
+     UPLOAD_PREFIX "/FSUITEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -66,7 +66,7 @@ static int have_error;
 static int no_check;
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   if (no_check)
     return NULL;
   switch(event->type) {
@@ -76,21 +76,21 @@ static void * eventCallback(void * cls,
   case FSUI_download_suspended:
     if (event->data.DownloadSuspended.dc.spos != search) {
       fprintf(stderr,
-	      "Download suspended but search reference not set correctly.\n");
+        "Download suspended but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadSuspended.dc.pos == download) &&
-	 (event->data.DownloadSuspended.dc.ppos != NULL) ) {
+   (event->data.DownloadSuspended.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download suspended but parent reference not set to NULL.\n");
+        "Download suspended but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadSuspended.dc.pos != download) &&
-	 (event->data.DownloadSuspended.dc.ppos != download) ) {
+   (event->data.DownloadSuspended.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download suspended but parent reference not set correctly (%p instead of %p).\n",
-	      event->data.DownloadSuspended.dc.ppos,
-	      download);
+        "Download suspended but parent reference not set correctly (%p instead of %p).\n",
+        event->data.DownloadSuspended.dc.ppos,
+        download);
       have_error = 1;
     }
     if (event->data.DownloadSuspended.dc.pos == download)
@@ -107,19 +107,19 @@ static void * eventCallback(void * cls,
       download = event->data.DownloadResumed.dc.pos;
     if (event->data.DownloadResumed.dc.spos != search) {
       fprintf(stderr,
-	      "Download resuming but search reference not set correctly.\n");
+        "Download resuming but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadResumed.dc.pos == download) &&
-	 (event->data.DownloadResumed.dc.ppos != NULL) ) {
+   (event->data.DownloadResumed.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download resuming but parent reference not set to NULL.\n");
+        "Download resuming but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadResumed.dc.pos != download) &&
-	 (event->data.DownloadResumed.dc.ppos != download) ) {
+   (event->data.DownloadResumed.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download resuming but parent reference not set correctly.\n");
+        "Download resuming but parent reference not set correctly.\n");
       have_error = 1;
     }
 #if DEBUG_VERBOSE
@@ -134,8 +134,8 @@ static void * eventCallback(void * cls,
   case FSUI_upload_progress:
 #if DEBUG_VERBOSE
     printf("Upload is progressing (%llu/%llu)...\n",
-	   event->data.UploadProgress.completed,
-	   event->data.UploadProgress.total);
+     event->data.UploadProgress.completed,
+     event->data.UploadProgress.total);
 #endif
     break;
   case FSUI_upload_completed:
@@ -149,19 +149,19 @@ static void * eventCallback(void * cls,
   case FSUI_download_completed:
     if (event->data.DownloadCompleted.dc.spos != search) {
       fprintf(stderr,
-	      "Download completed but search reference not set correctly.\n");
+        "Download completed but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadCompleted.dc.pos == download) &&
-	 (event->data.DownloadCompleted.dc.ppos != NULL) ) {
+   (event->data.DownloadCompleted.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download completed but parent reference not set to NULL.\n");
+        "Download completed but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadCompleted.dc.pos != download) &&
-	 (event->data.DownloadCompleted.dc.ppos != download) ) {
+   (event->data.DownloadCompleted.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download completed but parent reference not set correctly.\n");
+        "Download completed but parent reference not set correctly.\n");
       have_error = 1;
     }
 #if DEBUG_VERBOSE
@@ -171,32 +171,32 @@ static void * eventCallback(void * cls,
   case FSUI_download_progress:
     if (event->data.DownloadResumed.dc.spos != search) {
       fprintf(stderr,
-	      "Download progressing but search reference not set correctly.\n");
+        "Download progressing but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadResumed.dc.pos == download) &&
-	 (event->data.DownloadResumed.dc.ppos != NULL) ) {
+   (event->data.DownloadResumed.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download progressing but parent reference not set to NULL.\n");
+        "Download progressing but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadResumed.dc.pos != download) &&
-	 (event->data.DownloadResumed.dc.ppos != download) ) {
+   (event->data.DownloadResumed.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download progressing but parent reference not set correctly.\n");
+        "Download progressing but parent reference not set correctly.\n");
       have_error = 1;
     }
 #if DEBUG_VERBOSE
     printf("Download is progressing (%llu/%llu)...\n",
-	   event->data.DownloadProgress.completed,
-	   event->data.DownloadProgress.total);
+     event->data.DownloadProgress.completed,
+     event->data.DownloadProgress.total);
 #endif
     break;
   case FSUI_unindex_progress:
 #if DEBUG_VERBOSE
     printf("Unindex is progressing (%llu/%llu)...\n",
-	   event->data.UnindexProgress.completed,
-	   event->data.UnindexProgress.total);
+     event->data.UnindexProgress.completed,
+     event->data.UnindexProgress.total);
 #endif
     break;
   case FSUI_unindex_completed:
@@ -206,30 +206,30 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_unindex_error:
     fprintf(stderr,
-	    "Received ERROR: %d %s\n",
-	    event->type,
-	    event->data.UnindexError.message);
+      "Received ERROR: %d %s\n",
+      event->type,
+      event->data.UnindexError.message);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_upload_error:
     fprintf(stderr,
-	    "Received ERROR: %d %s\n",
-	    event->type,
-	    event->data.UploadError.message);
+      "Received ERROR: %d %s\n",
+      event->type,
+      event->data.UploadError.message);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_download_error:
     fprintf(stderr,
-	    "Received ERROR: %d %s\n",
-	    event->type,
-	    event->data.DownloadError.message);
+      "Received ERROR: %d %s\n",
+      event->type,
+      event->data.DownloadError.message);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_search_error:
     fprintf(stderr,
-	    "Received ERROR: %d %s\n",
-	    event->type,
-	    event->data.SearchError.message);
+      "Received ERROR: %d %s\n",
+      event->type,
+      event->data.SearchError.message);
     GE_BREAK(ectx, 0);
     break;
   case FSUI_download_aborted:
@@ -241,8 +241,8 @@ static void * eventCallback(void * cls,
   case FSUI_upload_suspended:
 #if DEBUG_VERBOSE
     fprintf(stderr,
-	    "Received SUSPENDING: %d\n",
-	    event->type);
+      "Received SUSPENDING: %d\n",
+      event->type);
 #endif
     break;
   case FSUI_download_started:
@@ -250,38 +250,38 @@ static void * eventCallback(void * cls,
       download = event->data.DownloadStarted.dc.pos;
     if (event->data.DownloadStarted.dc.spos != search) {
       fprintf(stderr,
-	      "Download started but search reference not set correctly.\n");
+        "Download started but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadStarted.dc.pos == download) &&
-	 (event->data.DownloadStarted.dc.ppos != NULL) ) {
+   (event->data.DownloadStarted.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download started but parent reference not set to NULL.\n");
+        "Download started but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadStarted.dc.pos != download) &&
-	 (event->data.DownloadStarted.dc.ppos != download) ) {
+   (event->data.DownloadStarted.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download started but parent reference not set correctly.\n");
+        "Download started but parent reference not set correctly.\n");
       have_error = 1;
     }
     break;
   case FSUI_download_stopped:
     if (event->data.DownloadStopped.dc.spos != search) {
       fprintf(stderr,
-	      "Download stopped but search reference not set correctly.\n");
+        "Download stopped but search reference not set correctly.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadStopped.dc.pos == download) &&
-	 (event->data.DownloadStopped.dc.ppos != NULL) ) {
+   (event->data.DownloadStopped.dc.ppos != NULL) ) {
       fprintf(stderr,
-	      "Download stopped but parent reference not set to NULL.\n");
+        "Download stopped but parent reference not set to NULL.\n");
       have_error = 1;
     }
     if ( (event->data.DownloadStopped.dc.pos != download) &&
-	 (event->data.DownloadStopped.dc.ppos != download) ) {
+   (event->data.DownloadStopped.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download stopped but parent reference not set correctly.\n");
+        "Download stopped but parent reference not set correctly.\n");
       have_error = 1;
     }
     break;
@@ -295,7 +295,7 @@ static void * eventCallback(void * cls,
     break;
   default:
     printf("Unexpected event: %d\n",
-	   event->type);
+     event->type);
     break;
   }
   return NULL;
@@ -333,29 +333,29 @@ int main(int argc, char * argv[]){
   ok = YES;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "serializetest2",
-		   32,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "serializetest2",
+  	   32,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
   for (j=4;j<256;j+=4) {
     fn = makeName(j);
@@ -363,60 +363,60 @@ int main(int argc, char * argv[]){
     for (i=0;i<FILESIZE;i++)
       buf[i] = weak_randomi(256);
     disk_file_write(ectx,
-		    fn,
-		    buf,
-		    FILESIZE,
-		    "600");
+  	    fn,
+  	    buf,
+  	    FILESIZE,
+  	    "600");
     FREE(buf);
     FREE(fn);
   }
   meta = ECRS_createMetaData();
   kuri = ECRS_parseListKeywordURI(ectx,
-				  2,
-				  (const char**)keywords);
+  			  2,
+  			  (const char**)keywords);
   ECRS_addToMetaData(meta,
-		     EXTRACTOR_MIMETYPE,
-		     GNUNET_DIRECTORY_MIME);
+  	     EXTRACTOR_MIMETYPE,
+  	     GNUNET_DIRECTORY_MIME);
   upload = FSUI_startUpload(ctx,
-			    UPLOAD_PREFIX,
-			    (DirectoryScanCallback) &disk_directory_scan,
-			    NULL,		
-			    0,
-			    0,
-			    YES,
-			    NO,
-			    NO,
-			    get_time() + 5 * cronHOURS,
-			    meta,
-			    kuri,
-			    kuri);
+  		    UPLOAD_PREFIX,
+  		    (DirectoryScanCallback) &disk_directory_scan,
+  		    NULL,		
+  		    0,
+  		    0,
+  		    YES,
+  		    NO,
+  		    NO,
+  		    get_time() + 5 * cronHOURS,
+  		    meta,
+  		    kuri,
+  		    kuri);
   CHECK(upload != NULL);
   ECRS_freeUri(kuri);
   kuri = NULL;
   FSUI_stopUpload(ctx, upload);
   CHECK(upURI != NULL);
   SNPRINTF(keyword,
-	   40,
-	   "%s %s %s",
-	   keywords[0],
-	   _("AND"),
-	   keywords[1]);
+     40,
+     "%s %s %s",
+     keywords[0],
+     _("AND"),
+     keywords[1]);
   uri = ECRS_parseCharKeywordURI(ectx,
-				 keyword);
+  			 keyword);
   search = FSUI_startSearch(ctx,
-			    0,
-			    100,
-			    240 * cronSECONDS,
-			    uri);
+  		    0,
+  		    100,
+  		    240 * cronSECONDS,
+  		    uri);
   CHECK(search != NULL);
   download = FSUI_startDownload(ctx,
-				0,
-				YES,
-				upURI,
-				meta,
-				UPLOAD_PREFIX "-download",
-				search,
-				NULL);
+  			0,
+  			YES,
+  			upURI,
+  			meta,
+  			UPLOAD_PREFIX "-download",
+  			search,
+  			NULL);
   ECRS_freeMetaData(meta);
   prog = 0;
   suspendRestart = 10;
@@ -424,22 +424,22 @@ int main(int argc, char * argv[]){
     prog++;
     PTHREAD_SLEEP(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
-	 (weak_randomi(100) == 0) ) {
+   (weak_randomi(100) == 0) ) {
 #if 1
 #if DEBUG_VERBOSE
       printf("Testing FSUI suspend-resume\n");
 #endif
       FSUI_stop(ctx); /* download possibly incomplete
-			 at this point, thus testing resume */
+  		 at this point, thus testing resume */
       CHECK(search == NULL);
       CHECK(download == NULL);
       ctx = FSUI_start(NULL,
-		       cfg,
-		       "serializetest2",
-		       32,
-		       YES,
-		       &eventCallback,
-		       NULL);
+  	       cfg,
+  	       "serializetest2",
+  	       32,
+  	       YES,
+  	       &eventCallback,
+  	       NULL);
 #if DEBUG_VERBOSE
       printf("Resumed...\n");
 #endif
@@ -447,13 +447,13 @@ int main(int argc, char * argv[]){
       suspendRestart--;
     }
     if ( (search != NULL) &&
-	 (suspendRestart >= 5) ) {
+   (suspendRestart >= 5) ) {
       no_check = 1;
       PTHREAD_SLEEP(50 * cronMILLIS);
       FSUI_abortSearch(ctx,
-		       search);
+  	       search);
       FSUI_stopSearch(ctx,
-		      search);
+  	      search);
       search = NULL;
       no_check = 0;
     }
@@ -461,12 +461,12 @@ int main(int argc, char * argv[]){
       break;
   }
   FSUI_stopDownload(ctx,
-		    download);
+  	    download);
   for (j=4;j<256;j+=4) {
     fn = makeName(j);
     unindex = FSUI_startUnindex(ctx, fn);
     FSUI_stopUnindex(ctx,
-		     unindex);
+  	     unindex);
     UNLINK(fn);
     FREE(fn);
   }

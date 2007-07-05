@@ -115,26 +115,26 @@ void PrintAdapters()
  */
 void Install()
 {
-	switch(InstallAsService(NULL))
-	{
-		case 0:
-			printf(_("GNUnet service installed successfully.\n"));
-			break;
-		case 1:
-			printf(_("This version of Windows doesn't support services.\n"));
-			break;
-		case 2:
-	    SetErrnoFromWinError(GetLastError());
-	    printf(_("Error: can't open Service Control Manager: %s\n"),
-	    	_win_strerror(errno));
-			break;
-		case 3:
-	    SetErrnoFromWinError(GetLastError());
-	    printf(_("Error: can't create service: %s\n"), _win_strerror(errno));
-			break;
-		default:
-			printf(_("Unknown error.\n"));			
-	}
+  switch(InstallAsService(NULL))
+  {
+  	case 0:
+  		printf(_("GNUnet service installed successfully.\n"));
+  		break;
+  	case 1:
+  		printf(_("This version of Windows doesn't support services.\n"));
+  		break;
+  	case 2:
+      SetErrnoFromWinError(GetLastError());
+      printf(_("Error: can't open Service Control Manager: %s\n"),
+      	_win_strerror(errno));
+  		break;
+  	case 3:
+      SetErrnoFromWinError(GetLastError());
+      printf(_("Error: can't create service: %s\n"), _win_strerror(errno));
+  		break;
+  	default:
+  		printf(_("Unknown error.\n"));			
+  }
 }
 
 /**
@@ -142,30 +142,30 @@ void Install()
  */
 void Uninstall()
 {
-	switch(UninstallService())
-	{
-		case 0:
-		  printf(_("Service deleted.\n"));
-			break;
-		case 1:
-			printf(_("This version of Windows doesn't support services.\n"));
-			break;
-		case 2:
-	    SetErrnoFromWinError(GetLastError());
-	    printf(_("Error: can't open Service Control Manager: %s\n"),
-	    	_win_strerror(errno));
-			break;
-		case 3:
-	    SetErrnoFromWinError(GetLastError());
-	    printf(_("Error: can't access service: %s\n"), _win_strerror(errno));
-			break;
-		case 4:
-	    SetErrnoFromWinError(GetLastError());
-	    printf(_("Error: can't delete service: %s\n"), _win_strerror(errno));
-			break;
-		default:
-			printf(_("Unknown error.\n"));
-	}
+  switch(UninstallService())
+  {
+  	case 0:
+  	  printf(_("Service deleted.\n"));
+  		break;
+  	case 1:
+  		printf(_("This version of Windows doesn't support services.\n"));
+  		break;
+  	case 2:
+      SetErrnoFromWinError(GetLastError());
+      printf(_("Error: can't open Service Control Manager: %s\n"),
+      	_win_strerror(errno));
+  		break;
+  	case 3:
+      SetErrnoFromWinError(GetLastError());
+      printf(_("Error: can't access service: %s\n"), _win_strerror(errno));
+  		break;
+  	case 4:
+      SetErrnoFromWinError(GetLastError());
+      printf(_("Error: can't delete service: %s\n"), _win_strerror(errno));
+  		break;
+  	default:
+  		printf(_("Unknown error.\n"));
+  }
 }
 
 void PatchSys(char *szFn)
@@ -174,7 +174,7 @@ void PatchSys(char *szFn)
   unsigned long lMem;
   char *pMem;
   int iCrc;
-	
+  
   pFile = fopen(szFn, "r+b");
   if (!pFile)
   {
@@ -207,11 +207,11 @@ void PatchSys(char *szFn)
       memcpy(pMem + 0x4F322, chunk2, 4);
       break;
     case 3886810835:
-    	memcpy(pMem + 0x130, chunk3, 4);
+      memcpy(pMem + 0x130, chunk3, 4);
       memcpy(pMem + 0x4f5a2, chunk2, 4);
       break;
     case 3246854107:
-    	memcpy(pMem + 0x130, chunk4, 4);
+      memcpy(pMem + 0x130, chunk4, 4);
       memcpy(pMem + 0x4f5a2, chunk2, 4);
       break;
     case 2437296753:

@@ -41,24 +41,24 @@ static ECRS_FileInfo fi2;
 static unsigned int notifications;
 
 static int notified(const ECRS_FileInfo * fi,
-		    const HashCode512 * key,
-		    int isRoot,
-		    void * cls) {
+  	    const HashCode512 * key,
+  	    int isRoot,
+  	    void * cls) {
   if ( (fi1.meta != NULL) &&
        (fi1.uri != NULL) &&
        (ECRS_equalsMetaData(fi->meta,
-			    fi1.meta)) &&
+  		    fi1.meta)) &&
        (ECRS_equalsUri(fi->uri,
-		       fi1.uri)) ) {
+  	       fi1.uri)) ) {
     notifications++;
     return OK;
   }
   if ( (fi2.meta != NULL) &&
        (fi2.uri != NULL) &&
        (ECRS_equalsMetaData(fi->meta,
-			    fi2.meta)) &&
+  		    fi2.meta)) &&
        (ECRS_equalsUri(fi->uri,
-		       fi2.uri)) ) {
+  	       fi2.uri)) ) {
     notifications++;
     return OK;
   }
@@ -66,15 +66,15 @@ static int notified(const ECRS_FileInfo * fi,
 }
 
 static int processor(const ECRS_FileInfo * fi,
-		     const HashCode512 * key,
-		     int isRoot,
-		     void * cls) {
+  	     const HashCode512 * key,
+  	     int isRoot,
+  	     void * cls) {
   if ( (fi1.meta != NULL) &&
        (fi1.uri != NULL) &&
        (ECRS_equalsMetaData(fi->meta,
-			    fi1.meta)) &&
+  		    fi1.meta)) &&
        (ECRS_equalsUri(fi->uri,
-		       fi1.uri)) ) {
+  	       fi1.uri)) ) {
     ECRS_freeUri(fi1.uri);
     fi1.uri = NULL;
     ECRS_freeMetaData(fi1.meta);
@@ -84,9 +84,9 @@ static int processor(const ECRS_FileInfo * fi,
   if ( (fi2.meta != NULL) &&
        (fi2.uri != NULL) &&
        (ECRS_equalsMetaData(fi->meta,
-			    fi2.meta)) &&
+  		    fi2.meta)) &&
        (ECRS_equalsUri(fi->uri,
-		       fi2.uri)) ) {
+  	       fi2.uri)) ) {
     ECRS_freeUri(fi2.uri);
     fi2.uri = NULL;
     ECRS_freeMetaData(fi2.meta);
@@ -108,86 +108,86 @@ static int testTracking() {
   fi1.uri = ECRS_keywordsToUri(k1);
   fi1.meta = ECRS_createMetaData();
   ECRS_addToMetaData(fi1.meta,
-		     EXTRACTOR_MIMETYPE,
-		     "foo/bar");
+  	     EXTRACTOR_MIMETYPE,
+  	     "foo/bar");
   fi2.uri = ECRS_keywordsToUri(k2);
   fi2.meta = ECRS_createMetaData();
   ECRS_addToMetaData(fi2.meta,
-		     EXTRACTOR_MIMETYPE,
-		     "foo/bar");
+  	     EXTRACTOR_MIMETYPE,
+  	     "foo/bar");
 
   URITRACK_clearTrackedURIS(NULL,
-			    cfg);
+  		    cfg);
   URITRACK_registerTrackCallback(NULL,
-				 cfg,
-				 &notified,
-				 NULL);
+  			 cfg,
+  			 &notified,
+  			 NULL);
   URITRACK_trackURIS(NULL,
-		     cfg,
-		     NO);
+  	     cfg,
+  	     NO);
   URITRACK_clearTrackedURIS(NULL,
-			    cfg);
+  		    cfg);
   /* test non-tracking */
   URITRACK_trackURI(NULL,
-		    cfg,
-		    &fi1);
+  	    cfg,
+  	    &fi1);
   CHECK(0 == URITRACK_listURIs(NULL,
-			       cfg,
-			       NO,
-			       NULL,
-			       NULL));
+  		       cfg,
+  		       NO,
+  		       NULL,
+  		       NULL));
   CHECK(NO == URITRACK_trackStatus(NULL,
-				   cfg));
+  			   cfg));
   URITRACK_clearTrackedURIS(NULL,
-			    cfg);
+  		    cfg);
   URITRACK_trackURIS(NULL,
-		     cfg,
-		     YES);
+  	     cfg,
+  	     YES);
   URITRACK_clearTrackedURIS(NULL,
-			    cfg);
+  		    cfg);
   CHECK(0 == URITRACK_listURIs(NULL,
-			       cfg,
-			       NO,
-			       NULL,
-			       NULL));
+  		       cfg,
+  		       NO,
+  		       NULL,
+  		       NULL));
   CHECK(YES == URITRACK_trackStatus(NULL,
-				    cfg));
+  			    cfg));
   URITRACK_trackURI(NULL,
-		    cfg,
-		    &fi1);
+  	    cfg,
+  	    &fi1);
   CHECK(1 == URITRACK_listURIs(NULL,
-			       cfg,
-			       NO,
-			       NULL,
-			       NULL));
+  		       cfg,
+  		       NO,
+  		       NULL,
+  		       NULL));
   URITRACK_trackURI(NULL,
-		    cfg,
-		    &fi2);
+  	    cfg,
+  	    &fi2);
   CHECK(2 == URITRACK_listURIs(NULL,
-			       cfg,
-			       YES,
-			       &processor,
-			       NULL));
+  		       cfg,
+  		       YES,
+  		       &processor,
+  		       NULL));
   URITRACK_trackURIS(NULL,
-		     cfg,
-		     NO);
+  	     cfg,
+  	     NO);
   CHECK(NO == URITRACK_trackStatus(NULL,
-				   cfg));
+  			   cfg));
   URITRACK_clearTrackedURIS(NULL,
-			    cfg);
+  		    cfg);
   CHECK(notifications == 2);
   URITRACK_unregisterTrackCallback(&notified,
-				   NULL);
+  			   NULL);
   return 0;
 }
 
 int main(int argc,
-	 char * argv[]) {
+   char * argv[]) {
   int failureCount = 0;
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }

@@ -67,8 +67,8 @@ free_box(SCM smob) {
 
 static int
 print_tc(SCM tc_smob,
-	 SCM port,
-	 scm_print_state *pstate) {
+   SCM port,
+   scm_print_state *pstate) {
   /* TC * tc = (TC *) SCM_SMOB_DATA (tc_smob); */
   scm_puts ("TC", port);
   /* non-zero means success */
@@ -77,8 +77,8 @@ print_tc(SCM tc_smob,
 
 static int
 print_tree(SCM tree_smob,
-	   SCM port,
-	   scm_print_state *pstate) {
+     SCM port,
+     scm_print_state *pstate) {
   /* struct GNS_Tree * tree = (struct GNS_Tree *) SCM_SMOB_DATA (tree_smob); */
 
   scm_puts ("Tree", port);
@@ -90,8 +90,8 @@ print_tree(SCM tree_smob,
 
 struct GNS_Tree *
 tree_lookup(struct GNS_Tree * root,
-	    const char * section,
-	    const char * option) {
+      const char * section,
+      const char * option) {
   int i;
   struct GNS_Tree * ret;
 
@@ -103,8 +103,8 @@ tree_lookup(struct GNS_Tree * root,
   i = 0;
   while (root->children[i] != NULL) {
     ret = tree_lookup(root->children[i],
-		      section,
-		      option);
+  	      section,
+  	      option);
     if (ret != NULL)
       return ret;
     i++;
@@ -113,8 +113,8 @@ tree_lookup(struct GNS_Tree * root,
 }
 
 SCM get_option(SCM smob,
-	       SCM section,
-	       SCM option) {
+         SCM section,
+         SCM option) {
   TC * tc;
   char * opt;
   char * sec;
@@ -127,8 +127,8 @@ SCM get_option(SCM smob,
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
   t = tree_lookup(tc->root,
-		  sec,
-		  opt);
+  	  sec,
+  	  opt);
   if (t == NULL)
     return SCM_EOL;
   switch (t->type & GNS_TypeMask) {
@@ -148,15 +148,15 @@ SCM get_option(SCM smob,
   GE_BREAK(NULL, 0);
   return SCM_EOL;
 }
-	
+  
 /**
  * Change the visibility of an entry in the
  * tree (and notify listeners about change).
  */
 SCM change_visible(SCM smob,
-		   SCM section,
-		   SCM option,
-		   SCM yesno) {
+  	   SCM section,
+  	   SCM option,
+  	   SCM yesno) {
   TC * tc;
   char * opt;
   char * sec;
@@ -178,17 +178,17 @@ SCM change_visible(SCM smob,
     return SCM_EOL;
   }
   t = tree_lookup(tc->root,
-		  sec,
-		  opt);
+  	  sec,
+  	  opt);
   if (t != NULL) {
     t->visible = val;
     tc->vcl(tc->ctx,
-	    t);
+      t);
   } else {
     fprintf(stderr,
-	    _("Internal error: entry `%s' in section `%s' not found for visibility change!\n"),
-	    opt,
-	    sec);
+      _("Internal error: entry `%s' in section `%s' not found for visibility change!\n"),
+      opt,
+      sec);
   }
   free(sec);
   free(opt);
@@ -199,9 +199,9 @@ SCM change_visible(SCM smob,
  * Set an option.
  */
 SCM set_option(SCM smob,
-	       SCM section,
-	       SCM option,
-	       SCM value) {
+         SCM section,
+         SCM option,
+         SCM value) {
   TC * tc;
   char * opt;
   char * sec;
@@ -216,10 +216,10 @@ SCM set_option(SCM smob,
   sec = scm_to_locale_string(section);
   val = scm_to_locale_string(value);
   GC_set_configuration_value_string(tc->cfg,
-				    NULL,
-				    sec,
-				    opt,
-				    val);
+  			    NULL,
+  			    sec,
+  			    opt,
+  			    val);
   if (sec != NULL)
     free(sec);
   if (val != NULL)
@@ -238,13 +238,13 @@ SCM set_option(SCM smob,
  *        min/max for integers
  */
 SCM build_tree_node(SCM section,
-		    SCM option,
-		    SCM description,
-		    SCM help,
-		    SCM children,
-		    SCM visible,
-		    SCM value,
-		    SCM range) {
+  	    SCM option,
+  	    SCM description,
+  	    SCM help,
+  	    SCM children,
+  	    SCM visible,
+  	    SCM value,
+  	    SCM range) {
   struct GNS_Tree * tree;
   SCM child;
   int i;
@@ -262,7 +262,7 @@ SCM build_tree_node(SCM section,
   for (i=0;i<clen;i++) {
     child = scm_list_ref(children, scm_from_signed_integer(i));
     SCM_ASSERT(SCM_SMOB_PREDICATE(tree_tag, child),
-	       children, SCM_ARG5, "build_tree_node");
+         children, SCM_ARG5, "build_tree_node");
   }
   SCM_ASSERT(scm_boolean_p(visible), visible, SCM_ARG6, "build_tree_node");
   if (scm_is_string(value)) {
@@ -270,24 +270,24 @@ SCM build_tree_node(SCM section,
     len = scm_to_int(scm_length(range));
     for (i=0;i<len;i++)
       SCM_ASSERT(scm_string_p(scm_list_ref(range,
-					   scm_from_signed_integer(i))),
-		 range, SCM_ARGn, "build_tree_node");
+  				   scm_from_signed_integer(i))),
+  	 range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_integer(value)) {
     SCM_ASSERT(scm_pair_p(range),
-	       range, SCM_ARGn, "build_tree_node");
+         range, SCM_ARGn, "build_tree_node");
     SCM_ASSERT(scm_is_integer(SCM_CAR(range)),
-	       range, SCM_ARGn, "build_tree_node");
+         range, SCM_ARGn, "build_tree_node");
     SCM_ASSERT(scm_is_integer(SCM_CDR(range)),
-	       range, SCM_ARGn, "build_tree_node");
+         range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_true(scm_real_p(value))) {
     /* no checks */
   } else if (scm_is_true(scm_boolean_p(value))) {
     /* no checks */
   } else {
     SCM_ASSERT(0,
-	       range,
-	       SCM_ARG7,
-	       "build_tree_node"); /* invalid type */
+         range,
+         SCM_ARG7,
+         "build_tree_node"); /* invalid type */
   }
 
   /* construct C object */
@@ -312,23 +312,23 @@ SCM build_tree_node(SCM section,
     tree->value.String.legalRange = MALLOC(sizeof(char*) * (len+1));
     for (i=0;i<len-1;i++)
       tree->value.String.legalRange[i]
-	= scm_to_locale_string(scm_list_ref(range,
-					    scm_from_signed_integer(i+1)));
+  = scm_to_locale_string(scm_list_ref(range,
+  				    scm_from_signed_integer(i+1)));
     if (len == 0)
       tree->value.String.legalRange[len] = NULL;
     else
       tree->value.String.legalRange[len-1] = NULL;
     if (len > 0)
       type = scm_to_locale_string(scm_list_ref(range,
-					       scm_from_signed_integer(0)));
+  				       scm_from_signed_integer(0)));
     else
       type = STRDUP("*");
     GE_ASSERT(NULL, type != NULL);
     if (0 == strcasecmp(type,
-			"MC")) {
+  		"MC")) {
       tree->type |= GNS_MC;
     } else if (0 == strcasecmp(type,
-			       "SC")) {
+  		       "SC")) {
       tree->type |= GNS_SC;
     } else {
       GE_BREAK(NULL, 0 == strcasecmp(type, "*"));
@@ -373,7 +373,7 @@ parse_internal(void * spec) {
 
 struct GNS_Tree *
 tree_parse(struct GE_Context * ectx,
-	   const char * specification) {
+     const char * specification) {
   struct GNS_Tree * ret;
 
   ret = parse_internal((void*) specification);
@@ -402,11 +402,11 @@ notify_change_internal(void * cls) {
  * Update visibility (and notify about changes).
  */
 void tree_notify_change(struct GC_Configuration * cfg,
-			VisibilityChangeListener vcl,
-			void * ctx,
-			struct GE_Context * ectx,
-			struct GNS_Tree * root,
-			struct GNS_Tree * change) {
+  		VisibilityChangeListener vcl,
+  		void * ctx,
+  		struct GE_Context * ectx,
+  		struct GNS_Tree * root,
+  		struct GNS_Tree * change) {
   TC tc;
 
   tc.cfg = cfg;
@@ -459,17 +459,17 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   scm_set_smob_free (tree_tag, free_box);
   scm_set_smob_print (tree_tag, print_tree);
   scm_c_define_gsubr("change-visible",
-		     4, 0, 0,
-		     &change_visible);
+  	     4, 0, 0,
+  	     &change_visible);
   scm_c_define_gsubr("build-tree-node",
-		     8, 0, 0,
-		     &build_tree_node);
+  	     8, 0, 0,
+  	     &build_tree_node);
   scm_c_define_gsubr("get-option",
-		     3, 0, 0,
-		     &get_option);
+  	     3, 0, 0,
+  	     &get_option);
   scm_c_define_gsubr("set-option",
-		     4, 0, 0,
-		     &set_option);
+  	     4, 0, 0,
+  	     &set_option);
 }
 
 void __attribute__ ((destructor)) gns_scheme_fin() {

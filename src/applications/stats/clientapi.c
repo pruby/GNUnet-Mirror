@@ -79,49 +79,49 @@ STATS_p2pMessageName(unsigned short type) {
     name = "P2P_PROTO_tracekit_REPLY";
     break;
 
-  case P2P_PROTO_tbench_REQUEST	:
+  case P2P_PROTO_tbench_REQUEST  :
     name = "P2P_PROTO_tbench_REQUEST";
     break;
-  case P2P_PROTO_tbench_REPLY	:
+  case P2P_PROTO_tbench_REPLY  :
     name = "P2P_PROTO_tbench_REPLY";
     break;
 
-  case P2P_PROTO_rpc_REQ	:
+  case P2P_PROTO_rpc_REQ  :
     name = "P2P_PROTO_rpc_REQ";
     break;
-  case P2P_PROTO_rpc_RES	:
+  case P2P_PROTO_rpc_RES  :
     name = "P2P_PROTO_rpc_RES";
     break;
-  case P2P_PROTO_rpc_ACK	:
+  case P2P_PROTO_rpc_ACK  :
     name = "P2P_PROTO_rpc_ACK";
     break;
 
-  case P2P_PROTO_DHT_DISCOVERY	:
+  case P2P_PROTO_DHT_DISCOVERY  :
     name = "P2P_PROTO_DHT_DISCOVERY";
     break;
-  case P2P_PROTO_DHT_ASK_HELLO	:
+  case P2P_PROTO_DHT_ASK_HELLO  :
     name = "P2P_PROTO_DHT_ASK_HELLO";
     break;
-  case P2P_PROTO_DHT_GET	:
+  case P2P_PROTO_DHT_GET  :
     name = "P2P_PROTO_DHT_GET";
     break;
-  case P2P_PROTO_DHT_PUT	:
+  case P2P_PROTO_DHT_PUT  :
     name = "P2P_PROTO_DHT_PUT";
     break;
-  case P2P_PROTO_DHT_RESULT	:
+  case P2P_PROTO_DHT_RESULT  :
     name = "P2P_PROTO_DHT_RESULT";
     break;
 
-  case P2P_PROTO_aip_IP	:
+  case P2P_PROTO_aip_IP  :
     name = "P2P_PROTO_aip_IP";
     break;
-  case P2P_PROTO_aip_ROUTE	:
+  case P2P_PROTO_aip_ROUTE  :
     name = "P2P_PROTO_aip_ROUTE";
     break;
-  case P2P_PROTO_aip_ROUTES	:
+  case P2P_PROTO_aip_ROUTES  :
     name = "P2P_PROTO_aip_ROUTES";
     break;
-  case P2P_PROTO_aip_GETROUTE	:
+  case P2P_PROTO_aip_GETROUTE  :
     name = "P2P_PROTO_aip_GETROUTE";
     break;
 
@@ -286,9 +286,9 @@ STATS_csMessageName(unsigned short type) {
  * @return OK on success, SYSERR on error
  */
 int STATS_getStatistics(struct GE_Context * ectx,
-			struct ClientServerConnection * sock,
-			STATS_StatProcessor processor,
-			void * cls) {
+  		struct ClientServerConnection * sock,
+  		STATS_StatProcessor processor,
+  		void * cls) {
   CS_stats_reply_MESSAGE * statMsg;
   MESSAGE_HEADER csHdr;
   unsigned int count;
@@ -302,7 +302,7 @@ int STATS_getStatistics(struct GE_Context * ectx,
   csHdr.type
     = htons(CS_PROTO_stats_GET_STATISTICS);
   if (SYSERR == connection_write(sock,
-				 &csHdr))
+  			 &csHdr))
     return SYSERR;
   statMsg
     = MALLOC(sizeof(CS_stats_reply_MESSAGE));
@@ -315,10 +315,10 @@ int STATS_getStatistics(struct GE_Context * ectx,
     /* printf("reading from socket starting %u of %d\n",
        count, ntohl(statMsg->totalCounters) );*/
     if (SYSERR == connection_read(sock,
-				  (MESSAGE_HEADER**)&statMsg))
+  			  (MESSAGE_HEADER**)&statMsg))
       return SYSERR;
     if ( (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) ||
-	 (((char*)statMsg)[ntohs(statMsg->header.size)-1] != '\0') ) {
+   (((char*)statMsg)[ntohs(statMsg->header.size)-1] != '\0') ) {
       GE_BREAK(ectx, 0);
       ret = SYSERR;
       break;
@@ -326,21 +326,21 @@ int STATS_getStatistics(struct GE_Context * ectx,
     mpos = sizeof(unsigned long long) * ntohl(statMsg->statCounters);
     if (count == 0) {
       ret = processor(_("Uptime (seconds)"),
-		      (unsigned long long)
-		      ((get_time() - ntohll(statMsg->startTime))/cronSECONDS),
-		      cls);
+  	      (unsigned long long)
+  	      ((get_time() - ntohll(statMsg->startTime))/cronSECONDS),
+  	      cls);
     }
     for (i=0;i<ntohl(statMsg->statCounters);i++) {
       if (mpos+strlen(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 >
-	  ntohs(statMsg->header.size) - sizeof(CS_stats_reply_MESSAGE)) {
-	GE_BREAK(ectx, 0);
-	ret = SYSERR;
-	break; /* out of bounds! */
+    ntohs(statMsg->header.size) - sizeof(CS_stats_reply_MESSAGE)) {
+  GE_BREAK(ectx, 0);
+  ret = SYSERR;
+  break; /* out of bounds! */
       }
       if (ret != SYSERR) {
-	ret = processor(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos],
-			ntohll(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values[i]),
-			cls);
+  ret = processor(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos],
+  		ntohll(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values[i]),
+  		cls);
       }
       mpos += strlen(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
     }
@@ -358,9 +358,9 @@ int STATS_getStatistics(struct GE_Context * ectx,
  * @return OK on success, SYSERR on error
  */
 int STATS_getAvailableProtocols(struct GE_Context * ectx,
-				struct ClientServerConnection * sock,
-				STATS_ProtocolProcessor processor,
-				void * cls) {
+  			struct ClientServerConnection * sock,
+  			STATS_ProtocolProcessor processor,
+  			void * cls) {
   CS_stats_get_supported_MESSAGE csStatMsg;
   unsigned short i;
   unsigned short j;
@@ -377,17 +377,17 @@ int STATS_getAvailableProtocols(struct GE_Context * ectx,
     for (i=0;i<65535;i++) {
       csStatMsg.type = htons(i);
       if (SYSERR == connection_write(sock,
-				     &csStatMsg.header))
-	return SYSERR;
+  			     &csStatMsg.header))
+  return SYSERR;
       if (SYSERR == connection_read_result(sock,
-					   &supported))
-	return SYSERR;
-      if (supported == YES) {	
-	ret = processor(i,
-			(j == 2) ? YES : NO,
-			cls);
-	if (ret != OK)
-	  break;
+  				   &supported))
+  return SYSERR;
+      if (supported == YES) {  
+  ret = processor(i,
+  		(j == 2) ? YES : NO,
+  		cls);
+  if (ret != OK)
+    break;
       }
     }
   }

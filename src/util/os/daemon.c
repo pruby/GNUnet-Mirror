@@ -37,8 +37,8 @@
  *  daemonized sucessfully, -1 on error
  */
 static pid_t launchWithExec(struct GE_Context * ectx,
-			    const char * cfgFile,
-			    int daemonize) {
+  		    const char * cfgFile,
+  		    int daemonize) {
   pid_t pid;
 
 #ifndef MINGW
@@ -72,31 +72,31 @@ static pid_t launchWithExec(struct GE_Context * ectx,
       args[1] = "-c";
       args[2] = cfgFile;
       if (NO == daemonize) {
-	args[3] = "-d";
-	args[4] = NULL;
+  args[3] = "-d";
+  args[4] = NULL;
       } else
-	args[3] = NULL;
+  args[3] = NULL;
     } else {
       if (NO == daemonize) {
-	args[1] = "-d";
-	args[2] = NULL;
+  args[1] = "-d";
+  args[2] = NULL;
       } else
-	args[1] = NULL;
+  args[1] = NULL;
     }
     errno = 0;
 #ifndef MINGW
     nice(10); /* return value is not well-defined */
     if (errno != 0)
       GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_USER | GE_BULK,
-		      "nice");
+  	      GE_WARNING | GE_USER | GE_BULK,
+  	      "nice");
 
     if (path != NULL)
       i = execv(path,
-	    (char**) args);
+      (char**) args);
     else
       i = execvp("gnunetd",
-	     (char**) args);
+       (char**) args);
 #else
     if (path != NULL)
       pid = i = spawnv(_P_NOWAIT, path, (const char *const *) args);
@@ -106,9 +106,9 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     FREENONNULL(path);
     if (i == -1)
       GE_LOG_STRERROR_FILE(ectx,
-  			 GE_ERROR | GE_USER | GE_BULK,
-  			 "exec",
-  			 path == NULL ? "gnunetd" : path);
+    		 GE_ERROR | GE_USER | GE_BULK,
+    		 "exec",
+    		 path == NULL ? "gnunetd" : path);
 #ifndef MINGW
     _exit(-1);
 #endif
@@ -121,12 +121,12 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     ret = waitpid(pid, &status, 0);
     if (ret == -1) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_USER | GE_BULK,
-		      "waitpid");
+  	      GE_ERROR | GE_USER | GE_BULK,
+  	      "waitpid");
       return SYSERR;
     }
     if ( (WIFEXITED(status) &&
-	  (0 != WEXITSTATUS(status)) ) ) {
+    (0 != WEXITSTATUS(status)) ) ) {
       return SYSERR;
     }
 #ifdef WCOREDUMP
@@ -135,7 +135,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     }
 #endif
     if (WIFSIGNALED(status) ||
-	WTERMSIG(status) ) {
+  WTERMSIG(status) ) {
       return SYSERR;
     }
     return 0;
@@ -153,17 +153,17 @@ static pid_t launchWithExec(struct GE_Context * ectx,
  *  daemonized sucessfully, -1 on error
  */
 int os_daemon_start(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    const char * cfgFile,
-		    int daemonize) {
+  	    struct GC_Configuration * cfg,
+  	    const char * cfgFile,
+  	    int daemonize) {
 #if LINUX || OSX || SOLARIS || SOMEBSD || MINGW
   return launchWithExec(ectx,
-			cfgFile,
-			daemonize);
+  		cfgFile,
+  		daemonize);
 #else
   /* any system out there that does not support THIS!? */
   if (-1 == system("gnunetd")) /* we may not have nice,
-				  so let's be minimalistic here. */
+  			  so let's be minimalistic here. */
     return -1;
   return 0;
 #endif
@@ -208,7 +208,7 @@ static int termProcess(int pid) {
  *  some error
  */
 int os_daemon_stop(struct GE_Context * ectx,
-		   int pid) {
+  	   int pid) {
   pid_t p;
   int status;
 
@@ -216,8 +216,8 @@ int os_daemon_stop(struct GE_Context * ectx,
   p = pid;
   if (p != WAITPID(p, &status, 0)) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_USER | GE_BULK,
-		    "waitpid");
+  	    GE_ERROR | GE_USER | GE_BULK,
+  	    "waitpid");
     return SYSERR;
   }
   if (WEXITSTATUS(status) == 0)

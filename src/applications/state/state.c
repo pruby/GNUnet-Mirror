@@ -51,8 +51,8 @@ static char * handle;
  * @return the number of bytes read on success, -1 on failure
  */
 static int stateReadContent(struct GE_Context * ectx,
-			    const char * name,
-			    void ** result) {
+  		    const char * name,
+  		    void ** result) {
   /* open file, must exist, open read only */
   char * dbh = handle;
   int fd;
@@ -62,37 +62,37 @@ static int stateReadContent(struct GE_Context * ectx,
   size_t n;
 
   GE_ASSERT(ectx,
-	    handle != NULL);
+      handle != NULL);
   if (result == NULL)
     return -1;
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
   SNPRINTF(fil,
-	   n,
-	   "%s/%s",
-	   dbh,
-	   name);
+     n,
+     "%s/%s",
+     dbh,
+     name);
   if ( (OK != disk_file_test(ectx,
-			     fil)) ||
+  		     fil)) ||
        (OK != disk_file_size(ectx,
-			     fil,
-			     &fsize,
-			     YES)) ||
+  		     fil,
+  		     &fsize,
+  		     YES)) ||
        (fsize == 0) ||
        (-1 == (fd = disk_file_open(ectx,
-				   fil,
-				   O_RDONLY,
-				   S_IRUSR) )) ) {
+  			   fil,
+  			   O_RDONLY,
+  			   S_IRUSR) )) ) {
     FREE(fil);
     return -1;
   }
   *result = MALLOC_LARGE(fsize);
   size = READ(fd,
-	      *result,
-	      fsize);
+        *result,
+        fsize);
   disk_file_close(ectx,
-		  fil,
-		  fd);
+  	  fil,
+  	  fd);
   FREE(fil);
   if (size == -1) {
     FREE(*result);
@@ -111,44 +111,44 @@ static int stateReadContent(struct GE_Context * ectx,
  * @return SYSERR on error, OK if ok.
  */
 static int stateAppendContent(struct GE_Context * ectx,
-			      const char * name,
-			      int len,
-			      const void * block) {
+  		      const char * name,
+  		      int len,
+  		      const void * block) {
   char * dbh = handle;
   char * fil;
   int fd;
   size_t n;
 
   GE_ASSERT(ectx,
-	    handle != NULL);
+      handle != NULL);
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
   SNPRINTF(fil,
-	   n,
-	   "%s/%s",
-	   dbh,
-	   name);
+     n,
+     "%s/%s",
+     dbh,
+     name);
   fd = disk_file_open(ectx,
-		      fil,
-		      O_RDWR|O_CREAT,
-		      S_IRUSR|S_IWUSR);
+  	      fil,
+  	      O_RDWR|O_CREAT,
+  	      S_IRUSR|S_IWUSR);
   if (fd == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_BULK | GE_USER,
-			 "open",
-			 fil);
+  		 GE_WARNING | GE_BULK | GE_USER,
+  		 "open",
+  		 fil);
     FREE(fil);
     return SYSERR; /* failed! */
   }
   lseek(fd,
-	0,
-	SEEK_END);
+  0,
+  SEEK_END);
   WRITE(fd,
-	block,
-	len);
+  block,
+  len);
   disk_file_close(ectx,
-		  fil,
-		  fd);
+  	  fil,
+  	  fd);
   FREE(fil);
   return OK;
 }
@@ -162,9 +162,9 @@ static int stateAppendContent(struct GE_Context * ectx,
  * @return SYSERR on error, OK if ok.
  */
 static int stateWriteContent(struct GE_Context * ectx,
-			     const char * name,
-			     int len,
-			     const void * block) {
+  		     const char * name,
+  		     int len,
+  		     const void * block) {
   char * dbh = handle;
   char * fil;
   int fd;
@@ -174,33 +174,33 @@ static int stateWriteContent(struct GE_Context * ectx,
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
   SNPRINTF(fil,
-	   n,
-	   "%s/%s",
-	   dbh,
-	   name);
+     n,
+     "%s/%s",
+     dbh,
+     name);
   fd = disk_file_open(ectx,
-		      fil,
-		      O_RDWR|O_CREAT,
-		      S_IRUSR|S_IWUSR);
+  	      fil,
+  	      O_RDWR|O_CREAT,
+  	      S_IRUSR|S_IWUSR);
   if (fd == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_BULK | GE_USER,
-			 "open",
-			 fil);
+  		 GE_WARNING | GE_BULK | GE_USER,
+  		 "open",
+  		 fil);
     FREE(fil);
     return SYSERR; /* failed! */
   }
   WRITE(fd,
-	block,
-	len);
+  block,
+  len);
   if (0 != ftruncate(fd, len))
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_BULK | GE_ADMIN,
-			 "ftruncate",
-			 fil);
+  		 GE_WARNING | GE_BULK | GE_ADMIN,
+  		 "ftruncate",
+  		 fil);
   disk_file_close(ectx,
-		  fil,
-		  fd);
+  	  fil,
+  	  fd);
   FREE(fil);
   return OK;
 }
@@ -211,7 +211,7 @@ static int stateWriteContent(struct GE_Context * ectx,
  *        (without directory)
  */
 static int stateUnlinkFromDB(struct GE_Context * ectx,
-			     const char * name) {
+  		     const char * name) {
   char * dbh = handle;
   char * fil;
   size_t n;
@@ -220,10 +220,10 @@ static int stateUnlinkFromDB(struct GE_Context * ectx,
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
   SNPRINTF(fil,
-	   n,
-	   "%s/%s",
-	   dbh,
-	   name);
+     n,
+     "%s/%s",
+     dbh,
+     name);
   UNLINK(fil);
   FREE(fil);
   return OK;
@@ -238,22 +238,22 @@ provide_module_state(CoreAPIForApplication * capi) {
 
   dbh = NULL;
   if (-1 == GC_get_configuration_value_filename(capi->cfg,
-						"GNUNETD",
-						"GNUNETD_HOME",
-						VAR_DAEMON_DIRECTORY,
-						&dbh))
+  					"GNUNETD",
+  					"GNUNETD_HOME",
+  					VAR_DAEMON_DIRECTORY,
+  					&dbh))
     return NULL;
   GE_ASSERT(capi->ectx, dbh != NULL);
   n = strlen(dbh) + strlen(DIR_EXT) + 5;
   handle = MALLOC(n);
   SNPRINTF(handle,
-	   n,
-	   "%s/%s/",
-	   dbh,
-	   DIR_EXT);
+     n,
+     "%s/%s/",
+     dbh,
+     DIR_EXT);
   FREE(dbh);
   if (SYSERR == disk_directory_create(capi->ectx,
-				      handle)) {
+  			      handle)) {
     FREE(handle);
     handle = NULL;
     return NULL;

@@ -57,7 +57,7 @@ static int waitForConnect(const char * name,
  * @return OK on success, SYSERR on failure
  */
 static int connect_daemons(unsigned short port1,
-			   unsigned short port2) {
+  		   unsigned short port2) {
   char host[128];
   GC_Configuration * cfg1 = GC_create_C_impl();
   GC_Configuration * cfg2 = GC_create_C_impl();
@@ -68,39 +68,39 @@ static int connect_daemons(unsigned short port1,
 
   ret = SYSERR;
   SNPRINTF(host,
-	   128,
-	   "localhost:%u",
-	   port1);
+     128,
+     "localhost:%u",
+     port1);
   GC_set_configuration_value_string(cfg1,
-				    NULL,
-				    "NETWORK",
-				    "HOST",
-				    host);
+  			    NULL,
+  			    "NETWORK",
+  			    "HOST",
+  			    host);
   SNPRINTF(host,
-	   128,
-	   "localhost:%u",
-	   port2);
+     128,
+     "localhost:%u",
+     port2);
   GC_set_configuration_value_string(cfg2,
-				    NULL,
-				    "NETWORK",
-				    "HOST",
-				    host);
+  			    NULL,
+  			    "NETWORK",
+  			    "HOST",
+  			    host);
   if ( (OK == connection_wait_for_running(NULL,
-					  cfg1,
-					  300 * cronSECONDS) ) &&
+  				  cfg1,
+  				  300 * cronSECONDS) ) &&
        (OK == connection_wait_for_running(NULL,
-					  cfg2,
-					  300 * cronSECONDS) ) ) {
+  				  cfg2,
+  				  300 * cronSECONDS) ) ) {
     sock1 = client_connection_create(NULL,
-				     cfg1);
+  			     cfg1);
     sock2 = client_connection_create(NULL,
-				     cfg2);
+  			     cfg2);
     h1 = NULL;
     fprintf(stderr, "Notifying NATed peer about other peer");
     if ( (OK == gnunet_identity_get_self(sock1,
-				       &h1)) &&
-	 (OK == gnunet_identity_peer_add(sock2,
-					 h1)) ) {
+  			       &h1)) &&
+   (OK == gnunet_identity_peer_add(sock2,
+  				 h1)) ) {
       fprintf(stderr, "!\n");
       ret = OK;
     } else
@@ -110,7 +110,7 @@ static int connect_daemons(unsigned short port1,
     connection_destroy(sock2);
   } else {
     fprintf(stderr,
-	    "Failed to establish connection with peers.\n");
+      "Failed to establish connection with peers.\n");
   }
   GC_free(cfg1);
   GC_free(cfg2);
@@ -137,23 +137,23 @@ int main(int argc, char ** argv) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_PEERS
   peer1 = os_daemon_start(NULL,
-			  cfg,
-			  "http-peer.conf",
-			  NO);
+  		  cfg,
+  		  "http-peer.conf",
+  		  NO);
   if (peer1 == -1) {
     GC_free(cfg);
     return -1;
   }
   peer2 = os_daemon_start(NULL,
-			  cfg,
-			  "nat-http-peer.conf",
-			  NO);  
+  		  cfg,
+  		  "nat-http-peer.conf",
+  		  NO);  
   if (peer2 == -1) {
     os_daemon_stop(NULL, peer1);
     GC_free(cfg);
@@ -161,24 +161,24 @@ int main(int argc, char ** argv) {
   }
 #endif
   connect_daemons(2087,
-		  12087);
+  	  12087);
   if (OK == connection_wait_for_running(NULL,
-					cfg,
-					30 * cronSECONDS)) {
+  				cfg,
+  				30 * cronSECONDS)) {
     sock = client_connection_create(NULL,
-				    cfg);
+  			    cfg);
     left = 30; /* how many iterations should we wait? */
     while (OK == STATS_getStatistics(NULL,
-				     sock,
-				     &waitForConnect,
-				     NULL)) {
+  			     sock,
+  			     &waitForConnect,
+  			     NULL)) {
       printf("Waiting for peers to connect (%u iterations left)...\n",
-	     left);
+       left);
       sleep(5);
       left--;
       if (left == 0) {
-	ret = 1;
-	break;
+  ret = 1;
+  break;
       }
     }
     connection_destroy(sock);

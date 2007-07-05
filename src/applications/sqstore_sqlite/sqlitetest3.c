@@ -56,7 +56,7 @@ static unsigned long long stored_ops;
 static cron_t start_time;
 
 static int putValue(SQstore_ServiceAPI * api,
-		    int i) {
+  	    int i) {
   Datastore_Value * value;
   size_t size;
   static HashCode512 key;
@@ -68,7 +68,7 @@ static int putValue(SQstore_ServiceAPI * api,
     size = sizeof(Datastore_Value) + weak_randomi(32 * 1024);
   size = size - (size & 7); /* always multiple of 8 */
   GE_ASSERT(NULL,
-	    size >= sizeof(Datastore_Value));
+      size >= sizeof(Datastore_Value));
   /* generate random key */
   hash(&key,
        sizeof(HashCode512),
@@ -80,8 +80,8 @@ static int putValue(SQstore_ServiceAPI * api,
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(get_time() + 60 * cronHOURS + weak_randomi(1000));
   memset(&value[1],
-	 i,
-	 size - sizeof(Datastore_Value));
+   i,
+   size - sizeof(Datastore_Value));
   if (OK != api->put(&key, value)) {
     FREE(value);
     fprintf(stderr, "E");
@@ -101,8 +101,8 @@ static int putValue(SQstore_ServiceAPI * api,
 
 static int
 iterateDummy(const HashCode512 * key,
-	     const Datastore_Value * val,
-	     void * cls) {
+       const Datastore_Value * val,
+       void * cls) {
   if (GNUNET_SHUTDOWN_TEST() == YES)
     return SYSERR;
   return OK;
@@ -119,9 +119,9 @@ static int test(SQstore_ServiceAPI * api) {
     start = get_time();
     for (j=0;j<PUT_10;j++) {
       if (OK != putValue(api, j))
-	break;
+  break;
       if (GNUNET_SHUTDOWN_TEST() == YES)
-	break;
+  break;
     }
     end = get_time();
     printf("%3u insertion              took %20llums\n", i, end-start);
@@ -176,15 +176,15 @@ int main(int argc, char *argv[]) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,
-	   cfg,
-	   cron,
-	   NULL);
+     cfg,
+     cron,
+     NULL);
   api = requestService("sqstore");
   if (api != NULL) {
     start_time = get_time();

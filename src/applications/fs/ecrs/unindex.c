@@ -53,9 +53,9 @@
  * FS_delete as argument!).
  */
 static int pushBlock(struct ClientServerConnection * sock,
-		     const CHK * chk,	
-		     unsigned int level,
-		     Datastore_Value ** iblocks) {
+  	     const CHK * chk,	
+  	     unsigned int level,
+  	     Datastore_Value ** iblocks) {
   unsigned int size;
   unsigned int present;
   Datastore_Value * value;
@@ -67,43 +67,43 @@ static int pushBlock(struct ClientServerConnection * sock,
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
     fileBlockGetKey(db,
-		    size,
-		    &ichk.key);
+  	    size,
+  	    &ichk.key);
     fileBlockGetQuery(db,
-		      size,
-		      &ichk.query);
+  	      size,
+  	      &ichk.query);
     if (OK != pushBlock(sock,
-			&ichk,
-			level+1,
-			iblocks)) {
+  		&ichk,
+  		level+1,
+  		iblocks)) {
       GE_BREAK(NULL, 0);
       return SYSERR;
     }
     fileBlockEncode(db,
-		    size,
-		    &ichk.query,
-		    &value);
+  	    size,
+  	    &ichk.query,
+  	    &value);
 #if STRICT_CHECKS
     if (SYSERR == FS_delete(sock,
-			    value)) {
+  		    value)) {
       FREE(value);
       GE_BREAK(NULL, 0);
       return SYSERR;
     }
 #else
     FS_delete(sock,
-	      value);
+        value);
 #endif
     FREE(value);
     size = sizeof(DBlock);
   }
   /* append CHK */
   memcpy(&((char*)db)[size],
-	 chk,
-	 sizeof(CHK));
+   chk,
+   sizeof(CHK));
   iblocks[level]->size = htonl(size +
-			       sizeof(CHK) +
-			       sizeof(Datastore_Value));
+  		       sizeof(CHK) +
+  		       sizeof(Datastore_Value));
   return OK;
 }
 
@@ -115,9 +115,9 @@ static int pushBlock(struct ClientServerConnection * sock,
  * b) delete symbolic link
  */
 static int undoSymlinking(struct GE_Context * ectx,
-			  const char * fn,
-			  const HashCode512 * fileId,
-			  struct ClientServerConnection * sock) {
+  		  const char * fn,
+  		  const HashCode512 * fileId,
+  		  struct ClientServerConnection * sock) {
   EncName enc;
   char * serverDir;
   char * serverFN;
@@ -128,11 +128,11 @@ static int undoSymlinking(struct GE_Context * ectx,
     return OK; /* symlinks do not exist? */
 #endif
   if (0 != LSTAT(fn,
-		 &buf)) {
+  	 &buf)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN,
-			 "stat",
-			 fn);
+  		 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN,
+  		 "stat",
+  		 fn);
     return SYSERR;
   }
 #ifdef S_ISLNK
@@ -141,27 +141,27 @@ static int undoSymlinking(struct GE_Context * ectx,
 #endif
   serverDir
     = getConfigurationOptionValue(sock,
-				  "FS",
-				  "INDEX-DIRECTORY");
+  			  "FS",
+  			  "INDEX-DIRECTORY");
   if (serverDir == NULL)
     return OK;
   serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
   strcpy(serverFN,
-	 serverDir);
+   serverDir);
   FREE(serverDir);
   if (serverFN[strlen(serverFN)-1] != DIR_SEPARATOR)
     strcat(serverFN,
-	   DIR_SEPARATOR_STR);
+     DIR_SEPARATOR_STR);
   hash2enc(fileId,
-	   &enc);
+     &enc);
   strcat(serverFN,
-	 (char*)&enc);
+   (char*)&enc);
 
   if (0 != UNLINK(serverFN)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN,
-			 "unlink",
-			 serverFN);
+  		 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN,
+  		 "unlink",
+  		 serverFN);
     FREE(serverFN);
     return SYSERR;
   }
@@ -177,12 +177,12 @@ static int undoSymlinking(struct GE_Context * ectx,
  * @return SYSERR if the unindexing failed (i.e. not indexed)
  */
 int ECRS_unindexFile(struct GE_Context * ectx,
-		     struct GC_Configuration * cfg,
-		     const char * filename,
-		     ECRS_UploadProgressCallback upcb,
-		     void * upcbClosure,
-		     ECRS_TestTerminate tt,
-		     void * ttClosure) {
+  	     struct GC_Configuration * cfg,
+  	     const char * filename,
+  	     ECRS_UploadProgressCallback upcb,
+  	     void * upcbClosure,
+  	     ECRS_TestTerminate tt,
+  	     void * ttClosure) {
   unsigned long long filesize;
   unsigned long long pos;
   unsigned int treedepth;
@@ -203,14 +203,14 @@ int ECRS_unindexFile(struct GE_Context * ectx,
 
   start = get_time();
   if (YES != disk_file_test(ectx,
-			    filename)) {
+  		    filename)) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
   if (OK != disk_file_size(ectx,
-			   filename,
-			   &filesize,
-			   YES))
+  		   filename,
+  		   &filesize,
+  		   YES))
     return SYSERR;
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL)
@@ -219,8 +219,8 @@ int ECRS_unindexFile(struct GE_Context * ectx,
   if (upcb != NULL)
     upcb(filesize, 0, eta, upcbClosure);
   if (SYSERR == getFileHash(ectx,
-			    filename,
-			    &fileId)) {
+  		    filename,
+  		    &fileId)) {
     connection_destroy(sock);
     GE_BREAK(ectx, 0);
     return SYSERR;
@@ -239,11 +239,11 @@ int ECRS_unindexFile(struct GE_Context * ectx,
   /* Test if file is indexed! */
   wasIndexed
     = FS_testIndexed(sock,
-		     &fileId);
+  	     &fileId);
 
   fd = disk_file_open(ectx,
-		      filename,
-		      O_RDONLY | O_LARGEFILE);
+  	      filename,
+  	      O_RDONLY | O_LARGEFILE);
   if (fd == -1)
     return SYSERR;
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
@@ -271,68 +271,68 @@ int ECRS_unindexFile(struct GE_Context * ectx,
       upcb(filesize, pos, eta, upcbClosure);
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto FAILURE;
+  goto FAILURE;
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
       memset(&db[1],
-	     0,
-	     DBLOCK_SIZE);
+       0,
+       DBLOCK_SIZE);
     }
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd,
-		     &db[1],
-		     size)) {
+  	     &db[1],
+  	     size)) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			   "READ",
-			   filename);
+  		   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+  		   "READ",
+  		   filename);
       goto FAILURE;
     }
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto FAILURE;
+  goto FAILURE;
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
-		    &chk.key);
+  	    size + sizeof(DBlock),
+  	    &chk.key);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
-		      &chk.query);
+  	      size + sizeof(DBlock),
+  	      &chk.query);
     if (OK != pushBlock(sock,
-			&chk,
-			0, /* dblocks are on level 0 */
-			iblocks)) {
+  		&chk,
+  		0, /* dblocks are on level 0 */
+  		iblocks)) {
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
     if (! wasIndexed) {
       if (OK ==
-	  fileBlockEncode(db,
-			  size,
-			  &chk.query,
-			  &value)) {
-	*value = *dblock; /* copy options! */
+    fileBlockEncode(db,
+  		  size,
+  		  &chk.query,
+  		  &value)) {
+  *value = *dblock; /* copy options! */
 #if STRICT_CHECKS
-	if (OK != FS_delete(sock,
-			    value)) {
-	  FREE(value);
-	  GE_BREAK(ectx, 0);
-	  goto FAILURE;
-	}
+  if (OK != FS_delete(sock,
+  		    value)) {
+    FREE(value);
+    GE_BREAK(ectx, 0);
+    goto FAILURE;
+  }
 #else
-	FS_delete(sock,
-		  value);
+  FS_delete(sock,
+  	  value);
 #endif
-	FREE(value);
+  FREE(value);
       } else {
-	goto FAILURE;
+  goto FAILURE;
       }
     }
     pos += size;
     now = get_time();
     eta = (cron_t) (start +
-		    (((double)(now - start)/(double)pos))
-		    * (double)filesize);
+  	    (((double)(now - start)/(double)pos))
+  	    * (double)filesize);
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
@@ -341,32 +341,32 @@ int ECRS_unindexFile(struct GE_Context * ectx,
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
-		    size,
-		    &chk.key);
+  	    size,
+  	    &chk.key);
     fileBlockGetQuery(db,
-		      size,
-		      &chk.query);
+  	      size,
+  	      &chk.query);
     if (OK != pushBlock(sock,
-			&chk,
-			i+1,
-			iblocks)) {
+  		&chk,
+  		i+1,
+  		iblocks)) {
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
     fileBlockEncode(db,
-		    size,
-		    &chk.query,
-		    &value);
+  	    size,
+  	    &chk.query,
+  	    &value);
 #if STRICT_CHECKS
     if (OK != FS_delete(sock,
-			value)) {
+  		value)) {
       FREE(value);
       GE_BREAK(ectx, 0);
       goto FAILURE;
     }
 #else
     FS_delete(sock,
-	      value);
+        value);
 #endif
     FREE(value);
     FREE(iblocks[i]);
@@ -375,14 +375,14 @@ int ECRS_unindexFile(struct GE_Context * ectx,
 
   if (wasIndexed) {
     if (OK == undoSymlinking(ectx,
-			     filename,
-			     &fileId,
-			     sock)) {
+  		     filename,
+  		     &fileId,
+  		     sock)) {
       if (OK != FS_unindex(sock,
-			   DBLOCK_SIZE,
-			   &fileId)) {
-	GE_BREAK(ectx, 0);
-	goto FAILURE;
+  		   DBLOCK_SIZE,
+  		   &fileId)) {
+  GE_BREAK(ectx, 0);
+  goto FAILURE;
       }
     } else {
       GE_BREAK(ectx, 0);

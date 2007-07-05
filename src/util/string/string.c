@@ -62,8 +62,8 @@ int SNPRINTF(char * buf,
  *          out the result like strncpy() does.
  */
 size_t strlcpy(char * dest,
-	       const char * src,
-	       size_t size) {
+         const char * src,
+         size_t size) {
   size_t ret;
 
   GE_ASSERT(NULL, dest != NULL);
@@ -89,8 +89,8 @@ size_t strlcpy(char * dest,
  * @param count The size of the destination buffer.
  */
 size_t strlcat(char * dest,
-	       const char * src,
-	       size_t count) {
+         const char * src,
+         size_t count) {
   size_t dsize;
   size_t len;
   size_t res;
@@ -128,21 +128,21 @@ char * string_get_fancy_time_interval(unsigned long long delta) {
       delta = delta / 60;
       unit = _(/* time unit */ "m");
       if (delta > 5 * 60) {
-	delta = delta / 60;
-	unit = _(/* time unit */ "h");
-	if (delta > 5 * 24) {
-	  delta = delta / 24;
-	  unit = _(/* time unit */ " days");	
-	}	
-      }		
-    }	
+  delta = delta / 60;
+  unit = _(/* time unit */ "h");
+  if (delta > 5 * 24) {
+    delta = delta / 24;
+    unit = _(/* time unit */ " days");	
   }	
+      }  	
+    }  
+  }  
   ret = MALLOC(32);
   SNPRINTF(ret,
-	   32,
-	   "%llu%s",
-	   delta,
-	   unit);
+     32,
+     "%llu%s",
+     delta,
+     unit);
   return ret;
 }
 
@@ -160,21 +160,21 @@ const char * unit = _(/* size unit */ "b");
       size = size / 1024;
       unit = _(/* size unit */ "MiB");
       if (size > 5 * 1024) {
-	size = size / 1024;
-	unit = _(/* size unit */ "GiB");
-	if (size > 5 * 1024) {
-	  size = size / 1024;
-	  unit = _(/* size unit */ "TiB");	
-	}	
-      }		
-    }	
+  size = size / 1024;
+  unit = _(/* size unit */ "GiB");
+  if (size > 5 * 1024) {
+    size = size / 1024;
+    unit = _(/* size unit */ "TiB");	
   }	
+      }  	
+    }  
+  }  
   ret = MALLOC(32);
   SNPRINTF(ret,
-	   32,
-	   "%llu%s",
-	   size,
-	   unit);
+     32,
+     "%llu%s",
+     size,
+     unit);
   return ret;
 }
 
@@ -190,9 +190,9 @@ const char * unit = _(/* size unit */ "b");
  *  string is returned.
  */
 char * string_convertToUtf8(struct GE_Context * ectx,
-			    const char * input,
-			    size_t len,
-			    const char * charset) {
+  		    const char * input,
+  		    size_t len,
+  		    const char * charset) {
   char * ret;
 #if ENABLE_NLS && HAVE_ICONV
   size_t tmpSize;
@@ -204,8 +204,8 @@ char * string_convertToUtf8(struct GE_Context * ectx,
   cd = iconv_open("UTF-8", charset);
   if (cd == (iconv_t) -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
-		    "iconv_open");
+  	    GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
+  	    "iconv_open");
     ret = MALLOC(len+1);
     memcpy(ret, input, len);
     ret[len] = '\0';
@@ -216,13 +216,13 @@ char * string_convertToUtf8(struct GE_Context * ectx,
   itmp = tmp;
   finSize = tmpSize;
   if (iconv(cd,
-	    (char**) &input,
-	    &len,
-	    &itmp,
-	    &finSize) == (size_t)-1) {
+      (char**) &input,
+      &len,
+      &itmp,
+      &finSize) == (size_t)-1) {
     GE_LOG_STRERROR(ectx,
-		    GE_USER | GE_WARNING | GE_BULK,
-		    "iconv");
+  	    GE_USER | GE_WARNING | GE_BULK,
+  	    "iconv");
     iconv_close(cd);
     FREE(tmp);
     ret = MALLOC(len+1);
@@ -232,14 +232,14 @@ char * string_convertToUtf8(struct GE_Context * ectx,
   }
   ret = MALLOC(tmpSize - finSize + 1);
   memcpy(ret,
-	 tmp,
-	 tmpSize - finSize);
+   tmp,
+   tmpSize - finSize);
   ret[tmpSize - finSize] = '\0';
   FREE(tmp);
   if (0 != iconv_close(cd))
     GE_LOG_STRERROR(ectx,
-		    GE_ADMIN | GE_WARNING | GE_REQUEST,
-		    "iconv_close");
+  	    GE_ADMIN | GE_WARNING | GE_REQUEST,
+  	    "iconv_close");
   return ret;
 #else
   ret = MALLOC(len+1);
@@ -260,7 +260,7 @@ char * string_convertToUtf8(struct GE_Context * ectx,
  *          NULL is returned on error
  */
 char * string_expandFileName(struct GE_Context * ectx,
-			     const char * fil) {
+  		     const char * fil) {
   char * buffer;
 #ifndef MINGW
   size_t len;
@@ -283,8 +283,8 @@ char * string_expandFileName(struct GE_Context * ectx,
     fm = getenv("HOME");
     if (fm == NULL) {
       GE_LOG(ectx,
-	     GE_USER | GE_ADMIN | GE_WARNING | GE_IMMEDIATE,
-	     _("Failed to expand `$HOME': environment variable `HOME' not set"));
+       GE_USER | GE_ADMIN | GE_WARNING | GE_IMMEDIATE,
+       _("Failed to expand `$HOME': environment variable `HOME' not set"));
       return NULL;
     }
     fm = STRDUP(fm);
@@ -293,7 +293,7 @@ char * string_expandFileName(struct GE_Context * ectx,
 
     /* skip over dir seperator to be consistent */
     if (fil_ptr[0] == DIR_SEPARATOR)
-    	fil_ptr++;
+      fil_ptr++;
   } else {
     /* relative path */
     fil_ptr = fil;
@@ -302,25 +302,25 @@ char * string_expandFileName(struct GE_Context * ectx,
     while (1) {
       buffer = MALLOC(len);
       if (getcwd(buffer, len) != NULL) {
-	fm = buffer;
-	break;
+  fm = buffer;
+  break;
       }
       if ( (errno == ERANGE) &&
-	   (len < 1024 * 1024 * 4) ) {
-	len *= 2;
-	FREE(buffer);
-	continue;
+     (len < 1024 * 1024 * 4) ) {
+  len *= 2;
+  FREE(buffer);
+  continue;
       }
       FREE(buffer);
       break;
     }
     if (fm == NULL) {
       GE_LOG_STRERROR(ectx,
-		      GE_USER | GE_WARNING | GE_IMMEDIATE,
-		      "getcwd");
+  	      GE_USER | GE_WARNING | GE_IMMEDIATE,
+  	      "getcwd");
       buffer = getenv("PWD"); /* alternative */
       if (buffer != NULL)
-	fm = STRDUP(buffer);
+  fm = STRDUP(buffer);
     }
     if (fm == NULL)
       fm = STRDUP("./"); /* give up */
@@ -328,7 +328,7 @@ char * string_expandFileName(struct GE_Context * ectx,
   n = strlen(fm) + 1 + strlen(fil_ptr) + 1;
   buffer = MALLOC(n);
   SNPRINTF(buffer, n,
-	   "%s/%s", fm, fil_ptr);
+     "%s/%s", fm, fil_ptr);
   FREE(fm);
   return buffer;
 #else
@@ -337,8 +337,8 @@ char * string_expandFileName(struct GE_Context * ectx,
   if ((lRet = plibc_conv_to_win_path(fil, fn)) != ERROR_SUCCESS) {
     SetErrnoFromWinError(lRet);
     GE_LOG_STRERROR(ectx,
-		    GE_USER | GE_WARNING | GE_IMMEDIATE,
-		    "plibc_conv_to_win_path");
+  	    GE_USER | GE_WARNING | GE_IMMEDIATE,
+  	    "plibc_conv_to_win_path");
     return NULL;
   }
   /* is the path relative? */
@@ -349,14 +349,14 @@ char * string_expandFileName(struct GE_Context * ectx,
     if (lRet + strlen(fn) + 1 > (MAX_PATH + 1)) {
       SetErrnoFromWinError(ERROR_BUFFER_OVERFLOW);
       GE_LOG_STRERROR(ectx,
-		      GE_USER | GE_WARNING | GE_IMMEDIATE,
-		      "GetCurrentDirectory");
+  	      GE_USER | GE_WARNING | GE_IMMEDIATE,
+  	      "GetCurrentDirectory");
       return NULL;
     }
     buffer = MALLOC(MAX_PATH + 1);
     SNPRINTF(buffer,
-	     MAX_PATH+1,
-	     "%s\\%s", szCurDir, fn);
+       MAX_PATH+1,
+       "%s\\%s", szCurDir, fn);
     FREE(fn);
     fn = buffer;
   }

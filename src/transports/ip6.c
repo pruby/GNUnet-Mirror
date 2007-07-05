@@ -51,14 +51,14 @@
  * @return SYSERR on failure, OK on success
  */
 static int getAddress6FromHostname(struct GE_Context * ectx,
-				   IP6addr * identity) {
+  			   IP6addr * identity) {
   char hostname[MAX_HOSTNAME];
   struct hostent * ip;
 
   if (0 != gethostname(hostname, MAX_HOSTNAME)) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		    "gethostname");
+  	    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+  	    "gethostname");
     return SYSERR;
   }
   /* GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -68,42 +68,42 @@ static int getAddress6FromHostname(struct GE_Context * ectx,
   ip = gethostbyname2(hostname, AF_INET6);
   if (ip == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	   _("Could not find IP of host `%s': %s\n"),
-	   hostname,
-	   hstrerror(h_errno));
+     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+     _("Could not find IP of host `%s': %s\n"),
+     hostname,
+     hstrerror(h_errno));
     return SYSERR;
   }
   if (ip->h_addrtype != AF_INET6) {
     GE_BREAK(ectx,
-	     0);
+       0);
     return SYSERR;
   }
   GE_ASSERT(ectx,
-	    sizeof(struct in6_addr) == sizeof(identity->addr));
+      sizeof(struct in6_addr) == sizeof(identity->addr));
   memcpy(&identity->addr[0],
-	 ip->h_addr_list[0],
-	 sizeof(struct in6_addr));
+   ip->h_addr_list[0],
+   sizeof(struct in6_addr));
   return OK;
 }
 
 #if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
 static int getAddress6FromGetIfAddrs(struct GC_Configuration * cfg,
-			             struct GE_Context * ectx,
-			             IP6addr * identity) {
+  		             struct GE_Context * ectx,
+  		             IP6addr * identity) {
   char * interfaces;
   struct ifaddrs *ifa_first;
 
   if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "INTERFACE",
-					      "eth0",
-					      &interfaces)) {
+  				      "NETWORK",
+  				      "INTERFACE",
+  				      "eth0",
+  				      &interfaces)) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("No interface specified in section `%s' under `%s'!\n"),
-	   "NETWORK",
-	   "INTERFACE");
+     GE_ERROR | GE_BULK | GE_USER,
+     _("No interface specified in section `%s' under `%s'!\n"),
+     "NETWORK",
+     "INTERFACE");
     return SYSERR; /* that won't work! */
   }
 
@@ -130,10 +130,10 @@ static int getAddress6FromGetIfAddrs(struct GC_Configuration * cfg,
     freeifaddrs(ifa_first);
   }
   GE_LOG(ectx,
-	 GE_WARNING | GE_USER | GE_BULK,
-	 _("Could not obtain IP for interface `%s' using `%s'.\n"),
-	 interfaces,
-	 "getifaddrs");
+   GE_WARNING | GE_USER | GE_BULK,
+   _("Could not obtain IP for interface `%s' using `%s'.\n"),
+   interfaces,
+   "getifaddrs");
   FREE(interfaces);
   return SYSERR;
 }
@@ -144,42 +144,42 @@ static int getAddress6FromGetIfAddrs(struct GC_Configuration * cfg,
  * @return SYSERR on error, OK on success
  */
 static int getAddress6(struct GC_Configuration * cfg,
-		       struct GE_Context * ectx,
-		       IP6addr  * address){
+  	       struct GE_Context * ectx,
+  	       IP6addr  * address){
   char * ipString;
   int retval;
   struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
 
   retval = SYSERR;
   if (GC_have_configuration_value(cfg,
-				  "NETWORK",
-				  "IP6")) {
+  			  "NETWORK",
+  			  "IP6")) {
     ipString = NULL;
     GC_get_configuration_value_string(cfg,
-				      "NETWORK",
-				      "IP6",
-				      "",
-				      &ipString);
+  			      "NETWORK",
+  			      "IP6",
+  			      "",
+  			      &ipString);
     if (strlen(ipString) > 0) {
       ip = gethostbyname2(ipString,
-			  AF_INET6);
+  		  AF_INET6);
       if (ip == NULL) {
-	GE_LOG(ectx,
-	       GE_ERROR | GE_USER | GE_BULK,
-	       _("Could not resolve `%s': %s\n"),
-	       ipString,
-	       hstrerror(h_errno));
+  GE_LOG(ectx,
+         GE_ERROR | GE_USER | GE_BULK,
+         _("Could not resolve `%s': %s\n"),
+         ipString,
+         hstrerror(h_errno));
       } else if (ip->h_addrtype != AF_INET6) {
-	GE_ASSERT(ectx,
-		  0);
-	retval = SYSERR;
+  GE_ASSERT(ectx,
+  	  0);
+  retval = SYSERR;
       } else {
-	GE_ASSERT(ectx,
-		  sizeof(struct in6_addr) == sizeof(address->addr));
-	memcpy(&address->addr[0],
-	       ip->h_addr_list[0],
-	       sizeof(struct in6_addr));
-	retval = OK;
+  GE_ASSERT(ectx,
+  	  sizeof(struct in6_addr) == sizeof(address->addr));
+  memcpy(&address->addr[0],
+         ip->h_addr_list[0],
+         sizeof(struct in6_addr));
+  retval = OK;
       }
     }
     FREE(ipString);
@@ -193,7 +193,7 @@ static int getAddress6(struct GC_Configuration * cfg,
 #endif
   if (retval == SYSERR)
     retval = getAddress6FromHostname(ectx,
-				     address);
+  			     address);
   return retval;
 }
 
@@ -202,8 +202,8 @@ static int getAddress6(struct GC_Configuration * cfg,
  * @return SYSERR on error, OK on success
  */
 int getPublicIP6Address(struct GC_Configuration * cfg,
-			struct GE_Context * ectx,
-			IP6addr * address) {
+  		struct GE_Context * ectx,
+  		IP6addr * address) {
   static IP6addr myAddress;
   static cron_t last;
   static cron_t lastError;
@@ -214,20 +214,20 @@ int getPublicIP6Address(struct GC_Configuration * cfg,
     if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     if (SYSERR == getAddress6(cfg,
-			      ectx,
-			      &myAddress)) {
+  		      ectx,
+  		      &myAddress)) {
       lastError = now;
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Failed to obtain my (external) %s address!\n"),
-	     "IPv6");
+       GE_WARNING | GE_USER | GE_BULK,
+       _("Failed to obtain my (external) %s address!\n"),
+       "IPv6");
       return SYSERR;
     }
     last = now;
   }
   memcpy(address,
-	 &myAddress,
-	 sizeof(IP6addr));
+   &myAddress,
+   sizeof(IP6addr));
   return OK;
 }
 

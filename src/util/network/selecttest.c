@@ -78,10 +78,10 @@ static unsigned long long throughput;
  *  socket should be closed
  */
 static int test_smh(void * mh_cls,
-		    struct SelectHandle * sh,
-		    struct SocketHandle * sock,
-		    void * sock_ctx,
-		    const MESSAGE_HEADER * msg) {
+  	    struct SelectHandle * sh,
+  	    struct SocketHandle * sock,
+  	    void * sock_ctx,
+  	    const MESSAGE_HEADER * msg) {
   static int sleeper;
   char * expect;
   unsigned short size;
@@ -90,22 +90,22 @@ static int test_smh(void * mh_cls,
   throughput += size;
   expect = MALLOC(size);
   memset(expect,
-	 (size - sizeof(MESSAGE_HEADER)) % 251,
-	 size);
+   (size - sizeof(MESSAGE_HEADER)) % 251,
+   size);
   if (0 != memcmp(&msg[1],
-		  expect,
-		  size - sizeof(MESSAGE_HEADER)) ) {
+  	  expect,
+  	  size - sizeof(MESSAGE_HEADER)) ) {
     fprintf(stderr,
-	    "Message of size %u corrupt!\n",
-	    size);
+      "Message of size %u corrupt!\n",
+      size);
     FREE(expect);
     return OK;
   }
   FREE(expect);
   while (msg->type != htons(recvPos)) {
     fprintf(stderr,
-	    "Message %u lost!\n",
-	    recvPos);
+      "Message %u lost!\n",
+      recvPos);
     recvPos++;
   }
   recvPos++;
@@ -132,10 +132,10 @@ static int test_smh(void * mh_cls,
  *         for the new connection
  */
 static void * test_sah(void * ah_cls,
-		       struct SelectHandle * sh,
-		       struct SocketHandle * sock,
-		       const void * addr,
-		       unsigned int addr_len) {
+  	       struct SelectHandle * sh,
+  	       struct SocketHandle * sock,
+  	       const void * addr,
+  	       unsigned int addr_len) {
   static int ret_addr;
 
   GE_BREAK(NULL, in == NULL);
@@ -148,9 +148,9 @@ static void * test_sah(void * ah_cls,
  * Free the associated context.
  */
 static void test_sch(void * ch_cls,
-		     struct SelectHandle * sh,
-		     struct SocketHandle * sock,
-		     void * sock_ctx) {
+  	     struct SelectHandle * sh,
+  	     struct SocketHandle * sock,
+  	     void * sock_ctx) {
   if (sock == in)
     in = NULL;
   else if (sock == out)
@@ -173,8 +173,8 @@ static int check() {
   cron_t start;
 
   listen_sock = SOCKET(PF_INET,
-		       SOCK_STREAM,
-		       6); /* 6: TCP */
+  	       SOCK_STREAM,
+  	       6); /* 6: TCP */
   if (listen_sock == -1) {
     GE_BREAK(NULL, 0);
     return 1;
@@ -183,53 +183,53 @@ static int check() {
   /* only try a single packet to establish connection,
      if that does not work, abort instantly */
   setsockopt(listen_sock,
-	     IPPROTO_TCP,
-	     TCP_SYNCNT,
-	     &zero,
-	     sizeof(zero));
+       IPPROTO_TCP,
+       TCP_SYNCNT,
+       &zero,
+       sizeof(zero));
 #endif
   memset((char *) &serverAddr,
-	 0,
-	 sizeof(serverAddr));
+   0,
+   sizeof(serverAddr));
   serverAddr.sin_family      = AF_INET;
   serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   serverAddr.sin_port        = htons(PORT);
   if (BIND(listen_sock,
-	   (struct sockaddr *) &serverAddr,
-	   sizeof(serverAddr)) < 0) {
+     (struct sockaddr *) &serverAddr,
+     sizeof(serverAddr)) < 0) {
     CLOSE(listen_sock);
     return 1;
   }
   LISTEN(listen_sock, 5);
 
   sh = select_create("Select Tester",
-		     NO, /* tcp */
-		     NULL, /* ectx */
-		     NULL, /* no load monitoring */
-		     listen_sock,
-		     sizeof(IPaddr),
-		     15 * cronSECONDS, /* inactive timeout */
-		     test_smh,
-		     NULL,
-		     test_sah,
-		     NULL,
-		     test_sch,
-		     NULL,
-		     128 * 1024); /* memory quota */
+  	     NO, /* tcp */
+  	     NULL, /* ectx */
+  	     NULL, /* no load monitoring */
+  	     listen_sock,
+  	     sizeof(IPaddr),
+  	     15 * cronSECONDS, /* inactive timeout */
+  	     test_smh,
+  	     NULL,
+  	     test_sah,
+  	     NULL,
+  	     test_sch,
+  	     NULL,
+  	     128 * 1024); /* memory quota */
 
   write_sock = SOCKET(PF_INET,
-		      SOCK_STREAM,
-		      6);
+  	      SOCK_STREAM,
+  	      6);
 
   memset((char *) &serverAddr,
-	 0,
-	 sizeof(serverAddr));
+   0,
+   sizeof(serverAddr));
   serverAddr.sin_family      = AF_INET;
   serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   serverAddr.sin_port        = htons(PORT);
   i = CONNECT(write_sock,
-	      (struct sockaddr*)&serverAddr,
-	      sizeof(serverAddr));
+        (struct sockaddr*)&serverAddr,
+        sizeof(serverAddr));
   if ( (i < 0) &&
        (errno != EINPROGRESS) && (errno != EWOULDBLOCK) ) {
     CLOSE(write_sock);
@@ -237,8 +237,8 @@ static int check() {
     return 1;
   }
   out = socket_create(NULL,
-		      NULL,
-		      write_sock);
+  	      NULL,
+  	      write_sock);
   if (-1 == socket_set_blocking(out, NO)) {
     socket_destroy(out);
     select_destroy(sh);
@@ -248,27 +248,27 @@ static int check() {
   m = MALLOC(65536);
   h = (MESSAGE_HEADER*) m;
   select_connect(sh,
-		 out,
-		 NULL);
+  	 out,
+  	 NULL);
   start = get_time();
   for (i=0;i<ITER;i++) {
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
     if (select_would_try(sh,
-			 out,
-			 (i % 60000) + sizeof(MESSAGE_HEADER),
-			 NO,
-			 NO)) {
+  		 out,
+  		 (i % 60000) + sizeof(MESSAGE_HEADER),
+  		 NO,
+  		 NO)) {
       h->size = htons((i % 60000) + sizeof(MESSAGE_HEADER));
       h->type = htons(msg++);
       memset(&m[sizeof(MESSAGE_HEADER)],
-	     (i % 60000) % 251,
-	     i % 60000);
+       (i % 60000) % 251,
+       i % 60000);
       select_write(sh,
-		   out,
-		   h,
-		   NO,
-		   NO);
+  	   out,
+  	   h,
+  	   NO,
+  	   NO);
     } else {
 #if DO_YIELD
       pthread_yield();
@@ -287,10 +287,10 @@ static int check() {
   select_destroy(sh);
   FREE(m);
   fprintf(stderr,
-	  "\nTransmitted %u test messages - received %u (performance: %llu kbps)\n",
-	  msg,
-	  recvPos,
-	  (throughput / 1024) * cronSECONDS / (get_time() - start));
+    "\nTransmitted %u test messages - received %u (performance: %llu kbps)\n",
+    msg,
+    recvPos,
+    (throughput / 1024) * cronSECONDS / (get_time() - start));
 #if DO_SLEEP
   if (msg - recvPos > 30)
     return 1;
@@ -299,13 +299,13 @@ static int check() {
 }
 
 int main(int argc,
-	 char * argv[]){
+   char * argv[]){
   int ret;
   ret = check();
   if (ret != 0)
     fprintf(stderr,
-	    "ERROR %d.\n",
-	    ret);
+      "ERROR %d.\n",
+      ret);
   return ret;
 }
 

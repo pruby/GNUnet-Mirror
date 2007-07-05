@@ -41,7 +41,7 @@
  * Pass the result to the client and note it as shown.
  */
 static void processResult(const ECRS_FileInfo * fi,
-			  FSUI_SearchList * pos) {
+  		  FSUI_SearchList * pos) {
   FSUI_Event event;
 
   GROW(pos->resultsReceived,
@@ -58,11 +58,11 @@ static void processResult(const ECRS_FileInfo * fi,
   event.data.SearchResult.fi = *fi;
   event.data.SearchResult.searchURI = pos->uri;
   pos->ctx->ecb(pos->ctx->ecbClosure,
-		&event);
+  	&event);
   URITRACK_addState(pos->ctx->ectx,
-		    pos->ctx->cfg,
-		    pos->uri,
-		    URITRACK_SEARCH_RESULT);
+  	    pos->ctx->cfg,
+  	    pos->uri,
+  	    URITRACK_SEARCH_RESULT);
 }
 
 
@@ -70,9 +70,9 @@ static void processResult(const ECRS_FileInfo * fi,
  * Process results found by ECRS.
  */
 static int spcb(const ECRS_FileInfo * fi,
-		const HashCode512 * key,
-		int isRoot,
-		void * cls) {
+  	const HashCode512 * key,
+  	int isRoot,
+  	void * cls) {
   FSUI_SearchList * pos = cls;
   unsigned int i;
   unsigned int j;
@@ -82,25 +82,25 @@ static int spcb(const ECRS_FileInfo * fi,
   ectx = pos->ctx->ectx;
 
   URITRACK_trackURI(ectx,
-		    pos->ctx->cfg,
-		    fi);
+  	    pos->ctx->cfg,
+  	    fi);
   if (isRoot) {
     NS_setNamespaceRoot(ectx,
-			pos->ctx->cfg,
-			fi->uri);
+  		pos->ctx->cfg,
+  		fi->uri);
     NS_addNamespaceInfo(ectx,
-			pos->ctx->cfg,
-			fi->uri,
-			fi->meta);
+  		pos->ctx->cfg,
+  		fi->uri,
+  		fi->meta);
     return OK;
   }
   for (i=0;i<pos->sizeResultsReceived;i++)
     if (ECRS_equalsUri(fi->uri,
-		       pos->resultsReceived[i].uri)) {
+  	       pos->resultsReceived[i].uri)) {
 #if DEBUG_SEARCH
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Received search result that I have seen before.\n");
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Received search result that I have seen before.\n");
 #endif
       return OK; /* seen before */
     }
@@ -109,87 +109,87 @@ static int spcb(const ECRS_FileInfo * fi,
       GE_BREAK(ectx, 0);
 #if DEBUG_SEARCH
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Received search result without key to decrypt.\n");
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Received search result without key to decrypt.\n");
 #endif
       return SYSERR;
     }
     for (i=0;i<pos->sizeUnmatchedResultsReceived;i++) {
       rp = &pos->unmatchedResultsReceived[i];
       if (ECRS_equalsUri(fi->uri,
-			 rp->fi.uri)) {
-	for (j=0;j<rp->matchingKeyCount;j++)
-	  if (0 == memcmp(key,
-			  &rp->matchingKeys[j],
-			  sizeof(HashCode512))) {
+  		 rp->fi.uri)) {
+  for (j=0;j<rp->matchingKeyCount;j++)
+    if (0 == memcmp(key,
+  		  &rp->matchingKeys[j],
+  		  sizeof(HashCode512))) {
 #if DEBUG_SEARCH
-	    GE_LOG(ectx,
-		   GE_DEBUG | GE_REQUEST | GE_USER,
-		   "Received search result that I have seen before (missing keyword to show client).\n");
+      GE_LOG(ectx,
+  	   GE_DEBUG | GE_REQUEST | GE_USER,
+  	   "Received search result that I have seen before (missing keyword to show client).\n");
 #endif
-	    return OK;
-	  }
-	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
+      return OK;
+    }
+  if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
 #if DEBUG_SEARCH
-	  GE_LOG(ectx,
-		 GE_DEBUG | GE_REQUEST | GE_USER,
-		 "Received search result (showing client)!\n");
+    GE_LOG(ectx,
+  	 GE_DEBUG | GE_REQUEST | GE_USER,
+  	 "Received search result (showing client)!\n");
 #endif
-	  GROW(rp->matchingKeys,
-	       rp->matchingKeyCount,
-	       0);
-	  processResult(&rp->fi,
-			pos);
-	  ECRS_freeUri(rp->fi.uri);
-	  ECRS_freeMetaData(rp->fi.meta);
-	  pos->unmatchedResultsReceived[i]
-	    = pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived-1];
-	  GROW(pos->unmatchedResultsReceived,
-	       pos->sizeUnmatchedResultsReceived,
-	       pos->sizeUnmatchedResultsReceived-1);
-	  return OK;
-	} else {
-	  GROW(rp->matchingKeys,
-	       rp->matchingKeyCount,
-	       rp->matchingKeyCount+1);
-	  rp->matchingKeys[rp->matchingKeyCount-1] = *key;
+    GROW(rp->matchingKeys,
+         rp->matchingKeyCount,
+         0);
+    processResult(&rp->fi,
+  		pos);
+    ECRS_freeUri(rp->fi.uri);
+    ECRS_freeMetaData(rp->fi.meta);
+    pos->unmatchedResultsReceived[i]
+      = pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived-1];
+    GROW(pos->unmatchedResultsReceived,
+         pos->sizeUnmatchedResultsReceived,
+         pos->sizeUnmatchedResultsReceived-1);
+    return OK;
+  } else {
+    GROW(rp->matchingKeys,
+         rp->matchingKeyCount,
+         rp->matchingKeyCount+1);
+    rp->matchingKeys[rp->matchingKeyCount-1] = *key;
 #if DEBUG_SEARCH
-	  GE_LOG(ectx,
-		 GE_DEBUG | GE_REQUEST | GE_USER,
-		 "Received search result (waiting for more %u keys before showing client).\n",
-		 pos->numberOfURIKeys - rp->matchingKeyCount);
+    GE_LOG(ectx,
+  	 GE_DEBUG | GE_REQUEST | GE_USER,
+  	 "Received search result (waiting for more %u keys before showing client).\n",
+  	 pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
-	  return OK;
-	}	
+    return OK;
+  }	
       }
     }
     GROW(pos->unmatchedResultsReceived,
-	 pos->sizeUnmatchedResultsReceived,
-	 pos->sizeUnmatchedResultsReceived+1);
+   pos->sizeUnmatchedResultsReceived,
+   pos->sizeUnmatchedResultsReceived+1);
     rp = &pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived-1];
     rp->fi.meta = ECRS_dupMetaData(fi->meta);
     rp->fi.uri = ECRS_dupUri(fi->uri);
     rp->matchingKeys = NULL;
     rp->matchingKeyCount = 0;
     GROW(rp->matchingKeys,
-	 rp->matchingKeyCount,
-	 1);
+   rp->matchingKeyCount,
+   1);
     rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Received search result (waiting for %u more keys before showing client).\n",
-	   pos->numberOfURIKeys  - rp->matchingKeyCount);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Received search result (waiting for %u more keys before showing client).\n",
+     pos->numberOfURIKeys  - rp->matchingKeyCount);
 #endif
     return OK;
   } else {
 #if DEBUG_SEARCH
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Received search result (showing client)!\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Received search result (showing client)!\n");
 #endif
     processResult(fi,
-		  pos);
+  	  pos);
   }
   return OK;
 }
@@ -214,18 +214,18 @@ void * FSUI_searchThread(void * cls) {
 
   mem = GE_memory_create(2);
   ee = GE_create_context_memory(GE_USER | GE_ADMIN |
-				GE_ERROR | GE_WARNING | GE_FATAL |
-				GE_BULK | GE_IMMEDIATE,
-				mem);
+  			GE_ERROR | GE_WARNING | GE_FATAL |
+  			GE_BULK | GE_IMMEDIATE,
+  			mem);
   ret = ECRS_search(ee,
-		    pos->ctx->cfg,
-		    pos->uri,
-		    pos->anonymityLevel,
-		    pos->timeout,
-		    &spcb,
-		    pos,
-		    &testTerminate,
-		    pos);
+  	    pos->ctx->cfg,
+  	    pos->uri,
+  	    pos->anonymityLevel,
+  	    pos->timeout,
+  	    &spcb,
+  	    pos,
+  	    &testTerminate,
+  	    pos);
   if (ret != OK) {
     const char * error;
 
@@ -238,20 +238,20 @@ void * FSUI_searchThread(void * cls) {
       error = _("Error running search (no reason given).");
     event.data.SearchError.message = error;
     pos->ctx->ecb(pos->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else if (pos->state == FSUI_ABORTED) {
     event.type = FSUI_search_aborted;
     event.data.SearchAborted.sc.pos = pos;
     event.data.SearchAborted.sc.cctx = pos->cctx;
     pos->ctx->ecb(pos->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else if (pos->state == FSUI_ACTIVE) {
     pos->state = FSUI_COMPLETED;
     event.type = FSUI_search_completed;
     event.data.SearchCompleted.sc.pos = pos;
     event.data.SearchCompleted.sc.cctx = pos->cctx;
     pos->ctx->ecb(pos->ctx->ecbClosure,
-		  &event);
+  	  &event);
   } else {
     GE_ASSERT(NULL, pos->state == FSUI_PENDING);
     /* must be suspending */
@@ -275,7 +275,7 @@ void * FSUI_searchThreadSignal(void * cls) {
   event.data.SearchStarted.searchURI = pos->uri;
   event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
   pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
-			    &event);
+  		    &event);
   return FSUI_searchThread(pos);
 }
 
@@ -284,10 +284,10 @@ void * FSUI_searchThreadSignal(void * cls) {
  */
 struct FSUI_SearchList *
 FSUI_startSearch(struct FSUI_Context * ctx,
-		 unsigned int anonymityLevel,
-		 unsigned int maxResults,
-		 cron_t timeout,
-		 const struct ECRS_URI * uri) {
+  	 unsigned int anonymityLevel,
+  	 unsigned int maxResults,
+  	 cron_t timeout,
+  	 const struct ECRS_URI * uri) {
   FSUI_SearchList * pos;
   struct GE_Context * ectx;
 
@@ -307,12 +307,12 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   pos->start_time = get_time();
   pos->timeout = timeout;
   pos->handle = PTHREAD_CREATE(&FSUI_searchThreadSignal,
-			       pos,
-			       32 * 1024);
+  		       pos,
+  		       32 * 1024);
   if (pos->handle == NULL) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_IMMEDIATE | GE_USER | GE_ADMIN,
-		    "PTHREAD_CREATE");
+  	    GE_ERROR | GE_IMMEDIATE | GE_USER | GE_ADMIN,
+  	    "PTHREAD_CREATE");
     ECRS_freeUri(pos->uri);
     FREE(pos);
     MUTEX_UNLOCK(ctx->lock);
@@ -328,7 +328,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
  * Abort a search.
  */
 int FSUI_abortSearch(struct FSUI_Context * ctx,
-		     struct FSUI_SearchList * sl) {
+  	     struct FSUI_SearchList * sl) {
   if (sl->state == FSUI_PENDING) {
     sl->state = FSUI_ABORTED_JOINED;
     return OK;
@@ -344,7 +344,7 @@ int FSUI_abortSearch(struct FSUI_Context * ctx,
  * Stop a search.
  */
 int FSUI_stopSearch(struct FSUI_Context * ctx,
-		    struct FSUI_SearchList * sl) {
+  	    struct FSUI_SearchList * sl) {
   FSUI_Event event;
   FSUI_SearchList * pos;
   FSUI_SearchList * prev;
@@ -355,7 +355,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   prev = NULL;
   pos = ctx->activeSearches;
   while ( (pos != sl) &&
-	  (pos != NULL) ) {
+    (pos != NULL) ) {
     prev = pos;
     pos = pos->next;
   }
@@ -380,7 +380,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
        (pos->state == FSUI_ERROR) ) {
     GE_ASSERT(ctx->ectx, pos->handle != NULL);
     PTHREAD_JOIN(pos->handle,
-		 &unused);
+  	 &unused);
     pos->handle = NULL;
     if (pos->state == FSUI_ACTIVE)
       pos->state = FSUI_PENDING;
@@ -393,7 +393,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   event.data.SearchStopped.sc.pos = pos;
   event.data.SearchStopped.sc.cctx = pos->cctx;
   pos->ctx->ecb(pos->ctx->ecbClosure,
-		&event);
+  	&event);
 
 
   ECRS_freeUri(pos->uri);
@@ -408,8 +408,8 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     ECRS_freeUri(pos->unmatchedResultsReceived[i].fi.uri);
     ECRS_freeMetaData(pos->unmatchedResultsReceived[i].fi.meta);
     GROW(pos->unmatchedResultsReceived[i].matchingKeys,
-	 pos->unmatchedResultsReceived[i].matchingKeyCount,
-	 0);
+   pos->unmatchedResultsReceived[i].matchingKeyCount,
+   0);
   }
   GROW(pos->unmatchedResultsReceived,
        pos->sizeUnmatchedResultsReceived,

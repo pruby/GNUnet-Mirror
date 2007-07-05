@@ -58,7 +58,7 @@ static int waitForConnect(const char * name,
  * @return 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+   const char ** argv) {
   struct DaemonContext * peers;
   int ret = 0;
   HashCode512 key;
@@ -76,16 +76,16 @@ int main(int argc,
   ectx = NULL;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   peers = gnunet_testing_start_daemons("tcp",
-				       "advertising dht stats",
-				       "/tmp/gnunet-dht-test",
-				       2087,
-				       10,
-				       NUM_PEERS);
+  			       "advertising dht stats",
+  			       "/tmp/gnunet-dht-test",
+  			       2087,
+  			       10,
+  			       NUM_PEERS);
   if (peers == NULL) {
     GC_free(cfg);
     return -1;
@@ -93,26 +93,26 @@ int main(int argc,
   for (i=0;i<NUM_PEERS;i++) {
     for (j=0;j<i;j++) {
       if (OK != gnunet_testing_connect_daemons(2087 + 10*i,
-					       2087 + 10*j)) {
-	gnunet_testing_stop_daemons(peers);
-	fprintf(stderr,
-		"Failed to connect the peers!\n");
-	GC_free(cfg);
-	return -1;
+  				       2087 + 10*j)) {
+  gnunet_testing_stop_daemons(peers);
+  fprintf(stderr,
+  	"Failed to connect the peers!\n");
+  GC_free(cfg);
+  return -1;
       }
     }
   }
 
   /* wait for some DHT's to find each other! */
   sock = client_connection_create(NULL,
-				  cfg);
+  			  cfg);
   left = 30; /* how many iterations should we wait? */
   while (OK == STATS_getStatistics(NULL,
-				   sock,
-				   &waitForConnect,
-				   NULL)) {
+  			   sock,
+  			   &waitForConnect,
+  			   NULL)) {
     printf("Waiting for peers to DHT-connect (%u iterations left)...\n",
-	   left);
+     left);
     sleep(5);
     left--;
     if (left == 0)
@@ -122,7 +122,7 @@ int main(int argc,
   if (ok == 0) {
     gnunet_testing_stop_daemons(peers);
     fprintf(stderr,
-	    "Peers' DHTs failed to DHT-connect!\n");
+      "Peers' DHTs failed to DHT-connect!\n");
     GC_free(cfg);
     return -1;
   }
@@ -130,26 +130,26 @@ int main(int argc,
   /* put loop */
   for (i=0;i<NUM_PEERS;i++) {
     SNPRINTF(buf,
-	     128,
-	     "localhost:%u",
-	     2087 + i * 10);
+       128,
+       "localhost:%u",
+       2087 + i * 10);
     GC_set_configuration_value_string(cfg,
-				      ectx,
-				      "NETWORK",
-				      "HOST",
-				      buf);
+  			      ectx,
+  			      "NETWORK",
+  			      "HOST",
+  			      buf);
     hash(buf, 4, &key);
     value = MALLOC(8);
     value->size = ntohl(8);
     memset(&value[1],
-	   'A' + i,
-	   4);
+     'A' + i,
+     4);
     CHECK(OK == DHT_LIB_put(cfg,
-			    ectx,
-			    &key,
-			    DHT_STRING2STRING_BLOCK,
-			    get_time() + 15 * cronMINUTES * NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
-			    value));
+  		    ectx,
+  		    &key,
+  		    DHT_STRING2STRING_BLOCK,
+  		    get_time() + 15 * cronMINUTES * NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
+  		    value));
   }
 
   /* get loops */
@@ -157,43 +157,43 @@ int main(int argc,
     found = 0;
     for (i=0;i<NUM_PEERS;i++) {
       SNPRINTF(buf,
-	       128,
-	       "localhost:%u",
-	       2087 + i * 10);
+         128,
+         "localhost:%u",
+         2087 + i * 10);
       GC_set_configuration_value_string(cfg,
-					ectx,
-					"NETWORK",
-					"HOST",
-					buf);
+  				ectx,
+  				"NETWORK",
+  				"HOST",
+  				buf);
       for (j=0;j<NUM_PEERS;j++) {
-	SNPRINTF(buf,
-		 128,
-		 "localhost:%u",
-		 2087 + j * 10);
-	hash(buf, 4, &key);
-	fprintf(stderr,
-		"Peer %d gets key %d", i, j);
-	if (0 < DHT_LIB_get(cfg,
-			    ectx,
-			    DHT_STRING2STRING_BLOCK,
-			     &key,
-			    (NUM_ROUNDS - k) * cronSECONDS,
-			    NULL,
-			    NULL)) {
-	  fprintf(stderr,
-		  " - found!\n");
-	  found++;
-	} else
-	  fprintf(stderr,
-		  " - NOT found!\n");
+  SNPRINTF(buf,
+  	 128,
+  	 "localhost:%u",
+  	 2087 + j * 10);
+  hash(buf, 4, &key);
+  fprintf(stderr,
+  	"Peer %d gets key %d", i, j);
+  if (0 < DHT_LIB_get(cfg,
+  		    ectx,
+  		    DHT_STRING2STRING_BLOCK,
+  		     &key,
+  		    (NUM_ROUNDS - k) * cronSECONDS,
+  		    NULL,
+  		    NULL)) {
+    fprintf(stderr,
+  	  " - found!\n");
+    found++;
+  } else
+    fprintf(stderr,
+  	  " - NOT found!\n");
       }
     }
     /* end of actual test code */
     fprintf(stderr,
-	    "Found %u out of %u attempts in round %u.\n",
-	    found,
-	    NUM_PEERS * NUM_PEERS,
-	    k);
+      "Found %u out of %u attempts in round %u.\n",
+      found,
+      NUM_PEERS * NUM_PEERS,
+      k);
   }
  FAILURE:
   gnunet_testing_stop_daemons(peers);

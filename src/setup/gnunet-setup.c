@@ -33,13 +33,13 @@
 #include "platform.h"
 
 typedef int (*ConfigurationPluginMain)(int argc,
-				       char * const * argv,
-				       struct PluginHandle * self,
-				       struct GE_Context * ectx,
-				       struct GC_Configuration * cfg,
-				       struct GNS_Context * gns,
-				       const char * filename,
-				       int is_daemon);
+  			       char * const * argv,
+  			       struct PluginHandle * self,
+  			       struct GE_Context * ectx,
+  			       struct GC_Configuration * cfg,
+  			       struct GNS_Context * gns,
+  			       const char * filename,
+  			       int is_daemon);
 
 static int config_daemon;
 
@@ -82,37 +82,37 @@ static void gns2cfg(struct GNS_Tree * pos) {
        (pos->option == NULL) )
     return;
   if (NO == GC_have_configuration_value(cfg,
-					pos->section,
-					pos->option)) {
+  				pos->section,
+  				pos->option)) {
     val = GNS_get_default_value_as_string(pos->type,
-					  &pos->value);
+  				  &pos->value);
     if (val != NULL) {
       GC_set_configuration_value_string(cfg,
-					ectx,
-					pos->section,
-					pos->option,
-					val);
+  				ectx,
+  				pos->section,
+  				pos->option,
+  				val);
       FREE(val);
     }
   }
 }
 
 static int dyn_config(const char * module,
-		      const char * mainfunc,
-		      int argc,
-		      char * const * argv,
-		      const char * filename) {
+  	      const char * mainfunc,
+  	      int argc,
+  	      char * const * argv,
+  	      const char * filename) {
   ConfigurationPluginMain mptr;
   struct PluginHandle * library;
 
   library = os_plugin_load(ectx,
-			   "libgnunet",
-			   module);
+  		   "libgnunet",
+  		   module);
   if (!library)
     return SYSERR;
   mptr = os_plugin_resolve_function(library,
-				    mainfunc,
-				    YES);
+  			    mainfunc,
+  			    YES);
   if (! mptr) {
     os_plugin_unload(library);
     return SYSERR;
@@ -156,7 +156,7 @@ static const char * modules[] = {
 
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   const char * operation;
   int done;
   char * dirname;
@@ -164,19 +164,19 @@ int main(int argc,
   int i;
 
   ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
+  			  GE_WARNING | GE_ERROR | GE_FATAL |
+  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
+  			  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
   os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   i = gnunet_parse_options(INFO,
-			   ectx,
-			   cfg,
-			   gnunetsetupOptions,
-			   (unsigned int) argc,
-			   argv);
+  		   ectx,
+  		   cfg,
+  		   gnunetsetupOptions,
+  		   (unsigned int) argc,
+  		   argv);
   if (i < 0) {
     GC_free(cfg);
     GE_free_context(ectx);
@@ -185,12 +185,12 @@ int main(int argc,
   if (i != argc - 1) {
     if (i < argc - 1) {
       fprintf(stderr,
-	      _("Too many arguments.\n"));
+        _("Too many arguments.\n"));
       return -1;
     }
     GE_LOG(ectx,
-	   GE_WARNING | GE_REQUEST | GE_USER,
-	   _("No interface specified, using default\n"));
+     GE_WARNING | GE_REQUEST | GE_USER,
+     _("No interface specified, using default\n"));
     operation = "config";
 #if HAVE_DIALOG
     operation = "menuconfig";
@@ -221,17 +221,17 @@ int main(int argc,
   }
   disk_directory_create(ectx, dirname);
   if ( ( (0 != ACCESS(cfgFilename, W_OK)) &&
-	 ( (errno != ENOENT) ||
-	   (0 != ACCESS(dirname, W_OK))) ) )
+   ( (errno != ENOENT) ||
+     (0 != ACCESS(dirname, W_OK))) ) )
     GE_DIE_STRERROR_FILE(ectx,
-			 GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-			 "access",
-			 dirname);
+  		 GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+  		 "access",
+  		 dirname);
   FREE(dirname);
 
   if (0 == ACCESS(cfgFilename, F_OK))
     GC_parse_configuration(cfg,
-			   cfgFilename);
+  		   cfgFilename);
   dirname = os_get_installation_path(IPK_DATADIR);
   GE_ASSERT(ectx, dirname != NULL);
   specname = MALLOC(strlen(dirname) + strlen("config-daemon.scm") + 1);
@@ -242,8 +242,8 @@ int main(int argc,
   else
     strcat(specname, "config-client.scm");
   gns = GNS_load_specification(ectx,
-			       cfg,
-			       specname);
+  		       cfg,
+  		       specname);
   FREE(specname);
   if (gns == NULL) {
     GC_free(cfg);
@@ -256,24 +256,24 @@ int main(int argc,
   done = NO;
   i = 0;
   while ( (done == NO) &&
-	  (modules[i] != NULL) ) {
+    (modules[i] != NULL) ) {
     if (strcmp(operation, modules[i]) == 0) {
       if (dyn_config(modules[i+1],
-		     modules[i+2],
-		     argc,
-		     argv,
-		     cfgFilename) != YES) {
-	GE_LOG(ectx,
-	       GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	       _("`%s' is not available."),
-	       operation);
-	GNS_free_specification(gns);
-	GC_free(cfg);
-	GE_free_context(ectx);
-	FREE(cfgFilename);
-	return -1;
+  	     modules[i+2],
+  	     argc,
+  	     argv,
+  	     cfgFilename) != YES) {
+  GE_LOG(ectx,
+         GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+         _("`%s' is not available."),
+         operation);
+  GNS_free_specification(gns);
+  GC_free(cfg);
+  GE_free_context(ectx);
+  FREE(cfgFilename);
+  return -1;
       } else {
-	done = YES;
+  done = YES;
       }
     }
     i += 3;
@@ -281,10 +281,10 @@ int main(int argc,
   FREE(cfgFilename);
   if (done == NO) {
     fprintf(stderr,
-	    _("Unknown operation `%s'\n"),
-	    operation);
+      _("Unknown operation `%s'\n"),
+      operation);
     fprintf(stderr,
-	    _("Use --help to get a list of options.\n"));
+      _("Use --help to get a list of options.\n"));
     GNS_free_specification(gns);
     GC_free(cfg);
     GE_free_context(ectx);

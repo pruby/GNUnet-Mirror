@@ -118,8 +118,8 @@ getDateFormat() {
  */
 static int
 removeOldLog(const char * fil,
-	     const char * dir,
-	     void * ptr) {
+       const char * dir,
+       void * ptr) {
   const FileContext * ctx = ptr;
   struct tm t;
   char * fullname;
@@ -139,8 +139,8 @@ removeOldLog(const char * fil,
     strcat(fullname, DIR_SEPARATOR_STR);
   strcat(fullname, fil);
   if (0 != strncmp(def,
-		   fullname,
-		   strlen(def))) {
+  	   fullname,
+  	   strlen(def))) {
     FREE(fullname);
     return OK;
   }
@@ -168,7 +168,7 @@ removeOldLog(const char * fil,
  */
 static char *
 getLogFileName(struct GE_Context * fctx,
-	       const char * name) {
+         const char * name) {
   time_t curtime;
   struct tm lcltime;
   char * datefmt;
@@ -186,10 +186,10 @@ getLogFileName(struct GE_Context * fctx,
 #endif
   /* Format current date for filename*/
   GE_ASSERT(fctx,
-	    0 != strftime(date,
-			  80,
-			  datefmt,
-			  &lcltime));
+      0 != strftime(date,
+  		  80,
+  		  datefmt,
+  		  &lcltime));
   FREE(datefmt);
 
   /* Remove special chars */
@@ -198,18 +198,18 @@ getLogFileName(struct GE_Context * fctx,
   size = strlen(name) + 82;
   ret = MALLOC(size);
   SNPRINTF(ret,
-	   size,
-	   "%s-%s",
-	   name,
-	   date);
+     size,
+     "%s-%s",
+     name,
+     date);
   return ret;
 }
 
 static void
 filelogger(void * cls,
-	   GE_KIND kind,
-	   const char * date,
-	   const char * msg) {
+     GE_KIND kind,
+     const char * date,
+     const char * msg) {
   FileContext * fctx = cls;
   char * name;
   int ret;
@@ -218,30 +218,30 @@ filelogger(void * cls,
   MUTEX_LOCK(fctx->lock);
   if (fctx->logrotate) {
     name = getLogFileName(fctx->ectx,
-			  fctx->basename);
+  		  fctx->basename);
     if ( (fctx->first_start == YES) ||
-	 (0 != strcmp(name,
-		      fctx->filename)) ) {
+   (0 != strcmp(name,
+  	      fctx->filename)) ) {
       fctx->first_start = NO;
       fclose(fctx->handle);
       fctx->handle = FOPEN(name, "a+");
       if (fctx->handle == NULL) {
-	fctx->handle = stderr;
-	fprintf(stderr,
-		_("Failed to open log-file `%s': %s\n"),
-		name,
-		STRERROR(errno));
+  fctx->handle = stderr;
+  fprintf(stderr,
+  	_("Failed to open log-file `%s': %s\n"),
+  	name,
+  	STRERROR(errno));
       }
       FREE(fctx->filename);
       fctx->filename = name;
       dirname = STRDUP(name);
       while ( (strlen(dirname) > 0) &&
-	      (dirname[strlen(dirname)-1] != DIR_SEPARATOR) )
-	dirname[strlen(dirname)-1] = '\0';
+        (dirname[strlen(dirname)-1] != DIR_SEPARATOR) )
+  dirname[strlen(dirname)-1] = '\0';
       disk_directory_scan(fctx->ectx,
-			  dirname,
-			  &removeOldLog,
-			  fctx);
+  		  dirname,
+  		  &removeOldLog,
+  		  fctx);
       FREE(dirname);
     } else {
       FREE(name);
@@ -259,20 +259,20 @@ filelogger(void * cls,
   
   if (fctx->logdate) {
     ret = fprintf(fctx->handle,
-		  "%s %s: %s",
-		  date,
-		  GE_kindToString(kind & GE_EVENTKIND),
-		  msg);
+  	  "%s %s: %s",
+  	  date,
+  	  GE_kindToString(kind & GE_EVENTKIND),
+  	  msg);
   } else {
     ret = fprintf(fctx->handle,
-		  "%s: %s",
-		  GE_kindToString(kind & GE_EVENTKIND),
-		  msg);
+  	  "%s: %s",
+  	  GE_kindToString(kind & GE_EVENTKIND),
+  	  msg);
   }
   if (ret < 0)
     GE_LOG_STRERROR(fctx->ectx,
-		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-		    "fclose");
+  	    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
+  	    "fclose");
 
   fflush(fctx->handle);
   MUTEX_UNLOCK(fctx->lock);
@@ -289,11 +289,11 @@ fileclose(void * cls) {
        (fctx->handle != stdout) &&
        (0 != fclose(fctx->handle)) )
     GE_LOG_STRERROR(fctx->ectx,
-		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-		    "fclose");
+  	    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
+  	    "fclose");
   FREE(fctx);
 }
-				
+  			
 /**
  * Create a logger that writes events to a file.
  *
@@ -305,10 +305,10 @@ fileclose(void * cls) {
  */
 struct GE_Context *
 GE_create_context_logfile(struct GE_Context * ectx,
-			  GE_KIND mask,
-			  const char * filename,
-			  int logDate,
-			  int logrotate) {
+  		  GE_KIND mask,
+  		  const char * filename,
+  		  int logDate,
+  		  int logrotate) {
   FileContext * fctx;
   FILE * fd;
   char * name;
@@ -317,16 +317,16 @@ GE_create_context_logfile(struct GE_Context * ectx,
   TIME(&start);
   if (logrotate != 0) {
     name = getLogFileName(NULL,
-			  filename);
+  		  filename);
   } else {
     name = STRDUP(filename);
   }
   fd = FOPEN(name, "a+");
   if (fd == NULL) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-			 "fopen",
-			 name);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
+  		 "fopen",
+  		 name);
     FREE(name);
     return NULL; /* ERROR! */
   }
@@ -341,10 +341,10 @@ GE_create_context_logfile(struct GE_Context * ectx,
   fctx->logstart = start;
   fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
-				    &filelogger,
-				    fctx,
-				    &fileclose,
-				    NULL);
+  			    &filelogger,
+  			    fctx,
+  			    &fileclose,
+  			    NULL);
 }
 
 
@@ -355,7 +355,7 @@ GE_create_context_logfile(struct GE_Context * ectx,
  */
 struct GE_Context *
 GE_create_context_stderr(int logDate,
-			 GE_KIND mask) {
+  		 GE_KIND mask) {
   FileContext * fctx;
 
   fctx = MALLOC(sizeof(FileContext));
@@ -369,10 +369,10 @@ GE_create_context_stderr(int logDate,
   fctx->first_start = NO;
   fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
-				    &filelogger,
-				    fctx,
-				    &fileclose,
-				    NULL);
+  			    &filelogger,
+  			    fctx,
+  			    &fileclose,
+  			    NULL);
 
 }
 
@@ -383,7 +383,7 @@ GE_create_context_stderr(int logDate,
  */
 struct GE_Context *
 GE_create_context_stdout(int logDate,
-			 GE_KIND mask) {
+  		 GE_KIND mask) {
   FileContext * fctx;
 
   fctx = MALLOC(sizeof(FileContext));
@@ -397,9 +397,9 @@ GE_create_context_stdout(int logDate,
   fctx->logstart = 0;
   fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
-				    &filelogger,
-				    fctx,
-				    &fileclose,
-				    NULL);
+  			    &filelogger,
+  			    fctx,
+  			    &fileclose,
+  			    NULL);
 
 }

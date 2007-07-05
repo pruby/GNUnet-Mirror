@@ -143,31 +143,31 @@ static void _free(struct GC_Configuration * cfg) {
       FREE(e->key);
       FREENONNULL(e->val);
       GE_ASSERT(cfg->data->ectx,
-		e->dirty_val == NULL);
+  	e->dirty_val == NULL);
     }
     GROW(sec->entries,
-	 sec->size,
-	 0);
+   sec->size,
+   0);
     FREE(sec->name);
   }
   GROW(cfg->data->sections,
        cfg->data->ssize,
        0);
   GE_ASSERT(cfg->data->ectx,
-	    cfg->data->listeners == 0);
+      cfg->data->listeners == 0);
   MUTEX_DESTROY(cfg->data->lock);
   FREE(cfg->data);
   FREE(cfg);
 }
 
 static void _set_error_context(struct GC_Configuration * cfg,
-			       struct GE_Context * ectx) {
+  		       struct GE_Context * ectx) {
   cfg->data->ectx = ectx;
 }
 
 static int
 _parse_configuration(struct GC_Configuration * cfg,
-		     const char * filename) {
+  	     const char * filename) {
   int dirty;
   char line[256];
   char tag[64];
@@ -181,14 +181,14 @@ _parse_configuration(struct GC_Configuration * cfg,
   char * fn;
 
   fn = string_expandFileName(NULL,
-			     filename);
+  		     filename);
   MUTEX_LOCK(cfg->data->lock);
   dirty = cfg->data->dirty; /* back up value! */
   if (NULL == (fp = FOPEN(fn, "r"))) {
     GE_LOG_STRERROR_FILE(cfg->data->ectx,
-			 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
-			 "fopen",
-			 fn);
+  		 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
+  		 "fopen",
+  		 fn);
     MUTEX_UNLOCK(cfg->data->lock);
     FREE(fn);
     return -1;
@@ -197,21 +197,21 @@ _parse_configuration(struct GC_Configuration * cfg,
   ret = 0;
   section = STRDUP("");
   memset(line,
-	 0,
-	 256);
+   0,
+   256);
   nr = 0;
   while (NULL != fgets(line, 255, fp)) {
     nr++;
     for (i=0;i<255;i++)
       if (line[i] == '\t')
-	line[i] = ' ';
+  line[i] = ' ';
     if (line[0] == '\n' || line[0] == '#' || line[0] == '%' ||
-	line[0] == '\r')
+  line[0] == '\r')
       continue;
     emptyline = 1;
     for (i=0;(i<255 && line[i] != 0);i++)
       if (line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
-	emptyline = 0;
+  emptyline = 0;
     if (emptyline == 1)
       continue;
     /* remove tailing whitespace */
@@ -220,20 +220,20 @@ _parse_configuration(struct GC_Configuration * cfg,
     if (1 == sscanf(line, "@INLINE@ %191[^\n]", value) ) {
       /* @INLINE@ value */
       char * expanded = string_expandFileName(cfg->data->ectx,
-					      value);
+  				      value);
       if (0 != _parse_configuration(cfg,
-				    expanded))
-	ret = -1; /* failed to parse included config */
+  			    expanded))
+  ret = -1; /* failed to parse included config */
     } else if (1 == sscanf(line,
-			   "[%99[^]]]",
-			   value)) {
+  		   "[%99[^]]]",
+  		   value)) {
       /* [value] */
       FREE(section);
       section = STRDUP(value);
     } else if (2 == sscanf(line,
-			   " %63[^= ] = %191[^\n]",
-			   tag,
-			   value)) {
+  		   " %63[^= ] = %191[^\n]",
+  		   tag,
+  		   value)) {
       /* tag = value */
       /* Strip LF */
       i = strlen(value) - 1;
@@ -242,61 +242,61 @@ _parse_configuration(struct GC_Configuration * cfg,
       /* remove quotes */
       i = 0;
       if (value[0] == '"') {
-	i = 1;
-	while ( (value[i] != '\0') &&
-		(value[i] != '"') )
-	  i++;
-	if (value[i] == '"') {
-	  value[i] = '\0';
-	  i = 1;
-	} else
-	  i = 0;
+  i = 1;
+  while ( (value[i] != '\0') &&
+  	(value[i] != '"') )
+    i++;
+  if (value[i] == '"') {
+    value[i] = '\0';
+    i = 1;
+  } else
+    i = 0;
       }
       /* first check if we have this value already;
-	 this could happen if the value was changed
-	 using a command-line option; only set it
-	 if we do not have a value already... */
+   this could happen if the value was changed
+   using a command-line option; only set it
+   if we do not have a value already... */
       if ( (NO == GC_have_configuration_value(cfg,
-					      section,
-					      tag)) &&
-	   (0 != GC_set_configuration_value_string(cfg,
-						   cfg->data->ectx,
-						   section,
-						   tag,
-						   &value[i])) )
-	ret = -1; /* could not set value */
+  				      section,
+  				      tag)) &&
+     (0 != GC_set_configuration_value_string(cfg,
+  					   cfg->data->ectx,
+  					   section,
+  					   tag,
+  					   &value[i])) )
+  ret = -1; /* could not set value */
     } else if (1 == sscanf(line,
-			   " %63[^= ] =[^\n]",
-			   tag)) {
+  		   " %63[^= ] =[^\n]",
+  		   tag)) {
       /* tag = */
       /* first check if we have this value already;
-	 this could happen if the value was changed
-	 using a command-line option; only set it
-	 if we do not have a value already... */
+   this could happen if the value was changed
+   using a command-line option; only set it
+   if we do not have a value already... */
       if ( (NO == GC_have_configuration_value(cfg,
-					      section,
-					      tag)) &&
-	   (0 != GC_set_configuration_value_string(cfg,
-						   cfg->data->ectx,
-						   section,
-						   tag,
-						   "")) )
-	ret = -1; /* could not set value */
+  				      section,
+  				      tag)) &&
+     (0 != GC_set_configuration_value_string(cfg,
+  					   cfg->data->ectx,
+  					   section,
+  					   tag,
+  					   "")) )
+  ret = -1; /* could not set value */
     } else {
       /* parse error */
       GE_LOG(cfg->data->ectx,
-	     GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK,
-	     _("Syntax error in configuration file `%s' at line %d.\n"),
-	     filename, nr);
+       GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK,
+       _("Syntax error in configuration file `%s' at line %d.\n"),
+       filename, nr);
       ret = -1;
       break;
     }
   }
   if (0 != fclose(fp)) {
     GE_LOG_STRERROR_FILE(cfg->data->ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
-			 "fclose",
-			 filename);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
+  		 "fclose",
+  		 filename);
     ret = -1;
   }
   /* restore dirty flag - anything we set in the meantime
@@ -314,7 +314,7 @@ _test_dirty(struct GC_Configuration * cfg) {
 
 static int
 _write_configuration(struct GC_Configuration * cfg,
-		     const char * filename) {
+  	     const char * filename) {
   GC_ConfigurationData * data;
   GC_Section * sec;
   GC_Entry * e;
@@ -332,9 +332,9 @@ _write_configuration(struct GC_Configuration * cfg,
   data = cfg->data;
   if (NULL == (fp = FOPEN(fn, "w"))) {
     GE_LOG_STRERROR_FILE(data->ectx,
-			 GE_ERROR | GE_USER | GE_IMMEDIATE,
-			 "fopen",
-			 fn);
+  		 GE_ERROR | GE_USER | GE_IMMEDIATE,
+  		 "fopen",
+  		 fn);
     FREE(fn);
     return -1;
   }
@@ -345,34 +345,34 @@ _write_configuration(struct GC_Configuration * cfg,
   for (i=0;i<data->ssize;i++) {
     sec = &data->sections[i];
     if (0 > fprintf(fp,
-		    "[%s]\n",
-		    sec->name)) {
+  	    "[%s]\n",
+  	    sec->name)) {
       error = 1;
       break;
     }
     for (j=0;j<sec->size;j++) {
       e = &sec->entries[j];
       GE_ASSERT(data->ectx,
-		e->dirty_val == NULL);
+  	e->dirty_val == NULL);
       if (e->val != NULL) {
-	val = MALLOC(strlen(e->val) * 2 + 1);
-	strcpy(val, e->val);
-	while (NULL != (pos = strstr(val, "\n"))) {
-	  memmove(&pos[2],
-		  &pos[1],
-		  strlen(&pos[1]));
-	  pos[0] = '\\';
-	  pos[1] = 'n';
-	}
-	if (0 > fprintf(fp,
-			"%s = %s\n",
-			e->key,
-			val)) {
-	  error = 1;
-	  FREE(val);
-	  break;
-	}
-	FREE(val);
+  val = MALLOC(strlen(e->val) * 2 + 1);
+  strcpy(val, e->val);
+  while (NULL != (pos = strstr(val, "\n"))) {
+    memmove(&pos[2],
+  	  &pos[1],
+  	  strlen(&pos[1]));
+    pos[0] = '\\';
+    pos[1] = 'n';
+  }
+  if (0 > fprintf(fp,
+  		"%s = %s\n",
+  		e->key,
+  		val)) {
+    error = 1;
+    FREE(val);
+    break;
+  }
+  FREE(val);
       }
     }
     if (error != 0)
@@ -384,14 +384,14 @@ _write_configuration(struct GC_Configuration * cfg,
   }
   if (error != 0)
     GE_LOG_STRERROR_FILE(data->ectx,
-			 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
-			 "fprintf",
-			 filename);
+  		 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
+  		 "fprintf",
+  		 filename);
   if (0 != fclose(fp)) {
     GE_LOG_STRERROR_FILE(data->ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
-			 "fclose",
-			 filename);
+  		 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
+  		 "fclose",
+  		 filename);
     error = 1;
   }
   if (error == 0) {
@@ -410,13 +410,13 @@ _write_configuration(struct GC_Configuration * cfg,
  */
 static GC_Section *
 findSection(GC_ConfigurationData * data,
-	    const char * section) {
+      const char * section) {
   int i;
   for (i=data->ssize-1;i>=0;i--)
     if (0 == strcmp(section,
-		    data->sections[i].name))
+  	    data->sections[i].name))
       return &data->sections[i];
-  return NULL;	
+  return NULL;  
 }
 
 /**
@@ -424,8 +424,8 @@ findSection(GC_ConfigurationData * data,
  */
 static GC_Entry *
 findEntry(GC_ConfigurationData * data,
-	  const char * section,
-	  const char * key) {
+    const char * section,
+    const char * key) {
   int i;
   GC_Section * sec;
 
@@ -434,17 +434,17 @@ findEntry(GC_ConfigurationData * data,
     return NULL;
   for (i=sec->size-1;i>=0;i--)
     if (0 == strcmp(key,
-		    sec->entries[i].key))
+  	    sec->entries[i].key))
       return &sec->entries[i];
-  return NULL;	
+  return NULL;  
 }
 
 static int
 _set_configuration_value_string(struct GC_Configuration * cfg,
-				struct GE_Context * ectx,
-				const char * section,
-				const char * option,
-				const char * value) {
+  			struct GE_Context * ectx,
+  			const char * section,
+  			const char * option,
+  			const char * value) {
   GC_ConfigurationData * data;
   GC_Section * sec;
   GC_Section nsec;
@@ -463,21 +463,21 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
       nsec.size = 0;
       nsec.entries = NULL;
       APPEND(data->sections,
-	     data->ssize,
-	     nsec);
+       data->ssize,
+       nsec);
       sec = findSection(data, section);
     }
     ne.key = STRDUP(option);
     ne.val = NULL;
     ne.dirty_val = NULL;
     APPEND(sec->entries,
-	   sec->size,
-	   ne);
+     sec->size,
+     ne);
     e = findEntry(data, section, option);
   }
   if (e->dirty_val != NULL) {
     if (0 == strcmp(e->dirty_val,
-		    value)) {
+  	    value)) {
       ret = 0;
     } else {
       /* recursive update to different value -- not allowed! */
@@ -489,11 +489,11 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
     i = data->lsize - 1;
     while (i >= 0) {
       if (0 != data->listeners[i].listener(data->listeners[i].ctx,
-					   cfg,
-					   ectx,
-					   section,
-					   option))
-	break; /* update refused */
+  				   cfg,
+  				   ectx,
+  				   section,
+  				   option))
+  break; /* update refused */
       i--;
       e = findEntry(data, section, option); /* side-effects of callback are possible! */
     }
@@ -504,22 +504,22 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
       e->dirty_val = NULL;
       i++; /* the callback that refused does not need refreshing */
       while (i < data->lsize) {
-	if (0 != data->listeners[i].listener(data->listeners[i].ctx,
-					     cfg,
-					     ectx,
-					     section,
-					     option))
-	  GE_ASSERT(ectx, 0); /* refused the refusal!? */
-	e = findEntry(data, section, option); /* side-effects of callback are possible! */
-	i++;
+  if (0 != data->listeners[i].listener(data->listeners[i].ctx,
+  				     cfg,
+  				     ectx,
+  				     section,
+  				     option))
+    GE_ASSERT(ectx, 0); /* refused the refusal!? */
+  e = findEntry(data, section, option); /* side-effects of callback are possible! */
+  i++;
       }
       ret = -1; /* error -- update refused */
     } else {
       /* all confirmed, commit! */
       if ( (e->val == NULL) ||
-	   (0 != strcmp(e->val,
-			e->dirty_val)) )
-	data->dirty = 1;
+     (0 != strcmp(e->val,
+  		e->dirty_val)) )
+  data->dirty = 1;
       FREENONNULL(e->val);
       e->val = e->dirty_val;
       e->dirty_val = NULL;
@@ -528,21 +528,21 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   }
   if (ret == -1)
     GE_LOG(ectx,
-	   GE_USER | GE_BULK | GE_WARNING,
-	   _("Setting option `%s' in section `%s' to value `%s' was refused.\n"),
-	   option,
-	   section,
-	   value);
+     GE_USER | GE_BULK | GE_WARNING,
+     _("Setting option `%s' in section `%s' to value `%s' was refused.\n"),
+     option,
+     section,
+     value);
   MUTEX_UNLOCK(data->lock);
   return ret;
 }
 
 static int
 _set_configuration_value_number(struct GC_Configuration * cfg,
-				struct GE_Context * ectx,
-				const char * section,
-				const char * option,
-				unsigned long long number) {
+  			struct GE_Context * ectx,
+  			const char * section,
+  			const char * option,
+  			unsigned long long number) {
   char s[64];
   SNPRINTF(s, 64, "%llu", number);
   return _set_configuration_value_string(cfg, ectx, section, option, s);
@@ -550,59 +550,59 @@ _set_configuration_value_number(struct GC_Configuration * cfg,
 
 static int
 _get_configuration_value_number(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				unsigned long long min,
-				unsigned long long max,
-				unsigned long long def,
-				unsigned long long * number) {
+  			const char * section,
+  			const char * option,
+  			unsigned long long min,
+  			unsigned long long max,
+  			unsigned long long def,
+  			unsigned long long * number) {
   GC_Entry * e;
   const char * val;
   int ret;
 
   MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
-		section,
-		option);
+  	section,
+  	option);
   if (e != NULL) {
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
     if (1 == SSCANF(val,
-		    "%llu",
-		    number)) {
+  	    "%llu",
+  	    number)) {
       if ( (*number >= min)  &&
-	   (*number <= max) ) {
-	ret = 0;
+     (*number <= max) ) {
+  ret = 0;
       } else {
-	GE_LOG(cfg->data->ectx,
-	       GE_ERROR | GE_USER | GE_BULK,
-	       _("Configuration value '%llu' for '%s' "
-		 "in section '%s' is out of legal bounds [%llu,%llu]\n"),
-	       *number,
-	       option,
-	       section,
-	       min,
-	       max);
-	ret = -1; /* error */
+  GE_LOG(cfg->data->ectx,
+         GE_ERROR | GE_USER | GE_BULK,
+         _("Configuration value '%llu' for '%s' "
+  	 "in section '%s' is out of legal bounds [%llu,%llu]\n"),
+         *number,
+         option,
+         section,
+         min,
+         max);
+  ret = -1; /* error */
       }
     } else {
       GE_LOG(cfg->data->ectx,
-	     GE_ERROR | GE_USER | GE_BULK,
-	     _("Configuration value '%s' for '%s'"
-	       " in section '%s' should be a number\n"),
-	     val,
-	     option,
-	     section,
-	     min,
-	     max);
+       GE_ERROR | GE_USER | GE_BULK,
+       _("Configuration value '%s' for '%s'"
+         " in section '%s' should be a number\n"),
+       val,
+       option,
+       section,
+       min,
+       max);
       ret = -1; /* error */
     }
   } else {
     *number = def;
     _set_configuration_value_number(cfg,
-				    cfg->data->ectx,
-				    section,
-				    option,
-				    def);
+  			    cfg->data->ectx,
+  			    section,
+  			    option,
+  			    def);
     ret = 1; /* default */
   }
   MUTEX_UNLOCK(cfg->data->lock);
@@ -611,18 +611,18 @@ _get_configuration_value_number(struct GC_Configuration * cfg,
 
 static int
 _get_configuration_value_string(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				const char * def,
-				char ** value) {
+  			const char * section,
+  			const char * option,
+  			const char * def,
+  			char ** value) {
   GC_Entry * e;
   const char * val;
   int ret;
 
   MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
-		section,
-		option);
+  	section,
+  	option);
   if (e != NULL) {
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
     *value = STRDUP(val);
@@ -631,18 +631,18 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
     if (def == NULL) {
       MUTEX_UNLOCK(cfg->data->lock);
       GE_LOG(cfg->data->ectx,
-	     GE_USER | GE_IMMEDIATE | GE_ERROR,
-	     "Configuration value for option `%s' in section `%s' required.\n",
-	     option,
-	     section);
+       GE_USER | GE_IMMEDIATE | GE_ERROR,
+       "Configuration value for option `%s' in section `%s' required.\n",
+       option,
+       section);
       return -1;
     }
     *value = STRDUP(def);
     _set_configuration_value_string(cfg,
-				    cfg->data->ectx,
-				    section,
-				    option,
-				    def);
+  			    cfg->data->ectx,
+  			    section,
+  			    option,
+  			    def);
     ret = 1; /* default */
   }
   MUTEX_UNLOCK(cfg->data->lock);
@@ -651,11 +651,11 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
 
 static int
 _get_configuration_value_choice(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				const char ** choices,
-				const char * def,
-				const char ** value) {
+  			const char * section,
+  			const char * option,
+  			const char ** choices,
+  			const char * def,
+  			const char ** value) {
   GC_Entry * e;
   const char * val;
   int i;
@@ -663,25 +663,25 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
 
   MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
-		section,
-		option);
+  	section,
+  	option);
   if (e != NULL) {
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
     i = 0;
     while (choices[i] != NULL) {
       if (0 == strcasecmp(choices[i],
-			  val))
-	break;
+  		  val))
+  break;
       i++;
     }
     if (choices[i] == NULL) {
       GE_LOG(cfg->data->ectx,
-	     GE_ERROR | GE_USER | GE_BULK,
-	     _("Configuration value '%s' for '%s'"
-	       " in section '%s' is not in set of legal choices\n"),
-	     val,
-	     option,
-	     section);
+       GE_ERROR | GE_USER | GE_BULK,
+       _("Configuration value '%s' for '%s'"
+         " in section '%s' is not in set of legal choices\n"),
+       val,
+       option,
+       section);
       ret = -1; /* error */
     } else {
       *value = choices[i];
@@ -704,15 +704,15 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
  */
 static int
 _have_configuration_value(struct GC_Configuration * cfg,
-			  const char * section,
-			  const char * option) {
+  		  const char * section,
+  		  const char * option) {
   GC_Entry * e;
   int ret;
 
   MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
-		section,
-		option);
+  	section,
+  	option);
   if (e == NULL)
     ret = NO;
   else
@@ -731,7 +731,7 @@ _have_configuration_value(struct GC_Configuration * cfg,
  */
 static char *
 _configuration_expand_dollar(struct GC_Configuration * cfg,
-			     char * orig) {
+  		     char * orig) {
   int i;
   char * prefix;
   char * result;
@@ -741,7 +741,7 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
     return orig;
   i = 0;
   while ( (orig[i] != '/') &&
-	  (orig[i] != '\\') &&
+    (orig[i] != '\\') &&
           (orig[i] != '\0') )
     i++;
   if (orig[i] == '\0') {
@@ -752,13 +752,13 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   }
   prefix = NULL;
   if (YES == _have_configuration_value(cfg,
-				       "PATHS",
-				       &orig[1])) {
+  			       "PATHS",
+  			       &orig[1])) {
     if (0 != _get_configuration_value_string(cfg,
-					     "PATHS",
-					     &orig[1],
-					     NULL,
-					     &prefix)) {
+  				     "PATHS",
+  				     &orig[1],
+  				     NULL,
+  				     &prefix)) {
       GE_BREAK(NULL, 0);
       return orig;
     }
@@ -794,10 +794,10 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
  */
 static int
 _get_configuration_value_filename(struct GC_Configuration * cfg,
-				  const char * section,
-				  const char * option,
-				  const char * def,
-				  char ** value) {
+  			  const char * section,
+  			  const char * option,
+  			  const char * def,
+  			  char ** value) {
   GC_ConfigurationData * data;
   int ret;
   char * tmp;
@@ -805,15 +805,15 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   data = cfg->data;
   tmp = NULL;
   ret = _get_configuration_value_string(cfg,
-					section,
-					option,
-					def,
-					&tmp);
+  				section,
+  				option,
+  				def,
+  				&tmp);
   if (tmp != NULL) {
     tmp = _configuration_expand_dollar(cfg,
-				       tmp);
+  			       tmp);
     *value = string_expandFileName(data->ectx,
-				   tmp);
+  			   tmp);
     FREE(tmp);
   } else {
     *value = NULL;
@@ -823,17 +823,17 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
 
 static int
 _set_configuration_value_choice(struct GC_Configuration * cfg,
-				struct GE_Context * ectx,
-				const char * section,
-				const char * option,
-				const char * choice) {
+  			struct GE_Context * ectx,
+  			const char * section,
+  			const char * option,
+  			const char * choice) {
   return _set_configuration_value_string(cfg, ectx, section, option, choice);
 }
 
 static int
 _attach_change_listener(struct GC_Configuration * cfg,
-			GC_ChangeListener callback,
-			void * ctx) {
+  		GC_ChangeListener callback,
+  		void * ctx) {
   GC_Listener l;
   int i;
   int j;
@@ -844,12 +844,12 @@ _attach_change_listener(struct GC_Configuration * cfg,
     for (j=0;j<s->size;j++) {
       GC_Entry * e = &s->entries[j];
       if (0 != callback(ctx,
-			cfg,
-			cfg->data->ectx,
-			s->name,
-			e->key)) {
-	MUTEX_UNLOCK(cfg->data->lock);
-	return -1;
+  		cfg,
+  		cfg->data->ectx,
+  		s->name,
+  		e->key)) {
+  MUTEX_UNLOCK(cfg->data->lock);
+  return -1;
       }
       s = &cfg->data->sections[i]; /* side-effects of callback are possible! */
     }
@@ -857,16 +857,16 @@ _attach_change_listener(struct GC_Configuration * cfg,
   l.listener = callback;
   l.ctx = ctx;
   APPEND(cfg->data->listeners,
-	 cfg->data->lsize,
-	 l);
+   cfg->data->lsize,
+   l);
   MUTEX_UNLOCK(cfg->data->lock);
   return 0;
 }
 
 static int
 _detach_change_listener(struct GC_Configuration * cfg,
-			GC_ChangeListener callback,
-			void * ctx) {
+  		GC_ChangeListener callback,
+  		void * ctx) {
   int i;
   GC_Listener * l;
 
@@ -874,12 +874,12 @@ _detach_change_listener(struct GC_Configuration * cfg,
   for (i=cfg->data->lsize-1;i>=0;i--) {
     l = &cfg->data->listeners[i];
     if ( (l->listener == callback) &&
-	 (l->ctx == ctx) ) {
+   (l->ctx == ctx) ) {
       cfg->data->listeners[i]
-	= cfg->data->listeners[cfg->data->lsize-1];
+  = cfg->data->listeners[cfg->data->lsize-1];
       GROW(cfg->data->listeners,
-	   cfg->data->lsize,
-	   cfg->data->lsize-1);
+     cfg->data->lsize,
+     cfg->data->lsize-1);
       MUTEX_UNLOCK(cfg->data->lock);
       return 0;
     }

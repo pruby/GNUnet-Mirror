@@ -47,11 +47,11 @@ unsigned int randomi(unsigned int i) {
     gcry_fast_random_poll();
 #endif
   ret = rand(); /* in case gcry_randomize fails,
-		   we at least get a pseudo-
-		   random number this way */
+  	   we at least get a pseudo-
+  	   random number this way */
   gcry_randomize((unsigned char*)&ret,
-		 sizeof(unsigned int),
-		 GCRY_STRONG_RANDOM);
+  	 sizeof(unsigned int),
+  	 GCRY_STRONG_RANDOM);
   unlockGcrypt();
   return ret % i;
 }
@@ -93,8 +93,8 @@ unsigned long long randomi64(unsigned long long u) {
   GE_ASSERT(NULL, u > 0);
   lockGcrypt();
   gcry_randomize((unsigned char *) &ret,
-		 sizeof(unsigned long long),
-		 GCRY_STRONG_RANDOM);
+  	 sizeof(unsigned long long),
+  	 GCRY_STRONG_RANDOM);
   unlockGcrypt();
   return ret % u;
 }

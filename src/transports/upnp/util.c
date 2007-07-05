@@ -29,7 +29,7 @@
  * (eg. &amp;, &lt; &#38 etc.) starting at s. Returns NULL on failure.*/
 static char *
 detect_entity(const char *text,
-	      int *length) {
+        int *length) {
   const char *pln;
   int len;
   int pound;
@@ -56,12 +56,12 @@ detect_entity(const char *text,
   else if(IS_ENTITY("&apos;"))
     pln = "\'";
   else if(*(text+1) == '#' && (sscanf(text, "&#%u;", &pound) == 1) &&
-	  pound != 0 && *(text+3+(int)log10(pound)) == ';') {
+    pound != 0 && *(text+3+(int)log10(pound)) == ';') {
     char b[7];
     char * buf = string_convertToUtf8(NULL,
-				      (const char*) &pound,
-				      2,
-				      "UNICODE");
+  			      (const char*) &pound,
+  			      2,
+  			      "UNICODE");
     if (strlen(buf) > 6)
       buf[6] = '\0';
     strcpy(b, buf);
@@ -81,7 +81,7 @@ detect_entity(const char *text,
 
 char *
 g_strdup_printf(const char * fmt,
-		...) {
+  	...) {
   size_t size;
   char * buf;
   va_list va;
@@ -107,21 +107,21 @@ gaim_unescape_html(const char *html) {
       char *ent;
 
       if ((ent = detect_entity(c, &len)) != NULL) {
-	app = g_strdup_printf("%s%s", ret, ent);
-	FREE(ret);
-	ret = app;
-	c += len;
-	FREE(ent);
+  app = g_strdup_printf("%s%s", ret, ent);
+  FREE(ret);
+  ret = app;
+  c += len;
+  FREE(ent);
       } else if (!strncmp(c, "<br>", 4)) {
-	app = g_strdup_printf("%s%s", ret, "\n");
-	FREE(ret);
-	ret = app;
-	c += 4;
+  app = g_strdup_printf("%s%s", ret, "\n");
+  FREE(ret);
+  ret = app;
+  c += 4;
       } else {
-	app = g_strdup_printf("%s%c", ret, *c);
-	FREE(ret);
-	ret = app;
-	c++;
+  app = g_strdup_printf("%s%c", ret, *c);
+  FREE(ret);
+  ret = app;
+  c++;
       }
     }
     return ret;

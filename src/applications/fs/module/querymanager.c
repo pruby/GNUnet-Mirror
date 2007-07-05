@@ -97,14 +97,14 @@ static void ceh(struct ClientHandle * client) {
  * @param client where did the query come from?
  */
 void trackQuery(const HashCode512 * query,
-		unsigned int type,
-		struct ClientHandle * client) {
+  	unsigned int type,
+  	struct ClientHandle * client) {
   GE_ASSERT(ectx, client != NULL);
   MUTEX_LOCK(queryManagerLock);
   if (trackerSize == trackerCount)
     GROW(trackers,
-	 trackerSize,
-	 trackerSize * 2);
+   trackerSize,
+   trackerSize * 2);
   trackers[trackerCount] = MALLOC(sizeof(TrackRecord));
   trackers[trackerCount]->query = *query;
   trackers[trackerCount]->type = type;
@@ -122,14 +122,14 @@ void trackQuery(const HashCode512 * query,
  * @param client where did the query come from?
  */
 void untrackQuery(const HashCode512 * query,
-		  struct ClientHandle * client) {
+  	  struct ClientHandle * client) {
   int i;
 
   MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
-	 (equalsHashCode512(&trackers[i]->query,
-			    query)) ) {
+   (equalsHashCode512(&trackers[i]->query,
+  		    query)) ) {
       removeEntry(i);
       MUTEX_UNLOCK(queryManagerLock);
       return;
@@ -144,7 +144,7 @@ void untrackQuery(const HashCode512 * query,
  * @param value the response
  */
 void processResponse(const HashCode512 * key,
-		     const Datastore_Value * value) {
+  	     const Datastore_Value * value) {
   int i;
   CS_fs_reply_content_MESSAGE * rc;
   unsigned int matchCount;
@@ -153,7 +153,7 @@ void processResponse(const HashCode512 * key,
 #endif
 
   GE_ASSERT(ectx,
-	    ntohl(value->size) > sizeof(Datastore_Value));
+      ntohl(value->size) > sizeof(Datastore_Value));
   if ( (ntohll(value->expirationTime) < get_time()) &&
        (ntohl(value->type) != D_BLOCK) )
     return; /* ignore expired, non-data responses! */
@@ -161,48 +161,48 @@ void processResponse(const HashCode512 * key,
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(key,
-		    &enc));
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     hash2enc(key,
+  	    &enc));
 #endif
   MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
     if ( (equalsHashCode512(&trackers[i]->query,
-			    key)) &&
-	 ( (trackers[i]->type == ANY_BLOCK) ||
-	   (trackers[i]->type == ntohl(value->type)) ) ) {
+  		    key)) &&
+   ( (trackers[i]->type == ANY_BLOCK) ||
+     (trackers[i]->type == ntohl(value->type)) ) ) {
       matchCount++;
       rc = MALLOC(sizeof(CS_fs_reply_content_MESSAGE) +
-		  ntohl(value->size) - sizeof(Datastore_Value));
+  	  ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.size = htons(sizeof(CS_fs_reply_content_MESSAGE) +
-			      ntohl(value->size) - sizeof(Datastore_Value));
+  		      ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.type = htons(CS_PROTO_gap_RESULT);
       rc->anonymityLevel = value->anonymityLevel;
       rc->expirationTime = value->expirationTime;
       memcpy(&rc[1],
-	     &value[1],
-	     ntohl(value->size) - sizeof(Datastore_Value));
+       &value[1],
+       ntohl(value->size) - sizeof(Datastore_Value));
 #if DEBUG_QUERYMANAGER
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "Sending reply for `%s' to client waiting in slot %u.\n",
-	     &enc,
-	     i);
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "Sending reply for `%s' to client waiting in slot %u.\n",
+       &enc,
+       i);
 #endif
       if (stats != NULL)
-	stats->change(stat_replies_transmitted,
-		      1);
+  stats->change(stat_replies_transmitted,
+  	      1);
       coreAPI->sendToClient(trackers[i]->client,
-			    &rc->header);
+  		    &rc->header);
       FREE(rc);
     }
   }
 #if DEBUG_QUERYMANAGER && 0
   if (matchCount == 0) {
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Reply `%s' did not match any request.\n",
-	   &enc);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Reply `%s' did not match any request.\n",
+     &enc);
   }
 #endif
   MUTEX_UNLOCK(queryManagerLock);

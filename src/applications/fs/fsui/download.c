@@ -39,17 +39,17 @@
  * in URITRACK.
  */
 static int listURIfoundDirectory(const ECRS_FileInfo * fi,
-				 const HashCode512 * key,
-				 int isRoot,
-				 void * prnt) {
+  			 const HashCode512 * key,
+  			 int isRoot,
+  			 void * prnt) {
   FSUI_DownloadList * dl = prnt;
 
   if (isRoot == YES)
     return OK; /* namespace ad, ignore */
   URITRACK_addState(dl->ctx->ectx,
-		    dl->ctx->cfg,
-		    fi->uri,
-		    URITRACK_DIRECTORY_FOUND);
+  	    dl->ctx->cfg,
+  	    fi->uri,
+  	    URITRACK_DIRECTORY_FOUND);
 
   return OK;
 }
@@ -61,22 +61,22 @@ static int listURIfoundDirectory(const ECRS_FileInfo * fi,
  */
 static FSUI_DownloadList *
 startDownload(struct FSUI_Context * ctx,
-	      unsigned int anonymityLevel,
-	      int is_recursive,
-	      const struct ECRS_URI * uri,
-	      const struct ECRS_MetaData * meta,
-	      const char * filename,
-	      struct FSUI_SearchList * psearch,
-	      FSUI_DownloadList * parent);
+        unsigned int anonymityLevel,
+        int is_recursive,
+        const struct ECRS_URI * uri,
+        const struct ECRS_MetaData * meta,
+        const char * filename,
+        struct FSUI_SearchList * psearch,
+        FSUI_DownloadList * parent);
 
 /**
  * Initiate a (recursive) download of the given
  * directory entry.
  */
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
-				    const HashCode512 * key,
-				    int isRoot,
-				    void * prnt) {
+  			    const HashCode512 * key,
+  			    int isRoot,
+  			    void * prnt) {
   FSUI_DownloadList * parent = prnt;
   struct GE_Context * ectx;
   int i;
@@ -90,51 +90,51 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
     return OK; /* namespace ad, ignore */
 
   URITRACK_trackURI(ectx,
-		    parent->ctx->cfg,
-		    fi);
+  	    parent->ctx->cfg,
+  	    fi);
   for (i=0;i<parent->completedDownloadsCount;i++)
     if (ECRS_equalsUri(parent->completedDownloads[i],
-		       fi->uri))
+  	       fi->uri))
       return OK; /* already complete! */
   pos = parent->child;
   while (pos != NULL) {
     if (ECRS_equalsUri(pos->fi.uri,
-		       fi->uri))
+  	       fi->uri))
       return OK; /* already downloading */
     pos = pos->next;
   }
   filename = ECRS_getFromMetaData(fi->meta,
-				  EXTRACTOR_FILENAME);
+  			  EXTRACTOR_FILENAME);
   if (filename == NULL) {
     char * tmp = ECRS_uriToString(fi->uri);
     GE_ASSERT(ectx,
-	      strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
+        strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
     filename = STRDUP(&tmp[strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX)]);
     FREE(tmp);
   }
   fullName = MALLOC(strlen(parent->filename) + 2
-		    + strlen(filename));
+  	    + strlen(filename));
   strcpy(fullName,
-	 parent->filename);
+   parent->filename);
   strcat(fullName,
-	 filename);
+   filename);
   while (NULL != (dotdot = strstr(fullName, "..")))
     dotdot[0] = dotdot[1] = '_';
   FREE(filename);
 #if DEBUG_DTM
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Starting recursive download of `%s'\n",
-	 fullName);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Starting recursive download of `%s'\n",
+   fullName);
 #endif
   startDownload(parent->ctx,
-		parent->anonymityLevel,
-		YES,
-		fi->uri,
-		fi->meta,
-		fullName,
-		parent->search,
-		parent);
+  	parent->anonymityLevel,
+  	YES,
+  	fi->uri,
+  	fi->meta,
+  	fullName,
+  	parent->search,
+  	parent);
   FREE(fullName);
   return OK;
 }
@@ -144,12 +144,12 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
  */
 static void
 downloadProgressCallback(unsigned long long totalBytes,
-			 unsigned long long completedBytes,
-			 cron_t eta,
-			 unsigned long long lastBlockOffset,
-			 const char * lastBlock,
-			 unsigned int lastBlockSize,
-			 void * cls) {
+  		 unsigned long long completedBytes,
+  		 cron_t eta,
+  		 unsigned long long lastBlockOffset,
+  		 const char * lastBlock,
+  		 unsigned int lastBlockSize,
+  		 void * cls) {
   FSUI_DownloadList * dl = cls;
   FSUI_Event event;
   struct ECRS_MetaData * md;
@@ -157,7 +157,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   cron_t run_time;
 
   GE_ASSERT(dl->ctx->ectx,
-	    dl->total == totalBytes);
+      dl->total == totalBytes);
   dl->completed = completedBytes;
   event.type = FSUI_download_progress;
   event.data.DownloadProgress.dc.pos = dl;
@@ -175,8 +175,8 @@ downloadProgressCallback(unsigned long long totalBytes,
     eta = now;
   } else {
     eta = (cron_t) (dl->startTime +
-		    (((double)(run_time)/(double)dl->completed))
-		    * (double)dl->total);
+  	    (((double)(run_time)/(double)dl->completed))
+  	    * (double)dl->total);
     if (eta < now)
       eta = now;
   }
@@ -186,14 +186,14 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.data.DownloadProgress.last_block = lastBlock;
   event.data.DownloadProgress.last_size = lastBlockSize;
   dl->ctx->ecb(dl->ctx->ecbClosure,
-	       &event);
+         &event);
   if ( (lastBlockOffset == 0) &&
        (dl->is_directory == SYSERR) ) {
     /* check if this is a directory */
     if ( (lastBlockSize > strlen(GNUNET_DIRECTORY_MAGIC)) &&
-	 (0 == strncmp(GNUNET_DIRECTORY_MAGIC,
-		       lastBlock,
-		       strlen(GNUNET_DIRECTORY_MAGIC)) ) )
+   (0 == strncmp(GNUNET_DIRECTORY_MAGIC,
+  	       lastBlock,
+  	       strlen(GNUNET_DIRECTORY_MAGIC)) ) )
       dl->is_directory = YES;
     else
       dl->is_directory = NO;
@@ -201,11 +201,11 @@ downloadProgressCallback(unsigned long long totalBytes,
   if (dl->is_directory == YES) {
     md = NULL;
     ECRS_listDirectory(dl->ctx->ectx,
-		       lastBlock,
-		       lastBlockSize,
-		       &md,
-		       &listURIfoundDirectory,
-		       dl);
+  	       lastBlock,
+  	       lastBlockSize,
+  	       &md,
+  	       &listURIfoundDirectory,
+  	       dl);
     if (md != NULL)
       ECRS_freeMetaData(md);
   }
@@ -214,11 +214,11 @@ downloadProgressCallback(unsigned long long totalBytes,
     md = NULL;
     MUTEX_LOCK(dl->ctx->lock);
     ECRS_listDirectory(dl->ctx->ectx,
-		       lastBlock,
-		       lastBlockSize,
-		       &md,
-		       &triggerRecursiveDownload,
-		       dl);
+  	       lastBlock,
+  	       lastBlockSize,
+  	       &md,
+  	       &triggerRecursiveDownload,
+  	       dl);
     MUTEX_UNLOCK(dl->ctx->lock);
     if (md != NULL)
       ECRS_freeMetaData(md);
@@ -255,24 +255,24 @@ void * downloadThread(void * cls) {
   ectx = dl->ctx->ectx;
 #if DEBUG_DTM
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Download thread for `%s' started...\n",
-	 dl->filename);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Download thread for `%s' started...\n",
+   dl->filename);
 #endif
   GE_ASSERT(ectx, dl->ctx != NULL);
   GE_ASSERT(ectx, dl->filename != NULL);
   mem = GE_memory_create(2);
   ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
-				mem);
+  			mem);
   ret = ECRS_downloadFile(ee,
-			  dl->ctx->cfg,
-			  dl->fi.uri,
-			  dl->filename,
-			  dl->anonymityLevel,
-			  &downloadProgressCallback,
-			  dl,
-			  &testTerminate,
-			  dl);
+  		  dl->ctx->cfg,
+  		  dl->fi.uri,
+  		  dl->filename,
+  		  dl->anonymityLevel,
+  		  &downloadProgressCallback,
+  		  dl,
+  		  &testTerminate,
+  		  dl);
   if (ret == OK) {
     dl->state = FSUI_COMPLETED;
     event.type = FSUI_download_completed;
@@ -286,11 +286,11 @@ void * downloadThread(void * cls) {
     event.data.DownloadCompleted.filename = dl->filename;
     event.data.DownloadCompleted.uri = dl->fi.uri;
     URITRACK_addState(dl->ctx->ectx,
-		      dl->ctx->cfg,
-		      dl->fi.uri,
-		      URITRACK_DOWNLOAD_COMPLETED);
+  	      dl->ctx->cfg,
+  	      dl->fi.uri,
+  	      URITRACK_DOWNLOAD_COMPLETED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);
+  	 &event);
   } else if (dl->state == FSUI_ACTIVE) {
     const char * error;
 
@@ -308,11 +308,11 @@ void * downloadThread(void * cls) {
       error = _("Download failed (no reason given)");
     event.data.DownloadError.message = error;
     URITRACK_addState(dl->ctx->ectx,
-		      dl->ctx->cfg,
-		      dl->fi.uri,
-		      URITRACK_DOWNLOAD_ABORTED);
+  	      dl->ctx->cfg,
+  	      dl->fi.uri,
+  	      URITRACK_DOWNLOAD_ABORTED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);
+  	 &event);
   } else if (dl->state == FSUI_ABORTED) { /* aborted */
     event.type = FSUI_download_aborted;
     event.data.DownloadAborted.dc.pos = dl;
@@ -322,11 +322,11 @@ void * downloadThread(void * cls) {
     event.data.DownloadAborted.dc.spos = dl->search;
     event.data.DownloadAborted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
     URITRACK_addState(dl->ctx->ectx,
-		      dl->ctx->cfg,
-		      dl->fi.uri,
-		      URITRACK_DOWNLOAD_ABORTED);
+  	      dl->ctx->cfg,
+  	      dl->fi.uri,
+  	      URITRACK_DOWNLOAD_ABORTED);
     dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);
+  	 &event);
   } else {
     /* else: suspended */
     GE_BREAK(NULL, dl->state == FSUI_SUSPENDING);
@@ -351,45 +351,45 @@ void * downloadThread(void * cls) {
       strcat(fn, GNUNET_DIRECTORY_EXT);
     }
     fd = disk_file_open(ectx,
-			fn,
-			O_LARGEFILE | O_RDONLY);
+  		fn,
+  		O_LARGEFILE | O_RDONLY);
     if (fd != -1) {
       dirBlock = MMAP(NULL,
-		      totalBytes,
-		      PROT_READ,
-		      MAP_SHARED,
-		      fd,
-		      0);
+  	      totalBytes,
+  	      PROT_READ,
+  	      MAP_SHARED,
+  	      fd,
+  	      0);
       if (MAP_FAILED == dirBlock) {
-	GE_LOG_STRERROR_FILE(ectx,
-			     GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
-			     "mmap",
-			     fn);	
+  GE_LOG_STRERROR_FILE(ectx,
+  		     GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
+  		     "mmap",
+  		     fn);	
       } else {
-	md = NULL;
-	ECRS_listDirectory(dl->ctx->ectx,
-			   dirBlock,
-			   totalBytes,
-			   &md,
-			   &listURIfoundDirectory,
-			   dl);
-	if (md != NULL)
-	  ECRS_freeMetaData(md);
- 	
-	if (dl->is_recursive) {
-	  /* load directory, start downloads */
-	  md = NULL;
-	  MUTEX_LOCK(dl->ctx->lock);
-	  ECRS_listDirectory(dl->ctx->ectx,
-			     dirBlock,
-			     totalBytes,
-			     &md,
-			     &triggerRecursiveDownload,
-			     dl);
-	  MUTEX_UNLOCK(dl->ctx->lock);
-	  ECRS_freeMetaData(md);
-	  MUNMAP(dirBlock, totalBytes);
-	}
+  md = NULL;
+  ECRS_listDirectory(dl->ctx->ectx,
+  		   dirBlock,
+  		   totalBytes,
+  		   &md,
+  		   &listURIfoundDirectory,
+  		   dl);
+  if (md != NULL)
+    ECRS_freeMetaData(md);
+   
+  if (dl->is_recursive) {
+    /* load directory, start downloads */
+    md = NULL;
+    MUTEX_LOCK(dl->ctx->lock);
+    ECRS_listDirectory(dl->ctx->ectx,
+  		     dirBlock,
+  		     totalBytes,
+  		     &md,
+  		     &triggerRecursiveDownload,
+  		     dl);
+    MUTEX_UNLOCK(dl->ctx->lock);
+    ECRS_freeMetaData(md);
+    MUNMAP(dirBlock, totalBytes);
+  }
       }
       CLOSE(fd);
     }
@@ -397,10 +397,10 @@ void * downloadThread(void * cls) {
   }
 #if DEBUG_DTM
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Download thread for `%s' terminated (%s)...\n",
-	 dl->filename,
-	 ret == OK ? "COMPLETED" : "ABORTED");
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Download thread for `%s' terminated (%s)...\n",
+   dl->filename,
+   ret == OK ? "COMPLETED" : "ABORTED");
 #endif
   dl->runTime = get_time() - dl->startTime;
   GE_free_context(ee);
@@ -413,27 +413,27 @@ void * downloadThread(void * cls) {
  */
 static FSUI_DownloadList *
 startDownload(struct FSUI_Context * ctx,
-	      unsigned int anonymityLevel,
-	      int is_recursive,
-	      const struct ECRS_URI * uri,
-	      const struct ECRS_MetaData * meta,
-	      const char * filename,
-	      struct FSUI_SearchList * psearch,
-	      FSUI_DownloadList * parent) {
+        unsigned int anonymityLevel,
+        int is_recursive,
+        const struct ECRS_URI * uri,
+        const struct ECRS_MetaData * meta,
+        const char * filename,
+        struct FSUI_SearchList * psearch,
+        FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
   FSUI_Event event;
 
   GE_ASSERT(NULL, ctx != NULL);
   GE_ASSERT(NULL, parent != NULL);
   if (! (ECRS_isFileUri(uri) ||
-	 ECRS_isLocationUri(uri)) ) {
+   ECRS_isLocationUri(uri)) ) {
     GE_BREAK(NULL, 0); /* wrong type of URI! */
     return NULL;
   }
   dl = MALLOC(sizeof(FSUI_DownloadList));
   memset(dl,
-	 0,
-	 sizeof(FSUI_DownloadList));
+   0,
+   sizeof(FSUI_DownloadList));
   dl->startTime = 0; /* not run at all so far! */
   dl->runTime = 0; /* not run at all so far! */
   dl->state = FSUI_PENDING;
@@ -463,17 +463,17 @@ startDownload(struct FSUI_Context * ctx,
   event.data.DownloadStarted.fi.meta = dl->fi.meta;
   event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   URITRACK_addState(ctx->ectx,
-		    ctx->cfg,
-		    uri,
-		    URITRACK_DOWNLOAD_STARTED);
+  	    ctx->cfg,
+  	    uri,
+  	    URITRACK_DOWNLOAD_STARTED);
   dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
-			  &event);
+  		  &event);
   dl->next = parent->child;
   parent->child = dl;
   if (psearch != NULL) {
     GROW(psearch->my_downloads,
-	 psearch->my_downloads_size,
-	 psearch->my_downloads_size + 1);
+   psearch->my_downloads_size,
+   psearch->my_downloads_size + 1);
     psearch->my_downloads[psearch->my_downloads_size -1] = dl;
   }
   return dl;
@@ -488,26 +488,26 @@ startDownload(struct FSUI_Context * ctx,
  */
 struct FSUI_DownloadList *
 FSUI_startDownload(struct FSUI_Context * ctx,
-		   unsigned int anonymityLevel,			
-		   int doRecursive,
-		   const struct ECRS_URI * uri,
-		   const struct ECRS_MetaData * meta,
-		   const char * filename,
-		   struct FSUI_SearchList * psearch,
-		   struct FSUI_DownloadList * pdownload) {
+  	   unsigned int anonymityLevel,			
+  	   int doRecursive,
+  	   const struct ECRS_URI * uri,
+  	   const struct ECRS_MetaData * meta,
+  	   const char * filename,
+  	   struct FSUI_SearchList * psearch,
+  	   struct FSUI_DownloadList * pdownload) {
   struct FSUI_DownloadList * ret;
 
   MUTEX_LOCK(ctx->lock);
   if (pdownload == NULL)
     pdownload = &ctx->activeDownloads;
   ret = startDownload(ctx,
-		      anonymityLevel,
-		      doRecursive,
-		      uri,
-		      meta,
-		      filename,
-		      psearch,
-		      pdownload);
+  	      anonymityLevel,
+  	      doRecursive,
+  	      uri,
+  	      meta,
+  	      filename,
+  	      psearch,
+  	      pdownload);
   MUTEX_UNLOCK(ctx->lock);
   return ret;
 }
@@ -531,56 +531,56 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
 
 #if DEBUG_DTM
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Download thread manager investigates pending download of file `%s' (%u/%u downloads)\n",
-	 list->filename,
-	 list->ctx->activeDownloadThreads,
-	 list->ctx->threadPoolSize);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Download thread manager investigates pending download of file `%s' (%u/%u downloads)\n",
+   list->filename,
+   list->ctx->activeDownloadThreads,
+   list->ctx->threadPoolSize);
 #endif
   ret = NO;
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
-	> list->ctx->activeDownloadThreads) &&
+  > list->ctx->activeDownloadThreads) &&
        (list->state == FSUI_PENDING) &&
        ( (list->total > list->completed) ||
          (list->total == 0) ) ) {
 #if DEBUG_DTM
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread manager starts download of file `%s'\n",
-	   list->filename);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Download thread manager starts download of file `%s'\n",
+     list->filename);
 #endif
     list->state = FSUI_ACTIVE;
     list->handle = PTHREAD_CREATE(&downloadThread,
-				  list,
-				  128 * 1024);
+  			  list,
+  			  128 * 1024);
     if (list->handle != NULL) {
       list->ctx->activeDownloadThreads++;
     } else {
       GE_LOG_STRERROR(ectx,
-		      GE_ADMIN | GE_USER | GE_BULK | GE_ERROR,
-		      "pthread_create");	
+  	      GE_ADMIN | GE_USER | GE_BULK | GE_ERROR,
+  	      "pthread_create");	
       list->state = FSUI_ERROR_JOINED;
     }
   }
 
   /* should this one be stopped? */
   if ( (list->ctx->threadPoolSize
-	< list->ctx->activeDownloadThreads) &&
+  < list->ctx->activeDownloadThreads) &&
        (list->state == FSUI_ACTIVE) ) {
 #if DEBUG_DTM
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
-	   list->filename,
-	   list->ctx->activeDownloadThreads,
-	   list->ctx->threadPoolSize);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
+     list->filename,
+     list->ctx->activeDownloadThreads,
+     list->ctx->threadPoolSize);
 #endif
     list->state = FSUI_SUSPENDING;
     GE_ASSERT(ectx, list->handle != NULL);
     PTHREAD_STOP_SLEEP(list->handle);
     PTHREAD_JOIN(list->handle,
-		 &unused);
+  	 &unused);
     list->handle = NULL;
     list->ctx->activeDownloadThreads--;
     list->state = FSUI_PENDING;
@@ -593,12 +593,12 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
        (list->state == FSUI_ERROR) ) {
 #if DEBUG_DTM
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread manager collects inactive download of file `%s'\n",
-	   list->filename);
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "Download thread manager collects inactive download of file `%s'\n",
+     list->filename);
 #endif
     PTHREAD_JOIN(list->handle,
-		 &unused);
+  	 &unused);
     list->handle = NULL;
     list->ctx->activeDownloadThreads--;
     list->state++; /* adds _JOINED */
@@ -622,7 +622,7 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
  *         NO if the download has already finished
  */
 int FSUI_abortDownload(struct FSUI_Context * ctx,
-		       struct FSUI_DownloadList * dl) {
+  	       struct FSUI_DownloadList * dl) {
   struct FSUI_DownloadList * c;
 
   GE_ASSERT(ctx->ectx, dl != NULL);
@@ -650,7 +650,7 @@ int FSUI_abortDownload(struct FSUI_Context * ctx,
  * @return SYSERR if no such download is pending
  */
 int FSUI_stopDownload(struct FSUI_Context * ctx,
-		      struct FSUI_DownloadList * dl) {
+  	      struct FSUI_DownloadList * dl) {
   void * unused;
   struct FSUI_DownloadList * prev;
   FSUI_Event event;
@@ -659,18 +659,18 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   GE_ASSERT(ctx->ectx, dl != NULL);
   while (dl->child != NULL)
     FSUI_stopDownload(ctx,
-		      dl->child);
+  	      dl->child);
   MUTEX_LOCK(ctx->lock);
   prev = (dl->parent != NULL) ? dl->parent->child : ctx->activeDownloads.child;
   while ( (prev != dl) &&
-	  (prev != NULL) &&
-	  (prev->next != dl) )
+    (prev != NULL) &&
+    (prev->next != dl) )
     prev = prev->next;
   if (prev == NULL) {
     MUTEX_UNLOCK(ctx->lock);
     GE_LOG(ctx->ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI_stopDownload failed to locate download.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "FSUI_stopDownload failed to locate download.\n");
     return SYSERR;
   }
   if (prev == dl)
@@ -684,7 +684,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
        (dl->state == FSUI_ERROR) ) {
     GE_ASSERT(ctx->ectx, dl->handle != NULL);
     PTHREAD_JOIN(dl->handle,
-		 &unused);
+  	 &unused);
     MUTEX_LOCK(ctx->lock);
     dl->ctx->activeDownloadThreads--;
     MUTEX_UNLOCK(ctx->lock);
@@ -704,15 +704,15 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   event.data.DownloadStopped.dc.spos = dl->search;
   event.data.DownloadStopped.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
   ctx->ecb(ctx->ecbClosure,
-	   &event);
+     &event);
   if (dl->search != NULL) {
     for (i=0;i<dl->search->my_downloads_size;i++) {
       if (dl->search->my_downloads[i] == dl) {
-	dl->search->my_downloads[i] =
-	  dl->search->my_downloads[dl->search->my_downloads_size -1];
-	GROW(dl->search->my_downloads,
-	     dl->search->my_downloads_size,
-	     dl->search->my_downloads_size - 1);
+  dl->search->my_downloads[i] =
+    dl->search->my_downloads[dl->search->my_downloads_size -1];
+  GROW(dl->search->my_downloads,
+       dl->search->my_downloads_size,
+       dl->search->my_downloads_size - 1);
       }
     }
   }

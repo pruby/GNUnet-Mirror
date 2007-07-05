@@ -25,7 +25,7 @@
  */
 
 typedef int (*BlacklistedTester)(const void * addr,
-				 unsigned int addr_len);
+  			 unsigned int addr_len);
 
 /**
  * Message-Packet header.
@@ -76,10 +76,10 @@ static struct SocketHandle * udp_sock;
  * already held by the caller.
  */
 static int select_message_handler(void * mh_cls,
-				  struct SelectHandle * sh,
-				  struct SocketHandle * sock,
-				  void * sock_ctx,
-				  const MESSAGE_HEADER * msg) {
+  			  struct SelectHandle * sh,
+  			  struct SocketHandle * sock,
+  			  void * sock_ctx,
+  			  const MESSAGE_HEADER * msg) {
   unsigned int len;
   P2P_PACKET * mp;
   const UDPMessage * um;
@@ -87,41 +87,41 @@ static int select_message_handler(void * mh_cls,
   len = ntohs(msg->size);
   if (len <= sizeof(UDPMessage)) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Received malformed message from udp-peer connection. Closing.\n"));
+     GE_WARNING | GE_USER | GE_BULK,
+     _("Received malformed message from udp-peer connection. Closing.\n"));
     return SYSERR;
   }
 #if DEBUG_UDP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK,
-	 "Received %d bytes via UDP\n",
-	 len);
+   GE_DEBUG | GE_USER | GE_BULK,
+   "Received %d bytes via UDP\n",
+   len);
 #endif
   um = (const UDPMessage*) msg;
   mp      = MALLOC(sizeof(P2P_PACKET));
   mp->msg = MALLOC(len - sizeof(UDPMessage));
   memcpy(mp->msg,
-	 &um[1],
-	 len - sizeof(UDPMessage));
+   &um[1],
+   len - sizeof(UDPMessage));
   mp->sender = um->sender;
   mp->size   = len - sizeof(UDPMessage);
   mp->tsession = NULL;
   coreAPI->receive(mp);
   if (stats != NULL)
     stats->change(stat_bytesReceived,
-		  len);
+  	  len);
   return OK;
 }
 
 static void * select_accept_handler(void * ah_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    const void * addr,
-				    unsigned int addr_len) {
+  			    struct SelectHandle * sh,
+  			    struct SocketHandle * sock,
+  			    const void * addr,
+  			    unsigned int addr_len) {
   static int nonnullpointer;
   BlacklistedTester blt = ah_cls;
   if (NO != blt(addr,
-		addr_len))
+  	addr_len))
     return NULL;
   return &nonnullpointer;
 }
@@ -131,9 +131,9 @@ static void * select_accept_handler(void * ah_cls,
  * Free the associated context.
  */
 static void select_close_handler(void * ch_cls,
-				 struct SelectHandle * sh,
-				 struct SocketHandle * sock,
-				 void * sock_ctx) {
+  			 struct SelectHandle * sh,
+  			 struct SocketHandle * sock,
+  			 void * sock_ctx) {
   /* do nothing */
 }
 
@@ -145,14 +145,14 @@ static void select_close_handler(void * ch_cls,
  * @return OK on success, SYSERR if the operation failed
  */
 static int udpConnect(const P2P_hello_MESSAGE * hello,
-		      TSession ** tsessionPtr) {
+  	      TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = MALLOC(P2P_hello_MESSAGE_size(hello));
   memcpy(tsession->internal,
-	 hello,
-	 P2P_hello_MESSAGE_size(hello));
+   hello,
+   P2P_hello_MESSAGE_size(hello));
   tsession->ttype = udpAPI.protocolNumber;
   tsession->peer = hello->senderIdentity;
   *tsessionPtr = tsession;
@@ -218,8 +218,8 @@ static int stopTransportServer() {
  *         SYSERR if the size/session is invalid
  */
 static int testWouldTry(TSession * tsession,
-			unsigned int size,
-			int important) {
+  		unsigned int size,
+  		int important) {
   const P2P_hello_MESSAGE * hello;
 
   if (udp_sock == NULL)

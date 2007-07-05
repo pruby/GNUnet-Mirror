@@ -34,7 +34,7 @@
 static CoreAPIForApplication * coreAPI;
 
 static int handleGetOption(struct ClientHandle * sock,
-			   const MESSAGE_HEADER * message) {
+  		   const MESSAGE_HEADER * message) {
   CS_getoption_request_MESSAGE * req;
   CS_getoption_reply_MESSAGE * rep;
   char * val;
@@ -47,25 +47,25 @@ static int handleGetOption(struct ClientHandle * sock,
   req->option[CS_getoption_request_MESSAGE_OPT_LEN-1] = '\0';
   val = NULL;
   if (NO == GC_have_configuration_value(coreAPI->cfg,
-					req->section,
-					req->option))
+  				req->section,
+  				req->option))
     return SYSERR; /* signal error: option not set */
   if ( (0 != GC_get_configuration_value_string(coreAPI->cfg,
-					       req->section,
-					       req->option,
-					       NULL,
-					       &val)) ||
+  				       req->section,
+  				       req->option,
+  				       NULL,
+  				       &val)) ||
        (val == NULL) )
     return SYSERR; /* signal error: option not set */
 
   rep = MALLOC(sizeof(MESSAGE_HEADER) + strlen(val) + 1);
   rep->header.size = htons(sizeof(MESSAGE_HEADER) + strlen(val) + 1);
   memcpy(rep->value,
-	 val,
-	 strlen(val)+1);
+   val,
+   strlen(val)+1);
   rep->header.type = htons(CS_PROTO_GET_OPTION_REPLY);
   ret = coreAPI->sendToClient(sock,
-			      &rep->header);
+  		      &rep->header);
   FREE(rep);
   FREE(val);
   return ret;
@@ -74,24 +74,24 @@ static int handleGetOption(struct ClientHandle * sock,
 int initialize_module_getoption(CoreAPIForApplication * capi) {
   coreAPI = capi;
   GE_LOG(capi->ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' registering client handler %d\n"),
-	 "getoption",
-	 CS_PROTO_GET_OPTION_REQUEST);
+   GE_INFO | GE_USER | GE_REQUEST,
+   _("`%s' registering client handler %d\n"),
+   "getoption",
+   CS_PROTO_GET_OPTION_REQUEST);
   capi->registerClientHandler(CS_PROTO_GET_OPTION_REQUEST,
-			      &handleGetOption);
+  		      &handleGetOption);
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						   "ABOUT",
-						   "getoption",
-						   _("allows clients to determine gnunetd's"
-						     " configuration")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					   "ABOUT",
+  					   "getoption",
+  					   _("allows clients to determine gnunetd's"
+  					     " configuration")));
   return OK;
 }
 
 void done_module_getoption() {
   coreAPI->unregisterClientHandler(CS_PROTO_GET_OPTION_REQUEST,
-				   &handleGetOption);
+  			   &handleGetOption);
   coreAPI = NULL;
 }

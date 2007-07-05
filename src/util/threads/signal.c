@@ -38,7 +38,7 @@ typedef struct SignalHandlerContext {
 } SignalHandlerContext;
 
 struct SignalHandlerContext * signal_handler_install(int signal,
-						     SignalHandler handler) {
+  					     SignalHandler handler) {
   struct SignalHandlerContext * ret;
   struct sigaction sig;
 
@@ -58,8 +58,8 @@ struct SignalHandlerContext * signal_handler_install(int signal,
 }
 
 void signal_handler_uninstall(int signal,
-			      SignalHandler handler,
-			      struct SignalHandlerContext * ctx) {
+  		      SignalHandler handler,
+  		      struct SignalHandlerContext * ctx) {
   struct sigaction sig;
 
   GE_ASSERT(NULL, (ctx->sig == signal) && (ctx->method == handler));

@@ -59,8 +59,8 @@
 void makeSessionkey(SESSIONKEY * key) {
   lockGcrypt();
   gcry_randomize(&key->key[0],
-		 SESSIONKEY_LEN,
-		 GCRY_STRONG_RANDOM);
+  	 SESSIONKEY_LEN,
+  	 GCRY_STRONG_RANDOM);
   unlockGcrypt();
   key->crc32 = htonl(crc32N(key, SESSIONKEY_LEN));
 }
@@ -77,10 +77,10 @@ void makeSessionkey(SESSIONKEY * key) {
  * @returns the size of the encrypted block, -1 for errors
  */
 int encryptBlock(const void * block,
-		 unsigned short len,
-		 const SESSIONKEY * sessionkey,
-		 const INITVECTOR * iv,
-		 void * result) {
+  	 unsigned short len,
+  	 const SESSIONKEY * sessionkey,
+  	 const INITVECTOR * iv,
+  	 void * result) {
   gcry_cipher_hd_t handle;
   int rc;
 
@@ -91,53 +91,53 @@ int encryptBlock(const void * block,
   }
   lockGcrypt();
   rc = gcry_cipher_open(&handle,
-			GCRY_CIPHER_AES256,
-			GCRY_CIPHER_MODE_CFB,
-			0);
+  		GCRY_CIPHER_AES256,
+  		GCRY_CIPHER_MODE_CFB,
+  		0);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_open",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_open",
+       rc);
     unlockGcrypt();
     return -1;
   }
   rc = gcry_cipher_setkey(handle,
-			  sessionkey,
-			  SESSIONKEY_LEN);
+  		  sessionkey,
+  		  SESSIONKEY_LEN);
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_setkey",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_setkey",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
   rc = gcry_cipher_setiv(handle,
-			 iv,
-			 sizeof(INITVECTOR));
+  		 iv,
+  		 sizeof(INITVECTOR));
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_setiv",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_setiv",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
 
   rc = gcry_cipher_encrypt(handle,
-			   result,
-			   len,
-			   block,
-			   len);
+  		   result,
+  		   len,
+  		   block,
+  		   len);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_encrypt",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_encrypt",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
@@ -158,10 +158,10 @@ int encryptBlock(const void * block,
  * @return -1 on failure, size of decrypted block on success
  */
 int decryptBlock(const SESSIONKEY * sessionkey,
-		 const void * block,
-		 unsigned short size,
-		 const INITVECTOR * iv,
-		 void * result) {
+  	 const void * block,
+  	 unsigned short size,
+  	 const INITVECTOR * iv,
+  	 void * result) {
   gcry_cipher_hd_t handle;
   int rc;
 
@@ -172,53 +172,53 @@ int decryptBlock(const SESSIONKEY * sessionkey,
   }
   lockGcrypt();
   rc = gcry_cipher_open(&handle,
-			GCRY_CIPHER_AES256,
-			GCRY_CIPHER_MODE_CFB,
-			0);
+  		GCRY_CIPHER_AES256,
+  		GCRY_CIPHER_MODE_CFB,
+  		0);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_open",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_open",
+       rc);
     unlockGcrypt();
     return -1;
   }
   rc = gcry_cipher_setkey(handle,
-			  sessionkey,
-			  SESSIONKEY_LEN);
+  		  sessionkey,
+  		  SESSIONKEY_LEN);
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_setkey",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_setkey",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
   rc = gcry_cipher_setiv(handle,
-			 iv,
-			 sizeof(INITVECTOR));
+  		 iv,
+  		 sizeof(INITVECTOR));
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_setiv",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_setiv",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
   rc = gcry_cipher_decrypt(handle,
-			   result,
-			   size,
-			   block,
-			   size);
+  		   result,
+  		   size,
+  		   block,
+  		   size);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_decrypt",
-	     rc);
+       GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+       "gcry_cipher_decrypt",
+       rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;

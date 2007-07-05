@@ -143,7 +143,7 @@ static unsigned int count_by_type[P2P_PROTO_MAX_USED];
  *        and updates to the handler list are illegal!
  */
 int registerp2pHandler(unsigned short type,
-		       MessagePartHandler callback) {
+  	       MessagePartHandler callback) {
   unsigned int last;
 
   if (threads_running == YES) {
@@ -154,13 +154,13 @@ int registerp2pHandler(unsigned short type,
   if (type >= max_registeredType) {
     unsigned int ort = max_registeredType;
     GROW(handlers,
-	 max_registeredType,
-	 type + 32);
+   max_registeredType,
+   type + 32);
     while (ort < max_registeredType) {
       unsigned int zero = 0;
       GROW(handlers[ort],
-	   zero,
-	   1);
+     zero,
+     1);
       ort++;
     }
   }
@@ -185,7 +185,7 @@ int registerp2pHandler(unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int unregisterp2pHandler(unsigned short type,
-			 MessagePartHandler callback) {
+  		 MessagePartHandler callback) {
   unsigned int pos;
   unsigned int last;
 
@@ -197,7 +197,7 @@ int unregisterp2pHandler(unsigned short type,
   if (type < max_registeredType) {
     pos = 0;
     while ( (handlers[type][pos] != NULL) &&
-	    (handlers[type][pos] != callback) )
+      (handlers[type][pos] != callback) )
       pos++;
     last = pos;
     while (handlers[type][last] != NULL)
@@ -232,7 +232,7 @@ int unregisterp2pHandler(unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int registerPlaintextHandler(unsigned short type,
-			     PlaintextMessagePartHandler callback) {
+  		     PlaintextMessagePartHandler callback) {
   unsigned int last;
 
   if (threads_running == YES) {
@@ -243,13 +243,13 @@ int registerPlaintextHandler(unsigned short type,
   if (type >= plaintextmax_registeredType) {
     unsigned int ort = plaintextmax_registeredType;
     GROW(plaintextHandlers,
-	 plaintextmax_registeredType,
-	 type + 32);
+   plaintextmax_registeredType,
+   type + 32);
     while (ort < plaintextmax_registeredType) {
       unsigned int zero = 0;
       GROW(plaintextHandlers[ort],
-	   zero,
-	   1);
+     zero,
+     1);
       ort++;
     }
   }
@@ -274,7 +274,7 @@ int registerPlaintextHandler(unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int unregisterPlaintextHandler(unsigned short type,
-			       PlaintextMessagePartHandler callback) {
+  		       PlaintextMessagePartHandler callback) {
   unsigned int pos;
   unsigned int last;
 
@@ -286,7 +286,7 @@ int unregisterPlaintextHandler(unsigned short type,
   if (type < plaintextmax_registeredType) {
     pos = 0;
     while ( (plaintextHandlers[type][pos] != NULL) &&
-	    (plaintextHandlers[type][pos] != callback) )
+      (plaintextHandlers[type][pos] != callback) )
       pos++;
     last = pos;
     while (plaintextHandlers[type][last] != NULL)
@@ -321,7 +321,7 @@ int unregisterPlaintextHandler(unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int isHandlerRegistered(unsigned short type,
-			unsigned short handlerType) {
+  		unsigned short handlerType) {
   int pos;
   int ret;
 
@@ -338,7 +338,7 @@ int isHandlerRegistered(unsigned short type,
     while (plaintextHandlers[type][pos] != NULL)
       pos++;
     if ( (handlerType == 0) ||
-	 (handlerType == 2) )
+   (handlerType == 2) )
       ret += pos;
   }
   if (type < max_registeredType) {
@@ -346,7 +346,7 @@ int isHandlerRegistered(unsigned short type,
     while (handlers[type][pos] != NULL)
       pos++;
     if ( (handlerType == 1) ||
-	 (handlerType == 2) )
+   (handlerType == 2) )
       ret += pos;
   }
   MUTEX_UNLOCK(handlerLock);
@@ -364,10 +364,10 @@ int isHandlerRegistered(unsigned short type,
  * @param session NULL if not available
  */
 void injectMessage(const PeerIdentity * sender,
-		   const char * msg,
-		   unsigned int size,
-		   int wasEncrypted,
-		   TSession * session) {
+  	   const char * msg,
+  	   unsigned int size,
+  	   int wasEncrypted,
+  	   TSession * session) {
   unsigned int pos;
   const MESSAGE_HEADER * part;
   MESSAGE_HEADER cpart;
@@ -387,36 +387,36 @@ void injectMessage(const PeerIdentity * sender,
     FREENONNULL(copy);
     copy = NULL;
     memcpy(&cpart,
-	   &msg[pos],
-	   sizeof(MESSAGE_HEADER));
+     &msg[pos],
+     sizeof(MESSAGE_HEADER));
     plen = htons(cpart.size);
     if (pos + plen > size) {
       if (sender != NULL) {
-	IF_GELOG(ectx,
-		 GE_WARNING | GE_USER | GE_BULK,
-		 hash2enc(&sender->hashPubKey,
-			  &enc));
-	GE_LOG(ectx,
-	       GE_WARNING | GE_USER | GE_BULK,
-	       _("Received corrupt message from peer `%s'in %s:%d.\n"),
-	       &enc,
-	       __FILE__, __LINE__);
+  IF_GELOG(ectx,
+  	 GE_WARNING | GE_USER | GE_BULK,
+  	 hash2enc(&sender->hashPubKey,
+  		  &enc));
+  GE_LOG(ectx,
+         GE_WARNING | GE_USER | GE_BULK,
+         _("Received corrupt message from peer `%s'in %s:%d.\n"),
+         &enc,
+         __FILE__, __LINE__);
       } else {
-	GE_BREAK(ectx, 0);
+  GE_BREAK(ectx, 0);
       }
       return;
     }
     if ( (pos % sizeof(int)) != 0) {
       /* correct misalignment; we allow messages to _not_ be a
-	 multiple of 4 bytes (if absolutely necessary; it should be
-	 avoided where the cost for doing so is not prohibitive);
-	 however we also (need to) guaranteed word-alignment for the
-	 handlers; so we must re-align the message if it is
-	 misaligned. */
+   multiple of 4 bytes (if absolutely necessary; it should be
+   avoided where the cost for doing so is not prohibitive);
+   however we also (need to) guaranteed word-alignment for the
+   handlers; so we must re-align the message if it is
+   misaligned. */
       copy = MALLOC(plen);
       memcpy(copy,
-	     &msg[pos],
-	     plen);
+       &msg[pos],
+       plen);
       part = copy;
     } else {
       part = (const MESSAGE_HEADER*) &msg[pos];
@@ -427,88 +427,88 @@ void injectMessage(const PeerIdentity * sender,
 #if DEBUG_HANDLER
     if (sender != NULL) {
       IF_GELOG(ectx,
-	       GE_DEBUG,
-	       hash2enc(&sender->hashPubKey,
-			&enc));
+         GE_DEBUG,
+         hash2enc(&sender->hashPubKey,
+  		&enc));
       GE_LOG(ectx,
-	     GE_DEBUG,
-	     "Received %s message of type %u from peer `%s'\n",
-	     wasEncrypted ? "encrypted" : "plaintext",
-	     ptyp,
-	     &enc);
+       GE_DEBUG,
+       "Received %s message of type %u from peer `%s'\n",
+       wasEncrypted ? "encrypted" : "plaintext",
+       ptyp,
+       &enc);
     }
 #endif
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
 
       if ( (ptyp >= max_registeredType) ||
-	   (NULL == handlers[ptyp][0]) ) {
-	GE_LOG(ectx,
-	       GE_DEBUG | GE_USER | GE_REQUEST,
-	       "Encrypted message of type '%d' not understood (no handler registered).\n",
-	       ptyp);
-	continue; /* no handler registered, go to next part */
+     (NULL == handlers[ptyp][0]) ) {
+  GE_LOG(ectx,
+         GE_DEBUG | GE_USER | GE_REQUEST,
+         "Encrypted message of type '%d' not understood (no handler registered).\n",
+         ptyp);
+  continue; /* no handler registered, go to next part */
       }
 #if MEASURE_TIME
       now = get_time();
 #endif
       last = 0;
       while (NULL != (callback = handlers[ptyp][last])) {
-	if (SYSERR == callback(sender,
-			       part)) {
+  if (SYSERR == callback(sender,
+  		       part)) {
 #if DEBUG_HANDLER
-	  GE_LOG(ectx,
-		 GE_DEBUG | GE_USER | GE_BULK,
-		 "Handler aborted message processing after receiving message of type '%d'.\n",
-		 ptyp);
+    GE_LOG(ectx,
+  	 GE_DEBUG | GE_USER | GE_BULK,
+  	 "Handler aborted message processing after receiving message of type '%d'.\n",
+  	 ptyp);
 #endif
-	  FREENONNULL(copy);
-	  copy = NULL;
-	  return; /* handler says: do not process the rest of the message */
-	}
-	last++;
+    FREENONNULL(copy);
+    copy = NULL;
+    return; /* handler says: do not process the rest of the message */
+  }
+  last++;
       }
 #if MEASURE_TIME
       if (ptyp < P2P_PROTO_MAX_USED) {
-	time_by_type[ptyp] += get_time() - now;
-	count_by_type[ptyp]++;
+  time_by_type[ptyp] += get_time() - now;
+  count_by_type[ptyp]++;
       }
 #endif
     } else { /* isEncrypted == NO */
       PlaintextMessagePartHandler callback;
 
       if ( (ptyp >= plaintextmax_registeredType) ||
-	   (NULL == plaintextHandlers[ptyp][0]) ) {
-	GE_LOG(ectx,
-	       GE_REQUEST | GE_DEBUG | GE_USER,
-	       "Plaintext message of type '%d' not understood (no handler registered).\n",
-	       ptyp);
-	continue; /* no handler registered, go to next part */
+     (NULL == plaintextHandlers[ptyp][0]) ) {
+  GE_LOG(ectx,
+         GE_REQUEST | GE_DEBUG | GE_USER,
+         "Plaintext message of type '%d' not understood (no handler registered).\n",
+         ptyp);
+  continue; /* no handler registered, go to next part */
       }
 #if MEASURE_TIME
       now = get_time();
 #endif
       last = 0;
       while (NULL != (callback = plaintextHandlers[ptyp][last])) {
-	if (SYSERR == callback(sender,
-			       part,
-			       session)) {
+  if (SYSERR == callback(sender,
+  		       part,
+  		       session)) {
 #if DEBUG_HANDLER
-	  GE_LOG(ectx,
-		 GE_DEBUG | GE_USER | GE_BULK,
-		 "Handler aborted message processing after receiving message of type '%d'.\n",
-		 ptyp);
+    GE_LOG(ectx,
+  	 GE_DEBUG | GE_USER | GE_BULK,
+  	 "Handler aborted message processing after receiving message of type '%d'.\n",
+  	 ptyp);
 #endif
-	  FREENONNULL(copy);
-	  copy = NULL;
-	  return; /* handler says: do not process the rest of the message */
-	}
-	last++;
+    FREENONNULL(copy);
+    copy = NULL;
+    return; /* handler says: do not process the rest of the message */
+  }
+  last++;
       }
 #if MEASURE_TIME
       if (ptyp < P2P_PROTO_MAX_USED) {
-	time_by_type[ptyp] += get_time() - now;
-	count_by_type[ptyp]++;
+  time_by_type[ptyp] += get_time() - now;
+  count_by_type[ptyp]++;
       }
 #endif
 
@@ -527,22 +527,22 @@ void injectMessage(const PeerIdentity * sender,
  * @param size the size of the message
  */
 static void handleMessage(TSession * tsession,
-			  const PeerIdentity * sender,
-			  const char * msg,
-			  unsigned int size) {
+  		  const PeerIdentity * sender,
+  		  const char * msg,
+  		  unsigned int size) {
   int ret;
 
   if ( (tsession != NULL) &&
        (sender != NULL) &&
        (0 != memcmp(sender,
-		    &tsession->peer,
-		    sizeof(PeerIdentity))) ) {
+  	    &tsession->peer,
+  	    sizeof(PeerIdentity))) ) {
     GE_BREAK(NULL, 0);
     return;
   }
   ret = checkHeader(sender,
-		    (P2P_PACKET_HEADER*) msg,
-		    size);
+  	    (P2P_PACKET_HEADER*) msg,
+  	    size);
   if (ret == SYSERR) 
     return; /* message malformed */  
   if ( (ret == YES) &&
@@ -551,10 +551,10 @@ static void handleMessage(TSession * tsession,
        (OK == transport->associate(tsession)) )
     considerTakeover(sender, tsession);
   injectMessage(sender,
-		&msg[sizeof(P2P_PACKET_HEADER)],
-		size - sizeof(P2P_PACKET_HEADER),
-		ret,
-		tsession);
+  	&msg[sizeof(P2P_PACKET_HEADER)],
+  	size - sizeof(P2P_PACKET_HEADER),
+  	ret,
+  	tsession);
 }
 
 /**
@@ -581,9 +581,9 @@ static void * threadMain(void * cls) {
     SEMAPHORE_UP(bufferQueueWrite_);
     /* handle buffer - now out of sync */
     handleMessage(mp->tsession,
-		  &mp->sender,
-		  mp->msg,
-		  mp->size);
+  	  &mp->sender,
+  	  mp->msg,
+  	  mp->size);
     if (mp->tsession != NULL)
       transport->disconnect(mp->tsession);
     FREE(mp->msg);
@@ -600,8 +600,8 @@ static void * threadMain(void * cls) {
 void core_receive(P2P_PACKET * mp) {
   if ( (mp->tsession != NULL) &&
        (0 != memcmp(&mp->sender,
-		    &mp->tsession->peer,
-		    sizeof(PeerIdentity))) ) {
+  	    &mp->tsession->peer,
+  	    sizeof(PeerIdentity))) ) {
     GE_BREAK(NULL, 0);
     FREE(mp->msg);
     FREE(mp);
@@ -615,12 +615,12 @@ void core_receive(P2P_PACKET * mp) {
     discarded++;
     if (0 == discarded % 64)
       GE_LOG(ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-	     accepted,
-	     discarded,
-	     blacklisted,
-	     1.0 * accepted / (blacklisted + discarded + 1)); 
+       GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+       accepted,
+       discarded,
+       blacklisted,
+       1.0 * accepted / (blacklisted + discarded + 1)); 
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
@@ -630,25 +630,25 @@ void core_receive(P2P_PACKET * mp) {
 #if DEBUG_HANDLER
     EncName enc;
     IF_GELOG(ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	     hash2enc(&mp->sender.hashPubKey,
-		      &enc));
+       GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+       hash2enc(&mp->sender.hashPubKey,
+  	      &enc));
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
-	   (char*)&enc);
+     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+     "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
+     (char*)&enc);
 #endif
 #if TRACK_DISCARD
     MUTEX_LOCK(globalLock_);
     blacklisted++;
     if (0 == blacklisted % 64)
       GE_LOG(ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-	     accepted,
-	     discarded,
-	     blacklisted,
-	     1.0 * accepted / (blacklisted + discarded + 1)); 
+       GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+       accepted,
+       discarded,
+       blacklisted,
+       1.0 * accepted / (blacklisted + discarded + 1)); 
     MUTEX_UNLOCK(globalLock_);
 #endif
     FREE(mp->msg);
@@ -662,9 +662,9 @@ void core_receive(P2P_PACKET * mp) {
        we're shut down! */
 #if 0
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "Discarding message of size %u -- buffer full!\n",
-	   mp->size);
+     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+     "Discarding message of size %u -- buffer full!\n",
+     mp->size);
 #endif
     FREE(mp->msg);
     FREE(mp);
@@ -674,12 +674,12 @@ void core_receive(P2P_PACKET * mp) {
     discarded++;
     if (0 == discarded % 64)
       GE_LOG(ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-	     accepted,
-	     discarded,
-	     blacklisted,
-	     1.0 * accepted / (blacklisted + discarded + 1)); 
+       GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+       accepted,
+       discarded,
+       blacklisted,
+       1.0 * accepted / (blacklisted + discarded + 1)); 
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
@@ -697,12 +697,12 @@ void core_receive(P2P_PACKET * mp) {
   accepted++;
   if (0 == accepted % 64)
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-	   accepted,
-	   discarded,
-	   blacklisted,
-	   1.0 * accepted / (blacklisted + discarded + 1)); 
+     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+     "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+     accepted,
+     discarded,
+     blacklisted,
+     1.0 * accepted / (blacklisted + discarded + 1)); 
 #endif
   MUTEX_UNLOCK(globalLock_);
   SEMAPHORE_UP(bufferQueueRead_);
@@ -724,12 +724,12 @@ void enableCoreProcessing() {
   threads_running = YES;
   for (i=0;i<THREAD_COUNT;i++) {
     threads_[i] = PTHREAD_CREATE(&threadMain,
-				 &i,
-				 128 * 1024);
+  			 &i,
+  			 128 * 1024);
     if (threads_[i] == NULL)
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR,
-		      "pthread_create");
+  	      GE_ERROR,
+  	      "pthread_create");
   }
 }
 
@@ -797,8 +797,8 @@ void doneHandler() {
       last++;
     last++;
     GROW(handlers[i],
-	 last,
-	 0);
+   last,
+   0);
   }
   GROW(handlers,
        max_registeredType,
@@ -808,8 +808,8 @@ void doneHandler() {
     while (plaintextHandlers[i][last] != NULL)
       last++;
     GROW(plaintextHandlers[i],
-	 last,
-	 0);
+   last,
+   0);
   }
   GROW(plaintextHandlers,
        plaintextmax_registeredType,
@@ -823,13 +823,13 @@ void doneHandler() {
     if (count_by_type[i] == 0)
       continue;
     GE_LOG(ectx,
-	   GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-	   "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
-	   count_by_type[i],
-	   i,
-	   time_by_type[i],
-	   time_by_type[i] / count_by_type[i]);
-  }	     
+     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+     "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
+     count_by_type[i],
+     i,
+     time_by_type[i],
+     time_by_type[i] / count_by_type[i]);
+  }       
 #endif
 }
 

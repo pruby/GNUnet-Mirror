@@ -65,9 +65,9 @@ static struct CommandLineOption gnunetpeerinfoOptions[] = {
  * Prepass just to resolve DNS entries.
  */
 static int resolveHostInfo(const PeerIdentity * id,
-			   const unsigned short proto,
-			   int verified,
-			   void * data) {
+  		   const unsigned short proto,
+  		   int verified,
+  		   void * data) {
   P2P_hello_MESSAGE * hello;
   void * addr;
   unsigned int addr_len;
@@ -77,20 +77,20 @@ static int resolveHostInfo(const PeerIdentity * id,
   if (GNUNET_SHUTDOWN_TEST()==YES)
     return SYSERR;
   hello = identity->identity2Hello(id,
-				   proto,
-				   NO);
+  			   proto,
+  			   NO);
   if (NULL == hello) 
     return OK;
   addr = NULL;
   addr_len = 0;
   have_addr = transport->helloToAddress(hello,
-					&addr,
-					&addr_len);
+  				&addr,
+  				&addr_len);
   FREE(hello);
   if (have_addr == OK) {
     info = network_get_ip_as_string(addr,
-				    addr_len,
-				    ! no_resolve);
+  			    addr_len,
+  			    ! no_resolve);
     FREE(addr);    
     addr = NULL;
     FREENONNULL(info);
@@ -106,9 +106,9 @@ static int resolveHostInfo(const PeerIdentity * id,
  * Could of course do more (e.g. resolve via DNS).
  */
 static int printHostInfo(const PeerIdentity * id,
-			 const unsigned short proto,
-			 int verified,
-			 void * data) {
+  		 const unsigned short proto,
+  		 int verified,
+  		 void * data) {
   P2P_hello_MESSAGE * hello;
   void * addr;
   unsigned int addr_len;
@@ -119,81 +119,81 @@ static int printHostInfo(const PeerIdentity * id,
   if (GNUNET_SHUTDOWN_TEST()==YES)
     return SYSERR;
   hash2enc(&id->hashPubKey,
-	   &enc);
+     &enc);
   hello = identity->identity2Hello(id,
-				   proto,
-				   NO);
+  			   proto,
+  			   NO);
   if (NULL == hello) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Could not get address of peer `%s'.\n"),
-	   &enc);
+     GE_WARNING | GE_BULK | GE_USER,
+     _("Could not get address of peer `%s'.\n"),
+     &enc);
     return OK;
   }
   if (SYSERR == verifySig(&hello->senderIdentity,
-			  P2P_hello_MESSAGE_size(hello) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
-			  &hello->signature,
-			  &hello->publicKey)) {
+  		  P2P_hello_MESSAGE_size(hello) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
+  		  &hello->signature,
+  		  &hello->publicKey)) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("hello message invalid (signature invalid).\n"));
+     GE_WARNING | GE_BULK | GE_USER,
+     _("hello message invalid (signature invalid).\n"));
   }
   addr = NULL;
   addr_len = 0;
   have_addr = transport->helloToAddress(hello,
-					&addr,
-					&addr_len);
+  				&addr,
+  				&addr_len);
   FREE(hello);
   if (have_addr != OK) {
     info = STRDUP("NAT"); /* most likely */
   } else {
     info = network_get_ip_as_string(addr,
-				    addr_len,
-				    ! no_resolve);
+  			    addr_len,
+  			    ! no_resolve);
     FREE(addr);
     addr = NULL;
   }  
   if (info == NULL) {
     GE_LOG(ectx,
-	   GE_DEBUG | GE_BULK | GE_USER,
-	   _("Could not get address of peer `%s'.\n"),
-	   &enc);
+     GE_DEBUG | GE_BULK | GE_USER,
+     _("Could not get address of peer `%s'.\n"),
+     &enc);
     printf(_("Peer `%s' with trust %8u\n"),
-	   (char*)&enc,
-	   identity->getHostTrust(id));
+     (char*)&enc,
+     identity->getHostTrust(id));
     return OK;
   }
   printf(_("Peer `%s' with trust %8u and address `%s'\n"),
-	 (char*)&enc,
-	 identity->getHostTrust(id),
-	 info);
+   (char*)&enc,
+   identity->getHostTrust(id),
+   info);
   FREE(info);
   return OK;
 }
 
 int main(int argc,
-	 char * const * argv) {
+   char * const * argv) {
   struct GC_Configuration * cfg;
   struct CronManager * cron;
   int ret;
 
   ret = GNUNET_init(argc,
-		    argv,
-		    "gnunet-peer-info",
-		    &cfgFilename,
-		    gnunetpeerinfoOptions,
-		    &ectx,
-		    &cfg);
+  	    argv,
+  	    "gnunet-peer-info",
+  	    &cfgFilename,
+  	    gnunetpeerinfoOptions,
+  	    &ectx,
+  	    &cfg);
   if (ret == -1) {
     GNUNET_fini(ectx, cfg);
     return -1;
   }
   GE_ASSERT(ectx,
-	    0 == GC_set_configuration_value_string(cfg,
-						   ectx,
-						   "TCPSERVER",
-						   "DISABLE",
-						   "YES"));
+      0 == GC_set_configuration_value_string(cfg,
+  					   ectx,
+  					   "TCPSERVER",
+  					   "DISABLE",
+  					   "YES"));
   cron = cron_create(ectx);
   initCore(ectx, cfg, cron, NULL);
   identity = requestService("identity");
@@ -201,15 +201,15 @@ int main(int argc,
   if (no_resolve != YES) {
 #if HAVE_ADNS
     identity->forEachHost(0, /* no timeout */
-			  &resolveHostInfo,
-			  NULL);
+  		  &resolveHostInfo,
+  		  NULL);
     /* give GNU ADNS time to resolve... */
     PTHREAD_SLEEP(2 * cronSECONDS);
 #endif
   }
   identity->forEachHost(0, /* no timeout */
-			&printHostInfo,
-			NULL);
+  		&printHostInfo,
+  		NULL);
   releaseService(identity);
   releaseService(transport);
   doneCore();

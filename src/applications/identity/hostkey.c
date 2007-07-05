@@ -62,21 +62,21 @@ const PublicKey * getPublicPrivateKey() {
  * @return SYSERR on error, OK on success
  */
 int signData(const void * data,
-	     unsigned short size,
-	     Signature * result) {
+       unsigned short size,
+       Signature * result) {
   int ret;
 
   ret = sign(hostkey,
-	     size,
-	     data,
-	     result);
+       size,
+       data,
+       result);
 #if EXTRA_CHECKS
   if (ret == OK) {
     GE_ASSERT(NULL,
-	      OK == verifySig(data,
-			      size,
-			      result,
-			      &publicKey));
+        OK == verifySig(data,
+  		      size,
+  		      result,
+  		      &publicKey));
   }
 #endif
   return ret;
@@ -92,16 +92,16 @@ int signData(const void * data,
  * @returns the size of the decrypted block, -1 on error
  */
 int decryptData(const RSAEncryptedData * block,
-		void * result,
-		unsigned int max) {
+  	void * result,
+  	unsigned int max) {
   return decryptPrivateKey(hostkey,
-			   block,
-			   result,
-			   max);
+  		   block,
+  		   result,
+  		   max);
 }
 
 void initPrivateKey(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg) {
+  	    struct GC_Configuration * cfg) {
   char * gnHome;
   char * hostkeyfile;
   PrivateKeyEncoded * encPrivateKey;
@@ -109,19 +109,19 @@ void initPrivateKey(struct GE_Context * ectx,
   int res;
 
   GE_ASSERT(ectx,
-	    -1 != GC_get_configuration_value_filename(cfg,
-						      "GNUNETD",
-						      "GNUNETD_HOME",
-						      VAR_DAEMON_DIRECTORY,
-						      &gnHome));
+      -1 != GC_get_configuration_value_filename(cfg,
+  					      "GNUNETD",
+  					      "GNUNETD_HOME",
+  					      VAR_DAEMON_DIRECTORY,
+  					      &gnHome));
   disk_directory_create(ectx,
-			gnHome);
+  		gnHome);
   if (YES != disk_directory_test(ectx,
-				 gnHome)) {
+  			 gnHome)) {
     GE_LOG(ectx,
-	   GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-	   _("Failed to access GNUnet home directory `%s'\n"),
-	   gnHome);
+     GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+     _("Failed to access GNUnet home directory `%s'\n"),
+     gnHome);
     abort();
   }
 
@@ -134,45 +134,45 @@ void initPrivateKey(struct GE_Context * ectx,
   strcat(hostkeyfile, HOSTKEYFILE);
   res = 0;
   if (YES == disk_file_test(ectx,
-			    hostkeyfile)) {
+  		    hostkeyfile)) {
     res = disk_file_read(ectx,
-			 hostkeyfile,
-			 sizeof(unsigned short),
-			 &len);
+  		 hostkeyfile,
+  		 sizeof(unsigned short),
+  		 &len);
   }
   encPrivateKey = NULL;
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));
     if (ntohs(len) !=
-	disk_file_read(ectx,
-		       hostkeyfile,
-		       ntohs(len),
-		       encPrivateKey)) {
+  disk_file_read(ectx,
+  	       hostkeyfile,
+  	       ntohs(len),
+  	       encPrivateKey)) {
       FREE(encPrivateKey);
       GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_IMMEDIATE | GE_ADMIN,
-	     _("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
-	     hostkeyfile);
+       GE_WARNING | GE_USER | GE_IMMEDIATE | GE_ADMIN,
+       _("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
+       hostkeyfile);
       encPrivateKey = NULL;
     }
   }
   if (encPrivateKey == NULL) { /* make new hostkey */
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK,
-	   _("Creating new hostkey (this may take a while).\n"));
+     GE_INFO | GE_USER | GE_BULK,
+     _("Creating new hostkey (this may take a while).\n"));
     hostkey = makePrivateKey();
     GE_ASSERT(ectx, hostkey != NULL);
     encPrivateKey = encodePrivateKey(hostkey);
     GE_ASSERT(ectx, encPrivateKey != NULL);
     disk_file_write(ectx,
-		    hostkeyfile,
-		    encPrivateKey,
-		    ntohs(encPrivateKey->len),
-		    "600");
+  	    hostkeyfile,
+  	    encPrivateKey,
+  	    ntohs(encPrivateKey->len),
+  	    "600");
     FREE(encPrivateKey);
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK,
-	   _("Done creating hostkey.\n"));
+     GE_INFO | GE_USER | GE_BULK,
+     _("Done creating hostkey.\n"));
   } else {
     hostkey = decodePrivateKey(encPrivateKey);
     FREE(encPrivateKey);
@@ -180,7 +180,7 @@ void initPrivateKey(struct GE_Context * ectx,
   FREE(hostkeyfile);
   GE_ASSERT(ectx, hostkey != NULL);
   getPublicKey(hostkey,
-	       &publicKey);
+         &publicKey);
 }
 
 

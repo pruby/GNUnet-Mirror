@@ -64,14 +64,14 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
        (ntohs(hello->header.type) != p2p_PROTO_hello) ) 
     return SYSERR; /* obviously invalid */  
   if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
-					      "NAT",
-					      "LIMITED",
-					      NO)) {
+  				      "NAT",
+  				      "LIMITED",
+  				      NO)) {
     /* if WE are a NAT and this is not our hello,
        it is invalid since NAT-to-NAT is not possible! */
     if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
-		    &hello->senderIdentity.hashPubKey,
-		    sizeof(HashCode512)))
+  	    &hello->senderIdentity.hashPubKey,
+  	    sizeof(HashCode512)))
       return OK;
     return SYSERR;
   }
@@ -89,9 +89,9 @@ static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
 
   if (NO == GC_get_configuration_value_yesno(coreAPI->cfg,
-					     "NAT",
-					     "LIMITED",
-					     NO))
+  				     "NAT",
+  				     "LIMITED",
+  				     NO))
     return NULL;
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   msg->senderAddressSize = htons(sizeof(HostAddress));
@@ -107,7 +107,7 @@ static P2P_hello_MESSAGE * createhello() {
  * @return always fails (returns SYSERR)
  */
 static int natConnect(const P2P_hello_MESSAGE * hello,
-		      TSession ** tsessionPtr) {
+  	      TSession ** tsessionPtr) {
   return SYSERR;
 }
 
@@ -135,9 +135,9 @@ int natAssociate(TSession * tsession) {
  * @return SYSERR (always fails)
  */
 static int natSend(TSession * tsession,
-		   const void * message,
-		   const unsigned int size,
-		   int important) {
+  	   const void * message,
+  	   const unsigned int size,
+  	   int important) {
   return SYSERR;
 }
 
@@ -172,16 +172,16 @@ static int stopTransportServer() {
  * Convert NAT address to a string.
  */
 static int helloToAddress(const P2P_hello_MESSAGE * hello,
-			  void ** sa,
-			  unsigned int * sa_len) {
+  		  void ** sa,
+  		  unsigned int * sa_len) {
   return getIPaddressFromPID(&hello->senderIdentity,
-			     sa,
-			     sa_len);
+  		     sa,
+  		     sa_len);
 }
 
 static int testWouldTry(TSession * tsession,
-			unsigned int size,
-			int important) {
+  		unsigned int size,
+  		int important) {
   return SYSERR;
 }
 

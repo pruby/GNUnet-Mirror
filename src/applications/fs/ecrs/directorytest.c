@@ -39,17 +39,17 @@ struct PCLS {
 };
 
 static int processor(const ECRS_FileInfo * fi,
-		     const HashCode512 * key,
-		     int isRoot,
-		     void * cls) {
+  	     const HashCode512 * key,
+  	     int isRoot,
+  	     void * cls) {
   struct PCLS * p = cls;
   int i;
 
   for (i=0;i<p->max;i++) {
     if (ECRS_equalsMetaData(p->fi[i].meta,
-			    fi->meta) &&
-	ECRS_equalsUri(p->fi[i].uri,
-		       fi->uri)) {
+  		    fi->meta) &&
+  ECRS_equalsUri(p->fi[i].uri,
+  	       fi->uri)) {
       p->pos++;
       return OK;
     }
@@ -77,23 +77,23 @@ static int testDirectory(unsigned int i) {
     fis[p].meta = ECRS_createMetaData();
     for (q=0;q<=p;q++) {
       SNPRINTF(txt,
-	       128,
-	       "%u -- %u\n",
-	       p, q);
+         128,
+         "%u -- %u\n",
+         p, q);
       ECRS_addToMetaData(fis[p].meta,
-			 q % EXTRACTOR_getHighestKeywordTypeNumber(),
-			 txt);
+  		 q % EXTRACTOR_getHighestKeywordTypeNumber(),
+  		 txt);
     }
     SNPRINTF(uri,
-	     512,
-	     "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
-	     p);
+       512,
+       "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
+       p);
     fis[p].uri = ECRS_stringToUri(NULL, uri);
     if (fis[p].uri == NULL) {
       ECRS_freeMetaData(fis[p].meta);
       while (--p > 0) {
-	ECRS_freeMetaData(fis[p].meta);
-	ECRS_freeUri(fis[p].uri);
+  ECRS_freeMetaData(fis[p].meta);
+  ECRS_freeUri(fis[p].uri);
       }
       FREE(fis);
       ABORT(); /* error in testcase */
@@ -101,17 +101,17 @@ static int testDirectory(unsigned int i) {
   }
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
-		     EXTRACTOR_TITLE,
-		     "A title");
+  	     EXTRACTOR_TITLE,
+  	     "A title");
   ECRS_addToMetaData(meta,
-		     EXTRACTOR_AUTHOR,
-		     "An author");
+  	     EXTRACTOR_AUTHOR,
+  	     "An author");
   if (OK != ECRS_createDirectory(NULL,
-				 &data,
-				 &dlen,
-				 i,
-				 fis,
-				 meta)) {
+  			 &data,
+  			 &dlen,
+  			 i,
+  			 fis,
+  			 meta)) {
     ECRS_freeMetaData(meta);
     for (p=0;p<i;p++) {
       ECRS_freeMetaData(fis[p].meta);
@@ -123,17 +123,17 @@ static int testDirectory(unsigned int i) {
   cls.pos = 0;
   cls.fi = fis;
   if (i != ECRS_listDirectory(NULL,
-			      data,
-			      dlen,
-			      &meta2,
-			      &processor,
-			      &cls)) {
+  		      data,
+  		      dlen,
+  		      &meta2,
+  		      &processor,
+  		      &cls)) {
     printf("expected %u\n", i);
     ret = 1;
     goto END;
   }
   if (! ECRS_equalsMetaData(meta,
-			    meta2)) {
+  		    meta2)) {
     ret = 1;
     goto END;
   }

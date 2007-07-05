@@ -34,9 +34,9 @@ int main(int argc, char * argv[]){
   struct GC_Configuration * cfg;
 
   ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
+  			  GE_WARNING | GE_ERROR | GE_FATAL |
+  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
+  			  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
@@ -48,15 +48,15 @@ int main(int argc, char * argv[]){
     PTHREAD_SLEEP(1);
   start = get_time();
   ret = os_cpu_get_load(ectx,
-			cfg);
+  		cfg);
   while (start + 60 * cronSECONDS > get_time())
     sqrt(245.2523); /* do some processing to drive load up */
   if (ret > os_cpu_get_load(ectx,
-			    cfg)) {
+  		    cfg)) {
     printf("busy loop decreased CPU load: %d < %d.\n",
-	   ret,
-	   os_cpu_get_load(ectx,
-			   cfg));
+     ret,
+     os_cpu_get_load(ectx,
+  		   cfg));
     ret = 1;
   } else {
     ret = 0;

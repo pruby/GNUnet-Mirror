@@ -126,8 +126,8 @@ static char * cvt = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\
  * @return the size of the output
  */
 static unsigned int base64_encode(char * data,
-				  unsigned int len,
-				  char ** output) {
+  			  unsigned int len,
+  			  char ** output) {
   unsigned int i;
   char c;
   unsigned int ret;
@@ -139,7 +139,7 @@ static unsigned int base64_encode(char * data,
   }
   ret = 0;
   *output = MALLOC( (((len * 4 / 3) + 8) * (MAX_CHAR_PER_LINE+2))/
-		     MAX_CHAR_PER_LINE);
+  	     MAX_CHAR_PER_LINE);
   for (i = 0; i < len; ++i) {
     c = (data[i] >> 2) & 0x3f;
     (*output)[ret++] = cvt[(int)c];
@@ -152,7 +152,7 @@ static unsigned int base64_encode(char * data,
     if (i < len) {
       c = (data[i] << 2) & 0x3f;
       if (++i < len)
-	c |= (data[i] >> 6) & 0x03;
+  c |= (data[i] >> 6) & 0x03;
       (*output)[ret++] = cvt[(int)c];
       CHECKLINE;
     } else {
@@ -176,8 +176,8 @@ static unsigned int base64_encode(char * data,
 #define cvtfind(a)( (((a) >= 'A')&&((a) <= 'Z'))? (a)-'A'\
                    :(((a)>='a')&&((a)<='z')) ? (a)-'a'+26\
                    :(((a)>='0')&&((a)<='9')) ? (a)-'0'+52\
-		   :((a) == '+') ? 62\
-		   :((a) == '/') ? 63 : -1)
+  	   :((a) == '+') ? 62\
+  	   :((a) == '/') ? 63 : -1)
 /**
  * Decode from Base64.
  *
@@ -188,18 +188,18 @@ static unsigned int base64_encode(char * data,
  * @return the size of the output
  */
 static unsigned int base64_decode(char * data,
-				  unsigned int len,
-				  char ** output) {
+  			  unsigned int len,
+  			  char ** output) {
   unsigned int i;
   char c;
   char c1;
   unsigned int ret=0;
 
-#define CHECK_CRLF	while (data[i] == '\r' || data[i] == '\n') {\
-				GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "ignoring CR/LF\n"); \
-				i++; \
-				if (i >= len) goto END;  \
-			}
+#define CHECK_CRLF  while (data[i] == '\r' || data[i] == '\n') {\
+  			GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "ignoring CR/LF\n"); \
+  			i++; \
+  			if (i >= len) goto END;  \
+  		}
 
   *output = MALLOC((len * 3 / 4) + 8);
 #if DEBUG_SMTP
@@ -208,7 +208,7 @@ static unsigned int base64_decode(char * data,
   for (i = 0; i < len; ++i) {
     CHECK_CRLF;
     if (data[i] == FILLCHAR)
-	      break;
+        break;
     c = (char) cvtfind(data[i]);
     ++i;
     CHECK_CRLF;
@@ -219,7 +219,7 @@ static unsigned int base64_decode(char * data,
       CHECK_CRLF;
       c = data[i];
       if (FILLCHAR == c)
-	break;
+  break;
       c = (char) cvtfind(c);
       c1 = ((c1 << 4) & 0xf0) | ((c >> 2) & 0xf);
       (*output)[ret++] = c1;
@@ -228,7 +228,7 @@ static unsigned int base64_decode(char * data,
       CHECK_CRLF;
       c1 = data[i];
       if (FILLCHAR == c1)
-	break;
+  break;
 
       c1 = (char) cvtfind(c1);
       c = ((c << 6) & 0xc0) | c1;
@@ -253,16 +253,16 @@ static void * listenAndDistribute(void * unused) {
   SMTPMessage * mp;
 
   pipename = getFileName("SMTP",
-			 "PIPE",
-			 _("You must specify the name of a "
-			   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
+  		 "PIPE",
+  		 _("You must specify the name of a "
+  		   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
   GE_ASSERT(ectx, pipename != NULL);
   UNLINK(pipename);
   if (0 != mkfifo(pipename,
-		  S_IWUSR|S_IRUSR))
+  	  S_IWUSR|S_IRUSR))
     GE_DIE_STRERROR(ectx,
-		    GE_ADMIN | GE_BULK | GE_FATAL,
-		    "mkfifo");
+  	    GE_ADMIN | GE_BULK | GE_FATAL,
+  	    "mkfifo");
   LINESIZE = ((smtpAPI.mtu * 4 / 3) + 8) * (MAX_CHAR_PER_LINE+2)/
              MAX_CHAR_PER_LINE; /* maximum size of a line supported */
   line = MALLOC(LINESIZE + 2);  /* 2 bytes for off-by-one errors, just to be safe... */
@@ -270,7 +270,7 @@ static void * listenAndDistribute(void * unused) {
 #define READLINE(l,limit) \
   do { retl = fgets(l, limit, fdes); \
     if ( (retl == NULL) || (smtp_shutdown == YES)) {\
-	goto END; \
+  goto END; \
     }\
     incrementBytesReceived(strlen(retl));\
   } while (0)
@@ -286,71 +286,71 @@ static void * listenAndDistribute(void * unused) {
     int fd;
 
     fd = disk_file_open(ectx,
-			pipename,
-			O_RDONLY);
+  		pipename,
+  		O_RDONLY);
     if (fd == -1) {
       if (smtp_shutdown == NO)
-	PTHREAD_SLEEP(5 * cronSECONDS);
+  PTHREAD_SLEEP(5 * cronSECONDS);
       continue;
     }
     fdes = fdopen(fd, "r");
     while (smtp_shutdown == NO ) {
       do {
-	READLINE(line, LINESIZE);
+  READLINE(line, LINESIZE);
       } while (0 != strAUTOncmp(line, CONTENT_TYPE_MULTIPART));
       READLINE(line, LINESIZE);
       if (strlen(line) < strlen("  boundary=\"")) {
-	goto END;
+  goto END;
       }
       boundary = STRDUP(&line[strlen("  boundary=\"")-2]);
       if (boundary[strlen(boundary)-2] != '\"') {
-	FREE(boundary);
-	goto END; /* format error */
+  FREE(boundary);
+  goto END; /* format error */
       } else {
-	boundary[strlen(boundary)-2] = '\0';
-	boundary[0] = boundary[1] = '-';
+  boundary[strlen(boundary)-2] = '\0';
+  boundary[0] = boundary[1] = '-';
       }
       do {
-	READLINE(line, LINESIZE);
+  READLINE(line, LINESIZE);
       } while (0 != strAUTOncmp(line, boundary));
       do {
-	READLINE(line, LINESIZE); /* content type, etc. */
+  READLINE(line, LINESIZE); /* content type, etc. */
       } while (0 != strAUTOncmp(line, ""));
       READLINE(line, LINESIZE); /* read base64 encoded message; decode, process */
       while ( (line[strlen(line)-2] != FILLCHAR) &&
-	      (strlen(line) < LINESIZE) )
-	READLINE(&line[strlen(line)-1], LINESIZE - strlen(line));
+        (strlen(line) < LINESIZE) )
+  READLINE(&line[strlen(line)-1], LINESIZE - strlen(line));
       size = base64_decode(line, strlen(line)-1, &out);
       if (size < sizeof(SMTPMessage)) {
-	GE_BREAK(ectx, 0);
-	FREE(out);
-	goto END;
+  GE_BREAK(ectx, 0);
+  FREE(out);
+  goto END;
       }
 
       mp = (SMTPMessage*)&out[size-sizeof(SMTPMessage)];
       if (ntohs(mp->size) != size) {
-	GE_LOG(ectx,
-	       GE_WARNING | GE_BULK | GE_USER,
-	       _("Received malformed message via SMTP (size mismatch).\n"));
+  GE_LOG(ectx,
+         GE_WARNING | GE_BULK | GE_USER,
+         _("Received malformed message via SMTP (size mismatch).\n"));
 #if DEBUG_SMTP
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "Size returned by base64=%d, in the msg=%d.\n",
-	    size,
-	    ntohl(mp->size));
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      "Size returned by base64=%d, in the msg=%d.\n",
+      size,
+      ntohl(mp->size));
 #endif
-	goto END;
+  goto END;
       }
       coreMP = MALLOC(sizeof(P2P_PACKET));
       coreMP->msg = out;
       coreMP->size = size - sizeof(SMTPMessage);
       coreMP->tsession = NULL;
       memcpy(&coreMP->sender,
-	     &mp->sender,
-	     sizeof(PeerIdentity));
+       &mp->sender,
+       sizeof(PeerIdentity));
 #if DEBUG_SMTP
       GE_LOG(ectx,
-	     GE_DEBUG | GE_REQUEST | GE_USER,
-	     "SMTP message passed to the core.\n");
+       GE_DEBUG | GE_REQUEST | GE_USER,
+       "SMTP message passed to the core.\n");
 #endif
 
       coreAPI->receive(coreMP);
@@ -359,8 +359,8 @@ static void * listenAndDistribute(void * unused) {
   END:
 #if DEBUG_SMTP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "SMTP message processed.\n");
+     GE_DEBUG | GE_REQUEST | GE_USER,
+     "SMTP message processed.\n");
 #endif
     if (fdes != NULL)
       fclose(fdes);
@@ -394,8 +394,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   } else {
 #if DEBUG_SMTP
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Verified SMTP helo from `%s'.\n",
-	&maddr->senderAddress[0]);
+  "Verified SMTP helo from `%s'.\n",
+  &maddr->senderAddress[0]);
 #endif
     return OK;
   }
@@ -416,44 +416,44 @@ static P2P_hello_MESSAGE * createhello() {
   int i;
 
   email = getConfigurationString("SMTP",
-				 "EMAIL");
+  			 "EMAIL");
   if (email == NULL) {
     static int once;
     if (once == 0) {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  "No email-address specified, cannot create SMTP advertisement.\n");
+    "No email-address specified, cannot create SMTP advertisement.\n");
       once = 1;
     }
     return NULL;
   }
   filter = getConfigurationString("SMTP",
-				  "FILTER");
+  			  "FILTER");
   if (filter == NULL) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
+  _("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
     FREE(email);
     return NULL;
   }
   if (strlen(filter) > FILTER_STRING_SIZE) {
     filter[FILTER_STRING_SIZE] = '\0';
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("SMTP filter string to long, capped to `%s'\n"),
-	filter);
+  _("SMTP filter string to long, capped to `%s'\n"),
+  filter);
   }
   i = (strlen(email) + 8) & (~7); /* make multiple of 8 */
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(EmailAddress) + i);
   memset(msg,
-	 0,
-	 sizeof(P2P_hello_MESSAGE) + sizeof(EmailAddress) + i);
+   0,
+   sizeof(P2P_hello_MESSAGE) + sizeof(EmailAddress) + i);
   haddr = (EmailAddress*) &msg[1];
   memset(&haddr->filter[0],
-	 0,
-	 FILTER_STRING_SIZE);
+   0,
+   FILTER_STRING_SIZE);
   strcpy(&haddr->filter[0],
-	 filter);
+   filter);
   memcpy(&haddr->senderAddress[0],
-	 email,
-	 strlen(email)+1);
+   email,
+   strlen(email)+1);
   msg->senderAddressSize = htons(strlen(email)+1+sizeof(EmailAddress));
   msg->protocol          = htons(SMTP_PROTOCOL_NUMBER);
   msg->MTU               = htonl(smtpAPI.mtu);
@@ -472,15 +472,15 @@ static P2P_hello_MESSAGE * createhello() {
  * @return OK on success, SYSERR if the operation failed
  */
 static int smtpConnect(const P2P_hello_MESSAGE * hello,
-		       TSession ** tsessionPtr) {
+  	       TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = MALLOC(P2P_hello_MESSAGE_size(hello));
   tsession->peer = hello->senderIdentity;
   memcpy(tsession->internal,
-	 hello,
-	 P2P_hello_MESSAGE_size(hello));
+   hello,
+   P2P_hello_MESSAGE_size(hello));
   tsession->ttype = smtpAPI.protocolNumber;
   (*tsessionPtr) = tsession;
   return OK;
@@ -512,9 +512,9 @@ int smtpAssociate(TSession * tsession) {
  * @return SYSERR on error, OK on success
  */
 static int smtpSend(TSession * tsession,
-		    const void * message,
-		    const unsigned int size,
-		    int important) {
+  	    const void * message,
+  	    const unsigned int size,
+  	    int important) {
   char * msg;
   SMTPMessage * mp;
   P2P_hello_MESSAGE * helo;
@@ -543,9 +543,9 @@ static int smtpSend(TSession * tsession,
   smtp_sock = smtp_create_session();
   if (smtp_sock == NULL) {
     GE_LOG(ectx,
-	   GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-	   _("Failed to initialize libesmtp: %s.\n"),
-	   smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
+     GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+     _("Failed to initialize libesmtp: %s.\n"),
+     smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
     return NULL;
   }
   smtpServer = "localhost:587"; /* fixme */
@@ -559,21 +559,21 @@ static int smtpSend(TSession * tsession,
   mp->size        = htons(ssize);
   mp->sender      = *coreAPI->myIdentity;
   memcpy(msg,
-	 message,
-	 size);
+   message,
+   size);
   ebody = NULL;
 #if DEBUG_SMTP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Base64-encoding %d byte message.\n",
-	 ssize);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Base64-encoding %d byte message.\n",
+   ssize);
 #endif
   ssize = base64_encode(msg, ssize, &ebody);
 #if DEBUG_SMTP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Base64-encoded message size is %d bytes.\n",
-	 ssize);
+   GE_DEBUG | GE_REQUEST | GE_USER,
+   "Base64-encoded message size is %d bytes.\n",
+   ssize);
 #endif
   FREE(msg);
   res = SYSERR;
@@ -581,35 +581,35 @@ static int smtpSend(TSession * tsession,
   message = smtp_add_message(smtp_sock);
   if (message == NULL) {
     GE_LOG(ectx,
-	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-	   "Failed to create smtp message: %s\n",
-	   smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
+     GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+     "Failed to create smtp message: %s\n",
+     smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
     return SYSERR;
   }
   smtp_size_set_estimate(message,
-			 ssize);
+  		 ssize);
   smtp_set_messagecb(message,
-		     &getMessage,
-		     &msg);
+  	     &getMessage,
+  	     &msg);
 
 #if 0
   if (OK == writeSMTPLine(smtp_sock,
-			  "%-*s\r\n",
-			  MIN(FILTER_STRING_SIZE,
-			      strlen(&haddr->filter[0])),
-			  &haddr->filter[0])) {
+  		  "%-*s\r\n",
+  		  MIN(FILTER_STRING_SIZE,
+  		      strlen(&haddr->filter[0])),
+  		  &haddr->filter[0])) {
   }
 #endif
   recipient = smtp_add_recipient(message,
-				 haddr->senderAddress);
+  			 haddr->senderAddress);
   if (recipient == NULL) {
     /* FIXME */
   }
   if (res != OK)
     GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Sending E-mail to `%s' failed.\n"),
-	   &haddr->senderAddress[0]);
+     GE_WARNING | GE_BULK | GE_USER,
+     _("Sending E-mail to `%s' failed.\n"),
+     &haddr->senderAddress[0]);
   incrementBytesSent(ssize);
   FREE(ebody);
   smtp_destroy_session(smtp_sock);
@@ -641,12 +641,12 @@ static int startTransportServer(void) {
   smtp_shutdown = NO;
   /* initialize SMTP network */
   dispatchThread = PTHREAD_CREATE(&listenAndDistribute,
-				  NULL,
-				  1024*4);
+  			  NULL,
+  			  1024*4);
   if (dispatchThread == NULL)
     GE_DIE_STRERROR(ectx,
-		    GE_ADMIN | GE_BULK | GE_FATAL,
-		    "pthread_create");
+  	    GE_ADMIN | GE_BULK | GE_FATAL,
+  	    "pthread_create");
   return OK;
 }
 
@@ -675,11 +675,11 @@ static char * addressToString(const P2P_hello_MESSAGE * helo) {
   n = FILTER_STRING_SIZE + strlen(addr->senderAddress) + 16;
   ret = MALLOC(n);
   SNPRINTF(ret,
-	   n,
-	   _("%.*s filter %s (SMTP)"),
-	   FILTER_STRING_SIZE,
-	   addr->filter,
-	   addr->senderAddress);
+     n,
+     _("%.*s filter %s (SMTP)"),
+     FILTER_STRING_SIZE,
+     addr->filter,
+     addr->senderAddress);
   return ret;
 }
 
@@ -698,14 +698,14 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   coreAPI = core;
   ectx = core->ectx;
   mtu = getConfigurationInt("SMTP",
-			    "MTU");
+  		    "MTU");
   if (mtu == 0)
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
     GE_LOG(ectx,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   _("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
-	   "SMTP");
+     GE_ERROR | GE_BULK | GE_USER,
+     _("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
+     "SMTP");
   if (mtu > MESSAGE_SIZE)
     mtu = MESSAGE_SIZE;
   smtpAPI.protocolNumber       = SMTP_PROTOCOL_NUMBER;

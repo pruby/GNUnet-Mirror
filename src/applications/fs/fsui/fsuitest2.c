@@ -36,7 +36,7 @@
 static struct FSUI_Context * ctx;
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   return NULL;
 }
 
@@ -51,40 +51,40 @@ int main(int argc, char * argv[]){
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  60 * cronSECONDS));
+  				  cfg,
+  				  60 * cronSECONDS));
 #endif
   ok = YES;
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "fsuitest2",
-		   32,
-		   YES, /* do resume! */
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "fsuitest2",
+  	   32,
+  	   YES, /* do resume! */
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
   FSUI_stop(ctx);
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "fsuitest2",
-		   32,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "fsuitest2",
+  	   32,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
  FAILURE:
   if (ctx != NULL)

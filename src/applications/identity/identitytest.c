@@ -80,31 +80,31 @@ static int runTest() {
     (&pid,
      -identity->getHostTrust(&pid));
   ASSERT(4 == identity->changeHostTrust
-	 (&pid, 4));
+   (&pid, 4));
   releaseService(identity);
 
   identity = requestService("identity");
   ASSERT(4 == identity->getHostTrust(&pid));
   ASSERT(5 == identity->changeHostTrust
-	 (&pid, 5));
+   (&pid, 5));
   ASSERT(-2 == identity->changeHostTrust
-	 (&pid, -2));
+   (&pid, -2));
   ASSERT(7 == identity->getHostTrust(&pid));
   ASSERT(-7 == identity->changeHostTrust
-	 (&pid, -40));
+   (&pid, -40));
   pkey = identity->getPublicPrivateKey();
   identity->getPeerIdentity(pkey,
-			    &pid);
+  		    &pid);
   ASSERT(0 == identity->getHostTrust(&pid));
 
   pkey = identity->getPublicPrivateKey();
   ASSERT(OK == identity->signData("TestData",
-				  8,
-				  &sig));
+  			  8,
+  			  &sig));
   ASSERT(OK == verifySig("TestData",
-			 8,
-			 &sig,
-			 pkey));
+  		 8,
+  		 &sig,
+  		 pkey));
 
   /* to test:
      hello verification, temporary storage,
@@ -116,12 +116,12 @@ static int runTest() {
 }
 
 static int hcb(void * data,
-	       const PeerIdentity * identity,
-	       const void * address,
-	       unsigned int addr_len,
-	       cron_t last_message,
-	       unsigned int trust,
-	       unsigned int bpmFromPeer) {
+         const PeerIdentity * identity,
+         const void * address,
+         unsigned int addr_len,
+         cron_t last_message,
+         unsigned int trust,
+         unsigned int bpmFromPeer) {
   /* TODO: do something meaningful */
   return OK;
 }
@@ -133,8 +133,8 @@ static int runClientTest() {
   ret = OK;
   sock = client_connection_create(NULL, cfg);
   gnunet_identity_request_peer_infos(sock,
-				     &hcb,
-				     &ret);
+  			     &hcb,
+  			     &ret);
   connection_destroy(sock);
   return ret;
 }
@@ -144,15 +144,15 @@ int main(int argc, char *argv[]) {
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,
-	   cfg,
-	   cron,
-	   NULL);
+     cfg,
+     cron,
+     NULL);
   err = 0;
   if (OK != runTest())
     err = 1;

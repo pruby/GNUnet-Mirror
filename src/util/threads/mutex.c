@@ -58,7 +58,7 @@
  */
 #ifndef _MSC_VER
 extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr,
-					int kind);
+  				int kind);
 #endif
 
 
@@ -81,40 +81,40 @@ Mutex * MUTEX_CREATE(int isRecursive) {
   if (isRecursive) {
 #if LINUX
     GE_ASSERT(NULL,
-	      0 == pthread_mutexattr_setkind_np
-	      (&attr,
-	       PTHREAD_MUTEX_RECURSIVE_NP));
+        0 == pthread_mutexattr_setkind_np
+        (&attr,
+         PTHREAD_MUTEX_RECURSIVE_NP));
 #elif SOMEBSD || FREEBSD || FREEBSD5
     GE_ASSERT(NULL,
-	      0 == pthread_mutexattr_setkind_np
-	      (&attr,
-	       PTHREAD_MUTEX_RECURSIVE));
+        0 == pthread_mutexattr_setkind_np
+        (&attr,
+         PTHREAD_MUTEX_RECURSIVE));
 #elif SOLARIS || OSX || WINDOWS
     GE_ASSERT(NULL,
-	      0 == pthread_mutexattr_settype
-	      (&attr,
-	       PTHREAD_MUTEX_RECURSIVE));
+        0 == pthread_mutexattr_settype
+        (&attr,
+         PTHREAD_MUTEX_RECURSIVE));
 #endif
   } else {
 #if LINUX
     GE_ASSERT(NULL,
-	      0 == pthread_mutexattr_setkind_np
-	      (&attr,
-	       PTHREAD_MUTEX_ERRORCHECK_NP));
+        0 == pthread_mutexattr_setkind_np
+        (&attr,
+         PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
     GE_ASSERT(NULL,
-	      0 == pthread_mutexattr_settype
-	      (&attr,
-	       PTHREAD_MUTEX_ERRORCHECK));
+        0 == pthread_mutexattr_settype
+        (&attr,
+         PTHREAD_MUTEX_ERRORCHECK));
 #endif
   }
   mut = MALLOC(sizeof(Mutex));
   memset(mut,
-	 0,
-	 sizeof(Mutex));
+   0,
+   sizeof(Mutex));
   GE_ASSERT(NULL,
-	    0 == pthread_mutex_init(&mut->pt,
-				    &attr));
+      0 == pthread_mutex_init(&mut->pt,
+  			    &attr));
   return mut;
 }
 
@@ -128,8 +128,8 @@ void MUTEX_DESTROY(Mutex * mutex) {
 }
 
 void MUTEX_LOCK_FL(Mutex * mutex,
-		   const char * file,
-		   unsigned int line) {
+  	   const char * file,
+  	   unsigned int line) {
   int ret;
   cron_t start;
   cron_t end;
@@ -141,23 +141,23 @@ void MUTEX_LOCK_FL(Mutex * mutex,
   if ( (end - start > REALTIME_LIMIT) &&
        (REALTIME_LIMIT != 0) ) {
     GE_LOG(NULL,
-	   GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
-	   _("Real-time delay violation (%llu ms) at %s:%u\n"),
-	   end - start,
-	   file,
-	   line);
+     GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+     _("Real-time delay violation (%llu ms) at %s:%u\n"),
+     end - start,
+     file,
+     line);
   }  
   if (ret != 0) {
     if (ret == EINVAL)
       GE_LOG(NULL,
-	     GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
-	     _("Invalid argument for `%s'.\n"),
-	     "pthread_mutex_lock");
+       GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
+       _("Invalid argument for `%s'.\n"),
+       "pthread_mutex_lock");
     if (ret == EDEADLK)
       GE_LOG(NULL,
-	     GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
-	     _("Deadlock due to `%s'.\n"),
-	      "pthread_mutex_lock");
+       GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
+       _("Deadlock due to `%s'.\n"),
+        "pthread_mutex_lock");
     GE_ASSERT(NULL, 0);
   }
   if (mutex->locked_depth++ == 0) {
@@ -175,13 +175,13 @@ void MUTEX_UNLOCK(Mutex * mutex) {
   if (0 == --mutex->locked_depth) {
     now = get_time();
     if ( (now - mutex->locked_time > REALTIME_LIMIT) &&
-	 (REALTIME_LIMIT != 0) )
+   (REALTIME_LIMIT != 0) )
       GE_LOG(NULL,
-	     GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
-	     _("Lock aquired for too long (%llu ms) at %s:%u\n"),
-	     now - mutex->locked_time,
-	     mutex->locked_file,
-	     mutex->locked_line);
+       GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+       _("Lock aquired for too long (%llu ms) at %s:%u\n"),
+       now - mutex->locked_time,
+       mutex->locked_file,
+       mutex->locked_line);
     mutex->locked_file = NULL;
     mutex->locked_line = 0;
     mutex->locked_time = 0;
@@ -190,14 +190,14 @@ void MUTEX_UNLOCK(Mutex * mutex) {
   if (ret != 0) {
     if (ret == EINVAL)
       GE_LOG(NULL,
-	     GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
-	     _("Invalid argument for `%s'.\n"),
-	     "pthread_mutex_lock");
+       GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
+       _("Invalid argument for `%s'.\n"),
+       "pthread_mutex_lock");
     if (ret == EPERM)
       GE_LOG(NULL,
-	     GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
-	     _("Permission denied for `%s'.\n"),
-	     "pthread_mutex_unlock");
+       GE_FATAL | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
+       _("Permission denied for `%s'.\n"),
+       "pthread_mutex_unlock");
     GE_ASSERT(NULL, 0);
   }
 }

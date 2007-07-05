@@ -44,13 +44,13 @@
  * @return OK on success, SYSERR on error
  */
 int gnunet_traffic_poll(struct ClientServerConnection * sock,
-			unsigned int timeframe,
-			unsigned short type,
-			unsigned short direction,
-			unsigned int * count,
-			unsigned int * avg_size,
-			unsigned int * peers,
-			unsigned int * time) {
+  		unsigned int timeframe,
+  		unsigned short type,
+  		unsigned short direction,
+  		unsigned int * count,
+  		unsigned int * avg_size,
+  		unsigned int * peers,
+  		unsigned int * time) {
   CS_traffic_info_MESSAGE * info;
   CS_traffic_request_MESSAGE req;
   int i;
@@ -62,16 +62,16 @@ int gnunet_traffic_poll(struct ClientServerConnection * sock,
   req.timePeriod
     = htonl(timeframe);
   if (SYSERR == connection_write(sock,
-				 &req.header))
+  			 &req.header))
     return SYSERR;
   info = NULL;
   if (SYSERR == connection_read(sock,
-				(MESSAGE_HEADER**)&info))
+  			(MESSAGE_HEADER**)&info))
     return SYSERR;
   if ( (ntohs(info->header.type) !=
-	CS_PROTO_traffic_INFO) ||
+  CS_PROTO_traffic_INFO) ||
        (ntohs(info->header.size) !=
-	sizeof(CS_traffic_info_MESSAGE) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
+  sizeof(CS_traffic_info_MESSAGE) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
     GE_BREAK(NULL, 0);
     return SYSERR;
   }

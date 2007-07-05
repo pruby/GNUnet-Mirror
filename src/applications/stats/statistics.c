@@ -111,7 +111,7 @@ static int statHandle(const char * name) {
  * @param value to what the value should be set
  */
 static void statSet(const int handle,
-		    const unsigned long long value) {
+  	    const unsigned long long value) {
   MUTEX_LOCK(statLock);
   if ( (handle < 0) ||
        (handle >= statCounters) ) {
@@ -145,7 +145,7 @@ static unsigned long long statGet(const int handle) {
  * @param delta by how much should the value be changed
  */
 static void statChange(const int handle,
-		       const int delta) {
+  	       const int delta) {
   MUTEX_LOCK(statLock);
   if ( (handle < 0) ||
        (handle >= statCounters) ) {
@@ -231,31 +231,31 @@ static void immediateUpdates() {
   update_sqstore_stats();
 #endif
   load = os_cpu_get_load(coreAPI->ectx,
-			 coreAPI->cfg);
+  		 coreAPI->cfg);
   if (load == -1)
     load = 0;
   statSet(stat_handle_cpu_load,
-	  load);
+    load);
   load = os_disk_get_load(coreAPI->ectx,
-			  coreAPI->cfg);
+  		  coreAPI->cfg);
   if (load == -1)
     load = 0;
   statSet(stat_handle_io_load,
-	  load);
+    load);
   load = os_network_monitor_get_load(coreAPI->load_monitor,
-				     Upload);
+  			     Upload);
   if (load == -1)
     load = 0;
   statSet(stat_handle_network_load_up,
-	  load);
+    load);
   load = os_network_monitor_get_load(coreAPI->load_monitor,
-				     Download);
+  			     Download);
   if (load == -1)
     load = 0;
   statSet(stat_handle_network_load_down,
-	  load);
+    load);
   statSet(stat_connected,
-	  coreAPI->forAllConnectedNodes(NULL, NULL));
+    coreAPI->forAllConnectedNodes(NULL, NULL));
 }
 
 
@@ -266,7 +266,7 @@ static void immediateUpdates() {
  * @param originalRequestMessage ignored at this point.
  */
 static int sendStatistics(struct ClientHandle * sock,
-			  const MESSAGE_HEADER * originalRequestMessage) {
+  		  const MESSAGE_HEADER * originalRequestMessage) {
   CS_stats_reply_MESSAGE * statMsg;
   int pos; /* position in the values-descriptions */
   int start;
@@ -291,9 +291,9 @@ static int sendStatistics(struct ClientHandle * sock,
        and their descriptions we can send in one message */
     mpos = 0;
     while ( (pos < statCounters) &&
-	    (mpos + sizeof(unsigned long long)
-	     + entries[pos].descStrLen + 1
-	     < MAX_BUFFER_SIZE - sizeof(CS_stats_reply_MESSAGE)) ) {
+      (mpos + sizeof(unsigned long long)
+       + entries[pos].descStrLen + 1
+       < MAX_BUFFER_SIZE - sizeof(CS_stats_reply_MESSAGE)) ) {
       mpos += sizeof(unsigned long long); /* value */
       mpos += entries[pos].descStrLen + 1;
       pos++;
@@ -305,8 +305,8 @@ static int sendStatistics(struct ClientHandle * sock,
     mpos = sizeof(unsigned long long) * (end - start);
     for (pos=start;pos<end;pos++) {
       memcpy(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg))->values)[mpos],
-	     entries[pos].description,
-	     entries[pos].descStrLen+1);
+       entries[pos].description,
+       entries[pos].descStrLen+1);
       mpos += entries[pos].descStrLen+1;
     }
     statMsg->statCounters = htonl(end - start);
@@ -317,7 +317,7 @@ static int sendStatistics(struct ClientHandle * sock,
        ntohs(statMsg->header.size),
        start, end, statCounters);*/
     if (SYSERR == coreAPI->sendToClient(sock,
-					&statMsg->header))
+  				&statMsg->header))
       break; /* abort, socket error! */
     start = end;
   }
@@ -329,7 +329,7 @@ static int sendStatistics(struct ClientHandle * sock,
  * Handle a request to see if a particular p2p message is supported.
  */
 static int handleMessageSupported(struct ClientHandle * sock,
-				  const MESSAGE_HEADER * message) {
+  			  const MESSAGE_HEADER * message) {
   unsigned short type;
   unsigned short htype;
   int supported;
@@ -355,7 +355,7 @@ static int handleMessageSupported(struct ClientHandle * sock,
  * @returns OK if ok, SYSERR if not.
  */
 static int processGetConnectionCountRequest(struct ClientHandle * client,
-					    const MESSAGE_HEADER * msg) {
+  				    const MESSAGE_HEADER * msg) {
   if (ntohs(msg->size) != sizeof(MESSAGE_HEADER)) {
     GE_BREAK(NULL, 0);
     return SYSERR;
@@ -369,16 +369,16 @@ static int processGetConnectionCountRequest(struct ClientHandle * client,
  * Handler for processing noise.
  */
 static int processNoise(const PeerIdentity * sender,
-			const MESSAGE_HEADER * msg) {
+  		const MESSAGE_HEADER * msg) {
   statChange(stat_bytes_noise_received,
-	     ntohs(msg->size));
+       ntohs(msg->size));
   return OK;
 }
 
 
 int initialize_module_stats(CoreAPIForApplication * capi) {
   GE_ASSERT(capi->ectx,
-	    myCoreAPI == NULL);
+      myCoreAPI == NULL);
   myCoreAPI = capi;
   stats = capi->requestService("stats");
   if (stats == NULL) {
@@ -388,29 +388,29 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   }
   initializeStats();
   GE_LOG(capi->ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' registering client handlers %d %d %d and p2p handler %d\n"),
-	 "stats",
-	 CS_PROTO_traffic_COUNT,
-	 CS_PROTO_stats_GET_STATISTICS,
-	 CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
-	 P2P_PROTO_noise);
+   GE_INFO | GE_USER | GE_REQUEST,
+   _("`%s' registering client handlers %d %d %d and p2p handler %d\n"),
+   "stats",
+   CS_PROTO_traffic_COUNT,
+   CS_PROTO_stats_GET_STATISTICS,
+   CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
+   P2P_PROTO_noise);
   capi->registerClientHandler(CS_PROTO_stats_GET_STATISTICS,
-			      &sendStatistics);
+  		      &sendStatistics);
   capi->registerClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
-			      &handleMessageSupported);
+  		      &handleMessageSupported);
   capi->registerClientHandler(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED,
-			      &handleMessageSupported);
+  		      &handleMessageSupported);
   capi->registerClientHandler(CS_PROTO_traffic_COUNT,
-				&processGetConnectionCountRequest);
+  			&processGetConnectionCountRequest);
   capi->registerHandler(P2P_PROTO_noise,
-			&processNoise);
+  		&processNoise);
   GE_ASSERT(capi->ectx,
-	    0 == GC_set_configuration_value_string(capi->cfg,
-						   capi->ectx,
-						   "ABOUT",
-						   "stats",
-						   gettext_noop("keeps statistics about gnunetd's operation")));
+      0 == GC_set_configuration_value_string(capi->cfg,
+  					   capi->ectx,
+  					   "ABOUT",
+  					   "stats",
+  					   gettext_noop("keeps statistics about gnunetd's operation")));
 #if HAVE_SQSTATS
   init_sqstore_stats();
 #endif
@@ -424,15 +424,15 @@ int done_module_stats() {
 #endif
   GE_ASSERT(NULL, myCoreAPI != NULL);
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_STATISTICS,
-				   &sendStatistics);
+  			   &sendStatistics);
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
-				   &handleMessageSupported);
+  			   &handleMessageSupported);
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED,
-				   &handleMessageSupported);
+  			   &handleMessageSupported);
   coreAPI->unregisterClientHandler(CS_PROTO_traffic_COUNT,
-				   &processGetConnectionCountRequest);
+  			   &processGetConnectionCountRequest);
   coreAPI->unregisterHandler(P2P_PROTO_noise,
-			     &processNoise);
+  		     &processNoise);
   myCoreAPI->releaseService(stats);
   stats = NULL;
   myCoreAPI = NULL;

@@ -37,9 +37,9 @@ static char * makeName(unsigned int i) {
 
   fn = MALLOC(strlen("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14,
-	   "/tmp/gnunet-fsui-searchtest/FSUITEST%u",
-	   i);
+     strlen("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14,
+     "/tmp/gnunet-fsui-searchtest/FSUITEST%u",
+     i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
 }
@@ -57,7 +57,7 @@ static struct MUTEX * lock;
 static volatile enum FSUI_EventType waitForEvent;
 
 static void * eventCallback(void * cls,
-			    const FSUI_Event * event) {
+  		    const FSUI_Event * event) {
   static char unused;
 
   MUTEX_LOCK(lock);
@@ -130,80 +130,80 @@ int main(int argc, char * argv[]){
   ok = YES;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
-				   "check.conf")) {
+  			   "check.conf")) {
     GC_free(cfg);
     return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
-			    cfg,
-			    "peer.conf",
-			    NO);
+  		    cfg,
+  		    "peer.conf",
+  		    NO);
   GE_ASSERT(NULL, daemon > 0);
   CHECK(OK == connection_wait_for_running(NULL,
-					  cfg,
-					  30 * cronSECONDS));
+  				  cfg,
+  				  30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   lock = MUTEX_CREATE(NO);
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "fsuisearchtest",
-		   32,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "fsuisearchtest",
+  	   32,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   CHECK(ctx != NULL);
   SNPRINTF(keyword,
-	   40,
-	   "%s %s %s",
-	   keywords[0],
-	   _("AND"),
-	   keywords[1]);
+     40,
+     "%s %s %s",
+     keywords[0],
+     _("AND"),
+     keywords[1]);
   luri = ECRS_parseCharKeywordURI(NULL, keyword);
   search = FSUI_startSearch(ctx,
-			    0,
-			    100,
-			    240 * cronSECONDS,
-			    luri);
+  		    0,
+  		    100,
+  		    240 * cronSECONDS,
+  		    luri);
   ECRS_freeUri(luri);
   uri = NULL;
   CHECK(NULL != search);
   FSUI_stop(ctx);
   /* resume search! */
   ctx = FSUI_start(NULL,
-		   cfg,
-		   "fsuisearchtest",
-		   32,
-		   YES,
-		   &eventCallback,
-		   NULL);
+  	   cfg,
+  	   "fsuisearchtest",
+  	   32,
+  	   YES,
+  	   &eventCallback,
+  	   NULL);
   fn = makeName(42);
   disk_file_write(NULL,
-		  fn,
-		  "foo bar test!",
-		  strlen("foo bar test!"),
-		  "600");
+  	  fn,
+  	  "foo bar test!",
+  	  strlen("foo bar test!"),
+  	  "600");
   meta = ECRS_createMetaData();
   kuri = ECRS_parseListKeywordURI(NULL,
-				  2,
-				  (const char**)keywords);
+  			  2,
+  			  (const char**)keywords);
   waitForEvent = FSUI_upload_completed;
   upload =
-	FSUI_startUpload(ctx,
-			 fn,
-			 (DirectoryScanCallback) &disk_directory_scan,
-			 NULL,		
-			 0,
-			 0,
-			 YES,
-			 NO,
-			 NO,
-			 get_time() + 5 * cronHOURS,
-			 meta,
-			 kuri,
-			 kuri);
+  FSUI_startUpload(ctx,
+  		 fn,
+  		 (DirectoryScanCallback) &disk_directory_scan,
+  		 NULL,		
+  		 0,
+  		 0,
+  		 YES,
+  		 NO,
+  		 NO,
+  		 get_time() + 5 * cronHOURS,
+  		 meta,
+  		 kuri,
+  		 kuri);
   CHECK(NULL != upload);
   FREE(fn);
   fn = NULL;
@@ -214,8 +214,8 @@ int main(int argc, char * argv[]){
     prog++;
     if (prog == 10000) {
       fprintf(stderr,
-	      "Upload failed to complete -- last event: %u\n",
-	      lastEvent);
+        "Upload failed to complete -- last event: %u\n",
+        lastEvent);
     }
     CHECK(prog < 10000)
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -230,21 +230,21 @@ int main(int argc, char * argv[]){
     PTHREAD_SLEEP(50 * cronMILLIS);
   }
   FSUI_abortSearch(ctx,
-		   search);
+  	   search);
   FSUI_stopSearch(ctx,
-		  search);
+  	  search);
   CHECK(uri != NULL);
   fn = makeName(43);
   meta = ECRS_createMetaData();
   waitForEvent = FSUI_download_completed;
   download = FSUI_startDownload(ctx,
-				0,
-				NO,
-				uri,
-				meta,
-				fn,
-				NULL,
-				NULL);
+  			0,
+  			NO,
+  			uri,
+  			meta,
+  			fn,
+  			NULL,
+  			NULL);
   ECRS_freeMetaData(meta);
   FREE(fn);
   fn = NULL;
