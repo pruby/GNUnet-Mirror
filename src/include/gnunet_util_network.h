@@ -492,6 +492,16 @@ int select_connect(struct SelectHandle * sh,
 		   struct SocketHandle * sock,
 		   void * sock_ctx);
 
+
+/**
+ * Change the timeout for this socket to a custom
+ * value.  Use 0 to use the default timeout for
+ * this select.
+ */
+int select_change_timeout(struct SelectHandle * sh,
+			  struct SocketHandle * sock,
+			  cron_t timeout);
+
 /**
  */
 int select_update_closure(struct SelectHandle * sh,

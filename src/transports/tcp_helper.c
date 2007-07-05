@@ -151,6 +151,10 @@ static int tcpDisconnect(TSession * tsession) {
   tcpsession->users--;
   if ( (tcpsession->users > 0) ||
        (tcpsession->in_select == YES) ) {
+    if (tcpsession->users == 0)
+      select_change_timeout(selector,
+			    tcpsession->sock,
+			    TCP_FAST_TIMEOUT);
     MUTEX_UNLOCK(tcpsession->lock);
     MUTEX_UNLOCK(tcplock);
     return OK;
@@ -193,7 +197,13 @@ static int tcpAssociate(TSession * tsession) {
   GE_ASSERT(ectx, tsession != NULL);
   tcpSession = tsession->internal;
   MUTEX_LOCK(tcpSession->lock);
+  if ( (tcpsession->users == 0) &&
+       (tcpsession->in_select == YES) )
+    select_change_timeout(selector,
+			  tcpsession->sock,
+			  0 /* default */);
   tcpSession->users++;
+  
   MUTEX_UNLOCK(tcpSession->lock);
   return OK;
 }

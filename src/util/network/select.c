@@ -58,6 +58,12 @@ typedef struct {
   cron_t lastUse;
 
   /**
+   * Set to 0 initially, set to a much lower value
+   * if a "fast timeout" is desired.
+   */
+  cron_t timeout;
+
+  /**
    * 0 : can be destroyed
    * 1 : if destruction is required, it must be delayed
    * -1: delayed destruction required
@@ -758,8 +764,10 @@ static void * selectThread(void * ctx) {
 	i--;
 	continue;
       }
-      if ( (sh->timeout != 0) &&
-	   (get_time() > session->lastUse + sh->timeout) ) {
+      if ( ( (sh->timeout != 0) &&
+	     (get_time() > session->lastUse + sh->timeout) ) ||
+	   ( (session->timeout != 0) &&
+	     (get_time() > session->lastUse + session->timeout) ) ) {
 	destroySession(sh, session);
 	i--;
 	continue;
