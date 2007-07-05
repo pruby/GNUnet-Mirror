@@ -1119,7 +1119,6 @@ static Session * findSession(struct SelectHandle * sh,
 			     struct SocketHandle * sock) {
   int i;
 
-  session = NULL;
   for (i=0;i<sh->sessionCount;i++)
     if (sh->sessions[i]->sock == sock) 
       return sh->sessions[i];
