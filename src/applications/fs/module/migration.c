@@ -162,7 +162,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
       }
     }
     if (match == 0) {
-      dist = distanceHashCode512(&content[i]->key,
+      dist = distanceHashCode512(&content[i].key,
 				 &receiver->hashPubKey);
       if (dist <= minDist) {
 	entry = i;
@@ -189,7 +189,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
 				   &content[entry].key,
 				   &content[entry].value,
 				   0)) {
-      content[entry] = NULL; /* just to be sure...*/
+      content[entry].value = NULL; /* just to be sure...*/
       MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
       GE_LOG(ectx,

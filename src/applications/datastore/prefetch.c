@@ -79,6 +79,8 @@ static int acquire(const HashCode512 * key,
 	 value,
 	 ntohl(value->size));
   MUTEX_UNLOCK(lock);
+  if (doneSignal)
+    return SYSERR;
   return OK;
 }
 
