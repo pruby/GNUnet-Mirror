@@ -132,6 +132,7 @@
  #include <semaphore.h>
 #endif
 #ifdef OSX
+#include <dlfcn.h>
 #include <semaphore.h>
 #include <net/if.h>
 #endif

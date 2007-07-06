@@ -74,6 +74,8 @@ int os_modify_user(int testCapability,
   if (IsWinNT())
     return CreateServiceAccount(user_name,
   			"GNUnet service account");
+#elif OSX
+  return SYSERR; /* TODO */
 #else
   if (ACCESS("/usr/sbin/adduser",
        X_OK) == 0) {

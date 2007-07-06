@@ -101,6 +101,43 @@ static char * get_path_from_module_filename() {
 }
 #endif
 
+#if OSX
+typedef int (*MyNSGetExecutablePathProto)(char *buf, size_t *bufsize);
+
+static char * get_path_from_NSGetExecutablePath() {
+  char *path;
+  char zero = '\0';
+  size_t len;
+  void *func;
+  int ret;
+
+  path = NULL;
+  func = dlsym(RTLD_DEFAULT, "_NSGetExecutablePath");
+  if (func) {
+    path = &zero;
+    len = 0;
+    ret = ((MyNSGetExecutablePathProto)func)(path, &len);
+    if (len == 0)
+      path = NULL;
+    else {
+      len++;
+      path = (char *)MALLOC(len);
+      ret = ((MyNSGetExecutablePathProto)func)(path, &len);
+      if (ret != 0) {
+        FREE(path);
+        path = NULL;
+      }
+      else {
+        while ((path[len] != '/') && (len > 0))
+          len--;
+        path[len] = '\0';
+      }
+    } 
+  }
+  return path;
+}
+#endif
+
 static char *
 get_path_from_PATH() {
   char * path;
@@ -171,6 +208,11 @@ os_get_exec_path() {
 #endif
 #if WINDOWS
   ret = get_path_from_module_filename();
+  if (ret != NULL)
+    return ret;
+#endif
+#if OSX
+  ret = get_path_from_NSGetExecutablePath();
   if (ret != NULL)
     return ret;
 #endif
