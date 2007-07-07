@@ -239,6 +239,8 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
   ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
   ebasename = string_expandFileName(ectx, basename);
+  disk_directory_create_for_file(ectx,
+				 ebasename);
   fp = FOPEN(ebasename, "a+");
   if (NULL == fp) {
     GE_LOG_STRERROR_FILE(ectx,
