@@ -322,9 +322,9 @@ static void cronCheckLiveness(void * unused) {
   int autoconnect;
 
   autoconnect = GC_get_configuration_value_yesno(coreAPI->cfg,
-  					 "GNUNETD",
-  					 "DISABLE-AUTOCONNECT",
-  					 NO);
+						 "GNUNETD",
+						 "DISABLE-AUTOCONNECT",
+						 NO);
   slotCount = coreAPI->getSlotCount();
   if ( (NO == autoconnect) &&
        (saturation < 1) ) {
@@ -334,9 +334,9 @@ static void cronCheckLiveness(void * unused) {
       minint = MAX_PEERS_PER_SLOT; /* never put more than 10 peers into a slot */
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
-  continue;
+	continue;
       if (minint > coreAPI->isSlotUsed(i))  
-  scanForHosts(i);
+	scanForHosts(i);
     }
   }
   active = coreAPI->forAllConnectedNodes(&checkNeedForPing,
@@ -444,30 +444,14 @@ int release_module_topology_default() {
   return OK;
 }
 
-#define TOPOLOGY_TAG_FILE "topology-070"
-
 /**
  * Update topology module.
  */
 void update_module_topology_default(UpdateAPI * uapi) {
-  State_ServiceAPI * state;
-
   uapi->updateModule("state");
   uapi->updateModule("identity");
   uapi->updateModule("transport");
   uapi->updateModule("pingpong");
-
-  /* remove version stamp file from 0.7.0x,
-     we have a global check for version, so
-     we do not need this one anymore;
-     this code can be removed in a few
-     versions (since it is just minor cleanup
-     anyway) */
-  state = uapi->requestService("state");
-  state->unlink(NULL,
-  	TOPOLOGY_TAG_FILE);
-  uapi->releaseService(state);
-  state = NULL;
 }
 
 static CoreAPIForApplication * myCapi;

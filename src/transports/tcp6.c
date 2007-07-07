@@ -219,9 +219,11 @@ static P2P_hello_MESSAGE * createhello() {
 
   port = getGNUnetTCP6Port();
   if (0 == port) {
+#if DEBUG_TCP6
     GE_LOG(ectx,
-     GE_DEBUG,
-     "TCP6 port is 0, will only send using TCP6\n");
+	   GE_DEBUG,
+	   "TCP6 port is 0, will only send using TCP6\n");
+#endif
     return NULL; /* TCP6 transport is configured SEND-only! */
   }
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(Host6Address));
@@ -232,8 +234,8 @@ static P2P_hello_MESSAGE * createhello() {
   			    &haddr->ip)) {
     FREE(msg);
     GE_LOG(ectx,
-     GE_WARNING | GE_USER | GE_BULK,
-     _("Could not determine my public IPv6 address.\n"));
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("Could not determine my public IPv6 address.\n"));
     return NULL;
   }
   haddr->port = htons(port);

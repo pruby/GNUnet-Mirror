@@ -124,9 +124,9 @@ static int allowConnection(const PeerIdentity * peer) {
  * @param im updated structure used to select the peer
  */
 static int scanHelperCount(const PeerIdentity * id,
-  		   const unsigned short proto,	
-  		   int confirmed,
-  		   void * cls) {
+			   unsigned short proto,	
+			   int confirmed,
+			   void * cls) {
   IndexMatch * im = cls;
 
   if (0 == memcmp(coreAPI->myIdentity,
@@ -134,6 +134,8 @@ static int scanHelperCount(const PeerIdentity * id,
   	  sizeof(PeerIdentity)))
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
+    return OK;
+  if (OK == coreAPI->queryPeerStatus(id, NULL, NULL))
     return OK;
   if ( (YES == transport->isAvailable(proto)) &&
        (OK == allowConnection(id)) ) {
@@ -162,6 +164,8 @@ static int scanHelperSelect(const PeerIdentity * id,
     return OK;
   if (coreAPI->computeIndex(id) != im->index)
     return OK;
+  if (OK == coreAPI->queryPeerStatus(id, NULL, NULL))
+    return OK;
   if ( (OK == allowConnection(id)) &&
        (YES == transport->isAvailable(proto)) ) {
     im->costSelector -= transport->getCost(proto);
@@ -185,7 +189,9 @@ static int scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
+#if DEBUG_TOPOLOGY
   EncName enc;
+#endif
 
   now = get_time();
   indexMatch.index = index;
@@ -213,19 +219,25 @@ static void scanForHosts(unsigned int index) {
     GE_BREAK(ectx, 0); /* should REALLY not happen */
     return;
   }
-  hash2enc(&indexMatch.match.hashPubKey,
-     &enc);
+#if DEBUG_TOPOLOGY
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&indexMatch.match.hashPubKey,
+		    &enc));
   GE_LOG(ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   "Topology: trying to connect to `%s'.\n",
-   &enc);
-  coreAPI->unicast(&indexMatch.match,
-  	   NULL,
-  	   0,
-  	   0);
-  identity->blacklistHost(&indexMatch.match,
-  		  (unsigned int) 5 * 60 * 60 * saturation, /* 5h at full saturation */
-  		  NO);
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Topology: trying to connect to `%s'.\n",
+	 &enc);
+#endif
+  if (NO == identity->isBlacklistedStrict(&indexMatch.match)) {
+    coreAPI->unicast(&indexMatch.match,
+		     NULL,
+		     0,
+		     0);
+    identity->blacklistHost(&indexMatch.match,
+			    (unsigned int) 5 * 60 * 60 * saturation, /* 5h at full saturation */
+			    NO);
+  }
 }
 
 /**
@@ -276,9 +288,10 @@ static void checkNeedForPing(const PeerIdentity * peer,
 #if DEBUG_TOPOLOGY
     hash2enc(&hi->hashPubKey,
        &enc);
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-  "Sending ping to `%s' to prevent connection timeout.\n",
-  (char*)&enc);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Sending ping to `%s' to prevent connection timeout.\n",
+	   (char*)&enc);
 #endif
     if (OK != pingpong->ping(peer,  		
   		     &notifyPONG,
@@ -298,18 +311,24 @@ static void cronCheckLiveness(void * unused) {
   int i;
   int slotCount;
   int active;
+  int autoconnect;
 
+  autoconnect = GC_get_configuration_value_yesno(coreAPI->cfg,
+						 "GNUNETD",
+						 "DISABLE-AUTOCONNECT",
+						 NO);
   slotCount = coreAPI->getSlotCount();
-  if (saturation < 1) {
+  if ( (NO == autoconnect) &&
+       (saturation < 1) ) {
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
-  continue;
+	continue;
       if (0 == coreAPI->isSlotUsed(i))  
-  scanForHosts(i);
+	scanForHosts(i);
     }
   }
   active = coreAPI->forAllConnectedNodes(&checkNeedForPing,
-  				 NULL);
+					 NULL);
   saturation = 1.0 * active / slotCount;
 }
 
@@ -470,7 +489,18 @@ int release_module_topology_f2f() {
   return OK;
 }
 
+/**
+ * Update topology module.
+ */
+void update_module_topology_default(UpdateAPI * uapi) {
+  uapi->updateModule("state");
+  uapi->updateModule("identity");
+  uapi->updateModule("transport");
+  uapi->updateModule("pingpong");
+}
+
 static CoreAPIForApplication * myCapi;
+
 static Topology_ServiceAPI * myTopology;
 
 int initialize_module_topology_f2f(CoreAPIForApplication * capi) {

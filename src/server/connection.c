@@ -2584,12 +2584,15 @@ int checkHeader(const PeerIdentity * sender,
   ENTRY();
   GE_ASSERT(ectx, msg != NULL);
   GE_ASSERT(ectx, sender != NULL);
-  hash2enc(&sender->hashPubKey, &enc);
-  if(size < sizeof(P2P_PACKET_HEADER)) {
+  if (size < sizeof(P2P_PACKET_HEADER)) {
+    IF_GELOG(ectx,
+	     GE_WARNING | GE_BULK | GE_DEVELOPER,
+	     hash2enc(&sender->hashPubKey, 
+		      &enc));
     GE_LOG(ectx,
-     GE_WARNING | GE_BULK | GE_DEVELOPER,
-     _("Message from `%s' discarded: invalid format.\n"),
-     &enc);
+	   GE_WARNING | GE_BULK | GE_DEVELOPER,
+	   _("Message from `%s' discarded: invalid format.\n"),
+	   &enc);
     return SYSERR;
   }
   if (stats != NULL)
@@ -2608,13 +2611,18 @@ int checkHeader(const PeerIdentity * sender,
 
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
-  if((be == NULL) ||
-     (be->status == STAT_DOWN) || (be->status == STAT_SETKEY_SENT)) {
+  if ( (be == NULL) ||
+       (be->status == STAT_DOWN) || 
+       (be->status == STAT_SETKEY_SENT) ) {
 #if DEBUG_CONNECTION
+    IF_GELOG(ectx,
+	     GE_INFO | GE_BULK | GE_DEVELOPER,
+	     hash2enc(&sender->hashPubKey, 
+		      &enc));
     GE_LOG(ectx,
-     GE_INFO | GE_BULK | GE_DEVELOPER,
-     "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
-     &enc);
+	   GE_INFO | GE_BULK | GE_DEVELOPER,
+	   "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
+	   &enc);
 #endif
     /* try to establish a connection, that way, we don't keep
        getting bogus messages until the other one times out. */
@@ -2625,22 +2633,29 @@ int checkHeader(const PeerIdentity * sender,
   }
   tmp = MALLOC(size - sizeof(HashCode512));
   res = decryptBlock(&be->skey_remote,
-  	     &msg->sequenceNumber,
-  	     size - sizeof(HashCode512),
-  	     (const INITVECTOR *) &msg->hash, /* IV */
+		     &msg->sequenceNumber,
+		     size - sizeof(HashCode512),
+		     (const INITVECTOR *) &msg->hash, /* IV */
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
-  if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
+  if (! ( (res != OK) && 
+	  equalsHashCode512(&hc, &msg->hash) ) ) {
+#if DEBUG_CONNECTION
+    IF_GELOG(ectx,
+	     GE_INFO | GE_BULK | GE_DEVELOPER,
+	     hash2enc(&sender->hashPubKey, 
+		      &enc));
     GE_LOG(ectx,
-     GE_INFO | GE_BULK | GE_DEVELOPER,
-     "Decrypting message from host `%s' failed, wrong sessionkey!\n",
-     &enc);
+	   GE_INFO | GE_BULK | GE_DEVELOPER,
+	   "Decrypting message from host `%s' failed, wrong sessionkey!\n",
+	   &enc);
+#endif
     addHost(sender, YES);
     MUTEX_UNLOCK(lock);
     FREE(tmp);
     return SYSERR;
   }
-  if(stats != NULL)
+  if (stats != NULL)
     stats->change(stat_decrypted, size - sizeof(HashCode512));
   memcpy(&msg->sequenceNumber, tmp, size - sizeof(HashCode512));
   FREE(tmp);
@@ -2658,26 +2673,30 @@ int checkHeader(const PeerIdentity * sender,
       }
     }
     if (res == SYSERR) {
+#if DEBUG_CONNECTION
       GE_LOG(ectx,
-       GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-       _("Invalid sequence number"
-         " %u <= %u, dropping message.\n"),
-       sequenceNumber, be->lastSequenceNumberReceived);
+	     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	     _("Invalid sequence number"
+	       " %u <= %u, dropping message.\n"),
+	     sequenceNumber,
+	     be->lastSequenceNumberReceived);
+#endif
       MUTEX_UNLOCK(lock);
       return SYSERR;
     }
-  }
-  else {
+  } else {
     be->lastPacketsBitmap =
       be->lastPacketsBitmap
       << (sequenceNumber - be->lastSequenceNumberReceived);
     be->lastSequenceNumberReceived = sequenceNumber;
   }
   stamp = ntohl(msg->timeStamp);
-  if(stamp + 1 * cronDAYS < TIME(NULL)) {
+  if (stamp + 1 * cronDAYS < TIME(NULL)) {
+#if DEBUG_CONNECTION
     GE_LOG(ectx,
-     GE_INFO | GE_BULK | GE_USER,
-     _("Message received more than one day old. Dropped.\n"));
+	   GE_INFO | GE_BULK | GE_USER,
+	   _("Message received more than one day old. Dropped.\n"));
+#endif
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }

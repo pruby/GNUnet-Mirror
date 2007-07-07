@@ -261,8 +261,8 @@ static P2P_hello_MESSAGE * createhello() {
       once = 1;
 #if DEBUG_TCP
       GE_LOG(ectx,
-       GE_DEBUG | GE_USER | GE_BULK,
-       "TCP port is 0, will only send using TCP.\n");
+	     GE_DEBUG | GE_USER | GE_BULK,
+	     "TCP port is 0, will only send using TCP.\n");
 #endif
     }
     return NULL; /* TCP transport is configured SEND-only! */
@@ -279,14 +279,14 @@ static P2P_hello_MESSAGE * createhello() {
   				&haddr->ip)) ) ) {
     FREE(msg);
     GE_LOG(ectx,
-     GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-     _("TCP: Could not determine my public IP address.\n"));
+	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+	   _("TCP: Could not determine my public IP address.\n"));
     return NULL;
   }
   GE_LOG(ectx,
-   GE_INFO | GE_USER | GE_BULK,
-   "TCP uses IP address %u.%u.%u.%u.\n",
-   PRIP(ntohl(*(int*)&haddr->ip)));
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "TCP uses IP address %u.%u.%u.%u.\n",
+	 PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

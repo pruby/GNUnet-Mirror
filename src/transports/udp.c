@@ -294,9 +294,9 @@ static P2P_hello_MESSAGE * createhello() {
     return NULL;
   }
   GE_LOG(ectx,
-   GE_INFO | GE_USER | GE_BULK,
-   "UDP uses IP address %u.%u.%u.%u.\n",
-   PRIP(ntohl(*(int*)&haddr->ip)));
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "UDP uses IP address %u.%u.%u.%u.\n",
+	 PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
