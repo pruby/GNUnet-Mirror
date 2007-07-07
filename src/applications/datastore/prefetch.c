@@ -91,11 +91,11 @@ static void * rcbAcquire(void * unused) {
   int load;
   while (doneSignal == NO) {
     sq->iterateMigrationOrder(&acquire,
-  		      NULL);
+			      NULL);
     /* sleep here - otherwise we may start looping immediately
        if there is no content in the DB! */
     load = os_cpu_get_load(ectx,
-  		   cfg);
+			   cfg);
     if (load < 10)
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)

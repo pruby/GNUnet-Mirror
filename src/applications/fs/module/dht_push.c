@@ -91,26 +91,28 @@ static int push_callback(const HashCode512 * key,
   if (dht == NULL)
     return SYSERR;
   dht->put(key,
-     ntohl(value->type),
-     ntohl(value->size) - sizeof(Datastore_Value),
-     ntohll(value->expirationTime),
-     (const char*) &value[1]);
+	   ntohl(value->type),
+	   ntohl(value->size) - sizeof(Datastore_Value),
+	   ntohll(value->expirationTime),
+	   (const char*) &value[1]);
   if (stats != NULL)
     stats->change(stat_push_count, 1);
+  if (dht == NULL)
+    return SYSERR;
   return OK;
 }
 
 static void * push_thread(void * cls) {
   while ( (dht != NULL) &&
-    (sqstore != NULL) ) {
+	  (sqstore != NULL) ) {
     if (total == 0)
       total = 1;
     total = sqstore->iterateNonAnonymous(0,
-  				 YES,
-  				 &push_callback,
-  				 NULL);
+					 YES,
+					 &push_callback,
+					 NULL);
     if ( (dht != NULL) &&
-   (total == 0) )
+	 (total == 0) )
       PTHREAD_SLEEP(15 * cronMINUTES);
   }
   return NULL;
