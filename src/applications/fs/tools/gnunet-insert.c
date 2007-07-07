@@ -231,7 +231,7 @@ static void * printstatus(void * ctx,
        : (double) (event->data.UploadCompleted.total
   		 / 1024.0 * cronSECONDS / delta));
     }
-    fstring = ECRS_uriToString(event->data.UploadCompleted.uri);  
+    fstring = ECRS_uriToString(event->data.UploadCompleted.uri);
     printf(_("File `%s' has URI: %s\n"),
      event->data.UploadCompleted.filename,
      fstring);
@@ -376,7 +376,7 @@ int main(int argc,
     char * ex;
     char * dirname;
     char * fname;
-  
+
     l = EXTRACTOR_loadDefaultLibraries();
     ex = NULL;
     GC_get_configuration_value_string(cfg,

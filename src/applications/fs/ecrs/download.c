@@ -1288,7 +1288,7 @@ static cron_t processRequests(RequestManager * rm) {
   issueRequest(rm, j);
   delta = (rm->requestList[j]->lastTimeout - now) + TTL_DECREMENT;
   pending++;
-      } else {  
+      } else {
   delta = 0;
       }
     } else {

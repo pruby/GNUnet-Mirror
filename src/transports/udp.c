@@ -495,7 +495,7 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
          unsigned int * sa_len) {
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   struct sockaddr_in * serverAddr;
-  
+
   *sa_len = sizeof(struct sockaddr_in);
   serverAddr = MALLOC(sizeof(struct sockaddr_in));
   *sa = serverAddr;

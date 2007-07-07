@@ -116,7 +116,7 @@ static int stat_ciphertextPingSent;
 
 /**
  * We received a PING message, send the PONG reply.
- */  
+ */
 static int pingReceived(const PeerIdentity * sender,
   		const MESSAGE_HEADER * msg) {
   const P2P_pingpong_MESSAGE * pmsg;
@@ -144,7 +144,7 @@ static int pingReceived(const PeerIdentity * sender,
 #if DEBUG_PINGPONG
   EncName enc;
 
-  hash2enc(&sender->hashPubKey, 
+  hash2enc(&sender->hashPubKey,
      &enc);
   GE_LOG(ectx,
    GE_DEBUG | GE_REQUEST | GE_USER,
@@ -182,7 +182,7 @@ static int sendPlaintext(const PeerIdentity * peer,
 /**
  * We received a PING message, send the PONG reply and notify the
  * connection module that the session is still life.
- */  
+ */
 static int plaintextPingReceived(const PeerIdentity * sender,
   			 const MESSAGE_HEADER * hmsg,
   			 TSession * tsession) {
@@ -213,7 +213,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   }
 
 #if DEBUG_PINGPONG
-  hash2enc(&sender->hashPubKey, 
+  hash2enc(&sender->hashPubKey,
      &enc);
   GE_LOG(ectx,
    GE_DEBUG | GE_REQUEST | GE_USER,
@@ -238,12 +238,12 @@ static int plaintextPingReceived(const PeerIdentity * sender,
     if (stats != NULL)
       stats->change(stat_plaintextPongFailed, 1);
   }
-  return ret;    
+  return ret;
 }
 
 /**
  * Handler for a pong.
- */   
+ */
 static int pongReceived(const PeerIdentity * sender,
   		const MESSAGE_HEADER * msg) {
   int i;
@@ -313,7 +313,7 @@ static int pongReceived(const PeerIdentity * sender,
 
 /**
  * Handler for a pong.
- */   
+ */
 static int plaintextPongReceived(const PeerIdentity * sender,
   			 const MESSAGE_HEADER * msg,
   			 TSession * session) {

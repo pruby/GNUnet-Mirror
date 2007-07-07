@@ -186,7 +186,7 @@ typedef struct {
   PublicKey owner;
   int hops;
 } transit_route;
-  
+
 static route_info *route_store = NULL;
 static int route_entries = 0;
 static int route_capacity = 0;
@@ -241,7 +241,7 @@ static int isEqualP(const PublicKey *first, const PublicKey *second) {
   int i;
   int ln = maxi(first->sizen, second->sizen);
   int sn = mini(first->sizen, second->sizen);
-  
+
   /* compare common mode modulus */
   if (memcmp( (first->key)+((first->sizen)-sn), (second->key)+((second->sizen)-sn), sn) != 0)
   	return NO;
@@ -464,7 +464,7 @@ static void id2net(struct in6_addr* buf, const PeerIdentity* them) {
   buf->s6_addr16[0] = htons(0xfd00  + a);
   buf->s6_addr16[1] = htons(b * 256 + c);
   buf->s6_addr16[2] = htons(d * 256 + e);
-  
+
   /* IPv6 /48 subnet number is zero */
   buf->s6_addr16[3] = 0;
 
@@ -562,7 +562,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
  */
 
   /* Bring interface up, like system("sudo ifconfig %s up"); */
-  
+
   /* not needed, we already have the iface name ... strncpy(ifr.ifr_name, name, IFNAMSIZ); */
   if (ioctl(admin_fd, SIOCGIFFLAGS, &ifr) < 0) {
   	GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot get socket flags for gnu%d because %s\n"), id, strerror(errno));
@@ -572,7 +572,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
   		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot set socket flags for gnu%d because %s\n"), id, strerror(errno));
   	}
   }
-  
+
   /* Seems to go better with lower mtu, aka system("sudo ifconfig %s mtu 1280") */
   ifr.ifr_mtu = 1280;
   if (ioctl(admin_fd, SIOCSIFMTU, &ifr) < 0) {
@@ -855,7 +855,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const MESSAGE_HEADER * gp) 
           for (i = 0; i < entries1; i++) {
                   if (isEqual(sender, &((store1+i)->peer))) {
   			fd = ((store1+i)->fd);
-  
+
   			(store1+i)->active = YES;
 
   			/* We are only allowed one call to write() per packet.
@@ -1335,7 +1335,7 @@ static void clientExitHandler(struct ClientHandle * c) {
 static int makeNonblocking(int handle) {
 #if MINGW
   u_long mode;
-  
+
   mode = 1;
   if (ioctlsocket(handle,
   	  FIONBIO,
@@ -1394,7 +1394,7 @@ int initialize_module_vpn(CoreAPIForApplication * capi) {
   /* system("sudo setpcaps cap_net_admin+eip `pidof gnunetd`"); */
 
   admin_fd = socket(AF_INET6, SOCK_DGRAM, 0);
-  
+
   GE_LOG(ectx, GE_DEBUG | GE_DEVELOPER | GE_REQUEST, _("`%s' initialising RFC4913 module  %d and %d\n"), "template", CS_PROTO_MAX_USED, P2P_PROTO_MAX_USED);
   GE_LOG(ectx, GE_DEBUG | GE_DEVELOPER | GE_REQUEST, _("RFC4193 my First 4 hex digits of host id are %x\n"), capi->myIdentity->hashPubKey.bits[0]);
 

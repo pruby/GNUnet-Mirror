@@ -212,7 +212,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
       &hc,
       sqc);
       freePrivateKey(pk);
-    }  
+    }
 #if DEBUG_SEARCH
     GE_LOG(ectx,
      GE_DEBUG | GE_REQUEST | GE_USER,
@@ -369,7 +369,7 @@ static int receiveReplies(const HashCode512 * key,
   EncName enc;
 #endif
   int j;
-  
+
   if (size < sizeof(KBlock))
     return SYSERR;
   kb = MALLOC(size);
@@ -429,7 +429,7 @@ static int receiveReplies(const HashCode512 * key,
       }
       case N_BLOCK: {
   const NBlock * nb;
-  
+
   if (size < sizeof(NBlock))
     return SYSERR;
   nb = (const NBlock*) &value[1];
@@ -441,7 +441,7 @@ static int receiveReplies(const HashCode512 * key,
       case KN_BLOCK:  {
   KNBlock * kb;
   int ret;
-  
+
   if (size < sizeof(KNBlock))
     return SYSERR;
   kb = MALLOC(size);
@@ -463,7 +463,7 @@ static int receiveReplies(const HashCode512 * key,
   TIME_T now;
   HashCode512 updateId;
   URI updateURI;
-  
+
   if (size < sizeof(SBlock))
     return SYSERR;
   sb = MALLOC(size);

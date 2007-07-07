@@ -95,7 +95,7 @@ URITRACK_getState(struct GE_Context * ectx,
   s = getDBName(cfg);
   if (NO == disk_file_test(ectx,
   		   s))
-    return URITRACK_FRESH;  	     
+    return URITRACK_FRESH;  	
   size = getDBSize(cfg);
   fd = disk_file_open(ectx,
   	      s,

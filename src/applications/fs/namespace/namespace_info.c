@@ -229,7 +229,7 @@ NS_createNamespace(struct GE_Context * ectx,
   if (ret != NULL) {
     HashCode512 id;
     char * name;
- 
+
     NS_setNamespaceRoot(ectx,
   		cfg,
   		ret);

@@ -194,7 +194,7 @@ getLogFileName(struct GE_Context * fctx,
 
   /* Remove special chars */
   disk_filename_canonicalize(date);
-  
+
   size = strlen(name) + 82;
   ret = MALLOC(size);
   SNPRINTF(ret,
@@ -255,8 +255,8 @@ filelogger(void * cls,
       AllocConsole();
       SetConsoleTitle(_("GNUnet error log"));
     }
-#endif  
-  
+#endif
+
   if (fctx->logdate) {
     ret = fprintf(fctx->handle,
   	  "%s %s: %s",

@@ -239,7 +239,7 @@ static void run_menu(struct GNS_Context * ctx,
   items = MALLOC(sizeof(DIALOG_LISTITEM) * i);
   i = 0;
   msel = -1;
-  
+
   while (val->String.legalRange[i] != NULL) {	
     items[i].name = "";
     items[i].text = val->String.legalRange[i];
@@ -307,7 +307,7 @@ static void run_menu(struct GNS_Context * ctx,
     tlen += strlen(val->String.legalRange[i]) + 1;
     items[i].help = "";
     items[i].state = 0;
-  
+
     tmp = val->String.val;
     while (NULL != (tmp = strstr(tmp,
   			       val->String.legalRange[i]))) {

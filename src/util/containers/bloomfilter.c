@@ -158,7 +158,7 @@ static void incrementBit(char * bitArray,
   setBit(bitArray, bitIdx);
   if (fd == -1)
     return;
-  /* Update the counter file on disk */  
+  /* Update the counter file on disk */
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
 
@@ -210,7 +210,7 @@ static void decrementBit(char * bitArray,
   unsigned int low;
   unsigned int targetLoc;
 
-  if (fd == -1) 
+  if (fd == -1)
     return; /* cannot decrement! */
   GE_ASSERT(NULL, fd != -1);
   /* Each char slot in the counter file holds two 4 bit counters */
@@ -219,10 +219,10 @@ static void decrementBit(char * bitArray,
   lseek(fd, fileSlot, SEEK_SET);
   value = 0;
   READ(fd, &value, 1);
-  
+
   low  = value & 0xF;
   high = (value & 0xF0) >> 4;
-  
+
   /* decrement, but once we have reached the max, never go back! */
   if (targetLoc == 0) {
     if ( (low > 0) && (low < 0xF) )
@@ -440,7 +440,7 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
     if (-1 == bf->fd) {
       FREE(bf);
       return NULL;
-    } 
+    }
     bf->filename = STRDUP(filename);
   } else {
     bf->fd = -1;
@@ -461,7 +461,7 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
     pos = 0;
     while (pos < size*8) {
       int res;
-      
+
       res = READ(bf->fd,
   	 rbuff,
   	 BUFFSIZE);
@@ -495,7 +495,7 @@ void freeBloomfilter(Bloomfilter * bf) {
   if (NULL == bf)
     return;
   MUTEX_DESTROY(bf->lock);
-  if (bf->fd != -1) 
+  if (bf->fd != -1)
     disk_file_close(bf->ectx,
   	    bf->filename,
   	    bf->fd);
@@ -517,7 +517,7 @@ void resetBloomfilter(Bloomfilter * bf) {
   memset(bf->bitArray,
    0,
    bf->bitArraySize);
-  if (bf->fd != -1) 
+  if (bf->fd != -1)
     makeEmptyFile(bf->fd,
   	  bf->bitArraySize * 4);
   MUTEX_UNLOCK(bf->lock);
@@ -615,7 +615,7 @@ void resizeBloomfilter(Bloomfilter * bf,
   memset(bf->bitArray,
    0,
    bf->bitArraySize);
-  if (bf->fd != -1) 
+  if (bf->fd != -1)
     makeEmptyFile(bf->fd,
   	  bf->bitArraySize * 4);
   e = iterator(iterator_arg);

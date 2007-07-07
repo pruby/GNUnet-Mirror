@@ -288,7 +288,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
 #if DEBUG_TOPOLOGY
     hash2enc(&hi->hashPubKey,
        &enc);
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Sending ping to `%s' to prevent connection timeout.\n",
 	   (char*)&enc);
@@ -323,7 +323,7 @@ static void cronCheckLiveness(void * unused) {
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
 	continue;
-      if (0 == coreAPI->isSlotUsed(i))  
+      if (0 == coreAPI->isSlotUsed(i))
 	scanForHosts(i);
     }
   }

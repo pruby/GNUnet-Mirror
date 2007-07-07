@@ -544,7 +544,7 @@ static int iterateHelper(unsigned int type,
     return SYSERR;
 
   MUTEX_LOCK(dbhI.DATABASE_Lock_);
-  mysql_thread_init();    
+  mysql_thread_init();
   mysql_query(dbhI.dbf,
         "SET AUTOCOMMIT = 0");
   mysql_query(dbhI.dbf,
@@ -571,7 +571,7 @@ static int iterateHelper(unsigned int type,
     LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
         "mysql_query",
         &dbhI);
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
@@ -586,7 +586,7 @@ static int iterateHelper(unsigned int type,
   		  sql_row,
   		  &dbhI);
     if (datum == NULL) {
-      mysql_thread_end();    
+      mysql_thread_end();
       MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
       iclose(&dbhI);
       return count;
@@ -607,13 +607,13 @@ static int iterateHelper(unsigned int type,
         "mysql_query",
         &dbhI);
     mysql_free_result(sql_res);
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
   }  	
   mysql_free_result(sql_res);
-  mysql_thread_end();    
+  mysql_thread_end();
   MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
   iclose(&dbhI);
   return count;
@@ -776,7 +776,7 @@ static int get(const HashCode512 * query,
    type);
 #endif
   MUTEX_LOCK(dbh->DATABASE_Lock_);
-  mysql_thread_init();    
+  mysql_thread_init();
   if (type != 0) {
     if (iter == NULL)
       stmt = dbh->selectsc;
@@ -801,13 +801,13 @@ static int get(const HashCode512 * query,
      "mysql_stmt_result_metadata",
      __FILE__, __LINE__,
      mysql_stmt_error(stmt));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
   if (7 != mysql_num_fields(sql_res)) {
     GE_BREAK(ectx, 0);
-    mysql_thread_end();       
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -819,7 +819,7 @@ static int get(const HashCode512 * query,
      "mysql_stmt_bind_param",
      __FILE__, __LINE__,
      mysql_stmt_error(stmt));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -830,7 +830,7 @@ static int get(const HashCode512 * query,
      "mysql_stmt_execute",
      __FILE__, __LINE__,
      mysql_stmt_error(stmt));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -856,7 +856,7 @@ static int get(const HashCode512 * query,
      "mysql_stmt_bind_result",
      __FILE__, __LINE__,
      mysql_stmt_error(stmt));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
@@ -868,7 +868,7 @@ static int get(const HashCode512 * query,
      "mysql_stmt_store_result",
      __FILE__, __LINE__,
      mysql_stmt_error(stmt));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
@@ -894,7 +894,7 @@ static int get(const HashCode512 * query,
   LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", dbh);
 
       FREE(datum);
-      mysql_thread_end();    
+      mysql_thread_end();
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       return count;
     }
@@ -930,7 +930,7 @@ static int get(const HashCode512 * query,
   }
   mysql_free_result(sql_res);
   FREE(datum);
-  mysql_thread_end();    
+  mysql_thread_end();
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
 
 #if DEBUG_MYSQL
@@ -979,7 +979,7 @@ static int put(const HashCode512 * key,
     return SYSERR;
   }
   MUTEX_LOCK(dbh->DATABASE_Lock_);
-  mysql_thread_init();    
+  mysql_thread_init();
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   hashSize = sizeof(HashCode512);
   size = ntohl(value->size);
@@ -1016,7 +1016,7 @@ static int put(const HashCode512 * key,
      "mysql_stmt_bind_param",
      __FILE__, __LINE__,
      mysql_stmt_error(dbh->insert));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -1028,11 +1028,11 @@ static int put(const HashCode512 * key,
      "mysql_stmt_execute",
      __FILE__, __LINE__,
      mysql_stmt_error(dbh->insert));
-    mysql_thread_end();    
+    mysql_thread_end();
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
-  mysql_thread_end();    
+  mysql_thread_end();
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
   MUTEX_LOCK(lock);
   content_size += ntohl(value->size);
@@ -1095,7 +1095,7 @@ static int del(const HashCode512 * key,
        "mysql_stmt_result_metadata",
        __FILE__, __LINE__,
        mysql_stmt_error(stmt));
-      mysql_thread_end();    
+      mysql_thread_end();
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       return SYSERR;
     }
@@ -1112,7 +1112,7 @@ static int del(const HashCode512 * key,
        "mysql_stmt_bind_param",
        __FILE__, __LINE__,
        mysql_stmt_error(stmt));
-      mysql_thread_end();      
+      mysql_thread_end();
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       return SYSERR;
     }
@@ -1148,7 +1148,7 @@ static int del(const HashCode512 * key,
        "mysql_stmt_bind_result",
        __FILE__, __LINE__,
        mysql_stmt_error(stmt));
-      mysql_thread_end();      
+      mysql_thread_end();
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       FREE(svalue);
       return SYSERR;
@@ -1160,7 +1160,7 @@ static int del(const HashCode512 * key,
        "mysql_stmt_store_result",
        __FILE__, __LINE__,
        mysql_stmt_error(stmt));
-      mysql_thread_end();    
+      mysql_thread_end();
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       FREE(svalue);
       return SYSERR;
@@ -1427,7 +1427,7 @@ provide_module_sqstore_mysql_embedded(CoreAPIForApplication * capi) {
     fclose(fp);
   }
   dbh = MALLOC(sizeof(mysqlHandle));
-  dbh->cnffile = cnffile;  
+  dbh->cnffile = cnffile;
   if (OK != iopen(dbh, YES)) {
     FREE(cnffile);
     FREE(dbh);

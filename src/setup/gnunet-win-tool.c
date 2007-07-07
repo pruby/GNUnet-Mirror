@@ -174,7 +174,7 @@ void PatchSys(char *szFn)
   unsigned long lMem;
   char *pMem;
   int iCrc;
-  
+
   pFile = fopen(szFn, "r+b");
   if (!pFile)
   {

@@ -287,7 +287,7 @@ static void ageRTD(void * unused) {
       if (stats != NULL)
   stats->change(stat_response_count, rpos->responseCount / 2);
       rpos->responseCount = rpos->responseCount / 2;
-      if (rpos->responseCount == 0) {  
+      if (rpos->responseCount == 0) {
   if (rprev == NULL)
     pos->responseList = rpos->next;
   else
@@ -706,7 +706,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
       if (rankingSum == 0)
   break;
       sel = weak_randomi64(rankingSum);
-      pos = 0;  
+      pos = 0;
       for (j=0;j<8*BITMAP_SIZE;j++) {
   pos += qr->rankings[j];
   if (pos > sel) {
@@ -997,8 +997,8 @@ static int addToSlot(int mode,
       for (i=0;i<ite->hostsWaiting;i++)
   if (ite->destination[i] == sender)
     return SYSERR;
-      if (ite->hostsWaiting >= MAX_HOSTS_WAITING) 
-  resetDestinations(ite);      
+      if (ite->hostsWaiting >= MAX_HOSTS_WAITING)
+  resetDestinations(ite);
     } else {
       ite->successful_local_lookup_in_delay_loop = NO;
       /* different request, flush pending queues */
@@ -1009,7 +1009,7 @@ static int addToSlot(int mode,
       ite->priority = priority;
     }
   } else { /* GROW mode */
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
         equalsHashCode512(query,
   			&ite->primaryKey));
     /* extend lifetime */
@@ -1539,7 +1539,7 @@ static int execQuery(const PeerIdentity * sender,
   GE_BREAK(NULL, 0);
   FREE(cls.values[perm[i]]);
   continue;
-      } 
+      }
       if ( (i < max) &&
      (sender != NULL) &&
      (YES == queueReply(sender,
@@ -1565,10 +1565,10 @@ static int execQuery(const PeerIdentity * sender,
        cls.valueCount,
        0);
   MUTEX_UNLOCK(lookup_exclusion);
-  if (doForward) 
+  if (doForward)
     forwardQuery(query,
   	 target,
-  	 sender);  
+  	 sender);
   change_pid_rc(senderID, -1);
   return doForward;
 }
@@ -1624,7 +1624,7 @@ static int useContent(const PeerIdentity * host,
    &enc2,
    (host != NULL) ? (const char*)&enc : "myself");
 #endif
-  
+
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   ite->successful_local_lookup_in_delay_loop = NO;
   size = ntohs(msg->header.size) - sizeof(P2P_gap_reply_MESSAGE);
@@ -2084,7 +2084,7 @@ static int handleQuery(const PeerIdentity * sender,
   ttl = ntohl(qmsg->ttl);
   if (ttl < 0)
     ttl = 0;
-  execQuery(sender,  
+  execQuery(sender,
       NULL,
       prio,
       policy,

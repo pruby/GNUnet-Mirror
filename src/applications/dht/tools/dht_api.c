@@ -191,7 +191,7 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
   connection_destroy(sock);
   return info.total;
 }
-  
+
 /**
  * Perform a synchronous put operation.   The peer does not have
  * to be part of the table!

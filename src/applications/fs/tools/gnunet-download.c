@@ -348,7 +348,7 @@ int main(int argc,
       else
   printf(_("Did not find any files in directory `%s'\n"),
          argv[i]);
-    }  
+    }
   } else {
     meta = ECRS_createMetaData();
     dl = FSUI_startDownload(ctx,

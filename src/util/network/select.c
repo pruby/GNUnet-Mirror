@@ -452,7 +452,7 @@ static void * selectThread(void * ctx) {
   int s;
   void * sctx;
   SocketHandle * sock;
-  Session * session;  
+  Session * session;
   size_t size;
   int old_errno;
 
@@ -603,7 +603,7 @@ static void * selectThread(void * ctx) {
   	 sh->sessionArrayLength + 4);
     sh->sessions[sh->sessionCount++] = session;
   }
-      }      
+      }
     } else {  /* is_udp == YES */
       if ( (sh->listen_sock != NULL) &&
      (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
@@ -611,7 +611,7 @@ static void * selectThread(void * ctx) {
   int udp_sock;
   int error;
   socklen_t optlen;
-  
+
   udp_sock = sh->listen_sock->handle;
   lenOfIncomingAddr = sh->max_addr_len;
   memset(clientAddr,
@@ -685,7 +685,7 @@ static void * selectThread(void * ctx) {
     } else {
       /* validate msg format! */
       const MESSAGE_HEADER * hdr;
-  
+
       /* if size < pending, set pending to size */
       if (size < pending)
         pending = size;
@@ -694,7 +694,7 @@ static void * selectThread(void * ctx) {
   	 (size >= sizeof(MESSAGE_HEADER)) &&
   	 (ntohs(hdr->size) == size) ) {
         void * sctx;
-  
+
         MUTEX_UNLOCK(sh->lock);
         sctx = sh->ah(sh->ah_cls,
   		    sh,
@@ -794,7 +794,7 @@ static int makePipeNonblocking(struct GE_Context * ectx,
   		    int handle) {
 #if MINGW
   DWORD mode;
-  
+
   mode = PIPE_NOWAIT;
 
   if (SetNamedPipeHandleState((HANDLE) handle, &mode, NULL, NULL))
@@ -1061,7 +1061,7 @@ int select_update_closure(struct SelectHandle * sh,
   		  struct SocketHandle * sock,
   		  void * old_sock_ctx,
   		  void * new_sock_ctx) {
-  Session * session;  
+  Session * session;
   int i;
 
   session = NULL;
@@ -1078,7 +1078,7 @@ int select_update_closure(struct SelectHandle * sh,
   GE_ASSERT(NULL,
       session->sock_ctx == old_sock_ctx);
   session->sock_ctx = new_sock_ctx;
-  MUTEX_UNLOCK(sh->lock);  
+  MUTEX_UNLOCK(sh->lock);
   return OK;
 }
 
@@ -1089,7 +1089,7 @@ int select_update_closure(struct SelectHandle * sh,
 int select_connect(struct SelectHandle * sh,
   	   struct SocketHandle * sock,
   	   void * sock_ctx) {
-  Session * session;  
+  Session * session;
 
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
@@ -1120,7 +1120,7 @@ static Session * findSession(struct SelectHandle * sh,
   int i;
 
   for (i=0;i<sh->sessionCount;i++)
-    if (sh->sessions[i]->sock == sock) 
+    if (sh->sessions[i]->sock == sock)
       return sh->sessions[i];
   return NULL;
 }

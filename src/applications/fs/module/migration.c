@@ -101,7 +101,7 @@ struct MigrationRecord {
 static struct MigrationRecord content[MAX_RECORDS];
 
 static struct GE_Context * ectx;
-  
+
 /**
  * Callback method for pushing content into the network.
  * The method chooses either a "recently" deleted block
@@ -175,13 +175,13 @@ activeMigrationCallback(const PeerIdentity * receiver,
   discard_match = content[i].sentCount;
   discard_entry = i;
       }
-    }    
+    }
   }
   if (entry == -1) {
     entry = discard_entry;
     GE_ASSERT(NULL,
         entry != -1);
-    FREENONNULL(content[entry].value);    
+    FREENONNULL(content[entry].value);
     content[entry].value = NULL;
     content[entry].sentCount = 0;
     if (OK != datastore->getRandom(&receiver->hashPubKey,
@@ -197,7 +197,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
        "Migration: random lookup in datastore failed.\n");
 #endif
       return 0;
-    }    
+    }
     if (stats != NULL)
       stats->change(stat_migration_factor, 1);
   }
@@ -206,7 +206,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
     GE_ASSERT(NULL, 0);
     MUTEX_UNLOCK(lock);
     return 0;
-  } 
+  }
   size = sizeof(GapWrapper) + ntohl(value->size) - sizeof(Datastore_Value);
   if (size > padding) {
     MUTEX_UNLOCK(lock);
@@ -223,7 +223,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   		    value,
   		    &content[entry].key,
   		    &enc) != OK) {
-      FREENONNULL(value);    
+      FREENONNULL(value);
       content[entry].value = NULL;
       MUTEX_UNLOCK(lock);
       return 0;
@@ -273,8 +273,8 @@ activeMigrationCallback(const PeerIdentity * receiver,
      "gap's tryMigrate returned %u\n",
      ret);
 #endif
-    if (ret != 0) 
-      content[entry].receiverIndices[content[entry].sentCount++] = index;    
+    if (ret != 0)
+      content[entry].receiverIndices[content[entry].sentCount++] = index;
   }
   MUTEX_UNLOCK(lock);
   if ( (ret > 0)&&

@@ -529,7 +529,7 @@ static int exchangeKey(const PeerIdentity * receiver,
   if (stats != NULL) {
     stats->change(stat_pingSent, 1);
     stats->change(stat_skeySent, 1);
-    /* pong, if present, is accounted for 
+    /* pong, if present, is accounted for
        by caller */
   }
   if (hello != NULL) {

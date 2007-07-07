@@ -440,7 +440,7 @@ static int server_main(pid_t bash_pid) {
     while (SOCKET_ADD_ARGUMENT == readSocket(&buf, &len)) {
       GROW(args, argc, argc+1);
       args[argc-1] = MALLOC(len+1);
-      memcpy(args[argc-1], buf, len);  
+      memcpy(args[argc-1], buf, len);
       args[argc-1][len] = '\0';
       FREE(buf);
       buf = NULL;

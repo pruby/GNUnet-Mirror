@@ -322,7 +322,7 @@ static int parseSubspaceURI(struct GE_Context * ectx,
     return SYSERR;
   pos += strlen(ECRS_SUBSPACE_INFIX);
   if ( (slen < pos+sizeof(EncName)+1) ||
-       (! ( (uri[pos+sizeof(EncName)-1] == '/') || 
+       (! ( (uri[pos+sizeof(EncName)-1] == '/') ||
       (uri[pos+sizeof(EncName)-1] == '\\') ) ) )
     return SYSERR;
 
@@ -877,7 +877,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   		  &uri2->data.sks.namespace) &&
   equalsHashCode512(&uri1->data.sks.identifier,
   		  &uri2->data.sks.identifier) )
-  
+
       return YES;
     return NO;
   case ksk:
@@ -906,7 +906,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
          sizeof(unsigned short) +
          sizeof(unsigned short)) != 0)
       return NO;
-    return YES;  
+    return YES;
   default:
     return NO;
   }

@@ -562,7 +562,7 @@ static void considerPeer(const PeerIdentity * sender,
   P2P_hello_MESSAGE * hello;
 
   bucket = findBucketFor(peer);
-  if (bucket == NULL) 
+  if (bucket == NULL)
     return; /* peers[i] == self */
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE)
     checkExpiration(bucket);

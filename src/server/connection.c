@@ -95,7 +95,7 @@
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
- * connectivity goal.  Also, messages that are older than 
+ * connectivity goal.  Also, messages that are older than
  * this value are discarded as too old.
  */
 #define SECONDS_PINGATTEMPT 120
@@ -882,18 +882,18 @@ static int outgoingCheck(unsigned int priority,
   unsigned int delta;
 
   load = os_network_monitor_get_load(load_monitor, Upload);  /* how much free bandwidth do we have? */
-  if (load >= 150) 
-    return SYSERR;              /* => always drop */  
+  if (load >= 150)
+    return SYSERR;              /* => always drop */
   if (load > 100) {
-    if (priority >= EXTREME_PRIORITY) 
+    if (priority >= EXTREME_PRIORITY)
       return OK;                /* allow administrative msgs */
-    else 
-      return SYSERR;            /* but nothing else */    
+    else
+      return SYSERR;            /* but nothing else */
   }
   if (overhead > 50)
     overhead = 50; /* bound */
-  if (load <= overhead) 
-    return OK;     
+  if (load <= overhead)
+    return OK;
   /* Suppose overhead = 50, then:
      Now load in [51, 100].  Between 51% and 100% load:
      at 51% require priority >= 1 = (load-50)^3
@@ -1517,7 +1517,7 @@ static int sendBuffer(BufferEntry * be) {
        everything.  Since we don't want to possibly
        loop forever, give it another shot later;
        so even if "ensureTransportConnected" succeded,
-       abort for now! */   
+       abort for now! */
   }
   if (YES != ret) {
     /* transport's buffer full -- no point in
@@ -2587,7 +2587,7 @@ int checkHeader(const PeerIdentity * sender,
   if (size < sizeof(P2P_PACKET_HEADER)) {
     IF_GELOG(ectx,
 	     GE_WARNING | GE_BULK | GE_DEVELOPER,
-	     hash2enc(&sender->hashPubKey, 
+	     hash2enc(&sender->hashPubKey,
 		      &enc));
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_DEVELOPER,
@@ -2597,10 +2597,10 @@ int checkHeader(const PeerIdentity * sender,
   }
   if (stats != NULL)
     stats->change(stat_received, size);
-  hash2enc(&sender->hashPubKey, 
+  hash2enc(&sender->hashPubKey,
      &enc);
-  hash(&msg->sequenceNumber, 
-       size - sizeof(HashCode512), 
+  hash(&msg->sequenceNumber,
+       size - sizeof(HashCode512),
        &hc);
   if (equalsHashCode512(&hc,
   		&msg->hash) &&
@@ -2612,12 +2612,12 @@ int checkHeader(const PeerIdentity * sender,
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if ( (be == NULL) ||
-       (be->status == STAT_DOWN) || 
+       (be->status == STAT_DOWN) ||
        (be->status == STAT_SETKEY_SENT) ) {
 #if DEBUG_CONNECTION
     IF_GELOG(ectx,
 	     GE_INFO | GE_BULK | GE_DEVELOPER,
-	     hash2enc(&sender->hashPubKey, 
+	     hash2enc(&sender->hashPubKey,
 		      &enc));
     GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_DEVELOPER,
@@ -2638,12 +2638,12 @@ int checkHeader(const PeerIdentity * sender,
 		     (const INITVECTOR *) &msg->hash, /* IV */
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
-  if (! ( (res != OK) && 
+  if (! ( (res != OK) &&
 	  equalsHashCode512(&hc, &msg->hash) ) ) {
 #if DEBUG_CONNECTION
     IF_GELOG(ectx,
 	     GE_INFO | GE_BULK | GE_DEVELOPER,
-	     hash2enc(&sender->hashPubKey, 
+	     hash2enc(&sender->hashPubKey,
 		      &enc));
     GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_DEVELOPER,
@@ -2879,7 +2879,7 @@ int isSlotUsed(int slot) {
  * @param time updated with the time
  * @return SYSERR if we are not connected to the peer at the moment
  */
-int getLastActivityOf(const PeerIdentity * peer, 
+int getLastActivityOf(const PeerIdentity * peer,
   	      cron_t * time) {
   int ret;
   BufferEntry *be;
@@ -3513,8 +3513,8 @@ void unicast(const PeerIdentity * receiver,
   if ( (getBandwidthAssignedTo(receiver, NULL, NULL) != OK) &&
        (identity->isBlacklistedStrict(receiver) == NO) )
     session->tryConnect(receiver);
-  if (msg == NULL) 
-    return; 
+  if (msg == NULL)
+    return;
   len = ntohs(msg->size);
   if (len == 0) {
     GE_LOG(ectx,

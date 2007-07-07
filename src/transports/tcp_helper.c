@@ -121,7 +121,7 @@ static struct TCPSession * sessions;
 static void freeTCPSession(TCPSession * tcpsession) {
   TCPSession * pos;
   TCPSession * prev;
-  
+
   MUTEX_DESTROY(tcpsession->lock);
   FREENONNULL(tcpsession->accept_addr);
   pos = sessions;
@@ -203,7 +203,7 @@ static int tcpAssociate(TSession * tsession) {
   		  tcpSession->sock,
   		  TCP_TIMEOUT);
   tcpSession->users++;
-  
+
   MUTEX_UNLOCK(tcpSession->lock);
   return OK;
 }
@@ -252,7 +252,7 @@ static int select_message_handler(void * mh_cls,
     tcpSession->expectingWelcome = NO;
     tcpSession->sender = welcome->clientIdentity;
     tsession->peer = welcome->clientIdentity;
-    if (tcpSession->accept_addr != NULL) 
+    if (tcpSession->accept_addr != NULL)
       setIPaddressFromPID(&welcome->clientIdentity,
   		  tcpSession->accept_addr,
   		  tcpSession->addr_len);
@@ -280,7 +280,7 @@ static int select_message_handler(void * mh_cls,
     MUTEX_UNLOCK(tcplock);
     return SYSERR;
   }	
-  if (pos->in_select) 
+  if (pos->in_select)
     select_disconnect(sh,
   		    pos->sock);
   pos->in_select = YES;
@@ -295,15 +295,15 @@ static int select_message_handler(void * mh_cls,
   tcpSession->accept_addr = NULL;
   tcpSession->addr_len = 0;
   tcpDisconnect(tsession);
-  tcpSession->in_select = NO; 
+  tcpSession->in_select = NO;
   freeTCPSession(tcpSession);
   tcpSession = pos;
   tsession = pos->tsession;
   MUTEX_UNLOCK(pos->lock);
   break;
-      }    
+      }
       pos = pos->next;
-    }  
+    }
     MUTEX_UNLOCK(tcplock);
 
   } else {
@@ -366,7 +366,7 @@ static void * select_accept_handler(void * ah_cls,
   tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 0;
   tcpSession->in_select = YES;
-  
+
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
@@ -381,7 +381,7 @@ static void * select_accept_handler(void * ah_cls,
   } else {
     GE_BREAK(NULL, 0);
     tcpSession->addr_len = 0;
-    tcpSession->accept_addr = NULL; 
+    tcpSession->accept_addr = NULL;
   }
   MUTEX_LOCK(tcplock);
   tcpSession->next = sessions;
@@ -445,7 +445,7 @@ static int tcpSend(TSession * tsession,
   if (tcpSession->in_select == NO) {
 #if DEBUG_TCP
     EncName enc;
-    
+
     IF_GELOG(ectx,
        GE_DEBUG | GE_DEVELOPER | GE_BULK,
        hash2enc(&tcpSession->sender.hashPubKey,

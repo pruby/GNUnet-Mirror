@@ -249,7 +249,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
     void * addr;
     unsigned int addr_len;
     int have_addr;
-    
+
     have_addr = transport->helloToAddress(xhello,
   				  &addr,
   				  &addr_len);
@@ -260,7 +260,7 @@ static void testPING(const P2P_hello_MESSAGE * xhello,
   			     addr_len,
   			     YES);
       FREE(addr);
-    }    
+    }
     fprintf(stderr,
       _("\nContacting `%s'."),
       str);
@@ -396,10 +396,10 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
     1, &gnunet_getopt_configure_set_option, "GNUNETD:TRANSPORTS" },
   { 'T', "timeout", "MS",
     gettext_noop("specifies after how many MS to time-out"),
-    1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:TIMEOUT" },  
+    1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:TIMEOUT" },
   { 'u', "user", "LOGIN",
     gettext_noop("run as user LOGIN"),
-    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },  
+    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   { 'X', "Xrepeat", "X",

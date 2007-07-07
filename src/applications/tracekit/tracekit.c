@@ -109,7 +109,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   	 idx);
     continue; /* discard */
   }
-  
+
   csReply = MALLOC(sizeof(CS_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity));
   /* build msg */
   csReply->header.size

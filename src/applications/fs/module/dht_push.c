@@ -33,7 +33,7 @@
 /**
  * Disable DHT pushing?  Set to 1 to essentially disable
  * the code in this file.  Used to study its performance
- * impact.  Useful also for users that do not want to 
+ * impact.  Useful also for users that do not want to
  * use non-anonymous file-sharing (since it eliminates
  * some of the processing cost which would otherwise go
  * to waste).

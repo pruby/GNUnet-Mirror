@@ -223,11 +223,11 @@ static sqliteHandle * getDBHandle() {
   CHECK(SQLITE_OK ==
   sqlite3_exec(ret->dbh,
   	     "PRAGMA page_size=4092", NULL, NULL, ENULL));
-  
+
   CHECK(SQLITE_OK ==
   sqlite3_busy_timeout(ret->dbh,
   		     BUSY_TIMEOUT_MS));
-  
+
 
   /* We have to do it here, because otherwise precompiling SQL might fail */
   CHECK(SQLITE_OK ==
@@ -466,7 +466,7 @@ static unsigned long long getStat(sqliteHandle * handle,
     }
   }
   sqlite3_finalize(stmt);
-  if (i == SQLITE_BUSY) 
+  if (i == SQLITE_BUSY)
     return SYSERR;
   if (i != SQLITE_OK) {
     LOG_SQLITE(handle,
@@ -995,7 +995,7 @@ static int get(const HashCode512 * key,
   		   type);
   else
     ret = SQLITE_OK;
-    
+
   if (key && (ret == SQLITE_OK)) {
     ret = sqlite3_bind_blob(stmt,
   		    bind,
@@ -1009,7 +1009,7 @@ static int get(const HashCode512 * key,
       if (iter != NULL) {
   datum = assembleDatum(handle,
   		      stmt);
-  
+
   if (datum == NULL)
     continue;
   if ( (key != NULL) &&
@@ -1030,7 +1030,7 @@ static int get(const HashCode512 * key,
   if (SYSERR == iter(&datum->key,
   		   &datum->value,
   		   closure) ) {
-  
+
     count = SYSERR;
     FREE(datum);
     ret = SQLITE_DONE;
@@ -1122,13 +1122,13 @@ static int put(const HashCode512 * key,
   n = sqlite3_step(stmt);
   if (n != SQLITE_DONE) {
     if (n == SQLITE_BUSY) {
-      sqlite3_reset(stmt);    
+      sqlite3_reset(stmt);
       return NO;
     }
     LOG_SQLITE(dbh,
          GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
          "sqlite_query");
-    sqlite3_reset(stmt);    
+    sqlite3_reset(stmt);
     return SYSERR;
   }
   sqlite3_reset(stmt);
@@ -1209,7 +1209,7 @@ static int del(const HashCode512 * key,
     value = &dvalue->value;
   } else {
     dvalue = NULL;
-  }    
+  }
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   n = sq_prepare(dbh->dbh,
   	 "DELETE FROM gn070 WHERE hash = ? and "
@@ -1321,7 +1321,7 @@ static int update(const HashCode512 * key,
    GE_DEBUG | GE_REQUEST | GE_USER,
    "SQLite: block updated\n");
 #endif
-  if (n == SQLITE_BUSY) 
+  if (n == SQLITE_BUSY)
     return NO;
   return n == SQLITE_OK ? OK : SYSERR;
 }

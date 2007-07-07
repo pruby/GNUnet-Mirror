@@ -79,7 +79,7 @@ static int resolveHostInfo(const PeerIdentity * id,
   hello = identity->identity2Hello(id,
   			   proto,
   			   NO);
-  if (NULL == hello) 
+  if (NULL == hello)
     return OK;
   addr = NULL;
   addr_len = 0;
@@ -91,10 +91,10 @@ static int resolveHostInfo(const PeerIdentity * id,
     info = network_get_ip_as_string(addr,
   			    addr_len,
   			    ! no_resolve);
-    FREE(addr);    
+    FREE(addr);
     addr = NULL;
     FREENONNULL(info);
-  }  
+  }
   return OK;
 }
 
@@ -152,7 +152,7 @@ static int printHostInfo(const PeerIdentity * id,
   			    ! no_resolve);
     FREE(addr);
     addr = NULL;
-  }  
+  }
   if (info == NULL) {
     GE_LOG(ectx,
      GE_DEBUG | GE_BULK | GE_USER,

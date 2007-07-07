@@ -105,7 +105,7 @@ int main(int argc,
   	       cfg,
   	       "test-collection");
   CHECK(NULL == CO_getCollection());
-  
+
   /* END OF TEST CODE */
  FAILURE:
   if (sock != NULL) {

@@ -154,7 +154,7 @@ typedef struct {
   /**
    * Get the network address from a HELLO.
    *
-   * @return OK on success, SYSERR on error 
+   * @return OK on success, SYSERR on error
    */
   int (*helloToAddress)(const P2P_hello_MESSAGE * hello,
 			void ** sa,

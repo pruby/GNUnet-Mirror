@@ -150,7 +150,7 @@ int SEMAPHORE_DOWN_FL(Semaphore * s,
   int ret;
   cron_t start;
   cron_t end;
-  
+
   GE_ASSERT(NULL, s != NULL);
   start = get_time();
   GE_ASSERT(NULL,
@@ -175,7 +175,7 @@ int SEMAPHORE_DOWN_FL(Semaphore * s,
      end - start,
      file,
      line);
-  }  
+  }
   return ret;
 }
 

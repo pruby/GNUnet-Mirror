@@ -552,7 +552,7 @@ int disk_directory_scan(struct GE_Context * ectx,
   closedir(dinfo);
   return SYSERR;
       }
-    }  
+    }
     count++;
   }
   closedir(dinfo);
@@ -750,16 +750,16 @@ int disk_file_copy(struct GE_Context * ectx,
 void disk_filename_canonicalize(char *fn) {
   char *idx;
   char c;
-  
+
   idx = fn;
   while (*idx) {
     c = *idx;
-    
+
     if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' ||
       c == '"' || c == '<' || c == '>' || c == '|') {
         *idx = '_';
     }
-    
+
     idx++;
   }
 }

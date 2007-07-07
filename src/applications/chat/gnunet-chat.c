@@ -107,7 +107,7 @@ static void * receiveThread(void * arg) {
     char timebuf[64];
     time_t timetmp;
     struct tm * tmptr;
-  
+
     time(&timetmp);
     tmptr = localtime(&timetmp);
     strftime(timebuf,

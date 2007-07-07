@@ -116,13 +116,13 @@ int gnunet_testing_start_daemon(unsigned short app_port,
   updatePort(cfg, "UDP6", tra_offset);
   updatePort(cfg, "HTTP", tra_offset);
   updatePort(cfg, "SMTP", tra_offset);
-  GC_set_configuration_value_string(cfg,  
+  GC_set_configuration_value_string(cfg,
   			    NULL,
   			    "PATHS",
   			    "GNUNETD_HOME",
   			    gnunetd_home);
   if (transports != NULL)
-    GC_set_configuration_value_string(cfg,  
+    GC_set_configuration_value_string(cfg,
   			      NULL,
   			      "GNUNETD",
   			      "TRANSPORTS",

@@ -255,7 +255,7 @@ static int checkQuota(sqlite3 * dbh) {
      payload,
      quota);
 #endif
-    sqlite3_reset(dstmt);  
+    sqlite3_reset(dstmt);
   }
   if (err != SQLITE_DONE) {
     GE_LOG(coreAPI->ectx,

@@ -163,7 +163,7 @@ void load_step2setup_gtk(GtkButton * button,
   char * val;
 
   destroyCurrentWindow();
-  curwnd = get_xml("assi_step2");  
+  curwnd = get_xml("assi_step2");
   cls.cmbNIC = lookup_widget("cmbNIC");
   GE_ASSERT(err_ctx, cls.cmbNIC != NULL);
   cls.nic_item_count = 0;
@@ -225,7 +225,7 @@ void load_step3setup_gtk(GtkButton * button,
   entDown = lookup_widget("entDown");
   radGNUnet = lookup_widget("radGNUnet");
   radShare = lookup_widget("radShare");
-  entCPU = lookup_widget("entCPU");  
+  entCPU = lookup_widget("entCPU");
   GC_get_configuration_value_string(editCfg,
   			    "LOAD",
   			    "MAXNETUPBPSTOTAL",
@@ -490,7 +490,7 @@ void on_finish_clickedsetup_gtk (GtkButton * button,
     showErr(_("Unable to change startup process:"),
       STRERROR(errno));
 #endif
-  }  
+  }
 
   if (OK != save_conf())
     return;

@@ -418,7 +418,7 @@ void CO_done() {
   ectx = NULL;
   cfg = NULL;
 }
-  
+
 
 /**
  * Start collection.

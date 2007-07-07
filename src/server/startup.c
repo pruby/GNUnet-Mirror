@@ -63,12 +63,12 @@ void shutdown_gnunetd(struct GC_Configuration * cfg,
     if (sig != SERVICE_CONTROL_STOP)
       {
   SERVICE_STATUS theStat;
-  
+
   /* Init proper shutdown through the SCM */
   if (GNControlService(hService, SERVICE_CONTROL_STOP, &theStat))
     {
       /* Success */
-  
+
       /* The Service Control Manager will call
          gnunetd.c::ServiceCtrlHandler(), which calls
          this function again. We then stop the gnunetd. */
@@ -292,7 +292,7 @@ int checkPermission(struct GE_Context * ectx,
   return OK;
 }
 
-#define CHECK(a,b,c,d,e) if (OK != checkPermission(ectx, cfg, a, b, c, d, e)) return SYSERR;  
+#define CHECK(a,b,c,d,e) if (OK != checkPermission(ectx, cfg, a, b, c, d, e)) return SYSERR;
 
 int checkPermissions(struct GE_Context * ectx,
   	     struct GC_Configuration * cfg) {

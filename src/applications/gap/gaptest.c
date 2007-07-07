@@ -103,7 +103,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   		0, /* anon */
   		0, /* prio */
   		get_time() + 10 * cronMINUTES, /* expire */
-  		&uprogress, 
+  		&uprogress,
   		NULL,
   		&testTerminate,
   		NULL,

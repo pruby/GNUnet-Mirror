@@ -61,8 +61,8 @@ static CoreAPIForTransport * coreAPI;
 static int verifyHello(const P2P_hello_MESSAGE * hello) {
   if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) ) 
-    return SYSERR; /* obviously invalid */  
+       (ntohs(hello->header.type) != p2p_PROTO_hello) )
+    return SYSERR; /* obviously invalid */
   if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
   				      "NAT",
   				      "LIMITED",
@@ -75,7 +75,7 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
       return OK;
     return SYSERR;
   }
-  return OK;  
+  return OK;
 }
 
 /**

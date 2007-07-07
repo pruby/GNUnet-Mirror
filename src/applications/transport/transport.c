@@ -199,8 +199,8 @@ transportConnect(const P2P_hello_MESSAGE * hello) {
   }
   tsession = NULL;
   if (OK != tapis[prot]->connect(hello,
-  			 &tsession)) 
-    return NULL;  
+  			 &tsession))
+    return NULL;
   tsession->ttype = prot;
   return tsession;
 }
@@ -265,7 +265,7 @@ transportConnectFreely(const PeerIdentity * peer,
 static int transportAssociate(TSession * tsession) {
   if ( (tsession == NULL) ||
        (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) ) 
+       (tapis[tsession->ttype] == NULL) )
     return SYSERR;
   return tapis[tsession->ttype]->associate(tsession);
 }
@@ -275,7 +275,7 @@ static int transportAssociate(TSession * tsession) {
  */
 static unsigned int transportGetCost(int ttype) {
   if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) ) 
+       (tapis[ttype] == NULL) )
     return SYSERR; /* -1 = INFTY */
   return tapis[ttype]->cost;
 }
@@ -345,7 +345,7 @@ static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
     return SYSERR; /* invalid */
   prot = ntohs(hello->protocol);
   if ( (prot >= tapis_count) ||
-       (tapis[prot] == NULL) ) 
+       (tapis[prot] == NULL) )
     return SYSERR; /* not supported */
   return tapis[prot]->verifyHello(hello);
 }
@@ -355,7 +355,7 @@ static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
  */
 static int transportGetMTU(unsigned short ttype) {
   if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) ) 
+       (tapis[ttype] == NULL) )
     return SYSERR;
   return tapis[ttype]->mtu;
 }

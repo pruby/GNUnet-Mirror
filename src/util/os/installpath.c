@@ -132,7 +132,7 @@ static char * get_path_from_NSGetExecutablePath() {
           len--;
         path[len] = '\0';
       }
-    } 
+    }
   }
   return path;
 }

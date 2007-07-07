@@ -144,7 +144,7 @@ static void do_put(struct ClientServerConnection * sock,
      "put",
      key,
      value);
-  }  
+  }
   FREE(dc);
 }
 

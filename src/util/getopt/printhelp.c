@@ -43,7 +43,7 @@ int gnunet_getopt_format_help(CommandLineProcessorContext * ctx,
   char * scp;
   const char * trans;
   const struct CommandLineOption * opt;
-  
+
   printf("%s\n%s\n",
    ctx->binaryOptions,
    gettext(about));

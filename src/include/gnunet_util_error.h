@@ -228,15 +228,15 @@ const char *GE_strerror(int errnum);
 /**
  * Use this for assertion violations caused by other
  * peers (i.e. protocol violations).  We do not want to
- * confuse end-users (say, some other peer runs an 
+ * confuse end-users (say, some other peer runs an
  * older, broken or incompatible GNUnet version), but
- * we still want to see these problems during 
+ * we still want to see these problems during
  * development and testing.  "OP == other peer".
  */
 #define GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
 /**
- * Just like GE_BREAK just with file/line/function 
+ * Just like GE_BREAK just with file/line/function
  * information given as part of the call.
  */
 #define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)

@@ -329,9 +329,9 @@ static int tcpConnect(const P2P_hello_MESSAGE * hello,
   return OK;
       }
       MUTEX_UNLOCK(session->lock);
-    }    
+    }
     session = session->next;
-  }  
+  }
   MUTEX_UNLOCK(tcplock);
   haddr = (HostAddress*) &hello[1];
 #if DEBUG_TCP
@@ -475,7 +475,7 @@ static int startTransportServer() {
   		   &isRejected,
   		   &select_close_handler,
   		   NULL,
-  		   128 * 1024 /* max memory */, 
+  		   128 * 1024 /* max memory */,
   		   128 /* max sockets */);
   return OK;
 }
@@ -493,7 +493,7 @@ static int reloadConfiguration(void * ctx,
 
   if (0 != strcmp(section, "TCP"))
     return 0; /* fast path */
-  
+
   MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
   FREENONNULL(allowedNetworks_);
@@ -532,7 +532,7 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
          unsigned int * sa_len) {
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   struct sockaddr_in * serverAddr;
-  
+
   *sa_len = sizeof(struct sockaddr_in);
   serverAddr = MALLOC(sizeof(struct sockaddr_in));
   *sa = serverAddr;

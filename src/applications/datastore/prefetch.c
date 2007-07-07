@@ -142,20 +142,20 @@ void initPrefetch(struct GE_Context * e,
   gather_thread = PTHREAD_CREATE(&rcbAcquire,
   			 NULL,
   			 64*1024);
-  if (gather_thread == NULL) 
+  if (gather_thread == NULL)
     GE_LOG_STRERROR(ectx,
   	    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-  	    "pthread_create");  
+  	    "pthread_create");
 }
 
 void donePrefetch() {
   void * unused;
 
   doneSignal = YES;
-  if (gather_thread != NULL) 
+  if (gather_thread != NULL)
     PTHREAD_STOP_SLEEP(gather_thread);
   SEMAPHORE_UP(acquireMoreSignal);
-  if (gather_thread != NULL) 
+  if (gather_thread != NULL)
     PTHREAD_JOIN(gather_thread, &unused);
   SEMAPHORE_DESTROY(acquireMoreSignal);
   FREENONNULL(rvalue);

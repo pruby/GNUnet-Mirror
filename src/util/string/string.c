@@ -135,8 +135,8 @@ char * string_get_fancy_time_interval(unsigned long long delta) {
     unit = _(/* time unit */ " days");	
   }	
       }  	
-    }  
-  }  
+    }
+  }
   ret = MALLOC(32);
   SNPRINTF(ret,
      32,
@@ -167,8 +167,8 @@ const char * unit = _(/* size unit */ "b");
     unit = _(/* size unit */ "TiB");	
   }	
       }  	
-    }  
-  }  
+    }
+  }
   ret = MALLOC(32);
   SNPRINTF(ret,
      32,

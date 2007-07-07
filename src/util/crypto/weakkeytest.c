@@ -163,7 +163,7 @@ static int getWeakKeys() {
     }
 
     gcry_cipher_close(handle);
-  
+
   }
 
   return number_of_weak_keys;

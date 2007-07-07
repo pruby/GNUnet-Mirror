@@ -157,7 +157,7 @@ receivedhello(const PeerIdentity * sender,
   int res;
   cron_t now;
   EncName enc;
-    
+
   /* first verify that it is actually a valid hello */
   msg = (const P2P_hello_MESSAGE* ) message;
   if ( (ntohs(msg->header.size) < sizeof(P2P_hello_MESSAGE)) ||
@@ -202,7 +202,7 @@ receivedhello(const PeerIdentity * sender,
     IF_GELOG(ectx,
        GE_INFO | GE_BULK | GE_USER,
        hash2enc(&msg->senderIdentity.hashPubKey,
-  	      &enc));    
+  	      &enc));
     GE_LOG(ectx,
      GE_DEBUG | GE_BULK | GE_USER,
      "Transport verification of HELLO message from `%s' failed (%u).\n",
@@ -556,7 +556,7 @@ broadcasthelloTransport(TransportAPI * tapi,
   identity->addHost(sd.m);
   if (sd.n < 1) {
     if (identity->forEachHost(0, NULL, NULL) == 0)
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
        GE_WARNING | GE_BULK | GE_USER,
        _("Announcing ourselves pointless: "
          "no other peers are known to us so far.\n"));
@@ -584,7 +584,7 @@ static void broadcasthello(void * unused) {
     return; /* CPU load too high... */
   i = transport->forEach(NULL,
   		 NULL);
-  if (i > 0) 
+  if (i > 0)
     transport->forEach(&broadcasthelloTransport,
   	       &i);
 }
@@ -651,7 +651,7 @@ forwardhelloHelper(const PeerIdentity * peer,
        GE_INFO | GE_REQUEST | GE_USER,
        hash2enc(&peer->hashPubKey,
   	      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
      GE_INFO | GE_REQUEST | GE_USER,
      "Removing HELLO from peer `%s' (expired %ds ago).\n",
      &enc,

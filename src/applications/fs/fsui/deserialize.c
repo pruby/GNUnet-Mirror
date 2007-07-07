@@ -378,7 +378,7 @@ static int readSearches(int fd,
     if (big == 0)
       return OK;
     list
-      = MALLOC(sizeof(FSUI_SearchList));  
+      = MALLOC(sizeof(FSUI_SearchList));
     memset(list,
      0,
      sizeof(FSUI_SearchList));
@@ -392,7 +392,7 @@ static int readSearches(int fd,
    (OK != read_int(fd, (int*) &list->sizeUnmatchedResultsReceived)) ||
    (list->sizeResultsReceived > 1024*1024) ||	
    (list->sizeUnmatchedResultsReceived > 1024*1024) ) {
-      GE_BREAK(NULL, 0);  
+      GE_BREAK(NULL, 0);
       break;
     }
     fixState(&list->state);
@@ -474,7 +474,7 @@ static int readSearches(int fd,
     goto ERR;
   }
       }
-    }  
+    }
     list->ctx
       = ctx;
     list->next

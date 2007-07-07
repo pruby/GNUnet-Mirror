@@ -305,7 +305,7 @@ static void gen_prime(mpz_t ptest,
       }
       if (x)
   continue;   /* Found a multiple of an already known prime. */
-  
+
       mpz_add_ui( ptest, prime, step );
       if (! mpz_tstbit( ptest, nbits-2 ))
   break;
@@ -313,7 +313,7 @@ static void gen_prime(mpz_t ptest,
       /* Do a fast Fermat test now. */
       mpz_sub_ui( pminus1, ptest, 1);
       mpz_powm( result, val_2, pminus1, ptest );
-      if ( ( !mpz_cmp_ui( result, 1 ) ) &&  
+      if ( ( !mpz_cmp_ui( result, 1 ) ) &&
      (is_prime(ptest, 5, hc) ) ) {		
   /* Got it. */
   mpz_clear(val_2);

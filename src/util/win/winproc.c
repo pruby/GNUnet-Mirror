@@ -90,7 +90,7 @@ int InitWinEnv(struct GE_Context *ectx)
 
   if (ectx)
     pEctx = ectx;
-  
+
   init = plibc_initialized();
   plibc_set_panic_proc(plibc_panic);
   ret = plibc_init("GNU", PACKAGE);

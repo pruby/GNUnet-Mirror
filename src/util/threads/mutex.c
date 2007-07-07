@@ -146,7 +146,7 @@ void MUTEX_LOCK_FL(Mutex * mutex,
      end - start,
      file,
      line);
-  }  
+  }
   if (ret != 0) {
     if (ret == EINVAL)
       GE_LOG(NULL,
@@ -164,7 +164,7 @@ void MUTEX_LOCK_FL(Mutex * mutex,
     mutex->locked_file = file;
     mutex->locked_line = line;
     mutex->locked_time = end;
-  } 
+  }
 }
 
 void MUTEX_UNLOCK(Mutex * mutex) {

@@ -226,7 +226,7 @@ static int set_client_config(CommandLineProcessorContext * ctx,
   cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
   return OK;
 }
-  
+
 
 /**
  * All gnunet-update command line options
@@ -241,10 +241,10 @@ static struct CommandLineOption gnunetupdateOptions[] = {
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'u', "user", "LOGIN",
     gettext_noop("run as user LOGIN"),
-    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },  
+    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },
   { 'U', "client", NULL,
     gettext_noop("run in client mode (for getting client configuration values)"),
-    0, &set_client_config, NULL },  
+    0, &set_client_config, NULL },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,

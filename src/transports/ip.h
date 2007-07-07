@@ -51,10 +51,10 @@ int getPublicIPAddress(struct GC_Configuration * cfg,
 
 /**
  * We only have the PeerIdentity.  Do we have any
- * clue about the address based on 
+ * clue about the address based on
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
- * 
+ *
  * @param sa set to the address
  * @return OK if we found an address, SYSERR if not
  */
@@ -68,7 +68,7 @@ int getIPaddressFromPID(const PeerIdentity * peer,
  * a welcome message that claims that this connection
  * came from a particular peer.  This information is
  * NOT validated (and it may well be impossible for
- * us to validate the address).  
+ * us to validate the address).
  */
 void setIPaddressFromPID(const PeerIdentity * peer,
 			 const void * sa,

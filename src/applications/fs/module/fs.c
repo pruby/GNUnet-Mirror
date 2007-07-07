@@ -256,7 +256,7 @@ static int get_result_callback(const HashCode512 * query,
     GE_BREAK(NULL, 0);
     return OK;
   }
- 
+
   gapPut(NULL,
    query,
    value,
@@ -1137,7 +1137,7 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
      "FS successfully took GAP shortcut for `%s'.\n",
      &enc);
 #endif
-    return OK;  
+    return OK;
   }
 
   /* run gapGet asynchronously (since it may take a while due to lots of IO) */

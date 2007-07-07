@@ -270,7 +270,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.data.UnindexResumed.eta = get_time();
     event.data.UnindexResumed.filename = xlist->filename;
     event.data.UnindexResumed.state = xlist->state;
-    xlist->cctx = cb(closure, &event);  
+    xlist->cctx = cb(closure, &event);
     xlist = xlist->next;
   }
 

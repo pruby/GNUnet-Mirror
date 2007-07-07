@@ -22,7 +22,7 @@
  * @file transports/ip.c
  * @brief code to determine thep IP of the local machine
  *        and to do DNS resolution (with caching)
- * 
+ *
  * @author Christian Grothoff
  * @author Tzvetan Horozov
  * @author Heikki Lindholm
@@ -83,11 +83,11 @@ static struct PICache * pi_head;
 static struct MUTEX * lock;
 
 static void expirePICache() {
-  struct PICache * pos; 
-  struct PICache * next; 
-  struct PICache * prev; 
+  struct PICache * pos;
+  struct PICache * next;
+  struct PICache * prev;
   cron_t now;
-  
+
   now = get_time();
   pos = pi_head;
   prev = NULL;
@@ -109,17 +109,17 @@ static void expirePICache() {
 
 /**
  * We only have the PeerIdentity.  Do we have any
- * clue about the address based on 
+ * clue about the address based on
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
- * 
+ *
  * @param sa set to the address
  * @return OK if we found an address, SYSERR if not
  */
 int getIPaddressFromPID(const PeerIdentity * peer,
   		void ** sa,
   		unsigned int * salen) {
-  struct PICache * cache; 
+  struct PICache * cache;
 
   MUTEX_LOCK(lock);
   expirePICache();
@@ -127,7 +127,7 @@ int getIPaddressFromPID(const PeerIdentity * peer,
   while (cache != NULL) {
     if (0 == memcmp(peer,
   	    &cache->peer,
-  	    sizeof(PeerIdentity))) {      
+  	    sizeof(PeerIdentity))) {
       *salen = cache->len;
       *sa = MALLOC(cache->len);
       memcpy(*sa,
@@ -148,7 +148,7 @@ int getIPaddressFromPID(const PeerIdentity * peer,
  * a welcome message that claims that this connection
  * came from a particular peer.  This information is
  * NOT validated (and it may well be impossible for
- * us to validate the address).  
+ * us to validate the address).
  */
 void setIPaddressFromPID(const PeerIdentity * peer,
   		 const void * sa,
@@ -166,7 +166,7 @@ void setIPaddressFromPID(const PeerIdentity * peer,
      (0 == memcmp(sa,
   		next->address,
   		salen)) )  {
-  MUTEX_UNLOCK(lock);  
+  MUTEX_UNLOCK(lock);
   return;
       }
       FREE(next->address);
@@ -175,8 +175,8 @@ void setIPaddressFromPID(const PeerIdentity * peer,
       memcpy(next->address,
        sa,
        salen);
-      MUTEX_UNLOCK(lock);  
-      return;      
+      MUTEX_UNLOCK(lock);
+      return;
     }
     next = next->next;
   }
@@ -189,10 +189,10 @@ void setIPaddressFromPID(const PeerIdentity * peer,
   next->len = salen;
   next->expire = get_time() + 12 * cronHOURS;
   expirePICache();
-  next->next = pi_head;  
+  next->next = pi_head;
   pi_head = next;
-  MUTEX_UNLOCK(lock);  
-  
+  MUTEX_UNLOCK(lock);
+
 }
 
 

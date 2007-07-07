@@ -450,7 +450,7 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
          unsigned int * sa_len) {
   const Host6Address * haddr = (const Host6Address*) &hello[1];
   struct sockaddr_in6 * serverAddr;
-  
+
   *sa_len = sizeof(struct sockaddr_in6);
   serverAddr = MALLOC(sizeof(struct sockaddr_in6));
   *sa = serverAddr;

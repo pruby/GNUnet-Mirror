@@ -307,7 +307,7 @@ static void writeUploads(int fd,
     WRITEINT(fd, shared->doIndex);
     WRITEINT(fd, shared->anonymityLevel);
     WRITEINT(fd, shared->priority);
-    WRITEINT(fd, shared->individualKeywords);  
+    WRITEINT(fd, shared->individualKeywords);
     WRITELONG(fd, shared->expiration);
     if (shared->extractor_config != NULL)
       WRITESTRING(fd,

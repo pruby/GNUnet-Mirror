@@ -170,7 +170,7 @@ static void tb_SET_TVALUE(ClientHandle client,
   identity->changeHostTrust(&msg->otherPeer,
   		    trust);
   sendAcknowledgement(client, OK);
-}  
+}
   	
 /**
  * Get a trust value.
@@ -181,7 +181,7 @@ static void tb_GET_TVALUE(ClientHandle client,
 
   trust = identity->getHostTrust(&msg->otherPeer);
   sendAcknowledgement(client, trust);
-}  
+}
 
 /**
  * Change the bandwidth limitations.
@@ -704,10 +704,10 @@ static void tb_SIGNAL(ClientHandle client,
     pi = pt[i];
     if (pi->uid != uid)
       continue;
-    if (sig == -1) {  
+    if (sig == -1) {
       if (pi->hasExited == NO) {
   ret = SYSERR;
-      } else {  
+      } else {
   ret = WEXITSTATUS(pi->exitStatus);
   /* free resources... */
   GROW(pi->output,
@@ -762,7 +762,7 @@ static void tb_GET_OUTPUT(ClientHandle client,
 
       sendAcknowledgement(client, pi->outputSize);
       pos = 0;
-      while (pos < pi->outputSize) {  
+      while (pos < pi->outputSize) {
   unsigned int run = pi->outputSize - pos;
   if (run > 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE))
     run = 65532 - sizeof(TESTBED_OUTPUT_REPLY_MESSAGE);

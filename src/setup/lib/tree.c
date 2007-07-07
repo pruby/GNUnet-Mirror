@@ -148,7 +148,7 @@ SCM get_option(SCM smob,
   GE_BREAK(NULL, 0);
   return SCM_EOL;
 }
-  
+
 /**
  * Change the visibility of an entry in the
  * tree (and notify listeners about change).

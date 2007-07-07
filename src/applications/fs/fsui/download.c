@@ -375,7 +375,7 @@ void * downloadThread(void * cls) {
   		   dl);
   if (md != NULL)
     ECRS_freeMetaData(md);
-   
+
   if (dl->is_recursive) {
     /* load directory, start downloads */
     md = NULL;

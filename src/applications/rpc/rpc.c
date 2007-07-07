@@ -649,7 +649,7 @@ static void retryRPCJob(void * ctx) {
       vectorRemoveObject(outgoingCalls, call);
     } else {
       vectorRemoveObject(incomingCalls, call);
-    }  
+    }
     FREE(call->msg);
     FREE(call);
   } else {
@@ -689,7 +689,7 @@ static void retryRPCJob(void * ctx) {
       call->expirationTime - now,
       now - call->lastAttempt,
       call->attempts);
-      }  
+      }
 #endif
       call->lastAttempt = now;
       call->attempts++;

@@ -476,7 +476,7 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   entry->hellos[0] = msg;
   entry->protocols[0] = ntohs(msg->protocol);
   entry->strict = NO;
-  entry->trust = 0;  
+  entry->trust = 0;
   MUTEX_UNLOCK(lock_);
 }
 
@@ -869,7 +869,7 @@ static int blacklistHost(const PeerIdentity * identity,
   if (strict) {
     entry->delta = desperation * cronSECONDS;
   } else {
-    if (entry->until < now) 
+    if (entry->until < now)
       entry->delta
   = weak_randomi(1+desperation*cronSECONDS);
     else
@@ -1033,14 +1033,14 @@ static int forEachHost(cron_t now,
 #if 0
 #if DEBUG_IDENTITY
       EncName enc;
-      
+
       IF_GELOG(ectx,
          GE_INFO | GE_USER | GE_BULK,
          hash2enc(&entry->identity.hashPubKey,
   		&enc));
       GE_LOG(ectx,
        GE_INFO | GE_USER | GE_BULK,
-       entry->strict ? 
+       entry->strict ?
        _("Peer `%s' is currently strictly blacklisted (for another %llums).\n") :
        _("Peer `%s' is currently blacklisted (for another %llums).\n"),
        &enc,
@@ -1292,14 +1292,14 @@ static int hostInfoIterator(const PeerIdentity * identity,
   hello = identity2Hello(identity,
   		 protocol,
   		 YES);
-  if (hello == NULL) 
+  if (hello == NULL)
     return OK; /* ignore -- happens if HELLO just expired */
   transport = coreAPI->requestService("transport");
   if (transport == NULL) {
     FREE(hello);
     return OK;
   }
-    
+
   len = 0;
   address = NULL;
   transport->helloToAddress(hello,

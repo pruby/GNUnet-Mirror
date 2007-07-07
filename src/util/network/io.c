@@ -170,7 +170,7 @@ int socket_set_blocking(struct SocketHandle * s,
   		int doBlock) {
 #if MINGW
   u_long mode;
-  
+
   mode = !doBlock;
   if (ioctlsocket(s->handle,
   	  FIONBIO, &mode) == SOCKET_ERROR) {

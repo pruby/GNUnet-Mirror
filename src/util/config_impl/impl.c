@@ -416,7 +416,7 @@ findSection(GC_ConfigurationData * data,
     if (0 == strcmp(section,
   	    data->sections[i].name))
       return &data->sections[i];
-  return NULL;  
+  return NULL;
 }
 
 /**
@@ -436,7 +436,7 @@ findEntry(GC_ConfigurationData * data,
     if (0 == strcmp(key,
   	    sec->entries[i].key))
       return &sec->entries[i];
-  return NULL;  
+  return NULL;
 }
 
 static int

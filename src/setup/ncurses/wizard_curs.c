@@ -58,7 +58,7 @@ static const char * cfg_fn;
 static void showCursErr(const char * prefix,
   		const char * error) {
   char * err;
-  
+
   err = MALLOC(strlen(prefix) + strlen(error) + 2);
   sprintf(err,
     "%s %s",
@@ -69,7 +69,7 @@ static void showCursErr(const char * prefix,
   	70,
   	15,
   	1);
-  FREE(err);  
+  FREE(err);
 }
 
 static void show_help(const char * helptext) {
@@ -104,7 +104,7 @@ static int query_yesno(const char * title,
   dialog_vars.cancel_label = _("No");
   dialog_vars.ok_label = _("Yes");
   while (true) {
-    ret = dialog_yesno(title,  
+    ret = dialog_yesno(title,
   	       question,
   	       20,
   	       70);
@@ -493,7 +493,7 @@ static int finish() {
     showCursErr(_("Unable to create user account for daemon."),
   	"");
     ret = SYSERR;
-  }  
+  }
   if ( (YES == GC_get_configuration_value_yesno(cfg,
   					"GNUNETD",
   					"AUTOSTART",

@@ -543,8 +543,8 @@ static void handleMessage(TSession * tsession,
   ret = checkHeader(sender,
   	    (P2P_PACKET_HEADER*) msg,
   	    size);
-  if (ret == SYSERR) 
-    return; /* message malformed */  
+  if (ret == SYSERR)
+    return; /* message malformed */
   if ( (ret == YES) &&
        (tsession != NULL) &&
        (sender != NULL) &&
@@ -620,7 +620,7 @@ void core_receive(P2P_PACKET * mp) {
        accepted,
        discarded,
        blacklisted,
-       1.0 * accepted / (blacklisted + discarded + 1)); 
+       1.0 * accepted / (blacklisted + discarded + 1));
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
@@ -648,7 +648,7 @@ void core_receive(P2P_PACKET * mp) {
        accepted,
        discarded,
        blacklisted,
-       1.0 * accepted / (blacklisted + discarded + 1)); 
+       1.0 * accepted / (blacklisted + discarded + 1));
     MUTEX_UNLOCK(globalLock_);
 #endif
     FREE(mp->msg);
@@ -679,7 +679,7 @@ void core_receive(P2P_PACKET * mp) {
        accepted,
        discarded,
        blacklisted,
-       1.0 * accepted / (blacklisted + discarded + 1)); 
+       1.0 * accepted / (blacklisted + discarded + 1));
     if (globalLock_ != NULL)
       MUTEX_UNLOCK(globalLock_);
 #endif
@@ -702,7 +702,7 @@ void core_receive(P2P_PACKET * mp) {
      accepted,
      discarded,
      blacklisted,
-     1.0 * accepted / (blacklisted + discarded + 1)); 
+     1.0 * accepted / (blacklisted + discarded + 1));
 #endif
   MUTEX_UNLOCK(globalLock_);
   SEMAPHORE_UP(bufferQueueRead_);
@@ -784,8 +784,8 @@ void doneHandler() {
   SEMAPHORE_DESTROY(bufferQueueWrite_);
   bufferQueueWrite_ = NULL;
   for (i=0;i<QUEUE_LENGTH;i++) {
-    if (bufferQueue_[i] != NULL) 
-      FREENONNULL(bufferQueue_[i]->msg);    
+    if (bufferQueue_[i] != NULL)
+      FREENONNULL(bufferQueue_[i]->msg);
     FREENONNULL(bufferQueue_[i]);
   }
 
@@ -829,7 +829,7 @@ void doneHandler() {
      i,
      time_by_type[i],
      time_by_type[i] / count_by_type[i]);
-  }       
+  }
 #endif
 }
 

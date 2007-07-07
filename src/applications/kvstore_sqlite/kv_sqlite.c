@@ -255,7 +255,7 @@ static sqliteHandle * getDBHandle(const char *name) {
   if (sqlite3_open(db->fn,
   	   &dbh->dbh) != SQLITE_OK) {
     printf("FN: %s\n", db->fn);
-    LOG_SQLITE(dbh->dbh,  
+    LOG_SQLITE(dbh->dbh,
          GE_ERROR | GE_BULK | GE_USER,
          "sqlite3_open");
     sqlite3_close(dbh->dbh);

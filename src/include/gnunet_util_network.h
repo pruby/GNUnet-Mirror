@@ -527,7 +527,7 @@ int select_disconnect(struct SelectHandle * sh,
  * human-readable IP address).
  *
  * @param sa should be of type "struct sockaddr*"
- */ 
+ */
 char * network_get_ip_as_string(const void * sa,
 				unsigned int salen,
 				int do_resolve);

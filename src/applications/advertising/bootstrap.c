@@ -180,7 +180,7 @@ static int needBootstrap() {
     return YES;
   }
   /* wait a bit longer */
-  return NO;  
+  return NO;
 }
 
 static void * processThread(void * unused) {

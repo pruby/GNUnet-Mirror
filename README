@@ -61,7 +61,7 @@ $ ./configure --prefix=$HOME --with-extractor=$HOME
 $ make
 # make install
 # gnunet-setup -d
-# gnunetd 
+# gnunetd
 
 This will compile and install GNUnet to ~/bin/, ~/lib/ and ~/man/.
 gnunet-setup will create the daemon configuration (-d); this step is
@@ -119,7 +119,7 @@ cause gnunetd to re-read the configuration file.  Note that not all
 options can be changed at runtime this way (e.g. to change any port
 number, you must fully restart gnunetd).
 
-After changing certain options (or updating GNUnet) you must re-run 
+After changing certain options (or updating GNUnet) you must re-run
 gnunet-update.
 
 
@@ -181,7 +181,7 @@ set an environment variable ("GNUNET_PREFIX") to the directory
 where GNUnet is installed (usually, GNUnet will use OS specific
 tricks in order to try to figure out the PREFIX, but since the
 testcase binaries are not installed, that trick does not work
-for them).  Also, before running any testcases, you must 
+for them).  Also, before running any testcases, you must
 complete the installation first.  Quick summary:
 
 $ ./configure --prefix=$SOMEWHERE

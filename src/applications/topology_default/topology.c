@@ -169,7 +169,7 @@ static int scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
-#if DEBUG_TOPOLOGY 
+#if DEBUG_TOPOLOGY
   EncName enc;
 #endif
 
@@ -243,7 +243,7 @@ static void notifyPONG(void * cls) {
   PeerIdentity * hostId = cls;
 #if DEBUG_TOPOLOGY || DEBUG_LIVENESS
   EncName enc;
-  
+
   IF_GELOG(coreAPI->ectx,
      GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
      hash2enc(&hostId->hashPubKey,
@@ -283,7 +283,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
        to keep the connection open instead of hanging up */
 #if DEBUG_TOPOLOGY || DEBUG_LIVENESS
     EncName enc;
-    
+
     IF_GELOG(coreAPI->ectx,
        GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
        hash2enc(&peer->hashPubKey,
@@ -335,7 +335,7 @@ static void cronCheckLiveness(void * unused) {
     for (i=slotCount-1;i>=0;i--) {
       if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
 	continue;
-      if (minint > coreAPI->isSlotUsed(i))  
+      if (minint > coreAPI->isSlotUsed(i))
 	scanForHosts(i);
     }
   }

@@ -388,7 +388,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   if (stats != NULL) {
     stat_filtered = stats->create(gettext_noop("# requests filtered by bloom filter"));
     stat_filter_failed = stats->create(gettext_noop("# bloom filter false positives"));
-    
+
     stats->set(stats->create(gettext_noop("# bytes allowed in datastore")),
          quota);
   }
@@ -506,7 +506,7 @@ void update_module_datastore(UpdateAPI * uapi) {
        (sizeof(unsigned long long) != state->read(uapi->ectx,
   					  "FS-LAST-QUOTA",
   					  (void**)&lq)) &&
-       (ntohll(*lq) == quota) ) {    
+       (ntohll(*lq) == quota) ) {
     uapi->releaseService(state);
     FREE(lq);
     return; /* no change */

@@ -61,7 +61,7 @@ static void cache_resolve(struct IPCache * cache) {
   adns_status ret;
   struct IPCache * rec;
   int reti;
-  
+
   if (cache->posted == NO) {
     ret = adns_submit_reverse(a_state,
   		      cache->sa,
@@ -70,14 +70,14 @@ static void cache_resolve(struct IPCache * cache) {
   		      adns_qf_none,
 #else
    		      0,
-#endif  
+#endif
   		      cache,
   		      &cache->query);
     if (adns_s_ok == ret)
-      cache->posted = YES;    
+      cache->posted = YES;
   }
   adns_processany(a_state);
-  answer = NULL; 
+  answer = NULL;
   reti = adns_check(a_state,
   	    &cache->query,
   	    &answer,
@@ -90,7 +90,7 @@ static void cache_resolve(struct IPCache * cache) {
       free(answer);
     }
     cache->posted = NO;
-  }  
+  }
 #else
 #if HAVE_GETNAMEINFO
   char hostname[256];
@@ -105,7 +105,7 @@ static void cache_resolve(struct IPCache * cache) {
 #else
 #if HAVE_GETHOSTBYADDR
   struct hostent * ent;
-  
+
   switch (cache->sa->sa_family) {
   case AF_INET:
     ent = gethostbyaddr(&((struct sockaddr_in*) cache->sa)->sin_addr,
@@ -121,13 +121,13 @@ static void cache_resolve(struct IPCache * cache) {
     ent = NULL;
   }
   if (ent != NULL)
-    cache->addr = STRDUP(ent->h_name); 
+    cache->addr = STRDUP(ent->h_name);
 #endif
 #endif
 #endif
 }
 
-static struct IPCache * 
+static struct IPCache *
 resolve(const struct sockaddr * sa,
   unsigned int salen) {
   struct IPCache * ret;
@@ -190,19 +190,19 @@ static char * no_resolve(const struct sockaddr * sa,
  * human-readable IP address).
  *
  * @param sa should be of type "struct sockaddr*"
- */ 
+ */
 char * network_get_ip_as_string(const void * sav,
   			unsigned int salen,
   			int do_resolve) {
   const struct sockaddr * sa = sav;
   char * ret;
-  struct IPCache * cache; 
+  struct IPCache * cache;
   struct IPCache * prev;
   cron_t now;
 
   if (salen < sizeof(struct sockaddr))
     return NULL;
-  now = get_time();  
+  now = get_time();
   MUTEX_LOCK(lock);
   cache = head;
   prev = NULL;
@@ -222,17 +222,17 @@ char * network_get_ip_as_string(const void * sav,
   prev->next = cache->next;
   FREENONNULL(cache->addr);
   FREE(cache->sa);
-  FREE(cache);      
+  FREE(cache);
   cache = prev->next;
       } else {
   head = cache->next;
   FREENONNULL(cache->addr);
   FREE(cache->sa);
-  FREE(cache);      
+  FREE(cache);
   cache = head;	
       }
       continue;
-    }    
+    }
     prev = cache;
     cache = cache->next;
   }
@@ -253,7 +253,7 @@ char * network_get_ip_as_string(const void * sav,
     MUTEX_UNLOCK(lock);
     return no_resolve(sav, salen);
   } else
-    cache = resolve(sa, salen);  
+    cache = resolve(sa, salen);
   ret = (cache->addr == NULL) ? NULL : STRDUP(cache->addr);
   if (ret == NULL)
     ret = no_resolve(sa, salen);

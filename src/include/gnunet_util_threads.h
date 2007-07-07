@@ -59,7 +59,7 @@ typedef unsigned long long cron_t;
 
 /**
  * How long will we accept locks to be held before
- * reporting that there maybe a problem?  Set to 
+ * reporting that there maybe a problem?  Set to
  * zero to disable reporting.
  */
 #define REALTIME_LIMIT (000 * cronMILLIS)

@@ -357,7 +357,7 @@ static int httpDisconnect(TSession * tsession) {
       break;
     }
   }
-  MUTEX_UNLOCK(httplock);    
+  MUTEX_UNLOCK(httplock);
   if (httpsession->is_client) {
     curl_multi_remove_handle(curl_multi,
   		     httpsession->cs.client.get);
@@ -373,7 +373,7 @@ static int httpDisconnect(TSession * tsession) {
       FREE(pos);
       pos = next;
     }
-    
+
   } else {
     MHD_destroy_response(httpsession->cs.server.get);
   }
@@ -1011,7 +1011,7 @@ static int httpSend(TSession * tsession,
     MUTEX_LOCK(httpSession->lock);
     curl_put = create_curl_put(httpSession,
   		       putData,
-  		       size + sizeof(MESSAGE_HEADER)); 
+  		       size + sizeof(MESSAGE_HEADER));
     if (curl_put == NULL) {
       MUTEX_UNLOCK(httpSession->lock);
       FREE(putData->msg);
@@ -1020,7 +1020,7 @@ static int httpSend(TSession * tsession,
     }
     putData->curl_put = curl_put;
     putData->next = httpSession->cs.client.puts;
-    httpSession->cs.client.puts = putData;  
+    httpSession->cs.client.puts = putData;
     MUTEX_UNLOCK(httpSession->lock);
     MUTEX_LOCK(httplock);
     mret = curl_multi_add_handle(curl_multi, curl_put);
@@ -1040,10 +1040,10 @@ static int httpSend(TSession * tsession,
     return OK;
   } else { /* httpSession->isClient == false */
     MUTEX_LOCK(httpSession->lock);
-    if (httpSession->wsize == 0) 
+    if (httpSession->wsize == 0)
       GROW(httpSession->wbuff,
      httpSession->wsize,
-     HTTP_BUF_SIZE);    
+     HTTP_BUF_SIZE);
     if (httpSession->wpos + size > httpSession->wsize) {
       /* need to grow or discard */
       if (! important) {
@@ -1073,7 +1073,7 @@ static int httpSend(TSession * tsession,
        msg,
        size);
       httpSession->wpos += size;
-    }    
+    }
     MUTEX_UNLOCK(httpSession->lock);
     return OK;
   }
@@ -1084,7 +1084,7 @@ static int httpSend(TSession * tsession,
  * (completed PUTs, GETs that have timed out,
  * etc.).
  */
-static void 
+static void
 cleanup_connections() {
   int i;
   HTTPSession * s;
@@ -1100,10 +1100,10 @@ cleanup_connections() {
       pos = s->cs.client.puts;
       while (pos != NULL) {
   /* FIXME: check if CURL has timed out
-     the GET operation! If so, clean up! 
-     (and make sure we re-establish GET 
+     the GET operation! If so, clean up!
+     (and make sure we re-establish GET
      as needed!) */
-  
+
 
   if (pos->done) {
     if (prev == NULL)
@@ -1114,7 +1114,7 @@ cleanup_connections() {
     curl_multi_remove_handle(curl_multi,
   			   pos->curl_put);
     curl_easy_cleanup(pos->curl_put);
-    FREE(pos);	  
+    FREE(pos);	
     if (prev == NULL)
       pos = s->cs.client.puts;
     else
@@ -1127,14 +1127,14 @@ cleanup_connections() {
     } else {
       /* FIXME: add code to close MHD connection
    from the server side (timeout!); need
-   to 
+   to
    A) tell GET callback to return "end of transmission"
    B) destroy response object
       */
     }
     MUTEX_UNLOCK(s->lock);
   }
-  MUTEX_UNLOCK(httplock);  
+  MUTEX_UNLOCK(httplock);
 }
 
 static void *
@@ -1285,7 +1285,7 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
          unsigned int * sa_len) {
   const HostAddress * haddr = (const HostAddress*) &hello[1];
   struct sockaddr_in * serverAddr;
-  
+
   *sa_len = sizeof(struct sockaddr_in);
   serverAddr = MALLOC(sizeof(struct sockaddr_in));
   *sa = serverAddr;

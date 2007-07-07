@@ -232,12 +232,12 @@ int initQueryManager(CoreAPIForApplication * capi) {
 void doneQueryManager() {
   int i;
 
-  for (i=trackerCount-1;i>=0;i--) 
+  for (i=trackerCount-1;i>=0;i--)
     FREE(trackers[i]);
-  
+
   GROW(trackers,
        trackerSize,
-       0); 
+       0);
   trackerCount = 0;
   if (stats != NULL) {
     stats->set(stat_queries_tracked, 0);

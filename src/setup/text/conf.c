@@ -223,7 +223,7 @@ static int readValue(GNS_Type type,
   }
   continue;
       }
-#endif  
+#endif
       if ( (buf[i] == 'd') && (i == 0) ) {
   printf("%s\n",
          val->String.def);

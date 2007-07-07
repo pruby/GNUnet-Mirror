@@ -382,7 +382,7 @@ int STATS_getAvailableProtocols(struct GE_Context * ectx,
       if (SYSERR == connection_read_result(sock,
   				   &supported))
   return SYSERR;
-      if (supported == YES) {  
+      if (supported == YES) {
   ret = processor(i,
   		(j == 2) ? YES : NO,
   		cls);

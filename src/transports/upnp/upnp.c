@@ -167,7 +167,7 @@ gaim_upnp_compare_device(const xmlnode* device,
   int ret;
 
   if (deviceTypeNode == NULL)
-    return FALSE;  
+    return FALSE;
   tmp = xmlnode_get_data(deviceTypeNode);
   ret = !strcasecmp(tmp, deviceType);
   FREE(tmp);
@@ -182,7 +182,7 @@ gaim_upnp_compare_service(const xmlnode* service,
   int ret;
 
   if (service == NULL)
-    return FALSE;  
+    return FALSE;
   serviceTypeNode = xmlnode_get_child(service, "serviceType");
   if(serviceTypeNode == NULL)
     return FALSE;
@@ -369,7 +369,7 @@ gaim_upnp_generate_action_message_and_send(const char * proxy,
   				   const char* actionParams,
   				   GaimUtilFetchUrlCallback cb,
   				   void * cb_data) {
-  CURL * curl;  
+  CURL * curl;
   int ret;
   char * soapHeader;
   char * sizeHeader;
@@ -551,7 +551,7 @@ upnp_parse_description_cb(void * httpResponse,
 static int
 gaim_upnp_parse_description(char * proxy,
   		    UPnPDiscoveryData * dd) {
-  CURL * curl;  
+  CURL * curl;
   int ret;
 
   if (0 != curl_global_init(CURL_GLOBAL_WIN32))
@@ -751,7 +751,7 @@ gaim_upnp_change_port_mapping(struct GE_Context * ectx,
   int ret;
 
   if (control_info.status != GAIM_UPNP_STATUS_DISCOVERED)
-    return NO;  
+    return NO;
   if (do_add) {
     internal_ip = gaim_upnp_get_internal_ip(cfg,
   				    ectx);

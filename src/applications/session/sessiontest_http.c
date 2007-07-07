@@ -153,7 +153,7 @@ int main(int argc, char ** argv) {
   peer2 = os_daemon_start(NULL,
   		  cfg,
   		  "nat-http-peer.conf",
-  		  NO);  
+  		  NO);
   if (peer2 == -1) {
     os_daemon_stop(NULL, peer1);
     GC_free(cfg);

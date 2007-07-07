@@ -297,7 +297,7 @@ static void addToTree(GtkTreeStore * model,
     gtk_tree_store_remove(model,
   		  &it);
     return;
-  }  
+  }
 }
 
 typedef struct {

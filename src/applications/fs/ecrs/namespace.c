@@ -275,7 +275,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
   		  &knb->nblock,
   		  size - sizeof(KBlock) - sizeof(unsigned int));
 
-      GE_ASSERT(ectx, 
+      GE_ASSERT(ectx,
   	OK == sign(pk,
   		   sizeof(NBlock) + mdsize,
   		   &knb->nblock,
@@ -448,7 +448,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
   dstURI = ECRS_uriToString(dstU);
   mdsize = ECRS_sizeofMetaData(md,
   		       ECRS_SERIALIZE_PART);
-  size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;  
+  size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +

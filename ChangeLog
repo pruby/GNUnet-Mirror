@@ -6,7 +6,7 @@ Sun Jul  1 20:35:00 MDT 2007
 	Fixed issue with too many TCP connections being
 	created.  Reduced CPU overheads by increasing
 	requirements for grouping of messages.  Improved
-	various error messages.  
+	various error messages.
 
 Sat Jun 30 01:55:34 MDT 2007
 	Improved bloomfilter recomputation after quota change.
@@ -48,14 +48,14 @@ Fri Jun  8 23:44:01 MDT 2007
 Tue May 29 23:15:27 MDT 2007
 	Fixed a major bug which resulted in peers without
 	traffic between them disconnecting (even if that
-	session was their only connection).  
+	session was their only connection).
 	Fixed another major bug where nodes would not
 	properly forward HELLOs from other peers (given
 	certain common/default configuration options).
 
 Sun May 27 22:39:48 MDT 2007
 	Added new API gnunet_testing_lib.h to make it
-	easier to write testcases that need to start 
+	easier to write testcases that need to start
 	gnunetd.  API is now used everywhere and the
 	ugly peer.conf files and directories are gone.
 	Fixed a bug with inserting empty directories.
@@ -63,9 +63,9 @@ Sun May 27 22:39:48 MDT 2007
 
 Sat May 26 18:24:15 MDT 2007
 	Fixed bugs with testcases (changes in names and
-	structure of options were not reflected in .conf 
+	structure of options were not reflected in .conf
 	files for various testcases).
-	Fixed issues with command-line option handling (failed to 
+	Fixed issues with command-line option handling (failed to
 	override configuration file options).
 	Fixed bogus nesting in GAP routing algorithm (caused
 	random request drops).
@@ -85,7 +85,7 @@ Wed Feb 28 15:29:05 MST 2007
 	Enabled abortion of gnunet-peer-info with CTRL-C.
 
 Mon Feb 26 19:19:29 MST 2007
-	Fixed handling of -d option by gnunet-download 
+	Fixed handling of -d option by gnunet-download
 	if -f option is not given.
 
 Sat Feb 24 15:43:14 MST 2007
@@ -113,7 +113,7 @@ Sun Jan 28 02:43:37 MST 2007
 Sat Jan 27 16:02:02 MST 2007
 	Changing $-expansion for interpretation of configuration file
 	(again).  Also, now the base-path for gnunetd defaults to
-	"/var/lib/gnunet" instead of "/var/lib/GNUnet".  
+	"/var/lib/gnunet" instead of "/var/lib/GNUnet".
 
 Tue Jan 23 19:48:37 MST 2007
 	Fixed problem with split-extractor keywords not being used
@@ -131,7 +131,7 @@ Mon Jan  8 22:21:15 MST 2007
 
 Mon Jan  8 21:34:02 MST 2007
 	Forcing -O3 for crypto library (performance critical).
-	Enforcing message queue limit for daemon (somehow got lost 
+	Enforcing message queue limit for daemon (somehow got lost
 	on the way to 0.7.1, was responsible for high CPU load).
 	Fixing cron job deletion in core (clean shutdown).
 
@@ -211,7 +211,7 @@ Wed Nov 29 22:20:26 MST 2006
 	FSUI test suite.
 
 Mon Nov 27 08:51:46 MST 2006
-	Added conversion of ECRS error messages to FSUI 
+	Added conversion of ECRS error messages to FSUI
 	error event messages.
 
 Sun Nov 19 00:20:14 MST 2006
@@ -230,7 +230,7 @@ Wed Nov  1 13:09:53 MST 2006
 	Fixed some problems with index creation in sqlite
 	datastore (discovered with new sqlite benchmarking
 	code).  Performance should improve significantly
-	(observed was a factor of 4-10 depending on 
+	(observed was a factor of 4-10 depending on
 	database size and operation).
 
 Thu Oct 19 23:44:24 MDT 2006
@@ -262,7 +262,7 @@ Sun May 14 02:51:15 PDT 2006
 	Major gnunet-setup GTK code cleanup (now uses libglade).
 
 Sat May 13 19:35:49 PDT 2006
-	Made headers more C++ friendly.     
+	Made headers more C++ friendly.
 
 Wed May 10 22:11:17 PDT 2006
 	Fixing bug that could result in hanging the UDP transport;
@@ -273,7 +273,7 @@ Sat May  6 00:17:59 PDT 2006
 
 Fri May  5 01:33:42 PDT 2006
 	Fixed bug with priorities of IBlocks of uploaded content
-	(priority was left at zero, making those blocks be 
+	(priority was left at zero, making those blocks be
 	possibly discarded rather quickly once the datastore filled
 	up).
 
@@ -286,7 +286,7 @@ Tue May  2 00:01:25 PDT 2006
 	fixing Mantis #1058.
 
 Sat Apr 22 13:50:39 PDT 2006
-	Fixed bug in util/cron.c where stopCron() would wait for an 
+	Fixed bug in util/cron.c where stopCron() would wait for an
 	unnecessary sleep to complete.
 
 Sat Mar 18 12:54:11 PST 2006
@@ -380,9 +380,9 @@ Mon Jul 18 01:03:05 CEST 2005
 	Alpha-rename fest.  Releasing 0.7.0pre5.
 
 Sun Jul 17 13:49:40 CEST 2005
-	Fixed problems with struct alignment on 64-bit 
+	Fixed problems with struct alignment on 64-bit
 	AMDs.  Fixed recently introduced memory leak.
-	Fixed various compiler warnings.  
+	Fixed various compiler warnings.
 	
 Sat Jul 16 23:55:31 CEST 2005
 	Fixed various minor problems with platforms
@@ -394,7 +394,7 @@ Mon Jul 11 14:41:18 CEST 2005
 	Fixed tiny memory leak in http_bootstrap.
 
 Mon Jul 11 02:22:24 CEST 2005
-	Fixed long-standing problems in statuscalls wrt 
+	Fixed long-standing problems in statuscalls wrt
 	network load estimates, leading to too-high bandwidth
 	consumption on average.  Fixed minor memory leaks.
 	Fixed far too often session-key exchange (was done
@@ -419,7 +419,7 @@ Sat Jul  2 17:21:07 CEST 2005
 Fri Jul  1 15:08:42 CEST 2005
         Added statistics for transports and other connection-
 	related functions.  Prevented core from dropping
-	messages just because transport is (temporarily) 
+	messages just because transport is (temporarily)
 	blocked.  Made transport selection in identity random
 	again where necessary.
 	
@@ -453,9 +453,9 @@ Sat Jun 11 11:25:24 EST 2005
 	passed around, wrong list of filenames updated).	
 
 Sat Apr  2 01:54:23 EST 2005
-	Various bugfixes, some of them critical (segfaults, 
-	protocol errors (resulting in failures to connect), 
-	old version of configuration file would be 
+	Various bugfixes, some of them critical (segfaults,
+	protocol errors (resulting in failures to connect),
+	old version of configuration file would be
 	generated if configuration was missing,
 	gnunet-insert would not properly work with multiple
 	keywords (-k and -K options)). Releasing 0.7.0pre2.

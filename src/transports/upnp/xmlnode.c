@@ -273,7 +273,7 @@ xmlnode_get_child_with_namespace(const xmlnode *parent,
   if (child_name != NULL) {
     child_name[0] = '\0';
     child_name++;
-  }  
+  }
 
   for(x = parent->child; x; x = x->next) {
     const char *xmlns = NULL;
