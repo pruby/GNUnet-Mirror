@@ -367,6 +367,7 @@ then
   fi
 fi
 AM_CONDITIONAL(HAVE_MYSQL, test x$mysql = xtrue)
+AM_CONDITIONAL(HAVE_MYSQLE, test "0" = "1")
 
 LDFLAGS=$SAVE_LDFLAGS
 CPPFLAGS=$SAVE_CPPFLAGS
@@ -597,7 +598,7 @@ AC_ARG_WITH(guile,
      AC_CHECK_LIB([guile], [scm_sigaction_for_thread],
       guile=1))])
 
-if test "$guile" == 1
+if test "$guile" = 1
 then
  AC_CHECK_LIB([guile], [scm_init_guile], [],
     	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]))

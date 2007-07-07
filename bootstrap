@@ -1,7 +1,9 @@
 #!/bin/sh
 export WANT_AUTOMAKE="1.8"
 export MKDIR_P="mkdir -p"
-automake -fi
+export AUTOMAKE="automake-1.8"
+export ACLOCAL="aclocal-1.8"
+automake-1.8 -fi
 cd libltdl
 autoreconf -f -i
 cd ..

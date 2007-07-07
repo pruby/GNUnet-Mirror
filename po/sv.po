@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-07-06 23:12-0600\n"
+"POT-Creation-Date: 2007-07-07 02:38-0600\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -478,7 +478,7 @@ msgid "# Foreign advertisements forwarded"
 msgstr ""
 
 #: src/applications/advertising/advertising.c:850
-#: src/applications/pingpong/pingpong.c:516
+#: src/applications/pingpong/pingpong.c:520
 msgid "# plaintext PING messages sent"
 msgstr "# PING-meddelanden i klartext skickade"
 
@@ -500,7 +500,7 @@ msgstr ""
 #: src/applications/pingpong/pingpong.c:128
 #: src/applications/pingpong/pingpong.c:199
 #: src/applications/pingpong/pingpong.c:264
-#: src/applications/pingpong/pingpong.c:335
+#: src/applications/pingpong/pingpong.c:337
 #, c-format
 msgid "Received malformed `%s' message. Dropping.\n"
 msgstr ""
@@ -513,54 +513,54 @@ msgstr ""
 msgid "Received PING not destined for us!\n"
 msgstr "Mottog PING som ej var ämnat för oss!\n"
 
-#: src/applications/pingpong/pingpong.c:308
-#: src/applications/pingpong/pingpong.c:371
+#: src/applications/pingpong/pingpong.c:309
+#: src/applications/pingpong/pingpong.c:374
 msgid ""
 "Could not match PONG against any PING. Try increasing MAX_PING_PONG "
 "constant.\n"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:414
+#: src/applications/pingpong/pingpong.c:418
 msgid "Cannot create PING, table full. Try increasing MAX_PING_PONG.\n"
 msgstr "Kan inte skapa PING, tabell är full. Försök att öka MAX_PING_PONG.\n"
 
-#: src/applications/pingpong/pingpong.c:506
+#: src/applications/pingpong/pingpong.c:510
 msgid "# encrypted PONG messages received"
 msgstr "# krypterade PONG-meddelanden mottagna"
 
-#: src/applications/pingpong/pingpong.c:508
+#: src/applications/pingpong/pingpong.c:512
 msgid "# plaintext PONG messages received"
 msgstr "# klartext PONG-meddelanden mottagna"
 
-#: src/applications/pingpong/pingpong.c:510
+#: src/applications/pingpong/pingpong.c:514
 msgid "# encrypted PING messages received"
 msgstr "# krypterade PING-meddelanden mottagna"
 
-#: src/applications/pingpong/pingpong.c:512
+#: src/applications/pingpong/pingpong.c:516
 msgid "# PING messages created"
 msgstr "# PING-meddelanden skapade"
 
-#: src/applications/pingpong/pingpong.c:514
+#: src/applications/pingpong/pingpong.c:518
 #: src/applications/session/connect.c:931
 msgid "# encrypted PONG messages sent"
 msgstr "# krypterade PONG-meddelanden skickade"
 
-#: src/applications/pingpong/pingpong.c:518
+#: src/applications/pingpong/pingpong.c:522
 #: src/applications/session/connect.c:929
 msgid "# encrypted PING messages sent"
 msgstr "# krypterade PING-meddelanden skickade"
 
-#: src/applications/pingpong/pingpong.c:520
+#: src/applications/pingpong/pingpong.c:524
 #, fuzzy
 msgid "# plaintext PONG messages sent"
 msgstr "# PING-meddelanden i klartext skickade"
 
-#: src/applications/pingpong/pingpong.c:522
+#: src/applications/pingpong/pingpong.c:526
 #, fuzzy
 msgid "# plaintext PONG transmissions failed"
 msgstr "# klartext PONG-meddelanden mottagna"
 
-#: src/applications/pingpong/pingpong.c:532
+#: src/applications/pingpong/pingpong.c:536
 #, c-format
 msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
 msgstr "\"%s\" registrerar handtag %d %d (klartext och kryptotext)\n"
