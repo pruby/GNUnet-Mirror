@@ -57,7 +57,12 @@ typedef unsigned long long cron_t;
 #define cronMONTHS ((cron_t)(30 * cronDAYS))
 #define cronYEARS ((cron_t)(365 * cronDAYS))
 
-#define REALTIME_LIMIT (1000 * cronMILLIS)
+/**
+ * How long will we accept locks to be held before
+ * reporting that there maybe a problem?  Set to 
+ * zero to disable reporting.
+ */
+#define REALTIME_LIMIT (000 * cronMILLIS)
 
 /**
  * Main method of a thread.
