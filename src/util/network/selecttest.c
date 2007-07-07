@@ -203,19 +203,20 @@ static int check() {
   LISTEN(listen_sock, 5);
 
   sh = select_create("Select Tester",
-  	     NO, /* tcp */
-  	     NULL, /* ectx */
-  	     NULL, /* no load monitoring */
-  	     listen_sock,
-  	     sizeof(IPaddr),
-  	     15 * cronSECONDS, /* inactive timeout */
-  	     test_smh,
-  	     NULL,
-  	     test_sah,
-  	     NULL,
-  	     test_sch,
-  	     NULL,
-  	     128 * 1024); /* memory quota */
+		     NO, /* tcp */
+		     NULL, /* ectx */
+		     NULL, /* no load monitoring */
+		     listen_sock,
+		     sizeof(IPaddr),
+		     15 * cronSECONDS, /* inactive timeout */
+		     test_smh,
+		     NULL,
+		     test_sah,
+		     NULL,
+		     test_sch,
+		     NULL,
+		     128 * 1024,  /* memory quota */
+		     128 /* socket quota */);
 
   write_sock = SOCKET(PF_INET,
   	      SOCK_STREAM,
