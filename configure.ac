@@ -27,9 +27,6 @@ AM_CONFIG_HEADER([config.h])
 
 AH_TOP([#define _GNU_SOURCE  1])
 
-# Hack for automake 1.10
-export MKDIR_P="mkdir -p"
-
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC

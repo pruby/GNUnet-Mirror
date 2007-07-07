@@ -1,3 +1,6 @@
+if HAVE_MYSQLE
+ MYSQLE_DIR = sqstore_mysql_embedded
+endif
 
 if HAVE_MYSQL
  MYSQL_DIR = sqstore_mysql
@@ -30,6 +33,7 @@ SUBDIRS	= \
  pingpong \
  session \
  $(MYSQL_DIR) \
+ $(MYSQLE_DIR) \
  $(SQLITE_DIR) \
  tbench \
  template \
