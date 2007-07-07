@@ -295,18 +295,20 @@ static int pongReceived(const PeerIdentity * sender,
   MUTEX_UNLOCK(pingPongLock);
 #if DEBUG_PINGPONG
   hash2enc(&sender->hashPubKey,
-     &enc);
+	   &enc);
   GE_LOG(ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   "Received PONG from `%s' matched %u peers.\n",
-   &enc,
-   matched);
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received PONG from `%s' matched %u peers.\n",
+	 &enc,
+	 matched);
 #endif
   if (matched == 0) {
+#if DEBUG_PINGPONG
     GE_LOG(ectx,
-     GE_WARNING | GE_BULK | GE_ADMIN,
-     _("Could not match PONG against any PING. "
-       "Try increasing MAX_PING_PONG constant.\n"));
+	   GE_WARNING | GE_BULK | GE_ADMIN,
+	   _("Could not match PONG against any PING. "
+	     "Try increasing MAX_PING_PONG constant.\n"));
+#endif
   }
   return OK;
 }
@@ -358,18 +360,20 @@ static int plaintextPongReceived(const PeerIdentity * sender,
   MUTEX_UNLOCK(pingPongLock);
 #if DEBUG_PINGPONG
   hash2enc(&sender->hashPubKey,
-     &enc);
+	   &enc);
   GE_LOG(ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   "Received plaintext PONG from `%s' matched %u peers.\n",
-   &enc,
-   matched);
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received plaintext PONG from `%s' matched %u peers.\n",
+	 &enc,
+	 matched);
 #endif
   if (matched == 0) {
+#if DEBUG_PINGPONG
     GE_LOG(ectx,
-     GE_WARNING | GE_BULK | GE_ADMIN,
-     _("Could not match PONG against any PING. "
-       "Try increasing MAX_PING_PONG constant.\n"));
+	   GE_WARNING | GE_BULK | GE_ADMIN,
+	   _("Could not match PONG against any PING. "
+	     "Try increasing MAX_PING_PONG constant.\n"));
+#endif
   }
   return OK;
 }
@@ -410,9 +414,9 @@ createPing(const PeerIdentity * receiver,
     }
   if (j == -1) { /* all send this second!? */
     GE_LOG(ectx,
-     GE_WARNING | GE_BULK | GE_ADMIN,
-     _("Cannot create PING, table full. "
-       "Try increasing MAX_PING_PONG.\n"));
+	   GE_WARNING | GE_BULK | GE_ADMIN,
+	   _("Cannot create PING, table full. "
+	     "Try increasing MAX_PING_PONG.\n"));
     MUTEX_UNLOCK(pingPongLock);
     return NULL;
   }

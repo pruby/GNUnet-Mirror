@@ -1,3 +1,6 @@
+Sat Jul  7 00:22:47 MDT 2007
+	Releasing GNUnet 0.7.2a.
+
 Fri Jul  6 22:54:52 MDT 2007
 	Fixed bugs in F2F topology code.  Eliminated a few
 	confusing LOG messages.	
