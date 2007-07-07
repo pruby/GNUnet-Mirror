@@ -3,10 +3,6 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.7.2a [7'07] (aka "bugfixes"):
-- fix memory/socket leak in gnunetd
-
-
 0.7.3 [8'07] (aka "features"):
 - chat support basics [RC]
 - old/new features:
