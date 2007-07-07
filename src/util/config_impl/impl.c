@@ -844,12 +844,12 @@ _attach_change_listener(struct GC_Configuration * cfg,
     for (j=0;j<s->size;j++) {
       GC_Entry * e = &s->entries[j];
       if (0 != callback(ctx,
-  		cfg,
-  		cfg->data->ectx,
-  		s->name,
-  		e->key)) {
-  MUTEX_UNLOCK(cfg->data->lock);
-  return -1;
+			cfg,
+			cfg->data->ectx,
+			s->name,
+			e->key)) {
+	MUTEX_UNLOCK(cfg->data->lock);
+	return -1;
       }
       s = &cfg->data->sections[i]; /* side-effects of callback are possible! */
     }

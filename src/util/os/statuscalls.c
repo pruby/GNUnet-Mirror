@@ -347,6 +347,9 @@ static int resetStatusCalls(void * cls,
   int numInterfaces;
   int basic;
 
+  if (0 != strcmp(sect,
+		  "LOAD"))
+    return 0; /* fast path */
   basic = GC_get_configuration_value_yesno(cfg,
   				   "LOAD",
   				   "BASICLIMITING",

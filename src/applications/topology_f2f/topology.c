@@ -340,11 +340,14 @@ static double estimateSaturation() {
   return saturation;
 }
 
+/**
+ * @return 0 on success.
+ */
 static int rereadConfiguration(void * ctx,
-  		       struct GC_Configuration * cfg,
-  		       struct GE_Context * ectx,
-  		       const char * section,
-  		       const char * option) {
+			       struct GC_Configuration * cfg,
+			       struct GE_Context * ectx,
+			       const char * section,
+			       const char * option) {
   char * fn;
   char * data;
   unsigned long long size;
@@ -353,7 +356,7 @@ static int rereadConfiguration(void * ctx,
   HashCode512 hc;
 
   if (0 != strcmp(section, "F2F"))
-    return OK;
+    return 0;
   GROW(friends,
        friendCount,
        0);
@@ -366,18 +369,18 @@ static int rereadConfiguration(void * ctx,
   if ( (0 == disk_file_test(ectx, fn)) ||
        (OK != disk_file_size(ectx, fn, &size, YES)) ) {
     GE_LOG(ectx,
-     GE_USER | GE_ADMIN | GE_ERROR | GE_IMMEDIATE,
-     "Could not read friends list `%s'\n",
-     fn);
+	   GE_USER | GE_ADMIN | GE_ERROR | GE_IMMEDIATE,
+	   "Could not read friends list `%s'\n",
+	   fn);
     FREE(fn);
     return SYSERR;
   }
   data = MALLOC(size);
   if (size != disk_file_read(ectx, fn, size, data)) {
     GE_LOG(ectx,
-     GE_ERROR | GE_BULK | GE_USER,
-     _("Failed to read friends list from `%s'\n"),
-     fn);
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("Failed to read friends list from `%s'\n"),
+	   fn);
     FREE(fn);
     FREE(data);
     return SYSERR;
@@ -393,8 +396,8 @@ static int rereadConfiguration(void * ctx,
      sizeof(EncName));
     if (! isspace(enc.encoding[sizeof(EncName)-1])) {
       GE_LOG(ectx,
-       GE_WARNING | GE_BULK | GE_USER,
-       _("Syntax error in topology specification, skipping bytes.\n"));
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Syntax error in topology specification, skipping bytes.\n"));
       continue;
     }
     enc.encoding[sizeof(EncName)-1] = '\0';
@@ -406,16 +409,16 @@ static int rereadConfiguration(void * ctx,
       friends[friendCount-1].hashPubKey = hc;
     } else {
       GE_LOG(ectx,
-       GE_WARNING | GE_BULK | GE_USER,
-       _("Syntax error in topology specification, skipping bytes `%s'.\n"),
-       &enc);
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Syntax error in topology specification, skipping bytes `%s'.\n"),
+	     &enc);
     }
     pos = pos + sizeof(EncName);
     while ( (pos < size) &&
-      isspace(data[pos]))
+	    isspace(data[pos]))
       pos++;
   }
-  return OK;
+  return 0;
 }
 
 Topology_ServiceAPI *
@@ -446,8 +449,9 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     return NULL;
   }
   if (0 != GC_attach_change_listener(coreAPI->cfg,
-  			     &rereadConfiguration,
-  			     NULL)) {
+				     &rereadConfiguration,
+				     NULL)) {
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     capi->releaseService(transport);
@@ -458,10 +462,10 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
   }
 
   cron_add_job(coreAPI->cron,
-         &cronCheckLiveness,
-         LIVE_SCAN_FREQUENCY,
-         LIVE_SCAN_FREQUENCY,
-         NULL);
+	       &cronCheckLiveness,
+	       LIVE_SCAN_FREQUENCY,
+	       LIVE_SCAN_FREQUENCY,
+	       NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;

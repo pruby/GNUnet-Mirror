@@ -419,10 +419,10 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     return NULL;
   }
   cron_add_job(capi->cron,
-         &cronCheckLiveness,
-         LIVE_SCAN_FREQUENCY,
-         LIVE_SCAN_FREQUENCY,
-         NULL);
+	       &cronCheckLiveness,
+	       LIVE_SCAN_FREQUENCY,
+	       LIVE_SCAN_FREQUENCY,
+	       NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
