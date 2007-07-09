@@ -292,13 +292,19 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
  * Initiate the database connection.
  * Uses dbhI->cnffile for the configuration,
  * so that must be set already.
+ *
+ * @param prepare is this the main connection
+ *        (if YES, we create tables and initialize
+ *         prepared statements; if NO, we
+ *         use longer timeouts (for iteration)
+ *         and do not setup prepared statements)
  * @return OK on success
  */
 static int iopen(mysqlHandle * dbhI,
-  	 int prepare) {
+		 int prepare) {
   char * dbname;
   my_bool reconnect = 0;
-  unsigned int timeout = 5; /* in seconds */
+  unsigned int timeout = 60; /* in seconds */
 
   if (dbhI->cnffile == NULL)
     return SYSERR;
@@ -317,6 +323,8 @@ static int iopen(mysqlHandle * dbhI,
   mysql_options(dbhI->dbf,
   	MYSQL_OPT_CONNECT_TIMEOUT,
   	(const void*) &timeout);
+  if (! prepare)
+    timeout = 28800;
   mysql_options(dbhI->dbf,
   	MYSQL_OPT_READ_TIMEOUT,
   	(const void*) &timeout);
@@ -348,6 +356,17 @@ static int iopen(mysqlHandle * dbhI,
     return SYSERR;
   }
   if (prepare) {
+    dbhI->prepare = YES;
+    mysql_query(dbhI->dbf,
+		"SET SESSION net_read_timeout=60, SESSION net_write_timeout=60");
+    if (mysql_error(dbhI->dbf)[0]) {
+      LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
+		"mysql_query",
+		dbhI);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
     mysql_query(dbhI->dbf,
   	"CREATE TABLE IF NOT EXISTS gn070 ("
   	" size INT(11) NOT NULL DEFAULT 0,"
@@ -414,8 +433,8 @@ static int iopen(mysqlHandle * dbhI,
       return SYSERR;
     }
     if (mysql_stmt_prepare(dbhI->insert,
-  		   INSERT_SAMPLE,
-  		   strlen(INSERT_SAMPLE)) ||
+			   INSERT_SAMPLE,
+			   strlen(INSERT_SAMPLE)) ||
 	mysql_stmt_prepare(dbhI->select,
 			   SELECT_SAMPLE,
 			   strlen(SELECT_SAMPLE)) ||
@@ -437,7 +456,8 @@ static int iopen(mysqlHandle * dbhI,
 	mysql_stmt_prepare(dbhI->deleteg,
 			   DELETE_GENERIC_SAMPLE,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
 	     _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s\n"),
 	     "mysql_stmt_prepare",
 	     __FILE__, __LINE__,
@@ -494,7 +514,6 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->ubind[2].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[3].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->ubind[4].buffer_type = MYSQL_TYPE_BLOB;
-    dbhI->prepare = YES;
   } else {
     dbhI->prepare = NO;
     mysql_query(dbhI->dbf,
@@ -1351,9 +1370,9 @@ static int del(const HashCode512 * key,
  * in the datastore.
  */
 static int update(const HashCode512 * key,
-  	  const Datastore_Value * value,
-  	  int delta,
-  	  cron_t expire) {
+		  const Datastore_Value * value,
+		  int delta,
+		  cron_t expire) {
   unsigned long contentSize;
   unsigned long twenty;
 
@@ -1374,15 +1393,15 @@ static int update(const HashCode512 * key,
   dbh->ubind[4].buffer = (char*) &value[1];
   dbh->ubind[4].length = &contentSize;
   GE_ASSERT(ectx,
-      mysql_stmt_param_count(dbh->update) <= 5);
+	    mysql_stmt_param_count(dbh->update) <= 5);
   if (mysql_stmt_bind_param(dbh->update,
-  		    dbh->ubind)) {
+			    dbh->ubind)) {
     GE_LOG(ectx,
-     GE_ERROR | GE_BULK | GE_USER,
-     _("`%s' failed at %s:%d with error: %s\n"),
-     "mysql_stmt_bind_param",
-     __FILE__, __LINE__,
-     mysql_stmt_error(dbh->update));
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_param",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->update));
     iclose(dbh);
     mysql_thread_end();
     MUTEX_UNLOCK(lock);
@@ -1395,11 +1414,11 @@ static int update(const HashCode512 * key,
    */
   if (mysql_stmt_execute(dbh->update)) {
     GE_LOG(ectx,
-     GE_ERROR | GE_BULK | GE_USER,
-     _("`%s' failed at %s:%d with error: %s\n"),
-     "mysql_stmt_execute",
-     __FILE__, __LINE__,
-     mysql_stmt_error(dbh->update));
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_execute",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->update));
     iclose(dbh);
     mysql_thread_end();
     MUTEX_UNLOCK(lock);
