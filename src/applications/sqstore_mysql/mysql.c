@@ -389,26 +389,26 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->deleteh = mysql_stmt_init(dbhI->dbf);
     dbhI->deleteg = mysql_stmt_init(dbhI->dbf);
     if ( (dbhI->insert == NULL) ||
-   (dbhI->update == NULL) ||
-   (dbhI->select == NULL) ||
-   (dbhI->selectc == NULL) ||
-   (dbhI->selects == NULL) ||
-   (dbhI->selectsc == NULL) ||
-   (dbhI->deleteh == NULL) ||
-   (dbhI->deleteg == NULL) ) {
+	 (dbhI->update == NULL) ||
+	 (dbhI->select == NULL) ||
+	 (dbhI->selectc == NULL) ||
+	 (dbhI->selects == NULL) ||
+	 (dbhI->selectsc == NULL) ||
+	 (dbhI->deleteh == NULL) ||
+	 (dbhI->deleteg == NULL) ) {
       GE_BREAK(ectx, 0);
       if (dbhI->insert != NULL)
-  mysql_stmt_close(dbhI->insert);
+	mysql_stmt_close(dbhI->insert);
       if (dbhI->update != NULL)
-  mysql_stmt_close(dbhI->update);
+	mysql_stmt_close(dbhI->update);
       if (dbhI->select != NULL)
-  mysql_stmt_close(dbhI->select);
+	mysql_stmt_close(dbhI->select);
       if (dbhI->selectc != NULL)
-  mysql_stmt_close(dbhI->selectc);
+	mysql_stmt_close(dbhI->selectc);
       if (dbhI->selects != NULL)
-  mysql_stmt_close(dbhI->selects);
+	mysql_stmt_close(dbhI->selects);
       if (dbhI->selectsc != NULL)
-  mysql_stmt_close(dbhI->selectsc);
+	mysql_stmt_close(dbhI->selectsc);
       mysql_close(dbhI->dbf);
       dbhI->dbf = NULL;
       return SYSERR;
@@ -416,39 +416,39 @@ static int iopen(mysqlHandle * dbhI,
     if (mysql_stmt_prepare(dbhI->insert,
   		   INSERT_SAMPLE,
   		   strlen(INSERT_SAMPLE)) ||
-  mysql_stmt_prepare(dbhI->select,
-  		   SELECT_SAMPLE,
-  		   strlen(SELECT_SAMPLE)) ||
-  mysql_stmt_prepare(dbhI->selectc,
-  		   SELECT_SAMPLE_COUNT,
-  		   strlen(SELECT_SAMPLE_COUNT)) ||
-  mysql_stmt_prepare(dbhI->selects,
-  		   SELECT_TYPE_SAMPLE,
-  		   strlen(SELECT_TYPE_SAMPLE)) ||
-  mysql_stmt_prepare(dbhI->selectsc,
-  		   SELECT_TYPE_SAMPLE_COUNT,
-  		   strlen(SELECT_TYPE_SAMPLE_COUNT)) ||
-  mysql_stmt_prepare(dbhI->update,
-  		   UPDATE_SAMPLE,
-  		   strlen(UPDATE_SAMPLE)) ||
-  mysql_stmt_prepare(dbhI->deleteh,
-  		   SELECT_HASH_SAMPLE,
-  		   strlen(SELECT_HASH_SAMPLE)) ||
-  mysql_stmt_prepare(dbhI->deleteg,
-  		   DELETE_GENERIC_SAMPLE,
-  		   strlen(DELETE_GENERIC_SAMPLE)) ) {
+	mysql_stmt_prepare(dbhI->select,
+			   SELECT_SAMPLE,
+			   strlen(SELECT_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->selectc,
+			   SELECT_SAMPLE_COUNT,
+			   strlen(SELECT_SAMPLE_COUNT)) ||
+	mysql_stmt_prepare(dbhI->selects,
+			   SELECT_TYPE_SAMPLE,
+			   strlen(SELECT_TYPE_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->selectsc,
+			   SELECT_TYPE_SAMPLE_COUNT,
+			   strlen(SELECT_TYPE_SAMPLE_COUNT)) ||
+	mysql_stmt_prepare(dbhI->update,
+			   UPDATE_SAMPLE,
+			   strlen(UPDATE_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->deleteh,
+			   SELECT_HASH_SAMPLE,
+			   strlen(SELECT_HASH_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->deleteg,
+			   DELETE_GENERIC_SAMPLE,
+			   strlen(DELETE_GENERIC_SAMPLE)) ) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-    _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s\n"),
-       "mysql_stmt_prepare",
-       __FILE__, __LINE__,
-       mysql_stmt_error(dbhI->insert),
-       mysql_stmt_error(dbhI->select),
-       mysql_stmt_error(dbhI->selectc),
-       mysql_stmt_error(dbhI->selects),
-       mysql_stmt_error(dbhI->selectsc),
-       mysql_stmt_error(dbhI->update),
-       mysql_stmt_error(dbhI->deleteh),
-       mysql_stmt_error(dbhI->deleteg));
+	     _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s\n"),
+	     "mysql_stmt_prepare",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(dbhI->insert),
+	     mysql_stmt_error(dbhI->select),
+	     mysql_stmt_error(dbhI->selectc),
+	     mysql_stmt_error(dbhI->selects),
+	     mysql_stmt_error(dbhI->selectsc),
+	     mysql_stmt_error(dbhI->update),
+	     mysql_stmt_error(dbhI->deleteh),
+	     mysql_stmt_error(dbhI->deleteg));
       mysql_stmt_close(dbhI->insert);
       mysql_stmt_close(dbhI->select);
       mysql_stmt_close(dbhI->selectc);
@@ -462,8 +462,8 @@ static int iopen(mysqlHandle * dbhI,
       return SYSERR;
     }
     memset(dbhI->bind,
-     0,
-     sizeof(dbhI->bind));
+	   0,
+	   sizeof(dbhI->bind));
     dbhI->bind[0].buffer_type = MYSQL_TYPE_LONG; /* size */
     dbhI->bind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
     dbhI->bind[2].buffer_type = MYSQL_TYPE_LONG; /* prio */
@@ -472,13 +472,13 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->bind[5].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
     dbhI->bind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
     memset(dbhI->sbind,
-     0,
-     sizeof(dbhI->sbind));
+	   0,
+	   sizeof(dbhI->sbind));
     dbhI->sbind[0].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
     dbhI->sbind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
     memset(dbhI->dbind,
-     0,
-     sizeof(dbhI->dbind));
+	   0,
+	   sizeof(dbhI->dbind));
     dbhI->dbind[0].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
     dbhI->dbind[1].buffer_type = MYSQL_TYPE_LONG; /* size */
     dbhI->dbind[2].buffer_type = MYSQL_TYPE_LONG; /* type */
@@ -487,8 +487,8 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->dbind[5].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
     dbhI->dbind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
     memset(dbhI->ubind,
-     0,
-     sizeof(dbhI->ubind));
+	   0,
+	   sizeof(dbhI->ubind));
     dbhI->ubind[0].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[1].buffer_type = MYSQL_TYPE_LONG;
     dbhI->ubind[2].buffer_type = MYSQL_TYPE_LONG;
@@ -498,7 +498,15 @@ static int iopen(mysqlHandle * dbhI,
   } else {
     dbhI->prepare = NO;
     mysql_query(dbhI->dbf,
-  	"SET SESSION net_read_timeout=28800, SESSION net_write_timeout=28800");
+		"SET SESSION net_read_timeout=28800, SESSION net_write_timeout=28800");
+    if (mysql_error(dbhI->dbf)[0]) {
+      LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
+		"mysql_query",
+		dbhI);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
   }
   dbhI->valid = YES;
   return OK;
