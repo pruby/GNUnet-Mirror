@@ -498,7 +498,7 @@ static int iopen(mysqlHandle * dbhI,
   } else {
     dbhI->prepare = NO;
     mysql_query(dbhI->dbf,
-  	"SET SESSION net_read_timeout=28800, SESSION net_write_timeout=2880000");
+  	"SET SESSION net_read_timeout=28800, SESSION net_write_timeout=28800");
   }
   dbhI->valid = YES;
   return OK;
