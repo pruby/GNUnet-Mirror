@@ -709,7 +709,7 @@ iterateMigrationOrder (Datum_Iterator iter, void *closure)
 {
   return iterateHelper (0,
                         "SELECT SQL_NO_CACHE * FROM gn070"
-                        " %s WHERE expire > %llu"
+                        " %s WHERE expire > %llu AND type!=3"
                         " ORDER BY expire DESC", iter, closure);
 }
 
