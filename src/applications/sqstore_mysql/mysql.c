@@ -305,6 +305,7 @@ static int iopen(mysqlHandle * dbhI,
   char * dbname;
   my_bool reconnect = 0;
   unsigned int timeout = 60; /* in seconds */
+  cron_t start;
 
   if (dbhI->cnffile == NULL)
     return SYSERR;
@@ -432,6 +433,7 @@ static int iopen(mysqlHandle * dbhI,
       dbhI->dbf = NULL;
       return SYSERR;
     }
+    start = get_time();
     if (mysql_stmt_prepare(dbhI->insert,
 			   INSERT_SAMPLE,
 			   strlen(INSERT_SAMPLE)) ||
@@ -458,7 +460,7 @@ static int iopen(mysqlHandle * dbhI,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
       GE_LOG(ectx, 
 	     GE_ERROR | GE_BULK | GE_USER,
-	     _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s\n"),
+	     _("`%s' failed at %s:%d with error: I/%s S/%s SC/%s SS/%s SSC/%s U/%s D/%s DG/%s after %llums\n"),
 	     "mysql_stmt_prepare",
 	     __FILE__, __LINE__,
 	     mysql_stmt_error(dbhI->insert),
@@ -468,7 +470,8 @@ static int iopen(mysqlHandle * dbhI,
 	     mysql_stmt_error(dbhI->selectsc),
 	     mysql_stmt_error(dbhI->update),
 	     mysql_stmt_error(dbhI->deleteh),
-	     mysql_stmt_error(dbhI->deleteg));
+	     mysql_stmt_error(dbhI->deleteg),
+	     get_time() - start);
       mysql_stmt_close(dbhI->insert);
       mysql_stmt_close(dbhI->select);
       mysql_stmt_close(dbhI->selectc);
@@ -600,7 +603,7 @@ static int iterateHelper(unsigned int type,
   mysql_query(dbhI.dbf,
         "SET AUTOCOMMIT = 0");
   mysql_query(dbhI.dbf,
-        "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
   if (type==0) {
     typestr[0] = '\0';
   } else {
@@ -1375,6 +1378,7 @@ static int update(const HashCode512 * key,
 		  cron_t expire) {
   unsigned long contentSize;
   unsigned long twenty;
+  cron_t start;
 
   twenty = sizeof(HashCode512);
   MUTEX_LOCK(lock);
@@ -1412,13 +1416,15 @@ static int update(const HashCode512 * key,
    * will generate a warning though, but its probably not seen
    * at all in this context.)
    */
+  start = get_time();
   if (mysql_stmt_execute(dbh->update)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
-	   _("`%s' failed at %s:%d with error: %s\n"),
+	   _("`%s' failed at %s:%d with error `%s' after %llums\n"),
 	   "mysql_stmt_execute",
 	   __FILE__, __LINE__,
-	   mysql_stmt_error(dbh->update));
+	   mysql_stmt_error(dbh->update),
+	   get_time() - start);
     iclose(dbh);
     mysql_thread_end();
     MUTEX_UNLOCK(lock);
