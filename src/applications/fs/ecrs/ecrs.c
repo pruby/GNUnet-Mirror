@@ -29,44 +29,32 @@
 #include "platform.h"
 #include "ecrs.h"
 
-void ECRS_encryptInPlace(const HashCode512 * hc,
-  		 void * data,
-  		 unsigned int len) {
-  char * tmp;
+void
+ECRS_encryptInPlace (const HashCode512 * hc, void *data, unsigned int len)
+{
+  char *tmp;
   SESSIONKEY skey;
   INITVECTOR iv;
 
-  hashToKey(hc, &skey, &iv);
-  tmp = MALLOC(len);
-  GE_ASSERT(NULL,
-      len ==
-      encryptBlock(data,
-  		 len,
-  		 &skey,
-  		 &iv,
-  		 tmp));
-  memcpy(data, tmp, len);
-  FREE(tmp);
+  hashToKey (hc, &skey, &iv);
+  tmp = MALLOC (len);
+  GE_ASSERT (NULL, len == encryptBlock (data, len, &skey, &iv, tmp));
+  memcpy (data, tmp, len);
+  FREE (tmp);
 }
 
-void ECRS_decryptInPlace(const HashCode512 * hc,
-  		 void * data,
-  		 unsigned int len) {
-  char * tmp;
+void
+ECRS_decryptInPlace (const HashCode512 * hc, void *data, unsigned int len)
+{
+  char *tmp;
   SESSIONKEY skey;
   INITVECTOR iv;
 
-  hashToKey(hc, &skey, &iv);
-  tmp = MALLOC(len);
-  GE_ASSERT(NULL,
-      len ==
-      decryptBlock(&skey,
-  		 data,
-  		 len,
-  		 &iv,
-  		 tmp));
-  memcpy(data, tmp, len);
-  FREE(tmp);
+  hashToKey (hc, &skey, &iv);
+  tmp = MALLOC (len);
+  GE_ASSERT (NULL, len == decryptBlock (&skey, data, len, &iv, tmp));
+  memcpy (data, tmp, len);
+  FREE (tmp);
 }
 
 /* end of ecrs.c */

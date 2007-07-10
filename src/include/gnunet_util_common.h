@@ -39,4 +39,4 @@
 #define YES     1
 #define NO      0
 
-#endif /*GNUNET_UTIL_COMMON_H_*/
+#endif /*GNUNET_UTIL_COMMON_H_ */

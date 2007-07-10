@@ -29,8 +29,9 @@
 #define GNUNET_UTIL_BOOT_H
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -50,27 +51,25 @@ extern "C" {
  *  command-line argument to be processed in argv
  *  otherwise
  */
-int GNUNET_init(int argc,
-		char * const * argv,
-		const char * binaryName,
-		char ** configurationFileName,
-		const struct CommandLineOption * options,
-		struct GE_Context ** ectx,
-		struct GC_Configuration ** cfg);
+int GNUNET_init (int argc,
+                 char *const *argv,
+                 const char *binaryName,
+                 char **configurationFileName,
+                 const struct CommandLineOption *options,
+                 struct GE_Context **ectx, struct GC_Configuration **cfg);
 
 /**
  * Free resources allocated during GNUnet_init.
  */
-void GNUNET_fini(struct GE_Context * ectx,
-		 struct GC_Configuration * cfg);
+void GNUNET_fini (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
 }
 #endif
-		
+
 /* ifndef GNUNET_UTIL_GETOPT_H */
 #endif
 /* end of gnunet_util_boot.h */

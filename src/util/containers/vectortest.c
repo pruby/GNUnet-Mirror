@@ -28,119 +28,250 @@
 
 #define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); vectorDump(v); vectorFree(v);
 
-static int test(int size) {
-  struct Vector * v;
+static int
+test (int size)
+{
+  struct Vector *v;
 
-  v = vectorNew(size);
-  if (0 != vectorSize(v))
-    { DUMP(v); return 1; }
-  if (OK != vectorInsertAt(v, "first", 0))
-    { DUMP(v); return 1; }
-  if (OK == vectorInsertAt(v, "not", 2))
-    { DUMP(v); return 1; }
-  if (OK != vectorInsertAt(v, "zero", 0))
-    { DUMP(v); return 1; }
-  if (OK != vectorInsertAt(v, "second", 2))
-    { DUMP(v); return 1; }
-  vectorInsertLast(v, "third");
-  if (4 != vectorSize(v))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetAt(v, 1), "first"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetAt(v, 3), "third"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetAt(v, 0), "zero"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetFirst(v), "zero"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetLast(v), "third"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorRemoveAt(v, 1), "first"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorGetAt(v, 1), "second"))
-    { DUMP(v); return 1; }
-  if (NULL != vectorRemoveAt(v, 3))
-    { DUMP(v); return 1; }
-  if (3 != vectorSize(v))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorRemoveAt(v, 1), "second"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorRemoveObject(v, "third"), "third"))
-    { DUMP(v); return 1; }
-  if (NULL != vectorRemoveObject(v, "third"))
-    { DUMP(v); return 1; }
-  if (0 != strcmp(vectorRemoveLast(v), "zero"))
-    { DUMP(v); return 1; }
-  if (0 != vectorSize(v))
-    { DUMP(v); return 1; }
-  if (NULL != vectorRemoveLast(v))
-    { DUMP(v); return 1; }
-  if (0 != vectorSize(v))
-    { DUMP(v); return 1; }
-  vectorFree(v);
+  v = vectorNew (size);
+  if (0 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (OK != vectorInsertAt (v, "first", 0))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (OK == vectorInsertAt (v, "not", 2))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (OK != vectorInsertAt (v, "zero", 0))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (OK != vectorInsertAt (v, "second", 2))
+    {
+      DUMP (v);
+      return 1;
+    }
+  vectorInsertLast (v, "third");
+  if (4 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetAt (v, 1), "first"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetAt (v, 3), "third"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetAt (v, 0), "zero"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetFirst (v), "zero"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetLast (v), "third"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorRemoveAt (v, 1), "first"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorGetAt (v, 1), "second"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (NULL != vectorRemoveAt (v, 3))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (3 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorRemoveAt (v, 1), "second"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorRemoveObject (v, "third"), "third"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (NULL != vectorRemoveObject (v, "third"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != strcmp (vectorRemoveLast (v), "zero"))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (NULL != vectorRemoveLast (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  if (0 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  vectorFree (v);
   return 0;
 }
 
-static int test2(int size) {
+static int
+test2 (int size)
+{
   long i;
-  struct Vector * v;
+  struct Vector *v;
 
-  v = vectorNew(size);
+  v = vectorNew (size);
 
-  for (i=0;i<500;i++)
-    if (OK != vectorInsertAt(v, (void*)i, 0))
-      { DUMP(v); return 1; }
-  if (500 != vectorSize(v))
-    { DUMP(v); return 1; }
-  for (i=0;i<500;i++)
-    if (499 - i != (long) vectorGetAt(v, i))
-      { DUMP(v); return 1; }
-  if (499 != (long) vectorGetFirst(v))
-    { DUMP(v); return 1; }
-  for (i=498;i>=0;i--)
-    if (i != (long) vectorGetNext(v))
-      { DUMP(v); return 1; }
+  for (i = 0; i < 500; i++)
+    if (OK != vectorInsertAt (v, (void *) i, 0))
+      {
+        DUMP (v);
+        return 1;
+      }
+  if (500 != vectorSize (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  for (i = 0; i < 500; i++)
+    if (499 - i != (long) vectorGetAt (v, i))
+      {
+        DUMP (v);
+        return 1;
+      }
+  if (499 != (long) vectorGetFirst (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  for (i = 498; i >= 0; i--)
+    if (i != (long) vectorGetNext (v))
+      {
+        DUMP (v);
+        return 1;
+      }
 
-  if (499 != (long) vectorGetFirst(v))
-    { DUMP(v); return 1; }
-  for (i=498;i>=250;i--)
-    if (i != (long) vectorGetNext(v))
-      { DUMP(v); return 1; }
-  for (i=251;i<499;i++)
-    if (i != (long) vectorGetPrevious(v))
-      { DUMP(v); return 1; }
+  if (499 != (long) vectorGetFirst (v))
+    {
+      DUMP (v);
+      return 1;
+    }
+  for (i = 498; i >= 250; i--)
+    if (i != (long) vectorGetNext (v))
+      {
+        DUMP (v);
+        return 1;
+      }
+  for (i = 251; i < 499; i++)
+    if (i != (long) vectorGetPrevious (v))
+      {
+        DUMP (v);
+        return 1;
+      }
 
-  vectorFree(v);
+  vectorFree (v);
   return 0;
 }
 
 
-int main(int argc,
-   char * argv[]) {
-  if (NULL != vectorNew(0))
-    { printf("At %d\n", __LINE__); return 1; }
-  if (NULL != vectorNew(1))
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(2) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(3) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(4) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(128) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(65536) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test(2*65536) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
+int
+main (int argc, char *argv[])
+{
+  if (NULL != vectorNew (0))
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (NULL != vectorNew (1))
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (2) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (3) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (4) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (128) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (65536) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test (2 * 65536) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
 
-  if (test2(2) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test2(3) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test2(4) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
-  if (test2(128) != 0)
-    { printf("At %d\n", __LINE__); return 1; }
+  if (test2 (2) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test2 (3) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test2 (4) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
+  if (test2 (128) != 0)
+    {
+      printf ("At %d\n", __LINE__);
+      return 1;
+    }
   return 0;
 }

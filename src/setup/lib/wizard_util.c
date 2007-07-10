@@ -31,39 +31,43 @@
 /**
  * @brief Determine whether a NIC makes a good default
  */
-int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int suggestion) {
+int
+wiz_is_nic_default (struct GC_Configuration *cfg, const char *name,
+                    int suggestion)
+{
   char *nic;
 
-  GC_get_configuration_value_string(cfg, "NETWORK", "INTERFACE", "eth0", &nic);
+  GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE", "eth0",
+                                     &nic);
 
 #ifdef WINDOWS
   /* default NIC for unixes */
-  if (strcmp(nic, "eth0") == 0)
-  {
-    FREE(nic);
-  	nic = NULL;
-  }
+  if (strcmp (nic, "eth0") == 0)
+    {
+      FREE (nic);
+      nic = NULL;
+    }
 #endif
 
   if (nic)
-  {
-    /* The user has selected a NIC before */
-    int niclen, inslen;
-
-    niclen = strlen(nic);
-    inslen = strlen(name);
-    suggestion = 0;
-
-    if (inslen >= niclen)
     {
+      /* The user has selected a NIC before */
+      int niclen, inslen;
+
+      niclen = strlen (nic);
+      inslen = strlen (name);
+      suggestion = 0;
+
+      if (inslen >= niclen)
+        {
 #ifdef WINDOWS
-      if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
+          if (strncmp (name + inslen - niclen - 1, nic, niclen) == 0)
 #else
-      if (strcmp(name, nic) == 0)
+          if (strcmp (name, nic) == 0)
 #endif
-        suggestion = 1; /* This is the previous selection */
+            suggestion = 1;     /* This is the previous selection */
+        }
     }
-  }
 
   return suggestion;
 }
@@ -76,66 +80,69 @@ int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int sugge
  * @param groupname name of the group to use
  * @return OK on success, SYSERR on error
  */
-int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
+int
+wiz_autostartService (int doAutoStart, char *username, char *groupname)
+{
   int ret;
   char *exe;
 
-  exe = os_get_installation_path(IPK_BINDIR);
-  exe = (char *) REALLOC(exe, strlen(exe) + 12); /* 11 = "gnunetd.exe" */
-  strcat(exe,
+  exe = os_get_installation_path (IPK_BINDIR);
+  exe = (char *) REALLOC (exe, strlen (exe) + 12);      /* 11 = "gnunetd.exe" */
+  strcat (exe,
 #ifndef WINDOWS
-    "gnunetd");
+          "gnunetd");
 #else
-    "gnunetd.exe");
+          "gnunetd.exe");
 #endif
 
-  ret = os_modify_autostart(NULL /* FIXME 0.7.1 NILS */, 0, doAutoStart, exe,
-          username, groupname);
-  FREE(exe);
-  if (ret != YES) {
+  ret =
+    os_modify_autostart (NULL /* FIXME 0.7.1 NILS */ , 0, doAutoStart, exe,
+                         username, groupname);
+  FREE (exe);
+  if (ret != YES)
+    {
 #ifdef WINDOWS
-    char *err = NULL;
+      char *err = NULL;
 
-    switch(ret) {
-      case 1:
-        err = winErrorStr(_("Can't open Service Control Manager"),
-          GetLastError());
-        break;
-      case 2:
-        if (GetLastError() != ERROR_SERVICE_EXISTS) {
-          err = winErrorStr(_("Can't create service"),
-            GetLastError());
+      switch (ret)
+        {
+        case 1:
+          err = winErrorStr (_("Can't open Service Control Manager"),
+                             GetLastError ());
+          break;
+        case 2:
+          if (GetLastError () != ERROR_SERVICE_EXISTS)
+            {
+              err = winErrorStr (_("Can't create service"), GetLastError ());
+            }
+          break;
+        case 3:
+          err = winErrorStr (_("Error changing the permissions of"
+                               " the GNUnet directory"), GetLastError ());
+          break;
+        case 4:
+          err =
+            winErrorStr (_("Cannot write to the regisitry"), GetLastError ());
+          break;
+        case 5:
+          err = winErrorStr (_("Can't access the service"), GetLastError ());
+          break;
+        case 6:
+          err = winErrorStr (_("Can't delete the service"), GetLastError ());
+          break;
+        default:
+          err = winErrorStr (_("Unknown error"), GetLastError ());
         }
-        break;
-      case 3:
-        err = winErrorStr(_("Error changing the permissions of"
-          " the GNUnet directory"), GetLastError());
-        break;
-      case 4:
-        err = winErrorStr(_("Cannot write to the regisitry"), GetLastError());
-        break;
-      case 5:
-        err = winErrorStr(_("Can't access the service"),
-    		GetLastError());
-      break;
-      case 6:
-        err = winErrorStr(_("Can't delete the service"),
-    		GetLastError());
-        break;
-      default:
-        err = winErrorStr(_("Unknown error"), GetLastError());
-    }
-    if (err) {
-      MessageBox(GetActiveWindow(),
-           err,
-           _("Error"),
-           MB_ICONSTOP | MB_OK);
-      free(err);
-    }
+      if (err)
+        {
+          MessageBox (GetActiveWindow (),
+                      err, _("Error"), MB_ICONSTOP | MB_OK);
+          free (err);
+        }
 #endif
 
-    return SYSERR;
-  }
+      return SYSERR;
+    }
   return OK;
 }
 
@@ -145,40 +152,51 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  * @param name the name of the new user
  * @return 1 on success
  */
-int wiz_createGroupUser(char *group_name, char *user_name) {
+int
+wiz_createGroupUser (char *group_name, char *user_name)
+{
   int ret;
 
-  ret = os_modify_user(0, 1, user_name, group_name);
+  ret = os_modify_user (0, 1, user_name, group_name);
 
-  if (ret) {
+  if (ret)
+    {
 #ifdef MINGW
-    char *err;
+      char *err;
 
-    switch(ret) {
-    case 1:
-      err = _("This version of Windows does not support "
-        "multiple users.");
-      break;
-    case 2:
-      err = winErrorStr(_("Error creating user"), GetLastError());
-      break;
-    case 3:
-      err = winErrorStr(_("Error accessing local security policy"), GetLastError());
-      break;
-    case 4:
-      err = winErrorStr(_("Error granting service right to user"), GetLastError());
-      break;
-    default:
-      err = winErrorStr(_("Unknown error while creating a new user"), GetLastError());
-    }
+      switch (ret)
+        {
+        case 1:
+          err = _("This version of Windows does not support "
+                  "multiple users.");
+          break;
+        case 2:
+          err = winErrorStr (_("Error creating user"), GetLastError ());
+          break;
+        case 3:
+          err =
+            winErrorStr (_("Error accessing local security policy"),
+                         GetLastError ());
+          break;
+        case 4:
+          err =
+            winErrorStr (_("Error granting service right to user"),
+                         GetLastError ());
+          break;
+        default:
+          err =
+            winErrorStr (_("Unknown error while creating a new user"),
+                         GetLastError ());
+        }
 
-    if (err) {
-      MessageBox(0, err, _("Error"), MB_ICONSTOP | MB_OK);
-      free(err);
-    }
+      if (err)
+        {
+          MessageBox (0, err, _("Error"), MB_ICONSTOP | MB_OK);
+          free (err);
+        }
 #endif
-    return 0;
-  }
+      return 0;
+    }
   return 1;
 }
 

@@ -29,7 +29,9 @@
 
 #define VERBOSE NO
 
-static int check() {
+static int
+check ()
+{
   cron_t now;
   cron_t last;
   TIME_T tnow;
@@ -41,57 +43,54 @@ static int check() {
      increasing;
      measure precision of sleep and report;
      test that sleep is interrupted by signals; */
-  last = now = get_time();
+  last = now = get_time ();
   while (now == last)
-    now = get_time();
+    now = get_time ();
   if (now < last)
     return 1;
-  tnow = tlast = TIME(NULL);
+  tnow = tlast = TIME (NULL);
   while (tnow == tlast)
-    tnow = TIME(NULL);
+    tnow = TIME (NULL);
   if (tnow < tlast)
     return 2;
   cumDelta = 0;
 #define INCR 47
 #define MAXV 1500
-  for (i=0;i<MAXV;i+=INCR) {
-    last = get_time();
-    PTHREAD_SLEEP(cronMILLIS * i);
-    now = get_time();
+  for (i = 0; i < MAXV; i += INCR)
+    {
+      last = get_time ();
+      PTHREAD_SLEEP (cronMILLIS * i);
+      now = get_time ();
 #if VERBOSE
-    fprintf(stderr,
-      "%4llu ms requested, got: %4llu ms\n",
-      i * cronMILLIS,
-      (now - last));
+      fprintf (stderr,
+               "%4llu ms requested, got: %4llu ms\n",
+               i * cronMILLIS, (now - last));
 #endif
-    if (last + cronMILLIS * i < now)
-      cumDelta += (now - (last+cronMILLIS*i));
-    else
-      cumDelta += ((last+cronMILLIS*i) - now);
-  }
-  FPRINTF(stdout,
-    "Sleep precision: %llu ms. ",
-    cumDelta / cronMILLIS / (MAXV/INCR));
+      if (last + cronMILLIS * i < now)
+        cumDelta += (now - (last + cronMILLIS * i));
+      else
+        cumDelta += ((last + cronMILLIS * i) - now);
+    }
+  FPRINTF (stdout,
+           "Sleep precision: %llu ms. ",
+           cumDelta / cronMILLIS / (MAXV / INCR));
   if (cumDelta <= 10 * cronMILLIS * MAXV / INCR)
-    fprintf(stdout,
-      "Timer precision is excellent.\n");
-  else if (cumDelta <= 50 * cronMILLIS * MAXV / INCR) /* 50 ms average deviation */
-    fprintf(stdout,
-      "Timer precision is good.\n");
+    fprintf (stdout, "Timer precision is excellent.\n");
+  else if (cumDelta <= 50 * cronMILLIS * MAXV / INCR)   /* 50 ms average deviation */
+    fprintf (stdout, "Timer precision is good.\n");
   else if (cumDelta > 250 * cronMILLIS * MAXV / INCR)
-    fprintf(stdout,
-      "Timer precision is awful.\n");
+    fprintf (stdout, "Timer precision is awful.\n");
   else
-    fprintf(stdout,
-      "Timer precision is acceptable.\n");
+    fprintf (stdout, "Timer precision is acceptable.\n");
   return 0;
 }
 
-int main(int argc,
-   char * argv[]){
+int
+main (int argc, char *argv[])
+{
   int ret;
 
-  ret = check();
+  ret = check ();
 
   return ret;
 }

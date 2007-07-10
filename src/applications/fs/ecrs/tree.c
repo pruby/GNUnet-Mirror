@@ -27,22 +27,25 @@
  * @param flen file length for which to compute the depth
  * @return depth of the tree
  */
-unsigned int computeDepth(unsigned long long flen) {
+unsigned int
+computeDepth (unsigned long long flen)
+{
   unsigned int treeDepth;
   unsigned long long fl;
 
-  GE_ASSERT(NULL, DBLOCK_SIZE < MAX_BUFFER_SIZE);
-  GE_ASSERT(NULL, IBLOCK_SIZE < MAX_BUFFER_SIZE);
+  GE_ASSERT (NULL, DBLOCK_SIZE < MAX_BUFFER_SIZE);
+  GE_ASSERT (NULL, IBLOCK_SIZE < MAX_BUFFER_SIZE);
   treeDepth = 0;
   fl = DBLOCK_SIZE;
-  while (fl < flen) {
-    treeDepth++;
-    if (fl * CHK_PER_INODE < fl) {
-      /* integer overflow, this is a HUGE file... */
-      return treeDepth;
+  while (fl < flen)
+    {
+      treeDepth++;
+      if (fl * CHK_PER_INODE < fl)
+        {
+          /* integer overflow, this is a HUGE file... */
+          return treeDepth;
+        }
+      fl = fl * CHK_PER_INODE;
     }
-    fl = fl * CHK_PER_INODE;
-  }
   return treeDepth;
 }
-

@@ -30,47 +30,40 @@
 
 #define DEBUG_DSTORE NO
 
-static Dstore_ServiceAPI * dstore;
+static Dstore_ServiceAPI *dstore;
 
-static CoreAPIForApplication * coreAPI;
+static CoreAPIForApplication *coreAPI;
 
 /**
  * Lookup in the local datastore.
  * @return total number of results found
  */
-int dht_store_get(const HashCode512 * key,
-  	  unsigned int type,
-  	  ResultHandler handler,
-  	  void * cls) {
-  return dstore->get(key,
-  	     type,
-  	     handler,
-  	     cls);
+int
+dht_store_get (const HashCode512 * key,
+               unsigned int type, ResultHandler handler, void *cls)
+{
+  return dstore->get (key, type, handler, cls);
 }
 
 /**
  * Store the given data in the local datastore.
  */
-void dht_store_put(unsigned int type,
-  	   const HashCode512 * key,
-  	   cron_t discard_time,
-  	   unsigned int size,
-  	   const char * data) {
-  if (discard_time < get_time()) {
+void
+dht_store_put (unsigned int type,
+               const HashCode512 * key,
+               cron_t discard_time, unsigned int size, const char *data)
+{
+  if (discard_time < get_time ())
+    {
 #if DEBUG_DSTORE
-    GE_LOG(coreAPI->ectx,
-     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-     "Content already expired (%llu < %llu), will not keep.\n",
-     discard_time,
-     get_time());
+      GE_LOG (coreAPI->ectx,
+              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+              "Content already expired (%llu < %llu), will not keep.\n",
+              discard_time, get_time ());
 #endif
-    return;
-  }
-  dstore->put(key,
-        type,
-        discard_time,
-        size,
-        data);
+      return;
+    }
+  dstore->put (key, type, discard_time, size, data);
 }
 
 /**
@@ -79,10 +72,11 @@ void dht_store_put(unsigned int type,
  * @param capi the core API
  * @return OK on success
  */
-int init_dht_store(size_t max_size,
-  	   CoreAPIForApplication * capi) {
+int
+init_dht_store (size_t max_size, CoreAPIForApplication * capi)
+{
   coreAPI = capi;
-  dstore = coreAPI->requestService("dstore");
+  dstore = coreAPI->requestService ("dstore");
   if (dstore == NULL)
     return SYSERR;
   return OK;
@@ -93,8 +87,10 @@ int init_dht_store(size_t max_size,
  *
  * @return OK on success
  */
-int done_dht_store() {
-  coreAPI->releaseService(dstore);
+int
+done_dht_store ()
+{
+  coreAPI->releaseService (dstore);
   coreAPI = NULL;
   dstore = NULL;
   return OK;

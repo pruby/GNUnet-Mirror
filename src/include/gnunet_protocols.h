@@ -35,8 +35,9 @@
 #define GNUNET_PROTOCOLS_H
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -429,13 +430,13 @@ extern "C" {
 
 /* ************* p2p VPN messages ************* */
 
-#define P2P_PROTO_aip_IP 64	/* contains IPv6 frame */
+#define P2P_PROTO_aip_IP 64     /* contains IPv6 frame */
 
-#define P2P_PROTO_aip_ROUTE 65 /* a route to a node */
+#define P2P_PROTO_aip_ROUTE 65  /* a route to a node */
 
 #define P2P_PROTO_aip_ROUTES 66 /* no more routes in my table */
 
-#define P2P_PROTO_aip_GETROUTE 67 /* request for a table entry from a peer */
+#define P2P_PROTO_aip_GETROUTE 67       /* request for a table entry from a peer */
 
 
 #define P2P_PROTO_MAX_USED 68
@@ -491,7 +492,7 @@ extern "C" {
 
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

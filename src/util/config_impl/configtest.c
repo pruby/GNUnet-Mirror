@@ -28,65 +28,50 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 
-static struct GC_Configuration * cfg;
+static struct GC_Configuration *cfg;
 
-static int testConfig() {
-  char * c;
+static int
+testConfig ()
+{
+  char *c;
   unsigned long long l;
 
-  if (0 != GC_get_configuration_value_string(cfg,
-  				     "test",
-  				     "b",
-  				     NULL,
-  				     &c))
+  if (0 != GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
     return 1;
-  if (0 != strcmp("b",
-  	  c))
+  if (0 != strcmp ("b", c))
     return 1;
-  FREE(c);
-  if (0 != GC_get_configuration_value_number(cfg,
-  				     "test",
-  				     "five",
-  				     0,
-  				     10,
-  				     9,
-  				     &l))
+  FREE (c);
+  if (0 != GC_get_configuration_value_number (cfg,
+                                              "test", "five", 0, 10, 9, &l))
     return 1;
   if (5 != l)
     return 1;
-  GC_set_configuration_value_string(cfg,
-  			    NULL,
-  			    "more",
-  			    "c",
-  			    "YES");
-  if (NO == GC_get_configuration_value_yesno(cfg,
-  				     "more",
-  				     "c",
-  				     NO))
+  GC_set_configuration_value_string (cfg, NULL, "more", "c", "YES");
+  if (NO == GC_get_configuration_value_yesno (cfg, "more", "c", NO))
     return 1;
   return 0;
 }
 
-int main(int argc,
-   char * argv[]) {
-  struct GE_Context * ectx;
+int
+main (int argc, char *argv[])
+{
+  struct GE_Context *ectx;
   int failureCount = 0;
 
-  ectx = GE_create_context_stderr(NO,
-  			  GE_WARNING | GE_ERROR | GE_FATAL |
-  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
-  			  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  cfg = GC_create_C_impl();
-  if (0 != GC_parse_configuration(cfg,
-  			  "testconfig.conf")) {
-    fprintf(stderr,
-      "Failed to parse configuration file\n");
-    return 1;
-  }
-  GE_ASSERT(ectx, cfg != NULL);
-  os_init(ectx);
-  failureCount += testConfig();
+  ectx = GE_create_context_stderr (NO,
+                                   GE_WARNING | GE_ERROR | GE_FATAL |
+                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
+                                   GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext (ectx);
+  cfg = GC_create_C_impl ();
+  if (0 != GC_parse_configuration (cfg, "testconfig.conf"))
+    {
+      fprintf (stderr, "Failed to parse configuration file\n");
+      return 1;
+    }
+  GE_ASSERT (ectx, cfg != NULL);
+  os_init (ectx);
+  failureCount += testConfig ();
 
   if (failureCount != 0)
     return 1;

@@ -35,106 +35,72 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
-static struct GE_Context * ectx;
+static struct GE_Context *ectx;
 
-int main(int argc, char * argv[]){
+int
+main (int argc, char *argv[])
+{
   pid_t daemon;
   int ok;
-  struct ECRS_URI * uri = NULL;
-  struct ECRS_URI * euri = NULL;
-  struct ECRS_MetaData * meta = NULL;
+  struct ECRS_URI *uri = NULL;
+  struct ECRS_URI *euri = NULL;
+  struct ECRS_MetaData *meta = NULL;
   HashCode512 root;
   int old;
   int newVal;
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  daemon  = os_daemon_start(NULL,
-  		    cfg,
-  		    "peer.conf",
-  		    NO);
-  GE_ASSERT(NULL, daemon > 0);
-  CHECK(OK == connection_wait_for_running(NULL,
-  				  cfg,
-  				  30 * cronSECONDS));
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  GE_ASSERT (NULL, daemon > 0);
+  CHECK (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS));
   ok = YES;
-  NS_deleteNamespace(ectx,
-  	     cfg,
-  	     "test");
-  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
+  NS_deleteNamespace (ectx, cfg, "test");
+  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  old = NS_listNamespaces(ectx,
-  		  cfg,
-  		  NULL,
-  		  NULL);
-  			
-  meta = ECRS_createMetaData();
-  ECRS_addToMetaData(meta,
-  	     0,
-  	     "test");
-  makeRandomId(&root);
-  uri = NS_createNamespace(ectx,
-  		   cfg,
-  		   1,
-  		   1,
-  		   get_time() + 10 * cronMINUTES,
-  		   "test",
-  		   meta,
-  		   NULL,
-  		   &root);
-  CHECK(uri != NULL);
-  newVal = NS_listNamespaces(ectx,
-  		     cfg,
-  		     NULL,
-  		     NULL);
-  CHECK(old < newVal);
-  old = NS_listNamespaceContent(ectx,
-  			cfg,
-  			"test",
-  			NULL,
-  			NULL);
-  euri = NS_addToNamespace(ectx,
-  		   cfg,
-  		   1,
-  		   1,
-  		   get_time() + 10 * cronMINUTES,
-  		   "test",
-  		   42,
-  		   NULL,
-  		   &root,
-  		   NULL,
-  		   uri,
-  		   meta);
-  CHECK(euri != NULL);
-  newVal = NS_listNamespaceContent(ectx,
-  			   cfg,
-  			   "test",
-  			   NULL,
-  			   NULL);
-  CHECK(old < newVal);
-  CHECK(OK == NS_deleteNamespace(ectx,
-  			 cfg,
-  			 "test"));
-  /* END OF TEST CODE */
- FAILURE:
-  if (uri != NULL)
-    ECRS_freeUri(uri);
-  if (euri != NULL)
-    ECRS_freeUri(euri);
-  if (meta != NULL)
-    ECRS_freeMetaData(meta);
-  ECRS_deleteNamespace(ectx,
-  	       cfg,
-  	       "test");
+  old = NS_listNamespaces (ectx, cfg, NULL, NULL);
 
-  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
-  GC_free(cfg);
+  meta = ECRS_createMetaData ();
+  ECRS_addToMetaData (meta, 0, "test");
+  makeRandomId (&root);
+  uri = NS_createNamespace (ectx,
+                            cfg,
+                            1,
+                            1,
+                            get_time () + 10 * cronMINUTES,
+                            "test", meta, NULL, &root);
+  CHECK (uri != NULL);
+  newVal = NS_listNamespaces (ectx, cfg, NULL, NULL);
+  CHECK (old < newVal);
+  old = NS_listNamespaceContent (ectx, cfg, "test", NULL, NULL);
+  euri = NS_addToNamespace (ectx,
+                            cfg,
+                            1,
+                            1,
+                            get_time () + 10 * cronMINUTES,
+                            "test", 42, NULL, &root, NULL, uri, meta);
+  CHECK (euri != NULL);
+  newVal = NS_listNamespaceContent (ectx, cfg, "test", NULL, NULL);
+  CHECK (old < newVal);
+  CHECK (OK == NS_deleteNamespace (ectx, cfg, "test"));
+  /* END OF TEST CODE */
+FAILURE:
+  if (uri != NULL)
+    ECRS_freeUri (uri);
+  if (euri != NULL)
+    ECRS_freeUri (euri);
+  if (meta != NULL)
+    ECRS_freeMetaData (meta);
+  ECRS_deleteNamespace (ectx, cfg, "test");
+
+  GE_ASSERT (NULL, OK == os_daemon_stop (NULL, daemon));
+  GC_free (cfg);
   return (ok == YES) ? 0 : 1;
 }
 

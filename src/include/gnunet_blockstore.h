@@ -30,8 +30,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -39,7 +40,8 @@ extern "C" {
 /**
  * Data stored in the blockstore.
  */
-typedef struct {
+typedef struct
+{
   /**
    * Size of the data container (in NBO).  This field
    * is followed by size-sizeof(unsigned int) bytes
@@ -56,9 +58,8 @@ typedef struct {
  * @param cls argument passed for context (closure)
  * @return OK to continue with iteration, SYSERR to abort
  */
-typedef int (*DataProcessor)(const HashCode512 * key,
-			     const DataContainer * value,
-			     void * cls);
+typedef int (*DataProcessor) (const HashCode512 * key,
+                              const DataContainer * value, void *cls);
 
 /**
  * GAP and DHT clients must implement this interface to tell
@@ -76,17 +77,18 @@ typedef int (*DataProcessor)(const HashCode512 * key,
  * The put method is (ab)used to check an item that is merely routed
  * for its integrity.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * First argument to be passed to all functions in this struct.
    */
-  void * closure;
+  void *closure;
 
   /**
    * Do a quick test if we MAY have the content.
    */
-  int (*fast_get)(const HashCode512 * key);
+  int (*fast_get) (const HashCode512 * key);
 
   /**
    * Lookup an item in the datastore.
@@ -99,13 +101,12 @@ typedef struct {
    * @param resCallbackClosure extra argument to resultCallback
    * @return number of results, SYSERR on error
    */
-  int (*get)(void * closure,
-	     unsigned int type,
-	     unsigned int prio,
-	     unsigned int keyCount,
-	     const HashCode512 * keys,
-	     DataProcessor resultCallback,
-	     void * resCallbackClosure);
+  int (*get) (void *closure,
+              unsigned int type,
+              unsigned int prio,
+              unsigned int keyCount,
+              const HashCode512 * keys,
+              DataProcessor resultCallback, void *resCallbackClosure);
 
   /**
    * Store an item in the datastore.
@@ -117,10 +118,9 @@ typedef struct {
    *         NO if the value verifies but is not stored,
    *         SYSERR if the value is malformed
    */
-  int (*put)(void * closure,
-	     const HashCode512 * key,
-	     const DataContainer * value,
-	     unsigned int prio);
+  int (*put) (void *closure,
+              const HashCode512 * key,
+              const DataContainer * value, unsigned int prio);
 
   /**
    * Remove an item from the datastore.
@@ -129,9 +129,8 @@ typedef struct {
    * @param value the value to remove, NULL for all values of the key
    * @return OK if the value could be removed, SYSERR if not (i.e. not present)
    */
-  int (*del)(void * closure,
-	     const HashCode512 * key,
-	     const DataContainer * value);
+  int (*del) (void *closure,
+              const HashCode512 * key, const DataContainer * value);
 
   /**
    * Iterate over all keys in the local datastore
@@ -140,13 +139,11 @@ typedef struct {
    * @param cls argument to processor
    * @return number of results, SYSERR on error
    */
-  int (*iterate)(void * closure,		
-		 DataProcessor processor,
-		 void * cls);
+  int (*iterate) (void *closure, DataProcessor processor, void *cls);
 
 } Blockstore;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

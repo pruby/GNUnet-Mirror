@@ -40,18 +40,14 @@ extern int sock;
 #define SOCKET_ADD_ARGUMENT 3
 #define SOCKET_END_COMMAND 4
 
-void socketSend(unsigned int len,
-		unsigned int type,
-		void * data);
+void socketSend (unsigned int len, unsigned int type, void *data);
 
 /**
  * Read a message from the socket.
  * @return the type of the message
  */
-unsigned int readSocket(char ** rbuf,
-			unsigned int * len);
+unsigned int readSocket (char **rbuf, unsigned int *len);
 
-void XPRINTF(const char * fmt,
-	     ...);
+void XPRINTF (const char *fmt, ...);
 
 #endif

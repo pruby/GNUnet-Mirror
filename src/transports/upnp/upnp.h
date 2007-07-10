@@ -32,8 +32,9 @@
 #include "gnunet_util_cron.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -44,9 +45,8 @@ extern "C" {
  * public IP address of the IGD, and control it for forwarding ports.
  * The result will be cached for further use.
  */
-int gaim_upnp_discover(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       int sock);
+int gaim_upnp_discover (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg, int sock);
 
 /**
  * Gets the IP address from a UPnP enabled IGD that sits on the local
@@ -56,7 +56,7 @@ int gaim_upnp_discover(struct GE_Context * ectx,
  *
  * @return The IP address of the network, or NULL if something went wrong
  */
-const char * gaim_upnp_get_public_ip(void);
+const char *gaim_upnp_get_public_ip (void);
 
 /**
  * Maps Ports in a UPnP enabled IGD that sits on the local network to
@@ -70,13 +70,13 @@ const char * gaim_upnp_get_public_ip(void);
  *           addition is complete
  * @param cb_data Extra data to be passed to the callback
  */
-int gaim_upnp_change_port_mapping(struct GE_Context * ectx,
-				  struct GC_Configuration * cfg,
-				  int do_add,
-				  unsigned short portmap,
-				  const char* protocol);
+int gaim_upnp_change_port_mapping (struct GE_Context *ectx,
+                                   struct GC_Configuration *cfg,
+                                   int do_add,
+                                   unsigned short portmap,
+                                   const char *protocol);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

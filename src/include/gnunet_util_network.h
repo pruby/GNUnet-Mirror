@@ -38,8 +38,9 @@
 #include "gnunet_util_threads.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -52,7 +53,8 @@ extern "C" {
 /**
  * @brief Specify low-level network IO behavior
  */
-typedef enum {
+typedef enum
+{
 
   /**
    * Do not block.
@@ -62,13 +64,13 @@ typedef enum {
   /**
    * Call may block.
    */
-  NC_Blocking    = 0x001,
+  NC_Blocking = 0x001,
 
   /**
    * Ignore interrupts (re-try if operation
    * was aborted due to interrupt)
    */
-  NC_IgnoreInt   = 0x010,
+  NC_IgnoreInt = 0x010,
 
   /**
    * Always try to read/write the maximum
@@ -76,29 +78,32 @@ typedef enum {
    * calls).  Only return on non-interrupt
    * error or if completely done.
    */
-  NC_Complete    = 0x111,
+  NC_Complete = 0x111,
 
 } NC_KIND;
 
 /**
  * @brief 512-bit hashcode
  */
-typedef struct {
-  unsigned int bits[512 / 8 / sizeof(unsigned int)]; /* = 16 */
+typedef struct
+{
+  unsigned int bits[512 / 8 / sizeof (unsigned int)];   /* = 16 */
 } HashCode512;
 
 /**
  * The identity of the host (basically the SHA-512 hashcode of
  * it's public key).
  */
-typedef struct {
+typedef struct
+{
   HashCode512 hashPubKey;
 } PeerIdentity;
 
 /**
  * Header for all Client-Server communications.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The length of the struct (in bytes, including the length field itself)
@@ -115,7 +120,8 @@ typedef struct {
 /**
  * Client-server communication: simple return value
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
@@ -132,7 +138,8 @@ typedef struct {
 /**
  * Client-server communication: simple error message
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
@@ -150,7 +157,8 @@ typedef struct {
 /**
  * @brief an IPv4 address
  */
-typedef struct {
+typedef struct
+{
   /**
    * struct in_addr
    */
@@ -165,7 +173,8 @@ struct CIDRNetwork;
 /**
  * @brief an IPV6 address.
  */
-typedef struct {
+typedef struct
+{
   /**
    * struct in6_addr addr;
    */
@@ -195,11 +204,11 @@ struct SelectHandle;
  * @return OK if message was valid, SYSERR if corresponding
  *  socket should be closed
  */
-typedef int (*SelectMessageHandler)(void * mh_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    void * sock_ctx,
-				    const MESSAGE_HEADER * msg);			
+typedef int (*SelectMessageHandler) (void *mh_cls,
+                                     struct SelectHandle * sh,
+                                     struct SocketHandle * sock,
+                                     void *sock_ctx,
+                                     const MESSAGE_HEADER * msg);
 
 /**
  * We've accepted a connection, check that
@@ -212,20 +221,20 @@ typedef int (*SelectMessageHandler)(void * mh_cls,
  * @return NULL to reject connection, otherwise value of sock_ctx
  *         for the new connection
  */
-typedef void * (*SelectAcceptHandler)(void * ah_cls,
-				      struct SelectHandle * sh,
-				      struct SocketHandle * sock,
-				      const void * addr,
-				      unsigned int addr_len);
+typedef void *(*SelectAcceptHandler) (void *ah_cls,
+                                      struct SelectHandle * sh,
+                                      struct SocketHandle * sock,
+                                      const void *addr,
+                                      unsigned int addr_len);
 
 /**
  * Select has been forced to close a connection.
  * Free the associated context.
  */
-typedef void (*SelectCloseHandler)(void * ch_cls,
-				   struct SelectHandle * sh,
-				   struct SocketHandle * sock,
-				   void * sock_ctx);
+typedef void (*SelectCloseHandler) (void *ch_cls,
+                                    struct SelectHandle * sh,
+                                    struct SocketHandle * sock,
+                                    void *sock_ctx);
 
 /* *********************** endianess conversion ************* */
 
@@ -234,14 +243,14 @@ typedef void (*SelectCloseHandler)(void * ch_cls,
  * @param n the value in network byte order
  * @return the same value in host byte order
  */
-unsigned long long ntohll(unsigned long long n);
+unsigned long long ntohll (unsigned long long n);
 
 /**
  * Convert a long long to network-byte-order.
  * @param n the value in host byte order
  * @return the same value in network byte order
  */
-unsigned long long htonll(unsigned long long n);
+unsigned long long htonll (unsigned long long n);
 
 /* ***************** basic parsing **************** */
 
@@ -256,9 +265,8 @@ unsigned long long htonll(unsigned long long n);
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDRNetwork *
-parse_ipv4_network_specification(struct GE_Context * ectx,
-				 const char * routeList);
+struct CIDRNetwork *parse_ipv4_network_specification (struct GE_Context *ectx,
+                                                      const char *routeList);
 
 /**
  * Parse a network specification. The argument specifies
@@ -271,9 +279,9 @@ parse_ipv4_network_specification(struct GE_Context * ectx,
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDR6Network *
-parse_ipv6_network_specification(struct GE_Context * ectx,
-				 const char * routeList);
+struct CIDR6Network *parse_ipv6_network_specification (struct GE_Context
+                                                       *ectx,
+                                                       const char *routeList);
 
 /**
  * Check if the given IP address is in the list of
@@ -282,8 +290,7 @@ parse_ipv6_network_specification(struct GE_Context * ectx,
  * @param ip the IP to check (in network byte order)
  * @return NO if the IP is not in the list, YES if it it is
  */
-int check_ipv4_listed(const struct CIDRNetwork * list,
-		      IPaddr ip);
+int check_ipv4_listed (const struct CIDRNetwork *list, IPaddr ip);
 
 /**
  * Check if the given IP address is in the list of
@@ -292,8 +299,7 @@ int check_ipv4_listed(const struct CIDRNetwork * list,
  * @param ip the IP to check (in network byte order)
  * @return NO if the IP is not in the list, YES if it it is
  */
-int check_ipv6_listed(const struct CIDR6Network * list,
-		      IP6addr ip);
+int check_ipv6_listed (const struct CIDR6Network *list, IP6addr ip);
 
 #define PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), \
                  (unsigned int)((((unsigned)(ip)))>>16 & 255), \
@@ -305,9 +311,8 @@ int check_ipv6_listed(const struct CIDR6Network * list,
  *
  * @return OK on success, SYSERR on error
  */
-int get_host_by_name(struct GE_Context * ectx,
-		     const char * hostname,
-		     IPaddr * ip);
+int get_host_by_name (struct GE_Context *ectx,
+                      const char *hostname, IPaddr * ip);
 
 /* ********************* low-level socket operations **************** */
 
@@ -316,20 +321,18 @@ int get_host_by_name(struct GE_Context * ectx,
  * The OS socket should henceforth be no longer used
  * directly.  socket_destroy will close it.
  */
-struct SocketHandle *
-socket_create(struct GE_Context * ectx,
-	      struct LoadMonitor * mon,
-	      int osSocket);
+struct SocketHandle *socket_create (struct GE_Context *ectx,
+                                    struct LoadMonitor *mon, int osSocket);
 
 /**
  * Close the socket (does NOT destroy it)
  */
-void socket_close(struct SocketHandle * s);
+void socket_close (struct SocketHandle *s);
 
 /**
  * Destroy the socket (also closes it).
  */
-void socket_destroy(struct SocketHandle * s);
+void socket_destroy (struct SocketHandle *s);
 
 /**
  * Depending on doBlock, enable or disable the nonblocking mode
@@ -338,15 +341,14 @@ void socket_destroy(struct SocketHandle * s);
  * @return Upon successful completion, it returns zero.
  * @return Otherwise -1 is returned.
  */
-int socket_set_blocking(struct SocketHandle * s,
-			int doBlock);
+int socket_set_blocking (struct SocketHandle *s, int doBlock);
 
 /**
  * Check whether the socket is blocking
  * @param s the socket
  * @return YES if blocking, NO non-blocking
  */
-int socket_test_blocking(struct SocketHandle * s);
+int socket_test_blocking (struct SocketHandle *s);
 
 /**
  * Do a read on the given socket.
@@ -361,19 +363,14 @@ int socket_test_blocking(struct SocketHandle * s);
  * @return SYSERR on error, YES on success or NO if the operation
  *         would have blocked
  */
-int socket_recv(struct SocketHandle * s,
-		NC_KIND nc,
-		void * buf,
-		size_t max,
-		size_t * read);
+int socket_recv (struct SocketHandle *s,
+                 NC_KIND nc, void *buf, size_t max, size_t * read);
 
-int socket_recv_from(struct SocketHandle * s,
-		     NC_KIND nc,
-		     void * buf,
-		     size_t max,
-		     size_t * read,
-		     char * from,
-		     unsigned int * fromlen);
+int socket_recv_from (struct SocketHandle *s,
+                      NC_KIND nc,
+                      void *buf,
+                      size_t max,
+                      size_t * read, char *from, unsigned int *fromlen);
 
 /**
  * Do a write on the given socket.
@@ -386,25 +383,20 @@ int socket_recv_from(struct SocketHandle * s,
  * @return SYSERR on error, YES on success or
  *         NO if the operation would have blocked.
  */
-int socket_send(struct SocketHandle * s,
-		NC_KIND nc,
-		const void * buf,
-		size_t max,
-		size_t * sent);
+int socket_send (struct SocketHandle *s,
+                 NC_KIND nc, const void *buf, size_t max, size_t * sent);
 
-int socket_send_to(struct SocketHandle * s,
-		   NC_KIND nc,
-		   const void * buf,
-		   size_t max,
-		   size_t * sent,
-		   const char * dst,
-		   unsigned int dstlen);
+int socket_send_to (struct SocketHandle *s,
+                    NC_KIND nc,
+                    const void *buf,
+                    size_t max,
+                    size_t * sent, const char *dst, unsigned int dstlen);
 
 /**
  * Check if socket is valid
  * @return YES if valid, NO otherwise
  */
-int socket_test_valid(struct SocketHandle * s);
+int socket_test_valid (struct SocketHandle *s);
 
 
 /* ********************* select operations **************** */
@@ -428,28 +420,27 @@ int socket_test_valid(struct SocketHandle * s);
  *        accept at most? 0 for unbounded
  * @return NULL on error
  */
-struct SelectHandle *
-select_create(const char * desc,
-	      int is_udp,
-	      struct GE_Context * ectx,
-	      struct LoadMonitor * mon,
-	      int sock,
-	      unsigned int max_addr_len,
-	      cron_t timeout,
-	      SelectMessageHandler mh,
-	      void * mh_cls,
-	      SelectAcceptHandler ah,
-	      void * ah_cls,
-	      SelectCloseHandler ch,
-	      void * ch_cls,
-	      unsigned int memory_quota,
-	      int socket_quota);
+struct SelectHandle *select_create (const char *desc,
+                                    int is_udp,
+                                    struct GE_Context *ectx,
+                                    struct LoadMonitor *mon,
+                                    int sock,
+                                    unsigned int max_addr_len,
+                                    cron_t timeout,
+                                    SelectMessageHandler mh,
+                                    void *mh_cls,
+                                    SelectAcceptHandler ah,
+                                    void *ah_cls,
+                                    SelectCloseHandler ch,
+                                    void *ch_cls,
+                                    unsigned int memory_quota,
+                                    int socket_quota);
 
 /**
  * Terminate the select thread, close the socket and
  * all associated connections.
  */
-void select_destroy(struct SelectHandle * sh);
+void select_destroy (struct SelectHandle *sh);
 
 /**
  * Queue the given message with the select thread.
@@ -462,11 +453,9 @@ void select_destroy(struct SelectHandle * sh);
  *         NO if there was not enough memory to queue it,
  *         SYSERR if the sock does not belong with this select
  */
-int select_write(struct SelectHandle * sh,
-		 struct SocketHandle * sock,
-		 const MESSAGE_HEADER * msg,
-		 int mayBlock,
-		 int force);
+int select_write (struct SelectHandle *sh,
+                  struct SocketHandle *sock,
+                  const MESSAGE_HEADER * msg, int mayBlock, int force);
 
 
 /**
@@ -481,19 +470,16 @@ int select_write(struct SelectHandle * sh,
  *         NO if there was not enough memory to queue it,
  *         SYSERR if the sock does not belong with this select
  */
-int select_would_try(struct SelectHandle * sh,
-		     struct SocketHandle * sock,
-		     unsigned int size,
-		     int mayBlock,
-		     int force);
+int select_would_try (struct SelectHandle *sh,
+                      struct SocketHandle *sock,
+                      unsigned int size, int mayBlock, int force);
 
 /**
  * Add another (already connected) socket to the set of
  * sockets managed by the select.
  */
-int select_connect(struct SelectHandle * sh,
-		   struct SocketHandle * sock,
-		   void * sock_ctx);
+int select_connect (struct SelectHandle *sh,
+                    struct SocketHandle *sock, void *sock_ctx);
 
 
 /**
@@ -501,23 +487,20 @@ int select_connect(struct SelectHandle * sh,
  * value.  Use 0 to use the default timeout for
  * this select.
  */
-int select_change_timeout(struct SelectHandle * sh,
-			  struct SocketHandle * sock,
-			  cron_t timeout);
+int select_change_timeout (struct SelectHandle *sh,
+                           struct SocketHandle *sock, cron_t timeout);
 
 /**
  */
-int select_update_closure(struct SelectHandle * sh,
-			  struct SocketHandle * sock,
-			  void * old_sock_ctx,
-			  void * new_sock_ctx);
+int select_update_closure (struct SelectHandle *sh,
+                           struct SocketHandle *sock,
+                           void *old_sock_ctx, void *new_sock_ctx);
 
 /**
  * Close the associated socket and remove it from the
  * set of sockets managed by select.
  */
-int select_disconnect(struct SelectHandle * sh,
-		      struct SocketHandle * sock);
+int select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock);
 
 
 /**
@@ -528,21 +511,19 @@ int select_disconnect(struct SelectHandle * sh,
  *
  * @param sa should be of type "struct sockaddr*"
  */
-char * network_get_ip_as_string(const void * sa,
-				unsigned int salen,
-				int do_resolve);
+char *network_get_ip_as_string (const void *sa,
+                                unsigned int salen, int do_resolve);
 
 /**
  * Get the IP address for the local machine.
  * @return NULL on error, IP as string otherwise
  */
-char * network_get_local_ip(struct GC_Configuration * cfg,
-			    struct GE_Context * ectx,
-			    IPaddr * addr);
+char *network_get_local_ip (struct GC_Configuration *cfg,
+                            struct GE_Context *ectx, IPaddr * addr);
 
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

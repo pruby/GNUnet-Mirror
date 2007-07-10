@@ -27,19 +27,23 @@
 #include "platform.h"
 #include "gnunet_util_network.h"
 
-unsigned long long ntohll(unsigned long long n) {
+unsigned long long
+ntohll (unsigned long long n)
+{
 #if __BYTE_ORDER == __BIG_ENDIAN
   return n;
 #else
-  return (((unsigned long long)ntohl(n)) << 32) + ntohl(n >> 32);
+  return (((unsigned long long) ntohl (n)) << 32) + ntohl (n >> 32);
 #endif
 }
 
-unsigned long long htonll(unsigned long long n) {
+unsigned long long
+htonll (unsigned long long n)
+{
 #if __BYTE_ORDER == __BIG_ENDIAN
   return n;
 #else
-  return (((unsigned long long)htonl(n)) << 32) + htonl(n >> 32);
+  return (((unsigned long long) htonl (n)) << 32) + htonl (n >> 32);
 #endif
 }
 

@@ -35,32 +35,40 @@
 /**
  * Semaphore used to signal "shutdown"
  */
-static struct SEMAPHORE * shutdown_signal;
+static struct SEMAPHORE *shutdown_signal;
 
 static int shutdown_active;
 
-static struct SignalHandlerContext * shc_int;
+static struct SignalHandlerContext *shc_int;
 
-static struct SignalHandlerContext * shc_term;
+static struct SignalHandlerContext *shc_term;
 
-static struct SignalHandlerContext * shc_quit;
+static struct SignalHandlerContext *shc_quit;
 
-void GNUNET_SHUTDOWN_INITIATE() {
-  GE_ASSERT(NULL, shutdown_signal != NULL);
+void
+GNUNET_SHUTDOWN_INITIATE ()
+{
+  GE_ASSERT (NULL, shutdown_signal != NULL);
   shutdown_active = YES;
-  SEMAPHORE_UP(shutdown_signal);
+  SEMAPHORE_UP (shutdown_signal);
 }
 
-int GNUNET_SHUTDOWN_TEST() {
+int
+GNUNET_SHUTDOWN_TEST ()
+{
   return shutdown_active;
 }
 
-void GNUNET_SHUTDOWN_WAITFOR() {
-  SEMAPHORE_DOWN(shutdown_signal, YES);
+void
+GNUNET_SHUTDOWN_WAITFOR ()
+{
+  SEMAPHORE_DOWN (shutdown_signal, YES);
 }
 
-static void run_shutdown() {
-  GNUNET_SHUTDOWN_INITIATE();
+static void
+run_shutdown ()
+{
+  GNUNET_SHUTDOWN_INITIATE ();
 }
 
 /**
@@ -68,17 +76,18 @@ static void run_shutdown() {
  * @param dwCtrlType is ignored
  */
 #ifdef MINGW
-BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
+BOOL WINAPI
+run_shutdown_win (DWORD dwCtrlType)
 {
-  switch(dwCtrlType)
-  {
+  switch (dwCtrlType)
+    {
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
     case CTRL_SHUTDOWN_EVENT:
     case CTRL_LOGOFF_EVENT:
     case SERVICE_CONTROL_STOP:
-      GNUNET_SHUTDOWN_INITIATE();
-  }
+      GNUNET_SHUTDOWN_INITIATE ();
+    }
 
   return TRUE;
 }
@@ -87,28 +96,30 @@ BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
 /**
  * Initialize the signal handlers, etc.
  */
-void __attribute__ ((constructor)) shutdown_handlers_ltdl_init() {
-  GE_ASSERT(NULL, shutdown_signal == NULL);
-  GE_ASSERT(NULL, shutdown_active == NO);
-  shutdown_signal = SEMAPHORE_CREATE(0);
+void __attribute__ ((constructor)) shutdown_handlers_ltdl_init ()
+{
+  GE_ASSERT (NULL, shutdown_signal == NULL);
+  GE_ASSERT (NULL, shutdown_active == NO);
+  shutdown_signal = SEMAPHORE_CREATE (0);
 #ifndef MINGW
-  shc_int = signal_handler_install(SIGINT, &run_shutdown);
-  shc_term = signal_handler_install(SIGTERM, &run_shutdown);
-  shc_quit = signal_handler_install(SIGQUIT, &run_shutdown);
+  shc_int = signal_handler_install (SIGINT, &run_shutdown);
+  shc_term = signal_handler_install (SIGTERM, &run_shutdown);
+  shc_quit = signal_handler_install (SIGQUIT, &run_shutdown);
 #else
-  SetConsoleCtrlHandler(&run_shutdown_win, TRUE);
+  SetConsoleCtrlHandler (&run_shutdown_win, TRUE);
 #endif
 }
 
-void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini() {
+void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini ()
+{
 #ifndef MINGW
-  signal_handler_uninstall(SIGINT, &run_shutdown, shc_int);
-  signal_handler_uninstall(SIGTERM, &run_shutdown, shc_term);
-  signal_handler_uninstall(SIGQUIT, &run_shutdown, shc_quit);
+  signal_handler_uninstall (SIGINT, &run_shutdown, shc_int);
+  signal_handler_uninstall (SIGTERM, &run_shutdown, shc_term);
+  signal_handler_uninstall (SIGQUIT, &run_shutdown, shc_quit);
 #else
-  SetConsoleCtrlHandler(&run_shutdown_win, FALSE);
+  SetConsoleCtrlHandler (&run_shutdown_win, FALSE);
 #endif
-  SEMAPHORE_DESTROY(shutdown_signal);
+  SEMAPHORE_DESTROY (shutdown_signal);
   shutdown_signal = NULL;
   shc_int = NULL;
   shc_term = NULL;

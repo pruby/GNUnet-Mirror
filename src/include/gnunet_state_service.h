@@ -29,8 +29,9 @@
 
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -38,7 +39,8 @@ extern "C" {
 /**
  * @brief API to the stats service
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Read the contents of a bucket to a buffer.
@@ -48,9 +50,7 @@ typedef struct {
    *        (*result should be NULL, sufficient space is allocated)
    * @return the number of bytes read on success, -1 on failure
    */
-  int (*read)(struct GE_Context * ectx,
-	      const char * name,
-	      void ** result);
+  int (*read) (struct GE_Context * ectx, const char *name, void **result);
 
   /**
    * Append content to file.
@@ -60,10 +60,8 @@ typedef struct {
    * @param block the data to store
    * @return SYSERR on error, OK if ok.
    */
-  int (*append)(struct GE_Context * ectx,
-		const char * name,
-		int len,
-		const void * block);
+  int (*append) (struct GE_Context * ectx,
+                 const char *name, int len, const void *block);
 
   /**
    * Write content to a file.
@@ -73,22 +71,19 @@ typedef struct {
    * @param block the data to store
    * @return SYSERR on error, OK if ok.
    */
-  int (*write)(struct GE_Context * ectx,
-	       const char * name,
-	       int len,
-	       const void * block);
+  int (*write) (struct GE_Context * ectx,
+                const char *name, int len, const void *block);
 
   /**
    * Free space in the database by removing one file
    * @param name the hashcode representing the name of the file
    *        (without directory)
    */
-  int (*unlink)(struct GE_Context * ectx,
-		const char * name);
+  int (*unlink) (struct GE_Context * ectx, const char *name);
 
 } State_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

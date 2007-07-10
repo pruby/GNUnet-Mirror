@@ -31,8 +31,9 @@
 #include "gnunet_util_cron.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -74,8 +75,9 @@ extern "C" {
  * Opaque handle for a session representation on the transport
  * layer side
  */
-typedef struct {
-  void * internal;
+typedef struct
+{
+  void *internal;
 
   PeerIdentity peer;
 
@@ -91,35 +93,34 @@ struct ClientHandle;
 /**
  * Type of a handler for messages from clients.
  */
-typedef int (*CSHandler)(struct ClientHandle * client,
-			 const MESSAGE_HEADER * message);
+typedef int (*CSHandler) (struct ClientHandle * client,
+                          const MESSAGE_HEADER * message);
 
 /**
  * Method called whenever a given client disconnects.
  */
-typedef void (*ClientExitHandler)(struct ClientHandle * client);
+typedef void (*ClientExitHandler) (struct ClientHandle * client);
 
 /**
  * Type of a handler for some message type.
  */
-typedef int (*MessagePartHandler)(const PeerIdentity * sender,
-				  const MESSAGE_HEADER * message);
+typedef int (*MessagePartHandler) (const PeerIdentity * sender,
+                                   const MESSAGE_HEADER * message);
 
 /**
  * Type of a handler for plaintext messages.  Since we cannot
  * be certain about the sender's identity, it is NOT passed to
  * the callback.
  */
-typedef int (*PlaintextMessagePartHandler)(const PeerIdentity * sender,
-					   const MESSAGE_HEADER * message,
-					   TSession * session);
+typedef int (*PlaintextMessagePartHandler) (const PeerIdentity * sender,
+                                            const MESSAGE_HEADER * message,
+                                            TSession * session);
 
 /**
  * Type of a handler for some message type.
  * @param identity the id of the node
  */
-typedef void (*PerNodeCallback)(const PeerIdentity * identity,
-				void * data);
+typedef void (*PerNodeCallback) (const PeerIdentity * identity, void *data);
 
 /**
  * Type of a send callback to fill up buffers.
@@ -131,9 +132,9 @@ typedef void (*PerNodeCallback)(const PeerIdentity * identity,
  * @return the number of bytes written to
  *   that buffer (must be a positive number).
  */
-typedef unsigned int (*BufferFillCallback)(const PeerIdentity * receiver,
-					   void * position,
-					   unsigned int padding);
+typedef unsigned int (*BufferFillCallback) (const PeerIdentity * receiver,
+                                            void *position,
+                                            unsigned int padding);
 
 /**
  * Callback that is used to fill in a message into the send buffer.
@@ -147,9 +148,8 @@ typedef unsigned int (*BufferFillCallback)(const PeerIdentity * receiver,
  *   to discard the message!
  * @return OK on success, SYSERR on error
  */
-typedef int (*BuildMessageCallback)(void * buf,
-				    void * closure,
-				    unsigned short len);
+typedef int (*BuildMessageCallback) (void *buf,
+                                     void *closure, unsigned short len);
 
 /**
  * Send a message to the client identified by the handle.  Note that
@@ -158,14 +158,15 @@ typedef int (*BuildMessageCallback)(void * buf,
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
-typedef int (*SendToClientCallback)(struct ClientHandle * handle,
-                                    const MESSAGE_HEADER * message);
+typedef int (*SendToClientCallback) (struct ClientHandle * handle,
+                                     const MESSAGE_HEADER * message);
 
 /**
  * GNUnet CORE API for applications and services that are implemented
  * on top of the GNUnet core.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The version of the CORE API. For now, always "0".
@@ -175,27 +176,27 @@ typedef struct {
   /**
    * The identity of the local node.
    */
-  PeerIdentity * myIdentity;
+  PeerIdentity *myIdentity;
 
   /**
    * System error context
    */
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
   /**
    * System configuration
    */
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
   /**
    * System load monitor
    */
-  struct LoadMonitor * load_monitor;
+  struct LoadMonitor *load_monitor;
 
   /**
    * System cron Manager.
    */
-  struct CronManager * cron;
+  struct CronManager *cron;
 
 
   /* ****************** services and applications **************** */
@@ -210,7 +211,7 @@ typedef struct {
    *
    * @return OK on success, SYSERR on error
    */
-  int (*loadApplicationModule)(const char * name);
+  int (*loadApplicationModule) (const char *name);
 
   /**
    * Unload an application module.  This function must be called
@@ -222,7 +223,7 @@ typedef struct {
    *
    * @return OK on success, SYSERR on error
    */
-  int (*unloadApplicationModule)(const char * name);
+  int (*unloadApplicationModule) (const char *name);
 
   /**
    * Load a service module of the given name. This function must be
@@ -232,7 +233,7 @@ typedef struct {
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void * (*requestService)(const char * name);
+  void *(*requestService) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -244,7 +245,7 @@ typedef struct {
    *
    * @return OK if service was successfully released, SYSERR on error
    */
-  int (*releaseService)(void * service);
+  int (*releaseService) (void *service);
 
   /* ****************** P2P data exchange **************** */
 
@@ -260,9 +261,8 @@ typedef struct {
    * @param msg the message to transmit, should contain MESSAGE_HEADERs
    * @return OK on success, SYSERR on failure
    */
-  int (*sendPlaintext)(TSession * session,
-		       const char * msg,
-		       unsigned int size);
+  int (*sendPlaintext) (TSession * session,
+                        const char *msg, unsigned int size);
 
   /**
    * Send an encrypted message to another node.
@@ -273,10 +273,9 @@ typedef struct {
    * @param importance how important is the message?
    * @param maxdelay how long can the message be delayed?
    */
-  void (*unicast)(const PeerIdentity * receiver,
-		  const MESSAGE_HEADER * msg,
-		  unsigned int importance,
-		  unsigned int maxdelay);
+  void (*unicast) (const PeerIdentity * receiver,
+                   const MESSAGE_HEADER * msg,
+                   unsigned int importance, unsigned int maxdelay);
 
   /**
    * Send an encrypted, on-demand build message to another node.
@@ -288,12 +287,11 @@ typedef struct {
    * @param importance how important is the message?
    * @param maxdelay how long can the message wait?
    */
-  void (*unicastCallback)(const PeerIdentity * receiver,
-			  BuildMessageCallback callback,
-			  void * closure,
-			  unsigned short len,
-			  unsigned int importance,
-			  unsigned int maxdelay);
+  void (*unicastCallback) (const PeerIdentity * receiver,
+                           BuildMessageCallback callback,
+                           void *closure,
+                           unsigned short len,
+                           unsigned int importance, unsigned int maxdelay);
 
   /**
    * Perform an operation for all connected hosts.
@@ -303,8 +301,7 @@ typedef struct {
    * @param arg the second argument to the method
    * @return the number of connected hosts
    */
-  int (*forAllConnectedNodes)(PerNodeCallback method,
-			      void * arg);
+  int (*forAllConnectedNodes) (PerNodeCallback method, void *arg);
 
   /**
    * Register a callback method that should be invoked whenever a message
@@ -326,15 +323,15 @@ typedef struct {
    *   that buffer (must be a positive number).
    * @return OK if the handler was registered, SYSERR on error
    */
-  int (*registerSendCallback)(const unsigned int minimumPadding,
-			      BufferFillCallback callback);
+  int (*registerSendCallback) (const unsigned int minimumPadding,
+                               BufferFillCallback callback);
 
   /**
    * Unregister a handler that was registered with registerSendCallback.
    * @return OK if the handler was removed, SYSERR on error
    */
-  int (*unregisterSendCallback)(const unsigned int minimumPadding,
-				BufferFillCallback callback);
+  int (*unregisterSendCallback) (const unsigned int minimumPadding,
+                                 BufferFillCallback callback);
 
   /**
    * Register a handler that is to be called for each
@@ -344,7 +341,7 @@ typedef struct {
    *        P2P message part that is transmitted
    * @return OK on success, SYSERR if there is a problem
    */
-  int (*registerSendNotify)(MessagePartHandler callback);
+  int (*registerSendNotify) (MessagePartHandler callback);
 
   /**
    * Unregister a handler that is to be called for each
@@ -354,7 +351,7 @@ typedef struct {
    *        P2P message part that is transmitted
    * @return OK on success, SYSERR if there is a problem
    */
-  int (*unregisterSendNotify)(MessagePartHandler callback);
+  int (*unregisterSendNotify) (MessagePartHandler callback);
 
 
   /* ********************* handlers ***************** */
@@ -368,8 +365,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerHandler)(unsigned short type,
-			 MessagePartHandler callback);
+  int (*registerHandler) (unsigned short type, MessagePartHandler callback);
 
   /**
    * Unregister a method as a handler for specific message
@@ -380,8 +376,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterHandler)(unsigned short type,
-			   MessagePartHandler callback);
+  int (*unregisterHandler) (unsigned short type, MessagePartHandler callback);
 
   /**
    * Is a handler registered for messages of the given type?
@@ -394,8 +389,8 @@ typedef struct {
    * @return number of handlers registered, 0 for none,
    *        SYSERR for invalid value of handlerType
    */
-  int (*isHandlerRegistered)(unsigned short type,
-			     unsigned short handlerType);
+  int (*isHandlerRegistered) (unsigned short type,
+                              unsigned short handlerType);
 
   /**
    * Register a method as a handler for specific message
@@ -406,8 +401,8 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerPlaintextHandler)(unsigned short type,
-				  PlaintextMessagePartHandler callback);
+  int (*registerPlaintextHandler) (unsigned short type,
+                                   PlaintextMessagePartHandler callback);
 
   /**
    * Unregister a method as a handler for specific message
@@ -419,8 +414,8 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterPlaintextHandler)(unsigned short type,
-				    PlaintextMessagePartHandler callback);
+  int (*unregisterPlaintextHandler) (unsigned short type,
+                                     PlaintextMessagePartHandler callback);
 
   /* ***************** traffic management ******************* */
 
@@ -433,8 +428,7 @@ typedef struct {
    * use it after this call.  If the core does not want/need
    * the session, it will also be disconnected.
    */
-  void (*offerTSessionFor)(const PeerIdentity * peer,
-			   TSession * session);
+  void (*offerTSessionFor) (const PeerIdentity * peer, TSession * session);
 
   /**
    * Assign a session key for traffic from or to a given peer.
@@ -446,10 +440,9 @@ typedef struct {
    * @param forSending NO if it is the key for receiving,
    *                   YES if it is the key for sending
    */
-  void (*assignSessionKey)(const SESSIONKEY * key,
-			   const PeerIdentity * peer,
-			   TIME_T age,
-			   int forSending);
+  void (*assignSessionKey) (const SESSIONKEY * key,
+                            const PeerIdentity * peer,
+                            TIME_T age, int forSending);
 
   /**
    * Obtain the session key used for traffic from or to a given peer.
@@ -462,10 +455,9 @@ typedef struct {
    * @return SYSERR if no sessionkey is known to the core,
    *         OK if the sessionkey was set.
    */
-  int (*getCurrentSessionKey)(const PeerIdentity * peer,
-			      SESSIONKEY * key,
-			      TIME_T * age,
-			      int forSending);
+  int (*getCurrentSessionKey) (const PeerIdentity * peer,
+                               SESSIONKEY * key,
+                               TIME_T * age, int forSending);
 
   /**
    * We have confirmed that the other peer is communicating with us,
@@ -474,7 +466,7 @@ typedef struct {
    * this could happen if in between the core has discarded
    * the session information).
    */
-  void (*confirmSessionUp)(const PeerIdentity * peer);
+  void (*confirmSessionUp) (const PeerIdentity * peer);
 
   /**
    * Increase the preference for traffic from some other peer.
@@ -482,8 +474,7 @@ typedef struct {
    * @param node the identity of the other peer
    * @param preference how much should the traffic preference be increased?
    */
-  void (*preferTrafficFrom)(const PeerIdentity * node,
-			    double preference);
+  void (*preferTrafficFrom) (const PeerIdentity * node, double preference);
 
   /**
    * Query how much bandwidth is availabe FROM the given node to
@@ -493,9 +484,8 @@ typedef struct {
    * @param last_seen set to last time peer was confirmed up
    * @return OK on success, SYSERR if if we are NOT connected
    */
-  int (*queryPeerStatus)(const PeerIdentity * node,
-			 unsigned int * bpm,
-			 cron_t * last_seen);
+  int (*queryPeerStatus) (const PeerIdentity * node,
+                          unsigned int *bpm, cron_t * last_seen);
 
   /**
    * Disconnect a particular peer. Sends a HANGUP message to the other
@@ -503,7 +493,7 @@ typedef struct {
    *
    * @param peer  the peer to disconnect
    */
-  void (*disconnectFromPeer)(const PeerIdentity *peer);
+  void (*disconnectFromPeer) (const PeerIdentity * peer);
 
   /* **************** Client-server interaction **************** */
 
@@ -514,8 +504,7 @@ typedef struct {
    * on the other hand does NOT confirm delivery since the actual
    * transfer happens asynchronously.
    */
-  int (*sendValueToClient)(struct ClientHandle * handle,
-			   int value);
+  int (*sendValueToClient) (struct ClientHandle * handle, int value);
 
   /**
    * Send a message to the client identified by the handle.  Note that
@@ -535,8 +524,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerClientHandler)(unsigned short type,
-			       CSHandler callback);
+  int (*registerClientHandler) (unsigned short type, CSHandler callback);
 
   /**
    * Remove a method as a handler for specific message
@@ -547,8 +535,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterClientHandler)(unsigned short type,
-				 CSHandler callback);
+  int (*unregisterClientHandler) (unsigned short type, CSHandler callback);
 
   /**
    * Register a handler to call if any client exits.
@@ -556,7 +543,7 @@ typedef struct {
    *   of every client that disconnected.
    * @return OK on success, SYSERR on error
    */
-  int (*registerClientExitHandler)(ClientExitHandler callback);
+  int (*registerClientExitHandler) (ClientExitHandler callback);
 
   /**
    * Unregister a handler to call if any client exits.
@@ -564,13 +551,13 @@ typedef struct {
    *   of every client that disconnected.
    * @return OK on success, SYSERR on error
    */
-  int (*unregisterClientExitHandler)(ClientExitHandler callback);
+  int (*unregisterClientExitHandler) (ClientExitHandler callback);
 
   /**
    * Terminate the connection with the given client (asynchronous
    * detection of a protocol violation).
    */
-  void (*terminateClientConnection)(struct ClientHandle * handle);
+  void (*terminateClientConnection) (struct ClientHandle * handle);
 
 
   /* ************************ MISC ************************ */
@@ -585,36 +572,35 @@ typedef struct {
    * @param session for plaintext messages, the
    *  assumed transport session.  Maybe NULL.
    */
-  void (*injectMessage)(const PeerIdentity * sender,
-			const char * msg,
-			unsigned int size,
-			int wasEncrypted,
-			TSession * session);
+  void (*injectMessage) (const PeerIdentity * sender,
+                         const char *msg,
+                         unsigned int size,
+                         int wasEncrypted, TSession * session);
 
   /**
    * Compute the index (small, positive, pseudo-unique identification
    * number) of a hostId.
    */
-  unsigned int (*computeIndex)(const PeerIdentity * hostId);
+  unsigned int (*computeIndex) (const PeerIdentity * hostId);
 
   /**
    * The the lock of the connection module. A module that registers
    * callbacks may need this.
    */
-  struct MUTEX * (*getConnectionModuleLock)(void);
+  struct MUTEX *(*getConnectionModuleLock) (void);
 
   /**
    * Get the current number of slots in the connection table (as computed
    * from the available bandwidth).
    */
-  int (*getSlotCount)(void);
+  int (*getSlotCount) (void);
 
   /**
    * Is the given slot used?
    * @return 0 if not, otherwise number of peers in
    * the slot
    */
-  int (*isSlotUsed)(int slot);
+  int (*isSlotUsed) (int slot);
 
   /**
    * Get the time of the last encrypted message that was received
@@ -622,8 +608,7 @@ typedef struct {
    * @param time updated with the time
    * @return SYSERR if we are not connected to the peer at the moment
    */
-  int (*getLastActivityOf)(const PeerIdentity * peer,
-			   cron_t * time);
+  int (*getLastActivityOf) (const PeerIdentity * peer, cron_t * time);
 
   /* here for binary compatibility (for now) */
 
@@ -634,12 +619,11 @@ typedef struct {
    * on the other hand does NOT confirm delivery since the actual
    * transfer happens asynchronously.
    */
-  int (*sendErrorMessageToClient)(struct ClientHandle * handle,
-				  GE_KIND kind,
-				  const char * value);
+  int (*sendErrorMessageToClient) (struct ClientHandle * handle,
+                                   GE_KIND kind, const char *value);
 
-  struct GE_Context * (*createClientLogContext)(GE_KIND mask,
-						struct ClientHandle * handle);
+  struct GE_Context *(*createClientLogContext) (GE_KIND mask,
+                                                struct ClientHandle * handle);
 } CoreAPIForApplication;
 
 
@@ -655,7 +639,7 @@ typedef int (*ApplicationInitMethod) (CoreAPIForApplication * capi);
  * Type of the shutdown method implemented by GNUnet protocol
  * plugins.
  */
-typedef void (*ApplicationDoneMethod)(void);
+typedef void (*ApplicationDoneMethod) (void);
 
 /**
  * Type of the initialization method implemented by GNUnet service
@@ -663,13 +647,13 @@ typedef void (*ApplicationDoneMethod)(void);
  *
  * @param capi the core API
  */
-typedef void * (*ServiceInitMethod)(CoreAPIForApplication * capi);
+typedef void *(*ServiceInitMethod) (CoreAPIForApplication * capi);
 
 /**
  * Type of the shutdown method implemented by GNUnet service
  * plugins.
  */
-typedef void (*ServiceDoneMethod)(void);
+typedef void (*ServiceDoneMethod) (void);
 
 
 
@@ -680,22 +664,23 @@ typedef void (*ServiceDoneMethod)(void);
  * will then call that function to allow the module to perform the
  * necessary updates.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * System error context
    */
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
   /**
    * System configuration
    */
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
   /**
    * Trigger updates for another module.
    */
-  int (*updateModule)(const char * module);
+  int (*updateModule) (const char *module);
 
   /**
    * Load a service module of the given name. This function must be
@@ -705,7 +690,7 @@ typedef struct {
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void * (*requestService)(const char * name);
+  void *(*requestService) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -717,15 +702,15 @@ typedef struct {
    *
    * @return OK if service was successfully released, SYSERR on error
    */
-  int (*releaseService)(void * service);
+  int (*releaseService) (void *service);
 
 
 } UpdateAPI;
 
-typedef void (*UpdateMethod)(UpdateAPI * uapi);
+typedef void (*UpdateMethod) (UpdateAPI * uapi);
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

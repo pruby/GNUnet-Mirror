@@ -26,25 +26,28 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-static int check() {
-  if (GNUNET_SHUTDOWN_TEST() != NO)
+static int
+check ()
+{
+  if (GNUNET_SHUTDOWN_TEST () != NO)
     return 1;
 #ifndef MINGW
-  kill(getpid(), SIGINT);
+  kill (getpid (), SIGINT);
 #else
-  GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+  GenerateConsoleCtrlEvent (CTRL_C_EVENT, 0);
 #endif
-  if (GNUNET_SHUTDOWN_TEST() != YES)
+  if (GNUNET_SHUTDOWN_TEST () != YES)
     return 2;
-  GNUNET_SHUTDOWN_WAITFOR();
+  GNUNET_SHUTDOWN_WAITFOR ();
   return 0;
 }
 
-int main(int argc,
-   char * argv[]){
+int
+main (int argc, char *argv[])
+{
   int ret;
 
-  ret = check();
+  ret = check ();
 
   return ret;
 }

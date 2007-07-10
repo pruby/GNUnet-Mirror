@@ -65,7 +65,8 @@
 /**
  * Host-Address in a HTTP network.
  */
-typedef struct {
+typedef struct
+{
   /**
    * claimed IP of the sender, network byte order
    */
@@ -83,12 +84,13 @@ typedef struct {
 
 } HostAddress;
 
-struct HTTPPutData {
-  struct HTTPPutData * next;
+struct HTTPPutData
+{
+  struct HTTPPutData *next;
 
-  char * msg;
+  char *msg;
 
-  CURL * curl_put;
+  CURL *curl_put;
 
   unsigned int size;
 
@@ -101,27 +103,28 @@ struct HTTPPutData {
 /**
  * Transport Session handle.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * mutex for synchronized access to struct
    */
-  struct MUTEX * lock;
+  struct MUTEX *lock;
 
   /**
    * Read buffer for the header.
    */
-  char rbuff1[sizeof(MESSAGE_HEADER)];
+  char rbuff1[sizeof (MESSAGE_HEADER)];
 
   /**
    * The read buffer (used only for the actual data).
    */
-  char * rbuff2;
+  char *rbuff2;
 
   /**
    * The write buffer.
    */
-  char * wbuff;
+  char *wbuff;
 
   /**
    * Last time this connection was used
@@ -182,39 +185,42 @@ typedef struct {
   /**
    * TSession for this session.
    */
-  TSession * tsession;
+  TSession *tsession;
 
   /**
    * Data maintained for the http client-server connection
    * (depends on if we are client or server).
    */
-  union {
+  union
+  {
 
-    struct {
+    struct
+    {
 
       /**
        * GET session response handle
        */
-      struct MHD_Response * get;
+      struct MHD_Response *get;
 
     } server;
 
-    struct {
+    struct
+    {
 
       /**
        * GET operation
        */
-      CURL * get;
+      CURL *get;
 
       /**
        * URL of the get and put operations.
        */
-      char * url;
+      char *url;
 
       /**
        * Linked list of PUT operations.
        */
-      struct HTTPPutData * puts;
+      struct HTTPPutData *puts;
 
     } client;
 
@@ -227,9 +233,9 @@ typedef struct {
 /**
  * apis (our advertised API and the core api )
  */
-static CoreAPIForTransport * coreAPI;
+static CoreAPIForTransport *coreAPI;
 
-static Stats_ServiceAPI * stats;
+static Stats_ServiceAPI *stats;
 
 static int stat_bytesReceived;
 
@@ -237,17 +243,17 @@ static int stat_bytesSent;
 
 static int stat_bytesDropped;
 
-static char * proxy;
+static char *proxy;
 
 /**
  * Daemon for listening for new connections.
  */
-static struct MHD_Daemon * mhd_daemon;
+static struct MHD_Daemon *mhd_daemon;
 
 /**
  * Curl multi for managing client operations.
  */
-static CURLM * curl_multi;
+static CURLM *curl_multi;
 
 /**
  * Set to YES while the transport is running.
@@ -257,12 +263,12 @@ static int http_running;
 /**
  * Thread running libcurl activities.
  */
-static struct PTHREAD * curl_thread;
+static struct PTHREAD *curl_thread;
 
 /**
  * Array of currently active HTTP sessions.
  */
-static TSession ** tsessions;
+static TSession **tsessions;
 
 static unsigned int tsessionCount;
 
@@ -271,12 +277,12 @@ static unsigned int tsessionArrayLength;
 /**
  * Blacklist configuration
  */
-static struct CIDRNetwork * filteredNetworks_;
+static struct CIDRNetwork *filteredNetworks_;
 
 /**
  * Universal plug & play (firewall hole punching)
  */
-static UPnP_ServiceAPI * upnp;
+static UPnP_ServiceAPI *upnp;
 
 
 /**
@@ -291,32 +297,33 @@ static UPnP_ServiceAPI * upnp;
  * prevent the select thread from operating and removing
  * is done by the only therad that reads from the array.
  */
-static struct MUTEX * httplock;
+static struct MUTEX *httplock;
 
 /**
  * Check if we are allowed to connect to the given IP.
  */
-static int acceptPolicyCallback(void * cls,
-  			const struct sockaddr * addr,
-  			socklen_t addr_len) {
+static int
+acceptPolicyCallback (void *cls,
+                      const struct sockaddr *addr, socklen_t addr_len)
+{
   IPaddr ip;
   int ret;
 
-  if (addr_len == sizeof(struct sockaddr_in)) {
-    memcpy(&ip,
-     &((struct sockaddr_in*) addr)->sin_addr,
-     sizeof(IPaddr));
-  } else if (addr_len == sizeof(IPaddr)) {
-    memcpy(&ip,
-     addr,
-     addr_len);
-  } else {
-    return MHD_NO;
-  }
-  MUTEX_LOCK(httplock);
-  ret = check_ipv4_listed(filteredNetworks_,
-  		  ip);
-  MUTEX_UNLOCK(httplock);
+  if (addr_len == sizeof (struct sockaddr_in))
+    {
+      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr, sizeof (IPaddr));
+    }
+  else if (addr_len == sizeof (IPaddr))
+    {
+      memcpy (&ip, addr, addr_len);
+    }
+  else
+    {
+      return MHD_NO;
+    }
+  MUTEX_LOCK (httplock);
+  ret = check_ipv4_listed (filteredNetworks_, ip);
+  MUTEX_UNLOCK (httplock);
   if (YES == ret)
     return MHD_NO;
   return MHD_YES;
@@ -332,60 +339,64 @@ static int acceptPolicyCallback(void * cls,
  * @param tsession the session that is closed
  * @return OK on success, SYSERR if the operation failed
  */
-static int httpDisconnect(TSession * tsession) {
-  HTTPSession * httpsession = tsession->internal;
-  struct HTTPPutData * pos;
-  struct HTTPPutData * next;
+static int
+httpDisconnect (TSession * tsession)
+{
+  HTTPSession *httpsession = tsession->internal;
+  struct HTTPPutData *pos;
+  struct HTTPPutData *next;
   int i;
 
-  if (httpsession == NULL) {
-    FREE(tsession);
-    return OK;
-  }
-  MUTEX_LOCK(httpsession->lock);
+  if (httpsession == NULL)
+    {
+      FREE (tsession);
+      return OK;
+    }
+  MUTEX_LOCK (httpsession->lock);
   httpsession->users--;
-  if (httpsession->users > 0) {
-    MUTEX_UNLOCK(httpsession->lock);
-    return OK;
-  }
+  if (httpsession->users > 0)
+    {
+      MUTEX_UNLOCK (httpsession->lock);
+      return OK;
+    }
   httpsession->destroyed = YES;
-  MUTEX_UNLOCK(httpsession->lock);
-  MUTEX_LOCK(httplock);
-  for (i=0;i<tsessionCount;i++) {
-    if (tsessions[i] == tsession) {
-      tsessions[i] = tsessions[--tsessionCount];
-      break;
+  MUTEX_UNLOCK (httpsession->lock);
+  MUTEX_LOCK (httplock);
+  for (i = 0; i < tsessionCount; i++)
+    {
+      if (tsessions[i] == tsession)
+        {
+          tsessions[i] = tsessions[--tsessionCount];
+          break;
+        }
     }
-  }
-  MUTEX_UNLOCK(httplock);
-  if (httpsession->is_client) {
-    curl_multi_remove_handle(curl_multi,
-  		     httpsession->cs.client.get);
-    curl_easy_cleanup(httpsession->cs.client.get);
-    FREE(httpsession->cs.client.url);
-    pos = httpsession->cs.client.puts;
-    while (pos != NULL) {
-      next = pos->next;
-      curl_multi_remove_handle(curl_multi,
-  		       pos->curl_put);
-      curl_easy_cleanup(pos->curl_put);
-      FREE(pos->msg);
-      FREE(pos);
-      pos = next;
-    }
+  MUTEX_UNLOCK (httplock);
+  if (httpsession->is_client)
+    {
+      curl_multi_remove_handle (curl_multi, httpsession->cs.client.get);
+      curl_easy_cleanup (httpsession->cs.client.get);
+      FREE (httpsession->cs.client.url);
+      pos = httpsession->cs.client.puts;
+      while (pos != NULL)
+        {
+          next = pos->next;
+          curl_multi_remove_handle (curl_multi, pos->curl_put);
+          curl_easy_cleanup (pos->curl_put);
+          FREE (pos->msg);
+          FREE (pos);
+          pos = next;
+        }
 
-  } else {
-    MHD_destroy_response(httpsession->cs.server.get);
-  }
-  GROW(httpsession->rbuff2,
-       httpsession->rsize2,
-       0);
-  GROW(httpsession->wbuff,
-       httpsession->wsize,
-       0);
-  MUTEX_DESTROY(httpsession->lock);
-  FREE(httpsession);
-  FREE(tsession);
+    }
+  else
+    {
+      MHD_destroy_response (httpsession->cs.server.get);
+    }
+  GROW (httpsession->rbuff2, httpsession->rsize2, 0);
+  GROW (httpsession->wbuff, httpsession->wsize, 0);
+  MUTEX_DESTROY (httpsession->lock);
+  FREE (httpsession);
+  FREE (tsession);
   return OK;
 }
 
@@ -393,16 +404,14 @@ static int httpDisconnect(TSession * tsession) {
  * Get the GNUnet HTTP port from the configuration, or from
  * /etc/services if it is not specified in the config file.
  */
-static unsigned short getGNUnetHTTPPort() {
+static unsigned short
+getGNUnetHTTPPort ()
+{
   unsigned long long port;
 
-  if (-1 == GC_get_configuration_value_number(coreAPI->cfg,
-  				      "HTTP",
-  				      "PORT",
-  				      0,
-  				      65535,
-  				      1080,
-  				      &port))
+  if (-1 == GC_get_configuration_value_number (coreAPI->cfg,
+                                               "HTTP",
+                                               "PORT", 0, 65535, 1080, &port))
     port = 1080;
   return (unsigned short) port;
 }
@@ -426,21 +435,25 @@ static unsigned short getGNUnetHTTPPort() {
  * @return OK if the session could be associated,
  *         SYSERR if not.
  */
-static int httpAssociate(TSession * tsession) {
-  HTTPSession * httpSession;
+static int
+httpAssociate (TSession * tsession)
+{
+  HTTPSession *httpSession;
 
-  if (tsession == NULL) {
-    GE_BREAK(NULL, 0);
-    return SYSERR;
-  }
+  if (tsession == NULL)
+    {
+      GE_BREAK (NULL, 0);
+      return SYSERR;
+    }
   httpSession = tsession->internal;
-  MUTEX_LOCK(httpSession->lock);
-  if (httpSession->destroyed == YES) {
-    MUTEX_UNLOCK(httpSession->lock);
-    return SYSERR;
-  }
+  MUTEX_LOCK (httpSession->lock);
+  if (httpSession->destroyed == YES)
+    {
+      MUTEX_UNLOCK (httpSession->lock);
+      return SYSERR;
+    }
   httpSession->users++;
-  MUTEX_UNLOCK(httpSession->lock);
+  MUTEX_UNLOCK (httpSession->lock);
   return OK;
 }
 
@@ -454,18 +467,20 @@ static int httpAssociate(TSession * tsession) {
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHello(const P2P_hello_MESSAGE * hello) {
-  const HostAddress * haddr;
+static int
+verifyHello (const P2P_hello_MESSAGE * hello)
+{
+  const HostAddress *haddr;
 
-  haddr = (const HostAddress*) &hello[1];
-  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) ||
-       (ntohs(hello->protocol) != HTTP_PROTOCOL_NUMBER) ||
-       (MHD_NO == acceptPolicyCallback(NULL,
-  			       (const struct sockaddr*) haddr,
-  			       sizeof(IPaddr))) )
-    return SYSERR; /* obviously invalid */
+  haddr = (const HostAddress *) &hello[1];
+  if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
+      (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.type) != p2p_PROTO_hello) ||
+      (ntohs (hello->protocol) != HTTP_PROTOCOL_NUMBER) ||
+      (MHD_NO == acceptPolicyCallback (NULL,
+                                       (const struct sockaddr *) haddr,
+                                       sizeof (IPaddr))))
+    return SYSERR;              /* obviously invalid */
   return OK;
 }
 
@@ -476,45 +491,48 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
  *
  * @return hello on success, NULL on error
  */
-static P2P_hello_MESSAGE * createhello() {
-  P2P_hello_MESSAGE * msg;
-  HostAddress * haddr;
+static P2P_hello_MESSAGE *
+createhello ()
+{
+  P2P_hello_MESSAGE *msg;
+  HostAddress *haddr;
   unsigned short port;
 
-  port = getGNUnetHTTPPort();
-  if (0 == port) {
-    GE_LOG(NULL,
-     GE_DEBUG | GE_REQUEST | GE_USER,
-     "HTTP port is 0, will only send using HTTP.\n");
-    return NULL; /* HTTP transport is configured SEND-only! */
-  }
-  msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
-  haddr = (HostAddress*) &msg[1];
+  port = getGNUnetHTTPPort ();
+  if (0 == port)
+    {
+      GE_LOG (NULL,
+              GE_DEBUG | GE_REQUEST | GE_USER,
+              "HTTP port is 0, will only send using HTTP.\n");
+      return NULL;              /* HTTP transport is configured SEND-only! */
+    }
+  msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (HostAddress));
+  haddr = (HostAddress *) & msg[1];
 
-  if (! ( ( (upnp != NULL) &&
-      (OK == upnp->get_ip(port,
-  			"TCP",
-  			&haddr->ip)) ) ||
-    (SYSERR != getPublicIPAddress(coreAPI->cfg,
-  				coreAPI->ectx,
-  				&haddr->ip)) ) ) {
-    FREE(msg);
-    GE_LOG(coreAPI->ectx,
-     GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-     _("HTTP: Could not determine my public IP address.\n"));
-    return NULL;
-  }
+  if (!(((upnp != NULL) &&
+         (OK == upnp->get_ip (port,
+                              "TCP",
+                              &haddr->ip))) ||
+        (SYSERR != getPublicIPAddress (coreAPI->cfg,
+                                       coreAPI->ectx, &haddr->ip))))
+    {
+      FREE (msg);
+      GE_LOG (coreAPI->ectx,
+              GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+              _("HTTP: Could not determine my public IP address.\n"));
+      return NULL;
+    }
 #if DEBUG_HTTP
-  GE_LOG(coreAPI->ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   "HTTP uses IP address %u.%u.%u.%u.\n",
-   PRIP(ntohl(*(int*)&haddr->ip)));
+  GE_LOG (coreAPI->ectx,
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP uses IP address %u.%u.%u.%u.\n",
+          PRIP (ntohl (*(int *) &haddr->ip)));
 #endif
-  haddr->port = htons(port);
-  haddr->reserved = htons(0);
-  msg->senderAddressSize = htons(sizeof(HostAddress));
-  msg->protocol = htons(HTTP_PROTOCOL_NUMBER);
-  msg->MTU = htonl(0);
+  haddr->port = htons (port);
+  haddr->reserved = htons (0);
+  msg->senderAddressSize = htons (sizeof (HostAddress));
+  msg->protocol = htons (HTTP_PROTOCOL_NUMBER);
+  msg->MTU = htonl (0);
   return msg;
 }
 
@@ -525,42 +543,40 @@ static P2P_hello_MESSAGE * createhello() {
  * calling.  It is ok to call this function without holding httplock if
  * the return value is ignored.
  */
-static unsigned int addTSession(TSession * tsession) {
+static unsigned int
+addTSession (TSession * tsession)
+{
   unsigned int i;
 
-  MUTEX_LOCK(httplock);
+  MUTEX_LOCK (httplock);
   if (tsessionCount == tsessionArrayLength)
-    GROW(tsessions,
-   tsessionArrayLength,
-   tsessionArrayLength * 2);
+    GROW (tsessions, tsessionArrayLength, tsessionArrayLength * 2);
   i = tsessionCount;
   tsessions[tsessionCount++] = tsession;
-  MUTEX_UNLOCK(httplock);
+  MUTEX_UNLOCK (httplock);
   return i;
 }
 
-static int contentReaderCallback(void * cls,
-  			 size_t pos,
-  			 char * buf,
-  			 int max) {
-  HTTPSession * session = cls;
+static int
+contentReaderCallback (void *cls, size_t pos, char *buf, int max)
+{
+  HTTPSession *session = cls;
 
-  MUTEX_LOCK(session->lock);
-  if (session->destroyed) {
-    MUTEX_UNLOCK(session->lock);
-    return -1;
-  }
+  MUTEX_LOCK (session->lock);
+  if (session->destroyed)
+    {
+      MUTEX_UNLOCK (session->lock);
+      return -1;
+    }
   if (session->wpos < max)
     max = session->wpos;
-  memcpy(buf,
-   &session->wbuff[session->woff],
-   max);
+  memcpy (buf, &session->wbuff[session->woff], max);
   session->wpos -= max;
   session->woff += max;
-  session->lastUse = get_time();
+  session->lastUse = get_time ();
   if (session->wpos == 0)
-    session->woff  = 0;
-  MUTEX_UNLOCK(session->lock);
+    session->woff = 0;
+  MUTEX_UNLOCK (session->lock);
   return max;
 }
 
@@ -568,8 +584,10 @@ static int contentReaderCallback(void * cls,
  * Notification that libmicrohttpd no longer needs the
  * response object.
  */
-static void contentReaderFreeCallback(void * cls) {
-  HTTPSession * session = cls;
+static void
+contentReaderFreeCallback (void *cls)
+{
+  HTTPSession *session = cls;
 
   session->destroyed = YES;
 }
@@ -579,127 +597,135 @@ static void contentReaderFreeCallback(void * cls) {
  * socket. Adds the session to the array of sessions watched
  * by the select thread.
  */
-static int accessHandlerCallback(void * cls,
-  			 struct MHD_Session * session,
-  			 const char * url,
-  			 const char * method,
-  			 const char * upload_data,
-  			 unsigned int * upload_data_size) {
-  TSession * tsession;
-  struct MHD_Response * response;
-  HTTPSession * httpSession;
+static int
+accessHandlerCallback (void *cls,
+                       struct MHD_Session *session,
+                       const char *url,
+                       const char *method,
+                       const char *upload_data,
+                       unsigned int *upload_data_size)
+{
+  TSession *tsession;
+  struct MHD_Response *response;
+  HTTPSession *httpSession;
   HashCode512 client;
   int i;
   unsigned int have;
-  MESSAGE_HEADER * hdr;
-  P2P_PACKET * mp;
+  MESSAGE_HEADER *hdr;
+  P2P_PACKET *mp;
   unsigned int cpy;
   unsigned int poff;
 
-  if ( (strlen(url) < 2) ||
-       (OK != enc2hash(&url[1],
-  	       &client)) ) {
-    return MHD_NO;
-  }
+  if ((strlen (url) < 2) || (OK != enc2hash (&url[1], &client)))
+    {
+      return MHD_NO;
+    }
 
   /* check if we already have a session for this */
-  MUTEX_LOCK(httplock);
-  for (i=0;i<tsessionCount;i++) {
-    tsession = tsessions[i];
-    httpSession = tsession->internal;
-    if (0 == memcmp(&httpSession->sender,
-  	    &client,
-  	    sizeof(HashCode512)))
-      break;
-    tsession = NULL;
-    httpSession = NULL;
-  }
-  if (tsession != NULL) {
-    MUTEX_LOCK(httpSession->lock);
-    httpSession->users++;
-    MUTEX_UNLOCK(httpSession->lock);
-  }
-  MUTEX_UNLOCK(httplock);
-
-  if (httpSession == NULL) {
-    httpSession = MALLOC(sizeof(HTTPSession));
-    memset(httpSession,
-     0,
-     sizeof(HTTPSession));
-    httpSession->sender = *(coreAPI->myIdentity);
-    httpSession->lock = MUTEX_CREATE(YES);
-    httpSession->users = 1; /* us only, core has not seen this tsession! */
-    httpSession->lastUse = get_time();
-    tsession = MALLOC(sizeof(TSession));
-    tsession->ttype = HTTP_PROTOCOL_NUMBER;
-    tsession->internal = httpSession;
-    tsession->peer = *(coreAPI->myIdentity);
-    httpSession->tsession = tsession;
-    addTSession(tsession);
-  }
-  if (0 == strcmp("GET", method)) {
-    /* handle get */
-    response = MHD_create_response_from_callback(-1,
-  					 contentReaderCallback,
-  					 httpSession,
-  					 contentReaderFreeCallback);
-    httpSession->cs.client.get = response;
-    MHD_queue_response(session,
-  	       MHD_HTTP_OK,
-  	       response);
-  } else if (0 == strcmp("PUT", method)) {
-    /* handle put (upload_data!) */
-    MUTEX_LOCK(httpSession->lock);
-    poff = 0;
-    have = *upload_data_size;
-    *upload_data_size = 0; /* we will always process everything */
-    while (have > 0) {
-      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) {
-  cpy = sizeof(MESSAGE_HEADER) - httpSession->rpos1;
-  if (cpy > have)
-    cpy = have;
-  memcpy(&httpSession->rbuff1[httpSession->rpos1],
-         &upload_data[poff],
-         cpy);
-  httpSession->rpos1 += cpy;
-  have -= cpy;
-  poff += cpy;
-  httpSession->rpos2 = 0;
-      }
-      if (httpSession->rpos1 < sizeof(MESSAGE_HEADER))
-  break;
-      hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
-      GROW(httpSession->rbuff2,
-     httpSession->rsize2,
-     ntohs(hdr->size) - sizeof(MESSAGE_HEADER));
-      if (httpSession->rpos2 < ntohs(hdr->size) - sizeof(MESSAGE_HEADER)) {
-  cpy = ntohs(hdr->size) - sizeof(MESSAGE_HEADER) - httpSession->rpos2;
-  if (cpy > have)
-    cpy = have;
-  memcpy(&httpSession->rbuff2[httpSession->rpos2],
-         &upload_data[poff],
-         cpy);
-  have -= cpy;
-  poff += cpy;
-  httpSession->rpos2 += cpy;
-      }
-      if (httpSession->rpos2 < ntohs(hdr->size) - sizeof(MESSAGE_HEADER))
-  break;
-      mp = MALLOC(sizeof(P2P_PACKET));
-      mp->msg = httpSession->rbuff2;
-      mp->sender = httpSession->sender;
-      mp->tsession = httpSession->tsession;
-      mp->size = ntohs(hdr->size) - sizeof(MESSAGE_HEADER);
-      coreAPI->receive(mp);
-      httpSession->rbuff2 = NULL;
-      httpSession->rpos2 = 0;
-      httpSession->rsize2 = 0;
-      httpSession->rpos1 = 0;
+  MUTEX_LOCK (httplock);
+  for (i = 0; i < tsessionCount; i++)
+    {
+      tsession = tsessions[i];
+      httpSession = tsession->internal;
+      if (0 == memcmp (&httpSession->sender, &client, sizeof (HashCode512)))
+        break;
+      tsession = NULL;
+      httpSession = NULL;
     }
-    MUTEX_UNLOCK(httpSession->lock);
-  } else {
-    return MHD_NO; /* must be get or put! */
-  }
+  if (tsession != NULL)
+    {
+      MUTEX_LOCK (httpSession->lock);
+      httpSession->users++;
+      MUTEX_UNLOCK (httpSession->lock);
+    }
+  MUTEX_UNLOCK (httplock);
+
+  if (httpSession == NULL)
+    {
+      httpSession = MALLOC (sizeof (HTTPSession));
+      memset (httpSession, 0, sizeof (HTTPSession));
+      httpSession->sender = *(coreAPI->myIdentity);
+      httpSession->lock = MUTEX_CREATE (YES);
+      httpSession->users = 1;   /* us only, core has not seen this tsession! */
+      httpSession->lastUse = get_time ();
+      tsession = MALLOC (sizeof (TSession));
+      tsession->ttype = HTTP_PROTOCOL_NUMBER;
+      tsession->internal = httpSession;
+      tsession->peer = *(coreAPI->myIdentity);
+      httpSession->tsession = tsession;
+      addTSession (tsession);
+    }
+  if (0 == strcmp ("GET", method))
+    {
+      /* handle get */
+      response = MHD_create_response_from_callback (-1,
+                                                    contentReaderCallback,
+                                                    httpSession,
+                                                    contentReaderFreeCallback);
+      httpSession->cs.client.get = response;
+      MHD_queue_response (session, MHD_HTTP_OK, response);
+    }
+  else if (0 == strcmp ("PUT", method))
+    {
+      /* handle put (upload_data!) */
+      MUTEX_LOCK (httpSession->lock);
+      poff = 0;
+      have = *upload_data_size;
+      *upload_data_size = 0;    /* we will always process everything */
+      while (have > 0)
+        {
+          if (httpSession->rpos1 < sizeof (MESSAGE_HEADER))
+            {
+              cpy = sizeof (MESSAGE_HEADER) - httpSession->rpos1;
+              if (cpy > have)
+                cpy = have;
+              memcpy (&httpSession->rbuff1[httpSession->rpos1],
+                      &upload_data[poff], cpy);
+              httpSession->rpos1 += cpy;
+              have -= cpy;
+              poff += cpy;
+              httpSession->rpos2 = 0;
+            }
+          if (httpSession->rpos1 < sizeof (MESSAGE_HEADER))
+            break;
+          hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
+          GROW (httpSession->rbuff2,
+                httpSession->rsize2,
+                ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
+          if (httpSession->rpos2 <
+              ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+            {
+              cpy =
+                ntohs (hdr->size) - sizeof (MESSAGE_HEADER) -
+                httpSession->rpos2;
+              if (cpy > have)
+                cpy = have;
+              memcpy (&httpSession->rbuff2[httpSession->rpos2],
+                      &upload_data[poff], cpy);
+              have -= cpy;
+              poff += cpy;
+              httpSession->rpos2 += cpy;
+            }
+          if (httpSession->rpos2 <
+              ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+            break;
+          mp = MALLOC (sizeof (P2P_PACKET));
+          mp->msg = httpSession->rbuff2;
+          mp->sender = httpSession->sender;
+          mp->tsession = httpSession->tsession;
+          mp->size = ntohs (hdr->size) - sizeof (MESSAGE_HEADER);
+          coreAPI->receive (mp);
+          httpSession->rbuff2 = NULL;
+          httpSession->rpos2 = 0;
+          httpSession->rsize2 = 0;
+          httpSession->rpos1 = 0;
+        }
+      MUTEX_UNLOCK (httpSession->lock);
+    }
+  else
+    {
+      return MHD_NO;            /* must be get or put! */
+    }
   return MHD_YES;
 }
 
@@ -707,66 +733,63 @@ static int accessHandlerCallback(void * cls,
  * Process downloaded bits
  */
 static size_t
-receiveContentCallback(void * ptr,
-  	       size_t size,
-  	       size_t nmemb,
-  	       void * ctx) {
-  HTTPSession * httpSession = ctx;
-  const char * inbuf = ptr;
+receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
+{
+  HTTPSession *httpSession = ctx;
+  const char *inbuf = ptr;
   size_t have = size * nmemb;
   size_t poff = 0;
   size_t cpy;
-  MESSAGE_HEADER * hdr;
-  P2P_PACKET * mp;
+  MESSAGE_HEADER *hdr;
+  P2P_PACKET *mp;
 
-  printf("Receiving %u bytes from GET\n",
-   have);
-  while (have > 0) {
-    if (httpSession->rpos1 < sizeof(MESSAGE_HEADER)) {
-      cpy = sizeof(MESSAGE_HEADER) - httpSession->rpos1;
-      if (cpy > have)
-  cpy = have;
-      memcpy(&httpSession->rbuff1[httpSession->rpos1],
-       &inbuf[poff],
-       cpy);
-      httpSession->rpos1 += cpy;
-      have -= cpy;
-      poff += cpy;
+  printf ("Receiving %u bytes from GET\n", have);
+  while (have > 0)
+    {
+      if (httpSession->rpos1 < sizeof (MESSAGE_HEADER))
+        {
+          cpy = sizeof (MESSAGE_HEADER) - httpSession->rpos1;
+          if (cpy > have)
+            cpy = have;
+          memcpy (&httpSession->rbuff1[httpSession->rpos1],
+                  &inbuf[poff], cpy);
+          httpSession->rpos1 += cpy;
+          have -= cpy;
+          poff += cpy;
+          httpSession->rpos2 = 0;
+        }
+      if (httpSession->rpos1 < sizeof (MESSAGE_HEADER))
+        return size * nmemb;
+      hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
+      GROW (httpSession->rbuff2,
+            httpSession->rsize2, ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
+      printf ("Expecting message of %u bytes via GET\n", ntohs (hdr->size));
+      if (httpSession->rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+        {
+          cpy =
+            ntohs (hdr->size) - sizeof (MESSAGE_HEADER) - httpSession->rpos2;
+          if (cpy > have)
+            cpy = have;
+          memcpy (&httpSession->rbuff2[httpSession->rpos2],
+                  &inbuf[poff], cpy);
+          have -= cpy;
+          poff += cpy;
+          httpSession->rpos2 += cpy;
+        }
+      if (httpSession->rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+        return size * nmemb;
+      mp = MALLOC (sizeof (P2P_PACKET));
+      mp->msg = httpSession->rbuff2;
+      mp->sender = httpSession->sender;
+      mp->tsession = httpSession->tsession;
+      mp->size = ntohs (hdr->size) - sizeof (MESSAGE_HEADER);
+      printf ("Passing message from GET to core!\n");
+      coreAPI->receive (mp);
+      httpSession->rbuff2 = NULL;
       httpSession->rpos2 = 0;
+      httpSession->rsize2 = 0;
+      httpSession->rpos1 = 0;
     }
-    if (httpSession->rpos1 < sizeof(MESSAGE_HEADER))
-      return size * nmemb;
-    hdr = (MESSAGE_HEADER *) httpSession->rbuff1;
-    GROW(httpSession->rbuff2,
-   httpSession->rsize2,
-   ntohs(hdr->size) - sizeof(MESSAGE_HEADER));
-    printf("Expecting message of %u bytes via GET\n",
-     ntohs(hdr->size));
-    if (httpSession->rpos2 < ntohs(hdr->size) - sizeof(MESSAGE_HEADER)) {
-      cpy = ntohs(hdr->size) - sizeof(MESSAGE_HEADER) - httpSession->rpos2;
-      if (cpy > have)
-  cpy = have;
-      memcpy(&httpSession->rbuff2[httpSession->rpos2],
-       &inbuf[poff],
-       cpy);
-      have -= cpy;
-      poff += cpy;
-      httpSession->rpos2 += cpy;
-    }
-    if (httpSession->rpos2 < ntohs(hdr->size) - sizeof(MESSAGE_HEADER))
-      return size * nmemb;
-    mp = MALLOC(sizeof(P2P_PACKET));
-    mp->msg = httpSession->rbuff2;
-    mp->sender = httpSession->sender;
-    mp->tsession = httpSession->tsession;
-    mp->size =  ntohs(hdr->size) - sizeof(MESSAGE_HEADER);
-    printf("Passing message from GET to core!\n");
-    coreAPI->receive(mp);
-    httpSession->rbuff2 = NULL;
-    httpSession->rpos2 = 0;
-    httpSession->rsize2 = 0;
-    httpSession->rpos1 = 0;
-  }
   return size * nmemb;
 }
 
@@ -774,18 +797,14 @@ receiveContentCallback(void * ptr,
  * Provide bits for upload
  */
 static size_t
-sendContentCallback(void * ptr,
-  	    size_t size,
-  	    size_t nmemb,
-  	    void * ctx) {
-  struct HTTPPutData * put = ctx;
+sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
+{
+  struct HTTPPutData *put = ctx;
   size_t max = size * nmemb;
 
   if (max > put->size - put->pos)
     max = put->size - put->pos;
-  memcpy(ptr,
-   &put->msg[put->pos],
-   max);
+  memcpy (ptr, &put->msg[put->pos], max);
   put->pos += max;
   return max;
 }
@@ -799,174 +818,130 @@ sendContentCallback(void * ptr,
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int httpConnect(const P2P_hello_MESSAGE * hello,
-  	       TSession ** tsessionPtr) {
-  const HostAddress * haddr = (const HostAddress*) &hello[1];
-  TSession * tsession;
-  HTTPSession * httpSession;
-  CURL * curl_get;
+static int
+httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
+{
+  const HostAddress *haddr = (const HostAddress *) &hello[1];
+  TSession *tsession;
+  HTTPSession *httpSession;
+  CURL *curl_get;
   CURLcode ret;
   CURLMcode mret;
-  char * url;
+  char *url;
   EncName enc;
   int i;
 
   /* check if we have a session pending for this peer */
   tsession = NULL;
-  MUTEX_LOCK(httplock);
-  for (i=0;i<tsessionCount;i++) {
-    if (0 == memcmp(&hello->senderIdentity,
-  	    &tsessions[i]->peer,
-  	    sizeof(PeerIdentity))) {
-      tsession = tsessions[i];
-      break;
+  MUTEX_LOCK (httplock);
+  for (i = 0; i < tsessionCount; i++)
+    {
+      if (0 == memcmp (&hello->senderIdentity,
+                       &tsessions[i]->peer, sizeof (PeerIdentity)))
+        {
+          tsession = tsessions[i];
+          break;
+        }
     }
-  }
-  if ( (tsession != NULL) &&
-       (OK == httpAssociate(tsession)) ) {
-    *tsessionPtr = tsession;
-    MUTEX_UNLOCK(httplock);
-    return OK;
-  }
-  MUTEX_UNLOCK(httplock);
+  if ((tsession != NULL) && (OK == httpAssociate (tsession)))
+    {
+      *tsessionPtr = tsession;
+      MUTEX_UNLOCK (httplock);
+      return OK;
+    }
+  MUTEX_UNLOCK (httplock);
 
   /* no session pending, initiate a new one! */
-  curl_get = curl_easy_init();
+  curl_get = curl_easy_init ();
   if (curl_get == NULL)
     return SYSERR;
 
-  hash2enc(&hello->senderIdentity.hashPubKey,
-     &enc);
-  url = MALLOC(64 + sizeof(EncName));
-  SNPRINTF(url,
-     64 + sizeof(EncName),
-     "http://%u.%u.%u.%u:%u/%s",
-     PRIP(ntohl(*(int*)&haddr->ip.addr)),
-     ntohs(haddr->port),
-     &enc);
+  hash2enc (&hello->senderIdentity.hashPubKey, &enc);
+  url = MALLOC (64 + sizeof (EncName));
+  SNPRINTF (url,
+            64 + sizeof (EncName),
+            "http://%u.%u.%u.%u:%u/%s",
+            PRIP (ntohl (*(int *) &haddr->ip.addr)),
+            ntohs (haddr->port), &enc);
 
   /* create GET */
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_FAILONERROR,
-  	   1);
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_URL,
-  	   url);
-  if (strlen(proxy) > 0)
-    CURL_EASY_SETOPT(curl_get,
-  	     CURLOPT_PROXY,
-  	     proxy);
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_BUFFERSIZE,
-  	   32 * 1024);
-  if (0 == strncmp(url,
-  	   "http",
-  	   4))
-    CURL_EASY_SETOPT(curl_get,
-  	     CURLOPT_USERAGENT,
-  	     "GNUnet-http");
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_CONNECTTIMEOUT,
-  	   150L);
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_TIMEOUT,
-  	   150L);
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_WRITEFUNCTION,
-  	   &receiveContentCallback);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_FAILONERROR, 1);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_URL, url);
+  if (strlen (proxy) > 0)
+    CURL_EASY_SETOPT (curl_get, CURLOPT_PROXY, proxy);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_BUFFERSIZE, 32 * 1024);
+  if (0 == strncmp (url, "http", 4))
+    CURL_EASY_SETOPT (curl_get, CURLOPT_USERAGENT, "GNUnet-http");
+  CURL_EASY_SETOPT (curl_get, CURLOPT_CONNECTTIMEOUT, 150L);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_TIMEOUT, 150L);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEFUNCTION, &receiveContentCallback);
 
-  httpSession = MALLOC(sizeof(HTTPSession));
-  memset(httpSession,
-   0,
-   sizeof(HTTPSession));
+  httpSession = MALLOC (sizeof (HTTPSession));
+  memset (httpSession, 0, sizeof (HTTPSession));
   httpSession->cs.client.url = url;
-  CURL_EASY_SETOPT(curl_get,
-  	   CURLOPT_WRITEDATA,
-  	   httpSession);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEDATA, httpSession);
   if (ret != CURLE_OK)
     goto cleanup;
-  mret = curl_multi_add_handle(curl_multi, curl_get);
-  if (mret != CURLM_OK) {
-    GE_LOG(coreAPI->ectx,
-     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-     _("%s failed at %s:%d: `%s'\n"),
-     "curl_multi_add_handle",
-     __FILE__,
-     __LINE__,
-     curl_multi_strerror(mret));
-    goto cleanup;
-  }
+  mret = curl_multi_add_handle (curl_multi, curl_get);
+  if (mret != CURLM_OK)
+    {
+      GE_LOG (coreAPI->ectx,
+              GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+              _("%s failed at %s:%d: `%s'\n"),
+              "curl_multi_add_handle",
+              __FILE__, __LINE__, curl_multi_strerror (mret));
+      goto cleanup;
+    }
 
   /* create SESSION */
   httpSession->sender = hello->senderIdentity;
-  httpSession->lock = MUTEX_CREATE(YES);
-  httpSession->users = 1; /* us only, core has not seen this tsession! */
-  httpSession->lastUse = get_time();
+  httpSession->lock = MUTEX_CREATE (YES);
+  httpSession->users = 1;       /* us only, core has not seen this tsession! */
+  httpSession->lastUse = get_time ();
   httpSession->is_client = YES;
   httpSession->cs.client.get = curl_get;
-  tsession = MALLOC(sizeof(TSession));
+  tsession = MALLOC (sizeof (TSession));
   httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
-  addTSession(tsession);
+  addTSession (tsession);
   *tsessionPtr = tsession;
   return OK;
- cleanup:
-  curl_easy_cleanup(curl_get);
-  FREE(url);
-  FREE(proxy);
-  FREE(httpSession);
+cleanup:
+  curl_easy_cleanup (curl_get);
+  FREE (url);
+  FREE (proxy);
+  FREE (httpSession);
   return SYSERR;
 }
 
 static CURL *
-create_curl_put(HTTPSession * httpSession,
-  	struct HTTPPutData * put,
-  	unsigned int size) {
-  CURL * curl_put;
+create_curl_put (HTTPSession * httpSession,
+                 struct HTTPPutData *put, unsigned int size)
+{
+  CURL *curl_put;
   CURLcode ret;
 
-  curl_put = curl_easy_init();
+  curl_put = curl_easy_init ();
   if (curl_put == NULL)
     return NULL;
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_FAILONERROR,
-  	   1);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_URL,
-  	   httpSession->cs.client.url);
-  if (strlen(proxy) > 0)
-    CURL_EASY_SETOPT(curl_put,
-  	     CURLOPT_PROXY,
-  	     proxy);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_BUFFERSIZE,
-  	   32 * 1024);
-  if (0 == strncmp(httpSession->cs.client.url,
-  	   "http",
-  	   4))
-    CURL_EASY_SETOPT(curl_put,
-  	     CURLOPT_USERAGENT,
-  	     "GNUnet-http");
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_UPLOAD,
-  	   1);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_CONNECTTIMEOUT,
-  	   150L);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_INFILESIZE_LARGE,
-  	   size);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_READFUNCTION,
-  	   &sendContentCallback);
-  CURL_EASY_SETOPT(curl_put,
-  	   CURLOPT_READDATA,
-  	   put);
-  if (ret != CURLE_OK) {
-    curl_easy_cleanup(curl_put);
-    return NULL;
-  }
+  CURL_EASY_SETOPT (curl_put, CURLOPT_FAILONERROR, 1);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_URL, httpSession->cs.client.url);
+  if (strlen (proxy) > 0)
+    CURL_EASY_SETOPT (curl_put, CURLOPT_PROXY, proxy);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_BUFFERSIZE, 32 * 1024);
+  if (0 == strncmp (httpSession->cs.client.url, "http", 4))
+    CURL_EASY_SETOPT (curl_put, CURLOPT_USERAGENT, "GNUnet-http");
+  CURL_EASY_SETOPT (curl_put, CURLOPT_UPLOAD, 1);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_CONNECTTIMEOUT, 150L);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_INFILESIZE_LARGE, size);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_READFUNCTION, &sendContentCallback);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_READDATA, put);
+  if (ret != CURLE_OK)
+    {
+      curl_easy_cleanup (curl_put);
+      return NULL;
+    }
   return curl_put;
 }
 
@@ -978,105 +953,106 @@ create_curl_put(HTTPSession * httpSession,
  * @param size the size of the message
  * @return SYSERR on error, OK on success, NO if queue is full
  */
-static int httpSend(TSession * tsession,
-  	    const void * msg,
-  	    unsigned int size,
-  	    int important) {
-  HTTPSession * httpSession = tsession->internal;
-  struct HTTPPutData * putData;
-  CURL * curl_put;
+static int
+httpSend (TSession * tsession,
+          const void *msg, unsigned int size, int important)
+{
+  HTTPSession *httpSession = tsession->internal;
+  struct HTTPPutData *putData;
+  CURL *curl_put;
   CURLMcode mret;
-  MESSAGE_HEADER * hdr;
-  char * tmp;
+  MESSAGE_HEADER *hdr;
+  char *tmp;
 
-  if (httpSession->is_client) {
-    if (size >= MAX_BUFFER_SIZE)
-      return SYSERR;
-    if (size == 0) {
-      GE_BREAK(NULL, 0);
-      return SYSERR;
+  if (httpSession->is_client)
+    {
+      if (size >= MAX_BUFFER_SIZE)
+        return SYSERR;
+      if (size == 0)
+        {
+          GE_BREAK (NULL, 0);
+          return SYSERR;
+        }
+      putData = MALLOC (sizeof (struct HTTPPutData));
+      memset (putData, 0, sizeof (struct HTTPPutData));
+      putData->msg = MALLOC (size + sizeof (MESSAGE_HEADER));
+      hdr = (MESSAGE_HEADER *) putData->msg;
+      hdr->size = htons (size + sizeof (MESSAGE_HEADER));
+      hdr->type = htons (0);
+      memcpy (&putData->msg[sizeof (MESSAGE_HEADER)], msg, size);
+      putData->size = size + sizeof (MESSAGE_HEADER);
+      MUTEX_LOCK (httpSession->lock);
+      curl_put = create_curl_put (httpSession,
+                                  putData, size + sizeof (MESSAGE_HEADER));
+      if (curl_put == NULL)
+        {
+          MUTEX_UNLOCK (httpSession->lock);
+          FREE (putData->msg);
+          FREE (putData);
+          return SYSERR;
+        }
+      putData->curl_put = curl_put;
+      putData->next = httpSession->cs.client.puts;
+      httpSession->cs.client.puts = putData;
+      MUTEX_UNLOCK (httpSession->lock);
+      MUTEX_LOCK (httplock);
+      mret = curl_multi_add_handle (curl_multi, curl_put);
+      if (mret != CURLM_OK)
+        {
+          GE_LOG (coreAPI->ectx,
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                  _("%s failed at %s:%d: `%s'\n"),
+                  "curl_multi_add_handle",
+                  __FILE__, __LINE__, curl_multi_strerror (mret));
+          putData->done = YES;
+          MUTEX_UNLOCK (httplock);
+          return SYSERR;
+        }
+      MUTEX_UNLOCK (httplock);
+      return OK;
     }
-    putData = MALLOC(sizeof(struct HTTPPutData));
-    memset(putData,
-     0,
-     sizeof(struct HTTPPutData));
-    putData->msg = MALLOC(size + sizeof(MESSAGE_HEADER));
-    hdr = (MESSAGE_HEADER*) putData->msg;
-    hdr->size = htons(size + sizeof(MESSAGE_HEADER));
-    hdr->type = htons(0);
-    memcpy(&putData->msg[sizeof(MESSAGE_HEADER)],
-     msg,
-     size);
-    putData->size = size + sizeof(MESSAGE_HEADER);
-    MUTEX_LOCK(httpSession->lock);
-    curl_put = create_curl_put(httpSession,
-  		       putData,
-  		       size + sizeof(MESSAGE_HEADER));
-    if (curl_put == NULL) {
-      MUTEX_UNLOCK(httpSession->lock);
-      FREE(putData->msg);
-      FREE(putData);
-      return SYSERR;
+  else
+    {                           /* httpSession->isClient == false */
+      MUTEX_LOCK (httpSession->lock);
+      if (httpSession->wsize == 0)
+        GROW (httpSession->wbuff, httpSession->wsize, HTTP_BUF_SIZE);
+      if (httpSession->wpos + size > httpSession->wsize)
+        {
+          /* need to grow or discard */
+          if (!important)
+            {
+              MUTEX_UNLOCK (httpSession->lock);
+              return NO;
+            }
+          tmp = MALLOC (httpSession->wpos + size);
+          memcpy (tmp,
+                  &httpSession->wbuff[httpSession->woff], httpSession->wpos);
+          FREE (httpSession->wbuff);
+          httpSession->wbuff = tmp;
+          httpSession->wsize = httpSession->wpos + size;
+          httpSession->woff = 0;
+          httpSession->wpos = httpSession->wpos + size;
+        }
+      else
+        {
+          /* fits without growing */
+          if (httpSession->wpos + httpSession->woff + size >
+              httpSession->wsize)
+            {
+              /* need to compact first */
+              memmove (httpSession->wbuff,
+                       &httpSession->wbuff[httpSession->woff],
+                       httpSession->wpos);
+              httpSession->woff = 0;
+            }
+          /* append */
+          memcpy (&httpSession->wbuff[httpSession->woff + httpSession->wpos],
+                  msg, size);
+          httpSession->wpos += size;
+        }
+      MUTEX_UNLOCK (httpSession->lock);
+      return OK;
     }
-    putData->curl_put = curl_put;
-    putData->next = httpSession->cs.client.puts;
-    httpSession->cs.client.puts = putData;
-    MUTEX_UNLOCK(httpSession->lock);
-    MUTEX_LOCK(httplock);
-    mret = curl_multi_add_handle(curl_multi, curl_put);
-    if (mret != CURLM_OK) {
-      GE_LOG(coreAPI->ectx,
-       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-       _("%s failed at %s:%d: `%s'\n"),
-       "curl_multi_add_handle",
-       __FILE__,
-       __LINE__,
-       curl_multi_strerror(mret));
-      putData->done = YES;
-      MUTEX_UNLOCK(httplock);
-      return SYSERR;
-    }
-    MUTEX_UNLOCK(httplock);
-    return OK;
-  } else { /* httpSession->isClient == false */
-    MUTEX_LOCK(httpSession->lock);
-    if (httpSession->wsize == 0)
-      GROW(httpSession->wbuff,
-     httpSession->wsize,
-     HTTP_BUF_SIZE);
-    if (httpSession->wpos + size > httpSession->wsize) {
-      /* need to grow or discard */
-      if (! important) {
-  MUTEX_UNLOCK(httpSession->lock);
-  return NO;
-      }
-      tmp = MALLOC(httpSession->wpos + size);
-      memcpy(tmp,
-       &httpSession->wbuff[httpSession->woff],
-       httpSession->wpos);
-      FREE(httpSession->wbuff);
-      httpSession->wbuff = tmp;
-      httpSession->wsize = httpSession->wpos + size;
-      httpSession->woff = 0;
-      httpSession->wpos = httpSession->wpos + size;
-    } else {
-      /* fits without growing */
-      if (httpSession->wpos + httpSession->woff + size > httpSession->wsize) {
-  /* need to compact first */
-  memmove(httpSession->wbuff,
-  	&httpSession->wbuff[httpSession->woff],
-  	httpSession->wpos);
-  httpSession->woff = 0;
-      }
-      /* append */
-      memcpy(&httpSession->wbuff[httpSession->woff + httpSession->wpos],
-       msg,
-       size);
-      httpSession->wpos += size;
-    }
-    MUTEX_UNLOCK(httpSession->lock);
-    return OK;
-  }
 }
 
 /**
@@ -1085,60 +1061,67 @@ static int httpSend(TSession * tsession,
  * etc.).
  */
 static void
-cleanup_connections() {
+cleanup_connections ()
+{
   int i;
-  HTTPSession * s;
-  struct HTTPPutData * prev;
-  struct HTTPPutData * pos;
+  HTTPSession *s;
+  struct HTTPPutData *prev;
+  struct HTTPPutData *pos;
 
-  MUTEX_LOCK(httplock);
-  for (i=0;i<tsessionCount;i++) {
-    s = tsessions[i]->internal;
-    MUTEX_LOCK(s->lock);
-    if (s->is_client) {
-      prev = NULL;
-      pos = s->cs.client.puts;
-      while (pos != NULL) {
-  /* FIXME: check if CURL has timed out
-     the GET operation! If so, clean up!
-     (and make sure we re-establish GET
-     as needed!) */
+  MUTEX_LOCK (httplock);
+  for (i = 0; i < tsessionCount; i++)
+    {
+      s = tsessions[i]->internal;
+      MUTEX_LOCK (s->lock);
+      if (s->is_client)
+        {
+          prev = NULL;
+          pos = s->cs.client.puts;
+          while (pos != NULL)
+            {
+              /* FIXME: check if CURL has timed out
+                 the GET operation! If so, clean up!
+                 (and make sure we re-establish GET
+                 as needed!) */
 
 
-  if (pos->done) {
-    if (prev == NULL)
-      s->cs.client.puts = pos->next;
-    else
-      prev->next = pos->next;
-    FREE(pos->msg);
-    curl_multi_remove_handle(curl_multi,
-  			   pos->curl_put);
-    curl_easy_cleanup(pos->curl_put);
-    FREE(pos);	
-    if (prev == NULL)
-      pos = s->cs.client.puts;
-    else
-      pos = pos->next;
-    continue;
-  }
-  prev = pos;
-  pos = pos->next;
-      }
-    } else {
-      /* FIXME: add code to close MHD connection
-   from the server side (timeout!); need
-   to
-   A) tell GET callback to return "end of transmission"
-   B) destroy response object
-      */
+              if (pos->done)
+                {
+                  if (prev == NULL)
+                    s->cs.client.puts = pos->next;
+                  else
+                    prev->next = pos->next;
+                  FREE (pos->msg);
+                  curl_multi_remove_handle (curl_multi, pos->curl_put);
+                  curl_easy_cleanup (pos->curl_put);
+                  FREE (pos);
+                  if (prev == NULL)
+                    pos = s->cs.client.puts;
+                  else
+                    pos = pos->next;
+                  continue;
+                }
+              prev = pos;
+              pos = pos->next;
+            }
+        }
+      else
+        {
+          /* FIXME: add code to close MHD connection
+             from the server side (timeout!); need
+             to
+             A) tell GET callback to return "end of transmission"
+             B) destroy response object
+           */
+        }
+      MUTEX_UNLOCK (s->lock);
     }
-    MUTEX_UNLOCK(s->lock);
-  }
-  MUTEX_UNLOCK(httplock);
+  MUTEX_UNLOCK (httplock);
 }
 
 static void *
-curl_runner(void * unused) {
+curl_runner (void *unused)
+{
   CURLMcode mret;
   fd_set rs;
   fd_set ws;
@@ -1147,48 +1130,36 @@ curl_runner(void * unused) {
   struct timeval tv;
   int running;
 
-  while (YES == http_running) {
-    max = 0;
-    FD_ZERO(&rs);
-    FD_ZERO(&ws);
-    FD_ZERO(&es);
-    mret = curl_multi_fdset(curl_multi,
-  		    &rs,
-  		    &ws,
-  		    &es,
-  		    &max);
-    if (mret != CURLM_OK) {
-      GE_LOG(coreAPI->ectx,
-       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-       _("%s failed at %s:%d: `%s'\n"),
-       "curl_multi_fdset",
-       __FILE__,
-       __LINE__,
-       curl_multi_strerror(mret));
-      break;
+  while (YES == http_running)
+    {
+      max = 0;
+      FD_ZERO (&rs);
+      FD_ZERO (&ws);
+      FD_ZERO (&es);
+      mret = curl_multi_fdset (curl_multi, &rs, &ws, &es, &max);
+      if (mret != CURLM_OK)
+        {
+          GE_LOG (coreAPI->ectx,
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                  _("%s failed at %s:%d: `%s'\n"),
+                  "curl_multi_fdset",
+                  __FILE__, __LINE__, curl_multi_strerror (mret));
+          break;
+        }
+      if (mhd_daemon != NULL)
+        MHD_get_fdset (mhd_daemon, &rs, &ws, &es, &max);
+      /* CURL requires a regular timeout... */
+      tv.tv_sec = 0;
+      tv.tv_usec = 1000;
+      SELECT (max + 1, &rs, &ws, &es, &tv);
+      if (YES != http_running)
+        break;
+      running = 0;
+      curl_multi_perform (curl_multi, &running);
+      if (mhd_daemon != NULL)
+        MHD_run (mhd_daemon);
+      cleanup_connections ();
     }
-    if (mhd_daemon != NULL)
-      MHD_get_fdset(mhd_daemon,
-  	    &rs,
-  	    &ws,
-  	    &es,
-  	    &max);
-    /* CURL requires a regular timeout... */
-    tv.tv_sec = 0;
-    tv.tv_usec = 1000;
-    SELECT(max + 1,
-     &rs,
-     &ws,
-     &es,
-     &tv);
-    if (YES != http_running)
-      break;
-    running = 0;
-    curl_multi_perform(curl_multi, &running);
-    if (mhd_daemon != NULL)
-      MHD_run(mhd_daemon);
-    cleanup_connections();
-  }
   return NULL;
 }
 
@@ -1196,33 +1167,29 @@ curl_runner(void * unused) {
  * Start the server process to receive inbound traffic.
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer() {
+static int
+startTransportServer ()
+{
   unsigned short port;
 
-  if ( (curl_multi != NULL) ||
-       (http_running == YES) )
+  if ((curl_multi != NULL) || (http_running == YES))
     return SYSERR;
-  curl_multi = curl_multi_init();
+  curl_multi = curl_multi_init ();
   if (curl_multi == NULL)
     return SYSERR;
-  port = getGNUnetHTTPPort();
-  if ( (mhd_daemon == NULL) &&
-       (port != 0) ) {
-    mhd_daemon = MHD_start_daemon(MHD_USE_IPv4,
-  			  port,
-  			  &acceptPolicyCallback,
-  			  NULL,
-  			  &accessHandlerCallback,
-  			  NULL);
-  }
+  port = getGNUnetHTTPPort ();
+  if ((mhd_daemon == NULL) && (port != 0))
+    {
+      mhd_daemon = MHD_start_daemon (MHD_USE_IPv4,
+                                     port,
+                                     &acceptPolicyCallback,
+                                     NULL, &accessHandlerCallback, NULL);
+    }
   http_running = YES;
-  curl_thread = PTHREAD_CREATE(&curl_runner,
-  		       NULL,
-  		       32 * 1024);
+  curl_thread = PTHREAD_CREATE (&curl_runner, NULL, 32 * 1024);
   if (curl_thread == NULL)
-    GE_DIE_STRERROR(coreAPI->ectx,
-  	    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-  	    "pthread_create");
+    GE_DIE_STRERROR (coreAPI->ectx,
+                     GE_FATAL | GE_ADMIN | GE_IMMEDIATE, "pthread_create");
   return OK;
 }
 
@@ -1230,20 +1197,22 @@ static int startTransportServer() {
  * Shutdown the server process (stop receiving inbound
  * traffic). May be restarted later!
  */
-static int stopTransportServer() {
-  void * unused;
+static int
+stopTransportServer ()
+{
+  void *unused;
 
-  if ( (http_running == NO) ||
-       (curl_multi == NULL) )
+  if ((http_running == NO) || (curl_multi == NULL))
     return SYSERR;
   http_running = NO;
-  PTHREAD_STOP_SLEEP(curl_thread);
-  PTHREAD_JOIN(curl_thread, &unused);
-  if (mhd_daemon != NULL) {
-    MHD_stop_daemon(mhd_daemon);
-    mhd_daemon = NULL;
-  }
-  curl_multi_cleanup(curl_multi);
+  PTHREAD_STOP_SLEEP (curl_thread);
+  PTHREAD_JOIN (curl_thread, &unused);
+  if (mhd_daemon != NULL)
+    {
+      MHD_stop_daemon (mhd_daemon);
+      mhd_daemon = NULL;
+    }
+  curl_multi_cleanup (curl_multi);
   curl_multi = NULL;
   return OK;
 }
@@ -1252,27 +1221,23 @@ static int stopTransportServer() {
  * Reload the configuration. Should never fail (keep old
  * configuration on error, syslog errors!)
  */
-static int reloadConfiguration(void * ctx,
-  		       struct GC_Configuration * cfg,
-  		       struct GE_Context * ectx,
-  		       const char * section,
-  		       const char * option) {
-  char * ch;
+static int
+reloadConfiguration (void *ctx,
+                     struct GC_Configuration *cfg,
+                     struct GE_Context *ectx,
+                     const char *section, const char *option)
+{
+  char *ch;
 
-  if (0 != strcmp(section, "HTTP"))
-    return 0; /* fast path */
-  MUTEX_LOCK(httplock);
-  FREENONNULL(filteredNetworks_);
+  if (0 != strcmp (section, "HTTP"))
+    return 0;                   /* fast path */
+  MUTEX_LOCK (httplock);
+  FREENONNULL (filteredNetworks_);
   ch = NULL;
-  GC_get_configuration_value_string(cfg,
-  			    "HTTP",
-  			    "BLACKLIST",
-  			    "",
-  			    &ch);
-  filteredNetworks_ = parse_ipv4_network_specification(ectx,
-  					       ch);
-  FREE(ch);
-  MUTEX_UNLOCK(httplock);
+  GC_get_configuration_value_string (cfg, "HTTP", "BLACKLIST", "", &ch);
+  filteredNetworks_ = parse_ipv4_network_specification (ectx, ch);
+  FREE (ch);
+  MUTEX_UNLOCK (httplock);
   return 0;
 }
 
@@ -1280,22 +1245,18 @@ static int reloadConfiguration(void * ctx,
  * Convert HTTP hello to IP address
  */
 static int
-helloToAddress(const P2P_hello_MESSAGE * hello,
-         void ** sa,
-         unsigned int * sa_len) {
-  const HostAddress * haddr = (const HostAddress*) &hello[1];
-  struct sockaddr_in * serverAddr;
+helloToAddress (const P2P_hello_MESSAGE * hello,
+                void **sa, unsigned int *sa_len)
+{
+  const HostAddress *haddr = (const HostAddress *) &hello[1];
+  struct sockaddr_in *serverAddr;
 
-  *sa_len = sizeof(struct sockaddr_in);
-  serverAddr = MALLOC(sizeof(struct sockaddr_in));
+  *sa_len = sizeof (struct sockaddr_in);
+  serverAddr = MALLOC (sizeof (struct sockaddr_in));
   *sa = serverAddr;
-  memset(serverAddr,
-   0,
-   sizeof(struct sockaddr_in));
-  serverAddr->sin_family   = AF_INET;
-  memcpy(&serverAddr->sin_addr,
-   haddr,
-   sizeof(IPaddr));
+  memset (serverAddr, 0, sizeof (struct sockaddr_in));
+  serverAddr->sin_family = AF_INET;
+  memcpy (&serverAddr->sin_addr, haddr, sizeof (IPaddr));
   serverAddr->sin_port = haddr->port;
   return OK;
 }
@@ -1308,89 +1269,86 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
  * via a global and returns the udp transport API.
  */
 TransportAPI *
-inittransport_http(CoreAPIForTransport * core) {
+inittransport_http (CoreAPIForTransport * core)
+{
   static TransportAPI httpAPI;
 
   coreAPI = core;
-  httplock = MUTEX_CREATE(YES);
-  if (0 != GC_attach_change_listener(coreAPI->cfg,
-  			     &reloadConfiguration,
-  			     NULL)) {
-    MUTEX_DESTROY(httplock);
-    return NULL;
-  }
-  if (0 != curl_global_init(CURL_GLOBAL_WIN32)) {
-    GE_BREAK(NULL, 0);
-    GC_detach_change_listener(coreAPI->cfg,
-  		      &reloadConfiguration,
-  		      NULL);
-    MUTEX_DESTROY(httplock);
-    return NULL;
-  }
+  httplock = MUTEX_CREATE (YES);
+  if (0 != GC_attach_change_listener (coreAPI->cfg,
+                                      &reloadConfiguration, NULL))
+    {
+      MUTEX_DESTROY (httplock);
+      return NULL;
+    }
+  if (0 != curl_global_init (CURL_GLOBAL_WIN32))
+    {
+      GE_BREAK (NULL, 0);
+      GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
+      MUTEX_DESTROY (httplock);
+      return NULL;
+    }
   tsessionCount = 0;
   tsessionArrayLength = 0;
-  GROW(tsessions,
-       tsessionArrayLength,
-       32);
-  if (GC_get_configuration_value_yesno(coreAPI->cfg,
-  			       "HTTP",
-  			       "UPNP",
-  			       YES) == YES) {
-    upnp = coreAPI->requestService("upnp");
+  GROW (tsessions, tsessionArrayLength, 32);
+  if (GC_get_configuration_value_yesno (coreAPI->cfg,
+                                        "HTTP", "UPNP", YES) == YES)
+    {
+      upnp = coreAPI->requestService ("upnp");
 
-    if (upnp == NULL) {
-      GE_LOG(coreAPI->ectx,
-       GE_ERROR | GE_USER | GE_IMMEDIATE,
-       _("The UPnP service could not be loaded. To disable UPnP, set the " \
-         "configuration option \"UPNP\" in section \"HTTP\" to \"NO\"\n"));	
+      if (upnp == NULL)
+        {
+          GE_LOG (coreAPI->ectx,
+                  GE_ERROR | GE_USER | GE_IMMEDIATE,
+                  _
+                  ("The UPnP service could not be loaded. To disable UPnP, set the "
+                   "configuration option \"UPNP\" in section \"HTTP\" to \"NO\"\n"));
+        }
     }
-  }
 
-  stats = coreAPI->requestService("stats");
-  if (stats != NULL) {
-    stat_bytesReceived
-      = stats->create(gettext_noop("# bytes received via HTTP"));
-    stat_bytesSent
-      = stats->create(gettext_noop("# bytes sent via HTTP"));
-    stat_bytesDropped
-      = stats->create(gettext_noop("# bytes dropped by HTTP (outgoing)"));
-  }
-  GC_get_configuration_value_string(coreAPI->cfg,
-  			    "GNUNETD",
-  			    "HTTP-PROXY",
-  			    "",
-  			    &proxy);
+  stats = coreAPI->requestService ("stats");
+  if (stats != NULL)
+    {
+      stat_bytesReceived
+        = stats->create (gettext_noop ("# bytes received via HTTP"));
+      stat_bytesSent = stats->create (gettext_noop ("# bytes sent via HTTP"));
+      stat_bytesDropped
+        = stats->create (gettext_noop ("# bytes dropped by HTTP (outgoing)"));
+    }
+  GC_get_configuration_value_string (coreAPI->cfg,
+                                     "GNUNETD", "HTTP-PROXY", "", &proxy);
 
-  httpAPI.protocolNumber       = HTTP_PROTOCOL_NUMBER;
-  httpAPI.mtu                  = 0;
-  httpAPI.cost                 = 20000; /* about equal to udp */
-  httpAPI.verifyHello          = &verifyHello;
-  httpAPI.createhello          = &createhello;
-  httpAPI.connect              = &httpConnect;
-  httpAPI.associate            = &httpAssociate;
-  httpAPI.send                 = &httpSend;
-  httpAPI.disconnect           = &httpDisconnect;
+  httpAPI.protocolNumber = HTTP_PROTOCOL_NUMBER;
+  httpAPI.mtu = 0;
+  httpAPI.cost = 20000;         /* about equal to udp */
+  httpAPI.verifyHello = &verifyHello;
+  httpAPI.createhello = &createhello;
+  httpAPI.connect = &httpConnect;
+  httpAPI.associate = &httpAssociate;
+  httpAPI.send = &httpSend;
+  httpAPI.disconnect = &httpDisconnect;
   httpAPI.startTransportServer = &startTransportServer;
-  httpAPI.stopTransportServer  = &stopTransportServer;
-  httpAPI.helloToAddress       = &helloToAddress;
+  httpAPI.stopTransportServer = &stopTransportServer;
+  httpAPI.helloToAddress = &helloToAddress;
 
   return &httpAPI;
 }
 
-void donetransport_http() {
-  GC_detach_change_listener(coreAPI->cfg,
-  		    &reloadConfiguration,
-  		    NULL);
-  coreAPI->releaseService(stats);
+void
+donetransport_http ()
+{
+  GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
+  coreAPI->releaseService (stats);
   stats = NULL;
-  if (upnp != NULL) {
-    coreAPI->releaseService(upnp);
-    stats = NULL;
-  }
-  FREENONNULL(filteredNetworks_);
-  MUTEX_DESTROY(httplock);
-  curl_global_cleanup();
-  FREENONNULL(proxy);
+  if (upnp != NULL)
+    {
+      coreAPI->releaseService (upnp);
+      stats = NULL;
+    }
+  FREENONNULL (filteredNetworks_);
+  MUTEX_DESTROY (httplock);
+  curl_global_cleanup ();
+  FREENONNULL (proxy);
   proxy = NULL;
 }
 

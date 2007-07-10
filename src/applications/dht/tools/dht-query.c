@@ -41,174 +41,158 @@
  */
 static cron_t timeout;
 
-static struct GE_Context * ectx;
+static struct GE_Context *ectx;
 
-static struct GC_Configuration * cfg;
+static struct GC_Configuration *cfg;
 
-static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-dht-query command line options
  */
 static struct CommandLineOption gnunetqueryOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE) DHT table.")), /* -h */
+  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")),        /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'T', "timeout", "TIME",
-    gettext_noop("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
-    1, &gnunet_getopt_configure_set_ulong, &timeout },
-  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  {'T', "timeout", "TIME",
+   gettext_noop
+   ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
+   1, &gnunet_getopt_configure_set_ulong, &timeout},
+  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
 };
 
-static int printCallback(const HashCode512 * hash,
-  		 const DataContainer * data,
-  		 void * cls) {
-  char * key = cls;
-  printf("%s(%s): '%.*s'\n",
-   "get",
-   key,
-   ntohl(data->size) - sizeof(DataContainer),
-   (char*)&data[1]);
+static int
+printCallback (const HashCode512 * hash,
+               const DataContainer * data, void *cls)
+{
+  char *key = cls;
+  printf ("%s(%s): '%.*s'\n",
+          "get",
+          key,
+          ntohl (data->size) - sizeof (DataContainer), (char *) &data[1]);
   return OK;
 }
 
-static void do_get(struct ClientServerConnection * sock,
-  	   const char * key) {
+static void
+do_get (struct ClientServerConnection *sock, const char *key)
+{
   int ret;
   HashCode512 hc;
 
-  hash(key,
-       strlen(key),
-       &hc);
+  hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
-  GE_LOG(ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   "Issuing '%s(%s)' command.\n",
-   "get",
-   key);
+  GE_LOG (ectx,
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "Issuing '%s(%s)' command.\n", "get", key);
 #endif
   if (timeout == 0)
     timeout = 30 * cronSECONDS;
-  ret = DHT_LIB_get(cfg,
-  	    ectx,
-  	    DHT_STRING2STRING_BLOCK,
-  	    &hc,
-  	    timeout,
-  	    &printCallback,
-  	    (void*) key);
+  ret = DHT_LIB_get (cfg,
+                     ectx,
+                     DHT_STRING2STRING_BLOCK,
+                     &hc, timeout, &printCallback, (void *) key);
   if (ret == 0)
-    printf(_("%s(%s) operation returned no results.\n"),
-     "get",
-     key);
+    printf (_("%s(%s) operation returned no results.\n"), "get", key);
 }
 
-static void do_put(struct ClientServerConnection * sock,
-  	   const char * key,
-  	   const char * value) {
-  DataContainer * dc;
+static void
+do_put (struct ClientServerConnection *sock,
+        const char *key, const char *value)
+{
+  DataContainer *dc;
   HashCode512 hc;
 
-  hash(key, strlen(key), &hc);
-  dc = MALLOC(sizeof(DataContainer)
-        + strlen(value));
-  dc->size = htonl(strlen(value)
-  	   + sizeof(DataContainer));
-  memcpy(&dc[1],
-   value,
-   strlen(value));
+  hash (key, strlen (key), &hc);
+  dc = MALLOC (sizeof (DataContainer) + strlen (value));
+  dc->size = htonl (strlen (value) + sizeof (DataContainer));
+  memcpy (&dc[1], value, strlen (value));
 #if DEBUG_DHT_QUERY
-  GE_LOG(ectx,
-   GE_DEBUG | GE_REQUEST | GE_USER,
-   _("Issuing '%s(%s,%s)' command.\n"),
-   "put",
-   key,
-   value);
+  GE_LOG (ectx,
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (timeout == 0)
     timeout = 30 * cronMINUTES;
-  if (OK == DHT_LIB_put(cfg,
-  		ectx,
-  		&hc,
-  		DHT_STRING2STRING_BLOCK,
-  		timeout + get_time(), /* convert to absolute time */
-  		dc)) {
-    printf(_("'%s(%s,%s)' succeeded\n"),
-     "put",
-     key,
-     value);
-  } else {
-    printf(_("'%s(%s,%s)' failed.\n"),
-     "put",
-     key,
-     value);
-  }
-  FREE(dc);
+  if (OK == DHT_LIB_put (cfg, ectx, &hc, DHT_STRING2STRING_BLOCK, timeout + get_time (),        /* convert to absolute time */
+                         dc))
+    {
+      printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
+    }
+  else
+    {
+      printf (_("'%s(%s,%s)' failed.\n"), "put", key, value);
+    }
+  FREE (dc);
 }
 
-int main(int argc,
-   char * const * argv) {
+int
+main (int argc, char *const *argv)
+{
   int i;
-  struct ClientServerConnection * handle;
+  struct ClientServerConnection *handle;
 
-  i = GNUNET_init(argc,
-  	  argv,
-  	  "gnunet-dht-query",
-  	  &cfgFilename,
-  	  gnunetqueryOptions,
-  	  &ectx,
-  	  &cfg);
-  if (i == -1) {
-    GNUNET_fini(ectx, cfg);
-    return -1;
-  }
-
-  handle = client_connection_create(ectx, cfg);
-  if (handle == NULL) {
-    fprintf(stderr,
-      _("Failed to connect to gnunetd.\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 1;
-  }
-
-  while (i < argc) {
-    if (0 == strcmp("get", argv[i])) {
-      if (i+2 > argc) {
-  fprintf(stderr,
-  	_("Command `%s' requires an argument (`%s').\n"),
-  	"get",
-  	"key");
-  break;
-      } else {
-  do_get(handle, argv[i+1]);
-  i += 2;
-      }
-      continue;
+  i = GNUNET_init (argc,
+                   argv,
+                   "gnunet-dht-query",
+                   &cfgFilename, gnunetqueryOptions, &ectx, &cfg);
+  if (i == -1)
+    {
+      GNUNET_fini (ectx, cfg);
+      return -1;
     }
-    if (0 == strcmp("put", argv[i])) {
-      if (i+3 > argc) {
-  fprintf(stderr,
-  	_("Command `%s' requires two arguments (`%s' and `%s').\n"),
-  	"put",
-  	"key",
-  	"value");
-  break;
-      } else {
-  do_put(handle, argv[i+1], argv[i+2]);
-  i += 3;
-      }
-      continue;
+
+  handle = client_connection_create (ectx, cfg);
+  if (handle == NULL)
+    {
+      fprintf (stderr, _("Failed to connect to gnunetd.\n"));
+      GC_free (cfg);
+      GE_free_context (ectx);
+      return 1;
     }
-    fprintf(stderr,
-      _("Unsupported command `%s'.  Aborting.\n"),
-      argv[i]);
-    break;
-  }
-  connection_destroy(handle);
-  GNUNET_fini(ectx, cfg);
+
+  while (i < argc)
+    {
+      if (0 == strcmp ("get", argv[i]))
+        {
+          if (i + 2 > argc)
+            {
+              fprintf (stderr,
+                       _("Command `%s' requires an argument (`%s').\n"),
+                       "get", "key");
+              break;
+            }
+          else
+            {
+              do_get (handle, argv[i + 1]);
+              i += 2;
+            }
+          continue;
+        }
+      if (0 == strcmp ("put", argv[i]))
+        {
+          if (i + 3 > argc)
+            {
+              fprintf (stderr,
+                       _
+                       ("Command `%s' requires two arguments (`%s' and `%s').\n"),
+                       "put", "key", "value");
+              break;
+            }
+          else
+            {
+              do_put (handle, argv[i + 1], argv[i + 2]);
+              i += 3;
+            }
+          continue;
+        }
+      fprintf (stderr, _("Unsupported command `%s'.  Aborting.\n"), argv[i]);
+      break;
+    }
+  connection_destroy (handle);
+  GNUNET_fini (ectx, cfg);
   return 0;
 }
 

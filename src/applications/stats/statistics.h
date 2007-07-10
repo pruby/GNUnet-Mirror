@@ -32,13 +32,14 @@
  * (bounded by the maximum CS message size!) number of statistical
  * numbers. If needed, several messages are used.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
   /**
    * For 64-bit alignment...
    */
   int reserved;
-  /* timestamp  (network byte order)*/
+  /* timestamp  (network byte order) */
   cron_t startTime;
   /* total number of statistical counters */
   int totalCounters;
@@ -51,7 +52,8 @@ typedef struct {
  * Generic version of CS_stats_reply_MESSAGE with field for finding the end
  * of the struct. Use the other version for allocation.
  */
-typedef struct {
+typedef struct
+{
   CS_stats_reply_MESSAGE stats_cs_message;
 
   /* values[statCounters] */
@@ -68,7 +70,8 @@ typedef struct {
  * Query protocol supported message.  Contains the type of
  * the message we are requesting the status of.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**

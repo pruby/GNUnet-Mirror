@@ -31,8 +31,9 @@
 #include "gnunet_util_network_client.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -46,17 +47,16 @@ extern "C" {
  * @param sock socket to talk to gnunetd over
  * @return OK on success, SYSERR on error
  */
-int gnunet_identity_peer_add(struct ClientServerConnection * sock,
-			     const P2P_hello_MESSAGE * hello);
+int gnunet_identity_peer_add (struct ClientServerConnection *sock,
+                              const P2P_hello_MESSAGE * hello);
 
 /**
  * Function to request the peer to sign something
  * with the private key of the peer.
  */
-int gnunet_identity_sign_function(struct ClientServerConnection * sock,
-				  unsigned short size,
-				  const void * data,
-				  Signature * result);
+int gnunet_identity_sign_function (struct ClientServerConnection *sock,
+                                   unsigned short size,
+                                   const void *data, Signature * result);
 
 /**
  * Function to request one of the peer's identities
@@ -64,8 +64,8 @@ int gnunet_identity_sign_function(struct ClientServerConnection * sock,
  *
  * @return SYSERR on error, OK on success
  */
-int gnunet_identity_get_self(struct ClientServerConnection * sock,
-			     P2P_hello_MESSAGE ** hello);
+int gnunet_identity_get_self (struct ClientServerConnection *sock,
+                              P2P_hello_MESSAGE ** hello);
 
 
 /**
@@ -73,8 +73,8 @@ int gnunet_identity_get_self(struct ClientServerConnection * sock,
  * @return SYSERR on error, YES if connection is now there
  *         NO if connection is not yet present
  */
-int gnunet_identity_request_connect(struct ClientServerConnection * sock,
-				    const PeerIdentity * peer);
+int gnunet_identity_request_connect (struct ClientServerConnection *sock,
+                                     const PeerIdentity * peer);
 
 
 /**
@@ -93,13 +93,13 @@ int gnunet_identity_request_connect(struct ClientServerConnection * sock,
  * @param identity the id of the node
  * @return OK to continue to iterate, SYSERR to abort
  */
-typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
-					      const PeerIdentity * identity,
-					      const void * address,
-					      unsigned int addr_len,
-					      cron_t last_message,
-					      unsigned int trust,
-					      unsigned int bpmFromPeer);
+typedef int (*GNUnetIdentityPeerInfoCallback) (void *data,
+                                               const PeerIdentity * identity,
+                                               const void *address,
+                                               unsigned int addr_len,
+                                               cron_t last_message,
+                                               unsigned int trust,
+                                               unsigned int bpmFromPeer);
 
 /**
  * Request information about all known peers
@@ -107,12 +107,12 @@ typedef int (*GNUnetIdentityPeerInfoCallback)(void * data,
  * @return SYSERR if iteration was aborted,
  *         otherwise number of peers known
  */
-int gnunet_identity_request_peer_infos(struct ClientServerConnection * sock,
-				       GNUnetIdentityPeerInfoCallback callback,
-				       void * cls);
+int gnunet_identity_request_peer_infos (struct ClientServerConnection *sock,
+                                        GNUnetIdentityPeerInfoCallback
+                                        callback, void *cls);
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

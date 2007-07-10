@@ -30,6 +30,6 @@
 /**
  * Internal notification about new tracked URI.
  */
-void URITRACK_internal_notify(const ECRS_FileInfo * fi);
+void URITRACK_internal_notify (const ECRS_FileInfo * fi);
 
 #endif

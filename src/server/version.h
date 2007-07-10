@@ -33,13 +33,11 @@
  * Check if we are up-to-date.
  * @return OK if we are
  */
-int checkUpToDate(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg);
+int checkUpToDate (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 /**
  * We are up-to-date.
  */
-void upToDate(struct GE_Context * ectx,
-	      struct GC_Configuration * cfg);
+void upToDate (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 #endif

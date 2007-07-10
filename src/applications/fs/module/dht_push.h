@@ -34,10 +34,9 @@
 /**
  * Initialize the migration module.
  */
-void init_dht_push(CoreAPIForApplication * capi,
-		   DHT_ServiceAPI * s);
+void init_dht_push (CoreAPIForApplication * capi, DHT_ServiceAPI * s);
 
-void done_dht_push(void);
+void done_dht_push (void);
 
 /* end of dht_push.h */
 #endif

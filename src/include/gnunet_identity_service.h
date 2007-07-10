@@ -33,8 +33,9 @@
 #include "gnunet_core.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -57,22 +58,22 @@ extern "C" {
  * @param data callback closure
  * @return OK to continue iteration
  */
-typedef int (*HostIterator)(const PeerIdentity * identity,
-			    unsigned short protocol,
-			    int confirmed,
-			    void * data);
+typedef int (*HostIterator) (const PeerIdentity * identity,
+                             unsigned short protocol,
+                             int confirmed, void *data);
 
 /**
  * @brief Definition of the Identity API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Get the public key of this peer.
    *
    * @return reference to the public key. Do not free it!
    */
-  const PublicKey * (*getPublicPrivateKey)(void);
+  const PublicKey *(*getPublicPrivateKey) (void);
 
   /**
    * Obtain identity from publicPrivateKey.
@@ -80,8 +81,7 @@ typedef struct {
    * @param pubKey the public key of the host
    * @param result address where to write the identity of the node
    */
-  void (*getPeerIdentity)(const PublicKey * pubKey,
-			  PeerIdentity * result);
+  void (*getPeerIdentity) (const PublicKey * pubKey, PeerIdentity * result);
 
 
   /**
@@ -91,9 +91,7 @@ typedef struct {
    * @param result where to store the result
    * @returns SYSERR on failure, OK on success
    */
-  int (*signData)(const void * data,
-		  unsigned short size,
-		  Signature * result);
+  int (*signData) (const void *data, unsigned short size, Signature * result);
 
   /**
    * Decrypt a given block with the hostkey.
@@ -103,26 +101,25 @@ typedef struct {
    *        the decrypted block is bigger, an error is returned
    * @returns the size of the decrypted block, -1 on error
    */
-  int (*decryptData)(const RSAEncryptedData * block,
-		     void * result,
-		     unsigned int max);
+  int (*decryptData) (const RSAEncryptedData * block,
+                      void *result, unsigned int max);
 
   /**
    * Delete a host from the list
    */
-  void (*delHostFromKnown)(const PeerIdentity * identity,
-			   unsigned short protocol);
+  void (*delHostFromKnown) (const PeerIdentity * identity,
+                            unsigned short protocol);
 
   /**
    * Add a host to the temporary list.
    */
-  void (*addHostTemporarily)(const P2P_hello_MESSAGE * tmp);
+  void (*addHostTemporarily) (const P2P_hello_MESSAGE * tmp);
 
   /**
    * Add a host to the persistent list.
    * @param msg the verified (!) hello message
    */
-  void (*addHost)(const P2P_hello_MESSAGE * msg);
+  void (*addHost) (const P2P_hello_MESSAGE * msg);
 
   /**
    * Call a method for each known host.
@@ -132,9 +129,7 @@ typedef struct {
    * @param data an argument to pass to the method
    * @return the number of known hosts matching
    */
-  int (*forEachHost)(cron_t now,
-		     HostIterator callback,
-		     void * data);
+  int (*forEachHost) (cron_t now, HostIterator callback, void *data);
 
   /**
    * Obtain the public key and address of a known host. If no specific
@@ -146,9 +141,9 @@ typedef struct {
    *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
    * @return NULL on failure, the hello on success
    */
-  P2P_hello_MESSAGE * (*identity2Hello)(const PeerIdentity *  hostId,
-					unsigned short protocol,
-					int tryTemporaryList);
+  P2P_hello_MESSAGE *(*identity2Hello) (const PeerIdentity * hostId,
+                                        unsigned short protocol,
+                                        int tryTemporaryList);
 
   /**
    *
@@ -159,10 +154,9 @@ typedef struct {
    * @param sig the signature
    * @return OK on success, SYSERR on error (verification failed)
    */
-  int (*verifyPeerSignature)(const PeerIdentity * signer,
-			     const void * message,
-			     int size,
-			     const Signature * sig);
+  int (*verifyPeerSignature) (const PeerIdentity * signer,
+                              const void *message,
+                              int size, const Signature * sig);
 
   /**
    * Blacklist a host. This method is called if a host
@@ -178,9 +172,8 @@ typedef struct {
    *               for back-off and limiting is applied.
    * @return OK on success SYSERR on error
    */
-  int (*blacklistHost)(const PeerIdentity * identity,
-		       unsigned int desperation,
-		       int strict);
+  int (*blacklistHost) (const PeerIdentity * identity,
+                        unsigned int desperation, int strict);
 
   /**
    * Is the node currently 'strictly' blacklisted, that is, the node
@@ -189,7 +182,7 @@ typedef struct {
    * @param identity node to check
    * @return YES if true, else NO
    */
-  int (*isBlacklistedStrict)(const PeerIdentity * identity);
+  int (*isBlacklistedStrict) (const PeerIdentity * identity);
 
   /**
    * Whitelist a host. This method is called if a host
@@ -198,7 +191,7 @@ typedef struct {
    *
    * @return OK on success SYSERR on error
    */
-  int (*whitelistHost)(const PeerIdentity * identity);
+  int (*whitelistHost) (const PeerIdentity * identity);
 
   /**
    * Change the host trust by a value.
@@ -207,17 +200,16 @@ typedef struct {
    * @param value is the int value by which the host credit is to be increased
    * @returns the new credit
    */
-  int (*changeHostTrust)(const PeerIdentity * hostId,
-			 int value);
+  int (*changeHostTrust) (const PeerIdentity * hostId, int value);
 
   /**
    * Obtain the trust record of the host.
    */
-  unsigned int (*getHostTrust)(const PeerIdentity * hostId);
+  unsigned int (*getHostTrust) (const PeerIdentity * hostId);
 
 } Identity_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

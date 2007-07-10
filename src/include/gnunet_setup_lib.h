@@ -48,43 +48,44 @@
 /**
  * Types of nodes and values in the configuration tree.
  */
-typedef enum {
-  GNS_Root     = 0,
-  GNS_Node     = 1,
-  GNS_Leaf     = 2,
+typedef enum
+{
+  GNS_Root = 0,
+  GNS_Node = 1,
+  GNS_Leaf = 2,
   GNS_KindMask = 3,
 
   /**
    * Binary type (yes/no).
    */
-  GNS_Boolean  = 4,
+  GNS_Boolean = 4,
 
   /**
    * Unsigned integer type.
    */
-  GNS_UInt64   = 8,
+  GNS_UInt64 = 8,
 
   /**
    * Double value type.
    */
-  GNS_Double   = 16,
+  GNS_Double = 16,
 
   /**
    * Free-form string (possibly with suggestions)
    */
-  GNS_String   = 32,
+  GNS_String = 32,
 
   /**
    * Multiple choice (results in space-seperated
    * strings, one for each choice).
    */
-  GNS_MC       = 64,
+  GNS_MC = 64,
 
   /**
    * Single choice (results in individual string
    * representing the choice).
    */
-  GNS_SC       = 128,
+  GNS_SC = 128,
 
   GNS_TypeMask = 252,
 } GNS_Type;
@@ -95,22 +96,26 @@ typedef enum {
  * A configuration value does not only specify a value
  * but also the legal range of values.
  */
-typedef union {
+typedef union
+{
 
-  struct {
+  struct
+  {
     int val;
 
     int def;
   } Boolean;
 
-  struct {
+  struct
+  {
     unsigned long long val;
     unsigned long long min;
     unsigned long long max;
     unsigned long long def;
   } UInt64;
 
-  struct {
+  struct
+  {
     double val;
     double def;
   } Double;
@@ -118,19 +123,20 @@ typedef union {
   /**
    * Data for GNS_String, GNS_MC and GNS_SC.
    */
-  struct {
+  struct
+  {
     /**
      * 0-terminated string, never NULL
      */
-    char * val;
+    char *val;
 
-    char * def;
+    char *def;
 
     /**
      * Set of legal or suggested values for
      * "val", NULL termianted.
      */
-    char ** legalRange;
+    char **legalRange;
 
   } String;
 
@@ -146,33 +152,34 @@ typedef union {
  * may change are the concrete values and the visibility
  * attribute, but not the overall tree structure.
  */
-typedef struct GNS_Tree {
+typedef struct GNS_Tree
+{
 
   /**
    * Section for this node (maybe NULL)
    */
-  char * section;
+  char *section;
 
   /**
    * Option name for this node (maybe NULL)
    */
-  char * option;
+  char *option;
 
   /**
    * Description for this node (never NULL)
    */
-  char * description;
+  char *description;
 
   /**
    * Helptext for this node (never NULL)
    */
-  char * help;
+  char *help;
 
   /**
    * NULL-terminated list of subnodes (must be empty for
    * nodes of type "leaf")
    */
-  struct GNS_Tree ** children;
+  struct GNS_Tree **children;
 
   /**
    * Is this node visible to the user at this point?
@@ -206,10 +213,9 @@ struct GNS_Context;
  * @param specification name of the guile file containing the spec
  * @return NULL on error (i.e. specification file not found)
  */
-struct GNS_Context *
-GNS_load_specification(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const char * specification);
+struct GNS_Context *GNS_load_specification (struct GE_Context *ectx,
+                                            struct GC_Configuration *cfg,
+                                            const char *specification);
 
 /**
  * Obtain the GNS_Tree from the GNS system.  The tree is only valid
@@ -219,14 +225,12 @@ GNS_load_specification(struct GE_Context * ectx,
  *
  * @return NULL on error
  */
-struct GNS_Tree *
-GNS_get_tree(struct GNS_Context * ctx);
+struct GNS_Tree *GNS_get_tree (struct GNS_Context *ctx);
 
 /**
  * Free resources associated with the GNS context.
  */
-void
-GNS_free_specification(struct GNS_Context * ctx);
+void GNS_free_specification (struct GNS_Context *ctx);
 
 /**
  * Callback that GNS will call whenever the GNS_Tree
@@ -234,8 +238,8 @@ GNS_free_specification(struct GNS_Context * ctx);
  *
  * @param node the node that has changed
  */
-typedef void (*GNS_TreeChangeListener)(const struct GNS_Tree * node,
-				       void * cls);
+typedef void (*GNS_TreeChangeListener) (const struct GNS_Tree * node,
+                                        void *cls);
 
 /**
  * Register a tree change listener with GNS.
@@ -243,18 +247,18 @@ typedef void (*GNS_TreeChangeListener)(const struct GNS_Tree * node,
  * @param listener callback to call whenever the tree changes
  */
 void
-GNS_register_tree_change_listener(struct GNS_Context * ctx,
-				  GNS_TreeChangeListener listener,
-				  void * cls);
+GNS_register_tree_change_listener (struct GNS_Context *ctx,
+                                   GNS_TreeChangeListener listener,
+                                   void *cls);
 
 /**
  * Release a tree change listener from GNS (do not call the listener
  * in the future for change events).
  */
 void
-GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
-				    GNS_TreeChangeListener listener,
-				    void * cls);
+GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
+                                     GNS_TreeChangeListener listener,
+                                     void *cls);
 
 /**
  * Convert the default value of the given tree entry to
@@ -262,8 +266,7 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
  *
  * @return NULL on error
  */
-char *
-GNS_get_default_value_as_string(GNS_Type type,
-				const GNS_Value * value);
+char *GNS_get_default_value_as_string (GNS_Type type,
+                                       const GNS_Value * value);
 
 #endif

@@ -35,9 +35,9 @@
 #include "gnunet_util_network_client.h"
 #include "core.h"
 
-static struct CronManager * cron;
+static struct CronManager *cron;
 
-static struct GC_Configuration * cfg;
+static struct GC_Configuration *cfg;
 
 
 #define ASSERT(cond) do { \
@@ -51,116 +51,106 @@ static struct GC_Configuration * cfg;
   } \
 } while (0)
 
-static int runTest() {
-  Identity_ServiceAPI * identity;
-  Transport_ServiceAPI * transport;
+static int
+runTest ()
+{
+  Identity_ServiceAPI *identity;
+  Transport_ServiceAPI *transport;
   PeerIdentity pid;
-  const PublicKey * pkey;
+  const PublicKey *pkey;
   Signature sig;
-  P2P_hello_MESSAGE * hello;
+  P2P_hello_MESSAGE *hello;
 
-  transport = requestService("transport");
-  identity = requestService("identity");
-  cron_start(cron);
+  transport = requestService ("transport");
+  identity = requestService ("identity");
+  cron_start (cron);
   /* give cron job chance to run */
-  PTHREAD_SLEEP(5 * cronSECONDS);
-  hello = transport->createhello(ANY_PROTOCOL_NUMBER);
-  if (NULL == hello) {
-    printf("Cannot run test, failed to create any hello.\n");
-    cron_stop(cron);
-    releaseService(identity);
-    releaseService(transport);
-    return SYSERR;
-  }
-  identity->addHost(hello);
+  PTHREAD_SLEEP (5 * cronSECONDS);
+  hello = transport->createhello (ANY_PROTOCOL_NUMBER);
+  if (NULL == hello)
+    {
+      printf ("Cannot run test, failed to create any hello.\n");
+      cron_stop (cron);
+      releaseService (identity);
+      releaseService (transport);
+      return SYSERR;
+    }
+  identity->addHost (hello);
   pid = hello->senderIdentity;
-  FREE(hello);
+  FREE (hello);
 
-  identity->changeHostTrust
-    (&pid,
-     -identity->getHostTrust(&pid));
-  ASSERT(4 == identity->changeHostTrust
-   (&pid, 4));
-  releaseService(identity);
+  identity->changeHostTrust (&pid, -identity->getHostTrust (&pid));
+  ASSERT (4 == identity->changeHostTrust (&pid, 4));
+  releaseService (identity);
 
-  identity = requestService("identity");
-  ASSERT(4 == identity->getHostTrust(&pid));
-  ASSERT(5 == identity->changeHostTrust
-   (&pid, 5));
-  ASSERT(-2 == identity->changeHostTrust
-   (&pid, -2));
-  ASSERT(7 == identity->getHostTrust(&pid));
-  ASSERT(-7 == identity->changeHostTrust
-   (&pid, -40));
-  pkey = identity->getPublicPrivateKey();
-  identity->getPeerIdentity(pkey,
-  		    &pid);
-  ASSERT(0 == identity->getHostTrust(&pid));
+  identity = requestService ("identity");
+  ASSERT (4 == identity->getHostTrust (&pid));
+  ASSERT (5 == identity->changeHostTrust (&pid, 5));
+  ASSERT (-2 == identity->changeHostTrust (&pid, -2));
+  ASSERT (7 == identity->getHostTrust (&pid));
+  ASSERT (-7 == identity->changeHostTrust (&pid, -40));
+  pkey = identity->getPublicPrivateKey ();
+  identity->getPeerIdentity (pkey, &pid);
+  ASSERT (0 == identity->getHostTrust (&pid));
 
-  pkey = identity->getPublicPrivateKey();
-  ASSERT(OK == identity->signData("TestData",
-  			  8,
-  			  &sig));
-  ASSERT(OK == verifySig("TestData",
-  		 8,
-  		 &sig,
-  		 pkey));
+  pkey = identity->getPublicPrivateKey ();
+  ASSERT (OK == identity->signData ("TestData", 8, &sig));
+  ASSERT (OK == verifySig ("TestData", 8, &sig, pkey));
 
   /* to test:
      hello verification, temporary storage,
      permanent storage, blacklisting, etc. */
-  cron_stop(cron);
-  releaseService(identity);
-  releaseService(transport);
+  cron_stop (cron);
+  releaseService (identity);
+  releaseService (transport);
   return OK;
 }
 
-static int hcb(void * data,
-         const PeerIdentity * identity,
-         const void * address,
-         unsigned int addr_len,
-         cron_t last_message,
-         unsigned int trust,
-         unsigned int bpmFromPeer) {
+static int
+hcb (void *data,
+     const PeerIdentity * identity,
+     const void *address,
+     unsigned int addr_len,
+     cron_t last_message, unsigned int trust, unsigned int bpmFromPeer)
+{
   /* TODO: do something meaningful */
   return OK;
 }
 
-static int runClientTest() {
-  struct ClientServerConnection * sock;
+static int
+runClientTest ()
+{
+  struct ClientServerConnection *sock;
   int ret;
 
   ret = OK;
-  sock = client_connection_create(NULL, cfg);
-  gnunet_identity_request_peer_infos(sock,
-  			     &hcb,
-  			     &ret);
-  connection_destroy(sock);
+  sock = client_connection_create (NULL, cfg);
+  gnunet_identity_request_peer_infos (sock, &hcb, &ret);
+  connection_destroy (sock);
   return ret;
 }
 
-int main(int argc, char *argv[]) {
+int
+main (int argc, char *argv[])
+{
   int err;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  cron = cron_create(NULL);
-  initCore(NULL,
-     cfg,
-     cron,
-     NULL);
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  cron = cron_create (NULL);
+  initCore (NULL, cfg, cron, NULL);
   err = 0;
-  if (OK != runTest())
+  if (OK != runTest ())
     err = 1;
-  if (OK != runClientTest())
+  if (OK != runClientTest ())
     err = 1;
-  doneCore();
-  cron_destroy(cron);
-  GC_free(cfg);
+  doneCore ();
+  cron_destroy (cron);
+  GC_free (cfg);
   return err;
 }
 

@@ -28,13 +28,12 @@
 #ifndef WIZARD_CURS_H
 #define WIZARD_CURS_H
 
-int wizard_curs_mainsetup_curses(int argc,
-				 const char **argv,
-				 struct PluginHandle * self,
-				 struct GE_Context * ectx,
-				 struct GC_Configuration * cfg,
-				 struct GNS_Context * gns,
-				 const char * filename,
-				 int is_daemon);
+int wizard_curs_mainsetup_curses (int argc,
+                                  const char **argv,
+                                  struct PluginHandle *self,
+                                  struct GE_Context *ectx,
+                                  struct GC_Configuration *cfg,
+                                  struct GNS_Context *gns,
+                                  const char *filename, int is_daemon);
 
 #endif

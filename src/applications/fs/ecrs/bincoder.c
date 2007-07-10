@@ -28,15 +28,18 @@
 /**
  * 64 characters for encoding, 6 bits per character
  */
-static char * encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=";
+static char *encTable__ =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=";
 
 
-static unsigned int getValue__(unsigned char a) {
-  if ( (a >= '0') && (a <= '9') )
+static unsigned int
+getValue__ (unsigned char a)
+{
+  if ((a >= '0') && (a <= '9'))
     return a - '0';
-  if ( (a >= 'A') && (a <= 'Z') )
+  if ((a >= 'A') && (a <= 'Z'))
     return (a - 'A' + 10);
-  if ( (a >= 'a') && (a <= 'z') )
+  if ((a >= 'a') && (a <= 'z'))
     return (a - 'a' + 36);
   if (a == '_')
     return 62;
@@ -44,38 +47,41 @@ static unsigned int getValue__(unsigned char a) {
     return 63;
   return -1;
 }
+
 /**
  * Convert binary data to a string.
  *
  * @return converted data
  */
 static char *
-bin2enc(const void * data,
-  size_t size) {
+bin2enc (const void *data, size_t size)
+{
   size_t len;
   size_t pos;
   unsigned int bits;
   unsigned int hbits;
-  char * ret;
+  char *ret;
 
-  GE_ASSERT(NULL, strlen(encTable__) == 64);
+  GE_ASSERT (NULL, strlen (encTable__) == 64);
   len = size * 8 / 6;
   if (((size * 8) % 6) != 0)
     len++;
-  ret = MALLOC(len+1);
+  ret = MALLOC (len + 1);
   ret[len] = '\0';
   len = 0;
   bits = 0;
   hbits = 0;
-  for (pos=0;pos<size;pos++) {
-    bits |= ((((const unsigned char*)data)[pos]) << hbits);
-    hbits += 8;
-    while (hbits >= 6) {
-      ret[len++] = encTable__[bits & 63];
-      bits >>= 6;
-      hbits -= 6;
+  for (pos = 0; pos < size; pos++)
+    {
+      bits |= ((((const unsigned char *) data)[pos]) << hbits);
+      hbits += 8;
+      while (hbits >= 6)
+        {
+          ret[len++] = encTable__[bits & 63];
+          bits >>= 6;
+          hbits -= 6;
+        }
     }
-  }
   if (hbits > 0)
     ret[len++] = encTable__[bits & 63];
   return ret;
@@ -92,9 +98,8 @@ bin2enc(const void * data,
  *        -1 on error
  */
 static int
-enc2bin(const char * input,
-  void * data,
-  size_t size) {
+enc2bin (const char *input, void *data, size_t size)
+{
   size_t len;
   size_t pos;
   unsigned int bits;
@@ -103,20 +108,22 @@ enc2bin(const char * input,
   len = size * 8 / 6;
   if (((size * 8) % 6) != 0)
     len++;
-  if (strlen(input) < len)
-    return -1; /* error! */
+  if (strlen (input) < len)
+    return -1;                  /* error! */
   bits = 0;
   hbits = 0;
   len = 0;
   pos = 0;
-  for (pos=0;pos<size;pos++) {
-    while (hbits < 8) {
-      bits |= (getValue__(input[len++]) << hbits);
-      hbits += 6;
+  for (pos = 0; pos < size; pos++)
+    {
+      while (hbits < 8)
+        {
+          bits |= (getValue__ (input[len++]) << hbits);
+          hbits += 6;
+        }
+      (((unsigned char *) data)[pos]) = (unsigned char) bits;
+      bits >>= 8;
+      hbits -= 8;
     }
-    (((unsigned char*)data)[pos]) = (unsigned char) bits;
-    bits >>= 8;
-    hbits -= 8;
-  }
   return len;
 }

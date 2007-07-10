@@ -30,8 +30,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -57,31 +58,32 @@ extern "C" {
  * Topology relies on advertising to learn about other peers, and
  * on session for establishing sessions.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Get an estimate of the network size.
    * @return the estimated number of nodes, SYSERR on error
    */
-  int (*estimateNetworkSize)(void);
+  int (*estimateNetworkSize) (void);
 
   /**
    * How big is our current desire to connect to other peers?
    * @return 1 for ideal, 0 for maximum desire, > 1 for too many
    *    connections (percent of desired number of connections)
    */
-  double (*getSaturation)(void);
+  double (*getSaturation) (void);
 
   /**
    * Will the topology allow a connection from the specified peer?
    * @return OK if a connection maybe established, SYSERR if not.
    */
-  int (*allowConnectionFrom)(const PeerIdentity * peer);
+  int (*allowConnectionFrom) (const PeerIdentity * peer);
 
 
 } Topology_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -90,4 +92,3 @@ typedef struct {
 
 #endif
 /* end of gnunet_topology_service.h */
-

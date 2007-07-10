@@ -43,23 +43,23 @@
 /**
  * DHT service.  Set to NULL to terminate
  */
-static DHT_ServiceAPI * dht;
+static DHT_ServiceAPI *dht;
 
 /**
  * Global core API.
  */
-static CoreAPIForApplication * coreAPI;
+static CoreAPIForApplication *coreAPI;
 
 /**
  * SQStore service.
  */
-static SQstore_ServiceAPI * sqstore;
+static SQstore_ServiceAPI *sqstore;
 
 
 /**
  * Thread that does the pushing.
  */
-static struct PTHREAD * thread;
+static struct PTHREAD *thread;
 
 /**
  * Total number of entries with anonymity 0.
@@ -68,14 +68,15 @@ static struct PTHREAD * thread;
  */
 static int total;
 
-static Stats_ServiceAPI * stats;
+static Stats_ServiceAPI *stats;
 
 static int stat_push_count;
 
 
-static int push_callback(const HashCode512 * key,
-  		 const Datastore_Value * value,
-  		 void * closure) {
+static int
+push_callback (const HashCode512 * key,
+               const Datastore_Value * value, void *closure)
+{
   cron_t delay;
 
   if (dht == NULL)
@@ -87,34 +88,31 @@ static int push_callback(const HashCode512 * key,
     delay = 5 * cronSECONDS;
   if (delay > 60 * cronSECONDS)
     delay = 60 * cronSECONDS;
-  PTHREAD_SLEEP(delay);
+  PTHREAD_SLEEP (delay);
   if (dht == NULL)
     return SYSERR;
-  dht->put(key,
-	   ntohl(value->type),
-	   ntohl(value->size) - sizeof(Datastore_Value),
-	   ntohll(value->expirationTime),
-	   (const char*) &value[1]);
+  dht->put (key,
+            ntohl (value->type),
+            ntohl (value->size) - sizeof (Datastore_Value),
+            ntohll (value->expirationTime), (const char *) &value[1]);
   if (stats != NULL)
-    stats->change(stat_push_count, 1);
+    stats->change (stat_push_count, 1);
   if (dht == NULL)
     return SYSERR;
   return OK;
 }
 
-static void * push_thread(void * cls) {
-  while ( (dht != NULL) &&
-	  (sqstore != NULL) ) {
-    if (total == 0)
-      total = 1;
-    total = sqstore->iterateNonAnonymous(0,
-					 YES,
-					 &push_callback,
-					 NULL);
-    if ( (dht != NULL) &&
-	 (total == 0) )
-      PTHREAD_SLEEP(15 * cronMINUTES);
-  }
+static void *
+push_thread (void *cls)
+{
+  while ((dht != NULL) && (sqstore != NULL))
+    {
+      if (total == 0)
+        total = 1;
+      total = sqstore->iterateNonAnonymous (0, YES, &push_callback, NULL);
+      if ((dht != NULL) && (total == 0))
+        PTHREAD_SLEEP (15 * cronMINUTES);
+    }
   return NULL;
 }
 
@@ -122,41 +120,46 @@ static void * push_thread(void * cls) {
 /**
  * Initialize the migration module.
  */
-void init_dht_push(CoreAPIForApplication * capi,
-  	   DHT_ServiceAPI * d) {
+void
+init_dht_push (CoreAPIForApplication * capi, DHT_ServiceAPI * d)
+{
   coreAPI = capi;
   dht = d;
-  sqstore = capi->requestService("sqstore");
-  if (sqstore == NULL) {
-    GE_BREAK(capi->ectx, 0);
-    return;
-  }
-  stats = capi->requestService("stats");
+  sqstore = capi->requestService ("sqstore");
+  if (sqstore == NULL)
+    {
+      GE_BREAK (capi->ectx, 0);
+      return;
+    }
+  stats = capi->requestService ("stats");
   if (stats != NULL)
     stat_push_count
-      = stats->create(gettext_noop("# blocks pushed into DHT"));
-  if (! NO_PUSH) {
-    thread = PTHREAD_CREATE(&push_thread,
-  		    NULL,
-  		    1024 * 128);
-  }
+      = stats->create (gettext_noop ("# blocks pushed into DHT"));
+  if (!NO_PUSH)
+    {
+      thread = PTHREAD_CREATE (&push_thread, NULL, 1024 * 128);
+    }
 }
 
-void done_dht_push(void) {
-  void * unused;
+void
+done_dht_push (void)
+{
+  void *unused;
 
   if (sqstore == NULL)
     return;
   dht = NULL;
-  if (thread != NULL) {
-    PTHREAD_STOP_SLEEP(thread);
-    PTHREAD_JOIN(thread, &unused);
-  }
-  coreAPI->releaseService(sqstore);
-  if (stats != NULL) {
-    coreAPI->releaseService(stats);
-    stats = NULL;
-  }
+  if (thread != NULL)
+    {
+      PTHREAD_STOP_SLEEP (thread);
+      PTHREAD_JOIN (thread, &unused);
+    }
+  coreAPI->releaseService (sqstore);
+  if (stats != NULL)
+    {
+      coreAPI->releaseService (stats);
+      stats = NULL;
+    }
   coreAPI = NULL;
 }
 

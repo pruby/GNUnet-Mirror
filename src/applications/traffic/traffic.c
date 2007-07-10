@@ -50,7 +50,7 @@
  */
 #define HISTORY_SIZE 32
 
-static Stats_ServiceAPI * stats;
+static Stats_ServiceAPI *stats;
 
 static int stat_traffic_received_by_type[P2P_PROTO_MAX_USED];
 
@@ -77,7 +77,8 @@ static int stat_traffic_transmitted_by_type[P2P_PROTO_MAX_USED];
  * Information about when a peer was last involved
  * in a message of the given type.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The ".a" member of the Host identity of the peer.
@@ -94,7 +95,8 @@ typedef struct {
 /**
  * Numbers for one receive/send/self-send type.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * When was this record last updated?
@@ -127,7 +129,8 @@ typedef struct {
 /**
  * Type of the internal traffic counters.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Statistics for sending
@@ -144,7 +147,7 @@ typedef struct {
 /**
  * Lock to synchronize access.
  */
-static struct MUTEX * lock;
+static struct MUTEX *lock;
 
 /**
  * Highest message type seen so far.
@@ -154,23 +157,23 @@ static unsigned int max_message_type = 0;
 /**
  * The actual counters.
  */
-static TrafficCounter ** counters = NULL;
+static TrafficCounter **counters = NULL;
 
 #if DEBUG
 static unsigned long long server_port;
 #endif
 
-static CoreAPIForApplication * coreAPI;
+static CoreAPIForApplication *coreAPI;
 
 /**
  * Update the use table dtc. A message of the given
  * size was processed interacting with a peer with
  * the given peerId.
  */
-static void updateUse(DirectedTrafficCounter * dtc,
-  	      unsigned short size,
-  	      int peerId,
-  	      int expireOnly) {
+static void
+updateUse (DirectedTrafficCounter * dtc,
+           unsigned short size, int peerId, int expireOnly)
+{
   cron_t now;
   cron_t delta;
   unsigned int unitNow;
@@ -180,53 +183,58 @@ static void updateUse(DirectedTrafficCounter * dtc,
   unsigned int i;
   unsigned int slot;
 
-  now = get_time();
+  now = get_time ();
   unitNow = now / TRAFFIC_TIME_UNIT;
   delta = now - dtc->lastUpdate;
   dtc->lastUpdate = now;
   deltaUnits = delta / TRAFFIC_TIME_UNIT;
 
-  if (NO == expireOnly) {
-    /* update peer identities */
-    minPeerTime = 0;
-    minPeerId = 0;
-    for (i=0;i<MAX_PEER_IDs;i++) {
-      if (dtc->peers[i].time < minPeerTime)
-  minPeerId = i;
-      if (dtc->peers[i].peerIdentity_a == peerId) {
-  minPeerId = i;
-  break; /* if the peer is already listed, re-use
-  	  that slot & update the time! */
-      }
+  if (NO == expireOnly)
+    {
+      /* update peer identities */
+      minPeerTime = 0;
+      minPeerId = 0;
+      for (i = 0; i < MAX_PEER_IDs; i++)
+        {
+          if (dtc->peers[i].time < minPeerTime)
+            minPeerId = i;
+          if (dtc->peers[i].peerIdentity_a == peerId)
+            {
+              minPeerId = i;
+              break;            /* if the peer is already listed, re-use
+                                   that slot & update the time! */
+            }
+        }
+      dtc->peers[minPeerId].time = unitNow;
+      dtc->peers[minPeerId].peerIdentity_a = peerId;
     }
-    dtc->peers[minPeerId].time = unitNow;
-    dtc->peers[minPeerId].peerIdentity_a = peerId;
-  }
 
   /* update expired slots: set appropriate slots to 0 */
   if (deltaUnits > HISTORY_SIZE)
     deltaUnits = HISTORY_SIZE;
-  for (i=0;i<deltaUnits;i++) {
-    dtc->count[HS_SLOT(unitNow - HISTORY_SIZE - i)] = 0;
-    dtc->avgSize[HS_SLOT(unitNow - HISTORY_SIZE - i)] = 0.0;
-  }
+  for (i = 0; i < deltaUnits; i++)
+    {
+      dtc->count[HS_SLOT (unitNow - HISTORY_SIZE - i)] = 0;
+      dtc->avgSize[HS_SLOT (unitNow - HISTORY_SIZE - i)] = 0.0;
+    }
 
-  if (NO == expireOnly) {
-    int devideBy;
+  if (NO == expireOnly)
+    {
+      int devideBy;
 
-    /* update slots */
-    dtc->slots = 0x80000000 | (dtc->slots >> deltaUnits);
+      /* update slots */
+      dtc->slots = 0x80000000 | (dtc->slots >> deltaUnits);
 
-    /* recompute average, increment count */
-    slot = HS_SLOT(unitNow);
-    dtc->count[slot]++;
-    devideBy = dtc->count[slot];
-    if (devideBy <= 0)
-      dtc->avgSize[slot] = 0; /* how can this happen? */
-    else
-      dtc->avgSize[slot]
-        = ((dtc->avgSize[slot] * (dtc->count[slot]-1)) + size) / devideBy;
-  }
+      /* recompute average, increment count */
+      slot = HS_SLOT (unitNow);
+      dtc->count[slot]++;
+      devideBy = dtc->count[slot];
+      if (devideBy <= 0)
+        dtc->avgSize[slot] = 0; /* how can this happen? */
+      else
+        dtc->avgSize[slot]
+          = ((dtc->avgSize[slot] * (dtc->count[slot] - 1)) + size) / devideBy;
+    }
 }
 
 /**
@@ -239,11 +247,12 @@ static void updateUse(DirectedTrafficCounter * dtc,
  *    the history into consideration (max is HISTORY_SIZE).
  * @param msgType what is the type of the message that the dtc is for?
  */
-static void buildSummary(TRAFFIC_COUNTER * res,
-  		 DirectedTrafficCounter * dtc,
-  		 unsigned int tcType,
-  		 unsigned int countTimeUnits,
-  		 unsigned short msgType) {
+static void
+buildSummary (TRAFFIC_COUNTER * res,
+              DirectedTrafficCounter * dtc,
+              unsigned int tcType,
+              unsigned int countTimeUnits, unsigned short msgType)
+{
   unsigned int i;
   unsigned short peerCount;
   cron_t now;
@@ -251,92 +260,95 @@ static void buildSummary(TRAFFIC_COUNTER * res,
   unsigned int msgCount;
   unsigned long long totalMsgSize;
 
-  updateUse(dtc, 0, 0, YES); /* expire old entries */
-  now = get_time();
+  updateUse (dtc, 0, 0, YES);   /* expire old entries */
+  now = get_time ();
   unitNow = now / TRAFFIC_TIME_UNIT;
 
   /* count number of peers that we interacted with in
      the last countTimeUnits */
   peerCount = 0;
-  for (i=0;i<MAX_PEER_IDs;i++)
+  for (i = 0; i < MAX_PEER_IDs; i++)
     if (dtc->peers[i].time > now - countTimeUnits)
       peerCount++;
-  res->flags = htons(tcType|peerCount);
+  res->flags = htons (tcType | peerCount);
 
   /* determine number of messages and average size */
   msgCount = 0;
   totalMsgSize = 0;
-  for (i=0;i<countTimeUnits;i++) {
-    unsigned int slot = HS_SLOT(unitNow - i);
-    totalMsgSize += dtc->count[slot] * dtc->avgSize[slot];
-    msgCount += dtc->count[slot];
-  }
+  for (i = 0; i < countTimeUnits; i++)
+    {
+      unsigned int slot = HS_SLOT (unitNow - i);
+      totalMsgSize += dtc->count[slot] * dtc->avgSize[slot];
+      msgCount += dtc->count[slot];
+    }
 
-  res->count = htonl(msgCount);
-  res->type = htons(msgType);
+  res->count = htonl (msgCount);
+  res->type = htons (msgType);
   if (msgCount > 0)
-    res->avrg_size = htonl(totalMsgSize / msgCount);
+    res->avrg_size = htonl (totalMsgSize / msgCount);
   else
     res->avrg_size = 0;
-  res->time_slots = htonl(dtc->slots);
+  res->time_slots = htonl (dtc->slots);
 }
 
 /**
  * Build a reply message for the client.
  */
-static CS_traffic_info_MESSAGE * buildReply(unsigned int countTimeUnits) {
-  CS_traffic_info_MESSAGE * reply;
+static CS_traffic_info_MESSAGE *
+buildReply (unsigned int countTimeUnits)
+{
+  CS_traffic_info_MESSAGE *reply;
   unsigned int count;
   unsigned int i;
 
-  MUTEX_LOCK(lock);
+  MUTEX_LOCK (lock);
   count = 0;
-  for (i=0;i<max_message_type;i++)
-    if (counters[i] != NULL) {
-      if (counters[i]->send.slots != 0)
-  count++;
-      if (counters[i]->receive.slots != 0)
-  count++;
-    }
-  reply = MALLOC(sizeof(CS_traffic_info_MESSAGE)+
-  	 count * sizeof(TRAFFIC_COUNTER));
-  reply->header.type = htons(CS_PROTO_traffic_INFO);
-  reply->header.size = htons(sizeof(CS_traffic_info_MESSAGE)+
-  		    count * sizeof(TRAFFIC_COUNTER));
-  reply->count = htonl(count);
+  for (i = 0; i < max_message_type; i++)
+    if (counters[i] != NULL)
+      {
+        if (counters[i]->send.slots != 0)
+          count++;
+        if (counters[i]->receive.slots != 0)
+          count++;
+      }
+  reply = MALLOC (sizeof (CS_traffic_info_MESSAGE) +
+                  count * sizeof (TRAFFIC_COUNTER));
+  reply->header.type = htons (CS_PROTO_traffic_INFO);
+  reply->header.size = htons (sizeof (CS_traffic_info_MESSAGE) +
+                              count * sizeof (TRAFFIC_COUNTER));
+  reply->count = htonl (count);
   count = 0;
-  for (i=0;i<max_message_type;i++)
-    if (counters[i] != NULL) {
-      if (counters[i]->send.slots != 0)
-  buildSummary(&((CS_traffic_info_MESSAGE_GENERIC*)reply)->counters[count++],
-  	     &counters[i]->send,
-  	     TC_SENT,
-  	     countTimeUnits,
-  	     i);
-      if (counters[i]->receive.slots != 0)
-  buildSummary(&((CS_traffic_info_MESSAGE_GENERIC*)reply)->counters[count++],
-  	     &counters[i]->receive,
-  	     TC_RECEIVED,
-  	     countTimeUnits,
-  	     i);
-    }
+  for (i = 0; i < max_message_type; i++)
+    if (counters[i] != NULL)
+      {
+        if (counters[i]->send.slots != 0)
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
+                        counters[count++], &counters[i]->send, TC_SENT,
+                        countTimeUnits, i);
+        if (counters[i]->receive.slots != 0)
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
+                        counters[count++], &counters[i]->receive, TC_RECEIVED,
+                        countTimeUnits, i);
+      }
 
-  MUTEX_UNLOCK(lock);
+  MUTEX_UNLOCK (lock);
   return reply;
 }
 
-static int trafficQueryHandler(struct ClientHandle * sock,
-  		       const MESSAGE_HEADER * message) {
-  const CS_traffic_request_MESSAGE * msg;
-  CS_traffic_info_MESSAGE * reply;
+static int
+trafficQueryHandler (struct ClientHandle *sock,
+                     const MESSAGE_HEADER * message)
+{
+  const CS_traffic_request_MESSAGE *msg;
+  CS_traffic_info_MESSAGE *reply;
   int ret;
 
-  if (sizeof(CS_traffic_request_MESSAGE) != ntohs(message->size))
+  if (sizeof (CS_traffic_request_MESSAGE) != ntohs (message->size))
     return SYSERR;
-  msg = (const CS_traffic_request_MESSAGE*) message;
-  reply = buildReply(ntohl(msg->timePeriod));
-  ret = coreAPI->sendToClient(sock, &reply->header);
-  FREE(reply);
+  msg = (const CS_traffic_request_MESSAGE *) message;
+  reply = buildReply (ntohl (msg->timePeriod));
+  ret = coreAPI->sendToClient (sock, &reply->header);
+  FREE (reply);
   return ret;
 }
 
@@ -356,57 +368,59 @@ static int trafficQueryHandler(struct ClientHandle * sock,
  *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
  * @return OK on success, SYSERR on error
  */
-static int getTrafficStats(unsigned int timePeriod,
-  		   unsigned short messageType,
-  		   unsigned short sendReceive,
-  		   unsigned int * messageCount,
-  		   unsigned int * peerCount,
-  		   unsigned int * avgMessageSize,
-  		   unsigned int * timeDistribution) {
-  DirectedTrafficCounter * dtc;
+static int
+getTrafficStats (unsigned int timePeriod,
+                 unsigned short messageType,
+                 unsigned short sendReceive,
+                 unsigned int *messageCount,
+                 unsigned int *peerCount,
+                 unsigned int *avgMessageSize, unsigned int *timeDistribution)
+{
+  DirectedTrafficCounter *dtc;
   unsigned int i;
   unsigned int nowUnit;
   double totSize;
 
   if (timePeriod > HISTORY_SIZE)
     timePeriod = HISTORY_SIZE;
-  MUTEX_LOCK(lock);
-  if ( (messageType >= max_message_type) ||
-       (counters[messageType] == NULL) ) {
-    *avgMessageSize = 0;
-    *messageCount = 0;
-    *peerCount = 0;
-    *timeDistribution = 0;
-    MUTEX_UNLOCK(lock);
-    return OK;
-  }
+  MUTEX_LOCK (lock);
+  if ((messageType >= max_message_type) || (counters[messageType] == NULL))
+    {
+      *avgMessageSize = 0;
+      *messageCount = 0;
+      *peerCount = 0;
+      *timeDistribution = 0;
+      MUTEX_UNLOCK (lock);
+      return OK;
+    }
 
   if (sendReceive == TC_SENT)
     dtc = &counters[messageType]->send;
   else
     dtc = &counters[messageType]->receive;
-  updateUse(dtc, 0, 0, YES);
+  updateUse (dtc, 0, 0, YES);
 
-  nowUnit = get_time() / TRAFFIC_TIME_UNIT;
+  nowUnit = get_time () / TRAFFIC_TIME_UNIT;
   *peerCount = 0;
   *messageCount = 0;
   totSize = 0;
-  for (i=0;i<MAX_PEER_IDs;i++)
+  for (i = 0; i < MAX_PEER_IDs; i++)
     if (dtc->peers[i].time > nowUnit - timePeriod)
       (*peerCount)++;
-  for (i=0;i<timePeriod;i++) {
-    unsigned int slot;
+  for (i = 0; i < timePeriod; i++)
+    {
+      unsigned int slot;
 
-    slot = HS_SLOT(nowUnit-i);
-    (*messageCount) += dtc->count[slot];
-    totSize += dtc->count[slot] * dtc->avgSize[slot];
-  }
-  if (*messageCount>0)
+      slot = HS_SLOT (nowUnit - i);
+      (*messageCount) += dtc->count[slot];
+      totSize += dtc->count[slot] * dtc->avgSize[slot];
+    }
+  if (*messageCount > 0)
     *avgMessageSize = (unsigned short) (totSize / (*messageCount));
   else
     *avgMessageSize = 0;
   *timeDistribution = dtc->slots;
-  MUTEX_UNLOCK(lock);
+  MUTEX_UNLOCK (lock);
   return OK;
 }
 
@@ -416,74 +430,68 @@ static int getTrafficStats(unsigned int timePeriod,
  * size and a valid traffic counter allocated for the
  * given port.
  */
-static void checkPort(unsigned short port) {
+static void
+checkPort (unsigned short port)
+{
   if (port >= max_message_type)
-    GROW(counters,
-   max_message_type,
-   port + 1);
-  if (counters[port] == NULL) {
-    counters[port] = MALLOC(sizeof(TrafficCounter));
-    memset(counters[port],
-     0,
-     sizeof(TrafficCounter));
-  }
+    GROW (counters, max_message_type, port + 1);
+  if (counters[port] == NULL)
+    {
+      counters[port] = MALLOC (sizeof (TrafficCounter));
+      memset (counters[port], 0, sizeof (TrafficCounter));
+    }
 }
 
-static void updateTrafficSendCounter(unsigned short ptyp,
-  			     unsigned short plen) {
+static void
+updateTrafficSendCounter (unsigned short ptyp, unsigned short plen)
+{
   if (ptyp >= P2P_PROTO_MAX_USED)
-    return; /* not tracked */
-  if (0 == stat_traffic_transmitted_by_type[ptyp]) {
-    char * s;
-    s = MALLOC(256);
-    SNPRINTF(s,
-       256,
-       _("# bytes transmitted of type %d"),
-       ptyp);
-    stat_traffic_transmitted_by_type[ptyp]
-      = stats->create(s);
-    FREE(s);
-  }
-  stats->change(stat_traffic_transmitted_by_type[ptyp],
-  	plen);
+    return;                     /* not tracked */
+  if (0 == stat_traffic_transmitted_by_type[ptyp])
+    {
+      char *s;
+      s = MALLOC (256);
+      SNPRINTF (s, 256, _("# bytes transmitted of type %d"), ptyp);
+      stat_traffic_transmitted_by_type[ptyp] = stats->create (s);
+      FREE (s);
+    }
+  stats->change (stat_traffic_transmitted_by_type[ptyp], plen);
 }
 
-static void updateTrafficReceiveCounter(unsigned short ptyp,
-  				unsigned short plen) {
-  if (ptyp < P2P_PROTO_MAX_USED) {
-    if (0 == stat_traffic_received_by_type[ptyp]) {
-      char * s;
-      s = MALLOC(256);
-      SNPRINTF(s,
-         256,
-         _("# bytes received of type %d"),
-         ptyp);
-      stat_traffic_received_by_type[ptyp]
-  = stats->create(s);
-      FREE(s);
+static void
+updateTrafficReceiveCounter (unsigned short ptyp, unsigned short plen)
+{
+  if (ptyp < P2P_PROTO_MAX_USED)
+    {
+      if (0 == stat_traffic_received_by_type[ptyp])
+        {
+          char *s;
+          s = MALLOC (256);
+          SNPRINTF (s, 256, _("# bytes received of type %d"), ptyp);
+          stat_traffic_received_by_type[ptyp] = stats->create (s);
+          FREE (s);
+        }
+      stats->change (stat_traffic_received_by_type[ptyp], plen);
     }
-    stats->change(stat_traffic_received_by_type[ptyp],
-  	  plen);
-  }
 }
 
-static void updatePlaintextTrafficReceiveCounter(unsigned short ptyp,
-  					 unsigned short plen) {
-  if (ptyp < P2P_PROTO_MAX_USED) {
-    if (0 == stat_pt_traffic_received_by_type[ptyp]) {
-      char * s;
-      s = MALLOC(256);
-      SNPRINTF(s,
-         256,
-         _("# bytes received in plaintext of type %d"),
-         ptyp);
-      stat_pt_traffic_received_by_type[ptyp]
-  = stats->create(s);
-      FREE(s);
+static void
+updatePlaintextTrafficReceiveCounter (unsigned short ptyp,
+                                      unsigned short plen)
+{
+  if (ptyp < P2P_PROTO_MAX_USED)
+    {
+      if (0 == stat_pt_traffic_received_by_type[ptyp])
+        {
+          char *s;
+          s = MALLOC (256);
+          SNPRINTF (s,
+                    256, _("# bytes received in plaintext of type %d"), ptyp);
+          stat_pt_traffic_received_by_type[ptyp] = stats->create (s);
+          FREE (s);
+        }
+      stats->change (stat_pt_traffic_received_by_type[ptyp], plen);
     }
-    stats->change(stat_pt_traffic_received_by_type[ptyp],
-  	  plen);
-  }
 }
 
 /**
@@ -492,20 +500,18 @@ static void updatePlaintextTrafficReceiveCounter(unsigned short ptyp,
  * @param header the header of the message
  * @param sender the identity of the sender
  */
-static int trafficReceive(const PeerIdentity * sender,
-  		  const MESSAGE_HEADER * header) {
+static int
+trafficReceive (const PeerIdentity * sender, const MESSAGE_HEADER * header)
+{
   unsigned short port;
 
-  port = ntohs(header->type);
-  updateTrafficReceiveCounter(port,
-  		      ntohs(header->size));
-  MUTEX_LOCK(lock);
-  checkPort(port);
-  updateUse(&counters[port]->receive,
-      ntohs(header->size),
-      sender->hashPubKey.bits[0],
-      NO);
-  MUTEX_UNLOCK(lock);
+  port = ntohs (header->type);
+  updateTrafficReceiveCounter (port, ntohs (header->size));
+  MUTEX_LOCK (lock);
+  checkPort (port);
+  updateUse (&counters[port]->receive,
+             ntohs (header->size), sender->hashPubKey.bits[0], NO);
+  MUTEX_UNLOCK (lock);
   return OK;
 }
 
@@ -516,20 +522,19 @@ static int trafficReceive(const PeerIdentity * sender,
  * @param header the header of the message
  * @param receiver the identity of the receiver
  */
-static int trafficSend(const PeerIdentity * receiver,
-  	       const MESSAGE_HEADER * header) {
+static int
+trafficSend (const PeerIdentity * receiver, const MESSAGE_HEADER * header)
+{
   unsigned short port;
 
-  port = ntohs(MAKE_UNALIGNED(header->type));
-  updateTrafficSendCounter(port,
-  		   ntohs(MAKE_UNALIGNED(header->size)));
-  MUTEX_LOCK(lock);
-  checkPort(port);
-  updateUse(&counters[port]->send,
-      ntohs(MAKE_UNALIGNED(header->size)),
-      receiver->hashPubKey.bits[0],
-      NO);
-  MUTEX_UNLOCK(lock);
+  port = ntohs (MAKE_UNALIGNED (header->type));
+  updateTrafficSendCounter (port, ntohs (MAKE_UNALIGNED (header->size)));
+  MUTEX_LOCK (lock);
+  checkPort (port);
+  updateUse (&counters[port]->send,
+             ntohs (MAKE_UNALIGNED (header->size)),
+             receiver->hashPubKey.bits[0], NO);
+  MUTEX_UNLOCK (lock);
   return OK;
 }
 
@@ -539,14 +544,16 @@ static int trafficSend(const PeerIdentity * receiver,
  * @param header the header of the message
  * @param receiver the identity of the receiver
  */
-static int plaintextReceive(const PeerIdentity * receiver,
-  		    const MESSAGE_HEADER * header,
-  		    TSession * session) {
+static int
+plaintextReceive (const PeerIdentity * receiver,
+                  const MESSAGE_HEADER * header, TSession * session)
+{
   unsigned short port;
 
-  port = ntohs(MAKE_UNALIGNED(header->type));
-  updatePlaintextTrafficReceiveCounter(port,
-  			       ntohs(MAKE_UNALIGNED(header->size)));
+  port = ntohs (MAKE_UNALIGNED (header->type));
+  updatePlaintextTrafficReceiveCounter (port,
+                                        ntohs (MAKE_UNALIGNED
+                                               (header->size)));
   return OK;
 }
 
@@ -555,100 +562,101 @@ static int plaintextReceive(const PeerIdentity * receiver,
  * Initialize the traffic module.
  */
 Traffic_ServiceAPI *
-provide_module_traffic(CoreAPIForApplication * capi) {
+provide_module_traffic (CoreAPIForApplication * capi)
+{
   static Traffic_ServiceAPI api;
   int i;
 
   coreAPI = capi;
 #if DEBUG
-  GC_get_configuration_value_number(capi->cfg,
-  			    "NETWORK",
-  			    "PORT",
-  			    0,
-  			    65536,
-  			    2087,
-  			    &server_port);
+  GC_get_configuration_value_number (capi->cfg,
+                                     "NETWORK",
+                                     "PORT", 0, 65536, 2087, &server_port);
 #endif
   api.get = &getTrafficStats;
-  for (i=0;i<P2P_PROTO_MAX_USED;i++)
+  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
     stat_traffic_transmitted_by_type[i] = 0;
-  coreAPI->registerSendNotify(&trafficSend);
-  for (i=0;i<P2P_PROTO_MAX_USED;i++) {
-    stat_traffic_received_by_type[i] = 0;
-    coreAPI->registerHandler(i,
-  		     &trafficReceive);
-    coreAPI->registerPlaintextHandler(i,
-  			      &plaintextReceive);
-  }
+  coreAPI->registerSendNotify (&trafficSend);
+  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+    {
+      stat_traffic_received_by_type[i] = 0;
+      coreAPI->registerHandler (i, &trafficReceive);
+      coreAPI->registerPlaintextHandler (i, &plaintextReceive);
+    }
 
-  GE_ASSERT(coreAPI->ectx, counters == NULL);
-  lock = MUTEX_CREATE(NO);
-  stats = capi->requestService("stats");
+  GE_ASSERT (coreAPI->ectx, counters == NULL);
+  lock = MUTEX_CREATE (NO);
+  stats = capi->requestService ("stats");
   return &api;
 }
 
 /**
  * Shutdown the traffic module.
  */
-void release_module_traffic() {
+void
+release_module_traffic ()
+{
   unsigned int i;
 
-  for (i=0;i<P2P_PROTO_MAX_USED;i++) {
-    coreAPI->unregisterHandler(i,
-  		     &trafficReceive);
-    coreAPI->unregisterPlaintextHandler(i,
-  				&plaintextReceive);
-  }
-  coreAPI->unregisterSendNotify(&trafficSend);
-  coreAPI->releaseService(stats);
+  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+    {
+      coreAPI->unregisterHandler (i, &trafficReceive);
+      coreAPI->unregisterPlaintextHandler (i, &plaintextReceive);
+    }
+  coreAPI->unregisterSendNotify (&trafficSend);
+  coreAPI->releaseService (stats);
   stats = NULL;
-  for (i=0;i<max_message_type;i++)
-    FREENONNULL(counters[i]);
-  GROW(counters,
-       max_message_type,
-       0);
-  MUTEX_DESTROY(lock);
+  for (i = 0; i < max_message_type; i++)
+    FREENONNULL (counters[i]);
+  GROW (counters, max_message_type, 0);
+  MUTEX_DESTROY (lock);
   lock = NULL;
   coreAPI = NULL;
 }
 
 
 
-static Traffic_ServiceAPI * myApi;
-static CoreAPIForApplication * myCoreAPI;
+static Traffic_ServiceAPI *myApi;
+static CoreAPIForApplication *myCoreAPI;
 
 /**
  * Initialize the traffic module.
  */
-int initialize_module_traffic(CoreAPIForApplication * capi) {
-  GE_ASSERT(capi->ectx, myCoreAPI == NULL);
+int
+initialize_module_traffic (CoreAPIForApplication * capi)
+{
+  GE_ASSERT (capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
-  myApi = capi->requestService("traffic");
-  if (myApi == NULL) {
-    GE_BREAK(capi->ectx, 0);
-    myCoreAPI = NULL;
-    return SYSERR;
-  }
-  capi->registerClientHandler(CS_PROTO_traffic_QUERY,
-  		      &trafficQueryHandler);
-  GE_ASSERT(capi->ectx,
-      0 == GC_set_configuration_value_string(capi->cfg,
-  					   capi->ectx,
-  					   "ABOUT",
-  					   "traffic",
-  					   gettext_noop("tracks bandwidth utilization by gnunetd")));
-  return OK;  			
+  myApi = capi->requestService ("traffic");
+  if (myApi == NULL)
+    {
+      GE_BREAK (capi->ectx, 0);
+      myCoreAPI = NULL;
+      return SYSERR;
+    }
+  capi->registerClientHandler (CS_PROTO_traffic_QUERY, &trafficQueryHandler);
+  GE_ASSERT (capi->ectx,
+             0 == GC_set_configuration_value_string (capi->cfg,
+                                                     capi->ectx,
+                                                     "ABOUT",
+                                                     "traffic",
+                                                     gettext_noop
+                                                     ("tracks bandwidth utilization by gnunetd")));
+  return OK;
 }
 
 /**
  * Shutdown the traffic module.
  */
-void done_module_traffic() {
-  GE_ASSERT(NULL, myCoreAPI != NULL);
-  GE_ASSERT(myCoreAPI->ectx,
-      SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
-  						 &trafficQueryHandler));
-  myCoreAPI->releaseService(myApi);
+void
+done_module_traffic ()
+{
+  GE_ASSERT (NULL, myCoreAPI != NULL);
+  GE_ASSERT (myCoreAPI->ectx,
+             SYSERR !=
+             myCoreAPI->unregisterClientHandler (CS_PROTO_traffic_QUERY,
+                                                 &trafficQueryHandler));
+  myCoreAPI->releaseService (myApi);
   myApi = NULL;
   myCoreAPI = NULL;
 }

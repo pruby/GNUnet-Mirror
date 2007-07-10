@@ -36,26 +36,28 @@
 #define SHA512_DIGEST_SIZE 64
 #define SHA512_HMAC_BLOCK_SIZE 128
 
-struct sha512_ctx {
+struct sha512_ctx
+{
   unsigned long long state[8];
   unsigned int count[4];
   unsigned char buf[128];
 };
 
-static unsigned long long Ch(unsigned long long x,
-  		     unsigned long long y,
-  		     unsigned long long z) {
+static unsigned long long
+Ch (unsigned long long x, unsigned long long y, unsigned long long z)
+{
   return z ^ (x & (y ^ z));
 }
 
-static unsigned long long Maj(unsigned long long x,
-  		      unsigned long long y,
-  		      unsigned long long z) {
+static unsigned long long
+Maj (unsigned long long x, unsigned long long y, unsigned long long z)
+{
   return (x & y) | (z & (x | y));
 }
 
-static unsigned long long RORu64(unsigned long long x,
-  			 unsigned long long y) {
+static unsigned long long
+RORu64 (unsigned long long x, unsigned long long y)
+{
   return (x >> y) | (x << (64 - y));
 }
 
@@ -137,56 +139,88 @@ const unsigned long long sha512_K[80] = {
   W[I] = s1(W[I-2]) + W[I-7] + s0(W[I-15]) + W[I-16];
 
 static void
-sha512_transform(unsigned long long *state,
-  	 const unsigned char *input) {
+sha512_transform (unsigned long long *state, const unsigned char *input)
+{
   unsigned long long a, b, c, d, e, f, g, h, t1, t2;
   unsigned long long W[80];
   unsigned long long t0;
   int i;
 
   /* load the input */
-  for (i = 0; i < 16; i++) {
-    LOAD_OP(t0, i, W, input);
-  }
+  for (i = 0; i < 16; i++)
+    {
+      LOAD_OP (t0, i, W, input);
+    }
 
-  for (i = 16; i < 80; i++) {
-    BLEND_OP(i, W);
-  }
+  for (i = 16; i < 80; i++)
+    {
+      BLEND_OP (i, W);
+    }
 
   /* load the state into our registers */
-  a=state[0];   b=state[1];   c=state[2];   d=state[3];
-  e=state[4];   f=state[5];   g=state[6];   h=state[7];
+  a = state[0];
+  b = state[1];
+  c = state[2];
+  d = state[3];
+  e = state[4];
+  f = state[5];
+  g = state[6];
+  h = state[7];
 
   /* now iterate */
-  for (i=0; i<80; i+=8) {
-    t1 = h + e1(e) + Ch(e,f,g) + sha512_K[i  ] + W[i  ];
-    t2 = e0(a) + Maj(a,b,c);    d+=t1;    h=t1+t2;
-    t1 = g + e1(d) + Ch(d,e,f) + sha512_K[i+1] + W[i+1];
-    t2 = e0(h) + Maj(h,a,b);    c+=t1;    g=t1+t2;
-    t1 = f + e1(c) + Ch(c,d,e) + sha512_K[i+2] + W[i+2];
-    t2 = e0(g) + Maj(g,h,a);    b+=t1;    f=t1+t2;
-    t1 = e + e1(b) + Ch(b,c,d) + sha512_K[i+3] + W[i+3];
-    t2 = e0(f) + Maj(f,g,h);    a+=t1;    e=t1+t2;
-    t1 = d + e1(a) + Ch(a,b,c) + sha512_K[i+4] + W[i+4];
-    t2 = e0(e) + Maj(e,f,g);    h+=t1;    d=t1+t2;
-    t1 = c + e1(h) + Ch(h,a,b) + sha512_K[i+5] + W[i+5];
-    t2 = e0(d) + Maj(d,e,f);    g+=t1;    c=t1+t2;
-    t1 = b + e1(g) + Ch(g,h,a) + sha512_K[i+6] + W[i+6];
-    t2 = e0(c) + Maj(c,d,e);    f+=t1;    b=t1+t2;
-    t1 = a + e1(f) + Ch(f,g,h) + sha512_K[i+7] + W[i+7];
-    t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
-  }
+  for (i = 0; i < 80; i += 8)
+    {
+      t1 = h + e1 (e) + Ch (e, f, g) + sha512_K[i] + W[i];
+      t2 = e0 (a) + Maj (a, b, c);
+      d += t1;
+      h = t1 + t2;
+      t1 = g + e1 (d) + Ch (d, e, f) + sha512_K[i + 1] + W[i + 1];
+      t2 = e0 (h) + Maj (h, a, b);
+      c += t1;
+      g = t1 + t2;
+      t1 = f + e1 (c) + Ch (c, d, e) + sha512_K[i + 2] + W[i + 2];
+      t2 = e0 (g) + Maj (g, h, a);
+      b += t1;
+      f = t1 + t2;
+      t1 = e + e1 (b) + Ch (b, c, d) + sha512_K[i + 3] + W[i + 3];
+      t2 = e0 (f) + Maj (f, g, h);
+      a += t1;
+      e = t1 + t2;
+      t1 = d + e1 (a) + Ch (a, b, c) + sha512_K[i + 4] + W[i + 4];
+      t2 = e0 (e) + Maj (e, f, g);
+      h += t1;
+      d = t1 + t2;
+      t1 = c + e1 (h) + Ch (h, a, b) + sha512_K[i + 5] + W[i + 5];
+      t2 = e0 (d) + Maj (d, e, f);
+      g += t1;
+      c = t1 + t2;
+      t1 = b + e1 (g) + Ch (g, h, a) + sha512_K[i + 6] + W[i + 6];
+      t2 = e0 (c) + Maj (c, d, e);
+      f += t1;
+      b = t1 + t2;
+      t1 = a + e1 (f) + Ch (f, g, h) + sha512_K[i + 7] + W[i + 7];
+      t2 = e0 (b) + Maj (b, c, d);
+      e += t1;
+      a = t1 + t2;
+    }
 
-  state[0] += a; state[1] += b; state[2] += c; state[3] += d;
-  state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+  state[0] += a;
+  state[1] += b;
+  state[2] += c;
+  state[3] += d;
+  state[4] += e;
+  state[5] += f;
+  state[6] += g;
+  state[7] += h;
 
   /* erase our data */
   a = b = c = d = e = f = g = h = t1 = t2 = 0;
-  memset(W, 0, 80 * sizeof(unsigned long long));
+  memset (W, 0, 80 * sizeof (unsigned long long));
 }
 
 static void
-sha512_init(struct sha512_ctx * sctx) {
+sha512_init (struct sha512_ctx *sctx)
+{
   sctx->state[0] = H0;
   sctx->state[1] = H1;
   sctx->state[2] = H2;
@@ -196,48 +230,52 @@ sha512_init(struct sha512_ctx * sctx) {
   sctx->state[6] = H6;
   sctx->state[7] = H7;
   sctx->count[0] = sctx->count[1] = sctx->count[2] = sctx->count[3] = 0;
-  memset(sctx->buf, 0, sizeof(sctx->buf));
+  memset (sctx->buf, 0, sizeof (sctx->buf));
 }
 
 static void
-sha512_update(struct sha512_ctx * sctx,
-        const unsigned char *data,
-        unsigned int len) {
+sha512_update (struct sha512_ctx *sctx,
+               const unsigned char *data, unsigned int len)
+{
   unsigned int i, index, part_len;
 
   /* Compute number of bytes mod 128 */
-  index = (unsigned int)((sctx->count[0] >> 3) & 0x7F);
+  index = (unsigned int) ((sctx->count[0] >> 3) & 0x7F);
 
   /* Update number of bits */
-  if ((sctx->count[0] += (len << 3)) < (len << 3)) {
-    if ((sctx->count[1] += 1) < 1)
-      if ((sctx->count[2] += 1) < 1)
-  sctx->count[3]++;
-    sctx->count[1] += (len >> 29);
-  }
+  if ((sctx->count[0] += (len << 3)) < (len << 3))
+    {
+      if ((sctx->count[1] += 1) < 1)
+        if ((sctx->count[2] += 1) < 1)
+          sctx->count[3]++;
+      sctx->count[1] += (len >> 29);
+    }
 
   part_len = 128 - index;
 
   /* Transform as many times as possible. */
-  if (len >= part_len) {
-    memcpy(&sctx->buf[index], data, part_len);
-    sha512_transform(sctx->state, sctx->buf);
+  if (len >= part_len)
+    {
+      memcpy (&sctx->buf[index], data, part_len);
+      sha512_transform (sctx->state, sctx->buf);
 
-    for (i = part_len; i + 127 < len; i+=128)
-      sha512_transform(sctx->state, &data[i]);
+      for (i = part_len; i + 127 < len; i += 128)
+        sha512_transform (sctx->state, &data[i]);
 
-    index = 0;
-  } else {
-    i = 0;
-  }
+      index = 0;
+    }
+  else
+    {
+      i = 0;
+    }
 
   /* Buffer remaining input */
-  memcpy(&sctx->buf[index], &data[i], len - i);
+  memcpy (&sctx->buf[index], &data[i], len - i);
 }
 
 static void
-sha512_final(struct sha512_ctx * sctx,
-       unsigned char *hash) {
+sha512_final (struct sha512_ctx *sctx, unsigned char *hash)
+{
   static unsigned char padding[128] = { 0x80, };
 
   unsigned int t;
@@ -251,49 +289,69 @@ sha512_final(struct sha512_ctx * sctx,
 
   /* Save number of bits */
   t = sctx->count[0];
-  bits[15] = t; t>>=8;
-  bits[14] = t; t>>=8;
-  bits[13] = t; t>>=8;
+  bits[15] = t;
+  t >>= 8;
+  bits[14] = t;
+  t >>= 8;
+  bits[13] = t;
+  t >>= 8;
   bits[12] = t;
   t = sctx->count[1];
-  bits[11] = t; t>>=8;
-  bits[10] = t; t>>=8;
-  bits[9 ] = t; t>>=8;
-  bits[8 ] = t;
+  bits[11] = t;
+  t >>= 8;
+  bits[10] = t;
+  t >>= 8;
+  bits[9] = t;
+  t >>= 8;
+  bits[8] = t;
   t = sctx->count[2];
-  bits[7 ] = t; t>>=8;
-  bits[6 ] = t; t>>=8;
-  bits[5 ] = t; t>>=8;
-  bits[4 ] = t;
+  bits[7] = t;
+  t >>= 8;
+  bits[6] = t;
+  t >>= 8;
+  bits[5] = t;
+  t >>= 8;
+  bits[4] = t;
   t = sctx->count[3];
-  bits[3 ] = t; t>>=8;
-  bits[2 ] = t; t>>=8;
-  bits[1 ] = t; t>>=8;
-  bits[0 ] = t;
+  bits[3] = t;
+  t >>= 8;
+  bits[2] = t;
+  t >>= 8;
+  bits[1] = t;
+  t >>= 8;
+  bits[0] = t;
 
   /* Pad out to 112 mod 128. */
   index = (sctx->count[0] >> 3) & 0x7f;
-  pad_len = (index < 112) ? (112 - index) : ((128+112) - index);
-  sha512_update(sctx, padding, pad_len);
+  pad_len = (index < 112) ? (112 - index) : ((128 + 112) - index);
+  sha512_update (sctx, padding, pad_len);
 
   /* Append length (before padding) */
-  sha512_update(sctx, bits, 16);
+  sha512_update (sctx, bits, 16);
 
   /* Store state in digest */
-  for (i = j = 0; i < 8; i++, j += 8) {
-    t2 = sctx->state[i];
-    hash[j+7] = (char)t2 & 0xff; t2>>=8;
-    hash[j+6] = (char)t2 & 0xff; t2>>=8;
-    hash[j+5] = (char)t2 & 0xff; t2>>=8;
-    hash[j+4] = (char)t2 & 0xff; t2>>=8;
-    hash[j+3] = (char)t2 & 0xff; t2>>=8;
-    hash[j+2] = (char)t2 & 0xff; t2>>=8;
-    hash[j+1] = (char)t2 & 0xff; t2>>=8;
-    hash[j  ] = (char)t2 & 0xff;
-  }
+  for (i = j = 0; i < 8; i++, j += 8)
+    {
+      t2 = sctx->state[i];
+      hash[j + 7] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 6] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 5] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 4] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 3] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 2] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j + 1] = (char) t2 & 0xff;
+      t2 >>= 8;
+      hash[j] = (char) t2 & 0xff;
+    }
 
   /* Zeroize sensitive information. */
-  memset(sctx, 0, sizeof(struct sha512_ctx));
+  memset (sctx, 0, sizeof (struct sha512_ctx));
 }
 
 /**
@@ -303,14 +361,14 @@ sha512_final(struct sha512_ctx * sctx,
  * @param size the length of the data to hash
  * @param ret pointer to where to write the hashcode
  */
-void hash(const void * block,
-    unsigned int size,
-    HashCode512 * ret) {
+void
+hash (const void *block, unsigned int size, HashCode512 * ret)
+{
   struct sha512_ctx ctx;
 
-  sha512_init(&ctx);
-  sha512_update(&ctx, block, size);
-  sha512_final(&ctx, (unsigned char*) ret);
+  sha512_init (&ctx);
+  sha512_update (&ctx, block, size);
+  sha512_final (&ctx, (unsigned char *) ret);
 }
 
 /**
@@ -320,72 +378,60 @@ void hash(const void * block,
  *
  * @return OK on success, SYSERR on error
  */
-int getFileHash(struct GE_Context * ectx,
-  	const char * filename,
-  	HashCode512 * ret) {
-  unsigned char * buf;
+int
+getFileHash (struct GE_Context *ectx, const char *filename, HashCode512 * ret)
+{
+  unsigned char *buf;
   unsigned long long len;
   unsigned long long pos;
   unsigned int delta;
   int fh;
   struct sha512_ctx ctx;
 
-  if (OK != disk_file_test(ectx,
-  		   filename))
+  if (OK != disk_file_test (ectx, filename))
     return SYSERR;
-  if (OK != disk_file_size(ectx,
-  		   filename,
-  		   &len,
-  		   NO))
+  if (OK != disk_file_size (ectx, filename, &len, NO))
     return SYSERR;
-  fh = disk_file_open(ectx,
-  	      filename,
-  	      O_RDONLY | O_LARGEFILE);
-  if (fh == -1) {
-    GE_LOG_STRERROR_FILE(ectx,
-  		 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
-  		 "open",
-  		 filename);
-    return SYSERR;
-  }
-  sha512_init(&ctx);
-  pos = 0;
-  buf = MALLOC(65536);
-  while (pos < len) {
-    delta = 65536;
-    if (len - pos < delta)
-      delta = len-pos;
-    if (delta != READ(fh,
-  	      buf,
-  	      delta)) {
-      GE_LOG_STRERROR_FILE(ectx,
-  		   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-  		   "read",
-  		   filename);
-      if (0 != CLOSE(fh))
-  GE_LOG_STRERROR_FILE(ectx,
-  		     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-  		     "close",
-  		     filename);
-      FREE(buf);
+  fh = disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
+  if (fh == -1)
+    {
+      GE_LOG_STRERROR_FILE (ectx,
+                            GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
+                            "open", filename);
       return SYSERR;
     }
-    sha512_update(&ctx,
-  	  buf,
-  	  delta);
-    if (pos + delta > pos)
-      pos += delta;
-    else
-      break;
-  }
-  if (0 != CLOSE(fh))
-    GE_LOG_STRERROR_FILE(ectx,
-  		 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-  		 "close",
-  		 filename);
-  sha512_final(&ctx,
-         (unsigned char*) ret);
-  FREE(buf);
+  sha512_init (&ctx);
+  pos = 0;
+  buf = MALLOC (65536);
+  while (pos < len)
+    {
+      delta = 65536;
+      if (len - pos < delta)
+        delta = len - pos;
+      if (delta != READ (fh, buf, delta))
+        {
+          GE_LOG_STRERROR_FILE (ectx,
+                                GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+                                "read", filename);
+          if (0 != CLOSE (fh))
+            GE_LOG_STRERROR_FILE (ectx,
+                                  GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+                                  "close", filename);
+          FREE (buf);
+          return SYSERR;
+        }
+      sha512_update (&ctx, buf, delta);
+      if (pos + delta > pos)
+        pos += delta;
+      else
+        break;
+    }
+  if (0 != CLOSE (fh))
+    GE_LOG_STRERROR_FILE (ectx,
+                          GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+                          "close", filename);
+  sha512_final (&ctx, (unsigned char *) ret);
+  FREE (buf);
   return OK;
 }
 
@@ -395,12 +441,14 @@ int getFileHash(struct GE_Context * ectx,
 /**
  * 32 characters for encoding (hash => 32 characters)
  */
-static char * encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+static char *encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-static unsigned int getValue__(unsigned char a) {
-  if ( (a >= '0') && (a <= '9') )
+static unsigned int
+getValue__ (unsigned char a)
+{
+  if ((a >= '0') && (a <= '9'))
     return a - '0';
-  if ( (a >= 'A') && (a <= 'V') )
+  if ((a >= 'A') && (a <= 'V'))
     return (a - 'A' + 10);
   return -1;
 }
@@ -416,37 +464,39 @@ static unsigned int getValue__(unsigned char a) {
  * @param result where to store the encoding (EncName can be
  *  safely cast to char*, a '\0' termination is set).
  */
-void hash2enc(const HashCode512 * block,
-        EncName * result) {
+void
+hash2enc (const HashCode512 * block, EncName * result)
+{
   unsigned int wpos;
   unsigned int rpos;
   unsigned int bits;
   unsigned int vbit;
 
-  GE_ASSERT(NULL, block != NULL);
-  GE_ASSERT(NULL, result != NULL);
+  GE_ASSERT (NULL, block != NULL);
+  GE_ASSERT (NULL, result != NULL);
   vbit = 0;
   wpos = 0;
   rpos = 0;
   bits = 0;
-  while ( (rpos < sizeof(HashCode512)) ||
-    (vbit > 0) ) {
-    if ( (rpos < sizeof(HashCode512)) &&
-   (vbit < 5) ) {
-      bits = (bits << 8) | ((unsigned char*)block)[rpos++]; /* eat 8 more bits */
-      vbit += 8;
+  while ((rpos < sizeof (HashCode512)) || (vbit > 0))
+    {
+      if ((rpos < sizeof (HashCode512)) && (vbit < 5))
+        {
+          bits = (bits << 8) | ((unsigned char *) block)[rpos++];       /* eat 8 more bits */
+          vbit += 8;
+        }
+      if (vbit < 5)
+        {
+          bits <<= (5 - vbit);  /* zero-padding */
+          GE_ASSERT (NULL, vbit == 2);  /* padding by 3: 512+3 mod 5 == 0 */
+          vbit = 5;
+        }
+      GE_ASSERT (NULL, wpos < sizeof (EncName) - 1);
+      result->encoding[wpos++] = encTable__[(bits >> (vbit - 5)) & 31];
+      vbit -= 5;
     }
-    if (vbit < 5) {
-      bits <<= (5 - vbit); /* zero-padding */
-      GE_ASSERT(NULL, vbit == 2); /* padding by 3: 512+3 mod 5 == 0 */
-      vbit = 5;
-    }
-    GE_ASSERT(NULL, wpos < sizeof(EncName)-1);
-    result->encoding[wpos++] = encTable__[(bits >> (vbit - 5)) & 31];
-    vbit -= 5;
-  }
-  GE_ASSERT(NULL, wpos == sizeof(EncName)-1);
-  GE_ASSERT(NULL, vbit == 0);
+  GE_ASSERT (NULL, wpos == sizeof (EncName) - 1);
+  GE_ASSERT (NULL, vbit == 0);
   result->encoding[wpos] = '\0';
 }
 
@@ -457,33 +507,35 @@ void hash2enc(const HashCode512 * block,
  * @param result where to store the hash code
  * @return OK on success, SYSERR if result has the wrong encoding
  */
-int enc2hash(const char * enc,
-       HashCode512 * result) {
+int
+enc2hash (const char *enc, HashCode512 * result)
+{
   unsigned int rpos;
   unsigned int wpos;
   unsigned int bits;
   unsigned int vbit;
 
-  if (strlen(enc) != sizeof(EncName)-1)
+  if (strlen (enc) != sizeof (EncName) - 1)
     return SYSERR;
 
-  vbit = 2; /* padding! */
-  wpos = sizeof(HashCode512);
-  rpos = sizeof(EncName)-1;
-  bits = getValue__(enc[--rpos]) >> 3;
-  while (wpos > 0) {
-    GE_ASSERT(NULL, rpos > 0);
-    bits = (getValue__(enc[--rpos]) << vbit) | bits;
-    vbit += 5;
-    if (vbit >= 8) {
-      ((unsigned char*)result)[--wpos]
-  = (unsigned char) bits;
-      bits >>= 8;
-      vbit -= 8;
+  vbit = 2;                     /* padding! */
+  wpos = sizeof (HashCode512);
+  rpos = sizeof (EncName) - 1;
+  bits = getValue__ (enc[--rpos]) >> 3;
+  while (wpos > 0)
+    {
+      GE_ASSERT (NULL, rpos > 0);
+      bits = (getValue__ (enc[--rpos]) << vbit) | bits;
+      vbit += 5;
+      if (vbit >= 8)
+        {
+          ((unsigned char *) result)[--wpos] = (unsigned char) bits;
+          bits >>= 8;
+          vbit -= 8;
+        }
     }
-  }
-  GE_ASSERT(NULL, rpos == 0);
-  GE_ASSERT(NULL, vbit == 0);
+  GE_ASSERT (NULL, rpos == 0);
+  GE_ASSERT (NULL, vbit == 0);
   return OK;
 }
 
@@ -496,69 +548,68 @@ int enc2hash(const char * enc,
  * @returns a positive number which is a measure for
  *  hashcode proximity.
  */
-unsigned int distanceHashCode512(const HashCode512 * a,
-  			 const HashCode512 * b) {
-  unsigned int x = (a->bits[1] - b->bits[1])>>16;
-  return ((x*x)>>16);
+unsigned int
+distanceHashCode512 (const HashCode512 * a, const HashCode512 * b)
+{
+  unsigned int x = (a->bits[1] - b->bits[1]) >> 16;
+  return ((x * x) >> 16);
 }
 
 /**
  * Compare two hashcodes.
  * @return 1 if they are equal, 0 if not.
  */
-int equalsHashCode512(const HashCode512 * a,
-  	      const HashCode512 * b) {
-  return (0 == memcmp(a,b,sizeof(HashCode512)));
+int
+equalsHashCode512 (const HashCode512 * a, const HashCode512 * b)
+{
+  return (0 == memcmp (a, b, sizeof (HashCode512)));
 }
 
-void makeRandomId(HashCode512 * result) {
+void
+makeRandomId (HashCode512 * result)
+{
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
-    result->bits[i] = rand();
+  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+    result->bits[i] = rand ();
 }
 
-void deltaId(const HashCode512 * a,
-       const HashCode512 * b,
-       HashCode512 * result) {
+void
+deltaId (const HashCode512 * a, const HashCode512 * b, HashCode512 * result)
+{
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
+  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
     result->bits[i] = b->bits[i] - a->bits[i];
 }
 
-void addHashCodes(const HashCode512 * a,
-  	  const HashCode512 * delta,
-  	  HashCode512 * result) {
+void
+addHashCodes (const HashCode512 * a,
+              const HashCode512 * delta, HashCode512 * result)
+{
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
+  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
     result->bits[i] = delta->bits[i] + a->bits[i];
 }
 
-void xorHashCodes(const HashCode512 * a,
-  	  const HashCode512 * b,
-  	  HashCode512 * result) {
+void
+xorHashCodes (const HashCode512 * a,
+              const HashCode512 * b, HashCode512 * result)
+{
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
+  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
     result->bits[i] = a->bits[i] ^ b->bits[i];
 }
 
 /**
  * Convert a hashcode into a key.
  */
-void hashToKey(const HashCode512 * hc,
-         SESSIONKEY * skey,
-         INITVECTOR * iv) {
-  GE_ASSERT(NULL,
-      sizeof(HashCode512) >=
-      SESSIONKEY_LEN +
-      sizeof(INITVECTOR));
-  memcpy(skey,
-   hc,
-   SESSIONKEY_LEN);
-  skey->crc32 = htonl(crc32N(skey,
-  		     SESSIONKEY_LEN));
-  memcpy(iv,
-   &((char *)hc)[SESSIONKEY_LEN],
-   sizeof(INITVECTOR));
+void
+hashToKey (const HashCode512 * hc, SESSIONKEY * skey, INITVECTOR * iv)
+{
+  GE_ASSERT (NULL,
+             sizeof (HashCode512) >= SESSIONKEY_LEN + sizeof (INITVECTOR));
+  memcpy (skey, hc, SESSIONKEY_LEN);
+  skey->crc32 = htonl (crc32N (skey, SESSIONKEY_LEN));
+  memcpy (iv, &((char *) hc)[SESSIONKEY_LEN], sizeof (INITVECTOR));
 }
 
 /**
@@ -567,14 +618,15 @@ void hashToKey(const HashCode512 * hc,
  * @param bit index into the hashcode, [0...511]
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
-int getHashCodeBit(const HashCode512 * code,
-  	   unsigned int bit) {
-  if (bit >= 8 * sizeof(HashCode512)) {
-    GE_ASSERT(NULL,
-        0);
-    return -1; /* error */
-  }
-  return (((unsigned char*)code)[bit >> 3] & (1 << bit & 7)) > 0;
+int
+getHashCodeBit (const HashCode512 * code, unsigned int bit)
+{
+  if (bit >= 8 * sizeof (HashCode512))
+    {
+      GE_ASSERT (NULL, 0);
+      return -1;                /* error */
+    }
+  return (((unsigned char *) code)[bit >> 3] & (1 << bit & 7)) > 0;
 }
 
 /**
@@ -582,20 +634,22 @@ int getHashCodeBit(const HashCode512 * code,
  * of all hashcodes.
  * @return 1 if h1 > h2, -1 if h1 < h2 and 0 if h1 == h2.
  */
-int hashCodeCompare(const HashCode512 * h1,
-  	    const HashCode512 * h2) {
-  unsigned int * i1;
-  unsigned int * i2;
+int
+hashCodeCompare (const HashCode512 * h1, const HashCode512 * h2)
+{
+  unsigned int *i1;
+  unsigned int *i2;
   int i;
 
-  i1 = (unsigned int*) h1;
-  i2 = (unsigned int*) h2;
-  for (i=(sizeof(HashCode512) / sizeof(unsigned int))-1;i>=0;i--) {
-    if (i1[i] > i2[i])
-      return 1;
-    if (i1[i] < i2[i])
-      return -1;
-  }
+  i1 = (unsigned int *) h1;
+  i2 = (unsigned int *) h2;
+  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+    {
+      if (i1[i] > i2[i])
+        return 1;
+      if (i1[i] < i2[i])
+        return -1;
+    }
   return 0;
 }
 
@@ -604,21 +658,23 @@ int hashCodeCompare(const HashCode512 * h1,
  * in the XOR metric (Kademlia).
  * @return -1 if h1 is closer, 1 if h2 is closer and 0 if h1==h2.
  */
-int hashCodeCompareDistance(const HashCode512 * h1,
-  		    const HashCode512 * h2,
-  		    const HashCode512 * target) {
+int
+hashCodeCompareDistance (const HashCode512 * h1,
+                         const HashCode512 * h2, const HashCode512 * target)
+{
   int i;
   unsigned int d1;
   unsigned int d2;
 
-  for (i=sizeof(HashCode512)/sizeof(unsigned int)-1;i>=0;i--) {
-    d1 = ((unsigned int*)h1)[i] ^ ((unsigned int*)target)[i];
-    d2 = ((unsigned int*)h2)[i] ^ ((unsigned int*)target)[i];
-    if (d1 > d2)
-      return 1;
-    else if (d1 < d2)
-      return -1;
-  }
+  for (i = sizeof (HashCode512) / sizeof (unsigned int) - 1; i >= 0; i--)
+    {
+      d1 = ((unsigned int *) h1)[i] ^ ((unsigned int *) target)[i];
+      d2 = ((unsigned int *) h2)[i] ^ ((unsigned int *) target)[i];
+      if (d1 > d2)
+        return 1;
+      else if (d1 < d2)
+        return -1;
+    }
   return 0;
 }
 

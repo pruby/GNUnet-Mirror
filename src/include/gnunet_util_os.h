@@ -36,8 +36,9 @@
 #include "gnunet_util_config.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -60,52 +61,49 @@ struct PluginHandle;
 /**
  * TIME prototype. "man time".
  */
-TIME_T TIME(TIME_T * t);
+TIME_T TIME (TIME_T * t);
 
 /**
  * "man ctime_r".
  * @return character sequence describing the time,
  *  must be freed by caller
  */
-char * GN_CTIME(const TIME_T * t);
+char *GN_CTIME (const TIME_T * t);
 
 /**
  * @param isDefault is this presumably the default interface
  * @return OK to continue iteration, SYSERR to abort
  */
-typedef int (*NetworkIfcProcessor)(const char * name,
-				   int isDefault,
-				   void * cls);
+typedef int (*NetworkIfcProcessor) (const char *name,
+                                    int isDefault, void *cls);
 
-typedef enum {
+typedef enum
+{
   Download,
   Upload,
 } NetworkDirection;
 
 struct LoadMonitor;
 
-struct IPC_SEMAPHORE *
-IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
-		     const char * basename,
-		     unsigned int initialValue);
+struct IPC_SEMAPHORE *IPC_SEMAPHORE_CREATE (struct GE_Context *ectx,
+                                            const char *basename,
+                                            unsigned int initialValue);
 
-void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem);
+void IPC_SEMAPHORE_DESTROY (struct IPC_SEMAPHORE *sem);
 
-void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem);
+void IPC_SEMAPHORE_UP (struct IPC_SEMAPHORE *sem);
 
 /**
  * @return OK on success, SYSERR if would block
  */
-int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
-		       int mayBlock);
+int IPC_SEMAPHORE_DOWN (struct IPC_SEMAPHORE *sem, int mayBlock);
 
 /**
  * Load plugin
  */
-struct PluginHandle *
-os_plugin_load(struct GE_Context * ectx,
-	       const char * libprefix,
-	       const char * dsoname);
+struct PluginHandle *os_plugin_load (struct GE_Context *ectx,
+                                     const char *libprefix,
+                                     const char *dsoname);
 
 /**
  * Try resolving a function provided by the plugin
@@ -116,18 +114,15 @@ os_plugin_load(struct GE_Context * ectx,
  *        with the respective dsoname of the plugin
  * @return NULL on error, otherwise pointer to the function
  */
-void *
-os_plugin_resolve_function(struct PluginHandle * plugin,			
-			   const char * methodprefix,
-			   int logError);
+void *os_plugin_resolve_function (struct PluginHandle *plugin,
+                                  const char *methodprefix, int logError);
 
-void os_plugin_unload(struct PluginHandle * plugin);
+void os_plugin_unload (struct PluginHandle *plugin);
 
-struct LoadMonitor *
-os_network_monitor_create(struct GE_Context * ectx,
-			  struct GC_Configuration * cfg);
+struct LoadMonitor *os_network_monitor_create (struct GE_Context *ectx,
+                                               struct GC_Configuration *cfg);
 
-void os_network_monitor_destroy(struct LoadMonitor * mon);
+void os_network_monitor_destroy (struct LoadMonitor *mon);
 
 /**
  * Get the load of the network relative to what is allowed.
@@ -135,8 +130,8 @@ void os_network_monitor_destroy(struct LoadMonitor * mon);
  * @return the network load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
-int os_network_monitor_get_load(struct LoadMonitor * monitor,
-				NetworkDirection dir);
+int os_network_monitor_get_load (struct LoadMonitor *monitor,
+                                 NetworkDirection dir);
 
 /**
  * Get the total amoung of bandwidth this load monitor allows
@@ -144,37 +139,34 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
  *
  * @return the maximum bandwidth in bytes per second, -1 for no limit
  */
-unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
-						NetworkDirection dir);
+unsigned long long os_network_monitor_get_limit (struct LoadMonitor *monitor,
+                                                 NetworkDirection dir);
 
 /**
  * Tell monitor to increment the number of bytes sent/received
  */
-void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
-					    NetworkDirection dir,
-					    unsigned long long delta);
+void os_network_monitor_notify_transmission (struct LoadMonitor *monitor,
+                                             NetworkDirection dir,
+                                             unsigned long long delta);
 
 /**
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
-void os_list_network_interfaces(struct GE_Context * ectx,
-				NetworkIfcProcessor proc,
-				void * cls);
+void os_list_network_interfaces (struct GE_Context *ectx,
+                                 NetworkIfcProcessor proc, void *cls);
 
 /**
  * @brief Set maximum number of open file descriptors
  * @return OK on success, SYSERR on error
  */
-int os_set_fd_limit(struct GE_Context * ectx,
-                    int n);
+int os_set_fd_limit (struct GE_Context *ectx, int n);
 
 /**
  * Set our process priority
  * @return OK on success, SYSERR on error
  */
-int os_set_process_priority(struct GE_Context * ectx,
-			    const char * str);
+int os_set_process_priority (struct GE_Context *ectx, const char *str);
 
 /**
  * @brief Make "application" start automatically
@@ -206,12 +198,11 @@ int os_set_process_priority(struct GE_Context * ectx,
  *  Unix
  *    2 startup script could not be opened
  */
-int os_modify_autostart(struct GE_Context * ectx,
-			int testCapability,
-			int doAutoStart,
-			const char * application,
-			const char * username,
-			const char * groupname);
+int os_modify_autostart (struct GE_Context *ectx,
+                         int testCapability,
+                         int doAutoStart,
+                         const char *application,
+                         const char *username, const char *groupname);
 
 /**
  * @brief Add or remove a service account for GNUnet
@@ -230,25 +221,21 @@ int os_modify_autostart(struct GE_Context * ectx,
  * @param group name of the group
  * @return OK on success, SYSERR on error
  */
-int os_modify_user(int testCapability,
-		   int doAdd,
-		   const char * name,
-		   const char * group);
+int os_modify_user (int testCapability,
+                    int doAdd, const char *name, const char *group);
 
 /**
  * Change current process to run as the given
  * user
  * @return OK on success, SYSERR on error
  */
-int os_change_user(struct GE_Context * ectx,
-		   const char * user);
+int os_change_user (struct GE_Context *ectx, const char *user);
 
 /**
  * @brief Change owner of a file
  */
-int os_change_owner(struct GE_Context * ectx,
-		    const char * filename,
-		    const char * user);
+int os_change_owner (struct GE_Context *ectx,
+                     const char *filename, const char *user);
 
 /**
  * Get the current CPU load.
@@ -257,8 +244,7 @@ int os_change_owner(struct GE_Context * ectx,
  * @return -1 on error, otherwise load value (between 0 and 100,
  *        (100 is equivalent to full load for one CPU)
  */
-int os_cpu_get_load(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg);
+int os_cpu_get_load (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 /**
  * Get the current IO load.
@@ -269,8 +255,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
  *       100 means that we spend all of our cycles waiting for
  *       the disk)
  */
-int os_disk_get_load(struct GE_Context * ectx,
-		     struct GC_Configuration * cfg);
+int os_disk_get_load (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 /**
  * Start gnunetd process
@@ -280,10 +265,9 @@ int os_disk_get_load(struct GE_Context * ectx,
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
  */
-int os_daemon_start(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    const char * cfgFile,
-		    int daemonize);
+int os_daemon_start (struct GE_Context *ectx,
+                     struct GC_Configuration *cfg,
+                     const char *cfgFile, int daemonize);
 
 /**
  * Wait until the gnunet daemon (or any other CHILD process for that
@@ -296,13 +280,13 @@ int os_daemon_start(struct GE_Context * ectx,
  *  failed, NO if gnunetd shutdown with
  *  some error
  */
-int os_daemon_stop(struct GE_Context * ectx,
-		   int pid);
+int os_daemon_stop (struct GE_Context *ectx, int pid);
 
 /**
  * List of install paths
  */
-enum InstallPathKind {
+enum InstallPathKind
+{
   IPK_PREFIX,
   IPK_BINDIR,
   IPK_LIBDIR,
@@ -317,7 +301,7 @@ enum InstallPathKind {
  * @param cfg the context to get configuration values from
  * @return a pointer to the dir path (to be freed by the caller)
  */
-char * os_get_installation_path(enum InstallPathKind dirkind);
+char *os_get_installation_path (enum InstallPathKind dirkind);
 
 /**
  * Write our process ID to the pid file.  Use only
@@ -326,16 +310,15 @@ char * os_get_installation_path(enum InstallPathKind dirkind);
  *
  * @return OK on success, SYSERR on error
  */
-int os_write_pid_file(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg,
-		      unsigned int pid);
+int os_write_pid_file (struct GE_Context *ectx,
+                       struct GC_Configuration *cfg, unsigned int pid);
 
 /**
  * Delete the PID file (to be called when the daemon
  * shuts down)
  */
-int os_delete_pid_file(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg);
+int os_delete_pid_file (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg);
 
 
 /**
@@ -346,26 +329,24 @@ int os_delete_pid_file(struct GE_Context * ectx,
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
  */
-int os_terminal_detach(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       int * filedes);
+int os_terminal_detach (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg, int *filedes);
 
 /**
  * Complete the handshake of detaching from the terminal.
  * @param success use NO for error, YES for successful start
  */
-void os_terminal_detach_complete(struct GE_Context * ectx,
-				 int * filedes,
-				 int success);
+void os_terminal_detach_complete (struct GE_Context *ectx,
+                                  int *filedes, int success);
 
 /**
  * @brief Perform OS specific initalization
  * @param ectx logging context, NULL means stderr
  * @returns OK on success, SYSERR otherwise
  */
-int os_init(struct GE_Context *ectx);
+int os_init (struct GE_Context *ectx);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

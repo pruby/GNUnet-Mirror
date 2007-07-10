@@ -32,7 +32,8 @@
 #include "gnunet_util_containers.h"
 #include "platform.h"
 
-typedef struct KeyValuePair {
+typedef struct KeyValuePair
+{
   void *key;
   unsigned long keylen;
   void *value;
@@ -40,7 +41,8 @@ typedef struct KeyValuePair {
   struct KeyValuePair *next;
 } KeyValuePair;
 
-typedef struct HashTable {
+typedef struct HashTable
+{
   long numOfBuckets;
   long numOfElements;
   KeyValuePair **bucketArray;
@@ -55,38 +57,45 @@ typedef struct HashTable {
  * @param n the size of z
  * @return the hashcode
  */
-static unsigned long long weakHash(const char *z, int n){
+static unsigned long long
+weakHash (const char *z, int n)
+{
   unsigned long long h = 0;
-  while(n > 0) {
-    h = (h << 3) ^ h ^ (unsigned char) *z++;
-    n--;
-  }
+  while (n > 0)
+    {
+      h = (h << 3) ^ h ^ (unsigned char) *z++;
+      n--;
+    }
   return h;
 }
 
 
-static int isProbablePrime(long oddNumber) {
+static int
+isProbablePrime (long oddNumber)
+{
   long i;
 
-  for (i=3; i<51; i+=2)
+  for (i = 3; i < 51; i += 2)
     if (oddNumber == i)
       return 1;
-    else if (oddNumber%i == 0)
+    else if (oddNumber % i == 0)
       return 0;
 
-  return 1; /* maybe */
+  return 1;                     /* maybe */
 }
 
-static long calculateIdealNumOfBuckets(const struct HashTable *hashTable) {
-    long idealNumOfBuckets = hashTable->numOfElements / hashTable->idealRatio;
-    if (idealNumOfBuckets < 5)
-        idealNumOfBuckets = 5;
-    else
-        idealNumOfBuckets |= 0x01; /* make it an odd number */
-    while (!isProbablePrime(idealNumOfBuckets))
-        idealNumOfBuckets += 2;
+static long
+calculateIdealNumOfBuckets (const struct HashTable *hashTable)
+{
+  long idealNumOfBuckets = hashTable->numOfElements / hashTable->idealRatio;
+  if (idealNumOfBuckets < 5)
+    idealNumOfBuckets = 5;
+  else
+    idealNumOfBuckets |= 0x01;  /* make it an odd number */
+  while (!isProbablePrime (idealNumOfBuckets))
+    idealNumOfBuckets += 2;
 
-    return idealNumOfBuckets;
+  return idealNumOfBuckets;
 }
 
 
@@ -107,57 +116,64 @@ static long calculateIdealNumOfBuckets(const struct HashTable *hashTable) {
  *                     passes the thresholds set by ht_setIdealRatio().
  * @return a new Hashtable, or NULL on error
  */
-struct HashTable *ht_create(long numOfBuckets) {
-    struct HashTable *hashTable;
-    int i;
+struct HashTable *
+ht_create (long numOfBuckets)
+{
+  struct HashTable *hashTable;
+  int i;
 
-    if (numOfBuckets <= 0)
+  if (numOfBuckets <= 0)
+    return NULL;
+
+  hashTable = (struct HashTable *) MALLOC (sizeof (struct HashTable));
+  if (hashTable == NULL)
+    return NULL;
+
+  hashTable->bucketArray = (KeyValuePair **)
+    MALLOC (numOfBuckets * sizeof (KeyValuePair *));
+  if (hashTable->bucketArray == NULL)
+    {
+      FREE (hashTable);
       return NULL;
-
-    hashTable = (struct HashTable *) MALLOC(sizeof(struct HashTable));
-    if (hashTable == NULL)
-        return NULL;
-
-    hashTable->bucketArray = (KeyValuePair **)
-                        MALLOC(numOfBuckets * sizeof(KeyValuePair *));
-    if (hashTable->bucketArray == NULL) {
-        FREE(hashTable);
-        return NULL;
     }
 
-    hashTable->numOfBuckets = numOfBuckets;
-    hashTable->numOfElements = 0;
+  hashTable->numOfBuckets = numOfBuckets;
+  hashTable->numOfElements = 0;
 
-    for (i=0; i<numOfBuckets; i++)
-        hashTable->bucketArray[i] = NULL;
+  for (i = 0; i < numOfBuckets; i++)
+    hashTable->bucketArray[i] = NULL;
 
-    hashTable->idealRatio = 3.0;
-    hashTable->lowerRehashThreshold = 0.0;
-    hashTable->upperRehashThreshold = 15.0;
+  hashTable->idealRatio = 3.0;
+  hashTable->lowerRehashThreshold = 0.0;
+  hashTable->upperRehashThreshold = 15.0;
 
-    return hashTable;
+  return hashTable;
 }
 
 /**
  * @brief destroys an existing HashTable
  * @param hashTable the HashTable to destroy
  */
-void ht_destroy(struct HashTable *hashTable) {
-    int i;
+void
+ht_destroy (struct HashTable *hashTable)
+{
+  int i;
 
-    for (i=0; i < hashTable->numOfBuckets; i++) {
-        KeyValuePair *pair = hashTable->bucketArray[i];
-        while (pair != NULL) {
-      KeyValuePair *nextPair = pair->next;
-            FREE(pair->key);
-            FREE(pair->value);
-            FREE(pair);
-            pair = nextPair;
+  for (i = 0; i < hashTable->numOfBuckets; i++)
+    {
+      KeyValuePair *pair = hashTable->bucketArray[i];
+      while (pair != NULL)
+        {
+          KeyValuePair *nextPair = pair->next;
+          FREE (pair->key);
+          FREE (pair->value);
+          FREE (pair);
+          pair = nextPair;
         }
     }
 
-    FREE(hashTable->bucketArray);
-    FREE(hashTable);
+  FREE (hashTable->bucketArray);
+  FREE (hashTable);
 }
 
 /**
@@ -167,13 +183,14 @@ void ht_destroy(struct HashTable *hashTable) {
  * @return whether or not the specified HashTable contains the
  *         specified key
  */
-int ht_containsKey(const struct HashTable *hashTable,
-  	   const void *key,
-  	   const unsigned int keylen) {
-    void *ret;
-    unsigned int retlen;
+int
+ht_containsKey (const struct HashTable *hashTable,
+                const void *key, const unsigned int keylen)
+{
+  void *ret;
+  unsigned int retlen;
 
-    return ht_get(hashTable, key, keylen, &ret, &retlen);
+  return ht_get (hashTable, key, keylen, &ret, &retlen);
 }
 
 /**
@@ -183,22 +200,25 @@ int ht_containsKey(const struct HashTable *hashTable,
  * @return whether or not the specified HashTable contains the
  *         specified value
  */
-int ht_containsValue(const struct HashTable *hashTable,
-  	     const void *value,
-  	     const unsigned int valuelen) {
-    int i;
+int
+ht_containsValue (const struct HashTable *hashTable,
+                  const void *value, const unsigned int valuelen)
+{
+  int i;
 
-    for (i=0; i<hashTable->numOfBuckets; i++) {
-        KeyValuePair *pair = hashTable->bucketArray[i];
-        while (pair != NULL) {
-    if ( (pair->valuelen == valuelen) &&
-         (memcmp(value, pair->value, valuelen) == 0) )
-                return 1;
-            pair = pair->next;
+  for (i = 0; i < hashTable->numOfBuckets; i++)
+    {
+      KeyValuePair *pair = hashTable->bucketArray[i];
+      while (pair != NULL)
+        {
+          if ((pair->valuelen == valuelen) &&
+              (memcmp (value, pair->value, valuelen) == 0))
+            return 1;
+          pair = pair->next;
         }
     }
 
-    return 0;
+  return 0;
 }
 
 /**
@@ -208,58 +228,62 @@ int ht_containsValue(const struct HashTable *hashTable,
  * @param value the value associated with the key
  * @return YES if successful, NO if an error was encountered
  */
-int ht_put(struct HashTable *hashTable,
-     const void *key,
-     const unsigned int keylen,
-     void *value,
-     const unsigned int valuelen) {
-    long hashValue;
-    KeyValuePair *pair;
+int
+ht_put (struct HashTable *hashTable,
+        const void *key,
+        const unsigned int keylen, void *value, const unsigned int valuelen)
+{
+  long hashValue;
+  KeyValuePair *pair;
 
-    if (key == NULL || value == NULL)
-      return NO;
+  if (key == NULL || value == NULL)
+    return NO;
 
-    hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
-    pair = hashTable->bucketArray[hashValue];
+  hashValue = weakHash (key, keylen) % hashTable->numOfBuckets;
+  pair = hashTable->bucketArray[hashValue];
 
-    while (pair != NULL && pair->keylen != keylen &&
-      memcmp(key, pair->key, keylen) != 0)
-        pair = pair->next;
+  while (pair != NULL && pair->keylen != keylen &&
+         memcmp (key, pair->key, keylen) != 0)
+    pair = pair->next;
 
-    if (pair) {
-        pair->key = REALLOC(pair->key, keylen);
-        memcpy(pair->key, key, keylen);
-        pair->keylen = keylen;
+  if (pair)
+    {
+      pair->key = REALLOC (pair->key, keylen);
+      memcpy (pair->key, key, keylen);
+      pair->keylen = keylen;
 
-        pair->key = REALLOC(value, valuelen);
-        memcpy(pair->value, value, valuelen);
-        pair->valuelen = valuelen;
+      pair->key = REALLOC (value, valuelen);
+      memcpy (pair->value, value, valuelen);
+      pair->valuelen = valuelen;
     }
-    else {
-        KeyValuePair *newPair = MALLOC(sizeof(KeyValuePair));
-        if (newPair == NULL)
-            return NO;
-        else {
-            newPair->key = MALLOC(keylen);
-            memcpy(newPair->key, key, keylen);
-            newPair->keylen = keylen;
-            newPair->value = MALLOC(valuelen);
-            memcpy(newPair->value, value, valuelen);
-            newPair->valuelen = valuelen;
-            newPair->next = hashTable->bucketArray[hashValue];
-            hashTable->bucketArray[hashValue] = newPair;
-            hashTable->numOfElements++;
+  else
+    {
+      KeyValuePair *newPair = MALLOC (sizeof (KeyValuePair));
+      if (newPair == NULL)
+        return NO;
+      else
+        {
+          newPair->key = MALLOC (keylen);
+          memcpy (newPair->key, key, keylen);
+          newPair->keylen = keylen;
+          newPair->value = MALLOC (valuelen);
+          memcpy (newPair->value, value, valuelen);
+          newPair->valuelen = valuelen;
+          newPair->next = hashTable->bucketArray[hashValue];
+          hashTable->bucketArray[hashValue] = newPair;
+          hashTable->numOfElements++;
 
-            if (hashTable->upperRehashThreshold > hashTable->idealRatio) {
-                float elementToBucketRatio = (float) hashTable->numOfElements /
-                                             (float) hashTable->numOfBuckets;
-                if (elementToBucketRatio > hashTable->upperRehashThreshold)
-                    ht_rehash(hashTable, 0);
+          if (hashTable->upperRehashThreshold > hashTable->idealRatio)
+            {
+              float elementToBucketRatio = (float) hashTable->numOfElements /
+                (float) hashTable->numOfBuckets;
+              if (elementToBucketRatio > hashTable->upperRehashThreshold)
+                ht_rehash (hashTable, 0);
             }
         }
     }
 
-    return YES;
+  return YES;
 }
 
 /**
@@ -270,24 +294,25 @@ int ht_put(struct HashTable *hashTable,
  * @param valuelen the length of the value
  * @return YES if found, NO otherwise
  */
-int ht_get(const struct HashTable *hashTable,
-     const void *key,
-     const unsigned int keylen,
-     void **value,
-     unsigned int *valuelen) {
-    long hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
-    KeyValuePair *pair = hashTable->bucketArray[hashValue];
+int
+ht_get (const struct HashTable *hashTable,
+        const void *key,
+        const unsigned int keylen, void **value, unsigned int *valuelen)
+{
+  long hashValue = weakHash (key, keylen) % hashTable->numOfBuckets;
+  KeyValuePair *pair = hashTable->bucketArray[hashValue];
 
-    while (pair != NULL && keylen != pair->keylen && memcmp(key, pair->key, keylen) != 0)
-        pair = pair->next;
+  while (pair != NULL && keylen != pair->keylen
+         && memcmp (key, pair->key, keylen) != 0)
+    pair = pair->next;
 
-    if (pair != NULL)
+  if (pair != NULL)
     {
       *value = pair->value;
       *valuelen = pair->valuelen;
     }
 
-    return pair != NULL;
+  return pair != NULL;
 }
 
 /**
@@ -295,34 +320,38 @@ int ht_get(const struct HashTable *hashTable,
  * @param hashTable the HashTable to remove the key/value pair from
  * @param key the key specifying the key/value pair to be removed
  */
-void ht_remove(struct HashTable *hashTable,
-         const void *key,
-         const unsigned int keylen) {
-    long hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
-    KeyValuePair *pair = hashTable->bucketArray[hashValue];
-    KeyValuePair *previousPair = NULL;
+void
+ht_remove (struct HashTable *hashTable,
+           const void *key, const unsigned int keylen)
+{
+  long hashValue = weakHash (key, keylen) % hashTable->numOfBuckets;
+  KeyValuePair *pair = hashTable->bucketArray[hashValue];
+  KeyValuePair *previousPair = NULL;
 
-    while (pair != NULL && pair->keylen != keylen &&
-      memcmp(pair->key, key, keylen) != 0) {
-        previousPair = pair;
-        pair = pair->next;
+  while (pair != NULL && pair->keylen != keylen &&
+         memcmp (pair->key, key, keylen) != 0)
+    {
+      previousPair = pair;
+      pair = pair->next;
     }
 
-    if (pair != NULL) {
-        FREE(pair->key);
-        FREE(pair->value);
-        if (previousPair != NULL)
-            previousPair->next = pair->next;
-        else
-            hashTable->bucketArray[hashValue] = pair->next;
-        FREE(pair);
-        hashTable->numOfElements--;
+  if (pair != NULL)
+    {
+      FREE (pair->key);
+      FREE (pair->value);
+      if (previousPair != NULL)
+        previousPair->next = pair->next;
+      else
+        hashTable->bucketArray[hashValue] = pair->next;
+      FREE (pair);
+      hashTable->numOfElements--;
 
-        if (hashTable->lowerRehashThreshold > 0.0) {
-            float elementToBucketRatio = (float) hashTable->numOfElements /
-                                         (float) hashTable->numOfBuckets;
-            if (elementToBucketRatio < hashTable->lowerRehashThreshold)
-                ht_rehash(hashTable, 0);
+      if (hashTable->lowerRehashThreshold > 0.0)
+        {
+          float elementToBucketRatio = (float) hashTable->numOfElements /
+            (float) hashTable->numOfBuckets;
+          if (elementToBucketRatio < hashTable->lowerRehashThreshold)
+            ht_rehash (hashTable, 0);
         }
     }
 }
@@ -331,23 +360,27 @@ void ht_remove(struct HashTable *hashTable,
  * @brief removes all key/value pairs from a HashTable
  * @param hashTable the HashTable to remove all key/value pairs from
  */
-void ht_removeAll(struct HashTable *hashTable) {
-    int i;
+void
+ht_removeAll (struct HashTable *hashTable)
+{
+  int i;
 
-    for (i=0; i<hashTable->numOfBuckets; i++) {
-        KeyValuePair *pair = hashTable->bucketArray[i];
-        while (pair != NULL) {
-            KeyValuePair *nextPair = pair->next;
-            FREE(pair->key);
-            FREE(pair->value);
-            FREE(pair);
-            pair = nextPair;
+  for (i = 0; i < hashTable->numOfBuckets; i++)
+    {
+      KeyValuePair *pair = hashTable->bucketArray[i];
+      while (pair != NULL)
+        {
+          KeyValuePair *nextPair = pair->next;
+          FREE (pair->key);
+          FREE (pair->value);
+          FREE (pair);
+          pair = nextPair;
         }
-        hashTable->bucketArray[i] = NULL;
+      hashTable->bucketArray[i] = NULL;
     }
 
-    hashTable->numOfElements = 0;
-    ht_rehash(hashTable, 5);
+  hashTable->numOfElements = 0;
+  ht_rehash (hashTable, 5);
 }
 
 /**
@@ -356,8 +389,10 @@ void ht_removeAll(struct HashTable *hashTable) {
  * @return the number of key/value pairs that are present in
  *         the specified HashTable
  */
-long ht_size(const struct HashTable *hashTable) {
-    return hashTable->numOfElements;
+long
+ht_size (const struct HashTable *hashTable)
+{
+  return hashTable->numOfElements;
 }
 
 /**
@@ -366,8 +401,10 @@ long ht_size(const struct HashTable *hashTable) {
  * @return the number of buckets that are in the specified
  *         HashTable
  */
-long ht_buckets(const struct HashTable *hashTable) {
-    return hashTable->numOfBuckets;
+long
+ht_buckets (const struct HashTable *hashTable)
+{
+  return hashTable->numOfBuckets;
 }
 
 /**
@@ -382,41 +419,46 @@ long ht_buckets(const struct HashTable *hashTable) {
  *                     specified, an appropriate number of buckets is
  *                     automatically calculated.
  */
-void ht_rehash(struct HashTable *hashTable, long numOfBuckets) {
-    KeyValuePair **newBucketArray;
-    int i;
+void
+ht_rehash (struct HashTable *hashTable, long numOfBuckets)
+{
+  KeyValuePair **newBucketArray;
+  int i;
 
-    if (numOfBuckets == 0)
-        numOfBuckets = calculateIdealNumOfBuckets(hashTable);
+  if (numOfBuckets == 0)
+    numOfBuckets = calculateIdealNumOfBuckets (hashTable);
 
-    if (numOfBuckets == hashTable->numOfBuckets)
-        return; /* already the right size! */
+  if (numOfBuckets == hashTable->numOfBuckets)
+    return;                     /* already the right size! */
 
-    newBucketArray = (KeyValuePair **)
-                                MALLOC(numOfBuckets * sizeof(KeyValuePair *));
-    if (newBucketArray == NULL) {
-        /* Couldn't allocate memory for the new array.  This isn't a fatal
-         * error; we just can't perform the rehash. */
-        return;
+  newBucketArray = (KeyValuePair **)
+    MALLOC (numOfBuckets * sizeof (KeyValuePair *));
+  if (newBucketArray == NULL)
+    {
+      /* Couldn't allocate memory for the new array.  This isn't a fatal
+       * error; we just can't perform the rehash. */
+      return;
     }
 
-    for (i=0; i<numOfBuckets; i++)
-        newBucketArray[i] = NULL;
+  for (i = 0; i < numOfBuckets; i++)
+    newBucketArray[i] = NULL;
 
-    for (i=0; i<hashTable->numOfBuckets; i++) {
-        KeyValuePair *pair = hashTable->bucketArray[i];
-        while (pair != NULL) {
-            KeyValuePair *nextPair = pair->next;
-            long hashValue = weakHash(pair->key, pair->keylen) % numOfBuckets;
-            pair->next = newBucketArray[hashValue];
-            newBucketArray[hashValue] = pair;
-            pair = nextPair;
+  for (i = 0; i < hashTable->numOfBuckets; i++)
+    {
+      KeyValuePair *pair = hashTable->bucketArray[i];
+      while (pair != NULL)
+        {
+          KeyValuePair *nextPair = pair->next;
+          long hashValue = weakHash (pair->key, pair->keylen) % numOfBuckets;
+          pair->next = newBucketArray[hashValue];
+          newBucketArray[hashValue] = pair;
+          pair = nextPair;
         }
     }
 
-    FREE(hashTable->bucketArray);
-    hashTable->bucketArray = newBucketArray;
-    hashTable->numOfBuckets = numOfBuckets;
+  FREE (hashTable->bucketArray);
+  hashTable->bucketArray = newBucketArray;
+  hashTable->numOfBuckets = numOfBuckets;
 }
 
 /**
@@ -445,18 +487,19 @@ void ht_rehash(struct HashTable *hashTable, long numOfBuckets) {
  *                     is considered unacceptably high, a value of 0.0 can
  *                     be specified.
  */
-void ht_setIdealRatio(struct HashTable *hashTable,
-  	      float idealRatio,
-  	      float lowerRehashThreshold,
-  	      float upperRehashThreshold) {
+void
+ht_setIdealRatio (struct HashTable *hashTable,
+                  float idealRatio,
+                  float lowerRehashThreshold, float upperRehashThreshold)
+{
 
-    if (idealRatio <= 0.0 || lowerRehashThreshold >= idealRatio ||
-          (upperRehashThreshold != 0.0 || upperRehashThreshold <= idealRatio))
-      return;
+  if (idealRatio <= 0.0 || lowerRehashThreshold >= idealRatio ||
+      (upperRehashThreshold != 0.0 || upperRehashThreshold <= idealRatio))
+    return;
 
-    hashTable->idealRatio = idealRatio;
-    hashTable->lowerRehashThreshold = lowerRehashThreshold;
-    hashTable->upperRehashThreshold = upperRehashThreshold;
+  hashTable->idealRatio = idealRatio;
+  hashTable->lowerRehashThreshold = lowerRehashThreshold;
+  hashTable->upperRehashThreshold = upperRehashThreshold;
 }
 
 

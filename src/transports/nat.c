@@ -37,7 +37,8 @@
  * NAT is that it can not be contacted from the outside,
  * the address is empty.
  */
-typedef struct {
+typedef struct
+{
 } HostAddress;
 
 /* *********** globals ************* */
@@ -45,7 +46,7 @@ typedef struct {
 /* apis (our advertised API and the core api ) */
 static TransportAPI natAPI;
 
-static CoreAPIForTransport * coreAPI;
+static CoreAPIForTransport *coreAPI;
 
 
 /* *************** API implementation *************** */
@@ -58,23 +59,24 @@ static CoreAPIForTransport * coreAPI;
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHello(const P2P_hello_MESSAGE * hello) {
-  if ( (ntohs(hello->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) )
-    return SYSERR; /* obviously invalid */
-  if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
-  				      "NAT",
-  				      "LIMITED",
-  				      NO)) {
-    /* if WE are a NAT and this is not our hello,
-       it is invalid since NAT-to-NAT is not possible! */
-    if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
-  	    &hello->senderIdentity.hashPubKey,
-  	    sizeof(HashCode512)))
-      return OK;
-    return SYSERR;
-  }
+static int
+verifyHello (const P2P_hello_MESSAGE * hello)
+{
+  if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
+      (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.type) != p2p_PROTO_hello))
+    return SYSERR;              /* obviously invalid */
+  if (YES == GC_get_configuration_value_yesno (coreAPI->cfg,
+                                               "NAT", "LIMITED", NO))
+    {
+      /* if WE are a NAT and this is not our hello,
+         it is invalid since NAT-to-NAT is not possible! */
+      if (0 == memcmp (&coreAPI->myIdentity->hashPubKey,
+                       &hello->senderIdentity.hashPubKey,
+                       sizeof (HashCode512)))
+        return OK;
+      return SYSERR;
+    }
   return OK;
 }
 
@@ -85,18 +87,18 @@ static int verifyHello(const P2P_hello_MESSAGE * hello) {
  *
  * @return hello on success, NULL on error
  */
-static P2P_hello_MESSAGE * createhello() {
-  P2P_hello_MESSAGE * msg;
+static P2P_hello_MESSAGE *
+createhello ()
+{
+  P2P_hello_MESSAGE *msg;
 
-  if (NO == GC_get_configuration_value_yesno(coreAPI->cfg,
-  				     "NAT",
-  				     "LIMITED",
-  				     NO))
+  if (NO == GC_get_configuration_value_yesno (coreAPI->cfg,
+                                              "NAT", "LIMITED", NO))
     return NULL;
-  msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
-  msg->senderAddressSize = htons(sizeof(HostAddress));
-  msg->protocol          = htons(NAT_PROTOCOL_NUMBER);
-  msg->MTU               = htonl(0);
+  msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (HostAddress));
+  msg->senderAddressSize = htons (sizeof (HostAddress));
+  msg->protocol = htons (NAT_PROTOCOL_NUMBER);
+  msg->MTU = htonl (0);
   return msg;
 }
 
@@ -106,8 +108,9 @@ static P2P_hello_MESSAGE * createhello() {
  * @param tsessionPtr the session handle that is to be set
  * @return always fails (returns SYSERR)
  */
-static int natConnect(const P2P_hello_MESSAGE * hello,
-  	      TSession ** tsessionPtr) {
+static int
+natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
+{
   return SYSERR;
 }
 
@@ -122,8 +125,10 @@ static int natConnect(const P2P_hello_MESSAGE * hello,
  * @return OK if the session could be associated,
  *         SYSERR if not.
  */
-int natAssociate(TSession * tsession) {
-  return SYSERR; /* NAT connections can never be associated */
+int
+natAssociate (TSession * tsession)
+{
+  return SYSERR;                /* NAT connections can never be associated */
 }
 
 /**
@@ -134,10 +139,10 @@ int natAssociate(TSession * tsession) {
  * @param size the size of the message
  * @return SYSERR (always fails)
  */
-static int natSend(TSession * tsession,
-  	   const void * message,
-  	   const unsigned int size,
-  	   int important) {
+static int
+natSend (TSession * tsession,
+         const void *message, const unsigned int size, int important)
+{
   return SYSERR;
 }
 
@@ -147,7 +152,9 @@ static int natSend(TSession * tsession,
  * @param tsession the session that is closed
  * @return always SYSERR
  */
-static int natDisconnect(TSession * tsession) {
+static int
+natDisconnect (TSession * tsession)
+{
   return SYSERR;
 }
 
@@ -156,7 +163,9 @@ static int natDisconnect(TSession * tsession) {
  *
  * @return OK on success, SYSERR if the operation failed
  */
-static int startTransportServer() {
+static int
+startTransportServer ()
+{
   return OK;
 }
 
@@ -164,24 +173,25 @@ static int startTransportServer() {
  * Shutdown the server process (stop receiving inbound traffic). Maybe
  * restarted later!
  */
-static int stopTransportServer() {
+static int
+stopTransportServer ()
+{
   return OK;
 }
 
 /**
  * Convert NAT address to a string.
  */
-static int helloToAddress(const P2P_hello_MESSAGE * hello,
-  		  void ** sa,
-  		  unsigned int * sa_len) {
-  return getIPaddressFromPID(&hello->senderIdentity,
-  		     sa,
-  		     sa_len);
+static int
+helloToAddress (const P2P_hello_MESSAGE * hello,
+                void **sa, unsigned int *sa_len)
+{
+  return getIPaddressFromPID (&hello->senderIdentity, sa, sa_len);
 }
 
-static int testWouldTry(TSession * tsession,
-  		unsigned int size,
-  		int important) {
+static int
+testWouldTry (TSession * tsession, unsigned int size, int important)
+{
   return SYSERR;
 }
 
@@ -189,26 +199,30 @@ static int testWouldTry(TSession * tsession,
  * The exported method. Makes the core api available via a global and
  * returns the nat transport API.
  */
-TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
+TransportAPI *
+inittransport_nat (CoreAPIForTransport * core)
+{
   coreAPI = core;
-  natAPI.protocolNumber       = NAT_PROTOCOL_NUMBER;
-  natAPI.mtu                  = 0;
-  natAPI.cost                 = 30000;
-  natAPI.verifyHello          = &verifyHello;
-  natAPI.createhello          = &createhello;
-  natAPI.connect              = &natConnect;
-  natAPI.send                 = &natSend;
-  natAPI.associate            = &natAssociate;
-  natAPI.disconnect           = &natDisconnect;
+  natAPI.protocolNumber = NAT_PROTOCOL_NUMBER;
+  natAPI.mtu = 0;
+  natAPI.cost = 30000;
+  natAPI.verifyHello = &verifyHello;
+  natAPI.createhello = &createhello;
+  natAPI.connect = &natConnect;
+  natAPI.send = &natSend;
+  natAPI.associate = &natAssociate;
+  natAPI.disconnect = &natDisconnect;
   natAPI.startTransportServer = &startTransportServer;
-  natAPI.stopTransportServer  = &stopTransportServer;
-  natAPI.helloToAddress       = &helloToAddress;
-  natAPI.testWouldTry         = &testWouldTry;
+  natAPI.stopTransportServer = &stopTransportServer;
+  natAPI.helloToAddress = &helloToAddress;
+  natAPI.testWouldTry = &testWouldTry;
 
   return &natAPI;
 }
 
-void donetransport_nat() {
+void
+donetransport_nat ()
+{
 }
 
 /* end of nat.c */

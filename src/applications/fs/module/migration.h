@@ -81,13 +81,12 @@
 /**
  * Initialize the migration module.
  */
-void initMigration(CoreAPIForApplication * capi,
-		   Datastore_ServiceAPI * s,
-		   GAP_ServiceAPI * g,
-		   DHT_ServiceAPI * d,
-		   Traffic_ServiceAPI * t);
+void initMigration (CoreAPIForApplication * capi,
+                    Datastore_ServiceAPI * s,
+                    GAP_ServiceAPI * g,
+                    DHT_ServiceAPI * d, Traffic_ServiceAPI * t);
 
-void doneMigration(void);
+void doneMigration (void);
 
 /* end of migration.h */
 #endif

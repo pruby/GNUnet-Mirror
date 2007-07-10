@@ -29,8 +29,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -38,7 +39,8 @@ extern "C" {
 /**
  * @brief Definition of the fragmentation API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Fragment an over-sized message.
@@ -51,18 +53,17 @@ typedef struct {
    * @param bmc callback to construct the message
    * @param bmcClosure argument to bmc
    */
-  void (*fragment)(const PeerIdentity * peer,
-		   unsigned int mtu,
-		   unsigned int prio,
-		   unsigned int targetTime,
-		   unsigned int len,
-		   BuildMessageCallback bmc,
-		   void * bmcClosure);
+  void (*fragment) (const PeerIdentity * peer,
+                    unsigned int mtu,
+                    unsigned int prio,
+                    unsigned int targetTime,
+                    unsigned int len,
+                    BuildMessageCallback bmc, void *bmcClosure);
 
 } Fragmentation_ServiceAPI;
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -71,4 +72,3 @@ typedef struct {
 
 /* end of gnunet_fragmentation_service.h */
 #endif
-

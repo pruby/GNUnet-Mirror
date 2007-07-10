@@ -30,51 +30,51 @@
 #include "gnunet_protocols.h"
 #include "gnunet_util_threads.h"
 
-int connection_test_running(struct GE_Context * ectx,
-  		    struct GC_Configuration * cfg) {
-  struct ClientServerConnection * sock;
+int
+connection_test_running (struct GE_Context *ectx,
+                         struct GC_Configuration *cfg)
+{
+  struct ClientServerConnection *sock;
   MESSAGE_HEADER csHdr;
   int ret;
 
-  sock = client_connection_create(ectx, cfg);
+  sock = client_connection_create (ectx, cfg);
   if (sock == NULL)
     return SYSERR;
-  csHdr.size
-    = htons(sizeof(MESSAGE_HEADER));
-  csHdr.type
-    = htons(CS_PROTO_traffic_COUNT);
-  if (SYSERR == connection_write(sock,
-  			 &csHdr)) {
-    connection_destroy(sock);
-    return SYSERR;
-  }
-  if (SYSERR == connection_read_result(sock,
-  			       &ret)) {
-    connection_destroy(sock);
-    return SYSERR;
-  }
-  connection_destroy(sock);
+  csHdr.size = htons (sizeof (MESSAGE_HEADER));
+  csHdr.type = htons (CS_PROTO_traffic_COUNT);
+  if (SYSERR == connection_write (sock, &csHdr))
+    {
+      connection_destroy (sock);
+      return SYSERR;
+    }
+  if (SYSERR == connection_read_result (sock, &ret))
+    {
+      connection_destroy (sock);
+      return SYSERR;
+    }
+  connection_destroy (sock);
   return OK;
 }
 
-int connection_request_shutdown(struct ClientServerConnection * sock) {
+int
+connection_request_shutdown (struct ClientServerConnection *sock)
+{
   MESSAGE_HEADER csHdr;
   int ret;
 
-  csHdr.size
-    = htons(sizeof(MESSAGE_HEADER));
-  csHdr.type
-    = htons(CS_PROTO_SHUTDOWN_REQUEST);
-  if (SYSERR == connection_write(sock,
-  			 &csHdr)) {
-    connection_close_temporarily(sock);
-    return SYSERR;
-  }
-  if (SYSERR == connection_read_result(sock,
-  			       &ret)) {
-    connection_close_temporarily(sock);
-    return SYSERR;
-  }
+  csHdr.size = htons (sizeof (MESSAGE_HEADER));
+  csHdr.type = htons (CS_PROTO_SHUTDOWN_REQUEST);
+  if (SYSERR == connection_write (sock, &csHdr))
+    {
+      connection_close_temporarily (sock);
+      return SYSERR;
+    }
+  if (SYSERR == connection_read_result (sock, &ret))
+    {
+      connection_close_temporarily (sock);
+      return SYSERR;
+    }
   return ret;
 }
 
@@ -85,25 +85,26 @@ int connection_request_shutdown(struct ClientServerConnection * sock) {
  * @param timeout how long to wait at most
  * @return OK if gnunetd is now running
  */
-int connection_wait_for_running(struct GE_Context * ectx,
-  			struct GC_Configuration * cfg,
-  			cron_t timeout) {
+int
+connection_wait_for_running (struct GE_Context *ectx,
+                             struct GC_Configuration *cfg, cron_t timeout)
+{
   cron_t min;
   int ret;
 
-  timeout += get_time();
-  while (GNUNET_SHUTDOWN_TEST() == 0) {
-    ret = connection_test_running(ectx,
-  			  cfg);
-    if (ret == OK)
-      return OK;
-    if (timeout < get_time())
-      return SYSERR;
-    min = timeout - get_time();
-    if (min > 100 * cronMILLIS)
-      min = 100 * cronMILLIS;
-    PTHREAD_SLEEP(min);
-  }
+  timeout += get_time ();
+  while (GNUNET_SHUTDOWN_TEST () == 0)
+    {
+      ret = connection_test_running (ectx, cfg);
+      if (ret == OK)
+        return OK;
+      if (timeout < get_time ())
+        return SYSERR;
+      min = timeout - get_time ();
+      if (min > 100 * cronMILLIS)
+        min = 100 * cronMILLIS;
+      PTHREAD_SLEEP (min);
+    }
   return SYSERR;
 }
 

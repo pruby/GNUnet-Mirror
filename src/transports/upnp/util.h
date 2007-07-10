@@ -32,7 +32,8 @@
 #include <string.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -45,7 +46,7 @@ extern "C" {
  *
  * @return the text with HTML entities literalized
  */
-char *gaim_unescape_html(const char *html);
+  char *gaim_unescape_html (const char *html);
 
 /**
  * Compares two strings to see if the first contains the second as
@@ -56,10 +57,9 @@ char *gaim_unescape_html(const char *html);
  *
  * @return   TRUE if p is a prefix of s, otherwise FALSE.
  */
-int gaim_str_has_prefix(const char *s, const char *p);
+  int gaim_str_has_prefix (const char *s, const char *p);
 
-char * g_strdup_printf(const char * fmt,
-		       ...);
+  char *g_strdup_printf (const char *fmt, ...);
 
 #ifdef __cplusplus
 }

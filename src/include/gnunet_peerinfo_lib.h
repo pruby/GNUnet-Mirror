@@ -31,8 +31,9 @@
 #include "gnunet_util_network_client.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -46,10 +47,9 @@ extern "C" {
  *
  * @return OK to continue, SYSERR to abort iteration
  */
-typedef int (*PEERINFO_PeerProcessor)(const char * name,
-				      const PeerIdentity * id,
-				      unsigned int trust,
-				      void * cls);
+typedef int (*PEERINFO_PeerProcessor) (const char *name,
+                                       const PeerIdentity * id,
+                                       unsigned int trust, void *cls);
 
 /**
  * Request information about peers.
@@ -59,13 +59,12 @@ typedef int (*PEERINFO_PeerProcessor)(const char * name,
  * @param connected_only only list currently connected peers
  * @return OK on success, SYSERR on error
  */
-int PEERINFO_getInfo(struct GE_Context * ectx,
-		     struct ClientServerConnection * sock,
-		     int connected_only,
-		     PEERINFO_PeerProcessor processor,
-		     void * cls);
+int PEERINFO_getInfo (struct GE_Context *ectx,
+                      struct ClientServerConnection *sock,
+                      int connected_only,
+                      PEERINFO_PeerProcessor processor, void *cls);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

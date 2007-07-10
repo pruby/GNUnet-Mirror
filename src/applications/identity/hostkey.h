@@ -35,16 +35,14 @@
  * Get the public key of the host
  * @return reference to the public key. Do not free it!
  */
-const PublicKey * getPublicPrivateKey(void);
+const PublicKey *getPublicPrivateKey (void);
 
 /**
  * Sign arbitrary data. ALWAYS use only on data we generated
  * entirely!
  * @return SYSERR on error, OK on success
  */
-int signData(const void * data,
-	     unsigned short size,
-	     Signature * result);
+int signData (const void *data, unsigned short size, Signature * result);
 
 /**
  * Decrypt a given block with the hostkey.
@@ -54,16 +52,14 @@ int signData(const void * data,
  *        the decrypted block is bigger, an error is returned
  * @returns the size of the decrypted block, -1 on error
  */
-int decryptData(const RSAEncryptedData * block,
-		void * result,
-		unsigned int max);
+int decryptData (const RSAEncryptedData * block,
+                 void *result, unsigned int max);
 
 
 
 
-void initPrivateKey(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg);
+void initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
-void donePrivateKey(void);
+void donePrivateKey (void);
 
 #endif

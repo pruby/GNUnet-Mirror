@@ -27,13 +27,14 @@
 
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
  * An xmlnode.
  */
-typedef struct _xmlnode xmlnode;
+  typedef struct _xmlnode xmlnode;
 
 /**
  * Gets a child node named name.
@@ -43,8 +44,7 @@ typedef struct _xmlnode xmlnode;
  *
  * @return The child or NULL.
  */
-xmlnode * xmlnode_get_child(const xmlnode *parent,
-			    const char *name);
+  xmlnode *xmlnode_get_child (const xmlnode * parent, const char *name);
 
 /**
  * Gets the next node with the same name as node.
@@ -53,7 +53,7 @@ xmlnode * xmlnode_get_child(const xmlnode *parent,
  *
  * @return The twin of node or NULL.
  */
-xmlnode *xmlnode_get_next_twin(xmlnode *node);
+  xmlnode *xmlnode_get_next_twin (xmlnode * node);
 
 /**
  * Gets data from a node.
@@ -63,7 +63,7 @@ xmlnode *xmlnode_get_next_twin(xmlnode *node);
  * @return The data from the node.  You must g_free
  *         this string when finished using it.
  */
-char *xmlnode_get_data(xmlnode *node);
+  char *xmlnode_get_data (xmlnode * node);
 
 /**
  * Creates a node from a string of XML.  Calling this on the
@@ -76,18 +76,17 @@ char *xmlnode_get_data(xmlnode *node);
  *
  * @return The new node.
  */
-xmlnode *xmlnode_from_str(const char *str,
-			  int size);
+  xmlnode *xmlnode_from_str (const char *str, int size);
 
 /**
  * Frees a node and all of it's children.
  *
  * @param node The node to free.
  */
-void xmlnode_free(xmlnode *node);
+  void xmlnode_free (xmlnode * node);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _GAIM_XMLNODE_H_ */
+#endif                          /* _GAIM_XMLNODE_H_ */

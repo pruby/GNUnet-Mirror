@@ -38,88 +38,89 @@
  *  in either case, if SYSERR is returned the user should probably
  *  be notified that 'something is wrong')
  */
-int ECRS_isFileIndexed(struct GE_Context * ectx,
-  	      struct GC_Configuration * cfg,
-  	      const char * filename) {
+int
+ECRS_isFileIndexed (struct GE_Context *ectx,
+                    struct GC_Configuration *cfg, const char *filename)
+{
   HashCode512 hc;
-  struct ClientServerConnection * sock;
+  struct ClientServerConnection *sock;
   int ret;
 
-  if (SYSERR == getFileHash(ectx,
-  		    filename,
-  		    &hc))
+  if (SYSERR == getFileHash (ectx, filename, &hc))
     return SYSERR;
-  sock = client_connection_create(ectx, cfg);
+  sock = client_connection_create (ectx, cfg);
   if (sock == NULL)
     return SYSERR;
-  ret = FS_testIndexed(sock,
-  	       &hc);
-  connection_destroy(sock);
+  ret = FS_testIndexed (sock, &hc);
+  connection_destroy (sock);
   return ret;
 }
 
-struct iiC {
-  struct GE_Context * ectx;
+struct iiC
+{
+  struct GE_Context *ectx;
   ECRS_FileIterator iterator;
-  void * closure;
+  void *closure;
   int cnt;
 };
 
-static int iiHelper(const char * fn,
-  	    const char * dir,
-  	    void * ptr) {
-  struct iiC * cls = ptr;
-  char * fullName;
-  char * lnkName;
+static int
+iiHelper (const char *fn, const char *dir, void *ptr)
+{
+  struct iiC *cls = ptr;
+  char *fullName;
+  char *lnkName;
   unsigned int size;
   int ret;
 
-  fullName = MALLOC(strlen(dir) + strlen(fn) + 4);
-  strcpy(fullName, dir);
-  strcat(fullName, DIR_SEPARATOR_STR);
-  strcat(fullName, fn);
+  fullName = MALLOC (strlen (dir) + strlen (fn) + 4);
+  strcpy (fullName, dir);
+  strcat (fullName, DIR_SEPARATOR_STR);
+  strcat (fullName, fn);
   size = 256;
-  lnkName = MALLOC(size);
-  while (1) {
-    ret = READLINK(fullName,
-  	   lnkName,
-  	   size - 1);
-    if (ret == -1) {
-      if (errno == ENAMETOOLONG) {
-  if (size * 2 < size) {
-    FREE(lnkName);
-    FREE(fullName);
-    return OK; /* error */
-  }
-  GROW(lnkName,
-       size,
-       size * 2);
-  continue;
-      }
-      if (errno != EINVAL) {
-  GE_LOG_STRERROR_FILE(cls->ectx,
-  		     GE_WARNING | GE_BULK | GE_ADMIN | GE_USER,
-  		     "readlink",
-  		     fullName);
-      }
-      FREE(lnkName);
-      FREE(fullName);
-      return OK; /* error */
-    } else {
-      lnkName[ret] = '\0';
-      break;
+  lnkName = MALLOC (size);
+  while (1)
+    {
+      ret = READLINK (fullName, lnkName, size - 1);
+      if (ret == -1)
+        {
+          if (errno == ENAMETOOLONG)
+            {
+              if (size * 2 < size)
+                {
+                  FREE (lnkName);
+                  FREE (fullName);
+                  return OK;    /* error */
+                }
+              GROW (lnkName, size, size * 2);
+              continue;
+            }
+          if (errno != EINVAL)
+            {
+              GE_LOG_STRERROR_FILE (cls->ectx,
+                                    GE_WARNING | GE_BULK | GE_ADMIN | GE_USER,
+                                    "readlink", fullName);
+            }
+          FREE (lnkName);
+          FREE (fullName);
+          return OK;            /* error */
+        }
+      else
+        {
+          lnkName[ret] = '\0';
+          break;
+        }
     }
-  }
   cls->cnt++;
-  if (OK != cls->iterator(lnkName,
-  		  cls->closure)) {
-    cls->cnt = SYSERR;
-    FREE(fullName);
-    FREE(lnkName);
-    return SYSERR;
-  }
-  FREE(fullName);
-  FREE(lnkName);
+  if (OK != cls->iterator (lnkName, cls->closure))
+    {
+      cls->cnt = SYSERR;
+      FREE (fullName);
+      FREE (lnkName);
+      return SYSERR;
+    }
+  FREE (fullName);
+  FREE (lnkName);
   return OK;
 }
 
@@ -135,36 +136,33 @@ static int iiHelper(const char * fn,
  *
  * @return number of files indexed, SYSERR if iterator aborted
  */
-int ECRS_iterateIndexedFiles(struct GE_Context * ectx,
-  		     struct GC_Configuration * cfg,
-  		     ECRS_FileIterator iterator,
-  		     void * closure) {
-  char * tmp;
-  char * indexDirectory;
-  struct ClientServerConnection * sock;
+int
+ECRS_iterateIndexedFiles (struct GE_Context *ectx,
+                          struct GC_Configuration *cfg,
+                          ECRS_FileIterator iterator, void *closure)
+{
+  char *tmp;
+  char *indexDirectory;
+  struct ClientServerConnection *sock;
   struct iiC cls;
 
-  sock = client_connection_create(ectx, cfg);
+  sock = client_connection_create (ectx, cfg);
   if (sock == NULL)
     return 0;
-  tmp = getConfigurationOptionValue(sock,
-  			    "FS",
-  			    "INDEX-DIRECTORY");
-  connection_destroy(sock);
-  if (tmp == NULL) {
-    return 0;
-  }
-  indexDirectory = string_expandFileName(ectx, tmp);
-  FREE(tmp);
+  tmp = getConfigurationOptionValue (sock, "FS", "INDEX-DIRECTORY");
+  connection_destroy (sock);
+  if (tmp == NULL)
+    {
+      return 0;
+    }
+  indexDirectory = string_expandFileName (ectx, tmp);
+  FREE (tmp);
   cls.ectx = ectx;
   cls.iterator = iterator;
   cls.closure = closure;
   cls.cnt = 0;
-  disk_directory_scan(ectx,
-  	      indexDirectory,
-  	      &iiHelper,
-  	      &cls);
-  FREE(indexDirectory);
+  disk_directory_scan (ectx, indexDirectory, &iiHelper, &cls);
+  FREE (indexDirectory);
   return cls.cnt;
 }
 

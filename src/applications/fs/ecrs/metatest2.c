@@ -32,51 +32,48 @@
 
 #define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
 
-static int testMeta() {
-  struct ECRS_MetaData * m;
-  char * val;
+static int
+testMeta ()
+{
+  struct ECRS_MetaData *m;
+  char *val;
   unsigned int size;
 
-  m = ECRS_createMetaData();
-  if (OK != ECRS_addToMetaData(m,
-  		       EXTRACTOR_UNKNOWN,
-  		       "link")) {
-    ECRS_freeMetaData(m);
-    ABORT();
-  }
-  if (OK != ECRS_addToMetaData(m,
-  		       EXTRACTOR_FILENAME,
-  		       "lib-link.m4")) {
-    ECRS_freeMetaData(m);
-    ABORT();
-  }
-  size = ECRS_sizeofMetaData(m,
-  		     ECRS_SERIALIZE_FULL);
-  val = MALLOC(size);
-  if (size != ECRS_serializeMetaData(NULL,
-  			     m,
-  			     val,
-  			     size,
-  			     ECRS_SERIALIZE_FULL)) {
-    ECRS_freeMetaData(m);
-    FREE(val);
-    ABORT();
-  }
-  ECRS_freeMetaData(m);
-  m = ECRS_deserializeMetaData(NULL,
-  		       val,
-  		       size);
-  FREE(val);
+  m = ECRS_createMetaData ();
+  if (OK != ECRS_addToMetaData (m, EXTRACTOR_UNKNOWN, "link"))
+    {
+      ECRS_freeMetaData (m);
+      ABORT ();
+    }
+  if (OK != ECRS_addToMetaData (m, EXTRACTOR_FILENAME, "lib-link.m4"))
+    {
+      ECRS_freeMetaData (m);
+      ABORT ();
+    }
+  size = ECRS_sizeofMetaData (m, ECRS_SERIALIZE_FULL);
+  val = MALLOC (size);
+  if (size != ECRS_serializeMetaData (NULL,
+                                      m, val, size, ECRS_SERIALIZE_FULL))
+    {
+      ECRS_freeMetaData (m);
+      FREE (val);
+      ABORT ();
+    }
+  ECRS_freeMetaData (m);
+  m = ECRS_deserializeMetaData (NULL, val, size);
+  FREE (val);
   if (m == NULL)
-    ABORT();
-  ECRS_freeMetaData(m);
+    ABORT ();
+  ECRS_freeMetaData (m);
   return 0;
 }
 
-int main(int argc, char * argv[]) {
+int
+main (int argc, char *argv[])
+{
   int failureCount = 0;
 
-  failureCount += testMeta();
+  failureCount += testMeta ();
 
   if (failureCount != 0)
     return 1;

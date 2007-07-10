@@ -40,7 +40,7 @@
 
 #define DIR_EXT "state.sdb"
 
-static char * handle;
+static char *handle;
 
 /**
  * Read the contents of a bucket to a buffer.
@@ -50,54 +50,44 @@ static char * handle;
  *        (*result should be NULL, sufficient space is allocated)
  * @return the number of bytes read on success, -1 on failure
  */
-static int stateReadContent(struct GE_Context * ectx,
-  		    const char * name,
-  		    void ** result) {
+static int
+stateReadContent (struct GE_Context *ectx, const char *name, void **result)
+{
   /* open file, must exist, open read only */
-  char * dbh = handle;
+  char *dbh = handle;
   int fd;
   int size;
-  char * fil;
+  char *fil;
   unsigned long long fsize;
   size_t n;
 
-  GE_ASSERT(ectx,
-      handle != NULL);
+  GE_ASSERT (ectx, handle != NULL);
   if (result == NULL)
     return -1;
-  n = strlen(dbh) + strlen(name) + 2;
-  fil = MALLOC(n);
-  SNPRINTF(fil,
-     n,
-     "%s/%s",
-     dbh,
-     name);
-  if ( (OK != disk_file_test(ectx,
-  		     fil)) ||
-       (OK != disk_file_size(ectx,
-  		     fil,
-  		     &fsize,
-  		     YES)) ||
-       (fsize == 0) ||
-       (-1 == (fd = disk_file_open(ectx,
-  			   fil,
-  			   O_RDONLY,
-  			   S_IRUSR) )) ) {
-    FREE(fil);
-    return -1;
-  }
-  *result = MALLOC_LARGE(fsize);
-  size = READ(fd,
-        *result,
-        fsize);
-  disk_file_close(ectx,
-  	  fil,
-  	  fd);
-  FREE(fil);
-  if (size == -1) {
-    FREE(*result);
-    *result = NULL;
-  }
+  n = strlen (dbh) + strlen (name) + 2;
+  fil = MALLOC (n);
+  SNPRINTF (fil, n, "%s/%s", dbh, name);
+  if ((OK != disk_file_test (ectx,
+                             fil)) ||
+      (OK != disk_file_size (ectx,
+                             fil,
+                             &fsize,
+                             YES)) ||
+      (fsize == 0) ||
+      (-1 == (fd = disk_file_open (ectx, fil, O_RDONLY, S_IRUSR))))
+    {
+      FREE (fil);
+      return -1;
+    }
+  *result = MALLOC_LARGE (fsize);
+  size = READ (fd, *result, fsize);
+  disk_file_close (ectx, fil, fd);
+  FREE (fil);
+  if (size == -1)
+    {
+      FREE (*result);
+      *result = NULL;
+    }
   return size;
 }
 
@@ -110,46 +100,31 @@ static int stateReadContent(struct GE_Context * ectx,
  * @param block the data to store
  * @return SYSERR on error, OK if ok.
  */
-static int stateAppendContent(struct GE_Context * ectx,
-  		      const char * name,
-  		      int len,
-  		      const void * block) {
-  char * dbh = handle;
-  char * fil;
+static int
+stateAppendContent (struct GE_Context *ectx,
+                    const char *name, int len, const void *block)
+{
+  char *dbh = handle;
+  char *fil;
   int fd;
   size_t n;
 
-  GE_ASSERT(ectx,
-      handle != NULL);
-  n = strlen(dbh) + strlen(name) + 2;
-  fil = MALLOC(n);
-  SNPRINTF(fil,
-     n,
-     "%s/%s",
-     dbh,
-     name);
-  fd = disk_file_open(ectx,
-  	      fil,
-  	      O_RDWR|O_CREAT,
-  	      S_IRUSR|S_IWUSR);
-  if (fd == -1) {
-    GE_LOG_STRERROR_FILE(ectx,
-  		 GE_WARNING | GE_BULK | GE_USER,
-  		 "open",
-  		 fil);
-    FREE(fil);
-    return SYSERR; /* failed! */
-  }
-  lseek(fd,
-  0,
-  SEEK_END);
-  WRITE(fd,
-  block,
-  len);
-  disk_file_close(ectx,
-  	  fil,
-  	  fd);
-  FREE(fil);
+  GE_ASSERT (ectx, handle != NULL);
+  n = strlen (dbh) + strlen (name) + 2;
+  fil = MALLOC (n);
+  SNPRINTF (fil, n, "%s/%s", dbh, name);
+  fd = disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  if (fd == -1)
+    {
+      GE_LOG_STRERROR_FILE (ectx,
+                            GE_WARNING | GE_BULK | GE_USER, "open", fil);
+      FREE (fil);
+      return SYSERR;            /* failed! */
+    }
+  lseek (fd, 0, SEEK_END);
+  WRITE (fd, block, len);
+  disk_file_close (ectx, fil, fd);
+  FREE (fil);
   return OK;
 }
 
@@ -161,47 +136,33 @@ static int stateAppendContent(struct GE_Context * ectx,
  * @param block the data to store
  * @return SYSERR on error, OK if ok.
  */
-static int stateWriteContent(struct GE_Context * ectx,
-  		     const char * name,
-  		     int len,
-  		     const void * block) {
-  char * dbh = handle;
-  char * fil;
+static int
+stateWriteContent (struct GE_Context *ectx,
+                   const char *name, int len, const void *block)
+{
+  char *dbh = handle;
+  char *fil;
   int fd;
   size_t n;
 
-  GE_ASSERT(ectx, handle != NULL);
-  n = strlen(dbh) + strlen(name) + 2;
-  fil = MALLOC(n);
-  SNPRINTF(fil,
-     n,
-     "%s/%s",
-     dbh,
-     name);
-  fd = disk_file_open(ectx,
-  	      fil,
-  	      O_RDWR|O_CREAT,
-  	      S_IRUSR|S_IWUSR);
-  if (fd == -1) {
-    GE_LOG_STRERROR_FILE(ectx,
-  		 GE_WARNING | GE_BULK | GE_USER,
-  		 "open",
-  		 fil);
-    FREE(fil);
-    return SYSERR; /* failed! */
-  }
-  WRITE(fd,
-  block,
-  len);
-  if (0 != ftruncate(fd, len))
-    GE_LOG_STRERROR_FILE(ectx,
-  		 GE_WARNING | GE_BULK | GE_ADMIN,
-  		 "ftruncate",
-  		 fil);
-  disk_file_close(ectx,
-  	  fil,
-  	  fd);
-  FREE(fil);
+  GE_ASSERT (ectx, handle != NULL);
+  n = strlen (dbh) + strlen (name) + 2;
+  fil = MALLOC (n);
+  SNPRINTF (fil, n, "%s/%s", dbh, name);
+  fd = disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  if (fd == -1)
+    {
+      GE_LOG_STRERROR_FILE (ectx,
+                            GE_WARNING | GE_BULK | GE_USER, "open", fil);
+      FREE (fil);
+      return SYSERR;            /* failed! */
+    }
+  WRITE (fd, block, len);
+  if (0 != ftruncate (fd, len))
+    GE_LOG_STRERROR_FILE (ectx,
+                          GE_WARNING | GE_BULK | GE_ADMIN, "ftruncate", fil);
+  disk_file_close (ectx, fil, fd);
+  FREE (fil);
   return OK;
 }
 
@@ -210,54 +171,47 @@ static int stateWriteContent(struct GE_Context * ectx,
  * @param name the hashcode representing the name of the file
  *        (without directory)
  */
-static int stateUnlinkFromDB(struct GE_Context * ectx,
-  		     const char * name) {
-  char * dbh = handle;
-  char * fil;
+static int
+stateUnlinkFromDB (struct GE_Context *ectx, const char *name)
+{
+  char *dbh = handle;
+  char *fil;
   size_t n;
 
-  GE_ASSERT(ectx, handle != NULL);
-  n = strlen(dbh) + strlen(name) + 2;
-  fil = MALLOC(n);
-  SNPRINTF(fil,
-     n,
-     "%s/%s",
-     dbh,
-     name);
-  UNLINK(fil);
-  FREE(fil);
+  GE_ASSERT (ectx, handle != NULL);
+  n = strlen (dbh) + strlen (name) + 2;
+  fil = MALLOC (n);
+  SNPRINTF (fil, n, "%s/%s", dbh, name);
+  UNLINK (fil);
+  FREE (fil);
   return OK;
 }
 
 State_ServiceAPI *
-provide_module_state(CoreAPIForApplication * capi) {
+provide_module_state (CoreAPIForApplication * capi)
+{
   static State_ServiceAPI api;
 
-  char * dbh;
+  char *dbh;
   size_t n;
 
   dbh = NULL;
-  if (-1 == GC_get_configuration_value_filename(capi->cfg,
-  					"GNUNETD",
-  					"GNUNETD_HOME",
-  					VAR_DAEMON_DIRECTORY,
-  					&dbh))
+  if (-1 == GC_get_configuration_value_filename (capi->cfg,
+                                                 "GNUNETD",
+                                                 "GNUNETD_HOME",
+                                                 VAR_DAEMON_DIRECTORY, &dbh))
     return NULL;
-  GE_ASSERT(capi->ectx, dbh != NULL);
-  n = strlen(dbh) + strlen(DIR_EXT) + 5;
-  handle = MALLOC(n);
-  SNPRINTF(handle,
-     n,
-     "%s/%s/",
-     dbh,
-     DIR_EXT);
-  FREE(dbh);
-  if (SYSERR == disk_directory_create(capi->ectx,
-  			      handle)) {
-    FREE(handle);
-    handle = NULL;
-    return NULL;
-  }
+  GE_ASSERT (capi->ectx, dbh != NULL);
+  n = strlen (dbh) + strlen (DIR_EXT) + 5;
+  handle = MALLOC (n);
+  SNPRINTF (handle, n, "%s/%s/", dbh, DIR_EXT);
+  FREE (dbh);
+  if (SYSERR == disk_directory_create (capi->ectx, handle))
+    {
+      FREE (handle);
+      handle = NULL;
+      return NULL;
+    }
   api.read = &stateReadContent;
   api.append = &stateAppendContent;
   api.write = &stateWriteContent;
@@ -268,9 +222,11 @@ provide_module_state(CoreAPIForApplication * capi) {
 /**
  * Clean shutdown of the storage module (not used at the moment)
  */
-void release_module_state() {
-  GE_ASSERT(NULL, handle != NULL);
-  FREE(handle);
+void
+release_module_state ()
+{
+  GE_ASSERT (NULL, handle != NULL);
+  FREE (handle);
   handle = NULL;
 }
 

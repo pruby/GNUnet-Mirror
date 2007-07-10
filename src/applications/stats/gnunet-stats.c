@@ -32,9 +32,9 @@
 #include "gnunet_stats_lib.h"
 #include "statistics.h"
 
-static int lastIp2p = 42; /* not YES or NO */
+static int lastIp2p = 42;       /* not YES or NO */
 
-static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * Print statistics received.
@@ -42,46 +42,37 @@ static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
  * @param stream where to print the statistics
  * @return OK on success, SYSERR on error
  */
-static int printStatistics(const char * name,
-  		   unsigned long long value,
-  		   void * cls) {
-  FILE * stream = cls;
-  FPRINTF(stream,
-    "%-60s: %16llu\n",
-    dgettext("GNUnet", name),
-    value);
+static int
+printStatistics (const char *name, unsigned long long value, void *cls)
+{
+  FILE *stream = cls;
+  FPRINTF (stream, "%-60s: %16llu\n", dgettext ("GNUnet", name), value);
   return OK;
 }
 
-static int printProtocols(unsigned short type,
-  		  int isP2P,
-  		  void * cls) {
-  FILE * stream = cls;
+static int
+printProtocols (unsigned short type, int isP2P, void *cls)
+{
+  FILE *stream = cls;
   const char *name = NULL;
 
-  if (isP2P != lastIp2p) {
-    if (isP2P)
-      fprintf(stream,
-        _("Supported peer-to-peer messages:\n"));
+  if (isP2P != lastIp2p)
+    {
+      if (isP2P)
+        fprintf (stream, _("Supported peer-to-peer messages:\n"));
 
-    else
-      fprintf(stream,
-        _("Supported client-server messages:\n"));
-    lastIp2p = isP2P;
-  }
+      else
+        fprintf (stream, _("Supported client-server messages:\n"));
+      lastIp2p = isP2P;
+    }
   if (isP2P)
-    name = STATS_p2pMessageName(type);
+    name = STATS_p2pMessageName (type);
   else
-    name = STATS_csMessageName(type);
+    name = STATS_csMessageName (type);
   if (name == NULL)
-    fprintf(stream,
-      "\t%d\n",
-      type);
+    fprintf (stream, "\t%d\n", type);
   else
-    fprintf(stream,
-      "\t%d\t(%s)\n",
-      type,
-      name);
+    fprintf (stream, "\t%d\t(%s)\n", type, name);
   return OK;
 }
 
@@ -89,14 +80,14 @@ static int printProtocols(unsigned short type,
  * All gnunet-transport-check command line options
  */
 static struct CommandLineOption gnunetstatsOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
+  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")),        /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'p', "protocols", NULL,
-    gettext_noop("prints supported protocol messages"),
-    0, &gnunet_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES" },
-  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  {'p', "protocols", NULL,
+   gettext_noop ("prints supported protocol messages"),
+   0, &gnunet_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES"},
+  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   COMMAND_LINE_OPTION_END,
 };
 
@@ -108,50 +99,41 @@ static struct CommandLineOption gnunetstatsOptions[] = {
  * @param argv command line arguments
  * @return 0 ok, 1 on error
  */
-int main(int argc,
-   char * const * argv) {
+int
+main (int argc, char *const *argv)
+{
   int res;
-  struct ClientServerConnection * sock;
-  struct GC_Configuration * cfg;
-  struct GE_Context * ectx;
+  struct ClientServerConnection *sock;
+  struct GC_Configuration *cfg;
+  struct GE_Context *ectx;
 
-  res = GNUNET_init(argc,
-  	    argv,
-  	    "gnunet-stats",
-  	    &cfgFilename,
-  	    gnunetstatsOptions,
-  	    &ectx,
-  	    &cfg);
-  if (res == -1) {
-    GNUNET_fini(ectx, cfg);
-    return -1;
-  }
-  sock = client_connection_create(ectx,
-  			  cfg);
-  if (sock == NULL) {
-    fprintf(stderr,
-      _("Error establishing connection with gnunetd.\n"));
-    return 1;
-  }
-  res = STATS_getStatistics(ectx,
-  		    sock,
-  		    &printStatistics,
-  		    stdout);
-  if ( (YES == GC_get_configuration_value_yesno(cfg,
-  					"STATS",
-  					"PRINT-PROTOCOLS",
-  					NO)) &&
-       (res == OK) ) {
-    res = STATS_getAvailableProtocols(ectx,
-  			      sock,
-  			      &printProtocols,
-  			      stdout);
-  }
+  res = GNUNET_init (argc,
+                     argv,
+                     "gnunet-stats",
+                     &cfgFilename, gnunetstatsOptions, &ectx, &cfg);
+  if (res == -1)
+    {
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+  sock = client_connection_create (ectx, cfg);
+  if (sock == NULL)
+    {
+      fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
+      return 1;
+    }
+  res = STATS_getStatistics (ectx, sock, &printStatistics, stdout);
+  if ((YES == GC_get_configuration_value_yesno (cfg,
+                                                "STATS",
+                                                "PRINT-PROTOCOLS",
+                                                NO)) && (res == OK))
+    {
+      res = STATS_getAvailableProtocols (ectx, sock, &printProtocols, stdout);
+    }
   if (res != OK)
-    fprintf(stderr,
-      _("Error reading information from gnunetd.\n"));
-  connection_destroy(sock);
-  GNUNET_fini(ectx, cfg);
+    fprintf (stderr, _("Error reading information from gnunetd.\n"));
+  connection_destroy (sock);
+  GNUNET_fini (ectx, cfg);
 
   return (res == OK) ? 0 : 1;
 }

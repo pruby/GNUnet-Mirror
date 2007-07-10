@@ -30,7 +30,8 @@
 /**
  * Client requests peer to perform some profiling.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
   /**
    * How big is each message (plus headers).
@@ -59,7 +60,7 @@ typedef struct {
    * Time to wait for the arrival of all repies
    * in one iteration.
    */
-  cron_t timeOut;		
+  cron_t timeOut;
   /**
    * intPktSpace delay is only introduced every
    * trainSize messages.
@@ -74,7 +75,8 @@ typedef struct {
 /**
  * Response from server with statistics.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
   unsigned int max_loss;
   unsigned int min_loss;

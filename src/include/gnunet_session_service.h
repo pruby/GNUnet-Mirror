@@ -30,8 +30,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -42,7 +43,8 @@ extern "C" {
  * Session is responsible for establishing a session with another
  * peer (SKEY exchange).
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Try to connect to the given peer.
@@ -51,11 +53,11 @@ typedef struct {
    *         YES if a connection is established upon return,
    *         NO if we're going to try to establish one asynchronously
    */
-  int (*tryConnect)(const PeerIdentity * peer);
+  int (*tryConnect) (const PeerIdentity * peer);
 
 } Session_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -64,4 +66,3 @@ typedef struct {
 
 #endif
 /* end of gnunet_session_service.h */
-

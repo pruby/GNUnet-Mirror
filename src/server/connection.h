@@ -39,7 +39,8 @@
  * by the 'data' which contains a sequence of GNUnet p2p messages,
  * each with its own MESSAGE_HEADER.
  */
-typedef struct {
+typedef struct
+{
   /* hash of the plaintext, used to verify message integrity;
      ALSO used as the IV for the symmetric cipher! */
   HashCode512 hash;
@@ -49,27 +50,26 @@ typedef struct {
   TIME_T timeStamp;
   /* desired bandwidth, 0 for plaintext messages! */
   unsigned int bandwidth;
-} P2P_PACKET_HEADER; /* 76 bytes */
+} P2P_PACKET_HEADER;            /* 76 bytes */
 
 /* ***************** GNUnet core internals ************ */
 
 /**
  * Initialize this module.
  */
-void initConnection(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    struct LoadMonitor * mon,
-		    struct CronManager * cron);
+void initConnection (struct GE_Context *ectx,
+                     struct GC_Configuration *cfg,
+                     struct LoadMonitor *mon, struct CronManager *cron);
 
 /**
  * Shutdown the connection module.
  */
-void doneConnection(void);
+void doneConnection (void);
 
 /**
  * For debugging.
  */
-void printConnectionBuffer(void);
+void printConnectionBuffer (void);
 
 /**
  * Check the sequence number and timestamp.  Decrypts the
@@ -83,9 +83,8 @@ void printConnectionBuffer(void);
  *         NO if it was in plaintext,
  *         SYSERR if it was malformed
  */
-int checkHeader(const PeerIdentity * sender,
-		P2P_PACKET_HEADER * msg,
-		unsigned short size);
+int checkHeader (const PeerIdentity * sender,
+                 P2P_PACKET_HEADER * msg, unsigned short size);
 
 /**
  * Consider switching the transport mechanism used for contacting the
@@ -98,16 +97,14 @@ int checkHeader(const PeerIdentity * sender,
  * @param tsession the transport session that is for grabs
  * @param sender the identity of the other node
  */
-void considerTakeover(const PeerIdentity * sender,
-		      TSession * tsession);
+void considerTakeover (const PeerIdentity * sender, TSession * tsession);
 
 /* ***************** CORE API methods ************* */
 
 /**
  * Call method for every connected node.
  */
-int forEachConnectedNode(PerNodeCallback method,
-			 void * arg);
+int forEachConnectedNode (PerNodeCallback method, void *arg);
 
 
 /**
@@ -122,14 +119,12 @@ int forEachConnectedNode(PerNodeCallback method,
  * @param msg the message to transmit, should contain MESSAGE_HEADERs
  * @return OK on success, SYSERR on failure
  */
-int sendPlaintext(TSession * tsession,
-		  const char * msg,
-		  unsigned int size);
+int sendPlaintext (TSession * tsession, const char *msg, unsigned int size);
 
 /**
  * Compute the hashtable index of a host id.
  */
-unsigned int computeIndex(const PeerIdentity * hostId);
+unsigned int computeIndex (const PeerIdentity * hostId);
 
 /**
  * Register a callback method that should be invoked whenever a
@@ -151,15 +146,15 @@ unsigned int computeIndex(const PeerIdentity * hostId);
  *   that buffer (must be a positive number).
  * @return OK if the handler was registered, SYSERR on error
  */
-int registerSendCallback(const unsigned int minimumPadding,
-			 BufferFillCallback callback);
+int registerSendCallback (const unsigned int minimumPadding,
+                          BufferFillCallback callback);
 
 /**
  * Unregister a handler that was registered with registerSendCallback.
  * @return OK if the handler was removed, SYSERR on error
  */
-int unregisterSendCallback(const unsigned int minimumPadding,
-			   BufferFillCallback callback);
+int unregisterSendCallback (const unsigned int minimumPadding,
+                            BufferFillCallback callback);
 
 /**
  * Send an encrypted, on-demand build message to another node.
@@ -171,12 +166,11 @@ int unregisterSendCallback(const unsigned int minimumPadding,
  * @param importance how important is the message?
  * @param maxdelay how long can the message wait?
  */
-void unicastCallback(const PeerIdentity * hostId,
-		     BuildMessageCallback callback,
-		     void * closure,
-		     unsigned short len,
-		     unsigned int importance,
-		     unsigned int maxdelay);
+void unicastCallback (const PeerIdentity * hostId,
+                      BuildMessageCallback callback,
+                      void *closure,
+                      unsigned short len,
+                      unsigned int importance, unsigned int maxdelay);
 
 /**
  * Send an encrypted message to another node.
@@ -186,15 +180,14 @@ void unicastCallback(const PeerIdentity * hostId,
  * @param importance how important is the message?
  * @param maxdelay how long can the message be delayed?
  */
-void unicast(const PeerIdentity * receiver,
-	     const MESSAGE_HEADER * msg,
-	     unsigned int importance,
-	     unsigned int maxdelay);
+void unicast (const PeerIdentity * receiver,
+              const MESSAGE_HEADER * msg,
+              unsigned int importance, unsigned int maxdelay);
 
 /**
  * Return a pointer to the lock of the connection module.
  */
-struct MUTEX * getConnectionModuleLock(void);
+struct MUTEX *getConnectionModuleLock (void);
 
 
 /* ******************** traffic management ********** */
@@ -203,17 +196,15 @@ struct MUTEX * getConnectionModuleLock(void);
  * How many bpm did we assign this peer (how much traffic
  * may the given peer send to us per minute?)
  */
-int getBandwidthAssignedTo(const PeerIdentity * hostId,
-			   unsigned int * bpm,
-			   cron_t * last_seen);
+int getBandwidthAssignedTo (const PeerIdentity * hostId,
+                            unsigned int *bpm, cron_t * last_seen);
 
 /**
  * Increase the preference for traffic from some other peer.
  * @param node the identity of the other peer
  * @param preference how much should the traffic preference be increased?
  */
-void updateTrafficPreference(const PeerIdentity * node,
-			     double preference);
+void updateTrafficPreference (const PeerIdentity * node, double preference);
 
 
 /**
@@ -222,7 +213,7 @@ void updateTrafficPreference(const PeerIdentity * node,
  *
  * @param peer  the peer to disconnect
  */
-void disconnectFromPeer(const PeerIdentity *node);
+void disconnectFromPeer (const PeerIdentity * node);
 
 
 /**
@@ -234,8 +225,7 @@ void disconnectFromPeer(const PeerIdentity *node);
  * use it after this call.  If the core does not want/need
  * the session, it will also be disconnected.
  */
-void offerTSessionFor(const PeerIdentity * peer,
-		      TSession * session);
+void offerTSessionFor (const PeerIdentity * peer, TSession * session);
 
 
 /**
@@ -248,10 +238,8 @@ void offerTSessionFor(const PeerIdentity * peer,
  * @param forSending NO if it is the key for receiving,
  *                   YES if it is the key for sending
  */
-void assignSessionKey(const SESSIONKEY * key,
-		      const PeerIdentity * peer,
-		      TIME_T age,
-		      int forSending);
+void assignSessionKey (const SESSIONKEY * key,
+                       const PeerIdentity * peer, TIME_T age, int forSending);
 
 /**
  * Obtain the session key used for traffic from or to a given peer.
@@ -264,24 +252,22 @@ void assignSessionKey(const SESSIONKEY * key,
  * @return SYSERR if no sessionkey is known to the core,
  *         OK if the sessionkey was set.
  */
-int getCurrentSessionKey(const PeerIdentity * peer,
-			 SESSIONKEY * key,
-			 TIME_T * age,
-			 int forSending);
+int getCurrentSessionKey (const PeerIdentity * peer,
+                          SESSIONKEY * key, TIME_T * age, int forSending);
 
 
 /**
  * Get the current number of slots in the connection table (as computed
  * from the available bandwidth).
  */
-int getSlotCount();
+int getSlotCount ();
 
 /**
  * Is the given slot used?
  * @return 0 if not, otherwise number of peers in
  * the slot
  */
-int isSlotUsed(int slot);
+int isSlotUsed (int slot);
 
 /**
  * Get the time of the last encrypted message that was received
@@ -289,8 +275,7 @@ int isSlotUsed(int slot);
  * @param time updated with the time
  * @return SYSERR if we are not connected to the peer at the moment
  */
-int getLastActivityOf(const PeerIdentity * peer,
-		      cron_t * time);
+int getLastActivityOf (const PeerIdentity * peer, cron_t * time);
 
 
 /**
@@ -298,7 +283,7 @@ int getLastActivityOf(const PeerIdentity * peer,
  *
  * @param peer the other peer,
  */
-void confirmSessionUp(const PeerIdentity * peer);
+void confirmSessionUp (const PeerIdentity * peer);
 
 
 /**
@@ -309,7 +294,7 @@ void confirmSessionUp(const PeerIdentity * peer);
  *        P2P message part that is transmitted
  * @return OK on success, SYSERR if there is a problem
  */
-int registerSendNotify(MessagePartHandler callback);
+int registerSendNotify (MessagePartHandler callback);
 
 /**
  * Unregister a handler that is to be called for each
@@ -319,7 +304,7 @@ int registerSendNotify(MessagePartHandler callback);
  *        P2P message part that is transmitted
  * @return OK on success, SYSERR if there is a problem
  */
-int unregisterSendNotify(MessagePartHandler callback);
+int unregisterSendNotify (MessagePartHandler callback);
 
 
 

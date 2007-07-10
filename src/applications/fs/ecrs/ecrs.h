@@ -45,7 +45,8 @@
 
 #define BLOCK_ALIGN_SIZE (DBLOCK_SIZE)
 
-typedef struct Location {
+typedef struct Location
+{
   /**
    * Information about the shared file.
    */
@@ -71,16 +72,21 @@ typedef struct Location {
 
 } Location;
 
-enum uri_types { chk, sks, ksk, loc };
+enum uri_types
+{ chk, sks, ksk, loc };
 
-typedef struct ECRS_URI {
+typedef struct ECRS_URI
+{
   enum uri_types type;
-  union {
-    struct {
-      char ** keywords;
+  union
+  {
+    struct
+    {
+      char **keywords;
       unsigned int keywordCount;
     } ksk;
-    struct {
+    struct
+    {
       HashCode512 namespace;
       HashCode512 identifier;
     } sks;
@@ -89,27 +95,27 @@ typedef struct ECRS_URI {
   } data;
 } URI;
 
-typedef struct {
+typedef struct
+{
   EXTRACTOR_KeywordType type;
-  char * data;
+  char *data;
 } Item;
 
 /**
  * Meta data to associate with a file, directory or namespace.
  */
-typedef struct ECRS_MetaData {
+typedef struct ECRS_MetaData
+{
   unsigned int itemCount;
-  Item * items;
+  Item *items;
 } MetaData;
 
 
-void ECRS_encryptInPlace(const HashCode512 * hc,
-			 void * data,
-			 unsigned int len);
+void ECRS_encryptInPlace (const HashCode512 * hc,
+                          void *data, unsigned int len);
 
-void ECRS_decryptInPlace(const HashCode512 * hc,
-			 void * data,
-			 unsigned int len);
+void ECRS_decryptInPlace (const HashCode512 * hc,
+                          void *data, unsigned int len);
 
 
 

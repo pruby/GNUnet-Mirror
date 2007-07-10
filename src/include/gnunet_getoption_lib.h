@@ -30,8 +30,9 @@
 #include "gnunet_util_network_client.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -40,11 +41,10 @@ extern "C" {
  * Obtain option value from a peer.
  * @return NULL on error
  */
-char * getConfigurationOptionValue(struct ClientServerConnection * sock,
-				   const char * section,
-				   const char * option);
+char *getConfigurationOptionValue (struct ClientServerConnection *sock,
+                                   const char *section, const char *option);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

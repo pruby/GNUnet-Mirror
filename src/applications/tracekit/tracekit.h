@@ -28,7 +28,8 @@
 
 #include "gnunet_core.h"
 
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -59,7 +60,8 @@ typedef struct {
 
 } P2P_tracekit_probe_MESSAGE;
 
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -87,7 +89,8 @@ typedef struct {
 
 } P2P_tracekit_reply_MESSAGE;
 
-typedef struct {
+typedef struct
+{
   P2P_tracekit_reply_MESSAGE p2p_reply;
 
   /**
@@ -98,7 +101,8 @@ typedef struct {
 } P2P_tracekit_reply_MESSAGE_GENERIC;
 
 
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -112,7 +116,8 @@ typedef struct {
   unsigned int priority;
 } CS_tracekit_probe_MESSAGE;
 
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -123,7 +128,8 @@ typedef struct {
 
 } CS_tracekit_reply_MESSAGE;
 
-typedef struct {
+typedef struct
+{
   CS_tracekit_reply_MESSAGE cs_reply;
 
   /**

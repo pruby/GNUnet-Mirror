@@ -36,7 +36,8 @@
 /**
  * @brief content hash key
  */
-typedef struct {
+typedef struct
+{
   HashCode512 key;
   HashCode512 query;
 } CHK;
@@ -44,7 +45,8 @@ typedef struct {
 /**
  * @brief data block
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block, in network byte order.
@@ -55,7 +57,8 @@ typedef struct {
 
 } DBlock;
 
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block (IBLOCK), in network byte order.
@@ -72,7 +75,8 @@ typedef struct {
  * A FileIdentifier groups the information
  * required to download (and check) a file.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Total size of the file in bytes. (network byte order (!))
@@ -89,7 +93,8 @@ typedef struct {
 /**
  * @brief keyword block (advertising data under a keyword)
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block (KBLOCK), in network byte order.
@@ -112,7 +117,8 @@ typedef struct {
 
 } KBlock;
 
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block (SBLOCK), in network byte order.
@@ -169,16 +175,17 @@ typedef struct {
   /* variable-size Meta-Data follows here! */
 } SBlock;
 
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block (NBLOCK), in network byte order.
    */
   unsigned int type;
 
-  Signature signature; /* 256 b */
+  Signature signature;          /* 256 b */
 
-  PublicKey subspace; /* S = H(subspace); 264 b */
+  PublicKey subspace;           /* S = H(subspace); 264 b */
 
   /**
    * Must be all zeros
@@ -204,7 +211,8 @@ typedef struct {
 /**
  * @brief keyword-NBlock (advertising namespace under a keyword)
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Type of the block (KNBLOCK), in network byte order.
@@ -231,33 +239,29 @@ typedef struct {
  * @return OK on success, SYSERR if data does not
  *  match the query
  */
-int fileBlockEncode(const DBlock * data,
-		    unsigned int len,
-		    const HashCode512 * query,
-		    Datastore_Value ** value);
+int fileBlockEncode (const DBlock * data,
+                     unsigned int len,
+                     const HashCode512 * query, Datastore_Value ** value);
 
 /**
  * Get the query that will be used to query for
  * a certain block of data.
  */
-void fileBlockGetQuery(const DBlock * data,
-		       unsigned int len,
-		       HashCode512 * query);
+void fileBlockGetQuery (const DBlock * data,
+                        unsigned int len, HashCode512 * query);
 
 
 /**
  * Get the key that will be used to decrypt
  * a certain block of data.
  */
-void fileBlockGetKey(const DBlock * data,
-		     unsigned int len,
-		     HashCode512 * key);
+void fileBlockGetKey (const DBlock * data,
+                      unsigned int len, HashCode512 * key);
 
 /**
  * What is the type of the given block of data?
  */
-unsigned int getTypeOfBlock(unsigned int size,
-			    const DBlock * data);
+unsigned int getTypeOfBlock (unsigned int size, const DBlock * data);
 
 /**
  * What is the main query (the one that is used in
@@ -272,10 +276,8 @@ unsigned int getTypeOfBlock(unsigned int size,
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor(unsigned int size,
-		const DBlock * data,
-		int verify,
-		HashCode512 * query);
+int getQueryFor (unsigned int size,
+                 const DBlock * data, int verify, HashCode512 * query);
 
 /**
  * Verify that the given Datum is a valid response
@@ -291,11 +293,10 @@ int getQueryFor(unsigned int size,
  *         NO; SYSERR if the keyCount does not match the
  *         query type
  */
-int isDatumApplicable(unsigned int type,
-		      unsigned int size,
-		      const DBlock * data,
-		      const HashCode512 * knownDatumQuery,
-		      unsigned int keyCount,
-		      const HashCode512 * keys);
+int isDatumApplicable (unsigned int type,
+                       unsigned int size,
+                       const DBlock * data,
+                       const HashCode512 * knownDatumQuery,
+                       unsigned int keyCount, const HashCode512 * keys);
 
 #endif

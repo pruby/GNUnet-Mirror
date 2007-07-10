@@ -28,26 +28,20 @@
  * Parse the specification file and create the tree.
  * Set all values to defaults.
  */
-struct GNS_Tree *
-tree_parse(struct GE_Context * ectx,
-	   const char * specification);
+struct GNS_Tree *tree_parse (struct GE_Context *ectx,
+                             const char *specification);
 
-struct GNS_Tree *
-tree_lookup(struct GNS_Tree * root,
-	    const char * section,
-	    const char * option);
+struct GNS_Tree *tree_lookup (struct GNS_Tree *root,
+                              const char *section, const char *option);
 
-typedef void (*VisibilityChangeListener)(void * ctx,
-					 struct GNS_Tree * tree);
+typedef void (*VisibilityChangeListener) (void *ctx, struct GNS_Tree * tree);
 
 /**
  * A value in the tree has been changed.
  * Update visibility (and notify about changes).
  */
-void tree_notify_change(struct GC_Configuration * cfg,
-			VisibilityChangeListener vcl,
-			void * ctx,
-			struct GE_Context * ectx,
-			struct GNS_Tree * root,
-			struct GNS_Tree * change);
-
+void tree_notify_change (struct GC_Configuration *cfg,
+                         VisibilityChangeListener vcl,
+                         void *ctx,
+                         struct GE_Context *ectx,
+                         struct GNS_Tree *root, struct GNS_Tree *change);

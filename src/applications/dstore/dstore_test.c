@@ -35,89 +35,82 @@
 
 static int error;
 
-static void checkIt(const HashCode512 * key,
-  	    unsigned int type,
-  	    unsigned int size,
-  	    const char * data,
-  	    void * cls) {
-  if (size != sizeof(HashCode512)) {
-    printf("ERROR: Invalid size\n");
-    error = 2;
-  }
-  if (0 != memcmp(data, cls, size)) {
-    printf("ERROR: Invalid data\n");
-    error = 3;
-  }
+static void
+checkIt (const HashCode512 * key,
+         unsigned int type, unsigned int size, const char *data, void *cls)
+{
+  if (size != sizeof (HashCode512))
+    {
+      printf ("ERROR: Invalid size\n");
+      error = 2;
+    }
+  if (0 != memcmp (data, cls, size))
+    {
+      printf ("ERROR: Invalid data\n");
+      error = 3;
+    }
 }
 
 /**
  * Add testcode here!
  */
-static int test(Dstore_ServiceAPI * api) {
+static int
+test (Dstore_ServiceAPI * api)
+{
   HashCode512 k;
   HashCode512 n;
   cron_t exp;
   unsigned int i;
 
-  exp = get_time() + 5 * cronMINUTES;
-  memset(&k,
-   0,
-   sizeof(HashCode512));
-  for (i=0;i<100;i++) {
-    hash(&k,
-   sizeof(HashCode512),
-   &n);
-    ASSERT(OK == api->put(&k,
-  		  i % 2,
-  		  exp,
-  		  sizeof(HashCode512),
-  		  (const char*) &n));
-    k = n;
-  }
-  memset(&k,
-   0,
-   sizeof(HashCode512));
-  for (i=0;i<100;i++) {
-    hash(&k,
-   sizeof(HashCode512),
-   &n);
-    ASSERT(1 == api->get(&k,
-  		 i % 2,
-  		 &checkIt,
-  		 &n));
-    k = n;
-  }
+  exp = get_time () + 5 * cronMINUTES;
+  memset (&k, 0, sizeof (HashCode512));
+  for (i = 0; i < 100; i++)
+    {
+      hash (&k, sizeof (HashCode512), &n);
+      ASSERT (OK == api->put (&k,
+                              i % 2,
+                              exp, sizeof (HashCode512), (const char *) &n));
+      k = n;
+    }
+  memset (&k, 0, sizeof (HashCode512));
+  for (i = 0; i < 100; i++)
+    {
+      hash (&k, sizeof (HashCode512), &n);
+      ASSERT (1 == api->get (&k, i % 2, &checkIt, &n));
+      k = n;
+    }
   return OK;
- FAILURE:
+FAILURE:
   return SYSERR;
 }
 
 #define TEST_DB "/tmp/GNUnet_dstore_test/"
 
-int main(int argc, char *argv[]) {
-  Dstore_ServiceAPI * api;
+int
+main (int argc, char *argv[])
+{
+  Dstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration * cfg;
-  struct CronManager * cron;
+  struct GC_Configuration *cfg;
+  struct CronManager *cron;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  cron = cron_create(NULL);
-  initCore(NULL,
-     cfg,
-     cron,
-     NULL);
-  api = requestService("dstore");
-  if (api != NULL) {
-    ok = test(api);
-    releaseService(api);
-  } else
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  cron = cron_create (NULL);
+  initCore (NULL, cfg, cron, NULL);
+  api = requestService ("dstore");
+  if (api != NULL)
+    {
+      ok = test (api);
+      releaseService (api);
+    }
+  else
     ok = SYSERR;
-  doneCore();
+  doneCore ();
   if (ok == SYSERR)
     return 1;
   return error;

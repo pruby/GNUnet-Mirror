@@ -33,19 +33,18 @@
  * Initialize the TCP port and listen for incoming client connections.
  * @return OK on success, SYSERR on error
  */
-int initTCPServer(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg);
+int initTCPServer (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 /**
  * Stop the server (but do not yet destroy the data structures)
  */
-int stopTCPServer(void);
+int stopTCPServer (void);
 
 /**
  * Shutdown the module.
  * @return OK on success, SYSERR on error
  */
-int doneTCPServer(void);
+int doneTCPServer (void);
 
 /**
  * Register a method as a handler for specific message
@@ -58,8 +57,7 @@ int doneTCPServer(void);
  * @return OK on success, SYSERR if there is already a
  *         handler for that type
  */
-int registerCSHandler(unsigned short type,
-		      CSHandler callback);
+int registerCSHandler (unsigned short type, CSHandler callback);
 
 /**
  * Unregister a method as a handler for specific message
@@ -72,12 +70,11 @@ int registerCSHandler(unsigned short type,
  * @return OK on success, SYSERR if there is no or another
  *         handler for that type
  */
-int unregisterCSHandler(unsigned short type,
-			CSHandler callback);
+int unregisterCSHandler (unsigned short type, CSHandler callback);
 
-int registerClientExitHandler(ClientExitHandler callback);
+int registerClientExitHandler (ClientExitHandler callback);
 
-int unregisterClientExitHandler(ClientExitHandler callback);
+int unregisterClientExitHandler (ClientExitHandler callback);
 
 /**
  * Send a message to the client identified by the handle.  Note that
@@ -86,8 +83,8 @@ int unregisterClientExitHandler(ClientExitHandler callback);
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
-int sendToClient(struct ClientHandle * handle,
-		 const MESSAGE_HEADER * message);
+int sendToClient (struct ClientHandle *handle,
+                  const MESSAGE_HEADER * message);
 
 
 /**
@@ -98,8 +95,7 @@ int sendToClient(struct ClientHandle * handle,
  * @return SYSERR on error, OK if the return value was
  *         send successfully
  */
-int sendTCPResultToClient(struct ClientHandle * sock,
-			  int ret);
+int sendTCPResultToClient (struct ClientHandle *sock, int ret);
 
 /**
  * Send an error message to the caller of a remote call via
@@ -109,11 +105,10 @@ int sendTCPResultToClient(struct ClientHandle * sock,
  * @return SYSERR on error, OK if the return value was
  *         send successfully
  */
-int sendTCPErrorToClient(struct ClientHandle * sock,
-			 GE_KIND kind,
-			 const char * message);
+int sendTCPErrorToClient (struct ClientHandle *sock,
+                          GE_KIND kind, const char *message);
 
-void terminateClientConnection(struct ClientHandle * sock);
+void terminateClientConnection (struct ClientHandle *sock);
 
 /**
  * Check if a handler is registered for a given
@@ -122,11 +117,10 @@ void terminateClientConnection(struct ClientHandle * sock);
  * @param type the message type
  * @return number of registered handlers (0 or 1)
  */
-unsigned int isCSHandlerRegistered(unsigned short type);
+unsigned int isCSHandlerRegistered (unsigned short type);
 
-struct GE_Context *
-createClientLogContext(GE_KIND mask,
-		       struct ClientHandle * handle);
+struct GE_Context *createClientLogContext (GE_KIND mask,
+                                           struct ClientHandle *handle);
 
 #endif
 /* end of tcpserver.h */

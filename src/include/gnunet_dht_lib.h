@@ -31,8 +31,9 @@
 #include "gnunet_dht_service.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -49,14 +50,13 @@ extern "C" {
  *        SYSERR
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
-int DHT_LIB_get(struct GC_Configuration * cfg,
-		struct GE_Context * ectx,
-		unsigned int type,
-		const HashCode512 * key,
-		cron_t timeout,
-		DataProcessor resultCallback,
-		void * resCallbackClosure);
-	
+int DHT_LIB_get (struct GC_Configuration *cfg,
+                 struct GE_Context *ectx,
+                 unsigned int type,
+                 const HashCode512 * key,
+                 cron_t timeout,
+                 DataProcessor resultCallback, void *resCallbackClosure);
+
 /**
  * Perform a synchronous put operation.
  *
@@ -65,14 +65,13 @@ int DHT_LIB_get(struct GC_Configuration * cfg,
  * @param value what to store
  * @return OK on success, SYSERR on error
  */
-int DHT_LIB_put(struct GC_Configuration * cfg,
-		struct GE_Context * ectx,
-		const HashCode512 * key,
-		unsigned int type,
-		cron_t expire,
-		const DataContainer * value);
+int DHT_LIB_put (struct GC_Configuration *cfg,
+                 struct GE_Context *ectx,
+                 const HashCode512 * key,
+                 unsigned int type,
+                 cron_t expire, const DataContainer * value);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

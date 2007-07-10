@@ -31,10 +31,12 @@
 /**
  * TIME prototype. "man time".
  */
-TIME_T TIME(TIME_T * t) {
+TIME_T
+TIME (TIME_T * t)
+{
   TIME_T now;
 
-  now = (TIME_T) time(NULL); /* potential 64-bit to 32-bit conversion!*/
+  now = (TIME_T) time (NULL);   /* potential 64-bit to 32-bit conversion! */
   if (t != NULL)
     *t = now;
   return now;
@@ -45,16 +47,18 @@ TIME_T TIME(TIME_T * t) {
  * GNUnet time value to a 64-bit value of the current
  * epoc if needed.
  */
-char * GN_CTIME(const TIME_T * t) {
+char *
+GN_CTIME (const TIME_T * t)
+{
   TIME_T now;
   time_t tnow;
 
-  tnow = time(NULL);
+  tnow = time (NULL);
   now = (TIME_T) tnow;
   tnow = tnow - now + *t;
 #ifdef ctime_r
-  return ctime_r(&tnow, MALLOC(32));
+  return ctime_r (&tnow, MALLOC (32));
 #else
-  return STRDUP(ctime(&tnow));
+  return STRDUP (ctime (&tnow));
 #endif
 }

@@ -38,23 +38,21 @@
  * @return SYSERR on error, NO if symlinking failed,
  *         YES on success
  */
-int ONDEMAND_initIndex(struct GE_Context * cectx,
-		       const HashCode512 * fileId,
-		       const char *fn);
+int ONDEMAND_initIndex (struct GE_Context *cectx,
+                        const HashCode512 * fileId, const char *fn);
 
 /**
  * @return NO if already present, YES on success,
  *  SYSERR on other error (i.e. datastore full)
  */
-int ONDEMAND_index(struct GE_Context * cectx,
-		   Datastore_ServiceAPI * datastore,
-		   unsigned int prio,
-		   cron_t expiration,
-		   unsigned long long fileOffset,
-		   unsigned int anonymityLevel,
-		   const HashCode512 * fileId,
-		   unsigned int size,
-		   const DBlock * content);
+int ONDEMAND_index (struct GE_Context *cectx,
+                    Datastore_ServiceAPI * datastore,
+                    unsigned int prio,
+                    cron_t expiration,
+                    unsigned long long fileOffset,
+                    unsigned int anonymityLevel,
+                    const HashCode512 * fileId,
+                    unsigned int size, const DBlock * content);
 
 /**
  * A query on the datastore resulted in the on-demand
@@ -64,10 +62,9 @@ int ONDEMAND_index(struct GE_Context * cectx,
  * this function also removes the OD-Entry
  * @return OK on success, SYSERR if there was an error
  */
-int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
-			const Datastore_Value * odb,
-			const HashCode512 * query,
-			Datastore_Value ** enc);
+int ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
+                         const Datastore_Value * odb,
+                         const HashCode512 * query, Datastore_Value ** enc);
 
 /**
  * Unindex the file with the given ID.  Removes the file from the
@@ -79,22 +76,21 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
  *        up the file properly when computing
  *        the keys of the odb blocks).
  */
-int ONDEMAND_unindex(struct GE_Context * cectx,
-		     Datastore_ServiceAPI * datastore,
-		     unsigned int blocksize,
-		     const HashCode512 * fileId);
+int ONDEMAND_unindex (struct GE_Context *cectx,
+                      Datastore_ServiceAPI * datastore,
+                      unsigned int blocksize, const HashCode512 * fileId);
 
 /**
  * Test if the file with the given ID is
  * indexed.
  * @return YES if so, NO if not.
  */
-int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
-			 const HashCode512 * fileId);
+int ONDEMAND_testindexed (Datastore_ServiceAPI * datastore,
+                          const HashCode512 * fileId);
 
-int ONDEMAND_init(CoreAPIForApplication * capi);
+int ONDEMAND_init (CoreAPIForApplication * capi);
 
-int ONDEMAND_done(void);
+int ONDEMAND_done (void);
 
 /* end of ondemand.h */
 #endif

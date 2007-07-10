@@ -37,57 +37,63 @@
 #define USE_LOCK NO
 
 #if USE_LOCK
-static struct MUTEX * gcrypt_shared_lock;
+static struct MUTEX *gcrypt_shared_lock;
 #else
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif
 
 
-void lockGcrypt() {
+void
+lockGcrypt ()
+{
 #if USE_LOCK
-  MUTEX_LOCK(gcrypt_shared_lock);
+  MUTEX_LOCK (gcrypt_shared_lock);
 #endif
 }
 
-void unlockGcrypt() {
+void
+unlockGcrypt ()
+{
 #if USE_LOCK
-  MUTEX_UNLOCK(gcrypt_shared_lock);
+  MUTEX_UNLOCK (gcrypt_shared_lock);
 #endif
 }
 
-static void dummy_logger(void * arg,
-  		 int level,
-  		 const char * format,
-  		 va_list args) {
+static void
+dummy_logger (void *arg, int level, const char *format, va_list args)
+{
   /* do nothing -- ignore libgcyrpt errors */
 }
 
-void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
+void __attribute__ ((constructor)) gnunet_crypto_ltdl_init ()
+{
 #if USE_LOCK
-  gcrypt_shared_lock = MUTEX_CREATE(YES);
+  gcrypt_shared_lock = MUTEX_CREATE (YES);
 #else
   gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 #endif
-  gcry_control(GCRYCTL_DISABLE_SECMEM, 0);
-  if (! gcry_check_version(GCRYPT_VERSION)) {
-    fprintf(stderr,
-      _("libgcrypt has not the expected version (version %s is required).\n"),
-      GCRYPT_VERSION);
-    abort();
-  }
-  srand((unsigned int)time(NULL));
-  gcry_set_log_handler(&dummy_logger, NULL);
+  gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
+  if (!gcry_check_version (GCRYPT_VERSION))
+    {
+      fprintf (stderr,
+               _
+               ("libgcrypt has not the expected version (version %s is required).\n"),
+               GCRYPT_VERSION);
+      abort ();
+    }
+  srand ((unsigned int) time (NULL));
+  gcry_set_log_handler (&dummy_logger, NULL);
 #ifdef gcry_fast_random_poll
-  lockGcrypt();
+  lockGcrypt ();
   gcry_fast_random_poll ();
-  unlockGcrypt();
+  unlockGcrypt ();
 #endif
 }
 
-void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini() {
+void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini ()
+{
 #if USE_LOCK
-  MUTEX_DESTROY(gcrypt_shared_lock);
+  MUTEX_DESTROY (gcrypt_shared_lock);
   gcrypt_shared_lock = NULL;
 #endif
 }
-

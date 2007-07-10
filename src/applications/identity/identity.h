@@ -29,7 +29,8 @@
 /**
  * Format of the signature response.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   Signature sig;
@@ -38,7 +39,8 @@ typedef struct {
 /**
  * Format of the connection request.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   PeerIdentity other;
@@ -51,7 +53,8 @@ typedef struct {
  * variable-size string with the peer's address as given by the
  * transport.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   unsigned int trust;

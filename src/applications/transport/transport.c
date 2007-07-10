@@ -36,24 +36,24 @@
 
 static CoreAPIForTransport ctapi;
 
-static CoreAPIForApplication * coreAPI;
+static CoreAPIForApplication *coreAPI;
 
-static Identity_ServiceAPI * identity;
+static Identity_ServiceAPI *identity;
 
 /**
  * Note that this array MUST not be modified
  * (in size/NULLs) after gnunetd has started
  * to go multi-threaded!
  */
-static TransportAPI ** tapis = NULL;
+static TransportAPI **tapis = NULL;
 
 static unsigned int tapis_count = 0;
 
 static unsigned long long hello_live;
 
-static struct MUTEX * tapis_lock;
+static struct MUTEX *tapis_lock;
 
-static struct GE_Context * ectx;
+static struct GE_Context *ectx;
 
 #define HELLO_RECREATE_FREQ (5 * cronMINUTES)
 
@@ -63,45 +63,46 @@ static struct GE_Context * ectx;
  * Create signed hello for this transport and put it into
  * the cache tapi->hello.
  */
-static void createSignedhello(void * cls) {
-  TransportAPI * tapi = cls;
-  MUTEX_LOCK(tapis_lock);
-  FREENONNULL(tapi->hello);
-  tapi->hello = tapi->createhello();
-  if (NULL == tapi->hello) {
-    MUTEX_UNLOCK(tapis_lock);
-    return;
-  }
-  memcpy(&tapi->hello->publicKey,
-   identity->getPublicPrivateKey(),
-   sizeof(PublicKey));
-  memcpy(&tapi->hello->senderIdentity,
-   coreAPI->myIdentity,
-   sizeof(PeerIdentity));
-  tapi->hello->expirationTime
-    = htonl(TIME(NULL) + hello_live);
-  tapi->hello->header.type
-    = htons(p2p_PROTO_hello);
-  tapi->hello->header.size
-    = htons(P2P_hello_MESSAGE_size(tapi->hello));
-  if (SYSERR == identity->signData(&(tapi->hello)->senderIdentity,
-  			   P2P_hello_MESSAGE_size(tapi->hello)
-  			   - sizeof(Signature)
-  			   - sizeof(PublicKey)
-  			   - sizeof(MESSAGE_HEADER),
-  			   &tapi->hello->signature)) {
-    FREE(tapi->hello);
-    tapi->hello = NULL;
-    GE_BREAK(ectx, 0);
-  }
-  MUTEX_UNLOCK(tapis_lock);
+static void
+createSignedhello (void *cls)
+{
+  TransportAPI *tapi = cls;
+  MUTEX_LOCK (tapis_lock);
+  FREENONNULL (tapi->hello);
+  tapi->hello = tapi->createhello ();
+  if (NULL == tapi->hello)
+    {
+      MUTEX_UNLOCK (tapis_lock);
+      return;
+    }
+  memcpy (&tapi->hello->publicKey,
+          identity->getPublicPrivateKey (), sizeof (PublicKey));
+  memcpy (&tapi->hello->senderIdentity,
+          coreAPI->myIdentity, sizeof (PeerIdentity));
+  tapi->hello->expirationTime = htonl (TIME (NULL) + hello_live);
+  tapi->hello->header.type = htons (p2p_PROTO_hello);
+  tapi->hello->header.size = htons (P2P_hello_MESSAGE_size (tapi->hello));
+  if (SYSERR == identity->signData (&(tapi->hello)->senderIdentity,
+                                    P2P_hello_MESSAGE_size (tapi->hello)
+                                    - sizeof (Signature)
+                                    - sizeof (PublicKey)
+                                    - sizeof (MESSAGE_HEADER),
+                                    &tapi->hello->signature))
+    {
+      FREE (tapi->hello);
+      tapi->hello = NULL;
+      GE_BREAK (ectx, 0);
+    }
+  MUTEX_UNLOCK (tapis_lock);
 }
 
 /**
  * Is this transport mechanism available (for sending)?
  * @return YES or NO
  */
-static int isTransportAvailable(unsigned short ttype) {
+static int
+isTransportAvailable (unsigned short ttype)
+{
   if (ttype >= tapis_count)
     return NO;
   if (NULL == tapis[ttype])
@@ -112,22 +113,21 @@ static int isTransportAvailable(unsigned short ttype) {
 /**
  * Add an implementation of a transport protocol.
  */
-static int addTransport(TransportAPI * tapi) {
+static int
+addTransport (TransportAPI * tapi)
+{
   if (tapi->protocolNumber >= tapis_count)
-    GROW(tapis,
-   tapis_count,
-   tapi->protocolNumber+1);
-  if (tapis[tapi->protocolNumber] != NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
+    GROW (tapis, tapis_count, tapi->protocolNumber + 1);
+  if (tapis[tapi->protocolNumber] != NULL)
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
   tapis[tapi->protocolNumber] = tapi;
   tapi->hello = NULL;
-  cron_add_job(coreAPI->cron,
-         &createSignedhello,
-         HELLO_RECREATE_FREQ,
-         HELLO_RECREATE_FREQ,
-         tapi);
+  cron_add_job (coreAPI->cron,
+                &createSignedhello,
+                HELLO_RECREATE_FREQ, HELLO_RECREATE_FREQ, tapi);
   return OK;
 }
 
@@ -135,23 +135,22 @@ static int addTransport(TransportAPI * tapi) {
  * Convert hello to string.
  */
 static int
-helloToAddress(const P2P_hello_MESSAGE * hello,
-         void ** sa,
-         unsigned int * sa_len) {
+helloToAddress (const P2P_hello_MESSAGE * hello,
+                void **sa, unsigned int *sa_len)
+{
   unsigned short prot;
 
-  prot = ntohs(hello->protocol);
-  if ( (prot >= tapis_count) ||
-       (tapis[prot] == NULL) ) {
-    GE_LOG(ectx,
-     GE_INFO | GE_REQUEST | GE_USER,
-     _("Converting peer address to string failed, transport type %d not supported\n"),
-     ntohs(hello->protocol));
-    return SYSERR;
-  }
-  return tapis[prot]->helloToAddress(hello,
-  			     sa,
-  			     sa_len);
+  prot = ntohs (hello->protocol);
+  if ((prot >= tapis_count) || (tapis[prot] == NULL))
+    {
+      GE_LOG (ectx,
+              GE_INFO | GE_REQUEST | GE_USER,
+              _
+              ("Converting peer address to string failed, transport type %d not supported\n"),
+              ntohs (hello->protocol));
+      return SYSERR;
+    }
+  return tapis[prot]->helloToAddress (hello, sa, sa_len);
 }
 
 /**
@@ -159,19 +158,22 @@ helloToAddress(const P2P_hello_MESSAGE * hello,
  * @param callback the method to call on each transport API implementation
  * @param data second argument to callback
  */
-static int forEachTransport(TransportCallback callback,
-  		    void * data) {
+static int
+forEachTransport (TransportCallback callback, void *data)
+{
   int i;
   int ret;
 
   ret = 0;
-  for (i=0;i<tapis_count;i++) {
-    if (tapis[i] != NULL) {
-      ret++;
-      if (callback != NULL)
-  callback(tapis[i], data);
+  for (i = 0; i < tapis_count; i++)
+    {
+      if (tapis[i] != NULL)
+        {
+          ret++;
+          if (callback != NULL)
+            callback (tapis[i], data);
+        }
     }
-  }
   return ret;
 }
 
@@ -184,34 +186,35 @@ static int forEachTransport(TransportCallback callback,
  * @return session on success, NULL on error
  */
 static TSession *
-transportConnect(const P2P_hello_MESSAGE * hello) {
+transportConnect (const P2P_hello_MESSAGE * hello)
+{
   unsigned short prot;
-  TSession * tsession;
+  TSession *tsession;
 
-  prot = ntohs(hello->protocol);
-  if ( (prot >= tapis_count)  ||
-       (tapis[prot] == NULL) ) {
-    GE_LOG(ectx,
-     GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
-     _("Transport connection attempt failed, transport type %d not supported\n"),
-     prot);
-    return NULL;
-  }
+  prot = ntohs (hello->protocol);
+  if ((prot >= tapis_count) || (tapis[prot] == NULL))
+    {
+      GE_LOG (ectx,
+              GE_INFO | GE_REQUEST | GE_USER | GE_ADMIN,
+              _
+              ("Transport connection attempt failed, transport type %d not supported\n"),
+              prot);
+      return NULL;
+    }
   tsession = NULL;
-  if (OK != tapis[prot]->connect(hello,
-  			 &tsession))
+  if (OK != tapis[prot]->connect (hello, &tsession))
     return NULL;
   tsession->ttype = prot;
   return tsession;
 }
 
 static TSession *
-transportConnectFreely(const PeerIdentity * peer,
-  	       int useTempList) {
+transportConnectFreely (const PeerIdentity * peer, int useTempList)
+{
   int i;
-  P2P_hello_MESSAGE * hello;
-  int * perm;
-  TSession * ret;
+  P2P_hello_MESSAGE *hello;
+  int *perm;
+  TSession *ret;
   unsigned int hc;
 #if DEBUG_TRANSPORT
   EncName enc;
@@ -219,35 +222,35 @@ transportConnectFreely(const PeerIdentity * peer,
 
   hc = 0;
   ret = NULL;
-  perm = permute(WEAK, tapis_count);
-  for (i=0;i<tapis_count;i++) {
-    if (tapis[perm[i]] == NULL)
-      continue;
-    hello = identity->identity2Hello(peer,
-  			     perm[i],
-  			     useTempList);
-    if (hello == NULL)
-      continue;
-    hc++;
-    ret = transportConnect(hello);
-    FREE(hello);
-    if (ret != NULL) {
-      ret->ttype = perm[i];
-      break;
+  perm = permute (WEAK, tapis_count);
+  for (i = 0; i < tapis_count; i++)
+    {
+      if (tapis[perm[i]] == NULL)
+        continue;
+      hello = identity->identity2Hello (peer, perm[i], useTempList);
+      if (hello == NULL)
+        continue;
+      hc++;
+      ret = transportConnect (hello);
+      FREE (hello);
+      if (ret != NULL)
+        {
+          ret->ttype = perm[i];
+          break;
+        }
     }
-  }
-  FREE(perm);
-  if (ret == NULL) {
+  FREE (perm);
+  if (ret == NULL)
+    {
 #if DEBUG_TRANSPORT
-    hash2enc(&peer->hashPubKey,
-       &enc);
-    GE_LOG(ectx,
-     GE_WARNING | GE_BULK | GE_ADMIN,
-     _("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
-     &enc,
-     hc);
+      hash2enc (&peer->hashPubKey, &enc);
+      GE_LOG (ectx,
+              GE_WARNING | GE_BULK | GE_ADMIN,
+              _
+              ("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
+              &enc, hc);
 #endif
-  }
+    }
   return ret;
 }
 
@@ -262,21 +265,23 @@ transportConnectFreely(const PeerIdentity * peer,
  * @return OK if the session could be associated,
  *         SYSERR if not.
  */
-static int transportAssociate(TSession * tsession) {
-  if ( (tsession == NULL) ||
-       (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) )
+static int
+transportAssociate (TSession * tsession)
+{
+  if ((tsession == NULL) ||
+      (tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     return SYSERR;
-  return tapis[tsession->ttype]->associate(tsession);
+  return tapis[tsession->ttype]->associate (tsession);
 }
 
 /**
  * Get the cost of a message in for the given transport mechanism.
  */
-static unsigned int transportGetCost(int ttype) {
-  if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) )
-    return SYSERR; /* -1 = INFTY */
+static unsigned int
+transportGetCost (int ttype)
+{
+  if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
+    return SYSERR;              /* -1 = INFTY */
   return tapis[ttype]->cost;
 }
 
@@ -289,46 +294,47 @@ static unsigned int transportGetCost(int ttype) {
  * @return OK on success, SYSERR on persistent error, NO on
  *         temporary error
  */
-static int transportSend(TSession * tsession,
-  		 const void * msg,
-  		 unsigned int size,
-  		 int important) {
-  if (tsession == NULL) {
-    GE_LOG(ectx,
-     GE_DEBUG | GE_DEVELOPER | GE_BULK,
-     "Transmission attempted on uni-directional pipe, failing.\n");
-    return SYSERR; /* can't do that, can happen for unidirectional pipes
-  	      that call core with TSession being NULL. */
-  }
-  if ( (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) ) {
-    GE_LOG(ectx,
-     GE_ERROR | GE_BULK | GE_USER,
-     _("Transmission attempt failed, transport type %d unknown.\n"),
-     tsession->ttype);
-    return SYSERR;
-  }
-  return tapis[tsession->ttype]->send(tsession,
-  			      msg,
-  			      size,
-  			      important);
+static int
+transportSend (TSession * tsession,
+               const void *msg, unsigned int size, int important)
+{
+  if (tsession == NULL)
+    {
+      GE_LOG (ectx,
+              GE_DEBUG | GE_DEVELOPER | GE_BULK,
+              "Transmission attempted on uni-directional pipe, failing.\n");
+      return SYSERR;            /* can't do that, can happen for unidirectional pipes
+                                   that call core with TSession being NULL. */
+    }
+  if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
+    {
+      GE_LOG (ectx,
+              GE_ERROR | GE_BULK | GE_USER,
+              _("Transmission attempt failed, transport type %d unknown.\n"),
+              tsession->ttype);
+      return SYSERR;
+    }
+  return tapis[tsession->ttype]->send (tsession, msg, size, important);
 }
 
 /**
  * Close the session with the remote node.
  * @return OK on success, SYSERR on error
  */
-static int transportDisconnect(TSession * tsession) {
-  if (tsession == NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  if ( (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) ) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  return tapis[tsession->ttype]->disconnect(tsession);
+static int
+transportDisconnect (TSession * tsession)
+{
+  if (tsession == NULL)
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
+  if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
+  return tapis[tsession->ttype]->disconnect (tsession);
 }
 
 /**
@@ -337,25 +343,27 @@ static int transportDisconnect(TSession * tsession) {
  * @return OK if the attempt to verify is on the way,
  *        SYSERR if the transport mechanism is not supported
  */
-static int transportVerifyHello(const P2P_hello_MESSAGE * hello) {
+static int
+transportVerifyHello (const P2P_hello_MESSAGE * hello)
+{
   unsigned short prot;
 
-  if ( (ntohs(hello->header.size) != P2P_hello_MESSAGE_size(hello)) ||
-       (ntohs(hello->header.type) != p2p_PROTO_hello) )
-    return SYSERR; /* invalid */
-  prot = ntohs(hello->protocol);
-  if ( (prot >= tapis_count) ||
-       (tapis[prot] == NULL) )
-    return SYSERR; /* not supported */
-  return tapis[prot]->verifyHello(hello);
+  if ((ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.type) != p2p_PROTO_hello))
+    return SYSERR;              /* invalid */
+  prot = ntohs (hello->protocol);
+  if ((prot >= tapis_count) || (tapis[prot] == NULL))
+    return SYSERR;              /* not supported */
+  return tapis[prot]->verifyHello (hello);
 }
 
 /**
  * Get the MTU for a given transport type.
  */
-static int transportGetMTU(unsigned short ttype) {
-  if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) )
+static int
+transportGetMTU (unsigned short ttype)
+{
+  if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
     return SYSERR;
   return tapis[ttype]->mtu;
 }
@@ -365,48 +373,49 @@ static int transportGetMTU(unsigned short ttype) {
  * transport type for this node.
  */
 static P2P_hello_MESSAGE *
-transportCreatehello(unsigned short ttype) {
-  TransportAPI * tapi;
-  P2P_hello_MESSAGE * hello;
+transportCreatehello (unsigned short ttype)
+{
+  TransportAPI *tapi;
+  P2P_hello_MESSAGE *hello;
 
-  MUTEX_LOCK(tapis_lock);
-  if (ttype == ANY_PROTOCOL_NUMBER) {
-    int * perm;
+  MUTEX_LOCK (tapis_lock);
+  if (ttype == ANY_PROTOCOL_NUMBER)
+    {
+      int *perm;
 
-    perm = permute(WEAK, tapis_count);
-    ttype = tapis_count-1;
-    while ( (ttype < tapis_count) &&
-      ( (tapis[perm[ttype]] == NULL) ||
-        (tapis[perm[ttype]] != NULL &&
-         tapis[perm[ttype]]->hello == NULL) ) )
-      ttype--; /* unsigned, will wrap around! */
-    if (ttype >= tapis_count) {
-      FREE(perm);
-      MUTEX_UNLOCK(tapis_lock);
+      perm = permute (WEAK, tapis_count);
+      ttype = tapis_count - 1;
+      while ((ttype < tapis_count) &&
+             ((tapis[perm[ttype]] == NULL) ||
+              (tapis[perm[ttype]] != NULL &&
+               tapis[perm[ttype]]->hello == NULL)))
+        ttype--;                /* unsigned, will wrap around! */
+      if (ttype >= tapis_count)
+        {
+          FREE (perm);
+          MUTEX_UNLOCK (tapis_lock);
+          return NULL;
+        }
+      ttype = perm[ttype];
+      FREE (perm);
+    }
+  if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
+    {
+      GE_LOG (ectx,
+              GE_DEBUG | GE_BULK | GE_USER,
+              _("No transport of type %d known.\n"), ttype);
+      MUTEX_UNLOCK (tapis_lock);
       return NULL;
     }
-    ttype = perm[ttype];
-    FREE(perm);
-  }
-  if ( (ttype >= tapis_count) ||
-       (tapis[ttype] == NULL) ) {
-    GE_LOG(ectx,
-     GE_DEBUG | GE_BULK | GE_USER,
-     _("No transport of type %d known.\n"),
-     ttype);
-    MUTEX_UNLOCK(tapis_lock);
-    return NULL;
-  }
   tapi = tapis[ttype];
-  if (tapi->hello == NULL) {
-    MUTEX_UNLOCK(tapis_lock);
-    return NULL; /* send-only transport */
-  }
-  hello = MALLOC(P2P_hello_MESSAGE_size(tapi->hello));
-  memcpy(hello,
-   tapi->hello,
-   P2P_hello_MESSAGE_size(tapi->hello));
-  MUTEX_UNLOCK(tapis_lock);
+  if (tapi->hello == NULL)
+    {
+      MUTEX_UNLOCK (tapis_lock);
+      return NULL;              /* send-only transport */
+    }
+  hello = MALLOC (P2P_hello_MESSAGE_size (tapi->hello));
+  memcpy (hello, tapi->hello, P2P_hello_MESSAGE_size (tapi->hello));
+  MUTEX_UNLOCK (tapis_lock);
   return hello;
 }
 
@@ -423,100 +432,103 @@ transportCreatehello(unsigned short ttype) {
  * @param buff where to write the hello messages
  * @return the number of bytes written to buff, -1 on error
  */
-static int getAdvertisedhellos(unsigned int maxLen,
-  		       char * buff) {
+static int
+getAdvertisedhellos (unsigned int maxLen, char *buff)
+{
   int i;
   int tcount;
-  P2P_hello_MESSAGE ** hellos;
+  P2P_hello_MESSAGE **hellos;
   int used;
 
-  MUTEX_LOCK(tapis_lock);
+  MUTEX_LOCK (tapis_lock);
   tcount = 0;
-  for (i=0;i<tapis_count;i++)
+  for (i = 0; i < tapis_count; i++)
     if (tapis[i] != NULL)
       tcount++;
 
-  hellos = MALLOC(tcount * sizeof(P2P_hello_MESSAGE*));
+  hellos = MALLOC (tcount * sizeof (P2P_hello_MESSAGE *));
   tcount = 0;
-  for (i=0;i<tapis_count;i++) {
-    if (tapis[i] != NULL) {
-      hellos[tcount] = transportCreatehello(i);
-      if (NULL != hellos[tcount])
-  tcount++;
+  for (i = 0; i < tapis_count; i++)
+    {
+      if (tapis[i] != NULL)
+        {
+          hellos[tcount] = transportCreatehello (i);
+          if (NULL != hellos[tcount])
+            tcount++;
+        }
     }
-  }
-  MUTEX_UNLOCK(tapis_lock);
-  if (tcount == 0) {
-    GE_LOG(ectx,
-     GE_INFO | GE_USER | GE_REQUEST,
-     _("No transport succeeded in creating a hello!\n"));
-    FREE(hellos);
-    return SYSERR;
-  }
+  MUTEX_UNLOCK (tapis_lock);
+  if (tcount == 0)
+    {
+      GE_LOG (ectx,
+              GE_INFO | GE_USER | GE_REQUEST,
+              _("No transport succeeded in creating a hello!\n"));
+      FREE (hellos);
+      return SYSERR;
+    }
   used = 0;
-  while (tcount > 0) {
-    i = weak_randomi(tcount); /* select a hello at random */
-    if ((unsigned int)P2P_hello_MESSAGE_size(hellos[i]) <= maxLen - used) {
-      memcpy(&buff[used],
-       hellos[i],
-       P2P_hello_MESSAGE_size(hellos[i]));
-      used += P2P_hello_MESSAGE_size(hellos[i]);
+  while (tcount > 0)
+    {
+      i = weak_randomi (tcount);        /* select a hello at random */
+      if ((unsigned int) P2P_hello_MESSAGE_size (hellos[i]) <= maxLen - used)
+        {
+          memcpy (&buff[used], hellos[i], P2P_hello_MESSAGE_size (hellos[i]));
+          used += P2P_hello_MESSAGE_size (hellos[i]);
+        }
+      FREE (hellos[i]);
+      hellos[i] = hellos[--tcount];
     }
-    FREE(hellos[i]);
-    hellos[i] = hellos[--tcount];
-  }
-  for (i=0;i<tcount;i++)
-    FREE(hellos[i]);
-  FREE(hellos);
+  for (i = 0; i < tcount; i++)
+    FREE (hellos[i]);
+  FREE (hellos);
   if (used == 0)
-    GE_LOG(ectx,
-     GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
-     "No HELLOs fit in %u bytes.\n",
-     maxLen);
+    GE_LOG (ectx,
+            GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+            "No HELLOs fit in %u bytes.\n", maxLen);
   return used;
 }
 
-static void initHello(void * cls) {
-  TransportAPI * tapi = cls;
-  P2P_hello_MESSAGE * hello;
+static void
+initHello (void *cls)
+{
+  TransportAPI *tapi = cls;
+  P2P_hello_MESSAGE *hello;
 
-  createSignedhello(tapi);
-  hello = transportCreatehello(tapi->protocolNumber);
-  if (NULL != hello) {
-    identity->addHost(hello);
-    FREE(hello);
-  }
+  createSignedhello (tapi);
+  hello = transportCreatehello (tapi->protocolNumber);
+  if (NULL != hello)
+    {
+      identity->addHost (hello);
+      FREE (hello);
+    }
 }
 
 
-static void doneHelper(TransportAPI * tapi,
-  	       void * unused) {
+static void
+doneHelper (TransportAPI * tapi, void *unused)
+{
   /* In the (rare) case that we shutdown transports
      before the cron-jobs had a chance to run, stop
      the cron-jobs */
-  cron_del_job(coreAPI->cron,
-         &initHello,
-         0,
-         tapi);
+  cron_del_job (coreAPI->cron, &initHello, 0, tapi);
 }
 
-static void unloadTransport(int i) {
-  void (*ptr)();
+static void
+unloadTransport (int i)
+{
+  void (*ptr) ();
 
-  doneHelper(tapis[i], NULL);
-  cron_del_job(coreAPI->cron,
-         &createSignedhello,
-         HELLO_RECREATE_FREQ,
-         tapis[i]);
-  ptr = os_plugin_resolve_function(tapis[i]->libHandle,
-  			   "donetransport_",
-  			   NO);
+  doneHelper (tapis[i], NULL);
+  cron_del_job (coreAPI->cron,
+                &createSignedhello, HELLO_RECREATE_FREQ, tapis[i]);
+  ptr = os_plugin_resolve_function (tapis[i]->libHandle,
+                                    "donetransport_", NO);
   if (ptr != NULL)
-    ptr();
-  FREE(tapis[i]->transName);
-  FREENONNULL(tapis[i]->hello);
+    ptr ();
+  FREE (tapis[i]->transName);
+  FREENONNULL (tapis[i]->hello);
   tapis[i]->hello = NULL;
-  os_plugin_unload(tapis[i]->libHandle);
+  os_plugin_unload (tapis[i]->libHandle);
   tapis[i] = NULL;
 }
 
@@ -525,31 +537,37 @@ static void unloadTransport(int i) {
  * Actually start the transport services and begin
  * receiving messages.
  */
-static void startTransports(P2P_PACKETProcessor mpp) {
+static void
+startTransports (P2P_PACKETProcessor mpp)
+{
   int i;
 
   ctapi.receive = mpp;
-  for (i=0;i<tapis_count;i++)
-    if (tapis[i] != NULL) {
-      if (OK != tapis[i]->startTransportServer())
-  unloadTransport(i);
-    }
+  for (i = 0; i < tapis_count; i++)
+    if (tapis[i] != NULL)
+      {
+        if (OK != tapis[i]->startTransportServer ())
+          unloadTransport (i);
+      }
 }
 
 /**
  * Stop the transport services, stop receiving messages.
  */
-static void stopTransports() {
+static void
+stopTransports ()
+{
   int i;
 
-  for (i=0;i<tapis_count;i++)
+  for (i = 0; i < tapis_count; i++)
     if (tapis[i] != NULL)
-      tapis[i]->stopTransportServer();
+      tapis[i]->stopTransportServer ();
   ctapi.receive = NULL;
 }
 
-static void initHelper(TransportAPI * tapi,
-  	       void * unused) {
+static void
+initHelper (TransportAPI * tapi, void *unused)
+{
   /* Creation of HELLOs takes longer if a locally
      unresolvable hostname ((Dyn)DNS) was specified
      as this host's address and we have no network
@@ -557,11 +575,7 @@ static void initHelper(TransportAPI * tapi,
      blocks the startup process in this case.
      This is why we create the HELLOs in another
      thread. */
-  cron_add_job(coreAPI->cron,
-         &initHello,
-         0,
-         0,
-         tapi);
+  cron_add_job (coreAPI->cron, &initHello, 0, 0, tapi);
 }
 
 /**
@@ -577,51 +591,48 @@ static void initHelper(TransportAPI * tapi,
  *         NO if the transport would just drop the message,
  *         SYSERR if the size/session is invalid
  */
-static int testWouldTry(TSession * tsession,
-  		unsigned int size,
-  		int important) {
+static int
+testWouldTry (TSession * tsession, unsigned int size, int important)
+{
   if (tsession == NULL)
     return SYSERR;
-  if ( (tsession->ttype >= tapis_count) ||
-       (tapis[tsession->ttype] == NULL) )
+  if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     return SYSERR;
-  return tapis[tsession->ttype]->testWouldTry(tsession,
-  				      size,
-  				      important);
+  return tapis[tsession->ttype]->testWouldTry (tsession, size, important);
 }
 
 /**
  * Initialize the transport layer.
  */
 Transport_ServiceAPI *
-provide_module_transport(CoreAPIForApplication * capi) {
+provide_module_transport (CoreAPIForApplication * capi)
+{
   static Transport_ServiceAPI ret;
-  TransportAPI * tapi;
+  TransportAPI *tapi;
   TransportMainMethod tptr;
-  char * dso;
-  char * next;
-  char * pos;
-  struct PluginHandle * lib;
+  char *dso;
+  char *next;
+  char *pos;
+  struct PluginHandle *lib;
   EncName myself;
 
   ectx = capi->ectx;
-  if (-1 == GC_get_configuration_value_number(capi->cfg,
-  				      "GNUNETD",
-  				      "HELLOEXPIRES",
-  				      1,
-  				      MAX_HELLO_EXPIRES / 60,
-  				      60,
-  				      &hello_live))
+  if (-1 == GC_get_configuration_value_number (capi->cfg,
+                                               "GNUNETD",
+                                               "HELLOEXPIRES",
+                                               1,
+                                               MAX_HELLO_EXPIRES / 60,
+                                               60, &hello_live))
     return NULL;
   hello_live *= 60;
 
-  GE_ASSERT(ectx,
-      sizeof(P2P_hello_MESSAGE) == 600);
-  identity = capi->requestService("identity");
-  if (identity == NULL) {
-    GE_BREAK(ectx, 0);
-    return NULL;
-  }
+  GE_ASSERT (ectx, sizeof (P2P_hello_MESSAGE) == 600);
+  identity = capi->requestService ("identity");
+  if (identity == NULL)
+    {
+      GE_BREAK (ectx, 0);
+      return NULL;
+    }
   coreAPI = capi;
   ctapi.version = 1;
   ctapi.myIdentity = coreAPI->myIdentity;
@@ -629,100 +640,94 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ctapi.cfg = coreAPI->cfg;
   ctapi.load_monitor = coreAPI->load_monitor;
   ctapi.cron = coreAPI->cron;
-  ctapi.receive = NULL; /* initialized LATER! */
+  ctapi.receive = NULL;         /* initialized LATER! */
   ctapi.requestService = coreAPI->requestService;
   ctapi.releaseService = coreAPI->releaseService;
 
-  GROW(tapis,
-       tapis_count,
-       UDP_PROTOCOL_NUMBER+1);
+  GROW (tapis, tapis_count, UDP_PROTOCOL_NUMBER + 1);
 
-  tapis_lock = MUTEX_CREATE(YES);
+  tapis_lock = MUTEX_CREATE (YES);
 
   /* now load transports */
   dso = NULL;
-  GE_ASSERT(ectx,
-      -1 != GC_get_configuration_value_string(capi->cfg,
-  					    "GNUNETD",
-  					    "TRANSPORTS",
-  					    "udp tcp nat",
-  					    &dso));
-  if (strlen(dso) != 0) {
-    GE_LOG(ectx,
-     GE_INFO | GE_USER | GE_BULK,
-     _("Loading transports `%s'\n"),
-     dso);
-    next = dso;
-    do {
-      pos = next;
-      while ( (*next != '\0') &&
-        (*next != ' ') )
-  next++;
-      if (*next == '\0')
-  next = NULL; /* terminate! */
-      else {
-  *next = '\0'; /* add 0-termination for pos */
-  next++;
-      }
-      lib = os_plugin_load(ectx,
-  		   "libgnunettransport_",
-  		   pos);
-      if (lib == NULL) {
-  GE_LOG(ectx,
-         GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-         _("Could not load transport plugin `%s'\n"),
-         pos);
-  continue;
-      }
-      tptr = os_plugin_resolve_function(lib,
-  				"inittransport_",
-  				YES);
-      if (tptr == NULL) {
-  GE_LOG(ectx,
-         GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-         _("Transport library `%s' did not provide required function '%s%s'.\n"),
-         pos,
-         "inittransport_",
-         pos);
-  os_plugin_unload(lib);
-  continue;
-      }
-      tapi = tptr(&ctapi);
-      if (tapi == NULL) {
-  os_plugin_unload(lib);
-  continue;
-      }
-      tapi->libHandle = lib;
-      tapi->transName = STRDUP(pos);
-      if (OK != addTransport(tapi)) {
-  void (*ptr)();
+  GE_ASSERT (ectx,
+             -1 != GC_get_configuration_value_string (capi->cfg,
+                                                      "GNUNETD",
+                                                      "TRANSPORTS",
+                                                      "udp tcp nat", &dso));
+  if (strlen (dso) != 0)
+    {
+      GE_LOG (ectx,
+              GE_INFO | GE_USER | GE_BULK,
+              _("Loading transports `%s'\n"), dso);
+      next = dso;
+      do
+        {
+          pos = next;
+          while ((*next != '\0') && (*next != ' '))
+            next++;
+          if (*next == '\0')
+            next = NULL;        /* terminate! */
+          else
+            {
+              *next = '\0';     /* add 0-termination for pos */
+              next++;
+            }
+          lib = os_plugin_load (ectx, "libgnunettransport_", pos);
+          if (lib == NULL)
+            {
+              GE_LOG (ectx,
+                      GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                      _("Could not load transport plugin `%s'\n"), pos);
+              continue;
+            }
+          tptr = os_plugin_resolve_function (lib, "inittransport_", YES);
+          if (tptr == NULL)
+            {
+              GE_LOG (ectx,
+                      GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER |
+                      GE_IMMEDIATE,
+                      _
+                      ("Transport library `%s' did not provide required function '%s%s'.\n"),
+                      pos, "inittransport_", pos);
+              os_plugin_unload (lib);
+              continue;
+            }
+          tapi = tptr (&ctapi);
+          if (tapi == NULL)
+            {
+              os_plugin_unload (lib);
+              continue;
+            }
+          tapi->libHandle = lib;
+          tapi->transName = STRDUP (pos);
+          if (OK != addTransport (tapi))
+            {
+              void (*ptr) ();
 
-  FREE(tapi->transName);
-  ptr = os_plugin_resolve_function(lib,
-  				 "donetransport_",
-  				 NO);
-  if (ptr != NULL)
-    ptr();
-  os_plugin_unload(lib);	
-      } else {
-  GE_LOG(ectx,
-         GE_INFO | GE_USER | GE_BULK,
-         _("Loaded transport `%s'\n"),
-         pos);
-      }
-    } while (next != NULL);
-  }
-  FREE(dso);
+              FREE (tapi->transName);
+              ptr = os_plugin_resolve_function (lib, "donetransport_", NO);
+              if (ptr != NULL)
+                ptr ();
+              os_plugin_unload (lib);
+            }
+          else
+            {
+              GE_LOG (ectx,
+                      GE_INFO | GE_USER | GE_BULK,
+                      _("Loaded transport `%s'\n"), pos);
+            }
+        }
+      while (next != NULL);
+    }
+  FREE (dso);
 
-  IF_GELOG(ectx,
-     GE_INFO | GE_REQUEST | GE_USER,
-     hash2enc(&coreAPI->myIdentity->hashPubKey,
-  	    &myself));
-  GE_LOG(ectx,
-   GE_INFO | GE_REQUEST | GE_USER,
-   _("I am peer `%s'.\n"),
-   &myself);
-  forEachTransport(&initHelper, NULL);
+  IF_GELOG (ectx,
+            GE_INFO | GE_REQUEST | GE_USER,
+            hash2enc (&coreAPI->myIdentity->hashPubKey, &myself));
+  GE_LOG (ectx,
+          GE_INFO | GE_REQUEST | GE_USER, _("I am peer `%s'.\n"), &myself);
+  forEachTransport (&initHelper, NULL);
 
   ret.start = &startTransports;
   ret.stop = &stopTransports;
@@ -749,24 +754,24 @@ provide_module_transport(CoreAPIForApplication * capi) {
 /**
  * Shutdown the transport layer.
  */
-int release_module_transport() {
+int
+release_module_transport ()
+{
   int i;
 
-  forEachTransport(&doneHelper, NULL);
-  for (i=0;i<tapis_count;i++)
+  forEachTransport (&doneHelper, NULL);
+  for (i = 0; i < tapis_count; i++)
     if (tapis[i] != NULL)
-      unloadTransport(i);
-  MUTEX_DESTROY(tapis_lock);
+      unloadTransport (i);
+  MUTEX_DESTROY (tapis_lock);
   tapis_lock = NULL;
-  GROW(tapis,
-       tapis_count,
-       0);
+  GROW (tapis, tapis_count, 0);
 
-  coreAPI->releaseService(identity);
+  coreAPI->releaseService (identity);
   identity = NULL;
   coreAPI = NULL;
   return OK;
 }
 
 
-/* end of transport.c */  		
+/* end of transport.c */

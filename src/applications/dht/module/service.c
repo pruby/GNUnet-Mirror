@@ -33,11 +33,12 @@
 /**
  * Global core API.
  */
-static CoreAPIForApplication * coreAPI;
+static CoreAPIForApplication *coreAPI;
 
-static struct CronManager * cron;
+static struct CronManager *cron;
 
-typedef struct DHT_GET_RECORD {
+typedef struct DHT_GET_RECORD
+{
   /**
    * Key that we are looking for.
    */
@@ -51,7 +52,7 @@ typedef struct DHT_GET_RECORD {
   /**
    * Extra argument to callback.
    */
-  void * cls;
+  void *cls;
 
   /**
    * Function to call once we are done
@@ -61,7 +62,7 @@ typedef struct DHT_GET_RECORD {
   /**
    * Extra argument to callbackComplete
    */
-  void * closure;
+  void *closure;
 
   /**
    * Type of the content that we are looking for.
@@ -70,32 +71,30 @@ typedef struct DHT_GET_RECORD {
 
 } DHT_GET_RECORD;
 
-static void client_result_converter(const HashCode512 * key,
-  			    unsigned int type,
-  			    unsigned int size,
-  			    const char * data,
-  			    void * cls) {
-  struct DHT_GET_RECORD * get = cls;
-  DataContainer * dc;
+static void
+client_result_converter (const HashCode512 * key,
+                         unsigned int type,
+                         unsigned int size, const char *data, void *cls)
+{
+  struct DHT_GET_RECORD *get = cls;
+  DataContainer *dc;
 
-  dc = MALLOC(sizeof(DataContainer) + size);
-  dc->size = ntohl(sizeof(DataContainer) + size);
-  memcpy(&dc[1],
-   data,
-   size);
-  get->callback(key,
-  	dc,
-  	get->cls);
-  FREE(dc);
+  dc = MALLOC (sizeof (DataContainer) + size);
+  dc->size = ntohl (sizeof (DataContainer) + size);
+  memcpy (&dc[1], data, size);
+  get->callback (key, dc, get->cls);
+  FREE (dc);
 }
 
 /**
  * Cron job that notifies the client.
  */
-static void timeout_callback(void * cls) {
-  struct DHT_GET_RECORD * rec = cls;
+static void
+timeout_callback (void *cls)
+{
+  struct DHT_GET_RECORD *rec = cls;
 
-  rec->callbackComplete(rec->closure);
+  rec->callbackComplete (rec->closure);
 }
 
 /**
@@ -117,31 +116,24 @@ static void timeout_callback(void * cls) {
  * @return handle to stop the async get
  */
 static struct DHT_GET_RECORD *
-dht_get_async_start(unsigned int type,
-  	    const HashCode512 * key,
-  	    cron_t timeout,
-  	    DataProcessor callback,
-  	    void * cls,
-  	    DHT_OP_Complete callbackComplete,
-  	    void * closure) {
-  struct DHT_GET_RECORD * ret;
+dht_get_async_start (unsigned int type,
+                     const HashCode512 * key,
+                     cron_t timeout,
+                     DataProcessor callback,
+                     void *cls,
+                     DHT_OP_Complete callbackComplete, void *closure)
+{
+  struct DHT_GET_RECORD *ret;
 
-  ret = MALLOC(sizeof(DHT_GET_RECORD));
+  ret = MALLOC (sizeof (DHT_GET_RECORD));
   ret->key = *key;
   ret->callback = callback;
   ret->cls = cls;
   ret->callbackComplete = callbackComplete;
   ret->closure = closure;
   ret->type = type;
-  cron_add_job(cron,
-         &timeout_callback,
-         timeout,
-         0,
-         ret);
-  dht_get_start(key,
-  	type,
-  	&client_result_converter,
-  	ret);
+  cron_add_job (cron, &timeout_callback, timeout, 0, ret);
+  dht_get_start (key, type, &client_result_converter, ret);
   return ret;
 }
 
@@ -149,20 +141,13 @@ dht_get_async_start(unsigned int type,
  * Stop async DHT-get.  Frees associated resources.
  */
 static int
-dht_get_async_stop(struct DHT_GET_RECORD * record) {
-  cron_suspend(cron,
-         YES);
-  cron_del_job(cron,
-         &timeout_callback,
-         0,
-         record);		
-  cron_resume_jobs(cron,
-  	   YES);
-  dht_get_stop(&record->key,
-         record->type,
-         &client_result_converter,
-         record);
-  FREE(record);
+dht_get_async_stop (struct DHT_GET_RECORD *record)
+{
+  cron_suspend (cron, YES);
+  cron_del_job (cron, &timeout_callback, 0, record);
+  cron_resume_jobs (cron, YES);
+  dht_get_stop (&record->key, record->type, &client_result_converter, record);
+  FREE (record);
   return OK;
 }
 
@@ -174,23 +159,25 @@ dht_get_async_stop(struct DHT_GET_RECORD * record) {
  * @return NULL on errors, DHT_API otherwise
  */
 DHT_ServiceAPI *
-provide_module_dht(CoreAPIForApplication * capi) {
+provide_module_dht (CoreAPIForApplication * capi)
+{
   static DHT_ServiceAPI api;
 
-  cron = cron_create(capi->ectx);
-  cron_start(cron);
-  if (OK != init_dht_store(1024 * 1024,
-  		   capi))
+  cron = cron_create (capi->ectx);
+  cron_start (cron);
+  if (OK != init_dht_store (1024 * 1024, capi))
     return NULL;
-  if (OK != init_dht_table(capi)) {
-    done_dht_store();
-    return NULL;
-  }
-  if (OK != init_dht_routing(capi)) {
-    done_dht_table();
-    done_dht_store();
-    return NULL;
-  }
+  if (OK != init_dht_table (capi))
+    {
+      done_dht_store ();
+      return NULL;
+    }
+  if (OK != init_dht_routing (capi))
+    {
+      done_dht_table ();
+      done_dht_store ();
+      return NULL;
+    }
   coreAPI = capi;
   api.get_start = &dht_get_async_start;
   api.get_stop = &dht_get_async_stop;
@@ -201,12 +188,14 @@ provide_module_dht(CoreAPIForApplication * capi) {
 /**
  * Shutdown DHT service.
  */
-int release_module_dht() {
-  cron_stop(cron);
-  done_dht_routing();
-  done_dht_table();
-  done_dht_store();
-  cron_destroy(cron);
+int
+release_module_dht ()
+{
+  cron_stop (cron);
+  done_dht_routing ();
+  done_dht_table ();
+  done_dht_store ();
+  cron_destroy (cron);
   return OK;
 }
 

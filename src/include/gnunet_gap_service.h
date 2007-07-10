@@ -35,8 +35,9 @@
 
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -53,23 +54,24 @@ extern "C" {
  * request.
  * @param verify check that content is valid? (YES/NO)
  */
-typedef int (*UniqueReplyIdentifier)(const DataContainer * content,
-				     unsigned int query_type,
-				     int verify,
-				     const HashCode512 * primaryKey);
+typedef int (*UniqueReplyIdentifier) (const DataContainer * content,
+                                      unsigned int query_type,
+                                      int verify,
+                                      const HashCode512 * primaryKey);
 
 /**
  * Given some content, compute the unique
  * hash of the content that can then be used
  * to sort out duplicates.
  */
-typedef int (*ReplyHashFunction)(const DataContainer * data,
-				 HashCode512 * hc);
+typedef int (*ReplyHashFunction) (const DataContainer * data,
+                                  HashCode512 * hc);
 
 /**
  * Functions of the GAP Service API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Start GAP.
@@ -77,9 +79,8 @@ typedef struct {
    * @param datastore the storage callbacks to use for storing data
    * @return SYSERR on error, OK on success
    */
-  int (*init)(Blockstore * datastore,
-	      UniqueReplyIdentifier uri,
-	      ReplyHashFunction rhf);
+  int (*init) (Blockstore * datastore,
+               UniqueReplyIdentifier uri, ReplyHashFunction rhf);
 
   /**
    * Perform a GET operation using 'key' as the key.  Note that no
@@ -95,22 +96,20 @@ typedef struct {
    * @return OK if we will start to query, SYSERR if all of our
    *  buffers are full or other error
    */
-  int (*get_start)(const PeerIdentity * target,
-		   unsigned int type,
-		   unsigned int anonymityLevel,
-		   unsigned int keyCount,
-		   const HashCode512 * keys,
-		   cron_t timeout,
-		   unsigned int prio);
+  int (*get_start) (const PeerIdentity * target,
+                    unsigned int type,
+                    unsigned int anonymityLevel,
+                    unsigned int keyCount,
+                    const HashCode512 * keys,
+                    cron_t timeout, unsigned int prio);
 
   /**
    * Stop sending out queries for a given key.  GAP will automatically
    * stop sending queries at some point, but this method can be used
    * to stop it earlier.
    */
-  int (*get_stop)(unsigned int type,
-		  unsigned int keyCount,
-		  const HashCode512 * keys);
+  int (*get_stop) (unsigned int type,
+                   unsigned int keyCount, const HashCode512 * keys);
 
   /**
    * Try to migrate the given content.
@@ -121,21 +120,20 @@ typedef struct {
    * @return the number of bytes written to
    *   that buffer (must be a positive number).
    */
-  unsigned int (*tryMigrate)(const DataContainer * data,
-			     const HashCode512 * primaryKey,
-			     char * position,
-			     unsigned int padding);
+  unsigned int (*tryMigrate) (const DataContainer * data,
+                              const HashCode512 * primaryKey,
+                              char *position, unsigned int padding);
 
   /**
    * What is the average priority of requests that we
    * are currently routing?
    */
-  unsigned int (*getAvgPriority)(void);
+  unsigned int (*getAvgPriority) (void);
 
 } GAP_ServiceAPI;
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

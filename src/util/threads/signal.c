@@ -29,7 +29,8 @@
 #include "platform.h"
 
 #ifndef MINGW
-typedef struct SignalHandlerContext {
+typedef struct SignalHandlerContext
+{
   int sig;
 
   SignalHandler method;
@@ -37,34 +38,37 @@ typedef struct SignalHandlerContext {
   struct sigaction oldsig;
 } SignalHandlerContext;
 
-struct SignalHandlerContext * signal_handler_install(int signal,
-  					     SignalHandler handler) {
-  struct SignalHandlerContext * ret;
+struct SignalHandlerContext *
+signal_handler_install (int signal, SignalHandler handler)
+{
+  struct SignalHandlerContext *ret;
   struct sigaction sig;
 
-  ret = MALLOC(sizeof(struct SignalHandlerContext));
+  ret = MALLOC (sizeof (struct SignalHandlerContext));
   ret->sig = signal;
   ret->method = handler;
 
-  sig.sa_handler = (void*) handler;
-  sigemptyset(&sig.sa_mask);
+  sig.sa_handler = (void *) handler;
+  sigemptyset (&sig.sa_mask);
 #ifdef SA_INTERRUPT
-  sig.sa_flags = SA_INTERRUPT; /* SunOS */
+  sig.sa_flags = SA_INTERRUPT;  /* SunOS */
 #else
   sig.sa_flags = SA_RESTART;
 #endif
-  sigaction(signal,  &sig, &ret->oldsig);
+  sigaction (signal, &sig, &ret->oldsig);
   return ret;
 }
 
-void signal_handler_uninstall(int signal,
-  		      SignalHandler handler,
-  		      struct SignalHandlerContext * ctx) {
+void
+signal_handler_uninstall (int signal,
+                          SignalHandler handler,
+                          struct SignalHandlerContext *ctx)
+{
   struct sigaction sig;
 
-  GE_ASSERT(NULL, (ctx->sig == signal) && (ctx->method == handler));
-  sigemptyset(&sig.sa_mask);
-  sigaction(signal,  &ctx->oldsig, &sig);
-  FREE(ctx);
+  GE_ASSERT (NULL, (ctx->sig == signal) && (ctx->method == handler));
+  sigemptyset (&sig.sa_mask);
+  sigaction (signal, &ctx->oldsig, &sig);
+  FREE (ctx);
 }
 #endif

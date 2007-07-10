@@ -28,8 +28,8 @@
 /* Returns a NULL-terminated string after unescaping an entity
  * (eg. &amp;, &lt; &#38 etc.) starting at s. Returns NULL on failure.*/
 static char *
-detect_entity(const char *text,
-        int *length) {
+detect_entity (const char *text, int *length)
+{
   const char *pln;
   int len;
   int pound;
@@ -39,102 +39,114 @@ detect_entity(const char *text,
 
 #define IS_ENTITY(s)  (!strncasecmp(text, s, (len = sizeof(s) - 1)))
 
-  if(IS_ENTITY("&amp;"))
+  if (IS_ENTITY ("&amp;"))
     pln = "&";
-  else if(IS_ENTITY("&lt;"))
+  else if (IS_ENTITY ("&lt;"))
     pln = "<";
-  else if(IS_ENTITY("&gt;"))
+  else if (IS_ENTITY ("&gt;"))
     pln = ">";
-  else if(IS_ENTITY("&nbsp;"))
+  else if (IS_ENTITY ("&nbsp;"))
     pln = " ";
-  else if(IS_ENTITY("&copy;"))
-    pln = "\302\251";      /* or use g_unichar_to_utf8(0xa9); */
-  else if(IS_ENTITY("&quot;"))
+  else if (IS_ENTITY ("&copy;"))
+    pln = "\302\251";           /* or use g_unichar_to_utf8(0xa9); */
+  else if (IS_ENTITY ("&quot;"))
     pln = "\"";
-  else if(IS_ENTITY("&reg;"))
-    pln = "\302\256";      /* or use g_unichar_to_utf8(0xae); */
-  else if(IS_ENTITY("&apos;"))
+  else if (IS_ENTITY ("&reg;"))
+    pln = "\302\256";           /* or use g_unichar_to_utf8(0xae); */
+  else if (IS_ENTITY ("&apos;"))
     pln = "\'";
-  else if(*(text+1) == '#' && (sscanf(text, "&#%u;", &pound) == 1) &&
-    pound != 0 && *(text+3+(int)log10(pound)) == ';') {
-    char b[7];
-    char * buf = string_convertToUtf8(NULL,
-  			      (const char*) &pound,
-  			      2,
-  			      "UNICODE");
-    if (strlen(buf) > 6)
-      buf[6] = '\0';
-    strcpy(b, buf);
-    pln = b;
-    FREE(buf);
-    len = 2;
-    while (isdigit((int) text[len]))
-      len++;
-    if (text[len] == ';') len++;
-  } else
+  else if (*(text + 1) == '#' && (sscanf (text, "&#%u;", &pound) == 1) &&
+           pound != 0 && *(text + 3 + (int) log10 (pound)) == ';')
+    {
+      char b[7];
+      char *buf = string_convertToUtf8 (NULL,
+                                        (const char *) &pound,
+                                        2,
+                                        "UNICODE");
+      if (strlen (buf) > 6)
+        buf[6] = '\0';
+      strcpy (b, buf);
+      pln = b;
+      FREE (buf);
+      len = 2;
+      while (isdigit ((int) text[len]))
+        len++;
+      if (text[len] == ';')
+        len++;
+    }
+  else
     return NULL;
 
   if (length)
     *length = len;
-  return STRDUP(pln);
+  return STRDUP (pln);
 }
 
 char *
-g_strdup_printf(const char * fmt,
-  	...) {
+g_strdup_printf (const char *fmt, ...)
+{
   size_t size;
-  char * buf;
+  char *buf;
   va_list va;
 
-  va_start(va, fmt);
-  size = VSNPRINTF(NULL, 0, fmt, va) + 1;
-  va_end(va);
-  buf = malloc(size);
-  va_start(va, fmt);
-  VSNPRINTF(buf, size, fmt, va);
-  va_end(va);
+  va_start (va, fmt);
+  size = VSNPRINTF (NULL, 0, fmt, va) + 1;
+  va_end (va);
+  buf = malloc (size);
+  va_start (va, fmt);
+  VSNPRINTF (buf, size, fmt, va);
+  va_end (va);
   return buf;
 }
 
 char *
-gaim_unescape_html(const char *html) {
-  if (html != NULL) {
-    const char *c = html;
-    char *ret = STRDUP("");
-    char *app;
-    while (*c) {
-      int len;
-      char *ent;
+gaim_unescape_html (const char *html)
+{
+  if (html != NULL)
+    {
+      const char *c = html;
+      char *ret = STRDUP ("");
+      char *app;
+      while (*c)
+        {
+          int len;
+          char *ent;
 
-      if ((ent = detect_entity(c, &len)) != NULL) {
-  app = g_strdup_printf("%s%s", ret, ent);
-  FREE(ret);
-  ret = app;
-  c += len;
-  FREE(ent);
-      } else if (!strncmp(c, "<br>", 4)) {
-  app = g_strdup_printf("%s%s", ret, "\n");
-  FREE(ret);
-  ret = app;
-  c += 4;
-      } else {
-  app = g_strdup_printf("%s%c", ret, *c);
-  FREE(ret);
-  ret = app;
-  c++;
-      }
+          if ((ent = detect_entity (c, &len)) != NULL)
+            {
+              app = g_strdup_printf ("%s%s", ret, ent);
+              FREE (ret);
+              ret = app;
+              c += len;
+              FREE (ent);
+            }
+          else if (!strncmp (c, "<br>", 4))
+            {
+              app = g_strdup_printf ("%s%s", ret, "\n");
+              FREE (ret);
+              ret = app;
+              c += 4;
+            }
+          else
+            {
+              app = g_strdup_printf ("%s%c", ret, *c);
+              FREE (ret);
+              ret = app;
+              c++;
+            }
+        }
+      return ret;
     }
-    return ret;
-  }
   return NULL;
 }
 
 
 int
-gaim_str_has_prefix(const char *s, const char *p) {
-  if ( (s == NULL) || (p == NULL) )
+gaim_str_has_prefix (const char *s, const char *p)
+{
+  if ((s == NULL) || (p == NULL))
     return 0;
-  return ! strncmp(s, p, strlen(p));
+  return !strncmp (s, p, strlen (p));
 }
 
 /* end of util.c */

@@ -33,8 +33,8 @@
  * Get the IP address for the local machine.
  * @return NULL on error
  */
-char * gaim_upnp_get_internal_ip(struct GC_Configuration * cfg,
-				 struct GE_Context * ectx);
+char *gaim_upnp_get_internal_ip (struct GC_Configuration *cfg,
+                                 struct GE_Context *ectx);
 
 
 #endif

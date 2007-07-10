@@ -28,8 +28,10 @@
 #include "gnunet_util_config_impl.h"
 #include "platform.h"
 
-void GC_free(struct GC_Configuration * cfg) {
-  cfg->free(cfg);
+void
+GC_free (struct GC_Configuration *cfg)
+{
+  cfg->free (cfg);
 }
 
 /**
@@ -44,9 +46,10 @@ void GC_free(struct GC_Configuration * cfg) {
  * @parm ectx maybe NULL, in that case errors will no longer
  *       be reported
  */
-void GC_set_error_context(struct GC_Configuration * cfg,
-  		  struct GE_Context * ectx) {
-  cfg->set_error_context(cfg, ectx);
+void
+GC_set_error_context (struct GC_Configuration *cfg, struct GE_Context *ectx)
+{
+  cfg->set_error_context (cfg, ectx);
 }
 
 /**
@@ -54,9 +57,10 @@ void GC_set_error_context(struct GC_Configuration * cfg,
  * file to the configuration environment.
  * @return 0 on success, -1 on error
  */
-int GC_parse_configuration(struct GC_Configuration * cfg,
-  		   const char * filename) {
-  return cfg->parse_configuration(cfg, filename);
+int
+GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
+{
+  return cfg->parse_configuration (cfg, filename);
 }
 
 /**
@@ -64,8 +68,10 @@ int GC_parse_configuration(struct GC_Configuration * cfg,
  * changed since the last save.
  * @return 0 if clean, 1 if dirty, -1 on error (i.e. last save failed)
  */
-int GC_test_dirty(struct GC_Configuration * cfg) {
-  return cfg->test_dirty(cfg);
+int
+GC_test_dirty (struct GC_Configuration *cfg)
+{
+  return cfg->test_dirty (cfg);
 }
 
 
@@ -73,9 +79,10 @@ int GC_test_dirty(struct GC_Configuration * cfg) {
  * Write configuration file.
  * @return 0 on success, -1 on error
  */
-int GC_write_configuration(struct GC_Configuration * cfg,
-  		   const char * filename) {
-  return cfg->write_configuration(cfg, filename);
+int
+GC_write_configuration (struct GC_Configuration *cfg, const char *filename)
+{
+  return cfg->write_configuration (cfg, filename);
 }
 
 
@@ -87,20 +94,20 @@ int GC_write_configuration(struct GC_Configuration * cfg,
  *        will NOT be aliased, maybe NULL)
  * @return YES, NO or SYSERR
  */
-int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
-  			     const char * section,
-  			     const char * option,
-  			     int def) {
-  static const char * yesno[] = { "YES" , "NO", NULL };
-  const char * val;
+int
+GC_get_configuration_value_yesno (struct GC_Configuration *cfg,
+                                  const char *section,
+                                  const char *option, int def)
+{
+  static const char *yesno[] = { "YES", "NO", NULL };
+  const char *val;
   int ret;
 
-  ret = GC_get_configuration_value_choice(cfg,
-  				  section,
-  				  option,
-  				  yesno,
-  				  def == YES ? "YES" : "NO",
-  				  &val);
+  ret = GC_get_configuration_value_choice (cfg,
+                                           section,
+                                           option,
+                                           yesno,
+                                           def == YES ? "YES" : "NO", &val);
   if (ret == -1)
     return SYSERR;
   if (val == yesno[0])
@@ -116,9 +123,10 @@ int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
  * @param old string to $-expand (will be freed!)
  * @return $-expanded string
  */
-char * GC_configuration_expand_dollar(struct GC_Configuration * cfg,
-  			      char * old) {
-  return cfg->configuration_expand_dollar(cfg, old);
+char *
+GC_configuration_expand_dollar (struct GC_Configuration *cfg, char *old)
+{
+  return cfg->configuration_expand_dollar (cfg, old);
 }
 
 /**
@@ -128,14 +136,17 @@ char * GC_configuration_expand_dollar(struct GC_Configuration * cfg,
  * @param def default value (use indicated by return value)
  * @return 0 on success, -1 on error, 1 for default
  */
-int GC_get_configuration_value_number(struct GC_Configuration * cfg,
-  			      const char * section,
-  			      const char * option,
-  			      unsigned long long min,
-  			      unsigned long long max,
-  			      unsigned long long def,
-  			      unsigned long long * number) {
-  return cfg->get_configuration_value_number(cfg, section, option, min, max, def, number);
+int
+GC_get_configuration_value_number (struct GC_Configuration *cfg,
+                                   const char *section,
+                                   const char *option,
+                                   unsigned long long min,
+                                   unsigned long long max,
+                                   unsigned long long def,
+                                   unsigned long long *number)
+{
+  return cfg->get_configuration_value_number (cfg, section, option, min, max,
+                                              def, number);
 }
 
 
@@ -147,20 +158,24 @@ int GC_get_configuration_value_number(struct GC_Configuration * cfg,
  *        value, or NULL if option is not specified and no default given
  * @return 0 on success, -1 on error, 1 for default
  */
-int GC_get_configuration_value_string(struct GC_Configuration * cfg,
-  			      const char * section,
-  			      const char * option,
-  			      const char * def,
-  			      char ** value) {
-  return cfg->get_configuration_value_string(cfg, section, option, def, value);
+int
+GC_get_configuration_value_string (struct GC_Configuration *cfg,
+                                   const char *section,
+                                   const char *option,
+                                   const char *def, char **value)
+{
+  return cfg->get_configuration_value_string (cfg, section, option, def,
+                                              value);
 }
 
-int GC_get_configuration_value_filename(struct GC_Configuration * cfg,
-  				const char * section,
-  				const char * option,
-  				const char * def,
-  				char ** value) {
-  return cfg->get_configuration_value_filename(cfg, section, option, def, value);
+int
+GC_get_configuration_value_filename (struct GC_Configuration *cfg,
+                                     const char *section,
+                                     const char *option,
+                                     const char *def, char **value)
+{
+  return cfg->get_configuration_value_filename (cfg, section, option, def,
+                                                value);
 }
 
 /**
@@ -174,13 +189,15 @@ int GC_get_configuration_value_filename(struct GC_Configuration * cfg,
  *        or NULL if option is not specified and no default given
  * @return 0 on success, -1 on error, 1 for default
  */
-int GC_get_configuration_value_choice(struct GC_Configuration * cfg,
-  			      const char * section,
-  			      const char * option,
-  			      const char ** choices,
-  			      const char * def,
-  			      const char ** value) {
-  return cfg->get_configuration_value_choice(cfg, section, option, choices, def, value);
+int
+GC_get_configuration_value_choice (struct GC_Configuration *cfg,
+                                   const char *section,
+                                   const char *option,
+                                   const char **choices,
+                                   const char *def, const char **value)
+{
+  return cfg->get_configuration_value_choice (cfg, section, option, choices,
+                                              def, value);
 }
 
 /**
@@ -188,12 +205,15 @@ int GC_get_configuration_value_choice(struct GC_Configuration * cfg,
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
-int GC_set_configuration_value_number(struct GC_Configuration * cfg,
-  			      struct GE_Context * ectx,
-  			      const char * section,
-  			      const char * option,
-  			      unsigned long long number) {
-  return cfg->set_configuration_value_number(cfg, ectx, section, option, number);
+int
+GC_set_configuration_value_number (struct GC_Configuration *cfg,
+                                   struct GE_Context *ectx,
+                                   const char *section,
+                                   const char *option,
+                                   unsigned long long number)
+{
+  return cfg->set_configuration_value_number (cfg, ectx, section, option,
+                                              number);
 }
 
 
@@ -203,12 +223,14 @@ int GC_set_configuration_value_number(struct GC_Configuration * cfg,
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
-int GC_set_configuration_value_string(struct GC_Configuration * cfg,
-  			      struct GE_Context * ectx,
-  			      const char * section,
-  			      const char * option,
-  			      const char * value) {
-  return cfg->set_configuration_value_string(cfg, ectx, section, option, value);
+int
+GC_set_configuration_value_string (struct GC_Configuration *cfg,
+                                   struct GE_Context *ectx,
+                                   const char *section,
+                                   const char *option, const char *value)
+{
+  return cfg->set_configuration_value_string (cfg, ectx, section, option,
+                                              value);
 }
 
 /**
@@ -218,12 +240,14 @@ int GC_set_configuration_value_string(struct GC_Configuration * cfg,
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)
  */
-int GC_set_configuration_value_choice(struct GC_Configuration * cfg,
-  			      struct GE_Context * ectx,
-  			      const char * section,
-  			      const char * option,
-  			      const char * choice) {
-  return cfg->set_configuration_value_choice(cfg, ectx, section, option, choice);
+int
+GC_set_configuration_value_choice (struct GC_Configuration *cfg,
+                                   struct GE_Context *ectx,
+                                   const char *section,
+                                   const char *option, const char *choice)
+{
+  return cfg->set_configuration_value_choice (cfg, ectx, section, option,
+                                              choice);
 }
 
 /**
@@ -231,10 +255,11 @@ int GC_set_configuration_value_choice(struct GC_Configuration * cfg,
  * configuration option changes.
  * @return 0 on success, -1 on error
  */
-int GC_attach_change_listener(struct GC_Configuration * cfg,
-  		      GC_ChangeListener callback,
-  		      void * ctx) {
-  return cfg->attach_change_listener(cfg, callback, ctx);
+int
+GC_attach_change_listener (struct GC_Configuration *cfg,
+                           GC_ChangeListener callback, void *ctx)
+{
+  return cfg->attach_change_listener (cfg, callback, ctx);
 }
 
 /**
@@ -242,16 +267,16 @@ int GC_attach_change_listener(struct GC_Configuration * cfg,
  * configuration option changes.
  * @return 0 on success, -1 on error, 1 for no such handler registered
  */
-int GC_detach_change_listener(struct GC_Configuration * cfg,
-  		      GC_ChangeListener callback,
-  		      void * ctx) {
-  return cfg->detach_change_listener(cfg, callback, ctx);
+int
+GC_detach_change_listener (struct GC_Configuration *cfg,
+                           GC_ChangeListener callback, void *ctx)
+{
+  return cfg->detach_change_listener (cfg, callback, ctx);
 }
 
-int GC_have_configuration_value(struct GC_Configuration * cfg,
-  			const char * section,
-  			const char * option) {
-  return cfg->have_configuration_value(cfg,
-  			       section,
-  			       option);
+int
+GC_have_configuration_value (struct GC_Configuration *cfg,
+                             const char *section, const char *option)
+{
+  return cfg->have_configuration_value (cfg, section, option);
 }

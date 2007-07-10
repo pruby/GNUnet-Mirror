@@ -31,87 +31,97 @@ static int global;
 static int global2;
 static int global3;
 
-static struct CronManager * cron;
+static struct CronManager *cron;
 
-static void cronJob(void * unused) {
-  global++;
+static void
+cronJob (void *unused)
+{
+  global ++;
 }
 
-static void cronJob2(void * unused) {
+static void
+cronJob2 (void *unused)
+{
   global2++;
 }
 
-static void cronJob3(void * unused) {
+static void
+cronJob3 (void *unused)
+{
   global3++;
 }
 
-static int testCron() {
+static int
+testCron ()
+{
   int i;
 
   global = -1;
   global2 = -1;
   global3 = -1;
-  cron_add_job(cron,
-         &cronJob, cronSECONDS*1, cronSECONDS*1, NULL);
-  cron_add_job(cron,
-         &cronJob2, cronSECONDS*4, cronSECONDS*4, NULL);
-  cron_add_job(cron,
-         &cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
-  for (i=0;i<10;i++) {
-    /*    fprintf(stderr,"."); */
-    sleep(1);
-    if (((global-i) * (global-i)) > 9) {
-      fprintf(stderr,"1: Expected %d got %d\n", i, global);
-      return 1;
+  cron_add_job (cron, &cronJob, cronSECONDS * 1, cronSECONDS * 1, NULL);
+  cron_add_job (cron, &cronJob2, cronSECONDS * 4, cronSECONDS * 4, NULL);
+  cron_add_job (cron, &cronJob3, cronSECONDS * 16, cronSECONDS * 16, NULL);
+  for (i = 0; i < 10; i++)
+    {
+      /*    fprintf(stderr,"."); */
+      sleep (1);
+      if (((global -i) *(global -i)) > 9)
+        {
+          fprintf (stderr, "1: Expected %d got %d\n", i, global);
+          return 1;
+        }
+      if (((global2 - (i >> 2)) * (global2 - (i >> 2))) > 9)
+        {
+          fprintf (stderr, "2: Expected %d got %d\n", i >> 2, global2);
+          return 1;
+        }
+      if (((global3 - (i >> 4)) * (global3 - (i >> 4))) > 9)
+        {
+          fprintf (stderr, "3: Expected %d got %d\n", i >> 4, global3);
+          return 1;
+        }
     }
-    if (((global2-(i>>2)) * (global2-(i>>2))) > 9) {
-      fprintf(stderr,"2: Expected %d got %d\n", i>>2, global2);
-      return 1;
-    }
-    if (((global3-(i>>4)) * (global3-(i>>4))) > 9) {
-      fprintf(stderr,"3: Expected %d got %d\n", i>>4, global3);
-      return 1;
-    }
-  }
-  cron_del_job(cron,
-         &cronJob, cronSECONDS*1, NULL);
-  cron_del_job(cron,
-         &cronJob2, cronSECONDS*4, NULL);
-  cron_del_job(cron,
-         &cronJob3, cronSECONDS*16, NULL);
+  cron_del_job (cron, &cronJob, cronSECONDS * 1, NULL);
+  cron_del_job (cron, &cronJob2, cronSECONDS * 4, NULL);
+  cron_del_job (cron, &cronJob3, cronSECONDS * 16, NULL);
   return 0;
 }
 
-static void delJob(void * unused) {
-  cron_del_job(cron,
-         &cronJob, 42, NULL);
+static void
+delJob (void *unused)
+{
+  cron_del_job (cron, &cronJob, 42, NULL);
 }
 
-static int testDelCron() {
+static int
+testDelCron ()
+{
   global = 0;
-  cron_add_job(cron,
-         &cronJob, cronSECONDS*1, 42, NULL);
-  cron_add_job(cron,
-         &delJob, 500 * cronMILLIS, 0, NULL);
-  PTHREAD_SLEEP(1 * cronSECONDS);
-  if (global != 0) {
-    fprintf(stderr,
-      "cron job was supposed to be deleted, but ran anyway!\n");
-    return 1;
-  }
+  cron_add_job (cron, &cronJob, cronSECONDS * 1, 42, NULL);
+  cron_add_job (cron, &delJob, 500 * cronMILLIS, 0, NULL);
+  PTHREAD_SLEEP (1 * cronSECONDS);
+  if (global !=0)
+    {
+      fprintf (stderr,
+               "cron job was supposed to be deleted, but ran anyway!\n");
+      return 1;
+    }
   return 0;
 }
 
-int main(int argc, char * argv[]) {
+int
+main (int argc, char *argv[])
+{
   int failureCount = 0;
 
-  cron = cron_create(NULL);
-  cron_start(cron);
-  failureCount += testCron();
-  failureCount += testDelCron();
-  cron_stop(cron);
-  cron_destroy(cron);
+  cron = cron_create (NULL);
+  cron_start (cron);
+  failureCount += testCron ();
+  failureCount += testDelCron ();
+  cron_stop (cron);
+  cron_destroy (cron);
   if (failureCount != 0)
     return 1;
   return 0;
-} /* end of main */
+}                               /* end of main */

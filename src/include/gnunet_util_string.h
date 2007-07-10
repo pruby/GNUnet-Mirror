@@ -40,8 +40,9 @@
 #include <stdlib.h>
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -161,21 +162,18 @@ extern "C" {
 /**
  * Like snprintf, just aborts if the buffer is of insufficient size.
  */
-int SNPRINTF(char * buf,
-	     size_t size,
-	     const char * format,
-	     ...);
+int SNPRINTF (char *buf, size_t size, const char *format, ...);
 
 /**
  * Give relative time in human-readable fancy format.
  * @param delta time in milli seconds
  */
-char * string_get_fancy_time_interval(unsigned long long delta);
+char *string_get_fancy_time_interval (unsigned long long delta);
 
 /**
  * Convert a given filesize into a fancy human-readable format.
  */
-char * string_get_fancy_byte_size(unsigned long long size);
+char *string_get_fancy_byte_size (unsigned long long size);
 
 /**
  * Convert the len characters long character sequence
@@ -184,10 +182,9 @@ char * string_get_fancy_byte_size(unsigned long long size);
  *
  * @return the converted string (0-terminated)
  */
-char * string_convertToUtf8(struct GE_Context * ectx,
-			    const char * input,
-			    size_t len,
-			    const char * charset);
+char *string_convertToUtf8 (struct GE_Context *ectx,
+                            const char *input,
+                            size_t len, const char *charset);
 
 /**
  * Complete filename (a la shell) from abbrevition.
@@ -197,22 +194,17 @@ char * string_convertToUtf8(struct GE_Context * ectx,
  * @returns the full file name,
  *          NULL is returned on error
  */
-char * string_expandFileName(struct GE_Context * ectx,
-			     const char * fil);
+char *string_expandFileName (struct GE_Context *ectx, const char *fil);
 
 /**
  * String functions
  */
 #if !HAVE_STRLCPY
-size_t strlcpy(char *dest,
-	       const char *src,
-	       size_t size);
+size_t strlcpy (char *dest, const char *src, size_t size);
 #endif
 
 #if !HAVE_STRLCAT
-size_t strlcat(char *dest,
-	       const char *src,
-	       size_t count);
+size_t strlcat (char *dest, const char *src, size_t count);
 #endif
 
 
@@ -223,10 +215,8 @@ size_t strlcat(char *dest,
  * memory is available.  Don't use xmalloc_ directly. Use the
  * MALLOC macro.
  */
-void * xmalloc_(size_t size,
-		const char * filename,
-		int linenumber,
-		const char * function);
+void *xmalloc_ (size_t size,
+                const char *filename, int linenumber, const char *function);
 
 /**
  * Allocate memory.  This function does not check if the
@@ -234,39 +224,32 @@ void * xmalloc_(size_t size,
  * allocations larger than 40 MB.  If you don't expect the
  * possibility of very large allocations, use MALLOC instead.
  */
-void * xmalloc_unchecked_(size_t size,
-			  const char * filename,
-			  int linenumber,
-			  const char * function);
+void *xmalloc_unchecked_ (size_t size,
+                          const char *filename,
+                          int linenumber, const char *function);
 
 /**
  * Reallocate memory. Checks the return value, aborts if no more
  * memory is available.
  */
-void * xrealloc_(void * ptr,
-		 const size_t n,
-		 const char * filename,
-		 int linenumber,
-		 const char * function);
+void *xrealloc_ (void *ptr,
+                 const size_t n,
+                 const char *filename, int linenumber, const char *function);
 
 /**
  * Free memory. Merely a wrapper for the case that we
  * want to keep track of allocations.  Don't use xfree_
  * directly. Use the FREE macro.
  */
-void xfree_(void * ptr,
-	    const char * filename,
-	    int linenumber,
-	    const char * function);
+void xfree_ (void *ptr,
+             const char *filename, int linenumber, const char *function);
 
 
 /**
  * Dup a string. Don't call xstrdup_ directly. Use the STRDUP macro.
  */
-char * xstrdup_(const char * str,
-		const char * filename,
-		int linenumber,
-		const char * function);
+char *xstrdup_ (const char *str,
+                const char *filename, int linenumber, const char *function);
 
 /**
  * Dup a string. Don't call xstrdup_ directly. Use the STRDUP macro.
@@ -277,11 +260,9 @@ char * xstrdup_(const char * str,
  * @param linenumber where in the code was the call to GROW
  * @return strdup(str)
  */
-char * xstrndup_(const char * str,
-		 const size_t n,
-		 const char * filename,
-		 int linenumber,
-		 const char * function);
+char *xstrndup_ (const char *str,
+                 const size_t n,
+                 const char *filename, int linenumber, const char *function);
 
 /**
  * Grow an array, the new elements are zeroed out.
@@ -296,15 +277,13 @@ char * xstrndup_(const char * str,
  * @param oldCount address of the number of elements in the *old array
  * @param newCount number of elements in the new array, may be 0 (then *old will be NULL afterwards)
  */
-void xgrow_(void ** old,
-	    size_t elementSize,
-	    unsigned int * oldCount,
-	    unsigned int newCount,
-	    const char * filename,
-	    int linenumber,
-	    const char * function);
+void xgrow_ (void **old,
+             size_t elementSize,
+             unsigned int *oldCount,
+             unsigned int newCount,
+             const char *filename, int linenumber, const char *function);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

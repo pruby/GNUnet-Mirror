@@ -29,40 +29,34 @@
 
 #define TESTSTRING "Hello World\0"
 
-static int testReadWrite() {
+static int
+testReadWrite ()
+{
   char tmp[100];
 
-  disk_file_write(NULL,
-  	  ".testfile",
-  	  TESTSTRING,
-  	  strlen(TESTSTRING),
-  	  "644");
-  tmp[disk_file_read(NULL,
-  	     ".testfile",
-  	     100,
-  	     tmp)] = '\0';
-  if (0 != memcmp(tmp,
-  	  TESTSTRING,
-  	  strlen(TESTSTRING)+1)) {
-    fprintf(stderr,
-      "Error in testReadWrite: *%s* != *%s* for file %s\n",
-      tmp,
-      TESTSTRING,
-      ".testfile");
-    return 1;
-  }
-  UNLINK(".testfile");
+  disk_file_write (NULL, ".testfile", TESTSTRING, strlen (TESTSTRING), "644");
+  tmp[disk_file_read (NULL, ".testfile", 100, tmp)] = '\0';
+  if (0 != memcmp (tmp, TESTSTRING, strlen (TESTSTRING) + 1))
+    {
+      fprintf (stderr,
+               "Error in testReadWrite: *%s* != *%s* for file %s\n",
+               tmp, TESTSTRING, ".testfile");
+      return 1;
+    }
+  UNLINK (".testfile");
   return 0;
 }
 
-int main(int argc, char * argv[]) {
+int
+main (int argc, char *argv[])
+{
   int failureCount = 0;
 
-  failureCount += testReadWrite();
-  if (failureCount != 0) {
-    fprintf(stderr,
-            "\n\n%d TESTS FAILED!\n\n",failureCount);
-    return -1;
-  }
+  failureCount += testReadWrite ();
+  if (failureCount != 0)
+    {
+      fprintf (stderr, "\n\n%d TESTS FAILED!\n\n", failureCount);
+      return -1;
+    }
   return 0;
-} /* end of main */
+}                               /* end of main */

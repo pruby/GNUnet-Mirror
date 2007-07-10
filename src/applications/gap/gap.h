@@ -203,7 +203,8 @@ typedef unsigned int QUERY_POLICY;
  * Request for content. The number of queries can
  * be determined from the header size.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -237,7 +238,8 @@ typedef struct {
 /**
  * Return message for search result.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   HashCode512 primaryKey;
@@ -249,7 +251,8 @@ typedef struct {
  * query that is being send from the local node to
  * optimize the sending strategy.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * How often did we send this query so far?
@@ -270,13 +273,13 @@ typedef struct {
   /**
    * The message that we are sending.
    */
-  P2P_gap_query_MESSAGE * msg;
+  P2P_gap_query_MESSAGE *msg;
 
   /**
    * How important would it be to send the message to all peers in
    * this bucket?
    */
-  int * rankings;
+  int *rankings;
 
   /**
    * When do we stop forwarding (!) this query?
@@ -314,7 +317,8 @@ typedef struct {
  * that the entries point to can easily use another 8 MB at this
  * point [see Mantis #1058])
  */
-typedef struct {
+typedef struct
+{
   /**
    * What are we waiting for?
    */
@@ -343,17 +347,17 @@ typedef struct {
    */
   unsigned int seenIndex;
 
-  int seenReplyWasUnique; /* YES/NO, only valid if seenIndex == 1 */
+  int seenReplyWasUnique;       /* YES/NO, only valid if seenIndex == 1 */
 
   /**
    * Hashcodes of the encrypted (!) replies that we have forwarded so far
    */
-  HashCode512 * seen;
+  HashCode512 *seen;
 
   /**
    * Who are these hosts?
    */
-  PID_INDEX * destination;
+  PID_INDEX *destination;
 
   /**
    * How many hosts are waiting for an answer to this query (length of
@@ -380,8 +384,9 @@ typedef struct {
  *  to queries from a certain peer at the moment
  * Linked list of peer ids with number of replies received.
  */
-typedef struct RL_ {
-  struct RL_ * next;
+typedef struct RL_
+{
+  struct RL_ *next;
   PID_INDEX responder;
   unsigned int responseCount;
 } ResponseList;
@@ -390,12 +395,13 @@ typedef struct RL_ {
  * Structure for tracking from which peer we got valueable replies for
  * which clients / other peers.
  */
-typedef struct RTD_ {
+typedef struct RTD_
+{
 
   /**
    * This is a linked list.
    */
-  struct RTD_ * next;
+  struct RTD_ *next;
 
   /**
    * For which client does this entry track replies?
@@ -406,7 +412,7 @@ typedef struct RTD_ {
    * Linked list of peers that responded, with
    * number of responses.
    */
-  ResponseList * responseList;
+  ResponseList *responseList;
 
   /**
    * Time at which we received the last reply
@@ -420,10 +426,8 @@ typedef struct RTD_ {
  * Tracking of just reward data (how much trust a peer
  * can gain for a particular reply).
  */
-typedef struct {
+typedef struct
+{
   HashCode512 query;
   unsigned int prio;
 } RewardEntry;
-
-
-

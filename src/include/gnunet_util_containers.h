@@ -40,8 +40,9 @@
 #include "gnunet_util_crypto.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -54,7 +55,7 @@ struct Bloomfilter;
 /**
  * Iterator over all HashCodes stored in a Bloomfilter.
  */
-typedef HashCode512 * (*ElementIterator)(void * arg);
+typedef HashCode512 *(*ElementIterator) (void *arg);
 
 /**
  * @brief a Vector (ordered variable size set of elements), opaque
@@ -75,10 +76,9 @@ struct HashTable;
  *        element (number of bits set per element in the set)
  * @return the bloomfilter
  */
-struct Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
-				     const char * filename,
-				     unsigned int size,
-				     unsigned int k);
+struct Bloomfilter *loadBloomfilter (struct GE_Context *ectx,
+                                     const char *filename,
+                                     unsigned int size, unsigned int k);
 
 /**
  * Test if an element is in the filter.
@@ -86,24 +86,21 @@ struct Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
  * @param bf the filter
  * @return YES if the element is in the filter, NO if not
  */
-int testBloomfilter(struct Bloomfilter * bf,
-		    const HashCode512 * e);
+int testBloomfilter (struct Bloomfilter *bf, const HashCode512 * e);
 
 /**
  * Add an element to the filter
  * @param bf the filter
  * @param e the element
  */
-void addToBloomfilter(struct Bloomfilter * bf,
-		      const HashCode512 * e);
+void addToBloomfilter (struct Bloomfilter *bf, const HashCode512 * e);
 
 /**
  * Remove an element from the filter.
  * @param bf the filter
  * @param e the element to remove
  */
-void delFromBloomfilter(struct Bloomfilter * bf,
-			const HashCode512 * e);
+void delFromBloomfilter (struct Bloomfilter *bf, const HashCode512 * e);
 
 /**
  * Free the space associcated with a filter
@@ -111,13 +108,13 @@ void delFromBloomfilter(struct Bloomfilter * bf,
  * free the space on the drive)
  * @param bf the filter
  */
-void freeBloomfilter(struct Bloomfilter * bf);
+void freeBloomfilter (struct Bloomfilter *bf);
 
 /**
  * Reset a bloom filter to empty.
  * @param bf the filter
  */
-void resetBloomfilter(struct Bloomfilter * bf);
+void resetBloomfilter (struct Bloomfilter *bf);
 
 /**
  * Resize a bloom filter.  Note that this operation
@@ -130,16 +127,15 @@ void resetBloomfilter(struct Bloomfilter * bf);
  * @param size the new size for the filter
  * @param k the new number of hash-function to apply per element
  */
-void resizeBloomfilter(struct Bloomfilter * bf,
-		       ElementIterator iterator,
-		       void * iterator_arg,
-		       unsigned int size,
-		       unsigned int k);
+void resizeBloomfilter (struct Bloomfilter *bf,
+                        ElementIterator iterator,
+                        void *iterator_arg,
+                        unsigned int size, unsigned int k);
 
 /**
  * A debug function that dumps the vector to stderr.
  */
-void vectorDump(struct Vector *v);
+void vectorDump (struct Vector *v);
 
 /**
  * @param vss Size of the VectorSegment data area. The "correct" value for this
@@ -149,112 +145,101 @@ void vectorDump(struct Vector *v);
  * or otherwise the increased length of the linked list will become a
  * bottleneck for operations that are performed on arbitrary indexes.
  */
-struct Vector * vectorNew(unsigned int vss);
+struct Vector *vectorNew (unsigned int vss);
 
 /**
  * Free vector structure including its data segments, but _not_ including the
  * stored void pointers. It is the user's responsibility to empty the vector
  * when necessary to avoid memory leakage.
  */
-void vectorFree(struct Vector * v);
+void vectorFree (struct Vector *v);
 
-size_t vectorSize(struct Vector * v);
+size_t vectorSize (struct Vector *v);
 
 /**
  * Insert a new element in the vector at given index.
  * @return OK on success, SYSERR if the index is out of bounds.
  */
-int vectorInsertAt(struct Vector * v,
-		   void * object,
-		   unsigned int index);
+int vectorInsertAt (struct Vector *v, void *object, unsigned int index);
 
 /**
  * Insert a new element at the end of the vector.
  */
-void vectorInsertLast(struct Vector * v, void * object);
+void vectorInsertLast (struct Vector *v, void *object);
 
 /**
  * Return the element at given index in the vector or NULL if the index is out
  * of bounds. The iterator is set to point to the returned element.
  */
-void * vectorGetAt(struct Vector * v,
-		   unsigned int index);
+void *vectorGetAt (struct Vector *v, unsigned int index);
 
 /**
  * Return the first element in the vector, whose index is 0, or NULL if the
  * vector is empty. The iterator of the vector is set to point to the first
  * element.
  */
-void * vectorGetFirst(struct Vector * v);
+void *vectorGetFirst (struct Vector *v);
 
 /**
  * Return the last element in the vector or NULL if the vector is empty. The
  * iterator of the vector is set to point to the last element.
  */
-void * vectorGetLast(struct Vector * v);
+void *vectorGetLast (struct Vector *v);
 
 /**
  * Return the next element in the vector, as called after vector_get_at() or
  * vector_get_first(). The return value is NULL if there are no more elements
  * in the vector or if the iterator has not been set.
  */
-void * vectorGetNext(struct Vector * v);
+void *vectorGetNext (struct Vector *v);
 
 /**
  * Return the previous element in the vector, as called after vector_get_at()
  * or vector_get_last(). The return value is NULL if there are no more
  * elements in the vector or if the iterator has not been set.
  */
-void * vectorGetPrevious(struct Vector * v);
+void *vectorGetPrevious (struct Vector *v);
 
 /**
  * Delete and return the element at given index. NULL is returned if index is
  * out of bounds.
  */
-void * vectorRemoveAt(struct Vector * v,
-		      unsigned int index);
+void *vectorRemoveAt (struct Vector *v, unsigned int index);
 
 /**
  * Delete and return the last element in the vector, or NULL if the vector
  * is empty.
  */
-void * vectorRemoveLast(struct Vector * v);
+void *vectorRemoveLast (struct Vector *v);
 
 /**
  * Delete and return given object from the vector, or return NULL if the object
  * is not found.
  */
-void * vectorRemoveObject(struct Vector * v, void * object);
+void *vectorRemoveObject (struct Vector *v, void *object);
 
 /**
  * Set the given index in the vector. The old value of the index is
  * returned, or NULL if the index is out of bounds.
  */
-void * vectorSetAt(struct Vector * v,
-		   void * object,
-		   unsigned int index);
+void *vectorSetAt (struct Vector *v, void *object, unsigned int index);
 
 /**
  * Set the index occupied by the given object to point to the new object.
  * The old object is returned, or NULL if it's not found.
  */
-void * vectorSetObject(struct Vector * v,
-		       void * object,
-		       void * old_object);
+void *vectorSetObject (struct Vector *v, void *object, void *old_object);
 
 /**
  * Swaps the contents of index1 and index2. Return value is OK
  * on success, SYSERR if either index is out of bounds.
  */
-int vectorSwap(struct Vector * v,
-	       unsigned int index1,
-	       unsigned int index2);
+int vectorSwap (struct Vector *v, unsigned int index1, unsigned int index2);
 
 /**
  * Return the index of given element or -1 if the element is not found.
  */
-unsigned int vectorIndexOf(struct Vector * v,
-			   void * object);
+unsigned int vectorIndexOf (struct Vector *v, void *object);
 
 /**
  * Return the data stored in the vector as a single dynamically
@@ -263,7 +248,7 @@ unsigned int vectorIndexOf(struct Vector * v,
  * you really need to access everything in the vector as fast as
  * possible.
  */
-void ** vectorElements(struct Vector * v);
+void **vectorElements (struct Vector *v);
 
 /**
  * @brief creates a new HashTable
@@ -282,13 +267,13 @@ void ** vectorElements(struct Vector * v);
  *                     passes the thresholds set by ht_setIdealRatio().
  * @return a new Hashtable, or NULL on error
  */
-struct HashTable *ht_create(long numOfBuckets);
+struct HashTable *ht_create (long numOfBuckets);
 
 /**
  * @brief destroys an existing HashTable
  * @param hashTable the HashTable to destroy
  */
-void ht_destroy(struct HashTable *hashTable);
+void ht_destroy (struct HashTable *hashTable);
 
 /**
  * @brief checks the existence of a key in a HashTable
@@ -297,7 +282,8 @@ void ht_destroy(struct HashTable *hashTable);
  * @return whether or not the specified HashTable contains the
  *         specified key
  */
-int ht_containsKey(const struct HashTable *hashTable, const void *key, const unsigned int keylen);
+int ht_containsKey (const struct HashTable *hashTable, const void *key,
+                    const unsigned int keylen);
 
 /**
  * @brief checks the existence of a value in a HashTable
@@ -306,7 +292,8 @@ int ht_containsKey(const struct HashTable *hashTable, const void *key, const uns
  * @return whether or not the specified HashTable contains the
  *         specified value
  */
-int ht_containsValue(const struct HashTable *hashTable, const void *value, const unsigned int valuelen);
+int ht_containsValue (const struct HashTable *hashTable, const void *value,
+                      const unsigned int valuelen);
 
 /**
  * @brief adds a key/value pair to a HashTable
@@ -315,11 +302,10 @@ int ht_containsValue(const struct HashTable *hashTable, const void *value, const
  * @param value the value associated with the key
  * @return 0 if successful, -1 if an error was encountered
  */
-int ht_put(struct HashTable *hashTable,
-	   const void *key,
-	   const unsigned int keylen,
-	   void *value,
-	   const unsigned int valuelen);
+int ht_put (struct HashTable *hashTable,
+            const void *key,
+            const unsigned int keylen,
+            void *value, const unsigned int valuelen);
 
 /**
  * @brief retrieves the value of a key in a HashTable
@@ -329,26 +315,23 @@ int ht_put(struct HashTable *hashTable,
  * @param valuelen the length of the value
  * @return YES if found, NO otherwise
  */
-int ht_get(const struct HashTable *hashTable,
-	   const void *key,
-	   const unsigned int keylen,
-	   void **value,
-	   unsigned int *valuelen);
+int ht_get (const struct HashTable *hashTable,
+            const void *key,
+            const unsigned int keylen, void **value, unsigned int *valuelen);
 
 /**
  * @brief removes a key/value pair from a HashTable
  * @param hashTable the HashTable to remove the key/value pair from
  * @param key the key specifying the key/value pair to be removed
  */
-void ht_remove(struct HashTable *hashTable,
-	       const void *key,
-	       const unsigned int keylen);
+void ht_remove (struct HashTable *hashTable,
+                const void *key, const unsigned int keylen);
 
 /**
  * @brief removes all key/value pairs from a HashTable
  * @param hashTable the HashTable to remove all key/value pairs from
  */
-void ht_removeAll(struct HashTable *hashTable);
+void ht_removeAll (struct HashTable *hashTable);
 
 /**
  * @brief returns the number of elements in a HashTable
@@ -356,7 +339,7 @@ void ht_removeAll(struct HashTable *hashTable);
  * @return the number of key/value pairs that are present in
  *         the specified HashTable
  */
-long ht_size(const struct HashTable *hashTable);
+long ht_size (const struct HashTable *hashTable);
 
 /**
  * @brief returns the number of buckets in a HashTable
@@ -364,7 +347,7 @@ long ht_size(const struct HashTable *hashTable);
  * @return the number of buckets that are in the specified
  *         HashTable
  */
-long ht_buckets(const struct HashTable *hashTable);
+long ht_buckets (const struct HashTable *hashTable);
 
 /**
  * @brief reorganizes a HashTable to be more efficient
@@ -378,8 +361,7 @@ long ht_buckets(const struct HashTable *hashTable);
  *                     specified, an appropriate number of buckets is
  *                     automatically calculated.
  */
-void ht_rehash(struct HashTable *hashTable,
-	       long numOfBuckets);
+void ht_rehash (struct HashTable *hashTable, long numOfBuckets);
 
 /**
  * @brief sets the ideal element-to-bucket ratio of a HashTable
@@ -407,10 +389,10 @@ void ht_rehash(struct HashTable *hashTable,
  *                     is considered unacceptably high, a value of 0.0 can
  *                     be specified.
  */
-void ht_setIdealRatio(struct HashTable *hashTable,
-		      float idealRatio,
-		      float lowerRehashThreshold,
-		      float upperRehashThreshold);
+void ht_setIdealRatio (struct HashTable *hashTable,
+                       float idealRatio,
+                       float lowerRehashThreshold,
+                       float upperRehashThreshold);
 
 #define HT_PUT(ht, key, val) ht_put(ht, key, sizeof(key), val, sizeof(val))
 #define HT_GET(ht, key, val, vallen) ht_get(ht, key, sizeof(key), val, vallen)
@@ -418,7 +400,7 @@ void ht_setIdealRatio(struct HashTable *hashTable,
 #define HT_CONTAINS_VALUE(ht, value) ht_containsValue(ht, value, sizeof(value))
 #define HT_REMOVE(ht, key) ht_remove(ht, key, sizeof(key))
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

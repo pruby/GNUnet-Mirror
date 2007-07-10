@@ -35,13 +35,13 @@
  *        should be accumulated before an e-mail is transmitted?
  */
 struct GE_Context *
-GE_create_context_email(struct GE_Context * ectx,
-  		GE_MASK mask,
-  		const char * address,
-  		const char * server,
-  		unsigned short port,
-  		int logDate,
-  		unsigned int bulkSize) {
+GE_create_context_email (struct GE_Context *ectx,
+                         GE_MASK mask,
+                         const char *address,
+                         const char *server,
+                         unsigned short port,
+                         int logDate, unsigned int bulkSize)
+{
   return NULL;
 }
 

@@ -33,8 +33,7 @@
  *
  * @return SYSERR on error, OK on success
  */
-int getPublicIP6Address(struct GC_Configuration * cfg,
-			struct GE_Context * ectx,
-			IP6addr  * address);
+int getPublicIP6Address (struct GC_Configuration *cfg,
+                         struct GE_Context *ectx, IP6addr * address);
 
 #endif

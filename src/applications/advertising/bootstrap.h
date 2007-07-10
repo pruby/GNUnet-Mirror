@@ -34,12 +34,12 @@
  * Start using the bootstrap service to obtain
  * advertisements if needed.
  */
-void startBootstrap(CoreAPIForApplication * capi);
+void startBootstrap (CoreAPIForApplication * capi);
 
 /**
  * Stop the bootstap service.
  */
-void stopBootstrap(void);
+void stopBootstrap (void);
 
 
 #endif

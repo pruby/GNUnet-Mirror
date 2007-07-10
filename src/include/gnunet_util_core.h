@@ -42,7 +42,8 @@
  * and includes the senderAddress.  Since the senderAddress may be
  * long, what is actually signed is the hash of these bytes.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**

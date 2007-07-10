@@ -32,10 +32,11 @@
  * @param ectx logging context, NULL means stderr
  * @returns OK on success, SYSERR otherwise
  */
-int os_init(struct GE_Context *ectx)
+int
+os_init (struct GE_Context *ectx)
 {
 #ifdef MINGW
-  if (InitWinEnv(ectx) != ERROR_SUCCESS)
+  if (InitWinEnv (ectx) != ERROR_SUCCESS)
     return SYSERR;
   else
 #endif
@@ -45,10 +46,10 @@ int os_init(struct GE_Context *ectx)
 /**
  * @brief Perform OS specific cleanup
  */
-void __attribute__ ((destructor)) os_fini()
+void __attribute__ ((destructor)) os_fini ()
 {
 #ifdef MINGW
-  ShutdownWinEnv();
+  ShutdownWinEnv ();
 #endif
 }
 

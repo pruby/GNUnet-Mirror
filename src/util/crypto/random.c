@@ -33,26 +33,27 @@
 /**
  * @return a random value in the interval [0,i[.
  */
-unsigned int randomi(unsigned int i) {
+unsigned int
+randomi (unsigned int i)
+{
 #ifdef gcry_fast_random_poll
   static unsigned int invokeCount;
 #endif
   unsigned int ret;
 
-  GE_ASSERT(NULL, i > 0);
-  lockGcrypt();
+  GE_ASSERT (NULL, i > 0);
+  lockGcrypt ();
   /* see http://lists.gnupg.org/pipermail/gcrypt-devel/2004-May/000613.html */
 #ifdef gcry_fast_random_poll
-  if ( (invokeCount++ % 256) == 0)
-    gcry_fast_random_poll();
+  if ((invokeCount++ % 256) == 0)
+    gcry_fast_random_poll ();
 #endif
-  ret = rand(); /* in case gcry_randomize fails,
-  	   we at least get a pseudo-
-  	   random number this way */
-  gcry_randomize((unsigned char*)&ret,
-  	 sizeof(unsigned int),
-  	 GCRY_STRONG_RANDOM);
-  unlockGcrypt();
+  ret = rand ();                /* in case gcry_randomize fails,
+                                   we at least get a pseudo-
+                                   random number this way */
+  gcry_randomize ((unsigned char *) &ret,
+                  sizeof (unsigned int), GCRY_STRONG_RANDOM);
+  unlockGcrypt ();
   return ret % i;
 }
 
@@ -63,62 +64,70 @@ unsigned int randomi(unsigned int i) {
  * @param n the size of the array
  * @return the permutation array (allocated from heap)
  */
-int * permute(int mode, int n) {
-  int * ret;
+int *
+permute (int mode, int n)
+{
+  int *ret;
   int i;
   int tmp;
   unsigned int x;
   unsigned int (*prng) (unsigned int u);
 
-  GE_ASSERT(NULL, n > 0);
-  ret = MALLOC(n * sizeof(int));
+  GE_ASSERT (NULL, n > 0);
+  ret = MALLOC (n * sizeof (int));
   prng = (mode == STRONG) ? randomi : weak_randomi;
-  for (i=0;i<n;i++)
+  for (i = 0; i < n; i++)
     ret[i] = i;
-  for (i=0;i<n;i++) {
-    x = prng(n);
-    tmp = ret[x];
-    ret[x] = ret[i];
-    ret[i] = tmp;
-  }
+  for (i = 0; i < n; i++)
+    {
+      x = prng (n);
+      tmp = ret[x];
+      ret[x] = ret[i];
+      ret[i] = tmp;
+    }
   return ret;
 }
 
 /**
  * Random on unsigned 64-bit values.
  */
-unsigned long long randomi64(unsigned long long u) {
+unsigned long long
+randomi64 (unsigned long long u)
+{
   unsigned long long ret;
 
-  GE_ASSERT(NULL, u > 0);
-  lockGcrypt();
-  gcry_randomize((unsigned char *) &ret,
-  	 sizeof(unsigned long long),
-  	 GCRY_STRONG_RANDOM);
-  unlockGcrypt();
+  GE_ASSERT (NULL, u > 0);
+  lockGcrypt ();
+  gcry_randomize ((unsigned char *) &ret,
+                  sizeof (unsigned long long), GCRY_STRONG_RANDOM);
+  unlockGcrypt ();
   return ret % u;
 }
 
 /**
  * @return a cryptographically weak random value in the interval [0,i[.
  */
-unsigned int weak_randomi(unsigned int i) {
+unsigned int
+weak_randomi (unsigned int i)
+{
   unsigned int ret;
 
-  GE_ASSERT(NULL, i > 0);
-  ret = i * ((double) RANDOM() / RAND_MAX);
+  GE_ASSERT (NULL, i > 0);
+  ret = i * ((double) RANDOM () / RAND_MAX);
   if (ret >= i)
     ret = i - 1;
   return ret;
 }
 
-unsigned long long weak_randomi64(unsigned long long u) {
+unsigned long long
+weak_randomi64 (unsigned long long u)
+{
   unsigned long long ret;
 
-  GE_ASSERT(NULL, u > 0);
-  ret = u * ((double) RANDOM() / RAND_MAX);
+  GE_ASSERT (NULL, u > 0);
+  ret = u * ((double) RANDOM () / RAND_MAX);
   if (ret >= u)
-    ret = u-1;
+    ret = u - 1;
   return ret;
 }
 

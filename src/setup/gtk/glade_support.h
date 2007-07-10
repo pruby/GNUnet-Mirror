@@ -27,22 +27,22 @@
 
 #define mainXML getMainXML()
 
-GladeXML * getMainXML(void);
+GladeXML *getMainXML (void);
 
-void destroyMainXML(void);
+void destroyMainXML (void);
 
-void setLibrary(struct PluginHandle * lib);
+void setLibrary (struct PluginHandle *lib);
 
-GtkWidget * get_xml(const char * dialog_name);
+GtkWidget *get_xml (const char *dialog_name);
 
-GladeXML * load_xml(const char * dialog_name);
+GladeXML *load_xml (const char *dialog_name);
 
 /**
  * Helper function to just show a simple dialog
  * that requires no initialization.
  */
-void showDialog(const char * name);
+void showDialog (const char *name);
 
-GtkWidget * lookup_widget(const char * name);
+GtkWidget *lookup_widget (const char *name);
 
 #endif

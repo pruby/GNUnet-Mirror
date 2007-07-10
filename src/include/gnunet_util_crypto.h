@@ -35,8 +35,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -74,7 +75,8 @@ struct PrivateKey;
 /**
  * @brief 0-terminated ASCII encoding of a HashCode512.
  */
-typedef struct {
+typedef struct
+{
   unsigned char encoding[104];
 } EncName;
 
@@ -85,32 +87,35 @@ typedef struct {
  * to serialize a private RSA key (typically when
  * writing it to disk).
  */
-typedef struct {
+typedef struct
+{
   /**
    * Total size of the structure, in bytes, in big-endian!
    */
   unsigned short len;
-  unsigned short sizen;/*  in big-endian! */
-  unsigned short sizee;/*  in big-endian! */
-  unsigned short sized;/*  in big-endian! */
-  unsigned short sizep;/*  in big-endian! */
-  unsigned short sizeq;/*  in big-endian! */
-  unsigned short sizedmp1;/*  in big-endian! */
-  unsigned short sizedmq1;/*  in big-endian! */
+  unsigned short sizen;         /*  in big-endian! */
+  unsigned short sizee;         /*  in big-endian! */
+  unsigned short sized;         /*  in big-endian! */
+  unsigned short sizep;         /*  in big-endian! */
+  unsigned short sizeq;         /*  in big-endian! */
+  unsigned short sizedmp1;      /*  in big-endian! */
+  unsigned short sizedmq1;      /*  in big-endian! */
   /* followed by the actual values */
 } PrivateKeyEncoded;
 
 /**
  * @brief an RSA signature
  */
-typedef struct {
+typedef struct
+{
   unsigned char sig[RSA_ENC_LEN];
 } Signature;
 
 /**
  * @brief A public key.
  */
-typedef struct {
+typedef struct
+{
   /**
    * In big-endian, must be RSA_KEY_LEN+2
    */
@@ -132,16 +137,18 @@ typedef struct {
 /**
  * RSA Encrypted data.
  */
-typedef struct {
+typedef struct
+{
   unsigned char encoding[RSA_ENC_LEN];
 } RSAEncryptedData;
 
 /**
  * @brief type for session keys
  */
-typedef struct {
+typedef struct
+{
   unsigned char key[SESSIONKEY_LEN];
-  int crc32; /* checksum! */
+  int crc32;                    /* checksum! */
 } SESSIONKEY;
 
 /**
@@ -150,8 +157,9 @@ typedef struct {
  * NOTE: must be smaller (!) in size than the
  * HashCode512.
  */
-typedef struct {
-  unsigned char iv[SESSIONKEY_LEN/2];
+typedef struct
+{
+  unsigned char iv[SESSIONKEY_LEN / 2];
 } INITVECTOR;
 
 /* **************** Functions and Macros ************* */
@@ -164,7 +172,7 @@ typedef struct {
  * @param len the length of the buffer in bytes
  * @return the resulting CRC32 checksum
  */
-int crc32N(const void * buf, int len);
+int crc32N (const void *buf, int len);
 
 /**
  * Produce a random value.
@@ -172,15 +180,15 @@ int crc32N(const void * buf, int len);
  * @param i the upper limit (exclusive) for the random number
  * @return a random value in the interval [0,i[.
  */
-unsigned int randomi(unsigned int i);
+unsigned int randomi (unsigned int i);
 
 /**
  * Random on unsigned 64-bit values.  We break them down into signed
  * 32-bit values and reassemble the 64-bit random value bit-wise.
  */
-unsigned long long randomi64(unsigned long long u);
+unsigned long long randomi64 (unsigned long long u);
 
-unsigned long long weak_randomi64(unsigned long long u);
+unsigned long long weak_randomi64 (unsigned long long u);
 
 /**
  * Get an array with a random permutation of the
@@ -189,7 +197,7 @@ unsigned long long weak_randomi64(unsigned long long u);
  * @param n the size of the array
  * @return the permutation array (allocated from heap)
  */
-int * permute(int mode, int n);
+int *permute (int mode, int n);
 
 /**
  * Produce a cryptographically weak random value.
@@ -197,12 +205,12 @@ int * permute(int mode, int n);
  * @param i the upper limit (exclusive) for the random number
  * @return a random value in the interval [0,i[.
  */
-unsigned int weak_randomi(unsigned int i);
+unsigned int weak_randomi (unsigned int i);
 
 /**
  * Create a new Session key.
  */
-void makeSessionkey(SESSIONKEY * key);
+void makeSessionkey (SESSIONKEY * key);
 
 /**
  * Encrypt a block with the public key of another
@@ -214,11 +222,10 @@ void makeSessionkey(SESSIONKEY * key);
  *        for streams.
  * @returns the size of the encrypted block, -1 for errors
  */
-int encryptBlock(const void * block,
-		 unsigned short len,
-		 const SESSIONKEY * sessionkey,
-		 const INITVECTOR * iv,
-		 void * result);
+int encryptBlock (const void *block,
+                  unsigned short len,
+                  const SESSIONKEY * sessionkey,
+                  const INITVECTOR * iv, void *result);
 
 /**
  * Decrypt a given block with the sessionkey.
@@ -229,11 +236,9 @@ int encryptBlock(const void * block,
  * @param result address to store the result at
  * @return -1 on failure, size of decrypted block on success
  */
-int decryptBlock(const SESSIONKEY * sessionkey,
-		 const void * block,
-		 unsigned short size,
-		 const INITVECTOR * iv,
-		 void * result);
+int decryptBlock (const SESSIONKEY * sessionkey,
+                  const void *block,
+                  unsigned short size, const INITVECTOR * iv, void *result);
 
 /**
  * Convert hash to ASCII encoding.
@@ -241,8 +246,7 @@ int decryptBlock(const SESSIONKEY * sessionkey,
  * @param result where to store the encoding (EncName can be
  *  safely cast to char*, a '\0' termination is set).
  */
-void hash2enc(const HashCode512 * block,
-	      EncName * result);
+void hash2enc (const HashCode512 * block, EncName * result);
 
 /**
  * Convert ASCII encoding back to hash
@@ -250,8 +254,7 @@ void hash2enc(const HashCode512 * block,
  * @param result where to store the hash code
  * @return OK on success, SYSERR if result has the wrong encoding
  */
-int enc2hash(const char * enc,
-	     HashCode512 * result);
+int enc2hash (const char *enc, HashCode512 * result);
 
 /**
  * Compute the distance between 2 hashcodes.
@@ -261,56 +264,47 @@ int enc2hash(const char * enc,
  * result should be a positive number.
  * @return number between 0 and 65536
  */
-unsigned int distanceHashCode512(const HashCode512 * a,
-				 const HashCode512 * b);
+unsigned int distanceHashCode512 (const HashCode512 * a,
+                                  const HashCode512 * b);
 
 /**
  * compare two hashcodes.
  */
-int equalsHashCode512(const HashCode512 * a,
-		      const HashCode512 * b);
+int equalsHashCode512 (const HashCode512 * a, const HashCode512 * b);
 
 /**
  * Hash block of given size.
  * @param block the data to hash, length is given as a second argument
  * @param ret pointer to where to write the hashcode
  */
-void hash(const void * block,
-	  unsigned int size,
-	  HashCode512 * ret);
+void hash (const void *block, unsigned int size, HashCode512 * ret);
 
 
 /**
  * Compute the hash of an entire file.
  * @return OK on success, SYSERR on error
  */
-int getFileHash(struct GE_Context * ectx,
-		const char * filename,
-     	        HashCode512 * ret);
+int getFileHash (struct GE_Context *ectx,
+                 const char *filename, HashCode512 * ret);
 
-void makeRandomId(HashCode512 * result);
+void makeRandomId (HashCode512 * result);
 
 /* compute result(delta) = b - a */
-void deltaId(const HashCode512 * a,
-	     const HashCode512 * b,
-	     HashCode512 * result);
+void deltaId (const HashCode512 * a,
+              const HashCode512 * b, HashCode512 * result);
 
 /* compute result(b) = a + delta */
-void addHashCodes(const HashCode512 * a,
-		  const HashCode512 * delta,
-		  HashCode512 * result);
+void addHashCodes (const HashCode512 * a,
+                   const HashCode512 * delta, HashCode512 * result);
 
 /* compute result = a ^ b */
-void xorHashCodes(const HashCode512 * a,
-		  const HashCode512 * b,
-		  HashCode512 * result);
+void xorHashCodes (const HashCode512 * a,
+                   const HashCode512 * b, HashCode512 * result);
 
 /**
  * Convert a hashcode into a key.
  */
-void hashToKey(const HashCode512 * hc,
-	       SESSIONKEY * skey,
-	       INITVECTOR * iv);
+void hashToKey (const HashCode512 * hc, SESSIONKEY * skey, INITVECTOR * iv);
 
 /**
  * Obtain a bit from a hashcode.
@@ -318,49 +312,46 @@ void hashToKey(const HashCode512 * hc,
  * @param bit index into the hashcode, [0...159]
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
-int getHashCodeBit(const HashCode512 * code,
-		   unsigned int bit);
+int getHashCodeBit (const HashCode512 * code, unsigned int bit);
 
 /**
  * Compare function for HashCodes, producing a total ordering
  * of all hashcodes.
  * @return 1 if h1 > h2, -1 if h1 < h2 and 0 if h1 == h2.
  */
-int hashCodeCompare(const HashCode512 * h1,
-		    const HashCode512 * h2);
+int hashCodeCompare (const HashCode512 * h1, const HashCode512 * h2);
 
 /**
  * Find out which of the two hash codes is closer to target
  * in the XOR metric (Kademlia).
  * @return -1 if h1 is closer, 1 if h2 is closer and 0 if h1==h2.
  */
-int hashCodeCompareDistance(const HashCode512 * h1,
-			    const HashCode512 * h2,
-			    const HashCode512 * target);
+int hashCodeCompareDistance (const HashCode512 * h1,
+                             const HashCode512 * h2,
+                             const HashCode512 * target);
 
 /**
  * create a new hostkey. Callee must free return value.
  */
-struct PrivateKey * makePrivateKey(void);
+struct PrivateKey *makePrivateKey (void);
 
 /**
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-struct PrivateKey * makeKblockKey(const HashCode512 * input);
+struct PrivateKey *makeKblockKey (const HashCode512 * input);
 
 /**
  * Free memory occupied by hostkey
  * @param hostkey pointer to the memory to free
  */
-void freePrivateKey(struct PrivateKey * hostkey);
+void freePrivateKey (struct PrivateKey *hostkey);
 
 /**
  * Extract the public key of the host.
  * @param result where to write the result.
  */
-void getPublicKey(const struct PrivateKey * hostkey,
-		  PublicKey * result);
+void getPublicKey (const struct PrivateKey *hostkey, PublicKey * result);
 
 /**
  * Encode the private key in a format suitable for
@@ -368,7 +359,7 @@ void getPublicKey(const struct PrivateKey * hostkey,
  * @param hostkey the hostkey to use
  * @returns encoding of the private key.
  */
-PrivateKeyEncoded * encodePrivateKey(const struct PrivateKey * hostkey);
+PrivateKeyEncoded *encodePrivateKey (const struct PrivateKey *hostkey);
 
 /**
  * Decode the private key from the file-format back
@@ -376,7 +367,7 @@ PrivateKeyEncoded * encodePrivateKey(const struct PrivateKey * hostkey);
  * @param encoded the encoded hostkey
  * @returns the decoded hostkey
  */
-struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding);
+struct PrivateKey *decodePrivateKey (const PrivateKeyEncoded * encoding);
 
 /**
  * Encrypt a block with the public key of another host that uses the
@@ -388,10 +379,10 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding);
  * @param target where to store the encrypted block
  * @returns SYSERR on error, OK if ok
  */
-int encryptPrivateKey(const void * block,
-		      unsigned short size,
-		      const PublicKey * publicKey,
-		      RSAEncryptedData * target);
+int encryptPrivateKey (const void *block,
+                       unsigned short size,
+                       const PublicKey * publicKey,
+                       RSAEncryptedData * target);
 
 /**
  * Decrypt a given block with the hostkey.
@@ -402,10 +393,9 @@ int encryptPrivateKey(const void * block,
  * @param size how many bytes of a result are expected? Must be exact.
  * @returns the size of the decrypted block (that is, size) or -1 on error
  */
-int decryptPrivateKey(const struct PrivateKey * key,
-		      const RSAEncryptedData * block,
-		      void * result,
-		      unsigned short size);
+int decryptPrivateKey (const struct PrivateKey *key,
+                       const RSAEncryptedData * block,
+                       void *result, unsigned short size);
 
 /**
  * Sign a given block.
@@ -415,10 +405,8 @@ int decryptPrivateKey(const struct PrivateKey * key,
  * @param result where to write the signature
  * @return SYSERR on error, OK on success
  */
-int sign(const struct PrivateKey * key,
-	 unsigned short size,
-	 const void * block,
-	 Signature * result);
+int sign (const struct PrivateKey *key,
+          unsigned short size, const void *block, Signature * result);
 
 /**
  * Verify signature.
@@ -428,12 +416,11 @@ int sign(const struct PrivateKey * key,
  * @param publicKey public key of the signer
  * @returns OK if ok, SYSERR if invalid
  */
-int verifySig(const void * block,
-	      unsigned short len,
-	      const Signature * sig,	
-	      const PublicKey * publicKey);
+int verifySig (const void *block,
+               unsigned short len,
+               const Signature * sig, const PublicKey * publicKey);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

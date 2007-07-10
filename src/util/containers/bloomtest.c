@@ -34,98 +34,100 @@
 /**
  * Generate a random hashcode.
  */
-static void nextHC(HashCode512 * hc) {
-  makeRandomId(hc);
+static void
+nextHC (HashCode512 * hc)
+{
+  makeRandomId (hc);
 }
 
-int main(int argc, char *argv[]) {
+int
+main (int argc, char *argv[])
+{
   struct Bloomfilter *bf;
   HashCode512 tmp;
   int i;
   int ok;
   int falseok;
 
-  srand(1);
-  UNLINK("/tmp/bloomtest.dat");
-  bf = loadBloomfilter(NULL,
-  	       "/tmp/bloomtest.dat",
-  	       SIZE,
-  	       K);
+  srand (1);
+  UNLINK ("/tmp/bloomtest.dat");
+  bf = loadBloomfilter (NULL, "/tmp/bloomtest.dat", SIZE, K);
 
-  for(i=0;i<200;i++) {
-    nextHC(&tmp);
-    addToBloomfilter(bf, &tmp);
-  }
-  srand(1);
-  ok=0;
-  for(i=0;i<200;i++) {
-    nextHC(&tmp);
-    if (testBloomfilter(bf, &tmp) == YES)
-      ok++;
-  }
-  if (ok != 200) {
-    printf(" Got %d elements out of"
-     "200 expected after insertion.\n",
-     ok);
-    return -1;
-  }
-  freeBloomfilter(bf);
+  for (i = 0; i < 200; i++)
+    {
+      nextHC (&tmp);
+      addToBloomfilter (bf, &tmp);
+    }
+  srand (1);
+  ok = 0;
+  for (i = 0; i < 200; i++)
+    {
+      nextHC (&tmp);
+      if (testBloomfilter (bf, &tmp) == YES)
+        ok++;
+    }
+  if (ok != 200)
+    {
+      printf (" Got %d elements out of"
+              "200 expected after insertion.\n", ok);
+      return -1;
+    }
+  freeBloomfilter (bf);
 
 
-  bf=loadBloomfilter(NULL,
-  	     "/tmp/bloomtest.dat",
-  	     SIZE,
-  	     K);
+  bf = loadBloomfilter (NULL, "/tmp/bloomtest.dat", SIZE, K);
 
-  srand(1);
-  ok=0;
-  for(i=0;i<200;i++) {
-    nextHC(&tmp);
-    if (testBloomfilter(bf, &tmp) == YES)
-      ok++;
-  }
-  if (ok != 200) {
-    printf(" Got %d elements out of 200"
-     "expected after reloading.\n",
-     ok);
-    return -1;
-  }
+  srand (1);
+  ok = 0;
+  for (i = 0; i < 200; i++)
+    {
+      nextHC (&tmp);
+      if (testBloomfilter (bf, &tmp) == YES)
+        ok++;
+    }
+  if (ok != 200)
+    {
+      printf (" Got %d elements out of 200"
+              "expected after reloading.\n", ok);
+      return -1;
+    }
 
-  srand(1);
-  for(i=0;i<100;i++) {
-    nextHC(&tmp);
-    delFromBloomfilter(bf, &tmp);
-  }
+  srand (1);
+  for (i = 0; i < 100; i++)
+    {
+      nextHC (&tmp);
+      delFromBloomfilter (bf, &tmp);
+    }
 
-  srand(1);
+  srand (1);
 
-  ok=0;
-  for(i=0;i<200;i++) {
-    nextHC(&tmp);
-    if(testBloomfilter(bf, &tmp) == YES)
-      ok++;
-  }
+  ok = 0;
+  for (i = 0; i < 200; i++)
+    {
+      nextHC (&tmp);
+      if (testBloomfilter (bf, &tmp) == YES)
+        ok++;
+    }
 
-  if (ok != 100) {
-    printf(" Expected 100 elements in filter"
-     " after adding 200 and deleting 100, got %d\n",
-     ok);
-    return -1;
-  }
+  if (ok != 100)
+    {
+      printf (" Expected 100 elements in filter"
+              " after adding 200 and deleting 100, got %d\n", ok);
+      return -1;
+    }
 
-  srand(3);
+  srand (3);
 
-  falseok=0;
-  for(i=0;i<1000;i++) {
-    nextHC(&tmp);
-    if(testBloomfilter(bf, &tmp) == YES)
-      falseok++;
-  }
+  falseok = 0;
+  for (i = 0; i < 1000; i++)
+    {
+      nextHC (&tmp);
+      if (testBloomfilter (bf, &tmp) == YES)
+        falseok++;
+    }
 
-  freeBloomfilter(bf);
+  freeBloomfilter (bf);
 
-  UNLINK("/tmp/bloomtest.dat");
+  UNLINK ("/tmp/bloomtest.dat");
   return 0;
 }
-
-

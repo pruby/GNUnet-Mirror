@@ -27,41 +27,42 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-int main(int argc, char * argv[]){
+int
+main (int argc, char *argv[])
+{
   int ret;
   cron_t start;
-  struct GE_Context * ectx;
-  struct GC_Configuration * cfg;
+  struct GE_Context *ectx;
+  struct GC_Configuration *cfg;
 
-  ectx = GE_create_context_stderr(NO,
-  			  GE_WARNING | GE_ERROR | GE_FATAL |
-  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
-  			  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  os_init(ectx);
+  ectx = GE_create_context_stderr (NO,
+                                   GE_WARNING | GE_ERROR | GE_FATAL |
+                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
+                                   GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext (ectx);
+  cfg = GC_create_C_impl ();
+  GE_ASSERT (ectx, cfg != NULL);
+  os_init (ectx);
   /* need to run each phase for more than 10s since
      statuscalls only refreshes that often... */
-  start = get_time();
-  while (start + 12 * cronSECONDS > get_time())
-    PTHREAD_SLEEP(1);
-  start = get_time();
-  ret = os_cpu_get_load(ectx,
-  		cfg);
-  while (start + 60 * cronSECONDS > get_time())
-    sqrt(245.2523); /* do some processing to drive load up */
-  if (ret > os_cpu_get_load(ectx,
-  		    cfg)) {
-    printf("busy loop decreased CPU load: %d < %d.\n",
-     ret,
-     os_cpu_get_load(ectx,
-  		   cfg));
-    ret = 1;
-  } else {
-    ret = 0;
-  }
-  GC_free(cfg);
-  GE_free_context(ectx);
+  start = get_time ();
+  while (start + 12 * cronSECONDS > get_time ())
+    PTHREAD_SLEEP (1);
+  start = get_time ();
+  ret = os_cpu_get_load (ectx, cfg);
+  while (start + 60 * cronSECONDS > get_time ())
+    sqrt (245.2523);            /* do some processing to drive load up */
+  if (ret > os_cpu_get_load (ectx, cfg))
+    {
+      printf ("busy loop decreased CPU load: %d < %d.\n",
+              ret, os_cpu_get_load (ectx, cfg));
+      ret = 1;
+    }
+  else
+    {
+      ret = 0;
+    }
+  GC_free (cfg);
+  GE_free_context (ectx);
   return ret;
 }

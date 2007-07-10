@@ -36,8 +36,9 @@
 #include "gnunet_datastore_service.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -45,12 +46,11 @@ extern "C" {
 
 struct FS_SEARCH_CONTEXT;
 
-struct FS_SEARCH_CONTEXT *
-FS_SEARCH_makeContext(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg,
-		      struct MUTEX * lock);
+struct FS_SEARCH_CONTEXT *FS_SEARCH_makeContext (struct GE_Context *ectx,
+                                                 struct GC_Configuration *cfg,
+                                                 struct MUTEX *lock);
 
-void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx);
+void FS_SEARCH_destroyContext (struct FS_SEARCH_CONTEXT *ctx);
 
 struct FS_SEARCH_HANDLE;
 
@@ -66,29 +66,28 @@ struct FS_SEARCH_HANDLE;
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-struct FS_SEARCH_HANDLE *
-FS_start_search(struct FS_SEARCH_CONTEXT * ctx,
-		const PeerIdentity * target,
-		unsigned int type,
-		unsigned int keyCount,
-		const HashCode512 * keys,
-		unsigned int anonymityLevel,
-		unsigned int prio,
-		cron_t timeout,
-		Datum_Iterator callback,
-		void * closure);
+struct FS_SEARCH_HANDLE *FS_start_search (struct FS_SEARCH_CONTEXT *ctx,
+                                          const PeerIdentity * target,
+                                          unsigned int type,
+                                          unsigned int keyCount,
+                                          const HashCode512 * keys,
+                                          unsigned int anonymityLevel,
+                                          unsigned int prio,
+                                          cron_t timeout,
+                                          Datum_Iterator callback,
+                                          void *closure);
 
 /**
  * Stop searching.
  */
-void FS_stop_search(struct FS_SEARCH_CONTEXT * ctx,
-		    struct FS_SEARCH_HANDLE * handle);
+void FS_stop_search (struct FS_SEARCH_CONTEXT *ctx,
+                     struct FS_SEARCH_HANDLE *handle);
 
 /**
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-int FS_getAveragePriority(struct ClientServerConnection * sock);
+int FS_getAveragePriority (struct ClientServerConnection *sock);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to
@@ -99,16 +98,15 @@ int FS_getAveragePriority(struct ClientServerConnection * sock);
  * @return OK on success, SYSERR on error
  * @see ecrs_core.h::fileBlockEncode
  */
-int FS_insert(struct ClientServerConnection * sock,
-	      const Datastore_Value * block);
+int FS_insert (struct ClientServerConnection *sock,
+               const Datastore_Value * block);
 
 
 /**
  * Initialize to index a file.  Tries to do the symlinking.
  */
-int FS_initIndex(struct ClientServerConnection * sock,
-		 const HashCode512 * fileHc,
-		 const char * fn);
+int FS_initIndex (struct ClientServerConnection *sock,
+                  const HashCode512 * fileHc, const char *fn);
 
 /**
  * Index a block.  Note that while the API is VERY similar to
@@ -120,10 +118,9 @@ int FS_initIndex(struct ClientServerConnection * sock,
  * @param offset the offset of the block into the file
  * @return OK on success, SYSERR on error
  */
-int FS_index(struct ClientServerConnection * sock,
-	     const HashCode512 * fileHc,	
-	     const Datastore_Value * block,
-	     unsigned long long offset);
+int FS_index (struct ClientServerConnection *sock,
+              const HashCode512 * fileHc,
+              const Datastore_Value * block, unsigned long long offset);
 
 /**
  * Delete a block.  The arguments are the same as the ones for
@@ -133,8 +130,8 @@ int FS_index(struct ClientServerConnection * sock,
  * @return number of items deleted on success,
  *    SYSERR on error
  */
-int FS_delete(struct ClientServerConnection * sock,
-	      const Datastore_Value * block);
+int FS_delete (struct ClientServerConnection *sock,
+               const Datastore_Value * block);
 
 /**
  * Unindex a file.
@@ -142,9 +139,8 @@ int FS_delete(struct ClientServerConnection * sock,
  * @param hc the hash of the entire file
  * @return OK on success, SYSERR on error
  */
-int FS_unindex(struct ClientServerConnection * sock,
-	       unsigned int blocksize,
-	       const HashCode512 * hc);
+int FS_unindex (struct ClientServerConnection *sock,
+                unsigned int blocksize, const HashCode512 * hc);
 
 /**
  * Test if a file of the given hash is indexed.
@@ -152,10 +148,10 @@ int FS_unindex(struct ClientServerConnection * sock,
  * @param hc the hash of the entire file
  * @return YES if so, NO if not, SYSERR on error
  */
-int FS_testIndexed(struct ClientServerConnection * sock,
-		   const HashCode512 * hc);
+int FS_testIndexed (struct ClientServerConnection *sock,
+                    const HashCode512 * hc);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

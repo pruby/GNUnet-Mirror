@@ -33,8 +33,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -48,15 +49,16 @@ extern "C" {
  *
  * The given struct is followed by the value.
  */
-typedef struct {
+typedef struct
+{
 
   MESSAGE_HEADER header;
 
-  unsigned int type; /* nbo */
+  unsigned int type;            /* nbo */
 
   HashCode512 key;
 
-  unsigned long long expire;  /* nbo */
+  unsigned long long expire;    /* nbo */
 
 } CS_dht_request_put_MESSAGE;
 
@@ -65,19 +67,20 @@ typedef struct {
  * a CS_dht_request_put_MESSAGE messages.  Clients can abort
  * the GET operation early by closing the connection.
  */
-typedef struct {
+typedef struct
+{
 
   MESSAGE_HEADER header;
 
-  unsigned int type; /* nbo */
+  unsigned int type;            /* nbo */
 
   HashCode512 key;
 
-  unsigned long long timeout;  /* nbo */
+  unsigned long long timeout;   /* nbo */
 
 } CS_dht_request_get_MESSAGE;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

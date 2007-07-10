@@ -24,8 +24,9 @@
 #include "gnunet_core.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -39,7 +40,8 @@ extern "C" {
 /**
  * @brief PingPong API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Ping a host an call a method if a reply comes back. Uses
@@ -52,11 +54,8 @@ typedef struct {
    *   NULL and the ping does not come back, ping will FREE data!
    * @returns OK on success, SYSERR on error
    */
-  int (*ping)(const PeerIdentity * receiver,
-	      CronJob method,
-	      void * data,
-	      int usePlaintext,
-	      int challenge);
+  int (*ping) (const PeerIdentity * receiver,
+               CronJob method, void *data, int usePlaintext, int challenge);
 
   /**
    * Ping a host an call a method if a reply comes back.
@@ -70,18 +69,16 @@ typedef struct {
    *   NULL and the ping does not come back, ping will FREE data!
    * @returns NULL on error, otherwise the PING message
    */
-  MESSAGE_HEADER * (*pingUser)(const PeerIdentity * receiver,
-			       CronJob method,
-			       void * data,
-			       int plaintext,
-			       int challenge);
+  MESSAGE_HEADER *(*pingUser) (const PeerIdentity * receiver,
+                               CronJob method,
+                               void *data, int plaintext, int challenge);
 
   unsigned int ping_size;
 
 } Pingpong_ServiceAPI;
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

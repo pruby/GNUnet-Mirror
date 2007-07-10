@@ -34,11 +34,11 @@
 
 /* Avoid wasting space on 8-byte longs. */
 #if UINT_MAX >= 0xffffffff
- typedef unsigned int uLong;
+typedef unsigned int uLong;
 #elif ULONG_MAX >= 0xffffffff
- typedef unsigned long uLong;
+typedef unsigned long uLong;
 #else
- #error This compiler is not ANSI-compliant!
+#error This compiler is not ANSI-compliant!
 #endif
 
 #define Z_NULL  0
@@ -52,16 +52,18 @@ static uLong crc_table[256];
  * with the ccorrect final value.  Thus, it is safe to call
  * even on a table that someone else is using concurrently.
  */
-void __attribute__ ((constructor)) crc32_init(void) {
+void __attribute__ ((constructor)) crc32_init (void)
+{
   unsigned int i, j;
   uLong h = 1;
   crc_table[0] = 0;
-  for (i = 128; i; i >>= 1) {
-    h = (h >> 1) ^ ((h & 1) ? POLYNOMIAL : 0);
-    /* h is now crc_table[i] */
-    for (j = 0; j < 256; j += 2*i)
-      crc_table[i+j] = crc_table[j] ^ h;
-  }
+  for (i = 128; i; i >>= 1)
+    {
+      h = (h >> 1) ^ ((h & 1) ? POLYNOMIAL : 0);
+      /* h is now crc_table[i] */
+      for (j = 0; j < 256; j += 2 * i)
+        crc_table[i + j] = crc_table[j] ^ h;
+    }
 }
 
 /*
@@ -74,10 +76,10 @@ void __attribute__ ((constructor)) crc32_init(void) {
  * to data in little-endian byte and bit order to preserve the
  * property of detecting all burst errors of length 32 bits or less.
  */
-static uLong crc32(uLong crc,
-  	   const char *buf,
-  	   size_t len) {
-  GE_ASSERT(NULL, crc_table[255] != 0);
+static uLong
+crc32 (uLong crc, const char *buf, size_t len)
+{
+  GE_ASSERT (NULL, crc_table[255] != 0);
   crc ^= 0xffffffff;
   while (len--)
     crc = (crc >> 8) ^ crc_table[(crc ^ *buf++) & 0xff];
@@ -92,10 +94,12 @@ static uLong crc32(uLong crc,
  * @param len the length of the buffer
  * @return the resulting CRC32 checksum
  */
-int crc32N(const void * buf, int len) {
+int
+crc32N (const void *buf, int len)
+{
   uLong crc;
-  crc = crc32(0L, Z_NULL, 0);
-  crc = crc32(crc, (char*)buf, len);
+  crc = crc32 (0L, Z_NULL, 0);
+  crc = crc32 (crc, (char *) buf, len);
   return crc;
 }
 

@@ -87,67 +87,65 @@ static unsigned long long stored_ops;
 
 static cron_t start_time;
 
-static int putValue(SQstore_ServiceAPI * api,
-  	    int i) {
-  Datastore_Value * value;
+static int
+putValue (SQstore_ServiceAPI * api, int i)
+{
+  Datastore_Value *value;
   size_t size;
   static HashCode512 key;
   static int ic;
 
   /* most content is 32k */
-  size = sizeof(Datastore_Value) + 32 * 1024;
-  if (weak_randomi(16) == 0) /* but some of it is less! */
-    size = sizeof(Datastore_Value) + weak_randomi(32 * 1024);
-  size = size - (size & 7); /* always multiple of 8 */
+  size = sizeof (Datastore_Value) + 32 * 1024;
+  if (weak_randomi (16) == 0)   /* but some of it is less! */
+    size = sizeof (Datastore_Value) + weak_randomi (32 * 1024);
+  size = size - (size & 7);     /* always multiple of 8 */
 
   /* generate random key */
-  hash(&key,
-       sizeof(HashCode512),
-       &key);
-  value = MALLOC(size);
-  value->size = htonl(size);
-  value->type = htonl(i);
-  value->prio = htonl(weak_randomi(100));
-  value->anonymityLevel = htonl(i);
-  value->expirationTime = htonll(get_time() + weak_randomi(1000));
-  memset(&value[1],
-   i,
-   size - sizeof(Datastore_Value));
-  if (OK != api->put(&key, value)) {
-    FREE(value);
-    fprintf(stderr, "E");
-    return SYSERR;
-  }
+  hash (&key, sizeof (HashCode512), &key);
+  value = MALLOC (size);
+  value->size = htonl (size);
+  value->type = htonl (i);
+  value->prio = htonl (weak_randomi (100));
+  value->anonymityLevel = htonl (i);
+  value->expirationTime = htonll (get_time () + weak_randomi (1000));
+  memset (&value[1], i, size - sizeof (Datastore_Value));
+  if (OK != api->put (&key, value))
+    {
+      FREE (value);
+      fprintf (stderr, "E");
+      return SYSERR;
+    }
   ic++;
 #if REPORT_ID
   if (ic % REP_FREQ == 0)
-    fprintf(stderr, "I");
+    fprintf (stderr, "I");
 #endif
-  stored_bytes += ntohl(value->size);
+  stored_bytes += ntohl (value->size);
   stored_ops++;
   stored_entries++;
-  FREE(value);
+  FREE (value);
   return OK;
 }
 
 static int
-iterateDelete(const HashCode512 * key,
-        const Datastore_Value * val,
-        void * cls) {
-  SQstore_ServiceAPI * api = cls;
+iterateDelete (const HashCode512 * key,
+               const Datastore_Value * val, void *cls)
+{
+  SQstore_ServiceAPI *api = cls;
   static int dc;
 
-  if (api->getSize() < MAX_SIZE)
+  if (api->getSize () < MAX_SIZE)
     return SYSERR;
-  if (GNUNET_SHUTDOWN_TEST() == YES)
+  if (GNUNET_SHUTDOWN_TEST () == YES)
     return SYSERR;
   dc++;
 #if REPORT_ID
   if (dc % REP_FREQ == 0)
-    fprintf(stderr, "D");
+    fprintf (stderr, "D");
 #endif
-  GE_ASSERT(NULL, 1 == api->del(key, val));
-  stored_bytes -= ntohl(val->size);
+  GE_ASSERT (NULL, 1 == api->del (key, val));
+  stored_bytes -= ntohl (val->size);
   stored_entries--;
   return OK;
 }
@@ -155,7 +153,9 @@ iterateDelete(const HashCode512 * key,
 /**
  * Add testcode here!
  */
-static int test(SQstore_ServiceAPI * api) {
+static int
+test (SQstore_ServiceAPI * api)
+{
   unsigned long long lops;
   int i;
   int j;
@@ -163,85 +163,82 @@ static int test(SQstore_ServiceAPI * api) {
   int have_file;
 
   lops = 0;
-  have_file = OK == disk_file_test(NULL,
-  			   DB_NAME);
+  have_file = OK == disk_file_test (NULL, DB_NAME);
 
-  for (i=0;i<ITERATIONS;i++) {
+  for (i = 0; i < ITERATIONS; i++)
+    {
 #if REPORT_ID
-    fprintf(stderr, ".");
+      fprintf (stderr, ".");
 #endif
-    /* insert data equivalent to 1/10th of MAX_SIZE */
-    for (j=0;j<PUT_10;j++) {
-      ASSERT(OK == putValue(api, j));
-      if (GNUNET_SHUTDOWN_TEST() == YES)
-  break;
+      /* insert data equivalent to 1/10th of MAX_SIZE */
+      for (j = 0; j < PUT_10; j++)
+        {
+          ASSERT (OK == putValue (api, j));
+          if (GNUNET_SHUTDOWN_TEST () == YES)
+            break;
+        }
+
+      /* trim down below MAX_SIZE again */
+      if ((i % 2) == 0)
+        api->iterateLowPriority (0, &iterateDelete, api);
+      else
+        api->iterateExpirationTime (0, &iterateDelete, api);
+
+      /* every 10 iterations print status */
+      size = 0;
+      if (have_file)
+        disk_file_size (NULL, DB_NAME, &size, NO);
+      printf (
+#if REPORT_ID
+               "\n"
+#endif
+               "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", i, stored_bytes / 1024,      /* used size in k */
+               api->getSize () / 1024,  /* API-reported size in k */
+               size / 1024,     /* disk size in kb */
+               (100.0 * size / stored_bytes) - 100,     /* overhead */
+               (stored_ops * 2 - stored_entries) / 1024,        /* total operations (in k) */
+               1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time () - start_time));     /* operations per second */
+      lops = stored_ops * 2 - stored_entries;
+      start_time = get_time ();
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
     }
-
-    /* trim down below MAX_SIZE again */
-    if ((i % 2) == 0)
-      api->iterateLowPriority(0, &iterateDelete, api);
-    else
-      api->iterateExpirationTime(0, &iterateDelete, api);
-
-    /* every 10 iterations print status */
-    size = 0;
-    if (have_file)
-      disk_file_size(NULL,
-  	     DB_NAME,
-  	     &size,
-  	     NO);
-    printf(
-#if REPORT_ID
-     "\n"
-#endif
-     "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
-     i,
-     stored_bytes / 1024,  /* used size in k */
-     api->getSize() / 1024, /* API-reported size in k */
-     size / 1024, /* disk size in kb */
-     (100.0 * size / stored_bytes) - 100, /* overhead */
-     (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-     1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */
-    lops = stored_ops * 2 - stored_entries;
-    start_time = get_time();
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-  }
-  api->drop();
+  api->drop ();
   return OK;
 
- FAILURE:
-  api->drop();
+FAILURE:
+  api->drop ();
   return SYSERR;
 }
 
-int main(int argc, char *argv[]) {
-  SQstore_ServiceAPI * api;
+int
+main (int argc, char *argv[])
+{
+  SQstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration * cfg;
-  struct CronManager * cron;
+  struct GC_Configuration *cfg;
+  struct CronManager *cron;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  cron = cron_create(NULL);
-  initCore(NULL,
-     cfg,
-     cron,
-     NULL);
-  api = requestService("sqstore");
-  if (api != NULL) {
-    start_time = get_time();
-    ok = test(api);
-    releaseService(api);
-  } else
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  cron = cron_create (NULL);
+  initCore (NULL, cfg, cron, NULL);
+  api = requestService ("sqstore");
+  if (api != NULL)
+    {
+      start_time = get_time ();
+      ok = test (api);
+      releaseService (api);
+    }
+  else
     ok = SYSERR;
-  doneCore();
-  cron_destroy(cron);
-  GC_free(cfg);
+  doneCore ();
+  cron_destroy (cron);
+  GC_free (cfg);
   if (ok == SYSERR)
     return 1;
   return 0;

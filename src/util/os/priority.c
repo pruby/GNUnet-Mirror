@@ -31,83 +31,80 @@
 /**
  * Set our process priority
  */
-int os_set_process_priority(struct GE_Context * ectx,
-  		    const char * str) {
+int
+os_set_process_priority (struct GE_Context *ectx, const char *str)
+{
   int prio = 0;
 
-  GE_ASSERT(ectx,
-      str != NULL);
+  GE_ASSERT (ectx, str != NULL);
   /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
    * and the usual numeric nice() increments */
-  if (strcmp(str, "NORMAL") == 0)
+  if (strcmp (str, "NORMAL") == 0)
 #ifdef MINGW
     prio = NORMAL_PRIORITY_CLASS;
 #else
-  prio = 0;
+    prio = 0;
 #endif
-  else if (strcmp(str, "ABOVE NORMAL") == 0)
+  else if (strcmp (str, "ABOVE NORMAL") == 0)
 #ifdef MINGW
     prio = ABOVE_NORMAL_PRIORITY_CLASS;
 #else
-  prio = -5;
+    prio = -5;
 #endif
-  else if (strcmp(str, "BELOW NORMAL") == 0)
+  else if (strcmp (str, "BELOW NORMAL") == 0)
 #ifdef MINGW
     prio = BELOW_NORMAL_PRIORITY_CLASS;
 #else
-  prio = 10;
+    prio = 10;
 #endif
-  else if (strcmp(str, "HIGH") == 0)
+  else if (strcmp (str, "HIGH") == 0)
 #ifdef MINGW
     prio = HIGH_PRIORITY_CLASS;
 #else
-  prio = -10;
+    prio = -10;
 #endif
-  else if (strcmp(str, "IDLE") == 0)
+  else if (strcmp (str, "IDLE") == 0)
 #ifdef MINGW
     prio = IDLE_PRIORITY_CLASS;
 #else
-  prio = 19;
+    prio = 19;
 #endif
-  else {
-    if (1 != sscanf(str,
-  	    "%d",
-  	    &prio)) {
-      GE_LOG(ectx,
-       GE_USER | GE_BULK | GE_ERROR,
-       _("Invalid process priority `%s'\n"),
-       str);
-      return SYSERR;
-    }
+  else
+    {
+      if (1 != sscanf (str, "%d", &prio))
+        {
+          GE_LOG (ectx,
+                  GE_USER | GE_BULK | GE_ERROR,
+                  _("Invalid process priority `%s'\n"), str);
+          return SYSERR;
+        }
 
 #ifdef MINGW
-  /* Convert the nice increment to a priority class */
-    if (prio == 0)
-      prio = NORMAL_PRIORITY_CLASS;
-    else if (prio > 0 && prio <= 10)
-      prio = BELOW_NORMAL_PRIORITY_CLASS;
-    else if (prio > 0)
-      prio = IDLE_PRIORITY_CLASS;
-    else if (prio < 0 && prio >= -10)
-      prio = ABOVE_NORMAL_PRIORITY_CLASS;
-    else if (prio < 0)
-      prio = HIGH_PRIORITY_CLASS;
+      /* Convert the nice increment to a priority class */
+      if (prio == 0)
+        prio = NORMAL_PRIORITY_CLASS;
+      else if (prio > 0 && prio <= 10)
+        prio = BELOW_NORMAL_PRIORITY_CLASS;
+      else if (prio > 0)
+        prio = IDLE_PRIORITY_CLASS;
+      else if (prio < 0 && prio >= -10)
+        prio = ABOVE_NORMAL_PRIORITY_CLASS;
+      else if (prio < 0)
+        prio = HIGH_PRIORITY_CLASS;
 #endif
-  }
+    }
 
   /* Set process priority */
 #ifdef MINGW
-  SetPriorityClass(GetCurrentProcess(), prio);
+  SetPriorityClass (GetCurrentProcess (), prio);
 #else
   errno = 0;
-  nice(prio);
-  if (errno != 0) {
-    GE_LOG_STRERROR(ectx,
-  	    GE_WARNING | GE_ADMIN | GE_BULK,
-  	    "nice");
-    return SYSERR;
-  }
+  nice (prio);
+  if (errno != 0)
+    {
+      GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "nice");
+      return SYSERR;
+    }
 #endif
   return OK;
 }
-

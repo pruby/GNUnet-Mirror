@@ -24,13 +24,13 @@
  * @author Christian Grothoff
  */
 
-typedef int (*BlacklistedTester)(const void * addr,
-  			 unsigned int addr_len);
+typedef int (*BlacklistedTester) (const void *addr, unsigned int addr_len);
 
 /**
  * Message-Packet header.
  */
-typedef struct {
+typedef struct
+{
   /**
    * size of the message, in bytes, including this header.
    */
@@ -45,11 +45,11 @@ typedef struct {
 
 /* *********** globals ************* */
 
-static CoreAPIForTransport * coreAPI;
+static CoreAPIForTransport *coreAPI;
 
 static TransportAPI udpAPI;
 
-static Stats_ServiceAPI * stats;
+static Stats_ServiceAPI *stats;
 
 static int stat_bytesReceived;
 
@@ -57,17 +57,17 @@ static int stat_bytesSent;
 
 static int stat_bytesDropped;
 
-static struct GE_Context * ectx;
+static struct GE_Context *ectx;
 
 /**
  * thread that listens for inbound messages
  */
-static struct SelectHandle * selector;
+static struct SelectHandle *selector;
 
 /**
  * the socket that we transmit all data with
  */
-static struct SocketHandle * udp_sock;
+static struct SocketHandle *udp_sock;
 
 /**
  * The socket of session has data waiting, process!
@@ -75,53 +75,51 @@ static struct SocketHandle * udp_sock;
  * This function may only be called if the tcplock is
  * already held by the caller.
  */
-static int select_message_handler(void * mh_cls,
-  			  struct SelectHandle * sh,
-  			  struct SocketHandle * sock,
-  			  void * sock_ctx,
-  			  const MESSAGE_HEADER * msg) {
+static int
+select_message_handler (void *mh_cls,
+                        struct SelectHandle *sh,
+                        struct SocketHandle *sock,
+                        void *sock_ctx, const MESSAGE_HEADER * msg)
+{
   unsigned int len;
-  P2P_PACKET * mp;
-  const UDPMessage * um;
+  P2P_PACKET *mp;
+  const UDPMessage *um;
 
-  len = ntohs(msg->size);
-  if (len <= sizeof(UDPMessage)) {
-    GE_LOG(ectx,
-     GE_WARNING | GE_USER | GE_BULK,
-     _("Received malformed message from udp-peer connection. Closing.\n"));
-    return SYSERR;
-  }
+  len = ntohs (msg->size);
+  if (len <= sizeof (UDPMessage))
+    {
+      GE_LOG (ectx,
+              GE_WARNING | GE_USER | GE_BULK,
+              _
+              ("Received malformed message from udp-peer connection. Closing.\n"));
+      return SYSERR;
+    }
 #if DEBUG_UDP
-  GE_LOG(ectx,
-   GE_DEBUG | GE_USER | GE_BULK,
-   "Received %d bytes via UDP\n",
-   len);
+  GE_LOG (ectx,
+          GE_DEBUG | GE_USER | GE_BULK, "Received %d bytes via UDP\n", len);
 #endif
-  um = (const UDPMessage*) msg;
-  mp      = MALLOC(sizeof(P2P_PACKET));
-  mp->msg = MALLOC(len - sizeof(UDPMessage));
-  memcpy(mp->msg,
-   &um[1],
-   len - sizeof(UDPMessage));
+  um = (const UDPMessage *) msg;
+  mp = MALLOC (sizeof (P2P_PACKET));
+  mp->msg = MALLOC (len - sizeof (UDPMessage));
+  memcpy (mp->msg, &um[1], len - sizeof (UDPMessage));
   mp->sender = um->sender;
-  mp->size   = len - sizeof(UDPMessage);
+  mp->size = len - sizeof (UDPMessage);
   mp->tsession = NULL;
-  coreAPI->receive(mp);
+  coreAPI->receive (mp);
   if (stats != NULL)
-    stats->change(stat_bytesReceived,
-  	  len);
+    stats->change (stat_bytesReceived, len);
   return OK;
 }
 
-static void * select_accept_handler(void * ah_cls,
-  			    struct SelectHandle * sh,
-  			    struct SocketHandle * sock,
-  			    const void * addr,
-  			    unsigned int addr_len) {
+static void *
+select_accept_handler (void *ah_cls,
+                       struct SelectHandle *sh,
+                       struct SocketHandle *sock,
+                       const void *addr, unsigned int addr_len)
+{
   static int nonnullpointer;
   BlacklistedTester blt = ah_cls;
-  if (NO != blt(addr,
-  	addr_len))
+  if (NO != blt (addr, addr_len))
     return NULL;
   return &nonnullpointer;
 }
@@ -130,10 +128,11 @@ static void * select_accept_handler(void * ah_cls,
  * Select has been forced to close a connection.
  * Free the associated context.
  */
-static void select_close_handler(void * ch_cls,
-  			 struct SelectHandle * sh,
-  			 struct SocketHandle * sock,
-  			 void * sock_ctx) {
+static void
+select_close_handler (void *ch_cls,
+                      struct SelectHandle *sh,
+                      struct SocketHandle *sock, void *sock_ctx)
+{
   /* do nothing */
 }
 
@@ -144,15 +143,14 @@ static void select_close_handler(void * ch_cls,
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int udpConnect(const P2P_hello_MESSAGE * hello,
-  	      TSession ** tsessionPtr) {
-  TSession * tsession;
+static int
+udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
+{
+  TSession *tsession;
 
-  tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(hello));
-  memcpy(tsession->internal,
-   hello,
-   P2P_hello_MESSAGE_size(hello));
+  tsession = MALLOC (sizeof (TSession));
+  tsession->internal = MALLOC (P2P_hello_MESSAGE_size (hello));
+  memcpy (tsession->internal, hello, P2P_hello_MESSAGE_size (hello));
   tsession->ttype = udpAPI.protocolNumber;
   tsession->peer = hello->senderIdentity;
   *tsessionPtr = tsession;
@@ -170,8 +168,10 @@ static int udpConnect(const P2P_hello_MESSAGE * hello,
  * @return OK if the session could be associated,
  *         SYSERR if not.
  */
-int udpAssociate(TSession * tsession) {
-  return SYSERR; /* UDP connections can never be associated */
+int
+udpAssociate (TSession * tsession)
+{
+  return SYSERR;                /* UDP connections can never be associated */
 }
 
 /**
@@ -180,12 +180,15 @@ int udpAssociate(TSession * tsession) {
  * @param tsession the session that is closed
  * @return OK on success, SYSERR if the operation failed
  */
-static int udpDisconnect(TSession * tsession) {
-  if (tsession != NULL) {
-    if (tsession->internal != NULL)
-      FREE(tsession->internal);
-    FREE(tsession);
-  }
+static int
+udpDisconnect (TSession * tsession)
+{
+  if (tsession != NULL)
+    {
+      if (tsession->internal != NULL)
+        FREE (tsession->internal);
+      FREE (tsession);
+    }
   return OK;
 }
 
@@ -193,13 +196,16 @@ static int udpDisconnect(TSession * tsession) {
  * Shutdown the server process (stop receiving inbound traffic). Maybe
  * restarted later!
  */
-static int stopTransportServer() {
-  GE_ASSERT(ectx, udp_sock != NULL);
-  if (selector != NULL) {
-    select_destroy(selector);
-    selector = NULL;
-  }
-  socket_destroy(udp_sock);
+static int
+stopTransportServer ()
+{
+  GE_ASSERT (ectx, udp_sock != NULL);
+  if (selector != NULL)
+    {
+      select_destroy (selector);
+      selector = NULL;
+    }
+  socket_destroy (udp_sock);
   udp_sock = NULL;
   return OK;
 }
@@ -217,22 +223,24 @@ static int stopTransportServer() {
  *         NO if the transport would just drop the message,
  *         SYSERR if the size/session is invalid
  */
-static int testWouldTry(TSession * tsession,
-  		unsigned int size,
-  		int important) {
-  const P2P_hello_MESSAGE * hello;
+static int
+testWouldTry (TSession * tsession, unsigned int size, int important)
+{
+  const P2P_hello_MESSAGE *hello;
 
   if (udp_sock == NULL)
     return SYSERR;
-  if (size == 0) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  if (size > udpAPI.mtu) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  hello = (const P2P_hello_MESSAGE*)tsession->internal;
+  if (size == 0)
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
+  if (size > udpAPI.mtu)
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
+  hello = (const P2P_hello_MESSAGE *) tsession->internal;
   if (hello == NULL)
     return SYSERR;
   return YES;

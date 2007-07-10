@@ -31,22 +31,24 @@
 #include "gnunet_util_config.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
 
 struct GC_ConfigurationData;
 
-typedef struct GC_Configuration {
+typedef struct GC_Configuration
+{
 
   /**
    * Internal configuration data.
    */
-  struct GC_ConfigurationData * data;
+  struct GC_ConfigurationData *data;
 
-  void (*free)(struct GC_Configuration * cfg);
+  void (*free) (struct GC_Configuration * cfg);
 
   /**
    * Set the context for reporting configuration IO errors
@@ -60,31 +62,31 @@ typedef struct GC_Configuration {
    * @parm ectx maybe NULL, in that case errors will no longer
    *       be reported
    */
-  void (*set_error_context)(struct GC_Configuration * cfg,
-			    struct GE_Context * ectx);
+  void (*set_error_context) (struct GC_Configuration * cfg,
+                             struct GE_Context * ectx);
 
   /**
    * Parse a configuration file, add all of the options in the
    * file to the configuration environment.
    * @return 0 on success, -1 on error
    */
-  int (*parse_configuration)(struct GC_Configuration * cfg,
-			     const char * filename);
+  int (*parse_configuration) (struct GC_Configuration * cfg,
+                              const char *filename);
 
   /**
    * Test if there are configuration options that were
    * changed since the last save.
    * @return 0 if clean, 1 if dirty, -1 on error (i.e. last save failed)
    */
-  int (*test_dirty)(struct GC_Configuration * cfg);
+  int (*test_dirty) (struct GC_Configuration * cfg);
 
 
   /**
    * Write configuration file.
    * @return 0 on success, -1 on error
    */
-  int (*write_configuration)(struct GC_Configuration * cfg,
-			     const char * filename);
+  int (*write_configuration) (struct GC_Configuration * cfg,
+                              const char *filename);
 
 
   /**
@@ -95,8 +97,8 @@ typedef struct GC_Configuration {
    * @param old string to $-expand (will be freed!)
    * @return $-expanded string
    */
-  char * (*configuration_expand_dollar)(struct GC_Configuration * cfg,
-					char * old);
+  char *(*configuration_expand_dollar) (struct GC_Configuration * cfg,
+                                        char *old);
 
   /**
    * Get a configuration value that should be a number.
@@ -105,13 +107,13 @@ typedef struct GC_Configuration {
    * @param def default value (use indicated by return value)
    * @return 0 on success, -1 on error, 1 for default
    */
-  int (*get_configuration_value_number)(struct GC_Configuration * cfg,
-					const char * section,
-					const char * option,
-					unsigned long long min,
-					unsigned long long max,
-					unsigned long long def,
-					unsigned long long * number);
+  int (*get_configuration_value_number) (struct GC_Configuration * cfg,
+                                         const char *section,
+                                         const char *option,
+                                         unsigned long long min,
+                                         unsigned long long max,
+                                         unsigned long long def,
+                                         unsigned long long *number);
 
 
   /**
@@ -122,11 +124,10 @@ typedef struct GC_Configuration {
    *        value, or NULL if option is not specified and no default given
    * @return 0 on success, -1 on error, 1 for default
    */
-  int (*get_configuration_value_string)(struct GC_Configuration * cfg,
-					const char * section,
-					const char * option,
-					const char * def,
-					char ** value);
+  int (*get_configuration_value_string) (struct GC_Configuration * cfg,
+                                         const char *section,
+                                         const char *option,
+                                         const char *def, char **value);
 
   /**
    * Get a configuration value that should be a file name.
@@ -136,11 +137,10 @@ typedef struct GC_Configuration {
    *        value, or NULL if option is not specified and no default given
    * @return 0 on success, -1 on error, 1 for default
    */
-  int (*get_configuration_value_filename)(struct GC_Configuration * cfg,
-					  const char * section,
-					  const char * option,
-					  const char * def,
-					  char ** value);
+  int (*get_configuration_value_filename) (struct GC_Configuration * cfg,
+                                           const char *section,
+                                           const char *option,
+                                           const char *def, char **value);
 
   /**
    * Get a configuration value that should be in a set of
@@ -153,23 +153,22 @@ typedef struct GC_Configuration {
    *        or NULL if option is not specified and no default given
    * @return 0 on success, -1 on error, 1 for default
    */
-  int (*get_configuration_value_choice)(struct GC_Configuration * cfg,
-					const char * section,
-					const char * option,
-					const char ** choices,
-					const char * def,
-					const char ** value);
+  int (*get_configuration_value_choice) (struct GC_Configuration * cfg,
+                                         const char *section,
+                                         const char *option,
+                                         const char **choices,
+                                         const char *def, const char **value);
 
   /**
    * Set a configuration value that should be a number.
    * @return 0 on success, -1 on error (i.e. out of memory,
    *   or update refused by registered callback)
    */
-  int (*set_configuration_value_number)(struct GC_Configuration * cfg,
-					struct GE_Context * ectx,
-					const char * section,
-					const char * option,
-					unsigned long long number);
+  int (*set_configuration_value_number) (struct GC_Configuration * cfg,
+                                         struct GE_Context * ectx,
+                                         const char *section,
+                                         const char *option,
+                                         unsigned long long number);
 
 
   /**
@@ -178,11 +177,11 @@ typedef struct GC_Configuration {
    * @return 0 on success, -1 on error (i.e. out of memory,
    *   or update refused by registered callback)
    */
-  int (*set_configuration_value_string)(struct GC_Configuration * cfg,
-					struct GE_Context * ectx,
-					const char * section,
-					const char * option,
-					const char * value);
+  int (*set_configuration_value_string) (struct GC_Configuration * cfg,
+                                         struct GE_Context * ectx,
+                                         const char *section,
+                                         const char *option,
+                                         const char *value);
 
   /**
    * Set a configuration value that should be in a set of
@@ -191,43 +190,40 @@ typedef struct GC_Configuration {
    * @return 0 on success, -1 on error (i.e. out of memory,
    *   or update refused by registered callback)
    */
-  int (*set_configuration_value_choice)(struct GC_Configuration * cfg,
-					struct GE_Context * ectx,
-					const char * section,
-					const char * option,
-					const char * choice);
+  int (*set_configuration_value_choice) (struct GC_Configuration * cfg,
+                                         struct GE_Context * ectx,
+                                         const char *section,
+                                         const char *option,
+                                         const char *choice);
 
   /**
    * Attach a callback that is notified whenever a
    * configuration option changes.
    * @return 0 on success, -1 on error
    */
-  int (*attach_change_listener)(struct GC_Configuration * cfg,
-				GC_ChangeListener callback,
-				void * ctx);
+  int (*attach_change_listener) (struct GC_Configuration * cfg,
+                                 GC_ChangeListener callback, void *ctx);
 
   /**
    * Attach a callback that is notified whenever a
    * configuration option changes.
    * @return 0 on success, -1 on error, 1 for no such handler registered
    */
-  int (*detach_change_listener)(struct GC_Configuration * cfg,
-				GC_ChangeListener callback,
-				void * ctx);
+  int (*detach_change_listener) (struct GC_Configuration * cfg,
+                                 GC_ChangeListener callback, void *ctx);
 
-  int (*have_configuration_value)(struct GC_Configuration * cfg,
-				  const char * section,
-				  const char * option);
+  int (*have_configuration_value) (struct GC_Configuration * cfg,
+                                   const char *section, const char *option);
 
 } GC_Configuration;
 
 /**
  * Create a GC_Configuration (C implementation).
  */
-GC_Configuration * GC_create_C_impl(void);
+GC_Configuration *GC_create_C_impl (void);
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

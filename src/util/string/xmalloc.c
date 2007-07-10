@@ -44,45 +44,31 @@
  * @param linenumber where in the code was the call to GROW
  * @return pointer to size bytes of memory
  */
-void * xmalloc_(size_t size,
-  	const char * filename,
-  	int linenumber,
-  	const char * function) {
+void *
+xmalloc_ (size_t size,
+          const char *filename, int linenumber, const char *function)
+{
   /* As a security precaution, we generally do not allow very large
      allocations using the default 'MALLOC' macro */
-  GE_ASSERT_FLF(NULL,
-  	size <= MAX_MALLOC_CHECKED,
-  	filename,
-  	linenumber,
-  	function);
-  return xmalloc_unchecked_(size,
-  		    filename,
-  		    linenumber,
-  		    function);
+  GE_ASSERT_FLF (NULL,
+                 size <= MAX_MALLOC_CHECKED, filename, linenumber, function);
+  return xmalloc_unchecked_ (size, filename, linenumber, function);
 }
 
-void * xmalloc_unchecked_(size_t size,
-  		  const char * filename,
-  		  int linenumber,
-  		  const char * function) {
-  void * result;
+void *
+xmalloc_unchecked_ (size_t size,
+                    const char *filename,
+                    int linenumber, const char *function)
+{
+  void *result;
 
-  GE_ASSERT_FLF(NULL,
-  	size < INT_MAX,
-  	filename,
-  	linenumber,
-  	function);
-  result = malloc(size);
+  GE_ASSERT_FLF (NULL, size < INT_MAX, filename, linenumber, function);
+  result = malloc (size);
   if (result == NULL)
-    GE_DIE_STRERROR_FLF(NULL,
-  		GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
-  		"malloc",
-  		filename,
-  		linenumber,
-  		function);
-  memset(result,
-   0,
-   size); /* client code should not rely on this, though... */
+    GE_DIE_STRERROR_FLF (NULL,
+                         GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
+                         "malloc", filename, linenumber, function);
+  memset (result, 0, size);     /* client code should not rely on this, though... */
   return result;
 }
 
@@ -98,20 +84,17 @@ void * xmalloc_unchecked_(size_t size,
  * @param linenumber where in the code was the call to REALLOC
  * @return pointer to size bytes of memory
  */
-void * xrealloc_(void * ptr,
-  	 const size_t n,
-  	 const char * filename,
-  	 int linenumber,
-  	 const char * function) {
-  ptr = realloc(ptr, n);
+void *
+xrealloc_ (void *ptr,
+           const size_t n,
+           const char *filename, int linenumber, const char *function)
+{
+  ptr = realloc (ptr, n);
 
   if (!ptr)
-    GE_DIE_STRERROR_FLF(NULL,
-  		GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
-  		"realloc",
-  		filename,
-  		linenumber,
-  		function);
+    GE_DIE_STRERROR_FLF (NULL,
+                         GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
+                         "realloc", filename, linenumber, function);
   return ptr;
 }
 
@@ -123,16 +106,11 @@ void * xrealloc_(void * ptr,
  * @param filename where in the code was the call to GROW
  * @param linenumber where in the code was the call to GROW
  */
-void xfree_(void * ptr,
-      const char * filename,
-      int linenumber,
-      const char * function) {
-  GE_ASSERT_FLF(NULL,
-  	ptr != NULL,
-  	filename,
-  	linenumber,
-  	function);
-  free(ptr);
+void
+xfree_ (void *ptr, const char *filename, int linenumber, const char *function)
+{
+  GE_ASSERT_FLF (NULL, ptr != NULL, filename, linenumber, function);
+  free (ptr);
 }
 
 /**
@@ -143,24 +121,15 @@ void xfree_(void * ptr,
  * @param linenumber where in the code was the call to GROW
  * @return strdup(str)
  */
-char * xstrdup_(const char * str,
-  	const char * filename,
-  	int linenumber,
-  	const char * function) {
-  char * res;
+char *
+xstrdup_ (const char *str,
+          const char *filename, int linenumber, const char *function)
+{
+  char *res;
 
-  GE_ASSERT_FLF(NULL,
-  	str != NULL,
-  	filename,
-  	linenumber,
-  	function);
-  res = (char*)xmalloc_(strlen(str)+1,
-  		filename,
-  		linenumber,
-  		function);
-  memcpy(res,
-   str,
-   strlen(str)+1);
+  GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
+  res = (char *) xmalloc_ (strlen (str) + 1, filename, linenumber, function);
+  memcpy (res, str, strlen (str) + 1);
   return res;
 }
 
@@ -173,27 +142,20 @@ char * xstrdup_(const char * str,
  * @param linenumber where in the code was the call to GROW
  * @return strdup(str)
  */
-char * xstrndup_(const char * str,
-  	 const size_t n,
-  	 const char * filename,
-  	 int linenumber,
-  	 const char * function) {
-  char * res;
+char *
+xstrndup_ (const char *str,
+           const size_t n,
+           const char *filename, int linenumber, const char *function)
+{
+  char *res;
   size_t min;
 
-  GE_ASSERT_FLF(NULL,
-  	str != NULL,
-  	filename,
-  	linenumber,
-  	function);
+  GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
   min = 0;
-  while ( (min < n) && (str[min] != '\0'))
+  while ((min < n) && (str[min] != '\0'))
     min++;
-  res = (char*)xmalloc_(min+1,
-  		filename,
-  		linenumber,
-  		function);
-  memcpy(res, str, min);
+  res = (char *) xmalloc_ (min + 1, filename, linenumber, function);
+  memcpy (res, str, min);
   res[min] = '\0';
   return res;
 }
@@ -211,47 +173,40 @@ char * xstrndup_(const char * str,
  * @param filename where in the code was the call to GROW
  * @param linenumber where in the code was the call to GROW
  */
-void xgrow_(void ** old,
-      size_t elementSize,
-      unsigned int * oldCount,
-      unsigned int newCount,
-      const char * filename,
-      int linenumber,
-      const char * function) {
-  void * tmp;
+void
+xgrow_ (void **old,
+        size_t elementSize,
+        unsigned int *oldCount,
+        unsigned int newCount,
+        const char *filename, int linenumber, const char *function)
+{
+  void *tmp;
   size_t size;
 
-  GE_ASSERT_FLF(NULL,
-  	INT_MAX / elementSize > newCount,
-  	filename,
-  	linenumber,
-  	function);
+  GE_ASSERT_FLF (NULL,
+                 INT_MAX / elementSize > newCount,
+                 filename, linenumber, function);
   size = newCount * elementSize;
-  if (size == 0) {
-    tmp = NULL;
-  } else {
-    tmp = xmalloc_(size,
-  	   filename,
-  	   linenumber,
-  	   function);
-    GE_ASSERT(NULL, tmp != NULL);
-    memset(tmp, 0, size); /* client code should not rely on this, though... */
-    if (*oldCount > newCount)
-      *oldCount = newCount; /* shrink is also allowed! */
-    memcpy(tmp,
-     *old,
-     elementSize * (*oldCount));
-  }
+  if (size == 0)
+    {
+      tmp = NULL;
+    }
+  else
+    {
+      tmp = xmalloc_ (size, filename, linenumber, function);
+      GE_ASSERT (NULL, tmp != NULL);
+      memset (tmp, 0, size);    /* client code should not rely on this, though... */
+      if (*oldCount > newCount)
+        *oldCount = newCount;   /* shrink is also allowed! */
+      memcpy (tmp, *old, elementSize * (*oldCount));
+    }
 
-  if (*old != NULL) {
-    xfree_(*old,
-     filename,
-     linenumber,
-     function);
-  }
+  if (*old != NULL)
+    {
+      xfree_ (*old, filename, linenumber, function);
+    }
   *old = tmp;
   *oldCount = newCount;
 }
 
 /* end of xmalloc.c */
-

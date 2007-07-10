@@ -49,7 +49,8 @@
 /**
  * @brief Internal state of a semaphore.
  */
-typedef struct SEMAPHORE {
+typedef struct SEMAPHORE
+{
   /**
    * Counter
    */
@@ -80,8 +81,8 @@ typedef struct SEMAPHORE {
  * on all pthread-systems so far. Odd.
  */
 #ifndef _MSC_VER
-extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr,
-  				int kind);
+extern int pthread_mutexattr_setkind_np (pthread_mutexattr_t * attr,
+                                         int kind);
 #endif
 
 /**
@@ -89,93 +90,82 @@ extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr,
  * setup and initialization.  semaphore destroy (below) should
  * be called when the semaphore is no longer needed.
  */
-Semaphore * SEMAPHORE_CREATE(int value) {
-  Semaphore * s;
+Semaphore *
+SEMAPHORE_CREATE (int value)
+{
+  Semaphore *s;
   pthread_mutexattr_t attr;
 #if WINDOWS
   attr = NULL;
 #endif
 
-  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_init (&attr);
 #if LINUX
-  GE_ASSERT(NULL,
-      0 == pthread_mutexattr_setkind_np
-      (&attr,
-       PTHREAD_MUTEX_ERRORCHECK_NP));
+  GE_ASSERT (NULL,
+             0 == pthread_mutexattr_setkind_np
+             (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
-  GE_ASSERT(NULL,
-      0 == pthread_mutexattr_settype
-      (&attr,
-       PTHREAD_MUTEX_ERRORCHECK));
+  GE_ASSERT (NULL,
+             0 == pthread_mutexattr_settype
+             (&attr, PTHREAD_MUTEX_ERRORCHECK));
 #endif
-  s = MALLOC(sizeof(Semaphore));
+  s = MALLOC (sizeof (Semaphore));
   s->v = value;
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_init(&s->mutex,
-  			    &attr));
-  GE_ASSERT(NULL,
-      0 == pthread_cond_init(&s->cond,
-  			   NULL));
+  GE_ASSERT (NULL, 0 == pthread_mutex_init (&s->mutex, &attr));
+  GE_ASSERT (NULL, 0 == pthread_cond_init (&s->cond, NULL));
   return s;
 }
 
-void SEMAPHORE_DESTROY(Semaphore * s) {
-  GE_ASSERT(NULL, s != NULL);
-  GE_ASSERT(NULL,
-      0 == pthread_cond_destroy(&s->cond));
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_destroy(&s->mutex));
-  FREE(s);
+void
+SEMAPHORE_DESTROY (Semaphore * s)
+{
+  GE_ASSERT (NULL, s != NULL);
+  GE_ASSERT (NULL, 0 == pthread_cond_destroy (&s->cond));
+  GE_ASSERT (NULL, 0 == pthread_mutex_destroy (&s->mutex));
+  FREE (s);
 }
 
-int SEMAPHORE_UP(Semaphore * s) {
+int
+SEMAPHORE_UP (Semaphore * s)
+{
   int ret;
 
-  GE_ASSERT(NULL, s != NULL);
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_lock(&s->mutex));
+  GE_ASSERT (NULL, s != NULL);
+  GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
   ret = ++(s->v);
-  GE_ASSERT(NULL,
-      0 == pthread_cond_signal(&s->cond));
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_unlock(&s->mutex));
+  GE_ASSERT (NULL, 0 == pthread_cond_signal (&s->cond));
+  GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
   return ret;
 }
 
-int SEMAPHORE_DOWN_FL(Semaphore * s,
-  	      int mayblock,
-  	      int longwait,
-  	      const char * file,
-  	      unsigned int line) {
+int
+SEMAPHORE_DOWN_FL (Semaphore * s,
+                   int mayblock,
+                   int longwait, const char *file, unsigned int line)
+{
   int ret;
   cron_t start;
   cron_t end;
 
-  GE_ASSERT(NULL, s != NULL);
-  start = get_time();
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_lock(&s->mutex));
-  while ( (s->v <= 0) && mayblock)
-    GE_ASSERT(NULL,
-        0 == pthread_cond_wait(&s->cond,
-  			     &s->mutex));
+  GE_ASSERT (NULL, s != NULL);
+  start = get_time ();
+  GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
+  while ((s->v <= 0) && mayblock)
+    GE_ASSERT (NULL, 0 == pthread_cond_wait (&s->cond, &s->mutex));
   if (s->v > 0)
     ret = --(s->v);
   else
     ret = SYSERR;
-  GE_ASSERT(NULL,
-      0 == pthread_mutex_unlock(&s->mutex));
-  end = get_time();
-  if ( (longwait == NO) &&
-       (end - start > REALTIME_LIMIT) &&
-       (REALTIME_LIMIT != 0) ) {
-    GE_LOG(NULL,
-     GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
-     _("Real-time delay violation (%llu ms) at %s:%u\n"),
-     end - start,
-     file,
-     line);
-  }
+  GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
+  end = get_time ();
+  if ((longwait == NO) &&
+      (end - start > REALTIME_LIMIT) && (REALTIME_LIMIT != 0))
+    {
+      GE_LOG (NULL,
+              GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+              _("Real-time delay violation (%llu ms) at %s:%u\n"),
+              end - start, file, line);
+    }
   return ret;
 }
 

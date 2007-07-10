@@ -32,15 +32,17 @@
  *
  * @return the current time
  */
-cron_t get_time() {
+cron_t
+get_time ()
+{
   struct timeval tv;
 #ifndef WINDOWS
-  struct timezone tz; /* man page says it's obsolete, but
-  		 I'd rather not pass a NULL pointer */
+  struct timezone tz;           /* man page says it's obsolete, but
+                                   I'd rather not pass a NULL pointer */
 
-  gettimeofday(&tv, &tz);
+  gettimeofday (&tv, &tz);
 #else
-  gettimeofday(&tv, NULL);
+  gettimeofday (&tv, NULL);
 #endif
-  return (((cron_t)tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
+  return (((cron_t) tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 }

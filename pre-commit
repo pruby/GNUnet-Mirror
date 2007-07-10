@@ -1,0 +1,2 @@
+#!/bin/sh
+indent -nut `find * -name "*.c"` `find * -name "*.h"`

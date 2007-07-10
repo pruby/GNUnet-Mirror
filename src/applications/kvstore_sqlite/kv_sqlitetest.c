@@ -37,66 +37,69 @@
 /**
  * Add testcode here!
  */
-static int test(KVstore_ServiceAPI * api) {
+static int
+test (KVstore_ServiceAPI * api)
+{
   KVHandle *kv;
   HashCode512 k, v;
   HashCode512 *r;
 
   cron_t timeStmp;
 
-  kv = api->getTable("TEST", "KV");
-  ASSERT(kv != NULL);
+  kv = api->getTable ("TEST", "KV");
+  ASSERT (kv != NULL);
 
-  timeStmp = get_time();
-  ASSERT(api->put(kv, (void *) &k, sizeof(k), (void *) &v, sizeof(v),
-    timeStmp) == OK);
+  timeStmp = get_time ();
+  ASSERT (api->put (kv, (void *) &k, sizeof (k), (void *) &v, sizeof (v),
+                    timeStmp) == OK);
 
-  r = api->get(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL);
-  ASSERT(r != NULL);
-  ASSERT(memcmp(&v, r, sizeof(v)) == 0);
-  FREE(r);
+  r = api->get (kv, (void *) &k, sizeof (k), 0, 0, NULL, NULL);
+  ASSERT (r != NULL);
+  ASSERT (memcmp (&v, r, sizeof (v)) == 0);
+  FREE (r);
 
-  ASSERT(api->del(kv, (void *) &k, sizeof(k), 0) == OK);
+  ASSERT (api->del (kv, (void *) &k, sizeof (k), 0) == OK);
 
-  ASSERT(api->get(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL) == NULL);
+  ASSERT (api->get (kv, (void *) &k, sizeof (k), 0, 0, NULL, NULL) == NULL);
 
-  ASSERT(api->dropTable(kv) == OK);
+  ASSERT (api->dropTable (kv) == OK);
 
-  api->dropDatabase("TEST");
+  api->dropDatabase ("TEST");
 
   return OK;
 
- FAILURE:
-  api->dropDatabase("TEST");
+FAILURE:
+  api->dropDatabase ("TEST");
   return SYSERR;
 }
 
 #define TEST_DB "/tmp/GNUnet_sqstore_test/"
 
-int main(int argc, char *argv[]) {
-  KVstore_ServiceAPI * api;
+int
+main (int argc, char *argv[])
+{
+  KVstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration * cfg;
-  struct CronManager * cron;
+  struct GC_Configuration *cfg;
+  struct CronManager *cron;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  cron = cron_create(NULL);
-  initCore(NULL,
-     cfg,
-     cron,
-     NULL);
-  api = requestService("kvstore_sqlite");
-  if (api != NULL) {
-    ok = test(api);
-    releaseService(api);
-  } else
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  cron = cron_create (NULL);
+  initCore (NULL, cfg, cron, NULL);
+  api = requestService ("kvstore_sqlite");
+  if (api != NULL)
+    {
+      ok = test (api);
+      releaseService (api);
+    }
+  else
     ok = SYSERR;
-  doneCore();
+  doneCore ();
   if (ok == SYSERR)
     return 1;
   return 0;

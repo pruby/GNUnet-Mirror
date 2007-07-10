@@ -32,8 +32,9 @@
 #include "gnunet_traffic_service.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -53,16 +54,15 @@ extern "C" {
  *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
  * @return OK on success, SYSERR on error
  */
-int gnunet_traffic_poll(struct ClientServerConnection * sock,
-			unsigned int timeframe,
-			unsigned short type,
-			unsigned short direction,
-			unsigned int * count,
-			unsigned int * avg_size,
-			unsigned int * peers,
-			unsigned int * time);
+int gnunet_traffic_poll (struct ClientServerConnection *sock,
+                         unsigned int timeframe,
+                         unsigned short type,
+                         unsigned short direction,
+                         unsigned int *count,
+                         unsigned int *avg_size,
+                         unsigned int *peers, unsigned int *time);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

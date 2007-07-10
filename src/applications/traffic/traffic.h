@@ -30,7 +30,8 @@
 /**
  * Counter for traffic.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Flags. See TC_XXXX definitions.
@@ -69,7 +70,8 @@ typedef struct {
  * A message of this format is send back to the client
  * if it sends a CS_TRAFFIC_QUERY to gnunetd.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -84,7 +86,8 @@ typedef struct {
  * Generic version of CS_traffic_info_MESSAGE with field for accessing end of struct
  * (use the other version for allocation).
  */
-typedef struct {
+typedef struct
+{
   CS_traffic_info_MESSAGE cs_traffic_info;
 
   /**
@@ -97,7 +100,8 @@ typedef struct {
 /**
  * Request for CS_traffic_info_MESSAGE.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**

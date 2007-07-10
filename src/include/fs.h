@@ -34,7 +34,8 @@
  * there maybe more than one (the semantics depend
  * on the type).
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -79,7 +80,8 @@ typedef struct {
  * header is followed by variable size data (the data portion
  * of the Datastore_Value).
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   unsigned int anonymityLevel;
@@ -94,7 +96,8 @@ typedef struct {
  * This struct is followed by a variable
  * number of bytes of content.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -121,7 +124,8 @@ typedef struct {
  * (for on-demand encoding).  This struct is followed
  * by the filename to index.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   unsigned int reserved;
@@ -139,7 +143,8 @@ typedef struct {
  * encoding).  This struct is followed by a variable
  * number of bytes of content.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -178,7 +183,8 @@ typedef struct {
  * Client to server: delete content.  This struct is followed by a
  * variable number of bytes of the content that is to be deleted.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
 } CS_fs_request_delete_MESSAGE;
@@ -187,7 +193,8 @@ typedef struct {
 /**
  * Client to server: unindex file.
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   /**
@@ -206,7 +213,8 @@ typedef struct {
 /**
  * Client to server: test if file is indexed
  */
-typedef struct {
+typedef struct
+{
   MESSAGE_HEADER header;
 
   unsigned int reserved;
@@ -225,9 +233,10 @@ typedef struct {
  * We essentially add the timeout value since that part is supposed to
  * be communicated to other peers.
  */
-typedef struct {
+typedef struct
+{
   DataContainer dc;
-  unsigned int reserved; /* for 64-bit alignment */
+  unsigned int reserved;        /* for 64-bit alignment */
   unsigned long long timeout;
 } GapWrapper;
 

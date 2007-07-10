@@ -34,12 +34,13 @@
 /**
  * Track record for a given result.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * What are these keys?
    */
-  HashCode512 * matchingKeys;
+  HashCode512 *matchingKeys;
 
   /**
    * What info do we have about this result?
@@ -57,7 +58,8 @@ typedef struct {
 /**
  * @brief list of active searches
  */
-typedef struct FSUI_SearchList {
+typedef struct FSUI_SearchList
+{
 
   /**
    * Desired timeout (relative) for this search
@@ -72,36 +74,36 @@ typedef struct FSUI_SearchList {
   /**
    * Searches are kept in a simple linked list.
    */
-  struct FSUI_SearchList * next;
+  struct FSUI_SearchList *next;
 
   /**
    * Context for this search
    */
-  struct FSUI_Context * ctx;
+  struct FSUI_Context *ctx;
 
   /**
    * Handle to the thread which performs the search.
    */
-  struct PTHREAD * handle;
+  struct PTHREAD *handle;
 
   /**
    * Which URI are we searching?
    */
-  struct ECRS_URI * uri;
+  struct ECRS_URI *uri;
 
   /**
    * What downloads belong to this search?
    */
-  struct FSUI_DownloadList ** my_downloads;
+  struct FSUI_DownloadList **my_downloads;
 
   /**
    * List of all results found so far.
    */
-  ECRS_FileInfo * resultsReceived;
+  ECRS_FileInfo *resultsReceived;
 
-  ResultPending * unmatchedResultsReceived;
+  ResultPending *unmatchedResultsReceived;
 
-  void * cctx;
+  void *cctx;
 
   /**
    * Desired anonymity level for this search
@@ -143,7 +145,8 @@ typedef struct FSUI_SearchList {
 /**
  * @brief list of active downloads
  */
-typedef struct FSUI_DownloadList {
+typedef struct FSUI_DownloadList
+{
 
   /**
    * How many bytes is this download in total
@@ -164,51 +167,51 @@ typedef struct FSUI_DownloadList {
   /**
    * Filename for this download.
    */
-  char * filename;
+  char *filename;
 
   /**
    * Next in the linked list of all downloads
    * kept in FSUI context.
    */
-  struct FSUI_DownloadList * next;
+  struct FSUI_DownloadList *next;
 
   /**
    * For recursive downloads, download entry for
    * the parent.
    */
-  struct FSUI_DownloadList * parent;
+  struct FSUI_DownloadList *parent;
 
   /**
    * If this is a recursive download, this is the
    * list of sub-downloads that are currently
    * going on in parallel.
    */
-  struct FSUI_DownloadList * child;
+  struct FSUI_DownloadList *child;
 
   /**
    * Search that this download belongs to (maybe NULL)
    */
-  struct FSUI_SearchList * search;
+  struct FSUI_SearchList *search;
 
   /**
    * FSUI context for this download.
    */
-  struct FSUI_Context * ctx;
+  struct FSUI_Context *ctx;
 
   /**
    * Client context for the downloadx
    */
-  void * cctx;
+  void *cctx;
 
   /**
    * Currently assigned thread (if any).
    */
-  struct PTHREAD * handle;
+  struct PTHREAD *handle;
 
   /**
    * FIs of completed sub-downloads.
    */
-  struct ECRS_URI ** completedDownloads;
+  struct ECRS_URI **completedDownloads;
 
   /**
    * When did the download start?  Note that if a download is resumed,
@@ -269,19 +272,20 @@ typedef struct FSUI_DownloadList {
 /**
  * Context for the unindex thread.
  */
-typedef struct FSUI_UnindexList {
+typedef struct FSUI_UnindexList
+{
 
   cron_t start_time;
 
-  struct FSUI_UnindexList * next;
+  struct FSUI_UnindexList *next;
 
-  struct PTHREAD * handle;
+  struct PTHREAD *handle;
 
-  char * filename;
+  char *filename;
 
-  struct FSUI_Context * ctx;
+  struct FSUI_Context *ctx;
 
-  void * cctx;
+  void *cctx;
 
   FSUI_State state;
 
@@ -291,26 +295,27 @@ typedef struct FSUI_UnindexList {
 /**
  * Shared context for upload of entire structure.
  */
-typedef struct FSUI_UploadShared {
+typedef struct FSUI_UploadShared
+{
 
   cron_t expiration;
 
   DirectoryScanCallback dsc;
 
-  void * dscClosure;
-		
-  EXTRACTOR_ExtractorList * extractors;
+  void *dscClosure;
 
-  struct FSUI_Context * ctx;
+  EXTRACTOR_ExtractorList *extractors;
 
-  struct PTHREAD * handle;
+  struct FSUI_Context *ctx;
+
+  struct PTHREAD *handle;
 
   /**
    * Keywords to be used for all uploads.
    */
-  struct ECRS_URI * global_keywords;
+  struct ECRS_URI *global_keywords;
 
-  char * extractor_config;
+  char *extractor_config;
 
   int doIndex;
 
@@ -325,7 +330,8 @@ typedef struct FSUI_UploadShared {
 /**
  * Context for each file upload.
  */
-typedef struct FSUI_UploadList {
+typedef struct FSUI_UploadList
+{
 
   unsigned long long completed;
 
@@ -333,35 +339,35 @@ typedef struct FSUI_UploadList {
 
   cron_t start_time;
 
-  struct FSUI_UploadShared * shared;
+  struct FSUI_UploadShared *shared;
 
-  struct FSUI_UploadList * next;
+  struct FSUI_UploadList *next;
 
-  struct FSUI_UploadList * child;
+  struct FSUI_UploadList *child;
 
-  struct FSUI_UploadList * parent;
+  struct FSUI_UploadList *parent;
 
   /**
    * Metadata for this file.
    */
-  struct ECRS_MetaData * meta;
+  struct ECRS_MetaData *meta;
 
   /**
    * Keywords to be used for this upload.
    */
-  struct ECRS_URI * keywords;
+  struct ECRS_URI *keywords;
 
   /**
    * URI for this file (set upon completion).
    */
-  struct ECRS_URI * uri;
+  struct ECRS_URI *uri;
 
-  char * filename;
+  char *filename;
 
   /**
    * FSUI-client context.
    */
-  void * cctx;
+  void *cctx;
 
   /**
    * State of this sub-process.
@@ -373,30 +379,31 @@ typedef struct FSUI_UploadList {
 /**
  * @brief global state of the FSUI library
  */
-typedef struct FSUI_Context {
+typedef struct FSUI_Context
+{
 
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
   /**
    * IPC semaphore used to ensure mutual exclusion
    * between different processes of the same name
    * that all use resume.
    */
-  struct IPC_SEMAPHORE * ipc;
+  struct IPC_SEMAPHORE *ipc;
 
   /**
    * Name of the tool using FSUI (used for resume).
    */
-  char * name;
+  char *name;
 
   /**
    * Lock to synchronize access to the FSUI Context.
    */
-  struct MUTEX * lock;
+  struct MUTEX *lock;
 
-  struct CronManager * cron;
+  struct CronManager *cron;
 
   /**
    * Callback for notifying the client about events.
@@ -406,22 +413,22 @@ typedef struct FSUI_Context {
   /**
    * Extra argument to ecb.
    */
-  void * ecbClosure;
+  void *ecbClosure;
 
   /**
    * Collection related data.
    */
-  DataContainer * collectionData;
+  DataContainer *collectionData;
 
   /**
    * List of active searches.
    */
-  FSUI_SearchList * activeSearches;
+  FSUI_SearchList *activeSearches;
 
   /**
    * List of active unindex operations.
    */
-  FSUI_UnindexList * unindexOperations;
+  FSUI_UnindexList *unindexOperations;
 
   FSUI_UploadList activeUploads;
 
@@ -454,16 +461,16 @@ typedef struct FSUI_Context {
  *
  * @return YES if change done that may require re-trying
  */
-int FSUI_updateDownloadThread(FSUI_DownloadList * list);
+int FSUI_updateDownloadThread (FSUI_DownloadList * list);
 
-void * FSUI_uploadThread(void * dl);
+void *FSUI_uploadThread (void *dl);
 
-void * FSUI_searchThread(void * pos);
+void *FSUI_searchThread (void *pos);
 
-void * FSUI_unindexThread(void * cls);
+void *FSUI_unindexThread (void *cls);
 
-void FSUI_serialize(struct FSUI_Context * ctx);
+void FSUI_serialize (struct FSUI_Context *ctx);
 
-void FSUI_deserialize(struct FSUI_Context * ctx);
+void FSUI_deserialize (struct FSUI_Context *ctx);
 
 #endif

@@ -35,79 +35,85 @@
 #define buf ((MESSAGE_HEADER*)&buffer)
 
 
-static struct SEMAPHORE * doneSem;
-static struct SEMAPHORE * cmdAck;
-static struct SEMAPHORE * exitCheck;
-static struct MUTEX * lock;
+static struct SEMAPHORE *doneSem;
+static struct SEMAPHORE *cmdAck;
+static struct SEMAPHORE *exitCheck;
+static struct MUTEX *lock;
 static int wantExit;
 static int silent;
 
-static char * cfgFilename;
+static char *cfgFilename;
 
 /**
  * All gnunet-transport-check command line options
  */
 static struct CommandLineOption gnunetvpnOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
+  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")),        /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 's', "silent", NULL,
-    gettext_noop("Suppress display of asynchronous log messages"),
-    0, &gnunet_getopt_configure_set_one, &silent },
-  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  {'s', "silent", NULL,
+   gettext_noop ("Suppress display of asynchronous log messages"),
+   0, &gnunet_getopt_configure_set_one, &silent},
+  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   COMMAND_LINE_OPTION_END,
 };
 
-static void * receiveThread(void * arg) {
-  struct ClientServerConnection * sock = arg;
+static void *
+receiveThread (void *arg)
+{
+  struct ClientServerConnection *sock = arg;
   char buffer[MAX_BUFFER_SIZE];
-  MESSAGE_HEADER * bufp = buf;
+  MESSAGE_HEADER *bufp = buf;
 
   /* buffer = MALLOC(MAX_BUFFER_SIZE); */
-  while (OK == connection_read(sock, &bufp)) {
-  switch (ntohs(buf->type)) {
-  	case CS_PROTO_VPN_DEBUGOFF:
-  	case CS_PROTO_VPN_DEBUGON:
-  	case CS_PROTO_VPN_TUNNELS:
-  	case CS_PROTO_VPN_ROUTES:
-  	case CS_PROTO_VPN_REALISED:
-  	case CS_PROTO_VPN_RESET:
-  	case CS_PROTO_VPN_REALISE:
-  	case CS_PROTO_VPN_ADD:
-  	case CS_PROTO_VPN_TRUST:
-  		if (ntohs(buf->size) > sizeof(MESSAGE_HEADER)) {
-  		fwrite( buffer+sizeof(MESSAGE_HEADER),
-  			sizeof(char),
-  			ntohs(buf->size)-sizeof(MESSAGE_HEADER),
-  			stdout);
-  		}
+  while (OK == connection_read (sock, &bufp))
+    {
+      switch (ntohs (buf->type))
+        {
+        case CS_PROTO_VPN_DEBUGOFF:
+        case CS_PROTO_VPN_DEBUGON:
+        case CS_PROTO_VPN_TUNNELS:
+        case CS_PROTO_VPN_ROUTES:
+        case CS_PROTO_VPN_REALISED:
+        case CS_PROTO_VPN_RESET:
+        case CS_PROTO_VPN_REALISE:
+        case CS_PROTO_VPN_ADD:
+        case CS_PROTO_VPN_TRUST:
+          if (ntohs (buf->size) > sizeof (MESSAGE_HEADER))
+            {
+              fwrite (buffer + sizeof (MESSAGE_HEADER),
+                      sizeof (char),
+                      ntohs (buf->size) - sizeof (MESSAGE_HEADER), stdout);
+            }
 
-  		SEMAPHORE_UP(cmdAck);
-  		SEMAPHORE_DOWN(exitCheck, YES);
-  		MUTEX_LOCK(lock);
-  		if (wantExit == YES) {
-  			MUTEX_UNLOCK(lock);
-  			SEMAPHORE_UP(doneSem);
-  			return NULL;
-  		}
-  		MUTEX_UNLOCK(lock);
-  	break;;
-  	case CS_PROTO_VPN_MSG:
-  		if (silent == YES) break;;
-  	case CS_PROTO_VPN_REPLY:
-  	
-  	if (ntohs(buf->size) > sizeof(MESSAGE_HEADER)) {
-  		fwrite( buffer+sizeof(MESSAGE_HEADER),
-  			sizeof(char),
-  			ntohs(buf->size)-sizeof(MESSAGE_HEADER),
-  			stdout);
-  	}
-  	break;;
-  }
-  }
+          SEMAPHORE_UP (cmdAck);
+          SEMAPHORE_DOWN (exitCheck, YES);
+          MUTEX_LOCK (lock);
+          if (wantExit == YES)
+            {
+              MUTEX_UNLOCK (lock);
+              SEMAPHORE_UP (doneSem);
+              return NULL;
+            }
+          MUTEX_UNLOCK (lock);
+          break;;
+        case CS_PROTO_VPN_MSG:
+          if (silent == YES)
+            break;;
+        case CS_PROTO_VPN_REPLY:
+
+          if (ntohs (buf->size) > sizeof (MESSAGE_HEADER))
+            {
+              fwrite (buffer + sizeof (MESSAGE_HEADER),
+                      sizeof (char),
+                      ntohs (buf->size) - sizeof (MESSAGE_HEADER), stdout);
+            }
+          break;;
+        }
+    }
   /* FREE(buffer); */
-  SEMAPHORE_UP(doneSem);
+  SEMAPHORE_UP (doneSem);
   return NULL;
 }
 
@@ -116,142 +122,182 @@ static void * receiveThread(void * arg) {
  * @param argv command line arguments
  * @return return value from gnunet-template: 0: ok, -1: error
  */
-int main(int argc,
-   char * const * argv) {
-  struct ClientServerConnection * sock;
-  struct PTHREAD * messageReceiveThread;
-  void * unused;
-  char buffer[sizeof(MESSAGE_HEADER) + 1024];
+int
+main (int argc, char *const *argv)
+{
+  struct ClientServerConnection *sock;
+  struct PTHREAD *messageReceiveThread;
+  void *unused;
+  char buffer[sizeof (MESSAGE_HEADER) + 1024];
   int rancommand = 0;
-  struct GC_Configuration * cfg;
-  struct GE_Context * ectx;
+  struct GC_Configuration *cfg;
+  struct GE_Context *ectx;
   int i;
 
-  i = GNUNET_init(argc,
-  	  argv,
-  	  "gnunet-vpn",
-  	  &cfgFilename,
-  	  gnunetvpnOptions,
-  	  &ectx,
-  	  &cfg);
-  if (i == -1) {
-    GNUNET_fini(ectx, cfg);
-    return -1;
-  }
-  sock = client_connection_create(ectx,
-  			  cfg);
-  if (sock == NULL) {
-    fprintf(stderr,
-      _("Error establishing connection with gnunetd.\n"));
-    GNUNET_fini(ectx, cfg);
-    return 1;
-  }
+  i = GNUNET_init (argc,
+                   argv,
+                   "gnunet-vpn", &cfgFilename, gnunetvpnOptions, &ectx, &cfg);
+  if (i == -1)
+    {
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+  sock = client_connection_create (ectx, cfg);
+  if (sock == NULL)
+    {
+      fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
+      GNUNET_fini (ectx, cfg);
+      return 1;
+    }
 
-  doneSem = SEMAPHORE_CREATE(0);
-  cmdAck = SEMAPHORE_CREATE(0);
-  exitCheck = SEMAPHORE_CREATE(0);
-  lock = MUTEX_CREATE(NO);
+  doneSem = SEMAPHORE_CREATE (0);
+  cmdAck = SEMAPHORE_CREATE (0);
+  exitCheck = SEMAPHORE_CREATE (0);
+  lock = MUTEX_CREATE (NO);
   wantExit = NO;
 
-  messageReceiveThread = PTHREAD_CREATE(&receiveThread,
-  				sock,
-  				128 * 1024);
+  messageReceiveThread = PTHREAD_CREATE (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
-    GE_DIE_STRERROR(ectx,
-  	    GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-  	    "pthread_create");
+    GE_DIE_STRERROR (ectx,
+                     GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+                     "pthread_create");
 
 
   /* accept keystrokes from user and send to gnunetd */
-  while (NULL != fgets(buffer, 1024, stdin)) {
-  if (rancommand) {
-  	rancommand = 0;
-  	SEMAPHORE_UP(exitCheck);
-  }
-  if (strncmp(buffer, "debug0", 6) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_DEBUGOFF);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "debug1", 6) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_DEBUGON);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "tunnels", 7) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_TUNNELS);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "route", 5) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_ROUTES);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "realised", 8) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_REALISED);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "reset", 5) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_RESET);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "realise", 7) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_REALISE);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "trust", 5) == 0) {
-  	((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_TRUST);
-  	((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER));
-  	if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  	rancommand = 1;
-  	SEMAPHORE_DOWN(cmdAck, YES);
-  } else if (strncmp(buffer, "add ", 4) == 0) {
-  	/* message header is 4 bytes long, we overwrite "add " with it
-  	 * also don't include \r or \n in the message
-  	 */
-  	if (strlen(&buffer[4]) > 1) {
-  		((MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_ADD);
-  		((MESSAGE_HEADER*)&buffer)->size = htons(sizeof(MESSAGE_HEADER) + strlen(&buffer[5]));
-  		if (SYSERR == connection_write(sock, (MESSAGE_HEADER*)&buffer)) return -1;
-  		rancommand = 1;
-  		SEMAPHORE_DOWN(cmdAck, YES);
-  	} else {
-  		printf("add requires hash as a parameter!\n");
-  	}
-  } else {
-  	printf("debug0, debug1, tunnels, route, realise, realised, reset, trust, add <hash>\n");
-  }
-  }
+  while (NULL != fgets (buffer, 1024, stdin))
+    {
+      if (rancommand)
+        {
+          rancommand = 0;
+          SEMAPHORE_UP (exitCheck);
+        }
+      if (strncmp (buffer, "debug0", 6) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_DEBUGOFF);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "debug1", 6) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_DEBUGON);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "tunnels", 7) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_TUNNELS);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "route", 5) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_ROUTES);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "realised", 8) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_REALISED);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "reset", 5) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_RESET);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "realise", 7) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_REALISE);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "trust", 5) == 0)
+        {
+          ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_TRUST);
+          ((MESSAGE_HEADER *) & buffer)->size =
+            htons (sizeof (MESSAGE_HEADER));
+          if (SYSERR == connection_write (sock, (MESSAGE_HEADER *) & buffer))
+            return -1;
+          rancommand = 1;
+          SEMAPHORE_DOWN (cmdAck, YES);
+        }
+      else if (strncmp (buffer, "add ", 4) == 0)
+        {
+          /* message header is 4 bytes long, we overwrite "add " with it
+           * also don't include \r or \n in the message
+           */
+          if (strlen (&buffer[4]) > 1)
+            {
+              ((MESSAGE_HEADER *) & buffer)->type = htons (CS_PROTO_VPN_ADD);
+              ((MESSAGE_HEADER *) & buffer)->size =
+                htons (sizeof (MESSAGE_HEADER) + strlen (&buffer[5]));
+              if (SYSERR ==
+                  connection_write (sock, (MESSAGE_HEADER *) & buffer))
+                return -1;
+              rancommand = 1;
+              SEMAPHORE_DOWN (cmdAck, YES);
+            }
+          else
+            {
+              printf ("add requires hash as a parameter!\n");
+            }
+        }
+      else
+        {
+          printf
+            ("debug0, debug1, tunnels, route, realise, realised, reset, trust, add <hash>\n");
+        }
+    }
   /* wait for shutdown... */
-  if (rancommand) {
-    MUTEX_LOCK(lock);
-    wantExit = YES;
-    MUTEX_UNLOCK(lock);
-    SEMAPHORE_UP(exitCheck);
-  }
+  if (rancommand)
+    {
+      MUTEX_LOCK (lock);
+      wantExit = YES;
+      MUTEX_UNLOCK (lock);
+      SEMAPHORE_UP (exitCheck);
+    }
 
   /* we can't guarantee that this can be called while the other thread is waiting for read */
-  connection_close_forever(sock);
-  SEMAPHORE_DOWN(doneSem, YES);
+  connection_close_forever (sock);
+  SEMAPHORE_DOWN (doneSem, YES);
 
-  SEMAPHORE_DESTROY(doneSem);
-  SEMAPHORE_DESTROY(cmdAck);
-  SEMAPHORE_DESTROY(exitCheck);
-  MUTEX_DESTROY(lock);
-  PTHREAD_JOIN(messageReceiveThread, &unused);
-  connection_destroy(sock);
-  GNUNET_fini(ectx, cfg);
+  SEMAPHORE_DESTROY (doneSem);
+  SEMAPHORE_DESTROY (cmdAck);
+  SEMAPHORE_DESTROY (exitCheck);
+  MUTEX_DESTROY (lock);
+  PTHREAD_JOIN (messageReceiveThread, &unused);
+  connection_destroy (sock);
+  GNUNET_fini (ectx, cfg);
 
   return 0;
 }

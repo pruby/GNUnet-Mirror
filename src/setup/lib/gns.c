@@ -30,46 +30,50 @@
 
 #include "tree.h"
 
-typedef struct GNS_TCL {
+typedef struct GNS_TCL
+{
 
   GNS_TreeChangeListener l;
 
-  void * c;
+  void *c;
 
-  struct GNS_TCL * next;
+  struct GNS_TCL *next;
 
 } GNS_TCL;
 
 /**
  * @brief gnunet setup context
  */
-struct GNS_Context {
+struct GNS_Context
+{
 
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
-  struct GNS_Tree * root;
+  struct GNS_Tree *root;
 
-  GNS_TCL * listeners;
+  GNS_TCL *listeners;
 
   unsigned int in_notify;
 
 };
 
-static void notify_listeners(void * ctx,
-  		     struct GNS_Tree * tree) {
-  struct GNS_Context * g = ctx;
-  GNS_TCL * lpos;
+static void
+notify_listeners (void *ctx, struct GNS_Tree *tree)
+{
+  struct GNS_Context *g = ctx;
+  GNS_TCL *lpos;
 
   if (g->in_notify > 0)
-    return; /* do not do recursive notifications! */
+    return;                     /* do not do recursive notifications! */
   g->in_notify++;
   lpos = g->listeners;
-  while (lpos != NULL) {
-    lpos->l(tree, lpos->c);
-    lpos = lpos->next;
-  }
+  while (lpos != NULL)
+    {
+      lpos->l (tree, lpos->c);
+      lpos = lpos->next;
+    }
   g->in_notify--;
 }
 
@@ -83,166 +87,177 @@ static void notify_listeners(void * ctx,
  * @return 0 if the change is ok, -1 if the change must be
  *         refused
  */
-int configChangeListener(void * ctx,
-  		 struct GC_Configuration * cfg,
-  		 struct GE_Context * ectx,
-  		 const char * section,
-  		 const char * option) {
-  struct GNS_Context * g = ctx;
-  struct GNS_Tree * pos;
+int
+configChangeListener (void *ctx,
+                      struct GC_Configuration *cfg,
+                      struct GE_Context *ectx,
+                      const char *section, const char *option)
+{
+  struct GNS_Context *g = ctx;
+  struct GNS_Tree *pos;
 
-  pos = tree_lookup(g->root,
-  	    section,
-  	    option);
-  if (pos == NULL) {
-    GE_LOG(g->ectx,
-     GE_DEVELOPER | GE_BULK | GE_ERROR,
-     "Tree lookup for unknown option `%s' in section `%s'!\n",
-     option,
-     section);
-    return 0; /* or refuse? */
-  }
+  pos = tree_lookup (g->root, section, option);
+  if (pos == NULL)
+    {
+      GE_LOG (g->ectx,
+              GE_DEVELOPER | GE_BULK | GE_ERROR,
+              "Tree lookup for unknown option `%s' in section `%s'!\n",
+              option, section);
+      return 0;                 /* or refuse? */
+    }
   /* first, check if value is valid */
-  if ((pos->type & GNS_KindMask) != GNS_Leaf) {
-    GE_LOG(g->ectx,
-     GE_DEVELOPER | GE_BULK | GE_ERROR,
-     "Tree value change for non-leaf option `%s' in section `%s'!\n",
-     option,
-     section);
-    return 0;
-  }
-  switch (pos->type & GNS_TypeMask) {
-  case GNS_Boolean: {
-    int val;
-
-    val = GC_get_configuration_value_yesno(cfg,
-  				   section,
-  				   option,
-  				   pos->value.Boolean.def);
-    if (val == SYSERR) {
-      return SYSERR;
+  if ((pos->type & GNS_KindMask) != GNS_Leaf)
+    {
+      GE_LOG (g->ectx,
+              GE_DEVELOPER | GE_BULK | GE_ERROR,
+              "Tree value change for non-leaf option `%s' in section `%s'!\n",
+              option, section);
+      return 0;
     }
-    pos->value.Boolean.val = val;
-    break;
-  }
-  case GNS_UInt64: {
-    unsigned long long val;
+  switch (pos->type & GNS_TypeMask)
+    {
+    case GNS_Boolean:
+      {
+        int val;
 
-    if (SYSERR == GC_get_configuration_value_number(cfg,
-  					    section,
-  					    option,
-  					    pos->value.UInt64.min,
-  					    pos->value.UInt64.max,
-  					    pos->value.UInt64.def,
-  					    &val)) {
-      return SYSERR;
-    }
-    pos->value.UInt64.val = val;
-    break;
-  }
-  case GNS_Double: {
-    char * s;
-    double d;
-
-    s = NULL;
-    GC_get_configuration_value_string(cfg,
-  			      section,
-  			      option,
-  			      NULL,
-  			      &s);
-    if (s == NULL) {
-      pos->value.Double.val = pos->value.Double.def;
-    } else {
-      if (1 != sscanf(s, "%lf", &d)) {
-  GE_LOG(ectx,
-         GE_USER | GE_ERROR | GE_IMMEDIATE,
-         "`%s' is not a valid double-precision floating point number.\n",
-         s);
-  FREE(s);
-  return SYSERR;
+        val = GC_get_configuration_value_yesno (cfg,
+                                                section,
+                                                option,
+                                                pos->value.Boolean.def);
+        if (val == SYSERR)
+          {
+            return SYSERR;
+          }
+        pos->value.Boolean.val = val;
+        break;
       }
-      pos->value.Double.val = d;
-      FREE(s);
+    case GNS_UInt64:
+      {
+        unsigned long long val;
+
+        if (SYSERR == GC_get_configuration_value_number (cfg,
+                                                         section,
+                                                         option,
+                                                         pos->value.UInt64.
+                                                         min,
+                                                         pos->value.UInt64.
+                                                         max,
+                                                         pos->value.UInt64.
+                                                         def, &val))
+          {
+            return SYSERR;
+          }
+        pos->value.UInt64.val = val;
+        break;
+      }
+    case GNS_Double:
+      {
+        char *s;
+        double d;
+
+        s = NULL;
+        GC_get_configuration_value_string (cfg, section, option, NULL, &s);
+        if (s == NULL)
+          {
+            pos->value.Double.val = pos->value.Double.def;
+          }
+        else
+          {
+            if (1 != sscanf (s, "%lf", &d))
+              {
+                GE_LOG (ectx,
+                        GE_USER | GE_ERROR | GE_IMMEDIATE,
+                        "`%s' is not a valid double-precision floating point number.\n",
+                        s);
+                FREE (s);
+                return SYSERR;
+              }
+            pos->value.Double.val = d;
+            FREE (s);
+          }
+        break;
+      }
+    case GNS_String:
+    case GNS_MC:
+      {
+        char *val;
+
+        if (SYSERR == GC_get_configuration_value_string (cfg,
+                                                         section,
+                                                         option,
+                                                         pos->value.String.
+                                                         def, &val))
+          return SYSERR;
+        FREE (pos->value.String.val);
+        pos->value.String.val = val;
+        break;
+      }
+    case GNS_SC:
+      {
+        const char *ival;
+
+        if (SYSERR == GC_get_configuration_value_choice (cfg,
+                                                         section,
+                                                         option,
+                                                         (const char **) pos->
+                                                         value.String.
+                                                         legalRange,
+                                                         pos->value.String.
+                                                         def, &ival))
+          return SYSERR;
+        FREE (pos->value.String.val);
+        pos->value.String.val = STRDUP (ival);
+        break;
+      }
     }
-    break;
-  }
-  case GNS_String:
-  case GNS_MC: {
-    char * val;
-
-    if (SYSERR == GC_get_configuration_value_string(cfg,
-  					    section,
-  					    option,
-  					    pos->value.String.def,
-  					    &val))
-      return SYSERR;
-    FREE(pos->value.String.val);
-    pos->value.String.val = val;
-    break;
-  }
-  case GNS_SC: {
-    const char * ival;
-
-    if (SYSERR == GC_get_configuration_value_choice(cfg,
-  					    section,
-  					    option,
-  					    (const char**) pos->value.String.legalRange,
-  					    pos->value.String.def,
-  					    &ival))
-      return SYSERR;
-    FREE(pos->value.String.val);
-    pos->value.String.val = STRDUP(ival);
-    break;
-  }
-  }
 
   /* notify client about value change */
-  notify_listeners(g, pos);
+  notify_listeners (g, pos);
 
   /* allow tree to update visibility */
-  tree_notify_change(cfg,
-  	     &notify_listeners,
-  	     g,
-  	     g->ectx,
-  	     g->root,
-  	     pos);
+  tree_notify_change (cfg, &notify_listeners, g, g->ectx, g->root, pos);
   return 0;
 }
 
-static void free_tree(struct GNS_Tree * t) {
+static void
+free_tree (struct GNS_Tree *t)
+{
   int i;
 
   i = 0;
-  while (t->children[i] != NULL) {
-    free_tree(t->children[i]);
-    i++;
-  }
-  switch (t->type & GNS_TypeMask) {
-  case 0:
-    break; /* no value */
-  case GNS_Boolean:
-  case GNS_UInt64:
-  case GNS_Double:
-    break; /* nothing to free */
-  case GNS_String:
-  case GNS_MC:
-  case GNS_SC:
-    i = 0;
-    while (t->value.String.legalRange[i] != NULL) {
-      FREE(t->value.String.legalRange[i]);
+  while (t->children[i] != NULL)
+    {
+      free_tree (t->children[i]);
       i++;
     }
-    FREE(t->value.String.legalRange);
-    FREE(t->value.String.val);
-    break;
-  default:
-    GE_BREAK(NULL, 0);
-    break;
-  }
-  FREE(t->description);
-  FREE(t->help);
-  FREE(t->children);
-  FREE(t);
+  switch (t->type & GNS_TypeMask)
+    {
+    case 0:
+      break;                    /* no value */
+    case GNS_Boolean:
+    case GNS_UInt64:
+    case GNS_Double:
+      break;                    /* nothing to free */
+    case GNS_String:
+    case GNS_MC:
+    case GNS_SC:
+      i = 0;
+      while (t->value.String.legalRange[i] != NULL)
+        {
+          FREE (t->value.String.legalRange[i]);
+          i++;
+        }
+      FREE (t->value.String.legalRange);
+      FREE (t->value.String.val);
+      break;
+    default:
+      GE_BREAK (NULL, 0);
+      break;
+    }
+  FREE (t->description);
+  FREE (t->help);
+  FREE (t->children);
+  FREE (t);
 }
 
 
@@ -256,31 +271,32 @@ static void free_tree(struct GNS_Tree * t) {
  * @return NULL on error (i.e. specification file not found)
  */
 struct GNS_Context *
-GNS_load_specification(struct GE_Context * ectx,
-  	       struct GC_Configuration * cfg,
-  	       const char * specification) {
-  struct GNS_Context * ctx;
-  struct GNS_Tree * root;
+GNS_load_specification (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg,
+                        const char *specification)
+{
+  struct GNS_Context *ctx;
+  struct GNS_Tree *root;
 
-  root = tree_parse(ectx, specification);
+  root = tree_parse (ectx, specification);
   if (root == NULL)
     return NULL;
-  ctx = MALLOC(sizeof(struct GNS_Context));
+  ctx = MALLOC (sizeof (struct GNS_Context));
   ctx->ectx = ectx;
   ctx->cfg = cfg;
   ctx->root = root;
   ctx->in_notify = 0;
-  if (-1 == GC_attach_change_listener(cfg,
-  			      &configChangeListener,
-  			      ctx)) {
-    GE_LOG(ectx,
-     GE_ERROR | GE_USER | GE_IMMEDIATE,
-     _("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
-     specification);
-    FREE(ctx);
-    free_tree(root);
-    return NULL;
-  }
+  if (-1 == GC_attach_change_listener (cfg, &configChangeListener, ctx))
+    {
+      GE_LOG (ectx,
+              GE_ERROR | GE_USER | GE_IMMEDIATE,
+              _
+              ("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
+              specification);
+      FREE (ctx);
+      free_tree (root);
+      return NULL;
+    }
   return ctx;
 }
 
@@ -293,7 +309,8 @@ GNS_load_specification(struct GE_Context * ectx,
  * @return NULL on error
  */
 struct GNS_Tree *
-GNS_get_tree(struct GNS_Context * ctx) {
+GNS_get_tree (struct GNS_Context *ctx)
+{
   return ctx->root;
 }
 
@@ -301,13 +318,12 @@ GNS_get_tree(struct GNS_Context * ctx) {
  * Free resources associated with the GNS context.
  */
 void
-GNS_free_specification(struct GNS_Context * ctx) {
-  GC_detach_change_listener(ctx->cfg,
-  		    &configChangeListener,
-  		    ctx);
-  free_tree(ctx->root);
-  GE_ASSERT(ctx->ectx, ctx->listeners == NULL);
-  FREE(ctx);
+GNS_free_specification (struct GNS_Context *ctx)
+{
+  GC_detach_change_listener (ctx->cfg, &configChangeListener, ctx);
+  free_tree (ctx->root);
+  GE_ASSERT (ctx->ectx, ctx->listeners == NULL);
+  FREE (ctx);
 }
 
 /**
@@ -316,12 +332,12 @@ GNS_free_specification(struct GNS_Context * ctx) {
  * @param listener callback to call whenever the tree changes
  */
 void
-GNS_register_tree_change_listener(struct GNS_Context * ctx,
-  			  GNS_TreeChangeListener listener,
-  			  void * cls) {
-  GNS_TCL  * n;
+GNS_register_tree_change_listener (struct GNS_Context *ctx,
+                                   GNS_TreeChangeListener listener, void *cls)
+{
+  GNS_TCL *n;
 
-  n = MALLOC(sizeof(GNS_TCL));
+  n = MALLOC (sizeof (GNS_TCL));
   n->l = listener;
   n->c = cls;
   n->next = ctx->listeners;
@@ -333,27 +349,29 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
  * in the future for change events).
  */
 void
-GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
-  			    GNS_TreeChangeListener listener,
-  			    void * cls) {
-  GNS_TCL * pos;
-  GNS_TCL * prev;
+GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
+                                     GNS_TreeChangeListener listener,
+                                     void *cls)
+{
+  GNS_TCL *pos;
+  GNS_TCL *prev;
 
   prev = NULL;
   pos = ctx->listeners;
-  while (pos != NULL) {
-    if ( (pos->l == listener) &&
-   (pos->c == cls)) {
-      if (prev == NULL)
-  ctx->listeners = pos->next;
-      else
-  prev->next = pos->next;
-      FREE(pos);
-      return; /* only unregister one! */
+  while (pos != NULL)
+    {
+      if ((pos->l == listener) && (pos->c == cls))
+        {
+          if (prev == NULL)
+            ctx->listeners = pos->next;
+          else
+            prev->next = pos->next;
+          FREE (pos);
+          return;               /* only unregister one! */
+        }
+      prev = pos;
+      pos = pos->next;
     }
-    prev = pos;
-    pos = pos->next;
-  }
 }
 
 /**
@@ -363,30 +381,31 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
  * @return NULL on error
  */
 char *
-GNS_get_default_value_as_string(GNS_Type type,
-  			const GNS_Value * value) {
+GNS_get_default_value_as_string (GNS_Type type, const GNS_Value * value)
+{
   char buf[48];
 
   if (value == NULL)
     return NULL;
-  switch (type & GNS_TypeMask) {
-  case GNS_Boolean:
-    if (value->Boolean.def)
-      return STRDUP("YES");
-    return STRDUP("NO");
-  case GNS_String:
-  case GNS_MC:
-  case GNS_SC:
-    if (value->String.def == NULL)
+  switch (type & GNS_TypeMask)
+    {
+    case GNS_Boolean:
+      if (value->Boolean.def)
+        return STRDUP ("YES");
+      return STRDUP ("NO");
+    case GNS_String:
+    case GNS_MC:
+    case GNS_SC:
+      if (value->String.def == NULL)
+        return NULL;
+      return STRDUP (value->String.def);
+    case GNS_Double:
+      SNPRINTF (buf, 48, "%f", value->Double.def);
+      return STRDUP (buf);
+    case GNS_UInt64:
+      SNPRINTF (buf, 48, "%llu", value->UInt64.def);
+      return STRDUP (buf);
+    default:
       return NULL;
-    return STRDUP(value->String.def);
-  case GNS_Double:
-    SNPRINTF(buf, 48, "%f", value->Double.def);
-    return STRDUP(buf);
-  case GNS_UInt64:
-    SNPRINTF(buf, 48, "%llu", value->UInt64.def);
-    return STRDUP(buf);
-  default:
-    return NULL;
-  }
+    }
 }

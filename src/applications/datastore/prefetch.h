@@ -33,11 +33,10 @@
 /**
  * Initialize the migration module.
  */
-void initPrefetch(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg,
-		  SQstore_ServiceAPI * sq);
+void initPrefetch (struct GE_Context *ectx,
+                   struct GC_Configuration *cfg, SQstore_ServiceAPI * sq);
 
-void donePrefetch(void);
+void donePrefetch (void);
 
 /**
  * Get a random value from the datastore that has
@@ -50,11 +49,10 @@ void donePrefetch(void);
  *        for any type.
  * @return OK if a value was found, SYSERR if not
  */
-int getRandom(const HashCode512 * receiver,
-	      unsigned int sizeLimit,
-	      HashCode512 * key,
-	      Datastore_Value ** value,
-	      unsigned int type);
+int getRandom (const HashCode512 * receiver,
+               unsigned int sizeLimit,
+               HashCode512 * key,
+               Datastore_Value ** value, unsigned int type);
 
 
 /* end of prefetch.h */

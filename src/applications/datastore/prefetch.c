@@ -33,18 +33,18 @@
 
 static HashCode512 rkey;
 
-static Datastore_Value * rvalue;
+static Datastore_Value *rvalue;
 
 /**
  * SQ-store handle
  */
-static SQstore_ServiceAPI * sq;
+static SQstore_ServiceAPI *sq;
 
 /**
  * Semaphore on which the RCB acquire thread waits
  * if the RCB buffer is full.
  */
-static struct SEMAPHORE * acquireMoreSignal;
+static struct SEMAPHORE *acquireMoreSignal;
 
 /**
  * Set to YES to shutdown the module.
@@ -54,31 +54,30 @@ static int doneSignal;
 /**
  * Lock for the RCB buffer.
  */
-static struct MUTEX * lock;
+static struct MUTEX *lock;
 
-static struct PTHREAD * gather_thread;
+static struct PTHREAD *gather_thread;
 
-static struct GE_Context * ectx;
+static struct GE_Context *ectx;
 
-static struct GC_Configuration * cfg;
-  	
+static struct GC_Configuration *cfg;
 
-static int acquire(const HashCode512 * key,
-  	   const Datastore_Value * value,
-  	   void * closure) {
+
+static int
+acquire (const HashCode512 * key,
+         const Datastore_Value * value, void *closure)
+{
   if (doneSignal)
     return SYSERR;
-  SEMAPHORE_DOWN(acquireMoreSignal, YES);
+  SEMAPHORE_DOWN (acquireMoreSignal, YES);
   if (doneSignal)
     return SYSERR;
-  MUTEX_LOCK(lock);
-  GE_ASSERT(NULL, rvalue == NULL);
+  MUTEX_LOCK (lock);
+  GE_ASSERT (NULL, rvalue == NULL);
   rkey = *key;
-  rvalue = MALLOC(ntohl(value->size));
-  memcpy(rvalue,
-   value,
-   ntohl(value->size));
-  MUTEX_UNLOCK(lock);
+  rvalue = MALLOC (ntohl (value->size));
+  memcpy (rvalue, value, ntohl (value->size));
+  MUTEX_UNLOCK (lock);
   if (doneSignal)
     return SYSERR;
   return OK;
@@ -87,22 +86,23 @@ static int acquire(const HashCode512 * key,
 /**
  * Acquire new block(s) to the migration buffer.
  */
-static void * rcbAcquire(void * unused) {
+static void *
+rcbAcquire (void *unused)
+{
   int load;
-  while (doneSignal == NO) {
-    sq->iterateMigrationOrder(&acquire,
-			      NULL);
-    /* sleep here - otherwise we may start looping immediately
-       if there is no content in the DB! */
-    load = os_cpu_get_load(ectx,
-			   cfg);
-    if (load < 10)
-      load = 10;    /* never sleep less than 500 ms */
-    if (load > 100)
-      load = 100;   /* never sleep longer than 5 seconds */
-    if (doneSignal == NO)
-      PTHREAD_SLEEP(50 * cronMILLIS * load);
-  }
+  while (doneSignal == NO)
+    {
+      sq->iterateMigrationOrder (&acquire, NULL);
+      /* sleep here - otherwise we may start looping immediately
+         if there is no content in the DB! */
+      load = os_cpu_get_load (ectx, cfg);
+      if (load < 10)
+        load = 10;              /* never sleep less than 500 ms */
+      if (load > 100)
+        load = 100;             /* never sleep longer than 5 seconds */
+      if (doneSignal == NO)
+        PTHREAD_SLEEP (50 * cronMILLIS * load);
+    }
   return NULL;
 }
 
@@ -112,55 +112,57 @@ static void * rcbAcquire(void * unused) {
  *
  * @return SYSERR if the RCB is empty
  */
-int getRandom(const HashCode512 * receiver,
-        unsigned int sizeLimit,
-        HashCode512 * key,
-        Datastore_Value ** value,
-        unsigned int type) {
-  MUTEX_LOCK(lock);
-  if (rvalue == NULL) {
-    MUTEX_UNLOCK(lock);
-    return SYSERR;
-  }
+int
+getRandom (const HashCode512 * receiver,
+           unsigned int sizeLimit,
+           HashCode512 * key, Datastore_Value ** value, unsigned int type)
+{
+  MUTEX_LOCK (lock);
+  if (rvalue == NULL)
+    {
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }
   *value = rvalue;
   *key = rkey;
   rvalue = NULL;
-  MUTEX_UNLOCK(lock);
-  SEMAPHORE_UP(acquireMoreSignal);
+  MUTEX_UNLOCK (lock);
+  SEMAPHORE_UP (acquireMoreSignal);
   return OK;
 }
-  			
-void initPrefetch(struct GE_Context * e,
-  	  struct GC_Configuration * c,
-  	  SQstore_ServiceAPI * s) {
+
+void
+initPrefetch (struct GE_Context *e,
+              struct GC_Configuration *c, SQstore_ServiceAPI * s)
+{
   ectx = e;
   cfg = c;
   sq = s;
-  acquireMoreSignal = SEMAPHORE_CREATE(1);
+  acquireMoreSignal = SEMAPHORE_CREATE (1);
   doneSignal = NO;
-  lock = MUTEX_CREATE(NO);
-  gather_thread = PTHREAD_CREATE(&rcbAcquire,
-  			 NULL,
-  			 64*1024);
+  lock = MUTEX_CREATE (NO);
+  gather_thread = PTHREAD_CREATE (&rcbAcquire, NULL, 64 * 1024);
   if (gather_thread == NULL)
-    GE_LOG_STRERROR(ectx,
-  	    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-  	    "pthread_create");
+    GE_LOG_STRERROR (ectx,
+                     GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+                     "pthread_create");
 }
 
-void donePrefetch() {
-  void * unused;
+void
+donePrefetch ()
+{
+  void *unused;
 
   doneSignal = YES;
   if (gather_thread != NULL)
-    PTHREAD_STOP_SLEEP(gather_thread);
-  SEMAPHORE_UP(acquireMoreSignal);
+    PTHREAD_STOP_SLEEP (gather_thread);
+  SEMAPHORE_UP (acquireMoreSignal);
   if (gather_thread != NULL)
-    PTHREAD_JOIN(gather_thread, &unused);
-  SEMAPHORE_DESTROY(acquireMoreSignal);
-  FREENONNULL(rvalue);
+    PTHREAD_JOIN (gather_thread, &unused);
+  SEMAPHORE_DESTROY (acquireMoreSignal);
+  FREENONNULL (rvalue);
   rvalue = NULL;
-  MUTEX_DESTROY(lock);
+  MUTEX_DESTROY (lock);
   lock = NULL;
   sq = NULL;
   cfg = NULL;

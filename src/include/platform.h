@@ -65,30 +65,30 @@
 #define VERBOSE_STATS 0
 
 #ifdef CYGWIN
- #include <sys/reent.h>
- #define _REENT_ONLY
+#include <sys/reent.h>
+#define _REENT_ONLY
 #endif
 
 #ifdef CYGWIN
- #undef _REENT_ONLY
+#undef _REENT_ONLY
 #endif
 
 #ifdef _MSC_VER
- #include <Winsock2.h>
+#include <Winsock2.h>
 #else
 #ifndef MINGW
- #include <netdb.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
- #include <arpa/inet.h>
- #include <netinet/tcp.h>
- #include <netinet/in.h>
- #include <pwd.h>
- #include <sys/ioctl.h>
- #include <sys/wait.h>
- #include <grp.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <pwd.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <grp.h>
 #else
- #include "winproc.h"
+#include "winproc.h"
 #endif
 #endif
 
@@ -97,17 +97,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #ifndef _MSC_VER
-#include <ltdl.h> /* KLB_FIX */
+#include <ltdl.h>               /* KLB_FIX */
 #endif
 #include <errno.h>
 #include <signal.h>
 #ifndef _MSC_VER
-#include <unistd.h> /* KLB_FIX */
+#include <unistd.h>             /* KLB_FIX */
 #endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifndef _MSC_VER
-#include <dirent.h> /* KLB_FIX */
+#include <dirent.h>             /* KLB_FIX */
 #endif
 #include <fcntl.h>
 #include <math.h>
@@ -126,10 +126,10 @@
 #endif
 
 #ifdef SOMEBSD
- #include <net/if.h>
+#include <net/if.h>
 #endif
 #ifdef FREEBSD
- #include <semaphore.h>
+#include <semaphore.h>
 #endif
 #ifdef OSX
 #include <dlfcn.h>
@@ -173,9 +173,9 @@
 #define _(String) dgettext("GNUnet",String)
 
 #ifdef CYGWIN
- #define SIOCGIFCONF     _IOW('s', 100, struct ifconf) /* get if list */
- #define SIOCGIFFLAGS    _IOW('s', 101, struct ifreq) /* Get if flags */
- #define SIOCGIFADDR     _IOW('s', 102, struct ifreq) /* Get if addr */
+#define SIOCGIFCONF     _IOW('s', 100, struct ifconf)   /* get if list */
+#define SIOCGIFFLAGS    _IOW('s', 101, struct ifreq)    /* Get if flags */
+#define SIOCGIFADDR     _IOW('s', 102, struct ifreq)    /* Get if addr */
 #endif
 
 #ifndef MINGW
@@ -183,17 +183,17 @@
 #endif
 
 #ifdef OSX
- #define socklen_t unsigned int
- #define __BYTE_ORDER BYTE_ORDER
- #define __BIG_ENDIAN BIG_ENDIAN
+#define socklen_t unsigned int
+#define __BYTE_ORDER BYTE_ORDER
+#define __BIG_ENDIAN BIG_ENDIAN
  /* not available on OS X, override configure */
- #undef HAVE_STAT64
- #undef HAVE_MREMAP
+#undef HAVE_STAT64
+#undef HAVE_MREMAP
 #endif
 
 
 #if !HAVE_ATOLL
-long long atoll(const char *nptr);
+long long atoll (const char *nptr);
 #endif
 
 #if ENABLE_NLS

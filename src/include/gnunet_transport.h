@@ -30,8 +30,9 @@
 #include "gnunet_core.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -52,14 +53,15 @@ extern "C" {
 /**
  * Type of a struct passed to receive.
  */
-typedef struct {
+typedef struct
+{
   /**
    * The session associated with the message
    * on the transport layer side. Maybe passed to "associate"
    * in order to send replies on a bi-directional pipe (if
    * possible).
    */
-  TSession * tsession;
+  TSession *tsession;
 
   /**
    * The identity of the sender node
@@ -70,7 +72,7 @@ typedef struct {
    * The message itself. The GNUnet core will call 'FREE' once
    * processing of msg is complete.
    */
-  char * msg;
+  char *msg;
 
   /**
    * The size of the message
@@ -85,7 +87,7 @@ typedef struct {
  *
  * @param mp the message, freed by the callee once processed!
  */
-typedef void (*P2P_PACKETProcessor)(P2P_PACKET * mp);
+typedef void (*P2P_PACKETProcessor) (P2P_PACKET * mp);
 
 /**
  * This header file contains a draft for the gnunetd
@@ -95,7 +97,8 @@ typedef void (*P2P_PACKETProcessor)(P2P_PACKET * mp);
  * A pointer to an instance of this struct is passed
  * to the init method of each Transport API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * The version of the CORE API. For now, always "1".
@@ -105,27 +108,27 @@ typedef struct {
   /**
    * The identity of the local node.
    */
-  PeerIdentity * myIdentity;
+  PeerIdentity *myIdentity;
 
   /**
    * System error context
    */
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
   /**
    * System configuration
    */
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
   /**
    * System load monitor
    */
-  struct LoadMonitor * load_monitor;
+  struct LoadMonitor *load_monitor;
 
   /**
    * System cron Manager.
    */
-  struct CronManager * cron;
+  struct CronManager *cron;
 
   /**
    * Data was received (potentially encrypted), make the core process
@@ -141,7 +144,7 @@ typedef struct {
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void * (*requestService)(const char * name);
+  void *(*requestService) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -153,7 +156,7 @@ typedef struct {
    *
    * @return OK if service was successfully released, SYSERR on error
    */
-  int (*releaseService)(void * service);
+  int (*releaseService) (void *service);
 
 } CoreAPIForTransport;
 
@@ -177,20 +180,21 @@ typedef struct {
  *
  * The type of inittransport_XXX is TransportMainMethod.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * This field is used by the core internally;
    * the transport should never do ANYTHING
    * with it.
    */
-  struct PluginHandle * libHandle;
+  struct PluginHandle *libHandle;
 
   /**
    * The name of the transport, set by the
    * core. Read only for the service itself!
    */
-  char * transName;
+  char *transName;
 
   /**
    * This field holds a cached hello for this
@@ -199,7 +203,7 @@ typedef struct {
    * idea.  The field is updated by a cron job
    * periodically.
    */
-  P2P_hello_MESSAGE * hello;
+  P2P_hello_MESSAGE *hello;
 
   /**
    * The number of the protocol that is supported by this transport
@@ -230,7 +234,7 @@ typedef struct {
    *        (the signature/crc have been verified before)
    * @return OK if the helo is well-formed
    */
-  int (*verifyHello)(const P2P_hello_MESSAGE * hello);
+  int (*verifyHello) (const P2P_hello_MESSAGE * hello);
 
   /**
    * Create a hello-Message for the current node. The hello is
@@ -243,7 +247,7 @@ typedef struct {
    * @return OK on success, SYSERR on error (e.g. send-only
    *  transports return SYSERR here)
    */
-  P2P_hello_MESSAGE * (*createhello)(void);
+  P2P_hello_MESSAGE *(*createhello) (void);
 
   /**
    * Establish a connection to a remote node.
@@ -252,8 +256,7 @@ typedef struct {
    * @param tsession the session handle that is to be set
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*connect)(const P2P_hello_MESSAGE * hello,
-		 TSession ** tsession);
+  int (*connect) (const P2P_hello_MESSAGE * hello, TSession ** tsession);
 
   /**
    * Send a message to the specified remote node.
@@ -269,10 +272,8 @@ typedef struct {
    *         using the session afterwards (useful if the other
    *         side closed the connection).
    */
-  int (*send)(TSession * tsession,
-	      const void * msg,
-	      unsigned int size,
-	      int important);
+  int (*send) (TSession * tsession,
+               const void *msg, unsigned int size, int important);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -293,7 +294,7 @@ typedef struct {
    * @return OK if the session could be associated,
    *         SYSERR if not.
    */
-  int (*associate)(TSession * tsession);
+  int (*associate) (TSession * tsession);
 
   /**
    * Disconnect from a remote node. A session can be closed
@@ -308,27 +309,26 @@ typedef struct {
    * @param tsession the session that is to be closed
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*disconnect)(TSession * tsession);
+  int (*disconnect) (TSession * tsession);
 
   /**
    * Start the server process to receive inbound traffic.
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*startTransportServer)(void);
+  int (*startTransportServer) (void);
 
   /**
    * Shutdown the server process (stop receiving inbound
    * traffic). Maybe restarted later!
    */
-  int (*stopTransportServer)(void);
+  int (*stopTransportServer) (void);
 
   /**
    * Convert hello to network address.
    * @return OK on success, SYSERR on error
    */
-  int (*helloToAddress)(const P2P_hello_MESSAGE * hello,
-			void ** sa,
-			unsigned int * sa_len);
+  int (*helloToAddress) (const P2P_hello_MESSAGE * hello,
+                         void **sa, unsigned int *sa_len);
 
   /**
    * Test if the transport would even try to send
@@ -343,9 +343,7 @@ typedef struct {
    *         NO if the transport would just drop the message,
    *         SYSERR if the size/session is invalid
    */
-  int (*testWouldTry)(TSession * tsession,
-		      unsigned int size,
-		      int important);
+  int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
 
 } TransportAPI;
 
@@ -368,9 +366,9 @@ typedef struct {
  *
  * The type of inittransport_XXX is TransportMainMethod.
  */
-typedef TransportAPI * (*TransportMainMethod)(CoreAPIForTransport *);
+typedef TransportAPI *(*TransportMainMethod) (CoreAPIForTransport *);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

@@ -30,8 +30,9 @@
 #include "gnunet_core.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -68,7 +69,8 @@ extern "C" {
  * type has recently been transmitted or received by this
  * peer.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Get statistics over the number of messages that
@@ -85,17 +87,16 @@ typedef struct {
    *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
    * @return OK on success, SYSERR on error
    */
-  int (*get)(unsigned int timeframe,
-	     unsigned short type,
-	     unsigned short direction,
-	     unsigned int * msgCount,
-	     unsigned int * peerCount,
-	     unsigned int * avg_size,
-	     unsigned int * time);
+  int (*get) (unsigned int timeframe,
+              unsigned short type,
+              unsigned short direction,
+              unsigned int *msgCount,
+              unsigned int *peerCount,
+              unsigned int *avg_size, unsigned int *time);
 
 } Traffic_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

@@ -33,22 +33,22 @@
  * Initialize message handling module (make ready to register
  * handlers).
  */
-void initHandler(struct GE_Context * e);
+void initHandler (struct GE_Context *e);
 
 /**
  * Shutdown message handling module.
  */
-void doneHandler();
+void doneHandler ();
 
 /**
  * Start processing messages from the transports.
  */
-void enableCoreProcessing();
+void enableCoreProcessing ();
 
 /**
  * Stop processing messages from the transports.
  */
-void disableCoreProcessing();
+void disableCoreProcessing ();
 
 /**
  * Handle a message (that was decrypted if needed).  Processes the
@@ -57,18 +57,16 @@ void disableCoreProcessing();
  * @param wasEncrypted YES if it was encrypted,
  *                     NO if plaintext,
  */
-void injectMessage(const PeerIdentity * sender,
-		   const char * msg,		
-		   unsigned int size,
-		   int wasEncrypted,
-		   TSession * session);
+void injectMessage (const PeerIdentity * sender,
+                    const char *msg,
+                    unsigned int size, int wasEncrypted, TSession * session);
 
 /**
  * Processing of a message from the transport layer (receive
  * implementation).  Detects if the message is encrypted, possibly
  * decrypts and calls injectMessage.
  */
-void core_receive(P2P_PACKET * mp);
+void core_receive (P2P_PACKET * mp);
 
 /**
  * Register a method as a handler for specific message
@@ -81,8 +79,8 @@ void core_receive(P2P_PACKET * mp);
  * @return OK on success, SYSERR if there is already a
  *         handler for that type
  */
-int registerp2pHandler(const unsigned short type,
-		       MessagePartHandler callback);
+int registerp2pHandler (const unsigned short type,
+                        MessagePartHandler callback);
 
 
 /**
@@ -94,8 +92,8 @@ int registerp2pHandler(const unsigned short type,
  * @return OK on success, SYSERR if there is a different
  *         handler for that type
  */
-int unregisterp2pHandler(const unsigned short type,
-			 MessagePartHandler callback);
+int unregisterp2pHandler (const unsigned short type,
+                          MessagePartHandler callback);
 
 
 /**
@@ -111,8 +109,8 @@ int unregisterp2pHandler(const unsigned short type,
  * @return OK on success, SYSERR if core threads are running
  *        and updates to the handler list are illegal!
  */
-int registerPlaintextHandler(const unsigned short type,
-			     PlaintextMessagePartHandler callback);
+int registerPlaintextHandler (const unsigned short type,
+                              PlaintextMessagePartHandler callback);
 
 
 /**
@@ -126,8 +124,8 @@ int registerPlaintextHandler(const unsigned short type,
  *        handler for that type or if core threads are running
  *        and updates to the handler list are illegal!
  */
-int unregisterPlaintextHandler(const unsigned short type,
-			       PlaintextMessagePartHandler callback);
+int unregisterPlaintextHandler (const unsigned short type,
+                                PlaintextMessagePartHandler callback);
 
 /**
  * Is a handler registered for messages of the given type?
@@ -140,8 +138,7 @@ int unregisterPlaintextHandler(const unsigned short type,
  * @return number of handlers registered, 0 for none,
  *        SYSERR for invalid value of handlerType
  */
-int isHandlerRegistered(unsigned short type,
-			unsigned short handlerType);
+int isHandlerRegistered (unsigned short type, unsigned short handlerType);
 
 
 #endif

@@ -30,8 +30,9 @@
 #include "gnunet_ecrs_lib.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -42,32 +43,26 @@ extern "C" {
  * @param onOff YES to enable tracking, NO to disable
  *  disabling tracking
  */
-void URITRACK_trackURIS(struct GE_Context * ectx,
-			struct GC_Configuration * cfg,
-			int onOff); /* file_info.c */
+void URITRACK_trackURIS (struct GE_Context *ectx, struct GC_Configuration *cfg, int onOff);     /* file_info.c */
 
 /**
  * Deletes all entries in the URITRACK tracking cache.
  */
-void URITRACK_clearTrackedURIS(struct GE_Context * ectx,
-			       struct GC_Configuration * cfg); /* file_info.c */
+void URITRACK_clearTrackedURIS (struct GE_Context *ectx, struct GC_Configuration *cfg); /* file_info.c */
 
 /**
  * Get the URITRACK URI tracking status.
  *
  * @return YES of tracking is enabled, NO if not
  */
-int URITRACK_trackStatus(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg); /* file_info.c */
+int URITRACK_trackStatus (struct GE_Context *ectx, struct GC_Configuration *cfg);       /* file_info.c */
 
 /**
  * Makes a URI available for directory building.  This function is
  * automatically called by all URITRACK functions and only in the
  * interface for clients that call ECRS directly.
  */
-void URITRACK_trackURI(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const ECRS_FileInfo * fi); /* file_info.c */
+void URITRACK_trackURI (struct GE_Context *ectx, struct GC_Configuration *cfg, const ECRS_FileInfo * fi);       /* file_info.c */
 
 /**
  * List all URIs.
@@ -75,11 +70,7 @@ void URITRACK_trackURI(struct GE_Context * ectx,
  * @param need_metadata YES if metadata should be
  *        provided, NO if metadata is not needed (faster)
  */
-int URITRACK_listURIs(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg,
-		      int need_metadata,
-		      ECRS_SearchProgressCallback iterator,
-		      void * closure); /* file_info.c */
+int URITRACK_listURIs (struct GE_Context *ectx, struct GC_Configuration *cfg, int need_metadata, ECRS_SearchProgressCallback iterator, void *closure);  /* file_info.c */
 
 /**
  * Register a handler that is called whenever
@@ -87,32 +78,29 @@ int URITRACK_listURIs(struct GE_Context * ectx,
  * the database, the callback will be called
  * for all existing URIs as well.
  */
-int URITRACK_registerTrackCallback(struct GE_Context * ectx,
-				   struct GC_Configuration * cfg,
-				   ECRS_SearchProgressCallback iterator,
-				   void * closure); /* callbacks.c */
+int URITRACK_registerTrackCallback (struct GE_Context *ectx, struct GC_Configuration *cfg, ECRS_SearchProgressCallback iterator, void *closure);        /* callbacks.c */
 
 /**
  * Unregister a URI callback.
  */
-int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
-				     void * closure); /* callbacks.c */
+int URITRACK_unregisterTrackCallback (ECRS_SearchProgressCallback iterator, void *closure);     /* callbacks.c */
 
 /**
  * Possible ways in which a given URI has been used or encountered.
  * Note that we only have 8-bits when storing this on the disk,
  * so do not add additional entries (without changing uri_info).
  */
-enum URITRACK_STATE {
-  URITRACK_FRESH              =    0,
-  URITRACK_INSERTED           =    1,
-  URITRACK_INDEXED            =    2,
-  URITRACK_DIRECTORY_ADDED    =    4,
-  URITRACK_DOWNLOAD_STARTED   =    8,
-  URITRACK_DOWNLOAD_ABORTED   =   16,
-  URITRACK_DOWNLOAD_COMPLETED =   32,
-  URITRACK_SEARCH_RESULT      =   64,
-  URITRACK_DIRECTORY_FOUND    =  128,
+enum URITRACK_STATE
+{
+  URITRACK_FRESH = 0,
+  URITRACK_INSERTED = 1,
+  URITRACK_INDEXED = 2,
+  URITRACK_DIRECTORY_ADDED = 4,
+  URITRACK_DOWNLOAD_STARTED = 8,
+  URITRACK_DOWNLOAD_ABORTED = 16,
+  URITRACK_DOWNLOAD_COMPLETED = 32,
+  URITRACK_SEARCH_RESULT = 64,
+  URITRACK_DIRECTORY_FOUND = 128,
 };
 
 /**
@@ -125,19 +113,18 @@ enum URITRACK_STATE {
  * return information from the wrong URI without detecting it).
  */
 enum URITRACK_STATE
-URITRACK_getState(struct GE_Context * ectx,
-		  struct GC_Configuration * cfg,
-		  const struct ECRS_URI * uri);
+URITRACK_getState (struct GE_Context *ectx,
+                   struct GC_Configuration *cfg, const struct ECRS_URI *uri);
 
 /**
  * Add additional information about a given URI's past.
  */
-void URITRACK_addState(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const struct ECRS_URI * uri,
-		       enum URITRACK_STATE state);
+void URITRACK_addState (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg,
+                        const struct ECRS_URI *uri,
+                        enum URITRACK_STATE state);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

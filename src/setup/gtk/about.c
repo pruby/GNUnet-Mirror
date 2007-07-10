@@ -32,18 +32,16 @@
 /**
  * This displays an about window
  */
-void on_aboutButton_activatesetup_gtk(GtkWidget * dummy,
-  			      gpointer data) {
-  GtkWidget * ad;
-  GladeXML * axml;
+void
+on_aboutButton_activatesetup_gtk (GtkWidget * dummy, gpointer data)
+{
+  GtkWidget *ad;
+  GladeXML *axml;
 
-  axml
-    = load_xml("aboutdialog");
-  ad
-    = glade_xml_get_widget(axml,
-  		   "aboutdialog");
-  gtk_dialog_run(GTK_DIALOG(ad));
-  g_object_unref(axml);
+  axml = load_xml ("aboutdialog");
+  ad = glade_xml_get_widget (axml, "aboutdialog");
+  gtk_dialog_run (GTK_DIALOG (ad));
+  g_object_unref (axml);
 }
 
 /* end of about.c */

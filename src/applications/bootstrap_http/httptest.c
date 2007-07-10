@@ -32,80 +32,80 @@
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_stats_service.h"
 
-void release_module_bootstrap();
+void release_module_bootstrap ();
 
-Bootstrap_ServiceAPI *
-provide_module_bootstrap(CoreAPIForApplication * capi);
+Bootstrap_ServiceAPI *provide_module_bootstrap (CoreAPIForApplication * capi);
 
-static void * rs(const char * name) { return NULL; }
+static void *
+rs (const char *name)
+{
+  return NULL;
+}
 
-static int rsx(void * s) { return OK; }
+static int
+rsx (void *s)
+{
+  return OK;
+}
 
 static unsigned int count;
 
 
-static void hello(const P2P_hello_MESSAGE * m,
-  	  void * arg) {
+static void
+hello (const P2P_hello_MESSAGE * m, void *arg)
+{
   count++;
 }
 
-static int terminate(void * arg) {
-  if (GNUNET_SHUTDOWN_TEST() == YES)
+static int
+terminate (void *arg)
+{
+  if (GNUNET_SHUTDOWN_TEST () == YES)
     return NO;
-  return YES; /* todo: add timeout? */
+  return YES;                   /* todo: add timeout? */
 }
 
-static void * pt(void * b) {
-  Bootstrap_ServiceAPI * boot = b;
+static void *
+pt (void *b)
+{
+  Bootstrap_ServiceAPI *boot = b;
 
-  boot->bootstrap(&hello,
-  	  NULL,
-  	  &terminate,
-  	  NULL);
+  boot->bootstrap (&hello, NULL, &terminate, NULL);
   return NULL;
 }
 
-int main(int argc,
-   char ** argv) {
+int
+main (int argc, char **argv)
+{
   static CoreAPIForApplication capi;
-  struct GC_Configuration * cfg;
-  struct PluginHandle * plugin;
-  Bootstrap_ServiceAPI * boot;
-  struct PTHREAD * p;
-  void * unused;
+  struct GC_Configuration *cfg;
+  struct PluginHandle *plugin;
+  Bootstrap_ServiceAPI *boot;
+  struct PTHREAD *p;
+  void *unused;
   ServiceInitMethod init;
   ServiceDoneMethod done;
 
   count = 0;
-  cfg = GC_create_C_impl();
-  GC_set_configuration_value_string(cfg,
-  			    NULL,
-  			    "GNUNETD",
-  			    "HOSTLISTURL",
-  			    "http://gnunet.org/hostlist");
-  memset(&capi,
-   0,
-   sizeof(CoreAPIForApplication));
+  cfg = GC_create_C_impl ();
+  GC_set_configuration_value_string (cfg,
+                                     NULL,
+                                     "GNUNETD",
+                                     "HOSTLISTURL",
+                                     "http://gnunet.org/hostlist");
+  memset (&capi, 0, sizeof (CoreAPIForApplication));
   capi.cfg = cfg;
   capi.requestService = &rs;
   capi.releaseService = &rsx;
-  plugin = os_plugin_load(NULL,
-  		  "libgnunetmodule_",
-  		  "bootstrap");
-  init = os_plugin_resolve_function(plugin,
-  			    "provide_module_",
-  			    YES);
-  boot = init(&capi);
-  p = PTHREAD_CREATE(&pt,
-  	     boot,
-  	     1024 * 64);
-  PTHREAD_JOIN(p, &unused);
-  done = os_plugin_resolve_function(plugin,
-  			    "release_module_",
-  			    YES);
-  done();
-  os_plugin_unload(plugin);
-  GC_free(cfg);
+  plugin = os_plugin_load (NULL, "libgnunetmodule_", "bootstrap");
+  init = os_plugin_resolve_function (plugin, "provide_module_", YES);
+  boot = init (&capi);
+  p = PTHREAD_CREATE (&pt, boot, 1024 * 64);
+  PTHREAD_JOIN (p, &unused);
+  done = os_plugin_resolve_function (plugin, "release_module_", YES);
+  done ();
+  os_plugin_unload (plugin);
+  GC_free (cfg);
   if (count == 0)
     return 1;
   return 0;

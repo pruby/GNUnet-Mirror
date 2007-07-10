@@ -38,8 +38,9 @@
 
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -47,7 +48,8 @@ extern "C" {
 /**
  * @brief Definition of the SQ-Store API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Get the current on-disk size of the SQ store.
@@ -55,15 +57,14 @@ typedef struct {
    * available.
    * @return number of bytes used on disk
    */
-  unsigned long long (*getSize)(void);
+  unsigned long long (*getSize) (void);
 
   /**
    * Store an item in the datastore.
    *
    * @return OK on success, SYSERR on error, NO on temporary error
    */
-  int (*put)(const HashCode512 * key,
-	     const Datastore_Value * value);
+  int (*put) (const HashCode512 * key, const Datastore_Value * value);
 
   /**
    * Iterate over the results for a particular key
@@ -76,10 +77,8 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*get)(const HashCode512 * key,
-	     unsigned int type,
-	     Datum_Iterator iter,
-	     void * closure);
+  int (*get) (const HashCode512 * key,
+              unsigned int type, Datum_Iterator iter, void *closure);
 
   /**
    * Update the priority for a particular key in the datastore.  If
@@ -106,10 +105,8 @@ typedef struct {
    * @return OK if a match was found and the update
    *     was successful, SYSERR on error
    */
-  int (*update)(const HashCode512 * key,
-		const Datastore_Value * value,
-		int delta,
-		cron_t expire);
+  int (*update) (const HashCode512 * key,
+                 const Datastore_Value * value, int delta, cron_t expire);
 
   /**
    * Iterate over the items in the datastore in ascending
@@ -121,9 +118,8 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateLowPriority)(unsigned int type,
-			    Datum_Iterator iter,
-			    void * closure);
+  int (*iterateLowPriority) (unsigned int type,
+                             Datum_Iterator iter, void *closure);
 
   /**
    * Iterate over content with anonymity zero.
@@ -136,10 +132,9 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateNonAnonymous)(unsigned int type,
-			     int on_demand,
-			     Datum_Iterator iter,
-			     void * closure);
+  int (*iterateNonAnonymous) (unsigned int type,
+                              int on_demand,
+                              Datum_Iterator iter, void *closure);
 
   /**
    * Iterate over the items in the datastore in ascending
@@ -151,9 +146,8 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateExpirationTime)(unsigned int type,
-			       Datum_Iterator iter,
-			       void * closure);
+  int (*iterateExpirationTime) (unsigned int type,
+                                Datum_Iterator iter, void *closure);
 
 
   /**
@@ -164,8 +158,7 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateMigrationOrder)(Datum_Iterator iter,
-			       void * closure);
+  int (*iterateMigrationOrder) (Datum_Iterator iter, void *closure);
 
   /**
    * Iterate over all the items in the datastore
@@ -177,8 +170,7 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateAllNow)(Datum_Iterator iter,
-		       void * closure);
+  int (*iterateAllNow) (Datum_Iterator iter, void *closure);
 
   /**
    * Delete an item from the datastore.
@@ -204,18 +196,17 @@ typedef struct {
    *        also be rare).
    *        0 if no matching items were found, SYSERR on errors
    */
-  int (*del)(const HashCode512 * key,
-	     const Datastore_Value * value);
+  int (*del) (const HashCode512 * key, const Datastore_Value * value);
 
   /**
    * Delete the database.  The next operation is
    * guaranteed to be unloading of the module.
    */
-  void (*drop)(void);
+  void (*drop) (void);
 
 } SQstore_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

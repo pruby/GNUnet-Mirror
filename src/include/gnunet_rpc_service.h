@@ -32,8 +32,9 @@
 #include "gnunet_blockstore.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -78,9 +79,8 @@ extern "C" {
 /**
  * Prototype for synchronous RPC functions.
  */
-typedef void (*RPC_Function)(const PeerIdentity * caller,
-			     RPC_Param * arguments,
-			     RPC_Param * results);
+typedef void (*RPC_Function) (const PeerIdentity * caller,
+                              RPC_Param * arguments, RPC_Param * results);
 
 /**
  * Opaque RPC internal per-RPC data.
@@ -91,67 +91,62 @@ struct CallInstance;
  * Signature of the callback function for the ASYNC_RPC to
  * be called upon completion of the ASYNC function.
  */
-typedef void (*Async_RPC_Complete_Callback)(RPC_Param * results,
-					    int errorCode,
-					    struct CallInstance * context);
+typedef void (*Async_RPC_Complete_Callback) (RPC_Param * results,
+                                             int errorCode,
+                                             struct CallInstance * context);
 
 /**
  * Prototype for asynchronous RPC functions.
  */
-typedef void (*ASYNC_RPC_Function)(const PeerIdentity * caller,
-				   RPC_Param * arguments,
-				   Async_RPC_Complete_Callback callback,
-				   struct CallInstance * context);
+typedef void (*ASYNC_RPC_Function) (const PeerIdentity * caller,
+                                    RPC_Param * arguments,
+                                    Async_RPC_Complete_Callback callback,
+                                    struct CallInstance * context);
 
 
 /**
  * Function to call once an asynchronous RPC completes.
  */
-typedef void (*RPC_Complete)(const PeerIdentity * responder,
-			     RPC_Param * results,
-			     void * closure);
+typedef void (*RPC_Complete) (const PeerIdentity * responder,
+                              RPC_Param * results, void *closure);
 
 struct RPC_Record;
 
 /**
  * The RPC service API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Perform a synchronous RPC.
    */
-  int (*RPC_execute)(const PeerIdentity * receiver,
-		     const char * name,
-		     RPC_Param * request_param,
-		     RPC_Param * return_param,
-		     unsigned int importance,
-		     cron_t timeout);
+  int (*RPC_execute) (const PeerIdentity * receiver,
+                      const char *name,
+                      RPC_Param * request_param,
+                      RPC_Param * return_param,
+                      unsigned int importance, cron_t timeout);
 
   /**
    * Register a synchronous RPC function.
    */
-  int (*RPC_register)(const char * name,
-		      RPC_Function func);
+  int (*RPC_register) (const char *name, RPC_Function func);
 
   /**
    * Unregister a synchronous RPC function.
    */
-  int (*RPC_unregister)(const char * name,
-			RPC_Function func);
+  int (*RPC_unregister) (const char *name, RPC_Function func);
 
   /**
    * Register an asynchronous RPC function.
    */
-  int (*RPC_register_async)(const char * name,
-			    ASYNC_RPC_Function func);
+  int (*RPC_register_async) (const char *name, ASYNC_RPC_Function func);
 
 
   /**
    * Unregister an asynchronous RPC function.
    */
-  int (*RPC_unregister_async)(const char * name,
-			      ASYNC_RPC_Function func);
+  int (*RPC_unregister_async) (const char *name, ASYNC_RPC_Function func);
 
   /**
    * Start an asynchronous RPC.
@@ -163,13 +158,12 @@ typedef struct {
    * @return value required to stop the RPC (and the RPC must
    *  be explicitly stopped to free resources!)
    */
-  struct RPC_Record * (*RPC_start)(const PeerIdentity * receiver,
-				   const char * name,
-				   RPC_Param * request_param,
-				   unsigned int importance,
-				   cron_t timeout,
-				   RPC_Complete callback,
-				   void * closure);
+  struct RPC_Record *(*RPC_start) (const PeerIdentity * receiver,
+                                   const char *name,
+                                   RPC_Param * request_param,
+                                   unsigned int importance,
+                                   cron_t timeout,
+                                   RPC_Complete callback, void *closure);
 
   /**
    * Stop an asynchronous RPC.
@@ -177,7 +171,7 @@ typedef struct {
    * @param record the return value from RPC_start
    * @return RPC_ERROR_OK if the RPC was successful
    */
-  int (*RPC_stop)(struct RPC_Record * record);
+  int (*RPC_stop) (struct RPC_Record * record);
 
 
 } RPC_ServiceAPI;
@@ -187,42 +181,36 @@ typedef struct {
 /**
  * RPC argument handling helper functions.
  */
-RPC_Param * RPC_paramNew(void);
+RPC_Param *RPC_paramNew (void);
 
-void RPC_paramFree(RPC_Param * param);
+void RPC_paramFree (RPC_Param * param);
 
-unsigned int RPC_paramCount(RPC_Param *param);
+unsigned int RPC_paramCount (RPC_Param * param);
 
-void RPC_paramAdd(RPC_Param * param,
-		  const char * name,
-		  unsigned int dataLength,
-		  const void * data);
+void RPC_paramAdd (RPC_Param * param,
+                   const char *name,
+                   unsigned int dataLength, const void *data);
 
-void RPC_paramAddDataContainer(RPC_Param * param,
-			       const char * name,
-			       const DataContainer * data);
+void RPC_paramAddDataContainer (RPC_Param * param,
+                                const char *name, const DataContainer * data);
 
-const char * RPC_paramName(RPC_Param * param,
-			   unsigned int i);
+const char *RPC_paramName (RPC_Param * param, unsigned int i);
 
-unsigned int RPC_paramIndex(RPC_Param * param,
-			    const char * name);
+unsigned int RPC_paramIndex (RPC_Param * param, const char *name);
 
 /**
  * @return OK on success, SYSERR on error
  */
-int RPC_paramValueByName(RPC_Param * param,
-			 const char * name,
-			 unsigned int * dataLength,
-			 void ** data);
+int RPC_paramValueByName (RPC_Param * param,
+                          const char *name,
+                          unsigned int *dataLength, void **data);
 
 /**
  * @return OK on success, SYSERR on error
  */
-int RPC_paramValueByPosition(RPC_Param * param,
-			     unsigned int i,
-			     unsigned int * dataLength,
-			     void ** data);
+int RPC_paramValueByPosition (RPC_Param * param,
+                              unsigned int i,
+                              unsigned int *dataLength, void **data);
 
 /**
  * Return the value of the given parameter in the RPC parameter structure.
@@ -230,9 +218,8 @@ int RPC_paramValueByPosition(RPC_Param * param,
  * @param param Target RPC parameter structure
  * @param value set to the value of the parameter
  */
-DataContainer *
-RPC_paramDataContainerByPosition(RPC_Param *param,
-				 unsigned int i);
+DataContainer *RPC_paramDataContainerByPosition (RPC_Param * param,
+                                                 unsigned int i);
 
 /**
  * Return the value of the named parameter in the RPC parameter
@@ -242,29 +229,27 @@ RPC_paramDataContainerByPosition(RPC_Param *param,
  * @param value set to the value of the named parameter
  * @return SYSERR on error
  */
-DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
-					     const char *name);
+DataContainer *RPC_paramDataContainerByName (RPC_Param * param,
+                                             const char *name);
 
 /**
  * Serialize the param array.  target must point to at least
  * RPC_paramSize(param) bytes of memory.
  */
-void RPC_paramSerialize(RPC_Param * param,
-			char * target);
+void RPC_paramSerialize (RPC_Param * param, char *target);
 
 /**
  * Deserialize parameters from buffer.
  */
-RPC_Param * RPC_paramDeserialize(char * buffer,
-				 size_t size);
+RPC_Param *RPC_paramDeserialize (char *buffer, size_t size);
 
 /**
  * How many bytes are required to serialize the param array?
  */
-size_t RPC_paramSize(RPC_Param * param);
+size_t RPC_paramSize (RPC_Param * param);
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

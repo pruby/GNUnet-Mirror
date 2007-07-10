@@ -31,12 +31,12 @@
 /**
  * Initialize the query management.
  */
-int initQueryManager(CoreAPIForApplication * capi);
+int initQueryManager (CoreAPIForApplication * capi);
 
 /**
  * Shutdown query management.
  */
-void doneQueryManager(void);
+void doneQueryManager (void);
 
 /**
  * Keep track of a query.  If a matching response
@@ -45,9 +45,8 @@ void doneQueryManager(void);
  * @param msg the query
  * @param client where did the query come from?
  */
-void trackQuery(const HashCode512 * query,
-		unsigned int type,
-		struct ClientHandle * client);
+void trackQuery (const HashCode512 * query,
+                 unsigned int type, struct ClientHandle *client);
 
 /**
  * Stop keeping track of a query.
@@ -55,8 +54,7 @@ void trackQuery(const HashCode512 * query,
  * @param msg the query
  * @param client where did the query come from?
  */
-void untrackQuery(const HashCode512 * query,
-		  struct ClientHandle * client);
+void untrackQuery (const HashCode512 * query, struct ClientHandle *client);
 
 /**
  * We received a reply from 'responder'.
@@ -64,7 +62,6 @@ void untrackQuery(const HashCode512 * query,
  *
  * @param value the response
  */
-void processResponse(const HashCode512 * key,
-		     const Datastore_Value * value);
+void processResponse (const HashCode512 * key, const Datastore_Value * value);
 
 #endif

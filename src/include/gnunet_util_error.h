@@ -31,8 +31,9 @@
 #define GNUNET_UTIL_ERROR_VERSION 0x00000000
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -47,16 +48,17 @@ struct GE_Context;
 /**
  * Classes of log messages.
  */
-typedef enum {
-  GE_NOTHING   = 0x00000000,
+typedef enum
+{
+  GE_NOTHING = 0x00000000,
   /* type of event */
-  GE_FATAL     = 0x00000001, /* FATAL/FAILURE/NOTHING */
-  GE_ERROR     = 0x00000002,
-  GE_WARNING   = 0x00000004,
-  GE_INFO      = 0x00000008, /* normal program response */
-  GE_STATUS    = 0x00000010, /* status message */
-  GE_DEBUG     = 0x00000020, /* DEBUG/CRON/EVERYTHING */
-  GE_EVENTKIND = 0x000000FF, /* bitmask */
+  GE_FATAL = 0x00000001,        /* FATAL/FAILURE/NOTHING */
+  GE_ERROR = 0x00000002,
+  GE_WARNING = 0x00000004,
+  GE_INFO = 0x00000008,         /* normal program response */
+  GE_STATUS = 0x00000010,       /* status message */
+  GE_DEBUG = 0x00000020,        /* DEBUG/CRON/EVERYTHING */
+  GE_EVENTKIND = 0x000000FF,    /* bitmask */
 
   /* who should see the message? */
   /**
@@ -65,82 +67,78 @@ typedef enum {
    * daemon, messages tagged just as GE_USER will
    * be discarded.
    */
-  GE_USER      = 0x01000000, /* current user, if possible */
+  GE_USER = 0x01000000,         /* current user, if possible */
   /**
    * These messages are sent to the logfile for the
    * administrator.  Note that normal users may not
    * always look there.
    */
-  GE_ADMIN     = 0x02000000, /* system administrator */
+  GE_ADMIN = 0x02000000,        /* system administrator */
   /**
    * These messages are usually not logged or given
    * to the user.  They can be obtained when the tool
    * is run in debug mode.
    */
-  GE_DEVELOPER = 0x04000000, /* GNUnet developers (bug!) */
+  GE_DEVELOPER = 0x04000000,    /* GNUnet developers (bug!) */
   /**
    * Mask for the type of user that should see the
    * message.
    */
-  GE_USERKIND  = 0x0F000000, /* bitmask */
+  GE_USERKIND = 0x0F000000,     /* bitmask */
 
   /* how event should be routed */
   /**
    * The message should only be shown upon specific
    * request.
    */
-  GE_REQUEST   = 0x20000000, /* display on request only (i.e. low-priority log, user demands verbose events) */
+  GE_REQUEST = 0x20000000,      /* display on request only (i.e. low-priority log, user demands verbose events) */
   /**
    * This type of message is not urgent and is likely
    * to occur in bulk.  Suitable for logging to a file
    * or in a generic, scrolling message window.
    */
-  GE_BULK      = 0x40000000, /* display in bulk output (i.e. log-file, scroll window, console) */
+  GE_BULK = 0x40000000,         /* display in bulk output (i.e. log-file, scroll window, console) */
   /**
    * This is a message that is urgent and should be
    * communicated as soon as possible.  Sending an
    * e-mail alert or opening a pop-up window maybe
    * appropriate.
    */
-  GE_IMMEDIATE = 0x80000000, /* display immediately (i.e. pop-up, e-mail) */
+  GE_IMMEDIATE = 0x80000000,    /* display immediately (i.e. pop-up, e-mail) */
   /**
    * Mask for the routing type.
    */
-  GE_ROUTEKIND = 0xF0000000, /* bitmask */
-  GE_ALL       = 0xFFFFFFFF,
-  GE_INVALID   = 0x08000000, /* unused bit */
+  GE_ROUTEKIND = 0xF0000000,    /* bitmask */
+  GE_ALL = 0xFFFFFFFF,
+  GE_INVALID = 0x08000000,      /* unused bit */
 } GE_KIND;
 
-void GE_LOG(struct GE_Context * ctx,
-	    GE_KIND kind,
-	    const char * message,
-	    ...);
+void GE_LOG (struct GE_Context *ctx, GE_KIND kind, const char *message, ...);
 
 /**
  * @brief Get user confirmation (e.g. before the app shuts down and closes the
  *        error message
  */
-void GE_CONFIRM(struct GE_Context * ctx);
+void GE_CONFIRM (struct GE_Context *ctx);
 
-void GE_setDefaultContext(struct GE_Context * ctx);
+void GE_setDefaultContext (struct GE_Context *ctx);
 
 /**
  * User-defined handler for log events.
  */
-typedef void (*GE_LogHandler)(void * ctx,
-			      GE_KIND kind,
-			      const char * date,
-			      const char * msg);
+typedef void (*GE_LogHandler) (void *ctx,
+                               GE_KIND kind,
+                               const char *date, const char *msg);
 
 /**
  * User-defined method to free handler context.
  */
-typedef void (*GE_CtxFree)(void * ctx);
+typedef void (*GE_CtxFree) (void *ctx);
 
 /**
  * User-defined method to wait for user confirmation
  */
-typedef void (*GE_Confirm)(void * ctx);
+typedef void (*GE_Confirm) (void *ctx);
 
 /**
  * Create a log context that calls a callback function
@@ -151,17 +149,16 @@ typedef void (*GE_Confirm)(void * ctx);
  *        to be passed to this handler
  * @param liberator callback to free ctx, maybe NULL
  */
-struct GE_Context *
-GE_create_context_callback(GE_KIND mask,
-			   GE_LogHandler handler,
-			   void * ctx,
-			   GE_CtxFree liberator,
-			   GE_Confirm confirm);
+struct GE_Context *GE_create_context_callback (GE_KIND mask,
+                                               GE_LogHandler handler,
+                                               void *ctx,
+                                               GE_CtxFree liberator,
+                                               GE_Confirm confirm);
 
 /**
  * Free a log context.
  */
-void GE_free_context(struct GE_Context * ctx);					
+void GE_free_context (struct GE_Context *ctx);
 
 /**
  * Does the given event match the mask?
@@ -170,8 +167,7 @@ void GE_free_context(struct GE_Context * ctx);
  * @param mask the filter mask
  * @return YES or NO
  */
-int GE_applies(GE_KIND have,
-	       GE_KIND mask);
+int GE_applies (GE_KIND have, GE_KIND mask);
 
 /**
  * Would an event of this kind be possibly
@@ -181,30 +177,28 @@ int GE_applies(GE_KIND have,
  * @param have the kind of event
  * @return YES or NO
  */
-int GE_isLogged(struct GE_Context * ctx,
-		GE_KIND kind);
+int GE_isLogged (struct GE_Context *ctx, GE_KIND kind);
 
 /**
  * Convert a textual description of a loglevel
  * to the respective GE_KIND.
  * @returns GE_INVALID if log does not parse
  */
-GE_KIND GE_getKIND(const char * log);
+GE_KIND GE_getKIND (const char *log);
 
 /**
  * Convert KIND to String
  */
-const char * GE_kindToString(GE_KIND kind);
+const char *GE_kindToString (GE_KIND kind);
 
 /**
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GE_Context *
-GE_create_context_multiplexer(struct GE_Context * ctx1,
-			      struct GE_Context * ctx2);
+struct GE_Context *GE_create_context_multiplexer (struct GE_Context *ctx1,
+                                                  struct GE_Context *ctx2);
 
-const char *GE_strerror(int errnum);
+const char *GE_strerror (int errnum);
 
 /**
  * If this context would log an event of the given kind,
@@ -284,7 +278,7 @@ const char *GE_strerror(int errnum);
 #define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

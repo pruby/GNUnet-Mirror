@@ -31,13 +31,12 @@
 #include "gnunet_setup_lib.h"
 #include "wizard_util.h"
 
-int gtk_wizard_mainsetup_gtk(int argc,
-			     char * const * argv,
-			     struct PluginHandle * self,
-			     struct GE_Context * ectx,
-			     struct GC_Configuration * cfg,
-			     struct GNS_Context * gns,
-			     const char * filename,
-			     int is_daemon);
+int gtk_wizard_mainsetup_gtk (int argc,
+                              char *const *argv,
+                              struct PluginHandle *self,
+                              struct GE_Context *ectx,
+                              struct GC_Configuration *cfg,
+                              struct GNS_Context *gns,
+                              const char *filename, int is_daemon);
 
 #endif

@@ -35,8 +35,9 @@
 #include "gnunet_blockstore.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -46,12 +47,13 @@ struct DHT_GET_RECORD;
 /**
  * DHT operation 'complete' (i.e timed out).
  */
-typedef void (*DHT_OP_Complete)(void * closure);
+typedef void (*DHT_OP_Complete) (void *closure);
 
 /**
  * Functions of the DHT Service API.
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Perform an asynchronous GET operation on the DHT identified by
@@ -66,18 +68,18 @@ typedef struct {
    * @param closure extra argument to callback
    * @return handle to stop the async get
    */
-  struct DHT_GET_RECORD * (*get_start)(unsigned int type,
-				       const HashCode512 * key,
-				       cron_t timeout,
-				       DataProcessor callback,
-				       void * cls,
-				       DHT_OP_Complete callbackComplete,
-				       void * closure);
+  struct DHT_GET_RECORD *(*get_start) (unsigned int type,
+                                       const HashCode512 * key,
+                                       cron_t timeout,
+                                       DataProcessor callback,
+                                       void *cls,
+                                       DHT_OP_Complete callbackComplete,
+                                       void *closure);
 
   /**
    * Stop async DHT-get.  Frees associated resources.
    */
-  int (*get_stop)(struct DHT_GET_RECORD * record);
+  int (*get_stop) (struct DHT_GET_RECORD * record);
 
   /**
    * Perform a PUT operation on the DHT identified by 'table' storing
@@ -86,15 +88,13 @@ typedef struct {
    *
    * @param key the key to store under
    */
-  void (*put)(const HashCode512 * key,
-	      unsigned int type,
-	      unsigned int size,
-	      cron_t expire,
-	      const char * data);
+  void (*put) (const HashCode512 * key,
+               unsigned int type,
+               unsigned int size, cron_t expire, const char *data);
 
 } DHT_ServiceAPI;
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

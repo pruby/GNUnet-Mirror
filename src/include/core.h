@@ -33,30 +33,29 @@
 /**
  * Initialize the CORE's globals.
  */
-int initCore(struct GE_Context * ectx,
-	     struct GC_Configuration * cfg,
-	     struct CronManager * cron,
-	     struct LoadMonitor * monitor);
+int initCore (struct GE_Context *ectx,
+              struct GC_Configuration *cfg,
+              struct CronManager *cron, struct LoadMonitor *monitor);
 
 /**
  * Shutdown the CORE modules (also shuts down all
  * application modules).
  */
-void doneCore(void);
+void doneCore (void);
 
-void * requestService(const char * pos);
+void *requestService (const char *pos);
 
-int releaseService(void * service);
+int releaseService (void *service);
 
 /**
  * @return OK on success, SYSERR if some modules failed to unload
  */
-int unloadApplicationModules(void);
+int unloadApplicationModules (void);
 
 /**
  * @return OK on success, SYSERR if some modules failed to load
  */
-int loadApplicationModules(void);
+int loadApplicationModules (void);
 
 
 

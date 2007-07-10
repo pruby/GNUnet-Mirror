@@ -32,74 +32,76 @@
 
 
 
-int main(int argc,
-   const char *argv[]) {
+int
+main (int argc, const char *argv[])
+{
   static CoreAPIForApplication capi;
-  struct GE_Context * ectx;
-  struct GC_Configuration * cfg;
+  struct GE_Context *ectx;
+  struct GC_Configuration *cfg;
   IPaddr addr;
   int i;
-  UPnP_ServiceAPI * upnp;
-  struct PluginHandle * plug;
+  UPnP_ServiceAPI *upnp;
+  struct PluginHandle *plug;
   ServiceInitMethod init;
   ServiceDoneMethod done;
 
-  ectx = GE_create_context_stderr(NO,
-  			  GE_WARNING | GE_ERROR | GE_FATAL |
-  			  GE_USER | GE_ADMIN | GE_DEVELOPER |
-  			  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  os_init(ectx);
+  ectx = GE_create_context_stderr (NO,
+                                   GE_WARNING | GE_ERROR | GE_FATAL |
+                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
+                                   GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext (ectx);
+  cfg = GC_create_C_impl ();
+  GE_ASSERT (ectx, cfg != NULL);
+  os_init (ectx);
   capi.ectx = ectx;
   capi.cfg = cfg;
-  plug = os_plugin_load(ectx, "libgnunet", "module_upnp");
-  if (plug == NULL) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 1;
-  }
-  init = os_plugin_resolve_function(plug,
-  			    "provide_",
-  			    YES);
-  if (init == NULL) {
-    os_plugin_unload(plug);
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 1;
-  }
-  upnp = init(&capi);
-  if (upnp == NULL) {
-    os_plugin_unload(plug);
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 1;
-  }
-  for (i=0;i<10;i++) {
-    if (GNUNET_SHUTDOWN_TEST() != NO)
-      break;
-    if (OK == upnp->get_ip(2086,
-  		   "TCP",
-  		   &addr)) {
-      printf("UPnP returned external IP %u.%u.%u.%u\n",
-       PRIP(ntohl(*(int*)&addr)));
-    } else {
-      /* we cannot be sure that there is a UPnP-capable
-   NAT-box out there, so test should not fail
-   just because of this! */
-      printf("No UPnP response (yet).\n");
+  plug = os_plugin_load (ectx, "libgnunet", "module_upnp");
+  if (plug == NULL)
+    {
+      GC_free (cfg);
+      GE_free_context (ectx);
+      return 1;
     }
-    PTHREAD_SLEEP(2 * cronSECONDS);
-  }
-  done = os_plugin_resolve_function(plug,
-  			    "release_",
-  			    YES);
+  init = os_plugin_resolve_function (plug, "provide_", YES);
+  if (init == NULL)
+    {
+      os_plugin_unload (plug);
+      GC_free (cfg);
+      GE_free_context (ectx);
+      return 1;
+    }
+  upnp = init (&capi);
+  if (upnp == NULL)
+    {
+      os_plugin_unload (plug);
+      GC_free (cfg);
+      GE_free_context (ectx);
+      return 1;
+    }
+  for (i = 0; i < 10; i++)
+    {
+      if (GNUNET_SHUTDOWN_TEST () != NO)
+        break;
+      if (OK == upnp->get_ip (2086, "TCP", &addr))
+        {
+          printf ("UPnP returned external IP %u.%u.%u.%u\n",
+                  PRIP (ntohl (*(int *) &addr)));
+        }
+      else
+        {
+          /* we cannot be sure that there is a UPnP-capable
+             NAT-box out there, so test should not fail
+             just because of this! */
+          printf ("No UPnP response (yet).\n");
+        }
+      PTHREAD_SLEEP (2 * cronSECONDS);
+    }
+  done = os_plugin_resolve_function (plug, "release_", YES);
   if (done != NULL)
-    done();
-  os_plugin_unload(plug);
-  GC_free(cfg);
-  GE_free_context(ectx);
+    done ();
+  os_plugin_unload (plug);
+  GC_free (cfg);
+  GE_free_context (ectx);
   return 0;
 }
 

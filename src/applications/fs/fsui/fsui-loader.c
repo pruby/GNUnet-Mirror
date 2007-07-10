@@ -28,54 +28,50 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_config_impl.h"
 
-static void * eventCallback(void * cls,
-  		    const FSUI_Event * event) {
+static void *
+eventCallback (void *cls, const FSUI_Event * event)
+{
 #if 0
-  switch(event->type) {
-  case FSUI_search_result:
-    printf("Received search result\n");
-    break;
-  case FSUI_upload_complete:
-    printf("Upload complete.\n");
-    break;
-  case FSUI_download_complete:
-    printf("Download complete.\n");
-    break;
-  case FSUI_unindex_complete:
-    printf("Unindex complete.\n");
-    break;
-  default:
-    printf("Other event.\n");
-    break;
-  }
+  switch (event->type)
+    {
+    case FSUI_search_result:
+      printf ("Received search result\n");
+      break;
+    case FSUI_upload_complete:
+      printf ("Upload complete.\n");
+      break;
+    case FSUI_download_complete:
+      printf ("Download complete.\n");
+      break;
+    case FSUI_unindex_complete:
+      printf ("Unindex complete.\n");
+      break;
+    default:
+      printf ("Other event.\n");
+      break;
+    }
 #endif
   return NULL;
 }
 
-int main(int argc,
-   char * argv[]) {
-  struct FSUI_Context * ctx;
-  struct GC_Configuration * cfg;
+int
+main (int argc, char *argv[])
+{
+  struct FSUI_Context *ctx;
+  struct GC_Configuration *cfg;
 
-  os_init(NULL);
-  cfg = GC_create_C_impl();
-  if (argc != 2) {
-    fprintf(stderr,
-      "Call with name of FSUI resource file!\n");
-    return -1;
-  }
-  ctx = FSUI_start(NULL,
-  	   cfg,
-  	   argv[1],
-  	   16,
-  	   YES,
-  	   &eventCallback,
-  	   NULL);
+  os_init (NULL);
+  cfg = GC_create_C_impl ();
+  if (argc != 2)
+    {
+      fprintf (stderr, "Call with name of FSUI resource file!\n");
+      return -1;
+    }
+  ctx = FSUI_start (NULL, cfg, argv[1], 16, YES, &eventCallback, NULL);
   if (ctx != NULL)
-    FSUI_stop(ctx);
+    FSUI_stop (ctx);
   else
-    fprintf(stderr,
-      "FSUI_start failed!\n");
-  GC_free(cfg);
+    fprintf (stderr, "FSUI_start failed!\n");
+  GC_free (cfg);
   return (ctx == NULL);
 }

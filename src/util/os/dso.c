@@ -28,133 +28,138 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
 
-typedef struct PluginHandle {
-  struct GE_Context * ectx;
-  char * libprefix;
-  char * dsoname;
-  void * handle;
+typedef struct PluginHandle
+{
+  struct GE_Context *ectx;
+  char *libprefix;
+  char *dsoname;
+  void *handle;
 } Plugin;
 
 
-static char * old_dlsearchpath;
+static char *old_dlsearchpath;
 
 
 /* using libtool, needs init! */
-void __attribute__ ((constructor)) gnc_ltdl_init() {
+void __attribute__ ((constructor)) gnc_ltdl_init ()
+{
   int err;
-  const char * opath;
-  char * path;
-  char * cpath;
+  const char *opath;
+  char *path;
+  char *cpath;
 
 #ifdef MINGW
-  InitWinEnv(NULL);
+  InitWinEnv (NULL);
 #endif
 
-  err = lt_dlinit();
-  if (err > 0) {
-    fprintf(stderr,
-      _("Initialization of plugin mechanism failed: %s!\n"),
-      lt_dlerror());
-    return;
-  }
-  opath = lt_dlgetsearchpath();
-  if (opath != NULL)
-    old_dlsearchpath = STRDUP(opath);
-  path = os_get_installation_path(IPK_LIBDIR);
-  if (path != NULL) {
-    if (opath != NULL) {
-      cpath = MALLOC(strlen(path) + strlen(opath) + 4);
-      strcpy(cpath, opath);
-      strcat(cpath, ":");
-      strcat(cpath, path);
-      lt_dlsetsearchpath(cpath);
-      FREE(path);
-      FREE(cpath);
-    } else {
-      lt_dlsetsearchpath(path);
-      FREE(path);
+  err = lt_dlinit ();
+  if (err > 0)
+    {
+      fprintf (stderr,
+               _("Initialization of plugin mechanism failed: %s!\n"),
+               lt_dlerror ());
+      return;
     }
-  }
+  opath = lt_dlgetsearchpath ();
+  if (opath != NULL)
+    old_dlsearchpath = STRDUP (opath);
+  path = os_get_installation_path (IPK_LIBDIR);
+  if (path != NULL)
+    {
+      if (opath != NULL)
+        {
+          cpath = MALLOC (strlen (path) + strlen (opath) + 4);
+          strcpy (cpath, opath);
+          strcat (cpath, ":");
+          strcat (cpath, path);
+          lt_dlsetsearchpath (cpath);
+          FREE (path);
+          FREE (cpath);
+        }
+      else
+        {
+          lt_dlsetsearchpath (path);
+          FREE (path);
+        }
+    }
 }
 
-void __attribute__ ((destructor)) gnc_ltdl_fini() {
-  lt_dlsetsearchpath(old_dlsearchpath);
-  if (old_dlsearchpath != NULL) {
-    FREE(old_dlsearchpath);
-    old_dlsearchpath = NULL;
-  }
+void __attribute__ ((destructor)) gnc_ltdl_fini ()
+{
+  lt_dlsetsearchpath (old_dlsearchpath);
+  if (old_dlsearchpath != NULL)
+    {
+      FREE (old_dlsearchpath);
+      old_dlsearchpath = NULL;
+    }
 
 #ifdef MINGW
-  ShutdownWinEnv();
+  ShutdownWinEnv ();
 #endif
 
   // lt_dlexit();
 }
 
 struct PluginHandle *
-os_plugin_load(struct GE_Context * ectx,
-         const char * libprefix,
-         const char * dsoname) {
-  void * libhandle;
-  char * libname;
-  Plugin * plug;
+os_plugin_load (struct GE_Context *ectx,
+                const char *libprefix, const char *dsoname)
+{
+  void *libhandle;
+  char *libname;
+  Plugin *plug;
 
-  libname = MALLOC(strlen(dsoname) +
-  	   strlen(libprefix) + 1);
-  strcpy(libname, libprefix);
-  strcat(libname, dsoname);
-  libhandle = lt_dlopenext(libname);
-  if (libhandle == NULL) {
-    GE_LOG(ectx,
-     GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-     _("`%s' failed for library `%s' with error: %s\n"),
-     "lt_dlopenext",
-     libname,
-     lt_dlerror());
-    FREE(libname);
-    return NULL;
-  }
-  FREE(libname);
-  plug = MALLOC(sizeof(Plugin));
+  libname = MALLOC (strlen (dsoname) + strlen (libprefix) + 1);
+  strcpy (libname, libprefix);
+  strcat (libname, dsoname);
+  libhandle = lt_dlopenext (libname);
+  if (libhandle == NULL)
+    {
+      GE_LOG (ectx,
+              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+              _("`%s' failed for library `%s' with error: %s\n"),
+              "lt_dlopenext", libname, lt_dlerror ());
+      FREE (libname);
+      return NULL;
+    }
+  FREE (libname);
+  plug = MALLOC (sizeof (Plugin));
   plug->handle = libhandle;
-  plug->libprefix = STRDUP(libprefix);
-  plug->dsoname = STRDUP(dsoname);
+  plug->libprefix = STRDUP (libprefix);
+  plug->dsoname = STRDUP (dsoname);
   plug->ectx = ectx;
   return plug;
 }
 
-void os_plugin_unload(struct PluginHandle * plugin) {
+void
+os_plugin_unload (struct PluginHandle *plugin)
+{
   // lt_dlclose(plugin->handle);
-  FREE(plugin->libprefix);
-  FREE(plugin->dsoname);
-  FREE(plugin);
+  FREE (plugin->libprefix);
+  FREE (plugin->dsoname);
+  FREE (plugin);
 }
 
 void *
-os_plugin_resolve_function(struct PluginHandle * plug,
-  		   const char * methodprefix,
-  		   int logError) {
-  char * initName;
-  void * mptr;
+os_plugin_resolve_function (struct PluginHandle *plug,
+                            const char *methodprefix, int logError)
+{
+  char *initName;
+  void *mptr;
 
-  initName = MALLOC(strlen(plug->dsoname) +
-  	    strlen(methodprefix) + 2);
-  strcpy(initName, "_");
-  strcat(initName, methodprefix);
-  strcat(initName, plug->dsoname);
-  mptr = lt_dlsym(plug->handle, &initName[1]);
+  initName = MALLOC (strlen (plug->dsoname) + strlen (methodprefix) + 2);
+  strcpy (initName, "_");
+  strcat (initName, methodprefix);
+  strcat (initName, plug->dsoname);
+  mptr = lt_dlsym (plug->handle, &initName[1]);
   if (mptr == NULL)
-    mptr = lt_dlsym(plug->handle, initName);
-  if ( (mptr == NULL) &&
-       (logError) )
-    GE_LOG(plug->ectx,
-     GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-     _("`%s' failed to resolve method '%s' with error: %s\n"),
-     "lt_dlsym",
-     &initName[1],
-     lt_dlerror());
-  FREE(initName);
+    mptr = lt_dlsym (plug->handle, initName);
+  if ((mptr == NULL) && (logError))
+    GE_LOG (plug->ectx,
+            GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+            _("`%s' failed to resolve method '%s' with error: %s\n"),
+            "lt_dlsym", &initName[1], lt_dlerror ());
+  FREE (initName);
   return mptr;
 }
 
-/* end of dso.c */  		
+/* end of dso.c */

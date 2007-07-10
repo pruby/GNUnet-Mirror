@@ -29,34 +29,36 @@
 
 #include "bincoder.c"
 
-static int testBC(int i) {
-  char * orig;
-  char * enc;
+static int
+testBC (int i)
+{
+  char *orig;
+  char *enc;
   char dec[256];
   int ret;
 
-  orig = MALLOC(i);
-  memset(orig, i, i);
-  enc = bin2enc(orig, i);
-  ret = enc2bin(enc,
-  	dec,
-  	i);
-  if ( (ret != strlen(enc)) ||
-       (0 != memcmp(orig, dec, i)) ) {
-    printf("Failed in iteration %d\n", i);
-    ret = -1;
-  }
-  FREE(enc);
-  FREE(orig);
+  orig = MALLOC (i);
+  memset (orig, i, i);
+  enc = bin2enc (orig, i);
+  ret = enc2bin (enc, dec, i);
+  if ((ret != strlen (enc)) || (0 != memcmp (orig, dec, i)))
+    {
+      printf ("Failed in iteration %d\n", i);
+      ret = -1;
+    }
+  FREE (enc);
+  FREE (orig);
   return ret != -1 ? 0 : 1;
 }
 
-int main(int argc, char * argv[]) {
+int
+main (int argc, char *argv[])
+{
   int failureCount = 0;
   int i;
 
-  for (i=0;i<256;i++)
-    failureCount += testBC(i);
+  for (i = 0; i < 256; i++)
+    failureCount += testBC (i);
   if (failureCount != 0)
     return 1;
   return 0;

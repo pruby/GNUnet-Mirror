@@ -28,15 +28,14 @@
 #include "gnunet_util_getopt.h"
 #include "platform.h"
 
-int gnunet_getopt_print_version(CommandLineProcessorContext * ctx,
-  			void * scls,
-  			const char * option,
-  			const char * value) {
-  const char * version = scls;
+int
+gnunet_getopt_print_version (CommandLineProcessorContext * ctx,
+                             void *scls,
+                             const char *option, const char *value)
+{
+  const char *version = scls;
 
-  printf("%s v%s\n",
-   ctx->binaryName,
-   version);
+  printf ("%s v%s\n", ctx->binaryName, version);
   return SYSERR;
 }
 

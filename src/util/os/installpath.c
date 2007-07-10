@@ -25,8 +25,9 @@
  */
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -47,35 +48,32 @@ extern "C" {
  * Try to determine path by reading /proc/PID/exe
  */
 static char *
-get_path_from_proc_exe() {
+get_path_from_proc_exe ()
+{
   char fn[64];
-  char * lnk;
+  char *lnk;
   size_t size;
 
-  SNPRINTF(fn,
-     64,
-     "/proc/%u/exe",
-     getpid());
-  lnk = MALLOC(1024);
-  size = readlink(fn, lnk, 1023);
-  if ( (size == 0) || (size >= 1024) ) {
-    GE_LOG_STRERROR_FILE(NULL,
-  		 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-  		 "readlink",
-  		 fn);
-    FREE(lnk);
-    return NULL;
-  }
+  SNPRINTF (fn, 64, "/proc/%u/exe", getpid ());
+  lnk = MALLOC (1024);
+  size = readlink (fn, lnk, 1023);
+  if ((size == 0) || (size >= 1024))
+    {
+      GE_LOG_STRERROR_FILE (NULL,
+                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                            "readlink", fn);
+      FREE (lnk);
+      return NULL;
+    }
   lnk[size] = '\0';
-  while ( (lnk[size] != '/') &&
-    (size > 0) )
+  while ((lnk[size] != '/') && (size > 0))
     size--;
-  if ( (size < 4) ||
-       (lnk[size-4] != '/') ) {
-    /* not installed in "/bin/" -- binary path probably useless */
-    FREE(lnk);
-    return NULL;
-  }
+  if ((size < 4) || (lnk[size - 4] != '/'))
+    {
+      /* not installed in "/bin/" -- binary path probably useless */
+      FREE (lnk);
+      return NULL;
+    }
   lnk[size] = '\0';
   return lnk;
 }
@@ -85,16 +83,16 @@ get_path_from_proc_exe() {
 /**
  * Try to determine path with win32-specific function
  */
-static char * get_path_from_module_filename() {
-  char * path;
-  char * idx;
+static char *
+get_path_from_module_filename ()
+{
+  char *path;
+  char *idx;
 
-  path = MALLOC(4097);
-  GetModuleFileName(NULL, path, 4096);
-  idx = path + strlen(path);
-  while ( (idx > path) &&
-    (*idx != '\\') &&
-    (*idx != '/') )
+  path = MALLOC (4097);
+  GetModuleFileName (NULL, path, 4096);
+  idx = path + strlen (path);
+  while ((idx > path) && (*idx != '\\') && (*idx != '/'))
     idx--;
   *idx = '\0';
   return path;
@@ -102,9 +100,11 @@ static char * get_path_from_module_filename() {
 #endif
 
 #if OSX
-typedef int (*MyNSGetExecutablePathProto)(char *buf, size_t *bufsize);
+typedef int (*MyNSGetExecutablePathProto) (char *buf, size_t * bufsize);
 
-static char * get_path_from_NSGetExecutablePath() {
+static char *
+get_path_from_NSGetExecutablePath ()
+{
   char *path;
   char zero = '\0';
   size_t len;
@@ -112,79 +112,88 @@ static char * get_path_from_NSGetExecutablePath() {
   int ret;
 
   path = NULL;
-  func = dlsym(RTLD_DEFAULT, "_NSGetExecutablePath");
-  if (func) {
-    path = &zero;
-    len = 0;
-    ret = ((MyNSGetExecutablePathProto)func)(path, &len);
-    if (len == 0)
-      path = NULL;
-    else {
-      len++;
-      path = (char *)MALLOC(len);
-      ret = ((MyNSGetExecutablePathProto)func)(path, &len);
-      if (ret != 0) {
-        FREE(path);
+  func = dlsym (RTLD_DEFAULT, "_NSGetExecutablePath");
+  if (func)
+    {
+      path = &zero;
+      len = 0;
+      ret = ((MyNSGetExecutablePathProto) func) (path, &len);
+      if (len == 0)
         path = NULL;
-      }
-      else {
-        while ((path[len] != '/') && (len > 0))
-          len--;
-        path[len] = '\0';
-      }
+      else
+        {
+          len++;
+          path = (char *) MALLOC (len);
+          ret = ((MyNSGetExecutablePathProto) func) (path, &len);
+          if (ret != 0)
+            {
+              FREE (path);
+              path = NULL;
+            }
+          else
+            {
+              while ((path[len] != '/') && (len > 0))
+                len--;
+              path[len] = '\0';
+            }
+        }
     }
-  }
   return path;
 }
 #endif
 
 static char *
-get_path_from_PATH() {
-  char * path;
-  char * pos;
-  char * end;
-  char * buf;
-  const char * p;
+get_path_from_PATH ()
+{
+  char *path;
+  char *pos;
+  char *end;
+  char *buf;
+  const char *p;
   size_t size;
 
-  p = getenv("PATH");
+  p = getenv ("PATH");
   if (p == NULL)
     return NULL;
-  path = STRDUP(p); /* because we write on it */
-  buf = MALLOC(strlen(path) + 20);
-  size = strlen(path);
+  path = STRDUP (p);            /* because we write on it */
+  buf = MALLOC (strlen (path) + 20);
+  size = strlen (path);
   pos = path;
 
-  while (NULL != (end = strchr(pos, ':'))) {
-    *end = '\0';
-    sprintf(buf, "%s/%s", pos, "gnunetd");
-    if (disk_file_test(NULL, buf) == YES) {
-      pos = STRDUP(pos);
-      FREE(buf);
-      FREE(path);
+  while (NULL != (end = strchr (pos, ':')))
+    {
+      *end = '\0';
+      sprintf (buf, "%s/%s", pos, "gnunetd");
+      if (disk_file_test (NULL, buf) == YES)
+        {
+          pos = STRDUP (pos);
+          FREE (buf);
+          FREE (path);
+          return pos;
+        }
+      pos = end + 1;
+    }
+  sprintf (buf, "%s/%s", pos, "gnunetd");
+  if (disk_file_test (NULL, buf) == YES)
+    {
+      pos = STRDUP (pos);
+      FREE (buf);
+      FREE (path);
       return pos;
     }
-    pos = end + 1;
-  }
-  sprintf(buf, "%s/%s", pos, "gnunetd");
-  if (disk_file_test(NULL, buf) == YES) {
-    pos = STRDUP(pos);
-    FREE(buf);
-    FREE(path);
-    return pos;
-  }
-  FREE(buf);
-  FREE(path);
+  FREE (buf);
+  FREE (path);
   return NULL;
 }
 
 static char *
-get_path_from_GNUNET_PREFIX() {
-  const char * p;
+get_path_from_GNUNET_PREFIX ()
+{
+  const char *p;
 
-  p = getenv("GNUNET_PREFIX");
+  p = getenv ("GNUNET_PREFIX");
   if (p != NULL)
-    return STRDUP(p);
+    return STRDUP (p);
   return NULL;
 }
 
@@ -195,28 +204,29 @@ get_path_from_GNUNET_PREFIX() {
  * @return a pointer to the executable path, or NULL on error
  */
 static char *
-os_get_exec_path() {
-  char * ret;
+os_get_exec_path ()
+{
+  char *ret;
 
-  ret = get_path_from_GNUNET_PREFIX();
+  ret = get_path_from_GNUNET_PREFIX ();
   if (ret != NULL)
     return ret;
 #if LINUX
-  ret = get_path_from_proc_exe();
+  ret = get_path_from_proc_exe ();
   if (ret != NULL)
     return ret;
 #endif
 #if WINDOWS
-  ret = get_path_from_module_filename();
+  ret = get_path_from_module_filename ();
   if (ret != NULL)
     return ret;
 #endif
 #if OSX
-  ret = get_path_from_NSGetExecutablePath();
+  ret = get_path_from_NSGetExecutablePath ();
   if (ret != NULL)
     return ret;
 #endif
-  ret = get_path_from_PATH();
+  ret = get_path_from_PATH ();
   if (ret != NULL)
     return ret;
   /* other attempts here */
@@ -230,61 +240,67 @@ os_get_exec_path() {
  * @author Milan
  * @return a pointer to the dir path (to be freed by the caller)
  */
-char * os_get_installation_path(enum InstallPathKind dirkind) {
+char *
+os_get_installation_path (enum InstallPathKind dirkind)
+{
   size_t n;
-  const char * dirname;
-  char * execpath;
-  char * tmp;
+  const char *dirname;
+  char *execpath;
+  char *tmp;
 
-  execpath = os_get_exec_path();
+  execpath = os_get_exec_path ();
   if (execpath == NULL)
     return NULL;
 
-  n = strlen(execpath);
-  if (n == 0) {
-    /* should never happen, but better safe than sorry */
-    FREE(execpath);
-    return NULL;
-  }
-  if (execpath[n-1] == DIR_SEPARATOR)
+  n = strlen (execpath);
+  if (n == 0)
+    {
+      /* should never happen, but better safe than sorry */
+      FREE (execpath);
+      return NULL;
+    }
+  if (execpath[n - 1] == DIR_SEPARATOR)
     execpath[--n] = '\0';
 
-  if ( (n > 3) &&
-       (0 == strcasecmp(&execpath[n-3], "bin")) ) {
-    /* good, strip of '/bin'! */
-    execpath[n-3] = '\0';
-    n -= 3;
-  }
-  switch(dirkind) {
-  case IPK_PREFIX:
-    dirname = "";
-    break;
-  case IPK_BINDIR:
-    dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
-    break;
-  case IPK_LIBDIR:
-    dirname = DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
-    break;
-  case IPK_DATADIR:
-    dirname = DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
-    break;
-  case IPK_LOCALEDIR:
-    dirname = DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "locale" DIR_SEPARATOR_STR ;
-    break;
-  default:
-    FREE(execpath);
-    return NULL;
-  }
-  tmp = MALLOC(strlen(execpath)+strlen(dirname)+1);
-  sprintf(tmp,
-    "%s%s",
-    execpath,
-    dirname);
-  FREE(execpath);
+  if ((n > 3) && (0 == strcasecmp (&execpath[n - 3], "bin")))
+    {
+      /* good, strip of '/bin'! */
+      execpath[n - 3] = '\0';
+      n -= 3;
+    }
+  switch (dirkind)
+    {
+    case IPK_PREFIX:
+      dirname = "";
+      break;
+    case IPK_BINDIR:
+      dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
+      break;
+    case IPK_LIBDIR:
+      dirname =
+        DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
+      break;
+    case IPK_DATADIR:
+      dirname =
+        DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "GNUnet"
+        DIR_SEPARATOR_STR;
+      break;
+    case IPK_LOCALEDIR:
+      dirname =
+        DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "locale"
+        DIR_SEPARATOR_STR;
+      break;
+    default:
+      FREE (execpath);
+      return NULL;
+    }
+  tmp = MALLOC (strlen (execpath) + strlen (dirname) + 1);
+  sprintf (tmp, "%s%s", execpath, dirname);
+  FREE (execpath);
   return tmp;
 }
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

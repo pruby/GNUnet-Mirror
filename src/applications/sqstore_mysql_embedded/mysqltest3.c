@@ -55,141 +55,144 @@ static unsigned long long stored_ops;
 
 static cron_t start_time;
 
-static int putValue(SQstore_ServiceAPI * api,
-  	    int i) {
-  Datastore_Value * value;
+static int
+putValue (SQstore_ServiceAPI * api, int i)
+{
+  Datastore_Value *value;
   size_t size;
   static HashCode512 key;
   static int ic;
 
   /* most content is 32k */
-  size = sizeof(Datastore_Value) + 32 * 1024;
-  if (weak_randomi(16) == 0) /* but some of it is less! */
-    size = sizeof(Datastore_Value) + weak_randomi(32 * 1024);
-  size = size - (size & 7); /* always multiple of 8 */
+  size = sizeof (Datastore_Value) + 32 * 1024;
+  if (weak_randomi (16) == 0)   /* but some of it is less! */
+    size = sizeof (Datastore_Value) + weak_randomi (32 * 1024);
+  size = size - (size & 7);     /* always multiple of 8 */
 
   /* generate random key */
-  hash(&key,
-       sizeof(HashCode512),
-       &key);
-  value = MALLOC(size);
-  value->size = htonl(size);
-  value->type = htonl(i);
-  value->prio = htonl(weak_randomi(100));
-  value->anonymityLevel = htonl(i);
-  value->expirationTime = htonll(get_time() + 60 * cronHOURS + weak_randomi(1000));
-  memset(&value[1],
-   i,
-   size - sizeof(Datastore_Value));
-  if (OK != api->put(&key, value)) {
-    FREE(value);
-    fprintf(stderr, "E");
-    return SYSERR;
-  }
+  hash (&key, sizeof (HashCode512), &key);
+  value = MALLOC (size);
+  value->size = htonl (size);
+  value->type = htonl (i);
+  value->prio = htonl (weak_randomi (100));
+  value->anonymityLevel = htonl (i);
+  value->expirationTime =
+    htonll (get_time () + 60 * cronHOURS + weak_randomi (1000));
+  memset (&value[1], i, size - sizeof (Datastore_Value));
+  if (OK != api->put (&key, value))
+    {
+      FREE (value);
+      fprintf (stderr, "E");
+      return SYSERR;
+    }
   ic++;
-  stored_bytes += ntohl(value->size);
+  stored_bytes += ntohl (value->size);
   stored_ops++;
   stored_entries++;
-  FREE(value);
+  FREE (value);
   return OK;
 }
 
 static int
-iterateDummy(const HashCode512 * key,
-       const Datastore_Value * val,
-       void * cls) {
-  if (GNUNET_SHUTDOWN_TEST() == YES)
+iterateDummy (const HashCode512 * key, const Datastore_Value * val, void *cls)
+{
+  if (GNUNET_SHUTDOWN_TEST () == YES)
     return SYSERR;
   return OK;
 }
 
-static int test(SQstore_ServiceAPI * api) {
+static int
+test (SQstore_ServiceAPI * api)
+{
   int i;
   int j;
   cron_t start;
   cron_t end;
 
-  for (i=0;i<ITERATIONS;i++) {
-    /* insert data equivalent to 1/10th of MAX_SIZE */
-    start = get_time();
-    for (j=0;j<PUT_10;j++) {
-      if (OK != putValue(api, j))
-  break;
-      if (GNUNET_SHUTDOWN_TEST() == YES)
-  break;
+  for (i = 0; i < ITERATIONS; i++)
+    {
+      /* insert data equivalent to 1/10th of MAX_SIZE */
+      start = get_time ();
+      for (j = 0; j < PUT_10; j++)
+        {
+          if (OK != putValue (api, j))
+            break;
+          if (GNUNET_SHUTDOWN_TEST () == YES)
+            break;
+        }
+      end = get_time ();
+      printf ("%3u insertion              took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateLowPriority (0, &iterateDummy, api);
+      end = get_time ();
+      printf ("%3u low priority iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateExpirationTime (0, &iterateDummy, api);
+      end = get_time ();
+      printf ("%3u expiration t iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateNonAnonymous (0, NO, &iterateDummy, api);
+      end = get_time ();
+      printf ("%3u non anonymou iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateNonAnonymous (0, YES, &iterateDummy, api);
+      end = get_time ();
+      printf ("%3u non anon YES iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateMigrationOrder (&iterateDummy, api);
+      end = get_time ();
+      printf ("%3u migration or iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
+      start = get_time ();
+      api->iterateAllNow (&iterateDummy, api);
+      end = get_time ();
+      printf ("%3u all now      iteration took %20llums\n", i, end - start);
+      if (GNUNET_SHUTDOWN_TEST () == YES)
+        break;
     }
-    end = get_time();
-    printf("%3u insertion              took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateLowPriority(0, &iterateDummy, api);
-    end = get_time();
-    printf("%3u low priority iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateExpirationTime(0, &iterateDummy, api);
-    end = get_time();
-    printf("%3u expiration t iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateNonAnonymous(0, NO, &iterateDummy, api);
-    end = get_time();
-    printf("%3u non anonymou iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateNonAnonymous(0, YES, &iterateDummy, api);
-    end = get_time();
-    printf("%3u non anon YES iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateMigrationOrder(&iterateDummy, api);
-    end = get_time();
-    printf("%3u migration or iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-    start = get_time();
-    api->iterateAllNow(&iterateDummy, api);
-    end = get_time();
-    printf("%3u all now      iteration took %20llums\n", i, end-start);
-    if (GNUNET_SHUTDOWN_TEST() == YES)
-      break;
-  }
-  api->drop();
+  api->drop ();
   return OK;
 }
 
-int main(int argc, char *argv[]) {
-  SQstore_ServiceAPI * api;
+int
+main (int argc, char *argv[])
+{
+  SQstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration * cfg;
-  struct CronManager * cron;
+  struct GC_Configuration *cfg;
+  struct CronManager *cron;
 
-  cfg = GC_create_C_impl();
-  if (-1 == GC_parse_configuration(cfg,
-  			   "check.conf")) {
-    GC_free(cfg);
-    return -1;
-  }
-  cron = cron_create(NULL);
-  initCore(NULL,
-     cfg,
-     cron,
-     NULL);
-  api = requestService("sqstore");
-  if (api != NULL) {
-    start_time = get_time();
-    ok = test(api);
-    releaseService(api);
-  } else
+  cfg = GC_create_C_impl ();
+  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+    {
+      GC_free (cfg);
+      return -1;
+    }
+  cron = cron_create (NULL);
+  initCore (NULL, cfg, cron, NULL);
+  api = requestService ("sqstore");
+  if (api != NULL)
+    {
+      start_time = get_time ();
+      ok = test (api);
+      releaseService (api);
+    }
+  else
     ok = SYSERR;
-  doneCore();
-  cron_destroy(cron);
-  GC_free(cfg);
+  doneCore ();
+  cron_destroy (cron);
+  GC_free (cfg);
   if (ok == SYSERR)
     return 1;
   return 0;

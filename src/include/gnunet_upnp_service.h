@@ -30,8 +30,9 @@
 #include "gnunet_util.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -39,7 +40,8 @@ extern "C" {
 /**
  * @brief UPNP API
  */
-typedef struct {
+typedef struct
+{
 
   /**
    * Get the external IP address for the local machine.
@@ -47,14 +49,12 @@ typedef struct {
    *
    * @return SYSERR on error, OK on success
    */
-  int (*get_ip)(unsigned short port,
-		const char * protocol,
-		IPaddr * address);
+  int (*get_ip) (unsigned short port, const char *protocol, IPaddr * address);
 
 } UPnP_ServiceAPI;
 
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

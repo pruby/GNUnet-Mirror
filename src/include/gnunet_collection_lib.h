@@ -30,8 +30,9 @@
 #include "gnunet_ecrs_lib.h"
 
 #ifdef __cplusplus
-extern "C" {
-#if 0 /* keep Emacsens' auto-indent happy */
+extern "C"
+{
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -39,38 +40,36 @@ extern "C" {
 /**
  * Initialize collection module.
  */
-void CO_init(struct GE_Context * ectx,
-	     struct GC_Configuration * cfg);
+void CO_init (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
 /**
  * Shutdown collection module.
  */
-void CO_done(void);
-		
+void CO_done (void);
+
 
 /**
  * Start a collection (also automatically stops
  * an existing collection).
  */
-int CO_startCollection(unsigned int anonymityLevel,
-		       unsigned int priority,
-		       TIME_T updateInterval,
-		       const char * name,
-		       const struct ECRS_MetaData * meta);
+int CO_startCollection (unsigned int anonymityLevel,
+                        unsigned int priority,
+                        TIME_T updateInterval,
+                        const char *name, const struct ECRS_MetaData *meta);
 
 /**
  * Stop collection.
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int CO_stopCollection(void);
+int CO_stopCollection (void);
 
 /**
  * Are we using a collection?
  *
  * @return NULL if there is no collection, otherwise its name
  */
-char * CO_getCollection(void);
+char *CO_getCollection (void);
 
 /**
  * Upload an update of the current collection information to the
@@ -87,7 +86,7 @@ char * CO_getCollection(void);
  * However, clients may want to call this function if explicit
  * publication of an update at another time is desired.
  */
-void CO_publishCollectionNow(void);
+void CO_publishCollectionNow (void);
 
 /**
  * If we are currently building a collection, publish the given file
@@ -100,9 +99,9 @@ void CO_publishCollectionNow(void);
  * maybe useful if you're inserting files using libECRS directly or
  * need other ways to explicitly extend a collection.
  */
-void CO_publishToCollection(const ECRS_FileInfo * fi);
+void CO_publishToCollection (const ECRS_FileInfo * fi);
 
-#if 0 /* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

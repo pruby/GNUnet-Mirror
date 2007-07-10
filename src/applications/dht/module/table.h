@@ -42,10 +42,9 @@
  *
  * @return OK on success, SYSERR on error
  */
-int select_dht_peer(PeerIdentity * set,
-		    const HashCode512 * target,
-		    const PeerIdentity * blocked,
-		    unsigned int blocked_size);
+int select_dht_peer (PeerIdentity * set,
+                     const HashCode512 * target,
+                     const PeerIdentity * blocked, unsigned int blocked_size);
 
 /**
  * Initialize table DHT component.
@@ -53,13 +52,13 @@ int select_dht_peer(PeerIdentity * set,
  * @param capi the core API
  * @return OK on success
  */
-int init_dht_table(CoreAPIForApplication * capi);
+int init_dht_table (CoreAPIForApplication * capi);
 
 /**
  * Shutdown table DHT component.
  *
  * @return OK on success
  */
-int done_dht_table(void);
+int done_dht_table (void);
 
 #endif

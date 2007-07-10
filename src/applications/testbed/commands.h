@@ -30,15 +30,15 @@
 /**
  * Signature of a command -- just like main()!
  */
-typedef int (*CommandHandler)(int argc,
-			      char * argv[]);
+typedef int (*CommandHandler) (int argc, char *argv[]);
 
-typedef struct CMD_ENTRY_ {
+typedef struct CMD_ENTRY_
+{
   /* the name of the command (what the user enters
      in the shell */
-  char * command;
+  char *command;
   /* help text */
-  char * help;
+  char *help;
   /* the function to run */
   CommandHandler handler;
 } CMD_ENTRY;
