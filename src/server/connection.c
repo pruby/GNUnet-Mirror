@@ -1532,6 +1532,7 @@ sendBuffer (BufferEntry * be)
   int ret;
   SendEntry **entries;
   unsigned int stotal;
+  TSession * tsession;
 
   ENTRY ();
   /* fast ways out */
@@ -1577,8 +1578,9 @@ sendBuffer (BufferEntry * be)
   if (ret == SYSERR)
     {
       /* transport session is gone! re-establish! */
-      transport->disconnect (be->session.tsession);
+      tsession = be->session.tsession;
       be->session.tsession = NULL;
+      transport->disconnect (tsession);
       ensureTransportConnected (be);
       /* This may have changed the MTU => need to re-do
          everything.  Since we don't want to possibly
@@ -1747,8 +1749,9 @@ sendBuffer (BufferEntry * be)
     }
   if ((ret == SYSERR) && (be->session.tsession != NULL))
     {
-      transport->disconnect (be->session.tsession);
+      tsession = be->session.tsession;
       be->session.tsession = NULL;
+      transport->disconnect (tsession);
     }
 
   FREE (encryptedMsg);
@@ -1997,6 +2000,7 @@ shutdownConnection (BufferEntry * be)
 {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
+  TSession * tsession;
 #if DEBUG_CONNECTION
   EncName enc;
 #endif
@@ -2044,8 +2048,9 @@ shutdownConnection (BufferEntry * be)
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
   if (be->session.tsession != NULL)
     {
-      transport->disconnect (be->session.tsession);
+      tsession = be->session.tsession;
       be->session.tsession = NULL;
+      transport->disconnect (tsession);
     }
   for (i = 0; i < be->sendBufferSize; i++)
     {
@@ -3089,6 +3094,7 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
 {
   BufferEntry *be;
   unsigned int cost;
+  TSession * ts;
 
   ENTRY ();
   if (tsession == NULL)
@@ -3123,8 +3129,11 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
   if ((transport->getCost (tsession->ttype) < cost) &&
       (transport->associate (tsession) == OK))
     {
-      if (be->session.tsession != NULL)
-        transport->disconnect (be->session.tsession);
+      ts = be->session.tsession;
+      if (ts != NULL) {
+	be->session.tsession = NULL;
+        transport->disconnect (ts);
+      }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
       fragmentIfNecessary (be);
