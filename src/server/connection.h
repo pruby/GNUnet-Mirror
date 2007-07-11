@@ -260,7 +260,7 @@ int getCurrentSessionKey (const PeerIdentity * peer,
  * Get the current number of slots in the connection table (as computed
  * from the available bandwidth).
  */
-int getSlotCount ();
+int getSlotCount (void);
 
 /**
  * Is the given slot used?
@@ -306,7 +306,11 @@ int registerSendNotify (MessagePartHandler callback);
  */
 int unregisterSendNotify (MessagePartHandler callback);
 
-
+/**
+ * Verify that the given session handle is not in use.
+ * @return OK if that is true, SYSERR if not.
+ */
+int assertUnused(TSession * tsession);
 
 #endif
 /* end of connection.h */

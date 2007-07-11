@@ -643,6 +643,7 @@ provide_module_transport (CoreAPIForApplication * capi)
   ctapi.receive = NULL;         /* initialized LATER! */
   ctapi.requestService = coreAPI->requestService;
   ctapi.releaseService = coreAPI->releaseService;
+  ctapi.assertUnused = coreAPI->assertUnused;
 
   GROW (tapis, tapis_count, UDP_PROTOCOL_NUMBER + 1);
 

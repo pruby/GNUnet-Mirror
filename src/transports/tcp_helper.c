@@ -158,12 +158,24 @@ tcpDisconnect (TSession * tsession)
   tcpsession->users--;
   if ((tcpsession->users > 0) || (tcpsession->in_select == YES))
     {
-      if (tcpsession->users == 0)
+      if (tcpsession->users == 0) {
         select_change_timeout (selector, tcpsession->sock, TCP_FAST_TIMEOUT);
+	GE_BREAK(ectx,
+		 OK == coreAPI->assertUnused(tsession));
+      }
       MUTEX_UNLOCK (tcpsession->lock);
       MUTEX_UNLOCK (tcplock);
       return OK;
     }
+  if (OK != coreAPI->assertUnused(tsession)) {
+    GE_BREAK(ectx, 0);
+    abort(); /* for now */
+    /* recovery attempt */
+    tcpsession->users = 1;
+    MUTEX_UNLOCK (tcpsession->lock);
+    MUTEX_UNLOCK (tcplock);
+    return OK;
+  }
 #if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,

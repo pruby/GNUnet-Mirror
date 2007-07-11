@@ -624,6 +624,9 @@ typedef struct
 
   struct GE_Context *(*createClientLogContext) (GE_KIND mask,
                                                 struct ClientHandle * handle);
+
+  int (*assertUnused)(TSession * tsession);
+
 } CoreAPIForApplication;
 
 

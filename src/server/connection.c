@@ -3822,6 +3822,33 @@ unregisterSendNotify (MessagePartHandler callback)
 
 
 
+/**
+ * Verify that the given session handle is not in use.
+ * @return OK if that is true, SYSERR if not.
+ */
+int assertUnused(TSession * tsession) {
+  int i;
+  BufferEntry * root;
+
+  MUTEX_LOCK (lock);
+  for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
+    {
+      root = CONNECTION_buffer_[i];
+      while (NULL != root)
+        {
+	  if (root->session.tsession == tsession) {
+	    GE_BREAK(ectx, 0);
+	    MUTEX_UNLOCK (lock);
+	    return SYSERR;
+	  }
+	  root = root->overflowChain;
+	}
+    }
+  MUTEX_UNLOCK (lock);
+
+  return OK;
+}
+
 
 void __attribute__ ((constructor)) gnunet_connection_ltdl_init ()
 {

@@ -554,6 +554,7 @@ initCore (struct GE_Context *ectx,
   applicationCore.getSlotCount = &getSlotCount; /* connection.c */
   applicationCore.isSlotUsed = &isSlotUsed;     /* connection.c */
   applicationCore.getLastActivityOf = &getLastActivityOf;       /* connection.c */
+  applicationCore.assertUnused = &assertUnused; /* connection.c */
 
   applicationCore.sendErrorMessageToClient = &sendTCPErrorToClient;     /* tcpserver.c */
   applicationCore.createClientLogContext = &createClientLogContext;     /* tcpserver.c */
