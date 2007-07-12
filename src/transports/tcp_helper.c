@@ -167,13 +167,13 @@ tcpDisconnect (TSession * tsession)
       MUTEX_UNLOCK (tcplock);
       return OK;
     }
+  MUTEX_UNLOCK (tcpsession->lock);
+  MUTEX_UNLOCK (tcplock);
   if (OK != coreAPI->assertUnused(tsession)) {
     GE_BREAK(ectx, 0);
     abort(); /* for now */
     /* recovery attempt */
     tcpsession->users = 1;
-    MUTEX_UNLOCK (tcpsession->lock);
-    MUTEX_UNLOCK (tcplock);
     return OK;
   }
 #if DEBUG_TCP
@@ -182,7 +182,7 @@ tcpDisconnect (TSession * tsession)
           "TCP disconnect closes socket session.\n");
 #endif
   select_disconnect (selector, tcpsession->sock);
-  MUTEX_UNLOCK (tcpsession->lock);
+  MUTEX_LOCK (tcplock);
   freeTCPSession (tcpsession);
   MUTEX_UNLOCK (tcplock);
   return OK;
