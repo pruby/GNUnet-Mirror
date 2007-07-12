@@ -158,13 +158,13 @@ tcpDisconnect (TSession * tsession)
   tcpsession->users--;
   if ((tcpsession->users > 0) || (tcpsession->in_select == YES))
     {
+      MUTEX_UNLOCK (tcpsession->lock);
+      MUTEX_UNLOCK (tcplock);
       if (tcpsession->users == 0) {
         select_change_timeout (selector, tcpsession->sock, TCP_FAST_TIMEOUT);
 	GE_BREAK(ectx,
 		 OK == coreAPI->assertUnused(tsession));
       }
-      MUTEX_UNLOCK (tcpsession->lock);
-      MUTEX_UNLOCK (tcplock);
       return OK;
     }
   MUTEX_UNLOCK (tcpsession->lock);
