@@ -309,12 +309,14 @@ select_message_handler (void *mh_cls,
               pos->addr_len = tcpSession->addr_len;
               tcpSession->accept_addr = NULL;
               tcpSession->addr_len = 0;
+              MUTEX_UNLOCK (pos->lock);
+	      MUTEX_UNLOCK (tcplock);
               tcpDisconnect (tsession);
               tcpSession->in_select = NO;
               freeTCPSession (tcpSession);
               tcpSession = pos;
               tsession = pos->tsession;
-              MUTEX_UNLOCK (pos->lock);
+	      MUTEX_LOCK (tcplock);
               break;
             }
           pos = pos->next;
