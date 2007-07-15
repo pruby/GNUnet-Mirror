@@ -162,7 +162,7 @@ typedef int (*BuildMessageCallback) (void *buf,
  */
 typedef int (*SendToClientCallback) (struct ClientHandle * handle,
                                      const MESSAGE_HEADER * message,
-				     int force);
+                                     int force);
 
 /**
  * GNUnet CORE API for applications and services that are implemented
@@ -628,7 +628,7 @@ typedef struct
   struct GE_Context *(*createClientLogContext) (GE_KIND mask,
                                                 struct ClientHandle * handle);
 
-  int (*assertUnused)(TSession * tsession);
+  int (*assertUnused) (TSession * tsession);
 
 } CoreAPIForApplication;
 

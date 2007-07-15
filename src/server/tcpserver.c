@@ -195,7 +195,7 @@ select_close_handler (void *ch_cls,
  */
 int
 sendToClient (struct ClientHandle *handle, const MESSAGE_HEADER * message,
-	      int force)
+              int force)
 {
 #if DEBUG_TCPHANDLER
   GE_LOG (ectx,

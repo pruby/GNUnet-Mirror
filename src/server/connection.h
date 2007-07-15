@@ -310,7 +310,7 @@ int unregisterSendNotify (MessagePartHandler callback);
  * Verify that the given session handle is not in use.
  * @return OK if that is true, SYSERR if not.
  */
-int assertUnused(TSession * tsession);
+int assertUnused (TSession * tsession);
 
 #endif
 /* end of connection.h */

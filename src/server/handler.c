@@ -702,8 +702,8 @@ core_receive (P2P_PACKET * mp)
       return;
     }
   /* try to increment session reference count */
-  if ( (mp->tsession != NULL) &&
-       (SYSERR == transport->associate (mp->tsession)) )
+  if ((mp->tsession != NULL) &&
+      (SYSERR == transport->associate (mp->tsession)))
     mp->tsession = NULL;
 
   MUTEX_LOCK (globalLock_);

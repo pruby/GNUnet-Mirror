@@ -1532,7 +1532,7 @@ sendBuffer (BufferEntry * be)
   int ret;
   SendEntry **entries;
   unsigned int stotal;
-  TSession * tsession;
+  TSession *tsession;
 
   ENTRY ();
   /* fast ways out */
@@ -2000,7 +2000,7 @@ shutdownConnection (BufferEntry * be)
 {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
-  TSession * tsession;
+  TSession *tsession;
 #if DEBUG_CONNECTION
   EncName enc;
 #endif
@@ -3094,7 +3094,7 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
 {
   BufferEntry *be;
   unsigned int cost;
-  TSession * ts;
+  TSession *ts;
 
   ENTRY ();
   if (tsession == NULL)
@@ -3130,10 +3130,11 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
       (transport->associate (tsession) == OK))
     {
       ts = be->session.tsession;
-      if (ts != NULL) {
-	be->session.tsession = NULL;
-        transport->disconnect (ts);
-      }
+      if (ts != NULL)
+        {
+          be->session.tsession = NULL;
+          transport->disconnect (ts);
+        }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
       fragmentIfNecessary (be);
@@ -3353,7 +3354,7 @@ doneConnection ()
           shutdownConnection (be);
           prev = be;
           be = be->overflowChain;
-	  CONNECTION_buffer_[i] = be;
+          CONNECTION_buffer_[i] = be;
           FREE (prev);
         }
     }
@@ -3836,9 +3837,11 @@ unregisterSendNotify (MessagePartHandler callback)
  * Verify that the given session handle is not in use.
  * @return OK if that is true, SYSERR if not.
  */
-int assertUnused(TSession * tsession) {
+int
+assertUnused (TSession * tsession)
+{
   int i;
-  BufferEntry * root;
+  BufferEntry *root;
 
   MUTEX_LOCK (lock);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
@@ -3846,13 +3849,14 @@ int assertUnused(TSession * tsession) {
       root = CONNECTION_buffer_[i];
       while (NULL != root)
         {
-	  if (root->session.tsession == tsession) {
-	    GE_BREAK(ectx, 0);
-	    MUTEX_UNLOCK (lock);
-	    return SYSERR;
-	  }
-	  root = root->overflowChain;
-	}
+          if (root->session.tsession == tsession)
+            {
+              GE_BREAK (ectx, 0);
+              MUTEX_UNLOCK (lock);
+              return SYSERR;
+            }
+          root = root->overflowChain;
+        }
     }
   MUTEX_UNLOCK (lock);
 

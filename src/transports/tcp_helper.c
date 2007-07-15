@@ -160,22 +160,24 @@ tcpDisconnect (TSession * tsession)
     {
       MUTEX_UNLOCK (tcpsession->lock);
       MUTEX_UNLOCK (tcplock);
-      if (tcpsession->users == 0) {
-        select_change_timeout (selector, tcpsession->sock, TCP_FAST_TIMEOUT);
-	GE_ASSERT(ectx,
-		  OK == coreAPI->assertUnused(tsession));
-      }
+      if (tcpsession->users == 0)
+        {
+          select_change_timeout (selector, tcpsession->sock,
+                                 TCP_FAST_TIMEOUT);
+          GE_ASSERT (ectx, OK == coreAPI->assertUnused (tsession));
+        }
       return OK;
     }
   MUTEX_UNLOCK (tcpsession->lock);
   MUTEX_UNLOCK (tcplock);
-  if (OK != coreAPI->assertUnused(tsession)) {
-    GE_BREAK(ectx, 0);
-    abort(); /* for now */
-    /* recovery attempt */
-    tcpsession->users = 1;
-    return OK;
-  }
+  if (OK != coreAPI->assertUnused (tsession))
+    {
+      GE_BREAK (ectx, 0);
+      abort ();                 /* for now */
+      /* recovery attempt */
+      tcpsession->users = 1;
+      return OK;
+    }
 #if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,
@@ -310,13 +312,13 @@ select_message_handler (void *mh_cls,
               tcpSession->accept_addr = NULL;
               tcpSession->addr_len = 0;
               MUTEX_UNLOCK (pos->lock);
-	      MUTEX_UNLOCK (tcplock);
+              MUTEX_UNLOCK (tcplock);
               tcpDisconnect (tsession);
               tcpSession->in_select = NO;
               freeTCPSession (tcpSession);
               tcpSession = pos;
               tsession = pos->tsession;
-	      MUTEX_LOCK (tcplock);
+              MUTEX_LOCK (tcplock);
               break;
             }
           pos = pos->next;

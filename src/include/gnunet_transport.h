@@ -158,7 +158,7 @@ typedef struct
    */
   int (*releaseService) (void *service);
 
-  int (*assertUnused)(TSession * tsession);
+  int (*assertUnused) (TSession * tsession);
 
 
 } CoreAPIForTransport;
