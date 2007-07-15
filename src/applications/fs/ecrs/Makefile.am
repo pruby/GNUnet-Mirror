@@ -32,6 +32,7 @@ libgnunetecrs_la_LIBADD = \
 
 check_PROGRAMS = \
   bincodertest \
+  downloadtest \
   namespacetest \
   uritest \
   metatest \
@@ -74,6 +75,13 @@ metatest2_LDADD = \
 ecrstest_SOURCES = \
   ecrstest.c
 ecrstest_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+
+downloadtest_SOURCES = \
+  downloadtest.c
+downloadtest_LDADD = \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
