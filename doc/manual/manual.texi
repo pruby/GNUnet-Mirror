@@ -1,0 +1,212 @@
+\input texinfo @c -*-texinfo-*-
+
+@setfilename manual.info
+@settitle GNUnet manual
+
+@titlepage
+@title GNUnet
+@subtitle  GNU's decentralized P2P framework
+@author by Nils Durner
+@end titlepage
+
+@contents
+
+@node Introduction
+@chapter Introduction
+
+@node Scope of this document
+@section Scope of this document
+This document is targeted towards end users who want to better understand what
+GNUnet is about, how it works and how to use it. GNUnet's technical background
+is only discussed briefly as the corresponding scientific papers
+@footnote{@uref {http://www.gnunet.org/papers.php3}} already cover
+these information. Additionally, practical tips are given on how to use GNUnet's
+tools in an efficient and secure manner.
+
+If one of your questions is not answered in this book, do not hesitate to
+contact the GNUnet developers or ask the GNUnet community for help. @xref {Contact}
+
+@node What is GNUnet@?
+@section What is GNUnet@?
+GNUnet can be summarized as ``software for secure Peer-to-Peer networking''.
+In this case, the term ``secure'' implies that:
+@itemize
+	@item Nobody on the network knows who you are (``anonymity'').@*The main goal
+	of GNUnet is to obscure the source of requests and actual content. For example,
+	nobody should be able to tell that you are the person who published a certain
+	document.
+	@item Nobody knows what you do (``confidentiality'').@*Neither outsiders nor
+	participants in the network should be able to tell in what kind of activities
+	you and your node are involved.
+	@item Nobody can prove that you know anything (``deniability'').@*Some actions in
+	anonymous
+	P2P systems require other peers to act upon behalf of another peer. None of the
+	involved peers knows what a particular action (searching, publishing) is
+	exactly about. That way, there is not need (and no possibility, see the next point)
+	to employ filters. Also, it should be hard to prove you searched for or published
+	particular content yourself.
+	@item Nobody is able to suppress information on the net
+	(``censorship-resistance'').@*Both filtering and censoring should be impossible
+	for attackers from the outside as well as malicious peers inside of GNUnet.
+	@item Nobody can destabilize the network (achieved through
+	``accounting'').@*It should not be possible to overload the network by flooding
+	the net with requests or content. Also, freeloading
+	@footnote{Retrieving content in large quantities without contributing to
+	the network} is dealt with.
+	@item No participant can pretend to be another (through authentication)@*
+	To be able to do accounting and guard against well-known attacks, all message
+	exchanges in GNUnet are authenticated. Of course, this is done in a way that
+	does not impair anonymity.
+@end itemize
+Other features of GNUnet include:
+@itemize
+  @item Open and constant development@*GNUnet is @dfn{Free Open Source Software},
+  which means that
+  any software engineer, computer scientist or hobbyist is able to verify what
+  GNUnet really does. New additions or modifications are instantly and
+  automatically sent via email to dozens of interested people around the world who
+  follow the development of GNUnet. This ensures that there is no way to sneak
+  undesirable or malicous functionality in.@*
+  Additionally, the way GNUnet achieves the goals mentioned above is described
+  in a number of peer-reviewed@footnote{Reviewed by other scientists
+  and security experts} scientific
+  papers@footnote{@uref {http://www.gnunet.org/papers.php3}}. This
+  enables people to audit the design of GNUnet without looking at the actual
+  code.@*
+  Finally, the GNUnet developers are always open to discussion and suggestions.
+  Several new features have been discussed in the public on mailing lists, IRC or
+  GNUnet's community page. The team also believes in the concept of an open
+  and honest information policy regarding security problems (``full-disclosure'').
+  @item Decentralized operation@*
+  The only central resources GNUnet uses are the hostlist servers. These servers
+  provide GNUnet peers with information on how to connect to other network
+  participants in order to join the network. Inside the network, there are no
+  central trusted authorities (like index servers for searching, for example).
+  Thus, the network as whole cannot be disrupted by failure of a central
+  service. Also, central services are problematic in terms of GNUnet's design
+  goals regarding censorship-resistance, deniability, confidentiality and
+  accountability.
+  @item Optional F2F/''darknet'' operating mode@*
+  The usually policy is to allow everybody to connect to the GNUnet. However, it
+  is possible to run a private P2P network where only trusted participants are
+  allowed to connect. This kind of network is also called ``Friend-to-Friend network''
+  or occasionally ``Darknet''.
+  @item Non-anonymous file transfers@*
+  For each file, both the sender and the receiver can chose the level of desired
+  anonymity. Because the degree of anonymity is a tradeoff between efficiency
+  (ultimately measured in transfer speed) and security, they can also agree to
+  transfer data in a non-anonymous fashion while still maintaining a secure
+  connection (as defined above) for maximum speed.
+  @item Next-generation filesharing@*
+  GNUnet tools make filesharing more convenient through features like display of
+  thumbnails in search results, search by meta data@footnote{e.g. author,
+  title, camera type, @dots} and retrieval of complete directory structures.
+  @item Layered software architecture@*
+  Technically speaking, the GNUnet software is not a single program, but rather
+  a @dfn{framework} that enables others to create new applications on top of the
+  GNUnet core quite easily.@*
+  Two examples for this are the projects @sc{gnunet-fuse} and @sc{gnunet-qt}.
+  The former enables you to access content found on GNUnet in the same way as
+  if it was stored on a DVD, the latter is a graphical user interface for GNUnet.
+  Both projects were each written by an individual developer in a matter of weeks.
+@end itemize
+
+@node What is GNUnet not@?
+@section What is GNUnet not?
+The most important property of all current solutions that offer a very high
+degree of anonymity is that you cannot exchange information @emph{fast}.
+While some of the current performance problems may be due to yet undiscovered
+software bugs or lack of optimization, other delays are by design. This means
+that anonymous transfers will never be as fast as non-anonymous downloads via
+Bittorrent@footnote{http://www.bittorrent.com}.
+
+A limitation specific to GNUnet is that currently the only available application is
+filesharing. Ideas for other services like anonymous chat or tunelling of
+traditional services exist, but elaborate concepts or implementations do not.
+In the meantime, users should use Tor@footnote{@uref{http://tor.eff.org}}
+for everything else than anonymous filesharing.
+
+@node Contact
+@chapter Contact
+
+The GNUnet community is a group of people spread throughout the world which
+not only discusses new concepts and ideas but also kindly helps newcomers
+and answers their questions.@*
+There are different ways to get in touch with the community.
+
+@node Forum, stories, blogs and polls
+@section Forum, stories, blogs and polls
+The web portal at @uref{http://gnunet.org/drupal/} is the main entry point
+for discussion and news.
+
+The forum is the right place for discussion, questions and answers. Some
+community members including the GNUnet developers also share their knowledge,
+latests findings and recent proceedings in form of stories and blogs. And as
+the developers need constant feedback from their user base, polls provide an
+effective way to let the developers know what should be improved next.
+
+Everything related to GNUnet is welcome, as long as it is respectful and legal.
+
+@node Mailinglists
+@section Mailinglists
+While email usually only works with known and named recipients, @dfn{mailinglists}
+allow communication with large groups over email. There are four different mailinglists
+that serve different purposes:
+@itemize
+	@item Developers, @email{gnunet-developers@@gnu.org}@*
+	      This mailinglist is used by the GNUnet developers to exchange ideas about
+	      the implementation. Also, contributions (preferably as context patch
+	      @footnote{not the full file, just the difference between the orginial and
+	      the modified version as produced by the @dfn{diff} command},
+	      if applicable) should be sent here. Please do @emph{not} send several MBs,
+	      talk to the developers first in this case!
+	@item Users, @email{help-gnunet@@gnu.org}@*
+	      help-gnunet is a mailinglist that is intended as a discussion forum for users,
+	      such that they can help other users. Some developers are also subscribed to
+	      this list. Please do not report bugs or request features on this list. Use
+	      our bug tracker instead. @xref{Bugtracker}
+	@item Announcements@*
+	      This is a mailing list where only GNUnet developers can post announcements about
+	      new releases of GNUnet and related software. All other mail will be discarded.
+	      Users who want to receive such announcements have to sign up, see below.
+	@item Diffs@*
+	      All modifications made to GNUnet are instantly sent to this list, which is
+	      only interesting for developers who want to be notified about changes of
+	      GNUnet's source code. Other mail will be discarded.
+@end itemize
+
+To receive emails sent to these lists, one has to sign up for each list at the
+following locations:
+@*@uref{http://mail.gnu.org/mailman/listinfo/gnunet-developers}
+@*@uref{http://mail.gnu.org/mailman/listinfo/help-gnunet}
+@*@uref{http://mail.gnu.org/mailman/listinfo/info-gnunet}
+@*@uref{http://mail.gnu.org/mailman/listinfo/gnunet-svn}
+@*
+These sites also contain an archive of old discussions and announcements. Except
+the "Diffs" mailing list, all lists only carry low (if any) amounts of traffic.
+Most of the discussion has moved to the community portal or chat (see below).
+
+@node Chat
+@section Chat
+Various GNUnet people are also on the @dfn{Freenode IRC network@footnote{@uref{http://www.freenode.net/}}}
+and meet in the channel #gnunet. Reaction is not always timely here, so patience
+is sometimes required.
+
+@node Bugtracker
+@section Bugtracker
+The bugtracker at @uref{http://gnunet.org/mantis/} stores all bug reports as well
+as feature and change requests. Registration is required to submit new reports
+or requests.
+Submissions should be as detailed as possible.
+
+@node Getting GNUnet
+@chapter Getting GNUnet
+
+@node Getting GNUnet - Overview
+@section Overview
+
+As GNUnet is @dfn{Free Open Source Software}, obtaining a copy is easy and free
+of charge. Mostly depending on your hardware and your operating system, the
+process of installing GNUnet onto your computer is more or less convenient.
+
+@bye
