@@ -173,8 +173,7 @@ listKeywords (const char *fn, const char *dir, void *cls)
       list = EXTRACTOR_getKeywords (l, fullName);
       list = EXTRACTOR_removeDuplicateKeywords (list,
                                                 EXTRACTOR_DUPLICATES_TYPELESS);
-      list = EXTRACTOR_removeKeywordsOfType(list,
-					    EXTRACTOR_THUMBNAIL_DATA);
+      list = EXTRACTOR_removeKeywordsOfType (list, EXTRACTOR_THUMBNAIL_DATA);
       EXTRACTOR_printKeywords (stdout, list);
       EXTRACTOR_freeKeywords (list);
     }

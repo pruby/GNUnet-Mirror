@@ -292,15 +292,18 @@ typedef struct
    * progress data, etc.).
    */
   struct CommonCtx *ctx;
+
   /**
    * What is the CHK for this block?
    */
   CHK chk;
+
   /**
    * At what offset (on the respective level!) is this
    * block?
    */
   unsigned long long offset;
+
   /**
    * 0 for dblocks, >0 for iblocks.
    */
@@ -837,7 +840,7 @@ checkPresent (NodeClosure * node)
      this for level-0 nodes */
   if ((node->level == 0) &&
       ((node->offset + size < node->ctx->offset) ||
-       (node->offset > node->ctx->offset + node->ctx->length)))
+       (node->offset >= node->ctx->offset + node->ctx->length)))
     return YES;
 
   data = MALLOC (size);
