@@ -30,6 +30,13 @@
 
 #define DEBUG_SELECT NO
 
+struct SemaphoreList
+{
+  struct SemaphoreList * next;
+
+  struct SEMAPHORE * sem;
+};
+
 /**
  * Select Session handle.
  */
@@ -40,6 +47,12 @@ typedef struct
    * the socket
    */
   struct SocketHandle *sock;
+
+  /**
+   * List of semaphores to raise whenever the
+   * write buffer is empty.
+   */
+  struct SemaphoreList * list;
 
   /**
    * Client connection context.
@@ -391,6 +404,7 @@ writeAndProcess (SelectHandle * sh, Session * session)
               /* free compaction! */
               session->wspos = 0;
               session->wapos = 0;
+
               if (session->wsize > sh->memory_quota)
                 {
                   /* if we went over quota before because of
@@ -929,9 +943,11 @@ select_write (struct SelectHandle *sh,
   Session *session;
   int i;
   unsigned short len;
-  int fresh_write;
   char *newBuffer;
   unsigned int newBufferSize;
+  struct SemaphoreList list;
+  struct SemaphoreList * prev;
+  struct SemaphoreList * pos;
 
 #if DEBUG_SELECT
   GE_LOG (sh->ectx,
@@ -962,7 +978,6 @@ select_write (struct SelectHandle *sh,
       MUTEX_UNLOCK (sh->lock);
       return NO;
     }
-  fresh_write = (session->wapos == session->wspos);
   if (session->wsize - session->wapos < len)
     {
       /* need to make space in some way or other */
@@ -1002,9 +1017,29 @@ select_write (struct SelectHandle *sh,
   GE_ASSERT (NULL, session->wapos + len <= session->wsize);
   memcpy (&session->wbuff[session->wapos], msg, len);
   session->wapos += len;
+  if (mayBlock) {
+    list.next = session->list;
+    list.sem = SEMAPHORE_CREATE(0);
+    session->list = &list;
+  }
   MUTEX_UNLOCK (sh->lock);
-  if (fresh_write)
-    signalSelect (sh);
+  signalSelect (sh);
+  if (mayBlock) {
+    SEMAPHORE_DOWN(list.sem, YES);
+    prev = NULL;
+    MUTEX_LOCK (sh->lock);
+    pos = session->list;
+    while (pos != &list) {
+      GE_ASSERT(NULL, pos != NULL);
+      prev = pos;
+      pos = pos->next;
+    }
+    if (prev == NULL)
+      session->list = list.next;
+    else
+      prev->next = list.next;
+    MUTEX_UNLOCK (sh->lock);
+  }
   return OK;
 }
 

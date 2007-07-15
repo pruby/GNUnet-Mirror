@@ -199,7 +199,7 @@ sendToClient (struct ClientHandle *handle, const MESSAGE_HEADER * message)
           GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
           "%s: sending reply to client\n", __FUNCTION__);
 #endif
-  return select_write (selector, handle->sock, message, NO, YES);
+  return select_write (selector, handle->sock, message, YES, YES);
 }
 
 void
