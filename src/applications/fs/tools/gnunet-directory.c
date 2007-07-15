@@ -136,10 +136,10 @@ static struct CommandLineOption gnunetdirectoryOptions[] = {
   COMMAND_LINE_OPTION_LOGGING,  /* -L */
   {'l', "list", NULL,
    gettext_noop ("list entries from the directory database"),
-   1, &gnunet_getopt_configure_set_one, &do_list},
+   0, &gnunet_getopt_configure_set_one, &do_list},
   {'t', "track", NULL,
    gettext_noop ("start tracking entries for the directory database"),
-   1, &gnunet_getopt_configure_set_one, &do_track},
+   0, &gnunet_getopt_configure_set_one, &do_track},
   COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
