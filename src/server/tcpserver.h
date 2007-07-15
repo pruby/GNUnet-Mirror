@@ -84,7 +84,8 @@ int unregisterClientExitHandler (ClientExitHandler callback);
  * transfer happens asynchronously.
  */
 int sendToClient (struct ClientHandle *handle,
-                  const MESSAGE_HEADER * message);
+                  const MESSAGE_HEADER * message,
+		  int force);
 
 
 /**

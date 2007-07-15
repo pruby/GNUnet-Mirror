@@ -241,13 +241,13 @@ cprintf (struct ClientHandle *c, int t, const char *format, ...)
   b->size = htons (sizeof (MESSAGE_HEADER) + strlen ((char *) (b + 1)));
   if (c != NULL)
     {
-      coreAPI->sendToClient (c, b);
+      coreAPI->sendToClient (c, b, YES);
     }
   else
     {
       for (r = 0; r < clients_entries; r++)
         {
-          coreAPI->sendToClient (*(clients_store + r), b);
+          coreAPI->sendToClient (*(clients_store + r), b, YES);
         }
     }
   FREE (b);

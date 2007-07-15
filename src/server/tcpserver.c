@@ -190,16 +190,19 @@ select_close_handler (void *ch_cls,
  * and only return errors if it runs out of buffers.  Returning OK
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
+ *
+ * @param force YES if this message MUST be queued
  */
 int
-sendToClient (struct ClientHandle *handle, const MESSAGE_HEADER * message)
+sendToClient (struct ClientHandle *handle, const MESSAGE_HEADER * message,
+	      int force)
 {
 #if DEBUG_TCPHANDLER
   GE_LOG (ectx,
           GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
           "%s: sending reply to client\n", __FUNCTION__);
 #endif
-  return select_write (selector, handle->sock, message, YES, YES);
+  return select_write (selector, handle->sock, message, YES, force);
 }
 
 void
@@ -513,7 +516,7 @@ sendTCPResultToClient (struct ClientHandle *sock, int ret)
   rv.header.size = htons (sizeof (RETURN_VALUE_MESSAGE));
   rv.header.type = htons (CS_PROTO_RETURN_VALUE);
   rv.return_value = htonl (ret);
-  return sendToClient (sock, &rv.header);
+  return sendToClient (sock, &rv.header, YES);
 }
 
 /**
@@ -542,7 +545,7 @@ sendTCPErrorToClient (struct ClientHandle *sock,
   rv->header.type = htons (CS_PROTO_RETURN_ERROR);
   rv->kind = htonl (kind);
   memcpy (&rv[1], message, strlen (message));
-  ret = sendToClient (sock, &rv->header);
+  ret = sendToClient (sock, &rv->header, YES);
   FREE (rv);
   return ret;
 }

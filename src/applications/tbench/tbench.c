@@ -377,7 +377,7 @@ csHandleTBenchRequest (struct ClientHandle *client,
   reply.variance_loss = sum_variance_loss / (iterations - 1);
   FREE (results);
   results = NULL;
-  return coreAPI->sendToClient (client, &reply.header);
+  return coreAPI->sendToClient (client, &reply.header, YES);
 }
 
 /**

@@ -157,9 +157,12 @@ typedef int (*BuildMessageCallback) (void *buf,
  * and only return SYSERR if it runs out of buffers.  Returning OK
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
+ *
+ * @param force YES if this message MUST be queued
  */
 typedef int (*SendToClientCallback) (struct ClientHandle * handle,
-                                     const MESSAGE_HEADER * message);
+                                     const MESSAGE_HEADER * message,
+				     int force);
 
 /**
  * GNUnet CORE API for applications and services that are implemented

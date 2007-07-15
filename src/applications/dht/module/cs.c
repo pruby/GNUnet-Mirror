@@ -121,7 +121,7 @@ get_result (const HashCode512 * key, const DataContainer * value, void *cls)
           __FILE__,
           __LINE__, ntohl (value->size) - sizeof (DataContainer), &value[1]);
 #endif
-  if (OK != coreAPI->sendToClient (record->client, &msg->header))
+  if (OK != coreAPI->sendToClient (record->client, &msg->header, YES))
     {
       GE_LOG (coreAPI->ectx,
               GE_ERROR | GE_IMMEDIATE | GE_USER,

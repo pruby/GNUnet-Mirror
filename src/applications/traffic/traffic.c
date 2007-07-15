@@ -347,7 +347,7 @@ trafficQueryHandler (struct ClientHandle *sock,
     return SYSERR;
   msg = (const CS_traffic_request_MESSAGE *) message;
   reply = buildReply (ntohl (msg->timePeriod));
-  ret = coreAPI->sendToClient (sock, &reply->header);
+  ret = coreAPI->sendToClient (sock, &reply->header, YES);
   FREE (reply);
   return ret;
 }

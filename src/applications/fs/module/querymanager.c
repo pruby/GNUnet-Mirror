@@ -193,7 +193,7 @@ processResponse (const HashCode512 * key, const Datastore_Value * value)
 #endif
           if (stats != NULL)
             stats->change (stat_replies_transmitted, 1);
-          coreAPI->sendToClient (trackers[i]->client, &rc->header);
+          coreAPI->sendToClient (trackers[i]->client, &rc->header, NO);
           FREE (rc);
         }
     }

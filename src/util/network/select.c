@@ -30,13 +30,6 @@
 
 #define DEBUG_SELECT NO
 
-struct SemaphoreList
-{
-  struct SemaphoreList * next;
-
-  struct SEMAPHORE * sem;
-};
-
 /**
  * Select Session handle.
  */
@@ -47,12 +40,6 @@ typedef struct
    * the socket
    */
   struct SocketHandle *sock;
-
-  /**
-   * List of semaphores to raise whenever the
-   * write buffer is empty.
-   */
-  struct SemaphoreList * list;
 
   /**
    * Client connection context.
@@ -84,6 +71,12 @@ typedef struct
    * 2 : destruction in progress
    */
   int locked;
+
+  /**
+   * Do not read from this socket until the
+   * current write is complete.
+   */
+  int no_read;
 
   /**
    * Current read position in the buffer.
@@ -240,6 +233,7 @@ destroySession (SelectHandle * sh, Session * s)
              "Destroying session %p of select %p with loss of %u in read and %u in write buffer.\n",
              s, sh, s->pos, s->wapos - s->wspos);
 #endif
+  /* signal waiting threads, if any */
   MUTEX_UNLOCK (sh->lock);
   sh->ch (sh->ch_cls, sh, s->sock, s->sock_ctx);
   MUTEX_LOCK (sh->lock);
@@ -404,7 +398,7 @@ writeAndProcess (SelectHandle * sh, Session * session)
               /* free compaction! */
               session->wspos = 0;
               session->wapos = 0;
-
+	      session->no_read = NO;
               if (session->wsize > sh->memory_quota)
                 {
                   /* if we went over quota before because of
@@ -503,8 +497,9 @@ selectThread (void *ctx)
             }
           else
             {
-              add_to_select_set (sock, &readSet, &max);
               add_to_select_set (sock, &errorSet, &max);
+	      if (session->no_read != YES)
+		add_to_select_set (sock, &readSet, &max);
               GE_ASSERT (NULL, session->wapos >= session->wspos);
               if (session->wapos > session->wspos)
                 add_to_select_set (sock, &writeSet, &max);      /* do we have a pending write request? */
@@ -945,9 +940,6 @@ select_write (struct SelectHandle *sh,
   unsigned short len;
   char *newBuffer;
   unsigned int newBufferSize;
-  struct SemaphoreList list;
-  struct SemaphoreList * prev;
-  struct SemaphoreList * pos;
 
 #if DEBUG_SELECT
   GE_LOG (sh->ectx,
@@ -970,9 +962,11 @@ select_write (struct SelectHandle *sh,
       return SYSERR;
     }
   GE_ASSERT (NULL, session->wapos >= session->wspos);
-  if ((sh->memory_quota > 0) &&
-      (session->wapos - session->wspos + len > sh->memory_quota) &&
-      (force == NO))
+  if ( (force == NO) &&
+       ( ( (sh->memory_quota > 0) &&
+	   (session->wapos - session->wspos + len > sh->memory_quota) ) ||
+	 ( (sh->memory_quota == 0) &&
+	   (session->wapos - session->wspos + len > MAX_MALLOC_CHECKED / 2) ) ) ) 
     {
       /* not enough free space, not allowed to grow that much */
       MUTEX_UNLOCK (sh->lock);
@@ -1017,29 +1011,10 @@ select_write (struct SelectHandle *sh,
   GE_ASSERT (NULL, session->wapos + len <= session->wsize);
   memcpy (&session->wbuff[session->wapos], msg, len);
   session->wapos += len;
-  if (mayBlock) {
-    list.next = session->list;
-    list.sem = SEMAPHORE_CREATE(0);
-    session->list = &list;
-  }
+  if (mayBlock) 
+    session->no_read = YES;  
   MUTEX_UNLOCK (sh->lock);
   signalSelect (sh);
-  if (mayBlock) {
-    SEMAPHORE_DOWN(list.sem, YES);
-    prev = NULL;
-    MUTEX_LOCK (sh->lock);
-    pos = session->list;
-    while (pos != &list) {
-      GE_ASSERT(NULL, pos != NULL);
-      prev = pos;
-      pos = pos->next;
-    }
-    if (prev == NULL)
-      session->list = list.next;
-    else
-      prev->next = list.next;
-    MUTEX_UNLOCK (sh->lock);
-  }
   return OK;
 }
 

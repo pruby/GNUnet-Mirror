@@ -1215,7 +1215,7 @@ identityRequestHelloHandler (struct ClientHandle *sock,
   if (hello == NULL)
     return SYSERR;
   hello->header.type = htons (CS_PROTO_identity_HELLO);
-  ret = coreAPI->sendToClient (sock, &hello->header);
+  ret = coreAPI->sendToClient (sock, &hello->header, YES);
   FREE (hello);
   return ret;
 }
@@ -1234,7 +1234,7 @@ identityRequestSignatureHandler (struct ClientHandle *sock,
                       ntohs (message->size) - sizeof (MESSAGE_HEADER),
                       &reply.sig))
     return SYSERR;
-  return coreAPI->sendToClient (sock, &reply.header);
+  return coreAPI->sendToClient (sock, &reply.header, YES);
 }
 
 static int
@@ -1288,7 +1288,7 @@ hostInfoIterator (const PeerIdentity * identity,
   reply->bpm = htonl (bpm);
   memcpy (&reply[1], address, len);
   FREENONNULL (address);
-  ret = coreAPI->sendToClient (sock, &reply->header);
+  ret = coreAPI->sendToClient (sock, &reply->header, YES);
   FREE (reply);
   return ret;
 }

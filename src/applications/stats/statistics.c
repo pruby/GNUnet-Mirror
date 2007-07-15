@@ -319,7 +319,7 @@ sendStatistics (struct ClientHandle *sock,
       /* printf("writing message of size %d with stats %d to %d out of %d to socket\n",
          ntohs(statMsg->header.size),
          start, end, statCounters); */
-      if (SYSERR == coreAPI->sendToClient (sock, &statMsg->header))
+      if (SYSERR == coreAPI->sendToClient (sock, &statMsg->header, YES))
         break;                  /* abort, socket error! */
       start = end;
     }

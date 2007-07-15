@@ -60,7 +60,7 @@ handleGetOption (struct ClientHandle *sock, const MESSAGE_HEADER * message)
   rep->header.size = htons (sizeof (MESSAGE_HEADER) + strlen (val) + 1);
   memcpy (rep->value, val, strlen (val) + 1);
   rep->header.type = htons (CS_PROTO_GET_OPTION_REPLY);
-  ret = coreAPI->sendToClient (sock, &rep->header);
+  ret = coreAPI->sendToClient (sock, &rep->header, YES);
   FREE (rep);
   FREE (val);
   return ret;

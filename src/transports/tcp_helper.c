@@ -162,8 +162,8 @@ tcpDisconnect (TSession * tsession)
       MUTEX_UNLOCK (tcplock);
       if (tcpsession->users == 0) {
         select_change_timeout (selector, tcpsession->sock, TCP_FAST_TIMEOUT);
-	GE_BREAK(ectx,
-		 OK == coreAPI->assertUnused(tsession));
+	GE_ASSERT(ectx,
+		  OK == coreAPI->assertUnused(tsession));
       }
       return OK;
     }

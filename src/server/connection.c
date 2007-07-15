@@ -3353,6 +3353,7 @@ doneConnection ()
           shutdownConnection (be);
           prev = be;
           be = be->overflowChain;
+	  CONNECTION_buffer_[i] = be;
           FREE (prev);
         }
     }

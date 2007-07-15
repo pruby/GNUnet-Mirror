@@ -131,7 +131,7 @@ handlep2pReply (const PeerIdentity * sender, const MESSAGE_HEADER * message)
                       peerList[0],
                       &((P2P_tracekit_reply_MESSAGE_GENERIC *) reply)->
                       peerList[0], hostCount * sizeof (PeerIdentity));
-              coreAPI->sendToClient (clients[idx], &csReply->header);
+              coreAPI->sendToClient (clients[idx], &csReply->header, YES);
               FREE (csReply);
             }
           else
