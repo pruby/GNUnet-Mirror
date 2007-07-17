@@ -209,4 +209,56 @@ As GNUnet is @dfn{Free Open Source Software}, obtaining a copy is easy and free
 of charge. Mostly depending on your hardware and your operating system, the
 process of installing GNUnet onto your computer is more or less convenient.
 
+The GNUnet software is generally available in three different forms: as binary
+package, source or virtual appliance. Each of these forms has its advantages
+and disadvantages which are detailed below.
+
+@node Binary packages
+@section Binary packages
+
+A binary package is ready-to-run software which just has to be installed and
+configured. This is the usual way of obtaining GNUnet. Some operating system
+vendors include GNUnet in their distribution or make it
+available for download. The installer for Microsoft Windows is an
+exception, it is separately available from the GNUnet download
+page@footnote{@uref{http://gnunet.org/download.php3}}.
+
+The advantage of binary packages is that the process of installation and
+configuration is usually quite convenient and optimized for the specific
+operating system. A serious disadvantage is that binary packages are
+often outdated, sometimes to the degree that the version shipped does
+not connect to the current GNUnet network because of version conflicts.
+For that reason, it is highly recommended to check the GNUnet homepage@footnote{@uref{http://gnunet.org}}
+or the announcements@footnote{@uref{http://blog.gmane.org/gmane.network.gnunet.announce}}
+for newer releases. If there is no (sufficiently new) binary package for your
+operating system, it is a good idea to ask the vendor or the maintainer
+of an existing package. Another way is to build GNUnet from source.
+@xref{Source}.
+
+@node Source
+@section Source
+
+"Source code" can be best described as "recipe" and "ingredients" of a
+particular piece of software. Just as a cake is baked, source code source code
+must be translated to machine code ("compiled") in order to get
+actual software which can be executed. Compiling GNUnet from source is
+usually not difficult, but it is certainly not as easy as installing a
+binary package. @xref{Compiling}. The advantage over binary packages is that
+it is always possible to get the newest version of GNUnet this way. This is
+not only true for regular releases of GNUnet, users are also able to
+download the development source code the instant changes are made by the
+developers. @xref{SVN}.
+
+@node Virtual appliance
+@section Virtual appliance
+
+Virtual appliances are complete software environments including an operating
+system which run through virtualization software like QEMU@footnote{@uref{http://fabrice.bellard.free.fr/qemu/}}
+or VMware@footnote{@uref{http://vmware.com/}}. Virtual appliances require no
+installation on the host system and little additional configuration effort.
+Also, software inside such a "virtual PC" is usually not able to access data
+on the real PC, making it ideal for users who just want to try GNUnet.
+However, the virtual appliance that is downloadable from the GNUnet homepage
+also suffers from outdated binary packages.
+
 @bye
