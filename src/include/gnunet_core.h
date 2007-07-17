@@ -79,7 +79,11 @@ typedef struct
 {
   void *internal;
 
+  const char **tokens;
+
   PeerIdentity peer;
+
+  unsigned int token_count;
 
   unsigned short ttype;
 } TSession;

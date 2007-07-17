@@ -269,7 +269,7 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
     fprintf (stderr, ".");
   tsession = NULL;
   peer = hello->senderIdentity;
-  tsession = transport->connect (hello);
+  tsession = transport->connect (hello, __FILE__);
   FREE (hello);
   if (tsession == NULL)
     {
@@ -299,7 +299,7 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
     {
       fprintf (stderr, "Send failed.\n");
       FREE (msg);
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       return;
     }
   FREE (msg);
@@ -325,7 +325,7 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
   cron_resume_jobs (cron, NO);
   SEMAPHORE_DESTROY (sem);
   sem = NULL;
-  transport->disconnect (tsession);
+  transport->disconnect (tsession, __FILE__);
   if (ok == YES)
     stats[2]++;
 }

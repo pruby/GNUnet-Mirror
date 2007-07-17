@@ -84,9 +84,11 @@ typedef struct
    * not available.
    *
    * @param hello the hello of the target node
+   * @param token string identifying who is holding the reference
+   *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connect) (const P2P_hello_MESSAGE * hello);
+  TSession *(*connect) (const P2P_hello_MESSAGE * hello, const char *token);
 
   /**
    * Connect to another peer, picking any transport that
@@ -95,9 +97,12 @@ typedef struct
    * @param peer which peer to connect to
    * @param allowTempLists may we even select hellos that have
    *        not yet been confirmed?
+   * @param token string identifying who is holding the reference
+   *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connectFreely) (const PeerIdentity * peer, int allowTempList);
+  TSession *(*connectFreely) (const PeerIdentity * peer, int allowTempList,
+                              const char *token);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -109,10 +114,12 @@ typedef struct
    * @param tsession the session handle passed along
    *   from the call to receive that was made by the transport
    *   layer
+   * @param token string identifying who is holding the reference
+   *              (must match when disconnect is called)
    * @return OK if the session could be associated,
    *         SYSERR if not.
    */
-  int (*associate) (TSession * tsession);
+  int (*associate) (TSession * tsession, const char *token);
 
   /**
    * Get the cost of a message in for the given transport mechanism.
@@ -135,10 +142,12 @@ typedef struct
   /**
    * Close the session with the remote node. May only be called on
    * either connected or associated sessions.
+   * @param token string identifying who is holding the reference
+   *              (must match when connect/assciate call)
    *
    * @return OK on success, SYSERR on error
    */
-  int (*disconnect) (TSession * session);
+  int (*disconnect) (TSession * session, const char *token);
 
   /**
    * Verify that a hello is ok. Call a method

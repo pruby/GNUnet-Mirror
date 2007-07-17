@@ -342,7 +342,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
 
 
   /* Establish session as advertised in the hello */
-  tsession = transport->connect (msg);
+  tsession = transport->connect (msg, __FILE__);
   if (tsession == NULL)
     {
       if (stats != NULL)
@@ -372,7 +372,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
       GE_LOG (ectx,
               GE_INFO | GE_REQUEST | GE_USER,
               _("Could not send HELLO+PING, ping buffer full.\n"));
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       if (stats != NULL)
         stats->change (stat_hello_ping_busy, 1);
       return SYSERR;
@@ -397,7 +397,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
       FREE (buffer);
       if (stats != NULL)
         stats->change (stat_hello_noselfad, 1);
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       return SYSERR;
     }
   res = OK;
@@ -420,7 +420,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
         stats->change (stat_plaintextPingSent, 1);
     }
   FREE (buffer);
-  if (SYSERR == transport->disconnect (tsession))
+  if (SYSERR == transport->disconnect (tsession, __FILE__))
     res = SYSERR;
   return res;
 }
@@ -493,7 +493,7 @@ broadcastHelper (const PeerIdentity * hi,
 #endif
       return OK;
     }
-  tsession = transport->connect (hello);
+  tsession = transport->connect (hello, __FILE__);
   FREE (hello);
   if (tsession == NULL)
     {
@@ -510,7 +510,7 @@ broadcastHelper (const PeerIdentity * hi,
   coreAPI->sendPlaintext (tsession,
                           (char *) &sd->m->header,
                           P2P_hello_MESSAGE_size (sd->m));
-  transport->disconnect (tsession);
+  transport->disconnect (tsession, __FILE__);
 #if DEBUG_ADVERTISING
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "Exit from %s.\n", __FUNCTION__);

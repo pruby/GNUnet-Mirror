@@ -1498,7 +1498,8 @@ ensureTransportConnected (BufferEntry * be)
 {
   if (be->session.tsession != NULL)
     return OK;
-  be->session.tsession = transport->connectFreely (&be->session.sender, YES);
+  be->session.tsession =
+    transport->connectFreely (&be->session.sender, YES, __FILE__);
   if (be->session.tsession == NULL)
     return NO;
   be->session.mtu = transport->getMTU (be->session.tsession->ttype);
@@ -1580,7 +1581,7 @@ sendBuffer (BufferEntry * be)
       /* transport session is gone! re-establish! */
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       ensureTransportConnected (be);
       /* This may have changed the MTU => need to re-do
          everything.  Since we don't want to possibly
@@ -1751,7 +1752,7 @@ sendBuffer (BufferEntry * be)
     {
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
     }
 
   FREE (encryptedMsg);
@@ -2050,7 +2051,7 @@ shutdownConnection (BufferEntry * be)
     {
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
     }
   for (i = 0; i < be->sendBufferSize; i++)
     {
@@ -3083,8 +3084,7 @@ getCurrentSessionKey (const PeerIdentity * peer,
  * on that TCP connection instead of keeping SMTP going.<p>
  *
  * Taking the transport over only makes sense if the cost is lower.
- * This method checks this.  If not, the transport session is
- * disconnected.
+ * This method checks this. 
  *
  * @param tsession the transport session that is for grabs
  * @param sender the identity of the other node
@@ -3109,7 +3109,6 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
   if (be == NULL)
     {
       MUTEX_UNLOCK (lock);
-      transport->disconnect (tsession);
       return;
     }
   cost = -1;
@@ -3127,19 +3126,18 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
      data on throughput. - CG
    */
   if ((transport->getCost (tsession->ttype) < cost) &&
-      (transport->associate (tsession) == OK))
+      (transport->associate (tsession, __FILE__) == OK))
     {
       ts = be->session.tsession;
       if (ts != NULL)
         {
           be->session.tsession = NULL;
-          transport->disconnect (ts);
+          transport->disconnect (ts, __FILE__);
         }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
       fragmentIfNecessary (be);
     }
-  transport->disconnect (tsession);
   MUTEX_UNLOCK (lock);
 }
 

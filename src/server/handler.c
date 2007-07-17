@@ -47,6 +47,12 @@
  */
 #define MEASURE_TIME NO
 
+/**
+ * Should we validate that handlers do not
+ * modify the messages that they are given?
+ * (expensive!)
+ */
+#define VALIDATE_CLIENT YES
 
 /**
  * How many incoming packages do we have in the buffer
@@ -395,6 +401,9 @@ injectMessage (const PeerIdentity * sender,
 #if MEASURE_TIME
   cron_t now;
 #endif
+#if VALIDATE_CLIENT
+  void *old_value;
+#endif
 
   pos = 0;
   copy = NULL;
@@ -472,6 +481,10 @@ injectMessage (const PeerIdentity * sender,
           last = 0;
           while (NULL != (callback = handlers[ptyp][last]))
             {
+#if VALIDATE_CLIENT
+              old_value = MALLOC (plen);
+              memcpy (old_value, part, plen);
+#endif
               if (SYSERR == callback (sender, part))
                 {
 #if DEBUG_HANDLER
@@ -484,6 +497,14 @@ injectMessage (const PeerIdentity * sender,
                   copy = NULL;
                   return;       /* handler says: do not process the rest of the message */
                 }
+#if VALIDATE_CLIENT
+              if (0 != memcmp (old_value, part, plen))
+                GE_LOG (ectx,
+                        GE_ERROR | GE_DEVELOPER | GE_IMMEDIATE,
+                        "Handler %d at %p violated const!\n", ptyp, callback);
+              FREE (old_value);
+#endif
+
               last++;
             }
 #if MEASURE_TIME
@@ -566,9 +587,7 @@ handleMessage (TSession * tsession,
   ret = checkHeader (sender, (P2P_PACKET_HEADER *) msg, size);
   if (ret == SYSERR)
     return;                     /* message malformed */
-  if ((ret == YES) &&
-      (tsession != NULL) &&
-      (sender != NULL) && (OK == transport->associate (tsession)))
+  if ((ret == YES) && (tsession != NULL) && (sender != NULL))
     considerTakeover (sender, tsession);
   injectMessage (sender,
                  &msg[sizeof (P2P_PACKET_HEADER)],
@@ -603,7 +622,7 @@ threadMain (void *cls)
       /* handle buffer - now out of sync */
       handleMessage (mp->tsession, &mp->sender, mp->msg, mp->size);
       if (mp->tsession != NULL)
-        transport->disconnect (mp->tsession);
+        transport->disconnect (mp->tsession, __FILE__);
       FREE (mp->msg);
       FREE (mp);
     }
@@ -703,7 +722,7 @@ core_receive (P2P_PACKET * mp)
     }
   /* try to increment session reference count */
   if ((mp->tsession != NULL) &&
-      (SYSERR == transport->associate (mp->tsession)))
+      (SYSERR == transport->associate (mp->tsession, __FILE__)))
     mp->tsession = NULL;
 
   MUTEX_LOCK (globalLock_);

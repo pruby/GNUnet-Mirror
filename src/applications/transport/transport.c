@@ -53,6 +53,8 @@ static unsigned long long hello_live;
 
 static struct MUTEX *tapis_lock;
 
+static struct MUTEX *lock;
+
 static struct GE_Context *ectx;
 
 #define HELLO_RECREATE_FREQ (5 * cronMINUTES)
@@ -186,7 +188,7 @@ forEachTransport (TransportCallback callback, void *data)
  * @return session on success, NULL on error
  */
 static TSession *
-transportConnect (const P2P_hello_MESSAGE * hello)
+transportConnect (const P2P_hello_MESSAGE * hello, const char *token)
 {
   unsigned short prot;
   TSession *tsession;
@@ -205,11 +207,16 @@ transportConnect (const P2P_hello_MESSAGE * hello)
   if (OK != tapis[prot]->connect (hello, &tsession))
     return NULL;
   tsession->ttype = prot;
+  MUTEX_LOCK (lock);
+  APPEND (tsession->tokens, tsession->token_count, token);
+  MUTEX_UNLOCK (lock);
+
   return tsession;
 }
 
 static TSession *
-transportConnectFreely (const PeerIdentity * peer, int useTempList)
+transportConnectFreely (const PeerIdentity * peer, int useTempList,
+                        const char *token)
 {
   int i;
   P2P_hello_MESSAGE *hello;
@@ -231,7 +238,7 @@ transportConnectFreely (const PeerIdentity * peer, int useTempList)
       if (hello == NULL)
         continue;
       hc++;
-      ret = transportConnect (hello);
+      ret = transportConnect (hello, token);
       FREE (hello);
       if (ret != NULL)
         {
@@ -266,12 +273,21 @@ transportConnectFreely (const PeerIdentity * peer, int useTempList)
  *         SYSERR if not.
  */
 static int
-transportAssociate (TSession * tsession)
+transportAssociate (TSession * tsession, const char *token)
 {
+  int ret;
+
   if ((tsession == NULL) ||
       (tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     return SYSERR;
-  return tapis[tsession->ttype]->associate (tsession);
+  ret = tapis[tsession->ttype]->associate (tsession);
+  if (ret == OK)
+    {
+      MUTEX_LOCK (lock);
+      APPEND (tsession->tokens, tsession->token_count, token);
+      MUTEX_UNLOCK (lock);
+    }
+  return ret;
 }
 
 /**
@@ -322,8 +338,10 @@ transportSend (TSession * tsession,
  * @return OK on success, SYSERR on error
  */
 static int
-transportDisconnect (TSession * tsession)
+transportDisconnect (TSession * tsession, const char *token)
 {
+  int i;
+
   if (tsession == NULL)
     {
       GE_BREAK (ectx, 0);
@@ -334,6 +352,29 @@ transportDisconnect (TSession * tsession)
       GE_BREAK (ectx, 0);
       return SYSERR;
     }
+  MUTEX_LOCK (lock);
+  for (i = 0; i < tsession->token_count; i++)
+    {
+      if (0 == strcmp (tsession->tokens[i], token))
+        {
+          tsession->tokens[i] = tsession->tokens[tsession->token_count - 1];
+          GROW (tsession->tokens,
+                tsession->token_count, tsession->token_count - 1);
+          i = -1;
+          break;
+        }
+    }
+  if (i != -1)
+    {
+      GE_BREAK (ectx, 0);
+      GE_LOG (ectx,
+              GE_ERROR | GE_DEVELOPER | GE_USER | GE_IMMEDIATE,
+              "Illegal call to `%s', do not have token `%s'\n",
+              __FUNCTION__, token);
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }
+  MUTEX_UNLOCK (lock);
   return tapis[tsession->ttype]->disconnect (tsession);
 }
 
@@ -648,6 +689,7 @@ provide_module_transport (CoreAPIForApplication * capi)
   GROW (tapis, tapis_count, UDP_PROTOCOL_NUMBER + 1);
 
   tapis_lock = MUTEX_CREATE (YES);
+  lock = MUTEX_CREATE (NO);
 
   /* now load transports */
   dso = NULL;
@@ -765,6 +807,7 @@ release_module_transport ()
     if (tapis[i] != NULL)
       unloadTransport (i);
   MUTEX_DESTROY (tapis_lock);
+  MUTEX_DESTROY (lock);
   tapis_lock = NULL;
   GROW (tapis, tapis_count, 0);
 

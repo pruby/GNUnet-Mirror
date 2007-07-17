@@ -49,13 +49,12 @@ static void progress_check
    unsigned long long completedBytes,
    cron_t eta,
    unsigned long long lastBlockOffset,
-   const char *lastBlock, unsigned int lastBlockSize, void *closure) {
+   const char *lastBlock, unsigned int lastBlockSize, void *closure)
+{
 #if 0
-  printf("Completed: %llu - Now: at %llu got %u bytes\n",
-	 completedBytes,
-	 lastBlockOffset,
-	 lastBlockSize);
-#endif	 
+  printf ("Completed: %llu - Now: at %llu got %u bytes\n",
+          completedBytes, lastBlockOffset, lastBlockSize);
+#endif
 }
 
 
@@ -123,35 +122,36 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   FREE (tmp);
   tmpName = makeName (0);
   ret = SYSERR;
-  for (j=SIZE-16*1024;j>=0;j-=16 * 1024) {
-    if (OK == ECRS_downloadPartialFile (NULL,
-					cfg,
-					uri,
-					tmpName, 
-					j,
-					16 * 1024,
-					0,
-					NO,
-					&progress_check, 
-					NULL, 
-					&testTerminate, 
-					NULL)) {      
-      fd = disk_file_open (NULL, tmpName, O_RDONLY);
-      buf = MALLOC (size);
-      in = MALLOC (size);
-      memset (buf, size + size / 253, size);
-      for (i = 0; i < (int) (size - 42 - sizeof (HashCode512));
-           i += sizeof (HashCode512))
-        hash (&buf[i], 42, (HashCode512 *) & buf[i + sizeof (HashCode512)]);
-      if (size != READ (fd, in, size))
-        ret = SYSERR;
-      else if (0 == memcmp (&buf[j], &in[j], 16 * 1024))
-        ret = OK;
-      FREE (buf);
-      FREE (in);
-      CLOSE (fd);
+  for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
+    {
+      if (OK == ECRS_downloadPartialFile (NULL,
+                                          cfg,
+                                          uri,
+                                          tmpName,
+                                          j,
+                                          16 * 1024,
+                                          0,
+                                          NO,
+                                          &progress_check,
+                                          NULL, &testTerminate, NULL))
+        {
+          fd = disk_file_open (NULL, tmpName, O_RDONLY);
+          buf = MALLOC (size);
+          in = MALLOC (size);
+          memset (buf, size + size / 253, size);
+          for (i = 0; i < (int) (size - 42 - sizeof (HashCode512));
+               i += sizeof (HashCode512))
+            hash (&buf[i], 42,
+                  (HashCode512 *) & buf[i + sizeof (HashCode512)]);
+          if (size != READ (fd, in, size))
+            ret = SYSERR;
+          else if (0 == memcmp (&buf[j], &in[j], 16 * 1024))
+            ret = OK;
+          FREE (buf);
+          FREE (in);
+          CLOSE (fd);
+        }
     }
-  }
   UNLINK (tmpName);
   FREE (tmpName);
   return ret;
@@ -202,7 +202,7 @@ main (int argc, char *argv[])
   ECRS_freeUri (uri);
   CHECK (OK == unindexFile (SIZE));
   fprintf (stderr, " Ok.\n");
-    
+
 
   /* END OF TEST CODE */
 FAILURE:

@@ -149,6 +149,7 @@ udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
   TSession *tsession;
 
   tsession = MALLOC (sizeof (TSession));
+  memset (tsession, 0, sizeof (TSession));
   tsession->internal = MALLOC (P2P_hello_MESSAGE_size (hello));
   memcpy (tsession->internal, hello, P2P_hello_MESSAGE_size (hello));
   tsession->ttype = udpAPI.protocolNumber;

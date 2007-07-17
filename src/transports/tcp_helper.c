@@ -379,6 +379,7 @@ select_accept_handler (void *ah_cls,
   GE_LOG (ectx, GE_DEBUG | GE_USER | GE_BULK, "Accepting TCP connection.\n");
 #endif
   tcpSession = MALLOC (sizeof (TCPSession));
+  memset (tcpSession, 0, sizeof (TCPSession));
   tcpSession->sock = sock;
   /* fill in placeholder identity to mark that we
      are waiting for the welcome message */
@@ -389,6 +390,7 @@ select_accept_handler (void *ah_cls,
   tcpSession->in_select = YES;
 
   tsession = MALLOC (sizeof (TSession));
+  memset (tsession, 0, sizeof (TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
   tcpSession->tsession = tsession;
@@ -580,10 +582,12 @@ tcpConnectHelper (const P2P_hello_MESSAGE * hello,
   TCPSession *tcpSession;
 
   tcpSession = MALLOC (sizeof (TCPSession));
+  memset (tcpSession, 0, sizeof (TCPSession));
   tcpSession->addr_len = 0;
   tcpSession->accept_addr = NULL;
   tcpSession->sock = s;
   tsession = MALLOC (sizeof (TSession));
+  memset (tsession, 0, sizeof (TSession));
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tsession->peer = hello->senderIdentity;

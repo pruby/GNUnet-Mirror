@@ -435,8 +435,9 @@ exchangeKey (const PeerIdentity * receiver,
     return SYSERR;
   hash2enc (&receiver->hashPubKey, &enc);
   /* then try to connect on the transport level */
-  if ((tsession == NULL) || (transport->associate (tsession) == SYSERR))
-    tsession = transport->connectFreely (receiver, YES);
+  if ((tsession == NULL)
+      || (transport->associate (tsession, __FILE__) == SYSERR))
+    tsession = transport->connectFreely (receiver, YES, __FILE__);
   if (tsession == NULL)
     {
 #if DEBUG_SESSION
@@ -454,7 +455,7 @@ exchangeKey (const PeerIdentity * receiver,
   if (ping == NULL)
     {
       FREE (sndr);
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       return SYSERR;
     }
 
@@ -476,7 +477,7 @@ exchangeKey (const PeerIdentity * receiver,
   FREE (ping);
   if (skey == NULL)
     {
-      transport->disconnect (tsession);
+      transport->disconnect (tsession, __FILE__);
       return SYSERR;
     }
 
@@ -516,12 +517,12 @@ exchangeKey (const PeerIdentity * receiver,
   if (0 != memcmp (receiver, &tsession->peer, sizeof (PeerIdentity)))
     {
       GE_BREAK (NULL, 0);
-      transport->disconnect (tsession);
     }
   else
     {
       coreAPI->offerTSessionFor (receiver, tsession);
     }
+  transport->disconnect (tsession, __FILE__);
   coreAPI->assignSessionKey (&sk, receiver, age, YES);
   return OK;
 }

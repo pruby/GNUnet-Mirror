@@ -168,12 +168,12 @@ sendPlaintext (const PeerIdentity * peer, const P2P_pingpong_MESSAGE * msg)
   TSession *mytsession;
   int ret;
 
-  mytsession = transport->connectFreely (peer, YES);
+  mytsession = transport->connectFreely (peer, YES, __FILE__);
   if (mytsession == NULL)
     return SYSERR;
   ret = coreAPI->sendPlaintext (mytsession,
                                 (char *) msg, sizeof (P2P_pingpong_MESSAGE));
-  transport->disconnect (mytsession);
+  transport->disconnect (mytsession, __FILE__);
   return ret;
 }
 

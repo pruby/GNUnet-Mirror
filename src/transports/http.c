@@ -649,6 +649,7 @@ accessHandlerCallback (void *cls,
       httpSession->users = 1;   /* us only, core has not seen this tsession! */
       httpSession->lastUse = get_time ();
       tsession = MALLOC (sizeof (TSession));
+      memset (tsession, 0, sizeof (TSession));
       tsession->ttype = HTTP_PROTOCOL_NUMBER;
       tsession->internal = httpSession;
       tsession->peer = *(coreAPI->myIdentity);
@@ -901,6 +902,7 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
   httpSession->is_client = YES;
   httpSession->cs.client.get = curl_get;
   tsession = MALLOC (sizeof (TSession));
+  memset (tsession, 0, sizeof (TSession));
   httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
