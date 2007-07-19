@@ -328,10 +328,7 @@ ECRS_uploadFile (struct GE_Context *ectx,
         }
       if (OK != pushBlock (sock, &mchk, 0,      /* dblocks are on level 0 */
                            iblocks, priority, expirationTime))
-        {
-          GE_BREAK (ectx, 0);
           goto FAILURE;
-        }
     }
   if (tt != NULL)
     if (OK != tt (ttClosure))
