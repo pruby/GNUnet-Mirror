@@ -66,6 +66,40 @@ static struct GE_Context *ectx;
 #define CHECK(s) do {} while(0)
 #endif
 
+
+/**
+ * Close the session with the remote node.
+ * @return OK on success, SYSERR on error
+ */
+static int
+assertAssociated (TSession * tsession, const char *token)
+{
+  int i;
+
+  if (tsession == NULL)
+    {
+      GE_BREAK (ectx, 0);
+      return SYSERR;
+    }
+  MUTEX_LOCK (lock);
+  for (i = 0; i < tsession->token_count; i++)
+    {
+      if (0 == strcmp (tsession->tokens[i], token))
+        {
+          i = -1;
+          break;
+        }
+    }
+  if (i != -1)
+    {
+      GE_BREAK(NULL, 0);
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }
+  MUTEX_UNLOCK (lock);
+  return OK;
+}
+
 /**
  * Create signed hello for this transport and put it into
  * the cache tapi->hello.
@@ -216,6 +250,8 @@ transportConnect (const P2P_hello_MESSAGE * hello, const char *token)
   APPEND (tsession->tokens, tsession->token_count, token);
   CHECK(tsession);
   MUTEX_UNLOCK (lock);
+  GE_BREAK(NULL,
+	   OK == assertAssociated(tsession, token));
   return tsession;
 }
 
@@ -288,7 +324,10 @@ transportAssociate (TSession * tsession, const char *token)
       APPEND (tsession->tokens, tsession->token_count, token);    
   CHECK(tsession);
   MUTEX_UNLOCK (lock);
-  return ret;
+  if (ret == OK)
+    GE_BREAK(NULL,
+	     OK == assertAssociated(tsession, token));
+   return ret;
 }
 
 /**
@@ -799,6 +838,7 @@ provide_module_transport (CoreAPIForApplication * capi)
   ret.createhello = &transportCreatehello;
   ret.getAdvertisedhellos = &getAdvertisedhellos;
   ret.testWouldTry = &testWouldTry;
+  ret.assertAssociated = &assertAssociated;
 
   return &ret;
 }

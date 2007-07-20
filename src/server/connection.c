@@ -219,10 +219,16 @@
 #define STAT_UP               7
 
 
-#if DEBUG_CONNECTION == 2
-#define ENTRY() GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Method entry: %s defined in %s:%d\n", __FUNCTION__, __FILE__, __LINE__);
+#if 1
+#define ENTRY() check_invariants()
 #else
 #define ENTRY() ;
+#endif
+
+#if 1
+#define EXIT() check_invariants()
+#else
+#define EXIT() ;
 #endif
 
 #if DEBUG_COLLECT_PRIO == YES
@@ -341,9 +347,9 @@ typedef struct
 } SendEntry;
 
 /**
- * A session is a token provided by the transport
+ * A tsession is a token provided by the transport
  * API to refer to a connection of the transport
- * layer.
+ * layer.  
  */
 typedef struct
 {
@@ -636,6 +642,25 @@ static int stat_total_allowed_recv;
 static int stat_total_send_buffer_size;
 
 /* ******************** CODE ********************* */
+
+static void check_invariants() {
+  int i;
+  BufferEntry *root;
+
+  MUTEX_LOCK (lock);
+  for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
+    {
+      root = CONNECTION_buffer_[i];
+      while (NULL != root)
+        {
+          if (root->session.tsession != NULL)
+	    GE_ASSERT(NULL,
+		      OK == transport->assertAssociated(root->session.tsession, __FILE__));
+	  root = root->overflowChain;
+	}
+    }
+  MUTEX_UNLOCK(lock);      
+}
 
 /**
  * This allocates and initializes a BufferEntry.
@@ -2529,6 +2554,7 @@ cronDecreaseLiveness (void *unused)
   int load_nup;
   int load_cpu;
 
+  ENTRY();
   load_cpu = os_cpu_get_load (ectx, cfg);
   load_nup = os_network_monitor_get_load (load_monitor, Upload);
   scheduleInboundTraffic ();
@@ -2674,6 +2700,7 @@ cronDecreaseLiveness (void *unused)
       stats->set (stat_total_allowed_now, total_allowed_now);
       stats->set (stat_total_send_buffer_size, total_send_buffer_size);
     }
+  EXIT();
 }
 
 /**
@@ -2711,6 +2738,7 @@ checkHeader (const PeerIdentity * sender,
       GE_LOG (ectx,
               GE_WARNING | GE_BULK | GE_DEVELOPER,
               _("Message from `%s' discarded: invalid format.\n"), &enc);
+      EXIT();
       return SYSERR;
     }
   if (stats != NULL)
@@ -2720,8 +2748,10 @@ checkHeader (const PeerIdentity * sender,
   if (equalsHashCode512 (&hc,
                          &msg->hash) &&
       (msg->sequenceNumber == 0) &&
-      (msg->bandwidth == 0) && (msg->timeStamp == 0))
+      (msg->bandwidth == 0) && (msg->timeStamp == 0)) {
+    EXIT();
     return NO;                  /* plaintext */
+  }
 
   MUTEX_LOCK (lock);
   be = lookForHost (sender);
@@ -2742,6 +2772,7 @@ checkHeader (const PeerIdentity * sender,
       if ((be == NULL) || (be->status == STAT_DOWN))
         addHost (sender, YES);
       MUTEX_UNLOCK (lock);
+      EXIT();
       return SYSERR;            /* could not decrypt */
     }
   tmp = MALLOC (size - sizeof (HashCode512));
@@ -2762,6 +2793,7 @@ checkHeader (const PeerIdentity * sender,
       addHost (sender, YES);
       MUTEX_UNLOCK (lock);
       FREE (tmp);
+      EXIT();
       return SYSERR;
     }
   if (stats != NULL)
@@ -2794,6 +2826,7 @@ checkHeader (const PeerIdentity * sender,
                   sequenceNumber, be->lastSequenceNumberReceived);
 #endif
           MUTEX_UNLOCK (lock);
+	  EXIT();
           return SYSERR;
         }
     }
@@ -2813,6 +2846,7 @@ checkHeader (const PeerIdentity * sender,
               _("Message received more than one day old. Dropped.\n"));
 #endif
       MUTEX_UNLOCK (lock);
+      EXIT();
       return SYSERR;
     }
 
@@ -2828,6 +2862,7 @@ checkHeader (const PeerIdentity * sender,
     }
   be->recently_received += size;
   MUTEX_UNLOCK (lock);
+  EXIT();
   return YES;
 }
 
@@ -2894,6 +2929,7 @@ assignSessionKey (const SESSIONKEY * key,
 {
   BufferEntry *be;
 
+  ENTRY();
   MUTEX_LOCK (lock);
   be = lookForHost (peer);
   if (be == NULL)
@@ -2923,6 +2959,7 @@ assignSessionKey (const SESSIONKEY * key,
         }
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 /**
@@ -2935,6 +2972,7 @@ confirmSessionUp (const PeerIdentity * peer)
 {
   BufferEntry *be;
 
+  ENTRY();
   MUTEX_LOCK (lock);
   be = lookForHost (peer);
   if (be != NULL)
@@ -2961,6 +2999,7 @@ confirmSessionUp (const PeerIdentity * peer)
         }
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 
@@ -2984,6 +3023,8 @@ isSlotUsed (int slot)
 {
   BufferEntry *be;
   int ret;
+
+  ENTRY();
   ret = 0;
   MUTEX_LOCK (lock);
   if ((slot >= 0) && (slot < CONNECTION_MAX_HOSTS_))
@@ -2997,6 +3038,7 @@ isSlotUsed (int slot)
         }
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return ret;
 }
 
@@ -3012,6 +3054,7 @@ getLastActivityOf (const PeerIdentity * peer, cron_t * time)
   int ret;
   BufferEntry *be;
 
+  ENTRY();
   ret = 0;
   MUTEX_LOCK (lock);
   be = lookForHost (peer);
@@ -3026,6 +3069,7 @@ getLastActivityOf (const PeerIdentity * peer, cron_t * time)
       ret = SYSERR;
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return ret;
 }
 
@@ -3047,6 +3091,7 @@ getCurrentSessionKey (const PeerIdentity * peer,
   int ret;
   BufferEntry *be;
 
+  ENTRY();
   ret = SYSERR;
   MUTEX_LOCK (lock);
   be = lookForHost (peer);
@@ -3072,6 +3117,7 @@ getCurrentSessionKey (const PeerIdentity * peer,
         }
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return ret;
 }
 
@@ -3109,6 +3155,7 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
   if (be == NULL)
     {
       MUTEX_UNLOCK (lock);
+      EXIT();
       return;
     }
   cost = -1;
@@ -3126,8 +3173,10 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
      data on throughput. - CG
    */
   if ((transport->getCost (tsession->ttype) < cost) &&
-      (transport->associate (tsession, __FILE__) == OK))
+      (OK == transport->associate (tsession, __FILE__)))
     {
+      GE_ASSERT(NULL,
+		OK == transport->assertAssociated(tsession, __FILE__));
       ts = be->session.tsession;
       if (ts != NULL)
         {
@@ -3136,9 +3185,12 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
         }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
+      check_invariants();
       fragmentIfNecessary (be);
     }
+  EXIT();
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 
@@ -3320,6 +3372,7 @@ initConnection (struct GE_Context *e,
                 ("# total number of bytes we are currently allowed to send"));
     }
   transport->start (&core_receive);
+  EXIT();
 }
 
 
@@ -3389,6 +3442,7 @@ doneConnection ()
   ectx = NULL;
   cfg = NULL;
   load_monitor = NULL;
+  EXIT();
 }
 
 
@@ -3406,11 +3460,13 @@ forEachConnectedNode (PerNodeCallback method, void *arg)
   fENHWrap wrap;
   int ret;
 
+  ENTRY();
   wrap.method = method;
   wrap.arg = arg;
   MUTEX_LOCK (lock);
   ret = forAllConnectedHosts (&fENHCallback, &wrap);
   MUTEX_UNLOCK (lock);
+  EXIT();
   return ret;
 }
 
@@ -3508,6 +3564,7 @@ registerSendCallback (const unsigned int minimumPadding,
       scl_nextTail = scl;
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return OK;
 }
 
@@ -3531,6 +3588,7 @@ unregisterSendCallback (const unsigned int minimumPadding,
   SendCallbackList *pos;
   SendCallbackList *prev;
 
+  ENTRY();
   prev = NULL;
   MUTEX_LOCK (lock);
   pos = scl_nextHead;
@@ -3547,12 +3605,14 @@ unregisterSendCallback (const unsigned int minimumPadding,
             scl_nextTail = prev;
           FREE (pos);
           MUTEX_UNLOCK (lock);
+	  EXIT();
           return OK;
         }
       prev = pos;
       pos = pos->next;
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return SYSERR;
 }
 
@@ -3575,6 +3635,7 @@ sendPlaintext (TSession * tsession, const char *msg, unsigned int size)
   int ret;
   P2P_PACKET_HEADER *hdr;
 
+  ENTRY();
   GE_ASSERT (ectx, tsession != NULL);
   if ((transport->getMTU (tsession->ttype) > 0) &&
       (transport->getMTU (tsession->ttype) <
@@ -3594,6 +3655,7 @@ sendPlaintext (TSession * tsession, const char *msg, unsigned int size)
   ret = transport->send (tsession,
                          buf, size + sizeof (P2P_PACKET_HEADER), NO);
   FREE (buf);
+  EXIT();
   return ret;
 }
 
@@ -3639,6 +3701,7 @@ unicastCallback (const PeerIdentity * hostId,
       FREENONNULL (closure);
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 /**
@@ -3658,22 +3721,27 @@ unicast (const PeerIdentity * receiver,
   char *closure;
   unsigned short len;
 
+  ENTRY();
   if ((getBandwidthAssignedTo (receiver, NULL, NULL) != OK) &&
       (identity->isBlacklistedStrict (receiver) == NO))
     session->tryConnect (receiver);
-  if (msg == NULL)
+  if (msg == NULL) {
+    EXIT();
     return;
+  }
   len = ntohs (msg->size);
   if (len == 0)
     {
       GE_LOG (ectx,
               GE_DEBUG | GE_BULK | GE_DEVELOPER,
               "Empty message send (hopefully used to initiate connection attempt)\n");
+      EXIT();
       return;
     }
   closure = MALLOC (len);
   memcpy (closure, msg, len);
   unicastCallback (receiver, NULL, closure, len, importance, maxdelay);
+  EXIT();
 }
 
 /**
@@ -3685,8 +3753,11 @@ unicast (const PeerIdentity * receiver,
 unsigned int
 computeIndex (const PeerIdentity * hostId)
 {
-  unsigned int res = (((unsigned int) hostId->hashPubKey.bits[0]) &
-                      ((unsigned int) (CONNECTION_MAX_HOSTS_ - 1)));
+  unsigned int res;
+  
+  ENTRY();
+  res = (((unsigned int) hostId->hashPubKey.bits[0]) &
+	 ((unsigned int) (CONNECTION_MAX_HOSTS_ - 1)));
   GE_ASSERT (ectx, res < CONNECTION_MAX_HOSTS_);
   return res;
 }
@@ -3726,6 +3797,7 @@ getBandwidthAssignedTo (const PeerIdentity * node,
       ret = SYSERR;
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return ret;
 }
 
@@ -3745,6 +3817,7 @@ updateTrafficPreference (const PeerIdentity * node, double preference)
   if (be != NULL)
     be->current_connection_value += preference;
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 /**
@@ -3780,6 +3853,7 @@ disconnectFromPeer (const PeerIdentity * node)
       shutdownConnection (be);
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
 }
 
 /**
@@ -3795,10 +3869,12 @@ registerSendNotify (MessagePartHandler callback)
 {
   if (callback == NULL)
     return SYSERR;
+  ENTRY();
   MUTEX_LOCK (lock);
   GROW (rsns, rsnSize, rsnSize + 1);
   rsns[rsnSize - 1] = callback;
   MUTEX_UNLOCK (lock);
+  EXIT();
   return OK;
 }
 
@@ -3814,6 +3890,10 @@ int
 unregisterSendNotify (MessagePartHandler callback)
 {
   int i;
+
+  if (callback == NULL)
+    return OK;
+  ENTRY();
   MUTEX_LOCK (lock);
   for (i = 0; i < rsnSize; i++)
     {
@@ -3826,6 +3906,7 @@ unregisterSendNotify (MessagePartHandler callback)
         }
     }
   MUTEX_UNLOCK (lock);
+  EXIT();
   return SYSERR;
 }
 
@@ -3841,6 +3922,7 @@ assertUnused (TSession * tsession)
   int i;
   BufferEntry *root;
 
+  ENTRY();
   MUTEX_LOCK (lock);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
     {
@@ -3851,13 +3933,14 @@ assertUnused (TSession * tsession)
             {
               GE_BREAK (ectx, 0);
               MUTEX_UNLOCK (lock);
+	      EXIT();
               return SYSERR;
             }
           root = root->overflowChain;
         }
     }
   MUTEX_UNLOCK (lock);
-
+  EXIT();
   return OK;
 }
 

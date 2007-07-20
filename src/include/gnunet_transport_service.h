@@ -206,6 +206,11 @@ typedef struct
    */
   int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
 
+  /**
+   * Verify that this session is associated (with the given
+   * token).
+   */
+  int (*assertAssociated) (TSession * tsession, const char *token);
 
 } Transport_ServiceAPI;
 

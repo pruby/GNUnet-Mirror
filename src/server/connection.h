@@ -217,18 +217,6 @@ void disconnectFromPeer (const PeerIdentity * node);
 
 
 /**
- * Offer the core a session for communication with the
- * given peer.  This is useful after establishing a connection
- * with another peer to hand it of to the core.  Note that
- * the core will take over the session and disconnect
- * it as it feels like.  Thus the client should no longer
- * use it after this call.  If the core does not want/need
- * the session, it will also be disconnected.
- */
-void offerTSessionFor (const PeerIdentity * peer, TSession * session);
-
-
-/**
  * Assign a session key for traffic from or to a given peer.
  * If the core does not yet have an entry for the given peer
  * in the connection table, a new entry is created.

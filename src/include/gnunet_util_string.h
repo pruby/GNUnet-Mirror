@@ -157,7 +157,7 @@ extern "C"
  * Append an element to a list (growing the
  * list by one).
  */
-#define APPEND(arr,size,element) do { GROW(arr,size,(size)+1); arr[(size)-1] = (element); } while(0)
+#define APPEND(arr,size,element) do { GROW(arr,size,size+1); arr[size-1] = element; } while(0)
 
 /**
  * Like snprintf, just aborts if the buffer is of insufficient size.
