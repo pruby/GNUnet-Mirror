@@ -144,7 +144,7 @@ freeTCPSession (TCPSession * tcpsession)
     }
   MUTEX_UNLOCK (tcplock);
   GE_ASSERT(ectx,
-	    OK != coreAPI->assertUnused (tcpsession->tsession));
+	    OK == coreAPI->assertUnused (tcpsession->tsession));
   MUTEX_LOCK (tcplock);
   FREE (tcpsession->tsession);
   FREE (tcpsession);
