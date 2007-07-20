@@ -142,6 +142,10 @@ freeTCPSession (TCPSession * tcpsession)
       prev = pos;
       pos = pos->next;
     }
+  MUTEX_UNLOCK (tcplock);
+  GE_ASSERT(ectx,
+	    OK != coreAPI->assertUnused (tcpsession->tsession));
+  MUTEX_LOCK (tcplock);
   FREE (tcpsession->tsession);
   FREE (tcpsession);
 }
@@ -158,26 +162,15 @@ tcpDisconnect (TSession * tsession)
   tcpsession->users--;
   if ((tcpsession->users > 0) || (tcpsession->in_select == YES))
     {
+      if (tcpsession->users == 0)
+	select_change_timeout (selector, tcpsession->sock,
+			       TCP_FAST_TIMEOUT);        
       MUTEX_UNLOCK (tcpsession->lock);
       MUTEX_UNLOCK (tcplock);
-      if (tcpsession->users == 0)
-        {
-          select_change_timeout (selector, tcpsession->sock,
-                                 TCP_FAST_TIMEOUT);
-          GE_ASSERT (ectx, OK == coreAPI->assertUnused (tsession));
-        }
       return OK;
     }
   MUTEX_UNLOCK (tcpsession->lock);
   MUTEX_UNLOCK (tcplock);
-  if (OK != coreAPI->assertUnused (tsession))
-    {
-      GE_BREAK (ectx, 0);
-      abort ();                 /* for now */
-      /* recovery attempt */
-      tcpsession->users = 1;
-      return OK;
-    }
 #if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,
@@ -239,7 +232,6 @@ select_message_handler (void *mh_cls,
 {
   TSession *tsession = sock_ctx;
   TCPSession *tcpSession;
-  TCPSession *pos;
   unsigned int len;
   P2P_PACKET *mp;
   const TCPWelcome *welcome;
@@ -274,57 +266,6 @@ select_message_handler (void *mh_cls,
       if (tcpSession->accept_addr != NULL)
         setIPaddressFromPID (&welcome->clientIdentity,
                              tcpSession->accept_addr, tcpSession->addr_len);
-      /* check that we do not already have
-         a connection from this peer; if so,
-         close the old one! */
-      MUTEX_LOCK (tcplock);
-      pos = sessions;
-      while (pos != NULL)
-        {
-          if (pos == tcpSession)
-            {
-              pos = pos->next;
-              continue;
-            }
-          if (0 == memcmp (&pos->sender,
-                           &tcpSession->sender, sizeof (PeerIdentity)))
-            {
-              /* replace existing socket in pos with
-                 the new socket in tcpSession; then
-                 delete the new tcpSession -- we have
-                 the old one! */
-              MUTEX_LOCK (pos->lock);
-              if (SYSERR == tcpAssociate (pos->tsession))
-                {
-                  GE_BREAK (ectx, 0);
-                  MUTEX_UNLOCK (pos->lock);
-                  MUTEX_UNLOCK (tcplock);
-                  return SYSERR;
-                }
-              if (pos->in_select)
-                select_disconnect (sh, pos->sock);
-              pos->in_select = YES;
-              pos->sock = tcpSession->sock;
-              select_update_closure (sh, pos->sock, tsession, pos->tsession);
-              FREENONNULL (pos->accept_addr);
-              pos->accept_addr = tcpSession->accept_addr;
-              pos->addr_len = tcpSession->addr_len;
-              tcpSession->accept_addr = NULL;
-              tcpSession->addr_len = 0;
-              MUTEX_UNLOCK (pos->lock);
-              MUTEX_UNLOCK (tcplock);
-              tcpDisconnect (tsession);
-              tcpSession->in_select = NO;
-              freeTCPSession (tcpSession);
-              tcpSession = pos;
-              tsession = pos->tsession;
-              MUTEX_LOCK (tcplock);
-              break;
-            }
-          pos = pos->next;
-        }
-      MUTEX_UNLOCK (tcplock);
-
     }
   else
     {

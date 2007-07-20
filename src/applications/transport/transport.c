@@ -59,7 +59,12 @@ static struct GE_Context *ectx;
 
 #define HELLO_RECREATE_FREQ (5 * cronMINUTES)
 
-
+#define CHECK_IT YES
+#if CHECK_IT
+#include "check.c"
+#else
+#define CHECK(s) do {} while(0)
+#endif
 
 /**
  * Create signed hello for this transport and put it into
@@ -204,13 +209,13 @@ transportConnect (const P2P_hello_MESSAGE * hello, const char *token)
       return NULL;
     }
   tsession = NULL;
-  if (OK != tapis[prot]->connect (hello, &tsession))
-    return NULL;
+  if (OK != tapis[prot]->connect (hello, &tsession)) 
+    return NULL;  
   tsession->ttype = prot;
   MUTEX_LOCK (lock);
   APPEND (tsession->tokens, tsession->token_count, token);
+  CHECK(tsession);
   MUTEX_UNLOCK (lock);
-
   return tsession;
 }
 
@@ -241,10 +246,7 @@ transportConnectFreely (const PeerIdentity * peer, int useTempList,
       ret = transportConnect (hello, token);
       FREE (hello);
       if (ret != NULL)
-        {
-          ret->ttype = perm[i];
           break;
-        }
     }
   FREE (perm);
   if (ret == NULL)
@@ -281,12 +283,11 @@ transportAssociate (TSession * tsession, const char *token)
       (tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     return SYSERR;
   ret = tapis[tsession->ttype]->associate (tsession);
-  if (ret == OK)
-    {
-      MUTEX_LOCK (lock);
-      APPEND (tsession->tokens, tsession->token_count, token);
-      MUTEX_UNLOCK (lock);
-    }
+  MUTEX_LOCK (lock);
+  if (ret == OK)    
+      APPEND (tsession->tokens, tsession->token_count, token);    
+  CHECK(tsession);
+  MUTEX_UNLOCK (lock);
   return ret;
 }
 
@@ -322,6 +323,9 @@ transportSend (TSession * tsession,
       return SYSERR;            /* can't do that, can happen for unidirectional pipes
                                    that call core with TSession being NULL. */
     }
+  MUTEX_LOCK (lock);
+  CHECK(tsession);
+  MUTEX_UNLOCK (lock);
   if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     {
       GE_LOG (ectx,
@@ -353,6 +357,7 @@ transportDisconnect (TSession * tsession, const char *token)
       return SYSERR;
     }
   MUTEX_LOCK (lock);
+  CHECK(tsession);
   for (i = 0; i < tsession->token_count; i++)
     {
       if (0 == strcmp (tsession->tokens[i], token))
@@ -375,7 +380,12 @@ transportDisconnect (TSession * tsession, const char *token)
       return SYSERR;
     }
   MUTEX_UNLOCK (lock);
-  return tapis[tsession->ttype]->disconnect (tsession);
+  i = tapis[tsession->ttype]->disconnect (tsession);
+  GE_BREAK(NULL, i == OK); /* should never fail */
+  MUTEX_LOCK (lock);
+  CHECK(tsession);
+  MUTEX_UNLOCK (lock);
+  return i;
 }
 
 /**

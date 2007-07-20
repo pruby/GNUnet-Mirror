@@ -435,8 +435,8 @@ exchangeKey (const PeerIdentity * receiver,
     return SYSERR;
   hash2enc (&receiver->hashPubKey, &enc);
   /* then try to connect on the transport level */
-  if ((tsession == NULL)
-      || (transport->associate (tsession, __FILE__) == SYSERR))
+  if ( (tsession == NULL)
+       || (transport->associate (tsession, __FILE__) == SYSERR))
     tsession = transport->connectFreely (receiver, YES, __FILE__);
   if (tsession == NULL)
     {
