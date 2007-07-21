@@ -348,11 +348,11 @@ iopen (mysqlHandle * dbhI, int prepare)
         }
       mysql_query (dbhI->dbf,
                    "CREATE TABLE IF NOT EXISTS gn070 ("
-                   " size INT(11) NOT NULL DEFAULT 0,"
-                   " type INT(11) NOT NULL DEFAULT 0,"
-                   " prio INT(11) NOT NULL DEFAULT 0,"
-                   " anonLevel INT(11) NOT NULL DEFAULT 0,"
-                   " expire BIGINT NOT NULL DEFAULT 0,"
+                   " size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+                   " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+                   " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+                   " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+                   " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " hash TINYBLOB NOT NULL DEFAULT '',"
                    " value BLOB NOT NULL DEFAULT '',"
                    " INDEX (hash(64)),"
