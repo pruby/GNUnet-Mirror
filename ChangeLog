@@ -1,3 +1,7 @@
+Sat Jul 21 23:42:11 MDT 2007
+	Radical changes to MySQL implementation (trying to
+	address certain scalability issues).
+
 Sat Jul  7 00:22:47 MDT 2007
 	Releasing GNUnet 0.7.2a.
 

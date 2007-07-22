@@ -129,7 +129,8 @@ processReplies (void *cls)
                                                                value,
                                                                ctx->
                                                                handles[i]->
-                                                               closure))
+                                                               closure,
+							       0))
                         {
                           ctx->handles[i]->callback = NULL;
                         }

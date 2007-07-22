@@ -111,6 +111,23 @@ get (const HashCode512 * query,
   return ret;
 }
 
+
+static int
+deleteCB (const HashCode512 * key,
+	  const Datastore_Value * value, void *closure,
+	  unsigned long long uid)
+{
+  const Datastore_Value * have = closure;
+  if (have == NULL)
+    return NO;
+  if  ( (value->size == have->size) &&
+	(0 == memcmp(&have[1],
+		     &value[1],
+		     ntohl(value->size) - sizeof(Datastore_Value))))
+    return NO;
+  return OK;
+}
+
 /**
  * Explicitly remove some content from the database.
  */
@@ -130,26 +147,11 @@ del (const HashCode512 * query, const Datastore_Value * value)
               &enc, __FILE__, __LINE__);
       return 0;
     }
-  ok = sq->del (query, value);
-  if (ok >= 0)
+  ok = sq->get (query, ntohl(value->type), &deleteCB, (void*) value);
+  while (ok-- > 0)
     {
       makeUnavailable (query);  /* update filter! */
       available += ntohl (value->size);
-#if DEBUG_DATASTORE
-      IF_GELOG (coreAPI->ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (query, &enc));
-      GE_LOG (coreAPI->ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
-              "Deleted `%s' from database.\n", &enc);
-#endif
-    }
-  else
-    {
-      IF_GELOG (coreAPI->ectx,
-                GE_WARNING | GE_BULK | GE_USER, hash2enc (query, &enc));
-      GE_LOG (coreAPI->ectx,
-              GE_WARNING | GE_BULK | GE_USER,
-              _("Database failed to delete `%s'.\n"), &enc);
     }
   return ok;
 }
@@ -243,7 +245,6 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
 
   /* check if it already exists... */
   cls.exists = NO;
-  cls.existing = NULL;
   cls.value = value;
   sq->get (key, ntohl (value->type), &checkExists, &cls);
   if (ntohl (value->type) == D_BLOCK)
@@ -253,7 +254,7 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
     {
       if ((ntohl (value->prio) == 0) &&
           (ntohll (value->expirationTime) <=
-           cls.expiration)))
+           cls.expiration))
         {
           return OK;
         }
@@ -293,34 +294,27 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
  */
 static int
 freeSpaceExpired (const HashCode512 * key,
-                  const Datastore_Value * value, void *closure)
+                  const Datastore_Value * value, void *closure,
+		  unsigned long long uid)
 {
-  int *icls = closure;
-  int ret;
-
+  if ((available > 0) && (available >= MIN_FREE))
+    return SYSERR;
   if (get_time () < ntohll (value->expirationTime))
     return SYSERR;              /* not expired */
-  ret = sq->del (key, value);
-  if (ret != SYSERR)
-    available += ntohl (value->size);
-  if ((available > 0) && (available >= MIN_FREE))
-    return *icls;
-  return OK;
+  available += ntohl (value->size);
+  return NO;
 }
 
 static int
 freeSpaceLow (const HashCode512 * key,
-              const Datastore_Value * value, void *closure)
+              const Datastore_Value * value, void *closure,
+	      unsigned long long uid)
 {
-  int ret;
-
-  minPriority = ntohl (value->prio);
-  ret = sq->del (key, value);
-  if (ret != SYSERR)
-    available += ntohl (value->size);
   if ((available > 0) && (available >= MIN_FREE))
     return SYSERR;
-  return OK;
+  minPriority = ntohl (value->prio);
+  available += ntohl (value->size);
+  return NO;
 }
 
 /**
@@ -332,12 +326,10 @@ freeSpaceLow (const HashCode512 * key,
 static void
 cronMaintenance (void *unused)
 {
-  int syserr = SYSERR;
-
   available = quota - sq->getSize ();
   if ((available < 0) || (available < MIN_FREE))
     {
-      sq->iterateExpirationTime (ANY_BLOCK, &freeSpaceExpired, &syserr);
+      sq->iterateExpirationTime (ANY_BLOCK, &freeSpaceExpired, NULL);
       if ((available < 0) || (available < MIN_FREE))
         {
           sq->iterateLowPriority (ANY_BLOCK, &freeSpaceLow, NULL);
@@ -466,7 +458,8 @@ release_module_datastore ()
  */
 static int
 filterAddAll (const HashCode512 * key,
-              const Datastore_Value * value, void *closure)
+              const Datastore_Value * value, void *closure,
+	      unsigned long long uid)
 {
   makeAvailable (key);
   return OK;

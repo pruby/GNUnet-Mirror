@@ -25,7 +25,13 @@
  * Database: MySQL
  *
  * NOTE: This db module does NOT work with mysql prior to 4.1 since
- * it uses prepared statements.
+ * it uses prepared statements.  MySQL 5.0.46 promises to fix a bug
+ * in MyISAM that is causing us grief.  At the time of this writing,
+ * that version is yet to be released.  In anticipation, the code
+ * will use MyISAM with 5.0.46 (and higher).  If you run such a
+ * version, please run "make check" to verify that the MySQL bug
+ * was actually fixed in your version (and if not, change the
+ * code below to use MyISAM for gn071).
  *
  * HIGHLIGHTS
  *
@@ -106,7 +112,7 @@
  *   1) by running mysqlcheck -A, or
  *   2) by executing (inside of mysql using the GNUnet database):
  *   mysql> REPAIR TABLE gn071;
- *   mysql> REPAIR TABLE gn071;
+ *   mysql> REPAIR TABLE gn072;
  *
  * PROBLEMS?
  *

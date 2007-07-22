@@ -8,6 +8,13 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.2a to HEAD
+==============
+
+WARNING: Migration of the content in your databases is not yet supported.
+(all of your existing content will be "lost" (for now)).
+
+
 0.7.2 to 0.7.2a
 ===============
 

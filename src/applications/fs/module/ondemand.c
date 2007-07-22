@@ -97,7 +97,8 @@ getOnDemandFile (const HashCode512 * fileId)
  */
 static int
 checkPresent (const HashCode512 * key,
-              const Datastore_Value * value, void *closure)
+              const Datastore_Value * value, void *closure,
+	      unsigned long long uid)
 {
   Datastore_Value *comp = closure;
 
@@ -532,7 +533,8 @@ ONDEMAND_testindexed (Datastore_ServiceAPI * datastore,
  */
 static int
 completeValue (const HashCode512 * key,
-               const Datastore_Value * value, void *closure)
+               const Datastore_Value * value, void *closure,
+	       unsigned long long uid)
 {
   Datastore_Value *comp = closure;
 

@@ -75,7 +75,8 @@ static int stat_push_count;
 
 static int
 push_callback (const HashCode512 * key,
-               const Datastore_Value * value, void *closure)
+               const Datastore_Value * value, void *closure,
+	       unsigned long long uid)
 {
   cron_t delay;
 

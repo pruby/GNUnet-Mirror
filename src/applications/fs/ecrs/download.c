@@ -962,7 +962,8 @@ decryptContent (const char *data,
  */
 static int
 nodeReceive (const HashCode512 * query,
-             const Datastore_Value * reply, void *cls)
+             const Datastore_Value * reply, void *cls,
+	     unsigned long long uid)
 {
   NodeClosure *node = cls;
   struct GE_Context *ectx = node->ctx->rm->ectx;

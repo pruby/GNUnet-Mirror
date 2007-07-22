@@ -88,7 +88,8 @@ typedef struct
  *
  * @param datum called with the next item
  * @param closure user-defined extra argument
- * @param uid unique identifier for the datum
+ * @param uid unique identifier for the datum;
+ *        maybe 0 if no unique identifier is available
  *
  * @return SYSERR to abort the iteration, OK to continue,
  *         NO to delete the item and continue (if supported)
@@ -184,6 +185,12 @@ typedef struct
                     unsigned int sizeLimit,
                     HashCode512 * key,
                     Datastore_Value ** value, unsigned int type);
+
+  /**
+   * Explicitly remove some content from the database.
+   */
+  int
+  (*del)(const HashCode512 * query, const Datastore_Value * value);
 
 } Datastore_ServiceAPI;
 
