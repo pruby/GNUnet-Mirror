@@ -421,9 +421,6 @@ transportDisconnect (TSession * tsession, const char *token)
   MUTEX_UNLOCK (lock);
   i = tapis[tsession->ttype]->disconnect (tsession);
   GE_BREAK(NULL, i == OK); /* should never fail */
-  MUTEX_LOCK (lock);
-  CHECK(tsession);
-  MUTEX_UNLOCK (lock);
   return i;
 }
 
