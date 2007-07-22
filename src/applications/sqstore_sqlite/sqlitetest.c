@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -52,7 +52,8 @@ initValue (int i)
 
 static int
 checkValue (const HashCode512 * key,
-            const Datastore_Value * val, void *closure)
+            const Datastore_Value * val, void *closure,
+	    unsigned long long uid)
 {
   int i;
   int ret;
@@ -77,39 +78,49 @@ checkValue (const HashCode512 * key,
 }
 
 static int
-iterateUp (const HashCode512 * key, const Datastore_Value * val, int *closure)
+iterateUp (const HashCode512 * key, const Datastore_Value * val, int *closure,
+	   unsigned long long uid)
 {
   int ret;
 
-  ret = checkValue (key, val, closure);
+  ret = checkValue (key, val, closure, uid);
   (*closure) += 2;
   return ret;
 }
 
 static int
 iterateDown (const HashCode512 * key,
-             const Datastore_Value * val, int *closure)
+             const Datastore_Value * val, int *closure,
+	     unsigned long long uid)
 {
   int ret;
 
   (*closure) -= 2;
-  ret = checkValue (key, val, closure);
+  ret = checkValue (key, val, closure, uid);
   return ret;
 }
 
 static int
 iterateDelete (const HashCode512 * key,
-               const Datastore_Value * val, SQstore_ServiceAPI * api)
+               const Datastore_Value * val, void * closure,
+	       unsigned long long uid)
 {
-  if (1 == api->del (key, val))
-    return OK;
-  else
-    return SYSERR;
+  return NO;
+}
+
+static int
+iteratePriority (const HashCode512 * key,
+		 const Datastore_Value * val, SQstore_ServiceAPI * api,
+		 unsigned long long uid)
+{
+  api->update(uid, 4, 0);
+  return OK;
 }
 
 static int
 priorityCheck (const HashCode512 * key,
-               const Datastore_Value * val, int *closure)
+               const Datastore_Value * val, int *closure,
+	       unsigned long long uid)
 {
   int id;
 
@@ -122,7 +133,8 @@ priorityCheck (const HashCode512 * key,
 
 static int
 multipleCheck (const HashCode512 * key,
-               const Datastore_Value * val, Datastore_Value ** last)
+               const Datastore_Value * val, Datastore_Value ** last,
+	       unsigned long long uid)
 {
   if (*last != NULL)
     {
@@ -171,7 +183,7 @@ test (SQstore_ServiceAPI * api)
     {
       memset (&key, 256 - i, sizeof (HashCode512));
       value = initValue (i);
-      ASSERT (1 == api->del (&key, value));
+      ASSERT (1 == api->get (&key, 0, &iterateDelete, NULL));
       FREE (value);
     }
   ASSERT (oldSize > api->getSize ());
@@ -197,7 +209,8 @@ test (SQstore_ServiceAPI * api)
   ASSERT (1 == api->iterateExpirationTime (ANY_BLOCK,
                                            (Datum_Iterator) & priorityCheck,
                                            &i));
-  api->update (&key, value, 4, 0);
+  ASSERT (1 == api->iterateAllNow((Datum_Iterator) & iteratePriority,
+				  api));
   i += 4;
   ASSERT (1 == api->iterateExpirationTime (ANY_BLOCK,
                                            (Datum_Iterator) & priorityCheck,
@@ -214,8 +227,8 @@ test (SQstore_ServiceAPI * api)
                                            (Datum_Iterator) & multipleCheck,
                                            &value));
   FREE (value);
-  api->del (&key, NULL);
-  api->del (&key, NULL);
+  ASSERT (2 == api->iterateAllNow ((Datum_Iterator) & iterateDelete,
+				   api));
   ASSERT (0 == api->iterateExpirationTime (ANY_BLOCK, NULL, NULL));
   api->drop ();
 

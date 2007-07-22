@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 /*
- * @file applications/sqstore_sqlite/sqlitetest3.c
+ * @file applications/sqstore_mysql/mysqltest3.c
  * @brief Profile sqstore iterators.
  * @author Christian Grothoff
  */
@@ -40,7 +40,7 @@
  */
 #define MAX_SIZE 1024LL * 1024 * 128
 
-#define ITERATIONS 10
+#define ITERATIONS 1
 
 /**
  * Number of put operations equivalent to 1/10th of MAX_SIZE
@@ -65,11 +65,13 @@ putValue (SQstore_ServiceAPI * api, int i)
 
   /* most content is 32k */
   size = sizeof (Datastore_Value) + 32 * 1024;
+
   if (weak_randomi (16) == 0)   /* but some of it is less! */
     size = sizeof (Datastore_Value) + weak_randomi (32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */
-  GE_ASSERT (NULL, size >= sizeof (Datastore_Value));
+
   /* generate random key */
+  key.bits[0] = (unsigned int) get_time();
   hash (&key, sizeof (HashCode512), &key);
   value = MALLOC (size);
   value->size = htonl (size);
@@ -86,10 +88,6 @@ putValue (SQstore_ServiceAPI * api, int i)
       return SYSERR;
     }
   ic++;
-#if REPORT_ID
-  if (ic % REP_FREQ == 0)
-    fprintf (stderr, "I");
-#endif
   stored_bytes += ntohl (value->size);
   stored_ops++;
   stored_entries++;
@@ -98,7 +96,8 @@ putValue (SQstore_ServiceAPI * api, int i)
 }
 
 static int
-iterateDummy (const HashCode512 * key, const Datastore_Value * val, void *cls)
+iterateDummy (const HashCode512 * key, const Datastore_Value * val, void *cls,
+	      unsigned long long uid)
 {
   if (GNUNET_SHUTDOWN_TEST () == YES)
     return SYSERR;
@@ -110,6 +109,7 @@ test (SQstore_ServiceAPI * api)
 {
   int i;
   int j;
+  int ret;
   cron_t start;
   cron_t end;
 
@@ -129,43 +129,37 @@ test (SQstore_ServiceAPI * api)
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateLowPriority (0, &iterateDummy, api);
+      ret = api->iterateLowPriority (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u low priority iteration took %20llums\n", i, end - start);
+      printf ("%3u low priority iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateExpirationTime (0, &iterateDummy, api);
+      ret = api->iterateExpirationTime (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u expiration t iteration took %20llums\n", i, end - start);
+      printf ("%3u expiration t iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateNonAnonymous (0, NO, &iterateDummy, api);
+      ret = api->iterateNonAnonymous (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u non anonymou iteration took %20llums\n", i, end - start);
+      printf ("%3u non anonymou iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateNonAnonymous (0, YES, &iterateDummy, api);
+      ret = api->iterateMigrationOrder (&iterateDummy, api);
       end = get_time ();
-      printf ("%3u non anon YES iteration took %20llums\n", i, end - start);
+      printf ("%3u migration or iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateMigrationOrder (&iterateDummy, api);
+      ret = api->iterateAllNow (&iterateDummy, api);
       end = get_time ();
-      printf ("%3u migration or iteration took %20llums\n", i, end - start);
-      if (GNUNET_SHUTDOWN_TEST () == YES)
-        break;
-      start = get_time ();
-      api->iterateAllNow (&iterateDummy, api);
-      end = get_time ();
-      printf ("%3u all now      iteration took %20llums\n", i, end - start);
+      printf ("%3u all now      iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
     }
-  api->drop ();
+  api->drop();
   return OK;
 }
 
@@ -202,4 +196,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* end of sqlitetest3.c */
+/* end of mysqltest3.c */

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -22,14 +22,23 @@
  * @brief Test for the sqstore implementations.
  * @author Christian Grothoff
  *
- * This testcase inserts a bunch of (variable size) data and then
- * deletes data until the (reported) database size drops below a given
- * threshold.  This is iterated 10 times, with the actual size of the
- * content stored, the database size reported and the file size on
- * disk being printed for each iteration.  The deletion strategy
- * alternates between "lowest priority" and "earliest expiration".
+ * This testcase inserts a bunch of (variable size) data and then deletes
+ * data until the (reported) database size drops below a given threshold.
+ * This is iterated 10 times, with the actual size of the content stored,
+ * the database size reported and the file size on disk being printed for
+ * each iteration.  The code also prints a "I" for every 40 blocks
+ * inserted and a "D" for every 40 blocks deleted.  The deletion
+ * strategy alternates between "lowest priority" and "earliest expiration".
  * Priorities and expiration dates are set using a pseudo-random value
  * within a realistic range.
+ * <p>
+ *
+ * Note that the disk overhead calculations are not very sane for
+ * MySQL: we take the entire /var/lib/mysql directory (best we can
+ * do for ISAM), which may contain other data and which never
+ * shrinks.  The scanning of the entire mysql directory during
+ * each report is also likely to be the cause of a minor
+ * slowdown compared to sqlite.<p>
  */
 
 #include "platform.h"
@@ -44,12 +53,36 @@
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 /**
- * Target datastore size (in bytes).  Realistic sizes are
- * more like 16 GB (not the default of 16 MB); however,
- * those take too long to run them in the usual "make check"
- * sequence.  Hence the value used for shipping is tiny.
+ * Target datastore size (in bytes).
+ * <p>
+ * Example impact of total size on the reported number
+ * of operations (insert and delete) per second (once
+ * roughly stabilized -- this is not "sound" experimental
+ * data but just a rough idea) for a particular machine:
+ * <pre>
+ *    4: 60   at   7k ops total
+ *    8: 50   at   3k ops total
+ *   16: 48   at   8k ops total
+ *   32: 46   at   8k ops total
+ *   64: 61   at   9k ops total
+ *  128: 89   at   9k ops total
+ * 4092: 11   at 383k ops total (12 GB stored, 14.8 GB DB size on disk, 2.5 GB reported)
+ * </pre>
+ * Pure insertion performance into an empty DB initially peaks
+ * at about 400 ops.  The performance seems to drop especially
+ * once the existing (fragmented) ISAM space is filled up and
+ * the DB needs to grow on disk.  This could be explained with
+ * ISAM looking more carefully for defragmentation opportunities.
+ * <p>
+ * MySQL disk space overheads (for otherwise unused database when
+ * run with 128 MB target data size; actual size 651 MB, useful
+ * data stored 520 MB) are quite large in the range of 25-30%.
+ * <p>
+ * This kind of processing seems to be IO bound (system is roughly
+ * at 90% wait, 10% CPU).  This is with MySQL 5.0.
+ *
  */
-#define MAX_SIZE 1024LL * 1024 * 128
+#define MAX_SIZE 1024LL * 1024 * 16
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -76,8 +109,11 @@
 
 /**
  * Name of the database on disk.
+ * You may have to adjust this path and the access
+ * permission to the respective directory in order
+ * to obtain all of the performance information.
  */
-#define DB_NAME "/tmp/gnunet-sqlite-sqstore-test/data/fs/content/gnunet.dat"
+#define DB_NAME "/var/lib/mysql"
 
 static unsigned long long stored_bytes;
 
@@ -130,7 +166,8 @@ putValue (SQstore_ServiceAPI * api, int i)
 
 static int
 iterateDelete (const HashCode512 * key,
-               const Datastore_Value * val, void *cls)
+               const Datastore_Value * val, void *cls,
+	       unsigned long long uid)
 {
   SQstore_ServiceAPI *api = cls;
   static int dc;
@@ -144,10 +181,9 @@ iterateDelete (const HashCode512 * key,
   if (dc % REP_FREQ == 0)
     fprintf (stderr, "D");
 #endif
-  GE_ASSERT (NULL, 1 == api->del (key, val));
   stored_bytes -= ntohl (val->size);
   stored_entries--;
-  return OK;
+  return NO;
 }
 
 /**
@@ -156,14 +192,13 @@ iterateDelete (const HashCode512 * key,
 static int
 test (SQstore_ServiceAPI * api)
 {
-  unsigned long long lops;
   int i;
   int j;
   unsigned long long size;
   int have_file;
+  struct stat sbuf;
 
-  lops = 0;
-  have_file = OK == disk_file_test (NULL, DB_NAME);
+  have_file = 0 == stat (DB_NAME, &sbuf);
 
   for (i = 0; i < ITERATIONS; i++)
     {
@@ -184,7 +219,6 @@ test (SQstore_ServiceAPI * api)
       else
         api->iterateExpirationTime (0, &iterateDelete, api);
 
-      /* every 10 iterations print status */
       size = 0;
       if (have_file)
         disk_file_size (NULL, DB_NAME, &size, NO);
@@ -192,14 +226,12 @@ test (SQstore_ServiceAPI * api)
 #if REPORT_ID
                "\n"
 #endif
-               "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", i, stored_bytes / 1024,      /* used size in k */
+               "Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n", stored_bytes / 1024,     /* used size in k */
                api->getSize () / 1024,  /* API-reported size in k */
                size / 1024,     /* disk size in kb */
                (100.0 * size / stored_bytes) - 100,     /* overhead */
                (stored_ops * 2 - stored_entries) / 1024,        /* total operations (in k) */
-               1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time () - start_time));     /* operations per second */
-      lops = stored_ops * 2 - stored_entries;
-      start_time = get_time ();
+               1000 * (stored_ops * 2 - stored_entries) / (1 + get_time () - start_time));      /* operations per second */
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
     }
@@ -244,4 +276,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* end of sqlitetest2.c */
+/* end of mysqltest2.c */
