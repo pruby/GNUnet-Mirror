@@ -21,8 +21,8 @@
 #
 #
 AC_PREREQ(2.57)
-AC_INIT([GNUnet], [0.7.2a],[bug-gnunet@gnu.org])
-AM_INIT_AUTOMAKE([GNUnet], [0.7.2a])
+AC_INIT([GNUnet], [0.7.2a-SVN],[bug-gnunet@gnu.org])
+AM_INIT_AUTOMAKE([GNUnet], [0.7.2a-SVN])
 AM_CONFIG_HEADER([config.h])
 
 AH_TOP([#define _GNU_SOURCE  1])

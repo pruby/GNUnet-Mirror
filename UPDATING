@@ -11,8 +11,7 @@ you're on your own.
 0.7.2a to HEAD
 ==============
 
-WARNING: Migration of the content in your databases is not yet supported.
-(all of your existing content will be "lost" (for now)).
+Run gnunet-update.
 
 
 0.7.2 to 0.7.2a

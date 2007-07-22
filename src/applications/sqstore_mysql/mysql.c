@@ -1519,4 +1519,71 @@ release_module_sqstore_mysql ()
   coreAPI = NULL;
 }
 
+
+/**
+ * Update mysql database module.
+ */
+void
+update_module_sqstore_mysql (UpdateAPI * uapi) {
+  ectx = uapi->ectx;
+#ifndef WINDOWS
+  pw = getpwuid (getuid ());
+  if (!pw)
+    GE_DIE_STRERROR (ectx, GE_FATAL | GE_ADMIN | GE_IMMEDIATE, "getpwuid");
+  home_dir = STRDUP (pw->pw_dir);
+#else
+  home_dir = (char *) MALLOC (_MAX_PATH + 1);
+  plibc_conv_to_win_path ("~/", home_dir);
+#endif
+  nX = strlen (home_dir) + 10;
+  cnffile = MALLOC (nX);
+  SNPRINTF (cnffile, nX, "%s/.my.cnf", home_dir);
+  FREE (home_dir);
+  GC_get_configuration_value_filename (uapi->cfg,
+                                       "MYSQL", "CONFIG", cnffile, &home_dir);
+  FREE (cnffile);
+  cnffile = home_dir;
+  GE_LOG (ectx,
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          _("Trying to use file `%s' for MySQL configuration.\n"), cnffile);
+  fp = FOPEN (cnffile, "r");
+  if (!fp)
+    {
+      GE_LOG_STRERROR_FILE (ectx,
+                            GE_ERROR | GE_ADMIN | GE_BULK, "fopen", cnffile);
+      FREE (cnffile);
+      return;
+    }
+  else
+    {
+      fclose (fp);
+    }
+  dbh = MALLOC (sizeof (mysqlHandle));
+  memset(dbh, 0, sizeof(mysqlHandle));
+  dbh->cnffile = cnffile;
+  if (OK != iopen ())
+    {
+      FREE (cnffile);
+      FREE (dbh);
+      GE_LOG (ectx,
+              GE_ERROR | GE_BULK | GE_USER,
+              _
+              ("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
+      dbh = NULL;
+      return;
+    }
+  if ( (0 == mysql_query(dbh->dbf,
+			 "ALTER TABLE gn070 ADD COLUMN vkey BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT")) &&
+       (0 == mysql_query(dbh->dbf,
+			 "INSERT INTO gn071 (size,type,prio,anonLevel,expire,hash,vkey) (SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn070)")) &&
+       (0 == mysql_query(dbh->dbf,
+			 "INSERT INTO gn072 (vkey,value) (SELECT vkey,value FROM gn070)") ) )
+    mysql_query("DROP TABLE gn070");
+  
+  }  
+  iclose();
+  mysql_library_end ();
+  ectx = NULL;
+}
+
 /* end of mysql.c */
