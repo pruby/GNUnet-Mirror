@@ -641,7 +641,6 @@ src/applications/pingpong/Makefile
 src/applications/rpc/Makefile
 src/applications/session/Makefile
 src/applications/sqstore_mysql/Makefile
-src/applications/sqstore_mysql_embedded/Makefile
 src/applications/sqstore_sqlite/Makefile
 src/applications/state/Makefile
 src/applications/stats/Makefile
