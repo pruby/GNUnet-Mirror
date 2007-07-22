@@ -191,10 +191,10 @@ typedef struct
 #define DELETE_ENTRY_BY_VKEY "DELETE FROM gn071 WHERE vkey=?"
   MYSQL_STMT * delete_entry_by_vkey;
 
-#define SELECT_ENTRY_BY_HASH "SELECT * FROM gn071 WHERE hash=? ORDER BY expire DESC"
+#define SELECT_ENTRY_BY_HASH "SELECT * FROM gn071 WHERE hash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1"
   MYSQL_STMT * select_entry_by_hash;
 
-#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT * FROM gn071 WHERE hash=? AND type=?"
+#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT * FROM gn071 WHERE hash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1"
   MYSQL_STMT * select_entry_by_hash_and_type;
 
 #define COUNT_ENTRY_BY_HASH "SELECT count(*) FROM gn071 WHERE hash=?"
@@ -203,36 +203,33 @@ typedef struct
 #define COUNT_ENTRY_BY_HASH_AND_TYPE "SELECT count(*) FROM gn071 WHERE hash=? AND type=?"
   MYSQL_STMT * count_entry_by_hash_and_type;
 
-#define UPDATE_ENTRY "UPDATE gn071 SET prio=prio+?,expire=IF(expire>=?,expire,?) WHERE hash=? AND vkey=?"
+#define UPDATE_ENTRY "UPDATE gn071 SET prio=prio+?,expire=IF(expire>=?,expire,?) WHERE vkey=?"
   MYSQL_STMT * update_entry;
 
 
 
-#define SELECT_IT_LOW_PRIORITY "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ?) )"\
+#define SELECT_IT_LOW_PRIORITY "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ? AND vkey != ?) )"\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
   MYSQL_STMT * ilow;
 
-#define SELECT_IT_NON_ANONYMOUS "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ?) ) "\
+#define SELECT_IT_NON_ANONYMOUS "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ? AND vkey != ?) ) "\
                                 "AND anonLevel=0 AND type != 0xFFFFFFFF "\
                                 "ORDER BY prio DESC,vkey DESC LIMIT 1"
   MYSQL_STMT * inon;
 
-#define SELECT_IT_EXPIRATION_TIME "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey > ?) OR (expire > ?) ) "\
+#define SELECT_IT_EXPIRATION_TIME "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey > ?) OR (expire > ? AND vkey != ?) ) "\
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1"
   MYSQL_STMT * iexp;
 
-#define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire > ?) ) "\
+#define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire > ? AND vkey != ?) ) "\
                                   "AND expire > ? AND type!=3 "\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
   MYSQL_STMT * imig;
 
-#define SELECT_ALL "SELECT * FROM gn071"
-  MYSQL_STMT * iall;
-
 } mysqlHandle;
 
 
-#define SELECT_SIZE "SELECT sum(size) FROM gn070"
+#define SELECT_SIZE "SELECT sum(size) FROM gn071"
 
 static mysqlHandle * dbh;
 
@@ -259,7 +256,6 @@ iclose ()
   PEND(dbh->inon);
   PEND(dbh->iexp);
   PEND(dbh->imig);
-  PEND(dbh->iall);  
   mysql_close (dbh->dbf);
   dbh->dbf = NULL;
   dbh->valid = NO;
@@ -321,9 +317,9 @@ iopen ()
 	       " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
 	       " hash BINARY(64) NOT NULL DEFAULT '',"
 	       " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	       " INDEX (hash(64)),"
+	       " INDEX (hash(64))," /* MySQL 5.0.46 fixes bug in MyISAM */
 	       " INDEX (prio),"
-	       " INDEX (expire,anonLevel,type)" ") ENGINE=MyISAM");
+	       " INDEX (expire,anonLevel,type)" ") ENGINE=InnoDB");
   if (mysql_error (dbh->dbf)[0])
     {
       LOG_MYSQL (GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", dbh);
@@ -366,7 +362,6 @@ iopen ()
   PINIT(dbh->inon, SELECT_IT_NON_ANONYMOUS);
   PINIT(dbh->iexp, SELECT_IT_EXPIRATION_TIME);
   PINIT(dbh->imig, SELECT_IT_MIGRATION_ORDER);
-  PINIT(dbh->iall, SELECT_ALL);
   dbh->valid = YES;
   return OK;
 }
@@ -544,12 +539,14 @@ assembleDatum (MYSQL_BIND * result)
        (! result[3].is_unsigned) ||
        (result[4].buffer_type != MYSQL_TYPE_LONGLONG) ||
        (! result[4].is_unsigned) ||
-       (result[5].buffer_type != MYSQL_TYPE_STRING) ||
+       (result[5].buffer_type != MYSQL_TYPE_BLOB) ||
        (result[5].buffer_length != sizeof(HashCode512)) ||
        (*result[5].length != sizeof(HashCode512)) ||
        (result[6].buffer_type != MYSQL_TYPE_LONGLONG) ||
-       (! result[6].is_unsigned) ) 
+       (! result[6].is_unsigned) ) {
+    GE_BREAK(NULL, 0);
     return NULL; /* error */  
+  }
   
   contentSize = * (unsigned int*) result[0].buffer;
   if (contentSize < sizeof(Datastore_Value))
@@ -612,7 +609,7 @@ assembleDatum (MYSQL_BIND * result)
     iclose ();
     return NULL;
   }
-  if ( (mysql_stmt_fetch(dbh->select_value)) ||
+  if ( (0 != mysql_stmt_fetch(dbh->select_value)) ||
        (rbind[0].buffer_length != contentSize) ||
        (length != contentSize) ) {
     mysql_stmt_reset(dbh->select_value);
@@ -702,7 +699,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
   qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;  /* expiration */
   qbind[4].is_unsigned = YES;
   qbind[4].buffer = &expiration;
-  qbind[5].buffer_type = MYSQL_TYPE_STRING; /* hash */
+  qbind[5].buffer_type = MYSQL_TYPE_BLOB; /* hash */
   qbind[5].buffer = (void*) key;
   qbind[5].length = &hashSize;
   qbind[5].buffer_length = hashSize;
@@ -755,20 +752,19 @@ put (const HashCode512 * key, const Datastore_Value * value)
  *        Use 0 for any type.
  * @param iter never NULL
  * @param is_asc are we using ascending order?
- * @param is_int is the extra ordering (other than vkey) an int?
+ * @param is_prio is the extra ordering by priority (otherwise by expiration)
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
 static int
 iterateHelper (unsigned int type,
 	       int is_asc,
-	       int is_int,
+	       int is_prio,
                MYSQL_STMT * stmt, Datum_Iterator iter, void *closure)
 {
   Datastore_Value * datum;
   int count;
   int ret;
-  int found;
   unsigned int last_prio;
   unsigned long long last_expire;
   unsigned long long last_vkey;
@@ -781,7 +777,7 @@ iterateHelper (unsigned int type,
   unsigned long hashSize;
   HashCode512 key;
   cron_t now;
-  MYSQL_BIND qbind[4];
+  MYSQL_BIND qbind[5];
   MYSQL_BIND rbind[7];
 
   if (is_asc) {
@@ -793,7 +789,8 @@ iterateHelper (unsigned int type,
     last_vkey = -1;
     last_expire = -1;
   }
-  if (is_int) {
+  memset(qbind, 0, sizeof(qbind));
+  if (is_prio) {
     qbind[0].buffer_type = MYSQL_TYPE_LONG;
     qbind[0].buffer = &last_prio;
     qbind[0].is_unsigned = YES;
@@ -812,8 +809,12 @@ iterateHelper (unsigned int type,
   qbind[1].buffer = &last_vkey;
   qbind[1].is_unsigned = YES;
   qbind[3].buffer_type = MYSQL_TYPE_LONGLONG;
-  qbind[3].buffer = &now;
+  qbind[3].buffer = &last_vkey;
   qbind[3].is_unsigned = YES;
+  qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
+  qbind[4].buffer = &now;
+  qbind[4].is_unsigned = YES;
+  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 4);
   
   hashSize = sizeof(HashCode512);
   memset(rbind, 0, sizeof(rbind));
@@ -832,13 +833,15 @@ iterateHelper (unsigned int type,
   rbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[4].buffer = &expiration;
   rbind[4].is_unsigned = YES;
-  rbind[5].buffer_type = MYSQL_TYPE_STRING;
+  rbind[5].buffer_type = MYSQL_TYPE_BLOB;
   rbind[5].buffer = &key;
   rbind[5].buffer_length = hashSize;
   rbind[5].length = &hashSize;
   rbind[6].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[6].buffer = &vkey;
   rbind[6].is_unsigned = YES;
+  GE_ASSERT (ectx,
+	     mysql_stmt_field_count (stmt) == 7);
 
   mysql_thread_init ();
   count = 0;
@@ -850,7 +853,6 @@ iterateHelper (unsigned int type,
       return SYSERR; 
     }
     now = get_time ();
-    GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 4);
     if (mysql_stmt_bind_param (stmt, qbind))
       {
 	GE_LOG (ectx,
@@ -859,8 +861,8 @@ iterateHelper (unsigned int type,
 		"mysql_stmt_bind_param",
 		__FILE__, __LINE__, mysql_stmt_error (stmt));
 	iclose ();
-	mysql_thread_end ();
 	MUTEX_UNLOCK (lock);
+	mysql_thread_end ();
 	return SYSERR;
       }
     if (mysql_stmt_execute (stmt))
@@ -871,12 +873,10 @@ iterateHelper (unsigned int type,
 		"mysql_stmt_execute",
 		__FILE__, __LINE__, mysql_stmt_error (stmt));
 	iclose ();
-	mysql_thread_end ();
 	MUTEX_UNLOCK (lock);
+	mysql_thread_end ();
 	return SYSERR;
       }    
-    GE_ASSERT (ectx,
-	       mysql_stmt_field_count (stmt) == 7);
     if (mysql_stmt_bind_result(stmt,
 			       rbind)) {
       GE_LOG (ectx,
@@ -889,57 +889,40 @@ iterateHelper (unsigned int type,
       MUTEX_UNLOCK (lock);
       return SYSERR;
     }
-    found = NO;
     datum = NULL;
-    while (mysql_stmt_fetch(stmt)) {
-      if (datum != NULL) {
-	if (iter == NULL)
-	  ret = OK;
-	else 
-	  ret = iter(&key,
-		     datum,
-		     closure,
-		     vkey);
-	FREE(datum);
-	datum = NULL;
-	if (ret == SYSERR) 
-	  break;        
-	if (ret == NO) {
-	  delete_value(vkey);
-	  delete_entry_by_vkey(vkey);
-	  content_size -= ntohl(datum->size);
-	}
-      }
-      found = YES;
-      count++;
-      datum = assembleDatum(rbind);
-      mysql_stmt_reset(stmt);
-    }
-    if (found == NO) {
+    if (0 != mysql_stmt_fetch(stmt)) {
       mysql_stmt_reset(stmt);
       MUTEX_UNLOCK (lock);
       break;
     }
+    mysql_stmt_reset(stmt);
     MUTEX_UNLOCK (lock);
-    if (datum == NULL)
-      continue;
-    ret = iter(&key,
-	       datum,
-	       closure,
-	       vkey);
-    FREE(datum);
-    if (ret == SYSERR) 
-      break;        
-    if (ret == NO) {
-      MUTEX_LOCK (lock);
-      delete_value(vkey);
-      delete_entry_by_vkey(vkey);
-      content_size -= ntohl(datum->size);
-      MUTEX_UNLOCK (lock);
-    }
     last_prio = prio;
     last_vkey = vkey;
     last_expire = expiration;
+    count++;
+    if (iter != NULL) {
+      datum = assembleDatum(rbind);    
+      if (datum == NULL)
+	continue;
+      if (iter == NULL)
+	ret = OK;
+      else
+	ret = iter(&key,
+		   datum,
+		   closure,
+		   vkey);
+      FREE(datum);
+      if (ret == SYSERR) 
+	break;        
+      if (ret == NO) {
+	MUTEX_LOCK (lock);
+	delete_value(vkey);
+	delete_entry_by_vkey(vkey);
+	content_size -= ntohl(datum->size);
+	MUTEX_UNLOCK (lock);
+      }
+    }
   }
   mysql_thread_end ();
   return count;
@@ -1037,9 +1020,9 @@ static int
 iterateAllNow (Datum_Iterator iter, void *closure)
 {
   return iterateHelper (0, 
-			NO,
-			NO,
-			dbh->iall,
+			YES,
+			YES,
+			dbh->ilow,
 			iter, closure);
 }
 
@@ -1067,10 +1050,11 @@ get (const HashCode512 * query,
   unsigned int level;
   unsigned long long expiration;
   unsigned long long vkey;
+  unsigned long long last_vkey;
   Datastore_Value * datum;
   HashCode512 key;
   unsigned long hashSize;
-  MYSQL_BIND qbind[2];  
+  MYSQL_BIND qbind[3];
   MYSQL_BIND rbind[7];
 #if DEBUG_MYSQL
   EncName enc;
@@ -1085,14 +1069,6 @@ get (const HashCode512 * query,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "MySQL looks for `%s' of type %u\n", &enc, type);
 #endif
-  MUTEX_LOCK (lock);
-  mysql_thread_init ();
-  if (OK != CHECK_DBH)
-    {
-      mysql_thread_end ();
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
-    }
   if (type != 0)
     {
       if (iter == NULL)
@@ -1109,49 +1085,18 @@ get (const HashCode512 * query,
     }
 
   hashSize = sizeof (HashCode512);
+  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
   memset(qbind, 0, sizeof(qbind));
-  qbind[0].buffer_type = MYSQL_TYPE_STRING;
+  qbind[0].buffer_type = MYSQL_TYPE_BLOB;
   qbind[0].buffer = (void*) query;
   qbind[0].length = &hashSize;
-  qbind[0].buffer_length = hashSize;
-  qbind[1].buffer_type = MYSQL_TYPE_LONG;
-  qbind[1].buffer = &type;
-  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 2);
-
-  if (mysql_stmt_bind_param (stmt, qbind))
-    {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "mysql_stmt_bind_param",
-              __FILE__, __LINE__, mysql_stmt_error (stmt));
-      iclose ();
-      mysql_thread_end ();
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
-    }
-
-  if (mysql_stmt_execute (stmt))
-    {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "mysql_stmt_execute",
-              __FILE__, __LINE__, mysql_stmt_error (stmt));
-      iclose ();
-      mysql_thread_end ();
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
-    }
-
-  if (iter == NULL)
-    {
-      count = mysql_stmt_affected_rows (stmt);
-      mysql_stmt_reset (stmt);
-      mysql_thread_end ();
-      MUTEX_UNLOCK (lock);
-      return count;
-    } 
+  qbind[0].buffer_length = hashSize;  
+  qbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+  qbind[1].is_unsigned = YES;
+  qbind[1].buffer = &last_vkey;
+  qbind[2].buffer_type = MYSQL_TYPE_LONG;
+  qbind[2].is_unsigned = YES;
+  qbind[2].buffer = &type;
   GE_ASSERT (ectx,
 	     mysql_stmt_field_count (stmt) == 7);
   memset(rbind, 0, sizeof(rbind));
@@ -1170,47 +1115,99 @@ get (const HashCode512 * query,
   rbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[4].buffer = &expiration;
   rbind[4].is_unsigned = YES;
-  rbind[5].buffer_type = MYSQL_TYPE_STRING;
+  rbind[5].buffer_type = MYSQL_TYPE_BLOB;
   rbind[5].buffer = &key;
   rbind[5].buffer_length = hashSize;
   rbind[5].length = &hashSize;
   rbind[6].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[6].buffer = &vkey;
   rbind[6].is_unsigned = YES;
-  if (mysql_stmt_bind_result(dbh->select_value,
-			     rbind)) {
-    GE_LOG (ectx,
-	    GE_ERROR | GE_BULK | GE_USER,
-	    _("`%s' failed at %s:%d with error: %s\n"),
-	    "mysql_stmt_bind_result",
-	    __FILE__, __LINE__, mysql_stmt_error (stmt));
-    iclose ();
-    mysql_thread_end ();
-    MUTEX_UNLOCK (lock);
-    return SYSERR;
-  }
+
+
+  mysql_thread_init ();
+  last_vkey = 0;
   count = 0;
-  while (mysql_stmt_fetch(stmt)) {
+  while (1) {
+    MUTEX_LOCK (lock);
+    if (OK != CHECK_DBH)
+      {
+	MUTEX_UNLOCK (lock);
+	mysql_thread_end ();
+	return SYSERR;
+      }
+    if (mysql_stmt_bind_param (stmt, qbind))
+      {
+	GE_LOG (ectx,
+		GE_ERROR | GE_BULK | GE_USER,
+		_("`%s' failed at %s:%d with error: %s\n"),
+		"mysql_stmt_bind_param",
+		__FILE__, __LINE__, mysql_stmt_error (stmt));
+	iclose ();
+	mysql_thread_end ();
+	MUTEX_UNLOCK (lock);
+	return SYSERR;
+      }
+    if (mysql_stmt_execute (stmt))
+      {
+	GE_LOG (ectx,
+		GE_ERROR | GE_BULK | GE_USER,
+		_("`%s' failed at %s:%d with error: %s\n"),
+		"mysql_stmt_execute",
+		__FILE__, __LINE__, mysql_stmt_error (stmt));
+	iclose ();
+	MUTEX_UNLOCK (lock);
+	mysql_thread_end ();
+	return SYSERR;
+      }
+    if (mysql_stmt_bind_result(stmt,
+			       rbind)) {
+      GE_LOG (ectx,
+	      GE_ERROR | GE_BULK | GE_USER,
+	      _("`%s' failed at %s:%d with error: %s\n"),
+	      "mysql_stmt_bind_result",
+	      __FILE__, __LINE__, mysql_stmt_error (stmt));
+      iclose ();
+      mysql_thread_end ();
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }    
+    if (0 != mysql_stmt_fetch(stmt)) {     
+      mysql_stmt_reset(stmt);
+      MUTEX_UNLOCK(lock);
+      break;
+    }
+    last_vkey = vkey;
+    if (iter == NULL)
+      {
+	count = mysql_stmt_affected_rows (stmt);
+	mysql_stmt_reset (stmt);
+	mysql_thread_end ();
+	MUTEX_UNLOCK (lock);
+    
+	return count;
+      }
+    mysql_stmt_reset(stmt);
     datum = assembleDatum(rbind);
-    if (datum == NULL)
-      continue;
+    MUTEX_UNLOCK(lock);
+    if (datum == NULL) 
+      continue;    
     count++;
     ret = iter(&key,
 	       datum,
 	       closure,
 	       vkey);
-    FREE(datum);
     if (ret == SYSERR) 
       break;    
     if (ret == NO) {
+      MUTEX_LOCK(lock);
       delete_value(vkey);
       delete_entry_by_vkey(vkey);
       content_size -= ntohl(datum->size);
+      MUTEX_UNLOCK(lock);
     }
+    FREE(datum);
   }
-  mysql_stmt_reset(stmt);
   mysql_thread_end ();
-  MUTEX_UNLOCK (lock);
   return count;
 }
 

@@ -65,6 +65,7 @@ putValue (SQstore_ServiceAPI * api, int i)
 
   /* most content is 32k */
   size = sizeof (Datastore_Value) + 32 * 1024;
+
   if (weak_randomi (16) == 0)   /* but some of it is less! */
     size = sizeof (Datastore_Value) + weak_randomi (32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */

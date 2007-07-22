@@ -31,7 +31,7 @@
 #include "gnunet_sqstore_service.h"
 #include "core.h"
 
-#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
+#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); abort(); goto FAILURE;} } while (0)
 
 static cron_t now;
 
