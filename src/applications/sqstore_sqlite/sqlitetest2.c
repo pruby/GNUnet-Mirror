@@ -166,8 +166,7 @@ putValue (SQstore_ServiceAPI * api, int i)
 
 static int
 iterateDelete (const HashCode512 * key,
-               const Datastore_Value * val, void *cls,
-	       unsigned long long uid)
+               const Datastore_Value * val, void *cls, unsigned long long uid)
 {
   SQstore_ServiceAPI *api = cls;
   static int dc;

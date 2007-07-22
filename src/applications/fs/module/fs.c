@@ -513,7 +513,7 @@ csHandleCS_fs_request_index_MESSAGE (struct ClientHandle *sock,
 static int
 completeValue (const HashCode512 * key,
                const Datastore_Value * value, void *closure,
-	       unsigned long long uid)
+               unsigned long long uid)
 {
   Datastore_Value *comp = closure;
 
@@ -709,7 +709,7 @@ typedef struct
 static int
 gapGetConverter (const HashCode512 * key,
                  const Datastore_Value * invalue, void *cls,
-		 unsigned long long uid)
+                 unsigned long long uid)
 {
   GGC *ggc = (GGC *) cls;
   GapWrapper *gw;

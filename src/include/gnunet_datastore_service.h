@@ -96,7 +96,7 @@ typedef struct
  */
 typedef int (*Datum_Iterator) (const HashCode512 * key,
                                const Datastore_Value * value, void *closure,
-			       unsigned long long uid);
+                               unsigned long long uid);
 
 
 /**
@@ -189,8 +189,7 @@ typedef struct
   /**
    * Explicitly remove some content from the database.
    */
-  int
-  (*del)(const HashCode512 * query, const Datastore_Value * value);
+  int (*del) (const HashCode512 * query, const Datastore_Value * value);
 
 } Datastore_ServiceAPI;
 

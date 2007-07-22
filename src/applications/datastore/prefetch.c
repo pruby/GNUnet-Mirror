@@ -65,8 +65,7 @@ static struct GC_Configuration *cfg;
 
 static int
 acquire (const HashCode512 * key,
-         const Datastore_Value * value, void *closure,
-	 unsigned long long uid)
+         const Datastore_Value * value, void *closure, unsigned long long uid)
 {
   if (doneSignal)
     return SYSERR;

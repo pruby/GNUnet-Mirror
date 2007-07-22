@@ -114,16 +114,16 @@ get (const HashCode512 * query,
 
 static int
 deleteCB (const HashCode512 * key,
-	  const Datastore_Value * value, void *closure,
-	  unsigned long long uid)
+          const Datastore_Value * value, void *closure,
+          unsigned long long uid)
 {
-  const Datastore_Value * have = closure;
+  const Datastore_Value *have = closure;
   if (have == NULL)
     return NO;
-  if  ( (value->size == have->size) &&
-	(0 == memcmp(&have[1],
-		     &value[1],
-		     ntohl(value->size) - sizeof(Datastore_Value))))
+  if ((value->size == have->size) &&
+      (0 == memcmp (&have[1],
+                    &value[1],
+                    ntohl (value->size) - sizeof (Datastore_Value))))
     return NO;
   return OK;
 }
@@ -147,7 +147,7 @@ del (const HashCode512 * query, const Datastore_Value * value)
               &enc, __FILE__, __LINE__);
       return 0;
     }
-  ok = sq->get (query, ntohl(value->type), &deleteCB, (void*) value);
+  ok = sq->get (query, ntohl (value->type), &deleteCB, (void *) value);
   while (ok-- > 0)
     {
       makeUnavailable (query);  /* update filter! */
@@ -203,7 +203,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
 
 typedef struct
 {
-  int exists; 
+  int exists;
   const Datastore_Value *value;
   unsigned long long uid;
   unsigned long long expiration;
@@ -211,8 +211,7 @@ typedef struct
 
 static int
 checkExists (const HashCode512 * key,
-             const Datastore_Value * value, void *cls,
-	     unsigned long long uid)
+             const Datastore_Value * value, void *cls, unsigned long long uid)
 {
   CE *ce = cls;
 
@@ -222,7 +221,7 @@ checkExists (const HashCode512 * key,
                     ntohl (value->size) - sizeof (Datastore_Value))))
     return OK;                  /* found another value, but different content! */
   ce->uid = uid;
-  ce->expiration = ntohll(value->expirationTime);
+  ce->expiration = ntohll (value->expirationTime);
   ce->exists = YES;
   return SYSERR;                /* abort iteration! */
 }
@@ -253,8 +252,7 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
   if (cls.exists)
     {
       if ((ntohl (value->prio) == 0) &&
-          (ntohll (value->expirationTime) <=
-           cls.expiration))
+          (ntohll (value->expirationTime) <= cls.expiration))
         {
           return OK;
         }
@@ -295,7 +293,7 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
 static int
 freeSpaceExpired (const HashCode512 * key,
                   const Datastore_Value * value, void *closure,
-		  unsigned long long uid)
+                  unsigned long long uid)
 {
   if ((available > 0) && (available >= MIN_FREE))
     return SYSERR;
@@ -308,7 +306,7 @@ freeSpaceExpired (const HashCode512 * key,
 static int
 freeSpaceLow (const HashCode512 * key,
               const Datastore_Value * value, void *closure,
-	      unsigned long long uid)
+              unsigned long long uid)
 {
   if ((available > 0) && (available >= MIN_FREE))
     return SYSERR;
@@ -459,7 +457,7 @@ release_module_datastore ()
 static int
 filterAddAll (const HashCode512 * key,
               const Datastore_Value * value, void *closure,
-	      unsigned long long uid)
+              unsigned long long uid)
 {
   makeAvailable (key);
   return OK;

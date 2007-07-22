@@ -143,8 +143,7 @@ freeTCPSession (TCPSession * tcpsession)
       pos = pos->next;
     }
   MUTEX_UNLOCK (tcplock);
-  GE_ASSERT(ectx,
-	    OK == coreAPI->assertUnused (tcpsession->tsession));
+  GE_ASSERT (ectx, OK == coreAPI->assertUnused (tcpsession->tsession));
   MUTEX_LOCK (tcplock);
   FREE (tcpsession->tsession);
   FREE (tcpsession);
@@ -163,8 +162,7 @@ tcpDisconnect (TSession * tsession)
   if ((tcpsession->users > 0) || (tcpsession->in_select == YES))
     {
       if (tcpsession->users == 0)
-	select_change_timeout (selector, tcpsession->sock,
-			       TCP_FAST_TIMEOUT);        
+        select_change_timeout (selector, tcpsession->sock, TCP_FAST_TIMEOUT);
       MUTEX_UNLOCK (tcpsession->lock);
       MUTEX_UNLOCK (tcplock);
       return OK;

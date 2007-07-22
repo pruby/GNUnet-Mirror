@@ -363,23 +363,26 @@ getSize ()
   /* benchmarking shows 13% overhead */
 }
 
-static int delete_by_rowid(sqliteHandle * handle,
-			   unsigned long long rid) {
+static int
+delete_by_rowid (sqliteHandle * handle, unsigned long long rid)
+{
   sqlite3_stmt *stmt;
-  
+
   if (sq_prepare (handle->dbh,
-		  "DELETE FROM gn070 WHERE _ROWID_ = ?", &stmt) != SQLITE_OK) {
-    LOG_SQLITE (handle,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sq_prepare");
-    return SYSERR;
-  }
+                  "DELETE FROM gn070 WHERE _ROWID_ = ?", &stmt) != SQLITE_OK)
+    {
+      LOG_SQLITE (handle,
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sq_prepare");
+      return SYSERR;
+    }
   sqlite3_bind_int64 (stmt, 1, rid);
-  if (SQLITE_DONE != sqlite3_step (stmt)) {
-    LOG_SQLITE (handle,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
-    sqlite3_finalize (stmt);
-    return SYSERR;
-  }
+  if (SQLITE_DONE != sqlite3_step (stmt))
+    {
+      LOG_SQLITE (handle,
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
+      sqlite3_finalize (stmt);
+      return SYSERR;
+    }
   sqlite3_finalize (stmt);
   return OK;
 }
@@ -390,8 +393,7 @@ static int delete_by_rowid(sqliteHandle * handle,
  */
 static Datastore_Value *
 assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
-	       HashCode512 * key,
-	       unsigned long long * rowid)
+               HashCode512 * key, unsigned long long *rowid)
 {
   Datastore_Value *value;
   int contentSize;
@@ -458,7 +460,7 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
   value->prio = htonl (sqlite3_column_int (stmt, 2));
   value->anonymityLevel = htonl (sqlite3_column_int (stmt, 3));
   value->expirationTime = htonll (sqlite3_column_int64 (stmt, 4));
-  memcpy (key, sqlite3_column_blob (stmt, 5), sizeof(HashCode512));
+  memcpy (key, sqlite3_column_blob (stmt, 5), sizeof (HashCode512));
   memcpy (&value[1], sqlite3_column_blob (stmt, 6), contentSize);
   return value;
 }
@@ -587,7 +589,7 @@ sqlite_iterate (unsigned int type,
   sqliteHandle *handle;
   int ret;
   cron_t now;
-  unsigned long long rowid;  
+  unsigned long long rowid;
 
   handle = getDBHandle ();
   dbh = handle->dbh;
@@ -715,18 +717,19 @@ sqlite_iterate (unsigned int type,
               if (iter != NULL)
                 {
                   ret = iter (&key, datum, closure, rowid);
-		  if (ret == SYSERR)		
+                  if (ret == SYSERR)
                     {
                       FREE (datum);
                       count = SYSERR;
                       break;
                     }
-		  if (ret == NO) {
-		    MUTEX_LOCK(db->DATABASE_Lock_);
-		    db->payload -= getContentDatastoreSize (datum);
-		    MUTEX_UNLOCK(db->DATABASE_Lock_);
-		    delete_by_rowid(handle, rowid);
-		  }
+                  if (ret == NO)
+                    {
+                      MUTEX_LOCK (db->DATABASE_Lock_);
+                      db->payload -= getContentDatastoreSize (datum);
+                      MUTEX_UNLOCK (db->DATABASE_Lock_);
+                      delete_by_rowid (handle, rowid);
+                    }
                 }
             }
           lastPrio = ntohl (datum->prio);
@@ -779,8 +782,7 @@ iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
  *   iter is non-NULL and aborted the iteration
  */
 static int
-iterateNonAnonymous (unsigned int type,
-                     Datum_Iterator iter, void *closure)
+iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 {
   return sqlite_iterate (0, iter, closure, NO, NO, NO, YES, YES);
 }
@@ -844,7 +846,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   if (sq_prepare (dbh,
                   "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_"
-		  " FROM gn070 WHERE _ROWID_ > :1 ORDER BY _ROWID_ ASC LIMIT 1",
+                  " FROM gn070 WHERE _ROWID_ > :1 ORDER BY _ROWID_ ASC LIMIT 1",
                   &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
@@ -853,37 +855,37 @@ iterateAllNow (Datum_Iterator iter, void *closure)
     }
   count = 0;
   last_rowid = 0;
-  while (1) {
-    ret = sqlite3_bind_int64 (stmt,
-			      1,
-			      last_rowid);
-    if (ret != SQLITE_OK)
-      break;
-    if (sqlite3_step (stmt) != SQLITE_ROW)
-      break;
-    datum = assembleDatum (handle, stmt, &key, &rowid);
-    last_rowid = rowid;
-    sqlite3_reset(stmt);
-    if (datum == NULL) 
-      continue;        
-    payload += getContentDatastoreSize (datum);
-    if (iter != NULL)
-      ret = iter (&key, datum, closure, rowid);
-    else
-      ret = OK;
-    if (ret == SYSERR) 
-      {
-	FREE (datum);
-	count = SYSERR;
-	break;
-      }
-    if (ret == NO) {
-      payload -= getContentDatastoreSize (datum);
-      delete_by_rowid(handle, rowid);
-    }  
-    FREE (datum);
-    count++;
-  }
+  while (1)
+    {
+      ret = sqlite3_bind_int64 (stmt, 1, last_rowid);
+      if (ret != SQLITE_OK)
+        break;
+      if (sqlite3_step (stmt) != SQLITE_ROW)
+        break;
+      datum = assembleDatum (handle, stmt, &key, &rowid);
+      last_rowid = rowid;
+      sqlite3_reset (stmt);
+      if (datum == NULL)
+        continue;
+      payload += getContentDatastoreSize (datum);
+      if (iter != NULL)
+        ret = iter (&key, datum, closure, rowid);
+      else
+        ret = OK;
+      if (ret == SYSERR)
+        {
+          FREE (datum);
+          count = SYSERR;
+          break;
+        }
+      if (ret == NO)
+        {
+          payload -= getContentDatastoreSize (datum);
+          delete_by_rowid (handle, rowid);
+        }
+      FREE (datum);
+      count++;
+    }
   sqlite3_finalize (stmt);
   if (count != SYSERR)
     {
@@ -971,7 +973,7 @@ get (const HashCode512 * key,
   int count = 0;
   sqlite3_stmt *stmt;
   char scratch[256];
-  Datastore_Value * datum;
+  Datastore_Value *datum;
   sqlite3 *dbh;
   sqliteHandle *handle;
   HashCode512 rkey;
@@ -979,14 +981,15 @@ get (const HashCode512 * key,
   unsigned long long rowid;
 
   if (key == NULL)
-    return iterateLowPriority(type, iter, closure);
+    return iterateLowPriority (type, iter, closure);
   handle = getDBHandle ();
   dbh = handle->dbh;
   strcpy (scratch, "SELECT ");
   if (iter == NULL)
     strcat (scratch, "count(*)");
   else
-    strcat (scratch, "size, type, prio, anonLevel, expire, hash, value, _ROWID_");
+    strcat (scratch,
+            "size, type, prio, anonLevel, expire, hash, value, _ROWID_");
   strcat (scratch, " FROM gn070 WHERE hash = :1 AND _ROWID_ > :2");
   if (type)
     strcat (scratch, " AND type = :3");
@@ -999,53 +1002,54 @@ get (const HashCode512 * key,
     }
   count = 0;
   last_rowid = 0;
-  while (1) {
-    ret = sqlite3_bind_blob (stmt,
-			     1,
-			     key, sizeof (HashCode512), SQLITE_TRANSIENT);
-    if (ret == SQLITE_OK)
-      ret = sqlite3_bind_int64 (stmt,
-				2,
-				last_rowid);
-    if (type && (ret == SQLITE_OK))
-      ret = sqlite3_bind_int (stmt, 3, type);   
-    if (ret == SQLITE_OK) {
-      ret = sqlite3_step (stmt);
-      if (ret != SQLITE_ROW)
-	break;
-      datum = assembleDatum (handle, stmt, &rkey, &rowid);
-      last_rowid = rowid;
-      sqlite3_reset(stmt);
-      if (datum == NULL) 
-	continue;      
-      if ((key != NULL) &&
-	  (0 != memcmp (&rkey, key, sizeof (HashCode512))))
-	{
-	  GE_BREAK (NULL, 0);
-	  FREE (datum);
-	  continue;
-	}      
-      if (iter != NULL)
-	ret = iter (&rkey, datum, closure, rowid);
-      else
-	ret = OK;
-      if (ret == SYSERR)
-	{
-	  count = SYSERR;
-	  FREE (datum);
-	  ret = SQLITE_DONE;
-	  break;
-	}
-      if (ret == NO) {
-	MUTEX_LOCK(db->DATABASE_Lock_);
-	db->payload -= getContentDatastoreSize (datum);
-	MUTEX_UNLOCK(db->DATABASE_Lock_);
-	delete_by_rowid(handle, rowid);
-      }
-      FREE (datum);
-      count++;
+  while (1)
+    {
+      ret = sqlite3_bind_blob (stmt,
+                               1,
+                               key, sizeof (HashCode512), SQLITE_TRANSIENT);
+      if (ret == SQLITE_OK)
+        ret = sqlite3_bind_int64 (stmt, 2, last_rowid);
+      if (type && (ret == SQLITE_OK))
+        ret = sqlite3_bind_int (stmt, 3, type);
+      if (ret == SQLITE_OK)
+        {
+          ret = sqlite3_step (stmt);
+          if (ret != SQLITE_ROW)
+            break;
+          datum = assembleDatum (handle, stmt, &rkey, &rowid);
+          last_rowid = rowid;
+          sqlite3_reset (stmt);
+          if (datum == NULL)
+            continue;
+          if ((key != NULL) &&
+              (0 != memcmp (&rkey, key, sizeof (HashCode512))))
+            {
+              GE_BREAK (NULL, 0);
+              FREE (datum);
+              continue;
+            }
+          if (iter != NULL)
+            ret = iter (&rkey, datum, closure, rowid);
+          else
+            ret = OK;
+          if (ret == SYSERR)
+            {
+              count = SYSERR;
+              FREE (datum);
+              ret = SQLITE_DONE;
+              break;
+            }
+          if (ret == NO)
+            {
+              MUTEX_LOCK (db->DATABASE_Lock_);
+              db->payload -= getContentDatastoreSize (datum);
+              MUTEX_UNLOCK (db->DATABASE_Lock_);
+              delete_by_rowid (handle, rowid);
+            }
+          FREE (datum);
+          count++;
+        }
     }
-  }
   sqlite3_finalize (stmt);
   return count;
 }
@@ -1126,8 +1130,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
  * in the datastore.
  */
 static int
-update (unsigned long long uid,
-        int delta, cron_t expire)
+update (unsigned long long uid, int delta, cron_t expire)
 {
   int n;
   sqliteHandle *dbh;
@@ -1138,8 +1141,7 @@ update (unsigned long long uid,
   sqlite3_bind_int64 (dbh->updPrio, 3, uid);
   n = sqlite3_step (dbh->updPrio);
   if (n != SQLITE_DONE)
-    LOG_SQLITE (dbh,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
+    LOG_SQLITE (dbh, GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
 
   sqlite3_reset (dbh->updPrio);
 

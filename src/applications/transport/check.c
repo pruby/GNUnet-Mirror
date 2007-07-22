@@ -49,14 +49,15 @@ typedef struct TCPSession
 
 } TCPSession;
 
-static void check(TSession * session) {
-  TCPSession * tcp;
+static void
+check (TSession * session)
+{
+  TCPSession *tcp;
 
   if (session->ttype != TCP_PROTOCOL_NUMBER)
     return;
   tcp = session->internal;
-  GE_ASSERT(NULL,
-	    tcp->users >= session->token_count);
+  GE_ASSERT (NULL, tcp->users >= session->token_count);
 }
 
 #define CHECK(s) check(s)

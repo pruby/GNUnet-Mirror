@@ -53,7 +53,7 @@ initValue (int i)
 static int
 checkValue (const HashCode512 * key,
             const Datastore_Value * val, void *closure,
-	    unsigned long long uid)
+            unsigned long long uid)
 {
   int i;
   int ret;
@@ -79,7 +79,7 @@ checkValue (const HashCode512 * key,
 
 static int
 iterateUp (const HashCode512 * key, const Datastore_Value * val, int *closure,
-	   unsigned long long uid)
+           unsigned long long uid)
 {
   int ret;
 
@@ -91,7 +91,7 @@ iterateUp (const HashCode512 * key, const Datastore_Value * val, int *closure,
 static int
 iterateDown (const HashCode512 * key,
              const Datastore_Value * val, int *closure,
-	     unsigned long long uid)
+             unsigned long long uid)
 {
   int ret;
 
@@ -102,25 +102,25 @@ iterateDown (const HashCode512 * key,
 
 static int
 iterateDelete (const HashCode512 * key,
-               const Datastore_Value * val, void * closure,
-	       unsigned long long uid)
+               const Datastore_Value * val, void *closure,
+               unsigned long long uid)
 {
   return NO;
 }
 
 static int
 iteratePriority (const HashCode512 * key,
-		 const Datastore_Value * val, SQstore_ServiceAPI * api,
-		 unsigned long long uid)
+                 const Datastore_Value * val, SQstore_ServiceAPI * api,
+                 unsigned long long uid)
 {
-  api->update(uid, 4, 0);
+  api->update (uid, 4, 0);
   return OK;
 }
 
 static int
 priorityCheck (const HashCode512 * key,
                const Datastore_Value * val, int *closure,
-	       unsigned long long uid)
+               unsigned long long uid)
 {
   int id;
 
@@ -134,7 +134,7 @@ priorityCheck (const HashCode512 * key,
 static int
 multipleCheck (const HashCode512 * key,
                const Datastore_Value * val, Datastore_Value ** last,
-	       unsigned long long uid)
+               unsigned long long uid)
 {
   if (*last != NULL)
     {
@@ -209,8 +209,7 @@ test (SQstore_ServiceAPI * api)
   ASSERT (1 == api->iterateExpirationTime (ANY_BLOCK,
                                            (Datum_Iterator) & priorityCheck,
                                            &i));
-  ASSERT (1 == api->iterateAllNow((Datum_Iterator) & iteratePriority,
-				  api));
+  ASSERT (1 == api->iterateAllNow ((Datum_Iterator) & iteratePriority, api));
   i += 4;
   ASSERT (1 == api->iterateExpirationTime (ANY_BLOCK,
                                            (Datum_Iterator) & priorityCheck,
@@ -227,8 +226,7 @@ test (SQstore_ServiceAPI * api)
                                            (Datum_Iterator) & multipleCheck,
                                            &value));
   FREE (value);
-  ASSERT (2 == api->iterateAllNow ((Datum_Iterator) & iterateDelete,
-				   api));
+  ASSERT (2 == api->iterateAllNow ((Datum_Iterator) & iterateDelete, api));
   ASSERT (0 == api->iterateExpirationTime (ANY_BLOCK, NULL, NULL));
   api->drop ();
 
