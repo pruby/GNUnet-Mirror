@@ -113,7 +113,7 @@
  * permission to the respective directory in order
  * to obtain all of the performance information.
  */
-#define DB_NAME "/var/lib/mysql"
+#define DB_NAME "/tmp/gnunet-sqlite-sqstore-test/data/fs/"
 
 static unsigned long long stored_bytes;
 

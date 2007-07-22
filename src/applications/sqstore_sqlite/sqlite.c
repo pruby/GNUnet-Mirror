@@ -359,8 +359,8 @@ getSize ()
   if (stats)
     stats->set (stat_size, ret);
   MUTEX_UNLOCK (db->DATABASE_Lock_);
-  return (unsigned long long) (ret * 1.06);
-  /* benchmarking shows 2-12% overhead */
+  return (unsigned long long) (ret * 1.13);
+  /* benchmarking shows 13% overhead */
 }
 
 static int delete_by_rowid(sqliteHandle * handle,

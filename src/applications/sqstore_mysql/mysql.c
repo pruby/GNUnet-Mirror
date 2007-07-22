@@ -940,7 +940,6 @@ iterateHelper (unsigned int type,
 		   datum,
 		   closure,
 		   vkey);
-      FREE(datum);
       if (ret == SYSERR) 
 	break;        
       if (ret == NO) {
@@ -950,6 +949,7 @@ iterateHelper (unsigned int type,
 	content_size -= ntohl(datum->size);
 	MUTEX_UNLOCK (lock);
       }
+      FREE(datum);
     }
   }
   mysql_thread_end ();

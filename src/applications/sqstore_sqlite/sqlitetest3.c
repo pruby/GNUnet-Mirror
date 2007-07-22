@@ -40,7 +40,7 @@
  */
 #define MAX_SIZE 1024LL * 1024 * 128
 
-#define ITERATIONS 1
+#define ITERATIONS 10
 
 /**
  * Number of put operations equivalent to 1/10th of MAX_SIZE
