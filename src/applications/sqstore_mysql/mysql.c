@@ -312,18 +312,36 @@ iopen ()
      earlier versions have issues with INDEX over BINARY data,
      which is why we need to use InnoDB for those
      (even though MyISAM would be faster) */
-  mysql_query (dbh->dbf,
-	       "CREATE TABLE IF NOT EXISTS gn071 ("
-	       " size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	       " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	       " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	       " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	       " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	       " hash BINARY(64) NOT NULL DEFAULT '',"
-	       " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-	       " INDEX (hash(64))," /* MySQL 5.0.46 fixes bug in MyISAM */
-	       " INDEX (prio),"
-	       " INDEX (expire,anonLevel,type)" ") ENGINE=InnoDB");
+  if (50046 <= mysql_get_server_version(dbh->dbf)) {
+    /* MySQL 5.0.46 fixes bug in MyISAM */
+    mysql_query (dbh->dbf,
+		 "CREATE TABLE IF NOT EXISTS gn071 ("
+		 " size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+		 " hash BINARY(64) NOT NULL DEFAULT '',"
+		 " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+		 " INDEX (hash(64))," 
+		 " INDEX (prio,vkey),"
+		 " INDEX (expire,vkey,type),"
+		 " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=MyISAM");
+  } else {
+    mysql_query (dbh->dbf,
+		 "CREATE TABLE IF NOT EXISTS gn071 ("
+		 " size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+		 " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+		 " hash BINARY(64) NOT NULL DEFAULT '',"
+		 " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+		 " INDEX (hash(64))," 
+		 " INDEX (prio,vkey),"
+		 " INDEX (expire,vkey,type),"
+		 " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=InnoDB");
+  }
   if (mysql_error (dbh->dbf)[0])
     {
       LOG_MYSQL (GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", dbh);

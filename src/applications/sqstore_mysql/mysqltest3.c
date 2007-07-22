@@ -40,7 +40,7 @@
  */
 #define MAX_SIZE 1024LL * 1024 * 128
 
-#define ITERATIONS 10
+#define ITERATIONS 1
 
 /**
  * Number of put operations equivalent to 1/10th of MAX_SIZE
@@ -146,14 +146,6 @@ test (SQstore_ServiceAPI * api)
       printf ("%3u non anonymou iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
-#if 1
-      start = get_time ();
-      ret = api->iterateNonAnonymous (0, &iterateDummy, api);
-      end = get_time ();
-      printf ("%3u non anon YES iteration took %20llums (%d)\n", i, end - start, ret);
-      if (GNUNET_SHUTDOWN_TEST () == YES)
-        break;
-#endif
       start = get_time ();
       ret = api->iterateMigrationOrder (&iterateDummy, api);
       end = get_time ();
@@ -167,6 +159,7 @@ test (SQstore_ServiceAPI * api)
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
     }
+  api->drop();
   return OK;
 }
 
