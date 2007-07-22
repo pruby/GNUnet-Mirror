@@ -109,7 +109,7 @@ push_thread (void *cls)
     {
       if (total == 0)
         total = 1;
-      total = sqstore->iterateNonAnonymous (0, YES, &push_callback, NULL);
+      total = sqstore->iterateNonAnonymous (0, &push_callback, NULL);
       if ((dht != NULL) && (total == 0))
         PTHREAD_SLEEP (15 * cronMINUTES);
     }

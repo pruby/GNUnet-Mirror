@@ -201,14 +201,16 @@ put (const HashCode512 * key, const Datastore_Value * value)
 
 typedef struct
 {
-  int exists;
+  int exists; 
   const Datastore_Value *value;
-  Datastore_Value *existing;
+  unsigned long long uid;
+  unsigned long long expiration;
 } CE;
 
 static int
 checkExists (const HashCode512 * key,
-             const Datastore_Value * value, void *cls)
+             const Datastore_Value * value, void *cls,
+	     unsigned long long uid)
 {
   CE *ce = cls;
 
@@ -217,8 +219,8 @@ checkExists (const HashCode512 * key,
                     &ce->value[1],
                     ntohl (value->size) - sizeof (Datastore_Value))))
     return OK;                  /* found another value, but different content! */
-  ce->existing = MALLOC (ntohl (value->size));
-  memcpy (ce->existing, value, ntohl (value->size));
+  ce->uid = uid;
+  ce->expiration = ntohll(value->expirationTime);
   ce->exists = YES;
   return SYSERR;                /* abort iteration! */
 }
@@ -251,16 +253,13 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
     {
       if ((ntohl (value->prio) == 0) &&
           (ntohll (value->expirationTime) <=
-           ntohll (cls.existing->expirationTime)))
+           cls.expiration)))
         {
-          FREE (cls.existing);
           return OK;
         }
       /* update prio */
-      sq->update (key,
-                  cls.existing,
+      sq->update (cls.uid,
                   ntohl (value->prio), ntohll (value->expirationTime));
-      FREE (cls.existing);
       return OK;
     }
 #if DEBUG_DATASTORE

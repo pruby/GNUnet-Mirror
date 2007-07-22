@@ -690,7 +690,7 @@ sqlite_iterate (unsigned int type,
               count++;
               if (iter != NULL)
                 {
-                  if (SYSERR == iter (&datum->key, &datum->value, closure))
+                  if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
                     {
                       FREE (datum);
                       count = SYSERR;
@@ -743,18 +743,16 @@ iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
  *
  * @param type limit the iteration to entries of this
  *   type. 0 for all entries.
- * @param on_demand limit the iteration to entries
- *        that not on-demand?
- * @param iter the callback method
+  * @param iter the callback method
  * @param closure argument to all callback calls
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
 static int
 iterateNonAnonymous (unsigned int type,
-                     int on_demand, Datum_Iterator iter, void *closure)
+                     Datum_Iterator iter, void *closure)
 {
-  return sqlite_iterate (0, iter, closure, NO, NO, NO, YES, on_demand);
+  return sqlite_iterate (0, iter, closure, NO, NO, NO, YES, YES);
 }
 
 /**
@@ -828,7 +826,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       payload += getContentDatastoreSize (&datum->value);
       if (iter != NULL)
         {
-          if (SYSERR == iter (&datum->key, &datum->value, closure))
+          if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
             {
               FREE (datum);
               count = SYSERR;
@@ -1009,7 +1007,7 @@ get (const HashCode512 * key,
                       "Found in database block with type %u.\n",
                       ntohl (*(int *) &((&datum->value)[1])));
 #endif
-              if (SYSERR == iter (&datum->key, &datum->value, closure))
+              if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
                 {
 
                   count = SYSERR;
@@ -1123,137 +1121,12 @@ put (const HashCode512 * key, const Datastore_Value * value)
 }
 
 /**
- * Delete an item from the datastore.
- *
- * @param value maybe NULL, then all items under the
- *        given key are deleted
- * @return the number of items deleted, 0 if
- *        none were found, SYSERR on errors
- */
-static int
-del (const HashCode512 * key, const Datastore_Value * value)
-{
-  size_t n;
-  sqlite3_stmt *stmt;
-  int deleted;
-  sqliteHandle *dbh;
-  Datastore_Datum *dvalue;
-  unsigned int size;
-  unsigned int type;
-  unsigned int prio;
-  unsigned int anon;
-  unsigned long long expir;
-  unsigned long contentSize;
-#if DEBUG_SQLITE
-  EncName enc;
-
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (key, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
-          "SQLite: deleting block with key `%s'\n", &enc);
-#endif
-
-  dbh = getDBHandle ();
-  if (db->lastSync > 1000)
-    syncStats (dbh);
-
-  if (NULL == value)
-    {
-      if (sq_prepare (dbh->dbh,
-                      "SELECT size, type, prio, anonLevel, expire, hash, value "
-                      "FROM gn070 WHERE hash = ? ORDER BY prio ASC",
-                      &stmt) != SQLITE_OK)
-        {
-          LOG_SQLITE (dbh,
-                      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-                      "sqlite_query");
-          return SYSERR;
-        }
-      sqlite3_bind_blob (stmt,
-                         1, key, sizeof (HashCode512), SQLITE_TRANSIENT);
-      if (sqlite3_step (stmt) != SQLITE_ROW)
-        {
-          sqlite3_finalize (stmt);
-          return NO;
-        }
-      dvalue = assembleDatum (dbh, stmt);
-      if (dvalue == NULL)
-        {
-          sqlite3_finalize (stmt);
-          return SYSERR;
-        }
-      sqlite3_finalize (stmt);
-      value = &dvalue->value;
-    }
-  else
-    {
-      dvalue = NULL;
-    }
-  contentSize = ntohl (value->size) - sizeof (Datastore_Value);
-  n = sq_prepare (dbh->dbh, "DELETE FROM gn070 WHERE hash = ? and " "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? " "AND expire = ?",     /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
-                  &stmt);
-  if (n == SQLITE_OK)
-    {
-      size = ntohl (value->size);
-      type = ntohl (value->type);
-      prio = ntohl (value->prio);
-      anon = ntohl (value->anonymityLevel);
-      expir = ntohll (value->expirationTime);
-
-      sqlite3_bind_blob (stmt, 1, key, sizeof (HashCode512),
-                         SQLITE_TRANSIENT);
-      sqlite3_bind_blob (stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
-      sqlite3_bind_int (stmt, 3, size);
-      sqlite3_bind_int (stmt, 4, type);
-      sqlite3_bind_int (stmt, 5, prio);
-      sqlite3_bind_int (stmt, 6, anon);
-      sqlite3_bind_int64 (stmt, 7, expir);
-      n = sqlite3_step (stmt);
-      if ((n == SQLITE_DONE) || (n == SQLITE_ROW))
-        db->payload -= getContentDatastoreSize (value);
-    }
-  else
-    {
-      LOG_SQLITE (dbh,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_prepare");
-    }
-  FREENONNULL (dvalue);
-  deleted = ((n == SQLITE_DONE)
-             || (n == SQLITE_ROW)) ? sqlite3_changes (dbh->dbh) : SYSERR;
-  sqlite3_finalize (stmt);
-
-  if (n != SQLITE_DONE)
-    {
-      if (n != SQLITE_BUSY)
-        {
-          LOG_SQLITE (dbh,
-                      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-                      "sqlite_query");
-          return SYSERR;
-        }
-      else
-        {
-          return NO;
-        }
-    }
-  db->lastSync++;
-
-#if DEBUG_SQLITE
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
-          "SQLite: %d block(s) deleted\n", deleted);
-#endif
-
-  return deleted;
-}
-
-/**
  * Update the priority for a particular key
  * in the datastore.
  */
 static int
-update (const HashCode512 * key,
-        const Datastore_Value * value, int delta, cron_t expire)
+update (unsigned long long uid,
+        int delta, cron_t expire)
 {
   int n;
   unsigned long contentSize;

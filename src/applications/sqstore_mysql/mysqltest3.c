@@ -70,6 +70,7 @@ putValue (SQstore_ServiceAPI * api, int i)
   size = size - (size & 7);     /* always multiple of 8 */
 
   /* generate random key */
+  key.bits[0] = (unsigned int) get_time();
   hash (&key, sizeof (HashCode512), &key);
   value = MALLOC (size);
   value->size = htonl (size);
@@ -94,7 +95,8 @@ putValue (SQstore_ServiceAPI * api, int i)
 }
 
 static int
-iterateDummy (const HashCode512 * key, const Datastore_Value * val, void *cls)
+iterateDummy (const HashCode512 * key, const Datastore_Value * val, void *cls,
+	      unsigned long long uid)
 {
   if (GNUNET_SHUTDOWN_TEST () == YES)
     return SYSERR;
@@ -137,17 +139,19 @@ test (SQstore_ServiceAPI * api)
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateNonAnonymous (0, NO, &iterateDummy, api);
+      api->iterateNonAnonymous (0, &iterateDummy, api);
       end = get_time ();
       printf ("%3u non anonymou iteration took %20llums\n", i, end - start);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
+#if 1
       start = get_time ();
-      api->iterateNonAnonymous (0, YES, &iterateDummy, api);
+      api->iterateNonAnonymous (0, &iterateDummy, api);
       end = get_time ();
       printf ("%3u non anon YES iteration took %20llums\n", i, end - start);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
+#endif
       start = get_time ();
       api->iterateMigrationOrder (&iterateDummy, api);
       end = get_time ();
@@ -161,7 +165,6 @@ test (SQstore_ServiceAPI * api)
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
     }
-  api->drop ();
   return OK;
 }
 

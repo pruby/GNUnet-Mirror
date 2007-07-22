@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -166,7 +166,8 @@ putValue (SQstore_ServiceAPI * api, int i)
 
 static int
 iterateDelete (const HashCode512 * key,
-               const Datastore_Value * val, void *cls)
+               const Datastore_Value * val, void *cls,
+	       unsigned long long uid)
 {
   SQstore_ServiceAPI *api = cls;
   static int dc;
@@ -180,10 +181,9 @@ iterateDelete (const HashCode512 * key,
   if (dc % REP_FREQ == 0)
     fprintf (stderr, "D");
 #endif
-  GE_ASSERT (NULL, 1 == api->del (key, val));
   stored_bytes -= ntohl (val->size);
   stored_entries--;
-  return OK;
+  return NO;
 }
 
 /**

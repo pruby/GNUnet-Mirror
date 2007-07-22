@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -84,33 +84,18 @@ typedef struct
 } Datastore_Value;
 
 /**
- * An entry (key-value pair) in the datastore.
- */
-typedef struct
-{
-
-  /**
-   * A key (not unique) that can be used to lookup this Datum in the
-   * datastore.
-   */
-  HashCode512 key;
-
-  /**
-   * The value associated with the key.
-   */
-  Datastore_Value value;
-
-} Datastore_Datum;
-
-/**
  * An iterator over a set of Datastore items.
  *
  * @param datum called with the next item
  * @param closure user-defined extra argument
- * @return SYSERR to abort the iteration, OK to continue.
+ * @param uid unique identifier for the datum
+ *
+ * @return SYSERR to abort the iteration, OK to continue,
+ *         NO to delete the item and continue (if supported)
  */
 typedef int (*Datum_Iterator) (const HashCode512 * key,
-                               const Datastore_Value * value, void *closure);
+                               const Datastore_Value * value, void *closure,
+			       unsigned long long uid);
 
 
 /**
@@ -199,16 +184,6 @@ typedef struct
                     unsigned int sizeLimit,
                     HashCode512 * key,
                     Datastore_Value ** value, unsigned int type);
-
-  /**
-   * Delete an item from the datastore.
-   *
-   * @param value maybe NULL, then all items under the
-   *         given key are deleted
-   * @return the number of items deleted, 0 if
-   *         none were found, SYSERR on errors
-   */
-  int (*del) (const HashCode512 * key, const Datastore_Value * value);
 
 } Datastore_ServiceAPI;
 
