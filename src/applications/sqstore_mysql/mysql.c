@@ -901,14 +901,7 @@ iterateHelper (unsigned int type,
     }
     mysql_stmt_reset(stmt);
     MUTEX_UNLOCK (lock);
-    if ( ( (is_prio) && (last_prio != prio)) ||
-	 ( (!is_prio) && (last_expire != expiration) ) ) {
-      if (is_asc)
-	last_vkey = 0;
-      else
-	last_vkey = 0x7FFFFFFFFFFFFFFFLL; /* MySQL only supports 63 bits */
-    } else
-      last_vkey = vkey;
+    last_vkey = vkey;
     last_prio = prio;
     last_expire = expiration;
     count++;
