@@ -212,7 +212,7 @@ typedef struct
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
   MYSQL_STMT * ilow;
 
-#define SELECT_IT_NON_ANONYMOUS "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ? AND vkey != ?) ) "\
+#define SELECT_IT_NON_ANONYMOUS "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey < ?) OR (prio < ? AND vkey != ?) ) "\
                                 "AND anonLevel=0 AND type != 0xFFFFFFFF "\
                                 "ORDER BY prio DESC,vkey DESC LIMIT 1"
   MYSQL_STMT * inon;
@@ -221,7 +221,7 @@ typedef struct
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1"
   MYSQL_STMT * iexp;
 
-#define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire > ? AND vkey != ?) ) "\
+#define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire < ? AND vkey != ?) ) "\
                                   "AND expire > ? AND type!=3 "\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
   MYSQL_STMT * imig;
@@ -308,6 +308,10 @@ iopen ()
       iclose();
       return SYSERR;
     }
+  /* MySQL 5.0.46 fixes a bug in MyISAM (presumably); 
+     earlier versions have issues with INDEX over BINARY data,
+     which is why we need to use InnoDB for those
+     (even though MyISAM would be faster) */
   mysql_query (dbh->dbf,
 	       "CREATE TABLE IF NOT EXISTS gn071 ("
 	       " size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
@@ -785,9 +789,9 @@ iterateHelper (unsigned int type,
     last_vkey = 0;
     last_expire = 0;
   } else {
-    last_prio = -1;
-    last_vkey = -1;
-    last_expire = -1;
+    last_prio = 0x7FFFFFFFL;
+    last_vkey = 0x7FFFFFFFFFFFFFFFLL; /* MySQL only supports 63 bits */
+    last_expire = 0x7FFFFFFFFFFFFFFFLL; /* MySQL only supports 63 bits */
   }
   memset(qbind, 0, sizeof(qbind));
   if (is_prio) {
@@ -814,7 +818,7 @@ iterateHelper (unsigned int type,
   qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[4].buffer = &now;
   qbind[4].is_unsigned = YES;
-  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 4);
+  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 5);
   
   hashSize = sizeof(HashCode512);
   memset(rbind, 0, sizeof(rbind));
@@ -897,8 +901,15 @@ iterateHelper (unsigned int type,
     }
     mysql_stmt_reset(stmt);
     MUTEX_UNLOCK (lock);
+    if ( ( (is_prio) && (last_prio != prio)) ||
+	 ( (!is_prio) && (last_expire != expiration) ) ) {
+      if (is_asc)
+	last_vkey = 0;
+      else
+	last_vkey = 0x7FFFFFFFFFFFFFFFLL; /* MySQL only supports 63 bits */
+    } else
+      last_vkey = vkey;
     last_prio = prio;
-    last_vkey = vkey;
     last_expire = expiration;
     count++;
     if (iter != NULL) {

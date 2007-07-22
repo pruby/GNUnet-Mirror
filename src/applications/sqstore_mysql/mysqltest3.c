@@ -109,6 +109,7 @@ test (SQstore_ServiceAPI * api)
 {
   int i;
   int j;
+  int ret;
   cron_t start;
   cron_t end;
 
@@ -128,41 +129,41 @@ test (SQstore_ServiceAPI * api)
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateLowPriority (0, &iterateDummy, api);
+      ret = api->iterateLowPriority (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u low priority iteration took %20llums\n", i, end - start);
+      printf ("%3u low priority iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateExpirationTime (0, &iterateDummy, api);
+      ret = api->iterateExpirationTime (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u expiration t iteration took %20llums\n", i, end - start);
+      printf ("%3u expiration t iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateNonAnonymous (0, &iterateDummy, api);
+      ret = api->iterateNonAnonymous (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u non anonymou iteration took %20llums\n", i, end - start);
+      printf ("%3u non anonymou iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
 #if 1
       start = get_time ();
-      api->iterateNonAnonymous (0, &iterateDummy, api);
+      ret = api->iterateNonAnonymous (0, &iterateDummy, api);
       end = get_time ();
-      printf ("%3u non anon YES iteration took %20llums\n", i, end - start);
+      printf ("%3u non anon YES iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
 #endif
       start = get_time ();
-      api->iterateMigrationOrder (&iterateDummy, api);
+      ret = api->iterateMigrationOrder (&iterateDummy, api);
       end = get_time ();
-      printf ("%3u migration or iteration took %20llums\n", i, end - start);
+      printf ("%3u migration or iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
       start = get_time ();
-      api->iterateAllNow (&iterateDummy, api);
+      ret = api->iterateAllNow (&iterateDummy, api);
       end = get_time ();
-      printf ("%3u all now      iteration took %20llums\n", i, end - start);
+      printf ("%3u all now      iteration took %20llums (%d)\n", i, end - start, ret);
       if (GNUNET_SHUTDOWN_TEST () == YES)
         break;
     }
