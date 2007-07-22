@@ -216,21 +216,18 @@ typedef struct
 
 #define SELECT_IT_LOW_PRIORITY "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ? AND vkey != ?) )"\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
-  MYSQL_STMT *ilow;
 
 #define SELECT_IT_NON_ANONYMOUS "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey < ?) OR (prio < ? AND vkey != ?) ) "\
                                 "AND anonLevel=0 AND type != 0xFFFFFFFF "\
                                 "ORDER BY prio DESC,vkey DESC LIMIT 1"
-  MYSQL_STMT *inon;
 
 #define SELECT_IT_EXPIRATION_TIME "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey > ?) OR (expire > ? AND vkey != ?) ) "\
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1"
-  MYSQL_STMT *iexp;
 
 #define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire < ? AND vkey != ?) ) "\
                                   "AND expire > ? AND type!=3 "\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
-  MYSQL_STMT *imig;
+  MYSQL_STMT * iter[4];
 
 } mysqlHandle;
 
@@ -258,10 +255,10 @@ iclose ()
   PEND (dbh->count_entry_by_hash);
   PEND (dbh->count_entry_by_hash_and_type);
   PEND (dbh->update_entry);
-  PEND (dbh->ilow);
-  PEND (dbh->inon);
-  PEND (dbh->iexp);
-  PEND (dbh->imig);
+  PEND (dbh->iter[0]);
+  PEND (dbh->iter[1]);
+  PEND (dbh->iter[2]);
+  PEND (dbh->iter[3]);
   mysql_close (dbh->dbf);
   dbh->dbf = NULL;
   dbh->valid = NO;
@@ -389,10 +386,10 @@ iopen ()
   PINIT (dbh->count_entry_by_hash, COUNT_ENTRY_BY_HASH);
   PINIT (dbh->count_entry_by_hash_and_type, COUNT_ENTRY_BY_HASH_AND_TYPE);
   PINIT (dbh->update_entry, UPDATE_ENTRY);
-  PINIT (dbh->ilow, SELECT_IT_LOW_PRIORITY);
-  PINIT (dbh->inon, SELECT_IT_NON_ANONYMOUS);
-  PINIT (dbh->iexp, SELECT_IT_EXPIRATION_TIME);
-  PINIT (dbh->imig, SELECT_IT_MIGRATION_ORDER);
+  PINIT (dbh->iter[0], SELECT_IT_LOW_PRIORITY);
+  PINIT (dbh->iter[1], SELECT_IT_NON_ANONYMOUS);
+  PINIT (dbh->iter[2], SELECT_IT_EXPIRATION_TIME);
+  PINIT (dbh->iter[3], SELECT_IT_MIGRATION_ORDER);
   dbh->valid = YES;
   return OK;
 }
@@ -791,7 +788,7 @@ static int
 iterateHelper (unsigned int type,
                int is_asc,
                int is_prio,
-               MYSQL_STMT * stmt, Datum_Iterator iter, void *closure)
+               unsigned int iter_select, Datum_Iterator iter, void *closure)
 {
   Datastore_Value *datum;
   int count;
@@ -810,6 +807,7 @@ iterateHelper (unsigned int type,
   cron_t now;
   MYSQL_BIND qbind[5];
   MYSQL_BIND rbind[7];
+  MYSQL_STMT * stmt;
 
   if (is_asc)
     {
@@ -890,6 +888,7 @@ iterateHelper (unsigned int type,
           mysql_thread_end ();
           return SYSERR;
         }
+      stmt = dbh->iter[iter_select];
       now = get_time ();
       if (mysql_stmt_bind_param (stmt, qbind))
         {
@@ -979,7 +978,7 @@ iterateHelper (unsigned int type,
 static int
 iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, YES, YES, dbh->ilow, iter, closure);
+  return iterateHelper (type, YES, YES, 0, iter, closure);
 }
 
 /**
@@ -995,7 +994,7 @@ iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, NO, YES, dbh->inon, iter, closure);
+  return iterateHelper (type, NO, YES, 1, iter, closure);
 }
 
 /**
@@ -1011,7 +1010,7 @@ iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, YES, NO, dbh->iexp, iter, closure);
+  return iterateHelper (type, YES, NO, 2, iter, closure);
 }
 
 /**
@@ -1025,7 +1024,7 @@ iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateMigrationOrder (Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (0, NO, NO, dbh->imig, iter, closure);
+  return iterateHelper (0, NO, NO, 3, iter, closure);
 }
 
 /**
@@ -1039,7 +1038,7 @@ iterateMigrationOrder (Datum_Iterator iter, void *closure)
 static int
 iterateAllNow (Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (0, YES, YES, dbh->ilow, iter, closure);
+  return iterateHelper (0, YES, YES, 0, iter, closure);
 }
 
 /**
@@ -1085,20 +1084,6 @@ get (const HashCode512 * query,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "MySQL looks for `%s' of type %u\n", &enc, type);
 #endif
-  if (type != 0)
-    {
-      if (iter == NULL)
-        stmt = dbh->count_entry_by_hash_and_type;
-      else
-        stmt = dbh->select_entry_by_hash_and_type;
-    }
-  else
-    {
-      if (iter == NULL)
-        stmt = dbh->count_entry_by_hash;
-      else
-        stmt = dbh->select_entry_by_hash;
-    }
 
   hashSize = sizeof (HashCode512);
   GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
@@ -1151,6 +1136,21 @@ get (const HashCode512 * query,
           mysql_thread_end ();
           return SYSERR;
         }
+      if (type != 0)
+	{
+	  if (iter == NULL)
+	    stmt = dbh->count_entry_by_hash_and_type;
+	  else
+	    stmt = dbh->select_entry_by_hash_and_type;
+	}
+      else
+	{
+	  if (iter == NULL)
+	    stmt = dbh->count_entry_by_hash;
+	  else
+	    stmt = dbh->select_entry_by_hash;
+	}
+
       if (mysql_stmt_bind_param (stmt, qbind))
         {
           GE_LOG (ectx,
