@@ -240,7 +240,7 @@ getDBHandle ()
   if (sqlite3_step (stmt) == SQLITE_DONE)
     {
       if (sqlite3_exec (ret->dbh,
-                        "CREATE TABLE gn070 ("
+                        "CREATE TABLE gn071 ("
                         "  size INTEGER NOT NULL DEFAULT 0,"
                         "  type INTEGER NOT NULL DEFAULT 0,"
                         "  prio INTEGER NOT NULL DEFAULT 0,"
@@ -265,12 +265,12 @@ getDBHandle ()
                    "SELECT COUNT(*) FROM gn070 WHERE hash=?",
                    &ret->countContent) != SQLITE_OK) ||
       (sq_prepare (ret->dbh,
-                   "SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire "
+                   "SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire, _ROWID_ "
                    "FROM gn070 WHERE hash=?",
                    &ret->exists) != SQLITE_OK) ||
       (sq_prepare (ret->dbh,
                    "UPDATE gn070 SET prio = prio + ?, expire = MAX(expire,?) WHERE "
-                   "hash = ? AND value = ? AND prio + ? < ?",
+                   "_ROWID_ = ?",
                    &ret->updPrio) != SQLITE_OK) ||
       (sq_prepare (ret->dbh,
                    "INSERT INTO gn070 (size, type, prio, "
@@ -364,12 +364,13 @@ getSize ()
 
 /**
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
- * assemble it into a Datastore_Datum representation.
+ * assemble it into a Datastore_Value representation.
  */
-static Datastore_Datum *
-assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt)
+static Datastore_Value *
+assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
+	       HashCode512 * key,
+	       unsigned long long * rowid)
 {
-  Datastore_Datum *datum;
   Datastore_Value *value;
   int contentSize;
   sqlite3 *dbh;
@@ -428,16 +429,15 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt)
       return NULL;
     }
 
-  datum = MALLOC (sizeof (Datastore_Datum) + contentSize);
-  value = &datum->value;
+  value = MALLOC (sizeof (Datastore_Value) + contentSize);
   value->size = htonl (contentSize + sizeof (Datastore_Value));
   value->type = htonl (type);
   value->prio = htonl (sqlite3_column_int (stmt, 2));
   value->anonymityLevel = htonl (sqlite3_column_int (stmt, 3));
   value->expirationTime = htonll (sqlite3_column_int64 (stmt, 4));
-  memcpy (&datum->key, sqlite3_column_blob (stmt, 5), sizeof (HashCode512));
   memcpy (&value[1], sqlite3_column_blob (stmt, 6), contentSize);
-  return datum;
+  *rowid = sqlite3_column_int64 (stmt, 7);
+  return value;
 }
 
 
@@ -556,7 +556,7 @@ sqlite_iterate (unsigned int type,
   sqlite3_stmt *stmt;
   int count;
   char scratch[512];
-  Datastore_Datum *datum;
+  Datastore_Value *datum;
   unsigned int lastPrio;
   unsigned long long lastExp;
   HashCode512 key;
@@ -564,13 +564,14 @@ sqlite_iterate (unsigned int type,
   sqliteHandle *handle;
   int ret;
   cron_t now;
+  unsigned long long rowid;
 
   handle = getDBHandle ();
   dbh = handle->dbh;
   /* For the rowid trick see
      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   strcpy (scratch,
-          "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
+          "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070"
           " WHERE rowid IN (SELECT rowid FROM gn070"
           " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
   if (sortByPriority)
@@ -674,23 +675,23 @@ sqlite_iterate (unsigned int type,
         }
       if ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
         {
-          datum = assembleDatum (handle, stmt);
+          datum = assembleDatum (handle, stmt, &key, &rowid);
           sqlite3_reset (stmt);
           if (datum == NULL)
             continue;
 #if 0
           printf ("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
-                  (ntohl (datum->value.size) - sizeof (Datastore_Value)),
-                  ntohl (datum->value.prio),
-                  ntohll (datum->value.expirationTime), lastPrio, lastExp);
+                  (ntohl (datum->size) - sizeof (Datastore_Value)),
+                  ntohl (datum->prio),
+                  ntohll (datum->expirationTime), lastPrio, lastExp);
 #endif
           if ((NO == limit_nonanonymous) ||
-              (ntohl (datum->value.anonymityLevel) == 0))
+              (ntohl (datum->anonymityLevel) == 0))
             {
               count++;
               if (iter != NULL)
                 {
-                  if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
+                  if (SYSERR == iter (&key, datum, closure, rowid))
                     {
                       FREE (datum);
                       count = SYSERR;
@@ -698,9 +699,8 @@ sqlite_iterate (unsigned int type,
                     }
                 }
             }
-          key = datum->key;
-          lastPrio = ntohl (datum->value.prio);
-          lastExp = ntohll (datum->value.expirationTime);
+          lastPrio = ntohl (datum->prio);
+          lastExp = ntohll (datum->expirationTime);
           FREE (datum);
         }
       else
@@ -798,11 +798,13 @@ iterateAllNow (Datum_Iterator iter, void *closure)
 {
   sqlite3_stmt *stmt;
   int count;
-  Datastore_Datum *datum;
+  Datastore_Value *datum;
   sqlite3 *dbh;
   sqliteHandle *handle;
   int ret;
   unsigned long long payload;
+  unsigned long long rowid;
+  HashCode512 key;
 
   payload = 0;
   handle = getDBHandle ();
@@ -810,7 +812,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
   /* For the rowid trick see
      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   if (sq_prepare (dbh,
-                  "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070",
+                  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070",
                   &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
@@ -820,13 +822,13 @@ iterateAllNow (Datum_Iterator iter, void *closure)
   count = 0;
   while ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
     {
-      datum = assembleDatum (handle, stmt);
+      datum = assembleDatum (handle, stmt, &key, &rowid);
       if (datum == NULL)
         continue;
-      payload += getContentDatastoreSize (&datum->value);
+      payload += getContentDatastoreSize (datum);
       if (iter != NULL)
         {
-          if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
+          if (SYSERR == iter (&key, datum, closure, rowid))
             {
               FREE (datum);
               count = SYSERR;
@@ -930,9 +932,11 @@ get (const HashCode512 * key,
   sqlite3_stmt *stmt;
   char scratch[256];
   int bind = 1;
-  Datastore_Datum *datum;
+  Datastore_Value *datum;
   sqlite3 *dbh;
   sqliteHandle *handle;
+  HashCode512 rkey;
+  unsigned long long rowid;
 #if DEBUG_SQLITE
   EncName enc;
 
@@ -947,7 +951,7 @@ get (const HashCode512 * key,
   if (iter == NULL)
     strcat (scratch, "count(*)");
   else
-    strcat (scratch, "size, type, prio, anonLevel, expire, hash, value");
+    strcat (scratch, "size, type, prio, anonLevel, expire, hash, value, _ROWID_");
   strcat (scratch, " FROM gn070");
 
   if (type || key)
@@ -989,12 +993,12 @@ get (const HashCode512 * key,
         {
           if (iter != NULL)
             {
-              datum = assembleDatum (handle, stmt);
+              datum = assembleDatum (handle, stmt, &rkey, &rowid);
 
               if (datum == NULL)
                 continue;
               if ((key != NULL) &&
-                  (0 != memcmp (&datum->key, key, sizeof (HashCode512))))
+                  (0 != memcmp (&rkey, key, sizeof (HashCode512))))
                 {
                   GE_BREAK (NULL, 0);
                   FREE (datum);
@@ -1007,7 +1011,7 @@ get (const HashCode512 * key,
                       "Found in database block with type %u.\n",
                       ntohl (*(int *) &((&datum->value)[1])));
 #endif
-              if (SYSERR == iter (&datum->key, &datum->value, closure, 0))
+              if (SYSERR == iter (&rkey, datum, closure, rowid))
                 {
 
                   count = SYSERR;
@@ -1129,28 +1133,12 @@ update (unsigned long long uid,
         int delta, cron_t expire)
 {
   int n;
-  unsigned long contentSize;
   sqliteHandle *dbh;
-#if DEBUG_SQLITE
-  EncName enc;
-
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (key, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
-          "SQLite: updating block with key `%s'\n", &enc);
-#endif
 
   dbh = getDBHandle ();
-  contentSize = ntohl (value->size) - sizeof (Datastore_Value);
   sqlite3_bind_int (dbh->updPrio, 1, delta);
   sqlite3_bind_int64 (dbh->updPrio, 2, expire);
-  sqlite3_bind_blob (dbh->updPrio,
-                     3, key, sizeof (HashCode512), SQLITE_TRANSIENT);
-  sqlite3_bind_blob (dbh->updPrio,
-                     4, &value[1], contentSize, SQLITE_TRANSIENT);
-  sqlite3_bind_int (dbh->updPrio, 5, delta);
-  sqlite3_bind_int (dbh->updPrio, 6, MAX_PRIO);
-
+  sqlite3_bind_int64 (dbh->updPrio, 3, uid);
   n = sqlite3_step (dbh->updPrio);
   sqlite3_reset (dbh->updPrio);
 
@@ -1236,7 +1224,6 @@ provide_module_sqstore_sqlite (CoreAPIForApplication * capi)
   api.iterateExpirationTime = &iterateExpirationTime;
   api.iterateMigrationOrder = &iterateMigrationOrder;
   api.iterateAllNow = &iterateAllNow;
-  api.del = &del;
   api.drop = &drop;
   api.update = &update;
   return &api;
