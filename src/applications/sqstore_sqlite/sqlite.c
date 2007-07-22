@@ -24,6 +24,7 @@
  * @author Nils Durner
  * @author Christian Grothoff
  * @todo Estimation of DB size
+ * @todo get/iterateAll: use ORDER-BY ROWID and LIMIT 1!
  *
  * Database: SQLite
  */
@@ -397,6 +398,7 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
   sqlite3 *dbh;
   unsigned int type;
 
+  *rowid = sqlite3_column_int64 (stmt, 7);
   type = sqlite3_column_int (stmt, 1);
   if (type == RESERVED_BLOCK)
     return NULL;
@@ -458,7 +460,6 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
   value->expirationTime = htonll (sqlite3_column_int64 (stmt, 4));
   memcpy (key, sqlite3_column_blob (stmt, 5), sizeof(HashCode512));
   memcpy (&value[1], sqlite3_column_blob (stmt, 6), contentSize);
-  *rowid = sqlite3_column_int64 (stmt, 7);
   return value;
 }
 
@@ -833,6 +834,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
   int ret;
   unsigned long long payload;
   unsigned long long rowid;
+  unsigned long long last_rowid;
   HashCode512 key;
 
   payload = 0;
@@ -841,7 +843,8 @@ iterateAllNow (Datum_Iterator iter, void *closure)
   /* For the rowid trick see
      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   if (sq_prepare (dbh,
-                  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070",
+                  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_"
+		  " FROM gn070 WHERE _ROWID_ > :1 ORDER BY _ROWID_ ASC LIMIT 1",
                   &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
@@ -849,36 +852,38 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       return SYSERR;
     }
   count = 0;
-  while ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
-    {
-      datum = assembleDatum (handle, stmt, &key, &rowid);
-      if (datum == NULL)
-        continue;
-      payload += getContentDatastoreSize (datum);
-      if (iter != NULL)
-        {
-          ret = iter (&key, datum, closure, rowid);
-	  if (ret == SYSERR) 
-            {
-              FREE (datum);
-              count = SYSERR;
-              break;
-            }
-	  if (ret == NO) {
-	    payload -= getContentDatastoreSize (datum);
-	    delete_by_rowid(handle, rowid);
-	  }
-        }
-      FREE (datum);
-      count++;
-    }
-  if (ret != SQLITE_DONE)
-    {
-      LOG_SQLITE (handle,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
-      sqlite3_finalize (stmt);
-      return SYSERR;
-    }
+  last_rowid = 0;
+  while (1) {
+    ret = sqlite3_bind_int64 (stmt,
+			      1,
+			      last_rowid);
+    if (ret != SQLITE_OK)
+      break;
+    if (sqlite3_step (stmt) != SQLITE_ROW)
+      break;
+    datum = assembleDatum (handle, stmt, &key, &rowid);
+    last_rowid = rowid;
+    sqlite3_reset(stmt);
+    if (datum == NULL) 
+      continue;        
+    payload += getContentDatastoreSize (datum);
+    if (iter != NULL)
+      ret = iter (&key, datum, closure, rowid);
+    else
+      ret = OK;
+    if (ret == SYSERR) 
+      {
+	FREE (datum);
+	count = SYSERR;
+	break;
+      }
+    if (ret == NO) {
+      payload -= getContentDatastoreSize (datum);
+      delete_by_rowid(handle, rowid);
+    }  
+    FREE (datum);
+    count++;
+  }
   sqlite3_finalize (stmt);
   if (count != SYSERR)
     {
@@ -962,23 +967,19 @@ static int
 get (const HashCode512 * key,
      unsigned int type, Datum_Iterator iter, void *closure)
 {
-  int ret, count = 0;
+  int ret;
+  int count = 0;
   sqlite3_stmt *stmt;
   char scratch[256];
-  int bind = 1;
-  Datastore_Value *datum;
+  Datastore_Value * datum;
   sqlite3 *dbh;
   sqliteHandle *handle;
   HashCode512 rkey;
+  unsigned long long last_rowid;
   unsigned long long rowid;
-#if DEBUG_SQLITE
-  EncName enc;
 
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (key, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
-          "SQLite: retrieving content `%s'\n", &enc);
-#endif
+  if (key == NULL)
+    return iterateLowPriority(type, iter, closure);
   handle = getDBHandle ();
   dbh = handle->dbh;
   strcpy (scratch, "SELECT ");
@@ -986,111 +987,66 @@ get (const HashCode512 * key,
     strcat (scratch, "count(*)");
   else
     strcat (scratch, "size, type, prio, anonLevel, expire, hash, value, _ROWID_");
-  strcat (scratch, " FROM gn070");
-
-  if (type || key)
-    {
-      strcat (scratch, " WHERE ");
-      if (type)
-        {
-          strcat (scratch, "type = :1");
-          if (key)
-            strcat (scratch, " and ");
-        }
-      if (key)
-        strcat (scratch, "hash = :2");
-    }
-  strcat (scratch, " ORDER BY expire DESC");
-
+  strcat (scratch, " FROM gn070 WHERE hash = :1 AND _ROWID_ > :2");
+  if (type)
+    strcat (scratch, " AND type = :3");
+  strcat (scratch, " ORDER BY _ROWID_ ASC LIMIT 1");
   if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
       return SYSERR;
     }
-
-  if (type)
-    ret = sqlite3_bind_int (stmt, bind++, type);
-  else
-    ret = SQLITE_OK;
-
-  if (key && (ret == SQLITE_OK))
-    {
-      ret = sqlite3_bind_blob (stmt,
-                               bind,
-                               key, sizeof (HashCode512), SQLITE_TRANSIENT);
+  count = 0;
+  last_rowid = 0;
+  while (1) {
+    ret = sqlite3_bind_blob (stmt,
+			     1,
+			     key, sizeof (HashCode512), SQLITE_TRANSIENT);
+    if (ret == SQLITE_OK)
+      ret = sqlite3_bind_int64 (stmt,
+				2,
+				last_rowid);
+    if (type && (ret == SQLITE_OK))
+      ret = sqlite3_bind_int (stmt, 3, type);   
+    if (ret == SQLITE_OK) {
+      ret = sqlite3_step (stmt);
+      if (ret != SQLITE_ROW)
+	break;
+      datum = assembleDatum (handle, stmt, &rkey, &rowid);
+      last_rowid = rowid;
+      sqlite3_reset(stmt);
+      if (datum == NULL) 
+	continue;      
+      if ((key != NULL) &&
+	  (0 != memcmp (&rkey, key, sizeof (HashCode512))))
+	{
+	  GE_BREAK (NULL, 0);
+	  FREE (datum);
+	  continue;
+	}      
+      if (iter != NULL)
+	ret = iter (&rkey, datum, closure, rowid);
+      else
+	ret = OK;
+      if (ret == SYSERR)
+	{
+	  count = SYSERR;
+	  FREE (datum);
+	  ret = SQLITE_DONE;
+	  break;
+	}
+      if (ret == NO) {
+	MUTEX_LOCK(db->DATABASE_Lock_);
+	db->payload -= getContentDatastoreSize (datum);
+	MUTEX_UNLOCK(db->DATABASE_Lock_);
+	delete_by_rowid(handle, rowid);
+      }
+      FREE (datum);
+      count++;
     }
-
-  if (ret == SQLITE_OK)
-    {
-      while ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
-        {
-          if (iter != NULL)
-            {
-              datum = assembleDatum (handle, stmt, &rkey, &rowid);
-
-              if (datum == NULL)
-                continue;
-              if ((key != NULL) &&
-                  (0 != memcmp (&rkey, key, sizeof (HashCode512))))
-                {
-                  GE_BREAK (NULL, 0);
-                  FREE (datum);
-                  continue;
-                }
-
-#if DEBUG_SQLITE
-              GE_LOG (ectx,
-                      GE_DEBUG | GE_REQUEST | GE_USER,
-                      "Found in database block with type %u.\n",
-                      ntohl (*(int *) &((&datum->value)[1])));
-#endif
-              ret = iter (&rkey, datum, closure, rowid);
-	      if (ret == SYSERR)
-                {
-
-                  count = SYSERR;
-                  FREE (datum);
-                  ret = SQLITE_DONE;
-                  break;
-                }
-	      if (ret == NO) {
-		MUTEX_LOCK(db->DATABASE_Lock_);
-		db->payload -= getContentDatastoreSize (datum);
-		MUTEX_UNLOCK(db->DATABASE_Lock_);
-		delete_by_rowid(handle, rowid);
-	      }
-              FREE (datum);
-              count++;
-            }
-          else
-            count += sqlite3_column_int (stmt, 0);
-        }
-      if (ret == SQLITE_BUSY)
-        {
-          sqlite3_finalize (stmt);
-          return count;
-        }
-      if (ret != SQLITE_DONE)
-        {
-          LOG_SQLITE (handle,
-                      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-                      "sqlite_query");
-          sqlite3_finalize (stmt);
-          return SYSERR;
-        }
-
-      sqlite3_finalize (stmt);
-    }
-  else
-    LOG_SQLITE (handle,
-                GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
-
-#if DEBUG_SQLITE
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: done reading content\n");
-#endif
-
+  }
+  sqlite3_finalize (stmt);
   return count;
 }
 
@@ -1181,6 +1137,10 @@ update (unsigned long long uid,
   sqlite3_bind_int64 (dbh->updPrio, 2, expire);
   sqlite3_bind_int64 (dbh->updPrio, 3, uid);
   n = sqlite3_step (dbh->updPrio);
+  if (n != SQLITE_DONE)
+    LOG_SQLITE (dbh,
+		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
+
   sqlite3_reset (dbh->updPrio);
 
 #if DEBUG_SQLITE
