@@ -849,7 +849,6 @@ iterateHelper (unsigned int type,
   qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[4].buffer = &now;
   qbind[4].is_unsigned = YES;
-  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 5);
 
   hashSize = sizeof (HashCode512);
   memset (rbind, 0, sizeof (rbind));
@@ -875,7 +874,6 @@ iterateHelper (unsigned int type,
   rbind[6].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[6].buffer = &vkey;
   rbind[6].is_unsigned = YES;
-  GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
 
   mysql_thread_init ();
   count = 0;
@@ -889,6 +887,8 @@ iterateHelper (unsigned int type,
           return SYSERR;
         }
       stmt = dbh->iter[iter_select];
+      GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 5);
+      GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       now = get_time ();
       if (mysql_stmt_bind_param (stmt, qbind))
         {
@@ -1086,7 +1086,6 @@ get (const HashCode512 * query,
 #endif
 
   hashSize = sizeof (HashCode512);
-  GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
   memset (qbind, 0, sizeof (qbind));
   qbind[0].buffer_type = MYSQL_TYPE_BLOB;
   qbind[0].buffer = (void *) query;
@@ -1098,7 +1097,6 @@ get (const HashCode512 * query,
   qbind[2].buffer_type = MYSQL_TYPE_LONG;
   qbind[2].is_unsigned = YES;
   qbind[2].buffer = &type;
-  GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
   memset (rbind, 0, sizeof (rbind));
   rbind[0].buffer_type = MYSQL_TYPE_LONG;
   rbind[0].buffer = &size;
@@ -1151,6 +1149,8 @@ get (const HashCode512 * query,
 	    stmt = dbh->select_entry_by_hash;
 	}
 
+      GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
+      GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       if (mysql_stmt_bind_param (stmt, qbind))
         {
           GE_LOG (ectx,
