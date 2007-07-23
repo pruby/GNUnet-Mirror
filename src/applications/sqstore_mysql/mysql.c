@@ -543,6 +543,9 @@ delete_entry_by_vkey (unsigned long long vkey)
  * Given a full (SELECT *) result set from gn071 table,
  * assemble it into a Datastore_Value representation.
  *
+ * Call *without* holding the lock, but while within
+ * mysql_thread_start/end.
+ *
  * @param result location where mysql_stmt_fetch stored the results
  * @return NULL on error
  */
@@ -607,6 +610,12 @@ assembleDatum (MYSQL_BIND * result)
   rbind[0].buffer_length = contentSize;
   rbind[0].length = &length;
   rbind[0].buffer = &datum[1];
+  MUTEX_LOCK(lock);
+  if (OK != CHECK_DBH)
+    {
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }
   GE_ASSERT (ectx, mysql_stmt_param_count (dbh->select_value) == 1);
   if (mysql_stmt_bind_param (dbh->select_value, qbind))
     {
@@ -616,6 +625,8 @@ assembleDatum (MYSQL_BIND * result)
               "mysql_stmt_bind_param",
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
+      MUTEX_UNLOCK (lock);
+      FREE(datum);
       return NULL;
     }
   if (mysql_stmt_execute (dbh->select_value))
@@ -626,6 +637,7 @@ assembleDatum (MYSQL_BIND * result)
               "mysql_stmt_execute",
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
+      FREE(datum);
       return NULL;
     }
   GE_ASSERT (ectx, mysql_stmt_field_count (dbh->select_value) == 1);
@@ -637,6 +649,8 @@ assembleDatum (MYSQL_BIND * result)
               "mysql_stmt_bind_result",
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
+      MUTEX_UNLOCK (lock);
+      FREE(datum);
       return NULL;
     }
   if ((0 != mysql_stmt_fetch (dbh->select_value)) ||
@@ -650,9 +664,12 @@ assembleDatum (MYSQL_BIND * result)
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       delete_entry_by_vkey (vkey);
       content_size -= ntohl (datum->size);
+      MUTEX_UNLOCK (lock);
+      FREE(datum);
       return NULL;
     }
   mysql_stmt_reset (dbh->select_value);
+  MUTEX_UNLOCK (lock);
   return datum;
 }
 
@@ -1204,8 +1221,8 @@ get (const HashCode512 * query,
           return count;
         }
       mysql_stmt_reset (stmt);
-      datum = assembleDatum (rbind);
       MUTEX_UNLOCK (lock);
+      datum = assembleDatum (rbind);
       if (datum == NULL)
         continue;
       count++;
