@@ -495,8 +495,8 @@ getStat (sqliteHandle * handle, const char *key)
           ret = sqlite3_column_int64 (stmt, 0);
           i = SQLITE_OK;
         }
+      sqlite3_finalize (stmt);
     }
-  sqlite3_finalize (stmt);
   if (i == SQLITE_BUSY)
     return SYSERR;
   if (i != SQLITE_OK)
@@ -742,7 +742,7 @@ sqlite_iterate (unsigned int type,
             {
               LOG_SQLITE (handle,
                           GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-                          "sqlite_query");
+                          "sqlite3_step");
               sqlite3_finalize (stmt);
               return SYSERR;
             }
@@ -886,6 +886,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       FREE (datum);
       count++;
     }
+  sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
   if (count != SYSERR)
     {
@@ -997,7 +998,7 @@ get (const HashCode512 * key,
   if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_prepare");
       return SYSERR;
     }
   count = 0;
@@ -1050,6 +1051,7 @@ get (const HashCode512 * key,
           count++;
         }
     }
+  sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
   return count;
 }
@@ -1111,7 +1113,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
           return NO;
         }
       LOG_SQLITE (dbh,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
       sqlite3_reset (stmt);
       return SYSERR;
     }
