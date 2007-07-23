@@ -614,6 +614,7 @@ assembleDatum (MYSQL_BIND * result)
   if (OK != CHECK_DBH)
     {
       MUTEX_UNLOCK (lock);
+      FREE(datum);
       return NULL;
     }
   GE_ASSERT (ectx, mysql_stmt_param_count (dbh->select_value) == 1);
@@ -965,8 +966,10 @@ iterateHelper (unsigned int type,
             ret = OK;
           else
             ret = iter (&key, datum, closure, vkey);
-          if (ret == SYSERR)
+          if (ret == SYSERR) {
+	    FREE(datum);
             break;
+	  }
           if (ret == NO)
             {
               MUTEX_LOCK (lock);
@@ -1227,8 +1230,10 @@ get (const HashCode512 * query,
         continue;
       count++;
       ret = iter (&key, datum, closure, vkey);
-      if (ret == SYSERR)
+      if (ret == SYSERR) {
+	FREE(datum);
         break;
+      }
       if (ret == NO)
         {
           MUTEX_LOCK (lock);
