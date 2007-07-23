@@ -614,7 +614,7 @@ assembleDatum (MYSQL_BIND * result)
   if (OK != CHECK_DBH)
     {
       MUTEX_UNLOCK (lock);
-      return SYSERR;
+      return NULL;
     }
   GE_ASSERT (ectx, mysql_stmt_param_count (dbh->select_value) == 1);
   if (mysql_stmt_bind_param (dbh->select_value, qbind))
