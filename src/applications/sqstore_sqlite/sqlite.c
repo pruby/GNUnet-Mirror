@@ -65,14 +65,6 @@
  */
 #define BUSY_TIMEOUT_MS 250
 
-static Stats_ServiceAPI *stats;
-
-static CoreAPIForApplication *coreAPI;
-
-static unsigned int stat_size;
-
-static struct GE_Context *ectx;
-
 /**
  * @brief Wrapper for SQLite
  */
@@ -101,38 +93,25 @@ typedef struct
   sqlite3_stmt *insertContent;
 } sqliteHandle;
 
-/**
- * @brief Information about the database
- */
-typedef struct
-{
+static Stats_ServiceAPI *stats;
 
-  struct MUTEX *DATABASE_Lock_;
-  /**
-   * filename of this bucket
-   */
-  char *fn;
+static CoreAPIForApplication *coreAPI;
 
-  /**
-   * bytes used
-   */
-  unsigned long long payload;
+static unsigned int stat_size;
 
-  unsigned int lastSync;
+static struct GE_Context *ectx;
 
-  /**
-   * Open handles
-   */
-  unsigned int handle_count;
+static struct MUTEX * lock;
 
-  /**
-   * List of open handles
-   */
-  sqliteHandle **handles;
+static char * fn;
 
-} sqliteDatabase;
+static unsigned long long payload;
 
-static sqliteDatabase *db;
+static unsigned int lastSync;
+
+static unsigned int handle_count;
+
+static sqliteHandle **handles;
 
 /**
  * @brief Prepare a SQL statement
@@ -200,14 +179,14 @@ getDBHandle ()
 #endif
 
   /* Is the DB already open? */
-  for (idx = 0; idx < db->handle_count; idx++)
-    if (PTHREAD_TEST_SELF (db->handles[idx]->tid))
-      return db->handles[idx];
+  for (idx = 0; idx < handle_count; idx++)
+    if (PTHREAD_TEST_SELF (handles[idx]->tid)) 
+      return handles[idx];
 
   /* we haven't opened the DB for this thread yet */
   ret = MALLOC (sizeof (sqliteHandle));
   /* Open database and precompile statements */
-  if (sqlite3_open (db->fn, &ret->dbh) != SQLITE_OK)
+  if (sqlite3_open (fn, &ret->dbh) != SQLITE_OK)
     {
       GE_LOG (ectx,
               GE_ERROR | GE_BULK | GE_USER,
@@ -293,10 +272,7 @@ getDBHandle ()
       return NULL;
     }
   ret->tid = PTHREAD_GET_SELF ();
-
-  MUTEX_LOCK (db->DATABASE_Lock_);
-  APPEND (db->handles, db->handle_count, ret);
-  MUTEX_UNLOCK (db->DATABASE_Lock_);
+  APPEND (handles, handle_count, ret);
   return ret;
 }
 
@@ -354,11 +330,11 @@ getSize ()
 {
   double ret;
 
-  MUTEX_LOCK (db->DATABASE_Lock_);
-  ret = db->payload;
+  MUTEX_LOCK (lock);
+  ret = payload;
   if (stats)
     stats->set (stat_size, ret);
-  MUTEX_UNLOCK (db->DATABASE_Lock_);
+  MUTEX_UNLOCK (lock);
   return (unsigned long long) (ret * 1.13);
   /* benchmarking shows 13% overhead */
 }
@@ -554,8 +530,8 @@ setStat (sqliteHandle * handle, const char *key, unsigned long long val)
 static void
 syncStats (sqliteHandle * handle)
 {
-  setStat (handle, "PAYLOAD", db->payload);
-  db->lastSync = 0;
+  setStat (handle, "PAYLOAD", payload);
+  lastSync = 0;
 }
 
 /**
@@ -591,6 +567,7 @@ sqlite_iterate (unsigned int type,
   cron_t now;
   unsigned long long rowid;
 
+  MUTEX_LOCK (lock);
   handle = getDBHandle ();
   dbh = handle->dbh;
   /* For the rowid trick see
@@ -656,6 +633,7 @@ sqlite_iterate (unsigned int type,
     {
       LOG_SQLITE (handle,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_prepare");
+      MUTEX_UNLOCK (lock);
       return SYSERR;
     }
   count = 0;
@@ -715,8 +693,10 @@ sqlite_iterate (unsigned int type,
             {
               count++;
               if (iter != NULL)
-                {
-                  ret = iter (&key, datum, closure, rowid);
+                { 
+		  MUTEX_UNLOCK (lock);		  
+		  ret = iter (&key, datum, closure, rowid);
+		  MUTEX_LOCK (lock);		  
                   if (ret == SYSERR)
                     {
                       FREE (datum);
@@ -725,9 +705,7 @@ sqlite_iterate (unsigned int type,
                     }
                   if (ret == NO)
                     {
-                      MUTEX_LOCK (db->DATABASE_Lock_);
-                      db->payload -= getContentDatastoreSize (datum);
-                      MUTEX_UNLOCK (db->DATABASE_Lock_);
+                      payload -= getContentDatastoreSize (datum);
                       delete_by_rowid (handle, rowid);
                     }
                 }
@@ -751,6 +729,7 @@ sqlite_iterate (unsigned int type,
         }
     }
   sqlite3_finalize (stmt);
+  MUTEX_UNLOCK (lock);
   return count;
 }
 
@@ -834,12 +813,13 @@ iterateAllNow (Datum_Iterator iter, void *closure)
   sqlite3 *dbh;
   sqliteHandle *handle;
   int ret;
-  unsigned long long payload;
+  unsigned long long newpayload;
   unsigned long long rowid;
   unsigned long long last_rowid;
   HashCode512 key;
 
-  payload = 0;
+  newpayload = 0;
+  MUTEX_LOCK (lock);
   handle = getDBHandle ();
   dbh = handle->dbh;
   /* For the rowid trick see
@@ -851,6 +831,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
     {
       LOG_SQLITE (handle,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_prepare");
+      MUTEX_UNLOCK (lock);
       return SYSERR;
     }
   count = 0;
@@ -867,10 +848,12 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       sqlite3_reset (stmt);
       if (datum == NULL)
         continue;
-      payload += getContentDatastoreSize (datum);
-      if (iter != NULL)
+      newpayload += getContentDatastoreSize (datum);
+      if (iter != NULL) {
+	MUTEX_UNLOCK (lock);
         ret = iter (&key, datum, closure, rowid);
-      else
+	MUTEX_LOCK (lock);
+      } else
         ret = OK;
       if (ret == SYSERR)
         {
@@ -880,7 +863,7 @@ iterateAllNow (Datum_Iterator iter, void *closure)
         }
       if (ret == NO)
         {
-          payload -= getContentDatastoreSize (datum);
+          newpayload -= getContentDatastoreSize (datum);
           delete_by_rowid (handle, rowid);
         }
       FREE (datum);
@@ -894,10 +877,11 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       GE_LOG (ectx,
               GE_INFO | GE_IMMEDIATE | GE_USER | GE_ADMIN,
               "SQLite database size recomputed.  New estimate is %llu, old estimate was %llu\n",
-              payload, db->payload);
-      db->payload = payload;
+              newpayload, payload);
+      payload = newpayload;
       syncStats (handle);
     }
+  MUTEX_UNLOCK (lock);
   return count;
 }
 
@@ -913,14 +897,11 @@ sqlite_shutdown ()
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: closing database\n");
 #endif
-  if (!db)
-    return;
-
   syncStats (getDBHandle ());
 
-  for (idx = 0; idx < db->handle_count; idx++)
+  for (idx = 0; idx < handle_count; idx++)
     {
-      sqliteHandle *h = db->handles[idx];
+      sqliteHandle *h = handles[idx];
 
       PTHREAD_REL_SELF (h->tid);
       sqlite3_finalize (h->countContent);
@@ -932,13 +913,12 @@ sqlite_shutdown ()
                     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_close");
       FREE (h);
     }
-  FREE (db->handles);
-  db->handle_count = 0;
-
-  MUTEX_DESTROY (db->DATABASE_Lock_);
-  FREE (db->fn);
-  FREE (db);
-  db = NULL;
+  FREE (handles);
+  handles = NULL;
+  handle_count = 0;
+  MUTEX_DESTROY (lock);
+  FREE (fn);
+  fn = NULL;
 }
 
 /**
@@ -948,10 +928,10 @@ sqlite_shutdown ()
 static void
 drop ()
 {
-  char *fn = STRDUP (db->fn);
+  char * n = STRDUP (fn);
   sqlite_shutdown ();
-  UNLINK (fn);
-  FREE (fn);
+  UNLINK (n);
+  FREE (n);
 }
 
 
@@ -983,6 +963,7 @@ get (const HashCode512 * key,
 
   if (key == NULL)
     return iterateLowPriority (type, iter, closure);
+  MUTEX_LOCK (lock);
   handle = getDBHandle ();
   dbh = handle->dbh;
   strcpy (scratch, "SELECT ");
@@ -999,6 +980,7 @@ get (const HashCode512 * key,
     {
       LOG_SQLITE (handle,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_prepare");
+      MUTEX_UNLOCK (lock);
       return SYSERR;
     }
   count = 0;
@@ -1029,9 +1011,11 @@ get (const HashCode512 * key,
               FREE (datum);
               continue;
             }
-          if (iter != NULL)
-            ret = iter (&rkey, datum, closure, rowid);
-          else
+          if (iter != NULL) {
+	    MUTEX_UNLOCK (lock);
+	    ret = iter (&rkey, datum, closure, rowid);
+	    MUTEX_LOCK (lock);
+	  } else
             ret = OK;
           if (ret == SYSERR)
             {
@@ -1042,10 +1026,8 @@ get (const HashCode512 * key,
             }
           if (ret == NO)
             {
-              MUTEX_LOCK (db->DATABASE_Lock_);
-              db->payload -= getContentDatastoreSize (datum);
-              MUTEX_UNLOCK (db->DATABASE_Lock_);
-              delete_by_rowid (handle, rowid);
+              payload -= getContentDatastoreSize (datum);
+	      delete_by_rowid (handle, rowid);
             }
           FREE (datum);
           count++;
@@ -1053,6 +1035,7 @@ get (const HashCode512 * key,
     }
   sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
+  MUTEX_UNLOCK (lock);
   return count;
 }
 
@@ -1087,8 +1070,9 @@ put (const HashCode512 * key, const Datastore_Value * value)
       GE_BREAK (ectx, 0);
       return SYSERR;
     }
+  MUTEX_LOCK (lock);
   dbh = getDBHandle ();
-  if (db->lastSync > 1000)
+  if (lastSync > 1000)
     syncStats (dbh);
   contentSize = ntohl (value->size) - sizeof (Datastore_Value);
   stmt = dbh->insertContent;
@@ -1118,12 +1102,13 @@ put (const HashCode512 * key, const Datastore_Value * value)
       return SYSERR;
     }
   sqlite3_reset (stmt);
-  db->lastSync++;
-  db->payload += getContentDatastoreSize (value);
+  lastSync++;
+  payload += getContentDatastoreSize (value);
 #if DEBUG_SQLITE
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: done writing content\n");
 #endif
+  MUTEX_UNLOCK (lock);
   return OK;
 }
 
@@ -1137,6 +1122,7 @@ update (unsigned long long uid, int delta, cron_t expire)
   int n;
   sqliteHandle *dbh;
 
+  MUTEX_LOCK (lock);
   dbh = getDBHandle ();
   sqlite3_bind_int (dbh->updPrio, 1, delta);
   sqlite3_bind_int64 (dbh->updPrio, 2, expire);
@@ -1150,6 +1136,7 @@ update (unsigned long long uid, int delta, cron_t expire)
 #if DEBUG_SQLITE
   GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: block updated\n");
 #endif
+  MUTEX_UNLOCK (lock);
   if (n == SQLITE_BUSY)
     return NO;
   return n == SQLITE_OK ? OK : SYSERR;
@@ -1170,10 +1157,8 @@ provide_module_sqstore_sqlite (CoreAPIForApplication * capi)
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: initializing database\n");
 #endif
 
-  db = MALLOC (sizeof (sqliteDatabase));
-  memset (db, 0, sizeof (sqliteDatabase));
-  db->payload = 0;
-  db->lastSync = 0;
+  payload = 0;
+  lastSync = 0;
 
   afsdir = NULL;
   GC_get_configuration_value_filename (capi->cfg,
@@ -1189,33 +1174,28 @@ provide_module_sqstore_sqlite (CoreAPIForApplication * capi)
     {
       GE_BREAK (ectx, 0);
       FREE (dir);
-      FREE (db);
       return NULL;
     }
-  db->DATABASE_Lock_ = MUTEX_CREATE (NO);
-  db->fn = dir;
+  fn = dir;
   dbh = getDBHandle ();
   if (dbh == NULL)
     {
       GE_BREAK (ectx, 0);
-      MUTEX_DESTROY (db->DATABASE_Lock_);
-      FREE (db->fn);
-      FREE (db);
+      FREE (fn);
       return NULL;
     }
 
-  db->payload = getStat (dbh, "PAYLOAD");
-  if (db->payload == SYSERR)
+  payload = getStat (dbh, "PAYLOAD");
+  if (payload == SYSERR)
     {
       GE_BREAK (ectx, 0);
       LOG_SQLITE (dbh,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_payload");
-      MUTEX_DESTROY (db->DATABASE_Lock_);
-      FREE (db->fn);
-      FREE (db);
+      MUTEX_DESTROY (lock);
+      FREE (fn);
       return NULL;
     }
-
+  lock = MUTEX_CREATE(NO);
   coreAPI = capi;
   stats = coreAPI->requestService ("stats");
   if (stats)
@@ -1247,6 +1227,8 @@ release_module_sqstore_sqlite ()
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: database shutdown\n");
 #endif
+  MUTEX_DESTROY(lock);
+  lock = NULL;
   coreAPI = NULL;
 }
 
@@ -1264,10 +1246,8 @@ update_module_sqstore_sqlite (UpdateAPI * uapi)
   char *dir;
   char *afsdir;
 
-  db = MALLOC (sizeof (sqliteDatabase));
-  memset (db, 0, sizeof (sqliteDatabase));
-  db->payload = 0;
-  db->lastSync = 0;
+  payload = 0;
+  lastSync = 0;
   afsdir = NULL;
   GC_get_configuration_value_filename (uapi->cfg,
                                        "FS",
@@ -1281,17 +1261,15 @@ update_module_sqstore_sqlite (UpdateAPI * uapi)
   if (OK != disk_directory_create (ectx, dir))
     {
       FREE (dir);
-      FREE (db);
       return;
     }
-  db->fn = dir;
-  db->DATABASE_Lock_ = MUTEX_CREATE (NO);
+  fn = dir;
+  lock = MUTEX_CREATE (NO);
   dbh = getDBHandle ();
   if (dbh == NULL)
     {
-      MUTEX_DESTROY (db->DATABASE_Lock_);
-      FREE (db->fn);
-      FREE (db);
+      MUTEX_DESTROY (lock);
+      FREE (fn);
       return;
     }
   createIndices (dbh->dbh);
