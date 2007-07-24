@@ -722,6 +722,7 @@ sqlite_iterate (unsigned int type,
                           GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                           "sqlite3_step");
               sqlite3_finalize (stmt);
+	      MUTEX_UNLOCK (lock);		  
               return SYSERR;
             }
           sqlite3_reset (stmt);
