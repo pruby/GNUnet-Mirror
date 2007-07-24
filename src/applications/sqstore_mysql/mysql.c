@@ -328,6 +328,7 @@ iopen ()
                    " hash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " INDEX (hash(64)),"
+                   " INDEX (vkey),"
                    " INDEX (prio,vkey),"
                    " INDEX (expire,vkey,type),"
                    " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=MyISAM");
@@ -344,6 +345,7 @@ iopen ()
                    " hash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " INDEX (hash(64)),"
+                   " INDEX (vkey),"
                    " INDEX (prio,vkey),"
                    " INDEX (expire,vkey,type),"
                    " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=InnoDB");
