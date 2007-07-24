@@ -916,7 +916,6 @@ sqlite_shutdown ()
   FREE (handles);
   handles = NULL;
   handle_count = 0;
-  MUTEX_DESTROY (lock);
   FREE (fn);
   fn = NULL;
 }
@@ -1274,6 +1273,7 @@ update_module_sqstore_sqlite (UpdateAPI * uapi)
     }
   createIndices (dbh->dbh);
   sqlite_shutdown ();
+  MUTEX_DESTROY (lock);
 }
 
 /* end of sqlite.c */
