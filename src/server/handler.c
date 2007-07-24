@@ -495,6 +495,9 @@ injectMessage (const PeerIdentity * sender,
 #endif
                   FREENONNULL (copy);
                   copy = NULL;
+#if VALIDATE_CLIENT
+		  FREE(old_value);
+#endif
                   return;       /* handler says: do not process the rest of the message */
                 }
 #if VALIDATE_CLIENT
