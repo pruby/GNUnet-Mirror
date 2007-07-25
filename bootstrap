@@ -1,9 +1,26 @@
 #!/bin/sh
 export WANT_AUTOMAKE="1.8"
 export MKDIR_P="mkdir -p"
-export AUTOMAKE="automake-1.8"
-export ACLOCAL="aclocal-1.8"
-automake-1.8 -fi
+
+if test "$(which automake-1.8)" != ""; then
+	export AUTOMAKE="automake-1.8"
+elif test "$(which automake)" != ""; then
+	export AUTOMAKE="automake"
+else
+	echo "Error: automake not found"
+	exit
+fi
+
+if test "$(which aclocal-1.8)" != ""; then
+	export ACLOCAL="aclocal-1.8"
+elif test "$(which aclocal)" != ""; then
+	export ACLOCAL="aclocal"
+else
+	echo "Error: aclocal not found"
+	exit
+fi
+
+$AUTOMAKE -fi
 cd libltdl
 autoreconf -f -i
 cd ..
