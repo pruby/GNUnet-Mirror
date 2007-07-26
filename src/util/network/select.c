@@ -233,14 +233,6 @@ destroySession (SelectHandle * sh, Session * s)
              "Destroying session %p of select %p with loss of %u in read and %u in write buffer.\n",
              s, sh, s->pos, s->wapos - s->wspos);
 #endif
-  /* signal waiting threads, if any */
-  MUTEX_UNLOCK (sh->lock);
-  sh->ch (sh->ch_cls, sh, s->sock, s->sock_ctx);
-  MUTEX_LOCK (sh->lock);
-  socket_destroy (s->sock);
-  sh->socket_quota++;
-  GROW (s->rbuff, s->rsize, 0);
-  GROW (s->wbuff, s->wsize, 0);
   for (i = 0; i < sh->sessionCount; i++)
     {
       if (sh->sessions[i] == s)
@@ -250,9 +242,16 @@ destroySession (SelectHandle * sh, Session * s)
           break;
         }
     }
-  FREE (s);
   if (sh->sessionCount * 2 < sh->sessionArrayLength)
     GROW (sh->sessions, sh->sessionArrayLength, sh->sessionCount);
+  MUTEX_UNLOCK (sh->lock);
+  sh->ch (sh->ch_cls, sh, s->sock, s->sock_ctx);
+  MUTEX_LOCK (sh->lock);
+  socket_destroy (s->sock);
+  sh->socket_quota++;
+  GROW (s->rbuff, s->rsize, 0);
+  GROW (s->wbuff, s->wsize, 0);
+  FREE (s);
 }
 
 /**
