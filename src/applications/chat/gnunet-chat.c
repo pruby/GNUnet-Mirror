@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,164 +20,157 @@
 
 /**
  * @file applications/chat/gnunet-chat.c
- * @brief Chat command line tool
+ * @brief Minimal chat command line tool
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "chat.h"
+#include "gnunet_chat_lib.h"
 
-#define CHAT_VERSION "0.0.3"
+static struct GC_Configuration *cfg;
 
-static Semaphore *doneSem;
+static struct GE_Context *ectx;
+
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+
+static char * nickname;
+
+static char * roomname = "gnunet";
 
 /**
- * Parse the options, set the timeout.
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * All gnunet-chat command line options
  */
-static int
-parseOptions (int argc, char **argv)
-{
-  int option_index;
-  int c;
+static struct CommandLineOption gnunetchatOptions[] = {
+  COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),      /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  {'n', "nick", "NAME",
+   gettext_noop ("set the nickname to use (requred)"),
+   1, &gnunet_getopt_configure_set_string, &nickname},
+  {'r', "room", "NAME",
+   gettext_noop ("set the chat room to join (requred)"),
+   1, &gnunet_getopt_configure_set_string, &roomname},
+  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
-  FREENONNULL (setConfigurationString ("GNUNETD", "LOGFILE", NULL));
-  while (1)
-    {
-      static struct GNoption long_options[] = {
-        LONG_DEFAULT_OPTIONS,
-        {"nickname", 1, 0, 'n'},
-        {0, 0, 0, 0}
-      };
-      option_index = 0;
-      c = GNgetopt_long (argc,
-                         argv, "vhdc:L:H:n:", long_options, &option_index);
-      if (c == -1)
-        break;                  /* No more flags to process */
-      if (YES == parseDefaultOptions (c, GNoptarg))
-        continue;
-      switch (c)
-        {
-        case 'n':
-          FREENONNULL (setConfigurationString ("GNUNET-CHAT",
-                                               "NICK", GNoptarg));
-          break;
-        case 'v':
-          printf ("GNUnet v%s, gnunet-chat v%s\n", VERSION, CHAT_VERSION);
-          return SYSERR;
-        case 'h':
-          {
-            static Help help[] = {
-              HELP_CONFIG,
-              HELP_HELP,
-              HELP_LOGLEVEL,
-              {'n', "nickname", NULL,
-               gettext_noop ("specify nickname")},
-              HELP_VERSION,
-              HELP_END,
-            };
-            formatHelp ("gnunet-chat [OPTIONS]",
-                        _("Start GNUnet chat client."), help);
-            return SYSERR;
-          }
-        default:
-          GE_LOG (ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-                  _("Use --help to get a list of options.\n"));
-          return -1;
-        }                       /* end of parsing commandline */
-    }                           /* while (1) */
+/**
+ * A message was send in the chat to us.
+ *
+ * @param timestamp when was the message sent?
+ * @param senderNick what is the nickname of the sender? (maybe NULL)
+ * @param message the message (maybe NULL, especially if confirmation
+ *        is requested before delivery; the protocol will ensure
+ *        that this function is called again with the full message
+ *        if a confirmation is transmitted; if the message is NULL,
+ *        the user is merely asked if engaging in the exchange is ok
+ * @param room in which room was the message received?
+ * @param options options for the message
+ * @return OK to accept the message now, NO to 
+ *         accept (but user is away), SYSERR to signal denied delivery
+ */
+static int receive_callback(void * cls,
+			    struct GNUNET_CHAT_Room * room,
+			    const char * senderNick,
+			    const char * message,
+			    cron_t timestamp,
+			    GNUNET_CHAT_MSG_OPTIONS options) {
+  fprintf(stdout,
+	  "%s: %s\n",
+	  senderNick,
+	  message);
   return OK;
 }
 
-static void *
-receiveThread (void *arg)
-{
-  struct ClientServerConnection *sock = arg;
-  CS_chat_MESSAGE *buffer;
-
-  buffer = MALLOC (MAX_BUFFER_SIZE);
-  while (OK == connection_read (sock, (CS_MESSAGE_HEADER **) & buffer))
-    {
-      char timebuf[64];
-      time_t timetmp;
-      struct tm *tmptr;
-
-      time (&timetmp);
-      tmptr = localtime (&timetmp);
-      strftime (timebuf, 64, "%b %e %H:%M ", tmptr);
-
-      if ((ntohs (buffer->header.size) != sizeof (CS_chat_MESSAGE)) ||
-          (ntohs (buffer->header.type) != CS_PROTO_chat_MSG))
-        continue;
-      buffer->nick[CHAT_NICK_LENGTH - 1] = '\0';
-      buffer->message[CHAT_MSG_LENGTH - 1] = '\0';
-      printf ("[%s][%s]: %s", timebuf, &buffer->nick[0], &buffer->message[0]);
-    }
-  FREE (buffer);
-  SEMAPHORE_UP (doneSem);
-  printf ("CHAT receive loop ends!\n");
-  return NULL;
+/**
+ * Message delivery confirmations.
+ *
+ * @param timestamp when was the message sent?
+ * @param senderNick what is the nickname of the receiver?
+ * @param message the message (maybe NULL)
+ * @param room in which room was the message received?
+ * @param options what were the options of the message
+ * @param response what was the receivers response (OK, NO, SYSERR).
+ * @param receipt signature confirming delivery (maybe NULL, only
+ *        if confirmation was requested)
+ * @return OK to continue, SYSERR to refuse processing further
+ *         confirmations from anyone for this message
+ */
+static int confirmation_callback(void * cls,
+				 struct GNUNET_CHAT_Room * room,
+				 const char * receiverNick,
+				 const PublicKey * receiverKey,
+				 const char * message,
+				 cron_t timestamp,
+				 GNUNET_CHAT_MSG_OPTIONS options,
+				 int response,
+				 const Signature * receipt) {
+  return OK;
 }
 
 /**
- * The main function to search for files on GNet.
+ * GNUnet-chat main.
+ *
  * @param argc number of arguments from the command line
  * @param argv command line arguments
- * @return return value from gnunetsearch: 0: ok, -1: error
+ * @return  0: ok, otherwise error
  */
 int
 main (int argc, char **argv)
 {
-  struct ClientServerConnection *sock;
-  PTHREAD_T messageReceiveThread;
-  void *unused;
-  CS_chat_MESSAGE msg;
-  char *nick;
-
-  if (SYSERR == initUtil (argc, argv, &parseOptions))
-    return 0;                   /* parse error, --help, etc. */
-  sock = getClientSocket ();
-  if (sock == NULL)
-    errexit (_("Could not connect to gnunetd.\n"));
-
-  nick = getConfigurationString ("GNUNET-CHAT", "NICK");
-  if (nick == NULL)
-    errexit (_("You must specify a nickname (use option `%s').\n"), "-n");
-
-  doneSem = SEMAPHORE_CREATE (0);
-  if (0 != PTHREAD_CREATE (&messageReceiveThread,
-                           &receiveThread, sock, 128 * 1024))
-    DIE_STRERROR ("pthread_create");
-
-  memset (&msg, 0, sizeof (CS_chat_MESSAGE));
-  memcpy (&msg.message[0], "Hi!\n", strlen ("Hi!\n"));
-  msg.header.size = htons (sizeof (CS_chat_MESSAGE));
-  msg.header.type = htons (CS_PROTO_chat_MSG);
-  memcpy (&msg.nick[0], nick, strlen (nick));
-
-  /* send first "Hi!" message to gnunetd to indicate "join" */
-  if (SYSERR == connection_write (sock, &msg.header))
-    errexit (_("Could not send join message to gnunetd\n"));
+  struct GNUNET_CHAT_Room * room;
+  PublicKey * my_pub;
+  struct PrivateKey * my_priv;
+  char message[1024];
+  
+  if (SYSERR == GNUNET_init (argc, 
+			     argv,
+			     "gnunet-chat [OPTIONS]",
+			     &cfgFilename,
+			     gnunetchatOptions,
+			     &ectx,
+			     &cfg))
+    return 1;                   /* parse error, --help, etc. */
+  if (nickname == NULL) {
+    fprintf(stderr,
+	    _("You must specify a nickname\n"));
+    return 1;
+  }
+  /* FIXME: load/generate private key! */
+  room = GNUNET_CHAT_join_room(ectx,
+			       cfg,
+			       nickname,
+			       my_pub,
+			       my_priv,
+			       "",
+			       &receive_callback,
+			       NULL);
+  if (room == NULL) {
+    fprintf(stderr,
+	    _("Failed to join the room\n"));
+    return 1;
+  }
 
   /* read messages from command line and send */
   while (1)
     {
-      memset (&msg.message, 0, 1024);
-      if (NULL == fgets (&msg.message[0], 1024, stdin))
+      memset (message, 0, 1024);
+      if (NULL == fgets (message, 1023, stdin))
         break;
-      if (SYSERR == connection_write (sock, &msg.header))
-        errexit (_("Could not send message to gnunetd\n"));
+      if (OK != GNUNET_CHAT_send_message(room,
+					 message,
+					 &confirmation_callback,
+					 NULL,
+					 GNUNET_CHAT_MSG_OPTION_NONE,
+					 NULL)) {
+	fprintf(stderr,
+		_("Failed to send message.\n"));
+      }
     }
-  closeSocketTemporarily (sock);
-  SEMAPHORE_DOWN (doneSem);
-  SEMAPHORE_DESTROY (doneSem);
-  PTHREAD_JOIN (&messageReceiveThread, &unused);
-  connection_destroy (sock);
-
-  doneUtil ();
+  GNUNET_CHAT_leave_room(room);
+  GNUNET_fini(ectx, cfg);
   return 0;
 }
 
