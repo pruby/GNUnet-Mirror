@@ -19,6 +19,7 @@ libnetwork_la_SOURCES = \
 libnetwork_la_LIBADD = $(ADNS_LINK)
 
 check_PROGRAMS = \
+ ipchecktest \
  selecttest 
 
 TESTS = $(check_PROGRAMS)
@@ -26,6 +27,13 @@ TESTS = $(check_PROGRAMS)
 selecttest_SOURCES = \
  selecttest.c 
 selecttest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+
+
+ipchecktest_SOURCES = \
+ ipchecktest.c 
+ipchecktest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
 

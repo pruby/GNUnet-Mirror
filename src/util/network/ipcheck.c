@@ -138,7 +138,7 @@ parse_ipv4_network_specification (struct GE_Context *ectx,
             =
             htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
                    temps[3]);
-          if ((slash <= 32) && (slash > 0))
+          if ((slash <= 32) && (slash >= 0))
             {
               result[i].netmask.addr = 0;
               while (slash > 0)
@@ -164,6 +164,40 @@ parse_ipv4_network_specification (struct GE_Context *ectx,
               FREE (result);
               return NULL;      /* error */
             }
+        }
+      /* try third notation */
+      slash = 32;
+      cnt = sscanf (&routeList[pos],
+                    "%u.%u.%u.%u;",
+                    &temps[0], &temps[1], &temps[2], &temps[3]);
+      if (cnt == 4)
+        {
+          for (j = 0; j < 4; j++)
+            if (temps[j] > 0xFF)
+              {
+                GE_LOG (ectx,
+                        GE_ERROR | GE_USER | GE_IMMEDIATE,
+                        _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                FREE (result);
+                return NULL;
+              }
+          result[i].network.addr
+            =
+            htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
+                   temps[3]);
+	  result[i].netmask.addr = 0;
+	  while (slash > 0)
+	    {
+	      result[i].netmask.addr
+		= (result[i].netmask.addr >> 1) + 0x80000000;
+	      slash--;
+	    }
+	  result[i].netmask.addr = htonl (result[i].netmask.addr);
+	  while (routeList[pos] != ';')
+	    pos++;
+	  pos++;
+	  i++;
+	  continue;
         }
       GE_LOG (ectx,
               GE_ERROR | GE_USER | GE_IMMEDIATE,
