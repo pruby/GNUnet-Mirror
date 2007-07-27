@@ -1172,7 +1172,10 @@ get (const HashCode512 * query,
 	}
 
       GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
-      GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
+      if (iter == NULL)
+	GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
+      else
+	GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       if (mysql_stmt_bind_param (stmt, qbind))
         {
           GE_LOG (ectx,
