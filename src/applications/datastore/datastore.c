@@ -486,7 +486,7 @@ update_module_datastore (UpdateAPI * uapi)
   state = uapi->requestService ("state");
   lq = NULL;
   if ((state != NULL) &&
-      (sizeof (unsigned long long) != state->read (uapi->ectx,
+      (sizeof (unsigned long long) == state->read (uapi->ectx,
                                                    "FS-LAST-QUOTA",
                                                    (void **) &lq)) &&
       (ntohll (*lq) == quota))
