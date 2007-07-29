@@ -262,7 +262,7 @@ createhello ()
  */
 static int
 tcp6Connect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
-	     int may_reuse)
+             int may_reuse)
 {
   int i;
   Host6Address *haddr;
@@ -275,28 +275,29 @@ tcp6Connect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
 
   if (selector == NULL)
     return SYSERR;
-  if (NO != may_reuse) {
-    MUTEX_LOCK (tcplock);
-    session = sessions;
-    while (session != NULL)
-      {
-	if (0 == memcmp (&session->sender,
-			 &hello->senderIdentity, sizeof (PeerIdentity)))
-	  {
-	    MUTEX_LOCK (session->lock);
-	    if (session->in_select)
-	      {
-		session->users++;
-		MUTEX_UNLOCK (session->lock);
-		MUTEX_UNLOCK (tcplock);
-		*tsessionPtr = session->tsession;
-		return OK;
-	      }
-	    MUTEX_UNLOCK (session->lock);
-	  }
-	session = session->next;
-      }
-  }
+  if (NO != may_reuse)
+    {
+      MUTEX_LOCK (tcplock);
+      session = sessions;
+      while (session != NULL)
+        {
+          if (0 == memcmp (&session->sender,
+                           &hello->senderIdentity, sizeof (PeerIdentity)))
+            {
+              MUTEX_LOCK (session->lock);
+              if (session->in_select)
+                {
+                  session->users++;
+                  MUTEX_UNLOCK (session->lock);
+                  MUTEX_UNLOCK (tcplock);
+                  *tsessionPtr = session->tsession;
+                  return OK;
+                }
+              MUTEX_UNLOCK (session->lock);
+            }
+          session = session->next;
+        }
+    }
   MUTEX_UNLOCK (tcplock);
   haddr = (Host6Address *) & hello[1];
   memset (&hints, 0, sizeof (hints));

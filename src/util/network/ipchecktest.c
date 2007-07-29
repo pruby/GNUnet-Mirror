@@ -26,25 +26,23 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-int test() 
+int
+test ()
 {
-  struct CIDRNetwork * cidr;
+  struct CIDRNetwork *cidr;
 
-  cidr = parse_ipv4_network_specification(NULL,
-					  "127.0.0.1;");
+  cidr = parse_ipv4_network_specification (NULL, "127.0.0.1;");
   if (cidr == NULL)
     return 1;
-  FREE(cidr);
-  cidr = parse_ipv4_network_specification(NULL,
-					  "127.0.0.1/8;");
+  FREE (cidr);
+  cidr = parse_ipv4_network_specification (NULL, "127.0.0.1/8;");
   if (cidr == NULL)
     return 2;
-  FREE(cidr);
-  cidr = parse_ipv4_network_specification(NULL,
-					  "0.0.0.0/0;");
+  FREE (cidr);
+  cidr = parse_ipv4_network_specification (NULL, "0.0.0.0/0;");
   if (cidr == NULL)
     return 4;
-  FREE(cidr);
+  FREE (cidr);
   return 0;
 }
 

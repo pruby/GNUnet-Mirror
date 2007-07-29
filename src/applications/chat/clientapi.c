@@ -33,31 +33,34 @@
 /**
  * Handle for a (joined) chat room.
  */
-struct GNUNET_CHAT_Room {
-  struct ClientServerConnection * sock;
+struct GNUNET_CHAT_Room
+{
+  struct ClientServerConnection *sock;
 
-  struct PTHREAD * listen_thread;
+  struct PTHREAD *listen_thread;
 
-  struct GE_Context * ectx;
+  struct GE_Context *ectx;
 
-  struct GC_Configuration * cfg;
+  struct GC_Configuration *cfg;
 
-  char * nickname;
+  char *nickname;
 
-  const PublicKey * my_public_key;
+  const PublicKey *my_public_key;
 
-  const struct PrivateKey * my_private_key;
+  const struct PrivateKey *my_private_key;
 
-  char * memberInfo;
+  char *memberInfo;
 
   GNUNET_CHAT_Message_Callback callback;
 
-  void * callback_cls;
+  void *callback_cls;
 
 };
 
-static void * thread_main(void * rcls) {
-  struct GNUNET_CHAT_Room * room = rcls;
+static void *
+thread_main (void *rcls)
+{
+  struct GNUNET_CHAT_Room *room = rcls;
   return NULL;
 }
 
@@ -65,10 +68,11 @@ static void * thread_main(void * rcls) {
  * List all of the (publically visible) chat rooms.
  * @return number of rooms on success, SYSERR if iterator aborted
  */
-int GNUNET_CHAT_list_rooms(struct GE_Context * ectx,
-			   struct GC_Configuration * cfg,
-			   GNUNET_CHAT_Room_Iterator it,
-			   void * cls) {
+int
+GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg,
+                        GNUNET_CHAT_Room_Iterator it, void *cls)
+{
   return SYSERR;
 }
 
@@ -81,16 +85,16 @@ int GNUNET_CHAT_list_rooms(struct GE_Context * ectx,
  *        been received?
  * @param cls argument to callback
  * @return NULL on error 
- */ 
+ */
 struct GNUNET_CHAT_Room *
-GNUNET_CHAT_join_room(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg,
-		      const char * nickname,
-		      const PublicKey * me,
-		      const struct PrivateKey * key,
-		      const char * memberInfo,
-		      GNUNET_CHAT_Message_Callback callback,
-		      void * cls) {
+GNUNET_CHAT_join_room (struct GE_Context *ectx,
+                       struct GC_Configuration *cfg,
+                       const char *nickname,
+                       const PublicKey * me,
+                       const struct PrivateKey *key,
+                       const char *memberInfo,
+                       GNUNET_CHAT_Message_Callback callback, void *cls)
+{
   // connect
 
   // allocate & init room struct
@@ -103,8 +107,10 @@ GNUNET_CHAT_join_room(struct GE_Context * ectx,
 
 /**
  * Leave a chat room.
- */ 
-void GNUNET_CHAT_leave_room(struct GNUNET_CHAT_Room * room) {
+ */
+void
+GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *room)
+{
   // stop thread
   // join thread
   // free room struct
@@ -117,12 +123,13 @@ void GNUNET_CHAT_leave_room(struct GNUNET_CHAT_Room * room) {
  * @return OK on success, SYSERR on error
  */
 int
-GNUNET_CHAT_send_message(struct GNUNET_CHAT_Room * room,
-			 const char * message,
-			 GNUNET_CHAT_Message_Confirmation callback,
-			 void * cls,
-			 GNUNET_CHAT_MSG_OPTIONS options,
-			 const PublicKey * receiver) {
+GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
+                          const char *message,
+                          GNUNET_CHAT_Message_Confirmation callback,
+                          void *cls,
+                          GNUNET_CHAT_MSG_OPTIONS options,
+                          const PublicKey * receiver)
+{
   return SYSERR;
 }
 
@@ -130,9 +137,10 @@ GNUNET_CHAT_send_message(struct GNUNET_CHAT_Room * room,
  * List all of the (known) chat members.
  * @return number of rooms on success, SYSERR if iterator aborted
  */
-int GNUNET_CHAT_list_members(struct GNUNET_CHAT_Room * room,
-			     GNUNET_CHAT_Member_Iterator it,
-			     void * cls) {
+int
+GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
+                          GNUNET_CHAT_Member_Iterator it, void *cls)
+{
   return SYSERR;
 }
 

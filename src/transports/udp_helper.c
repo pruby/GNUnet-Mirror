@@ -145,7 +145,7 @@ select_close_handler (void *ch_cls,
  */
 static int
 udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
-	    int may_reuse)
+            int may_reuse)
 {
   TSession *tsession;
 

@@ -32,17 +32,17 @@ static struct GC_Configuration *cfg;
 
 static struct GE_Context *ectx;
 
-static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
-static char * nickname;
+static char *nickname;
 
-static char * roomname = "gnunet";
+static char *roomname = "gnunet";
 
 /**
  * All gnunet-chat command line options
  */
 static struct CommandLineOption gnunetchatOptions[] = {
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),      /* -h */
+  COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),   /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING,  /* -L */
   {'n', "nick", "NAME",
@@ -71,16 +71,14 @@ static struct CommandLineOption gnunetchatOptions[] = {
  * @return OK to accept the message now, NO to 
  *         accept (but user is away), SYSERR to signal denied delivery
  */
-static int receive_callback(void * cls,
-			    struct GNUNET_CHAT_Room * room,
-			    const char * senderNick,
-			    const char * message,
-			    cron_t timestamp,
-			    GNUNET_CHAT_MSG_OPTIONS options) {
-  fprintf(stdout,
-	  "%s: %s\n",
-	  senderNick,
-	  message);
+static int
+receive_callback (void *cls,
+                  struct GNUNET_CHAT_Room *room,
+                  const char *senderNick,
+                  const char *message,
+                  cron_t timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+{
+  fprintf (stdout, "%s: %s\n", senderNick, message);
   return OK;
 }
 
@@ -98,15 +96,16 @@ static int receive_callback(void * cls,
  * @return OK to continue, SYSERR to refuse processing further
  *         confirmations from anyone for this message
  */
-static int confirmation_callback(void * cls,
-				 struct GNUNET_CHAT_Room * room,
-				 const char * receiverNick,
-				 const PublicKey * receiverKey,
-				 const char * message,
-				 cron_t timestamp,
-				 GNUNET_CHAT_MSG_OPTIONS options,
-				 int response,
-				 const Signature * receipt) {
+static int
+confirmation_callback (void *cls,
+                       struct GNUNET_CHAT_Room *room,
+                       const char *receiverNick,
+                       const PublicKey * receiverKey,
+                       const char *message,
+                       cron_t timestamp,
+                       GNUNET_CHAT_MSG_OPTIONS options,
+                       int response, const Signature * receipt)
+{
   return OK;
 }
 
@@ -120,38 +119,31 @@ static int confirmation_callback(void * cls,
 int
 main (int argc, char **argv)
 {
-  struct GNUNET_CHAT_Room * room;
-  PublicKey * my_pub;
-  struct PrivateKey * my_priv;
+  struct GNUNET_CHAT_Room *room;
+  PublicKey *my_pub;
+  struct PrivateKey *my_priv;
   char message[1024];
-  
-  if (SYSERR == GNUNET_init (argc, 
-			     argv,
-			     "gnunet-chat [OPTIONS]",
-			     &cfgFilename,
-			     gnunetchatOptions,
-			     &ectx,
-			     &cfg))
+
+  if (SYSERR == GNUNET_init (argc,
+                             argv,
+                             "gnunet-chat [OPTIONS]",
+                             &cfgFilename, gnunetchatOptions, &ectx, &cfg))
     return 1;                   /* parse error, --help, etc. */
-  if (nickname == NULL) {
-    fprintf(stderr,
-	    _("You must specify a nickname\n"));
-    return 1;
-  }
+  if (nickname == NULL)
+    {
+      fprintf (stderr, _("You must specify a nickname\n"));
+      return 1;
+    }
   /* FIXME: load/generate private key! */
-  room = GNUNET_CHAT_join_room(ectx,
-			       cfg,
-			       nickname,
-			       my_pub,
-			       my_priv,
-			       "",
-			       &receive_callback,
-			       NULL);
-  if (room == NULL) {
-    fprintf(stderr,
-	    _("Failed to join the room\n"));
-    return 1;
-  }
+  room = GNUNET_CHAT_join_room (ectx,
+                                cfg,
+                                nickname,
+                                my_pub, my_priv, "", &receive_callback, NULL);
+  if (room == NULL)
+    {
+      fprintf (stderr, _("Failed to join the room\n"));
+      return 1;
+    }
 
   /* read messages from command line and send */
   while (1)
@@ -159,18 +151,17 @@ main (int argc, char **argv)
       memset (message, 0, 1024);
       if (NULL == fgets (message, 1023, stdin))
         break;
-      if (OK != GNUNET_CHAT_send_message(room,
-					 message,
-					 &confirmation_callback,
-					 NULL,
-					 GNUNET_CHAT_MSG_OPTION_NONE,
-					 NULL)) {
-	fprintf(stderr,
-		_("Failed to send message.\n"));
-      }
+      if (OK != GNUNET_CHAT_send_message (room,
+                                          message,
+                                          &confirmation_callback,
+                                          NULL,
+                                          GNUNET_CHAT_MSG_OPTION_NONE, NULL))
+        {
+          fprintf (stderr, _("Failed to send message.\n"));
+        }
     }
-  GNUNET_CHAT_leave_room(room);
-  GNUNET_fini(ectx, cfg);
+  GNUNET_CHAT_leave_room (room);
+  GNUNET_fini (ectx, cfg);
   return 0;
 }
 

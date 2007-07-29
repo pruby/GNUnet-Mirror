@@ -227,7 +227,7 @@ typedef struct
 #define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire < ? AND vkey != ?) ) "\
                                   "AND expire > ? AND type!=3 "\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
-  MYSQL_STMT * iter[4];
+  MYSQL_STMT *iter[4];
 
 } mysqlHandle;
 
@@ -612,11 +612,11 @@ assembleDatum (MYSQL_BIND * result)
   rbind[0].buffer_length = contentSize;
   rbind[0].length = &length;
   rbind[0].buffer = &datum[1];
-  MUTEX_LOCK(lock);
+  MUTEX_LOCK (lock);
   if (OK != CHECK_DBH)
     {
       MUTEX_UNLOCK (lock);
-      FREE(datum);
+      FREE (datum);
       return NULL;
     }
   GE_ASSERT (ectx, mysql_stmt_param_count (dbh->select_value) == 1);
@@ -629,7 +629,7 @@ assembleDatum (MYSQL_BIND * result)
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
       MUTEX_UNLOCK (lock);
-      FREE(datum);
+      FREE (datum);
       return NULL;
     }
   if (mysql_stmt_execute (dbh->select_value))
@@ -640,7 +640,7 @@ assembleDatum (MYSQL_BIND * result)
               "mysql_stmt_execute",
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
-      FREE(datum);
+      FREE (datum);
       return NULL;
     }
   GE_ASSERT (ectx, mysql_stmt_field_count (dbh->select_value) == 1);
@@ -653,7 +653,7 @@ assembleDatum (MYSQL_BIND * result)
               __FILE__, __LINE__, mysql_stmt_error (dbh->select_value));
       iclose ();
       MUTEX_UNLOCK (lock);
-      FREE(datum);
+      FREE (datum);
       return NULL;
     }
   if ((0 != mysql_stmt_fetch (dbh->select_value)) ||
@@ -668,7 +668,7 @@ assembleDatum (MYSQL_BIND * result)
       delete_entry_by_vkey (vkey);
       content_size -= ntohl (datum->size);
       MUTEX_UNLOCK (lock);
-      FREE(datum);
+      FREE (datum);
       return NULL;
     }
   mysql_stmt_reset (dbh->select_value);
@@ -827,7 +827,7 @@ iterateHelper (unsigned int type,
   cron_t now;
   MYSQL_BIND qbind[5];
   MYSQL_BIND rbind[7];
-  MYSQL_STMT * stmt;
+  MYSQL_STMT *stmt;
 
   if (is_asc)
     {
@@ -968,10 +968,11 @@ iterateHelper (unsigned int type,
             ret = OK;
           else
             ret = iter (&key, datum, closure, vkey);
-          if (ret == SYSERR) {
-	    FREE(datum);
-            break;
-	  }
+          if (ret == SYSERR)
+            {
+              FREE (datum);
+              break;
+            }
           if (ret == NO)
             {
               MUTEX_LOCK (lock);
@@ -1157,25 +1158,25 @@ get (const HashCode512 * query,
           return SYSERR;
         }
       if (type != 0)
-	{
-	  if (iter == NULL)
-	    stmt = dbh->count_entry_by_hash_and_type;
-	  else
-	    stmt = dbh->select_entry_by_hash_and_type;
-	}
+        {
+          if (iter == NULL)
+            stmt = dbh->count_entry_by_hash_and_type;
+          else
+            stmt = dbh->select_entry_by_hash_and_type;
+        }
       else
-	{
-	  if (iter == NULL)
-	    stmt = dbh->count_entry_by_hash;
-	  else
-	    stmt = dbh->select_entry_by_hash;
-	}
+        {
+          if (iter == NULL)
+            stmt = dbh->count_entry_by_hash;
+          else
+            stmt = dbh->select_entry_by_hash;
+        }
 
       GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
       if (iter == NULL)
-	GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
+        GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
       else
-	GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
+        GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       if (mysql_stmt_bind_param (stmt, qbind))
         {
           GE_LOG (ectx,
@@ -1235,10 +1236,11 @@ get (const HashCode512 * query,
         continue;
       count++;
       ret = iter (&key, datum, closure, vkey);
-      if (ret == SYSERR) {
-	FREE(datum);
-        break;
-      }
+      if (ret == SYSERR)
+        {
+          FREE (datum);
+          break;
+        }
       if (ret == NO)
         {
           MUTEX_LOCK (lock);

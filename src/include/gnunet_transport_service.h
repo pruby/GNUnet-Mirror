@@ -91,7 +91,7 @@ typedef struct
    * @return session handle on success, NULL on error
    */
   TSession *(*connect) (const P2P_hello_MESSAGE * hello, const char *token,
-			int may_reuse);
+                        int may_reuse);
 
   /**
    * Connect to another peer, picking any transport that

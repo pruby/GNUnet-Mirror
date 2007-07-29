@@ -261,7 +261,7 @@ typedef struct
    * @return OK on success, SYSERR if the operation failed
    */
   int (*connect) (const P2P_hello_MESSAGE * hello, TSession ** tsession,
-		  int may_reuse);
+                  int may_reuse);
 
   /**
    * Send a message to the specified remote node.

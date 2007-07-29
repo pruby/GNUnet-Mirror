@@ -101,9 +101,9 @@ static unsigned int stat_size;
 
 static struct GE_Context *ectx;
 
-static struct MUTEX * lock;
+static struct MUTEX *lock;
 
-static char * fn;
+static char *fn;
 
 static unsigned long long payload;
 
@@ -180,7 +180,7 @@ getDBHandle ()
 
   /* Is the DB already open? */
   for (idx = 0; idx < handle_count; idx++)
-    if (PTHREAD_TEST_SELF (handles[idx]->tid)) 
+    if (PTHREAD_TEST_SELF (handles[idx]->tid))
       return handles[idx];
 
   /* we haven't opened the DB for this thread yet */
@@ -693,10 +693,10 @@ sqlite_iterate (unsigned int type,
             {
               count++;
               if (iter != NULL)
-                { 
-		  MUTEX_UNLOCK (lock);		  
-		  ret = iter (&key, datum, closure, rowid);
-		  MUTEX_LOCK (lock);		  
+                {
+                  MUTEX_UNLOCK (lock);
+                  ret = iter (&key, datum, closure, rowid);
+                  MUTEX_LOCK (lock);
                   if (ret == SYSERR)
                     {
                       FREE (datum);
@@ -722,7 +722,7 @@ sqlite_iterate (unsigned int type,
                           GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                           "sqlite3_step");
               sqlite3_finalize (stmt);
-	      MUTEX_UNLOCK (lock);		  
+              MUTEX_UNLOCK (lock);
               return SYSERR;
             }
           sqlite3_reset (stmt);
@@ -850,11 +850,13 @@ iterateAllNow (Datum_Iterator iter, void *closure)
       if (datum == NULL)
         continue;
       newpayload += getContentDatastoreSize (datum);
-      if (iter != NULL) {
-	MUTEX_UNLOCK (lock);
-        ret = iter (&key, datum, closure, rowid);
-	MUTEX_LOCK (lock);
-      } else
+      if (iter != NULL)
+        {
+          MUTEX_UNLOCK (lock);
+          ret = iter (&key, datum, closure, rowid);
+          MUTEX_LOCK (lock);
+        }
+      else
         ret = OK;
       if (ret == SYSERR)
         {
@@ -928,7 +930,7 @@ sqlite_shutdown ()
 static void
 drop ()
 {
-  char * n = STRDUP (fn);
+  char *n = STRDUP (fn);
   sqlite_shutdown ();
   UNLINK (n);
   FREE (n);
@@ -1011,11 +1013,13 @@ get (const HashCode512 * key,
               FREE (datum);
               continue;
             }
-          if (iter != NULL) {
-	    MUTEX_UNLOCK (lock);
-	    ret = iter (&rkey, datum, closure, rowid);
-	    MUTEX_LOCK (lock);
-	  } else
+          if (iter != NULL)
+            {
+              MUTEX_UNLOCK (lock);
+              ret = iter (&rkey, datum, closure, rowid);
+              MUTEX_LOCK (lock);
+            }
+          else
             ret = OK;
           if (ret == SYSERR)
             {
@@ -1027,7 +1031,7 @@ get (const HashCode512 * key,
           if (ret == NO)
             {
               payload -= getContentDatastoreSize (datum);
-	      delete_by_rowid (handle, rowid);
+              delete_by_rowid (handle, rowid);
             }
           FREE (datum);
           count++;
@@ -1195,7 +1199,7 @@ provide_module_sqstore_sqlite (CoreAPIForApplication * capi)
       FREE (fn);
       return NULL;
     }
-  lock = MUTEX_CREATE(NO);
+  lock = MUTEX_CREATE (NO);
   coreAPI = capi;
   stats = coreAPI->requestService ("stats");
   if (stats)
@@ -1227,7 +1231,7 @@ release_module_sqstore_sqlite ()
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: database shutdown\n");
 #endif
-  MUTEX_DESTROY(lock);
+  MUTEX_DESTROY (lock);
   lock = NULL;
   coreAPI = NULL;
 }

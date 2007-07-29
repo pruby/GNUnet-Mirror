@@ -310,7 +310,7 @@ createhello ()
  */
 static int
 tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
-	    int may_reuse)
+            int may_reuse)
 {
   static int zero = 0;
   HostAddress *haddr;
@@ -322,31 +322,32 @@ tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
 
   if (selector == NULL)
     return SYSERR;
-  if (may_reuse != NO) {
-    MUTEX_LOCK (tcplock);
-    session = sessions;
-    while (session != NULL)
-      {
-	if (0 == memcmp (&session->sender,
-			 &hello->senderIdentity, sizeof (PeerIdentity)))
-	  {
-	    MUTEX_LOCK (session->lock);
-	    if (session->in_select)
-	      {
-		session->users++;
-		MUTEX_UNLOCK (session->lock);
-		MUTEX_UNLOCK (tcplock);
-		*tsessionPtr = session->tsession;
-		return OK;
-	      }
-	    MUTEX_UNLOCK (session->lock);
-	  }
-	session = session->next;
-      }
-    MUTEX_UNLOCK (tcplock);
-  }
+  if (may_reuse != NO)
+    {
+      MUTEX_LOCK (tcplock);
+      session = sessions;
+      while (session != NULL)
+        {
+          if (0 == memcmp (&session->sender,
+                           &hello->senderIdentity, sizeof (PeerIdentity)))
+            {
+              MUTEX_LOCK (session->lock);
+              if (session->in_select)
+                {
+                  session->users++;
+                  MUTEX_UNLOCK (session->lock);
+                  MUTEX_UNLOCK (tcplock);
+                  *tsessionPtr = session->tsession;
+                  return OK;
+                }
+              MUTEX_UNLOCK (session->lock);
+            }
+          session = session->next;
+        }
+      MUTEX_UNLOCK (tcplock);
+    }
   haddr = (HostAddress *) & hello[1];
-#if DEBUG_TCP 
+#if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,
           "Creating TCP connection to %u.%u.%u.%u:%u.\n",

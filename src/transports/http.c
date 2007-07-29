@@ -821,7 +821,7 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
  */
 static int
 httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
-	     int may_reuse)
+             int may_reuse)
 {
   const HostAddress *haddr = (const HostAddress *) &hello[1];
   TSession *tsession;

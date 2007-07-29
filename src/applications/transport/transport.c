@@ -229,9 +229,8 @@ forEachTransport (TransportCallback callback, void *data)
  * @return session on success, NULL on error
  */
 static TSession *
-transportConnect (const P2P_hello_MESSAGE * hello, 
-		  const char *token,
-		  int may_reuse)
+transportConnect (const P2P_hello_MESSAGE * hello,
+                  const char *token, int may_reuse)
 {
   unsigned short prot;
   TSession *tsession;
@@ -247,8 +246,7 @@ transportConnect (const P2P_hello_MESSAGE * hello,
       return NULL;
     }
   tsession = NULL;
-  if (OK != tapis[prot]->connect (hello, &tsession,
-				  may_reuse))
+  if (OK != tapis[prot]->connect (hello, &tsession, may_reuse))
     return NULL;
   tsession->ttype = prot;
   MUTEX_LOCK (lock);

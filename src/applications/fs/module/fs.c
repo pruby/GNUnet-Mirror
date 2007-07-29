@@ -220,7 +220,7 @@ gapPut (void *closure,
     ret = OK;
   FREE (dv);
   if (ret == SYSERR)
-    ret = NO; /* error in put != content invalid! */
+    ret = NO;                   /* error in put != content invalid! */
   return ret;
 }
 

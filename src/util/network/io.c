@@ -141,14 +141,11 @@ socket_destroy (struct SocketHandle *s)
     {
 #ifdef LINUX
       unsigned int option;
-      option = 1; /* 1s only */
-      SETSOCKOPT(s->handle,
-		 IPPROTO_TCP,
-		 TCP_LINGER2,
-		 &option,
-		 sizeof(unsigned int));
-		 
-#endif      
+      option = 1;               /* 1s only */
+      SETSOCKOPT (s->handle,
+                  IPPROTO_TCP, TCP_LINGER2, &option, sizeof (unsigned int));
+
+#endif
       if ((0 != SHUTDOWN (s->handle, SHUT_RDWR)) &&
 #ifdef OSX
           (errno != EINVAL) &&  /* OS X returns these instead of ENOTCONN */

@@ -185,19 +185,19 @@ parse_ipv4_network_specification (struct GE_Context *ectx,
             =
             htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
                    temps[3]);
-	  result[i].netmask.addr = 0;
-	  while (slash > 0)
-	    {
-	      result[i].netmask.addr
-		= (result[i].netmask.addr >> 1) + 0x80000000;
-	      slash--;
-	    }
-	  result[i].netmask.addr = htonl (result[i].netmask.addr);
-	  while (routeList[pos] != ';')
-	    pos++;
-	  pos++;
-	  i++;
-	  continue;
+          result[i].netmask.addr = 0;
+          while (slash > 0)
+            {
+              result[i].netmask.addr
+                = (result[i].netmask.addr >> 1) + 0x80000000;
+              slash--;
+            }
+          result[i].netmask.addr = htonl (result[i].netmask.addr);
+          while (routeList[pos] != ';')
+            pos++;
+          pos++;
+          i++;
+          continue;
         }
       GE_LOG (ectx,
               GE_ERROR | GE_USER | GE_IMMEDIATE,

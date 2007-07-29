@@ -42,7 +42,8 @@ extern "C"
  */
 #define GNUNET_CHAT_VERSION "0.0.0"
 
-typedef enum {
+typedef enum
+{
   /**
    * No special options.
    */
@@ -87,18 +88,16 @@ typedef enum {
  *
  * @return OK to continue, SYSERR to abort iteration
  */
-typedef int (*GNUNET_CHAT_Room_Iterator)(const char * room,
-					 const char * topic,
-					 void * cls);
+typedef int (*GNUNET_CHAT_Room_Iterator) (const char *room,
+                                          const char *topic, void *cls);
 
 /**
  * List all of the (publically visible) chat rooms.
  * @return number of rooms on success, SYSERR if iterator aborted
  */
-int GNUNET_CHAT_list_rooms(struct GE_Context * ectx,
-			   struct GC_Configuration * cfg,
-			   GNUNET_CHAT_Room_Iterator it,
-			   void * cls);
+int GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
+                            struct GC_Configuration *cfg,
+                            GNUNET_CHAT_Room_Iterator it, void *cls);
 
 
 /**
@@ -121,12 +120,12 @@ struct GNUNET_CHAT_Room;
  * @return OK to accept the message now, NO to 
  *         accept (but user is away), SYSERR to signal denied delivery
  */
-typedef int (*GNUNET_CHAT_Message_Callback)(void * cls,
-					    struct GNUNET_CHAT_Room * room,
-					    const char * senderNick,
-					    const char * message,
-					    cron_t timestamp,
-					    GNUNET_CHAT_MSG_OPTIONS options);
+typedef int (*GNUNET_CHAT_Message_Callback) (void *cls,
+                                             struct GNUNET_CHAT_Room * room,
+                                             const char *senderNick,
+                                             const char *message,
+                                             cron_t timestamp,
+                                             GNUNET_CHAT_MSG_OPTIONS options);
 
 /**
  * Join a chat room.  
@@ -137,21 +136,20 @@ typedef int (*GNUNET_CHAT_Message_Callback)(void * cls,
  *        been received?
  * @param cls argument to callback
  * @return NULL on error 
- */ 
-struct GNUNET_CHAT_Room *
-GNUNET_CHAT_join_room(struct GE_Context * ectx,
-		      struct GC_Configuration * cfg,
-		      const char * nickname,
-		      const PublicKey * me,
-		      const struct PrivateKey * key,
-		      const char * memberInfo,
-		      GNUNET_CHAT_Message_Callback callback,
-		      void * cls);
+ */
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GE_Context *ectx,
+                                                struct GC_Configuration *cfg,
+                                                const char *nickname,
+                                                const PublicKey * me,
+                                                const struct PrivateKey *key,
+                                                const char *memberInfo,
+                                                GNUNET_CHAT_Message_Callback
+                                                callback, void *cls);
 
 /**
  * Leave a chat room.
- */ 
-void GNUNET_CHAT_leave_room(struct GNUNET_CHAT_Room * room);
+ */
+void GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *room);
 
 
 /**
@@ -168,15 +166,17 @@ void GNUNET_CHAT_leave_room(struct GNUNET_CHAT_Room * room);
  * @return OK to continue, SYSERR to refuse processing further
  *         confirmations from anyone for this message
  */
-typedef int (*GNUNET_CHAT_Message_Confirmation)(void * cls,
-						struct GNUNET_CHAT_Room * room,
-						const char * receiverNick,
-						const PublicKey * receiverKey,
-						const char * message,
-						cron_t timestamp,
-						GNUNET_CHAT_MSG_OPTIONS options,
-						int response,
-						const Signature * receipt);
+typedef int (*GNUNET_CHAT_Message_Confirmation) (void *cls,
+                                                 struct GNUNET_CHAT_Room *
+                                                 room,
+                                                 const char *receiverNick,
+                                                 const PublicKey *
+                                                 receiverKey,
+                                                 const char *message,
+                                                 cron_t timestamp,
+                                                 GNUNET_CHAT_MSG_OPTIONS
+                                                 options, int response,
+                                                 const Signature * receipt);
 
 
 /**
@@ -186,30 +186,28 @@ typedef int (*GNUNET_CHAT_Message_Confirmation)(void * cls,
  * @return OK on success, SYSERR on error
  */
 int
-GNUNET_CHAT_send_message(struct GNUNET_CHAT_Room * room,
-			 const char * message,
-			 GNUNET_CHAT_Message_Confirmation callback,
-			 void * cls,
-			 GNUNET_CHAT_MSG_OPTIONS options,
-			 const PublicKey * receiver);
+GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
+                          const char *message,
+                          GNUNET_CHAT_Message_Confirmation callback,
+                          void *cls,
+                          GNUNET_CHAT_MSG_OPTIONS options,
+                          const PublicKey * receiver);
 
 
 /**
  * Callback function to iterate over room members.
  */
-typedef int (*GNUNET_CHAT_Member_Iterator)(const char * nickname,
-					   const PublicKey * owner,
-					   const char * memberInfo,
-					   cron_t lastConfirmed,
-					   void * cls);
+typedef int (*GNUNET_CHAT_Member_Iterator) (const char *nickname,
+                                            const PublicKey * owner,
+                                            const char *memberInfo,
+                                            cron_t lastConfirmed, void *cls);
 
 /**
  * List all of the (known) chat members.
  * @return number of rooms on success, SYSERR if iterator aborted
  */
-int GNUNET_CHAT_list_members(struct GNUNET_CHAT_Room * room,
-			     GNUNET_CHAT_Member_Iterator it,
-			     void * cls);
+int GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
+                              GNUNET_CHAT_Member_Iterator it, void *cls);
 
 
 

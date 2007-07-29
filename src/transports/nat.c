@@ -110,7 +110,7 @@ createhello ()
  */
 static int
 natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
-	    int may_reuse)
+            int may_reuse)
 {
   return SYSERR;
 }
