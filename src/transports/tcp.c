@@ -118,6 +118,8 @@ isBlacklisted (const void *addr, unsigned int addr_len)
 #endif
       return SYSERR;
     }
+  if (ip.addr == 0)
+    return SYSERR;
   MUTEX_LOCK (tcpblacklistlock);
   ret = check_ipv4_listed (filteredNetworks_, ip);
   MUTEX_UNLOCK (tcpblacklistlock);
@@ -341,7 +343,7 @@ tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
     }
   MUTEX_UNLOCK (tcplock);
   haddr = (HostAddress *) & hello[1];
-#if DEBUG_TCP
+#if DEBUG_TCP 
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,
           "Creating TCP connection to %u.%u.%u.%u:%u.\n",
