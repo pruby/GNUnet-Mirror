@@ -216,7 +216,7 @@ and disadvantages which are detailed below.
 @node Binary packages
 @section Binary packages
 
-A binary package is ready-to-run software which just has to be installed and
+A @dfn{binary} package is ready-to-run software which just has to be installed and
 configured. This is the usual way of obtaining GNUnet. Some operating system
 vendors include GNUnet in their distribution or make it
 available for download. The installer for Microsoft Windows is an
@@ -238,8 +238,8 @@ of an existing package. Another way is to build GNUnet from source.
 @node Source
 @section Source
 
-"Source code" can be best described as "recipe" and "ingredients" of a
-particular piece of software. Just as a cake is baked, source code source code
+@dfn{Source code} can be best described as "recipe" and "ingredients" of a
+particular piece of software. Just as a cake is baked, source code
 must be translated to machine code ("compiled") in order to get
 actual software which can be executed. Compiling GNUnet from source is
 usually not difficult, but it is certainly not as easy as installing a
@@ -252,7 +252,7 @@ developers. @xref{SVN}.
 @node Virtual appliance
 @section Virtual appliance
 
-Virtual appliances are complete software environments including an operating
+@dfn{Virtual appliances} are complete software environments including an operating
 system which run through virtualization software like QEMU@footnote{@uref{http://fabrice.bellard.free.fr/qemu/}}
 or VMware@footnote{@uref{http://vmware.com/}}. Virtual appliances require no
 installation on the host system and little additional configuration effort.
