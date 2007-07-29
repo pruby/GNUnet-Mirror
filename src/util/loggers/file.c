@@ -38,11 +38,6 @@ typedef struct FileContext
 {
 
   /**
-   * Error context for errors
-   */
-  struct GE_Context *ectx;
-
-  /**
    * File handle used for logging.
    */
   FILE *handle;
@@ -167,7 +162,7 @@ removeOldLog (const char *fil, const char *dir, void *ptr)
  * formatted for appending to the filename.
  */
 static char *
-getLogFileName (struct GE_Context *fctx, const char *name)
+getLogFileName (const char *name)
 {
   time_t curtime;
   struct tm lcltime;
@@ -185,7 +180,7 @@ getLogFileName (struct GE_Context *fctx, const char *name)
   lcltime = *localtime (&curtime);
 #endif
   /* Format current date for filename */
-  GE_ASSERT (fctx, 0 != strftime (date, 80, datefmt, &lcltime));
+  GE_ASSERT (NULL, 0 != strftime (date, 80, datefmt, &lcltime));
   FREE (datefmt);
 
   /* Remove special chars */
@@ -221,7 +216,7 @@ filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
   MUTEX_LOCK (fctx->lock);
   if (fctx->logrotate)
     {
-      name = getLogFileName (fctx->ectx, fctx->basename);
+      name = getLogFileName (fctx->basename);
       if ((fctx->first_start == YES) || (0 != strcmp (name, fctx->filename)))
         {
           fctx->first_start = NO;
@@ -266,10 +261,9 @@ filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
                      "%s: %s", GE_kindToString (kind & GE_EVENTKIND), msg);
     }
   if (ret < 0)
-    GE_LOG_STRERROR (fctx->ectx,
-                     GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-                     "fclose");
-
+    fprintf (stderr,
+             _("`%s' failed at %s:%d in %s with error: %s\n"),
+             "fclose", __FILE__, __LINE__, __FUNCTION__, STRERROR (errno));
   fflush (fctx->handle);
   MUTEX_UNLOCK (fctx->lock);
 }
@@ -284,9 +278,9 @@ fileclose (void *cls)
   FREENONNULL (fctx->basename);
   if ((fctx->handle != stderr) &&
       (fctx->handle != stdout) && (0 != fclose (fctx->handle)))
-    GE_LOG_STRERROR (fctx->ectx,
-                     GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-                     "fclose");
+    fprintf (stderr,
+             _("`%s' failed at %s:%d in %s with error: %s\n"),
+             "fclose", __FILE__, __LINE__, __FUNCTION__, STRERROR (errno));
   FREE (fctx);
 }
 
@@ -312,7 +306,7 @@ GE_create_context_logfile (struct GE_Context *ectx,
   TIME (&start);
   if (logrotate != 0)
     {
-      name = getLogFileName (NULL, filename);
+      name = getLogFileName (filename);
     }
   else
     {
@@ -329,7 +323,6 @@ GE_create_context_logfile (struct GE_Context *ectx,
     }
   fctx = MALLOC (sizeof (FileContext));
   fctx->first_start = YES;
-  fctx->ectx = ectx;
   fctx->logdate = logDate;
   fctx->logrotate = logrotate;
   fctx->handle = fd;
@@ -354,7 +347,6 @@ GE_create_context_stderr (int logDate, GE_KIND mask)
   FileContext *fctx;
 
   fctx = MALLOC (sizeof (FileContext));
-  fctx->ectx = NULL;
   fctx->logdate = logDate;
   fctx->logrotate = 0;
   fctx->handle = stderr;
@@ -379,7 +371,6 @@ GE_create_context_stdout (int logDate, GE_KIND mask)
   FileContext *fctx;
 
   fctx = MALLOC (sizeof (FileContext));
-  fctx->ectx = NULL;
   fctx->logdate = logDate;
   fctx->logrotate = 0;
   fctx->first_start = NO;
