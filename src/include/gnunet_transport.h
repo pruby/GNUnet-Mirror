@@ -257,9 +257,11 @@ typedef struct
    *
    * @param hello the hello-Message for the target node
    * @param tsession the session handle that is to be set
+   * @param may_reuse can an existing connection be re-used?
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*connect) (const P2P_hello_MESSAGE * hello, TSession ** tsession);
+  int (*connect) (const P2P_hello_MESSAGE * hello, TSession ** tsession,
+		  int may_reuse);
 
   /**
    * Send a message to the specified remote node.

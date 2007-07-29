@@ -84,11 +84,14 @@ typedef struct
    * not available.
    *
    * @param hello the hello of the target node
+   * @param may_reuse can an existing connection be
+   *        re-used?
    * @param token string identifying who is holding the reference
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connect) (const P2P_hello_MESSAGE * hello, const char *token);
+  TSession *(*connect) (const P2P_hello_MESSAGE * hello, const char *token,
+			int may_reuse);
 
   /**
    * Connect to another peer, picking any transport that

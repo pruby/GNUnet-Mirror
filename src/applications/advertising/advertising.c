@@ -342,7 +342,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
 
 
   /* Establish session as advertised in the hello */
-  tsession = transport->connect (msg, __FILE__);
+  tsession = transport->connect (msg, __FILE__, NO);
   if (tsession == NULL)
     {
       if (stats != NULL)
@@ -493,7 +493,7 @@ broadcastHelper (const PeerIdentity * hi,
 #endif
       return OK;
     }
-  tsession = transport->connect (hello, __FILE__);
+  tsession = transport->connect (hello, __FILE__, YES);
   FREE (hello);
   if (tsession == NULL)
     {

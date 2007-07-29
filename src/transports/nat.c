@@ -109,7 +109,8 @@ createhello ()
  * @return always fails (returns SYSERR)
  */
 static int
-natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr)
+natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
+	    int may_reuse)
 {
   return SYSERR;
 }

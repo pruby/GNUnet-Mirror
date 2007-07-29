@@ -224,10 +224,14 @@ forEachTransport (TransportCallback callback, void *data)
  * transport mechanism is not available.
  *
  * @param hello the hello of the target node
+ * @param may_reuse can an existing connection be
+ *        re-used?
  * @return session on success, NULL on error
  */
 static TSession *
-transportConnect (const P2P_hello_MESSAGE * hello, const char *token)
+transportConnect (const P2P_hello_MESSAGE * hello, 
+		  const char *token,
+		  int may_reuse)
 {
   unsigned short prot;
   TSession *tsession;
@@ -243,7 +247,8 @@ transportConnect (const P2P_hello_MESSAGE * hello, const char *token)
       return NULL;
     }
   tsession = NULL;
-  if (OK != tapis[prot]->connect (hello, &tsession))
+  if (OK != tapis[prot]->connect (hello, &tsession,
+				  may_reuse))
     return NULL;
   tsession->ttype = prot;
   MUTEX_LOCK (lock);
@@ -278,7 +283,7 @@ transportConnectFreely (const PeerIdentity * peer, int useTempList,
       if (hello == NULL)
         continue;
       hc++;
-      ret = transportConnect (hello, token);
+      ret = transportConnect (hello, token, YES);
       FREE (hello);
       if (ret != NULL)
         break;

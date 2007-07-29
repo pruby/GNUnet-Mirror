@@ -123,7 +123,7 @@ testTAPI (TransportAPI * tapi, void *ctx)
       return;
     }
   tsession = NULL;
-  if (OK != tapi->connect (helo, &tsession))
+  if (OK != tapi->connect (helo, &tsession, NO))
     {
       fprintf (stderr, _("`%s': Could not connect.\n"), tapi->transName);
       *res = SYSERR;
@@ -269,7 +269,7 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
     fprintf (stderr, ".");
   tsession = NULL;
   peer = hello->senderIdentity;
-  tsession = transport->connect (hello, __FILE__);
+  tsession = transport->connect (hello, __FILE__, NO);
   FREE (hello);
   if (tsession == NULL)
     {
