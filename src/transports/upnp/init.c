@@ -97,7 +97,7 @@ static void
 discover (void *unused)
 {
   kill_discovery ();
-  discovery_socket = SOCKET (AF_INET, SOCK_DGRAM, 0);
+  discovery_socket = SOCKET (PF_INET, SOCK_DGRAM, 0);
   if (discovery_socket == -1)
     return;
   discovery = PTHREAD_CREATE (&discover_thread, NULL, 1024 * 128);
