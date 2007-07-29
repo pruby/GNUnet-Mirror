@@ -1528,7 +1528,7 @@ ensureTransportConnected (BufferEntry * be)
   if (be->session.tsession != NULL)
     return OK;
   be->session.tsession =
-    transport->connectFreely (&be->session.sender, YES, __FILE__);
+    transport->connectFreely (&be->session.sender, NO, __FILE__);
   if (be->session.tsession == NULL)
     return NO;
   be->session.mtu = transport->getMTU (be->session.tsession->ttype);
