@@ -145,7 +145,7 @@ removeOldLog (const char *fil, const char *dir, void *ptr)
       FREE (fullname);
       return OK;
     }
-  logdate = &fullname[strlen (def)];
+  logdate = &fullname[strlen (def) + 1];
   datefmt = getDateFormat ();
   ret = strptime (logdate, datefmt, &t);
   FREE (datefmt);
@@ -198,12 +198,25 @@ getLogFileName (struct GE_Context *fctx, const char *name)
 }
 
 static void
+purge_old_logs (FileContext * fctx, const char *logfilename)
+{
+  char *dirname;
+
+  dirname = STRDUP (logfilename);
+  while ((strlen (dirname) > 0) &&
+         (dirname[strlen (dirname) - 1] != DIR_SEPARATOR))
+    dirname[strlen (dirname) - 1] = '\0';
+  disk_directory_scan (NULL, dirname, &removeOldLog, fctx);
+  FREE (dirname);
+
+}
+
+static void
 filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
 {
   FileContext *fctx = cls;
   char *name;
   int ret;
-  char *dirname;
 
   MUTEX_LOCK (fctx->lock);
   if (fctx->logrotate)
@@ -223,12 +236,7 @@ filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
             }
           FREE (fctx->filename);
           fctx->filename = name;
-          dirname = STRDUP (name);
-          while ((strlen (dirname) > 0) &&
-                 (dirname[strlen (dirname) - 1] != DIR_SEPARATOR))
-            dirname[strlen (dirname) - 1] = '\0';
-          disk_directory_scan (fctx->ectx, dirname, &removeOldLog, fctx);
-          FREE (dirname);
+          purge_old_logs (fctx, name);
         }
       else
         {
@@ -329,6 +337,7 @@ GE_create_context_logfile (struct GE_Context *ectx,
   fctx->basename = STRDUP (filename);
   fctx->logstart = start;
   fctx->lock = MUTEX_CREATE (YES);
+  purge_old_logs (fctx, name);
   return GE_create_context_callback (mask,
                                      &filelogger, fctx, &fileclose, NULL);
 }
