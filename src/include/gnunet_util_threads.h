@@ -63,7 +63,7 @@ typedef unsigned long long cron_t;
  * reporting that there maybe a problem?  Set to
  * zero to disable reporting.
  */
-#define REALTIME_LIMIT (1000 * cronMILLIS)
+#define REALTIME_LIMIT (000 * cronMILLIS)
 
 /**
  * Main method of a thread.
