@@ -59,7 +59,7 @@ static struct GE_Context *ectx;
 
 #define HELLO_RECREATE_FREQ (5 * cronMINUTES)
 
-#define CHECK_IT YES
+#define CHECK_IT NO
 #if CHECK_IT
 #include "check.c"
 #else
