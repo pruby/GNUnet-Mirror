@@ -643,20 +643,14 @@ selectThread (void *ctx)
 
                   msg = MALLOC (pending);
                   size = 0;
-                  if (YES != socket_recv_from (sh->listen_sock,
-                                               NC_Nonblocking,
-                                               msg,
-                                               pending,
-                                               &size,
-                                               clientAddr,
+                  if (SYSERR != socket_recv_from (sh->listen_sock,
+						  NC_Nonblocking,
+						  msg,
+						  pending,
+						  &size,
+						  clientAddr,
                                                &lenOfIncomingAddr))
                     {
-#if DEBUG_SELECT
-                      GE_LOG (sh->ectx,
-                              GE_DEBUG | GE_DEVELOPER | GE_BULK,
-                              "Error in select %p -- failed to receive %u bytes\n",
-                              sh, pending);
-#endif
                       socket_close (sh->listen_sock);
                     }
                   else

@@ -343,10 +343,8 @@ socket_recv_from (struct SocketHandle *s,
               *read = pos;
               return (pos == 0) ? NO : YES;
             }
-#if DEBUG_IO
           GE_LOG_STRERROR (s->ectx,
-                           GE_DEBUG | GE_USER | GE_REQUEST, "recvfrom");
-#endif
+                           GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER, "recvfrom");
           *read = pos;
           return SYSERR;
         }
