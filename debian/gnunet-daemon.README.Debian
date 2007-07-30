@@ -1,0 +1,21 @@
+gnunet for Debian
+-----------------
+
+GNUnet starts by default at boot time. To change the default behaviour, run:
+
+	# dpkg-reconfigure -plow gnunet-daemon
+
+In order to start, stop or restart manually the daemon, use:
+
+	# /etc/init.d/gnunet-daemon
+
+with the parameter start, stop or restart.
+
+Note: You cannot upgrade GNUnet directly from versions earlier than 0.6.1b,
+refer to the file UPDATING for information on how to migrate your data.
+
+GNUnet has a global config file, /etc/gnunet.conf, for some programs (e.g.
+gnunet-stats) it may also need a per user config file, a sample of which is the
+included gnunet.user which can be copied to ~/.gnunet/gnunet.conf
+
+ -- Arnaud Kyheng <Arnaud.Kyheng@free.fr>  Sun, 29 Aug 2004 23:07:45 +0200
