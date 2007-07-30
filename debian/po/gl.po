@@ -1,0 +1,78 @@
+# Galician translation of gnunet's debconf templates
+# This file is distributed under the same license as the gnunet package.
+# Jacobo Tarrio <jtarrio@debian.org>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnunet\n"
+"Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
+"POT-Creation-Date: 2007-06-27 09:09+0000\n"
+"PO-Revision-Date: 2007-06-11 13:21+0200\n"
+"Last-Translator: Jacobo Tarrio <jtarrio@debian.org>\n"
+"Language-Team: Galician <proxecto@trasno.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../gnunet-daemon.templates:2001
+msgid "Should the GNUnet daemon be launched on boot?"
+msgstr "¿Debe iniciarse o servizo GNUnet co sistema?"
+
+#. Type: boolean
+#. Description
+#: ../gnunet-daemon.templates:2001
+msgid ""
+"If you choose this option, a GNUnet server will be started each time the "
+"system is launched. Otherwise, you will need to launch GNUnet each time you "
+"want to use it."
+msgstr ""
+"Se escolle esta opción, hase iniciar un servidor GNUnet cada vez que inicie "
+"o sistema. Se non, ha ter que iniciar GNUnet cada vez que queira empregalo."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+msgid "GNUnet user:"
+msgstr "Usuario de GNUnet:"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+msgid "Please choose the user that the GNUnet daemon process will run as."
+msgstr "Escolla o usuario co que se ha executar o servizo GNUnet."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+msgid ""
+"This should be a dedicated account. If the specified account does not "
+"already exist, it will automatically be created, with no login shell."
+msgstr ""
+"Debería ser unha conta adicada. Se a conta non existe, hase crear "
+"automaticamente sen intérprete de ordes para se conectar."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+msgid "GNUnet group:"
+msgstr "Grupo de GNUnet:"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+msgid "Please choose the group that the GNUnet daemon process will run as."
+msgstr "Escolla o grupo co que se ha executar o servizo GNUnet."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+msgid ""
+"This should be a dedicated group, not one that already owns data. Only the "
+"members of this group will have access to GNUnet data, and be allowed to "
+"start and stop the GNUnet server."
+msgstr ""
+"Este debería ser un grupo adicado, non un que xa posúa datos. Só os membros "
+"dese grupo han ter acceso aos datos de GNUnet e permiso para iniciar e deter "
+"o servidor GNUnet."

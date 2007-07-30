@@ -1,0 +1,2 @@
+misc:Depends=debconf (>= 0.5) | debconf-2.0
+shlibs:Depends=gnunet-client, gnunet-common, guile-1.8-libs, libadns1, libc6 (>= 2.5-0ubuntu1), libcurl3 (>= 7.15.5-1), libgcrypt11 (>=1.2.2), libgmp3c2, libgpg-error0 (>= 1.4), libltdl3 (>= 1.5.2-2), libmysqlclient15off (>= 5.0.27-1), libsqlite3-0 (>= 3.3.13), libxml2 (>= 2.6.27), zlib1g (>= 1:1.2.1)

@@ -1,0 +1,87 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnunet\n"
+"Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
+"POT-Creation-Date: 2007-06-27 09:09+0000\n"
+"PO-Revision-Date: 2007-04-29 14:40+0100\n"
+"Last-Translator: Bart Cornelis <cobaco@skolelinux.no>\n"
+"Language-Team: debian-l10n-dutch <debian-l10n-dutch@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Dutch\n"
+
+#. Type: boolean
+#. Description
+#: ../gnunet-daemon.templates:2001
+msgid "Should the GNUnet daemon be launched on boot?"
+msgstr ""
+
+#. Type: boolean
+#. Description
+#: ../gnunet-daemon.templates:2001
+#, fuzzy
+#| msgid ""
+#| "If you accept here, a GNUnet server will be started each time your "
+#| "machine starts.  If you decline this option, you need to launch GNUnet "
+#| "each time you want to use it."
+msgid ""
+"If you choose this option, a GNUnet server will be started each time the "
+"system is launched. Otherwise, you will need to launch GNUnet each time you "
+"want to use it."
+msgstr ""
+"Als u dit aanvaard wordt de GNUnet-server telkens u het systeem opstart "
+"gestart. Als u dit afslaat dient u GNUnet handmatig te starten telkens u "
+"GNUnet wilt gebruiken."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+msgid "GNUnet user:"
+msgstr "GNUnet-gebruiker:"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+#, fuzzy
+#| msgid "Define the user owning the GNUnet daemon process."
+msgid "Please choose the user that the GNUnet daemon process will run as."
+msgstr ""
+"Als welke gebruiker dient het GNUnet-achtergronddienstproces te draaien?"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:3001
+msgid ""
+"This should be a dedicated account. If the specified account does not "
+"already exist, it will automatically be created, with no login shell."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+msgid "GNUnet group:"
+msgstr "GNUnet-groep:"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+#, fuzzy
+#| msgid "Define the group owning the GNUnet daemon process."
+msgid "Please choose the group that the GNUnet daemon process will run as."
+msgstr ""
+"Welke groep dient eigenaar te zijn van het GNUnet-achtergronddienstproces?"
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:4001
+msgid ""
+"This should be a dedicated group, not one that already owns data. Only the "
+"members of this group will have access to GNUnet data, and be allowed to "
+"start and stop the GNUnet server."
+msgstr ""

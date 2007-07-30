@@ -1,0 +1,1 @@
+shlibs:Depends=gnunet-common, guile-1.8-libs, libadns1, libc6 (>= 2.5-0ubuntu1), libextractor1c2a (>= 0.5.18), libgcrypt11 (>=1.2.2), libgmp3c2, libgpg-error0 (>= 1.4), libltdl3 (>= 1.5.2-2), zlib1g (>= 1:1.2.1)

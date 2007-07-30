@@ -1,0 +1,6 @@
+gnunet_0.7.2-1_all.deb net optional
+gnunet-client_0.7.2-1_i386.deb net optional
+gnunet-common_0.7.2-1_i386.deb net optional
+gnunet-daemon_0.7.2-1_i386.deb net optional
+gnunet-dev_0.7.2-1_i386.deb libdevel optional
+gnunet-tools_0.7.2-1_i386.deb net optional
