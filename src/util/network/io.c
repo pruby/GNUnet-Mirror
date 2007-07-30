@@ -344,7 +344,8 @@ socket_recv_from (struct SocketHandle *s,
               return (pos == 0) ? NO : YES;
             }
           GE_LOG_STRERROR (s->ectx,
-                           GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER, "recvfrom");
+                           GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
+                           "recvfrom");
           *read = pos;
           return SYSERR;
         }

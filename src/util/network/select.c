@@ -643,17 +643,17 @@ selectThread (void *ctx)
 
                   msg = MALLOC (pending);
                   size = 0;
-                  if (SYSERR == socket_recv_from (sh->listen_sock,
-						  NC_Nonblocking,
-						  msg,
-						  pending,
-						  &size,
-						  clientAddr,
-                                               &lenOfIncomingAddr))
+                  ret = socket_recv_from (sh->listen_sock,
+                                          NC_Nonblocking,
+                                          msg,
+                                          pending,
+                                          &size,
+                                          clientAddr, &lenOfIncomingAddr);
+                  if (ret == SYSERR)
                     {
                       socket_close (sh->listen_sock);
                     }
-                  else
+                  else if (ret == OK)
                     {
                       /* validate msg format! */
                       const MESSAGE_HEADER *hdr;
