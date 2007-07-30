@@ -52,7 +52,7 @@
  * modify the messages that they are given?
  * (expensive!)
  */
-#define VALIDATE_CLIENT YES
+#define VALIDATE_CLIENT NO
 
 /**
  * How many incoming packages do we have in the buffer
