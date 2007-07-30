@@ -643,7 +643,7 @@ selectThread (void *ctx)
 
                   msg = MALLOC (pending);
                   size = 0;
-                  if (SYSERR != socket_recv_from (sh->listen_sock,
+                  if (SYSERR == socket_recv_from (sh->listen_sock,
 						  NC_Nonblocking,
 						  msg,
 						  pending,
