@@ -1,4 +1,4 @@
-debian/tmp/usr/lib/*.so
-debian/tmp/usr/lib/*.la
-debian/tmp/usr/lib/GNUnet/*.la
-debian/tmp/usr/include/*
+/usr/include/*
+/usr/lib/*.so
+/usr/lib/*.la
+/usr/lib/GNUnet/*.la

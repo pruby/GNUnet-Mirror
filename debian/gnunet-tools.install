@@ -1,7 +1,7 @@
-debian/tmp/usr/bin/gnunet-setup
-debian/tmp/usr/lib/libgnunetsetup.so.*
-debian/tmp/usr/lib/GNUnet/libgnunetsetup_*.so
-debian/tmp/usr/share/GNUnet/gnunet-setup.glade
-debian/tmp/usr/share/GNUnet/config-client.scm
-debian/tmp/usr/share/GNUnet/config-daemon.scm
-debian/tmp/usr/share/GNUnet/gnunet-logo-color.png
+/usr/bin/gnunet-setup
+/usr/lib/libgnunetsetup.so.*
+/usr/lib/GNUnet/libgnunetsetup_*.so
+/usr/share/GNUnet/config-client.scm
+/usr/share/GNUnet/config-daemon.scm
+/usr/share/GNUnet/gnunet-logo-color.png
+/usr/share/GNUnet/gnunet-setup.glade

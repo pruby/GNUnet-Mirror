@@ -1,123 +1,115 @@
-#! /bin/sh
-# postinst script for gnunet
-#
+#!/bin/sh
 # Author: Arnaud Kyheng <Arnaud.Kyheng@free.fr>
 
 set -e
 
-# summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
-#          <conflicting-package> <version>
-# for details, see http://www.debian.org/doc/debian-policy/ or
-# the debian-policy package
-#
+case "${1}" in
+	configure)
+		# Source debconf library.
+		. /usr/share/debconf/confmodule
 
+		# Read default values
+		CONFIG_FILE=/etc/default/gnunet-daemon
 
-case "$1" in
-    configure)
-    	# Source debconf library.
-	. /usr/share/debconf/confmodule
-	
-	# Read default values
-	CONFIG_FILE=/etc/default/gnunet-daemon
+		# This is need to migrate data from 0.6.1b or later
+		echo "Migrating previous GNUnet data (gnunet-update)"
+		gnunet-update
 
-	# This is need to migrate data from 0.6.1b or later
-	echo "Migrating previous GNUnet data (gnunet-update)"
-	gnunet-update
+		# Read debconf values
+		db_get gnunet-daemon/gnunet_user
+		gnunet_user="${RET}"
+		db_get gnunet-daemon/gnunet_group
+		gnunet_group="${RET}"
+		db_get gnunet-daemon/launch_at_startup
+		launch_at_startup="${RET}"
 
-	# Read debconf values
-	db_get gnunet-daemon/gnunet_user
-	gnunet_user="$RET"
-	db_get gnunet-daemon/gnunet_group
-	gnunet_group="$RET"
-	db_get gnunet-daemon/launch_at_startup
-	launch_at_startup="$RET"
-	# Creating gnunet group if needed
-	if ! getent group $gnunet_group > /dev/null ; then
-		echo -n "Creating new GNUnet group $gnunet_group"
-		addgroup --quiet --system $gnunet_group
-		echo " [done]"
-	fi
-	# Creating gnunet user if needed
-	if ! getent passwd $gnunet_user > /dev/null ; then
-		echo -n "Creating new GNUnet user $gnunet_user"
-		adduser --quiet --system --ingroup $gnunet_group --no-create-home $gnunet_user
-		echo " [done]"
-	fi
-	# Update files and directories permissions
-	# Assuming default values, this *should* not be changed
-	echo -n "Updating files and directories permissions"
-	/bin/chown -R $gnunet_user:$gnunet_group /var/run/gnunetd
-	/bin/chown -R $gnunet_user:$gnunet_group /var/log/gnunetd
-	# Use the new "gnunet-update -g"
-	GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
-	/bin/chown -R $gnunet_user:$gnunet_group $GNUNETD_HOME
-	echo  " [done]"
-	# Writing new values to configuration file
-	echo -n "Writing new configuration file"
-	CONFIG_NEW=`/bin/tempfile`
-	cat > $CONFIG_NEW <<EOF
-# This file controls the behaviour of the GNUnet init script. 
+		# Creating gnunet group if needed
+		if ! getent group ${gnunet_group} > /dev/null
+		then
+			echo -n "Creating new GNUnet group ${gnunet_group}: "
+			addgroup --quiet --system ${gnunet_group}
+			echo "done."
+		fi
+
+		# Creating gnunet user if needed
+		if ! getent passwd $gnunet_user > /dev/null
+		then
+			echo -n "Creating new GNUnet user ${gnunet_user}: "
+			adduser --quiet --system --ingroup ${gnunet_group} --no-create-home ${gnunet_user}
+			echo "done."
+		fi
+
+		# Update files and directories permissions.
+		# Assuming default values, this *should* not be changed.
+		echo -n "Updating files and directories permissions: "
+		chown -R ${gnunet_user}:${gnunet_group} /var/run/gnunetd
+		chown -R ${gnunet_user}:${gnunet_group} /var/log/gnunetd
+		# Use the new "gnunet-update -g"
+		GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
+		chown -R ${gnunet_user}:${gnunet_group} ${GNUNETD_HOME}
+		echo  "done."
+
+		# Writing new values to configuration file
+		echo -n "Writing new configuration file: "
+		CONFIG_NEW=`/bin/tempfile`
+
+cat > "${CONFIG_NEW}" <<EOF
+# This file controls the behaviour of the GNUnet init script.
 # It will be parsed as a shell script.
-# please do not edit by hand but
-# use dpkg-reconfigure gnunet-daemon
+# please do not edit by hand, use 'dpkg-reconfigure gnunet-daemon'.
 
-GNUNET_USER=$gnunet_user
-GNUNET_GROUP=$gnunet_group
+GNUNET_USER=${gnunet_user}
+GNUNET_GROUP=${gnunet_group}
 EOF
 
-	cp -f $CONFIG_NEW $CONFIG_FILE
-	echo " [done]"
-	
-	# Secure access to the data directory
-	/bin/chmod 0700 $GNUNETD_HOME || true
-	
-	# Cleaning
-	rm -f $CONFIG_NEW
-	echo "All done."
-	if [ "$launch_at_startup" = 'true' ]; then
-		if [ -x "/etc/init.d/gnunet-daemon" ]; then
-		    update-rc.d gnunet-daemon defaults > /dev/null 2>&1 || true
-		    if [ -x /usr/sbin/invoke-rc.d ]; then
-		      invoke-rc.d gnunet-daemon start || true
-		    else
-		      /etc/init.d/gnunet-daemon start || true
-		    fi
+		cp -f "${CONFIG_NEW}" "${CONFIG_FILE}"
+		echo "done."
+
+		# Secure access to the data directory
+		chmod 0700 "${GNUNETD_HOME}" || true
+
+		# Cleaning
+		rm -f "${CONFIG_NEW}"
+		echo "All done."
+
+		if [ "${launch_at_startup}" = "true" ]
+		then
+			if [ -x /etc/init.d/gnunet-daemon ]
+			then
+				update-rc.d gnunet-daemon defaults > /dev/null 2>&1 || true
+
+				if [ -x /usr/sbin/invoke-rc.d ]
+				then
+					invoke-rc.d gnunet-daemon start || true
+				else
+					/etc/init.d/gnunet-daemon start || true
+				fi
+			fi
+		else
+			if [ -x /etc/init.d/gnunet-daemon ]
+			then
+				if [ -x /usr/sbin/invoke-rc.d ]
+				then
+					invoke-rc.d gnunet-daemon stop || true
+				else
+					/etc/init.d/gnunet-daemon stop || true
+				fi
+			fi
+
+			update-rc.d -f gnunet-daemon remove > /dev/null 2>&1 || true
 		fi
-	else
-		if [ -x "/etc/init.d/gnunet-daemon" ]; then
-		    if [ -x /usr/sbin/invoke-rc.d ] ; then
-		        invoke-rc.d gnunet-daemon stop || true
-		    else
-		        /etc/init.d/gnunet-daemon stop || true
-		    fi
-		fi
-		update-rc.d -f gnunet-daemon remove > /dev/null 2>&1 || true
-	fi
+		;;
 
+	abort-upgrade|abort-remove|abort-deconfigure)
 
-    ;;
+		;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-
-    ;;
-
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
+	*)
+		echo "postinst called with unknown argument \`${1}'" >&2
+		exit 1
+		;;
 esac
-
-# dh_installdeb will replace this with shell code automatically
-# generated by other debhelper scripts.
 
 #DEBHELPER#
 
 exit 0
-
-

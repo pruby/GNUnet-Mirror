@@ -13,228 +13,66 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnunet 0.7.0b-1\n"
+"Project-Id-Version: gnunet\n"
 "Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
-"POT-Creation-Date: 2007-05-03 23:33+0200\n"
-"PO-Revision-Date: 2006-01-11 23:46+0100\n"
+"POT-Creation-Date: 2007-06-11 07:59+0200\n"
+"PO-Revision-Date: 2007-06-11 09:30+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
-"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid "Former installation of GNUnet detected"
-msgstr "Tidigare installation av GNUnet hittades"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid ""
-"Since there are important changes in this version, the installer will need "
-"to modify the GNUnet configuration file (/etc/gnunet.conf)."
-msgstr ""
-"Eftersom det är viktiga ändringar i denna version behöver vi modifiera din "
-"konfigurationsfil för GNUnet (/etc/gnunet.conf)."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid ""
-"The installation process will backup /etc/gnunet.conf to /etc/gnunet.conf."
-"old, and will automatically build a new configuration file."
-msgstr ""
-"Installationsprocessen kommer att säkerhetskopiera /etc/gnunet.conf till /"
-"etc/gnunet.conf.old och automatiskt bygga en ny konfigurationsfil."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid "Every personal settings will be preserved as much as possible."
-msgstr ""
-"Dina personliga inställningar kommer att behållas som mycket som möjligt."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid "Warning"
-msgstr "Varning"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid ""
-"For some obscure reason, the installer have failed to discover the "
-"configuration settings in /etc/gnunet.conf."
-msgstr ""
-"Av någon underlig anledning misslyckades vi att identifiera dina "
-"inställningar i /etc/gnunet.conf."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid "The old configuration file will be moved to /etc/gnunet.conf.old."
-msgstr ""
-"Din gamla konfigurationsfil kommer att flyttas till /etc/gnunet.conf.old."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Since some changes are *mandatory* in this file, a fresh default "
-"configuration file will now be installed"
-msgstr ""
-"Eftersom vissa ändringar är *obligatoriska* i denna fil kommer en färsk "
-"standardkonfigurationsfil nu att installeras"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Please take a look and make necessary changes in it if needed after "
-"installation."
-msgstr ""
-"Vänligen ta en titt på den och gör nödvändiga ändringar vid behov efter "
-"installationen."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "Upgrade from a version prior to 0.7.0"
-msgstr "Uppgradering från en version före 0.7.0"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"It seems that you are upgrading GNUnet from a version prior to 0.7.x. GNUnet "
-"0.7.x introduced new configuration files and a new database storage format "
-"which is not compatible with versions prior to 0.7.x."
-msgstr ""
-"Det verkar som om du uppgraderar GNUnet från en version före 0.7.x. GNUnet "
-"0.7.x introducerade nya konfigurationsfiler och ett nytt lagringsformat för "
-"databasen som inte är kompatibel med versioner före 0.7.x."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "GNUnet cannot convert your database format to the new format."
-msgstr "GNUnet kan inte konvertera din databas till det nya formatet."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your database storage will be automatically moved to /var/lib/GNUnet."
-"prior07, and the gnunet package will build a new empty storage for you."
-msgstr ""
-"Din databas kommer att automatiskt flyttas till /var/lib/GNUnet.prior07 och "
-"gnunet-paketet kommer att bygga en ny tom lagringsplats åt dig."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07 "
-"and replaced by /etc/gnunetd.conf which you can modify later by running "
-"\"gnunet-setup -d -c /etc/gnunetd.conf\", as root."
-msgstr ""
-"Din fil /etc/gnunet.conf kommer också att flyttas till /etc/gnunet.conf."
-"prior07 och ersättas av /etc/gnunetd.conf som du kan modifiera senare genom "
-"att köra \"gnunet-setup -d -c /etc/gnunetd.conf\", som root."
-
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:4001
-#, fuzzy
-msgid "Launch at startup?"
-msgstr "Starta vid systemets uppstart?"
+#: ../gnunet-daemon.templates:5001
+msgid "Should the GNUnet daemon be launched on boot?"
+msgstr "Ska GNUnet-demonen startas vid systemets uppstart?"
 
+#| msgid ""
+#| "If you accept here, a GNUnet server will be started each time your "
+#| "machine starts.  If you decline this option, you need to launch GNUnet "
+#| "each time you want to use it."
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:4001
-#, fuzzy
-msgid "Setup GNUnet as a system service."
-msgstr "Vill du starta GNUnet som en systemtjänst ?"
-
-#. Type: boolean
-#. Description
-#: ../gnunet-daemon.templates:4001
-msgid ""
-"If you accept here, a GNUnet server will be started each time your machine "
-"starts.  If you decline this option, you need to launch GNUnet each time you "
-"want to use it."
-msgstr ""
-"Om du accepterar här kommer en GNUnet-server att startas varje gång din "
-"dator startar.  Om du vägrar behöver du starta GNUnet varje gång du vill "
-"använda det."
+#: ../gnunet-daemon.templates:5001
+msgid "If you choose this option, a GNUnet server will be started each time the system is launched. Otherwise, you will need to launch GNUnet each time you want to use it."
+msgstr "Om du väljer det här alternativet kommer en GNUnet-server att startas varje gång som systemet startar upp. Om inte behöver du starta GNUnet varje gång du vill använda det."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-#, fuzzy
+#: ../gnunet-daemon.templates:6001
 msgid "GNUnet user:"
 msgstr "GNUnet-användare:"
 
+#| msgid "Define the user owning the GNUnet daemon process."
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-msgid "Define the user owning the GNUnet daemon process."
-msgstr "Definiera användaren som äger GNUnet-demonens process."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:5001
-msgid ""
-"For security reasons, it's best to create a new user exclusively for  GNUnet."
-msgstr ""
-"Av säkerhetsskäl är det bäst att skapa en ny användare exklusivt för GNUnet."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:5001
-msgid ""
-"If you choose this option, that user will automatically be created  as a "
-"system user, for whom no login will be allowed."
-msgstr ""
-"Om du väljer detta alternativ kommer användaren att automatiskt skapas som "
-"en systemanvändare, som inte tillåts logga in."
+#: ../gnunet-daemon.templates:6001
+msgid "Please choose the user that the GNUnet daemon process will run as."
+msgstr "Välj den användare som GNUnet-demonens process ska köra som."
 
 #. Type: string
 #. Description
 #: ../gnunet-daemon.templates:6001
-#, fuzzy
+msgid "This should be a dedicated account. If the specified account does not already exist, it will automatically be created, with no login shell."
+msgstr "Det här bör vara ett dedicerat konto. Om det angivna kontot inte finns kommer det automatiskt att skapas, utan något inloggningsskal."
+
+#. Type: string
+#. Description
+#: ../gnunet-daemon.templates:7001
 msgid "GNUnet group:"
 msgstr "GNUnet-grupp:"
 
+#| msgid "Define the group owning the GNUnet daemon process."
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
-msgid "Define the group owning the GNUnet daemon process."
-msgstr "Definiera gruppen som äger GNUnet-demonens process."
+#: ../gnunet-daemon.templates:7001
+msgid "Please choose the group that the GNUnet daemon process will run as."
+msgstr "Välj den grupp som GNUnet-demonens process ska köra som."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
-msgid ""
-"For security reason, the best is to create a new group for this, and make "
-"sure that it owns no data beside GNUnet's ones."
-msgstr ""
-"Av säkerhetsskäl är det bäst att skapa en ny grupp för detta och se till att "
-"den inte äger något data förrutom det i GNUnet."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:6001
-msgid ""
-"Only the members of this group are allowed to start and stop the GNUnet "
-"server and  have access to GNUnet data."
-msgstr ""
-"Endast medlemmar av denna grupp tillåts att starta och stoppa GNUnet-servern "
-"och har tillgång till GNUnets data."
+#: ../gnunet-daemon.templates:7001
+msgid "This should be a dedicated group, not one that already owns data. Only the members of this group will have access to GNUnet data, and be allowed to start and stop the GNUnet server."
+msgstr "Det här bör vara en dedicerat grupp, inte en grupp som redan äger data. Endast medlemmar av den här gruppen kommer att få åtkomst till GNUnets data och kommer att tillåtas att starta och stoppa GNUnet-servern."

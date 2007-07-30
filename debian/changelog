@@ -1,3 +1,44 @@
+gnunet (0.7.2-2) feisty; urgency=low
+
+  * Fixed the debian directory
+
+ -- elmargol <elmargol@googlemail.com>  Mon, 30 Jul 2007 08:03:17 +0200
+
+gnunet (0.7.2-1) unstable; urgency=low
+
+  * New upstream release (Closes: #429478).
+  * Rewritten/edited all debian/* files; now using plain debhelper again.
+  * Removed no longer needed update mechanism from 0.6 to 0.7.
+  * Updated reviewed debconf templates from debian-l10n-english team
+    <debian-l10n-english@lists.debian.org>
+    (Closes: #427877, #425211, #425310, #429845).
+  * Added Vietnamese debconf translation from Clytie Siddall
+    <clytie@riverland.net.au> (Closes: #428547).
+  * Added updated Spanish debconf translation from Rudy Godoy Guillen
+    <rudy@stone-head.org> (Closes: #426078).
+  * Added updated Swedish debconf translation from Daniel Nylander
+    <yeager@lidkoping.net> (Closes: #428356).
+  * Added updated Portuguese debconf translation from Portuguese Translation
+    Team <traduz@debianpt.org> (Closes: #428357).
+  * Added Galician debconf translation from Jacobo Tarrio <jtarrio@trasno.net>
+    (Closes: #428387).
+  * Added updated German debconf translation from Helge Kreutzmann
+    <debian@helgefjell.de> (Closes: 425309, #429843).
+  * Added Russian debconf translation from Yuri Kozlov
+    <kozlov.y@gmail.com> (Closes: #429853).
+  * Added updated Czech debconf translation from Miroslav Kure
+    <kurem@upcase.inf.upol.cz> (Closes: #430343).
+
+ -- Daniel Baumann <daniel@debian.org>  Wed, 27 Jun 2007 09:53:00 +0200
+
+gnunet (0.7.1c-2) unstable; urgency=low
+
+  * Rebuild against new curl (Closes: #423573).
+  * Added Dutch debconf translation from Bart Cornelis <cobaco@skolelinux.no>
+    (Closes: #423048).
+
+ -- Daniel Baumann <daniel@debian.org>  Sun, 13 May 2007 21:28:00 +0200
+
 gnunet (0.7.1c-1) unstable; urgency=low
 
   * New upstream release (Closes: #420538).
@@ -121,11 +162,9 @@ gnunet (0.6.6b-2) unstable; urgency=low
   * debian/control: Set libextractor required instead of recommended (Closes: #305138)
   * debian/README.Debian: Changed filename UPGRADING to UPDATING (Closes:
     #305136).
-  
+
   * debian/po/pt_BR.po: Added new Brazilian Portuguese translation, thanks to
     Rodrigo Tadeu Claro (Closes: #306350).
-
-  
 
  -- Arnaud Kyheng <Arnaud.Kyheng@free.fr>  Sun,  1 May 2005 12:31:50 +0200
 
@@ -134,7 +173,7 @@ gnunet (0.6.6b-1) unstable; urgency=low
   * New Upstream release.
   * debian/control: Added libextractor dependency.
   * debian/rules: Added libextractor support.
-  
+
   * debian/gnunet.postinst: Improved default configuration file building
     process.
 
@@ -188,7 +227,7 @@ gnunet (0.6.6-1) unstable; urgency=low
 
 gnunet (0.6.5-3) unstable; urgency=low
 
-  * debian/control: Fixed dependencies. (Closes: #291776, #291857). 
+  * debian/control: Fixed dependencies. (Closes: #291776, #291857).
   * Fixed a typo in previous changelog (Closes: #289496).
 
  -- Arnaud Kyheng <Arnaud.Kyheng@free.fr>  Mon, 24 Jan 2005 00:41:29 +0100
@@ -201,14 +240,14 @@ gnunet (0.6.5-2) unstable; urgency=low
       build-dep: debhelper (>= 4.1.16) which depends on po-debconf.
       depend: debconf (>= 1.2.0) since old versions have problems with
       templates specifying the encoding of their content.
-    - debian/rules: Add 'debconf-updatepo' to the clean target   
+    - debian/rules: Add 'debconf-updatepo' to the clean target
       (to make sure that the relevant files are ready for translation in the
       distributed source packages, and thus help translators).
-    - execute "debconf-gettextize debian/*templates*". 
+    - execute "debconf-gettextize debian/*templates*".
     - update the style to the best current practice.
 
   * Applied Andreas Jochens patch to fix build process on AMD64 with gcc 4.0
-    (Closes: #289496). 
+    (Closes: #289496).
 
   * debian/control: Fixed dependencies.
 
@@ -232,7 +271,7 @@ gnunet (0.6.4a-7) unstable; urgency=high
     Fixed possible error in restart command.
 
   * debian/gnunet.config: Changed compared version for the upgrade to
-    0.6.4a-7. 
+    0.6.4a-7.
 
  -- Arnaud Kyheng <Arnaud.Kyheng@free.fr>  Tue,  9 Nov 2004 14:47:21 +0100
 
@@ -245,7 +284,7 @@ gnunet (0.6.4a-6) unstable; urgency=low
   * debian/gnunet.postinst: use new gnunet-update instead of complex shell
     script.
     Changed compared version for the upgrade to 0.6.4a-6.
-    
+
   * debian/gnunet.config: use new gnunet-update instead of complex shell
     script.
     Changed compared version for the upgrade to 0.6.4a-6.
@@ -266,7 +305,7 @@ gnunet (0.6.4a-5) unstable; urgency=low
     Changed compared version for the upgrade to 0.6.4a-5 since some people
     should have gnunet not yet configured with 0.6.4a-4.
     Lowered the warning note priority to medium.
-    Removed reset of the warning note. 
+    Removed reset of the warning note.
     Removed unneeded comments.
     Only warn user if configuration values are not yet compliant.
 
@@ -342,7 +381,7 @@ gnunet (0.6.4-3) unstable; urgency=low
 
 gnunet (0.6.4-2) unstable; urgency=low
 
-  * Bumb revision number so ftp-master will accept it. 
+  * Bumb revision number so ftp-master will accept it.
 
  -- Glenn McGrath <bug1@debian.org>  Fri, 10 Sep 2004 12:13:54 +1000
 
@@ -352,14 +391,14 @@ gnunet (0.6.4-1) unstable; urgency=low
   * New maintainer (Closes: #225690)
   * contrib/gnu_in_net.xpm: Modified the application's icon to make the
     background transparent.
-    
+
   * debian/gnunet.postinst: Perform gnunet-check -a instead of gnunet-check
     -u. This is needed to migrate data from 0.6.2b or earlier.
 
   * debian/control: Updated build dependency from libgtk1.2-dev to
     libgtk2.0-dev as required.
 
-  * debian/control: Added build dependency libgmp3-dev (>= 4.0.0) as required. 
+  * debian/control: Added build dependency libgmp3-dev (>= 4.0.0) as required.
 
  -- Arnaud Kyheng <Arnaud.Kyheng@free.fr>  Sun, 29 Aug 2004 23:07:45 +0200
 
@@ -380,7 +419,7 @@ gnunet (0.6.2a-2) unstable; urgency=low
 gnunet (0.6.2a-1) unstable; urgency=low
 
   * New upstream release
-  * Build depends on guile 
+  * Build depends on guile
 
  -- Glenn McGrath <bug1@debian.org>  Thu,  6 May 2004 20:31:51 +1000
 
@@ -399,7 +438,7 @@ gnunet (0.6.1d-4) unstable; urgency=low
 
 gnunet (0.6.1d-3) unstable; urgency=low
 
-  * Disable STAT_MALLOC to fix hostkey generatation bug. 
+  * Disable STAT_MALLOC to fix hostkey generatation bug.
 
  -- Glenn McGrath <bug1@debian.org>  Tue, 13 Apr 2004 17:51:07 +1000
 
@@ -451,7 +490,7 @@ gnunet (0.6.0a-1) unstable; urgency=low
 gnunet (0.6.0-1) unstable; urgency=low
 
   * New upstream release
-  * Undefined symbols problem fixed by upstream (Closes: #201002)  
+  * Undefined symbols problem fixed by upstream (Closes: #201002)
   * Remove gnunet-convert in this release as its broken.
   * Regenerate build files with autoreconf -if
   * Dont mention internal shared libraries in .shlibs file
@@ -463,8 +502,8 @@ gnunet (0.5.5-2) unstable; urgency=low
   * Fix internal key generation bug iwhen using internal crypto with
     patch from upstream, patch-gnunet-0.5.5-rndlinux.c[.diff]
     (Closes: #207677)
-  * Rephrase gnunet-gtk description (Closes: #209643) 
-  * Update standards version to 3.6.1.0 
+  * Rephrase gnunet-gtk description (Closes: #209643)
+  * Update standards version to 3.6.1.0
 
  -- Glenn McGrath <bug1@debian.org>  Tue,  9 Sep 2003 23:41:50 +0000
 
@@ -490,13 +529,13 @@ gnunet (0.5.4a-4) unstable; urgency=low
 
 gnunet (0.5.4a-3) unstable; urgency=low
 
-  * Declare build dependency on automake1.7 
+  * Declare build dependency on automake1.7
 
  -- Glenn McGrath <bug1@debian.org>  Mon, 21 Jul 2003 13:30:07 +0000
 
 gnunet (0.5.4a-2) unstable; urgency=low
 
-  * Fix removal of package when daemon not running (Closes: #201647) 
+  * Fix removal of package when daemon not running (Closes: #201647)
   * Build depends on libltdl3-dev (Closes: #201316)
   * Run autoreconf to avoid libtool problem
   * Bump standards version to 3.6.0
@@ -565,4 +604,3 @@ gnunet (0.5.1a-1) unstable; urgency=low
   * Initial Release.
 
  -- Glenn McGrath <bug1@debian.org>  Thu,  6 Feb 2003 23:32:06 +1100
-

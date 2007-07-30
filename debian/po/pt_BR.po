@@ -7,13 +7,13 @@
 # /usr/share/doc/po-debconf/README-trans
 # or http://www.debian.org/intl/l10n/po-debconf/README-trans
 # Developers do not need to manually edit POT or PO files.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gnunet 0.6.6b-1\n"
 "Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
-"POT-Creation-Date: 2007-05-03 23:33+0200\n"
+"POT-Creation-Date: 2007-06-27 09:09+0000\n"
 "PO-Revision-Date: 2005-05-26 10:42-0300\n"
 "Last-Translator: Guilherme de S. Pastore <gpastore@colband.com.br>\n"
 "Language-Team: Debian-BR <debian-l10n-portuguese@lists.debian.org>\n"
@@ -21,143 +21,23 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid "Former installation of GNUnet detected"
-msgstr "Instalação anterior do GNUnet detectada"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid ""
-"Since there are important changes in this version, the installer will need "
-"to modify the GNUnet configuration file (/etc/gnunet.conf)."
-msgstr ""
-"Como há mudanças importantes nesta versão, nós precisaremos modificar o seu "
-"arquivo de configuração do GNUnet (/etc/gnunet.conf)."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid ""
-"The installation process will backup /etc/gnunet.conf to /etc/gnunet.conf."
-"old, and will automatically build a new configuration file."
-msgstr ""
-"O processo de instalação fará uma cópia de /etc/gnunet.conf em /etc/gnunet."
-"conf.old, e automaticamente construirá um novo arquivo de configuração."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid "Every personal settings will be preserved as much as possible."
-msgstr "Suas configurações pessoais serão preservadas o máximo possível."
-
-#. Type: note
+#. Type: boolean
 #. Description
 #: ../gnunet-daemon.templates:2001
-msgid "Warning"
-msgstr "Aviso"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid ""
-"For some obscure reason, the installer have failed to discover the "
-"configuration settings in /etc/gnunet.conf."
-msgstr ""
-"Por alguma razão desconhecida, nós não conseguimos descobrir suas "
-"configurações em /etc/gnunet.conf"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid "The old configuration file will be moved to /etc/gnunet.conf.old."
-msgstr ""
-"Seu arquivo de configuração anterior será movido para /etc/gnunet.conf.old."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Since some changes are *mandatory* in this file, a fresh default "
-"configuration file will now be installed"
-msgstr ""
-"Já que algumas mudanças são *obrigatórias* nesse arquivo, um novo arquivo de "
-"configuração padrão será instalado agora"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Please take a look and make necessary changes in it if needed after "
-"installation."
-msgstr ""
-"Por favor, verifique e, se preciso, faça as mudanças necessárias após a "
-"instalação."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "Upgrade from a version prior to 0.7.0"
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"It seems that you are upgrading GNUnet from a version prior to 0.7.x. GNUnet "
-"0.7.x introduced new configuration files and a new database storage format "
-"which is not compatible with versions prior to 0.7.x."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "GNUnet cannot convert your database format to the new format."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your database storage will be automatically moved to /var/lib/GNUnet."
-"prior07, and the gnunet package will build a new empty storage for you."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07 "
-"and replaced by /etc/gnunetd.conf which you can modify later by running "
-"\"gnunet-setup -d -c /etc/gnunetd.conf\", as root."
+msgid "Should the GNUnet daemon be launched on boot?"
 msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:4001
+#: ../gnunet-daemon.templates:2001
 #, fuzzy
-msgid "Launch at startup?"
-msgstr "Rodar na inicialização?"
-
-#. Type: boolean
-#. Description
-#: ../gnunet-daemon.templates:4001
-#, fuzzy
-msgid "Setup GNUnet as a system service."
-msgstr "Você deseja rodar o GNUnet como um serviço do sistema?"
-
-#. Type: boolean
-#. Description
-#: ../gnunet-daemon.templates:4001
+#| msgid ""
+#| "If you accept here, a GNUnet server will be started each time your "
+#| "machine starts.  If you decline this option, you need to launch GNUnet "
+#| "each time you want to use it."
 msgid ""
-"If you accept here, a GNUnet server will be started each time your machine "
-"starts.  If you decline this option, you need to launch GNUnet each time you "
+"If you choose this option, a GNUnet server will be started each time the "
+"system is launched. Otherwise, you will need to launch GNUnet each time you "
 "want to use it."
 msgstr ""
 "Se você aceitar, um servidor GNUnet será iniciado cada vez que o seu "
@@ -166,68 +46,47 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
+#: ../gnunet-daemon.templates:3001
 #, fuzzy
 msgid "GNUnet user:"
 msgstr "Usuário do GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-msgid "Define the user owning the GNUnet daemon process."
+#: ../gnunet-daemon.templates:3001
+#, fuzzy
+#| msgid "Define the user owning the GNUnet daemon process."
+msgid "Please choose the user that the GNUnet daemon process will run as."
 msgstr "Defina o usuário que será dono do processo do daemon do GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-#, fuzzy
+#: ../gnunet-daemon.templates:3001
 msgid ""
-"For security reasons, it's best to create a new user exclusively for  GNUnet."
+"This should be a dedicated account. If the specified account does not "
+"already exist, it will automatically be created, with no login shell."
 msgstr ""
-"Por razões de segurança, o melhor é criar um novo usuário para isso, e ter "
-"certeza de que ele não é dono de informação alguma que não as do GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-#, fuzzy
-msgid ""
-"If you choose this option, that user will automatically be created  as a "
-"system user, for whom no login will be allowed."
-msgstr ""
-"Se você escolher essa opção, o usuário será criado automaticamente (como uma "
-"conta de sistema) e não será autorizado a se logar."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:6001
+#: ../gnunet-daemon.templates:4001
 #, fuzzy
 msgid "GNUnet group:"
 msgstr "Grupo do GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
-msgid "Define the group owning the GNUnet daemon process."
+#: ../gnunet-daemon.templates:4001
+#, fuzzy
+#| msgid "Define the group owning the GNUnet daemon process."
+msgid "Please choose the group that the GNUnet daemon process will run as."
 msgstr "Defina o grupo que será responsável pelo processo de daemon do GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
+#: ../gnunet-daemon.templates:4001
 msgid ""
-"For security reason, the best is to create a new group for this, and make "
-"sure that it owns no data beside GNUnet's ones."
+"This should be a dedicated group, not one that already owns data. Only the "
+"members of this group will have access to GNUnet data, and be allowed to "
+"start and stop the GNUnet server."
 msgstr ""
-"Por razões de segurança, o melhor é criar um novo grupo para isto, e ter "
-"certeza de que ele não é dono de nenhuma informação, com exceção das do "
-"GNUnet."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:6001
-msgid ""
-"Only the members of this group are allowed to start and stop the GNUnet "
-"server and  have access to GNUnet data."
-msgstr ""
-"Somente os membros deste grupo têm permissão para iniciar e parar o servidor "
-"GNUnet e têm acesso aos dados do GNUnet."

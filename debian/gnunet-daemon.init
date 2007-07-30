@@ -1,24 +1,15 @@
-#! /bin/sh
-#
-# skeleton	example file to build /etc/init.d/ scripts.
-#		This file should be used to construct scripts for /etc/init.d.
-#
-#		Written by Miquel van Smoorenburg <miquels@cistron.nl>.
-#		Modified for Debian GNU/Linux
-#		by Ian Murdock <imurdock@gnu.ai.mit.edu>.
-#
-# Version:	@(#)skeleton  1.9  26-Feb-2001  miquels@cistron.nl
-#
-# Additions:	Modified for Debian GNUnet package
-#			by Arnaud Kyheng <Arnaud.Kyheng@free.fr>
+#!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          gnunet-daemon
-# Required-Start:    $syslog $network $local_fs
-# Required-Stop:     $syslog $network $local_fs
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Launch the GNUnet daemon at boot time
+# Provides:		gnunet-daemon
+# Required-Start:	$syslog $network $local_fs
+# Required-Stop:	$syslog $network $local_fs
+# Should-Start:
+# Should-Stop:
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	Starts the GNUnet daemon at boot time.
+# Description:		GNUnet is a secure, trust-based peer-to-peer framework.
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -26,62 +17,49 @@ DAEMON=/usr/bin/gnunetd
 NAME=gnunetd
 DESC=GNUnet
 # Assuming default value for PIDFILE. This should not be changed
-PIDFILE=/var/run/gnunetd/$NAME.pid
+PIDFILE=/var/run/gnunetd/"${NAME}".pid
 
-test -x $DAEMON || exit 0
+test -x "${DAEMON}" || exit 0
 
 set -e
 
 # Get configuration
-if [ -r /etc/default/gnunet-daemon ]; then
+if [ -r /etc/default/gnunet-daemon ]
+then
 	. /etc/default/gnunet-daemon
 fi
 
-case "$1" in
-  start)
-	# We should not need --background, but if not here, the invoke-rc.d hangs
-	# when using debconf
-	# --quiet removed: For some unknown reason, with gnunet 0.7.0, adding --quiet brake the pidfile creation...
-	#
-	echo -n "Starting $DESC: "
-	start-stop-daemon --start --background --chuid  $GNUNET_USER --pidfile $PIDFILE \
-		--exec $DAEMON -- -c /etc/gnunetd.conf
-	echo "$NAME."
-	;;
-  stop)
-	echo -n "Stopping $DESC: "
-	start-stop-daemon --stop --pidfile $PIDFILE \
-		--exec $DAEMON --retry 15 --oknodo
-	echo "$NAME."
-	;;
-  #reload)
-	#
-	#	If the daemon can reload its config files on the fly
-	#	for example by sending it SIGHUP, do it here.
-	#
-	#	If the daemon responds to changes in its config file
-	#	directly anyway, make this a do-nothing entry.
-	#
-	# echo "Reloading $DESC configuration files."
-	# start-stop-daemon --stop --signal 1 --quiet --pidfile \
-	#	/var/run/$NAME.pid --exec $DAEMON
-  #;;
-  restart|force-reload)
-	#
-	#	If the "reload" option is implemented, move the "force-reload"
-	#	option to the "reload" entry above. If not, "force-reload" is
-	#	just the same as "restart".
-	#
-	echo "Restarting $DESC: $NAME..."
-	$0 stop
-        sleep 1
-        $0 start
-	;;
-  *)
-	N=/etc/init.d/$NAME
-	echo "Usage: $N {start|stop|restart|force-reload}" >&2
-	exit 1
-	;;
+case "${1}" in
+	start)
+		# We should not need --background, but if not here, the
+		# invoke-rc.d hangs when using debconf --quiet removed: For some
+		# unknown reason, with gnunet 0.7.0, adding --quiet brake the
+		# pidfile creation...
+
+		echo -n "Starting ${DESC}: "
+		start-stop-daemon --start --background --chuid ${GNUNET_USER} \
+			--pidfile "${PIDFILE}" --exec ${DAEMON} -- -c \
+			/etc/gnunetd.conf
+		echo "${NAME}."
+		;;
+
+	stop)
+		echo -n "Stopping ${DESC}: "
+		start-stop-daemon --stop --pidfile ${PIDFILE} --exec ${DAEMON} \
+			--retry 15 --oknodo
+		echo "${NAME}."
+		;;
+
+	restart|force-reload)
+		${0} stop
+		sleep 1
+		${0} start
+		;;
+
+	*)
+		echo "Usage: ${0} {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
 esac
 
 exit 0

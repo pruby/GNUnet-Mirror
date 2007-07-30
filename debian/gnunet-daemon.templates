@@ -1,74 +1,35 @@
-Template: gnunet-daemon/warning
-Type: note
-_Description: Former installation of GNUnet detected
- Since there are important changes in this version, the installer
- will need to modify the GNUnet configuration file (/etc/gnunet.conf).
- .
- The installation process will backup /etc/gnunet.conf to
- /etc/gnunet.conf.old, and will automatically build a new configuration
- file.
- .
- Every personal settings will be preserved as much as possible.
-
-Template: gnunet-daemon/failed
-Type: note
-_Description: Warning
- For some obscure reason, the installer have failed to discover
- the configuration settings in /etc/gnunet.conf.
- .
- The old configuration file will be moved to /etc/gnunet.conf.old.
- .
- Since some changes are *mandatory* in this file, a
- fresh default configuration file will now be installed
- .
- Please take a look and make necessary changes in it if needed after
- installation.
-
-Template: gnunet-daemon/prior_07
-Type: note
-_Description: Upgrade from a version prior to 0.7.0
- It seems that you are upgrading GNUnet from a version prior to 0.7.x.
- GNUnet 0.7.x introduced new configuration files and a new database
- storage format which is not compatible with versions prior to 0.7.x.
- .
- GNUnet cannot convert your database format to the new format.
- .
- Your database storage will be automatically moved to /var/lib/GNUnet.prior07,
- and the gnunet package will build a new empty storage for you.
- .
- Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07
- and replaced by /etc/gnunetd.conf which you can modify later by running
- "gnunet-setup -d -c /etc/gnunetd.conf", as root.
+# These templates have been reviewed by the debian-l10n-english
+# team
+#
+# If modifications/additions/rewording are needed, please ask
+# for an advice to debian-l10n-english@lists.debian.org
+#
+# Even minor modifications require translation updates and such
+# changes should be coordinated with translators and reviewers.
 
 Template: gnunet-daemon/launch_at_startup
 Type: boolean
 Default: true
-_Description: Launch at startup?
- Setup GNUnet as a system service. 
- .
- If you accept here, a GNUnet server will be started each time your machine
- starts.  If you decline this option, you need to launch GNUnet each time
- you want to use it.
+_Description: Should the GNUnet daemon be launched on boot?
+ If you choose this option, a GNUnet server will be started each time
+ the system is launched. Otherwise, you will need to launch
+ GNUnet each time you want to use it.
 
 Template: gnunet-daemon/gnunet_user
 Type: string
 Default: gnunet
 _Description: GNUnet user:
- Define the user owning the GNUnet daemon process.
+ Please choose the user that the GNUnet daemon process will run as.
  .
- For security reasons, it's best to create a new user exclusively for  GNUnet.
- .
- If you choose this option, that user will automatically be created  as a system user,
- for whom no login will be allowed.
+ This should be a dedicated account. If the specified account does not
+ already exist, it will automatically be created, with no login shell.
 
 Template: gnunet-daemon/gnunet_group
 Type: string
 Default: gnunet
 _Description: GNUnet group:
- Define the group owning the GNUnet daemon process.
+ Please choose the group that the GNUnet daemon process will run as.
  .
- For security reason, the best is to create a new group for this, and make
- sure that it owns no data beside GNUnet's ones.
- .
- Only the members of this group are allowed to start and stop the GNUnet server and 
- have access to GNUnet data.
+ This should be a dedicated group, not one that already owns data.
+ Only the members of this group will have access to GNUnet data, and
+ be allowed to start and stop the GNUnet server.

@@ -1,8 +1,8 @@
-debian/tmp/usr/bin/gnunetd
-debian/tmp/usr/bin/gnunet-update
-debian/tmp/usr/bin/gnunet-transport-check
-debian/tmp/usr/bin/gnunet-peer-info
-debian/tmp/usr/lib/libgnunetcore.so.*
-debian/tmp/usr/lib/libgnunetmodule_*.so.*
-debian/tmp/usr/lib/GNUnet/libgnunetmodule_*.so
-debian/tmp/usr/lib/GNUnet/libgnunettransport_*.so
+/usr/bin/gnunetd
+/usr/bin/gnunet-transport-check
+/usr/bin/gnunet-peer-info
+/usr/bin/gnunet-update
+/usr/lib/libgnunetcore.so.*
+/usr/lib/GNUnet/libgnunetmodule_*.so
+/usr/lib/GNUnet/libgnunettransport_*.so
+/usr/lib/libgnunetip.so.*

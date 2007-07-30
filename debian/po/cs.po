@@ -15,224 +15,74 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet\n"
 "Report-Msgid-Bugs-To: Arnaud.Kyheng@free.fr\n"
-"POT-Creation-Date: 2007-05-03 23:33+0200\n"
-"PO-Revision-Date: 2006-09-25 21:51+0200\n"
+"POT-Creation-Date: 2007-06-27 09:09+0000\n"
+"PO-Revision-Date: 2007-06-23 12:42+0200\n"
 "Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid "Former installation of GNUnet detected"
-msgstr "Byla rozpoznána předchozí instalace GNUnet"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid ""
-"Since there are important changes in this version, the installer will need "
-"to modify the GNUnet configuration file (/etc/gnunet.conf)."
-msgstr ""
-"Protože se v této verzi udály významné změny, je nutné upravit váš "
-"konfigurační soubor /etc/gnunet.conf."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-msgid ""
-"The installation process will backup /etc/gnunet.conf to /etc/gnunet.conf."
-"old, and will automatically build a new configuration file."
-msgstr ""
-"Instalační proces zazálohuje /etc/gnunet.conf do /etc/gnunet.conf.old a "
-"automaticky vytvoří nový konfigurační soubor."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:1001
-#, fuzzy
-msgid "Every personal settings will be preserved as much as possible."
-msgstr "Vaše osobní nastavení bylo pokud možno zachováno."
-
-#. Type: note
+#. Type: boolean
 #. Description
 #: ../gnunet-daemon.templates:2001
-msgid "Warning"
-msgstr "Varování"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid ""
-"For some obscure reason, the installer have failed to discover the "
-"configuration settings in /etc/gnunet.conf."
-msgstr ""
-"Z nějakého obskurního důvodu jsem nemohl v /etc/gnunet.conf objevit žádné "
-"nastavení."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-#, fuzzy
-msgid "The old configuration file will be moved to /etc/gnunet.conf.old."
-msgstr "Váš starý konfigurační soubor bude přesunut do /etc/gnunet.conf.old."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Since some changes are *mandatory* in this file, a fresh default "
-"configuration file will now be installed"
-msgstr ""
-"Protože jsou některé změny v tomto souboru *povinné*, nainstaluje se nyní "
-"výchozí konfigurační soubor."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:2001
-msgid ""
-"Please take a look and make necessary changes in it if needed after "
-"installation."
-msgstr "Po instalaci jej projděte a případně proveďte nezbytné změny."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "Upgrade from a version prior to 0.7.0"
-msgstr "Přechod z dřívější verze než 0.7.0"
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"It seems that you are upgrading GNUnet from a version prior to 0.7.x. GNUnet "
-"0.7.x introduced new configuration files and a new database storage format "
-"which is not compatible with versions prior to 0.7.x."
-msgstr ""
-"Zdá se, že aktualizujete GNUnet z dřívější verze než 0.7.x. GNUnet 0.7.x "
-"zavedl nový formát konfiguračních souborů a nový formát uložení databáze, "
-"které nejsou kompatibilní s verzemi před 0.7.x."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid "GNUnet cannot convert your database format to the new format."
-msgstr "GNUnet nemůže převést váš formát databáze do nového formátu."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your database storage will be automatically moved to /var/lib/GNUnet."
-"prior07, and the gnunet package will build a new empty storage for you."
-msgstr ""
-"Vaše databáze bude automaticky přesunuta do /var/lib/GNUnet.prior07 a balík "
-"gnunet vám automaticky vytvoří novou, prázdnou databázi."
-
-#. Type: note
-#. Description
-#: ../gnunet-daemon.templates:3001
-msgid ""
-"Your /etc/gnunet.conf file will also be moved to /etc/gnunet.conf.prior07 "
-"and replaced by /etc/gnunetd.conf which you can modify later by running "
-"\"gnunet-setup -d -c /etc/gnunetd.conf\", as root."
-msgstr ""
-"Také váš konfigurační soubor /etc/gnunet.conf bude přesunut do /etc/gnunet."
-"conf.prior07 a bude nahrazen novějším /etc/gnunet.conf, který můžete později "
-"upravit spuštěním příkazu \"gnunet-setup -d -c /etc/gnunet.conf\" jako "
-"uživatel root."
+msgid "Should the GNUnet daemon be launched on boot?"
+msgstr "Má se daemon GNUnet spouštět při zavádění systému?"
 
 #. Type: boolean
 #. Description
-#: ../gnunet-daemon.templates:4001
-#, fuzzy
-msgid "Launch at startup?"
-msgstr "Spustit při startu?"
-
-#. Type: boolean
-#. Description
-#: ../gnunet-daemon.templates:4001
-#, fuzzy
-msgid "Setup GNUnet as a system service."
-msgstr "Chcete spustit GNUnet jako systémovou službu při zavádění systému?"
-
-#. Type: boolean
-#. Description
-#: ../gnunet-daemon.templates:4001
+#: ../gnunet-daemon.templates:2001
 msgid ""
-"If you accept here, a GNUnet server will be started each time your machine "
-"starts.  If you decline this option, you need to launch GNUnet each time you "
+"If you choose this option, a GNUnet server will be started each time the "
+"system is launched. Otherwise, you will need to launch GNUnet each time you "
 "want to use it."
 msgstr ""
-"Pokud budete souhlasit, bude se server GNUnet spouštět při každém startu "
-"počítače. Zamítnete-li, budete muset GNUnet spouštět ručně pokaždé, kdy ho "
-"budete chtít použít."
+"Zvolíte-li tuto možnost, bude se server GNUnet spouštět při každém zavádění "
+"systému. V opačném případě budete muset GNUnet spouštět ručně pokaždé, kdy "
+"ho budete chtít použít."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-#, fuzzy
+#: ../gnunet-daemon.templates:3001
 msgid "GNUnet user:"
 msgstr "Uživatel GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-msgid "Define the user owning the GNUnet daemon process."
-msgstr "Zadejte uživatele vlastnícího daemon GNUnet."
+#: ../gnunet-daemon.templates:3001
+msgid "Please choose the user that the GNUnet daemon process will run as."
+msgstr "Zadejte prosím uživatele, pod kterým se bude daemon GNUnet spouštět."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
+#: ../gnunet-daemon.templates:3001
 msgid ""
-"For security reasons, it's best to create a new user exclusively for  GNUnet."
+"This should be a dedicated account. If the specified account does not "
+"already exist, it will automatically be created, with no login shell."
 msgstr ""
-"Z bezpečnostních důvodů je nejlepší vytvořit pro GNUnet nového dedikovaného "
-"uživatele."
+"Mělo by jít o dedikovaný účet. Pokud zadaný účet neexistuje, bude "
+"automaticky vytvořen (bez přihlašovacího shellu)."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:5001
-msgid ""
-"If you choose this option, that user will automatically be created  as a "
-"system user, for whom no login will be allowed."
-msgstr ""
-"Zvolíte-li tuto možnost, bude tento uživatel automaticky vytvořen jako "
-"systémový a bude mu zakázáno přihlášení."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:6001
-#, fuzzy
+#: ../gnunet-daemon.templates:4001
 msgid "GNUnet group:"
 msgstr "Skupina GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
-msgid "Define the group owning the GNUnet daemon process."
-msgstr "Zadejte skupinu vlastnící daemon GNUnet."
+#: ../gnunet-daemon.templates:4001
+msgid "Please choose the group that the GNUnet daemon process will run as."
+msgstr "Zadejte prosím skupinu, pod kterou se bude daemon GNUnet spouštět."
 
 #. Type: string
 #. Description
-#: ../gnunet-daemon.templates:6001
+#: ../gnunet-daemon.templates:4001
 msgid ""
-"For security reason, the best is to create a new group for this, and make "
-"sure that it owns no data beside GNUnet's ones."
+"This should be a dedicated group, not one that already owns data. Only the "
+"members of this group will have access to GNUnet data, and be allowed to "
+"start and stop the GNUnet server."
 msgstr ""
-"Z bezpečnostních důvodů je nejlepší vytvořit novou skupinu, která nevlastní "
-"kromě GNUnetu žádná jiná data."
-
-#. Type: string
-#. Description
-#: ../gnunet-daemon.templates:6001
-msgid ""
-"Only the members of this group are allowed to start and stop the GNUnet "
-"server and  have access to GNUnet data."
-msgstr ""
-"Pouze uživatelé této skupiny mohou spouštět a zastavovat server GNUnet a "
-"mají přístup k datům GNUnetu."
+"Mělo by jít o dedikovanou skupinu různou od té, která již vlastní data. "
+"Pouze členové této skupiny budou mít přístup k datům GNUnetu a budou moci "
+"spouštět a zastavovat server GNUnet."
