@@ -214,7 +214,7 @@ package, source or virtual appliance. Each of these forms has its advantages
 and disadvantages which are detailed below.
 
 @node Binary packages
-@section Binary packages
+@subsection Binary packages
 
 A @dfn{binary} package is ready-to-run software which just has to be installed and
 configured. This is the usual way of obtaining GNUnet. Some operating system
@@ -236,7 +236,7 @@ of an existing package. Another way is to build GNUnet from source.
 @xref{Source}.
 
 @node Source
-@section Source
+@subsection Source
 
 @dfn{Source code} can be best described as "recipe" and "ingredients" of a
 particular piece of software. Just as a cake is baked, source code
@@ -250,7 +250,7 @@ download the development source code the instant changes are made by the
 developers. @xref{SVN}.
 
 @node Virtual appliance
-@section Virtual appliance
+@subsection Virtual appliance
 
 @dfn{Virtual appliances} are complete software environments including an operating
 system which run through virtualization software like QEMU@footnote{@uref{http://fabrice.bellard.free.fr/qemu/}}
