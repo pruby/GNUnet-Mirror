@@ -30,7 +30,7 @@
 static int
 testHT ()
 {
-  struct HashTable *ht = ht_create (10);
+  struct HashTable *ht = ht_create (3);
   void *val;
   unsigned int vallen;
 
