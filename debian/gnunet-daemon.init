@@ -38,14 +38,14 @@ case "${1}" in
 
 		echo -n "Starting ${DESC}: "
 		start-stop-daemon --start --background --chuid ${GNUNET_USER} \
-			--pidfile "${PIDFILE}" --exec ${DAEMON} -- -c \
+			--pidfile "$PIDFILE" --exec ${DAEMON} -- -c \
 			/etc/gnunetd.conf
 		echo "${NAME}."
 		;;
 
 	stop)
 		echo -n "Stopping ${DESC}: "
-		start-stop-daemon --stop --pidfile ${PIDFILE} --exec ${DAEMON} \
+		start-stop-daemon --stop --pidfile $PIDFILE --exec ${DAEMON} \
 			--retry 15 --oknodo
 		echo "${NAME}."
 		;;
