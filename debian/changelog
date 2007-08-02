@@ -1,9 +1,15 @@
+gnunet (0.7.2b-1) stable; urgency=low
+
+  * New upstream Release
+
+ -- Nils Durner <durner@gnunet.org>  Thu, 2 Aug 2007 19:13:50 +0200
+
 gnunet (0.7.2b-1) feisty; urgency=low
 
   * New upstream Release
   * Fixed the debian directory
 
- -- elmargol <elmargol@googlemail.com>  Thu,  2 Aug 2007 13:56:37 +0200
+ -- elmargol <elmargol@googlemail.com>  Thu, 2 Aug 2007 13:56:37 +0200
 
 gnunet (0.7.2-1) unstable; urgency=low
 
