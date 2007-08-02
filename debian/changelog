@@ -1,6 +1,6 @@
 gnunet (0.7.2b-1) feisty; urgency=low
 
-	* New upstream Release
+  * New upstream Release
   * Fixed the debian directory
 
  -- elmargol <elmargol@googlemail.com>  Thu,  2 Aug 2007 13:56:37 +0200
