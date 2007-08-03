@@ -70,6 +70,11 @@
 #define DEBUG_COLLECT_PRIO NO
 
 /**
+ * strictly mark TSessions as down
+ */
+#define STRICT_STAT_DOWN NO
+
+/**
  * Until which load do we consider the peer overly idle
  * (which means that we would like to use more resources).<p>
  *
@@ -1530,7 +1535,10 @@ ensureTransportConnected (BufferEntry * be)
   be->session.tsession =
     transport->connectFreely (&be->session.sender, NO, __FILE__);
   if (be->session.tsession == NULL)
-    return NO;
+    {
+      be->status = STAT_DOWN;
+      return NO;
+    }
   be->session.mtu = transport->getMTU (be->session.tsession->ttype);
   fragmentIfNecessary (be);
   return OK;
@@ -1610,6 +1618,9 @@ sendBuffer (BufferEntry * be)
       /* transport session is gone! re-establish! */
       tsession = be->session.tsession;
       be->session.tsession = NULL;
+#if STRICT_STAT_DOWN
+      be->status = STAT_DOWN;
+#endif
       transport->disconnect (tsession, __FILE__);
       ensureTransportConnected (be);
       /* This may have changed the MTU => need to re-do
@@ -1781,6 +1792,9 @@ sendBuffer (BufferEntry * be)
     {
       tsession = be->session.tsession;
       be->session.tsession = NULL;
+#if STRICT_STAT_DOWN
+      be->status = STAT_DOWN;
+#endif
       transport->disconnect (tsession, __FILE__);
     }
 
@@ -2080,6 +2094,9 @@ shutdownConnection (BufferEntry * be)
     {
       tsession = be->session.tsession;
       be->session.tsession = NULL;
+#if STRICT_STAT_DOWN
+      be->status = STAT_DOWN;
+#endif
       transport->disconnect (tsession, __FILE__);
     }
   for (i = 0; i < be->sendBufferSize; i++)
@@ -3186,6 +3203,9 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
       if (ts != NULL)
         {
           be->session.tsession = NULL;
+#if STRICT_STAT_DOWN
+          be->status = STAT_DOWN;
+#endif
           transport->disconnect (ts, __FILE__);
         }
       be->session.tsession = tsession;
