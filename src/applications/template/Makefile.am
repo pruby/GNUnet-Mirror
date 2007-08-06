@@ -7,7 +7,8 @@ LDADD = \
  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
  $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
 
-bin_PROGRAMS = \
+# change to bin_PROGRAMS for real apps
+noinst_PROGRAMS = \
   gnunet-template
 
 plugin_LTLIBRARIES = \
