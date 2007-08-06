@@ -3,7 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 lib_LTLIBRARIES = \
   libgnunetdht_api.la 
 
-bin_PROGRAMS = \
+noinst_PROGRAMS = \
   gnunet-dht-query 
 
 libgnunetdht_api_la_SOURCES = \
