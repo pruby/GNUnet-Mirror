@@ -20,6 +20,10 @@ Annotations:
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
+  Furthermore: blake suggested indexing a document only after
+  a keyword of the document has been requested (so we would 
+  add a special block to the datastore and then trigger
+  gnunet-insert only if the file is actually needed!)
 - guard friendly connection count (#1018) [RC]
 - power insert [#854]
 
