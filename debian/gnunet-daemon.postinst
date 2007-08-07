@@ -11,6 +11,31 @@ case "${1}" in
 		# Read default values
 		CONFIG_FILE=/etc/default/gnunet-daemon
 
+		# Check for GNUNETD_HOME consistancy
+		# Look for historical location of GNUNETD_HOME
+		GNUNETD_HOME=`gnunet-update --get=PATHS:GNUNETD_HOME`
+		if [ ! $GNUNETD_HOME ] || [ ! -d "$GNUNETD_HOME" ]; then
+			# Set up the new section and value
+			echo -n "Updating /etc/gnunetd.conf with new [PATHS] mandatory section"
+			GNUNETD_HOME=`gnunet-update --get=GNUNETD:GNUNETD_HOME`
+			if [ ! $GNUNETD_HOME ] || [ ! -d "$GNUNETD_HOME" ]; then
+				# using default value
+				GNUNETD_HOME="/var/lib/GNUnet"
+			fi
+			CONFIG_NEW=`/bin/tempfile`
+			cat > $CONFIG_NEW <<EOF
+[PATHS]
+GNUNETD_HOME = $GNUNETD_HOME
+
+EOF
+			sed '/^GNUNETD_HOME/d' /etc/gnunetd.conf >> $CONFIG_NEW
+			mv -f /etc/gnunetd.conf /etc/gnunetd.conf.bak
+			cp -f $CONFIG_NEW /etc/gnunetd.conf
+			rm -f $CONFIG_NEW
+			chmod 644 /etc/gnunetd.conf
+			echo " [done]"
+		fi
+
 		# This is need to migrate data from 0.6.1b or later
 		echo "Migrating previous GNUnet data (gnunet-update)"
 		gnunet-update
