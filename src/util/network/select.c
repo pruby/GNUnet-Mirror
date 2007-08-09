@@ -551,7 +551,10 @@ selectThread (void *ctx)
               if (sh->socket_quota <= 0)
                 {
                   SHUTDOWN (s, SHUT_WR);
-                  CLOSE (s);
+                  if (0 != CLOSE (s))
+		    GE_LOG_STRERROR (sh->ectx,
+				     GE_WARNING | GE_ADMIN | GE_BULK,
+				     "close");
                   s = -1;
                   continue;
                 }

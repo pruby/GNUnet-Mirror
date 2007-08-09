@@ -245,7 +245,7 @@ ht_put (struct HashTable *hashTable,
   while(pair)
     {
       if (pair->keylen == keylen)
-        if (memcmp(key, pair->key, key) == 0)
+        if (memcmp(key, pair->key, keylen) == 0)
           break;
       pair = pair->next;
     }
