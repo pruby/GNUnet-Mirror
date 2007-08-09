@@ -74,7 +74,7 @@ binary-arch: build install
 	dh_installman -a
 	dh_installdebconf -a
 	dh_installlogrotate -a
-	dh_installinit -a
+	dh_installinit -a -n
 	dh_link -a
 	dh_strip -a
 	dh_compress -a
