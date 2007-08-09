@@ -72,7 +72,7 @@
 /**
  * strictly mark TSessions as down
  */
-#define STRICT_STAT_DOWN NO
+#define STRICT_STAT_DOWN YES
 
 /**
  * Until which load do we consider the peer overly idle
