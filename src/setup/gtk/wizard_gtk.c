@@ -518,7 +518,7 @@ on_entIP_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 void
 on_chkFW_toggledsetup_gtk (GtkToggleButton * togglebutton, gpointer user_data)
 {
-  GC_set_configuration_value_choice (editCfg, err_ctx, "LIMITED", "NAT",
+  GC_set_configuration_value_choice (editCfg, err_ctx, "NAT", "LIMITED",
                                      gtk_toggle_button_get_active
                                      (togglebutton) ? "YES" : "NO");
 }
@@ -618,8 +618,8 @@ on_chkStart_toggledsetup_gtk (GtkToggleButton * togglebutton,
   doAutoStart = gtk_toggle_button_get_active (togglebutton);
   GC_set_configuration_value_choice (editCfg,
                                      err_ctx,
-                                     "AUTOSTART",
-                                     "GNUNETD", doAutoStart ? "YES" : "NO");
+                                     "GNUNETD",
+                                     "AUTOSTART", doAutoStart ? "YES" : "NO");
 }
 
 
