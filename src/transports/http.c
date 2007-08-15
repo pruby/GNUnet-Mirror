@@ -602,6 +602,7 @@ accessHandlerCallback (void *cls,
                        struct MHD_Connection *session,
                        const char *url,
                        const char *method,
+		       const char *version,
                        const char *upload_data,
                        unsigned int *upload_data_size)
 {
