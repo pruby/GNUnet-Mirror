@@ -25,8 +25,8 @@
  *
  * TODO:
  * - connection timeout (shutdown inactive connections)
- *   => CURL can help do this automatically, need to do it with MHD
- *      and query CURL for timed-out connections (and then clean up)
+ *   => CURL and MHD can help do this, we mostly need
+ *      to make sure we clean up properly...
  * - proper connection re-establishment (i.e., if a GET times out or
  *      dies otherwise, we need to re-start the TSession if the
  *      core wants to keep using it!)
@@ -1186,7 +1186,14 @@ startTransportServer ()
       mhd_daemon = MHD_start_daemon (MHD_USE_IPv4,
                                      port,
                                      &acceptPolicyCallback,
-                                     NULL, &accessHandlerCallback, NULL);
+                                     NULL, &accessHandlerCallback, NULL,
+				     MHD_OPTION_CONNECTION_TIMEOUT,
+				     HTTP_TIMEOUT,
+				     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+				     1024 * 128,
+				     MHD_OPTION_CONNECTION_LIMIT,
+				     128,
+				     MHD_OPTION_END);
     }
   http_running = YES;
   curl_thread = PTHREAD_CREATE (&curl_runner, NULL, 32 * 1024);
