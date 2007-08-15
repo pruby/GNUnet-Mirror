@@ -599,7 +599,7 @@ contentReaderFreeCallback (void *cls)
  */
 static int
 accessHandlerCallback (void *cls,
-                       struct MHD_Session *session,
+                       struct MHD_Connection *session,
                        const char *url,
                        const char *method,
                        const char *upload_data,
@@ -660,6 +660,7 @@ accessHandlerCallback (void *cls,
     {
       /* handle get */
       response = MHD_create_response_from_callback (-1,
+						    64 * 1024,
                                                     contentReaderCallback,
                                                     httpSession,
                                                     contentReaderFreeCallback);
@@ -1183,7 +1184,7 @@ startTransportServer ()
   port = getGNUnetHTTPPort ();
   if ((mhd_daemon == NULL) && (port != 0))
     {
-      mhd_daemon = MHD_start_daemon (MHD_USE_IPv4,
+      mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
                                      port,
                                      &acceptPolicyCallback,
                                      NULL, &accessHandlerCallback, NULL,
