@@ -209,15 +209,15 @@ const char *GE_strerror (int errnum);
 /**
  * Use this for fatal errors that cannot be handled
  */
-#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0)
+#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0)
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0)
+#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0)
 
 /**
  * Use this for internal assertion violations that are
  * not fatal (can be handled) but should not occur.
  */
-#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
+#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
 /**
  * Use this for assertion violations caused by other
@@ -227,13 +227,13 @@ const char *GE_strerror (int errnum);
  * we still want to see these problems during
  * development and testing.  "OP == other peer".
  */
-#define GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
+#define GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
 /**
  * Just like GE_BREAK just with file/line/function
  * information given as part of the call.
  */
-#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
+#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
