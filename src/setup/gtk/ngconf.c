@@ -306,7 +306,8 @@ on_saveButton_activatesetup_gtk ()
  *
  * @return TRUE to NOT exit (i.e. user hits cancel on save YES/NO/CANCEL).
  */
-gboolean on_main_window_delete_eventsetup_gtk ()
+gboolean
+on_main_window_delete_eventsetup_gtk ()
 {
   GtkWidget *dialog;
   gint ret;

@@ -242,10 +242,10 @@ ht_put (struct HashTable *hashTable,
   hashValue = weakHash (key, keylen) % hashTable->numOfBuckets;
   pair = hashTable->bucketArray[hashValue];
 
-  while(pair)
+  while (pair)
     {
       if (pair->keylen == keylen)
-        if (memcmp(key, pair->key, keylen) == 0)
+        if (memcmp (key, pair->key, keylen) == 0)
           break;
       pair = pair->next;
     }

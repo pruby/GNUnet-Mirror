@@ -154,9 +154,9 @@ testTAPI (TransportAPI * tapi, void *ctx)
       repeat--;
       ok = NO;
       ret = NO;
-      while (ret == NO) 
-	ret = sendPlaintext (tsession, (char *) noise, ntohs (noise->size));
-      if (ret != OK) 
+      while (ret == NO)
+        ret = sendPlaintext (tsession, (char *) noise, ntohs (noise->size));
+      if (ret != OK)
         {
           fprintf (stderr, _("`%s': Could not send.\n"), tapi->transName);
           *res = SYSERR;

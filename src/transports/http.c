@@ -101,7 +101,7 @@ struct HTTPPutData
   /**
    * Handle to our CURL request.
    */
-  CURL *curl_put;  
+  CURL *curl_put;
 
   /**
    * Last time we made progress with the PUT.
@@ -146,7 +146,7 @@ struct MHDPutData
   /**
    * MHD connection handle for this request.
    */
-  struct MHD_Connection * session;
+  struct MHD_Connection *session;
 
   /**
    * Last time we received data on this PUT
@@ -158,22 +158,22 @@ struct MHDPutData
    * Read buffer for the header (from PUT)
    */
   char rbuff1[sizeof (MESSAGE_HEADER)];
-  
+
   /**
    * The read buffer (used only receiving PUT data).
    */
   char *rbuff2;
-  
+
   /**
    * Number of valid bytes in rbuff1
    */
   unsigned int rpos1;
-  
+
   /**
    * Number of valid bytes in rbuff2
    */
   unsigned int rpos2;
-  
+
 
   /**
    * Size of the rbuff2 buffer.
@@ -201,7 +201,7 @@ typedef struct
   /**
    * TSession for this session.
    */
-  TSession * tsession;
+  TSession *tsession;
 
   /**
    * mutex for synchronized access to struct
@@ -248,18 +248,18 @@ typedef struct
       /**
        * Active PUT requests (linked list).
        */
-      struct MHDPutData * puts;
+      struct MHDPutData *puts;
 
 #if DO_GET
       /**
        * GET session response handle
        */
-      struct MHD_Response * get;
+      struct MHD_Response *get;
 
       /**
        * The write buffer (for sending GET response)
        */
-      char * wbuff;
+      char *wbuff;
 
       /**
        * What was the last time we were able to
@@ -271,7 +271,7 @@ typedef struct
        * Current write position in wbuff
        */
       unsigned int woff;
-      
+
       /**
        * Number of valid bytes in wbuff (starting at woff)
        */
@@ -308,22 +308,22 @@ typedef struct
        * Read buffer for the header (from GET).
        */
       char rbuff1[sizeof (MESSAGE_HEADER)];
-      
+
       /**
        * The read buffer (used only receiving GET data).
        */
       char *rbuff2;
-      
+
       /**
        * Number of valid bytes in rbuff1
        */
       unsigned int rpos1;
-      
+
       /**
        * Number of valid bytes in rbuff2
        */
       unsigned int rpos2;
-      
+
       /**
        * Current size of the read buffer rbuff2.
        */
@@ -429,9 +429,11 @@ static struct MUTEX *httplock;
  * Signal select thread that its selector
  * set may have changed.
  */
-static void signal_select() {
+static void
+signal_select ()
+{
   static char c;
-  write(signal_pipe[1], &c, sizeof(c));
+  write (signal_pipe[1], &c, sizeof (c));
 }
 
 /**
@@ -455,28 +457,27 @@ acceptPolicyCallback (void *cls,
   else
     {
 #if DEBUG_HTTP
-      GE_LOG(coreAPI->ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	     "Rejecting HTTP connection\n");
+      GE_LOG (coreAPI->ectx,
+              GE_DEBUG | GE_DEVELOPER | GE_BULK,
+              "Rejecting HTTP connection\n");
 #endif
       return MHD_NO;
     }
   MUTEX_LOCK (httplock);
   ret = check_ipv4_listed (filteredNetworks_, ip);
   MUTEX_UNLOCK (httplock);
-  if (YES == ret) 
+  if (YES == ret)
     {
 #if DEBUG_HTTP
-      GE_LOG(coreAPI->ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	     "Rejecting HTTP connection\n");
+      GE_LOG (coreAPI->ectx,
+              GE_DEBUG | GE_DEVELOPER | GE_BULK,
+              "Rejecting HTTP connection\n");
 #endif
       return MHD_NO;
     }
 #if DEBUG_HTTP
-  GE_LOG(coreAPI->ectx,
-	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Accepting HTTP connection\n");
+  GE_LOG (coreAPI->ectx,
+          GE_DEBUG | GE_DEVELOPER | GE_BULK, "Accepting HTTP connection\n");
 #endif
   return MHD_YES;
 }
@@ -509,15 +510,17 @@ httpDisconnect (TSession * tsession)
   return OK;
 }
 
-static void 
-destroy_tsession(TSession * tsession) {
+static void
+destroy_tsession (TSession * tsession)
+{
   HTTPSession *httpsession = tsession->internal;
   struct HTTPPutData *pos;
   struct HTTPPutData *next;
-  struct MHDPutData * mpos;
-  struct MHDPutData * mnext;
+  struct MHDPutData *mpos;
+  struct MHDPutData *mnext;
+  struct MHD_Response *r;
   int i;
-  
+
   MUTEX_LOCK (httplock);
   for (i = 0; i < tsessionCount; i++)
     {
@@ -532,10 +535,9 @@ destroy_tsession(TSession * tsession) {
     {
 #if DO_GET
       curl_multi_remove_handle (curl_multi, httpsession->cs.client.get);
-      signal_select();
+      signal_select ();
       curl_easy_cleanup (httpsession->cs.client.get);
-      GROW (httpsession->cs.client.rbuff2, 
-	    httpsession->cs.client.rsize2, 0);
+      GROW (httpsession->cs.client.rbuff2, httpsession->cs.client.rsize2, 0);
 #endif
       FREE (httpsession->cs.client.url);
       pos = httpsession->cs.client.puts;
@@ -543,7 +545,7 @@ destroy_tsession(TSession * tsession) {
         {
           next = pos->next;
           curl_multi_remove_handle (curl_multi, pos->curl_put);
-	  signal_select();
+          signal_select ();
           curl_easy_cleanup (pos->curl_put);
           FREE (pos->msg);
           FREE (pos);
@@ -553,25 +555,25 @@ destroy_tsession(TSession * tsession) {
   else
     {
 #if DO_GET
-      GROW (httpsession->cs.server.wbuff,
-	    httpsession->cs.server.wsize, 0);
-      if (httpsession->cs.server.get != NULL) {
-	MHD_destroy_response (httpsession->cs.server.get);
-	httpsession->cs.server.get = NULL;
-      }
-#endif      
+      GROW (httpsession->cs.server.wbuff, httpsession->cs.server.wsize, 0);
+      if (httpsession->cs.server.get != NULL)
+        {
+          r = httpsession->cs.server.get;
+          httpsession->cs.server.get = NULL;
+          MHD_destroy_response (r);
+        }
+#endif
       mpos = httpsession->cs.server.puts;
       /* this should be NULL already, but just
-	 in case it is not, we free it anyway... */
-      while (mpos != NULL) {
-	mnext = mpos->next;
-	GROW(mpos->rbuff2,
-	     mpos->rsize2,
-	     0);	
-	FREE(mpos);
-	mpos = mnext;
-      }
-      
+         in case it is not, we free it anyway... */
+      while (mpos != NULL)
+        {
+          mnext = mpos->next;
+          GROW (mpos->rbuff2, mpos->rsize2, 0);
+          FREE (mpos);
+          mpos = mnext;
+        }
+
     }
   MUTEX_DESTROY (httpsession->lock);
   FREE (httpsession);
@@ -657,10 +659,11 @@ verifyHello (const P2P_hello_MESSAGE * hello)
       (ntohs (hello->protocol) != HTTP_PROTOCOL_NUMBER) ||
       (MHD_NO == acceptPolicyCallback (NULL,
                                        (const struct sockaddr *) haddr,
-                                       sizeof (IPaddr)))) {
-    GE_BREAK_OP(NULL, 0);
-    return SYSERR;              /* obviously invalid */
-  }
+                                       sizeof (IPaddr))))
+    {
+      GE_BREAK_OP (NULL, 0);
+      return SYSERR;            /* obviously invalid */
+    }
   return OK;
 }
 
@@ -774,8 +777,7 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
-          "HTTP returns %u bytes in MHD GET handler.\n",
-          max);
+          "HTTP returns %u bytes in MHD GET handler.\n", max);
 #endif
   return max;
 }
@@ -789,9 +791,9 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 static void
 contentReaderFreeCallback (void *cls)
 {
-  HTTPSession * session = cls;
+  HTTPSession *session = cls;
 
-  GE_ASSERT(NULL, session->cs.server.get == NULL);
+  GE_ASSERT (NULL, session->cs.server.get == NULL);
 }
 #endif
 
@@ -807,13 +809,13 @@ accessHandlerCallback (void *cls,
                        struct MHD_Connection *session,
                        const char *url,
                        const char *method,
-		       const char *version,
+                       const char *version,
                        const char *upload_data,
                        unsigned int *upload_data_size)
 {
-  TSession * tsession;
-  struct MHD_Response * response;
-  struct MHDPutData * put;
+  TSession *tsession;
+  struct MHD_Response *response;
+  struct MHDPutData *put;
   HTTPSession *httpSession;
   HashCode512 client;
   int i;
@@ -827,7 +829,7 @@ accessHandlerCallback (void *cls,
   if ((strlen (url) < 2) || (OK != enc2hash (&url[1], &client)))
     {
       /* invalid request */
-      GE_BREAK_OP(NULL, 0);
+      GE_BREAK_OP (NULL, 0);
       return MHD_NO;
     }
 
@@ -838,8 +840,8 @@ accessHandlerCallback (void *cls,
     {
       tsession = tsessions[i];
       httpSession = tsession->internal;
-      if ( (0 == memcmp (&httpSession->sender, &client, sizeof (HashCode512))) &&
-	   (httpSession->is_client == NO) )
+      if ((0 == memcmp (&httpSession->sender, &client, sizeof (HashCode512)))
+          && (httpSession->is_client == NO))
         break;
       tsession = NULL;
       httpSession = NULL;
@@ -851,10 +853,10 @@ accessHandlerCallback (void *cls,
     {
 #if DEBUG_HTTP
       GE_LOG (coreAPI->ectx,
-	      GE_DEBUG | GE_REQUEST | GE_USER,
-	      "HTTP/MHD creates new session for request from `%s'.\n",
-	      &url[1]);
-#endif 
+              GE_DEBUG | GE_REQUEST | GE_USER,
+              "HTTP/MHD creates new session for request from `%s'.\n",
+              &url[1]);
+#endif
       httpSession = MALLOC (sizeof (HTTPSession));
       memset (httpSession, 0, sizeof (HTTPSession));
       httpSession->sender.hashPubKey = client;
@@ -875,23 +877,23 @@ accessHandlerCallback (void *cls,
     {
 #if DEBUG_HTTP
       GE_LOG (coreAPI->ectx,
-	      GE_DEBUG | GE_REQUEST | GE_USER,
-	      "HTTP/MHD receives GET request from `%s'.\n",
-	      &url[1]);
+              GE_DEBUG | GE_REQUEST | GE_USER,
+              "HTTP/MHD receives GET request from `%s'.\n", &url[1]);
 #endif
 
       /* handle get; create response object if we do not 
-	 have one already */
-      response = httpSession->cs.server.get;      
-      if (response == NULL) {
-	response = MHD_create_response_from_callback (-1,
-						      64 * 1024,
-						      contentReaderCallback,
-						      httpSession,
-						      contentReaderFreeCallback);
-	httpSession->cs.server.get = response;
-      }
-      httpSession->cs.server.last_get_activity = get_time();
+         have one already */
+      response = httpSession->cs.server.get;
+      if (response == NULL)
+        {
+          response = MHD_create_response_from_callback (-1,
+                                                        64 * 1024,
+                                                        contentReaderCallback,
+                                                        httpSession,
+                                                        contentReaderFreeCallback);
+          httpSession->cs.server.get = response;
+        }
+      httpSession->cs.server.last_get_activity = get_time ();
       MHD_queue_response (session, MHD_HTTP_OK, response);
       MUTEX_UNLOCK (httpSession->lock);
       return MHD_YES;
@@ -901,57 +903,53 @@ accessHandlerCallback (void *cls,
     {
 #if DEBUG_HTTP
       GE_LOG (coreAPI->ectx,
-	      GE_DEBUG | GE_REQUEST | GE_USER,
-	      "HTTP/MHD receives PUT request from `%s' with %u bytes.\n",
-	      &url[1],
-	      *upload_data_size);
+              GE_DEBUG | GE_REQUEST | GE_USER,
+              "HTTP/MHD receives PUT request from `%s' with %u bytes.\n",
+              &url[1], *upload_data_size);
 #endif
       put = httpSession->cs.server.puts;
-      while ( (put != NULL) &&
-	      (put->session != session) )
-	put = put->next;
-      if (put == NULL) {
-	put = MALLOC(sizeof(struct MHDPutData));
-	memset(put, 0, sizeof(struct MHDPutData));
-	put->next = httpSession->cs.server.puts;
-	httpSession->cs.server.puts = put;
-	put->session = session;
-      }
-      put->last_activity = get_time();
-	
+      while ((put != NULL) && (put->session != session))
+        put = put->next;
+      if (put == NULL)
+        {
+          put = MALLOC (sizeof (struct MHDPutData));
+          memset (put, 0, sizeof (struct MHDPutData));
+          put->next = httpSession->cs.server.puts;
+          httpSession->cs.server.puts = put;
+          put->session = session;
+        }
+      put->last_activity = get_time ();
+
       /* handle put (upload_data!) */
       poff = 0;
       have = *upload_data_size;
       *upload_data_size = 0;    /* we will always process everything */
-      if ( (have == 0) &&
-	   (put->done == NO) &&
-	   (put->ready == YES) ) {
-	put->done = YES;
-	/* end of upload, send response! */
+      if ((have == 0) && (put->done == NO) && (put->ready == YES))
+        {
+          put->done = YES;
+          /* end of upload, send response! */
 #if DEBUG_HTTP
-	GE_LOG (coreAPI->ectx,
-		GE_DEBUG | GE_REQUEST | GE_USER,
-		"HTTP/MHD queues dummy response to completed PUT request.\n");
+          GE_LOG (coreAPI->ectx,
+                  GE_DEBUG | GE_REQUEST | GE_USER,
+                  "HTTP/MHD queues dummy response to completed PUT request.\n");
 #endif
-	response = MHD_create_response_from_data (strlen(HTTP_PUT_RESPONSE),
-						  HTTP_PUT_RESPONSE,
-						  MHD_NO,
-						  MHD_NO);
-	MHD_queue_response (session, MHD_HTTP_OK, response);
-	MHD_destroy_response(response);
-	MUTEX_UNLOCK (httpSession->lock);
-	return MHD_YES;
-      }
+          response =
+            MHD_create_response_from_data (strlen (HTTP_PUT_RESPONSE),
+                                           HTTP_PUT_RESPONSE, MHD_NO, MHD_NO);
+          MHD_queue_response (session, MHD_HTTP_OK, response);
+          MHD_destroy_response (response);
+          MUTEX_UNLOCK (httpSession->lock);
+          return MHD_YES;
+        }
       while (have > 0)
         {
-	  put->ready = NO;
+          put->ready = NO;
           if (put->rpos1 < sizeof (MESSAGE_HEADER))
             {
               cpy = sizeof (MESSAGE_HEADER) - put->rpos1;
               if (cpy > have)
                 cpy = have;
-              memcpy (&put->rbuff1[put->rpos1],
-                      &upload_data[poff], cpy);
+              memcpy (&put->rbuff1[put->rpos1], &upload_data[poff], cpy);
               put->rpos1 += cpy;
               have -= cpy;
               poff += cpy;
@@ -961,24 +959,18 @@ accessHandlerCallback (void *cls,
             break;
           hdr = (MESSAGE_HEADER *) put->rbuff1;
           GROW (put->rbuff2,
-                put->rsize2,
-                ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
-          if (put->rpos2 <
-              ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+                put->rsize2, ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
+          if (put->rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
             {
-              cpy =
-                ntohs (hdr->size) - sizeof (MESSAGE_HEADER) -
-                put->rpos2;
+              cpy = ntohs (hdr->size) - sizeof (MESSAGE_HEADER) - put->rpos2;
               if (cpy > have)
                 cpy = have;
-              memcpy (&put->rbuff2[put->rpos2],
-                      &upload_data[poff], cpy);
+              memcpy (&put->rbuff2[put->rpos2], &upload_data[poff], cpy);
               have -= cpy;
               poff += cpy;
               put->rpos2 += cpy;
             }
-          if (put->rpos2 <
-              ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+          if (put->rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
             break;
           mp = MALLOC (sizeof (P2P_PACKET));
           mp->msg = put->rbuff2;
@@ -986,24 +978,24 @@ accessHandlerCallback (void *cls,
           mp->tsession = httpSession->tsession;
           mp->size = ntohs (hdr->size) - sizeof (MESSAGE_HEADER);
 #if DEBUG_HTTP
-	GE_LOG (coreAPI->ectx,
-		GE_DEBUG | GE_REQUEST | GE_USER,
-		"HTTP/MHD passes %u bytes to core (received via PUT request).\n",
-		mp->size);
+          GE_LOG (coreAPI->ectx,
+                  GE_DEBUG | GE_REQUEST | GE_USER,
+                  "HTTP/MHD passes %u bytes to core (received via PUT request).\n",
+                  mp->size);
 #endif
           coreAPI->receive (mp);
           put->rbuff2 = NULL;
           put->rpos2 = 0;
           put->rsize2 = 0;
           put->rpos1 = 0;
-	  put->ready = YES;
+          put->ready = YES;
         }
       MUTEX_UNLOCK (httpSession->lock);
       return MHD_YES;
     }
   MUTEX_UNLOCK (httpSession->lock);
-  GE_BREAK_OP(NULL, 0); /* invalid request */
-  return MHD_NO; 
+  GE_BREAK_OP (NULL, 0);        /* invalid request */
+  return MHD_NO;
 }
 
 #if DO_GET
@@ -1021,12 +1013,11 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   MESSAGE_HEADER *hdr;
   P2P_PACKET *mp;
 
-  httpSession->cs.client.last_get_activity = get_time();
+  httpSession->cs.client.last_get_activity = get_time ();
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/CURL receives %u bytes as response to GET.\n",
-	  size * nmemb);
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/CURL receives %u bytes as response to GET.\n", size * nmemb);
 #endif
   while (have > 0)
     {
@@ -1035,8 +1026,8 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
           cpy = sizeof (MESSAGE_HEADER) - httpSession->cs.client.rpos1;
           if (cpy > have)
             cpy = have;
-          memcpy (&httpSession->cs.client.rbuff1[httpSession->cs.client.rpos1],
-                  &inbuf[poff], cpy);
+          memcpy (&httpSession->cs.client.
+                  rbuff1[httpSession->cs.client.rpos1], &inbuf[poff], cpy);
           httpSession->cs.client.rpos1 += cpy;
           have -= cpy;
           poff += cpy;
@@ -1046,21 +1037,25 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
         break;
       hdr = (MESSAGE_HEADER *) httpSession->cs.client.rbuff1;
       GROW (httpSession->cs.client.rbuff2,
-            httpSession->cs.client.rsize2, ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
+            httpSession->cs.client.rsize2,
+            ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
       printf ("Expecting message of %u bytes via GET\n", ntohs (hdr->size));
-      if (httpSession->cs.client.rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+      if (httpSession->cs.client.rpos2 <
+          ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
         {
           cpy =
-            ntohs (hdr->size) - sizeof (MESSAGE_HEADER) - httpSession->cs.client.rpos2;
+            ntohs (hdr->size) - sizeof (MESSAGE_HEADER) -
+            httpSession->cs.client.rpos2;
           if (cpy > have)
             cpy = have;
-          memcpy (&httpSession->cs.client.rbuff2[httpSession->cs.client.rpos2],
-                  &inbuf[poff], cpy);
+          memcpy (&httpSession->cs.client.
+                  rbuff2[httpSession->cs.client.rpos2], &inbuf[poff], cpy);
           have -= cpy;
           poff += cpy;
           httpSession->cs.client.rpos2 += cpy;
         }
-      if (httpSession->cs.client.rpos2 < ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
+      if (httpSession->cs.client.rpos2 <
+          ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
         break;
       mp = MALLOC (sizeof (P2P_PACKET));
       mp->msg = httpSession->cs.client.rbuff2;
@@ -1088,38 +1083,40 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   struct HTTPPutData *put = ctx;
   size_t max = size * nmemb;
 
-  put->last_activity = get_time();
+  put->last_activity = get_time ();
   if (max > put->size - put->pos)
     max = put->size - put->pos;
   memcpy (ptr, &put->msg[put->pos], max);
   put->pos += max;
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/CURL sends %u bytes in PUT request.\n",
-	  max);
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/CURL sends %u bytes in PUT request.\n", max);
 #endif
   return max;
 }
 
 #define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GE_LOG(coreAPI->ectx, GE_WARNING | GE_USER | GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
 
-static void 
-create_session_url(HTTPSession * httpSession) {
+static void
+create_session_url (HTTPSession * httpSession)
+{
   char *url;
   EncName enc;
 
   url = httpSession->cs.client.url;
-  if (url == NULL) {
-    hash2enc (&httpSession->sender.hashPubKey, &enc);
-    url = MALLOC (64 + sizeof (EncName));
-    SNPRINTF (url,
-	      64 + sizeof (EncName),
-	      "http://%u.%u.%u.%u:%u/%s",
-	      PRIP (ntohl (*(int *) &httpSession->cs.client.address.ip.addr)),
-	      ntohs (httpSession->cs.client.address.port), &enc);
-    httpSession->cs.client.url = url;
-  }
+  if (url == NULL)
+    {
+      hash2enc (&httpSession->sender.hashPubKey, &enc);
+      url = MALLOC (64 + sizeof (EncName));
+      SNPRINTF (url,
+                64 + sizeof (EncName),
+                "http://%u.%u.%u.%u:%u/%s",
+                PRIP (ntohl
+                      (*(int *) &httpSession->cs.client.address.ip.addr)),
+                ntohs (httpSession->cs.client.address.port), &enc);
+      httpSession->cs.client.url = url;
+    }
 }
 
 #if DO_GET
@@ -1130,19 +1127,20 @@ create_session_url(HTTPSession * httpSession) {
  * @return OK on success, SYSERR on error
  */
 static int
-create_curl_get(HTTPSession * httpSession) {
+create_curl_get (HTTPSession * httpSession)
+{
   CURL *curl_get;
   CURLcode ret;
   CURLMcode mret;
 
   curl_get = httpSession->cs.client.get;
-  if (curl_get != NULL) {
-    curl_multi_remove_handle(curl_multi,
-			     curl_get);
-    signal_select();
-    curl_easy_cleanup(curl_get);			     
-    httpSession->cs.client.get = NULL;
-  }    
+  if (curl_get != NULL)
+    {
+      curl_multi_remove_handle (curl_multi, curl_get);
+      signal_select ();
+      curl_easy_cleanup (curl_get);
+      httpSession->cs.client.get = NULL;
+    }
   curl_get = curl_easy_init ();
   if (curl_get == NULL)
     return SYSERR;
@@ -1158,10 +1156,11 @@ create_curl_get(HTTPSession * httpSession) {
   CURL_EASY_SETOPT (curl_get, CURLOPT_TIMEOUT, 150L);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEFUNCTION, &receiveContentCallback);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEDATA, httpSession);
-  if (ret != CURLE_OK) {
-    curl_easy_cleanup(curl_get);			     
-    return SYSERR;
-  }
+  if (ret != CURLE_OK)
+    {
+      curl_easy_cleanup (curl_get);
+      return SYSERR;
+    }
   mret = curl_multi_add_handle (curl_multi, curl_get);
   if (mret != CURLM_OK)
     {
@@ -1170,16 +1169,16 @@ create_curl_get(HTTPSession * httpSession) {
               _("%s failed at %s:%d: `%s'\n"),
               "curl_multi_add_handle",
               __FILE__, __LINE__, curl_multi_strerror (mret));
-      curl_easy_cleanup(curl_get);			     
+      curl_easy_cleanup (curl_get);
       return SYSERR;
     }
-  signal_select();
-  httpSession->cs.client.last_get_activity = get_time();
+  signal_select ();
+  httpSession->cs.client.last_get_activity = get_time ();
   httpSession->cs.client.get = curl_get;
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/CURL initiated GET request.\n");
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/CURL initiated GET request.\n");
 #endif
   return OK;
 }
@@ -1203,27 +1202,28 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
 
   /* check if we have a session pending for this peer */
   tsession = NULL;
-  if (may_reuse) {
-    MUTEX_LOCK (httplock);  
-    for (i = 0; i < tsessionCount; i++)
-      {
-	if (0 == memcmp (&hello->senderIdentity,
-			 &tsessions[i]->peer, sizeof (PeerIdentity)))
-	  {
-	    tsession = tsessions[i];
-	    break;
-	  }
-      }
-    if ((tsession != NULL) && (OK == httpAssociate (tsession)))
-      {
-	*tsessionPtr = tsession;
-	MUTEX_UNLOCK (httplock);
-	return OK;
-      }
-    MUTEX_UNLOCK (httplock);
-  }
+  if (may_reuse)
+    {
+      MUTEX_LOCK (httplock);
+      for (i = 0; i < tsessionCount; i++)
+        {
+          if (0 == memcmp (&hello->senderIdentity,
+                           &tsessions[i]->peer, sizeof (PeerIdentity)))
+            {
+              tsession = tsessions[i];
+              break;
+            }
+        }
+      if ((tsession != NULL) && (OK == httpAssociate (tsession)))
+        {
+          *tsessionPtr = tsession;
+          MUTEX_UNLOCK (httplock);
+          return OK;
+        }
+      MUTEX_UNLOCK (httplock);
+    }
   /* no session pending, initiate a new one! */
-  httpSession = MALLOC (sizeof (HTTPSession));  
+  httpSession = MALLOC (sizeof (HTTPSession));
   memset (httpSession, 0, sizeof (HTTPSession));
   httpSession->sender = hello->senderIdentity;
   httpSession->lock = MUTEX_CREATE (YES);
@@ -1236,22 +1236,23 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
   httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
-  create_session_url(httpSession);
+  create_session_url (httpSession);
 #if DO_GET
-  if (OK != create_curl_get(httpSession)) {
-    FREE(tsession);
-    FREE(httpSession);
-    return SYSERR;
-  }
+  if (OK != create_curl_get (httpSession))
+    {
+      FREE (tsession);
+      FREE (httpSession);
+      return SYSERR;
+    }
 #endif
   /* PUTs will be created as needed */
   addTSession (tsession);
   *tsessionPtr = tsession;
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/CURL initiated connection to `%s'.\n",
-	  httpSession->cs.client.url);
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/CURL initiated connection to `%s'.\n",
+          httpSession->cs.client.url);
 #endif
   return OK;
 }
@@ -1262,16 +1263,14 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
  * operation as completed.
  */
 static size_t
-discardContentCallback(void * data,
-		       size_t size,
-		       size_t nmemb,
-		       void * put_cls) {
-  struct HTTPPutData * put = put_cls;
+discardContentCallback (void *data, size_t size, size_t nmemb, void *put_cls)
+{
+  struct HTTPPutData *put = put_cls;
   /* this condition should pretty much always be
      true; just checking here in case the PUT 
      response comes early somehow */
-  if (put->pos == put->size) 
-   put->done = YES;  
+  if (put->pos == put->size)
+    put->done = YES;
   return size * nmemb;
 }
 
@@ -1279,8 +1278,7 @@ discardContentCallback(void * data,
  * Create a new PUT request for the given PUT data.
  */
 static int
-create_curl_put (HTTPSession * httpSession,
-                 struct HTTPPutData *put)
+create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
 {
   CURL *curl_put;
   CURLcode ret;
@@ -1289,8 +1287,7 @@ create_curl_put (HTTPSession * httpSession,
 
   /* we should have initiated a GET earlier,
      so URL must not be NULL here */
-  GE_ASSERT(NULL,
-	    httpSession->cs.client.url != NULL);
+  GE_ASSERT (NULL, httpSession->cs.client.url != NULL);
   curl_put = curl_easy_init ();
   if (curl_put == NULL)
     return SYSERR;
@@ -1322,20 +1319,20 @@ create_curl_put (HTTPSession * httpSession,
   if (mret != CURLM_OK)
     {
       GE_LOG (coreAPI->ectx,
-	      GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	      _("%s failed at %s:%d: `%s'\n"),
-	      "curl_multi_add_handle",
-	      __FILE__, __LINE__, curl_multi_strerror (mret));
+              GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+              _("%s failed at %s:%d: `%s'\n"),
+              "curl_multi_add_handle",
+              __FILE__, __LINE__, curl_multi_strerror (mret));
       MUTEX_UNLOCK (httplock);
       return SYSERR;
     }
-  signal_select();
+  signal_select ();
   put->curl_put = curl_put;
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/CURL initiated PUT request to `%s'.\n",
-	  httpSession->cs.client.url);
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/CURL initiated PUT request to `%s'.\n",
+          httpSession->cs.client.url);
 #endif
   return OK;
 }
@@ -1369,17 +1366,19 @@ httpSend (TSession * tsession,
           GE_BREAK (NULL, 0);
           return SYSERR;
         }
-      if (important != YES) {
-	MUTEX_LOCK (httpSession->lock);
-	if (httpSession->cs.client.puts != NULL) {
-	  /* do not queue more than one unimportant PUT at a time */
-	  if (httpSession->cs.client.puts->done == YES)
-	    signal_select(); /* do clean up now! */
-	  MUTEX_UNLOCK (httpSession->lock);
-	  return NO;
-	}
-	MUTEX_UNLOCK (httpSession->lock);
-      }      
+      if (important != YES)
+        {
+          MUTEX_LOCK (httpSession->lock);
+          if (httpSession->cs.client.puts != NULL)
+            {
+              /* do not queue more than one unimportant PUT at a time */
+              if (httpSession->cs.client.puts->done == YES)
+                signal_select ();       /* do clean up now! */
+              MUTEX_UNLOCK (httpSession->lock);
+              return NO;
+            }
+          MUTEX_UNLOCK (httpSession->lock);
+        }
       putData = MALLOC (sizeof (struct HTTPPutData));
       memset (putData, 0, sizeof (struct HTTPPutData));
       putData->msg = MALLOC (size + sizeof (MESSAGE_HEADER));
@@ -1388,42 +1387,44 @@ httpSend (TSession * tsession,
       hdr->type = htons (0);
       memcpy (&putData->msg[sizeof (MESSAGE_HEADER)], msg, size);
       putData->size = size + sizeof (MESSAGE_HEADER);
-      if (OK != create_curl_put (httpSession,
-				 putData)) {
-	FREE (putData->msg);
-	FREE (putData);
-	return SYSERR;
-      }
+      if (OK != create_curl_put (httpSession, putData))
+        {
+          FREE (putData->msg);
+          FREE (putData);
+          return SYSERR;
+        }
       MUTEX_LOCK (httpSession->lock);
       putData->next = httpSession->cs.client.puts;
       httpSession->cs.client.puts = putData;
       MUTEX_UNLOCK (httpSession->lock);
       return OK;
     }
-  
+
   /* httpSession->isClient == false, respond to a GET (we
      hopefully have one or will have one soon) */
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP/MHD queues %u bytes to be sent as response to GET as soon as possible.\n",
-	  size);
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP/MHD queues %u bytes to be sent as response to GET as soon as possible.\n",
+          size);
 #endif
 #if DO_GET
   MUTEX_LOCK (httpSession->lock);
   if (httpSession->cs.server.wsize == 0)
-    GROW (httpSession->cs.server.wbuff, httpSession->cs.server.wsize, HTTP_BUF_SIZE);
+    GROW (httpSession->cs.server.wbuff, httpSession->cs.server.wsize,
+          HTTP_BUF_SIZE);
   if (httpSession->cs.server.wpos + size > httpSession->cs.server.wsize)
     {
       /* need to grow or discard */
       if (!important)
-	{
-	  MUTEX_UNLOCK (httpSession->lock);
-	  return NO;
-	}
+        {
+          MUTEX_UNLOCK (httpSession->lock);
+          return NO;
+        }
       tmp = MALLOC (httpSession->cs.server.wpos + size);
       memcpy (tmp,
-	      &httpSession->cs.server.wbuff[httpSession->cs.server.woff], httpSession->cs.server.wpos);
+              &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
+              httpSession->cs.server.wpos);
       FREE (httpSession->cs.server.wbuff);
       httpSession->cs.server.wbuff = tmp;
       httpSession->cs.server.wsize = httpSession->cs.server.wpos + size;
@@ -1434,17 +1435,18 @@ httpSend (TSession * tsession,
     {
       /* fits without growing */
       if (httpSession->cs.server.wpos + httpSession->cs.server.woff + size >
-	  httpSession->cs.server.wsize)
-	{
-	  /* need to compact first */
-	  memmove (httpSession->cs.server.wbuff,
-		   &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
-		   httpSession->cs.server.wpos);
-	  httpSession->cs.server.woff = 0;
-	}
+          httpSession->cs.server.wsize)
+        {
+          /* need to compact first */
+          memmove (httpSession->cs.server.wbuff,
+                   &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
+                   httpSession->cs.server.wpos);
+          httpSession->cs.server.woff = 0;
+        }
       /* append */
-      memcpy (&httpSession->cs.server.wbuff[httpSession->cs.server.woff + httpSession->cs.server.wpos],
-	      msg, size);
+      memcpy (&httpSession->cs.server.
+              wbuff[httpSession->cs.server.woff +
+                    httpSession->cs.server.wpos], msg, size);
       httpSession->cs.server.wpos += size;
     }
   MUTEX_UNLOCK (httpSession->lock);
@@ -1465,44 +1467,44 @@ cleanup_connections ()
   HTTPSession *s;
   struct HTTPPutData *prev;
   struct HTTPPutData *pos;
-  struct MHDPutData * mpos;
-  struct MHDPutData * mprev;
+  struct MHDPutData *mpos;
+  struct MHDPutData *mprev;
   cron_t now;
 
   MUTEX_LOCK (httplock);
-  now = get_time();     
+  now = get_time ();
   for (i = 0; i < tsessionCount; i++)
     {
       s = tsessions[i]->internal;
       MUTEX_LOCK (s->lock);
       if (s->is_client)
         {
-	  if ( (s->cs.client.puts == NULL) &&
-	       (s->users == 0)
+          if ((s->cs.client.puts == NULL) && (s->users == 0)
 #if DO_GET
-	       && (s->cs.client.last_get_activity + HTTP_TIMEOUT < now)
+              && (s->cs.client.last_get_activity + HTTP_TIMEOUT < now)
 #endif
-	       ) {
-	    MUTEX_UNLOCK (s->lock);
+            )
+            {
+              MUTEX_UNLOCK (s->lock);
 #if DO_GET
 #if DEBUG_HTTP
-	    GE_LOG (coreAPI->ectx,
-		    GE_DEBUG | GE_REQUEST | GE_USER,
-		    "HTTP transport destroys old (%llu ms) unused client session\n",
-		    now - s->cs.client.last_get_activity);
+              GE_LOG (coreAPI->ectx,
+                      GE_DEBUG | GE_REQUEST | GE_USER,
+                      "HTTP transport destroys old (%llu ms) unused client session\n",
+                      now - s->cs.client.last_get_activity);
 #endif
 #endif
-	    destroy_tsession(tsessions[i]);
-	    i--;
-	    continue;
-	  }
+              destroy_tsession (tsessions[i]);
+              i--;
+              continue;
+            }
 
           prev = NULL;
           pos = s->cs.client.puts;
           while (pos != NULL)
             {
-	      if (pos->last_activity + HTTP_TIMEOUT < now)
-		pos->done = YES;
+              if (pos->last_activity + HTTP_TIMEOUT < now)
+                pos->done = YES;
               if (pos->done)
                 {
                   if (prev == NULL)
@@ -1511,7 +1513,7 @@ cleanup_connections ()
                     prev->next = pos->next;
                   FREE (pos->msg);
                   curl_multi_remove_handle (curl_multi, pos->curl_put);
-		  signal_select();	  
+                  signal_select ();
                   curl_easy_cleanup (pos->curl_put);
                   FREE (pos);
                   if (prev == NULL)
@@ -1524,58 +1526,57 @@ cleanup_connections ()
               pos = pos->next;
             }
 #if DO_GET
-	  if ( (s->cs.client.last_get_activity + HTTP_TIMEOUT < now) &&
-	       ( (s->users > 0) ||
-		 (s->cs.client.puts != NULL) ) )
-	    create_curl_get(s);
+          if ((s->cs.client.last_get_activity + HTTP_TIMEOUT < now) &&
+              ((s->users > 0) || (s->cs.client.puts != NULL)))
+            create_curl_get (s);
 #endif
         }
-      else 
-	{
-	  mpos = s->cs.server.puts;
-	  mprev = NULL;
-	  while (mpos != NULL) {
-	    if ( (mpos->done == YES) ||
-		 (mpos->last_activity + HTTP_TIMEOUT < now) ) {
-	      if (mprev == NULL)
-		s->cs.server.puts = mpos->next;
-	      else
-		mprev->next = mpos->next;
-	      GROW(mpos->rbuff2,
-		   mpos->rsize2,
-		   0); 
-	      FREE(mpos);
-	      if (mprev == NULL)
-		mpos = s->cs.server.puts;
-	      else
-		mpos = mprev->next;
-	      continue;
-	    }
-	    mprev = mpos;
-	    mpos = mpos->next;
-	  }
+      else
+        {
+          mpos = s->cs.server.puts;
+          mprev = NULL;
+          while (mpos != NULL)
+            {
+              if ((mpos->done == YES) ||
+                  (mpos->last_activity + HTTP_TIMEOUT < now))
+                {
+                  if (mprev == NULL)
+                    s->cs.server.puts = mpos->next;
+                  else
+                    mprev->next = mpos->next;
+                  GROW (mpos->rbuff2, mpos->rsize2, 0);
+                  FREE (mpos);
+                  if (mprev == NULL)
+                    mpos = s->cs.server.puts;
+                  else
+                    mpos = mprev->next;
+                  continue;
+                }
+              mprev = mpos;
+              mpos = mpos->next;
+            }
 
-	  /* ! s->is_client */
-	  if ( 
+          /* ! s->is_client */
+          if (
 #if DO_GET
-	      (s->cs.server.last_get_activity + HTTP_TIMEOUT < now) &&
+               (s->cs.server.last_get_activity + HTTP_TIMEOUT < now) &&
 #endif
-	       (s->users == 0) 
-	       ) {
-	    MUTEX_UNLOCK (s->lock);
+               (s->users == 0))
+            {
+              MUTEX_UNLOCK (s->lock);
 #if DO_GET
 #if DEBUG_HTTP
-	    GE_LOG (coreAPI->ectx,
-		    GE_DEBUG | GE_REQUEST | GE_USER,
-		    "HTTP transport destroys old (%llu ms) unused server session\n",
-		    now - s->cs.server.last_get_activity);
+              GE_LOG (coreAPI->ectx,
+                      GE_DEBUG | GE_REQUEST | GE_USER,
+                      "HTTP transport destroys old (%llu ms) unused server session\n",
+                      now - s->cs.server.last_get_activity);
 #endif
 #endif
-	    destroy_tsession(tsessions[i]);
-	    i--;
-	    continue;
-	  }
-	}
+              destroy_tsession (tsessions[i]);
+              i--;
+              continue;
+            }
+        }
       MUTEX_UNLOCK (s->lock);
     }
   MUTEX_UNLOCK (httplock);
@@ -1597,12 +1598,12 @@ curl_runner (void *unused)
   unsigned long long timeout;
   long ms;
   int have_tv;
-  char buf[128]; /* for reading from pipe */
+  char buf[128];                /* for reading from pipe */
 
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP transport select thread started\n");
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP transport select thread started\n");
 #endif
   while (YES == http_running)
     {
@@ -1623,44 +1624,43 @@ curl_runner (void *unused)
       if (mhd_daemon != NULL)
         MHD_get_fdset (mhd_daemon, &rs, &ws, &es, &max);
       timeout = 0;
-      have_tv = MHD_get_timeout(mhd_daemon,
-				&timeout);
-      if ( (CURLM_OK == curl_multi_timeout(curl_multi, &ms)) &&
-	   ( (ms < timeout) ||
-	     (have_tv == MHD_NO) ) ) {
-	timeout = ms;
-	have_tv = MHD_YES;
-      }
-      FD_SET(signal_pipe[0], &rs);
+      have_tv = MHD_get_timeout (mhd_daemon, &timeout);
+      if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
+          ((ms < timeout) || (have_tv == MHD_NO)))
+        {
+          timeout = ms;
+          have_tv = MHD_YES;
+        }
+      FD_SET (signal_pipe[0], &rs);
       if (max < signal_pipe[0])
-	max = signal_pipe[0];
+        max = signal_pipe[0];
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       SELECT (max + 1, &rs, &ws, &es, (have_tv == MHD_YES) ? &tv : NULL);
       if (YES != http_running)
         break;
       running = 0;
-      do {
-	mret = curl_multi_perform (curl_multi, &running);
-      } while ( (mret == CURLM_CALL_MULTI_PERFORM) &&
-		(http_running == YES) );
-      if ( FD_ISSET(signal_pipe[0], &rs)) 
-	read(signal_pipe[0], buf, sizeof(buf));      
-      if ( (mret != CURLM_OK) &&
-	   (mret != CURLM_CALL_MULTI_PERFORM) ) 
-	GE_LOG (coreAPI->ectx,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		_("%s failed at %s:%d: `%s'\n"),
-		"curl_multi_perform",
-		__FILE__, __LINE__, curl_multi_strerror (mret));      
-      if (mhd_daemon != NULL) 
-        MHD_run (mhd_daemon);  
+      do
+        {
+          mret = curl_multi_perform (curl_multi, &running);
+        }
+      while ((mret == CURLM_CALL_MULTI_PERFORM) && (http_running == YES));
+      if (FD_ISSET (signal_pipe[0], &rs))
+        read (signal_pipe[0], buf, sizeof (buf));
+      if ((mret != CURLM_OK) && (mret != CURLM_CALL_MULTI_PERFORM))
+        GE_LOG (coreAPI->ectx,
+                GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                _("%s failed at %s:%d: `%s'\n"),
+                "curl_multi_perform",
+                __FILE__, __LINE__, curl_multi_strerror (mret));
+      if (mhd_daemon != NULL)
+        MHD_run (mhd_daemon);
       cleanup_connections ();
     }
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
-	  GE_DEBUG | GE_REQUEST | GE_USER,
-	  "HTTP transport select thread exits.\n");
+          GE_DEBUG | GE_REQUEST | GE_USER,
+          "HTTP transport select thread exits.\n");
 #endif
   return NULL;
 }
@@ -1687,22 +1687,22 @@ startTransportServer ()
                                      port,
                                      &acceptPolicyCallback,
                                      NULL, &accessHandlerCallback, NULL,
-				     MHD_OPTION_CONNECTION_TIMEOUT,
-				     HTTP_TIMEOUT,
-				     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-				     1024 * 128,
-				     MHD_OPTION_CONNECTION_LIMIT,
-				     128,
-				     MHD_OPTION_END);
+                                     MHD_OPTION_CONNECTION_TIMEOUT,
+                                     HTTP_TIMEOUT,
+                                     MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+                                     1024 * 128,
+                                     MHD_OPTION_CONNECTION_LIMIT,
+                                     128, MHD_OPTION_END);
     }
-  if (0 != PIPE(signal_pipe)) {
-    MHD_stop_daemon(mhd_daemon);
-    curl_multi_cleanup(curl_multi);
-    curl_multi = NULL;
-    mhd_daemon = NULL;
-    return SYSERR;
-  }
-  http_running = YES;  
+  if (0 != PIPE (signal_pipe))
+    {
+      MHD_stop_daemon (mhd_daemon);
+      curl_multi_cleanup (curl_multi);
+      curl_multi = NULL;
+      mhd_daemon = NULL;
+      return SYSERR;
+    }
+  http_running = YES;
   curl_thread = PTHREAD_CREATE (&curl_runner, NULL, 32 * 1024);
   if (curl_thread == NULL)
     GE_DIE_STRERROR (coreAPI->ectx,
@@ -1718,19 +1718,30 @@ static int
 stopTransportServer ()
 {
   void *unused;
+  int i;
+  HTTPSession *s;
 
   if ((http_running == NO) || (curl_multi == NULL))
     return SYSERR;
   http_running = NO;
-  signal_select();
+  signal_select ();
   PTHREAD_STOP_SLEEP (curl_thread);
   PTHREAD_JOIN (curl_thread, &unused);
-  CLOSE(signal_pipe[0]);
-  CLOSE(signal_pipe[1]);
+  CLOSE (signal_pipe[0]);
+  CLOSE (signal_pipe[1]);
   if (mhd_daemon != NULL)
     {
       MHD_stop_daemon (mhd_daemon);
       mhd_daemon = NULL;
+    }
+  for (i = 0; i < tsessionCount; i++)
+    {
+      s = tsessions[i]->internal;
+      if (s->users == 0)
+        {
+          destroy_tsession (tsessions[i]);
+          i--;
+        }
     }
   curl_multi_cleanup (curl_multi);
   curl_multi = NULL;
@@ -1870,6 +1881,7 @@ donetransport_http ()
   curl_global_cleanup ();
   FREENONNULL (proxy);
   proxy = NULL;
+  GROW (tsessions, tsessionArrayLength, 0);
 }
 
 /* end of http.c */

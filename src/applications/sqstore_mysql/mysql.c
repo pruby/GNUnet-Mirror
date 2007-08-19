@@ -964,7 +964,7 @@ iterateHelper (unsigned int type,
           datum = assembleDatum (rbind);
           if (datum == NULL)
             continue;
-	  ret = iter (&key, datum, closure, vkey);
+          ret = iter (&key, datum, closure, vkey);
           if (ret == SYSERR)
             {
               FREE (datum);

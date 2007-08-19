@@ -552,9 +552,9 @@ selectThread (void *ctx)
                 {
                   SHUTDOWN (s, SHUT_WR);
                   if (0 != CLOSE (s))
-		    GE_LOG_STRERROR (sh->ectx,
-				     GE_WARNING | GE_ADMIN | GE_BULK,
-				     "close");
+                    GE_LOG_STRERROR (sh->ectx,
+                                     GE_WARNING | GE_ADMIN | GE_BULK,
+                                     "close");
                   s = -1;
                   continue;
                 }

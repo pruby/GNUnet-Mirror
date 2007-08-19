@@ -1098,13 +1098,13 @@ put (const HashCode512 * key, const Datastore_Value * value)
       if (n == SQLITE_BUSY)
         {
           sqlite3_reset (stmt);
-	  MUTEX_UNLOCK(lock);
+          MUTEX_UNLOCK (lock);
           return NO;
         }
       LOG_SQLITE (dbh,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
       sqlite3_reset (stmt);
-      MUTEX_UNLOCK(lock);
+      MUTEX_UNLOCK (lock);
       return SYSERR;
     }
   sqlite3_reset (stmt);

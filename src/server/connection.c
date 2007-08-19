@@ -1620,17 +1620,18 @@ sendBuffer (BufferEntry * be)
       be->session.tsession = NULL;
       transport->disconnect (tsession, __FILE__);
       ensureTransportConnected (be);
-      if (be->session.tsession == NULL) {
+      if (be->session.tsession == NULL)
+        {
 #if STRICT_STAT_DOWN
-	be->status = STAT_DOWN;
-#endif     
-	for (i = 0; i < be->sendBufferSize; i++)
-	  {
-	    FREENONNULL (be->sendBuffer[i]->closure);
-	    FREE (be->sendBuffer[i]);
-	  }
-	GROW (be->sendBuffer, be->sendBufferSize, 0);	
-      }
+          be->status = STAT_DOWN;
+#endif
+          for (i = 0; i < be->sendBufferSize; i++)
+            {
+              FREENONNULL (be->sendBuffer[i]->closure);
+              FREE (be->sendBuffer[i]);
+            }
+          GROW (be->sendBuffer, be->sendBufferSize, 0);
+        }
       /* This may have changed the MTU => need to re-do
          everything.  Since we don't want to possibly
          loop forever, give it another shot later;
@@ -1805,10 +1806,10 @@ sendBuffer (BufferEntry * be)
 #endif
       transport->disconnect (tsession, __FILE__);
       for (i = 0; i < be->sendBufferSize; i++)
-	{
-	  FREENONNULL (be->sendBuffer[i]->closure);
-	  FREE (be->sendBuffer[i]);
-	}
+        {
+          FREENONNULL (be->sendBuffer[i]->closure);
+          FREE (be->sendBuffer[i]);
+        }
       GROW (be->sendBuffer, be->sendBufferSize, 0);
     }
 
