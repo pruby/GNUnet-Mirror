@@ -441,8 +441,6 @@ AC_ARG_WITH(microhttpd,
     AC_CHECK_HEADERS(microhttpd.h,
       AC_CHECK_LIB([microhttpd], [MHD_start_daemon],
           lmhd=1))])
-# NO libmicrohttpd/http support for 0.7.2 release!
-lmhd=0
 AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
 
