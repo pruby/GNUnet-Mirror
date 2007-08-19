@@ -117,13 +117,21 @@ db_reset ()
 {
   int fd;
   sqlite3 *dbh;
-
+  char *tmpl;
+  
   if (fn != NULL)
     {
       UNLINK (fn);
       FREE (fn);
     }
-  fn = STRDUP ("/tmp/dstoreXXXXXX");
+  tmpl = "/tmp/dstoreXXXXXX";
+
+#ifdef MINGW
+  fn = (char *) MALLOC(MAX_PATH + 1);
+  plibc_conv_to_win_path(tmpl, fn);
+#else
+  fn = STRDUP (tmpl);
+#endif
   fd = mkstemp (fn);
   if (fd == -1)
     {
