@@ -108,6 +108,7 @@ testTAPI (TransportAPI * tapi, void *ctx)
   cron_t start;
   cron_t end;
   MESSAGE_HEADER *noise;
+  int ret;
 
   GE_ASSERT (ectx, tapi != NULL);
   if (tapi->protocolNumber == NAT_PROTOCOL_NUMBER)
@@ -152,7 +153,10 @@ testTAPI (TransportAPI * tapi, void *ctx)
     {
       repeat--;
       ok = NO;
-      if (OK != sendPlaintext (tsession, (char *) noise, ntohs (noise->size)))
+      ret = NO;
+      while (ret == NO) 
+	ret = sendPlaintext (tsession, (char *) noise, ntohs (noise->size));
+      if (ret != OK) 
         {
           fprintf (stderr, _("`%s': Could not send.\n"), tapi->transName);
           *res = SYSERR;
