@@ -780,8 +780,7 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
           "HTTP returns %u bytes in MHD GET handler.\n", max);
 #endif
   if (stats != NULL)
-    stats->change(stat_bytesSent,
-		  max);
+    stats->change (stat_bytesSent, max);
   return max;
 }
 #endif
@@ -927,8 +926,7 @@ accessHandlerCallback (void *cls,
       poff = 0;
       have = *upload_data_size;
       if (stats != NULL)
-	stats->change(stat_bytesReceived,
-		      have);
+        stats->change (stat_bytesReceived, have);
       *upload_data_size = 0;    /* we will always process everything */
       if ((have == 0) && (put->done == NO) && (put->ready == YES))
         {
@@ -1076,8 +1074,7 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
       httpSession->cs.client.rpos1 = 0;
     }
   if (stats != NULL)
-    stats->change(stat_bytesReceived,
-		  size * nmemb);
+    stats->change (stat_bytesReceived, size * nmemb);
   return size * nmemb;
 }
 #endif
@@ -1103,8 +1100,7 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
           "HTTP/CURL sends %u bytes in PUT request.\n", max);
 #endif
   if (stats != NULL)
-    stats->change(stat_bytesSent,
-		  max);
+    stats->change (stat_bytesSent, max);
   return max;
 }
 
@@ -1387,9 +1383,8 @@ httpSend (TSession * tsession,
               if (httpSession->cs.client.puts->done == YES)
                 signal_select ();       /* do clean up now! */
               MUTEX_UNLOCK (httpSession->lock);
-	      if (stats != NULL)
-		stats->change(stat_bytesDropped,
-			      size);
+              if (stats != NULL)
+                stats->change (stat_bytesDropped, size);
 
               return NO;
             }
