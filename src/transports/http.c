@@ -597,6 +597,27 @@ getGNUnetHTTPPort ()
 }
 
 /**
+ * Get the GNUnet HTTP port from the configuration, or from
+ * /etc/services if it is not specified in the config file.
+ */
+static unsigned short
+getGNUnetAdvertisedHTTPPort ()
+{
+  unsigned long long port;
+
+  if (!GC_have_configuration_value (coreAPI->cfg, "HTTP", "ADVERTISED-PORT"))
+    {
+      port = getGNUnetHTTPPort ();
+    }
+  else if (-1 == GC_get_configuration_value_number (coreAPI->cfg,
+                                                    "HTTP",
+                                                    "ADVERTISED-PORT", 0,
+                                                    65535, 80, &port))
+    port = getGNUnetHTTPPort ();
+  return (unsigned short) port;
+}
+
+/**
  * A (core) Session is to be associated with a transport session. The
  * transport service may want to know in order to call back on the
  * core if the connection is being closed. Associate can also be
@@ -681,7 +702,7 @@ createhello ()
   HostAddress *haddr;
   unsigned short port;
 
-  port = getGNUnetHTTPPort ();
+  port = getGNUnetAdvertisedHTTPPort ();
   if (0 == port)
     {
       GE_LOG (NULL,

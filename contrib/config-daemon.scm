@@ -891,6 +891,18 @@ The size of the DSTORE QUOTA is specified in MB.")
  (cons 0 65535)
  'nat-unlimited))
 
+(define (http-advertised-port builder)
+ (builder
+ "HTTP"
+ "ADVERTISED-PORT"
+ (_ "Which is the external port of the HTTP transport?")
+ (_ "Use this option if your firewall maps say port 80 to your real HTTP port.  This can be useful in making the HTTP messages appear even more legit (without the need for running gnunetd as root due to the use of a priviledged port).")
+ '()
+ #t
+ 80
+ (cons 0 65535)
+ 'nat-unlimited))
+
 (define (http builder)
  (builder
  "HTTP"

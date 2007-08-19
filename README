@@ -196,6 +196,20 @@ testcase to the Mantis bugtracking system at
 https://gnunet.org/mantis/.
 
 
+Running http on port 80
+=======================
+
+In order to hide GNUnet's HTTP traffic perfectly, you might consider
+running GNUnet's HTTP transport on port 80.  However, you should not
+run GNUnet as root.  Instead, forward port 80 to say 8080 with this
+command (as root, in your startup scripts):
+
+# iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+
+Then set in the HTTP section of gnunetd.conf the "ADVERTISED-PORT"
+to "80" and "PORT" to 8080. 
+
+
 
 Stay tuned
 ==========
