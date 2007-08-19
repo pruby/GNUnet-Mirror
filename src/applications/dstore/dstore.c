@@ -440,7 +440,10 @@ provide_module_dstore (CoreAPIForApplication * capi)
           "SQLite Dstore: initializing database\n");
 #endif
   if (OK != db_reset ())
-    return NULL;
+    {
+      GE_BREAK(capi->ectx, 0);
+      return NULL;
+    }
   lock = MUTEX_CREATE (NO);
 
 
