@@ -178,7 +178,7 @@ fi
 
 
 # libcurl
-LIBCURL_CHECK_CONFIG(,,,AC_MSG_ERROR([GNUnet requires libcurl]))
+LIBCURL_CHECK_CONFIG(,7.15.4,,AC_MSG_ERROR([GNUnet requires libcurl >= 7.15.4]))
 
 # libxml2
 AM_PATH_XML2(,xml=1,xml=0)

@@ -29,7 +29,7 @@ running GNUnet:
 - libextractor >= 0.5.18
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
-- libcurl      >= 7.x
+- libcurl      >= 7.15.4
 - sqlite       >= 3.0
 - libltdl      >= 1.5 (part of GNU libtool)
 - libguile     >= 1.8 (strongly recommended)
