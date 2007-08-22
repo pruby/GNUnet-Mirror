@@ -1265,6 +1265,7 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
   httpSession->tsession = tsession;
   tsession->ttype = HTTP_PROTOCOL_NUMBER;
   tsession->internal = httpSession;
+  tsession->peer = hello->senderIdentity;
   create_session_url (httpSession);
 #if DO_GET
   if (OK != create_curl_get (httpSession))
