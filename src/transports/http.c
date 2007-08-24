@@ -1704,7 +1704,9 @@ curl_runner (void *unused)
       if (mhd_daemon != NULL)
         MHD_get_fdset (mhd_daemon, &rs, &ws, &es, &max);
       timeout = 0;
-      have_tv = MHD_get_timeout (mhd_daemon, &timeout);
+      have_tv = MHD_NO;
+      if (mhd_daemon != NULL)
+	have_tv = MHD_get_timeout (mhd_daemon, &timeout);
       if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
           ((ms < timeout) || (have_tv == MHD_NO)))
         {
