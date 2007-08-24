@@ -1367,6 +1367,53 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   return OK;
 }
 
+
+/**
+ * Test if the transport would even try to send
+ * a message of the given size and importance
+ * for the given session.<br>
+ * This function is used to check if the core should
+ * even bother to construct (and encrypt) this kind
+ * of message.
+ *
+ * @return YES if the transport would try (i.e. queue
+ *         the message or call the OS to send),
+ *         NO if the transport would just drop the message,
+ *         SYSERR if the size/session is invalid
+ */
+static int
+httpTestWouldTry (TSession * tsession, const unsigned int size, int important)
+{
+  HTTPSession *httpSession = tsession->internal;
+
+  if (size >= MAX_BUFFER_SIZE - sizeof (MESSAGE_HEADER))
+    {
+      GE_BREAK (coreAPI->ectx, 0);
+      return SYSERR;
+    }
+  if (size == 0)
+    {
+      GE_BREAK (coreAPI->ectx, 0);
+      return SYSERR;
+    }
+  if (httpSession->is_client) {
+    /* client */
+    if ( (important != YES) &&
+	 (httpSession->cs.client.puts != NULL) )
+	return NO;            
+    return YES;
+  } else {
+    /* server */
+    if (httpSession->cs.server.wsize == 0)
+      return YES;
+    if ( (httpSession->cs.server.wpos + size > httpSession->cs.server.wsize) &&
+	 (important != YES) )
+      return NO;
+    return YES;
+  }
+}
+
+
 /**
  * Send a message to the specified remote node.
  *
@@ -1894,6 +1941,7 @@ inittransport_http (CoreAPIForTransport * core)
   httpAPI.startTransportServer = &startTransportServer;
   httpAPI.stopTransportServer = &stopTransportServer;
   httpAPI.helloToAddress = &helloToAddress;
+  httpAPI.testWouldTry = &httpTestWouldTry;
 
   return &httpAPI;
 }
