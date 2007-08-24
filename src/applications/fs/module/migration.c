@@ -54,6 +54,11 @@
 #define MAX_RECORDS 64
 
 /**
+ * How often do we poll the datastore for content (at most).
+ */
+#define MAX_POLL_FREQUENCY (250 * cronMILLIS)
+
+/**
  * Datastore service.
  */
 static Datastore_ServiceAPI *datastore;
@@ -122,6 +127,7 @@ static unsigned int
 activeMigrationCallback (const PeerIdentity * receiver,
                          void *position, unsigned int padding)
 {
+  static cron_t discard_time;
   unsigned int ret;
   GapWrapper *gw;
   unsigned int size;
@@ -142,24 +148,37 @@ activeMigrationCallback (const PeerIdentity * receiver,
 
   index = coreAPI->computeIndex (receiver);
   MUTEX_LOCK (lock);
+  now = get_time();
   entry = -1;
   discard_entry = -1;
   discard_match = -1;
   minDist = -1;                 /* max */
   for (i = 0; i < MAX_RECORDS; i++)
     {
-      if (content[i].value == NULL)
-        {
-          discard_entry = i;
-          discard_match = MAX_RECEIVERS + 1;
-          continue;
-        }
+      if (content[i].value == NULL) 
+	{
+	  if (discard_time >= now - MAX_POLL_FREQUENCY)
+	    continue;
+	  discard_time = now;
+	  if (OK != datastore->getRandom (&content[i].key,
+					  &content[i].value))
+	    {
+	      content[entry].value = NULL;  /* just to be sure... */
+	      continue;
+	    } 
+	  else 
+	    {
+	      if (stats != NULL)
+		stats->change (stat_migration_factor, 1);
+	    }
+	}
       match = 1;
       if (ntohl (content[i].value->size) + sizeof (GapWrapper) -
           sizeof (Datastore_Value) <= padding)
         {
           match = 0;
           for (j = 0; j < content[i].sentCount; j++)
+
             {
               if (content[i].receiverIndices[j] == index)
                 {
@@ -187,29 +206,33 @@ activeMigrationCallback (const PeerIdentity * receiver,
             }
         }
     }
-  if (entry == -1)
-    {
-      entry = discard_entry;
-      GE_ASSERT (NULL, entry != -1);
-      FREENONNULL (content[entry].value);
-      content[entry].value = NULL;
-      content[entry].sentCount = 0;
-      if (OK != datastore->getRandom (&receiver->hashPubKey,
-                                      padding,
-                                      &content[entry].key,
-                                      &content[entry].value, 0))
-        {
-          content[entry].value = NULL;  /* just to be sure... */
-          MUTEX_UNLOCK (lock);
-#if DEBUG_MIGRATION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
-                  "Migration: random lookup in datastore failed.\n");
-#endif
-          return 0;
-        }
+  if ( (discard_entry != -1) &&
+       (discard_match > MAX_RECEIVERS / 2) &&
+       (discard_time < now - MAX_POLL_FREQUENCY) ) {
+    discard_time = now;
+    FREENONNULL (content[discard_entry].value);
+    content[discard_entry].value = NULL;
+    content[discard_entry].sentCount = 0;
+    if (OK != datastore->getRandom (&content[discard_entry].key,
+				    &content[discard_entry].value)) {
+	content[discard_entry].value = NULL;  /* just to be sure... */
+	discard_entry = -1;
+    } else {
       if (stats != NULL)
         stats->change (stat_migration_factor, 1);
+    }
+  }
+  if (entry == -1)
+    entry = discard_entry;
+  if (entry == -1) 
+    {
+#if DEBUG_MIGRATION 
+      GE_LOG (ectx,
+	      GE_DEBUG | GE_REQUEST | GE_USER,
+	      "Migration: no content available for migration.\n");
+#endif
+      MUTEX_UNLOCK (lock);
+      return 0;
     }
   value = content[entry].value;
   if (value == NULL)
@@ -221,6 +244,13 @@ activeMigrationCallback (const PeerIdentity * receiver,
   size = sizeof (GapWrapper) + ntohl (value->size) - sizeof (Datastore_Value);
   if (size > padding)
     {
+#if DEBUG_MIGRATION 
+          GE_LOG (ectx,
+                  GE_DEBUG | GE_REQUEST | GE_USER,
+                  "Migration: available content too big (%u > %u) for migration.\n",
+		  size,
+		  padding);
+#endif
       MUTEX_UNLOCK (lock);
       return 0;
     }
@@ -238,7 +268,12 @@ activeMigrationCallback (const PeerIdentity * receiver,
           FREENONNULL (value);
           content[entry].value = NULL;
           MUTEX_UNLOCK (lock);
-          return 0;
+#if DEBUG_MIGRATION
+          GE_LOG (ectx,
+                  GE_DEBUG | GE_REQUEST | GE_USER,
+                  "Migration: failed to locate indexed content for migration.\n");
+#endif
+	  return 0;
         }
       if (stats != NULL)
         stats->change (stat_on_demand_migration_attempts, 1);
@@ -251,10 +286,16 @@ activeMigrationCallback (const PeerIdentity * receiver,
   if (size > padding)
     {
       MUTEX_UNLOCK (lock);
-      return 0;
+#if DEBUG_MIGRATION
+      GE_LOG (ectx,
+	      GE_DEBUG | GE_REQUEST | GE_USER,
+	      "Migration: available content too big (%u > %u) for migration.\n",
+	      size,
+	      padding);
+#endif
+    return 0;
     }
   et = ntohll (value->expirationTime);
-  now = get_time ();
   if (et > now)
     {
       et -= now;
@@ -281,8 +322,21 @@ activeMigrationCallback (const PeerIdentity * receiver,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "gap's tryMigrate returned %u\n", ret);
 #endif
-      if (ret != 0)
-        content[entry].receiverIndices[content[entry].sentCount++] = index;
+      if (ret != 0) {
+	if (content[entry].sentCount == MAX_RECEIVERS) {
+	  FREE (content[entry].value);
+	  content[entry].value = NULL;
+	  content[entry].sentCount = 0;	  
+	} else {
+	  content[entry].receiverIndices[content[entry].sentCount++] = index;
+	}
+      } else {
+#if DEBUG_MIGRATION
+	GE_LOG (ectx,
+		GE_DEBUG | GE_REQUEST | GE_USER,
+		"Migration: not enough cover traffic\n");
+#endif
+      }
     }
   MUTEX_UNLOCK (lock);
   if ((ret > 0) && (stats != NULL))
