@@ -176,13 +176,18 @@ typedef struct
                         unsigned int desperation, int strict);
 
   /**
-   * Is the node currently 'strictly' blacklisted, that is, the node
+   * Is the node currently blacklisted.
+   * If "strict" is true, only count strictly blacklisted
+   * peers, which are peers where the node
    * misbehaved badly and we also reject inbound connections.
    *
    * @param identity node to check
+   * @param strict YES if we should only care about
+   *        strict blacklisting
    * @return YES if true, else NO
    */
-  int (*isBlacklistedStrict) (const PeerIdentity * identity);
+  int (*isBlacklisted) (const PeerIdentity * identity,
+			int strict);
 
   /**
    * Whitelist a host. This method is called if a host
