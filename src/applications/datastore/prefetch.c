@@ -113,9 +113,7 @@ rcbAcquire (void *unused)
  * @return SYSERR if the RCB is empty
  */
 int
-getRandom (const HashCode512 * receiver,
-           unsigned int sizeLimit,
-           HashCode512 * key, Datastore_Value ** value, unsigned int type)
+getRandom (HashCode512 * key, Datastore_Value ** value)
 {
   MUTEX_LOCK (lock);
   if (rvalue == NULL)

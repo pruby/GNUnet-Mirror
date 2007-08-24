@@ -42,17 +42,13 @@ void donePrefetch (void);
  * Get a random value from the datastore that has
  * a key close to the given approx value.
  *
- * @param approx maybe NULL (if any random entry
- *   will do)
  * @param value set to an approximate match
  * @param type if a particular type is desired, 0
  *        for any type.
  * @return OK if a value was found, SYSERR if not
  */
-int getRandom (const HashCode512 * receiver,
-               unsigned int sizeLimit,
-               HashCode512 * key,
-               Datastore_Value ** value, unsigned int type);
+int getRandom (HashCode512 * key,
+               Datastore_Value ** value);
 
 
 /* end of prefetch.h */
