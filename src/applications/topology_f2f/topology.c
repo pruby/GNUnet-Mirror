@@ -220,7 +220,7 @@ scanForHosts (unsigned int index)
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Topology: trying to connect to `%s'.\n", &enc);
 #endif
-  if (NO == identity->isBlacklistedStrict (&indexMatch.match))
+  if (NO == identity->isBlacklisted (&indexMatch.match, YES))
     {
       coreAPI->unicast (&indexMatch.match, NULL, 0, 0);
       identity->blacklistHost (&indexMatch.match, (unsigned int) 5 * 60 * 60 * saturation,      /* 5h at full saturation */

@@ -305,6 +305,7 @@ select_accept_handler (void *ah_cls,
   TSession *tsession;
   TCPSession *tcpSession;
 
+  GE_ASSERT (NULL, sock != NULL);
   if (NO != blt (addr, addr_len))
     {
 #if DEBUG_TCP

@@ -217,7 +217,7 @@ scanForHosts (unsigned int index)
           GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
           "Trying to connect to peer `%s'\n", &enc);
 #endif
-  if (NO == identity->isBlacklistedStrict (&indexMatch.match))
+  if (NO == identity->isBlacklisted (&indexMatch.match, YES))
     {
       coreAPI->unicast (&indexMatch.match, NULL, 0, 0);
       identity->blacklistHost (&indexMatch.match, (unsigned int) (saturation * 5 * 60 * 60),    /* 5 hours at full saturation */

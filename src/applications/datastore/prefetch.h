@@ -47,8 +47,7 @@ void donePrefetch (void);
  *        for any type.
  * @return OK if a value was found, SYSERR if not
  */
-int getRandom (HashCode512 * key,
-               Datastore_Value ** value);
+int getRandom (HashCode512 * key, Datastore_Value ** value);
 
 
 /* end of prefetch.h */

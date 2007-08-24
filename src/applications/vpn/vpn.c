@@ -907,7 +907,7 @@ static void *tunThread (void *arg)
   	if (timeout.tv_sec < (interval / 2)) {
   		for (i = 0; i < entries1; i++) {
   			if (((store1+i)->active) > 0) {
-  				if (identity->isBlacklistedStrict(&((store1+i)->peer))) {
+  				if (identity->isBlacklisted(&((store1+i)->peer)), YES) {
   					GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 --- whitelist of peer %x\n"),
   						(store1+i)->peer.hashPubKey.bits[0]);
   					identity->whitelistHost(&((store1+i)->peer));

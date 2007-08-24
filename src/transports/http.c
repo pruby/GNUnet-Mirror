@@ -1396,21 +1396,23 @@ httpTestWouldTry (TSession * tsession, const unsigned int size, int important)
       GE_BREAK (coreAPI->ectx, 0);
       return SYSERR;
     }
-  if (httpSession->is_client) {
-    /* client */
-    if ( (important != YES) &&
-	 (httpSession->cs.client.puts != NULL) )
-	return NO;            
-    return YES;
-  } else {
-    /* server */
-    if (httpSession->cs.server.wsize == 0)
+  if (httpSession->is_client)
+    {
+      /* client */
+      if ((important != YES) && (httpSession->cs.client.puts != NULL))
+        return NO;
       return YES;
-    if ( (httpSession->cs.server.wpos + size > httpSession->cs.server.wsize) &&
-	 (important != YES) )
-      return NO;
-    return YES;
-  }
+    }
+  else
+    {
+      /* server */
+      if (httpSession->cs.server.wsize == 0)
+        return YES;
+      if ((httpSession->cs.server.wpos + size > httpSession->cs.server.wsize)
+          && (important != YES))
+        return NO;
+      return YES;
+    }
 }
 
 
@@ -1706,7 +1708,7 @@ curl_runner (void *unused)
       timeout = 0;
       have_tv = MHD_NO;
       if (mhd_daemon != NULL)
-	have_tv = MHD_get_timeout (mhd_daemon, &timeout);
+        have_tv = MHD_get_timeout (mhd_daemon, &timeout);
       if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
           ((ms < timeout) || (have_tv == MHD_NO)))
         {

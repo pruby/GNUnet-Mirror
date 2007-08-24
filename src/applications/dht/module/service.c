@@ -168,18 +168,18 @@ provide_module_dht (CoreAPIForApplication * capi)
   cron_start (cron);
   if (OK != init_dht_store (1024 * 1024, capi))
     {
-      GE_BREAK(capi->ectx, 0);
+      GE_BREAK (capi->ectx, 0);
       return NULL;
     }
   if (OK != init_dht_table (capi))
     {
-      GE_BREAK(capi->ectx, 0);
+      GE_BREAK (capi->ectx, 0);
       done_dht_store ();
       return NULL;
     }
   if (OK != init_dht_routing (capi))
     {
-      GE_BREAK(capi->ectx, 0);
+      GE_BREAK (capi->ectx, 0);
       done_dht_table ();
       done_dht_store ();
       return NULL;

@@ -624,6 +624,8 @@ static int stat_sizeMessagesDropped;
 
 static int stat_hangupSent;
 
+static int stat_closedTransport;
+
 static int stat_encrypted;
 
 static int stat_transmitted;
@@ -1622,9 +1624,21 @@ sendBuffer (BufferEntry * be)
       ensureTransportConnected (be);
       if (be->session.tsession == NULL)
         {
+#if DEBUG_CONNECTION || 1
+          EncName enc;
+          IF_GELOG (ectx,
+                    GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                    hash2enc (&be->session.sender.hashPubKey, &enc));
+          GE_LOG (ectx,
+                  GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                  "Session is DOWN for `%s' due to transport disconnect\n",
+                  &enc);
+#endif
 #if STRICT_STAT_DOWN
           be->status = STAT_DOWN;
 #endif
+          if (stats != NULL)
+            stats->change (stat_closedTransport, 1);
           for (i = 0; i < be->sendBufferSize; i++)
             {
               FREENONNULL (be->sendBuffer[i]->closure);
@@ -1799,11 +1813,22 @@ sendBuffer (BufferEntry * be)
     }
   if ((ret == SYSERR) && (be->session.tsession != NULL))
     {
+#if DEBUG_CONNECTION || 1
+      EncName enc;
+      IF_GELOG (ectx,
+                GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                hash2enc (&be->session.sender.hashPubKey, &enc));
+      GE_LOG (ectx,
+              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+              "Session is DOWN for `%s' due to transmission error\n", &enc);
+#endif
       tsession = be->session.tsession;
       be->session.tsession = NULL;
 #if STRICT_STAT_DOWN
       be->status = STAT_DOWN;
 #endif
+      if (stats != NULL)
+        stats->change (stat_closedTransport, 1);
       transport->disconnect (tsession, __FILE__);
       for (i = 0; i < be->sendBufferSize; i++)
         {
@@ -2078,7 +2103,15 @@ shutdownConnection (BufferEntry * be)
   if (be->status == STAT_UP)
     {
       SendEntry *se;
-
+#if DEBUG_CONNECTION || 1
+      EncName enc;
+      IF_GELOG (ectx,
+                GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                hash2enc (&be->session.sender.hashPubKey, &enc));
+      GE_LOG (ectx,
+              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+              "Session DOWN for `%s' due to HANGUP received\n", &enc);
+#endif
       hangup.header.type = htons (P2P_PROTO_hangup);
       hangup.header.size = htons (sizeof (P2P_hangup_MESSAGE));
       identity->getPeerIdentity (identity->getPublicPrivateKey (),
@@ -2109,9 +2142,6 @@ shutdownConnection (BufferEntry * be)
     {
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-#if STRICT_STAT_DOWN
-      be->status = STAT_DOWN;
-#endif
       transport->disconnect (tsession, __FILE__);
     }
   for (i = 0; i < be->sendBufferSize; i++)
@@ -2190,7 +2220,7 @@ scheduleInboundTraffic ()
   int earlyRun;
   int load;
   int *perm;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
   EncName enc;
 #endif
 
@@ -2312,7 +2342,7 @@ scheduleInboundTraffic ()
           entries[u]->recently_received = 0;    /* "clear" slate */
           if (entries[u]->violations > 10)
             {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
               IF_GELOG (ectx,
                         GE_INFO | GE_BULK | GE_DEVELOPER,
                         hash2enc (&entries[u]->session.sender.hashPubKey,
@@ -2528,7 +2558,7 @@ scheduleInboundTraffic ()
 
       if (be->idealized_limit < MIN_BPM_PER_PEER)
         {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
                     hash2enc (&be->session.sender.hashPubKey, &enc));
@@ -2627,7 +2657,7 @@ cronDecreaseLiveness (void *unused)
               if ((now > root->isAlive) &&      /* concurrency might make this false... */
                   (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS))
                 {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
                   EncName enc;
 
                   /* switch state form UP to DOWN: too much inactivity */
@@ -2696,7 +2726,7 @@ cronDecreaseLiveness (void *unused)
                   (now - root->isAlive >
                    SECONDS_NOPINGPONG_DROP * cronSECONDS))
                 {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
                   EncName enc;
 
                   IF_GELOG (ectx,
@@ -2915,7 +2945,7 @@ static int
 handleHANGUP (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
 {
   BufferEntry *be;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
   EncName enc;
 #endif
 
@@ -2926,7 +2956,7 @@ handleHANGUP (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
                    &((P2P_hangup_MESSAGE *) msg)->sender,
                    sizeof (PeerIdentity)))
     return SYSERR;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
             hash2enc (&sender->hashPubKey, &enc));
@@ -3020,7 +3050,7 @@ confirmSessionUp (const PeerIdentity * peer)
           ((be->status & STAT_SETKEY_RECEIVED) > 0) &&
           (OK == ensureTransportConnected (be)) && (be->status != STAT_UP))
         {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
           EncName enc;
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -3138,8 +3168,10 @@ getCurrentSessionKey (const PeerIdentity * peer,
         {
           if ((be->status & STAT_SETKEY_SENT) > 0)
             {
-              *key = be->skey_local;
-              *age = be->skey_local_created;
+              if (key != NULL)
+                *key = be->skey_local;
+              if (age != NULL)
+                *age = be->skey_local_created;
               ret = OK;
             }
         }
@@ -3147,8 +3179,10 @@ getCurrentSessionKey (const PeerIdentity * peer,
         {                       /* for receiving */
           if ((be->status & STAT_SETKEY_RECEIVED) > 0)
             {
-              *key = be->skey_remote;
-              *age = be->skey_remote_created;
+              if (key != NULL)
+                *key = be->skey_remote;
+              if (age != NULL)
+                *age = be->skey_remote_created;
               ret = OK;
             }
         }
@@ -3372,6 +3406,10 @@ initConnection (struct GE_Context *e,
                                                                "# bytes of outgoing messages dropped"));
       stat_hangupSent
         = stats->create (gettext_noop ("# connections closed (HANGUP sent)"));
+      stat_closedTransport
+        =
+        stats->
+        create (gettext_noop ("# connections closed (transport issue)"));
       stat_encrypted = stats->create (gettext_noop (    /* includes encrypted but then
                                                            not transmitted data */
                                                      "# bytes encrypted"));
@@ -3759,8 +3797,7 @@ unicast (const PeerIdentity * receiver,
   unsigned short len;
 
   ENTRY ();
-  if ((getBandwidthAssignedTo (receiver, NULL, NULL) != OK) &&
-      (identity->isBlacklistedStrict (receiver) == NO))
+  if (getBandwidthAssignedTo (receiver, NULL, NULL) != OK)
     session->tryConnect (receiver);
   if (msg == NULL)
     {

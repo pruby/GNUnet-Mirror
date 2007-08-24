@@ -176,8 +176,7 @@ typedef struct
    * @param value set to an approximate match
    * @return OK if a value was found, SYSERR if not
    */
-  int (*getRandom) (HashCode512 * key,
-                    Datastore_Value ** value);
+  int (*getRandom) (HashCode512 * key, Datastore_Value ** value);
 
   /**
    * Explicitly remove some content from the database.

@@ -860,13 +860,13 @@ blacklistHost (const PeerIdentity * identity,
 }
 
 /**
- * Is the host currently 'strictly' blacklisted (i.e. we refuse to talk)?
+ * Is the host currently blacklisted (i.e. we refuse to talk)?
  *
  * @param identity host to check
  * @return YES if true, else NO
  */
 static int
-isBlacklistedStrict (const PeerIdentity * identity)
+isBlacklisted (const PeerIdentity * identity, int strict)
 {
   cron_t now;
   HostEntry *entry;
@@ -880,7 +880,7 @@ isBlacklistedStrict (const PeerIdentity * identity)
       return NO;
     }
   now = get_time ();
-  if ((now < entry->until) && (entry->strict == YES))
+  if ((now < entry->until) && ((entry->strict == YES) || (strict == NO)))
     {
 #if DEBUG_IDENTITY
       EncName enc;
@@ -1329,7 +1329,7 @@ provide_module_identity (CoreAPIForApplication * capi)
   id.identity2Hello = &identity2Hello;
   id.verifyPeerSignature = &verifyPeerSignature;
   id.blacklistHost = &blacklistHost;
-  id.isBlacklistedStrict = &isBlacklistedStrict;
+  id.isBlacklisted = &isBlacklisted;
   id.whitelistHost = &whitelistHost;
   id.changeHostTrust = &changeHostTrust;
   id.getHostTrust = &getHostTrust;

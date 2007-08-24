@@ -118,7 +118,7 @@ db_reset ()
   int fd;
   sqlite3 *dbh;
   char *tmpl;
-  
+
   if (fn != NULL)
     {
       UNLINK (fn);
@@ -127,8 +127,8 @@ db_reset ()
   tmpl = "/tmp/dstoreXXXXXX";
 
 #ifdef MINGW
-  fn = (char *) MALLOC(MAX_PATH + 1);
-  plibc_conv_to_win_path(tmpl, fn);
+  fn = (char *) MALLOC (MAX_PATH + 1);
+  plibc_conv_to_win_path (tmpl, fn);
 #else
   fn = STRDUP (tmpl);
 #endif
@@ -449,7 +449,7 @@ provide_module_dstore (CoreAPIForApplication * capi)
 #endif
   if (OK != db_reset ())
     {
-      GE_BREAK(capi->ectx, 0);
+      GE_BREAK (capi->ectx, 0);
       return NULL;
     }
   lock = MUTEX_CREATE (NO);

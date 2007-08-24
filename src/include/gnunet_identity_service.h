@@ -186,8 +186,7 @@ typedef struct
    *        strict blacklisting
    * @return YES if true, else NO
    */
-  int (*isBlacklisted) (const PeerIdentity * identity,
-			int strict);
+  int (*isBlacklisted) (const PeerIdentity * identity, int strict);
 
   /**
    * Whitelist a host. This method is called if a host

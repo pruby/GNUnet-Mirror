@@ -666,7 +666,7 @@ core_receive (P2P_PACKET * mp)
 #endif
     }
   /* check for blacklisting */
-  if (YES == identity->isBlacklistedStrict (&mp->sender))
+  if (YES == identity->isBlacklisted (&mp->sender, YES))
     {
 #if DEBUG_HANDLER
       EncName enc;

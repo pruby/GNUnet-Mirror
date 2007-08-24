@@ -491,10 +491,10 @@ exchangeKey (const PeerIdentity * receiver,
               GE_ERROR | GE_USER | GE_IMMEDIATE,
               _("Could not create any HELLO for myself!\n"));
     }
-#if DEBUG_SESSION
+#if DEBUG_SESSION || 1
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_REQUEST,
-          "Sending session key `%s' to peer `%s'.\n", printSKEY (&sk), &enc);
+          "Sending session key  to peer `%s'.\n", &enc);
 #endif
   if (stats != NULL)
     {
@@ -593,6 +593,14 @@ acceptSessionKey (const PeerIdentity * sender,
               &enc);
       return SYSERR;
     }
+  if ((OK != coreAPI->getCurrentSessionKey (sender,
+                                            NULL,
+                                            NULL,
+                                            YES)) &&
+      (YES == identity->isBlacklisted (sender, NO)))
+    return SYSERR;              /* other peer initiated but is
+                                   listed as not allowed => discard */
+
   sessionkeySigned = (const P2P_setkey_MESSAGE *) msg;
 
   if ((ntohs (msg->size) == sizeof (P2P_new_setkey_MESSAGE)) ||
@@ -825,6 +833,8 @@ tryConnect (const PeerIdentity * peer)
           GE_DEBUG | GE_USER | GE_REQUEST,
           "Trying to exchange key with `%s'.\n", &enc);
 #endif
+  if (YES == identity->isBlacklisted (peer, NO))
+    return NO;                  /* not allowed right now! */
   if (OK == exchangeKey (peer, NULL, NULL))
     return NO;
   return SYSERR;
