@@ -491,7 +491,7 @@ exchangeKey (const PeerIdentity * receiver,
               GE_ERROR | GE_USER | GE_IMMEDIATE,
               _("Could not create any HELLO for myself!\n"));
     }
-#if DEBUG_SESSION || 1
+#if DEBUG_SESSION 
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_REQUEST,
           "Sending session key  to peer `%s'.\n", &enc);

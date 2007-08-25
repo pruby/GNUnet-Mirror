@@ -205,7 +205,7 @@ long long atoll (const char *nptr);
 #endif
 
 #if defined(__sparc__)
-#define MAKE_UNALIGNED(val) ({ __typeof__((val)) __tmp; memcpy(&__tmp, &(val), sizeof((val))); __tmp; })
+#define MAKE_UNALIGNED(val) ({ __typeof__((val)) __tmp; memmove(&__tmp, &(val), sizeof((val))); __tmp; })
 #else
 #define MAKE_UNALIGNED(val) val
 #endif

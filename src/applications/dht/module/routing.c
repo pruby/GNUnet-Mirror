@@ -550,7 +550,7 @@ handlePut (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
 #endif
       dht_store_put (ntohl (put->type),
                      &put->key,
-                     ntohll (put->timeout) + now,
+                     ntohll (MAKE_UNALIGNED (put->timeout)) + now,
                      ntohs (put->header.size) - sizeof (DHT_PUT_MESSAGE),
                      (const char *) &put[1]);
     }
