@@ -162,7 +162,7 @@ activeMigrationCallback (const PeerIdentity * receiver,
           discard_time = now;
           if (OK != datastore->getRandom (&content[i].key, &content[i].value))
             {
-              content[entry].value = NULL;      /* just to be sure... */
+              content[i].value = NULL;      /* just to be sure... */
               continue;
             }
           else
