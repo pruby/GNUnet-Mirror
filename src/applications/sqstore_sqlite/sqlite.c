@@ -392,6 +392,7 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
               GE_WARNING | GE_BULK | GE_USER,
               _("Invalid data in %s (NCS).  Trying to fix (by deletion).\n"),
               _("sqlite datastore"));
+      sqlite3_reset (stmt);
       if (sq_prepare (dbh,
                       "DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK)
         {
@@ -414,7 +415,8 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
               GE_WARNING | GE_BULK | GE_USER,
               _("Invalid data in %s.  Trying to fix (by deletion).\n"),
               _("sqlite datastore"));
-      if (sq_prepare (dbh,
+     sqlite3_reset (stmt);
+     if (sq_prepare (dbh,
                       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
                       &stmt) == SQLITE_OK)
         {
