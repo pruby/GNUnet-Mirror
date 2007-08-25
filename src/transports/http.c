@@ -705,9 +705,11 @@ createhello ()
   port = getGNUnetAdvertisedHTTPPort ();
   if (0 == port)
     {
+#if DEBUG_HTTP
       GE_LOG (NULL,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "HTTP port is 0, will only send using HTTP.\n");
+#endif
       return NULL;              /* HTTP transport is configured SEND-only! */
     }
   msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (HostAddress));
