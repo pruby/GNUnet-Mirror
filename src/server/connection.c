@@ -1609,6 +1609,7 @@ sendBuffer (BufferEntry * be)
   totalMessageSize = selectMessagesToSend (be, &priority);
   if ( (totalMessageSize == 0) &&
        ( (be->sendBufferSize != 0) ||
+	 (be->session.mtu != 0) || /* only if transport has congestion control! */
 	 (be->available_send_window < 2 * EXPECTED_MTU) ) )
     {
       expireSendBufferEntries (be);
@@ -1638,7 +1639,7 @@ sendBuffer (BufferEntry * be)
       ensureTransportConnected (be);
       if (be->session.tsession == NULL)
         {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
           EncName enc;
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -1833,7 +1834,7 @@ sendBuffer (BufferEntry * be)
     }
   if ((ret == SYSERR) && (be->session.tsession != NULL))
     {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
       EncName enc;
       IF_GELOG (ectx,
                 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -2124,7 +2125,7 @@ shutdownConnection (BufferEntry * be)
   if (be->status == STAT_UP)
     {
       SendEntry *se;
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
       EncName enc;
       IF_GELOG (ectx,
                 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
@@ -2245,7 +2246,7 @@ scheduleInboundTraffic ()
   int *perm;
   cron_t min_uptime;
   unsigned int min_uptime_slot;
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
   EncName enc;
 #endif
 
@@ -2367,7 +2368,7 @@ scheduleInboundTraffic ()
           entries[u]->recently_received = 0;    /* "clear" slate */
           if (entries[u]->violations > 10)
             {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
               IF_GELOG (ectx,
                         GE_INFO | GE_BULK | GE_DEVELOPER,
                         hash2enc (&entries[u]->session.sender.hashPubKey,
@@ -2608,7 +2609,7 @@ scheduleInboundTraffic ()
 
       if (be->idealized_limit < MIN_BPM_PER_PEER)
         {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
                     hash2enc (&be->session.sender.hashPubKey, &enc));
@@ -2707,7 +2708,7 @@ cronDecreaseLiveness (void *unused)
               if ((now > root->isAlive) &&      /* concurrency might make this false... */
                   (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS))
                 {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
                   EncName enc;
 
                   /* switch state form UP to DOWN: too much inactivity */
@@ -2776,7 +2777,7 @@ cronDecreaseLiveness (void *unused)
                   (now - root->isAlive >
                    SECONDS_NOPINGPONG_DROP * cronSECONDS))
                 {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
                   EncName enc;
 
                   IF_GELOG (ectx,
@@ -2995,7 +2996,7 @@ static int
 handleHANGUP (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
 {
   BufferEntry *be;
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
   EncName enc;
 #endif
 
@@ -3006,7 +3007,7 @@ handleHANGUP (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
                    &((P2P_hangup_MESSAGE *) msg)->sender,
                    sizeof (PeerIdentity)))
     return SYSERR;
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
             hash2enc (&sender->hashPubKey, &enc));
@@ -3100,7 +3101,7 @@ confirmSessionUp (const PeerIdentity * peer)
           ((be->status & STAT_SETKEY_RECEIVED) > 0) &&
           (OK == ensureTransportConnected (be)) && (be->status != STAT_UP))
         {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
           EncName enc;
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
