@@ -136,8 +136,9 @@
 
 /**
  * Expected MTU for a streaming connection.
+ * (one bit of content plus 1k header overhead)
  */
-#define EXPECTED_MTU 32768
+#define EXPECTED_MTU 32768 + 1024
 
 /**
  * How many ping/pong messages to we want to transmit
@@ -962,22 +963,12 @@ outgoingCheck (unsigned int priority, unsigned int overhead)
     {
       if (priority >= EXTREME_PRIORITY)
         return OK;              /* allow administrative msgs */
-      else
-        return SYSERR;          /* but nothing else */
+      return SYSERR;          /* but nothing else */
     }
-  if (overhead > 50)
-    overhead = 50;              /* bound */
-  if (load <= overhead)
+  if (load <= 75 + overhead) 
     return OK;
-  /* Suppose overhead = 50, then:
-     Now load in [51, 100].  Between 51% and 100% load:
-     at 51% require priority >= 1 = (load-50)^3
-     at 52% require priority >= 8 = (load-50)^3
-     at 75% require priority >= 15626 = (load-50)^3
-     at 100% require priority >= 125000 = (load-50)^3
-     (cubic function)
-   */
-  delta = load - overhead;      /* now delta is in [1,50] with 50 == 100% load */
+  delta = load - overhead - 75;
+  /* Now delta in [0, 25] */
   if (delta * delta * delta > priority)
     {
 #if DEBUG_POLICY
@@ -1023,7 +1014,7 @@ checkSendFrequency (BufferEntry * be)
   if (be->session.mtu == 0)
     {
       msf =                     /* ms per message */
-        EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS);        /* bytes per ms */
+        EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS); /* bytes per ms */
     }
   else
     {
@@ -1038,10 +1029,16 @@ checkSendFrequency (BufferEntry * be)
   load = os_cpu_get_load (ectx, cfg);
   if (load == -1)
     load = 50;
+  /* adjust frequency based on send buffer size */
+  i = be->sendBufferSize;
+  if (i > 100)
+    i = 100;
+  if (i <= 25)
+    i = 25;
   /* adjust send frequency; if load is smaller
-     than 25%, decrease frequency, otherwise
+     than i%, decrease frequency, otherwise
      increase it (quadratically)! */
-  msf = msf * load * load / 25 / 25;
+  msf = msf * load * load / i / i;
   if (be->lastSendAttempt + msf > get_time ())
     {
 #if DEBUG_CONNECTION
@@ -1610,12 +1607,16 @@ sendBuffer (BufferEntry * be)
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS (be);
   totalMessageSize = selectMessagesToSend (be, &priority);
-  if (totalMessageSize == 0)
+  if ( (totalMessageSize == 0) &&
+       ( (be->sendBufferSize != 0) ||
+	 (be->available_send_window < 2 * EXPECTED_MTU) ) )
     {
       expireSendBufferEntries (be);
       be->inSendBuffer = NO;
       return NO;                /* deferr further */
     }
+  if (totalMessageSize == 0) 
+    totalMessageSize = EXPECTED_MTU + sizeof(P2P_PACKET_HEADER);
   GE_ASSERT (ectx, totalMessageSize > sizeof (P2P_PACKET_HEADER));
   if ((be->session.mtu != 0) && (totalMessageSize > be->session.mtu))
     {
@@ -1677,26 +1678,31 @@ sendBuffer (BufferEntry * be)
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
-  if ((SYSERR == outgoingCheck (priority,
+  if (SYSERR == outgoingCheck (priority,
                                 totalMessageSize /
-                                sizeof (P2P_PACKET_HEADER)))
-      || (0 == prepareSelectedMessages (be)))
+			       sizeof (P2P_PACKET_HEADER)))
     {
       expireSendBufferEntries (be);
       be->inSendBuffer = NO;
       return NO;                /* deferr further */
     }
+
   /* get permutation of SendBuffer Entries
      such that SE_FLAGS are obeyed */
-  entries = permuteSendBuffer (be, &stotal);
-  if ((stotal == 0) || (entries == NULL))
-    {
-      /* no messages selected!? */
-      GE_BREAK (ectx, 0);
-      be->inSendBuffer = NO;
-      FREE (entries);
-      return NO;
-    }
+  if (0 != prepareSelectedMessages (be)) {
+    entries = permuteSendBuffer (be, &stotal);
+    if ((stotal == 0) || (entries == NULL))
+      {
+	/* no messages selected!? */
+	GE_BREAK (ectx, 0);
+	be->inSendBuffer = NO;
+	FREE (entries);
+	return NO;
+      }
+  } else {
+    entries = NULL;
+    stotal = 0;
+  }
 
   /* build message */
   plaintextMsg = MALLOC (totalMessageSize);
@@ -1717,7 +1723,7 @@ sendBuffer (BufferEntry * be)
       memcpy (&plaintextMsg[p], entry->closure, entry->len);
       p += entry->len;
     }
-  FREE (entries);
+  FREENONNULL (entries);
   entries = NULL;
   if (p > totalMessageSize)
     {
