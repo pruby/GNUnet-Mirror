@@ -408,10 +408,16 @@ typedef struct BufferEntry_
 
   /**
    * is this host alive? timestamp of the time of the last-active
-  * point (as witnessed by some higher-level application, typically
+   * point (as witnessed by some higher-level application, typically
    * topology+pingpong)
    */
   cron_t isAlive;
+
+  /**
+   * At what time did we initially establish (STAT_UP) this connection?
+   * Should be zero if status != STAT_UP.
+   */
+  cron_t time_established;
 
   /**
    * Status of the connection (STAT_XXX)
@@ -512,6 +518,12 @@ typedef struct BufferEntry_
    * are we currently in "sendBuffer" for this entry?
    */
   int inSendBuffer;
+
+  /**
+   * Did we already select this entry for bandwidth
+   * assignment due to high uptime this round?
+   */
+  int tes_selected;
 
 } BufferEntry;
 
@@ -1539,6 +1551,7 @@ ensureTransportConnected (BufferEntry * be)
   if (be->session.tsession == NULL)
     {
       be->status = STAT_DOWN;
+      be->time_established = 0;
       return NO;
     }
   be->session.mtu = transport->getMTU (be->session.tsession->ttype);
@@ -1636,6 +1649,7 @@ sendBuffer (BufferEntry * be)
 #endif
 #if STRICT_STAT_DOWN
           be->status = STAT_DOWN;
+	  be->time_established = 0;
 #endif
           if (stats != NULL)
             stats->change (stat_closedTransport, 1);
@@ -1826,6 +1840,7 @@ sendBuffer (BufferEntry * be)
       be->session.tsession = NULL;
 #if STRICT_STAT_DOWN
       be->status = STAT_DOWN;
+      be->time_established = 0;      
 #endif
       if (stats != NULL)
         stats->change (stat_closedTransport, 1);
@@ -2136,6 +2151,7 @@ shutdownConnection (BufferEntry * be)
     }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
+  be->time_established = 0;
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
   if (be->session.tsession != NULL)
@@ -2211,6 +2227,7 @@ scheduleInboundTraffic ()
   double *shares;
   double shareSum;
   unsigned int u;
+  unsigned int v;
   unsigned int minCon;
   long long schedulableBandwidth;
   long long decrementSB;
@@ -2220,6 +2237,8 @@ scheduleInboundTraffic ()
   int earlyRun;
   int load;
   int *perm;
+  cron_t min_uptime;
+  unsigned int min_uptime_slot;
 #if DEBUG_CONNECTION || 1
   EncName enc;
 #endif
@@ -2515,13 +2534,38 @@ scheduleInboundTraffic ()
       perm = NULL;
     }
 
-  /* randomly add the remaining MIN_BPM_PER_PEER to minCon peers; yes, this will
-     yield some fluctuation, but some amount of fluctuation should be
-     good since it creates opportunities. */
-  if (activePeerCount > 0)
-    for (u = 0; u < minCon; u++)
-      entries[weak_randomi (activePeerCount)]->idealized_limit
-        += MIN_BPM_PER_PEER;
+  /* add the remaining MIN_BPM_PER_PEER to the minCon peers
+     with the highest connection uptimes; by linking this with
+     connection uptime, we reduce fluctuation */
+  if (activePeerCount > 0) {
+    if (minCon >= activePeerCount) {
+      /* in this case, just add to all peers */
+      for (u = 0; u < minCon; u++) {
+	entries[u % activePeerCount]->idealized_limit
+	  += MIN_BPM_PER_PEER;
+      }
+    } else { /* minCon < activePeerCount */
+      min_uptime = get_time();
+      min_uptime_slot = -1;
+      for (v=0;v<activePeerCount;v++) 
+	entries[min_uptime_slot]->tes_selected = NO;
+      for (u = 0; u < minCon; u++) {
+	for (v=0;v<activePeerCount;v++) {
+	  if ( (entries[v]->time_established != 0) &&
+	       (entries[v]->time_established < min_uptime) &&
+	       (entries[v]->tes_selected == NO) ) {
+	    min_uptime_slot = v;
+	    min_uptime = entries[v]->time_established;
+	  }
+	}
+	if (min_uptime_slot != -1) {
+	  entries[min_uptime_slot]->tes_selected = YES;
+	  entries[min_uptime_slot]->idealized_limit
+	    += MIN_BPM_PER_PEER;	  
+	}
+      } /* for minCon */
+    } /* if minCon < activePeerCount */
+  } /* if we had active peers */
 
   /* prepare for next round */
   lastRoundStart = now;
@@ -3060,6 +3104,7 @@ confirmSessionUp (const PeerIdentity * peer)
                   "Received confirmation that session is UP for `%s'\n",
                   &enc);
 #endif
+	  be->time_established = get_time();
           be->status = STAT_UP;
           be->lastSequenceNumberReceived = 0;
           be->lastSequenceNumberSend = 1;
