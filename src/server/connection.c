@@ -2548,7 +2548,7 @@ scheduleInboundTraffic ()
       min_uptime = get_time();
       min_uptime_slot = -1;
       for (v=0;v<activePeerCount;v++) 
-	entries[min_uptime_slot]->tes_selected = NO;
+	entries[v]->tes_selected = NO;
       for (u = 0; u < minCon; u++) {
 	for (v=0;v<activePeerCount;v++) {
 	  if ( (entries[v]->time_established != 0) &&
