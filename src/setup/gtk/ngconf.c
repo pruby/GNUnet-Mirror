@@ -22,10 +22,6 @@
  * @file setup/gtk/ngconf.c
  * @author Nils Durner
  * @author Christian Grothoff
- *
- * TODO:
- * + handle MC option parsing
- * + test event handlers for widget option changes!
  */
 
 #include "gnunet_setup_lib.h"
@@ -196,6 +192,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
   GtkWidget * label;
   int i;
   char defStr[128];
+  const char * lri;
 
   box = gtk_hbox_new (FALSE, 0);
   link_visibility(pos, box);
@@ -216,7 +213,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
 				    w);
       gtk_box_pack_start (GTK_BOX (ebox), label, FALSE, FALSE, 10);
       gtk_entry_set_text (GTK_ENTRY (w), pos->value.String.val);
-      g_signal_connect (w, "changed", G_CALLBACK(&boolean_toggled), pos);
+      g_signal_connect (w, "changed", G_CALLBACK(&string_update), pos);
       tooltip(w, pos->help);
       gtk_box_pack_start (GTK_BOX (ebox), w, TRUE, TRUE, 10);
       gtk_box_pack_start (GTK_BOX (box), ebox, TRUE, TRUE, 10);
@@ -225,31 +222,29 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
       i = 0;
       label = gtk_label_new(pos->description);
       gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
-      while (pos->value.String.legalRange[i] != NULL)
+      while (NULL != (lri = pos->value.String.legalRange[i])) 
         {
+       
           w =
-            gtk_check_button_new_with_label (pos->value.String.legalRange[i]);
+            gtk_check_button_new_with_label (lri);
 	  g_object_set_data(G_OBJECT(w),
 			    "MC-value",
-			    pos->value.String.legalRange[i]);
-          if ((NULL != strstr (pos->value.String.legalRange[i],
-                               pos->value.String.val)) &&
-              ((' ' == strstr (pos->value.String.legalRange[i],
-                               pos->value.String.val)[strlen (pos->value.
-                                                              String.
-                                                              legalRange[i])])
+			    (void*) lri);
+          if ((NULL != strstr (pos->value.String.val,
+			       lri)) &&
+              ((' ' == strstr (pos->value.String.val,
+			       lri)[strlen (lri)])
                || ('\0' ==
-                   strstr (pos->value.String.legalRange[i],
-                           pos->value.String.val)[strlen (pos->value.String.
-                                                          legalRange[i])]))
+                   strstr (pos->value.String.val,
+			   lri)[strlen (lri)]))
               &&
-              ((pos->value.String.legalRange[i] ==
-                strstr (pos->value.String.legalRange[i],
-                        pos->value.String.val))
-               || (' ' ==
-                   strstr (pos->value.String.legalRange[i],
-                           pos->value.String.val)[-1])))
-            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), TRUE);
+	      ((pos->value.String.val ==
+		strstr (pos->value.String.val,
+			lri))
+	       || (' ' ==
+		   strstr (pos->value.String.val,
+			   lri)[-1])))
+	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), TRUE);
           g_signal_connect (w, "toggled", G_CALLBACK(&multi_update), pos);
           gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 5);
           i++;
