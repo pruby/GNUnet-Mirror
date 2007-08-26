@@ -70,8 +70,8 @@ static void update_visibility() {
   while (pos != NULL) {
     if (pos->pos->visible)
       gtk_widget_show(pos->w);
-    else
-      gtk_widget_hide(pos->w);
+    else 
+      gtk_widget_hide(pos->w);    
     pos = pos->next;
   }
 }
@@ -103,23 +103,15 @@ static void
 radio_update (GtkRadioButton * button, gpointer user_data)
 {
   struct GNS_Tree *pos = user_data;
-  GSList *list = gtk_radio_button_get_group (button);
-  int i;
+  const char * opt;
 
-  i = 0;
-  while (pos->value.String.legalRange[i] != NULL)
-    {
-      if (list->data == button)
-        {
-          GC_set_configuration_value_string (cfg,
-                                             ectx,
-                                             pos->section,
-                                             pos->option,
-                                             pos->value.String.legalRange[i]);
-        }
-      list = list->next;
-      i++;
-    }
+  opt = g_object_get_data(G_OBJECT(button),
+			  "SC-value");
+  GC_set_configuration_value_string (cfg,
+				     ectx,
+				     pos->section,
+				     pos->option,
+				     opt);
   update_visibility();
 }
 
@@ -202,6 +194,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
       w = gtk_check_button_new_with_label (pos->description);
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w),
                                   pos->value.Boolean.val);
+      tooltip(w, pos->help);
       g_signal_connect (w, "toggled", G_CALLBACK(&boolean_toggled), pos);
       gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 10);
       break;
@@ -227,6 +220,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
        
           w =
             gtk_check_button_new_with_label (lri);
+	  tooltip(w, pos->help);
 	  g_object_set_data(G_OBJECT(w),
 			    "MC-value",
 			    (void*) lri);
@@ -256,19 +250,23 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
       choice = NULL;
       label = gtk_label_new(pos->description);
       gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
-      while (pos->value.String.legalRange[i] != NULL)
+      while (NULL != (lri = pos->value.String.legalRange[i]) )
         {
 	  if (w != NULL)
 	    w =
 	      gtk_radio_button_new_with_label_from_widget	      
-            (GTK_RADIO_BUTTON(w), pos->value.String.legalRange[i]);
+            (GTK_RADIO_BUTTON(w), lri);
 	  else
 	    w =
 	      gtk_radio_button_new_with_label	      
-	      (NULL, pos->value.String.legalRange[i]);
+	      (NULL, lri);
+	  tooltip(w, pos->help);
+	  g_object_set_data(G_OBJECT(w),
+			    "SC-value",
+			    (void*) lri);
           gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 0);
           if (0 ==
-              strcmp (pos->value.String.legalRange[i], pos->value.String.val))
+              strcmp (lri, pos->value.String.val))
 	    choice = w;
           g_signal_connect (w, "toggled", G_CALLBACK(&radio_update), pos);
           i++;
@@ -279,6 +277,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
     case GNS_Double:
       SNPRINTF (defStr, 128, "%llf", pos->value.Double.val);
       w = gtk_entry_new ();
+      tooltip(w, pos->help);
       label = gtk_label_new(pos->description);
       gtk_label_set_mnemonic_widget(GTK_LABEL(label),
 				    w);
@@ -291,6 +290,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
       w = gtk_spin_button_new_with_range (pos->value.UInt64.min,
 					  pos->value.UInt64.max,
 					  1);
+      tooltip(w, pos->help);
       label = gtk_label_new(pos->description);
       gtk_label_set_mnemonic_widget(GTK_LABEL(label),
 				    w);

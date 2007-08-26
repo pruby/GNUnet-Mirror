@@ -104,7 +104,7 @@ However, active testing and qualified feedback of these features is always welco
    #f
    'always) )
 
-;; paths
+;; fundamentals
 
 (define (paths-home builder)
  (builder
@@ -217,19 +217,6 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
    (list "SC" "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
    'always))
 
-;; option not supported / used at the moment (useful?)
-;(define (log-conf-date builder)
-; (builder
-;   "LOGGING"
-;   "DATE"
-;   (_ "Log the date of the event")
-;   (nohelp)
-;   '()
-;   #t
-;   #t
-;   #t
-;   'advanced))
-
 (define (log-keeplog builder)
  (builder
   "GNUNETD"
@@ -272,7 +259,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
  (builder
    "LOGGING"
    "" 
-   (_ "Configuration of the logging system") 
+   (_ "Logging") 
    (_ "Specify which system messages should be logged how")
    (list 
      (log-keeplog builder)
@@ -283,7 +270,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
    #t
    #f
    #f
-   'always) )
+   'advanced) )
 
  
 (define (general-pidfile builder)
@@ -340,7 +327,7 @@ Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that 
   #t
   "udp tcp nat"
   (list "MC" "udp" "udp6" "tcp" "tcp6" "nat")
-  'advanced) )
+  'always) )
  
 
 (define (general-applications builder)
@@ -370,7 +357,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   #t
   "advertising getoption fs stats traffic"
   (list "MC" "advertising" "getoption" "fs" "stats" "traffic" "dht" "tracekit" "tbench" "vpn" "chat")
-  'advanced) )
+  'always) )
  
 
 
@@ -379,12 +366,13 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "TCPSERVER"
  "DISABLE"
  (_ "Disable client-server connections")
- (nohelp)
+ (_ "This option can be used to tell gnunetd not to open the client port.  When run like this, gnunetd will participate as a peer in the network but not support any user interfaces.  This maybe useful for headless systems that are never expected to have end-user interactions.  Note that this will also prevent you from running diagnostic tools like gnunet-stats!")
  '()
  #t
  #f
  #f
- 'advanced) )
+ 'rare) )
+
 
 (define (gnunetd-private-network builder)
  (builder
@@ -398,7 +386,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  #f
  'rare) )
 
-(define (network-disable-advertisting builder)
+(define (network-disable-advertising builder)
  (builder
  "NETWORK"
  "DISABLE-ADVERTISEMENTS"
@@ -420,7 +408,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  #t
  #f
  #f
- 'rare) )
+ 'experimental) )
 
 (define (network-disable-helloexchange builder)
  (builder
@@ -432,13 +420,13 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  #t
  #f
  #f
- 'rare) )
+ 'experimental) )
 
 (define (network-port builder)
  (builder
  "NETWORK"
  "PORT"
- (_ "Client/Server Port")
+ (_ "Port for communication with GNUnet user interfaces")
  (_ "Which is the client-server port that is used between gnunetd and the clients (TCP only).  You may firewall this port for non-local machines (but you do not have to since GNUnet will perform access control and only allow connections from machines that are listed under TRUSTED).")
  '()
  #t
@@ -464,26 +452,14 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  "GNUNETD"
  "LIMIT-ALLOW"
  (_ "Limit connections to the specfied set of peers.")
- (_ "If this option is not set, any peer is allowed to connect.  If it is set, only the specified peers are allowed.")
+ (_ "If this option is not set, any peer is allowed to connect.  If it is set, only the specified peers are allowed. Specify the list of peer IDs (not IPs!)")
  '()
  #t
  ""
  '()
  'rare))
 
-(define (username builder)
- (builder
- "GNUNETD"
- "USER"
- (_ "Run gnunetd as this user.")
- (_ "When started as root, gnunetd will change permissions to the given user.")
- '()
- #t
- "gnunetd"
- '()
- 'advanced))
-
-(define (groupname builder)
+(define (general-groupname builder)
  (builder
  "GNUNETD"
  "GROUP"
@@ -495,35 +471,23 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  '()
  'advanced))
 
-(define (autostart builder)
- (builder
- "GNUNETD"
- "AUTOSTART"
- (_ "Run gnunetd during system startup?")
- (nohelp)
- '()
- #t
- #t
- '()
- 'rare))
-
-
 (define (limit-deny builder)
  (builder
  "GNUNETD"
  "LIMIT-DENY"
  (_ "Prevent the specfied set of peers from connecting.")
- (_ "If this option is not set, any peer is allowed to connect.")
+ (_ "If this option is not set, any peer is allowed to connect.  If the ID of a peer is listed here, connections from that peer will be refused.  Specify the list of peer IDs (not IPs!)")
  '()
  #t
  ""
  '()
  'rare))
 
-(define (general-advertising builder)
+(define (advertising builder)
  (builder
   "ADVERTISING"
   ""
+ (_ "Topology Maintenance")
  (_ "Rarely used settings for peer advertisements and connections")
  (list
     (general-helloexpires builder) 
@@ -547,36 +511,53 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "General settings")
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
-    (username builder) 
-    (groupname builder) 
-    (autostart builder) 
-    (daemon-fdlimit builder) 
-    (fs-path builder) 
-    (index-path builder) 
-    (general-pidfile builder) 
-    (general-hostlisturl builder)
-    (general-http-proxy builder)
     (network-port builder) 
     (network-trusted builder) 
+    (general-hostlisturl builder)
+    (general-http-proxy builder)
+    (f2f builder) 
+    (fs-path builder) 
+    (index-path builder) 
+    (daemon-fdlimit builder) 
     (general-username builder) 
+    (general-groupname builder) 
+    (general-pidfile builder) 
     (general-autostart builder) 
-    (general-transports builder) 
-    (general-applications builder) 
   )
   #t
   #f
   #f
   'always) )
 
+(define (modules builder)
+ (builder
+  "MODULES"
+  ""
+  (_ "Modules")
+  (_ "Settings that select specific implementations for GNUnet modules")
+  (list 
+    (modules-sqstore builder) 
+    (modules-topology builder) 
+  )
+  #t
+  #f
+  #f
+  'advanced) )
 
-(define (paths builder)
+
+
+
+(define (fundamentals builder)
  (builder
   "PATHS"
   ""
-  (_ "Path settings")
-  (_ "Prefixes for paths used by GNUnet")
+  (_ "Fundamentals")
+  (_ "")
   (list 
     (paths-home builder) 
+    (general-applications builder) 
+    (general-transports builder) 
+    (modules builder) 
   )
   #t
   #f
@@ -599,7 +580,7 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
   #t
   "sqstore_sqlite"
   (list "SC" "sqstore_sqlite" "sqstore_mysql")
-  'advanced) )
+  'fs-loaded) )
 
 (define (modules-topology builder)
  (builder
@@ -614,23 +595,6 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   #t
   "topology_default"
   (list "SC" "topology_default" "topology_f2f")
-  'advanced) )
-
-
-
-(define (modules builder)
- (builder
-  "MODULES"
-  ""
-  (_ "Modules")
-  (_ "Settings that select specific implementations for GNUnet modules")
-  (list 
-    (modules-sqstore builder) 
-    (modules-topology builder) 
-  )
-  #t
-  #f
-  #f
   'advanced) )
 
 
@@ -835,7 +799,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  #t
  #f
- 'tcp-port-nz))
+ 'tcp-loaded))
 
 (define (tcp-blacklist builder)
  (builder
@@ -1223,7 +1187,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  50
  (cons 0 10000)
- 'always))
+ 'advanced))
 
 (define (load-cpu-hard builder)
  (builder
@@ -1235,7 +1199,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  0
  (cons 0 99999)
- 'advanced))
+ 'rare))
 
 (define (load-hard-up-limit builder)
  (builder
@@ -1247,7 +1211,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  0
  (cons 0 999999999)
- 'advanced))
+ 'rare))
 
 (define (load-padding builder)
  (builder
@@ -1325,12 +1289,11 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
   (nohelp)
   (list 
     (meta builder)
-    (paths builder)
+    (fundamentals builder)
     (general builder) 
+    (advertising builder) 
     (logging builder)
     (load builder)
-    (modules builder) 
-    (f2f builder) 
     (transports builder) 
     (applications builder) 
   )
@@ -1391,8 +1354,8 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
         (begin 
           (cond
             ((eq? i 'advanced)     (change-visible ctx a b advanced))
-            ((eq? i 'rare)         (change-visible ctx a b rare))
-            ((eq? i 'experimental) (change-visible ctx a b experimental))
+            ((eq? i 'rare)         (change-visible ctx a b (and advanced rare)))
+            ((eq? i 'experimental) (change-visible ctx a b (and advanced experimental)))
             ((eq? i 'f2f)          (change-visible ctx a b f2f))
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
