@@ -28,6 +28,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_protocols.h"
+#include "gnunet_directories.h"
 #include "platform.h"
 
 #define TEMPLATE_VERSION "2006072900"
@@ -42,7 +43,7 @@ static struct MUTEX *lock;
 static int wantExit;
 static int silent;
 
-static char *cfgFilename;
+static char *cfgFilename = "~/.gnunet/gnunet.conf";
 
 /**
  * All gnunet-transport-check command line options
