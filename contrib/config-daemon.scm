@@ -777,8 +777,8 @@ The size of the DSTORE QUOTA is specified in MB.")
     (fs-activemigration builder)
     (fs-gap-tablesize builder)
     (fs-dht-tablesize builder)
-    (mysql builder)
     (dstore-quota builder)
+    (mysql builder)
   )
   #t
   #t
