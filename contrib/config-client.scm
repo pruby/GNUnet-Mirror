@@ -166,7 +166,7 @@ However, active testing and qualified feedback of these features is always welco
  (builder
    "LOGGING"
    "" 
-   (_ "Configuration of the logging system") 
+   (_ "Logging") 
    (_ "Specify which system messages should be logged how")
    (list 
      (log-keeplog builder)
@@ -177,7 +177,7 @@ However, active testing and qualified feedback of these features is always welco
    #t
    #f
    #f
-   'always) )
+   'advanced) )
 
 ;; general options
 
@@ -276,7 +276,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
   #t 
   #f 
   #f 
-  'always) )
+  'advanced) )
 
 (define (gnunet-gtk-plugins builder)
  (builder 
