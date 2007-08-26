@@ -24,9 +24,8 @@
  * @author Christian Grothoff
  *
  * TODO:
- * * add proper widgets for each option
- * * implement event handlers to process widget option changes!
- * * update glade file to create Notebook instead of tree view
+ * + handle MC option parsing
+ * + test event handlers for widget option changes!
  */
 
 #include "gnunet_setup_lib.h"
@@ -42,16 +41,66 @@ static struct GE_Context *ectx;
 
 static const char *cfg_filename;
 
+struct P2W {
+  struct P2W * next;
+  struct GNS_Tree * pos;
+  GtkWidget * w;
+};
+
+/**
+ * Maping of GNS_tree positions to widgets
+ * (used for visibility updates).
+ */
+static struct P2W * pws;
+
+#if GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 12
+#else
+static GtkTooltips * tips;
+#endif
+
+static void tooltip(GtkWidget * w,
+		    const char * text) {
+#if GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 12
+  gtk_widget_set_tooltip_text(w, text);
+#else
+  gtk_tooltips_set_tip(tips, w, text, NULL);
+#endif
+}
+
+static void update_visibility() {
+  struct P2W * pos;
+
+  pos = pws;
+  while (pos != NULL) {
+    if (pos->pos->visible)
+      gtk_widget_show(pos->w);
+    else
+      gtk_widget_hide(pos->w);
+    pos = pos->next;
+  }
+}
+
+static void link_visibility(struct GNS_Tree * pos,
+			    GtkWidget * w) {
+  struct P2W * pw;
+  pw = MALLOC(sizeof(struct P2W));
+  pw->pos = pos;
+  pw->w = w;
+  pw->next = pws;
+  pws = pw;
+}
+
 static void
 boolean_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
   struct GNS_Tree *pos = user_data;
-  GC_set_configuration_value_number (cfg,
+  GC_set_configuration_value_string (cfg,
                                      ectx,
                                      pos->section,
                                      pos->option,
-                                     gtk_toggle_button_get_mode
-                                     (togglebutton));
+                                     gtk_toggle_button_get_active
+                                     (togglebutton) ? "YES" : "NO");
+  update_visibility();
 }
 
 static void
@@ -75,34 +124,55 @@ radio_update (GtkRadioButton * button, gpointer user_data)
       list = list->next;
       i++;
     }
+  update_visibility();
 }
 
 static void
-multi_update (GtkRadioButton * button, gpointer user_data)
+multi_update (GtkToggleButton * button,
+	      gpointer user_data)
 {
   struct GNS_Tree *pos = user_data;
-  GSList *list = gtk_radio_button_get_group (button);
-  int i;
-  char *val;
-  int size;
+  char * val;
+  char * opt;
+  char * ret;
+  char * v;
+  char * s;
 
-  size = 1;
-  i = 0;
-  while (pos->value.String.legalRange[i] != NULL)
-    size += strlen (pos->value.String.legalRange[i++]) + 1;
-  val = MALLOC (size);
-  val[0] = '\0';
-  i = 0;
-  while (pos->value.String.legalRange[i] != NULL)
-    {
-      if (gtk_toggle_button_get_mode (GTK_TOGGLE_BUTTON (list->data)))
-        strcat (val, pos->value.String.legalRange[i]);
-      list = list->next;
-      i++;
-    }
+  val = NULL;
+  GC_get_configuration_value_string (cfg,
+				     pos->section, 
+				     pos->option, 
+				     NULL,
+				     &val);
+  GE_ASSERT(ectx, val != NULL);
+  opt = g_object_get_data(G_OBJECT(button),
+			  "MC-value");
+  if (gtk_toggle_button_get_active (button)) {
+    ret = MALLOC(strlen(val) + strlen(opt) + 2);
+    strcpy(ret, val);
+    strcat(ret, " ");
+    strcat(ret, opt);    
+  } else {
+    v = val;
+    while ( (NULL != (s = strstr(v, opt))) &&
+	    ( ( (s[strlen(opt)] != '\0') &&
+		(s[strlen(opt)] != ' ') ) ||
+	      ( (s != val) &&
+		(s[-1] != ' ') ) ) )
+      v = s + 1;
+    GE_ASSERT(NULL, s != NULL);
+    ret = MALLOC(strlen(val));
+    s[0] = '\0';
+    if (s != val)
+      s[-1] = '\0'; /* kill space */
+    strcpy(ret, val);
+    strcat(ret, &s[strlen(opt)]);
+  }
   GC_set_configuration_value_string (cfg,
-                                     ectx, pos->section, pos->option, val);
+                                     ectx, pos->section, pos->option, ret);
+  FREE (ret);
   FREE (val);
+  update_visibility();
 }
 
 static void
@@ -113,45 +183,55 @@ string_update (GtkEntry * entry, gpointer user_data)
                                      ectx,
                                      pos->section,
                                      pos->option, gtk_entry_get_text (entry));
+  update_visibility();
 }
 
 static int
 addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
 {
-  GtkWidget *box;
-  GtkWidget *label;
+  GtkWidget * ebox;
+  GtkWidget * box;
   GtkWidget *w;
-  GSList *list;
+  GtkWidget * choice;
+  GtkWidget * label;
   int i;
   char defStr[128];
 
-  if (!pos->visible)
-    return 0;
   box = gtk_hbox_new (FALSE, 0);
+  link_visibility(pos, box);
   switch (pos->type & GNS_TypeMask)
     {
     case GNS_Boolean:
       w = gtk_check_button_new_with_label (pos->description);
-      gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (w),
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w),
                                   pos->value.Boolean.val);
-      g_signal_connect (w, "toggled", &boolean_toggled, pos);
-      gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
+      g_signal_connect (w, "toggled", G_CALLBACK(&boolean_toggled), pos);
+      gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 10);
       break;
     case GNS_String:
+      ebox = gtk_vbox_new (FALSE, 10);
       w = gtk_entry_new ();
+      label = gtk_label_new(pos->description);
+      gtk_label_set_mnemonic_widget(GTK_LABEL(label),
+				    w);
+      gtk_box_pack_start (GTK_BOX (ebox), label, FALSE, FALSE, 10);
       gtk_entry_set_text (GTK_ENTRY (w), pos->value.String.val);
-      g_signal_connect (w, "toggled", &boolean_toggled, pos);
-      gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
-      label = gtk_label_new (pos->help);
-      gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, FALSE);
+      g_signal_connect (w, "changed", G_CALLBACK(&boolean_toggled), pos);
+      tooltip(w, pos->help);
+      gtk_box_pack_start (GTK_BOX (ebox), w, TRUE, TRUE, 10);
+      gtk_box_pack_start (GTK_BOX (box), ebox, TRUE, TRUE, 10);
       break;
     case GNS_MC:
       i = 0;
+      label = gtk_label_new(pos->description);
+      gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
       while (pos->value.String.legalRange[i] != NULL)
         {
           w =
             gtk_check_button_new_with_label (pos->value.String.legalRange[i]);
-          g_signal_connect (w, "toggled", &multi_toggled, pos);
+	  g_object_set_data(G_OBJECT(w),
+			    "MC-value",
+			    pos->value.String.legalRange[i]);
           if ((NULL != strstr (pos->value.String.legalRange[i],
                                pos->value.String.val)) &&
               ((' ' == strstr (pos->value.String.legalRange[i],
@@ -169,48 +249,71 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
                || (' ' ==
                    strstr (pos->value.String.legalRange[i],
                            pos->value.String.val)[-1])))
-            gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (w, TRUE));
-          gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), TRUE);
+          g_signal_connect (w, "toggled", G_CALLBACK(&multi_update), pos);
+          gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 5);
           i++;
         }
       break;
     case GNS_SC:
       w = NULL;
       i = 0;
+      choice = NULL;
+      label = gtk_label_new(pos->description);
+      gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
       while (pos->value.String.legalRange[i] != NULL)
         {
-          w =
-            gtk_radio_button_new_with_label_from_widget
-            (w, pos->value.String.legalRange[i]);
-          g_signal_connect (w, "toggled", &multi_toggled, pos);
-          gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
+	  if (w != NULL)
+	    w =
+	      gtk_radio_button_new_with_label_from_widget	      
+            (GTK_RADIO_BUTTON(w), pos->value.String.legalRange[i]);
+	  else
+	    w =
+	      gtk_radio_button_new_with_label	      
+	      (NULL, pos->value.String.legalRange[i]);
+          gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 0);
           if (0 ==
               strcmp (pos->value.String.legalRange[i], pos->value.String.val))
-            gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (w, TRUE));
+	    choice = w;
+          g_signal_connect (w, "toggled", G_CALLBACK(&radio_update), pos);
           i++;
-        }
+	}        
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (choice), TRUE);
 
       break;
     case GNS_Double:
       SNPRINTF (defStr, 128, "%llf", pos->value.Double.val);
       w = gtk_entry_new ();
-      g_signal_connect (w, "changed", &string_toggled, pos);
+      label = gtk_label_new(pos->description);
+      gtk_label_set_mnemonic_widget(GTK_LABEL(label),
+				    w);
+      gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
+      g_signal_connect (w, "changed", G_CALLBACK(&string_update), pos);
       gtk_entry_set_text (GTK_ENTRY (w), defStr);
-      gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
+      gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 0);
       break;
     case GNS_UInt64:
-      SNPRINTF (defStr, 128, "%llu", pos->value.UInt64.val);
-      w = gtk_entry_new ();
-      gtk_entry_set_text (GTK_ENTRY (w), defStr);
-      g_signal_connect (w, "changed", &string_toggled, pos);
-      gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, FALSE);
+      w = gtk_spin_button_new_with_range (pos->value.UInt64.min,
+					  pos->value.UInt64.max,
+					  1);
+      label = gtk_label_new(pos->description);
+      gtk_label_set_mnemonic_widget(GTK_LABEL(label),
+				    w);
+      gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 10);
+      gtk_spin_button_set_value (GTK_SPIN_BUTTON (w), 
+				 pos->value.UInt64.val);
+      gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (w), 
+				   TRUE);
+      gtk_spin_button_set_digits (GTK_SPIN_BUTTON (w), 
+				  0);
+      g_signal_connect (w, "changed", G_CALLBACK(&string_update), pos);
+      gtk_box_pack_start (GTK_BOX (box), w, FALSE, FALSE, 0);
       break;
     default:
       GE_ASSERT (NULL, 0);
       return 0;
     }
-  label = gtk_label_new (pos->help);
-  gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, FALSE);
+  gtk_box_pack_start (GTK_BOX (parent), box, FALSE, FALSE, 10);
   return 1;
 }
 
@@ -222,20 +325,22 @@ addNodeToTree (GtkNotebook * parent, struct GNS_Tree *pos)
   GtkNotebook *notebook;
   GtkWidget *vbox;
   GtkWidget *label;
+  GtkWidget * scroll;
   int have;
-  if (!pos->visible)
-    return 0;
+
   have = 0;
-  notebook = GTK_NOTEBOOK (gtk_notebook_new ());
-  vbox = gtk_vbox_new (FALSE, 0);
-  label = gtk_label_new (pos->description);
-  gtk_box_pack_start (GTK_BOX (vbox) notebook, TRUE, TRUE, FALSE);
   i = 0;
+  vbox = gtk_vbox_new (FALSE, 0);
+  notebook = NULL;
   while (NULL != (child = pos->children[i]))
     {
       switch (child->type & GNS_KindMask)
         {
         case GNS_Node:
+	  if (notebook == NULL) {
+	    notebook = GTK_NOTEBOOK (gtk_notebook_new ());
+	    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET(notebook), TRUE, TRUE, 0);
+	  }
           have = have | addNodeToTree (notebook, child);
           break;
         case GNS_Leaf:
@@ -250,12 +355,22 @@ addNodeToTree (GtkNotebook * parent, struct GNS_Tree *pos)
     }
   if (have != 0)
     {
-      gtk_notebook_append_page (parent, vbox, label);
+      label = gtk_label_new (pos->description);
+      gtk_widget_show_all(vbox);
+      gtk_widget_show_all(label);
+      scroll = gtk_scrolled_window_new(NULL, NULL);
+      gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
+				     GTK_POLICY_NEVER,
+				     GTK_POLICY_AUTOMATIC);
+      link_visibility(pos, scroll);
+      link_visibility(pos, label);
+      gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scroll),
+					    vbox);
+      gtk_notebook_append_page (parent, scroll, label);
     }
   else
     {
-      g_unref (vbox);
-      g_unref (label);
+      g_object_unref (vbox);
     }
   return have;
 }
@@ -263,9 +378,11 @@ addNodeToTree (GtkNotebook * parent, struct GNS_Tree *pos)
 static void
 initView (struct GNS_Context *gns)
 {
-  GtkWidget *notebook;
-  notebook = lookup_widget ("configNotebook");
-  addNodeToTree (notebook, gns);
+  GtkNotebook *notebook;
+  notebook = GTK_NOTEBOOK(lookup_widget ("configNotebook"));
+  addNodeToTree (notebook, GNS_get_tree(gns));
+  gtk_widget_show_all(GTK_WIDGET(notebook));
+  update_visibility();
 }
 
 
@@ -374,6 +491,10 @@ gconf_main_post_init (struct
   cfg_filename = filename;
   no_model = gtk_list_store_new (1, G_TYPE_STRING);
   setLibrary (self);
+#if GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 12
+#else
+  tips = gtk_tooltips_new();
+#endif
   mainWindow = get_xml ("setupWindow");
   initView (gns);
   gtk_window_maximize (GTK_WINDOW (mainWindow));

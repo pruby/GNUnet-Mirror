@@ -18,7 +18,7 @@ EXTRA_DIST = \
 
 libgnunetsetup_gtk_la_SOURCES = \
  about.c \
- gconf.c gconf.h \
+ ngconf.c gconf.h \
  glade_support.h glade_support.c \
  wizard_gtk.c wizard_gtk.h
 
