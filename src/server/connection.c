@@ -3384,8 +3384,8 @@ connectionConfigChangeCallback (void *ctx,
       max_bpm = new_max_bpm;
       newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 4);
       /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-      if (newMAXHOSTS < 4)
-        newMAXHOSTS = 4;        /* strict minimum is 4 (must match bootstrap.c!) */
+      if (newMAXHOSTS < 8)
+        newMAXHOSTS = 8;        /* strict minimum is 8 (must, divided by 2, match bootstrap.c!) */
       if (newMAXHOSTS > 256)
         newMAXHOSTS = 256;      /* limit, otherwise we run out of sockets! */
 
