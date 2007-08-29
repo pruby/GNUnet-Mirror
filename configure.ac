@@ -414,7 +414,6 @@ AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
 # libmicrohttpd
 lmhd=0
-AC_CHECK_LIB([microhttpd],[MHD_start_daemon])
 AC_MSG_CHECKING([for libmicrohttpd])
 AC_ARG_WITH(microhttpd,
    [  --with-microhttpd=PFX    Base of libmicrohttpd installation],
@@ -692,10 +691,10 @@ then
  AC_MSG_NOTICE([NOTICE: curses based gnunet-setup frontends will not be installed.])
 fi
 
-#if test "$lmhd" != 1
-#then
-# AC_MSG_NOTICE([NOTICE: libmicrohttpd not found, http transport will not be installed.])
-#fi
+if test "$lmhd" != 1
+then
+ AC_MSG_NOTICE([NOTICE: libmicrohttpd not found, http transport will not be installed.])
+fi
 
 if test "$ipv6" = "0"
 then
