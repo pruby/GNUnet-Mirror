@@ -526,6 +526,12 @@ typedef struct BufferEntry_
    */
   int tes_selected;
 
+  /**
+   * Should we consider switching to a non-fragmenting
+   * transport?
+   */
+  int consider_transport_switch;
+
 } BufferEntry;
 
 typedef struct
@@ -660,6 +666,8 @@ static int stat_total_lost_sent;
 static int stat_total_allowed_recv;
 
 static int stat_total_send_buffer_size;
+
+static int stat_transport_switches;
 
 /* ******************** CODE ********************* */
 
@@ -1518,6 +1526,7 @@ fragmentIfNecessary (BufferEntry * be)
           GROW (be->sendBuffer, be->sendBufferSize, ret);
           /* calling fragment will change be->sendBuffer;
              thus we need to restart from the beginning afterwards... */
+	  be->consider_transport_switch = YES;
           fragmentation->fragment (&be->session.sender,
                                    be->session.mtu -
                                    sizeof (P2P_PACKET_HEADER), entry->pri,
@@ -1895,6 +1904,7 @@ appendToBuffer (BufferEntry * be, SendEntry * se)
   if ((be->session.mtu != 0) &&
       (se->len > be->session.mtu - sizeof (P2P_PACKET_HEADER)))
     {
+      be->consider_transport_switch = YES;
       /* this message is so big that it must be fragmented! */
       fragmentation->fragment (&be->session.sender,
                                be->session.mtu - sizeof (P2P_PACKET_HEADER),
@@ -2700,7 +2710,7 @@ cronDecreaseLiveness (void *unused)
               root = root->overflowChain;
               FREE (tmp);
               continue;         /* no need to call 'send buffer' */
-            case STAT_UP:
+            case STAT_UP:	      
               updateCurBPS (root);
               total_allowed_sent += root->max_bpm;
               total_allowed_recv += root->idealized_limit;
@@ -2728,6 +2738,24 @@ cronDecreaseLiveness (void *unused)
                                            YES);
                   shutdownConnection (root);
                 }
+	      if ( (root->consider_transport_switch == YES) &&		   
+		   (load_cpu < 50) ) {
+		TSession * alternative;
+
+		GE_BREAK(NULL, root->session.mtu != 0);
+		alternative = transport->connectFreely(&root->session.sender,
+						       NO,
+						       __FILE__);
+		if ( (alternative != NULL) &&
+		     (transport->getMTU(alternative->ttype) == 0) ) {
+		  transport->disconnect(root->session.tsession, __FILE__);
+		  root->session.mtu = 0;
+		  root->session.tsession = alternative;
+		  root->consider_transport_switch = NO;
+		  if (stats != NULL)
+		    stats->change (stat_transport_switches, 1);
+		}
+	      }
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&
                   (scl_nextHead != NULL) &&
@@ -3295,8 +3323,10 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
      to get to know each other). See also transport paper and the
      data on throughput. - CG
    */
-  if ((transport->getCost (tsession->ttype) < cost) &&
-      (OK == transport->associate (tsession, __FILE__)))
+  if ( ( (transport->getCost (tsession->ttype) < cost) ||
+	 ( (be->consider_transport_switch == YES) &&
+	   (transport->getMTU(tsession->ttype) == 0) ) ) &&
+       (OK == transport->associate (tsession, __FILE__)) )
     {
       GE_ASSERT (NULL,
                  OK == transport->assertAssociated (tsession, __FILE__));
@@ -3308,6 +3338,9 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
         }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
+      if ( (be->consider_transport_switch == YES) &&
+	   (transport->getMTU(tsession->ttype) == 0) )
+	be->consider_transport_switch = NO;
       check_invariants ();
       fragmentIfNecessary (be);
     }
@@ -3497,6 +3530,10 @@ initConnection (struct GE_Context *e,
         stats->
         create (gettext_noop
                 ("# total number of bytes we are currently allowed to send"));
+      stat_transport_switches =
+        stats->
+        create (gettext_noop
+                ("# transports switched to stream transport"));
     }
   transport->start (&core_receive);
   EXIT ();
