@@ -138,7 +138,7 @@
  * Expected MTU for a streaming connection.
  * (one bit of content plus 1k header overhead)
  */
-#define EXPECTED_MTU 32768 + 1024
+#define EXPECTED_MTU (32768 + 1024)
 
 /**
  * How many ping/pong messages to we want to transmit
@@ -2289,7 +2289,7 @@ scheduleInboundTraffic ()
   if (timeDifference < MIN_SAMPLE_TIME)
     {
       earlyRun = 1;
-      if (activePeerCount > CONNECTION_MAX_HOSTS_ / 16)
+      if (activePeerCount > CONNECTION_MAX_HOSTS_ / 8) 
         {
           MUTEX_UNLOCK (lock);
           return;               /* don't update too frequently, we need at least some
@@ -2594,8 +2594,11 @@ scheduleInboundTraffic ()
                 hash2enc (&entries[u]->session.sender.hashPubKey, &enc));
       GE_LOG (ectx,
               GE_DEBUG | GE_BULK | GE_USER,
-              "inbound limit for peer %u: %s set to %u bpm\n",
-              u, &enc, entries[u]->idealized_limit);
+              "inbound limit for peer %u: %4s set to %u bpm (ARR: %lld, uptime: %llus, value: %lf)\n",
+              u, &enc, entries[u]->idealized_limit,
+	      adjustedRR[u],
+	      (get_time() - entries[u]->time_established) / cronSECONDS,
+	      entries[u]->current_connection_value);
 #endif
       if ((timeDifference > 50) && (weak_randomi (timeDifference + 1) > 50))
         entries[u]->current_connection_value *= 0.9;    /* age */
