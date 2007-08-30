@@ -209,11 +209,6 @@ typedef struct
   struct MUTEX *lock;
 
   /**
-   * Last time this connection was used
-   */
-  cron_t lastUse;
-
-  /**
    * To whom are we talking to (set to our identity
    * if we are still waiting for the welcome message)
    */
@@ -792,8 +787,8 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
   session->cs.server.wpos -= max;
   session->cs.server.woff += max;
   now = get_time ();
-  session->lastUse = now;
-  session->cs.server.last_get_activity = now;
+  if (max > 0)
+    session->cs.server.last_get_activity = now;
   if (session->cs.server.wpos == 0)
     session->cs.server.woff = 0;
   MUTEX_UNLOCK (session->lock);
@@ -896,7 +891,6 @@ accessHandlerCallback (void *cls,
       addTSession (tsession);
     }
   MUTEX_LOCK (httpSession->lock);
-  httpSession->lastUse = get_time ();
 #if DO_GET
   if (0 == strcasecmp (MHD_HTTP_METHOD_GET, method))
     {
@@ -1259,7 +1253,6 @@ httpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
   httpSession->sender = hello->senderIdentity;
   httpSession->lock = MUTEX_CREATE (YES);
   httpSession->users = 1;       /* us only, core has not seen this tsession! */
-  httpSession->lastUse = get_time ();
   httpSession->is_client = YES;
   httpSession->cs.client.address = *haddr;
   tsession = MALLOC (sizeof (TSession));
