@@ -546,9 +546,13 @@ destroy_tsession (TSession * tsession)
           FREE (pos);
           pos = next;
         }
+      MUTEX_DESTROY (httpsession->lock);
+      FREE (httpsession);
+      FREE (tsession);
     }
   else
     {
+      httpsession->destroyed = YES;
 #if DO_GET
       GROW (httpsession->cs.server.wbuff, httpsession->cs.server.wsize, 0);
       if (httpsession->cs.server.get != NULL)
@@ -570,9 +574,6 @@ destroy_tsession (TSession * tsession)
         }
 
     }
-  MUTEX_DESTROY (httpsession->lock);
-  FREE (httpsession);
-  FREE (tsession);
 }
 
 /**
@@ -814,6 +815,9 @@ contentReaderFreeCallback (void *cls)
   HTTPSession *session = cls;
 
   GE_ASSERT (NULL, session->cs.server.get == NULL);
+  MUTEX_DESTROY (session->lock);
+  FREE (session->tsession);
+  FREE (session);
 }
 #endif
 
