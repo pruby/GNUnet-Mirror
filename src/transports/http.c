@@ -835,7 +835,8 @@ accessHandlerCallback (void *cls,
                        const char *method,
                        const char *version,
                        const char *upload_data,
-                       unsigned int *upload_data_size)
+                       unsigned int *upload_data_size,
+		       void ** unused)
 {
   TSession *tsession;
   struct MHD_Response *response;
