@@ -1772,11 +1772,11 @@ startTransportServer ()
                                      &acceptPolicyCallback,
                                      NULL, &accessHandlerCallback, NULL,
                                      MHD_OPTION_CONNECTION_TIMEOUT,
-                                     HTTP_TIMEOUT,
+                                     (unsigned int) HTTP_TIMEOUT,
                                      MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-                                     1024 * 128,
+                                     (unsigned int) 1024 * 128,
                                      MHD_OPTION_CONNECTION_LIMIT,
-                                     128, MHD_OPTION_END);
+                                     (unsigned int) 128, MHD_OPTION_END);
     }
   if (0 != PIPE (signal_pipe))
     {
