@@ -167,14 +167,14 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
   if ((ntohs (msg->header.size) < sizeof (P2P_hello_MESSAGE)) ||
       (ntohs (msg->header.size) != P2P_hello_MESSAGE_size (msg)))
     {
-      GE_BREAK (ectx, 0);
+      GE_BREAK_OP (ectx, 0);
       return SYSERR;
     }
   identity->getPeerIdentity (&msg->publicKey, &foreignId);
   if (!equalsHashCode512 (&msg->senderIdentity.hashPubKey,
                           &foreignId.hashPubKey))
     {
-      GE_BREAK (ectx, 0);
+      GE_BREAK_OP (ectx, 0);
       return SYSERR;            /* public key and host hash do not match */
     }
   if (SYSERR == verifySig (&msg->senderIdentity,
@@ -192,7 +192,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
               _
               ("HELLO message from `%s' has an invalid signature. Dropping.\n"),
               (char *) &enc);
-      GE_BREAK (ectx, 0);
+      GE_BREAK_OP (ectx, 0);
       return SYSERR;            /* message invalid */
     }
   if ((TIME_T) ntohl (msg->expirationTime) > TIME (NULL) + MAX_HELLO_EXPIRES)
@@ -201,7 +201,7 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
               GE_WARNING | GE_BULK | GE_USER,
               _
               ("HELLO message has expiration too far in the future. Dropping.\n"));
-      GE_BREAK (ectx, 0);
+      GE_BREAK_OP (ectx, 0);
       return SYSERR;
     }
   if (SYSERR == transport->verifyhello (msg))

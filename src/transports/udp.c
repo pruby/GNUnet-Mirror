@@ -263,6 +263,7 @@ verifyHello (const P2P_hello_MESSAGE * hello)
 static P2P_hello_MESSAGE *
 createhello ()
 {
+  static HostAddress last_addr;
   P2P_hello_MESSAGE *msg;
   HostAddress *haddr;
   unsigned short port;
@@ -287,12 +288,17 @@ createhello ()
               _("UDP: Could not determine my public IP address.\n"));
       return NULL;
     }
-  GE_LOG (ectx,
-          GE_DEBUG | GE_USER | GE_BULK,
-          "UDP uses IP address %u.%u.%u.%u.\n",
-          PRIP (ntohl (*(int *) &haddr->ip)));
   haddr->port = htons (port);
   haddr->reserved = htons (0);
+  if (0 != memcmp(haddr,
+		  &last_addr,
+		  sizeof(HostAddress))) {
+    GE_LOG (ectx,
+	    GE_DEBUG | GE_USER | GE_BULK,
+	    "UDP uses IP address %u.%u.%u.%u.\n",
+	    PRIP (ntohl (*(int *) &haddr->ip)));
+    last_addr = *haddr;
+  }
   msg->senderAddressSize = htons (sizeof (HostAddress));
   msg->protocol = htons (UDP_PROTOCOL_NUMBER);
   msg->MTU = htonl (udpAPI.mtu);
