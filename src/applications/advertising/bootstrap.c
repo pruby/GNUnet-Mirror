@@ -31,7 +31,7 @@
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_state_service.h"
 
-#define DEBUG_BOOTSTRAP NO
+#define DEBUG_BOOTSTRAP YES
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
@@ -77,7 +77,7 @@ processhellos (HelloListClosure * hcq)
       /* select hellos in random order */
       rndidx = weak_randomi (hcq->hellosCount);
 #if DEBUG_BOOTSTRAP
-      GE_LOG (ectx,
+      GE_LOG (coreAPI->ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "%s chose hello %d of %d\n",
               __FUNCTION__, rndidx, hcq->hellosCount);
@@ -197,7 +197,7 @@ processThread (void *unused)
       if (YES == hlc.do_shutdown)
         break;
 #if DEBUG_BOOTSTRAP
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Starting bootstrap.\n");
+      GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Starting bootstrap.\n");
 #endif
       hlc.hellosLen = 0;
       hlc.hellosCount = 0;
