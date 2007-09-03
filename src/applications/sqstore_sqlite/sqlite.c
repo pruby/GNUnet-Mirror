@@ -44,14 +44,14 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_SQLITE(db, cmd) do { GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_ADMIN, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); abort(); } while(0);
+#define DIE_SQLITE(db, cmd) do { GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_ADMIN, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_SQLITE(db, level, cmd) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0);
+#define LOG_SQLITE(db, level, cmd) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0)
 
 /**
  * After how many ms "busy" should a DB operation fail for good?
