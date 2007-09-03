@@ -91,6 +91,13 @@ sq_prepare (sqlite3 * dbh, const char *zSql,    /* SQL statement, UTF-8 encoded 
 
 #define SQLITE3_EXEC(db, cmd) do { if (SQLITE_OK != sqlite3_exec(db, cmd, NULL, NULL, &emsg)) { GE_LOG(coreAPI->ectx, GE_ERROR | GE_ADMIN | GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), "sqlite3_exec", __FILE__, __LINE__, emsg); sqlite3_free(emsg); } } while(0);
 
+/**
+ * Log an error message at log-level 'level' that indicates
+ * a failure of the command 'cmd' on file 'filename'
+ * with the message given by strerror(errno).
+ */
+#define LOG_SQLITE(db, level, cmd) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0);
+
 static void
 db_init (sqlite3 * dbh)
 {
@@ -341,15 +348,33 @@ d_put (const HashCode512 * key,
       MUTEX_UNLOCK (lock);
       return SYSERR;
     }
-  sqlite3_bind_int (stmt, 1, size);
-  sqlite3_bind_int (stmt, 2, type);
-  sqlite3_bind_int64 (stmt, 3, get_time ());
-  sqlite3_bind_int64 (stmt, 4, discard_time);
-  sqlite3_bind_blob (stmt, 5, key, sizeof (HashCode512), SQLITE_TRANSIENT);
-  sqlite3_bind_blob (stmt, 6, data, size, SQLITE_TRANSIENT);
-  sqlite3_step (stmt);
-  sqlite3_finalize (stmt);
-  payload += size + OVERHEAD;
+  if ((SQLITE_OK == sqlite3_bind_int (stmt, 1, size)) &&
+      (SQLITE_OK == sqlite3_bind_int (stmt, 2, type)) &&
+      (SQLITE_OK == sqlite3_bind_int64 (stmt, 3, get_time ())) &&
+      (SQLITE_OK == sqlite3_bind_int64 (stmt, 4, discard_time)) &&
+      (SQLITE_OK ==
+       sqlite3_bind_blob (stmt, 5, key, sizeof (HashCode512),
+                          SQLITE_TRANSIENT))
+      && (SQLITE_OK ==
+          sqlite3_bind_blob (stmt, 6, data, size, SQLITE_TRANSIENT)))
+    {
+      if (SQLITE_DONE != sqlite3_step (stmt))
+        LOG_SQLITE (dbh,
+                    GE_ERROR | GE_DEVELOPER | GE_ADMIN | GE_BULK,
+                    "sqlite3_step");
+      else
+        payload += size + OVERHEAD;
+      if (SQLITE_OK != sqlite3_finalize (stmt))
+        LOG_SQLITE (dbh,
+                    GE_ERROR | GE_DEVELOPER | GE_ADMIN | GE_BULK,
+                    "sqlite3_finalize");
+    }
+  else
+    {
+      LOG_SQLITE (dbh,
+                  GE_ERROR | GE_DEVELOPER | GE_ADMIN | GE_BULK,
+                  "sqlite3_bind_xxx");
+    }
 #if DEBUG_DSTORE
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_DEVELOPER,

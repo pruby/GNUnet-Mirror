@@ -355,7 +355,7 @@ delete_by_rowid (sqliteHandle * handle, unsigned long long rid)
   if (SQLITE_DONE != sqlite3_step (stmt))
     {
       LOG_SQLITE (handle,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
       sqlite3_finalize (stmt);
       return SYSERR;
     }
@@ -393,22 +393,26 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
               _("Invalid data in %s (NCS).  Trying to fix (by deletion).\n"),
               _("sqlite datastore"));
       if (1)
-	abort();
+        abort ();
       if (SQLITE_OK != sqlite3_reset (stmt))
-	LOG_SQLITE (handle,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
+        LOG_SQLITE (handle,
+                    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
       if (sq_prepare (dbh,
-                      "DELETE FROM gn070 WHERE size < ?", &stmtd) == SQLITE_OK)
+                      "DELETE FROM gn070 WHERE size < ?",
+                      &stmtd) == SQLITE_OK)
         {
-          if (SQLITE_OK != sqlite3_bind_int (stmtd, 1, sizeof (Datastore_Value)))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_bind_int");	    
-          if (SQLITE_DONE != sqlite3_step (stmtd)) 
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
+          if (SQLITE_OK !=
+              sqlite3_bind_int (stmtd, 1, sizeof (Datastore_Value)))
+            LOG_SQLITE (handle, GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_bind_int");
+          if (SQLITE_DONE != sqlite3_step (stmtd))
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_step");
           if (SQLITE_OK != sqlite3_finalize (stmtd))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_finalize");
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_finalize");
         }
       else
         LOG_SQLITE (handle,
@@ -419,32 +423,36 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
   if (sqlite3_column_bytes (stmt, 5) != sizeof (HashCode512) ||
       sqlite3_column_bytes (stmt, 6) != contentSize)
     {
-      sqlite3_stmt *stmt;
+      sqlite3_stmt *stmtd;
 
       GE_LOG (ectx,
               GE_WARNING | GE_BULK | GE_USER,
               _("Invalid data in %s.  Trying to fix (by deletion).\n"),
               _("sqlite datastore"));
       if (SQLITE_OK != sqlite3_reset (stmt))
-	LOG_SQLITE (handle,
-		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
-     if (sq_prepare (dbh,
+        LOG_SQLITE (handle,
+                    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
+      if (sq_prepare (dbh,
                       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
-                      &stmt) == SQLITE_OK)
+                      &stmtd) == SQLITE_OK)
         {
-          if (SQLITE_OK != sqlite3_bind_int (stmt, 1, sizeof (HashCode512)))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_bind_int");	  
-	  if (SQLITE_OK != sqlite3_bind_int (stmt, 2, sizeof (Datastore_Value)))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_bind_int");	    
-          if (SQLITE_DONE != sqlite3_step (stmt))
-      	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
-	  if (SQLITE_OK != sqlite3_finalize (stmt))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_finalize");
-	}
+          if (SQLITE_OK != sqlite3_bind_int (stmtd, 1, sizeof (HashCode512)))
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_bind_int");
+          if (SQLITE_OK !=
+              sqlite3_bind_int (stmtd, 2, sizeof (Datastore_Value)))
+            LOG_SQLITE (handle, GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_bind_int");
+          if (SQLITE_DONE != sqlite3_step (stmtd))
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_step");
+          if (SQLITE_OK != sqlite3_finalize (stmtd))
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_finalize");
+        }
       else
         LOG_SQLITE (handle,
                     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sq_prepare");
@@ -523,7 +531,10 @@ setStat (sqliteHandle * handle, const char *key, unsigned long long val)
                   "DELETE FROM gn070 where hash = ?", &stmt) == SQLITE_OK)
     {
       sqlite3_bind_text (stmt, 1, key, strlen (key), SQLITE_STATIC);
-      sqlite3_step (stmt);
+      if (SQLITE_DONE != sqlite3_step (stmt))
+        LOG_SQLITE (handle,
+                    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
+
       sqlite3_finalize (stmt);
     }
 
@@ -531,13 +542,21 @@ setStat (sqliteHandle * handle, const char *key, unsigned long long val)
                   "INSERT INTO gn070(hash, expire, type) VALUES (?, ?, ?)",
                   &stmt) != SQLITE_OK)
     return SYSERR;
-  sqlite3_bind_text (stmt, 1, key, strlen (key), SQLITE_STATIC);
-  sqlite3_bind_int64 (stmt, 2, val);
-  sqlite3_bind_int (stmt, 3, RESERVED_BLOCK);
+  if ((SQLITE_OK !=
+       sqlite3_bind_text (stmt, 1, key, strlen (key), SQLITE_STATIC))
+      || (SQLITE_OK != sqlite3_bind_int64 (stmt, 2, val))
+      || (SQLITE_OK != sqlite3_bind_int (stmt, 3, RESERVED_BLOCK)))
+    {
+      LOG_SQLITE (handle,
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                  "sqlite3_bind_xxx");
+      sqlite3_finalize (stmt);
+      return SYSERR;
+    }
   if (sqlite3_step (stmt) != SQLITE_DONE)
     {
       LOG_SQLITE (handle,
-                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_setStat");
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
       sqlite3_finalize (stmt);
       return SYSERR;
     }
@@ -702,9 +721,10 @@ sqlite_iterate (unsigned int type,
         {
           datum = assembleDatum (handle, stmt, &key, &rowid);
           if (SQLITE_OK != sqlite3_reset (stmt))
-	    LOG_SQLITE (handle,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
-	  if (datum == NULL)
+            LOG_SQLITE (handle,
+                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                        "sqlite3_reset");
+          if (datum == NULL)
             continue;
 #if 0
           printf ("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
@@ -921,7 +941,7 @@ sqlite_shutdown ()
   unsigned int idx;
 
   if (fn == NULL)
-    return; /* already down */
+    return;                     /* already down */
 #if DEBUG_SQLITE
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: closing database\n");
@@ -1027,15 +1047,16 @@ get (const HashCode512 * key,
           ret = sqlite3_step (stmt);
           if (ret != SQLITE_ROW)
             break;
-	  if (iter == NULL) {
-	    count = sqlite3_column_int (stmt, 0); 
-	    sqlite3_reset (stmt);
-	    sqlite3_finalize (stmt);
-	    MUTEX_UNLOCK (lock);
-	    return count;
-	  }
-	  datum = assembleDatum (handle, stmt, &rkey, &rowid);
-	  last_rowid = rowid;
+          if (iter == NULL)
+            {
+              count = sqlite3_column_int (stmt, 0);
+              sqlite3_reset (stmt);
+              sqlite3_finalize (stmt);
+              MUTEX_UNLOCK (lock);
+              return count;
+            }
+          datum = assembleDatum (handle, stmt, &rkey, &rowid);
+          last_rowid = rowid;
           sqlite3_reset (stmt);
           if (datum == NULL)
             continue;
@@ -1046,9 +1067,9 @@ get (const HashCode512 * key,
               FREE (datum);
               continue;
             }
-	  MUTEX_UNLOCK (lock);
-	  ret = iter (&rkey, datum, closure, rowid);
-	  MUTEX_LOCK (lock);	
+          MUTEX_UNLOCK (lock);
+          ret = iter (&rkey, datum, closure, rowid);
+          MUTEX_LOCK (lock);
           if (ret == SYSERR)
             {
               count = SYSERR;
@@ -1113,21 +1134,27 @@ put (const HashCode512 * key, const Datastore_Value * value)
   prio = ntohl (value->prio);
   anon = ntohl (value->anonymityLevel);
   expir = ntohll (value->expirationTime);
-  if ( (SQLITE_OK != sqlite3_bind_int (stmt, 1, size)) ||
-       (SQLITE_OK != sqlite3_bind_int (stmt, 2, type)) ||
-       (SQLITE_OK != sqlite3_bind_int (stmt, 3, prio)) ||
-       (SQLITE_OK != sqlite3_bind_int (stmt, 4, anon)) ||
-       (SQLITE_OK != sqlite3_bind_int64 (stmt, 5, expir)) ||
-       (SQLITE_OK != sqlite3_bind_blob (stmt, 6, key, sizeof (HashCode512), SQLITE_TRANSIENT)) ||
-       (SQLITE_OK != sqlite3_bind_blob (stmt, 7, &value[1], contentSize, SQLITE_TRANSIENT)) ) {
-    LOG_SQLITE (dbh,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_bind_XXXX");	    
-    if (SQLITE_OK != sqlite3_reset (stmt))
+  if ((SQLITE_OK != sqlite3_bind_int (stmt, 1, size)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt, 2, type)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt, 3, prio)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt, 4, anon)) ||
+      (SQLITE_OK != sqlite3_bind_int64 (stmt, 5, expir)) ||
+      (SQLITE_OK !=
+       sqlite3_bind_blob (stmt, 6, key, sizeof (HashCode512),
+                          SQLITE_TRANSIENT))
+      || (SQLITE_OK !=
+          sqlite3_bind_blob (stmt, 7, &value[1], contentSize,
+                             SQLITE_TRANSIENT)))
+    {
       LOG_SQLITE (dbh,
-		  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");	    
-    MUTEX_UNLOCK (lock);
-    return SYSERR;
-  }
+                  GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+                  "sqlite3_bind_XXXX");
+      if (SQLITE_OK != sqlite3_reset (stmt))
+        LOG_SQLITE (dbh,
+                    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
+      MUTEX_UNLOCK (lock);
+      return SYSERR;
+    }
 
   n = sqlite3_step (stmt);
   if (n != SQLITE_DONE)
@@ -1146,7 +1173,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
     }
   if (SQLITE_OK != sqlite3_reset (stmt))
     LOG_SQLITE (dbh,
-		GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");	    
+                GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_reset");
   lastSync++;
   payload += getContentDatastoreSize (value);
 #if DEBUG_SQLITE
@@ -1174,7 +1201,7 @@ update (unsigned long long uid, int delta, cron_t expire)
   sqlite3_bind_int64 (dbh->updPrio, 3, uid);
   n = sqlite3_step (dbh->updPrio);
   if (n != SQLITE_DONE)
-    LOG_SQLITE (dbh, GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_step");
+    LOG_SQLITE (dbh, GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_step");
 
   sqlite3_reset (dbh->updPrio);
 

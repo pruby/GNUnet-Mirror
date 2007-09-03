@@ -173,7 +173,7 @@ udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
 int
 udpAssociate (TSession * tsession)
 {
-  return SYSERR; /* UDP connections can never be associated */
+  return SYSERR;                /* UDP connections can never be associated */
 }
 
 /**

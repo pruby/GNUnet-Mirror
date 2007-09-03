@@ -290,15 +290,14 @@ createhello ()
     }
   haddr->port = htons (port);
   haddr->reserved = htons (0);
-  if (0 != memcmp(haddr,
-		  &last_addr,
-		  sizeof(HostAddress))) {
-    GE_LOG (ectx,
-	    GE_DEBUG | GE_USER | GE_BULK,
-	    "UDP uses IP address %u.%u.%u.%u.\n",
-	    PRIP (ntohl (*(int *) &haddr->ip)));
-    last_addr = *haddr;
-  }
+  if (0 != memcmp (haddr, &last_addr, sizeof (HostAddress)))
+    {
+      GE_LOG (ectx,
+              GE_DEBUG | GE_USER | GE_BULK,
+              "UDP uses IP address %u.%u.%u.%u.\n",
+              PRIP (ntohl (*(int *) &haddr->ip)));
+      last_addr = *haddr;
+    }
   msg->senderAddressSize = htons (sizeof (HostAddress));
   msg->protocol = htons (UDP_PROTOCOL_NUMBER);
   msg->MTU = htonl (udpAPI.mtu);

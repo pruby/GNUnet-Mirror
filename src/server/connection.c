@@ -971,9 +971,9 @@ outgoingCheck (unsigned int priority, unsigned int overhead)
     {
       if (priority >= EXTREME_PRIORITY)
         return OK;              /* allow administrative msgs */
-      return SYSERR;          /* but nothing else */
+      return SYSERR;            /* but nothing else */
     }
-  if (load <= 75 + overhead) 
+  if (load <= 75 + overhead)
     return OK;
   delta = load - overhead - 75;
   /* Now delta in [0, 25] */
@@ -1022,7 +1022,7 @@ checkSendFrequency (BufferEntry * be)
   if (be->session.mtu == 0)
     {
       msf =                     /* ms per message */
-        EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS); /* bytes per ms */
+        EXPECTED_MTU / (be->max_bpm * cronMINUTES / cronMILLIS);        /* bytes per ms */
     }
   else
     {
@@ -1526,7 +1526,7 @@ fragmentIfNecessary (BufferEntry * be)
           GROW (be->sendBuffer, be->sendBufferSize, ret);
           /* calling fragment will change be->sendBuffer;
              thus we need to restart from the beginning afterwards... */
-	  be->consider_transport_switch = YES;
+          be->consider_transport_switch = YES;
           fragmentation->fragment (&be->session.sender,
                                    be->session.mtu -
                                    sizeof (P2P_PACKET_HEADER), entry->pri,
@@ -1616,17 +1616,16 @@ sendBuffer (BufferEntry * be)
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS (be);
   totalMessageSize = selectMessagesToSend (be, &priority);
-  if ( (totalMessageSize == 0) &&
-       ( (be->sendBufferSize != 0) ||
-	 (be->session.mtu != 0) || /* only if transport has congestion control! */
-	 (be->available_send_window < 2 * EXPECTED_MTU) ) )
+  if ((totalMessageSize == 0) && ((be->sendBufferSize != 0) || (be->session.mtu != 0) ||        /* only if transport has congestion control! */
+                                  (be->available_send_window <
+                                   2 * EXPECTED_MTU)))
     {
       expireSendBufferEntries (be);
       be->inSendBuffer = NO;
       return NO;                /* deferr further */
     }
-  if (totalMessageSize == 0) 
-    totalMessageSize = EXPECTED_MTU + sizeof(P2P_PACKET_HEADER);
+  if (totalMessageSize == 0)
+    totalMessageSize = EXPECTED_MTU + sizeof (P2P_PACKET_HEADER);
   GE_ASSERT (ectx, totalMessageSize > sizeof (P2P_PACKET_HEADER));
   if ((be->session.mtu != 0) && (totalMessageSize > be->session.mtu))
     {
@@ -1660,7 +1659,7 @@ sendBuffer (BufferEntry * be)
 #endif
 #if STRICT_STAT_DOWN
           be->status = STAT_DOWN;
-	  be->time_established = 0;
+          be->time_established = 0;
 #endif
           if (stats != NULL)
             stats->change (stat_closedTransport, 1);
@@ -1689,8 +1688,7 @@ sendBuffer (BufferEntry * be)
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
   if (SYSERR == outgoingCheck (priority,
-                                totalMessageSize /
-			       sizeof (P2P_PACKET_HEADER)))
+                               totalMessageSize / sizeof (P2P_PACKET_HEADER)))
     {
       expireSendBufferEntries (be);
       be->inSendBuffer = NO;
@@ -1699,20 +1697,23 @@ sendBuffer (BufferEntry * be)
 
   /* get permutation of SendBuffer Entries
      such that SE_FLAGS are obeyed */
-  if (0 != prepareSelectedMessages (be)) {
-    entries = permuteSendBuffer (be, &stotal);
-    if ((stotal == 0) || (entries == NULL))
-      {
-	/* no messages selected!? */
-	GE_BREAK (ectx, 0);
-	be->inSendBuffer = NO;
-	FREE (entries);
-	return NO;
-      }
-  } else {
-    entries = NULL;
-    stotal = 0;
-  }
+  if (0 != prepareSelectedMessages (be))
+    {
+      entries = permuteSendBuffer (be, &stotal);
+      if ((stotal == 0) || (entries == NULL))
+        {
+          /* no messages selected!? */
+          GE_BREAK (ectx, 0);
+          be->inSendBuffer = NO;
+          FREE (entries);
+          return NO;
+        }
+    }
+  else
+    {
+      entries = NULL;
+      stotal = 0;
+    }
 
   /* build message */
   plaintextMsg = MALLOC (totalMessageSize);
@@ -1856,7 +1857,7 @@ sendBuffer (BufferEntry * be)
       be->session.tsession = NULL;
 #if STRICT_STAT_DOWN
       be->status = STAT_DOWN;
-      be->time_established = 0;      
+      be->time_established = 0;
 #endif
       if (stats != NULL)
         stats->change (stat_closedTransport, 1);
@@ -2289,7 +2290,7 @@ scheduleInboundTraffic ()
   if (timeDifference < MIN_SAMPLE_TIME)
     {
       earlyRun = 1;
-      if (activePeerCount > CONNECTION_MAX_HOSTS_ / 8) 
+      if (activePeerCount > CONNECTION_MAX_HOSTS_ / 8)
         {
           MUTEX_UNLOCK (lock);
           return;               /* don't update too frequently, we need at least some
@@ -2554,35 +2555,44 @@ scheduleInboundTraffic ()
   /* add the remaining MIN_BPM_PER_PEER to the minCon peers
      with the highest connection uptimes; by linking this with
      connection uptime, we reduce fluctuation */
-  if (activePeerCount > 0) {
-    if (minCon >= activePeerCount) {
-      /* in this case, just add to all peers */
-      for (u = 0; u < minCon; u++) {
-	entries[u % activePeerCount]->idealized_limit
-	  += MIN_BPM_PER_PEER;
-      }
-    } else { /* minCon < activePeerCount */
-      min_uptime = get_time();
-      min_uptime_slot = -1;
-      for (v=0;v<activePeerCount;v++) 
-	entries[v]->tes_selected = NO;
-      for (u = 0; u < minCon; u++) {
-	for (v=0;v<activePeerCount;v++) {
-	  if ( (entries[v]->time_established != 0) &&
-	       (entries[v]->time_established < min_uptime) &&
-	       (entries[v]->tes_selected == NO) ) {
-	    min_uptime_slot = v;
-	    min_uptime = entries[v]->time_established;
-	  }
-	}
-	if (min_uptime_slot != -1) {
-	  entries[min_uptime_slot]->tes_selected = YES;
-	  entries[min_uptime_slot]->idealized_limit
-	    += MIN_BPM_PER_PEER;	  
-	}
-      } /* for minCon */
-    } /* if minCon < activePeerCount */
-  } /* if we had active peers */
+  if (activePeerCount > 0)
+    {
+      if (minCon >= activePeerCount)
+        {
+          /* in this case, just add to all peers */
+          for (u = 0; u < minCon; u++)
+            {
+              entries[u % activePeerCount]->idealized_limit
+                += MIN_BPM_PER_PEER;
+            }
+        }
+      else
+        {                       /* minCon < activePeerCount */
+          min_uptime = get_time ();
+          min_uptime_slot = -1;
+          for (v = 0; v < activePeerCount; v++)
+            entries[v]->tes_selected = NO;
+          for (u = 0; u < minCon; u++)
+            {
+              for (v = 0; v < activePeerCount; v++)
+                {
+                  if ((entries[v]->time_established != 0) &&
+                      (entries[v]->time_established < min_uptime) &&
+                      (entries[v]->tes_selected == NO))
+                    {
+                      min_uptime_slot = v;
+                      min_uptime = entries[v]->time_established;
+                    }
+                }
+              if (min_uptime_slot != -1)
+                {
+                  entries[min_uptime_slot]->tes_selected = YES;
+                  entries[min_uptime_slot]->idealized_limit
+                    += MIN_BPM_PER_PEER;
+                }
+            }                   /* for minCon */
+        }                       /* if minCon < activePeerCount */
+    }                           /* if we had active peers */
 
   /* prepare for next round */
   lastRoundStart = now;
@@ -2596,9 +2606,9 @@ scheduleInboundTraffic ()
               GE_DEBUG | GE_BULK | GE_USER,
               "inbound limit for peer %u: %4s set to %u bpm (ARR: %lld, uptime: %llus, value: %lf)\n",
               u, &enc, entries[u]->idealized_limit,
-	      adjustedRR[u],
-	      (get_time() - entries[u]->time_established) / cronSECONDS,
-	      entries[u]->current_connection_value);
+              adjustedRR[u],
+              (get_time () - entries[u]->time_established) / cronSECONDS,
+              entries[u]->current_connection_value);
 #endif
       if ((timeDifference > 50) && (weak_randomi (timeDifference + 1) > 50))
         entries[u]->current_connection_value *= 0.9;    /* age */
@@ -2713,7 +2723,7 @@ cronDecreaseLiveness (void *unused)
               root = root->overflowChain;
               FREE (tmp);
               continue;         /* no need to call 'send buffer' */
-            case STAT_UP:	      
+            case STAT_UP:
               updateCurBPS (root);
               total_allowed_sent += root->max_bpm;
               total_allowed_recv += root->idealized_limit;
@@ -2741,24 +2751,26 @@ cronDecreaseLiveness (void *unused)
                                            YES);
                   shutdownConnection (root);
                 }
-	      if ( (root->consider_transport_switch == YES) &&		   
-		   (load_cpu < 50) ) {
-		TSession * alternative;
+              if ((root->consider_transport_switch == YES) && (load_cpu < 50))
+                {
+                  TSession *alternative;
 
-		GE_BREAK(NULL, root->session.mtu != 0);
-		alternative = transport->connectFreely(&root->session.sender,
-						       NO,
-						       __FILE__);
-		if ( (alternative != NULL) &&
-		     (transport->getMTU(alternative->ttype) == 0) ) {
-		  transport->disconnect(root->session.tsession, __FILE__);
-		  root->session.mtu = 0;
-		  root->session.tsession = alternative;
-		  root->consider_transport_switch = NO;
-		  if (stats != NULL)
-		    stats->change (stat_transport_switches, 1);
-		}
-	      }
+                  GE_BREAK (NULL, root->session.mtu != 0);
+                  alternative =
+                    transport->connectFreely (&root->session.sender, NO,
+                                              __FILE__);
+                  if ((alternative != NULL)
+                      && (transport->getMTU (alternative->ttype) == 0))
+                    {
+                      transport->disconnect (root->session.tsession,
+                                             __FILE__);
+                      root->session.mtu = 0;
+                      root->session.tsession = alternative;
+                      root->consider_transport_switch = NO;
+                      if (stats != NULL)
+                        stats->change (stat_transport_switches, 1);
+                    }
+                }
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&
                   (scl_nextHead != NULL) &&
@@ -3142,7 +3154,7 @@ confirmSessionUp (const PeerIdentity * peer)
                   "Received confirmation that session is UP for `%s'\n",
                   &enc);
 #endif
-	  be->time_established = get_time();
+          be->time_established = get_time ();
           be->status = STAT_UP;
           be->lastSequenceNumberReceived = 0;
           be->lastSequenceNumberSend = 1;
@@ -3326,10 +3338,10 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
      to get to know each other). See also transport paper and the
      data on throughput. - CG
    */
-  if ( ( (transport->getCost (tsession->ttype) < cost) ||
-	 ( (be->consider_transport_switch == YES) &&
-	   (transport->getMTU(tsession->ttype) == 0) ) ) &&
-       (OK == transport->associate (tsession, __FILE__)) )
+  if (((transport->getCost (tsession->ttype) < cost) ||
+       ((be->consider_transport_switch == YES) &&
+        (transport->getMTU (tsession->ttype) == 0))) &&
+      (OK == transport->associate (tsession, __FILE__)))
     {
       GE_ASSERT (NULL,
                  OK == transport->assertAssociated (tsession, __FILE__));
@@ -3341,9 +3353,9 @@ considerTakeover (const PeerIdentity * sender, TSession * tsession)
         }
       be->session.tsession = tsession;
       be->session.mtu = transport->getMTU (tsession->ttype);
-      if ( (be->consider_transport_switch == YES) &&
-	   (transport->getMTU(tsession->ttype) == 0) )
-	be->consider_transport_switch = NO;
+      if ((be->consider_transport_switch == YES) &&
+          (transport->getMTU (tsession->ttype) == 0))
+        be->consider_transport_switch = NO;
       check_invariants ();
       fragmentIfNecessary (be);
     }
@@ -3535,8 +3547,7 @@ initConnection (struct GE_Context *e,
                 ("# total number of bytes we are currently allowed to send"));
       stat_transport_switches =
         stats->
-        create (gettext_noop
-                ("# transports switched to stream transport"));
+        create (gettext_noop ("# transports switched to stream transport"));
     }
   transport->start (&core_receive);
   EXIT ();

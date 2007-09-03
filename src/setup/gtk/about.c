@@ -41,7 +41,7 @@ on_aboutButton_activatesetup_gtk (GtkWidget * dummy, gpointer data)
   axml = load_xml ("aboutdialog");
   ad = glade_xml_get_widget (axml, "aboutdialog");
   gtk_dialog_run (GTK_DIALOG (ad));
-  gtk_widget_destroy(ad);
+  gtk_widget_destroy (ad);
   g_object_unref (axml);
 }
 
@@ -51,7 +51,7 @@ on_aboutButton_activatesetup_gtk (GtkWidget * dummy, gpointer data)
 void
 gtk_widget_destroy_setup_gtk (GtkWidget * dummy)
 {
-  gtk_widget_destroy(dummy);
+  gtk_widget_destroy (dummy);
 }
 
 /* end of about.c */

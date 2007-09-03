@@ -1273,9 +1273,7 @@ done_module_fs ()
   LG_Job *job;
   void *unused;
 
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
-          "fs shutdown\n");
+  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "fs shutdown\n");
   doneMigration ();
   GE_ASSERT (ectx,
              SYSERR !=
