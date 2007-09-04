@@ -34,10 +34,14 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 
+#define ROUNDS 1
+
+#define OFFSET 10
+
 /**
  * Name of the configuration file.
  */
-static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+static char *cfgFilename = "test.conf";
 
 /**
  * Transport being tested.
@@ -134,7 +138,11 @@ main (int argc, char *const *argv)
   char * trans;
   int res;
   int pos;
+  TSession * tsession;
+  P2P_hello_MESSAGE * hello;
 
+  memset(&api, 0,
+	 sizeof(CoreAPIForTransport));
   pid = fork();
   res = GNUNET_init (argc,
                      argv,
@@ -162,12 +170,13 @@ main (int argc, char *const *argv)
   GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP", "NO");
   GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6", "BLACKLIST", "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "BLACKLIST", "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP", "NO");
   GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6", "BLACKLIST", "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "BLACKLIST", "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP", "NO");
 
   if (pid == 0)
-    pos = 10;
+    pos = OFFSET;
   else
     pos = 0;
   GC_set_configuration_value_number (api.cfg, api.ectx, "TCP", "PORT", 4444+pos);
@@ -212,10 +221,33 @@ main (int argc, char *const *argv)
     GNUNET_SHUTDOWN_WAITFOR();
   } else {
     /* client - initiate requests */
-    // FIXME!
-
-    
-
+    hello = transport->createhello();
+    /* HACK hello -- change port! */
+    ((unsigned short*) &hello[1])[2] = htons(ntohl(((unsigned short*) &hello[1])[2]) + OFFSET);
+    if (OK != transport->connect(hello,
+				 &tsession,
+				 NO)) {
+      FREE(hello);
+      transport->stopTransportServer();
+      os_plugin_unload(plugin);
+      goto cleanup;
+    }
+    FREE(hello);
+    pos=0;
+    while (pos < ROUNDS) {
+      if (OK == transport->send(tsession,
+				expectedValue,
+				expectedSize,
+				pos > ROUNDS / 2 ? YES : NO))
+	pos++;
+    }
+    pos = 0;
+    while ( (pos++ < 100) &&
+	    (msg_count < ROUNDS) ) 
+      PTHREAD_SLEEP(50 * cronMILLIS);
+    if (msg_count < ROUNDS)
+      res = SYSERR;
+    transport->disconnect(tsession);
   }  
 
   transport->stopTransportServer();

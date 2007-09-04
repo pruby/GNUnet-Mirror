@@ -1,6 +1,6 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
-EXTRA_DIST = tcp_helper.c udp_helper.c
+EXTRA_DIST = tcp_helper.c udp_helper.c test.conf
 
 plugindir = $(libdir)/GNUnet
 
