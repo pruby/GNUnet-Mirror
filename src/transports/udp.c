@@ -32,7 +32,7 @@
 #include "ip.h"
 #include "platform.h"
 
-#define DEBUG_UDP NO
+#define DEBUG_UDP YES
 
 static UPnP_ServiceAPI *upnp;
 

@@ -32,7 +32,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_TCP NO
+#define DEBUG_TCP YES
 
 /**
  * after how much time of the core not being associated with a tcp

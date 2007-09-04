@@ -19,13 +19,20 @@ if HAVE_MHD
   httptransport = libgnunettransport_http.la
 endif
 
-SUBDIRS = $(build_upnp) .
+SUBDIRS = . $(build_upnp)
 
 noinst_LTLIBRARIES = \
   $(v6ip) 
 
 lib_LTLIBRARIES = \
   libgnunetip.la
+
+check_PROGRAMS = \
+  test_udp \
+  test_tcp \
+  test_http 
+
+TESTS = $(check_PROGRAMS)
 
 
 if !MINGW
@@ -98,4 +105,38 @@ libgnunettransport_udp6_la_LIBADD = \
  libgnunetip6.la
 libgnunettransport_udp6_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 
+
+
+
+
+
+test_udp_SOURCES = \
+ test.c 
+test_udp_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
+
+test_tcp_SOURCES = \
+ test.c 
+test_tcp_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
+
+test_http_SOURCES = \
+ test.c 
+test_http_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
 

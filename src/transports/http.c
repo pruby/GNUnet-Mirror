@@ -37,7 +37,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_HTTP NO
+#define DEBUG_HTTP YES
 
 /**
  * Disable GET (for debugging only!).  Must be YES
@@ -1953,8 +1953,10 @@ void
 donetransport_http ()
 {
   GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
-  coreAPI->releaseService (stats);
-  stats = NULL;
+  if (stats != NULL) {
+    coreAPI->releaseService (stats);
+    stats = NULL;
+  }
   if (upnp != NULL)
     {
       coreAPI->releaseService (upnp);
