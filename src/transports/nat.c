@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_NAT YES
+#define DEBUG_NAT NO
 
 /**
  * Host-Address in a NAT network.  Since the idea behind

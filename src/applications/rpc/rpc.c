@@ -42,7 +42,7 @@
 /**
  * Print messages helpful for debugging RPC clients.
  */
-#define DEBUG_RPC_CLIENT YES
+#define DEBUG_RPC_CLIENT NO
 
 /**
  * Minimum delay between retry attempts for RPC messages.

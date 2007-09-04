@@ -31,7 +31,7 @@
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_state_service.h"
 
-#define DEBUG_BOOTSTRAP YES
+#define DEBUG_BOOTSTRAP NO
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
