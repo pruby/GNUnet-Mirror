@@ -188,8 +188,9 @@ main (int argc, char *const *argv)
   plugin = os_plugin_load(api.ectx,
 			  "libgnunettransport_",
 			  trans);
+  FREE(trans);
   if (plugin == NULL) {
-    fprintf(stderr, "Error loading plugin...\n");
+    fprintf(stderr, "Error loading plugin...\n");    
     goto cleanup;
   }
   init = os_plugin_resolve_function(plugin,
