@@ -53,6 +53,8 @@ static struct IPCache *head;
 static struct MUTEX *lock;
 
 #if HAVE_ADNS
+static int a_init;
+
 static adns_state a_state;
 #endif
 
@@ -65,6 +67,11 @@ cache_resolve (struct IPCache *cache)
   struct IPCache *rec;
   int reti;
 
+  if (a_init == 0)
+    {
+      a_init = 1;
+      adns_init (&a_state, adns_if_noerrprint, NULL);
+    }
   if (cache->posted == NO)
     {
       ret = adns_submit_reverse (a_state, cache->sa, adns_r_ptr,
@@ -269,9 +276,6 @@ network_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
 void __attribute__ ((constructor)) gnunet_dns_ltdl_init ()
 {
   lock = MUTEX_CREATE (YES);
-#if HAVE_ADNS
-  adns_init (&a_state, adns_if_noerrprint, NULL);
-#endif
 }
 
 void __attribute__ ((destructor)) gnunet_dns_ltdl_fini ()
@@ -294,6 +298,10 @@ void __attribute__ ((destructor)) gnunet_dns_ltdl_fini ()
       head = pos;
     }
 #if HAVE_ADNS
-  adns_finish (a_state);
+  if (a_init != 0)
+    {
+      a_init = 0;
+      adns_finish (a_state);
+    }
 #endif
 }
