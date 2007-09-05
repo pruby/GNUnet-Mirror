@@ -1709,6 +1709,7 @@ curl_runner (void *unused)
       if (mhd_daemon != NULL)
         have_tv = MHD_get_timeout (mhd_daemon, &timeout);
       if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
+	  (ms != -1) &&
           ((ms < timeout) || (have_tv == MHD_NO)))
         {
           timeout = ms;
@@ -1953,10 +1954,11 @@ void
 donetransport_http ()
 {
   GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
-  if (stats != NULL) {
-    coreAPI->releaseService (stats);
-    stats = NULL;
-  }
+  if (stats != NULL)
+    {
+      coreAPI->releaseService (stats);
+      stats = NULL;
+    }
   if (upnp != NULL)
     {
       coreAPI->releaseService (upnp);
