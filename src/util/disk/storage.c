@@ -662,7 +662,7 @@ disk_file_open (struct GE_Context *ectx, const char *filename, int oflag, ...)
   /* set binary mode */
   oflag |= O_BINARY;
 #endif
-  ret = open (fn, oflag, mode);
+  ret = OPEN (fn, oflag, mode);
   if (ret == -1)
     GE_LOG_STRERROR_FILE (ectx, GE_WARNING | GE_USER | GE_BULK, "open", fn);
   FREE (fn);
