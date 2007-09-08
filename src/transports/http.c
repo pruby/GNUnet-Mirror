@@ -903,6 +903,9 @@ contentReaderFreeCallback (void *cls)
 
   GE_ASSERT (NULL, mgd->get == NULL);
   MUTEX_DESTROY(mgd->lock);
+  GROW (mgd->wbuff,
+	mgd->wsize,
+	0);
   FREE (mgd);
 }
 #endif
