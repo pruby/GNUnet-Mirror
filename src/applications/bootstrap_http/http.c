@@ -66,12 +66,12 @@ typedef struct
 } BootstrapContext;
 
 #ifndef MINGW
-  #define USE_MULTI YES
+#define USE_MULTI YES
 #else
   /* FIXME: plibc needs to know about handle types in SELECT(),
-            figure out whether curl only returns sockets from
-            curl_multi_fdset() */
-  #define USE_MULTI NO
+     figure out whether curl only returns sockets from
+     curl_multi_fdset() */
+#define USE_MULTI NO
 #endif
 
 /**

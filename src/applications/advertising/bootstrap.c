@@ -197,7 +197,8 @@ processThread (void *unused)
       if (YES == hlc.do_shutdown)
         break;
 #if DEBUG_BOOTSTRAP
-      GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Starting bootstrap.\n");
+      GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+              "Starting bootstrap.\n");
 #endif
       hlc.hellosLen = 0;
       hlc.hellosCount = 0;
