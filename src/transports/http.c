@@ -577,14 +577,14 @@ destroy_tsession (TSession * tsession)
         {
           /* If we never received a GET request,
              we did not create a response... */
-          MUTEX_DESTROY (session->lock);
-          FREE (session->tsession);
-          FREE (session);
+          MUTEX_DESTROY (httpsession->lock);
+          FREE (httpsession->tsession);
+          FREE (httpsession);
         }
 #else
-      MUTEX_DESTROY (session->lock);
-      FREE (session->tsession);
-      FREE (session);
+      MUTEX_DESTROY (httpsession->lock);
+      FREE (httpsession->tsession);
+      FREE (httpsession);
 #endif
     }
 }
