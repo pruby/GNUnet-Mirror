@@ -324,6 +324,7 @@ udpSend (TSession * tsession,
   int ssize;
   size_t sent;
 
+  GE_ASSERT (NULL, tsession != NULL);
   if (udp_sock == NULL)
     return SYSERR;
   if (size == 0)
