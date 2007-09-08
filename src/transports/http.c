@@ -553,15 +553,6 @@ destroy_tsession (TSession * tsession)
   else
     {
       httpsession->destroyed = YES;
-#if DO_GET
-      GROW (httpsession->cs.server.wbuff, httpsession->cs.server.wsize, 0);
-      if (httpsession->cs.server.get != NULL)
-        {
-          r = httpsession->cs.server.get;
-          httpsession->cs.server.get = NULL;
-          MHD_destroy_response (r);
-        }
-#endif
       mpos = httpsession->cs.server.puts;
       /* this should be NULL already, but just
          in case it is not, we free it anyway... */
@@ -572,7 +563,29 @@ destroy_tsession (TSession * tsession)
           FREE (mpos);
           mpos = mnext;
         }
-
+#if DO_GET
+      GROW (httpsession->cs.server.wbuff, httpsession->cs.server.wsize, 0);
+      if (httpsession->cs.server.get != NULL)
+        {
+          r = httpsession->cs.server.get;
+          httpsession->cs.server.get = NULL;
+          /* contentReaderFreeCallback WILL
+             destroy session->lock/tesssion */
+          MHD_destroy_response (r);
+        }
+      else
+        {
+          /* If we never received a GET request,
+             we did not create a response... */
+          MUTEX_DESTROY (session->lock);
+          FREE (session->tsession);
+          FREE (session);
+        }
+#else
+      MUTEX_DESTROY (session->lock);
+      FREE (session->tsession);
+      FREE (session);
+#endif
     }
 }
 
