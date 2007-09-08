@@ -189,7 +189,7 @@ CO_init (struct GE_Context *e, struct GC_Configuration *c)
       FREE (fn);
       return;
     }
-  fd = open (fn, O_RDONLY | O_LARGEFILE);
+  fd = OPEN (fn, O_RDONLY | O_LARGEFILE);
   if (fd == -1)
     {
       GE_BREAK (ectx, 0);
@@ -341,7 +341,7 @@ writeCO ()
     }
 
   fn = getCollectionFileName ();
-  fd = open (fn,
+  fd = OPEN (fn,
              O_CREAT | O_LARGEFILE | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
