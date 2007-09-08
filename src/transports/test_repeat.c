@@ -36,7 +36,7 @@
 
 #define ROUNDS 10
 
-#define XROUNDS 2
+#define XROUNDS 10
 
 #define OFFSET 10
 
@@ -292,8 +292,8 @@ main (int argc, char *const *argv)
 	      pos++;
 	  }
 	pos = 0;
-	while ((pos++ < 100) && (msg_count < ROUNDS * (xround+1) ))
-	  PTHREAD_SLEEP (50 * cronMILLIS);
+	while ((pos++ < 100) && (msg_count < ROUNDS * (xround+1) )) 
+	  PTHREAD_SLEEP (50 * cronMILLIS);	
 	if (msg_count < ROUNDS * (xround + 1))
 	  {
 	    if (NULL == strstr (argv[0], "udp"))

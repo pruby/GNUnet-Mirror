@@ -22,9 +22,6 @@
  * @file transports/http.c
  * @brief Implementation of the HTTP transport service
  * @author Christian Grothoff
- *
- * TODO:
- * - test GETs (gnunet-transport-check does NOT!)
  */
 
 #include "gnunet_util.h"
@@ -37,7 +34,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_HTTP YES
+#define DEBUG_HTTP NO
 
 /**
  * Disable GET (for debugging only!).  Must be YES
@@ -193,9 +190,67 @@ struct MHDPutData
 };
 
 /**
+ * Server-side data for a GET request.
+ */
+struct MHDGetData {
+  
+  /**
+   * This is a linked list.
+   */
+  struct MHDGetData * next;
+
+  /**
+   * mutex for synchronized access to struct
+   */
+  struct MUTEX *lock;
+
+  /**
+   * MHD connection handle for this request.
+   */
+  struct MHD_Connection *session;
+  
+  /**
+   * GET session response handle
+   */
+  struct MHD_Response *get;
+
+  /**
+   * My HTTP session.
+   */
+  struct HTTPSession * httpsession;
+
+  /**
+   * The write buffer (for sending GET response)
+   */
+  char *wbuff;
+  
+  /**
+   * What was the last time we were able to
+   * transmit data using the current get handle?
+   */
+  cron_t last_get_activity;
+
+  /**
+   * Current write position in wbuff
+   */
+  unsigned int woff;
+  
+  /**
+   * Number of valid bytes in wbuff (starting at woff)
+   */
+  unsigned int wpos;
+  
+  /**
+   * Size of the write buffer.
+   */
+  unsigned int wsize;
+
+};
+
+/**
  * Transport Session handle.
  */
-typedef struct
+typedef struct HTTPSession
 {
 
   /**
@@ -247,35 +302,10 @@ typedef struct
 
 #if DO_GET
       /**
-       * GET session response handle
+       * Active GET requests (linked list; most
+       * recent received GET is the head of the list).
        */
-      struct MHD_Response *get;
-
-      /**
-       * The write buffer (for sending GET response)
-       */
-      char *wbuff;
-
-      /**
-       * What was the last time we were able to
-       * transmit data using the current get handle?
-       */
-      cron_t last_get_activity;
-
-      /**
-       * Current write position in wbuff
-       */
-      unsigned int woff;
-
-      /**
-       * Number of valid bytes in wbuff (starting at woff)
-       */
-      unsigned int wpos;
-
-      /**
-       * Size of the write buffer.
-       */
-      unsigned int wsize;
+      struct MHDGetData * gets;
 #endif
 
     } server;
@@ -513,6 +543,10 @@ destroy_tsession (TSession * tsession)
   struct HTTPPutData *next;
   struct MHDPutData *mpos;
   struct MHDPutData *mnext;
+#if DO_GET
+  struct MHDGetData *gpos;
+  struct MHDGetData *gnext;
+#endif
   struct MHD_Response *r;
   int i;
 
@@ -563,30 +597,72 @@ destroy_tsession (TSession * tsession)
           FREE (mpos);
           mpos = mnext;
         }
+      httpsession->cs.server.puts = NULL;
 #if DO_GET
-      GROW (httpsession->cs.server.wbuff, httpsession->cs.server.wsize, 0);
-      if (httpsession->cs.server.get != NULL)
-        {
-          r = httpsession->cs.server.get;
-          httpsession->cs.server.get = NULL;
+      gpos = httpsession->cs.server.gets;
+      while (gpos != NULL) 
+	{
+	  GROW (gpos->wbuff, 
+		gpos->wsize, 0);
+          r = gpos->get;
+          gpos->get = NULL;
           /* contentReaderFreeCallback WILL
              destroy session->lock/tesssion */
-          MHD_destroy_response (r);
+	  gnext = gpos->next;
+	  MHD_destroy_response (r); 
+	  gpos = gnext;
         }
-      else
-        {
-          /* If we never received a GET request,
-             we did not create a response... */
-          MUTEX_DESTROY (httpsession->lock);
-          FREE (httpsession->tsession);
-          FREE (httpsession);
-        }
-#else
+      httpsession->cs.server.gets = NULL;
+#endif
       MUTEX_DESTROY (httpsession->lock);
       FREE (httpsession->tsession);
       FREE (httpsession);
-#endif
     }
+}
+
+/**
+ * MHD is done handling a request.  Cleanup
+ * the respective transport state.
+ */
+static void
+requestCompletedCallback(void * unused,
+			 struct MHD_Connection * session,
+			 void ** httpSessionCache) {
+  HTTPSession * httpsession = *httpSessionCache;
+  struct MHDPutData * pprev;
+  struct MHDPutData * ppos;
+#if DO_GET
+  struct MHDGetData * gprev;
+  struct MHDGetData * gpos;
+#endif
+
+  if (httpsession == NULL)
+    return; /* oops */
+  GE_ASSERT(NULL, !httpsession->is_client);
+  pprev = NULL;
+  ppos = httpsession->cs.server.puts;
+  while (ppos != NULL) {
+    if (ppos->session == session) {
+      ppos->last_activity = 0;
+      signal_select();
+      return;
+    }
+    pprev = ppos;
+    ppos = ppos->next;
+  }
+#if DO_GET
+  gprev = NULL;
+  gpos = httpsession->cs.server.gets;
+  while (gpos != NULL) {
+    if (gpos->session == session) {
+      gpos->last_get_activity = 0;
+      signal_select();
+      return;
+    }
+    gprev = gpos;
+    gpos = gpos->next;
+  }
+#endif
 }
 
 /**
@@ -786,26 +862,21 @@ addTSession (TSession * tsession)
 static int
 contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 {
-  HTTPSession *session = cls;
+  struct MHDGetData * mgd = cls;
   cron_t now;
 
-  MUTEX_LOCK (session->lock);
-  if (session->destroyed)
-    {
-      MUTEX_UNLOCK (session->lock);
-      return -1;
-    }
-  if (session->cs.server.wpos < max)
-    max = session->cs.server.wpos;
-  memcpy (buf, &session->cs.server.wbuff[session->cs.server.woff], max);
-  session->cs.server.wpos -= max;
-  session->cs.server.woff += max;
+  MUTEX_LOCK (mgd->lock);
+  if (mgd->wpos < max)
+    max = mgd->wpos;
+  memcpy (buf, &mgd->wbuff[mgd->woff], max);
+  mgd->wpos -= max;
+  mgd->woff += max;
   now = get_time ();
   if (max > 0)
-    session->cs.server.last_get_activity = now;
-  if (session->cs.server.wpos == 0)
-    session->cs.server.woff = 0;
-  MUTEX_UNLOCK (session->lock);
+    mgd->last_get_activity = now;
+  if (mgd->wpos == 0)
+    mgd->woff = 0;
+  MUTEX_UNLOCK (mgd->lock);
 #if DEBUG_HTTP
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
@@ -813,6 +884,9 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 #endif
   if (stats != NULL)
     stats->change (stat_bytesSent, max);
+  if ( (max == 0) &&
+       (mgd->httpsession->cs.server.gets != mgd) )
+    return -1; /* end of response (another GET replaces this one) */
   return max;
 }
 #endif
@@ -825,12 +899,11 @@ contentReaderCallback (void *cls, size_t pos, char *buf, int max)
 static void
 contentReaderFreeCallback (void *cls)
 {
-  HTTPSession *session = cls;
+  struct MHDGetData * mgd = cls;
 
-  GE_ASSERT (NULL, session->cs.server.get == NULL);
-  MUTEX_DESTROY (session->lock);
-  FREE (session->tsession);
-  FREE (session);
+  GE_ASSERT (NULL, mgd->get == NULL);
+  MUTEX_DESTROY(mgd->lock);
+  FREE (mgd);
 }
 #endif
 
@@ -848,12 +921,14 @@ accessHandlerCallback (void *cls,
                        const char *method,
                        const char *version,
                        const char *upload_data,
-                       unsigned int *upload_data_size, void **unused)
+                       unsigned int *upload_data_size,
+		       void **httpSessionCache)
 {
   TSession *tsession;
-  struct MHD_Response *response;
   struct MHDPutData *put;
+  struct MHDGetData *get;
   HTTPSession *httpSession;
+  struct MHD_Response * response;
   HashCode512 client;
   int i;
   unsigned int have;
@@ -871,20 +946,22 @@ accessHandlerCallback (void *cls,
     }
 
   /* check if we already have a session for this */
-  httpSession = NULL;
-  MUTEX_LOCK (httplock);
-  for (i = 0; i < tsessionCount; i++)
+  httpSession = *httpSessionCache;
+  if (httpSession == NULL) 
     {
-      tsession = tsessions[i];
-      httpSession = tsession->internal;
-      if ((0 == memcmp (&httpSession->sender, &client, sizeof (HashCode512)))
-          && (httpSession->is_client == NO))
-        break;
-      tsession = NULL;
-      httpSession = NULL;
+      MUTEX_LOCK (httplock);
+      for (i = 0; i < tsessionCount; i++)
+	{
+	  tsession = tsessions[i];
+	  httpSession = tsession->internal;
+	  if ((0 == memcmp (&httpSession->sender, &client, sizeof (HashCode512)))
+	      && (httpSession->is_client == NO))
+	    break;
+	  tsession = NULL;
+	  httpSession = NULL;
+	}
+      MUTEX_UNLOCK (httplock);
     }
-  MUTEX_UNLOCK (httplock);
-
   /* create new session if necessary */
   if (httpSession == NULL)
     {
@@ -907,6 +984,7 @@ accessHandlerCallback (void *cls,
       httpSession->tsession = tsession;
       addTSession (tsession);
     }
+  *httpSessionCache = httpSession;
   MUTEX_LOCK (httpSession->lock);
 #if DO_GET
   if (0 == strcasecmp (MHD_HTTP_METHOD_GET, method))
@@ -919,18 +997,20 @@ accessHandlerCallback (void *cls,
 
       /* handle get; create response object if we do not 
          have one already */
-      response = httpSession->cs.server.get;
-      if (response == NULL)
-        {
-          response = MHD_create_response_from_callback (-1,
-                                                        64 * 1024,
-                                                        contentReaderCallback,
-                                                        httpSession,
-                                                        contentReaderFreeCallback);
-          httpSession->cs.server.get = response;
-        }
-      httpSession->cs.server.last_get_activity = get_time ();
-      MHD_queue_response (session, MHD_HTTP_OK, response);
+      get = MALLOC(sizeof(struct MHDGetData));
+      memset(get, 0, sizeof(struct MHDGetData));
+      get->lock = MUTEX_CREATE(NO);      
+      get->next = httpSession->cs.server.gets;
+      httpSession->cs.server.gets = get;
+      get->session = session;
+      get->httpsession = httpSession;
+      get->last_get_activity = get_time();
+      get->get = MHD_create_response_from_callback (-1,
+						    64 * 1024,
+						    contentReaderCallback,
+						    get,
+						    contentReaderFreeCallback);
+      MHD_queue_response (session, MHD_HTTP_OK, get->get);
       MUTEX_UNLOCK (httpSession->lock);
       return MHD_YES;
     }
@@ -1400,6 +1480,8 @@ static int
 httpTestWouldTry (TSession * tsession, const unsigned int size, int important)
 {
   HTTPSession *httpSession = tsession->internal;
+  struct MHDGetData * get;
+  int ret;
 
   if (size >= MAX_BUFFER_SIZE - sizeof (MESSAGE_HEADER))
     {
@@ -1421,12 +1503,22 @@ httpTestWouldTry (TSession * tsession, const unsigned int size, int important)
   else
     {
       /* server */
-      if (httpSession->cs.server.wsize == 0)
-        return YES;
-      if ((httpSession->cs.server.wpos + size > httpSession->cs.server.wsize)
-          && (important != YES))
-        return NO;
-      return YES;
+      MUTEX_LOCK(httpSession->lock);
+      get = httpSession->cs.server.gets;
+      if (get == NULL)
+	ret = NO;      
+      else {
+	if (get->wsize == 0)
+	  ret = YES;
+	else
+	  if ( (get->wpos + size > get->wsize)
+	       && (important != YES) )
+	    ret = NO;
+	  else
+	    ret = YES;
+      }
+      MUTEX_UNLOCK(httpSession->lock);
+      return ret;
     }
 }
 
@@ -1447,6 +1539,7 @@ httpSend (TSession * tsession,
   struct HTTPPutData *putData;
   MESSAGE_HEADER *hdr;
 #if DO_GET
+  struct MHDGetData *getData;
   char *tmp;
 #endif
 
@@ -1508,52 +1601,60 @@ httpSend (TSession * tsession,
 #endif
 #if DO_GET
   MUTEX_LOCK (httpSession->lock);
-  if (httpSession->cs.server.wsize == 0)
-    GROW (httpSession->cs.server.wbuff, httpSession->cs.server.wsize,
+  getData = httpSession->cs.server.gets;
+  if (getData == NULL) {
+    MUTEX_UNLOCK (httpSession->lock);
+    return SYSERR;    
+  }
+  MUTEX_LOCK(getData->lock);
+  if (getData->wsize == 0)
+    GROW (getData->wbuff, getData->wsize,
           HTTP_BUF_SIZE);
   size += sizeof (MESSAGE_HEADER);
-  if (httpSession->cs.server.wpos + size > httpSession->cs.server.wsize)
+  if (getData->wpos + size > getData->wsize)
     {
       /* need to grow or discard */
       if (!important)
         {
+          MUTEX_UNLOCK (getData->lock);
           MUTEX_UNLOCK (httpSession->lock);
           return NO;
         }
-      tmp = MALLOC (httpSession->cs.server.wpos + size);
+      tmp = MALLOC (getData->wpos + size);
       memcpy (tmp,
-              &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
-              httpSession->cs.server.wpos);
-      hdr = (MESSAGE_HEADER *) & tmp[httpSession->cs.server.wpos];
+              &getData->wbuff[getData->woff],
+              getData->wpos);
+      hdr = (MESSAGE_HEADER *) & tmp[getData->wpos];
       hdr->type = htons (0);
       hdr->size = htons (size);
       memcpy (&hdr[1], msg, size - sizeof (MESSAGE_HEADER));
-      FREE (httpSession->cs.server.wbuff);
-      httpSession->cs.server.wbuff = tmp;
-      httpSession->cs.server.wsize = httpSession->cs.server.wpos + size;
-      httpSession->cs.server.woff = 0;
-      httpSession->cs.server.wpos = httpSession->cs.server.wpos + size;
+      FREE (getData->wbuff);
+      getData->wbuff = tmp;
+      getData->wsize = getData->wpos + size;
+      getData->woff = 0;
+      getData->wpos = getData->wpos + size;
     }
   else
     {
       /* fits without growing */
-      if (httpSession->cs.server.wpos + httpSession->cs.server.woff + size >
-          httpSession->cs.server.wsize)
+      if (getData->wpos + getData->woff + size >
+          getData->wsize)
         {
           /* need to compact first */
-          memmove (httpSession->cs.server.wbuff,
-                   &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
-                   httpSession->cs.server.wpos);
-          httpSession->cs.server.woff = 0;
+          memmove (getData->wbuff,
+                   &getData->wbuff[getData->woff],
+                   getData->wpos);
+          getData->woff = 0;
         }
       /* append */
-      hdr = (MESSAGE_HEADER *) & httpSession->cs.server.
-        wbuff[httpSession->cs.server.woff + httpSession->cs.server.wpos];
+      hdr = (MESSAGE_HEADER *) &getData->
+        wbuff[getData->woff + getData->wpos];
       hdr->size = htons (size);
       hdr->type = htons (0);
       memcpy (&hdr[1], msg, size - sizeof (MESSAGE_HEADER));
-      httpSession->cs.server.wpos += size;
+      getData->wpos += size;
     }
+  MUTEX_UNLOCK (getData->lock);
   MUTEX_UNLOCK (httpSession->lock);
 #endif
   return OK;
@@ -1574,6 +1675,11 @@ cleanup_connections ()
   struct HTTPPutData *pos;
   struct MHDPutData *mpos;
   struct MHDPutData *mprev;
+#if DO_GET
+  struct MHD_Response * r;
+  struct MHDGetData *gpos;
+  struct MHDGetData *gnext;
+#endif
   cron_t now;
 
   MUTEX_LOCK (httplock);
@@ -1662,19 +1768,34 @@ cleanup_connections ()
             }
 
           /* ! s->is_client */
+#if DO_GET
+	  gpos = s->cs.server.gets;
+	  while (gpos != NULL) {
+	    gnext = gpos->next;
+	    gpos->next = NULL;
+	    if ( (gpos->last_get_activity + HTTP_TIMEOUT < now) ||
+		 (gpos != s->cs.server.gets) ) {
+	      if (gpos == s->cs.server.gets)
+		s->cs.server.gets = NULL;
+	      r = gpos->get;
+	      gpos->get = NULL;
+	      MHD_destroy_response (r);
+	    }
+	    gpos = gnext;
+	  }
+#endif
           if (
 #if DO_GET
-               (s->cs.server.last_get_activity + HTTP_TIMEOUT < now) &&
+	      (s->cs.server.gets == NULL) &&
 #endif
-               (s->users == 0))
+	      (s->users == 0))
             {
               MUTEX_UNLOCK (s->lock);
 #if DO_GET
 #if DEBUG_HTTP
               GE_LOG (coreAPI->ectx,
                       GE_DEBUG | GE_REQUEST | GE_USER,
-                      "HTTP transport destroys old (%llu ms) unused server session\n",
-                      now - s->cs.server.last_get_activity);
+                      "HTTP transport destroys unused server session\n");
 #endif
 #endif
               destroy_tsession (tsessions[i]);
@@ -1753,7 +1874,7 @@ curl_runner (void *unused)
         }
       while ((mret == CURLM_CALL_MULTI_PERFORM) && (http_running == YES));
       if (FD_ISSET (signal_pipe[0], &rs))
-        read (signal_pipe[0], buf, sizeof (buf));
+        read (signal_pipe[0], buf, 1);
       if ((mret != CURLM_OK) && (mret != CURLM_CALL_MULTI_PERFORM))
         GE_LOG (coreAPI->ectx,
                 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
@@ -1799,7 +1920,10 @@ startTransportServer ()
                                      MHD_OPTION_CONNECTION_MEMORY_LIMIT,
                                      (unsigned int) 1024 * 128,
                                      MHD_OPTION_CONNECTION_LIMIT,
-                                     (unsigned int) 128, MHD_OPTION_END);
+                                     (unsigned int) 128, 
+				     MHD_OPTION_NOTIFY_COMPLETED,
+				     &requestCompletedCallback, NULL,
+				     MHD_OPTION_END);
     }
   if (0 != PIPE (signal_pipe))
     {
@@ -1809,6 +1933,8 @@ startTransportServer ()
       mhd_daemon = NULL;
       return SYSERR;
     }
+  network_make_pipe_nonblocking(coreAPI->ectx,
+				signal_pipe[0]);
   http_running = YES;
   curl_thread = PTHREAD_CREATE (&curl_runner, NULL, 32 * 1024);
   if (curl_thread == NULL)

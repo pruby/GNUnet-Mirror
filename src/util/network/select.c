@@ -765,8 +765,8 @@ selectThread (void *ctx)
   return NULL;
 }
 
-static int
-makePipeNonblocking (struct GE_Context *ectx, int handle)
+int
+network_make_pipe_nonblocking (struct GE_Context *ectx, int handle)
 {
 #if MINGW
   DWORD mode;
@@ -836,7 +836,7 @@ select_create (const char *description,
       FREE (sh);
       return NULL;
     }
-  if (OK != makePipeNonblocking (sh->ectx, sh->signal_pipe[0]))
+  if (OK != network_make_pipe_nonblocking (sh->ectx, sh->signal_pipe[0]))
     {
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
