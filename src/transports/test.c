@@ -121,6 +121,7 @@ receive (P2P_PACKET * mp)
           if (OK != transport->connect (hello, &tsession, NO))
             {
               FREE (hello);
+	      FREE (mp->msg);
               FREE (mp);
               error_count++;
               return;
@@ -154,6 +155,7 @@ receive (P2P_PACKET * mp)
       else
         msg_count++;
     }
+  FREE (mp->msg);
   FREE (mp);
 }
 
