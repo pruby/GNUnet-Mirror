@@ -34,7 +34,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 
-#define ROUNDS 1
+#define ROUNDS 10
 
 #define OFFSET 10
 
@@ -51,7 +51,7 @@ static TransportAPI *transport;
 /**
  * What response do we currently expect to receive?
  */
-static char * expectedValue;
+static char *expectedValue;
 
 /**
  * What is the size of the expected response?
@@ -81,15 +81,18 @@ static struct CommandLineOption testOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
-static void * requestService(const char * name) {
+static void *
+requestService (const char *name)
+{
   /* we expect only "stats" to be requested... */
-  if (0 != strcmp(name, "stats")) 
-    fprintf(stderr,
-	    "Rejecting request for service `%s'\n", name);
+  if (0 != strcmp (name, "stats"))
+    fprintf (stderr, "Rejecting request for service `%s'\n", name);
   return NULL;
 }
 
-static int assertUnused(TSession * tsession) {
+static int
+assertUnused (TSession * tsession)
+{
   return OK;
 }
 
@@ -97,192 +100,210 @@ static int assertUnused(TSession * tsession) {
  * We received a message.  The "client" should try to echo it back,
  * the "server" should validate that it got the right reply.
  */
-static void receive(P2P_PACKET * mp) {
+static void
+receive (P2P_PACKET * mp)
+{
   unsigned int retries;
 
-  msg_count++;
-  if (pid == 0) {
-    /* server; do echo back */
-    retries = 0;
-    while (NO == transport->send(mp->tsession,
-				 mp->msg,
-				 mp->size,
-				 retries > 6 ? YES : NO)) {
-      if (retries > 10) {
-	fprintf(stderr,
-		"Failed to send reply!\n");
-	error_count++;
-	break;
-      }
-      retries++;
+  if (pid == 0)
+    {
+      /* server; do echo back */
+      retries = 0;
+      while (NO == transport->send (mp->tsession,
+                                    mp->msg,
+                                    mp->size, retries > 6 ? YES : NO))
+        {
+          if (retries > 10)
+            {
+              fprintf (stderr, "Failed to send reply!\n");
+              error_count++;
+              break;
+            }
+          retries++;
+        }
     }
-  } else {
-    /* validate echo */
-    if ( (mp->size != expectedSize) ||
-	 (0 != memcmp(mp->msg,
-		      expectedValue,
-		      mp->size)) )
-      error_count++;
-  }  
-  FREE(mp);
+  else
+    {
+      /* validate echo */
+      if ((mp->size != expectedSize) ||
+          (0 != memcmp (mp->msg, expectedValue, mp->size)))
+        error_count++;
+      else
+        msg_count++;
+    }
+  FREE (mp);
 }
 
 int
 main (int argc, char *const *argv)
 {
   CoreAPIForTransport api;
-  struct PluginHandle * plugin;
+  struct PluginHandle *plugin;
   TransportMainMethod init;
   void (*done) ();
   PeerIdentity me;
-  char * trans;
+  char *trans;
   int res;
   int pos;
-  TSession * tsession;
-  P2P_hello_MESSAGE * hello;
+  TSession *tsession;
+  P2P_hello_MESSAGE *hello;
 
-  memset(&api, 0,
-	 sizeof(CoreAPIForTransport));
-  pid = fork();
+  memset (&api, 0, sizeof (CoreAPIForTransport));
+  pid = fork ();
   res = GNUNET_init (argc,
                      argv,
                      "transport-test",
                      &cfgFilename, testOptions, &api.ectx, &api.cfg);
   if (res == -1)
     goto cleanup;
-  
+
   expectedValue = MALLOC (expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';
   while (pos-- > 0)
     expectedValue[pos] = 'A' + (pos % 26);
-  trans = strstr(argv[0], "_");
+  trans = strstr (argv[0], "_");
   if (trans == NULL)
     goto cleanup;
   trans++;
-  trans = strdup(trans);
-  if (NULL != strstr(trans, "."))
-    strstr(trans, ".")[0] = '\0';
-  if (NULL != strstr(trans, "-"))
-    strstr(trans, ".")[0] = '\0';
+  trans = strdup (trans);
+  if (NULL != strstr (trans, "."))
+    strstr (trans, ".")[0] = '\0';
+  if (NULL != strstr (trans, "-"))
+    strstr (trans, ".")[0] = '\0';
   /* disable blacklists (loopback is often blacklisted)... */
-  GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "BLACKLIST", "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "BLACKLIST",
+                                     "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP", "NO");
-  GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6", "BLACKLIST", "");
-  GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "BLACKLIST", "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6", "BLACKLIST",
+                                     "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "BLACKLIST",
+                                     "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP", "NO");
-  GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6", "BLACKLIST", "");
-  GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "BLACKLIST", "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6", "BLACKLIST",
+                                     "");
+  GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "BLACKLIST",
+                                     "");
   GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP", "NO");
 
   if (pid == 0)
     pos = OFFSET;
   else
     pos = 0;
-  GC_set_configuration_value_number (api.cfg, api.ectx, "TCP", "PORT", 4444+pos);
-  GC_set_configuration_value_number (api.cfg, api.ectx, "TCP6", "PORT", 4445+pos);
-  GC_set_configuration_value_number (api.cfg, api.ectx, "UDP", "PORT", 4446+pos);
-  GC_set_configuration_value_number (api.cfg, api.ectx, "UDP6", "PORT", 4447+pos);
-  GC_set_configuration_value_number (api.cfg, api.ectx, "HTTP", "PORT", 4448+pos);
-  makeRandomId(&me.hashPubKey);
-  plugin = os_plugin_load(api.ectx,
-			  "libgnunettransport_",
-			  trans);
-  FREE(trans);
-  if (plugin == NULL) {
-    fprintf(stderr, "Error loading plugin...\n");    
-    goto cleanup;
-  }
-  init = os_plugin_resolve_function(plugin,
-				    "inittransport_",
-				    YES);
-  if (init == NULL) {
-    fprintf(stderr, "Error resolving init method...\n");
-    os_plugin_unload(plugin);
-    goto cleanup;
-  }
+  GC_set_configuration_value_number (api.cfg, api.ectx, "TCP", "PORT",
+                                     4444 + pos);
+  GC_set_configuration_value_number (api.cfg, api.ectx, "TCP6", "PORT",
+                                     4445 + pos);
+  GC_set_configuration_value_number (api.cfg, api.ectx, "UDP", "PORT",
+                                     4446 + pos);
+  GC_set_configuration_value_number (api.cfg, api.ectx, "UDP6", "PORT",
+                                     4447 + pos);
+  GC_set_configuration_value_number (api.cfg, api.ectx, "HTTP", "PORT",
+                                     4448 + pos);
+  makeRandomId (&me.hashPubKey);
+  plugin = os_plugin_load (api.ectx, "libgnunettransport_", trans);
+  FREE (trans);
+  if (plugin == NULL)
+    {
+      fprintf (stderr, "Error loading plugin...\n");
+      goto cleanup;
+    }
+  init = os_plugin_resolve_function (plugin, "inittransport_", YES);
+  if (init == NULL)
+    {
+      fprintf (stderr, "Error resolving init method...\n");
+      os_plugin_unload (plugin);
+      goto cleanup;
+    }
   api.cron = cron_create (api.ectx);
   api.myIdentity = &me;
   api.receive = &receive;
   api.requestService = &requestService;
-  api.releaseService = NULL; /* not needed */
+  api.releaseService = NULL;    /* not needed */
   api.assertUnused = &assertUnused;
-  cron_start(api.cron); 
+  cron_start (api.cron);
   res = OK;
-  transport = init(&api);
-  if (transport == NULL) {
-    fprintf(stderr, "Error initializing plugin...\n");
-    os_plugin_unload(plugin);
-    goto cleanup;
-  }
-  transport->startTransportServer();
-  GE_ASSERT(NULL, (transport->mtu >= expectedSize) || (transport->mtu == 0));
-  if (pid == 0) {
-    /* server - wait for requests */
-    GNUNET_SHUTDOWN_WAITFOR();
-  } else {
-    /* client - initiate requests */
-    hello = transport->createhello();
-    /* HACK hello -- change port! */
-    ((unsigned short*) &hello[1])[2] = htons(ntohl(((unsigned short*) &hello[1])[2]) + OFFSET);
-    if (OK != transport->connect(hello,
-				 &tsession,
-				 NO)) {
-      FREE(hello);
-      transport->stopTransportServer();
-      os_plugin_unload(plugin);
+  transport = init (&api);
+  if (transport == NULL)
+    {
+      fprintf (stderr, "Error initializing plugin...\n");
+      os_plugin_unload (plugin);
       goto cleanup;
     }
-    FREE(hello);
-    pos=0;
-    while (pos < ROUNDS) {
-      if (OK == transport->send(tsession,
-				expectedValue,
-				expectedSize,
-				pos > ROUNDS / 2 ? YES : NO))
-	pos++;
+  transport->startTransportServer ();
+  GE_ASSERT (NULL, (transport->mtu >= expectedSize) || (transport->mtu == 0));
+  if (pid == 0)
+    {
+      /* server - wait for requests */
+      GNUNET_SHUTDOWN_WAITFOR ();
     }
-    pos = 0;
-    while ( (pos++ < 100) &&
-	    (msg_count < ROUNDS) ) 
-      PTHREAD_SLEEP(50 * cronMILLIS);
-    if (msg_count < ROUNDS)
-      res = SYSERR;
-    transport->disconnect(tsession);
-  }  
+  else
+    {
+      /* client - initiate requests */
+      hello = transport->createhello ();
+      /* HACK hello -- change port! */
+      ((unsigned short *) &hello[1])[2] =
+        htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
+      if (OK != transport->connect (hello, &tsession, NO))
+        {
+          FREE (hello);
+          transport->stopTransportServer ();
+          os_plugin_unload (plugin);
+          goto cleanup;
+        }
+      FREE (hello);
+      pos = 0;
+      while (pos < ROUNDS)
+        {
+          if (OK == transport->send (tsession,
+                                     expectedValue,
+                                     expectedSize,
+                                     pos > ROUNDS / 2 ? YES : NO))
+            pos++;
+        }
+      pos = 0;
+      while ((pos++ < 100) && (msg_count < ROUNDS))
+        PTHREAD_SLEEP (50 * cronMILLIS);
+      if (msg_count < ROUNDS)
+        res = SYSERR;
+      transport->disconnect (tsession);
+    }
 
-  transport->stopTransportServer();
-  done = os_plugin_resolve_function(plugin,
-				    "donetransport_",
-				    NO);
+  transport->stopTransportServer ();
+  done = os_plugin_resolve_function (plugin, "donetransport_", NO);
   if (done != NULL)
-    done();
-  if (pid != 0) {
-    kill(pid, SIGTERM);
-    waitpid(pid, &res, 0);
-    if (WEXITSTATUS(res) == 0)
-      res = OK;
-    else
-      res = SYSERR;
-  }
-  os_plugin_unload(plugin);
+    done ();
+  if (pid != 0)
+    {
+      kill (pid, SIGTERM);
+      waitpid (pid, &pos, 0);
+      if (WEXITSTATUS (pos) != 0)
+        res = SYSERR;
+    }
+  os_plugin_unload (plugin);
   cron_stop (api.cron);
   cron_destroy (api.cron);
   GNUNET_fini (api.ectx, api.cfg);
-  FREE(expectedValue);
+  FREE (expectedValue);
   if (error_count > 0)
     res = SYSERR;
   if (res != OK)
-    return 2;
+    {
+      fprintf (stderr,
+               "Test failed (%u/%u %s)!\n",
+               msg_count, ROUNDS, pid == 0 ? "messages" : "replies");
+      return 2;
+    }
   return 0;
 
-cleanup:      
+cleanup:
   GNUNET_fini (api.ectx, api.cfg);
-  if (pid != 0) {
-    kill(pid, SIGTERM);
-    waitpid(pid, &res, 0);
-  }
-  FREE(expectedValue);
+  if (pid != 0)
+    {
+      kill (pid, SIGTERM);
+      waitpid (pid, &res, 0);
+    }
+  FREE (expectedValue);
   return 1;
 }
 

@@ -1064,7 +1064,6 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
       GROW (httpSession->cs.client.rbuff2,
             httpSession->cs.client.rsize2,
             ntohs (hdr->size) - sizeof (MESSAGE_HEADER));
-      printf ("Expecting message of %u bytes via GET\n", ntohs (hdr->size));
       if (httpSession->cs.client.rpos2 <
           ntohs (hdr->size) - sizeof (MESSAGE_HEADER))
         {
@@ -1087,7 +1086,6 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
       mp->sender = httpSession->sender;
       mp->tsession = httpSession->tsession;
       mp->size = ntohs (hdr->size) - sizeof (MESSAGE_HEADER);
-      printf ("Passing message from GET to core!\n");
       coreAPI->receive (mp);
       httpSession->cs.client.rbuff2 = NULL;
       httpSession->cs.client.rpos2 = 0;
@@ -1181,10 +1179,14 @@ create_curl_get (HTTPSession * httpSession)
   CURL_EASY_SETOPT (curl_get, CURLOPT_BUFFERSIZE, 32 * 1024);
   if (0 == strncmp (httpSession->cs.client.url, "http", 4))
     CURL_EASY_SETOPT (curl_get, CURLOPT_USERAGENT, "GNUnet-http");
+#if 0
+  CURL_EASY_SETOPT (curl_get, CURLOPT_VERBOSE, 1);
+#endif
   CURL_EASY_SETOPT (curl_get, CURLOPT_CONNECTTIMEOUT, 150L);
   CURL_EASY_SETOPT (curl_get, CURLOPT_TIMEOUT, 150L);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEFUNCTION, &receiveContentCallback);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEDATA, httpSession);
+  CURL_EASY_SETOPT (curl_get, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
   if (ret != CURLE_OK)
     {
       curl_easy_cleanup (curl_get);
@@ -1332,13 +1334,14 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   CURL_EASY_SETOPT (curl_put, CURLOPT_VERBOSE, 1);
 #endif
   CURL_EASY_SETOPT (curl_put, CURLOPT_CONNECTTIMEOUT, 150L);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_TIMEOUT, 150L);
   size = put->size;
   CURL_EASY_SETOPT (curl_put, CURLOPT_INFILESIZE, size);
   CURL_EASY_SETOPT (curl_put, CURLOPT_READFUNCTION, &sendContentCallback);
   CURL_EASY_SETOPT (curl_put, CURLOPT_READDATA, put);
   CURL_EASY_SETOPT (curl_put, CURLOPT_WRITEFUNCTION, &discardContentCallback);
   CURL_EASY_SETOPT (curl_put, CURLOPT_WRITEDATA, put);
-  CURL_EASY_SETOPT (curl_put, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+  CURL_EASY_SETOPT (curl_put, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
   if (ret != CURLE_OK)
     {
       curl_easy_cleanup (curl_put);
@@ -1468,6 +1471,7 @@ httpSend (TSession * tsession,
       hdr->type = htons (0);
       memcpy (&putData->msg[sizeof (MESSAGE_HEADER)], msg, size);
       putData->size = size + sizeof (MESSAGE_HEADER);
+      putData->last_activity = get_time ();
       if (OK != create_curl_put (httpSession, putData))
         {
           FREE (putData->msg);
@@ -1494,6 +1498,7 @@ httpSend (TSession * tsession,
   if (httpSession->cs.server.wsize == 0)
     GROW (httpSession->cs.server.wbuff, httpSession->cs.server.wsize,
           HTTP_BUF_SIZE);
+  size += sizeof (MESSAGE_HEADER);
   if (httpSession->cs.server.wpos + size > httpSession->cs.server.wsize)
     {
       /* need to grow or discard */
@@ -1506,6 +1511,10 @@ httpSend (TSession * tsession,
       memcpy (tmp,
               &httpSession->cs.server.wbuff[httpSession->cs.server.woff],
               httpSession->cs.server.wpos);
+      hdr = (MESSAGE_HEADER *) & tmp[httpSession->cs.server.wpos];
+      hdr->type = htons (0);
+      hdr->size = htons (size);
+      memcpy (&hdr[1], msg, size - sizeof (MESSAGE_HEADER));
       FREE (httpSession->cs.server.wbuff);
       httpSession->cs.server.wbuff = tmp;
       httpSession->cs.server.wsize = httpSession->cs.server.wpos + size;
@@ -1525,9 +1534,11 @@ httpSend (TSession * tsession,
           httpSession->cs.server.woff = 0;
         }
       /* append */
-      memcpy (&httpSession->cs.server.
-              wbuff[httpSession->cs.server.woff +
-                    httpSession->cs.server.wpos], msg, size);
+      hdr = (MESSAGE_HEADER *) & httpSession->cs.server.
+        wbuff[httpSession->cs.server.woff + httpSession->cs.server.wpos];
+      hdr->size = htons (size);
+      hdr->type = htons (0);
+      memcpy (&hdr[1], msg, size - sizeof (MESSAGE_HEADER));
       httpSession->cs.server.wpos += size;
     }
   MUTEX_UNLOCK (httpSession->lock);
@@ -1709,8 +1720,7 @@ curl_runner (void *unused)
       if (mhd_daemon != NULL)
         have_tv = MHD_get_timeout (mhd_daemon, &timeout);
       if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
-	  (ms != -1) &&
-          ((ms < timeout) || (have_tv == MHD_NO)))
+          (ms != -1) && ((ms < timeout) || (have_tv == MHD_NO)))
         {
           timeout = ms;
           have_tv = MHD_YES;
