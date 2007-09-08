@@ -31,7 +31,9 @@ check_PROGRAMS = \
   test_udp \
   test_tcp \
   test_http \
-  testrepeat_http
+  testrepeat_udp \
+  testrepeat_tcp \
+  testrepeat_http 
 
 TESTS = $(check_PROGRAMS)
 
@@ -141,6 +143,25 @@ test_http_LDADD = \
  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
 
+testrepeat_tcp_SOURCES = \
+ test_repeat.c 
+testrepeat_tcp_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
+
+testrepeat_udp_SOURCES = \
+ test_repeat.c 
+testrepeat_udp_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
 
 testrepeat_http_SOURCES = \
  test_repeat.c 
