@@ -1914,7 +1914,7 @@ startTransportServer ()
   port = getGNUnetHTTPPort ();
   if ((mhd_daemon == NULL) && (port != 0))
     {
-      mhd_daemon = MHD_start_daemon (MHD_USE_DEBUG,
+      mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
                                      port,
                                      &acceptPolicyCallback,
                                      NULL, &accessHandlerCallback, NULL,
