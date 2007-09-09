@@ -6,7 +6,6 @@ Annotations:
 0.7.3 [8'07] (aka "features"):
 - chat support basics [RC]
 - old/new features:
-  * HTTP transport (libcurl, libmicrohttpd) [#765]
   * SMTP transport (libesmtp)
 - Documentation:
   * LJ article
