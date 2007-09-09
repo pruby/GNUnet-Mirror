@@ -2766,9 +2766,14 @@ cronDecreaseLiveness (void *unused)
                                              __FILE__);
                       root->session.mtu = 0;
                       root->session.tsession = alternative;
+                      alternative = NULL;
                       root->consider_transport_switch = NO;
                       if (stats != NULL)
                         stats->change (stat_transport_switches, 1);
+                    }
+                  if (alternative != NULL)
+                    {
+                      transport->disconnect (alternative, __FILE__);
                     }
                 }
               if ((root->available_send_window > 35 * 1024) &&
