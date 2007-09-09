@@ -527,8 +527,7 @@ char *network_get_local_ip (struct GC_Configuration *cfg,
  * to non-blocking IO.
  * @return OK on success
  */
-int network_make_pipe_nonblocking(struct GE_Context * ectx,
-				  int pipe);
+int network_make_pipe_nonblocking (struct GE_Context *ectx, int pipe);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

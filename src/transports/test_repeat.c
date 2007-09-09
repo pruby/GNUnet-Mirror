@@ -123,7 +123,7 @@ receive (P2P_PACKET * mp)
           if (OK != transport->connect (hello, &tsession, NO))
             {
               FREE (hello);
-	      FREE (mp->msg);
+              FREE (mp->msg);
               FREE (mp);
               error_count++;
               return;
@@ -268,43 +268,51 @@ main (int argc, char *const *argv)
     }
   else
     {
-      for (xround=0;xround<XROUNDS;xround++) {
-	/* client - initiate requests */
-	hello = transport->createhello ();
-	/* HACK hello -- change port! */
-	((unsigned short *) &hello[1])[2] =
-	  htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
-	if (OK != transport->connect (hello, &tsession, NO))
-	  {
-	    FREE (hello);
-	    transport->stopTransportServer ();
-	    os_plugin_unload (plugin);
-	    goto cleanup;
-	  }
-	FREE (hello);
-	pos = 0;
-	while (pos < ROUNDS)
-	  {
-	    if (OK == transport->send (tsession,
-				       expectedValue,
-				       expectedSize,
-				       pos > ROUNDS / 2 ? YES : NO))
-	      pos++;
-	  }
-	pos = 0;
-	while ((pos++ < 100) && (msg_count < ROUNDS * (xround+1) )) 
-	  PTHREAD_SLEEP (50 * cronMILLIS);	
-	if (msg_count < ROUNDS * (xround + 1))
-	  {
-	    if (NULL == strstr (argv[0], "udp"))
-            res = SYSERR;
-	    else
-	      fprintf (stderr,
-		       "WARNING: only %u/%u messages received (maybe ok, try again?)\n",
-		       msg_count, ROUNDS);
+      for (xround = 0; xround < XROUNDS; xround++)
+        {
+          fprintf (stderr, ".");
+          /* client - initiate requests */
+          hello = transport->createhello ();
+          /* HACK hello -- change port! */
+          ((unsigned short *) &hello[1])[2] =
+            htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
+          if (OK != transport->connect (hello, &tsession, NO))
+            {
+              FREE (hello);
+              transport->stopTransportServer ();
+              os_plugin_unload (plugin);
+              goto cleanup;
+            }
+          FREE (hello);
+          pos = 0;
+          while (pos < ROUNDS)
+            {
+              if (OK == transport->send (tsession,
+                                         expectedValue,
+                                         expectedSize,
+                                         pos > ROUNDS / 2 ? YES : NO))
+                pos++;
+            }
+          pos = 0;
+          while ((pos++ < 100) && (msg_count < ROUNDS * (xround + 1)))
+            PTHREAD_SLEEP (50 * cronMILLIS);
+          if (msg_count < ROUNDS * (xround + 1))
+            {
+              if (NULL == strstr (argv[0], "udp"))
+                res = SYSERR;
+              else
+                fprintf (stderr,
+                         "WARNING: only %u/%u messages received (maybe ok, try again?)\n",
+                         msg_count, ROUNDS);
+            }
+          transport->disconnect (tsession);
+          if ((xround % 3) == 0)
+            {
+              transport->stopTransportServer ();
+              transport->startTransportServer ();
+            }
         }
-	transport->disconnect (tsession);
-      }
+      fprintf (stderr, "\n");
     }
 
   transport->stopTransportServer ();
@@ -329,7 +337,8 @@ main (int argc, char *const *argv)
     {
       fprintf (stderr,
                "Test failed (%u/%u %s)!\n",
-               msg_count, ROUNDS * XROUNDS, pid == 0 ? "messages" : "replies");
+               msg_count, ROUNDS * XROUNDS,
+               pid == 0 ? "messages" : "replies");
       return 2;
     }
   return 0;
