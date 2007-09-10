@@ -39,6 +39,7 @@ gnunet_update_LDADD = \
 gnunet_peer_info_SOURCES = \
  gnunet-peer-info.c 
 gnunet_peer_info_LDADD  = \
+ $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/server/libgnunetcore.la \
  $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
 
