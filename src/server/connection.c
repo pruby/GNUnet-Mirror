@@ -1643,7 +1643,8 @@ sendBuffer (BufferEntry * be)
       /* transport session is gone! re-establish! */
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-      transport->disconnect (tsession, __FILE__);
+      if (tsession != NULL)
+	transport->disconnect (tsession, __FILE__);
       ensureTransportConnected (be);
       if (be->session.tsession == NULL)
         {
@@ -2693,6 +2694,7 @@ cronDecreaseLiveness (void *unused)
   unsigned long long total_send_buffer_size;
   int load_nup;
   int load_cpu;
+  TSession * tsession;
 
   ENTRY ();
   load_cpu = os_cpu_get_load (ectx, cfg);
@@ -2762,19 +2764,19 @@ cronDecreaseLiveness (void *unused)
                   if ((alternative != NULL)
                       && (transport->getMTU (alternative->ttype) == 0))
                     {
-                      transport->disconnect (root->session.tsession,
-                                             __FILE__);
+		      tsession = root->session.tsession;
                       root->session.mtu = 0;
                       root->session.tsession = alternative;
                       alternative = NULL;
                       root->consider_transport_switch = NO;
+		      if (tsession != NULL)
+			transport->disconnect (tsession,
+					       __FILE__);
                       if (stats != NULL)
                         stats->change (stat_transport_switches, 1);
                     }
-                  if (alternative != NULL)
-                    {
-                      transport->disconnect (alternative, __FILE__);
-                    }
+                  if (alternative != NULL)                    
+                      transport->disconnect (alternative, __FILE__);                    
                 }
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&

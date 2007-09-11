@@ -536,6 +536,8 @@ inittransport_udp (CoreAPIForTransport * core)
       stat_bytesSent = stats->create (gettext_noop ("# bytes sent via UDP"));
       stat_bytesDropped
         = stats->create (gettext_noop ("# bytes dropped by UDP (outgoing)"));
+      stat_udpConnected
+        = stats->create (gettext_noop ("# UDP connections (right now)"));
     }
   configLock = MUTEX_CREATE (NO);
   reloadConfiguration ();

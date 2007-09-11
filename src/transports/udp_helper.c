@@ -57,6 +57,8 @@ static int stat_bytesSent;
 
 static int stat_bytesDropped;
 
+static int stat_udpConnected;
+
 static struct GE_Context *ectx;
 
 /**
@@ -156,6 +158,8 @@ udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
   tsession->ttype = udpAPI.protocolNumber;
   tsession->peer = hello->senderIdentity;
   *tsessionPtr = tsession;
+  if (stats != NULL)
+    stats->change (stat_udpConnected, 1);
   return OK;
 }
 
@@ -190,6 +194,8 @@ udpDisconnect (TSession * tsession)
       if (tsession->internal != NULL)
         FREE (tsession->internal);
       FREE (tsession);
+      if (stats != NULL)
+        stats->change (stat_udpConnected, -1);
     }
   return OK;
 }

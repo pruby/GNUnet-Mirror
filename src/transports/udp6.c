@@ -469,7 +469,17 @@ inittransport_udp6 (CoreAPIForTransport * core)
     GE_LOG (ectx,
             GE_ERROR | GE_USER | GE_IMMEDIATE,
             _("MTU %llu for `%s' is probably too low!\n"), mtu, "UDP6");
-
+  stats = coreAPI->requestService ("stats");
+  if (stats != NULL)
+    {
+      stat_bytesReceived
+        = stats->create (gettext_noop ("# bytes received via UDP6"));
+      stat_bytesSent = stats->create (gettext_noop ("# bytes sent via UDP6"));
+      stat_bytesDropped
+        = stats->create (gettext_noop ("# bytes dropped by UDP6 (outgoing)"));
+      stat_udpConnected
+        = stats->create (gettext_noop ("# UDP6 connections (right now)"));
+    }
   udpAPI.protocolNumber = UDP6_PROTOCOL_NUMBER;
   udpAPI.mtu = mtu - sizeof (UDPMessage);
   udpAPI.cost = 19950;
@@ -490,6 +500,11 @@ inittransport_udp6 (CoreAPIForTransport * core)
 void
 donetransport_udp6 ()
 {
+  if (stats != NULL)
+    {
+      coreAPI->releaseService (stats);
+      stats = NULL;
+    }
   MUTEX_DESTROY (configLock);
   FREENONNULL (filteredNetworks_);
 }
