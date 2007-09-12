@@ -288,6 +288,11 @@ typedef struct HTTPSession
   int is_client;
 
   /**
+   * Is MHD still using this session handle?
+   */
+  int is_mhd_active;
+
+  /**
    * Data maintained for the http client-server connection
    * (depends on if we are client or server).
    */
@@ -668,6 +673,7 @@ requestCompletedCallback (void *unused,
       gpos = gpos->next;
     }
 #endif
+  httpsession->is_mhd_active--;
 }
 
 /**
@@ -981,7 +987,7 @@ accessHandlerCallback (void *cls,
       memset (httpSession, 0, sizeof (HTTPSession));
       httpSession->sender.hashPubKey = client;
       httpSession->lock = MUTEX_CREATE (YES);
-      httpSession->users = 0;   /* nobody yet */
+      httpSession->users = 0;   /* MHD */
       tsession = MALLOC (sizeof (TSession));
       memset (tsession, 0, sizeof (TSession));
       tsession->ttype = HTTP_PROTOCOL_NUMBER;
@@ -990,7 +996,10 @@ accessHandlerCallback (void *cls,
       httpSession->tsession = tsession;
       addTSession (tsession);
     }
-  *httpSessionCache = httpSession;
+  if (*httpSessionCache == NULL) {
+    httpSession->is_mhd_active++;
+    *httpSessionCache = httpSession;
+  }
   MUTEX_LOCK (httpSession->lock);
 #if DO_GET
   if (0 == strcasecmp (MHD_HTTP_METHOD_GET, method))
@@ -1789,8 +1798,9 @@ cleanup_connections ()
 #endif
           if (
 #if DO_GET
-               (s->cs.server.gets == NULL) &&
+               (s->cs.server.gets == NULL) &&	       
 #endif
+	       (s->is_mhd_active == 0) &&
                (s->users == 0))
             {
               MUTEX_UNLOCK (s->lock);
