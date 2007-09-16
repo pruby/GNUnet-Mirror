@@ -66,6 +66,7 @@ libgnunettransport_http_la_SOURCES = http.c
 libgnunettransport_http_la_LIBADD = \
  -lmicrohttpd @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  libgnunetip.la
 libgnunettransport_http_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 

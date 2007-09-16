@@ -29,9 +29,9 @@
 #include "gnunet_transport.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_upnp_service.h"
+#include "platform.h"
 #include <microhttpd.h>
 #include <curl/curl.h>
-#include "platform.h"
 #include "ip.h"
 
 #define DEBUG_HTTP NO
