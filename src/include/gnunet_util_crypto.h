@@ -117,7 +117,7 @@ typedef struct
 typedef struct
 {
   /**
-   * In big-endian, must be RSA_KEY_LEN+2
+   * In big-endian, must be RSA_KEY_LEN+4
    */
   unsigned short len;
   /**
