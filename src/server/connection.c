@@ -75,16 +75,6 @@
 #define STRICT_STAT_DOWN YES
 
 /**
- * Until which load do we consider the peer overly idle
- * (which means that we would like to use more resources).<p>
- *
- * Note that we use 70 to leave some room for applications
- * to consume resources "idly" (i.e. up to 85%) and then
- * still have some room for "paid for" resource consumption.
- */
-#define IDLE_LOAD_THRESHOLD 70
-
-/**
  * If an attempt to establish a connection is not answered
  * within 150s, drop.
  */
@@ -1272,7 +1262,7 @@ expireSendBufferEntries (BufferEntry * be)
     msgCap = EXPECTED_MTU;      /* have at least one MTU */
   if (msgCap > max_bpm_up)
     msgCap = max_bpm_up;        /* have no more than max-bpm for entire daemon */
-  if (load < 50)
+  if (load < IDLE_LOAD_THRESHOLD)
     {                           /* afford more if CPU load is low */
       if (load == 0)
         load = 1;               /* avoid division by zero */
@@ -2753,7 +2743,7 @@ cronDecreaseLiveness (void *unused)
                                            YES);
                   shutdownConnection (root);
                 }
-              if ((root->consider_transport_switch == YES) && (load_cpu < 50))
+              if ((root->consider_transport_switch == YES) && (load_cpu < IDLE_LOAD_THRESHOLD))
                 {
                   TSession *alternative;
 
@@ -3403,8 +3393,8 @@ connectionConfigChangeCallback (void *ctx,
       max_bpm = new_max_bpm;
       newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 4);
       /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-      if (newMAXHOSTS < 8)
-        newMAXHOSTS = 8;        /* strict minimum is 8 (must, divided by 2, match bootstrap.c!) */
+      if (newMAXHOSTS < MIN_CONNECTION_TARGET*2)
+        newMAXHOSTS = MIN_CONNECTION_TARGET*2;   
       if (newMAXHOSTS > 256)
         newMAXHOSTS = 256;      /* limit, otherwise we run out of sockets! */
 

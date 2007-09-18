@@ -219,14 +219,14 @@ evaluateQuery (const PeerIdentity * sender, unsigned int *priority)
   unsigned int netLoad = os_network_monitor_get_load (coreAPI->load_monitor,
                                                       Upload);
 
-  if ((netLoad == (unsigned int) -1) || (netLoad < IDLE_LOAD_THRESHOLD))
+  if ((netLoad == (unsigned int) -1) || (netLoad < GAP_IDLE_LOAD_THRESHOLD))
     {
       *priority = 0;            /* minimum priority, no charge! */
       return QUERY_ANSWER | QUERY_FORWARD | QUERY_INDIRECT;
     }
   /* charge! */
   (*priority) = -identity->changeHostTrust (sender, -(*priority));
-  if (netLoad < IDLE_LOAD_THRESHOLD + (*priority))
+  if (netLoad < GAP_IDLE_LOAD_THRESHOLD + (*priority))
     return QUERY_ANSWER | QUERY_FORWARD | QUERY_INDIRECT;
   else if (netLoad < 90 + 10 * (*priority))
     return QUERY_ANSWER | QUERY_FORWARD;

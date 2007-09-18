@@ -47,9 +47,9 @@
 /**
  * Until which load do we consider the peer idle and do not
  * charge at all? (should be larger than IDLE_LOAD_THRESHOLD used
- * by server/connection.c!)
+ * by the rest of the code)!
  */
-#define IDLE_LOAD_THRESHOLD 85
+#define GAP_IDLE_LOAD_THRESHOLD ((100 + IDLE_LOAD_THRESHOLD) / 2)
 
 /**
  * For how many different hosts can we have a query pending (at most).

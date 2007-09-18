@@ -171,7 +171,6 @@ updateInterfaceTraffic (struct LoadMonitor *monitor)
   if (monitor->proc_net_dev != NULL)
     {
       rewind (monitor->proc_net_dev);
-      fflush (monitor->proc_net_dev);
       /* Parse the line matching the interface ('eth0') */
       while (!feof (monitor->proc_net_dev))
         {

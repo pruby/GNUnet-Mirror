@@ -31,6 +31,22 @@
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
 
+/**
+ * Minimum number of connections for any peer
+ * (if we fall below this, strong countermeasures
+ * maybe used).
+ */
+#define MIN_CONNECTION_TARGET 4
+
+/**
+ * Until which load do we consider the peer overly idle
+ * (which means that we would like to use more resources).<p>
+ *
+ * Note that we use 70 to leave some room for applications
+ * to consume resources "idly" (i.e. up to 85%) and then
+ * still have some room for "paid for" resource consumption.
+ */
+#define IDLE_LOAD_THRESHOLD 70
 
 /**
  * @brief hello.  A hello body contains the current HostAddress, the

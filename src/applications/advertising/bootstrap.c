@@ -141,10 +141,10 @@ needBootstrap ()
   char *data;
 
   now = get_time ();
-  if (coreAPI->forAllConnectedNodes (NULL, NULL) >= 3)
+  if (coreAPI->forAllConnectedNodes (NULL, NULL) >= MIN_CONNECTION_TARGET)
     {
       /* still change delta and lastTest; even
-         if the peer _briefly_ drops below 3
+         if the peer _briefly_ drops below MCT
          connections, we don't want it to immediately
          go for the hostlist... */
       delta = 5 * cronMINUTES;
