@@ -158,7 +158,7 @@ stateWriteContent (struct GE_Context *ectx,
       return SYSERR;            /* failed! */
     }
   WRITE (fd, block, len);
-  if (0 != ftruncate (fd, len))
+  if (0 != FTRUNCATE (fd, len))
     GE_LOG_STRERROR_FILE (ectx,
                           GE_WARNING | GE_BULK | GE_ADMIN, "ftruncate", fil);
   disk_file_close (ectx, fil, fd);
