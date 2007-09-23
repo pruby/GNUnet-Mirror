@@ -190,7 +190,7 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
   else
     {
       /* store the blocking mode */
-      __win_SetHandleBlockingMode (s->handle, doBlock);
+      plibc_fd_set_blocking(s->handle, doBlock);
       return 0;
     }
 #else
@@ -209,7 +209,7 @@ socket_test_blocking (struct SocketHandle *s)
 #ifndef MINGW
   return (fcntl (s->handle, F_GETFL) & O_NONBLOCK) ? NO : YES;
 #else
-  return __win_IsHandleMarkedAsBlocking (s->handle);
+  return plibc_fd_get_blocking(s->handle);
 #endif
 }
 
@@ -524,8 +524,7 @@ socket_test_valid (struct SocketHandle *s)
   struct stat buf;
   return -1 != fstat (s->handle, &buf);
 #else
-  long l;
-  return ioctlsocket (s->handle, FIONREAD, &l) != SOCKET_ERROR;
+  return _win_isSocketValid(s->handle);
 #endif
 }
 
