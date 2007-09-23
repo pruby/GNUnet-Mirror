@@ -227,7 +227,7 @@ readFromIOC (IOContext * this,
       MUTEX_UNLOCK (this->lock);
       return SYSERR;
     }
-  lseek (this->handles[level], pos, SEEK_SET);
+  LSEEK (this->handles[level], pos, SEEK_SET);
   ret = READ (this->handles[level], buf, len);
   MUTEX_UNLOCK (this->lock);
 #if DEBUG_DOWNLOAD
@@ -262,7 +262,7 @@ writeToIOC (IOContext * this,
       MUTEX_UNLOCK (this->lock);
       return len;               /* lie -- no temps allowed... */
     }
-  lseek (this->handles[level], pos, SEEK_SET);
+  LSEEK (this->handles[level], pos, SEEK_SET);
   ret = WRITE (this->handles[level], buf, len);
   if (ret != len)
     {

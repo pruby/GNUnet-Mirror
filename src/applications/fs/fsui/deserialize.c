@@ -755,7 +755,7 @@ FSUI_deserialize (struct FSUI_Context *ctx)
       GE_LOG (ctx->ectx,
               GE_WARNING | GE_BULK | GE_USER,
               _("FSUI state file `%s' had syntax error at offset %u.\n"),
-              ctx->name, lseek (fd, 0, SEEK_CUR));
+              ctx->name, LSEEK (fd, 0, SEEK_CUR));
     }
   CLOSE (fd);
   UNLINK (ctx->name);

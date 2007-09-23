@@ -214,7 +214,7 @@ ONDEMAND_index (struct GE_Context *cectx,
           FREE (fn);
           return SYSERR;
         }
-      lseek (fd, fileOffset, SEEK_SET);
+      LSEEK (fd, fileOffset, SEEK_SET);
       ret = WRITE (fd, &content[1], size - sizeof (DBlock));
       if (ret == size - sizeof (DBlock))
         {
@@ -456,7 +456,7 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
     FREE (afsDir);
   }
 #endif
-  if (ntohll (odb->fileOffset) != lseek (fileHandle,
+  if (ntohll (odb->fileOffset) != LSEEK (fileHandle,
                                          ntohll (odb->fileOffset), SEEK_SET))
     {
       GE_LOG_STRERROR_FILE (ectx,

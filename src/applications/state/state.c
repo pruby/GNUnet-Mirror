@@ -121,7 +121,7 @@ stateAppendContent (struct GE_Context *ectx,
       FREE (fil);
       return SYSERR;            /* failed! */
     }
-  lseek (fd, 0, SEEK_END);
+  LSEEK (fd, 0, SEEK_END);
   WRITE (fd, block, len);
   disk_file_close (ectx, fil, fd);
   FREE (fil);

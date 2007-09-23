@@ -136,10 +136,10 @@ FLOCK (int fd, int operation)
   fsync (fd);
 }
 static int
-LSEEK (int fd, off_t pos, int mode)
+SEMA_LSEEK (int fd, off_t pos, int mode)
 {
   int ret;
-  ret = lseek (fd, pos, mode);
+  ret = LSEEK (fd, pos, mode);
   if (ret == -1)
     GE_LOG_STRERROR (NULL, GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, "lseek");
   return ret;
@@ -326,18 +326,18 @@ again:
   if (sizeof (int) != READ (fd, &cnt, sizeof (int)))
     {
       cnt = htonl (initialValue);
-      LSEEK (fd, 0, SEEK_SET);
+      SEMA_LSEEK (fd, 0, SEEK_SET);
       if (sizeof (int) != WRITE (fd, &cnt, sizeof (int)))
         GE_LOG_STRERROR_FILE (ectx,
                               GE_ERROR | GE_USER | GE_BULK,
                               "write", basename);
     }
-  LSEEK (fd, sizeof (int), SEEK_SET);
+  SEMA_LSEEK (fd, sizeof (int), SEEK_SET);
   if (sizeof (int) != READ (fd, &cnt, sizeof (int)))
     cnt = htonl (1);
   else
     cnt = htonl (ntohl (cnt) + 1);
-  LSEEK (fd, sizeof (int), SEEK_SET);
+  SEMA_LSEEK (fd, sizeof (int), SEEK_SET);
   if (sizeof (int) != WRITE (fd, &cnt, sizeof (int)))
     GE_LOG_STRERROR_FILE (ectx,
                           GE_WARNING | GE_USER | GE_BULK, "write", basename);
@@ -380,7 +380,7 @@ IPC_SEMAPHORE_UP (struct IPC_SEMAPHORE *sem)
 
     MUTEX_LOCK (&sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
-    LSEEK (sem->fd, 0, SEEK_SET);
+    SEMA_LSEEK (sem->fd, 0, SEEK_SET);
     if (sizeof (int) != READ (sem->fd, &cnt, sizeof (int)))
       {
         GE_LOG_STRERROR_FILE (sem->ectx,
@@ -391,7 +391,7 @@ IPC_SEMAPHORE_UP (struct IPC_SEMAPHORE *sem)
         return;
       }
     cnt = htonl (ntohl (cnt) + 1);
-    LSEEK (sem->fd, 0, SEEK_SET);
+    SEMA_LSEEK (sem->fd, 0, SEEK_SET);
     if (sizeof (int) != WRITE (sem->fd, &cnt, sizeof (int)))
       GE_LOG_STRERROR_FILE (sem->ectx,
                             GE_WARNING | GE_USER | GE_BULK,
@@ -444,7 +444,7 @@ IPC_SEMAPHORE_DOWN (struct IPC_SEMAPHORE *sem, int mayBlock)
     cnt = ntohl (0);
     while (htonl (cnt) == 0)
       {
-        LSEEK (sem->fd, 0, SEEK_SET);
+        SEMA_LSEEK (sem->fd, 0, SEEK_SET);
         if (sizeof (int) != READ (sem->fd, &cnt, sizeof (int)))
           {
             GE_LOG_STRERROR_FILE (sem->ectx,
@@ -464,7 +464,7 @@ IPC_SEMAPHORE_DOWN (struct IPC_SEMAPHORE *sem, int mayBlock)
       }
 
     cnt = htonl (ntohl (cnt) - 1);
-    LSEEK (sem->fd, 0, SEEK_SET);
+    SEMA_LSEEK (sem->fd, 0, SEEK_SET);
     if (sizeof (int) != WRITE (sem->fd, &cnt, sizeof (int)))
       GE_LOG_STRERROR_FILE (sem->ectx,
                             GE_WARNING | GE_USER | GE_BULK,
@@ -524,11 +524,11 @@ IPC_SEMAPHORE_DESTROY (struct IPC_SEMAPHORE *sem)
 
     MUTEX_DESTROY (&sem->internalLock);
     FLOCK (sem->fd, LOCK_EX);
-    LSEEK (sem->fd, sizeof (int), SEEK_SET);
+    SEMA_LSEEK (sem->fd, sizeof (int), SEEK_SET);
     if (sizeof (int) == READ (sem->fd, &cnt, sizeof (int)))
       {
         cnt = htonl (ntohl (cnt) - 1);
-        LSEEK (sem->fd, sizeof (int), SEEK_SET);
+        SEMA_LSEEK (sem->fd, sizeof (int), SEEK_SET);
         if (sizeof (int) != WRITE (sem->fd, &cnt, sizeof (int)))
           GE_LOG_STRERROR (sem->ectx,
                            GE_WARNING | GE_USER | GE_BULK, "write");

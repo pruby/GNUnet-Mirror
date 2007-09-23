@@ -97,7 +97,7 @@ URITRACK_getState (struct GE_Context *ectx,
   if (fd == -1)
     return URITRACK_FRESH;
   o = 2 * (crc % size);
-  if (o != lseek (fd, o, SEEK_SET))
+  if (o != LSEEK (fd, o, SEEK_SET))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
@@ -143,7 +143,7 @@ URITRACK_addState (struct GE_Context *ectx,
       return;
     }
   o = 2 * (crc % size);
-  if (o != lseek (fd, o, SEEK_SET))
+  if (o != LSEEK (fd, o, SEEK_SET))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
@@ -163,7 +163,7 @@ URITRACK_addState (struct GE_Context *ectx,
       io[1] = URITRACK_FRESH;
     }
   io[1] |= state;
-  if (o != lseek (fd, o, SEEK_SET))
+  if (o != LSEEK (fd, o, SEEK_SET))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,

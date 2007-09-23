@@ -166,7 +166,7 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
 
-  if (fileSlot != (unsigned int) lseek (fd, fileSlot, SEEK_SET))
+  if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
     GE_DIE_STRERROR (NULL,
                      GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "lseek");
   value = 0;
@@ -186,7 +186,7 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
         high++;
     }
   value = ((high << 4) | low);
-  if (fileSlot != (unsigned int) lseek (fd, fileSlot, SEEK_SET))
+  if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
     GE_DIE_STRERROR (NULL,
                      GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "lseek");
   if (1 != WRITE (fd, &value, 1))
@@ -218,7 +218,7 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
   /* Each char slot in the counter file holds two 4 bit counters */
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
-  lseek (fd, fileSlot, SEEK_SET);
+  LSEEK (fd, fileSlot, SEEK_SET);
   value = 0;
   READ (fd, &value, 1);
 
@@ -245,7 +245,7 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
         }
     }
   value = ((high << 4) | low);
-  lseek (fd, fileSlot, SEEK_SET);
+  LSEEK (fd, fileSlot, SEEK_SET);
   if (1 != WRITE (fd, &value, 1))
     GE_DIE_STRERROR (NULL,
                      GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "write");
@@ -271,7 +271,7 @@ makeEmptyFile (int fd, unsigned int size)
     return SYSERR;
   buffer = MALLOC (BUFFSIZE);
   memset (buffer, 0, BUFFSIZE);
-  lseek (fd, 0, SEEK_SET);
+  LSEEK (fd, 0, SEEK_SET);
 
   while (bytesleft > 0)
     {
