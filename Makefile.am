@@ -1,5 +1,5 @@
 INCLUDES = -I$(top_srcdir)/src/include
-SUBDIRS  = m4 po libltdl src doc contrib
+SUBDIRS  = m4 po src doc contrib
 
 EXTRA_DIST = \
  ABOUT-NLS \

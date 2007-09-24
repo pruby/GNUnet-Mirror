@@ -14,7 +14,7 @@ libgnunetmodule_session_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 
 if HAVE_MHD
-  httptest = sessiontest_http
+  httptest = sessiontest_http sessiontest2_http
 endif
 
 check_PROGRAMS = \
@@ -42,6 +42,15 @@ sessiontest_udp_LDADD = \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+sessiontest_http_SOURCES = \
+  sessiontest.c 
+sessiontest_http_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
 sessiontest2_SOURCES = \
   sessiontest2.c 
 sessiontest2_LDADD = \
@@ -52,9 +61,9 @@ sessiontest2_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 
-sessiontest_http_SOURCES = \
+sessiontest2_http_SOURCES = \
   sessiontest_http.c 
-sessiontest_http_LDADD = \
+sessiontest2_http_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \

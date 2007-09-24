@@ -30,6 +30,7 @@
 int
 main (int argc, char *argv[])
 {
+  static long k;
   int ret;
   cron_t start;
   struct GE_Context *ectx;
@@ -51,7 +52,7 @@ main (int argc, char *argv[])
   start = get_time ();
   ret = os_cpu_get_load (ectx, cfg);
   while (start + 60 * cronSECONDS > get_time ())
-    sqrt (245.2523);            /* do some processing to drive load up */
+    k++;            /* do some processing to drive load up */
   if (ret > os_cpu_get_load (ectx, cfg))
     {
       printf ("busy loop decreased CPU load: %d < %d.\n",

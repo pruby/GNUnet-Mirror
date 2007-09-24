@@ -82,7 +82,7 @@ main (int argc, const char **argv)
     }
   peers =
     gnunet_testing_start_daemons (NULL ==
-                                  strstr (argv[0], "_udp") ? "tcp" : "udp",
+                                  strstr (argv[0], "_") + 1,
                                   "advertising stats",
                                   "/tmp/gnunet-advertising-test", 2087, 10,
                                   NUM_PEERS);

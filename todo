@@ -4,11 +4,9 @@ Annotations:
   RC == Release Critical
 
 0.7.3 [8'07] (aka "features"):
+- http transport needs more testing (still not 100% sure it is working)
+- fix strange crash-bug(s) in gnunetd and gnunet-setup
 - chat support basics [RC]
-- old/new features:
-  * SMTP transport (libesmtp)
-- Documentation:
-  * LJ article
 - Testcases:
   * more XFS/DHT
   * tracekit
@@ -25,6 +23,8 @@ Annotations:
   gnunet-insert only if the file is actually needed!)
 - guard friendly connection count (#1018) [RC]
 - power insert [#854]
+- old/new features:
+  * SMTP transport (libesmtp)
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling

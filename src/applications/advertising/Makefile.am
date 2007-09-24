@@ -16,24 +16,39 @@ libgnunetmodule_advertising_la_LIBADD = \
 libgnunetmodule_advertising_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 
+
+
+if HAVE_MHD
+  httptest = advertisingtest_http 
+endif
+
 check_PROGRAMS = \
-  advertising_test \
-  advertising_test_udp 
+  advertisingtest_tcp \
+  advertisingtest_udp $(httptest) 
 
 TESTS = $(check_PROGRAMS)
 
-advertising_test_SOURCES = \
+advertisingtest_tcp_SOURCES = \
   advertising_test.c 
-advertising_test_LDADD = \
+advertisingtest_tcp_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-advertising_test_udp_SOURCES = \
+advertisingtest_udp_SOURCES = \
   advertising_test.c 
-advertising_test_udp_LDADD = \
+advertisingtest_udp_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
+  $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+advertisingtest_http_SOURCES = \
+  advertising_test.c 
+advertisingtest_http_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
