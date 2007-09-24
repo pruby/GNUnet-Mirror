@@ -1634,7 +1634,7 @@ sendBuffer (BufferEntry * be)
       tsession = be->session.tsession;
       be->session.tsession = NULL;
       if (tsession != NULL)
-	transport->disconnect (tsession, __FILE__);
+        transport->disconnect (tsession, __FILE__);
       ensureTransportConnected (be);
       if (be->session.tsession == NULL)
         {
@@ -2684,7 +2684,7 @@ cronDecreaseLiveness (void *unused)
   unsigned long long total_send_buffer_size;
   int load_nup;
   int load_cpu;
-  TSession * tsession;
+  TSession *tsession;
 
   ENTRY ();
   load_cpu = os_cpu_get_load (ectx, cfg);
@@ -2743,7 +2743,8 @@ cronDecreaseLiveness (void *unused)
                                            YES);
                   shutdownConnection (root);
                 }
-              if ((root->consider_transport_switch == YES) && (load_cpu < IDLE_LOAD_THRESHOLD))
+              if ((root->consider_transport_switch == YES)
+                  && (load_cpu < IDLE_LOAD_THRESHOLD))
                 {
                   TSession *alternative;
 
@@ -2754,19 +2755,18 @@ cronDecreaseLiveness (void *unused)
                   if ((alternative != NULL)
                       && (transport->getMTU (alternative->ttype) == 0))
                     {
-		      tsession = root->session.tsession;
+                      tsession = root->session.tsession;
                       root->session.mtu = 0;
                       root->session.tsession = alternative;
                       alternative = NULL;
                       root->consider_transport_switch = NO;
-		      if (tsession != NULL)
-			transport->disconnect (tsession,
-					       __FILE__);
+                      if (tsession != NULL)
+                        transport->disconnect (tsession, __FILE__);
                       if (stats != NULL)
                         stats->change (stat_transport_switches, 1);
                     }
-                  if (alternative != NULL)                    
-                      transport->disconnect (alternative, __FILE__);                    
+                  if (alternative != NULL)
+                    transport->disconnect (alternative, __FILE__);
                 }
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&
@@ -3393,8 +3393,8 @@ connectionConfigChangeCallback (void *ctx,
       max_bpm = new_max_bpm;
       newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 4);
       /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-      if (newMAXHOSTS < MIN_CONNECTION_TARGET*2)
-        newMAXHOSTS = MIN_CONNECTION_TARGET*2;   
+      if (newMAXHOSTS < MIN_CONNECTION_TARGET * 2)
+        newMAXHOSTS = MIN_CONNECTION_TARGET * 2;
       if (newMAXHOSTS > 256)
         newMAXHOSTS = 256;      /* limit, otherwise we run out of sockets! */
 

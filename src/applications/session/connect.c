@@ -597,9 +597,9 @@ acceptSessionKey (const PeerIdentity * sender,
                                             NULL,
                                             NULL,
                                             YES)) &&
-      ( (YES == identity->isBlacklisted (sender, NO)) ||
-	( (coreAPI->forAllConnectedNodes (NULL, NULL) >= 3) &&
-	  (os_cpu_get_load(ectx, coreAPI->cfg) > IDLE_LOAD_THRESHOLD)) ) )
+      ((YES == identity->isBlacklisted (sender, NO)) ||
+       ((coreAPI->forAllConnectedNodes (NULL, NULL) >= 3) &&
+        (os_cpu_get_load (ectx, coreAPI->cfg) > IDLE_LOAD_THRESHOLD))))
     return SYSERR;              /* other peer initiated but is
                                    listed as not allowed => discard */
 

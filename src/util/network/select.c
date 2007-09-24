@@ -774,7 +774,7 @@ network_make_pipe_nonblocking (struct GE_Context *ectx, int handle)
   mode = PIPE_NOWAIT;
 
   if (SetNamedPipeHandleState ((HANDLE) handle, &mode, NULL, NULL))
-    plibc_fd_set_blocking(handle, 0);
+    plibc_fd_set_blocking (handle, 0);
   /* don't report errors because Win9x doesn't support SetNamedPipeHandleState() */
 #else
   int flags = fcntl (handle, F_GETFL);

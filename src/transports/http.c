@@ -996,10 +996,11 @@ accessHandlerCallback (void *cls,
       httpSession->tsession = tsession;
       addTSession (tsession);
     }
-  if (*httpSessionCache == NULL) {
-    httpSession->is_mhd_active++;
-    *httpSessionCache = httpSession;
-  }
+  if (*httpSessionCache == NULL)
+    {
+      httpSession->is_mhd_active++;
+      *httpSessionCache = httpSession;
+    }
   MUTEX_LOCK (httpSession->lock);
 #if DO_GET
   if (0 == strcasecmp (MHD_HTTP_METHOD_GET, method))
@@ -1798,10 +1799,9 @@ cleanup_connections ()
 #endif
           if (
 #if DO_GET
-               (s->cs.server.gets == NULL) &&	       
+               (s->cs.server.gets == NULL) &&
 #endif
-	       (s->is_mhd_active == 0) &&
-               (s->users == 0))
+               (s->is_mhd_active == 0) && (s->users == 0))
             {
               MUTEX_UNLOCK (s->lock);
 #if DO_GET
