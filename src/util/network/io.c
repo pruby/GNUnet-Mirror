@@ -181,7 +181,7 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
   u_long mode;
 
   mode = !doBlock;
-  if (ioctlsocket (s->handle, FIONBIO, &mode) == SOCKET_ERROR)
+  if (ioctlsocket (plibc_fd_get_handle(s->handle), FIONBIO, &mode) == SOCKET_ERROR)
     {
       SetErrnoFromWinsockError (WSAGetLastError ());
 
