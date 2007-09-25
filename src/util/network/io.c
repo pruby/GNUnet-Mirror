@@ -181,7 +181,11 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
   u_long mode;
 
   mode = !doBlock;
+#if HAVE_PLIBC_FD
   if (ioctlsocket (plibc_fd_get_handle(s->handle), FIONBIO, &mode) == SOCKET_ERROR)
+#else
+  if (ioctlsocket (s->handle, FIONBIO, &mode) == SOCKET_ERROR)
+#endif
     {
       SetErrnoFromWinsockError (WSAGetLastError ());
 
@@ -190,7 +194,11 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
   else
     {
       /* store the blocking mode */
+#if HAVE_PLIBC_FD
       plibc_fd_set_blocking (s->handle, doBlock);
+#else
+      __win_SetHandleBlockingMode(s->handle, doBlock);
+#endif
       return 0;
     }
 #else
@@ -209,7 +217,11 @@ socket_test_blocking (struct SocketHandle *s)
 #ifndef MINGW
   return (fcntl (s->handle, F_GETFL) & O_NONBLOCK) ? NO : YES;
 #else
+#if HAVE_PLIBC_FD
   return plibc_fd_get_blocking (s->handle);
+#else
+  return __win_IsHandleMarkedAsBlocking(s->handle);
+#endif
 #endif
 }
 

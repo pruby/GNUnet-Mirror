@@ -1590,7 +1590,11 @@ static int makeNonblocking (int handle)
   else
     {
       /* store the blocking mode */
+#if HAVE_PLIBC_FD
       plibc_fd_set_blocking (handle, 0);
+#else
+      __win_SetHandleBlockingMode(handle, 0);
+#endif
     }
 #else
   int flags = fcntl (handle, F_GETFL);
