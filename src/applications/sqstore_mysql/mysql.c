@@ -213,7 +213,9 @@ typedef struct
   MYSQL_STMT *update_entry;
 
 
-
+#if 0
+  /* old, easier to read statments -- do not use,
+     C code no longer works with these! */
 #define SELECT_IT_LOW_PRIORITY "SELECT * FROM gn071 WHERE ( (prio = ? AND vkey > ?) OR (prio > ? AND vkey != ?) )"\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
 
@@ -226,6 +228,44 @@ typedef struct
 
 #define SELECT_IT_MIGRATION_ORDER "SELECT * FROM gn071 WHERE ( (expire = ? AND vkey < ?) OR (expire < ? AND vkey != ?) ) "\
                                   "AND expire > ? AND type!=3 "\
+                                  "ORDER BY expire DESC,vkey DESC LIMIT 1"
+
+#endif
+
+/* warning, slighly crazy mysql statements ahead.  Essentially, MySQL does not handle
+   "OR" very well, so we need to use UNION instead.  And UNION does not 
+   automatically apply a LIMIT on the outermost clause, so we need to 
+   repeat ourselves quite a bit.  All hail the performance gods (and thanks 
+   to #mysql on freenode) */
+#define SELECT_IT_LOW_PRIORITY "(SELECT * FROM gn071 WHERE (prio = ? AND vkey > ?) "\
+                               "ORDER BY prio ASC,vkey ASC LIMIT 1) "\
+                               "UNION "\
+                               "(SELECT * FROM gn071 WHERE (prio > ? AND vkey != ?)"\
+                               "ORDER BY prio ASC,vkey ASC LIMIT 1)"\
+                               "ORDER BY prio ASC,vkey ASC LIMIT 1"
+
+#define SELECT_IT_NON_ANONYMOUS "(SELECT * FROM gn071 WHERE (prio = ? AND vkey < ?)"\
+                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
+                                "UNION "\
+                                "(SELECT * FROM gn071 WHERE (prio < ? AND vkey != ?)"\
+                                " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
+                                "ORDER BY prio DESC,vkey DESC LIMIT 1"
+
+#define SELECT_IT_EXPIRATION_TIME "(SELECT * FROM gn071 WHERE (expire = ? AND vkey > ?) "\
+                                  "ORDER BY expire ASC,vkey ASC LIMIT 1) "\
+                                  "UNION "\
+                                  "(SELECT * FROM gn071 WHERE (expire > ? AND vkey != ?) "\
+                                  "ORDER BY expire ASC,vkey ASC LIMIT 1)"\
+                                  "ORDER BY expire ASC,vkey ASC LIMIT 1"
+
+
+#define SELECT_IT_MIGRATION_ORDER "(SELECT * FROM gn071 WHERE (expire = ? AND vkey < ?)"\
+                                  " AND expire > ? AND type!=3"\
+                                  " ORDER BY expire DESC,vkey DESC LIMIT 1) "\
+                                  "UNION "\
+                                  "(SELECT * FROM gn071 WHERE (expire < ? AND vkey != ?)"\
+                                  " AND expire > ? AND type!=3"\
+                                  " ORDER BY expire DESC,vkey DESC LIMIT 1)"\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
   MYSQL_STMT *iter[4];
 
@@ -801,6 +841,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
  * @param iter never NULL
  * @param is_asc are we using ascending order?
  * @param is_prio is the extra ordering by priority (otherwise by expiration)
+ * @param is_migr is this IT_MIGRATON_ORDER (with expire)
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
@@ -808,6 +849,7 @@ static int
 iterateHelper (unsigned int type,
                int is_asc,
                int is_prio,
+	       int is_migr,
                unsigned int iter_select, Datum_Iterator iter, void *closure)
 {
   Datastore_Value *datum;
@@ -825,10 +867,11 @@ iterateHelper (unsigned int type,
   unsigned long hashSize;
   HashCode512 key;
   cron_t now;
-  MYSQL_BIND qbind[5];
+  MYSQL_BIND qbind[6];
   MYSQL_BIND rbind[7];
   MYSQL_STMT *stmt;
 
+  GE_ASSERT(NULL, ( (is_migr == 1) || (is_migr == 0)));
   if (is_asc)
     {
       last_prio = 0;
@@ -847,28 +890,33 @@ iterateHelper (unsigned int type,
       qbind[0].buffer_type = MYSQL_TYPE_LONG;
       qbind[0].buffer = &last_prio;
       qbind[0].is_unsigned = YES;
-      qbind[2].buffer_type = MYSQL_TYPE_LONG;
-      qbind[2].buffer = &last_prio;
-      qbind[2].is_unsigned = YES;
+      qbind[2 + is_migr].buffer_type = MYSQL_TYPE_LONG;
+      qbind[2 + is_migr].buffer = &last_prio;
+      qbind[2 + is_migr].is_unsigned = YES;
     }
   else
     {
       qbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
       qbind[0].buffer = &last_expire;
       qbind[0].is_unsigned = YES;
-      qbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
-      qbind[2].buffer = &last_expire;
-      qbind[2].is_unsigned = YES;
+      qbind[2 + is_migr].buffer_type = MYSQL_TYPE_LONGLONG;
+      qbind[2 + is_migr].buffer = &last_expire;
+      qbind[2 + is_migr].is_unsigned = YES;
     }
   qbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[1].buffer = &last_vkey;
   qbind[1].is_unsigned = YES;
-  qbind[3].buffer_type = MYSQL_TYPE_LONGLONG;
-  qbind[3].buffer = &last_vkey;
-  qbind[3].is_unsigned = YES;
-  qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
-  qbind[4].buffer = &now;
-  qbind[4].is_unsigned = YES;
+  qbind[3 + is_migr].buffer_type = MYSQL_TYPE_LONGLONG;
+  qbind[3 + is_migr].buffer = &last_vkey;
+  qbind[3 + is_migr].is_unsigned = YES;
+  if (is_migr) {
+    qbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
+    qbind[2].buffer = &now;
+    qbind[2].is_unsigned = YES;
+    qbind[5].buffer_type = MYSQL_TYPE_LONGLONG;
+    qbind[5].buffer = &now;
+    qbind[5].is_unsigned = YES;
+  }
 
   hashSize = sizeof (HashCode512);
   memset (rbind, 0, sizeof (rbind));
@@ -907,7 +955,7 @@ iterateHelper (unsigned int type,
           return SYSERR;
         }
       stmt = dbh->iter[iter_select];
-      GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 5);
+      GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 6);
       GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       now = get_time ();
       if (mysql_stmt_bind_param (stmt, qbind))
@@ -998,7 +1046,7 @@ iterateHelper (unsigned int type,
 static int
 iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, YES, YES, 0, iter, closure);
+  return iterateHelper (type, YES, YES, NO, 0, iter, closure);
 }
 
 /**
@@ -1014,7 +1062,7 @@ iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, NO, YES, 1, iter, closure);
+  return iterateHelper (type, NO, YES, NO, 1, iter, closure);
 }
 
 /**
@@ -1030,7 +1078,7 @@ iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (type, YES, NO, 2, iter, closure);
+  return iterateHelper (type, YES, NO, NO, 2, iter, closure);
 }
 
 /**
@@ -1044,7 +1092,7 @@ iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateMigrationOrder (Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (0, NO, NO, 3, iter, closure);
+  return iterateHelper (0, NO, NO, YES, 3, iter, closure);
 }
 
 /**
@@ -1058,7 +1106,7 @@ iterateMigrationOrder (Datum_Iterator iter, void *closure)
 static int
 iterateAllNow (Datum_Iterator iter, void *closure)
 {
-  return iterateHelper (0, YES, YES, 0, iter, closure);
+  return iterateHelper (0, YES, YES, NO, 0, iter, closure);
 }
 
 /**
