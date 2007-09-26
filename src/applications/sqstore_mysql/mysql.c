@@ -237,33 +237,33 @@ typedef struct
    automatically apply a LIMIT on the outermost clause, so we need to 
    repeat ourselves quite a bit.  All hail the performance gods (and thanks 
    to #mysql on freenode) */
-#define SELECT_IT_LOW_PRIORITY "(SELECT * FROM gn071 WHERE (prio = ? AND vkey > ?) "\
+#define SELECT_IT_LOW_PRIORITY "(SELECT * FROM gn071 FORCE INDEX(prio) WHERE (prio = ? AND vkey > ?) "\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1) "\
                                "UNION "\
-                               "(SELECT * FROM gn071 WHERE (prio > ? AND vkey != ?)"\
+                               "(SELECT * FROM gn071 FORCE INDEX(prio) WHERE (prio > ? AND vkey != ?)"\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1)"\
                                "ORDER BY prio ASC,vkey ASC LIMIT 1"
 
-#define SELECT_IT_NON_ANONYMOUS "(SELECT * FROM gn071 WHERE (prio = ? AND vkey < ?)"\
+#define SELECT_IT_NON_ANONYMOUS "(SELECT * FROM gn071 FORCE INDEX(prio) WHERE (prio = ? AND vkey < ?)"\
                                 " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
                                 "UNION "\
-                                "(SELECT * FROM gn071 WHERE (prio < ? AND vkey != ?)"\
+                                "(SELECT * FROM gn071 FORCE INDEX(prio) WHERE (prio < ? AND vkey != ?)"\
                                 " AND anonLevel=0 AND type != 0xFFFFFFFF ORDER BY prio DESC,vkey DESC LIMIT 1) "\
                                 "ORDER BY prio DESC,vkey DESC LIMIT 1"
 
-#define SELECT_IT_EXPIRATION_TIME "(SELECT * FROM gn071 WHERE (expire = ? AND vkey > ?) "\
+#define SELECT_IT_EXPIRATION_TIME "(SELECT * FROM gn071 FORCE INDEX(expire) WHERE (expire = ? AND vkey > ?) "\
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1) "\
                                   "UNION "\
-                                  "(SELECT * FROM gn071 WHERE (expire > ? AND vkey != ?) "\
+                                  "(SELECT * FROM gn071 FORCE INDEX(expire) WHERE (expire > ? AND vkey != ?) "\
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1)"\
                                   "ORDER BY expire ASC,vkey ASC LIMIT 1"
 
 
-#define SELECT_IT_MIGRATION_ORDER "(SELECT * FROM gn071 WHERE (expire = ? AND vkey < ?)"\
+#define SELECT_IT_MIGRATION_ORDER "(SELECT * FROM gn071 FORCE INDEX(expire) WHERE (expire = ? AND vkey < ?)"\
                                   " AND expire > ? AND type!=3"\
                                   " ORDER BY expire DESC,vkey DESC LIMIT 1) "\
                                   "UNION "\
-                                  "(SELECT * FROM gn071 WHERE (expire < ? AND vkey != ?)"\
+                                  "(SELECT * FROM gn071 FORCE INDEX(expire) WHERE (expire < ? AND vkey != ?)"\
                                   " AND expire > ? AND type!=3"\
                                   " ORDER BY expire DESC,vkey DESC LIMIT 1)"\
                                   "ORDER BY expire DESC,vkey DESC LIMIT 1"
@@ -367,11 +367,11 @@ iopen ()
                    " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " hash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-                   " INDEX (hash(64)),"
-                   " INDEX (vkey),"
-                   " INDEX (prio,vkey),"
-                   " INDEX (expire,vkey,type),"
-                   " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=MyISAM");
+                   " INDEX hash (hash(64)),"
+                   " INDEX vkey (vkey),"
+                   " INDEX prio (prio,vkey),"
+                   " INDEX expire (expire,vkey,type),"
+                   " INDEX anonLevel (anonLevel,prio,vkey,type)" ") ENGINE=MyISAM");
     }
   else
     {
@@ -384,11 +384,11 @@ iopen ()
                    " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " hash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-                   " INDEX (hash(64)),"
-                   " INDEX (vkey),"
-                   " INDEX (prio,vkey),"
-                   " INDEX (expire,vkey,type),"
-                   " INDEX (anonLevel,prio,vkey,type)" ") ENGINE=InnoDB");
+                   " INDEX hash (hash(64)),"
+                   " INDEX vkey (vkey),"
+                   " INDEX prio (prio,vkey),"
+                   " INDEX expire (expire,vkey,type),"
+                   " INDEX anonLevel (anonLevel,prio,vkey,type)" ") ENGINE=InnoDB");
     }
   if (mysql_error (dbh->dbf)[0])
     {
