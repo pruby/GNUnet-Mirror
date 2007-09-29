@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-09-29 16:44-0600\n"
+"POT-Creation-Date: 2007-09-29 16:48-0600\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -617,25 +617,25 @@ msgstr ""
 #: src/applications/sqstore_sqlite/sqlite.c:54
 #: src/applications/sqstore_mysql/mysql.c:145
 #: src/applications/sqstore_mysql/mysql.c:152
-#: src/applications/sqstore_mysql/mysql.c:468
-#: src/applications/sqstore_mysql/mysql.c:478
-#: src/applications/sqstore_mysql/mysql.c:516
-#: src/applications/sqstore_mysql/mysql.c:526
-#: src/applications/sqstore_mysql/mysql.c:558
-#: src/applications/sqstore_mysql/mysql.c:569
-#: src/applications/sqstore_mysql/mysql.c:667
-#: src/applications/sqstore_mysql/mysql.c:679
-#: src/applications/sqstore_mysql/mysql.c:691
-#: src/applications/sqstore_mysql/mysql.c:705
-#: src/applications/sqstore_mysql/mysql.c:802
-#: src/applications/sqstore_mysql/mysql.c:816
-#: src/applications/sqstore_mysql/mysql.c:965
-#: src/applications/sqstore_mysql/mysql.c:977
-#: src/applications/sqstore_mysql/mysql.c:989
-#: src/applications/sqstore_mysql/mysql.c:1229
-#: src/applications/sqstore_mysql/mysql.c:1241
-#: src/applications/sqstore_mysql/mysql.c:1253
-#: src/applications/sqstore_mysql/mysql.c:1338
+#: src/applications/sqstore_mysql/mysql.c:470
+#: src/applications/sqstore_mysql/mysql.c:480
+#: src/applications/sqstore_mysql/mysql.c:518
+#: src/applications/sqstore_mysql/mysql.c:528
+#: src/applications/sqstore_mysql/mysql.c:560
+#: src/applications/sqstore_mysql/mysql.c:571
+#: src/applications/sqstore_mysql/mysql.c:669
+#: src/applications/sqstore_mysql/mysql.c:681
+#: src/applications/sqstore_mysql/mysql.c:693
+#: src/applications/sqstore_mysql/mysql.c:707
+#: src/applications/sqstore_mysql/mysql.c:804
+#: src/applications/sqstore_mysql/mysql.c:818
+#: src/applications/sqstore_mysql/mysql.c:968
+#: src/applications/sqstore_mysql/mysql.c:980
+#: src/applications/sqstore_mysql/mysql.c:992
+#: src/applications/sqstore_mysql/mysql.c:1232
+#: src/applications/sqstore_mysql/mysql.c:1244
+#: src/applications/sqstore_mysql/mysql.c:1256
+#: src/applications/sqstore_mysql/mysql.c:1341
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/applications/dstore/dstore.c:92 src/applications/dstore/dstore.c:99
@@ -670,7 +670,7 @@ msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
 
 #: src/applications/sqstore_sqlite/sqlite.c:1276
-#: src/applications/sqstore_mysql/mysql.c:1446
+#: src/applications/sqstore_mysql/mysql.c:1449
 msgid "# bytes in datastore"
 msgstr ""
 
@@ -808,24 +808,24 @@ msgstr "Câu trả lời async của RPC sai.\n"
 msgid "async RPC reply not received.\n"
 msgstr "Không nhận được câu trả lời async của RPC.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:419
+#: src/applications/sqstore_mysql/mysql.c:421
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error: %s"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1356
+#: src/applications/sqstore_mysql/mysql.c:1359
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error `%s' after %llums\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1468
-#: src/applications/sqstore_mysql/mysql.c:1615
+#: src/applications/sqstore_mysql/mysql.c:1471
+#: src/applications/sqstore_mysql/mysql.c:1618
 #, fuzzy, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Đang thử dùng tập tin '%s' cho cấu hình MySQL.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1493
-#: src/applications/sqstore_mysql/mysql.c:1638
+#: src/applications/sqstore_mysql/mysql.c:1496
+#: src/applications/sqstore_mysql/mysql.c:1641
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
