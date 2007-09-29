@@ -45,7 +45,7 @@
  * Track how much time was spent on each
  * type of message?
  */
-#define MEASURE_TIME YES
+#define MEASURE_TIME NO
 
 /**
  * Should we validate that handlers do not
