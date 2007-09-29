@@ -128,8 +128,7 @@ main (int argc, char **argv)
     }
 #if START_PEERS
   peers =
-    gnunet_testing_start_daemons (NULL ==
-                                  strstr (argv[0], "_") + 1,
+    gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,
                                   "advertising tbench topology stats",
                                   "/tmp/gnunet-tbench-test", 2087, 10000, 2);
   if (peers == NULL)

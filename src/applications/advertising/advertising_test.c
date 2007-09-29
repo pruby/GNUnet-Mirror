@@ -81,8 +81,7 @@ main (int argc, const char **argv)
       return -1;
     }
   peers =
-    gnunet_testing_start_daemons (NULL ==
-                                  strstr (argv[0], "_") + 1,
+    gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,
                                   "advertising stats",
                                   "/tmp/gnunet-advertising-test", 2087, 10,
                                   NUM_PEERS);
