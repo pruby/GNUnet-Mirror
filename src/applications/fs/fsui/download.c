@@ -568,6 +568,7 @@ FSUI_updateDownloadThread (FSUI_DownloadList * list)
               "Download thread manager collects inactive download of file `%s'\n",
               list->filename);
 #endif
+      PTHREAD_STOP_SLEEP (list->handle);
       PTHREAD_JOIN (list->handle, &unused);
       list->handle = NULL;
       list->ctx->activeDownloadThreads--;
@@ -658,6 +659,7 @@ FSUI_stopDownload (struct FSUI_Context *ctx, struct FSUI_DownloadList *dl)
       (dl->state == FSUI_ABORTED) || (dl->state == FSUI_ERROR))
     {
       GE_ASSERT (ctx->ectx, dl->handle != NULL);
+      PTHREAD_STOP_SLEEP (dl->handle);
       PTHREAD_JOIN (dl->handle, &unused);
       MUTEX_LOCK (ctx->lock);
       dl->ctx->activeDownloadThreads--;
