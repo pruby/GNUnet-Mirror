@@ -182,7 +182,8 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
 
   mode = !doBlock;
 #if HAVE_PLIBC_FD
-  if (ioctlsocket (plibc_fd_get_handle(s->handle), FIONBIO, &mode) == SOCKET_ERROR)
+  if (ioctlsocket (plibc_fd_get_handle (s->handle), FIONBIO, &mode) ==
+      SOCKET_ERROR)
 #else
   if (ioctlsocket (s->handle, FIONBIO, &mode) == SOCKET_ERROR)
 #endif
@@ -197,7 +198,7 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
 #if HAVE_PLIBC_FD
       plibc_fd_set_blocking (s->handle, doBlock);
 #else
-      __win_SetHandleBlockingMode(s->handle, doBlock);
+      __win_SetHandleBlockingMode (s->handle, doBlock);
 #endif
       return 0;
     }
@@ -220,7 +221,7 @@ socket_test_blocking (struct SocketHandle *s)
 #if HAVE_PLIBC_FD
   return plibc_fd_get_blocking (s->handle);
 #else
-  return __win_IsHandleMarkedAsBlocking(s->handle);
+  return __win_IsHandleMarkedAsBlocking (s->handle);
 #endif
 #endif
 }

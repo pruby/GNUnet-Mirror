@@ -1593,7 +1593,7 @@ static int makeNonblocking (int handle)
 #if HAVE_PLIBC_FD
       plibc_fd_set_blocking (handle, 0);
 #else
-      __win_SetHandleBlockingMode(handle, 0);
+      __win_SetHandleBlockingMode (handle, 0);
 #endif
     }
 #else

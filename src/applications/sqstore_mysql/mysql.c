@@ -371,7 +371,8 @@ iopen ()
                    " INDEX vkey (vkey),"
                    " INDEX prio (prio,vkey),"
                    " INDEX expire (expire,vkey,type),"
-                   " INDEX anonLevel (anonLevel,prio,vkey,type)" ") ENGINE=MyISAM");
+                   " INDEX anonLevel (anonLevel,prio,vkey,type)"
+                   ") ENGINE=MyISAM");
     }
   else
     {
@@ -388,7 +389,8 @@ iopen ()
                    " INDEX vkey (vkey),"
                    " INDEX prio (prio,vkey),"
                    " INDEX expire (expire,vkey,type),"
-                   " INDEX anonLevel (anonLevel,prio,vkey,type)" ") ENGINE=InnoDB");
+                   " INDEX anonLevel (anonLevel,prio,vkey,type)"
+                   ") ENGINE=InnoDB");
     }
   if (mysql_error (dbh->dbf)[0])
     {
@@ -849,7 +851,7 @@ static int
 iterateHelper (unsigned int type,
                int is_asc,
                int is_prio,
-	       int is_migr,
+               int is_migr,
                unsigned int iter_select, Datum_Iterator iter, void *closure)
 {
   Datastore_Value *datum;
@@ -871,7 +873,7 @@ iterateHelper (unsigned int type,
   MYSQL_BIND rbind[7];
   MYSQL_STMT *stmt;
 
-  GE_ASSERT(NULL, ( (is_migr == 1) || (is_migr == 0)));
+  GE_ASSERT (NULL, ((is_migr == 1) || (is_migr == 0)));
   if (is_asc)
     {
       last_prio = 0;
@@ -909,14 +911,15 @@ iterateHelper (unsigned int type,
   qbind[3 + is_migr].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[3 + is_migr].buffer = &last_vkey;
   qbind[3 + is_migr].is_unsigned = YES;
-  if (is_migr) {
-    qbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
-    qbind[2].buffer = &now;
-    qbind[2].is_unsigned = YES;
-    qbind[5].buffer_type = MYSQL_TYPE_LONGLONG;
-    qbind[5].buffer = &now;
-    qbind[5].is_unsigned = YES;
-  }
+  if (is_migr)
+    {
+      qbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
+      qbind[2].buffer = &now;
+      qbind[2].is_unsigned = YES;
+      qbind[5].buffer_type = MYSQL_TYPE_LONGLONG;
+      qbind[5].buffer = &now;
+      qbind[5].is_unsigned = YES;
+    }
 
   hashSize = sizeof (HashCode512);
   memset (rbind, 0, sizeof (rbind));
