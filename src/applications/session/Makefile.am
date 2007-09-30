@@ -18,15 +18,15 @@ if HAVE_MHD
 endif
 
 check_PROGRAMS = \
-  sessiontest \
+  sessiontest_tcp \
   sessiontest_udp \
   sessiontest2 $(httptest)
 
 TESTS = $(check_PROGRAMS)
 
-sessiontest_SOURCES = \
+sessiontest_tcp_SOURCES = \
   sessiontest.c 
-sessiontest_LDADD = \
+sessiontest_tcp_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/testing/libgnunettesting_api.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
