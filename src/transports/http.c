@@ -1243,7 +1243,7 @@ create_session_url (HTTPSession * httpSession)
   url = httpSession->cs.client.url;
   if (url == NULL)
     {
-      hash2enc (&httpSession->sender.hashPubKey, &enc);
+      hash2enc (&coreAPI->myIdentity->hashPubKey, &enc);
       url = MALLOC (64 + sizeof (EncName));
       SNPRINTF (url,
                 64 + sizeof (EncName),
