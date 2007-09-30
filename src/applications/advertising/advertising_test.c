@@ -83,7 +83,7 @@ main (int argc, const char **argv)
   peers =
     gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,
                                   "advertising stats",
-                                  "/tmp/gnunet-advertising-test", 2087, 10,
+                                  "/tmp/gnunet-advertising-test", 12087, 10,
                                   NUM_PEERS);
   if (peers == NULL)
     {
@@ -93,8 +93,8 @@ main (int argc, const char **argv)
   /* do circular connect */
   for (i = 0; i < NUM_PEERS; i++)
     {
-      if (OK != gnunet_testing_connect_daemons (2087 + 10 * i,
-                                                2087 +
+      if (OK != gnunet_testing_connect_daemons (12087 + 10 * i,
+                                                12087 +
                                                 10 * ((i + 1) % NUM_PEERS)))
         {
           gnunet_testing_stop_daemons (peers);

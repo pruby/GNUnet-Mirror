@@ -243,6 +243,15 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
       identity->addHost (msg);
       if (stats != NULL)
         stats->change (stat_hello_nat_in, 1);
+#if DEBUG_ADVERTISING
+      IF_GELOG (ectx,
+		GE_INFO | GE_REQUEST | GE_USER,
+		hash2enc (&msg->senderIdentity.hashPubKey, &enc));
+      GE_LOG (ectx,
+	      GE_INFO | GE_REQUEST | GE_USER,
+	      "HELLO advertisement from `%s' for NAT, no verification required.\n",
+	      &enc);
+#endif
       return OK;
     }
 
@@ -266,6 +275,15 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
           if (stats != NULL)
             stats->change (stat_hello_update, 1);
           FREE (copy);
+#if DEBUG_ADVERTISING
+	  IF_GELOG (ectx,
+		    GE_INFO | GE_REQUEST | GE_USER,
+		    hash2enc (&msg->senderIdentity.hashPubKey, &enc));
+	  GE_LOG (ectx,
+		  GE_INFO | GE_REQUEST | GE_USER,
+		  "HELLO advertisement from `%s' for protocol %d updates old advertisement, no verification required.\n",
+		  &enc, ntohs (msg->protocol));
+#endif
           return OK;
         }
 #if DEBUG_ADVERTISING
@@ -347,6 +365,15 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
     {
       if (stats != NULL)
         stats->change (stat_hello_no_transport, 1);
+#if DEBUG_ADVERTISING
+      IF_GELOG (ectx,
+		GE_INFO | GE_REQUEST | GE_USER,
+		hash2enc (&msg->senderIdentity.hashPubKey, &enc));
+      GE_LOG (ectx,
+	      GE_INFO | GE_REQUEST | GE_USER,
+	      "Failed to connect to `%s'.  Verification failed.\n",
+	      &enc);
+#endif
       return SYSERR;            /* could not connect */
     }
 
@@ -398,6 +425,15 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
       if (stats != NULL)
         stats->change (stat_hello_noselfad, 1);
       transport->disconnect (tsession, __FILE__);
+#if DEBUG_ADVERTISING
+      IF_GELOG (ectx,
+		GE_INFO | GE_REQUEST | GE_USER,
+		hash2enc (&msg->senderIdentity.hashPubKey, &enc));
+      GE_LOG (ectx,
+	      GE_INFO | GE_REQUEST | GE_USER,
+	      "Failed to connect advertisement for myself.  Verification failed.\n",
+	      &enc);
+#endif
       return SYSERR;
     }
   res = OK;
@@ -412,6 +448,15 @@ receivedhello (const PeerIdentity * sender, const MESSAGE_HEADER * message)
 
       if (stats != NULL)
         stats->change (stat_hello_send_error, 1);
+#if DEBUG_ADVERTISING
+      IF_GELOG (ectx,
+		GE_INFO | GE_REQUEST | GE_USER,
+		hash2enc (&msg->senderIdentity.hashPubKey, &enc));
+      GE_LOG (ectx,
+	      GE_INFO | GE_REQUEST | GE_USER,
+	      "Failed to transmit advertisement for myself.  Verification failed.\n",
+	      &enc);
+#endif
       res = SYSERR;
     }
   if (res == OK)
