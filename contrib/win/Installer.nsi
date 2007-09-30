@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.2b"
+!define PRODUCT_VERSION "0.7.2c"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -187,6 +187,7 @@ SectionGroup "GNUnet" SEC_GNUNET
       File "C:\GNUnet\bin\libgnunetip-0.dll" 
 			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
       File "C:\GNUnet\bin\libgnunetmodule_upnp.dll"
+      File "C:\GNUnet\bin\libgnunettransport_http.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
       Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
@@ -343,7 +344,6 @@ SectionGroup "GNUnet" SEC_GNUNET
       File "C:\GNUnet\bin\libgnunetmodule_dstore.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
 			File "C:\GNUnet\bin\libgnunetdht_api-0.dll"
-			File "C:\GNUnet\bin\gnunet-dht-query.exe"
 		SectionEnd
 
 		Section "RPC" SEC_RPC
@@ -421,6 +421,7 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libintl-2.dll"
 		File "C:\GNUnet\bin\libintl-3.dll"
 		File "C:\GNUnet\bin\libltdl-3.dll"
+    File "C:\GNUnet\bin\libmicrohttpd-2.dll"
 		File "C:\GNUnet\bin\libmysql.dll"
 		File "C:\GNUnet\bin\libplibc-1.dll"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
@@ -927,7 +928,8 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libintl-2.dll"
 	Delete "$INSTDIR\bin\libintl-3.dll"
 	Delete "$INSTDIR\bin\libltdl-3.dll"
-	Delete "$INSTDIR\bin\libmysql.dll"
+  Delete "$INSTDIR\bin\libmicrohttpd-2.dll"
+  Delete "$INSTDIR\bin\libmysql.dll"
 	Delete "$INSTDIR\bin\libogg-0.dll"
 	Delete "$INSTDIR\bin\libpango-1.0-0.dll"
 	Delete "$INSTDIR\bin\libpangowin32-1.0-0.dll"
