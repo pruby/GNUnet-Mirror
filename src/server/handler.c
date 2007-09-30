@@ -434,10 +434,10 @@ injectMessage (const PeerIdentity * sender,
             }
           return;
         }
-      if ((pos % sizeof (int)) != 0)
+      if ((pos % sizeof (long)) != 0)
         {
           /* correct misalignment; we allow messages to _not_ be a
-             multiple of 4 bytes (if absolutely necessary; it should be
+             multiple of sizeof(long) bytes (if absolutely necessary; it should be
              avoided where the cost for doing so is not prohibitive);
              however we also (need to) guaranteed word-alignment for the
              handlers; so we must re-align the message if it is
@@ -588,8 +588,10 @@ handleMessage (TSession * tsession,
       return;
     }
   ret = checkHeader (sender, (P2P_PACKET_HEADER *) msg, size);
-  if (ret == SYSERR)
+  if (ret == SYSERR) {
+    GE_BREAK_OP(NULL, 0);
     return;                     /* message malformed */
+  }
   if ((ret == YES) && (tsession != NULL) && (sender != NULL))
     considerTakeover (sender, tsession);
   injectMessage (sender,

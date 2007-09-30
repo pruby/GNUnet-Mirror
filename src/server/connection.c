@@ -3828,7 +3828,7 @@ sendPlaintext (TSession * tsession, const char *msg, unsigned int size)
   hash (&hdr->sequenceNumber,
         size + sizeof (P2P_PACKET_HEADER) - sizeof (HashCode512), &hdr->hash);
   ret = transport->send (tsession,
-                         buf, size + sizeof (P2P_PACKET_HEADER), NO);
+                         buf, size + sizeof (P2P_PACKET_HEADER), YES);
   FREE (buf);
   EXIT ();
   return ret;
