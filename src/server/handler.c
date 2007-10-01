@@ -588,10 +588,8 @@ handleMessage (TSession * tsession,
       return;
     }
   ret = checkHeader (sender, (P2P_PACKET_HEADER *) msg, size);
-  if (ret == SYSERR) {
-    GE_BREAK_OP(NULL, 0);
-    return;                     /* message malformed */
-  }
+  if (ret == SYSERR) 
+    return;   /* message malformed or failed to decrypt*/
   if ((ret == YES) && (tsession != NULL) && (sender != NULL))
     considerTakeover (sender, tsession);
   injectMessage (sender,
