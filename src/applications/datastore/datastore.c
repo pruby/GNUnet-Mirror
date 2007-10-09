@@ -29,6 +29,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_datastore_service.h"
 #include "gnunet_sqstore_service.h"
@@ -72,11 +73,28 @@ static int stat_filtered;
 
 static int stat_filter_failed;
 
+/**
+ * Time at which the database was created (used for
+ * content aging).
+ */ 
+static TIME_T db_creation_time;
 
 /**
  * Require 1/100th of quota to be 'free' space.
  */
 #define MIN_FREE (quota / 100)
+
+/**
+ * One month of database uptime corresponds to one
+ * priority point.
+ */
+static int comp_priority() {
+  TIME_T now;
+  TIME(&now);
+  if (db_creation_time < now)
+    return 0;
+  return (db_creation_time - now) / 60 / 60 / 24 / 30;
+}
 
 static unsigned long long
 getSize ()
@@ -169,6 +187,7 @@ static int
 put (const HashCode512 * key, const Datastore_Value * value)
 {
   int ok;
+  Datastore_Value * nvalue;
 
   /* check if we have enough space / priority */
   if (ntohll (value->expirationTime) < get_time ())
@@ -179,7 +198,7 @@ put (const HashCode512 * key, const Datastore_Value * value)
       return NO;
     }
   if ((available < ntohl (value->size)) &&
-      (minPriority > ntohl (value->prio)))
+      (minPriority > ntohl (value->prio) + comp_priority()))
     {
       GE_LOG (coreAPI->ectx,
               GE_INFO | GE_REQUEST | GE_USER,
@@ -190,9 +209,13 @@ put (const HashCode512 * key, const Datastore_Value * value)
     }
   if (ntohl (value->prio) < minPriority)
     minPriority = ntohl (value->prio);
-
+  /* construct new value with comp'ed priority */
+  nvalue = MALLOC(ntohl(value->size));
+  memcpy(nvalue, value, ntohl(value->size));
+  nvalue->prio = htonl(comp_priority() + ntohl(value->prio));
   /* add the content */
-  ok = sq->put (key, value);
+  ok = sq->put (key, nvalue);
+  FREE(nvalue);
   if (ok == YES)
     {
       makeAvailable (key);
@@ -241,6 +264,8 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
 {
   CE cls;
   int ok;
+  int comp_prio;
+  Datastore_Value * nvalue;
 
   /* check if it already exists... */
   cls.exists = NO;
@@ -261,23 +286,28 @@ putUpdate (const HashCode512 * key, const Datastore_Value * value)
                   ntohl (value->prio), ntohll (value->expirationTime));
       return OK;
     }
+  comp_prio = comp_priority();
 #if DEBUG_DATASTORE
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Migration: available %llu (need %u), min priority %u have %u\n",
-          available, ntohl (value->size), minPriority, ntohl (value->prio));
+          available, ntohl (value->size), minPriority, ntohl (value->prio) + comp_prio);
 #endif
   /* check if we have enough space / priority */
   if ((available < ntohl (value->size)) &&
-      (minPriority > ntohl (value->prio)))
+      (minPriority > ntohl (value->prio) + comp_prio))
     return NO;                  /* new content has such a low priority that
                                    we should not even bother! */
-  if (ntohl (value->prio) < minPriority)
-    minPriority = ntohl (value->prio);
-
+  if (ntohl (value->prio) + comp_prio < minPriority)
+    minPriority = ntohl (value->prio) + comp_prio;
+  /* construct new value with comp'ed priority */
+  nvalue = MALLOC(ntohl(value->size));
+  memcpy(nvalue, value, ntohl(value->size));
+  nvalue->prio = htonl(comp_priority() + ntohl(value->prio));
   /* add the content */
-  ok = sq->put (key, value);
-  if (ok == YES)
+  ok = sq->put (key, nvalue);
+  FREE(nvalue);
+ if (ok == YES)
     {
       makeAvailable (key);
       available -= ntohl (value->size);
@@ -328,10 +358,8 @@ cronMaintenance (void *unused)
   if ((available < 0) || (available < MIN_FREE))
     {
       sq->iterateExpirationTime (ANY_BLOCK, &freeSpaceExpired, NULL);
-      if ((available < 0) || (available < MIN_FREE))
-        {
-          sq->iterateLowPriority (ANY_BLOCK, &freeSpaceLow, NULL);
-        }
+      if ((available < 0) || (available < MIN_FREE))        
+          sq->iterateLowPriority (ANY_BLOCK, &freeSpaceLow, NULL);        
     }
   else
     {
@@ -349,6 +377,8 @@ provide_module_datastore (CoreAPIForApplication * capi)
   unsigned long long lquota;
   unsigned long long sqot;
   State_ServiceAPI *state;
+  struct stat sbuf;
+  char * fsdir;
 
   if (-1 == GC_get_configuration_value_number (capi->cfg,
                                                "FS",
@@ -412,6 +442,18 @@ provide_module_datastore (CoreAPIForApplication * capi)
         }
       return NULL;
     }
+  fsdir = NULL;
+  GC_get_configuration_value_filename(capi->cfg,
+				      "FS",
+				      "DIR",
+				      VAR_DAEMON_DIRECTORY "/data/fs/",
+				      &fsdir);
+  /* just in case dir does not exist ... */
+  disk_directory_create(NULL, fsdir);
+  if (0 == STAT(fsdir, &sbuf))
+    db_creation_time = sbuf.st_ctime;
+  FREE(fsdir);
+
   available = quota - sq->getSize ();
   cron = cron_create (capi->ectx);
   cron_add_job (cron,
