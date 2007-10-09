@@ -1388,7 +1388,7 @@ getSize ()
   if (stats)
     stats->set (stat_size, ret);
   MUTEX_UNLOCK (lock);
-  return ret * 2;               /* FIXME: measure again! */
+  return ret * 1.2;
 }
 
 /**
