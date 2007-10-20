@@ -53,6 +53,41 @@
  */
 #define LOG_SQLITE(db, level, cmd) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0)
 
+/* These selects basically work in the same way as the old MySQL selects do. But because the
+   reverse ordering kills performance, we are using subselects with MAX() for SQLite instead.
+
+#define SELECT_IT_NON_ANONYMOUS "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 WHERE ( (prio = ? AND hash < ?) OR (prio < ? AND hash != ?) ) "\
+                                "AND anonLevel=0 AND type not in (4294967294, 4294967295) "\
+                                "ORDER BY prio DESC,hash DESC LIMIT 1"
+
+#define SELECT_IT_MIGRATION_ORDER "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 WHERE ( (expire = ? AND hash < ?) OR (expire < ? AND hash != ?) ) "\
+                                  "AND expire > ? AND type!=3 "\
+                                  "ORDER BY expire DESC,hash DESC LIMIT 1" 
+*/
+
+#define SELECT_IT_LOW_PRIORITY "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 WHERE " \
+  "((prio = ? AND hash > ?) OR (prio > ? AND hash != ?)) AND type not in (4294967294, 4294967295, 3) ORDER BY " \
+  "prio ASC,hash ASC LIMIT 1"
+
+#define SELECT_IT_NON_ANONYMOUS  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 " \
+  "WHERE hash = " \
+    "(SELECT MAX(hash) FROM gn070 WHERE prio = " \
+      "(SELECT MAX(prio) FROM gn070 WHERE ((prio = ? AND hash < ?) OR (prio < ? AND hash != ?)) AND anonLevel=0 AND " \
+        "type NOT IN (4294967294, 4294967295, 3)) " \
+      "AND ((prio = ? AND hash < ?) OR (prio < ? AND hash != ?)) AND anonLevel=0 AND type NOT IN (4294967294, " \
+      "4294967295, 3))"
+
+#define SELECT_IT_EXPIRATION_TIME "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 WHERE " \
+  "((expire = ? AND hash > ?) OR (expire > ? AND hash != ?)) AND type NOT IN (4294967294, 4294967295, 3) ORDER BY " \
+  "expire ASC,hash ASC LIMIT 1"
+
+#define SELECT_IT_MIGRATION_ORDER "Select size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070 WHERE " \
+  "hash =" \
+    "(Select MAX(hash) FROM gn070 WHERE expire =" \
+        "(Select MAX(expire) FROM gn070 WHERE ((expire = ? AND hash < ?) OR (expire < ? AND hash != ?)) AND " \
+        "type NOT IN (4294967294, 4294967295, 3)) " \
+    "and type not in (4294967294, 4294967295, 3) and ((expire = ? and hash < ?) or (expire < ? and hash != ?)))"
+
 /**
  * After how many ms "busy" should a DB operation fail for good?
  * A low value makes sure that we are more responsive to requests
@@ -151,13 +186,23 @@ createIndices (sqlite3 * dbh)
          sqlite3_exec (dbh,
                        "CREATE INDEX idx_expire ON gn070 (expire)",
                        NULL, NULL, ENULL));
+  sqlite3_exec (dbh, "DROP INDEX idx_comb1", NULL, NULL, ENULL);
+  sqlite3_exec (dbh, "DROP INDEX idx_comb2", NULL, NULL, ENULL);
   CHECK (SQLITE_OK ==
          sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+                       "CREATE INDEX idx_comb3 ON gn070 (expire,type,hash)",
                        NULL, NULL, ENULL));
   CHECK (SQLITE_OK ==
          sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+                       "CREATE INDEX idx_comb4 ON gn070 (anonLevel,type,prio,hash)",
+                       NULL, NULL, ENULL));
+  CHECK (SQLITE_OK ==
+         sqlite3_exec (dbh,
+                       "CREATE INDEX idx_comb5 ON gn070 (expire,type,hash)",
+                       NULL, NULL, ENULL));
+  CHECK (SQLITE_OK ==
+         sqlite3_exec (dbh,
+                       "CREATE INDEX idx_comb6 ON gn070 (prio,type,hash)",
                        NULL, NULL, ENULL));
 }
 
@@ -588,16 +633,15 @@ syncStats (sqliteHandle * handle)
  */
 static int
 sqlite_iterate (unsigned int type,
-                Datum_Iterator iter,
-                void *closure,
-                int sortByPriority,
-                int inverseOrder,
-                int include_expired,
-                int limit_nonanonymous, int limit_ondemand)
+                int is_asc,
+                int is_prio,
+                int is_migr,
+                int limit_nonanonymous,
+                unsigned int iter_select, Datum_Iterator iter, void *closure)
 {
   sqlite3_stmt *stmt;
   int count;
-  char scratch[512];
+  char *stmt_str;
   Datastore_Value *datum;
   unsigned int lastPrio;
   unsigned long long lastExp;
@@ -611,66 +655,27 @@ sqlite_iterate (unsigned int type,
   MUTEX_LOCK (lock);
   handle = getDBHandle ();
   dbh = handle->dbh;
-  /* For the rowid trick see
-     http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
-  strcpy (scratch,
-          "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ FROM gn070"
-          " WHERE rowid IN (SELECT rowid FROM gn070"
-          " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
-  if (sortByPriority)
+
+  switch (iter_select)
     {
-      if (inverseOrder)
-        strcat (scratch, "(expire < :4 AND prio == :5) OR prio < :6)");
-      else
-        strcat (scratch, "(expire > :4 AND prio == :5) OR prio > :6)");
+    case 0:
+      stmt_str = SELECT_IT_LOW_PRIORITY;
+      break;
+    case 1:
+      stmt_str = SELECT_IT_NON_ANONYMOUS;
+      break;
+    case 2:
+      stmt_str = SELECT_IT_EXPIRATION_TIME;
+      break;
+    case 3:
+      stmt_str = SELECT_IT_MIGRATION_ORDER;
+      break;
+    default:
+      GE_BREAK (NULL, 0);
+      return SYSERR;
     }
-  else
-    {
-      if (inverseOrder)
-        strcat (scratch, "(prio < :4 AND expire == :5) OR expire < :6)");
-      else
-        strcat (scratch, "(prio > :4 AND expire == :5) OR expire > :6)");
-    }
-  if (type != 0)
-    {
-      strcat (scratch, " AND type = :7");
-    }
-  else if (limit_ondemand == YES)
-    {
-      SNPRINTF (&scratch[strlen (scratch)],
-                512 - strlen (scratch),
-                " AND type != %d AND type != %d",
-                RESERVED_BLOCK, ONDEMAND_BLOCK);
-    }
-  else
-    {
-      SNPRINTF (&scratch[strlen (scratch)], 512 - strlen (scratch), " AND type != %d", RESERVED_BLOCK); /* otherwise we iterate over
-                                                                                                           the stats entry, which would
-                                                                                                           be bad */
-    }
-  if (NO == include_expired)
-    {
-      if (type != 0)
-        strcat (scratch, " AND expire > :8");
-      else
-        strcat (scratch, " AND expire > :7");
-    }
-  if (sortByPriority)
-    {
-      if (inverseOrder)
-        strcat (scratch, " ORDER BY prio DESC, expire DESC, hash ASC");
-      else
-        strcat (scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
-    }
-  else
-    {
-      if (inverseOrder)
-        strcat (scratch, " ORDER BY expire DESC, prio DESC, hash ASC");
-      else
-        strcat (scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
-    }
-  strcat (scratch, " LIMIT 1)");
-  if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
+
+  if (sq_prepare (dbh, stmt_str, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
                   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_prepare");
@@ -678,54 +683,70 @@ sqlite_iterate (unsigned int type,
       return SYSERR;
     }
   count = 0;
-  if (inverseOrder)
-    {
-      lastPrio = 0x7FFFFFFF;
-      lastExp = 0x7FFFFFFFFFFFFFFFLL;
-    }
-  else
+  if (is_asc)
     {
       lastPrio = 0;
       lastExp = 0;
+      memset (&key, 0, sizeof (HashCode512));
     }
-  memset (&key, 0, sizeof (HashCode512));
+  else
+    {
+      lastPrio = 0x7FFFFFFF;
+      lastExp = 0x7FFFFFFFFFFFFFFFLL;
+      memset (&key, 255, sizeof (HashCode512));
+    }
   while (1)
     {
-      sqlite3_bind_blob (stmt,
-                         1, &key, sizeof (HashCode512), SQLITE_TRANSIENT);
-      sqlite3_bind_int64 (stmt, 2, lastExp);
-      sqlite3_bind_int (stmt, 3, lastPrio);
-      if (sortByPriority)
+      if (is_prio)
         {
-          sqlite3_bind_int64 (stmt, 4, lastExp);
-          sqlite3_bind_int (stmt, 5, lastPrio);
-          sqlite3_bind_int (stmt, 6, lastPrio);
+          sqlite3_bind_int (stmt, 1, lastPrio);
+          sqlite3_bind_int (stmt, 3, lastPrio);
         }
       else
         {
-          sqlite3_bind_int64 (stmt, 4, lastExp);
-          sqlite3_bind_int (stmt, 5, lastPrio);
-          sqlite3_bind_int64 (stmt, 6, lastExp);
+          sqlite3_bind_int64 (stmt, 1, lastExp);
+          sqlite3_bind_int64 (stmt, 3, lastExp);
         }
-      if (type)
-        sqlite3_bind_int (stmt, 7, type);
-      if (NO == include_expired)
+
+      sqlite3_bind_blob (stmt, 2, &key, sizeof (HashCode512),
+                         SQLITE_TRANSIENT);
+      sqlite3_bind_blob (stmt, 4, &key, sizeof (HashCode512),
+                         SQLITE_TRANSIENT);
+      now = get_time ();
+
+      if (is_migr)
         {
-          now = get_time ();
-          if (type)
-            sqlite3_bind_int64 (stmt, 8, now);
-          else
-            sqlite3_bind_int64 (stmt, 7, now);
+          sqlite3_bind_int64 (stmt, 5, lastExp);
+          sqlite3_bind_blob (stmt, 6, &key, sizeof (HashCode512),
+                             SQLITE_TRANSIENT);
+
+          sqlite3_bind_int64 (stmt, 7, lastExp);
+          sqlite3_bind_blob (stmt, 8, &key, sizeof (HashCode512),
+                             SQLITE_TRANSIENT);
         }
+      else if (limit_nonanonymous)
+        {
+          sqlite3_bind_int (stmt, 5, lastPrio);
+          sqlite3_bind_blob (stmt, 6, &key, sizeof (HashCode512),
+                             SQLITE_TRANSIENT);
+
+          sqlite3_bind_int (stmt, 7, lastPrio);
+          sqlite3_bind_blob (stmt, 8, &key, sizeof (HashCode512),
+                             SQLITE_TRANSIENT);
+        }
+
       if ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
         {
-          datum = assembleDatum (handle, stmt, &key, &rowid);
+          if (sqlite3_column_int64 (stmt, 4) < now)
+            datum = NULL;
+          else
+            datum = assembleDatum (handle, stmt, &key, &rowid);
           if (SQLITE_OK != sqlite3_reset (stmt))
             LOG_SQLITE (handle,
                         GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                         "sqlite3_reset");
           if (datum == NULL)
-            continue;
+            break;
 #if 0
           printf ("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
                   (ntohl (datum->size) - sizeof (Datastore_Value)),
@@ -792,7 +813,7 @@ sqlite_iterate (unsigned int type,
 static int
 iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return sqlite_iterate (type, iter, closure, YES, NO, YES, NO, NO);
+  return sqlite_iterate (type, YES, YES, NO, NO, 0, iter, closure);
 }
 
 /**
@@ -808,7 +829,7 @@ iterateLowPriority (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return sqlite_iterate (0, iter, closure, NO, NO, NO, YES, YES);
+  return sqlite_iterate (type, NO, YES, NO, YES, 1, iter, closure);
 }
 
 /**
@@ -823,7 +844,7 @@ iterateNonAnonymous (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 {
-  return sqlite_iterate (type, iter, closure, NO, NO, YES, NO, NO);
+  return sqlite_iterate (type, YES, NO, NO, NO, 2, iter, closure);
 }
 
 /**
@@ -837,7 +858,7 @@ iterateExpirationTime (unsigned int type, Datum_Iterator iter, void *closure)
 static int
 iterateMigrationOrder (Datum_Iterator iter, void *closure)
 {
-  return sqlite_iterate (0, iter, closure, NO, YES, NO, NO, NO);
+  return sqlite_iterate (0, NO, NO, YES, NO, 3, iter, closure);
 }
 
 /**
