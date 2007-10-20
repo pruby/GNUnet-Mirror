@@ -737,7 +737,7 @@ sqlite_iterate (unsigned int type,
 
       if ((ret = sqlite3_step (stmt)) == SQLITE_ROW)
         {
-          if (sqlite3_column_int64 (stmt, 4) < now)
+          if (is_migr && sqlite3_column_int64 (stmt, 4) < now)
             datum = NULL;
           else
             datum = assembleDatum (handle, stmt, &key, &rowid);
