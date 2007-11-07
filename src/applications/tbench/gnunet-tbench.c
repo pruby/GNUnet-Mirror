@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_boot.h"
@@ -54,7 +55,7 @@ static cron_t messageSpacing = DEFAULT_SPACING;
 
 static int outputFormat = OF_HUMAN_READABLE;
 
-static char *cfgFilename;
+static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-tbench command line options
