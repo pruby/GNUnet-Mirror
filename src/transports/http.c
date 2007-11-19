@@ -1006,7 +1006,8 @@ accessHandlerCallback (void *cls,
   if ((strlen (url) < 2) || (OK != enc2hash (&url[1], &client)))
     {
       /* invalid request */
-      GE_BREAK_OP (NULL, 0);
+      /* GE_BREAK_OP (NULL, 0); -- this happens a lot, most likely 
+	 somebody scanning for MyDoom.X-opened backdoors */
       return MHD_NO;
     }
 
