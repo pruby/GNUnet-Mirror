@@ -43,63 +43,63 @@ extern "C"
 /**
  * Time for absolute times used by cron (64 bit)
  */
-typedef unsigned long long cron_t;
+typedef unsigned long long GNUNET_CronTime;
 
 
 /**
  * @brief constants to specify time
  */
-#define cronMILLIS ((cron_t)1)
-#define cronSECONDS ((cron_t)(1000 * cronMILLIS))
-#define cronMINUTES ((cron_t) (60 * cronSECONDS))
-#define cronHOURS ((cron_t)(60 * cronMINUTES))
-#define cronDAYS ((cron_t)(24 * cronHOURS))
-#define cronWEEKS ((cron_t)(7 * cronDAYS))
-#define cronMONTHS ((cron_t)(30 * cronDAYS))
-#define cronYEARS ((cron_t)(365 * cronDAYS))
+#define GNUNET_CRON_MILLISECONDS ((GNUNET_CronTime)1L)
+#define GNUNET_CRON_SECONDS ((GNUNET_CronTime)(1000 * GNUNET_CRON_MILLISECONDS))
+#define GNUNET_CRON_MINUTES ((GNUNET_CronTime) (60 * GNUNET_CRON_SECONDS))
+#define GNUNET_CRON_HOURS ((GNUNET_CronTime)(60 * GNUNET_CRON_MINUTES))
+#define GNUNET_CRON_DAYS ((GNUNET_CronTime)(24 * GNUNET_CRON_HOURS))
+#define GNUNET_CRON_WEEKS ((GNUNET_CronTime)(7 * GNUNET_CRON_DAYS))
+#define GNUNET_CRON_MONTHS ((GNUNET_CronTime)(30 * GNUNET_CRON_DAYS))
+#define GNUNET_CRON_YEARS ((GNUNET_CronTime)(365 * GNUNET_CRON_DAYS))
 
 /**
  * How long will we accept locks to be held before
  * reporting that there maybe a problem?  Set to
  * zero to disable reporting.
  */
-#define REALTIME_LIMIT (000 * cronMILLIS)
+#define GNUNET_REALTIME_LIMIT (000 * GNUNET_CRON_MILLISECONDS)
 
 /**
  * Main method of a thread.
  */
-typedef void *(*PThreadMain) (void *);
+typedef void *(*GNUNET_ThreadMainFunction) (void *);
 
 /**
  * @brief Encapsulation of a pthread handle.
  */
-struct PTHREAD;
+struct GNUNET_ThreadHandle;
 
 /**
  * @brief Structure for MUTual EXclusion (Mutex).
  */
-struct MUTEX;
+struct GNUNET_Mutex;
 
 /**
  * @brief semaphore abstraction (for pthreads)
  */
-struct SEMAPHORE;
+struct GNUNET_Semaphore;
 
 /**
- * Returns YES if pt is the handle for THIS thread.
+ * Returns GNUNET_YES if pt is the handle for THIS thread.
  */
-int PTHREAD_TEST_SELF (struct PTHREAD *pt);
+int GNUNET_thread_test_self (struct GNUNET_ThreadHandle *pt);
 
 /**
  * Get the handle for THIS thread.
  */
-struct PTHREAD *PTHREAD_GET_SELF (void);
+struct GNUNET_ThreadHandle *GNUNET_thread_get_self (void);
 
 /**
  * Release handle for a thread (should have been
- * obtained using PTHREAD_GET_SELF).
+ * obtained using GNUNET_thread_get_self).
  */
-void PTHREAD_REL_SELF (struct PTHREAD *pt);
+void GNUNET_thread_release_self (struct GNUNET_ThreadHandle *pt);
 
 /**
  * Create a thread. Use this method instead of pthread_create since
@@ -112,8 +112,9 @@ void PTHREAD_REL_SELF (struct PTHREAD *pt);
  *        will just segfault and gdb will give a messed-up stacktrace.
  * @return the handle
  */
-struct PTHREAD *PTHREAD_CREATE (PThreadMain main,
-                                void *arg, unsigned int stackSize);
+struct GNUNET_ThreadHandle *GNUNET_thread_create (GNUNET_ThreadMainFunction
+                                                  main, void *arg,
+                                                  unsigned int stackSize);
 
 
 
@@ -123,8 +124,9 @@ struct PTHREAD *PTHREAD_CREATE (PThreadMain main,
  *
  * @param ret set to the return value of the other thread.
  */
-void PTHREAD_JOIN_FL (struct PTHREAD *handle,
-                      void **ret, const char *file, unsigned int line);
+void GNUNET_thread_join_at_file_line_ (struct GNUNET_ThreadHandle *handle,
+                                       void **ret, const char *file,
+                                       unsigned int line);
 
 /**
  * Wait for the other thread to terminate.  May only be called
@@ -132,75 +134,77 @@ void PTHREAD_JOIN_FL (struct PTHREAD *handle,
  *
  * @param ret set to the return value of the other thread.
  */
-#define PTHREAD_JOIN(handle,ret) PTHREAD_JOIN_FL(handle,ret,__FILE__,__LINE__)
+#define GNUNET_thread_join(handle,ret) GNUNET_thread_join_at_file_line_(handle,ret,__FILE__,__LINE__)
 
 /**
- * Sleep for the specified time interval.  PTHREAD_STOP_SLEEP can be
+ * Sleep for the specified time interval.  GNUNET_thread_stop_sleep can be
  * used to interrupt the sleep.  Caller is responsible to check that
  * the sleep was long enough.
  *
  * @param time how long to sleep (in milli seconds)
  */
-void PTHREAD_SLEEP (cron_t time);
+void GNUNET_thread_sleep (GNUNET_CronTime time);
 
 /**
  * Get the current time (in cron-units).
  *
  * @return the current time
  */
-cron_t get_time (void);
+GNUNET_CronTime GNUNET_get_time (void);
 
 /**
- * Stop the sleep of anothe thread.
+ * Stop the sleep of another thread.
  */
-void PTHREAD_STOP_SLEEP (struct PTHREAD *handle);
+void GNUNET_thread_stop_sleep (struct GNUNET_ThreadHandle *handle);
 
-struct MUTEX *MUTEX_CREATE (int isRecursive);
+struct GNUNET_Mutex *GNUNET_mutex_create (int isRecursive);
 
-void MUTEX_DESTROY (struct MUTEX *mutex);
+void GNUNET_mutex_destroy (struct GNUNET_Mutex *mutex);
 
-void MUTEX_LOCK_FL (struct MUTEX *mutex, const char *file, unsigned int line);
+void GNUNET_mutex_lock_at_file_line_ (struct GNUNET_Mutex *mutex,
+                                      const char *file, unsigned int line);
 
-#define MUTEX_LOCK(mutex) MUTEX_LOCK_FL(mutex, __FILE__, __LINE__)
+#define GNUNET_mutex_lock(mutex) GNUNET_mutex_lock_at_file_line_(mutex, __FILE__, __LINE__)
 
-void MUTEX_UNLOCK (struct MUTEX *mutex);
+void GNUNET_mutex_unlock (struct GNUNET_Mutex *mutex);
 
-struct SEMAPHORE *SEMAPHORE_CREATE (int value);
+struct GNUNET_Semaphore *GNUNET_semaphore_create (int value);
 
-void SEMAPHORE_DESTROY (struct SEMAPHORE *sem);
+void GNUNET_semaphore_destroy (struct GNUNET_Semaphore *sem);
 
 /**
- * @param block set to NO to never block (and
+ * @param block set to GNUNET_NO to never block (and
  *        thus fail if semaphore counter is 0)
- * @return SYSERR if would block, otherwise
+ * @return GNUNET_SYSERR if would block, otherwise
  *  new count value after change
  */
-int SEMAPHORE_DOWN_FL (struct SEMAPHORE *sem,
-                       int mayblock,
-                       int longwait, const char *file, unsigned int line);
+int GNUNET_semaphore_down_at_file_line_ (struct GNUNET_Semaphore *sem,
+                                         int mayblock,
+                                         int longwait, const char *file,
+                                         unsigned int line);
 
 
 /**
- * @param block set to NO to never block (and
+ * @param block set to GNUNET_NO to never block (and
  *        thus fail if semaphore counter is 0)
- * @return SYSERR if would block, otherwise
+ * @return GNUNET_SYSERR if would block, otherwise
  *  new count value after change
  */
-#define SEMAPHORE_DOWN(sem, mayblock) SEMAPHORE_DOWN_FL(sem, mayblock, YES, __FILE__, __LINE__)
+#define GNUNET_semaphore_down(sem, mayblock) GNUNET_semaphore_down_at_file_line_(sem, mayblock, GNUNET_YES, __FILE__, __LINE__)
 
 
 /**
- * Like SEMAPHORE_DOWN, just with the expectation
+ * Like GNUNET_semaphore_down, just with the expectation
  * that this operation does not take a long time.
  * (used for debugging unexpected high-latency
  * behavior).
  *
- * @param block set to NO to never block (and
+ * @param block set to GNUNET_NO to never block (and
  *        thus fail if semaphore counter is 0)
- * @return SYSERR if would block, otherwise
+ * @return GNUNET_SYSERR if would block, otherwise
  *  new count value after change
  */
-#define SEMAPHORE_DOWN_FAST(sem, mayblock) SEMAPHORE_DOWN_FL(sem, mayblock, NO, __FILE__, __LINE__)
+#define GNUNET_semaphore_down_fast(sem, mayblock) GNUNET_semaphore_down_at_file_line_(sem, mayblock, GNUNET_NO, __FILE__, __LINE__)
 
 /**
  * function increments the semaphore and signals any threads that
@@ -208,19 +212,19 @@ int SEMAPHORE_DOWN_FL (struct SEMAPHORE *sem,
  *
  * @return new count value of the semaphore after increment
  */
-int SEMAPHORE_UP (struct SEMAPHORE *sem);
+int GNUNET_semaphore_up (struct GNUNET_Semaphore *sem);
 
 /**
  * Programatically shutdown the application.
  */
-void GNUNET_SHUTDOWN_INITIATE (void);
+void GNUNET_shutdown_initiate (void);
 
 /**
  * Test if the shutdown has been initiated.
  *
- * @return YES if we are shutting down, NO otherwise
+ * @return GNUNET_YES if we are shutting down, GNUNET_NO otherwise
  */
-int GNUNET_SHUTDOWN_TEST (void);
+int GNUNET_shutdown_test (void);
 
 /**
  * Wait until the shutdown has been initiated.  This
@@ -228,9 +232,9 @@ int GNUNET_SHUTDOWN_TEST (void);
  * nothing better to do) to wait for a user signal
  * (or other thread) to initiate the shutdown.
  */
-void GNUNET_SHUTDOWN_WAITFOR (void);
+void GNUNET_shutdown_wait_for (void);
 
-struct SignalHandlerContext;
+struct GNUNET_SignalHandlerContext;
 
 /**
  * A signal handler.  Since different OSes have different signatures
@@ -240,18 +244,20 @@ struct SignalHandlerContext;
  * the implementation must guarantee that this handler is not called
  * for signals other than the one that it has been registered for.
  */
-typedef void (*SignalHandler) (void);
+typedef void (*GNUNET_SignalHandler) (void);
 
 /**
  * Install a signal handler that will be run if the
  * given signal is received.
  */
-struct SignalHandlerContext *signal_handler_install (int signal,
-                                                     SignalHandler handler);
+struct GNUNET_SignalHandlerContext *GNUNET_signal_handler_install (int signal,
+                                                                   GNUNET_SignalHandler
+                                                                   handler);
 
-void signal_handler_uninstall (int signal,
-                               SignalHandler handler,
-                               struct SignalHandlerContext *ctx);
+void GNUNET_signal_handler_uninstall (int signal,
+                                      GNUNET_SignalHandler handler,
+                                      struct GNUNET_SignalHandlerContext
+                                      *ctx);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

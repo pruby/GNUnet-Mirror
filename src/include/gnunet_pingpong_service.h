@@ -48,14 +48,15 @@ typedef struct
    * an encrypted ping routed using the core.
    *
    * @param receiver the peer that should be PINGed
-   * @param usePlaintext send the PING in plaintext (YES/NO)
+   * @param usePlaintext send the PING in plaintext (GNUNET_YES/GNUNET_NO)
    * @param method the method to call if a PONG comes back
    * @param data an argument to pass to the method, if not
-   *   NULL and the ping does not come back, ping will FREE data!
-   * @returns OK on success, SYSERR on error
+   *   NULL and the ping does not come back, ping will GNUNET_free data!
+   * @returns GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*ping) (const PeerIdentity * receiver,
-               CronJob method, void *data, int usePlaintext, int challenge);
+  int (*ping) (const GNUNET_PeerIdentity * receiver,
+               GNUNET_CronJob method, void *data, int usePlaintext,
+               int challenge);
 
   /**
    * Ping a host an call a method if a reply comes back.
@@ -66,12 +67,13 @@ typedef struct
    * @param receiver the peer that should be PINGed
    * @param method the method to call if a PONG comes back
    * @param data an argument to pass to the method, if not
-   *   NULL and the ping does not come back, ping will FREE data!
+   *   NULL and the ping does not come back, ping will GNUNET_free data!
    * @returns NULL on error, otherwise the PING message
    */
-  MESSAGE_HEADER *(*pingUser) (const PeerIdentity * receiver,
-                               CronJob method,
-                               void *data, int plaintext, int challenge);
+  GNUNET_MessageHeader *(*pingUser) (const GNUNET_PeerIdentity * receiver,
+                                     GNUNET_CronJob method,
+                                     void *data, int plaintext,
+                                     int challenge);
 
   unsigned int ping_size;
 

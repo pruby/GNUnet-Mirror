@@ -30,7 +30,7 @@
 
 int wizard_curs_mainsetup_curses (int argc,
                                   const char **argv,
-                                  struct PluginHandle *self,
+                                  struct GNUNET_PluginHandle *self,
                                   struct GE_Context *ectx,
                                   struct GC_Configuration *cfg,
                                   struct GNS_Context *gns,

@@ -34,10 +34,10 @@ void doneFilters (void);
 
 void deleteFilter (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
-void makeAvailable (const HashCode512 * key);
+void makeAvailable (const GNUNET_HashCode * key);
 
-void makeUnavailable (const HashCode512 * key);
+void makeUnavailable (const GNUNET_HashCode * key);
 
-int testAvailable (const HashCode512 * key);
+int testAvailable (const GNUNET_HashCode * key);
 
 #endif

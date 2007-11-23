@@ -12,16 +12,16 @@
 static int
 parseCommandLine (int argc, char *argv[])
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 int
 main (int argc, char *argv[])
 {
-  HashCode512 hc;
+  GNUNET_HashCode hc;
 
   initUtil (argc, argv, &parseCommandLine);
-  hash ("TEST", 4, &hc);
+  GNUNET_hash ("TEST", 4, &hc);
   if ((hc.bits[0] != ntohl (2080019878)) ||
       (hc.bits[1] != ntohl (-2003678137)) ||
       (hc.bits[2] != ntohl (-942529663)) ||
@@ -34,7 +34,7 @@ main (int argc, char *argv[])
               ntohl (hc.bits[2]), ntohl (hc.bits[3]), ntohl (hc.bits[4]));
       return -1;
     }
-  hash (NULL, 0, &hc);
+  GNUNET_hash (NULL, 0, &hc);
   if ((hc.bits[0] != ntohl (-813440715)) ||
       (hc.bits[1] != ntohl (2129639613)) ||
       (hc.bits[2] != ntohl (-246142896)) ||

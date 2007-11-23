@@ -175,7 +175,7 @@ static int GNoptopt = '?';
    variable POSIXLY_CORRECT, or using `+' as the first character
    of the list of option characters.
 
-   PERMUTE is the default.  We permute the contents of ARGV as we scan,
+   PERMUTE is the default.  We GNUNET_permute the contents of ARGV as we scan,
    so that eventually all the non-options are at the end.  This allows options
    to be given in any order, even with programs that were not written to
    expect this.
@@ -499,7 +499,7 @@ _getopt_initialize (argc, argv, optstring)
    `flag' field is nonzero, the value of the option's `val' field
    if the `flag' field is zero.
 
-   The elements of ARGV aren't really const, because we permute them.
+   The elements of ARGV aren't really const, because we GNUNET_permute them.
    But we pretend they're const in the prototype to be compatible
    with other systems.
 
@@ -603,7 +603,7 @@ GN_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
           return -1;
         }
 
-      /* If we have come to a non-option and did not permute it,
+      /* If we have come to a non-option and did not GNUNET_permute it,
          either stop the scan or describe it to the caller and pass it by.  */
 
       if (NONOPTION_P)
@@ -999,14 +999,14 @@ GNgetopt_long (int argc,
  *   argument, or -1 on error
  */
 int
-gnunet_parse_options (const char *binaryOptions,
+GNUNET_parse_options (const char *binaryOptions,
                       struct GE_Context *ectx,
                       struct GC_Configuration *cfg,
-                      const CommandLineOption * allOptions,
+                      const GNUNET_CommandLineOption * allOptions,
                       unsigned int argc, char *const *argv)
 {
   struct GNoption *long_options;
-  CommandLineProcessorContext clpc;
+  GNUNET_CommandLineProcessorContext clpc;
   int count;
   int i;
   char *shorts;
@@ -1025,8 +1025,8 @@ gnunet_parse_options (const char *binaryOptions,
   count = 0;
   while (allOptions[count].name != NULL)
     count++;
-  long_options = MALLOC (sizeof (struct GNoption) * (count + 1));
-  shorts = MALLOC (count * 2 + 1);
+  long_options = GNUNET_malloc (sizeof (struct GNoption) * (count + 1));
+  shorts = GNUNET_malloc (count * 2 + 1);
   spos = 0;
   for (i = 0; i < count; i++)
     {
@@ -1043,14 +1043,14 @@ gnunet_parse_options (const char *binaryOptions,
   long_options[count].flag = NULL;
   long_options[count].val = '\0';
   shorts[spos++] = '\0';
-  cont = OK;
+  cont = GNUNET_OK;
   /* main getopt loop */
-  while (cont == OK)
+  while (cont == GNUNET_OK)
     {
       int option_index = 0;
       c = GNgetopt_long (argc, argv, shorts, long_options, &option_index);
 
-      if (c == SYSERR)
+      if (c == GNUNET_SYSERR)
         break;                  /* No more flags to process */
 
       for (i = 0; i < count; i++)
@@ -1069,14 +1069,14 @@ gnunet_parse_options (const char *binaryOptions,
           GE_LOG (ectx,
                   GE_INFO | GE_USER | GE_IMMEDIATE,
                   _("Use --help to get a list of options.\n"));
-          cont = SYSERR;
+          cont = GNUNET_SYSERR;
         }
     }
 
-  FREE (shorts);
-  FREE (long_options);
-  if (cont == SYSERR)
-    return SYSERR;
+  GNUNET_free (shorts);
+  GNUNET_free (long_options);
+  if (cont == GNUNET_SYSERR)
+    return GNUNET_SYSERR;
   return GNoptind;
 }
 

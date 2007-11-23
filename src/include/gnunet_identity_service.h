@@ -53,12 +53,12 @@ extern "C"
  *
  * @param identity the identity of the host
  * @param protocol the available protocol
- * @param confirmed is the address confirmed (YES),
- *        if NO the host is in the temporary list
+ * @param confirmed is the address confirmed (GNUNET_YES),
+ *        if GNUNET_NO the host is in the temporary list
  * @param data callback closure
- * @return OK to continue iteration
+ * @return GNUNET_OK to continue iteration
  */
-typedef int (*HostIterator) (const PeerIdentity * identity,
+typedef int (*HostIterator) (const GNUNET_PeerIdentity * identity,
                              unsigned short protocol,
                              int confirmed, void *data);
 
@@ -73,7 +73,7 @@ typedef struct
    *
    * @return reference to the public key. Do not free it!
    */
-  const PublicKey *(*getPublicPrivateKey) (void);
+  const GNUNET_RSA_PublicKey *(*getPublicPrivateKey) (void);
 
   /**
    * Obtain identity from publicPrivateKey.
@@ -81,17 +81,19 @@ typedef struct
    * @param pubKey the public key of the host
    * @param result address where to write the identity of the node
    */
-  void (*getPeerIdentity) (const PublicKey * pubKey, PeerIdentity * result);
+  void (*getPeerIdentity) (const GNUNET_RSA_PublicKey * pubKey,
+                           GNUNET_PeerIdentity * result);
 
 
   /**
    * Sign arbitrary data. ALWAYS use only on data we entirely generated.
-   * @param data what to sign
+   * @param data what to GNUNET_RSA_sign
    * @param size how big is the data
    * @param result where to store the result
-   * @returns SYSERR on failure, OK on success
+   * @returns GNUNET_SYSERR on failure, GNUNET_OK on success
    */
-  int (*signData) (const void *data, unsigned short size, Signature * result);
+  int (*signData) (const void *data, unsigned short size,
+                   GNUNET_RSA_Signature * result);
 
   /**
    * Decrypt a given block with the hostkey.
@@ -101,25 +103,25 @@ typedef struct
    *        the decrypted block is bigger, an error is returned
    * @returns the size of the decrypted block, -1 on error
    */
-  int (*decryptData) (const RSAEncryptedData * block,
+  int (*decryptData) (const GNUNET_RSA_EncryptedData * block,
                       void *result, unsigned int max);
 
   /**
    * Delete a host from the list
    */
-  void (*delHostFromKnown) (const PeerIdentity * identity,
+  void (*delHostFromKnown) (const GNUNET_PeerIdentity * identity,
                             unsigned short protocol);
 
   /**
    * Add a host to the temporary list.
    */
-  void (*addHostTemporarily) (const P2P_hello_MESSAGE * tmp);
+  void (*addHostTemporarily) (const GNUNET_MessageHello * tmp);
 
   /**
    * Add a host to the persistent list.
    * @param msg the verified (!) hello message
    */
-  void (*addHost) (const P2P_hello_MESSAGE * msg);
+  void (*addHost) (const GNUNET_MessageHello * msg);
 
   /**
    * Call a method for each known host.
@@ -129,7 +131,7 @@ typedef struct
    * @param data an argument to pass to the method
    * @return the number of known hosts matching
    */
-  int (*forEachHost) (cron_t now, HostIterator callback, void *data);
+  int (*forEachHost) (GNUNET_CronTime now, HostIterator callback, void *data);
 
   /**
    * Obtain the public key and address of a known host. If no specific
@@ -141,9 +143,9 @@ typedef struct
    *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
    * @return NULL on failure, the hello on success
    */
-  P2P_hello_MESSAGE *(*identity2Hello) (const PeerIdentity * hostId,
-                                        unsigned short protocol,
-                                        int tryTemporaryList);
+  GNUNET_MessageHello *(*identity2Hello) (const GNUNET_PeerIdentity * hostId,
+                                          unsigned short protocol,
+                                          int tryTemporaryList);
 
   /**
    *
@@ -152,11 +154,11 @@ typedef struct
    * @param message the signed message
    * @param size the size of the message
    * @param sig the signature
-   * @return OK on success, SYSERR on error (verification failed)
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error (verification failed)
    */
-  int (*verifyPeerSignature) (const PeerIdentity * signer,
+  int (*verifyPeerSignature) (const GNUNET_PeerIdentity * signer,
                               const void *message,
-                              int size, const Signature * sig);
+                              int size, const GNUNET_RSA_Signature * sig);
 
   /**
    * Blacklist a host. This method is called if a host
@@ -167,12 +169,12 @@ typedef struct
    * @param strict should we reject incoming connections?
    *               (and also not possibly attempt to connect
    *                to this peer from our side)?
-   *               If set to YES, the desperation value
+   *               If set to GNUNET_YES, the desperation value
    *               is also definite, otherwise an algorithm
    *               for back-off and limiting is applied.
-   * @return OK on success SYSERR on error
+   * @return GNUNET_OK on success GNUNET_SYSERR on error
    */
-  int (*blacklistHost) (const PeerIdentity * identity,
+  int (*blacklistHost) (const GNUNET_PeerIdentity * identity,
                         unsigned int desperation, int strict);
 
   /**
@@ -182,20 +184,20 @@ typedef struct
    * misbehaved badly and we also reject inbound connections.
    *
    * @param identity node to check
-   * @param strict YES if we should only care about
+   * @param strict GNUNET_YES if we should only care about
    *        strict blacklisting
-   * @return YES if true, else NO
+   * @return GNUNET_YES if true, else GNUNET_NO
    */
-  int (*isBlacklisted) (const PeerIdentity * identity, int strict);
+  int (*isBlacklisted) (const GNUNET_PeerIdentity * identity, int strict);
 
   /**
    * Whitelist a host. This method is called if a host
    * successfully established a connection. It typically
    * resets the exponential backoff to the smallest value.
    *
-   * @return OK on success SYSERR on error
+   * @return GNUNET_OK on success GNUNET_SYSERR on error
    */
-  int (*whitelistHost) (const PeerIdentity * identity);
+  int (*whitelistHost) (const GNUNET_PeerIdentity * identity);
 
   /**
    * Change the host trust by a value.
@@ -204,12 +206,12 @@ typedef struct
    * @param value is the int value by which the host credit is to be increased
    * @returns the new credit
    */
-  int (*changeHostTrust) (const PeerIdentity * hostId, int value);
+  int (*changeHostTrust) (const GNUNET_PeerIdentity * hostId, int value);
 
   /**
    * Obtain the trust record of the host.
    */
-  unsigned int (*getHostTrust) (const PeerIdentity * hostId);
+  unsigned int (*getHostTrust) (const GNUNET_PeerIdentity * hostId);
 
 } Identity_ServiceAPI;
 

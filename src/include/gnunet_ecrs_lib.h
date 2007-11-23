@@ -43,7 +43,7 @@ extern "C"
  * Just the version number of the AFS/ESED/ESED2/ECRS implementation.
  * History:
  *
- * 1.x.x: initial version with triple hash and merkle tree
+ * 1.x.x: initial version with triple GNUNET_hash and merkle tree
  * 2.x.x: root node with mime-type, filename and version number
  * 2.1.x: combined CHK/3HASH encoding with 25:1 super-nodes
  * 2.2.x: with directories
@@ -88,14 +88,14 @@ struct ECRS_MetaData;
 
 /**
  * Iterator over meta data.
- * @return OK to continue to iterate, SYSERR to abort
+ * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR to abort
  */
 typedef int (*ECRS_MetaDataIterator) (EXTRACTOR_KeywordType type,
                                       const char *data, void *closure);
 
 /**
  * Iterator over keywords
- * @return OK to continue to iterate, SYSERR to abort
+ * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR to abort
  */
 typedef int (*ECRS_KeywordIterator) (const char *data, void *closure);
 
@@ -123,14 +123,14 @@ int ECRS_equalsMetaData (const struct ECRS_MetaData *md1,
 
 /**
  * Extend metadata.
- * @return OK on success, SYSERR if this entry already exists
+ * @return GNUNET_OK on success, GNUNET_SYSERR if this entry already exists
  */
 int ECRS_addToMetaData (struct ECRS_MetaData *md,
                         EXTRACTOR_KeywordType type, const char *data);
 
 /**
  * Remove an item.
- * @return OK on success, SYSERR if the item does not exist in md
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the item does not exist in md
  */
 int ECRS_delFromMetaData (struct ECRS_MetaData *md,
                           EXTRACTOR_KeywordType type, const char *data);
@@ -178,7 +178,7 @@ size_t ECRS_getThumbnailFromMetaData (const struct ECRS_MetaData *md,
 /**
  * Extract meta-data from a file.
  *
- * @return SYSERR on error, otherwise the number
+ * @return GNUNET_SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
 int ECRS_extractMetaData (struct GE_Context *ectx,
@@ -187,10 +187,10 @@ int ECRS_extractMetaData (struct GE_Context *ectx,
                           EXTRACTOR_ExtractorList * extractors);
 
 /* = 0 */
-#define ECRS_SERIALIZE_FULL NO
+#define ECRS_SERIALIZE_FULL GNUNET_NO
 
 /* = 1 */
-#define ECRS_SERIALIZE_PART YES
+#define ECRS_SERIALIZE_PART GNUNET_YES
 
 /* disallow compression (if speed is important) */
 #define ECRS_SERIALIZE_NO_COMPRESS 2
@@ -202,9 +202,9 @@ int ECRS_extractMetaData (struct GE_Context *ectx,
  * @param size maximum number of bytes available
  * @param part is it ok to just write SOME of the
  *        meta-data to match the size constraint,
- *        possibly discarding some data? YES/NO.
+ *        possibly discarding some data? GNUNET_YES/GNUNET_NO.
  * @return number of bytes written on success,
- *         SYSERR on error (typically: not enough
+ *         GNUNET_SYSERR on error (typically: not enough
  *         space)
  */
 int ECRS_serializeMetaData (struct GE_Context *ectx,
@@ -232,8 +232,8 @@ struct ECRS_MetaData *ECRS_deserializeMetaData (struct GE_Context *ectx,
  * Does the meta-data claim that this is a directory?
  * Checks if the mime-type is that of a GNUnet directory.
  *
- * @return YES if it is, NO if it is not, SYSERR if
- *  we have no mime-type information (treat as 'NO')
+ * @return GNUNET_YES if it is, GNUNET_NO if it is not, GNUNET_SYSERR if
+ *  we have no mime-type information (treat as 'GNUNET_NO')
  */
 int ECRS_isDirectory (const struct ECRS_MetaData *md);
 
@@ -287,9 +287,10 @@ int ECRS_getKeywordsFromUri (const struct ECRS_URI *uri,
 
 /**
  * Obtain the identity of the peer offering the data
- * @return -1 if this is not a location URI, otherwise OK
+ * @return -1 if this is not a location URI, otherwise GNUNET_OK
  */
-int ECRS_getPeerFromUri (const struct ECRS_URI *uri, PeerIdentity * peer);
+int ECRS_getPeerFromUri (const struct ECRS_URI *uri,
+                         GNUNET_PeerIdentity * peer);
 
 /**
  * Obtain the URI of the content itself.
@@ -304,7 +305,8 @@ struct ECRS_URI *ECRS_getContentUri (const struct ECRS_URI *uri);
  */
 typedef int (*ECRS_SignFunction) (void *cls,
                                   unsigned short size,
-                                  const void *data, Signature * result);
+                                  const void *data,
+                                  GNUNET_RSA_Signature * result);
 
 /**
  * Construct a location URI.
@@ -317,8 +319,8 @@ typedef int (*ECRS_SignFunction) (void *cls,
  * @return the location URI
  */
 struct ECRS_URI *ECRS_uriFromLocation (const struct ECRS_URI *baseUri,
-                                       const PublicKey * peer,
-                                       TIME_T expirationTime,
+                                       const GNUNET_RSA_PublicKey * peer,
+                                       GNUNET_Int32Time expirationTime,
                                        ECRS_SignFunction signer,
                                        void *signer_cls);
 
@@ -381,21 +383,22 @@ int ECRS_isNamespaceUri (const struct ECRS_URI *uri);
  * Get the (globally unique) name for the given
  * namespace.
  *
- * @return the name (hash) of the namespace, caller
+ * @return the name (GNUNET_hash) of the namespace, caller
  *  must free it.
  */
-char *ECRS_getNamespaceName (const HashCode512 * nsid);
+char *ECRS_getNamespaceName (const GNUNET_HashCode * nsid);
 
 /**
  * Get the ID of a namespace from the given
  * namespace URI.
  */
-int ECRS_getNamespaceId (const struct ECRS_URI *uri, HashCode512 * nsid);
+int ECRS_getNamespaceId (const struct ECRS_URI *uri, GNUNET_HashCode * nsid);
 
 /**
  * Get the content ID of an SKS URI.
  */
-int ECRS_getSKSContentHash (const struct ECRS_URI *uri, HashCode512 * nsid);
+int ECRS_getSKSContentHash (const struct ECRS_URI *uri,
+                            GNUNET_HashCode * nsid);
 
 /**
  * Is this a keyword URI?
@@ -438,17 +441,15 @@ typedef struct
 /**
  * @param scls must be of type "struct ECRS_URI **"
  */
-int gnunet_getopt_configure_set_keywords (CommandLineProcessorContext * ctx,
-                                          void *scls,
-                                          const char *option,
+int gnunet_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext *
+                                          ctx, void *scls, const char *option,
                                           const char *value);
 
 /**
  * @param scls must be of type "struct ECRS_MetaData **"
  */
-int gnunet_getopt_configure_set_metadata (CommandLineProcessorContext * ctx,
-                                          void *scls,
-                                          const char *option,
+int gnunet_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext *
+                                          ctx, void *scls, const char *option,
                                           const char *value);
 
 
@@ -465,7 +466,7 @@ int gnunet_getopt_configure_set_metadata (CommandLineProcessorContext * ctx,
  */
 typedef void (*ECRS_UploadProgressCallback)
   (unsigned long long totalBytes,
-   unsigned long long completedBytes, cron_t eta, void *closure);
+   unsigned long long completedBytes, GNUNET_CronTime eta, void *closure);
 
 /**
  * Should the operation be aborted?  Callback used by many functions
@@ -477,8 +478,8 @@ typedef void (*ECRS_UploadProgressCallback)
  * be aborted by any signal, after which the functions will call
  * this callback to check if they should continue).
  *
- * @return OK to continue, SYSERR to abort with deleting
- *  temporary files, NO to abort without deleting temporary files
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to abort with deleting
+ *  temporary files, GNUNET_NO to abort without deleting temporary files
  */
 typedef int (*ECRS_TestTerminate) (void *closure);
 
@@ -488,28 +489,28 @@ typedef int (*ECRS_TestTerminate) (void *closure);
  * @param priority what is the priority for OUR node to
  *   keep this file available?  Use 0 for maximum anonymity and
  *   minimum reliability...
- * @param doIndex YES for index, NO for insertion
+ * @param doIndex GNUNET_YES for index, GNUNET_NO for insertion
  * @param uri set to the URI of the uploaded file
- * @return SYSERR if the upload failed (i.e. not enough space
+ * @return GNUNET_SYSERR if the upload failed (i.e. not enough space
  *  or gnunetd not running)
  */
-int ECRS_uploadFile (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *filename, int doIndex, unsigned int anonymityLevel, unsigned int priority, cron_t expirationTime,       /* absolute time */
+int ECRS_uploadFile (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *filename, int doIndex, unsigned int anonymityLevel, unsigned int priority, GNUNET_CronTime expirationTime,      /* absolute time */
                      ECRS_UploadProgressCallback upcb, void *upcbClosure, ECRS_TestTerminate tt, void *ttClosure, struct ECRS_URI **uri);       /* upload.c */
 
 /**
  * Test if a file is indexed.
  *
- * @return YES if the file is indexed, NO if not, SYSERR on errors
+ * @return GNUNET_YES if the file is indexed, GNUNET_NO if not, GNUNET_SYSERR on errors
  *  (i.e. filename could not be accessed and thus we have problems
  *  checking; also possible that the file was modified after indexing;
- *  in either case, if SYSERR is returned the user should probably
+ *  in either case, if GNUNET_SYSERR is returned the user should probably
  *  be notified that 'something is wrong')
  */
 int ECRS_isFileIndexed (struct GE_Context *ectx,
                         struct GC_Configuration *cfg, const char *filename);
 
 /**
- * @return OK to continue iteration, SYSERR to abort
+ * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
 typedef int (*ECRS_FileIterator) (const char *filename, void *cls);
 
@@ -523,7 +524,7 @@ typedef int (*ECRS_FileIterator) (const char *filename, void *cls);
  * names will have been lost.  In that case, the iterator
  * will NOT iterate over these files.
  *
- * @return number of files indexed, SYSERR if iterator aborted
+ * @return number of files indexed, GNUNET_SYSERR if iterator aborted
  */
 int ECRS_iterateIndexedFiles (struct GE_Context *ectx,
                               struct GC_Configuration *cfg,
@@ -532,7 +533,7 @@ int ECRS_iterateIndexedFiles (struct GE_Context *ectx,
 /**
  * Unindex a file.
  *
- * @return SYSERR if the unindexing failed (i.e. not indexed)
+ * @return GNUNET_SYSERR if the unindexing failed (i.e. not indexed)
  */
 int ECRS_unindexFile (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *filename, ECRS_UploadProgressCallback upcb, void *upcbClosure, ECRS_TestTerminate tt, void *ttClosure);        /* unindex.c */
 
@@ -557,24 +558,24 @@ int ECRS_unindexFile (struct GE_Context *ectx, struct GC_Configuration *cfg, con
  *
  * @return URI on success, NULL on error (namespace already exists)
  */
-struct ECRS_URI *ECRS_createNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *name, const struct ECRS_MetaData *meta, unsigned int anonymityLevel, unsigned int priority, cron_t expiration, const struct ECRS_URI *advertisementURI, const HashCode512 * rootEntry);       /* namespace.c */
+struct ECRS_URI *ECRS_createNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *name, const struct ECRS_MetaData *meta, unsigned int anonymityLevel, unsigned int priority, GNUNET_CronTime expiration, const struct ECRS_URI *advertisementURI, const GNUNET_HashCode * rootEntry);  /* namespace.c */
 
 /**
  * Check if the given namespace exists (locally).
  * @param hc if non-null, also check that this is the
  *   hc of the public key
- * @return OK if the namespace exists, SYSERR if not
+ * @return GNUNET_OK if the namespace exists, GNUNET_SYSERR if not
  */
 int ECRS_testNamespaceExists (struct GE_Context *ectx,
                               struct GC_Configuration *cfg,
-                              const char *name, const HashCode512 * hc);
+                              const char *name, const GNUNET_HashCode * hc);
 
 /**
  * Delete a local namespace.  Only prevents future insertions
  * into the namespace, does not delete any content from
  * the network!
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int ECRS_deleteNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *namespaceName);    /* namespace.c */
 
@@ -583,7 +584,7 @@ int ECRS_deleteNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg,
  * Contains the name of the local namespace and the global
  * ID.
  */
-typedef int (*ECRS_NamespaceInfoCallback) (const HashCode512 * id,
+typedef int (*ECRS_NamespaceInfoCallback) (const GNUNET_HashCode * id,
                                            const char *name, void *closure);
 
 /**
@@ -592,7 +593,7 @@ typedef int (*ECRS_NamespaceInfoCallback) (const HashCode512 * id,
  * we only iterate over the local namespaces.
  *
  * @param list where to store the names (is allocated, caller frees)
- * @return SYSERR on error, otherwise the number of pseudonyms in list
+ * @return GNUNET_SYSERR on error, otherwise the number of pseudonyms in list
  */
 int ECRS_listNamespaces (struct GE_Context *ectx, struct GC_Configuration *cfg, ECRS_NamespaceInfoCallback cb, void *cls);      /* namespace.c */
 
@@ -606,7 +607,7 @@ int ECRS_listNamespaces (struct GE_Context *ectx, struct GC_Configuration *cfg, 
  *        entry?
  * @return URI on success, NULL on error
  */
-struct ECRS_URI *ECRS_addToNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *name, unsigned int anonymityLevel, unsigned int priority, cron_t expirationTime, TIME_T creationTime, TIME_T updateInterval, const HashCode512 * thisId, const HashCode512 * nextId, const struct ECRS_URI *dst, const struct ECRS_MetaData *md);      /* namespace.c */
+struct ECRS_URI *ECRS_addToNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *name, unsigned int anonymityLevel, unsigned int priority, GNUNET_CronTime expirationTime, GNUNET_Int32Time creationTime, GNUNET_Int32Time updateInterval, const GNUNET_HashCode * thisId, const GNUNET_HashCode * nextId, const struct ECRS_URI *dst, const struct ECRS_MetaData *md); /* namespace.c */
 
 /**
  * Add an entry into the K-space (keyword space).
@@ -617,22 +618,22 @@ struct ECRS_URI *ECRS_addToNamespace (struct GE_Context *ectx, struct GC_Configu
  * @param md what meta-data should be associated with the
  *        entry?
  */
-int ECRS_addToKeyspace (struct GE_Context *ectx, struct GC_Configuration *cfg, const struct ECRS_URI *uri, unsigned int anonymityLevel, unsigned int priority, cron_t expirationTime, const struct ECRS_URI *dst, const struct ECRS_MetaData *md);      /* keyspace.c */
+int ECRS_addToKeyspace (struct GE_Context *ectx, struct GC_Configuration *cfg, const struct ECRS_URI *uri, unsigned int anonymityLevel, unsigned int priority, GNUNET_CronTime expirationTime, const struct ECRS_URI *dst, const struct ECRS_MetaData *md);     /* keyspace.c */
 
 /**
  * The search has found another result.  Callback to notify
  * whoever is controlling the search.
  *
  * @param uri the URI of the datum
- * @param key under which the result was found (hash of keyword),
+ * @param key under which the result was found (GNUNET_hash of keyword),
  *        NULL if no key is known
  * @param isRoot is this a namespace root advertisement?
  * @param md a description for the URI
- * @return OK, SYSERR to abort
+ * @return GNUNET_OK, GNUNET_SYSERR to abort
  */
 typedef int (*ECRS_SearchProgressCallback)
   (const ECRS_FileInfo * fi,
-   const HashCode512 * key, int isRoot, void *closure);
+   const GNUNET_HashCode * key, int isRoot, void *closure);
 
 /**
  * Search for content.
@@ -641,7 +642,7 @@ typedef int (*ECRS_SearchProgressCallback)
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-int ECRS_search (struct GE_Context *ectx, struct GC_Configuration *cfg, const struct ECRS_URI *uri, unsigned int anonymityLevel, cron_t timeout, ECRS_SearchProgressCallback spcb, void *spcbClosure, ECRS_TestTerminate tt, void *ttClosure);  /* search.c */
+int ECRS_search (struct GE_Context *ectx, struct GC_Configuration *cfg, const struct ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_CronTime timeout, ECRS_SearchProgressCallback spcb, void *spcbClosure, ECRS_TestTerminate tt, void *ttClosure); /* search.c */
 
 /**
  * Notification of ECRS to a client about the progress of an insertion
@@ -652,7 +653,7 @@ int ECRS_search (struct GE_Context *ectx, struct GC_Configuration *cfg, const st
  * @param completedBytes number of bytes that have been obtained
  * @param eta absolute estimated time for the completion of the operation
  * @param lastBlockOffset offset of the last block that was downloaded,
- *        -1 as long as NO leaf of the file-tree has been obtained.  Note
+ *        -1 as long as GNUNET_NO leaf of the file-tree has been obtained.  Note
  *        that inner nodes are _not_ counted here
  * @param lastBlock plaintext of the last block that was downloaded
  * @param lastBlockSize size of the last block that was downloaded
@@ -660,12 +661,12 @@ int ECRS_search (struct GE_Context *ectx, struct GC_Configuration *cfg, const st
 typedef void (*ECRS_DownloadProgressCallback)
   (unsigned long long totalBytes,
    unsigned long long completedBytes,
-   cron_t eta,
+   GNUNET_CronTime eta,
    unsigned long long lastBlockOffset,
    const char *lastBlock, unsigned int lastBlockSize, void *closure);
 
 /**
- * Download a file.
+ * GNUNET_ND_DOWNLOAD a file.
  *
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
@@ -673,7 +674,7 @@ typedef void (*ECRS_DownloadProgressCallback)
 int ECRS_downloadFile (struct GE_Context *ectx, struct GC_Configuration *cfg, const struct ECRS_URI *uri, const char *filename, unsigned int anonymityLevel, ECRS_DownloadProgressCallback dpcb, void *dpcbClosure, ECRS_TestTerminate tt, void *ttClosure);    /* download.c */
 
 /**
- * Download parts of a file.  Note that this will store
+ * GNUNET_ND_DOWNLOAD parts of a file.  Note that this will store
  * the blocks at the respective offset in the given file.
  * Also, the download is still using the blocking of the
  * underlying ECRS encoding.  As a result, the download
@@ -687,7 +688,7 @@ int ECRS_downloadFile (struct GE_Context *ectx, struct GC_Configuration *cfg, co
  *
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
- * @param no_temporaries set to YES to disallow generation of temporary files
+ * @param no_temporaries set to GNUNET_YES to disallow generation of temporary files
  * @param start starting offset
  * @param length length of the download (starting at offset)
  */
@@ -704,7 +705,7 @@ int ECRS_downloadPartialFile (struct GE_Context *ectx, struct GC_Configuration *
  * @param len number of bytes in data
  * @param md set to the MD for the directory if the first
  *   block is part of data
- * @return number of entries on success, SYSERR if the
+ * @return number of entries on success, GNUNET_SYSERR if the
  *         directory is malformed
  */
 int ECRS_listDirectory (struct GE_Context *ectx, const char *data, unsigned long long len, struct ECRS_MetaData **md, ECRS_SearchProgressCallback spcb, void *spcbClosure);     /* directory.c */
@@ -720,7 +721,7 @@ int ECRS_listDirectory (struct GE_Context *ectx, const char *data, unsigned long
  *        respective values at same offset in in uris)
  * @param meta meta-data for the directory.  The meta entry
  *        is extended with the mime-type for a GNUnet directory.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int ECRS_createDirectory (struct GE_Context *ectx, char **data, unsigned long long *len, unsigned int count, const ECRS_FileInfo * fis, struct ECRS_MetaData *meta);    /* directory.c */
 

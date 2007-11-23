@@ -4,7 +4,6 @@ LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 bin_PROGRAMS = \
@@ -28,7 +27,6 @@ gnunet_directory_SOURCES = \
 gnunet_directory_LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 
@@ -39,7 +37,6 @@ gnunet_pseudonym_LDADD = \
   $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
   $(top_builddir)/src/applications/fs/collection/libgnunetcollection.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_search_SOURCES = \

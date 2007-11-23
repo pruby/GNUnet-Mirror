@@ -47,7 +47,7 @@
 #include <dlfcn.h>
 #endif
 
-#define ALLOW_EXTRA_CHECKS NO
+#define ALLOW_EXTRA_CHECKS GNUNET_NO
 
 /**
  * For strptime (glibc2 needs this).
@@ -128,7 +128,7 @@
 #ifdef SOMEBSD
 #include <net/if.h>
 #endif
-#ifdef FREEBSD
+#ifdef GNUNET_freeBSD
 #include <semaphore.h>
 #endif
 #ifdef OSX

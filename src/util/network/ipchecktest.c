@@ -29,20 +29,20 @@
 int
 test ()
 {
-  struct CIDRNetwork *cidr;
+  struct GNUNET_IPv4NetworkSet *cidr;
 
-  cidr = parse_ipv4_network_specification (NULL, "127.0.0.1;");
+  cidr = GNUNET_parse_ipv4_network_specification (NULL, "127.0.0.1;");
   if (cidr == NULL)
     return 1;
-  FREE (cidr);
-  cidr = parse_ipv4_network_specification (NULL, "127.0.0.1/8;");
+  GNUNET_free (cidr);
+  cidr = GNUNET_parse_ipv4_network_specification (NULL, "127.0.0.1/8;");
   if (cidr == NULL)
     return 2;
-  FREE (cidr);
-  cidr = parse_ipv4_network_specification (NULL, "0.0.0.0/0;");
+  GNUNET_free (cidr);
+  cidr = GNUNET_parse_ipv4_network_specification (NULL, "0.0.0.0/0;");
   if (cidr == NULL)
     return 4;
-  FREE (cidr);
+  GNUNET_free (cidr);
   return 0;
 }
 

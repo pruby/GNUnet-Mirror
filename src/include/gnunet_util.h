@@ -55,6 +55,12 @@
 #include "gnunet_util_getopt.h"
 #include "gnunet_util_network.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_util_crypto.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_containers.h"
+#include "gnunet_util_cron.h"
+#include "gnunet_util_boot.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -76,7 +82,7 @@ extern "C"
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-#define GNUNET_UTIL_VERSION 0x00070202
+#define GNUNET_UTIL_VERSION 0x00070203
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

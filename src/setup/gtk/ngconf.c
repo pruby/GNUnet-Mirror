@@ -85,7 +85,7 @@ static void
 link_visibility (struct GNS_Tree *pos, GtkWidget * w)
 {
   struct P2W *pw;
-  pw = MALLOC (sizeof (struct P2W));
+  pw = GNUNET_malloc (sizeof (struct P2W));
   pw->pos = pos;
   pw->w = w;
   pw->next = pws;
@@ -134,7 +134,7 @@ multi_update (GtkToggleButton * button, gpointer user_data)
   opt = g_object_get_data (G_OBJECT (button), "MC-value");
   if (gtk_toggle_button_get_active (button))
     {
-      ret = MALLOC (strlen (val) + strlen (opt) + 2);
+      ret = GNUNET_malloc (strlen (val) + strlen (opt) + 2);
       strcpy (ret, val);
       strcat (ret, " ");
       strcat (ret, opt);
@@ -147,7 +147,7 @@ multi_update (GtkToggleButton * button, gpointer user_data)
                (s[strlen (opt)] != ' ')) || ((s != val) && (s[-1] != ' '))))
         v = s + 1;
       GE_ASSERT (NULL, s != NULL);
-      ret = MALLOC (strlen (val));
+      ret = GNUNET_malloc (strlen (val));
       s[0] = '\0';
       if (s != val)
         s[-1] = '\0';           /* kill space */
@@ -156,8 +156,8 @@ multi_update (GtkToggleButton * button, gpointer user_data)
     }
   GC_set_configuration_value_string (cfg,
                                      ectx, pos->section, pos->option, ret);
-  FREE (ret);
-  FREE (val);
+  GNUNET_free (ret);
+  GNUNET_free (val);
   update_visibility ();
 }
 
@@ -262,7 +262,7 @@ addLeafToTree (GtkWidget * parent, struct GNS_Tree *pos)
 
       break;
     case GNS_Double:
-      SNPRINTF (defStr, 128, "%llf", pos->value.Double.val);
+      GNUNET_snprintf (defStr, 128, "%llf", pos->value.Double.val);
       w = gtk_entry_new ();
       tooltip (w, pos->help);
       label = gtk_label_new (pos->description);
@@ -398,7 +398,7 @@ on_saveButton_activatesetup_gtk ()
  * needs saving and possibly save configuration or do not
  * exit.
  *
- * @return TRUE to NOT exit (i.e. user hits cancel on save YES/NO/CANCEL).
+ * @return TRUE to NOT exit (i.e. user hits cancel on save GNUNET_YES/GNUNET_NO/CANCEL).
  */
 gboolean
 on_main_window_delete_eventsetup_gtk ()
@@ -452,7 +452,7 @@ gtk_main_quitsetup_gtk ()
 
 int
 gconf_main_post_init (struct
-                      PluginHandle
+                      GNUNET_PluginHandle
                       *self,
                       struct
                       GE_Context *e,
@@ -496,7 +496,7 @@ gconf_mainsetup_gtk (int argc,
                      const char
                      **argv,
                      struct
-                     PluginHandle
+                     GNUNET_PluginHandle
                      *self,
                      struct GE_Context
                      *ectx,

@@ -62,9 +62,9 @@ typedef struct
   /**
    * Store an item in the datastore.
    *
-   * @return OK on success, SYSERR on error, NO on temporary error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO on temporary error
    */
-  int (*put) (const HashCode512 * key, const Datastore_Value * value);
+  int (*put) (const GNUNET_HashCode * key, const Datastore_Value * value);
 
   /**
    * Iterate over the results for a particular key
@@ -74,10 +74,10 @@ typedef struct
    * @param type entries of which type are relevant?
    *     Use 0 for any type.
    * @param iter maybe NULL (to just count)
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*get) (const HashCode512 * key,
+  int (*get) (const GNUNET_HashCode * key,
               unsigned int type, Datum_Iterator iter, void *closure);
 
   /**
@@ -99,10 +99,10 @@ typedef struct
    * @param expire new expiration time should be the
    *     MAX of any existing expiration time and
    *     this value
-   * @return OK if a match was found and the update
-   *     was successful, SYSERR on error
+   * @return GNUNET_OK if a match was found and the update
+   *     was successful, GNUNET_SYSERR on error
    */
-  int (*update) (unsigned long long uid, int delta, cron_t expire);
+  int (*update) (unsigned long long uid, int delta, GNUNET_CronTime expire);
 
   /**
    * Iterate over the items in the datastore in ascending
@@ -111,7 +111,7 @@ typedef struct
    * @param type entries of which type should be considered?
    *        Use 0 for any type.
    * @param iter never NULL
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateLowPriority) (unsigned int type,
@@ -123,7 +123,7 @@ typedef struct
    * @param type entries of which type should be considered?
    *        Use 0 for any type.
    * @param iter never NULL
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateNonAnonymous) (unsigned int type,
@@ -136,7 +136,7 @@ typedef struct
    * @param type entries of which type should be considered?
    *        Use 0 for any type.
    * @param iter never NULL
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateExpirationTime) (unsigned int type,
@@ -148,7 +148,7 @@ typedef struct
    * order.
    *
    * @param iter never NULL
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateMigrationOrder) (Datum_Iterator iter, void *closure);
@@ -160,7 +160,7 @@ typedef struct
    * is on doing it fast).
    *
    * @param iter never NULL
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateAllNow) (Datum_Iterator iter, void *closure);

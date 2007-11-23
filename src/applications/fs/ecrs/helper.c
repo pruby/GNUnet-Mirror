@@ -51,7 +51,7 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
       GE_BREAK (ectx, 0);
       return NULL;
     }
-  searchString = STRDUP (input);
+  searchString = GNUNET_strdup (input);
   num_Words = 0;
   for (inWord = 0, c = searchString; *c != '\0'; ++c)
     {
@@ -68,13 +68,13 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
 
   if (num_Words == 0)
     {
-      FREENONNULL (searchString);
+      GNUNET_free_non_null (searchString);
       GE_LOG (ectx,
               GE_ERROR | GE_IMMEDIATE | GE_USER,
               _("No keywords specified!\n"));
       return NULL;
     }
-  keywords = MALLOC (num_Words * sizeof (char *));
+  keywords = GNUNET_malloc (num_Words * sizeof (char *));
   num_Words = 0;
   for (inWord = 0, c = searchString; *c != '\0'; ++c)
     {
@@ -91,8 +91,8 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
         }
     }
   uri = ECRS_parseArgvKeywordURI (ectx, num_Words, (const char **) keywords);
-  FREE (keywords);
-  FREE (searchString);
+  GNUNET_free (keywords);
+  GNUNET_free (searchString);
   return uri;
 }
 
@@ -116,7 +116,7 @@ ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
 
   uriString = NULL;
   uriSize = 0;
-  GROW (uriString, uriSize, 4096);
+  GNUNET_array_grow (uriString, uriSize, 4096);
   strcpy (uriString, ECRS_URI_PREFIX);
   strcat (uriString, ECRS_SEARCH_INFIX);
   uriLen = 1 + strlen (ECRS_URI_PREFIX) + strlen (ECRS_SEARCH_INFIX);
@@ -125,7 +125,8 @@ ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
   for (i = 0; i < num_keywords; i++)
     {
       if (uriSize < uriLen + strlen (_("AND")) + 1 + strlen (keywords[i]))
-        GROW (uriString, uriSize, uriSize + 4096 + strlen (keywords[i]));
+        GNUNET_array_grow (uriString, uriSize,
+                           uriSize + 4096 + strlen (keywords[i]));
       if ((i > 0) && (0 == strcmp (keywords[i], _("AND"))))
         {
           strcat (uriString, "+");
@@ -145,7 +146,7 @@ ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
         }
     }
   uri = ECRS_stringToUri (ectx, uriString);
-  GROW (uriString, uriSize, 0);
+  GNUNET_array_grow (uriString, uriSize, 0);
   return uri;
 }
 
@@ -169,7 +170,7 @@ ECRS_parseListKeywordURI (struct GE_Context *ectx,
 
   uriString = NULL;
   uriSize = 0;
-  GROW (uriString, uriSize, 4096);
+  GNUNET_array_grow (uriString, uriSize, 4096);
   strcpy (uriString, ECRS_URI_PREFIX);
   strcat (uriString, ECRS_SEARCH_INFIX);
   uriLen = 1 + strlen (ECRS_URI_PREFIX) + strlen (ECRS_SEARCH_INFIX);
@@ -178,7 +179,8 @@ ECRS_parseListKeywordURI (struct GE_Context *ectx,
   for (i = 0; i < num_keywords; i++)
     {
       if (uriSize < uriLen + 1 + strlen (keywords[i]))
-        GROW (uriString, uriSize, uriSize + 4096 + strlen (keywords[i]));
+        GNUNET_array_grow (uriString, uriSize,
+                           uriSize + 4096 + strlen (keywords[i]));
       if (i > 0)
         {
           strcat (uriString, "+");
@@ -188,7 +190,7 @@ ECRS_parseListKeywordURI (struct GE_Context *ectx,
       uriLen += strlen (keywords[i]);
     }
   uri = ECRS_stringToUri (ectx, uriString);
-  GROW (uriString, uriSize, 0);
+  GNUNET_array_grow (uriString, uriSize, 0);
   return uri;
 }
 

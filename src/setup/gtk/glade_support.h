@@ -31,7 +31,7 @@ GladeXML *getMainXML (void);
 
 void destroyMainXML (void);
 
-void setLibrary (struct PluginHandle *lib);
+void setLibrary (struct GNUNET_PluginHandle *lib);
 
 GtkWidget *get_xml (const char *dialog_name);
 

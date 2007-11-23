@@ -59,11 +59,11 @@ testKeyword ()
   uri = ECRS_uriToString (ret);
   if (0 != strcmp (uri, "gnunet://ecrs/ksk/foo+bar"))
     {
-      FREE (uri);
+      GNUNET_free (uri);
       ECRS_freeUri (ret);
       ABORT ();
     }
-  FREE (uri);
+  GNUNET_free (uri);
   ECRS_freeUri (ret);
   return 0;
 }
@@ -74,18 +74,19 @@ testLocation ()
   struct ECRS_URI *uri;
   char *uric;
   struct ECRS_URI *uri2;
-  PublicKey pk;
-  struct PrivateKey *hk;
+  GNUNET_RSA_PublicKey pk;
+  struct GNUNET_RSA_PrivateKey *hk;
   struct ECRS_URI *baseURI;
 
   baseURI =
     ECRS_stringToUri (NULL,
                       "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
-  hk = makePrivateKey ();
-  getPublicKey (hk, &pk);
+  hk = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hk, &pk);
   uri = ECRS_uriFromLocation (baseURI,
-                              &pk, 43, (ECRS_SignFunction) & sign, hk);
-  freePrivateKey (hk);
+                              &pk, 43, (ECRS_SignFunction) & GNUNET_RSA_sign,
+                              hk);
+  GNUNET_RSA_free_key (hk);
   if (uri == NULL)
     {
       GE_BREAK (NULL, 0);
@@ -116,14 +117,14 @@ testLocation ()
   printf ("URI: `%s'\n", uric);
 #endif
   uri2 = ECRS_stringToUri (NULL, uric);
-  FREE (uric);
+  GNUNET_free (uric);
   if (uri2 == NULL)
     {
       GE_BREAK (NULL, 0);
       ECRS_freeUri (uri);
       return 1;
     }
-  if (YES != ECRS_equalsUri (uri, uri2))
+  if (GNUNET_YES != ECRS_equalsUri (uri, uri2))
     {
       GE_BREAK (NULL, 0);
       ECRS_freeUri (uri);
@@ -172,10 +173,10 @@ testNamespace (int i)
                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO"))
     {
       ECRS_freeUri (ret);
-      FREE (uri);
+      GNUNET_free (uri);
       ABORT ();
     }
-  FREE (uri);
+  GNUNET_free (uri);
   ECRS_freeUri (ret);
   return 0;
 }
@@ -213,7 +214,7 @@ testFile (int i)
       ECRS_freeUri (ret);
       ABORT ();
     }
-  if (ntohll (ret->data.fi.file_length) != 42)
+  if (GNUNET_ntohll (ret->data.fi.file_length) != 42)
     {
       ECRS_freeUri (ret);
       ABORT ();
@@ -223,11 +224,11 @@ testFile (int i)
   if (0 != strcmp (uri,
                    "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42"))
     {
-      FREE (uri);
+      GNUNET_free (uri);
       ECRS_freeUri (ret);
       ABORT ();
     }
-  FREE (uri);
+  GNUNET_free (uri);
   ECRS_freeUri (ret);
   return 0;
 }

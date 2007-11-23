@@ -56,7 +56,7 @@
 #include <net/if.h>
 #include <net/if_mib.h>
 #endif
-#define DEBUG_STATUSCALLS NO
+#define DEBUG_STATUSCALLS GNUNET_NO
 
 /**
  * where to read network interface information from
@@ -80,13 +80,13 @@ typedef struct
 
   unsigned long long lastSum;
 
-  cron_t lastCall;
+  GNUNET_CronTime lastCall;
 
   int lastValue;
 
   /**
    * Can we compute statistics (because we have a previous
-   * value)?  YES or NO.
+   * value)?  GNUNET_YES or GNUNET_NO.
    */
   int have_last;
 
@@ -97,7 +97,7 @@ typedef struct
 
 } DirectionInfo;
 
-typedef struct LoadMonitor
+typedef struct GNUNET_LoadMonitor
 {
 
   /**
@@ -116,8 +116,8 @@ typedef struct LoadMonitor
   unsigned int ifcsSize;
 
   /**
-   * How to measure traffic (YES == only gnunetd,
-   * NO == try to include all apps)
+   * How to measure traffic (GNUNET_YES == only gnunetd,
+   * GNUNET_NO == try to include all apps)
    */
   int useBasicMethod;
 
@@ -128,7 +128,7 @@ typedef struct LoadMonitor
   /**
    * Lock.
    */
-  struct MUTEX *statusMutex;
+  struct GNUNET_Mutex *statusMutex;
 
   struct GE_Context *ectx;
 
@@ -138,27 +138,28 @@ typedef struct LoadMonitor
 
   DirectionInfo download_info;
 
-  cron_t last_ifc_update;
+  GNUNET_CronTime last_ifc_update;
 
 } LoadMonitor;
 
 void
-os_network_monitor_notify_transmission (struct LoadMonitor *monitor,
-                                        NetworkDirection dir,
-                                        unsigned long long delta)
+GNUNET_network_monitor_notify_transmission (struct GNUNET_LoadMonitor
+                                            *monitor,
+                                            GNUNET_NETWORK_DIRECTION dir,
+                                            unsigned long long delta)
 {
-  MUTEX_LOCK (monitor->statusMutex);
-  if (dir == Download)
+  GNUNET_mutex_lock (monitor->statusMutex);
+  if (dir == GNUNET_ND_DOWNLOAD)
     monitor->globalTrafficBetweenProc.last_in += delta;
   else
     monitor->globalTrafficBetweenProc.last_out += delta;
-  MUTEX_UNLOCK (monitor->statusMutex);
+  GNUNET_mutex_unlock (monitor->statusMutex);
 }
 
 #define MAX_PROC_LINE 5000
 
 static void
-updateInterfaceTraffic (struct LoadMonitor *monitor)
+updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
 {
 #ifdef LINUX
   unsigned long long rxnew;
@@ -354,7 +355,7 @@ resetStatusCalls (void *cls,
                   struct GC_Configuration *cfg,
                   struct GE_Context *ectx, const char *sect, const char *op)
 {
-  struct LoadMonitor *monitor = cls;
+  struct GNUNET_LoadMonitor *monitor = cls;
   char *interfaces;
   int i;
   int numInterfaces;
@@ -363,14 +364,15 @@ resetStatusCalls (void *cls,
   if (0 != strcmp (sect, "LOAD"))
     return 0;                   /* fast path */
   basic = GC_get_configuration_value_yesno (cfg,
-                                            "LOAD", "BASICLIMITING", YES);
-  if (basic == SYSERR)
-    return SYSERR;
+                                            "LOAD", "BASICLIMITING",
+                                            GNUNET_YES);
+  if (basic == GNUNET_SYSERR)
+    return GNUNET_SYSERR;
   if (-1 == GC_get_configuration_value_string (cfg,
                                                "LOAD",
                                                "INTERFACES",
                                                "eth0", &interfaces))
-    return SYSERR;
+    return GNUNET_SYSERR;
   if (interfaces == NULL)
     {
       GE_LOG (ectx,
@@ -378,49 +380,50 @@ resetStatusCalls (void *cls,
               _
               ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
               "LOAD", "INTERFACES");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (strlen (interfaces) == 0)
     {
-      FREE (interfaces);
+      GNUNET_free (interfaces);
       GE_LOG (ectx,
               GE_ERROR | GE_USER | GE_BULK,
               _
               ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
               "LOAD", "INTERFACES");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  MUTEX_LOCK (monitor->statusMutex);
+  GNUNET_mutex_lock (monitor->statusMutex);
   for (i = 0; i < monitor->ifcsSize; i++)
-    FREE (monitor->ifcs[i].name);
+    GNUNET_free (monitor->ifcs[i].name);
   numInterfaces = 1;
   for (i = strlen (interfaces) - 1; i >= 0; i--)
     if (interfaces[i] == ',')
       numInterfaces++;
-  GROW (monitor->ifcs, monitor->ifcsSize, numInterfaces);
+  GNUNET_array_grow (monitor->ifcs, monitor->ifcsSize, numInterfaces);
   for (i = strlen (interfaces) - 1; i >= 0; i--)
     {
       if (interfaces[i] == ',')
         {
-          monitor->ifcs[--numInterfaces].name = STRDUP (&interfaces[i + 1]);
+          monitor->ifcs[--numInterfaces].name =
+            GNUNET_strdup (&interfaces[i + 1]);
           numInterfaces++;
           interfaces[i] = '\0';
         }
     }
-  monitor->ifcs[--numInterfaces].name = STRDUP (interfaces);
+  monitor->ifcs[--numInterfaces].name = GNUNET_strdup (interfaces);
   GE_ASSERT (ectx, numInterfaces == 0);
   for (i = 0; i < monitor->ifcsSize; i++)
     {
       monitor->ifcs[i].last_in = 0;
       monitor->ifcs[i].last_out = 0;
     }
-  monitor->upload_info.have_last = NO;
+  monitor->upload_info.have_last = GNUNET_NO;
   monitor->upload_info.lastCall = 0;
   monitor->upload_info.overload = 0;
-  monitor->download_info.have_last = NO;
+  monitor->download_info.have_last = GNUNET_NO;
   monitor->download_info.lastCall = 0;
   monitor->download_info.overload = 0;
-  FREE (interfaces);
+  GNUNET_free (interfaces);
   monitor->useBasicMethod = basic;
   GC_get_configuration_value_number (cfg,
                                      "LOAD",
@@ -434,9 +437,9 @@ resetStatusCalls (void *cls,
                                      0,
                                      (unsigned long long) -1,
                                      50000, &monitor->upload_info.max);
-  monitor->last_ifc_update = get_time ();
+  monitor->last_ifc_update = GNUNET_get_time ();
   updateInterfaceTraffic (monitor);
-  MUTEX_UNLOCK (monitor->statusMutex);
+  GNUNET_mutex_unlock (monitor->statusMutex);
   return 0;
 }
 
@@ -447,19 +450,19 @@ resetStatusCalls (void *cls,
  * @return the maximum bandwidth in bytes per second, -1 for no limit
  */
 unsigned long long
-os_network_monitor_get_limit (struct LoadMonitor *monitor,
-                              NetworkDirection dir)
+GNUNET_network_monitor_get_limit (struct GNUNET_LoadMonitor *monitor,
+                                  GNUNET_NETWORK_DIRECTION dir)
 {
   if (monitor == NULL)
     return -1;
-  if (dir == Upload)
+  if (dir == GNUNET_ND_UPLOAD)
     return monitor->upload_info.max;
-  else if (dir == Download)
+  else if (dir == GNUNET_ND_DOWNLOAD)
     return monitor->download_info.max;
   return -1;
 }
 
-#define INCREMENTAL_INTERVAL (60 * cronSECONDS)
+#define INCREMENTAL_INTERVAL (60 * GNUNET_CRON_SECONDS)
 
 /**
  * Get the load of the network relative to what is allowed.
@@ -467,11 +470,11 @@ os_network_monitor_get_limit (struct LoadMonitor *monitor,
  *        (100 is equivalent to full load)
  */
 int
-os_network_monitor_get_load (struct LoadMonitor *monitor,
-                             NetworkDirection dir)
+GNUNET_network_monitor_get_load (struct GNUNET_LoadMonitor *monitor,
+                                 GNUNET_NETWORK_DIRECTION dir)
 {
   DirectionInfo *di;
-  cron_t now;
+  GNUNET_CronTime now;
   unsigned long long maxExpect;
   unsigned long long currentLoadSum;
   unsigned long long currentTotal;
@@ -481,20 +484,20 @@ os_network_monitor_get_load (struct LoadMonitor *monitor,
 
   if (monitor == NULL)
     return 0;                   /* no limits */
-  if (dir == Upload)
+  if (dir == GNUNET_ND_UPLOAD)
     di = &monitor->upload_info;
   else
     di = &monitor->download_info;
 
-  MUTEX_LOCK (monitor->statusMutex);
-  now = get_time ();
-  if ((monitor->useBasicMethod == NO) &&
-      (now - monitor->last_ifc_update > 10 * cronSECONDS))
+  GNUNET_mutex_lock (monitor->statusMutex);
+  now = GNUNET_get_time ();
+  if ((monitor->useBasicMethod == GNUNET_NO) &&
+      (now - monitor->last_ifc_update > 10 * GNUNET_CRON_SECONDS))
     {
       monitor->last_ifc_update = now;
       updateInterfaceTraffic (monitor);
     }
-  if (dir == Upload)
+  if (dir == GNUNET_ND_UPLOAD)
     {
       currentTotal = monitor->globalTrafficBetweenProc.last_out;
       for (i = 0; i < monitor->ifcsSize; i++)
@@ -507,24 +510,24 @@ os_network_monitor_get_load (struct LoadMonitor *monitor,
         currentTotal += monitor->ifcs[i].last_in;
     }
   if ((di->lastSum > currentTotal) ||
-      (di->have_last == NO) || (now < di->lastCall))
+      (di->have_last == GNUNET_NO) || (now < di->lastCall))
     {
       /* integer overflow or first datapoint; since we cannot tell where
          / by how much the overflow happened, all we can do is ignore
          this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
       di->lastSum = currentTotal;
       di->lastCall = now;
-      di->have_last = YES;
-      MUTEX_UNLOCK (monitor->statusMutex);
+      di->have_last = GNUNET_YES;
+      GNUNET_mutex_unlock (monitor->statusMutex);
       return -1;
     }
   if (di->max == 0)
     {
-      MUTEX_UNLOCK (monitor->statusMutex);
+      GNUNET_mutex_unlock (monitor->statusMutex);
       return -1;
     }
 
-  maxExpect = (now - di->lastCall) * di->max / cronSECONDS;
+  maxExpect = (now - di->lastCall) * di->max / GNUNET_CRON_SECONDS;
   if (now - di->lastCall < INCREMENTAL_INTERVAL)
     {
       /* return weighted average between last return value and
@@ -538,7 +541,7 @@ os_network_monitor_get_load (struct LoadMonitor *monitor,
                                                            di->lastSum +
                                                            di->overload) /
           maxExpect;
-      MUTEX_UNLOCK (monitor->statusMutex);
+      GNUNET_mutex_unlock (monitor->statusMutex);
       return ret;
     }
 
@@ -551,18 +554,18 @@ os_network_monitor_get_load (struct LoadMonitor *monitor,
     di->overload = currentLoadSum - maxExpect;
   ret = currentLoadSum * 100 / maxExpect;
   di->lastValue = ret;
-  MUTEX_UNLOCK (monitor->statusMutex);
+  GNUNET_mutex_unlock (monitor->statusMutex);
   return ret;
 }
 
-struct LoadMonitor *
-os_network_monitor_create (struct GE_Context *ectx,
-                           struct GC_Configuration *cfg)
+struct GNUNET_LoadMonitor *
+GNUNET_network_monitor_create (struct GE_Context *ectx,
+                               struct GC_Configuration *cfg)
 {
-  struct LoadMonitor *monitor;
+  struct GNUNET_LoadMonitor *monitor;
 
-  monitor = MALLOC (sizeof (struct LoadMonitor));
-  memset (monitor, 0, sizeof (struct LoadMonitor));
+  monitor = GNUNET_malloc (sizeof (struct GNUNET_LoadMonitor));
+  memset (monitor, 0, sizeof (struct GNUNET_LoadMonitor));
   monitor->ectx = ectx;
   monitor->cfg = cfg;
 #ifdef LINUX
@@ -572,17 +575,17 @@ os_network_monitor_create (struct GE_Context *ectx,
                           GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                           "fopen", PROC_NET_DEV);
 #endif
-  monitor->statusMutex = MUTEX_CREATE (NO);
+  monitor->statusMutex = GNUNET_mutex_create (GNUNET_NO);
   if (-1 == GC_attach_change_listener (cfg, &resetStatusCalls, monitor))
     {
-      os_network_monitor_destroy (monitor);
+      GNUNET_network_monitor_destroy (monitor);
       return NULL;
     }
   return monitor;
 }
 
 void
-os_network_monitor_destroy (struct LoadMonitor *monitor)
+GNUNET_network_monitor_destroy (struct GNUNET_LoadMonitor *monitor)
 {
   int i;
 
@@ -592,10 +595,10 @@ os_network_monitor_destroy (struct LoadMonitor *monitor)
     fclose (monitor->proc_net_dev);
 #endif
   for (i = 0; i < monitor->ifcsSize; i++)
-    FREE (monitor->ifcs[i].name);
-  GROW (monitor->ifcs, monitor->ifcsSize, 0);
-  MUTEX_DESTROY (monitor->statusMutex);
-  FREE (monitor);
+    GNUNET_free (monitor->ifcs[i].name);
+  GNUNET_array_grow (monitor->ifcs, monitor->ifcsSize, 0);
+  GNUNET_mutex_destroy (monitor->statusMutex);
+  GNUNET_free (monitor);
 }
 
 /* end of statuscalls.c */

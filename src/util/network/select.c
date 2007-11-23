@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "network.h"
 
-#define DEBUG_SELECT NO
+#define DEBUG_SELECT GNUNET_NO
 
 /**
  * Select Session handle.
@@ -39,7 +39,7 @@ typedef struct
   /**
    * the socket
    */
-  struct SocketHandle *sock;
+  struct GNUNET_SocketHandle *sock;
 
   /**
    * Client connection context.
@@ -56,13 +56,13 @@ typedef struct
    */
   char *wbuff;
 
-  cron_t lastUse;
+  GNUNET_CronTime lastUse;
 
   /**
    * Set to 0 initially, set to a much lower value
    * if a "fast timeout" is desired.
    */
-  cron_t timeout;
+  GNUNET_CronTime timeout;
 
   /**
    * 0 : can be destroyed
@@ -105,7 +105,7 @@ typedef struct
 
 } Session;
 
-typedef struct SelectHandle
+typedef struct GNUNET_SelectHandle
 {
 
   const char *description;
@@ -113,34 +113,34 @@ typedef struct SelectHandle
   /**
    * mutex for synchronized access
    */
-  struct MUTEX *lock;
+  struct GNUNET_Mutex *lock;
 
   /**
    * one thread for listening for new connections,
    * and for reading on all open sockets
    */
-  struct PTHREAD *thread;
+  struct GNUNET_ThreadHandle *thread;
 
   /**
    * sock is the tcp socket that we listen on for new inbound
    * connections.  Maybe NULL if we are not listening.
    */
-  struct SocketHandle *listen_sock;
+  struct GNUNET_SocketHandle *listen_sock;
 
   struct GE_Context *ectx;
 
-  struct LoadMonitor *load_monitor;
+  struct GNUNET_LoadMonitor *load_monitor;
 
   /**
    * Array of currently active TCP sessions.
    */
   Session **sessions;
 
-  SelectMessageHandler mh;
+  GNUNET_SelectMessageHandler mh;
 
-  SelectAcceptHandler ah;
+  GNUNET_SelectAcceptHandler ah;
 
-  SelectCloseHandler ch;
+  GNUNET_SelectCloseHandler ch;
 
   void *mh_cls;
 
@@ -148,7 +148,7 @@ typedef struct SelectHandle
 
   void *ch_cls;
 
-  cron_t timeout;
+  GNUNET_CronTime timeout;
 
   /**
    * tcp_pipe is used to signal the thread that is
@@ -174,7 +174,7 @@ typedef struct SelectHandle
 } SelectHandle;
 
 static void
-add_to_select_set (struct SocketHandle *s, fd_set * set, int *max)
+add_to_select_set (struct GNUNET_SocketHandle *s, fd_set * set, int *max)
 {
   FD_SET (s->handle, set);
   if (*max < s->handle)
@@ -243,15 +243,16 @@ destroySession (SelectHandle * sh, Session * s)
         }
     }
   if (sh->sessionCount * 2 < sh->sessionArrayLength)
-    GROW (sh->sessions, sh->sessionArrayLength, sh->sessionCount);
-  MUTEX_UNLOCK (sh->lock);
+    GNUNET_array_grow (sh->sessions, sh->sessionArrayLength,
+                       sh->sessionCount);
+  GNUNET_mutex_unlock (sh->lock);
   sh->ch (sh->ch_cls, sh, s->sock, s->sock_ctx);
-  MUTEX_LOCK (sh->lock);
-  socket_destroy (s->sock);
+  GNUNET_mutex_lock (sh->lock);
+  GNUNET_socket_destroy (s->sock);
   sh->socket_quota++;
-  GROW (s->rbuff, s->rsize, 0);
-  GROW (s->wbuff, s->wsize, 0);
-  FREE (s);
+  GNUNET_array_grow (s->rbuff, s->rsize, 0);
+  GNUNET_array_grow (s->wbuff, s->wsize, 0);
+  GNUNET_free (s);
 }
 
 /**
@@ -260,12 +261,12 @@ destroySession (SelectHandle * sh, Session * s)
  *
  * This function may only be called if the lock is
  * already held by the caller.
- * @return OK for success, SYSERR if session was destroyed
+ * @return GNUNET_OK for success, GNUNET_SYSERR if session was destroyed
  */
 static int
 readAndProcess (SelectHandle * sh, Session * session)
 {
-  const MESSAGE_HEADER *pack;
+  const GNUNET_MessageHeader *pack;
   int ret;
   size_t recvd;
   unsigned short len;
@@ -273,62 +274,64 @@ readAndProcess (SelectHandle * sh, Session * session)
   if (session->rsize == session->pos)
     {
       /* read buffer too small, grow */
-      GROW (session->rbuff, session->rsize, session->rsize + 1024);
+      GNUNET_array_grow (session->rbuff, session->rsize,
+                         session->rsize + 1024);
     }
-  ret = socket_recv (session->sock,
-                     NC_Nonblocking | NC_IgnoreInt,
-                     &session->rbuff[session->pos],
-                     session->rsize - session->pos, &recvd);
+  ret = GNUNET_socket_recv (session->sock,
+                            GNUNET_NC_NONBLOCKING | GNUNET_NC_IGNORE_INT,
+                            &session->rbuff[session->pos],
+                            session->rsize - session->pos, &recvd);
 #if DEBUG_SELECT
   GE_LOG (sh->ectx,
           GE_DEBUG | GE_DEVELOPER | GE_BULK,
           "Receiving from session %p of select %p return %d-%u (%s).\n",
           sh, session, ret, recvd, STRERROR (errno));
 #endif
-  if (ret != OK)
+  if (ret != GNUNET_OK)
     {
       destroySession (sh, session);
-      return SYSERR;            /* other side closed connection */
+      return GNUNET_SYSERR;     /* other side closed connection */
     }
   session->pos += recvd;
-  while ((sh->shutdown == NO) && (session->pos >= sizeof (MESSAGE_HEADER)))
+  while ((sh->shutdown == GNUNET_NO)
+         && (session->pos >= sizeof (GNUNET_MessageHeader)))
     {
-      pack = (const MESSAGE_HEADER *) &session->rbuff[0];
+      pack = (const GNUNET_MessageHeader *) &session->rbuff[0];
       len = ntohs (pack->size);
       /* check minimum size */
-      if (len < sizeof (MESSAGE_HEADER))
+      if (len < sizeof (GNUNET_MessageHeader))
         {
           GE_LOG (sh->ectx,
                   GE_WARNING | GE_USER | GE_BULK,
                   _
                   ("Received malformed message (too small) from connection. Closing.\n"));
           destroySession (sh, session);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (len > session->rsize) /* if message larger than read buffer, grow! */
-        GROW (session->rbuff, session->rsize, len);
+        GNUNET_array_grow (session->rbuff, session->rsize, len);
 
       /* do we have the entire message? */
       if (session->pos < len)
         break;                  /* wait for more */
       if (session->locked == 0)
         session->locked = 1;
-      MUTEX_UNLOCK (sh->lock);
-      if (OK != sh->mh (sh->mh_cls,
-                        sh, session->sock, session->sock_ctx, pack))
+      GNUNET_mutex_unlock (sh->lock);
+      if (GNUNET_OK != sh->mh (sh->mh_cls,
+                               sh, session->sock, session->sock_ctx, pack))
         {
-          MUTEX_LOCK (sh->lock);
+          GNUNET_mutex_lock (sh->lock);
           if (session->locked == 1)
             session->locked = 0;
           destroySession (sh, session);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      MUTEX_LOCK (sh->lock);
+      GNUNET_mutex_lock (sh->lock);
       if (session->locked == -1)
         {
           session->locked = 0;
           destroySession (sh, session);
-          return OK;
+          return GNUNET_OK;
         }
       if (session->locked == 1)
         session->locked = 0;
@@ -336,8 +339,8 @@ readAndProcess (SelectHandle * sh, Session * session)
       memmove (&session->rbuff[0], &session->rbuff[len], session->pos - len);
       session->pos -= len;
     }
-  session->lastUse = get_time ();
-  return OK;
+  session->lastUse = GNUNET_get_time ();
+  return GNUNET_OK;
 }
 
 /**
@@ -346,7 +349,7 @@ readAndProcess (SelectHandle * sh, Session * session)
  *
  * This function may only be called if the lock is
  * already held by the caller.
- * @return OK for success, SYSERR if session was destroyed
+ * @return GNUNET_OK for success, GNUNET_SYSERR if session was destroyed
  */
 static int
 writeAndProcess (SelectHandle * sh, Session * session)
@@ -362,26 +365,26 @@ writeAndProcess (SelectHandle * sh, Session * session)
           sh, session, sh->shutdown);
 #endif
   sock = session->sock;
-  while (sh->shutdown == NO)
+  while (sh->shutdown == GNUNET_NO)
     {
-      ret = socket_send (sock,
-                         NC_Nonblocking,
-                         &session->wbuff[session->wspos],
-                         session->wapos - session->wspos, &size);
+      ret = GNUNET_socket_send (sock,
+                                GNUNET_NC_NONBLOCKING,
+                                &session->wbuff[session->wspos],
+                                session->wapos - session->wspos, &size);
 #if DEBUG_SELECT
       GE_LOG (sh->ectx,
               GE_DEBUG | GE_DEVELOPER | GE_BULK,
               "Sending %d bytes from session %p of select %p return %d.\n",
               session->wapos - session->wspos, sh, session, ret);
 #endif
-      if (ret == SYSERR)
+      if (ret == GNUNET_SYSERR)
         {
           GE_LOG_STRERROR (sh->ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_BULK, "send");
           destroySession (sh, session);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      if (ret == OK)
+      if (ret == GNUNET_OK)
         {
           if (size == 0)
             {
@@ -389,7 +392,7 @@ writeAndProcess (SelectHandle * sh, Session * session)
                  other side closed connection), so close
                  the session */
               destroySession (sh, session);
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
           session->wspos += size;
           if (session->wspos == session->wapos)
@@ -397,25 +400,26 @@ writeAndProcess (SelectHandle * sh, Session * session)
               /* free compaction! */
               session->wspos = 0;
               session->wapos = 0;
-              session->no_read = NO;
+              session->no_read = GNUNET_NO;
               if (session->wsize > sh->memory_quota)
                 {
                   /* if we went over quota before because of
                      force, use this opportunity to shrink
                      back to size! */
-                  GROW (session->wbuff, session->wsize, sh->memory_quota);
+                  GNUNET_array_grow (session->wbuff, session->wsize,
+                                     sh->memory_quota);
                 }
             }
           break;
         }
-      GE_ASSERT (sh->ectx, ret == NO);
+      GE_ASSERT (sh->ectx, ret == GNUNET_NO);
       /* this should only happen under Win9x because
          of a bug in the socket implementation (KB177346).
          Let's sleep and try again. */
-      PTHREAD_SLEEP (20 * cronMILLIS);
+      GNUNET_thread_sleep (20 * GNUNET_CRON_MILLISECONDS);
     }
-  session->lastUse = get_time ();
-  return OK;
+  session->lastUse = GNUNET_get_time ();
+  return GNUNET_OK;
 }
 
 /**
@@ -424,7 +428,7 @@ writeAndProcess (SelectHandle * sh, Session * session)
 static void *
 selectThread (void *ctx)
 {
-  struct SelectHandle *sh = ctx;
+  struct GNUNET_SelectHandle *sh = ctx;
   char *clientAddr;
   fd_set readSet;
   fd_set errorSet;
@@ -441,9 +445,9 @@ selectThread (void *ctx)
   size_t size;
   int old_errno;
 
-  clientAddr = MALLOC (sh->max_addr_len);
-  MUTEX_LOCK (sh->lock);
-  while (sh->shutdown == NO)
+  clientAddr = GNUNET_malloc (sh->max_addr_len);
+  GNUNET_mutex_lock (sh->lock);
+  while (sh->shutdown == GNUNET_NO)
     {
       FD_ZERO (&readSet);
       FD_ZERO (&errorSet);
@@ -465,9 +469,9 @@ selectThread (void *ctx)
       max = sh->signal_pipe[0];
       if (sh->listen_sock != NULL)
         {
-          if (!socket_test_valid (sh->listen_sock))
+          if (!GNUNET_socket_test_valid (sh->listen_sock))
             {
-              socket_destroy (sh->listen_sock);
+              GNUNET_socket_destroy (sh->listen_sock);
               GE_LOG (sh->ectx,
                       GE_USER | GE_ERROR | GE_BULK,
                       _("select listen socket for `%s' not valid!\n"),
@@ -482,9 +486,9 @@ selectThread (void *ctx)
       for (i = 0; i < sh->sessionCount; i++)
         {
           Session *session = sh->sessions[i];
-          struct SocketHandle *sock = session->sock;
+          struct GNUNET_SocketHandle *sock = session->sock;
 
-          if (!socket_test_valid (sock))
+          if (!GNUNET_socket_test_valid (sock))
             {
 #if DEBUG_SELECT
               GE_LOG (sh->ectx,
@@ -497,17 +501,17 @@ selectThread (void *ctx)
           else
             {
               add_to_select_set (sock, &errorSet, &max);
-              if (session->no_read != YES)
+              if (session->no_read != GNUNET_YES)
                 add_to_select_set (sock, &readSet, &max);
               GE_ASSERT (NULL, session->wapos >= session->wspos);
               if (session->wapos > session->wspos)
                 add_to_select_set (sock, &writeSet, &max);      /* do we have a pending write request? */
             }
         }
-      MUTEX_UNLOCK (sh->lock);
+      GNUNET_mutex_unlock (sh->lock);
       ret = SELECT (max + 1, &readSet, &writeSet, &errorSet, NULL);
       old_errno = errno;
-      MUTEX_LOCK (sh->lock);
+      GNUNET_mutex_lock (sh->lock);
       if ((ret == -1) && ((old_errno == EAGAIN) || (old_errno == EINTR)))
         continue;
       if (ret == -1)
@@ -526,7 +530,7 @@ selectThread (void *ctx)
             }
           continue;
         }
-      if (sh->is_udp == NO)
+      if (sh->is_udp == GNUNET_NO)
         {
           if ((sh->listen_sock != NULL) &&
               (FD_ISSET (sh->listen_sock->handle, &readSet)))
@@ -534,7 +538,7 @@ selectThread (void *ctx)
               lenOfIncomingAddr = sh->max_addr_len;
               memset (clientAddr, 0, lenOfIncomingAddr);
               /* make sure this is non-blocking */
-              socket_set_blocking (sh->listen_sock, NO);
+              GNUNET_socket_set_blocking (sh->listen_sock, GNUNET_NO);
               s = ACCEPT (sh->listen_sock->handle,
                           (struct sockaddr *) clientAddr, &lenOfIncomingAddr);
               if (s == -1)
@@ -565,10 +569,10 @@ selectThread (void *ctx)
                       "Select %p is accepting connection: %d\n", sh, s);
 #endif
               sock = socket_create (sh->ectx, sh->load_monitor, s);
-              MUTEX_UNLOCK (sh->lock);
+              GNUNET_mutex_unlock (sh->lock);
               sctx = sh->ah (sh->ah_cls,
                              sh, sock, clientAddr, lenOfIncomingAddr);
-              MUTEX_LOCK (sh->lock);
+              GNUNET_mutex_lock (sh->lock);
 #if DEBUG_SELECT
               GE_LOG (sh->ectx,
                       GE_DEBUG | GE_DEVELOPER | GE_BULK,
@@ -576,25 +580,26 @@ selectThread (void *ctx)
 #endif
               if (sctx == NULL)
                 {
-                  socket_destroy (sock);
+                  GNUNET_socket_destroy (sock);
                   sh->socket_quota++;
                 }
               else
                 {
-                  session = MALLOC (sizeof (Session));
+                  session = GNUNET_malloc (sizeof (Session));
                   memset (session, 0, sizeof (Session));
                   session->sock = sock;
                   session->sock_ctx = sctx;
-                  session->lastUse = get_time ();
+                  session->lastUse = GNUNET_get_time ();
                   if (sh->sessionArrayLength == sh->sessionCount)
-                    GROW (sh->sessions,
-                          sh->sessionArrayLength, sh->sessionArrayLength + 4);
+                    GNUNET_array_grow (sh->sessions,
+                                       sh->sessionArrayLength,
+                                       sh->sessionArrayLength + 4);
                   sh->sessions[sh->sessionCount++] = session;
                 }
             }
         }
       else
-        {                       /* is_udp == YES */
+        {                       /* is_udp == GNUNET_YES */
           if ((sh->listen_sock != NULL) &&
               (FD_ISSET (sh->listen_sock->handle, &readSet)))
             {
@@ -635,47 +640,49 @@ selectThread (void *ctx)
                 {
                   /* maybe empty UDP packet was sent (see report on bug-gnunet,
                      5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
-                  socket_recv_from (sh->listen_sock,
-                                    NC_Nonblocking,
-                                    NULL,
-                                    0, &size, clientAddr, &lenOfIncomingAddr);
+                  GNUNET_socket_recv_from (sh->listen_sock,
+                                           GNUNET_NC_NONBLOCKING,
+                                           NULL,
+                                           0, &size, clientAddr,
+                                           &lenOfIncomingAddr);
                 }
               else
                 {
                   char *msg;
 
-                  msg = MALLOC (pending);
+                  msg = GNUNET_malloc (pending);
                   size = 0;
-                  ret = socket_recv_from (sh->listen_sock,
-                                          NC_Nonblocking,
-                                          msg,
-                                          pending,
-                                          &size,
-                                          clientAddr, &lenOfIncomingAddr);
-                  if (ret == SYSERR)
+                  ret = GNUNET_socket_recv_from (sh->listen_sock,
+                                                 GNUNET_NC_NONBLOCKING,
+                                                 msg,
+                                                 pending,
+                                                 &size,
+                                                 clientAddr,
+                                                 &lenOfIncomingAddr);
+                  if (ret == GNUNET_SYSERR)
                     {
-                      socket_close (sh->listen_sock);
+                      GNUNET_socket_close (sh->listen_sock);
                     }
-                  else if (ret == OK)
+                  else if (ret == GNUNET_OK)
                     {
                       /* validate msg format! */
-                      const MESSAGE_HEADER *hdr;
+                      const GNUNET_MessageHeader *hdr;
 
                       /* if size < pending, set pending to size */
                       if (size < pending)
                         pending = size;
-                      hdr = (const MESSAGE_HEADER *) msg;
+                      hdr = (const GNUNET_MessageHeader *) msg;
                       if ((size == pending) &&
-                          (size >= sizeof (MESSAGE_HEADER)) &&
+                          (size >= sizeof (GNUNET_MessageHeader)) &&
                           (ntohs (hdr->size) == size))
                         {
                           void *sctx;
 
-                          MUTEX_UNLOCK (sh->lock);
+                          GNUNET_mutex_unlock (sh->lock);
                           sctx = sh->ah (sh->ah_cls,
                                          sh,
                                          NULL, clientAddr, lenOfIncomingAddr);
-                          MUTEX_LOCK (sh->lock);
+                          GNUNET_mutex_lock (sh->lock);
                           if (sctx != NULL)
                             {
 #if DEBUG_SELECT
@@ -702,14 +709,14 @@ selectThread (void *ctx)
 #if DEBUG_SELECT
                           GE_BREAK (sh->ectx, size == pending);
                           GE_BREAK (sh->ectx,
-                                    size >= sizeof (MESSAGE_HEADER));
+                                    size >= sizeof (GNUNET_MessageHeader));
                           GE_BREAK (sh->ectx,
-                                    (size >= sizeof (MESSAGE_HEADER))
+                                    (size >= sizeof (GNUNET_MessageHeader))
                                     && (ntohs (hdr->size) == size));
 #endif
                         }
                     }
-                  FREE (msg);
+                  GNUNET_free (msg);
                 }
             }
         }                       /* end UDP processing */
@@ -731,13 +738,13 @@ selectThread (void *ctx)
           session = sh->sessions[i];
           sock = session->sock;
           if ((FD_ISSET (sock->handle, &readSet)) &&
-              (SYSERR == readAndProcess (sh, session)))
+              (GNUNET_SYSERR == readAndProcess (sh, session)))
             {
               i--;
               continue;
             }
           if ((FD_ISSET (sock->handle, &writeSet)) &&
-              (SYSERR == writeAndProcess (sh, session)))
+              (GNUNET_SYSERR == writeAndProcess (sh, session)))
             {
               i--;
               continue;
@@ -749,9 +756,9 @@ selectThread (void *ctx)
               continue;
             }
           if (((sh->timeout != 0) &&
-               (get_time () > session->lastUse + sh->timeout)) ||
+               (GNUNET_get_time () > session->lastUse + sh->timeout)) ||
               ((session->timeout != 0) &&
-               (get_time () > session->lastUse + session->timeout)))
+               (GNUNET_get_time () > session->lastUse + session->timeout)))
             {
               destroySession (sh, session);
               i--;
@@ -760,13 +767,13 @@ selectThread (void *ctx)
         }
     }
   sh->description = "DEAD";
-  MUTEX_UNLOCK (sh->lock);
-  FREE (clientAddr);
+  GNUNET_mutex_unlock (sh->lock);
+  GNUNET_free (clientAddr);
   return NULL;
 }
 
 int
-network_make_pipe_nonblocking (struct GE_Context *ectx, int handle)
+GNUNET_pipe_make_nonblocking (struct GE_Context *ectx, int handle)
 {
 #if MINGW
   DWORD mode;
@@ -788,10 +795,10 @@ network_make_pipe_nonblocking (struct GE_Context *ectx, int handle)
       GE_LOG_STRERROR (ectx,
                        GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                        "fcntl");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #endif
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -808,48 +815,50 @@ network_make_pipe_nonblocking (struct GE_Context *ectx, int handle)
  * @return NULL on error
  */
 SelectHandle *
-select_create (const char *description,
-               int is_udp,
-               struct GE_Context * ectx,
-               struct LoadMonitor * mon,
-               int sock,
-               unsigned int max_addr_len,
-               cron_t timeout,
-               SelectMessageHandler mh,
-               void *mh_cls,
-               SelectAcceptHandler ah,
-               void *ah_cls,
-               SelectCloseHandler ch,
-               void *ch_cls, unsigned int memory_quota, int socket_quota)
+GNUNET_select_create (const char *description,
+                      int is_udp,
+                      struct GE_Context * ectx,
+                      struct GNUNET_LoadMonitor * mon,
+                      int sock,
+                      unsigned int max_addr_len,
+                      GNUNET_CronTime timeout,
+                      GNUNET_SelectMessageHandler mh,
+                      void *mh_cls,
+                      GNUNET_SelectAcceptHandler ah,
+                      void *ah_cls,
+                      GNUNET_SelectCloseHandler ch,
+                      void *ch_cls, unsigned int memory_quota,
+                      int socket_quota)
 {
   SelectHandle *sh;
 
-  if ((is_udp == NO) && (sock != -1) && (0 != LISTEN (sock, 5)))
+  if ((is_udp == GNUNET_NO) && (sock != -1) && (0 != LISTEN (sock, 5)))
     {
       GE_LOG_STRERROR (ectx, GE_ERROR | GE_USER | GE_IMMEDIATE, "listen");
       return NULL;
     }
   GE_ASSERT (ectx, description != NULL);
-  sh = MALLOC (sizeof (SelectHandle));
+  sh = GNUNET_malloc (sizeof (SelectHandle));
   memset (sh, 0, sizeof (SelectHandle));
   sh->is_udp = is_udp;
   sh->description = description;
   if (0 != PIPE (sh->signal_pipe))
     {
       GE_LOG_STRERROR (ectx, GE_ERROR | GE_USER | GE_IMMEDIATE, "pipe");
-      FREE (sh);
+      GNUNET_free (sh);
       return NULL;
     }
-  if (OK != network_make_pipe_nonblocking (sh->ectx, sh->signal_pipe[0]))
+  if (GNUNET_OK !=
+      GNUNET_pipe_make_nonblocking (sh->ectx, sh->signal_pipe[0]))
     {
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
         GE_LOG_STRERROR (ectx, GE_ERROR | GE_IMMEDIATE | GE_ADMIN, "close");
-      FREE (sh);
+      GNUNET_free (sh);
       return NULL;
     }
 
-  sh->shutdown = NO;
+  sh->shutdown = GNUNET_NO;
   sh->ectx = ectx;
   sh->load_monitor = mon;
   sh->max_addr_len = max_addr_len;
@@ -862,23 +871,23 @@ select_create (const char *description,
   sh->memory_quota = memory_quota;
   sh->socket_quota = socket_quota;
   sh->timeout = timeout;
-  sh->lock = MUTEX_CREATE (YES);
+  sh->lock = GNUNET_mutex_create (GNUNET_YES);
   if (sock != -1)
     sh->listen_sock = socket_create (ectx, mon, sock);
   else
     sh->listen_sock = NULL;
-  sh->thread = PTHREAD_CREATE (&selectThread, sh, 256 * 1024);
+  sh->thread = GNUNET_thread_create (&selectThread, sh, 256 * 1024);
   if (sh->thread == NULL)
     {
       GE_LOG_STRERROR (ectx,
                        GE_ERROR | GE_IMMEDIATE | GE_ADMIN, "pthread_create");
       if (sh->listen_sock != NULL)
-        socket_destroy (sh->listen_sock);
+        GNUNET_socket_destroy (sh->listen_sock);
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
         GE_LOG_STRERROR (ectx, GE_ERROR | GE_IMMEDIATE | GE_ADMIN, "close");
-      MUTEX_DESTROY (sh->lock);
-      FREE (sh);
+      GNUNET_mutex_destroy (sh->lock);
+      GNUNET_free (sh);
       return NULL;
     }
   return sh;
@@ -889,7 +898,7 @@ select_create (const char *description,
  * all associated connections.
  */
 void
-select_destroy (struct SelectHandle *sh)
+GNUNET_select_destroy (struct GNUNET_SelectHandle *sh)
 {
   void *unused;
 
@@ -897,17 +906,17 @@ select_destroy (struct SelectHandle *sh)
   GE_LOG (sh->ectx,
           GE_DEBUG | GE_DEVELOPER | GE_BULK, "Destroying select %p\n", sh);
 #endif
-  sh->shutdown = YES;
+  sh->shutdown = GNUNET_YES;
   signalSelect (sh);
-  PTHREAD_STOP_SLEEP (sh->thread);
-  PTHREAD_JOIN (sh->thread, &unused);
+  GNUNET_thread_stop_sleep (sh->thread);
+  GNUNET_thread_join (sh->thread, &unused);
   sh->thread = NULL;
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   while (sh->sessionCount > 0)
     destroySession (sh, sh->sessions[0]);
-  GROW (sh->sessions, sh->sessionArrayLength, 0);
-  MUTEX_UNLOCK (sh->lock);
-  MUTEX_DESTROY (sh->lock);
+  GNUNET_array_grow (sh->sessions, sh->sessionArrayLength, 0);
+  GNUNET_mutex_unlock (sh->lock);
+  GNUNET_mutex_destroy (sh->lock);
   if (0 != CLOSE (sh->signal_pipe[1]))
     GE_LOG_STRERROR (sh->ectx,
                      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, "close");
@@ -915,25 +924,26 @@ select_destroy (struct SelectHandle *sh)
     GE_LOG_STRERROR (sh->ectx,
                      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, "close");
   if (sh->listen_sock != NULL)
-    socket_destroy (sh->listen_sock);
-  FREE (sh);
+    GNUNET_socket_destroy (sh->listen_sock);
+  GNUNET_free (sh);
 }
 
 /**
  * Queue the given message with the select thread.
  *
- * @param mayBlock if YES, blocks this thread until message
+ * @param mayBlock if GNUNET_YES, blocks this thread until message
  *        has been sent
  * @param force message is important, queue even if
  *        there is not enough space
- * @return OK if the message was sent or queued,
- *         NO if there was not enough memory to queue it,
- *         SYSERR if the sock does not belong with this select
+ * @return GNUNET_OK if the message was sent or queued,
+ *         GNUNET_NO if there was not enough memory to queue it,
+ *         GNUNET_SYSERR if the sock does not belong with this select
  */
 int
-select_write (struct SelectHandle *sh,
-              struct SocketHandle *sock,
-              const MESSAGE_HEADER * msg, int mayBlock, int force)
+GNUNET_select_write (struct GNUNET_SelectHandle *sh,
+                     struct GNUNET_SocketHandle *sock,
+                     const GNUNET_MessageHeader * msg, int mayBlock,
+                     int force)
 {
   Session *session;
   int i;
@@ -949,7 +959,7 @@ select_write (struct SelectHandle *sh,
 #endif
   session = NULL;
   len = ntohs (msg->size);
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   for (i = 0; i < sh->sessionCount; i++)
     if (sh->sessions[i]->sock == sock)
       {
@@ -958,19 +968,20 @@ select_write (struct SelectHandle *sh,
       }
   if (session == NULL)
     {
-      MUTEX_UNLOCK (sh->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_SYSERR;
     }
   GE_ASSERT (NULL, session->wapos >= session->wspos);
-  if ((force == NO) &&
+  if ((force == GNUNET_NO) &&
       (((sh->memory_quota > 0) &&
         (session->wapos - session->wspos + len > sh->memory_quota)) ||
        ((sh->memory_quota == 0) &&
-        (session->wapos - session->wspos + len > MAX_MALLOC_CHECKED / 2))))
+        (session->wapos - session->wspos + len >
+         GNUNET_MAX_GNUNET_malloc_CHECKED / 2))))
     {
       /* not enough free space, not allowed to grow that much */
-      MUTEX_UNLOCK (sh->lock);
-      return NO;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_NO;
     }
   if (session->wsize - session->wapos < len)
     {
@@ -993,15 +1004,15 @@ select_write (struct SelectHandle *sh,
           while (newBufferSize < len + session->wapos - session->wspos)
             newBufferSize *= 2;
           if ((sh->memory_quota > 0) &&
-              (newBufferSize > sh->memory_quota) && (force == NO))
+              (newBufferSize > sh->memory_quota) && (force == GNUNET_NO))
             newBufferSize = sh->memory_quota;
           GE_ASSERT (NULL,
                      newBufferSize >= len + session->wapos - session->wspos);
-          newBuffer = MALLOC (newBufferSize);
+          newBuffer = GNUNET_malloc (newBufferSize);
           memcpy (newBuffer,
                   &session->wbuff[session->wspos],
                   session->wapos - session->wspos);
-          FREENONNULL (session->wbuff);
+          GNUNET_free_non_null (session->wbuff);
           session->wbuff = newBuffer;
           session->wsize = newBufferSize;
           session->wapos = session->wapos - session->wspos;
@@ -1012,25 +1023,25 @@ select_write (struct SelectHandle *sh,
   memcpy (&session->wbuff[session->wapos], msg, len);
   session->wapos += len;
   if (mayBlock)
-    session->no_read = YES;
-  MUTEX_UNLOCK (sh->lock);
+    session->no_read = GNUNET_YES;
+  GNUNET_mutex_unlock (sh->lock);
   signalSelect (sh);
-  return OK;
+  return GNUNET_OK;
 }
 
 
 /**
  */
 int
-select_update_closure (struct SelectHandle *sh,
-                       struct SocketHandle *sock,
-                       void *old_sock_ctx, void *new_sock_ctx)
+GNUNET_select_update_closure (struct GNUNET_SelectHandle *sh,
+                              struct GNUNET_SocketHandle *sock,
+                              void *old_sock_ctx, void *new_sock_ctx)
 {
   Session *session;
   int i;
 
   session = NULL;
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   for (i = 0; i < sh->sessionCount; i++)
     if (sh->sessions[i]->sock == sock)
       {
@@ -1039,13 +1050,13 @@ select_update_closure (struct SelectHandle *sh,
       }
   if (session == NULL)
     {
-      MUTEX_UNLOCK (sh->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_SYSERR;
     }
   GE_ASSERT (NULL, session->sock_ctx == old_sock_ctx);
   session->sock_ctx = new_sock_ctx;
-  MUTEX_UNLOCK (sh->lock);
-  return OK;
+  GNUNET_mutex_unlock (sh->lock);
+  return GNUNET_OK;
 }
 
 /**
@@ -1053,8 +1064,8 @@ select_update_closure (struct SelectHandle *sh,
  * sockets managed by the select.
  */
 int
-select_connect (struct SelectHandle *sh,
-                struct SocketHandle *sock, void *sock_ctx)
+GNUNET_select_connect (struct GNUNET_SelectHandle *sh,
+                       struct GNUNET_SocketHandle *sock, void *sock_ctx)
 {
   Session *session;
 
@@ -1063,23 +1074,24 @@ select_connect (struct SelectHandle *sh,
           GE_DEBUG | GE_DEVELOPER | GE_BULK,
           "Adding connection %p to selector %p\n", sock, sh);
 #endif
-  session = MALLOC (sizeof (Session));
+  session = GNUNET_malloc (sizeof (Session));
   memset (session, 0, sizeof (Session));
   session->sock = sock;
   session->sock_ctx = sock_ctx;
-  session->lastUse = get_time ();
-  MUTEX_LOCK (sh->lock);
+  session->lastUse = GNUNET_get_time ();
+  GNUNET_mutex_lock (sh->lock);
   if (sh->sessionArrayLength == sh->sessionCount)
-    GROW (sh->sessions, sh->sessionArrayLength, sh->sessionArrayLength + 4);
+    GNUNET_array_grow (sh->sessions, sh->sessionArrayLength,
+                       sh->sessionArrayLength + 4);
   sh->sessions[sh->sessionCount++] = session;
   sh->socket_quota--;
-  MUTEX_UNLOCK (sh->lock);
+  GNUNET_mutex_unlock (sh->lock);
   signalSelect (sh);
-  return OK;
+  return GNUNET_OK;
 }
 
 static Session *
-findSession (struct SelectHandle *sh, struct SocketHandle *sock)
+findSession (struct GNUNET_SelectHandle *sh, struct GNUNET_SocketHandle *sock)
 {
   int i;
 
@@ -1094,7 +1106,8 @@ findSession (struct SelectHandle *sh, struct SocketHandle *sock)
  * set of sockets managed by select.
  */
 int
-select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock)
+GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
+                          struct GNUNET_SocketHandle *sock)
 {
   Session *session;
 
@@ -1103,17 +1116,17 @@ select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock)
           GE_DEBUG | GE_DEVELOPER | GE_BULK,
           "Removing connection %p from selector %p\n", sock, sh);
 #endif
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   session = findSession (sh, sock);
   if (session == NULL)
     {
-      MUTEX_UNLOCK (sh->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_SYSERR;
     }
   destroySession (sh, session);
-  MUTEX_UNLOCK (sh->lock);
+  GNUNET_mutex_unlock (sh->lock);
   signalSelect (sh);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -1122,59 +1135,60 @@ select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock)
  * this select.
  */
 int
-select_change_timeout (struct SelectHandle *sh,
-                       struct SocketHandle *sock, cron_t timeout)
+GNUNET_select_change_timeout (struct GNUNET_SelectHandle *sh,
+                              struct GNUNET_SocketHandle *sock,
+                              GNUNET_CronTime timeout)
 {
   Session *session;
 
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   session = findSession (sh, sock);
   if (session == NULL)
     {
-      MUTEX_UNLOCK (sh->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_SYSERR;
     }
   session->timeout = timeout;
-  MUTEX_UNLOCK (sh->lock);
-  return OK;
+  GNUNET_mutex_unlock (sh->lock);
+  return GNUNET_OK;
 }
 
 
 /**
  * Would select queue or send the given message at this time?
  *
- * @param mayBlock if YES, blocks this thread until message
+ * @param mayBlock if GNUNET_YES, blocks this thread until message
  *        has been sent
  * @param size size of the message
  * @param force message is important, queue even if
  *        there is not enough space
- * @return OK if the message would be sent or queued,
- *         NO if there was not enough memory to queue it,
- *         SYSERR if the sock does not belong with this select
+ * @return GNUNET_OK if the message would be sent or queued,
+ *         GNUNET_NO if there was not enough memory to queue it,
+ *         GNUNET_SYSERR if the sock does not belong with this select
  */
 int
-select_would_try (struct SelectHandle *sh,
-                  struct SocketHandle *sock,
-                  unsigned int size, int mayBlock, int force)
+GNUNET_select_test_write_now (struct GNUNET_SelectHandle *sh,
+                              struct GNUNET_SocketHandle *sock,
+                              unsigned int size, int mayBlock, int force)
 {
   Session *session;
 
-  MUTEX_LOCK (sh->lock);
+  GNUNET_mutex_lock (sh->lock);
   session = findSession (sh, sock);
   if (session == NULL)
     {
-      MUTEX_UNLOCK (sh->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_SYSERR;
     }
   GE_ASSERT (NULL, session->wapos >= session->wspos);
   if ((sh->memory_quota > 0) &&
       (session->wapos - session->wspos + size > sh->memory_quota) &&
-      (force == NO))
+      (force == GNUNET_NO))
     {
       /* not enough free space, not allowed to grow that much */
-      MUTEX_UNLOCK (sh->lock);
-      return NO;
+      GNUNET_mutex_unlock (sh->lock);
+      return GNUNET_NO;
     }
-  MUTEX_UNLOCK (sh->lock);
-  return YES;
+  GNUNET_mutex_unlock (sh->lock);
+  return GNUNET_YES;
 }

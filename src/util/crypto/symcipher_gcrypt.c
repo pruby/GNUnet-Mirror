@@ -57,12 +57,12 @@
  * Create a new SessionKey (for AES-256).
  */
 void
-makeSessionkey (SESSIONKEY * key)
+GNUNET_AES_create_session_key (GNUNET_AES_SessionKey * key)
 {
   lockGcrypt ();
-  gcry_randomize (&key->key[0], SESSIONKEY_LEN, GCRY_STRONG_RANDOM);
+  gcry_randomize (&key->key[0], GNUNET_SESSIONKEY_LEN, GCRY_STRONG_RANDOM);
   unlockGcrypt ();
-  key->crc32 = htonl (crc32N (key, SESSIONKEY_LEN));
+  key->crc32 = htonl (GNUNET_crc32_n (key, GNUNET_SESSIONKEY_LEN));
 }
 
 /**
@@ -77,18 +77,19 @@ makeSessionkey (SESSIONKEY * key)
  * @returns the size of the encrypted block, -1 for errors
  */
 int
-encryptBlock (const void *block,
-              unsigned short len,
-              const SESSIONKEY * sessionkey,
-              const INITVECTOR * iv, void *result)
+GNUNET_AES_encrypt (const void *block,
+                    unsigned short len,
+                    const GNUNET_AES_SessionKey * sessionkey,
+                    const GNUNET_AES_InitializationVector * iv, void *result)
 {
   gcry_cipher_hd_t handle;
   int rc;
 
-  if (sessionkey->crc32 != htonl (crc32N (sessionkey, SESSIONKEY_LEN)))
+  if (sessionkey->crc32 !=
+      htonl (GNUNET_crc32_n (sessionkey, GNUNET_SESSIONKEY_LEN)))
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   lockGcrypt ();
   rc = gcry_cipher_open (&handle,
@@ -101,7 +102,7 @@ encryptBlock (const void *block,
       unlockGcrypt ();
       return -1;
     }
-  rc = gcry_cipher_setkey (handle, sessionkey, SESSIONKEY_LEN);
+  rc = gcry_cipher_setkey (handle, sessionkey, GNUNET_SESSIONKEY_LEN);
 
   if (rc && ((char) rc != GPG_ERR_WEAK_KEY))
     {
@@ -112,7 +113,8 @@ encryptBlock (const void *block,
       unlockGcrypt ();
       return -1;
     }
-  rc = gcry_cipher_setiv (handle, iv, sizeof (INITVECTOR));
+  rc =
+    gcry_cipher_setiv (handle, iv, sizeof (GNUNET_AES_InitializationVector));
   if (rc && ((char) rc != GPG_ERR_WEAK_KEY))
     {
       LOG_GCRY (NULL,
@@ -149,17 +151,19 @@ encryptBlock (const void *block,
  * @return -1 on failure, size of decrypted block on success
  */
 int
-decryptBlock (const SESSIONKEY * sessionkey,
-              const void *block,
-              unsigned short size, const INITVECTOR * iv, void *result)
+GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
+                    const void *block,
+                    unsigned short size,
+                    const GNUNET_AES_InitializationVector * iv, void *result)
 {
   gcry_cipher_hd_t handle;
   int rc;
 
-  if (sessionkey->crc32 != htonl (crc32N (sessionkey, SESSIONKEY_LEN)))
+  if (sessionkey->crc32 !=
+      htonl (GNUNET_crc32_n (sessionkey, GNUNET_SESSIONKEY_LEN)))
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   lockGcrypt ();
   rc = gcry_cipher_open (&handle,
@@ -172,7 +176,7 @@ decryptBlock (const SESSIONKEY * sessionkey,
       unlockGcrypt ();
       return -1;
     }
-  rc = gcry_cipher_setkey (handle, sessionkey, SESSIONKEY_LEN);
+  rc = gcry_cipher_setkey (handle, sessionkey, GNUNET_SESSIONKEY_LEN);
 
   if (rc && ((char) rc != GPG_ERR_WEAK_KEY))
     {
@@ -183,7 +187,8 @@ decryptBlock (const SESSIONKEY * sessionkey,
       unlockGcrypt ();
       return -1;
     }
-  rc = gcry_cipher_setiv (handle, iv, sizeof (INITVECTOR));
+  rc =
+    gcry_cipher_setiv (handle, iv, sizeof (GNUNET_AES_InitializationVector));
 
   if (rc && ((char) rc != GPG_ERR_WEAK_KEY))
     {

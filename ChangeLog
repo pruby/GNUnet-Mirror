@@ -1,3 +1,8 @@
+Thu Nov 22 20:49:16 MST 2007
+	United all libgnunetutil_*.so libraries into one big
+	libgnunetutil.so library (eliminates issues for binary
+	packagers and reduces file size by about 20%).
+
 Sat Sep 29 16:48:24 MDT 2007
 	Improved MySQL sqstore module performance.
 	Releasing GNUnet 0.7.2c.

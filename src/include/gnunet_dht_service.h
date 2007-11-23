@@ -69,8 +69,8 @@ typedef struct
    * @return handle to stop the async get
    */
   struct DHT_GET_RECORD *(*get_start) (unsigned int type,
-                                       const HashCode512 * key,
-                                       cron_t timeout,
+                                       const GNUNET_HashCode * key,
+                                       GNUNET_CronTime timeout,
                                        DataProcessor callback,
                                        void *cls,
                                        DHT_OP_Complete callbackComplete,
@@ -88,9 +88,9 @@ typedef struct
    *
    * @param key the key to store under
    */
-  void (*put) (const HashCode512 * key,
+  void (*put) (const GNUNET_HashCode * key,
                unsigned int type,
-               unsigned int size, cron_t expire, const char *data);
+               unsigned int size, GNUNET_CronTime expire, const char *data);
 
 } DHT_ServiceAPI;
 

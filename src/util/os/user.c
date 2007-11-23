@@ -29,8 +29,9 @@
 #include "platform.h"
 
 int
-os_modify_user (int testCapability,
-                int doAdd, const char *group_name, const char *user_name)
+GNUNET_configure_user_account (int testCapability,
+                               int doAdd, const char *group_name,
+                               const char *user_name)
 {
   int haveGroup;
 
@@ -39,38 +40,38 @@ os_modify_user (int testCapability,
       /* TODO: actually check that group/user
          exists/does not yet exist */
 #ifdef WINDOWS
-      return IsWinNT ()? OK : SYSERR;
+      return IsWinNT ()? GNUNET_OK : GNUNET_SYSERR;
 #endif
 #ifdef LINUX
       if (geteuid () != 0)
-        return SYSERR;
-      if (doAdd == YES)
+        return GNUNET_SYSERR;
+      if (doAdd == GNUNET_YES)
         {
           if (((ACCESS ("/usr/sbin/adduser", X_OK) == 0) ||
                (ACCESS ("/usr/sbin/useradd", X_OK) == 0)) &&
               ((ACCESS ("/usr/sbin/addgroup", X_OK) == 0) ||
                (ACCESS ("/usr/sbin/groupadd", X_OK) == 0)))
-            return OK;
-          return SYSERR;
+            return GNUNET_OK;
+          return GNUNET_SYSERR;
         }
-      else if (doAdd == NO)
+      else if (doAdd == GNUNET_NO)
         {
           if ((ACCESS ("/usr/sbin/deluser", X_OK) == 0) ||
               (ACCESS ("/usr/sbin/userdel", X_OK) == 0))
-            return OK;
-          return SYSERR;
+            return GNUNET_OK;
+          return GNUNET_SYSERR;
         }
-      else if (doAdd == SYSERR)
+      else if (doAdd == GNUNET_SYSERR)
         {
           if (((ACCESS ("/usr/sbin/dleuser", X_OK) == 0) ||
                (ACCESS ("/usr/sbin/userdel", X_OK) == 0)) &&
               ((ACCESS ("/usr/sbin/delgroup", X_OK) == 0) ||
                (ACCESS ("/usr/sbin/groupdel", X_OK) == 0)))
-            return OK;
-          return SYSERR;
+            return GNUNET_OK;
+          return GNUNET_SYSERR;
         }
 #endif
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if ((user_name == NULL) || (0 == strlen (user_name)))
     return 0;
@@ -79,7 +80,7 @@ os_modify_user (int testCapability,
   if (IsWinNT ())
     return CreateServiceAccount (user_name, "GNUnet service account");
 #elif OSX
-  return SYSERR;                /* TODO */
+  return GNUNET_SYSERR;         /* TODO */
 #else
   if (ACCESS ("/usr/sbin/adduser", X_OK) == 0)
     {
@@ -89,8 +90,8 @@ os_modify_user (int testCapability,
 
       haveGroup = group_name && strlen (group_name) > 0;
       cmd =
-        MALLOC (256 + (haveGroup ? strlen (group_name) : 0) +
-                strlen (user_name));
+        GNUNET_malloc (256 + (haveGroup ? strlen (group_name) : 0) +
+                       strlen (user_name));
 
       if (haveGroup)
         {
@@ -104,14 +105,14 @@ os_modify_user (int testCapability,
                haveGroup ? "--ingroup" : "",
                haveGroup ? group_name : "", user_name);
       system (cmd);
-      FREE (cmd);
-      return OK;
+      GNUNET_free (cmd);
+      return GNUNET_OK;
     }
   /* TODO: useradd */
   else
-    return SYSERR;
+    return GNUNET_SYSERR;
 #endif
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 
@@ -120,7 +121,7 @@ os_modify_user (int testCapability,
  * @brief Change user ID
  */
 int
-os_change_user (struct GE_Context *ectx, const char *user)
+GNUNET_change_user (struct GE_Context *ectx, const char *user)
 {
 #ifndef MINGW
   struct passwd *pws;
@@ -133,7 +134,7 @@ os_change_user (struct GE_Context *ectx, const char *user)
               GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
               _("Cannot obtain information about user `%s': %s\n"),
               user, errno == 0 ? _("No such user") : STRERROR (errno));
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if ((0 != setgid (pws->pw_gid)) || (0 != setegid (pws->pw_gid)) ||
 #if HAVE_INITGROUPS
@@ -148,12 +149,12 @@ os_change_user (struct GE_Context *ectx, const char *user)
                   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                   _("Cannot change user/group to `%s': %s\n"),
                   user, STRERROR (errno));
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
 #endif
 
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -162,8 +163,8 @@ os_change_user (struct GE_Context *ectx, const char *user)
  * @brief Change owner of a file
  */
 int
-os_change_owner (struct GE_Context *ectx,
-                 const char *filename, const char *user)
+GNUNET_file_change_owner (struct GE_Context *ectx,
+                          const char *filename, const char *user)
 {
 #ifndef MINGW
   struct passwd *pws;
@@ -171,16 +172,17 @@ os_change_owner (struct GE_Context *ectx,
   pws = getpwnam (user);
   if (pws == NULL)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-              _("Cannot obtain information about user `%s': %s\n"),
-              user, STRERROR (errno));
-      return SYSERR;
+      if (NULL != ectx)
+        GE_LOG (ectx,
+                GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                _("Cannot obtain information about user `%s': %s\n"),
+                user, STRERROR (errno));
+      return GNUNET_SYSERR;
     }
-  if (0 != chown (filename, pws->pw_uid, pws->pw_gid))
+  if ((0 != chown (filename, pws->pw_uid, pws->pw_gid)) && (NULL != ectx))
     GE_LOG_STRERROR_FILE (ectx,
                           GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                           "chown", filename);
 #endif
-  return OK;
+  return GNUNET_OK;
 }

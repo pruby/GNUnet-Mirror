@@ -26,8 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_boot.h"
-#include "gnunet_util_cron.h"
 #include "gnunet_directories.h"
 #include "gnunet_core.h"
 #include "core.h"
@@ -58,13 +56,13 @@ static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 /**
  * Allow the module named "pos" to update.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
 updateModule (const char *rpos)
 {
   UpdateMethod mptr;
-  struct PluginHandle *library;
+  struct GNUNET_PluginHandle *library;
   char *name;
   int i;
   char *pos;
@@ -72,38 +70,38 @@ updateModule (const char *rpos)
   for (i = 0; i < processedCount; i++)
     if (0 == strcmp (rpos, processed[i]))
       {
-        return OK;              /* already done */
+        return GNUNET_OK;       /* already done */
       }
-  GROW (processed, processedCount, processedCount + 1);
-  processed[processedCount - 1] = STRDUP (rpos);
+  GNUNET_array_grow (processed, processedCount, processedCount + 1);
+  processed[processedCount - 1] = GNUNET_strdup (rpos);
 
   pos = NULL;
   if (-1 == GC_get_configuration_value_string (cfg,
                                                "MODULES", rpos, rpos, &pos))
-    return SYSERR;
+    return GNUNET_SYSERR;
   GE_ASSERT (ectx, pos != NULL);
 
-  name = MALLOC (strlen (pos) + strlen ("module_") + 1);
+  name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
   strcat (name, pos);
-  FREE (pos);
-  library = os_plugin_load (ectx, DSO_PREFIX, name);
+  GNUNET_free (pos);
+  library = GNUNET_plugin_load (ectx, DSO_PREFIX, name);
   if (library == NULL)
     {
-      FREE (name);
-      return SYSERR;
+      GNUNET_free (name);
+      return GNUNET_SYSERR;
     }
-  mptr = os_plugin_resolve_function (library, "update_", NO);
+  mptr = GNUNET_plugin_resolve_function (library, "update_", GNUNET_NO);
   if (mptr == NULL)
     {
-      os_plugin_unload (library);
-      FREE (name);
-      return OK;                /* module needs no updates! */
+      GNUNET_plugin_unload (library);
+      GNUNET_free (name);
+      return GNUNET_OK;         /* module needs no updates! */
     }
   mptr (&uapi);
-  os_plugin_unload (library);
-  FREE (name);
-  return OK;
+  GNUNET_plugin_unload (library);
+  GNUNET_free (name);
+  return GNUNET_OK;
 }
 
 /**
@@ -145,14 +143,14 @@ updateApplicationModules ()
           GE_LOG (ectx,
                   GE_INFO | GE_USER | GE_BULK,
                   _("Updating data for module `%s'\n"), pos);
-          if (OK != updateModule (pos))
+          if (GNUNET_OK != updateModule (pos))
             GE_LOG (ectx,
                     GE_ERROR | GE_DEVELOPER | GE_BULK | GE_USER,
                     _("Failed to update data for module `%s'\n"), pos);
         }
     }
   while (next != NULL);
-  FREE (dso);
+  GNUNET_free (dso);
 }
 
 static void
@@ -171,11 +169,11 @@ doGet (char *get)
       *ent = '\0';
       ent++;
     }
-  if (YES == GC_have_configuration_value (cfg, sec, ent))
+  if (GNUNET_YES == GC_have_configuration_value (cfg, sec, ent))
     {
       GC_get_configuration_value_string (cfg, sec, ent, NULL, &val);
       printf ("%s\n", val);
-      FREE (val);
+      GNUNET_free (val);
     }
 }
 
@@ -183,7 +181,7 @@ static void
 work ()
 {
   int i;
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
   uapi.updateModule = &updateModule;
   uapi.requestService = &requestService;
@@ -192,7 +190,7 @@ work ()
   uapi.cfg = cfg;
 
   cron = cron_create (ectx);
-  if (initCore (ectx, cfg, cron, NULL) != OK)
+  if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
     {
       GE_LOG (ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
               _("Core initialization failed.\n"));
@@ -215,42 +213,42 @@ work ()
   upToDate (ectx, cfg);
 
   for (i = 0; i < processedCount; i++)
-    FREE (processed[i]);
-  GROW (processed, processedCount, 0);
+    GNUNET_free (processed[i]);
+  GNUNET_array_grow (processed, processedCount, 0);
   doneCore ();
-  cron_destroy (cron);
+  GNUNET_cron_destroy (cron);
 }
 
 static int
-set_client_config (CommandLineProcessorContext * ctx,
+set_client_config (GNUNET_CommandLineProcessorContext * ctx,
                    void *scls, const char *option, const char *value)
 {
   cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
-  return OK;
+  return GNUNET_OK;
 }
 
 
 /**
  * All gnunet-update command line options
  */
-static struct CommandLineOption gnunetupdateOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+static struct GNUNET_CommandLineOption gnunetupdateOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'g', "get", "SECTION:ENTRY",
    gettext_noop ("print a value from the configuration file to stdout"),
-   1, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET"},
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Updates GNUnet datastructures after version change.")),      /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+   1, &GNUNET_getopt_configure_set_option, "GNUNET-UPDATE:GET"},
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Updates GNUnet datastructures after version change.")),       /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'u', "user", "LOGIN",
    gettext_noop ("run as user LOGIN"),
-   1, &gnunet_getopt_configure_set_option, "GNUNETD:USER"},
+   1, &GNUNET_getopt_configure_set_option, "GNUNETD:USER"},
   {'U', "client", NULL,
    gettext_noop
    ("run in client mode (for getting client configuration values)"),
    0, &set_client_config, NULL},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 
@@ -264,7 +262,7 @@ main (int argc, char *const *argv)
                      argv,
                      "gnunet-update",
                      &cfgFilename, gnunetupdateOptions, &ectx, &cfg);
-  if ((ret == -1) || (OK != changeUser (ectx, cfg)))
+  if ((ret == -1) || (GNUNET_OK != changeUser (ectx, cfg)))
     {
       GNUNET_fini (ectx, cfg);
       return -1;
@@ -275,7 +273,7 @@ main (int argc, char *const *argv)
     doGet (get);
   else
     work ();
-  FREE (get);
+  GNUNET_free (get);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

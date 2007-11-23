@@ -29,14 +29,14 @@
 #include "gnunet_util_string.h"
 
 /**
- * TIME prototype. "man time".
+ * GNUNET_get_time_int32 prototype. "man time".
  */
-TIME_T
-TIME (TIME_T * t)
+GNUNET_Int32Time
+GNUNET_get_time_int32 (GNUNET_Int32Time * t)
 {
-  TIME_T now;
+  GNUNET_Int32Time now;
 
-  now = (TIME_T) time (NULL);   /* potential 64-bit to 32-bit conversion! */
+  now = (GNUNET_Int32Time) time (NULL); /* potential 64-bit to 32-bit conversion! */
   if (t != NULL)
     *t = now;
   return now;
@@ -48,17 +48,17 @@ TIME (TIME_T * t)
  * epoc if needed.
  */
 char *
-GN_CTIME (const TIME_T * t)
+GNUNET_int32_time_to_string (const GNUNET_Int32Time * t)
 {
-  TIME_T now;
+  GNUNET_Int32Time now;
   time_t tnow;
 
   tnow = time (NULL);
-  now = (TIME_T) tnow;
+  now = (GNUNET_Int32Time) tnow;
   tnow = tnow - now + *t;
 #ifdef ctime_r
-  return ctime_r (&tnow, MALLOC (32));
+  return ctime_r (&tnow, GNUNET_malloc (32));
 #else
-  return STRDUP (ctime (&tnow));
+  return GNUNET_strdup (ctime (&tnow));
 #endif
 }

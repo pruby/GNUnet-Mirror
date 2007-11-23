@@ -53,11 +53,11 @@ getPIDFile (struct GC_Configuration *cfg)
 /**
  * Write our process ID to the pid file.
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-os_write_pid_file (struct GE_Context *ectx,
-                   struct GC_Configuration *cfg, unsigned int pid)
+GNUNET_pid_file_write (struct GE_Context *ectx,
+                       struct GC_Configuration *cfg, unsigned int pid)
 {
   FILE *pidfd;
   char *pif;
@@ -67,9 +67,9 @@ os_write_pid_file (struct GE_Context *ectx,
 
   pif = getPIDFile (cfg);
   if (pif == NULL)
-    return OK;                  /* no PID file */
+    return GNUNET_OK;           /* no PID file */
   GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user);
-  rdir = STRDUP (pif);
+  rdir = GNUNET_strdup (pif);
   len = strlen (rdir);
   while ((len > 0) && (rdir[len] != DIR_SEPARATOR))
     len--;
@@ -78,28 +78,28 @@ os_write_pid_file (struct GE_Context *ectx,
     {
       /* we get to create a directory -- and claim it
          as ours! */
-      disk_directory_create (ectx, rdir);
+      GNUNET_disk_directory_create (ectx, rdir);
       if (strlen (user))
-        os_change_owner (ectx, rdir, user);
+        GNUNET_file_change_owner (ectx, rdir, user);
     }
   if (0 != ACCESS (rdir, W_OK | X_OK))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                             "access", rdir);
-      FREE (rdir);
-      FREE (user);
-      return SYSERR;
+      GNUNET_free (rdir);
+      GNUNET_free (user);
+      return GNUNET_SYSERR;
     }
-  FREE (rdir);
+  GNUNET_free (rdir);
   pidfd = FOPEN (pif, "w");
   if (pidfd == NULL)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_ADMIN | GE_BULK, "fopen", pif);
-      FREE (pif);
-      FREE (user);
-      return SYSERR;
+      GNUNET_free (pif);
+      GNUNET_free (user);
+      return GNUNET_SYSERR;
     }
   if (0 > FPRINTF (pidfd, "%u", pid))
     GE_LOG_STRERROR_FILE (ectx,
@@ -108,31 +108,31 @@ os_write_pid_file (struct GE_Context *ectx,
     GE_LOG_STRERROR_FILE (ectx,
                           GE_WARNING | GE_ADMIN | GE_BULK, "fclose", pif);
   if (strlen (user))
-    os_change_owner (ectx, pif, user);
-  FREE (user);
-  FREE (pif);
-  return OK;
+    GNUNET_file_change_owner (ectx, pif, user);
+  GNUNET_free (user);
+  GNUNET_free (pif);
+  return GNUNET_OK;
 }
 
 int
-os_delete_pid_file (struct GE_Context *ectx, struct GC_Configuration *cfg)
+GNUNET_pid_file_delete (struct GE_Context *ectx, struct GC_Configuration *cfg)
 {
   char *pif = getPIDFile (cfg);
   if (pif == NULL)
-    return OK;                  /* no PID file */
-  if (YES == disk_file_test (ectx, pif))
+    return GNUNET_OK;           /* no PID file */
+  if (GNUNET_YES == GNUNET_disk_file_test (ectx, pif))
     {
       if (0 != UNLINK (pif))
         {
           GE_LOG_STRERROR_FILE (ectx,
                                 GE_WARNING | GE_ADMIN | GE_BULK,
                                 "unlink", pif);
-          FREE (pif);
-          return SYSERR;
+          GNUNET_free (pif);
+          return GNUNET_SYSERR;
         }
     }
-  FREE (pif);
-  return OK;
+  GNUNET_free (pif);
+  return GNUNET_OK;
 }
 
 
@@ -144,8 +144,8 @@ os_delete_pid_file (struct GE_Context *ectx, struct GC_Configuration *cfg)
  *        to complete the detachment protocol (handshake)
  */
 int
-os_terminal_detach (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg, int *filedes)
+GNUNET_terminal_detach (struct GE_Context *ectx,
+                        struct GC_Configuration *cfg, int *filedes)
 {
   pid_t pid;
   int nullfd;
@@ -155,7 +155,7 @@ os_terminal_detach (struct GE_Context *ectx,
     {
       GE_LOG_STRERROR (ectx,
                        GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE, "chdir");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 
 #ifndef MINGW
@@ -165,7 +165,7 @@ os_terminal_detach (struct GE_Context *ectx,
     {
       GE_LOG_STRERROR (ectx,
                        GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE, "fork");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (pid)
     {                           /* Parent */
@@ -174,16 +174,16 @@ os_terminal_detach (struct GE_Context *ectx,
 
       if (0 != CLOSE (filedes[1]))
         GE_LOG_STRERROR (ectx, GE_WARNING | GE_USER | GE_BULK, "close");
-      ok = SYSERR;
+      ok = GNUNET_SYSERR;
       while (0 < READ (filedes[0], &c, sizeof (char)))
         {
           if (c == '.')
-            ok = OK;
+            ok = GNUNET_OK;
         }
       fflush (stdout);
-      if (ok == OK)
+      if (ok == GNUNET_OK)
         {
-          os_write_pid_file (ectx, cfg, pid);
+          GNUNET_pid_file_write (ectx, cfg, pid);
           exit (0);
         }
       else
@@ -193,13 +193,13 @@ os_terminal_detach (struct GE_Context *ectx,
     }
   if (0 != CLOSE (filedes[0]))
     GE_LOG_STRERROR (ectx, GE_WARNING | GE_USER | GE_BULK, "close");
-  nullfd = disk_file_open (ectx, "/dev/null", O_RDWR | O_APPEND);
+  nullfd = GNUNET_disk_file_open (ectx, "/dev/null", O_RDWR | O_APPEND);
   if (nullfd < 0)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                             "fork", "/dev/null");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   /* child - close fds linking to invoking terminal, but
    * close usual incoming fds, but redirect them somewhere
@@ -209,7 +209,7 @@ os_terminal_detach (struct GE_Context *ectx,
     {
       GE_LOG_STRERROR (ectx,
                        GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE, "dup2");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   pid = setsid ();              /* Detach from controlling terminal */
   if (pid == -1)
@@ -218,12 +218,12 @@ os_terminal_detach (struct GE_Context *ectx,
 #else
   FreeConsole ();
 #endif
-  return OK;
+  return GNUNET_OK;
 }
 
 void
-os_terminal_detach_complete (struct GE_Context *ectx,
-                             int *filedes, int success)
+GNUNET_terminal_detach_complete (struct GE_Context *ectx,
+                                 int *filedes, int success)
 {
 #ifndef MINGW
   char c = '.';

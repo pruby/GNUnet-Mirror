@@ -32,27 +32,27 @@
 /**
  * Test if a file is indexed.
  *
- * @return YES if the file is indexed, NO if not, SYSERR on errors
+ * @return GNUNET_YES if the file is indexed, GNUNET_NO if not, GNUNET_SYSERR on errors
  *  (i.e. filename could not be accessed and thus we have problems
  *  checking; also possible that the file was modified after indexing;
- *  in either case, if SYSERR is returned the user should probably
+ *  in either case, if GNUNET_SYSERR is returned the user should probably
  *  be notified that 'something is wrong')
  */
 int
 ECRS_isFileIndexed (struct GE_Context *ectx,
                     struct GC_Configuration *cfg, const char *filename)
 {
-  HashCode512 hc;
-  struct ClientServerConnection *sock;
+  GNUNET_HashCode hc;
+  struct GNUNET_ClientServerConnection *sock;
   int ret;
 
-  if (SYSERR == getFileHash (ectx, filename, &hc))
-    return SYSERR;
-  sock = client_connection_create (ectx, cfg);
+  if (GNUNET_SYSERR == GNUNET_hash_file (ectx, filename, &hc))
+    return GNUNET_SYSERR;
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   ret = FS_testIndexed (sock, &hc);
-  connection_destroy (sock);
+  GNUNET_client_connection_destroy (sock);
   return ret;
 }
 
@@ -73,12 +73,12 @@ iiHelper (const char *fn, const char *dir, void *ptr)
   unsigned int size;
   int ret;
 
-  fullName = MALLOC (strlen (dir) + strlen (fn) + 4);
+  fullName = GNUNET_malloc (strlen (dir) + strlen (fn) + 4);
   strcpy (fullName, dir);
   strcat (fullName, DIR_SEPARATOR_STR);
   strcat (fullName, fn);
   size = 256;
-  lnkName = MALLOC (size);
+  lnkName = GNUNET_malloc (size);
   while (1)
     {
       ret = READLINK (fullName, lnkName, size - 1);
@@ -88,11 +88,11 @@ iiHelper (const char *fn, const char *dir, void *ptr)
             {
               if (size * 2 < size)
                 {
-                  FREE (lnkName);
-                  FREE (fullName);
-                  return OK;    /* error */
+                  GNUNET_free (lnkName);
+                  GNUNET_free (fullName);
+                  return GNUNET_OK;     /* error */
                 }
-              GROW (lnkName, size, size * 2);
+              GNUNET_array_grow (lnkName, size, size * 2);
               continue;
             }
           if (errno != EINVAL)
@@ -101,9 +101,9 @@ iiHelper (const char *fn, const char *dir, void *ptr)
                                     GE_WARNING | GE_BULK | GE_ADMIN | GE_USER,
                                     "readlink", fullName);
             }
-          FREE (lnkName);
-          FREE (fullName);
-          return OK;            /* error */
+          GNUNET_free (lnkName);
+          GNUNET_free (fullName);
+          return GNUNET_OK;     /* error */
         }
       else
         {
@@ -112,16 +112,16 @@ iiHelper (const char *fn, const char *dir, void *ptr)
         }
     }
   cls->cnt++;
-  if (OK != cls->iterator (lnkName, cls->closure))
+  if (GNUNET_OK != cls->iterator (lnkName, cls->closure))
     {
-      cls->cnt = SYSERR;
-      FREE (fullName);
-      FREE (lnkName);
-      return SYSERR;
+      cls->cnt = GNUNET_SYSERR;
+      GNUNET_free (fullName);
+      GNUNET_free (lnkName);
+      return GNUNET_SYSERR;
     }
-  FREE (fullName);
-  FREE (lnkName);
-  return OK;
+  GNUNET_free (fullName);
+  GNUNET_free (lnkName);
+  return GNUNET_OK;
 }
 
 /**
@@ -134,7 +134,7 @@ iiHelper (const char *fn, const char *dir, void *ptr)
  * names will have been lost.  In that case, the iterator
  * will NOT iterate over these files.
  *
- * @return number of files indexed, SYSERR if iterator aborted
+ * @return number of files indexed, GNUNET_SYSERR if iterator aborted
  */
 int
 ECRS_iterateIndexedFiles (struct GE_Context *ectx,
@@ -143,26 +143,26 @@ ECRS_iterateIndexedFiles (struct GE_Context *ectx,
 {
   char *tmp;
   char *indexDirectory;
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   struct iiC cls;
 
-  sock = client_connection_create (ectx, cfg);
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return 0;
-  tmp = getConfigurationOptionValue (sock, "FS", "INDEX-DIRECTORY");
-  connection_destroy (sock);
+  tmp = GNUNET_get_daemon_configuration_value (sock, "FS", "INDEX-DIRECTORY");
+  GNUNET_client_connection_destroy (sock);
   if (tmp == NULL)
     {
       return 0;
     }
-  indexDirectory = string_expandFileName (ectx, tmp);
-  FREE (tmp);
+  indexDirectory = GNUNET_expand_file_name (ectx, tmp);
+  GNUNET_free (tmp);
   cls.ectx = ectx;
   cls.iterator = iterator;
   cls.closure = closure;
   cls.cnt = 0;
-  disk_directory_scan (ectx, indexDirectory, &iiHelper, &cls);
-  FREE (indexDirectory);
+  GNUNET_disk_directory_scan (ectx, indexDirectory, &iiHelper, &cls);
+  GNUNET_free (indexDirectory);
   return cls.cnt;
 }
 

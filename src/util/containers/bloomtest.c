@@ -35,35 +35,35 @@
  * Generate a random hashcode.
  */
 static void
-nextHC (HashCode512 * hc)
+nextHC (GNUNET_HashCode * hc)
 {
-  makeRandomId (hc);
+  GNUNET_create_random_hash (hc);
 }
 
 int
 main (int argc, char *argv[])
 {
-  struct Bloomfilter *bf;
-  HashCode512 tmp;
+  struct GNUNET_BloomFilter *bf;
+  GNUNET_HashCode tmp;
   int i;
   int ok;
   int falseok;
 
   srand (1);
   UNLINK ("/tmp/bloomtest.dat");
-  bf = loadBloomfilter (NULL, "/tmp/bloomtest.dat", SIZE, K);
+  bf = GNUNET_bloomfilter_load (NULL, "/tmp/bloomtest.dat", SIZE, K);
 
   for (i = 0; i < 200; i++)
     {
       nextHC (&tmp);
-      addToBloomfilter (bf, &tmp);
+      GNUNET_bloomfilter_add (bf, &tmp);
     }
   srand (1);
   ok = 0;
   for (i = 0; i < 200; i++)
     {
       nextHC (&tmp);
-      if (testBloomfilter (bf, &tmp) == YES)
+      if (GNUNET_bloomfilter_test (bf, &tmp) == GNUNET_YES)
         ok++;
     }
   if (ok != 200)
@@ -72,17 +72,17 @@ main (int argc, char *argv[])
               "200 expected after insertion.\n", ok);
       return -1;
     }
-  freeBloomfilter (bf);
+  GNUNET_bloomfilter_free (bf);
 
 
-  bf = loadBloomfilter (NULL, "/tmp/bloomtest.dat", SIZE, K);
+  bf = GNUNET_bloomfilter_load (NULL, "/tmp/bloomtest.dat", SIZE, K);
 
   srand (1);
   ok = 0;
   for (i = 0; i < 200; i++)
     {
       nextHC (&tmp);
-      if (testBloomfilter (bf, &tmp) == YES)
+      if (GNUNET_bloomfilter_test (bf, &tmp) == GNUNET_YES)
         ok++;
     }
   if (ok != 200)
@@ -96,7 +96,7 @@ main (int argc, char *argv[])
   for (i = 0; i < 100; i++)
     {
       nextHC (&tmp);
-      delFromBloomfilter (bf, &tmp);
+      GNUNET_bloomfilter_remove (bf, &tmp);
     }
 
   srand (1);
@@ -105,7 +105,7 @@ main (int argc, char *argv[])
   for (i = 0; i < 200; i++)
     {
       nextHC (&tmp);
-      if (testBloomfilter (bf, &tmp) == YES)
+      if (GNUNET_bloomfilter_test (bf, &tmp) == GNUNET_YES)
         ok++;
     }
 
@@ -122,11 +122,11 @@ main (int argc, char *argv[])
   for (i = 0; i < 1000; i++)
     {
       nextHC (&tmp);
-      if (testBloomfilter (bf, &tmp) == YES)
+      if (GNUNET_bloomfilter_test (bf, &tmp) == GNUNET_YES)
         falseok++;
     }
 
-  freeBloomfilter (bf);
+  GNUNET_bloomfilter_free (bf);
 
   UNLINK ("/tmp/bloomtest.dat");
   return 0;

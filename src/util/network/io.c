@@ -28,15 +28,15 @@
 #include "platform.h"
 #include "network.h"
 
-#define DEBUG_IO NO
+#define DEBUG_IO GNUNET_NO
 
 /**
  * Global lock for gethostbyname.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 #ifndef MINGW
-static struct SignalHandlerContext *sctx;
+static struct GNUNET_SignalHandlerContext *sctx;
 
 static void
 catcher ()
@@ -46,9 +46,9 @@ catcher ()
 
 void __attribute__ ((constructor)) gnunet_network_io_init ()
 {
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
 #ifndef MINGW
-  sctx = signal_handler_install (SIGPIPE, &catcher);
+  sctx = GNUNET_signal_handler_install (SIGPIPE, &catcher);
 #else
   InitWinEnv (NULL);
 #endif
@@ -56,10 +56,10 @@ void __attribute__ ((constructor)) gnunet_network_io_init ()
 
 void __attribute__ ((destructor)) gnunet_network_io_fini ()
 {
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
 #ifndef MINGW
-  signal_handler_uninstall (SIGPIPE, &catcher, sctx);
+  GNUNET_signal_handler_uninstall (SIGPIPE, &catcher, sctx);
   sctx = NULL;
 #else
   ShutdownWinEnv ();
@@ -68,15 +68,16 @@ void __attribute__ ((destructor)) gnunet_network_io_fini ()
 
 /**
  * Get the IP address of the given host.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-get_host_by_name (struct GE_Context *ectx, const char *hostname, IPaddr * ip)
+GNUNET_get_host_by_name (struct GE_Context *ectx, const char *hostname,
+                         GNUNET_IPv4Address * ip)
 {
   struct hostent *he;
 
   /* slight hack: re-use config lock */
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   he = GETHOSTBYNAME (hostname);
   if (he == NULL)
     {
@@ -84,30 +85,31 @@ get_host_by_name (struct GE_Context *ectx, const char *hostname, IPaddr * ip)
               GE_ERROR | GE_ADMIN | GE_BULK,
               _("Could not find IP of host `%s': %s\n"),
               hostname, hstrerror (h_errno));
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   if (he->h_addrtype != AF_INET)
     {
       GE_BREAK (ectx, 0);
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   memcpy (ip,
           &((struct in_addr *) he->h_addr_list[0])->s_addr,
           sizeof (struct in_addr));
-  MUTEX_UNLOCK (lock);
-  return OK;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 
 
-struct SocketHandle *
-socket_create (struct GE_Context *ectx, struct LoadMonitor *mon, int osSocket)
+struct GNUNET_SocketHandle *
+socket_create (struct GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
+               int osSocket)
 {
   SocketHandle *ret;
 
-  ret = MALLOC (sizeof (SocketHandle));
+  ret = GNUNET_malloc (sizeof (SocketHandle));
   ret->ectx = ectx;
   ret->mon = mon;
   ret->handle = osSocket;
@@ -116,7 +118,7 @@ socket_create (struct GE_Context *ectx, struct LoadMonitor *mon, int osSocket)
 }
 
 void
-socket_close (struct SocketHandle *s)
+GNUNET_socket_close (struct GNUNET_SocketHandle *s)
 {
   GE_ASSERT (NULL, s != NULL);
   if ((0 != SHUTDOWN (s->handle, SHUT_RDWR)) &&
@@ -134,7 +136,7 @@ socket_close (struct SocketHandle *s)
 }
 
 void
-socket_destroy (struct SocketHandle *s)
+GNUNET_socket_destroy (struct GNUNET_SocketHandle *s)
 {
   GE_ASSERT (NULL, s != NULL);
   if (s->handle != -1)
@@ -159,13 +161,13 @@ socket_destroy (struct SocketHandle *s)
                          GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
                          "close");
     }
-  FREE (s);
+  GNUNET_free (s);
 }
 
 /* TODO: log errors! */
 #ifdef OSX
 static int
-socket_set_nosigpipe (struct SocketHandle *s, int dontSigPipe)
+socket_set_nosigpipe (struct GNUNET_SocketHandle *s, int dontSigPipe)
 {
   return setsockopt (s->handle,
                      SOL_SOCKET, SO_NOSIGPIPE,
@@ -175,7 +177,7 @@ socket_set_nosigpipe (struct SocketHandle *s, int dontSigPipe)
 
 /* TODO: log errors! */
 int
-socket_set_blocking (struct SocketHandle *s, int doBlock)
+GNUNET_socket_set_blocking (struct GNUNET_SocketHandle *s, int doBlock)
 {
 #if MINGW
   u_long mode;
@@ -213,10 +215,10 @@ socket_set_blocking (struct SocketHandle *s, int doBlock)
 }
 
 int
-socket_test_blocking (struct SocketHandle *s)
+GNUNET_socket_test_blocking (struct GNUNET_SocketHandle *s)
 {
 #ifndef MINGW
-  return (fcntl (s->handle, F_GETFL) & O_NONBLOCK) ? NO : YES;
+  return (fcntl (s->handle, F_GETFL) & O_NONBLOCK) ? GNUNET_NO : GNUNET_YES;
 #else
 #if HAVE_PLIBC_FD
   return plibc_fd_get_blocking (s->handle);
@@ -227,30 +229,30 @@ socket_test_blocking (struct SocketHandle *s)
 }
 
 int
-socket_recv (struct SocketHandle *s,
-             NC_KIND nc, void *buf, size_t max, size_t * read)
+GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
+                    GNUNET_NC_KIND nc, void *buf, size_t max, size_t * read)
 {
   int flags;
   size_t pos;
   size_t ret;
 
   GE_ASSERT (NULL, s->checksum == -s->handle);
-  socket_set_blocking (s, 0 != (nc & NC_Blocking));
+  GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #ifdef CYGWIN
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  socket_set_nosigpipe (s, 0 == (nc & NC_IgnoreInt));
-  if (0 == (nc & NC_Blocking))
+  socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif LINUX
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #else
   /* good luck */
@@ -263,71 +265,72 @@ socket_recv (struct SocketHandle *s,
       ret = (size_t) RECV (s->handle, &((char *) buf)[pos], max - pos, flags);
       GE_ASSERT (NULL, s->checksum == -s->handle);
       if ((ret == (size_t) - 1) &&
-          (errno == EINTR) && (0 != (nc & NC_IgnoreInt)))
+          (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
         continue;
       if ((ret == (size_t) - 1) || (ret > max - pos))
         {
           if (errno == EINTR)
             {
               *read = pos;
-              return YES;
+              return GNUNET_YES;
             }
           if (errno == EWOULDBLOCK)
             {
-              if (0 != (nc & NC_Blocking))
+              if (0 != (nc & GNUNET_NC_BLOCKING))
                 continue;
               *read = pos;
-              return (pos == 0) ? NO : YES;
+              return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
           GE_LOG_STRERROR (s->ectx, GE_DEBUG | GE_USER | GE_REQUEST, "recv");
 #endif
           *read = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (ret == 0)
         {
           /* most likely: other side closed connection */
           *read = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (s->mon != NULL)
-        os_network_monitor_notify_transmission (s->mon, Download, ret);
+        GNUNET_network_monitor_notify_transmission (s->mon,
+                                                    GNUNET_ND_DOWNLOAD, ret);
       GE_ASSERT (NULL, pos + ret >= pos);
       pos += ret;
     }
-  while ((pos < max) && (0 != (nc & NC_Blocking)));
+  while ((pos < max) && (0 != (nc & GNUNET_NC_BLOCKING)));
   *read = pos;
-  return YES;
+  return GNUNET_YES;
 }
 
 int
-socket_recv_from (struct SocketHandle *s,
-                  NC_KIND nc,
-                  void *buf,
-                  size_t max,
-                  size_t * read, char *from, unsigned int *fromlen)
+GNUNET_socket_recv_from (struct GNUNET_SocketHandle *s,
+                         GNUNET_NC_KIND nc,
+                         void *buf,
+                         size_t max,
+                         size_t * read, char *from, unsigned int *fromlen)
 {
   int flags;
   size_t pos;
   size_t ret;
 
-  socket_set_blocking (s, 0 != (nc & NC_Blocking));
+  GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #ifdef CYGWIN
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #elif OSX
-  socket_set_nosigpipe (s, 0 == (nc & NC_IgnoreInt));
-  if (0 == (nc & NC_Blocking))
+  socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif SOMEBSD || SOLARIS
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif LINUX
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #else
   /* good luck */
@@ -340,67 +343,69 @@ socket_recv_from (struct SocketHandle *s,
                                max - pos,
                                flags, (struct sockaddr *) from, fromlen);
       if ((ret == (size_t) - 1) &&
-          (errno == EINTR) && (0 != (nc & NC_IgnoreInt)))
+          (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
         continue;
       if ((ret == (size_t) - 1) || (ret > max - pos))
         {
           if (errno == EINTR)
             {
               *read = pos;
-              return YES;
+              return GNUNET_YES;
             }
           if (errno == EWOULDBLOCK)
             {
-              if (0 != (nc & NC_Blocking))
+              if (0 != (nc & GNUNET_NC_BLOCKING))
                 continue;
               *read = pos;
-              return (pos == 0) ? NO : YES;
+              return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
           GE_LOG_STRERROR (s->ectx,
                            GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
                            "recvfrom");
           *read = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (ret == 0)
         {
           /* most likely: other side closed connection */
           *read = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (s->mon != NULL)
-        os_network_monitor_notify_transmission (s->mon, Download, ret);
+        GNUNET_network_monitor_notify_transmission (s->mon,
+                                                    GNUNET_ND_DOWNLOAD, ret);
       pos += ret;
     }
-  while ((pos < max) && (0 != (nc & NC_Blocking)));
+  while ((pos < max) && (0 != (nc & GNUNET_NC_BLOCKING)));
   *read = pos;
-  return YES;
+  return GNUNET_YES;
 }
 
 int
-socket_send (struct SocketHandle *s,
-             NC_KIND nc, const void *buf, size_t max, size_t * sent)
+GNUNET_socket_send (struct GNUNET_SocketHandle *s,
+                    GNUNET_NC_KIND nc, const void *buf, size_t max,
+                    size_t * sent)
 {
   int flags;
   size_t pos;
   size_t ret;
 
-  socket_set_blocking (s, 0 != (nc & NC_Blocking));
+  GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #if SOMEBSD || SOLARIS
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  socket_set_nosigpipe (s, 0 == (nc & NC_IgnoreInt));
-  if (0 == (nc & NC_Blocking))
+  socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #elif LINUX
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #else
   /* pray */
@@ -411,70 +416,71 @@ socket_send (struct SocketHandle *s,
     {
       ret = (size_t) SEND (s->handle, &((char *) buf)[pos], max - pos, flags);
       if ((ret == (size_t) - 1) &&
-          (errno == EINTR) && (0 != (nc & NC_IgnoreInt)))
+          (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
         continue;
       if ((ret == (size_t) - 1) || (ret > max - pos))
         {
           if (errno == EINTR)
             {
               *sent = pos;
-              return YES;
+              return GNUNET_YES;
             }
           if (errno == EWOULDBLOCK)
             {
-              if (0 != (nc & NC_Blocking))
+              if (0 != (nc & GNUNET_NC_BLOCKING))
                 continue;
               *sent = pos;
-              return (pos == 0) ? NO : YES;
+              return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
           GE_LOG_STRERROR (s->ectx, GE_DEBUG | GE_USER | GE_REQUEST, "send");
 #endif
           *sent = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (ret == 0)
         {
           /* strange error; most likely: other side closed connection */
           *sent = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (s->mon != NULL)
-        os_network_monitor_notify_transmission (s->mon, Upload, ret);
+        GNUNET_network_monitor_notify_transmission (s->mon, GNUNET_ND_UPLOAD,
+                                                    ret);
       pos += ret;
     }
-  while ((pos < max) && (0 != (nc & NC_Blocking)));
+  while ((pos < max) && (0 != (nc & GNUNET_NC_BLOCKING)));
   *sent = pos;
-  return YES;
+  return GNUNET_YES;
 }
 
 int
-socket_send_to (struct SocketHandle *s,
-                NC_KIND nc,
-                const void *buf,
-                size_t max,
-                size_t * sent, const char *dst, unsigned int dstlen)
+GNUNET_socket_send_to (struct GNUNET_SocketHandle *s,
+                       GNUNET_NC_KIND nc,
+                       const void *buf,
+                       size_t max,
+                       size_t * sent, const char *dst, unsigned int dstlen)
 {
   int flags;
   size_t pos;
   size_t ret;
 
-  socket_set_blocking (s, 0 != (nc & NC_Blocking));
+  GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #if SOMEBSD || SOLARIS
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif OSX
-  socket_set_nosigpipe (s, 0 == (nc & NC_IgnoreInt));
-  if (0 == (nc & NC_Blocking))
+  socket_set_nosigpipe (s, 0 == (nc & GNUNET_NC_IGNORE_INT));
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
 #elif CYGWIN
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #elif LINUX
-  if (0 == (nc & NC_Blocking))
+  if (0 == (nc & GNUNET_NC_BLOCKING))
     flags |= MSG_DONTWAIT;
-  if (0 == (nc & NC_IgnoreInt))
+  if (0 == (nc & GNUNET_NC_IGNORE_INT))
     flags |= MSG_NOSIGNAL;
 #else
   /* pray */
@@ -488,42 +494,43 @@ socket_send_to (struct SocketHandle *s,
                              max - pos,
                              flags, (const struct sockaddr *) dst, dstlen);
       if ((ret == (size_t) - 1) &&
-          (errno == EINTR) && (0 != (nc & NC_IgnoreInt)))
+          (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
         continue;
       if ((ret == (size_t) - 1) || (ret > max - pos))
         {
           if (errno == EINTR)
             {
               *sent = pos;
-              return YES;
+              return GNUNET_YES;
             }
           if (errno == EWOULDBLOCK)
             {
-              if (0 != (nc & NC_Blocking))
+              if (0 != (nc & GNUNET_NC_BLOCKING))
                 continue;
               *sent = pos;
-              return (pos == 0) ? NO : YES;
+              return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
           GE_LOG_STRERROR (s->ectx,
                            GE_DEBUG | GE_USER | GE_REQUEST, "sendto");
 #endif
           *sent = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (ret == 0)
         {
           /* strange error; most likely: other side closed connection */
           *sent = pos;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (s->mon != NULL)
-        os_network_monitor_notify_transmission (s->mon, Upload, ret);
+        GNUNET_network_monitor_notify_transmission (s->mon, GNUNET_ND_UPLOAD,
+                                                    ret);
       pos += ret;
     }
-  while ((pos < max) && (0 != (nc & NC_Blocking)));
+  while ((pos < max) && (0 != (nc & GNUNET_NC_BLOCKING)));
   *sent = pos;
-  return YES;
+  return GNUNET_YES;
 }
 
 /**
@@ -531,7 +538,7 @@ socket_send_to (struct SocketHandle *s,
  * @return 1 if valid, 0 otherwise
  */
 int
-socket_test_valid (struct SocketHandle *s)
+GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s)
 {
 #ifndef MINGW
   struct stat buf;

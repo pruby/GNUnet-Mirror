@@ -34,7 +34,7 @@
 #include "gnunet_kvstore_service.h"
 #include <sqlite3.h>
 
-#define DEBUG_SQLITE NO
+#define DEBUG_SQLITE GNUNET_NO
 
 /**
  * Die with an error message that indicates
@@ -64,7 +64,7 @@ typedef struct
   /**
    * Thread ID owning this handle
    */
-  struct PTHREAD *tid;
+  struct GNUNET_ThreadHandle *tid;
 
 } sqliteHandle;
 
@@ -111,7 +111,7 @@ static unsigned int databases;
 
 static sqliteDatabase **dbs;
 
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * @brief Encode a binary buffer "in" of size n bytes so that it contains
@@ -205,11 +205,11 @@ getDBFileName (const char *name)
                                        "DIR",
                                        VAR_DAEMON_DIRECTORY "/kvstore/",
                                        &dir);
-  disk_directory_create (ectx, dir);
+  GNUNET_disk_directory_create (ectx, dir);
   mem = strlen (dir) + strlen (name) + 6;
-  fn = MALLOC (mem);
-  SNPRINTF (fn, mem, "%s/%s.dat", dir, name);
-  FREE (dir);
+  fn = GNUNET_malloc (mem);
+  GNUNET_snprintf (fn, mem, "%s/%s.dat", dir, name);
+  GNUNET_free (dir);
   return fn;
 }
 
@@ -226,11 +226,11 @@ getDB (const char *name)
   for (idx = 0; idx < databases; idx++)
     if (0 == strcmp (dbs[idx]->name, name))
       return dbs[idx];
-  db = MALLOC (sizeof (sqliteDatabase));
+  db = GNUNET_malloc (sizeof (sqliteDatabase));
   memset (db, 0, sizeof (sqliteDatabase));
   db->fn = getDBFileName (name);
-  db->name = STRDUP (name);
-  APPEND (dbs, databases, db);
+  db->name = GNUNET_strdup (name);
+  GNUNET_array_append (dbs, databases, db);
   return db;
 }
 
@@ -248,34 +248,34 @@ getDBHandle (const char *name)
   sqliteHandle *dbh;
   sqliteDatabase *db;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   db = getDB (name);
   for (idx = 0; idx < db->handle_count; idx++)
-    if (PTHREAD_TEST_SELF (db->handles[idx]->tid))
+    if (GNUNET_thread_test_self (db->handles[idx]->tid))
       {
         sqliteHandle *ret = db->handles[idx];
-        MUTEX_UNLOCK (lock);
+        GNUNET_mutex_unlock (lock);
         return ret;
       }
   /* we haven't opened the DB for this thread yet */
-  dbh = MALLOC (sizeof (sqliteHandle));
-  dbh->tid = PTHREAD_GET_SELF ();
+  dbh = GNUNET_malloc (sizeof (sqliteHandle));
+  dbh->tid = GNUNET_thread_get_self ();
   if (sqlite3_open (db->fn, &dbh->dbh) != SQLITE_OK)
     {
       printf ("FN: %s\n", db->fn);
       LOG_SQLITE (dbh->dbh, GE_ERROR | GE_BULK | GE_USER, "sqlite3_open");
       sqlite3_close (dbh->dbh);
-      MUTEX_UNLOCK (lock);
-      PTHREAD_REL_SELF (dbh->tid);
-      FREE (dbh);
+      GNUNET_mutex_unlock (lock);
+      GNUNET_thread_release_self (dbh->tid);
+      GNUNET_free (dbh);
       return NULL;
     }
-  APPEND (db->handles, db->handle_count, dbh);
+  GNUNET_array_append (db->handles, db->handle_count, dbh);
   sqlite3_exec (dbh->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
   sqlite3_exec (dbh->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
   sqlite3_exec (dbh->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
   sqlite3_exec (dbh->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return dbh;
 }
 
@@ -287,15 +287,15 @@ close_database (sqliteDatabase * db)
   for (idx = 0; idx < db->handle_count; idx++)
     {
       sqliteHandle *dbh = db->handles[idx];
-      PTHREAD_REL_SELF (dbh->tid);
+      GNUNET_thread_release_self (dbh->tid);
       if (sqlite3_close (dbh->dbh) != SQLITE_OK)
         LOG_SQLITE (dbh->dbh, LOG_ERROR, "sqlite_close");
-      FREE (dbh);
+      GNUNET_free (dbh);
     }
-  GROW (db->handles, db->handle_count, 0);
-  FREE (db->fn);
-  FREE (db->name);
-  FREE (db);
+  GNUNET_array_grow (db->handles, db->handle_count, 0);
+  GNUNET_free (db->fn);
+  GNUNET_free (db->name);
+  GNUNET_free (db);
 }
 
 /**
@@ -308,7 +308,7 @@ dropDatabase (const char *name)
   unsigned int idx;
   char *fn;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (idx = 0; idx < databases; idx++)
     {
       if (0 == strcmp (dbs[idx]->name, name))
@@ -316,14 +316,14 @@ dropDatabase (const char *name)
           db = dbs[idx];
           close_database (db);
           dbs[idx] = dbs[databases - 1];
-          GROW (dbs, databases, databases - 1);
+          GNUNET_array_grow (dbs, databases, databases - 1);
           break;
         }
     }
   fn = getDBFileName (name);
   UNLINK (fn);
-  FREE (fn);
-  MUTEX_UNLOCK (lock);
+  GNUNET_free (fn);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -348,7 +348,7 @@ getTable (const char *database, const char *table)
   sqlite3_bind_text (stmt, 1, table, len, SQLITE_STATIC);
   if (sqlite3_step (stmt) == SQLITE_DONE)
     {
-      char *create = MALLOC (len + 58);
+      char *create = GNUNET_malloc (len + 58);
 
       sprintf (create,
                "CREATE TABLE %s (gn_key BLOB, gn_val BLOB, gn_age BIGINT)",
@@ -358,22 +358,22 @@ getTable (const char *database, const char *table)
         {
           LOG_SQLITE (dbh->dbh, LOG_ERROR, "sqlite_create");
           sqlite3_finalize (stmt);
-          FREE (create);
+          GNUNET_free (create);
           return NULL;
         }
 
-      FREE (create);
+      GNUNET_free (create);
     }
   sqlite3_finalize (stmt);
 
   /* FIXME: more indexes */
-  idx = MALLOC (len + 34);
+  idx = GNUNET_malloc (len + 34);
   sprintf (idx, "CREATE INDEX idx_key ON %s (gn_key)", table);
   sqlite3_exec (dbh->dbh, idx, NULL, NULL, NULL);
-  FREE (idx);
-  ret = MALLOC (sizeof (KVHandle));
-  ret->table = STRDUP (table);
-  ret->db = STRDUP (database);
+  GNUNET_free (idx);
+  ret = GNUNET_malloc (sizeof (KVHandle));
+  ret->table = GNUNET_strdup (table);
+  ret->db = GNUNET_strdup (database);
 
   return ret;
 }
@@ -409,12 +409,12 @@ get (KVHandle * kv,
   ret_dec = NULL;
 
   len = strlen (kv->table);
-  sel = MALLOC (len + 45);
+  sel = GNUNET_malloc (len + 45);
 
   if (key)
     {
       where = "WHERE gn_key = ?";
-      key_enc = MALLOC (keylen * 2 + 1);
+      key_enc = GNUNET_malloc (keylen * 2 + 1);
       enclen = sqlite_encode_binary (key, keylen, key_enc);
     }
   else
@@ -456,25 +456,25 @@ get (KVHandle * kv,
 
       /* free previous result, only the last in the result set
          is returned to the caller */
-      FREENONNULL (ret_dec);
+      GNUNET_free_non_null (ret_dec);
 
-      ret_dec = MALLOC (retlen);
+      ret_dec = GNUNET_malloc (retlen);
       retlen = sqlite_decode_binary_n (ret, ret_dec, retlen);
 
       if (handler)
-        if (handler (closure, ret, retlen) != OK)
+        if (handler (closure, ret, retlen) != GNUNET_OK)
           {
-            FREE (sel);
-            FREENONNULL (key_enc);
-            FREE (ret_dec);
+            GNUNET_free (sel);
+            GNUNET_free_non_null (key_enc);
+            GNUNET_free (ret_dec);
             sqlite3_finalize (stmt);
 
             return ret;
           }
     }
   sqlite3_finalize (stmt);
-  FREE (sel);
-  FREENONNULL (key_enc);
+  GNUNET_free (sel);
+  GNUNET_free_non_null (key_enc);
   return ret_dec;
 }
 
@@ -486,7 +486,7 @@ get (KVHandle * kv,
  * @param val value of the pair
  * @param vallen length of the value (int because of SQLite!)
  * @param optional creation time
- * @return OK on success, SYSERR otherwise
+ * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
 put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
@@ -501,18 +501,18 @@ put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
 
   dbh = getDBHandle (kv->db);
   if (dbh == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   len = strlen (kv->table);
-  ins = MALLOC (len + 68);
+  ins = GNUNET_malloc (len + 68);
 
   sprintf (ins,
            "INSERT INTO %s(gn_key, gn_val, gn_age) values (?, ?, ?)",
            kv->table);
 
-  key_enc = MALLOC (keylen * 2);
+  key_enc = GNUNET_malloc (keylen * 2);
   keyenc_len = sqlite_encode_binary (key, keylen, key_enc);
 
-  val_enc = MALLOC (vallen * 2);
+  val_enc = GNUNET_malloc (vallen * 2);
   valenc_len = sqlite_encode_binary (val, vallen, val_enc);
 
   sq_prepare (dbh, ins, &stmt);
@@ -521,19 +521,19 @@ put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
   sqlite3_bind_int64 (stmt, 3, age);
   if (sqlite3_step (stmt) != SQLITE_DONE)
     {
-      FREE (ins);
-      FREE (key_enc);
-      FREE (val_enc);
+      GNUNET_free (ins);
+      GNUNET_free (key_enc);
+      GNUNET_free (val_enc);
       LOG_SQLITE (dbh->dbh, LOG_ERROR, "put");
       sqlite3_finalize (stmt);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   sqlite3_finalize (stmt);
-  FREE (ins);
-  FREE (key_enc);
-  FREE (val_enc);
+  GNUNET_free (ins);
+  GNUNET_free (key_enc);
+  GNUNET_free (val_enc);
 
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -541,7 +541,7 @@ put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
  * @param key key to delete (may be NULL)
  * @param keylen length of the key
  * @param age age of the items to delete (may be 0)
- * @return OK on success, SYSERR otherwise
+ * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
 del (KVHandle * kv, void *key, int keylen, unsigned long long age)
@@ -556,10 +556,10 @@ del (KVHandle * kv, void *key, int keylen, unsigned long long age)
 
   dbh = getDBHandle (kv->db);
   if (dbh == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
 
   len = strlen (kv->table);
-  del = MALLOC (len + 52);
+  del = GNUNET_malloc (len + 52);
   bind = 1;
 
   if (key)
@@ -579,7 +579,7 @@ del (KVHandle * kv, void *key, int keylen, unsigned long long age)
   sq_prepare (dbh, del, &stmt);
   if (key)
     {
-      keyenc = MALLOC (keylen * 2);
+      keyenc = GNUNET_malloc (keylen * 2);
       keyenc_len = sqlite_encode_binary (key, keylen, keyenc);
       sqlite3_bind_blob (stmt, 1, keyenc, keyenc_len, SQLITE_STATIC);
       bind++;
@@ -594,18 +594,18 @@ del (KVHandle * kv, void *key, int keylen, unsigned long long age)
 
   if (sqlite3_step (stmt) != SQLITE_DONE)
     {
-      FREE (del);
-      FREENONNULL (keyenc);
+      GNUNET_free (del);
+      GNUNET_free_non_null (keyenc);
       LOG_SQLITE (dbh->dbh, LOG_ERROR, "delete");
       sqlite3_finalize (stmt);
 
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   sqlite3_finalize (stmt);
-  FREE (del);
-  FREENONNULL (keyenc);
+  GNUNET_free (del);
+  GNUNET_free_non_null (keyenc);
 
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -615,14 +615,14 @@ del (KVHandle * kv, void *key, int keylen, unsigned long long age)
 static void
 closeTable (KVHandle * kv)
 {
-  FREE (kv->table);
-  FREE (kv->db);
+  GNUNET_free (kv->table);
+  GNUNET_free (kv->db);
 }
 
 /**
  * @brief Drop a Key/Value-Table
  * @param the handle to the table
- * @return OK on success, SYSERR otherwise
+ * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
 dropTable (KVHandle * kv)
@@ -633,21 +633,21 @@ dropTable (KVHandle * kv)
 
   dbh = getDBHandle (kv->db);
   if (dbh == NULL)
-    return SYSERR;
-  drop = MALLOC (12 + strlen (kv->table));
+    return GNUNET_SYSERR;
+  drop = GNUNET_malloc (12 + strlen (kv->table));
   sprintf (drop, "DROP TABLE %s", kv->table);
   sq_prepare (dbh, drop, &stmt);
   if (sqlite3_step (stmt) != SQLITE_DONE)
     {
-      FREE (drop);
+      GNUNET_free (drop);
       LOG_SQLITE (dbh->dbh, LOG_ERROR, "drop");
       sqlite3_finalize (stmt);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   sqlite3_finalize (stmt);
-  FREE (drop);
+  GNUNET_free (drop);
   closeTable (kv);
-  return OK;
+  return GNUNET_OK;
 }
 
 KVstore_ServiceAPI *
@@ -662,7 +662,7 @@ provide_module_kvstore_sqlite (CoreAPIForApplication * capi)
           "KV-SQLite: initializing database\n");
 #endif
 
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
   api.closeTable = &closeTable;
   api.del = &del;
@@ -684,7 +684,7 @@ release_module_kvstore_sqlite ()
 
   for (idx = 0; idx < databases; idx++)
     close_database (dbs[idx]);
-  GROW (dbs, databases, 0);
+  GNUNET_array_grow (dbs, databases, 0);
 
 #if DEBUG_SQLITE
   GE_LOG (ectx,
@@ -692,7 +692,7 @@ release_module_kvstore_sqlite ()
           "SQLite KVStore: database shutdown\n");
 #endif
 
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   coreAPI = NULL;
 }
 

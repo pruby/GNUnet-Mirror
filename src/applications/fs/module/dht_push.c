@@ -38,7 +38,7 @@
  * some of the processing cost which would otherwise go
  * to waste).
  */
-#define NO_PUSH NO
+#define NO_PUSH GNUNET_NO
 
 /**
  * DHT service.  Set to NULL to terminate
@@ -59,7 +59,7 @@ static SQstore_ServiceAPI *sqstore;
 /**
  * Thread that does the pushing.
  */
-static struct PTHREAD *thread;
+static struct GNUNET_ThreadHandle *thread;
 
 /**
  * Total number of entries with anonymity 0.
@@ -74,33 +74,33 @@ static int stat_push_count;
 
 
 static int
-push_callback (const HashCode512 * key,
+push_callback (const GNUNET_HashCode * key,
                const Datastore_Value * value, void *closure,
                unsigned long long uid)
 {
-  cron_t delay;
+  GNUNET_CronTime delay;
 
   if (dht == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   /* try pushing out everything every 6h,
      but do not push more often than every 5s */
-  delay = 6 * cronHOURS / total;
-  if (delay < 5 * cronSECONDS)
-    delay = 5 * cronSECONDS;
-  if (delay > 60 * cronSECONDS)
-    delay = 60 * cronSECONDS;
-  PTHREAD_SLEEP (delay);
+  delay = 6 * GNUNET_CRON_HOURS / total;
+  if (delay < 5 * GNUNET_CRON_SECONDS)
+    delay = 5 * GNUNET_CRON_SECONDS;
+  if (delay > 60 * GNUNET_CRON_SECONDS)
+    delay = 60 * GNUNET_CRON_SECONDS;
+  GNUNET_thread_sleep (delay);
   if (dht == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   dht->put (key,
             ntohl (value->type),
             ntohl (value->size) - sizeof (Datastore_Value),
-            ntohll (value->expirationTime), (const char *) &value[1]);
+            GNUNET_ntohll (value->expirationTime), (const char *) &value[1]);
   if (stats != NULL)
     stats->change (stat_push_count, 1);
   if (dht == NULL)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 static void *
@@ -112,7 +112,7 @@ push_thread (void *cls)
         total = 1;
       total = sqstore->iterateNonAnonymous (0, &push_callback, NULL);
       if ((dht != NULL) && (total == 0))
-        PTHREAD_SLEEP (15 * cronMINUTES);
+        GNUNET_thread_sleep (15 * GNUNET_CRON_MINUTES);
     }
   return NULL;
 }
@@ -138,7 +138,7 @@ init_dht_push (CoreAPIForApplication * capi, DHT_ServiceAPI * d)
       = stats->create (gettext_noop ("# blocks pushed into DHT"));
   if (!NO_PUSH)
     {
-      thread = PTHREAD_CREATE (&push_thread, NULL, 1024 * 128);
+      thread = GNUNET_thread_create (&push_thread, NULL, 1024 * 128);
     }
 }
 
@@ -152,8 +152,8 @@ done_dht_push (void)
   dht = NULL;
   if (thread != NULL)
     {
-      PTHREAD_STOP_SLEEP (thread);
-      PTHREAD_JOIN (thread, &unused);
+      GNUNET_thread_stop_sleep (thread);
+      GNUNET_thread_join (thread, &unused);
     }
   coreAPI->releaseService (sqstore);
   if (stats != NULL)

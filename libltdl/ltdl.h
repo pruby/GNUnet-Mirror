@@ -161,7 +161,7 @@ LT_SCOPE int lt_dlisresident LT_PARAMS ((lt_dlhandle handle));
 
 
 
-/* --- MUTEX LOCKING --- */
+/* --- GNUNET_Mutex LOCKING --- */
 
 
 typedef void lt_dlmutex_lock LT_PARAMS ((void));

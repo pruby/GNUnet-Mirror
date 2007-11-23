@@ -56,9 +56,9 @@ typedef struct
  * @param key the current key
  * @param value the current value
  * @param cls argument passed for context (closure)
- * @return OK to continue with iteration, SYSERR to abort
+ * @return GNUNET_OK to continue with iteration, GNUNET_SYSERR to abort
  */
-typedef int (*DataProcessor) (const HashCode512 * key,
+typedef int (*DataProcessor) (const GNUNET_HashCode * key,
                               const DataContainer * value, void *cls);
 
 /**
@@ -88,7 +88,7 @@ typedef struct
   /**
    * Do a quick test if we MAY have the content.
    */
-  int (*fast_get) (const HashCode512 * key);
+  int (*fast_get) (const GNUNET_HashCode * key);
 
   /**
    * Lookup an item in the datastore.
@@ -99,13 +99,13 @@ typedef struct
    * @param keys to look up
    * @param resultCallback function to call for each result that was found
    * @param resCallbackClosure extra argument to resultCallback
-   * @return number of results, SYSERR on error
+   * @return number of results, GNUNET_SYSERR on error
    */
   int (*get) (void *closure,
               unsigned int type,
               unsigned int prio,
               unsigned int keyCount,
-              const HashCode512 * keys,
+              const GNUNET_HashCode * keys,
               DataProcessor resultCallback, void *resCallbackClosure);
 
   /**
@@ -114,12 +114,12 @@ typedef struct
    * @param key the key of the item, NULL if not known
    *        (client should try to figure it out)
    * @param value the value to store
-   * @return OK if the value could be stored,
-   *         NO if the value verifies but is not stored,
-   *         SYSERR if the value is malformed
+   * @return GNUNET_OK if the value could be stored,
+   *         GNUNET_NO if the value verifies but is not stored,
+   *         GNUNET_SYSERR if the value is malformed
    */
   int (*put) (void *closure,
-              const HashCode512 * key,
+              const GNUNET_HashCode * key,
               const DataContainer * value, unsigned int prio);
 
   /**
@@ -127,17 +127,17 @@ typedef struct
    *
    * @param key the key of the item
    * @param value the value to remove, NULL for all values of the key
-   * @return OK if the value could be removed, SYSERR if not (i.e. not present)
+   * @return GNUNET_OK if the value could be removed, GNUNET_SYSERR if not (i.e. not present)
    */
   int (*del) (void *closure,
-              const HashCode512 * key, const DataContainer * value);
+              const GNUNET_HashCode * key, const DataContainer * value);
 
   /**
    * Iterate over all keys in the local datastore
    *
    * @param processor function to call on each item
    * @param cls argument to processor
-   * @return number of results, SYSERR on error
+   * @return number of results, GNUNET_SYSERR on error
    */
   int (*iterate) (void *closure, DataProcessor processor, void *cls);
 

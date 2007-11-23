@@ -47,10 +47,11 @@
 /**
  * Obtain the identity information for the current node
  * (connection information), conInfo.
- * @return SYSERR on failure, OK on success
+ * @return GNUNET_SYSERR on failure, GNUNET_OK on success
  */
 static int
-getAddressFromHostname (struct GE_Context *ectx, IPaddr * identity)
+getAddressFromHostname (struct GE_Context *ectx,
+                        GNUNET_IPv4Address * identity)
 {
   char hostname[MAX_HOSTNAME];
   int ret;
@@ -60,16 +61,17 @@ getAddressFromHostname (struct GE_Context *ectx, IPaddr * identity)
       GE_LOG_STRERROR (ectx,
                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
                        "gethostname");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  ret = get_host_by_name (ectx, hostname, identity);
+  ret = GNUNET_get_host_by_name (ectx, hostname, identity);
   return ret;
 }
 
-#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
+#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
 static int
 getAddressFromGetIfAddrs (struct GC_Configuration *cfg,
-                          struct GE_Context *ectx, IPaddr * identity)
+                          struct GE_Context *ectx,
+                          GNUNET_IPv4Address * identity)
 {
   char *interfaces;
   struct ifaddrs *ifa_first;
@@ -83,7 +85,7 @@ getAddressFromGetIfAddrs (struct GC_Configuration *cfg,
               GE_ERROR | GE_BULK | GE_USER,
               _("No interface specified in section `%s' under `%s'!\n"),
               "NETWORK", "INTERFACE");
-      return SYSERR;            /* that won't work! */
+      return GNUNET_SYSERR;     /* that won't work! */
     }
 
   if (getifaddrs (&ifa_first) == 0)
@@ -104,8 +106,8 @@ getAddressFromGetIfAddrs (struct GC_Configuration *cfg,
                       &(((struct sockaddr_in *) ifa_ptr->ifa_addr)->sin_addr),
                       sizeof (struct in_addr));
               freeifaddrs (ifa_first);
-              FREE (interfaces);
-              return OK;
+              GNUNET_free (interfaces);
+              return GNUNET_OK;
             }
         }
       freeifaddrs (ifa_first);
@@ -114,8 +116,8 @@ getAddressFromGetIfAddrs (struct GC_Configuration *cfg,
           GE_WARNING | GE_USER | GE_BULK,
           _("Could not obtain IP for interface `%s' using `%s'.\n"),
           interfaces, "getifaddrs");
-  FREE (interfaces);
-  return SYSERR;
+  GNUNET_free (interfaces);
+  return GNUNET_SYSERR;
 }
 #endif
 
@@ -124,7 +126,7 @@ getAddressFromGetIfAddrs (struct GC_Configuration *cfg,
 #define MAX_INTERFACES 16
 static int
 getAddressFromIOCTL (struct GC_Configuration *cfg,
-                     struct GE_Context *ectx, IPaddr * identity)
+                     struct GE_Context *ectx, GNUNET_IPv4Address * identity)
 {
   char *interfaces;
 #ifndef MINGW
@@ -145,16 +147,16 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
               GE_ERROR | GE_BULK | GE_USER,
               _("No interface specified in section `%s' under `%s'!\n"),
               "NETWORK", "INTERFACE");
-      return SYSERR;            /* that won't work! */
+      return GNUNET_SYSERR;     /* that won't work! */
     }
 #ifndef MINGW
   sockfd = SOCKET (PF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1)
     {
-      FREE (interfaces);
+      GNUNET_free (interfaces);
       GE_LOG_STRERROR (ectx,
                        GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "socket");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   memset (&ifc, 0, sizeof (struct ifconf));
   ifc.ifc_len = sizeof (ifr);
@@ -166,8 +168,8 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
                        GE_WARNING | GE_ADMIN | GE_USER | GE_BULK, "ioctl");
       if (0 != CLOSE (sockfd))
         GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "close");
-      FREE (interfaces);
-      return SYSERR;
+      GNUNET_free (interfaces);
+      return GNUNET_SYSERR;
     }
   ifCount = ifc.ifc_len / sizeof (struct ifreq);
 
@@ -187,8 +189,8 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
               sizeof (struct in_addr));
       if (0 != CLOSE (sockfd))
         GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "close");
-      FREE (interfaces);
-      return OK;
+      GNUNET_free (interfaces);
+      return GNUNET_OK;
     }
   GE_LOG (ectx,
           GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
@@ -210,8 +212,8 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
               sizeof (struct in_addr));
       if (0 != CLOSE (sockfd))
         GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "close");
-      FREE (interfaces);
-      return OK;
+      GNUNET_free (interfaces);
+      return GNUNET_OK;
     }
 
   if (0 != CLOSE (sockfd))
@@ -220,8 +222,8 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
           GE_WARNING | GE_USER | GE_BULK,
           _("Could not obtain IP for interface `%s' using `%s'.\n"),
           interfaces, "ioctl");
-  FREE (interfaces);
-  return SYSERR;
+  GNUNET_free (interfaces);
+  return GNUNET_SYSERR;
 #else /* MinGW */
 
   /* Win 98 or Win NT SP 4 */
@@ -270,13 +272,14 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
 
           GlobalFree (pTable);
           GlobalFree (pAddrTable);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       else if (iAddrCount > 1)
         GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
                 _("There is more than one IP address specified"
                   " for interface `%s'.\nGNUnet will "
-                  "use %u.%u.%u.%u.\n"), interfaces, PRIP (ntohl (dwIP)));
+                  "use %u.%u.%u.%u.\n"), interfaces,
+                GNUNET_PRIP (ntohl (dwIP)));
 
       identity->addr = dwIP;
 
@@ -297,7 +300,7 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
                   _("Could not resolve `%s' to "
                     "determine our IP address: %s\n"),
                   "www.example.com", STRERROR (errno));
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
 
       theHost.sin_family = AF_INET;
@@ -309,14 +312,14 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
                    sizeof (theHost)) == SOCKET_ERROR && errno != EWOULDBLOCK)
         {
           GE_LOG_STRERROR (ectx, GE_ERROR | GE_BULK | GE_USER, "connect");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
 
       i = sizeof (theHost);
       if (GETSOCKNAME (s, (SOCKADDR *) & theHost, &i) == SOCKET_ERROR)
         {
           GE_LOG_STRERROR (ectx, GE_ERROR | GE_BULK | GE_USER, "getsockname");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       closesocket (s);
       identity->addr = theHost.sin_addr.S_un.S_addr;
@@ -324,9 +327,9 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
 
   GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
-          PRIP (ntohl (identity->addr)));
+          GNUNET_PRIP (ntohl (identity->addr)));
 
-  return OK;
+  return GNUNET_OK;
 #endif
 }
 
@@ -337,43 +340,44 @@ getAddressFromIOCTL (struct GC_Configuration *cfg,
  * @return NULL on error, IP as string otherwise
  */
 char *
-network_get_local_ip (struct GC_Configuration *cfg,
-                      struct GE_Context *ectx, IPaddr * addr)
+GNUNET_get_local_ip (struct GC_Configuration *cfg,
+                     struct GE_Context *ectx, GNUNET_IPv4Address * addr)
 {
-  IPaddr address;
+  GNUNET_IPv4Address address;
   char *ipString;
   int retval;
   char buf[65];
 
-  retval = SYSERR;
+  retval = GNUNET_SYSERR;
   if (GC_have_configuration_value (cfg, "NETWORK", "IP"))
     {
       ipString = NULL;
       GC_get_configuration_value_string (cfg, "NETWORK", "IP", "", &ipString);
       if (strlen (ipString) > 0)
         {
-          retval = get_host_by_name (ectx, ipString, &address);
+          retval = GNUNET_get_host_by_name (ectx, ipString, &address);
         }
-      FREE (ipString);
+      GNUNET_free (ipString);
     }
 #if LINUX || SOMEBSD || MINGW
-  if (retval == SYSERR)
-    if (OK == getAddressFromIOCTL (cfg, ectx, &address))
-      retval = OK;
+  if (retval == GNUNET_SYSERR)
+    if (GNUNET_OK == getAddressFromIOCTL (cfg, ectx, &address))
+      retval = GNUNET_OK;
 #endif
-#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
-  if (retval == SYSERR)
-    if (OK == getAddressFromGetIfAddrs (cfg, ectx, &address))
-      retval = OK;
+#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
+  if (retval == GNUNET_SYSERR)
+    if (GNUNET_OK == getAddressFromGetIfAddrs (cfg, ectx, &address))
+      retval = GNUNET_OK;
 #endif
-  if (retval == SYSERR)
+  if (retval == GNUNET_SYSERR)
     retval = getAddressFromHostname (ectx, &address);
-  if (retval == SYSERR)
+  if (retval == GNUNET_SYSERR)
     return NULL;
-  SNPRINTF (buf, 64, "%u.%u.%u.%u", PRIP (ntohl (*(int *) &address)));
+  GNUNET_snprintf (buf, 64, "%u.%u.%u.%u",
+                   GNUNET_PRIP (ntohl (*(int *) &address)));
   if (addr != NULL)
     *addr = address;
-  return STRDUP (buf);
+  return GNUNET_strdup (buf);
 }
 
 

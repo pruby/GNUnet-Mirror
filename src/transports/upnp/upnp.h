@@ -65,7 +65,7 @@ const char *gaim_upnp_get_public_ip (void);
  *
  * @param portmap The port to map to this client
  * @param protocol The protocol to map, either "TCP" or "UDP"
- * @param do_add TRUE/YES to add, FALSE/NO to remove
+ * @param do_add TRUE/GNUNET_YES to add, FALSE/GNUNET_NO to remove
  * @param cb an optional callback function to be notified when the mapping
  *           addition is complete
  * @param cb_data Extra data to be passed to the callback

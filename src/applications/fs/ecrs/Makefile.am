@@ -25,8 +25,6 @@ libgnunetecrs_la_LIBADD = \
  $(top_builddir)/src/applications/fs/libecrs_core.la \
  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
  $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
- $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
- $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 
@@ -51,14 +49,11 @@ bincodertest_LDADD = \
 uritest_SOURCES = \
   uritest.c 
 uritest_LDADD = \
-  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 namespacetest_SOURCES = \
   namespacetest.c 
 namespacetest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 metatest_SOURCES = \
@@ -75,29 +70,21 @@ metatest2_LDADD = \
 ecrstest_SOURCES = \
   ecrstest.c
 ecrstest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 downloadtest_SOURCES = \
   downloadtest.c
 downloadtest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 searchtest_SOURCES = \
   searchtest.c
 searchtest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 directorytest_SOURCES = \
   directorytest.c
 directorytest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 EXTRA_DIST = \

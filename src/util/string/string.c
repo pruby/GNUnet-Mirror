@@ -33,7 +33,7 @@
 
 
 int
-SNPRINTF (char *buf, size_t size, const char *format, ...)
+GNUNET_snprintf (char *buf, size_t size, const char *format, ...)
 {
   int ret;
   va_list args;
@@ -45,77 +45,12 @@ SNPRINTF (char *buf, size_t size, const char *format, ...)
   return ret;
 }
 
-#if !HAVE_STRLCPY
-/**
- * @brief Copy a %NUL terminated string into a sized buffer
- * @author Linus Torvalds
- * @param dest Where to copy the string to
- * @param src Where to copy the string from
- * @param size size of destination buffer
- * @remarks Compatible with *BSD: the result is always a valid
- *          NUL-terminated string that fits in the buffer (unless,
- *          of course, the buffer size is zero). It does not pad
- *          out the result like strncpy() does.
- */
-size_t
-strlcpy (char *dest, const char *src, size_t size)
-{
-  size_t ret;
-
-  GE_ASSERT (NULL, dest != NULL);
-  GE_ASSERT (NULL, size > 0);
-  GE_ASSERT (NULL, src != NULL);
-  ret = strlen (src);
-
-  if (size)
-    {
-      size_t len = (ret >= size) ? size - 1 : ret;
-      memcpy (dest, src, len);
-      dest[len] = '\0';
-    }
-  return ret;
-}
-#endif
-
-#if !HAVE_STRLCAT
-/**
- * @brief Append a length-limited, %NUL-terminated string to another
- * @author Linus Torvalds
- * @param dest The string to be appended to
- * @param src The string to append to it
- * @param count The size of the destination buffer.
- */
-size_t
-strlcat (char *dest, const char *src, size_t count)
-{
-  size_t dsize;
-  size_t len;
-  size_t res;
-
-  GE_ASSERT (NULL, dest != NULL);
-  GE_ASSERT (NULL, src != NULL);
-  GE_ASSERT (NULL, count > 0);
-  dsize = strlen (dest);
-  len = strlen (src);
-  res = dsize + len;
-  GE_ASSERT (NULL, dsize < count);
-
-  dest += dsize;
-  count -= dsize;
-  if (len >= count)
-    len = count - 1;
-  memcpy (dest, src, len);
-  dest[len] = 0;
-  return res;
-}
-#endif
-
 /**
  * Give relative time in human-readable fancy format.
  * @param delta time in milli seconds
  */
 char *
-string_get_fancy_time_interval (unsigned long long delta)
+GNUNET_get_time_interval_as_fancy_string (unsigned long long delta)
 {
   const char *unit = _( /* time unit */ "ms");
   char *ret;
@@ -140,8 +75,8 @@ string_get_fancy_time_interval (unsigned long long delta)
             }
         }
     }
-  ret = MALLOC (32);
-  SNPRINTF (ret, 32, "%llu%s", delta, unit);
+  ret = GNUNET_malloc (32);
+  GNUNET_snprintf (ret, 32, "%llu%s", delta, unit);
   return ret;
 }
 
@@ -149,7 +84,7 @@ string_get_fancy_time_interval (unsigned long long delta)
  * Convert a given filesize into a fancy human-readable format.
  */
 char *
-string_get_fancy_byte_size (unsigned long long size)
+GNUNET_get_byte_size_as_fancy_string (unsigned long long size)
 {
   const char *unit = _( /* size unit */ "b");
   char *ret;
@@ -174,8 +109,8 @@ string_get_fancy_byte_size (unsigned long long size)
             }
         }
     }
-  ret = MALLOC (32);
-  SNPRINTF (ret, 32, "%llu%s", size, unit);
+  ret = GNUNET_malloc (32);
+  GNUNET_snprintf (ret, 32, "%llu%s", size, unit);
   return ret;
 }
 
@@ -191,8 +126,9 @@ string_get_fancy_byte_size (unsigned long long size)
  *  string is returned.
  */
 char *
-string_convertToUtf8 (struct GE_Context *ectx,
-                      const char *input, size_t len, const char *charset)
+GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
+                               const char *input, size_t len,
+                               const char *charset)
 {
   char *ret;
 #if ENABLE_NLS && HAVE_ICONV
@@ -208,34 +144,34 @@ string_convertToUtf8 (struct GE_Context *ectx,
       GE_LOG_STRERROR (ectx,
                        GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
                        "iconv_open");
-      ret = MALLOC (len + 1);
+      ret = GNUNET_malloc (len + 1);
       memcpy (ret, input, len);
       ret[len] = '\0';
       return ret;
     }
   tmpSize = 3 * len + 4;
-  tmp = MALLOC (tmpSize);
+  tmp = GNUNET_malloc (tmpSize);
   itmp = tmp;
   finSize = tmpSize;
   if (iconv (cd, (char **) &input, &len, &itmp, &finSize) == (size_t) - 1)
     {
       GE_LOG_STRERROR (ectx, GE_USER | GE_WARNING | GE_BULK, "iconv");
       iconv_close (cd);
-      FREE (tmp);
-      ret = MALLOC (len + 1);
+      GNUNET_free (tmp);
+      ret = GNUNET_malloc (len + 1);
       memcpy (ret, input, len);
       ret[len] = '\0';
       return ret;
     }
-  ret = MALLOC (tmpSize - finSize + 1);
+  ret = GNUNET_malloc (tmpSize - finSize + 1);
   memcpy (ret, tmp, tmpSize - finSize);
   ret[tmpSize - finSize] = '\0';
-  FREE (tmp);
+  GNUNET_free (tmp);
   if (0 != iconv_close (cd))
     GE_LOG_STRERROR (ectx, GE_ADMIN | GE_WARNING | GE_REQUEST, "iconv_close");
   return ret;
 #else
-  ret = MALLOC (len + 1);
+  ret = GNUNET_malloc (len + 1);
   memcpy (ret, input, len);
   ret[len] = '\0';
   return ret;
@@ -253,7 +189,7 @@ string_convertToUtf8 (struct GE_Context *ectx,
  *          NULL is returned on error
  */
 char *
-string_expandFileName (struct GE_Context *ectx, const char *fil)
+GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
 {
   char *buffer;
 #ifndef MINGW
@@ -272,7 +208,7 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
 #ifndef MINGW
   if (fil[0] == DIR_SEPARATOR)
     /* absolute path, just copy */
-    return STRDUP (fil);
+    return GNUNET_strdup (fil);
   if (fil[0] == '~')
     {
       fm = getenv ("HOME");
@@ -284,7 +220,7 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
                   ("Failed to expand `$HOME': environment variable `HOME' not set"));
           return NULL;
         }
-      fm = STRDUP (fm);
+      fm = GNUNET_strdup (fm);
       /* do not copy '~' */
       fil_ptr = fil + 1;
 
@@ -300,7 +236,7 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
       fm = NULL;
       while (1)
         {
-          buffer = MALLOC (len);
+          buffer = GNUNET_malloc (len);
           if (getcwd (buffer, len) != NULL)
             {
               fm = buffer;
@@ -309,10 +245,10 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
           if ((errno == ERANGE) && (len < 1024 * 1024 * 4))
             {
               len *= 2;
-              FREE (buffer);
+              GNUNET_free (buffer);
               continue;
             }
-          FREE (buffer);
+          GNUNET_free (buffer);
           break;
         }
       if (fm == NULL)
@@ -321,18 +257,18 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
                            GE_USER | GE_WARNING | GE_IMMEDIATE, "getcwd");
           buffer = getenv ("PWD");      /* alternative */
           if (buffer != NULL)
-            fm = STRDUP (buffer);
+            fm = GNUNET_strdup (buffer);
         }
       if (fm == NULL)
-        fm = STRDUP ("./");     /* give up */
+        fm = GNUNET_strdup ("./");      /* give up */
     }
   n = strlen (fm) + 1 + strlen (fil_ptr) + 1;
-  buffer = MALLOC (n);
-  SNPRINTF (buffer, n, "%s/%s", fm, fil_ptr);
-  FREE (fm);
+  buffer = GNUNET_malloc (n);
+  GNUNET_snprintf (buffer, n, "%s/%s", fm, fil_ptr);
+  GNUNET_free (fm);
   return buffer;
 #else
-  fn = MALLOC (MAX_PATH + 1);
+  fn = GNUNET_malloc (MAX_PATH + 1);
 
   if ((lRet = plibc_conv_to_win_path (fil, fn)) != ERROR_SUCCESS)
     {
@@ -355,9 +291,9 @@ string_expandFileName (struct GE_Context *ectx, const char *fil)
                            "GetCurrentDirectory");
           return NULL;
         }
-      buffer = MALLOC (MAX_PATH + 1);
-      SNPRINTF (buffer, MAX_PATH + 1, "%s\\%s", szCurDir, fn);
-      FREE (fn);
+      buffer = GNUNET_malloc (MAX_PATH + 1);
+      GNUNET_snprintf (buffer, MAX_PATH + 1, "%s\\%s", szCurDir, fn);
+      GNUNET_free (fn);
       fn = buffer;
     }
 

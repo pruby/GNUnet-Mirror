@@ -292,12 +292,12 @@ build_tree_node (SCM section,
     }
 
   /* construct C object */
-  tree = MALLOC (sizeof (struct GNS_Tree));
+  tree = GNUNET_malloc (sizeof (struct GNS_Tree));
   tree->section = scm_to_locale_string (section);
   tree->option = scm_to_locale_string (option);
   tree->description = scm_to_locale_string (description);
   tree->help = scm_to_locale_string (help);
-  tree->children = MALLOC (sizeof (struct GNS_Tree *) * (clen + 1));
+  tree->children = GNUNET_malloc (sizeof (struct GNS_Tree *) * (clen + 1));
   for (i = 0; i < clen; i++)
     {
       child = scm_list_ref (children, scm_from_signed_integer (i));
@@ -312,7 +312,8 @@ build_tree_node (SCM section,
       tree->value.String.val = scm_to_locale_string (value);
       tree->value.String.def = scm_to_locale_string (value);
       len = scm_to_int (scm_length (range));
-      tree->value.String.legalRange = MALLOC (sizeof (char *) * (len + 1));
+      tree->value.String.legalRange =
+        GNUNET_malloc (sizeof (char *) * (len + 1));
       for (i = 0; i < len - 1; i++)
         tree->value.String.legalRange[i]
           = scm_to_locale_string (scm_list_ref (range,
@@ -327,7 +328,7 @@ build_tree_node (SCM section,
                                                    scm_from_signed_integer
                                                    (0)));
       else
-        type = STRDUP ("*");
+        type = GNUNET_strdup ("*");
       GE_ASSERT (NULL, type != NULL);
       if (0 == strcasecmp (type, "MC"))
         {
@@ -342,7 +343,7 @@ build_tree_node (SCM section,
           GE_BREAK (NULL, 0 == strcasecmp (type, "*"));
           tree->type |= GNS_String;
         }
-      FREE (type);
+      GNUNET_free (type);
     }
   else if (scm_is_integer (value))
     {

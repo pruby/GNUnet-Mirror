@@ -31,9 +31,10 @@
 /**
  * @brief Get the IPv6 address for the local machine.
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int getPublicIP6Address (struct GC_Configuration *cfg,
-                         struct GE_Context *ectx, IP6addr * address);
+                         struct GE_Context *ectx,
+                         GNUNET_IPv6Address * address);
 
 #endif

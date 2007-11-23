@@ -59,15 +59,15 @@ detect_entity (const char *text, int *length)
            pound != 0 && *(text + 3 + (int) log10 (pound)) == ';')
     {
       char b[7];
-      char *buf = string_convertToUtf8 (NULL,
-                                        (const char *) &pound,
-                                        2,
-                                        "UNICODE");
+      char *buf = GNUNET_convert_string_to_utf8 (NULL,
+                                                 (const char *) &pound,
+                                                 2,
+                                                 "UNICODE");
       if (strlen (buf) > 6)
         buf[6] = '\0';
       strcpy (b, buf);
       pln = b;
-      FREE (buf);
+      GNUNET_free (buf);
       len = 2;
       while (isdigit ((int) text[len]))
         len++;
@@ -79,7 +79,7 @@ detect_entity (const char *text, int *length)
 
   if (length)
     *length = len;
-  return STRDUP (pln);
+  return GNUNET_strdup (pln);
 }
 
 char *
@@ -105,7 +105,7 @@ gaim_unescape_html (const char *html)
   if (html != NULL)
     {
       const char *c = html;
-      char *ret = STRDUP ("");
+      char *ret = GNUNET_strdup ("");
       char *app;
       while (*c)
         {
@@ -115,22 +115,22 @@ gaim_unescape_html (const char *html)
           if ((ent = detect_entity (c, &len)) != NULL)
             {
               app = g_strdup_printf ("%s%s", ret, ent);
-              FREE (ret);
+              GNUNET_free (ret);
               ret = app;
               c += len;
-              FREE (ent);
+              GNUNET_free (ent);
             }
           else if (!strncmp (c, "<br>", 4))
             {
               app = g_strdup_printf ("%s%s", ret, "\n");
-              FREE (ret);
+              GNUNET_free (ret);
               ret = app;
               c += 4;
             }
           else
             {
               app = g_strdup_printf ("%s%c", ret, *c);
-              FREE (ret);
+              GNUNET_free (ret);
               ret = app;
               c++;
             }

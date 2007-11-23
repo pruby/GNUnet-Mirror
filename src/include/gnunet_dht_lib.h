@@ -47,14 +47,14 @@ extern "C"
  *        automatically time-out
  * @param resultCallback function to call for results,
  *        the operation also aborts if the callback returns
- *        SYSERR
- * @return number of results on success, SYSERR on error (i.e. timeout)
+ *        GNUNET_SYSERR
+ * @return number of results on success, GNUNET_SYSERR on error (i.e. timeout)
  */
 int DHT_LIB_get (struct GC_Configuration *cfg,
                  struct GE_Context *ectx,
                  unsigned int type,
-                 const HashCode512 * key,
-                 cron_t timeout,
+                 const GNUNET_HashCode * key,
+                 GNUNET_CronTime timeout,
                  DataProcessor resultCallback, void *resCallbackClosure);
 
 /**
@@ -63,13 +63,13 @@ int DHT_LIB_get (struct GC_Configuration *cfg,
  * @param key the key to store
  * @param expire when should the content expire
  * @param value what to store
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int DHT_LIB_put (struct GC_Configuration *cfg,
                  struct GE_Context *ectx,
-                 const HashCode512 * key,
+                 const GNUNET_HashCode * key,
                  unsigned int type,
-                 cron_t expire, const DataContainer * value);
+                 GNUNET_CronTime expire, const DataContainer * value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

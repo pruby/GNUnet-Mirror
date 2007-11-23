@@ -34,13 +34,13 @@
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   /**
    * For 64-bit alignment...
    */
   int reserved;
   /* timestamp  (network byte order) */
-  cron_t startTime;
+  GNUNET_CronTime startTime;
   /* total number of statistical counters */
   int totalCounters;
   /* number of statistical counters in this message */
@@ -72,7 +72,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * The type of the message (XX_CS_PROTO_XXXX)

@@ -53,7 +53,7 @@ const char *STATS_csMessageName (unsigned short type);
 /**
  * @param name the name of the datum
  * @param value the value
- * @return OK to continue, SYSERR to abort iteration
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*STATS_StatProcessor) (const char *name,
                                     unsigned long long value, void *cls);
@@ -62,16 +62,16 @@ typedef int (*STATS_StatProcessor) (const char *name,
  * Request statistics from TCP socket.
  * @param sock the socket to use
  * @param processor function to call on each value
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int STATS_getStatistics (struct GE_Context *ectx,
-                         struct ClientServerConnection *sock,
+                         struct GNUNET_ClientServerConnection *sock,
                          STATS_StatProcessor processor, void *cls);
 
 /**
  * @param type the type ID of the message
- * @param isP2P YES for P2P, NO for CS types
- * @return OK to continue, SYSERR to abort iteration
+ * @param isP2P GNUNET_YES for P2P, GNUNET_NO for CS types
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*STATS_ProtocolProcessor) (unsigned short type,
                                         int isP2P, void *cls);
@@ -80,10 +80,10 @@ typedef int (*STATS_ProtocolProcessor) (unsigned short type,
  * Request available protocols from TCP socket.
  * @param sock the socket to use
  * @param processor function to call on each value
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int STATS_getAvailableProtocols (struct GE_Context *ectx,
-                                 struct ClientServerConnection *sock,
+                                 struct GNUNET_ClientServerConnection *sock,
                                  STATS_ProtocolProcessor processor,
                                  void *cls);
 

@@ -61,7 +61,7 @@ typedef struct
 
   /**
    * Is this transport mechanism available (for sending)?
-   * @return YES or NO
+   * @return GNUNET_YES or GNUNET_NO
    */
   int (*isAvailable) (unsigned short ttype);
 
@@ -74,7 +74,7 @@ typedef struct
    * Iterate over all available transport mechanisms.
    * @param callback the method to call on each transport API implementation
    * @param data second argument to callback
-   * @return number of transports, SYSERR on error
+   * @return number of transports, GNUNET_SYSERR on error
    */
   int (*forEach) (TransportCallback callback, void *data);
 
@@ -90,7 +90,7 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connect) (const P2P_hello_MESSAGE * hello, const char *token,
+  TSession *(*connect) (const GNUNET_MessageHello * hello, const char *token,
                         int may_reuse);
 
   /**
@@ -104,8 +104,8 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connectFreely) (const PeerIdentity * peer, int allowTempList,
-                              const char *token);
+  TSession *(*connectFreely) (const GNUNET_PeerIdentity * peer,
+                              int allowTempList, const char *token);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -119,8 +119,8 @@ typedef struct
    *   layer
    * @param token string identifying who is holding the reference
    *              (must match when disconnect is called)
-   * @return OK if the session could be associated,
-   *         SYSERR if not.
+   * @return GNUNET_OK if the session could be associated,
+   *         GNUNET_SYSERR if not.
    */
   int (*associate) (TSession * tsession, const char *token);
 
@@ -136,7 +136,7 @@ typedef struct
    * @param msg the message to send
    * @param size the size of the message
    * @param important the message is important
-   * @return OK on success, SYSERR on persistent error, NO on
+   * @return GNUNET_OK on success, GNUNET_SYSERR on persistent error, GNUNET_NO on
    *         temporary error
    */
   int (*send) (TSession * session,
@@ -148,24 +148,24 @@ typedef struct
    * @param token string identifying who is holding the reference
    *              (must match when connect/assciate call)
    *
-   * @return OK on success, SYSERR on error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
   int (*disconnect) (TSession * session, const char *token);
 
   /**
    * Verify that a hello is ok. Call a method
    * if the verification was successful.
-   * @return OK if the attempt to verify is on the way,
-   *        SYSERR if the transport mechanism is not supported
+   * @return GNUNET_OK if the attempt to verify is on the way,
+   *        GNUNET_SYSERR if the transport mechanism is not supported
    */
-  int (*verifyhello) (const P2P_hello_MESSAGE * hello);
+  int (*verifyhello) (const GNUNET_MessageHello * hello);
 
   /**
    * Get the network address from a HELLO.
    *
-   * @return OK on success, SYSERR on error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*helloToAddress) (const P2P_hello_MESSAGE * hello,
+  int (*helloToAddress) (const GNUNET_MessageHello * hello,
                          void **sa, unsigned int *sa_len);
 
   /**
@@ -177,7 +177,7 @@ typedef struct
    * Create a hello advertisement for the given
    * transport type for this node.
    */
-  P2P_hello_MESSAGE *(*createhello) (unsigned short ttype);
+  GNUNET_MessageHello *(*createhello) (unsigned short ttype);
 
   /**
    * Get a message consisting of (if possible) all addresses that this
@@ -202,10 +202,10 @@ typedef struct
    * even bother to construct (and encrypt) this kind
    * of message.
    *
-   * @return YES if the transport would try (i.e. queue
+   * @return GNUNET_YES if the transport would try (i.e. queue
    *         the message or call the OS to send),
-   *         NO if the transport would just drop the message,
-   *         SYSERR if the size/session is invalid
+   *         GNUNET_NO if the transport would just drop the message,
+   *         GNUNET_SYSERR if the size/session is invalid
    */
   int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
 

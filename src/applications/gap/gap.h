@@ -37,7 +37,7 @@
 #include "gnunet_topology_service.h"
 #include "pid_table.h"
 
-#define DEBUG_GAP NO
+#define DEBUG_GAP GNUNET_NO
 
 #define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
@@ -46,10 +46,10 @@
 
 /**
  * Until which load do we consider the peer idle and do not
- * charge at all? (should be larger than IDLE_LOAD_THRESHOLD used
+ * charge at all? (should be larger than GNUNET_IDLE_LOAD_THRESHOLD used
  * by the rest of the code)!
  */
-#define GAP_IDLE_LOAD_THRESHOLD ((100 + IDLE_LOAD_THRESHOLD) / 2)
+#define GAP_IDLE_LOAD_THRESHOLD ((100 + GNUNET_IDLE_LOAD_THRESHOLD) / 2)
 
 /**
  * For how many different hosts can we have a query pending (at most).
@@ -69,7 +69,7 @@
  * accordance to your network latency (above the time it'll take you
  * to send a packet and get a reply).
  */
-#define TTL_DECREMENT 5 * cronSECONDS
+#define TTL_DECREMENT 5 * GNUNET_CRON_SECONDS
 
 /**
  * Send answer if local files match
@@ -120,7 +120,7 @@
  * How much is a query worth 'in general' (even
  * if there is no trust relationship between
  * the peers!).  Multiplied by the number of queries
- * in the request.  20 is for '20 bytes / hash',
+ * in the request.  20 is for '20 bytes / GNUNET_hash',
  * so this is kind of the base unit.
  */
 #define BASE_QUERY_PRIORITY 20
@@ -168,7 +168,7 @@
  * the other peer will make that slot available.  This is the
  * probability that one will give in.  And yes, it's a hack.  It
  * may not be needed anymore once we add collision-resistance to
- * the routing hash table.
+ * the routing GNUNET_hash table.
  */
 #define TIE_BREAKER_CHANCE 4
 
@@ -189,7 +189,7 @@
  * ITE modes for addToSlot.
  */
 #define ITE_REPLACE 0
-#define ITE_GROW 1
+#define ITE_GNUNET_array_grow 1
 
 
 /* **************** Types ****************** */
@@ -205,7 +205,7 @@ typedef unsigned int QUERY_POLICY;
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Type of the query (block type).
@@ -218,20 +218,20 @@ typedef struct
   unsigned int priority;
 
   /**
-   * Relative time to live in cronMILLIS (network byte order)
+   * Relative time to live in GNUNET_CRON_MILLISECONDS (network byte order)
    */
   int ttl;
 
   /**
    * To whom to return results?
    */
-  PeerIdentity returnTo;
+  GNUNET_PeerIdentity returnTo;
 
   /**
    * Hashcodes of the file(s) we're looking for.
    * Details depend on the query type.
    */
-  HashCode512 queries[1];
+  GNUNET_HashCode queries[1];
 
 } P2P_gap_query_MESSAGE;
 
@@ -240,9 +240,9 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
-  HashCode512 primaryKey;
+  GNUNET_HashCode primaryKey;
 
 } P2P_gap_reply_MESSAGE;
 
@@ -284,7 +284,7 @@ typedef struct
   /**
    * When do we stop forwarding (!) this query?
    */
-  cron_t expires;
+  GNUNET_CronTime expires;
 
   /**
    * To which peer will we never send this message?
@@ -322,7 +322,7 @@ typedef struct
   /**
    * What are we waiting for?
    */
-  HashCode512 primaryKey;
+  GNUNET_HashCode primaryKey;
 
   /**
    * For what type of reply are we waiting?
@@ -332,7 +332,7 @@ typedef struct
   /**
    * How much is this query worth to us, that is, how much would
    * this node be willing to "pay" for an answer that matches the
-   * hash stored in this ITE? (This is NOT the inbound priority,
+   * GNUNET_hash stored in this ITE? (This is NOT the inbound priority,
    * it is the trust-adjusted inbound priority.)
    */
   unsigned int priority;
@@ -340,19 +340,19 @@ typedef struct
   /**
    * When can we forget about this entry?
    */
-  cron_t ttl;
+  GNUNET_CronTime ttl;
 
   /**
    * Which replies have we already seen?
    */
   unsigned int seenIndex;
 
-  int seenReplyWasUnique;       /* YES/NO, only valid if seenIndex == 1 */
+  int seenReplyWasUnique;       /* GNUNET_YES/GNUNET_NO, only valid if seenIndex == 1 */
 
   /**
    * Hashcodes of the encrypted (!) replies that we have forwarded so far
    */
-  HashCode512 *seen;
+  GNUNET_HashCode *seen;
 
   /**
    * Who are these hosts?
@@ -419,7 +419,7 @@ typedef struct RTD_
    * for this client.  Used to discard old entries
    * eventually.
    */
-  TIME_T lastReplyReceived;
+  GNUNET_Int32Time lastReplyReceived;
 } ReplyTrackData;
 
 /**
@@ -428,6 +428,6 @@ typedef struct RTD_
  */
 typedef struct
 {
-  HashCode512 query;
+  GNUNET_HashCode query;
   unsigned int prio;
 } RewardEntry;

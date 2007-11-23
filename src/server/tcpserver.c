@@ -34,9 +34,9 @@
 #include "handler.h"
 #include "startup.h"
 
-#define DEBUG_TCPHANDLER NO
+#define DEBUG_TCPHANDLER GNUNET_NO
 
-#define TIME_HANDLERS NO
+#define TIME_HANDLERS GNUNET_NO
 
 /**
  * Array of the message handlers.
@@ -62,12 +62,12 @@ static unsigned int exitHandlerCount;
 /**
  * Mutex to guard access to the handler array.
  */
-static struct MUTEX *handlerlock;
+static struct GNUNET_Mutex *handlerlock;
 
 /**
  * The thread that waits for new connections.
  */
-static struct SelectHandle *selector;
+static struct GNUNET_SelectHandle *selector;
 
 static struct GE_Context *ectx;
 
@@ -79,41 +79,42 @@ static struct GC_Configuration *cfg;
 typedef struct ClientHandle
 {
 
-  struct SocketHandle *sock;
+  struct GNUNET_SocketHandle *sock;
 
 } ClientHandle;
 
 /**
  * Configuration...
  */
-static struct CIDRNetwork *trustedNetworks_ = NULL;
+static struct GNUNET_IPv4NetworkSet *trustedNetworks_ = NULL;
 
 /**
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted (IPaddr ip)
+isWhitelisted (GNUNET_IPv4Address ip)
 {
-  return check_ipv4_listed (trustedNetworks_, ip);
+  return GNUNET_check_ipv4_listed (trustedNetworks_, ip);
 }
 
 static int
-shutdownHandler (struct ClientHandle *client, const MESSAGE_HEADER * msg)
+shutdownHandler (struct ClientHandle *client,
+                 const GNUNET_MessageHeader * msg)
 {
   int ret;
 
-  if (ntohs (msg->size) != sizeof (MESSAGE_HEADER))
+  if (ntohs (msg->size) != sizeof (GNUNET_MessageHeader))
     {
       GE_LOG (NULL,
               GE_WARNING | GE_USER | GE_BULK,
               _("The `%s' request received from client is malformed.\n"),
               "shutdown");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   GE_LOG (NULL,
           GE_INFO | GE_USER | GE_REQUEST,
           "shutdown request accepted from client\n");
-  ret = sendTCPResultToClient (client, OK);
+  ret = sendTCPResultToClient (client, GNUNET_OK);
   shutdown_gnunetd (cfg, 0);
   return ret;
 }
@@ -121,11 +122,11 @@ shutdownHandler (struct ClientHandle *client, const MESSAGE_HEADER * msg)
 int
 registerClientExitHandler (ClientExitHandler callback)
 {
-  MUTEX_LOCK (handlerlock);
-  GROW (exitHandlers, exitHandlerCount, exitHandlerCount + 1);
+  GNUNET_mutex_lock (handlerlock);
+  GNUNET_array_grow (exitHandlers, exitHandlerCount, exitHandlerCount + 1);
   exitHandlers[exitHandlerCount - 1] = callback;
-  MUTEX_UNLOCK (handlerlock);
-  return OK;
+  GNUNET_mutex_unlock (handlerlock);
+  return GNUNET_OK;
 }
 
 int
@@ -133,107 +134,109 @@ unregisterClientExitHandler (ClientExitHandler callback)
 {
   int i;
 
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   for (i = 0; i < exitHandlerCount; i++)
     {
       if (exitHandlers[i] == callback)
         {
           exitHandlers[i] = exitHandlers[exitHandlerCount - 1];
-          GROW (exitHandlers, exitHandlerCount, exitHandlerCount - 1);
-          MUTEX_UNLOCK (handlerlock);
-          return OK;
+          GNUNET_array_grow (exitHandlers, exitHandlerCount,
+                             exitHandlerCount - 1);
+          GNUNET_mutex_unlock (handlerlock);
+          return GNUNET_OK;
         }
     }
-  MUTEX_UNLOCK (handlerlock);
-  return SYSERR;
+  GNUNET_mutex_unlock (handlerlock);
+  return GNUNET_SYSERR;
 }
 
 static void *
 select_accept_handler (void *ah_cls,
-                       struct SelectHandle *sh,
-                       struct SocketHandle *sock,
+                       struct GNUNET_SelectHandle *sh,
+                       struct GNUNET_SocketHandle *sock,
                        const void *addr, unsigned int addr_len)
 {
   struct ClientHandle *session;
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
   struct sockaddr_in *a;
 
   if (addr_len != sizeof (struct sockaddr_in))
     return NULL;
   a = (struct sockaddr_in *) addr;
-  memcpy (&ip, &a->sin_addr, sizeof (IPaddr));
+  memcpy (&ip, &a->sin_addr, sizeof (GNUNET_IPv4Address));
   if (!isWhitelisted (ip))
     return NULL;
-  session = MALLOC (sizeof (ClientHandle));
+  session = GNUNET_malloc (sizeof (ClientHandle));
   session->sock = sock;
   return session;
 }
 
 static void
 select_close_handler (void *ch_cls,
-                      struct SelectHandle *sh,
-                      struct SocketHandle *sock, void *sock_ctx)
+                      struct GNUNET_SelectHandle *sh,
+                      struct GNUNET_SocketHandle *sock, void *sock_ctx)
 {
   ClientHandle *session = sock_ctx;
   int i;
 
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   for (i = 0; i < exitHandlerCount; i++)
     exitHandlers[i] (session);
-  MUTEX_UNLOCK (handlerlock);
-  FREE (session);
+  GNUNET_mutex_unlock (handlerlock);
+  GNUNET_free (session);
 }
 
 /**
  * Send a message to the client identified by the handle.  Note that
  * the core will typically buffer these messages as much as possible
- * and only return errors if it runs out of buffers.  Returning OK
+ * and only return errors if it runs out of buffers.  Returning GNUNET_OK
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  *
- * @param force YES if this message MUST be queued
+ * @param force GNUNET_YES if this message MUST be queued
  */
 int
-sendToClient (struct ClientHandle *handle, const MESSAGE_HEADER * message,
-              int force)
+sendToClient (struct ClientHandle *handle,
+              const GNUNET_MessageHeader * message, int force)
 {
 #if DEBUG_TCPHANDLER
   GE_LOG (ectx,
           GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
           "%s: sending reply to client\n", __FUNCTION__);
 #endif
-  return select_write (selector, handle->sock, message, YES, force);
+  return GNUNET_select_write (selector, handle->sock, message, GNUNET_YES,
+                              force);
 }
 
 void
 terminateClientConnection (struct ClientHandle *sock)
 {
-  select_disconnect (selector, sock->sock);
+  GNUNET_select_disconnect (selector, sock->sock);
 }
 
 static int
 select_message_handler (void *mh_cls,
-                        struct SelectHandle *sh,
-                        struct SocketHandle *sock,
-                        void *sock_ctx, const MESSAGE_HEADER * msg)
+                        struct GNUNET_SelectHandle *sh,
+                        struct GNUNET_SocketHandle *sock,
+                        void *sock_ctx, const GNUNET_MessageHeader * msg)
 {
   struct ClientHandle *sender = sock_ctx;
   unsigned short ptyp;
   CSHandler callback;
 #if TIME_HANDLERS
-  cron_t start;
+  GNUNET_CronTime start;
 #endif
 
   ptyp = htons (msg->type);
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   if (ptyp >= max_registeredType)
     {
       GE_LOG (ectx,
               GE_INFO | GE_USER | GE_BULK,
               "%s: Message of type %d not understood: no handler registered\n",
               __FUNCTION__, ptyp, max_registeredType);
-      MUTEX_UNLOCK (handlerlock);
-      return SYSERR;
+      GNUNET_mutex_unlock (handlerlock);
+      return GNUNET_SYSERR;
     }
   callback = handlers[ptyp];
   if (callback == NULL)
@@ -242,15 +245,15 @@ select_message_handler (void *mh_cls,
               GE_INFO | GE_USER | GE_BULK,
               "%s: Message of type %d not understood: no handler registered\n",
               __FUNCTION__, ptyp);
-      MUTEX_UNLOCK (handlerlock);
-      return SYSERR;
+      GNUNET_mutex_unlock (handlerlock);
+      return GNUNET_SYSERR;
     }
   else
     {
 #if TIME_HANDLERS
-      start = get_time ();
+      start = GNUNET_get_time ();
 #endif
-      if (OK != callback (sender, msg))
+      if (GNUNET_OK != callback (sender, msg))
         {
 #if 0
           GE_LOG (ectx,
@@ -258,19 +261,19 @@ select_message_handler (void *mh_cls,
                   "%s: Message of type %d caused error in handler\n",
                   __FUNCTION__, ptyp);
 #endif
-          MUTEX_UNLOCK (handlerlock);
-          return SYSERR;
+          GNUNET_mutex_unlock (handlerlock);
+          return GNUNET_SYSERR;
         }
 #if TIME_HANDLERS
-      if (get_time () - start > cronSECONDS)
+      if (GNUNET_get_time () - start > GNUNET_CRON_SECONDS)
         GE_LOG (ectx,
                 GE_INFO | GE_DEVELOPER | GE_IMMEDIATE,
                 "Handling message of type %u took %llu s\n",
-                ptyp, (get_time () - start) / cronSECONDS);
+                ptyp, (GNUNET_get_time () - start) / GNUNET_CRON_SECONDS);
 #endif
     }
-  MUTEX_UNLOCK (handlerlock);
-  return OK;
+  GNUNET_mutex_unlock (handlerlock);
+  return GNUNET_OK;
 }
 
 /**
@@ -298,14 +301,14 @@ startTCPServer ()
 
   listenerPort = getGNUnetPort ();
   if (listenerPort == 0)
-    return SYSERR;
+    return GNUNET_SYSERR;
   listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
   if (listenerFD < 0)
     {
       GE_LOG_STRERROR (ectx,
                        GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
                        "socket");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   /* fill in the inet address structure */
   memset (&serverAddr, 0, sizeof (serverAddr));
@@ -324,24 +327,24 @@ startTCPServer ()
               _("`%s' failed for port %d. Is gnunetd already running?\n"),
               "bind", listenerPort);
       CLOSE (listenerFD);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  selector = select_create ("tcpserver", NO, ectx, NULL, listenerFD, sizeof (struct sockaddr_in), 0,    /* no timeout */
-                            &select_message_handler,
-                            NULL,
-                            &select_accept_handler,
-                            NULL,
-                            &select_close_handler,
-                            NULL, 0 /* no memory quota */ ,
-                            256 /* max sockets */ );
+  selector = GNUNET_select_create ("tcpserver", GNUNET_NO, ectx, NULL, listenerFD, sizeof (struct sockaddr_in), 0,      /* no timeout */
+                                   &select_message_handler,
+                                   NULL,
+                                   &select_accept_handler,
+                                   NULL,
+                                   &select_close_handler,
+                                   NULL, 0 /* no memory quota */ ,
+                                   256 /* max sockets */ );
   if (selector == NULL)
     {
       CLOSE (listenerFD);       /* maybe closed already
-                                   depending on how select_create
+                                   depending on how GNUNET_select_create
                                    failed... */
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 int
@@ -353,20 +356,20 @@ doneTCPServer ()
                                    and other gnunet-tools that are
                                    not gnunetd */
   unregisterCSHandler (CS_PROTO_SHUTDOWN_REQUEST, &shutdownHandler);
-  GROW (handlers, max_registeredType, 0);
-  GROW (exitHandlers, exitHandlerCount, 0);
-  FREE (trustedNetworks_);
-  return OK;
+  GNUNET_array_grow (handlers, max_registeredType, 0);
+  GNUNET_array_grow (exitHandlers, exitHandlerCount, 0);
+  GNUNET_free (trustedNetworks_);
+  return GNUNET_OK;
 }
 
 void __attribute__ ((constructor)) gnunet_tcpserver_ltdl_init ()
 {
-  handlerlock = MUTEX_CREATE (YES);
+  handlerlock = GNUNET_mutex_create (GNUNET_YES);
 }
 
 void __attribute__ ((destructor)) gnunet_tcpserver_ltdl_fini ()
 {
-  MUTEX_DESTROY (handlerlock);
+  GNUNET_mutex_destroy (handlerlock);
   handlerlock = NULL;
 }
 
@@ -387,9 +390,9 @@ initTCPServer (struct GE_Context *e, struct GC_Configuration *c)
                                                "NETWORK",
                                                "TRUSTED",
                                                "127.0.0.0/8;", &ch))
-    return SYSERR;
+    return GNUNET_SYSERR;
   GE_ASSERT (ectx, ch != NULL);
-  trustedNetworks_ = parse_ipv4_network_specification (ectx, ch);
+  trustedNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
   if (trustedNetworks_ == NULL)
     {
       GE_LOG (ectx,
@@ -397,22 +400,22 @@ initTCPServer (struct GE_Context *e, struct GC_Configuration *c)
               _
               ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
               "NETWORK", "TRUSTED", ch);
-      FREE (ch);
-      return SYSERR;
+      GNUNET_free (ch);
+      return GNUNET_SYSERR;
     }
-  FREE (ch);
+  GNUNET_free (ch);
 
   registerCSHandler (CS_PROTO_SHUTDOWN_REQUEST, &shutdownHandler);
-  if ((NO == GC_get_configuration_value_yesno (cfg,
-                                               "TCPSERVER",
-                                               "DISABLE",
-                                               NO)) &&
-      (OK != startTCPServer ()))
+  if ((GNUNET_NO == GC_get_configuration_value_yesno (cfg,
+                                                      "TCPSERVER",
+                                                      "DISABLE",
+                                                      GNUNET_NO)) &&
+      (GNUNET_OK != startTCPServer ()))
     {
       doneTCPServer ();
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -423,10 +426,10 @@ stopTCPServer ()
 {
   if (selector != NULL)
     {
-      select_destroy (selector);
+      GNUNET_select_destroy (selector);
       selector = NULL;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -435,32 +438,32 @@ stopTCPServer ()
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
- *        SYSERR, processing of the message is discontinued
+ *        GNUNET_SYSERR, processing of the message is discontinued
  *        afterwards (all other parts are ignored)
- * @return OK on success, SYSERR if there is already a
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
 int
 registerCSHandler (unsigned short type, CSHandler callback)
 {
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
     {
       if (handlers[type] != NULL)
         {
-          MUTEX_UNLOCK (handlerlock);
+          GNUNET_mutex_unlock (handlerlock);
           GE_LOG (ectx,
                   GE_WARNING | GE_DEVELOPER | GE_BULK,
                   _("%s failed, message type %d already in use.\n"),
                   __FUNCTION__, type);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
   else
-    GROW (handlers, max_registeredType, type + 8);
+    GNUNET_array_grow (handlers, max_registeredType, type + 8);
   handlers[type] = callback;
-  MUTEX_UNLOCK (handlerlock);
-  return OK;
+  GNUNET_mutex_unlock (handlerlock);
+  return GNUNET_OK;
 }
 
 /**
@@ -470,33 +473,33 @@ registerCSHandler (unsigned short type, CSHandler callback)
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
- *        SYSERR, processing of the message is discontinued
+ *        GNUNET_SYSERR, processing of the message is discontinued
  *        afterwards (all other parts are ignored)
- * @return OK on success, SYSERR if there is no or another
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is no or another
  *         handler for that type
  */
 int
 unregisterCSHandler (unsigned short type, CSHandler callback)
 {
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
     {
       if (handlers[type] != callback)
         {
-          MUTEX_UNLOCK (handlerlock);
-          return SYSERR;        /* another handler present */
+          GNUNET_mutex_unlock (handlerlock);
+          return GNUNET_SYSERR; /* another handler present */
         }
       else
         {
           handlers[type] = NULL;
-          MUTEX_UNLOCK (handlerlock);
-          return OK;            /* success */
+          GNUNET_mutex_unlock (handlerlock);
+          return GNUNET_OK;     /* success */
         }
     }
   else
     {                           /* can't be there */
-      MUTEX_UNLOCK (handlerlock);
-      return SYSERR;
+      GNUNET_mutex_unlock (handlerlock);
+      return GNUNET_SYSERR;
     }
 }
 
@@ -505,18 +508,18 @@ unregisterCSHandler (unsigned short type, CSHandler callback)
  * TCP.
  * @param sock the TCP socket
  * @param ret the return value to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
 int
 sendTCPResultToClient (struct ClientHandle *sock, int ret)
 {
-  RETURN_VALUE_MESSAGE rv;
+  GNUNET_MessageReturnValue rv;
 
-  rv.header.size = htons (sizeof (RETURN_VALUE_MESSAGE));
+  rv.header.size = htons (sizeof (GNUNET_MessageReturnValue));
   rv.header.type = htons (CS_PROTO_RETURN_VALUE);
   rv.return_value = htonl (ret);
-  return sendToClient (sock, &rv.header, YES);
+  return sendToClient (sock, &rv.header, GNUNET_YES);
 }
 
 /**
@@ -524,14 +527,14 @@ sendTCPResultToClient (struct ClientHandle *sock, int ret)
  * TCP.
  * @param sock the TCP socket
  * @param message the error message to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
 int
 sendTCPErrorToClient (struct ClientHandle *sock,
                       GE_KIND kind, const char *message)
 {
-  RETURN_ERROR_MESSAGE *rv;
+  GNUNET_MessageReturnErrorMessage *rv;
   size_t msgLen;
   int ret;
 
@@ -539,14 +542,14 @@ sendTCPErrorToClient (struct ClientHandle *sock,
   msgLen = ((msgLen + 3) >> 2) << 2;
   if (msgLen > 60000)
     msgLen = 60000;
-  rv = MALLOC (sizeof (RETURN_ERROR_MESSAGE) + msgLen);
-  memset (rv, 0, sizeof (RETURN_ERROR_MESSAGE) + msgLen);
-  rv->header.size = htons (sizeof (MESSAGE_HEADER) + msgLen);
+  rv = GNUNET_malloc (sizeof (GNUNET_MessageReturnErrorMessage) + msgLen);
+  memset (rv, 0, sizeof (GNUNET_MessageReturnErrorMessage) + msgLen);
+  rv->header.size = htons (sizeof (GNUNET_MessageHeader) + msgLen);
   rv->header.type = htons (CS_PROTO_RETURN_ERROR);
   rv->kind = htonl (kind);
   memcpy (&rv[1], message, strlen (message));
-  ret = sendToClient (sock, &rv->header, YES);
-  FREE (rv);
+  ret = sendToClient (sock, &rv->header, GNUNET_YES);
+  GNUNET_free (rv);
   return ret;
 }
 
@@ -560,16 +563,16 @@ sendTCPErrorToClient (struct ClientHandle *sock,
 unsigned int
 isCSHandlerRegistered (unsigned short type)
 {
-  MUTEX_LOCK (handlerlock);
+  GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
     {
       if (handlers[type] != NULL)
         {
-          MUTEX_UNLOCK (handlerlock);
+          GNUNET_mutex_unlock (handlerlock);
           return 1;
         }
     }
-  MUTEX_UNLOCK (handlerlock);
+  GNUNET_mutex_unlock (handlerlock);
   return 0;
 }
 

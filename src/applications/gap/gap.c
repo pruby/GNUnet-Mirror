@@ -40,7 +40,7 @@
 /**
  * Only for debugging / system analysis!
  */
-#define DO_HISTOGRAM NO
+#define DO_HISTOGRAM GNUNET_NO
 
 /* ********************** GLOBALS ******************** */
 
@@ -48,7 +48,7 @@
  * Avoiding concurrent lookups for the same ITE: lock to grant
  * access to peers to perform a lookup that matches this ITE entry.
  */
-static struct MUTEX *lookup_exclusion;
+static struct GNUNET_Mutex *lookup_exclusion;
 
 /**
  * GNUnet core.
@@ -155,7 +155,7 @@ static QueryRecord queries[QUERY_RECORD_COUNT];
 /**
  * Mutex for all gap structures.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * Linked list tracking reply statistics.  Synchronize access using
@@ -214,10 +214,11 @@ adjustTTL (int ttl, unsigned int prio)
  * @return binary encoding: QUERY_XXXX constants
  */
 static QUERY_POLICY
-evaluateQuery (const PeerIdentity * sender, unsigned int *priority)
+evaluateQuery (const GNUNET_PeerIdentity * sender, unsigned int *priority)
 {
-  unsigned int netLoad = os_network_monitor_get_load (coreAPI->load_monitor,
-                                                      Upload);
+  unsigned int netLoad =
+    GNUNET_network_monitor_get_load (coreAPI->load_monitor,
+                                     GNUNET_ND_UPLOAD);
 
   if ((netLoad == (unsigned int) -1) || (netLoad < GAP_IDLE_LOAD_THRESHOLD))
     {
@@ -240,7 +241,7 @@ evaluateQuery (const PeerIdentity * sender, unsigned int *priority)
  * Map the id to an index into the bitmap array.
  */
 static unsigned int
-getIndex (const PeerIdentity * peer)
+getIndex (const GNUNET_PeerIdentity * peer)
 {
   return ((unsigned int *) peer)[0] % (8 * BITMAP_SIZE);
 }
@@ -274,20 +275,20 @@ ageRTD (void *unused)
   ResponseList *rpos;
   ResponseList *rprev;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   prev = NULL;
   pos = rtdList;
   while (pos != NULL)
     {
       /* after 10 minutes, always discard everything */
-      if (pos->lastReplyReceived < TIME (NULL) - 600)
+      if (pos->lastReplyReceived < GNUNET_get_time_int32 (NULL) - 600)
         {
           while (pos->responseList != NULL)
             {
               rpos = pos->responseList;
               pos->responseList = rpos->next;
               change_pid_rc (rpos->responder, -1);
-              FREE (rpos);
+              GNUNET_free (rpos);
             }
         }
       /* otherwise, age reply counts */
@@ -305,7 +306,7 @@ ageRTD (void *unused)
               else
                 rprev->next = rpos->next;
               change_pid_rc (rpos->responder, -1);
-              FREE (rpos);
+              GNUNET_free (rpos);
               if (rprev == NULL)
                 rpos = pos->responseList;
               else
@@ -324,7 +325,7 @@ ageRTD (void *unused)
           else
             prev->next = pos->next;
           change_pid_rc (pos->queryOrigin, -1);
-          FREE (pos);
+          GNUNET_free (pos);
           if (prev == NULL)
             pos = rtdList;
           else
@@ -334,7 +335,7 @@ ageRTD (void *unused)
       prev = pos;
       pos = pos->next;
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -354,7 +355,7 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
 
   if (responder == 0)
     return;                     /* we don't track local responses */
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   pos = rtdList;
   prev = NULL;
   while (pos != NULL)
@@ -366,7 +367,7 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
     }
   if (pos == NULL)
     {
-      pos = MALLOC (sizeof (ReplyTrackData));
+      pos = GNUNET_malloc (sizeof (ReplyTrackData));
       pos->next = NULL;
       pos->responseList = NULL;
       pos->queryOrigin = origin;
@@ -376,7 +377,7 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
       else
         prev->next = pos;
     }
-  TIME (&pos->lastReplyReceived);
+  GNUNET_get_time_int32 (&pos->lastReplyReceived);
   rpos = pos->responseList;
   rprev = NULL;
   while (rpos != NULL)
@@ -386,13 +387,13 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
           rpos->responseCount++;
           if (stats != NULL)
             stats->change (stat_response_count, 1);
-          MUTEX_UNLOCK (lock);
+          GNUNET_mutex_unlock (lock);
           return;
         }
       rprev = rpos;
       rpos = rpos->next;
     }
-  rpos = MALLOC (sizeof (ResponseList));
+  rpos = GNUNET_malloc (sizeof (ResponseList));
   rpos->responseCount = 1;
   if (stats != NULL)
     stats->change (stat_response_count, 1);
@@ -403,7 +404,7 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
     pos->responseList = rpos;
   else
     rprev->next = rpos;
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -424,19 +425,19 @@ updateResponseData (PID_INDEX origin, PID_INDEX responder)
  *   that buffer (must be a positive number).
  */
 static unsigned int
-fillInQuery (const PeerIdentity * receiver,
+fillInQuery (const GNUNET_PeerIdentity * receiver,
              void *position, unsigned int padding)
 {
   static unsigned int pos = 0;
   unsigned int start;
   unsigned int delta;
-  cron_t now;
+  GNUNET_CronTime now;
   QueryRecord *qr;
   PID_INDEX receiverId;
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   receiverId = intern_pid (receiver);
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   start = pos;
   delta = 0;
   while (padding - delta > sizeof (P2P_gap_query_MESSAGE))
@@ -445,9 +446,10 @@ fillInQuery (const PeerIdentity * receiver,
       if ((qr->expires > now) &&
           (0 == getBit (qr, getIndex (receiver))) &&
           (receiverId != qr->noTarget) &&
-          (!(equalsHashCode512 (&receiver->hashPubKey,
-                                &qr->msg->returnTo.hashPubKey))) &&
-          (padding - delta >= ntohs (qr->msg->header.size)))
+          (0 != memcmp (&receiver->hashPubKey,
+                        &qr->msg->returnTo.hashPubKey,
+                        sizeof (GNUNET_HashCode)))
+          && (padding - delta >= ntohs (qr->msg->header.size)))
         {
           setBit (&queries[pos], getIndex (receiver));
           memcpy (&((char *) position)[delta],
@@ -461,7 +463,7 @@ fillInQuery (const PeerIdentity * receiver,
       if (pos == start)
         break;
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   change_pid_rc (receiverId, -1);
   return delta;
 }
@@ -471,7 +473,7 @@ fillInQuery (const PeerIdentity * receiver,
  * on each connected node by the core.
  */
 static void
-hotpathSelectionCode (const PeerIdentity * peer, void *cls)
+hotpathSelectionCode (const GNUNET_PeerIdentity * peer, void *cls)
 {
   QueryRecord *qr = cls;
   ReplyTrackData *pos;
@@ -481,8 +483,8 @@ hotpathSelectionCode (const PeerIdentity * peer, void *cls)
   PID_INDEX id;
   unsigned int idx;
 #if DEBUG_GAP
-  EncName enc;
-  EncName enc2;
+  GNUNET_EncName enc;
+  GNUNET_EncName enc2;
 #endif
 
   id = intern_pid (peer);
@@ -513,18 +515,18 @@ hotpathSelectionCode (const PeerIdentity * peer, void *cls)
             ranking = 0x7FFFFFF;
         }
     }
-  distance = distanceHashCode512 (&qr->msg->queries[0], &peer->hashPubKey) >> 10;       /* change to value in [0:63] */
+  distance = GNUNET_hash_distance_u32 (&qr->msg->queries[0], &peer->hashPubKey) >> 10;  /* change to value in [0:63] */
   if (distance <= 0)
     distance = 1;
-  ranking += weak_randomi (1 + 0xFFFF * 10 / (1 + distance));   /* 0 to 20 "response equivalents" for proximity */
-  ranking += weak_randomi (0xFFFF);     /* 2 "response equivalents" random chance for everyone */
+  ranking += GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1 + 0xFFFF * 10 / (1 + distance));  /* 0 to 20 "response equivalents" for proximity */
+  ranking += GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 0xFFFF);    /* 2 "response equivalents" random chance for everyone */
   if (id == qr->noTarget)
     ranking = 0;                /* no chance for blocked peers */
   idx = getIndex (peer);
 #if DEBUG_GAP
-  hash2enc (&qr->msg->queries[0], &enc);
+  GNUNET_hash_to_enc (&qr->msg->queries[0], &enc);
   ((char *) &enc)[6] = '\0';
-  hash2enc (&peer->hashPubKey, &enc2);
+  GNUNET_hash_to_enc (&peer->hashPubKey, &enc2);
   ((char *) &enc2)[6] = '\0';
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
@@ -547,11 +549,11 @@ static int
 loadTooHigh ()
 {
   return ((hardCPULimit > 0) &&
-          (os_cpu_get_load (ectx,
-                            coreAPI->cfg) >= hardCPULimit)) ||
+          (GNUNET_cpu_get_load (ectx,
+                                coreAPI->cfg) >= hardCPULimit)) ||
     ((hardUpLimit > 0) &&
-     (os_network_monitor_get_load (coreAPI->load_monitor,
-                                   Upload) >= hardUpLimit));
+     (GNUNET_network_monitor_get_load (coreAPI->load_monitor,
+                                       GNUNET_ND_UPLOAD) >= hardUpLimit));
 }
 
 /**
@@ -559,16 +561,18 @@ loadTooHigh ()
  * nodes.
  */
 static void
-sendToSelected (const PeerIdentity * peer, void *cls)
+sendToSelected (const GNUNET_PeerIdentity * peer, void *cls)
 {
   const QueryRecord *qr = cls;
   PID_INDEX id;
 #if DEBUG_GAP
-  EncName encq;
-  EncName encp;
+  GNUNET_EncName encq;
+  GNUNET_EncName encp;
 #endif
 
-  if (equalsHashCode512 (&peer->hashPubKey, &qr->msg->returnTo.hashPubKey))
+  if (0 ==
+      memcmp (&peer->hashPubKey, &qr->msg->returnTo.hashPubKey,
+              sizeof (GNUNET_HashCode)))
     return;                     /* never send back to source */
 
   /* Load above hard limit? */
@@ -587,8 +591,8 @@ sendToSelected (const PeerIdentity * peer, void *cls)
 #if DEBUG_GAP
       IF_GELOG (ectx,
                 GE_DEBUG | GE_REQUEST | GE_USER,
-                hash2enc (&peer->hashPubKey, &encp);
-                hash2enc (&qr->msg->queries[0], &encq));
+                GNUNET_hash_to_enc (&peer->hashPubKey, &encp);
+                GNUNET_hash_to_enc (&qr->msg->queries[0], &encq));
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "Sending query `%s' to `%s'\n", &encq, &encp);
@@ -609,17 +613,18 @@ sendToSelected (const PeerIdentity * peer, void *cls)
  */
 static void
 forwardQuery (const P2P_gap_query_MESSAGE * msg,
-              const PeerIdentity * target, const PeerIdentity * excludePeer)
+              const GNUNET_PeerIdentity * target,
+              const GNUNET_PeerIdentity * excludePeer)
 {
-  cron_t now;
+  GNUNET_CronTime now;
   QueryRecord *qr;
   QueryRecord dummy;
-  cron_t oldestTime;
-  cron_t expirationTime;
+  GNUNET_CronTime oldestTime;
+  GNUNET_CronTime expirationTime;
   int oldestIndex;
   int i;
   int j;
-  int noclear = NO;
+  int noclear = GNUNET_NO;
   unsigned long long rankingSum;
   unsigned long long sel;
   unsigned long long pos;
@@ -630,8 +635,8 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
       /* connect to target host -- if known */
       coreAPI->unicast (target, NULL, ntohl (msg->priority), 0);
     }
-  now = get_time ();
-  MUTEX_LOCK (lock);
+  now = GNUNET_get_time ();
+  GNUNET_mutex_lock (lock);
 
   oldestIndex = -1;
   expirationTime = now + ntohl (msg->ttl);
@@ -650,13 +655,13 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
                         &msg->queries[0],
                         ntohs (msg->header.size)
                         - sizeof (P2P_gap_query_MESSAGE)
-                        + sizeof (HashCode512))))
+                        + sizeof (GNUNET_HashCode))))
         {
           /* We have exactly this query pending already.
              Replace existing query! */
           oldestIndex = i;
           if ((queries[i].expires > now - 4 * TTL_DECREMENT) && /* not long expired */
-              (weak_randomi (4) != 0))
+              (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 4) != 0))
             {
               /* do not clear the bitmap describing which peers we have
                  forwarded the query to already; but do this only with high
@@ -676,7 +681,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
                  a query stays in the QM indefinitely might be much more
                  rare; so don't just trust a micro-scale benchmark when
                  trying to figure out an 'optimal' threshold). */
-              noclear = YES;
+              noclear = GNUNET_YES;
             }
           break;                /* this is it, do not scan for other
                                    'oldest' entries */
@@ -690,14 +695,14 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
   else
     {
       qr = &queries[oldestIndex];
-      FREENONNULL (qr->msg);
+      GNUNET_free_non_null (qr->msg);
       qr->msg = NULL;
     }
   qr->expires = expirationTime;
   qr->transmissionCount = 0;
-  qr->msg = MALLOC (ntohs (msg->header.size));
+  qr->msg = GNUNET_malloc (ntohs (msg->header.size));
   memcpy (qr->msg, msg, ntohs (msg->header.size));
-  if (noclear == NO)
+  if (noclear == GNUNET_NO)
     memset (&qr->bitmap[0], 0, BITMAP_SIZE);
 
   if (qr->noTarget != 0)
@@ -707,7 +712,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
   else
     qr->noTarget = intern_pid (coreAPI->myIdentity);
   qr->totalDistance = 0;
-  qr->rankings = MALLOC (sizeof (int) * 8 * BITMAP_SIZE);
+  qr->rankings = GNUNET_malloc (sizeof (int) * 8 * BITMAP_SIZE);
   qr->activeConnections
     = coreAPI->forAllConnectedNodes (&hotpathSelectionCode, qr);
   /* actual selection, proportional to rankings
@@ -722,7 +727,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
         {
           if (rankingSum == 0)
             break;
-          sel = weak_randomi64 (rankingSum);
+          sel = GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK, rankingSum);
           pos = 0;
           for (j = 0; j < 8 * BITMAP_SIZE; j++)
             {
@@ -738,7 +743,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
             }
         }
     }
-  FREE (qr->rankings);
+  GNUNET_free (qr->rankings);
   qr->rankings = NULL;
   if (target != NULL)
     {
@@ -751,9 +756,9 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
   if (qr == &dummy)
     {
       change_pid_rc (dummy.noTarget, -1);
-      FREE (dummy.msg);
+      GNUNET_free (dummy.msg);
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -761,28 +766,29 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
  * we have learned the answer).
  */
 static int
-dequeueQuery (const HashCode512 * query)
+dequeueQuery (const GNUNET_HashCode * query)
 {
   int i;
   int ret;
   QueryRecord *qr;
 
-  ret = SYSERR;
-  MUTEX_LOCK (lock);
+  ret = GNUNET_SYSERR;
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < QUERY_RECORD_COUNT; i++)
     {
       qr = &queries[i];
       if (qr->msg != NULL)
         {
-          if (equalsHashCode512 (query, &qr->msg->queries[0]))
+          if (0 ==
+              memcmp (query, &qr->msg->queries[0], sizeof (GNUNET_HashCode)))
             {
               qr->expires = 0;  /* expire NOW! */
-              ret = OK;
+              ret = GNUNET_OK;
               break;
             }
         }
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
@@ -792,7 +798,7 @@ dequeueQuery (const HashCode512 * query)
  * Compute the hashtable index of a host id.
  */
 static unsigned int
-computeRoutingIndex (const HashCode512 * query)
+computeRoutingIndex (const GNUNET_HashCode * query)
 {
   unsigned int res
     = (((unsigned int *) query)[0] ^
@@ -819,8 +825,8 @@ computeRoutingIndex (const HashCode512 * query)
  * @param hostId the peer from where the content came,
  *     NULL for the local peer
  */
-static int useContent (const PeerIdentity * hostId,
-                       const MESSAGE_HEADER * pmsg);
+static int useContent (const GNUNET_PeerIdentity * hostId,
+                       const GNUNET_MessageHeader * pmsg);
 
 /**
  * Call useContent "later" and then free the pmsg.
@@ -828,9 +834,9 @@ static int useContent (const PeerIdentity * hostId,
 static void
 useContentLater (void *data)
 {
-  MESSAGE_HEADER *pmsg = data;
+  GNUNET_MessageHeader *pmsg = data;
   useContent (NULL, pmsg);
-  FREE (pmsg);
+  GNUNET_free (pmsg);
 }
 
 /**
@@ -847,75 +853,77 @@ useContentLater (void *data)
  *  the type ID).
  */
 static int
-queueReply (const PeerIdentity * sender,
-            const HashCode512 * primaryKey, const DataContainer * data)
+queueReply (const GNUNET_PeerIdentity * sender,
+            const GNUNET_HashCode * primaryKey, const DataContainer * data)
 {
   P2P_gap_reply_MESSAGE *pmsg;
   IndirectionTableEntry *ite;
   unsigned int size;
 #if DEBUG_GAP
-  EncName enc;
+  GNUNET_EncName enc;
 
   IF_GELOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (primaryKey, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+            GE_DEBUG | GE_REQUEST | GE_USER, GNUNET_hash_to_enc (primaryKey,
+                                                                 &enc));
+  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "Gap queues reply to query `%s' for later use.\n", &enc);
 #endif
 
 #if EXTRA_CHECKS
   /* verify data is valid */
-  uri (data, ANY_BLOCK, YES, primaryKey);
+  uri (data, ANY_BLOCK, GNUNET_YES, primaryKey);
 #endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex (primaryKey)];
-  if (!equalsHashCode512 (&ite->primaryKey, primaryKey))
+  if (0 != memcmp (&ite->primaryKey, primaryKey, sizeof (GNUNET_HashCode)))
     {
 #if DEBUG_GAP
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
 #endif
-      return NO;                /* we don't care for the reply (anymore) */
+      return GNUNET_NO;         /* we don't care for the reply (anymore) */
     }
-  if (YES == ite->successful_local_lookup_in_delay_loop)
+  if (GNUNET_YES == ite->successful_local_lookup_in_delay_loop)
     {
 #if DEBUG_GAP
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "GAP: Dropping reply, found reply locally during delay\n");
 #endif
-      return NO;                /* wow, really bad concurrent DB lookup and processing for
+      return GNUNET_NO;         /* wow, really bad concurrent DB lookup and processing for
                                    the same query.  Well, at least we should not also
                                    queue the delayed reply twice... */
     }
   size =
     sizeof (P2P_gap_reply_MESSAGE) + ntohl (data->size) -
     sizeof (DataContainer);
-  if (size >= MAX_BUFFER_SIZE)
+  if (size >= GNUNET_MAX_BUFFER_SIZE)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  ite->successful_local_lookup_in_delay_loop = YES;
-  pmsg = MALLOC (size);
+  ite->successful_local_lookup_in_delay_loop = GNUNET_YES;
+  pmsg = GNUNET_malloc (size);
   pmsg->header.size = htons (size);
   pmsg->header.type = htons (P2P_PROTO_gap_RESULT);
   pmsg->primaryKey = *primaryKey;
   memcpy (&pmsg[1], &data[1], size - sizeof (P2P_gap_reply_MESSAGE));
   /* delay reply, delay longer if we are busy (makes it harder
      to predict / analyze, too). */
-  cron_add_job (coreAPI->cron,
-                &useContentLater, weak_randomi (TTL_DECREMENT), 0, pmsg);
-  return YES;
+  GNUNET_cron_add_job (coreAPI->cron,
+                       &useContentLater,
+                       GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                                          TTL_DECREMENT), 0, pmsg);
+  return GNUNET_YES;
 }
 
 static void
-addReward (const HashCode512 * query, unsigned int prio)
+addReward (const GNUNET_HashCode * query, unsigned int prio)
 {
   if (prio == 0)
     return;
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   rewards[rewardPos].query = *query;
   if (stats != NULL)
     stats->change (stat_pending_rewards, prio - rewards[rewardPos].prio);
@@ -923,20 +931,20 @@ addReward (const HashCode512 * query, unsigned int prio)
   rewardPos++;
   if (rewardPos == rewardSize)
     rewardPos = 0;
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 static unsigned int
-claimReward (const HashCode512 * query)
+claimReward (const GNUNET_HashCode * query)
 {
   int i;
   unsigned int ret;
 
   ret = 0;
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < rewardSize; i++)
     {
-      if (equalsHashCode512 (query, &rewards[i].query))
+      if (0 == memcmp (query, &rewards[i].query, sizeof (GNUNET_HashCode)))
         {
           ret += rewards[i].prio;
           if (stats != NULL)
@@ -944,7 +952,7 @@ claimReward (const HashCode512 * query)
           rewards[i].prio = 0;
         }
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
@@ -953,7 +961,7 @@ resetSeen (IndirectionTableEntry * ite)
 {
   if (stats != NULL)
     stats->change (stat_memory_seen, -ite->seenIndex);
-  GROW (ite->seen, ite->seenIndex, 0);
+  GNUNET_array_grow (ite->seen, ite->seenIndex, 0);
 }
 
 static void
@@ -962,7 +970,7 @@ resetDestinations (IndirectionTableEntry * ite)
   decrement_pid_rcs (ite->destination, ite->hostsWaiting);
   if (stats != NULL)
     stats->change (stat_memory_destinations, -ite->hostsWaiting);
-  GROW (ite->destination, ite->hostsWaiting, 0);
+  GNUNET_array_grow (ite->destination, ite->hostsWaiting, 0);
 }
 
 /**
@@ -975,47 +983,47 @@ resetDestinations (IndirectionTableEntry * ite)
  * @param ttl how long to keep the new entry, relative ttl
  * @param priority how important is the new entry
  * @param sender for which node is the entry
- * @return OK if sender was added, SYSERR if existed already
+ * @return GNUNET_OK if sender was added, GNUNET_SYSERR if existed already
  *            in the queue
  */
 static int
 addToSlot (int mode,
            IndirectionTableEntry * ite,
-           const HashCode512 * query,
+           const GNUNET_HashCode * query,
            int ttl, unsigned int priority, PID_INDEX sender)
 {
   unsigned int i;
-  cron_t now;
+  GNUNET_CronTime now;
 #if DEBUG__GAP
-  EncName enc;
+  GNUNET_EncName enc;
 
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (query, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_hash_to_enc (query, &enc));
+  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "GAP: Queueing query '%s' in slot %p\n", &enc, ite);
 #endif
   GE_ASSERT (ectx, sender != 0);        /* do NOT add to RT for local clients! */
-  now = get_time ();
+  now = GNUNET_get_time ();
   if ((stats != NULL) && (ite->ttl == 0))
     stats->change (stat_routing_slots_used, 1);
 
   if (mode == ITE_REPLACE)
     {
       resetSeen (ite);
-      ite->seenReplyWasUnique = NO;
-      if (equalsHashCode512 (query, &ite->primaryKey))
+      ite->seenReplyWasUnique = GNUNET_NO;
+      if (0 == memcmp (query, &ite->primaryKey, sizeof (GNUNET_HashCode)))
         {
           ite->ttl = now + ttl;
           ite->priority += priority;
           for (i = 0; i < ite->hostsWaiting; i++)
             if (ite->destination[i] == sender)
-              return SYSERR;
+              return GNUNET_SYSERR;
           if (ite->hostsWaiting >= MAX_HOSTS_WAITING)
             resetDestinations (ite);
         }
       else
         {
-          ite->successful_local_lookup_in_delay_loop = NO;
+          ite->successful_local_lookup_in_delay_loop = GNUNET_NO;
           /* different request, flush pending queues */
           dequeueQuery (&ite->primaryKey);
           ite->primaryKey = *query;
@@ -1025,33 +1033,36 @@ addToSlot (int mode,
         }
     }
   else
-    {                           /* GROW mode */
-      GE_ASSERT (ectx, equalsHashCode512 (query, &ite->primaryKey));
+    {                           /* GNUNET_array_grow mode */
+      GE_ASSERT (ectx,
+                 0 == memcmp (query, &ite->primaryKey,
+                              sizeof (GNUNET_HashCode)));
       /* extend lifetime */
       if (ite->ttl < now + ttl)
         ite->ttl = now + ttl;
       ite->priority += priority;
       for (i = 0; i < ite->hostsWaiting; i++)
         if (sender == ite->destination[i])
-          return SYSERR;        /* already there! */
+          return GNUNET_SYSERR; /* already there! */
     }
   if (stats != NULL)
     stats->change (stat_memory_destinations, 1);
-  GROW (ite->destination, ite->hostsWaiting, ite->hostsWaiting + 1);
+  GNUNET_array_grow (ite->destination, ite->hostsWaiting,
+                     ite->hostsWaiting + 1);
   ite->destination[ite->hostsWaiting - 1] = sender;
   change_pid_rc (sender, 1);
   /* again: new listener, flush seen list */
   resetSeen (ite);
-  ite->seenReplyWasUnique = NO;
-  return OK;
+  ite->seenReplyWasUnique = GNUNET_NO;
+  return GNUNET_OK;
 }
 
 /**
  * Find out, if this query is already pending. If the ttl of
  * the new query is higher than the ttl of an existing query,
- * NO is returned since we should re-send the query.<p>
+ * GNUNET_NO is returned since we should re-send the query.<p>
  *
- * If YES is returned, the slot is also marked as used by
+ * If GNUNET_YES is returned, the slot is also marked as used by
  * the query and the sender (HostId or socket) is added.<p>
  *
  * This method contains a heuristic that attempts to do its best to
@@ -1062,41 +1073,42 @@ addToSlot (int mode,
  * of code than anyone on this planet would think is possible.
  *
  *
- * @param query the hash to look for
+ * @param query the GNUNET_hash to look for
  * @param ttl how long would the new query last
  * @param priority the priority of the query
  * @param sender which peer transmitted the query?
- * @param isRouted set to OK if we can route this
- *        query, SYSERR if we can not
- * @param doForward is set to OK if we should
- *        forward the query, SYSERR if not
+ * @param isRouted set to GNUNET_OK if we can route this
+ *        query, GNUNET_SYSERR if we can not
+ * @param doForward is set to GNUNET_OK if we should
+ *        forward the query, GNUNET_SYSERR if not
  * @return a case ID for debugging
  */
 static int
-needsForwarding (const HashCode512 * query,
+needsForwarding (const GNUNET_HashCode * query,
                  int ttl,
                  unsigned int priority,
                  PID_INDEX sender, int *isRouted, int *doForward)
 {
   IndirectionTableEntry *ite;
-  cron_t now;
-  cron_t new_ttl;
+  GNUNET_CronTime now;
+  GNUNET_CronTime new_ttl;
   int equal_to_pending;
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   ite = &ROUTING_indTable_[computeRoutingIndex (query)];
-  equal_to_pending = equalsHashCode512 (query, &ite->primaryKey);
+  equal_to_pending =
+    memcmp (query, &ite->primaryKey, sizeof (GNUNET_HashCode));
   if ((stats != NULL) && (equal_to_pending))
     stats->change (stat_routing_request_duplicates, 1);
 
   new_ttl = now + ttl;
   if ((ite->ttl < now) &&
-      (ite->ttl < now - (cron_t) (TTL_DECREMENT * 10L)) &&
+      (ite->ttl < now - (GNUNET_CronTime) (TTL_DECREMENT * 10L)) &&
       (ttl > -TTL_DECREMENT * 5))
     {
       addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
-      *isRouted = YES;
-      *doForward = YES;
+      *isRouted = GNUNET_YES;
+      *doForward = GNUNET_YES;
       return 21;
     }
   if ((ttl < 0) && (equal_to_pending))
@@ -1104,20 +1116,21 @@ needsForwarding (const HashCode512 * query,
       /* if ttl is "expired" and we have
          the exact query pending, route
          replies but do NOT forward _again_! */
-      addToSlot (ITE_GROW, ite, query, ttl, priority, sender);
-      *isRouted = NO;
+      addToSlot (ITE_GNUNET_array_grow, ite, query, ttl, priority, sender);
+      *isRouted = GNUNET_NO;
       /* don't go again, we are not even going to reset the seen
          list, so why bother looking locally again, if we would find
          something, the seen list would block sending the reply anyway
          since we're not resetting that (ttl too small!)! */
-      *doForward = NO;
+      *doForward = GNUNET_NO;
       return 0;
     }
 
   if ((ite->ttl < new_ttl) &&
       (ite->ttl +
-       (cron_t) (TTL_DECREMENT * topology->estimateNetworkSize ()) < new_ttl)
-      && (ite->ttl + (cron_t) (TTL_DECREMENT * 10L) < new_ttl)
+       (GNUNET_CronTime) (TTL_DECREMENT * topology->estimateNetworkSize ()) <
+       new_ttl)
+      && (ite->ttl + (GNUNET_CronTime) (TTL_DECREMENT * 10L) < new_ttl)
       && (ite->ttl < now))
     {
       /* expired AND is significantly (!)
@@ -1125,19 +1138,20 @@ needsForwarding (const HashCode512 * query,
       /* previous entry relatively expired, start using the slot --
          and kill the old seen list! */
       resetSeen (ite);
-      ite->seenReplyWasUnique = NO;
+      ite->seenReplyWasUnique = GNUNET_NO;
       if ((equal_to_pending) &&
-          (YES == ite->successful_local_lookup_in_delay_loop))
+          (GNUNET_YES == ite->successful_local_lookup_in_delay_loop))
         {
-          *isRouted = NO;
-          *doForward = NO;
-          addToSlot (ITE_GROW, ite, query, ttl, priority, sender);
+          *isRouted = GNUNET_NO;
+          *doForward = GNUNET_NO;
+          addToSlot (ITE_GNUNET_array_grow, ite, query, ttl, priority,
+                     sender);
           return 1;
         }
       else
         {
-          *isRouted = YES;
-          *doForward = YES;
+          *isRouted = GNUNET_YES;
+          *doForward = GNUNET_YES;
           if ((stats != NULL) && (equal_to_pending))
             {
               stats->change (stat_routing_request_repeat, 1);
@@ -1156,22 +1170,22 @@ needsForwarding (const HashCode512 * query,
       if (ite->seenIndex == 0)
         {
           if ((ite->ttl < new_ttl) &&
-              (ite->ttl + (cron_t) TTL_DECREMENT < new_ttl))
+              (ite->ttl + (GNUNET_CronTime) TTL_DECREMENT < new_ttl))
             {
               /* ttl of new is SIGNIFICANTLY longer? */
               /* query again */
-              if (YES == ite->successful_local_lookup_in_delay_loop)
+              if (GNUNET_YES == ite->successful_local_lookup_in_delay_loop)
                 {
-                  *isRouted = NO;       /* don't go again, we are already
-                                           processing a local lookup! */
-                  *doForward = NO;
+                  *isRouted = GNUNET_NO;        /* don't go again, we are already
+                                                   processing a local lookup! */
+                  *doForward = GNUNET_NO;
                   addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
                   return 3;
                 }
               else
                 {
-                  *isRouted = YES;
-                  *doForward = YES;
+                  *isRouted = GNUNET_YES;
+                  *doForward = GNUNET_YES;
                   if (stats != NULL)
                     {
                       stats->change (stat_routing_request_repeat, 1);
@@ -1189,30 +1203,32 @@ needsForwarding (const HashCode512 * query,
             {
               /* new TTL is lower than the old one, thus
                  just wait for the reply that may come back */
-              if (OK ==
-                  addToSlot (ITE_GROW, ite, query, ttl, priority, sender))
+              if (GNUNET_OK ==
+                  addToSlot (ITE_GNUNET_array_grow, ite, query, ttl, priority,
+                             sender))
                 {
-                  if (YES == ite->successful_local_lookup_in_delay_loop)
+                  if (GNUNET_YES ==
+                      ite->successful_local_lookup_in_delay_loop)
                     {
-                      *isRouted = NO;
+                      *isRouted = GNUNET_NO;
                       /* don't go again, we are already processing a
                          local lookup! */
-                      *doForward = NO;
+                      *doForward = GNUNET_NO;
                       return 5;
                     }
                   else
                     {
-                      *isRouted = YES;
-                      *doForward = NO;
+                      *isRouted = GNUNET_YES;
+                      *doForward = GNUNET_NO;
                       return 6;
                     }
                 }
               else
                 {
-                  *isRouted = NO;       /* same query with _higher_ TTL has already been
-                                           processed FOR THE SAME recipient! Do NOT do
-                                           the lookup *again*. */
-                  *doForward = NO;
+                  *isRouted = GNUNET_NO;        /* same query with _higher_ TTL has already been
+                                                   processed FOR THE SAME recipient! Do NOT do
+                                                   the lookup *again*. */
+                  *doForward = GNUNET_NO;
                   return 7;
                 }
             }
@@ -1227,22 +1243,22 @@ needsForwarding (const HashCode512 * query,
             {                   /* ttl of new is longer? */
               /* go again */
               resetSeen (ite);
-              ite->seenReplyWasUnique = NO;
-              if (YES == ite->successful_local_lookup_in_delay_loop)
+              ite->seenReplyWasUnique = GNUNET_NO;
+              if (GNUNET_YES == ite->successful_local_lookup_in_delay_loop)
                 {
-                  *isRouted = NO;
+                  *isRouted = GNUNET_NO;
                   /* don't go again, we are already processing a local lookup! */
-                  *doForward = NO;
+                  *doForward = GNUNET_NO;
                   addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
                   return 8;
                 }
               else
                 {
-                  *isRouted = YES;
+                  *isRouted = GNUNET_YES;
                   /* only forward if new TTL is significantly higher */
                   if (ite->ttl + TTL_DECREMENT < new_ttl)
                     {
-                      *doForward = YES;
+                      *doForward = GNUNET_YES;
                       if (stats != NULL)
                         {
                           stats->change (stat_routing_request_repeat, 1);
@@ -1254,7 +1270,7 @@ needsForwarding (const HashCode512 * query,
                         }
                     }
                   else
-                    *doForward = NO;
+                    *doForward = GNUNET_NO;
                   addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
                   return 9;
                 }
@@ -1263,26 +1279,28 @@ needsForwarding (const HashCode512 * query,
             {
               /* new TTL is lower than the old one, thus
                  just wait for the reply that may come back */
-              if (OK ==
-                  addToSlot (ITE_GROW, ite, query, ttl, priority, sender))
+              if (GNUNET_OK ==
+                  addToSlot (ITE_GNUNET_array_grow, ite, query, ttl, priority,
+                             sender))
                 {
-                  if (YES == ite->successful_local_lookup_in_delay_loop)
+                  if (GNUNET_YES ==
+                      ite->successful_local_lookup_in_delay_loop)
                     {
-                      *isRouted = NO;
-                      *doForward = NO;
+                      *isRouted = GNUNET_NO;
+                      *doForward = GNUNET_NO;
                       return 10;
                     }
                   else
                     {
-                      *isRouted = YES;
-                      *doForward = NO;
+                      *isRouted = GNUNET_YES;
+                      *doForward = GNUNET_NO;
                       return 11;
                     }
                 }
               else
                 {
-                  *isRouted = NO;
-                  *doForward = NO;
+                  *isRouted = GNUNET_NO;
+                  *doForward = GNUNET_NO;
                   return 12;
                 }
             }
@@ -1295,13 +1313,15 @@ needsForwarding (const HashCode512 * query,
              receiver */
           int isttlHigher;
           if (ite->ttl < new_ttl)
-            isttlHigher = NO;
+            isttlHigher = GNUNET_NO;
           else
-            isttlHigher = YES;
-          if (OK == addToSlot (ITE_GROW, ite, query, ttl, priority, sender))
+            isttlHigher = GNUNET_YES;
+          if (GNUNET_OK ==
+              addToSlot (ITE_GNUNET_array_grow, ite, query, ttl, priority,
+                         sender))
             {
-              *isRouted = YES;
-              *doForward = NO;
+              *isRouted = GNUNET_YES;
+              *doForward = GNUNET_NO;
               return 13;
             }
           else
@@ -1310,7 +1330,7 @@ needsForwarding (const HashCode512 * query,
               /* receiver is the same as the one that already got the
                  answer, do not bother to do this again, IF
                  the TTL is not higher! */
-              *doForward = NO;
+              *doForward = GNUNET_NO;
               return 14;
             }
         }
@@ -1325,16 +1345,16 @@ needsForwarding (const HashCode512 * query,
     {
       /* we have seen the unique answer, get rid of it early */
       addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
-      *isRouted = YES;
-      *doForward = YES;
+      *isRouted = GNUNET_YES;
+      *doForward = GNUNET_YES;
       return 15;
     }
   /* Another still valid query is using the slot.  Now we need a _really_
      good reason to discard it... */
   if (ttl < 0)
     {
-      *isRouted = NO;
-      *doForward = NO;
+      *isRouted = GNUNET_NO;
+      *doForward = GNUNET_NO;
       if (stats != NULL)
         stats->change (stat_routing_collisions, 1);
       return 16;                /* if new ttl is "expired", don't bother with priorities */
@@ -1354,21 +1374,21 @@ needsForwarding (const HashCode512 * query,
       (long long) 10 * (ttl * ite->priority))
     {
       addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
-      *isRouted = YES;
-      *doForward = YES;
+      *isRouted = GNUNET_YES;
+      *doForward = GNUNET_YES;
       return 17;
     }
-  if (weak_randomi (TIE_BREAKER_CHANCE) == 0)
+  if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TIE_BREAKER_CHANCE) == 0)
     {
       addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
-      *isRouted = YES;
-      *doForward = YES;
+      *isRouted = GNUNET_YES;
+      *doForward = GNUNET_YES;
       return 20;
     }
   /* sadly, the slot is busy with something else; we can
      not even add ourselves to the reply set */
-  *isRouted = NO;
-  *doForward = NO;
+  *isRouted = GNUNET_NO;
+  *doForward = GNUNET_NO;
   if (stats != NULL)
     stats->change (stat_routing_collisions, 1);
 
@@ -1382,19 +1402,19 @@ needsForwarding (const HashCode512 * query,
  * @param msg the message to route
  */
 static void
-sendReply (IndirectionTableEntry * ite, const MESSAGE_HEADER * msg)
+sendReply (IndirectionTableEntry * ite, const GNUNET_MessageHeader * msg)
 {
   unsigned int j;
   unsigned int maxDelay;
-  cron_t now;
-  PeerIdentity recv;
+  GNUNET_CronTime now;
+  GNUNET_PeerIdentity recv;
 #if DEBUG_GAP
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
   if (stats != NULL)
     stats->change (stat_routing_successes, 1);
-  now = get_time ();
+  now = GNUNET_get_time ();
   if (now < ite->ttl)
     maxDelay = ite->ttl - now;
   else
@@ -1406,7 +1426,7 @@ sendReply (IndirectionTableEntry * ite, const MESSAGE_HEADER * msg)
 #if DEBUG_GAP
       IF_GELOG (ectx,
                 GE_DEBUG | GE_REQUEST | GE_USER,
-                hash2enc (&recv.hashPubKey, &enc));
+                GNUNET_hash_to_enc (&recv.hashPubKey, &enc));
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "GAP sending reply to `%s'\n", &enc);
@@ -1421,7 +1441,7 @@ struct qLRC
 {
   DataContainer **values;
   unsigned int valueCount;
-  HashCode512 query;
+  GNUNET_HashCode query;
 };
 
 /**
@@ -1437,7 +1457,7 @@ struct qLRC
  *  the type ID).
  */
 static int
-queryLocalResultCallback (const HashCode512 * primaryKey,
+queryLocalResultCallback (const GNUNET_HashCode * primaryKey,
                           const DataContainer * value, void *closure)
 {
   struct qLRC *cls = closure;
@@ -1445,19 +1465,19 @@ queryLocalResultCallback (const HashCode512 * primaryKey,
 
 #if EXTRA_CHECKS
   /* verify data is valid */
-  uri (value, ANY_BLOCK, YES, primaryKey);
+  uri (value, ANY_BLOCK, GNUNET_YES, primaryKey);
 #endif
   /* check seen */
   if ((cls->valueCount > MAX_SEEN_VALUES) &&
-      (weak_randomi (cls->valueCount) > 8))
-    return OK;                  /* statistical drop, too many replies to keep in memory */
+      (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, cls->valueCount) > 8))
+    return GNUNET_OK;           /* statistical drop, too many replies to keep in memory */
   for (i = 0; i < cls->valueCount; i++)
     if (0 == memcmp (value, cls->values[i], ntohl (value->size)))
-      return OK;                /* drop, duplicate entry in DB! */
-  GROW (cls->values, cls->valueCount, cls->valueCount + 1);
-  cls->values[cls->valueCount - 1] = MALLOC (ntohl (value->size));
+      return GNUNET_OK;         /* drop, duplicate entry in DB! */
+  GNUNET_array_grow (cls->values, cls->valueCount, cls->valueCount + 1);
+  cls->values[cls->valueCount - 1] = GNUNET_malloc (ntohl (value->size));
   memcpy (cls->values[cls->valueCount - 1], value, ntohl (value->size));
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -1465,7 +1485,7 @@ queryLocalResultCallback (const HashCode512 * primaryKey,
  * the query is added to the routing table and the content is looked
  * for locally. If the content is available locally, a deferred
  * response is simulated with a cron job and the local content is
- * marked as valueable. The method returns OK if the query should
+ * marked as valueable. The method returns GNUNET_OK if the query should
  * subsequently be routed to other peers.
  *
  * @param sender next hop in routing of the reply, NULL for us
@@ -1473,13 +1493,13 @@ queryLocalResultCallback (const HashCode512 * primaryKey,
  * @param prio the effective priority of the query
  * @param ttl the relative ttl of the query
  * @param query the query itself
- * @return OK/YES if the query will be routed further,
- *         NO if we already found the one and only response,
- *         SYSERR if not (out of resources)
+ * @return GNUNET_OK/GNUNET_YES if the query will be routed further,
+ *         GNUNET_NO if we already found the one and only response,
+ *         GNUNET_SYSERR if not (out of resources)
  */
 static int
-execQuery (const PeerIdentity * sender,
-           const PeerIdentity * target,
+execQuery (const GNUNET_PeerIdentity * sender,
+           const GNUNET_PeerIdentity * target,
            unsigned int prio,
            QUERY_POLICY policy, int ttl, const P2P_gap_query_MESSAGE * query)
 {
@@ -1488,23 +1508,23 @@ execQuery (const PeerIdentity * sender,
   struct qLRC cls;
   int i;
   int max;
-  int *perm;
+  unsigned int *perm;
   int doForward;
   PID_INDEX senderID;
 #if DEBUG_GAP
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
   /* Load above hard limit? */
   if (loadTooHigh ())
-    return SYSERR;
+    return GNUNET_SYSERR;
   if (rhf == NULL)
-    return SYSERR;              /* not fully initialized */
+    return GNUNET_SYSERR;       /* not fully initialized */
 
   senderID = intern_pid (sender);
   GE_ASSERT (ectx, (senderID != 0) || (sender == NULL));
   ite = &ROUTING_indTable_[computeRoutingIndex (&query->queries[0])];
-  MUTEX_LOCK (lookup_exclusion);
+  GNUNET_mutex_lock (lookup_exclusion);
   i = -1;
   if (sender != NULL)
     {
@@ -1517,8 +1537,8 @@ execQuery (const PeerIdentity * sender,
         }
       else
         {
-          isRouted = NO;
-          doForward = NO;
+          isRouted = GNUNET_NO;
+          doForward = GNUNET_NO;
           if (stats != NULL)
             {
               if ((policy & QUERY_ANSWER) > 0)
@@ -1531,16 +1551,16 @@ execQuery (const PeerIdentity * sender,
   else
     {
       addReward (&query->queries[0], prio);
-      isRouted = YES;
-      doForward = YES;
+      isRouted = GNUNET_YES;
+      doForward = GNUNET_YES;
     }
   if ((policy & QUERY_FORWARD) == 0)
-    doForward = NO;
+    doForward = GNUNET_NO;
 
 #if DEBUG_GAP
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_USER,
-            hash2enc (&query->queries[0], &enc));
+            GNUNET_hash_to_enc (&query->queries[0], &enc));
   ((char *) &enc)[6] = '\0';
   GE_LOG (ectx,
           GE_INFO | GE_IMMEDIATE | GE_USER,
@@ -1553,21 +1573,25 @@ execQuery (const PeerIdentity * sender,
   cls.values = NULL;
   cls.valueCount = 0;
   cls.query = query->queries[0];
-  if ((isRouted == YES) &&      /* if we can't route, lookup useless! */
+  if ((isRouted == GNUNET_YES) &&       /* if we can't route, lookup useless! */
       ((policy & QUERY_ANSWER) > 0))
     {
       bs->get (bs->closure,
                ntohl (query->type),
                prio,
                1 + (ntohs (query->header.size)
-                    - sizeof (P2P_gap_query_MESSAGE)) / sizeof (HashCode512),
-               &query->queries[0], &queryLocalResultCallback, &cls);
+                    -
+                    sizeof (P2P_gap_query_MESSAGE)) /
+               sizeof (GNUNET_HashCode), &query->queries[0],
+               &queryLocalResultCallback, &cls);
     }
 
   if (cls.valueCount > 0)
     {
-      perm = permute (WEAK, cls.valueCount);
-      max = os_network_monitor_get_load (coreAPI->load_monitor, Download);
+      perm = GNUNET_permute (GNUNET_RANDOM_QUALITY_WEAK, cls.valueCount);
+      max =
+        GNUNET_network_monitor_get_load (coreAPI->load_monitor,
+                                         GNUNET_ND_DOWNLOAD);
       if (max > 100)
         max = 100;
       if (max == -1)
@@ -1581,34 +1605,35 @@ execQuery (const PeerIdentity * sender,
       for (i = 0; i < cls.valueCount; i++)
         {
           if ((i == 0) &&
-              (SYSERR == bs->put (bs->closure,
-                                  &query->queries[0],
-                                  cls.values[perm[i]], ite->priority)))
+              (GNUNET_SYSERR == bs->put (bs->closure,
+                                         &query->queries[0],
+                                         cls.values[perm[i]], ite->priority)))
             {
               GE_BREAK (NULL, 0);
-              FREE (cls.values[perm[i]]);
+              GNUNET_free (cls.values[perm[i]]);
               continue;
             }
           if ((i < max) &&
               (sender != NULL) &&
-              (YES == queueReply (sender,
-                                  &query->queries[0],
-                                  cls.values[perm[i]])) && (stats != NULL))
+              (GNUNET_YES == queueReply (sender,
+                                         &query->queries[0],
+                                         cls.values[perm[i]]))
+              && (stats != NULL))
             stats->change (stat_routing_local_results, 1);
           /* even for local results, always do 'put'
              (at least to give back results to local client &
              to update priority; but only do this for
              the first result */
-          if (uri (cls.values[perm[i]], ite->type, NO,  /* no need to verify local results! */
+          if (uri (cls.values[perm[i]], ite->type, GNUNET_NO,   /* no need to verify local results! */
                    &query->queries[0]))
-            doForward = NO;     /* we have the one and only answer,
-                                   do not bother to forward... */
-          FREE (cls.values[perm[i]]);
+            doForward = GNUNET_NO;      /* we have the one and only answer,
+                                           do not bother to forward... */
+          GNUNET_free (cls.values[perm[i]]);
         }
-      FREE (perm);
+      GNUNET_free (perm);
     }
-  GROW (cls.values, cls.valueCount, 0);
-  MUTEX_UNLOCK (lookup_exclusion);
+  GNUNET_array_grow (cls.values, cls.valueCount, 0);
+  GNUNET_mutex_unlock (lookup_exclusion);
   if (doForward)
     forwardQuery (query, target, sender);
   change_pid_rc (senderID, -1);
@@ -1630,11 +1655,12 @@ execQuery (const PeerIdentity * sender,
  *         priority of the original request)
  */
 static int
-useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
+useContent (const GNUNET_PeerIdentity * host,
+            const GNUNET_MessageHeader * pmsg)
 {
   const P2P_gap_reply_MESSAGE *msg;
   unsigned int i;
-  HashCode512 contentHC;
+  GNUNET_HashCode contentHC;
   IndirectionTableEntry *ite;
   unsigned int size;
   int ret;
@@ -1643,21 +1669,21 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
   double preference;
   PID_INDEX hostId;
 #if DEBUG_GAP
-  EncName enc;
-  EncName enc2;
+  GNUNET_EncName enc;
+  GNUNET_EncName enc2;
 #endif
 
   if (ntohs (pmsg->size) < sizeof (P2P_gap_reply_MESSAGE))
     {
       GE_BREAK_OP (ectx, 0);
-      return SYSERR;            /* invalid! */
+      return GNUNET_SYSERR;     /* invalid! */
     }
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
 #if DEBUG_GAP
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_USER,
-            if (host != NULL) hash2enc (&host->hashPubKey, &enc));
-  hash2enc (&msg->primaryKey, &enc2);
+            if (host != NULL) GNUNET_hash_to_enc (&host->hashPubKey, &enc));
+  GNUNET_hash_to_enc (&msg->primaryKey, &enc2);
   ((char *) &enc2)[6] = '\0';
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1666,7 +1692,7 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
 #endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex (&msg->primaryKey)];
-  ite->successful_local_lookup_in_delay_loop = NO;
+  ite->successful_local_lookup_in_delay_loop = GNUNET_NO;
   size = ntohs (msg->header.size) - sizeof (P2P_gap_reply_MESSAGE);
   prio = 0;
 
@@ -1674,52 +1700,53 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
     {
       if (stats != NULL)
         stats->change (stat_routing_reply_drops, 1);
-      return OK;                /* not fully initialized! */
+      return GNUNET_OK;         /* not fully initialized! */
     }
-  value = MALLOC (size + sizeof (DataContainer));
+  value = GNUNET_malloc (size + sizeof (DataContainer));
   value->size = htonl (size + sizeof (DataContainer));
   memcpy (&value[1], &msg[1], size);
   rhf (value, &contentHC);
 
   /* FIRST: check if valid */
   ret = bs->put (bs->closure, &msg->primaryKey, value, 0);
-  if (ret == SYSERR)
+  if (ret == GNUNET_SYSERR)
     {
-      EncName enc;
+      GNUNET_EncName enc;
 
       IF_GELOG (ectx,
                 GE_ERROR | GE_BULK | GE_USER,
-                if (host != NULL) hash2enc (&host->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+                if (host != NULL) GNUNET_hash_to_enc (&host->hashPubKey,
+                                                      &enc));
+      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
               _("GAP received invalid content from `%s'\n"),
               (host != NULL) ? (const char *) &enc : _("myself"));
       GE_BREAK_OP (ectx, 0);
-      FREE (value);
-      return SYSERR;            /* invalid */
+      GNUNET_free (value);
+      return GNUNET_SYSERR;     /* invalid */
     }
 
   /* SECOND: check if seen */
-  MUTEX_LOCK (lookup_exclusion);
+  GNUNET_mutex_lock (lookup_exclusion);
   for (i = 0; i < ite->seenIndex; i++)
     {
-      if (equalsHashCode512 (&contentHC, &ite->seen[i]))
+      if (0 == memcmp (&contentHC, &ite->seen[i], sizeof (GNUNET_HashCode)))
         {
-          MUTEX_UNLOCK (lookup_exclusion);
-          FREE (value);
+          GNUNET_mutex_unlock (lookup_exclusion);
+          GNUNET_free (value);
           if (stats != NULL)
             stats->change (stat_routing_reply_dups, 1);
           return 0;             /* seen before, useless */
         }
     }
-  MUTEX_UNLOCK (lookup_exclusion);
+  GNUNET_mutex_unlock (lookup_exclusion);
 
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
   hostId = intern_pid (host);
-  MUTEX_LOCK (lookup_exclusion);
-  if (equalsHashCode512 (&ite->primaryKey, &msg->primaryKey))
+  GNUNET_mutex_lock (lookup_exclusion);
+  if (0 ==
+      memcmp (&ite->primaryKey, &msg->primaryKey, sizeof (GNUNET_HashCode)))
     {
       prio = ite->priority;
       ite->priority = 0;
@@ -1736,23 +1763,24 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
                     ite->destination[ite->hostsWaiting - 1];
                   if (stats != NULL)
                     stats->change (stat_memory_destinations, -1);
-                  GROW (ite->destination,
-                        ite->hostsWaiting, ite->hostsWaiting - 1);
+                  GNUNET_array_grow (ite->destination,
+                                     ite->hostsWaiting,
+                                     ite->hostsWaiting - 1);
                 }
             }
         }
       if (stats != NULL)
         stats->change (stat_memory_seen, 1);
-      GROW (ite->seen, ite->seenIndex, ite->seenIndex + 1);
+      GNUNET_array_grow (ite->seen, ite->seenIndex, ite->seenIndex + 1);
       ite->seen[ite->seenIndex - 1] = contentHC;
       if (ite->seenIndex == 1)
         {
-          ite->seenReplyWasUnique = uri (value, ite->type, NO,  /* already verified */
+          ite->seenReplyWasUnique = uri (value, ite->type, GNUNET_NO,   /* already verified */
                                          &ite->primaryKey);
         }
       else
         {
-          ite->seenReplyWasUnique = NO;
+          ite->seenReplyWasUnique = GNUNET_NO;
         }
       sendReply (ite, &msg->header);
       if (ite->seenIndex > MAX_SEEN_VALUES * 2)
@@ -1774,7 +1802,7 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
       if (stats != NULL)
         stats->change (stat_routing_reply_drops, 1);
     }
-  MUTEX_UNLOCK (lookup_exclusion);
+  GNUNET_mutex_unlock (lookup_exclusion);
   prio += claimReward (&msg->primaryKey);
 
   /* FOURTH: update content priority in local datastore */
@@ -1784,13 +1812,13 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
     }
 
   /* FIFTH: if unique reply, stop querying */
-  if (uri (value, ite->type, NO,        /* already verified */
+  if (uri (value, ite->type, GNUNET_NO, /* already verified */
            &ite->primaryKey))
     {
       /* unique reply, stop forwarding! */
       dequeueQuery (&ite->primaryKey);
     }
-  FREE (value);
+  GNUNET_free (value);
 
   /* SIXTH: adjust traffic preferences */
   if (host != NULL)
@@ -1804,7 +1832,7 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
       coreAPI->preferTrafficFrom (host, preference);
     }
   change_pid_rc (hostId, -1);
-  return OK;
+  return GNUNET_OK;
 }
 
 /* ***************** GAP API implementation ***************** */
@@ -1813,7 +1841,7 @@ useContent (const PeerIdentity * host, const MESSAGE_HEADER * pmsg)
  * Start GAP.
  *
  * @param datastore the storage callbacks to use for storing data
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
 init (Blockstore * datastore, UniqueReplyIdentifier uid, ReplyHashFunction rh)
@@ -1821,12 +1849,12 @@ init (Blockstore * datastore, UniqueReplyIdentifier uid, ReplyHashFunction rh)
   if (bs != NULL)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   bs = datastore;
   uri = uid;
   rhf = rh;
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -1842,27 +1870,29 @@ init (Blockstore * datastore, UniqueReplyIdentifier uid, ReplyHashFunction rh)
  * @param keys the keys to query for
  * @param timeout how long to wait until this operation should
  *        automatically time-out
- * @return OK if we will start to query, SYSERR if all of our
- *  buffers are full or other error, NO if we already
+ * @return GNUNET_OK if we will start to query, GNUNET_SYSERR if all of our
+ *  buffers are full or other error, GNUNET_NO if we already
  *  returned the one and only reply (local hit)
  */
 static int
-get_start (const PeerIdentity * target,
+get_start (const GNUNET_PeerIdentity * target,
            unsigned int type,
            unsigned int anonymityLevel,
            unsigned int keyCount,
-           const HashCode512 * keys, cron_t timeout, unsigned int prio)
+           const GNUNET_HashCode * keys, GNUNET_CronTime timeout,
+           unsigned int prio)
 {
   P2P_gap_query_MESSAGE *msg;
   unsigned int size;
   int ret;
 
   size =
-    sizeof (P2P_gap_query_MESSAGE) + (keyCount - 1) * sizeof (HashCode512);
-  if (size >= MAX_BUFFER_SIZE)
+    sizeof (P2P_gap_query_MESSAGE) + (keyCount -
+                                      1) * sizeof (GNUNET_HashCode);
+  if (size >= GNUNET_MAX_BUFFER_SIZE)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;            /* too many keys! */
+      return GNUNET_SYSERR;     /* too many keys! */
     }
 
   /* anonymity level considerations:
@@ -1881,16 +1911,17 @@ get_start (const PeerIdentity * target,
                   GE_ERROR | GE_BULK | GE_USER,
                   _
                   ("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      if (OK != traffic->get ((TTL_DECREMENT + timeout) / TRAFFIC_TIME_UNIT,
-                              P2P_PROTO_gap_QUERY,
-                              TC_RECEIVED, &count, &peers, &sizes, &timevect))
+      if (GNUNET_OK !=
+          traffic->get ((TTL_DECREMENT + timeout) / TRAFFIC_TIME_UNIT,
+                        P2P_PROTO_gap_QUERY, TC_RECEIVED, &count, &peers,
+                        &sizes, &timevect))
         {
           GE_LOG (ectx,
                   GE_WARNING | GE_BULK | GE_USER,
                   _("Failed to get traffic stats.\n"));
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (anonymityLevel > 1000)
         {
@@ -1900,7 +1931,7 @@ get_start (const PeerIdentity * target,
                       GE_WARNING | GE_BULK | GE_USER,
                       _
                       ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
           if (count < anonymityLevel % 1000)
             {
@@ -1908,7 +1939,7 @@ get_start (const PeerIdentity * target,
                       GE_WARNING | GE_BULK | GE_USER,
                       _
                       ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
       else
@@ -1919,26 +1950,26 @@ get_start (const PeerIdentity * target,
                       GE_WARNING | GE_BULK | GE_USER,
                       _
                       ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
     }
 
 
-  msg = MALLOC (size);
+  msg = GNUNET_malloc (size);
   msg->header.size = htons (size);
   msg->header.type = htons (P2P_PROTO_gap_QUERY);
   msg->type = htonl (type);
   msg->priority = htonl (prio);
-  msg->ttl = htonl (adjustTTL ((int) timeout - get_time (), prio));
-  memcpy (&msg->queries[0], keys, sizeof (HashCode512) * keyCount);
+  msg->ttl = htonl (adjustTTL ((int) timeout - GNUNET_get_time (), prio));
+  memcpy (&msg->queries[0], keys, sizeof (GNUNET_HashCode) * keyCount);
   msg->returnTo = *coreAPI->myIdentity;
   ret = execQuery (NULL,
                    target,
                    prio,
                    QUERY_ANSWER | QUERY_FORWARD | QUERY_INDIRECT,
-                   timeout - get_time (), msg);
-  FREE (msg);
+                   timeout - GNUNET_get_time (), msg);
+  GNUNET_free (msg);
   return ret;
 }
 
@@ -1948,10 +1979,11 @@ get_start (const PeerIdentity * target,
  * stop it earlier.
  */
 static int
-get_stop (unsigned int type, unsigned int keyCount, const HashCode512 * keys)
+get_stop (unsigned int type, unsigned int keyCount,
+          const GNUNET_HashCode * keys)
 {
   if (keyCount < 1)
-    return SYSERR;
+    return GNUNET_SYSERR;
   return dequeueQuery (&keys[0]);
 }
 
@@ -1966,7 +1998,7 @@ get_stop (unsigned int type, unsigned int keyCount, const HashCode512 * keys)
  */
 static unsigned int
 tryMigrate (const DataContainer * data,
-            const HashCode512 * primaryKey,
+            const GNUNET_HashCode * primaryKey,
             char *position, unsigned int padding)
 {
   P2P_gap_reply_MESSAGE *reply;
@@ -1975,7 +2007,7 @@ tryMigrate (const DataContainer * data,
   size =
     sizeof (P2P_gap_reply_MESSAGE) + ntohl (data->size) -
     sizeof (DataContainer);
-  if ((size > padding) || (size >= MAX_BUFFER_SIZE))
+  if ((size > padding) || (size >= GNUNET_MAX_BUFFER_SIZE))
     return 0;
   reply = (P2P_gap_reply_MESSAGE *) position;
   reply->header.type = htons (P2P_PROTO_gap_RESULT);
@@ -1990,7 +2022,8 @@ tryMigrate (const DataContainer * data,
  * lookup, forward or even indirect.
  */
 static int
-handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
+handleQuery (const GNUNET_PeerIdentity * sender,
+             const GNUNET_MessageHeader * msg)
 {
   QUERY_POLICY policy;
   P2P_gap_query_MESSAGE *qmsg;
@@ -1999,7 +2032,7 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
   unsigned int prio;
   double preference;
 #if DEBUG_GAP
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
   if (bs == NULL)
@@ -2015,30 +2048,31 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
         {
           IF_GELOG (ectx,
                     GE_DEBUG | GE_REQUEST | GE_USER,
-                    hash2enc (&sender->hashPubKey, &enc));
+                    GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
         }
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "Dropping query from %s, this peer is too busy.\n",
               sender == NULL ? "localhost" : (char *) &enc);
 #endif
-      return OK;
+      return GNUNET_OK;
     }
   queries = 1 + (ntohs (msg->size) - sizeof (P2P_gap_query_MESSAGE))
-    / sizeof (HashCode512);
+    / sizeof (GNUNET_HashCode);
   if ((queries <= 0) ||
       (ntohs (msg->size) < sizeof (P2P_gap_query_MESSAGE)) ||
       (ntohs (msg->size) != sizeof (P2P_gap_query_MESSAGE) +
-       (queries - 1) * sizeof (HashCode512)))
+       (queries - 1) * sizeof (GNUNET_HashCode)))
     {
       GE_BREAK_OP (ectx, 0);
-      return SYSERR;            /* malformed query */
+      return GNUNET_SYSERR;     /* malformed query */
     }
 
-  qmsg = MALLOC (ntohs (msg->size));
+  qmsg = GNUNET_malloc (ntohs (msg->size));
   memcpy (qmsg, msg, ntohs (msg->size));
-  if (equalsHashCode512 (&qmsg->returnTo.hashPubKey,
-                         &coreAPI->myIdentity->hashPubKey))
+  if (0 == memcmp (&qmsg->returnTo.hashPubKey,
+                   &coreAPI->myIdentity->hashPubKey,
+                   sizeof (GNUNET_HashCode)))
     {
       /* A to B, B sends to C without source rewriting,
          C sends back to A again without source rewriting;
@@ -2046,8 +2080,8 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
          in this case, A must just drop; however, this
          should not happen (peers should check). */
       GE_BREAK_OP (ectx, 0);
-      FREE (qmsg);
-      return OK;
+      GNUNET_free (qmsg);
+      return GNUNET_OK;
     }
   if (stats != NULL)
     stats->change (stat_routing_totals, 1);
@@ -2056,25 +2090,29 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
   ttl = ntohl (qmsg->ttl);
   if (ttl < 0)
     {
-      ttl = ttl - 2 * TTL_DECREMENT - weak_randomi (TTL_DECREMENT);
+      ttl =
+        ttl - 2 * TTL_DECREMENT -
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
       if (ttl > 0)
         {                       /* integer underflow => drop (should be very rare)! */
-          FREE (qmsg);
+          GNUNET_free (qmsg);
           if (stats != NULL)
             stats->change (stat_routing_direct_drops, 1);
-          return OK;            /* just abort */
+          return GNUNET_OK;     /* just abort */
         }
     }
   else
     {
-      ttl = ttl - 2 * TTL_DECREMENT - weak_randomi (TTL_DECREMENT);
+      ttl =
+        ttl - 2 * TTL_DECREMENT -
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
     }
   prio = ntohl (qmsg->priority);
   policy = evaluateQuery (sender, &prio);
 #if DEBUG_GAP
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_USER,
-            hash2enc (&qmsg->queries[0], &enc));
+            GNUNET_hash_to_enc (&qmsg->queries[0], &enc));
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Received GAP query `%s'.\n", &enc);
@@ -2083,12 +2121,12 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
     {
       /* policy says no answer/forward/indirect => direct drop;
          this happens if the peer is too busy (netload-up >= 100%).  */
-      FREE (qmsg);
+      GNUNET_free (qmsg);
 #if DEBUG_GAP
       if (sender != NULL)
         {
           IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-                    hash2enc (&sender->hashPubKey, &enc));
+                    GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
         }
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2097,7 +2135,7 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
 #endif
       if (stats != NULL)
         stats->change (stat_routing_direct_drops, 1);
-      return OK;                /* straight drop. */
+      return GNUNET_OK;         /* straight drop. */
     }
   preference = (double) prio;
   if ((policy & QUERY_INDIRECT) > 0)
@@ -2122,8 +2160,8 @@ handleQuery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
   if (ttl < 0)
     ttl = 0;
   execQuery (sender, NULL, prio, policy, ttl, qmsg);
-  FREE (qmsg);
-  return OK;
+  GNUNET_free (qmsg);
+  return GNUNET_OK;
 }
 
 static unsigned int
@@ -2168,8 +2206,8 @@ provide_module_gap (CoreAPIForApplication * capi)
       || (-1 ==
           GC_get_configuration_value_number (cfg, "GAP", "TABLESIZE",
                                              MIN_INDIRECTION_TABLE_SIZE,
-                                             MAX_MALLOC_CHECKED /
-                                             sizeof (IndirectionTableEntry),
+                                             GNUNET_MAX_GNUNET_malloc_CHECKED
+                                             / sizeof (IndirectionTableEntry),
                                              MIN_INDIRECTION_TABLE_SIZE,
                                              &indirectionTableSize)))
     return NULL;
@@ -2231,7 +2269,7 @@ provide_module_gap (CoreAPIForApplication * capi)
         stats->create (gettext_noop ("# gap response weights"));
     }
   init_pid_table (ectx, stats);
-  GROW (rewards, rewardSize, MAX_REWARD_TRACKS);
+  GNUNET_array_grow (rewards, rewardSize, MAX_REWARD_TRACKS);
 
 
   identity = coreAPI->requestService ("identity");
@@ -2245,15 +2283,15 @@ provide_module_gap (CoreAPIForApplication * capi)
               _
               ("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
     }
-  random_qsel = weak_randomi (0xFFFF);
-  lookup_exclusion = MUTEX_CREATE (NO);
+  random_qsel = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 0xFFFF);
+  lookup_exclusion = GNUNET_mutex_create (GNUNET_NO);
   ROUTING_indTable_
-    = MALLOC (sizeof (IndirectionTableEntry) * indirectionTableSize);
+    = GNUNET_malloc (sizeof (IndirectionTableEntry) * indirectionTableSize);
   memset (ROUTING_indTable_,
           0, sizeof (IndirectionTableEntry) * indirectionTableSize);
   for (i = 0; i < indirectionTableSize; i++)
     {
-      ROUTING_indTable_[i].successful_local_lookup_in_delay_loop = NO;
+      ROUTING_indTable_[i].successful_local_lookup_in_delay_loop = GNUNET_NO;
     }
 
   for (i = 0; i < QUERY_RECORD_COUNT; i++)
@@ -2262,7 +2300,8 @@ provide_module_gap (CoreAPIForApplication * capi)
       queries[i].msg = NULL;
     }
   lock = coreAPI->getConnectionModuleLock ();
-  cron_add_job (capi->cron, &ageRTD, 2 * cronMINUTES, 2 * cronMINUTES, NULL);
+  GNUNET_cron_add_job (capi->cron, &ageRTD, 2 * GNUNET_CRON_MINUTES,
+                       2 * GNUNET_CRON_MINUTES, NULL);
 
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2294,17 +2333,17 @@ release_module_gap ()
   coreAPI->unregisterSendCallback (sizeof (P2P_gap_query_MESSAGE),
                                    &fillInQuery);
 
-  cron_del_job (coreAPI->cron, &ageRTD, 2 * cronMINUTES, NULL);
+  GNUNET_cron_del_job (coreAPI->cron, &ageRTD, 2 * GNUNET_CRON_MINUTES, NULL);
 
   for (i = 0; i < indirectionTableSize; i++)
     {
       ite = &ROUTING_indTable_[i];
       resetSeen (ite);
-      ite->seenReplyWasUnique = NO;
+      ite->seenReplyWasUnique = GNUNET_NO;
       resetDestinations (ite);
     }
 
-  MUTEX_DESTROY (lookup_exclusion);
+  GNUNET_mutex_destroy (lookup_exclusion);
   lookup_exclusion = NULL;
   while (rtdList != NULL)
     {
@@ -2314,12 +2353,12 @@ release_module_gap ()
         {
           rpos = pos->responseList;
           pos->responseList = rpos->next;
-          FREE (rpos);
+          GNUNET_free (rpos);
         }
-      FREE (pos);
+      GNUNET_free (pos);
     }
   for (i = 0; i < QUERY_RECORD_COUNT; i++)
-    FREENONNULL (queries[i].msg);
+    GNUNET_free_non_null (queries[i].msg);
 
   coreAPI->releaseService (identity);
   identity = NULL;
@@ -2330,8 +2369,8 @@ release_module_gap ()
       coreAPI->releaseService (traffic);
       traffic = NULL;
     }
-  FREE (ROUTING_indTable_);
-  GROW (rewards, rewardSize, 0);
+  GNUNET_free (ROUTING_indTable_);
+  GNUNET_array_grow (rewards, rewardSize, 0);
   done_pid_table ();
   if (stats != NULL)
     {

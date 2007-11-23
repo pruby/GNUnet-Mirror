@@ -31,15 +31,10 @@ gnunet_setup_SOURCES = \
 
 gnunet_setup_LDADD = \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 gnunet_win_tool_SOURCE = \
  gnunet-win-tool.c
 
 gnunet_win_tool_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
- $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
+ $(top_builddir)/src/util/libgnunetutil.la 

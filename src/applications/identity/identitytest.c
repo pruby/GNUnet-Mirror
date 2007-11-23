@@ -35,7 +35,7 @@
 #include "gnunet_util_network_client.h"
 #include "core.h"
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
 static struct GC_Configuration *cfg;
 
@@ -44,10 +44,10 @@ static struct GC_Configuration *cfg;
   if (!cond) { \
    printf("Assertion failed at %s:%d\n", \
           __FILE__, __LINE__); \
-   cron_stop(cron); \
+   GNUNET_cron_stop(cron); \
    releaseService(identity); \
    releaseService(transport); \
-   return SYSERR; \
+   return GNUNET_SYSERR; \
   } \
 } while (0)
 
@@ -56,28 +56,28 @@ runTest ()
 {
   Identity_ServiceAPI *identity;
   Transport_ServiceAPI *transport;
-  PeerIdentity pid;
-  const PublicKey *pkey;
-  Signature sig;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_PeerIdentity pid;
+  const GNUNET_RSA_PublicKey *pkey;
+  GNUNET_RSA_Signature sig;
+  GNUNET_MessageHello *hello;
 
   transport = requestService ("transport");
   identity = requestService ("identity");
-  cron_start (cron);
+  GNUNET_cron_start (cron);
   /* give cron job chance to run */
-  PTHREAD_SLEEP (5 * cronSECONDS);
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
   hello = transport->createhello (ANY_PROTOCOL_NUMBER);
   if (NULL == hello)
     {
       printf ("Cannot run test, failed to create any hello.\n");
-      cron_stop (cron);
+      GNUNET_cron_stop (cron);
       releaseService (identity);
       releaseService (transport);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   identity->addHost (hello);
   pid = hello->senderIdentity;
-  FREE (hello);
+  GNUNET_free (hello);
 
   identity->changeHostTrust (&pid, -identity->getHostTrust (&pid));
   ASSERT (4 == identity->changeHostTrust (&pid, 4));
@@ -94,39 +94,40 @@ runTest ()
   ASSERT (0 == identity->getHostTrust (&pid));
 
   pkey = identity->getPublicPrivateKey ();
-  ASSERT (OK == identity->signData ("TestData", 8, &sig));
-  ASSERT (OK == verifySig ("TestData", 8, &sig, pkey));
+  ASSERT (GNUNET_OK == identity->signData ("TestData", 8, &sig));
+  ASSERT (GNUNET_OK == GNUNET_RSA_verify ("TestData", 8, &sig, pkey));
 
   /* to test:
      hello verification, temporary storage,
      permanent storage, blacklisting, etc. */
-  cron_stop (cron);
+  GNUNET_cron_stop (cron);
   releaseService (identity);
   releaseService (transport);
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
 hcb (void *data,
-     const PeerIdentity * identity,
+     const GNUNET_PeerIdentity * identity,
      const void *address,
      unsigned int addr_len,
-     cron_t last_message, unsigned int trust, unsigned int bpmFromPeer)
+     GNUNET_CronTime last_message, unsigned int trust,
+     unsigned int bpmFromPeer)
 {
   /* TODO: do something meaningful */
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
 runClientTest ()
 {
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   int ret;
 
-  ret = OK;
-  sock = client_connection_create (NULL, cfg);
-  gnunet_identity_request_peer_infos (sock, &hcb, &ret);
-  connection_destroy (sock);
+  ret = GNUNET_OK;
+  sock = GNUNET_client_connection_create (NULL, cfg);
+  GNUNET_IDENTITY_request_peer_infos (sock, &hcb, &ret);
+  GNUNET_client_connection_destroy (sock);
   return ret;
 }
 
@@ -135,7 +136,7 @@ main (int argc, char *argv[])
 {
   int err;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -144,12 +145,12 @@ main (int argc, char *argv[])
   cron = cron_create (NULL);
   initCore (NULL, cfg, cron, NULL);
   err = 0;
-  if (OK != runTest ())
+  if (GNUNET_OK != runTest ())
     err = 1;
-  if (OK != runClientTest ())
+  if (GNUNET_OK != runClientTest ())
     err = 1;
   doneCore ();
-  cron_destroy (cron);
+  GNUNET_cron_destroy (cron);
   GC_free (cfg);
   return err;
 }

@@ -218,7 +218,7 @@ extern "C"
 #define CS_PROTO_identity_HELLO 28
 
 /**
- * Client asks the Daemon to sign a message.
+ * Client asks the Daemon to GNUNET_RSA_sign a message.
  */
 #define CS_PROTO_identity_request_SIGN 29
 
@@ -365,7 +365,7 @@ extern "C"
 
 /**
  * termination of connection (other host is nice
- * and tells us, there is NO requirement to do so!)
+ * and tells us, there is GNUNET_NO requirement to do so!)
  */
 #define P2P_PROTO_hangup 4
 

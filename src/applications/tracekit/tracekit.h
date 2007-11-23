@@ -30,12 +30,12 @@
 
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * When was this probe started? (NBO)
    */
-  TIME_T timestamp;
+  GNUNET_Int32Time timestamp;
 
   /**
    * How many more hops should this probe go (NBO)
@@ -56,31 +56,31 @@ typedef struct
    * Which peer is the ultimate receiver of this
    * information?
    */
-  PeerIdentity initiatorId;
+  GNUNET_PeerIdentity initiatorId;
 
 } P2P_tracekit_probe_MESSAGE;
 
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Which peer is the ultimate receiver of this
    * information?
    */
-  PeerIdentity initiatorId;
+  GNUNET_PeerIdentity initiatorId;
 
   /**
    * Which peer is the ultimate responder responsible
    * for sending this reply?
    */
-  PeerIdentity responderId;
+  GNUNET_PeerIdentity responderId;
 
   /**
    * At what time was the initator sending the
    * request?
    */
-  TIME_T initiatorTimestamp;
+  GNUNET_Int32Time initiatorTimestamp;
 
   /**
    * Internal client Id of the sender.
@@ -97,13 +97,13 @@ typedef struct
    * List of peers that the responder is
    * currently connected to.
    */
-  PeerIdentity peerList[1];
+  GNUNET_PeerIdentity peerList[1];
 } P2P_tracekit_reply_MESSAGE_GENERIC;
 
 
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * How many more hops should this probe go (NBO)
@@ -118,13 +118,13 @@ typedef struct
 
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Which peer is the ultimate responder responsible
    * for sending this reply?
    */
-  PeerIdentity responderId;
+  GNUNET_PeerIdentity responderId;
 
 } CS_tracekit_reply_MESSAGE;
 
@@ -136,7 +136,7 @@ typedef struct
    * List of peers that the responder is
    * currently connected to.
    */
-  PeerIdentity peerList[1];
+  GNUNET_PeerIdentity peerList[1];
 } CS_tracekit_reply_MESSAGE_GENERIC;
 
 #endif

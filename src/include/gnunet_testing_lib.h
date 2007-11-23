@@ -52,15 +52,16 @@ extern "C"
  * @param applications application services that should be loaded
  * @param pid of the process (set)
  * @param peer identity of the peer (set)
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int gnunet_testing_start_daemon (unsigned short app_port,
+int GNUNET_TESTING_start_daemon (unsigned short app_port,
                                  unsigned short tra_offset,
                                  const char *gnunetd_home,
                                  const char *transports,
                                  const char *applications,
                                  pid_t * pid,
-                                 PeerIdentity * peer, char **configFile);
+                                 GNUNET_PeerIdentity * peer,
+                                 char **configFile);
 
 /**
  * Establish a connection between two GNUnet daemons
@@ -68,9 +69,9 @@ int gnunet_testing_start_daemon (unsigned short app_port,
  *
  * @param port1 client port of the first daemon
  * @param port2 client port of the second daemon
- * @return OK on success, SYSERR on failure
+ * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
-int gnunet_testing_connect_daemons (unsigned short port1,
+int GNUNET_TESTING_connect_daemons (unsigned short port1,
                                     unsigned short port2);
 
 
@@ -78,18 +79,18 @@ int gnunet_testing_connect_daemons (unsigned short port1,
  * Shutdown the GNUnet daemon waiting on the given port
  * and running under the given pid.
  *
- * @return OK on success, SYSERR on failure
+ * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
-int gnunet_testing_stop_daemon (unsigned short port, pid_t pid);
+int GNUNET_TESTING_stop_daemon (unsigned short port, pid_t pid);
 
 
 /**
  * Linked list of information about daemon processes.
  */
-struct DaemonContext
+struct GNUNET_TESTING_DaemonContext
 {
-  struct DaemonContext *next;
-  PeerIdentity peer;
+  struct GNUNET_TESTING_DaemonContext *next;
+  GNUNET_PeerIdentity peer;
   pid_t pid;
   unsigned short port;
   char *configFile;
@@ -104,7 +105,7 @@ struct DaemonContext
  *
  * @return handle used to stop the daemons, NULL on error
  */
-struct DaemonContext *gnunet_testing_start_daemons (const char *transports,
+struct GNUNET_TESTING_DaemonContext *GNUNET_TESTING_start_daemons (const char *transports,
                                                     const char *applications,
                                                     const char
                                                     *gnunetd_home_prefix,
@@ -115,9 +116,9 @@ struct DaemonContext *gnunet_testing_start_daemons (const char *transports,
 
 /**
  * Stop all of the daemons started with the start function.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int gnunet_testing_stop_daemons (struct DaemonContext *peers);
+int GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -31,13 +31,15 @@ parseCommandLine (int argc, char *argv[])
       switch (c)
         {
         case 'c':
-          FREENONNULL (setConfigurationString ("FILES",
-                                               "gnunet.conf", GNoptarg));
+          GNUNET_free_non_null (setConfigurationString ("FILES",
+                                                        "gnunet.conf",
+                                                        GNoptarg));
           break;
         }                       /* end of parsing commandline */
     }
-  FREENONNULL (setConfigurationString ("GNUNETD", "LOGLEVEL", "NOTHING"));
-  return OK;
+  GNUNET_free_non_null (setConfigurationString
+                        ("GNUNETD", "LOGLEVEL", "NOTHING"));
+  return GNUNET_OK;
 }
 
 #define TH "TestHandle"
@@ -49,17 +51,17 @@ testState ()
   char *ret;
 
   stateUnlinkFromDB (TH);       /* go to defined state */
-  if (SYSERR == stateWriteContent (TH, 5, testString))
+  if (GNUNET_SYSERR == stateWriteContent (TH, 5, testString))
     return 1;
-  if (SYSERR == stateAppendContent (TH, 6, &testString[5]))
+  if (GNUNET_SYSERR == stateAppendContent (TH, 6, &testString[5]))
     return 2;
   ret = NULL;
-  if (SYSERR == stateReadContent (TH, (void **) &ret))
+  if (GNUNET_SYSERR == stateReadContent (TH, (void **) &ret))
     return 3;
   if (0 != strncmp (ret, testString, 11))
     return 4;
-  FREE (ret);
-  if (OK != stateUnlinkFromDB (TH))
+  GNUNET_free (ret);
+  if (GNUNET_OK != stateUnlinkFromDB (TH))
     return 5;
   return 0;
 }

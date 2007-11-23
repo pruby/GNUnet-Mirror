@@ -34,12 +34,12 @@ typedef struct
   /**
    * size of the message, in bytes, including this header.
    */
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
-   * What is the identity of the sender (hash of public key)
+   * What is the identity of the sender (GNUNET_hash of public key)
    */
-  PeerIdentity sender;
+  GNUNET_PeerIdentity sender;
 
 } UDPMessage;
 
@@ -64,12 +64,12 @@ static struct GE_Context *ectx;
 /**
  * thread that listens for inbound messages
  */
-static struct SelectHandle *selector;
+static struct GNUNET_SelectHandle *selector;
 
 /**
  * the socket that we transmit all data with
  */
-static struct SocketHandle *udp_sock;
+static struct GNUNET_SocketHandle *udp_sock;
 
 /**
  * The socket of session has data waiting, process!
@@ -79,9 +79,9 @@ static struct SocketHandle *udp_sock;
  */
 static int
 select_message_handler (void *mh_cls,
-                        struct SelectHandle *sh,
-                        struct SocketHandle *sock,
-                        void *sock_ctx, const MESSAGE_HEADER * msg)
+                        struct GNUNET_SelectHandle *sh,
+                        struct GNUNET_SocketHandle *sock,
+                        void *sock_ctx, const GNUNET_MessageHeader * msg)
 {
   unsigned int len;
   P2P_PACKET *mp;
@@ -94,15 +94,15 @@ select_message_handler (void *mh_cls,
               GE_WARNING | GE_USER | GE_BULK,
               _
               ("Received malformed message from udp-peer connection. Closing.\n"));
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #if DEBUG_UDP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK, "Received %d bytes via UDP\n", len);
 #endif
   um = (const UDPMessage *) msg;
-  mp = MALLOC (sizeof (P2P_PACKET));
-  mp->msg = MALLOC (len - sizeof (UDPMessage));
+  mp = GNUNET_malloc (sizeof (P2P_PACKET));
+  mp->msg = GNUNET_malloc (len - sizeof (UDPMessage));
   memcpy (mp->msg, &um[1], len - sizeof (UDPMessage));
   mp->sender = um->sender;
   mp->size = len - sizeof (UDPMessage);
@@ -110,18 +110,18 @@ select_message_handler (void *mh_cls,
   coreAPI->receive (mp);
   if (stats != NULL)
     stats->change (stat_bytesReceived, len);
-  return OK;
+  return GNUNET_OK;
 }
 
 static void *
 select_accept_handler (void *ah_cls,
-                       struct SelectHandle *sh,
-                       struct SocketHandle *sock,
+                       struct GNUNET_SelectHandle *sh,
+                       struct GNUNET_SocketHandle *sock,
                        const void *addr, unsigned int addr_len)
 {
   static int nonnullpointer;
   BlacklistedTester blt = ah_cls;
-  if (NO != blt (addr, addr_len))
+  if (GNUNET_NO != blt (addr, addr_len))
     return NULL;
   return &nonnullpointer;
 }
@@ -132,8 +132,8 @@ select_accept_handler (void *ah_cls,
  */
 static void
 select_close_handler (void *ch_cls,
-                      struct SelectHandle *sh,
-                      struct SocketHandle *sock, void *sock_ctx)
+                      struct GNUNET_SelectHandle *sh,
+                      struct GNUNET_SocketHandle *sock, void *sock_ctx)
 {
   /* do nothing */
 }
@@ -143,24 +143,24 @@ select_close_handler (void *ch_cls,
  *
  * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
+udpConnect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
             int may_reuse)
 {
   TSession *tsession;
 
-  tsession = MALLOC (sizeof (TSession));
+  tsession = GNUNET_malloc (sizeof (TSession));
   memset (tsession, 0, sizeof (TSession));
-  tsession->internal = MALLOC (P2P_hello_MESSAGE_size (hello));
-  memcpy (tsession->internal, hello, P2P_hello_MESSAGE_size (hello));
+  tsession->internal = GNUNET_malloc (GNUNET_sizeof_hello (hello));
+  memcpy (tsession->internal, hello, GNUNET_sizeof_hello (hello));
   tsession->ttype = udpAPI.protocolNumber;
   tsession->peer = hello->senderIdentity;
   *tsessionPtr = tsession;
   if (stats != NULL)
     stats->change (stat_udpConnected, 1);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -171,20 +171,20 @@ udpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
  * @param tsession the session handle passed along
  *   from the call to receive that was made by the transport
  *   layer
- * @return OK if the session could be associated,
- *         SYSERR if not.
+ * @return GNUNET_OK if the session could be associated,
+ *         GNUNET_SYSERR if not.
  */
 int
 udpAssociate (TSession * tsession)
 {
-  return SYSERR;                /* UDP connections can never be associated */
+  return GNUNET_SYSERR;         /* UDP connections can never be associated */
 }
 
 /**
  * Disconnect from a remote node.
  *
  * @param tsession the session that is closed
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
 udpDisconnect (TSession * tsession)
@@ -192,12 +192,12 @@ udpDisconnect (TSession * tsession)
   if (tsession != NULL)
     {
       if (tsession->internal != NULL)
-        FREE (tsession->internal);
-      FREE (tsession);
+        GNUNET_free (tsession->internal);
+      GNUNET_free (tsession);
       if (stats != NULL)
         stats->change (stat_udpConnected, -1);
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -210,12 +210,12 @@ stopTransportServer ()
   GE_ASSERT (ectx, udp_sock != NULL);
   if (selector != NULL)
     {
-      select_destroy (selector);
+      GNUNET_select_destroy (selector);
       selector = NULL;
     }
-  socket_destroy (udp_sock);
+  GNUNET_socket_destroy (udp_sock);
   udp_sock = NULL;
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -226,32 +226,32 @@ stopTransportServer ()
  * even bother to construct (and encrypt) this kind
  * of message.
  *
- * @return YES if the transport would try (i.e. queue
+ * @return GNUNET_YES if the transport would try (i.e. queue
  *         the message or call the OS to send),
- *         NO if the transport would just drop the message,
- *         SYSERR if the size/session is invalid
+ *         GNUNET_NO if the transport would just drop the message,
+ *         GNUNET_SYSERR if the size/session is invalid
  */
 static int
 testWouldTry (TSession * tsession, unsigned int size, int important)
 {
-  const P2P_hello_MESSAGE *hello;
+  const GNUNET_MessageHello *hello;
 
   if (udp_sock == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   if (size == 0)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (size > udpAPI.mtu)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  hello = (const P2P_hello_MESSAGE *) tsession->internal;
+  hello = (const GNUNET_MessageHello *) tsession->internal;
   if (hello == NULL)
-    return SYSERR;
-  return YES;
+    return GNUNET_SYSERR;
+  return GNUNET_YES;
 }
 
 

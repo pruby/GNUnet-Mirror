@@ -29,22 +29,22 @@
 static void
 semaphore_up (void *ctx)
 {
-  struct SEMAPHORE *sem = ctx;
-  SEMAPHORE_UP (sem);
+  struct GNUNET_Semaphore *sem = ctx;
+  GNUNET_semaphore_up (sem);
 }
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
 static int
 check ()
 {
-  struct SEMAPHORE *sem;
+  struct GNUNET_Semaphore *sem;
   unsigned long long cumDelta;
-  cron_t now;
-  cron_t last;
+  GNUNET_CronTime now;
+  GNUNET_CronTime last;
   int i;
 
-  sem = SEMAPHORE_CREATE (0);
+  sem = GNUNET_semaphore_create (0);
 
   cumDelta = 0;
 
@@ -52,10 +52,11 @@ check ()
 #define INCR2 113
   for (i = 50; i < MAXV2 + 50; i += INCR2)
     {
-      last = get_time ();
-      cron_add_job (cron, &semaphore_up, i * cronMILLIS, 0, sem);
-      SEMAPHORE_DOWN (sem, YES);
-      now = get_time ();
+      last = GNUNET_get_time ();
+      GNUNET_cron_add_job (cron, &semaphore_up, i * GNUNET_CRON_MILLISECONDS,
+                           0, sem);
+      GNUNET_semaphore_down (sem, GNUNET_YES);
+      now = GNUNET_get_time ();
       if (now < last + i)
         now = last + i - now;
       else
@@ -70,16 +71,16 @@ check ()
   FPRINTF (stdout,
            "Sleep interrupt precision is %llums. ",
            cumDelta / (MAXV2 / INCR2));
-  if (cumDelta <= 10 * cronMILLIS * MAXV2 / INCR2)
+  if (cumDelta <= 10 * GNUNET_CRON_MILLISECONDS * MAXV2 / INCR2)
     fprintf (stdout, "Timer precision is excellent.\n");
-  else if (cumDelta <= 50 * cronMILLIS * MAXV2 / INCR2) /* 50ms average deviation */
+  else if (cumDelta <= 50 * GNUNET_CRON_MILLISECONDS * MAXV2 / INCR2)   /* 50ms average deviation */
     fprintf (stdout, "Timer precision is good.\n");
-  else if (cumDelta > 250 * cronMILLIS * MAXV2 / INCR2)
+  else if (cumDelta > 250 * GNUNET_CRON_MILLISECONDS * MAXV2 / INCR2)
     fprintf (stdout, "Timer precision is awful.\n");
   else
     fprintf (stdout, "Timer precision is acceptable.\n");
 
-  SEMAPHORE_DESTROY (sem);
+  GNUNET_semaphore_destroy (sem);
   return 0;
 }
 
@@ -89,10 +90,10 @@ main (int argc, char *argv[])
   int failureCount = 0;
 
   cron = cron_create (NULL);
-  cron_start (cron);
+  GNUNET_cron_start (cron);
   failureCount += check ();
-  cron_stop (cron);
-  cron_destroy (cron);
+  GNUNET_cron_stop (cron);
+  GNUNET_cron_destroy (cron);
   if (failureCount != 0)
     return 1;
   return 0;

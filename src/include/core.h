@@ -35,7 +35,8 @@
  */
 int initCore (struct GE_Context *ectx,
               struct GC_Configuration *cfg,
-              struct CronManager *cron, struct LoadMonitor *monitor);
+              struct GNUNET_CronManager *cron,
+              struct GNUNET_LoadMonitor *monitor);
 
 /**
  * Shutdown the CORE modules (also shuts down all
@@ -48,12 +49,12 @@ void *requestService (const char *pos);
 int releaseService (void *service);
 
 /**
- * @return OK on success, SYSERR if some modules failed to unload
+ * @return GNUNET_OK on success, GNUNET_SYSERR if some modules failed to unload
  */
 int unloadApplicationModules (void);
 
 /**
- * @return OK on success, SYSERR if some modules failed to load
+ * @return GNUNET_OK on success, GNUNET_SYSERR if some modules failed to load
  */
 int loadApplicationModules (void);
 

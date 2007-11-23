@@ -28,7 +28,7 @@
 #define TESTBED_COMMANDS_H
 
 /**
- * Signature of a command -- just like main()!
+ * GNUNET_RSA_Signature of a command -- just like main()!
  */
 typedef int (*CommandHandler) (int argc, char *argv[]);
 

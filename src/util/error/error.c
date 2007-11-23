@@ -172,7 +172,7 @@ int
 GE_isLogged (GE_Context * ctx, GE_KIND kind)
 {
   if (ctx == NULL)
-    return YES;
+    return GNUNET_YES;
   return GE_applies (kind, ctx->mask);
 }
 

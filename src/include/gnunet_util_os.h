@@ -46,83 +46,90 @@ extern "C"
 /**
  * 32-bit timer value.
  */
-typedef unsigned int TIME_T;
+typedef unsigned int GNUNET_Int32Time;
 
 /**
  * @brief Inter-process semaphore.
  */
-struct IPC_SEMAPHORE;
+struct GNUNET_IPC_Semaphore;
 
 /**
  * @brief plugin (shared library) handle
  */
-struct PluginHandle;
+struct GNUNET_PluginHandle;
 
 /**
- * TIME prototype. "man time".
+ * GNUNET_get_time_int32 prototype. "man time".
  */
-TIME_T TIME (TIME_T * t);
+GNUNET_Int32Time GNUNET_get_time_int32 (GNUNET_Int32Time * t);
 
 /**
  * "man ctime_r".
  * @return character sequence describing the time,
  *  must be freed by caller
  */
-char *GN_CTIME (const TIME_T * t);
+char *GNUNET_int32_time_to_string (const GNUNET_Int32Time * t);
 
 /**
  * @param isDefault is this presumably the default interface
- * @return OK to continue iteration, SYSERR to abort
+ * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
-typedef int (*NetworkIfcProcessor) (const char *name,
-                                    int isDefault, void *cls);
+typedef int (*GNUNET_NetworkInterfaceProcessor) (const char *name,
+                                                 int isDefault, void *cls);
 
 typedef enum
 {
-  Download,
-  Upload,
-} NetworkDirection;
+  GNUNET_ND_DOWNLOAD,
+  GNUNET_ND_UPLOAD,
+} GNUNET_NETWORK_DIRECTION;
 
-struct LoadMonitor;
+struct GNUNET_LoadMonitor;
 
-struct IPC_SEMAPHORE *IPC_SEMAPHORE_CREATE (struct GE_Context *ectx,
-                                            const char *basename,
-                                            unsigned int initialValue);
+struct GNUNET_IPC_Semaphore *GNUNET_IPC_semaphore_create (struct GE_Context
+                                                          *ectx,
+                                                          const char
+                                                          *basename,
+                                                          unsigned int
+                                                          initialValue);
 
-void IPC_SEMAPHORE_DESTROY (struct IPC_SEMAPHORE *sem);
+void GNUNET_IPC_semaphore_destroy (struct GNUNET_IPC_Semaphore *sem);
 
-void IPC_SEMAPHORE_UP (struct IPC_SEMAPHORE *sem);
+void GNUNET_IPC_semaphore_up (struct GNUNET_IPC_Semaphore *sem);
 
 /**
- * @return OK on success, SYSERR if would block
+ * @return GNUNET_OK on success, GNUNET_SYSERR if would block
  */
-int IPC_SEMAPHORE_DOWN (struct IPC_SEMAPHORE *sem, int mayBlock);
+int GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem,
+                               int mayBlock);
 
 /**
  * Load plugin
  */
-struct PluginHandle *os_plugin_load (struct GE_Context *ectx,
-                                     const char *libprefix,
-                                     const char *dsoname);
+struct GNUNET_PluginHandle *GNUNET_plugin_load (struct GE_Context *ectx,
+                                                const char *libprefix,
+                                                const char *dsoname);
 
 /**
  * Try resolving a function provided by the plugin
- * @param logError YES if failure to find the function
+ * @param logError GNUNET_YES if failure to find the function
  *        is an error that should be logged
  * @param methodprefix prefix for the method; the
  *        method name will be automatically extended
  *        with the respective dsoname of the plugin
  * @return NULL on error, otherwise pointer to the function
  */
-void *os_plugin_resolve_function (struct PluginHandle *plugin,
-                                  const char *methodprefix, int logError);
+void *GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plugin,
+                                      const char *methodprefix, int logError);
 
-void os_plugin_unload (struct PluginHandle *plugin);
+void GNUNET_plugin_unload (struct GNUNET_PluginHandle *plugin);
 
-struct LoadMonitor *os_network_monitor_create (struct GE_Context *ectx,
-                                               struct GC_Configuration *cfg);
+struct GNUNET_LoadMonitor *GNUNET_network_monitor_create (struct GE_Context
+                                                          *ectx,
+                                                          struct
+                                                          GC_Configuration
+                                                          *cfg);
 
-void os_network_monitor_destroy (struct LoadMonitor *mon);
+void GNUNET_network_monitor_destroy (struct GNUNET_LoadMonitor *mon);
 
 /**
  * Get the load of the network relative to what is allowed.
@@ -130,8 +137,8 @@ void os_network_monitor_destroy (struct LoadMonitor *mon);
  * @return the network load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
-int os_network_monitor_get_load (struct LoadMonitor *monitor,
-                                 NetworkDirection dir);
+int GNUNET_network_monitor_get_load (struct GNUNET_LoadMonitor *monitor,
+                                     GNUNET_NETWORK_DIRECTION dir);
 
 /**
  * Get the total amoung of bandwidth this load monitor allows
@@ -139,55 +146,59 @@ int os_network_monitor_get_load (struct LoadMonitor *monitor,
  *
  * @return the maximum bandwidth in bytes per second, -1 for no limit
  */
-unsigned long long os_network_monitor_get_limit (struct LoadMonitor *monitor,
-                                                 NetworkDirection dir);
+unsigned long long GNUNET_network_monitor_get_limit (struct GNUNET_LoadMonitor
+                                                     *monitor,
+                                                     GNUNET_NETWORK_DIRECTION
+                                                     dir);
 
 /**
  * Tell monitor to increment the number of bytes sent/received
  */
-void os_network_monitor_notify_transmission (struct LoadMonitor *monitor,
-                                             NetworkDirection dir,
-                                             unsigned long long delta);
+void GNUNET_network_monitor_notify_transmission (struct GNUNET_LoadMonitor
+                                                 *monitor,
+                                                 GNUNET_NETWORK_DIRECTION dir,
+                                                 unsigned long long delta);
 
 /**
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
-void os_list_network_interfaces (struct GE_Context *ectx,
-                                 NetworkIfcProcessor proc, void *cls);
+void GNUNET_list_network_interfaces (struct GE_Context *ectx,
+                                     GNUNET_NetworkInterfaceProcessor proc,
+                                     void *cls);
 
 /**
  * @brief Set maximum number of open file descriptors
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int os_set_fd_limit (struct GE_Context *ectx, int n);
+int GNUNET_set_fd_limit (struct GE_Context *ectx, int n);
 
 /**
  * Set our process priority
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int os_set_process_priority (struct GE_Context *ectx, const char *str);
+int GNUNET_set_process_priority (struct GE_Context *ectx, const char *str);
 
 /**
  * @brief Make "application" start automatically
  *
- * @param testCapability YES to merely probe if the OS has this
+ * @param testCapability GNUNET_YES to merely probe if the OS has this
  *        functionality (in that case, no actual operation is
- *        performed).  SYSERR is returned if
+ *        performed).  GNUNET_SYSERR is returned if
  *        a) autostart is not supported,
  *        b) the application does not seem to exist
  *        c) the user or group do not exist
  *        d) the user has insufficient permissions for
  *           changing autostart
- *        e) doAutoStart is NO, but autostart is already
+ *        e) doAutoStart is GNUNET_NO, but autostart is already
  *           disabled
- *        f) doAutoStart is YES, but autostart is already
+ *        f) doAutoStart is GNUNET_YES, but autostart is already
  *           enabled
- * @param doAutoStart YES to enable autostart of the
- *        application, NO to disable it
+ * @param doAutoStart GNUNET_YES to enable autostart of the
+ *        application, GNUNET_NO to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
- * @returns YES on success, NO if unsupported, SYSERR on failure or one of
+ * @returns GNUNET_YES on success, GNUNET_NO if unsupported, GNUNET_SYSERR on failure or one of
  *          these error codes:
  *  Windows
  *    2 SCM could not be opened
@@ -198,44 +209,45 @@ int os_set_process_priority (struct GE_Context *ectx, const char *str);
  *  Unix
  *    2 startup script could not be opened
  */
-int os_modify_autostart (struct GE_Context *ectx,
-                         int testCapability,
-                         int doAutoStart,
-                         const char *application,
-                         const char *username, const char *groupname);
+int GNUNET_configure_autostart (struct GE_Context *ectx,
+                                int testCapability,
+                                int doAutoStart,
+                                const char *application,
+                                const char *username, const char *groupname);
 
 /**
  * @brief Add or remove a service account for GNUnet
  *
- * @param testCapability YES to merely probe if the OS has this
+ * @param testCapability GNUNET_YES to merely probe if the OS has this
  *        functionality (in that case, no actual operation is
- *        performed).  SYSERR is returned if
+ *        performed).  GNUNET_SYSERR is returned if
  *        a) adding users is not supported,
  *        b) the user has insufficient permissions for
  *           adding/removing users
- *        c) doAdd is NO, but user does not exist
- *        d) doAdd is YES, and user already exists
- * @param doAdd YES to add, NO to remove user, SYSERR to
+ *        c) doAdd is GNUNET_NO, but user does not exist
+ *        d) doAdd is GNUNET_YES, and user already exists
+ * @param doAdd GNUNET_YES to add, GNUNET_NO to remove user, GNUNET_SYSERR to
  *        purge (removes user AND group)
  * @param name the name of the user
  * @param group name of the group
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int os_modify_user (int testCapability,
-                    int doAdd, const char *name, const char *group);
+int GNUNET_configure_user_account (int testCapability,
+                                   int doAdd, const char *name,
+                                   const char *group);
 
 /**
  * Change current process to run as the given
  * user
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int os_change_user (struct GE_Context *ectx, const char *user);
+int GNUNET_change_user (struct GE_Context *ectx, const char *user);
 
 /**
  * @brief Change owner of a file
  */
-int os_change_owner (struct GE_Context *ectx,
-                     const char *filename, const char *user);
+int GNUNET_file_change_owner (struct GE_Context *ectx,
+                              const char *filename, const char *user);
 
 /**
  * Get the current CPU load.
@@ -244,7 +256,8 @@ int os_change_owner (struct GE_Context *ectx,
  * @return -1 on error, otherwise load value (between 0 and 100,
  *        (100 is equivalent to full load for one CPU)
  */
-int os_cpu_get_load (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int GNUNET_cpu_get_load (struct GE_Context *ectx,
+                         struct GC_Configuration *cfg);
 
 /**
  * Get the current IO load.
@@ -255,19 +268,20 @@ int os_cpu_get_load (struct GE_Context *ectx, struct GC_Configuration *cfg);
  *       100 means that we spend all of our cycles waiting for
  *       the disk)
  */
-int os_disk_get_load (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int GNUNET_disk_get_load (struct GE_Context *ectx,
+                          struct GC_Configuration *cfg);
 
 /**
  * Start gnunetd process
  *
  * @param cfgFile configuration file to use, NULL for default
- * @param daemonize YES if gnunetd should be daemonized
+ * @param daemonize GNUNET_YES if gnunetd should be daemonized
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
  */
-int os_daemon_start (struct GE_Context *ectx,
-                     struct GC_Configuration *cfg,
-                     const char *cfgFile, int daemonize);
+int GNUNET_daemon_start (struct GE_Context *ectx,
+                         struct GC_Configuration *cfg,
+                         const char *cfgFile, int daemonize);
 
 /**
  * Wait until the gnunet daemon (or any other CHILD process for that
@@ -275,23 +289,23 @@ int os_daemon_start (struct GE_Context *ectx,
  * the daemon was started with daemon_start in no-daemonize mode.
  * On arbitrary PIDs, this function may fail unexpectedly.
  *
- * @return YES if gnunetd shutdown with
- *  return value 0, SYSERR if waitpid
- *  failed, NO if gnunetd shutdown with
+ * @return GNUNET_YES if gnunetd shutdown with
+ *  return value 0, GNUNET_SYSERR if waitpid
+ *  failed, GNUNET_NO if gnunetd shutdown with
  *  some error
  */
-int os_daemon_stop (struct GE_Context *ectx, int pid);
+int GNUNET_daemon_stop (struct GE_Context *ectx, int pid);
 
 /**
  * List of install paths
  */
-enum InstallPathKind
+enum GNUNET_INSTALL_PATH_KIND
 {
-  IPK_PREFIX,
-  IPK_BINDIR,
-  IPK_LIBDIR,
-  IPK_DATADIR,
-  IPK_LOCALEDIR
+  GNUNET_IPK_PREFIX,
+  GNUNET_IPK_BINDIR,
+  GNUNET_IPK_LIBDIR,
+  GNUNET_IPK_DATADIR,
+  GNUNET_IPK_LOCALEDIR
 };
 
 /**
@@ -301,24 +315,24 @@ enum InstallPathKind
  * @param cfg the context to get configuration values from
  * @return a pointer to the dir path (to be freed by the caller)
  */
-char *os_get_installation_path (enum InstallPathKind dirkind);
+char *GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind);
 
 /**
  * Write our process ID to the pid file.  Use only
- * if you are not calling os_terminal_detach, since
- * os_terminal_detach will already write the pid file.
+ * if you are not calling GNUNET_terminal_detach, since
+ * GNUNET_terminal_detach will already write the pid file.
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int os_write_pid_file (struct GE_Context *ectx,
-                       struct GC_Configuration *cfg, unsigned int pid);
+int GNUNET_pid_file_write (struct GE_Context *ectx,
+                           struct GC_Configuration *cfg, unsigned int pid);
 
 /**
  * Delete the PID file (to be called when the daemon
  * shuts down)
  */
-int os_delete_pid_file (struct GE_Context *ectx,
-                        struct GC_Configuration *cfg);
+int GNUNET_pid_file_delete (struct GE_Context *ectx,
+                            struct GC_Configuration *cfg);
 
 
 /**
@@ -329,22 +343,22 @@ int os_delete_pid_file (struct GE_Context *ectx,
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
  */
-int os_terminal_detach (struct GE_Context *ectx,
-                        struct GC_Configuration *cfg, int *filedes);
+int GNUNET_terminal_detach (struct GE_Context *ectx,
+                            struct GC_Configuration *cfg, int *filedes);
 
 /**
  * Complete the handshake of detaching from the terminal.
- * @param success use NO for error, YES for successful start
+ * @param success use GNUNET_NO for error, GNUNET_YES for successful start
  */
-void os_terminal_detach_complete (struct GE_Context *ectx,
-                                  int *filedes, int success);
+void GNUNET_terminal_detach_complete (struct GE_Context *ectx,
+                                      int *filedes, int success);
 
 /**
  * @brief Perform OS specific initalization
  * @param ectx logging context, NULL means stderr
- * @returns OK on success, SYSERR otherwise
+ * @returns GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
-int os_init (struct GE_Context *ectx);
+int GNUNET_os_init (struct GE_Context *ectx);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

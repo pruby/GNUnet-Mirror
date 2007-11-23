@@ -28,7 +28,7 @@
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   char section[CS_getoption_request_MESSAGE_OPT_LEN];
   char option[CS_getoption_request_MESSAGE_OPT_LEN];
 } CS_getoption_request_MESSAGE;
@@ -39,7 +39,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   char value[1];
 } CS_getoption_reply_MESSAGE;
 

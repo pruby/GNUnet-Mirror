@@ -36,10 +36,10 @@ main (int argc, char *argv[])
 
   p = RPC_paramNew ();
 
-  if (SYSERR != RPC_paramValueByPosition (p, 0, &len, &buf))
+  if (GNUNET_SYSERR != RPC_paramValueByPosition (p, 0, &len, &buf))
     return 1;
 
-  if (SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
     return 1;
 
   if (RPC_paramCount (p) != 0)
@@ -54,31 +54,31 @@ main (int argc, char *argv[])
     return 1;
 
   size = RPC_paramSize (p);
-  buf = MALLOC (size);
+  buf = GNUNET_malloc (size);
   RPC_paramSerialize (p, buf);
   RPC_paramFree (p);
   p = RPC_paramDeserialize (buf, size);
-  FREE (buf);
+  GNUNET_free (buf);
   if (p == NULL)
     return 1;
   buf = NULL;
-  if (OK != RPC_paramValueByName (p, "foo", &len, &buf))
+  if (GNUNET_OK != RPC_paramValueByName (p, "foo", &len, &buf))
     return 1;
   if (strcmp ("bar", buf) != 0)
     return 1;
   buf = NULL;
   if (4 != len)
     return 1;
-  if (OK != RPC_paramValueByPosition (p, 1, &len, &buf))
+  if (GNUNET_OK != RPC_paramValueByPosition (p, 1, &len, &buf))
     return 1;
   if (strcmp ("foo", buf) != 0)
     return 1;
   if (4 != len)
     return 1;
-  if (SYSERR != RPC_paramValueByPosition (p, 2, &len, &buf))
+  if (GNUNET_SYSERR != RPC_paramValueByPosition (p, 2, &len, &buf))
     return 1;
 
-  if (SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
     return 1;
   RPC_paramFree (p);
 

@@ -55,20 +55,20 @@ typedef struct Location
   /**
    * Identity of the peer sharing the file.
    */
-  PublicKey peer;
+  GNUNET_RSA_PublicKey peer;
 
   /**
    * Time when the HELLO *and* this location URI
    * expire (they expire together!).
    */
-  TIME_T expirationTime;
+  GNUNET_Int32Time expirationTime;
 
   /**
    * RSA signature over the FileIdentifier,
-   * hash of the peer and expiration time.
+   * GNUNET_hash of the peer and expiration time.
    * (everything until proto).
    */
-  Signature contentSignature;
+  GNUNET_RSA_Signature contentSignature;
 
 } Location;
 
@@ -87,8 +87,8 @@ typedef struct ECRS_URI
     } ksk;
     struct
     {
-      HashCode512 namespace;
-      HashCode512 identifier;
+      GNUNET_HashCode namespace;
+      GNUNET_HashCode identifier;
     } sks;
     FileIdentifier fi;
     Location loc;
@@ -111,10 +111,10 @@ typedef struct ECRS_MetaData
 } MetaData;
 
 
-void ECRS_encryptInPlace (const HashCode512 * hc,
+void ECRS_encryptInPlace (const GNUNET_HashCode * hc,
                           void *data, unsigned int len);
 
-void ECRS_decryptInPlace (const HashCode512 * hc,
+void ECRS_decryptInPlace (const GNUNET_HashCode * hc,
                           void *data, unsigned int len);
 
 

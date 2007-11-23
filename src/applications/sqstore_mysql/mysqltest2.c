@@ -85,10 +85,10 @@
 #define MAX_SIZE 1024LL * 1024 * 16
 
 /**
- * Report progress outside of major reports? Should probably be YES if
+ * Report progress outside of major reports? Should probably be GNUNET_YES if
  * size is > 16 MB.
  */
-#define REPORT_ID NO
+#define REPORT_ID GNUNET_NO
 
 /**
  * Number of put operations equivalent to 1/10th of MAX_SIZE
@@ -121,36 +121,40 @@ static unsigned long long stored_entries;
 
 static unsigned long long stored_ops;
 
-static cron_t start_time;
+static GNUNET_CronTime start_time;
 
 static int
 putValue (SQstore_ServiceAPI * api, int i)
 {
   Datastore_Value *value;
   size_t size;
-  static HashCode512 key;
+  static GNUNET_HashCode key;
   static int ic;
 
   /* most content is 32k */
   size = sizeof (Datastore_Value) + 32 * 1024;
-  if (weak_randomi (16) == 0)   /* but some of it is less! */
-    size = sizeof (Datastore_Value) + weak_randomi (32 * 1024);
+  if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 16) == 0)  /* but some of it is less! */
+    size =
+      sizeof (Datastore_Value) +
+      GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */
 
   /* generate random key */
-  hash (&key, sizeof (HashCode512), &key);
-  value = MALLOC (size);
+  GNUNET_hash (&key, sizeof (GNUNET_HashCode), &key);
+  value = GNUNET_malloc (size);
   value->size = htonl (size);
   value->type = htonl (i);
-  value->prio = htonl (weak_randomi (100));
+  value->prio = htonl (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100));
   value->anonymityLevel = htonl (i);
-  value->expirationTime = htonll (get_time () + weak_randomi (1000));
+  value->expirationTime =
+    GNUNET_htonll (GNUNET_get_time () +
+                   GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
   memset (&value[1], i, size - sizeof (Datastore_Value));
-  if (OK != api->put (&key, value))
+  if (GNUNET_OK != api->put (&key, value))
     {
-      FREE (value);
+      GNUNET_free (value);
       fprintf (stderr, "E");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   ic++;
 #if REPORT_ID
@@ -160,21 +164,21 @@ putValue (SQstore_ServiceAPI * api, int i)
   stored_bytes += ntohl (value->size);
   stored_ops++;
   stored_entries++;
-  FREE (value);
-  return OK;
+  GNUNET_free (value);
+  return GNUNET_OK;
 }
 
 static int
-iterateDelete (const HashCode512 * key,
+iterateDelete (const GNUNET_HashCode * key,
                const Datastore_Value * val, void *cls, unsigned long long uid)
 {
   SQstore_ServiceAPI *api = cls;
   static int dc;
 
   if (api->getSize () < MAX_SIZE)
-    return SYSERR;
-  if (GNUNET_SHUTDOWN_TEST () == YES)
-    return SYSERR;
+    return GNUNET_SYSERR;
+  if (GNUNET_shutdown_test () == GNUNET_YES)
+    return GNUNET_SYSERR;
   dc++;
 #if REPORT_ID
   if (dc % REP_FREQ == 0)
@@ -182,7 +186,7 @@ iterateDelete (const HashCode512 * key,
 #endif
   stored_bytes -= ntohl (val->size);
   stored_entries--;
-  return NO;
+  return GNUNET_NO;
 }
 
 /**
@@ -207,8 +211,8 @@ test (SQstore_ServiceAPI * api)
       /* insert data equivalent to 1/10th of MAX_SIZE */
       for (j = 0; j < PUT_10; j++)
         {
-          ASSERT (OK == putValue (api, j));
-          if (GNUNET_SHUTDOWN_TEST () == YES)
+          ASSERT (GNUNET_OK == putValue (api, j));
+          if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
         }
 
@@ -220,7 +224,7 @@ test (SQstore_ServiceAPI * api)
 
       size = 0;
       if (have_file)
-        disk_file_size (NULL, DB_NAME, &size, NO);
+        GNUNET_disk_file_size (NULL, DB_NAME, &size, GNUNET_NO);
       printf (
 #if REPORT_ID
                "\n"
@@ -230,16 +234,16 @@ test (SQstore_ServiceAPI * api)
                size / 1024,     /* disk size in kb */
                (100.0 * size / stored_bytes) - 100,     /* overhead */
                (stored_ops * 2 - stored_entries) / 1024,        /* total operations (in k) */
-               1000 * (stored_ops * 2 - stored_entries) / (1 + get_time () - start_time));      /* operations per second */
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+               1000 * (stored_ops * 2 - stored_entries) / (1 + GNUNET_get_time () - start_time));       /* operations per second */
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   api->drop ();
-  return OK;
+  return GNUNET_OK;
 
 FAILURE:
   api->drop ();
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 int
@@ -248,9 +252,9 @@ main (int argc, char *argv[])
   SQstore_ServiceAPI *api;
   int ok;
   struct GC_Configuration *cfg;
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -261,16 +265,16 @@ main (int argc, char *argv[])
   api = requestService ("sqstore");
   if (api != NULL)
     {
-      start_time = get_time ();
+      start_time = GNUNET_get_time ();
       ok = test (api);
       releaseService (api);
     }
   else
-    ok = SYSERR;
+    ok = GNUNET_SYSERR;
   doneCore ();
-  cron_destroy (cron);
+  GNUNET_cron_destroy (cron);
   GC_free (cfg);
-  if (ok == SYSERR)
+  if (ok == GNUNET_SYSERR)
     return 1;
   return 0;
 }

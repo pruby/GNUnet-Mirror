@@ -31,9 +31,9 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE GNUNET_NO
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static volatile int suspendRestart = 0;
 
@@ -44,11 +44,11 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = MALLOC (strlen ("/tmp/gnunet-fsui-downloadtest/FSUITEST") + 14);
-  SNPRINTF (fn,
-            strlen ("/tmp/gnunet-fsui-downloadtest/FSUITEST") + 14,
-            "/tmp/gnunet-fsui-downloadtest/FSUITEST%u", i);
-  disk_directory_create_for_file (NULL, fn);
+  fn = GNUNET_malloc (strlen ("/tmp/gnunet-fsui-downloadtest/FSUITEST") + 14);
+  GNUNET_snprintf (fn,
+                   strlen ("/tmp/gnunet-fsui-downloadtest/FSUITEST") + 14,
+                   "/tmp/gnunet-fsui-downloadtest/FSUITEST%u", i);
+  GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
 
@@ -115,10 +115,10 @@ eventCallback (void *cls, const FSUI_Event * event)
 #if DEBUG_VERBOSE
           printf ("Download started: %s.\n", u);
 #endif
-          FREE (u);
+          GNUNET_free (u);
           download = FSUI_startDownload (ctx,
                                          0,
-                                         NO,
+                                         GNUNET_NO,
                                          event->data.SearchResult.fi.uri,
                                          event->data.SearchResult.fi.meta,
                                          fn, NULL, NULL);
@@ -127,7 +127,7 @@ eventCallback (void *cls, const FSUI_Event * event)
               GE_BREAK (ectx, 0);
               return NULL;
             }
-          FREE (fn);
+          GNUNET_free (fn);
           suspendRestart = 4;
         }
       break;
@@ -237,42 +237,42 @@ main (int argc, char *argv[])
   struct FSUI_UnindexList *unindex = NULL;
   struct FSUI_UploadList *upload = NULL;
 
-  ok = YES;
-  cfg = GC_create_C_impl ();
+  ok = GNUNET_YES;
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
 #if START_DAEMON
-  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GE_ASSERT (NULL, daemon > 0);
-  CHECK (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS));
-  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
+  CHECK (GNUNET_OK ==
+         GNUNET_wait_for_daemon_running (NULL, cfg,
+                                         30 * GNUNET_CRON_SECONDS));
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   ctx = FSUI_start (NULL,
-                    cfg, "fsuidownloadtest", 32, YES, &eventCallback, NULL);
+                    cfg, "fsuidownloadtest", 32, GNUNET_YES, &eventCallback,
+                    NULL);
   CHECK (ctx != NULL);
   fn = makeName (42);
-  buf = MALLOC (FILESIZE);
+  buf = GNUNET_malloc (FILESIZE);
   for (i = 0; i < FILESIZE; i++)
-    buf[i] = weak_randomi (256);
-  disk_file_write (ectx, fn, buf, FILESIZE, "600");
-  FREE (buf);
+    buf[i] = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 256);
+  GNUNET_disk_file_write (ectx, fn, buf, FILESIZE, "600");
+  GNUNET_free (buf);
   meta = ECRS_createMetaData ();
   kuri = ECRS_parseListKeywordURI (ectx, 2, (const char **) keywords);
   waitForEvent = FSUI_upload_completed;
   upload = FSUI_startUpload (ctx,
                              fn,
-                             (DirectoryScanCallback) & disk_directory_scan,
-                             NULL,
-                             0,
-                             0,
-                             YES,
-                             NO,
-                             NO,
-                             get_time () + 5 * cronHOURS, meta, kuri, kuri);
+                             (DirectoryScanCallback) &
+                             GNUNET_disk_directory_scan, NULL, 0, 0,
+                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
+                             kuri, kuri);
   CHECK (upload != NULL);
   ECRS_freeUri (kuri);
   kuri = NULL;
@@ -282,23 +282,25 @@ main (int argc, char *argv[])
     {
       prog++;
       CHECK (prog < 5000);
-      PTHREAD_SLEEP (50 * cronMILLIS);
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   FSUI_stopUpload (ctx, upload);
-  SNPRINTF (keyword, 40, "%s %s %s", keywords[0], _("AND"), keywords[1]);
+  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
+                   keywords[1]);
   uri = ECRS_parseCharKeywordURI (ectx, keyword);
   waitForEvent = FSUI_download_completed;
-  search = FSUI_startSearch (ctx, 0, 10000, 240 * cronSECONDS, uri);
+  search = FSUI_startSearch (ctx, 0, 10000, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   prog = 0;
   while (search != NULL)
     {
       prog++;
       CHECK (prog < 10000);
-      PTHREAD_SLEEP (50 * cronMILLIS);
-      if ((suspendRestart > 0) && (weak_randomi (4) == 0))
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      if ((suspendRestart > 0)
+          && (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 4) == 0))
         {
 #if 1
 #if DEBUG_VERBOSE
@@ -311,14 +313,14 @@ main (int argc, char *argv[])
           ctx = FSUI_start (NULL,
                             cfg,
                             "fsuidownloadtest",
-                            32, YES, &eventCallback, NULL);
+                            32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif
 #endif
           suspendRestart--;
         }
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   CHECK (search == NULL);
@@ -331,9 +333,9 @@ main (int argc, char *argv[])
     {
       prog++;
       CHECK (prog < 5000);
-      PTHREAD_SLEEP (50 * cronMILLIS);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       CHECK (lastEvent != FSUI_unindex_error);
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   CHECK (lastEvent == FSUI_unindex_completed);
@@ -350,7 +352,7 @@ FAILURE:
   if (fn != NULL)
     {
       UNLINK (fn);
-      FREE (fn);
+      GNUNET_free (fn);
     }
   if (uri != NULL)
     ECRS_freeUri (uri);
@@ -359,15 +361,15 @@ FAILURE:
   fn = makeName (43);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   UNLINK (fn);
-  FREE (fn);
+  GNUNET_free (fn);
   if (upURI != NULL)
     ECRS_freeUri (upURI);
 
 #if START_DAEMON
-  GE_BREAK (NULL, OK == os_daemon_stop (NULL, daemon));
+  GE_BREAK (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
   GC_free (cfg);
-  return (ok == YES) ? 0 : 1;
+  return (ok == GNUNET_YES) ? 0 : 1;
 }
 
 /* end of downloadtest.c */

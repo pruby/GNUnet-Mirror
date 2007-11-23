@@ -29,7 +29,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_boot.h"
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport_service.h"
@@ -41,9 +40,9 @@
 #include "handler.h"
 #include "startup.h"
 
-#define DEBUG_TRANSPORT_CHECK NO
+#define DEBUG_TRANSPORT_CHECK GNUNET_NO
 
-static struct SEMAPHORE *sem;
+static struct GNUNET_Semaphore *sem;
 
 static int terminate;
 
@@ -69,29 +68,29 @@ static struct GC_Configuration *cfg;
 
 static struct GE_Context *ectx;
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
 static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 static void
 semUp (void *arg)
 {
-  struct SEMAPHORE *sem = arg;
+  struct GNUNET_Semaphore *sem = arg;
 
-  terminate = YES;
-  SEMAPHORE_UP (sem);
+  terminate = GNUNET_YES;
+  GNUNET_semaphore_up (sem);
 }
 
 static int
-noiseHandler (const PeerIdentity * peer,
-              const MESSAGE_HEADER * msg, TSession * s)
+noiseHandler (const GNUNET_PeerIdentity * peer,
+              const GNUNET_MessageHeader * msg, TSession * s)
 {
   if ((ntohs (msg->size) ==
-       sizeof (MESSAGE_HEADER) + expectedSize) &&
+       sizeof (GNUNET_MessageHeader) + expectedSize) &&
       (0 == memcmp (expectedValue, &msg[1], expectedSize)))
-    ok = YES;
-  SEMAPHORE_UP (sem);
-  return OK;
+    ok = GNUNET_YES;
+  GNUNET_semaphore_up (sem);
+  return GNUNET_OK;
 }
 
 /**
@@ -101,37 +100,37 @@ static void
 testTAPI (TransportAPI * tapi, void *ctx)
 {
   int *res = ctx;
-  P2P_hello_MESSAGE *helo;
+  GNUNET_MessageHello *helo;
   TSession *tsession;
   unsigned long long repeat;
   unsigned long long total;
-  cron_t start;
-  cron_t end;
-  MESSAGE_HEADER *noise;
+  GNUNET_CronTime start;
+  GNUNET_CronTime end;
+  GNUNET_MessageHeader *noise;
   int ret;
 
   GE_ASSERT (ectx, tapi != NULL);
   if (tapi->protocolNumber == NAT_PROTOCOL_NUMBER)
     {
-      *res = OK;
+      *res = GNUNET_OK;
       return;                   /* NAT cannot be tested */
     }
   helo = tapi->createhello ();
   if (helo == NULL)
     {
       fprintf (stderr, _("`%s': Could not create hello.\n"), tapi->transName);
-      *res = SYSERR;
+      *res = GNUNET_SYSERR;
       return;
     }
   tsession = NULL;
-  if (OK != tapi->connect (helo, &tsession, NO))
+  if (GNUNET_OK != tapi->connect (helo, &tsession, GNUNET_NO))
     {
       fprintf (stderr, _("`%s': Could not connect.\n"), tapi->transName);
-      *res = SYSERR;
-      FREE (helo);
+      *res = GNUNET_SYSERR;
+      GNUNET_free (helo);
       return;
     }
-  FREE (helo);
+  GNUNET_free (helo);
   if (-1 == GC_get_configuration_value_number (cfg,
                                                "TRANSPORT-CHECK",
                                                "REPEAT",
@@ -139,87 +138,88 @@ testTAPI (TransportAPI * tapi, void *ctx)
                                                (unsigned long) -1,
                                                1, &repeat))
     {
-      *res = SYSERR;
+      *res = GNUNET_SYSERR;
       return;
     }
   total = repeat;
-  sem = SEMAPHORE_CREATE (0);
-  start = get_time ();
-  noise = MALLOC (expectedSize + sizeof (MESSAGE_HEADER));
+  sem = GNUNET_semaphore_create (0);
+  start = GNUNET_get_time ();
+  noise = GNUNET_malloc (expectedSize + sizeof (GNUNET_MessageHeader));
   noise->type = htons (P2P_PROTO_noise);
-  noise->size = htons (expectedSize + sizeof (MESSAGE_HEADER));
+  noise->size = htons (expectedSize + sizeof (GNUNET_MessageHeader));
   memcpy (&noise[1], expectedValue, expectedSize);
-  while ((repeat > 0) && (GNUNET_SHUTDOWN_TEST () == NO))
+  while ((repeat > 0) && (GNUNET_shutdown_test () == GNUNET_NO))
     {
       repeat--;
-      ok = NO;
-      ret = NO;
-      while (ret == NO)
+      ok = GNUNET_NO;
+      ret = GNUNET_NO;
+      while (ret == GNUNET_NO)
         ret = sendPlaintext (tsession, (char *) noise, ntohs (noise->size));
-      if (ret != OK)
+      if (ret != GNUNET_OK)
         {
           fprintf (stderr, _("`%s': Could not send.\n"), tapi->transName);
-          *res = SYSERR;
+          *res = GNUNET_SYSERR;
           tapi->disconnect (tsession);
-          SEMAPHORE_DESTROY (sem);
-          FREE (noise);
+          GNUNET_semaphore_destroy (sem);
+          GNUNET_free (noise);
           return;
         }
-      cron_add_job (cron, &semUp, timeout, 0, sem);
-      SEMAPHORE_DOWN (sem, YES);
-      cron_suspend (cron, NO);
-      cron_del_job (cron, &semUp, 0, sem);
-      cron_resume_jobs (cron, NO);
-      if (ok != YES)
+      GNUNET_cron_add_job (cron, &semUp, timeout, 0, sem);
+      GNUNET_semaphore_down (sem, GNUNET_YES);
+      GNUNET_cron_suspend_jobs (cron, GNUNET_NO);
+      GNUNET_cron_del_job (cron, &semUp, 0, sem);
+      GNUNET_cron_resume_jobs (cron, GNUNET_NO);
+      if (ok != GNUNET_YES)
         {
           FPRINTF (stderr,
                    _("`%s': Did not receive message within %llu ms.\n"),
                    tapi->transName, timeout);
-          *res = SYSERR;
+          *res = GNUNET_SYSERR;
           tapi->disconnect (tsession);
-          SEMAPHORE_DESTROY (sem);
-          FREE (noise);
+          GNUNET_semaphore_destroy (sem);
+          GNUNET_free (noise);
           return;
         }
     }
-  FREE (noise);
-  end = get_time ();
-  if (OK != tapi->disconnect (tsession))
+  GNUNET_free (noise);
+  end = GNUNET_get_time ();
+  if (GNUNET_OK != tapi->disconnect (tsession))
     {
       fprintf (stderr, _("`%s': Could not disconnect.\n"), tapi->transName);
-      *res = SYSERR;
-      SEMAPHORE_DESTROY (sem);
+      *res = GNUNET_SYSERR;
+      GNUNET_semaphore_destroy (sem);
       return;
     }
-  SEMAPHORE_DESTROY (sem);
+  GNUNET_semaphore_destroy (sem);
   printf (_
           ("`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes each.\n"),
-          tapi->transName, (unsigned int) ((end - start) / cronMILLIS), total,
+          tapi->transName,
+          (unsigned int) ((end - start) / GNUNET_CRON_MILLISECONDS), total,
           expectedSize);
 }
 
 static void
 pingCallback (void *unused)
 {
-  ok = YES;
-  SEMAPHORE_UP (sem);
+  ok = GNUNET_YES;
+  GNUNET_semaphore_up (sem);
 }
 
 static void
-testPING (const P2P_hello_MESSAGE * xhello, void *arg)
+testPING (const GNUNET_MessageHello * xhello, void *arg)
 {
   int *stats = arg;
   TSession *tsession;
-  P2P_hello_MESSAGE *hello;
-  P2P_hello_MESSAGE *myHello;
-  MESSAGE_HEADER *ping;
+  GNUNET_MessageHello *hello;
+  GNUNET_MessageHello *myHello;
+  GNUNET_MessageHeader *ping;
   char *msg;
   int len;
-  PeerIdentity peer;
+  GNUNET_PeerIdentity peer;
   unsigned long long verbose;
 
   stats[0]++;                   /* one more seen */
-  if (NO == transport->isAvailable (ntohs (xhello->protocol)))
+  if (GNUNET_NO == transport->isAvailable (ntohs (xhello->protocol)))
     {
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
@@ -243,21 +243,21 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
       int have_addr;
 
       have_addr = transport->helloToAddress (xhello, &addr, &addr_len);
-      if (have_addr == NO)
+      if (have_addr == GNUNET_NO)
         {
-          str = STRDUP ("NAT"); /* most likely */
+          str = GNUNET_strdup ("NAT");  /* most likely */
         }
       else
         {
-          str = network_get_ip_as_string (addr, addr_len, YES);
-          FREE (addr);
+          str = GNUNET_get_ip_as_string (addr, addr_len, GNUNET_YES);
+          GNUNET_free (addr);
         }
       fprintf (stderr, _("\nContacting `%s'."), str);
-      FREE (str);
+      GNUNET_free (str);
     }
   else
     fprintf (stderr, ".");
-  hello = MALLOC (ntohs (xhello->header.size));
+  hello = GNUNET_malloc (ntohs (xhello->header.size));
   memcpy (hello, xhello, ntohs (xhello->header.size));
 
   myHello = transport->createhello (ntohs (xhello->protocol));
@@ -266,15 +266,15 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
     myHello = transport->createhello (NAT_PROTOCOL_NUMBER);
   if (myHello == NULL)
     {
-      FREE (hello);
+      GNUNET_free (hello);
       return;
     }
   if (verbose > 0)
     fprintf (stderr, ".");
   tsession = NULL;
   peer = hello->senderIdentity;
-  tsession = transport->connect (hello, __FILE__, NO);
-  FREE (hello);
+  tsession = transport->connect (hello, __FILE__, GNUNET_NO);
+  GNUNET_free (hello);
   if (tsession == NULL)
     {
       fprintf (stderr, _(" Connection failed\n"));
@@ -289,91 +289,91 @@ testPING (const P2P_hello_MESSAGE * xhello, void *arg)
   if (verbose > 0)
     fprintf (stderr, ".");
 
-  sem = SEMAPHORE_CREATE (0);
-  ping = pingpong->pingUser (&peer, &pingCallback, NULL, YES, rand ());
+  sem = GNUNET_semaphore_create (0);
+  ping = pingpong->pingUser (&peer, &pingCallback, NULL, GNUNET_YES, rand ());
   len = ntohs (ping->size) + ntohs (myHello->header.size);
-  msg = MALLOC (len);
+  msg = GNUNET_malloc (len);
   memcpy (msg, myHello, ntohs (myHello->header.size));
   memcpy (&msg[ntohs (myHello->header.size)], ping, ntohs (ping->size));
-  FREE (myHello);
-  FREE (ping);
+  GNUNET_free (myHello);
+  GNUNET_free (ping);
   /* send ping */
-  ok = NO;
-  if (OK != sendPlaintext (tsession, msg, len))
+  ok = GNUNET_NO;
+  if (GNUNET_OK != sendPlaintext (tsession, msg, len))
     {
       fprintf (stderr, "Send failed.\n");
-      FREE (msg);
+      GNUNET_free (msg);
       transport->disconnect (tsession, __FILE__);
       return;
     }
-  FREE (msg);
+  GNUNET_free (msg);
   if (verbose > 0)
     fprintf (stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
   GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Waiting for PONG\n");
 #endif
-  terminate = NO;
-  cron_add_job (cron, &semUp, timeout, 5 * cronSECONDS, sem);
-  SEMAPHORE_DOWN (sem, YES);
+  terminate = GNUNET_NO;
+  GNUNET_cron_add_job (cron, &semUp, timeout, 5 * GNUNET_CRON_SECONDS, sem);
+  GNUNET_semaphore_down (sem, GNUNET_YES);
 
   if (verbose > 0)
     {
-      if (ok != YES)
+      if (ok != GNUNET_YES)
         FPRINTF (stderr, _("Timeout after %llums.\n"), timeout);
       else
         fprintf (stderr, _("OK!\n"));
     }
-  cron_suspend (cron, NO);
-  cron_del_job (cron, &semUp, 5 * cronSECONDS, sem);
-  cron_resume_jobs (cron, NO);
-  SEMAPHORE_DESTROY (sem);
+  GNUNET_cron_suspend_jobs (cron, GNUNET_NO);
+  GNUNET_cron_del_job (cron, &semUp, 5 * GNUNET_CRON_SECONDS, sem);
+  GNUNET_cron_resume_jobs (cron, GNUNET_NO);
+  GNUNET_semaphore_destroy (sem);
   sem = NULL;
   transport->disconnect (tsession, __FILE__);
-  if (ok == YES)
+  if (ok == GNUNET_YES)
     stats[2]++;
 }
 
 static int
 testTerminate (void *arg)
 {
-  if (GNUNET_SHUTDOWN_TEST () == NO)
-    return YES;
-  return NO;
+  if (GNUNET_shutdown_test () == GNUNET_NO)
+    return GNUNET_YES;
+  return GNUNET_NO;
 }
 
 /**
  * All gnunet-transport-check command line options
  */
-static struct CommandLineOption gnunettransportcheckOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to test if GNUnet transport services are operational.")),       /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+static struct GNUNET_CommandLineOption gnunettransportcheckOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to test if GNUnet transport services are operational.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'p', "ping", NULL,
    gettext_noop ("ping peers from HOSTLISTURL that match transports"),
-   0, &gnunet_getopt_configure_set_one, &ping},
+   0, &GNUNET_getopt_configure_set_one, &ping},
   {'r', "repeat", "COUNT",
    gettext_noop ("send COUNT messages"),
-   1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:REPEAT"},
+   1, &GNUNET_getopt_configure_set_option, "TRANSPORT-CHECK:REPEAT"},
   {'s', "size", "SIZE",
    gettext_noop ("send messages with SIZE bytes payload"),
-   1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:SIZE"},
+   1, &GNUNET_getopt_configure_set_option, "TRANSPORT-CHECK:SIZE"},
   {'t', "transport", "TRANSPORT",
    gettext_noop ("specifies which TRANSPORT should be tested"),
-   1, &gnunet_getopt_configure_set_option, "GNUNETD:TRANSPORTS"},
+   1, &GNUNET_getopt_configure_set_option, "GNUNETD:TRANSPORTS"},
   {'T', "timeout", "MS",
    gettext_noop ("specifies after how many MS to time-out"),
-   1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:TIMEOUT"},
+   1, &GNUNET_getopt_configure_set_option, "TRANSPORT-CHECK:TIMEOUT"},
   {'u', "user", "LOGIN",
    gettext_noop ("run as user LOGIN"),
-   1, &gnunet_getopt_configure_set_option, "GNUNETD:USER"},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
+   1, &GNUNET_getopt_configure_set_option, "GNUNETD:USER"},
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   {'X', "Xrepeat", "X",
    gettext_noop ("repeat each test X times"),
-   1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:X-REPEAT"},
-  COMMAND_LINE_OPTION_END,
+   1, &GNUNET_getopt_configure_set_option, "TRANSPORT-CHECK:X-REPEAT"},
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 int
@@ -389,7 +389,7 @@ main (int argc, char *const *argv)
                      argv,
                      "gnunet-transport-check",
                      &cfgFilename, gnunettransportcheckOptions, &ectx, &cfg);
-  if ((res == -1) || (OK != changeUser (ectx, cfg)))
+  if ((res == -1) || (GNUNET_OK != changeUser (ectx, cfg)))
     {
       GNUNET_fini (ectx, cfg);
       return -1;
@@ -407,14 +407,15 @@ main (int argc, char *const *argv)
                                                "TRANSPORT-CHECK",
                                                "TIMEOUT",
                                                1,
-                                               60 * cronSECONDS,
-                                               3 * cronSECONDS, &timeout))
+                                               60 * GNUNET_CRON_SECONDS,
+                                               3 * GNUNET_CRON_SECONDS,
+                                               &timeout))
     {
       GNUNET_fini (ectx, cfg);
       return 1;
     }
 
-  expectedValue = MALLOC (expectedSize);
+  expectedValue = GNUNET_malloc (expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';
   while (pos-- > 0)
@@ -426,7 +427,7 @@ main (int argc, char *const *argv)
                                                "TRANSPORTS",
                                                "udp tcp http", &trans))
     {
-      FREE (expectedValue);
+      GNUNET_free (expectedValue);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
@@ -435,7 +436,7 @@ main (int argc, char *const *argv)
     printf (_("Testing transport(s) %s\n"), trans);
   else
     printf (_("Available transport(s): %s\n"), trans);
-  FREE (trans);
+  GNUNET_free (trans);
   if (!ping)
     {
       /* disable blacklists (loopback is often blacklisted)... */
@@ -446,10 +447,10 @@ main (int argc, char *const *argv)
       GC_set_configuration_value_string (cfg, ectx, "HTTP", "BLACKLIST", "");
     }
   cron = cron_create (ectx);
-  if (OK != initCore (ectx, cfg, cron, NULL))
+  if (GNUNET_OK != initCore (ectx, cfg, cron, NULL))
     {
-      FREE (expectedValue);
-      cron_destroy (cron);
+      GNUNET_free (expectedValue);
+      GNUNET_cron_destroy (cron);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
@@ -459,13 +460,13 @@ main (int argc, char *const *argv)
   identity = requestService ("identity");
   transport = requestService ("transport");
   pingpong = requestService ("pingpong");
-  cron_start (cron);
+  GNUNET_cron_start (cron);
 
   GC_get_configuration_value_number (cfg,
                                      "TRANSPORT-CHECK",
                                      "X-REPEAT",
                                      1, (unsigned long long) -1, 1, &Xrepeat);
-  res = OK;
+  res = GNUNET_OK;
   if (ping)
     {
       bootstrap = requestService ("bootstrap");
@@ -481,10 +482,10 @@ main (int argc, char *const *argv)
     }
   else
     {
-      while ((Xrepeat-- > 0) && (GNUNET_SHUTDOWN_TEST () == NO))
+      while ((Xrepeat-- > 0) && (GNUNET_shutdown_test () == GNUNET_NO))
         transport->forEach (&testTAPI, &res);
     }
-  cron_stop (cron);
+  GNUNET_cron_stop (cron);
   releaseService (identity);
   releaseService (transport);
   releaseService (pingpong);
@@ -492,11 +493,11 @@ main (int argc, char *const *argv)
   unregisterPlaintextHandler (P2P_PROTO_noise, &noiseHandler);
   doneConnection ();
   doneCore ();
-  FREE (expectedValue);
-  cron_destroy (cron);
+  GNUNET_free (expectedValue);
+  GNUNET_cron_destroy (cron);
   GNUNET_fini (ectx, cfg);
 
-  if (res != OK)
+  if (res != GNUNET_OK)
     return -1;
   return 0;
 }

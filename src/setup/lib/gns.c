@@ -124,9 +124,9 @@ configChangeListener (void *ctx,
                                                 section,
                                                 option,
                                                 pos->value.Boolean.def);
-        if (val == SYSERR)
+        if (val == GNUNET_SYSERR)
           {
-            return SYSERR;
+            return GNUNET_SYSERR;
           }
         pos->value.Boolean.val = val;
         break;
@@ -135,17 +135,18 @@ configChangeListener (void *ctx,
       {
         unsigned long long val;
 
-        if (SYSERR == GC_get_configuration_value_number (cfg,
-                                                         section,
-                                                         option,
-                                                         pos->value.UInt64.
-                                                         min,
-                                                         pos->value.UInt64.
-                                                         max,
-                                                         pos->value.UInt64.
-                                                         def, &val))
+        if (GNUNET_SYSERR == GC_get_configuration_value_number (cfg,
+                                                                section,
+                                                                option,
+                                                                pos->value.
+                                                                UInt64.min,
+                                                                pos->value.
+                                                                UInt64.max,
+                                                                pos->value.
+                                                                UInt64.def,
+                                                                &val))
           {
-            return SYSERR;
+            return GNUNET_SYSERR;
           }
         pos->value.UInt64.val = val;
         break;
@@ -169,11 +170,11 @@ configChangeListener (void *ctx,
                         GE_USER | GE_ERROR | GE_IMMEDIATE,
                         "`%s' is not a valid double-precision floating point number.\n",
                         s);
-                FREE (s);
-                return SYSERR;
+                GNUNET_free (s);
+                return GNUNET_SYSERR;
               }
             pos->value.Double.val = d;
-            FREE (s);
+            GNUNET_free (s);
           }
         break;
       }
@@ -182,13 +183,14 @@ configChangeListener (void *ctx,
       {
         char *val;
 
-        if (SYSERR == GC_get_configuration_value_string (cfg,
-                                                         section,
-                                                         option,
-                                                         pos->value.String.
-                                                         def, &val))
-          return SYSERR;
-        FREE (pos->value.String.val);
+        if (GNUNET_SYSERR == GC_get_configuration_value_string (cfg,
+                                                                section,
+                                                                option,
+                                                                pos->value.
+                                                                String.def,
+                                                                &val))
+          return GNUNET_SYSERR;
+        GNUNET_free (pos->value.String.val);
         pos->value.String.val = val;
         break;
       }
@@ -196,17 +198,19 @@ configChangeListener (void *ctx,
       {
         const char *ival;
 
-        if (SYSERR == GC_get_configuration_value_choice (cfg,
-                                                         section,
-                                                         option,
-                                                         (const char **) pos->
-                                                         value.String.
-                                                         legalRange,
-                                                         pos->value.String.
-                                                         def, &ival))
-          return SYSERR;
-        FREE (pos->value.String.val);
-        pos->value.String.val = STRDUP (ival);
+        if (GNUNET_SYSERR == GC_get_configuration_value_choice (cfg,
+                                                                section,
+                                                                option,
+                                                                (const char
+                                                                 **) pos->
+                                                                value.String.
+                                                                legalRange,
+                                                                pos->value.
+                                                                String.def,
+                                                                &ival))
+          return GNUNET_SYSERR;
+        GNUNET_free (pos->value.String.val);
+        pos->value.String.val = GNUNET_strdup (ival);
         break;
       }
     }
@@ -244,20 +248,20 @@ free_tree (struct GNS_Tree *t)
       i = 0;
       while (t->value.String.legalRange[i] != NULL)
         {
-          FREE (t->value.String.legalRange[i]);
+          GNUNET_free (t->value.String.legalRange[i]);
           i++;
         }
-      FREE (t->value.String.legalRange);
-      FREE (t->value.String.val);
+      GNUNET_free (t->value.String.legalRange);
+      GNUNET_free (t->value.String.val);
       break;
     default:
       GE_BREAK (NULL, 0);
       break;
     }
-  FREE (t->description);
-  FREE (t->help);
-  FREE (t->children);
-  FREE (t);
+  GNUNET_free (t->description);
+  GNUNET_free (t->help);
+  GNUNET_free (t->children);
+  GNUNET_free (t);
 }
 
 
@@ -281,7 +285,7 @@ GNS_load_specification (struct GE_Context *ectx,
   root = tree_parse (ectx, specification);
   if (root == NULL)
     return NULL;
-  ctx = MALLOC (sizeof (struct GNS_Context));
+  ctx = GNUNET_malloc (sizeof (struct GNS_Context));
   ctx->ectx = ectx;
   ctx->cfg = cfg;
   ctx->root = root;
@@ -293,7 +297,7 @@ GNS_load_specification (struct GE_Context *ectx,
               _
               ("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
               specification);
-      FREE (ctx);
+      GNUNET_free (ctx);
       free_tree (root);
       return NULL;
     }
@@ -323,7 +327,7 @@ GNS_free_specification (struct GNS_Context *ctx)
   GC_detach_change_listener (ctx->cfg, &configChangeListener, ctx);
   free_tree (ctx->root);
   GE_ASSERT (ctx->ectx, ctx->listeners == NULL);
-  FREE (ctx);
+  GNUNET_free (ctx);
 }
 
 /**
@@ -337,7 +341,7 @@ GNS_register_tree_change_listener (struct GNS_Context *ctx,
 {
   GNS_TCL *n;
 
-  n = MALLOC (sizeof (GNS_TCL));
+  n = GNUNET_malloc (sizeof (GNS_TCL));
   n->l = listener;
   n->c = cls;
   n->next = ctx->listeners;
@@ -366,7 +370,7 @@ GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
             ctx->listeners = pos->next;
           else
             prev->next = pos->next;
-          FREE (pos);
+          GNUNET_free (pos);
           return;               /* only unregister one! */
         }
       prev = pos;
@@ -391,20 +395,20 @@ GNS_get_default_value_as_string (GNS_Type type, const GNS_Value * value)
     {
     case GNS_Boolean:
       if (value->Boolean.def)
-        return STRDUP ("YES");
-      return STRDUP ("NO");
+        return GNUNET_strdup ("YES");
+      return GNUNET_strdup ("NO");
     case GNS_String:
     case GNS_MC:
     case GNS_SC:
       if (value->String.def == NULL)
         return NULL;
-      return STRDUP (value->String.def);
+      return GNUNET_strdup (value->String.def);
     case GNS_Double:
-      SNPRINTF (buf, 48, "%f", value->Double.def);
-      return STRDUP (buf);
+      GNUNET_snprintf (buf, 48, "%f", value->Double.def);
+      return GNUNET_strdup (buf);
     case GNS_UInt64:
-      SNPRINTF (buf, 48, "%llu", value->UInt64.def);
-      return STRDUP (buf);
+      GNUNET_snprintf (buf, 48, "%llu", value->UInt64.def);
+      return GNUNET_strdup (buf);
     default:
       return NULL;
     }

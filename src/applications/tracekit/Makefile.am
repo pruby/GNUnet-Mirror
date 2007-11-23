@@ -3,11 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 LDADD =  \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
-  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
-  $(top_builddir)/src/util/cron/libgnunetutil_cron.la 
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 bin_PROGRAMS = \
   gnunet-tracekit

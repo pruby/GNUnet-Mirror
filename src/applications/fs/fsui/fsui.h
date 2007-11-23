@@ -40,7 +40,7 @@ typedef struct
   /**
    * What are these keys?
    */
-  HashCode512 *matchingKeys;
+  GNUNET_HashCode *matchingKeys;
 
   /**
    * What info do we have about this result?
@@ -48,7 +48,7 @@ typedef struct
   ECRS_FileInfo fi;
 
   /**
-   * For how many keys (hash of keyword) did we
+   * For how many keys (GNUNET_hash of keyword) did we
    * get this result?
    */
   unsigned int matchingKeyCount;
@@ -64,12 +64,12 @@ typedef struct FSUI_SearchList
   /**
    * Desired timeout (relative) for this search
    */
-  cron_t timeout;
+  GNUNET_CronTime timeout;
 
   /**
    * start time of the search
    */
-  cron_t start_time;
+  GNUNET_CronTime start_time;
 
   /**
    * Searches are kept in a simple linked list.
@@ -84,7 +84,7 @@ typedef struct FSUI_SearchList
   /**
    * Handle to the thread which performs the search.
    */
-  struct PTHREAD *handle;
+  struct GNUNET_ThreadHandle *handle;
 
   /**
    * Which URI are we searching?
@@ -206,7 +206,7 @@ typedef struct FSUI_DownloadList
   /**
    * Currently assigned thread (if any).
    */
-  struct PTHREAD *handle;
+  struct GNUNET_ThreadHandle *handle;
 
   /**
    * FIs of completed sub-downloads.
@@ -220,7 +220,7 @@ typedef struct FSUI_DownloadList
    * While the download thread is running, this is the
    * absolute start time assuming the thread ran continuously.
    */
-  cron_t startTime;
+  GNUNET_CronTime startTime;
 
   /**
    * While the download thread is suspended, this is the
@@ -228,24 +228,24 @@ typedef struct FSUI_DownloadList
    * While the download thread is running, startTime should
    * be used instead (since runTime maybe outdated).
    */
-  cron_t runTime;
+  GNUNET_CronTime runTime;
 
   /**
-   * Is this a recursive download? (YES/NO)
+   * Is this a recursive download? (GNUNET_YES/GNUNET_NO)
    */
   int is_recursive;
 
   /**
-   * Is this file a directory?  Set to YES either if the first block
+   * Is this file a directory?  Set to GNUNET_YES either if the first block
    * contains the correct directory MAGIC, or if the mime-type in the
-   * meta-data was saying that the file is a directory.  Set to SYSERR
+   * meta-data was saying that the file is a directory.  Set to GNUNET_SYSERR
    * initially if no mime-type is specified and we have not yet seen
-   * the first block.  Set to NO if a different mime-type was given or
+   * the first block.  Set to GNUNET_NO if a different mime-type was given or
    * if the first block did not have the correct MAGIC.<p>
    *
-   * As long as is_directory is SYSERR we _defer_ processing the other
+   * As long as is_directory is GNUNET_SYSERR we _defer_ processing the other
    * blocks of the file that we may receive.  After we established
-   * that this is a directory (and if is_recursive is YES), we try to
+   * that this is a directory (and if is_recursive is GNUNET_YES), we try to
    * decode the directory eagerly and start the other downloads in
    * parallel.  Once the directory is complete, we make sure that
    * really all files have been started and wait for their completion.
@@ -275,11 +275,11 @@ typedef struct FSUI_DownloadList
 typedef struct FSUI_UnindexList
 {
 
-  cron_t start_time;
+  GNUNET_CronTime start_time;
 
   struct FSUI_UnindexList *next;
 
-  struct PTHREAD *handle;
+  struct GNUNET_ThreadHandle *handle;
 
   char *filename;
 
@@ -298,7 +298,7 @@ typedef struct FSUI_UnindexList
 typedef struct FSUI_UploadShared
 {
 
-  cron_t expiration;
+  GNUNET_CronTime expiration;
 
   DirectoryScanCallback dsc;
 
@@ -308,7 +308,7 @@ typedef struct FSUI_UploadShared
 
   struct FSUI_Context *ctx;
 
-  struct PTHREAD *handle;
+  struct GNUNET_ThreadHandle *handle;
 
   /**
    * Keywords to be used for all uploads.
@@ -337,7 +337,7 @@ typedef struct FSUI_UploadList
 
   unsigned long long total;
 
-  cron_t start_time;
+  GNUNET_CronTime start_time;
 
   struct FSUI_UploadShared *shared;
 
@@ -391,7 +391,7 @@ typedef struct FSUI_Context
    * between different processes of the same name
    * that all use resume.
    */
-  struct IPC_SEMAPHORE *ipc;
+  struct GNUNET_IPC_Semaphore *ipc;
 
   /**
    * Name of the tool using FSUI (used for resume).
@@ -401,9 +401,9 @@ typedef struct FSUI_Context
   /**
    * Lock to synchronize access to the FSUI Context.
    */
-  struct MUTEX *lock;
+  struct GNUNET_Mutex *lock;
 
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
   /**
    * Callback for notifying the client about events.
@@ -459,7 +459,7 @@ typedef struct FSUI_Context
  * size and active downloads.  Call only while holding FSUI lock (or
  * during start/stop).
  *
- * @return YES if change done that may require re-trying
+ * @return GNUNET_YES if change done that may require re-trying
  */
 int FSUI_updateDownloadThread (FSUI_DownloadList * list);
 

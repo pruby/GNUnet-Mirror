@@ -86,7 +86,7 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
   GE_ASSERT (gfsd->ectx, filename != NULL);
   if ((dirname != NULL) && (strlen (dirname) > 0))
     {
-      fn = MALLOC (strlen (filename) + strlen (dirname) + 3);
+      fn = GNUNET_malloc (strlen (filename) + strlen (dirname) + 3);
       if (strlen (dirname) > 0)
         {
           strcpy (fn, dirname);
@@ -105,51 +105,52 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
         strcat (fn, filename);
     }
   else
-    fn = STRDUP (filename);
+    fn = GNUNET_strdup (filename);
 
 #ifdef HAVE_STAT64
   if (0 != STAT64 (fn, &buf))
     {
       GE_LOG_STRERROR_FILE (gfsd->ectx,
                             GE_WARNING | GE_USER | GE_REQUEST, "stat64", fn);
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
 #else
   if (0 != STAT (fn, &buf))
     {
       GE_LOG_STRERROR_FILE (gfsd->ectx,
                             GE_WARNING | GE_USER | GE_REQUEST, "stat", fn);
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
 #endif
-  if ((!S_ISLNK (buf.st_mode)) || (gfsd->include_sym_links == YES))
+  if ((!S_ISLNK (buf.st_mode)) || (gfsd->include_sym_links == GNUNET_YES))
     gfsd->total += buf.st_size;
   if ((S_ISDIR (buf.st_mode)) &&
       (0 == ACCESS (fn, X_OK)) &&
-      ((!S_ISLNK (buf.st_mode)) || (gfsd->include_sym_links == YES)))
+      ((!S_ISLNK (buf.st_mode)) || (gfsd->include_sym_links == GNUNET_YES)))
     {
-      if (SYSERR == disk_directory_scan (gfsd->ectx, fn, &getSizeRec, gfsd))
+      if (GNUNET_SYSERR ==
+          GNUNET_disk_directory_scan (gfsd->ectx, fn, &getSizeRec, gfsd))
         {
-          FREE (fn);
-          return SYSERR;
+          GNUNET_free (fn);
+          return GNUNET_SYSERR;
         }
     }
-  FREE (fn);
-  return OK;
+  GNUNET_free (fn);
+  return GNUNET_OK;
 }
 
 /**
  * Get the size of the file (or directory)
  * of the given file (in bytes).
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int
-disk_file_size (struct GE_Context *ectx,
-                const char *filename,
-                unsigned long long *size, int includeSymLinks)
+GNUNET_disk_file_size (struct GE_Context *ectx,
+                       const char *filename,
+                       unsigned long long *size, int includeSymLinks)
 {
   GetFileSizeData gfsd;
   int ret;
@@ -171,7 +172,7 @@ disk_file_size (struct GE_Context *ectx,
  * @return -1 on errors, otherwise the number of free blocks
  */
 long
-disk_get_blocks_available (struct GE_Context *ectx, const char *part)
+GNUNET_disk_get_blocks_available (struct GE_Context *ectx, const char *part)
 {
 #ifdef SOLARIS
   struct statvfs buf;
@@ -217,11 +218,11 @@ disk_get_blocks_available (struct GE_Context *ectx, const char *part)
 /**
  * Test if fil is a directory.
  *
- * @return YES if yes, NO if not, SYSERR if it
+ * @return GNUNET_YES if yes, GNUNET_NO if not, GNUNET_SYSERR if it
  *   does not exist
  */
 int
-disk_directory_test (struct GE_Context *ectx, const char *fil)
+GNUNET_disk_directory_test (struct GE_Context *ectx, const char *fil)
 {
   struct stat filestat;
   int ret;
@@ -234,38 +235,38 @@ disk_directory_test (struct GE_Context *ectx, const char *fil)
           GE_LOG_STRERROR_FILE (ectx,
                                 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
                                 "stat", fil);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      return NO;
+      return GNUNET_NO;
     }
   if (!S_ISDIR (filestat.st_mode))
-    return NO;
+    return GNUNET_NO;
   if (ACCESS (fil, R_OK | X_OK) < 0)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
                             "access", fil);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return YES;
+  return GNUNET_YES;
 }
 
 /**
  * Check that fil corresponds to a filename
  * (of a file that exists and that is not a directory).
- * @returns YES if yes, NO if not a file, SYSERR if something
+ * @returns GNUNET_YES if yes, GNUNET_NO if not a file, GNUNET_SYSERR if something
  * else (will print an error message in that case, too).
  */
 int
-disk_file_test (struct GE_Context *ectx, const char *fil)
+GNUNET_disk_file_test (struct GE_Context *ectx, const char *fil)
 {
   struct stat filestat;
   int ret;
   char *rdir;
 
-  rdir = string_expandFileName (ectx, fil);
+  rdir = GNUNET_expand_file_name (ectx, fil);
   if (rdir == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
 
   ret = STAT (rdir, &filestat);
   if (ret != 0)
@@ -275,45 +276,45 @@ disk_file_test (struct GE_Context *ectx, const char *fil)
           GE_LOG_STRERROR_FILE (ectx,
                                 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
                                 "stat", rdir);
-          FREE (rdir);
-          return SYSERR;
+          GNUNET_free (rdir);
+          return GNUNET_SYSERR;
         }
-      FREE (rdir);
-      return NO;
+      GNUNET_free (rdir);
+      return GNUNET_NO;
     }
   if (!S_ISREG (filestat.st_mode))
     {
-      FREE (rdir);
-      return NO;
+      GNUNET_free (rdir);
+      return GNUNET_NO;
     }
   if (ACCESS (rdir, R_OK) < 0)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
                             "access", rdir);
-      FREE (rdir);
-      return SYSERR;
+      GNUNET_free (rdir);
+      return GNUNET_SYSERR;
     }
-  FREE (rdir);
-  return YES;
+  GNUNET_free (rdir);
+  return GNUNET_YES;
 }
 
 /**
  * Implementation of "mkdir -p"
  * @param dir the directory to create
- * @returns OK on success, SYSERR on failure
+ * @returns GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 int
-disk_directory_create (struct GE_Context *ectx, const char *dir)
+GNUNET_disk_directory_create (struct GE_Context *ectx, const char *dir)
 {
   char *rdir;
   int len;
   int pos;
-  int ret = OK;
+  int ret = GNUNET_OK;
 
-  rdir = string_expandFileName (ectx, dir);
+  rdir = GNUNET_expand_file_name (ectx, dir);
   if (rdir == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
 
   len = strlen (rdir);
 #ifndef MINGW
@@ -343,13 +344,13 @@ disk_directory_create (struct GE_Context *ectx, const char *dir)
       if ((rdir[pos] == DIR_SEPARATOR) || (pos == len))
         {
           rdir[pos] = '\0';
-          ret = disk_directory_test (ectx, rdir);
-          if (ret == SYSERR)
+          ret = GNUNET_disk_directory_test (ectx, rdir);
+          if (ret == GNUNET_SYSERR)
             {
-              FREE (rdir);
-              return SYSERR;
+              GNUNET_free (rdir);
+              return GNUNET_SYSERR;
             }
-          if (ret == NO)
+          if (ret == GNUNET_NO)
             {
 #ifndef MINGW
               ret = mkdir (rdir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);  /* 755 */
@@ -361,16 +362,16 @@ disk_directory_create (struct GE_Context *ectx, const char *dir)
                   GE_LOG_STRERROR_FILE (ectx,
                                         GE_ERROR | GE_USER | GE_BULK,
                                         "mkdir", rdir);
-                  FREE (rdir);
-                  return SYSERR;
+                  GNUNET_free (rdir);
+                  return GNUNET_SYSERR;
                 }
             }
           rdir[pos] = DIR_SEPARATOR;
         }
       pos++;
     }
-  FREE (rdir);
-  return OK;
+  GNUNET_free (rdir);
+  return GNUNET_OK;
 }
 
 
@@ -379,24 +380,25 @@ disk_directory_create (struct GE_Context *ectx, const char *dir)
  * a file.
  *
  * @param filename name of a file in the directory
- * @returns OK on success, SYSERR on failure
+ * @returns GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 int
-disk_directory_create_for_file (struct GE_Context *ectx, const char *dir)
+GNUNET_disk_directory_create_for_file (struct GE_Context *ectx,
+                                       const char *dir)
 {
   char *rdir;
   int len;
   int ret;
 
-  rdir = string_expandFileName (ectx, dir);
+  rdir = GNUNET_expand_file_name (ectx, dir);
   if (rdir == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   len = strlen (rdir);
   while ((len > 0) && (rdir[len] != DIR_SEPARATOR))
     len--;
   rdir[len] = '\0';
-  ret = disk_directory_create (ectx, rdir);
-  FREE (rdir);
+  ret = GNUNET_disk_directory_create (ectx, rdir);
+  GNUNET_free (rdir);
   return ret;
 }
 
@@ -409,8 +411,8 @@ disk_directory_create_for_file (struct GE_Context *ectx, const char *dir)
  * @return the number of bytes read on success, -1 on failure
  */
 int
-disk_file_read (struct GE_Context *ectx,
-                const char *fileName, int len, void *result)
+GNUNET_disk_file_read (struct GE_Context *ectx,
+                       const char *fileName, int len, void *result)
 {
   /* open file, must exist, open read only */
   int handle;
@@ -421,11 +423,11 @@ disk_file_read (struct GE_Context *ectx,
   if (len == 0)
     return 0;
   GE_ASSERT (ectx, result != NULL);
-  handle = disk_file_open (ectx, fileName, O_RDONLY, S_IRUSR);
+  handle = GNUNET_disk_file_open (ectx, fileName, O_RDONLY, S_IRUSR);
   if (handle < 0)
     return -1;
   size = READ (handle, result, len);
-  disk_file_close (ectx, fileName, handle);
+  GNUNET_disk_file_close (ectx, fileName, handle);
   return size;
 }
 
@@ -452,12 +454,12 @@ atoo (const char *s)
  * @param buffer the data to write
  * @param n number of bytes to write
  * @param mode permissions to set on the file
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-disk_file_write (struct GE_Context *ectx,
-                 const char *fileName,
-                 const void *buffer, unsigned int n, const char *mode)
+GNUNET_disk_file_write (struct GE_Context *ectx,
+                        const char *fileName,
+                        const void *buffer, unsigned int n, const char *mode)
 {
   int handle;
   char *fn;
@@ -465,12 +467,13 @@ disk_file_write (struct GE_Context *ectx,
   /* open file, open with 600, create if not
      present, otherwise overwrite */
   GE_ASSERT (ectx, fileName != NULL);
-  fn = string_expandFileName (ectx, fileName);
-  handle = disk_file_open (ectx, fn, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+  fn = GNUNET_expand_file_name (ectx, fileName);
+  handle =
+    GNUNET_disk_file_open (ectx, fn, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
   if (handle == -1)
     {
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
   GE_ASSERT (ectx, (n == 0) || (buffer != NULL));
   /* write the buffer take length from the beginning */
@@ -478,18 +481,18 @@ disk_file_write (struct GE_Context *ectx,
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_IMMEDIATE, "write", fn);
-      disk_file_close (ectx, fn, handle);
-      FREE (fn);
-      return SYSERR;
+      GNUNET_disk_file_close (ectx, fn, handle);
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
-  disk_file_close (ectx, fn, handle);
+  GNUNET_disk_file_close (ectx, fn, handle);
   if (0 != CHMOD (fn, atoo (mode)))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_BULK, "chmod", fn);
     }
-  FREE (fn);
-  return OK;
+  GNUNET_free (fn);
+  return GNUNET_OK;
 }
 
 /**
@@ -499,13 +502,14 @@ disk_file_write (struct GE_Context *ectx,
  * @param callback the method to call for each file,
  *        can be NULL, in that case, we only count
  * @param data argument to pass to callback
- * @return the number of files found, SYSERR on error or
- *         ieration aborted by callback returning SYSERR
+ * @return the number of files found, GNUNET_SYSERR on error or
+ *         ieration aborted by callback returning GNUNET_SYSERR
  */
 int
-disk_directory_scan (struct GE_Context *ectx,
-                     const char *dirName,
-                     DirectoryEntryCallback callback, void *data)
+GNUNET_disk_directory_scan (struct GE_Context *ectx,
+                            const char *dirName,
+                            GNUNET_DirectoryEntryCallback callback,
+                            void *data)
 {
   DIR *dinfo;
   struct dirent *finfo;
@@ -517,14 +521,14 @@ disk_directory_scan (struct GE_Context *ectx,
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_BULK, "stat", dirName);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (!S_ISDIR (istat.st_mode))
     {
       GE_LOG (ectx,
               GE_WARNING | GE_USER | GE_BULK,
               _("Expected `%s' to be a directory!\n"), dirName);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   errno = 0;
   dinfo = OPENDIR (dirName);
@@ -533,7 +537,7 @@ disk_directory_scan (struct GE_Context *ectx,
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_BULK,
                             "opendir", dirName);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   while ((finfo = readdir (dinfo)) != NULL)
     {
@@ -542,10 +546,10 @@ disk_directory_scan (struct GE_Context *ectx,
         continue;
       if (callback != NULL)
         {
-          if (OK != callback (finfo->d_name, dirName, data))
+          if (GNUNET_OK != callback (finfo->d_name, dirName, data))
             {
               closedir (dinfo);
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
       count++;
@@ -555,7 +559,7 @@ disk_directory_scan (struct GE_Context *ectx,
 }
 
 /**
- * Callback for disk_directory_remove
+ * Callback for GNUNET_disk_directory_remove
  */
 static int
 rmHelper (const char *fil, const char *dir, void *ctx)
@@ -565,15 +569,15 @@ rmHelper (const char *fil, const char *dir, void *ctx)
   size_t n;
 
   n = strlen (dir) + strlen (fil) + 2;
-  fn = MALLOC (n);
-  SNPRINTF (fn, n, "%s/%s", dir, fil);
-  if (SYSERR == disk_directory_remove (ectx, fn))
+  fn = GNUNET_malloc (n);
+  GNUNET_snprintf (fn, n, "%s/%s", dir, fil);
+  if (GNUNET_SYSERR == GNUNET_disk_directory_remove (ectx, fn))
     {
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
-  FREE (fn);
-  return OK;
+  GNUNET_free (fn);
+  return GNUNET_OK;
 }
 
 /**
@@ -582,42 +586,43 @@ rmHelper (const char *fil, const char *dir, void *ctx)
  *
  *
  * @param fileName the file to remove
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-disk_directory_remove (struct GE_Context *ectx, const char *fileName)
+GNUNET_disk_directory_remove (struct GE_Context *ectx, const char *fileName)
 {
   struct stat istat;
 
   if (0 != STAT (fileName, &istat))
-    return NO;                  /* file may not exist... */
+    return GNUNET_NO;           /* file may not exist... */
   if (UNLINK (fileName) == 0)
-    return OK;
+    return GNUNET_OK;
   if ((errno != EISDIR) &&
       /* EISDIR is not sufficient in all cases, e.g.
          sticky /tmp directory may result in EPERM on BSD.
          So we also explicitly check "isDirectory" */
-      (YES != disk_directory_test (ectx, fileName)))
+      (GNUNET_YES != GNUNET_disk_directory_test (ectx, fileName)))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
                             "rmdir", fileName);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  if (SYSERR == disk_directory_scan (ectx, fileName, &rmHelper, ectx))
-    return SYSERR;
+  if (GNUNET_SYSERR ==
+      GNUNET_disk_directory_scan (ectx, fileName, &rmHelper, ectx))
+    return GNUNET_SYSERR;
   if (0 != RMDIR (fileName))
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
                             "rmdir", fileName);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 void
-disk_file_close (struct GE_Context *ectx, const char *filename, int fd)
+GNUNET_disk_file_close (struct GE_Context *ectx, const char *filename, int fd)
 {
   if (0 != CLOSE (fd))
     GE_LOG_STRERROR_FILE (ectx,
@@ -625,7 +630,8 @@ disk_file_close (struct GE_Context *ectx, const char *filename, int fd)
 }
 
 int
-disk_file_open (struct GE_Context *ectx, const char *filename, int oflag, ...)
+GNUNET_disk_file_open (struct GE_Context *ectx, const char *filename,
+                       int oflag, ...)
 {
   char *fn;
   int mode;
@@ -643,9 +649,9 @@ disk_file_open (struct GE_Context *ectx, const char *filename, int oflag, ...)
                             GE_BULK, "plibc_conv_to_win_path", filename);
       return -1;
     }
-  fn = STRDUP (szFile);
+  fn = GNUNET_strdup (szFile);
 #else
-  fn = string_expandFileName (ectx, filename);
+  fn = GNUNET_expand_file_name (ectx, filename);
 #endif
   if (oflag & O_CREAT)
     {
@@ -665,7 +671,7 @@ disk_file_open (struct GE_Context *ectx, const char *filename, int oflag, ...)
   ret = OPEN (fn, oflag, mode);
   if (ret == -1)
     GE_LOG_STRERROR_FILE (ectx, GE_WARNING | GE_USER | GE_BULK, "open", fn);
-  FREE (fn);
+  GNUNET_free (fn);
   return ret;
 }
 
@@ -673,10 +679,11 @@ disk_file_open (struct GE_Context *ectx, const char *filename, int oflag, ...)
 
 /**
  * Copy a file.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-disk_file_copy (struct GE_Context *ectx, const char *src, const char *dst)
+GNUNET_disk_file_copy (struct GE_Context *ectx, const char *src,
+                       const char *dst)
 {
   char *buf;
   unsigned long long pos;
@@ -685,22 +692,22 @@ disk_file_copy (struct GE_Context *ectx, const char *src, const char *dst)
   int in;
   int out;
 
-  if (OK != disk_file_size (ectx, src, &size, YES))
-    return SYSERR;
+  if (GNUNET_OK != GNUNET_disk_file_size (ectx, src, &size, GNUNET_YES))
+    return GNUNET_SYSERR;
   pos = 0;
-  in = disk_file_open (ectx, src, O_RDONLY | O_LARGEFILE);
+  in = GNUNET_disk_file_open (ectx, src, O_RDONLY | O_LARGEFILE);
   if (in == -1)
-    return SYSERR;
-  out = disk_file_open (ectx,
-                        dst,
-                        O_LARGEFILE | O_WRONLY | O_CREAT | O_EXCL,
-                        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    return GNUNET_SYSERR;
+  out = GNUNET_disk_file_open (ectx,
+                               dst,
+                               O_LARGEFILE | O_WRONLY | O_CREAT | O_EXCL,
+                               S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
   if (out == -1)
     {
-      disk_file_close (ectx, src, in);
-      return SYSERR;
+      GNUNET_disk_file_close (ectx, src, in);
+      return GNUNET_SYSERR;
     }
-  buf = MALLOC (COPY_BLK_SIZE);
+  buf = GNUNET_malloc (COPY_BLK_SIZE);
   while (pos < size)
     {
       len = COPY_BLK_SIZE;
@@ -712,15 +719,15 @@ disk_file_copy (struct GE_Context *ectx, const char *src, const char *dst)
         goto FAIL;
       pos += len;
     }
-  FREE (buf);
-  disk_file_close (ectx, src, in);
-  disk_file_close (ectx, dst, out);
-  return OK;
+  GNUNET_free (buf);
+  GNUNET_disk_file_close (ectx, src, in);
+  GNUNET_disk_file_close (ectx, dst, out);
+  return GNUNET_OK;
 FAIL:
-  FREE (buf);
-  disk_file_close (ectx, src, in);
-  disk_file_close (ectx, dst, out);
-  return SYSERR;
+  GNUNET_free (buf);
+  GNUNET_disk_file_close (ectx, src, in);
+  GNUNET_disk_file_close (ectx, dst, out);
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -728,7 +735,7 @@ FAIL:
  * @param fn the filename to canonicalize
  */
 void
-disk_filename_canonicalize (char *fn)
+GNUNET_disk_filename_canonicalize (char *fn)
 {
   char *idx;
   char c;

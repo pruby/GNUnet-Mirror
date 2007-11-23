@@ -55,6 +55,7 @@ struct GE_Memory;
 struct GE_Context *GE_create_context_logfile (struct GE_Context *ectx,
                                               GE_KIND mask,
                                               const char *filename,
+                                              const char *owner,
                                               int logDate, int logrotate);
 
 

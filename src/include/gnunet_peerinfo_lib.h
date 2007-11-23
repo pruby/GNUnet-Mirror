@@ -45,10 +45,10 @@ extern "C"
  * @param id identity of the peer
  * @param trust trust we have in the peer
  *
- * @return OK to continue, SYSERR to abort iteration
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*PEERINFO_PeerProcessor) (const char *name,
-                                       const PeerIdentity * id,
+                                       const GNUNET_PeerIdentity * id,
                                        unsigned int trust, void *cls);
 
 /**
@@ -57,10 +57,10 @@ typedef int (*PEERINFO_PeerProcessor) (const char *name,
  * @param sock the socket to use
  * @param processor function to call on each value
  * @param connected_only only list currently connected peers
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int PEERINFO_getInfo (struct GE_Context *ectx,
-                      struct ClientServerConnection *sock,
+                      struct GNUNET_ClientServerConnection *sock,
                       int connected_only,
                       PEERINFO_PeerProcessor processor, void *cls);
 

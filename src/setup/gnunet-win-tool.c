@@ -25,10 +25,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_os.h"
-#include "gnunet_util_crypto.h"
-#include "gnunet_util_error_loggers.h"
-
+#include "gnunet_util.h"
 #include <conio.h>
 
 #define WINTOOL_VERSION "0.1.0"
@@ -50,24 +47,24 @@ static struct GE_Context *ectx;
 /**
  * All gnunet-win-tool command line options
  */
-static struct CommandLineOption gnunetwinOptions[] = {
+static struct GNUNET_CommandLineOption gnunetwinOptions[] = {
   {'n', "netadapters", "network adapters",
    gettext_noop ("list all network adapters"),
-   0, &gnunet_getopt_configure_set_one, &bPrintAdapters},
+   0, &GNUNET_getopt_configure_set_one, &bPrintAdapters},
   {'i', "install", "install service",
    gettext_noop ("install GNUnet as Windows service"),
-   0, &gnunet_getopt_configure_set_one, &bInstall},
+   0, &GNUNET_getopt_configure_set_one, &bInstall},
   {'u', "uninstall", "uninstall service",
    gettext_noop ("uninstall GNUnet service"),
-   0, &gnunet_getopt_configure_set_one, &bUninstall},
+   0, &GNUNET_getopt_configure_set_one, &bUninstall},
   {'C', "increase-connections", "increase connections",
    gettext_noop ("increase the maximum number of TCP/IP connections"),
-   0, &gnunet_getopt_configure_set_one, &bConn},
+   0, &GNUNET_getopt_configure_set_one, &bConn},
   {'R', "filehash", "hash",
    gettext_noop ("display a file's hash value"),
-   1, &gnunet_getopt_configure_set_string, &hashFile},
+   1, &GNUNET_getopt_configure_set_string, &hashFile},
   COMMAND_LINE_OPTION_VERSION (WINTOOL_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_END,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 /**
@@ -207,7 +204,7 @@ PatchSys (char *szFn)
   fseek (pFile, 0, SEEK_SET);
   fread (pMem, 1, lMem, pFile);
 
-  switch (iCrc = crc32N (pMem, lMem))
+  switch (iCrc = GNUNET_crc32_n (pMem, lMem))
     {
     case 2151852539:
       memcpy (pMem + 0x130, chunk1, 4);
@@ -314,17 +311,17 @@ IncreaseConnections ()
 }
 
 /**
- * Print the hash of a file
+ * Print the GNUNET_hash of a file
  */
 void
 doHash ()
 {
-  HashCode512 code;
-  EncName hex;
+  GNUNET_HashCode code;
+  GNUNET_EncName hex;
   char *c;
 
-  getFileHash (ectx, hashFile, &code);
-  hash2enc (&code, &hex);
+  GNUNET_hash_file (ectx, hashFile, &code);
+  GNUNET_hash_to_enc (&code, &hex);
   printf ("SHA512(%s)= ", hashFile);
 
   /* Flip byte order */
@@ -336,7 +333,7 @@ doHash ()
       c += 2;
     }
   putchar ('\n');
-  FREE (hashFile);
+  GNUNET_free (hashFile);
   hashFile = NULL;
 }
 
@@ -352,18 +349,18 @@ main (int argc, char **argv)
 {
   int res;
 
-  res = OK;
+  res = GNUNET_OK;
 
   /* startup */
-  ectx = GE_create_context_stderr (NO,
+  ectx = GE_create_context_stderr (GNUNET_NO,
                                    GE_WARNING | GE_ERROR | GE_FATAL |
                                    GE_USER | GE_ADMIN | GE_DEVELOPER |
                                    GE_IMMEDIATE | GE_BULK);
-  res = gnunet_parse_options ("gnunet-win-tool [OPTIONS] [KEYWORDS]",
+  res = GNUNET_parse_options ("gnunet-win-tool [OPTIONS] [KEYWORDS]",
                               ectx,
                               NULL,
                               gnunetwinOptions, (unsigned int) argc, argv);
-  if (res == SYSERR)
+  if (res == GNUNET_SYSERR)
     {
       GE_free_context (ectx);
       return -1;
@@ -382,7 +379,7 @@ main (int argc, char **argv)
 
   GE_free_context (ectx);
 
-  return (res == OK) ? 0 : 1;
+  return (res == GNUNET_OK) ? 0 : 1;
 }
 
 /* end of gnunet-win-tool.c */

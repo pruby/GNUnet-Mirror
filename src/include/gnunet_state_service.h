@@ -58,7 +58,7 @@ typedef struct
    * @param fn the key for the entry
    * @param len the number of bytes in block
    * @param block the data to store
-   * @return SYSERR on error, OK if ok.
+   * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
    */
   int (*append) (struct GE_Context * ectx,
                  const char *name, int len, const void *block);
@@ -69,7 +69,7 @@ typedef struct
    * @param fn the key for the entry
    * @param len the number of bytes in block
    * @param block the data to store
-   * @return SYSERR on error, OK if ok.
+   * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
    */
   int (*write) (struct GE_Context * ectx,
                 const char *name, int len, const void *block);

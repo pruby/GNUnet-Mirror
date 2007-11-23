@@ -51,11 +51,11 @@ struct CD
 };
 
 static int
-iter (const HashCode512 * key, const Datastore_Value * value, void *cls)
+iter (const GNUNET_HashCode * key, const Datastore_Value * value, void *cls)
 {
   struct CD *data = cls;
-  cron_t expire;
-  cron_t now;
+  GNUNET_CronTime expire;
+  GNUNET_CronTime now;
 
   switch (ntohl (value->type))
     {
@@ -108,19 +108,19 @@ iter (const HashCode512 * key, const Datastore_Value * value, void *cls)
       data->stat_prio[2]++;
       break;
     }
-  expire = ntohll (value->expirationTime);
-  now = get_time ();
+  expire = GNUNET_ntohll (value->expirationTime);
+  now = GNUNET_get_time ();
   if (expire <= now)
     data->stat_expire[0]++;
-  else if (expire <= now + 1 * cronHOURS)
+  else if (expire <= now + 1 * GNUNET_CRON_HOURS)
     data->stat_expire[1]++;
-  else if (expire <= now + 1 * cronDAYS)
+  else if (expire <= now + 1 * GNUNET_CRON_DAYS)
     data->stat_expire[2]++;
-  else if (expire <= now + 1 * cronWEEKS)
+  else if (expire <= now + 1 * GNUNET_CRON_WEEKS)
     data->stat_expire[3]++;
-  else if (expire <= now + 1 * cronMONTHS)
+  else if (expire <= now + 1 * GNUNET_CRON_MONTHS)
     data->stat_expire[4]++;
-  return OK;
+  return GNUNET_OK;
 }
 
 static void
@@ -146,7 +146,7 @@ init_sqstore_stats ()
 {
   sq = myCoreAPI->requestService ("sqstore");
   if (sq == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   stat_block[0] = stats->create (gettext_noop ("# Any-Blocks"));
   stat_block[1] = stats->create (gettext_noop ("# DBlocks"));
   stat_block[2] = stats->create (gettext_noop ("# SBlocks"));
@@ -166,7 +166,7 @@ init_sqstore_stats ()
   stat_anon[3] = stats->create (gettext_noop ("# no anonymity"));
   stat_anon[1] = stats->create (gettext_noop ("# anonymity one"));
   stat_anon[2] = stats->create (gettext_noop ("# anonymity larger than one"));
-  return OK;
+  return GNUNET_OK;
 }
 
 static void

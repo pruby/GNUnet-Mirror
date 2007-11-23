@@ -40,7 +40,7 @@
  * simple, we do the anonymity-level check for
  * outgoing content right here.
  *
- * @return OK if cover traffic is sufficient
+ * @return GNUNET_OK if cover traffic is sufficient
  */
 int
 checkCoverTraffic (struct GE_Context *ectx,
@@ -52,18 +52,19 @@ checkCoverTraffic (struct GE_Context *ectx,
   unsigned int timevect;
 
   if (level == 0)
-    return OK;
+    return GNUNET_OK;
   level--;
   if (traffic == NULL)
-    return SYSERR;
-  if (OK != traffic->get (5 * cronSECONDS / TRAFFIC_TIME_UNIT,  /* TTL_DECREMENT/TTU */
-                          P2P_PROTO_gap_RESULT,
-                          TC_RECEIVED, &count, &peers, &sizes, &timevect))
+    return GNUNET_SYSERR;
+  if (GNUNET_OK != traffic->get (5 * GNUNET_CRON_SECONDS / TRAFFIC_TIME_UNIT,   /* TTL_DECREMENT/TTU */
+                                 P2P_PROTO_gap_RESULT,
+                                 TC_RECEIVED, &count, &peers, &sizes,
+                                 &timevect))
     {
       GE_LOG (ectx,
               GE_WARNING | GE_BULK | GE_USER,
               _("Failed to get traffic stats.\n"));
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (level > 1000)
     {
@@ -73,7 +74,7 @@ checkCoverTraffic (struct GE_Context *ectx,
                   GE_DEBUG | GE_REQUEST | GE_USER,
                   "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
                   "Result dropped.\n", level, peers);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (count < level % 1000)
         {
@@ -81,7 +82,7 @@ checkCoverTraffic (struct GE_Context *ectx,
                   GE_DEBUG | GE_REQUEST | GE_USER,
                   "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
                   "Result dropped.\n", level, count);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
   else
@@ -92,10 +93,10 @@ checkCoverTraffic (struct GE_Context *ectx,
                   GE_DEBUG | GE_REQUEST | GE_USER,
                   "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
                   "Result dropped.\n", level, count);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /* end of anonymity.c */

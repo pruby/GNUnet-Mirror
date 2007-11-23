@@ -52,9 +52,9 @@ extern "C"
  * @param time set to the time distribution
  *        bit-vector giving times of interactions,
  *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int gnunet_traffic_poll (struct ClientServerConnection *sock,
+int GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
                          unsigned int timeframe,
                          unsigned short type,
                          unsigned short direction,

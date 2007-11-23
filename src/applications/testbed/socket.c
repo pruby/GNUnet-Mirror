@@ -32,7 +32,7 @@
 
 /* ********* helper methods to implement primitive commands *********** */
 
-#define DEBUG NO
+#define DEBUG GNUNET_NO
 
 int sock = -1;
 
@@ -72,7 +72,7 @@ socketSend (unsigned int len, unsigned int type, void *data)
 #endif
 
   tlen = len + sizeof (ExchangeBuffer);
-  buf = MALLOC (tlen);
+  buf = GNUNET_malloc (tlen);
   if (len > 0)
     memcpy (&buf->data[0], data, len);
   buf->size = htonl (tlen);
@@ -86,7 +86,7 @@ socketSend (unsigned int len, unsigned int type, void *data)
 #endif
 
   writeAll (sock, (void *) buf, tlen);
-  FREE (buf);
+  GNUNET_free (buf);
 }
 
 /**
@@ -118,7 +118,7 @@ readSocket (char **rbuf, unsigned int *len)
     }
   mlen = ntohl (mlen);
 
-  buf = MALLOC (mlen);
+  buf = GNUNET_malloc (mlen);
   while ((pos < mlen) && (ret >= 0))
     {
       ret = READ (sock, &((char *) buf)[pos], mlen - pos);
@@ -137,9 +137,9 @@ readSocket (char **rbuf, unsigned int *len)
 #endif
 
   type = ntohl (buf->type);
-  *rbuf = MALLOC (mlen - sizeof (ExchangeBuffer));
+  *rbuf = GNUNET_malloc (mlen - sizeof (ExchangeBuffer));
   memcpy (*rbuf, &buf->data[0], mlen - sizeof (ExchangeBuffer));
-  FREE (buf);
+  GNUNET_free (buf);
   *len = mlen - sizeof (ExchangeBuffer);
   return type;
 }
@@ -155,7 +155,7 @@ XPRINTF (const char *fmt, ...)
   unsigned int size = 1024;
   char *p;
 
-  p = MALLOC (size);
+  p = GNUNET_malloc (size);
   while (1)
     {
       /* Try to print in the allocated space. */
@@ -166,14 +166,14 @@ XPRINTF (const char *fmt, ...)
       if ((n > -1) && (n < size))
         {
           socketSend (n, SOCKET_PRINTF, p);
-          FREE (p);
+          GNUNET_free (p);
           return;
         }
       /* Else try again with more space. */
       if (n > -1)               /* glibc 2.1 */
-        GROW (p, size, (unsigned int) n + 1);   /* precisely what is needed */
+        GNUNET_array_grow (p, size, (unsigned int) n + 1);      /* precisely what is needed */
       else                      /* glibc 2.0 */
-        GROW (p, size, size * 2);       /* twice the old size */
+        GNUNET_array_grow (p, size, size * 2);  /* twice the old size */
     }
 }
 

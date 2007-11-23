@@ -53,7 +53,6 @@ gnunetinclude_HEADERS = \
   gnunet_util_boot.h \
   gnunet_util_common.h \
   gnunet_util_config.h \
-  gnunet_util_config_impl.h \
   gnunet_util_containers.h \
   gnunet_util_core.h \
   gnunet_util_cron.h \

@@ -31,7 +31,7 @@
 #include "gnunet_util_network_client.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 /**
  * Must be a multiple of 16k.
@@ -41,13 +41,13 @@
 static int
 testTerminate (void *unused)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 static void progress_check
   (unsigned long long totalBytes,
    unsigned long long completedBytes,
-   cron_t eta,
+   GNUNET_CronTime eta,
    unsigned long long lastBlockOffset,
    const char *lastBlock, unsigned int lastBlockSize, void *closure)
 {
@@ -65,11 +65,11 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = MALLOC (strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14);
-  SNPRINTF (fn,
-            strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
-            "/tmp/gnunet-ecrstest/ECRSTEST%u", i);
-  disk_directory_create_for_file (NULL, fn);
+  fn = GNUNET_malloc (strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14);
+  GNUNET_snprintf (fn,
+                   strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
+                   "/tmp/gnunet-ecrstest/ECRSTEST%u", i);
+  GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
 
@@ -84,22 +84,24 @@ uploadFile (unsigned int size)
   int i;
 
   name = makeName (size);
-  fd = disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
-  buf = MALLOC (size);
+  fd =
+    GNUNET_disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+  buf = GNUNET_malloc (size);
   memset (buf, size + size / 253, size);
-  for (i = 0; i < (int) (size - 42 - sizeof (HashCode512));
-       i += sizeof (HashCode512))
-    hash (&buf[i], 42, (HashCode512 *) & buf[i + sizeof (HashCode512)]);
+  for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
+       i += sizeof (GNUNET_HashCode))
+    GNUNET_hash (&buf[i], 42,
+                 (GNUNET_HashCode *) & buf[i + sizeof (GNUNET_HashCode)]);
   WRITE (fd, buf, size);
-  FREE (buf);
+  GNUNET_free (buf);
   CLOSE (fd);
-  ret = ECRS_uploadFile (NULL, cfg, name, YES,  /* index */
+  ret = ECRS_uploadFile (NULL, cfg, name, GNUNET_YES,   /* index */
                          0,     /* anon */
                          0,     /* prio */
-                         get_time () + 10 * cronMINUTES,        /* expire */
+                         GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
                          NULL,  /* progress */
                          NULL, &testTerminate, NULL, &uri);
-  FREE (name);
+  GNUNET_free (name);
   return uri;
 }
 
@@ -119,41 +121,42 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   GE_LOG (NULL,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Starting download of `%s'\n", tmp);
-  FREE (tmp);
+  GNUNET_free (tmp);
   tmpName = makeName (0);
-  ret = SYSERR;
+  ret = GNUNET_SYSERR;
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
-      if (OK == ECRS_downloadPartialFile (NULL,
-                                          cfg,
-                                          uri,
-                                          tmpName,
-                                          j,
-                                          16 * 1024,
-                                          0,
-                                          NO,
-                                          &progress_check,
-                                          NULL, &testTerminate, NULL))
+      if (GNUNET_OK == ECRS_downloadPartialFile (NULL,
+                                                 cfg,
+                                                 uri,
+                                                 tmpName,
+                                                 j,
+                                                 16 * 1024,
+                                                 0,
+                                                 GNUNET_NO,
+                                                 &progress_check,
+                                                 NULL, &testTerminate, NULL))
         {
-          fd = disk_file_open (NULL, tmpName, O_RDONLY);
-          buf = MALLOC (size);
-          in = MALLOC (size);
+          fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
+          buf = GNUNET_malloc (size);
+          in = GNUNET_malloc (size);
           memset (buf, size + size / 253, size);
-          for (i = 0; i < (int) (size - 42 - sizeof (HashCode512));
-               i += sizeof (HashCode512))
-            hash (&buf[i], 42,
-                  (HashCode512 *) & buf[i + sizeof (HashCode512)]);
+          for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
+               i += sizeof (GNUNET_HashCode))
+            GNUNET_hash (&buf[i], 42,
+                         (GNUNET_HashCode *) & buf[i +
+                                                   sizeof (GNUNET_HashCode)]);
           if (size != READ (fd, in, size))
-            ret = SYSERR;
+            ret = GNUNET_SYSERR;
           else if (0 == memcmp (&buf[j], &in[j], 16 * 1024))
-            ret = OK;
-          FREE (buf);
-          FREE (in);
+            ret = GNUNET_OK;
+          GNUNET_free (buf);
+          GNUNET_free (in);
           CLOSE (fd);
         }
     }
   UNLINK (tmpName);
-  FREE (tmpName);
+  GNUNET_free (tmpName);
   return ret;
 }
 
@@ -167,8 +170,8 @@ unindexFile (unsigned int size)
   name = makeName (size);
   ret = ECRS_unindexFile (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
   if (0 != UNLINK (name))
-    ret = SYSERR;
-  FREE (name);
+    ret = GNUNET_SYSERR;
+  GNUNET_free (name);
   return ret;
 }
 
@@ -177,40 +180,42 @@ main (int argc, char *argv[])
 {
   pid_t daemon;
   int ok;
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   struct ECRS_URI *uri;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
-  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GE_ASSERT (NULL, daemon > 0);
   sock = NULL;
-  CHECK (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS));
-  ok = YES;
-  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
-  sock = client_connection_create (NULL, cfg);
+  CHECK (GNUNET_OK ==
+         GNUNET_wait_for_daemon_running (NULL, cfg,
+                                         30 * GNUNET_CRON_SECONDS));
+  ok = GNUNET_YES;
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
+  sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
 
   /* ACTUAL TEST CODE */
   uri = uploadFile (SIZE);
   CHECK (NULL != uri);
-  CHECK (OK == downloadFile (SIZE, uri));
+  CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   ECRS_freeUri (uri);
-  CHECK (OK == unindexFile (SIZE));
+  CHECK (GNUNET_OK == unindexFile (SIZE));
   fprintf (stderr, " Ok.\n");
 
 
   /* END OF TEST CODE */
 FAILURE:
   if (sock != NULL)
-    connection_destroy (sock);
-  GE_ASSERT (NULL, OK == os_daemon_stop (NULL, daemon));
+    GNUNET_client_connection_destroy (sock);
+  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
   GC_free (cfg);
-  return (ok == YES) ? 0 : 1;
+  return (ok == GNUNET_YES) ? 0 : 1;
 }
 
 /* end of ecrstest.c */

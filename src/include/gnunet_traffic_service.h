@@ -56,11 +56,11 @@ extern "C"
 #define TC_DIVERSITY_MASK 0xFFF
 
 /**
- * What is the unit of time (in cron_t) for the traffic module? This
+ * What is the unit of time (in GNUNET_CronTime) for the traffic module? This
  * constant essentially specifies the resolution of the distribution
  * function that is applied for sampling traffic. Default is 1s.
  */
-#define TRAFFIC_TIME_UNIT cronSECONDS
+#define TRAFFIC_TIME_UNIT GNUNET_CRON_SECONDS
 
 /**
  * @brief API to the traffic service.
@@ -85,7 +85,7 @@ typedef struct
    * @param time set to the time distribution
    *        bit-vector giving times of interactions,
    *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
-   * @return OK on success, SYSERR on error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
   int (*get) (unsigned int timeframe,
               unsigned short type,

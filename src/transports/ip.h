@@ -43,21 +43,22 @@
  * (dynDNS? static IP? NAT?) and at the end what the user
  * needs.
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int getPublicIPAddress (struct GC_Configuration *cfg,
-                        struct GE_Context *ectx, IPaddr * address);
+                        struct GE_Context *ectx,
+                        GNUNET_IPv4Address * address);
 
 /**
- * We only have the PeerIdentity.  Do we have any
+ * We only have the GNUNET_PeerIdentity.  Do we have any
  * clue about the address based on
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
  *
  * @param sa set to the address
- * @return OK if we found an address, SYSERR if not
+ * @return GNUNET_OK if we found an address, GNUNET_SYSERR if not
  */
-int getIPaddressFromPID (const PeerIdentity * peer,
+int getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
                          void **sa, unsigned int *salen);
 
 /**
@@ -68,7 +69,7 @@ int getIPaddressFromPID (const PeerIdentity * peer,
  * NOT validated (and it may well be impossible for
  * us to validate the address).
  */
-void setIPaddressFromPID (const PeerIdentity * peer,
+void setIPaddressFromPID (const GNUNET_PeerIdentity * peer,
                           const void *sa, unsigned int salen);
 
 #endif

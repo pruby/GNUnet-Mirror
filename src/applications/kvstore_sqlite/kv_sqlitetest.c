@@ -41,36 +41,36 @@ static int
 test (KVstore_ServiceAPI * api)
 {
   KVHandle *kv;
-  HashCode512 k, v;
-  HashCode512 *r;
+  GNUNET_HashCode k, v;
+  GNUNET_HashCode *r;
 
-  cron_t timeStmp;
+  GNUNET_CronTime timeStmp;
 
   kv = api->getTable ("TEST", "KV");
   ASSERT (kv != NULL);
 
-  timeStmp = get_time ();
+  timeStmp = GNUNET_get_time ();
   ASSERT (api->put (kv, (void *) &k, sizeof (k), (void *) &v, sizeof (v),
-                    timeStmp) == OK);
+                    timeStmp) == GNUNET_OK);
 
   r = api->get (kv, (void *) &k, sizeof (k), 0, 0, NULL, NULL);
   ASSERT (r != NULL);
   ASSERT (memcmp (&v, r, sizeof (v)) == 0);
-  FREE (r);
+  GNUNET_free (r);
 
-  ASSERT (api->del (kv, (void *) &k, sizeof (k), 0) == OK);
+  ASSERT (api->del (kv, (void *) &k, sizeof (k), 0) == GNUNET_OK);
 
   ASSERT (api->get (kv, (void *) &k, sizeof (k), 0, 0, NULL, NULL) == NULL);
 
-  ASSERT (api->dropTable (kv) == OK);
+  ASSERT (api->dropTable (kv) == GNUNET_OK);
 
   api->dropDatabase ("TEST");
 
-  return OK;
+  return GNUNET_OK;
 
 FAILURE:
   api->dropDatabase ("TEST");
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 #define TEST_DB "/tmp/GNUnet_sqstore_test/"
@@ -81,9 +81,9 @@ main (int argc, char *argv[])
   KVstore_ServiceAPI *api;
   int ok;
   struct GC_Configuration *cfg;
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -98,9 +98,9 @@ main (int argc, char *argv[])
       releaseService (api);
     }
   else
-    ok = SYSERR;
+    ok = GNUNET_SYSERR;
   doneCore ();
-  if (ok == SYSERR)
+  if (ok == GNUNET_SYSERR)
     return 1;
   return 0;
 }

@@ -25,41 +25,42 @@
  */
 
 #include "gnunet_util.h"
-#include "gnunet_util_network_client.h"
-#include "gnunet_util_boot.h"
+#include "gnunet_util.h"
 #include "platform.h"
 
 #define TEMPLATE_VERSION "0.0.0"
 
-static struct SEMAPHORE *doneSem;
+static struct GNUNET_Semaphore *doneSem;
 
 static char *cfgFilename;
 
 /**
  * All gnunetd command line options
  */
-static struct CommandLineOption gnunettemplateOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),    /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_END,
+static struct GNUNET_CommandLineOption gnunettemplateOptions[] = {
+	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),    /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 static void *
 receiveThread (void *cls)
 {
-  struct ClientServerConnection *sock = cls;
+  struct GNUNET_ClientServerConnection *sock = cls;
   void *buffer;
 
-  buffer = MALLOC (MAX_BUFFER_SIZE);
-  while (OK == connection_read (sock, (MESSAGE_HEADER **) & buffer))
+  buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
+  while (GNUNET_OK ==
+         GNUNET_client_connection_read (sock,
+                                        (GNUNET_MessageHeader **) & buffer))
     {
       /* process */
     }
-  FREE (buffer);
-  SEMAPHORE_UP (doneSem);
+  GNUNET_free (buffer);
+  GNUNET_semaphore_up (doneSem);
   return NULL;
 }
 
@@ -71,8 +72,8 @@ receiveThread (void *cls)
 int
 main (int argc, char *const *argv)
 {
-  struct ClientServerConnection *sock;
-  struct PTHREAD *messageReceiveThread;
+  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_ThreadHandle *messageReceiveThread;
   void *unused;
   struct GE_Context *ectx;
   struct GC_Configuration *cfg;
@@ -88,14 +89,15 @@ main (int argc, char *const *argv)
       return -1;
     }
 
-  sock = client_connection_create (ectx, cfg);
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
       fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  messageReceiveThread = PTHREAD_CREATE (&receiveThread, sock, 128 * 1024);
+  messageReceiveThread =
+    GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
     {
       GE_DIE_STRERROR (ectx,
@@ -105,11 +107,11 @@ main (int argc, char *const *argv)
 
   /* wait for shutdown... */
 
-  connection_close_forever (sock);
-  SEMAPHORE_DOWN (doneSem, YES);
-  SEMAPHORE_DESTROY (doneSem);
-  PTHREAD_JOIN (messageReceiveThread, &unused);
-  connection_destroy (sock);
+  GNUNET_client_connection_close_forever (sock);
+  GNUNET_semaphore_down (doneSem, GNUNET_YES);
+  GNUNET_semaphore_destroy (doneSem);
+  GNUNET_thread_join (messageReceiveThread, &unused);
+  GNUNET_client_connection_destroy (sock);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

@@ -76,20 +76,20 @@ getValueAsString (GNS_Type type, GNS_Value * val)
     {
     case GNS_Boolean:
       if (val->Boolean.val)
-        return STRDUP (_("yes"));
-      return STRDUP (_("no"));
+        return GNUNET_strdup (_("yes"));
+      return GNUNET_strdup (_("no"));
     case GNS_String:
     case GNS_SC:
     case GNS_MC:
-      return STRDUP (val->String.val);
+      return GNUNET_strdup (val->String.val);
     case GNS_Double:
-      SNPRINTF (buf, 92, "%f", val->Double.val);
-      return STRDUP (buf);
+      GNUNET_snprintf (buf, 92, "%f", val->Double.val);
+      return GNUNET_strdup (buf);
     case GNS_UInt64:
-      SNPRINTF (buf, 92, "%llu", val->UInt64.val);
-      return STRDUP (buf);
+      GNUNET_snprintf (buf, 92, "%llu", val->UInt64.val);
+      return GNUNET_strdup (buf);
     }
-  return STRDUP ("Internal error.");
+  return GNUNET_strdup ("Internal error.");
 }
 
 static void
@@ -158,7 +158,7 @@ printChoice (int indent, GNS_Type type, GNS_Value * val)
 }
 
 /**
- * @return OK on success, NO to display help, SYSERR to abort
+ * @return GNUNET_OK on success, GNUNET_NO to display help, GNUNET_SYSERR to abort
  */
 static int
 readValue (GNS_Type type, GNS_Value * val)
@@ -179,23 +179,23 @@ readValue (GNS_Type type, GNS_Value * val)
             {
             case '\n':
               printf ("\n");
-              return YES;       /* skip */
+              return GNUNET_YES;        /* skip */
             case 'y':
             case 'Y':
               val->Boolean.val = 1;
               printf (_("Yes\n"));
-              return YES;
+              return GNUNET_YES;
             case 'n':
             case 'N':
               val->Boolean.val = 0;
               printf (_("No\n"));
-              return YES;
+              return GNUNET_YES;
             case '?':
               printf (_("Help\n"));
-              return NO;
+              return GNUNET_NO;
             case 'q':
               printf (_("Abort\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             default:
               break;
             }
@@ -210,7 +210,7 @@ readValue (GNS_Type type, GNS_Value * val)
           if (buf[i] == 'q')
             {
               printf (_("Abort\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
 #if 0
           if (buf[i] == '\b')
@@ -226,19 +226,19 @@ readValue (GNS_Type type, GNS_Value * val)
           if ((buf[i] == 'd') && (i == 0))
             {
               printf ("%s\n", val->String.def);
-              FREE (val->String.val);
-              val->String.val = STRDUP (val->String.def);
-              return YES;
+              GNUNET_free (val->String.val);
+              val->String.val = GNUNET_strdup (val->String.def);
+              return GNUNET_YES;
             }
           if ((buf[i] == '?') && (i == 0))
             {
               printf (_("Help\n"));
-              return NO;
+              return GNUNET_NO;
             }
           if ((buf[i] == '\n') && (i == 0))
             {
               printf ("%s\n", val->String.val);
-              return YES;       /* keep */
+              return GNUNET_YES;        /* keep */
             }
           if (buf[i] != '\n')
             {
@@ -252,10 +252,10 @@ readValue (GNS_Type type, GNS_Value * val)
             }
           break;
         }
-      FREE (val->String.val);
-      val->String.val = STRDUP (buf[0] == ' ' ? &buf[1] : buf);
+      GNUNET_free (val->String.val);
+      val->String.val = GNUNET_strdup (buf[0] == ' ' ? &buf[1] : buf);
       printf ("\n");
-      return OK;
+      return GNUNET_OK;
     case GNS_SC:
       while (1)
         {
@@ -263,17 +263,17 @@ readValue (GNS_Type type, GNS_Value * val)
           if (c == '?')
             {
               printf (_("Help\n"));
-              return NO;
+              return GNUNET_NO;
             }
           if (c == '\n')
             {
               printf ("%s\n", val->String.val);
-              return YES;
+              return GNUNET_YES;
             }
           if (c == 'q')
             {
               printf (_("Abort\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
           i = -1;
           if ((c >= '0') && (c <= '9'))
@@ -290,10 +290,10 @@ readValue (GNS_Type type, GNS_Value * val)
               }
           if (i == -1)
             continue;           /* invalid entry */
-          FREE (val->String.val);
-          val->String.val = STRDUP (val->String.legalRange[i]);
+          GNUNET_free (val->String.val);
+          val->String.val = GNUNET_strdup (val->String.legalRange[i]);
           printf ("%s\n", val->String.val);
-          return OK;
+          return GNUNET_OK;
         }
       /* unreachable */
     case GNS_Double:
@@ -304,7 +304,7 @@ readValue (GNS_Type type, GNS_Value * val)
           if (buf[i] == 'q')
             {
               printf (_("Abort\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
 #if 0
           if (buf[i] == '\b')
@@ -321,12 +321,12 @@ readValue (GNS_Type type, GNS_Value * val)
             {
               val->Double.val = val->Double.def;
               printf ("%f\n", val->Double.val);
-              return YES;       /* default */
+              return GNUNET_YES;        /* default */
             }
           if (buf[i] == '?')
             {
               printf (_("Help\n"));
-              return NO;
+              return GNUNET_NO;
             }
           if (buf[i] != '\n')
             {
@@ -341,13 +341,13 @@ readValue (GNS_Type type, GNS_Value * val)
           if (i == 0)
             {
               printf ("%f\n", val->Double.val);
-              return YES;       /* keep */
+              return GNUNET_YES;        /* keep */
             }
           buf[i + 1] = '\0';
           if (1 == sscanf (buf, "%lf", &val->Double.val))
             {
               printf ("\n");
-              return OK;
+              return GNUNET_OK;
             }
           i = 0;
           printf (_("\nInvalid entry, try again (use '?' for help): "));
@@ -362,7 +362,7 @@ readValue (GNS_Type type, GNS_Value * val)
           if (buf[i] == 'q')
             {
               printf (_("Abort\n"));
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
 #if 0
           if (buf[i] == '\b')
@@ -379,12 +379,12 @@ readValue (GNS_Type type, GNS_Value * val)
             {
               val->UInt64.val = val->UInt64.def;
               printf ("%llu\n", val->UInt64.val);
-              return YES;       /* default */
+              return GNUNET_YES;        /* default */
             }
           if (buf[i] == '?')
             {
               printf (_("Help\n"));
-              return NO;
+              return GNUNET_NO;
             }
           if (buf[i] != '\n')
             {
@@ -399,7 +399,7 @@ readValue (GNS_Type type, GNS_Value * val)
           if (i == 0)
             {
               printf ("%llu\n", val->UInt64.val);
-              return YES;       /* keep */
+              return GNUNET_YES;        /* keep */
             }
           buf[i + 1] = '\0';
           if ((1 == sscanf (buf,
@@ -409,7 +409,7 @@ readValue (GNS_Type type, GNS_Value * val)
             {
               val->UInt64.val = l;
               printf ("\n");
-              return OK;
+              return GNUNET_OK;
             }
           i = 0;
           printf (_("\nInvalid entry, try again (use '?' for help): "));
@@ -420,9 +420,9 @@ readValue (GNS_Type type, GNS_Value * val)
       fprintf (stderr,
                _("Unknown kind %x (internal error).  Skipping option.\n"),
                type & GNS_TypeMask);
-      return OK;
+      return GNUNET_OK;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
@@ -436,7 +436,7 @@ conf (int indent,
   int i;
 
   if (!tree->visible)
-    return OK;
+    return GNUNET_OK;
   switch (tree->type & GNS_KindMask)
     {
     case GNS_Leaf:
@@ -448,12 +448,12 @@ conf (int indent,
           iprintf (indent, "%s\n", gettext (tree->description));
           printChoice (indent, tree->type, &tree->value);
           i = readValue (tree->type, &tree->value);
-          if (i == SYSERR)
+          if (i == GNUNET_SYSERR)
             {
-              FREE (ovalue);
-              return SYSERR;
+              GNUNET_free (ovalue);
+              return GNUNET_SYSERR;
             }
-          if (i == OK)
+          if (i == GNUNET_OK)
             break;
           printf ("\n\n");
           iprintf (0, "%s\n", gettext (tree->help));
@@ -466,13 +466,13 @@ conf (int indent,
                                                    tree->section,
                                                    tree->option, value)))
         {
-          FREE (value);
-          FREE (ovalue);
+          GNUNET_free (value);
+          GNUNET_free (ovalue);
           return conf (indent, cfg, ectx, tree);        /* try again */
         }
-      FREE (value);
-      FREE (ovalue);
-      return OK;
+      GNUNET_free (value);
+      GNUNET_free (ovalue);
+      return GNUNET_OK;
     case GNS_Node:
       choice = '\0';
       while (choice == '\0')
@@ -486,10 +486,10 @@ conf (int indent,
             case 'N':
             case 'n':
               iprintf (indent, "%c\n", choice);
-              return OK;
+              return GNUNET_OK;
             case 'q':
               iprintf (indent, _("Aborted.\n"));
-              return SYSERR;    /* escape */
+              return GNUNET_SYSERR;     /* escape */
             case '?':
               iprintf (indent, "%c\n", choice);
               iprintf (indent, "%s\n", gettext (tree->help));
@@ -511,24 +511,25 @@ conf (int indent,
       i = 0;
       while (tree->children[i] != NULL)
         {
-          if (SYSERR == conf (indent + 1, cfg, ectx, tree->children[i]))
-            return SYSERR;
+          if (GNUNET_SYSERR ==
+              conf (indent + 1, cfg, ectx, tree->children[i]))
+            return GNUNET_SYSERR;
           i++;
         }
-      return OK;
+      return GNUNET_OK;
     default:
       fprintf (stderr,
                _("Unknown kind %x (internal error).  Aborting.\n"),
                tree->type & GNS_KindMask);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 int
 main_setup_text (int argc,
                  const char **argv,
-                 struct PluginHandle *self,
+                 struct GNUNET_PluginHandle *self,
                  struct GE_Context *ectx,
                  struct GC_Configuration *cfg,
                  struct GNS_Context *gns, const char *filename, int is_daemon)
@@ -555,7 +556,7 @@ main_setup_text (int argc,
   c = 'r';
   while (c == 'r')
     {
-      if (OK != conf (-1, cfg, ectx, root))
+      if (GNUNET_OK != conf (-1, cfg, ectx, root))
         {
           ioctl (0, TCSETS, &oldT);
           return 1;
@@ -606,7 +607,7 @@ main_setup_text (int argc,
 int
 dump_setup_text (int argc,
                  const char **argv,
-                 struct PluginHandle *self,
+                 struct GNUNET_PluginHandle *self,
                  struct GE_Context *ectx,
                  struct GC_Configuration *cfg,
                  struct GNS_Context *gns, const char *filename, int is_daemon)

@@ -34,10 +34,10 @@
  * to gcrypt or should we tell gcrypt that we use
  * pthreads?
  */
-#define USE_LOCK NO
+#define USE_LOCK GNUNET_NO
 
 #if USE_LOCK
-static struct MUTEX *gcrypt_shared_lock;
+static struct GNUNET_Mutex *gcrypt_shared_lock;
 #else
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif
@@ -47,7 +47,7 @@ void
 lockGcrypt ()
 {
 #if USE_LOCK
-  MUTEX_LOCK (gcrypt_shared_lock);
+  GNUNET_mutex_lock (gcrypt_shared_lock);
 #endif
 }
 
@@ -55,7 +55,7 @@ void
 unlockGcrypt ()
 {
 #if USE_LOCK
-  MUTEX_UNLOCK (gcrypt_shared_lock);
+  GNUNET_mutex_unlock (gcrypt_shared_lock);
 #endif
 }
 
@@ -68,7 +68,7 @@ dummy_logger (void *arg, int level, const char *format, va_list args)
 void __attribute__ ((constructor)) gnunet_crypto_ltdl_init ()
 {
 #if USE_LOCK
-  gcrypt_shared_lock = MUTEX_CREATE (YES);
+  gcrypt_shared_lock = GNUNET_mutex_create (GNUNET_YES);
 #else
   gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 #endif
@@ -93,7 +93,7 @@ void __attribute__ ((constructor)) gnunet_crypto_ltdl_init ()
 void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini ()
 {
 #if USE_LOCK
-  MUTEX_DESTROY (gcrypt_shared_lock);
+  GNUNET_mutex_destroy (gcrypt_shared_lock);
   gcrypt_shared_lock = NULL;
 #endif
 }

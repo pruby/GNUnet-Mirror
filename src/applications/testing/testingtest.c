@@ -37,41 +37,41 @@ main (int argc, const char **argv)
 {
   pid_t daemon1;
   pid_t daemon2;
-  PeerIdentity p1;
-  PeerIdentity p2;
+  GNUNET_PeerIdentity p1;
+  GNUNET_PeerIdentity p2;
   char *c1 = NULL;
   char *c2 = NULL;
   int ret = 0;
 
-  if (OK != gnunet_testing_start_daemon (12087,
-                                         10000,
-                                         "/tmp/gnunet-testing-1",
-                                         "tcp",
-                                         "advertising stats",
-                                         &daemon1, &p1, &c1))
+  if (GNUNET_OK != GNUNET_TESTING_start_daemon (12087,
+                                                10000,
+                                                "/tmp/gnunet-testing-1",
+                                                "tcp",
+                                                "advertising stats",
+                                                &daemon1, &p1, &c1))
     ret |= 1;
-  if (OK != gnunet_testing_start_daemon (22087,
-                                         20000,
-                                         "/tmp/gnunet-testing-2",
-                                         "tcp",
-                                         "advertising stats",
-                                         &daemon2, &p2, &c2))
+  if (GNUNET_OK != GNUNET_TESTING_start_daemon (22087,
+                                                20000,
+                                                "/tmp/gnunet-testing-2",
+                                                "tcp",
+                                                "advertising stats",
+                                                &daemon2, &p2, &c2))
     ret |= 2;
-  if (OK != gnunet_testing_connect_daemons (12087, 22087))
+  if (GNUNET_OK != GNUNET_TESTING_connect_daemons (12087, 22087))
     ret |= 4;
-  if (OK != gnunet_testing_stop_daemon (12087, daemon1))
+  if (GNUNET_OK != GNUNET_TESTING_stop_daemon (12087, daemon1))
     ret |= 8;
-  if (OK != gnunet_testing_stop_daemon (22087, daemon2))
+  if (GNUNET_OK != GNUNET_TESTING_stop_daemon (22087, daemon2))
     ret |= 16;
   if (c1 != NULL)
     {
       UNLINK (c1);
-      FREE (c1);
+      GNUNET_free (c1);
     }
   if (c2 != NULL)
     {
       UNLINK (c2);
-      FREE (c2);
+      GNUNET_free (c2);
     }
   return ret;
 }

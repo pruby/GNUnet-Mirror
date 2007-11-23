@@ -39,7 +39,7 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
-#define DEBUG_TOPOLOGY NO
+#define DEBUG_TOPOLOGY GNUNET_NO
 
 /**
  * After 2 minutes on an inactive connection, probe the other
@@ -53,7 +53,7 @@
  * How often should the cron-job scan for free slots (to establish
  * new connections)?
  */
-#define LIVE_SCAN_FREQUENCY 500 * cronMILLIS
+#define LIVE_SCAN_FREQUENCY 500 * GNUNET_CRON_MILLISECONDS
 
 /**
  * Value > 1 that determines the chance (1:LSE) that the cron job
@@ -93,24 +93,24 @@ typedef struct
   unsigned int index;
   unsigned int matchCount;
   long long costSelector;
-  PeerIdentity match;
+  GNUNET_PeerIdentity match;
 } IndexMatch;
 
-static PeerIdentity *friends;
+static GNUNET_PeerIdentity *friends;
 static unsigned int friendCount;
 
 static int
-allowConnection (const PeerIdentity * peer)
+allowConnection (const GNUNET_PeerIdentity * peer)
 {
   int i;
 
   if ((coreAPI->myIdentity != NULL) &&
-      (0 == memcmp (coreAPI->myIdentity, peer, sizeof (PeerIdentity))))
-    return SYSERR;              /* disallow connections to self */
+      (0 == memcmp (coreAPI->myIdentity, peer, sizeof (GNUNET_PeerIdentity))))
+    return GNUNET_SYSERR;       /* disallow connections to self */
   for (i = friendCount - 1; i >= 0; i--)
-    if (0 == memcmp (&friends[i], peer, sizeof (PeerIdentity)))
-      return OK;
-  return SYSERR;
+    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
+      return GNUNET_OK;
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -123,23 +123,24 @@ allowConnection (const PeerIdentity * peer)
  * @param im updated structure used to select the peer
  */
 static int
-scanHelperCount (const PeerIdentity * id,
+scanHelperCount (const GNUNET_PeerIdentity * id,
                  unsigned short proto, int confirmed, void *cls)
 {
   IndexMatch *im = cls;
 
-  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (PeerIdentity)))
-    return OK;
+  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (GNUNET_PeerIdentity)))
+    return GNUNET_OK;
   if (coreAPI->computeIndex (id) != im->index)
-    return OK;
-  if (OK == coreAPI->queryPeerStatus (id, NULL, NULL))
-    return OK;
-  if ((YES == transport->isAvailable (proto)) && (OK == allowConnection (id)))
+    return GNUNET_OK;
+  if (GNUNET_OK == coreAPI->queryPeerStatus (id, NULL, NULL))
+    return GNUNET_OK;
+  if ((GNUNET_YES == transport->isAvailable (proto))
+      && (GNUNET_OK == allowConnection (id)))
     {
       im->matchCount++;
       im->costSelector += transport->getCost (proto);
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -151,27 +152,28 @@ scanHelperCount (const PeerIdentity * id,
  * @param im structure responsible for the selection process
  */
 static int
-scanHelperSelect (const PeerIdentity * id,
+scanHelperSelect (const GNUNET_PeerIdentity * id,
                   const unsigned short proto, int confirmed, void *cls)
 {
   IndexMatch *im = cls;
-  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (PeerIdentity)))
-    return OK;
+  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (GNUNET_PeerIdentity)))
+    return GNUNET_OK;
   if (coreAPI->computeIndex (id) != im->index)
-    return OK;
-  if (OK == coreAPI->queryPeerStatus (id, NULL, NULL))
-    return OK;
-  if ((OK == allowConnection (id)) && (YES == transport->isAvailable (proto)))
+    return GNUNET_OK;
+  if (GNUNET_OK == coreAPI->queryPeerStatus (id, NULL, NULL))
+    return GNUNET_OK;
+  if ((GNUNET_OK == allowConnection (id))
+      && (GNUNET_YES == transport->isAvailable (proto)))
     {
       im->costSelector -= transport->getCost (proto);
       if ((im->matchCount == 0) || (im->costSelector < 0))
         {
           im->match = *id;
-          return SYSERR;        /* abort iteration */
+          return GNUNET_SYSERR; /* abort iteration */
         }
       im->matchCount--;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -185,12 +187,12 @@ static void
 scanForHosts (unsigned int index)
 {
   IndexMatch indexMatch;
-  cron_t now;
+  GNUNET_CronTime now;
 #if DEBUG_TOPOLOGY
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   indexMatch.index = index;
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
@@ -198,11 +200,13 @@ scanForHosts (unsigned int index)
   if (indexMatch.matchCount == 0)
     return;                     /* no matching peers found! */
   if (indexMatch.costSelector > 0)
-    indexMatch.costSelector = weak_randomi (indexMatch.costSelector / 4) * 4;
+    indexMatch.costSelector =
+      GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                         indexMatch.costSelector / 4) * 4;
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost (now, &scanHelperSelect, &indexMatch);
   if (0 == memcmp (coreAPI->myIdentity,
-                   &indexMatch.match, sizeof (PeerIdentity)))
+                   &indexMatch.match, sizeof (GNUNET_PeerIdentity)))
     {
       GE_BREAK (ectx, 0);       /* should not happen, at least not often... */
       return;
@@ -215,77 +219,79 @@ scanForHosts (unsigned int index)
 #if DEBUG_TOPOLOGY
   IF_GELOG (ectx,
             GE_DEBUG | GE_REQUEST | GE_USER,
-            hash2enc (&indexMatch.match.hashPubKey, &enc));
+            GNUNET_hash_to_enc (&indexMatch.match.hashPubKey, &enc));
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Topology: trying to connect to `%s'.\n", &enc);
 #endif
-  if (NO == identity->isBlacklisted (&indexMatch.match, YES))
+  if (GNUNET_NO == identity->isBlacklisted (&indexMatch.match, GNUNET_YES))
     {
       coreAPI->unicast (&indexMatch.match, NULL, 0, 0);
       identity->blacklistHost (&indexMatch.match, (unsigned int) 5 * 60 * 60 * saturation,      /* 5h at full saturation */
-                               NO);
+                               GNUNET_NO);
     }
 }
 
 /**
- * We received a sign of life from this host.
+ * We received a GNUNET_RSA_sign of life from this host.
  *
- * @param hostId the peer that gave a sign of live
+ * @param hostId the peer that gave a GNUNET_RSA_sign of live
  */
 static void
 notifyPONG (void *cls)
 {
-  PeerIdentity *hostId = cls;
+  GNUNET_PeerIdentity *hostId = cls;
 #if DEBUG_TOPOLOGY
-  EncName enc;
+  GNUNET_EncName enc;
 
-  hash2enc (&hostId->hashPubKey, &enc);
+  GNUNET_hash_to_enc (&hostId->hashPubKey, &enc);
   GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "Received pong from `%s', telling core that peer is still alive.\n",
           (char *) &enc);
 #endif
   coreAPI->confirmSessionUp (hostId);
-  FREE (hostId);
+  GNUNET_free (hostId);
 }
 
 /**
  * Check the liveness of the ping and possibly ping it.
  */
 static void
-checkNeedForPing (const PeerIdentity * peer, void *unused)
+checkNeedForPing (const GNUNET_PeerIdentity * peer, void *unused)
 {
-  cron_t now;
-  cron_t act;
+  GNUNET_CronTime now;
+  GNUNET_CronTime act;
 #if DEBUG_TOPOLOGY
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
-  if (weak_randomi (LIVE_PING_EFFECTIVENESS) != 0)
+  if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, LIVE_PING_EFFECTIVENESS)
+      != 0)
     return;
-  now = get_time ();
-  if (SYSERR == coreAPI->getLastActivityOf (peer, &act))
+  now = GNUNET_get_time ();
+  if (GNUNET_SYSERR == coreAPI->getLastActivityOf (peer, &act))
     {
       GE_BREAK (ectx, 0);
       return;                   /* this should not happen... */
     }
 
-  if (now - act > SECONDS_PINGATTEMPT * cronSECONDS)
+  if (now - act > SECONDS_PINGATTEMPT * GNUNET_CRON_SECONDS)
     {
       /* if we have less than 75% of the number of connections
          that we would like to have, try ping-ing the other side
          to keep the connection open instead of hanging up */
-      PeerIdentity *hi = MALLOC (sizeof (PeerIdentity));
+      GNUNET_PeerIdentity *hi = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       *hi = *peer;
 #if DEBUG_TOPOLOGY
-      hash2enc (&hi->hashPubKey, &enc);
+      GNUNET_hash_to_enc (&hi->hashPubKey, &enc);
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "Sending ping to `%s' to prevent connection timeout.\n",
               (char *) &enc);
 #endif
-      if (OK != pingpong->ping (peer, &notifyPONG, hi, NO, rand ()))
-        FREE (hi);
+      if (GNUNET_OK !=
+          pingpong->ping (peer, &notifyPONG, hi, GNUNET_NO, rand ()))
+        GNUNET_free (hi);
     }
 }
 
@@ -304,13 +310,15 @@ cronCheckLiveness (void *unused)
 
   autoconnect = GC_get_configuration_value_yesno (coreAPI->cfg,
                                                   "GNUNETD",
-                                                  "DISABLE-AUTOCONNECT", NO);
+                                                  "DISABLE-AUTOCONNECT",
+                                                  GNUNET_NO);
   slotCount = coreAPI->getSlotCount ();
-  if ((NO == autoconnect) && (saturation < 1))
+  if ((GNUNET_NO == autoconnect) && (saturation < 1))
     {
       for (i = slotCount - 1; i >= 0; i--)
         {
-          if (weak_randomi (LIVE_SCAN_EFFECTIVENESS) != 0)
+          if (GNUNET_random_u32
+              (GNUNET_RANDOM_QUALITY_WEAK, LIVE_SCAN_EFFECTIVENESS) != 0)
             continue;
           if (0 == coreAPI->isSlotUsed (i))
             scanForHosts (i);
@@ -345,44 +353,44 @@ rereadConfiguration (void *ctx,
   char *data;
   unsigned long long size;
   size_t pos;
-  EncName enc;
-  HashCode512 hc;
+  GNUNET_EncName enc;
+  GNUNET_HashCode hc;
 
   if (0 != strcmp (section, "F2F"))
     return 0;
-  GROW (friends, friendCount, 0);
+  GNUNET_array_grow (friends, friendCount, 0);
   fn = NULL;
   GC_get_configuration_value_filename (cfg,
                                        "F2F",
                                        "FRIENDS",
                                        VAR_DAEMON_DIRECTORY "/friends", &fn);
-  if ((0 == disk_file_test (ectx, fn)) ||
-      (OK != disk_file_size (ectx, fn, &size, YES)))
+  if ((0 == GNUNET_disk_file_test (ectx, fn)) ||
+      (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
     {
       GE_LOG (ectx,
               GE_USER | GE_ADMIN | GE_ERROR | GE_IMMEDIATE,
               "Could not read friends list `%s'\n", fn);
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
-  data = MALLOC (size);
-  if (size != disk_file_read (ectx, fn, size, data))
+  data = GNUNET_malloc (size);
+  if (size != GNUNET_disk_file_read (ectx, fn, size, data))
     {
       GE_LOG (ectx,
               GE_ERROR | GE_BULK | GE_USER,
               _("Failed to read friends list from `%s'\n"), fn);
-      FREE (fn);
-      FREE (data);
-      return SYSERR;
+      GNUNET_free (fn);
+      GNUNET_free (data);
+      return GNUNET_SYSERR;
     }
-  FREE (fn);
+  GNUNET_free (fn);
   pos = 0;
   while ((pos < size) && isspace (data[pos]))
     pos++;
-  while (pos <= size - sizeof (EncName))
+  while (pos <= size - sizeof (GNUNET_EncName))
     {
-      memcpy (&enc, &data[pos], sizeof (EncName));
-      if (!isspace (enc.encoding[sizeof (EncName) - 1]))
+      memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
+      if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
         {
           GE_LOG (ectx,
                   GE_WARNING | GE_BULK | GE_USER,
@@ -390,10 +398,10 @@ rereadConfiguration (void *ctx,
                   ("Syntax error in topology specification, skipping bytes.\n"));
           continue;
         }
-      enc.encoding[sizeof (EncName) - 1] = '\0';
-      if (OK == enc2hash ((char *) &enc, &hc))
+      enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
+      if (GNUNET_OK == GNUNET_enc_to_hash ((char *) &enc, &hc))
         {
-          GROW (friends, friendCount, friendCount + 1);
+          GNUNET_array_grow (friends, friendCount, friendCount + 1);
           friends[friendCount - 1].hashPubKey = hc;
         }
       else
@@ -404,7 +412,7 @@ rereadConfiguration (void *ctx,
                   ("Syntax error in topology specification, skipping bytes `%s'.\n"),
                   &enc);
         }
-      pos = pos + sizeof (EncName);
+      pos = pos + sizeof (GNUNET_EncName);
       while ((pos < size) && isspace (data[pos]))
         pos++;
     }
@@ -455,9 +463,9 @@ provide_module_topology_f2f (CoreAPIForApplication * capi)
       return NULL;
     }
 
-  cron_add_job (coreAPI->cron,
-                &cronCheckLiveness,
-                LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
+  GNUNET_cron_add_job (coreAPI->cron,
+                       &cronCheckLiveness,
+                       LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -467,7 +475,8 @@ provide_module_topology_f2f (CoreAPIForApplication * capi)
 int
 release_module_topology_f2f ()
 {
-  cron_del_job (coreAPI->cron, &cronCheckLiveness, LIVE_SCAN_FREQUENCY, NULL);
+  GNUNET_cron_del_job (coreAPI->cron, &cronCheckLiveness, LIVE_SCAN_FREQUENCY,
+                       NULL);
   GC_detach_change_listener (coreAPI->cfg, &rereadConfiguration, NULL);
   coreAPI->releaseService (identity);
   identity = NULL;
@@ -476,8 +485,8 @@ release_module_topology_f2f ()
   coreAPI->releaseService (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
-  GROW (friends, friendCount, 0);
-  return OK;
+  GNUNET_array_grow (friends, friendCount, 0);
+  return GNUNET_OK;
 }
 
 /**
@@ -509,7 +518,7 @@ initialize_module_topology_f2f (CoreAPIForApplication * capi)
                                                      "topology",
                                                      gettext_noop
                                                      ("maintains a friend-to-friend restricted topology")));
-  return OK;
+  return GNUNET_OK;
 }
 
 void

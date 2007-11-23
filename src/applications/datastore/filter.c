@@ -33,7 +33,7 @@
 /**
  * Filter.
  */
-static struct Bloomfilter *filter;
+static struct GNUNET_BloomFilter *filter;
 
 static char *
 getFilterName (struct GE_Context *ectx, struct GC_Configuration *cfg)
@@ -48,15 +48,15 @@ getFilterName (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                                  VAR_DAEMON_DIRECTORY "/fs",
                                                  &fn))
     return NULL;
-  if (OK != disk_directory_create (ectx, fn))
+  if (GNUNET_OK != GNUNET_disk_directory_create (ectx, fn))
     {
-      FREE (fn);
+      GNUNET_free (fn);
       return NULL;
     }
-  bf = MALLOC (strlen (fn) + strlen ("/bloomfilter") + 1);
+  bf = GNUNET_malloc (strlen (fn) + strlen ("/bloomfilter") + 1);
   strcpy (bf, fn);
   strcat (bf, "/bloomfilter");
-  FREE (fn);
+  GNUNET_free (fn);
   return bf;
 }
 
@@ -73,24 +73,24 @@ initFilters (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                                0,
                                                ((unsigned long long) -1) /
                                                1024 / 1024, 1024, &quota))
-    return SYSERR;
+    return GNUNET_SYSERR;
   quota *= 1024;
   bf_size = quota / 32;         /* 8 bit per entry, 1 bit per 32 kb in DB */
   bf = getFilterName (ectx, cfg);
   if (bf == NULL)
-    return SYSERR;
-  filter = loadBloomfilter (ectx, bf, bf_size, 5);      /* approx. 3% false positives at max use */
-  FREE (bf);
+    return GNUNET_SYSERR;
+  filter = GNUNET_bloomfilter_load (ectx, bf, bf_size, 5);      /* approx. 3% false positives at max use */
+  GNUNET_free (bf);
   if (filter == NULL)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 void
 doneFilters ()
 {
   if (filter != NULL)
-    freeBloomfilter (filter);
+    GNUNET_bloomfilter_free (filter);
 }
 
 void
@@ -101,25 +101,25 @@ deleteFilter (struct GE_Context *ectx, struct GC_Configuration *cfg)
   GE_ASSERT (ectx, filter == NULL);
   fn = getFilterName (ectx, cfg);
   UNLINK (fn);
-  FREE (fn);
+  GNUNET_free (fn);
 }
 
 void
-makeAvailable (const HashCode512 * key)
+makeAvailable (const GNUNET_HashCode * key)
 {
-  addToBloomfilter (filter, key);
+  GNUNET_bloomfilter_add (filter, key);
 }
 
 void
-makeUnavailable (const HashCode512 * key)
+makeUnavailable (const GNUNET_HashCode * key)
 {
-  delFromBloomfilter (filter, key);
+  GNUNET_bloomfilter_remove (filter, key);
 }
 
 int
-testAvailable (const HashCode512 * key)
+testAvailable (const GNUNET_HashCode * key)
 {
-  return testBloomfilter (filter, key);
+  return GNUNET_bloomfilter_test (filter, key);
 }
 
 /* end of filter.c */

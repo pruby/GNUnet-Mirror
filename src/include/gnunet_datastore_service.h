@@ -76,10 +76,10 @@ typedef struct
   unsigned int anonymityLevel;
 
   /**
-   * Expiration time for this item, in NBO (use htonll to read!).  Use
+   * Expiration time for this item, in NBO (use GNUNET_htonll to read!).  Use
    * "-1" for items that never expire.
    */
-  cron_t expirationTime;
+  GNUNET_CronTime expirationTime;
 
 } Datastore_Value;
 
@@ -91,10 +91,10 @@ typedef struct
  * @param uid unique identifier for the datum;
  *        maybe 0 if no unique identifier is available
  *
- * @return SYSERR to abort the iteration, OK to continue,
- *         NO to delete the item and continue (if supported)
+ * @return GNUNET_SYSERR to abort the iteration, GNUNET_OK to continue,
+ *         GNUNET_NO to delete the item and continue (if supported)
  */
-typedef int (*Datum_Iterator) (const HashCode512 * key,
+typedef int (*Datum_Iterator) (const GNUNET_HashCode * key,
                                const Datastore_Value * value, void *closure,
                                unsigned long long uid);
 
@@ -129,24 +129,25 @@ typedef struct
    * Store an item in the datastore.  If the item is
    * already present, a second copy is created.
    *
-   * @return YES on success, NO if the datastore is
+   * @return GNUNET_YES on success, GNUNET_NO if the datastore is
    *   full and the priority of the item is not high enough
-   *   to justify removing something else, SYSERR on
+   *   to justify removing something else, GNUNET_SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*put) (const HashCode512 * key, const Datastore_Value * value);
+  int (*put) (const GNUNET_HashCode * key, const Datastore_Value * value);
 
   /**
    * Store an item in the datastore.  If the item is already present,
    * the priorities are summed up and the higher expiration time and
    * lower anonymity level is used.
    *
-   * @return YES on success, NO if the datastore is
+   * @return GNUNET_YES on success, GNUNET_NO if the datastore is
    *   full and the priority of the item is not high enough
-   *   to justify removing something else, SYSERR on
+   *   to justify removing something else, GNUNET_SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*putUpdate) (const HashCode512 * key, const Datastore_Value * value);
+  int (*putUpdate) (const GNUNET_HashCode * key,
+                    const Datastore_Value * value);
 
   /**
    * Iterate over the results for a particular key
@@ -156,32 +157,32 @@ typedef struct
    * @param type entries of which type are relevant?
    *     Use 0 for any type.
    * @param iter maybe NULL (to just count)
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration,
    *   0 if no matches were found.  May NOT return
-   *   SYSERR unless the iterator aborted!
+   *   GNUNET_SYSERR unless the iterator aborted!
    */
-  int (*get) (const HashCode512 * key,
+  int (*get) (const GNUNET_HashCode * key,
               unsigned int type, Datum_Iterator iter, void *closure);
 
   /**
    * Do a quick test if we MAY have the content.
    */
-  int (*fast_get) (const HashCode512 * key);
+  int (*fast_get) (const GNUNET_HashCode * key);
 
   /**
    * Get a random value from the datastore.
    *
    * @param key set to the key of the match
    * @param value set to an approximate match
-   * @return OK if a value was found, SYSERR if not
+   * @return GNUNET_OK if a value was found, GNUNET_SYSERR if not
    */
-  int (*getRandom) (HashCode512 * key, Datastore_Value ** value);
+  int (*getRandom) (GNUNET_HashCode * key, Datastore_Value ** value);
 
   /**
    * Explicitly remove some content from the database.
    */
-  int (*del) (const HashCode512 * query, const Datastore_Value * value);
+  int (*del) (const GNUNET_HashCode * query, const Datastore_Value * value);
 
 } Datastore_ServiceAPI;
 

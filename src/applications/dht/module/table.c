@@ -57,7 +57,7 @@
  * How often should the cron job for maintaining the DHT
  * run?
  */
-#define MAINTAIN_FREQUENCY 1500 * cronMILLIS
+#define MAINTAIN_FREQUENCY 1500 * GNUNET_CRON_MILLISECONDS
 
 /**
  * What is the chance (1 in XXX) that we send DISCOVERY messages
@@ -91,17 +91,17 @@ typedef struct
   /**
    * What was the last time we received a message from this peer?
    */
-  cron_t lastActivity;
+  GNUNET_CronTime lastActivity;
 
   /**
    * What was the last time we send a PING to this peer?
    */
-  cron_t lastTimePingSend;
+  GNUNET_CronTime lastTimePingSend;
 
   /**
    * What is the average latency for replies received?
    */
-  cron_t expected_latency;
+  GNUNET_CronTime expected_latency;
 
   /**
    * Number of responses received
@@ -116,7 +116,7 @@ typedef struct
   /**
    * What is the identity of the peer?
    */
-  PeerIdentity id;
+  GNUNET_PeerIdentity id;
 
 } PeerInfo;
 
@@ -170,7 +170,7 @@ static unsigned int total_peers;
 /**
  * Mutex to synchronize access to tables.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * Identity service.
@@ -203,7 +203,7 @@ static int stat_dht_advertisements;
 typedef struct
 {
 
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int space_available;
 
@@ -217,38 +217,38 @@ typedef struct
 typedef struct
 {
 
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int reserved;
 
-  PeerIdentity peer;
+  GNUNET_PeerIdentity peer;
 
 } P2P_DHT_ASK_HELLO;
 
 /**
- * Get the index of the lowest bit of the two hash codes that
+ * Get the index of the lowest bit of the two GNUNET_hash codes that
  * differs.
  */
 static unsigned int
-get_bit_distance (const HashCode512 * h1, const HashCode512 * h2)
+get_bit_distance (const GNUNET_HashCode * h1, const GNUNET_HashCode * h2)
 {
   unsigned int i;
   int diff;
 
-  for (i = 0; i < sizeof (HashCode512) * 8; i++)
+  for (i = 0; i < sizeof (GNUNET_HashCode) * 8; i++)
     {
-      diff = getHashCodeBit (h1, i) - getHashCodeBit (h2, i);
+      diff = GNUNET_hash_get_bit (h1, i) - GNUNET_hash_get_bit (h2, i);
       if (diff != 0)
         return i;
     }
-  return sizeof (HashCode512) * 8;
+  return sizeof (GNUNET_HashCode) * 8;
 }
 
 /**
  * @return NULL if peer is the current host
  */
 static PeerBucket *
-findBucketFor (const PeerIdentity * peer)
+findBucketFor (const GNUNET_PeerIdentity * peer)
 {
   unsigned int index;
   int i;
@@ -268,14 +268,15 @@ findBucketFor (const PeerIdentity * peer)
  * in our DHT routing table.
  */
 static PeerInfo *
-findPeerEntryInBucket (PeerBucket * bucket, const PeerIdentity * peer)
+findPeerEntryInBucket (PeerBucket * bucket, const GNUNET_PeerIdentity * peer)
 {
   unsigned int i;
 
   if (bucket == NULL)
     return NULL;
   for (i = 0; i < bucket->peers_size; i++)
-    if (0 == memcmp (peer, &bucket->peers[i]->id, sizeof (PeerIdentity)))
+    if (0 ==
+        memcmp (peer, &bucket->peers[i]->id, sizeof (GNUNET_PeerIdentity)))
       return bucket->peers[i];
   return NULL;
 }
@@ -285,14 +286,14 @@ findPeerEntryInBucket (PeerBucket * bucket, const PeerIdentity * peer)
  * in our DHT routing table.
  */
 static PeerInfo *
-findPeerEntry (const PeerIdentity * peer)
+findPeerEntry (const GNUNET_PeerIdentity * peer)
 {
   return findPeerEntryInBucket (findBucketFor (peer), peer);
 }
 
 /**
  * Return a number that is the larger the closer the
- * "have" hash code is to the "target".  The basic
+ * "have" GNUNET_hash code is to the "target".  The basic
  * idea is that if "have" would be in the n-th lowest
  * bucket of "target", the returned value should be
  * 2^n.  However, the largest number we can return
@@ -301,14 +302,15 @@ findPeerEntry (const PeerIdentity * peer)
  * @return inverse distance metric, non-zero.
  */
 static unsigned int
-inverse_distance (const HashCode512 * target, const HashCode512 * have)
+inverse_distance (const GNUNET_HashCode * target,
+                  const GNUNET_HashCode * have)
 {
   unsigned int bucket;
   double d;
 
   bucket = get_bit_distance (target, have);
   d = bucket * 32;
-  d = exp2 (d / (sizeof (HashCode512) * 8));
+  d = exp2 (d / (sizeof (GNUNET_HashCode) * 8));
   if (d > ((unsigned int) -1))
     return -1;
   return (unsigned int) d;
@@ -324,12 +326,13 @@ inverse_distance (const HashCode512 * target, const HashCode512 * have)
  * exponentially declining probability (this function is also used for
  * populating the target's routing table).
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-select_dht_peer (PeerIdentity * set,
-                 const HashCode512 * target,
-                 const PeerIdentity * blocked, unsigned int blocked_size)
+select_dht_peer (GNUNET_PeerIdentity * set,
+                 const GNUNET_HashCode * target,
+                 const GNUNET_PeerIdentity * blocked,
+                 unsigned int blocked_size)
 {
   unsigned long long total_distance;
   unsigned long long selected;
@@ -341,7 +344,7 @@ select_dht_peer (PeerIdentity * set,
   PeerBucket *bucket;
   PeerInfo *pi;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   if (stats != NULL)
     stats->change (stat_dht_route_looks, 1);
   total_distance = 0;
@@ -351,56 +354,58 @@ select_dht_peer (PeerIdentity * set,
       for (ec = 0; ec < bucket->peers_size; ec++)
         {
           pi = bucket->peers[ec];
-          match = NO;
+          match = GNUNET_NO;
           for (i = 0; i < blocked_size; i++)
             {
-              if (0 == memcmp (&pi->id, &blocked[i], sizeof (PeerIdentity)))
+              if (0 ==
+                  memcmp (&pi->id, &blocked[i], sizeof (GNUNET_PeerIdentity)))
                 {
-                  match = YES;
+                  match = GNUNET_YES;
                   break;
                 }
             }
-          if (match == YES)
+          if (match == GNUNET_YES)
             continue;
           total_distance += inverse_distance (target, &pi->id.hashPubKey);
         }
     }
   if (total_distance == 0)
     {
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
-  selected = weak_randomi64 (total_distance);
+  selected = GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK, total_distance);
   for (bc = 0; bc < bucketCount; bc++)
     {
       bucket = &buckets[bc];
       for (ec = 0; ec < bucket->peers_size; ec++)
         {
           pi = bucket->peers[ec];
-          match = NO;
+          match = GNUNET_NO;
           for (i = 0; i < blocked_size; i++)
             {
-              if (0 == memcmp (&pi->id, &blocked[i], sizeof (PeerIdentity)))
+              if (0 ==
+                  memcmp (&pi->id, &blocked[i], sizeof (GNUNET_PeerIdentity)))
                 {
-                  match = YES;
+                  match = GNUNET_YES;
                   break;
                 }
             }
-          if (match == YES)
+          if (match == GNUNET_YES)
             continue;
           distance = inverse_distance (target, &pi->id.hashPubKey);
           if (distance > selected)
             {
               *set = pi->id;
-              MUTEX_UNLOCK (lock);
-              return OK;
+              GNUNET_mutex_unlock (lock);
+              return GNUNET_OK;
             }
           selected -= distance;
         }
     }
   GE_BREAK (NULL, 0);
-  MUTEX_UNLOCK (lock);
-  return SYSERR;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -409,12 +414,12 @@ select_dht_peer (PeerIdentity * set,
  * @param cls NULL or pre-build discovery message
  */
 static void
-broadcast_dht_discovery (const PeerIdentity * other, void *cls)
+broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
 {
   P2P_DHT_Discovery *disco = cls;
   unsigned int pc;
   unsigned int i;
-  PeerIdentity *pos;
+  GNUNET_PeerIdentity *pos;
 
   if (stats != NULL)
     stats->change (stat_dht_advertisements, 1);
@@ -431,10 +436,12 @@ broadcast_dht_discovery (const PeerIdentity * other, void *cls)
     pc = MAINTAIN_ADV_CAP;
   if (pc == 0)
     pc = 1;
-  disco = MALLOC (pc * sizeof (PeerIdentity) + sizeof (P2P_DHT_Discovery));
+  disco =
+    GNUNET_malloc (pc * sizeof (GNUNET_PeerIdentity) +
+                   sizeof (P2P_DHT_Discovery));
   disco->header.type = htons (P2P_PROTO_DHT_DISCOVERY);
   disco->space_available = -1;  /* FIXME */
-  pos = (PeerIdentity *) & disco[1];
+  pos = (GNUNET_PeerIdentity *) & disco[1];
   i = 0;
   if (total_peers == 0)
     {
@@ -445,22 +452,22 @@ broadcast_dht_discovery (const PeerIdentity * other, void *cls)
     }
   while (i < pc)
     {
-      if (OK != select_dht_peer (&pos[i], &other->hashPubKey, pos, i))
+      if (GNUNET_OK != select_dht_peer (&pos[i], &other->hashPubKey, pos, i))
         pc--;
       else
         i++;
     }
   disco->header.size =
-    htons (pc * sizeof (PeerIdentity) + sizeof (P2P_DHT_Discovery));
+    htons (pc * sizeof (GNUNET_PeerIdentity) + sizeof (P2P_DHT_Discovery));
   coreAPI->unicast (other, &disco->header, 0,
                     MAINTAIN_FREQUENCY * MAINTAIN_CHANCE / 2);
-  FREE (disco);
+  GNUNET_free (disco);
 }
 
 static void
-broadcast_dht_discovery_prob (const PeerIdentity * other, void *cls)
+broadcast_dht_discovery_prob (const GNUNET_PeerIdentity * other, void *cls)
 {
-  if (weak_randomi (MAINTAIN_CHANCE) != 0)
+  if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, MAINTAIN_CHANCE) != 0)
     return;
   broadcast_dht_discovery (other, cls);
 }
@@ -493,17 +500,17 @@ maintain_dht_job (void *unused)
 static void
 pongNotify (void *cls)
 {
-  PeerIdentity *peer = cls;
+  GNUNET_PeerIdentity *peer = cls;
   PeerInfo *pi;
 
   pi = findPeerEntry (peer);
   if (pi != NULL)
     {
-      pi->lastActivity = get_time ();
+      pi->lastActivity = GNUNET_get_time ();
       pi->expected_latency = pi->lastActivity - pi->lastTimePingSend;
       pi->response_count++;
     }
-  FREE (peer);
+  GNUNET_free (peer);
 }
 
 /**
@@ -513,13 +520,13 @@ pongNotify (void *cls)
 static void
 pingPeer (PeerInfo * pi)
 {
-  PeerIdentity *p;
+  GNUNET_PeerIdentity *p;
 
-  p = MALLOC (sizeof (PeerIdentity));
+  p = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
   *p = pi->id;
-  if (OK == pingpong->ping (p, &pongNotify, p, NO, rand ()))
+  if (GNUNET_OK == pingpong->ping (p, &pongNotify, p, GNUNET_NO, rand ()))
     {
-      pi->lastTimePingSend = get_time ();
+      pi->lastTimePingSend = GNUNET_get_time ();
       pi->request_count++;
     }
 }
@@ -528,21 +535,21 @@ pingPeer (PeerInfo * pi)
  * Check if pi is still up and running.  May also try
  * to confirm that the peer is still live.
  *
- * @return YES if the peer should be removed from the DHT table
+ * @return GNUNET_YES if the peer should be removed from the DHT table
  */
 static int
 checkExpired (PeerInfo * pi)
 {
-  cron_t now;
+  GNUNET_CronTime now;
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   if (pi->lastActivity >= now)
-    return NO;
+    return GNUNET_NO;
   if (now - pi->lastActivity > MAINTAIN_PEER_TIMEOUT)
-    return YES;
+    return GNUNET_YES;
   if (now - pi->lastActivity > MAINTAIN_PEER_TIMEOUT / 2)
     pingPeer (pi);
-  return NO;
+  return GNUNET_NO;
 }
 
 /**
@@ -557,14 +564,15 @@ checkExpiration (PeerBucket * bucket)
   for (i = 0; i < bucket->peers_size; i++)
     {
       peer = bucket->peers[i];
-      if (checkExpired (peer) == YES)
+      if (checkExpired (peer) == GNUNET_YES)
         {
           total_peers--;
           if (stats != NULL)
             stats->change (stat_dht_total_peers, -1);
-          FREE (peer);
+          GNUNET_free (peer);
           bucket->peers[i] = bucket->peers[bucket->peers_size - 1];
-          GROW (bucket->peers, bucket->peers_size, bucket->peers_size - 1);
+          GNUNET_array_grow (bucket->peers, bucket->peers_size,
+                             bucket->peers_size - 1);
         }
     }
 }
@@ -573,12 +581,13 @@ checkExpiration (PeerBucket * bucket)
  * Consider adding the given peer to the DHT.
  */
 static void
-considerPeer (const PeerIdentity * sender, const PeerIdentity * peer)
+considerPeer (const GNUNET_PeerIdentity * sender,
+              const GNUNET_PeerIdentity * peer)
 {
   PeerInfo *pi;
   PeerBucket *bucket;
   P2P_DHT_ASK_HELLO ask;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
 
   bucket = findBucketFor (peer);
   if (bucket == NULL)
@@ -590,7 +599,7 @@ considerPeer (const PeerIdentity * sender, const PeerIdentity * peer)
   if (NULL != findPeerEntryInBucket (bucket, peer))
     return;                     /* already have this peer in buckets */
   /* do we know how to contact this peer? */
-  hello = identity->identity2Hello (peer, ANY_PROTOCOL_NUMBER, NO);
+  hello = identity->identity2Hello (peer, ANY_PROTOCOL_NUMBER, GNUNET_NO);
   if (hello == NULL)
     {
       /* if identity not known, ask sender for HELLO of other peer */
@@ -599,23 +608,24 @@ considerPeer (const PeerIdentity * sender, const PeerIdentity * peer)
       ask.reserved = 0;
       ask.peer = *peer;
       coreAPI->unicast (sender, &ask.header, 0, /* FIXME: priority */
-                        5 * cronSECONDS);
+                        5 * GNUNET_CRON_SECONDS);
       return;
     }
-  FREE (hello);
+  GNUNET_free (hello);
   /* check if connected, if not, send discovery */
-  if (OK != coreAPI->queryPeerStatus (peer, NULL, NULL))
+  if (GNUNET_OK != coreAPI->queryPeerStatus (peer, NULL, NULL))
     {
       /* not yet connected; connect sending DISCOVERY */
       broadcast_dht_discovery (peer, NULL);
       return;
     }
   /* we are connected (in core), add to bucket */
-  pi = MALLOC (sizeof (PeerInfo));
+  pi = GNUNET_malloc (sizeof (PeerInfo));
   memset (pi, 0, sizeof (PeerInfo));
   pi->id = *peer;
   pingPeer (pi);
-  GROW (bucket->peers, bucket->peers_size, bucket->peers_size + 1);
+  GNUNET_array_grow (bucket->peers, bucket->peers_size,
+                     bucket->peers_size + 1);
   bucket->peers[bucket->peers_size - 1] = pi;
   total_peers++;
   if (stats != NULL)
@@ -626,25 +636,27 @@ considerPeer (const PeerIdentity * sender, const PeerIdentity * peer)
  * Handle discovery message.
  */
 static int
-handleDiscovery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
+handleDiscovery (const GNUNET_PeerIdentity * sender,
+                 const GNUNET_MessageHeader * msg)
 {
   unsigned int pc;
   unsigned int i;
   const P2P_DHT_Discovery *disco;
-  const PeerIdentity *peers;
+  const GNUNET_PeerIdentity *peers;
 
   pc =
-    (ntohs (msg->size) - sizeof (P2P_DHT_Discovery)) / sizeof (PeerIdentity);
+    (ntohs (msg->size) -
+     sizeof (P2P_DHT_Discovery)) / sizeof (GNUNET_PeerIdentity);
   if (pc > MAINTAIN_ADV_CAP * 8)
     {
       GE_BREAK (coreAPI->ectx, 0);
-      return SYSERR;            /* far too big */
+      return GNUNET_SYSERR;     /* far too big */
     }
   if (ntohs (msg->size) !=
-      sizeof (P2P_DHT_Discovery) + pc * sizeof (PeerIdentity))
+      sizeof (P2P_DHT_Discovery) + pc * sizeof (GNUNET_PeerIdentity))
     {
       GE_BREAK (coreAPI->ectx, 0);
-      return SYSERR;            /* malformed */
+      return GNUNET_SYSERR;     /* malformed */
     }
   disco = (const P2P_DHT_Discovery *) msg;
   if (stats != NULL)
@@ -654,42 +666,44 @@ handleDiscovery (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
       /* if peer has 0 connections, be sure to send discovery back */
       broadcast_dht_discovery (sender, NULL);
     }
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   considerPeer (sender, sender);
-  peers = (const PeerIdentity *) &disco[1];
+  peers = (const GNUNET_PeerIdentity *) &disco[1];
   for (i = 0; i < pc; i++)
     considerPeer (sender, &peers[i]);
-  MUTEX_UNLOCK (lock);
-  return OK;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 /**
  * Handle ask hello message.
  */
 static int
-handleAskHello (const PeerIdentity * sender, const MESSAGE_HEADER * msg)
+handleAskHello (const GNUNET_PeerIdentity * sender,
+                const GNUNET_MessageHeader * msg)
 {
   const P2P_DHT_ASK_HELLO *ask;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
 
   if (ntohs (msg->size) != sizeof (P2P_DHT_ASK_HELLO))
-    return SYSERR;
+    return GNUNET_SYSERR;
   ask = (const P2P_DHT_ASK_HELLO *) msg;
   if (NULL == findBucketFor (&ask->peer))
-    return OK;
-  hello = identity->identity2Hello (&ask->peer, ANY_PROTOCOL_NUMBER, NO);
+    return GNUNET_OK;
+  hello =
+    identity->identity2Hello (&ask->peer, ANY_PROTOCOL_NUMBER, GNUNET_NO);
   if (hello == NULL)
-    return OK;
-  coreAPI->unicast (sender, &hello->header, 0, 5 * cronSECONDS);
-  FREE (hello);
-  return OK;
+    return GNUNET_OK;
+  coreAPI->unicast (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
+  GNUNET_free (hello);
+  return GNUNET_OK;
 }
 
 /**
  * Initialize table DHT component.
  *
  * @param capi the core API
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int
 init_dht_table (CoreAPIForApplication * capi)
@@ -702,7 +716,7 @@ init_dht_table (CoreAPIForApplication * capi)
   i = coreAPI->getSlotCount () / MAINTAIN_BUCKET_SIZE / 2;
   if (i < 4)
     i = 4;
-  GROW (buckets, bucketCount, i);
+  GNUNET_array_grow (buckets, bucketCount, i);
   for (i = 0; i < bucketCount; i++)
     {
       buckets[i].bstart = 512 * i / bucketCount;
@@ -727,16 +741,16 @@ init_dht_table (CoreAPIForApplication * capi)
   GE_ASSERT (coreAPI->ectx, pingpong != NULL);
   capi->registerHandler (P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
   capi->registerHandler (P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
-  cron_add_job (coreAPI->cron,
-                &maintain_dht_job,
-                MAINTAIN_FREQUENCY, MAINTAIN_FREQUENCY, NULL);
-  return OK;
+  GNUNET_cron_add_job (coreAPI->cron,
+                       &maintain_dht_job,
+                       MAINTAIN_FREQUENCY, MAINTAIN_FREQUENCY, NULL);
+  return GNUNET_OK;
 }
 
 /**
  * Shutdown table DHT component.
  *
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int
 done_dht_table ()
@@ -746,7 +760,8 @@ done_dht_table ()
 
   coreAPI->unregisterHandler (P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
   coreAPI->unregisterHandler (P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
-  cron_del_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY, NULL);
+  GNUNET_cron_del_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
+                       NULL);
   if (stats != NULL)
     {
       coreAPI->releaseService (stats);
@@ -759,12 +774,12 @@ done_dht_table ()
   for (i = 0; i < bucketCount; i++)
     {
       for (j = 0; j < buckets[i].peers_size; j++)
-        FREE (buckets[i].peers[j]);
-      GROW (buckets[i].peers, buckets[i].peers_size, 0);
+        GNUNET_free (buckets[i].peers[j]);
+      GNUNET_array_grow (buckets[i].peers, buckets[i].peers_size, 0);
     }
-  GROW (buckets, bucketCount, 0);
+  GNUNET_array_grow (buckets, bucketCount, 0);
   lock = NULL;
-  return OK;
+  return GNUNET_OK;
 }
 
 /* end of table.c */

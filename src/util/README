@@ -10,21 +10,19 @@ util/win: win32 portability (lowest layer)
   util/os: process and system abstractions (depends on threads, config)
    util/network: network IO abstractions (depends on threads, config, os)
 
+The following depend on all of the above:
+util/cron: periodic job execution 
+util/config_impl: implementation of config API 
+util/loggers: specific logging implementations
+
 util: main utility library (depends on all of the above)
       => these are all statically linked into gnunetutil.so
 
-util/config_impl: implementation of config API (depends on gnunetutil.so)
-      => linked to gnunetutil_config.so
-
 -------- TODO ----------
-util/cron: periodic job execution (depends on gnunetutil.so)
-      => linked to gnunetutil_cron.so
 util/crypto: implementation of crypto API (depends on gnunetutil.so)
       => linked to gnunetutil_crypto.so
 util/containers: implementation of bloomfilter/vector/hashset (depends on gnunetutil.so)
       => linked to gnunetutil_containers.so (also requires libgnunetutil_crypto)
-util/loggers: specific logging implementations (depends on gnunetutil.so)
-      => linked to gnunetutil_logging.so
 util/network_client: library for synchronous communiation of clients with gnunetd (depends on gnunetutil.so)
       => linked to gnunetutil_network_client.so
 

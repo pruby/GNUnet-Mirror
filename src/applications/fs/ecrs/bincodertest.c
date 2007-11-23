@@ -37,7 +37,7 @@ testBC (int i)
   char dec[256];
   int ret;
 
-  orig = MALLOC (i);
+  orig = GNUNET_malloc (i);
   memset (orig, i, i);
   enc = bin2enc (orig, i);
   ret = enc2bin (enc, dec, i);
@@ -46,8 +46,8 @@ testBC (int i)
       printf ("Failed in iteration %d\n", i);
       ret = -1;
     }
-  FREE (enc);
-  FREE (orig);
+  GNUNET_free (enc);
+  GNUNET_free (orig);
   return ret != -1 ? 0 : 1;
 }
 

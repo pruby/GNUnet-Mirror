@@ -40,24 +40,25 @@
  * exponentially declining probability (this function is also used for
  * populating the target's routing table).
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int select_dht_peer (PeerIdentity * set,
-                     const HashCode512 * target,
-                     const PeerIdentity * blocked, unsigned int blocked_size);
+int select_dht_peer (GNUNET_PeerIdentity * set,
+                     const GNUNET_HashCode * target,
+                     const GNUNET_PeerIdentity * blocked,
+                     unsigned int blocked_size);
 
 /**
  * Initialize table DHT component.
  *
  * @param capi the core API
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int init_dht_table (CoreAPIForApplication * capi);
 
 /**
  * Shutdown table DHT component.
  *
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int done_dht_table (void);
 

@@ -32,11 +32,11 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE GNUNET_NO
 
 #define UPLOAD_PREFIX "/tmp/gnunet-fsui-searializetest2"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static struct GE_Context *ectx;
 
@@ -45,11 +45,11 @@ makeName (unsigned int i)
 {
   char *fn;
 
-  fn = MALLOC (strlen (UPLOAD_PREFIX "/FSUITEST") + 14);
-  SNPRINTF (fn,
-            strlen (UPLOAD_PREFIX "/FSUITEST") + 14,
-            UPLOAD_PREFIX "/FSUITEST%u", i);
-  disk_directory_create_for_file (NULL, fn);
+  fn = GNUNET_malloc (strlen (UPLOAD_PREFIX "/FSUITEST") + 14);
+  GNUNET_snprintf (fn,
+                   strlen (UPLOAD_PREFIX "/FSUITEST") + 14,
+                   UPLOAD_PREFIX "/FSUITEST%u", i);
+  GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
 
@@ -345,58 +345,59 @@ main (int argc, char *argv[])
   int suspendRestart = 0;
 
 
-  ok = YES;
-  cfg = GC_create_C_impl ();
+  ok = GNUNET_YES;
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
 #if START_DAEMON
-  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GE_ASSERT (NULL, daemon > 0);
-  CHECK (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS));
-  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
+  CHECK (GNUNET_OK ==
+         GNUNET_wait_for_daemon_running (NULL, cfg,
+                                         30 * GNUNET_CRON_SECONDS));
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   ctx = FSUI_start (NULL,
-                    cfg, "serializetest2", 32, YES, &eventCallback, NULL);
+                    cfg, "serializetest2", 32, GNUNET_YES, &eventCallback,
+                    NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 256; j += 4)
     {
       fn = makeName (j);
-      buf = MALLOC (FILESIZE * j);
+      buf = GNUNET_malloc (FILESIZE * j);
       for (i = 0; i < FILESIZE; i++)
-        buf[i] = weak_randomi (256);
-      disk_file_write (ectx, fn, buf, FILESIZE, "600");
-      FREE (buf);
-      FREE (fn);
+        buf[i] = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 256);
+      GNUNET_disk_file_write (ectx, fn, buf, FILESIZE, "600");
+      GNUNET_free (buf);
+      GNUNET_free (fn);
     }
   meta = ECRS_createMetaData ();
   kuri = ECRS_parseListKeywordURI (ectx, 2, (const char **) keywords);
   ECRS_addToMetaData (meta, EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
   upload = FSUI_startUpload (ctx,
                              UPLOAD_PREFIX,
-                             (DirectoryScanCallback) & disk_directory_scan,
-                             NULL,
-                             0,
-                             0,
-                             YES,
-                             NO,
-                             NO,
-                             get_time () + 5 * cronHOURS, meta, kuri, kuri);
+                             (DirectoryScanCallback) &
+                             GNUNET_disk_directory_scan, NULL, 0, 0,
+                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
+                             kuri, kuri);
   CHECK (upload != NULL);
   ECRS_freeUri (kuri);
   kuri = NULL;
   FSUI_stopUpload (ctx, upload);
   CHECK (upURI != NULL);
-  SNPRINTF (keyword, 40, "%s %s %s", keywords[0], _("AND"), keywords[1]);
+  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
+                   keywords[1]);
   uri = ECRS_parseCharKeywordURI (ectx, keyword);
-  search = FSUI_startSearch (ctx, 0, 100, 240 * cronSECONDS, uri);
+  search = FSUI_startSearch (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   download = FSUI_startDownload (ctx,
                                  0,
-                                 YES,
+                                 GNUNET_YES,
                                  upURI,
                                  meta,
                                  UPLOAD_PREFIX "-download", search, NULL);
@@ -406,8 +407,9 @@ main (int argc, char *argv[])
   while (prog < 1000)
     {
       prog++;
-      PTHREAD_SLEEP (50 * cronMILLIS);
-      if ((suspendRestart > 0) && (weak_randomi (100) == 0))
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      if ((suspendRestart > 0)
+          && (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) == 0))
         {
 #if 1
 #if DEBUG_VERBOSE
@@ -419,7 +421,8 @@ main (int argc, char *argv[])
           CHECK (download == NULL);
           ctx = FSUI_start (NULL,
                             cfg,
-                            "serializetest2", 32, YES, &eventCallback, NULL);
+                            "serializetest2", 32, GNUNET_YES, &eventCallback,
+                            NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif
@@ -429,13 +432,13 @@ main (int argc, char *argv[])
       if ((search != NULL) && (suspendRestart >= 5))
         {
           no_check = 1;
-          PTHREAD_SLEEP (50 * cronMILLIS);
+          GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
           FSUI_abortSearch (ctx, search);
           FSUI_stopSearch (ctx, search);
           search = NULL;
           no_check = 0;
         }
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   FSUI_stopDownload (ctx, download);
@@ -445,7 +448,7 @@ main (int argc, char *argv[])
       unindex = FSUI_startUnindex (ctx, fn);
       FSUI_stopUnindex (ctx, unindex);
       UNLINK (fn);
-      FREE (fn);
+      GNUNET_free (fn);
     }
   /* END OF TEST CODE */
 FAILURE:
@@ -459,12 +462,12 @@ FAILURE:
     ECRS_freeUri (upURI);
 
 #if START_DAEMON
-  GE_BREAK (NULL, OK == os_daemon_stop (NULL, daemon));
+  GE_BREAK (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
   GC_free (cfg);
   if (have_error)
-    ok = NO;
-  return (ok == YES) ? 0 : 1;
+    ok = GNUNET_NO;
+  return (ok == GNUNET_YES) ? 0 : 1;
 }
 
 /* end of serializetest2.c */

@@ -165,7 +165,7 @@ void GE_free_context (struct GE_Context *ctx);
  *
  * @param have the event type
  * @param mask the filter mask
- * @return YES or NO
+ * @return GNUNET_YES or GNUNET_NO
  */
 int GE_applies (GE_KIND have, GE_KIND mask);
 
@@ -175,7 +175,7 @@ int GE_applies (GE_KIND have, GE_KIND mask);
  *
  * @param ctx the logger
  * @param have the kind of event
- * @return YES or NO
+ * @return GNUNET_YES or GNUNET_NO
  */
 int GE_isLogged (struct GE_Context *ctx, GE_KIND kind);
 

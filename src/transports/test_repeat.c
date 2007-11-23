@@ -79,8 +79,8 @@ static unsigned int msg_count;
 /**
  * No options.
  */
-static struct CommandLineOption testOptions[] = {
-  COMMAND_LINE_OPTION_END,
+static struct GNUNET_CommandLineOption testOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 static void *
@@ -95,7 +95,7 @@ requestService (const char *name)
 static int
 assertUnused (TSession * tsession)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -107,7 +107,7 @@ receive (P2P_PACKET * mp)
 {
   unsigned int retries;
   TSession *tsession;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
 
   if (pid == 0)
     {
@@ -120,19 +120,21 @@ receive (P2P_PACKET * mp)
           /* HACK hello -- change port! */
           ((unsigned short *) &hello[1])[2] =
             htons (ntohs (((unsigned short *) &hello[1])[2]) - OFFSET);
-          if (OK != transport->connect (hello, &tsession, NO))
+          if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
-              FREE (hello);
-              FREE (mp->msg);
-              FREE (mp);
+              GNUNET_free (hello);
+              GNUNET_free (mp->msg);
+              GNUNET_free (mp);
               error_count++;
               return;
             }
-          FREE (hello);
+          GNUNET_free (hello);
         }
-      while (NO == transport->send (tsession,
-                                    mp->msg,
-                                    mp->size, retries > 6 ? YES : NO))
+      while (GNUNET_NO == transport->send (tsession,
+                                           mp->msg,
+                                           mp->size,
+                                           retries >
+                                           6 ? GNUNET_YES : GNUNET_NO))
         {
           if (retries > 10)
             {
@@ -157,23 +159,23 @@ receive (P2P_PACKET * mp)
       else
         msg_count++;
     }
-  FREE (mp->msg);
-  FREE (mp);
+  GNUNET_free (mp->msg);
+  GNUNET_free (mp);
 }
 
 int
 main (int argc, char *const *argv)
 {
   CoreAPIForTransport api;
-  struct PluginHandle *plugin;
+  struct GNUNET_PluginHandle *plugin;
   TransportMainMethod init;
   void (*done) ();
-  PeerIdentity me;
+  GNUNET_PeerIdentity me;
   char *trans;
   int res;
   int pos;
   TSession *tsession;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
   int xround;
 
   memset (&api, 0, sizeof (CoreAPIForTransport));
@@ -185,7 +187,7 @@ main (int argc, char *const *argv)
   if (res == -1)
     goto cleanup;
 
-  expectedValue = MALLOC (expectedSize);
+  expectedValue = GNUNET_malloc (expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';
   while (pos-- > 0)
@@ -228,19 +230,20 @@ main (int argc, char *const *argv)
                                      4447 + pos);
   GC_set_configuration_value_number (api.cfg, api.ectx, "HTTP", "PORT",
                                      4448 + pos);
-  makeRandomId (&me.hashPubKey);
-  plugin = os_plugin_load (api.ectx, "libgnunettransport_", trans);
-  FREE (trans);
+  GNUNET_create_random_hash (&me.hashPubKey);
+  plugin = GNUNET_plugin_load (api.ectx, "libgnunettransport_", trans);
+  GNUNET_free (trans);
   if (plugin == NULL)
     {
       fprintf (stderr, "Error loading plugin...\n");
       goto cleanup;
     }
-  init = os_plugin_resolve_function (plugin, "inittransport_", YES);
+  init =
+    GNUNET_plugin_resolve_function (plugin, "inittransport_", GNUNET_YES);
   if (init == NULL)
     {
       fprintf (stderr, "Error resolving init method...\n");
-      os_plugin_unload (plugin);
+      GNUNET_plugin_unload (plugin);
       goto cleanup;
     }
   api.cron = cron_create (api.ectx);
@@ -249,22 +252,22 @@ main (int argc, char *const *argv)
   api.requestService = &requestService;
   api.releaseService = NULL;    /* not needed */
   api.assertUnused = &assertUnused;
-  cron_start (api.cron);
-  res = OK;
+  GNUNET_cron_start (api.cron);
+  res = GNUNET_OK;
   transport = init (&api);
   if (transport == NULL)
     {
       fprintf (stderr, "Error initializing plugin...\n");
-      os_plugin_unload (plugin);
+      GNUNET_plugin_unload (plugin);
       goto cleanup;
     }
   transport->startTransportServer ();
   GE_ASSERT (NULL, (transport->mtu >= expectedSize) || (transport->mtu == 0));
-  PTHREAD_SLEEP (50 * cronMILLIS);      /* give other process time to start */
+  GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);  /* give other process time to start */
   if (pid == 0)
     {
       /* server - wait for requests */
-      GNUNET_SHUTDOWN_WAITFOR ();
+      GNUNET_shutdown_wait_for ();
     }
   else
     {
@@ -276,30 +279,32 @@ main (int argc, char *const *argv)
           /* HACK hello -- change port! */
           ((unsigned short *) &hello[1])[2] =
             htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
-          if (OK != transport->connect (hello, &tsession, NO))
+          if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
-              FREE (hello);
+              GNUNET_free (hello);
               transport->stopTransportServer ();
-              os_plugin_unload (plugin);
+              GNUNET_plugin_unload (plugin);
               goto cleanup;
             }
-          FREE (hello);
+          GNUNET_free (hello);
           pos = 0;
           while (pos < ROUNDS)
             {
-              if (OK == transport->send (tsession,
-                                         expectedValue,
-                                         expectedSize,
-                                         pos > ROUNDS / 2 ? YES : NO))
+              if (GNUNET_OK == transport->send (tsession,
+                                                expectedValue,
+                                                expectedSize,
+                                                pos >
+                                                ROUNDS /
+                                                2 ? GNUNET_YES : GNUNET_NO))
                 pos++;
             }
           pos = 0;
           while ((pos++ < 100) && (msg_count < ROUNDS * (xround + 1)))
-            PTHREAD_SLEEP (50 * cronMILLIS);
+            GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
           if (msg_count < ROUNDS * (xround + 1))
             {
               if (NULL == strstr (argv[0], "udp"))
-                res = SYSERR;
+                res = GNUNET_SYSERR;
               else
                 fprintf (stderr,
                          "WARNING: only %u/%u messages received (maybe ok, try again?)\n",
@@ -316,7 +321,7 @@ main (int argc, char *const *argv)
     }
 
   transport->stopTransportServer ();
-  done = os_plugin_resolve_function (plugin, "donetransport_", NO);
+  done = GNUNET_plugin_resolve_function (plugin, "donetransport_", GNUNET_NO);
   if (done != NULL)
     done ();
   if (pid != 0)
@@ -324,16 +329,16 @@ main (int argc, char *const *argv)
       kill (pid, SIGTERM);
       waitpid (pid, &pos, 0);
       if (WEXITSTATUS (pos) != 0)
-        res = SYSERR;
+        res = GNUNET_SYSERR;
     }
-  os_plugin_unload (plugin);
-  cron_stop (api.cron);
-  cron_destroy (api.cron);
+  GNUNET_plugin_unload (plugin);
+  GNUNET_cron_stop (api.cron);
+  GNUNET_cron_destroy (api.cron);
   GNUNET_fini (api.ectx, api.cfg);
-  FREE (expectedValue);
+  GNUNET_free (expectedValue);
   if (error_count > 0)
-    res = SYSERR;
-  if (res != OK)
+    res = GNUNET_SYSERR;
+  if (res != GNUNET_OK)
     {
       fprintf (stderr,
                "Test failed (%u/%u %s)!\n",
@@ -350,7 +355,7 @@ cleanup:
       kill (pid, SIGTERM);
       waitpid (pid, &res, 0);
     }
-  FREE (expectedValue);
+  GNUNET_free (expectedValue);
   return 1;
 }
 

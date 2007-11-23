@@ -28,10 +28,10 @@
 #define NETWORK_H
 
 
-typedef struct SocketHandle
+typedef struct GNUNET_SocketHandle
 {
 
-  struct LoadMonitor *mon;
+  struct GNUNET_LoadMonitor *mon;
 
   struct GE_Context *ectx;
 

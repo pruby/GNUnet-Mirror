@@ -28,7 +28,7 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
 
-typedef struct PluginHandle
+typedef struct GNUNET_PluginHandle
 {
   struct GE_Context *ectx;
   char *libprefix;
@@ -62,24 +62,24 @@ void __attribute__ ((constructor)) gnc_ltdl_init ()
     }
   opath = lt_dlgetsearchpath ();
   if (opath != NULL)
-    old_dlsearchpath = STRDUP (opath);
-  path = os_get_installation_path (IPK_LIBDIR);
+    old_dlsearchpath = GNUNET_strdup (opath);
+  path = GNUNET_get_installation_path (GNUNET_IPK_LIBDIR);
   if (path != NULL)
     {
       if (opath != NULL)
         {
-          cpath = MALLOC (strlen (path) + strlen (opath) + 4);
+          cpath = GNUNET_malloc (strlen (path) + strlen (opath) + 4);
           strcpy (cpath, opath);
           strcat (cpath, ":");
           strcat (cpath, path);
           lt_dlsetsearchpath (cpath);
-          FREE (path);
-          FREE (cpath);
+          GNUNET_free (path);
+          GNUNET_free (cpath);
         }
       else
         {
           lt_dlsetsearchpath (path);
-          FREE (path);
+          GNUNET_free (path);
         }
     }
 }
@@ -89,7 +89,7 @@ void __attribute__ ((destructor)) gnc_ltdl_fini ()
   lt_dlsetsearchpath (old_dlsearchpath);
   if (old_dlsearchpath != NULL)
     {
-      FREE (old_dlsearchpath);
+      GNUNET_free (old_dlsearchpath);
       old_dlsearchpath = NULL;
     }
 
@@ -100,15 +100,15 @@ void __attribute__ ((destructor)) gnc_ltdl_fini ()
   // lt_dlexit();
 }
 
-struct PluginHandle *
-os_plugin_load (struct GE_Context *ectx,
-                const char *libprefix, const char *dsoname)
+struct GNUNET_PluginHandle *
+GNUNET_plugin_load (struct GE_Context *ectx,
+                    const char *libprefix, const char *dsoname)
 {
   void *libhandle;
   char *libname;
   Plugin *plug;
 
-  libname = MALLOC (strlen (dsoname) + strlen (libprefix) + 1);
+  libname = GNUNET_malloc (strlen (dsoname) + strlen (libprefix) + 1);
   strcpy (libname, libprefix);
   strcat (libname, dsoname);
   libhandle = lt_dlopenext (libname);
@@ -118,35 +118,36 @@ os_plugin_load (struct GE_Context *ectx,
               GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
               _("`%s' failed for library `%s' with error: %s\n"),
               "lt_dlopenext", libname, lt_dlerror ());
-      FREE (libname);
+      GNUNET_free (libname);
       return NULL;
     }
-  FREE (libname);
-  plug = MALLOC (sizeof (Plugin));
+  GNUNET_free (libname);
+  plug = GNUNET_malloc (sizeof (Plugin));
   plug->handle = libhandle;
-  plug->libprefix = STRDUP (libprefix);
-  plug->dsoname = STRDUP (dsoname);
+  plug->libprefix = GNUNET_strdup (libprefix);
+  plug->dsoname = GNUNET_strdup (dsoname);
   plug->ectx = ectx;
   return plug;
 }
 
 void
-os_plugin_unload (struct PluginHandle *plugin)
+GNUNET_plugin_unload (struct GNUNET_PluginHandle *plugin)
 {
   // lt_dlclose(plugin->handle);
-  FREE (plugin->libprefix);
-  FREE (plugin->dsoname);
-  FREE (plugin);
+  GNUNET_free (plugin->libprefix);
+  GNUNET_free (plugin->dsoname);
+  GNUNET_free (plugin);
 }
 
 void *
-os_plugin_resolve_function (struct PluginHandle *plug,
-                            const char *methodprefix, int logError)
+GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plug,
+                                const char *methodprefix, int logError)
 {
   char *initName;
   void *mptr;
 
-  initName = MALLOC (strlen (plug->dsoname) + strlen (methodprefix) + 2);
+  initName =
+    GNUNET_malloc (strlen (plug->dsoname) + strlen (methodprefix) + 2);
   strcpy (initName, "_");
   strcat (initName, methodprefix);
   strcat (initName, plug->dsoname);
@@ -158,7 +159,7 @@ os_plugin_resolve_function (struct PluginHandle *plug,
             GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
             _("`%s' failed to resolve method '%s' with error: %s\n"),
             "lt_dlsym", &initName[1], lt_dlerror ());
-  FREE (initName);
+  GNUNET_free (initName);
   return mptr;
 }
 

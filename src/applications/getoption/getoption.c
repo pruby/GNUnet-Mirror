@@ -34,7 +34,8 @@
 static CoreAPIForApplication *coreAPI;
 
 static int
-handleGetOption (struct ClientHandle *sock, const MESSAGE_HEADER * message)
+handleGetOption (struct ClientHandle *sock,
+                 const GNUNET_MessageHeader * message)
 {
   CS_getoption_request_MESSAGE *req;
   CS_getoption_reply_MESSAGE *rep;
@@ -42,27 +43,27 @@ handleGetOption (struct ClientHandle *sock, const MESSAGE_HEADER * message)
   int ret;
 
   if (ntohs (message->size) != sizeof (CS_getoption_request_MESSAGE))
-    return SYSERR;
+    return GNUNET_SYSERR;
   req = (CS_getoption_request_MESSAGE *) message;
   req->section[CS_getoption_request_MESSAGE_OPT_LEN - 1] = '\0';
   req->option[CS_getoption_request_MESSAGE_OPT_LEN - 1] = '\0';
   val = NULL;
-  if (NO == GC_have_configuration_value (coreAPI->cfg,
-                                         req->section, req->option))
-    return SYSERR;              /* signal error: option not set */
+  if (GNUNET_NO == GC_have_configuration_value (coreAPI->cfg,
+                                                req->section, req->option))
+    return GNUNET_SYSERR;       /* signal error: option not set */
   if ((0 != GC_get_configuration_value_string (coreAPI->cfg,
                                                req->section,
                                                req->option,
                                                NULL, &val)) || (val == NULL))
-    return SYSERR;              /* signal error: option not set */
+    return GNUNET_SYSERR;       /* signal error: option not set */
 
-  rep = MALLOC (sizeof (MESSAGE_HEADER) + strlen (val) + 1);
-  rep->header.size = htons (sizeof (MESSAGE_HEADER) + strlen (val) + 1);
+  rep = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
+  rep->header.size = htons (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
   memcpy (rep->value, val, strlen (val) + 1);
   rep->header.type = htons (CS_PROTO_GET_OPTION_REPLY);
-  ret = coreAPI->sendToClient (sock, &rep->header, YES);
-  FREE (rep);
-  FREE (val);
+  ret = coreAPI->sendToClient (sock, &rep->header, GNUNET_YES);
+  GNUNET_free (rep);
+  GNUNET_free (val);
   return ret;
 }
 
@@ -83,7 +84,7 @@ initialize_module_getoption (CoreAPIForApplication * capi)
                                                      _
                                                      ("allows clients to determine gnunetd's"
                                                       " configuration")));
-  return OK;
+  return GNUNET_OK;
 }
 
 void

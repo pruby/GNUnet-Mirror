@@ -57,7 +57,7 @@ typedef struct
   /**
    * Array with all command line options.
    */
-  const struct CommandLineOption *allOptions;
+  const struct GNUNET_CommandLineOption *allOptions;
 
   /**
    * Original command line
@@ -84,7 +84,7 @@ typedef struct
    */
   struct GC_Configuration *cfg;
 
-} CommandLineProcessorContext;
+} GNUNET_CommandLineProcessorContext;
 
 /**
  * @brief Process a command line option
@@ -93,17 +93,18 @@ typedef struct
  * @param scls specific closure (for this processor)
  * @param option long name of the option (i.e. "config" for --config)
  * @param value argument, NULL if none was given
- * @return OK to continue processing other options, SYSERR to abort
+ * @return GNUNET_OK to continue processing other options, GNUNET_SYSERR to abort
  */
-typedef int (*CommandLineOptionProcessor) (CommandLineProcessorContext * ctx,
-                                           void *scls,
-                                           const char *option,
-                                           const char *value);
+typedef
+  int (*GNUNET_CommandLineOptionProcessor) (GNUNET_CommandLineProcessorContext
+                                            * ctx, void *scls,
+                                            const char *option,
+                                            const char *value);
 
 /**
  * @brief Definition of a command line option.
  */
-typedef struct CommandLineOption
+typedef struct GNUNET_CommandLineOption
 {
 
   /**
@@ -127,21 +128,21 @@ typedef struct CommandLineOption
   const char *description;
 
   /**
-   * Is an argument required?  0: NO (includes optional), 1: YES.
+   * Is an argument required?  0: GNUNET_NO (includes optional), 1: GNUNET_YES.
    */
   int require_argument;
 
   /**
    * Handler for the option.
    */
-  CommandLineOptionProcessor processor;
+  GNUNET_CommandLineOptionProcessor processor;
 
   /**
    * Specific closure to pass to the processor.
    */
   void *scls;
 
-} CommandLineOption;
+} GNUNET_CommandLineOption;
 
 /**
  * Macro defining the option to print the command line
@@ -149,8 +150,8 @@ typedef struct CommandLineOption
  *
  * @param about string with brief description of the application
  */
-#define COMMAND_LINE_OPTION_HELP(about) \
-  { 'h', "help", (const char *) NULL, gettext_noop("print this help"), 0, &gnunet_getopt_format_help, (void *) about }
+#define GNUNET_COMMAND_LINE_OPTION_HELP(about) \
+  { 'h', "help", (const char *) NULL, gettext_noop("print this help"), 0, &GNUNET_getopt_format_help_, (void *) about }
 
 /**
  * Macro defining the option to print the version of
@@ -158,37 +159,37 @@ typedef struct CommandLineOption
  *
  * @param version string with the version number
  */
-#define COMMAND_LINE_OPTION_VERSION(version) \
-  { 'v', "version", (const char *) NULL, gettext_noop("print the version number"), 0, &gnunet_getopt_print_version, (void *) version }
+#define GNUNET_COMMAND_LINE_OPTION_VERSION(version) \
+  { 'v', "version", (const char *) NULL, gettext_noop("print the version number"), 0, &GNUNET_getopt_print_version_, (void *) version }
 
 /**
  * Set the configuration option for logging.
  */
-#define COMMAND_LINE_OPTION_LOGGING \
-  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, (void *) "LOGGING:USER-LEVEL" }
+#define GNUNET_COMMAND_LINE_OPTION_LOGGING \
+  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &GNUNET_getopt_configure_set_option, (void *) "LOGGING:USER-LEVEL" }
 
 /**
  * Set the configuration option for increasing verbosity.
  */
-#define COMMAND_LINE_OPTION_VERBOSE \
-  { 'V', "verbose", (const char *) NULL, gettext_noop("be verbose"), 0, &gnunet_getopt_configure_increment_value, (void *) "GNUNET:VERBOSE" }
+#define GNUNET_COMMAND_LINE_OPTION_VERBOSE \
+  { 'V', "verbose", (const char *) NULL, gettext_noop("be verbose"), 0, &GNUNET_getopt_configure_increment_value, (void *) "GNUNET:VERBOSE" }
 
 /**
  * Set the configuration option for the configuration file.
  */
-#define COMMAND_LINE_OPTION_CFG_FILE(fn)				\
-  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &gnunet_getopt_configure_set_string, (void *) fn }
+#define GNUNET_COMMAND_LINE_OPTION_CFG_FILE(fn)				\
+  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &GNUNET_getopt_configure_set_string, (void *) fn }
 
 /**
  * Set the configuration option for the configuration file.
  */
-#define COMMAND_LINE_OPTION_HOSTNAME \
-  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &gnunet_getopt_configure_set_option, (void *) "NETWORK:HOST" }
+#define GNUNET_COMMAND_LINE_OPTION_HOSTNAME \
+  { 'H', "host", "HOSTNAME", gettext_noop("specify host on which gnunetd is running"), 1, &GNUNET_getopt_configure_set_option, (void *) "NETWORK:HOST" }
 
 /**
  * Marker to end the list of options.
  */
-#define COMMAND_LINE_OPTION_END \
+#define GNUNET_COMMAND_LINE_OPTION_END \
   { '\0', NULL, NULL, NULL, 0, NULL, NULL }
 
 /**
@@ -203,48 +204,46 @@ typedef struct CommandLineOption
  * @return index into argv with first non-option
  *   argument, or -1 on error
  */
-int gnunet_parse_options (const char *binaryName,
+int GNUNET_parse_options (const char *binaryName,
                           struct GE_Context *ectx,
                           struct GC_Configuration *cfg,
-                          const CommandLineOption * allOptions,
+                          const GNUNET_CommandLineOption * allOptions,
                           unsigned int argc, char *const *argv);
 
-int gnunet_getopt_configure_set_option (CommandLineProcessorContext * ctx,
-                                        void *scls,
-                                        const char *option,
+int GNUNET_getopt_configure_set_option (GNUNET_CommandLineProcessorContext *
+                                        ctx, void *scls, const char *option,
                                         const char *value);
 
-int gnunet_getopt_configure_set_ulong (CommandLineProcessorContext * ctx,
-                                       void *scls,
-                                       const char *option, const char *value);
+int GNUNET_getopt_configure_set_ulong (GNUNET_CommandLineProcessorContext *
+                                       ctx, void *scls, const char *option,
+                                       const char *value);
 
-int gnunet_getopt_configure_set_uint (CommandLineProcessorContext * ctx,
-                                      void *scls,
-                                      const char *option, const char *value);
+int GNUNET_getopt_configure_set_uint (GNUNET_CommandLineProcessorContext *
+                                      ctx, void *scls, const char *option,
+                                      const char *value);
 
-int gnunet_getopt_configure_set_one (CommandLineProcessorContext * ctx,
+int GNUNET_getopt_configure_set_one (GNUNET_CommandLineProcessorContext * ctx,
                                      void *scls,
                                      const char *option, const char *value);
 
-int gnunet_getopt_configure_set_string (CommandLineProcessorContext * ctx,
-                                        void *scls,
-                                        const char *option,
+int GNUNET_getopt_configure_set_string (GNUNET_CommandLineProcessorContext *
+                                        ctx, void *scls, const char *option,
                                         const char *value);
 
-int gnunet_getopt_configure_increment_value (CommandLineProcessorContext *
-                                             ctx, void *scls,
-                                             const char *option,
-                                             const char *value);
+int
+GNUNET_getopt_configure_increment_value (GNUNET_CommandLineProcessorContext *
+                                         ctx, void *scls, const char *option,
+                                         const char *value);
 
 /* *************** internal prototypes - use macros above! ************* */
 
-int gnunet_getopt_format_help (CommandLineProcessorContext * ctx,
-                               void *scls,
-                               const char *option, const char *value);
+int GNUNET_getopt_format_help_ (GNUNET_CommandLineProcessorContext * ctx,
+                                void *scls,
+                                const char *option, const char *value);
 
-int gnunet_getopt_print_version (CommandLineProcessorContext * ctx,
-                                 void *scls,
-                                 const char *option, const char *value);
+int GNUNET_getopt_print_version_ (GNUNET_CommandLineProcessorContext * ctx,
+                                  void *scls,
+                                  const char *option, const char *value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

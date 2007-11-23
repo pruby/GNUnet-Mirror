@@ -42,7 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #if HAVE_STDLIB_H
 #  include <stdlib.h>
 #else
-#  if HAVE_MALLOC_H
+#  if HAVE_GNUNET_malloc_H
 #    include <malloc.h>
 #  endif
 #endif
@@ -128,7 +128,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "ltdl.h"
 
-#if WITH_DMALLOC
+#if WITH_DGNUNET_malloc
 #  include <dmalloc.h>
 #endif
 
@@ -228,25 +228,25 @@ LT_PARAMS ((size_t size)) = (lt_ptr (*)LT_PARAMS ((size_t))) malloc;
 
 /* The following macros reduce the amount of typing needed to cast
    assigned memory.  */
-#if WITH_DMALLOC
+#if WITH_DGNUNET_malloc
 
-#define LT_DLMALLOC(tp, n)	((tp *) xmalloc ((n) * sizeof(tp)))
-#define LT_DLREALLOC(tp, p, n)	((tp *) xrealloc ((p), (n) * sizeof(tp)))
-#define LT_DLFREE(p)						\
+#define LT_DLGNUNET_malloc(tp, n)	((tp *) xmalloc ((n) * sizeof(tp)))
+#define LT_DLGNUNET_realloc(tp, p, n)	((tp *) xrealloc ((p), (n) * sizeof(tp)))
+#define LT_DLGNUNET_free(p)						\
 	LT_STMT_START { if (p) (p) = (xfree (p), (lt_ptr) 0); } LT_STMT_END
 
-#define LT_EMALLOC(tp, n)	((tp *) xmalloc ((n) * sizeof(tp)))
-#define LT_EREALLOC(tp, p, n)	((tp *) xrealloc ((p), (n) * sizeof(tp)))
+#define LT_EGNUNET_malloc(tp, n)	((tp *) xmalloc ((n) * sizeof(tp)))
+#define LT_EGNUNET_realloc(tp, p, n)	((tp *) xrealloc ((p), (n) * sizeof(tp)))
 
 #else
 
-#define LT_DLMALLOC(tp, n)	((tp *) lt_dlmalloc ((n) * sizeof(tp)))
-#define LT_DLREALLOC(tp, p, n)	((tp *) lt_dlrealloc ((p), (n) * sizeof(tp)))
-#define LT_DLFREE(p)						\
+#define LT_DLGNUNET_malloc(tp, n)	((tp *) lt_dlmalloc ((n) * sizeof(tp)))
+#define LT_DLGNUNET_realloc(tp, p, n)	((tp *) lt_dlrealloc ((p), (n) * sizeof(tp)))
+#define LT_DLGNUNET_free(p)						\
 	LT_STMT_START { if (p) (p) = (lt_dlfree (p), (lt_ptr) 0); } LT_STMT_END
 
-#define LT_EMALLOC(tp, n)	((tp *) lt_emalloc ((n) * sizeof(tp)))
-#define LT_EREALLOC(tp, p, n)	((tp *) lt_erealloc ((p), (n) * sizeof(tp)))
+#define LT_EGNUNET_malloc(tp, n)	((tp *) lt_emalloc ((n) * sizeof(tp)))
+#define LT_EGNUNET_realloc(tp, p, n)	((tp *) lt_erealloc ((p), (n) * sizeof(tp)))
 
 #endif
 
@@ -270,7 +270,7 @@ LT_PARAMS ((size_t size)) = (lt_ptr (*)LT_PARAMS ((size_t))) malloc;
 
   if (str)
     {
-      tmp = LT_DLMALLOC (char, 1 + strlen (str));
+      tmp = LT_DLGNUNET_malloc (char, 1 + strlen (str));
       if (tmp)
         {
           strcpy (tmp, str);
@@ -463,7 +463,7 @@ opendir (path)
   (void) strncpy (file_specification, path, LT_FILENAME_MAX - 6);
   file_specification[LT_FILENAME_MAX - 6] = LT_EOS_CHAR;
   (void) strcat (file_specification, "\\");
-  entry = LT_DLMALLOC (DIR, sizeof (DIR));
+  entry = LT_DLGNUNET_malloc (DIR, sizeof (DIR));
   if (entry != (DIR *) 0)
     {
       entry->firsttime = TRUE;
@@ -477,7 +477,7 @@ opendir (path)
         FindFirstFile (file_specification, &entry->Win32FindData);
       if (entry->hSearch == INVALID_HANDLE_VALUE)
         {
-          LT_DLFREE (entry);
+          LT_DLGNUNET_free (entry);
           return (DIR *) 0;
         }
     }
@@ -567,7 +567,7 @@ realloc (ptr, size)
 #endif
 
 
-#if ! HAVE_ARGZ_APPEND
+#if ! HAVE_ARGZ_GNUNET_array_append
 #  define argz_append rpl_argz_append
 
 static error_t argz_append LT_PARAMS ((char **pargz, size_t * pargz_len,
@@ -593,7 +593,7 @@ argz_append (pargz, pargz_len, buf, buf_len)
 
   /* Ensure there is enough room to append BUF_LEN.  */
   argz_len = *pargz_len + buf_len;
-  argz = LT_DLREALLOC (char, *pargz, argz_len);
+  argz = LT_DLGNUNET_realloc (char, *pargz, argz_len);
   if (!argz)
     return ENOMEM;
 
@@ -606,7 +606,7 @@ argz_append (pargz, pargz_len, buf, buf_len)
 
   return 0;
 }
-#endif /* !HAVE_ARGZ_APPEND */
+#endif /* !HAVE_ARGZ_GNUNET_array_append */
 
 
 #if ! HAVE_ARGZ_CREATE_SEP
@@ -637,7 +637,7 @@ argz_create_sep (str, delim, pargz, pargz_len)
       const char *p;
       char *q;
 
-      argz = LT_DLMALLOC (char, argz_len);
+      argz = LT_DLGNUNET_malloc (char, argz_len);
       if (!argz)
         return ENOMEM;
 
@@ -661,7 +661,7 @@ argz_create_sep (str, delim, pargz, pargz_len)
 
   /* If ARGZ_LEN has shrunk to nothing, release ARGZ's memory.  */
   if (!argz_len)
-    LT_DLFREE (argz);
+    LT_DLGNUNET_free (argz);
 
   /* Assign new values.  */
   *pargz = argz;
@@ -704,7 +704,7 @@ argz_insert (pargz, pargz_len, before, entry)
     size_t entry_len = 1 + LT_STRLEN (entry);
     size_t argz_len = *pargz_len + entry_len;
     size_t offset = before - *pargz;
-    char *argz = LT_DLREALLOC (char, *pargz, argz_len);
+    char *argz = LT_DLGNUNET_realloc (char, *pargz, argz_len);
 
     if (!argz)
       return ENOMEM;
@@ -879,7 +879,7 @@ static const char sys_search_path[] = LTDL_SYSSEARCHPATH;
 
 
 
-/* --- MUTEX LOCKING --- */
+/* --- GNUNET_Mutex LOCKING --- */
 
 
 /* Macros to make it easier to run the lock functions only if they have
@@ -887,10 +887,10 @@ static const char sys_search_path[] = LTDL_SYSSEARCHPATH;
    ensure that the stored error message from the last error is not
    accidentally erased if the current function doesn't generate an
    error of its own.  */
-#define LT_DLMUTEX_LOCK()			LT_STMT_START {	\
+#define LT_DLGNUNET_mutex_lock()			LT_STMT_START {	\
 	if (lt_dlmutex_lock_func) (*lt_dlmutex_lock_func)();	\
 						} LT_STMT_END
-#define LT_DLMUTEX_UNLOCK()			LT_STMT_START { \
+#define LT_DLGNUNET_mutex_unlock()			LT_STMT_START { \
 	if (lt_dlmutex_unlock_func) (*lt_dlmutex_unlock_func)();\
 						} LT_STMT_END
 #define LT_DLMUTEX_SETERROR(errormsg)		LT_STMT_START {	\
@@ -926,7 +926,7 @@ lt_dlmutex_register (lock, unlock, seterror, geterror)
   int errors = 0;
 
   /* Lock using the old lock() callback, if any.  */
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   if ((lock && unlock && seterror && geterror)
       || !(lock || unlock || seterror || geterror))
@@ -970,10 +970,10 @@ lt_dladderror (diagnostic)
 
   assert (diagnostic);
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   errindex = errorcount - LT_ERROR_MAX;
-  temp = LT_EREALLOC (const char *, user_error_strings, 1 + errindex);
+  temp = LT_EGNUNET_realloc (const char *, user_error_strings, 1 + errindex);
   if (temp)
     {
       user_error_strings = temp;
@@ -981,7 +981,7 @@ lt_dladderror (diagnostic)
       result = errorcount++;
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return result;
 }
@@ -992,7 +992,7 @@ lt_dlseterror (errindex)
 {
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   if (errindex >= errorcount || errindex < 0)
     {
@@ -1011,7 +1011,7 @@ lt_dlseterror (errindex)
       LT_DLMUTEX_SETERROR (user_error_strings[errindex - LT_ERROR_MAX]);
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -1335,7 +1335,7 @@ sys_wll_open (loader_data, filename)
     {
       /* Append a `.' to stop Windows from adding an
          implicit `.dll' extension. */
-      searchname = LT_EMALLOC (char, 2 + LT_STRLEN (filename));
+      searchname = LT_EGNUNET_malloc (char, 2 + LT_STRLEN (filename));
       if (searchname)
         sprintf (searchname, "%s.", filename);
     }
@@ -1363,7 +1363,7 @@ sys_wll_open (loader_data, filename)
     SetErrorMode (errormode);
   }
 
-  LT_DLFREE (searchname);
+  LT_DLGNUNET_free (searchname);
 
   /* libltdl expects this function to fail if it is unable
      to physically load the library.  Sadly, LoadLibrary
@@ -1373,7 +1373,7 @@ sys_wll_open (loader_data, filename)
      We check whether LoadLibrary is returning a handle to
      an already loaded module, and simulate failure if we
      find one. */
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   cur = handles;
   while (cur)
     {
@@ -1390,7 +1390,7 @@ sys_wll_open (loader_data, filename)
 
       cur = cur->next;
     }
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   if (cur || !module)
     {
@@ -1543,7 +1543,7 @@ sys_dld_open (loader_data, filename)
   if (dld_link (filename) != 0)
     {
       LT_DLMUTEX_SETERROR (LT_DLSTRERROR (CANNOT_OPEN));
-      LT_DLFREE (module);
+      LT_DLGNUNET_free (module);
       module = 0;
     }
 
@@ -1564,7 +1564,7 @@ sys_dld_close (loader_data, module)
     }
   else
     {
-      LT_DLFREE (module);
+      LT_DLGNUNET_free (module);
     }
 
   return errors;
@@ -2003,7 +2003,7 @@ presym_init (loader_data)
 {
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   preloaded_symbols = 0;
   if (default_preloaded_symbols)
@@ -2011,7 +2011,7 @@ presym_init (loader_data)
       errors = lt_dlpreload (default_preloaded_symbols);
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -2021,7 +2021,7 @@ presym_free_symlists ()
 {
   lt_dlsymlists_t *lists;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   lists = preloaded_symbols;
   while (lists)
@@ -2029,11 +2029,11 @@ presym_free_symlists ()
       lt_dlsymlists_t *tmp = lists;
 
       lists = lists->next;
-      LT_DLFREE (tmp);
+      LT_DLGNUNET_free (tmp);
     }
   preloaded_symbols = 0;
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return 0;
 }
@@ -2054,7 +2054,7 @@ presym_add_symlist (preloaded)
   lt_dlsymlists_t *lists;
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   lists = preloaded_symbols;
   while (lists)
@@ -2066,7 +2066,7 @@ presym_add_symlist (preloaded)
       lists = lists->next;
     }
 
-  tmp = LT_EMALLOC (lt_dlsymlists_t, 1);
+  tmp = LT_EGNUNET_malloc (lt_dlsymlists_t, 1);
   if (tmp)
     {
       memset (tmp, 0, sizeof (lt_dlsymlists_t));
@@ -2080,7 +2080,7 @@ presym_add_symlist (preloaded)
     }
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
   return errors;
 }
 
@@ -2092,7 +2092,7 @@ presym_open (loader_data, filename)
   lt_dlsymlists_t *lists;
   lt_module module = (lt_module) 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   lists = preloaded_symbols;
 
   if (!lists)
@@ -2130,7 +2130,7 @@ presym_open (loader_data, filename)
   LT_DLMUTEX_SETERROR (LT_DLSTRERROR (FILE_NOT_FOUND));
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
   return module;
 }
 
@@ -2246,7 +2246,7 @@ lt_dlinit ()
 {
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   /* Initialize only at first call. */
   if (++initialized == 1)
@@ -2287,7 +2287,7 @@ lt_dlinit ()
         }
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -2306,12 +2306,12 @@ lt_dlpreload (preloaded)
     {
       presym_free_symlists ();
 
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       if (default_preloaded_symbols)
         {
           errors = lt_dlpreload (default_preloaded_symbols);
         }
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
 
   return errors;
@@ -2321,9 +2321,9 @@ int
 lt_dlpreload_default (preloaded)
      const lt_dlsymlist *preloaded;
 {
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   default_preloaded_symbols = preloaded;
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
   return 0;
 }
 
@@ -2334,7 +2334,7 @@ lt_dlexit ()
   lt_dlloader *loader;
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   loader = loaders;
 
   if (!initialized)
@@ -2395,7 +2395,7 @@ lt_dlexit ()
     }
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
   return errors;
 }
 
@@ -2410,7 +2410,7 @@ tryall_dlopen (handle, filename)
   int errors = 0;
 
   LT_DLMUTEX_GETERROR (saved_error);
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   cur = handles;
   loader = loaders;
@@ -2482,7 +2482,7 @@ tryall_dlopen (handle, filename)
 
   if (!loader)
     {
-      LT_DLFREE (cur->info.filename);
+      LT_DLGNUNET_free (cur->info.filename);
       ++errors;
       goto done;
     }
@@ -2491,7 +2491,7 @@ tryall_dlopen (handle, filename)
   LT_DLMUTEX_SETERROR (saved_error);
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -2524,7 +2524,7 @@ tryall_dlopen_module (handle, prefix, dirname, dlname)
 
   /* Allocate memory, and combine DIRNAME and MODULENAME into it.
      The PREFIX (if any) is handled below.  */
-  filename = LT_EMALLOC (char, dirname_len + 1 + filename_len + 1);
+  filename = LT_EGNUNET_malloc (char, dirname_len + 1 + filename_len + 1);
   if (!filename)
     return 1;
 
@@ -2543,7 +2543,7 @@ tryall_dlopen_module (handle, prefix, dirname, dlname)
       ++error;
     }
 
-  LT_DLFREE (filename);
+  LT_DLGNUNET_free (filename);
   return error;
 }
 
@@ -2605,7 +2605,7 @@ canonicalize_path (path, pcanonical)
   assert (path && *path);
   assert (pcanonical);
 
-  canonical = LT_EMALLOC (char, 1 + LT_STRLEN (path));
+  canonical = LT_EGNUNET_malloc (char, 1 + LT_STRLEN (path));
   if (!canonical)
     return 1;
 
@@ -2708,7 +2708,7 @@ foreach_dirinpath (search_path, base_name, func, data1, data2)
   char *filename = 0;
   char *canonical = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   if (!search_path || !*search_path)
     {
@@ -2730,9 +2730,9 @@ foreach_dirinpath (search_path, base_name, func, data1, data2)
 
         if (lendir + 1 + lenbase >= filenamesize)
           {
-            LT_DLFREE (filename);
+            LT_DLGNUNET_free (filename);
             filenamesize = lendir + 1 + lenbase + 1;    /* "/d" + '/' + "f" + '\0' */
-            filename = LT_EMALLOC (char, filenamesize);
+            filename = LT_EGNUNET_malloc (char, filenamesize);
             if (!filename)
               goto cleanup;
           }
@@ -2755,11 +2755,11 @@ foreach_dirinpath (search_path, base_name, func, data1, data2)
   }
 
 cleanup:
-  LT_DLFREE (argz);
-  LT_DLFREE (canonical);
-  LT_DLFREE (filename);
+  LT_DLGNUNET_free (argz);
+  LT_DLGNUNET_free (canonical);
+  LT_DLGNUNET_free (filename);
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return result;
 }
@@ -2788,7 +2788,7 @@ find_file_callback (filename, data1, data2)
       if (dirend > filename)
         *dirend = LT_EOS_CHAR;
 
-      LT_DLFREE (*pdir);
+      LT_DLGNUNET_free (*pdir);
       *pdir = lt_estrdup (filename);
       is_done = (*pdir == 0) ? -1 : 1;
     }
@@ -2870,7 +2870,7 @@ load_deplibs (handle, deplibs)
     }
   ++errors;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   if (user_search_path)
     {
       save_search_path = lt_estrdup (user_search_path);
@@ -2919,7 +2919,7 @@ load_deplibs (handle, deplibs)
       goto cleanup;
     }
 
-  names = LT_EMALLOC (char *, depcount * sizeof (char *));
+  names = LT_EGNUNET_malloc (char *, depcount * sizeof (char *));
   if (!names)
     goto cleanup;
 
@@ -2948,7 +2948,7 @@ load_deplibs (handle, deplibs)
               if (strncmp (p, "-l", 2) == 0)
                 {
                   size_t name_len = 3 + /* "lib" */ LT_STRLEN (p + 2);
-                  name = LT_EMALLOC (char, 1 + name_len);
+                  name = LT_EGNUNET_malloc (char, 1 + name_len);
                   if (name)
                     sprintf (name, "lib%s", p + 2);
                 }
@@ -2974,7 +2974,8 @@ load_deplibs (handle, deplibs)
     {
       int j = 0;
 
-      handle->deplibs = (lt_dlhandle *) LT_EMALLOC (lt_dlhandle *, depcount);
+      handle->deplibs =
+        (lt_dlhandle *) LT_EGNUNET_malloc (lt_dlhandle *, depcount);
       if (!handle->deplibs)
         goto cleanup;
 
@@ -2994,18 +2995,18 @@ load_deplibs (handle, deplibs)
 cleanup_names:
   for (i = 0; i < depcount; ++i)
     {
-      LT_DLFREE (names[i]);
+      LT_DLGNUNET_free (names[i]);
     }
 
 cleanup:
-  LT_DLFREE (names);
+  LT_DLGNUNET_free (names);
   /* restore the old search path */
   if (user_search_path)
     {
-      LT_DLFREE (user_search_path);
+      LT_DLGNUNET_free (user_search_path);
       user_search_path = save_search_path;
     }
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
 #endif
 
@@ -3044,14 +3045,14 @@ trim (dest, str)
   size_t len = LT_STRLEN (str);
   char *tmp;
 
-  LT_DLFREE (*dest);
+  LT_DLGNUNET_free (*dest);
 
   if (!end)
     return 1;
 
   if (len > 3 && str[0] == '\'')
     {
-      tmp = LT_EMALLOC (char, end - str);
+      tmp = LT_EGNUNET_malloc (char, end - str);
       if (!tmp)
         return 1;
 
@@ -3074,10 +3075,10 @@ free_vars (dlname, oldname, libdir, deplibs)
      char *libdir;
      char *deplibs;
 {
-  LT_DLFREE (dlname);
-  LT_DLFREE (oldname);
-  LT_DLFREE (libdir);
-  LT_DLFREE (deplibs);
+  LT_DLGNUNET_free (dlname);
+  LT_DLGNUNET_free (oldname);
+  LT_DLGNUNET_free (libdir);
+  LT_DLGNUNET_free (deplibs);
 
   return 0;
 }
@@ -3104,7 +3105,8 @@ try_dlopen (phandle, filename)
   /* dlopen self? */
   if (!filename)
     {
-      *phandle = (lt_dlhandle) LT_EMALLOC (struct lt_dlhandle_struct, 1);
+      *phandle =
+        (lt_dlhandle) LT_EGNUNET_malloc (struct lt_dlhandle_struct, 1);
       if (*phandle == 0)
         return 1;
 
@@ -3116,7 +3118,7 @@ try_dlopen (phandle, filename)
 
       if (tryall_dlopen (&newhandle, 0) != 0)
         {
-          LT_DLFREE (*phandle);
+          LT_DLGNUNET_free (*phandle);
           return 1;
         }
 
@@ -3140,7 +3142,7 @@ try_dlopen (phandle, filename)
     {
       size_t dirlen = (1 + base_name) - canonical;
 
-      dir = LT_EMALLOC (char, 1 + dirlen);
+      dir = LT_EGNUNET_malloc (char, 1 + dirlen);
       if (!dir)
         {
           ++errors;
@@ -3176,7 +3178,7 @@ try_dlopen (phandle, filename)
       int installed = 1;
 
       /* extract the module name from the file name */
-      name = LT_EMALLOC (char, ext - base_name + 1);
+      name = LT_EGNUNET_malloc (char, ext - base_name + 1);
       if (!name)
         {
           ++errors;
@@ -3208,11 +3210,11 @@ try_dlopen (phandle, filename)
         {
           const char *search_path;
 
-          LT_DLMUTEX_LOCK ();
+          LT_DLGNUNET_mutex_lock ();
           search_path = user_search_path;
           if (search_path)
             file = find_file (user_search_path, base_name, &dir);
-          LT_DLMUTEX_UNLOCK ();
+          LT_DLGNUNET_mutex_unlock ();
 
           if (!file)
             {
@@ -3251,7 +3253,7 @@ try_dlopen (phandle, filename)
         }
 
       line_len = LT_FILENAME_MAX;
-      line = LT_EMALLOC (char, line_len);
+      line = LT_EGNUNET_malloc (char, line_len);
       if (!line)
         {
           fclose (file);
@@ -3271,7 +3273,7 @@ try_dlopen (phandle, filename)
              that is longer than the initial buffer size.  */
           while ((line[LT_STRLEN (line) - 1] != '\n') && (!feof (file)))
             {
-              line = LT_DLREALLOC (char, line, line_len * 2);
+              line = LT_DLGNUNET_realloc (char, line, line_len * 2);
               if (!fgets (&line[line_len - 1], (int) line_len + 1, file))
                 {
                   break;
@@ -3346,17 +3348,18 @@ try_dlopen (phandle, filename)
         }
 
       fclose (file);
-      LT_DLFREE (line);
+      LT_DLGNUNET_free (line);
 
       /* allocate the handle */
-      *phandle = (lt_dlhandle) LT_EMALLOC (struct lt_dlhandle_struct, 1);
+      *phandle =
+        (lt_dlhandle) LT_EGNUNET_malloc (struct lt_dlhandle_struct, 1);
       if (*phandle == 0)
         ++errors;
 
       if (errors)
         {
           free_vars (dlname, old_name, libdir, deplibs);
-          LT_DLFREE (*phandle);
+          LT_DLGNUNET_free (*phandle);
           goto cleanup;
         }
 
@@ -3382,7 +3385,7 @@ try_dlopen (phandle, filename)
       free_vars (dlname, old_name, libdir, deplibs);
       if (errors)
         {
-          LT_DLFREE (*phandle);
+          LT_DLGNUNET_free (*phandle);
           goto cleanup;
         }
 
@@ -3394,7 +3397,8 @@ try_dlopen (phandle, filename)
   else
     {
       /* not a libtool module */
-      *phandle = (lt_dlhandle) LT_EMALLOC (struct lt_dlhandle_struct, 1);
+      *phandle =
+        (lt_dlhandle) LT_EGNUNET_malloc (struct lt_dlhandle_struct, 1);
       if (*phandle == 0)
         {
           ++errors;
@@ -3428,7 +3432,7 @@ try_dlopen (phandle, filename)
 
       if (!newhandle)
         {
-          LT_DLFREE (*phandle);
+          LT_DLGNUNET_free (*phandle);
           ++errors;
           goto cleanup;
         }
@@ -3442,18 +3446,18 @@ register_handle:
       (*phandle)->info.ref_count = 1;
       LT_DLMEM_REASSIGN ((*phandle)->info.name, name);
 
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       (*phandle)->next = handles;
       handles = *phandle;
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
 
   LT_DLMUTEX_SETERROR (saved_error);
 
 cleanup:
-  LT_DLFREE (dir);
-  LT_DLFREE (name);
-  LT_DLFREE (canonical);
+  LT_DLGNUNET_free (dir);
+  LT_DLGNUNET_free (name);
+  LT_DLGNUNET_free (canonical);
 
   return errors;
 }
@@ -3522,7 +3526,7 @@ lt_dlopenext (filename)
     }
 
   /* First try appending ARCHIVE_EXT.  */
-  tmp = LT_EMALLOC (char, len + LT_STRLEN (archive_ext) + 1);
+  tmp = LT_EGNUNET_malloc (char, len + LT_STRLEN (archive_ext) + 1);
   if (!tmp)
     return 0;
 
@@ -3537,7 +3541,7 @@ lt_dlopenext (filename)
      in the module search path.  */
   if (handle || ((errors > 0) && !file_not_found ()))
     {
-      LT_DLFREE (tmp);
+      LT_DLGNUNET_free (tmp);
       return handle;
     }
 
@@ -3545,8 +3549,8 @@ lt_dlopenext (filename)
   /* Try appending SHLIB_EXT.   */
   if (LT_STRLEN (shlib_ext) > LT_STRLEN (archive_ext))
     {
-      LT_DLFREE (tmp);
-      tmp = LT_EMALLOC (char, len + LT_STRLEN (shlib_ext) + 1);
+      LT_DLGNUNET_free (tmp);
+      tmp = LT_EGNUNET_malloc (char, len + LT_STRLEN (shlib_ext) + 1);
       if (!tmp)
         return 0;
 
@@ -3564,7 +3568,7 @@ lt_dlopenext (filename)
      with the current error message.  */
   if (handle || ((errors > 0) && !file_not_found ()))
     {
-      LT_DLFREE (tmp);
+      LT_DLGNUNET_free (tmp);
       return handle;
     }
 #endif
@@ -3572,7 +3576,7 @@ lt_dlopenext (filename)
   /* Still here?  Then we really did fail to locate any of the file
      names we tried.  */
   LT_DLMUTEX_SETERROR (LT_DLSTRERROR (FILE_NOT_FOUND));
-  LT_DLFREE (tmp);
+  LT_DLGNUNET_free (tmp);
   return 0;
 }
 
@@ -3682,7 +3686,7 @@ lt_argz_insertdir (pargz, pargz_len, dirnam, dp)
   /* Prepend the directory name.  */
   end_offset = end - dp->d_name;
   buf_len = dir_len + 1 + end_offset;
-  buf = LT_EMALLOC (char, 1 + buf_len);
+  buf = LT_EGNUNET_malloc (char, 1 + buf_len);
   if (!buf)
     return ++errors;
 
@@ -3697,7 +3701,7 @@ lt_argz_insertdir (pargz, pargz_len, dirnam, dp)
   if (lt_argz_insertinorder (pargz, pargz_len, buf) != 0)
     ++errors;
 
-  LT_DLFREE (buf);
+  LT_DLGNUNET_free (buf);
 
   return errors;
 }
@@ -3766,7 +3770,7 @@ foreachfile_callback (dirname, data1, data2)
   }
 
 cleanup:
-  LT_DLFREE (argz);
+  LT_DLGNUNET_free (argz);
 
   return is_done;
 }
@@ -3830,7 +3834,7 @@ lt_dlclose (handle)
   lt_dlhandle cur, last;
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   /* check whether the handle is valid */
   last = cur = handles;
@@ -3870,11 +3874,11 @@ lt_dlclose (handle)
       errors += unload_deplibs (handle);
 
       /* It is up to the callers to free the data itself.  */
-      LT_DLFREE (handle->caller_data);
+      LT_DLGNUNET_free (handle->caller_data);
 
-      LT_DLFREE (handle->info.filename);
-      LT_DLFREE (handle->info.name);
-      LT_DLFREE (handle);
+      LT_DLGNUNET_free (handle->info.filename);
+      LT_DLGNUNET_free (handle->info.name);
+      LT_DLGNUNET_free (handle);
 
       goto done;
     }
@@ -3886,7 +3890,7 @@ lt_dlclose (handle)
     }
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -3923,7 +3927,7 @@ lt_dlsym (handle, symbol)
     }
   else
     {
-      sym = LT_EMALLOC (char, lensym + LT_SYMBOL_OVERHEAD + 1);
+      sym = LT_EGNUNET_malloc (char, lensym + LT_SYMBOL_OVERHEAD + 1);
       if (!sym)
         {
           LT_DLMUTEX_SETERROR (LT_DLSTRERROR (BUFFER_OVERFLOW));
@@ -3958,7 +3962,7 @@ lt_dlsym (handle, symbol)
         {
           if (sym != lsym)
             {
-              LT_DLFREE (sym);
+              LT_DLGNUNET_free (sym);
             }
           return address;
         }
@@ -3979,7 +3983,7 @@ lt_dlsym (handle, symbol)
   address = handle->loader->find_sym (data, handle->module, sym);
   if (sym != lsym)
     {
-      LT_DLFREE (sym);
+      LT_DLGNUNET_free (sym);
     }
 
   return address;
@@ -4062,8 +4066,8 @@ lt_dlpath_insertdir (ppath, before, dir)
   LT_DLMEM_REASSIGN (*ppath, argz);
 
 cleanup:
-  LT_DLFREE (canonical);
-  LT_DLFREE (argz);
+  LT_DLGNUNET_free (canonical);
+  LT_DLGNUNET_free (argz);
 
   return errors;
 }
@@ -4076,10 +4080,10 @@ lt_dladdsearchdir (search_dir)
 
   if (search_dir && *search_dir)
     {
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       if (lt_dlpath_insertdir (&user_search_path, 0, search_dir) != 0)
         ++errors;
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
 
   return errors;
@@ -4094,26 +4098,26 @@ lt_dlinsertsearchdir (before, search_dir)
 
   if (before)
     {
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       if ((before < user_search_path)
           || (before >= user_search_path + LT_STRLEN (user_search_path)))
         {
-          LT_DLMUTEX_UNLOCK ();
+          LT_DLGNUNET_mutex_unlock ();
           LT_DLMUTEX_SETERROR (LT_DLSTRERROR (INVALID_POSITION));
           return 1;
         }
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
 
   if (search_dir && *search_dir)
     {
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       if (lt_dlpath_insertdir (&user_search_path,
                                (char *) before, search_dir) != 0)
         {
           ++errors;
         }
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
 
   return errors;
@@ -4125,19 +4129,19 @@ lt_dlsetsearchpath (search_path)
 {
   int errors = 0;
 
-  LT_DLMUTEX_LOCK ();
-  LT_DLFREE (user_search_path);
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_lock ();
+  LT_DLGNUNET_free (user_search_path);
+  LT_DLGNUNET_mutex_unlock ();
 
   if (!search_path || !LT_STRLEN (search_path))
     {
       return errors;
     }
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   if (canonicalize_path (search_path, &user_search_path) != 0)
     ++errors;
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -4147,9 +4151,9 @@ lt_dlgetsearchpath ()
 {
   const char *saved_path;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   saved_path = user_search_path;
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return saved_path;
 }
@@ -4219,7 +4223,7 @@ lt_dlforeach (func, data)
   int errors = 0;
   lt_dlhandle cur;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   cur = handles;
   while (cur)
@@ -4234,7 +4238,7 @@ lt_dlforeach (func, data)
         }
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -4245,9 +4249,9 @@ lt_dlcaller_register ()
   static lt_dlcaller_id last_caller_id = 0;
   int result;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   result = ++last_caller_id;
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return result;
 }
@@ -4264,7 +4268,7 @@ lt_dlcaller_set_data (key, handle, data)
 
   /* This needs to be locked so that the caller data can be updated
      simultaneously by different threads.  */
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   if (handle->caller_data)
     while (handle->caller_data[n_elements].key)
@@ -4284,7 +4288,8 @@ lt_dlcaller_set_data (key, handle, data)
   if (i == n_elements)
     {
       lt_caller_data *temp
-        = LT_DLREALLOC (lt_caller_data, handle->caller_data, 2 + n_elements);
+        = LT_DLGNUNET_realloc (lt_caller_data, handle->caller_data,
+                               2 + n_elements);
 
       if (!temp)
         {
@@ -4302,7 +4307,7 @@ lt_dlcaller_set_data (key, handle, data)
   handle->caller_data[i].data = data;
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return stale;
 }
@@ -4316,7 +4321,7 @@ lt_dlcaller_get_data (key, handle)
 
   /* This needs to be locked so that the caller data isn't updated by
      another thread part way through this function.  */
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   /* Locate the index of the element with a matching KEY.  */
   {
@@ -4331,7 +4336,7 @@ lt_dlcaller_get_data (key, handle)
       }
   }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return result;
 }
@@ -4359,7 +4364,7 @@ lt_dlloader_add (place, dlloader, loader_name)
     }
 
   /* Create a new dlloader node with copies of the user callbacks.  */
-  node = LT_EMALLOC (lt_dlloader, 1);
+  node = LT_EGNUNET_malloc (lt_dlloader, 1);
   if (!node)
     return 1;
 
@@ -4372,7 +4377,7 @@ lt_dlloader_add (place, dlloader, loader_name)
   node->find_sym = dlloader->find_sym;
   node->dlloader_data = dlloader->dlloader_data;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   if (!loaders)
     {
       /* If there are no loaders, NODE becomes the list! */
@@ -4416,7 +4421,7 @@ lt_dlloader_add (place, dlloader, loader_name)
         }
     }
 
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -4435,7 +4440,7 @@ lt_dlloader_remove (loader_name)
       return 1;
     }
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
 
   /* Fail if there are any open modules which use this loader. */
   for (handle = handles; handle; handle = handle->next)
@@ -4474,10 +4479,10 @@ lt_dlloader_remove (loader_name)
       errors = place->dlloader_exit (place->dlloader_data);
     }
 
-  LT_DLFREE (place);
+  LT_DLGNUNET_free (place);
 
 done:
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return errors;
 }
@@ -4488,9 +4493,9 @@ lt_dlloader_next (place)
 {
   lt_dlloader *next;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   next = place ? place->next : loaders;
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return next;
 }
@@ -4503,9 +4508,9 @@ lt_dlloader_name (place)
 
   if (place)
     {
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       name = place ? place->loader_name : 0;
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
   else
     {
@@ -4523,9 +4528,9 @@ lt_dlloader_data (place)
 
   if (place)
     {
-      LT_DLMUTEX_LOCK ();
+      LT_DLGNUNET_mutex_lock ();
       data = place ? &(place->dlloader_data) : 0;
-      LT_DLMUTEX_UNLOCK ();
+      LT_DLGNUNET_mutex_unlock ();
     }
   else
     {
@@ -4541,7 +4546,7 @@ lt_dlloader_find (loader_name)
 {
   lt_dlloader *place = 0;
 
-  LT_DLMUTEX_LOCK ();
+  LT_DLGNUNET_mutex_lock ();
   for (place = loaders; place; place = place->next)
     {
       if (strcmp (place->loader_name, loader_name) == 0)
@@ -4549,7 +4554,7 @@ lt_dlloader_find (loader_name)
           break;
         }
     }
-  LT_DLMUTEX_UNLOCK ();
+  LT_DLGNUNET_mutex_unlock ();
 
   return place;
 }

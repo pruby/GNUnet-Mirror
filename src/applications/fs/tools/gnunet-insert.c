@@ -31,8 +31,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_util_boot.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
@@ -48,7 +47,7 @@ static struct FSUI_Context *ctx;
 
 static struct FSUI_UploadList *ul;
 
-static cron_t start_time;
+static GNUNET_CronTime start_time;
 
 /* ************ config options ******** */
 
@@ -91,10 +90,10 @@ static int extract_only;
 static int do_disable_creation_time;
 
 static void
-convertId (const char *s, HashCode512 * id)
+convertId (const char *s, GNUNET_HashCode * id)
 {
-  if ((s != NULL) && (enc2hash (s, id) == SYSERR))
-    hash (s, strlen (s), id);
+  if ((s != NULL) && (GNUNET_enc_to_hash (s, id) == GNUNET_SYSERR))
+    GNUNET_hash (s, strlen (s), id);
 }
 
 /**
@@ -104,9 +103,9 @@ convertId (const char *s, HashCode512 * id)
 static void
 postProcess (const struct ECRS_URI *uri)
 {
-  HashCode512 prevId;
-  HashCode512 thisId;
-  HashCode512 nextId;
+  GNUNET_HashCode prevId;
+  GNUNET_HashCode thisId;
+  GNUNET_HashCode nextId;
   struct ECRS_URI *nsuri;
   char *us;
 
@@ -119,9 +118,9 @@ postProcess (const struct ECRS_URI *uri)
                              cfg,
                              anonymity,
                              priority,
-                             get_time () + 2 * cronYEARS,
+                             GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
                              pseudonym,
-                             (TIME_T) interval,
+                             (GNUNET_Int32Time) interval,
                              prev_id == NULL ? NULL : &prevId,
                              this_id == NULL ? NULL : &thisId,
                              next_id == NULL ? NULL : &nextId, uri, meta);
@@ -130,14 +129,14 @@ postProcess (const struct ECRS_URI *uri)
       us = ECRS_uriToString (nsuri);
       ECRS_freeUri (nsuri);
       printf (_("Created entry `%s' in namespace `%s'\n"), us, pseudonym);
-      FREE (us);
+      GNUNET_free (us);
     }
   else
     {
       printf (_("Failed to add entry to namespace `%s' (does it exist?)\n"),
               pseudonym);
     }
-  FREE (pseudonym);
+  GNUNET_free (pseudonym);
   pseudonym = NULL;
 }
 
@@ -149,7 +148,7 @@ listKeywords (const char *fn, const char *dir, void *cls)
   struct stat buf;
   EXTRACTOR_KeywordList *list;
 
-  fullName = MALLOC (strlen (dir) + strlen (fn) + 2);
+  fullName = GNUNET_malloc (strlen (dir) + strlen (fn) + 2);
   strcpy (fullName, dir);
   if (dir[strlen (dir) - 1] != DIR_SEPARATOR)
     strcat (fullName, DIR_SEPARATOR_STR);
@@ -157,8 +156,8 @@ listKeywords (const char *fn, const char *dir, void *cls)
   printf (_("Keywords for file `%s':\n"), fullName);
   if (0 != STAT (fullName, &buf))
     {
-      FREE (fullName);
-      return OK;
+      GNUNET_free (fullName);
+      return GNUNET_OK;
     }
   if (S_ISDIR (buf.st_mode))
     {
@@ -166,7 +165,7 @@ listKeywords (const char *fn, const char *dir, void *cls)
       printf ("%s - %s\n",
               dgettext ("libextractor", "mimetype"),
               "application/gnunet-directory");
-      disk_directory_scan (NULL, fullName, &listKeywords, cls);
+      GNUNET_disk_directory_scan (NULL, fullName, &listKeywords, cls);
     }
   else
     {
@@ -177,8 +176,8 @@ listKeywords (const char *fn, const char *dir, void *cls)
       EXTRACTOR_printKeywords (stdout, list);
       EXTRACTOR_freeKeywords (list);
     }
-  FREE (fullName);
-  return OK;
+  GNUNET_free (fullName);
+  return GNUNET_OK;
 }
 
 
@@ -198,56 +197,56 @@ printstatus (void *ctx, const FSUI_Event * event)
       if (*verboselevel)
         {
           char *ret;
-          cron_t now;
+          GNUNET_CronTime now;
 
-          now = get_time ();
+          now = GNUNET_get_time ();
           delta = event->data.UploadProgress.eta - now;
           if (event->data.UploadProgress.eta < now)
             delta = 0;
-          ret = string_get_fancy_time_interval (delta);
+          ret = GNUNET_get_time_interval_as_fancy_string (delta);
           PRINTF (_("%16llu of %16llu bytes inserted "
                     "(estimating %6s to completion) - %s\n"),
                   event->data.UploadProgress.completed,
                   event->data.UploadProgress.total,
                   ret, event->data.UploadProgress.filename);
-          FREE (ret);
+          GNUNET_free (ret);
         }
       break;
     case FSUI_upload_completed:
       if (*verboselevel)
         {
-          delta = get_time () - start_time;
+          delta = GNUNET_get_time () - start_time;
           PRINTF (_("Upload of `%s' complete, "
                     "%llu bytes took %llu seconds (%8.3f KiB/s).\n"),
                   event->data.UploadCompleted.filename,
                   event->data.UploadCompleted.total,
-                  delta / cronSECONDS,
+                  delta / GNUNET_CRON_SECONDS,
                   (delta == 0)
                   ? (double) (-1.0)
                   : (double) (event->data.UploadCompleted.total
-                              / 1024.0 * cronSECONDS / delta));
+                              / 1024.0 * GNUNET_CRON_SECONDS / delta));
         }
       fstring = ECRS_uriToString (event->data.UploadCompleted.uri);
       printf (_("File `%s' has URI: %s\n"),
               event->data.UploadCompleted.filename, fstring);
-      FREE (fstring);
+      GNUNET_free (fstring);
       if (ul == event->data.UploadCompleted.uc.pos)
         {
           postProcess (event->data.UploadCompleted.uri);
           errorCode = 0;
-          GNUNET_SHUTDOWN_INITIATE ();
+          GNUNET_shutdown_initiate ();
         }
       break;
     case FSUI_upload_aborted:
       printf (_("\nUpload aborted.\n"));
       errorCode = 2;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_upload_error:
       printf (_("\nError uploading file: %s"),
               event->data.UploadError.message);
       errorCode = 3;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_upload_started:
     case FSUI_upload_stopped:
@@ -263,33 +262,33 @@ printstatus (void *ctx, const FSUI_Event * event)
 /**
  * All gnunet-insert command line options
  */
-static struct CommandLineOption gnunetinsertOptions[] = {
+static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
   {'a', "anonymity", "LEVEL",
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
-   1, &gnunet_getopt_configure_set_uint, &anonymity},
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+   1, &GNUNET_getopt_configure_set_uint, &anonymity},
+   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
   {'C', "copy", NULL,
    gettext_noop ("even if gnunetd is running on the local machine, force the"
                  " creation of a copy instead of making a link to the GNUnet share directory"),
-   0, &gnunet_getopt_configure_set_one, &do_copy},
+   0, &GNUNET_getopt_configure_set_one, &do_copy},
   {'d', "disable-creation-time", NULL,
    gettext_noop
    ("disable adding the creation time to the metadata of the uploaded file"),
-   0, &gnunet_getopt_configure_set_one, &do_disable_creation_time},
+   0, &GNUNET_getopt_configure_set_one, &do_disable_creation_time},
   {'D', "disable-direct", NULL,
    gettext_noop
    ("do not use libextractor to add additional references to directory entries and/or the published file"),
-   0, &gnunet_getopt_configure_set_one, &do_no_direct_references},
+   0, &GNUNET_getopt_configure_set_one, &do_no_direct_references},
   {'e', "extract", NULL,
    gettext_noop
    ("print list of extracted keywords that would be used, but do not perform upload"),
-   0, &gnunet_getopt_configure_set_one, &extract_only},
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Make files available to GNUnet for sharing.")),      /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+   0, &GNUNET_getopt_configure_set_one, &extract_only},
+   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Make files available to GNUnet for sharing.")),      /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   {'i', "interval", "SECONDS",
    gettext_noop ("set interval for availability of updates to SECONDS"
                  " (for namespace insertions only)"),
-   1, &gnunet_getopt_configure_set_uint, &interval},
+   1, &GNUNET_getopt_configure_set_uint, &interval},
   {'k', "key", "KEYWORD",
    gettext_noop
    ("add an additional keyword for the top-level file or directory"
@@ -299,45 +298,45 @@ static struct CommandLineOption gnunetinsertOptions[] = {
    gettext_noop ("add an additional keyword for all files and directories"
                  " (this option can be specified multiple times)"),
    1, &gnunet_getopt_configure_set_keywords, &gloKeywords},
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'m', "meta", "TYPE:VALUE",
    gettext_noop ("set the meta-data for the given TYPE to the given VALUE"),
    1, &gnunet_getopt_configure_set_metadata, &meta},
   {'n', "noindex", NULL,
    gettext_noop ("do not index, perform full insertion (stores entire "
                  "file in encrypted form in GNUnet database)"),
-   0, &gnunet_getopt_configure_set_one, &do_insert},
+   0, &GNUNET_getopt_configure_set_one, &do_insert},
   {'N', "next", "ID",
    gettext_noop
    ("specify ID of an updated version to be published in the future"
     " (for namespace insertions only)"),
-   1, &gnunet_getopt_configure_set_string, &next_id},
+   1, &GNUNET_getopt_configure_set_string, &next_id},
   {'p', "priority", "PRIORITY",
    gettext_noop ("specify the priority of the content"),
-   1, &gnunet_getopt_configure_set_uint, &priority},
+   1, &GNUNET_getopt_configure_set_uint, &priority},
   {'P', "pseudonym", "NAME",
    gettext_noop
    ("publish the files under the pseudonym NAME (place file into namespace)"),
-   1, &gnunet_getopt_configure_set_string, &pseudonym},
+   1, &GNUNET_getopt_configure_set_string, &pseudonym},
   {'S', "sporadic", NULL,
    gettext_noop ("specifies this as an aperiodic but updated publication"
                  " (for namespace insertions only)"),
-   0, &gnunet_getopt_configure_set_one, &is_sporadic},
+   0, &GNUNET_getopt_configure_set_one, &is_sporadic},
   {'t', "this", "ID",
    gettext_noop ("set the ID of this version of the publication"
                  " (for namespace insertions only)"),
-   1, &gnunet_getopt_configure_set_string, &this_id},
+   1, &GNUNET_getopt_configure_set_string, &this_id},
   {'T', "time", "TIME",
    gettext_noop
    ("specify creation time for SBlock (see man-page for format)"),
-   1, &gnunet_getopt_configure_set_string, &creation_time},
+   1, &GNUNET_getopt_configure_set_string, &creation_time},
   {'u', "update", "ID",
    gettext_noop ("ID of the previous version of the content"
                  " (for namespace update only)"),
-   1, &gnunet_getopt_configure_set_string, &prev_id},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+   1, &GNUNET_getopt_configure_set_string, &prev_id},
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 /**
@@ -386,8 +385,8 @@ main (int argc, char *const *argv)
       GC_get_configuration_value_string (cfg, "FS", "EXTRACTORS", "", &ex);
       if (strlen (ex) > 0)
         l = EXTRACTOR_loadConfigLibraries (l, ex);
-      FREE (ex);
-      dirname = string_expandFileName (ectx, filename);
+      GNUNET_free (ex);
+      dirname = GNUNET_expand_file_name (ectx, filename);
       GE_ASSERT (ectx, dirname != NULL);
       while ((strlen (dirname) > 0) &&
              (dirname[strlen (dirname) - 1] == DIR_SEPARATOR))
@@ -398,7 +397,7 @@ main (int argc, char *const *argv)
       GE_ASSERT (ectx, fname != dirname);
       fname[-1] = '\0';
       listKeywords (fname, dirname, l);
-      FREE (dirname);
+      GNUNET_free (dirname);
       EXTRACTOR_removeAll (l);
       ECRS_freeMetaData (meta);
 
@@ -413,7 +412,7 @@ main (int argc, char *const *argv)
   /* check arguments */
   if (pseudonym != NULL)
     {
-      if (OK != ECRS_testNamespaceExists (ectx, cfg, pseudonym, NULL))
+      if (GNUNET_OK != ECRS_testNamespaceExists (ectx, cfg, pseudonym, NULL))
         {
           printf (_("Could not access namespace `%s' (does not exist?).\n"),
                   pseudonym);
@@ -485,34 +484,34 @@ main (int argc, char *const *argv)
     }
 
   /* fundamental init */
-  ctx = FSUI_start (ectx, cfg, "gnunet-insert", NO, 32, /* make configurable */
+  ctx = FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,  /* make configurable */
                     &printstatus, &verbose);
 
   /* first insert all of the top-level files or directories */
-  tmp = string_expandFileName (ectx, filename);
+  tmp = GNUNET_expand_file_name (ectx, filename);
   if (!do_disable_creation_time)
     ECRS_addPublicationDateToMetaData (meta);
-  start_time = get_time ();
+  start_time = GNUNET_get_time ();
   errorCode = 1;
   ul = FSUI_startUpload (ctx,
                          tmp,
-                         (DirectoryScanCallback) & disk_directory_scan,
+                         (DirectoryScanCallback) & GNUNET_disk_directory_scan,
                          ectx,
                          anonymity,
                          priority,
                          !do_insert,
-                         YES,
+                         GNUNET_YES,
                          !do_no_direct_references,
-                         start_time + 2 * cronYEARS,
+                         start_time + 2 * GNUNET_CRON_YEARS,
                          meta, gloKeywords, topKeywords);
   if (gloKeywords != NULL)
     ECRS_freeUri (gloKeywords);
   if (topKeywords != NULL)
     ECRS_freeUri (topKeywords);
-  FREE (tmp);
+  GNUNET_free (tmp);
   if (ul != NULL)
     {
-      GNUNET_SHUTDOWN_WAITFOR ();
+      GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
         FSUI_abortUpload (ctx, ul);
       FSUI_stopUpload (ctx, ul);

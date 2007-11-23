@@ -171,24 +171,24 @@ set_highbit (mpz_t a, unsigned int n)
 }
 
 static void
-mpz_randomize (mpz_t n, unsigned int nbits, HashCode512 * rnd)
+mpz_randomize (mpz_t n, unsigned int nbits, GNUNET_HashCode * rnd)
 {
-  HashCode512 *tmp;
+  GNUNET_HashCode *tmp;
   int cnt;
   int i;
 
-  cnt = (nbits / sizeof (HashCode512) / 8) + 1;
-  tmp = MALLOC (sizeof (HashCode512) * cnt);
+  cnt = (nbits / sizeof (GNUNET_HashCode) / 8) + 1;
+  tmp = GNUNET_malloc (sizeof (GNUNET_HashCode) * cnt);
 
   tmp[0] = *rnd;
   for (i = 0; i < cnt - 1; i++)
     {
-      hash (&tmp[i], sizeof (HashCode512), &tmp[i + 1]);
+      GNUNET_hash (&tmp[i], sizeof (GNUNET_HashCode), &tmp[i + 1]);
     }
   *rnd = tmp[cnt - 1];
-  mpz_import (n, cnt * sizeof (HashCode512) / sizeof (unsigned int),
+  mpz_import (n, cnt * sizeof (GNUNET_HashCode) / sizeof (unsigned int),
               1, sizeof (unsigned int), 1, 0, tmp);
-  FREE (tmp);
+  GNUNET_free (tmp);
   i = get_nbits (n);
   while (i > nbits)
     mpz_clrbit (n, i--);
@@ -198,7 +198,7 @@ mpz_randomize (mpz_t n, unsigned int nbits, HashCode512 * rnd)
  * Return true if n is probably a prime
  */
 static int
-is_prime (mpz_t n, int steps, HashCode512 * hc)
+is_prime (mpz_t n, int steps, GNUNET_HashCode * hc)
 {
   mpz_t x;
   mpz_t y;
@@ -273,7 +273,7 @@ leave:
 }
 
 static void
-gen_prime (mpz_t ptest, unsigned int nbits, HashCode512 * hc)
+gen_prime (mpz_t ptest, unsigned int nbits, GNUNET_HashCode * hc)
 {
   mpz_t prime, pminus1, val_2, val_3, result;
   int i;
@@ -283,7 +283,7 @@ gen_prime (mpz_t ptest, unsigned int nbits, HashCode512 * hc)
 
   GE_ASSERT (NULL, nbits >= 16);
 
-  mods = MALLOC (no_of_small_prime_numbers * sizeof (*mods));
+  mods = GNUNET_malloc (no_of_small_prime_numbers * sizeof (*mods));
   /* Make nbits fit into mpz_t implementation. */
   mpz_init_set_ui (val_2, 2);
   mpz_init_set_ui (val_3, 3);
@@ -337,7 +337,7 @@ gen_prime (mpz_t ptest, unsigned int nbits, HashCode512 * hc)
               mpz_clear (result);
               mpz_clear (pminus1);
               mpz_clear (prime);
-              FREE (mods);
+              GNUNET_free (mods);
               return;
             }
         }
@@ -378,7 +378,7 @@ test_gcd (mpz_t g, mpz_t xa, mpz_t xb)
  */
 static void
 generate_kblock_key (KBlock_secret_key * sk,
-                     unsigned int nbits, HashCode512 * hc)
+                     unsigned int nbits, GNUNET_HashCode * hc)
 {
   mpz_t t1, t2;
   mpz_t phi;                    /* helper: (p-1)(q-1) */
@@ -446,15 +446,15 @@ generate_kblock_key (KBlock_secret_key * sk,
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-static PrivateKeyEncoded *
-makeKblockKeyInternal (const HashCode512 * hc)
+static GNUNET_RSA_PrivateKeyEncoded *
+makeKblockKeyInternal (const GNUNET_HashCode * hc)
 {
   KBlock_secret_key sk;
-  HashCode512 hx;
+  GNUNET_HashCode hx;
   void *pbu[6];
   mpz_t *pkv[6];
   size_t sizes[6];
-  PrivateKeyEncoded *retval;
+  GNUNET_RSA_PrivateKeyEncoded *retval;
   int i;
   size_t size;
 
@@ -475,7 +475,7 @@ makeKblockKeyInternal (const HashCode512 * hc)
   pkv[3] = &sk.p;
   pkv[4] = &sk.q;
   pkv[5] = &sk.u;
-  size = sizeof (PrivateKeyEncoded);
+  size = sizeof (GNUNET_RSA_PrivateKeyEncoded);
   for (i = 0; i < 6; i++)
     {
       pbu[i] = mpz_export (NULL, &sizes[i], 1,  /* most significant word first */
@@ -486,7 +486,7 @@ makeKblockKeyInternal (const HashCode512 * hc)
       size += sizes[i];
     }
   GE_ASSERT (NULL, size < 65536);
-  retval = MALLOC (size);
+  retval = GNUNET_malloc (size);
   retval->len = htons (size);
   i = 0;
   retval->sizen = htons (sizes[0]);
@@ -518,48 +518,48 @@ makeKblockKeyInternal (const HashCode512 * hc)
 
 typedef struct
 {
-  HashCode512 hc;
-  PrivateKeyEncoded *pke;
+  GNUNET_HashCode hc;
+  GNUNET_RSA_PrivateKeyEncoded *pke;
 } KBlockKeyCacheLine;
 
 static KBlockKeyCacheLine **cache;
 static unsigned int cacheSize;
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-struct PrivateKey *
-makeKblockKey (const HashCode512 * hc)
+struct GNUNET_RSA_PrivateKey *
+GNUNET_RSA_create_key_from_hash (const GNUNET_HashCode * hc)
 {
-  struct PrivateKey *ret;
+  struct GNUNET_RSA_PrivateKey *ret;
   KBlockKeyCacheLine *line;
   int i;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < cacheSize; i++)
     {
-      if (equalsHashCode512 (hc, &cache[i]->hc))
+      if (0 == memcmp (hc, &cache[i]->hc, sizeof (GNUNET_HashCode)))
         {
-          ret = decodePrivateKey (cache[i]->pke);
-          MUTEX_UNLOCK (lock);
+          ret = GNUNET_RSA_decode_key (cache[i]->pke);
+          GNUNET_mutex_unlock (lock);
           return ret;
         }
     }
 
-  line = MALLOC (sizeof (KBlockKeyCacheLine));
+  line = GNUNET_malloc (sizeof (KBlockKeyCacheLine));
   line->hc = *hc;
   line->pke = makeKblockKeyInternal (hc);
-  GROW (cache, cacheSize, cacheSize + 1);
+  GNUNET_array_grow (cache, cacheSize, cacheSize + 1);
   cache[cacheSize - 1] = line;
-  MUTEX_UNLOCK (lock);
-  return decodePrivateKey (line->pke);
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_RSA_decode_key (line->pke);
 }
 
 void __attribute__ ((constructor)) gnunet_crypto_kblock_ltdl_init (void)
 {
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
 void __attribute__ ((destructor)) gnunet_crypto_kblock_ltdl_fini (void)
@@ -567,11 +567,11 @@ void __attribute__ ((destructor)) gnunet_crypto_kblock_ltdl_fini (void)
   int i;
   for (i = 0; i < cacheSize; i++)
     {
-      FREE (cache[i]->pke);
-      FREE (cache[i]);
+      GNUNET_free (cache[i]->pke);
+      GNUNET_free (cache[i]);
     }
-  GROW (cache, cacheSize, 0);
-  MUTEX_DESTROY (lock);
+  GNUNET_array_grow (cache, cacheSize, 0);
+  GNUNET_mutex_destroy (lock);
 }
 
 /* end of kblockkey.c */

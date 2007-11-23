@@ -31,49 +31,51 @@
 #include "gnunet_util_threads.h"
 
 int
-connection_test_running (struct GE_Context *ectx,
-                         struct GC_Configuration *cfg)
+GNUNET_test_daemon_running (struct GE_Context *ectx,
+                            struct GC_Configuration *cfg)
 {
-  struct ClientServerConnection *sock;
-  MESSAGE_HEADER csHdr;
+  struct GNUNET_ClientServerConnection *sock;
+  GNUNET_MessageHeader csHdr;
   int ret;
 
-  sock = client_connection_create (ectx, cfg);
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
-    return SYSERR;
-  csHdr.size = htons (sizeof (MESSAGE_HEADER));
+    return GNUNET_SYSERR;
+  csHdr.size = htons (sizeof (GNUNET_MessageHeader));
   csHdr.type = htons (CS_PROTO_traffic_COUNT);
-  if (SYSERR == connection_write (sock, &csHdr))
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
     {
-      connection_destroy (sock);
-      return SYSERR;
+      GNUNET_client_connection_destroy (sock);
+      return GNUNET_SYSERR;
     }
-  if (SYSERR == connection_read_result (sock, &ret))
+  if (GNUNET_SYSERR == GNUNET_client_connection_read_result (sock, &ret))
     {
-      connection_destroy (sock);
-      return SYSERR;
+      GNUNET_client_connection_destroy (sock);
+      return GNUNET_SYSERR;
     }
-  connection_destroy (sock);
-  return OK;
+  GNUNET_client_connection_destroy (sock);
+  return GNUNET_OK;
 }
 
 int
-connection_request_shutdown (struct ClientServerConnection *sock)
+GNUNET_client_connection_request_daemon_shutdown (struct
+                                                  GNUNET_ClientServerConnection
+                                                  *sock)
 {
-  MESSAGE_HEADER csHdr;
+  GNUNET_MessageHeader csHdr;
   int ret;
 
-  csHdr.size = htons (sizeof (MESSAGE_HEADER));
+  csHdr.size = htons (sizeof (GNUNET_MessageHeader));
   csHdr.type = htons (CS_PROTO_SHUTDOWN_REQUEST);
-  if (SYSERR == connection_write (sock, &csHdr))
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
     {
-      connection_close_temporarily (sock);
-      return SYSERR;
+      GNUNET_client_connection_close_temporarily (sock);
+      return GNUNET_SYSERR;
     }
-  if (SYSERR == connection_read_result (sock, &ret))
+  if (GNUNET_SYSERR == GNUNET_client_connection_read_result (sock, &ret))
     {
-      connection_close_temporarily (sock);
-      return SYSERR;
+      GNUNET_client_connection_close_temporarily (sock);
+      return GNUNET_SYSERR;
     }
   return ret;
 }
@@ -83,29 +85,30 @@ connection_request_shutdown (struct ClientServerConnection *sock)
  * running.
  *
  * @param timeout how long to wait at most
- * @return OK if gnunetd is now running
+ * @return GNUNET_OK if gnunetd is now running
  */
 int
-connection_wait_for_running (struct GE_Context *ectx,
-                             struct GC_Configuration *cfg, cron_t timeout)
+GNUNET_wait_for_daemon_running (struct GE_Context *ectx,
+                                struct GC_Configuration *cfg,
+                                GNUNET_CronTime timeout)
 {
-  cron_t min;
+  GNUNET_CronTime min;
   int ret;
 
-  timeout += get_time ();
-  while (GNUNET_SHUTDOWN_TEST () == 0)
+  timeout += GNUNET_get_time ();
+  while (GNUNET_shutdown_test () == 0)
     {
-      ret = connection_test_running (ectx, cfg);
-      if (ret == OK)
-        return OK;
-      if (timeout < get_time ())
-        return SYSERR;
-      min = timeout - get_time ();
-      if (min > 100 * cronMILLIS)
-        min = 100 * cronMILLIS;
-      PTHREAD_SLEEP (min);
+      ret = GNUNET_test_daemon_running (ectx, cfg);
+      if (ret == GNUNET_OK)
+        return GNUNET_OK;
+      if (timeout < GNUNET_get_time ())
+        return GNUNET_SYSERR;
+      min = timeout - GNUNET_get_time ();
+      if (min > 100 * GNUNET_CRON_MILLISECONDS)
+        min = 100 * GNUNET_CRON_MILLISECONDS;
+      GNUNET_thread_sleep (min);
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /* end of daemon.c */

@@ -32,8 +32,8 @@
  *
  * @return the current time
  */
-cron_t
-get_time ()
+GNUNET_CronTime
+GNUNET_get_time ()
 {
   struct timeval tv;
 #ifndef WINDOWS
@@ -44,5 +44,5 @@ get_time ()
 #else
   gettimeofday (&tv, NULL);
 #endif
-  return (((cron_t) tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
+  return (((GNUNET_CronTime) tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 }

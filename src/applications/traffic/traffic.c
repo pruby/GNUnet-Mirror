@@ -101,7 +101,7 @@ typedef struct
   /**
    * When was this record last updated?
    */
-  cron_t lastUpdate;
+  GNUNET_CronTime lastUpdate;
 
   /**
    * Time slots for processing (shifted bitvector)
@@ -147,7 +147,7 @@ typedef struct
 /**
  * Lock to synchronize access.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * Highest message type seen so far.
@@ -174,8 +174,8 @@ static void
 updateUse (DirectedTrafficCounter * dtc,
            unsigned short size, int peerId, int expireOnly)
 {
-  cron_t now;
-  cron_t delta;
+  GNUNET_CronTime now;
+  GNUNET_CronTime delta;
   unsigned int unitNow;
   unsigned int deltaUnits;
   unsigned int minPeerId;
@@ -183,13 +183,13 @@ updateUse (DirectedTrafficCounter * dtc,
   unsigned int i;
   unsigned int slot;
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   unitNow = now / TRAFFIC_TIME_UNIT;
   delta = now - dtc->lastUpdate;
   dtc->lastUpdate = now;
   deltaUnits = delta / TRAFFIC_TIME_UNIT;
 
-  if (NO == expireOnly)
+  if (GNUNET_NO == expireOnly)
     {
       /* update peer identities */
       minPeerTime = 0;
@@ -218,7 +218,7 @@ updateUse (DirectedTrafficCounter * dtc,
       dtc->avgSize[HS_SLOT (unitNow - HISTORY_SIZE - i)] = 0.0;
     }
 
-  if (NO == expireOnly)
+  if (GNUNET_NO == expireOnly)
     {
       int devideBy;
 
@@ -255,13 +255,13 @@ buildSummary (TRAFFIC_COUNTER * res,
 {
   unsigned int i;
   unsigned short peerCount;
-  cron_t now;
+  GNUNET_CronTime now;
   unsigned int unitNow;
   unsigned int msgCount;
   unsigned long long totalMsgSize;
 
-  updateUse (dtc, 0, 0, YES);   /* expire old entries */
-  now = get_time ();
+  updateUse (dtc, 0, 0, GNUNET_YES);    /* expire old entries */
+  now = GNUNET_get_time ();
   unitNow = now / TRAFFIC_TIME_UNIT;
 
   /* count number of peers that we interacted with in
@@ -301,7 +301,7 @@ buildReply (unsigned int countTimeUnits)
   unsigned int count;
   unsigned int i;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   count = 0;
   for (i = 0; i < max_message_type; i++)
     if (counters[i] != NULL)
@@ -311,8 +311,8 @@ buildReply (unsigned int countTimeUnits)
         if (counters[i]->receive.slots != 0)
           count++;
       }
-  reply = MALLOC (sizeof (CS_traffic_info_MESSAGE) +
-                  count * sizeof (TRAFFIC_COUNTER));
+  reply = GNUNET_malloc (sizeof (CS_traffic_info_MESSAGE) +
+                         count * sizeof (TRAFFIC_COUNTER));
   reply->header.type = htons (CS_PROTO_traffic_INFO);
   reply->header.size = htons (sizeof (CS_traffic_info_MESSAGE) +
                               count * sizeof (TRAFFIC_COUNTER));
@@ -331,24 +331,24 @@ buildReply (unsigned int countTimeUnits)
                         countTimeUnits, i);
       }
 
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return reply;
 }
 
 static int
 trafficQueryHandler (struct ClientHandle *sock,
-                     const MESSAGE_HEADER * message)
+                     const GNUNET_MessageHeader * message)
 {
   const CS_traffic_request_MESSAGE *msg;
   CS_traffic_info_MESSAGE *reply;
   int ret;
 
   if (sizeof (CS_traffic_request_MESSAGE) != ntohs (message->size))
-    return SYSERR;
+    return GNUNET_SYSERR;
   msg = (const CS_traffic_request_MESSAGE *) message;
   reply = buildReply (ntohl (msg->timePeriod));
-  ret = coreAPI->sendToClient (sock, &reply->header, YES);
-  FREE (reply);
+  ret = coreAPI->sendToClient (sock, &reply->header, GNUNET_YES);
+  GNUNET_free (reply);
   return ret;
 }
 
@@ -366,7 +366,7 @@ trafficQueryHandler (struct ClientHandle *sock,
  * @param peerCount number of peers engaged (set)
  * @param timeDistribution bit-vector giving times of interactions,
  *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
 getTrafficStats (unsigned int timePeriod,
@@ -383,24 +383,24 @@ getTrafficStats (unsigned int timePeriod,
 
   if (timePeriod > HISTORY_SIZE)
     timePeriod = HISTORY_SIZE;
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   if ((messageType >= max_message_type) || (counters[messageType] == NULL))
     {
       *avgMessageSize = 0;
       *messageCount = 0;
       *peerCount = 0;
       *timeDistribution = 0;
-      MUTEX_UNLOCK (lock);
-      return OK;
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_OK;
     }
 
   if (sendReceive == TC_SENT)
     dtc = &counters[messageType]->send;
   else
     dtc = &counters[messageType]->receive;
-  updateUse (dtc, 0, 0, YES);
+  updateUse (dtc, 0, 0, GNUNET_YES);
 
-  nowUnit = get_time () / TRAFFIC_TIME_UNIT;
+  nowUnit = GNUNET_get_time () / TRAFFIC_TIME_UNIT;
   *peerCount = 0;
   *messageCount = 0;
   totSize = 0;
@@ -420,8 +420,8 @@ getTrafficStats (unsigned int timePeriod,
   else
     *avgMessageSize = 0;
   *timeDistribution = dtc->slots;
-  MUTEX_UNLOCK (lock);
-  return OK;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 
@@ -434,10 +434,10 @@ static void
 checkPort (unsigned short port)
 {
   if (port >= max_message_type)
-    GROW (counters, max_message_type, port + 1);
+    GNUNET_array_grow (counters, max_message_type, port + 1);
   if (counters[port] == NULL)
     {
-      counters[port] = MALLOC (sizeof (TrafficCounter));
+      counters[port] = GNUNET_malloc (sizeof (TrafficCounter));
       memset (counters[port], 0, sizeof (TrafficCounter));
     }
 }
@@ -450,10 +450,10 @@ updateTrafficSendCounter (unsigned short ptyp, unsigned short plen)
   if (0 == stat_traffic_transmitted_by_type[ptyp])
     {
       char *s;
-      s = MALLOC (256);
-      SNPRINTF (s, 256, _("# bytes transmitted of type %d"), ptyp);
+      s = GNUNET_malloc (256);
+      GNUNET_snprintf (s, 256, _("# bytes transmitted of type %d"), ptyp);
       stat_traffic_transmitted_by_type[ptyp] = stats->create (s);
-      FREE (s);
+      GNUNET_free (s);
     }
   stats->change (stat_traffic_transmitted_by_type[ptyp], plen);
 }
@@ -466,10 +466,10 @@ updateTrafficReceiveCounter (unsigned short ptyp, unsigned short plen)
       if (0 == stat_traffic_received_by_type[ptyp])
         {
           char *s;
-          s = MALLOC (256);
-          SNPRINTF (s, 256, _("# bytes received of type %d"), ptyp);
+          s = GNUNET_malloc (256);
+          GNUNET_snprintf (s, 256, _("# bytes received of type %d"), ptyp);
           stat_traffic_received_by_type[ptyp] = stats->create (s);
-          FREE (s);
+          GNUNET_free (s);
         }
       stats->change (stat_traffic_received_by_type[ptyp], plen);
     }
@@ -484,11 +484,12 @@ updatePlaintextTrafficReceiveCounter (unsigned short ptyp,
       if (0 == stat_pt_traffic_received_by_type[ptyp])
         {
           char *s;
-          s = MALLOC (256);
-          SNPRINTF (s,
-                    256, _("# bytes received in plaintext of type %d"), ptyp);
+          s = GNUNET_malloc (256);
+          GNUNET_snprintf (s,
+                           256, _("# bytes received in plaintext of type %d"),
+                           ptyp);
           stat_pt_traffic_received_by_type[ptyp] = stats->create (s);
-          FREE (s);
+          GNUNET_free (s);
         }
       stats->change (stat_pt_traffic_received_by_type[ptyp], plen);
     }
@@ -501,18 +502,19 @@ updatePlaintextTrafficReceiveCounter (unsigned short ptyp,
  * @param sender the identity of the sender
  */
 static int
-trafficReceive (const PeerIdentity * sender, const MESSAGE_HEADER * header)
+trafficReceive (const GNUNET_PeerIdentity * sender,
+                const GNUNET_MessageHeader * header)
 {
   unsigned short port;
 
   port = ntohs (header->type);
   updateTrafficReceiveCounter (port, ntohs (header->size));
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   checkPort (port);
   updateUse (&counters[port]->receive,
-             ntohs (header->size), sender->hashPubKey.bits[0], NO);
-  MUTEX_UNLOCK (lock);
-  return OK;
+             ntohs (header->size), sender->hashPubKey.bits[0], GNUNET_NO);
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 
@@ -523,19 +525,20 @@ trafficReceive (const PeerIdentity * sender, const MESSAGE_HEADER * header)
  * @param receiver the identity of the receiver
  */
 static int
-trafficSend (const PeerIdentity * receiver, const MESSAGE_HEADER * header)
+trafficSend (const GNUNET_PeerIdentity * receiver,
+             const GNUNET_MessageHeader * header)
 {
   unsigned short port;
 
   port = ntohs (MAKE_UNALIGNED (header->type));
   updateTrafficSendCounter (port, ntohs (MAKE_UNALIGNED (header->size)));
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   checkPort (port);
   updateUse (&counters[port]->send,
              ntohs (MAKE_UNALIGNED (header->size)),
-             receiver->hashPubKey.bits[0], NO);
-  MUTEX_UNLOCK (lock);
-  return OK;
+             receiver->hashPubKey.bits[0], GNUNET_NO);
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 /**
@@ -545,8 +548,8 @@ trafficSend (const PeerIdentity * receiver, const MESSAGE_HEADER * header)
  * @param receiver the identity of the receiver
  */
 static int
-plaintextReceive (const PeerIdentity * receiver,
-                  const MESSAGE_HEADER * header, TSession * session)
+plaintextReceive (const GNUNET_PeerIdentity * receiver,
+                  const GNUNET_MessageHeader * header, TSession * session)
 {
   unsigned short port;
 
@@ -554,7 +557,7 @@ plaintextReceive (const PeerIdentity * receiver,
   updatePlaintextTrafficReceiveCounter (port,
                                         ntohs (MAKE_UNALIGNED
                                                (header->size)));
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -585,7 +588,7 @@ provide_module_traffic (CoreAPIForApplication * capi)
     }
 
   GE_ASSERT (coreAPI->ectx, counters == NULL);
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
   stats = capi->requestService ("stats");
   return &api;
 }
@@ -607,9 +610,9 @@ release_module_traffic ()
   coreAPI->releaseService (stats);
   stats = NULL;
   for (i = 0; i < max_message_type; i++)
-    FREENONNULL (counters[i]);
-  GROW (counters, max_message_type, 0);
-  MUTEX_DESTROY (lock);
+    GNUNET_free_non_null (counters[i]);
+  GNUNET_array_grow (counters, max_message_type, 0);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
   coreAPI = NULL;
 }
@@ -632,7 +635,7 @@ initialize_module_traffic (CoreAPIForApplication * capi)
     {
       GE_BREAK (capi->ectx, 0);
       myCoreAPI = NULL;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   capi->registerClientHandler (CS_PROTO_traffic_QUERY, &trafficQueryHandler);
   GE_ASSERT (capi->ectx,
@@ -642,7 +645,7 @@ initialize_module_traffic (CoreAPIForApplication * capi)
                                                      "traffic",
                                                      gettext_noop
                                                      ("tracks bandwidth utilization by gnunetd")));
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -653,7 +656,7 @@ done_module_traffic ()
 {
   GE_ASSERT (NULL, myCoreAPI != NULL);
   GE_ASSERT (myCoreAPI->ectx,
-             SYSERR !=
+             GNUNET_SYSERR !=
              myCoreAPI->unregisterClientHandler (CS_PROTO_traffic_QUERY,
                                                  &trafficQueryHandler));
   myCoreAPI->releaseService (myApi);

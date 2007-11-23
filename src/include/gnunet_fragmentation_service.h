@@ -53,7 +53,7 @@ typedef struct
    * @param bmc callback to construct the message
    * @param bmcClosure argument to bmc
    */
-  void (*fragment) (const PeerIdentity * peer,
+  void (*fragment) (const GNUNET_PeerIdentity * peer,
                     unsigned int mtu,
                     unsigned int prio,
                     unsigned int targetTime,

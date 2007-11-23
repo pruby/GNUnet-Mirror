@@ -31,9 +31,9 @@
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
-  Signature sig;
+  GNUNET_RSA_Signature sig;
 } CS_identity_signature_MESSAGE;
 
 /**
@@ -41,9 +41,9 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
-  PeerIdentity other;
+  GNUNET_PeerIdentity other;
 } CS_identity_connect_MESSAGE;
 
 /**
@@ -55,13 +55,13 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int trust;
 
-  PeerIdentity peer;
+  GNUNET_PeerIdentity peer;
 
-  cron_t last_message;
+  GNUNET_CronTime last_message;
 
   unsigned int bpm;
 } CS_identity_peer_info_MESSAGE;

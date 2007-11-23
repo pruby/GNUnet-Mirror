@@ -417,7 +417,7 @@ typedef struct
       /**
        * Estimated completion time.
        */
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       /**
        * Information about the download.
@@ -547,7 +547,7 @@ typedef struct
       /**
        * Estimated completion time.
        */
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       /**
        * Information about the download.
@@ -581,7 +581,7 @@ typedef struct
       /**
        * Estimated completion time (for the current file)
        */
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       /**
        * Information about the upload.
@@ -683,7 +683,7 @@ typedef struct
       /**
        * Estimated completion time (for the current file)
        */
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       /**
        * Information about the upload.
@@ -712,7 +712,7 @@ typedef struct
 
       unsigned long long completed;
 
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       const char *filename;
 
@@ -763,7 +763,7 @@ typedef struct
 
       unsigned long long completed;
 
-      cron_t eta;
+      GNUNET_CronTime eta;
 
       const char *filename;
 
@@ -821,11 +821,11 @@ typedef void *(*FSUI_EventCallback) (void *cls, const FSUI_Event * event);
  * previously.<p>
  *
  * The basic idea is that graphical user interfaces use their UI name
- * (i.e.  gnunet-gtk) for 'name' and set doResume to YES.  They should
+ * (i.e.  gnunet-gtk) for 'name' and set doResume to GNUNET_YES.  They should
  * have a command-line switch --resume=NAME to allow the user to
  * change 'name' to something else (such that the user can resume
  * state from another GUI).  Shell UIs on the other hand should set
- * doResume to NO and may hard-wire a 'name' (which has no semantic
+ * doResume to GNUNET_NO and may hard-wire a 'name' (which has no semantic
  * meaning, however, the name of the UI would still be a good choice).
  * <p>
  *
@@ -837,10 +837,10 @@ typedef void *(*FSUI_EventCallback) (void *cls, const FSUI_Event * event);
  *          and that also use resume cannot run multiple instances
  *          in parallel (for the same user account); the name
  *          must be a valid filename (not a path)
- * @param doResume YES if old activities should be resumed (also
+ * @param doResume GNUNET_YES if old activities should be resumed (also
  *          implies that on shutdown, all pending activities are
  *          suspended instead of canceled);
- *          NO if activities should never be resumed
+ *          GNUNET_NO if activities should never be resumed
  * @param cb function to call for events, must not be NULL
  * @param closure extra argument to cb
  * @return NULL on error
@@ -861,19 +861,19 @@ void FSUI_stop (struct FSUI_Context *ctx);      /* fsui.c */
  *
  * @return NULL on error
  */
-struct FSUI_SearchList *FSUI_startSearch (struct FSUI_Context *ctx, unsigned int anonymityLevel, unsigned int maxResults, cron_t timeout, const struct ECRS_URI *uri);  /* search.c */
+struct FSUI_SearchList *FSUI_startSearch (struct FSUI_Context *ctx, unsigned int anonymityLevel, unsigned int maxResults, GNUNET_CronTime timeout, const struct ECRS_URI *uri); /* search.c */
 
 /**
  * Abort a search.
  *
- * @return SYSERR if such a search is not known
+ * @return GNUNET_SYSERR if such a search is not known
  */
 int FSUI_abortSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl);    /* search.c */
 
 /**
  * Stop a search.
  *
- * @return SYSERR if such a search is not known
+ * @return GNUNET_SYSERR if such a search is not known
  */
 int FSUI_stopSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl);     /* search.c */
 
@@ -888,7 +888,7 @@ struct FSUI_DownloadList *FSUI_startDownload (struct FSUI_Context *ctx, unsigned
  * Abort a download.  If the dl is for a recursive
  * download, all sub-downloads will also be aborted.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_abortDownload (struct FSUI_Context *ctx, struct FSUI_DownloadList *dl);        /* download.c */
 
@@ -896,21 +896,21 @@ int FSUI_abortDownload (struct FSUI_Context *ctx, struct FSUI_DownloadList *dl);
  * Stop a download.  If the dl is for a recursive
  * download, all sub-downloads will also be stopped.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_stopDownload (struct FSUI_Context *ctx, struct FSUI_DownloadList *dl); /* download.c */
 
 /**
  * Method that can be used to select files that
  * should be put into a directory when doing an
- * upload.  For example, "disk_directory_scan"
+ * upload.  For example, "GNUNET_disk_directory_scan"
  * is a legal implementation that would simply
  * select all files of the directory for the
  * upload.
  */
 typedef int (*DirectoryScanCallback) (void *data,
                                       const char *filename,
-                                      DirectoryEntryCallback dec,
+                                      GNUNET_DirectoryEntryCallback dec,
                                       void *decClosure);
 
 /**
@@ -936,7 +936,7 @@ struct FSUI_UploadList *FSUI_startUpload (struct FSUI_Context *ctx,
                                           int doIndex,
                                           int doExtract,
                                           int individualKeywords,
-                                          cron_t expiration,
+                                          GNUNET_CronTime expiration,
                                           const struct ECRS_MetaData
                                           *topLevelMetaData,
                                           const struct ECRS_URI *globalURI,
@@ -947,7 +947,7 @@ struct FSUI_UploadList *FSUI_startUpload (struct FSUI_Context *ctx,
  * Abort an upload.  If the context is for a recursive
  * upload, all sub-uploads will also be aborted.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_abortUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul);
 
@@ -955,7 +955,7 @@ int FSUI_abortUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul);
  * Stop an upload.  Only to be called for the top-level
  * upload.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_stopUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul);
 
@@ -973,7 +973,7 @@ struct FSUI_UnindexList *FSUI_startUnindex (struct FSUI_Context *ctx,
 /**
  * Abort an unindex operation.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_abortUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *ul);
 
@@ -981,7 +981,7 @@ int FSUI_abortUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *ul);
 /**
  * Stop an unindex operation.
  *
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int FSUI_stopUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *ul);
 

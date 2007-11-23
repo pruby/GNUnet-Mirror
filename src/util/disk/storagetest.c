@@ -34,8 +34,9 @@ testReadWrite ()
 {
   char tmp[100];
 
-  disk_file_write (NULL, ".testfile", TESTSTRING, strlen (TESTSTRING), "644");
-  tmp[disk_file_read (NULL, ".testfile", 100, tmp)] = '\0';
+  GNUNET_disk_file_write (NULL, ".testfile", TESTSTRING, strlen (TESTSTRING),
+                          "644");
+  tmp[GNUNET_disk_file_read (NULL, ".testfile", 100, tmp)] = '\0';
   if (0 != memcmp (tmp, TESTSTRING, strlen (TESTSTRING) + 1))
     {
       fprintf (stderr,

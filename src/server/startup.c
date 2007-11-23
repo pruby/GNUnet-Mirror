@@ -56,7 +56,8 @@ shutdown_gnunetd (struct GC_Configuration *cfg, int sig)
 #ifdef MINGW
   if (!cfg || GC_get_configuration_value_yesno (cfg,
                                                 "GNUNETD",
-                                                "WINSERVICE", NO) == YES)
+                                                "WINSERVICE",
+                                                GNUNET_NO) == GNUNET_YES)
     {
       /* If GNUnet runs as service, only the
          Service Control Manager is allowed
@@ -86,7 +87,7 @@ shutdown_gnunetd (struct GC_Configuration *cfg, int sig)
     }
 #endif
 
-  GNUNET_SHUTDOWN_INITIATE ();
+  GNUNET_shutdown_initiate ();
 }
 
 #ifdef MINGW
@@ -137,14 +138,14 @@ changeUser (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                               "USER",
                                               "", &user) && strlen (user))
     {
-      if (OK != os_change_user (ectx, user))
+      if (GNUNET_OK != GNUNET_change_user (ectx, user))
         {
-          FREE (user);
-          return SYSERR;
+          GNUNET_free (user);
+          return GNUNET_SYSERR;
         }
     }
-  FREE (user);
-  return OK;
+  GNUNET_free (user);
+  return GNUNET_OK;
 }
 
 int
@@ -158,12 +159,12 @@ setFdLimit (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                               "FDLIMIT",
                                               0, 65536, 1024, &limit))
     {
-      if (OK != os_set_fd_limit (ectx, (int) limit))
+      if (GNUNET_OK != GNUNET_set_fd_limit (ectx, (int) limit))
         {
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -255,9 +256,9 @@ checkPermission (struct GE_Context *ectx,
 
   GC_get_configuration_value_filename (cfg, section, option, def, &fn);
   if (is_directory)
-    disk_directory_create (ectx, fn);
+    GNUNET_disk_directory_create (ectx, fn);
   else
-    disk_directory_create_for_file (ectx, fn);
+    GNUNET_disk_directory_create_for_file (ectx, fn);
   if ((0 != ACCESS (fn, F_OK)) && (mode == W_OK))
     {
       /* adjust check to see if directory is writable */
@@ -273,20 +274,20 @@ checkPermission (struct GE_Context *ectx,
               GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
               _("Insufficient access permissions for `%s': %s\n"),
               fn, STRERROR (errno));
-      FREE (fn);
-      return SYSERR;
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
     }
-  FREE (fn);
-  return OK;
+  GNUNET_free (fn);
+  return GNUNET_OK;
 }
 
-#define CHECK(a,b,c,d,e) if (OK != checkPermission(ectx, cfg, a, b, c, d, e)) return SYSERR;
+#define CHECK(a,b,c,d,e) if (GNUNET_OK != checkPermission(ectx, cfg, a, b, c, d, e)) return GNUNET_SYSERR;
 
 int
 checkPermissions (struct GE_Context *ectx, struct GC_Configuration *cfg)
 {
-  CHECK ("PATHS", "GNUNETD_HOME", "/var/lib/gnunet", YES, W_OK | X_OK);
-  CHECK ("GNUNETD", "LOGFILE", "$GNUNETD_HOME/daemon-logs", NO, W_OK);
+  CHECK ("PATHS", "GNUNETD_HOME", "/var/lib/gnunet", GNUNET_YES, W_OK | X_OK);
+  CHECK ("GNUNETD", "LOGFILE", "$GNUNETD_HOME/daemon-logs", GNUNET_NO, W_OK);
   /* these should only be checked if "fs" is actually
      loaded; we clearly should not check everything here
      that just might be used (MYSQL-CONFIG, F2F-FRIENDS),
@@ -294,10 +295,11 @@ checkPermissions (struct GE_Context *ectx, struct GC_Configuration *cfg)
      not great.  Would be nice if we could find a way to
      keep things decentralized and still do a nice job
      with reporting errors... */
-  CHECK ("FS", "DIR", "$GNUNETD_HOME/data/fs", YES, W_OK | X_OK);
+  CHECK ("FS", "DIR", "$GNUNETD_HOME/data/fs", GNUNET_YES, W_OK | X_OK);
   CHECK ("FS",
-         "INDEX-DIRECTORY", "$GNUNETD_HOME/data/shared", YES, W_OK | X_OK);
-  return OK;
+         "INDEX-DIRECTORY", "$GNUNETD_HOME/data/shared", GNUNET_YES,
+         W_OK | X_OK);
+  return GNUNET_OK;
 }
 
 /* end of startup.c */

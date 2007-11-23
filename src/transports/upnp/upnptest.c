@@ -38,34 +38,34 @@ main (int argc, const char *argv[])
   static CoreAPIForApplication capi;
   struct GE_Context *ectx;
   struct GC_Configuration *cfg;
-  IPaddr addr;
+  GNUNET_IPv4Address addr;
   int i;
   UPnP_ServiceAPI *upnp;
-  struct PluginHandle *plug;
+  struct GNUNET_PluginHandle *plug;
   ServiceInitMethod init;
   ServiceDoneMethod done;
 
-  ectx = GE_create_context_stderr (NO,
+  ectx = GE_create_context_stderr (GNUNET_NO,
                                    GE_WARNING | GE_ERROR | GE_FATAL |
                                    GE_USER | GE_ADMIN | GE_DEVELOPER |
                                    GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext (ectx);
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   GE_ASSERT (ectx, cfg != NULL);
-  os_init (ectx);
+  GNUNET_os_init (ectx);
   capi.ectx = ectx;
   capi.cfg = cfg;
-  plug = os_plugin_load (ectx, "libgnunet", "module_upnp");
+  plug = GNUNET_plugin_load (ectx, "libgnunet", "module_upnp");
   if (plug == NULL)
     {
       GC_free (cfg);
       GE_free_context (ectx);
       return 1;
     }
-  init = os_plugin_resolve_function (plug, "provide_", YES);
+  init = GNUNET_plugin_resolve_function (plug, "provide_", GNUNET_YES);
   if (init == NULL)
     {
-      os_plugin_unload (plug);
+      GNUNET_plugin_unload (plug);
       GC_free (cfg);
       GE_free_context (ectx);
       return 1;
@@ -73,16 +73,16 @@ main (int argc, const char *argv[])
   upnp = init (&capi);
   if (upnp == NULL)
     {
-      os_plugin_unload (plug);
+      GNUNET_plugin_unload (plug);
       GC_free (cfg);
       GE_free_context (ectx);
       return 1;
     }
   for (i = 0; i < 10; i++)
     {
-      if (GNUNET_SHUTDOWN_TEST () != NO)
+      if (GNUNET_shutdown_test () != GNUNET_NO)
         break;
-      if (OK == upnp->get_ip (2086, "TCP", &addr))
+      if (GNUNET_OK == upnp->get_ip (2086, "TCP", &addr))
         {
           printf ("UPnP returned external IP %u.%u.%u.%u\n",
                   PRIP (ntohl (*(int *) &addr)));
@@ -94,12 +94,12 @@ main (int argc, const char *argv[])
              just because of this! */
           printf ("No UPnP response (yet).\n");
         }
-      PTHREAD_SLEEP (2 * cronSECONDS);
+      GNUNET_thread_sleep (2 * GNUNET_CRON_SECONDS);
     }
-  done = os_plugin_resolve_function (plug, "release_", YES);
+  done = GNUNET_plugin_resolve_function (plug, "release_", GNUNET_YES);
   if (done != NULL)
     done ();
-  os_plugin_unload (plug);
+  GNUNET_plugin_unload (plug);
   GC_free (cfg);
   GE_free_context (ectx);
   return 0;

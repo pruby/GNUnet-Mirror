@@ -43,13 +43,13 @@
 #include "gnunet_util_containers.h"
 #include "platform.h"
 
-typedef struct Bloomfilter
+typedef struct GNUNET_BloomFilter
 {
 
   /**
    * Concurrency control
    */
-  struct MUTEX *lock;
+  struct GNUNET_Mutex *lock;
 
   /**
    * The actual bloomfilter bit array
@@ -125,7 +125,7 @@ clearBit (char *bitArray, unsigned int bitIdx)
  *
  * @param bitArray memory area to set the bit in
  * @param bitIdx which bit to test
- * @return YES if the bit is set, NO if not.
+ * @return GNUNET_YES if the bit is set, GNUNET_NO if not.
  */
 static int
 testBit (char *bitArray, unsigned int bitIdx)
@@ -136,9 +136,9 @@ testBit (char *bitArray, unsigned int bitIdx)
   slot = bitIdx / 8;
   targetBit = (1L << (bitIdx % 8));
   if (bitArray[slot] & targetBit)
-    return YES;
+    return GNUNET_YES;
   else
-    return NO;
+    return GNUNET_NO;
 }
 
 /**
@@ -258,7 +258,7 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
  *
  * @param fd the file handle
  * @param size the size of the file
- * @return OK if created ok, SYSERR otherwise
+ * @return GNUNET_OK if created ok, GNUNET_SYSERR otherwise
  */
 static int
 makeEmptyFile (int fd, unsigned int size)
@@ -268,8 +268,8 @@ makeEmptyFile (int fd, unsigned int size)
   int res = 0;
 
   if (fd == -1)
-    return SYSERR;
-  buffer = MALLOC (BUFFSIZE);
+    return GNUNET_SYSERR;
+  buffer = GNUNET_malloc (BUFFSIZE);
   memset (buffer, 0, BUFFSIZE);
   LSEEK (fd, 0, SEEK_SET);
 
@@ -290,15 +290,15 @@ makeEmptyFile (int fd, unsigned int size)
           GE_DIE_STRERROR (NULL,
                            GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
                            "write");
-          FREE (buffer);
-          return SYSERR;
+          GNUNET_free (buffer);
+          return GNUNET_SYSERR;
         }
     }
-  FREE (buffer);
-  return OK;
+  GNUNET_free (buffer);
+  return GNUNET_OK;
 }
 
-/* ************** Bloomfilter hash iterator ********* */
+/* ************** GNUNET_BloomFilter GNUNET_hash iterator ********* */
 
 /**
  * Iterator (callback) method to be called by the
@@ -322,19 +322,19 @@ typedef void (*BitIterator) (Bloomfilter * bf, unsigned int bit, void *arg);
  */
 static void
 iterateBits (Bloomfilter * bf,
-             BitIterator callback, void *arg, const HashCode512 * key)
+             BitIterator callback, void *arg, const GNUNET_HashCode * key)
 {
-  HashCode512 tmp[2];
+  GNUNET_HashCode tmp[2];
   int bitCount;
   int round;
   unsigned int slot = 0;
 
   bitCount = bf->addressesPerElement;
-  memcpy (&tmp[0], key, sizeof (HashCode512));
+  memcpy (&tmp[0], key, sizeof (GNUNET_HashCode));
   round = 0;
   while (bitCount > 0)
     {
-      while (slot < (sizeof (HashCode512) / sizeof (unsigned int)))
+      while (slot < (sizeof (GNUNET_HashCode) / sizeof (unsigned int)))
         {
           callback (bf,
                     (((unsigned int *) &tmp[round & 1])[slot]) &
@@ -346,7 +346,8 @@ iterateBits (Bloomfilter * bf,
         }
       if (bitCount > 0)
         {
-          hash (&tmp[round & 1], sizeof (HashCode512), &tmp[(round + 1) & 1]);
+          GNUNET_hash (&tmp[round & 1], sizeof (GNUNET_HashCode),
+                       &tmp[(round + 1) & 1]);
           round++;
           slot = 0;
         }
@@ -384,14 +385,14 @@ decrementBitCallback (Bloomfilter * bf, unsigned int bit, void *arg)
  *
  * @param bf the filter
  * @param bit the bit to test
- * @param arg pointer set to NO if bit is not set
+ * @param arg pointer set to GNUNET_NO if bit is not set
  */
 static void
 testBitCallback (Bloomfilter * bf, unsigned int bit, void *cls)
 {
   int *arg = cls;
-  if (NO == testBit (bf->bitArray, bit))
-    *arg = NO;
+  if (GNUNET_NO == testBit (bf->bitArray, bit))
+    *arg = GNUNET_NO;
 }
 
 /* *********************** INTERFACE **************** */
@@ -402,13 +403,14 @@ testBitCallback (Bloomfilter * bf, unsigned int bit, void *cls)
  * @param filename the name of the file (or the prefix)
  * @param size the size of the bloom-filter (number of
  *        bytes of storage space to use)
- * @param k the number of hash-functions to apply per
+ * @param k the number of GNUNET_hash-functions to apply per
  *        element (number of bits set per element in the set)
  * @return the bloomfilter
  */
 Bloomfilter *
-loadBloomfilter (struct GE_Context *ectx,
-                 const char *filename, unsigned int size, unsigned int k)
+GNUNET_bloomfilter_load (struct GE_Context *ectx,
+                         const char *filename, unsigned int size,
+                         unsigned int k)
 {
   Bloomfilter *bf;
   char *rbuff;
@@ -425,25 +427,26 @@ loadBloomfilter (struct GE_Context *ectx,
     ui *= 2;
   size = ui;                    /* make sure it's a power of 2 */
 
-  bf = MALLOC (sizeof (Bloomfilter));
+  bf = GNUNET_malloc (sizeof (Bloomfilter));
   bf->ectx = ectx;
   /* Try to open a bloomfilter file */
   if (filename != NULL)
     {
 #ifndef _MSC_VER
-      bf->fd = disk_file_open (ectx,
-                               filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+      bf->fd = GNUNET_disk_file_open (ectx,
+                                      filename, O_RDWR | O_CREAT,
+                                      S_IRUSR | S_IWUSR);
 #else
-      bf->fd = disk_file_open (ectx,
-                               filename,
-                               O_WRONLY | O_CREAT, S_IREAD | S_IWRITE);
+      bf->fd = GNUNET_disk_file_open (ectx,
+                                      filename,
+                                      O_WRONLY | O_CREAT, S_IREAD | S_IWRITE);
 #endif
       if (-1 == bf->fd)
         {
-          FREE (bf);
+          GNUNET_free (bf);
           return NULL;
         }
-      bf->filename = STRDUP (filename);
+      bf->filename = GNUNET_strdup (filename);
     }
   else
     {
@@ -451,8 +454,8 @@ loadBloomfilter (struct GE_Context *ectx,
       bf->filename = NULL;
     }
   /* Alloc block */
-  bf->lock = MUTEX_CREATE (YES);
-  bf->bitArray = MALLOC_LARGE (size);
+  bf->lock = GNUNET_mutex_create (GNUNET_YES);
+  bf->bitArray = GNUNET_malloc_large (size);
   bf->bitArraySize = size;
   bf->addressesPerElement = k;
   memset (bf->bitArray, 0, bf->bitArraySize);
@@ -460,7 +463,7 @@ loadBloomfilter (struct GE_Context *ectx,
   if (bf->fd != -1)
     {
       /* Read from the file what bits we can */
-      rbuff = MALLOC (BUFFSIZE);
+      rbuff = GNUNET_malloc (BUFFSIZE);
       pos = 0;
       while (pos < size * 8)
         {
@@ -480,7 +483,7 @@ loadBloomfilter (struct GE_Context *ectx,
             break;
           pos += BUFFSIZE * 2;  /* 2 bits per byte in the buffer */
         }
-      FREE (rbuff);
+      GNUNET_free (rbuff);
     }
   return bf;
 }
@@ -493,16 +496,16 @@ loadBloomfilter (struct GE_Context *ectx,
  * @param bf the filter
  */
 void
-freeBloomfilter (Bloomfilter * bf)
+GNUNET_bloomfilter_free (Bloomfilter * bf)
 {
   if (NULL == bf)
     return;
-  MUTEX_DESTROY (bf->lock);
+  GNUNET_mutex_destroy (bf->lock);
   if (bf->fd != -1)
-    disk_file_close (bf->ectx, bf->filename, bf->fd);
-  FREENONNULL (bf->filename);
-  FREE (bf->bitArray);
-  FREE (bf);
+    GNUNET_disk_file_close (bf->ectx, bf->filename, bf->fd);
+  GNUNET_free_non_null (bf->filename);
+  GNUNET_free (bf->bitArray);
+  GNUNET_free (bf);
 }
 
 /**
@@ -511,16 +514,16 @@ freeBloomfilter (Bloomfilter * bf)
  * @param bf the filter
  */
 void
-resetBloomfilter (Bloomfilter * bf)
+GNUNET_bloomfilter_clear (Bloomfilter * bf)
 {
   if (NULL == bf)
     return;
 
-  MUTEX_LOCK (bf->lock);
+  GNUNET_mutex_lock (bf->lock);
   memset (bf->bitArray, 0, bf->bitArraySize);
   if (bf->fd != -1)
     makeEmptyFile (bf->fd, bf->bitArraySize * 4);
-  MUTEX_UNLOCK (bf->lock);
+  GNUNET_mutex_unlock (bf->lock);
 }
 
 
@@ -529,19 +532,19 @@ resetBloomfilter (Bloomfilter * bf)
  *
  * @param e the element
  * @param bf the filter
- * @return YES if the element is in the filter, NO if not
+ * @return GNUNET_YES if the element is in the filter, GNUNET_NO if not
  */
 int
-testBloomfilter (Bloomfilter * bf, const HashCode512 * e)
+GNUNET_bloomfilter_test (Bloomfilter * bf, const GNUNET_HashCode * e)
 {
   int res;
 
   if (NULL == bf)
-    return YES;
-  MUTEX_LOCK (bf->lock);
-  res = YES;
+    return GNUNET_YES;
+  GNUNET_mutex_lock (bf->lock);
+  res = GNUNET_YES;
   iterateBits (bf, &testBitCallback, &res, e);
-  MUTEX_UNLOCK (bf->lock);
+  GNUNET_mutex_unlock (bf->lock);
   return res;
 }
 
@@ -552,14 +555,14 @@ testBloomfilter (Bloomfilter * bf, const HashCode512 * e)
  * @param e the element
  */
 void
-addToBloomfilter (Bloomfilter * bf, const HashCode512 * e)
+GNUNET_bloomfilter_add (Bloomfilter * bf, const GNUNET_HashCode * e)
 {
 
   if (NULL == bf)
     return;
-  MUTEX_LOCK (bf->lock);
+  GNUNET_mutex_lock (bf->lock);
   iterateBits (bf, &incrementBitCallback, NULL, e);
-  MUTEX_UNLOCK (bf->lock);
+  GNUNET_mutex_unlock (bf->lock);
 }
 
 /**
@@ -569,13 +572,13 @@ addToBloomfilter (Bloomfilter * bf, const HashCode512 * e)
  * @param e the element to remove
  */
 void
-delFromBloomfilter (Bloomfilter * bf, const HashCode512 * e)
+GNUNET_bloomfilter_remove (Bloomfilter * bf, const GNUNET_HashCode * e)
 {
   if (NULL == bf)
     return;
-  MUTEX_LOCK (bf->lock);
+  GNUNET_mutex_lock (bf->lock);
   iterateBits (bf, &decrementBitCallback, NULL, e);
-  MUTEX_UNLOCK (bf->lock);
+  GNUNET_mutex_unlock (bf->lock);
 }
 
 /**
@@ -587,36 +590,37 @@ delFromBloomfilter (Bloomfilter * bf, const HashCode512 * e)
  * @param iterator an iterator over all elements stored in the BF
  * @param iterator_arg argument to the iterator function
  * @param size the new size for the filter
- * @param k the new number of hash-function to apply per element
+ * @param k the new number of GNUNET_hash-function to apply per element
  */
 void
-resizeBloomfilter (Bloomfilter * bf,
-                   ElementIterator iterator,
-                   void *iterator_arg, unsigned int size, unsigned int k)
+GNUNET_bloomfilter_resize (Bloomfilter * bf,
+                           GNUNET_HashCodeIterator iterator,
+                           void *iterator_arg, unsigned int size,
+                           unsigned int k)
 {
-  HashCode512 *e;
+  GNUNET_HashCode *e;
   unsigned int i;
 
-  MUTEX_LOCK (bf->lock);
-  FREE (bf->bitArray);
+  GNUNET_mutex_lock (bf->lock);
+  GNUNET_free (bf->bitArray);
   i = 1;
   while (i < size)
     i *= 2;
   size = i;                     /* make sure it's a power of 2 */
 
   bf->bitArraySize = size;
-  bf->bitArray = MALLOC (size);
+  bf->bitArray = GNUNET_malloc (size);
   memset (bf->bitArray, 0, bf->bitArraySize);
   if (bf->fd != -1)
     makeEmptyFile (bf->fd, bf->bitArraySize * 4);
   e = iterator (iterator_arg);
   while (e != NULL)
     {
-      addToBloomfilter (bf, e);
-      FREE (e);
+      GNUNET_bloomfilter_add (bf, e);
+      GNUNET_free (e);
       e = iterator (iterator_arg);
     }
-  MUTEX_UNLOCK (bf->lock);
+  GNUNET_mutex_unlock (bf->lock);
 }
 
 /* ******************** end of bloomfilter.c *********** */

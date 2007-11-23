@@ -215,7 +215,7 @@ main (int argc, char *argv[])
   for (i = 0; i < 1024; i++)
     buf[i] = (char) i;
   for (i = 0; i < 1024; i++)
-    if (expected[i] != crc32N (&buf[i], 1024 - i))
+    if (expected[i] != GNUNET_crc32_n (&buf[i], 1024 - i))
       return 1;
   return 0;
 }

@@ -32,38 +32,38 @@
 #define MAX_TESTVAL sizeof(SESSIONKEY)
 #define ITER 10
 
-#define PERF NO
+#define PERF GNUNET_NO
 
 static int
 testEncryptDecrypt ()
 {
-  struct PrivateKey *hostkey;
-  PublicKey pkey;
-  RSAEncryptedData target;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_PublicKey pkey;
+  GNUNET_RSA_EncryptedData target;
   char result[MAX_TESTVAL];
   int i;
-  TIME_T start;
+  GNUNET_Int32Time start;
   int ok;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
-  getPublicKey (hostkey, &pkey);
+  hostkey = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hostkey, &pkey);
 
   ok = 0;
-  TIME (&start);
+  GNUNET_get_time_int32 (&start);
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      if (SYSERR == encryptPrivateKey (TESTSTRING,
-                                       strlen (TESTSTRING) + 1,
-                                       &pkey, &target))
+      if (GNUNET_SYSERR == GNUNET_RSA_encrypt (TESTSTRING,
+                                               strlen (TESTSTRING) + 1,
+                                               &pkey, &target))
         {
           fprintf (stderr, "encryptPrivateKey returned SYSERR\n");
           ok++;
           continue;
         }
-      if (-1 == decryptPrivateKey (hostkey,
-                                   &target, result, strlen (TESTSTRING) + 1))
+      if (-1 == GNUNET_RSA_decrypt (hostkey,
+                                    &target, result, strlen (TESTSTRING) + 1))
         {
           fprintf (stderr, "decryptPrivateKey returned SYSERR\n");
           ok++;
@@ -79,37 +79,37 @@ testEncryptDecrypt ()
         }
     }
   printf ("%d RSA encrypt/decrypt operations %ds (%d failures)\n",
-          ITER, (int) (TIME (NULL) - start), ok);
-  freePrivateKey (hostkey);
+          ITER, (int) (GNUNET_get_time_int32 (NULL) - start), ok);
+  GNUNET_RSA_free_key (hostkey);
   if (ok == 0)
-    return OK;
+    return GNUNET_OK;
   else
-    return SYSERR;
+    return GNUNET_SYSERR;
 }
 
 #if PERF
 static int
 testEncryptPerformance ()
 {
-  struct PrivateKey *hostkey;
-  PublicKey pkey;
-  RSAEncryptedData target;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_PublicKey pkey;
+  GNUNET_RSA_EncryptedData target;
   int i;
-  cron_t start;
+  GNUNET_CronTime start;
   int ok;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
-  getPublicKey (hostkey, &pkey);
+  hostkey = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hostkey, &pkey);
 
   ok = 0;
-  start = get_time ();
+  start = GNUNET_get_time ();
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      if (SYSERR == encryptPrivateKey (TESTSTRING,
-                                       strlen (TESTSTRING) + 1,
-                                       &pkey, &target))
+      if (GNUNET_SYSERR == GNUNET_RSA_encrypt (TESTSTRING,
+                                               strlen (TESTSTRING) + 1,
+                                               &pkey, &target))
         {
           fprintf (stderr, "encryptPrivateKey returned SYSERR\n");
           ok++;
@@ -117,51 +117,53 @@ testEncryptPerformance ()
         }
     }
   printf ("%d RSA encrypt operations %llu ms (%d failures)\n",
-          ITER, get_time () - start, ok);
-  freePrivateKey (hostkey);
+          ITER, GNUNET_get_time () - start, ok);
+  GNUNET_RSA_free_key (hostkey);
   if (ok != 0)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 #endif
 
 static int
 testEncryptDecryptSK ()
 {
-  struct PrivateKey *hostkey;
-  PublicKey pkey;
-  RSAEncryptedData target;
-  SESSIONKEY insk;
-  SESSIONKEY outsk;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_PublicKey pkey;
+  GNUNET_RSA_EncryptedData target;
+  GNUNET_AES_SessionKey insk;
+  GNUNET_AES_SessionKey outsk;
   int i;
-  TIME_T start;
+  GNUNET_Int32Time start;
   int ok;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
-  getPublicKey (hostkey, &pkey);
+  hostkey = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hostkey, &pkey);
 
   ok = 0;
-  TIME (&start);
+  GNUNET_get_time_int32 (&start);
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      makeSessionkey (&insk);
-      if (SYSERR == encryptPrivateKey (&insk,
-                                       sizeof (SESSIONKEY), &pkey, &target))
+      GNUNET_AES_create_session_key (&insk);
+      if (GNUNET_SYSERR == GNUNET_RSA_encrypt (&insk,
+                                               sizeof (GNUNET_AES_SessionKey),
+                                               &pkey, &target))
         {
           fprintf (stderr, "encryptPrivateKey returned SYSERR\n");
           ok++;
           continue;
         }
-      if (-1 == decryptPrivateKey (hostkey,
-                                   &target, &outsk, sizeof (SESSIONKEY)))
+      if (-1 == GNUNET_RSA_decrypt (hostkey,
+                                    &target, &outsk,
+                                    sizeof (GNUNET_AES_SessionKey)))
         {
           fprintf (stderr, "decryptPrivateKey returned SYSERR\n");
           ok++;
           continue;
         }
-      if (0 != memcmp (&insk, &outsk, sizeof (SESSIONKEY)))
+      if (0 != memcmp (&insk, &outsk, sizeof (GNUNET_AES_SessionKey)))
         {
           printf ("testEncryptDecryptSK failed!\n");
           ok++;
@@ -169,46 +171,48 @@ testEncryptDecryptSK ()
         }
     }
   printf ("%d RSA encrypt/decrypt SK operations %ds (%d failures)\n",
-          ITER, (int) (TIME (NULL) - start), ok);
-  freePrivateKey (hostkey);
+          ITER, (int) (GNUNET_get_time_int32 (NULL) - start), ok);
+  GNUNET_RSA_free_key (hostkey);
   if (ok != 0)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 static int
 testSignVerify ()
 {
-  struct PrivateKey *hostkey;
-  Signature sig;
-  PublicKey pkey;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_Signature sig;
+  GNUNET_RSA_PublicKey pkey;
   int i;
-  TIME_T start;
-  int ok = OK;
+  GNUNET_Int32Time start;
+  int ok = GNUNET_OK;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
-  getPublicKey (hostkey, &pkey);
-  TIME (&start);
+  hostkey = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hostkey, &pkey);
+  GNUNET_get_time_int32 (&start);
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      if (SYSERR == sign (hostkey, strlen (TESTSTRING), TESTSTRING, &sig))
+      if (GNUNET_SYSERR ==
+          GNUNET_RSA_sign (hostkey, strlen (TESTSTRING), TESTSTRING, &sig))
         {
           fprintf (stderr, "sign returned SYSERR\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
-      if (SYSERR == verifySig (TESTSTRING, strlen (TESTSTRING), &sig, &pkey))
+      if (GNUNET_SYSERR ==
+          GNUNET_RSA_verify (TESTSTRING, strlen (TESTSTRING), &sig, &pkey))
         {
           printf ("testSignVerify failed!\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
     }
   printf ("%d RSA sign/verify operations %ds\n",
-          ITER, (int) (TIME (NULL) - start));
-  freePrivateKey (hostkey);
+          ITER, (int) (GNUNET_get_time_int32 (NULL) - start));
+  GNUNET_RSA_free_key (hostkey);
   return ok;
 }
 
@@ -216,29 +220,31 @@ testSignVerify ()
 static int
 testSignPerformance ()
 {
-  struct PrivateKey *hostkey;
-  Signature sig;
-  PublicKey pkey;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_Signature sig;
+  GNUNET_RSA_PublicKey pkey;
   int i;
-  cron_t start;
-  int ok = OK;
+  GNUNET_CronTime start;
+  int ok = GNUNET_OK;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
-  getPublicKey (hostkey, &pkey);
-  start = get_time ();
+  hostkey = GNUNET_RSA_create_key ();
+  GNUNET_RSA_get_public_key (hostkey, &pkey);
+  start = GNUNET_get_time ();
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      if (SYSERR == sign (hostkey, strlen (TESTSTRING), TESTSTRING, &sig))
+      if (GNUNET_SYSERR ==
+          GNUNET_RSA_sign (hostkey, strlen (TESTSTRING), TESTSTRING, &sig))
         {
           fprintf (stderr, "sign returned SYSERR\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
     }
-  printf ("%d RSA sign operations %llu ms\n", ITER, get_time () - start);
-  freePrivateKey (hostkey);
+  printf ("%d RSA sign operations %llu ms\n", ITER,
+          GNUNET_get_time () - start);
+  GNUNET_RSA_free_key (hostkey);
   return ok;
 }
 #endif
@@ -246,60 +252,61 @@ testSignPerformance ()
 static int
 testPrivateKeyEncoding ()
 {
-  struct PrivateKey *hostkey;
-  PrivateKeyEncoded *encoding;
-  PublicKey pkey;
-  RSAEncryptedData target;
+  struct GNUNET_RSA_PrivateKey *hostkey;
+  GNUNET_RSA_PrivateKeyEncoded *encoding;
+  GNUNET_RSA_PublicKey pkey;
+  GNUNET_RSA_EncryptedData target;
   char result[MAX_TESTVAL];
   int i;
-  TIME_T start;
-  int ok = OK;
+  GNUNET_Int32Time start;
+  int ok = GNUNET_OK;
 
   fprintf (stderr, "W");
-  hostkey = makePrivateKey ();
+  hostkey = GNUNET_RSA_create_key ();
 
-  TIME (&start);
+  GNUNET_get_time_int32 (&start);
   for (i = 0; i < ITER; i++)
     {
       fprintf (stderr, ".");
-      getPublicKey (hostkey, &pkey);
-      if (SYSERR == encryptPrivateKey (TESTSTRING,
-                                       strlen (TESTSTRING) + 1,
-                                       &pkey, &target))
+      GNUNET_RSA_get_public_key (hostkey, &pkey);
+      if (GNUNET_SYSERR == GNUNET_RSA_encrypt (TESTSTRING,
+                                               strlen (TESTSTRING) + 1,
+                                               &pkey, &target))
         {
           fprintf (stderr, "encryptPrivateKey returned SYSERR\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
-      encoding = encodePrivateKey (hostkey);
-      freePrivateKey (hostkey);
+      encoding = GNUNET_RSA_encode_key (hostkey);
+      GNUNET_RSA_free_key (hostkey);
       if (encoding == NULL)
         {
           fprintf (stderr, "encodePrivateKey returned NULL\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
-      hostkey = decodePrivateKey (encoding);
-      FREE (encoding);
-      if (SYSERR == decryptPrivateKey (hostkey,
-                                       &target,
-                                       result, strlen (TESTSTRING) + 1))
+      hostkey = GNUNET_RSA_decode_key (encoding);
+      GNUNET_free (encoding);
+      if (GNUNET_SYSERR == GNUNET_RSA_decrypt (hostkey,
+                                               &target,
+                                               result,
+                                               strlen (TESTSTRING) + 1))
         {
           fprintf (stderr, "decryptPrivateKey returned SYSERR\n");
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
       if (strncmp (TESTSTRING, result, strlen (TESTSTRING)) != 0)
         {
           printf ("%s != %.*s - testEncryptDecrypt failed!\n",
                   TESTSTRING, (int) strlen (TESTSTRING), result);
-          ok = SYSERR;
+          ok = GNUNET_SYSERR;
           continue;
         }
     }
-  freePrivateKey (hostkey);
+  GNUNET_RSA_free_key (hostkey);
   printf ("%d RSA encrypt/encode/decode/decrypt operations %ds\n",
-          ITER, (int) (TIME (NULL) - start));
+          ITER, (int) (GNUNET_get_time_int32 (NULL) - start));
   return ok;
 }
 
@@ -309,18 +316,18 @@ main (int argc, char *argv[])
   int failureCount = 0;
 
 #if PERF
-  if (OK != testEncryptPerformance ())
+  if (GNUNET_OK != testEncryptPerformance ())
     failureCount++;
-  if (OK != testSignPerformance ())
+  if (GNUNET_OK != testSignPerformance ())
     failureCount++;
 #endif
-  if (OK != testEncryptDecryptSK ())
+  if (GNUNET_OK != testEncryptDecryptSK ())
     failureCount++;
-  if (OK != testEncryptDecrypt ())
+  if (GNUNET_OK != testEncryptDecrypt ())
     failureCount++;
-  if (OK != testSignVerify ())
+  if (GNUNET_OK != testSignVerify ())
     failureCount++;
-  if (OK != testPrivateKeyEncoding ())
+  if (GNUNET_OK != testPrivateKeyEncoding ())
     failureCount++;
 
   if (failureCount != 0)

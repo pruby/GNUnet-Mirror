@@ -19,9 +19,6 @@ libgnunetfsui_la_LIBADD = \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
  $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
  $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
- $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
- $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
@@ -31,10 +28,8 @@ EXTRA_DIST = \
 fsui_loader_SOURCES = \
  fsui-loader.c 
 fsui_loader_LDADD = \
- $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 check_PROGRAMS = \
@@ -52,8 +47,6 @@ TESTS = $(check_PROGRAMS)
 fsuitest_SOURCES = \
   fsuitest.c 
 fsuitest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -61,8 +54,6 @@ fsuitest_LDADD = \
 fsuitest2_SOURCES = \
   fsuitest2.c 
 fsuitest2_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -70,8 +61,6 @@ fsuitest2_LDADD = \
 searchtest_SOURCES = \
   searchtest.c 
 searchtest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -79,8 +68,6 @@ searchtest_LDADD = \
 downloadtest_SOURCES = \
   downloadtest.c 
 downloadtest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -88,8 +75,6 @@ downloadtest_LDADD = \
 serializetest_SOURCES = \
   serializetest.c 
 serializetest_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -97,8 +82,6 @@ serializetest_LDADD = \
 serializetest2_SOURCES = \
   serializetest2.c 
 serializetest2_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -106,8 +89,6 @@ serializetest2_LDADD = \
 serializetest3_SOURCES = \
   serializetest3.c 
 serializetest3_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -116,8 +97,6 @@ serializetest3_LDADD = \
 serializetest4_SOURCES = \
   serializetest4.c 
 serializetest4_LDADD = \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 

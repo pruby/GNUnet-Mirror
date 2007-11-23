@@ -20,7 +20,7 @@
 
 /**
  * @file include/gnunet_dstore_service.h
- * @brief dstore is a simple persistent hash table
+ * @brief dstore is a simple persistent GNUNET_hash table
  *        of bounded size with content expiration
  *        In contrast to the sqstore there is
  *        no prioritization, deletion or iteration.
@@ -42,7 +42,7 @@ extern "C"
 #endif
 #endif
 
-typedef void (*ResultHandler) (const HashCode512 * key,
+typedef void (*ResultHandler) (const GNUNET_HashCode * key,
                                unsigned int type,
                                unsigned int size,
                                const char *data, void *cls);
@@ -56,11 +56,12 @@ typedef struct
   /**
    * Store an item in the datastore.
    *
-   * @return OK on success, SYSERR on error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*put) (const HashCode512 * key,
+  int (*put) (const GNUNET_HashCode * key,
               unsigned int type,
-              cron_t discard_time, unsigned int size, const char *data);
+              GNUNET_CronTime discard_time, unsigned int size,
+              const char *data);
 
   /**
    * Iterate over the results for a particular key
@@ -69,10 +70,10 @@ typedef struct
    * @param key
    * @param type entries of which type are relevant?
    * @param iter maybe NULL (to just count)
-   * @return the number of results, SYSERR if the
+   * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*get) (const HashCode512 * key,
+  int (*get) (const GNUNET_HashCode * key,
               unsigned int type, ResultHandler handler, void *closure);
 
 } Dstore_ServiceAPI;

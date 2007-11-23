@@ -36,14 +36,14 @@
  */
 static CoreAPIForApplication *coreAPI;
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
 typedef struct DHT_GET_RECORD
 {
   /**
    * Key that we are looking for.
    */
-  HashCode512 key;
+  GNUNET_HashCode key;
 
   /**
    * Function to call for each result.
@@ -73,18 +73,18 @@ typedef struct DHT_GET_RECORD
 } DHT_GET_RECORD;
 
 static void
-client_result_converter (const HashCode512 * key,
+client_result_converter (const GNUNET_HashCode * key,
                          unsigned int type,
                          unsigned int size, const char *data, void *cls)
 {
   struct DHT_GET_RECORD *get = cls;
   DataContainer *dc;
 
-  dc = MALLOC (sizeof (DataContainer) + size);
+  dc = GNUNET_malloc (sizeof (DataContainer) + size);
   dc->size = ntohl (sizeof (DataContainer) + size);
   memcpy (&dc[1], data, size);
   get->callback (key, dc, get->cls);
-  FREE (dc);
+  GNUNET_free (dc);
 }
 
 /**
@@ -118,22 +118,22 @@ timeout_callback (void *cls)
  */
 static struct DHT_GET_RECORD *
 dht_get_async_start (unsigned int type,
-                     const HashCode512 * key,
-                     cron_t timeout,
+                     const GNUNET_HashCode * key,
+                     GNUNET_CronTime timeout,
                      DataProcessor callback,
                      void *cls,
                      DHT_OP_Complete callbackComplete, void *closure)
 {
   struct DHT_GET_RECORD *ret;
 
-  ret = MALLOC (sizeof (DHT_GET_RECORD));
+  ret = GNUNET_malloc (sizeof (DHT_GET_RECORD));
   ret->key = *key;
   ret->callback = callback;
   ret->cls = cls;
   ret->callbackComplete = callbackComplete;
   ret->closure = closure;
   ret->type = type;
-  cron_add_job (cron, &timeout_callback, timeout, 0, ret);
+  GNUNET_cron_add_job (cron, &timeout_callback, timeout, 0, ret);
   dht_get_start (key, type, &client_result_converter, ret);
   return ret;
 }
@@ -144,12 +144,12 @@ dht_get_async_start (unsigned int type,
 static int
 dht_get_async_stop (struct DHT_GET_RECORD *record)
 {
-  cron_suspend (cron, YES);
-  cron_del_job (cron, &timeout_callback, 0, record);
-  cron_resume_jobs (cron, YES);
+  GNUNET_cron_suspend_jobs (cron, GNUNET_YES);
+  GNUNET_cron_del_job (cron, &timeout_callback, 0, record);
+  GNUNET_cron_resume_jobs (cron, GNUNET_YES);
   dht_get_stop (&record->key, record->type, &client_result_converter, record);
-  FREE (record);
-  return OK;
+  GNUNET_free (record);
+  return GNUNET_OK;
 }
 
 /**
@@ -165,19 +165,19 @@ provide_module_dht (CoreAPIForApplication * capi)
   static DHT_ServiceAPI api;
 
   cron = cron_create (capi->ectx);
-  cron_start (cron);
-  if (OK != init_dht_store (1024 * 1024, capi))
+  GNUNET_cron_start (cron);
+  if (GNUNET_OK != init_dht_store (1024 * 1024, capi))
     {
       GE_BREAK (capi->ectx, 0);
       return NULL;
     }
-  if (OK != init_dht_table (capi))
+  if (GNUNET_OK != init_dht_table (capi))
     {
       GE_BREAK (capi->ectx, 0);
       done_dht_store ();
       return NULL;
     }
-  if (OK != init_dht_routing (capi))
+  if (GNUNET_OK != init_dht_routing (capi))
     {
       GE_BREAK (capi->ectx, 0);
       done_dht_table ();
@@ -197,12 +197,12 @@ provide_module_dht (CoreAPIForApplication * capi)
 int
 release_module_dht ()
 {
-  cron_stop (cron);
+  GNUNET_cron_stop (cron);
   done_dht_routing ();
   done_dht_table ();
   done_dht_store ();
-  cron_destroy (cron);
-  return OK;
+  GNUNET_cron_destroy (cron);
+  return GNUNET_OK;
 }
 
 /* end of service.c */

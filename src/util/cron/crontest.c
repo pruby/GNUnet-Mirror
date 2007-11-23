@@ -31,7 +31,7 @@ static int global;
 static int global2;
 static int global3;
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
 static void
 cronJob (void *unused)
@@ -59,9 +59,12 @@ testCron ()
   global = -1;
   global2 = -1;
   global3 = -1;
-  cron_add_job (cron, &cronJob, cronSECONDS * 1, cronSECONDS * 1, NULL);
-  cron_add_job (cron, &cronJob2, cronSECONDS * 4, cronSECONDS * 4, NULL);
-  cron_add_job (cron, &cronJob3, cronSECONDS * 16, cronSECONDS * 16, NULL);
+  GNUNET_cron_add_job (cron, &cronJob, GNUNET_CRON_SECONDS * 1,
+                       GNUNET_CRON_SECONDS * 1, NULL);
+  GNUNET_cron_add_job (cron, &cronJob2, GNUNET_CRON_SECONDS * 4,
+                       GNUNET_CRON_SECONDS * 4, NULL);
+  GNUNET_cron_add_job (cron, &cronJob3, GNUNET_CRON_SECONDS * 16,
+                       GNUNET_CRON_SECONDS * 16, NULL);
   for (i = 0; i < 10; i++)
     {
       /*    fprintf(stderr,"."); */
@@ -82,25 +85,26 @@ testCron ()
           return 1;
         }
     }
-  cron_del_job (cron, &cronJob, cronSECONDS * 1, NULL);
-  cron_del_job (cron, &cronJob2, cronSECONDS * 4, NULL);
-  cron_del_job (cron, &cronJob3, cronSECONDS * 16, NULL);
+  GNUNET_cron_del_job (cron, &cronJob, GNUNET_CRON_SECONDS * 1, NULL);
+  GNUNET_cron_del_job (cron, &cronJob2, GNUNET_CRON_SECONDS * 4, NULL);
+  GNUNET_cron_del_job (cron, &cronJob3, GNUNET_CRON_SECONDS * 16, NULL);
   return 0;
 }
 
 static void
 delJob (void *unused)
 {
-  cron_del_job (cron, &cronJob, 42, NULL);
+  GNUNET_cron_del_job (cron, &cronJob, 42, NULL);
 }
 
 static int
 testDelCron ()
 {
   global = 0;
-  cron_add_job (cron, &cronJob, cronSECONDS * 1, 42, NULL);
-  cron_add_job (cron, &delJob, 500 * cronMILLIS, 0, NULL);
-  PTHREAD_SLEEP (1 * cronSECONDS);
+  GNUNET_cron_add_job (cron, &cronJob, GNUNET_CRON_SECONDS * 1, 42, NULL);
+  GNUNET_cron_add_job (cron, &delJob, 500 * GNUNET_CRON_MILLISECONDS, 0,
+                       NULL);
+  GNUNET_thread_sleep (1 * GNUNET_CRON_SECONDS);
   if (global !=0)
     {
       fprintf (stderr,
@@ -116,11 +120,11 @@ main (int argc, char *argv[])
   int failureCount = 0;
 
   cron = cron_create (NULL);
-  cron_start (cron);
+  GNUNET_cron_start (cron);
   failureCount += testCron ();
   failureCount += testDelCron ();
-  cron_stop (cron);
-  cron_destroy (cron);
+  GNUNET_cron_stop (cron);
+  GNUNET_cron_destroy (cron);
   if (failureCount != 0)
     return 1;
   return 0;

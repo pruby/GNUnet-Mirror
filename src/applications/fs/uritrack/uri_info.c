@@ -45,9 +45,9 @@ getDBName (struct GC_Configuration *cfg)
                                        "GNUNET_HOME",
                                        GNUNET_HOME_DIRECTORY, &basename);
   n = strlen (basename) + 512;
-  ipcName = MALLOC (n);
-  SNPRINTF (ipcName, n, "%s/uri_info.db", basename);
-  FREE (basename);
+  ipcName = GNUNET_malloc (n);
+  GNUNET_snprintf (ipcName, n, "%s/uri_info.db", basename);
+  GNUNET_free (basename);
   return ipcName;
 }
 
@@ -71,7 +71,7 @@ getDBSize (struct GC_Configuration *cfg)
  * information that we give back maybe inaccurate (returning
  * URITRACK_FRESH if the URI did not fit into our bounded-size map,
  * even if the URI is not fresh anymore; also, if the URI has a
- * hash-collision in the map, there is a 1:256 chance that we will
+ * GNUNET_hash-collision in the map, there is a 1:256 chance that we will
  * return information from the wrong URI without detecting it).
  */
 enum URITRACK_STATE
@@ -86,14 +86,14 @@ URITRACK_getState (struct GE_Context *ectx,
   off_t o;
 
   s = ECRS_uriToString (uri);
-  crc = crc32N (s, strlen (s));
-  FREE (s);
+  crc = GNUNET_crc32_n (s, strlen (s));
+  GNUNET_free (s);
   s = getDBName (cfg);
-  if (NO == disk_file_test (ectx, s))
+  if (GNUNET_NO == GNUNET_disk_file_test (ectx, s))
     return URITRACK_FRESH;
   size = getDBSize (cfg);
-  fd = disk_file_open (ectx, s, O_RDONLY);
-  FREE (s);
+  fd = GNUNET_disk_file_open (ectx, s, O_RDONLY);
+  GNUNET_free (s);
   if (fd == -1)
     return URITRACK_FRESH;
   o = 2 * (crc % size);
@@ -132,14 +132,14 @@ URITRACK_addState (struct GE_Context *ectx,
   off_t o;
 
   s = ECRS_uriToString (uri);
-  crc = crc32N (s, strlen (s));
-  FREE (s);
+  crc = GNUNET_crc32_n (s, strlen (s));
+  GNUNET_free (s);
   s = getDBName (cfg);
   size = getDBSize (cfg);
-  fd = disk_file_open (ectx, s, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  fd = GNUNET_disk_file_open (ectx, s, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
-      FREE (s);
+      GNUNET_free (s);
       return;
     }
   o = 2 * (crc % size);
@@ -149,7 +149,7 @@ URITRACK_addState (struct GE_Context *ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
                             "lseek", s);
       CLOSE (fd);
-      FREE (s);
+      GNUNET_free (s);
       return;
     }
   if (2 != read (fd, io, 2))
@@ -169,15 +169,15 @@ URITRACK_addState (struct GE_Context *ectx,
                             GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
                             "lseek", s);
       CLOSE (fd);
-      FREE (s);
+      GNUNET_free (s);
       return;
     }
   if (2 != write (fd, io, 2))
     GE_LOG_STRERROR_FILE (ectx,
                           GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
                           "write", s);
-  disk_file_close (ectx, s, fd);
-  FREE (s);
+  GNUNET_disk_file_close (ectx, s, fd);
+  GNUNET_free (s);
 }
 
 /* end of uri_info.c */

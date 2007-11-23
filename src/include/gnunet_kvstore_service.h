@@ -52,7 +52,7 @@ typedef struct
  * @param closure optional parameter
  * @param val the value retrieved
  * @param vallen the length von val
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 typedef int (*KVCallback) (void *closure, void *val, int vallen);
 
@@ -93,7 +93,7 @@ typedef struct
    * @param val value of the pair
    * @param vallen length of the value (int because of SQLite!)
    * @param optional creation time
-   * @return OK on success, SYSERR otherwise
+   * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
   int (*put) (KVHandle * kv,
               void *key,
@@ -104,7 +104,7 @@ typedef struct
    * @param key key to delete (may be NULL)
    * @param keylen length of the key
    * @param age age of the items to delete (may be 0)
-   * @return OK on success, SYSERR otherwise
+   * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
   int (*del) (KVHandle * kv, void *key, int keylen, unsigned long long age);
 
@@ -117,7 +117,7 @@ typedef struct
   /**
    * @brief Drop a Key/Value-Table
    * @param the handle to the table
-   * @return OK on success, SYSERR otherwise
+   * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
   int (*dropTable) (KVHandle * kv);
 

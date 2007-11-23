@@ -28,7 +28,7 @@
 #include "gnunet_util_string.h"
 #include "platform.h"
 
-#if SOLARIS || FREEBSD || OSX
+#if SOLARIS || GNUNET_freeBSD || OSX
 #include <semaphore.h>
 #endif
 #if SOMEBSD
@@ -42,19 +42,19 @@
 #include <pthread.h>
 #endif
 
-typedef struct PTHREAD
+typedef struct GNUNET_ThreadHandle
 {
   pthread_t pt;
 } PThread;
 
 /**
- * Returns YES if pt is the handle for THIS thread.
+ * Returns GNUNET_YES if pt is the handle for THIS thread.
  */
 int
-PTHREAD_TEST_SELF (PThread * handle)
+GNUNET_thread_test_self (PThread * handle)
 {
   if (handle == NULL)
-    return NO;
+    return GNUNET_NO;
 #if HAVE_PTHREAD_EQUAL
   if (pthread_equal (pthread_self (), handle->pt))
 #else
@@ -64,19 +64,19 @@ PTHREAD_TEST_SELF (PThread * handle)
   if (handle->pt == pthread_self ())
 #endif
 #endif
-    return YES;
+    return GNUNET_YES;
   else
-    return NO;
+    return GNUNET_NO;
 }
 
 /**
  * Get the handle for THIS thread.
  */
 PThread *
-PTHREAD_GET_SELF ()
+GNUNET_thread_get_self ()
 {
   PThread *ret;
-  ret = MALLOC (sizeof (PThread));
+  ret = GNUNET_malloc (sizeof (PThread));
   ret->pt = pthread_self ();
   return ret;
 }
@@ -85,9 +85,9 @@ PTHREAD_GET_SELF ()
  * Release handle for a thread.
  */
 void
-PTHREAD_REL_SELF (PThread * handle)
+GNUNET_thread_release_self (PThread * handle)
 {
-  FREE (handle);
+  GNUNET_free (handle);
 }
 
 /**
@@ -103,7 +103,8 @@ PTHREAD_REL_SELF (PThread * handle)
  * @return see pthread_create
  */
 PThread *
-PTHREAD_CREATE (PThreadMain main, void *arg, unsigned int stackSize)
+GNUNET_thread_create (GNUNET_ThreadMainFunction main, void *arg,
+                      unsigned int stackSize)
 {
   PThread *handle;
 #ifndef LINUX
@@ -111,7 +112,7 @@ PTHREAD_CREATE (PThreadMain main, void *arg, unsigned int stackSize)
 #endif
   int ret;
 
-  handle = MALLOC (sizeof (PThread));
+  handle = GNUNET_malloc (sizeof (PThread));
 #ifdef MINGW
   memset (handle, 0, sizeof (PThread));
 #endif
@@ -128,33 +129,34 @@ PTHREAD_CREATE (PThreadMain main, void *arg, unsigned int stackSize)
                         main, arg);
   if (ret != 0)
     {
-      FREE (handle);
+      GNUNET_free (handle);
       return NULL;
     }
   return handle;
 }
 
 void
-PTHREAD_JOIN_FL (PThread * handle,
-                 void **ret, const char *file, unsigned int line)
+GNUNET_thread_join_at_file_line_ (PThread * handle,
+                                  void **ret, const char *file,
+                                  unsigned int line)
 {
-  cron_t start;
-  cron_t end;
+  GNUNET_CronTime start;
+  GNUNET_CronTime end;
   int k;
 
   GE_ASSERT (NULL, handle != NULL);
-  GE_ASSERT (NULL, NO == PTHREAD_TEST_SELF (handle));
-  start = get_time ();
+  GE_ASSERT (NULL, GNUNET_NO == GNUNET_thread_test_self (handle));
+  start = GNUNET_get_time ();
   k = pthread_join (handle->pt, ret);
-  end = get_time ();
-  if ((end - start > REALTIME_LIMIT) && (REALTIME_LIMIT != 0))
+  end = GNUNET_get_time ();
+  if ((end - start > GNUNET_REALTIME_LIMIT) && (GNUNET_REALTIME_LIMIT != 0))
     {
       GE_LOG (NULL,
               GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
               _("Real-time delay violation (%llu ms) at %s:%u\n"),
               end - start, file, line);
     }
-  FREE (handle);
+  GNUNET_free (handle);
   switch (k)
     {
     case 0:
@@ -201,12 +203,12 @@ sigalrmHandler (int sig)
 
 
 /**
- * Sleep for the specified time interval.  Use PTHREAD_STOP_SLEEP to
+ * Sleep for the specified time interval.  Use GNUNET_thread_stop_sleep to
  * wake the thread up early.  Caller is responsible to check that the
  * sleep was long enough.
  */
 void
-PTHREAD_SLEEP (unsigned long long delay)
+GNUNET_thread_sleep (unsigned long long delay)
 {
 #if LINUX || SOLARIS || SOMEBSD || OSX
   struct timespec req;
@@ -241,7 +243,7 @@ PTHREAD_SLEEP (unsigned long long delay)
 }
 
 void
-PTHREAD_STOP_SLEEP (PThread * handle)
+GNUNET_thread_stop_sleep (PThread * handle)
 {
   int ret;
 

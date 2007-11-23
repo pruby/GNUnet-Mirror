@@ -30,31 +30,31 @@
 #include "ecrs.h"
 
 void
-ECRS_encryptInPlace (const HashCode512 * hc, void *data, unsigned int len)
+ECRS_encryptInPlace (const GNUNET_HashCode * hc, void *data, unsigned int len)
 {
   char *tmp;
-  SESSIONKEY skey;
-  INITVECTOR iv;
+  GNUNET_AES_SessionKey skey;
+  GNUNET_AES_InitializationVector iv;
 
-  hashToKey (hc, &skey, &iv);
-  tmp = MALLOC (len);
-  GE_ASSERT (NULL, len == encryptBlock (data, len, &skey, &iv, tmp));
+  GNUNET_hash_to_AES_key (hc, &skey, &iv);
+  tmp = GNUNET_malloc (len);
+  GE_ASSERT (NULL, len == GNUNET_AES_encrypt (data, len, &skey, &iv, tmp));
   memcpy (data, tmp, len);
-  FREE (tmp);
+  GNUNET_free (tmp);
 }
 
 void
-ECRS_decryptInPlace (const HashCode512 * hc, void *data, unsigned int len)
+ECRS_decryptInPlace (const GNUNET_HashCode * hc, void *data, unsigned int len)
 {
   char *tmp;
-  SESSIONKEY skey;
-  INITVECTOR iv;
+  GNUNET_AES_SessionKey skey;
+  GNUNET_AES_InitializationVector iv;
 
-  hashToKey (hc, &skey, &iv);
-  tmp = MALLOC (len);
-  GE_ASSERT (NULL, len == decryptBlock (&skey, data, len, &iv, tmp));
+  GNUNET_hash_to_AES_key (hc, &skey, &iv);
+  tmp = GNUNET_malloc (len);
+  GE_ASSERT (NULL, len == GNUNET_AES_decrypt (&skey, data, len, &iv, tmp));
   memcpy (data, tmp, len);
-  FREE (tmp);
+  GNUNET_free (tmp);
 }
 
 /* end of ecrs.c */

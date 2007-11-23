@@ -36,11 +36,11 @@ check ()
   int k;
   unsigned int ui;
 
-  /* MALLOC/FREE test */
+  /* GNUNET_malloc/GNUNET_free test */
   k = 352;                      /* random start value */
   for (i = 1; i < MAX_TESTVAL; i++)
     {
-      ptrs[i] = MALLOC (i);
+      ptrs[i] = GNUNET_malloc (i);
       for (j = 0; j < i; j++)
         ptrs[i][j] = k++;
     }
@@ -50,49 +50,38 @@ check ()
       for (j = i - 1; j >= 0; j--)
         if (ptrs[i][j] != (char) --k)
           return 1;
-      FREE (ptrs[i]);
+      GNUNET_free (ptrs[i]);
     }
 
-  /* STRNDUP tests */
-  FREE (STRNDUP ("foo", 0));
-  ptrs[0] = STRNDUP ("foo", 42);
-  if (0 != strcmp (ptrs[0], "foo"))
-    return 1;
-  FREE (ptrs[0]);
-  ptrs[0] = STRNDUP ("foo", 2);
-  if (0 != strcmp (ptrs[0], "fo"))
-    return 2;
-  FREE (ptrs[0]);
+  /* GNUNET_free_non_null test */
+  GNUNET_free_non_null (NULL);
+  GNUNET_free_non_null (GNUNET_malloc (4));
 
-  /* FREENONNULL test */
-  FREENONNULL (NULL);
-  FREENONNULL (MALLOC (4));
-
-  /* STRDUP tests */
-  ptrs[0] = STRDUP ("bar");
+  /* GNUNET_strdup tests */
+  ptrs[0] = GNUNET_strdup ("bar");
   if (0 != strcmp (ptrs[0], "bar"))
     return 3;
-  FREE (ptrs[0]);
+  GNUNET_free (ptrs[0]);
 
-  /* GROW tests */
+  /* GNUNET_array_grow tests */
   ptrs[0] = NULL;
   ui = 0;
-  GROW (ptrs[0], ui, 42);
+  GNUNET_array_grow (ptrs[0], ui, 42);
   if (ui != 42)
     return 4;
-  GROW (ptrs[0], ui, 22);
+  GNUNET_array_grow (ptrs[0], ui, 22);
   if (ui != 22)
     return 5;
   for (j = 0; j < 22; j++)
     ptrs[0][j] = j;
-  GROW (ptrs[0], ui, 32);
+  GNUNET_array_grow (ptrs[0], ui, 32);
   for (j = 0; j < 22; j++)
     if (ptrs[0][j] != j)
       return 6;
   for (j = 22; j < 32; j++)
     if (ptrs[0][j] != 0)
       return 7;
-  GROW (ptrs[0], ui, 0);
+  GNUNET_array_grow (ptrs[0], ui, 0);
   if (i != 0)
     return 8;
   if (ptrs[0] != NULL)

@@ -32,7 +32,7 @@
  * Set our process priority
  */
 int
-os_set_process_priority (struct GE_Context *ectx, const char *str)
+GNUNET_set_process_priority (struct GE_Context *ectx, const char *str)
 {
   int prio = 0;
 
@@ -76,7 +76,7 @@ os_set_process_priority (struct GE_Context *ectx, const char *str)
           GE_LOG (ectx,
                   GE_USER | GE_BULK | GE_ERROR,
                   _("Invalid process priority `%s'\n"), str);
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
 
 #ifdef MINGW
@@ -103,8 +103,8 @@ os_set_process_priority (struct GE_Context *ectx, const char *str)
   if (errno != 0)
     {
       GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "nice");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #endif
-  return OK;
+  return GNUNET_OK;
 }

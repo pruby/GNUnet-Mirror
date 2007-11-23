@@ -35,7 +35,7 @@
 #include "gnunet_namespace_lib.h"
 #include "fsui.h"
 
-#define DEBUG_SEARCH NO
+#define DEBUG_SEARCH GNUNET_NO
 
 /**
  * Pass the result to the client and note it as shown.
@@ -45,8 +45,8 @@ processResult (const ECRS_FileInfo * fi, FSUI_SearchList * pos)
 {
   FSUI_Event event;
 
-  GROW (pos->resultsReceived,
-        pos->sizeResultsReceived, pos->sizeResultsReceived + 1);
+  GNUNET_array_grow (pos->resultsReceived,
+                     pos->sizeResultsReceived, pos->sizeResultsReceived + 1);
   pos->resultsReceived[pos->sizeResultsReceived - 1].uri
     = ECRS_dupUri (fi->uri);
   pos->resultsReceived[pos->sizeResultsReceived - 1].meta
@@ -68,7 +68,7 @@ processResult (const ECRS_FileInfo * fi, FSUI_SearchList * pos)
  */
 static int
 spcb (const ECRS_FileInfo * fi,
-      const HashCode512 * key, int isRoot, void *cls)
+      const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   FSUI_SearchList *pos = cls;
   unsigned int i;
@@ -83,7 +83,7 @@ spcb (const ECRS_FileInfo * fi,
     {
       NS_setNamespaceRoot (ectx, pos->ctx->cfg, fi->uri);
       NS_addNamespaceInfo (ectx, pos->ctx->cfg, fi->uri, fi->meta);
-      return OK;
+      return GNUNET_OK;
     }
   for (i = 0; i < pos->sizeResultsReceived; i++)
     if (ECRS_equalsUri (fi->uri, pos->resultsReceived[i].uri))
@@ -93,7 +93,7 @@ spcb (const ECRS_FileInfo * fi,
                 GE_DEBUG | GE_REQUEST | GE_USER,
                 "Received search result that I have seen before.\n");
 #endif
-        return OK;              /* seen before */
+        return GNUNET_OK;       /* seen before */
       }
   if (pos->numberOfURIKeys > 1)
     {
@@ -105,7 +105,7 @@ spcb (const ECRS_FileInfo * fi,
                   GE_DEBUG | GE_REQUEST | GE_USER,
                   "Received search result without key to decrypt.\n");
 #endif
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       for (i = 0; i < pos->sizeUnmatchedResultsReceived; i++)
         {
@@ -114,14 +114,15 @@ spcb (const ECRS_FileInfo * fi,
             {
               for (j = 0; j < rp->matchingKeyCount; j++)
                 if (0 == memcmp (key,
-                                 &rp->matchingKeys[j], sizeof (HashCode512)))
+                                 &rp->matchingKeys[j],
+                                 sizeof (GNUNET_HashCode)))
                   {
 #if DEBUG_SEARCH
                     GE_LOG (ectx,
                             GE_DEBUG | GE_REQUEST | GE_USER,
                             "Received search result that I have seen before (missing keyword to show client).\n");
 #endif
-                    return OK;
+                    return GNUNET_OK;
                   }
               if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys)
                 {
@@ -130,7 +131,8 @@ spcb (const ECRS_FileInfo * fi,
                           GE_DEBUG | GE_REQUEST | GE_USER,
                           "Received search result (showing client)!\n");
 #endif
-                  GROW (rp->matchingKeys, rp->matchingKeyCount, 0);
+                  GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount,
+                                     0);
                   processResult (&rp->fi, pos);
                   ECRS_freeUri (rp->fi.uri);
                   ECRS_freeMetaData (rp->fi.meta);
@@ -139,15 +141,16 @@ spcb (const ECRS_FileInfo * fi,
                     pos->unmatchedResultsReceived[pos->
                                                   sizeUnmatchedResultsReceived
                                                   - 1];
-                  GROW (pos->unmatchedResultsReceived,
-                        pos->sizeUnmatchedResultsReceived,
-                        pos->sizeUnmatchedResultsReceived - 1);
-                  return OK;
+                  GNUNET_array_grow (pos->unmatchedResultsReceived,
+                                     pos->sizeUnmatchedResultsReceived,
+                                     pos->sizeUnmatchedResultsReceived - 1);
+                  return GNUNET_OK;
                 }
               else
                 {
-                  GROW (rp->matchingKeys,
-                        rp->matchingKeyCount, rp->matchingKeyCount + 1);
+                  GNUNET_array_grow (rp->matchingKeys,
+                                     rp->matchingKeyCount,
+                                     rp->matchingKeyCount + 1);
                   rp->matchingKeys[rp->matchingKeyCount - 1] = *key;
 #if DEBUG_SEARCH
                   GE_LOG (ectx,
@@ -155,20 +158,20 @@ spcb (const ECRS_FileInfo * fi,
                           "Received search result (waiting for more %u keys before showing client).\n",
                           pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
-                  return OK;
+                  return GNUNET_OK;
                 }
             }
         }
-      GROW (pos->unmatchedResultsReceived,
-            pos->sizeUnmatchedResultsReceived,
-            pos->sizeUnmatchedResultsReceived + 1);
+      GNUNET_array_grow (pos->unmatchedResultsReceived,
+                         pos->sizeUnmatchedResultsReceived,
+                         pos->sizeUnmatchedResultsReceived + 1);
       rp =
         &pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived - 1];
       rp->fi.meta = ECRS_dupMetaData (fi->meta);
       rp->fi.uri = ECRS_dupUri (fi->uri);
       rp->matchingKeys = NULL;
       rp->matchingKeyCount = 0;
-      GROW (rp->matchingKeys, rp->matchingKeyCount, 1);
+      GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount, 1);
       rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
       GE_LOG (ectx,
@@ -176,7 +179,7 @@ spcb (const ECRS_FileInfo * fi,
               "Received search result (waiting for %u more keys before showing client).\n",
               pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
-      return OK;
+      return GNUNET_OK;
     }
   else
     {
@@ -187,7 +190,7 @@ spcb (const ECRS_FileInfo * fi,
 #endif
       processResult (fi, pos);
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
@@ -196,8 +199,8 @@ testTerminate (void *cls)
   FSUI_SearchList *pos = cls;
   if ((pos->state == FSUI_ACTIVE) &&
       (pos->maxResults > pos->sizeResultsReceived))
-    return OK;
-  return SYSERR;
+    return GNUNET_OK;
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -221,7 +224,7 @@ FSUI_searchThread (void *cls)
                      pos->uri,
                      pos->anonymityLevel,
                      pos->timeout, &spcb, pos, &testTerminate, pos);
-  if (ret != OK)
+  if (ret != GNUNET_OK)
     {
       const char *error;
 
@@ -286,14 +289,14 @@ struct FSUI_SearchList *
 FSUI_startSearch (struct FSUI_Context *ctx,
                   unsigned int anonymityLevel,
                   unsigned int maxResults,
-                  cron_t timeout, const struct ECRS_URI *uri)
+                  GNUNET_CronTime timeout, const struct ECRS_URI *uri)
 {
   FSUI_SearchList *pos;
   struct GE_Context *ectx;
 
   ectx = ctx->ectx;
-  MUTEX_LOCK (ctx->lock);
-  pos = MALLOC (sizeof (FSUI_SearchList));
+  GNUNET_mutex_lock (ctx->lock);
+  pos = GNUNET_malloc (sizeof (FSUI_SearchList));
   pos->maxResults = maxResults;
   pos->state = FSUI_ACTIVE;
   pos->uri = ECRS_dupUri (uri);
@@ -304,22 +307,23 @@ FSUI_startSearch (struct FSUI_Context *ctx,
   pos->unmatchedResultsReceived = 0;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
-  pos->start_time = get_time ();
+  pos->start_time = GNUNET_get_time ();
   pos->timeout = timeout;
-  pos->handle = PTHREAD_CREATE (&FSUI_searchThreadSignal, pos, 32 * 1024);
+  pos->handle =
+    GNUNET_thread_create (&FSUI_searchThreadSignal, pos, 32 * 1024);
   if (pos->handle == NULL)
     {
       GE_LOG_STRERROR (ectx,
                        GE_ERROR | GE_IMMEDIATE | GE_USER | GE_ADMIN,
                        "PTHREAD_CREATE");
       ECRS_freeUri (pos->uri);
-      FREE (pos);
-      MUTEX_UNLOCK (ctx->lock);
+      GNUNET_free (pos);
+      GNUNET_mutex_unlock (ctx->lock);
       return NULL;
     }
   pos->next = ctx->activeSearches;
   ctx->activeSearches = pos;
-  MUTEX_UNLOCK (ctx->lock);
+  GNUNET_mutex_unlock (ctx->lock);
   return pos;
 }
 
@@ -332,13 +336,13 @@ FSUI_abortSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl)
   if (sl->state == FSUI_PENDING)
     {
       sl->state = FSUI_ABORTED_JOINED;
-      return OK;
+      return GNUNET_OK;
     }
   if (sl->state != FSUI_ACTIVE)
-    return SYSERR;
+    return GNUNET_SYSERR;
   sl->state = FSUI_ABORTED;
-  PTHREAD_STOP_SLEEP (sl->handle);
-  return OK;
+  GNUNET_thread_stop_sleep (sl->handle);
+  return GNUNET_OK;
 }
 
 /**
@@ -353,7 +357,7 @@ FSUI_stopSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl)
   void *unused;
   int i;
 
-  MUTEX_LOCK (ctx->lock);
+  GNUNET_mutex_lock (ctx->lock);
   prev = NULL;
   pos = ctx->activeSearches;
   while ((pos != sl) && (pos != NULL))
@@ -363,8 +367,8 @@ FSUI_stopSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl)
     }
   if (pos == NULL)
     {
-      MUTEX_UNLOCK (ctx->lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (ctx->lock);
+      return GNUNET_SYSERR;
     }
   if (prev == NULL)
     ctx->activeSearches = pos->next;
@@ -372,15 +376,15 @@ FSUI_stopSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl)
     prev->next = pos->next;
   for (i = 0; i < sl->my_downloads_size; i++)
     sl->my_downloads[i]->search = NULL;
-  GROW (sl->my_downloads, sl->my_downloads_size, 0);
-  MUTEX_UNLOCK (ctx->lock);
+  GNUNET_array_grow (sl->my_downloads, sl->my_downloads_size, 0);
+  GNUNET_mutex_unlock (ctx->lock);
   pos->next = NULL;
   if ((pos->state == FSUI_ACTIVE) ||
       (pos->state == FSUI_COMPLETED) ||
       (pos->state == FSUI_ABORTED) || (pos->state == FSUI_ERROR))
     {
       GE_ASSERT (ctx->ectx, pos->handle != NULL);
-      PTHREAD_JOIN (pos->handle, &unused);
+      GNUNET_thread_join (pos->handle, &unused);
       pos->handle = NULL;
       if (pos->state == FSUI_ACTIVE)
         pos->state = FSUI_PENDING;
@@ -403,17 +407,19 @@ FSUI_stopSearch (struct FSUI_Context *ctx, struct FSUI_SearchList *sl)
       ECRS_freeUri (pos->resultsReceived[i].uri);
       ECRS_freeMetaData (pos->resultsReceived[i].meta);
     }
-  GROW (pos->resultsReceived, pos->sizeResultsReceived, 0);
+  GNUNET_array_grow (pos->resultsReceived, pos->sizeResultsReceived, 0);
   for (i = 0; i < pos->sizeUnmatchedResultsReceived; i++)
     {
       ECRS_freeUri (pos->unmatchedResultsReceived[i].fi.uri);
       ECRS_freeMetaData (pos->unmatchedResultsReceived[i].fi.meta);
-      GROW (pos->unmatchedResultsReceived[i].matchingKeys,
-            pos->unmatchedResultsReceived[i].matchingKeyCount, 0);
+      GNUNET_array_grow (pos->unmatchedResultsReceived[i].matchingKeys,
+                         pos->unmatchedResultsReceived[i].matchingKeyCount,
+                         0);
     }
-  GROW (pos->unmatchedResultsReceived, pos->sizeUnmatchedResultsReceived, 0);
-  FREE (pos);
-  return OK;
+  GNUNET_array_grow (pos->unmatchedResultsReceived,
+                     pos->sizeUnmatchedResultsReceived, 0);
+  GNUNET_free (pos);
+  return GNUNET_OK;
 }
 
 /* end of search.c */

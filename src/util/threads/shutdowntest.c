@@ -29,12 +29,12 @@
 static int
 check ()
 {
-  if (GNUNET_SHUTDOWN_TEST () != NO)
+  if (GNUNET_shutdown_test () != GNUNET_NO)
     return 1;
-  GNUNET_SHUTDOWN_INITIATE ();
-  if (GNUNET_SHUTDOWN_TEST () != YES)
+  GNUNET_shutdown_initiate ();
+  if (GNUNET_shutdown_test () != GNUNET_YES)
     return 2;
-  GNUNET_SHUTDOWN_WAITFOR ();
+  GNUNET_shutdown_wait_for ();
   return 0;
 }
 

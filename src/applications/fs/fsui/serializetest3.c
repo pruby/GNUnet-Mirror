@@ -31,11 +31,11 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE GNUNET_NO
 
 #define UPLOAD_PREFIX "/tmp/gnunet-fsui-searializetest3"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static struct GE_Context *ectx;
 
@@ -143,34 +143,39 @@ main (int argc, char *argv[])
   int suspendRestart = 0;
 
 
-  ok = YES;
-  cfg = GC_create_C_impl ();
+  ok = GNUNET_YES;
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
 #if START_DAEMON
-  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GE_ASSERT (NULL, daemon > 0);
-  CHECK (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS));
-  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
+  CHECK (GNUNET_OK ==
+         GNUNET_wait_for_daemon_running (NULL, cfg,
+                                         30 * GNUNET_CRON_SECONDS));
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
   ctx = FSUI_start (NULL,
-                    cfg, "serializetest3", 32, YES, &eventCallback, NULL);
+                    cfg, "serializetest3", 32, GNUNET_YES, &eventCallback,
+                    NULL);
   CHECK (ctx != NULL);
-  SNPRINTF (keyword, 40, "%s %s %s", keywords[0], _("AND"), keywords[1]);
+  GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
+                   keywords[1]);
   uri = ECRS_parseCharKeywordURI (ectx, keyword);
-  search = FSUI_startSearch (ctx, 0, 100, 240 * cronSECONDS, uri);
+  search = FSUI_startSearch (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   prog = 0;
   suspendRestart = 10;
   while (prog < 1000)
     {
       prog++;
-      PTHREAD_SLEEP (50 * cronMILLIS);
-      if ((suspendRestart > 0) && (weak_randomi (100) == 0))
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+      if ((suspendRestart > 0)
+          && (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 100) == 0))
         {
 #if 1
 #if DEBUG_VERBOSE
@@ -181,14 +186,15 @@ main (int argc, char *argv[])
           CHECK (search == NULL);
           ctx = FSUI_start (NULL,
                             cfg,
-                            "serializetest3", 32, YES, &eventCallback, NULL);
+                            "serializetest3", 32, GNUNET_YES, &eventCallback,
+                            NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif
 #endif
           suspendRestart--;
         }
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
   FSUI_abortSearch (ctx, search);
@@ -202,12 +208,12 @@ FAILURE:
     ECRS_freeUri (uri);
 
 #if START_DAEMON
-  GE_BREAK (NULL, OK == os_daemon_stop (NULL, daemon));
+  GE_BREAK (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
   GC_free (cfg);
   if (have_error)
-    ok = NO;
-  return (ok == YES) ? 0 : 1;
+    ok = GNUNET_NO;
+  return (ok == GNUNET_YES) ? 0 : 1;
 }
 
 /* end of serializetest3.c */

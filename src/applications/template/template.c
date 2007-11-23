@@ -31,35 +31,36 @@
 
 static CoreAPIForApplication *coreAPI = NULL;
 static struct ClientHandle *client;
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 static int
-handlep2pMSG (const PeerIdentity * sender, const MESSAGE_HEADER * message)
+handlep2pMSG (const GNUNET_PeerIdentity * sender,
+              const GNUNET_MessageHeader * message)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
-csHandle (struct ClientHandle *client, const MESSAGE_HEADER * message)
+csHandle (struct ClientHandle *client, const GNUNET_MessageHeader * message)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 static void
 clientExitHandler (struct ClientHandle *c)
 {
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   if (c == client)
     client = NULL;
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 int
 initialize_module_template (CoreAPIForApplication * capi)
 {
-  int ok = OK;
+  int ok = GNUNET_OK;
 
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
   client = NULL;
   coreAPI = capi;
 
@@ -67,12 +68,14 @@ initialize_module_template (CoreAPIForApplication * capi)
           GE_DEBUG | GE_REQUEST | GE_USER,
           _("`%s' registering client handler %d and %d\n"),
           "template", CS_PROTO_MAX_USED, P2P_PROTO_MAX_USED);
-  if (SYSERR == capi->registerHandler (P2P_PROTO_MAX_USED, &handlep2pMSG))
-    ok = SYSERR;
-  if (SYSERR == capi->registerClientExitHandler (&clientExitHandler))
-    ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler (CS_PROTO_MAX_USED, &csHandle))
-    ok = SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->registerHandler (P2P_PROTO_MAX_USED, &handlep2pMSG))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR == capi->registerClientExitHandler (&clientExitHandler))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->registerClientHandler (CS_PROTO_MAX_USED, &csHandle))
+    ok = GNUNET_SYSERR;
   return ok;
 }
 
@@ -82,7 +85,7 @@ done_module_template ()
   coreAPI->unregisterHandler (P2P_PROTO_MAX_USED, &handlep2pMSG);
   coreAPI->unregisterClientExitHandler (&clientExitHandler);
   coreAPI->unregisterClientHandler (CS_PROTO_MAX_USED, &csHandle);
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   coreAPI = NULL;
 }
 

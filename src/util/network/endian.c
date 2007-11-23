@@ -28,7 +28,7 @@
 #include "gnunet_util_network.h"
 
 unsigned long long
-ntohll (unsigned long long n)
+GNUNET_ntohll (unsigned long long n)
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
   return n;
@@ -38,7 +38,7 @@ ntohll (unsigned long long n)
 }
 
 unsigned long long
-htonll (unsigned long long n)
+GNUNET_htonll (unsigned long long n)
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
   return n;

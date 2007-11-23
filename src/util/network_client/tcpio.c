@@ -43,7 +43,7 @@
 #include "gnunet_protocols.h"
 #include "platform.h"
 
-#define DEBUG_TCPIO NO
+#define DEBUG_TCPIO GNUNET_NO
 
 /**
  * Struct to refer to a GNUnet TCP connection.
@@ -51,19 +51,19 @@
  * drops the connection, the client automatically tries
  * to reconnect (and for that needs connection information).
  */
-typedef struct ClientServerConnection
+typedef struct GNUNET_ClientServerConnection
 {
 
   /**
    * the socket handle, NULL if not life
    */
-  struct SocketHandle *sock;
+  struct GNUNET_SocketHandle *sock;
 
-  struct MUTEX *readlock;
+  struct GNUNET_Mutex *readlock;
 
-  struct MUTEX *writelock;
+  struct GNUNET_Mutex *writelock;
 
-  struct MUTEX *destroylock;
+  struct GNUNET_Mutex *destroylock;
 
   struct GE_Context *ectx;
 
@@ -99,7 +99,7 @@ getGNUnetPort (struct GE_Context *ectx, struct GC_Configuration *cfg)
   pos = strstr (res, ":");
   if (pos == NULL)
     {
-      FREE (res);
+      GNUNET_free (res);
       return 2087;
     }
   pos++;
@@ -110,10 +110,10 @@ getGNUnetPort (struct GE_Context *ectx, struct GC_Configuration *cfg)
               _
               ("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
               pos);
-      FREE (res);
+      GNUNET_free (res);
       return 2087;
     }
-  FREE (res);
+  GNUNET_free (res);
   return (unsigned short) port;
 }
 
@@ -146,76 +146,80 @@ getGNUnetdHost (struct GE_Context *ectx, struct GC_Configuration *cfg)
   return res;
 }
 
-struct ClientServerConnection *
-client_connection_create (struct GE_Context *ectx,
-                          struct GC_Configuration *cfg)
+struct GNUNET_ClientServerConnection *
+GNUNET_client_connection_create (struct GE_Context *ectx,
+                                 struct GC_Configuration *cfg)
 {
   ClientServerConnection *result;
 
-  result = MALLOC (sizeof (ClientServerConnection));
+  result = GNUNET_malloc (sizeof (ClientServerConnection));
   result->sock = NULL;
-  result->readlock = MUTEX_CREATE (NO);
-  result->writelock = MUTEX_CREATE (NO);
-  result->destroylock = MUTEX_CREATE (YES);
+  result->readlock = GNUNET_mutex_create (GNUNET_NO);
+  result->writelock = GNUNET_mutex_create (GNUNET_NO);
+  result->destroylock = GNUNET_mutex_create (GNUNET_YES);
   result->ectx = ectx;
   result->cfg = cfg;
   return result;
 }
 
 void
-connection_close_temporarily (struct ClientServerConnection *sock)
+GNUNET_client_connection_close_temporarily (struct
+                                            GNUNET_ClientServerConnection
+                                            *sock)
 {
   GE_ASSERT (NULL, sock != NULL);
-  MUTEX_LOCK (sock->destroylock);
+  GNUNET_mutex_lock (sock->destroylock);
   if (sock->sock != NULL)
     {
-      socket_close (sock->sock);
-      MUTEX_LOCK (sock->readlock);
-      MUTEX_LOCK (sock->writelock);
-      socket_destroy (sock->sock);
+      GNUNET_socket_close (sock->sock);
+      GNUNET_mutex_lock (sock->readlock);
+      GNUNET_mutex_lock (sock->writelock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      MUTEX_UNLOCK (sock->writelock);
-      MUTEX_UNLOCK (sock->readlock);
+      GNUNET_mutex_unlock (sock->writelock);
+      GNUNET_mutex_unlock (sock->readlock);
     }
-  MUTEX_UNLOCK (sock->destroylock);
+  GNUNET_mutex_unlock (sock->destroylock);
 }
 
 void
-connection_close_forever (struct ClientServerConnection *sock)
+GNUNET_client_connection_close_forever (struct GNUNET_ClientServerConnection
+                                        *sock)
 {
   GE_ASSERT (NULL, sock != NULL);
-  MUTEX_LOCK (sock->destroylock);
+  GNUNET_mutex_lock (sock->destroylock);
   if (sock->sock != NULL)
     {
-      socket_close (sock->sock);
-      MUTEX_LOCK (sock->readlock);
-      MUTEX_LOCK (sock->writelock);
-      socket_destroy (sock->sock);
+      GNUNET_socket_close (sock->sock);
+      GNUNET_mutex_lock (sock->readlock);
+      GNUNET_mutex_lock (sock->writelock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      sock->dead = YES;
-      MUTEX_UNLOCK (sock->writelock);
-      MUTEX_UNLOCK (sock->readlock);
+      sock->dead = GNUNET_YES;
+      GNUNET_mutex_unlock (sock->writelock);
+      GNUNET_mutex_unlock (sock->readlock);
     }
   else
     {
-      sock->dead = YES;
+      sock->dead = GNUNET_YES;
     }
-  MUTEX_UNLOCK (sock->destroylock);
+  GNUNET_mutex_unlock (sock->destroylock);
 }
 
 void
-connection_destroy (struct ClientServerConnection *sock)
+GNUNET_client_connection_destroy (struct GNUNET_ClientServerConnection *sock)
 {
   GE_ASSERT (NULL, sock != NULL);
-  connection_close_forever (sock);
-  MUTEX_DESTROY (sock->readlock);
-  MUTEX_DESTROY (sock->writelock);
-  MUTEX_DESTROY (sock->destroylock);
-  FREE (sock);
+  GNUNET_client_connection_close_forever (sock);
+  GNUNET_mutex_destroy (sock->readlock);
+  GNUNET_mutex_destroy (sock->writelock);
+  GNUNET_mutex_destroy (sock->destroylock);
+  GNUNET_free (sock);
 }
 
 int
-connection_test_open (struct ClientServerConnection *sock)
+GNUNET_client_connection_test_connected (struct GNUNET_ClientServerConnection
+                                         *sock)
 {
   return (sock->sock != NULL);
 }
@@ -224,7 +228,9 @@ connection_test_open (struct ClientServerConnection *sock)
  * Check a socket, open and connect if it is closed and it is a client-socket.
  */
 int
-connection_ensure_connected (struct ClientServerConnection *sock)
+GNUNET_client_connection_ensure_connected (struct
+                                           GNUNET_ClientServerConnection
+                                           *sock)
 {
   struct sockaddr_in soaddr;
   fd_set rset;
@@ -235,51 +241,52 @@ connection_ensure_connected (struct ClientServerConnection *sock)
   int osock;
   unsigned short port;
   char *host;
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
 
   GE_ASSERT (NULL, sock != NULL);
   if (sock->sock != NULL)
-    return OK;
-  if (sock->dead == YES)
-    return SYSERR;
+    return GNUNET_OK;
+  if (sock->dead == GNUNET_YES)
+    return GNUNET_SYSERR;
   port = getGNUnetPort (sock->ectx, sock->cfg);
   if (port == 0)
-    return SYSERR;
+    return GNUNET_SYSERR;
   host = getGNUnetdHost (sock->ectx, sock->cfg);
   if (host == NULL)
-    return SYSERR;
-  if (SYSERR == get_host_by_name (sock->ectx, host, &ip))
+    return GNUNET_SYSERR;
+  if (GNUNET_SYSERR == GNUNET_get_host_by_name (sock->ectx, host, &ip))
     {
-      FREE (host);
-      return SYSERR;
+      GNUNET_free (host);
+      return GNUNET_SYSERR;
     }
-  MUTEX_LOCK (sock->destroylock);
+  GNUNET_mutex_lock (sock->destroylock);
   if (sock->sock != NULL)
     {
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return OK;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_OK;
     }
-  if (sock->dead == YES)
+  if (sock->dead == GNUNET_YES)
     {
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
   osock = SOCKET (PF_INET, SOCK_STREAM, 6);     /* 6: TCP */
   if (osock == -1)
     {
       GE_LOG_STRERROR (sock->ectx,
                        GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, "socket");
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
   sock->sock = socket_create (sock->ectx, NULL, osock);
-  socket_set_blocking (sock->sock, NO);
+  GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
   memset (&soaddr, 0, sizeof (soaddr));
   soaddr.sin_family = AF_INET;
-  GE_ASSERT (sock->ectx, sizeof (struct in_addr) == sizeof (IPaddr));
+  GE_ASSERT (sock->ectx,
+             sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
   memcpy (&soaddr.sin_addr, &ip, sizeof (struct in_addr));
   soaddr.sin_port = htons (port);
   ret = CONNECT (osock, (struct sockaddr *) &soaddr, sizeof (soaddr));
@@ -289,11 +296,11 @@ connection_ensure_connected (struct ClientServerConnection *sock)
               GE_WARNING | GE_USER | GE_BULK,
               _("Cannot connect to %s:%u: %s\n"),
               host, port, STRERROR (errno));
-      socket_destroy (sock->sock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
   /* we call select() first with a timeout of WAIT_SECONDS to
      avoid blocking on a later write indefinitely;
@@ -314,22 +321,22 @@ connection_ensure_connected (struct ClientServerConnection *sock)
       if (errno != EINTR)
         GE_LOG_STRERROR (sock->ectx,
                          GE_WARNING | GE_USER | GE_BULK, "select");
-      socket_destroy (sock->sock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
   if (FD_ISSET (osock, &eset))
     {
       GE_LOG (sock->ectx,
               GE_WARNING | GE_USER | GE_BULK,
               _("Error connecting to %s:%u\n"), host, port);
-      socket_destroy (sock->sock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
   if (!FD_ISSET (osock, &wset))
     {
@@ -337,137 +344,142 @@ connection_ensure_connected (struct ClientServerConnection *sock)
               GE_WARNING | GE_USER | GE_BULK,
               _("Failed to connect to %s:%u in %ds\n"),
               host, port, WAIT_SECONDS);
-      socket_destroy (sock->sock);
+      GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
-      FREE (host);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_free (host);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
-  FREE (host);
-  socket_set_blocking (sock->sock, YES);
-  MUTEX_UNLOCK (sock->destroylock);
-  return OK;
+  GNUNET_free (host);
+  GNUNET_socket_set_blocking (sock->sock, GNUNET_YES);
+  GNUNET_mutex_unlock (sock->destroylock);
+  return GNUNET_OK;
 }
 
 /**
  * Write to a GNUnet TCP socket.  Will also potentially complete the
- * sending of a previous non-blocking connection_write call.
+ * sending of a previous non-blocking GNUNET_client_connection_write call.
  *
  * @param sock the socket to write to
  * @param buffer the buffer to write
- * @return OK if the write was sucessful, otherwise SYSERR.
+ * @return GNUNET_OK if the write was sucessful, otherwise GNUNET_SYSERR.
  */
 int
-connection_write (struct ClientServerConnection *sock,
-                  const MESSAGE_HEADER * buffer)
+GNUNET_client_connection_write (struct GNUNET_ClientServerConnection *sock,
+                                const GNUNET_MessageHeader * buffer)
 {
   size_t size;
   size_t sent;
   int res;
 
-  MUTEX_LOCK (sock->destroylock);
-  MUTEX_LOCK (sock->writelock);
-  if (SYSERR == connection_ensure_connected (sock))
+  GNUNET_mutex_lock (sock->destroylock);
+  GNUNET_mutex_lock (sock->writelock);
+  if (GNUNET_SYSERR == GNUNET_client_connection_ensure_connected (sock))
     {
-      MUTEX_UNLOCK (sock->writelock);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sock->writelock);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
-  MUTEX_UNLOCK (sock->destroylock);
+  GNUNET_mutex_unlock (sock->destroylock);
   GE_ASSERT (NULL, sock->sock != NULL);
   size = ntohs (buffer->size);
-  res = socket_send (sock->sock, NC_Complete, buffer, size, &sent);
-  if ((res != YES) || (sent != size))
+  res =
+    GNUNET_socket_send (sock->sock, GNUNET_NC_COMPLETE_TRANSFER, buffer, size,
+                        &sent);
+  if ((res != GNUNET_YES) || (sent != size))
     {
-      MUTEX_UNLOCK (sock->writelock);
-      connection_close_temporarily (sock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sock->writelock);
+      GNUNET_client_connection_close_temporarily (sock);
+      return GNUNET_SYSERR;
     }
-  MUTEX_UNLOCK (sock->writelock);
-  return OK;
+  GNUNET_mutex_unlock (sock->writelock);
+  return GNUNET_OK;
 }
 
 int
-connection_read (struct ClientServerConnection *sock,
-                 MESSAGE_HEADER ** buffer)
+GNUNET_client_connection_read (struct GNUNET_ClientServerConnection *sock,
+                               GNUNET_MessageHeader ** buffer)
 {
   int res;
   size_t pos;
   char *buf;
   unsigned short size;
-  RETURN_ERROR_MESSAGE *rem;
+  GNUNET_MessageReturnErrorMessage *rem;
 
-  MUTEX_LOCK (sock->destroylock);
-  MUTEX_LOCK (sock->readlock);
-  if (OK != connection_ensure_connected (sock))
+  GNUNET_mutex_lock (sock->destroylock);
+  GNUNET_mutex_lock (sock->readlock);
+  if (GNUNET_OK != GNUNET_client_connection_ensure_connected (sock))
     {
-      MUTEX_UNLOCK (sock->readlock);
-      MUTEX_UNLOCK (sock->destroylock);
-      return SYSERR;
+      GNUNET_mutex_unlock (sock->readlock);
+      GNUNET_mutex_unlock (sock->destroylock);
+      return GNUNET_SYSERR;
     }
-  MUTEX_UNLOCK (sock->destroylock);
+  GNUNET_mutex_unlock (sock->destroylock);
   GE_ASSERT (NULL, sock->sock != NULL);
   while (1)
     {
       pos = 0;
       res = 0;
-      if ((OK != socket_recv (sock->sock,
-                              NC_Complete,
-                              &size,
-                              sizeof (unsigned short),
-                              &pos)) || (pos != sizeof (unsigned short)))
+      if ((GNUNET_OK != GNUNET_socket_recv (sock->sock,
+                                            GNUNET_NC_COMPLETE_TRANSFER,
+                                            &size,
+                                            sizeof (unsigned short),
+                                            &pos))
+          || (pos != sizeof (unsigned short)))
         {
-          MUTEX_UNLOCK (sock->readlock);
-          connection_close_temporarily (sock);
-          return SYSERR;
+          GNUNET_mutex_unlock (sock->readlock);
+          GNUNET_client_connection_close_temporarily (sock);
+          return GNUNET_SYSERR;
         }
       size = ntohs (size);
-      if (size < sizeof (MESSAGE_HEADER))
+      if (size < sizeof (GNUNET_MessageHeader))
         {
           GE_BREAK (sock->ectx, 0);
-          MUTEX_UNLOCK (sock->readlock);
-          connection_close_temporarily (sock);
-          return SYSERR;        /* invalid header */
+          GNUNET_mutex_unlock (sock->readlock);
+          GNUNET_client_connection_close_temporarily (sock);
+          return GNUNET_SYSERR; /* invalid header */
         }
 
-      buf = MALLOC (size);
-      if ((OK != socket_recv (sock->sock,
-                              NC_Complete,
-                              &buf[pos],
-                              size - pos,
-                              &pos)) ||
+      buf = GNUNET_malloc (size);
+      if ((GNUNET_OK != GNUNET_socket_recv (sock->sock,
+                                            GNUNET_NC_COMPLETE_TRANSFER,
+                                            &buf[pos],
+                                            size - pos,
+                                            &pos)) ||
           (pos + sizeof (unsigned short) != size))
         {
-          FREE (buf);
-          MUTEX_UNLOCK (sock->readlock);
-          connection_close_temporarily (sock);
-          return SYSERR;
+          GNUNET_free (buf);
+          GNUNET_mutex_unlock (sock->readlock);
+          GNUNET_client_connection_close_temporarily (sock);
+          return GNUNET_SYSERR;
         }
 #if DEBUG_TCPIO
       GE_LOG (sock->ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "Successfully received %d bytes from TCP socket.\n", size);
 #endif
-      *buffer = (MESSAGE_HEADER *) buf;
+      *buffer = (GNUNET_MessageHeader *) buf;
       (*buffer)->size = htons (size);
 
       if (ntohs ((*buffer)->type) != CS_PROTO_RETURN_ERROR)
         break;                  /* got actual message! */
-      rem = (RETURN_ERROR_MESSAGE *) * buffer;
-      if (ntohs (rem->header.size) < sizeof (RETURN_ERROR_MESSAGE))
+      rem = (GNUNET_MessageReturnErrorMessage *) * buffer;
+      if (ntohs (rem->header.size) <
+          sizeof (GNUNET_MessageReturnErrorMessage))
         {
           GE_BREAK (sock->ectx, 0);
-          MUTEX_UNLOCK (sock->readlock);
-          connection_close_temporarily (sock);
-          FREE (buf);
-          return SYSERR;
+          GNUNET_mutex_unlock (sock->readlock);
+          GNUNET_client_connection_close_temporarily (sock);
+          GNUNET_free (buf);
+          return GNUNET_SYSERR;
         }
-      size = ntohs (rem->header.size) - sizeof (RETURN_ERROR_MESSAGE);
+      size =
+        ntohs (rem->header.size) - sizeof (GNUNET_MessageReturnErrorMessage);
       GE_LOG (sock->ectx, ntohl (rem->kind), "%.*s", (int) size, &rem[1]);
-      FREE (rem);
+      GNUNET_free (rem);
     }                           /* while (1) */
-  MUTEX_UNLOCK (sock->readlock);
-  return OK;                    /* success */
+  GNUNET_mutex_unlock (sock->readlock);
+  return GNUNET_OK;             /* success */
 }
 
 /**
@@ -475,29 +487,31 @@ connection_read (struct ClientServerConnection *sock,
  *
  * @param sock the TCP socket
  * @param ret the return value from TCP
- * @return SYSERR on error, OK if the return value was read
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was read
  * successfully
  */
 int
-connection_read_result (struct ClientServerConnection *sock, int *ret)
+GNUNET_client_connection_read_result (struct GNUNET_ClientServerConnection
+                                      *sock, int *ret)
 {
-  RETURN_VALUE_MESSAGE *rv;
+  GNUNET_MessageReturnValue *rv;
 
   rv = NULL;
-  if (SYSERR == connection_read (sock, (MESSAGE_HEADER **) & rv))
-    return SYSERR;
-  if ((ntohs (rv->header.size) != sizeof (RETURN_VALUE_MESSAGE)) ||
+  if (GNUNET_SYSERR ==
+      GNUNET_client_connection_read (sock, (GNUNET_MessageHeader **) & rv))
+    return GNUNET_SYSERR;
+  if ((ntohs (rv->header.size) != sizeof (GNUNET_MessageReturnValue)) ||
       (ntohs (rv->header.type) != CS_PROTO_RETURN_VALUE))
     {
       GE_LOG (sock->ectx,
               GE_WARNING | GE_DEVELOPER | GE_BULK,
               _("`%s' failed, reply invalid!\n"), __FUNCTION__);
-      FREE (rv);
-      return SYSERR;
+      GNUNET_free (rv);
+      return GNUNET_SYSERR;
     }
   *ret = ntohl (rv->return_value);
-  FREE (rv);
-  return OK;
+  GNUNET_free (rv);
+  return GNUNET_OK;
 }
 
 /**
@@ -505,18 +519,19 @@ connection_read_result (struct ClientServerConnection *sock, int *ret)
  * TCP.
  * @param sock the TCP socket
  * @param ret the return value to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
 int
-connection_write_result (struct ClientServerConnection *sock, int ret)
+GNUNET_client_connection_write_result (struct GNUNET_ClientServerConnection
+                                       *sock, int ret)
 {
-  RETURN_VALUE_MESSAGE rv;
+  GNUNET_MessageReturnValue rv;
 
-  rv.header.size = htons (sizeof (RETURN_VALUE_MESSAGE));
+  rv.header.size = htons (sizeof (GNUNET_MessageReturnValue));
   rv.header.type = htons (CS_PROTO_RETURN_VALUE);
   rv.return_value = htonl (ret);
-  return connection_write (sock, &rv.header);
+  return GNUNET_client_connection_write (sock, &rv.header);
 }
 
 /*  end of tcpio.c */

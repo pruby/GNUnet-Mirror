@@ -33,7 +33,7 @@
 
 int gtk_wizard_mainsetup_gtk (int argc,
                               char *const *argv,
-                              struct PluginHandle *self,
+                              struct GNUNET_PluginHandle *self,
                               struct GE_Context *ectx,
                               struct GC_Configuration *cfg,
                               struct GNS_Context *gns,

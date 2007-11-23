@@ -44,7 +44,7 @@ wiz_is_nic_default (struct GC_Configuration *cfg, const char *name,
   /* default NIC for unixes */
   if (strcmp (nic, "eth0") == 0)
     {
-      FREE (nic);
+      GNUNET_free (nic);
       nic = NULL;
     }
 #endif
@@ -78,7 +78,7 @@ wiz_is_nic_default (struct GC_Configuration *cfg, const char *name,
  * @param doAutoStart true to enable autostart, false to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 wiz_autostartService (int doAutoStart, char *username, char *groupname)
@@ -86,8 +86,8 @@ wiz_autostartService (int doAutoStart, char *username, char *groupname)
   int ret;
   char *exe;
 
-  exe = os_get_installation_path (IPK_BINDIR);
-  exe = (char *) REALLOC (exe, strlen (exe) + 12);      /* 11 = "gnunetd.exe" */
+  exe = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
+  exe = (char *) GNUNET_realloc (exe, strlen (exe) + 12);       /* 11 = "gnunetd.exe" */
   strcat (exe,
 #ifndef WINDOWS
           "gnunetd");
@@ -96,10 +96,10 @@ wiz_autostartService (int doAutoStart, char *username, char *groupname)
 #endif
 
   ret =
-    os_modify_autostart (NULL /* FIXME 0.7.1 NILS */ , 0, doAutoStart, exe,
-                         username, groupname);
-  FREE (exe);
-  if (ret != YES)
+    GNUNET_configure_autostart (NULL /* FIXME 0.7.1 NILS */ , 0, doAutoStart,
+                                exe, username, groupname);
+  GNUNET_free (exe);
+  if (ret != GNUNET_YES)
     {
 #ifdef WINDOWS
       char *err = NULL;
@@ -141,9 +141,9 @@ wiz_autostartService (int doAutoStart, char *username, char *groupname)
         }
 #endif
 
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -157,7 +157,7 @@ wiz_createGroupUser (char *group_name, char *user_name)
 {
   int ret;
 
-  ret = os_modify_user (0, 1, user_name, group_name);
+  ret = GNUNET_configure_user_account (0, 1, user_name, group_name);
 
   if (ret)
     {

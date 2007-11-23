@@ -33,8 +33,8 @@ computeDepth (unsigned long long flen)
   unsigned int treeDepth;
   unsigned long long fl;
 
-  GE_ASSERT (NULL, DBLOCK_SIZE < MAX_BUFFER_SIZE);
-  GE_ASSERT (NULL, IBLOCK_SIZE < MAX_BUFFER_SIZE);
+  GE_ASSERT (NULL, DBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
+  GE_ASSERT (NULL, IBLOCK_SIZE < GNUNET_MAX_BUFFER_SIZE);
   treeDepth = 0;
   fl = DBLOCK_SIZE;
   while (fl < flen)

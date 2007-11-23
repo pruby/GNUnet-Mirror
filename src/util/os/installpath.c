@@ -54,15 +54,15 @@ get_path_from_proc_exe ()
   char *lnk;
   size_t size;
 
-  SNPRINTF (fn, 64, "/proc/%u/exe", getpid ());
-  lnk = MALLOC (1024);
+  GNUNET_snprintf (fn, 64, "/proc/%u/exe", getpid ());
+  lnk = GNUNET_malloc (1024);
   size = readlink (fn, lnk, 1023);
   if ((size == 0) || (size >= 1024))
     {
       GE_LOG_STRERROR_FILE (NULL,
                             GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                             "readlink", fn);
-      FREE (lnk);
+      GNUNET_free (lnk);
       return NULL;
     }
   lnk[size] = '\0';
@@ -71,7 +71,7 @@ get_path_from_proc_exe ()
   if ((size < 4) || (lnk[size - 4] != '/'))
     {
       /* not installed in "/bin/" -- binary path probably useless */
-      FREE (lnk);
+      GNUNET_free (lnk);
       return NULL;
     }
   lnk[size] = '\0';
@@ -89,7 +89,7 @@ get_path_from_module_filename ()
   char *path;
   char *idx;
 
-  path = MALLOC (4097);
+  path = GNUNET_malloc (4097);
   GetModuleFileName (NULL, path, 4096);
   idx = path + strlen (path);
   while ((idx > path) && (*idx != '\\') && (*idx != '/'))
@@ -123,11 +123,11 @@ get_path_from_NSGetExecutablePath ()
       else
         {
           len++;
-          path = (char *) MALLOC (len);
+          path = (char *) GNUNET_malloc (len);
           ret = ((MyNSGetExecutablePathProto) func) (path, &len);
           if (ret != 0)
             {
-              FREE (path);
+              GNUNET_free (path);
               path = NULL;
             }
           else
@@ -155,8 +155,8 @@ get_path_from_PATH ()
   p = getenv ("PATH");
   if (p == NULL)
     return NULL;
-  path = STRDUP (p);            /* because we write on it */
-  buf = MALLOC (strlen (path) + 20);
+  path = GNUNET_strdup (p);     /* because we write on it */
+  buf = GNUNET_malloc (strlen (path) + 20);
   size = strlen (path);
   pos = path;
 
@@ -164,25 +164,25 @@ get_path_from_PATH ()
     {
       *end = '\0';
       sprintf (buf, "%s/%s", pos, "gnunetd");
-      if (disk_file_test (NULL, buf) == YES)
+      if (GNUNET_disk_file_test (NULL, buf) == GNUNET_YES)
         {
-          pos = STRDUP (pos);
-          FREE (buf);
-          FREE (path);
+          pos = GNUNET_strdup (pos);
+          GNUNET_free (buf);
+          GNUNET_free (path);
           return pos;
         }
       pos = end + 1;
     }
   sprintf (buf, "%s/%s", pos, "gnunetd");
-  if (disk_file_test (NULL, buf) == YES)
+  if (GNUNET_disk_file_test (NULL, buf) == GNUNET_YES)
     {
-      pos = STRDUP (pos);
-      FREE (buf);
-      FREE (path);
+      pos = GNUNET_strdup (pos);
+      GNUNET_free (buf);
+      GNUNET_free (path);
       return pos;
     }
-  FREE (buf);
-  FREE (path);
+  GNUNET_free (buf);
+  GNUNET_free (path);
   return NULL;
 }
 
@@ -193,7 +193,7 @@ get_path_from_GNUNET_PREFIX ()
 
   p = getenv ("GNUNET_PREFIX");
   if (p != NULL)
-    return STRDUP (p);
+    return GNUNET_strdup (p);
   return NULL;
 }
 
@@ -241,7 +241,7 @@ os_get_exec_path ()
  * @return a pointer to the dir path (to be freed by the caller)
  */
 char *
-os_get_installation_path (enum InstallPathKind dirkind)
+GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind)
 {
   size_t n;
   const char *dirname;
@@ -256,7 +256,7 @@ os_get_installation_path (enum InstallPathKind dirkind)
   if (n == 0)
     {
       /* should never happen, but better safe than sorry */
-      FREE (execpath);
+      GNUNET_free (execpath);
       return NULL;
     }
   if (execpath[n - 1] == DIR_SEPARATOR)
@@ -270,33 +270,33 @@ os_get_installation_path (enum InstallPathKind dirkind)
     }
   switch (dirkind)
     {
-    case IPK_PREFIX:
+    case GNUNET_IPK_PREFIX:
       dirname = "";
       break;
-    case IPK_BINDIR:
+    case GNUNET_IPK_BINDIR:
       dirname = DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR;
       break;
-    case IPK_LIBDIR:
+    case GNUNET_IPK_LIBDIR:
       dirname =
         DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "GNUnet" DIR_SEPARATOR_STR;
       break;
-    case IPK_DATADIR:
+    case GNUNET_IPK_DATADIR:
       dirname =
         DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "GNUnet"
         DIR_SEPARATOR_STR;
       break;
-    case IPK_LOCALEDIR:
+    case GNUNET_IPK_LOCALEDIR:
       dirname =
         DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "locale"
         DIR_SEPARATOR_STR;
       break;
     default:
-      FREE (execpath);
+      GNUNET_free (execpath);
       return NULL;
     }
-  tmp = MALLOC (strlen (execpath) + strlen (dirname) + 1);
+  tmp = GNUNET_malloc (strlen (execpath) + strlen (dirname) + 1);
   sprintf (tmp, "%s%s", execpath, dirname);
-  FREE (execpath);
+  GNUNET_free (execpath);
   return tmp;
 }
 

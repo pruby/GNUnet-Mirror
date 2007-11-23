@@ -66,7 +66,7 @@ bin2enc (const void *data, size_t size)
   len = size * 8 / 6;
   if (((size * 8) % 6) != 0)
     len++;
-  ret = MALLOC (len + 1);
+  ret = GNUNET_malloc (len + 1);
   ret[len] = '\0';
   len = 0;
   bits = 0;

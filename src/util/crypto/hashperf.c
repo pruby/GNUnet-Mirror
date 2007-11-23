@@ -31,32 +31,32 @@
 static void
 perfHash ()
 {
-  HashCode512 hc1;
-  HashCode512 hc2;
-  HashCode512 hc3;
+  GNUNET_HashCode hc1;
+  GNUNET_HashCode hc2;
+  GNUNET_HashCode hc3;
   int i;
   char *buf;
 
-  buf = MALLOC (1024 * 64);
+  buf = GNUNET_malloc (1024 * 64);
   memset (buf, 1, 1024 * 64);
-  hash ("foo", 3, &hc1);
+  GNUNET_hash ("foo", 3, &hc1);
   for (i = 0; i < 1024; i++)
     {
-      hash (&hc1, sizeof (HashCode512), &hc2);
-      hash (&hc2, sizeof (HashCode512), &hc1);
-      hash (buf, 1024 * 64, &hc3);
+      GNUNET_hash (&hc1, sizeof (GNUNET_HashCode), &hc2);
+      GNUNET_hash (&hc2, sizeof (GNUNET_HashCode), &hc1);
+      GNUNET_hash (buf, 1024 * 64, &hc3);
     }
-  FREE (buf);
+  GNUNET_free (buf);
 }
 
 int
 main (int argc, char *argv[])
 {
-  cron_t start;
+  GNUNET_CronTime start;
 
-  start = get_time ();
+  start = GNUNET_get_time ();
   perfHash ();
-  printf ("Hash perf took %llu ms\n", get_time () - start);
+  printf ("Hash perf took %llu ms\n", GNUNET_get_time () - start);
   return 0;
 }
 

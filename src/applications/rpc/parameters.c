@@ -32,7 +32,7 @@
 
 /**
  * A parameter to/from an RPC call. These (and nothing else) are stored in
- * the Vector of the RPC_Param structure.
+ * the GNUNET_Vector of the RPC_Param structure.
  */
 typedef struct
 {
@@ -49,7 +49,7 @@ typedef struct
 RPC_Param *
 RPC_paramNew ()
 {
-  return vectorNew (4);
+  return GNUNET_vector_create (4);
 }
 
 /**
@@ -64,14 +64,14 @@ RPC_paramFree (RPC_Param * param)
 {
   if (param == NULL)
     return;
-  while (vectorSize (param) > 0)
+  while (GNUNET_vector_get_size (param) > 0)
     {
-      Parameter *p = vectorRemoveLast (param);
-      FREE (p->name);
-      FREE (p->data);
-      FREE (p);
+      Parameter *p = GNUNET_vector_delete_last (param);
+      GNUNET_free (p->name);
+      GNUNET_free (p->data);
+      GNUNET_free (p);
     }
-  vectorFree (param);
+  GNUNET_vector_destroy (param);
 }
 
 /**
@@ -191,7 +191,7 @@ RPC_paramCount (RPC_Param * param)
 {
   if (param == NULL)
     return 0;
-  return vectorSize (param);
+  return GNUNET_vector_get_size (param);
 }
 
 
@@ -215,8 +215,8 @@ RPC_paramAdd (RPC_Param * param,
 
   if (param == NULL)
     return;
-  new = MALLOC (sizeof (Parameter));
-  new->name = STRDUP (name);
+  new = GNUNET_malloc (sizeof (Parameter));
+  new->name = GNUNET_strdup (name);
   new->dataLength = dataLength;
   if (dataLength == 0)
     {
@@ -224,10 +224,10 @@ RPC_paramAdd (RPC_Param * param,
     }
   else
     {
-      new->data = MALLOC (dataLength);
+      new->data = GNUNET_malloc (dataLength);
       memcpy (new->data, data, dataLength);
     }
-  vectorInsertLast (param, new);
+  GNUNET_vector_insert_last (param, new);
 }
 
 
@@ -250,8 +250,8 @@ RPC_paramAddDataContainer (RPC_Param * param,
 
   if (param == NULL)
     return;
-  new = MALLOC (sizeof (Parameter));
-  new->name = STRDUP (name);
+  new = GNUNET_malloc (sizeof (Parameter));
+  new->name = GNUNET_strdup (name);
   new->dataLength = ntohl (data->size) - sizeof (DataContainer);
   if (new->dataLength == 0)
     {
@@ -259,10 +259,10 @@ RPC_paramAddDataContainer (RPC_Param * param,
     }
   else
     {
-      new->data = MALLOC (new->dataLength);
+      new->data = GNUNET_malloc (new->dataLength);
       memcpy (new->data, &data[1], new->dataLength);
     }
-  vectorInsertLast (param, new);
+  GNUNET_vector_insert_last (param, new);
 }
 
 /**
@@ -279,7 +279,7 @@ RPC_paramName (RPC_Param * param, unsigned int i)
 
   if (param == NULL)
     return NULL;
-  p = vectorGetAt (param, i);
+  p = GNUNET_vector_get (param, i);
   if (p)
     return p->name;
   else
@@ -292,7 +292,7 @@ RPC_paramName (RPC_Param * param, unsigned int i)
  *
  * @param param Target RPC parameter structure
  * @param value set to the value of the named parameter
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 int
 RPC_paramValueByName (RPC_Param * param,
@@ -302,20 +302,20 @@ RPC_paramValueByName (RPC_Param * param,
   Parameter *p;
 
   if (param == NULL)
-    return SYSERR;
-  p = vectorGetFirst (param);
+    return GNUNET_SYSERR;
+  p = GNUNET_vector_get_first (param);
   while (p != NULL)
     {
       if (!strcmp (p->name, name))
         {
           *value = p->data;
           *dataLength = p->dataLength;
-          return OK;
+          return GNUNET_OK;
         }
-      p = vectorGetNext (param);
+      p = GNUNET_vector_get_next (param);
     }
 
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -323,7 +323,7 @@ RPC_paramValueByName (RPC_Param * param,
  *
  * @param param Target RPC parameter structure
  * @param value set to the value of the named parameter
- * @return SYSERR on error
+ * @return GNUNET_SYSERR on error
  */
 DataContainer *
 RPC_paramDataContainerByName (RPC_Param * param, const char *name)
@@ -333,17 +333,17 @@ RPC_paramDataContainerByName (RPC_Param * param, const char *name)
 
   if (param == NULL)
     return NULL;
-  p = vectorGetFirst (param);
+  p = GNUNET_vector_get_first (param);
   while (p != NULL)
     {
       if (!strcmp (p->name, name))
         {
-          ret = MALLOC (sizeof (DataContainer) + p->dataLength);
+          ret = GNUNET_malloc (sizeof (DataContainer) + p->dataLength);
           ret->size = htonl (sizeof (DataContainer) + p->dataLength);
           memcpy (&ret[1], p->data, p->dataLength);
           return ret;
         }
-      p = vectorGetNext (param);
+      p = GNUNET_vector_get_next (param);
     }
 
   return NULL;
@@ -363,15 +363,15 @@ RPC_paramValueByPosition (RPC_Param * param,
   Parameter *p;
 
   if (param == NULL)
-    return SYSERR;
-  p = vectorGetAt (param, i);
+    return GNUNET_SYSERR;
+  p = GNUNET_vector_get (param, i);
   if (p != NULL)
     {
       *dataLength = p->dataLength;
       *value = p->data;
-      return OK;
+      return GNUNET_OK;
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -388,10 +388,10 @@ RPC_paramDataContainerByPosition (RPC_Param * param, unsigned int i)
 
   if (param == NULL)
     return NULL;
-  p = vectorGetAt (param, i);
+  p = GNUNET_vector_get (param, i);
   if (p != NULL)
     {
-      ret = MALLOC (sizeof (DataContainer) + p->dataLength);
+      ret = GNUNET_malloc (sizeof (DataContainer) + p->dataLength);
       ret->size = htonl (sizeof (DataContainer) + p->dataLength);
       memcpy (&ret[1], p->data, p->dataLength);
       return ret;

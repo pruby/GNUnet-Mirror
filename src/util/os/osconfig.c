@@ -35,8 +35,9 @@
  * @param callback the callback function
  */
 void
-os_list_network_interfaces (struct GE_Context *ectx,
-                            NetworkIfcProcessor proc, void *cls)
+GNUNET_list_network_interfaces (struct GE_Context *ectx,
+                                GNUNET_NetworkInterfaceProcessor proc,
+                                void *cls)
 {
 #ifdef MINGW
   ListNICs (proc, cls);
@@ -85,7 +86,7 @@ os_list_network_interfaces (struct GE_Context *ectx,
       *dst = 0;
 
       if ((entry[0] != '\0') &&
-          (OK != proc (entry, strcmp (entry, "eth0") == 0, cls)))
+          (GNUNET_OK != proc (entry, strcmp (entry, "eth0") == 0, cls)))
         break;
 
       while ((c != '\n') && (c != EOF))
@@ -97,13 +98,13 @@ os_list_network_interfaces (struct GE_Context *ectx,
 
 /**
  * @brief Set maximum number of open file descriptors
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-os_set_fd_limit (struct GE_Context *ectx, int n)
+GNUNET_set_fd_limit (struct GE_Context *ectx, int n)
 {
   if (n == 0)
-    return OK;
+    return GNUNET_OK;
 #if HAVE_SETRLIMIT
   struct rlimit rlim;
   int ret;
@@ -116,19 +117,19 @@ os_set_fd_limit (struct GE_Context *ectx, int n)
       GE_LOG_STRERROR (ectx,
                        GE_INFO | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                        "setrlimit");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #else
   GE_LOG (ectx,
           GE_INFO | GE_USER | GE_ADMIN,
           _("Setting open descriptor limit not supported.\n"));
 #endif
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * @brief Checks if we can start GNUnet automatically
- * @return YES if yes, NO otherwise
+ * @return GNUNET_YES if yes, GNUNET_NO otherwise
  */
 static int
 isOSAutostartCapable ()
@@ -138,14 +139,14 @@ isOSAutostartCapable ()
     {
       /* Debian */
       if (ACCESS ("/etc/init.d/", W_OK) == 0)
-        return YES;
+        return GNUNET_YES;
     }
-  return NO;
+  return GNUNET_NO;
 #else
 #ifdef WINDOWS
-  return IsWinNT ()? YES : NO;
+  return IsWinNT ()? GNUNET_YES : GNUNET_NO;
 #else
-  return NO;
+  return GNUNET_NO;
 #endif
 #endif
 }
@@ -153,23 +154,23 @@ isOSAutostartCapable ()
 /**
  * @brief Make "application" start automatically
  *
- * @param testCapability YES to merely probe if the OS has this
+ * @param testCapability GNUNET_YES to merely probe if the OS has this
  *        functionality (in that case, no actual operation is
- *        performed).  SYSERR is returned if
+ *        performed).  GNUNET_SYSERR is returned if
  *        a) autostart is not supported,
  *        b) the application does not seem to exist
  *        c) the user or group do not exist
  *        d) the user has insufficient permissions for
  *           changing autostart
- *        e) doAutoStart is NO, but autostart is already
+ *        e) doAutoStart is GNUNET_NO, but autostart is already
  *           disabled
- *        f) doAutoStart is YES, but autostart is already
+ *        f) doAutoStart is GNUNET_YES, but autostart is already
  *           enabled
- * @param doAutoStart YES to enable autostart of the
- *        application, NO to disable it
+ * @param doAutoStart GNUNET_YES to enable autostart of the
+ *        application, GNUNET_NO to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
- * @returns YES on success, NO if unsupported, SYSERR on failure or one of
+ * @returns GNUNET_YES on success, GNUNET_NO if unsupported, GNUNET_SYSERR on failure or one of
  *          these error codes:
  *  Windows
  *    2 SCM could not be opened
@@ -181,11 +182,11 @@ isOSAutostartCapable ()
  *    2 startup script could not be opened
  */
 int
-os_modify_autostart (struct GE_Context *ectx,
-                     int testCapability,
-                     int doAutoStart,
-                     const char *application,
-                     const char *username, const char *groupname)
+GNUNET_configure_autostart (struct GE_Context *ectx,
+                            int testCapability,
+                            int doAutoStart,
+                            const char *application,
+                            const char *username, const char *groupname)
 {
   if (testCapability)
     {
@@ -210,7 +211,7 @@ os_modify_autostart (struct GE_Context *ectx,
             case 0:
               break;
             case 1:
-              return NO;
+              return GNUNET_NO;
             case 2:
               return 2;
             case 3:
@@ -218,7 +219,7 @@ os_modify_autostart (struct GE_Context *ectx,
                 return 3;
               break;
             default:
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
 
           /* Grant permissions to the GNUnet directory */
@@ -264,7 +265,7 @@ os_modify_autostart (struct GE_Context *ectx,
             case 0:
               break;
             case 1:
-              return NO;
+              return GNUNET_NO;
             case 2:
               return 2;
             case 3:
@@ -272,7 +273,7 @@ os_modify_autostart (struct GE_Context *ectx,
             case 4:
               return 3;
             default:
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
       else
@@ -291,7 +292,7 @@ os_modify_autostart (struct GE_Context *ectx,
         }
     }
 
-  return YES;
+  return GNUNET_YES;
 #else
   struct stat buf;
   int ret;
@@ -302,7 +303,7 @@ os_modify_autostart (struct GE_Context *ectx,
       GE_LOG_STRERROR_FILE (ectx,
                             GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                             "access", "/usr/sbin/update-rc.d");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 
   /* Debian */
@@ -368,7 +369,7 @@ os_modify_autostart (struct GE_Context *ectx,
                                     GE_WARNING | GE_USER | GE_ADMIN |
                                     GE_IMMEDIATE, "chmod",
                                     "/etc/init.d/gnunetd");
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
       if (STAT ("/etc/init.d/gnunetd", &buf) != -1)
@@ -392,10 +393,10 @@ os_modify_autostart (struct GE_Context *ectx,
                           "/usr/sbin/update-rc.d gnunetd defaults",
                           WEXITSTATUS (ret));
                 }
-              return SYSERR;
+              return GNUNET_SYSERR;
             }
         }
-      return YES;
+      return GNUNET_YES;
     }
   else
     {                           /* REMOVE autostart */
@@ -405,7 +406,7 @@ os_modify_autostart (struct GE_Context *ectx,
                                 GE_WARNING | GE_USER | GE_ADMIN |
                                 GE_IMMEDIATE, "unlink",
                                 "/etc/init.d/gnunetd");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       errno = 0;
       if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
@@ -414,12 +415,12 @@ os_modify_autostart (struct GE_Context *ectx,
                                 GE_WARNING | GE_USER | GE_ADMIN |
                                 GE_IMMEDIATE, "system",
                                 "/usr/sbin/update-rc.d");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      return YES;
+      return GNUNET_YES;
     }
 #endif
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 

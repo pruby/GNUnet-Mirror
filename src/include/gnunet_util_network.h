@@ -48,7 +48,7 @@ extern "C"
 /**
  * We use an unsigned short in the protocol header, thus:
  */
-#define MAX_BUFFER_SIZE 65536
+#define GNUNET_MAX_BUFFER_SIZE 65536
 
 /**
  * @brief Specify low-level network IO behavior
@@ -59,18 +59,18 @@ typedef enum
   /**
    * Do not block.
    */
-  NC_Nonblocking = 0x000,
+  GNUNET_NC_NONBLOCKING = 0x000,
 
   /**
    * Call may block.
    */
-  NC_Blocking = 0x001,
+  GNUNET_NC_BLOCKING = 0x001,
 
   /**
    * Ignore interrupts (re-try if operation
    * was aborted due to interrupt)
    */
-  NC_IgnoreInt = 0x010,
+  GNUNET_NC_IGNORE_INT = 0x010,
 
   /**
    * Always try to read/write the maximum
@@ -78,9 +78,9 @@ typedef enum
    * calls).  Only return on non-interrupt
    * error or if completely done.
    */
-  NC_Complete = 0x111,
+  GNUNET_NC_COMPLETE_TRANSFER = 0x111,
 
-} NC_KIND;
+} GNUNET_NC_KIND;
 
 /**
  * @brief 512-bit hashcode
@@ -88,7 +88,7 @@ typedef enum
 typedef struct
 {
   unsigned int bits[512 / 8 / sizeof (unsigned int)];   /* = 16 */
-} HashCode512;
+} GNUNET_HashCode;
 
 /**
  * The identity of the host (basically the SHA-512 hashcode of
@@ -96,8 +96,8 @@ typedef struct
  */
 typedef struct
 {
-  HashCode512 hashPubKey;
-} PeerIdentity;
+  GNUNET_HashCode hashPubKey;
+} GNUNET_PeerIdentity;
 
 /**
  * Header for all Client-Server communications.
@@ -115,7 +115,7 @@ typedef struct
    */
   unsigned short type;
 
-} MESSAGE_HEADER;
+} GNUNET_MessageHeader;
 
 /**
  * Client-server communication: simple return value
@@ -126,14 +126,14 @@ typedef struct
   /**
    * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
    */
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * The return value (network byte order)
    */
   int return_value;
 
-} RETURN_VALUE_MESSAGE;
+} GNUNET_MessageReturnValue;
 
 /**
  * Client-server communication: simple error message
@@ -144,14 +144,14 @@ typedef struct
   /**
    * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
    */
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * The return value (network byte order)
    */
   GE_KIND kind;
 
-} RETURN_ERROR_MESSAGE;
+} GNUNET_MessageReturnErrorMessage;
 
 
 /**
@@ -163,12 +163,12 @@ typedef struct
    * struct in_addr
    */
   unsigned int addr;
-} IPaddr;
+} GNUNET_IPv4Address;
 
 /**
  * @brief IPV4 network in CIDR notation.
  */
-struct CIDRNetwork;
+struct GNUNET_IPv4NetworkSet;
 
 /**
  * @brief an IPV6 address.
@@ -179,36 +179,36 @@ typedef struct
    * struct in6_addr addr;
    */
   unsigned int addr[4];
-} IP6addr;
+} GNUNET_IPv6Address;
 
 /**
  * @brief IPV6 network in CIDR notation.
  */
-struct CIDR6Network;
+struct GNUNET_IPv6NetworkSet;
 
 /**
  * @brief handle for a system socket
  */
-struct SocketHandle;
+struct GNUNET_SocketHandle;
 
 /**
  * @brief handle for a select manager
  */
-struct SelectHandle;
+struct GNUNET_SelectHandle;
 
 /**
  * @brief callback for handling messages received by select
  *
  * @param sock socket on which the message was received
  *        (should ONLY be used to queue reply using select methods)
- * @return OK if message was valid, SYSERR if corresponding
+ * @return GNUNET_OK if message was valid, GNUNET_SYSERR if corresponding
  *  socket should be closed
  */
-typedef int (*SelectMessageHandler) (void *mh_cls,
-                                     struct SelectHandle * sh,
-                                     struct SocketHandle * sock,
-                                     void *sock_ctx,
-                                     const MESSAGE_HEADER * msg);
+typedef int (*GNUNET_SelectMessageHandler) (void *mh_cls,
+                                            struct GNUNET_SelectHandle * sh,
+                                            struct GNUNET_SocketHandle * sock,
+                                            void *sock_ctx,
+                                            const GNUNET_MessageHeader * msg);
 
 /**
  * We've accepted a connection, check that
@@ -221,20 +221,20 @@ typedef int (*SelectMessageHandler) (void *mh_cls,
  * @return NULL to reject connection, otherwise value of sock_ctx
  *         for the new connection
  */
-typedef void *(*SelectAcceptHandler) (void *ah_cls,
-                                      struct SelectHandle * sh,
-                                      struct SocketHandle * sock,
-                                      const void *addr,
-                                      unsigned int addr_len);
+typedef void *(*GNUNET_SelectAcceptHandler) (void *ah_cls,
+                                             struct GNUNET_SelectHandle * sh,
+                                             struct GNUNET_SocketHandle *
+                                             sock, const void *addr,
+                                             unsigned int addr_len);
 
 /**
  * Select has been forced to close a connection.
  * Free the associated context.
  */
-typedef void (*SelectCloseHandler) (void *ch_cls,
-                                    struct SelectHandle * sh,
-                                    struct SocketHandle * sock,
-                                    void *sock_ctx);
+typedef void (*GNUNET_SelectCloseHandler) (void *ch_cls,
+                                           struct GNUNET_SelectHandle * sh,
+                                           struct GNUNET_SocketHandle * sock,
+                                           void *sock_ctx);
 
 /* *********************** endianess conversion ************* */
 
@@ -243,14 +243,14 @@ typedef void (*SelectCloseHandler) (void *ch_cls,
  * @param n the value in network byte order
  * @return the same value in host byte order
  */
-unsigned long long ntohll (unsigned long long n);
+unsigned long long GNUNET_ntohll (unsigned long long n);
 
 /**
  * Convert a long long to network-byte-order.
  * @param n the value in host byte order
  * @return the same value in network byte order
  */
-unsigned long long htonll (unsigned long long n);
+unsigned long long GNUNET_htonll (unsigned long long n);
 
 /* ***************** basic parsing **************** */
 
@@ -265,8 +265,12 @@ unsigned long long htonll (unsigned long long n);
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDRNetwork *parse_ipv4_network_specification (struct GE_Context *ectx,
-                                                      const char *routeList);
+struct GNUNET_IPv4NetworkSet *GNUNET_parse_ipv4_network_specification (struct
+                                                                       GE_Context
+                                                                       *ectx,
+                                                                       const
+                                                                       char
+                                                                       *routeList);
 
 /**
  * Parse a network specification. The argument specifies
@@ -279,29 +283,34 @@ struct CIDRNetwork *parse_ipv4_network_specification (struct GE_Context *ectx,
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDR6Network *parse_ipv6_network_specification (struct GE_Context
-                                                       *ectx,
-                                                       const char *routeList);
+struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
+                                                                       GE_Context
+                                                                       *ectx,
+                                                                       const
+                                                                       char
+                                                                       *routeList);
 
 /**
  * Check if the given IP address is in the list of
  * IP addresses.
  * @param list a list of networks
  * @param ip the IP to check (in network byte order)
- * @return NO if the IP is not in the list, YES if it it is
+ * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
-int check_ipv4_listed (const struct CIDRNetwork *list, IPaddr ip);
+int GNUNET_check_ipv4_listed (const struct GNUNET_IPv4NetworkSet *list,
+                              GNUNET_IPv4Address ip);
 
 /**
  * Check if the given IP address is in the list of
  * IP addresses.
  * @param list a list of networks
  * @param ip the IP to check (in network byte order)
- * @return NO if the IP is not in the list, YES if it it is
+ * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
  */
-int check_ipv6_listed (const struct CIDR6Network *list, IP6addr ip);
+int GNUNET_check_ipv6_listed (const struct GNUNET_IPv6NetworkSet *list,
+                              GNUNET_IPv6Address ip);
 
-#define PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), \
+#define GNUNET_PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), \
                  (unsigned int)((((unsigned)(ip)))>>16 & 255), \
                  (unsigned int)((((unsigned int)(ip)))>>8 & 255), \
                  (unsigned int)((((unsigned int)(ip))) & 255)
@@ -309,30 +318,31 @@ int check_ipv6_listed (const struct CIDR6Network *list, IP6addr ip);
 /**
  * Get the IP address of the given host.
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int get_host_by_name (struct GE_Context *ectx,
-                      const char *hostname, IPaddr * ip);
+int GNUNET_get_host_by_name (struct GE_Context *ectx,
+                             const char *hostname, GNUNET_IPv4Address * ip);
 
 /* ********************* low-level socket operations **************** */
 
 /**
  * Create a socket handle by boxing an OS socket.
  * The OS socket should henceforth be no longer used
- * directly.  socket_destroy will close it.
+ * directly.  GNUNET_socket_destroy will close it.
  */
-struct SocketHandle *socket_create (struct GE_Context *ectx,
-                                    struct LoadMonitor *mon, int osSocket);
+struct GNUNET_SocketHandle *socket_create (struct GE_Context *ectx,
+                                           struct GNUNET_LoadMonitor *mon,
+                                           int osSocket);
 
 /**
  * Close the socket (does NOT destroy it)
  */
-void socket_close (struct SocketHandle *s);
+void GNUNET_socket_close (struct GNUNET_SocketHandle *s);
 
 /**
  * Destroy the socket (also closes it).
  */
-void socket_destroy (struct SocketHandle *s);
+void GNUNET_socket_destroy (struct GNUNET_SocketHandle *s);
 
 /**
  * Depending on doBlock, enable or disable the nonblocking mode
@@ -341,14 +351,14 @@ void socket_destroy (struct SocketHandle *s);
  * @return Upon successful completion, it returns zero.
  * @return Otherwise -1 is returned.
  */
-int socket_set_blocking (struct SocketHandle *s, int doBlock);
+int GNUNET_socket_set_blocking (struct GNUNET_SocketHandle *s, int doBlock);
 
 /**
  * Check whether the socket is blocking
  * @param s the socket
- * @return YES if blocking, NO non-blocking
+ * @return GNUNET_YES if blocking, GNUNET_NO non-blocking
  */
-int socket_test_blocking (struct SocketHandle *s);
+int GNUNET_socket_test_blocking (struct GNUNET_SocketHandle *s);
 
 /**
  * Do a read on the given socket.
@@ -360,17 +370,19 @@ int socket_test_blocking (struct SocketHandle *s);
  * @param max maximum number of bytes to read
  * @param read number of bytes actually read.
  *             0 is returned if no more bytes can be read
- * @return SYSERR on error, YES on success or NO if the operation
+ * @return GNUNET_SYSERR on error, GNUNET_YES on success or GNUNET_NO if the operation
  *         would have blocked
  */
-int socket_recv (struct SocketHandle *s,
-                 NC_KIND nc, void *buf, size_t max, size_t * read);
+int GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
+                        GNUNET_NC_KIND nc, void *buf, size_t max,
+                        size_t * read);
 
-int socket_recv_from (struct SocketHandle *s,
-                      NC_KIND nc,
-                      void *buf,
-                      size_t max,
-                      size_t * read, char *from, unsigned int *fromlen);
+int GNUNET_socket_recv_from (struct GNUNET_SocketHandle *s,
+                             GNUNET_NC_KIND nc,
+                             void *buf,
+                             size_t max,
+                             size_t * read, char *from,
+                             unsigned int *fromlen);
 
 /**
  * Do a write on the given socket.
@@ -380,23 +392,25 @@ int socket_recv_from (struct SocketHandle *s,
  * @param buf buffer to send
  * @param max maximum number of bytes to send
  * @param sent number of bytes actually sent
- * @return SYSERR on error, YES on success or
- *         NO if the operation would have blocked.
+ * @return GNUNET_SYSERR on error, GNUNET_YES on success or
+ *         GNUNET_NO if the operation would have blocked.
  */
-int socket_send (struct SocketHandle *s,
-                 NC_KIND nc, const void *buf, size_t max, size_t * sent);
+int GNUNET_socket_send (struct GNUNET_SocketHandle *s,
+                        GNUNET_NC_KIND nc, const void *buf, size_t max,
+                        size_t * sent);
 
-int socket_send_to (struct SocketHandle *s,
-                    NC_KIND nc,
-                    const void *buf,
-                    size_t max,
-                    size_t * sent, const char *dst, unsigned int dstlen);
+int GNUNET_socket_send_to (struct GNUNET_SocketHandle *s,
+                           GNUNET_NC_KIND nc,
+                           const void *buf,
+                           size_t max,
+                           size_t * sent, const char *dst,
+                           unsigned int dstlen);
 
 /**
  * Check if socket is valid
- * @return YES if valid, NO otherwise
+ * @return GNUNET_YES if valid, GNUNET_NO otherwise
  */
-int socket_test_valid (struct SocketHandle *s);
+int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
 
 
 /* ********************* select operations **************** */
@@ -420,66 +434,67 @@ int socket_test_valid (struct SocketHandle *s);
  *        accept at most? 0 for unbounded
  * @return NULL on error
  */
-struct SelectHandle *select_create (const char *desc,
-                                    int is_udp,
-                                    struct GE_Context *ectx,
-                                    struct LoadMonitor *mon,
-                                    int sock,
-                                    unsigned int max_addr_len,
-                                    cron_t timeout,
-                                    SelectMessageHandler mh,
-                                    void *mh_cls,
-                                    SelectAcceptHandler ah,
-                                    void *ah_cls,
-                                    SelectCloseHandler ch,
-                                    void *ch_cls,
-                                    unsigned int memory_quota,
-                                    int socket_quota);
+struct GNUNET_SelectHandle *GNUNET_select_create (const char *desc,
+                                                  int is_udp,
+                                                  struct GE_Context *ectx,
+                                                  struct GNUNET_LoadMonitor
+                                                  *mon, int sock,
+                                                  unsigned int max_addr_len,
+                                                  GNUNET_CronTime timeout,
+                                                  GNUNET_SelectMessageHandler
+                                                  mh, void *mh_cls,
+                                                  GNUNET_SelectAcceptHandler
+                                                  ah, void *ah_cls,
+                                                  GNUNET_SelectCloseHandler
+                                                  ch, void *ch_cls,
+                                                  unsigned int memory_quota,
+                                                  int socket_quota);
 
 /**
  * Terminate the select thread, close the socket and
  * all associated connections.
  */
-void select_destroy (struct SelectHandle *sh);
+void GNUNET_select_destroy (struct GNUNET_SelectHandle *sh);
 
 /**
  * Queue the given message with the select thread.
  *
- * @param mayBlock if YES, blocks this thread until message
+ * @param mayBlock if GNUNET_YES, blocks this thread until message
  *        has been sent
  * @param force message is important, queue even if
  *        there is not enough space
- * @return OK if the message was sent or queued
- *         NO if there was not enough memory to queue it,
- *         SYSERR if the sock does not belong with this select
+ * @return GNUNET_OK if the message was sent or queued
+ *         GNUNET_NO if there was not enough memory to queue it,
+ *         GNUNET_SYSERR if the sock does not belong with this select
  */
-int select_write (struct SelectHandle *sh,
-                  struct SocketHandle *sock,
-                  const MESSAGE_HEADER * msg, int mayBlock, int force);
+int GNUNET_select_write (struct GNUNET_SelectHandle *sh,
+                         struct GNUNET_SocketHandle *sock,
+                         const GNUNET_MessageHeader * msg, int mayBlock,
+                         int force);
 
 
 /**
  * Would select queue or send the given message at this time?
  *
- * @param mayBlock if YES, blocks this thread until message
+ * @param mayBlock if GNUNET_YES, blocks this thread until message
  *        has been sent
  * @param size size of the message
  * @param force message is important, queue even if
  *        there is not enough space
- * @return OK if the message would be sent or queued,
- *         NO if there was not enough memory to queue it,
- *         SYSERR if the sock does not belong with this select
+ * @return GNUNET_OK if the message would be sent or queued,
+ *         GNUNET_NO if there was not enough memory to queue it,
+ *         GNUNET_SYSERR if the sock does not belong with this select
  */
-int select_would_try (struct SelectHandle *sh,
-                      struct SocketHandle *sock,
-                      unsigned int size, int mayBlock, int force);
+int GNUNET_select_test_write_now (struct GNUNET_SelectHandle *sh,
+                                  struct GNUNET_SocketHandle *sock,
+                                  unsigned int size, int mayBlock, int force);
 
 /**
  * Add another (already connected) socket to the set of
  * sockets managed by the select.
  */
-int select_connect (struct SelectHandle *sh,
-                    struct SocketHandle *sock, void *sock_ctx);
+int GNUNET_select_connect (struct GNUNET_SelectHandle *sh,
+                           struct GNUNET_SocketHandle *sock, void *sock_ctx);
 
 
 /**
@@ -487,20 +502,22 @@ int select_connect (struct SelectHandle *sh,
  * value.  Use 0 to use the default timeout for
  * this select.
  */
-int select_change_timeout (struct SelectHandle *sh,
-                           struct SocketHandle *sock, cron_t timeout);
+int GNUNET_select_change_timeout (struct GNUNET_SelectHandle *sh,
+                                  struct GNUNET_SocketHandle *sock,
+                                  GNUNET_CronTime timeout);
 
 /**
  */
-int select_update_closure (struct SelectHandle *sh,
-                           struct SocketHandle *sock,
-                           void *old_sock_ctx, void *new_sock_ctx);
+int GNUNET_select_update_closure (struct GNUNET_SelectHandle *sh,
+                                  struct GNUNET_SocketHandle *sock,
+                                  void *old_sock_ctx, void *new_sock_ctx);
 
 /**
  * Close the associated socket and remove it from the
  * set of sockets managed by select.
  */
-int select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock);
+int GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
+                              struct GNUNET_SocketHandle *sock);
 
 
 /**
@@ -511,23 +528,24 @@ int select_disconnect (struct SelectHandle *sh, struct SocketHandle *sock);
  *
  * @param sa should be of type "struct sockaddr*"
  */
-char *network_get_ip_as_string (const void *sa,
-                                unsigned int salen, int do_resolve);
+char *GNUNET_get_ip_as_string (const void *sa,
+                               unsigned int salen, int do_resolve);
 
 /**
  * Get the IP address for the local machine.
  * @return NULL on error, IP as string otherwise
  */
-char *network_get_local_ip (struct GC_Configuration *cfg,
-                            struct GE_Context *ectx, IPaddr * addr);
+char *GNUNET_get_local_ip (struct GC_Configuration *cfg,
+                           struct GE_Context *ectx,
+                           GNUNET_IPv4Address * addr);
 
 
 /**
  * Change a file descriptor that refers to a pipe
  * to non-blocking IO.
- * @return OK on success
+ * @return GNUNET_OK on success
  */
-int network_make_pipe_nonblocking (struct GE_Context *ectx, int pipe);
+int GNUNET_pipe_make_nonblocking (struct GE_Context *ectx, int pipe);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

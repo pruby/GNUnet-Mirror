@@ -26,7 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
-#include "gnunet_util_config_impl.h"
+#include "gnunet_util.h"
 
 static void *
 eventCallback (void *cls, const FSUI_Event * event)
@@ -60,14 +60,14 @@ main (int argc, char *argv[])
   struct FSUI_Context *ctx;
   struct GC_Configuration *cfg;
 
-  os_init (NULL);
-  cfg = GC_create_C_impl ();
+  GNUNET_os_init (NULL);
+  cfg = GC_create ();
   if (argc != 2)
     {
       fprintf (stderr, "Call with name of FSUI resource file!\n");
       return -1;
     }
-  ctx = FSUI_start (NULL, cfg, argv[1], 16, YES, &eventCallback, NULL);
+  ctx = FSUI_start (NULL, cfg, argv[1], 16, GNUNET_YES, &eventCallback, NULL);
   if (ctx != NULL)
     FSUI_stop (ctx);
   else

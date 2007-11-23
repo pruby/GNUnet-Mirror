@@ -29,22 +29,22 @@
 #include "platform.h"
 
 #ifndef MINGW
-typedef struct SignalHandlerContext
+typedef struct GNUNET_SignalHandlerContext
 {
   int sig;
 
-  SignalHandler method;
+  GNUNET_SignalHandler method;
 
   struct sigaction oldsig;
 } SignalHandlerContext;
 
-struct SignalHandlerContext *
-signal_handler_install (int signal, SignalHandler handler)
+struct GNUNET_SignalHandlerContext *
+GNUNET_signal_handler_install (int signal, GNUNET_SignalHandler handler)
 {
-  struct SignalHandlerContext *ret;
+  struct GNUNET_SignalHandlerContext *ret;
   struct sigaction sig;
 
-  ret = MALLOC (sizeof (struct SignalHandlerContext));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_SignalHandlerContext));
   ret->sig = signal;
   ret->method = handler;
 
@@ -60,15 +60,15 @@ signal_handler_install (int signal, SignalHandler handler)
 }
 
 void
-signal_handler_uninstall (int signal,
-                          SignalHandler handler,
-                          struct SignalHandlerContext *ctx)
+GNUNET_signal_handler_uninstall (int signal,
+                                 GNUNET_SignalHandler handler,
+                                 struct GNUNET_SignalHandlerContext *ctx)
 {
   struct sigaction sig;
 
   GE_ASSERT (NULL, (ctx->sig == signal) && (ctx->method == handler));
   sigemptyset (&sig.sa_mask);
   sigaction (signal, &ctx->oldsig, &sig);
-  FREE (ctx);
+  GNUNET_free (ctx);
 }
 #endif

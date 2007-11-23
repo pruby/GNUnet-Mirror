@@ -30,17 +30,17 @@
 /**
  * @brief Perform OS specific initalization
  * @param ectx logging context, NULL means stderr
- * @returns OK on success, SYSERR otherwise
+ * @returns GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 int
-os_init (struct GE_Context *ectx)
+GNUNET_os_init (struct GE_Context *ectx)
 {
 #ifdef MINGW
   if (InitWinEnv (ectx) != ERROR_SUCCESS)
-    return SYSERR;
+    return GNUNET_SYSERR;
   else
 #endif
-    return OK;
+    return GNUNET_OK;
 }
 
 /**

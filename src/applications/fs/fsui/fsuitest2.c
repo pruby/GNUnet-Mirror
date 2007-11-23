@@ -30,7 +30,7 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 
 static struct FSUI_Context *ctx;
@@ -52,36 +52,39 @@ main (int argc, char *argv[])
   int ok;
   struct GC_Configuration *cfg;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
 #if START_DAEMON
-  daemon = os_daemon_start (NULL, cfg, "peer.conf", NO);
+  daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GE_ASSERT (NULL, daemon > 0);
-  CHECK (OK == connection_wait_for_running (NULL, cfg, 60 * cronSECONDS));
+  CHECK (GNUNET_OK ==
+         GNUNET_wait_for_daemon_running (NULL, cfg,
+                                         60 * GNUNET_CRON_SECONDS));
 #endif
-  ok = YES;
-  PTHREAD_SLEEP (5 * cronSECONDS);      /* give apps time to start */
+  ok = GNUNET_YES;
+  GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = FSUI_start (NULL, cfg, "fsuitest2", 32, YES,    /* do resume! */
+  ctx = FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES,     /* do resume! */
                     &eventCallback, NULL);
   CHECK (ctx != NULL);
   FSUI_stop (ctx);
-  ctx = FSUI_start (NULL, cfg, "fsuitest2", 32, YES, &eventCallback, NULL);
+  ctx =
+    FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
 FAILURE:
   if (ctx != NULL)
     FSUI_stop (ctx);
 #if START_DAEMON
-  GE_ASSERT (NULL, OK == os_daemon_stop (NULL, daemon));
+  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
   GC_free (cfg);
 
-  return (ok == YES) ? 0 : 1;
+  return (ok == GNUNET_YES) ? 0 : 1;
 }
 
 /* end of fsuitest2.c */

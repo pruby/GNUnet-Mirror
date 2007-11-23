@@ -3,9 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
- $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 # change to bin_PROGRAMS for real apps
 noinst_PROGRAMS = \
@@ -22,7 +20,7 @@ libgnunetmodule_template_la_SOURCES = \
   template.c 
 libgnunetmodule_template_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la 
+  $(top_builddir)/src/util/libgnunetutil.la 
+
 
 

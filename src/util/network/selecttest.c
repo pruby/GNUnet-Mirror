@@ -34,7 +34,7 @@
  * and performance is still erratic due to the sender
  * doing busy-waiting (and thus possibly burning CPU).
  */
-#define DO_SLEEP YES
+#define DO_SLEEP GNUNET_YES
 
 /**
  * The busy-waiting can be helped with yielding; while
@@ -43,7 +43,7 @@
  * useful to show the theoretical performance
  * (on my system about 100 mbps).
  */
-#define DO_YIELD NO
+#define DO_YIELD GNUNET_NO
 
 #if DO_YIELD
 void pthread_yield (void);
@@ -60,9 +60,9 @@ void pthread_yield (void);
 #endif
 
 
-static struct SocketHandle *out;
+static struct GNUNET_SocketHandle *out;
 
-static struct SocketHandle *in;
+static struct GNUNET_SocketHandle *in;
 
 static unsigned int recvPos;
 
@@ -74,14 +74,14 @@ static unsigned long long throughput;
  *
  * @param sock socket on which the message was received
  *        (should ONLY be used to queue reply using select methods)
- * @return OK if message was valid, SYSERR if corresponding
+ * @return GNUNET_OK if message was valid, GNUNET_SYSERR if corresponding
  *  socket should be closed
  */
 static int
 test_smh (void *mh_cls,
-          struct SelectHandle *sh,
-          struct SocketHandle *sock,
-          void *sock_ctx, const MESSAGE_HEADER * msg)
+          struct GNUNET_SelectHandle *sh,
+          struct GNUNET_SocketHandle *sock,
+          void *sock_ctx, const GNUNET_MessageHeader * msg)
 {
   static int sleeper;
   char *expect;
@@ -89,15 +89,15 @@ test_smh (void *mh_cls,
 
   size = ntohs (msg->size);
   throughput += size;
-  expect = MALLOC (size);
-  memset (expect, (size - sizeof (MESSAGE_HEADER)) % 251, size);
-  if (0 != memcmp (&msg[1], expect, size - sizeof (MESSAGE_HEADER)))
+  expect = GNUNET_malloc (size);
+  memset (expect, (size - sizeof (GNUNET_MessageHeader)) % 251, size);
+  if (0 != memcmp (&msg[1], expect, size - sizeof (GNUNET_MessageHeader)))
     {
       fprintf (stderr, "Message of size %u corrupt!\n", size);
-      FREE (expect);
-      return OK;
+      GNUNET_free (expect);
+      return GNUNET_OK;
     }
-  FREE (expect);
+  GNUNET_free (expect);
   while (msg->type != htons (recvPos))
     {
       fprintf (stderr, "Message %u lost!\n", recvPos);
@@ -108,10 +108,10 @@ test_smh (void *mh_cls,
     fprintf (stderr, ".");
 #if DO_SLEEP
   if (sleeper % 5 == 0)
-    PTHREAD_SLEEP (50 * cronMILLIS);
+    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
 #endif
   sleeper++;
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -128,8 +128,9 @@ test_smh (void *mh_cls,
  */
 static void *
 test_sah (void *ah_cls,
-          struct SelectHandle *sh,
-          struct SocketHandle *sock, const void *addr, unsigned int addr_len)
+          struct GNUNET_SelectHandle *sh,
+          struct GNUNET_SocketHandle *sock, const void *addr,
+          unsigned int addr_len)
 {
   static int ret_addr;
 
@@ -144,7 +145,8 @@ test_sah (void *ah_cls,
  */
 static void
 test_sch (void *ch_cls,
-          struct SelectHandle *sh, struct SocketHandle *sock, void *sock_ctx)
+          struct GNUNET_SelectHandle *sh, struct GNUNET_SocketHandle *sock,
+          void *sock_ctx)
 {
   if (sock == in)
     in = NULL;
@@ -160,14 +162,14 @@ check ()
 {
   static int zero = 0;
   struct sockaddr_in serverAddr;
-  struct SelectHandle *sh;
+  struct GNUNET_SelectHandle *sh;
   int listen_sock;
   int write_sock;
   int i;
   int msg;
   char *m;
-  MESSAGE_HEADER *h;
-  cron_t start;
+  GNUNET_MessageHeader *h;
+  GNUNET_CronTime start;
 
   listen_sock = SOCKET (PF_INET, SOCK_STREAM, 6);       /* 6: TCP */
   if (listen_sock == -1)
@@ -192,12 +194,12 @@ check ()
     }
   LISTEN (listen_sock, 5);
 
-  sh = select_create ("Select Tester", NO,      /* tcp */
-                      NULL,     /* ectx */
-                      NULL,     /* no load monitoring */
-                      listen_sock, sizeof (IPaddr), 15 * cronSECONDS,   /* inactive timeout */
-                      test_smh, NULL, test_sah, NULL, test_sch, NULL, 128 * 1024,       /* memory quota */
-                      128 /* socket quota */ );
+  sh = GNUNET_select_create ("Select Tester", GNUNET_NO,        /* tcp */
+                             NULL,      /* ectx */
+                             NULL,      /* no load monitoring */
+                             listen_sock, sizeof (GNUNET_IPv4Address), 15 * GNUNET_CRON_SECONDS,        /* inactive timeout */
+                             test_smh, NULL, test_sah, NULL, test_sch, NULL, 128 * 1024,        /* memory quota */
+                             128 /* socket quota */ );
 
   write_sock = SOCKET (PF_INET, SOCK_STREAM, 6);
 
@@ -210,33 +212,36 @@ check ()
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       CLOSE (write_sock);
-      select_destroy (sh);
+      GNUNET_select_destroy (sh);
       return 1;
     }
   out = socket_create (NULL, NULL, write_sock);
-  if (-1 == socket_set_blocking (out, NO))
+  if (-1 == GNUNET_socket_set_blocking (out, GNUNET_NO))
     {
-      socket_destroy (out);
-      select_destroy (sh);
+      GNUNET_socket_destroy (out);
+      GNUNET_select_destroy (sh);
       return 1;
     }
   msg = 0;
-  m = MALLOC (65536);
-  h = (MESSAGE_HEADER *) m;
-  select_connect (sh, out, NULL);
-  start = get_time ();
+  m = GNUNET_malloc (65536);
+  h = (GNUNET_MessageHeader *) m;
+  GNUNET_select_connect (sh, out, NULL);
+  start = GNUNET_get_time ();
   for (i = 0; i < ITER; i++)
     {
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
-      if (select_would_try (sh,
-                            out,
-                            (i % 60000) + sizeof (MESSAGE_HEADER), NO, NO))
+      if (GNUNET_select_test_write_now (sh,
+                                        out,
+                                        (i % 60000) +
+                                        sizeof (GNUNET_MessageHeader),
+                                        GNUNET_NO, GNUNET_NO))
         {
-          h->size = htons ((i % 60000) + sizeof (MESSAGE_HEADER));
+          h->size = htons ((i % 60000) + sizeof (GNUNET_MessageHeader));
           h->type = htons (msg++);
-          memset (&m[sizeof (MESSAGE_HEADER)], (i % 60000) % 251, i % 60000);
-          select_write (sh, out, h, NO, NO);
+          memset (&m[sizeof (GNUNET_MessageHeader)], (i % 60000) % 251,
+                  i % 60000);
+          GNUNET_select_write (sh, out, h, GNUNET_NO, GNUNET_NO);
         }
       else
         {
@@ -246,21 +251,22 @@ check ()
         }
 #if DO_SLEEP
       if (i % 500 == 0)
-        PTHREAD_SLEEP (500 * cronMILLIS);
+        GNUNET_thread_sleep (500 * GNUNET_CRON_MILLISECONDS);
 #endif
     }
   /* give select time to send the rest... */
 #if DO_SLEEP
-  PTHREAD_SLEEP (2500 * cronMILLIS);
+  GNUNET_thread_sleep (2500 * GNUNET_CRON_MILLISECONDS);
 #endif
-  select_disconnect (sh, out);
-  select_destroy (sh);
-  FREE (m);
+  GNUNET_select_disconnect (sh, out);
+  GNUNET_select_destroy (sh);
+  GNUNET_free (m);
   fprintf (stderr,
            "\nTransmitted %u test messages - received %u (performance: %llu kbps)\n",
            msg,
            recvPos,
-           (throughput / 1024) * cronSECONDS / (get_time () - start));
+           (throughput / 1024) * GNUNET_CRON_SECONDS / (GNUNET_get_time () -
+                                                        start));
 #if DO_SLEEP
   if (msg - recvPos > 30)
     return 1;

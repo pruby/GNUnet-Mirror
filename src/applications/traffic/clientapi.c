@@ -41,10 +41,10 @@
  * @param count set to number of messages
  * @param avg_size set to average size
  * @param peers set to number of peers involved
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-gnunet_traffic_poll (struct ClientServerConnection *sock,
+GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
                      unsigned int timeframe,
                      unsigned short type,
                      unsigned short direction,
@@ -59,11 +59,12 @@ gnunet_traffic_poll (struct ClientServerConnection *sock,
   req.header.size = htons (sizeof (CS_traffic_request_MESSAGE));
   req.header.type = htons (CS_PROTO_traffic_QUERY);
   req.timePeriod = htonl (timeframe);
-  if (SYSERR == connection_write (sock, &req.header))
-    return SYSERR;
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &req.header))
+    return GNUNET_SYSERR;
   info = NULL;
-  if (SYSERR == connection_read (sock, (MESSAGE_HEADER **) & info))
-    return SYSERR;
+  if (GNUNET_SYSERR ==
+      GNUNET_client_connection_read (sock, (GNUNET_MessageHeader **) & info))
+    return GNUNET_SYSERR;
   if ((ntohs (info->header.type) !=
        CS_PROTO_traffic_INFO) ||
       (ntohs (info->header.size) !=
@@ -71,7 +72,7 @@ gnunet_traffic_poll (struct ClientServerConnection *sock,
        ntohl (info->count) * sizeof (TRAFFIC_COUNTER)))
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 
   for (i = ntohl (info->count) - 1; i >= 0; i--)
@@ -86,8 +87,8 @@ gnunet_traffic_poll (struct ClientServerConnection *sock,
           *time = ntohl (tc->time_slots);
         }                       /* end if received */
     }                           /* end for all counters */
-  FREE (info);
-  return OK;
+  GNUNET_free (info);
+  return GNUNET_OK;
 }
 
 /* end of clientapi.c */

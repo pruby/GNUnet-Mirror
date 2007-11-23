@@ -27,7 +27,7 @@
 #include <dialog.h>
 
 #undef _
-#undef OK
+#undef GNUNET_OK
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
@@ -106,7 +106,7 @@ run_menu (struct GNS_Context *ctx,
             }
           if (st == 0)
             return;             /* no visible entries */
-          items = MALLOC (sizeof (DIALOG_LISTITEM) * st);
+          items = GNUNET_malloc (sizeof (DIALOG_LISTITEM) * st);
           i = 0;
           st = 0;
           while (pos->children[i] != NULL)
@@ -127,7 +127,7 @@ run_menu (struct GNS_Context *ctx,
           st = dlg_menu (gettext (pos->description),
                          "Select configuration option to change",
                          20, 70, 13, st, items, &msel, NULL);
-          FREE (items);
+          GNUNET_free (items);
           switch (st)
             {
             case DLG_EXIT_OK:
@@ -192,7 +192,7 @@ run_menu (struct GNS_Context *ctx,
               break;
             case GNS_String:
               /* free form */
-              fitem.text = MALLOC (65536);
+              fitem.text = GNUNET_malloc (65536);
               strcpy (fitem.text, pos->value.String.val);
               fitem.text_len = strlen (fitem.text);
               fitem.help = pos->help;
@@ -212,7 +212,7 @@ run_menu (struct GNS_Context *ctx,
                                  ("Internal error! (Value invalid?)"));
                       break;
                     }
-                  FREE (fitem.text);
+                  GNUNET_free (fitem.text);
                   return;
                 case DLG_EXIT_HELP:
                   show_help (pos->option, pos->help);
@@ -220,12 +220,12 @@ run_menu (struct GNS_Context *ctx,
                 case DLG_EXIT_CANCEL:
                 case DLG_EXIT_ERROR:
                 case DLG_EXIT_ESC:
-                  FREE (fitem.text);
+                  GNUNET_free (fitem.text);
                   return;
                 default:
                   break;
                 }
-              FREE (fitem.text);
+              GNUNET_free (fitem.text);
               /* end free form */
               break;
             case GNS_SC:
@@ -235,7 +235,7 @@ run_menu (struct GNS_Context *ctx,
               while (val->String.legalRange[i] != NULL)
                 i++;
               GE_ASSERT (ectx, i != 0);
-              items = MALLOC (sizeof (DIALOG_LISTITEM) * i);
+              items = GNUNET_malloc (sizeof (DIALOG_LISTITEM) * i);
               i = 0;
               msel = -1;
 
@@ -261,7 +261,7 @@ run_menu (struct GNS_Context *ctx,
                                   gettext (pos->description),
                                   20,
                                   70, 13, i, items, " *", FLAG_RADIO, &msel);
-              FREE (items);
+              GNUNET_free (items);
               switch (st)
                 {
                 case DLG_EXIT_OK:
@@ -297,7 +297,7 @@ run_menu (struct GNS_Context *ctx,
               while (val->String.legalRange[i] != NULL)
                 i++;
               GE_ASSERT (ectx, i != 0);
-              items = MALLOC (sizeof (DIALOG_LISTITEM) * i);
+              items = GNUNET_malloc (sizeof (DIALOG_LISTITEM) * i);
               i = 0;
               msel = 0;
               while (val->String.legalRange[i] != NULL)
@@ -333,7 +333,7 @@ run_menu (struct GNS_Context *ctx,
               switch (st)
                 {
                 case DLG_EXIT_OK:
-                  tmp = MALLOC (tlen);
+                  tmp = GNUNET_malloc (tlen);
                   tmp[0] = '\0';
                   i = 0;
                   while (val->String.legalRange[i] != NULL)
@@ -353,14 +353,14 @@ run_menu (struct GNS_Context *ctx,
                                                               pos->option,
                                                               tmp))
                     {
-                      FREE (tmp);
+                      GNUNET_free (tmp);
                       show_help (pos->option,
                                  gettext_noop
                                  ("Internal error! (Choice invalid?)"));
                       break;
                     }
-                  FREE (tmp);
-                  FREE (items);
+                  GNUNET_free (tmp);
+                  GNUNET_free (items);
                   return;
                 case DLG_EXIT_HELP:
                   show_help (pos->option, pos->help);
@@ -369,14 +369,14 @@ run_menu (struct GNS_Context *ctx,
                 case DLG_EXIT_ERROR:
                 case DLG_EXIT_CANCEL:
                 default:
-                  FREE (items);
+                  GNUNET_free (items);
                   return;
                 }
-              FREE (items);
+              GNUNET_free (items);
               break;
             case GNS_Double:
-              fitem.text = MALLOC (64);
-              SNPRINTF (fitem.text, 64, "%f", pos->value.Double.val);
+              fitem.text = GNUNET_malloc (64);
+              GNUNET_snprintf (fitem.text, 64, "%f", pos->value.Double.val);
               fitem.text_len = strlen (fitem.text);
               fitem.help = pos->help;
               st = DLG_EXIT_HELP;
@@ -403,7 +403,7 @@ run_menu (struct GNS_Context *ctx,
                                  ("Internal error! (Value invalid?)"));
                       break;
                     }
-                  FREE (fitem.text);
+                  GNUNET_free (fitem.text);
                   return;
                 case DLG_EXIT_HELP:
                   show_help (pos->option, pos->help);
@@ -411,12 +411,12 @@ run_menu (struct GNS_Context *ctx,
                 default:
                   break;
                 }
-              FREE (fitem.text);
+              GNUNET_free (fitem.text);
               break;
 
             case GNS_UInt64:
-              fitem.text = MALLOC (64);
-              SNPRINTF (fitem.text, 64, "%llu", pos->value.UInt64.val);
+              fitem.text = GNUNET_malloc (64);
+              GNUNET_snprintf (fitem.text, 64, "%llu", pos->value.UInt64.val);
               fitem.text_len = strlen (fitem.text);
               fitem.help = pos->help;
               st = DLG_EXIT_HELP;
@@ -463,7 +463,7 @@ run_menu (struct GNS_Context *ctx,
                       break;
                     }
                 }
-              FREE (fitem.text);
+              GNUNET_free (fitem.text);
               return;
             default:
               GE_BREAK (ectx, 0);
@@ -483,7 +483,7 @@ run_menu (struct GNS_Context *ctx,
 int
 mconf_mainsetup_curses (int argc,
                         const char **argv,
-                        struct PluginHandle *self,
+                        struct GNUNET_PluginHandle *self,
                         struct GE_Context *e,
                         struct GC_Configuration *cfg,
                         struct GNS_Context *gns,

@@ -22,7 +22,6 @@ libgnunetmodule_dstore_la_LDFLAGS = \
   $(SQLITE_LDFLAGS)
 libgnunetmodule_dstore_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
  -lsqlite3
 
 EXTRA_DIST = check.conf
@@ -31,5 +30,4 @@ dstore_test_SOURCES = \
  dstore_test.c 
 dstore_test_LDADD = \
  $(top_builddir)/src/server/libgnunetcore.la  \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
  $(top_builddir)/src/util/libgnunetutil.la  

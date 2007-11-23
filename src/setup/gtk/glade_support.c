@@ -25,7 +25,7 @@
 /**
  * Handle to the dynamic library (which contains this code)
  */
-static struct PluginHandle *library;
+static struct GNUNET_PluginHandle *library;
 
 /**
  * Current glade handle.
@@ -52,11 +52,11 @@ get_glade_filename ()
   char *path;
   char *gladeFile;
 
-  path = os_get_installation_path (IPK_DATADIR);
-  gladeFile = MALLOC (strlen (path) + 20);
+  path = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+  gladeFile = GNUNET_malloc (strlen (path) + 20);
   strcpy (gladeFile, path);
   strcat (gladeFile, "gnunet-setup.glade");
-  FREE (path);
+  GNUNET_free (path);
   return gladeFile;
 }
 
@@ -72,7 +72,7 @@ connector (const gchar * handler_name,
   void *method;
 
   GE_ASSERT (NULL, xml != NULL);
-  method = os_plugin_resolve_function (library, handler_name, YES);
+  method = GNUNET_plugin_resolve_function (library, handler_name, GNUNET_YES);
   if (method == NULL)
     return;
   glade_xml_signal_connect (xml, handler_name, (GCallback) method);
@@ -90,7 +90,7 @@ load_xml (const char *dialog_name)
     GE_DIE_STRERROR_FILE (NULL,
                           GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
                           "open", gladeFile);
-  FREE (gladeFile);
+  GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (ret, &connector, ret);
   return ret;
 }
@@ -125,7 +125,7 @@ showDialog (const char *name)
     GE_DIE_STRERROR_FILE (NULL,
                           GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
                           "open", gladeFile);
-  FREE (gladeFile);
+  GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (myXML, &connector, myXML);
   msgSave = glade_xml_get_widget (myXML, name);
   gtk_widget_show (msgSave);
@@ -133,7 +133,7 @@ showDialog (const char *name)
 }
 
 void
-setLibrary (struct PluginHandle *lib)
+setLibrary (struct GNUNET_PluginHandle *lib)
 {
   library = lib;
 }

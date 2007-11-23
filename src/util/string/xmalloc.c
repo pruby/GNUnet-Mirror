@@ -37,28 +37,29 @@
  * memory is available.
  *
  * @param size how many bytes of memory to allocate, do NOT use
- *  this function (or MALLOC) to allocate more than several MB
+ *  this function (or GNUNET_malloc) to allocate more than several MB
  *  of memory, if you are possibly needing a very large chunk use
- *  xmalloc_unchecked_ instead.
- * @param filename where in the code was the call to GROW
- * @param linenumber where in the code was the call to GROW
+ *  GNUNET_xmalloc_unchecked_ instead.
+ * @param filename where in the code was the call to GNUNET_array_grow
+ * @param linenumber where in the code was the call to GNUNET_array_grow
  * @return pointer to size bytes of memory
  */
 void *
-xmalloc_ (size_t size,
-          const char *filename, int linenumber, const char *function)
+GNUNET_xmalloc_ (size_t size,
+                 const char *filename, int linenumber, const char *function)
 {
   /* As a security precaution, we generally do not allow very large
-     allocations using the default 'MALLOC' macro */
+     allocations using the default 'GNUNET_malloc' macro */
   GE_ASSERT_FLF (NULL,
-                 size <= MAX_MALLOC_CHECKED, filename, linenumber, function);
-  return xmalloc_unchecked_ (size, filename, linenumber, function);
+                 size <= GNUNET_MAX_GNUNET_malloc_CHECKED, filename,
+                 linenumber, function);
+  return GNUNET_xmalloc_unchecked_ (size, filename, linenumber, function);
 }
 
 void *
-xmalloc_unchecked_ (size_t size,
-                    const char *filename,
-                    int linenumber, const char *function)
+GNUNET_xmalloc_unchecked_ (size_t size,
+                           const char *filename,
+                           int linenumber, const char *function)
 {
   void *result;
 
@@ -78,16 +79,16 @@ xmalloc_unchecked_ (size_t size,
  *
  * @ptr the pointer to reallocate
  * @param size how many bytes of memory to allocate, do NOT use
- *  this function (or MALLOC) to allocate more than several MB
+ *  this function (or GNUNET_malloc) to allocate more than several MB
  *  of memory
- * @param filename where in the code was the call to REALLOC
- * @param linenumber where in the code was the call to REALLOC
+ * @param filename where in the code was the call to GNUNET_realloc
+ * @param linenumber where in the code was the call to GNUNET_realloc
  * @return pointer to size bytes of memory
  */
 void *
-xrealloc_ (void *ptr,
-           const size_t n,
-           const char *filename, int linenumber, const char *function)
+GNUNET_xrealloc_ (void *ptr,
+                  const size_t n,
+                  const char *filename, int linenumber, const char *function)
 {
   ptr = realloc (ptr, n);
 
@@ -103,11 +104,12 @@ xrealloc_ (void *ptr,
  * want to keep track of allocations.
  *
  * @param ptr the pointer to free
- * @param filename where in the code was the call to GROW
- * @param linenumber where in the code was the call to GROW
+ * @param filename where in the code was the call to GNUNET_array_grow
+ * @param linenumber where in the code was the call to GNUNET_array_grow
  */
 void
-xfree_ (void *ptr, const char *filename, int linenumber, const char *function)
+GNUNET_xfree_ (void *ptr, const char *filename, int linenumber,
+               const char *function)
 {
   GE_ASSERT_FLF (NULL, ptr != NULL, filename, linenumber, function);
   free (ptr);
@@ -117,49 +119,23 @@ xfree_ (void *ptr, const char *filename, int linenumber, const char *function)
  * Dup a string (same semantics as strdup).
  *
  * @param str the string to dup
- * @param filename where in the code was the call to GROW
- * @param linenumber where in the code was the call to GROW
+ * @param filename where in the code was the call to GNUNET_array_grow
+ * @param linenumber where in the code was the call to GNUNET_array_grow
  * @return strdup(str)
  */
 char *
-xstrdup_ (const char *str,
-          const char *filename, int linenumber, const char *function)
+GNUNET_xstrdup_ (const char *str,
+                 const char *filename, int linenumber, const char *function)
 {
   char *res;
 
   GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
-  res = (char *) xmalloc_ (strlen (str) + 1, filename, linenumber, function);
+  res =
+    (char *) GNUNET_xmalloc_ (strlen (str) + 1, filename, linenumber,
+                              function);
   memcpy (res, str, strlen (str) + 1);
   return res;
 }
-
-/**
- * Dup a string (same semantics as strdup).
- *
- * @param str the string to dup
- * @param n the maximum number of characters to copy (+1 for 0-termination)
- * @param filename where in the code was the call to GROW
- * @param linenumber where in the code was the call to GROW
- * @return strdup(str)
- */
-char *
-xstrndup_ (const char *str,
-           const size_t n,
-           const char *filename, int linenumber, const char *function)
-{
-  char *res;
-  size_t min;
-
-  GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
-  min = 0;
-  while ((min < n) && (str[min] != '\0'))
-    min++;
-  res = (char *) xmalloc_ (min + 1, filename, linenumber, function);
-  memcpy (res, str, min);
-  res[min] = '\0';
-  return res;
-}
-
 
 /**
  * Grow an array.  Grows old by (*oldCount-newCount)*elementSize bytes
@@ -170,15 +146,15 @@ xstrndup_ (const char *str,
  * @param elementSize the size of the elements of the array
  * @param oldCount address of the number of elements in the *old array
  * @param newCount number of elements in the new array, may be 0
- * @param filename where in the code was the call to GROW
- * @param linenumber where in the code was the call to GROW
+ * @param filename where in the code was the call to GNUNET_array_grow
+ * @param linenumber where in the code was the call to GNUNET_array_grow
  */
 void
-xgrow_ (void **old,
-        size_t elementSize,
-        unsigned int *oldCount,
-        unsigned int newCount,
-        const char *filename, int linenumber, const char *function)
+GNUNET_xgrow_ (void **old,
+               size_t elementSize,
+               unsigned int *oldCount,
+               unsigned int newCount,
+               const char *filename, int linenumber, const char *function)
 {
   void *tmp;
   size_t size;
@@ -193,7 +169,7 @@ xgrow_ (void **old,
     }
   else
     {
-      tmp = xmalloc_ (size, filename, linenumber, function);
+      tmp = GNUNET_xmalloc_ (size, filename, linenumber, function);
       GE_ASSERT (NULL, tmp != NULL);
       memset (tmp, 0, size);    /* client code should not rely on this, though... */
       if (*oldCount > newCount)
@@ -203,7 +179,7 @@ xgrow_ (void **old,
 
   if (*old != NULL)
     {
-      xfree_ (*old, filename, linenumber, function);
+      GNUNET_xfree_ (*old, filename, linenumber, function);
     }
   *old = tmp;
   *oldCount = newCount;

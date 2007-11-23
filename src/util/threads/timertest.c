@@ -27,15 +27,15 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-#define VERBOSE NO
+#define VERBOSE GNUNET_NO
 
 static int
 check ()
 {
-  cron_t now;
-  cron_t last;
-  TIME_T tnow;
-  TIME_T tlast;
+  GNUNET_CronTime now;
+  GNUNET_CronTime last;
+  GNUNET_Int32Time tnow;
+  GNUNET_Int32Time tlast;
   int i;
   unsigned long long cumDelta;
 
@@ -43,14 +43,14 @@ check ()
      increasing;
      measure precision of sleep and report;
      test that sleep is interrupted by signals; */
-  last = now = get_time ();
+  last = now = GNUNET_get_time ();
   while (now == last)
-    now = get_time ();
+    now = GNUNET_get_time ();
   if (now < last)
     return 1;
-  tnow = tlast = TIME (NULL);
+  tnow = tlast = GNUNET_get_time_int32 (NULL);
   while (tnow == tlast)
-    tnow = TIME (NULL);
+    tnow = GNUNET_get_time_int32 (NULL);
   if (tnow < tlast)
     return 2;
   cumDelta = 0;
@@ -58,27 +58,27 @@ check ()
 #define MAXV 1500
   for (i = 0; i < MAXV; i += INCR)
     {
-      last = get_time ();
-      PTHREAD_SLEEP (cronMILLIS * i);
-      now = get_time ();
+      last = GNUNET_get_time ();
+      GNUNET_thread_sleep (GNUNET_CRON_MILLISECONDS * i);
+      now = GNUNET_get_time ();
 #if VERBOSE
       fprintf (stderr,
                "%4llu ms requested, got: %4llu ms\n",
-               i * cronMILLIS, (now - last));
+               i * GNUNET_CRON_MILLISECONDS, (now - last));
 #endif
-      if (last + cronMILLIS * i < now)
-        cumDelta += (now - (last + cronMILLIS * i));
+      if (last + GNUNET_CRON_MILLISECONDS * i < now)
+        cumDelta += (now - (last + GNUNET_CRON_MILLISECONDS * i));
       else
-        cumDelta += ((last + cronMILLIS * i) - now);
+        cumDelta += ((last + GNUNET_CRON_MILLISECONDS * i) - now);
     }
   FPRINTF (stdout,
            "Sleep precision: %llu ms. ",
-           cumDelta / cronMILLIS / (MAXV / INCR));
-  if (cumDelta <= 10 * cronMILLIS * MAXV / INCR)
+           cumDelta / GNUNET_CRON_MILLISECONDS / (MAXV / INCR));
+  if (cumDelta <= 10 * GNUNET_CRON_MILLISECONDS * MAXV / INCR)
     fprintf (stdout, "Timer precision is excellent.\n");
-  else if (cumDelta <= 50 * cronMILLIS * MAXV / INCR)   /* 50 ms average deviation */
+  else if (cumDelta <= 50 * GNUNET_CRON_MILLISECONDS * MAXV / INCR)     /* 50 ms average deviation */
     fprintf (stdout, "Timer precision is good.\n");
-  else if (cumDelta > 250 * cronMILLIS * MAXV / INCR)
+  else if (cumDelta > 250 * GNUNET_CRON_MILLISECONDS * MAXV / INCR)
     fprintf (stdout, "Timer precision is awful.\n");
   else
     fprintf (stdout, "Timer precision is acceptable.\n");

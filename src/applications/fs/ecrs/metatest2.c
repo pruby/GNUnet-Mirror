@@ -40,28 +40,28 @@ testMeta ()
   unsigned int size;
 
   m = ECRS_createMetaData ();
-  if (OK != ECRS_addToMetaData (m, EXTRACTOR_UNKNOWN, "link"))
+  if (GNUNET_OK != ECRS_addToMetaData (m, EXTRACTOR_UNKNOWN, "link"))
     {
       ECRS_freeMetaData (m);
       ABORT ();
     }
-  if (OK != ECRS_addToMetaData (m, EXTRACTOR_FILENAME, "lib-link.m4"))
+  if (GNUNET_OK != ECRS_addToMetaData (m, EXTRACTOR_FILENAME, "lib-link.m4"))
     {
       ECRS_freeMetaData (m);
       ABORT ();
     }
   size = ECRS_sizeofMetaData (m, ECRS_SERIALIZE_FULL);
-  val = MALLOC (size);
+  val = GNUNET_malloc (size);
   if (size != ECRS_serializeMetaData (NULL,
                                       m, val, size, ECRS_SERIALIZE_FULL))
     {
       ECRS_freeMetaData (m);
-      FREE (val);
+      GNUNET_free (val);
       ABORT ();
     }
   ECRS_freeMetaData (m);
   m = ECRS_deserializeMetaData (NULL, val, size);
-  FREE (val);
+  GNUNET_free (val);
   if (m == NULL)
     ABORT ();
   ECRS_freeMetaData (m);

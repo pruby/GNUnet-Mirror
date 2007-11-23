@@ -32,7 +32,7 @@
 #include "ip.h"
 #include "ip6.h"
 
-#define DEBUG_UDP6 NO
+#define DEBUG_UDP6 GNUNET_NO
 
 #include "udp_helper.c"
 
@@ -44,7 +44,7 @@ typedef struct
   /**
    * claimed IP of the sender, network byte order
    */
-  IP6addr ip;
+  GNUNET_IPv6Address ip;
 
   /**
    * claimed port of the sender, network byte order
@@ -62,13 +62,13 @@ typedef struct
 
 static struct GC_Configuration *cfg;
 
-static struct LoadMonitor *load_monitor;
+static struct GNUNET_LoadMonitor *load_monitor;
 
-static struct CIDR6Network *filteredNetworks_;
+static struct GNUNET_IPv6NetworkSet *filteredNetworks_;
 
-static struct CIDR6Network *allowedNetworks_;
+static struct GNUNET_IPv6NetworkSet *allowedNetworks_;
 
-static struct MUTEX *configLock;
+static struct GNUNET_Mutex *configLock;
 
 /**
  * Get the GNUnet UDP6 port from the configuration, or from
@@ -114,7 +114,7 @@ passivesock (unsigned short port)
       memset (&sin, 0, sizeof (sin));
       sin.sin6_family = AF_INET6;
       sin.sin6_port = htons (port);
-      memcpy (&sin.sin6_addr, &in6addr_any, sizeof (IP6addr));
+      memcpy (&sin.sin6_addr, &in6addr_any, sizeof (GNUNET_IPv6Address));
       if (BIND (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0)
         {
           GE_LOG_STRERROR (ectx, GE_FATAL | GE_ADMIN | GE_IMMEDIATE, "bind");
@@ -133,25 +133,26 @@ passivesock (unsigned short port)
 static int
 isBlacklisted (const void *addr, unsigned int addr_len)
 {
-  IP6addr ip;
+  GNUNET_IPv6Address ip;
   int ret;
 
-  if (addr_len == sizeof (IP6addr))
+  if (addr_len == sizeof (GNUNET_IPv6Address))
     {
-      memcpy (&ip, addr, sizeof (IP6addr));
+      memcpy (&ip, addr, sizeof (GNUNET_IPv6Address));
     }
   else if (addr_len == sizeof (struct sockaddr_in6))
     {
       memcpy (&ip,
-              &((struct sockaddr_in6 *) addr)->sin6_addr, sizeof (IP6addr));
+              &((struct sockaddr_in6 *) addr)->sin6_addr,
+              sizeof (GNUNET_IPv6Address));
     }
   else
     {
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  MUTEX_LOCK (configLock);
-  ret = check_ipv6_listed (filteredNetworks_, ip);
-  MUTEX_UNLOCK (configLock);
+  GNUNET_mutex_lock (configLock);
+  ret = GNUNET_check_ipv6_listed (filteredNetworks_, ip);
+  GNUNET_mutex_unlock (configLock);
   return ret;
 }
 
@@ -161,27 +162,28 @@ isBlacklisted (const void *addr, unsigned int addr_len)
 static int
 isWhitelisted (const void *addr, unsigned int addr_len)
 {
-  IP6addr ip;
+  GNUNET_IPv6Address ip;
   int ret;
 
-  if (addr_len == sizeof (IP6addr))
+  if (addr_len == sizeof (GNUNET_IPv6Address))
     {
-      memcpy (&ip, addr, sizeof (IP6addr));
+      memcpy (&ip, addr, sizeof (GNUNET_IPv6Address));
     }
   else if (addr_len == sizeof (struct sockaddr_in6))
     {
       memcpy (&ip,
-              &((struct sockaddr_in6 *) addr)->sin6_addr, sizeof (IP6addr));
+              &((struct sockaddr_in6 *) addr)->sin6_addr,
+              sizeof (GNUNET_IPv6Address));
     }
   else
     {
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  ret = OK;
-  MUTEX_LOCK (configLock);
+  ret = GNUNET_OK;
+  GNUNET_mutex_lock (configLock);
   if (allowedNetworks_ != NULL)
-    ret = check_ipv6_listed (filteredNetworks_, ip);
-  MUTEX_UNLOCK (configLock);
+    ret = GNUNET_check_ipv6_listed (filteredNetworks_, ip);
+  GNUNET_mutex_unlock (configLock);
   return ret;
 }
 
@@ -189,11 +191,11 @@ isWhitelisted (const void *addr, unsigned int addr_len)
 static int
 isRejected (const void *addr, unsigned int addr_len)
 {
-  if ((YES == isBlacklisted (addr,
-                             addr_len)) ||
-      (YES != isWhitelisted (addr, addr_len)))
-    return YES;
-  return NO;
+  if ((GNUNET_YES == isBlacklisted (addr,
+                                    addr_len)) ||
+      (GNUNET_YES != isWhitelisted (addr, addr_len)))
+    return GNUNET_YES;
+  return GNUNET_NO;
 }
 
 
@@ -206,21 +208,21 @@ isRejected (const void *addr, unsigned int addr_len)
  *
  * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
- * @return OK on success, SYSERR on failure
+ * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 static int
-verifyHello (const P2P_hello_MESSAGE * hello)
+verifyHello (const GNUNET_MessageHello * hello)
 {
   Host6Address *haddr;
 
   haddr = (Host6Address *) & hello[1];
   if ((ntohs (hello->senderAddressSize) != sizeof (Host6Address)) ||
-      (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
       (ntohs (hello->header.type) != p2p_PROTO_hello) ||
-      (YES == isBlacklisted (&haddr->ip,
-                             sizeof (IP6addr))) ||
-      (YES != isWhitelisted (&haddr->ip, sizeof (IP6addr))))
-    return SYSERR;              /* obviously invalid */
+      (GNUNET_YES == isBlacklisted (&haddr->ip,
+                                    sizeof (GNUNET_IPv6Address))) ||
+      (GNUNET_YES != isWhitelisted (&haddr->ip, sizeof (GNUNET_IPv6Address))))
+    return GNUNET_SYSERR;       /* obviously invalid */
   else
     {
 #if DEBUG_UDP6
@@ -231,21 +233,21 @@ verifyHello (const P2P_hello_MESSAGE * hello)
                          &haddr->ip,
                          inet6, INET6_ADDRSTRLEN), ntohs (haddr->port));
 #endif
-      return OK;
+      return GNUNET_OK;
     }
 }
 
 /**
  * Create a hello-Message for the current node. The hello is created
  * without signature and without a timestamp. The GNUnet core will
- * sign the message and add an expiration time.
+ * GNUNET_RSA_sign the message and add an expiration time.
  *
  * @return hello on success, NULL on error
  */
-static P2P_hello_MESSAGE *
+static GNUNET_MessageHello *
 createhello ()
 {
-  P2P_hello_MESSAGE *msg;
+  GNUNET_MessageHello *msg;
   Host6Address *haddr;
   unsigned short port;
 
@@ -253,12 +255,12 @@ createhello ()
   if (port == 0)
     return NULL;                /* UDP6 transport configured send-only */
 
-  msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (Host6Address));
+  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (Host6Address));
   haddr = (Host6Address *) & msg[1];
 
-  if (SYSERR == getPublicIP6Address (cfg, ectx, &haddr->ip))
+  if (GNUNET_SYSERR == getPublicIP6Address (cfg, ectx, &haddr->ip))
     {
-      FREE (msg);
+      GNUNET_free (msg);
       GE_LOG (ectx,
               GE_WARNING,
               _("UDP6: Could not determine my public IPv6 address.\n"));
@@ -275,17 +277,17 @@ createhello ()
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the P2P_hello_MESSAGE identifying the remote node
+ * @param tsession the GNUNET_MessageHello identifying the remote node
  * @param message what to send
  * @param size the size of the message
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
 udp6Send (TSession * tsession,
           const void *message, const unsigned int size, int importance)
 {
   UDPMessage *mp;
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
   Host6Address *haddr;
   struct sockaddr_in6 sin;      /* an Internet endpoint address */
   int ok;
@@ -295,33 +297,33 @@ udp6Send (TSession * tsession,
 #endif
 
   if (udp_sock == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   if (size == 0)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (size > udpAPI.mtu)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  hello = (P2P_hello_MESSAGE *) tsession->internal;
+  hello = (GNUNET_MessageHello *) tsession->internal;
   if (hello == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
 
   haddr = (Host6Address *) & hello[1];
   ssize = size + sizeof (UDPMessage);
-  mp = MALLOC (ssize);
+  mp = GNUNET_malloc (ssize);
   mp->header.size = htons (ssize);
   mp->header.type = 0;
   mp->sender = *coreAPI->myIdentity;
   memcpy (&mp[1], message, size);
-  ok = SYSERR;
+  ok = GNUNET_SYSERR;
   memset (&sin, 0, sizeof (sin));
   sin.sin6_family = AF_INET6;
   sin.sin6_port = haddr->port;
-  memcpy (&sin.sin6_addr, &haddr->ip.addr, sizeof (IP6addr));
+  memcpy (&sin.sin6_addr, &haddr->ip.addr, sizeof (GNUNET_IPv6Address));
 #if DEBUG_UDP6
   GE_LOG (ectx,
           GE_DEBUG,
@@ -330,13 +332,14 @@ udp6Send (TSession * tsession,
           inet_ntop (AF_INET6,
                      &sin, inet6, INET6_ADDRSTRLEN), ntohs (sin.sin_port));
 #endif
-  if (YES == socket_send_to (udp_sock,
-                             NC_Nonblocking,
-                             mp,
-                             ssize,
-                             &ssize, (const char *) &sin, sizeof (sin)))
+  if (GNUNET_YES == GNUNET_socket_send_to (udp_sock,
+                                           GNUNET_NC_NONBLOCKING,
+                                           mp,
+                                           ssize,
+                                           &ssize, (const char *) &sin,
+                                           sizeof (sin)))
     {
-      ok = OK;
+      ok = GNUNET_OK;
       if (stats != NULL)
         stats->change (stat_bytesSent, ssize);
     }
@@ -346,14 +349,14 @@ udp6Send (TSession * tsession,
       if (stats != NULL)
         stats->change (stat_bytesDropped, ssize);
     }
-  FREE (mp);
+  GNUNET_free (mp);
   return ok;
 }
 
 /**
  * Start the server process to receive inbound traffic.
  *
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
 startTransportServer ()
@@ -367,27 +370,28 @@ startTransportServer ()
     {
       sock = passivesock (port);
       if (sock == -1)
-        return SYSERR;
-      selector = select_create ("udp6", YES, ectx, load_monitor, sock, sizeof (struct sockaddr_in6), 0, /* timeout */
-                                &select_message_handler,
-                                NULL,
-                                &select_accept_handler,
-                                &isRejected,
-                                &select_close_handler,
-                                NULL, 64 * 1024, 16 /* max sockets */ );
+        return GNUNET_SYSERR;
+      selector = GNUNET_select_create ("udp6", GNUNET_YES, ectx, load_monitor, sock, sizeof (struct sockaddr_in6), 0,   /* timeout */
+                                       &select_message_handler,
+                                       NULL,
+                                       &select_accept_handler,
+                                       &isRejected,
+                                       &select_close_handler,
+                                       NULL, 64 * 1024,
+                                       16 /* max sockets */ );
       if (selector == NULL)
-        return SYSERR;
+        return GNUNET_SYSERR;
     }
   sock = SOCKET (PF_INET, SOCK_DGRAM, 17);
   if (sock == -1)
     {
       GE_LOG_STRERROR (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "socket");
-      select_destroy (selector);
+      GNUNET_select_destroy (selector);
       selector = NULL;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   udp_sock = socket_create (ectx, load_monitor, sock);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -398,18 +402,18 @@ reloadConfiguration ()
 {
   char *ch;
 
-  MUTEX_LOCK (configLock);
-  FREENONNULL (filteredNetworks_);
+  GNUNET_mutex_lock (configLock);
+  GNUNET_free_non_null (filteredNetworks_);
   GC_get_configuration_value_string (cfg, "UDP6", "BLACKLIST", "", &ch);
-  filteredNetworks_ = parse_ipv6_network_specification (ectx, ch);
-  FREE (ch);
+  filteredNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
+  GNUNET_free (ch);
   GC_get_configuration_value_string (cfg, "UDP6", "WHITELIST", "", &ch);
   if (strlen (ch) > 0)
-    allowedNetworks_ = parse_ipv6_network_specification (ectx, ch);
+    allowedNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
   else
     allowedNetworks_ = NULL;
-  FREE (ch);
-  MUTEX_UNLOCK (configLock);
+  GNUNET_free (ch);
+  GNUNET_mutex_unlock (configLock);
   return 0;
 }
 
@@ -417,20 +421,20 @@ reloadConfiguration ()
  * Convert UDP6 hello to IPv6 address
  */
 static int
-helloToAddress (const P2P_hello_MESSAGE * hello,
+helloToAddress (const GNUNET_MessageHello * hello,
                 void **sa, unsigned int *sa_len)
 {
   const Host6Address *haddr = (const Host6Address *) &hello[1];
   struct sockaddr_in6 *serverAddr;
 
   *sa_len = sizeof (struct sockaddr_in6);
-  serverAddr = MALLOC (sizeof (struct sockaddr_in6));
+  serverAddr = GNUNET_malloc (sizeof (struct sockaddr_in6));
   *sa = serverAddr;
   memset (serverAddr, 0, sizeof (struct sockaddr_in6));
   serverAddr->sin6_family = AF_INET6;
-  memcpy (&serverAddr->sin6_addr, haddr, sizeof (IP6addr));
+  memcpy (&serverAddr->sin6_addr, haddr, sizeof (GNUNET_IPv6Address));
   serverAddr->sin6_port = haddr->port;
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -452,7 +456,7 @@ inittransport_udp6 (CoreAPIForTransport * core)
   coreAPI = core;
   ectx = core->ectx;
   cfg = core->cfg;
-  configLock = MUTEX_CREATE (NO);
+  configLock = GNUNET_mutex_create (GNUNET_NO);
 
   reloadConfiguration ();
   if (-1 == GC_get_configuration_value_number (cfg,
@@ -460,8 +464,8 @@ inittransport_udp6 (CoreAPIForTransport * core)
                                                "MTU",
                                                sizeof (UDPMessage) +
                                                P2P_MESSAGE_OVERHEAD +
-                                               sizeof (MESSAGE_HEADER) + 32,
-                                               65500, MESSAGE_SIZE, &mtu))
+                                               sizeof (GNUNET_MessageHeader) +
+                                               32, 65500, MESSAGE_SIZE, &mtu))
     {
       return NULL;
     }
@@ -505,8 +509,8 @@ donetransport_udp6 ()
       coreAPI->releaseService (stats);
       stats = NULL;
     }
-  MUTEX_DESTROY (configLock);
-  FREENONNULL (filteredNetworks_);
+  GNUNET_mutex_destroy (configLock);
+  GNUNET_free_non_null (filteredNetworks_);
 }
 
 /* end of udp6.c */

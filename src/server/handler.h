@@ -54,10 +54,10 @@ void disableCoreProcessing ();
  * Handle a message (that was decrypted if needed).  Processes the
  * message by calling the registered handler for each message part.
  *
- * @param wasEncrypted YES if it was encrypted,
- *                     NO if plaintext,
+ * @param wasEncrypted GNUNET_YES if it was encrypted,
+ *                     GNUNET_NO if plaintext,
  */
-void injectMessage (const PeerIdentity * sender,
+void injectMessage (const GNUNET_PeerIdentity * sender,
                     const char *msg,
                     unsigned int size, int wasEncrypted, TSession * session);
 
@@ -74,9 +74,9 @@ void core_receive (P2P_PACKET * mp);
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
- *        SYSERR, processing of the message is discontinued
+ *        GNUNET_SYSERR, processing of the message is discontinued
  *        afterwards (all other parts are ignored)
- * @return OK on success, SYSERR if there is already a
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
 int registerp2pHandler (const unsigned short type,
@@ -89,7 +89,7 @@ int registerp2pHandler (const unsigned short type,
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received
- * @return OK on success, SYSERR if there is a different
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
  *         handler for that type
  */
 int unregisterp2pHandler (const unsigned short type,
@@ -100,13 +100,13 @@ int unregisterp2pHandler (const unsigned short type,
  * Register a method as a handler for specific message types.  Note
  * that it IS possible to register multiple handlers for the same
  * message.  In that case, they will ALL be executed in the order of
- * registration, unless one of them returns SYSERR in which case the
+ * registration, unless one of them returns GNUNET_SYSERR in which case the
  * remaining handlers and the rest of the message are ignored.
  *
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received
- * @return OK on success, SYSERR if core threads are running
+ * @return GNUNET_OK on success, GNUNET_SYSERR if core threads are running
  *        and updates to the handler list are illegal!
  */
 int registerPlaintextHandler (const unsigned short type,
@@ -120,7 +120,7 @@ int registerPlaintextHandler (const unsigned short type,
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received
- * @return OK on success, SYSERR if there is a different
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
  *        handler for that type or if core threads are running
  *        and updates to the handler list are illegal!
  */
@@ -134,9 +134,9 @@ int unregisterPlaintextHandler (const unsigned short type,
  *                    1 for ciphertext P2P,
  *                    2 for either plaintext or ciphertext P2P,
  *                    3 for client-server
- *        NO for ciphertext handlers, SYSERR for either
+ *        GNUNET_NO for ciphertext handlers, GNUNET_SYSERR for either
  * @return number of handlers registered, 0 for none,
- *        SYSERR for invalid value of handlerType
+ *        GNUNET_SYSERR for invalid value of handlerType
  */
 int isHandlerRegistered (unsigned short type, unsigned short handlerType);
 

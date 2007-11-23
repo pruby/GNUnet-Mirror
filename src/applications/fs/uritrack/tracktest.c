@@ -42,7 +42,7 @@ static unsigned int notifications;
 
 static int
 notified (const ECRS_FileInfo * fi,
-          const HashCode512 * key, int isRoot, void *cls)
+          const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
@@ -50,7 +50,7 @@ notified (const ECRS_FileInfo * fi,
                             fi1.meta)) && (ECRS_equalsUri (fi->uri, fi1.uri)))
     {
       notifications++;
-      return OK;
+      return GNUNET_OK;
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
@@ -58,14 +58,14 @@ notified (const ECRS_FileInfo * fi,
                             fi2.meta)) && (ECRS_equalsUri (fi->uri, fi2.uri)))
     {
       notifications++;
-      return OK;
+      return GNUNET_OK;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
 processor (const ECRS_FileInfo * fi,
-           const HashCode512 * key, int isRoot, void *cls)
+           const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
@@ -76,7 +76,7 @@ processor (const ECRS_FileInfo * fi,
       fi1.uri = NULL;
       ECRS_freeMetaData (fi1.meta);
       fi1.meta = NULL;
-      return OK;
+      return GNUNET_OK;
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
@@ -87,9 +87,9 @@ processor (const ECRS_FileInfo * fi,
       fi2.uri = NULL;
       ECRS_freeMetaData (fi2.meta);
       fi2.meta = NULL;
-      return OK;
+      return GNUNET_OK;
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 static int
@@ -112,23 +112,23 @@ testTracking ()
 
   URITRACK_clearTrackedURIS (NULL, cfg);
   URITRACK_registerTrackCallback (NULL, cfg, &notified, NULL);
-  URITRACK_trackURIS (NULL, cfg, NO);
+  URITRACK_trackURIS (NULL, cfg, GNUNET_NO);
   URITRACK_clearTrackedURIS (NULL, cfg);
   /* test non-tracking */
   URITRACK_trackURI (NULL, cfg, &fi1);
-  CHECK (0 == URITRACK_listURIs (NULL, cfg, NO, NULL, NULL));
-  CHECK (NO == URITRACK_trackStatus (NULL, cfg));
+  CHECK (0 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
+  CHECK (GNUNET_NO == URITRACK_trackStatus (NULL, cfg));
   URITRACK_clearTrackedURIS (NULL, cfg);
-  URITRACK_trackURIS (NULL, cfg, YES);
+  URITRACK_trackURIS (NULL, cfg, GNUNET_YES);
   URITRACK_clearTrackedURIS (NULL, cfg);
-  CHECK (0 == URITRACK_listURIs (NULL, cfg, NO, NULL, NULL));
-  CHECK (YES == URITRACK_trackStatus (NULL, cfg));
+  CHECK (0 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
+  CHECK (GNUNET_YES == URITRACK_trackStatus (NULL, cfg));
   URITRACK_trackURI (NULL, cfg, &fi1);
-  CHECK (1 == URITRACK_listURIs (NULL, cfg, NO, NULL, NULL));
+  CHECK (1 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
   URITRACK_trackURI (NULL, cfg, &fi2);
-  CHECK (2 == URITRACK_listURIs (NULL, cfg, YES, &processor, NULL));
-  URITRACK_trackURIS (NULL, cfg, NO);
-  CHECK (NO == URITRACK_trackStatus (NULL, cfg));
+  CHECK (2 == URITRACK_listURIs (NULL, cfg, GNUNET_YES, &processor, NULL));
+  URITRACK_trackURIS (NULL, cfg, GNUNET_NO);
+  CHECK (GNUNET_NO == URITRACK_trackStatus (NULL, cfg));
   URITRACK_clearTrackedURIS (NULL, cfg);
   CHECK (notifications == 2);
   URITRACK_unregisterTrackCallback (&notified, NULL);
@@ -140,7 +140,7 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);

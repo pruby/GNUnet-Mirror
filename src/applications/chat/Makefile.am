@@ -15,8 +15,6 @@ gnunet_chat_SOURCES = \
   gnunet-chat.c 
 gnunet_chat_LDADD = \
   $(top_builddir)/src/applications/chat/libgnunetchat.so \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
-  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetchat_api_la_SOURCES = \
@@ -31,5 +29,4 @@ libgnunetmodule_chat_la_SOURCES = \
 libgnunetmodule_chat_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 libgnunetmodule_chat_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+  $(top_builddir)/src/util/libgnunetutil.la 

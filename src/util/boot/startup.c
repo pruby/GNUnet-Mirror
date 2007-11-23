@@ -26,7 +26,7 @@
 
 #include "gnunet_directories.h"
 #include "gnunet_util_boot.h"
-#include "gnunet_util_config_impl.h"
+#include "gnunet_util_config.h"
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
@@ -69,6 +69,7 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
   struct GE_Context *tetx;
   unsigned long long logrotate;
   int dev;
+  char *user;
 
   nctx = NULL;
   admin_log_file = NULL;
@@ -85,7 +86,7 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
                                        "LOGFILE",
                                        VAR_DAEMON_DIRECTORY "/logs",
                                        &admin_log_file);
-  disk_directory_create_for_file (*ectx, admin_log_file);
+  GNUNET_disk_directory_create_for_file (*ectx, admin_log_file);
   GC_get_configuration_value_string (cfg,
                                      "LOGGING",
                                      "ADMIN-LEVEL",
@@ -94,16 +95,19 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
                                      "LOGGING",
                                      "USER-LEVEL",
                                      "WARNING", &user_log_level);
-  dev = GC_get_configuration_value_yesno (cfg, "LOGGING", "DEVELOPER", NO);
+  user = NULL;
+  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", NULL, &user);
+  dev =
+    GC_get_configuration_value_yesno (cfg, "LOGGING", "DEVELOPER", GNUNET_NO);
   all = convertLogLevel (admin_log_level);
   ull = convertLogLevel (user_log_level);
-  if (dev == YES)
+  if (dev == GNUNET_YES)
     {
       all |= GE_DEVELOPER | GE_REQUEST;
       ull |= GE_DEVELOPER | GE_REQUEST;
     }
-  FREE (admin_log_level);
-  FREE (user_log_level);
+  GNUNET_free (admin_log_level);
+  GNUNET_free (user_log_level);
   if (all != 0)
     {
       nctx = GE_create_context_logfile (NULL,
@@ -111,12 +115,13 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
                                         | GE_ADMIN
                                         | GE_BULK
                                         | GE_IMMEDIATE,
-                                        admin_log_file, YES, (int) logrotate);
+                                        admin_log_file,
+                                        user, GNUNET_YES, (int) logrotate);
     }
-  FREE (admin_log_file);
+  GNUNET_free (admin_log_file);
   if (ull != 0)
     {
-      tetx = GE_create_context_stderr (YES,
+      tetx = GE_create_context_stderr (GNUNET_YES,
                                        ull
                                        | GE_USERKIND
                                        | GE_BULK | GE_IMMEDIATE);
@@ -145,7 +150,7 @@ GNUNET_init (int argc,
              char *const *argv,
              const char *binaryName,
              char **cfgFileName,
-             const struct CommandLineOption *options,
+             const struct GNUNET_CommandLineOption *options,
              struct GE_Context **ectx, struct GC_Configuration **cfg)
 {
   int i;
@@ -153,52 +158,53 @@ GNUNET_init (int argc,
   int is_daemon;
   int ret;
 
-  os_init (NULL);
+  GNUNET_os_init (NULL);
 
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
-  path = os_get_installation_path (IPK_LOCALEDIR);
+  path = GNUNET_get_installation_path (GNUNET_IPK_LOCALEDIR);
   BINDTEXTDOMAIN ("GNUnet", path);
-  FREE (path);
+  GNUNET_free (path);
   textdomain ("GNUnet");
 #endif
   is_daemon = 0 == strcmp (DEFAULT_DAEMON_CONFIG_FILE, *cfgFileName);
 
   /* during startup, log all warnings and higher
      for anybody to stderr */
-  *ectx = GE_create_context_stderr (YES,
+  *ectx = GE_create_context_stderr (GNUNET_YES,
                                     GE_WARNING | GE_ERROR | GE_FATAL |
                                     GE_USER | GE_ADMIN | GE_DEVELOPER |
                                     GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext (*ectx);
-  os_init (*ectx);
-  *cfg = GC_create_C_impl ();
+  GNUNET_os_init (*ectx);
+  *cfg = GC_create ();
   GE_ASSERT (*ectx, *cfg != NULL);
-  i = gnunet_parse_options (binaryName,
+  i = GNUNET_parse_options (binaryName,
                             *ectx, *cfg, options, (unsigned int) argc, argv);
   if (i == -1)
     return -1;
-  if ((YES != disk_file_test (*ectx, *cfgFileName)) && (!is_daemon))
+  if ((GNUNET_YES != GNUNET_disk_file_test (*ectx, *cfgFileName))
+      && (!is_daemon))
     {
       char *run;
       char *bindir;
       size_t max;
 
-      bindir = os_get_installation_path (IPK_BINDIR);
+      bindir = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
       max = 128 + strlen (*cfgFileName) + strlen (bindir);
-      run = MALLOC (max);
-      SNPRINTF (run,
-                max,
-                "%sgnunet-setup -c %s generate-defaults",
-                bindir, *cfgFileName);
-      FREE (bindir);
+      run = GNUNET_malloc (max);
+      GNUNET_snprintf (run,
+                       max,
+                       "%sgnunet-setup -c %s generate-defaults",
+                       bindir, *cfgFileName);
+      GNUNET_free (bindir);
       ret = system (run);
       if (0 != ret)
         GE_LOG (*ectx,
                 GE_ERROR | GE_USER | GE_IMMEDIATE,
                 _("Failed to run %s: %s %d\n"),
                 run, strerror (errno), WEXITSTATUS (ret));
-      FREE (run);
+      GNUNET_free (run);
     }
   if (0 != GC_parse_configuration (*cfg, *cfgFileName))
     return -1;
@@ -208,11 +214,11 @@ GNUNET_init (int argc,
                                      "PATHS",
                                      "GNUNETD_HOME",
                                      "/var/lib/gnunet", &path);
-  FREE (path);
+  GNUNET_free (path);
   GC_get_configuration_value_string (*cfg,
                                      "PATHS",
                                      "GNUNET_HOME", "~/.gnunet", &path);
-  FREE (path);
+  GNUNET_free (path);
   if (configure_logging (ectx, *cfg) != 0)
     return -1;
   return i;

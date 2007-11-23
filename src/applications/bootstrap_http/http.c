@@ -66,12 +66,12 @@ typedef struct
 } BootstrapContext;
 
 #ifndef MINGW
-#define USE_MULTI YES
+#define USE_MULTI GNUNET_YES
 #else
   /* FIXME: plibc needs to know about handle types in SELECT(),
      figure out whether curl only returns sockets from
      curl_multi_fdset() */
-#define USE_MULTI NO
+#define USE_MULTI GNUNET_NO
 #endif
 
 /**
@@ -83,7 +83,7 @@ downloadHostlistHelper (void *ptr, size_t size, size_t nmemb, void *ctx)
   BootstrapContext *bctx = ctx;
   size_t osize;
   unsigned int total;
-  const P2P_hello_MESSAGE *hello;
+  const GNUNET_MessageHello *hello;
   unsigned int hs;
 
   bctx->total += size * nmemb;
@@ -91,18 +91,18 @@ downloadHostlistHelper (void *ptr, size_t size, size_t nmemb, void *ctx)
     return 0;                   /* ok, no data */
   osize = bctx->bsize;
   total = size * nmemb + osize;
-  GROW (bctx->buf, bctx->bsize, total);
+  GNUNET_array_grow (bctx->buf, bctx->bsize, total);
   memcpy (&bctx->buf[osize], ptr, size * nmemb);
-  while ((bctx->bsize >= sizeof (P2P_hello_MESSAGE)) &&
+  while ((bctx->bsize >= sizeof (GNUNET_MessageHello)) &&
          (bctx->termTest (bctx->targ)))
     {
-      hello = (const P2P_hello_MESSAGE *) &bctx->buf[0];
+      hello = (const GNUNET_MessageHello *) &bctx->buf[0];
       hs = ntohs (hello->header.size);
       if (bctx->bsize < hs)
         break;                  /* incomplete */
       if ((ntohs (hello->header.type) != p2p_PROTO_hello) ||
-          (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
-          (P2P_hello_MESSAGE_size (hello) >= MAX_BUFFER_SIZE))
+          (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
+          (GNUNET_sizeof_hello (hello) >= GNUNET_MAX_BUFFER_SIZE))
         {
           GE_LOG (ectx,
                   GE_WARNING | GE_USER | GE_IMMEDIATE,
@@ -114,7 +114,7 @@ downloadHostlistHelper (void *ptr, size_t size, size_t nmemb, void *ctx)
         stats->change (stat_hellodownloaded, 1);
       bctx->callback (hello, bctx->arg);
       memmove (&bctx->buf[0], &bctx->buf[hs], bctx->bsize - hs);
-      GROW (bctx->buf, bctx->bsize, bctx->bsize - hs);
+      GNUNET_array_grow (bctx->buf, bctx->bsize, bctx->bsize - hs);
     }
   return size * nmemb;
 }
@@ -175,7 +175,7 @@ downloadHostlist (bootstrap_hello_callback callback,
               GE_WARNING | GE_BULK | GE_USER,
               _
               ("No hostlist URL specified in configuration, will not bootstrap.\n"));
-      FREE (url);
+      GNUNET_free (url);
       curl_easy_cleanup (curl);
       return;
     }
@@ -193,11 +193,11 @@ downloadHostlist (bootstrap_hello_callback callback,
     }
   if (urls == 0)
     {
-      FREE (url);
+      GNUNET_free (url);
       curl_easy_cleanup (curl);
       return;
     }
-  urls = weak_randomi (urls) + 1;
+  urls = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, urls) + 1;
   pos = strlen (url) - 1;
   while (pos > 0)
     {
@@ -256,7 +256,8 @@ downloadHostlist (bootstrap_hello_callback callback,
               __FILE__, __LINE__, curl_multi_strerror (mret));
       goto cleanup;
     }
-  while ((YES == termTest (targ)) && (GNUNET_SHUTDOWN_TEST () == NO))
+  while ((GNUNET_YES == termTest (targ))
+         && (GNUNET_shutdown_test () == GNUNET_NO))
     {
       max = 0;
       FD_ZERO (&rs);
@@ -278,7 +279,7 @@ downloadHostlist (bootstrap_hello_callback callback,
       tv.tv_sec = 0;
       tv.tv_usec = 1000;
       SELECT (max + 1, &rs, &ws, &es, &tv);
-      if (YES != termTest (targ))
+      if (GNUNET_YES != termTest (targ))
         break;
       do
         {
@@ -312,7 +313,8 @@ downloadHostlist (bootstrap_hello_callback callback,
               break;
             }
         }
-      while ((mret == CURLM_CALL_MULTI_PERFORM) && (YES == termTest (targ)));
+      while ((mret == CURLM_CALL_MULTI_PERFORM)
+             && (GNUNET_YES == termTest (targ)));
       if ((mret != CURLM_OK) && (mret != CURLM_CALL_MULTI_PERFORM))
         {
           GE_LOG (ectx,
@@ -357,8 +359,8 @@ downloadHostlist (bootstrap_hello_callback callback,
   GE_LOG (ectx,
           GE_INFO | GE_BULK | GE_USER,
           _("Downloaded %llu bytes from `%s'.\n"), bctx.total, url);
-  FREE (url);
-  FREE (proxy);
+  GNUNET_free (url);
+  GNUNET_free (proxy);
   curl_global_cleanup ();
   return;
 cleanup:
@@ -372,8 +374,8 @@ cleanup:
   if (multi != NULL)
     curl_multi_cleanup (multi);
 #endif
-  FREE (url);
-  FREE (proxy);
+  GNUNET_free (url);
+  GNUNET_free (proxy);
   curl_global_cleanup ();
 }
 

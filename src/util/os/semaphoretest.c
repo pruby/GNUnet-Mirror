@@ -28,7 +28,7 @@
 
 #include <sys/types.h>
 
-static struct IPC_SEMAPHORE *ipc;
+static struct GNUNET_IPC_Semaphore *ipc;
 
 static struct GE_Context *ectx;
 
@@ -50,14 +50,14 @@ testIPCSemaphore ()
   me = fork ();
   sw = me;
 
-  ipc = IPC_SEMAPHORE_CREATE (ectx, "/tmp/gnunet_ipc_semtest", 0);
+  ipc = GNUNET_IPC_semaphore_create (ectx, "/tmp/gnunet_ipc_semtest", 0);
   for (cnt = 0; cnt < 3; cnt++)
     {
       if (sw == 0)
         {
           for (i = 0; i < 6; i++)
             {
-              IPC_SEMAPHORE_DOWN (ipc, YES);
+              GNUNET_IPC_semaphore_down (ipc, GNUNET_YES);
               fd = FOPEN ("/tmp/gnunet_ipc_xchange", "a+");
               if (fd == NULL)
                 {
@@ -93,7 +93,7 @@ testIPCSemaphore ()
         {
           for (i = 0; i < 6; i++)
             {
-              PTHREAD_SLEEP (50 + i * 50);
+              GNUNET_thread_sleep (50 + i * 50);
               fd = FOPEN ("/tmp/gnunet_ipc_xchange", "a+");
               if (fd == NULL)
                 {
@@ -112,7 +112,7 @@ testIPCSemaphore ()
                   goto END;
                 }
               fclose (fd);
-              IPC_SEMAPHORE_UP (ipc);
+              GNUNET_IPC_semaphore_up (ipc);
             }
           fprintf (stderr, ".");
           sleep (1);            /* give reader ample time to finish */
@@ -120,7 +120,7 @@ testIPCSemaphore ()
         }
     }
 END:
-  IPC_SEMAPHORE_DESTROY (ipc);
+  GNUNET_IPC_semaphore_destroy (ipc);
   REMOVE ("/tmp/gnunet_ipc_xchange");
   if (me == 0)
     {
@@ -146,12 +146,12 @@ main (int argc, char *argv[])
 {
   int ret = 0;
 
-  ectx = GE_create_context_stderr (NO,
+  ectx = GE_create_context_stderr (GNUNET_NO,
                                    GE_WARNING | GE_ERROR | GE_FATAL |
                                    GE_USER | GE_ADMIN | GE_DEVELOPER |
                                    GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext (ectx);
-  os_init (ectx);
+  GNUNET_os_init (ectx);
   ret += testIPCSemaphore ();
   fprintf (stderr, "\n");
   GE_free_context (ectx);

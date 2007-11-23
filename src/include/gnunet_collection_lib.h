@@ -54,13 +54,13 @@ void CO_done (void);
  */
 int CO_startCollection (unsigned int anonymityLevel,
                         unsigned int priority,
-                        TIME_T updateInterval,
+                        GNUNET_Int32Time updateInterval,
                         const char *name, const struct ECRS_MetaData *meta);
 
 /**
  * Stop collection.
  *
- * @return OK on success, SYSERR if no collection is active
+ * @return GNUNET_OK on success, GNUNET_SYSERR if no collection is active
  */
 int CO_stopCollection (void);
 
@@ -72,7 +72,7 @@ int CO_stopCollection (void);
 char *CO_getCollection (void);
 
 /**
- * Upload an update of the current collection information to the
+ * GNUNET_ND_UPLOAD an update of the current collection information to the
  * network now.  The function has no effect if the collection has not
  * changed since the last publication.  If we are currently not
  * collecting, this function does nothing.

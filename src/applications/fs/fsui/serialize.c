@@ -43,7 +43,7 @@ static void
 WRITELONG (int fd, long long val)
 {
   long long big;
-  big = htonll (val);
+  big = GNUNET_htonll (val);
   WRITE (fd, &big, sizeof (long long));
 }
 
@@ -57,7 +57,7 @@ writeURI (int fd, const struct ECRS_URI *uri)
   size = strlen (buf);
   WRITEINT (fd, size);
   WRITE (fd, buf, size);
-  FREE (buf);
+  GNUNET_free (buf);
 }
 
 static void
@@ -80,7 +80,7 @@ writeMetaData (struct GE_Context *ectx,
                               ECRS_SERIALIZE_NO_COMPRESS);
   if (size > 1024 * 1024)
     size = 1024 * 1024;
-  buf = MALLOC (size);
+  buf = GNUNET_malloc (size);
   ECRS_serializeMetaData (ectx,
                           meta,
                           buf,
@@ -88,7 +88,7 @@ writeMetaData (struct GE_Context *ectx,
                           ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
   WRITEINT (fd, size);
   WRITE (fd, buf, size);
-  FREE (buf);
+  GNUNET_free (buf);
 }
 
 
@@ -156,7 +156,7 @@ writeDownloadList (struct GE_Context *ectx,
   WRITEINT (fd, list->completedDownloadsCount);
   WRITELONG (fd, list->total);
   WRITELONG (fd, list->completed);
-  WRITELONG (fd, get_time () - list->startTime);
+  WRITELONG (fd, GNUNET_get_time () - list->startTime);
 
   WRITESTRING (fd, list->filename);
   writeFileInfo (ectx, fd, &list->fi);
@@ -203,7 +203,7 @@ writeSearches (int fd, struct FSUI_Context *ctx)
       WRITEINT (fd, spos->maxResults);
       WRITELONG (fd, spos->timeout);
       WRITELONG (fd, spos->start_time);
-      WRITELONG (fd, get_time ());
+      WRITELONG (fd, GNUNET_get_time ());
       WRITEINT (fd, spos->anonymityLevel);
       WRITEINT (fd, spos->sizeResultsReceived);
       WRITEINT (fd, spos->sizeUnmatchedResultsReceived);
@@ -225,7 +225,7 @@ writeSearches (int fd, struct FSUI_Context *ctx)
           WRITEINT (fd, rp->matchingKeyCount);
           WRITE (fd,
                  rp->matchingKeys,
-                 sizeof (HashCode512) * rp->matchingKeyCount);
+                 sizeof (GNUNET_HashCode) * rp->matchingKeyCount);
         }
       spos = spos->next;
     }
@@ -271,7 +271,7 @@ writeUploadList (int fd,
       WRITEINT (fd, upos->state);
       WRITELONG (fd, upos->completed);
       WRITELONG (fd, upos->total);
-      WRITELONG (fd, get_time ());
+      WRITELONG (fd, GNUNET_get_time ());
       WRITELONG (fd, upos->start_time);
       if (upos->uri != NULL)
         writeURI (fd, upos->uri);
@@ -280,8 +280,8 @@ writeUploadList (int fd,
       if (upos->meta != NULL)
         writeMetaData (ctx->ectx, fd, upos->meta);
       WRITESTRING (fd, upos->filename);
-      writeUploadList (fd, ctx, upos->child, NO);
-      if (top == YES)
+      writeUploadList (fd, ctx, upos->child, GNUNET_NO);
+      if (top == GNUNET_YES)
         break;
       upos = upos->next;
     }
@@ -313,7 +313,7 @@ writeUploads (int fd, struct FSUI_Context *ctx, struct FSUI_UploadList *upos)
         WRITESTRING (fd, shared->extractor_config);
       if (shared->global_keywords != NULL)
         writeURI (fd, shared->global_keywords);
-      writeUploadList (fd, ctx, upos, YES);
+      writeUploadList (fd, ctx, upos, GNUNET_YES);
       upos = upos->next;
     }
   WRITEINT (fd, 0);
@@ -324,9 +324,10 @@ FSUI_serialize (struct FSUI_Context *ctx)
 {
   int fd;
 
-  fd = disk_file_open (ctx->ectx,
-                       ctx->name,
-                       O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+  fd = GNUNET_disk_file_open (ctx->ectx,
+                              ctx->name,
+                              O_CREAT | O_TRUNC | O_WRONLY,
+                              S_IRUSR | S_IWUSR);
   if (fd == -1)
     return;
   WRITE (fd, "FSUI01\n\0", 8);  /* magic */

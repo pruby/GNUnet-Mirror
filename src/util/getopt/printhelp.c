@@ -31,8 +31,8 @@
 #define BORDER 29
 
 int
-gnunet_getopt_format_help (CommandLineProcessorContext * ctx,
-                           void *scls, const char *option, const char *value)
+GNUNET_getopt_format_help_ (GNUNET_CommandLineProcessorContext * ctx,
+                            void *scls, const char *option, const char *value)
 {
   const char *about = scls;
   int slen;
@@ -42,7 +42,7 @@ gnunet_getopt_format_help (CommandLineProcessorContext * ctx,
   int p;
   char *scp;
   const char *trans;
-  const struct CommandLineOption *opt;
+  const struct GNUNET_CommandLineOption *opt;
 
   printf ("%s\n%s\n", ctx->binaryOptions, gettext (about));
   printf (_
@@ -83,22 +83,22 @@ gnunet_getopt_format_help (CommandLineProcessorContext * ctx,
             {
               if (isspace (trans[j]))
                 {
-                  scp = MALLOC (j - p + 1);
+                  scp = GNUNET_malloc (j - p + 1);
                   memcpy (scp, &trans[p], j - p);
                   scp[j - p] = '\0';
                   printf ("%s\n%*s", scp, BORDER + 2, "");
-                  FREE (scp);
+                  GNUNET_free (scp);
                   p = j + 1;
                   slen = BORDER + 2;
                   goto OUTER;
                 }
             }
           /* could not find space to break line */
-          scp = MALLOC (78 - slen + 1);
+          scp = GNUNET_malloc (78 - slen + 1);
           memcpy (scp, &trans[p], 78 - slen);
           scp[78 - slen] = '\0';
           printf ("%s\n%*s", scp, BORDER + 2, "");
-          FREE (scp);
+          GNUNET_free (scp);
           slen = BORDER + 2;
           p = p + 78 - slen;
         }
@@ -109,7 +109,7 @@ gnunet_getopt_format_help (CommandLineProcessorContext * ctx,
         printf ("\n");
       i++;
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /* end of printhelp.c */

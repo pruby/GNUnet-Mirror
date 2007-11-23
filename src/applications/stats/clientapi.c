@@ -287,41 +287,43 @@ STATS_csMessageName (unsigned short type)
  * Request statistics from TCP socket.
  * @param sock the socket to use
  * @param processor function to call on each value
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 STATS_getStatistics (struct GE_Context *ectx,
-                     struct ClientServerConnection *sock,
+                     struct GNUNET_ClientServerConnection *sock,
                      STATS_StatProcessor processor, void *cls)
 {
   CS_stats_reply_MESSAGE *statMsg;
-  MESSAGE_HEADER csHdr;
+  GNUNET_MessageHeader csHdr;
   unsigned int count;
   unsigned int i;
   int mpos;
   int ret;
 
-  ret = OK;
-  csHdr.size = htons (sizeof (MESSAGE_HEADER));
+  ret = GNUNET_OK;
+  csHdr.size = htons (sizeof (GNUNET_MessageHeader));
   csHdr.type = htons (CS_PROTO_stats_GET_STATISTICS);
-  if (SYSERR == connection_write (sock, &csHdr))
-    return SYSERR;
-  statMsg = MALLOC (sizeof (CS_stats_reply_MESSAGE));
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
+    return GNUNET_SYSERR;
+  statMsg = GNUNET_malloc (sizeof (CS_stats_reply_MESSAGE));
   statMsg->totalCounters = htonl (1);   /* to ensure we enter the loop */
   count = 0;
   while (count < ntohl (statMsg->totalCounters))
     {
-      FREE (statMsg);
+      GNUNET_free (statMsg);
       statMsg = NULL;
       /* printf("reading from socket starting %u of %d\n",
          count, ntohl(statMsg->totalCounters) ); */
-      if (SYSERR == connection_read (sock, (MESSAGE_HEADER **) & statMsg))
-        return SYSERR;
+      if (GNUNET_SYSERR ==
+          GNUNET_client_connection_read (sock,
+                                         (GNUNET_MessageHeader **) & statMsg))
+        return GNUNET_SYSERR;
       if ((ntohs (statMsg->header.size) < sizeof (CS_stats_reply_MESSAGE)) ||
           (((char *) statMsg)[ntohs (statMsg->header.size) - 1] != '\0'))
         {
           GE_BREAK (ectx, 0);
-          ret = SYSERR;
+          ret = GNUNET_SYSERR;
           break;
         }
       mpos = sizeof (unsigned long long) * ntohl (statMsg->statCounters);
@@ -329,9 +331,9 @@ STATS_getStatistics (struct GE_Context *ectx,
         {
           ret = processor (_("Uptime (seconds)"),
                            (unsigned long long)
-                           ((get_time () -
-                             ntohll (statMsg->startTime)) / cronSECONDS),
-                           cls);
+                           ((GNUNET_get_time () -
+                             GNUNET_ntohll (statMsg->startTime)) /
+                            GNUNET_CRON_SECONDS), cls);
         }
       for (i = 0; i < ntohl (statMsg->statCounters); i++)
         {
@@ -343,18 +345,18 @@ STATS_getStatistics (struct GE_Context *ectx,
               ntohs (statMsg->header.size) - sizeof (CS_stats_reply_MESSAGE))
             {
               GE_BREAK (ectx, 0);
-              ret = SYSERR;
+              ret = GNUNET_SYSERR;
               break;            /* out of bounds! */
             }
-          if (ret != SYSERR)
+          if (ret != GNUNET_SYSERR)
             {
               ret =
                 processor (&
                            ((char
                              *) (((CS_stats_reply_MESSAGE_GENERIC *)
                                   statMsg)->values))[mpos],
-                           ntohll (((CS_stats_reply_MESSAGE_GENERIC *)
-                                    statMsg)->values[i]), cls);
+                           GNUNET_ntohll (((CS_stats_reply_MESSAGE_GENERIC *)
+                                           statMsg)->values[i]), cls);
             }
           mpos +=
             strlen (&
@@ -363,7 +365,7 @@ STATS_getStatistics (struct GE_Context *ectx,
         }
       count += ntohl (statMsg->statCounters);
     }                           /* end while */
-  FREE (statMsg);
+  GNUNET_free (statMsg);
   return ret;
 }
 
@@ -372,11 +374,11 @@ STATS_getStatistics (struct GE_Context *ectx,
  * Request available protocols from TCP socket.
  * @param sock the socket to use
  * @param processor function to call on each value
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 STATS_getAvailableProtocols (struct GE_Context *ectx,
-                             struct ClientServerConnection *sock,
+                             struct GNUNET_ClientServerConnection *sock,
                              STATS_ProtocolProcessor processor, void *cls)
 {
   CS_stats_get_supported_MESSAGE csStatMsg;
@@ -385,7 +387,7 @@ STATS_getAvailableProtocols (struct GE_Context *ectx,
   int supported;
   int ret;
 
-  ret = OK;
+  ret = GNUNET_OK;
   csStatMsg.header.size = htons (sizeof (CS_stats_get_supported_MESSAGE));
   csStatMsg.header.type = htons (CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED);
   for (j = 2; j < 4; j++)
@@ -394,19 +396,21 @@ STATS_getAvailableProtocols (struct GE_Context *ectx,
       for (i = 0; i < 65535; i++)
         {
           csStatMsg.type = htons (i);
-          if (SYSERR == connection_write (sock, &csStatMsg.header))
-            return SYSERR;
-          if (SYSERR == connection_read_result (sock, &supported))
-            return SYSERR;
-          if (supported == YES)
+          if (GNUNET_SYSERR ==
+              GNUNET_client_connection_write (sock, &csStatMsg.header))
+            return GNUNET_SYSERR;
+          if (GNUNET_SYSERR ==
+              GNUNET_client_connection_read_result (sock, &supported))
+            return GNUNET_SYSERR;
+          if (supported == GNUNET_YES)
             {
-              ret = processor (i, (j == 2) ? YES : NO, cls);
-              if (ret != OK)
+              ret = processor (i, (j == 2) ? GNUNET_YES : GNUNET_NO, cls);
+              if (ret != GNUNET_OK)
                 break;
             }
         }
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /* end of clientapi.c */

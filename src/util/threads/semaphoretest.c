@@ -27,9 +27,9 @@
 
 #include <sys/types.h>
 
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
-static struct SEMAPHORE *sem;
+static struct GNUNET_Semaphore *sem;
 
 static volatile int sv;
 
@@ -40,10 +40,10 @@ lockIt (void *unused)
 {
   sv = 0;
   while (sv == 0)
-    PTHREAD_SLEEP (50 * cronMILLIS);    /* busy waiting may not always work */
-  MUTEX_LOCK (lock);
+    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);        /* busy waiting may not always work */
+  GNUNET_mutex_lock (lock);
   sv = 1;
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   sv = 2;
   tv = 2;
   return NULL;
@@ -63,58 +63,58 @@ bigStack (void *unused)
 static int
 testPTHREAD_CREATE ()
 {
-  struct PTHREAD *pt;
+  struct GNUNET_ThreadHandle *pt;
   void *unused;
 
   sv = -1;
   tv = 0;
-  lock = MUTEX_CREATE (NO);
-  pt = PTHREAD_CREATE (&lockIt, NULL, 1024);
+  lock = GNUNET_mutex_create (GNUNET_NO);
+  pt = GNUNET_thread_create (&lockIt, NULL, 1024);
   while (tv != 2)
     {
       sv = 1;
-      PTHREAD_SLEEP (50 * cronMILLIS);  /* busy waiting may not always work */
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);      /* busy waiting may not always work */
     }
-  PTHREAD_JOIN (pt, &unused);
-  MUTEX_DESTROY (lock);
-  pt = PTHREAD_CREATE (&bigStack, NULL, 1024 * 100 + 25000);    /* fails by segfault */
-  PTHREAD_JOIN (pt, &unused);
+  GNUNET_thread_join (pt, &unused);
+  GNUNET_mutex_destroy (lock);
+  pt = GNUNET_thread_create (&bigStack, NULL, 1024 * 100 + 25000);      /* fails by segfault */
+  GNUNET_thread_join (pt, &unused);
   return 0;
 }
 
 static int
 testMutex ()
 {
-  struct PTHREAD *pt;
+  struct GNUNET_ThreadHandle *pt;
   void *unused;
 
-  lock = MUTEX_CREATE (NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
 
   sv = 1;
   tv = 0;
-  pt = PTHREAD_CREATE (&lockIt, NULL, 1024);
+  pt = GNUNET_thread_create (&lockIt, NULL, 1024);
   while (sv == 1)
-    PTHREAD_SLEEP (50 * cronMILLIS);    /* busy waiting may not always work */
-  MUTEX_LOCK (lock);
+    GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);        /* busy waiting may not always work */
+  GNUNET_mutex_lock (lock);
   sv = 5;                       /* release lockIt from while sv==0 loop,
                                    blocks it on lock */
 
   if (sv != 5)
     {
-      MUTEX_UNLOCK (lock);
+      GNUNET_mutex_unlock (lock);
       while (tv != 2)
-        PTHREAD_SLEEP (50 * cronMILLIS);        /* busy waiting may not always work */
-      MUTEX_DESTROY (lock);
+        GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);    /* busy waiting may not always work */
+      GNUNET_mutex_destroy (lock);
       printf ("MUTEX test failed at %s:%u\n", __FILE__, __LINE__);
       return 1;                 /* error */
     }
   else
     {
-      MUTEX_UNLOCK (lock);
+      GNUNET_mutex_unlock (lock);
       while (tv != 2)
-        PTHREAD_SLEEP (50 * cronMILLIS);        /* busy waiting may not always work */
-      PTHREAD_JOIN (pt, &unused);
-      MUTEX_DESTROY (lock);
+        GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);    /* busy waiting may not always work */
+      GNUNET_thread_join (pt, &unused);
+      GNUNET_mutex_destroy (lock);
       return 0;                 /* ok */
     }
 }
@@ -124,12 +124,12 @@ testRecursiveMutex ()
 {
   int i;
 
-  lock = MUTEX_CREATE (YES);
+  lock = GNUNET_mutex_create (GNUNET_YES);
   for (i = 0; i < 50; i++)
-    MUTEX_LOCK (lock);
+    GNUNET_mutex_lock (lock);
   for (i = 0; i < 50; i++)
-    MUTEX_UNLOCK (lock);
-  MUTEX_DESTROY (lock);
+    GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_destroy (lock);
   return 0;                     /* ok -- fails by hanging! */
 }
 
@@ -139,16 +139,16 @@ semUpDown (void *unused)
   int i;
 
   for (i = 0; i < 42; i++)
-    SEMAPHORE_DOWN (sem, YES);  /* fails by blocking */
-  if (SEMAPHORE_DOWN (sem, NO) != SYSERR)
+    GNUNET_semaphore_down (sem, GNUNET_YES);    /* fails by blocking */
+  if (GNUNET_semaphore_down (sem, GNUNET_NO) != GNUNET_SYSERR)
     {
-      SEMAPHORE_DESTROY (sem);
-      printf ("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n"
+      GNUNET_semaphore_destroy (sem);
+      printf ("GNUNET_semaphore_down_NONBLOCKING failed at %s:%u\n"
               "Testcase deadlocked.\n", __FILE__, __LINE__);
       return NULL;              /* will halt testcase! */
     }
   for (i = 0; i < 42; i++)
-    SEMAPHORE_UP (sem);
+    GNUNET_semaphore_up (sem);
   return NULL;
 }
 
@@ -156,46 +156,47 @@ static int
 testSemaphore ()
 {
   int i;
-  struct PTHREAD *pt;
+  struct GNUNET_ThreadHandle *pt;
   void *unused;
 
-  sem = SEMAPHORE_CREATE (42);
+  sem = GNUNET_semaphore_create (42);
   for (i = 0; i < 42; i++)
-    SEMAPHORE_DOWN (sem, YES);  /* fails by blocking */
-  if (SEMAPHORE_DOWN (sem, NO) != SYSERR)
+    GNUNET_semaphore_down (sem, GNUNET_YES);    /* fails by blocking */
+  if (GNUNET_semaphore_down (sem, GNUNET_NO) != GNUNET_SYSERR)
     {
-      SEMAPHORE_DESTROY (sem);
-      printf ("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
+      GNUNET_semaphore_destroy (sem);
+      printf ("GNUNET_semaphore_down_NONBLOCKING failed at %s:%u\n",
               __FILE__, __LINE__);
       return 1;
     }
   for (i = 0; i < 42; i++)
-    SEMAPHORE_UP (sem);
+    GNUNET_semaphore_up (sem);
   for (i = 0; i < 42; i++)
-    if (SYSERR == SEMAPHORE_DOWN (sem, NO))
+    if (GNUNET_SYSERR == GNUNET_semaphore_down (sem, GNUNET_NO))
       {
-        SEMAPHORE_DESTROY (sem);
-        printf ("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u iteration %d\n",
-                __FILE__, __LINE__, i);
+        GNUNET_semaphore_destroy (sem);
+        printf
+          ("GNUNET_semaphore_down_NONBLOCKING failed at %s:%u iteration %d\n",
+           __FILE__, __LINE__, i);
         return 1;
       }
-  if (SEMAPHORE_DOWN (sem, NO) != SYSERR)
+  if (GNUNET_semaphore_down (sem, GNUNET_NO) != GNUNET_SYSERR)
     {
-      SEMAPHORE_DESTROY (sem);
-      printf ("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
+      GNUNET_semaphore_destroy (sem);
+      printf ("GNUNET_semaphore_down_NONBLOCKING failed at %s:%u\n",
               __FILE__, __LINE__);
       return 1;
     }
-  pt = PTHREAD_CREATE (&semUpDown, NULL, 1024);
+  pt = GNUNET_thread_create (&semUpDown, NULL, 1024);
   for (i = 0; i < 42; i++)
-    SEMAPHORE_UP (sem);
-  PTHREAD_JOIN (pt, &unused);
+    GNUNET_semaphore_up (sem);
+  GNUNET_thread_join (pt, &unused);
   for (i = 0; i < 42; i++)
-    SEMAPHORE_DOWN (sem, YES);
-  if (SEMAPHORE_DOWN (sem, NO) != SYSERR)
+    GNUNET_semaphore_down (sem, GNUNET_YES);
+  if (GNUNET_semaphore_down (sem, GNUNET_NO) != GNUNET_SYSERR)
     {
-      SEMAPHORE_DESTROY (sem);
-      printf ("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
+      GNUNET_semaphore_destroy (sem);
+      printf ("GNUNET_semaphore_down_NONBLOCKING failed at %s:%u\n",
               __FILE__, __LINE__);
       return 1;
     }

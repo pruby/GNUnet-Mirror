@@ -42,59 +42,69 @@ extern "C"
 #endif
 #endif
 
-struct ClientServerConnection;
+struct GNUNET_ClientServerConnection;
 
 /**
  * Get a connection with gnunetd.
  */
-struct ClientServerConnection *client_connection_create (struct GE_Context
-                                                         *ectx,
-                                                         struct
-                                                         GC_Configuration
-                                                         *cfg);
+struct GNUNET_ClientServerConnection *GNUNET_client_connection_create (struct
+                                                                       GE_Context
+                                                                       *ectx,
+                                                                       struct
+                                                                       GC_Configuration
+                                                                       *cfg);
 
 /**
  * Close a GNUnet TCP socket for now (use to temporarily close
  * a TCP connection that will probably not be used for a long
  * time; the socket will still be auto-reopened by the
- * connection_read/connection_write methods if it is a client-socket).
+ * GNUNET_client_connection_read/GNUNET_client_connection_write methods if it is a client-socket).
  *
- * Also, you must still call connection_destroy to free all
+ * Also, you must still call GNUNET_client_connection_destroy to free all
  * resources associated with the connection.
  */
-void connection_close_temporarily (struct ClientServerConnection *sock);
+void GNUNET_client_connection_close_temporarily (struct
+                                                 GNUNET_ClientServerConnection
+                                                 *sock);
 
 /**
  * Close a GNUnet TCP socket forever.
  * Prevent it from being opened again.
  *
- * Also, you must still call connection_destroy to free all
+ * Also, you must still call GNUNET_client_connection_destroy to free all
  * resources associated with the connection.
  */
-void connection_close_forever (struct ClientServerConnection *sock);
+void GNUNET_client_connection_close_forever (struct
+                                             GNUNET_ClientServerConnection
+                                             *sock);
 
 /**
  * Destroy connection between gnunetd and clients.
  * Also closes the connection if it is still active.
  */
-void connection_destroy (struct ClientServerConnection *con);
+void GNUNET_client_connection_destroy (struct GNUNET_ClientServerConnection
+                                       *con);
 
 /**
  * Check if a socket is open. Will ALWAYS return 'true' for a valid
  * client socket (even if the connection is closed), but will return
  * false for a closed server socket.
  *
- * @return 1 if open, 0 if closed
+ * @return GNUNET_YES if open, GNUNET_NO if closed
  */
-int connection_test_open (struct ClientServerConnection *sock);
+int GNUNET_client_connection_test_connected (struct
+                                             GNUNET_ClientServerConnection
+                                             *sock);
 
 /**
  * Check a socket, open and connect if it is closed and it is a
  * client-socket.
  *
- * @return OK if the socket is now open, SYSERR if not
+ * @return GNUNET_OK if the socket is now open, GNUNET_SYSERR if not
  */
-int connection_ensure_connected (struct ClientServerConnection *sock);
+int GNUNET_client_connection_ensure_connected (struct
+                                               GNUNET_ClientServerConnection
+                                               *sock);
 
 /**
  * Read from a GNUnet client-server connection.
@@ -102,49 +112,53 @@ int connection_ensure_connected (struct ClientServerConnection *sock);
  * @param sock the socket
  * @param buffer the buffer to write data to
  *        if NULL == *buffer, *buffer is allocated (caller frees)
- * @return OK if the read was successful, SYSERR if the socket
+ * @return GNUNET_OK if the read was successful, GNUNET_SYSERR if the socket
  *         was closed by the other side (if the socket is a
  *         client socket and is used again, the next
  *         read/write call will automatically attempt
  *         to re-establish the connection).
  */
-int connection_read (struct ClientServerConnection *sock,
-                     MESSAGE_HEADER ** buffer);
+int GNUNET_client_connection_read (struct GNUNET_ClientServerConnection *sock,
+                                   GNUNET_MessageHeader ** buffer);
 
 /**
  * Write to a GNUnet TCP socket.
  *
  * @param sock the socket to write to
  * @param buffer the buffer to write
- * @return OK if the write was sucessful,
- *         SYSERR if the write failed (error will be logged)
+ * @return GNUNET_OK if the write was sucessful,
+ *         GNUNET_SYSERR if the write failed (error will be logged)
  */
-int connection_write (struct ClientServerConnection *sock,
-                      const MESSAGE_HEADER * buffer);
+int GNUNET_client_connection_write (struct GNUNET_ClientServerConnection
+                                    *sock,
+                                    const GNUNET_MessageHeader * buffer);
 
 /**
  * Obtain a simple return value from the connection.
  * Note that the protocol will automatically communicate
  * errors and pass those to the error context used when
  * the socket was created.  In that case, read_result
- * will return SYSERR for the corresponding communication.
+ * will return GNUNET_SYSERR for the corresponding communication.
  *
  * @param sock the TCP socket
  * @param ret the return value from TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         read successfully
  */
-int connection_read_result (struct ClientServerConnection *sock, int *ret);
+int GNUNET_client_connection_read_result (struct GNUNET_ClientServerConnection
+                                          *sock, int *ret);
 
 /**
  * Send a simple return value to the other side.
  *
  * @param sock the TCP socket
  * @param ret the return value to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
-int connection_write_result (struct ClientServerConnection *sock, int ret);
+int GNUNET_client_connection_write_result (struct
+                                           GNUNET_ClientServerConnection
+                                           *sock, int ret);
 
 /**
  * Stop gnunetd
@@ -152,7 +166,7 @@ int connection_write_result (struct ClientServerConnection *sock, int ret);
  * Note that returning an error does NOT mean that
  * gnunetd will continue to run (it may have been
  * shutdown by something else in the meantime or
- * crashed).  Call connection_test_running() frequently
+ * crashed).  Call GNUNET_test_daemon_running() frequently
  * to check the status of gnunetd.
  *
  * Furthermore, note that this WILL potentially kill
@@ -162,9 +176,11 @@ int connection_write_result (struct ClientServerConnection *sock, int ret);
  * This function does NOT need the PID and will also
  * kill daemonized gnunetd's.
  *
- * @return OK successfully stopped, SYSERR: error
+ * @return GNUNET_OK successfully stopped, GNUNET_SYSERR: error
  */
-int connection_request_shutdown (struct ClientServerConnection *sock);
+int GNUNET_client_connection_request_daemon_shutdown (struct
+                                                      GNUNET_ClientServerConnection
+                                                      *sock);
 
 /**
  * Checks if gnunetd is running
@@ -172,21 +188,21 @@ int connection_request_shutdown (struct ClientServerConnection *sock);
  * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
  * running.
  *
- * @return OK if gnunetd is running, SYSERR if not
+ * @return GNUNET_OK if gnunetd is running, GNUNET_SYSERR if not
  */
-int connection_test_running (struct GE_Context *ectx,
-                             struct GC_Configuration *cfg);
+int GNUNET_test_daemon_running (struct GE_Context *ectx,
+                                struct GC_Configuration *cfg);
 
 /**
  * Wait until the gnunet daemon is
  * running.
  *
  * @param timeout how long to wait at most in ms
- * @return OK if gnunetd is now running
+ * @return GNUNET_OK if gnunetd is now running
  */
-int connection_wait_for_running (struct GE_Context *ectx,
-                                 struct GC_Configuration *cfg,
-                                 cron_t timeout);
+int GNUNET_wait_for_daemon_running (struct GE_Context *ectx,
+                                    struct GC_Configuration *cfg,
+                                    GNUNET_CronTime timeout);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

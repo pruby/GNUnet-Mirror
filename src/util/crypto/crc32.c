@@ -95,7 +95,7 @@ crc32 (uLong crc, const char *buf, size_t len)
  * @return the resulting CRC32 checksum
  */
 int
-crc32N (const void *buf, int len)
+GNUNET_crc32_n (const void *buf, unsigned int len)
 {
   uLong crc;
   crc = crc32 (0L, Z_NULL, 0);

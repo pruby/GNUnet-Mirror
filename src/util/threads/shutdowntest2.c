@@ -29,16 +29,16 @@
 static int
 check ()
 {
-  if (GNUNET_SHUTDOWN_TEST () != NO)
+  if (GNUNET_shutdown_test () != GNUNET_NO)
     return 1;
 #ifndef MINGW
   kill (getpid (), SIGINT);
 #else
   GenerateConsoleCtrlEvent (CTRL_C_EVENT, 0);
 #endif
-  if (GNUNET_SHUTDOWN_TEST () != YES)
+  if (GNUNET_shutdown_test () != GNUNET_YES)
     return 2;
-  GNUNET_SHUTDOWN_WAITFOR ();
+  GNUNET_shutdown_wait_for ();
   return 0;
 }
 

@@ -192,7 +192,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
           
         snprintf(szEntry, 1000, "%s (%d.%d.%d.%d - %I64u)",
           pszIfName ? pszIfName : (char *) pTable->table[dwIfIdx].bDescr,
-          PRIP(ntohl(dwIP)),
+          GNUNET_PRIP(ntohl(dwIP)),
           *((unsigned long long *) bPhysAddr));
         szEntry[1000] = 0;
         
@@ -206,7 +206,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
     GlobalFree(pTable);
   }
   
-  return YES;
+  return GNUNET_YES;
 }
 
 /**
@@ -840,7 +840,7 @@ int win_ols_sendto(struct SocketHandle *s, const char *buf, int len,
   
   wbuf.buf = (char *) buf;
   wbuf.len = len;
-  ol = (WSAOVERLAPPED *) MALLOC(sizeof(WSAOVERLAPPED));
+  ol = (WSAOVERLAPPED *) GNUNET_malloc(sizeof(WSAOVERLAPPED));
   memset(ol, 0, sizeof(WSAOVERLAPPED));
   ol->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   
@@ -875,7 +875,7 @@ int win_ols_sendto(struct SocketHandle *s, const char *buf, int len,
         
         ol = *it;
         CloseHandle(ol->hEvent);
-        FREE(ol);
+        GNUNET_free(ol);
         next = it;
         next++;
         lstOL.erase(it);

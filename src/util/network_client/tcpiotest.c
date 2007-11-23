@@ -108,58 +108,60 @@ doAccept (int serverSocket)
 }
 
 static int
-testTransmission (struct ClientServerConnection *a, struct SocketHandle *b)
+testTransmission (struct GNUNET_ClientServerConnection *a,
+                  struct GNUNET_SocketHandle *b)
 {
-  MESSAGE_HEADER *hdr;
-  MESSAGE_HEADER *buf;
+  GNUNET_MessageHeader *hdr;
+  GNUNET_MessageHeader *buf;
   int i;
   int j;
   size_t rd;
   size_t pos;
 
-  hdr = MALLOC (1024);
-  for (i = 0; i < 1024 - sizeof (MESSAGE_HEADER); i += 7)
+  hdr = GNUNET_malloc (1024);
+  for (i = 0; i < 1024 - sizeof (GNUNET_MessageHeader); i += 7)
     {
       fprintf (stderr, ".");
       for (j = 0; j < i; j++)
         ((char *) &hdr[1])[j] = (char) i + j;
-      hdr->size = htons (i + sizeof (MESSAGE_HEADER));
+      hdr->size = htons (i + sizeof (GNUNET_MessageHeader));
       hdr->type = 0;
-      if (OK != connection_write (a, hdr))
+      if (GNUNET_OK != GNUNET_client_connection_write (a, hdr))
         {
-          FREE (hdr);
+          GNUNET_free (hdr);
           return 1;
         }
-      buf = MALLOC (2048);
+      buf = GNUNET_malloc (2048);
       pos = 0;
-      while (pos < i + sizeof (MESSAGE_HEADER))
+      while (pos < i + sizeof (GNUNET_MessageHeader))
         {
           rd = 0;
-          if (SYSERR == socket_recv (b,
-                                     NC_Nonblocking,
-                                     &buf[pos], 2048 - pos, &rd))
+          if (GNUNET_SYSERR == GNUNET_socket_recv (b,
+                                                   GNUNET_NC_NONBLOCKING,
+                                                   &buf[pos], 2048 - pos,
+                                                   &rd))
             {
-              FREE (hdr);
-              FREE (buf);
+              GNUNET_free (hdr);
+              GNUNET_free (buf);
               return 2;
             }
           pos += rd;
         }
-      if (pos != i + sizeof (MESSAGE_HEADER))
+      if (pos != i + sizeof (GNUNET_MessageHeader))
         {
-          FREE (buf);
-          FREE (hdr);
+          GNUNET_free (buf);
+          GNUNET_free (hdr);
           return 3;
         }
-      if (0 != memcmp (buf, hdr, i + sizeof (MESSAGE_HEADER)))
+      if (0 != memcmp (buf, hdr, i + sizeof (GNUNET_MessageHeader)))
         {
-          FREE (buf);
-          FREE (hdr);
+          GNUNET_free (buf);
+          GNUNET_free (hdr);
           return 4;
         }
-      FREE (buf);
+      GNUNET_free (buf);
     }
-  FREE (hdr);
+  GNUNET_free (hdr);
   return 0;
 }
 
@@ -169,11 +171,11 @@ main (int argc, char *argv[])
   int i;
   int ret;
   int serverSocket;
-  struct ClientServerConnection *clientSocket;
+  struct GNUNET_ClientServerConnection *clientSocket;
   int acceptSocket;
-  struct SocketHandle *sh;
+  struct GNUNET_SocketHandle *sh;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -182,11 +184,12 @@ main (int argc, char *argv[])
   serverSocket = openServerSocket ();
   if (serverSocket == -1)
     return 1;
-  clientSocket = client_connection_create (NULL, cfg);
+  clientSocket = GNUNET_client_connection_create (NULL, cfg);
   ret = 0;
   for (i = 0; i < 2; i++)
     {
-      if (OK != connection_ensure_connected (clientSocket))
+      if (GNUNET_OK !=
+          GNUNET_client_connection_ensure_connected (clientSocket))
         {
           ret = 42;
           break;
@@ -199,10 +202,10 @@ main (int argc, char *argv[])
         }
       sh = socket_create (NULL, NULL, acceptSocket);
       ret = ret | testTransmission (clientSocket, sh);
-      connection_close_temporarily (clientSocket);
-      socket_destroy (sh);
+      GNUNET_client_connection_close_temporarily (clientSocket);
+      GNUNET_socket_destroy (sh);
     }
-  connection_destroy (clientSocket);
+  GNUNET_client_connection_destroy (clientSocket);
   CLOSE (serverSocket);
   if (ret > 0)
     fprintf (stderr, "Error %d\n", ret);

@@ -44,7 +44,7 @@
 #define TESTBED_SET_LOSS_RATE	9       /* Set the drop probability of a connection             */
 #define TESTBED_LOAD_MODULE     10      /* load a module                                        */
 #define TESTBED_UNLOAD_MODULE   11      /* unload a module                                      */
-#define TESTBED_UPLOAD_FILE	12      /* Upload a file to a peer                              */
+#define TESTBED_UPLOAD_FILE	12      /* GNUNET_ND_UPLOAD a file to a peer                              */
 #define TESTBED_DISABLE_hello    13     /* stop sending hellos */
 #define TESTBED_ENABLE_hello     14     /* start sending hellos */
 #define TESTBED_DISABLE_AUTOCONNECT    15       /* stop automatically connecting to other peers */
@@ -65,7 +65,7 @@
 /*
   TODO LIST:
   Make loss rate to work. (CG: DONE)
-  Upload a file to a specific machine.  (RF: DONE)
+  GNUNET_ND_UPLOAD a file to a specific machine.  (RF: DONE)
   Revisit statistics (don't re-invent that wheel!)
   AFS download a file on a specific machine.
   AFS insert a file on a specific machine.
@@ -105,19 +105,19 @@ typedef struct
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  P2P_hello_MESSAGE helo;
+  GNUNET_MessageHello helo;
 } TESTBED_hello_MESSAGE;
 
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  P2P_hello_MESSAGE helo;
+  GNUNET_MessageHello helo;
 } TESTBED_ADD_PEER_MESSAGE;
 
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  PeerIdentity host;
+  GNUNET_PeerIdentity host;
 } TESTBED_DEL_PEER_MESSAGE;
 
 typedef struct
@@ -128,20 +128,20 @@ typedef struct
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  PeerIdentity otherPeer;
+  GNUNET_PeerIdentity otherPeer;
 } TESTBED_GET_TVALUE_MESSAGE;
 
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  PeerIdentity otherPeer;
+  GNUNET_PeerIdentity otherPeer;
   unsigned int trust;
 } TESTBED_SET_TVALUE_MESSAGE;
 
 typedef struct
 {
   TESTBED_CS_MESSAGE header;
-  PeerIdentity otherPeer;
+  GNUNET_PeerIdentity otherPeer;
 } TESTBED_BLACKLIST_MESSAGE;
 
 typedef struct
@@ -173,7 +173,7 @@ typedef struct
   char modulename[1];
 } TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC;
 
-#define TESTBED_FILE_APPEND	1
+#define TESTBED_FILE_GNUNET_array_append	1
 #define TESTBED_FILE_DELETE	2
 
 #define TESTBED_FILE_BLK_SIZE	1400
@@ -218,7 +218,7 @@ typedef struct
 typedef struct
 {
   TESTBED_ALLOW_CONNECT_MESSAGE allow_connect_message;
-  PeerIdentity peers[1];
+  GNUNET_PeerIdentity peers[1];
 } TESTBED_ALLOW_CONNECT_MESSAGE_GENERIC;
 
 typedef struct
@@ -229,7 +229,7 @@ typedef struct
 typedef struct
 {
   TESTBED_DENY_CONNECT_MESSAGE deny_connect_message;
-  PeerIdentity peers[1];
+  GNUNET_PeerIdentity peers[1];
 } TESTBED_DENY_CONNECT_MESSAGE_GENERIC;
 
 typedef struct

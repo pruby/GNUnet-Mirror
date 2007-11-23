@@ -43,42 +43,42 @@ extern "C"
 /**
  * Type of a cron-job method.
  */
-typedef void (*CronJob) (void *);
+typedef void (*GNUNET_CronJob) (void *);
 
-struct CronManager;
+struct GNUNET_CronManager;
 
-struct CronManager *cron_create (struct GE_Context *ectx);
+struct GNUNET_CronManager *cron_create (struct GE_Context *ectx);
 
-void cron_destroy (struct CronManager *mgr);
+void GNUNET_cron_destroy (struct GNUNET_CronManager *mgr);
 
-void cron_start (struct CronManager *mgr);
+void GNUNET_cron_start (struct GNUNET_CronManager *mgr);
 
-void cron_stop (struct CronManager *mgr);
+void GNUNET_cron_stop (struct GNUNET_CronManager *mgr);
 
 /**
  * Stop running cron-jobs for a short time.  This method may only be
  * called by a thread that is not holding any locks.  It will cause
  * a deadlock if this method is called from within a cron-job and
- * checkself is NO.  If checkself is YES and this method is called
+ * checkself is GNUNET_NO.  If checkself is GNUNET_YES and this method is called
  * within a cron-job, nothing happens.
  *
- * @param checkself, if YES and this thread is the cron thread, do nothing
+ * @param checkself, if GNUNET_YES and this thread is the cron thread, do nothing
  */
-void cron_suspend (struct CronManager *mgr, int checkself);
+void GNUNET_cron_suspend_jobs (struct GNUNET_CronManager *mgr, int checkself);
 
 /**
  * Resume running cron-jobs.  Call must be matched by
  * previous call to cron_suspend_jobs with identical
  * arguments.
  *
- * @param checkself, if YES and this thread is the cron thread, do nothing
+ * @param checkself, if GNUNET_YES and this thread is the cron thread, do nothing
  */
-void cron_resume_jobs (struct CronManager *mgr, int checkself);
+void GNUNET_cron_resume_jobs (struct GNUNET_CronManager *mgr, int checkself);
 
 /**
  * Is the cron-thread currently running?
  */
-int cron_test_running (struct CronManager *mgr);
+int GNUNET_cron_test_running (struct GNUNET_CronManager *mgr);
 
 /**
  * Add a cron-job to the delta list.
@@ -88,9 +88,10 @@ int cron_test_running (struct CronManager *mgr);
  *        the runs, otherwise 0.
  * @param data argument to pass to the method
  */
-void cron_add_job (struct CronManager *mgr,
-                   CronJob method,
-                   unsigned int delta, unsigned int deltaRepeat, void *data);
+void GNUNET_cron_add_job (struct GNUNET_CronManager *mgr,
+                          GNUNET_CronJob method,
+                          unsigned int delta, unsigned int deltaRepeat,
+                          void *data);
 
 /**
  * If the specified cron-job exists in th delta-list, move it to the
@@ -104,8 +105,9 @@ void cron_add_job (struct CronManager *mgr,
  *        non-null and cron is shutdown before the job is
  *        run and/or delCronJob is called
  */
-void cron_advance_job (struct CronManager *mgr,
-                       CronJob method, unsigned int deltaRepeat, void *data);
+void GNUNET_cron_advance_job (struct GNUNET_CronManager *mgr,
+                              GNUNET_CronJob method, unsigned int deltaRepeat,
+                              void *data);
 
 /**
  * Remove first matching cron-job from the list. This method should
@@ -120,8 +122,9 @@ void cron_advance_job (struct CronManager *mgr,
  * @param data what was the data given to the method
  * @return the number of jobs removed (0 or 1)
  */
-int cron_del_job (struct CronManager *mgr,
-                  CronJob method, unsigned int repeat, void *data);
+int GNUNET_cron_del_job (struct GNUNET_CronManager *mgr,
+                         GNUNET_CronJob method, unsigned int repeat,
+                         void *data);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

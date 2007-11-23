@@ -60,7 +60,7 @@
  *
  * Now, for local content eventually modulo will rebound to the MAX
  * (whereas for migrated content it will hit 0 and disappear).  But
- * that is OK: the adversary cannot distinguish the modulo wraparound
+ * that is GNUNET_OK: the adversary cannot distinguish the modulo wraparound
  * from content migration (refresh with higher lifetime) which could
  * plausibly happen from the original node (and in fact would happen
  * around the same time!).  This design also achieves the design goal
@@ -76,7 +76,7 @@
  * expiration to give the user some indication about availability.
  *
  */
-#define MAX_MIGRATION_EXP (1L * cronMONTHS)
+#define MAX_MIGRATION_EXP (1L * GNUNET_CRON_MONTHS)
 
 /**
  * Initialize the migration module.

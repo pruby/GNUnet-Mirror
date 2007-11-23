@@ -36,7 +36,7 @@
  * (if we fall below this, strong countermeasures
  * maybe used).
  */
-#define MIN_CONNECTION_TARGET 4
+#define GNUNET_MIN_CONNECTION_TARGET 4
 
 /**
  * Until which load do we consider the peer overly idle
@@ -46,41 +46,41 @@
  * to consume resources "idly" (i.e. up to 85%) and then
  * still have some room for "paid for" resource consumption.
  */
-#define IDLE_LOAD_THRESHOLD 70
+#define GNUNET_IDLE_LOAD_THRESHOLD 70
 
 /**
  * @brief hello.  A hello body contains the current HostAddress, the
- * host identity (hash), the time how long the HostAddress is valid, a
+ * host identity (GNUNET_hash), the time how long the HostAddress is valid, a
  * signature signing the information above and the public key of the
- * host.  The hash of the public key must match the host identity.<p>
+ * host.  The GNUNET_hash of the public key must match the host identity.<p>
  *
- * The signature goes over the message starting at the PeerIdentity
+ * The signature goes over the message starting at the GNUNET_PeerIdentity
  * and includes the senderAddress.  Since the senderAddress may be
- * long, what is actually signed is the hash of these bytes.
+ * long, what is actually signed is the GNUNET_hash of these bytes.
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * The signature
    */
-  Signature signature;
+  GNUNET_RSA_Signature signature;
 
   /**
    * The public key
    */
-  PublicKey publicKey;
+  GNUNET_RSA_PublicKey publicKey;
 
   /**
-   * Whose identity follows? Must be hash of PublicKey.
+   * Whose identity follows? Must be GNUNET_hash of GNUNET_RSA_PublicKey.
    */
-  PeerIdentity senderIdentity;
+  GNUNET_PeerIdentity senderIdentity;
 
   /**
    * time this address expires  (network byte order)
    */
-  TIME_T expirationTime;
+  GNUNET_Int32Time expirationTime;
 
   /**
    * advertised MTU for sending (replies can have a different
@@ -101,9 +101,9 @@ typedef struct
    */
   unsigned short protocol;
 
-} P2P_hello_MESSAGE;
+} GNUNET_MessageHello;
 
-#define P2P_hello_MESSAGE_size(hello) ((sizeof(P2P_hello_MESSAGE) + ntohs((hello)->senderAddressSize)))
+#define GNUNET_sizeof_hello(hello) ((sizeof(GNUNET_MessageHello) + ntohs((hello)->senderAddressSize)))
 
 
 

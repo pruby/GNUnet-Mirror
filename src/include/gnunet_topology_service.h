@@ -63,7 +63,7 @@ typedef struct
 
   /**
    * Get an estimate of the network size.
-   * @return the estimated number of nodes, SYSERR on error
+   * @return the estimated number of nodes, GNUNET_SYSERR on error
    */
   int (*estimateNetworkSize) (void);
 
@@ -76,9 +76,9 @@ typedef struct
 
   /**
    * Will the topology allow a connection from the specified peer?
-   * @return OK if a connection maybe established, SYSERR if not.
+   * @return GNUNET_OK if a connection maybe established, GNUNET_SYSERR if not.
    */
-  int (*allowConnectionFrom) (const PeerIdentity * peer);
+  int (*allowConnectionFrom) (const GNUNET_PeerIdentity * peer);
 
 
 } Topology_ServiceAPI;

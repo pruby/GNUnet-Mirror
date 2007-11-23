@@ -1,10 +1,19 @@
 SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) \
-  error string config \
-  getopt disk threads \
-  os network . \
-  config_impl cron crypto \
-  containers loggers network_client \
-  boot
+  boot \
+  config \
+  containers \
+  cron \
+  crypto \
+  disk \
+  error \
+  getopt \
+  loggers \
+  network \
+  network_client \
+  os \
+  string \
+  threads \
+  .
 
 INCLUDES = -I$(top_srcdir)/src/include
 
@@ -40,12 +49,18 @@ endif
 lib_LTLIBRARIES = libgnunetutil.la
 
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
+ boot/libboot.la \
  config/libconfig.la \
+ containers/libcontainers.la \
+ cron/libcron.la \
+ crypto/libcrypto.la \
  disk/libdisk.la \
  error/liberror.la \
  getopt/libgetopt.la \
+ loggers/libloggers.la \
  string/libstring.la \
  network/libnetwork.la \
+ network_client/libnetwork_client.la \
  os/libos.la \
  threads/libthreads.la
 
@@ -56,5 +71,5 @@ EXTRA_DIST = \
 
 libgnunetutil_la_LDFLAGS = \
  -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
- -version-info 1:0:0
+ -version-info 2:0:0
 

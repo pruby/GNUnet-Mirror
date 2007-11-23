@@ -31,7 +31,7 @@
 
 /**
  * Initialize the TCP port and listen for incoming client connections.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int initTCPServer (struct GE_Context *ectx, struct GC_Configuration *cfg);
 
@@ -42,7 +42,7 @@ int stopTCPServer (void);
 
 /**
  * Shutdown the module.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int doneTCPServer (void);
 
@@ -52,9 +52,9 @@ int doneTCPServer (void);
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
- *        SYSERR, processing of the message is discontinued
+ *        GNUNET_SYSERR, processing of the message is discontinued
  *        afterwards (all other parts are ignored)
- * @return OK on success, SYSERR if there is already a
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
 int registerCSHandler (unsigned short type, CSHandler callback);
@@ -65,9 +65,9 @@ int registerCSHandler (unsigned short type, CSHandler callback);
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
- *        SYSERR, processing of the message is discontinued
+ *        GNUNET_SYSERR, processing of the message is discontinued
  *        afterwards (all other parts are ignored)
- * @return OK on success, SYSERR if there is no or another
+ * @return GNUNET_OK on success, GNUNET_SYSERR if there is no or another
  *         handler for that type
  */
 int unregisterCSHandler (unsigned short type, CSHandler callback);
@@ -79,12 +79,12 @@ int unregisterClientExitHandler (ClientExitHandler callback);
 /**
  * Send a message to the client identified by the handle.  Note that
  * the core will typically buffer these messages as much as possible
- * and only return SYSERR if it runs out of buffers.  Returning OK
+ * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
 int sendToClient (struct ClientHandle *handle,
-                  const MESSAGE_HEADER * message, int force);
+                  const GNUNET_MessageHeader * message, int force);
 
 
 /**
@@ -92,7 +92,7 @@ int sendToClient (struct ClientHandle *handle,
  * TCP.
  * @param sock the TCP socket
  * @param ret the return value to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
 int sendTCPResultToClient (struct ClientHandle *sock, int ret);
@@ -102,7 +102,7 @@ int sendTCPResultToClient (struct ClientHandle *sock, int ret);
  * TCP.
  * @param sock the TCP socket
  * @param message the error message to send via TCP
- * @return SYSERR on error, OK if the return value was
+ * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
 int sendTCPErrorToClient (struct ClientHandle *sock,

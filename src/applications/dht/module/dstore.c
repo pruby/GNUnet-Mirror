@@ -28,7 +28,7 @@
 #include "dstore.h"
 #include "gnunet_blockstore.h"
 
-#define DEBUG_DSTORE NO
+#define DEBUG_DSTORE GNUNET_NO
 
 static Dstore_ServiceAPI *dstore;
 
@@ -39,7 +39,7 @@ static CoreAPIForApplication *coreAPI;
  * @return total number of results found
  */
 int
-dht_store_get (const HashCode512 * key,
+dht_store_get (const GNUNET_HashCode * key,
                unsigned int type, ResultHandler handler, void *cls)
 {
   return dstore->get (key, type, handler, cls);
@@ -50,16 +50,17 @@ dht_store_get (const HashCode512 * key,
  */
 void
 dht_store_put (unsigned int type,
-               const HashCode512 * key,
-               cron_t discard_time, unsigned int size, const char *data)
+               const GNUNET_HashCode * key,
+               GNUNET_CronTime discard_time, unsigned int size,
+               const char *data)
 {
-  if (discard_time < get_time ())
+  if (discard_time < GNUNET_get_time ())
     {
 #if DEBUG_DSTORE
       GE_LOG (coreAPI->ectx,
               GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
               "Content already expired (%llu < %llu), will not keep.\n",
-              discard_time, get_time ());
+              discard_time, GNUNET_get_time ());
 #endif
       return;
     }
@@ -70,7 +71,7 @@ dht_store_put (unsigned int type,
  * Initialize dstore DHT component.
  *
  * @param capi the core API
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int
 init_dht_store (size_t max_size, CoreAPIForApplication * capi)
@@ -78,14 +79,14 @@ init_dht_store (size_t max_size, CoreAPIForApplication * capi)
   coreAPI = capi;
   dstore = coreAPI->requestService ("dstore");
   if (dstore == NULL)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 /**
  * Shutdown dstore DHT component.
  *
- * @return OK on success
+ * @return GNUNET_OK on success
  */
 int
 done_dht_store ()
@@ -93,7 +94,7 @@ done_dht_store ()
   coreAPI->releaseService (dstore);
   coreAPI = NULL;
   dstore = NULL;
-  return OK;
+  return GNUNET_OK;
 }
 
 /* end of dstore.c */

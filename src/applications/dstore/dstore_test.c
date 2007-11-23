@@ -36,10 +36,10 @@
 static int error;
 
 static void
-checkIt (const HashCode512 * key,
+checkIt (const GNUNET_HashCode * key,
          unsigned int type, unsigned int size, const char *data, void *cls)
 {
-  if (size != sizeof (HashCode512))
+  if (size != sizeof (GNUNET_HashCode))
     {
       printf ("ERROR: Invalid size\n");
       error = 2;
@@ -57,31 +57,32 @@ checkIt (const HashCode512 * key,
 static int
 test (Dstore_ServiceAPI * api)
 {
-  HashCode512 k;
-  HashCode512 n;
-  cron_t exp;
+  GNUNET_HashCode k;
+  GNUNET_HashCode n;
+  GNUNET_CronTime exp;
   unsigned int i;
 
-  exp = get_time () + 5 * cronMINUTES;
-  memset (&k, 0, sizeof (HashCode512));
+  exp = GNUNET_get_time () + 5 * GNUNET_CRON_MINUTES;
+  memset (&k, 0, sizeof (GNUNET_HashCode));
   for (i = 0; i < 100; i++)
     {
-      hash (&k, sizeof (HashCode512), &n);
-      ASSERT (OK == api->put (&k,
-                              i % 2,
-                              exp, sizeof (HashCode512), (const char *) &n));
+      GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
+      ASSERT (GNUNET_OK == api->put (&k,
+                                     i % 2,
+                                     exp, sizeof (GNUNET_HashCode),
+                                     (const char *) &n));
       k = n;
     }
-  memset (&k, 0, sizeof (HashCode512));
+  memset (&k, 0, sizeof (GNUNET_HashCode));
   for (i = 0; i < 100; i++)
     {
-      hash (&k, sizeof (HashCode512), &n);
+      GNUNET_hash (&k, sizeof (GNUNET_HashCode), &n);
       ASSERT (1 == api->get (&k, i % 2, &checkIt, &n));
       k = n;
     }
-  return OK;
+  return GNUNET_OK;
 FAILURE:
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 #define TEST_DB "/tmp/GNUnet_dstore_test/"
@@ -92,9 +93,9 @@ main (int argc, char *argv[])
   Dstore_ServiceAPI *api;
   int ok;
   struct GC_Configuration *cfg;
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -109,9 +110,9 @@ main (int argc, char *argv[])
       releaseService (api);
     }
   else
-    ok = SYSERR;
+    ok = GNUNET_SYSERR;
   doneCore ();
-  if (ok == SYSERR)
+  if (ok == GNUNET_SYSERR)
     return 1;
   return error;
 }

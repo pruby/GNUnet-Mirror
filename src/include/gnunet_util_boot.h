@@ -55,7 +55,7 @@ int GNUNET_init (int argc,
                  char *const *argv,
                  const char *binaryName,
                  char **configurationFileName,
-                 const struct CommandLineOption *options,
+                 const struct GNUNET_CommandLineOption *options,
                  struct GE_Context **ectx, struct GC_Configuration **cfg);
 
 /**

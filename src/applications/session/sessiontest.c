@@ -32,7 +32,7 @@
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 
-#define START_PEERS YES
+#define START_PEERS GNUNET_YES
 
 static int ok;
 
@@ -42,9 +42,9 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
   if ((value > 0) && (0 == strcmp (_("# of connected peers"), name)))
     {
       ok = 1;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -58,22 +58,22 @@ int
 main (int argc, char **argv)
 {
 #if START_PEERS
-  struct DaemonContext *peers;
+  struct GNUNET_TESTING_DaemonContext *peers;
 #endif
   int ret;
-  struct ClientServerConnection *sock1;
-  struct ClientServerConnection *sock2;
+  struct GNUNET_ClientServerConnection *sock1;
+  struct GNUNET_ClientServerConnection *sock2;
   int left;
   struct GC_Configuration *cfg;
 
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
 #if START_PEERS
-  peers = gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,      /* tcp, udp or http */
+  peers = GNUNET_TESTING_start_daemons (strstr (argv[0], "_") + 1,      /* tcp, udp or http */
                                         "advertising stats",
                                         "/tmp/gnunet-session-test", 2087,
                                         10000, 2);
@@ -83,17 +83,19 @@ main (int argc, char **argv)
       return -1;
     }
 #endif
-  gnunet_testing_connect_daemons (2087, 12087);
-  if (OK == connection_wait_for_running (NULL, cfg, 30 * cronSECONDS))
+  GNUNET_TESTING_connect_daemons (2087, 12087);
+  if (GNUNET_OK ==
+      GNUNET_wait_for_daemon_running (NULL, cfg, 30 * GNUNET_CRON_SECONDS))
     {
-      sock1 = client_connection_create (NULL, cfg);
+      sock1 = GNUNET_client_connection_create (NULL, cfg);
       GC_set_configuration_value_string (cfg,
                                          NULL,
                                          "NETWORK",
                                          "HOST", "localhost:12087");
-      sock2 = client_connection_create (NULL, cfg);
+      sock2 = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
-      while (OK == STATS_getStatistics (NULL, sock1, &waitForConnect, NULL))
+      while (GNUNET_OK ==
+             STATS_getStatistics (NULL, sock1, &waitForConnect, NULL))
         {
           printf ("Waiting for peers to connect (%u iterations left)...\n",
                   left);
@@ -111,7 +113,7 @@ main (int argc, char **argv)
           for (left = 0; left < 10; left++)
             {
               ok = 0;
-              while (GNUNET_SHUTDOWN_TEST () == NO)
+              while (GNUNET_shutdown_test () == GNUNET_NO)
                 {
                   printf ("Checking that peers are staying connected 1...\n");
                   STATS_getStatistics (NULL, sock1, &waitForConnect, NULL);
@@ -138,8 +140,8 @@ main (int argc, char **argv)
         }
 #endif
 
-      connection_destroy (sock1);
-      connection_destroy (sock2);
+      GNUNET_client_connection_destroy (sock1);
+      GNUNET_client_connection_destroy (sock2);
     }
   else
     {
@@ -147,7 +149,7 @@ main (int argc, char **argv)
       ret = 1;
     }
 #if START_PEERS
-  gnunet_testing_stop_daemons (peers);
+  GNUNET_TESTING_stop_daemons (peers);
 #endif
   GC_free (cfg);
   return (ok == 0) ? 1 : 0;

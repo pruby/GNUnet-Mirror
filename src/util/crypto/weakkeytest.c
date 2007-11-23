@@ -32,14 +32,14 @@
 #include "platform.h"
 
 #define MAX_WEAK_KEY_TRIALS 100000
-#define GENERATE_WEAK_KEYS NO
+#define GENERATE_WEAK_KEYS GNUNET_NO
 #define WEAK_KEY_TESTSTRING "I hate weak keys."
 
 static void
-printWeakKey (SESSIONKEY * key)
+printWeakKey (GNUNET_AES_SessionKey * key)
 {
   int i;
-  for (i = 0; i < SESSIONKEY_LEN; i++)
+  for (i = 0; i < GNUNET_SESSIONKEY_LEN; i++)
     {
       printf ("%x ", (int) (key->key[i]));
     }
@@ -51,10 +51,10 @@ testWeakKey ()
   char result[100];
   char res[100];
   int size;
-  SESSIONKEY weak_key;
-  INITVECTOR INITVALUE;
+  GNUNET_AES_SessionKey weak_key;
+  GNUNET_AES_InitializationVector INITVALUE;
 
-  memset (&INITVALUE, 42, sizeof (INITVECTOR));
+  memset (&INITVALUE, 42, sizeof (GNUNET_AES_InitializationVector));
   /* sorry, this is not a weak key -- I don't have
      any at the moment! */
   weak_key.key[0] = (char) (0x4c);
@@ -90,11 +90,11 @@ testWeakKey ()
   weak_key.key[30] = (char) (0xaa);
   weak_key.key[31] = (char) (0xaa);
   /* memset(&weak_key, 0, 32); */
-  weak_key.crc32 = htonl (crc32N (&weak_key, SESSIONKEY_LEN));
+  weak_key.crc32 = htonl (GNUNET_crc32_n (&weak_key, GNUNET_SESSIONKEY_LEN));
 
-  size = encryptBlock (WEAK_KEY_TESTSTRING,
-                       strlen (WEAK_KEY_TESTSTRING) + 1,
-                       &weak_key, &INITVALUE, result);
+  size = GNUNET_AES_encrypt (WEAK_KEY_TESTSTRING,
+                             strlen (WEAK_KEY_TESTSTRING) + 1,
+                             &weak_key, &INITVALUE, result);
 
   if (size == -1)
     {
@@ -102,7 +102,7 @@ testWeakKey ()
       return 1;
     }
 
-  size = decryptBlock (&weak_key, result, size, &INITVALUE, res);
+  size = GNUNET_AES_decrypt (&weak_key, result, size, &INITVALUE, res);
 
   if ((strlen (WEAK_KEY_TESTSTRING) + 1) != size)
     {
@@ -121,7 +121,7 @@ testWeakKey ()
 static int
 getWeakKeys ()
 {
-  SESSIONKEY sessionkey;
+  GNUNET_AES_SessionKey sessionkey;
   int number_of_weak_keys = 0;
   int number_of_runs;
 
@@ -135,7 +135,7 @@ getWeakKeys ()
       if (number_of_runs % 1000 == 0)
         fprintf (stderr, ".");
       /*printf("Got to run number %d.\n", number_of_runs); */
-      makeSessionkey (&sessionkey);
+      GNUNET_AES_create_session_key (&sessionkey);
 
       rc = gcry_cipher_open (&handle,
                              GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB, 0);
@@ -148,7 +148,7 @@ getWeakKeys ()
           continue;
         }
 
-      rc = gcry_cipher_setkey (handle, &sessionkey, SESSIONKEY_LEN);
+      rc = gcry_cipher_setkey (handle, &sessionkey, GNUNET_SESSIONKEY_LEN);
 
       if ((char) rc == GPG_ERR_WEAK_KEY)
         {

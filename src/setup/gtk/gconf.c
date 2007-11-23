@@ -164,7 +164,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
               i++;
               j *= 2;
             }
-          tmp = MALLOC (tmpl);
+          tmp = GNUNET_malloc (tmpl);
           /* For now, only allow multiple choice for less than 12 entries...
              (10 are needed for applications!) */
           if (i < 12)
@@ -192,7 +192,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                        pos->option, i);
               GE_BREAK (NULL, 0);
             }
-          FREE (tmp);
+          GNUNET_free (tmp);
           gtk_tree_store_set (model,
                               &it,
                               SETUP_TEXT_VIS, TRUE,
@@ -220,8 +220,8 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
           break;
         case GNS_Double:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
-          SNPRINTF (defStr, 128, "%f", pos->value.Double.def);
-          SNPRINTF (valStr, 128, "%f", pos->value.Double.val);
+          GNUNET_snprintf (defStr, 128, "%f", pos->value.Double.def);
+          GNUNET_snprintf (valStr, 128, "%f", pos->value.Double.val);
           gtk_list_store_insert_with_values (cmodel, &it2, -1, 0, valStr, -1);
           if (0 != strcmp (valStr, defStr))
             {
@@ -238,8 +238,8 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
           break;
         case GNS_UInt64:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
-          SNPRINTF (defStr, 128, "%llu", pos->value.UInt64.def);
-          SNPRINTF (valStr, 128, "%llu", pos->value.UInt64.val);
+          GNUNET_snprintf (defStr, 128, "%llu", pos->value.UInt64.def);
+          GNUNET_snprintf (valStr, 128, "%llu", pos->value.UInt64.val);
           gtk_list_store_insert_with_values (cmodel, &it2, -1, 0, valStr, -1);
           if (0 != strcmp (valStr, defStr))
             {
@@ -279,7 +279,7 @@ collectRows (GtkTreeView * tree_view, GtkTreePath * path, gpointer user_data)
 {
   CR_Context *ctx = user_data;
 
-  GROW (ctx->paths, ctx->size, ctx->size + 1);
+  GNUNET_array_grow (ctx->paths, ctx->size, ctx->size + 1);
   ctx->paths[ctx->size - 1] = gtk_tree_path_to_string (path);
 }
 
@@ -336,7 +336,7 @@ updateTreeModel (struct GNS_Context *gns)
       gtk_tree_path_free (path);
       free (crCTX.paths[i]);
     }
-  GROW (crCTX.paths, crCTX.size, 0);
+  GNUNET_array_grow (crCTX.paths, crCTX.size, 0);
 }
 
 static void
@@ -509,7 +509,7 @@ on_saveButton_activatesetup_gtk ()
  * needs saving and possibly save configuration or do not
  * exit.
  *
- * @return TRUE to NOT exit (i.e. user hits cancel on save YES/NO/CANCEL).
+ * @return TRUE to NOT exit (i.e. user hits cancel on save GNUNET_YES/GNUNET_NO/CANCEL).
  */
 gboolean
 on_main_window_delete_eventsetup_gtk ()
@@ -563,7 +563,7 @@ gtk_main_quitsetup_gtk ()
 
 
 int
-gconf_main_post_init (struct PluginHandle *self,
+gconf_main_post_init (struct GNUNET_PluginHandle *self,
                       struct GE_Context *e,
                       struct GC_Configuration *c,
                       struct GNS_Context *gns,
@@ -599,7 +599,7 @@ gconf_main_post_init (struct PluginHandle *self,
 int
 gconf_mainsetup_gtk (int argc,
                      const char **argv,
-                     struct PluginHandle *self,
+                     struct GNUNET_PluginHandle *self,
                      struct GE_Context *ectx,
                      struct GC_Configuration *cfg,
                      struct GNS_Context *gns,

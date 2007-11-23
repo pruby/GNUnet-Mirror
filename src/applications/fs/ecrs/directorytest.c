@@ -41,7 +41,7 @@ struct PCLS
 
 static int
 processor (const ECRS_FileInfo * fi,
-           const HashCode512 * key, int isRoot, void *cls)
+           const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   struct PCLS *p = cls;
   int i;
@@ -53,11 +53,11 @@ processor (const ECRS_FileInfo * fi,
           ECRS_equalsUri (p->fi[i].uri, fi->uri))
         {
           p->pos++;
-          return OK;
+          return GNUNET_OK;
         }
     }
   fprintf (stderr, "Error at %s:%d\n", __FILE__, __LINE__);
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 static int
@@ -76,21 +76,21 @@ testDirectory (unsigned int i)
   int ret = 0;
 
   cls.max = i;
-  fis = MALLOC (sizeof (ECRS_FileInfo) * i);
+  fis = GNUNET_malloc (sizeof (ECRS_FileInfo) * i);
   for (p = 0; p < i; p++)
     {
       fis[p].meta = ECRS_createMetaData ();
       for (q = 0; q <= p; q++)
         {
-          SNPRINTF (txt, 128, "%u -- %u\n", p, q);
+          GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
           ECRS_addToMetaData (fis[p].meta,
                               q % EXTRACTOR_getHighestKeywordTypeNumber (),
                               txt);
         }
-      SNPRINTF (uri,
-                512,
-                "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
-                p);
+      GNUNET_snprintf (uri,
+                       512,
+                       "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
+                       p);
       fis[p].uri = ECRS_stringToUri (NULL, uri);
       if (fis[p].uri == NULL)
         {
@@ -100,14 +100,14 @@ testDirectory (unsigned int i)
               ECRS_freeMetaData (fis[p].meta);
               ECRS_freeUri (fis[p].uri);
             }
-          FREE (fis);
+          GNUNET_free (fis);
           ABORT ();             /* error in testcase */
         }
     }
   meta = ECRS_createMetaData ();
   ECRS_addToMetaData (meta, EXTRACTOR_TITLE, "A title");
   ECRS_addToMetaData (meta, EXTRACTOR_AUTHOR, "An author");
-  if (OK != ECRS_createDirectory (NULL, &data, &dlen, i, fis, meta))
+  if (GNUNET_OK != ECRS_createDirectory (NULL, &data, &dlen, i, fis, meta))
     {
       ECRS_freeMetaData (meta);
       for (p = 0; p < i; p++)
@@ -115,7 +115,7 @@ testDirectory (unsigned int i)
           ECRS_freeMetaData (fis[p].meta);
           ECRS_freeUri (fis[p].uri);
         }
-      FREE (fis);
+      GNUNET_free (fis);
       ABORT ();
     }
   cls.pos = 0;
@@ -132,7 +132,7 @@ testDirectory (unsigned int i)
       goto END;
     }
 END:
-  FREE (data);
+  GNUNET_free (data);
   ECRS_freeMetaData (meta);
   ECRS_freeMetaData (meta2);
   for (p = 0; p < i; p++)
@@ -140,7 +140,7 @@ END:
       ECRS_freeMetaData (fis[p].meta);
       ECRS_freeUri (fis[p].uri);
     }
-  FREE (fis);
+  GNUNET_free (fis);
   return ret;
 }
 

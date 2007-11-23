@@ -28,18 +28,15 @@
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
-#include "gnunet_util_crypto.h"
 #include "gnunet_dht_lib.h"
-#include "gnunet_util_boot.h"
-#include "gnunet_util_network_client.h"
 
-#define DEBUG_DHT_QUERY NO
+#define DEBUG_DHT_QUERY GNUNET_NO
 
 /**
  * How long should a "GET" run (or how long should
  * content last on the network).
  */
-static cron_t timeout;
+static GNUNET_CronTime timeout;
 
 static struct GE_Context *ectx;
 
@@ -50,22 +47,22 @@ static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 /**
  * All gnunet-dht-query command line options
  */
-static struct CommandLineOption gnunetqueryOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")),        /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
+	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'T', "timeout", "TIME",
    gettext_noop
    ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
-   1, &gnunet_getopt_configure_set_ulong, &timeout},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+   1, &GNUNET_getopt_configure_set_ulong, &timeout},
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 static int
-printCallback (const HashCode512 * hash,
+printCallback (const GNUNET_HashCode * hash,
                const DataContainer * data, void *cls)
 {
   char *key = cls;
@@ -74,23 +71,23 @@ printCallback (const HashCode512 * hash,
           key,
           (int) (ntohl (data->size) - sizeof (DataContainer)),
           (char *) &data[1]);
-  return OK;
+  return GNUNET_OK;
 }
 
 static void
-do_get (struct ClientServerConnection *sock, const char *key)
+do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 {
   int ret;
-  HashCode512 hc;
+  GNUNET_HashCode hc;
 
-  hash (key, strlen (key), &hc);
+  GNUNET_hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "Issuing '%s(%s)' command.\n", "get", key);
 #endif
   if (timeout == 0)
-    timeout = 30 * cronSECONDS;
+    timeout = 30 * GNUNET_CRON_SECONDS;
   ret = DHT_LIB_get (cfg,
                      ectx,
                      DHT_STRING2STRING_BLOCK,
@@ -100,14 +97,14 @@ do_get (struct ClientServerConnection *sock, const char *key)
 }
 
 static void
-do_put (struct ClientServerConnection *sock,
+do_put (struct GNUNET_ClientServerConnection *sock,
         const char *key, const char *value)
 {
   DataContainer *dc;
-  HashCode512 hc;
+  GNUNET_HashCode hc;
 
-  hash (key, strlen (key), &hc);
-  dc = MALLOC (sizeof (DataContainer) + strlen (value));
+  GNUNET_hash (key, strlen (key), &hc);
+  dc = GNUNET_malloc (sizeof (DataContainer) + strlen (value));
   dc->size = htonl (strlen (value) + sizeof (DataContainer));
   memcpy (&dc[1], value, strlen (value));
 #if DEBUG_DHT_QUERY
@@ -116,9 +113,9 @@ do_put (struct ClientServerConnection *sock,
           _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (timeout == 0)
-    timeout = 30 * cronMINUTES;
-  if (OK == DHT_LIB_put (cfg, ectx, &hc, DHT_STRING2STRING_BLOCK, timeout + get_time (),        /* convert to absolute time */
-                         dc))
+    timeout = 30 * GNUNET_CRON_MINUTES;
+  if (GNUNET_OK == DHT_LIB_put (cfg, ectx, &hc, DHT_STRING2STRING_BLOCK, timeout + GNUNET_get_time (),  /* convert to absolute time */
+                                dc))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
     }
@@ -126,14 +123,14 @@ do_put (struct ClientServerConnection *sock,
     {
       printf (_("'%s(%s,%s)' failed.\n"), "put", key, value);
     }
-  FREE (dc);
+  GNUNET_free (dc);
 }
 
 int
 main (int argc, char *const *argv)
 {
   int i;
-  struct ClientServerConnection *handle;
+  struct GNUNET_ClientServerConnection *handle;
 
   i = GNUNET_init (argc,
                    argv,
@@ -145,7 +142,7 @@ main (int argc, char *const *argv)
       return -1;
     }
 
-  handle = client_connection_create (ectx, cfg);
+  handle = GNUNET_client_connection_create (ectx, cfg);
   if (handle == NULL)
     {
       fprintf (stderr, _("Failed to connect to gnunetd.\n"));
@@ -192,7 +189,7 @@ main (int argc, char *const *argv)
       fprintf (stderr, _("Unsupported command `%s'.  Aborting.\n"), argv[i]);
       break;
     }
-  connection_destroy (handle);
+  GNUNET_client_connection_destroy (handle);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

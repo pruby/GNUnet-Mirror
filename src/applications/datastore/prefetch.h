@@ -45,9 +45,9 @@ void donePrefetch (void);
  * @param value set to an approximate match
  * @param type if a particular type is desired, 0
  *        for any type.
- * @return OK if a value was found, SYSERR if not
+ * @return GNUNET_OK if a value was found, GNUNET_SYSERR if not
  */
-int getRandom (HashCode512 * key, Datastore_Value ** value);
+int getRandom (GNUNET_HashCode * key, Datastore_Value ** value);
 
 
 /* end of prefetch.h */

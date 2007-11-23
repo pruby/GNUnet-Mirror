@@ -26,126 +26,126 @@
 #include "gnunet_util_containers.h"
 #include "platform.h"
 
-#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); vectorDump(v); vectorFree(v);
+#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); GNUNET_vector_dump(v); GNUNET_vector_destroy(v);
 
 static int
 test (int size)
 {
-  struct Vector *v;
+  struct GNUNET_Vector *v;
 
-  v = vectorNew (size);
-  if (0 != vectorSize (v))
+  v = GNUNET_vector_create (size);
+  if (0 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
-  if (OK != vectorInsertAt (v, "first", 0))
+  if (GNUNET_OK != GNUNET_vector_insert_at (v, "first", 0))
     {
       DUMP (v);
       return 1;
     }
-  if (OK == vectorInsertAt (v, "not", 2))
+  if (GNUNET_OK == GNUNET_vector_insert_at (v, "not", 2))
     {
       DUMP (v);
       return 1;
     }
-  if (OK != vectorInsertAt (v, "zero", 0))
+  if (GNUNET_OK != GNUNET_vector_insert_at (v, "zero", 0))
     {
       DUMP (v);
       return 1;
     }
-  if (OK != vectorInsertAt (v, "second", 2))
+  if (GNUNET_OK != GNUNET_vector_insert_at (v, "second", 2))
     {
       DUMP (v);
       return 1;
     }
-  vectorInsertLast (v, "third");
-  if (4 != vectorSize (v))
+  GNUNET_vector_insert_last (v, "third");
+  if (4 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetAt (v, 1), "first"))
+  if (0 != strcmp (GNUNET_vector_get (v, 1), "first"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetAt (v, 3), "third"))
+  if (0 != strcmp (GNUNET_vector_get (v, 3), "third"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetAt (v, 0), "zero"))
+  if (0 != strcmp (GNUNET_vector_get (v, 0), "zero"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetFirst (v), "zero"))
+  if (0 != strcmp (GNUNET_vector_get_first (v), "zero"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetLast (v), "third"))
+  if (0 != strcmp (GNUNET_vector_get_last (v), "third"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorRemoveAt (v, 1), "first"))
+  if (0 != strcmp (GNUNET_vector_delete_at (v, 1), "first"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorGetAt (v, 1), "second"))
+  if (0 != strcmp (GNUNET_vector_get (v, 1), "second"))
     {
       DUMP (v);
       return 1;
     }
-  if (NULL != vectorRemoveAt (v, 3))
+  if (NULL != GNUNET_vector_delete_at (v, 3))
     {
       DUMP (v);
       return 1;
     }
-  if (3 != vectorSize (v))
+  if (3 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorRemoveAt (v, 1), "second"))
+  if (0 != strcmp (GNUNET_vector_delete_at (v, 1), "second"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorRemoveObject (v, "third"), "third"))
+  if (0 != strcmp (GNUNET_vector_delete (v, "third"), "third"))
     {
       DUMP (v);
       return 1;
     }
-  if (NULL != vectorRemoveObject (v, "third"))
+  if (NULL != GNUNET_vector_delete (v, "third"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != strcmp (vectorRemoveLast (v), "zero"))
+  if (0 != strcmp (GNUNET_vector_delete_last (v), "zero"))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != vectorSize (v))
+  if (0 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
-  if (NULL != vectorRemoveLast (v))
+  if (NULL != GNUNET_vector_delete_last (v))
     {
       DUMP (v);
       return 1;
     }
-  if (0 != vectorSize (v))
+  if (0 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
-  vectorFree (v);
+  GNUNET_vector_destroy (v);
   return 0;
 }
 
@@ -153,58 +153,58 @@ static int
 test2 (int size)
 {
   long i;
-  struct Vector *v;
+  struct GNUNET_Vector *v;
 
-  v = vectorNew (size);
+  v = GNUNET_vector_create (size);
 
   for (i = 0; i < 500; i++)
-    if (OK != vectorInsertAt (v, (void *) i, 0))
+    if (GNUNET_OK != GNUNET_vector_insert_at (v, (void *) i, 0))
       {
         DUMP (v);
         return 1;
       }
-  if (500 != vectorSize (v))
+  if (500 != GNUNET_vector_get_size (v))
     {
       DUMP (v);
       return 1;
     }
   for (i = 0; i < 500; i++)
-    if (499 - i != (long) vectorGetAt (v, i))
+    if (499 - i != (long) GNUNET_vector_get (v, i))
       {
         DUMP (v);
         return 1;
       }
-  if (499 != (long) vectorGetFirst (v))
+  if (499 != (long) GNUNET_vector_get_first (v))
     {
       DUMP (v);
       return 1;
     }
   for (i = 498; i >= 0; i--)
-    if (i != (long) vectorGetNext (v))
+    if (i != (long) GNUNET_vector_get_next (v))
       {
         DUMP (v);
         return 1;
       }
 
-  if (499 != (long) vectorGetFirst (v))
+  if (499 != (long) GNUNET_vector_get_first (v))
     {
       DUMP (v);
       return 1;
     }
   for (i = 498; i >= 250; i--)
-    if (i != (long) vectorGetNext (v))
+    if (i != (long) GNUNET_vector_get_next (v))
       {
         DUMP (v);
         return 1;
       }
   for (i = 251; i < 499; i++)
-    if (i != (long) vectorGetPrevious (v))
+    if (i != (long) GNUNET_vector_get_prev (v))
       {
         DUMP (v);
         return 1;
       }
 
-  vectorFree (v);
+  GNUNET_vector_destroy (v);
   return 0;
 }
 
@@ -212,12 +212,12 @@ test2 (int size)
 int
 main (int argc, char *argv[])
 {
-  if (NULL != vectorNew (0))
+  if (NULL != GNUNET_vector_create (0))
     {
       printf ("At %d\n", __LINE__);
       return 1;
     }
-  if (NULL != vectorNew (1))
+  if (NULL != GNUNET_vector_create (1))
     {
       printf ("At %d\n", __LINE__);
       return 1;

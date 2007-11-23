@@ -33,12 +33,12 @@
  * - holes in sequence
  * - other overlaps
  * - timeouts
- * - multiple entries in hash-list
- * - id collisions in hash-list
+ * - multiple entries in GNUNET_hash-list
+ * - id collisions in GNUNET_hash-list
  */
 
 /* -- to speed up the testcases -- */
-#define DEFRAGMENTATION_TIMEOUT (1 * cronSECONDS)
+#define DEFRAGMENTATION_TIMEOUT (1 * GNUNET_CRON_SECONDS)
 
 #include "platform.h"
 #include "gnunet_util.h"
@@ -46,7 +46,7 @@
 
 #include "fragmentation.c"
 
-static PeerIdentity mySender;
+static GNUNET_PeerIdentity mySender;
 static char *myMsg;
 static unsigned short myMsgLen;
 
@@ -55,11 +55,12 @@ static char masterBuffer[65536];
 static char resultBuffer[65536];
 
 static void
-handleHelper (const PeerIdentity * sender,
+handleHelper (const GNUNET_PeerIdentity * sender,
               const char *msg,
               const unsigned int len, int wasEncrypted, TSession * ts)
 {
-  GE_ASSERT (NULL, 0 == memcmp (sender, &mySender, sizeof (PeerIdentity)));
+  GE_ASSERT (NULL,
+             0 == memcmp (sender, &mySender, sizeof (GNUNET_PeerIdentity)));
   myMsg = resultBuffer;
   memcpy (resultBuffer, msg, len);
   myMsgLen = len;
@@ -71,7 +72,7 @@ handleHelper (const PeerIdentity * sender,
 static void
 makeTimeout ()
 {
-  PTHREAD_SLEEP (DEFRAGMENTATION_TIMEOUT * 2);
+  GNUNET_thread_sleep (DEFRAGMENTATION_TIMEOUT * 2);
   defragmentationPurgeCron (NULL);
 }
 
@@ -85,7 +86,7 @@ makeTimeout ()
  * @param length of the data portion
  * @param id the identity of the fragment
  */
-static MESSAGE_HEADER *
+static GNUNET_MessageHeader *
 makeFragment (unsigned short start,
               unsigned short size, unsigned short tot, int id)
 {
@@ -128,7 +129,7 @@ checkPacket (int id, unsigned int len)
 static void
 testSimpleFragment ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
 
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
@@ -141,7 +142,7 @@ testSimpleFragment ()
 static void
 testSimpleFragmentTimeout ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
 
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
@@ -158,7 +159,7 @@ testSimpleFragmentTimeout ()
 static void
 testSimpleFragmentReverse ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
 
   pep = makeFragment (16, 16, 32, 42);
   processFragment (&mySender, pep);
@@ -171,7 +172,7 @@ testSimpleFragmentReverse ()
 static void
 testManyFragments ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 50; i++)
@@ -188,7 +189,7 @@ testManyFragments ()
 static void
 testManyFragmentsMegaLarge ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 4000; i++)
@@ -205,7 +206,7 @@ testManyFragmentsMegaLarge ()
 static void
 testLastFragmentEarly ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 5; i++)
@@ -227,7 +228,7 @@ testLastFragmentEarly ()
 static void
 testManyInterleavedFragments ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 50; i++)
@@ -250,7 +251,7 @@ testManyInterleavedFragments ()
 static void
 testManyInterleavedOverlappingFragments ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 50; i++)
@@ -273,7 +274,7 @@ testManyInterleavedOverlappingFragments ()
 static void
 testManyOverlappingFragments ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 50; i++)
@@ -290,7 +291,7 @@ testManyOverlappingFragments ()
 static void
 testManyOverlappingFragmentsTimeout ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
 
   for (i = 0; i < 50; i++)
@@ -314,7 +315,7 @@ testManyOverlappingFragmentsTimeout ()
 static void
 testManyFragmentsMultiId ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
   int id;
 
@@ -340,7 +341,7 @@ testManyFragmentsMultiId ()
 static void
 testManyFragmentsMultiIdCollisions ()
 {
-  MESSAGE_HEADER *pep;
+  GNUNET_MessageHeader *pep;
   int i;
   int id;
 
@@ -368,13 +369,13 @@ testManyFragmentsMultiIdCollisions ()
 static int
 registerp2pHandler (const unsigned short type, MessagePartHandler callback)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
 unregisterp2pHandler (const unsigned short type, MessagePartHandler callback)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -425,6 +426,6 @@ main (int argc, char *argv[])
   fprintf (stderr, ".");
   release_module_fragmentation ();
   fprintf (stderr, "\n");
-  cron_destroy (capi.cron);
+  GNUNET_cron_destroy (capi.cron);
   return 0;                     /* testcase passed */
 }

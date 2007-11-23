@@ -46,15 +46,15 @@
 typedef struct
 {
   /** IP address of the peer */
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
   /** CS port of the peer */
   unsigned short port;
   /** string describing the peer address */
   char *ips;
   /** socket to communicate with the peer */
-  struct ClientServerConnection sock;
+  struct GNUNET_ClientServerConnection sock;
   /** hello message identifying the peer in the network */
-  P2P_hello_MESSAGE *helo;
+  GNUNET_MessageHello *helo;
   /** if we're using ssh, what is the PID of the
       ssh process? (-1 for unencrypted direct connections) */
   pid_t ssh;
@@ -73,7 +73,7 @@ static unsigned int nnodes = 0;
 /**
  * Should the driver exit?
  */
-int do_quit = NO;
+int do_quit = GNUNET_NO;
 
 /**
  * Convert the strings ss and ds to peer-identifiers (ints) s and d
@@ -114,36 +114,37 @@ sendMessage (unsigned msgType, int peer, unsigned short argSize, void *arg)
     errexit ("Message body too big for sendMessage: %s\n", argSize);
 
   msgsz = sizeof (TESTBED_CS_MESSAGE) + argSize;
-  msg = MALLOC (msgsz);
+  msg = GNUNET_malloc (msgsz);
   msg->header.size = htons (msgsz);
   msg->header.type = htons (CS_PROTO_testbed_REQUEST);
   msg->msgType = htonl (msgType);
   memcpy (&((TESTBED_CS_MESSAGE_GENERIC *) msg)->data[0], arg, argSize);
-  msgsz = connection_write (&nodes[peer].sock, &msg->header);
-  FREE (msg);
-  if (msgsz == SYSERR)
+  msgsz = GNUNET_client_connection_write (&nodes[peer].sock, &msg->header);
+  GNUNET_free (msg);
+  if (msgsz == GNUNET_SYSERR)
     {
       XPRINTF (" Could not send message to peer %s.\n", nodes[peer].ips);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Read a result from the given peer.  Print
  * an error message if the peer fails to respond.
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
 readResult (int peer, int *result)
 {
-  if (OK != connection_read_result (&nodes[peer].sock, result))
+  if (GNUNET_OK !=
+      GNUNET_client_connection_read_result (&nodes[peer].sock, result))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[peer].ips);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /* ****************** individual commands ********** */
@@ -182,8 +183,8 @@ addNode (int argc, char *argv[])
   req.reserved = 0;
   /* connect */
   currindex = nnodes;
-  GROW (nodes, nnodes, nnodes + 1);
-  nodes[currindex].ips = STRDUP (argv[0]);
+  GNUNET_array_grow (nodes, nnodes, nnodes + 1);
+  nodes[currindex].ips = GNUNET_strdup (argv[0]);
   nodes[currindex].port = atoi (argv[1]);
   nodes[currindex].ssh = -1;
 #ifndef MINGW
@@ -192,9 +193,9 @@ addNode (int argc, char *argv[])
   nodes[currindex].ip.addr.S_un.S_addr = inet_addr (argv[0]);
 #endif
 
-  if (SYSERR == initGNUnetClientSocket (nodes[currindex].port,
-                                        nodes[currindex].ips,
-                                        &nodes[currindex].sock))
+  if (GNUNET_SYSERR == initGNUnetClientSocket (nodes[currindex].port,
+                                               nodes[currindex].ips,
+                                               &nodes[currindex].sock))
     {
       XPRINTF (" could not connect to %s:%d.\n",
                nodes[currindex].ips, nodes[currindex].port);
@@ -202,51 +203,53 @@ addNode (int argc, char *argv[])
     }
 
   /* request hello */
-  if (OK != sendMessage (TESTBED_GET_hello,
-                         currindex,
-                         sizeof (TESTBED_GET_hello_MESSAGE) -
-                         sizeof (TESTBED_CS_MESSAGE), &req.proto))
+  if (GNUNET_OK != sendMessage (TESTBED_GET_hello,
+                                currindex,
+                                sizeof (TESTBED_GET_hello_MESSAGE) -
+                                sizeof (TESTBED_CS_MESSAGE), &req.proto))
     {
       /* send message already printed an error message */
       destroySocket (&nodes[currindex].sock);
-      FREE (nodes[currindex].ips);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_free (nodes[currindex].ips);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
 
   hdr = NULL;
-  if (SYSERR == connection_read (&nodes[currindex].sock,
-                                 (CS_MESSAGE_HEADER **) & hdr))
+  if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
+                                                      (CS_MESSAGE_HEADER **) &
+                                                      hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
       destroySocket (&nodes[currindex].sock);
-      FREE (nodes[currindex].ips);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_free (nodes[currindex].ips);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
   if ((ntohs (hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
       (ntohs (hdr->header.header.size) >= sizeof (TESTBED_hello_MESSAGE)) &&
       (ntohl (hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
       (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) >=
-       sizeof (P2P_hello_MESSAGE))
+       sizeof (GNUNET_MessageHello))
       && (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) ==
-          P2P_hello_MESSAGE_size (&hdr->helo)))
+          GNUNET_sizeof_hello (&hdr->helo)))
     {
-      nodes[currindex].helo = MALLOC (P2P_hello_MESSAGE_size (&hdr->helo));
-      memcpy (nodes[currindex].helo,
-              &hdr->helo, P2P_hello_MESSAGE_size (&hdr->helo));
+      nodes[currindex].helo =
+        GNUNET_malloc (GNUNET_sizeof_hello (&hdr->helo));
+      memcpy (nodes[currindex].helo, &hdr->helo,
+              GNUNET_sizeof_hello (&hdr->helo));
     }
   else
     {
-      FREE (hdr);
+      GNUNET_free (hdr);
       destroySocket (&nodes[currindex].sock);
       XPRINTF (" peer %s did not respond with proper hello.\n",
                nodes[currindex].ips);
-      FREE (nodes[currindex].ips);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_free (nodes[currindex].ips);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
-  FREE (hdr);
+  GNUNET_free (hdr);
   XPRINTF ("%d\n", currindex);
   return 0;
 }
@@ -333,9 +336,9 @@ addSshNode (int argc, char *argv[])
       sargv[1] = "-l";
       sargv[2] = argv[0];       /* login */
       sargv[3] = "-L";
-      SNPRINTF (pohopo, 64, "%d:%s:%d", lport,  /* local port */
-                "localhost",    /* loopback on remote host */
-                port /* remote port */ );
+      GNUNET_snprintf (pohopo, 64, "%d:%s:%d", lport,   /* local port */
+                       "localhost",     /* loopback on remote host */
+                       port /* remote port */ );
       sargv[4] = pohopo;
       sargv[5] = argv[1];       /* remote hostname */
       sargv[6] = NULL;          /* last argument */
@@ -355,8 +358,8 @@ addSshNode (int argc, char *argv[])
   req.reserved = 0;
   /* connect */
   currindex = nnodes;
-  GROW (nodes, nnodes, nnodes + 1);
-  nodes[currindex].ips = STRDUP ("localhost");
+  GNUNET_array_grow (nodes, nnodes, nnodes + 1);
+  nodes[currindex].ips = GNUNET_strdup ("localhost");
   nodes[currindex].port = lport;
   nodes[currindex].ssh = pid;
 #ifndef MINGW
@@ -372,76 +375,78 @@ addSshNode (int argc, char *argv[])
       ret = initGNUnetClientSocket (nodes[currindex].port,
                                     nodes[currindex].ips,
                                     &nodes[currindex].sock);
-      if (ret == OK)
+      if (ret == GNUNET_OK)
         break;
       rtc++;
-      PTHREAD_SLEEP (cronSECONDS);
+      GNUNET_thread_sleep (GNUNET_CRON_SECONDS);
     }
-  if (ret == SYSERR)
+  if (ret == GNUNET_SYSERR)
     {
       XPRINTF (" could not connect to %s:%d.\n",
                nodes[currindex].ips, nodes[currindex].port);
       kill (nodes[currindex].ssh, SIGTERM);
       waitpid (nodes[currindex].ssh, &status, 0);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
 
   /* request hello */
-  if (OK != sendMessage (TESTBED_GET_hello,
-                         currindex,
-                         sizeof (TESTBED_GET_hello_MESSAGE) -
-                         sizeof (TESTBED_CS_MESSAGE), &req.proto))
+  if (GNUNET_OK != sendMessage (TESTBED_GET_hello,
+                                currindex,
+                                sizeof (TESTBED_GET_hello_MESSAGE) -
+                                sizeof (TESTBED_CS_MESSAGE), &req.proto))
     {
       /* send message already printed an error message */
       destroySocket (&nodes[currindex].sock);
-      FREE (nodes[currindex].ips);
+      GNUNET_free (nodes[currindex].ips);
       /* fixme: check error conditions on kill/waidpid! */
       kill (nodes[currindex].ssh, SIGTERM);
       waitpid (nodes[currindex].ssh, &status, 0);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
 
   hdr = NULL;
-  if (SYSERR == connection_read (&nodes[currindex].sock,
-                                 (CS_MESSAGE_HEADER **) & hdr))
+  if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
+                                                      (CS_MESSAGE_HEADER **) &
+                                                      hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
       destroySocket (&nodes[currindex].sock);
-      FREE (nodes[currindex].ips);
+      GNUNET_free (nodes[currindex].ips);
       /* fixme: check error conditions on kill/waidpid! */
       kill (nodes[currindex].ssh, SIGTERM);
       waitpid (nodes[currindex].ssh, &status, 0);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
   if ((ntohs (hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
       (ntohs (hdr->header.header.size) >= sizeof (TESTBED_hello_MESSAGE)) &&
       (ntohl (hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
       (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) >=
-       sizeof (P2P_hello_MESSAGE))
+       sizeof (GNUNET_MessageHello))
       && (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) ==
-          P2P_hello_MESSAGE_size (&hdr->helo)))
+          GNUNET_sizeof_hello (&hdr->helo)))
     {
-      nodes[currindex].helo = MALLOC (P2P_hello_MESSAGE_size (&hdr->helo));
-      memcpy (nodes[currindex].helo,
-              &hdr->helo, P2P_hello_MESSAGE_size (&hdr->helo));
+      nodes[currindex].helo =
+        GNUNET_malloc (GNUNET_sizeof_hello (&hdr->helo));
+      memcpy (nodes[currindex].helo, &hdr->helo,
+              GNUNET_sizeof_hello (&hdr->helo));
     }
   else
     {
-      FREE (hdr);
+      GNUNET_free (hdr);
       destroySocket (&nodes[currindex].sock);
       XPRINTF (" peer %s did not respond with proper hello.\n",
                nodes[currindex].ips);
-      FREE (nodes[currindex].ips);
+      GNUNET_free (nodes[currindex].ips);
       /* fixme: check error conditions on kill/waidpid! */
       kill (nodes[currindex].ssh, SIGTERM);
       waitpid (nodes[currindex].ssh, &status, 0);
-      GROW (nodes, nnodes, nnodes - 1);
+      GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
-  FREE (hdr);
+  GNUNET_free (hdr);
   XPRINTF ("%d\n", currindex);
   return 0;
 }
@@ -461,14 +466,14 @@ delConnection (int argc, char *argv[])
       return -1;
     }
   CHECK_SRC_DST (src, dst, argv[0], argv[1]);
-  if (OK != sendMessage (TESTBED_DEL_PEER,
-                         src,
-                         sizeof (PeerIdentity),
-                         &nodes[dst].helo->senderIdentity))
+  if (GNUNET_OK != sendMessage (TESTBED_DEL_PEER,
+                                src,
+                                sizeof (GNUNET_PeerIdentity),
+                                &nodes[dst].helo->senderIdentity))
     return -1;
-  if (OK != readResult (src, &ack))
+  if (GNUNET_OK != readResult (src, &ack))
     return -1;
-  if (ack == OK)
+  if (ack == GNUNET_OK)
     {
       XPRINTF ("OK.\n");
       return 0;
@@ -494,11 +499,11 @@ delAllConnections (int argc, char *argv[])
       return -1;
     }
   CHECK_PEER (dst, argv[0]);
-  if (OK != sendMessage (TESTBED_DEL_ALL_PEERS, dst, 0, NULL))
+  if (GNUNET_OK != sendMessage (TESTBED_DEL_ALL_PEERS, dst, 0, NULL))
     return -1;
-  if (OK != readResult (dst, &ack))
+  if (GNUNET_OK != readResult (dst, &ack))
     return -1;
-  if (ack == OK)
+  if (ack == GNUNET_OK)
     {
       XPRINTF ("OK.\n");
       return 0;
@@ -524,14 +529,14 @@ addConnection (int argc, char *argv[])
       return -1;
     }
   CHECK_SRC_DST (src, dst, argv[0], argv[1]);
-  if (SYSERR == sendMessage (TESTBED_ADD_PEER,
-                             src,
-                             P2P_hello_MESSAGE_size (nodes[dst].helo),
-                             nodes[dst].helo))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_ADD_PEER,
+                                    src,
+                                    GNUNET_sizeof_hello (nodes[dst].helo),
+                                    nodes[dst].helo))
     return -1;
-  if (OK != readResult (src, &ack))
+  if (GNUNET_OK != readResult (src, &ack))
     return -1;
-  if (ack == OK)
+  if (ack == GNUNET_OK)
     {
       XPRINTF ("OK.\n");
       return 0;
@@ -562,15 +567,15 @@ setTrust (int argc, char *argv[])
   value = atoi (argv[2]);
   msg.trust = htonl (value);
   memcpy (&msg.otherPeer,
-          &nodes[dst].helo->senderIdentity, sizeof (PeerIdentity));
-  if (SYSERR == sendMessage (TESTBED_SET_TVALUE,
-                             src,
-                             sizeof (PeerIdentity) + sizeof (unsigned int),
-                             &msg.otherPeer))
+          &nodes[dst].helo->senderIdentity, sizeof (GNUNET_PeerIdentity));
+  if (GNUNET_SYSERR == sendMessage (TESTBED_SET_TVALUE,
+                                    src,
+                                    sizeof (GNUNET_PeerIdentity) +
+                                    sizeof (unsigned int), &msg.otherPeer))
     return -1;
-  if (OK != readResult (src, &ack))
+  if (GNUNET_OK != readResult (src, &ack))
     return -1;
-  if (htonl (ack) != OK)
+  if (htonl (ack) != GNUNET_OK)
     {
       XPRINTF (" peer could not set trust value.\n");
       return -1;
@@ -596,12 +601,12 @@ getTrust (int argc, char *argv[])
       return -1;
     }
   CHECK_SRC_DST (src, dst, argv[0], argv[1]);
-  if (SYSERR == sendMessage (TESTBED_GET_TVALUE,
-                             src,
-                             sizeof (PeerIdentity),
-                             &nodes[dst].helo->senderIdentity))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_GET_TVALUE,
+                                    src,
+                                    sizeof (GNUNET_PeerIdentity),
+                                    &nodes[dst].helo->senderIdentity))
     return -1;
-  if (SYSERR == readResult (src, &value))
+  if (GNUNET_SYSERR == readResult (src, &value))
     return -1;
   if (value < 0)
     {
@@ -629,11 +634,11 @@ disablehello (int argc, char *argv[])
       return -1;
     }
   CHECK_PEER (dst, argv[0]);
-  if (SYSERR == sendMessage (TESTBED_DISABLE_hello, dst, 0, NULL))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_DISABLE_hello, dst, 0, NULL))
     return -1;
-  if (SYSERR == readResult (dst, &value))
+  if (GNUNET_SYSERR == readResult (dst, &value))
     return -1;
-  if (value != OK)
+  if (value != GNUNET_OK)
     {
       XPRINTF (" could disable hello\n");
       return -1;
@@ -659,11 +664,11 @@ enablehello (int argc, char *argv[])
       return -1;
     }
   CHECK_PEER (dst, argv[0]);
-  if (SYSERR == sendMessage (TESTBED_ENABLE_hello, dst, 0, NULL))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_ENABLE_hello, dst, 0, NULL))
     return -1;
-  if (SYSERR == readResult (dst, &value))
+  if (GNUNET_SYSERR == readResult (dst, &value))
     return -1;
-  if (value != OK)
+  if (value != GNUNET_OK)
     {
       XPRINTF (" could enable hello\n");
       return -1;
@@ -689,11 +694,12 @@ disableAUTOCONNECT (int argc, char *argv[])
       return -1;
     }
   CHECK_PEER (dst, argv[0]);
-  if (SYSERR == sendMessage (TESTBED_DISABLE_AUTOCONNECT, dst, 0, NULL))
+  if (GNUNET_SYSERR ==
+      sendMessage (TESTBED_DISABLE_AUTOCONNECT, dst, 0, NULL))
     return -1;
-  if (SYSERR == readResult (dst, &value))
+  if (GNUNET_SYSERR == readResult (dst, &value))
     return -1;
-  if (value != OK)
+  if (value != GNUNET_OK)
     {
       XPRINTF (" could disable AUTOCONNECT\n");
       return -1;
@@ -719,11 +725,11 @@ enableAUTOCONNECT (int argc, char *argv[])
       return -1;
     }
   CHECK_PEER (dst, argv[0]);
-  if (SYSERR == sendMessage (TESTBED_ENABLE_AUTOCONNECT, dst, 0, NULL))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_ENABLE_AUTOCONNECT, dst, 0, NULL))
     return -1;
-  if (SYSERR == readResult (dst, &value))
+  if (GNUNET_SYSERR == readResult (dst, &value))
     return -1;
-  if (value != OK)
+  if (value != GNUNET_OK)
     {
       XPRINTF (" could enable AUTOCONNECT\n");
       return -1;
@@ -740,12 +746,13 @@ static int
 allowDenyConnectHelper (unsigned int argc, char *argv[], int type)
 {
   int dst, value;
-  PeerIdentity *list;
+  GNUNET_PeerIdentity *list;
   int i;
   int idx = 0;
 
   CHECK_PEER (dst, argv[0]);
-  if (argc > (65532 - sizeof (TESTBED_CS_MESSAGE)) / sizeof (PeerIdentity))
+  if (argc >
+      (65532 - sizeof (TESTBED_CS_MESSAGE)) / sizeof (GNUNET_PeerIdentity))
     {
       XPRINTF ("Too many peers specified.  Ask a wizard to enlarge limit.\n");
       return -1;
@@ -753,25 +760,27 @@ allowDenyConnectHelper (unsigned int argc, char *argv[], int type)
 
   list = NULL;
   for (i = 1; i < argc; i++)
-    CHECK_PEER (idx, argv[i]);  /* may return, do before MALLOC! */
+    CHECK_PEER (idx, argv[i]);  /* may return, do before GNUNET_malloc! */
   if (argc > 1)
-    list = MALLOC (sizeof (PeerIdentity) * (argc - 1));
+    list = GNUNET_malloc (sizeof (GNUNET_PeerIdentity) * (argc - 1));
   for (i = 1; i < argc; i++)
     {
       CHECK_PEER (idx, argv[i]);
       memcpy (&list[i - 1],
-              &nodes[idx].helo->senderIdentity, sizeof (PeerIdentity));
+              &nodes[idx].helo->senderIdentity, sizeof (GNUNET_PeerIdentity));
     }
-  if (SYSERR == sendMessage (type,
-                             dst, sizeof (PeerIdentity) * (argc - 1), list))
+  if (GNUNET_SYSERR == sendMessage (type,
+                                    dst,
+                                    sizeof (GNUNET_PeerIdentity) * (argc - 1),
+                                    list))
     {
-      FREENONNULL (list);
+      GNUNET_free_non_null (list);
       return -1;
     }
-  FREENONNULL (list);
-  if (SYSERR == readResult (dst, &value))
+  GNUNET_free_non_null (list);
+  if (GNUNET_SYSERR == readResult (dst, &value))
     return -1;
-  if (value != OK)
+  if (value != GNUNET_OK)
     {
       XPRINTF (" could change setting.\n");
       return -1;
@@ -821,11 +830,11 @@ loadModuleHelper (unsigned short type, char *peerId, char *modulename)
   int ok, dst;
 
   CHECK_PEER (dst, peerId);
-  if (OK != sendMessage (type, dst, strlen (modulename), modulename))
+  if (GNUNET_OK != sendMessage (type, dst, strlen (modulename), modulename))
     return -1;
-  if (OK != readResult (dst, &ok))
+  if (GNUNET_OK != readResult (dst, &ok))
     return -1;
-  if (ok != OK)
+  if (ok != GNUNET_OK)
     {
       XPRINTF (" peer %s refused.\n", nodes[dst].ips);
       return -1;
@@ -886,7 +895,7 @@ startProcess (int argc, char *argv[])
   size = 0;
   for (i = 1; i < argc; i++)
     size += 1 + strlen (argv[i]);
-  cmdLine = MALLOC (size);
+  cmdLine = GNUNET_malloc (size);
   pos = 0;
   for (i = 1; i < argc; i++)
     {
@@ -894,15 +903,15 @@ startProcess (int argc, char *argv[])
       pos += strlen (argv[i]) + 1;
     }
 
-  if (OK != sendMessage (TESTBED_EXEC, dst, size, cmdLine))
+  if (GNUNET_OK != sendMessage (TESTBED_EXEC, dst, size, cmdLine))
     {
-      FREE (cmdLine);
+      GNUNET_free (cmdLine);
       return -1;
     }
-  FREE (cmdLine);
-  if (OK != readResult (dst, &ack))
+  GNUNET_free (cmdLine);
+  if (GNUNET_OK != readResult (dst, &ack))
     return -1;
-  if (ack != SYSERR)
+  if (ack != GNUNET_SYSERR)
     {
       XPRINTF ("%d\n", ack);
       return 0;
@@ -919,7 +928,7 @@ startProcess (int argc, char *argv[])
  * 0 to test if the process is still live.  Use
  * -1 to obtain the return value from a dead
  * process and to free all associated resources.
- * For -1 the return value is printed, otherwise OK.
+ * For -1 the return value is printed, otherwise GNUNET_OK.
  * Note that if the signal is -1 and the process
  * is still running, -1 is returned (which can then
  * NOT be distinguished from the process returning -1)
@@ -939,19 +948,19 @@ signalProcess (int argc, char *argv[])
   CHECK_PEER (dst, argv[0]);
   msg.pid = htonl (atoi (argv[1]));
   msg.signal = htonl (atoi (argv[2]));
-  if (OK != sendMessage (TESTBED_SIGNAL,
-                         dst,
-                         sizeof (TESTBED_SIGNAL_MESSAGE) -
-                         sizeof (TESTBED_CS_MESSAGE), &msg.pid))
+  if (GNUNET_OK != sendMessage (TESTBED_SIGNAL,
+                                dst,
+                                sizeof (TESTBED_SIGNAL_MESSAGE) -
+                                sizeof (TESTBED_CS_MESSAGE), &msg.pid))
     return -1;
-  if (OK != readResult (dst, &ack))
+  if (GNUNET_OK != readResult (dst, &ack))
     return -1;
   if (ntohl (msg.signal) == -1)
     {
       XPRINTF ("%d\n", ack);
       return 0;
     }
-  if (ack == OK)
+  if (ack == GNUNET_OK)
     {
       XPRINTF ("OK.\n");
       return 0;
@@ -980,11 +989,11 @@ dumpProcessOutput (int argc, char *argv[])
     }
   CHECK_PEER (dst, argv[0]);
   pid = htonl (atoi (argv[1]));
-  if (OK != sendMessage (TESTBED_GET_OUTPUT, dst, sizeof (int), &pid))
+  if (GNUNET_OK != sendMessage (TESTBED_GET_OUTPUT, dst, sizeof (int), &pid))
     return -1;
-  if (OK != readResult (dst, (int *) &ack))
+  if (GNUNET_OK != readResult (dst, (int *) &ack))
     return -1;
-  if (ack != SYSERR)
+  if (ack != GNUNET_SYSERR)
     {
       char *tmp;
       unsigned int pos = 0;
@@ -994,8 +1003,9 @@ dumpProcessOutput (int argc, char *argv[])
           TESTBED_OUTPUT_REPLY_MESSAGE *reply;
 
           reply = NULL;
-          if (SYSERR == connection_read (&nodes[dst].sock,
-                                         (CS_MESSAGE_HEADER **) & reply))
+          if (GNUNET_SYSERR ==
+              GNUNET_client_connection_read (&nodes[dst].sock,
+                                             (CS_MESSAGE_HEADER **) & reply))
             {
               XPRINTF (" peer %s is not responding after %d of %d bytes.\n",
                        nodes[dst].ips, pos, ack);
@@ -1005,14 +1015,14 @@ dumpProcessOutput (int argc, char *argv[])
           size =
             ntohs (reply->header.header.size) -
             sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
-          tmp = MALLOC (size + 1);
+          tmp = GNUNET_malloc (size + 1);
           memcpy (tmp,
                   &((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) reply)->data[0],
                   size);
           tmp[size] = '\0';
           XPRINTF ("%s", tmp);
-          FREE (tmp);
-          FREE (reply);
+          GNUNET_free (tmp);
+          GNUNET_free (reply);
           pos += size;
         }
       return 0;
@@ -1048,14 +1058,14 @@ setBW (int argc, char *argv[])
     }
   msg.in_bw = htonl (in);
   msg.out_bw = htonl (out);
-  if (SYSERR == sendMessage (TESTBED_SET_BW,
-                             dst,
-                             sizeof (TESTBED_SET_BW_MESSAGE) -
-                             sizeof (TESTBED_CS_MESSAGE), &msg.in_bw))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_SET_BW,
+                                    dst,
+                                    sizeof (TESTBED_SET_BW_MESSAGE) -
+                                    sizeof (TESTBED_CS_MESSAGE), &msg.in_bw))
     return -1;
-  if (OK != readResult (dst, &ack))
+  if (GNUNET_OK != readResult (dst, &ack))
     return -1;
-  if (ack != OK)
+  if (ack != GNUNET_OK)
     {
       XPRINTF (" peer could not set the specified bandwith.\n");
       return -1;
@@ -1086,15 +1096,15 @@ setLoss (int argc, char *argv[])
   msg.percentageLossInbound = htonl (atoi (argv[1]));
   msg.percentageLossOutbound = htonl (atoi (argv[2]));
 
-  if (SYSERR == sendMessage (TESTBED_SET_LOSS_RATE,
-                             dst,
-                             sizeof (TESTBED_SET_LOSS_RATE_MESSAGE) -
-                             sizeof (TESTBED_CS_MESSAGE),
-                             &msg.percentageLossInbound))
+  if (GNUNET_SYSERR == sendMessage (TESTBED_SET_LOSS_RATE,
+                                    dst,
+                                    sizeof (TESTBED_SET_LOSS_RATE_MESSAGE) -
+                                    sizeof (TESTBED_CS_MESSAGE),
+                                    &msg.percentageLossInbound))
     return -1;
-  if (OK != readResult (dst, &ack))
+  if (GNUNET_OK != readResult (dst, &ack))
     return -1;
-  if (ack != OK)
+  if (ack != GNUNET_OK)
     {
       XPRINTF (" peer could not set the specified loss rates.\n");
       return -1;
@@ -1111,7 +1121,7 @@ printStatistic (const char *name, unsigned long long value, const char *arg)
 {
   if (0 == strcmp (name, arg))
     XPRINTF ("%llu\n", value);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -1126,7 +1136,7 @@ getStat (int argc, char **argv)
 {
   int res, peer, printProtocols;
 
-  printProtocols = NO;
+  printProtocols = GNUNET_NO;
   if (argc != 2)
     {
       XPRINTF ("Syntax: get-stat PEERID STATID\n");
@@ -1135,7 +1145,7 @@ getStat (int argc, char **argv)
   CHECK_PEER (peer, argv[0]);
   res = requestStatistics (&nodes[peer].sock,
                            (StatisticsProcessor) & printStatistic, argv[1]);
-  if (res == OK)
+  if (res == GNUNET_OK)
     return 0;
   else
     return -1;
@@ -1145,13 +1155,13 @@ getStat (int argc, char **argv)
  * Print statistics received.
  *
  * @param stream where to print the statistics
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
 printStatistics (const char *name, unsigned long long value, void *unused)
 {
   XPRINTF ("%-60s: %16llu\n", name, value);
-  return OK;
+  return GNUNET_OK;
 }
 
 static int lastIp2p;
@@ -1177,7 +1187,7 @@ printProtocols (unsigned short type, int isP2P, void *unused)
     XPRINTF ("\t%d\n", type);
   else
     XPRINTF ("\t%d\t(%s)\n", type, name);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -1192,7 +1202,7 @@ getStats (int argc, char **argv)
 {
   int res, peer, printProtocolsOpt;
 
-  printProtocolsOpt = NO;
+  printProtocolsOpt = GNUNET_NO;
   if (argc == 2)
     {
       if (strcmp (argv[0], "-P"))
@@ -1200,7 +1210,7 @@ getStats (int argc, char **argv)
           XPRINTF ("Syntax: get-stats [-P] PEERID\n");
           return -1;
         }
-      printProtocolsOpt = YES;
+      printProtocolsOpt = GNUNET_YES;
       CHECK_PEER (peer, argv[1]);
     }
   else if (argc != 1)
@@ -1212,14 +1222,14 @@ getStats (int argc, char **argv)
     CHECK_PEER (peer, argv[0]);
   res = requestStatistics (&nodes[peer].sock,
                            (StatisticsProcessor) & printStatistics, NULL);
-  if ((printProtocolsOpt == YES) && (res == OK))
+  if ((printProtocolsOpt == GNUNET_YES) && (res == GNUNET_OK))
     {
-      lastIp2p = 42;            /* not YES or NO */
+      lastIp2p = 42;            /* not GNUNET_YES or GNUNET_NO */
       res = requestAvailableProtocols (&nodes[peer].sock,
                                        (ProtocolProcessor) & printProtocols,
                                        NULL);
     }
-  if (res == OK)
+  if (res == GNUNET_OK)
     return 0;
   else
     return -1;
@@ -1245,20 +1255,20 @@ getOption (int argc, char **argv)
       return -1;
     }
   CHECK_PEER (peer, argv[0]);
-  opt = getConfigurationOptionValue (&nodes[peer].sock, argv[1], argv[2]);
+  opt = GNUNET_get_daemon_configuration_value (&nodes[peer].sock, argv[1], argv[2]);
   if (opt == NULL)
     {
       XPRINTF ("Error sending request to peer %d\n", peer);
       return -1;
     }
   XPRINTF ("%s\n", opt);
-  FREE (opt);
+  GNUNET_free (opt);
   return 0;
 }
 
 
 /**
- * Upload a file to a peer.
+ * GNUNET_ND_UPLOAD a file to a peer.
  */
 static int
 uploadFile (int argc, char *argv[])
@@ -1288,37 +1298,41 @@ uploadFile (int argc, char *argv[])
       return -1;
     }
 
-  msg = MALLOC (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) + TESTBED_FILE_BLK_SIZE);
-  msg->header.header.size
-    = htons (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) + flen);
+  msg =
+    GNUNET_malloc (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) +
+                   TESTBED_FILE_BLK_SIZE);
+  msg->header.header.size =
+    htons (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) + flen);
   msg->header.header.type = htons (CS_PROTO_testbed_REQUEST);
   msg->header.msgType = htonl (TESTBED_UPLOAD_FILE);
   msg->type = htonl (TESTBED_FILE_DELETE);
   memcpy (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf, argv[2], flen);
 
-  if (SYSERR == connection_write (&nodes[peer].sock, &msg->header.header))
+  if (GNUNET_SYSERR ==
+      GNUNET_client_connection_write (&nodes[peer].sock, &msg->header.header))
     {
       fclose (infile);
-      FREE (msg);
+      GNUNET_free (msg);
       XPRINTF (" Could not send message to peer %s.\n", nodes[peer].ips);
       return -1;
     }
   /* Read ack from the peer */
-  if (OK != connection_read_result (&nodes[peer].sock, &ack))
+  if (GNUNET_OK !=
+      GNUNET_client_connection_read_result (&nodes[peer].sock, &ack))
     {
       fclose (infile);
-      FREE (msg);
+      GNUNET_free (msg);
       XPRINTF ("Peer is not responding\n");
       return -1;
     }
-  if (ack != OK)
+  if (ack != GNUNET_OK)
     {
       fclose (infile);
-      FREE (msg);
+      GNUNET_free (msg);
       XPRINTF (" Peer returned error (delete existing file).\n");
       return -1;
     }
-  msg->type = htonl (TESTBED_FILE_APPEND);
+  msg->type = htonl (TESTBED_FILE_GNUNET_array_append);
   buf = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + flen;
   while ((nbytes = GN_FREAD (buf, 1,
                              (TESTBED_FILE_BLK_SIZE -
@@ -1329,23 +1343,25 @@ uploadFile (int argc, char *argv[])
         break;
       msg->header.header.size = htons (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) +
                                        nbytes + flen);
-      if (SYSERR == connection_write (&nodes[peer].sock, &msg->header.header))
+      if (GNUNET_SYSERR ==
+          GNUNET_client_connection_write (&nodes[peer].sock,
+                                          &msg->header.header))
         {
           fclose (infile);
-          FREE (msg);
+          GNUNET_free (msg);
           XPRINTF (" could not send file to node %s.\n", nodes[peer].ips);
           return -1;
         }
-      if (OK != readResult (peer, &ack))
+      if (GNUNET_OK != readResult (peer, &ack))
         {
           fclose (infile);
-          FREE (msg);
+          GNUNET_free (msg);
           return -1;
         }
-      if (ack != OK)
+      if (ack != GNUNET_OK)
         {
           fclose (infile);
-          FREE (msg);
+          GNUNET_free (msg);
           XPRINTF (" peer returned error.\n");
           return -1;
         }
@@ -1353,12 +1369,12 @@ uploadFile (int argc, char *argv[])
   if (ferror (infile))
     {
       fclose (infile);
-      FREE (msg);
+      GNUNET_free (msg);
       XPRINTF (" could not read source file. Transmission aborted.\n");
       return -1;
     }
   fclose (infile);
-  FREE (msg);
+  GNUNET_free (msg);
   XPRINTF ("OK.\n");
   return 0;
 }
@@ -1410,7 +1426,7 @@ processCommands (char *buffer, unsigned int *available)
               return 0;
             }
         }
-      up = MALLOC (end - start + 1);
+      up = GNUNET_malloc (end - start + 1);
       memcpy (up, &buffer[start], end - start);
       up[end - start] = '\0';
       port = 2087;              /* default port */
@@ -1421,8 +1437,9 @@ processCommands (char *buffer, unsigned int *available)
           char ports[12];
           char ips[128];
           char *argv[2];
-          SNPRINTF (ports, 12, "%d", port);
-          SNPRINTF (ips, 128, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+          GNUNET_snprintf (ports, 12, "%d", port);
+          GNUNET_snprintf (ips, 128, "%u.%u.%u.%u", ip[0], ip[1], ip[2],
+                           ip[3]);
           argv[0] = ips;
           argv[1] = ports;
           if (0 != addNode (2, argv))
@@ -1431,7 +1448,7 @@ processCommands (char *buffer, unsigned int *available)
       else
         {
           char *login;
-          login = MALLOC (64);
+          login = GNUNET_malloc (64);
           if (5 <= sscanf (up,
                            "add-node %63s %d %d %d %d %d",
                            login, &ip[0], &ip[1], &ip[2], &ip[3], &port))
@@ -1439,17 +1456,18 @@ processCommands (char *buffer, unsigned int *available)
               char ports[12];
               char ips[128];
               char *argv[3];
-              SNPRINTF (ports, 12, "%d", port);
-              SNPRINTF (ips, 128, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+              GNUNET_snprintf (ports, 12, "%d", port);
+              GNUNET_snprintf (ips, 128, "%u.%u.%u.%u", ip[0], ip[1], ip[2],
+                               ip[3]);
               argv[0] = login;
               argv[1] = ips;
               argv[2] = ports;
               if (0 != addSshNode (3, argv))
                 err = 2;
             }
-          FREE (login);
+          GNUNET_free (login);
         }
-      FREE (up);
+      GNUNET_free (up);
       end++;
       start = end;
     }
@@ -1477,7 +1495,7 @@ addAvailable (int argc, char *argv[])
   int sock;
   size_t ret;
   char *command;
-  cron_t start;
+  GNUNET_CronTime start;
   char c;
   char *buffer;
   int i;
@@ -1485,7 +1503,7 @@ addAvailable (int argc, char *argv[])
   int k;
   struct sockaddr_in theProxy;
   char *proxy, *proxyPort;
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
   size_t n;
 
   if (argc == 0)
@@ -1498,21 +1516,22 @@ addAvailable (int argc, char *argv[])
         }
     }
   else
-    reg = STRDUP (argv[0]);
+    reg = GNUNET_strdup (argv[0]);
 
 
 
   proxy = getConfigurationString ("GNUNETD", "HTTP-PROXY");
   if (proxy != NULL)
     {
-      if (OK != get_host_by_name (ectx, proxy, &ip))
+      if (GNUNET_OK != GNUNET_get_host_by_name (ectx, proxy, &ip))
         {
           XPRINTF (" Couldn't resolve name of HTTP proxy '%s'\n", proxy);
           theProxy.sin_addr.s_addr = 0;
         }
       else
         {
-          memcpy (&theProxy.sin_addr.s_addr, &ip, sizeof (IPaddr));
+          memcpy (&theProxy.sin_addr.s_addr, &ip,
+                  sizeof (GNUNET_IPv4Address));
           proxyPort = getConfigurationString ("GNUNETD", "HTTP-PROXY-PORT");
           if (proxyPort == NULL)
             {
@@ -1521,10 +1540,10 @@ addAvailable (int argc, char *argv[])
           else
             {
               theProxy.sin_port = htons (atoi (proxyPort));
-              FREE (proxyPort);
+              GNUNET_free (proxyPort);
             }
         }
-      FREE (proxy);
+      GNUNET_free (proxy);
     }
   else
     {
@@ -1538,7 +1557,7 @@ addAvailable (int argc, char *argv[])
     }
   port = 80;                    /* default http port */
 
-  hostname = STRDUP (&reg[strlen (HTTP_URL)]);
+  hostname = GNUNET_strdup (&reg[strlen (HTTP_URL)]);
   buffer = NULL;
   j = -1;
   k = -1;
@@ -1559,13 +1578,13 @@ addAvailable (int argc, char *argv[])
       char *pstring;
       if (k == -1)
         {
-          pstring = MALLOC (strlen (hostname) - j + 1);
+          pstring = GNUNET_malloc (strlen (hostname) - j + 1);
           memcpy (pstring, &hostname[j], strlen (hostname) - j + 1);
           pstring[strlen (hostname) - j] = '\0';
         }
       else
         {
-          pstring = MALLOC (k - j + 1);
+          pstring = GNUNET_malloc (k - j + 1);
           memcpy (pstring, &hostname[j], k - j);
           pstring[k - j] = '\0';
         }
@@ -1573,12 +1592,12 @@ addAvailable (int argc, char *argv[])
       if ((port < 0) || (port > 65536))
         {
           XPRINTF (" malformed http URL: %s at %s.\n", reg, buffer);
-          FREE (hostname);
-          FREE (reg);
-          FREE (pstring);
+          GNUNET_free (hostname);
+          GNUNET_free (reg);
+          GNUNET_free (pstring);
           return -1;
         }
-      FREE (pstring);
+      GNUNET_free (pstring);
     }
   hostname[k] = '\0';
 
@@ -1594,8 +1613,8 @@ addAvailable (int argc, char *argv[])
     {
       XPRINTF (" could not open socket for hostlist download (%s).\n",
                STRERROR (errno));
-      FREE (hostname);
-      FREE (reg);
+      GNUNET_free (hostname);
+      GNUNET_free (reg);
       return -1;
     }
 
@@ -1603,15 +1622,15 @@ addAvailable (int argc, char *argv[])
   if (theProxy.sin_addr.s_addr == 0)
     {
       /* no proxy */
-      if (OK != get_host_by_name (ectx, hostname, &ip))
+      if (GNUNET_OK != GNUNET_get_host_by_name (ectx, hostname, &ip))
         {
           XPRINTF (" could not download hostlist, host '%s' unknown\n",
                    hostname);
-          FREE (reg);
-          FREE (hostname);
+          GNUNET_free (reg);
+          GNUNET_free (hostname);
           return -1;
         }
-      memcpy (&soaddr.sin_addr.s_addr, &ip, sizeof (IPaddr));
+      memcpy (&soaddr.sin_addr.s_addr, &ip, sizeof (GNUNET_IPv4Address));
       soaddr.sin_port = htons ((unsigned short) port);
     }
   else
@@ -1627,29 +1646,29 @@ addAvailable (int argc, char *argv[])
     {
       XPRINTF (" failed to send HTTP request to host %s: %s\n",
                hostname, STRERROR (errno));
-      FREE (reg);
-      FREE (hostname);
+      GNUNET_free (reg);
+      GNUNET_free (hostname);
       closefile (sock);
       return -1;
     }
 
   n = strlen (GET_COMMAND) + strlen (reg);
-  command = MALLOC (n);
-  SNPRINTF (command, n, GET_COMMAND, reg);
-  FREE (reg);
+  command = GNUNET_malloc (n);
+  GNUNET_snprintf (command, n, GET_COMMAND, reg);
+  GNUNET_free (reg);
   curpos = strlen (command) + 1;
   curpos = SEND_BLOCKING_ALL (sock, command, curpos);
-  if (SYSERR == (int) curpos)
+  if (GNUNET_SYSERR == (int) curpos)
     {
       XPRINTF (" failed so send HTTP request %s to host %s (%u - %d) - %s\n",
                command, hostname, curpos, sock, STRERROR (errno));
-      FREE (command);
-      FREE (hostname);
+      GNUNET_free (command);
+      GNUNET_free (hostname);
       closefile (sock);
       return -1;
     }
-  FREE (command);
-  FREE (hostname);
+  GNUNET_free (command);
+  GNUNET_free (hostname);
   cronTime (&start);
 
   /* we first have to read out the http_response */
@@ -1659,12 +1678,12 @@ addAvailable (int argc, char *argv[])
     {
       int success;
 
-      if (start + 5 * cronMINUTES < get_time ())
+      if (start + 5 * GNUNET_CRON_MINUTES < GNUNET_get_time ())
         break;                  /* exit after 5m */
       success = RECV_NONBLOCKING (sock, &c, sizeof (c), &ret);
-      if (success == NO)
+      if (success == GNUNET_NO)
         {
-          PTHREAD_SLEEP (100 * cronMILLIS);
+          GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
           continue;
         }
       if ((ret == 0) || (ret == (size_t) - 1))
@@ -1682,25 +1701,25 @@ addAvailable (int argc, char *argv[])
     }
 
   /* now read peer list */
-  buffer = MALLOC (65536);
+  buffer = GNUNET_malloc (65536);
 
 
   while (1)
     {
       int success;
 
-      if (start + 300 * cronSECONDS < get_time ())
+      if (start + 300 * GNUNET_CRON_SECONDS < GNUNET_get_time ())
         break;                  /* exit after 300s */
       curpos = 0;
       while (curpos < 65536)
         {
-          if (start + 300 * cronSECONDS < get_time ())
+          if (start + 300 * GNUNET_CRON_SECONDS < GNUNET_get_time ())
             break;              /* exit after 300s */
           success = RECV_NONBLOCKING (sock,
                                       &buffer[curpos], 65536 - curpos, &ret);
-          if (success == NO)
+          if (success == GNUNET_NO)
             {
-              PTHREAD_SLEEP (20);
+              GNUNET_thread_sleep (20);
               continue;
             }
           if ((ret == 0) || (ret == (size_t) - 1))
@@ -1709,7 +1728,7 @@ addAvailable (int argc, char *argv[])
 
           if (0 != processCommands (buffer, &curpos))
             {
-              FREE (buffer);
+              GNUNET_free (buffer);
               closefile (sock);
               return -1;
             }
@@ -1717,11 +1736,11 @@ addAvailable (int argc, char *argv[])
     }
   if (0 != processCommands (buffer, &curpos))
     {
-      FREE (buffer);
+      GNUNET_free (buffer);
       closefile (sock);
       return -1;
     }
-  FREE (buffer);
+  GNUNET_free (buffer);
   closefile (sock);
   return 0;
 }
@@ -1744,7 +1763,7 @@ listPeers (int argc, char *argv[])
 static int
 doExit (int argc, char *argv[])
 {
-  do_quit = YES;
+  do_quit = GNUNET_YES;
   return 0;
 }
 

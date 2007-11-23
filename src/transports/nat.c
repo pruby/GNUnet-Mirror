@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_NAT NO
+#define DEBUG_NAT GNUNET_NO
 
 /**
  * Host-Address in a NAT network.  Since the idea behind
@@ -57,45 +57,47 @@ static CoreAPIForTransport *coreAPI;
  *
  * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
- * @return OK on success, SYSERR on failure
+ * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 static int
-verifyHello (const P2P_hello_MESSAGE * hello)
+verifyHello (const GNUNET_MessageHello * hello)
 {
   if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
       (ntohs (hello->header.type) != p2p_PROTO_hello))
-    return SYSERR;              /* obviously invalid */
-  if (YES == GC_get_configuration_value_yesno (coreAPI->cfg,
-                                               "NAT", "LIMITED", NO))
+    return GNUNET_SYSERR;       /* obviously invalid */
+  if (GNUNET_YES == GC_get_configuration_value_yesno (coreAPI->cfg,
+                                                      "NAT", "LIMITED",
+                                                      GNUNET_NO))
     {
       /* if WE are a NAT and this is not our hello,
          it is invalid since NAT-to-NAT is not possible! */
       if (0 == memcmp (&coreAPI->myIdentity->hashPubKey,
                        &hello->senderIdentity.hashPubKey,
-                       sizeof (HashCode512)))
-        return OK;
-      return SYSERR;
+                       sizeof (GNUNET_HashCode)))
+        return GNUNET_OK;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Create a hello-Message for the current node. The hello is created
  * without signature and without a timestamp. The GNUnet core will
- * sign the message and add an expiration time.
+ * GNUNET_RSA_sign the message and add an expiration time.
  *
  * @return hello on success, NULL on error
  */
-static P2P_hello_MESSAGE *
+static GNUNET_MessageHello *
 createhello ()
 {
-  P2P_hello_MESSAGE *msg;
+  GNUNET_MessageHello *msg;
 
-  if (NO == GC_get_configuration_value_yesno (coreAPI->cfg,
-                                              "NAT", "LIMITED", NO))
+  if (GNUNET_NO == GC_get_configuration_value_yesno (coreAPI->cfg,
+                                                     "NAT", "LIMITED",
+                                                     GNUNET_NO))
     return NULL;
-  msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (HostAddress));
+  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   msg->senderAddressSize = htons (sizeof (HostAddress));
   msg->protocol = htons (NAT_PROTOCOL_NUMBER);
   msg->MTU = htonl (0);
@@ -106,13 +108,13 @@ createhello ()
  * Establish a connection to a remote node.
  * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
- * @return always fails (returns SYSERR)
+ * @return always fails (returns GNUNET_SYSERR)
  */
 static int
-natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
+natConnect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
             int may_reuse)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -123,51 +125,51 @@ natConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
  * @param tsession the session handle passed along
  *   from the call to receive that was made by the transport
  *   layer
- * @return OK if the session could be associated,
- *         SYSERR if not.
+ * @return GNUNET_OK if the session could be associated,
+ *         GNUNET_SYSERR if not.
  */
 int
 natAssociate (TSession * tsession)
 {
-  return SYSERR;                /* NAT connections can never be associated */
+  return GNUNET_SYSERR;         /* NAT connections can never be associated */
 }
 
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the P2P_hello_MESSAGE identifying the remote node
+ * @param tsession the GNUNET_MessageHello identifying the remote node
  * @param message what to send
  * @param size the size of the message
- * @return SYSERR (always fails)
+ * @return GNUNET_SYSERR (always fails)
  */
 static int
 natSend (TSession * tsession,
          const void *message, const unsigned int size, int important)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
  * Disconnect from a remote node.
  *
  * @param tsession the session that is closed
- * @return always SYSERR
+ * @return always GNUNET_SYSERR
  */
 static int
 natDisconnect (TSession * tsession)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
  * Start the server process to receive inbound traffic.
  *
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
 startTransportServer ()
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -177,14 +179,14 @@ startTransportServer ()
 static int
 stopTransportServer ()
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Convert NAT address to a string.
  */
 static int
-helloToAddress (const P2P_hello_MESSAGE * hello,
+helloToAddress (const GNUNET_MessageHello * hello,
                 void **sa, unsigned int *sa_len)
 {
   return getIPaddressFromPID (&hello->senderIdentity, sa, sa_len);
@@ -193,7 +195,7 @@ helloToAddress (const P2P_hello_MESSAGE * hello,
 static int
 testWouldTry (TSession * tsession, unsigned int size, int important)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**

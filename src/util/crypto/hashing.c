@@ -26,7 +26,7 @@
 
 /**
  * @file util/crypto/hashing.c
- * @brief SHA-512 hash related functions
+ * @brief SHA-512 GNUNET_hash related functions
  * @author Christian Grothoff
  */
 
@@ -357,12 +357,12 @@ sha512_final (struct sha512_ctx *sctx, unsigned char *hash)
 /**
  * Hash block of given size.
  *
- * @param block the data to hash, length is given as a second argument
- * @param size the length of the data to hash
+ * @param block the data to GNUNET_hash, length is given as a second argument
+ * @param size the length of the data to GNUNET_hash
  * @param ret pointer to where to write the hashcode
  */
 void
-hash (const void *block, unsigned int size, HashCode512 * ret)
+GNUNET_hash (const void *block, unsigned int size, GNUNET_HashCode * ret)
 {
   struct sha512_ctx ctx;
 
@@ -372,14 +372,15 @@ hash (const void *block, unsigned int size, HashCode512 * ret)
 }
 
 /**
- * Compute the hash of an entire file.  Does NOT load the entire file
+ * Compute the GNUNET_hash of an entire file.  Does NOT load the entire file
  * into memory but instead processes it in blocks.  Very important for
  * large files.
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-getFileHash (struct GE_Context *ectx, const char *filename, HashCode512 * ret)
+GNUNET_hash_file (struct GE_Context *ectx, const char *filename,
+                  GNUNET_HashCode * ret)
 {
   unsigned char *buf;
   unsigned long long len;
@@ -388,21 +389,21 @@ getFileHash (struct GE_Context *ectx, const char *filename, HashCode512 * ret)
   int fh;
   struct sha512_ctx ctx;
 
-  if (OK != disk_file_test (ectx, filename))
-    return SYSERR;
-  if (OK != disk_file_size (ectx, filename, &len, NO))
-    return SYSERR;
-  fh = disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
+  if (GNUNET_OK != GNUNET_disk_file_test (ectx, filename))
+    return GNUNET_SYSERR;
+  if (GNUNET_OK != GNUNET_disk_file_size (ectx, filename, &len, GNUNET_NO))
+    return GNUNET_SYSERR;
+  fh = GNUNET_disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
   if (fh == -1)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
                             "open", filename);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   sha512_init (&ctx);
   pos = 0;
-  buf = MALLOC (65536);
+  buf = GNUNET_malloc (65536);
   while (pos < len)
     {
       delta = 65536;
@@ -417,8 +418,8 @@ getFileHash (struct GE_Context *ectx, const char *filename, HashCode512 * ret)
             GE_LOG_STRERROR_FILE (ectx,
                                   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                                   "close", filename);
-          FREE (buf);
-          return SYSERR;
+          GNUNET_free (buf);
+          return GNUNET_SYSERR;
         }
       sha512_update (&ctx, buf, delta);
       if (pos + delta > pos)
@@ -431,15 +432,15 @@ getFileHash (struct GE_Context *ectx, const char *filename, HashCode512 * ret)
                           GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                           "close", filename);
   sha512_final (&ctx, (unsigned char *) ret);
-  FREE (buf);
-  return OK;
+  GNUNET_free (buf);
+  return GNUNET_OK;
 }
 
 
 /* ***************** binary-ASCII encoding *************** */
 
 /**
- * 32 characters for encoding (hash => 32 characters)
+ * 32 characters for encoding (GNUNET_hash => 32 characters)
  */
 static char *encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
@@ -454,18 +455,18 @@ getValue__ (unsigned char a)
 }
 
 /**
- * Convert hash to ASCII encoding.  The ASCII encoding is rather
+ * Convert GNUNET_hash to ASCII encoding.  The ASCII encoding is rather
  * GNUnet specific.  It was chosen such that it only uses characters
  * in [0-9A-V], can be produced without complex arithmetics and uses a
  * small number of characters.  The GNUnet encoding uses 102
  * characters plus a null terminator.
  *
- * @param block the hash code
- * @param result where to store the encoding (EncName can be
+ * @param block the GNUNET_hash code
+ * @param result where to store the encoding (GNUNET_EncName can be
  *  safely cast to char*, a '\0' termination is set).
  */
 void
-hash2enc (const HashCode512 * block, EncName * result)
+GNUNET_hash_to_enc (const GNUNET_HashCode * block, GNUNET_EncName * result)
 {
   unsigned int wpos;
   unsigned int rpos;
@@ -478,9 +479,9 @@ hash2enc (const HashCode512 * block, EncName * result)
   wpos = 0;
   rpos = 0;
   bits = 0;
-  while ((rpos < sizeof (HashCode512)) || (vbit > 0))
+  while ((rpos < sizeof (GNUNET_HashCode)) || (vbit > 0))
     {
-      if ((rpos < sizeof (HashCode512)) && (vbit < 5))
+      if ((rpos < sizeof (GNUNET_HashCode)) && (vbit < 5))
         {
           bits = (bits << 8) | ((unsigned char *) block)[rpos++];       /* eat 8 more bits */
           vbit += 8;
@@ -491,36 +492,36 @@ hash2enc (const HashCode512 * block, EncName * result)
           GE_ASSERT (NULL, vbit == 2);  /* padding by 3: 512+3 mod 5 == 0 */
           vbit = 5;
         }
-      GE_ASSERT (NULL, wpos < sizeof (EncName) - 1);
+      GE_ASSERT (NULL, wpos < sizeof (GNUNET_EncName) - 1);
       result->encoding[wpos++] = encTable__[(bits >> (vbit - 5)) & 31];
       vbit -= 5;
     }
-  GE_ASSERT (NULL, wpos == sizeof (EncName) - 1);
+  GE_ASSERT (NULL, wpos == sizeof (GNUNET_EncName) - 1);
   GE_ASSERT (NULL, vbit == 0);
   result->encoding[wpos] = '\0';
 }
 
 /**
- * Convert ASCII encoding back to hash
+ * Convert ASCII encoding back to GNUNET_hash
  *
  * @param enc the encoding
- * @param result where to store the hash code
- * @return OK on success, SYSERR if result has the wrong encoding
+ * @param result where to store the GNUNET_hash code
+ * @return GNUNET_OK on success, GNUNET_SYSERR if result has the wrong encoding
  */
 int
-enc2hash (const char *enc, HashCode512 * result)
+GNUNET_enc_to_hash (const char *enc, GNUNET_HashCode * result)
 {
   unsigned int rpos;
   unsigned int wpos;
   unsigned int bits;
   unsigned int vbit;
 
-  if (strlen (enc) != sizeof (EncName) - 1)
-    return SYSERR;
+  if (strlen (enc) != sizeof (GNUNET_EncName) - 1)
+    return GNUNET_SYSERR;
 
   vbit = 2;                     /* padding! */
-  wpos = sizeof (HashCode512);
-  rpos = sizeof (EncName) - 1;
+  wpos = sizeof (GNUNET_HashCode);
+  rpos = sizeof (GNUNET_EncName) - 1;
   bits = getValue__ (enc[--rpos]) >> 3;
   while (wpos > 0)
     {
@@ -536,7 +537,7 @@ enc2hash (const char *enc, HashCode512 * result)
     }
   GE_ASSERT (NULL, rpos == 0);
   GE_ASSERT (NULL, vbit == 0);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -549,53 +550,49 @@ enc2hash (const char *enc, HashCode512 * result)
  *  hashcode proximity.
  */
 unsigned int
-distanceHashCode512 (const HashCode512 * a, const HashCode512 * b)
+GNUNET_hash_distance_u32 (const GNUNET_HashCode * a,
+                          const GNUNET_HashCode * b)
 {
   unsigned int x = (a->bits[1] - b->bits[1]) >> 16;
   return ((x * x) >> 16);
 }
 
-/**
- * Compare two hashcodes.
- * @return 1 if they are equal, 0 if not.
- */
-int
-equalsHashCode512 (const HashCode512 * a, const HashCode512 * b)
-{
-  return (0 == memcmp (a, b, sizeof (HashCode512)));
-}
-
 void
-makeRandomId (HashCode512 * result)
+GNUNET_create_random_hash (GNUNET_HashCode * result)
 {
   int i;
-  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+  for (i = (sizeof (GNUNET_HashCode) / sizeof (unsigned int)) - 1; i >= 0;
+       i--)
     result->bits[i] = rand ();
 }
 
 void
-deltaId (const HashCode512 * a, const HashCode512 * b, HashCode512 * result)
+GNUNET_hash_difference (const GNUNET_HashCode * a, const GNUNET_HashCode * b,
+                        GNUNET_HashCode * result)
 {
   int i;
-  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+  for (i = (sizeof (GNUNET_HashCode) / sizeof (unsigned int)) - 1; i >= 0;
+       i--)
     result->bits[i] = b->bits[i] - a->bits[i];
 }
 
 void
-addHashCodes (const HashCode512 * a,
-              const HashCode512 * delta, HashCode512 * result)
+GNUNET_hash_sum (const GNUNET_HashCode * a,
+                 const GNUNET_HashCode * delta, GNUNET_HashCode * result)
 {
   int i;
-  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+  for (i = (sizeof (GNUNET_HashCode) / sizeof (unsigned int)) - 1; i >= 0;
+       i--)
     result->bits[i] = delta->bits[i] + a->bits[i];
 }
 
 void
-xorHashCodes (const HashCode512 * a,
-              const HashCode512 * b, HashCode512 * result)
+GNUNET_hash_xor (const GNUNET_HashCode * a,
+                 const GNUNET_HashCode * b, GNUNET_HashCode * result)
 {
   int i;
-  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+  for (i = (sizeof (GNUNET_HashCode) / sizeof (unsigned int)) - 1; i >= 0;
+       i--)
     result->bits[i] = a->bits[i] ^ b->bits[i];
 }
 
@@ -603,25 +600,30 @@ xorHashCodes (const HashCode512 * a,
  * Convert a hashcode into a key.
  */
 void
-hashToKey (const HashCode512 * hc, SESSIONKEY * skey, INITVECTOR * iv)
+GNUNET_hash_to_AES_key (const GNUNET_HashCode * hc,
+                        GNUNET_AES_SessionKey * skey,
+                        GNUNET_AES_InitializationVector * iv)
 {
   GE_ASSERT (NULL,
-             sizeof (HashCode512) >= SESSIONKEY_LEN + sizeof (INITVECTOR));
-  memcpy (skey, hc, SESSIONKEY_LEN);
-  skey->crc32 = htonl (crc32N (skey, SESSIONKEY_LEN));
-  memcpy (iv, &((char *) hc)[SESSIONKEY_LEN], sizeof (INITVECTOR));
+             sizeof (GNUNET_HashCode) >=
+             GNUNET_SESSIONKEY_LEN +
+             sizeof (GNUNET_AES_InitializationVector));
+  memcpy (skey, hc, GNUNET_SESSIONKEY_LEN);
+  skey->crc32 = htonl (GNUNET_crc32_n (skey, GNUNET_SESSIONKEY_LEN));
+  memcpy (iv, &((char *) hc)[GNUNET_SESSIONKEY_LEN],
+          sizeof (GNUNET_AES_InitializationVector));
 }
 
 /**
  * Obtain a bit from a hashcode.
- * @param code the hash to index bit-wise
+ * @param code the GNUNET_hash to index bit-wise
  * @param bit index into the hashcode, [0...511]
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
 int
-getHashCodeBit (const HashCode512 * code, unsigned int bit)
+GNUNET_hash_get_bit (const GNUNET_HashCode * code, unsigned int bit)
 {
-  if (bit >= 8 * sizeof (HashCode512))
+  if (bit >= 8 * sizeof (GNUNET_HashCode))
     {
       GE_ASSERT (NULL, 0);
       return -1;                /* error */
@@ -635,7 +637,7 @@ getHashCodeBit (const HashCode512 * code, unsigned int bit)
  * @return 1 if h1 > h2, -1 if h1 < h2 and 0 if h1 == h2.
  */
 int
-hashCodeCompare (const HashCode512 * h1, const HashCode512 * h2)
+GNUNET_hash_cmp (const GNUNET_HashCode * h1, const GNUNET_HashCode * h2)
 {
   unsigned int *i1;
   unsigned int *i2;
@@ -643,7 +645,8 @@ hashCodeCompare (const HashCode512 * h1, const HashCode512 * h2)
 
   i1 = (unsigned int *) h1;
   i2 = (unsigned int *) h2;
-  for (i = (sizeof (HashCode512) / sizeof (unsigned int)) - 1; i >= 0; i--)
+  for (i = (sizeof (GNUNET_HashCode) / sizeof (unsigned int)) - 1; i >= 0;
+       i--)
     {
       if (i1[i] > i2[i])
         return 1;
@@ -654,19 +657,20 @@ hashCodeCompare (const HashCode512 * h1, const HashCode512 * h2)
 }
 
 /**
- * Find out which of the two hash codes is closer to target
+ * Find out which of the two GNUNET_hash codes is closer to target
  * in the XOR metric (Kademlia).
  * @return -1 if h1 is closer, 1 if h2 is closer and 0 if h1==h2.
  */
 int
-hashCodeCompareDistance (const HashCode512 * h1,
-                         const HashCode512 * h2, const HashCode512 * target)
+GNUNET_hash_xorcmp (const GNUNET_HashCode * h1,
+                    const GNUNET_HashCode * h2,
+                    const GNUNET_HashCode * target)
 {
   int i;
   unsigned int d1;
   unsigned int d2;
 
-  for (i = sizeof (HashCode512) / sizeof (unsigned int) - 1; i >= 0; i--)
+  for (i = sizeof (GNUNET_HashCode) / sizeof (unsigned int) - 1; i >= 0; i--)
     {
       d1 = ((unsigned int *) h1)[i] ^ ((unsigned int *) target)[i];
       d2 = ((unsigned int *) h2)[i] ^ ((unsigned int *) target)[i];

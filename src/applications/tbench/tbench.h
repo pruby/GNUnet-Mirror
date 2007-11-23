@@ -32,7 +32,7 @@
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   /**
    * How big is each message (plus headers).
    * Note that GNUnet is limited to 64k messages.
@@ -50,17 +50,17 @@ typedef struct
   /**
    * Which peer should receive the messages?
    */
-  PeerIdentity receiverId;
+  GNUNET_PeerIdentity receiverId;
   /**
    * Inter packet space in milliseconds (delay
    * introduced when sending messages).
    */
-  cron_t intPktSpace;
+  GNUNET_CronTime intPktSpace;
   /**
    * Time to wait for the arrival of all repies
    * in one iteration.
    */
-  cron_t timeOut;
+  GNUNET_CronTime timeOut;
   /**
    * intPktSpace delay is only introduced every
    * trainSize messages.
@@ -77,14 +77,14 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   unsigned int max_loss;
   unsigned int min_loss;
   float mean_loss;
   float variance_loss;
 
-  cron_t max_time;
-  cron_t min_time;
+  GNUNET_CronTime max_time;
+  GNUNET_CronTime min_time;
   float mean_time;
   float variance_time;
 } CS_tbench_reply_MESSAGE;

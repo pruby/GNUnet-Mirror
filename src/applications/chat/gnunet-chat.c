@@ -41,19 +41,19 @@ static char *roomname = "gnunet";
 /**
  * All gnunet-chat command line options
  */
-static struct CommandLineOption gnunetchatOptions[] = {
+static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
   COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),   /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'n', "nick", "NAME",
    gettext_noop ("set the nickname to use (requred)"),
-   1, &gnunet_getopt_configure_set_string, &nickname},
+   1, &GNUNET_getopt_configure_set_string, &nickname},
   {'r', "room", "NAME",
    gettext_noop ("set the chat room to join (requred)"),
-   1, &gnunet_getopt_configure_set_string, &roomname},
+   1, &GNUNET_getopt_configure_set_string, &roomname},
   COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 /**
@@ -68,18 +68,18 @@ static struct CommandLineOption gnunetchatOptions[] = {
  *        the user is merely asked if engaging in the exchange is ok
  * @param room in which room was the message received?
  * @param options options for the message
- * @return OK to accept the message now, NO to 
- *         accept (but user is away), SYSERR to signal denied delivery
+ * @return GNUNET_OK to accept the message now, GNUNET_NO to
+ *         accept (but user is away), GNUNET_SYSERR to signal denied delivery
  */
 static int
 receive_callback (void *cls,
                   struct GNUNET_CHAT_Room *room,
                   const char *senderNick,
                   const char *message,
-                  cron_t timestamp, GNUNET_CHAT_MSG_OPTIONS options)
+                  GNUNET_CronTime timestamp, GNUNET_CHAT_MSG_OPTIONS options)
 {
   fprintf (stdout, "%s: %s\n", senderNick, message);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -90,23 +90,23 @@ receive_callback (void *cls,
  * @param message the message (maybe NULL)
  * @param room in which room was the message received?
  * @param options what were the options of the message
- * @param response what was the receivers response (OK, NO, SYSERR).
+ * @param response what was the receivers response (GNUNET_OK, GNUNET_NO, GNUNET_SYSERR).
  * @param receipt signature confirming delivery (maybe NULL, only
  *        if confirmation was requested)
- * @return OK to continue, SYSERR to refuse processing further
+ * @return GNUNET_OK to continue, GNUNET_SYSERR to refuse processing further
  *         confirmations from anyone for this message
  */
 static int
 confirmation_callback (void *cls,
                        struct GNUNET_CHAT_Room *room,
                        const char *receiverNick,
-                       const PublicKey * receiverKey,
+                       const GNUNET_RSA_PublicKey * receiverKey,
                        const char *message,
-                       cron_t timestamp,
+                       GNUNET_CronTime timestamp,
                        GNUNET_CHAT_MSG_OPTIONS options,
-                       int response, const Signature * receipt)
+                       int response, const GNUNET_RSA_Signature * receipt)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -120,14 +120,15 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_CHAT_Room *room;
-  PublicKey *my_pub;
-  struct PrivateKey *my_priv;
+  GNUNET_RSA_PublicKey *my_pub;
+  struct GNUNET_RSA_PrivateKey *my_priv;
   char message[1024];
 
-  if (SYSERR == GNUNET_init (argc,
-                             argv,
-                             "gnunet-chat [OPTIONS]",
-                             &cfgFilename, gnunetchatOptions, &ectx, &cfg))
+  if (GNUNET_SYSERR == GNUNET_init (argc,
+                                    argv,
+                                    "gnunet-chat [OPTIONS]",
+                                    &cfgFilename, gnunetchatOptions, &ectx,
+                                    &cfg))
     return 1;                   /* parse error, --help, etc. */
   if (nickname == NULL)
     {
@@ -151,11 +152,12 @@ main (int argc, char **argv)
       memset (message, 0, 1024);
       if (NULL == fgets (message, 1023, stdin))
         break;
-      if (OK != GNUNET_CHAT_send_message (room,
-                                          message,
-                                          &confirmation_callback,
-                                          NULL,
-                                          GNUNET_CHAT_MSG_OPTION_NONE, NULL))
+      if (GNUNET_OK != GNUNET_CHAT_send_message (room,
+                                                 message,
+                                                 &confirmation_callback,
+                                                 NULL,
+                                                 GNUNET_CHAT_MSG_OPTION_NONE,
+                                                 NULL))
         {
           fprintf (stderr, _("Failed to send message.\n"));
         }

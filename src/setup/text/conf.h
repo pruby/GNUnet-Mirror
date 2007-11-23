@@ -33,7 +33,7 @@
 
 int main_setup_text (int argc,
                      const char **argv,
-                     struct PluginHandle *self,
+                     struct GNUNET_PluginHandle *self,
                      struct GE_Context *ectx,
                      struct GC_Configuration *cfg,
                      struct GNS_Context *gns,
@@ -41,7 +41,7 @@ int main_setup_text (int argc,
 
 int dump_setup_text (int argc,
                      const char **argv,
-                     struct PluginHandle *self,
+                     struct GNUNET_PluginHandle *self,
                      struct GE_Context *ectx,
                      struct GC_Configuration *cfg,
                      struct GNS_Context *gns,

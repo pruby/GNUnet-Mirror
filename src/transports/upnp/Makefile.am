@@ -24,8 +24,7 @@ libgnunetmodule_upnp_la_CFLAGS = \
  @LIBCURL_CPPFLAGS@ @XML_CPPFLAGS@
 libgnunetmodule_upnp_la_LIBADD = \
  @EXT_LIB_PATH@ @EXT_LIBS@ @XML_LIBS@ @LIBCURL@ \
- $(top_builddir)/src/util/libgnunetutil.la  \
- $(top_builddir)/src/util/cron/libgnunetutil_cron.la 
+ $(top_builddir)/src/util/libgnunetutil.la  
 
 check_PROGRAMS = \
  upnptest 
@@ -35,8 +34,6 @@ TESTS = $(check_PROGRAMS)
 upnptest_SOURCES = \
  upnptest.c 
 upnptest_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 

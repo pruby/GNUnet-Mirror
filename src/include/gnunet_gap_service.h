@@ -52,20 +52,20 @@ extern "C"
  * Function that helps the routing code to find out if
  * a given reply is the one and only reply for a given
  * request.
- * @param verify check that content is valid? (YES/NO)
+ * @param verify check that content is valid? (GNUNET_YES/GNUNET_NO)
  */
 typedef int (*UniqueReplyIdentifier) (const DataContainer * content,
                                       unsigned int query_type,
                                       int verify,
-                                      const HashCode512 * primaryKey);
+                                      const GNUNET_HashCode * primaryKey);
 
 /**
  * Given some content, compute the unique
- * hash of the content that can then be used
+ * GNUNET_hash of the content that can then be used
  * to sort out duplicates.
  */
 typedef int (*ReplyHashFunction) (const DataContainer * data,
-                                  HashCode512 * hc);
+                                  GNUNET_HashCode * hc);
 
 /**
  * Functions of the GAP Service API.
@@ -77,7 +77,7 @@ typedef struct
    * Start GAP.
    *
    * @param datastore the storage callbacks to use for storing data
-   * @return SYSERR on error, OK on success
+   * @return GNUNET_SYSERR on error, GNUNET_OK on success
    */
   int (*init) (Blockstore * datastore,
                UniqueReplyIdentifier uri, ReplyHashFunction rhf);
@@ -93,15 +93,15 @@ typedef struct
    * @param keys the keys to query for
    * @param timeout how long to wait until this operation should
    *        automatically time-out
-   * @return OK if we will start to query, SYSERR if all of our
+   * @return GNUNET_OK if we will start to query, GNUNET_SYSERR if all of our
    *  buffers are full or other error
    */
-  int (*get_start) (const PeerIdentity * target,
+  int (*get_start) (const GNUNET_PeerIdentity * target,
                     unsigned int type,
                     unsigned int anonymityLevel,
                     unsigned int keyCount,
-                    const HashCode512 * keys,
-                    cron_t timeout, unsigned int prio);
+                    const GNUNET_HashCode * keys,
+                    GNUNET_CronTime timeout, unsigned int prio);
 
   /**
    * Stop sending out queries for a given key.  GAP will automatically
@@ -109,7 +109,7 @@ typedef struct
    * to stop it earlier.
    */
   int (*get_stop) (unsigned int type,
-                   unsigned int keyCount, const HashCode512 * keys);
+                   unsigned int keyCount, const GNUNET_HashCode * keys);
 
   /**
    * Try to migrate the given content.
@@ -121,7 +121,7 @@ typedef struct
    *   that buffer (must be a positive number).
    */
   unsigned int (*tryMigrate) (const DataContainer * data,
-                              const HashCode512 * primaryKey,
+                              const GNUNET_HashCode * primaryKey,
                               char *position, unsigned int padding);
 
   /**

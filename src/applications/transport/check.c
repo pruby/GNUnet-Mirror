@@ -10,7 +10,7 @@ typedef struct TCPSession
   /**
    * the tcp socket (used to identify this connection with selector)
    */
-  struct SocketHandle *sock;
+  struct GNUNET_SocketHandle *sock;
 
   /**
    * Our tsession.
@@ -20,16 +20,16 @@ typedef struct TCPSession
   /**
    * mutex for synchronized access to 'users'
    */
-  struct MUTEX *lock;
+  struct GNUNET_Mutex *lock;
 
   /**
    * To whom are we talking to (set to our identity
    * if we are still waiting for the welcome message)
    */
-  PeerIdentity sender;
+  GNUNET_PeerIdentity sender;
 
   /**
-   * Are we still expecting the welcome? (YES/NO)
+   * Are we still expecting the welcome? (GNUNET_YES/GNUNET_NO)
    */
   int expectingWelcome;
 

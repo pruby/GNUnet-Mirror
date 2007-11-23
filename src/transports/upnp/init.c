@@ -35,9 +35,9 @@ static struct GE_Context *ectx;
 
 static struct GC_Configuration *cfg;
 
-static struct CronManager *cron;
+static struct GNUNET_CronManager *cron;
 
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 typedef struct
 {
@@ -49,24 +49,24 @@ static PMap *maps;
 
 static unsigned int maps_size;
 
-static struct PTHREAD *discovery;
+static struct GNUNET_ThreadHandle *discovery;
 
 static int discovery_socket;
 
 /**
  * Obtain the public/external IP address.
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
-gnunet_upnp_get_public_ip (IPaddr * address)
+gnunet_upnp_get_public_ip (GNUNET_IPv4Address * address)
 {
   const char *ip;
 
   ip = gaim_upnp_get_public_ip ();
   if (ip == NULL)
-    return SYSERR;
-  return get_host_by_name (ectx, ip, address);
+    return GNUNET_SYSERR;
+  return GNUNET_get_host_by_name (ectx, ip, address);
 }
 
 static void
@@ -78,7 +78,7 @@ kill_discovery ()
     {
       SHUTDOWN (discovery_socket, SHUT_RDWR);
       CLOSE (discovery_socket);
-      PTHREAD_JOIN (discovery, &unused);
+      GNUNET_thread_join (discovery, &unused);
       discovery = NULL;
     }
 }
@@ -100,7 +100,7 @@ discover (void *unused)
   discovery_socket = SOCKET (PF_INET, SOCK_DGRAM, 0);
   if (discovery_socket == -1)
     return;
-  discovery = PTHREAD_CREATE (&discover_thread, NULL, 1024 * 128);
+  discovery = GNUNET_thread_create (&discover_thread, NULL, 1024 * 128);
 }
 
 /**
@@ -111,38 +111,39 @@ portmap (void *unused)
 {
   unsigned int i;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < maps_size; i++)
     gaim_upnp_change_port_mapping (ectx,
-                                   cfg, NO, maps[i].port, maps[i].proto);
-  MUTEX_UNLOCK (lock);
+                                   cfg, GNUNET_NO, maps[i].port,
+                                   maps[i].proto);
+  GNUNET_mutex_unlock (lock);
 }
 
 
 /**
  * Get the external IP address for the local machine.
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
 gnunet_upnp_get_ip (unsigned short port,
-                    const char *protocol, IPaddr * address)
+                    const char *protocol, GNUNET_IPv4Address * address)
 {
   unsigned int i;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < maps_size; i++)
     if ((0 == strcmp (maps[i].proto, protocol)) && (maps[i].port == port))
       break;
   if (i == maps_size)
     {
       /* new entry! */
-      GROW (maps, maps_size, maps_size + 1);
+      GNUNET_array_grow (maps, maps_size, maps_size + 1);
       maps[i].proto = protocol;
       maps[i].port = port;
-      gaim_upnp_change_port_mapping (ectx, cfg, YES, port, protocol);
+      gaim_upnp_change_port_mapping (ectx, cfg, GNUNET_YES, port, protocol);
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return gnunet_upnp_get_public_ip (address);
 }
 
@@ -158,10 +159,11 @@ provide_module_upnp (CoreAPIForApplication * capi)
   ectx = capi->ectx;
   cfg = capi->cfg;
   cron = cron_create (ectx);
-  lock = MUTEX_CREATE (NO);
-  cron_start (cron);
-  cron_add_job (cron, &discover, 0, 5 * cronMINUTES, NULL);
-  cron_add_job (cron, &portmap, 150 * cronSECONDS, 5 * cronMINUTES, NULL);
+  lock = GNUNET_mutex_create (GNUNET_NO);
+  GNUNET_cron_start (cron);
+  GNUNET_cron_add_job (cron, &discover, 0, 5 * GNUNET_CRON_MINUTES, NULL);
+  GNUNET_cron_add_job (cron, &portmap, 150 * GNUNET_CRON_SECONDS,
+                       5 * GNUNET_CRON_MINUTES, NULL);
   api.get_ip = gnunet_upnp_get_ip;
   return &api;
 }
@@ -175,22 +177,23 @@ release_module_upnp ()
   unsigned int i;
 
   if (cron == NULL)
-    return SYSERR;              /* not loaded! */
+    return GNUNET_SYSERR;       /* not loaded! */
   for (i = 0; i < maps_size; i++)
     gaim_upnp_change_port_mapping (ectx,
-                                   cfg, NO, maps[i].port, maps[i].proto);
-  cron_stop (cron);
-  cron_del_job (cron, &discover, 5 * cronMINUTES, NULL);
-  cron_del_job (cron, &portmap, 5 * cronMINUTES, NULL);
-  cron_destroy (cron);
+                                   cfg, GNUNET_NO, maps[i].port,
+                                   maps[i].proto);
+  GNUNET_cron_stop (cron);
+  GNUNET_cron_del_job (cron, &discover, 5 * GNUNET_CRON_MINUTES, NULL);
+  GNUNET_cron_del_job (cron, &portmap, 5 * GNUNET_CRON_MINUTES, NULL);
+  GNUNET_cron_destroy (cron);
   kill_discovery ();
   cron = NULL;
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
-  GROW (maps, maps_size, 0);
+  GNUNET_array_grow (maps, maps_size, 0);
   ectx = NULL;
   cfg = NULL;
-  return OK;
+  return GNUNET_OK;
 }
 
 

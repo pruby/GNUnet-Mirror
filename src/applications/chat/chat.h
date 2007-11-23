@@ -32,7 +32,7 @@
 
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   char nick[CHAT_NICK_LENGTH];
   char message[CHAT_MSG_LENGTH];
 } P2P_chat_MESSAGE;

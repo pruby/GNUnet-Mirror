@@ -29,9 +29,9 @@
 #include "prefetch.h"
 #include "gnunet_protocols.h"
 
-#define DEBUG_PREFETCH NO
+#define DEBUG_PREFETCH GNUNET_NO
 
-static HashCode512 rkey;
+static GNUNET_HashCode rkey;
 
 static Datastore_Value *rvalue;
 
@@ -44,19 +44,19 @@ static SQstore_ServiceAPI *sq;
  * Semaphore on which the RCB acquire thread waits
  * if the RCB buffer is full.
  */
-static struct SEMAPHORE *acquireMoreSignal;
+static struct GNUNET_Semaphore *acquireMoreSignal;
 
 /**
- * Set to YES to shutdown the module.
+ * Set to GNUNET_YES to shutdown the module.
  */
 static int doneSignal;
 
 /**
  * Lock for the RCB buffer.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
-static struct PTHREAD *gather_thread;
+static struct GNUNET_ThreadHandle *gather_thread;
 
 static struct GE_Context *ectx;
 
@@ -64,23 +64,23 @@ static struct GC_Configuration *cfg;
 
 
 static int
-acquire (const HashCode512 * key,
+acquire (const GNUNET_HashCode * key,
          const Datastore_Value * value, void *closure, unsigned long long uid)
 {
   if (doneSignal)
-    return SYSERR;
-  SEMAPHORE_DOWN (acquireMoreSignal, YES);
+    return GNUNET_SYSERR;
+  GNUNET_semaphore_down (acquireMoreSignal, GNUNET_YES);
   if (doneSignal)
-    return SYSERR;
-  MUTEX_LOCK (lock);
+    return GNUNET_SYSERR;
+  GNUNET_mutex_lock (lock);
   GE_ASSERT (NULL, rvalue == NULL);
   rkey = *key;
-  rvalue = MALLOC (ntohl (value->size));
+  rvalue = GNUNET_malloc (ntohl (value->size));
   memcpy (rvalue, value, ntohl (value->size));
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   if (doneSignal)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 /**
@@ -90,18 +90,18 @@ static void *
 rcbAcquire (void *unused)
 {
   int load;
-  while (doneSignal == NO)
+  while (doneSignal == GNUNET_NO)
     {
       sq->iterateMigrationOrder (&acquire, NULL);
       /* sleep here - otherwise we may start looping immediately
          if there is no content in the DB! */
-      load = os_cpu_get_load (ectx, cfg);
+      load = GNUNET_cpu_get_load (ectx, cfg);
       if (load < 10)
         load = 10;              /* never sleep less than 500 ms */
       if (load > 100)
         load = 100;             /* never sleep longer than 5 seconds */
-      if (doneSignal == NO)
-        PTHREAD_SLEEP (50 * cronMILLIS * load);
+      if (doneSignal == GNUNET_NO)
+        GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS * load);
     }
   return NULL;
 }
@@ -110,23 +110,23 @@ rcbAcquire (void *unused)
  * Select content for active migration.  Takes the best match from the
  * randomContentBuffer (if the RCB is non-empty) and returns it.
  *
- * @return SYSERR if the RCB is empty
+ * @return GNUNET_SYSERR if the RCB is empty
  */
 int
-getRandom (HashCode512 * key, Datastore_Value ** value)
+getRandom (GNUNET_HashCode * key, Datastore_Value ** value)
 {
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   if (rvalue == NULL)
     {
-      MUTEX_UNLOCK (lock);
-      return SYSERR;
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
     }
   *value = rvalue;
   *key = rkey;
   rvalue = NULL;
-  MUTEX_UNLOCK (lock);
-  SEMAPHORE_UP (acquireMoreSignal);
-  return OK;
+  GNUNET_mutex_unlock (lock);
+  GNUNET_semaphore_up (acquireMoreSignal);
+  return GNUNET_OK;
 }
 
 void
@@ -136,10 +136,10 @@ initPrefetch (struct GE_Context *e,
   ectx = e;
   cfg = c;
   sq = s;
-  acquireMoreSignal = SEMAPHORE_CREATE (1);
-  doneSignal = NO;
-  lock = MUTEX_CREATE (NO);
-  gather_thread = PTHREAD_CREATE (&rcbAcquire, NULL, 64 * 1024);
+  acquireMoreSignal = GNUNET_semaphore_create (1);
+  doneSignal = GNUNET_NO;
+  lock = GNUNET_mutex_create (GNUNET_NO);
+  gather_thread = GNUNET_thread_create (&rcbAcquire, NULL, 64 * 1024);
   if (gather_thread == NULL)
     GE_LOG_STRERROR (ectx,
                      GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
@@ -151,16 +151,16 @@ donePrefetch ()
 {
   void *unused;
 
-  doneSignal = YES;
+  doneSignal = GNUNET_YES;
   if (gather_thread != NULL)
-    PTHREAD_STOP_SLEEP (gather_thread);
-  SEMAPHORE_UP (acquireMoreSignal);
+    GNUNET_thread_stop_sleep (gather_thread);
+  GNUNET_semaphore_up (acquireMoreSignal);
   if (gather_thread != NULL)
-    PTHREAD_JOIN (gather_thread, &unused);
-  SEMAPHORE_DESTROY (acquireMoreSignal);
-  FREENONNULL (rvalue);
+    GNUNET_thread_join (gather_thread, &unused);
+  GNUNET_semaphore_destroy (acquireMoreSignal);
+  GNUNET_free_non_null (rvalue);
   rvalue = NULL;
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
   sq = NULL;
   cfg = NULL;

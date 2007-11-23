@@ -39,7 +39,7 @@ typedef struct GE_Message
 typedef struct GE_Memory
 {
   GE_Message *messages;
-  struct MUTEX *lock;
+  struct GNUNET_Mutex *lock;
   unsigned int maxSize;
   unsigned int size;
   unsigned int pos;
@@ -51,32 +51,33 @@ memorylogger (void *cls, GE_KIND kind, const char *date, const char *msg)
   GE_Memory *ctx = cls;
   unsigned int max;
 
-  MUTEX_LOCK (ctx->lock);
+  GNUNET_mutex_lock (ctx->lock);
   if (ctx->pos == ctx->size)
     {
       if ((ctx->maxSize != 0) && (ctx->size == ctx->maxSize))
         {
-          MUTEX_UNLOCK (ctx->lock);
+          GNUNET_mutex_unlock (ctx->lock);
           return;
         }
       max = ctx->pos * 2 + 16;
       if ((ctx->maxSize == 0) && (max > ctx->maxSize))
         max = ctx->maxSize;
-      GROW (ctx->messages, ctx->size, max);
+      GNUNET_array_grow (ctx->messages, ctx->size, max);
     }
-  ctx->messages[ctx->pos].date = STRDUP (date);
+  ctx->messages[ctx->pos].date = GNUNET_strdup (date);
   if (ctx->pos == ctx->maxSize - 1)
     {
-      ctx->messages[ctx->pos].msg = STRDUP (_("Out of memory (for logging)"));
+      ctx->messages[ctx->pos].msg =
+        GNUNET_strdup (_("Out of memory (for logging)"));
       ctx->messages[ctx->pos].mask = GE_STATUS | GE_USER | GE_BULK;
     }
   else
     {
-      ctx->messages[ctx->pos].msg = STRDUP (msg);
+      ctx->messages[ctx->pos].msg = GNUNET_strdup (msg);
       ctx->messages[ctx->pos].mask = kind;
     }
   ctx->pos++;
-  MUTEX_UNLOCK (ctx->lock);
+  GNUNET_mutex_unlock (ctx->lock);
 }
 
 /**
@@ -105,12 +106,12 @@ GE_memory_create (unsigned int maxSize)
 {
   GE_Memory *ret;
 
-  ret = MALLOC (sizeof (GE_Memory));
+  ret = GNUNET_malloc (sizeof (GE_Memory));
   ret->maxSize = maxSize;
   ret->size = 0;
   ret->pos = 0;
   ret->messages = NULL;
-  ret->lock = MUTEX_CREATE (NO);
+  ret->lock = GNUNET_mutex_create (GNUNET_NO);
   return ret;
 }
 
@@ -134,17 +135,17 @@ GE_memory_poll (struct GE_Memory *memory, GE_LogHandler handler, void *ctx)
 {
   int i;
 
-  MUTEX_LOCK (memory->lock);
+  GNUNET_mutex_lock (memory->lock);
   for (i = 0; i < memory->pos; i++)
     {
       handler (ctx,
                memory->messages[i].mask,
                memory->messages[i].date, memory->messages[i].msg);
-      FREE (memory->messages[i].date);
-      FREE (memory->messages[i].msg);
+      GNUNET_free (memory->messages[i].date);
+      GNUNET_free (memory->messages[i].msg);
     }
   memory->pos = 0;
-  MUTEX_UNLOCK (memory->lock);
+  GNUNET_mutex_unlock (memory->lock);
 }
 
 void
@@ -152,14 +153,14 @@ GE_memory_reset (struct GE_Memory *memory)
 {
   int i;
 
-  MUTEX_LOCK (memory->lock);
+  GNUNET_mutex_lock (memory->lock);
   for (i = memory->pos - 1; i >= 0; i--)
     {
-      FREE (memory->messages[i].date);
-      FREE (memory->messages[i].msg);
+      GNUNET_free (memory->messages[i].date);
+      GNUNET_free (memory->messages[i].msg);
     }
-  GROW (memory->messages, memory->size, 0);
-  MUTEX_UNLOCK (memory->lock);
+  GNUNET_array_grow (memory->messages, memory->size, 0);
+  GNUNET_mutex_unlock (memory->lock);
 }
 
 void
@@ -167,12 +168,12 @@ GE_memory_free (struct GE_Memory *memory)
 {
   int i;
 
-  MUTEX_DESTROY (memory->lock);
+  GNUNET_mutex_destroy (memory->lock);
   for (i = memory->pos - 1; i >= 0; i--)
     {
-      FREE (memory->messages[i].date);
-      FREE (memory->messages[i].msg);
+      GNUNET_free (memory->messages[i].date);
+      GNUNET_free (memory->messages[i].msg);
     }
-  GROW (memory->messages, memory->size, 0);
-  FREE (memory);
+  GNUNET_array_grow (memory->messages, memory->size, 0);
+  GNUNET_free (memory);
 }

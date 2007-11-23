@@ -41,7 +41,7 @@ extern "C"
  * Obtain option value from a peer.
  * @return NULL on error
  */
-char *getConfigurationOptionValue (struct ClientServerConnection *sock,
+char *GNUNET_get_daemon_configuration_value (struct GNUNET_ClientServerConnection *sock,
                                    const char *section, const char *option);
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -31,18 +31,18 @@
 static int
 test (int number)
 {
-  HashCode512 h1;
-  HashCode512 h2;
-  EncName enc;
+  GNUNET_HashCode h1;
+  GNUNET_HashCode h2;
+  GNUNET_EncName enc;
 
-  memset (&h1, number, sizeof (HashCode512));
-  hash2enc (&h1, &enc);
-  if (OK != enc2hash ((char *) &enc, &h2))
+  memset (&h1, number, sizeof (GNUNET_HashCode));
+  GNUNET_hash_to_enc (&h1, &enc);
+  if (GNUNET_OK != GNUNET_enc_to_hash ((char *) &enc, &h2))
     {
       printf ("enc2hash failed!\n");
       return 1;
     }
-  if (!equalsHashCode512 (&h1, &h2))
+  if (0 != memcmp (&h1, &h2, sizeof (GNUNET_HashCode)))
     return 1;
   return 0;
 }

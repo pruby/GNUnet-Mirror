@@ -31,7 +31,7 @@
 
 /**
  * Check if we are up-to-date.
- * @return OK if we are
+ * @return GNUNET_OK if we are
  */
 int checkUpToDate (struct GE_Context *ectx, struct GC_Configuration *cfg);
 

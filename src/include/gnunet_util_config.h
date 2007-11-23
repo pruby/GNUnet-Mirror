@@ -98,7 +98,7 @@ int GC_get_configuration_value_number (struct GC_Configuration *cfg,
 
 /**
  * Test if we have a value for a particular option
- * @return YES if so, NO if not.
+ * @return GNUNET_YES if so, GNUNET_NO if not.
  */
 int GC_have_configuration_value (struct GC_Configuration *cfg,
                                  const char *section, const char *option);
@@ -150,11 +150,11 @@ int GC_get_configuration_value_choice (struct GC_Configuration *cfg,
 
 /**
  * Get a configuration value that should be in a set of
- * "YES" or "NO".
+ * "GNUNET_YES" or "GNUNET_NO".
  *
  * @param def default value (use indicated by return value;
  *        will NOT be aliased, maybe NULL)
- * @return YES, NO or SYSERR
+ * @return GNUNET_YES, GNUNET_NO or GNUNET_SYSERR
  */
 int GC_get_configuration_value_yesno (struct GC_Configuration *cfg,
                                       const char *section,
@@ -237,6 +237,11 @@ int GC_attach_change_listener (struct GC_Configuration *cfg,
  */
 int GC_detach_change_listener (struct GC_Configuration *cfg,
                                GC_ChangeListener callback, void *ctx);
+
+/**
+ * Create a GC_Configuration
+ */
+struct GC_Configuration *GC_create (void);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

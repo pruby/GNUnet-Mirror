@@ -36,7 +36,7 @@
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Priority of the search.
@@ -46,7 +46,7 @@ typedef struct
   /**
    * At what time does the search expire?
    */
-  cron_t expiration;
+  GNUNET_CronTime expiration;
 
   /**
    * Type of the content that we're looking for.
@@ -66,12 +66,12 @@ typedef struct
    * response.  Set to all-zeros if target is not
    * known.
    */
-  PeerIdentity target;
+  GNUNET_PeerIdentity target;
 
   /**
    * What are the queries?
    */
-  HashCode512 query[1];
+  GNUNET_HashCode query[1];
 
 } CS_fs_request_search_MESSAGE;
 
@@ -82,11 +82,11 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int anonymityLevel;
 
-  cron_t expirationTime;
+  GNUNET_CronTime expirationTime;
 
 } CS_fs_reply_content_MESSAGE;
 
@@ -98,7 +98,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -108,7 +108,7 @@ typedef struct
   /**
    * At what time does the entry expire?
    */
-  cron_t expiration;
+  GNUNET_CronTime expiration;
 
   /**
    * What are the anonymity requirements for this content?
@@ -126,15 +126,15 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int reserved;
 
   /**
-   * What is the hash of the file that contains
+   * What is the GNUNET_hash of the file that contains
    * this block?
    */
-  HashCode512 fileId;
+  GNUNET_HashCode fileId;
 
 } CS_fs_request_init_index_MESSAGE;
 
@@ -145,7 +145,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -155,7 +155,7 @@ typedef struct
   /**
    * At what time does the entry expire?
    */
-  cron_t expiration;
+  GNUNET_CronTime expiration;
 
   /**
    * At what offset in the plaintext file is
@@ -164,11 +164,11 @@ typedef struct
   unsigned long long fileOffset;
 
   /**
-   * What is the hash of the file that contains
+   * What is the GNUNET_hash of the file that contains
    * this block?  Used by gnunetd for the name
    * of the file in the on-demand datastore.
    */
-  HashCode512 fileId;
+  GNUNET_HashCode fileId;
 
   /**
    * What are the anonymity requirements for this content?
@@ -185,7 +185,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
 } CS_fs_request_delete_MESSAGE;
 
@@ -195,7 +195,7 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   /**
    * Size of each block of the file.
@@ -203,10 +203,10 @@ typedef struct
   unsigned int blocksize;
 
   /**
-   * What is the hash of the file that should be
+   * What is the GNUNET_hash of the file that should be
    * unindexed?
    */
-  HashCode512 fileId;
+  GNUNET_HashCode fileId;
 
 } CS_fs_request_unindex_MESSAGE;
 
@@ -215,15 +215,15 @@ typedef struct
  */
 typedef struct
 {
-  MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
 
   unsigned int reserved;
 
   /**
-   * What is the hash of the file that should be
+   * What is the GNUNET_hash of the file that should be
    * unindexed?
    */
-  HashCode512 fileId;
+  GNUNET_HashCode fileId;
 
 } RequestTestindex;
 

@@ -45,36 +45,37 @@ extern "C"
  * just like HELLOs received from other peers.
  *
  * @param sock socket to talk to gnunetd over
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int gnunet_identity_peer_add (struct ClientServerConnection *sock,
-                              const P2P_hello_MESSAGE * hello);
+int GNUNET_IDENTITY_peer_add (struct GNUNET_ClientServerConnection *sock,
+                              const GNUNET_MessageHello * hello);
 
 /**
- * Function to request the peer to sign something
+ * Function to request the peer to GNUNET_RSA_sign something
  * with the private key of the peer.
  */
-int gnunet_identity_sign_function (struct ClientServerConnection *sock,
+int GNUNET_IDENTITY_sign_function (struct GNUNET_ClientServerConnection *sock,
                                    unsigned short size,
-                                   const void *data, Signature * result);
+                                   const void *data,
+                                   GNUNET_RSA_Signature * result);
 
 /**
  * Function to request one of the peer's identities
  * (that is, external addresses).
  *
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
-int gnunet_identity_get_self (struct ClientServerConnection *sock,
-                              P2P_hello_MESSAGE ** hello);
+int GNUNET_IDENTITY_get_self (struct GNUNET_ClientServerConnection *sock,
+                              GNUNET_MessageHello ** hello);
 
 
 /**
  * Request the peer to connect to another peer
- * @return SYSERR on error, YES if connection is now there
- *         NO if connection is not yet present
+ * @return GNUNET_SYSERR on error, GNUNET_YES if connection is now there
+ *         GNUNET_NO if connection is not yet present
  */
-int gnunet_identity_request_connect (struct ClientServerConnection *sock,
-                                     const PeerIdentity * peer);
+int GNUNET_IDENTITY_request_connect (struct GNUNET_ClientServerConnection
+                                     *sock, const GNUNET_PeerIdentity * peer);
 
 
 /**
@@ -91,24 +92,25 @@ int gnunet_identity_request_connect (struct ClientServerConnection *sock,
  *        number of bytes per minute that we currently allow
  *        this peer to sent to us
  * @param identity the id of the node
- * @return OK to continue to iterate, SYSERR to abort
+ * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR to abort
  */
-typedef int (*GNUnetIdentityPeerInfoCallback) (void *data,
-                                               const PeerIdentity * identity,
-                                               const void *address,
+typedef int (*GNUNET_IDENTITY_PeerInfoCallback) (void *data,
+                                               const GNUNET_PeerIdentity *
+                                               identity, const void *address,
                                                unsigned int addr_len,
-                                               cron_t last_message,
+                                               GNUNET_CronTime last_message,
                                                unsigned int trust,
                                                unsigned int bpmFromPeer);
 
 /**
  * Request information about all known peers
  *
- * @return SYSERR if iteration was aborted,
+ * @return GNUNET_SYSERR if iteration was aborted,
  *         otherwise number of peers known
  */
-int gnunet_identity_request_peer_infos (struct ClientServerConnection *sock,
-                                        GNUnetIdentityPeerInfoCallback
+int GNUNET_IDENTITY_request_peer_infos (struct GNUNET_ClientServerConnection
+                                        *sock,
+                                        GNUNET_IDENTITY_PeerInfoCallback
                                         callback, void *cls);
 
 

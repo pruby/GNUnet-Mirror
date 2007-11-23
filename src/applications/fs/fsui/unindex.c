@@ -37,7 +37,8 @@
  */
 static void
 progressCallback (unsigned long long totalBytes,
-                  unsigned long long completedBytes, cron_t eta, void *cls)
+                  unsigned long long completedBytes, GNUNET_CronTime eta,
+                  void *cls)
 {
   FSUI_UnindexList *utc = cls;
   FSUI_Event event;
@@ -57,8 +58,8 @@ tt (void *cls)
 {
   FSUI_UnindexList *utc = cls;
   if (utc->state != FSUI_ACTIVE)
-    return SYSERR;
-  return OK;
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 /**
@@ -74,7 +75,9 @@ FSUI_unindexThread (void *cls)
   struct GE_Memory *mem;
   struct GE_Context *ee;
 
-  if (OK != disk_file_size (utc->ctx->ectx, utc->filename, &size, YES))
+  if (GNUNET_OK !=
+      GNUNET_disk_file_size (utc->ctx->ectx, utc->filename, &size,
+                             GNUNET_YES))
     {
       GE_BREAK (utc->ctx->ectx, 0);
       size = 0;
@@ -86,7 +89,7 @@ FSUI_unindexThread (void *cls)
   ret =
     ECRS_unindexFile (ee, utc->ctx->cfg, utc->filename, &progressCallback,
                       utc, &tt, utc);
-  if (ret == OK)
+  if (ret == GNUNET_OK)
     {
       utc->state = FSUI_COMPLETED;
       event.type = FSUI_unindex_completed;
@@ -142,7 +145,9 @@ FSUI_unindexThreadEvent (void *cls)
   FSUI_Event event;
   unsigned long long size;
 
-  if (OK != disk_file_size (utc->ctx->ectx, utc->filename, &size, YES))
+  if (GNUNET_OK !=
+      GNUNET_disk_file_size (utc->ctx->ectx, utc->filename, &size,
+                             GNUNET_YES))
     {
       GE_BREAK (utc->ctx->ectx, 0);
       size = 0;
@@ -162,8 +167,8 @@ FSUI_unindexThreadEvent (void *cls)
  * automatically the unindexed file in the global keyword space under
  * the given keywords.
  *
- * @return OK on success (at least we started with it),
- *  SYSERR if the file does not exist or gnunetd is not
+ * @return GNUNET_OK on success (at least we started with it),
+ *  GNUNET_SYSERR if the file does not exist or gnunetd is not
  *  running
  */
 struct FSUI_UnindexList *
@@ -171,35 +176,36 @@ FSUI_startUnindex (struct FSUI_Context *ctx, const char *filename)
 {
   FSUI_UnindexList *utc;
 
-  if (YES == disk_directory_test (ctx->ectx, filename))
+  if (GNUNET_YES == GNUNET_disk_directory_test (ctx->ectx, filename))
     {
       GE_BREAK (ctx->ectx, 0);
       return NULL;
     }
-  if (YES != disk_file_test (ctx->ectx, filename))
+  if (GNUNET_YES != GNUNET_disk_file_test (ctx->ectx, filename))
     {
       GE_BREAK (ctx->ectx, 0);
       return NULL;
     }
-  utc = MALLOC (sizeof (FSUI_UnindexList));
+  utc = GNUNET_malloc (sizeof (FSUI_UnindexList));
   utc->ctx = ctx;
-  utc->filename = STRDUP (filename);
-  utc->start_time = get_time ();
+  utc->filename = GNUNET_strdup (filename);
+  utc->start_time = GNUNET_get_time ();
   utc->state = FSUI_ACTIVE;
-  utc->handle = PTHREAD_CREATE (&FSUI_unindexThreadEvent, utc, 32 * 1024);
+  utc->handle =
+    GNUNET_thread_create (&FSUI_unindexThreadEvent, utc, 32 * 1024);
   if (utc->handle == NULL)
     {
       GE_LOG_STRERROR (ctx->ectx,
                        GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
                        "PTHREAD_CREATE");
-      FREE (utc->filename);
-      FREE (utc);
+      GNUNET_free (utc->filename);
+      GNUNET_free (utc);
       return NULL;
     }
-  MUTEX_LOCK (ctx->lock);
+  GNUNET_mutex_lock (ctx->lock);
   utc->next = ctx->unindexOperations;
   ctx->unindexOperations = utc;
-  MUTEX_UNLOCK (ctx->lock);
+  GNUNET_mutex_unlock (ctx->lock);
   return utc;
 }
 
@@ -207,30 +213,30 @@ FSUI_startUnindex (struct FSUI_Context *ctx, const char *filename)
 /**
  * Abort a deletion operation.
  *
- * @return SYSERR if no such unindex is pending
+ * @return GNUNET_SYSERR if no such unindex is pending
  */
 int
 FSUI_abortUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *ul)
 {
   if ((ul->state != FSUI_ACTIVE) && (ul->state != FSUI_PENDING))
-    return NO;
+    return GNUNET_NO;
   if (ul->state == FSUI_ACTIVE)
     {
       ul->state = FSUI_ABORTED;
-      PTHREAD_STOP_SLEEP (ul->handle);
+      GNUNET_thread_stop_sleep (ul->handle);
     }
   else
     {
       ul->state = FSUI_ABORTED_JOINED;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 
 /**
  * Stop a deletion operation.
  *
- * @return SYSERR if no such unindex is pending
+ * @return GNUNET_SYSERR if no such unindex is pending
  */
 int
 FSUI_stopUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *dl)
@@ -244,23 +250,23 @@ FSUI_stopUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *dl)
   if (dl == NULL)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #if 0
   GE_LOG (ectx,
           GE_DEBUG | GE_REQUEST | GE_USER, "FSUI_stopUnindex called.\n");
 #endif
-  MUTEX_LOCK (ctx->lock);
+  GNUNET_mutex_lock (ctx->lock);
   prev = ctx->unindexOperations;
   while ((prev != dl) && (prev != NULL) && (prev->next != dl))
     prev = prev->next;
   if (prev == NULL)
     {
-      MUTEX_UNLOCK (ctx->lock);
+      GNUNET_mutex_unlock (ctx->lock);
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               "FSUI_stopUnindex failed to locate deletion operation.\n");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (prev == dl)
     {
@@ -270,13 +276,13 @@ FSUI_stopUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *dl)
     {
       prev->next = dl->next;
     }
-  MUTEX_UNLOCK (ctx->lock);
+  GNUNET_mutex_unlock (ctx->lock);
   if ((dl->state == FSUI_ACTIVE) ||
       (dl->state == FSUI_COMPLETED) ||
       (dl->state == FSUI_ABORTED) || (dl->state == FSUI_ERROR))
     {
       GE_ASSERT (ctx->ectx, dl->handle != NULL);
-      PTHREAD_JOIN (dl->handle, &unused);
+      GNUNET_thread_join (dl->handle, &unused);
       dl->handle = NULL;
       if (dl->state == FSUI_ACTIVE)
         dl->state = FSUI_PENDING;
@@ -291,9 +297,9 @@ FSUI_stopUnindex (struct FSUI_Context *ctx, struct FSUI_UnindexList *dl)
   event.data.UnindexStopped.uc.pos = dl;
   event.data.UnindexStopped.uc.cctx = dl->cctx;
   dl->ctx->ecb (dl->ctx->ecbClosure, &event);
-  FREE (dl->filename);
-  FREE (dl);
-  return OK;
+  GNUNET_free (dl->filename);
+  GNUNET_free (dl);
+  return GNUNET_OK;
 }
 
 /* end of unindex.c */

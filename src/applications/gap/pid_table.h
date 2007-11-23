@@ -33,10 +33,10 @@ void done_pid_table (void);
 
 typedef unsigned int PID_INDEX;
 
-PID_INDEX intern_pid (const PeerIdentity * pid);
+PID_INDEX intern_pid (const GNUNET_PeerIdentity * pid);
 
 void change_pid_rc (PID_INDEX id, int delta);
 
 void decrement_pid_rcs (const PID_INDEX * ids, unsigned int count);
 
-void resolve_pid (PID_INDEX id, PeerIdentity * pid);
+void resolve_pid (PID_INDEX id, GNUNET_PeerIdentity * pid);

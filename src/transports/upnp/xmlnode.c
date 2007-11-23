@@ -43,8 +43,8 @@
 # define NEWLINE_S "\n"
 #endif
 
-#define TRUE YES
-#define FALSE NO
+#define TRUE GNUNET_YES
+#define FALSE GNUNET_NO
 
 #define g_return_if_fail(a) if(!(a)) return;
 #define g_return_val_if_fail(a, val) if(!(a)) return (val);
@@ -79,7 +79,7 @@ struct _xmlnode
   struct _xmlnode *lastchild;  /**< The last child node or @c NULL.*/
   struct _xmlnode *next;        /**< The next node or @c NULL. */
   XMLNodePool *pool;
-  int free_pool;                /* set to YES for the root node, which must free the pool */
+  int free_pool;                /* set to GNUNET_YES for the root node, which must free the pool */
 };
 
 
@@ -88,7 +88,7 @@ g_memdup (const void *data, size_t s)
 {
   void *ret;
 
-  ret = MALLOC (s);
+  ret = GNUNET_malloc (s);
   memcpy (ret, data, s);
   return ret;
 }
@@ -99,20 +99,21 @@ g_string_append_len (char *prefix, const void *data, size_t s)
   char *ret;
 
   ret = g_strdup_printf ("%s%.*s", prefix, s, data);
-  FREE (prefix);
+  GNUNET_free (prefix);
   return ret;
 }
 
 static xmlnode *
 new_node (const char *name, XMLNodeType type, void *user_data)
 {
-  xmlnode *node = MALLOC (sizeof (xmlnode));
+  xmlnode *node = GNUNET_malloc (sizeof (xmlnode));
 
-  node->name = name == NULL ? NULL : STRDUP (name);
+  node->name = name == NULL ? NULL : GNUNET_strdup (name);
   node->type = type;
   node->pool = user_data;
   if (node->pool->size == node->pool->pos)
-    GROW (node->pool->nodes, node->pool->size, node->pool->size * 2 + 64);
+    GNUNET_array_grow (node->pool->nodes, node->pool->size,
+                       node->pool->size * 2 + 64);
   node->pool->nodes[node->pool->pos++] = node;
   node->free_pool = 0;
   return node;
@@ -211,7 +212,7 @@ xmlnode_set_attrib (xmlnode * node,
   g_return_if_fail (value != NULL);
   xmlnode_remove_attrib (node, attr);
   attrib_node = new_node (attr, XMLNODE_TYPE_ATTRIB, user_data);
-  attrib_node->data = STRDUP (value);
+  attrib_node->data = GNUNET_strdup (value);
   xmlnode_insert_child (node, attrib_node);
 }
 
@@ -219,8 +220,8 @@ static void
 xmlnode_set_namespace (xmlnode * node, const char *xmlns)
 {
   g_return_if_fail (node != NULL);
-  FREENONNULL (node->xmlns);
-  node->xmlns = STRDUP (xmlns);
+  GNUNET_free_non_null (node->xmlns);
+  node->xmlns = GNUNET_strdup (xmlns);
 }
 
 static const char *
@@ -239,20 +240,20 @@ freePool (XMLNodePool * pool)
   for (i = 0; i < pool->pos; i++)
     {
       x = pool->nodes[i];
-      FREENONNULL (x->name);
-      FREENONNULL (x->data);
-      FREENONNULL (x->xmlns);
-      FREE (x);
+      GNUNET_free_non_null (x->name);
+      GNUNET_free_non_null (x->data);
+      GNUNET_free_non_null (x->xmlns);
+      GNUNET_free (x);
     }
-  GROW (pool->nodes, pool->size, 0);
-  FREE (pool);
+  GNUNET_array_grow (pool->nodes, pool->size, 0);
+  GNUNET_free (pool);
 }
 
 void
 xmlnode_free (xmlnode * node)
 {
   g_return_if_fail (node != NULL);
-  if (node->free_pool != YES)
+  if (node->free_pool != GNUNET_YES)
     return;
   freePool (node->pool);
 }
@@ -271,7 +272,7 @@ xmlnode_get_child_with_namespace (const xmlnode * parent,
   if (name == NULL)
     return NULL;
 
-  parent_name = STRDUP (name);
+  parent_name = GNUNET_strdup (name);
   child_name = strstr (parent_name, "/");
   if (child_name != NULL)
     {
@@ -298,7 +299,7 @@ xmlnode_get_child_with_namespace (const xmlnode * parent,
   if (child_name && ret)
     ret = xmlnode_get_child (ret, child_name);
 
-  FREE (parent_name);
+  GNUNET_free (parent_name);
   return ret;
 }
 
@@ -321,7 +322,7 @@ xmlnode_get_data (xmlnode * node)
       if (c->type == XMLNODE_TYPE_DATA)
         {
           if (!str)
-            str = STRDUP ("");
+            str = GNUNET_strdup ("");
           str = g_string_append_len (str, c->data, c->data_sz);
         }
     }
@@ -361,15 +362,15 @@ xmlnode_parser_element_start_libxml (void *user_data,
     {
       char *txt;
       int attrib_len = attributes[i + 4] - attributes[i + 3];
-      char *attrib = MALLOC (attrib_len + 1);
+      char *attrib = GNUNET_malloc (attrib_len + 1);
       memcpy (attrib, attributes[i + 3], attrib_len);
       attrib[attrib_len] = '\0';
       txt = attrib;
       attrib = gaim_unescape_html (txt);
-      FREE (txt);
+      GNUNET_free (txt);
       xmlnode_set_attrib (node, (const char *) attributes[i], attrib,
                           user_data);
-      FREE (attrib);
+      GNUNET_free (attrib);
     }
   xpd->current = node;
 }
@@ -448,7 +449,7 @@ xmlnode_from_str (const char *str, int size)
   g_return_val_if_fail (str != NULL, NULL);
 
   real_size = size < 0 ? strlen (str) : size;
-  xpd = MALLOC (sizeof (XMLNodePool));
+  xpd = GNUNET_malloc (sizeof (XMLNodePool));
   memset (xpd, 0, sizeof (XMLNodePool));
   if (xmlSAXUserParseMemory (&xmlnode_parser_libxml, xpd, str, real_size) < 0)
     {
@@ -456,7 +457,7 @@ xmlnode_from_str (const char *str, int size)
       return NULL;
     }
   ret = xpd->current;
-  ret->free_pool = YES;
+  ret->free_pool = GNUNET_YES;
   return ret;
 }
 

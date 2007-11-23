@@ -26,7 +26,7 @@
  * @author Murali Krishan Ramanathan
  *
  * Todo:
- * - test secure sign-on (and test testbed setup script!)
+ * - test secure GNUNET_RSA_sign-on (and test testbed setup script!)
  * - allow removing of peers (explicitly AND when peer shuts down!)
  *   Problem: what happens to the peer-IDs in that case?
  * - general problem: the way we use tcpio means that any rouge
@@ -78,14 +78,14 @@ static char *testbedArg0;
  *
  * @param argc the number of options
  * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * @return GNUNET_OK on error, GNUNET_SYSERR if we should exit
  */
 static int
 helperParseOptions (int argc, char *argv[])
 {
   int c, option_index;
 
-  FREENONNULL (setConfigurationString ("GNUNETD", "LOGFILE", NULL));
+  GNUNET_free_non_null (setConfigurationString ("GNUNETD", "LOGFILE", NULL));
   while (1)
     {
       static struct GNoption long_options[] = {
@@ -97,14 +97,14 @@ helperParseOptions (int argc, char *argv[])
       c = GNgetopt_long (argc, argv, "vhdc:L:", long_options, &option_index);
       if (c == -1)
         break;                  /* No more flags to process */
-      if (YES == parseDefaultOptions (c, GNoptarg))
+      if (GNUNET_YES == parseDefaultOptions (c, GNoptarg))
         continue;
       switch (c)
         {
         case 'v':
           printf ("GNUnet v%s, gnunet-testbed v%s\n",
                   VERSION, TESTBED_VERSION);
-          return SYSERR;
+          return GNUNET_SYSERR;
         case 'h':
           {
             static Help help[] = {
@@ -116,7 +116,7 @@ helperParseOptions (int argc, char *argv[])
             };
             formatHelp ("gnunet-testbed ==HELPER== [OPTIONS] [COMMAND]",
                         _("Start GNUnet-testbed helper."), help);
-            return SYSERR;
+            return GNUNET_SYSERR;
           }
         default:
           GE_LOG (ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
@@ -125,7 +125,7 @@ helperParseOptions (int argc, char *argv[])
         }                       /* end of parsing commandline */
     }                           /* while (1) */
   setConfigurationStringList (&argv[GNoptind], argc - GNoptind);
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -147,7 +147,7 @@ helper_main (int argc, char *argv[])
   char *buf;
   struct sockaddr_in soaddr;
 
-  if (SYSERR == initUtil (argc, argv, &helperParseOptions))
+  if (GNUNET_SYSERR == initUtil (argc, argv, &helperParseOptions))
     return -1;
 
   argc = getConfigurationStringList (&argv);
@@ -161,7 +161,7 @@ helper_main (int argc, char *argv[])
   if (sock == -1)
     {
       LOG_STRERROR (LOG_FAILURE, "socket");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   soaddr.sin_family = AF_INET;
   soaddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
@@ -174,19 +174,19 @@ helper_main (int argc, char *argv[])
               PORT, STRERROR (errno));
       closefile (sock);
       sock = -1;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 
   /* write command to socket */
   socketSend (strlen (argv[0]), SOCKET_BEGIN_COMMAND, argv[0]);
-  FREE (argv[0]);
+  GNUNET_free (argv[0]);
   /* write args to socket */
   for (i = 1; i < argc; i++)
     {
       socketSend (strlen (argv[i]), SOCKET_ADD_ARGUMENT, argv[i]);
-      FREE (argv[i]);
+      GNUNET_free (argv[i]);
     }
-  FREE (argv);
+  GNUNET_free (argv);
   socketSend (0, SOCKET_END_COMMAND, NULL);
 
   /* read result from socket, print to stderr,  obtain retVal */
@@ -194,14 +194,14 @@ helper_main (int argc, char *argv[])
   buf = NULL;
   while (i == SOCKET_PRINTF)
     {
-      FREENONNULL (buf);
+      GNUNET_free_non_null (buf);
       buf = NULL;
       i = readSocket (&buf, &len);
       if (i == SOCKET_PRINTF)
         fprintf (stdout, "%.*s", (int) len, buf);
     }
   retVal = *(int *) buf;
-  FREE (buf);
+  GNUNET_free (buf);
   closefile (sock);
   return retVal;
 }
@@ -213,7 +213,7 @@ helper_main (int argc, char *argv[])
 static void
 sigChildHandler (int signal, siginfo_t * info, void *extra)
 {
-  do_quit = YES;
+  do_quit = GNUNET_YES;
 }
 
 /**
@@ -257,7 +257,7 @@ bash_main ()
         }
       i++;
     }
-  FREE (configFile);
+  GNUNET_free (configFile);
   fclose (aliases);
   doneUtil ();
   execvp (SHELL, argv);
@@ -268,13 +268,13 @@ bash_main ()
 /**
  * Configuration...
  */
-static struct CIDRNetwork *trustedNetworks_ = NULL;
+static struct GNUNET_IPv4NetworkSet *trustedNetworks_ = NULL;
 
 /**
  * Is this IP labeled as trusted for CS connections?
  */
 static int
-isWhitelisted (IPaddr ip)
+isWhitelisted (GNUNET_IPv4Address ip)
 {
   return checkIPListed (trustedNetworks_, ip);
 }
@@ -331,7 +331,7 @@ CREATE_SOCKET:
       goto CREATE_SOCKET;
     }
 
-  do_quit = NO;
+  do_quit = GNUNET_NO;
   /* signal handler is needed if the child did exit
      (e.g. with CTRL-D and not with the command 'exit') */
   newAct.sa_sigaction = &sigChildHandler;
@@ -344,7 +344,8 @@ CREATE_SOCKET:
   if (0 != sigprocmask (SIG_UNBLOCK, &set, &oset))
     DIE_STRERROR ("sigprocmask");
   LISTEN (ssock, 5);
-  while ((do_quit == NO) && (0 == waitpid (bash_pid, &status, WNOHANG)))
+  while ((do_quit == GNUNET_NO)
+         && (0 == waitpid (bash_pid, &status, WNOHANG)))
     {
       unsigned int argc;
       char *command;
@@ -354,7 +355,7 @@ CREATE_SOCKET:
       fd_set rset;
       fd_set wset;
       fd_set eset;
-      IPaddr ipaddr;
+      GNUNET_IPv4Address ipaddr;
 
       lenOfIncomingAddr = sizeof (clientAddr);
       /* accept is not interrupted by SIGCHLD,
@@ -374,9 +375,10 @@ CREATE_SOCKET:
           continue;
         }
       /* access control! */
-      GE_ASSERT (ectx, sizeof (struct in_addr) == sizeof (IPaddr));
+      GE_ASSERT (ectx,
+                 sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
       memcpy (&ipaddr, &clientAddr.sin_addr, sizeof (struct in_addr));
-      if (NO == isWhitelisted (ipaddr))
+      if (GNUNET_NO == isWhitelisted (ipaddr))
         {
           GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
                   _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
@@ -396,23 +398,23 @@ CREATE_SOCKET:
                    _("Protocol violation on socket. " "Expected command.\n"));
           return -1;
         }
-      command = MALLOC (len + 1);
+      command = GNUNET_malloc (len + 1);
       memcpy (command, buf, len);
       command[len] = '\0';
       argc = 0;
       args = NULL;
-      FREE (buf);
+      GNUNET_free (buf);
       buf = NULL;
       while (SOCKET_ADD_ARGUMENT == readSocket (&buf, &len))
         {
-          GROW (args, argc, argc + 1);
-          args[argc - 1] = MALLOC (len + 1);
+          GNUNET_array_grow (args, argc, argc + 1);
+          args[argc - 1] = GNUNET_malloc (len + 1);
           memcpy (args[argc - 1], buf, len);
           args[argc - 1][len] = '\0';
-          FREE (buf);
+          GNUNET_free (buf);
           buf = NULL;
         }
-      FREENONNULL (buf);
+      GNUNET_free_non_null (buf);
       i = 0;
       while (commands[i].command != NULL)
         {
@@ -426,8 +428,8 @@ CREATE_SOCKET:
           i++;
         }
       for (i = 0; i < argc; i++)
-        FREE (args[i]);
-      GROW (args, argc, 0);
+        GNUNET_free (args[i]);
+      GNUNET_array_grow (args, argc, 0);
       if (commands[i].command == NULL)
         {
           /* should never happen unless the user
@@ -436,7 +438,7 @@ CREATE_SOCKET:
           PRINTF (_("Command `%s' not found!\n"), command);
           socketSend (sizeof (unsigned int), SOCKET_RETVAL, &i);
         }
-      FREE (command);
+      GNUNET_free (command);
       closefile (sock);
       sock = -1;
     }
@@ -459,14 +461,14 @@ CREATE_SOCKET:
  *
  * @param argc the number of options
  * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * @return GNUNET_OK on error, GNUNET_SYSERR if we should exit
  */
 static int
 parseOptions (int argc, char *argv[])
 {
   int c, option_index;
 
-  FREENONNULL (setConfigurationString ("GNUNETD", "LOGFILE", NULL));
+  GNUNET_free_non_null (setConfigurationString ("GNUNETD", "LOGFILE", NULL));
   while (1)
     {
       static struct GNoption long_options[] = {
@@ -478,14 +480,14 @@ parseOptions (int argc, char *argv[])
       c = GNgetopt_long (argc, argv, "vhdc:L:", long_options, &option_index);
       if (c == -1)
         break;                  /* No more flags to process */
-      if (YES == parseDefaultOptions (c, GNoptarg))
+      if (GNUNET_YES == parseDefaultOptions (c, GNoptarg))
         continue;
       switch (c)
         {
         case 'v':
           printf ("GNUnet v%s, gnunet-testbed v%s\n",
                   VERSION, TESTBED_VERSION);
-          return SYSERR;
+          return GNUNET_SYSERR;
 
         case 'h':
           {
@@ -498,7 +500,7 @@ parseOptions (int argc, char *argv[])
             };
             formatHelp ("gnunet-testbed [OPTIONS]",
                         _("Start GNUnet testbed controller."), help);
-            return SYSERR;
+            return GNUNET_SYSERR;
           }
         default:
           GE_LOG (ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
@@ -506,7 +508,7 @@ parseOptions (int argc, char *argv[])
           return -1;
         }                       /* end of parsing commandline */
     }                           /* while (1) */
-  return OK;
+  return GNUNET_OK;
 }
 
 /* **************** main **************** */
@@ -544,7 +546,7 @@ main (int argc, char *argv[])
         }
     }
 
-  if (SYSERR == initUtil (argc, argv, &parseOptions))
+  if (GNUNET_SYSERR == initUtil (argc, argv, &parseOptions))
     return -1;
 
   ch = getConfigurationString ("GNUNET-TESTBED", "TRUSTED");
@@ -559,7 +561,7 @@ main (int argc, char *argv[])
         errexit (_
                  ("Malformed entry in the configuration in section %s under %s: %s\n"),
                  "GNUNET-TESTBED", "TRUSTED", ch);
-      FREE (ch);
+      GNUNET_free (ch);
     }
 
   /* we are the main testbed process.  Fork of
@@ -570,7 +572,7 @@ main (int argc, char *argv[])
     DIE_STRERROR ("fork");
   if (pid == 0)
     {
-      FREE (trustedNetworks_);
+      GNUNET_free (trustedNetworks_);
       bash_main ();
       return 0;                 /* unreached */
     }
@@ -583,9 +585,9 @@ main (int argc, char *argv[])
       kill (pid, SIGHUP);
       /* proper shutdown... */
       doneUtil ();
-      FREE (trustedNetworks_);
+      GNUNET_free (trustedNetworks_);
       UNLINK (TB_ALIASES);
-      FREE (testbedArg0);
+      GNUNET_free (testbedArg0);
       return ret;
     }
 #endif

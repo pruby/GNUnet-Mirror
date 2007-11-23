@@ -66,10 +66,10 @@ typedef struct
   /**
    * The identity of the sender node
    */
-  PeerIdentity sender;
+  GNUNET_PeerIdentity sender;
 
   /**
-   * The message itself. The GNUnet core will call 'FREE' once
+   * The message itself. The GNUnet core will call 'GNUNET_free' once
    * processing of msg is complete.
    */
   char *msg;
@@ -108,7 +108,7 @@ typedef struct
   /**
    * The identity of the local node.
    */
-  PeerIdentity *myIdentity;
+  GNUNET_PeerIdentity *myIdentity;
 
   /**
    * System error context
@@ -123,12 +123,12 @@ typedef struct
   /**
    * System load monitor
    */
-  struct LoadMonitor *load_monitor;
+  struct GNUNET_LoadMonitor *load_monitor;
 
   /**
    * System cron Manager.
    */
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
 
   /**
    * Data was received (potentially encrypted), make the core process
@@ -154,7 +154,7 @@ typedef struct
    * modules are loaded or unloaded inside the module initialization
    * or shutdown code.
    *
-   * @return OK if service was successfully released, SYSERR on error
+   * @return GNUNET_OK if service was successfully released, GNUNET_SYSERR on error
    */
   int (*releaseService) (void *service);
 
@@ -191,7 +191,7 @@ typedef struct
    * the transport should never do ANYTHING
    * with it.
    */
-  struct PluginHandle *libHandle;
+  struct GNUNET_PluginHandle *libHandle;
 
   /**
    * The name of the transport, set by the
@@ -206,7 +206,7 @@ typedef struct
    * idea.  The field is updated by a cron job
    * periodically.
    */
-  P2P_hello_MESSAGE *hello;
+  GNUNET_MessageHello *hello;
 
   /**
    * The number of the protocol that is supported by this transport
@@ -235,22 +235,22 @@ typedef struct
    * will only play ping pong after this verification passed.
    * @param hello the hello message to verify
    *        (the signature/crc have been verified before)
-   * @return OK if the helo is well-formed
+   * @return GNUNET_OK if the helo is well-formed
    */
-  int (*verifyHello) (const P2P_hello_MESSAGE * hello);
+  int (*verifyHello) (const GNUNET_MessageHello * hello);
 
   /**
    * Create a hello-Message for the current node. The hello is
    * created without signature, timestamp, senderIdentity
-   * or publicKey. The GNUnet core will sign the message
+   * or publicKey. The GNUnet core will GNUNET_RSA_sign the message
    * and add these other fields. The callee is only
    * responsible for filling in the protocol number,
    * senderAddressSize and the senderAddress itself.
    *
-   * @return OK on success, SYSERR on error (e.g. send-only
-   *  transports return SYSERR here)
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error (e.g. send-only
+   *  transports return GNUNET_SYSERR here)
    */
-  P2P_hello_MESSAGE *(*createhello) (void);
+  GNUNET_MessageHello *(*createhello) (void);
 
   /**
    * Establish a connection to a remote node.
@@ -258,9 +258,9 @@ typedef struct
    * @param hello the hello-Message for the target node
    * @param tsession the session handle that is to be set
    * @param may_reuse can an existing connection be re-used?
-   * @return OK on success, SYSERR if the operation failed
+   * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
-  int (*connect) (const P2P_hello_MESSAGE * hello, TSession ** tsession,
+  int (*connect) (const GNUNET_MessageHello * hello, TSession ** tsession,
                   int may_reuse);
 
   /**
@@ -269,10 +269,10 @@ typedef struct
    *        or the hello_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
-   * @param important YES if message is important (i.e. grow
+   * @param important GNUNET_YES if message is important (i.e. grow
    *        buffers to queue if needed)
-   * @return SYSERR on error, NO on temporary error (retry),
-   *         YES/OK on success; after any persistent error,
+   * @return GNUNET_SYSERR on error, GNUNET_NO on temporary error (retry),
+   *         GNUNET_YES/GNUNET_OK on success; after any persistent error,
    *         the caller must call "disconnect" and not continue
    *         using the session afterwards (useful if the other
    *         side closed the connection).
@@ -288,7 +288,7 @@ typedef struct
    * later, in this case, call disconnect afterwards. This can be used
    * to test if the connection must be closed by the core or if the core
    * can assume that it is going to be self-managed (if associate
-   * returns OK and session was NULL, the transport layer is responsible
+   * returns GNUNET_OK and session was NULL, the transport layer is responsible
    * for eventually freeing resources associated with the tesession). If
    * session is not NULL, the core takes responsbility for eventually
    * calling disconnect.
@@ -296,8 +296,8 @@ typedef struct
    * @param tsession the session handle passed along
    *   from the call to receive that was made by the transport
    *   layer
-   * @return OK if the session could be associated,
-   *         SYSERR if not.
+   * @return GNUNET_OK if the session could be associated,
+   *         GNUNET_SYSERR if not.
    */
   int (*associate) (TSession * tsession);
 
@@ -312,13 +312,13 @@ typedef struct
    * being called from the other side.
    *
    * @param tsession the session that is to be closed
-   * @return OK on success, SYSERR if the operation failed
+   * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
   int (*disconnect) (TSession * tsession);
 
   /**
    * Start the server process to receive inbound traffic.
-   * @return OK on success, SYSERR if the operation failed
+   * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
   int (*startTransportServer) (void);
 
@@ -330,9 +330,9 @@ typedef struct
 
   /**
    * Convert hello to network address.
-   * @return OK on success, SYSERR on error
+   * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*helloToAddress) (const P2P_hello_MESSAGE * hello,
+  int (*helloToAddress) (const GNUNET_MessageHello * hello,
                          void **sa, unsigned int *sa_len);
 
   /**
@@ -343,10 +343,10 @@ typedef struct
    * even bother to construct (and encrypt) this kind
    * of message.
    *
-   * @return YES if the transport would try (i.e. queue
+   * @return GNUNET_YES if the transport would try (i.e. queue
    *         the message or call the OS to send),
-   *         NO if the transport would just drop the message,
-   *         SYSERR if the size/session is invalid
+   *         GNUNET_NO if the transport would just drop the message,
+   *         GNUNET_SYSERR if the size/session is invalid
    */
   int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
 

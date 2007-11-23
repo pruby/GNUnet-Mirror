@@ -43,7 +43,7 @@
 #include "gnunet_util.h"
 #include "gnunet_util_containers.h"
 
-typedef struct Vector
+typedef struct GNUNET_Vector
 {
   unsigned int VECTOR_SEGMENT_SIZE;
   struct vector_segment_t *segmentsHead;
@@ -67,7 +67,7 @@ typedef struct vector_segment_t
  * sizes of the segments. This currently isn't used.
  */
 void
-vectorDump (Vector * v)
+GNUNET_vector_dump (Vector * v)
 {
   VectorSegment *vs;
   int n;
@@ -119,8 +119,8 @@ vectorSegmentSplit (Vector * v, VectorSegment * vs)
   int moveCount;
 
   oldNext = vs->next;
-  vs->next = MALLOC (sizeof (VectorSegment));
-  vs->next->data = MALLOC (v->VECTOR_SEGMENT_SIZE * sizeof (void *));
+  vs->next = GNUNET_malloc (sizeof (VectorSegment));
+  vs->next->data = GNUNET_malloc (v->VECTOR_SEGMENT_SIZE * sizeof (void *));
   vs->next->previous = vs;
   vs->next->next = oldNext;
   if (NULL != oldNext)
@@ -146,8 +146,8 @@ vectorSegmentJoin (Vector * v, VectorSegment * vs)
   memcpy (vs->data + vs->size,
           vs->next->data, vs->next->size * sizeof (void *));
   vs->size += vs->next->size;
-  FREE (vs->next->data);
-  FREE (vs->next);
+  GNUNET_free (vs->next->data);
+  GNUNET_free (vs->next);
   vs->next = oldNext;
   if (oldNext != NULL)
     vs->next->previous = vs;
@@ -171,8 +171,8 @@ vectorSegmentRemove (Vector * v, VectorSegment * vs)
     vs->next->previous = vs->previous;
   else
     v->segmentsTail = vs->previous;
-  FREE (vs->data);
-  FREE (vs);
+  GNUNET_free (vs->data);
+  GNUNET_free (vs);
 }
 
 
@@ -293,17 +293,17 @@ vectorFindObject (Vector * v,
  * Allocate a new vector structure with a single empty data segment.
  */
 Vector *
-vectorNew (unsigned int vss)
+GNUNET_vector_create (unsigned int vss)
 {
   Vector *rvalue;
 
   if (vss < 2)
     return NULL;                /* invalid! */
-  rvalue = MALLOC (sizeof (Vector));
+  rvalue = GNUNET_malloc (sizeof (Vector));
   rvalue->VECTOR_SEGMENT_SIZE = vss;
   rvalue->size = 0;
-  rvalue->segmentsHead = MALLOC (sizeof (VectorSegment));
-  rvalue->segmentsHead->data = MALLOC (sizeof (void *) * vss);
+  rvalue->segmentsHead = GNUNET_malloc (sizeof (VectorSegment));
+  rvalue->segmentsHead->data = GNUNET_malloc (sizeof (void *) * vss);
   rvalue->segmentsTail = rvalue->segmentsHead;
   rvalue->segmentsHead->next = NULL;
   rvalue->segmentsHead->previous = NULL;
@@ -319,7 +319,7 @@ vectorNew (unsigned int vss)
  * when necessary to avoid memory leakage.
  */
 void
-vectorFree (Vector * v)
+GNUNET_vector_destroy (Vector * v)
 {
   VectorSegment *vs;
   VectorSegment *vsNext;
@@ -328,39 +328,39 @@ vectorFree (Vector * v)
   while (vs != NULL)
     {
       vsNext = vs->next;
-      FREE (vs->data);
-      FREE (vs);
+      GNUNET_free (vs->data);
+      GNUNET_free (vs);
       vs = vsNext;
     }
-  FREE (v);
+  GNUNET_free (v);
 }
 
 /**
  * Return the size of the vector.
  */
 size_t
-vectorSize (Vector * v)
+GNUNET_vector_get_size (Vector * v)
 {
   return v->size;
 }
 
 /**
  * Insert a new element in the vector at given index. The return value is
- * OK on success, SYSERR if the index is out of bounds.
+ * GNUNET_OK on success, GNUNET_SYSERR if the index is out of bounds.
  */
 int
-vectorInsertAt (Vector * v, void *object, unsigned int index)
+GNUNET_vector_insert_at (Vector * v, void *object, unsigned int index)
 {
   VectorSegment *segment;
   int segmentIndex;
   int i;
 
   if (index > v->size)
-    return SYSERR;
+    return GNUNET_SYSERR;
   v->iteratorSegment = NULL;
   segmentIndex = vectorFindNewIndex (v, index, &segment);
   if (segmentIndex == -1)
-    return SYSERR;
+    return GNUNET_SYSERR;
   for (i = segment->size; i > segmentIndex; i--)
     segment->data[i] = segment->data[i - 1];
   segment->data[segmentIndex] = object;
@@ -368,14 +368,14 @@ vectorInsertAt (Vector * v, void *object, unsigned int index)
   segment->size++;
   if (segment->size == v->VECTOR_SEGMENT_SIZE)
     vectorSegmentSplit (v, segment);
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Insert a new element at the end of the vector.
  */
 void
-vectorInsertLast (Vector * v, void *object)
+GNUNET_vector_insert_last (Vector * v, void *object)
 {
   v->iteratorSegment = NULL;
   v->segmentsTail->data[v->segmentsTail->size++] = object;
@@ -389,7 +389,7 @@ vectorInsertLast (Vector * v, void *object)
  * of bounds. The iterator is set to point to the returned element.
  */
 void *
-vectorGetAt (Vector * v, unsigned int index)
+GNUNET_vector_get (Vector * v, unsigned int index)
 {
   int ret;
   if ((index < 0) || (index >= v->size))
@@ -407,7 +407,7 @@ vectorGetAt (Vector * v, unsigned int index)
  * element.
  */
 void *
-vectorGetFirst (Vector * v)
+GNUNET_vector_get_first (Vector * v)
 {
   if (v->size == 0)
     return NULL;
@@ -421,7 +421,7 @@ vectorGetFirst (Vector * v)
  * empty. The iterator of the vector is set to the last element.
  */
 void *
-vectorGetLast (Vector * v)
+GNUNET_vector_get_last (Vector * v)
 {
   if (v->size == 0)
     return NULL;
@@ -436,7 +436,7 @@ vectorGetLast (Vector * v)
  * in the vector or if the iterator has not been set.
  */
 void *
-vectorGetNext (Vector * v)
+GNUNET_vector_get_next (Vector * v)
 {
   if (v->iteratorSegment == NULL)
     return NULL;
@@ -462,7 +462,7 @@ vectorGetNext (Vector * v)
  * elements in the vector or if the iterator has not been set.
  */
 void *
-vectorGetPrevious (Vector * v)
+GNUNET_vector_get_prev (Vector * v)
 {
   if (v->iteratorSegment == NULL)
     return NULL;
@@ -487,7 +487,7 @@ vectorGetPrevious (Vector * v)
  * out of bounds.
  */
 void *
-vectorRemoveAt (Vector * v, unsigned int index)
+GNUNET_vector_delete_at (Vector * v, unsigned int index)
 {
   VectorSegment *segment;
   int segmentIndex;
@@ -519,7 +519,7 @@ vectorRemoveAt (Vector * v, unsigned int index)
  * is empty.
  */
 void *
-vectorRemoveLast (Vector * v)
+GNUNET_vector_delete_last (Vector * v)
 {
   void *rvalue;
 
@@ -543,7 +543,7 @@ vectorRemoveLast (Vector * v)
  * is not found.
  */
 void *
-vectorRemoveObject (Vector * v, void *object)
+GNUNET_vector_delete (Vector * v, void *object)
 {
   VectorSegment *segment;
   int segmentIndex;
@@ -572,7 +572,7 @@ vectorRemoveObject (Vector * v, void *object)
  * returned, or NULL if the index is out of bounds.
  */
 void *
-vectorSetAt (Vector * v, void *object, unsigned int index)
+GNUNET_vector_update_at (Vector * v, void *object, unsigned int index)
 {
   VectorSegment *segment;
   int segmentIndex;
@@ -595,7 +595,7 @@ vectorSetAt (Vector * v, void *object, unsigned int index)
  * The old object is returned, or NULL if it's not found.
  */
 void *
-vectorSetObject (Vector * v, void *object, void *oldObject)
+GNUNET_vector_update (Vector * v, void *object, void *oldObject)
 {
   VectorSegment *segment;
   int segmentIndex;
@@ -612,11 +612,12 @@ vectorSetObject (Vector * v, void *object, void *oldObject)
 
 
 /**
- * Swaps the contents of index1 and index2. Return value is OK
- * on success, SYSERR if either index is out of bounds.
+ * Swaps the contents of index1 and index2. Return value is GNUNET_OK
+ * on success, GNUNET_SYSERR if either index is out of bounds.
  */
 int
-vectorSwap (Vector * v, unsigned int index1, unsigned int index2)
+GNUNET_vector_swap_elements (Vector * v, unsigned int index1,
+                             unsigned int index2)
 {
   VectorSegment *segment1;
   VectorSegment *segment2;
@@ -625,23 +626,23 @@ vectorSwap (Vector * v, unsigned int index1, unsigned int index2)
   void *temp;
 
   if ((index1 >= v->size) || (index2 >= v->size))
-    return SYSERR;
+    return GNUNET_SYSERR;
   v->iteratorSegment = NULL;
   segmentIndex1 = vectorFindIndex (v, index1, &segment1);
   segmentIndex2 = vectorFindIndex (v, index2, &segment2);
   if ((segmentIndex1 == -1) || (segmentIndex2 == -1))
-    return SYSERR;
+    return GNUNET_SYSERR;
   temp = segment1->data[segmentIndex1];
   segment1->data[segmentIndex1] = segment2->data[segmentIndex2];
   segment2->data[segmentIndex2] = temp;
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Return the index of given element or -1 if the element is not found.
  */
 unsigned int
-vectorIndexOf (Vector * v, void *object)
+GNUNET_vector_index_of (Vector * v, void *object)
 {
   VectorSegment *segment;
   unsigned int i;
@@ -668,13 +669,13 @@ vectorIndexOf (Vector * v, void *object)
  * everything in the vector as fast as possible.
  */
 void **
-vectorElements (Vector * v)
+GNUNET_vector_to_array (Vector * v)
 {
   void **rvalue;
   VectorSegment *vs;
   size_t i = 0;
 
-  rvalue = MALLOC_LARGE (v->size * sizeof (void *));
+  rvalue = GNUNET_malloc_large (v->size * sizeof (void *));
   for (vs = v->segmentsHead; vs; vs = vs->next)
     {
       memcpy (rvalue + i, vs->data, vs->size * sizeof (void *));

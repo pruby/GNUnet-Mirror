@@ -32,7 +32,7 @@
    later inclusions of <locale.h> a NOP.  We don't include <libintl.h>
    as well because people using "gettext.h" will not include <libintl.h>,
    and also including <libintl.h> would fail on SunOS 4, whereas <locale.h>
-   is OK.  */
+   is GNUNET_OK.  */
 #if defined(__sun)
 # include <locale.h>
 #endif
@@ -51,7 +51,7 @@
     ((N) == 1 ? (const char *) (Msgid1) : (const char *) (Msgid2))
 # define dcngettext(Domainname, Msgid1, Msgid2, N, Category) \
     ((N) == 1 ? (const char *) (Msgid1) : (const char *) (Msgid2))
-/* slight modification here to avoid warnings: generate NO code,
+/* slight modification here to avoid warnings: generate GNUNET_NO code,
    not even the cast... */
 # define textdomain(Domainname)
 # define bindtextdomain(Domainname, Dirname)

@@ -34,22 +34,26 @@
 static int
 testSymcipher ()
 {
-  SESSIONKEY key;
+  GNUNET_AES_SessionKey key;
   char result[100];
   int size;
   char res[100];
 
-  makeSessionkey (&key);
-  size = encryptBlock (TESTSTRING,
-                       strlen (TESTSTRING) + 1,
-                       &key, (const INITVECTOR *) INITVALUE, result);
+  GNUNET_AES_create_session_key (&key);
+  size = GNUNET_AES_encrypt (TESTSTRING,
+                             strlen (TESTSTRING) + 1,
+                             &key,
+                             (const GNUNET_AES_InitializationVector *)
+                             INITVALUE, result);
   if (size == -1)
     {
       printf ("symciphertest failed: encryptBlock returned %d\n", size);
       return 1;
     }
-  size = decryptBlock (&key,
-                       result, size, (const INITVECTOR *) INITVALUE, res);
+  size = GNUNET_AES_decrypt (&key,
+                             result, size,
+                             (const GNUNET_AES_InitializationVector *)
+                             INITVALUE, res);
   if (strlen (TESTSTRING) + 1 != size)
     {
       printf ("symciphertest failed: decryptBlock returned %d\n", size);
@@ -67,8 +71,8 @@ testSymcipher ()
 int
 verifyCrypto ()
 {
-  SESSIONKEY key;
-  char result[SESSIONKEY_LEN];
+  GNUNET_AES_SessionKey key;
+  char result[GNUNET_SESSIONKEY_LEN];
   char *res;
   int ret;
 
@@ -90,8 +94,8 @@ verifyCrypto ()
   res = NULL;
   ret = 0;
 
-  memcpy (key.key, raw_key, SESSIONKEY_LEN);
-  key.crc32 = htonl (crc32N (&key, SESSIONKEY_LEN));
+  memcpy (key.key, raw_key, GNUNET_SESSIONKEY_LEN);
+  key.crc32 = htonl (GNUNET_crc32_n (&key, GNUNET_SESSIONKEY_LEN));
 
   if (ntohl (key.crc32) != (unsigned int) 38125195LL)
     {
@@ -102,37 +106,40 @@ verifyCrypto ()
       goto error;
     }
 
-  if (SESSIONKEY_LEN !=
-      encryptBlock (plain,
-                    SESSIONKEY_LEN,
-                    &key, (const INITVECTOR *) "testtesttesttest", result))
+  if (GNUNET_SESSIONKEY_LEN !=
+      GNUNET_AES_encrypt (plain,
+                          GNUNET_SESSIONKEY_LEN,
+                          &key,
+                          (const GNUNET_AES_InitializationVector *)
+                          "testtesttesttest", result))
     {
       printf ("Wrong return value from encrypt block.\n");
       ret = 1;
       goto error;
     }
 
-  if (memcmp (encrresult, result, SESSIONKEY_LEN) != 0)
+  if (memcmp (encrresult, result, GNUNET_SESSIONKEY_LEN) != 0)
     {
       printf ("Encrypted result wrong.\n");
       ret = 1;
       goto error;
     }
 
-  res = MALLOC (SESSIONKEY_LEN);
+  res = GNUNET_malloc (GNUNET_SESSIONKEY_LEN);
 
-  if (SESSIONKEY_LEN !=
-      decryptBlock (&key,
-                    result,
-                    SESSIONKEY_LEN,
-                    (const INITVECTOR *) "testtesttesttest", res))
+  if (GNUNET_SESSIONKEY_LEN !=
+      GNUNET_AES_decrypt (&key,
+                          result,
+                          GNUNET_SESSIONKEY_LEN,
+                          (const GNUNET_AES_InitializationVector *)
+                          "testtesttesttest", res))
     {
       printf ("Wrong return value from decrypt block.\n");
       ret = 1;
       goto error;
     }
 
-  if (memcmp (res, plain, SESSIONKEY_LEN) != 0)
+  if (memcmp (res, plain, GNUNET_SESSIONKEY_LEN) != 0)
     {
       printf ("Decrypted result does not match input.\n");
 
@@ -141,7 +148,7 @@ verifyCrypto ()
 
 error:
 
-  FREENONNULL (res);
+  GNUNET_free_non_null (res);
 
   return ret;
 }
@@ -151,7 +158,8 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
-  GE_ASSERT (NULL, strlen (INITVALUE) > sizeof (INITVECTOR));
+  GE_ASSERT (NULL,
+             strlen (INITVALUE) > sizeof (GNUNET_AES_InitializationVector));
   failureCount += testSymcipher ();
   failureCount += verifyCrypto ();
 

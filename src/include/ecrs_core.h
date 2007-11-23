@@ -34,12 +34,12 @@
 #include "gnunet_datastore_service.h"
 
 /**
- * @brief content hash key
+ * @brief content GNUNET_hash key
  */
 typedef struct
 {
-  HashCode512 key;
-  HashCode512 query;
+  GNUNET_HashCode key;
+  GNUNET_HashCode query;
 } CHK;
 
 /**
@@ -102,14 +102,14 @@ typedef struct
   unsigned int type;
 
   /**
-   * Signature using RSA-key generated from search keyword.
+   * GNUNET_RSA_Signature using RSA-key generated from search keyword.
    */
-  Signature signature;
+  GNUNET_RSA_Signature signature;
 
   /**
    * Key generated (!) from the H(keyword) as the seed!
    */
-  PublicKey keyspace;
+  GNUNET_RSA_PublicKey keyspace;
 
   /* 0-terminated URI here */
 
@@ -128,26 +128,26 @@ typedef struct
   /**
    * RSA signature (from pseudonym controlling the namespace)
    */
-  Signature signature;
+  GNUNET_RSA_Signature signature;
 
   /**
    * Public key of the pseudonym; S = H(subspace);
    */
-  PublicKey subspace;
+  GNUNET_RSA_PublicKey subspace;
 
   /* from here on signed */
 
   /**
    * R = H(N-I)^S, used for routing!
    */
-  HashCode512 identifier;
+  GNUNET_HashCode identifier;
   /* from here on encrypted */
 
   /**
    * Time at which this SBlock was created;
    * in network byte order
    */
-  TIME_T creationTime;
+  GNUNET_Int32Time creationTime;
 
   /**
    * Interval (in seconds) how often the publisher intends to produce
@@ -156,19 +156,19 @@ typedef struct
    * for entries without a fixed update frequency; in network byte
    * order
    */
-  TIME_T updateInterval;
+  GNUNET_Int32Time updateInterval;
 
   /**
    * N, the identifier that will be used for the
    * next revision of this SBlock.
    */
-  HashCode512 nextIdentifier;
+  GNUNET_HashCode nextIdentifier;
 
   /**
    * I, the increment between identifiers (used to enable
    * skipping of blocks by appying multiple increments.
    */
-  HashCode512 identifierIncrement;
+  GNUNET_HashCode identifierIncrement;
 
   /* 0-terminated URI follows here! */
 
@@ -183,27 +183,27 @@ typedef struct
    */
   unsigned int type;
 
-  Signature signature;          /* 256 b */
+  GNUNET_RSA_Signature signature;       /* 256 b */
 
-  PublicKey subspace;           /* S = H(subspace); 264 b */
+  GNUNET_RSA_PublicKey subspace;        /* S = H(subspace); 264 b */
 
   /**
    * Must be all zeros
    */
-  HashCode512 identifier;
+  GNUNET_HashCode identifier;
 
   /* The REST (from here on) is encrypted! */
 
   /**
    * Identifier of the namespace
    */
-  HashCode512 namespace;
+  GNUNET_HashCode namespace;
 
   /**
    * Key of an (optional) root entry into the namespace
    * (use all-zeros for not given).
    */
-  HashCode512 rootEntry;
+  GNUNET_HashCode rootEntry;
 
   /* variable-size Meta-Data follows here! */
 } NBlock;
@@ -236,19 +236,19 @@ typedef struct
  *        the anonymityLevel is to be set to 0
  *        (caller should have checked before calling
  *        this method).
- * @return OK on success, SYSERR if data does not
+ * @return GNUNET_OK on success, GNUNET_SYSERR if data does not
  *  match the query
  */
 int fileBlockEncode (const DBlock * data,
                      unsigned int len,
-                     const HashCode512 * query, Datastore_Value ** value);
+                     const GNUNET_HashCode * query, Datastore_Value ** value);
 
 /**
  * Get the query that will be used to query for
  * a certain block of data.
  */
 void fileBlockGetQuery (const DBlock * data,
-                        unsigned int len, HashCode512 * query);
+                        unsigned int len, GNUNET_HashCode * query);
 
 
 /**
@@ -256,7 +256,7 @@ void fileBlockGetQuery (const DBlock * data,
  * a certain block of data.
  */
 void fileBlockGetKey (const DBlock * data,
-                      unsigned int len, HashCode512 * key);
+                      unsigned int len, GNUNET_HashCode * key);
 
 /**
  * What is the type of the given block of data?
@@ -270,14 +270,14 @@ unsigned int getTypeOfBlock (unsigned int size, const DBlock * data);
  *
  * @param type the type of the encoding
  * @param data the content (encoded)
- * @param verify should the data be verified?  Use NO if
+ * @param verify should the data be verified?  Use GNUNET_NO if
  *         data integrity has been checked before (maybe much faster!)
  * @param query set to the query for the content
- * @return SYSERR if the content is invalid or
+ * @return GNUNET_SYSERR if the content is invalid or
  *   the content type is not known
  */
 int getQueryFor (unsigned int size,
-                 const DBlock * data, int verify, HashCode512 * query);
+                 const DBlock * data, int verify, GNUNET_HashCode * query);
 
 /**
  * Verify that the given Datum is a valid response
@@ -289,14 +289,14 @@ int getQueryFor (unsigned int size,
  * @param knownDatumQuery result of getQueryFor
  * @param keyCount the number of keys in the query
  * @param keys the keys of the query
- * @return YES if this data matches the query, otherwise
- *         NO; SYSERR if the keyCount does not match the
+ * @return GNUNET_YES if this data matches the query, otherwise
+ *         GNUNET_NO; GNUNET_SYSERR if the keyCount does not match the
  *         query type
  */
 int isDatumApplicable (unsigned int type,
                        unsigned int size,
                        const DBlock * data,
-                       const HashCode512 * knownDatumQuery,
-                       unsigned int keyCount, const HashCode512 * keys);
+                       const GNUNET_HashCode * knownDatumQuery,
+                       unsigned int keyCount, const GNUNET_HashCode * keys);
 
 #endif

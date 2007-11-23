@@ -33,17 +33,17 @@
 #include "platform.h"
 #include "callbacks.h"
 
-#define DEBUG_FILE_INFO NO
+#define DEBUG_FILE_INFO GNUNET_NO
 
 #define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
-static struct IPC_SEMAPHORE *
+static struct GNUNET_IPC_Semaphore *
 createIPC (struct GE_Context *ectx, struct GC_Configuration *cfg)
 {
   char *basename;
   char *ipcName;
-  struct IPC_SEMAPHORE *sem;
+  struct GNUNET_IPC_Semaphore *sem;
   size_t n;
 
   GC_get_configuration_value_filename (cfg,
@@ -51,11 +51,11 @@ createIPC (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                        "GNUNET_HOME",
                                        GNUNET_HOME_DIRECTORY, &basename);
   n = strlen (basename) + 512;
-  ipcName = MALLOC (n);
-  SNPRINTF (ipcName, n, "%s/directory_ipc_lock", basename);
-  FREE (basename);
-  sem = IPC_SEMAPHORE_CREATE (ectx, ipcName, 1);
-  FREE (ipcName);
+  ipcName = GNUNET_malloc (n);
+  GNUNET_snprintf (ipcName, n, "%s/directory_ipc_lock", basename);
+  GNUNET_free (basename);
+  sem = GNUNET_IPC_semaphore_create (ectx, ipcName, 1);
+  GNUNET_free (ipcName);
   return sem;
 }
 
@@ -69,12 +69,12 @@ getUriDbName (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                        "GNUNET",
                                        "GNUNET_HOME",
                                        GNUNET_HOME_DIRECTORY, &pfx);
-  nw = MALLOC (strlen (pfx) + strlen (STATE_NAME) + 2);
+  nw = GNUNET_malloc (strlen (pfx) + strlen (STATE_NAME) + 2);
   strcpy (nw, pfx);
   strcat (nw, DIR_SEPARATOR_STR);
   strcat (nw, STATE_NAME);
-  FREE (pfx);
-  disk_directory_create_for_file (ectx, nw);
+  GNUNET_free (pfx);
+  GNUNET_disk_directory_create_for_file (ectx, nw);
   return nw;
 }
 
@@ -88,19 +88,19 @@ getToggleName (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                        "GNUNET",
                                        "GNUNET_HOME",
                                        GNUNET_HOME_DIRECTORY, &pfx);
-  nw = MALLOC (strlen (pfx) + strlen (TRACK_OPTION) + 2);
+  nw = GNUNET_malloc (strlen (pfx) + strlen (TRACK_OPTION) + 2);
   strcpy (nw, pfx);
   strcat (nw, DIR_SEPARATOR_STR);
   strcat (nw, TRACK_OPTION);
-  FREE (pfx);
-  disk_directory_create_for_file (ectx, nw);
+  GNUNET_free (pfx);
+  GNUNET_disk_directory_create_for_file (ectx, nw);
   return nw;
 }
 
 /**
  * Get the URITRACK URI tracking status.
  *
- * @return YES of tracking is enabled, NO if not
+ * @return GNUNET_YES of tracking is enabled, GNUNET_NO if not
  */
 int
 URITRACK_trackStatus (struct GE_Context *ectx, struct GC_Configuration *cfg)
@@ -109,28 +109,29 @@ URITRACK_trackStatus (struct GE_Context *ectx, struct GC_Configuration *cfg)
   char *tn;
 
   tn = getToggleName (ectx, cfg);
-  if (YES != disk_file_test (ectx, tn))
+  if (GNUNET_YES != GNUNET_disk_file_test (ectx, tn))
     {
-      FREE (tn);
-      return NO;                /* default: off */
+      GNUNET_free (tn);
+      return GNUNET_NO;         /* default: off */
     }
-  if ((sizeof (int) != disk_file_read (ectx,
-                                       tn,
-                                       sizeof (int),
-                                       &status)) || (ntohl (status) != YES))
+  if ((sizeof (int) != GNUNET_disk_file_read (ectx,
+                                              tn,
+                                              sizeof (int),
+                                              &status))
+      || (ntohl (status) != GNUNET_YES))
     {
-      FREE (tn);
+      GNUNET_free (tn);
 #if DEBUG_FILE_INFO
       GE_LOG (ectx,
               GE_DEBUG | GE_REQUEST | GE_USER,
               _("Collecting file identifiers disabled.\n"));
 #endif
-      return NO;
+      return GNUNET_NO;
     }
   else
     {
-      FREE (tn);
-      return YES;
+      GNUNET_free (tn);
+      return GNUNET_YES;
     }
 }
 
@@ -142,15 +143,15 @@ struct CheckPresentClosure
 
 static int
 checkPresent (const ECRS_FileInfo * fi,
-              const HashCode512 * key, int isRoot, void *closure)
+              const GNUNET_HashCode * key, int isRoot, void *closure)
 {
   struct CheckPresentClosure *cpc = closure;
   if (ECRS_equalsUri (fi->uri, cpc->fi->uri))
     {
       cpc->present = 1;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -160,7 +161,7 @@ void
 URITRACK_trackURI (struct GE_Context *ectx,
                    struct GC_Configuration *cfg, const ECRS_FileInfo * fi)
 {
-  struct IPC_SEMAPHORE *sem;
+  struct GNUNET_IPC_Semaphore *sem;
   char *data;
   unsigned int size;
   char *suri;
@@ -168,17 +169,17 @@ URITRACK_trackURI (struct GE_Context *ectx,
   char *fn;
   struct CheckPresentClosure cpc;
 
-  if (NO == URITRACK_trackStatus (ectx, cfg))
+  if (GNUNET_NO == URITRACK_trackStatus (ectx, cfg))
     return;
   cpc.present = 0;
   cpc.fi = fi;
-  URITRACK_listURIs (ectx, cfg, NO, &checkPresent, &cpc);
+  URITRACK_listURIs (ectx, cfg, GNUNET_NO, &checkPresent, &cpc);
   if (cpc.present == 1)
     return;
   size = ECRS_sizeofMetaData (fi->meta,
                               ECRS_SERIALIZE_FULL |
                               ECRS_SERIALIZE_NO_COMPRESS);
-  data = MALLOC (size);
+  data = GNUNET_malloc (size);
   GE_ASSERT (ectx,
              size == ECRS_serializeMetaData (ectx,
                                              fi->meta,
@@ -189,12 +190,12 @@ URITRACK_trackURI (struct GE_Context *ectx,
   size = htonl (size);
   suri = ECRS_uriToString (fi->uri);
   sem = createIPC (ectx, cfg);
-  IPC_SEMAPHORE_DOWN (sem, YES);
+  GNUNET_IPC_semaphore_down (sem, GNUNET_YES);
   fn = getUriDbName (ectx, cfg);
-  fh = disk_file_open (ectx,
-                       fn,
-                       O_WRONLY | O_APPEND | O_CREAT | O_LARGEFILE,
-                       S_IRUSR | S_IWUSR);
+  fh = GNUNET_disk_file_open (ectx,
+                              fn,
+                              O_WRONLY | O_APPEND | O_CREAT |
+                              O_LARGEFILE, S_IRUSR | S_IWUSR);
   if (fh != -1)
     {
       WRITE (fh, suri, strlen (suri) + 1);
@@ -202,11 +203,11 @@ URITRACK_trackURI (struct GE_Context *ectx,
       WRITE (fh, data, ntohl (size));
       CLOSE (fh);
     }
-  FREE (fn);
-  IPC_SEMAPHORE_UP (sem);
-  IPC_SEMAPHORE_DESTROY (sem);
-  FREE (data);
-  FREE (suri);
+  GNUNET_free (fn);
+  GNUNET_IPC_semaphore_up (sem);
+  GNUNET_IPC_semaphore_destroy (sem);
+  GNUNET_free (data);
+  GNUNET_free (suri);
   URITRACK_internal_notify (fi);
 }
 
@@ -218,28 +219,28 @@ void
 URITRACK_clearTrackedURIS (struct GE_Context *ectx,
                            struct GC_Configuration *cfg)
 {
-  struct IPC_SEMAPHORE *sem;
+  struct GNUNET_IPC_Semaphore *sem;
   char *fn;
 
   sem = createIPC (ectx, cfg);
-  IPC_SEMAPHORE_DOWN (sem, YES);
+  GNUNET_IPC_semaphore_down (sem, GNUNET_YES);
   fn = getUriDbName (ectx, cfg);
-  if (YES == disk_file_test (ectx, fn))
+  if (GNUNET_YES == GNUNET_disk_file_test (ectx, fn))
     {
       if (0 != UNLINK (fn))
         GE_LOG_STRERROR_FILE (ectx,
                               GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                               "unlink", fn);
     }
-  FREE (fn);
-  IPC_SEMAPHORE_UP (sem);
-  IPC_SEMAPHORE_DESTROY (sem);
+  GNUNET_free (fn);
+  GNUNET_IPC_semaphore_up (sem);
+  GNUNET_IPC_semaphore_destroy (sem);
 }
 
 /**
  * Toggle tracking URIs.
  *
- * @param onOff YES to enable tracking, NO to disable
+ * @param onOff GNUNET_YES to enable tracking, GNUNET_NO to disable
  *  disabling tracking
  */
 void
@@ -250,8 +251,8 @@ URITRACK_trackURIS (struct GE_Context *ectx,
   char *tn;
 
   tn = getToggleName (ectx, cfg);
-  disk_file_write (ectx, tn, &o, sizeof (int), "600");
-  FREE (tn);
+  GNUNET_disk_file_write (ectx, tn, &o, sizeof (int), "600");
+  GNUNET_free (tn);
 }
 
 /**
@@ -260,8 +261,8 @@ URITRACK_trackURIS (struct GE_Context *ectx,
  *
  * @param iterator function to call on each entry, may be NULL
  * @param closure extra argument to the callback
- * @param need_metadata YES if metadata should be
- *        provided, NO if metadata is not needed (faster)
+ * @param need_metadata GNUNET_YES if metadata should be
+ *        provided, GNUNET_NO if metadata is not needed (faster)
  * @return number of entries found
  */
 int
@@ -270,7 +271,7 @@ URITRACK_listURIs (struct GE_Context *ectx,
                    int need_metadata,
                    ECRS_SearchProgressCallback iterator, void *closure)
 {
-  struct IPC_SEMAPHORE *sem;
+  struct GNUNET_IPC_Semaphore *sem;
   int rval;
   char *result;
   off_t ret;
@@ -284,24 +285,24 @@ URITRACK_listURIs (struct GE_Context *ectx,
 
   fn = getUriDbName (ectx, cfg);
   sem = createIPC (ectx, cfg);
-  IPC_SEMAPHORE_DOWN (sem, YES);
+  GNUNET_IPC_semaphore_down (sem, GNUNET_YES);
   if ((0 != STAT (fn, &buf)) || (buf.st_size == 0))
     {
-      IPC_SEMAPHORE_UP (sem);
-      IPC_SEMAPHORE_DESTROY (sem);
-      FREE (fn);
+      GNUNET_IPC_semaphore_up (sem);
+      GNUNET_IPC_semaphore_destroy (sem);
+      GNUNET_free (fn);
       return 0;                 /* no URI db */
     }
-  fd = disk_file_open (ectx, fn, O_LARGEFILE | O_RDONLY);
+  fd = GNUNET_disk_file_open (ectx, fn, O_LARGEFILE | O_RDONLY);
   if (fd == -1)
     {
-      IPC_SEMAPHORE_UP (sem);
-      IPC_SEMAPHORE_DESTROY (sem);
+      GNUNET_IPC_semaphore_up (sem);
+      GNUNET_IPC_semaphore_destroy (sem);
       GE_LOG_STRERROR_FILE (ectx,
                             GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                             "open", fn);
-      FREE (fn);
-      return SYSERR;            /* error opening URI db */
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;     /* error opening URI db */
     }
   result = MMAP (NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
   if (result == MAP_FAILED)
@@ -310,10 +311,10 @@ URITRACK_listURIs (struct GE_Context *ectx,
       GE_LOG_STRERROR_FILE (ectx,
                             GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                             "mmap", fn);
-      FREE (fn);
-      IPC_SEMAPHORE_UP (sem);
-      IPC_SEMAPHORE_DESTROY (sem);
-      return SYSERR;
+      GNUNET_free (fn);
+      GNUNET_IPC_semaphore_up (sem);
+      GNUNET_IPC_semaphore_destroy (sem);
+      return GNUNET_SYSERR;
     }
   ret = buf.st_size;
   pos = 0;
@@ -344,7 +345,7 @@ URITRACK_listURIs (struct GE_Context *ectx,
           ECRS_freeUri (fi.uri);
           goto FORMATERROR;
         }
-      if (need_metadata == YES)
+      if (need_metadata == GNUNET_YES)
         {
           fi.meta = ECRS_deserializeMetaData (ectx, &result[spos], msize);
           if (fi.meta == NULL)
@@ -361,7 +362,7 @@ URITRACK_listURIs (struct GE_Context *ectx,
       pos = spos + msize;
       if (iterator != NULL)
         {
-          if (OK != iterator (&fi, NULL, NO, closure))
+          if (GNUNET_OK != iterator (&fi, NULL, GNUNET_NO, closure))
             {
               if (fi.meta != NULL)
                 ECRS_freeMetaData (fi.meta);
@@ -371,10 +372,10 @@ URITRACK_listURIs (struct GE_Context *ectx,
                                       GE_ERROR | GE_ADMIN | GE_BULK,
                                       "munmap", fn);
               CLOSE (fd);
-              FREE (fn);
-              IPC_SEMAPHORE_UP (sem);
-              IPC_SEMAPHORE_DESTROY (sem);
-              return SYSERR;    /* iteration aborted */
+              GNUNET_free (fn);
+              GNUNET_IPC_semaphore_up (sem);
+              GNUNET_IPC_semaphore_destroy (sem);
+              return GNUNET_SYSERR;     /* iteration aborted */
             }
         }
       rval++;
@@ -385,9 +386,9 @@ URITRACK_listURIs (struct GE_Context *ectx,
   if (0 != MUNMAP (result, buf.st_size))
     GE_LOG_STRERROR_FILE (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "munmap", fn);
   CLOSE (fd);
-  FREE (fn);
-  IPC_SEMAPHORE_UP (sem);
-  IPC_SEMAPHORE_DESTROY (sem);
+  GNUNET_free (fn);
+  GNUNET_IPC_semaphore_up (sem);
+  GNUNET_IPC_semaphore_destroy (sem);
   return rval;
 FORMATERROR:
   GE_LOG (ectx,
@@ -396,11 +397,11 @@ FORMATERROR:
   if (0 != MUNMAP (result, buf.st_size))
     GE_LOG_STRERROR_FILE (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "munmap", fn);
   CLOSE (fd);
-  FREE (fn);
-  IPC_SEMAPHORE_UP (sem);
-  IPC_SEMAPHORE_DESTROY (sem);
+  GNUNET_free (fn);
+  GNUNET_IPC_semaphore_up (sem);
+  GNUNET_IPC_semaphore_destroy (sem);
   URITRACK_clearTrackedURIS (ectx, cfg);
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 

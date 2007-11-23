@@ -49,9 +49,9 @@ countConnections (const char *name, unsigned long long value, void *cls)
   if (0 == strcmp (_("# of connected peers"), name))
     {
       *num = value;
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -61,11 +61,11 @@ countConnections (const char *name, unsigned long long value, void *cls)
 int
 main (int argc, const char **argv)
 {
-  struct DaemonContext *peers;
+  struct GNUNET_TESTING_DaemonContext *peers;
   int ret = 0;
   struct GE_Context *ectx;
   struct GC_Configuration *cfg;
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   int i;
   int k;
   int have;
@@ -74,14 +74,14 @@ main (int argc, const char **argv)
   int min;
 
   ectx = NULL;
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
       return -1;
     }
   peers =
-    gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,
+    GNUNET_TESTING_start_daemons (strstr (argv[0], "_") + 1,
                                   "advertising stats",
                                   "/tmp/gnunet-advertising-test", 12087, 10,
                                   NUM_PEERS);
@@ -93,11 +93,12 @@ main (int argc, const char **argv)
   /* do circular connect */
   for (i = 0; i < NUM_PEERS; i++)
     {
-      if (OK != gnunet_testing_connect_daemons (12087 + 10 * i,
-                                                12087 +
-                                                10 * ((i + 1) % NUM_PEERS)))
+      if (GNUNET_OK != GNUNET_TESTING_connect_daemons (12087 + 10 * i,
+                                                       12087 +
+                                                       10 * ((i + 1) %
+                                                             NUM_PEERS)))
         {
-          gnunet_testing_stop_daemons (peers);
+          GNUNET_TESTING_stop_daemons (peers);
           fprintf (stderr,
                    "Failed to connect peers %d and %d!\n",
                    i, (i + 1) % NUM_PEERS);
@@ -105,23 +106,23 @@ main (int argc, const char **argv)
           return -1;
         }
     }
-  PTHREAD_SLEEP (15 * cronSECONDS);
+  GNUNET_thread_sleep (15 * GNUNET_CRON_SECONDS);
 
   /* check loops */
   for (k = 0; k < NUM_ROUNDS; k++)
     {
-      if (GNUNET_SHUTDOWN_TEST () == YES)
+      if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
       found = 0;
       min = NUM_PEERS;
       for (i = 0; i < NUM_PEERS; i++)
         {
-          SNPRINTF (buf, 128, "localhost:%u", 2087 + i * 10);
+          GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
           GC_set_configuration_value_string (cfg,
                                              ectx, "NETWORK", "HOST", buf);
-          sock = client_connection_create (NULL, cfg);
+          sock = GNUNET_client_connection_create (NULL, cfg);
           STATS_getStatistics (NULL, sock, &countConnections, &have);
-          connection_destroy (sock);
+          GNUNET_client_connection_destroy (sock);
           found += have;
           if (have < min)
             min = have;
@@ -130,9 +131,9 @@ main (int argc, const char **argv)
                "Have %d connections total in round %d, minimum number was %d\n",
                found, k, min);
       if (k < NUM_ROUNDS - 1)
-        PTHREAD_SLEEP (45 * cronSECONDS);       /* one hello-forward round is 45s! */
+        GNUNET_thread_sleep (45 * GNUNET_CRON_SECONDS); /* one hello-forward round is 45s! */
     }
-  gnunet_testing_stop_daemons (peers);
+  GNUNET_TESTING_stop_daemons (peers);
   GC_free (cfg);
   return ret;
 }

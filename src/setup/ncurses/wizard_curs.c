@@ -34,7 +34,7 @@
 #include <dialog.h>
 
 #undef _
-#undef OK
+#undef GNUNET_OK
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
@@ -60,10 +60,10 @@ showCursErr (const char *prefix, const char *error)
 {
   char *err;
 
-  err = MALLOC (strlen (prefix) + strlen (error) + 2);
+  err = GNUNET_malloc (strlen (prefix) + strlen (error) + 2);
   sprintf (err, "%s %s", prefix, error);
   dialog_msgbox (_("Error"), err, 70, 15, 1);
-  FREE (err);
+  GNUNET_free (err);
 }
 
 static void
@@ -142,7 +142,7 @@ query_string (const char *title,
   dialog_vars.cancel_label = _("Abort");
   dialog_vars.ok_label = _("Ok");
   fitem.type = 0;
-  fitem.name = STRDUP (question);
+  fitem.name = GNUNET_strdup (question);
   fitem.name_len = strlen (question);
   fitem.name_y = 3;
   fitem.name_x = 5;
@@ -153,10 +153,10 @@ query_string (const char *title,
   fitem.text_ilen = 63;
   fitem.text_free = 0;
   fitem.help_free = 0;
-  fitem.text = MALLOC (65536);
+  fitem.text = GNUNET_malloc (65536);
   strcpy (fitem.text, def);
   fitem.text_len = strlen (fitem.text);
-  fitem.help = STRDUP (help);
+  fitem.help = GNUNET_strdup (help);
   msel = 0;
 
   ret = 2;
@@ -196,9 +196,9 @@ query_string (const char *title,
           break;
         }
     }
-  FREE (fitem.name);
-  FREE (fitem.text);
-  FREE (fitem.help);
+  GNUNET_free (fitem.name);
+  GNUNET_free (fitem.text);
+  GNUNET_free (fitem.help);
   return ret;
 }
 
@@ -229,13 +229,13 @@ insert_nic_curs (const char *name, int defaultNIC, void *cls)
   while ((pos < MAX_NIC) && (nic_items[pos].text != NULL))
     pos++;
   if (pos == MAX_NIC)
-    return SYSERR;
+    return GNUNET_SYSERR;
   item = &nic_items[pos];
   item->name = "";
-  item->text = STRDUP (name);
+  item->text = GNUNET_strdup (name);
   item->help = "";
   item->state = defaultNIC;
-  return OK;
+  return GNUNET_OK;
 }
 
 static int
@@ -260,7 +260,7 @@ network_interface ()
   fitem.text_free = 0;
   fitem.help_free = 0;
   memset (nic_items, 0, sizeof (DIALOG_LISTITEM) * MAX_NIC);
-  os_list_network_interfaces (NULL, &insert_nic_curs, nic_items);
+  GNUNET_list_network_interfaces (NULL, &insert_nic_curs, nic_items);
   total = 0;
   while ((total < MAX_NIC) && (nic_items[total].text != NULL))
     {
@@ -388,7 +388,9 @@ disk_quota ()
 static int
 user ()
 {
-  if (YES != os_modify_user (YES, YES, "gnunet", "gnunet"))
+  if (GNUNET_YES !=
+      GNUNET_configure_user_account (GNUNET_YES, GNUNET_YES, "gnunet",
+                                     "gnunet"))
     return last;                /* ignore option */
   return query_string (_("Daemon configuration: user account"),
                        _("As which user should gnunetd be run?"),
@@ -406,7 +408,9 @@ user ()
 static int
 group ()
 {
-  if (YES != os_modify_user (YES, YES, "gnunet", "gnunet"))
+  if (GNUNET_YES !=
+      GNUNET_configure_user_account (GNUNET_YES, GNUNET_YES, "gnunet",
+                                     "gnunet"))
     return last;                /* ignore option */
   return query_string (_("Daemon configuration: group account"),
                        _("As which group should gnunetd be run?"),
@@ -445,16 +449,16 @@ finish ()
   char *user_name;
   char *group_name;
 
-  ret = OK;
+  ret = GNUNET_OK;
 
   if ((0 != GC_test_dirty (cfg)) &&
       (0 != GC_write_configuration (cfg, cfg_fn)))
     {
       prefix = _("Unable to save configuration file `%s':");
-      err = MALLOC (strlen (cfg_fn) + strlen (prefix) + 1);
+      err = GNUNET_malloc (strlen (cfg_fn) + strlen (prefix) + 1);
       sprintf (err, prefix, cfg_fn);
       showCursErr (err, STRERROR (errno));
-      ret = SYSERR;
+      ret = GNUNET_SYSERR;
     }
   user_name = NULL;
   GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user_name);
@@ -462,24 +466,26 @@ finish ()
                                      "GNUNETD", "GROUP", "", &group_name);
   if (((strlen (user_name) > 0) ||
        (strlen (group_name) > 0)) &&
-      (OK == os_modify_user (YES,
-                             YES,
-                             user_name,
-                             group_name)) &&
-      (OK != os_modify_user (NO, YES, user_name, group_name)))
+      (GNUNET_OK == GNUNET_configure_user_account (GNUNET_YES,
+                                                   GNUNET_YES,
+                                                   user_name,
+                                                   group_name)) &&
+      (GNUNET_OK !=
+       GNUNET_configure_user_account (GNUNET_NO, GNUNET_YES, user_name,
+                                      group_name)))
     {
       showCursErr (_("Unable to create user account for daemon."), "");
-      ret = SYSERR;
+      ret = GNUNET_SYSERR;
     }
-  if ((YES == GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", NO)) && (YES != os_modify_autostart (ectx, NO, YES, "gnunetd",     /* specify full path? */
-                                                                                                                  user_name,
-                                                                                                                  group_name)))
+  if ((GNUNET_YES == GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && (GNUNET_YES != GNUNET_configure_autostart (ectx, GNUNET_NO, GNUNET_YES, "gnunetd",   /* specify full path? */
+                                                                                                                                              user_name,
+                                                                                                                                              group_name)))
     {
       showCursErr (_("Unable to setup autostart for daemon."), "");
-      ret = SYSERR;
+      ret = GNUNET_SYSERR;
     }
-  FREE (user_name);
-  FREE (group_name);
+  GNUNET_free (user_name);
+  GNUNET_free (group_name);
   return ret;
 }
 
@@ -495,7 +501,7 @@ save_config ()
   switch (ret)
     {
     case DLG_EXIT_OK:
-      if (OK != finish ())
+      if (GNUNET_OK != finish ())
         return 0;               /* error */
       return 1;
     case DLG_EXIT_CANCEL:
@@ -514,7 +520,7 @@ save_config ()
 int
 wizard_curs_mainsetup_curses (int argc,
                               const char **argv,
-                              struct PluginHandle *self,
+                              struct GNUNET_PluginHandle *self,
                               struct GE_Context *e,
                               struct GC_Configuration *c,
                               struct GNS_Context *gns,
@@ -539,8 +545,8 @@ wizard_curs_mainsetup_curses (int argc,
   init_dialog (stdin, stderr);
 
   phase = 0;
-  ret = NO;
-  while (ret == NO)
+  ret = GNUNET_NO;
+  while (ret == GNUNET_NO)
     {
       switch (phase)
         {
@@ -579,7 +585,7 @@ wizard_curs_mainsetup_curses (int argc,
           break;
         case 11:
           dir = 0;
-          ret = OK;
+          ret = GNUNET_OK;
           break;
         default:
           GE_BREAK (NULL, 0);
@@ -589,7 +595,7 @@ wizard_curs_mainsetup_curses (int argc,
       phase += dir;
       last = dir;
       if (dir == 0)
-        ret = SYSERR;
+        ret = GNUNET_SYSERR;
     }
   end_dialog ();
 #ifndef MINGW

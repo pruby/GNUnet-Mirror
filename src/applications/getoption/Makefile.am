@@ -12,8 +12,7 @@ plugin_LTLIBRARIES = \
 libgnunetgetoption_api_la_SOURCES = \
   clientapi.c 
 libgnunetgetoption_api_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 libgnunetmodule_getoption_la_SOURCES = \
   getoption.c getoption.h

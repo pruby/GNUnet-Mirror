@@ -18,34 +18,28 @@ libgnunetcore_la_SOURCES = \
  startup.c startup.h \
  version.c version.h
 libgnunetcore_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
- $(top_builddir)/src/util/cron/libgnunetutil_cron.la 
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 
 gnunetd_SOURCES = \
  gnunetd.c 
 gnunetd_LDADD = \
- $(top_builddir)/src/server/libgnunetcore.la \
- $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+ $(top_builddir)/src/server/libgnunetcore.la
 
 
 gnunet_update_SOURCES = \
  gnunet-update.c 
 gnunet_update_LDADD = \
- $(top_builddir)/src/server/libgnunetcore.la \
- $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+ $(top_builddir)/src/server/libgnunetcore.la
 
 gnunet_peer_info_SOURCES = \
  gnunet-peer-info.c 
 gnunet_peer_info_LDADD  = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/server/libgnunetcore.la \
- $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+ $(top_builddir)/src/server/libgnunetcore.la
 
 gnunet_transport_check_SOURCES = \
  gnunet-transport-check.c 
 gnunet_transport_check_LDADD  = \
- $(top_builddir)/src/server/libgnunetcore.la \
- $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
+ $(top_builddir)/src/server/libgnunetcore.la
 

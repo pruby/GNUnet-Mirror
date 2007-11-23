@@ -40,13 +40,13 @@
  *
  * Note that this function maybe called on parts of directories.
  * Thus parser errors should not be reported _at all_ (with BREAK).
- * Of course, returning SYSERR maybe appropriate.  Still, if some
+ * Of course, returning GNUNET_SYSERR maybe appropriate.  Still, if some
  * entries can be recovered despite these parsing errors, the
  * function should try to do this.
  *
  * @param data pointer to the beginning of the directory
  * @param len number of bytes in data
- * @return number of entries on success, SYSERR if the
+ * @return number of entries on success, GNUNET_SYSERR if the
  *         directory is malformed
  */
 int
@@ -72,14 +72,14 @@ ECRS_listDirectory (struct GE_Context *ectx,
       memcpy (&mdSize, &data[8], sizeof (unsigned int));
       mdSize = ntohl (mdSize);
       if (mdSize > len - 8 - sizeof (unsigned int))
-        return SYSERR;          /* invalid size */
+        return GNUNET_SYSERR;   /* invalid size */
       *md = ECRS_deserializeMetaData (ectx,
                                       &data[8 + sizeof (unsigned int)],
                                       mdSize);
       if (*md == NULL)
         {
           GE_BREAK (ectx, 0);
-          return SYSERR;        /* malformed ! */
+          return GNUNET_SYSERR; /* malformed ! */
         }
       pos = 8 + sizeof (unsigned int) + mdSize;
     }
@@ -107,7 +107,7 @@ ECRS_listDirectory (struct GE_Context *ectx,
       while ((epos < len) && (data[epos] != '\0'))
         epos++;
       if (epos >= len)
-        return SYSERR;          /* malformed - or partial download */
+        return GNUNET_SYSERR;   /* malformed - or partial download */
 
       fi.uri = ECRS_stringToUri (ectx, &data[pos]);
       pos = epos + 1;
@@ -120,7 +120,7 @@ ECRS_listDirectory (struct GE_Context *ectx,
         {
           ECRS_freeUri (fi.uri);
           GE_BREAK (ectx, 0);
-          return SYSERR;        /* illegal in directory! */
+          return GNUNET_SYSERR; /* illegal in directory! */
         }
 
       memcpy (&mdSize, &data[pos], sizeof (unsigned int));
@@ -130,7 +130,7 @@ ECRS_listDirectory (struct GE_Context *ectx,
       if (pos + mdSize > len)
         {
           ECRS_freeUri (fi.uri);
-          return SYSERR;        /* malformed - or partial download */
+          return GNUNET_SYSERR; /* malformed - or partial download */
         }
 
       fi.meta = ECRS_deserializeMetaData (ectx, &data[pos], mdSize);
@@ -138,12 +138,12 @@ ECRS_listDirectory (struct GE_Context *ectx,
         {
           ECRS_freeUri (fi.uri);
           GE_BREAK (ectx, 0);
-          return SYSERR;        /* malformed ! */
+          return GNUNET_SYSERR; /* malformed ! */
         }
       pos += mdSize;
       count++;
       if (spcb != NULL)
-        spcb (&fi, NULL, NO, spcbClosure);
+        spcb (&fi, NULL, GNUNET_NO, spcbClosure);
       ECRS_freeMetaData (fi.meta);
       ECRS_freeUri (fi.uri);
     }
@@ -256,7 +256,7 @@ block_align (unsigned long long start,
  *        respective values at same offset in in uris)
  * @param meta meta-data for the directory.  The meta entry
  *        is extended with the mime-type for a GNUnet directory.
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 ECRS_createDirectory (struct GE_Context *ectx,
@@ -280,14 +280,14 @@ ECRS_createDirectory (struct GE_Context *ectx,
       if (ECRS_isKeywordUri (fis[i].uri))
         {
           GE_BREAK (ectx, 0);
-          return SYSERR;        /* illegal in directory! */
+          return GNUNET_SYSERR; /* illegal in directory! */
         }
     }
-  ucs = MALLOC (sizeof (char *) * count);
+  ucs = GNUNET_malloc (sizeof (char *) * count);
   size = 8 + sizeof (unsigned int);
   size += ECRS_sizeofMetaData (meta, ECRS_SERIALIZE_FULL);
-  sizes = MALLOC (count * sizeof (unsigned long long));
-  perm = MALLOC (count * sizeof (int));
+  sizes = GNUNET_malloc (count * sizeof (unsigned long long));
+  perm = GNUNET_malloc (count * sizeof (int));
   for (i = 0; i < count; i++)
     {
       perm[i] = i;
@@ -297,12 +297,12 @@ ECRS_createDirectory (struct GE_Context *ectx,
       if (psize == -1)
         {
           GE_BREAK (ectx, 0);
-          FREE (sizes);
-          FREE (perm);
+          GNUNET_free (sizes);
+          GNUNET_free (perm);
           while (i >= 0)
-            FREE (ucs[i--]);
-          FREE (ucs);
-          return SYSERR;
+            GNUNET_free (ucs[i--]);
+          GNUNET_free (ucs);
+          return GNUNET_SYSERR;
         }
       sizes[i] = psize + sizeof (unsigned int) + strlen (ucs[i]) + 1;
     }
@@ -317,7 +317,7 @@ ECRS_createDirectory (struct GE_Context *ectx,
       size = do_align (psize, size);
     }
   *len = size;
-  *data = MALLOC (size);
+  *data = GNUNET_malloc (size);
   memset (*data, 0, size);
 
   pos = 8;
@@ -328,7 +328,7 @@ ECRS_createDirectory (struct GE_Context *ectx,
                                 &(*data)[pos + sizeof (unsigned int)],
                                 size - pos - sizeof (unsigned int),
                                 ECRS_SERIALIZE_FULL);
-  GE_ASSERT (ectx, ret != SYSERR);
+  GE_ASSERT (ectx, ret != GNUNET_SYSERR);
   ret = htonl (ret);
   memcpy (&(*data)[pos], &ret, sizeof (unsigned int));
   pos += ntohl (ret) + sizeof (unsigned int);
@@ -342,23 +342,23 @@ ECRS_createDirectory (struct GE_Context *ectx,
       pos -= sizes[i];          /* go back to beginning */
       memcpy (&(*data)[pos], ucs[i], strlen (ucs[i]) + 1);
       pos += strlen (ucs[i]) + 1;
-      FREE (ucs[i]);
+      GNUNET_free (ucs[i]);
       ret = ECRS_serializeMetaData (ectx,
                                     fis[i].meta,
                                     &(*data)[pos + sizeof (unsigned int)],
                                     size - pos - sizeof (unsigned int),
                                     ECRS_SERIALIZE_FULL);
-      GE_ASSERT (ectx, ret != SYSERR);
+      GE_ASSERT (ectx, ret != GNUNET_SYSERR);
       ret = htonl (ret);
       memcpy (&(*data)[pos], &ret, sizeof (unsigned int));
       pos += ntohl (ret) + sizeof (unsigned int);
     }
-  FREE (sizes);
-  FREE (perm);
-  FREE (ucs);
+  GNUNET_free (sizes);
+  GNUNET_free (perm);
+  GNUNET_free (ucs);
   GE_ASSERT (ectx, pos == size);
 
-  return OK;
+  return GNUNET_OK;
 }
 
 /* end of directory.c */

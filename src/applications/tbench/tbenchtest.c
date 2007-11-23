@@ -35,17 +35,17 @@
 
 #define START_PEERS 1
 
-static PeerIdentity peer1;
-static PeerIdentity peer2;
+static GNUNET_PeerIdentity peer1;
+static GNUNET_PeerIdentity peer2;
 
 static int
-test (struct ClientServerConnection *sock,
+test (struct GNUNET_ClientServerConnection *sock,
       unsigned int messageSize,
       unsigned int messageCnt,
       unsigned int messageIterations,
-      cron_t messageSpacing,
+      GNUNET_CronTime messageSpacing,
       unsigned int messageTrainSize,
-      cron_t messageTimeOut /* in milli-seconds */ )
+      GNUNET_CronTime messageTimeOut /* in milli-seconds */ )
 {
   int ret;
   CS_tbench_request_MESSAGE msg;
@@ -59,18 +59,20 @@ test (struct ClientServerConnection *sock,
   msg.msgSize = htonl (messageSize);
   msg.msgCnt = htonl (messageCnt);
   msg.iterations = htonl (messageIterations);
-  msg.intPktSpace = htonll (messageSpacing);
+  msg.intPktSpace = GNUNET_htonll (messageSpacing);
   msg.trainSize = htonl (messageTrainSize);
-  msg.timeOut = htonll (messageTimeOut);
+  msg.timeOut = GNUNET_htonll (messageTimeOut);
   msg.priority = htonl (5);
   msg.receiverId = peer2;
 
-  if (SYSERR == connection_write (sock, &msg.header))
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &msg.header))
     return -1;
   ret = 0;
 
   buffer = NULL;
-  if (OK == connection_read (sock, (MESSAGE_HEADER **) & buffer))
+  if (GNUNET_OK ==
+      GNUNET_client_connection_read (sock,
+                                     (GNUNET_MessageHeader **) & buffer))
     {
       if ((float) buffer->mean_loss <= 0)
         {
@@ -83,8 +85,9 @@ test (struct ClientServerConnection *sock,
         }
       printf (_
               ("Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"),
-              ntohll (buffer->max_time), ntohll (buffer->min_time),
-              buffer->mean_time, buffer->variance_time);
+              GNUNET_ntohll (buffer->max_time),
+              GNUNET_ntohll (buffer->min_time), buffer->mean_time,
+              buffer->variance_time);
       printf (_("Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"),
               ntohl (buffer->max_loss), ntohl (buffer->min_loss),
               buffer->mean_loss, buffer->variance_loss);
@@ -94,7 +97,7 @@ test (struct ClientServerConnection *sock,
       printf (_("\nFailed to receive reply from gnunetd.\n"));
       ret = -1;
     }
-  FREENONNULL (buffer);
+  GNUNET_free_non_null (buffer);
 
   return ret;
 }
@@ -110,17 +113,17 @@ int
 main (int argc, char **argv)
 {
 #if START_PEERS
-  struct DaemonContext *peers;
+  struct GNUNET_TESTING_DaemonContext *peers;
 #endif
   int i;
   int ok;
   int ret;
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   struct GC_Configuration *cfg;
 
   ret = 0;
   ok = 1;
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   if (-1 == GC_parse_configuration (cfg, "check.conf"))
     {
       GC_free (cfg);
@@ -128,7 +131,7 @@ main (int argc, char **argv)
     }
 #if START_PEERS
   peers =
-    gnunet_testing_start_daemons (strstr (argv[0], "_") + 1,
+    GNUNET_TESTING_start_daemons (strstr (argv[0], "_") + 1,
                                   "advertising tbench topology stats",
                                   "/tmp/gnunet-tbench-test", 2087, 10000, 2);
   if (peers == NULL)
@@ -139,30 +142,34 @@ main (int argc, char **argv)
 #endif
   peer1 = peers->peer;
   peer2 = peers->next->peer;
-  if (OK != gnunet_testing_connect_daemons (2087, 12087))
+  if (GNUNET_OK != GNUNET_TESTING_connect_daemons (2087, 12087))
     {
-      gnunet_testing_stop_daemons (peers);
+      GNUNET_TESTING_stop_daemons (peers);
       fprintf (stderr, "Failed to connect the peers!\n");
       GC_free (cfg);
       return -1;
     }
-  sock = client_connection_create (NULL, cfg);
+  sock = GNUNET_client_connection_create (NULL, cfg);
   printf (_("Running benchmark...\n"));
   /* 'slow' pass: wait for bandwidth negotiation! */
   if (ret == 0)
-    ret = test (sock, 64, 100, 4, 50 * cronMILLIS, 1, 5 * cronSECONDS);
+    ret =
+      test (sock, 64, 100, 4, 50 * GNUNET_CRON_MILLISECONDS, 1,
+            5 * GNUNET_CRON_SECONDS);
   /* 'blast' pass: hit bandwidth limits! */
   for (i = 8; i < 60000; i *= 2)
     {
       if (ret == 0)
         ret =
-          test (sock, i, 1 + 1024 / i, 4, 10 * cronMILLIS, 2,
-                2 * cronSECONDS);
+          test (sock, i, 1 + 1024 / i, 4, 10 * GNUNET_CRON_MILLISECONDS, 2,
+                2 * GNUNET_CRON_SECONDS);
     }
-  ret = test (sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
-  connection_destroy (sock);
+  ret =
+    test (sock, 32768, 10, 10, 500 * GNUNET_CRON_MILLISECONDS, 1,
+          10 * GNUNET_CRON_SECONDS);
+  GNUNET_client_connection_destroy (sock);
 #if START_PEERS
-  gnunet_testing_stop_daemons (peers);
+  GNUNET_TESTING_stop_daemons (peers);
 #endif
   if (ok == 0)
     ret = 1;

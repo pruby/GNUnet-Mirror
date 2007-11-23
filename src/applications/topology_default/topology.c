@@ -39,9 +39,9 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
-#define DEBUG_TOPOLOGY NO
+#define DEBUG_TOPOLOGY GNUNET_NO
 
-#define DEBUG_LIVENESS NO
+#define DEBUG_LIVENESS GNUNET_NO
 
 /**
  * After 2 minutes on an inactive connection, probe the other
@@ -54,7 +54,7 @@
  * How often should the cron-job scan for free slots (to establish
  * new connections)?
  */
-#define LIVE_SCAN_FREQUENCY 500 * cronMILLIS
+#define LIVE_SCAN_FREQUENCY 500 * GNUNET_CRON_MILLISECONDS
 
 /**
  * Value > 1 that determines the chance (1:LSE) that the cron job
@@ -92,7 +92,7 @@ typedef struct
   unsigned int index;
   unsigned int matchCount;
   long long costSelector;
-  PeerIdentity match;
+  GNUNET_PeerIdentity match;
 } IndexMatch;
 
 /**
@@ -105,23 +105,23 @@ typedef struct
  * @param im updated structure used to select the peer
  */
 static int
-scanHelperCount (const PeerIdentity * id,
+scanHelperCount (const GNUNET_PeerIdentity * id,
                  unsigned short proto, int confirmed, void *data)
 {
   IndexMatch *im = data;
 
-  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (PeerIdentity)))
-    return OK;
+  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (GNUNET_PeerIdentity)))
+    return GNUNET_OK;
   if (coreAPI->computeIndex (id) != im->index)
-    return OK;
-  if (OK == coreAPI->queryPeerStatus (id, NULL, NULL))
-    return OK;
-  if (YES == transport->isAvailable (proto))
+    return GNUNET_OK;
+  if (GNUNET_OK == coreAPI->queryPeerStatus (id, NULL, NULL))
+    return GNUNET_OK;
+  if (GNUNET_YES == transport->isAvailable (proto))
     {
       im->matchCount++;
       im->costSelector += transport->getCost (proto);
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -133,28 +133,28 @@ scanHelperCount (const PeerIdentity * id,
  * @param im structure responsible for the selection process
  */
 static int
-scanHelperSelect (const PeerIdentity * id,
+scanHelperSelect (const GNUNET_PeerIdentity * id,
                   unsigned short proto, int confirmed, void *data)
 {
   IndexMatch *im = data;
 
-  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (PeerIdentity)))
-    return OK;
+  if (0 == memcmp (coreAPI->myIdentity, id, sizeof (GNUNET_PeerIdentity)))
+    return GNUNET_OK;
   if (coreAPI->computeIndex (id) != im->index)
-    return OK;
-  if (OK == coreAPI->queryPeerStatus (id, NULL, NULL))
-    return OK;
-  if (YES == transport->isAvailable (proto))
+    return GNUNET_OK;
+  if (GNUNET_OK == coreAPI->queryPeerStatus (id, NULL, NULL))
+    return GNUNET_OK;
+  if (GNUNET_YES == transport->isAvailable (proto))
     {
       im->costSelector -= transport->getCost (proto);
       if ((im->matchCount == 0) || (im->costSelector < 0))
         {
           im->match = *id;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       im->matchCount--;
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -169,15 +169,16 @@ static void
 scanForHosts (unsigned int index)
 {
   IndexMatch indexMatch;
-  cron_t now;
+  GNUNET_CronTime now;
 #if DEBUG_TOPOLOGY
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
-  if (os_network_monitor_get_load (coreAPI->load_monitor, Upload) > 100)
+  if (GNUNET_network_monitor_get_load
+      (coreAPI->load_monitor, GNUNET_ND_UPLOAD) > 100)
     return;                     /* bandwidth saturated, do not
                                    push it higher! */
-  now = get_time ();
+  now = GNUNET_get_time ();
   indexMatch.index = index;
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
@@ -192,18 +193,19 @@ scanForHosts (unsigned int index)
       return;                   /* no matching peers found! */
     }
   if (indexMatch.costSelector > 0)
-    indexMatch.costSelector = weak_randomi64 (indexMatch.costSelector);
+    indexMatch.costSelector =
+      GNUNET_random_u64 (GNUNET_RANDOM_QUALITY_WEAK, indexMatch.costSelector);
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost (now, &scanHelperSelect, &indexMatch);
   if (0 == memcmp (coreAPI->myIdentity,
-                   &indexMatch.match, sizeof (PeerIdentity)))
+                   &indexMatch.match, sizeof (GNUNET_PeerIdentity)))
     return;                     /* should happen really rarely */
   if (coreAPI->computeIndex (&indexMatch.match) != index)
     {
       GE_BREAK (NULL, 0);       /* should REALLY not happen */
       return;
     }
-  if (OK == coreAPI->queryPeerStatus (&indexMatch.match, NULL, NULL))
+  if (GNUNET_OK == coreAPI->queryPeerStatus (&indexMatch.match, NULL, NULL))
     {
       GE_BREAK (NULL, 0);       /* should REALLY not happen */
       return;
@@ -212,86 +214,88 @@ scanForHosts (unsigned int index)
 #if DEBUG_TOPOLOGY
   IF_GELOG (coreAPI->ectx,
             GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
-            hash2enc (&indexMatch.match.hashPubKey, &enc));
+            GNUNET_hash_to_enc (&indexMatch.match.hashPubKey, &enc));
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
           "Trying to connect to peer `%s'\n", &enc);
 #endif
-  if (NO == identity->isBlacklisted (&indexMatch.match, YES))
+  if (GNUNET_NO == identity->isBlacklisted (&indexMatch.match, GNUNET_YES))
     {
       coreAPI->unicast (&indexMatch.match, NULL, 0, 0);
       identity->blacklistHost (&indexMatch.match, (unsigned int) (saturation * 5 * 60 * 60),    /* 5 hours at full saturation */
-                               NO);
+                               GNUNET_NO);
     }
 }
 
 /**
- * We received a sign of life from this host.
+ * We received a GNUNET_RSA_sign of life from this host.
  *
- * @param hostId the peer that gave a sign of live
+ * @param hostId the peer that gave a GNUNET_RSA_sign of live
  */
 static void
 notifyPONG (void *cls)
 {
-  PeerIdentity *hostId = cls;
+  GNUNET_PeerIdentity *hostId = cls;
 #if DEBUG_TOPOLOGY || DEBUG_LIVENESS
-  EncName enc;
+  GNUNET_EncName enc;
 
   IF_GELOG (coreAPI->ectx,
             GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-            hash2enc (&hostId->hashPubKey, &enc));
+            GNUNET_hash_to_enc (&hostId->hashPubKey, &enc));
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
           "Received liveness confirmation from `%s'.\n", &enc);
 #endif
 
   coreAPI->confirmSessionUp (hostId);
-  FREE (hostId);
+  GNUNET_free (hostId);
 }
 
 /**
  * Check the liveness of the peer and possibly ping it.
  */
 static void
-checkNeedForPing (const PeerIdentity * peer, void *unused)
+checkNeedForPing (const GNUNET_PeerIdentity * peer, void *unused)
 {
-  cron_t now;
-  cron_t act;
-  PeerIdentity *hi;
+  GNUNET_CronTime now;
+  GNUNET_CronTime act;
+  GNUNET_PeerIdentity *hi;
   int ran;
 
-  ran = weak_randomi (LIVE_PING_EFFECTIVENESS);
+  ran =
+    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, LIVE_PING_EFFECTIVENESS);
   if (ran != 0)
     return;
-  now = get_time ();
-  if (SYSERR == coreAPI->getLastActivityOf (peer, &act))
+  now = GNUNET_get_time ();
+  if (GNUNET_SYSERR == coreAPI->getLastActivityOf (peer, &act))
     {
       GE_BREAK (coreAPI->ectx, 0);
       return;                   /* this should not happen... */
     }
 
-  if (now - act > SECONDS_PINGATTEMPT * cronSECONDS)
+  if (now - act > SECONDS_PINGATTEMPT * GNUNET_CRON_SECONDS)
     {
       /* if we have less than 75% of the number of connections
          that we would like to have, try ping-ing the other side
          to keep the connection open instead of hanging up */
 #if DEBUG_TOPOLOGY || DEBUG_LIVENESS
-      EncName enc;
+      GNUNET_EncName enc;
 
       IF_GELOG (coreAPI->ectx,
                 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
-                hash2enc (&peer->hashPubKey, &enc));
+                GNUNET_hash_to_enc (&peer->hashPubKey, &enc));
       GE_LOG (coreAPI->ectx,
               GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
               "Peer `%s' was inactive for %llus.  Sending PING.\n",
-              &enc, (now - act) / cronSECONDS);
+              &enc, (now - act) / GNUNET_CRON_SECONDS);
 #endif
 
 
-      hi = MALLOC (sizeof (PeerIdentity));
+      hi = GNUNET_malloc (sizeof (GNUNET_PeerIdentity));
       *hi = *peer;
-      if (OK != pingpong->ping (peer, &notifyPONG, hi, NO, rand ()))
-        FREE (hi);
+      if (GNUNET_OK !=
+          pingpong->ping (peer, &notifyPONG, hi, GNUNET_NO, rand ()))
+        GNUNET_free (hi);
     }
 }
 
@@ -313,9 +317,10 @@ cronCheckLiveness (void *unused)
 
   autoconnect = GC_get_configuration_value_yesno (coreAPI->cfg,
                                                   "GNUNETD",
-                                                  "DISABLE-AUTOCONNECT", NO);
+                                                  "DISABLE-AUTOCONNECT",
+                                                  GNUNET_NO);
   slotCount = coreAPI->getSlotCount ();
-  if ((NO == autoconnect) && (saturation < 1))
+  if ((GNUNET_NO == autoconnect) && (saturation < 1))
     {
       if (saturation * MAX_PEERS_PER_SLOT >= 1)
         minint = (unsigned int) (1 / saturation);
@@ -323,7 +328,8 @@ cronCheckLiveness (void *unused)
         minint = MAX_PEERS_PER_SLOT;    /* never put more than 10 peers into a slot */
       for (i = slotCount - 1; i >= 0; i--)
         {
-          if (weak_randomi (LIVE_SCAN_EFFECTIVENESS) != 0)
+          if (GNUNET_random_u32
+              (GNUNET_RANDOM_QUALITY_WEAK, LIVE_SCAN_EFFECTIVENESS) != 0)
             continue;
           if (minint > coreAPI->isSlotUsed (i))
             scanForHosts (i);
@@ -375,12 +381,12 @@ estimateSaturation ()
 }
 
 static int
-allowConnection (const PeerIdentity * peer)
+allowConnection (const GNUNET_PeerIdentity * peer)
 {
   if ((coreAPI->myIdentity != NULL) &&
-      (0 == memcmp (coreAPI->myIdentity, peer, sizeof (PeerIdentity))))
-    return SYSERR;              /* disallow connections to self */
-  return OK;                    /* allow everything else */
+      (0 == memcmp (coreAPI->myIdentity, peer, sizeof (GNUNET_PeerIdentity))))
+    return GNUNET_SYSERR;       /* disallow connections to self */
+  return GNUNET_OK;             /* allow everything else */
 }
 
 Topology_ServiceAPI *
@@ -413,9 +419,9 @@ provide_module_topology_default (CoreAPIForApplication * capi)
       transport = NULL;
       return NULL;
     }
-  cron_add_job (capi->cron,
-                &cronCheckLiveness,
-                LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
+  GNUNET_cron_add_job (capi->cron,
+                       &cronCheckLiveness,
+                       LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -425,7 +431,8 @@ provide_module_topology_default (CoreAPIForApplication * capi)
 int
 release_module_topology_default ()
 {
-  cron_del_job (coreAPI->cron, &cronCheckLiveness, LIVE_SCAN_FREQUENCY, NULL);
+  GNUNET_cron_del_job (coreAPI->cron, &cronCheckLiveness, LIVE_SCAN_FREQUENCY,
+                       NULL);
   coreAPI->releaseService (identity);
   identity = NULL;
   coreAPI->releaseService (transport);
@@ -433,7 +440,7 @@ release_module_topology_default ()
   coreAPI->releaseService (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
@@ -465,7 +472,7 @@ initialize_module_topology_default (CoreAPIForApplication * capi)
                                                      "topology",
                                                      gettext_noop
                                                      ("maintains GNUnet default mesh topology")));
-  return OK;
+  return GNUNET_OK;
 }
 
 void

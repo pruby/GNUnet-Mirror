@@ -26,12 +26,10 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "gnunet_util_network_client.h"
-#include "gnunet_util_boot.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 #include "tracekit.h"
 
-static struct SEMAPHORE *doneSem;
+static struct GNUNET_Semaphore *doneSem;
 
 static char *cfgFilename;
 
@@ -42,27 +40,27 @@ static struct GC_Configuration *cfg;
 /**
  * All gnunet-tracekit command line options
  */
-static struct CommandLineOption gnunettracekitOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
+	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
   {'D', "depth", "DEPTH",
    gettext_noop ("probe network to the given DEPTH"), 1,
-   &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:HOPS"},
+   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:HOPS"},
   {'F', "format", "FORMAT",
    gettext_noop
    ("specify output format; 0 for human readable output, 1 for dot, 2 for vcg"),
    1,
-   &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:FORMAT"},
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:FORMAT"},
+   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'P', "priority", "PRIO",
    gettext_noop ("use PRIO for the priority of the trace request"), 1,
-   &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY"},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY"},
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   {'W', "wait", "DELAY",
    gettext_noop ("wait DELAY seconds for replies"), 1,
-   &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT"},
-  COMMAND_LINE_OPTION_END,
+   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT"},
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 static unsigned int
@@ -77,19 +75,19 @@ getConfigurationInt (const char *sec, const char *opt, unsigned int max)
 static void
 run_shutdown (void *unused)
 {
-  GNUNET_SHUTDOWN_INITIATE ();
+  GNUNET_shutdown_initiate ();
 }
 
 static void *
 receiveThread (void *cls)
 {
-  struct ClientServerConnection *sock = cls;
+  struct GNUNET_ClientServerConnection *sock = cls;
   CS_tracekit_reply_MESSAGE *buffer;
   unsigned long long format;
-  PeerIdentity *peersSeen;
+  GNUNET_PeerIdentity *peersSeen;
   unsigned int psCount;
   unsigned int psSize;
-  PeerIdentity *peersResponding;
+  GNUNET_PeerIdentity *peersResponding;
   unsigned int prCount;
   unsigned int prSize;
   int i;
@@ -98,11 +96,11 @@ receiveThread (void *cls)
 
   psCount = 0;
   psSize = 1;
-  peersSeen = MALLOC (psSize * sizeof (PeerIdentity));
+  peersSeen = GNUNET_malloc (psSize * sizeof (GNUNET_PeerIdentity));
   prCount = 0;
   prSize = 1;
-  peersResponding = MALLOC (prSize * sizeof (PeerIdentity));
-  buffer = MALLOC (MAX_BUFFER_SIZE);
+  peersResponding = GNUNET_malloc (prSize * sizeof (GNUNET_PeerIdentity));
+  buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
   if (-1 ==
       GC_get_configuration_value_number (cfg,
                                          "GNUNET-TRACEKIT",
@@ -110,20 +108,22 @@ receiveThread (void *cls)
     {
       printf (_("Format specification invalid. "
                 "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
-      SEMAPHORE_UP (doneSem);
-      FREE (peersResponding);
-      FREE (peersSeen);
-      FREE (buffer);
+      GNUNET_semaphore_up (doneSem);
+      GNUNET_free (peersResponding);
+      GNUNET_free (peersSeen);
+      GNUNET_free (buffer);
       return NULL;
     }
   if (format == 1)
     printf ("digraph G {\n");
   if (format == 2)
     printf ("graph: {\n");
-  while (OK == connection_read (sock, (MESSAGE_HEADER **) & buffer))
+  while (GNUNET_OK ==
+         GNUNET_client_connection_read (sock,
+                                        (GNUNET_MessageHeader **) & buffer))
     {
       int count;
-      EncName enc;
+      GNUNET_EncName enc;
 
       count =
         ntohs (buffer->header.size) - sizeof (CS_tracekit_reply_MESSAGE);
@@ -132,22 +132,25 @@ receiveThread (void *cls)
           GE_BREAK (ectx, 0);
           break;                /* faulty reply */
         }
-      hash2enc (&buffer->responderId.hashPubKey, &enc);
-      match = NO;
+      GNUNET_hash_to_enc (&buffer->responderId.hashPubKey, &enc);
+      match = GNUNET_NO;
       for (j = 0; j < prCount; j++)
-        if (equalsHashCode512 (&buffer->responderId.hashPubKey,
-                               &peersResponding[j].hashPubKey))
-          match = YES;
-      if (match == NO)
+        if (0 == memcmp (&buffer->responderId.hashPubKey,
+                         &peersResponding[j].hashPubKey,
+                         sizeof (GNUNET_HashCode)))
+          match = GNUNET_YES;
+      if (match == GNUNET_NO)
         {
           if (prCount == prSize)
-            GROW (peersResponding, prSize, prSize * 2);
+            GNUNET_array_grow (peersResponding, prSize, prSize * 2);
           memcpy (&peersResponding[prCount++],
-                  &buffer->responderId.hashPubKey, sizeof (PeerIdentity));
+                  &buffer->responderId.hashPubKey,
+                  sizeof (GNUNET_PeerIdentity));
         }
-      count = count / sizeof (PeerIdentity);
+      count = count / sizeof (GNUNET_PeerIdentity);
       if (ntohs (buffer->header.size) !=
-          sizeof (CS_tracekit_reply_MESSAGE) + count * sizeof (PeerIdentity))
+          sizeof (CS_tracekit_reply_MESSAGE) +
+          count * sizeof (GNUNET_PeerIdentity))
         {
           GE_BREAK (ectx, 0);
           break;
@@ -170,27 +173,30 @@ receiveThread (void *cls)
         }
       else
         {
-          EncName other;
+          GNUNET_EncName other;
 
           for (i = 0; i < count; i++)
             {
-              match = NO;
+              match = GNUNET_NO;
               for (j = 0; j < psCount; j++)
-                if (equalsHashCode512
-                    (&((CS_tracekit_reply_MESSAGE_GENERIC *) buffer)->
-                     peerList[i].hashPubKey, &peersSeen[j].hashPubKey))
-                  match = YES;
-              if (match == NO)
+                if (0 ==
+                    memcmp (&((CS_tracekit_reply_MESSAGE_GENERIC *) buffer)->
+                            peerList[i].hashPubKey, &peersSeen[j].hashPubKey,
+                            sizeof (GNUNET_HashCode)))
+                  match = GNUNET_YES;
+              if (match == GNUNET_NO)
                 {
                   if (psCount == psSize)
-                    GROW (peersSeen, psSize, psSize * 2);
+                    GNUNET_array_grow (peersSeen, psSize, psSize * 2);
                   memcpy (&peersSeen[psCount++],
                           &((CS_tracekit_reply_MESSAGE_GENERIC *) buffer)->
-                          peerList[i].hashPubKey, sizeof (PeerIdentity));
+                          peerList[i].hashPubKey,
+                          sizeof (GNUNET_PeerIdentity));
                 }
 
-              hash2enc (&((CS_tracekit_reply_MESSAGE_GENERIC *) buffer)->
-                        peerList[i].hashPubKey, &other);
+              GNUNET_hash_to_enc (&
+                                  ((CS_tracekit_reply_MESSAGE_GENERIC *)
+                                   buffer)->peerList[i].hashPubKey, &other);
               switch (format)
                 {
                 case 0:
@@ -214,22 +220,22 @@ receiveThread (void *cls)
             }
         }
     }
-  FREE (buffer);
+  GNUNET_free (buffer);
   for (i = 0; i < psCount; i++)
     {
-      EncName enc;
+      GNUNET_EncName enc;
 
-      match = NO;
+      match = GNUNET_NO;
       for (j = 0; j < prCount; j++)
-        if (equalsHashCode512 (&peersResponding[j].hashPubKey,
-                               &peersSeen[i].hashPubKey))
+        if (0 == memcmp (&peersResponding[j].hashPubKey,
+                         &peersSeen[i].hashPubKey, sizeof (GNUNET_HashCode)))
           {
-            match = YES;
+            match = GNUNET_YES;
             break;
           }
-      if (match == NO)
+      if (match == GNUNET_NO)
         {
-          hash2enc (&peersSeen[i].hashPubKey, &enc);
+          GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
           switch (format)
             {
             case 0:
@@ -253,7 +259,7 @@ receiveThread (void *cls)
           switch (format)
             {
             case 2:
-              hash2enc (&peersSeen[i].hashPubKey, &enc);
+              GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
               printf ("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
                       (char *) &enc, 4, (char *) &enc);
               break;
@@ -277,9 +283,9 @@ receiveThread (void *cls)
     printf ("}\n");
   if (format == 2)
     printf ("}\n");
-  SEMAPHORE_UP (doneSem);
-  FREE (peersResponding);
-  FREE (peersSeen);
+  GNUNET_semaphore_up (doneSem);
+  GNUNET_free (peersResponding);
+  GNUNET_free (peersSeen);
   return NULL;
 }
 
@@ -291,13 +297,13 @@ receiveThread (void *cls)
 int
 main (int argc, char *const *argv)
 {
-  struct ClientServerConnection *sock;
-  struct PTHREAD *messageReceiveThread;
+  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_ThreadHandle *messageReceiveThread;
   void *unused;
   CS_tracekit_probe_MESSAGE probe;
   int sleepTime;
   struct GE_Context *ectx;
-  struct CronManager *cron;
+  struct GNUNET_CronManager *cron;
   int res;
 
   res = GNUNET_init (argc,
@@ -309,7 +315,7 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return -1;
     }
-  sock = client_connection_create (ectx, cfg);
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
       fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
@@ -317,8 +323,9 @@ main (int argc, char *const *argv)
       return 1;
     }
 
-  doneSem = SEMAPHORE_CREATE (0);
-  messageReceiveThread = PTHREAD_CREATE (&receiveThread, sock, 128 * 1024);
+  doneSem = GNUNET_semaphore_create (0);
+  messageReceiveThread =
+    GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
     GE_DIE_STRERROR (ectx,
                      GE_FATAL | GE_IMMEDIATE | GE_ADMIN, "pthread_create");
@@ -329,7 +336,7 @@ main (int argc, char *const *argv)
     = htonl (getConfigurationInt ("GNUNET-TRACEKIT", "HOPS", 0xFFFFFFFF));
   probe.priority
     = htonl (getConfigurationInt ("GNUNET-TRACEKIT", "PRIORITY", 0xFFFFFFFF));
-  if (SYSERR == connection_write (sock, &probe.header))
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &probe.header))
     {
       GE_LOG (ectx,
               GE_ERROR | GE_BULK | GE_USER,
@@ -337,19 +344,20 @@ main (int argc, char *const *argv)
       return -1;
     }
   cron = cron_create (ectx);
-  cron_start (cron);
+  GNUNET_cron_start (cron);
   sleepTime = getConfigurationInt ("GNUNET-TRACEKIT", "WAIT", 0xFFFFFFFF);
   if (sleepTime == 0)
     sleepTime = 5;
-  cron_add_job (cron, &run_shutdown, cronSECONDS * sleepTime, 0, NULL);
-  GNUNET_SHUTDOWN_WAITFOR ();
-  connection_close_forever (sock);
-  SEMAPHORE_DOWN (doneSem, YES);
-  SEMAPHORE_DESTROY (doneSem);
-  PTHREAD_JOIN (messageReceiveThread, &unused);
-  connection_destroy (sock);
-  cron_stop (cron);
-  cron_destroy (cron);
+  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * sleepTime,
+                       0, NULL);
+  GNUNET_shutdown_wait_for ();
+  GNUNET_client_connection_close_forever (sock);
+  GNUNET_semaphore_down (doneSem, GNUNET_YES);
+  GNUNET_semaphore_destroy (doneSem);
+  GNUNET_thread_join (messageReceiveThread, &unused);
+  GNUNET_client_connection_destroy (sock);
+  GNUNET_cron_stop (cron);
+  GNUNET_cron_destroy (cron);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

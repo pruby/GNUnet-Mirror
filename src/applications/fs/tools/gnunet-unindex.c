@@ -30,13 +30,13 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
-#include "gnunet_util_boot.h"
+#include "gnunet_util.h"
 
 static struct GE_Context *ectx;
 
 static struct GC_Configuration *cfg;
 
-static cron_t start_time;
+static GNUNET_CronTime start_time;
 
 static int errorCode;
 
@@ -56,36 +56,39 @@ printstatus (void *cls, const FSUI_Event * event)
     case FSUI_unindex_progress:
       if (*verboselevel)
         {
-          delta = event->data.UnindexProgress.eta - get_time ();
+          delta = event->data.UnindexProgress.eta - GNUNET_get_time ();
           PRINTF (_
                   ("%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "),
                   event->data.UnindexProgress.completed,
-                  event->data.UnindexProgress.total, delta / cronSECONDS);
+                  event->data.UnindexProgress.total,
+                  delta / GNUNET_CRON_SECONDS);
           printf ("\r");
         }
       break;
     case FSUI_unindex_completed:
       if (*verboselevel)
         {
-          delta = get_time () - start_time;
+          delta = GNUNET_get_time () - start_time;
           PRINTF (_
                   ("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
                   event->data.UnindexCompleted.filename,
-                  event->data.UnindexCompleted.total, delta / cronSECONDS,
+                  event->data.UnindexCompleted.total,
+                  delta / GNUNET_CRON_SECONDS,
                   (delta ==
                    0) ? (double) (-1.0) : (double) (event->data.
                                                     UnindexCompleted.total /
-                                                    1024.0 * cronSECONDS /
+                                                    1024.0 *
+                                                    GNUNET_CRON_SECONDS /
                                                     delta));
         }
       errorCode = 0;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_unindex_error:
       printf (_("\nError unindexing file: %s\n"),
               event->data.UnindexError.message);
       errorCode = 3;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_unindex_started:
     case FSUI_unindex_stopped:
@@ -100,14 +103,14 @@ printstatus (void *cls, const FSUI_Event * event)
 /**
  * All gnunet-unindex command line options
  */
-static struct CommandLineOption gnunetunindexOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Unindex files.")),   /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+static struct GNUNET_CommandLineOption gnunetunindexOptions[] = {
+	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Unindex files.")),   /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 /**
@@ -148,10 +151,11 @@ main (int argc, char *const *argv)
                                      "VERBOSE", 0, 9999, 0, &verbose);
   /* fundamental init */
   ctx = FSUI_start (ectx,
-                    cfg, "gnunet-unindex", 2, NO, &printstatus, &verbose);
+                    cfg, "gnunet-unindex", 2, GNUNET_NO, &printstatus,
+                    &verbose);
   errorCode = 1;
-  start_time = get_time ();
-  filename = string_expandFileName (ectx, argv[i]);
+  start_time = GNUNET_get_time ();
+  filename = GNUNET_expand_file_name (ectx, argv[i]);
   ul = FSUI_startUnindex (ctx, filename);
   if (ul == NULL)
     {
@@ -160,12 +164,12 @@ main (int argc, char *const *argv)
     }
   else
     {
-      GNUNET_SHUTDOWN_WAITFOR ();
+      GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
         FSUI_abortUnindex (ctx, ul);
       FSUI_stopUnindex (ctx, ul);
     }
-  FREE (filename);
+  GNUNET_free (filename);
   FSUI_stop (ctx);
   GNUNET_fini (ectx, cfg);
   return errorCode;

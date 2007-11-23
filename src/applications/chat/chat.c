@@ -37,33 +37,33 @@ static CoreAPIForApplication *coreAPI = NULL;
 
 static ClientHandle clients[MAX_CLIENTS];
 static int clientCount;
-static HashCode512 lastMsgs[MAX_LAST_MESSAGES];
+static GNUNET_HashCode lastMsgs[MAX_LAST_MESSAGES];
 static int ringIndex;
 static Mutex chatMutex;
 
 static void
-markSeen (HashCode512 * hc)
+markSeen (GNUNET_HashCode * hc)
 {
   if (++ringIndex >= MAX_LAST_MESSAGES)
     ringIndex = 0;
-  memcpy (&lastMsgs[ringIndex], hc, sizeof (HashCode512));
+  memcpy (&lastMsgs[ringIndex], hc, sizeof (GNUNET_HashCode));
 }
 
 typedef struct
 {
-  const MESSAGE_HEADER *message;
+  const GNUNET_MessageHeader *message;
   unsigned int prio;
   unsigned int delay;
 } BCC;
 
 static void
-bccHelper (const PeerIdentity * peer, BCC * bcc)
+bccHelper (const GNUNET_PeerIdentity * peer, BCC * bcc)
 {
   coreAPI->unicast (peer, bcc->message, bcc->prio, bcc->delay);
 }
 
 static void
-broadcastToConnected (const MESSAGE_HEADER * message,
+broadcastToConnected (const GNUNET_MessageHeader * message,
                       unsigned int prio, unsigned int delay)
 {
   BCC bcc;
@@ -74,29 +74,30 @@ broadcastToConnected (const MESSAGE_HEADER * message,
 }
 
 static int
-handleChatMSG (const PeerIdentity * sender, const MESSAGE_HEADER * message)
+handleChatMSG (const GNUNET_PeerIdentity * sender,
+               const GNUNET_MessageHeader * message)
 {
   int i;
   int j;
   CS_chat_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
-  HashCode512 hc;
+  GNUNET_HashCode hc;
 
   if (ntohs (message->size) != sizeof (P2P_chat_MESSAGE))
     {
       GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
               _("Message received from peer is invalid.\n"));
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
 
   /* check if we have seen this message already */
-  hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
+  GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
   j = -1;
-  MUTEX_LOCK (&chatMutex);
+  GNUNET_mutex_lock (&chatMutex);
   for (i = 0; i < MAX_LAST_MESSAGES; i++)
-    if (equalsHashCode512 (&hc, &lastMsgs[i]))
+    if (0 == memcmp (&hc, &lastMsgs[i], sizeof (GNUNET_HashCode)))
       j = i;
   if (j == -1)
     {
@@ -116,8 +117,8 @@ handleChatMSG (const PeerIdentity * sender, const MESSAGE_HEADER * message)
          &pmsg->message[0]);
        */
     }
-  MUTEX_UNLOCK (&chatMutex);
-  return OK;
+  GNUNET_mutex_unlock (&chatMutex);
+  return GNUNET_OK;
 }
 
 static int
@@ -127,18 +128,18 @@ csHandleChatRequest (ClientHandle client, const CS_MESSAGE_HEADER * message)
   int j;
   CS_chat_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
-  HashCode512 hc;
+  GNUNET_HashCode hc;
 
   if (ntohs (message->size) != sizeof (CS_chat_MESSAGE))
     {
       GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
               _("Message received from client is invalid\n"));
-      return SYSERR;            /* invalid message */
+      return GNUNET_SYSERR;     /* invalid message */
     }
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
-  hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
-  MUTEX_LOCK (&chatMutex);
+  GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
+  GNUNET_mutex_lock (&chatMutex);
   markSeen (&hc);
 
   /* forward to all other TCP chat clients */
@@ -164,15 +165,15 @@ csHandleChatRequest (ClientHandle client, const CS_MESSAGE_HEADER * message)
   /* forward to all other nodes in the network */
   pmsg->header.type = htons (P2P_PROTO_chat_MSG);
   broadcastToConnected (&pmsg->header, 5, 1);
-  MUTEX_UNLOCK (&chatMutex);
-  return OK;
+  GNUNET_mutex_unlock (&chatMutex);
+  return GNUNET_OK;
 }
 
 static void
 chatClientExitHandler (ClientHandle client)
 {
   int i;
-  MUTEX_LOCK (&chatMutex);
+  GNUNET_mutex_lock (&chatMutex);
   for (i = 0; i < clientCount; i++)
     if (clients[i] == client)
       {
@@ -181,34 +182,36 @@ chatClientExitHandler (ClientHandle client)
         clients[i] = clients[--clientCount];
         break;
       }
-  MUTEX_UNLOCK (&chatMutex);
+  GNUNET_mutex_unlock (&chatMutex);
 }
 
 /**
  * Initialize the AFS module. This method name must match
  * the library name (libgnunet_XXX => initialize_XXX).
- * @return SYSERR on errors
+ * @return GNUNET_SYSERR on errors
  */
 int
 initialize_module_chat (CoreAPIForApplication * capi)
 {
-  int ok = OK;
+  int ok = GNUNET_OK;
 
   GE_ASSERT (ectx, sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
-  MUTEX_CREATE (&chatMutex);
+  GNUNET_mutex_create (&chatMutex);
   clientCount = 0;
   coreAPI = capi;
   GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           _("`%s' registering handlers %d and %d\n"),
           "chat", P2P_PROTO_chat_MSG, CS_PROTO_chat_MSG);
 
-  if (SYSERR == capi->registerHandler (P2P_PROTO_chat_MSG, &handleChatMSG))
-    ok = SYSERR;
-  if (SYSERR == capi->registerClientExitHandler (&chatClientExitHandler))
-    ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler (CS_PROTO_chat_MSG,
-                                             &csHandleChatRequest))
-    ok = SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->registerHandler (P2P_PROTO_chat_MSG, &handleChatMSG))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR ==
+      capi->registerClientExitHandler (&chatClientExitHandler))
+    ok = GNUNET_SYSERR;
+  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_chat_MSG,
+                                                    &csHandleChatRequest))
+    ok = GNUNET_SYSERR;
 
   GE_ASSERT (capi->ectx,
              0 == GC_set_configuration_value_string (capi->cfg,
@@ -226,7 +229,7 @@ done_module_chat ()
   coreAPI->unregisterHandler (P2P_PROTO_chat_MSG, &handleChatMSG);
   coreAPI->unregisterClientExitHandler (&chatClientExitHandler);
   coreAPI->unregisterClientHandler (CS_PROTO_chat_MSG, &csHandleChatRequest);
-  MUTEX_DESTROY (&chatMutex);
+  GNUNET_mutex_destroy (&chatMutex);
   coreAPI = NULL;
 }
 

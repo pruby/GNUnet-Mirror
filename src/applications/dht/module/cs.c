@@ -33,7 +33,7 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
-#define DEBUG_CS NO
+#define DEBUG_CS GNUNET_NO
 
 /**
  * Global core API.
@@ -61,13 +61,13 @@ static unsigned int getRecordsSize;
 /**
  * Lock.
  */
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 /**
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
 static int
-csPut (struct ClientHandle *client, const MESSAGE_HEADER * message)
+csPut (struct ClientHandle *client, const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_put_MESSAGE *req;
   unsigned int size;
@@ -75,24 +75,25 @@ csPut (struct ClientHandle *client, const MESSAGE_HEADER * message)
   if (ntohs (message->size) < sizeof (CS_dht_request_put_MESSAGE))
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   req = (const CS_dht_request_put_MESSAGE *) message;
   size = ntohs (req->header.size) - sizeof (CS_dht_request_put_MESSAGE);
-  GE_ASSERT (NULL, size < MAX_BUFFER_SIZE);
+  GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
 #if DEBUG_CS
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           "`%s' at %s:%d processes put '%.*s'\n",
           __FUNCTION__, __FILE__, __LINE__, size, &req[1]);
 #endif
-  dhtAPI->put (&req->key, ntohl (req->type), size, ntohll (req->expire) + get_time (),  /* convert to absolute time */
+  dhtAPI->put (&req->key, ntohl (req->type), size, GNUNET_ntohll (req->expire) + GNUNET_get_time (),    /* convert to absolute time */
                (const char *) &req[1]);
-  return OK;
+  return GNUNET_OK;
 }
 
 int
-get_result (const HashCode512 * key, const DataContainer * value, void *cls)
+get_result (const GNUNET_HashCode * key, const DataContainer * value,
+            void *cls)
 {
   DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
@@ -102,12 +103,12 @@ get_result (const HashCode512 * key, const DataContainer * value, void *cls)
   n =
     sizeof (CS_dht_request_put_MESSAGE) + ntohl (value->size) -
     sizeof (DataContainer);
-  if (n > MAX_BUFFER_SIZE)
+  if (n > GNUNET_MAX_BUFFER_SIZE)
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  msg = MALLOC (n);
+  msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
   msg->header.type = htons (CS_PROTO_dht_REQUEST_PUT);
   msg->expire = 0;              /* unknown */
@@ -121,7 +122,8 @@ get_result (const HashCode512 * key, const DataContainer * value, void *cls)
           __FILE__,
           __LINE__, ntohl (value->size) - sizeof (DataContainer), &value[1]);
 #endif
-  if (OK != coreAPI->sendToClient (record->client, &msg->header, YES))
+  if (GNUNET_OK !=
+      coreAPI->sendToClient (record->client, &msg->header, GNUNET_YES))
     {
       GE_LOG (coreAPI->ectx,
               GE_ERROR | GE_IMMEDIATE | GE_USER,
@@ -129,8 +131,8 @@ get_result (const HashCode512 * key, const DataContainer * value, void *cls)
               "sendToClient");
       coreAPI->terminateClientConnection (record->client);
     }
-  FREE (msg);
-  return OK;
+  GNUNET_free (msg);
+  return GNUNET_OK;
 }
 
 static void
@@ -140,21 +142,21 @@ get_timeout (void *cls)
   int i;
   int found;
 
-  found = NO;
-  MUTEX_LOCK (lock);
+  found = GNUNET_NO;
+  GNUNET_mutex_lock (lock);
   for (i = getRecordsSize - 1; i >= 0; i--)
     if (getRecords[i] == record)
       {
         getRecords[i] = getRecords[getRecordsSize - 1];
-        GROW (getRecords, getRecordsSize, getRecordsSize - 1);
-        found = YES;
+        GNUNET_array_grow (getRecords, getRecordsSize, getRecordsSize - 1);
+        found = GNUNET_YES;
         break;
       }
-  MUTEX_UNLOCK (lock);
-  if (found == YES)
+  GNUNET_mutex_unlock (lock);
+  if (found == GNUNET_YES)
     {
       dhtAPI->get_stop (record->get_record);
-      FREE (record);
+      GNUNET_free (record);
     }
 }
 
@@ -162,7 +164,7 @@ get_timeout (void *cls)
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
 static int
-csGet (struct ClientHandle *client, const MESSAGE_HEADER * message)
+csGet (struct ClientHandle *client, const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_get_MESSAGE *get;
   DHT_CLIENT_GET_RECORD *cpc;
@@ -170,7 +172,7 @@ csGet (struct ClientHandle *client, const MESSAGE_HEADER * message)
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
       GE_BREAK (NULL, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
 #if DEBUG_CS
   GE_LOG (coreAPI->ectx,
@@ -178,16 +180,16 @@ csGet (struct ClientHandle *client, const MESSAGE_HEADER * message)
           "`%s' at %s:%d processes get\n", __FUNCTION__, __FILE__, __LINE__);
 #endif
   get = (const CS_dht_request_get_MESSAGE *) message;
-  cpc = MALLOC (sizeof (DHT_CLIENT_GET_RECORD));
+  cpc = GNUNET_malloc (sizeof (DHT_CLIENT_GET_RECORD));
   cpc->client = client;
   cpc->get_record = dhtAPI->get_start (ntohl (get->type),
                                        &get->key,
-                                       ntohll (get->timeout),
+                                       GNUNET_ntohll (get->timeout),
                                        &get_result, cpc, &get_timeout, cpc);
-  MUTEX_LOCK (lock);
-  APPEND (getRecords, getRecordsSize, cpc);
-  MUTEX_UNLOCK (lock);
-  return OK;
+  GNUNET_mutex_lock (lock);
+  GNUNET_array_append (getRecords, getRecordsSize, cpc);
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
 }
 
 /**
@@ -200,7 +202,7 @@ csClientExit (struct ClientHandle *client)
   int i;
   struct DHT_GET_RECORD *gr;
   DHT_CLIENT_GET_RECORD *cgr;
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < getRecordsSize; i++)
     {
       cgr = getRecords[i];
@@ -208,15 +210,15 @@ csClientExit (struct ClientHandle *client)
         {
           gr = cgr->get_record;
           getRecords[i] = getRecords[getRecordsSize - 1];
-          GROW (getRecords, getRecordsSize, getRecordsSize - 1);
-          MUTEX_UNLOCK (lock);
+          GNUNET_array_grow (getRecords, getRecordsSize, getRecordsSize - 1);
+          GNUNET_mutex_unlock (lock);
           dhtAPI->get_stop (gr);
-          FREE (cgr);
-          MUTEX_LOCK (lock);
+          GNUNET_free (cgr);
+          GNUNET_mutex_lock (lock);
           i--;
         }
     }
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 }
 
 int
@@ -226,22 +228,22 @@ initialize_module_dht (CoreAPIForApplication * capi)
 
   dhtAPI = capi->requestService ("dht");
   if (dhtAPI == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   coreAPI = capi;
   GE_LOG (coreAPI->ectx,
           GE_DEBUG | GE_REQUEST | GE_USER,
           _("`%s' registering client handlers: %d %d\n"),
           "dht", CS_PROTO_dht_REQUEST_PUT, CS_PROTO_dht_REQUEST_GET);
-  status = OK;
-  lock = MUTEX_CREATE (NO);
-  if (SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_PUT,
-                                             &csPut))
-    status = SYSERR;
-  if (SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_GET,
-                                             &csGet))
-    status = SYSERR;
-  if (SYSERR == capi->registerClientExitHandler (&csClientExit))
-    status = SYSERR;
+  status = GNUNET_OK;
+  lock = GNUNET_mutex_create (GNUNET_NO);
+  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_PUT,
+                                                    &csPut))
+    status = GNUNET_SYSERR;
+  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_GET,
+                                                    &csGet))
+    status = GNUNET_SYSERR;
+  if (GNUNET_SYSERR == capi->registerClientExitHandler (&csClientExit))
+    status = GNUNET_SYSERR;
   GE_ASSERT (capi->ectx,
              0 == GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
@@ -260,23 +262,23 @@ done_module_dht ()
 {
   int status;
 
-  status = OK;
+  status = GNUNET_OK;
   GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER, "DHT: shutdown\n");
-  if (OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_PUT,
-                                              &csPut))
-    status = SYSERR;
-  if (OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_GET,
-                                              &csGet))
-    status = SYSERR;
-  if (OK != coreAPI->unregisterClientExitHandler (&csClientExit))
-    status = SYSERR;
+  if (GNUNET_OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_PUT,
+                                                     &csPut))
+    status = GNUNET_SYSERR;
+  if (GNUNET_OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_GET,
+                                                     &csGet))
+    status = GNUNET_SYSERR;
+  if (GNUNET_OK != coreAPI->unregisterClientExitHandler (&csClientExit))
+    status = GNUNET_SYSERR;
 
   while (getRecordsSize > 0)
     get_timeout (getRecords[0]);
   coreAPI->releaseService (dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   return status;
 }
 

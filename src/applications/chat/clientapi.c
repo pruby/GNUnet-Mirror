@@ -35,9 +35,9 @@
  */
 struct GNUNET_CHAT_Room
 {
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
 
-  struct PTHREAD *listen_thread;
+  struct GNUNET_ThreadHandle *listen_thread;
 
   struct GE_Context *ectx;
 
@@ -45,13 +45,13 @@ struct GNUNET_CHAT_Room
 
   char *nickname;
 
-  const PublicKey *my_public_key;
+  const GNUNET_RSA_PublicKey *my_public_key;
 
-  const struct PrivateKey *my_private_key;
+  const struct GNUNET_RSA_PrivateKey *my_private_key;
 
   char *memberInfo;
 
-  GNUNET_CHAT_Message_Callback callback;
+  GNUNET_CHAT_MessageCallback callback;
 
   void *callback_cls;
 
@@ -66,34 +66,34 @@ thread_main (void *rcls)
 
 /**
  * List all of the (publically visible) chat rooms.
- * @return number of rooms on success, SYSERR if iterator aborted
+ * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
  */
 int
 GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
                         struct GC_Configuration *cfg,
-                        GNUNET_CHAT_Room_Iterator it, void *cls)
+                        GNUNET_CHAT_RoomIterator it, void *cls)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
- * Join a chat room.  
+ * Join a chat room.
  *
  * @param nickname the nick you want to use
  * @param memberInfo public information about you
  * @param callback which function to call if a message has
  *        been received?
  * @param cls argument to callback
- * @return NULL on error 
+ * @return NULL on error
  */
 struct GNUNET_CHAT_Room *
 GNUNET_CHAT_join_room (struct GE_Context *ectx,
                        struct GC_Configuration *cfg,
                        const char *nickname,
-                       const PublicKey * me,
-                       const struct PrivateKey *key,
+                       const GNUNET_RSA_PublicKey * me,
+                       const struct GNUNET_RSA_PrivateKey *key,
                        const char *memberInfo,
-                       GNUNET_CHAT_Message_Callback callback, void *cls)
+                       GNUNET_CHAT_MessageCallback callback, void *cls)
 {
   // connect
 
@@ -120,28 +120,28 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *room)
  * Send a message.
  *
  * @param receiver use NULL to send to everyone in the room
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
 GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           const char *message,
-                          GNUNET_CHAT_Message_Confirmation callback,
+                          GNUNET_CHAT_MessageConfirmation callback,
                           void *cls,
                           GNUNET_CHAT_MSG_OPTIONS options,
-                          const PublicKey * receiver)
+                          const GNUNET_RSA_PublicKey * receiver)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 /**
  * List all of the (known) chat members.
- * @return number of rooms on success, SYSERR if iterator aborted
+ * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
  */
 int
 GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
-                          GNUNET_CHAT_Member_Iterator it, void *cls)
+                          GNUNET_CHAT_MemberIterator it, void *cls)
 {
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 

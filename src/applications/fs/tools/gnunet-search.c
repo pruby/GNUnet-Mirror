@@ -27,8 +27,7 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
-#include "gnunet_util_cron.h"
-#include "gnunet_util_boot.h"
+#include "gnunet_util.h"
 
 
 static struct GE_Context *ectx;
@@ -58,7 +57,7 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
   printf ("\t%20s: %s\n",
           dgettext ("libextractor",
                     EXTRACTOR_getKeywordTypeAsString (type)), data);
-  return OK;
+  return GNUNET_OK;
 }
 
 static void
@@ -80,19 +79,19 @@ eventCallback (void *cls, const FSUI_Event * event)
     {
     case FSUI_search_error:
       errorCode = 3;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_search_aborted:
       errorCode = 4;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_search_completed:
       errorCode = 0;
-      GNUNET_SHUTDOWN_INITIATE ();
+      GNUNET_shutdown_initiate ();
       break;
     case FSUI_search_result:
       /* retain URIs for possible directory dump later */
-      GROW (fis, fiCount, fiCount + 1);
+      GNUNET_array_grow (fis, fiCount, fiCount + 1);
       fis[fiCount - 1].uri = ECRS_dupUri (event->data.SearchResult.fi.uri);
       fis[fiCount - 1].meta
         = ECRS_dupMetaData (event->data.SearchResult.fi.meta);
@@ -114,8 +113,8 @@ eventCallback (void *cls, const FSUI_Event * event)
         printf ("gnunet-download %s\n", uri);
       printMeta (event->data.SearchResult.fi.meta);
       printf ("\n");
-      FREENONNULL (filename);
-      FREE (uri);
+      GNUNET_free_non_null (filename);
+      GNUNET_free (uri);
       break;
     case FSUI_search_started:
     case FSUI_search_stopped:
@@ -130,26 +129,26 @@ eventCallback (void *cls, const FSUI_Event * event)
 /**
  * All gnunet-search command line options
  */
-static struct CommandLineOption gnunetsearchOptions[] = {
+static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   {'a', "anonymity", "LEVEL",
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
-   1, &gnunet_getopt_configure_set_uint, &anonymity},
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Search GNUnet for files.")), /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+   1, &GNUNET_getopt_configure_set_uint, &anonymity},
+   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Search GNUnet for files.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'m', "max", "LIMIT",
    gettext_noop ("exit after receiving LIMIT results"),
-   1, &gnunet_getopt_configure_set_uint, &max_results},
+   1, &GNUNET_getopt_configure_set_uint, &max_results},
   {'o', "output", "FILENAME",
    gettext_noop ("write encountered (decrypted) search results to FILENAME"),
-   1, &gnunet_getopt_configure_set_string, &output_filename},
+   1, &GNUNET_getopt_configure_set_string, &output_filename},
   {'t', "timeout", "DELAY",
    gettext_noop ("wait DELAY seconds for search results before aborting"),
-   1, &gnunet_getopt_configure_set_uint, &delay},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
-  COMMAND_LINE_OPTION_VERBOSE,
-  COMMAND_LINE_OPTION_END,
+   1, &GNUNET_getopt_configure_set_uint, &delay},
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERBOSE,
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 /**
@@ -171,7 +170,7 @@ main (int argc, char *const *argv)
                    argv,
                    "gnunet-search [OPTIONS] [KEYWORDS]",
                    &cfgFilename, gnunetsearchOptions, &ectx, &cfg);
-  if (i == SYSERR)
+  if (i == GNUNET_SYSERR)
     {
       GNUNET_fini (ectx, cfg);
       return -1;
@@ -186,16 +185,19 @@ main (int argc, char *const *argv)
     }
   if (max_results == 0)
     max_results = (unsigned int) -1;    /* infty */
-  ctx = FSUI_start (ectx, cfg, "gnunet-search", 4, NO, &eventCallback, NULL);
+  ctx =
+    FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO, &eventCallback,
+                NULL);
   if (ctx == NULL)
     {
       ECRS_freeUri (uri);
       GNUNET_fini (ectx, cfg);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   errorCode = 1;
   s = FSUI_startSearch (ctx,
-                        anonymity, max_results, delay * cronSECONDS, uri);
+                        anonymity, max_results, delay * GNUNET_CRON_SECONDS,
+                        uri);
   ECRS_freeUri (uri);
   if (s == NULL)
     {
@@ -203,7 +205,7 @@ main (int argc, char *const *argv)
       FSUI_stop (ctx);
       goto quit;
     }
-  GNUNET_SHUTDOWN_WAITFOR ();
+  GNUNET_shutdown_wait_for ();
   if (errorCode == 1)
     FSUI_abortSearch (ctx, s);
   FSUI_stopSearch (ctx, s);
@@ -218,21 +220,22 @@ main (int argc, char *const *argv)
 
       meta = ECRS_createMetaData ();
       /* ?: anything here to put into meta? */
-      if (OK == ECRS_createDirectory (ectx, &data, &n, fiCount, fis, meta))
+      if (GNUNET_OK ==
+          ECRS_createDirectory (ectx, &data, &n, fiCount, fis, meta))
         {
-          outfile = string_expandFileName (ectx, output_filename);
-          disk_file_write (ectx, outfile, data, n, "600");
-          FREE (outfile);
-          FREE (data);
+          outfile = GNUNET_expand_file_name (ectx, output_filename);
+          GNUNET_disk_file_write (ectx, outfile, data, n, "600");
+          GNUNET_free (outfile);
+          GNUNET_free (data);
         }
-      FREE (output_filename);
+      GNUNET_free (output_filename);
     }
   for (i = 0; i < fiCount; i++)
     {
       ECRS_freeUri (fis[i].uri);
       ECRS_freeMetaData (fis[i].meta);
     }
-  GROW (fis, fiCount, 0);
+  GNUNET_array_grow (fis, fiCount, 0);
 quit:
   GNUNET_fini (ectx, cfg);
   return errorCode;

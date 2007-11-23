@@ -12,8 +12,5 @@ libgnunetmodule_datastore_la_SOURCES = \
 libgnunetmodule_datastore_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 libgnunetmodule_datastore_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
- $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
- $(top_builddir)/src/util/containers/libgnunetutil_containers.la 
+ $(top_builddir)/src/util/libgnunetutil.la 
 

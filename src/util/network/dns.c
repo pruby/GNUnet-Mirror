@@ -39,8 +39,8 @@ struct IPCache
   struct IPCache *next;
   char *addr;
   struct sockaddr *sa;
-  cron_t last_refresh;
-  cron_t last_request;
+  GNUNET_CronTime last_refresh;
+  GNUNET_CronTime last_request;
   unsigned int salen;
 #if HAVE_ADNS
   int posted;
@@ -50,7 +50,7 @@ struct IPCache
 
 static struct IPCache *head;
 
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 #if HAVE_ADNS
 static int a_init;
@@ -72,7 +72,7 @@ cache_resolve (struct IPCache *cache)
       a_init = 1;
       adns_init (&a_state, adns_if_noerrprint, NULL);
     }
-  if (cache->posted == NO)
+  if (cache->posted == GNUNET_NO)
     {
       ret = adns_submit_reverse (a_state, cache->sa, adns_r_ptr,
 #ifdef adns_qf_none
@@ -82,7 +82,7 @@ cache_resolve (struct IPCache *cache)
 #endif
                                  cache, &cache->query);
       if (adns_s_ok == ret)
-        cache->posted = YES;
+        cache->posted = GNUNET_YES;
     }
   adns_processany (a_state);
   answer = NULL;
@@ -92,17 +92,17 @@ cache_resolve (struct IPCache *cache)
       if (answer != NULL)
         {
           if ((answer->rrs.str != NULL) && (*(answer->rrs.str) != NULL))
-            cache->addr = STRDUP (*(answer->rrs.str));
+            cache->addr = GNUNET_strdup (*(answer->rrs.str));
           free (answer);
         }
-      cache->posted = NO;
+      cache->posted = GNUNET_NO;
     }
 #else
 #if HAVE_GETNAMEINFO
   char hostname[256];
 
   if (0 == getnameinfo (cache->sa, cache->salen, hostname, 255, NULL, 0, 0))
-    cache->addr = STRDUP (hostname);
+    cache->addr = GNUNET_strdup (hostname);
 #else
 #if HAVE_GETHOSTBYADDR
   struct hostent *ent;
@@ -111,7 +111,7 @@ cache_resolve (struct IPCache *cache)
     {
     case AF_INET:
       ent = gethostbyaddr (&((struct sockaddr_in *) cache->sa)->sin_addr,
-                           sizeof (IPaddr), AF_INET);
+                           sizeof (GNUNET_IPv4Address), AF_INET);
       break;
     case AF_INET6:
       ent = gethostbyaddr (&((struct sockaddr_in6 *) cache->sa)->sin6_addr,
@@ -121,7 +121,7 @@ cache_resolve (struct IPCache *cache)
       ent = NULL;
     }
   if (ent != NULL)
-    cache->addr = STRDUP (ent->h_name);
+    cache->addr = GNUNET_strdup (ent->h_name);
 #endif
 #endif
 #endif
@@ -132,16 +132,16 @@ resolve (const struct sockaddr *sa, unsigned int salen)
 {
   struct IPCache *ret;
 
-  ret = MALLOC (sizeof (struct IPCache));
+  ret = GNUNET_malloc (sizeof (struct IPCache));
 #if HAVE_ADNS
-  ret->posted = NO;
+  ret->posted = GNUNET_NO;
 #endif
   ret->next = head;
   ret->salen = salen;
-  ret->sa = salen == 0 ? NULL : MALLOC (salen);
+  ret->sa = salen == 0 ? NULL : GNUNET_malloc (salen);
   memcpy (ret->sa, sa, salen);
-  ret->last_request = get_time ();
-  ret->last_refresh = get_time ();
+  ret->last_request = GNUNET_get_time ();
+  ret->last_refresh = GNUNET_get_time ();
   ret->addr = NULL;
   cache_resolve (ret);
   head = ret;
@@ -161,12 +161,13 @@ no_resolve (const struct sockaddr *sa, unsigned int salen)
     case AF_INET:
       if (salen != sizeof (struct sockaddr_in))
         return NULL;
-      ret = STRDUP ("255.255.255.255");
-      SNPRINTF (ret,
-                strlen ("255.255.255.255") + 1,
-                "%u.%u.%u.%u",
-                PRIP (ntohl
-                      (*(int *) &((struct sockaddr_in *) sa)->sin_addr)));
+      ret = GNUNET_strdup ("255.255.255.255");
+      GNUNET_snprintf (ret,
+                       strlen ("255.255.255.255") + 1,
+                       "%u.%u.%u.%u",
+                       GNUNET_PRIP (ntohl
+                                    (*(int *) &((struct sockaddr_in *) sa)->
+                                     sin_addr)));
       break;
     case AF_INET6:
       if (salen != sizeof (struct sockaddr_in6))
@@ -174,7 +175,7 @@ no_resolve (const struct sockaddr *sa, unsigned int salen)
       inet_ntop (AF_INET6,
                  &((struct sockaddr_in6 *) sa)->sin6_addr,
                  inet6, INET6_ADDRSTRLEN);
-      ret = STRDUP (inet6);
+      ret = GNUNET_strdup (inet6);
       break;
     default:
       ret = NULL;
@@ -192,46 +193,46 @@ no_resolve (const struct sockaddr *sa, unsigned int salen)
  * @param sa should be of type "struct sockaddr*"
  */
 char *
-network_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
+GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
 {
   const struct sockaddr *sa = sav;
   char *ret;
   struct IPCache *cache;
   struct IPCache *prev;
-  cron_t now;
+  GNUNET_CronTime now;
 
   if (salen < sizeof (struct sockaddr))
     return NULL;
-  now = get_time ();
-  MUTEX_LOCK (lock);
+  now = GNUNET_get_time ();
+  GNUNET_mutex_lock (lock);
   cache = head;
   prev = NULL;
   while ((cache != NULL) &&
          ((cache->salen != salen) || (0 != memcmp (cache->sa, sa, salen))))
     {
-      if (cache->last_request + 60 * cronMINUTES < now)
+      if (cache->last_request + 60 * GNUNET_CRON_MINUTES < now)
         {
 #if HAVE_ADNS
-          if (cache->posted == YES)
+          if (cache->posted == GNUNET_YES)
             {
               adns_cancel (cache->query);
-              cache->posted = NO;
+              cache->posted = GNUNET_NO;
             }
 #endif
           if (prev != NULL)
             {
               prev->next = cache->next;
-              FREENONNULL (cache->addr);
-              FREE (cache->sa);
-              FREE (cache);
+              GNUNET_free_non_null (cache->addr);
+              GNUNET_free (cache->sa);
+              GNUNET_free (cache);
               cache = prev->next;
             }
           else
             {
               head = cache->next;
-              FREENONNULL (cache->addr);
-              FREE (cache->sa);
-              FREE (cache);
+              GNUNET_free_non_null (cache->addr);
+              GNUNET_free (cache->sa);
+              GNUNET_free (cache);
               cache = head;
             }
           continue;
@@ -242,31 +243,31 @@ network_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
   if (cache != NULL)
     {
       cache->last_request = now;
-      if (cache->last_refresh + 12 * cronHOURS < now)
+      if (cache->last_refresh + 12 * GNUNET_CRON_HOURS < now)
         {
-          FREENONNULL (cache->addr);
+          GNUNET_free_non_null (cache->addr);
           cache->addr = NULL;
           cache->salen = 0;
           cache_resolve (cache);
         }
 #if HAVE_ADNS
-      if (cache->posted == YES)
+      if (cache->posted == GNUNET_YES)
         {
           cache_resolve (cache);
         }
 #endif
     }
-  else if (do_resolve == NO)
+  else if (do_resolve == GNUNET_NO)
     {
-      MUTEX_UNLOCK (lock);
+      GNUNET_mutex_unlock (lock);
       return no_resolve (sav, salen);
     }
   else
     cache = resolve (sa, salen);
-  ret = (cache->addr == NULL) ? NULL : STRDUP (cache->addr);
+  ret = (cache->addr == NULL) ? NULL : GNUNET_strdup (cache->addr);
   if (ret == NULL)
     ret = no_resolve (sa, salen);
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
   return ret;
 }
 
@@ -275,26 +276,26 @@ network_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
 
 void __attribute__ ((constructor)) gnunet_dns_ltdl_init ()
 {
-  lock = MUTEX_CREATE (YES);
+  lock = GNUNET_mutex_create (GNUNET_YES);
 }
 
 void __attribute__ ((destructor)) gnunet_dns_ltdl_fini ()
 {
   struct IPCache *pos;
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   while (head != NULL)
     {
       pos = head->next;
 #if HAVE_ADNS
-      if (head->posted == YES)
+      if (head->posted == GNUNET_YES)
         {
           adns_cancel (head->query);
-          head->posted = NO;
+          head->posted = GNUNET_NO;
         }
 #endif
-      FREENONNULL (head->addr);
-      FREE (head->sa);
-      FREE (head);
+      GNUNET_free_non_null (head->addr);
+      GNUNET_free (head->sa);
+      GNUNET_free (head);
       head = pos;
     }
 #if HAVE_ADNS

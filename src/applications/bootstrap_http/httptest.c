@@ -45,14 +45,14 @@ rs (const char *name)
 static int
 rsx (void *s)
 {
-  return OK;
+  return GNUNET_OK;
 }
 
 static unsigned int count;
 
 
 static void
-hello (const P2P_hello_MESSAGE * m, void *arg)
+hello (const GNUNET_MessageHello * m, void *arg)
 {
   count++;
 }
@@ -60,9 +60,9 @@ hello (const P2P_hello_MESSAGE * m, void *arg)
 static int
 terminate (void *arg)
 {
-  if (GNUNET_SHUTDOWN_TEST () == YES)
-    return NO;
-  return YES;                   /* todo: add timeout? */
+  if (GNUNET_shutdown_test () == GNUNET_YES)
+    return GNUNET_NO;
+  return GNUNET_YES;            /* todo: add timeout? */
 }
 
 static void *
@@ -79,15 +79,15 @@ main (int argc, char **argv)
 {
   static CoreAPIForApplication capi;
   struct GC_Configuration *cfg;
-  struct PluginHandle *plugin;
+  struct GNUNET_PluginHandle *plugin;
   Bootstrap_ServiceAPI *boot;
-  struct PTHREAD *p;
+  struct GNUNET_ThreadHandle *p;
   void *unused;
   ServiceInitMethod init;
   ServiceDoneMethod done;
 
   count = 0;
-  cfg = GC_create_C_impl ();
+  cfg = GC_create ();
   GC_set_configuration_value_string (cfg,
                                      NULL,
                                      "GNUNETD",
@@ -97,14 +97,16 @@ main (int argc, char **argv)
   capi.cfg = cfg;
   capi.requestService = &rs;
   capi.releaseService = &rsx;
-  plugin = os_plugin_load (NULL, "libgnunetmodule_", "bootstrap");
-  init = os_plugin_resolve_function (plugin, "provide_module_", YES);
+  plugin = GNUNET_plugin_load (NULL, "libgnunetmodule_", "bootstrap");
+  init =
+    GNUNET_plugin_resolve_function (plugin, "provide_module_", GNUNET_YES);
   boot = init (&capi);
-  p = PTHREAD_CREATE (&pt, boot, 1024 * 64);
-  PTHREAD_JOIN (p, &unused);
-  done = os_plugin_resolve_function (plugin, "release_module_", YES);
+  p = GNUNET_thread_create (&pt, boot, 1024 * 64);
+  GNUNET_thread_join (p, &unused);
+  done =
+    GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
   done ();
-  os_plugin_unload (plugin);
+  GNUNET_plugin_unload (plugin);
   GC_free (cfg);
   if (count == 0)
     return 1;

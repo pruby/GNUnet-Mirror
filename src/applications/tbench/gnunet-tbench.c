@@ -27,13 +27,11 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
-#include "gnunet_util_network_client.h"
-#include "gnunet_util_boot.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 #include "tbench.h"
 
 #define DEFAULT_MESSAGE_SIZE  10
-#define DEFAULT_TIMEOUT  	(2 * cronSECONDS)
+#define DEFAULT_TIMEOUT  	(2 * GNUNET_CRON_SECONDS)
 #define DEFAULT_SPACING  	0
 
 #define OF_HUMAN_READABLE 0
@@ -49,9 +47,9 @@ static unsigned long long messageIterations = 1;
 
 static unsigned long long messageTrainSize = 1;
 
-static cron_t messageTimeOut = DEFAULT_TIMEOUT;
+static GNUNET_CronTime messageTimeOut = DEFAULT_TIMEOUT;
 
-static cron_t messageSpacing = DEFAULT_SPACING;
+static GNUNET_CronTime messageSpacing = DEFAULT_SPACING;
 
 static int outputFormat = OF_HUMAN_READABLE;
 
@@ -60,38 +58,38 @@ static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 /**
  * All gnunet-tbench command line options
  */
-static struct CommandLineOption gnunettbenchOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
+static struct GNUNET_CommandLineOption gnunettbenchOptions[] = {
+	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+	GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
   {'g', "gnuplot", NULL,
    gettext_noop ("output in gnuplot format"), 0,
-   &gnunet_getopt_configure_set_one, &outputFormat},
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+   &GNUNET_getopt_configure_set_one, &outputFormat},
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   {'i', "iterations", "ITER",
    gettext_noop ("number of iterations"), 1,
-   &gnunet_getopt_configure_set_ulong, &messageIterations},
-  COMMAND_LINE_OPTION_LOGGING,  /* -L */
+   &GNUNET_getopt_configure_set_ulong, &messageIterations},
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'n', "msg", "MESSAGES",
    gettext_noop ("number of messages to use per iteration"), 1,
-   &gnunet_getopt_configure_set_ulong, &messageCnt},
+   &GNUNET_getopt_configure_set_ulong, &messageCnt},
   {'r', "rec", "RECEIVER",
    gettext_noop ("receiver host identifier (ENC file name)"), 1,
-   &gnunet_getopt_configure_set_string, &messageReceiver},
+   &GNUNET_getopt_configure_set_string, &messageReceiver},
   {'s', "size", "SIZE",
    gettext_noop ("message size"), 1,
-   &gnunet_getopt_configure_set_ulong, &messageSize},
+   &GNUNET_getopt_configure_set_ulong, &messageSize},
   {'S', "space", "SPACE",
    gettext_noop ("sleep for SPACE ms after each a message block"), 1,
-   &gnunet_getopt_configure_set_ulong, &messageSpacing},
+   &GNUNET_getopt_configure_set_ulong, &messageSpacing},
   {'t', "timeout", "TIMEOUT",
    gettext_noop ("time to wait for the completion of an iteration (in ms)"),
    1,
-   &gnunet_getopt_configure_set_ulong, &messageTimeOut},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   &GNUNET_getopt_configure_set_ulong, &messageTimeOut},
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   {'X', "xspace", "COUNT",
    gettext_noop ("number of messages in a message block"), 1,
-   &gnunet_getopt_configure_set_ulong, &messageTrainSize},
-  COMMAND_LINE_OPTION_END,
+   &GNUNET_getopt_configure_set_ulong, &messageTrainSize},
+  GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 
@@ -105,7 +103,7 @@ static struct CommandLineOption gnunettbenchOptions[] = {
 int
 main (int argc, char *const *argv)
 {
-  struct ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE *buffer;
   float messagesPercentLoss;
@@ -122,7 +120,7 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return -1;
     }
-  sock = client_connection_create (ectx, cfg);
+  sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
       fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
@@ -135,39 +133,42 @@ main (int argc, char *const *argv)
   msg.msgSize = htonl (messageSize);
   msg.msgCnt = htonl (messageCnt);
   msg.iterations = htonl (messageIterations);
-  msg.intPktSpace = htonll (messageSpacing);
+  msg.intPktSpace = GNUNET_htonll (messageSpacing);
   msg.trainSize = htonl (messageTrainSize);
-  msg.timeOut = htonll (messageTimeOut);
+  msg.timeOut = GNUNET_htonll (messageTimeOut);
   msg.priority = htonl (5);
   if (messageReceiver == NULL)
     {
       fprintf (stderr, _("You must specify a receiver!\n"));
-      connection_destroy (sock);
+      GNUNET_client_connection_destroy (sock);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  if (OK != enc2hash (messageReceiver, &msg.receiverId.hashPubKey))
+  if (GNUNET_OK !=
+      GNUNET_enc_to_hash (messageReceiver, &msg.receiverId.hashPubKey))
     {
       fprintf (stderr,
                _
                ("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
                messageReceiver);
-      FREE (messageReceiver);
-      connection_destroy (sock);
+      GNUNET_free (messageReceiver);
+      GNUNET_client_connection_destroy (sock);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  FREE (messageReceiver);
+  GNUNET_free (messageReceiver);
 
-  if (SYSERR == connection_write (sock, &msg.header))
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &msg.header))
     {
-      connection_destroy (sock);
+      GNUNET_client_connection_destroy (sock);
       GNUNET_fini (ectx, cfg);
       return -1;
     }
 
   buffer = NULL;
-  if (OK == connection_read (sock, (MESSAGE_HEADER **) & buffer))
+  if (GNUNET_OK ==
+      GNUNET_client_connection_read (sock,
+                                     (GNUNET_MessageHeader **) & buffer))
     {
       GE_ASSERT (ectx,
                  ntohs (buffer->header.size) ==
@@ -186,8 +187,8 @@ main (int argc, char *const *argv)
         {
         case OF_HUMAN_READABLE:
           printf (_("Time:\n"));
-          PRINTF (_("\tmax      %llums\n"), ntohll (buffer->max_time));
-          PRINTF (_("\tmin      %llums\n"), ntohll (buffer->min_time));
+          PRINTF (_("\tmax      %llums\n"), GNUNET_ntohll (buffer->max_time));
+          PRINTF (_("\tmin      %llums\n"), GNUNET_ntohll (buffer->min_time));
           printf (_("\tmean     %8.4fms\n"), buffer->mean_time);
           printf (_("\tvariance %8.4fms\n"), buffer->variance_time);
 
@@ -203,13 +204,13 @@ main (int argc, char *const *argv)
         default:
           printf (_("Output format not known, this should not happen.\n"));
         }
-      FREE (buffer);
+      GNUNET_free (buffer);
     }
   else
     printf (_
             ("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));
 
-  connection_destroy (sock);
+  GNUNET_client_connection_destroy (sock);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

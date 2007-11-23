@@ -38,7 +38,7 @@ MetaData *
 ECRS_createMetaData ()
 {
   MetaData *ret;
-  ret = MALLOC (sizeof (MetaData));
+  ret = GNUNET_malloc (sizeof (MetaData));
   ret->items = NULL;
   ret->itemCount = 0;
   return ret;
@@ -52,9 +52,9 @@ ECRS_freeMetaData (MetaData * md)
 {
   int i;
   for (i = 0; i < md->itemCount; i++)
-    FREE (md->items[i].data);
-  GROW (md->items, md->itemCount, 0);
-  FREE (md);
+    GNUNET_free (md->items[i].data);
+  GNUNET_array_grow (md->items, md->itemCount, 0);
+  GNUNET_free (md);
 }
 
 /**
@@ -65,18 +65,18 @@ void
 ECRS_addPublicationDateToMetaData (MetaData * md)
 {
   char *dat;
-  TIME_T t;
+  GNUNET_Int32Time t;
 
-  TIME (&t);
+  GNUNET_get_time_int32 (&t);
   ECRS_delFromMetaData (md, EXTRACTOR_PUBLICATION_DATE, NULL);
-  dat = GN_CTIME (&t);
+  dat = GNUNET_int32_time_to_string (&t);
   ECRS_addToMetaData (md, EXTRACTOR_PUBLICATION_DATE, dat);
-  FREE (dat);
+  GNUNET_free (dat);
 }
 
 /**
  * Extend metadata.
- * @return OK on success, SYSERR if this entry already exists
+ * @return GNUNET_OK on success, GNUNET_SYSERR if this entry already exists
  */
 int
 ECRS_addToMetaData (MetaData * md,
@@ -89,39 +89,39 @@ ECRS_addToMetaData (MetaData * md,
     {
       if ((md->items[idx].type == type) &&
           (0 == strcmp (md->items[idx].data, data)))
-        return SYSERR;
+        return GNUNET_SYSERR;
     }
   idx = md->itemCount;
-  GROW (md->items, md->itemCount, md->itemCount + 1);
+  GNUNET_array_grow (md->items, md->itemCount, md->itemCount + 1);
   md->items[idx].type = type;
-  md->items[idx].data = STRDUP (data);
-  return OK;
+  md->items[idx].data = GNUNET_strdup (data);
+  return GNUNET_OK;
 }
 
 /**
  * Remove an item.
- * @return OK on success, SYSERR if the item does not exist in md
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the item does not exist in md
  */
 int
 ECRS_delFromMetaData (MetaData * md,
                       EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
-  int ret = SYSERR;
+  int ret = GNUNET_SYSERR;
   for (idx = 0; idx < md->itemCount; idx++)
     {
       if ((md->items[idx].type == type) &&
           ((data == NULL) || (0 == strcmp (md->items[idx].data, data))))
         {
-          FREE (md->items[idx].data);
+          GNUNET_free (md->items[idx].data);
           md->items[idx] = md->items[md->itemCount - 1];
-          GROW (md->items, md->itemCount, md->itemCount - 1);
+          GNUNET_array_grow (md->items, md->itemCount, md->itemCount - 1);
           if (data == NULL)
             {
-              ret = OK;
+              ret = GNUNET_OK;
               continue;
             }
-          return OK;
+          return GNUNET_OK;
         }
     }
   return ret;
@@ -145,9 +145,9 @@ ECRS_getMetaData (const MetaData * md,
       if (md->items[i].type != EXTRACTOR_THUMBNAIL_DATA)
         {
           if ((iterator != NULL) &&
-              (OK != iterator (md->items[i].type,
-                               md->items[i].data, closure)))
-            return SYSERR;
+              (GNUNET_OK != iterator (md->items[i].type,
+                                      md->items[i].data, closure)))
+            return GNUNET_SYSERR;
         }
       else
         sub++;
@@ -167,7 +167,7 @@ ECRS_getFromMetaData (const MetaData * md, EXTRACTOR_KeywordType type)
 
   for (i = md->itemCount - 1; i >= 0; i--)
     if (type == md->items[i].type)
-      return STRDUP (md->items[i].data);
+      return GNUNET_strdup (md->items[i].data);
   return NULL;
 }
 
@@ -264,12 +264,12 @@ ECRS_getThumbnailFromMetaData (const struct ECRS_MetaData * md,
     return 0;
   if (strlen (encoded) == 0)
     {
-      FREE (encoded);
+      GNUNET_free (encoded);
       return 0;                 /* invalid */
     }
   *thumb = NULL;
   ret = decodeThumbnail (encoded, thumb, &size);
-  FREE (encoded);
+  GNUNET_free (encoded);
   if (ret == 0)
     return size;
   else
@@ -296,7 +296,7 @@ ECRS_dupMetaData (const MetaData * md)
 /**
  * Extract meta-data from a file.
  *
- * @return SYSERR on error, otherwise the number
+ * @return GNUNET_SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
 int
@@ -310,7 +310,7 @@ ECRS_extractMetaData (struct GE_Context *ectx,
   int ret;
 
   if (filename == NULL)
-    return SYSERR;
+    return GNUNET_SYSERR;
   if (extractors == NULL)
     return 0;
   head = EXTRACTOR_getKeywords (extractors, filename);
@@ -320,7 +320,8 @@ ECRS_extractMetaData (struct GE_Context *ectx,
   ret = 0;
   while (pos != NULL)
     {
-      if (OK == ECRS_addToMetaData (md, pos->keywordType, pos->keyword))
+      if (GNUNET_OK ==
+          ECRS_addToMetaData (md, pos->keywordType, pos->keyword))
         ret++;
       pos = pos->next;
     }
@@ -341,18 +342,18 @@ tryCompression (char *data, unsigned int oldSize)
   /* documentation says 100.1% oldSize + 12 bytes, but we
      should be able to overshoot by more to be safe */
 #endif
-  tmp = MALLOC (dlen);
+  tmp = GNUNET_malloc (dlen);
   if (Z_OK == compress2 ((Bytef *) tmp,
                          &dlen, (const Bytef *) data, oldSize, 9))
     {
       if (dlen < oldSize)
         {
           memcpy (data, tmp, dlen);
-          FREE (tmp);
+          GNUNET_free (tmp);
           return dlen;
         }
     }
-  FREE (tmp);
+  GNUNET_free (tmp);
   return oldSize;
 }
 
@@ -371,7 +372,7 @@ decompress (const char *input,
   uLongf olen;
 
   olen = outputSize;
-  output = MALLOC (olen);
+  output = GNUNET_malloc (olen);
   if (Z_OK == uncompress ((Bytef *) output,
                           &olen, (const Bytef *) input, inputSize))
     {
@@ -379,7 +380,7 @@ decompress (const char *input,
     }
   else
     {
-      FREE (output);
+      GNUNET_free (output);
       return NULL;
     }
 }
@@ -428,9 +429,9 @@ typedef struct
  * @param size maximum number of bytes available
  * @param part is it ok to just write SOME of the
  *        meta-data to match the size constraint,
- *        possibly discarding some data? YES/NO.
+ *        possibly discarding some data? GNUNET_YES/GNUNET_NO.
  * @return number of bytes written on success,
- *         SYSERR on error (typically: not enough
+ *         GNUNET_SYSERR on error (typically: not enough
  *         space)
  */
 int
@@ -446,7 +447,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
   unsigned int ic;
 
   if (max < sizeof (MetaDataHeader))
-    return SYSERR;              /* far too small */
+    return GNUNET_SYSERR;       /* far too small */
   ic = md->itemCount;
   hdr = NULL;
   while (1)
@@ -457,7 +458,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
         size += 1 + strlen (md->items[i].data);
       while (size % 8 != 0)
         size++;
-      hdr = MALLOC (size);
+      hdr = GNUNET_malloc (size);
       hdr->version = htonl (0);
       hdr->entries = htonl (ic);
       for (i = 0; i < ic; i++)
@@ -489,12 +490,12 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
         }
       if (size <= max)
         break;
-      FREE (hdr);
+      GNUNET_free (hdr);
       hdr = NULL;
 
       if ((part & ECRS_SERIALIZE_PART) == 0)
         {
-          return SYSERR;        /* does not fit! */
+          return GNUNET_SYSERR; /* does not fit! */
         }
       /* partial serialization ok, try again with less meta-data */
       if (size > 2 * max)
@@ -504,7 +505,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
     }
   GE_ASSERT (ectx, size <= max);
   memcpy (target, hdr, size);
-  FREE (hdr);
+  GNUNET_free (hdr);
   /* extra check: deserialize! */
 #if EXTRA_CHECKS
   {
@@ -539,7 +540,7 @@ ECRS_sizeofMetaData (const MetaData * md, int part)
     size += 1 + strlen (md->items[i].data);
   while (size % 8 != 0)
     size++;
-  hdr = MALLOC (size);
+  hdr = GNUNET_malloc (size);
   hdr->version = htonl (0);
   hdr->entries = htonl (md->itemCount);
   for (i = 0; i < ic; i++)
@@ -563,7 +564,7 @@ ECRS_sizeofMetaData (const MetaData * md, int part)
   if (pos < size - sizeof (MetaDataHeader))
     size = pos + sizeof (MetaDataHeader);
 
-  FREE (hdr);
+  GNUNET_free (hdr);
 
   return size;
 }
@@ -637,7 +638,7 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
     }
 
   md = ECRS_createMetaData ();
-  GROW (md->items, md->itemCount, ic);
+  GNUNET_array_grow (md->items, md->itemCount, ic);
   i = 0;
   pos = sizeof (unsigned int) * ic;
   while ((pos < dataSize) && (i < ic))
@@ -645,7 +646,7 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
       len = strlen (&data[pos]) + 1;
       md->items[i].type = (EXTRACTOR_KeywordType)
         ntohl (MAKE_UNALIGNED (((unsigned int *) data)[i]));
-      md->items[i].data = STRDUP (&data[pos]);
+      md->items[i].data = GNUNET_strdup (&data[pos]);
       pos += len;
       i++;
     }
@@ -655,11 +656,11 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
       goto FAILURE;
     }
   if (compressed)
-    FREE (data);
+    GNUNET_free (data);
   return md;
 FAILURE:
   if (compressed)
-    FREE (data);
+    GNUNET_free (data);
   return NULL;                  /* size too small */
 }
 
@@ -677,12 +678,12 @@ ECRS_isDirectory (const MetaData * md)
       if (md->items[i].type == EXTRACTOR_MIMETYPE)
         {
           if (0 == strcmp (md->items[i].data, GNUNET_DIRECTORY_MIME))
-            return YES;
+            return GNUNET_YES;
           else
-            return NO;
+            return GNUNET_NO;
         }
     }
-  return SYSERR;
+  return GNUNET_SYSERR;
 }
 
 static char *mimeMap[][2] = {
@@ -770,7 +771,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
   char *ret;
   struct stat filestat;
 
-  path = STRDUP (filename);
+  path = GNUNET_strdup (filename);
   i = strlen (path);
   while ((i > 0) && (path[i] != DIR_SEPARATOR))
     i--;
@@ -820,13 +821,13 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
              (filename[i] != '.') && (filename[i] != DIR_SEPARATOR))
         i--;
       if (filename[i] == '.')
-        mime = STRDUP (&filename[i]);
+        mime = GNUNET_strdup (&filename[i]);
     }
   if (mime == NULL)
     {
       renameTo =
-        MALLOC (strlen (path) + strlen (key) + strlen (DIR_SEPARATOR_STR) +
-                20);
+        GNUNET_malloc (strlen (path) + strlen (key) +
+                       strlen (DIR_SEPARATOR_STR) + 20);
       strcpy (renameTo, path);
       if (path[strlen (path) - 1] != DIR_SEPARATOR)
         strcat (renameTo, DIR_SEPARATOR_STR);
@@ -835,8 +836,8 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
   else
     {
       renameTo =
-        MALLOC (strlen (path) + strlen (key) + strlen (mime) +
-                strlen (DIR_SEPARATOR_STR) + 20);
+        GNUNET_malloc (strlen (path) + strlen (key) + strlen (mime) +
+                       strlen (DIR_SEPARATOR_STR) + 20);
       strcpy (renameTo, path);
       if (path[strlen (path) - 1] != DIR_SEPARATOR)
         strcat (renameTo, DIR_SEPARATOR_STR);
@@ -862,7 +863,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
           j = 0;
           do
             {
-              SNPRINTF (&renameTo[i], 19, ".%u", j++);
+              GNUNET_snprintf (&renameTo[i], 19, ".%u", j++);
               if (j > 100000)
                 break;
             }
@@ -876,7 +877,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
                     _("Renaming of file `%s' to `%s' failed: %s\n"),
                     filename, renameTo, STRERROR (errno));
           else
-            ret = STRDUP (renameTo);
+            ret = GNUNET_strdup (renameTo);
         }
       else
         {
@@ -885,8 +886,8 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
                   filename, renameTo);
         }
     }
-  FREE (path);
-  FREE (renameTo);
+  GNUNET_free (path);
+  GNUNET_free (renameTo);
   EXTRACTOR_freeKeywords (list);
   EXTRACTOR_removeAll (l);
   return ret;
@@ -904,18 +905,18 @@ ECRS_equalsMetaData (const struct ECRS_MetaData *md1,
   int found;
 
   if (md1->itemCount != md2->itemCount)
-    return NO;
+    return GNUNET_NO;
   for (i = 0; i < md1->itemCount; i++)
     {
-      found = NO;
+      found = GNUNET_NO;
       for (j = 0; j < md2->itemCount; j++)
         if ((md1->items[i].type == md2->items[j].type) &&
             (0 == strcmp (md1->items[i].data, md2->items[j].data)))
-          found = YES;
-      if (found == NO)
-        return NO;
+          found = GNUNET_YES;
+      if (found == GNUNET_NO)
+        return GNUNET_NO;
     }
-  return YES;
+  return GNUNET_YES;
 }
 
 

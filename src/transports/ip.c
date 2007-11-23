@@ -35,37 +35,37 @@
 
 /**
  * Get the IP address for the local machine.
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int
 getPublicIPAddress (struct GC_Configuration *cfg,
-                    struct GE_Context *ectx, IPaddr * address)
+                    struct GE_Context *ectx, GNUNET_IPv4Address * address)
 {
-  static IPaddr myAddress;
-  static cron_t last;
-  static cron_t lastError;
-  cron_t now;
+  static GNUNET_IPv4Address myAddress;
+  static GNUNET_CronTime last;
+  static GNUNET_CronTime lastError;
+  GNUNET_CronTime now;
   char *ips;
 
-  now = get_time ();
-  if (last + cronMINUTES < now)
+  now = GNUNET_get_time ();
+  if (last + GNUNET_CRON_MINUTES < now)
     {
-      if (lastError + 30 * cronSECONDS > now)
-        return SYSERR;
-      ips = network_get_local_ip (cfg, ectx, &myAddress);
+      if (lastError + 30 * GNUNET_CRON_SECONDS > now)
+        return GNUNET_SYSERR;
+      ips = GNUNET_get_local_ip (cfg, ectx, &myAddress);
       if (ips == NULL)
         {
           GE_LOG (ectx,
                   GE_WARNING | GE_USER | GE_BULK,
                   _("Failed to obtain my (external) %s address!\n"), "IP");
           lastError = now;
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
-      FREE (ips);
+      GNUNET_free (ips);
       last = now;
     }
-  memcpy (address, &myAddress, sizeof (IPaddr));
-  return OK;
+  memcpy (address, &myAddress, sizeof (GNUNET_IPv4Address));
+  return GNUNET_OK;
 }
 
 struct PICache
@@ -73,13 +73,13 @@ struct PICache
   struct PICache *next;
   void *address;
   unsigned int len;
-  PeerIdentity peer;
-  cron_t expire;
+  GNUNET_PeerIdentity peer;
+  GNUNET_CronTime expire;
 };
 
 static struct PICache *pi_head;
 
-static struct MUTEX *lock;
+static struct GNUNET_Mutex *lock;
 
 static void
 expirePICache ()
@@ -87,9 +87,9 @@ expirePICache ()
   struct PICache *pos;
   struct PICache *next;
   struct PICache *prev;
-  cron_t now;
+  GNUNET_CronTime now;
 
-  now = get_time ();
+  now = GNUNET_get_time ();
   pos = pi_head;
   prev = NULL;
   while (pos != NULL)
@@ -97,8 +97,8 @@ expirePICache ()
       next = pos->next;
       if (pos->expire < now)
         {
-          FREE (pos->address);
-          FREE (pos);
+          GNUNET_free (pos->address);
+          GNUNET_free (pos);
           if (prev == NULL)
             pi_head = next;
           else
@@ -112,37 +112,37 @@ expirePICache ()
 
 
 /**
- * We only have the PeerIdentity.  Do we have any
+ * We only have the GNUNET_PeerIdentity.  Do we have any
  * clue about the address based on
  * the "accept" of the connection?  Note that the
  * response is just the best guess.
  *
  * @param sa set to the address
- * @return OK if we found an address, SYSERR if not
+ * @return GNUNET_OK if we found an address, GNUNET_SYSERR if not
  */
 int
-getIPaddressFromPID (const PeerIdentity * peer,
+getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
                      void **sa, unsigned int *salen)
 {
   struct PICache *cache;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   expirePICache ();
   cache = pi_head;
   while (cache != NULL)
     {
-      if (0 == memcmp (peer, &cache->peer, sizeof (PeerIdentity)))
+      if (0 == memcmp (peer, &cache->peer, sizeof (GNUNET_PeerIdentity)))
         {
           *salen = cache->len;
-          *sa = MALLOC (cache->len);
+          *sa = GNUNET_malloc (cache->len);
           memcpy (*sa, cache->address, cache->len);
-          MUTEX_UNLOCK (lock);
-          return OK;
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
         }
       cache = cache->next;
     }
-  MUTEX_UNLOCK (lock);
-  return SYSERR;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_SYSERR;
 }
 
 /**
@@ -154,43 +154,43 @@ getIPaddressFromPID (const PeerIdentity * peer,
  * us to validate the address).
  */
 void
-setIPaddressFromPID (const PeerIdentity * peer,
+setIPaddressFromPID (const GNUNET_PeerIdentity * peer,
                      const void *sa, unsigned int salen)
 {
   struct PICache *next;
 
-  MUTEX_LOCK (lock);
+  GNUNET_mutex_lock (lock);
   next = pi_head;
   while (next != NULL)
     {
-      if (0 == memcmp (peer, &next->peer, sizeof (PeerIdentity)))
+      if (0 == memcmp (peer, &next->peer, sizeof (GNUNET_PeerIdentity)))
         {
-          next->expire = get_time () + 12 * cronHOURS;
+          next->expire = GNUNET_get_time () + 12 * GNUNET_CRON_HOURS;
           if ((salen == next->len) &&
               (0 == memcmp (sa, next->address, salen)))
             {
-              MUTEX_UNLOCK (lock);
+              GNUNET_mutex_unlock (lock);
               return;
             }
-          FREE (next->address);
-          next->address = MALLOC (salen);
+          GNUNET_free (next->address);
+          next->address = GNUNET_malloc (salen);
           next->len = salen;
           memcpy (next->address, sa, salen);
-          MUTEX_UNLOCK (lock);
+          GNUNET_mutex_unlock (lock);
           return;
         }
       next = next->next;
     }
-  next = MALLOC (sizeof (struct PICache));
+  next = GNUNET_malloc (sizeof (struct PICache));
   next->peer = *peer;
-  next->address = MALLOC (salen);
+  next->address = GNUNET_malloc (salen);
   memcpy (next->address, sa, salen);
   next->len = salen;
-  next->expire = get_time () + 12 * cronHOURS;
+  next->expire = GNUNET_get_time () + 12 * GNUNET_CRON_HOURS;
   expirePICache ();
   next->next = pi_head;
   pi_head = next;
-  MUTEX_UNLOCK (lock);
+  GNUNET_mutex_unlock (lock);
 
 }
 
@@ -198,18 +198,18 @@ setIPaddressFromPID (const PeerIdentity * peer,
 
 void __attribute__ ((constructor)) gnunet_ip_ltdl_init ()
 {
-  lock = MUTEX_CREATE (YES);
+  lock = GNUNET_mutex_create (GNUNET_YES);
 }
 
 void __attribute__ ((destructor)) gnunet_ip_ltdl_fini ()
 {
   struct PICache *ppos;
-  MUTEX_DESTROY (lock);
+  GNUNET_mutex_destroy (lock);
   while (pi_head != NULL)
     {
       ppos = pi_head->next;
-      FREE (pi_head->address);
-      FREE (pi_head);
+      GNUNET_free (pi_head->address);
+      GNUNET_free (pi_head);
       pi_head = ppos;
     }
 }

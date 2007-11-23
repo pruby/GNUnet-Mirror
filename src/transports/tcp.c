@@ -32,7 +32,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_TCP NO
+#define DEBUG_TCP GNUNET_NO
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -41,7 +41,7 @@
  * Needs to be larger than SECONDS_INACTIVE_DROP in
  * core's connection.s
  */
-#define TCP_TIMEOUT (600 * cronSECONDS)
+#define TCP_TIMEOUT (600 * GNUNET_CRON_SECONDS)
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -50,7 +50,7 @@
  * Needs to be larger than SECONDS_INACTIVE_DROP in
  * core's connection.s
  */
-#define TCP_FAST_TIMEOUT (5 * cronSECONDS)
+#define TCP_FAST_TIMEOUT (5 * GNUNET_CRON_SECONDS)
 
 #define TARGET_BUFFER_SIZE 4092
 
@@ -64,7 +64,7 @@ typedef struct
   /**
    * claimed IP of the sender, network byte order
    */
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
 
   /**
    * claimed port of the sender, network byte order
@@ -84,13 +84,13 @@ static TransportAPI tcpAPI;
 
 static UPnP_ServiceAPI *upnp;
 
-static struct CIDRNetwork *filteredNetworks_;
+static struct GNUNET_IPv4NetworkSet *filteredNetworks_;
 
-static struct CIDRNetwork *allowedNetworks_;
+static struct GNUNET_IPv4NetworkSet *allowedNetworks_;
 
 static struct GC_Configuration *cfg;
 
-static struct MUTEX *tcpblacklistlock;
+static struct GNUNET_Mutex *tcpblacklistlock;
 
 /**
  * Check if we are allowed to connect to the given IP.
@@ -98,14 +98,15 @@ static struct MUTEX *tcpblacklistlock;
 static int
 isBlacklisted (const void *addr, unsigned int addr_len)
 {
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
   int ret;
 
   if (addr_len == sizeof (struct sockaddr_in))
     {
-      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr, sizeof (IPaddr));
+      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr,
+              sizeof (GNUNET_IPv4Address));
     }
-  else if (addr_len == sizeof (IPaddr))
+  else if (addr_len == sizeof (GNUNET_IPv4Address))
     {
       memcpy (&ip, addr, addr_len);
     }
@@ -116,19 +117,19 @@ isBlacklisted (const void *addr, unsigned int addr_len)
               GE_DEBUG | GE_ADMIN | GE_BULK,
               "Rejecting connection (invalid address length %u)\n", addr_len);
 #endif
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   if (ip.addr == 0)
-    return SYSERR;
-  MUTEX_LOCK (tcpblacklistlock);
-  ret = check_ipv4_listed (filteredNetworks_, ip);
-  MUTEX_UNLOCK (tcpblacklistlock);
+    return GNUNET_SYSERR;
+  GNUNET_mutex_lock (tcpblacklistlock);
+  ret = GNUNET_check_ipv4_listed (filteredNetworks_, ip);
+  GNUNET_mutex_unlock (tcpblacklistlock);
 #if DEBUG_TCP
-  if (ret != NO)
+  if (ret != GNUNET_NO)
     GE_LOG (ectx,
             GE_DEBUG | GE_ADMIN | GE_BULK,
             "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
-            PRIP (ntohl (*(int *) addr)));
+            GNUNET_PRIP (ntohl (*(int *) addr)));
 #endif
   return ret;
 }
@@ -139,14 +140,15 @@ isBlacklisted (const void *addr, unsigned int addr_len)
 static int
 isWhitelisted (const void *addr, unsigned int addr_len)
 {
-  IPaddr ip;
+  GNUNET_IPv4Address ip;
   int ret;
 
   if (addr_len == sizeof (struct sockaddr_in))
     {
-      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr, sizeof (IPaddr));
+      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr,
+              sizeof (GNUNET_IPv4Address));
     }
-  else if (addr_len == sizeof (IPaddr))
+  else if (addr_len == sizeof (GNUNET_IPv4Address))
     {
       memcpy (&ip, addr, addr_len);
     }
@@ -157,20 +159,20 @@ isWhitelisted (const void *addr, unsigned int addr_len)
               GE_DEBUG | GE_ADMIN | GE_BULK,
               "Rejecting connection (invalid address length %u)\n", addr_len);
 #endif
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
-  ret = YES;
-  MUTEX_LOCK (tcpblacklistlock);
+  ret = GNUNET_YES;
+  GNUNET_mutex_lock (tcpblacklistlock);
   if (allowedNetworks_ != NULL)
-    ret = check_ipv4_listed (allowedNetworks_, ip);
-  MUTEX_UNLOCK (tcpblacklistlock);
-  if (ret != YES)
+    ret = GNUNET_check_ipv4_listed (allowedNetworks_, ip);
+  GNUNET_mutex_unlock (tcpblacklistlock);
+  if (ret != GNUNET_YES)
     {
 #if DEBUG_TCP
       GE_LOG (ectx,
               GE_DEBUG | GE_ADMIN | GE_BULK,
               "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
-              PRIP (ntohl (*(int *) addr)));
+              GNUNET_PRIP (ntohl (*(int *) addr)));
 #endif
     }
   return ret;
@@ -179,11 +181,11 @@ isWhitelisted (const void *addr, unsigned int addr_len)
 static int
 isRejected (const void *addr, unsigned int addr_len)
 {
-  if ((NO != isBlacklisted (addr,
-                            addr_len)) ||
-      (YES != isWhitelisted (addr, addr_len)))
-    return YES;
-  return NO;
+  if ((GNUNET_NO != isBlacklisted (addr,
+                                   addr_len)) ||
+      (GNUNET_YES != isWhitelisted (addr, addr_len)))
+    return GNUNET_YES;
+  return GNUNET_NO;
 }
 
 /**
@@ -216,47 +218,47 @@ getGNUnetTCPPort ()
  * success.
  * @param hello the Hello message to verify
  *        (the signature/crc have been verified before)
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
-verifyHello (const P2P_hello_MESSAGE * hello)
+verifyHello (const GNUNET_MessageHello * hello)
 {
   HostAddress *haddr;
 
   haddr = (HostAddress *) & hello[1];
   if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != P2P_hello_MESSAGE_size (hello)) ||
+      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
       (ntohs (hello->header.type) != p2p_PROTO_hello) ||
       (ntohs (hello->protocol) != TCP_PROTOCOL_NUMBER) ||
-      (YES == isBlacklisted (&haddr->ip,
-                             sizeof (IPaddr))) ||
-      (YES != isWhitelisted (&haddr->ip, sizeof (IPaddr))))
+      (GNUNET_YES == isBlacklisted (&haddr->ip,
+                                    sizeof (GNUNET_IPv4Address))) ||
+      (GNUNET_YES != isWhitelisted (&haddr->ip, sizeof (GNUNET_IPv4Address))))
     {
 #if DEBUG_TCP
-      EncName enc;
+      GNUNET_EncName enc;
 
-      hash2enc (&hello->senderIdentity.hashPubKey, &enc);
+      GNUNET_hash_to_enc (&hello->senderIdentity.hashPubKey, &enc);
       GE_LOG (ectx,
               GE_DEBUG | GE_ADMIN | GE_BULK,
               "Rejecting HELLO from `%s'\n", &enc);
 #endif
-      return SYSERR;            /* obviously invalid */
+      return GNUNET_SYSERR;     /* obviously invalid */
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 /**
  * Create a hello-Message for the current node. The hello is
  * created without signature and without a timestamp. The
- * GNUnet core will sign the message and add an expiration time.
+ * GNUnet core will GNUNET_RSA_sign the message and add an expiration time.
  *
  * @return hello on success, NULL on error
  */
-static P2P_hello_MESSAGE *
+static GNUNET_MessageHello *
 createhello ()
 {
   static HostAddress last_addr;
-  P2P_hello_MESSAGE *msg;
+  GNUNET_MessageHello *msg;
   HostAddress *haddr;
   unsigned short port;
 
@@ -275,16 +277,16 @@ createhello ()
         }
       return NULL;              /* TCP transport is configured SEND-only! */
     }
-  msg = MALLOC (sizeof (P2P_hello_MESSAGE) + sizeof (HostAddress));
+  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   haddr = (HostAddress *) & msg[1];
 
   if (!(((upnp != NULL) &&
-         (OK == upnp->get_ip (port,
-                              "TCP",
-                              &haddr->ip))) ||
-        (SYSERR != getPublicIPAddress (cfg, ectx, &haddr->ip))))
+         (GNUNET_OK == upnp->get_ip (port,
+                                     "TCP",
+                                     &haddr->ip))) ||
+        (GNUNET_SYSERR != getPublicIPAddress (cfg, ectx, &haddr->ip))))
     {
-      FREE (msg);
+      GNUNET_free (msg);
       GE_LOG (ectx,
               GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
               _("TCP: Could not determine my public IP address.\n"));
@@ -297,7 +299,7 @@ createhello ()
       GE_LOG (ectx,
               GE_DEBUG | GE_USER | GE_BULK,
               "TCP uses IP address %u.%u.%u.%u.\n",
-              PRIP (ntohl (*(int *) &haddr->ip)));
+              GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
       last_addr = *haddr;
     }
   msg->senderAddressSize = htons (sizeof (HostAddress));
@@ -311,58 +313,60 @@ createhello ()
  *
  * @param hello the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
+tcpConnect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
             int may_reuse)
 {
   static int zero = 0;
   HostAddress *haddr;
   int sock;
   struct sockaddr_in soaddr;
-  struct SocketHandle *s;
+  struct GNUNET_SocketHandle *s;
   int i;
   TCPSession *session;
 
   if (selector == NULL)
-    return SYSERR;
-  if (may_reuse != NO)
+    return GNUNET_SYSERR;
+  if (may_reuse != GNUNET_NO)
     {
-      MUTEX_LOCK (tcplock);
+      GNUNET_mutex_lock (tcplock);
       session = sessions;
       while (session != NULL)
         {
           if (0 == memcmp (&session->sender,
-                           &hello->senderIdentity, sizeof (PeerIdentity)))
+                           &hello->senderIdentity,
+                           sizeof (GNUNET_PeerIdentity)))
             {
-              MUTEX_LOCK (session->lock);
+              GNUNET_mutex_lock (session->lock);
               if (session->in_select)
                 {
                   session->users++;
-                  MUTEX_UNLOCK (session->lock);
-                  MUTEX_UNLOCK (tcplock);
+                  GNUNET_mutex_unlock (session->lock);
+                  GNUNET_mutex_unlock (tcplock);
                   *tsessionPtr = session->tsession;
-                  return OK;
+                  return GNUNET_OK;
                 }
-              MUTEX_UNLOCK (session->lock);
+              GNUNET_mutex_unlock (session->lock);
             }
           session = session->next;
         }
-      MUTEX_UNLOCK (tcplock);
+      GNUNET_mutex_unlock (tcplock);
     }
   haddr = (HostAddress *) & hello[1];
 #if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_USER | GE_BULK,
           "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-          PRIP (ntohl (*(int *) &haddr->ip.addr)), ntohs (haddr->port));
+          GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
+          ntohs (haddr->port));
 #endif
   sock = SOCKET (PF_INET, SOCK_STREAM, 6);      /* 6: TCP */
   if (sock == -1)
     {
       GE_LOG_STRERROR (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "socket");
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   s = socket_create (ectx, coreAPI->load_monitor, sock);
 #if TCP_SYNCNT
@@ -370,16 +374,16 @@ tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
      if that does not work, abort instantly */
   setsockopt (sock, IPPROTO_TCP, TCP_SYNCNT, &zero, sizeof (zero));
 #endif
-  if (-1 == socket_set_blocking (s, NO))
+  if (-1 == GNUNET_socket_set_blocking (s, GNUNET_NO))
     {
-      socket_destroy (s);
-      return SYSERR;
+      GNUNET_socket_destroy (s);
+      return GNUNET_SYSERR;
     }
   memset (&soaddr, 0, sizeof (soaddr));
   soaddr.sin_family = AF_INET;
 
-  GE_ASSERT (ectx, sizeof (struct in_addr) == sizeof (IPaddr));
-  memcpy (&soaddr.sin_addr, &haddr->ip, sizeof (IPaddr));
+  GE_ASSERT (ectx, sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
+  memcpy (&soaddr.sin_addr, &haddr->ip, sizeof (GNUNET_IPv4Address));
   soaddr.sin_port = haddr->port;
   i = CONNECT (sock, (struct sockaddr *) &soaddr, sizeof (soaddr));
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
@@ -387,23 +391,23 @@ tcpConnect (const P2P_hello_MESSAGE * hello, TSession ** tsessionPtr,
       GE_LOG (ectx,
               GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
               _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-              PRIP (ntohl (*(int *) &haddr->ip)),
+              GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
               ntohs (haddr->port), STRERROR (errno));
-      socket_destroy (s);
-      return SYSERR;
+      GNUNET_socket_destroy (s);
+      return GNUNET_SYSERR;
     }
 #if DEBUG_TCP
   GE_LOG (ectx,
           GE_DEBUG | GE_DEVELOPER | GE_USER | GE_BULK,
           "Establishing connection to %u.%u.%u.%u:%u\n",
-          PRIP (ntohl (*(int *) &haddr->ip)), ntohs (haddr->port));
+          GNUNET_PRIP (ntohl (*(int *) &haddr->ip)), ntohs (haddr->port));
 #endif
   return tcpConnectHelper (hello, s, tcpAPI.protocolNumber, tsessionPtr);
 }
 
 /**
  * Start the server process to receive inbound traffic.
- * @return OK on success, SYSERR if the operation failed
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
 startTransportServer ()
@@ -416,7 +420,7 @@ startTransportServer ()
   if (selector != NULL)
     {
       GE_BREAK (ectx, 0);
-      return SYSERR;
+      return GNUNET_SYSERR;
     }
   port = getGNUnetTCPPort ();
   if (port != 0)
@@ -425,7 +429,7 @@ startTransportServer ()
       if (s < 0)
         {
           GE_LOG_STRERROR (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "socket");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
       if (SETSOCKOPT (s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
         GE_DIE_STRERROR (ectx,
@@ -445,28 +449,28 @@ startTransportServer ()
             GE_LOG_STRERROR (ectx,
                              GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
                              "close");
-          return SYSERR;
+          return GNUNET_SYSERR;
         }
     }
   else
     {
       s = -1;                   /* no listening! */
     }
-  selector = select_create ("tcp",
-                            NO,
-                            ectx,
-                            coreAPI->load_monitor,
-                            s,
-                            sizeof (struct sockaddr_in),
-                            TCP_FAST_TIMEOUT,
-                            &select_message_handler,
-                            NULL,
-                            &select_accept_handler,
-                            &isRejected,
-                            &select_close_handler,
-                            NULL, 128 * 1024 /* max memory */ ,
-                            128 /* max sockets */ );
-  return OK;
+  selector = GNUNET_select_create ("tcp",
+                                   GNUNET_NO,
+                                   ectx,
+                                   coreAPI->load_monitor,
+                                   s,
+                                   sizeof (struct sockaddr_in),
+                                   TCP_FAST_TIMEOUT,
+                                   &select_message_handler,
+                                   NULL,
+                                   &select_accept_handler,
+                                   &isRejected,
+                                   &select_close_handler,
+                                   NULL, 128 * 1024 /* max memory */ ,
+                                   128 /* max sockets */ );
+  return GNUNET_OK;
 }
 
 /**
@@ -484,21 +488,21 @@ reloadConfiguration (void *ctx,
   if (0 != strcmp (section, "TCP"))
     return 0;                   /* fast path */
 
-  MUTEX_LOCK (tcpblacklistlock);
-  FREENONNULL (filteredNetworks_);
-  FREENONNULL (allowedNetworks_);
+  GNUNET_mutex_lock (tcpblacklistlock);
+  GNUNET_free_non_null (filteredNetworks_);
+  GNUNET_free_non_null (allowedNetworks_);
   ch = NULL;
   GC_get_configuration_value_string (cfg, "TCP", "BLACKLIST", "", &ch);
-  filteredNetworks_ = parse_ipv4_network_specification (ectx, ch);
-  FREE (ch);
+  filteredNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
+  GNUNET_free (ch);
   ch = NULL;
   GC_get_configuration_value_string (cfg, "TCP", "WHITELIST", "", &ch);
   if (strlen (ch) > 0)
-    allowedNetworks_ = parse_ipv4_network_specification (ectx, ch);
+    allowedNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
   else
     allowedNetworks_ = NULL;
-  FREE (ch);
-  MUTEX_UNLOCK (tcpblacklistlock);
+  GNUNET_free (ch);
+  GNUNET_mutex_unlock (tcpblacklistlock);
   /* TODO: error handling! */
   return 0;
 }
@@ -507,20 +511,20 @@ reloadConfiguration (void *ctx,
  * Convert TCP hello to IP address
  */
 static int
-helloToAddress (const P2P_hello_MESSAGE * hello,
+helloToAddress (const GNUNET_MessageHello * hello,
                 void **sa, unsigned int *sa_len)
 {
   const HostAddress *haddr = (const HostAddress *) &hello[1];
   struct sockaddr_in *serverAddr;
 
   *sa_len = sizeof (struct sockaddr_in);
-  serverAddr = MALLOC (sizeof (struct sockaddr_in));
+  serverAddr = GNUNET_malloc (sizeof (struct sockaddr_in));
   *sa = serverAddr;
   memset (serverAddr, 0, sizeof (struct sockaddr_in));
   serverAddr->sin_family = AF_INET;
-  memcpy (&serverAddr->sin_addr, haddr, sizeof (IPaddr));
+  memcpy (&serverAddr->sin_addr, haddr, sizeof (GNUNET_IPv4Address));
   serverAddr->sin_port = haddr->port;
-  return OK;
+  return GNUNET_OK;
 }
 
 
@@ -536,20 +540,21 @@ inittransport_tcp (CoreAPIForTransport * core)
   ectx = core->ectx;
   cfg = core->cfg;
   GE_ASSERT (ectx, sizeof (HostAddress) == 8);
-  GE_ASSERT (ectx, sizeof (MESSAGE_HEADER) == 4);
+  GE_ASSERT (ectx, sizeof (GNUNET_MessageHeader) == 4);
   GE_ASSERT (ectx, sizeof (TCPWelcome) == 68);
-  tcplock = MUTEX_CREATE (YES);
-  tcpblacklistlock = MUTEX_CREATE (YES);
+  tcplock = GNUNET_mutex_create (GNUNET_YES);
+  tcpblacklistlock = GNUNET_mutex_create (GNUNET_YES);
   if (0 != GC_attach_change_listener (cfg, &reloadConfiguration, NULL))
     {
-      MUTEX_DESTROY (tcplock);
-      MUTEX_DESTROY (tcpblacklistlock);
+      GNUNET_mutex_destroy (tcplock);
+      GNUNET_mutex_destroy (tcpblacklistlock);
       tcplock = NULL;
       tcpblacklistlock = NULL;
       return NULL;
     }
   coreAPI = core;
-  if (GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", YES) == YES)
+  if (GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", GNUNET_YES) ==
+      GNUNET_YES)
     {
       upnp = coreAPI->requestService ("upnp");
 
@@ -603,10 +608,10 @@ donetransport_tcp ()
       coreAPI->releaseService (upnp);
       upnp = NULL;
     }
-  FREENONNULL (filteredNetworks_);
-  FREENONNULL (allowedNetworks_);
-  MUTEX_DESTROY (tcplock);
-  MUTEX_DESTROY (tcpblacklistlock);
+  GNUNET_free_non_null (filteredNetworks_);
+  GNUNET_free_non_null (allowedNetworks_);
+  GNUNET_mutex_destroy (tcplock);
+  GNUNET_mutex_destroy (tcpblacklistlock);
 }
 
 /* end of tcp.c */

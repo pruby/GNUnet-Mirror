@@ -40,7 +40,7 @@ extern "C"
 /**
  * Toggle tracking URIs.
  *
- * @param onOff YES to enable tracking, NO to disable
+ * @param onOff GNUNET_YES to enable tracking, GNUNET_NO to disable
  *  disabling tracking
  */
 void URITRACK_trackURIS (struct GE_Context *ectx, struct GC_Configuration *cfg, int onOff);     /* file_info.c */
@@ -53,7 +53,7 @@ void URITRACK_clearTrackedURIS (struct GE_Context *ectx, struct GC_Configuration
 /**
  * Get the URITRACK URI tracking status.
  *
- * @return YES of tracking is enabled, NO if not
+ * @return GNUNET_YES of tracking is enabled, GNUNET_NO if not
  */
 int URITRACK_trackStatus (struct GE_Context *ectx, struct GC_Configuration *cfg);       /* file_info.c */
 
@@ -67,8 +67,8 @@ void URITRACK_trackURI (struct GE_Context *ectx, struct GC_Configuration *cfg, c
 /**
  * List all URIs.
  *
- * @param need_metadata YES if metadata should be
- *        provided, NO if metadata is not needed (faster)
+ * @param need_metadata GNUNET_YES if metadata should be
+ *        provided, GNUNET_NO if metadata is not needed (faster)
  */
 int URITRACK_listURIs (struct GE_Context *ectx, struct GC_Configuration *cfg, int need_metadata, ECRS_SearchProgressCallback iterator, void *closure);  /* file_info.c */
 
@@ -109,7 +109,7 @@ enum URITRACK_STATE
  * information that we give back maybe inaccurate (returning
  * URITRACK_FRESH if the URI did not fit into our bounded-size map,
  * even if the URI is not fresh anymore; also, if the URI has a
- * hash-collision in the map, there is a 1:256 chance that we will
+ * GNUNET_hash-collision in the map, there is a 1:256 chance that we will
  * return information from the wrong URI without detecting it).
  */
 enum URITRACK_STATE

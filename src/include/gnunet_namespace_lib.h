@@ -41,11 +41,11 @@ extern "C"
  * Iterator over all namespaces.
  *
  * @param rating the local rating of the namespace
- * @return OK to continue iteration, SYSERR to abort
+ * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
 typedef int (*NS_NamespaceIterator) (void *cls,
                                      const char *namespaceName,
-                                     const HashCode512 * namespaceId,
+                                     const GNUNET_HashCode * namespaceId,
                                      const struct ECRS_MetaData * md,
                                      int rating);
 
@@ -58,14 +58,14 @@ typedef int (*NS_NamespaceIterator) (void *cls,
  * @param publicationFrequency how often are updates scheduled?
  * @param nextPublicationTime the scheduled time for the
  *  next update (0 for sporadic updates)
- * @return OK to continue iteration, SYSERR to abort
+ * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
  */
 typedef int (*NS_UpdateIterator) (void *cls,
                                   const ECRS_FileInfo * uri,
-                                  const HashCode512 * lastId,
-                                  const HashCode512 * nextId,
-                                  TIME_T publicationFrequency,
-                                  TIME_T nextPublicationTime);
+                                  const GNUNET_HashCode * lastId,
+                                  const GNUNET_HashCode * nextId,
+                                  GNUNET_Int32Time publicationFrequency,
+                                  GNUNET_Int32Time nextPublicationTime);
 
 /**
  * Create a new namespace (and publish an advertismement).
@@ -75,13 +75,13 @@ typedef int (*NS_UpdateIterator) (void *cls,
  * @param meta meta-data about the namespace (maybe NULL)
  * @return URI on success, NULL on error (namespace already exists)
  */
-struct ECRS_URI *NS_createNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, unsigned int anonymityLevel, unsigned int insertPriority, cron_t insertExpiration, const char *namespaceName, const struct ECRS_MetaData *meta, const struct ECRS_URI *advertisementURI, const HashCode512 * rootEntry);    /* namespace_info.c */
+struct ECRS_URI *NS_createNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, unsigned int anonymityLevel, unsigned int insertPriority, GNUNET_CronTime insertExpiration, const char *namespaceName, const struct ECRS_MetaData *meta, const struct ECRS_URI *advertisementURI, const GNUNET_HashCode * rootEntry);       /* namespace_info.c */
 
 /**
  * Delete a local namespace.  Only prevents future insertions into the
  * namespace, does not delete any content from the network!
  *
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int NS_deleteNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, const char *namespaceName);      /* namespace.c */
 
@@ -111,11 +111,11 @@ void NS_addNamespaceInfo (struct GE_Context *ectx,
 
 /**
  * Get the root of the namespace (if we have one).
- * @return SYSERR on error, OK on success
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int NS_getNamespaceRoot (struct GE_Context *ectx,
                          struct GC_Configuration *cfg,
-                         const char *ns, HashCode512 * root);
+                         const char *ns, GNUNET_HashCode * root);
 
 void NS_setNamespaceRoot (struct GE_Context *ectx,
                           struct GC_Configuration *cfg,
@@ -181,20 +181,21 @@ int NS_unregisterDiscoveryCallback (NS_NamespaceIterator iterator,
  *        entry?
  * @return the resulting URI, NULL on error
  */
-struct ECRS_URI *NS_addToNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, unsigned int anonymityLevel, unsigned int insertPriority, cron_t insertExpiration, const char *name, TIME_T updateInterval, const HashCode512 * lastId, const HashCode512 * thisId, const HashCode512 * nextId, const struct ECRS_URI *dst, const struct ECRS_MetaData *md); /* namespace_info.c */
+struct ECRS_URI *NS_addToNamespace (struct GE_Context *ectx, struct GC_Configuration *cfg, unsigned int anonymityLevel, unsigned int insertPriority, GNUNET_CronTime insertExpiration, const char *name, GNUNET_Int32Time updateInterval, const GNUNET_HashCode * lastId, const GNUNET_HashCode * thisId, const GNUNET_HashCode * nextId, const struct ECRS_URI *dst, const struct ECRS_MetaData *md);  /* namespace_info.c */
 
 /**
  * Compute the next ID for peridodically updated content.
  * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
  * @param thisId MUST be known to NS
- * @return OK on success, SYSERR on error
+ * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int NS_computeNextId (struct GE_Context *ectx,
                       struct GC_Configuration *cfg,
                       const char *name,
-                      const HashCode512 * lastId,
-                      const HashCode512 * thisId,
-                      TIME_T updateInterval, HashCode512 * nextId);
+                      const GNUNET_HashCode * lastId,
+                      const GNUNET_HashCode * thisId,
+                      GNUNET_Int32Time updateInterval,
+                      GNUNET_HashCode * nextId);
 
 /**
  * List all updateable content in a given namespace.

@@ -36,7 +36,7 @@
 #include "gnunet_state_service.h"
 #include "platform.h"
 
-#define STATE_DEBUG NO
+#define STATE_DEBUG GNUNET_NO
 
 #define DIR_EXT "state.sdb"
 
@@ -65,27 +65,27 @@ stateReadContent (struct GE_Context *ectx, const char *name, void **result)
   if (result == NULL)
     return -1;
   n = strlen (dbh) + strlen (name) + 2;
-  fil = MALLOC (n);
-  SNPRINTF (fil, n, "%s/%s", dbh, name);
-  if ((OK != disk_file_test (ectx,
-                             fil)) ||
-      (OK != disk_file_size (ectx,
-                             fil,
-                             &fsize,
-                             YES)) ||
+  fil = GNUNET_malloc (n);
+  GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
+  if ((GNUNET_OK != GNUNET_disk_file_test (ectx,
+                                           fil)) ||
+      (GNUNET_OK != GNUNET_disk_file_size (ectx,
+                                           fil,
+                                           &fsize,
+                                           GNUNET_YES)) ||
       (fsize == 0) ||
-      (-1 == (fd = disk_file_open (ectx, fil, O_RDONLY, S_IRUSR))))
+      (-1 == (fd = GNUNET_disk_file_open (ectx, fil, O_RDONLY, S_IRUSR))))
     {
-      FREE (fil);
+      GNUNET_free (fil);
       return -1;
     }
-  *result = MALLOC_LARGE (fsize);
+  *result = GNUNET_malloc_large (fsize);
   size = READ (fd, *result, fsize);
-  disk_file_close (ectx, fil, fd);
-  FREE (fil);
+  GNUNET_disk_file_close (ectx, fil, fd);
+  GNUNET_free (fil);
   if (size == -1)
     {
-      FREE (*result);
+      GNUNET_free (*result);
       *result = NULL;
     }
   return size;
@@ -98,7 +98,7 @@ stateReadContent (struct GE_Context *ectx, const char *name, void **result)
  * @param name the key for the entry
  * @param len the number of bytes in block
  * @param block the data to store
- * @return SYSERR on error, OK if ok.
+ * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
  */
 static int
 stateAppendContent (struct GE_Context *ectx,
@@ -111,21 +111,21 @@ stateAppendContent (struct GE_Context *ectx,
 
   GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
-  fil = MALLOC (n);
-  SNPRINTF (fil, n, "%s/%s", dbh, name);
-  fd = disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  fil = GNUNET_malloc (n);
+  GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
+  fd = GNUNET_disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_BULK | GE_USER, "open", fil);
-      FREE (fil);
-      return SYSERR;            /* failed! */
+      GNUNET_free (fil);
+      return GNUNET_SYSERR;     /* failed! */
     }
   LSEEK (fd, 0, SEEK_END);
   WRITE (fd, block, len);
-  disk_file_close (ectx, fil, fd);
-  FREE (fil);
-  return OK;
+  GNUNET_disk_file_close (ectx, fil, fd);
+  GNUNET_free (fil);
+  return GNUNET_OK;
 }
 
 /**
@@ -134,7 +134,7 @@ stateAppendContent (struct GE_Context *ectx,
  * @param name the key for the entry
  * @param len the number of bytes in block
  * @param block the data to store
- * @return SYSERR on error, OK if ok.
+ * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
  */
 static int
 stateWriteContent (struct GE_Context *ectx,
@@ -147,23 +147,23 @@ stateWriteContent (struct GE_Context *ectx,
 
   GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
-  fil = MALLOC (n);
-  SNPRINTF (fil, n, "%s/%s", dbh, name);
-  fd = disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  fil = GNUNET_malloc (n);
+  GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
+  fd = GNUNET_disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
       GE_LOG_STRERROR_FILE (ectx,
                             GE_WARNING | GE_BULK | GE_USER, "open", fil);
-      FREE (fil);
-      return SYSERR;            /* failed! */
+      GNUNET_free (fil);
+      return GNUNET_SYSERR;     /* failed! */
     }
   WRITE (fd, block, len);
   if (0 != FTRUNCATE (fd, len))
     GE_LOG_STRERROR_FILE (ectx,
                           GE_WARNING | GE_BULK | GE_ADMIN, "ftruncate", fil);
-  disk_file_close (ectx, fil, fd);
-  FREE (fil);
-  return OK;
+  GNUNET_disk_file_close (ectx, fil, fd);
+  GNUNET_free (fil);
+  return GNUNET_OK;
 }
 
 /**
@@ -180,11 +180,11 @@ stateUnlinkFromDB (struct GE_Context *ectx, const char *name)
 
   GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
-  fil = MALLOC (n);
-  SNPRINTF (fil, n, "%s/%s", dbh, name);
+  fil = GNUNET_malloc (n);
+  GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
   UNLINK (fil);
-  FREE (fil);
-  return OK;
+  GNUNET_free (fil);
+  return GNUNET_OK;
 }
 
 State_ServiceAPI *
@@ -203,12 +203,12 @@ provide_module_state (CoreAPIForApplication * capi)
     return NULL;
   GE_ASSERT (capi->ectx, dbh != NULL);
   n = strlen (dbh) + strlen (DIR_EXT) + 5;
-  handle = MALLOC (n);
-  SNPRINTF (handle, n, "%s/%s/", dbh, DIR_EXT);
-  FREE (dbh);
-  if (SYSERR == disk_directory_create (capi->ectx, handle))
+  handle = GNUNET_malloc (n);
+  GNUNET_snprintf (handle, n, "%s/%s/", dbh, DIR_EXT);
+  GNUNET_free (dbh);
+  if (GNUNET_SYSERR == GNUNET_disk_directory_create (capi->ectx, handle))
     {
-      FREE (handle);
+      GNUNET_free (handle);
       handle = NULL;
       return NULL;
     }
@@ -226,7 +226,7 @@ void
 release_module_state ()
 {
   GE_ASSERT (NULL, handle != NULL);
-  FREE (handle);
+  GNUNET_free (handle);
   handle = NULL;
 }
 

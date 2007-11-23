@@ -32,11 +32,11 @@
 #include "querymanager.h"
 
 
-#define DEBUG_QUERYMANAGER NO
+#define DEBUG_QUERYMANAGER GNUNET_NO
 
 typedef struct
 {
-  HashCode512 query;
+  GNUNET_HashCode query;
   unsigned int type;
   struct ClientHandle *client;
 } TrackRecord;
@@ -63,7 +63,7 @@ static unsigned int trackerSize;
 /**
  * Mutex for all query manager structures.
  */
-static struct MUTEX *queryManagerLock;
+static struct GNUNET_Mutex *queryManagerLock;
 
 static CoreAPIForApplication *coreAPI;
 
@@ -73,24 +73,24 @@ static void
 removeEntry (unsigned int off)
 {
   GE_ASSERT (ectx, off < trackerCount);
-  FREE (trackers[off]);
+  GNUNET_free (trackers[off]);
   if (stats != NULL)
     stats->change (stat_queries_tracked, -1);
   trackers[off] = trackers[--trackerCount];
   trackers[trackerCount] = NULL;
   if ((trackerSize > 64) && (trackerSize > 2 * trackerCount))
-    GROW (trackers, trackerSize, trackerSize / 2);
+    GNUNET_array_grow (trackers, trackerSize, trackerSize / 2);
 }
 
 static void
 ceh (struct ClientHandle *client)
 {
   int i;
-  MUTEX_LOCK (queryManagerLock);
+  GNUNET_mutex_lock (queryManagerLock);
   for (i = trackerCount - 1; i >= 0; i--)
     if (trackers[i]->client == client)
       removeEntry (i);
-  MUTEX_UNLOCK (queryManagerLock);
+  GNUNET_mutex_unlock (queryManagerLock);
 }
 
 /**
@@ -101,21 +101,21 @@ ceh (struct ClientHandle *client)
  * @param client where did the query come from?
  */
 void
-trackQuery (const HashCode512 * query,
+trackQuery (const GNUNET_HashCode * query,
             unsigned int type, struct ClientHandle *client)
 {
   GE_ASSERT (ectx, client != NULL);
-  MUTEX_LOCK (queryManagerLock);
+  GNUNET_mutex_lock (queryManagerLock);
   if (trackerSize == trackerCount)
-    GROW (trackers, trackerSize, trackerSize * 2);
-  trackers[trackerCount] = MALLOC (sizeof (TrackRecord));
+    GNUNET_array_grow (trackers, trackerSize, trackerSize * 2);
+  trackers[trackerCount] = GNUNET_malloc (sizeof (TrackRecord));
   trackers[trackerCount]->query = *query;
   trackers[trackerCount]->type = type;
   trackers[trackerCount]->client = client;
   trackerCount++;
   if (stats != NULL)
     stats->change (stat_queries_tracked, 1);
-  MUTEX_UNLOCK (queryManagerLock);
+  GNUNET_mutex_unlock (queryManagerLock);
 }
 
 /**
@@ -125,20 +125,20 @@ trackQuery (const HashCode512 * query,
  * @param client where did the query come from?
  */
 void
-untrackQuery (const HashCode512 * query, struct ClientHandle *client)
+untrackQuery (const GNUNET_HashCode * query, struct ClientHandle *client)
 {
   int i;
 
-  MUTEX_LOCK (queryManagerLock);
+  GNUNET_mutex_lock (queryManagerLock);
   for (i = trackerCount - 1; i >= 0; i--)
     if ((trackers[i]->client == client) &&
-        (equalsHashCode512 (&trackers[i]->query, query)))
+        (0 == memcmp (&trackers[i]->query, query, sizeof (GNUNET_HashCode))))
       {
         removeEntry (i);
-        MUTEX_UNLOCK (queryManagerLock);
+        GNUNET_mutex_unlock (queryManagerLock);
         return;
       }
-  MUTEX_UNLOCK (queryManagerLock);
+  GNUNET_mutex_unlock (queryManagerLock);
 }
 
 /**
@@ -148,35 +148,36 @@ untrackQuery (const HashCode512 * query, struct ClientHandle *client)
  * @param value the response
  */
 void
-processResponse (const HashCode512 * key, const Datastore_Value * value)
+processResponse (const GNUNET_HashCode * key, const Datastore_Value * value)
 {
   int i;
   CS_fs_reply_content_MESSAGE *rc;
   unsigned int matchCount;
 #if DEBUG_QUERYMANAGER
-  EncName enc;
+  GNUNET_EncName enc;
 #endif
 
   GE_ASSERT (ectx, ntohl (value->size) > sizeof (Datastore_Value));
-  if ((ntohll (value->expirationTime) < get_time ()) &&
+  if ((GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ()) &&
       (ntohl (value->type) != D_BLOCK))
     return;                     /* ignore expired, non-data responses! */
 
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc (key, &enc));
+  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_hash_to_enc (key, &enc));
 #endif
-  MUTEX_LOCK (queryManagerLock);
+  GNUNET_mutex_lock (queryManagerLock);
   for (i = trackerCount - 1; i >= 0; i--)
     {
-      if ((equalsHashCode512 (&trackers[i]->query,
-                              key)) &&
+      if ((0 == memcmp (&trackers[i]->query,
+                        key, sizeof (GNUNET_HashCode))) &&
           ((trackers[i]->type == ANY_BLOCK) ||
            (trackers[i]->type == ntohl (value->type))))
         {
           matchCount++;
-          rc = MALLOC (sizeof (CS_fs_reply_content_MESSAGE) +
-                       ntohl (value->size) - sizeof (Datastore_Value));
+          rc = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) +
+                              ntohl (value->size) - sizeof (Datastore_Value));
           rc->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) +
                                    ntohl (value->size) -
                                    sizeof (Datastore_Value));
@@ -193,8 +194,8 @@ processResponse (const HashCode512 * key, const Datastore_Value * value)
 #endif
           if (stats != NULL)
             stats->change (stat_replies_transmitted, 1);
-          coreAPI->sendToClient (trackers[i]->client, &rc->header, NO);
-          FREE (rc);
+          coreAPI->sendToClient (trackers[i]->client, &rc->header, GNUNET_NO);
+          GNUNET_free (rc);
         }
     }
 #if DEBUG_QUERYMANAGER && 0
@@ -205,7 +206,7 @@ processResponse (const HashCode512 * key, const Datastore_Value * value)
               "Reply `%s' did not match any request.\n", &enc);
     }
 #endif
-  MUTEX_UNLOCK (queryManagerLock);
+  GNUNET_mutex_unlock (queryManagerLock);
 }
 
 /**
@@ -217,8 +218,8 @@ initQueryManager (CoreAPIForApplication * capi)
   coreAPI = capi;
   ectx = capi->ectx;
   capi->registerClientExitHandler (&ceh);
-  GROW (trackers, trackerSize, 64);
-  queryManagerLock = MUTEX_CREATE (NO);
+  GNUNET_array_grow (trackers, trackerSize, 64);
+  queryManagerLock = GNUNET_mutex_create (GNUNET_NO);
   stats = capi->requestService ("stats");
   if (stats != NULL)
     {
@@ -229,7 +230,7 @@ initQueryManager (CoreAPIForApplication * capi)
       stat_replies_transmitted =
         stats->create (gettext_noop ("# FS replies passed to clients"));
     }
-  return OK;
+  return GNUNET_OK;
 }
 
 void
@@ -238,9 +239,9 @@ doneQueryManager ()
   int i;
 
   for (i = trackerCount - 1; i >= 0; i--)
-    FREE (trackers[i]);
+    GNUNET_free (trackers[i]);
 
-  GROW (trackers, trackerSize, 0);
+  GNUNET_array_grow (trackers, trackerSize, 0);
   trackerCount = 0;
   if (stats != NULL)
     {
@@ -250,7 +251,7 @@ doneQueryManager ()
     }
 
   coreAPI->unregisterClientExitHandler (&ceh);
-  MUTEX_DESTROY (queryManagerLock);
+  GNUNET_mutex_destroy (queryManagerLock);
   coreAPI = NULL;
   ectx = NULL;
 }
