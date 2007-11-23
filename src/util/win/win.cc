@@ -828,7 +828,7 @@ SOCKET win_ols_socket(int af, int type, int protocol)
   return s;
 }
 
-int win_ols_sendto(struct SocketHandle *s, const char *buf, int len,
+int win_ols_sendto(struct GNUNET_SocketHandle *s, const char *buf, int len,
                 const struct sockaddr *to, int tolen)
 {
   int iRet;
