@@ -1097,7 +1097,7 @@ needsForwarding (const GNUNET_HashCode * query,
   now = GNUNET_get_time ();
   ite = &ROUTING_indTable_[computeRoutingIndex (query)];
   equal_to_pending =
-    memcmp (query, &ite->primaryKey, sizeof (GNUNET_HashCode));
+    0 == memcmp (query, &ite->primaryKey, sizeof (GNUNET_HashCode));
   if ((stats != NULL) && (equal_to_pending))
     stats->change (stat_routing_request_duplicates, 1);
 
