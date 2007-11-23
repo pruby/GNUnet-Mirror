@@ -63,7 +63,7 @@ static struct GNUNET_CommandLineOption gnunetwinOptions[] = {
   {'R', "filehash", "hash",
    gettext_noop ("display a file's hash value"),
    1, &GNUNET_getopt_configure_set_string, &hashFile},
-  COMMAND_LINE_OPTION_VERSION (WINTOOL_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (WINTOOL_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -102,7 +102,7 @@ PrintAdapters ()
               if (pAddrTable->table[i].dwIndex ==
                   pTable->table[dwIfIdx].dwIndex)
                 printf ("Address: %u.%u.%u.%u\n",
-                        PRIP (ntohl (pAddrTable->table[i].dwAddr)));
+                        GNUNET_PRIP (ntohl (pAddrTable->table[i].dwAddr)));
             }
           printf ("\n");
         }
