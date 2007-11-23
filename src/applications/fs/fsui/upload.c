@@ -39,10 +39,15 @@
 
 /**
  * Transform an ECRS progress callback into an FSUI event.
+ * 
+ * @param direct is this a direct ECRS trigger, or a recursive
+ *        call from a child signaling progress to the parent?
  */
 static void
-progressCallback (unsigned long long totalBytes,
-                  unsigned long long completedBytes, cron_t eta, void *ptr)
+progressCallbackR (unsigned long long totalBytes,
+		   unsigned long long completedBytes, cron_t eta, void *ptr,
+		   int direct,
+		   int add)
 {
   FSUI_UploadList *utc = ptr;
   FSUI_Event event;
@@ -56,11 +61,29 @@ progressCallback (unsigned long long totalBytes,
   event.data.UploadProgress.uc.cctx = utc->cctx;
   event.data.UploadProgress.uc.ppos = utc->parent;
   event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
-  event.data.UploadProgress.completed = completedBytes;
-  event.data.UploadProgress.total = totalBytes;
+  if (YES == ECRS_isDirectory(utc->meta)) {
+    if ( (direct == YES) && (totalBytes == completedBytes) ) 
+      add = YES;
+    if (add == NO) {
+      event.data.UploadProgress.completed = completedBytes + utc->completed;
+      event.data.UploadProgress.total = utc->total;
+      if (totalBytes == completedBytes) 
+	utc->completed += completedBytes;
+    } else {
+      GE_ASSERT(NULL, totalBytes == completedBytes);
+      event.data.UploadProgress.completed = completedBytes + utc->completed;
+      event.data.UploadProgress.total = totalBytes + utc->total;
+      utc->total += completedBytes;
+      utc->completed += completedBytes;
+    }
+  } else {
+    /* simple file upload */
+    event.data.UploadProgress.completed = completedBytes;
+    event.data.UploadProgress.total = totalBytes;
+    utc->completed = completedBytes;
+  }
   event.data.UploadProgress.eta = eta;
   event.data.UploadProgress.filename = utc->filename;
-  utc->completed = completedBytes;
   utc->shared->ctx->ecb (utc->shared->ctx->ecbClosure, &event);
   if (utc->parent != &utc->shared->ctx->activeUploads)
     {
@@ -80,8 +103,19 @@ progressCallback (unsigned long long totalBytes,
                              (double) subtotal)) *
                            (double) utc->parent->total);
         }
-      progressCallback (utc->parent->total, subtotal, xeta, utc->parent);
+      progressCallbackR (totalBytes, completedBytes, xeta, utc->parent,
+			 NO, add);
     }
+}
+
+/**
+ * Transform an ECRS progress callback into an FSUI event.
+ */
+static void
+progressCallback (unsigned long long totalBytes,
+                  unsigned long long completedBytes, cron_t eta, void *ptr) 
+{
+  progressCallbackR(totalBytes, completedBytes, eta, ptr, YES, NO);
 }
 
 static int
