@@ -47,7 +47,8 @@ static void
 progressCallbackR (unsigned long long totalBytes,
 		   unsigned long long completedBytes, cron_t eta, void *ptr,
 		   int direct,
-		   int add)
+		   int add,
+		   int unaccounted)
 {
   FSUI_UploadList *utc = ptr;
   FSUI_Event event;
@@ -62,11 +63,13 @@ progressCallbackR (unsigned long long totalBytes,
   event.data.UploadProgress.uc.ppos = utc->parent;
   event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
   if (YES == ECRS_isDirectory(utc->meta)) {
+    if (direct == YES)
+      unaccounted = YES;
     if ( (direct == YES) && (totalBytes == completedBytes) ) 
       add = YES;
     if (add == NO) {
       event.data.UploadProgress.completed = completedBytes + utc->completed;
-      event.data.UploadProgress.total = utc->total;
+      event.data.UploadProgress.total = utc->total + ((unaccounted == NO) ? 0 : totalBytes);
       if (totalBytes == completedBytes) 
 	utc->completed += completedBytes;
     } else {
@@ -104,7 +107,7 @@ progressCallbackR (unsigned long long totalBytes,
                            (double) utc->parent->total);
         }
       progressCallbackR (totalBytes, completedBytes, xeta, utc->parent,
-			 NO, add);
+			 NO, add, unaccounted);
     }
 }
 
@@ -115,7 +118,7 @@ static void
 progressCallback (unsigned long long totalBytes,
                   unsigned long long completedBytes, cron_t eta, void *ptr) 
 {
-  progressCallbackR(totalBytes, completedBytes, eta, ptr, YES, NO);
+  progressCallbackR(totalBytes, completedBytes, eta, ptr, YES, NO, NO);
 }
 
 static int
