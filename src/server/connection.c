@@ -227,7 +227,7 @@
 #define EXIT() ;
 #endif
 
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
 FILE *prioFile;
 #endif
 
@@ -1161,7 +1161,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
               (*priority) = approximateKnapsack (be,
                                                  be->session.mtu -
                                                  sizeof (P2P_PACKET_HEADER));
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
               FPRINTF (prioFile, "%llu 0 %u\n", GNUNET_get_time (),
                        *priority);
 #endif
@@ -1171,7 +1171,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
               (*priority) = solveKnapsack (be,
                                            be->session.mtu -
                                            sizeof (P2P_PACKET_HEADER));
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
               FPRINTF (prioFile, "%llu 1 %u\n", GNUNET_get_time (),
                        *priority);
 #endif
@@ -1182,7 +1182,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
           (*priority) = solveKnapsack (be,
                                        be->session.mtu -
                                        sizeof (P2P_PACKET_HEADER));
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
           FPRINTF (prioFile, "%llu 2 %u\n", GNUNET_get_time (), *priority);
 #endif
         }
@@ -3640,7 +3640,7 @@ doneConnection ()
   topology = NULL;
   releaseService (stats);
   stats = NULL;
-#if DEBUG_COLLECT_PRIO == YES
+#if DEBUG_COLLECT_PRIO
   if (prioFile != NULL)
     {
       fclose (prioFile);
