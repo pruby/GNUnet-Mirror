@@ -158,7 +158,6 @@ GC_free (struct GC_Configuration *cfg)
   GE_ASSERT (cfg->ectx, cfg->listeners == 0);
   GNUNET_mutex_destroy (cfg->lock);
   GNUNET_free (cfg);
-  GNUNET_free (cfg);
 }
 
 void
