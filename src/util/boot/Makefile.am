@@ -8,6 +8,3 @@ noinst_LTLIBRARIES = \
 libboot_la_SOURCES = \
   startup.c
 
-libgnunetutil_boot_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
-
