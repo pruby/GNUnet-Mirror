@@ -333,6 +333,8 @@ GE_create_context_logfile (struct GE_Context *ectx,
       GNUNET_free (name);
       return NULL;              /* ERROR! */
     }
+  if (owner != NULL)
+    GNUNET_file_change_owner (NULL, name, owner);
   fctx = GNUNET_malloc (sizeof (FileContext));
   fctx->first_start = GNUNET_YES;
   fctx->logdate = logDate;

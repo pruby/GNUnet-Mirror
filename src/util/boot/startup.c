@@ -69,12 +69,17 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
   struct GE_Context *tetx;
   unsigned long long logrotate;
   int dev;
-  char *user;
+  char * user;
+  char * rdir;
+  size_t len;
+  size_t pos;
 
   nctx = NULL;
   admin_log_file = NULL;
   admin_log_level = NULL;
   user_log_level = NULL;
+  user = NULL;
+  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", NULL, &user);
   logrotate = 7;
   if (-1 == GC_get_configuration_value_number (cfg,
                                                "GNUNETD",
@@ -86,7 +91,29 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
                                        "LOGFILE",
                                        VAR_DAEMON_DIRECTORY "/logs",
                                        &admin_log_file);
-  GNUNET_disk_directory_create_for_file (*ectx, admin_log_file);
+  if (user != NULL) {
+    rdir = GNUNET_expand_file_name (NULL, admin_log_file);
+    GE_ASSERT(NULL, rdir != NULL);
+    len = strlen (rdir);
+    pos = 1;
+    while (pos < len) {
+      if (rdir[pos] == DIR_SEPARATOR) {
+	rdir[pos] = '\0';
+	if (mkdir(rdir, S_IRUSR | S_IWUSR| S_IXUSR) == 0) {
+	  GNUNET_file_change_owner(nctx,
+				   rdir,
+				   user);
+	} else if (errno != EEXIST) {
+	  GE_LOG_STRERROR_FILE (NULL,
+				GE_ERROR | GE_USER | GE_BULK,
+				"mkdir", rdir);      
+	}
+	rdir[pos] = DIR_SEPARATOR;
+      } 
+      pos++;
+    }
+    GNUNET_free(rdir);
+  }
   GC_get_configuration_value_string (cfg,
                                      "LOGGING",
                                      "ADMIN-LEVEL",
@@ -95,8 +122,6 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
                                      "LOGGING",
                                      "USER-LEVEL",
                                      "WARNING", &user_log_level);
-  user = NULL;
-  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", NULL, &user);
   dev =
     GC_get_configuration_value_yesno (cfg, "LOGGING", "DEVELOPER", GNUNET_NO);
   all = convertLogLevel (admin_log_level);
@@ -130,6 +155,7 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
       else
         nctx = GE_create_context_multiplexer (nctx, tetx);
     }
+  GNUNET_free_non_null(user);
   GE_setDefaultContext (nctx);
   GE_free_context (*ectx);
   *ectx = nctx;

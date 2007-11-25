@@ -87,20 +87,6 @@ waitForSignalHandler (struct GE_Context *ectx)
           _("`%s' is shutting down.\n"), "gnunetd");
 }
 
-
-static int
-post_detach ()
-{
-  if (GNUNET_OK != changeUser (ectx, cfg))
-    return GNUNET_SYSERR;
-  if (GNUNET_OK != checkPermissions (ectx, cfg))
-    return GNUNET_SYSERR;
-  mon = GNUNET_network_monitor_create (ectx, cfg);
-  if (mon == NULL)
-    return GNUNET_SYSERR;
-  return GNUNET_OK;
-}
-
 /**
  * The main method of gnunetd.
  */
@@ -115,7 +101,7 @@ gnunet_main ()
     return GNUNET_SYSERR;
   if (GNUNET_NO != debug_flag)
     GNUNET_pid_file_write (ectx, cfg, (unsigned int) getpid ());
-  if (GNUNET_OK != post_detach ())
+  if (NULL == (mon = GNUNET_network_monitor_create (ectx, cfg)))
     {
       if (GNUNET_NO == debug_flag)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
@@ -156,7 +142,6 @@ gnunet_main ()
   waitForSignalHandler (ectx);
   disableCoreProcessing ();
   GNUNET_cron_stop (cron);
-  GNUNET_pid_file_delete (ectx, cfg);
   stopTCPServer ();
   unloadApplicationModules ();
   doneConnection ();
@@ -235,6 +220,17 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
+  GNUNET_pid_file_write(ectx, cfg, getpid());
+  if (GNUNET_OK != changeUser (ectx, cfg)) {
+    GNUNET_pid_file_delete(ectx, cfg);
+    GNUNET_fini (ectx, cfg);
+    return 1;
+  }
+  if (GNUNET_OK != checkPermissions (ectx, cfg)) {
+    GNUNET_pid_file_delete (ectx, cfg);
+    GNUNET_fini (ectx, cfg);
+    return 1;
+  }
   if (GNUNET_YES == debug_flag)
     {
       int dev;
@@ -271,6 +267,7 @@ main (int argc, char *const *argv)
               _
               ("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
               "gnunet-update");
+      GNUNET_pid_file_delete (ectx, cfg);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
@@ -288,6 +285,7 @@ main (int argc, char *const *argv)
   else
 #endif
     ret = gnunet_main ();
+  GNUNET_pid_file_delete (ectx, cfg);
   GNUNET_fini (ectx, cfg);
   if (ret != GNUNET_OK)
     return 1;
