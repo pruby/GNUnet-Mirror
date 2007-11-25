@@ -79,7 +79,11 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
   admin_log_level = NULL;
   user_log_level = NULL;
   user = NULL;
-  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", NULL, &user);
+  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user);
+  if (strlen(user) == 0) {
+    GNUNET_free(user);
+    user = NULL;
+  }
   logrotate = 7;
   if (-1 == GC_get_configuration_value_number (cfg,
                                                "GNUNETD",
