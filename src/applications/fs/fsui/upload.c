@@ -402,7 +402,7 @@ GNUNET_FSUI_uploadThread (void *cls)
   if ((utc->child != NULL) &&
       ((strlen (pfn) == 0) || (pfn[strlen (pfn) - 1] != DIR_SEPARATOR)))
     strcat (pfn, DIR_SEPARATOR_STR);
-  GNUNET_ECRS_meta_data_inser (utc->meta, EXTRACTOR_FILENAME, pfn);
+  GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_FILENAME, pfn);
   GNUNET_free (pfn);
   if ((utc->shared->anonymityLevel == 0)
       && (utc->shared->doIndex == GNUNET_YES))
@@ -638,7 +638,7 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
           return NULL;
         }
       utc->meta = GNUNET_ECRS_meta_data_duplicate (md);
-      GNUNET_ECRS_meta_data_inser (utc->meta,
+      GNUNET_ECRS_meta_data_insert (utc->meta,
                                    EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
     }
   if (keywords != NULL)

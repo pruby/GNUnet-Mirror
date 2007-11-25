@@ -226,7 +226,7 @@ main (int argc, char *const *argv)
     {
       if (start_collection)
         {
-          GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_OWNER, create_name);
+          GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_OWNER, create_name);
           if (GNUNET_OK == GNUNET_CO_collection_start (anonymity, priority, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
                                                        create_name, meta))
             {

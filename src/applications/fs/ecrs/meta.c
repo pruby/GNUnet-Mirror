@@ -70,7 +70,7 @@ GNUNET_ECRS_meta_data_add_publication_date (MetaData * md)
   GNUNET_get_time_int32 (&t);
   GNUNET_ECRS_meta_data_delete (md, EXTRACTOR_PUBLICATION_DATE, NULL);
   dat = GNUNET_int32_time_to_string (&t);
-  GNUNET_ECRS_meta_data_inser (md, EXTRACTOR_PUBLICATION_DATE, dat);
+  GNUNET_ECRS_meta_data_insert (md, EXTRACTOR_PUBLICATION_DATE, dat);
   GNUNET_free (dat);
 }
 
@@ -79,7 +79,7 @@ GNUNET_ECRS_meta_data_add_publication_date (MetaData * md)
  * @return GNUNET_OK on success, GNUNET_SYSERR if this entry already exists
  */
 int
-GNUNET_ECRS_meta_data_inser (MetaData * md,
+GNUNET_ECRS_meta_data_insert (MetaData * md,
                              EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
@@ -291,7 +291,7 @@ GNUNET_ECRS_meta_data_duplicate (const MetaData * md)
     return NULL;
   ret = GNUNET_ECRS_meta_data_create ();
   for (i = md->itemCount - 1; i >= 0; i--)
-    GNUNET_ECRS_meta_data_inser (ret, md->items[i].type, md->items[i].data);
+    GNUNET_ECRS_meta_data_insert (ret, md->items[i].type, md->items[i].data);
   return ret;
 }
 
@@ -323,7 +323,7 @@ GNUNET_ECRS_meta_data_extract_from_file (struct GNUNET_GE_Context *ectx,
   while (pos != NULL)
     {
       if (GNUNET_OK ==
-          GNUNET_ECRS_meta_data_inser (md, pos->keywordType, pos->keyword))
+          GNUNET_ECRS_meta_data_insert (md, pos->keywordType, pos->keyword))
         ret++;
       pos = pos->next;
     }

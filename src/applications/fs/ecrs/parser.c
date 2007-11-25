@@ -99,7 +99,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (tmp[strlen (typename)] == ':') &&
           (0 == strncmp (typename, tmp, strlen (typename))))
         {
-          GNUNET_ECRS_meta_data_inser (meta, type,
+          GNUNET_ECRS_meta_data_insert (meta, type,
                                        &tmp[strlen (typename) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
@@ -109,7 +109,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (tmp[strlen (typename_i18n)] == ':') &&
           (0 == strncmp (typename_i18n, tmp, strlen (typename_i18n))))
         {
-          GNUNET_ECRS_meta_data_inser (meta, type,
+          GNUNET_ECRS_meta_data_insert (meta, type,
                                        &tmp[strlen (typename_i18n) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
@@ -118,7 +118,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
     }
   if (tmp != NULL)
     {
-      GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_UNKNOWN, tmp);
+      GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_UNKNOWN, tmp);
       GNUNET_free (tmp);
       printf (_
               ("Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),

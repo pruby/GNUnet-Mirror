@@ -65,7 +65,7 @@ main (int argc, char *argv[])
 #endif
   ok = GNUNET_YES;
   meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE, "test/foo");
+  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE, "test/foo");
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
   GNUNET_CO_init (NULL, cfg);

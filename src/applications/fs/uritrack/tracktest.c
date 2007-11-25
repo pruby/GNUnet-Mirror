@@ -109,10 +109,10 @@ testTracking ()
   };
   fi1.uri = GNUNET_ECRS_keyword_string_to_uri (k1);
   fi1.meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_inser (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  GNUNET_ECRS_meta_data_insert (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
   fi2.uri = GNUNET_ECRS_keyword_string_to_uri (k2);
   fi2.meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_inser (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  GNUNET_ECRS_meta_data_insert (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
 
   GNUNET_URITRACK_clear (NULL, cfg);
   GNUNET_URITRACK_register_track_callback (NULL, cfg, &notified, NULL);

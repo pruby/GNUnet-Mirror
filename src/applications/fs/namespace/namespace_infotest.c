@@ -69,7 +69,7 @@ main (int argc, char *argv[])
   old = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
 
   meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_inser (meta, 0, "test");
+  GNUNET_ECRS_meta_data_insert (meta, 0, "test");
   GNUNET_create_random_hash (&root);
   uri = GNUNET_NS_namespace_create (ectx,
                                     cfg,

@@ -83,7 +83,7 @@ testDirectory (unsigned int i)
       for (q = 0; q <= p; q++)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
-          GNUNET_ECRS_meta_data_inser (fis[p].meta,
+          GNUNET_ECRS_meta_data_insert (fis[p].meta,
                                        q %
                                        EXTRACTOR_getHighestKeywordTypeNumber
                                        (), txt);
@@ -106,8 +106,8 @@ testDirectory (unsigned int i)
         }
     }
   meta = GNUNET_ECRS_meta_data_create ();
-  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_TITLE, "A title");
-  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_AUTHOR, "An author");
+  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_TITLE, "A title");
+  GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_AUTHOR, "An author");
   if (GNUNET_OK !=
       GNUNET_ECRS_directory_create (NULL, &data, &dlen, i, fis, meta))
     {

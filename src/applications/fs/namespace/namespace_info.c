@@ -892,7 +892,7 @@ static int
 mergeMeta (EXTRACTOR_KeywordType type, const char *data, void *cls)
 {
   struct GNUNET_ECRS_MetaData *meta = cls;
-  GNUNET_ECRS_meta_data_inser (meta, type, data);
+  GNUNET_ECRS_meta_data_insert (meta, type, data);
   return GNUNET_OK;
 }
 
