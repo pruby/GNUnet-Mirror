@@ -191,7 +191,7 @@ GNUNET_RPC_parameters_get_serialized_size (GNUNET_RPC_CallParameters * param)
  * @return The number of parameters
  */
 unsigned int
-GNUNET_RPC_paramters_count (GNUNET_RPC_CallParameters * param)
+GNUNET_RPC_parameters_count (GNUNET_RPC_CallParameters * param)
 {
   if (param == NULL)
     return 0;
