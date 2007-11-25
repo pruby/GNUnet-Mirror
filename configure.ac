@@ -72,26 +72,36 @@ case "$host_os" in
      LDFLAGS="-flat_namespace -undefined suppress $LDFLAGS"
      AC_MSG_WARN([The VPN application cannot be compiled on your OS])
      build_target="macosx"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
      build_target="linux"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 freebsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(FREEBSD,1,[This is a FreeBSD system])
      CFLAGS="-D_THREAD_SAFE $CFLAGS"
      build_target="freebsd"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 openbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(OPENBSD,1,[This is an OpenBSD system])
      LIBS=`echo $LIBS | sed -e "s/-ldl//"`
      build_target="openbsd"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 netbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(NETBSD,1,[This is a NetBSD system])
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 *solaris*)
      AC_DEFINE_UNQUOTED(SOLARIS,1,[This is a Solaris system])
@@ -99,11 +109,15 @@ netbsd*)
      AC_CHECK_LIB(resolv, res_init)
      AC_CHECK_LIB(rt, nanosleep)
      build_target="solaris"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 *arm-linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
      CFLAGS="-D_REENTRANT -fPIC -pipe $CFLAGS"
      build_target="linux"
+     LIBPREFIX=
+     DLLDIR=lib
      ;;
 *cygwin*)
      AC_DEFINE_UNQUOTED(CYGWIN,1,[This is a Cygwin system])
@@ -112,6 +126,8 @@ netbsd*)
      LDFLAGS="$LDFLAGS -no-undefined"
      CFLAGS="-mms-bitfields $CFLAGS"
      build_target="cygwin"
+     LIBPREFIX=lib
+     DLLDIR=bin
      AC_PROG_CXX
      ;;
 *mingw*)
@@ -123,6 +139,8 @@ netbsd*)
      CFLAGS="-mms-bitfields $CFLAGS"
      build_target="mingw"
      AC_PROG_CXX
+     LIBPREFIX=lib
+     DLLDIR=bin
      ;;
 *)
      AC_MSG_RESULT(Unrecognised OS $host_os)
@@ -150,6 +168,9 @@ AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
+
+# test for qmake
+AC_CHECK_PROG([QMAKE], [qmake-qt4], [qmake-qt4], [qmake])
 
 # 'save' libs; only those libs found so far will be
 # linked against _everywhere_.  For the others, we
@@ -408,6 +429,46 @@ AC_ARG_WITH(dialog,
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
+# check for Qt 4
+AC_LANG_PUSH([C++])
+qt=0
+AC_MSG_CHECKING(for Qt)
+AC_ARG_WITH(qt,
+   [  --with-qt=PFX    Base of Qt installation],
+   [AC_MSG_RESULT([$with_qt])
+    case $with_qt in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS([Qt/qpixmap.h],
+          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
+            qt=1,
+              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+              qt=1)))
+        ;;
+      *)
+        LDFLAGS="-L$with_qt/lib $LDFLAGS"
+        CPPFLAGS="-I$with_qt/include -I$with_qt/include/qt4 $CPPFLAGS"
+        AC_CHECK_HEADERS([Qt/qpixmap.h],
+          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
+            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+            qt=1,
+              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+              EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+              qt=1)))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-qt not specified])
+    LDFLAGS="-L/usr/lib $LDFLAGS"
+    CPPFLAGS="-I/usr/include -I/usr/include/qt4 $CPPFLAGS"    
+    AC_CHECK_HEADERS([Qt/qpixmap.h],
+          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
+            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+            qt=1,
+              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+              EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+              qt=1)))])
 
 # libmicrohttpd
 lmhd=0
@@ -607,6 +668,16 @@ else
 fi
 AM_CONDITIONAL(HAVE_GUILE, test x$guile = x1)
 
+if test "$qt" = 1
+then
+	AC_DEFINE(HAVE_QT, 1, [We have Qt])
+fi
+AM_CONDITIONAL(HAVE_QT, test x$qt != x0)
+
+AC_SUBST(LIBPREFIX)
+AC_SUBST(DLLDIR)
+AC_SUBST(EXT_LIB_PATH)
+
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile
@@ -655,6 +726,7 @@ src/applications/vpn/Makefile
 src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
+src/setup/qt/qt.pro
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
@@ -679,6 +751,15 @@ src/util/threads/Makefile
 src/util/win/Makefile
 ])
 AC_OUTPUT
+
+if test "$qt" = 1
+then
+	AC_MSG_NOTICE([Running qmake])
+	PWD=$(pwd)
+	cd src/setup/qt
+	MINGW_IN_SHELL=1 $QMAKE qt.pro -unix -recursive
+	cd $PWD
+fi
 
 # Finally: summary!
 
@@ -722,3 +803,16 @@ if test "x$sqlite" = "x0"
 then
   AC_MSG_NOTICE([WARNING: sqlite not found, this will cause problems with file-sharing.])
 fi
+
+AC_MSG_NOTICE([********************************************
+You can build GNUnet with
+	make install
+now. After that, run
+	gnunet-setup -d wizard-gtk
+(on graphical systems with GTK) or
+	gnunet-setup -d wizard-curses
+(on text-based systems with curses) in order to make important configuration
+settings. If neither works for you, you can find a template configuration
+file in the contrib/ subdirectory. Copy it to /etc/gnunetd.conf and modify it
+using your favourite text editor.
+********************************************])
