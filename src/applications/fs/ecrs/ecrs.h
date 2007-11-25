@@ -112,10 +112,10 @@ typedef struct GNUNET_ECRS_MetaData
 
 
 void GNUNET_ECRS_encryptInPlace (const GNUNET_HashCode * hc,
-                          void *data, unsigned int len);
+                                 void *data, unsigned int len);
 
 void GNUNET_ECRS_decryptInPlace (const GNUNET_HashCode * hc,
-                          void *data, unsigned int len);
+                                 void *data, unsigned int len);
 
 
 

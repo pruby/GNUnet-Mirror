@@ -36,14 +36,16 @@
  * Start a DHT get operation.
  */
 void dht_get_start (const GNUNET_HashCode * key,
-                    unsigned int type, GNUNET_ResultProcessor handler, void *cls);
+                    unsigned int type, GNUNET_ResultProcessor handler,
+                    void *cls);
 
 /**
  * Stop a DHT get operation (prevents calls to
  * the given iterator).
  */
 void dht_get_stop (const GNUNET_HashCode * key,
-                   unsigned int type, GNUNET_ResultProcessor handler, void *cls);
+                   unsigned int type, GNUNET_ResultProcessor handler,
+                   void *cls);
 
 /**
  * Perform a DHT put operation.  Note that PUT operations always

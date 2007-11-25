@@ -80,7 +80,7 @@ GNUNET_ECRS_meta_data_add_publication_date (MetaData * md)
  */
 int
 GNUNET_ECRS_meta_data_inser (MetaData * md,
-                    EXTRACTOR_KeywordType type, const char *data)
+                             EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
 
@@ -104,7 +104,7 @@ GNUNET_ECRS_meta_data_inser (MetaData * md,
  */
 int
 GNUNET_ECRS_meta_data_delete (MetaData * md,
-                      EXTRACTOR_KeywordType type, const char *data)
+                              EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
   int ret = GNUNET_SYSERR;
@@ -134,7 +134,8 @@ GNUNET_ECRS_meta_data_delete (MetaData * md,
  */
 int
 GNUNET_ECRS_meta_data_get_contents (const MetaData * md,
-                  GNUNET_ECRS_MetaDataProcessor iterator, void *closure)
+                                    GNUNET_ECRS_MetaDataProcessor iterator,
+                                    void *closure)
 {
   int i;
   int sub;
@@ -161,7 +162,8 @@ GNUNET_ECRS_meta_data_get_contents (const MetaData * md,
  * @return number of entries
  */
 char *
-GNUNET_ECRS_meta_data_get_by_type (const MetaData * md, EXTRACTOR_KeywordType type)
+GNUNET_ECRS_meta_data_get_by_type (const MetaData * md,
+                                   EXTRACTOR_KeywordType type)
 {
   int i;
 
@@ -253,7 +255,7 @@ decodeThumbnail (const char *in, unsigned char **out, size_t * outSize)
  */
 size_t
 GNUNET_ECRS_meta_data_get_thumbnail (const struct GNUNET_ECRS_MetaData * md,
-                               unsigned char **thumb)
+                                     unsigned char **thumb)
 {
   char *encoded;
   int ret;
@@ -301,9 +303,9 @@ GNUNET_ECRS_meta_data_duplicate (const MetaData * md)
  */
 int
 GNUNET_ECRS_meta_data_extract_from_file (struct GNUNET_GE_Context *ectx,
-                      MetaData * md,
-                      const char *filename,
-                      EXTRACTOR_ExtractorList * extractors)
+                                         MetaData * md,
+                                         const char *filename,
+                                         EXTRACTOR_ExtractorList * extractors)
 {
   EXTRACTOR_KeywordList *head;
   EXTRACTOR_KeywordList *pos;
@@ -436,8 +438,8 @@ typedef struct
  */
 int
 GNUNET_ECRS_meta_data_serialize (struct GNUNET_GE_Context *ectx,
-                        const MetaData * md,
-                        char *target, unsigned int max, int part)
+                                 const MetaData * md,
+                                 char *target, unsigned int max, int part)
 {
   MetaDataHeader *hdr;
   size_t size;
@@ -577,7 +579,7 @@ GNUNET_ECRS_meta_data_get_serialized_size (const MetaData * md, int part)
  */
 struct GNUNET_ECRS_MetaData *
 GNUNET_ECRS_meta_data_deserialize (struct GNUNET_GE_Context *ectx,
-                          const char *input, unsigned int size)
+                                   const char *input, unsigned int size)
 {
   MetaData *md;
   const MetaDataHeader *hdr;
@@ -758,7 +760,8 @@ static char *mimeMap[][2] = {
  * @return the new filename
  */
 char *
-GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx, const char *filename)
+GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
+                                     const char *filename)
 {
   EXTRACTOR_ExtractorList *l;
   EXTRACTOR_KeywordList *list;
@@ -797,8 +800,10 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx, const char 
       while ((mimeMap[i][0] != NULL) && (0 != strcmp (mime, mimeMap[i][0])))
         i++;
       if (mimeMap[i][1] == NULL)
-        GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                "Did not find mime type `%s' in extension list.\n", mime);
+        GNUNET_GE_LOG (ectx,
+                       GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                       "Did not find mime type `%s' in extension list.\n",
+                       mime);
       mime = mimeMap[i][1];
     }
   if (key == NULL)
@@ -873,17 +878,20 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx, const char 
       if (0 != STAT (renameTo, &filestat))
         {
           if (0 != RENAME (filename, renameTo))
-            GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                    _("Renaming of file `%s' to `%s' failed: %s\n"),
-                    filename, renameTo, STRERROR (errno));
+            GNUNET_GE_LOG (ectx,
+                           GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                           _("Renaming of file `%s' to `%s' failed: %s\n"),
+                           filename, renameTo, STRERROR (errno));
           else
             ret = GNUNET_strdup (renameTo);
         }
       else
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Could not rename file `%s' to `%s': file exists\n"),
-                  filename, renameTo);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Could not rename file `%s' to `%s': file exists\n"),
+                         filename, renameTo);
         }
     }
   GNUNET_free (path);
@@ -898,7 +906,7 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx, const char 
  */
 int
 GNUNET_ECRS_meta_data_test_equal (const struct GNUNET_ECRS_MetaData *md1,
-                     const struct GNUNET_ECRS_MetaData *md2)
+                                  const struct GNUNET_ECRS_MetaData *md2)
 {
   int i;
   int j;

@@ -79,22 +79,23 @@ verifyKBlock (struct GNUNET_GE_Context *ectx,
     j++;
   if (j == size)
     {
-      GNUNET_GE_BREAK (NULL, 0);       /* kblock malformed */
+      GNUNET_GE_BREAK (NULL, 0);        /* kblock malformed */
       return GNUNET_SYSERR;
     }
   dstURI = (const char *) &kb[1];
   j++;
   fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
-                                      &((const char *) kb)[j], size - j);
+                                               &((const char *) kb)[j],
+                                               size - j);
   if (fi.meta == NULL)
     {
-      GNUNET_GE_BREAK (ectx, 0);       /* kblock malformed */
+      GNUNET_GE_BREAK (ectx, 0);        /* kblock malformed */
       return GNUNET_SYSERR;
     }
   fi.uri = GNUNET_ECRS_string_to_uri (ectx, dstURI);
   if (fi.uri == NULL)
     {
-      GNUNET_GE_BREAK (ectx, 0);       /* kblock malformed */
+      GNUNET_GE_BREAK (ectx, 0);        /* kblock malformed */
       GNUNET_ECRS_meta_data_destroy (fi.meta);
       return GNUNET_SYSERR;
     }
@@ -117,13 +118,13 @@ verifyKBlock (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
-                    struct GNUNET_GC_Configuration *cfg,
-                    const struct GNUNET_ECRS_URI *uri,
-                    unsigned int anonymityLevel,
-                    unsigned int priority,
-                    GNUNET_CronTime expirationTime,
-                    const struct GNUNET_ECRS_URI *dst,
-                    const struct GNUNET_ECRS_MetaData *md)
+                                   struct GNUNET_GC_Configuration *cfg,
+                                   const struct GNUNET_ECRS_URI *uri,
+                                   unsigned int anonymityLevel,
+                                   unsigned int priority,
+                                   GNUNET_CronTime expirationTime,
+                                   const struct GNUNET_ECRS_URI *dst,
+                                   const struct GNUNET_ECRS_MetaData *md)
 {
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_DatastoreValue *value;
@@ -151,7 +152,9 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  mdsize = GNUNET_ECRS_meta_data_get_serialized_size (md, GNUNET_ECRS_SERIALIZE_PART);
+  mdsize =
+    GNUNET_ECRS_meta_data_get_serialized_size (md,
+                                               GNUNET_ECRS_SERIALIZE_PART);
   dstURI = GNUNET_ECRS_uri_to_string (dst);
   size = mdsize + sizeof (KBlock) + strlen (dstURI) + 1;
   if (size > MAX_KBLOCK_SIZE)
@@ -163,10 +166,11 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
       mdsize = size - sizeof (KBlock) - strlen (dstURI) - 1;
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
-                                       md,
-                                       &((char *) &kb[1])[strlen (dstURI) +
+                                                md,
+                                                &((char *)
+                                                  &kb[1])[strlen (dstURI) +
                                                           1], mdsize,
-                                       GNUNET_ECRS_SERIALIZE_PART);
+                                                GNUNET_ECRS_SERIALIZE_PART);
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -182,12 +186,14 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
       kb->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
       GNUNET_GE_ASSERT (ectx,
-                 mdsize ==
-                 GNUNET_ECRS_meta_data_serialize (ectx,
-                                         md,
-                                         &((char *) &kb[1])[strlen (dstURI) +
-                                                            1], mdsize,
-                                         GNUNET_ECRS_SERIALIZE_FULL));
+                        mdsize ==
+                        GNUNET_ECRS_meta_data_serialize (ectx,
+                                                         md,
+                                                         &((char *)
+                                                           &kb[1])[strlen
+                                                                   (dstURI) +
+                                                                   1], mdsize,
+                                                         GNUNET_ECRS_SERIALIZE_FULL));
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
@@ -198,9 +204,9 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
   ret = GNUNET_OK;
 
   if (GNUNET_GC_get_configuration_value_yesno (cfg,
-                                        "FS",
-                                        "DISABLE-CREATION-TIME",
-                                        GNUNET_NO) == GNUNET_YES)
+                                               "FS",
+                                               "DISABLE-CREATION-TIME",
+                                               GNUNET_NO) == GNUNET_YES)
     xuri = GNUNET_ECRS_uri_duplicate (uri);
   else
     xuri = GNUNET_ECRS_uri_expand_keywords_with_date (uri);
@@ -215,21 +221,24 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
 #if DEBUG_KEYSPACE
       IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&key, &enc));
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Encrypting KBlock with key %s.\n", &enc);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Encrypting KBlock with key %s.\n", &enc);
 #endif
       GNUNET_ECRS_encryptInPlace (&key, &kb[1], mdsize + strlen (dstURI) + 1);
       pk = GNUNET_RSA_create_key_from_hash (&key);
       GNUNET_RSA_get_public_key (pk, &kb->keyspace);
       GNUNET_GE_ASSERT (ectx,
-                 GNUNET_OK == GNUNET_RSA_sign (pk,
-                                               mdsize + strlen (dstURI) + 1,
-                                               &kb[1], &kb->signature));
+                        GNUNET_OK == GNUNET_RSA_sign (pk,
+                                                      mdsize +
+                                                      strlen (dstURI) + 1,
+                                                      &kb[1],
+                                                      &kb->signature));
 #if EXTRA_CHECKS
       /* extra check: verify sig */
       GNUNET_GE_ASSERT (ectx,
-                 GNUNET_OK == getQueryFor (size, (DBlock *) kb, GNUNET_YES,
-                                           &hc));
+                        GNUNET_OK == getQueryFor (size, (DBlock *) kb,
+                                                  GNUNET_YES, &hc));
 #endif
       GNUNET_RSA_free_key (pk);
       if (GNUNET_OK != GNUNET_FS_insert (sock, value))

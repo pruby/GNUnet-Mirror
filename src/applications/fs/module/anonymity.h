@@ -44,6 +44,7 @@
  * @return GNUNET_OK if cover traffic is sufficient
  */
 int checkCoverTraffic (struct GNUNET_GE_Context *ectx,
-                       GNUNET_Traffic_ServiceAPI * traffic, unsigned int level);
+                       GNUNET_Traffic_ServiceAPI * traffic,
+                       unsigned int level);
 
 #endif

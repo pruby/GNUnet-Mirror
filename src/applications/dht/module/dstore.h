@@ -35,7 +35,8 @@
  * @return total number of results found
  */
 int dht_store_get (const GNUNET_HashCode * key,
-                   unsigned int type, GNUNET_ResultProcessor handler, void *cls);
+                   unsigned int type, GNUNET_ResultProcessor handler,
+                   void *cls);
 
 /**
  * Store the given data in the local datastore.

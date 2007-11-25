@@ -63,7 +63,7 @@ static struct GNUNET_CommandLineOption gnunetwinOptions[] = {
   {'R', "filehash", "hash",
    gettext_noop ("display a file's hash value"),
    1, &GNUNET_getopt_configure_set_string, &hashFile},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (WINTOOL_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (WINTOOL_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -353,13 +353,15 @@ main (int argc, char **argv)
 
   /* startup */
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
-                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
-                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
-  res = GNUNET_parse_options ("gnunet-win-tool [OPTIONS] [KEYWORDS]",
-                              ectx,
-                              NULL,
-                              gnunetwinOptions, (unsigned int) argc, argv);
+                                          GNUNET_GE_WARNING | GNUNET_GE_ERROR
+                                          | GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                          GNUNET_GE_ADMIN |
+                                          GNUNET_GE_DEVELOPER |
+                                          GNUNET_GE_IMMEDIATE |
+                                          GNUNET_GE_BULK);
+  res =
+    GNUNET_parse_options ("gnunet-win-tool [OPTIONS] [KEYWORDS]", ectx, NULL,
+                          gnunetwinOptions, (unsigned int) argc, argv);
   if (res == GNUNET_SYSERR)
     {
       GNUNET_GE_free_context (ectx);

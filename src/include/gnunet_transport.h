@@ -260,8 +260,8 @@ typedef struct
    * @param may_reuse can an existing connection be re-used?
    * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
-  int (*connect) (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsession,
-                  int may_reuse);
+  int (*connect) (const GNUNET_MessageHello * hello,
+                  GNUNET_TSession ** tsession, int may_reuse);
 
   /**
    * Send a message to the specified remote node.
@@ -348,7 +348,8 @@ typedef struct
    *         GNUNET_NO if the transport would just drop the message,
    *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size, int important);
+  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size,
+                       int important);
 
 } TransportAPI;
 

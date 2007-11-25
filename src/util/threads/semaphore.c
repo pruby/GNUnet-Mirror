@@ -102,12 +102,12 @@ GNUNET_semaphore_create (int value)
   pthread_mutexattr_init (&attr);
 #if LINUX
   GNUNET_GE_ASSERT (NULL,
-             0 == pthread_mutexattr_setkind_np
-             (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
+                    0 == pthread_mutexattr_setkind_np
+                    (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
   GNUNET_GE_ASSERT (NULL,
-             0 == pthread_mutexattr_settype
-             (&attr, PTHREAD_MUTEX_ERRORCHECK));
+                    0 == pthread_mutexattr_settype
+                    (&attr, PTHREAD_MUTEX_ERRORCHECK));
 #endif
   s = GNUNET_malloc (sizeof (Semaphore));
   s->v = value;
@@ -163,9 +163,10 @@ GNUNET_semaphore_down_at_file_line_ (Semaphore * s,
       (end - start > GNUNET_REALTIME_LIMIT) && (GNUNET_REALTIME_LIMIT != 0))
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-              _("Real-time delay violation (%llu ms) at %s:%u\n"),
-              end - start, file, line);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING |
+                     GNUNET_GE_IMMEDIATE,
+                     _("Real-time delay violation (%llu ms) at %s:%u\n"),
+                     end - start, file, line);
     }
   return ret;
 }

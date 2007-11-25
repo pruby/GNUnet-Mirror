@@ -43,7 +43,8 @@ testEC ()
   data = GNUNET_malloc (len);
   memset (&data[1], rand (), len - sizeof (DBlock));
   data->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
-  CHECK (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA == getTypeOfBlock (len, data), data);
+  CHECK (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA == getTypeOfBlock (len, data),
+         data);
   fileBlockGetKey (data, len, &key);
   fileBlockGetQuery (data, len, &query);
   CHECK (GNUNET_OK == fileBlockEncode (data, len, &query, &value), data);

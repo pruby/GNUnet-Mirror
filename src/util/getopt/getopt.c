@@ -1067,8 +1067,9 @@ GNUNET_parse_options (const char *binaryOptions,
       if (i == count)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                  _("Use --help to get a list of options.\n"));
+                         GNUNET_GE_INFO | GNUNET_GE_USER |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Use --help to get a list of options.\n"));
           cont = GNUNET_SYSERR;
         }
     }

@@ -129,12 +129,12 @@ END:
   else
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "waiting for other process to exit.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "waiting for other process to exit.\n");
       if (-1 == waitpid (me, &j, 0))
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                "waitpid failed: %s\n", STRERROR (errno));
+                       GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                       "waitpid failed: %s\n", STRERROR (errno));
       if ((!WIFEXITED (j)) || WEXITSTATUS (j) == 1)
         ret = 1;                /* error in child */
     }
@@ -147,9 +147,12 @@ main (int argc, char *argv[])
   int ret = 0;
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
-                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
-                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+                                          GNUNET_GE_WARNING | GNUNET_GE_ERROR
+                                          | GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                          GNUNET_GE_ADMIN |
+                                          GNUNET_GE_DEVELOPER |
+                                          GNUNET_GE_IMMEDIATE |
+                                          GNUNET_GE_BULK);
   GNUNET_GE_setDefaultContext (ectx);
   GNUNET_os_init (ectx);
   ret += testIPCSemaphore ();

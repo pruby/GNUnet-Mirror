@@ -59,7 +59,8 @@ void disableCoreProcessing ();
  */
 void injectMessage (const GNUNET_PeerIdentity * sender,
                     const char *msg,
-                    unsigned int size, int wasEncrypted, GNUNET_TSession * session);
+                    unsigned int size, int wasEncrypted,
+                    GNUNET_TSession * session);
 
 /**
  * Processing of a message from the transport layer (receive

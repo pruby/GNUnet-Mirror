@@ -137,9 +137,10 @@ getCollectionFileName ()
   char *fnBase;
 
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                       "GNUNET",
-                                       "GNUNET_HOME",
-                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
+                                              "GNUNET",
+                                              "GNUNET_HOME",
+                                              GNUNET_DEFAULT_HOME_DIRECTORY,
+                                              &fnBase);
   fn = GNUNET_malloc (strlen (fnBase) + strlen (COLLECTION) + 4);
   strcpy (fn, fnBase);
   GNUNET_disk_directory_create (ectx, fn);
@@ -153,7 +154,8 @@ getCollectionFileName ()
  * Initialize collection module.
  */
 void
-GNUNET_CO_init (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
+GNUNET_CO_init (struct GNUNET_GE_Context *e,
+                struct GNUNET_GC_Configuration *c)
 {
   char *fn;
   int len;
@@ -202,8 +204,9 @@ GNUNET_CO_init (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
   if (buf == MAP_FAILED)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                            "mmap", fn);
+                                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                   GNUNET_GE_USER | GNUNET_GE_BULK, "mmap",
+                                   fn);
       CLOSE (fd);
       GNUNET_free (fn);
       return;
@@ -331,11 +334,13 @@ writeCO ()
     return;
 
   /* write collection data */
-  mlen = GNUNET_ECRS_meta_data_get_serialized_size (collectionData->meta, GNUNET_NO);
+  mlen =
+    GNUNET_ECRS_meta_data_get_serialized_size (collectionData->meta,
+                                               GNUNET_NO);
   buf = GNUNET_malloc (mlen);
   if (mlen != GNUNET_ECRS_meta_data_serialize (ectx,
-                                      collectionData->meta, buf, mlen,
-                                      GNUNET_NO))
+                                               collectionData->meta, buf,
+                                               mlen, GNUNET_NO))
     {
       GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (buf);
@@ -348,8 +353,9 @@ writeCO ()
   if (fd == -1)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_BULK,
-                            "open", fn);
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                   GNUNET_GE_ERROR | GNUNET_GE_BULK, "open",
+                                   fn);
       GNUNET_free (fn);
       GNUNET_free (buf);
       return;
@@ -366,11 +372,14 @@ writeCO ()
   GNUNET_free (buf);
   for (i = 0; i < collectionData->file_count; i++)
     {
-      mlen = GNUNET_ECRS_meta_data_get_serialized_size (collectionData->files[i].meta, GNUNET_NO);
+      mlen =
+        GNUNET_ECRS_meta_data_get_serialized_size (collectionData->files[i].
+                                                   meta, GNUNET_NO);
       buf = GNUNET_malloc (mlen);
       if (mlen != GNUNET_ECRS_meta_data_serialize (ectx,
-                                          collectionData->files[i].meta,
-                                          buf, mlen, GNUNET_NO))
+                                                   collectionData->files[i].
+                                                   meta, buf, mlen,
+                                                   GNUNET_NO))
         {
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (buf);
@@ -415,9 +424,10 @@ GNUNET_CO_done ()
  */
 int
 GNUNET_CO_collection_start (unsigned int anonymityLevel,
-                    unsigned int prio,
-                    GNUNET_Int32Time updateInterval,
-                    const char *name, const struct GNUNET_ECRS_MetaData *meta)
+                            unsigned int prio,
+                            GNUNET_Int32Time updateInterval,
+                            const char *name,
+                            const struct GNUNET_ECRS_MetaData *meta)
 {
   struct GNUNET_ECRS_URI *advertisement;
   struct GNUNET_ECRS_URI *rootURI;
@@ -425,21 +435,21 @@ GNUNET_CO_collection_start (unsigned int anonymityLevel,
   GNUNET_Int32Time now;
 
   GNUNET_mutex_lock (lock);
-  GNUNET_CO_collection_stop ();         /* cancel old collection */
+  GNUNET_CO_collection_stop (); /* cancel old collection */
   GNUNET_GE_ASSERT (ectx, name != NULL);
   advertisement = GNUNET_ECRS_keyword_string_to_uri (ectx, COLLECTION);
   GNUNET_GE_ASSERT (ectx, advertisement != NULL);
   GNUNET_get_time_int32 (&now);
   GNUNET_create_random_hash (&nextId);
   rootURI = GNUNET_ECRS_namespace_create (ectx,
-                                  cfg,
-                                  name,
-                                  meta,
-                                  anonymityLevel,
-                                  prio,
-                                  GNUNET_get_time () +
-                                  COLLECTION_ADV_LIFETIME, advertisement,
-                                  &nextId);
+                                          cfg,
+                                          name,
+                                          meta,
+                                          anonymityLevel,
+                                          prio,
+                                          GNUNET_get_time () +
+                                          COLLECTION_ADV_LIFETIME,
+                                          advertisement, &nextId);
   if (rootURI == NULL)
     {
       GNUNET_ECRS_uri_destroy (advertisement);
@@ -549,7 +559,8 @@ GNUNET_CO_collection_publish_now ()
       return;
     }
   GNUNET_get_time_int32 (&now);
-  if ((ntohl (collectionData->data.updateInterval) != GNUNET_ECRS_SBLOCK_UPDATE_NONE)
+  if ((ntohl (collectionData->data.updateInterval) !=
+       GNUNET_ECRS_SBLOCK_UPDATE_NONE)
       && (ntohl (collectionData->data.updateInterval) !=
           GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
       && (ntohl (collectionData->data.lastPublication) +
@@ -558,7 +569,8 @@ GNUNET_CO_collection_publish_now ()
       GNUNET_mutex_unlock (lock);
       return;
     }
-  if ((ntohl (collectionData->data.updateInterval) != GNUNET_ECRS_SBLOCK_UPDATE_NONE)
+  if ((ntohl (collectionData->data.updateInterval) !=
+       GNUNET_ECRS_SBLOCK_UPDATE_NONE)
       && (ntohl (collectionData->data.updateInterval) !=
           GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC))
     {
@@ -577,22 +589,29 @@ GNUNET_CO_collection_publish_now ()
   fd = mkstemp (tmpName);
   if (fd == -1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "mkstemp");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "mkstemp");
       GNUNET_free (tmpName);
       GNUNET_mutex_unlock (lock);
       return;
     }
   dirData = NULL;
   GNUNET_GE_ASSERT (ectx,
-             GNUNET_OK == GNUNET_ECRS_directory_create (ectx,
-                                                &dirData,
-                                                &dirLen,
-                                                collectionData->file_count,
-                                                collectionData->files,
-                                                collectionData->meta));
+                    GNUNET_OK == GNUNET_ECRS_directory_create (ectx,
+                                                               &dirData,
+                                                               &dirLen,
+                                                               collectionData->
+                                                               file_count,
+                                                               collectionData->
+                                                               files,
+                                                               collectionData->
+                                                               meta));
   if (-1 == WRITE (fd, dirData, dirLen))
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "write");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "write");
       GNUNET_free (tmpName);
       GNUNET_free (dirData);
       GNUNET_mutex_unlock (lock);
@@ -601,12 +620,13 @@ GNUNET_CO_collection_publish_now ()
   GNUNET_free (dirData);
   CLOSE (fd);
   if (GNUNET_OK != GNUNET_ECRS_file_upload (ectx, cfg, tmpName, GNUNET_NO,      /* indexing */
-                                    ntohl (collectionData->data.
-                                           anonymityLevel),
-                                    ntohl (collectionData->data.priority),
-                                    GNUNET_get_time () +
-                                    COLLECTION_ADV_LIFETIME, NULL, NULL, NULL,
-                                    NULL, &directoryURI))
+                                            ntohl (collectionData->data.
+                                                   anonymityLevel),
+                                            ntohl (collectionData->data.
+                                                   priority),
+                                            GNUNET_get_time () +
+                                            COLLECTION_ADV_LIFETIME, NULL,
+                                            NULL, NULL, NULL, &directoryURI))
     {
       UNLINK (tmpName);
       GNUNET_free (tmpName);
@@ -616,16 +636,20 @@ GNUNET_CO_collection_publish_now ()
   UNLINK (tmpName);
   GNUNET_free (tmpName);
   uri = GNUNET_ECRS_namespace_add_content (ectx,
-                             cfg,
-                             collectionData->name,
-                             ntohl (collectionData->data.anonymityLevel),
-                             ntohl (collectionData->data.priority),
-                             GNUNET_get_time () + COLLECTION_ADV_LIFETIME,
-                             now,
-                             ntohl (collectionData->data.updateInterval),
-                             &collectionData->data.lastId,
-                             &collectionData->data.nextId,
-                             directoryURI, collectionData->meta);
+                                           cfg,
+                                           collectionData->name,
+                                           ntohl (collectionData->data.
+                                                  anonymityLevel),
+                                           ntohl (collectionData->data.
+                                                  priority),
+                                           GNUNET_get_time () +
+                                           COLLECTION_ADV_LIFETIME, now,
+                                           ntohl (collectionData->data.
+                                                  updateInterval),
+                                           &collectionData->data.lastId,
+                                           &collectionData->data.nextId,
+                                           directoryURI,
+                                           collectionData->meta);
   if (uri != NULL)
     {
       collectionData->data.lastPublication = htonl (now);
@@ -682,7 +706,8 @@ GNUNET_CO_collection_add_item (const GNUNET_ECRS_FileInfo * fi)
   fc.meta = GNUNET_ECRS_meta_data_duplicate (fi->meta);
   GNUNET_array_append (collectionData->files, collectionData->file_count, fc);
   collectionData->changed = GNUNET_YES;
-  if (ntohl (collectionData->data.updateInterval) == GNUNET_ECRS_SBLOCK_UPDATE_NONE)
+  if (ntohl (collectionData->data.updateInterval) ==
+      GNUNET_ECRS_SBLOCK_UPDATE_NONE)
     GNUNET_CO_collection_publish_now ();
   GNUNET_mutex_unlock (lock);
 }

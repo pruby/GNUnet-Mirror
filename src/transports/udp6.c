@@ -83,8 +83,9 @@ getGNUnetUDP6Port ()
   unsigned long long port;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "UDP6",
-                                               "PORT", 1, 65535, 2086, &port))
+                                                      "UDP6",
+                                                      "PORT", 1, 65535, 2086,
+                                                      &port))
     {
       if ((pse = getservbyname ("gnunet", "udp")))
         port = htons (pse->s_port);
@@ -106,9 +107,13 @@ passivesock (unsigned short port)
 
   sock = SOCKET (PF_INET6, SOCK_DGRAM, 17);
   if (sock < 0)
-    GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "socket");
+    GNUNET_GE_DIE_STRERROR (ectx,
+                            GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                            GNUNET_GE_IMMEDIATE, "socket");
   if (SETSOCKOPT (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
-    GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "setsockopt");
+    GNUNET_GE_DIE_STRERROR (ectx,
+                            GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                            GNUNET_GE_IMMEDIATE, "setsockopt");
   if (port != 0)
     {
       memset (&sin, 0, sizeof (sin));
@@ -117,11 +122,16 @@ passivesock (unsigned short port)
       memcpy (&sin.sin6_addr, &in6addr_any, sizeof (GNUNET_IPv6Address));
       if (BIND (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0)
         {
-          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "bind");
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_IMMEDIATE, "bind");
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                  _("Failed to bind to UDP port %d.\n"), port);
-          GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "bind");
+                         GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Failed to bind to UDP port %d.\n"), port);
+          GNUNET_GE_DIE_STRERROR (ectx,
+                                  GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                  GNUNET_GE_IMMEDIATE, "bind");
         }
     }                           /* do not bind if port == 0, then we use send-only! */
   return sock;
@@ -227,11 +237,11 @@ verifyHello (const GNUNET_MessageHello * hello)
     {
 #if DEBUG_UDP6
       char inet6[INET6_ADDRSTRLEN];
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
-              inet_ntop (AF_INET6,
-                         &haddr->ip,
-                         inet6, INET6_ADDRSTRLEN), ntohs (haddr->port));
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Verified UDP6 hello from %u.%u.%u.%u:%u.\n",
+                     inet_ntop (AF_INET6, &haddr->ip, inet6,
+                                INET6_ADDRSTRLEN), ntohs (haddr->port));
 #endif
       return GNUNET_OK;
     }
@@ -262,8 +272,9 @@ createhello ()
     {
       GNUNET_free (msg);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING,
-              _("UDP6: Could not determine my public IPv6 address.\n"));
+                     GNUNET_GE_WARNING,
+                     _
+                     ("UDP6: Could not determine my public IPv6 address.\n"));
       return NULL;
     }
   haddr->port = htons (port);
@@ -326,11 +337,12 @@ udp6Send (GNUNET_TSession * tsession,
   memcpy (&sin.sin6_addr, &haddr->ip.addr, sizeof (GNUNET_IPv6Address));
 #if DEBUG_UDP6
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG,
-          "Sending message of %u bytes via UDP6 to %s:%d..\n",
-          ssize,
-          inet_ntop (AF_INET6,
-                     &sin, inet6, INET6_ADDRSTRLEN), ntohs (sin.sin_port));
+                 GNUNET_GE_DEBUG,
+                 "Sending message of %u bytes via UDP6 to %s:%d..\n",
+                 ssize,
+                 inet_ntop (AF_INET6,
+                            &sin, inet6, INET6_ADDRSTRLEN),
+                 ntohs (sin.sin_port));
 #endif
   if (GNUNET_YES == GNUNET_socket_send_to (udp_sock,
                                            GNUNET_NC_NONBLOCKING,
@@ -385,7 +397,9 @@ startTransportServer ()
   sock = SOCKET (PF_INET, SOCK_DGRAM, 17);
   if (sock == -1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "socket");
       GNUNET_select_destroy (selector);
       selector = NULL;
       return GNUNET_SYSERR;
@@ -404,10 +418,12 @@ reloadConfiguration ()
 
   GNUNET_mutex_lock (configLock);
   GNUNET_free_non_null (filteredNetworks_);
-  GNUNET_GC_get_configuration_value_string (cfg, "UDP6", "BLACKLIST", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, "UDP6", "BLACKLIST", "",
+                                            &ch);
   filteredNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
   GNUNET_free (ch);
-  GNUNET_GC_get_configuration_value_string (cfg, "UDP6", "WHITELIST", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, "UDP6", "WHITELIST", "",
+                                            &ch);
   if (strlen (ch) > 0)
     allowedNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
   else
@@ -460,19 +476,24 @@ inittransport_udp6 (CoreAPIForTransport * core)
 
   reloadConfiguration ();
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "UDP6",
-                                               "MTU",
-                                               sizeof (UDPMessage) +
-                                               GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD +
-                                               sizeof (GNUNET_MessageHeader) +
-                                               32, 65500, MESSAGNUNET_GE_SIZE, &mtu))
+                                                      "UDP6",
+                                                      "MTU",
+                                                      sizeof (UDPMessage) +
+                                                      GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD
+                                                      +
+                                                      sizeof
+                                                      (GNUNET_MessageHeader) +
+                                                      32, 65500,
+                                                      MESSAGNUNET_GE_SIZE,
+                                                      &mtu))
     {
       return NULL;
     }
   if (mtu < 1200)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-            _("MTU %llu for `%s' is probably too low!\n"), mtu, "UDP6");
+                   GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                   _("MTU %llu for `%s' is probably too low!\n"), mtu,
+                   "UDP6");
   stats = coreAPI->requestService ("stats");
   if (stats != NULL)
     {

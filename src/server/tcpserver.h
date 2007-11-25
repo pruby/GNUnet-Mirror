@@ -33,7 +33,8 @@
  * Initialize the TCP port and listen for incoming client connections.
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int initTCPServer (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
+int initTCPServer (struct GNUNET_GE_Context *ectx,
+                   struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Stop the server (but do not yet destroy the data structures)
@@ -57,7 +58,8 @@ int doneTCPServer (void);
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
-int registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback);
+int registerCSHandler (unsigned short type,
+                       GNUNET_ClientRequestHandler callback);
 
 /**
  * Unregister a method as a handler for specific message
@@ -70,7 +72,8 @@ int registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is no or another
  *         handler for that type
  */
-int unregisterCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback);
+int unregisterCSHandler (unsigned short type,
+                         GNUNET_ClientRequestHandler callback);
 
 int registerClientExitHandler (GNUNET_ClientExitHandler callback);
 
@@ -120,7 +123,8 @@ void terminateClientConnection (struct GNUNET_ClientHandle *sock);
 unsigned int isCSHandlerRegistered (unsigned short type);
 
 struct GNUNET_GE_Context *createClientLogContext (GNUNET_GE_KIND mask,
-                                           struct GNUNET_ClientHandle *handle);
+                                                  struct GNUNET_ClientHandle
+                                                  *handle);
 
 #endif
 /* end of tcpserver.h */

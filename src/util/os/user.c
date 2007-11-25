@@ -131,9 +131,10 @@ GNUNET_change_user (struct GNUNET_GE_Context *ectx, const char *user)
   if (pws == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-              _("Cannot obtain information about user `%s': %s\n"),
-              user, errno == 0 ? _("No such user") : STRERROR (errno));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                     GNUNET_GE_IMMEDIATE,
+                     _("Cannot obtain information about user `%s': %s\n"),
+                     user, errno == 0 ? _("No such user") : STRERROR (errno));
       return GNUNET_SYSERR;
     }
   if ((0 != setgid (pws->pw_gid)) || (0 != setegid (pws->pw_gid)) ||
@@ -146,9 +147,10 @@ GNUNET_change_user (struct GNUNET_GE_Context *ectx, const char *user)
           (0 != setreuid (pws->pw_uid, pws->pw_uid)))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                  _("Cannot change user/group to `%s': %s\n"),
-                  user, STRERROR (errno));
+                         GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Cannot change user/group to `%s': %s\n"), user,
+                         STRERROR (errno));
           return GNUNET_SYSERR;
         }
     }
@@ -174,15 +176,17 @@ GNUNET_file_change_owner (struct GNUNET_GE_Context *ectx,
     {
       if (NULL != ectx)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                _("Cannot obtain information about user `%s': %s\n"),
-                user, STRERROR (errno));
+                       GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                       GNUNET_GE_IMMEDIATE,
+                       _("Cannot obtain information about user `%s': %s\n"),
+                       user, STRERROR (errno));
       return GNUNET_SYSERR;
     }
   if ((0 != chown (filename, pws->pw_uid, pws->pw_gid)) && (NULL != ectx))
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                          "chown", filename);
+                                 GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                 GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                 "chown", filename);
 #endif
   return GNUNET_OK;
 }

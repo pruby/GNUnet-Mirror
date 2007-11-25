@@ -68,13 +68,13 @@ connect_daemons (unsigned short port1, unsigned short port2)
 
   ret = GNUNET_SYSERR;
   GNUNET_snprintf (host, 128, "localhost:%u", port1);
-  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
+                                            host);
   GNUNET_snprintf (host, 128, "localhost:%u", port2);
-  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
-  if ((GNUNET_OK == GNUNET_wait_for_daemon_running (NULL,
-                                                    cfg1,
-                                                    300 *
-                                                    GNUNET_CRON_SECONDS))
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
+                                            host);
+  if ((GNUNET_OK ==
+       GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
           GNUNET_wait_for_daemon_running (NULL, cfg2,
                                           300 * GNUNET_CRON_SECONDS)))

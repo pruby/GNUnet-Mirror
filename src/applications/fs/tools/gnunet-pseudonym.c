@@ -72,7 +72,7 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
   {'A', "automate", NULL,
    gettext_noop ("automate creation of a namespace by starting a collection"),
    0, &GNUNET_getopt_configure_set_one, &start_collection},
-   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'C', "create", "NICKNAME",
    gettext_noop ("create a new pseudonym under the given NICKNAME"),
    1, &GNUNET_getopt_configure_set_string, &create_name},
@@ -82,7 +82,7 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
   {'E', "end", NULL,
    gettext_noop ("end automated building of a namespace (ends collection)"),
    0, &GNUNET_getopt_configure_set_one, &stop_collection},
-   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")),    /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")),     /* -h */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'k', "keyword", "KEYWORD",
    gettext_noop
@@ -105,7 +105,7 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
   {'s', "set-rating", "ID:VALUE",
    gettext_noop ("set the rating of a namespace"),
    0, &GNUNET_getopt_configure_set_string, &set_rating},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -227,8 +227,8 @@ main (int argc, char *const *argv)
       if (start_collection)
         {
           GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_OWNER, create_name);
-          if (GNUNET_OK == GNUNET_CO_collection_start (anonymity, priority, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC,        /* FIXME: allow other update policies */
-                                               create_name, meta))
+          if (GNUNET_OK == GNUNET_CO_collection_start (anonymity, priority, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
+                                                       create_name, meta))
             {
               printf (_("Started collection `%s'.\n"), create_name);
             }
@@ -264,15 +264,17 @@ main (int argc, char *const *argv)
           else
             {
               if (advertisement == NULL)
-                advertisement = GNUNET_ECRS_keyword_string_to_uri (ectx, "namespace");
+                advertisement =
+                  GNUNET_ECRS_keyword_string_to_uri (ectx, "namespace");
             }
           rootURI = GNUNET_NS_namespace_create (ectx,
-                                        cfg,
-                                        anonymity,
-                                        priority,
-                                        expiration + GNUNET_get_time (),
-                                        create_name,
-                                        meta, advertisement, &rootEntry);
+                                                cfg,
+                                                anonymity,
+                                                priority,
+                                                expiration +
+                                                GNUNET_get_time (),
+                                                create_name, meta,
+                                                advertisement, &rootEntry);
           if (rootURI == NULL)
             {
               printf (_("Could not create namespace `%s' (exists?).\n"),

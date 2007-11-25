@@ -60,7 +60,7 @@ GNUNET_RPC_parameters_create ()
  * @param param The RPC parameter structure to be freed
  */
 void
-GNUNET_RPC_parameters_destroy(GNUNET_RPC_CallParameters * param)
+GNUNET_RPC_parameters_destroy (GNUNET_RPC_CallParameters * param)
 {
   if (param == NULL)
     return;
@@ -79,7 +79,8 @@ GNUNET_RPC_parameters_destroy(GNUNET_RPC_CallParameters * param)
  * GNUNET_RPC_parameters_get_serialized_size(param) bytes of memory.
  */
 void
-GNUNET_RPC_parameters_serialize (GNUNET_RPC_CallParameters * param, char *target)
+GNUNET_RPC_parameters_serialize (GNUNET_RPC_CallParameters * param,
+                                 char *target)
 {
   int i;
   const char *paramName;
@@ -97,7 +98,8 @@ GNUNET_RPC_parameters_serialize (GNUNET_RPC_CallParameters * param, char *target
     {
       paramName = GNUNET_RPC_parameters_get_name (param, i);
       paramValue = NULL;
-      GNUNET_RPC_parameters_get_value_by_index (param, i, &dataLength, &paramValue);
+      GNUNET_RPC_parameters_get_value_by_index (param, i, &dataLength,
+                                                &paramValue);
       memcpy (&target[pos], paramName, strlen (paramName) + 1);
       pos += strlen (paramName) + 1;
       *(unsigned int *) &target[pos] = htonl (dataLength);
@@ -141,7 +143,8 @@ GNUNET_RPC_parameters_deserialize (char *buffer, size_t size)
           return NULL;
         }
 
-      GNUNET_RPC_parameters_add (ret, &buffer[xpos], dataLength, &buffer[pos]);
+      GNUNET_RPC_parameters_add (ret, &buffer[xpos], dataLength,
+                                 &buffer[pos]);
       pos += dataLength;
     }
   return ret;
@@ -167,7 +170,8 @@ GNUNET_RPC_parameters_get_serialized_size (GNUNET_RPC_CallParameters * param)
     {
       paramName = GNUNET_RPC_parameters_get_name (param, i);
       paramValue = NULL;
-      GNUNET_RPC_parameters_get_value_by_index (param, i, &dataLength, &paramValue);
+      GNUNET_RPC_parameters_get_value_by_index (param, i, &dataLength,
+                                                &paramValue);
       if (pos + strlen (paramName) + 1 + sizeof (unsigned int) < pos)
         return 0;
       pos += strlen (paramName) + 1;
@@ -209,7 +213,8 @@ GNUNET_RPC_paramters_count (GNUNET_RPC_CallParameters * param)
 
 void
 GNUNET_RPC_parameters_add (GNUNET_RPC_CallParameters * param,
-              const char *name, unsigned int dataLength, const void *data)
+                           const char *name, unsigned int dataLength,
+                           const void *data)
 {
   Parameter *new;
 
@@ -244,7 +249,8 @@ GNUNET_RPC_parameters_add (GNUNET_RPC_CallParameters * param,
  */
 void
 GNUNET_RPC_parameters_add_data_container (GNUNET_RPC_CallParameters * param,
-                           const char *name, const GNUNET_DataContainer * data)
+                                          const char *name,
+                                          const GNUNET_DataContainer * data)
 {
   Parameter *new;
 
@@ -273,7 +279,8 @@ GNUNET_RPC_parameters_add_data_container (GNUNET_RPC_CallParameters * param,
  * @return Name of the parameter
  */
 const char *
-GNUNET_RPC_parameters_get_name (GNUNET_RPC_CallParameters * param, unsigned int i)
+GNUNET_RPC_parameters_get_name (GNUNET_RPC_CallParameters * param,
+                                unsigned int i)
 {
   Parameter *p;
 
@@ -296,8 +303,9 @@ GNUNET_RPC_parameters_get_name (GNUNET_RPC_CallParameters * param, unsigned int 
  */
 int
 GNUNET_RPC_parameters_get_value_by_name (GNUNET_RPC_CallParameters * param,
-                      const char *name,
-                      unsigned int *dataLength, void **value)
+                                         const char *name,
+                                         unsigned int *dataLength,
+                                         void **value)
 {
   Parameter *p;
 
@@ -326,7 +334,8 @@ GNUNET_RPC_parameters_get_value_by_name (GNUNET_RPC_CallParameters * param,
  * @return GNUNET_SYSERR on error
  */
 GNUNET_DataContainer *
-GNUNET_RPC_parameters_get_data_container_by_name (GNUNET_RPC_CallParameters * param, const char *name)
+GNUNET_RPC_parameters_get_data_container_by_name (GNUNET_RPC_CallParameters *
+                                                  param, const char *name)
 {
   Parameter *p;
   GNUNET_DataContainer *ret;
@@ -357,8 +366,9 @@ GNUNET_RPC_parameters_get_data_container_by_name (GNUNET_RPC_CallParameters * pa
  */
 int
 GNUNET_RPC_parameters_get_value_by_index (GNUNET_RPC_CallParameters * param,
-                          unsigned int i,
-                          unsigned int *dataLength, void **value)
+                                          unsigned int i,
+                                          unsigned int *dataLength,
+                                          void **value)
 {
   Parameter *p;
 
@@ -381,7 +391,8 @@ GNUNET_RPC_parameters_get_value_by_index (GNUNET_RPC_CallParameters * param,
  * @param value set to the value of the parameter
  */
 GNUNET_DataContainer *
-GNUNET_RPC_parameters_get_data_container_by_index (GNUNET_RPC_CallParameters * param, unsigned int i)
+GNUNET_RPC_parameters_get_data_container_by_index (GNUNET_RPC_CallParameters *
+                                                   param, unsigned int i)
 {
   Parameter *p;
   GNUNET_DataContainer *ret;

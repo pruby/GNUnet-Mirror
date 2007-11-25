@@ -101,12 +101,15 @@ printDirectory (const char *filename)
       if (data == MAP_FAILED)
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "mmap", name);
+                                       GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                       GNUNET_GE_BULK, "mmap", name);
           ret = -1;
         }
       else
         {
-          ret = GNUNET_ECRS_directory_list_contents (ectx, data, len, &md, &printNode, NULL);
+          ret =
+            GNUNET_ECRS_directory_list_contents (ectx, data, len, &md,
+                                                 &printNode, NULL);
           MUNMAP (data, len);
         }
       CLOSE (fd);
@@ -128,8 +131,8 @@ printDirectory (const char *filename)
  * All gnunet-directory command line options
  */
 static struct GNUNET_CommandLineOption gnunetdirectoryOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-	GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Perform directory related operations.")),    /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Perform directory related operations.")),     /* -h */
   {'k', "kill", NULL,
    gettext_noop
    ("remove all entries from the directory database and stop tracking URIs"),
@@ -141,7 +144,7 @@ static struct GNUNET_CommandLineOption gnunetdirectoryOptions[] = {
   {'t', "track", NULL,
    gettext_noop ("start tracking entries for the directory database"),
    0, &GNUNET_getopt_configure_set_one, &do_track},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

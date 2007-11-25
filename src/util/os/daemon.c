@@ -37,7 +37,8 @@
  *  daemonized sucessfully, -1 on error
  */
 static pid_t
-launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile, int daemonize)
+launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile,
+                int daemonize)
 {
   pid_t pid;
 
@@ -97,7 +98,9 @@ launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile, int daemoni
 #ifndef MINGW
       nice (10);                /* return value is not well-defined */
       if (errno != 0)
-        GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "nice");
+        GNUNET_GE_LOG_STRERROR (ectx,
+                                GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                GNUNET_GE_BULK, "nice");
 
       if (path != NULL)
         i = execv (path, (char **) args);
@@ -112,8 +115,9 @@ launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile, int daemoni
       GNUNET_free_non_null (path);
       if (i == -1)
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-                              "exec", path == NULL ? "gnunetd" : path);
+                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "exec",
+                                     path == NULL ? "gnunetd" : path);
 #ifndef MINGW
       _exit (-1);
 #endif
@@ -127,7 +131,9 @@ launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile, int daemoni
       ret = waitpid (pid, &status, 0);
       if (ret == -1)
         {
-          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "waitpid");
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                  GNUNET_GE_BULK, "waitpid");
           return GNUNET_SYSERR;
         }
       if ((WIFEXITED (status) && (0 != WEXITSTATUS (status))))
@@ -225,7 +231,9 @@ GNUNET_daemon_stop (struct GNUNET_GE_Context *ectx, int pid)
   p = pid;
   if (p != WAITPID (p, &status, 0))
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "waitpid");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_USER |
+                              GNUNET_GE_BULK, "waitpid");
       return GNUNET_SYSERR;
     }
   if (WEXITSTATUS (status) == 0)

@@ -37,9 +37,12 @@ main (int argc, const char *argv[])
   struct GNUNET_GC_Configuration *cfg;
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
-                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
-                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+                                          GNUNET_GE_WARNING | GNUNET_GE_ERROR
+                                          | GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                          GNUNET_GE_ADMIN |
+                                          GNUNET_GE_DEVELOPER |
+                                          GNUNET_GE_IMMEDIATE |
+                                          GNUNET_GE_BULK);
   GNUNET_GE_setDefaultContext (ectx);
   cfg = GNUNET_GC_create ();
   GNUNET_GE_ASSERT (ectx, cfg != NULL);

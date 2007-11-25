@@ -75,7 +75,7 @@ main (int argc, char *argv[])
   GNUNET_ECRS_namespace_delete (NULL, cfg, "test-collection");
   CHECK (NULL == GNUNET_CO_collection_get_name ());
   CHECK (GNUNET_OK == GNUNET_CO_collection_start (1, 100, 60,   /* 60s */
-                                          "test-collection", meta));
+                                                  "test-collection", meta));
   have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
   CHECK (0 == strcmp (have, "test-collection"));
@@ -83,7 +83,7 @@ main (int argc, char *argv[])
   fi.meta = meta;
   fi.uri =
     GNUNET_ECRS_string_to_uri (NULL,
-                      "gnunet://ecrs/chk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0");
+                               "gnunet://ecrs/chk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0");
   GNUNET_CO_collection_add_item (&fi);
   GNUNET_ECRS_uri_destroy (fi.uri);
   GNUNET_CO_done ();

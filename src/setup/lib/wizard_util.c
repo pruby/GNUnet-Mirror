@@ -37,8 +37,8 @@ wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
 {
   char *nic;
 
-  GNUNET_GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE", "eth0",
-                                     &nic);
+  GNUNET_GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE",
+                                            "eth0", &nic);
 
 #ifdef WINDOWS
   /* default NIC for unixes */

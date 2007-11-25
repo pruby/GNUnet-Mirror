@@ -40,7 +40,8 @@
  */
 int
 GNUNET_ECRS_file_test_indexed (struct GNUNET_GE_Context *ectx,
-                    struct GNUNET_GC_Configuration *cfg, const char *filename)
+                               struct GNUNET_GC_Configuration *cfg,
+                               const char *filename)
 {
   GNUNET_HashCode hc;
   struct GNUNET_ClientServerConnection *sock;
@@ -98,8 +99,9 @@ iiHelper (const char *fn, const char *dir, void *ptr)
           if (errno != EINVAL)
             {
               GNUNET_GE_LOG_STRERROR_FILE (cls->ectx,
-                                    GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN | GNUNET_GE_USER,
-                                    "readlink", fullName);
+                                           GNUNET_GE_WARNING | GNUNET_GE_BULK
+                                           | GNUNET_GE_ADMIN | GNUNET_GE_USER,
+                                           "readlink", fullName);
             }
           GNUNET_free (lnkName);
           GNUNET_free (fullName);
@@ -138,8 +140,9 @@ iiHelper (const char *fn, const char *dir, void *ptr)
  */
 int
 GNUNET_ECRS_get_indexed_files (struct GNUNET_GE_Context *ectx,
-                          struct GNUNET_GC_Configuration *cfg,
-                          GNUNET_ECRS_FileProcessor iterator, void *closure)
+                               struct GNUNET_GC_Configuration *cfg,
+                               GNUNET_ECRS_FileProcessor iterator,
+                               void *closure)
 {
   char *tmp;
   char *indexDirectory;

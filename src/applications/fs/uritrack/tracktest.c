@@ -47,7 +47,8 @@ notified (const GNUNET_ECRS_FileInfo * fi,
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
       (GNUNET_ECRS_meta_data_test_equal (fi->meta,
-                            fi1.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
+                                         fi1.meta))
+      && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
       notifications++;
       return GNUNET_OK;
@@ -55,7 +56,8 @@ notified (const GNUNET_ECRS_FileInfo * fi,
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
       (GNUNET_ECRS_meta_data_test_equal (fi->meta,
-                            fi2.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
+                                         fi2.meta))
+      && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
       notifications++;
       return GNUNET_OK;
@@ -70,7 +72,8 @@ processor (const GNUNET_ECRS_FileInfo * fi,
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
       (GNUNET_ECRS_meta_data_test_equal (fi->meta,
-                            fi1.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
+                                         fi1.meta))
+      && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
       GNUNET_ECRS_uri_destroy (fi1.uri);
       fi1.uri = NULL;
@@ -81,7 +84,8 @@ processor (const GNUNET_ECRS_FileInfo * fi,
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
       (GNUNET_ECRS_meta_data_test_equal (fi->meta,
-                            fi2.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
+                                         fi2.meta))
+      && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
       GNUNET_ECRS_uri_destroy (fi2.uri);
       fi2.uri = NULL;

@@ -91,7 +91,8 @@ print_tree (SCM tree_smob, SCM port, scm_print_state * pstate)
 /* **************************** tree API ****************** */
 
 struct GNUNET_GNS_TreeNode *
-tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section, const char *option)
+tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section,
+             const char *option)
 {
   int i;
   struct GNUNET_GNS_TreeNode *ret;
@@ -297,11 +298,13 @@ build_tree_node (SCM section,
   tree->option = scm_to_locale_string (option);
   tree->description = scm_to_locale_string (description);
   tree->help = scm_to_locale_string (help);
-  tree->children = GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode *) * (clen + 1));
+  tree->children =
+    GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode *) * (clen + 1));
   for (i = 0; i < clen; i++)
     {
       child = scm_list_ref (children, scm_from_signed_integer (i));
-      tree->children[i] = (struct GNUNET_GNS_TreeNode *) SCM_SMOB_DATA (child);
+      tree->children[i] =
+        (struct GNUNET_GNS_TreeNode *) SCM_SMOB_DATA (child);
     }
   tree->children[clen] = NULL;
   tree->type = (clen == 0) ? GNUNET_GNS_KIND_LEAF : GNUNET_GNS_KIND_NODE;
@@ -423,7 +426,8 @@ tree_notify_change (struct GNUNET_GC_Configuration *cfg,
                     VisibilityChangeListener vcl,
                     void *ctx,
                     struct GNUNET_GE_Context *ectx,
-                    struct GNUNET_GNS_TreeNode *root, struct GNUNET_GNS_TreeNode *change)
+                    struct GNUNET_GNS_TreeNode *root,
+                    struct GNUNET_GNS_TreeNode *change)
 {
   TC tc;
 

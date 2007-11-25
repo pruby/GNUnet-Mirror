@@ -46,9 +46,15 @@ extern "C"
 
 struct GNUNET_FS_SearchContext;
 
-struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
-                                                 struct GNUNET_GC_Configuration *cfg,
-                                                 struct GNUNET_Mutex *lock);
+struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct
+                                                                 GNUNET_GE_Context
+                                                                 *ectx,
+                                                                 struct
+                                                                 GNUNET_GC_Configuration
+                                                                 *cfg,
+                                                                 struct
+                                                                 GNUNET_Mutex
+                                                                 *lock);
 
 void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
 
@@ -66,28 +72,38 @@ struct GNUNET_FS_SearchHandle;
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-struct GNUNET_FS_SearchHandle *GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
-                                          const GNUNET_PeerIdentity * target,
-                                          unsigned int type,
-                                          unsigned int keyCount,
-                                          const GNUNET_HashCode * keys,
-                                          unsigned int anonymityLevel,
-                                          unsigned int prio,
-                                          GNUNET_CronTime timeout,
-                                          GNUNET_DatastoreValueIterator callback,
-                                          void *closure);
+struct GNUNET_FS_SearchHandle *GNUNET_FS_start_search (struct
+                                                       GNUNET_FS_SearchContext
+                                                       *ctx,
+                                                       const
+                                                       GNUNET_PeerIdentity *
+                                                       target,
+                                                       unsigned int type,
+                                                       unsigned int keyCount,
+                                                       const GNUNET_HashCode *
+                                                       keys,
+                                                       unsigned int
+                                                       anonymityLevel,
+                                                       unsigned int prio,
+                                                       GNUNET_CronTime
+                                                       timeout,
+                                                       GNUNET_DatastoreValueIterator
+                                                       callback,
+                                                       void *closure);
 
 /**
  * Stop searching.
  */
 void GNUNET_FS_stop_search (struct GNUNET_FS_SearchContext *ctx,
-                     struct GNUNET_FS_SearchHandle *handle);
+                            struct GNUNET_FS_SearchHandle *handle);
 
 /**
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-int GNUNET_FS_get_current_average_priority (struct GNUNET_ClientServerConnection *sock);
+int GNUNET_FS_get_current_average_priority (struct
+                                            GNUNET_ClientServerConnection
+                                            *sock);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to
@@ -99,14 +115,15 @@ int GNUNET_FS_get_current_average_priority (struct GNUNET_ClientServerConnection
  * @see ecrs_core.h::fileBlockEncode
  */
 int GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
-               const GNUNET_DatastoreValue * block);
+                      const GNUNET_DatastoreValue * block);
 
 
 /**
  * Initialize to index a file.  Tries to do the symlinking.
  */
 int GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
-                  const GNUNET_HashCode * fileHc, const char *fn);
+                               const GNUNET_HashCode * fileHc,
+                               const char *fn);
 
 /**
  * Index a block.  Note that while the API is VERY similar to
@@ -119,8 +136,9 @@ int GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
-              const GNUNET_HashCode * fileHc,
-              const GNUNET_DatastoreValue * block, unsigned long long offset);
+                     const GNUNET_HashCode * fileHc,
+                     const GNUNET_DatastoreValue * block,
+                     unsigned long long offset);
 
 /**
  * Delete a block.  The arguments are the same as the ones for
@@ -131,7 +149,7 @@ int GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
  *    GNUNET_SYSERR on error
  */
 int GNUNET_FS_delete (struct GNUNET_ClientServerConnection *sock,
-               const GNUNET_DatastoreValue * block);
+                      const GNUNET_DatastoreValue * block);
 
 /**
  * Unindex a file.
@@ -140,7 +158,7 @@ int GNUNET_FS_delete (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_FS_unindex (struct GNUNET_ClientServerConnection *sock,
-                unsigned int blocksize, const GNUNET_HashCode * hc);
+                       unsigned int blocksize, const GNUNET_HashCode * hc);
 
 /**
  * Test if a file of the given GNUNET_hash is indexed.
@@ -149,7 +167,7 @@ int GNUNET_FS_unindex (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_YES if so, GNUNET_NO if not, GNUNET_SYSERR on error
  */
 int GNUNET_FS_test_indexed (struct GNUNET_ClientServerConnection *sock,
-                    const GNUNET_HashCode * hc);
+                            const GNUNET_HashCode * hc);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

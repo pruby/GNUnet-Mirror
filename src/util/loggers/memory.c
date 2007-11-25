@@ -46,7 +46,8 @@ typedef struct GNUNET_GE_Memory
 } GNUNET_GE_Memory;
 
 static void
-memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
+memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date,
+              const char *msg)
 {
   GNUNET_GE_Memory *ctx = cls;
   unsigned int max;
@@ -69,7 +70,8 @@ memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
     {
       ctx->messages[ctx->pos].msg =
         GNUNET_strdup (_("Out of memory (for logging)"));
-      ctx->messages[ctx->pos].mask = GNUNET_GE_STATUS | GNUNET_GE_USER | GNUNET_GE_BULK;
+      ctx->messages[ctx->pos].mask =
+        GNUNET_GE_STATUS | GNUNET_GE_USER | GNUNET_GE_BULK;
     }
   else
     {
@@ -85,9 +87,11 @@ memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
  * queried later in bulk).
  */
 struct GNUNET_GE_Context *
-GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask, struct GNUNET_GE_Memory *memory)
+GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask,
+                                 struct GNUNET_GE_Memory *memory)
 {
-  return GNUNET_GE_create_context_callback (mask, &memorylogger, memory, NULL, NULL);
+  return GNUNET_GE_create_context_callback (mask, &memorylogger, memory, NULL,
+                                            NULL);
 }
 
 /**
@@ -131,7 +135,8 @@ GNUNET_GE_memory_get (struct GNUNET_GE_Memory *memory, unsigned int index)
  * Also clears the memory.
  */
 void
-GNUNET_GE_memory_poll (struct GNUNET_GE_Memory *memory, GNUNET_GE_LogHandler handler, void *ctx)
+GNUNET_GE_memory_poll (struct GNUNET_GE_Memory *memory,
+                       GNUNET_GE_LogHandler handler, void *ctx)
 {
   int i;
 

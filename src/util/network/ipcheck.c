@@ -101,8 +101,10 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
             if (temps[j] > 0xFF)
               {
                 GNUNET_GE_LOG (ectx,
-                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                        _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                               GNUNET_GE_ERROR | GNUNET_GE_USER |
+                               GNUNET_GE_IMMEDIATE,
+                               _("Invalid format for IP: `%s'\n"),
+                               &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
               }
@@ -129,8 +131,10 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
             if (temps[j] > 0xFF)
               {
                 GNUNET_GE_LOG (ectx,
-                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                        _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                               GNUNET_GE_ERROR | GNUNET_GE_USER |
+                               GNUNET_GE_IMMEDIATE,
+                               _("Invalid format for IP: `%s'\n"),
+                               &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
               }
@@ -157,10 +161,11 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
           else
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                      _
-                      ("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
-                      slash);
+                             GNUNET_GE_ERROR | GNUNET_GE_USER |
+                             GNUNET_GE_IMMEDIATE,
+                             _
+                             ("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
+                             slash);
               GNUNET_free (result);
               return NULL;      /* error */
             }
@@ -176,8 +181,10 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
             if (temps[j] > 0xFF)
               {
                 GNUNET_GE_LOG (ectx,
-                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                        _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                               GNUNET_GE_ERROR | GNUNET_GE_USER |
+                               GNUNET_GE_IMMEDIATE,
+                               _("Invalid format for IP: `%s'\n"),
+                               &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
               }
@@ -200,16 +207,16 @@ GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
           continue;
         }
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _("Invalid format for IP: `%s'\n"), &routeList[pos]);
       GNUNET_free (result);
       return NULL;              /* error */
     }
   if (pos < strlen (routeList))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("Invalid format for IP: `%s'\n"), &routeList[pos]);
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _("Invalid format for IP: `%s'\n"), &routeList[pos]);
       GNUNET_free (result);
       return NULL;              /* oops */
     }
@@ -255,9 +262,10 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
   if (routeList[len - 1] != ';')
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("Invalid network notation (does not end with ';': `%s')\n"),
-              routeList);
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _
+                     ("Invalid network notation (does not end with ';': `%s')\n"),
+                     routeList);
       GNUNET_free (routeList);
       return NULL;
     }
@@ -287,9 +295,10 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
           if (ret <= 0)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                      _("Wrong format `%s' for netmask: %s\n"),
-                      &routeList[slash + 1], STRERROR (errno));
+                             GNUNET_GE_ERROR | GNUNET_GE_USER |
+                             GNUNET_GE_IMMEDIATE,
+                             _("Wrong format `%s' for netmask: %s\n"),
+                             &routeList[slash + 1], STRERROR (errno));
               GNUNET_free (result);
               GNUNET_free (routeList);
               return NULL;
@@ -300,9 +309,10 @@ GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
       if (ret <= 0)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                  _("Wrong format `%s' for network: %s\n"),
-                  &routeList[slash + 1], STRERROR (errno));
+                         GNUNET_GE_ERROR | GNUNET_GE_USER |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Wrong format `%s' for network: %s\n"),
+                         &routeList[slash + 1], STRERROR (errno));
           GNUNET_free (result);
           GNUNET_free (routeList);
           return NULL;

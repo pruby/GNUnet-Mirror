@@ -88,8 +88,9 @@ load_xml (const char *dialog_name)
   ret = glade_xml_new (gladeFile, dialog_name, PACKAGNUNET_GE_NAME);
   if (ret == NULL)
     GNUNET_GE_DIE_STRERROR_FILE (NULL,
-                          GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
-                          "open", gladeFile);
+                                 GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                 GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+                                 "open", gladeFile);
   GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (ret, &connector, ret);
   return ret;
@@ -123,8 +124,9 @@ showDialog (const char *name)
   myXML = glade_xml_new (gladeFile, name, PACKAGNUNET_GE_NAME);
   if (mainXML_ == NULL)
     GNUNET_GE_DIE_STRERROR_FILE (NULL,
-                          GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
-                          "open", gladeFile);
+                                 GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                 GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+                                 "open", gladeFile);
   GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (myXML, &connector, myXML);
   msgSave = glade_xml_get_widget (myXML, name);

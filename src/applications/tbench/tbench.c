@@ -98,7 +98,8 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
   const P2P_tbench_MESSAGE *msg;
 
 #if DEBUG_TBENCH
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER, "Received tbench request\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                 "Received tbench request\n");
 #endif
   if (ntohs (message->size) < sizeof (P2P_tbench_MESSAGE))
     {
@@ -116,10 +117,10 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
 
 #if DEBUG_TBENCH
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-          "Received request %u from iteration %u/%u\n",
-          htonl (msg->packetNum),
-          htonl (msg->iterationNum), htonl (msg->nounce));
+                 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                 "Received request %u from iteration %u/%u\n",
+                 htonl (msg->packetNum),
+                 htonl (msg->iterationNum), htonl (msg->nounce));
 #endif
   reply = GNUNET_malloc (ntohs (message->size));
   memcpy (reply, message, ntohs (message->size));
@@ -176,20 +177,20 @@ handleTBenchReply (const GNUNET_PeerIdentity * sender,
         }
 #if DEBUG_TBENCH
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-              "Received response %u from iteration %u/%u on time!\n",
-              htonl (pmsg->packetNum),
-              htonl (pmsg->iterationNum), htonl (pmsg->nounce));
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Received response %u from iteration %u/%u on time!\n",
+                     htonl (pmsg->packetNum),
+                     htonl (pmsg->iterationNum), htonl (pmsg->nounce));
 #endif
     }
   else
     {
 #if DEBUG_TBENCH
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-              "Received message %u from iteration %u too late (now at iteration %u)\n",
-              ntohl (pmsg->packetNum),
-              ntohl (pmsg->iterationNum), currIteration);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Received message %u from iteration %u too late (now at iteration %u)\n",
+                     ntohl (pmsg->packetNum),
+                     ntohl (pmsg->iterationNum), currIteration);
 #endif
     }
   GNUNET_mutex_unlock (lock);
@@ -237,8 +238,9 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
 
 #if DEBUG_TBENCH
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Tbench received request from client.\n", msgCnt, size, iterations);
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Tbench received request from client.\n", msgCnt, size,
+                 iterations);
 #endif
   if (ntohs (message->size) != sizeof (CS_tbench_request_MESSAGE))
     return GNUNET_SYSERR;
@@ -252,16 +254,16 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
   msgCnt = ntohl (msg->msgCnt);
 #if DEBUG_TBENCH
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Tbench runs %u test messages of size %u in %u iterations.\n",
-          msgCnt, size, iterations);
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Tbench runs %u test messages of size %u in %u iterations.\n",
+                 msgCnt, size, iterations);
 #endif
   GNUNET_mutex_lock (lock);
   if (results != NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              "Cannot run multiple tbench sessions at the same time!\n");
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     "Cannot run multiple tbench sessions at the same time!\n");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -308,9 +310,9 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
           p2p->packetNum = htonl (packetNum);
 #if DEBUG_TBENCH
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  "Sending message %u of size %u in iteration %u\n",
-                  packetNum, size, iteration);
+                         GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         "Sending message %u of size %u in iteration %u\n",
+                         packetNum, size, iteration);
 #endif
           coreAPI->unicast (&msg->receiverId, &p2p->header, ntohl (msg->priority), 0);  /* no delay */
           if ((delay != 0) &&
@@ -331,8 +333,8 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
   GNUNET_free (p2p);
 #if DEBUG_TBENCH
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-          "Done waiting for response.\n", packetNum, size, iteration);
+                 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                 "Done waiting for response.\n", packetNum, size, iteration);
 #endif
 
   sum_loss = 0;
@@ -404,26 +406,29 @@ initialize_module_tbench (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST,
                                               &handleTBenchReq))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
-                                                    &csHandleTBenchRequest))
+  if (GNUNET_SYSERR ==
+      capi->registerClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
+                                   &csHandleTBenchRequest))
     ok = GNUNET_SYSERR;
 
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "tbench",
-                                                     gettext_noop
-                                                     ("allows profiling of direct "
-                                                      "peer-to-peer connections")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "tbench",
+                                                                   gettext_noop
+                                                                   ("allows profiling of direct "
+                                                                    "peer-to-peer connections")));
   return ok;
 }
 
 void
 done_module_tbench ()
 {
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST, &handleTBenchReq);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REPLY, &handleTBenchReply);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST,
+                              &handleTBenchReq);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REPLY,
+                              &handleTBenchReply);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                     &csHandleTBenchRequest);
   GNUNET_mutex_destroy (lock);

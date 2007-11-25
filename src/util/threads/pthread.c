@@ -152,9 +152,10 @@ GNUNET_thread_join_at_file_line_ (PThread * handle,
   if ((end - start > GNUNET_REALTIME_LIMIT) && (GNUNET_REALTIME_LIMIT != 0))
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-              _("Real-time delay violation (%llu ms) at %s:%u\n"),
-              end - start, file, line);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING |
+                     GNUNET_GE_IMMEDIATE,
+                     _("Real-time delay violation (%llu ms) at %s:%u\n"),
+                     end - start, file, line);
     }
   GNUNET_free (handle);
   switch (k)
@@ -163,25 +164,29 @@ GNUNET_thread_join_at_file_line_ (PThread * handle,
       return;
     case ESRCH:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed with error code %s: %s\n"),
-              "pthread_join", "ESRCH", STRERROR (errno));
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("`%s' failed with error code %s: %s\n"),
+                     "pthread_join", "ESRCH", STRERROR (errno));
       break;
     case EINVAL:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed with error code %s: %s\n"),
-              "pthread_join", "EINVAL", STRERROR (errno));
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("`%s' failed with error code %s: %s\n"),
+                     "pthread_join", "EINVAL", STRERROR (errno));
     case EDEADLK:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed with error code %s: %s\n"),
-              "pthread_join", "EDEADLK", STRERROR (errno));
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("`%s' failed with error code %s: %s\n"),
+                     "pthread_join", "EDEADLK", STRERROR (errno));
     default:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed with error code %d: %s\n"),
-              "pthread_join", k, STRERROR (errno));
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("`%s' failed with error code %d: %s\n"),
+                     "pthread_join", k, STRERROR (errno));
     }
   GNUNET_GE_ASSERT (NULL, 0);
 }
@@ -226,7 +231,9 @@ GNUNET_thread_sleep (unsigned long long delay)
   rem.tv_sec = 0;
   rem.tv_nsec = 0;
   if ((0 != nanosleep (&req, &rem)) && (errno != EINTR))
-    GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "nanosleep");
+    GNUNET_GE_LOG_STRERROR (NULL,
+                            GNUNET_GE_WARNING | GNUNET_GE_USER |
+                            GNUNET_GE_BULK, "nanosleep");
 
 #elif WINDOWS
   SleepEx (delay, TRUE);
@@ -237,7 +244,9 @@ GNUNET_thread_sleep (unsigned long long delay)
     = (delay - timeout.tv_sec * CRON_UNIT_TO_SECONDS) * MICROSEC_TO_CRON_UNIT;
   ret = SELECT (0, NULL, NULL, NULL, &timeout);
   if ((ret == -1) && (errno != EINTR))
-    GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "select");
+    GNUNET_GE_LOG_STRERROR (NULL,
+                            GNUNET_GE_WARNING | GNUNET_GE_USER |
+                            GNUNET_GE_BULK, "select");
 #endif
 
 }
@@ -262,18 +271,20 @@ GNUNET_thread_stop_sleep (PThread * handle)
       break;                    /* ok */
     case EINVAL:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              _("`%s' failed with error code %s: %s\n"),
-              "pthread_kill", "EINVAL", STRERROR (ret));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_BULK,
+                     _("`%s' failed with error code %s: %s\n"),
+                     "pthread_kill", "EINVAL", STRERROR (ret));
       break;
     case ESRCH:
       /* ignore, thread might have already exited by chance */
       break;
     default:
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              _("`%s' failed with error code %d: %s\n"),
-              "pthread_kill", ret, STRERROR (ret));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_BULK,
+                     _("`%s' failed with error code %d: %s\n"),
+                     "pthread_kill", ret, STRERROR (ret));
       break;
     }
 }
@@ -296,7 +307,9 @@ void __attribute__ ((constructor)) pthread_handlers_ltdl_init ()
   sig.sa_flags = SA_NODEFER;
   sig.sa_handler = &sigalrmHandler;
   if (0 != sigaction (SIGALRM, &sig, &old))
-    GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "sigaction");
+    GNUNET_GE_LOG_STRERROR (NULL,
+                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                            GNUNET_GE_BULK, "sigaction");
 #else
   InitWinEnv (NULL);
 #endif
@@ -306,7 +319,9 @@ void __attribute__ ((destructor)) pthread_handlers_ltdl_fini ()
 {
 #ifndef MINGW
   if (0 != sigaction (SIGALRM, &old, &sig))
-    GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "sigaction");
+    GNUNET_GE_LOG_STRERROR (NULL,
+                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                            GNUNET_GE_BULK, "sigaction");
 #else
   ShutdownWinEnv ();
 #endif

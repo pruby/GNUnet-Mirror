@@ -58,7 +58,8 @@ GNUNET_GE_applies (GNUNET_GE_KIND have, GNUNET_GE_KIND mask)
 }
 
 void
-GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind, const char *message, ...)
+GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
+               const char *message, ...)
 {
   va_list va;
   char date[64];
@@ -74,7 +75,8 @@ GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind, const char *m
     return;
   if ((ctx == NULL) &&
       (((kind & (GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK)) == 0) ||
-       ((kind & (GNUNET_GE_FATAL | GNUNET_GE_ERROR | GNUNET_GE_WARNING)) == 0)))
+       ((kind & (GNUNET_GE_FATAL | GNUNET_GE_ERROR | GNUNET_GE_WARNING)) ==
+        0)))
     return;
 
   va_start (va, message);
@@ -131,9 +133,10 @@ GNUNET_GE_CONFIRM (struct GNUNET_GE_Context *ctx)
  */
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_callback (GNUNET_GE_KIND mask,
-                            GNUNET_GE_LogHandler handler,
-                            void *ctx,
-                            GNUNET_GE_CtxFree liberator, GNUNET_GE_Confirm confirm)
+                                   GNUNET_GE_LogHandler handler,
+                                   void *ctx,
+                                   GNUNET_GE_CtxFree liberator,
+                                   GNUNET_GE_Confirm confirm)
 {
   GNUNET_GE_Context *ret;
 
@@ -253,7 +256,8 @@ typedef struct
 } CPair;
 
 static void
-multiplexer (void *ctx, GNUNET_GE_KIND kind, const char *date, const char *msg)
+multiplexer (void *ctx, GNUNET_GE_KIND kind, const char *date,
+             const char *msg)
 {
   CPair *pair = ctx;
 
@@ -291,7 +295,7 @@ pairdestruct (void *ctx)
  */
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_multiplexer (struct GNUNET_GE_Context *ctx1,
-                               struct GNUNET_GE_Context *ctx2)
+                                      struct GNUNET_GE_Context *ctx2)
 {
   CPair *cls;
   GNUNET_GE_Context *ret;

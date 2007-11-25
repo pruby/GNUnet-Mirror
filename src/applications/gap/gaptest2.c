@@ -105,11 +105,11 @@ uploadFile (unsigned int size)
   GNUNET_free (buf);
   GNUNET_disk_file_close (ectx, name, fd);
   ret = GNUNET_ECRS_file_upload (ectx, cfg, name, GNUNET_YES,   /* index */
-                         1,     /* anon */
-                         0,     /* prio */
-                         GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
-                         &uprogress,    /* progress */
-                         NULL, &testTerminate, NULL, &uri);
+                                 1,     /* anon */
+                                 0,     /* prio */
+                                 GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
+                                 &uprogress,    /* progress */
+                                 NULL, &testTerminate, NULL, &uri);
   if (ret != GNUNET_SYSERR)
     {
       struct GNUNET_ECRS_MetaData *meta;
@@ -121,8 +121,8 @@ uploadFile (unsigned int size)
 
       meta = GNUNET_ECRS_meta_data_create ();
       key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
-      ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,   /* expire */
-                                uri, meta);
+      ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,    /* expire */
+                                               uri, meta);
       GNUNET_ECRS_meta_data_destroy (meta);
       GNUNET_ECRS_uri_destroy (uri);
       GNUNET_free (name);
@@ -152,7 +152,7 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 
   tmp = GNUNET_ECRS_uri_to_string (fi->uri);
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Search found URI `%s'\n", tmp);
+                 "Search found URI `%s'\n", tmp);
   GNUNET_free (tmp);
   GNUNET_GE_ASSERT (ectx, NULL == *my);
   *my = GNUNET_ECRS_uri_duplicate (fi->uri);
@@ -171,11 +171,11 @@ searchFile (struct GNUNET_ECRS_URI **uri)
 
   myURI = NULL;
   ret = GNUNET_ECRS_search (ectx,
-                     cfg,
-                     *uri,
-                     1,
-                     1450 * GNUNET_CRON_SECONDS,
-                     &searchCB, &myURI, &testTerminate, NULL);
+                            cfg,
+                            *uri,
+                            1,
+                            1450 * GNUNET_CRON_SECONDS,
+                            &searchCB, &myURI, &testTerminate, NULL);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))
@@ -197,17 +197,17 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
 
   tmp = GNUNET_ECRS_uri_to_string (uri);
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Starting download of `%s'\n", tmp);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
   ret = GNUNET_SYSERR;
   if (GNUNET_OK == GNUNET_ECRS_file_download (ectx,
-                                      cfg,
-                                      uri,
-                                      tmpName,
-                                      1, &dprogress, NULL, &testTerminate,
-                                      NULL))
+                                              cfg,
+                                              uri,
+                                              tmpName,
+                                              1, &dprogress, NULL,
+                                              &testTerminate, NULL))
     {
 
       fd = GNUNET_disk_file_open (ectx, tmpName, O_RDONLY);
@@ -238,7 +238,9 @@ unindexFile (unsigned int size)
   char *name;
 
   name = makeName (size);
-  ret = GNUNET_ECRS_file_uninde (ectx, cfg, name, NULL, NULL, &testTerminate, NULL);
+  ret =
+    GNUNET_ECRS_file_uninde (ectx, cfg, name, NULL, NULL, &testTerminate,
+                             NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);
@@ -296,7 +298,8 @@ main (int argc, char **argv)
   uri = uploadFile (SIZE);
   CHECK (NULL != uri);
   GNUNET_snprintf (buf, 128, "localhost:%u", 2077 + PEER_COUNT * 10);
-  GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
+  GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
+                                            buf);
   CHECK (GNUNET_OK == searchFile (&uri));
   printf ("Search successful!\n");
   start = GNUNET_get_time ();
@@ -307,8 +310,9 @@ main (int argc, char **argv)
                            GNUNET_CRON_SECONDS));
   GNUNET_ECRS_uri_destroy (uri);
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     "NETWORK", "HOST", "localhost:2087");
+                                            ectx,
+                                            "NETWORK", "HOST",
+                                            "localhost:2087");
   CHECK (GNUNET_OK == unindexFile (SIZE));
 
 FAILURE:

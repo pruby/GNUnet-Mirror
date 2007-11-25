@@ -201,10 +201,10 @@ getDBFileName (const char *name)
   size_t mem;
 
   GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
-                                       "KEYVALUE_DATABASE",
-                                       "DIR",
-                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/kvstore/",
-                                       &dir);
+                                              "KEYVALUE_DATABASE",
+                                              "DIR",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/kvstore/", &dir);
   GNUNET_disk_directory_create (ectx, dir);
   mem = strlen (dir) + strlen (name) + 6;
   fn = GNUNET_malloc (mem);
@@ -263,7 +263,8 @@ getDBHandle (const char *name)
   if (sqlite3_open (db->fn, &dbh->dbh) != SQLITE_OK)
     {
       printf ("FN: %s\n", db->fn);
-      LOG_SQLITE (dbh->dbh, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER, "sqlite3_open");
+      LOG_SQLITE (dbh->dbh, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                  "sqlite3_open");
       sqlite3_close (dbh->dbh);
       GNUNET_mutex_unlock (lock);
       GNUNET_thread_release_self (dbh->tid);
@@ -392,7 +393,8 @@ static void *
 get (GNUNET_KeyValueRecord * kv,
      void *key,
      int keylen,
-     unsigned int sort, unsigned int limit, GNUNET_KeyValueProcessor handler, void *closure)
+     unsigned int sort, unsigned int limit, GNUNET_KeyValueProcessor handler,
+     void *closure)
 {
   unsigned int len, enclen, retlen;
   char *sel, *order, *where, limit_spec[30];
@@ -544,7 +546,8 @@ put (GNUNET_KeyValueRecord * kv, void *key, int keylen, void *val, int vallen,
  * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
-del (GNUNET_KeyValueRecord * kv, void *key, int keylen, unsigned long long age)
+del (GNUNET_KeyValueRecord * kv, void *key, int keylen,
+     unsigned long long age)
 {
   unsigned int len;
   char *del, *key_where, *age_where;
@@ -658,8 +661,8 @@ provide_module_kvstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "KV-SQLite: initializing database\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "KV-SQLite: initializing database\n");
 #endif
 
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -688,8 +691,8 @@ release_module_kvstore_sqlite ()
 
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "SQLite KVStore: database shutdown\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite KVStore: database shutdown\n");
 #endif
 
   GNUNET_mutex_destroy (lock);

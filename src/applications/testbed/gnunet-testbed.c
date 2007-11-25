@@ -119,8 +119,10 @@ helperParseOptions (int argc, char *argv[])
             return GNUNET_SYSERR;
           }
         default:
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
-                  _("Use --help to get a list of options.\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                         GNUNET_GE_USER,
+                         _("Use --help to get a list of options.\n"));
           return -1;
         }                       /* end of parsing commandline */
     }                           /* while (1) */
@@ -169,9 +171,10 @@ helper_main (int argc, char *argv[])
   res = CONNECT (sock, (struct sockaddr *) &soaddr, sizeof (soaddr));
   if ((res < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
-      GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              _("Cannot connect to LOOPBACK port %d: %s\n"),
-              PORT, STRERROR (errno));
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     _("Cannot connect to LOOPBACK port %d: %s\n"), PORT,
+                     STRERROR (errno));
       closefile (sock);
       sock = -1;
       return GNUNET_SYSERR;
@@ -307,7 +310,8 @@ CREATE_SOCKET:
     {
       LOG_STRERROR (LOG_ERROR, "socket");
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("No client service started. Trying again in 30 seconds.\n"));
+                     _
+                     ("No client service started. Trying again in 30 seconds.\n"));
       sleep (30);
     }
 
@@ -322,9 +326,10 @@ CREATE_SOCKET:
   if (BIND (ssock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Error (%s) binding the TCP listener to "
-                "port %d. No proxy service started.\nTrying "
-                "again in %d seconds...\n"), STRERROR (errno), PORT, secs);
+                     _("Error (%s) binding the TCP listener to "
+                       "port %d. No proxy service started.\nTrying "
+                       "again in %d seconds...\n"), STRERROR (errno), PORT,
+                     secs);
       sleep (secs);
       secs += 5;                /* slow progression... */
       closefile (ssock);
@@ -376,13 +381,16 @@ CREATE_SOCKET:
         }
       /* access control! */
       GNUNET_GE_ASSERT (ectx,
-                 sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
+                        sizeof (struct in_addr) ==
+                        sizeof (GNUNET_IPv4Address));
       memcpy (&ipaddr, &clientAddr.sin_addr, sizeof (struct in_addr));
       if (GNUNET_NO == isWhitelisted (ipaddr))
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
-                  PRIP (ntohl (*(int *) &clientAddr.sin_addr)));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
+                         PRIP (ntohl (*(int *) &clientAddr.sin_addr)));
           closefile (sock);
           continue;
         }
@@ -503,8 +511,10 @@ parseOptions (int argc, char *argv[])
             return GNUNET_SYSERR;
           }
         default:
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
-                  _("Use --help to get a list of options.\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                         GNUNET_GE_USER,
+                         _("Use --help to get a list of options.\n"));
           return -1;
         }                       /* end of parsing commandline */
     }                           /* while (1) */

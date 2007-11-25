@@ -85,7 +85,8 @@ typedef enum
 
 struct GNUNET_LoadMonitor;
 
-struct GNUNET_IPC_Semaphore *GNUNET_IPC_semaphore_create (struct GNUNET_GE_Context
+struct GNUNET_IPC_Semaphore *GNUNET_IPC_semaphore_create (struct
+                                                          GNUNET_GE_Context
                                                           *ectx,
                                                           const char
                                                           *basename,
@@ -105,8 +106,8 @@ int GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem,
 /**
  * Load plugin
  */
-struct GNUNET_PluginHandle *GNUNET_plugin_load (struct GNUNET_GE_Context *ectx,
-                                                const char *libprefix,
+struct GNUNET_PluginHandle *GNUNET_plugin_load (struct GNUNET_GE_Context
+                                                *ectx, const char *libprefix,
                                                 const char *dsoname);
 
 /**
@@ -123,7 +124,8 @@ void *GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plugin,
 
 void GNUNET_plugin_unload (struct GNUNET_PluginHandle *plugin);
 
-struct GNUNET_LoadMonitor *GNUNET_network_monitor_create (struct GNUNET_GE_Context
+struct GNUNET_LoadMonitor *GNUNET_network_monitor_create (struct
+                                                          GNUNET_GE_Context
                                                           *ectx,
                                                           struct
                                                           GNUNET_GC_Configuration
@@ -177,7 +179,8 @@ int GNUNET_set_fd_limit (struct GNUNET_GE_Context *ectx, int n);
  * Set our process priority
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str);
+int GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx,
+                                 const char *str);
 
 /**
  * @brief Make "application" start automatically
@@ -325,7 +328,8 @@ char *GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind);
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
-                           struct GNUNET_GC_Configuration *cfg, unsigned int pid);
+                           struct GNUNET_GC_Configuration *cfg,
+                           unsigned int pid);
 
 /**
  * Delete the PID file (to be called when the daemon
@@ -344,7 +348,8 @@ int GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
  *        to complete the detachment protocol (handshake)
  */
 int GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
-                            struct GNUNET_GC_Configuration *cfg, int *filedes);
+                            struct GNUNET_GC_Configuration *cfg,
+                            int *filedes);
 
 /**
  * Complete the handshake of detaching from the terminal.

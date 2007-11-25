@@ -159,7 +159,8 @@ main (int argc, char *argv[])
   int failureCount = 0;
 
   GNUNET_GE_ASSERT (NULL,
-             strlen (INITVALUE) > sizeof (GNUNET_AES_InitializationVector));
+                    strlen (INITVALUE) >
+                    sizeof (GNUNET_AES_InitializationVector));
   failureCount += testSymcipher ();
   failureCount += verifyCrypto ();
 

@@ -330,8 +330,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "serializetest4", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "serializetest4", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 16; j += 4)
     {
@@ -345,9 +345,10 @@ main (int argc, char *argv[])
     }
   meta = GNUNET_ECRS_meta_data_create ();
   kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
-  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
-  upload = GNUNET_FSUI_upload_star (ctx,
-                             UPLOAD_PREFIX,
+  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE,
+                               GNUNET_DIRECTORY_MIME);
+  upload =
+    GNUNET_FSUI_upload_star (ctx, UPLOAD_PREFIX,
                              (GNUNET_FSUI_DirectoryScanCallback) &
                              GNUNET_disk_directory_scan, NULL, 0, 0,
                              GNUNET_YES, GNUNET_NO, GNUNET_NO,
@@ -361,10 +362,11 @@ main (int argc, char *argv[])
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   download = GNUNET_FSUI_download_start (ctx,
-                                 0,
-                                 GNUNET_YES,
-                                 upURI,
-                                 meta, UPLOAD_PREFIX "-download", NULL, NULL);
+                                         0,
+                                         GNUNET_YES,
+                                         upURI,
+                                         meta, UPLOAD_PREFIX "-download",
+                                         NULL, NULL);
   GNUNET_ECRS_meta_data_destroy (meta);
   prog = 0;
   suspendRestart = 10;
@@ -379,13 +381,13 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "serializetest4", 32, GNUNET_YES, &eventCallback,
-                            NULL);
+                                   cfg,
+                                   "serializetest4", 32, GNUNET_YES,
+                                   &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

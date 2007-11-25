@@ -202,34 +202,37 @@ main (int argc, char *const *argv)
   if (NULL != strstr (trans, "-"))
     strstr (trans, ".")[0] = '\0';
   /* disable blacklists (loopback is often blacklisted)... */
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "BLACKLIST",
-                                     "");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP", "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6", "BLACKLIST",
-                                     "");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "BLACKLIST",
-                                     "");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP", "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6", "BLACKLIST",
-                                     "");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "BLACKLIST",
-                                     "");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP", "NO");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP",
+                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP",
+                                            "NO");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6",
+                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP",
+                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP",
+                                            "NO");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6",
+                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP",
+                                            "BLACKLIST", "");
+  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP",
+                                            "NO");
 
   if (pid == 0)
     pos = OFFSET;
   else
     pos = 0;
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "TCP", "PORT",
-                                     4444 + pos);
+                                            4444 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "TCP6", "PORT",
-                                     4445 + pos);
+                                            4445 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "UDP", "PORT",
-                                     4446 + pos);
+                                            4446 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "UDP6", "PORT",
-                                     4447 + pos);
+                                            4447 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "HTTP", "PORT",
-                                     4448 + pos);
+                                            4448 + pos);
   GNUNET_create_random_hash (&me.hashPubKey);
   plugin = GNUNET_plugin_load (api.ectx, "libgnunettransport_", trans);
   GNUNET_free (trans);
@@ -262,7 +265,8 @@ main (int argc, char *const *argv)
       goto cleanup;
     }
   transport->startTransportServer ();
-  GNUNET_GE_ASSERT (NULL, (transport->mtu >= expectedSize) || (transport->mtu == 0));
+  GNUNET_GE_ASSERT (NULL, (transport->mtu >= expectedSize)
+                    || (transport->mtu == 0));
   GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);  /* give other process time to start */
   if (pid == 0)
     {

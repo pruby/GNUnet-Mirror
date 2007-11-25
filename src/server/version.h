@@ -33,11 +33,13 @@
  * Check if we are up-to-date.
  * @return GNUNET_OK if we are
  */
-int checkUpToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
+int checkUpToDate (struct GNUNET_GE_Context *ectx,
+                   struct GNUNET_GC_Configuration *cfg);
 
 /**
  * We are up-to-date.
  */
-void upToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
+void upToDate (struct GNUNET_GE_Context *ectx,
+               struct GNUNET_GC_Configuration *cfg);
 
 #endif

@@ -49,7 +49,7 @@ processor (const GNUNET_ECRS_FileInfo * fi,
   for (i = 0; i < p->max; i++)
     {
       if (GNUNET_ECRS_meta_data_test_equal (p->fi[i].meta,
-                               fi->meta) &&
+                                            fi->meta) &&
           GNUNET_ECRS_uri_test_equal (p->fi[i].uri, fi->uri))
         {
           p->pos++;
@@ -84,8 +84,9 @@ testDirectory (unsigned int i)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
           GNUNET_ECRS_meta_data_inser (fis[p].meta,
-                              q % EXTRACTOR_getHighestKeywordTypeNumber (),
-                              txt);
+                                       q %
+                                       EXTRACTOR_getHighestKeywordTypeNumber
+                                       (), txt);
         }
       GNUNET_snprintf (uri,
                        512,
@@ -107,7 +108,8 @@ testDirectory (unsigned int i)
   meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_TITLE, "A title");
   GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_AUTHOR, "An author");
-  if (GNUNET_OK != GNUNET_ECRS_directory_create (NULL, &data, &dlen, i, fis, meta))
+  if (GNUNET_OK !=
+      GNUNET_ECRS_directory_create (NULL, &data, &dlen, i, fis, meta))
     {
       GNUNET_ECRS_meta_data_destroy (meta);
       for (p = 0; p < i; p++)
@@ -120,7 +122,9 @@ testDirectory (unsigned int i)
     }
   cls.pos = 0;
   cls.fi = fis;
-  if (i != GNUNET_ECRS_directory_list_contents (NULL, data, dlen, &meta2, &processor, &cls))
+  if (i !=
+      GNUNET_ECRS_directory_list_contents (NULL, data, dlen, &meta2,
+                                           &processor, &cls))
     {
       printf ("expected %u\n", i);
       ret = 1;

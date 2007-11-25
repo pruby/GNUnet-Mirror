@@ -111,7 +111,8 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
   if (0 != STAT64 (fn, &buf))
     {
       GNUNET_GE_LOG_STRERROR_FILE (gfsd->ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_REQUEST, "stat64", fn);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_REQUEST, "stat64", fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
@@ -119,7 +120,8 @@ getSizeRec (const char *filename, const char *dirname, void *ptr)
   if (0 != STAT (fn, &buf))
     {
       GNUNET_GE_LOG_STRERROR_FILE (gfsd->ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_REQUEST, "stat", fn);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_REQUEST, "stat", fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
@@ -172,7 +174,8 @@ GNUNET_disk_file_size (struct GNUNET_GE_Context *ectx,
  * @return -1 on errors, otherwise the number of free blocks
  */
 long
-GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx, const char *part)
+GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx,
+                                  const char *part)
 {
 #ifdef SOLARIS
   struct statvfs buf;
@@ -180,8 +183,9 @@ GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx, const char *pa
   if (0 != statvfs (part, &buf))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "statfs", part);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "statfs",
+                                   part);
       return -1;
     }
   return buf.f_bavail;
@@ -195,9 +199,9 @@ GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx, const char *pa
   if (!GetDiskFreeSpace (szDrive, &dwDummy, &dwDummy, &dwBlocks, &dwDummy))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed for drive `%s': %u\n"),
-              "GetDiskFreeSpace", szDrive, GetLastError ());
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                     GNUNET_GE_BULK, _("`%s' failed for drive `%s': %u\n"),
+                     "GetDiskFreeSpace", szDrive, GetLastError ());
 
       return -1;
     }
@@ -207,8 +211,9 @@ GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx, const char *pa
   if (0 != statfs (part, &s))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "statfs", part);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "statfs",
+                                   part);
       return -1;
     }
   return s.f_bavail;
@@ -233,8 +238,9 @@ GNUNET_disk_directory_test (struct GNUNET_GE_Context *ectx, const char *fil)
       if (errno != ENOENT)
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
-                                "stat", fil);
+                                       GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                       GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
+                                       "stat", fil);
           return GNUNET_SYSERR;
         }
       return GNUNET_NO;
@@ -244,8 +250,9 @@ GNUNET_disk_directory_test (struct GNUNET_GE_Context *ectx, const char *fil)
   if (ACCESS (fil, R_OK | X_OK) < 0)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
-                            "access", fil);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
+                                   "access", fil);
       return GNUNET_SYSERR;
     }
   return GNUNET_YES;
@@ -274,8 +281,9 @@ GNUNET_disk_file_test (struct GNUNET_GE_Context *ectx, const char *fil)
       if (errno != ENOENT)
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
-                                "stat", rdir);
+                                       GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                       GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
+                                       "stat", rdir);
           GNUNET_free (rdir);
           return GNUNET_SYSERR;
         }
@@ -290,8 +298,9 @@ GNUNET_disk_file_test (struct GNUNET_GE_Context *ectx, const char *fil)
   if (ACCESS (rdir, R_OK) < 0)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
-                            "access", rdir);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
+                                   "access", rdir);
       GNUNET_free (rdir);
       return GNUNET_SYSERR;
     }
@@ -360,8 +369,9 @@ GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx, const char *dir)
               if ((ret != 0) && (errno != EEXIST))
                 {
                   GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-                                        "mkdir", rdir);
+                                               GNUNET_GE_ERROR |
+                                               GNUNET_GE_USER |
+                                               GNUNET_GE_BULK, "mkdir", rdir);
                   GNUNET_free (rdir);
                   return GNUNET_SYSERR;
                 }
@@ -480,7 +490,8 @@ GNUNET_disk_file_write (struct GNUNET_GE_Context *ectx,
   if (n != WRITE (handle, buffer, n))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "write", fn);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_IMMEDIATE, "write", fn);
       GNUNET_disk_file_close (ectx, fn, handle);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
@@ -489,7 +500,8 @@ GNUNET_disk_file_write (struct GNUNET_GE_Context *ectx,
   if (0 != CHMOD (fn, atoo (mode)))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "chmod", fn);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_BULK, "chmod", fn);
     }
   GNUNET_free (fn);
   return GNUNET_OK;
@@ -520,14 +532,15 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
   if (0 != STAT (dirName, &istat))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "stat", dirName);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_BULK, "stat", dirName);
       return GNUNET_SYSERR;
     }
   if (!S_ISDIR (istat.st_mode))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Expected `%s' to be a directory!\n"), dirName);
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _("Expected `%s' to be a directory!\n"), dirName);
       return GNUNET_SYSERR;
     }
   errno = 0;
@@ -535,8 +548,8 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
   if ((errno == EACCES) || (dinfo == NULL))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                            "opendir", dirName);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_BULK, "opendir", dirName);
       return GNUNET_SYSERR;
     }
   while ((finfo = readdir (dinfo)) != NULL)
@@ -589,7 +602,8 @@ rmHelper (const char *fil, const char *dir, void *ctx)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx, const char *fileName)
+GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx,
+                              const char *fileName)
 {
   struct stat istat;
 
@@ -604,8 +618,9 @@ GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx, const char *fileNa
       (GNUNET_YES != GNUNET_disk_directory_test (ectx, fileName)))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "rmdir", fileName);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "rmdir",
+                                   fileName);
       return GNUNET_SYSERR;
     }
   if (GNUNET_SYSERR ==
@@ -614,19 +629,22 @@ GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx, const char *fileNa
   if (0 != RMDIR (fileName))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "rmdir", fileName);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "rmdir",
+                                   fileName);
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
 }
 
 void
-GNUNET_disk_file_close (struct GNUNET_GE_Context *ectx, const char *filename, int fd)
+GNUNET_disk_file_close (struct GNUNET_GE_Context *ectx, const char *filename,
+                        int fd)
 {
   if (0 != CLOSE (fd))
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "close", filename);
+                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK, "close", filename);
 }
 
 int
@@ -645,8 +663,10 @@ GNUNET_disk_file_open (struct GNUNET_GE_Context *ectx, const char *filename,
       errno = ENOENT;
       SetLastError (lRet);
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
-                            GNUNET_GE_BULK, "plibc_conv_to_win_path", filename);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
+                                   GNUNET_GE_BULK, "plibc_conv_to_win_path",
+                                   filename);
       return -1;
     }
   fn = GNUNET_strdup (szFile);
@@ -670,7 +690,9 @@ GNUNET_disk_file_open (struct GNUNET_GE_Context *ectx, const char *filename,
 #endif
   ret = OPEN (fn, oflag, mode);
   if (ret == -1)
-    GNUNET_GE_LOG_STRERROR_FILE (ectx, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "open", fn);
+    GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK, "open", fn);
   GNUNET_free (fn);
   return ret;
 }

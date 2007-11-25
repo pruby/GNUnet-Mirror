@@ -323,12 +323,12 @@ buildReply (unsigned int countTimeUnits)
       {
         if (counters[i]->send.slots != 0)
           buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->send, GNUNET_TRAFFIC_TYPE_SENT,
-                        countTimeUnits, i);
+                        counters[count++], &counters[i]->send,
+                        GNUNET_TRAFFIC_TYPE_SENT, countTimeUnits, i);
         if (counters[i]->receive.slots != 0)
           buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->receive, GNUNET_TRAFFIC_TYPE_RECEIVED,
-                        countTimeUnits, i);
+                        counters[count++], &counters[i]->receive,
+                        GNUNET_TRAFFIC_TYPE_RECEIVED, countTimeUnits, i);
       }
 
   GNUNET_mutex_unlock (lock);
@@ -549,7 +549,8 @@ trafficSend (const GNUNET_PeerIdentity * receiver,
  */
 static int
 plaintextReceive (const GNUNET_PeerIdentity * receiver,
-                  const GNUNET_MessageHeader * header, GNUNET_TSession * session)
+                  const GNUNET_MessageHeader * header,
+                  GNUNET_TSession * session)
 {
   unsigned short port;
 
@@ -573,8 +574,9 @@ provide_module_traffic (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
 #if DEBUG
   GNUNET_GC_get_configuration_value_number (capi->cfg,
-                                     "NETWORK",
-                                     "PORT", 0, 65536, 2087, &server_port);
+                                            "NETWORK",
+                                            "PORT", 0, 65536, 2087,
+                                            &server_port);
 #endif
   api.get = &getTrafficStats;
   for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
@@ -637,14 +639,15 @@ initialize_module_traffic (GNUNET_CoreAPIForPlugins * capi)
       myCoreAPI = NULL;
       return GNUNET_SYSERR;
     }
-  capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY, &trafficQueryHandler);
+  capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY,
+                               &trafficQueryHandler);
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "traffic",
-                                                     gettext_noop
-                                                     ("tracks bandwidth utilization by gnunetd")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "traffic",
+                                                                   gettext_noop
+                                                                   ("tracks bandwidth utilization by gnunetd")));
   return GNUNET_OK;
 }
 
@@ -656,9 +659,10 @@ done_module_traffic ()
 {
   GNUNET_GE_ASSERT (NULL, myCoreAPI != NULL);
   GNUNET_GE_ASSERT (myCoreAPI->ectx,
-             GNUNET_SYSERR !=
-             myCoreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY,
-                                                 &trafficQueryHandler));
+                    GNUNET_SYSERR !=
+                    myCoreAPI->
+                    unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY,
+                                             &trafficQueryHandler));
   myCoreAPI->releaseService (myApi);
   myApi = NULL;
   myCoreAPI = NULL;

@@ -125,7 +125,8 @@ trackQuery (const GNUNET_HashCode * query,
  * @param client where did the query come from?
  */
 void
-untrackQuery (const GNUNET_HashCode * query, struct GNUNET_ClientHandle *client)
+untrackQuery (const GNUNET_HashCode * query,
+              struct GNUNET_ClientHandle *client)
 {
   int i;
 
@@ -148,7 +149,8 @@ untrackQuery (const GNUNET_HashCode * query, struct GNUNET_ClientHandle *client)
  * @param value the response
  */
 void
-processResponse (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
+processResponse (const GNUNET_HashCode * key,
+                 const GNUNET_DatastoreValue * value)
 {
   int i;
   CS_fs_reply_content_MESSAGE *rc;
@@ -157,9 +159,10 @@ processResponse (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * valu
   GNUNET_EncName enc;
 #endif
 
-  GNUNET_GE_ASSERT (ectx, ntohl (value->size) > sizeof (GNUNET_DatastoreValue));
-  if ((GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ()) &&
-      (ntohl (value->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
+  GNUNET_GE_ASSERT (ectx,
+                    ntohl (value->size) > sizeof (GNUNET_DatastoreValue));
+  if ((GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ())
+      && (ntohl (value->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
     return;                     /* ignore expired, non-data responses! */
 
   matchCount = 0;
@@ -177,20 +180,22 @@ processResponse (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * valu
         {
           matchCount++;
           rc = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) +
-                              ntohl (value->size) - sizeof (GNUNET_DatastoreValue));
-          rc->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) +
-                                   ntohl (value->size) -
-                                   sizeof (GNUNET_DatastoreValue));
+                              ntohl (value->size) -
+                              sizeof (GNUNET_DatastoreValue));
+          rc->header.size =
+            htons (sizeof (CS_fs_reply_content_MESSAGE) +
+                   ntohl (value->size) - sizeof (GNUNET_DatastoreValue));
           rc->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
           rc->anonymityLevel = value->anonymityLevel;
           rc->expirationTime = value->expirationTime;
           memcpy (&rc[1],
-                  &value[1], ntohl (value->size) - sizeof (GNUNET_DatastoreValue));
+                  &value[1],
+                  ntohl (value->size) - sizeof (GNUNET_DatastoreValue));
 #if DEBUG_QUERYMANAGER
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "Sending reply for `%s' to client waiting in slot %u.\n",
-                  &enc, i);
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "Sending reply for `%s' to client waiting in slot %u.\n",
+                         &enc, i);
 #endif
           if (stats != NULL)
             stats->change (stat_replies_transmitted, 1);
@@ -202,8 +207,8 @@ processResponse (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * valu
   if (matchCount == 0)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Reply `%s' did not match any request.\n", &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Reply `%s' did not match any request.\n", &enc);
     }
 #endif
   GNUNET_mutex_unlock (queryManagerLock);

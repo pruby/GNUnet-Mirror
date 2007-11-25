@@ -79,9 +79,9 @@ processhellos (HelloListClosure * hcq)
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, hcq->hellosCount);
 #if DEBUG_BOOTSTRAP
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "%s chose hello %d of %d\n",
-              __FUNCTION__, rndidx, hcq->hellosCount);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "%s chose hello %d of %d\n",
+                     __FUNCTION__, rndidx, hcq->hellosCount);
 #endif
       msg = (GNUNET_MessageHello *) hcq->hellos[rndidx];
       hcq->hellos[rndidx] = hcq->hellos[hcq->hellosCount - 1];
@@ -205,8 +205,9 @@ processThread (void *unused)
       if (GNUNET_YES == hlc.do_shutdown)
         break;
 #if DEBUG_BOOTSTRAP
-      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Starting bootstrap.\n");
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Starting bootstrap.\n");
 #endif
       hlc.hellosLen = 0;
       hlc.hellosCount = 0;

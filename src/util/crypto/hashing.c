@@ -397,8 +397,9 @@ GNUNET_hash_file (struct GNUNET_GE_Context *ectx, const char *filename,
   if (fh == -1)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
-                            "open", filename);
+                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
+                                   "open", filename);
       return GNUNET_SYSERR;
     }
   sha512_init (&ctx);
@@ -412,12 +413,14 @@ GNUNET_hash_file (struct GNUNET_GE_Context *ectx, const char *filename,
       if (delta != READ (fh, buf, delta))
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                                "read", filename);
+                                       GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                       GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                                       "read", filename);
           if (0 != CLOSE (fh))
             GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                                  "close", filename);
+                                         GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                         GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                                         "close", filename);
           GNUNET_free (buf);
           return GNUNET_SYSERR;
         }
@@ -429,8 +432,9 @@ GNUNET_hash_file (struct GNUNET_GE_Context *ectx, const char *filename,
     }
   if (0 != CLOSE (fh))
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                          "close", filename);
+                                 GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                 GNUNET_GE_ADMIN | GNUNET_GE_BULK, "close",
+                                 filename);
   sha512_final (&ctx, (unsigned char *) ret);
   GNUNET_free (buf);
   return GNUNET_OK;
@@ -489,7 +493,7 @@ GNUNET_hash_to_enc (const GNUNET_HashCode * block, GNUNET_EncName * result)
       if (vbit < 5)
         {
           bits <<= (5 - vbit);  /* zero-padding */
-          GNUNET_GE_ASSERT (NULL, vbit == 2);  /* padding by 3: 512+3 mod 5 == 0 */
+          GNUNET_GE_ASSERT (NULL, vbit == 2);   /* padding by 3: 512+3 mod 5 == 0 */
           vbit = 5;
         }
       GNUNET_GE_ASSERT (NULL, wpos < sizeof (GNUNET_EncName) - 1);
@@ -605,9 +609,9 @@ GNUNET_hash_to_AES_key (const GNUNET_HashCode * hc,
                         GNUNET_AES_InitializationVector * iv)
 {
   GNUNET_GE_ASSERT (NULL,
-             sizeof (GNUNET_HashCode) >=
-             GNUNET_SESSIONKEY_LEN +
-             sizeof (GNUNET_AES_InitializationVector));
+                    sizeof (GNUNET_HashCode) >=
+                    GNUNET_SESSIONKEY_LEN +
+                    sizeof (GNUNET_AES_InitializationVector));
   memcpy (skey, hc, GNUNET_SESSIONKEY_LEN);
   skey->crc32 = htonl (GNUNET_crc32_n (skey, GNUNET_SESSIONKEY_LEN));
   memcpy (iv, &((char *) hc)[GNUNET_SESSIONKEY_LEN],

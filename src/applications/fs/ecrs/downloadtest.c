@@ -96,11 +96,11 @@ uploadFile (unsigned int size)
   GNUNET_free (buf);
   CLOSE (fd);
   ret = GNUNET_ECRS_file_upload (NULL, cfg, name, GNUNET_YES,   /* index */
-                         0,     /* anon */
-                         0,     /* prio */
-                         GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
-                         NULL,  /* progress */
-                         NULL, &testTerminate, NULL, &uri);
+                                 0,     /* anon */
+                                 0,     /* prio */
+                                 GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
+                                 NULL,  /* progress */
+                                 NULL, &testTerminate, NULL, &uri);
   GNUNET_free (name);
   return uri;
 }
@@ -119,23 +119,25 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
 
   tmp = GNUNET_ECRS_uri_to_string (uri);
   GNUNET_GE_LOG (NULL,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Starting download of `%s'\n", tmp);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
   ret = GNUNET_SYSERR;
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
       if (GNUNET_OK == GNUNET_ECRS_file_download_partial (NULL,
-                                                 cfg,
-                                                 uri,
-                                                 tmpName,
-                                                 j,
-                                                 16 * 1024,
-                                                 0,
-                                                 GNUNET_NO,
-                                                 &progress_check,
-                                                 NULL, &testTerminate, NULL))
+                                                          cfg,
+                                                          uri,
+                                                          tmpName,
+                                                          j,
+                                                          16 * 1024,
+                                                          0,
+                                                          GNUNET_NO,
+                                                          &progress_check,
+                                                          NULL,
+                                                          &testTerminate,
+                                                          NULL))
         {
           fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
           buf = GNUNET_malloc (size);
@@ -168,7 +170,9 @@ unindexFile (unsigned int size)
   char *name;
 
   name = makeName (size);
-  ret = GNUNET_ECRS_file_uninde (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
+  ret =
+    GNUNET_ECRS_file_uninde (NULL, cfg, name, NULL, NULL, &testTerminate,
+                             NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);

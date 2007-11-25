@@ -119,7 +119,8 @@ main (int argc, const char **argv)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
           GNUNET_GC_set_configuration_value_string (cfg,
-                                             ectx, "NETWORK", "HOST", buf);
+                                                    ectx, "NETWORK", "HOST",
+                                                    buf);
           sock = GNUNET_client_connection_create (NULL, cfg);
           GNUNET_STATS_get_statistics (NULL, sock, &countConnections, &have);
           GNUNET_client_connection_destroy (sock);

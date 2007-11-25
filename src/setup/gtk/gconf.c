@@ -64,7 +64,8 @@ static struct GNUNET_GE_Context *ectx;
 static const char *cfg_filename;
 
 static void
-addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNUNET_GNS_TreeNode *pos)
+addToTree (GtkTreeStore * model, GtkTreeIter * parent,
+           struct GNUNET_GNS_TreeNode *pos)
 {
   GtkTreeIter it;
   GtkTreeIter it2;
@@ -364,7 +365,8 @@ editedTextHandler (GtkCellRendererToggle * rdner,
   gtk_tree_model_get (model,
                       &iter,
                       SETUP_SECTION, &section, SETUP_OPTION, &option, -1);
-  GNUNET_GC_set_configuration_value_string (cfg, ectx, section, option, new_value);
+  GNUNET_GC_set_configuration_value_string (cfg, ectx, section, option,
+                                            new_value);
   updateTreeModel (gns);
   free (section);
   free (option);

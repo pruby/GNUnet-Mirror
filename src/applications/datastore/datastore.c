@@ -116,10 +116,12 @@ get (const GNUNET_HashCode * query,
       GNUNET_EncName enc;
 
       IF_GELOG (coreAPI->ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, GNUNET_hash_to_enc (query,
-                                                                     &enc));
-      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Datastore availability pre-test failed for `%s'.\n", &enc);
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                GNUNET_hash_to_enc (query, &enc));
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Datastore availability pre-test failed for `%s'.\n",
+                     &enc);
 #endif
       if (stats != NULL)
         stats->change (stat_filtered, 1);
@@ -160,11 +162,12 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
   if (!testAvailable (query))
     {
       IF_GELOG (coreAPI->ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, GNUNET_hash_to_enc (query,
-                                                                    &enc));
-      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Availability test failed for `%s' at %s:%d.\n"), &enc,
-              __FILE__, __LINE__);
+                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                GNUNET_hash_to_enc (query, &enc));
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Availability test failed for `%s' at %s:%d.\n"), &enc,
+                     __FILE__, __LINE__);
       return 0;
     }
   ok = sq->get (query, ntohl (value->type), &deleteCB, (void *) value);
@@ -195,17 +198,17 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   if (GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ())
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Received content for put already expired!\n");
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Received content for put already expired!\n");
       return GNUNET_NO;
     }
   if ((available < ntohl (value->size)) &&
       (minPriority > ntohl (value->prio) + comp_priority ()))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
-              sq->getSize (), quota);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
+                     sq->getSize (), quota);
       return GNUNET_NO;         /* new content has such a low priority that
                                    we should not even bother! */
     }
@@ -236,7 +239,8 @@ typedef struct
 
 static int
 checkExists (const GNUNET_HashCode * key,
-             const GNUNET_DatastoreValue * value, void *cls, unsigned long long uid)
+             const GNUNET_DatastoreValue * value, void *cls,
+             unsigned long long uid)
 {
   CE *ce = cls;
 
@@ -291,10 +295,10 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   comp_prio = comp_priority ();
 #if DEBUG_DATASTORE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Migration: available %llu (need %u), min priority %u have %u\n",
-          available, ntohl (value->size), minPriority,
-          ntohl (value->prio) + comp_prio);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Migration: available %llu (need %u), min priority %u have %u\n",
+                 available, ntohl (value->size), minPriority,
+                 ntohl (value->prio) + comp_prio);
 #endif
   /* check if we have enough space / priority */
   if ((available < ntohl (value->size)) &&
@@ -360,9 +364,11 @@ cronMaintenance (void *unused)
   available = quota - sq->getSize ();
   if ((available < 0) || (available < MIN_GNUNET_free))
     {
-      sq->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, &freeSpaceExpired, NULL);
+      sq->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+                                 &freeSpaceExpired, NULL);
       if ((available < 0) || (available < MIN_GNUNET_free))
-        sq->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, &freeSpaceLow, NULL);
+        sq->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+                                &freeSpaceLow, NULL);
     }
   else
     {
@@ -384,11 +390,12 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
   char *fsdir;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (capi->cfg,
-                                               "FS",
-                                               "QUOTA",
-                                               0,
-                                               ((unsigned long long) -1) /
-                                               1024 / 1024, 1024, &lquota))
+                                                      "FS",
+                                                      "QUOTA",
+                                                      0,
+                                                      ((unsigned long long)
+                                                       -1) / 1024 / 1024,
+                                                      1024, &lquota))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;              /* OOPS */
@@ -417,8 +424,10 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
   else
     {
       GNUNET_GE_LOG (capi->ectx,
-              GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_BULK,
-              _("Failed to load state service. Trying to do without.\n"));
+                     GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
+                     GNUNET_GE_BULK,
+                     _
+                     ("Failed to load state service. Trying to do without.\n"));
     }
   sq = capi->requestService ("sqstore");
   if (sq == NULL)
@@ -447,10 +456,10 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
     }
   fsdir = NULL;
   GNUNET_GC_get_configuration_value_filename (capi->cfg,
-                                       "FS",
-                                       "DIR",
-                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/data/fs/",
-                                       &fsdir);
+                                              "FS",
+                                              "DIR",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/data/fs/", &fsdir);
   /* just in case dir does not exist ... */
   GNUNET_disk_directory_create (NULL, fsdir);
   if (0 == STAT (fsdir, &sbuf))
@@ -524,11 +533,12 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   GNUNET_State_ServiceAPI *state;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (uapi->cfg,
-                                               "FS",
-                                               "QUOTA",
-                                               0,
-                                               ((unsigned long long) -1) /
-                                               1024 / 1024, 1024, &quota))
+                                                      "FS",
+                                                      "QUOTA",
+                                                      0,
+                                                      ((unsigned long long)
+                                                       -1) / 1024 / 1024,
+                                                      1024, &quota))
     return;                     /* OOPS */
   state = uapi->requestService ("state");
   lq = NULL;
@@ -555,9 +565,10 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   else
     {
       GNUNET_GE_LOG (uapi->ectx,
-              GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_BULK,
-              _
-              ("Failed to load sqstore service.  Check your configuration!\n"));
+                     GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
+                     GNUNET_GE_BULK,
+                     _
+                     ("Failed to load sqstore service.  Check your configuration!\n"));
     }
   sq = NULL;
   doneFilters ();

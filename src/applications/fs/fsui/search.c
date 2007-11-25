@@ -59,7 +59,8 @@ processResult (const GNUNET_ECRS_FileInfo * fi, GNUNET_FSUI_SearchList * pos)
   event.data.SearchResult.searchURI = pos->uri;
   pos->ctx->ecb (pos->ctx->ecbClosure, &event);
   GNUNET_URITRACK_add_state (pos->ctx->ectx,
-                     pos->ctx->cfg, pos->uri, GNUNET_URITRACK_SEARCH_RESULT);
+                             pos->ctx->cfg, pos->uri,
+                             GNUNET_URITRACK_SEARCH_RESULT);
 }
 
 
@@ -82,7 +83,8 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
   if (isRoot)
     {
       GNUNET_NS_namespace_set_root (ectx, pos->ctx->cfg, fi->uri);
-      GNUNET_NS_namespace_add_information (ectx, pos->ctx->cfg, fi->uri, fi->meta);
+      GNUNET_NS_namespace_add_information (ectx, pos->ctx->cfg, fi->uri,
+                                           fi->meta);
       return GNUNET_OK;
     }
   for (i = 0; i < pos->sizeResultsReceived; i++)
@@ -90,8 +92,8 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
       {
 #if DEBUG_SEARCH
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                "Received search result that I have seen before.\n");
+                       GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                       "Received search result that I have seen before.\n");
 #endif
         return GNUNET_OK;       /* seen before */
       }
@@ -102,8 +104,8 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
           GNUNET_GE_BREAK (ectx, 0);
 #if DEBUG_SEARCH
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "Received search result without key to decrypt.\n");
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "Received search result without key to decrypt.\n");
 #endif
           return GNUNET_SYSERR;
         }
@@ -119,8 +121,9 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
                   {
 #if DEBUG_SEARCH
                     GNUNET_GE_LOG (ectx,
-                            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                            "Received search result that I have seen before (missing keyword to show client).\n");
+                                   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                                   GNUNET_GE_USER,
+                                   "Received search result that I have seen before (missing keyword to show client).\n");
 #endif
                     return GNUNET_OK;
                   }
@@ -128,8 +131,9 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
                 {
 #if DEBUG_SEARCH
                   GNUNET_GE_LOG (ectx,
-                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                          "Received search result (showing client)!\n");
+                                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                                 GNUNET_GE_USER,
+                                 "Received search result (showing client)!\n");
 #endif
                   GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount,
                                      0);
@@ -154,9 +158,10 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
                   rp->matchingKeys[rp->matchingKeyCount - 1] = *key;
 #if DEBUG_SEARCH
                   GNUNET_GE_LOG (ectx,
-                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                          "Received search result (waiting for more %u keys before showing client).\n",
-                          pos->numberOfURIKeys - rp->matchingKeyCount);
+                                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                                 GNUNET_GE_USER,
+                                 "Received search result (waiting for more %u keys before showing client).\n",
+                                 pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
                   return GNUNET_OK;
                 }
@@ -175,9 +180,9 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
       rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Received search result (waiting for %u more keys before showing client).\n",
-              pos->numberOfURIKeys - rp->matchingKeyCount);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Received search result (waiting for %u more keys before showing client).\n",
+                     pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
       return GNUNET_OK;
     }
@@ -185,8 +190,8 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
     {
 #if DEBUG_SEARCH
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Received search result (showing client)!\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Received search result (showing client)!\n");
 #endif
       processResult (fi, pos);
     }
@@ -217,13 +222,12 @@ GNUNET_FSUI_searchThread (void *cls)
 
   mem = GNUNET_GE_memory_create (2);
   ee = GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN |
-                                 GNUNET_GE_ERROR | GNUNET_GE_WARNING | GNUNET_GE_FATAL |
-                                 GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE, mem);
-  ret = GNUNET_ECRS_search (ee,
-                     pos->ctx->cfg,
-                     pos->uri,
-                     pos->anonymityLevel,
-                     pos->timeout, &spcb, pos, &testTerminate, pos);
+                                        GNUNET_GE_ERROR | GNUNET_GE_WARNING |
+                                        GNUNET_GE_FATAL | GNUNET_GE_BULK |
+                                        GNUNET_GE_IMMEDIATE, mem);
+  ret =
+    GNUNET_ECRS_search (ee, pos->ctx->cfg, pos->uri, pos->anonymityLevel,
+                        pos->timeout, &spcb, pos, &testTerminate, pos);
   if (ret != GNUNET_OK)
     {
       const char *error;
@@ -287,9 +291,10 @@ GNUNET_FSUI_searchThreadSignal (void *cls)
  */
 struct GNUNET_FSUI_SearchList *
 GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
-                  unsigned int anonymityLevel,
-                  unsigned int maxResults,
-                  GNUNET_CronTime timeout, const struct GNUNET_ECRS_URI *uri)
+                          unsigned int anonymityLevel,
+                          unsigned int maxResults,
+                          GNUNET_CronTime timeout,
+                          const struct GNUNET_ECRS_URI *uri)
 {
   GNUNET_FSUI_SearchList *pos;
   struct GNUNET_GE_Context *ectx;
@@ -314,8 +319,9 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   if (pos->handle == NULL)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                       "PTHREAD_CREATE");
+                              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                              GNUNET_GE_USER | GNUNET_GE_ADMIN,
+                              "PTHREAD_CREATE");
       GNUNET_ECRS_uri_destroy (pos->uri);
       GNUNET_free (pos);
       GNUNET_mutex_unlock (ctx->lock);
@@ -331,7 +337,8 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
  * Abort a search.
  */
 int
-GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl)
+GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
+                          struct GNUNET_FSUI_SearchList *sl)
 {
   if (sl->state == GNUNET_FSUI_PENDING)
     {
@@ -349,7 +356,8 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_Se
  * Stop a search.
  */
 int
-GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl)
+GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
+                         struct GNUNET_FSUI_SearchList *sl)
 {
   GNUNET_FSUI_Event event;
   GNUNET_FSUI_SearchList *pos;
@@ -381,7 +389,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_Sea
   pos->next = NULL;
   if ((pos->state == GNUNET_FSUI_ACTIVE) ||
       (pos->state == GNUNET_FSUI_COMPLETED) ||
-      (pos->state == GNUNET_FSUI_ABORTED) || (pos->state == GNUNET_FSUI_ERROR))
+      (pos->state == GNUNET_FSUI_ABORTED)
+      || (pos->state == GNUNET_FSUI_ERROR))
     {
       GNUNET_GE_ASSERT (ctx->ectx, pos->handle != NULL);
       GNUNET_thread_join (pos->handle, &unused);
@@ -411,7 +420,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_Sea
   for (i = 0; i < pos->sizeUnmatchedResultsReceived; i++)
     {
       GNUNET_ECRS_uri_destroy (pos->unmatchedResultsReceived[i].fi.uri);
-      GNUNET_ECRS_meta_data_destroy (pos->unmatchedResultsReceived[i].fi.meta);
+      GNUNET_ECRS_meta_data_destroy (pos->unmatchedResultsReceived[i].fi.
+                                     meta);
       GNUNET_array_grow (pos->unmatchedResultsReceived[i].matchingKeys,
                          pos->unmatchedResultsReceived[i].matchingKeyCount,
                          0);

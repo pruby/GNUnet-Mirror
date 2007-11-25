@@ -85,28 +85,28 @@ GNUNET_mutex_create (int isRecursive)
     {
 #if LINUX
       GNUNET_GE_ASSERT (NULL,
-                 0 == pthread_mutexattr_setkind_np
-                 (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
+                        0 == pthread_mutexattr_setkind_np
+                        (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #elif SOMEBSD || GNUNET_freeBSD || GNUNET_freeBSD5
       GNUNET_GE_ASSERT (NULL,
-                 0 == pthread_mutexattr_setkind_np
-                 (&attr, PTHREAD_MUTEX_RECURSIVE));
+                        0 == pthread_mutexattr_setkind_np
+                        (&attr, PTHREAD_MUTEX_RECURSIVE));
 #elif SOLARIS || OSX || WINDOWS
       GNUNET_GE_ASSERT (NULL,
-                 0 == pthread_mutexattr_settype
-                 (&attr, PTHREAD_MUTEX_RECURSIVE));
+                        0 == pthread_mutexattr_settype
+                        (&attr, PTHREAD_MUTEX_RECURSIVE));
 #endif
     }
   else
     {
 #if LINUX
       GNUNET_GE_ASSERT (NULL,
-                 0 == pthread_mutexattr_setkind_np
-                 (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
+                        0 == pthread_mutexattr_setkind_np
+                        (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
       GNUNET_GE_ASSERT (NULL,
-                 0 == pthread_mutexattr_settype
-                 (&attr, PTHREAD_MUTEX_ERRORCHECK));
+                        0 == pthread_mutexattr_settype
+                        (&attr, PTHREAD_MUTEX_ERRORCHECK));
 #endif
     }
   mut = GNUNET_malloc (sizeof (Mutex));
@@ -141,20 +141,24 @@ GNUNET_mutex_lock_at_file_line_ (Mutex * mutex, const char *file,
   if ((end - start > GNUNET_REALTIME_LIMIT) && (GNUNET_REALTIME_LIMIT != 0))
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-              _("Real-time delay violation (%llu ms) at %s:%u\n"),
-              end - start, file, line);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING |
+                     GNUNET_GE_IMMEDIATE,
+                     _("Real-time delay violation (%llu ms) at %s:%u\n"),
+                     end - start, file, line);
     }
   if (ret != 0)
     {
       if (ret == EINVAL)
         GNUNET_GE_LOG (NULL,
-                GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                _("Invalid argument for `%s'.\n"), "pthread_mutex_lock");
+                       GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
+                       | GNUNET_GE_IMMEDIATE,
+                       _("Invalid argument for `%s'.\n"),
+                       "pthread_mutex_lock");
       if (ret == EDEADLK)
         GNUNET_GE_LOG (NULL,
-                GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                _("Deadlock due to `%s'.\n"), "pthread_mutex_lock");
+                       GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
+                       | GNUNET_GE_IMMEDIATE, _("Deadlock due to `%s'.\n"),
+                       "pthread_mutex_lock");
       GNUNET_GE_ASSERT (NULL, 0);
     }
   if (mutex->locked_depth++ == 0)
@@ -178,10 +182,11 @@ GNUNET_mutex_unlock (Mutex * mutex)
       if ((now - mutex->locked_time > GNUNET_REALTIME_LIMIT) &&
           (GNUNET_REALTIME_LIMIT != 0))
         GNUNET_GE_LOG (NULL,
-                GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-                _("Lock aquired for too long (%llu ms) at %s:%u\n"),
-                now - mutex->locked_time,
-                mutex->locked_file, mutex->locked_line);
+                       GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING |
+                       GNUNET_GE_IMMEDIATE,
+                       _("Lock aquired for too long (%llu ms) at %s:%u\n"),
+                       now - mutex->locked_time, mutex->locked_file,
+                       mutex->locked_line);
       mutex->locked_file = NULL;
       mutex->locked_line = 0;
       mutex->locked_time = 0;
@@ -191,12 +196,16 @@ GNUNET_mutex_unlock (Mutex * mutex)
     {
       if (ret == EINVAL)
         GNUNET_GE_LOG (NULL,
-                GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                _("Invalid argument for `%s'.\n"), "pthread_mutex_lock");
+                       GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
+                       | GNUNET_GE_IMMEDIATE,
+                       _("Invalid argument for `%s'.\n"),
+                       "pthread_mutex_lock");
       if (ret == EPERM)
         GNUNET_GE_LOG (NULL,
-                GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                _("Permission denied for `%s'.\n"), "pthread_mutex_unlock");
+                       GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
+                       | GNUNET_GE_IMMEDIATE,
+                       _("Permission denied for `%s'.\n"),
+                       "pthread_mutex_unlock");
       GNUNET_GE_ASSERT (NULL, 0);
     }
 }

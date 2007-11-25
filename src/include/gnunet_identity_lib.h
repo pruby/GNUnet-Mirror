@@ -95,12 +95,13 @@ int GNUNET_IDENTITY_request_connect (struct GNUNET_ClientServerConnection
  * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR to abort
  */
 typedef int (*GNUNET_IDENTITY_PeerInfoCallback) (void *data,
-                                               const GNUNET_PeerIdentity *
-                                               identity, const void *address,
-                                               unsigned int addr_len,
-                                               GNUNET_CronTime last_message,
-                                               unsigned int trust,
-                                               unsigned int bpmFromPeer);
+                                                 const GNUNET_PeerIdentity *
+                                                 identity,
+                                                 const void *address,
+                                                 unsigned int addr_len,
+                                                 GNUNET_CronTime last_message,
+                                                 unsigned int trust,
+                                                 unsigned int bpmFromPeer);
 
 /**
  * Request information about all known peers

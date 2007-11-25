@@ -79,14 +79,14 @@ printProtocols (unsigned short type, int isP2P, void *cls)
  * All gnunet-transport-check command line options
  */
 static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'p', "protocols", NULL,
    gettext_noop ("prints supported protocol messages"),
    0, &GNUNET_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES"},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -123,12 +123,14 @@ main (int argc, char *const *argv)
     }
   res = GNUNET_STATS_get_statistics (ectx, sock, &printStatistics, stdout);
   if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                       "STATS",
-                                                       "PRINT-PROTOCOLS",
-                                                       GNUNET_NO))
+                                                              "STATS",
+                                                              "PRINT-PROTOCOLS",
+                                                              GNUNET_NO))
       && (res == GNUNET_OK))
     {
-      res = GNUNET_STATS_get_available_protocols (ectx, sock, &printProtocols, stdout);
+      res =
+        GNUNET_STATS_get_available_protocols (ectx, sock, &printProtocols,
+                                              stdout);
     }
   if (res != GNUNET_OK)
     fprintf (stderr, _("Error reading information from gnunetd.\n"));

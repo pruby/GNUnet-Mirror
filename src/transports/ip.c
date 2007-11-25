@@ -39,7 +39,8 @@
  */
 int
 getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
-                    struct GNUNET_GE_Context *ectx, GNUNET_IPv4Address * address)
+                    struct GNUNET_GE_Context *ectx,
+                    GNUNET_IPv4Address * address)
 {
   static GNUNET_IPv4Address myAddress;
   static GNUNET_CronTime last;
@@ -56,8 +57,9 @@ getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
       if (ips == NULL)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _("Failed to obtain my (external) %s address!\n"), "IP");
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Failed to obtain my (external) %s address!\n"),
+                         "IP");
           lastError = now;
           return GNUNET_SYSERR;
         }

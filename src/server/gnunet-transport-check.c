@@ -132,11 +132,11 @@ testTAPI (TransportAPI * tapi, void *ctx)
     }
   GNUNET_free (helo);
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "TRANSPORT-CHECK",
-                                               "REPEAT",
-                                               1,
-                                               (unsigned long) -1,
-                                               1, &repeat))
+                                                      "TRANSPORT-CHECK",
+                                                      "REPEAT",
+                                                      1,
+                                                      (unsigned long) -1,
+                                                      1, &repeat))
     {
       *res = GNUNET_SYSERR;
       return;
@@ -222,9 +222,9 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   if (GNUNET_NO == transport->isAvailable (ntohs (xhello->protocol)))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              _(" Transport %d is not being tested\n"),
-              ntohs (xhello->protocol));
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     _(" Transport %d is not being tested\n"),
+                     ntohs (xhello->protocol));
       return;
     }
   if (ntohs (xhello->protocol) == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
@@ -232,9 +232,10 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
 
   stats[1]++;                   /* one more with transport 'available' */
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "GNUNET",
-                                     "VERBOSE",
-                                     0, (unsigned long long) -1, 0, &verbose);
+                                            "GNUNET",
+                                            "VERBOSE",
+                                            0, (unsigned long long) -1, 0,
+                                            &verbose);
   if (verbose > 0)
     {
       char *str;
@@ -311,7 +312,8 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
     fprintf (stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Waiting for PONG\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Waiting for PONG\n");
 #endif
   terminate = GNUNET_NO;
   GNUNET_cron_add_job (cron, &semUp, timeout, 5 * GNUNET_CRON_SECONDS, sem);
@@ -368,7 +370,7 @@ static struct GNUNET_CommandLineOption gnunettransportcheckOptions[] = {
   {'u', "user", "LOGIN",
    gettext_noop ("run as user LOGIN"),
    1, &GNUNET_getopt_configure_set_option, "GNUNETD:USER"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   {'X', "Xrepeat", "X",
    gettext_noop ("repeat each test X times"),
@@ -396,20 +398,22 @@ main (int argc, char *const *argv)
     }
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "TRANSPORT-CHECK",
-                                               "SIZE",
-                                               1, 60000, 12, &expectedSize))
+                                                      "TRANSPORT-CHECK",
+                                                      "SIZE",
+                                                      1, 60000, 12,
+                                                      &expectedSize))
     {
       GNUNET_fini (ectx, cfg);
       return 1;
     }
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "TRANSPORT-CHECK",
-                                               "TIMEOUT",
-                                               1,
-                                               60 * GNUNET_CRON_SECONDS,
-                                               3 * GNUNET_CRON_SECONDS,
-                                               &timeout))
+                                                      "TRANSPORT-CHECK",
+                                                      "TIMEOUT",
+                                                      1,
+                                                      60 *
+                                                      GNUNET_CRON_SECONDS,
+                                                      3 * GNUNET_CRON_SECONDS,
+                                                      &timeout))
     {
       GNUNET_fini (ectx, cfg);
       return 1;
@@ -423,9 +427,9 @@ main (int argc, char *const *argv)
 
   trans = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "GNUNETD",
-                                               "TRANSPORTS",
-                                               "udp tcp http", &trans))
+                                                      "GNUNETD",
+                                                      "TRANSPORTS",
+                                                      "udp tcp http", &trans))
     {
       GNUNET_free (expectedValue);
       GNUNET_fini (ectx, cfg);
@@ -440,11 +444,16 @@ main (int argc, char *const *argv)
   if (!ping)
     {
       /* disable blacklists (loopback is often blacklisted)... */
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLIST", "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP6", "BLACKLIST", "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLIST", "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP6", "BLACKLIST", "");
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLIST",
+                                                "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP6",
+                                                "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLIST",
+                                                "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP6",
+                                                "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",
+                                                "BLACKLIST", "");
     }
   cron = cron_create (ectx);
   if (GNUNET_OK != initCore (ectx, cfg, cron, NULL))
@@ -463,9 +472,10 @@ main (int argc, char *const *argv)
   GNUNET_cron_start (cron);
 
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "TRANSPORT-CHECK",
-                                     "X-REPEAT",
-                                     1, (unsigned long long) -1, 1, &Xrepeat);
+                                            "TRANSPORT-CHECK",
+                                            "X-REPEAT",
+                                            1, (unsigned long long) -1, 1,
+                                            &Xrepeat);
   res = GNUNET_OK;
   if (ping)
     {

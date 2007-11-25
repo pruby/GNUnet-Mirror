@@ -48,15 +48,15 @@ static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
  * All gnunet-dht-query command line options
  */
 static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Query (get KEY, put KEY VALUE) DHT table.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'T', "timeout", "TIME",
    gettext_noop
    ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
    1, &GNUNET_getopt_configure_set_ulong, &timeout},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -83,15 +83,15 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
   GNUNET_hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Issuing '%s(%s)' command.\n", "get", key);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Issuing '%s(%s)' command.\n", "get", key);
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_SECONDS;
   ret = GNUNET_DHT_get (cfg,
-                     ectx,
-                     GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                     &hc, timeout, &printCallback, (void *) key);
+                        ectx,
+                        GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                        &hc, timeout, &printCallback, (void *) key);
   if (ret == 0)
     printf (_("%s(%s) operation returned no results.\n"), "get", key);
 }
@@ -109,13 +109,13 @@ do_put (struct GNUNET_ClientServerConnection *sock,
   memcpy (&dc[1], value, strlen (value));
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_MINUTES;
-  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),  /* convert to absolute time */
-                                dc))
+  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),        /* convert to absolute time */
+                                   dc))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
     }

@@ -425,9 +425,11 @@ injectMessage (const GNUNET_PeerIdentity * sender,
                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                         GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                      _("Received corrupt message from peer `%s'in %s:%d.\n"),
-                      &enc, __FILE__, __LINE__);
+                             GNUNET_GE_WARNING | GNUNET_GE_USER |
+                             GNUNET_GE_BULK,
+                             _
+                             ("Received corrupt message from peer `%s'in %s:%d.\n"),
+                             &enc, __FILE__, __LINE__);
             }
           else
             {
@@ -460,8 +462,9 @@ injectMessage (const GNUNET_PeerIdentity * sender,
           IF_GELOG (ectx, GNUNET_GE_DEBUG,
                     GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
           GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG,
-                  "Received %s message of type %u from peer `%s'\n",
-                  wasEncrypted ? "encrypted" : "plaintext", ptyp, &enc);
+                         "Received %s message of type %u from peer `%s'\n",
+                         wasEncrypted ? "encrypted" : "plaintext", ptyp,
+                         &enc);
         }
 #endif
       if (GNUNET_YES == wasEncrypted)
@@ -471,9 +474,10 @@ injectMessage (const GNUNET_PeerIdentity * sender,
           if ((ptyp >= max_registeredType) || (NULL == handlers[ptyp][0]))
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-                      "Encrypted message of type '%d' not understood (no handler registered).\n",
-                      ptyp);
+                             GNUNET_GE_DEBUG | GNUNET_GE_USER |
+                             GNUNET_GE_REQUEST,
+                             "Encrypted message of type '%d' not understood (no handler registered).\n",
+                             ptyp);
               continue;         /* no handler registered, go to next part */
             }
 #if MEASURE_TIME
@@ -490,9 +494,10 @@ injectMessage (const GNUNET_PeerIdentity * sender,
                 {
 #if DEBUG_HANDLER
                   GNUNET_GE_LOG (ectx,
-                          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                          "Handler aborted message processing after receiving message of type '%d'.\n",
-                          ptyp);
+                                 GNUNET_GE_DEBUG | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK,
+                                 "Handler aborted message processing after receiving message of type '%d'.\n",
+                                 ptyp);
 #endif
                   GNUNET_free_non_null (copy);
                   copy = NULL;
@@ -504,8 +509,10 @@ injectMessage (const GNUNET_PeerIdentity * sender,
 #if VALIDATE_CLIENT
               if (0 != memcmp (old_value, part, plen))
                 GNUNET_GE_LOG (ectx,
-                        GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-                        "Handler %d at %p violated const!\n", ptyp, callback);
+                               GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER |
+                               GNUNET_GE_IMMEDIATE,
+                               "Handler %d at %p violated const!\n", ptyp,
+                               callback);
               GNUNET_free (old_value);
 #endif
 
@@ -527,9 +534,10 @@ injectMessage (const GNUNET_PeerIdentity * sender,
               (NULL == plaintextHandlers[ptyp][0]))
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_REQUEST | GNUNET_GE_DEBUG | GNUNET_GE_USER,
-                      "Plaintext message of type '%d' not understood (no handler registered).\n",
-                      ptyp);
+                             GNUNET_GE_REQUEST | GNUNET_GE_DEBUG |
+                             GNUNET_GE_USER,
+                             "Plaintext message of type '%d' not understood (no handler registered).\n",
+                             ptyp);
               continue;         /* no handler registered, go to next part */
             }
 #if MEASURE_TIME
@@ -542,9 +550,10 @@ injectMessage (const GNUNET_PeerIdentity * sender,
                 {
 #if DEBUG_HANDLER
                   GNUNET_GE_LOG (ectx,
-                          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                          "Handler aborted message processing after receiving message of type '%d'.\n",
-                          ptyp);
+                                 GNUNET_GE_DEBUG | GNUNET_GE_USER |
+                                 GNUNET_GE_BULK,
+                                 "Handler aborted message processing after receiving message of type '%d'.\n",
+                                 ptyp);
 #endif
                   GNUNET_free_non_null (copy);
                   copy = NULL;
@@ -659,11 +668,11 @@ core_receive (P2P_PACKET * mp)
       discarded++;
       if (0 == discarded % 64)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-                accepted,
-                discarded,
-                blacklisted, 1.0 * accepted / (blacklisted + discarded + 1));
+                       GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                       GNUNET_GE_REQUEST,
+                       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+                       accepted, discarded, blacklisted,
+                       1.0 * accepted / (blacklisted + discarded + 1));
       if (globalLock_ != NULL)
         GNUNET_mutex_unlock (globalLock_);
 #endif
@@ -677,20 +686,21 @@ core_receive (P2P_PACKET * mp)
                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                 GNUNET_hash_to_enc (&mp->sender.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
-              (char *) &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
+                     (char *) &enc);
 #endif
 #if TRACK_DISCARD
       GNUNET_mutex_lock (globalLock_);
       blacklisted++;
       if (0 == blacklisted % 64)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-                accepted,
-                discarded,
-                blacklisted, 1.0 * accepted / (blacklisted + discarded + 1));
+                       GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                       GNUNET_GE_REQUEST,
+                       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+                       accepted, discarded, blacklisted,
+                       1.0 * accepted / (blacklisted + discarded + 1));
       GNUNET_mutex_unlock (globalLock_);
 #endif
       GNUNET_free (mp->msg);
@@ -705,8 +715,10 @@ core_receive (P2P_PACKET * mp)
          we're shut down! */
 #if 0
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              "Discarding message of size %u -- buffer full!\n", mp->size);
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     "Discarding message of size %u -- buffer full!\n",
+                     mp->size);
 #endif
       GNUNET_free (mp->msg);
       GNUNET_free (mp);
@@ -716,11 +728,11 @@ core_receive (P2P_PACKET * mp)
       discarded++;
       if (0 == discarded % 64)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-                accepted,
-                discarded,
-                blacklisted, 1.0 * accepted / (blacklisted + discarded + 1));
+                       GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                       GNUNET_GE_REQUEST,
+                       "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+                       accepted, discarded, blacklisted,
+                       1.0 * accepted / (blacklisted + discarded + 1));
       if (globalLock_ != NULL)
         GNUNET_mutex_unlock (globalLock_);
 #endif
@@ -739,11 +751,12 @@ core_receive (P2P_PACKET * mp)
   accepted++;
   if (0 == accepted % 64)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-            "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
-            accepted,
-            discarded,
-            blacklisted, 1.0 * accepted / (blacklisted + discarded + 1));
+                   GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                   "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
+                   accepted,
+                   discarded,
+                   blacklisted,
+                   1.0 * accepted / (blacklisted + discarded + 1));
 #endif
   GNUNET_mutex_unlock (globalLock_);
   GNUNET_semaphore_up (bufferQueueRead_);
@@ -867,10 +880,11 @@ doneHandler ()
       if (count_by_type[i] == 0)
         continue;
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
-              count_by_type[i],
-              i, time_by_type[i], time_by_type[i] / count_by_type[i]);
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
+                     count_by_type[i], i, time_by_type[i],
+                     time_by_type[i] / count_by_type[i]);
     }
 #endif
 }

@@ -56,7 +56,8 @@ const char *GNUNET_STATS_cs_message_type_to_string (unsigned short type);
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*GNUNET_STATS_StatisticsProcessor) (const char *name,
-                                    unsigned long long value, void *cls);
+                                                 unsigned long long value,
+                                                 void *cls);
 
 /**
  * Request statistics from TCP socket.
@@ -65,8 +66,9 @@ typedef int (*GNUNET_STATS_StatisticsProcessor) (const char *name,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
-                         struct GNUNET_ClientServerConnection *sock,
-                         GNUNET_STATS_StatisticsProcessor processor, void *cls);
+                                 struct GNUNET_ClientServerConnection *sock,
+                                 GNUNET_STATS_StatisticsProcessor processor,
+                                 void *cls);
 
 /**
  * @param type the type ID of the message
@@ -74,7 +76,7 @@ int GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*GNUNET_STATS_ProtocolProcessor) (unsigned short type,
-                                        int isP2P, void *cls);
+                                               int isP2P, void *cls);
 
 /**
  * Request available protocols from TCP socket.
@@ -83,9 +85,10 @@ typedef int (*GNUNET_STATS_ProtocolProcessor) (unsigned short type,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_STATS_get_available_protocols (struct GNUNET_GE_Context *ectx,
-                                 struct GNUNET_ClientServerConnection *sock,
-                                 GNUNET_STATS_ProtocolProcessor processor,
-                                 void *cls);
+                                          struct GNUNET_ClientServerConnection
+                                          *sock,
+                                          GNUNET_STATS_ProtocolProcessor
+                                          processor, void *cls);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

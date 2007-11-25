@@ -118,7 +118,8 @@ sendMessage (unsigned msgType, int peer, unsigned short argSize, void *arg)
   msg->header.size = htons (msgsz);
   msg->header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->msgType = htonl (msgType);
-  memcpy (&((TESTBED_CS_MESSAGNUNET_GE_GENERIC *) msg)->data[0], arg, argSize);
+  memcpy (&((TESTBED_CS_MESSAGNUNET_GE_GENERIC *) msg)->data[0], arg,
+          argSize);
   msgsz = GNUNET_client_connection_write (&nodes[peer].sock, &msg->header);
   GNUNET_free (msg);
   if (msgsz == GNUNET_SYSERR)
@@ -217,8 +218,8 @@ addNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGNUNET_GE_HEADER **) &
-                                                      hdr))
+                                                      (CS_MESSAGNUNET_GE_HEADER
+                                                       **) & hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
       destroySocket (&nodes[currindex].sock);
@@ -344,7 +345,7 @@ addSshNode (int argc, char *argv[])
       sargv[6] = NULL;          /* last argument */
       execvp ("ssh", sargv);
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              " execvp failed: %s\n", STRERROR (errno));
+                     " execvp failed: %s\n", STRERROR (errno));
       exit (-1);
     }
   if (pid == -1)
@@ -408,8 +409,8 @@ addSshNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGNUNET_GE_HEADER **) &
-                                                      hdr))
+                                                      (CS_MESSAGNUNET_GE_HEADER
+                                                       **) & hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
       destroySocket (&nodes[currindex].sock);
@@ -1005,7 +1006,8 @@ dumpProcessOutput (int argc, char *argv[])
           reply = NULL;
           if (GNUNET_SYSERR ==
               GNUNET_client_connection_read (&nodes[dst].sock,
-                                             (CS_MESSAGNUNET_GE_HEADER **) & reply))
+                                             (CS_MESSAGNUNET_GE_HEADER **) &
+                                             reply))
             {
               XPRINTF (" peer %s is not responding after %d of %d bytes.\n",
                        nodes[dst].ips, pos, ack);
@@ -1017,8 +1019,8 @@ dumpProcessOutput (int argc, char *argv[])
             sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
           tmp = GNUNET_malloc (size + 1);
           memcpy (tmp,
-                  &((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) reply)->data[0],
-                  size);
+                  &((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) reply)->
+                  data[0], size);
           tmp[size] = '\0';
           XPRINTF ("%s", tmp);
           GNUNET_free (tmp);
@@ -1255,7 +1257,9 @@ getOption (int argc, char **argv)
       return -1;
     }
   CHECK_PEER (peer, argv[0]);
-  opt = GNUNET_get_daemon_configuration_value (&nodes[peer].sock, argv[1], argv[2]);
+  opt =
+    GNUNET_get_daemon_configuration_value (&nodes[peer].sock, argv[1],
+                                           argv[2]);
   if (opt == NULL)
     {
       XPRINTF ("Error sending request to peer %d\n", peer);
@@ -1306,7 +1310,8 @@ uploadFile (int argc, char *argv[])
   msg->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->header.msgType = htonl (TESTBED_UPLOAD_FILE);
   msg->type = htonl (TESTBED_FILE_DELETE);
-  memcpy (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf, argv[2], flen);
+  memcpy (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf, argv[2],
+          flen);
 
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (&nodes[peer].sock, &msg->header.header))
@@ -1603,7 +1608,7 @@ addAvailable (int argc, char *argv[])
 
 #if DEBUG_TESTBED
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          " Trying to download a hostlist from %s\n", reg);
+                 " Trying to download a hostlist from %s\n", reg);
 #endif
 
 

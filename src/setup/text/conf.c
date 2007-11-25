@@ -93,7 +93,8 @@ getValueAsString (GNUNET_GNS_TreeNodeKindAndType type, GNUNET_GNS_Value * val)
 }
 
 static void
-printChoice (int indent, GNUNET_GNS_TreeNodeKindAndType type, GNUNET_GNS_Value * val)
+printChoice (int indent, GNUNET_GNS_TreeNodeKindAndType type,
+             GNUNET_GNS_Value * val)
 {
   int i;
   char defLet;
@@ -462,9 +463,10 @@ conf (int indent,
       value = getValueAsString (tree->type, &tree->value);
       if ((0 != strcmp (value, ovalue)) &&
           (0 != GNUNET_GC_set_configuration_value_string (cfg,
-                                                   ectx,
-                                                   tree->section,
-                                                   tree->option, value)))
+                                                          ectx,
+                                                          tree->section,
+                                                          tree->option,
+                                                          value)))
         {
           GNUNET_free (value);
           GNUNET_free (ovalue);
@@ -532,7 +534,8 @@ main_setup_text (int argc,
                  struct GNUNET_PluginHandle *self,
                  struct GNUNET_GE_Context *ectx,
                  struct GNUNET_GC_Configuration *cfg,
-                 struct GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
+                 struct GNUNET_GNS_Context *gns, const char *filename,
+                 int is_daemon)
 {
   struct GNUNET_GNS_TreeNode *root;
   struct termios oldT;
@@ -610,7 +613,8 @@ dump_setup_text (int argc,
                  struct GNUNET_PluginHandle *self,
                  struct GNUNET_GE_Context *ectx,
                  struct GNUNET_GC_Configuration *cfg,
-                 struct GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
+                 struct GNUNET_GNS_Context *gns, const char *filename,
+                 int is_daemon)
 {
   return GNUNET_GC_write_configuration (cfg, filename);
 }

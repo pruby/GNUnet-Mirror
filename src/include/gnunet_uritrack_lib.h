@@ -43,26 +43,26 @@ extern "C"
  * @param onOff GNUNET_YES to enable tracking, GNUNET_NO to disable
  *  disabling tracking
  */
-void GNUNET_URITRACK_toggle_tracking (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, int onOff);     /* file_info.c */
+void GNUNET_URITRACK_toggle_tracking (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, int onOff);  /* file_info.c */
 
 /**
  * Deletes all entries in the URITRACK tracking cache.
  */
-void GNUNET_URITRACK_clear (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg); /* file_info.c */
+void GNUNET_URITRACK_clear (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);       /* file_info.c */
 
 /**
  * Get the URITRACK URI tracking status.
  *
  * @return GNUNET_YES of tracking is enabled, GNUNET_NO if not
  */
-int GNUNET_URITRACK_get_tracking_status (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);       /* file_info.c */
+int GNUNET_URITRACK_get_tracking_status (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);  /* file_info.c */
 
 /**
  * Makes a URI available for directory building.  This function is
  * automatically called by all URITRACK functions and only in the
  * interface for clients that call ECRS directly.
  */
-void GNUNET_URITRACK_track (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const GNUNET_ECRS_FileInfo * fi);       /* file_info.c */
+void GNUNET_URITRACK_track (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const GNUNET_ECRS_FileInfo * fi);      /* file_info.c */
 
 /**
  * List all URIs.
@@ -70,7 +70,7 @@ void GNUNET_URITRACK_track (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Con
  * @param need_metadata GNUNET_YES if metadata should be
  *        provided, GNUNET_NO if metadata is not needed (faster)
  */
-int GNUNET_URITRACK_list (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, int need_metadata, GNUNET_ECRS_SearchResultProcessor iterator, void *closure);  /* file_info.c */
+int GNUNET_URITRACK_list (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, int need_metadata, GNUNET_ECRS_SearchResultProcessor iterator, void *closure);   /* file_info.c */
 
 /**
  * Register a handler that is called whenever
@@ -78,12 +78,12 @@ int GNUNET_URITRACK_list (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Confi
  * the database, the callback will be called
  * for all existing URIs as well.
  */
-int GNUNET_URITRACK_register_track_callback (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, GNUNET_ECRS_SearchResultProcessor iterator, void *closure);        /* callbacks.c */
+int GNUNET_URITRACK_register_track_callback (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, GNUNET_ECRS_SearchResultProcessor iterator, void *closure);   /* callbacks.c */
 
 /**
  * Unregister a URI callback.
  */
-int GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor iterator, void *closure);     /* callbacks.c */
+int GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor iterator, void *closure);      /* callbacks.c */
 
 /**
  * Possible ways in which a given URI has been used or encountered.
@@ -114,15 +114,16 @@ enum GNUNET_URITRACK_STATE
  */
 enum GNUNET_URITRACK_STATE
 GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
-                   struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri);
+                           struct GNUNET_GC_Configuration *cfg,
+                           const struct GNUNET_ECRS_URI *uri);
 
 /**
  * Add additional information about a given URI's past.
  */
 void GNUNET_URITRACK_add_state (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg,
-                        const struct GNUNET_ECRS_URI *uri,
-                        enum GNUNET_URITRACK_STATE state);
+                                struct GNUNET_GC_Configuration *cfg,
+                                const struct GNUNET_ECRS_URI *uri,
+                                enum GNUNET_URITRACK_STATE state);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

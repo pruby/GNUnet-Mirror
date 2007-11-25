@@ -234,9 +234,9 @@ getDBHandle ()
   if (sqlite3_open (fn, &ret->dbh) != SQLITE_OK)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Unable to initialize SQLite: %s.\n"),
-              sqlite3_errmsg (ret->dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Unable to initialize SQLite: %s.\n"),
+                     sqlite3_errmsg (ret->dbh));
       sqlite3_close (ret->dbh);
       GNUNET_free (ret);
       return NULL;
@@ -276,8 +276,8 @@ getDBHandle ()
                         NULL) != SQLITE_OK)
         {
           LOG_SQLITE (ret,
-                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                      "sqlite_create");
+                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                      GNUNET_GE_BULK, "sqlite_create");
           sqlite3_finalize (stmt);
           GNUNET_free (ret);
           return NULL;
@@ -304,7 +304,8 @@ getDBHandle ()
                    &ret->insertContent) != SQLITE_OK))
     {
       LOG_SQLITE (ret,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "precompiling");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "precompiling");
       if (ret->countContent != NULL)
         sqlite3_finalize (ret->countContent);
       if (ret->exists != NULL)
@@ -393,14 +394,16 @@ delete_by_rowid (sqliteHandle * handle, unsigned long long rid)
                   "DELETE FROM gn070 WHERE _ROWID_ = ?", &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sq_prepare");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sq_prepare");
       return GNUNET_SYSERR;
     }
   sqlite3_bind_int64 (stmt, 1, rid);
   if (SQLITE_DONE != sqlite3_step (stmt))
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_step");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_step");
       sqlite3_finalize (stmt);
       return GNUNET_SYSERR;
     }
@@ -434,34 +437,37 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
       sqlite3_stmt *stmtd;
 
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Invalid data in %s (NCS).  Trying to fix (by deletion).\n"),
-              _("sqlite datastore"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("Invalid data in %s (NCS).  Trying to fix (by deletion).\n"),
+                     _("sqlite datastore"));
       if (1)
         abort ();
       if (SQLITE_OK != sqlite3_reset (stmt))
         LOG_SQLITE (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_reset");
-      if (sq_prepare (dbh,
-                      "DELETE FROM gn070 WHERE size < ?",
-                      &stmtd) == SQLITE_OK)
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sqlite3_reset");
+      if (sq_prepare (dbh, "DELETE FROM gn070 WHERE size < ?", &stmtd) ==
+          SQLITE_OK)
         {
           if (SQLITE_OK !=
               sqlite3_bind_int (stmtd, 1, sizeof (GNUNET_DatastoreValue)))
-            LOG_SQLITE (handle, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_bind_int");
+            LOG_SQLITE (handle,
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_bind_int");
           if (SQLITE_DONE != sqlite3_step (stmtd))
             LOG_SQLITE (handle,
-                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_step");
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_step");
           if (SQLITE_OK != sqlite3_finalize (stmtd))
             LOG_SQLITE (handle,
-                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_finalize");
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_finalize");
         }
       else
         LOG_SQLITE (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sq_prepare");
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sq_prepare");
       return NULL;              /* error */
     }
 
@@ -471,36 +477,41 @@ assembleDatum (sqliteHandle * handle, sqlite3_stmt * stmt,
       sqlite3_stmt *stmtd;
 
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Invalid data in %s.  Trying to fix (by deletion).\n"),
-              _("sqlite datastore"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+                     _("sqlite datastore"));
       if (SQLITE_OK != sqlite3_reset (stmt))
         LOG_SQLITE (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_reset");
-      if (sq_prepare (dbh,
-                      "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
-                      &stmtd) == SQLITE_OK)
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sqlite3_reset");
+      if (sq_prepare
+          (dbh,
+           "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
+           &stmtd) == SQLITE_OK)
         {
           if (SQLITE_OK !=
               sqlite3_bind_int (stmtd, 1, sizeof (GNUNET_HashCode)))
-            LOG_SQLITE (handle, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_bind_int");
+            LOG_SQLITE (handle,
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_bind_int");
           if (SQLITE_OK !=
               sqlite3_bind_int (stmtd, 2, sizeof (GNUNET_DatastoreValue)))
-            LOG_SQLITE (handle, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_bind_int");
+            LOG_SQLITE (handle,
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_bind_int");
           if (SQLITE_DONE != sqlite3_step (stmtd))
             LOG_SQLITE (handle,
-                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_step");
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_step");
           if (SQLITE_OK != sqlite3_finalize (stmtd))
             LOG_SQLITE (handle,
-                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_finalize");
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_finalize");
         }
       else
         LOG_SQLITE (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sq_prepare");
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sq_prepare");
 
       return NULL;
     }
@@ -553,7 +564,8 @@ getStat (sqliteHandle * handle, const char *key)
   if (i != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite_getStat");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_getStat");
       return GNUNET_SYSERR;
     }
   return ret;
@@ -578,7 +590,8 @@ setStat (sqliteHandle * handle, const char *key, unsigned long long val)
       sqlite3_bind_text (stmt, 1, key, strlen (key), SQLITE_STATIC);
       if (SQLITE_DONE != sqlite3_step (stmt))
         LOG_SQLITE (handle,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_step");
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sqlite3_step");
 
       sqlite3_finalize (stmt);
     }
@@ -590,18 +603,20 @@ setStat (sqliteHandle * handle, const char *key, unsigned long long val)
   if ((SQLITE_OK !=
        sqlite3_bind_text (stmt, 1, key, strlen (key), SQLITE_STATIC))
       || (SQLITE_OK != sqlite3_bind_int64 (stmt, 2, val))
-      || (SQLITE_OK != sqlite3_bind_int (stmt, 3, GNUNET_GNUNET_ECRS_BLOCKTYPE_RESERVED)))
+      || (SQLITE_OK !=
+          sqlite3_bind_int (stmt, 3, GNUNET_GNUNET_ECRS_BLOCKTYPE_RESERVED)))
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  "sqlite3_bind_xxx");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_bind_xxx");
       sqlite3_finalize (stmt);
       return GNUNET_SYSERR;
     }
   if (sqlite3_step (stmt) != SQLITE_DONE)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_step");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_step");
       sqlite3_finalize (stmt);
       return GNUNET_SYSERR;
     }
@@ -637,7 +652,8 @@ sqlite_iterate (unsigned int type,
                 int is_prio,
                 int is_migr,
                 int limit_nonanonymous,
-                unsigned int iter_select, GNUNET_DatastoreValueIterator iter, void *closure)
+                unsigned int iter_select, GNUNET_DatastoreValueIterator iter,
+                void *closure)
 {
   sqlite3_stmt *stmt;
   int count;
@@ -678,7 +694,8 @@ sqlite_iterate (unsigned int type,
   if (sq_prepare (dbh, stmt_str, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_prepare");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_prepare");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -743,8 +760,8 @@ sqlite_iterate (unsigned int type,
             datum = assembleDatum (handle, stmt, &key, &rowid);
           if (SQLITE_OK != sqlite3_reset (stmt))
             LOG_SQLITE (handle,
-                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                        "sqlite3_reset");
+                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                        GNUNET_GE_BULK, "sqlite3_reset");
           if (datum == NULL)
             break;
 #if 0
@@ -784,8 +801,8 @@ sqlite_iterate (unsigned int type,
           if (ret != SQLITE_DONE)
             {
               LOG_SQLITE (handle,
-                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                          "sqlite3_step");
+                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                          GNUNET_GE_BULK, "sqlite3_step");
               sqlite3_finalize (stmt);
               GNUNET_mutex_unlock (lock);
               return GNUNET_SYSERR;
@@ -811,7 +828,8 @@ sqlite_iterate (unsigned int type,
  *   iter is non-NULL and aborted the iteration
  */
 static int
-iterateLowPriority (unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
+iterateLowPriority (unsigned int type, GNUNET_DatastoreValueIterator iter,
+                    void *closure)
 {
   return sqlite_iterate (type, GNUNET_YES, GNUNET_YES, GNUNET_NO, GNUNET_NO,
                          0, iter, closure);
@@ -828,7 +846,8 @@ iterateLowPriority (unsigned int type, GNUNET_DatastoreValueIterator iter, void 
  *   iter is non-NULL and aborted the iteration
  */
 static int
-iterateNonAnonymous (unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
+iterateNonAnonymous (unsigned int type, GNUNET_DatastoreValueIterator iter,
+                     void *closure)
 {
   return sqlite_iterate (type, GNUNET_NO, GNUNET_YES, GNUNET_NO, GNUNET_YES,
                          1, iter, closure);
@@ -844,7 +863,8 @@ iterateNonAnonymous (unsigned int type, GNUNET_DatastoreValueIterator iter, void
  * @return the number of items stored in the content database
  */
 static int
-iterateExpirationTime (unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
+iterateExpirationTime (unsigned int type, GNUNET_DatastoreValueIterator iter,
+                       void *closure)
 {
   return sqlite_iterate (type, GNUNET_YES, GNUNET_NO, GNUNET_NO, GNUNET_NO, 2,
                          iter, closure);
@@ -900,7 +920,8 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
                   &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_prepare");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_prepare");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -947,9 +968,10 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
     {
       /* re-computed payload! */
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-              "SQLite database size recomputed.  New estimate is %llu, old estimate was %llu\n",
-              newpayload, payload);
+                     GNUNET_GE_INFO | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER |
+                     GNUNET_GE_ADMIN,
+                     "SQLite database size recomputed.  New estimate is %llu, old estimate was %llu\n",
+                     newpayload, payload);
       payload = newpayload;
       syncStats (handle);
     }
@@ -969,7 +991,8 @@ sqlite_shutdown ()
     return;                     /* already down */
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "SQLite: closing database\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite: closing database\n");
 #endif
   syncStats (getDBHandle ());
 
@@ -984,7 +1007,8 @@ sqlite_shutdown ()
       sqlite3_finalize (h->insertContent);
       if (sqlite3_close (h->dbh) != SQLITE_OK)
         LOG_SQLITE (h,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite_close");
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sqlite_close");
       GNUNET_free (h);
     }
   GNUNET_free (handles);
@@ -1052,7 +1076,8 @@ get (const GNUNET_HashCode * key,
   if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite_prepare");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_prepare");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -1139,9 +1164,9 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
             GNUNET_hash_to_enc (key, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-          "Storing in database block with type %u/key `%s'/priority %u/expiration %llu.\n",
-          ntohl (*(int *) &value[1]), &enc, ntohl (value->prio),
-          GNUNET_ntohll (value->expirationTime));
+                 "Storing in database block with type %u/key `%s'/priority %u/expiration %llu.\n",
+                 ntohl (*(int *) &value[1]), &enc, ntohl (value->prio),
+                 GNUNET_ntohll (value->expirationTime));
 #endif
 
   if ((ntohl (value->size) < sizeof (GNUNET_DatastoreValue)))
@@ -1173,11 +1198,12 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
                              SQLITE_TRANSIENT)))
     {
       LOG_SQLITE (dbh,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  "sqlite3_bind_XXXX");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_bind_XXXX");
       if (SQLITE_OK != sqlite3_reset (stmt))
         LOG_SQLITE (dbh,
-                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_reset");
+                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                    GNUNET_GE_BULK, "sqlite3_reset");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -1192,19 +1218,22 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
           return GNUNET_NO;
         }
       LOG_SQLITE (dbh,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_step");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite3_step");
       sqlite3_reset (stmt);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   if (SQLITE_OK != sqlite3_reset (stmt))
     LOG_SQLITE (dbh,
-                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_reset");
+                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                GNUNET_GE_BULK, "sqlite3_reset");
   lastSync++;
   payload += getContentDatastoreSize (value);
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "SQLite: done writing content\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite: done writing content\n");
 #endif
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
@@ -1227,12 +1256,15 @@ update (unsigned long long uid, int delta, GNUNET_CronTime expire)
   sqlite3_bind_int64 (dbh->updPrio, 3, uid);
   n = sqlite3_step (dbh->updPrio);
   if (n != SQLITE_DONE)
-    LOG_SQLITE (dbh, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite3_step");
+    LOG_SQLITE (dbh,
+                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                GNUNET_GE_BULK, "sqlite3_step");
 
   sqlite3_reset (dbh->updPrio);
 
 #if DEBUG_SQLITE
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "SQLite: block updated\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite: block updated\n");
 #endif
   GNUNET_mutex_unlock (lock);
   if (n == SQLITE_BUSY)
@@ -1252,7 +1284,8 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "SQLite: initializing database\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite: initializing database\n");
 #endif
 
   payload = 0;
@@ -1260,10 +1293,10 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
 
   afsdir = NULL;
   GNUNET_GC_get_configuration_value_filename (capi->cfg,
-                                       "FS",
-                                       "DIR",
-                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/data/fs/",
-                                       &afsdir);
+                                              "FS",
+                                              "DIR",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/data/fs/", &afsdir);
   dir = GNUNET_malloc (strlen (afsdir) + strlen ("/content/gnunet.dat") + 2);
   strcpy (dir, afsdir);
   strcat (dir, "/content/gnunet.dat");
@@ -1289,7 +1322,8 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
     {
       GNUNET_GE_BREAK (ectx, 0);
       LOG_SQLITE (dbh,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK, "sqlite_payload");
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_payload");
       GNUNET_mutex_destroy (lock);
       GNUNET_free (fn);
       fn = NULL;
@@ -1325,7 +1359,8 @@ release_module_sqstore_sqlite ()
   sqlite_shutdown ();
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "SQLite: database shutdown\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite: database shutdown\n");
 #endif
   GNUNET_mutex_destroy (lock);
   lock = NULL;
@@ -1350,10 +1385,10 @@ update_module_sqstore_sqlite (GNUNET_UpdateAPI * uapi)
   lastSync = 0;
   afsdir = NULL;
   GNUNET_GC_get_configuration_value_filename (uapi->cfg,
-                                       "FS",
-                                       "DIR",
-                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/data/fs/",
-                                       &afsdir);
+                                              "FS",
+                                              "DIR",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/data/fs/", &afsdir);
   dir = GNUNET_malloc (strlen (afsdir) + 8 + 2);        /* 8 = "content/" */
   strcpy (dir, afsdir);
   strcat (dir, "/content/");

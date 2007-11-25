@@ -425,11 +425,12 @@ gaim_upnp_generate_action_message_and_send (const char *proxy,
 #if 0
   if (ret != CURLE_OK)
     GNUNET_GE_LOG (NULL,
-            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-            _("%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"),
-            "curl_easy_perform",
-            control_info.control_url,
-            soapMessage, __FILE__, __LINE__, curl_easy_strerror (ret));
+                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_BULK,
+                   _
+                   ("%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"),
+                   "curl_easy_perform", control_info.control_url, soapMessage,
+                   __FILE__, __LINE__, curl_easy_strerror (ret));
 #endif
   curl_slist_free_all (headers);
   curl_easy_cleanup (curl);
@@ -471,8 +472,8 @@ looked_up_public_ip_cb (void *url_data,
     temp2 = temp + sizeof (control_info.publicip) - 1;
   memcpy (control_info.publicip, temp + 1, temp2 - (temp + 1));
   GNUNET_GE_LOG (NULL,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-          _("upnp: NAT Returned IP: %s\n"), control_info.publicip);
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 _("upnp: NAT Returned IP: %s\n"), control_info.publicip);
   return len;
 }
 
@@ -536,10 +537,10 @@ gaim_upnp_parse_description (char *proxy, UPnPDiscoveryData * dd)
   ret = curl_easy_perform (curl);
   if (ret != CURLE_OK)
     GNUNET_GE_LOG (NULL,
-            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-            _("%s failed at %s:%d: `%s'\n"),
-            "curl_easy_perform",
-            __FILE__, __LINE__, curl_easy_strerror (ret));
+                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                   "curl_easy_perform", __FILE__, __LINE__,
+                   curl_easy_strerror (ret));
   curl_easy_cleanup (curl);
   curl_global_cleanup ();
   if (control_info.control_url == NULL)
@@ -650,7 +651,8 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
   dd.full_url[endDescURL - startDescURL] = '\0';
   proxy = NULL;
   GNUNET_GC_get_configuration_value_string (cfg,
-                                     "GNUNETD", "HTTP-PROXY", "", &proxy);
+                                            "GNUNETD", "HTTP-PROXY", "",
+                                            &proxy);
   ret = gaim_upnp_parse_description (proxy, &dd);
   GNUNET_free (dd.full_url);
   GNUNET_array_grow (dd.buf, dd.buf_len, 0);
@@ -713,11 +715,12 @@ gaim_upnp_change_port_mapping (struct GNUNET_GE_Context *ectx,
     }
   proxy = NULL;
   GNUNET_GC_get_configuration_value_string (cfg,
-                                     "GNUNETD", "HTTP-PROXY", "", &proxy);
-  ret = gaim_upnp_generate_action_message_and_send (proxy,
-                                                    action_name,
-                                                    action_params,
-                                                    &ignore_response, NULL);
+                                            "GNUNETD", "HTTP-PROXY", "",
+                                            &proxy);
+  ret =
+    gaim_upnp_generate_action_message_and_send (proxy, action_name,
+                                                action_params,
+                                                &ignore_response, NULL);
 
   GNUNET_free (action_params);
   GNUNET_free (proxy);

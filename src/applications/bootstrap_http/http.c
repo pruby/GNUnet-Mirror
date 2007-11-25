@@ -105,9 +105,10 @@ downloadHostlistHelper (void *ptr, size_t size, size_t nmemb, void *ctx)
           (GNUNET_sizeof_hello (hello) >= GNUNET_MAX_BUFFER_SIZE))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                  _("Bootstrap data obtained from `%s' is invalid.\n"),
-                  bctx->url);
+                         GNUNET_GE_WARNING | GNUNET_GE_USER |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Bootstrap data obtained from `%s' is invalid.\n"),
+                         bctx->url);
           return 0;             /* Error: invalid format! */
         }
       if (stats != NULL)
@@ -168,13 +169,13 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
     }
   url = NULL;
   if (0 != GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
-                                              "GNUNETD",
-                                              "HOSTLISTURL", "", &url))
+                                                     "GNUNETD",
+                                                     "HOSTLISTURL", "", &url))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _
-              ("No hostlist URL specified in configuration, will not bootstrap.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("No hostlist URL specified in configuration, will not bootstrap.\n"));
       GNUNET_free (url);
       curl_easy_cleanup (curl);
       return;
@@ -214,12 +215,14 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
       pos--;
     }
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER, _("Bootstrapping using `%s'.\n"), url);
+                 GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
+                 _("Bootstrapping using `%s'.\n"), url);
   bctx.url = url;
   bctx.total = 0;
   proxy = NULL;
   GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
-                                     "GNUNETD", "HTTP-PROXY", "", &proxy);
+                                            "GNUNETD", "HTTP-PROXY", "",
+                                            &proxy);
   CURL_EASY_SETOPT (curl, CURLOPT_WRITEFUNCTION, &downloadHostlistHelper);
   CURL_EASY_SETOPT (curl, CURLOPT_WRITEDATA, &bctx);
   if (ret != CURLE_OK)
@@ -227,8 +230,8 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   CURL_EASY_SETOPT (curl, CURLOPT_FAILONERROR, 1);
   CURL_EASY_SETOPT (curl, CURLOPT_URL, &url[pos]);
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-          _("Trying to download hostlist from `%s'\n"), &url[pos]);
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 _("Trying to download hostlist from `%s'\n"), &url[pos]);
   if (strlen (proxy) > 0)
     CURL_EASY_SETOPT (curl, CURLOPT_PROXY, proxy);
   CURL_EASY_SETOPT (curl, CURLOPT_BUFFERSIZE, 1024);    /* a bit more than one HELLO */
@@ -250,10 +253,10 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   if (mret != CURLM_OK)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("%s failed at %s:%d: `%s'\n"),
-              "curl_multi_add_handle",
-              __FILE__, __LINE__, curl_multi_strerror (mret));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                     "curl_multi_add_handle", __FILE__, __LINE__,
+                     curl_multi_strerror (mret));
       goto cleanup;
     }
   while ((GNUNET_YES == termTest (targ))
@@ -267,10 +270,10 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
       if (mret != CURLM_OK)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _("%s failed at %s:%d: `%s'\n"),
-                  "curl_multi_fdset",
-                  __FILE__, __LINE__, curl_multi_strerror (mret));
+                         GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                         GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                         "curl_multi_fdset", __FILE__, __LINE__,
+                         curl_multi_strerror (mret));
           goto cleanup;
         }
       /* use timeout of 1s in case that SELECT is not interrupted by
@@ -298,12 +301,12 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
                     case CURLMSG_DONE:
                       if (msg->data.result != CURLE_OK)
                         GNUNET_GE_LOG (ectx,
-                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                                _("%s failed at %s:%d: `%s'\n"),
-                                "curl_multi_perform",
-                                __FILE__,
-                                __LINE__,
-                                curl_easy_strerror (msg->data.result));
+                                       GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                       GNUNET_GE_USER | GNUNET_GE_BULK,
+                                       _("%s failed at %s:%d: `%s'\n"),
+                                       "curl_multi_perform", __FILE__,
+                                       __LINE__,
+                                       curl_easy_strerror (msg->data.result));
                       break;
                     default:
                       break;
@@ -318,10 +321,10 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
       if ((mret != CURLM_OK) && (mret != CURLM_CALL_MULTI_PERFORM))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _("%s failed at %s:%d: `%s'\n"),
-                  "curl_multi_perform",
-                  __FILE__, __LINE__, curl_multi_strerror (mret));
+                         GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                         GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                         "curl_multi_perform", __FILE__, __LINE__,
+                         curl_multi_strerror (mret));
           goto cleanup;
         }
       if (running == 0)
@@ -331,34 +334,34 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   if (mret != CURLM_OK)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              _("%s failed at %s:%d: `%s'\n"),
-              "curl_multi_remove_handle",
-              __FILE__, __LINE__, curl_multi_strerror (mret));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                     "curl_multi_remove_handle", __FILE__, __LINE__,
+                     curl_multi_strerror (mret));
       goto cleanup;
     }
 #else
   ret = curl_easy_perform (curl);
   if (ret != CURLE_OK)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-            _("%s failed at %s:%d: `%s'\n"),
-            "curl_easy_perform",
-            __FILE__, __LINE__, curl_easy_strerror (ret));
+                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                   "curl_easy_perform", __FILE__, __LINE__,
+                   curl_easy_strerror (ret));
 #endif
   curl_easy_cleanup (curl);
 #if USE_MULTI
   mret = curl_multi_cleanup (multi);
   if (mret != CURLM_OK)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-            _("%s failed at %s:%d: `%s'\n"),
-            "curl_multi_cleanup",
-            __FILE__, __LINE__, curl_multi_strerror (mret));
+                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                   "curl_multi_cleanup", __FILE__, __LINE__,
+                   curl_multi_strerror (mret));
 #endif
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
-          _("Downloaded %llu bytes from `%s'.\n"), bctx.total, url);
+                 GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
+                 _("Downloaded %llu bytes from `%s'.\n"), bctx.total, url);
   GNUNET_free (url);
   GNUNET_free (proxy);
   curl_global_cleanup ();

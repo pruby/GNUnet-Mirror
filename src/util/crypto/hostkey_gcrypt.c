@@ -902,9 +902,10 @@ GNUNET_RSA_verify (const void *block,
   if (rc)
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
-              _("RSA signature verification failed at %s:%d: %s\n"),
-              __FILE__, __LINE__, gcry_strerror (rc));
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK |
+                     GNUNET_GE_DEVELOPER,
+                     _("RSA signature verification failed at %s:%d: %s\n"),
+                     __FILE__, __LINE__, gcry_strerror (rc));
       unlockGcrypt ();
       return GNUNET_SYSERR;
     }

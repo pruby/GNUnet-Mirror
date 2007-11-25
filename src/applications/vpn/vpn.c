@@ -466,13 +466,14 @@ static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
   if (len > (65535 - sizeof (struct tun_pi)))
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("RFC4193 Frame length %d is too big for GNUnet!\n"), len);
+                     _("RFC4193 Frame length %d is too big for GNUnet!\n"),
+                     len);
       return GNUNET_NO;
     }
   if (len < sizeof (struct tun_pi))
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("RFC4193 Frame length %d too small\n"), len);
+                     _("RFC4193 Frame length %d too small\n"), len);
       return GNUNET_NO;
     }
   if ((ntohs (tp->proto) == ETH_P_IP)
@@ -488,8 +489,8 @@ static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
       return GNUNET_YES;
     }
   GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-          _("RFC4193 Ethertype %x and IP version %x do not match!\n"),
-          ntohs (tp->proto), ((struct iphdr *) fp)->version);
+                 _("RFC4193 Ethertype %x and IP version %x do not match!\n"),
+                 ntohs (tp->proto), ((struct iphdr *) fp)->version);
   return GNUNET_NO;
 }
 
@@ -512,7 +513,8 @@ static int isEqual (const GNUNET_PeerIdentity * first,
  * Convert a PeerIdentify into a "random" RFC4193 prefix
  * actually we make the first 40 bits of the GNUNET_hash into the prefix!
  */
-static void id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them)
+static void id2ip (struct GNUNET_ClientHandle *cx,
+                   const GNUNET_PeerIdentity * them)
 {
   unsigned char a, b, c, d, e;
   a = (them->hashPubKey.bits[0] >> 8) & 0xff;
@@ -520,7 +522,8 @@ static void id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * t
   c = (them->hashPubKey.bits[1] >> 8) & 0xff;
   d = (them->hashPubKey.bits[1] >> 0) & 0xff;
   e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-  cprintf (cx, GNUNET_CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x", a, b, c, d, e);
+  cprintf (cx, GNUNET_CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x", a, b, c,
+           d, e);
 }
 
 /* convert GNUNET_PeerIdentity into network octet order IPv6 address */
@@ -556,15 +559,19 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
   int i, used, fd, id = 0;
 
 
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("RFC4193 Going to try and make a tunnel in slot %d\n"), n);
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("RFC4193 Going to try and make a tunnel in slot %d\n"), n);
 
   fd = open ("/dev/net/tun", O_RDWR);
   if (fd < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Cannot open tunnel device because of %s"), strerror (fd));
-      GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "open");
+                     _("Cannot open tunnel device because of %s"),
+                     strerror (fd));
+      GNUNET_GE_DIE_STRERROR (ectx,
+                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "open");
     }
   memset (&ifr, 0, sizeof (ifr));
 
@@ -593,10 +600,12 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
         {
           if ((store1 + i)->id == id)
             {
-              GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                      _
-                      ("RFC4193 Create skips gnu%d as we are already using it\n"),
-                      id);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_REQUEST,
+                             _
+                             ("RFC4193 Create skips gnu%d as we are already using it\n"),
+                             id);
               id++;
               used = 1;
             }
@@ -606,16 +615,22 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
           sprintf (ifr.ifr_name, "gnu%d", id);
           if (ioctl (fd, TUNSETIFF, (void *) &ifr) < 0)
             {
-              GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                      _("Cannot set tunnel name to %s because of %s\n"),
-                      ifr.ifr_name, strerror (errno));
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_USER,
+                             _
+                             ("Cannot set tunnel name to %s because of %s\n"),
+                             ifr.ifr_name, strerror (errno));
               id++;
               used = 1;
             }
           else
             {
-              GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                      _("Configured tunnel name to %s\n"), ifr.ifr_name);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                             GNUNET_GE_USER,
+                             _("Configured tunnel name to %s\n"),
+                             ifr.ifr_name);
             }
         }
     }
@@ -656,17 +671,18 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
   if (ioctl (admin_fd, SIOCGIFFLAGS, &ifr) < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Cannot get socket flags for gnu%d because %s\n"), id,
-              strerror (errno));
+                     _("Cannot get socket flags for gnu%d because %s\n"), id,
+                     strerror (errno));
     }
   else
     {
       ifr.ifr_flags |= IFF_UP | IFF_RUNNING;
       if (ioctl (admin_fd, SIOCSIFFLAGS, &ifr) < 0)
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Cannot set socket flags for gnu%d because %s\n"), id,
-                  strerror (errno));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("Cannot set socket flags for gnu%d because %s\n"),
+                         id, strerror (errno));
         }
     }
 
@@ -675,16 +691,16 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
   if (ioctl (admin_fd, SIOCSIFMTU, &ifr) < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Cannot set MTU for gnu%d because %s\n"), id,
-              strerror (errno));
+                     _("Cannot set MTU for gnu%d because %s\n"), id,
+                     strerror (errno));
     }
 
   /* lets add an IP address... aka "sudo ifconfig %s add %s:%04x::1/64" */
   if (ioctl (admin_fd, SIOCGIFINDEX, &ifr) < 0)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Cannot get interface index for gnu%d because %s\n"), id,
-              strerror (errno));
+                     _("Cannot get interface index for gnu%d because %s\n"),
+                     id, strerror (errno));
     }
   else
     {
@@ -694,22 +710,26 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
       ifr6.ifr6_ifindex = ifr.ifr_ifindex;
       id2net (&ifr6.ifr6_addr, coreAPI->myIdentity);
       ifr6.ifr6_addr.s6_addr16[3] = htons (n + VC_START);
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              _("IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"), id,
-              ntohs (ifr6.ifr6_addr.s6_addr16[0]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[1]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[2]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[3]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[4]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[5]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[6]),
-              ntohs (ifr6.ifr6_addr.s6_addr16[7]), ifr6.ifr6_prefixlen);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     _("IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
+                     id, ntohs (ifr6.ifr6_addr.s6_addr16[0]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[1]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[2]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[3]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[4]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[5]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[6]),
+                     ntohs (ifr6.ifr6_addr.s6_addr16[7]),
+                     ifr6.ifr6_prefixlen);
       if (ioctl (admin_fd, SIOCSIFADDR, &ifr6) < 0)
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _
-                  ("Cannot set interface IPv6 address for gnu%d because %s\n"),
-                  id, strerror (errno));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Cannot set interface IPv6 address for gnu%d because %s\n"),
+                         id, strerror (errno));
         }
 
       /* lets add a route to the peer, aka "#sudo route -A inet6 add %s::/48 dev %s" */
@@ -720,22 +740,26 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
       rt.rtmsg_flags = RTF_UP;
       rt.rtmsg_metric = 1;      /* how many hops to owner of public key */
       rt.rtmsg_dst_len = 48;    /* network prefix len is 48 by standard */
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              _
-              ("IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
-              id, ntohs (rt.rtmsg_dst.s6_addr16[0]),
-              ntohs (rt.rtmsg_dst.s6_addr16[1]),
-              ntohs (rt.rtmsg_dst.s6_addr16[2]),
-              ntohs (rt.rtmsg_dst.s6_addr16[3]),
-              ntohs (rt.rtmsg_dst.s6_addr16[4]),
-              ntohs (rt.rtmsg_dst.s6_addr16[5]),
-              ntohs (rt.rtmsg_dst.s6_addr16[6]),
-              ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     _
+                     ("IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
+                     id, ntohs (rt.rtmsg_dst.s6_addr16[0]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[1]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[2]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[3]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[4]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[5]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[6]),
+                     ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
       if (ioctl (admin_fd, SIOCADDRT, &rt) < 0)
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Cannot add route IPv6 address for gnu%s because %s\n"),
-                  id, strerror (errno));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Cannot add route IPv6 address for gnu%s because %s\n"),
+                         id, strerror (errno));
         }
     }
 }
@@ -774,9 +798,10 @@ static void checkensure_peer (const GNUNET_PeerIdentity * them,
       rstore1 = GNUNET_realloc (store1, rcapacity1);
       if (rstore1 == NULL)
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _
-                  ("RFC4193 We have run out of memory and so I can't store a tunnel for this peer.\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("RFC4193 We have run out of memory and so I can't store a tunnel for this peer.\n"));
           entries1--;
           return;
         }
@@ -823,9 +848,11 @@ static void *tunThread (void *arg)
   tp = ((struct tun_pi *) fp) - 1;
   gp = ((GNUNET_MessageHeader *) fp) - 1;
   running = 1;
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"), fp,
-          tp, gp);
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _
+                 ("RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"),
+                 fp, tp, gp);
 
   GNUNET_mutex_lock (lock);
   while (running)
@@ -843,7 +870,9 @@ static void *tunThread (void *arg)
         }
       else
         {
-          GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "fstat");
+          GNUNET_GE_DIE_STRERROR (ectx,
+                                  GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_BULK, "fstat");
         }
       for (i = 0; i < entries1; i++)
         {
@@ -857,8 +886,9 @@ static void *tunThread (void *arg)
       ret = SELECT (max + 1, &readSet, &writeSet, &errorSet, &timeout);
       if (ret < 0)
         {
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  "From the vpn select: %s\n", strerror (errno));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         "From the vpn select: %s\n", strerror (errno));
           running = 0;
           break;
         }
@@ -866,8 +896,9 @@ static void *tunThread (void *arg)
         {
           if (0 >= READ (signalingPipe[0], &tmp[0], MAXSIG_BUF))
             GNUNET_GE_LOG_STRERROR (ectx,
-                             GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                             "vpn could not read from exit control pipe\n");
+                                    GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                                    GNUNET_GE_USER,
+                                    "vpn could not read from exit control pipe\n");
         }
       GNUNET_mutex_lock (lock);
       for (i = 0; i < entries1; i++)
@@ -896,15 +927,19 @@ static void *tunThread (void *arg)
             {
               if (close ((store1 + i)->fd) == 0)
                 {
-                  GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                          _("VPN dropping connection %x\n"), i);
+                  GNUNET_GE_LOG (ectx,
+                                 GNUNET_GE_INFO | GNUNET_GE_REQUEST |
+                                 GNUNET_GE_USER,
+                                 _("VPN dropping connection %x\n"), i);
                   *(store1 + i) = *(store1 + (entries1 - 1));
                   entries1--;
                 }
               else
                 {
-                  GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                          _("VPN cannot drop connection %x\n"), i);
+                  GNUNET_GE_LOG (ectx,
+                                 GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                 GNUNET_GE_USER,
+                                 _("VPN cannot drop connection %x\n"), i);
                 }
             }
         }
@@ -922,8 +957,9 @@ static void *tunThread (void *arg)
   	}
 */
     }
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("RFC4193 Thread exiting\n"));
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("RFC4193 Thread exiting\n"));
   GNUNET_mutex_unlock (lock);
   return NULL;
 }
@@ -969,26 +1005,33 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
           tp->proto = htons (ETH_P_IPV6);
           if (ntohs (fp->ip6_src.s6_addr16[0]) < 0xFD00)
             {
-              GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                      _("VPN IP src not anonymous. drop..\n"));
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_REQUEST,
+                             _("VPN IP src not anonymous. drop..\n"));
               return GNUNET_OK;
             }
           if (ntohs (fp->ip6_dst.s6_addr16[0]) < 0xFD00)
             {
-              GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                      _("VPN IP not anonymous, drop.\n"));
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_REQUEST,
+                             _("VPN IP not anonymous, drop.\n"));
               return GNUNET_OK;
             }
           break;
         case 4:
           tp->proto = htons (ETH_P_IP);
-          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                  _("VPN Received, not anonymous, drop.\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                         GNUNET_GE_REQUEST,
+                         _("VPN Received, not anonymous, drop.\n"));
           return GNUNET_OK;
         default:
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("VPN Received unknown IP version %d...\n"),
-                  ((struct iphdr *) fp)->version);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("VPN Received unknown IP version %d...\n"),
+                         ((struct iphdr *) fp)->version);
           return GNUNET_OK;
         }
 
@@ -1022,9 +1065,11 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
       /* do not normally get here... but checkensure so any future packets could be routed... */
       checkensure_peer (sender, NULL);
       GNUNET_mutex_unlock (lock);
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-              _
-              ("Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"));
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_REQUEST,
+                     _
+                     ("Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"));
       return GNUNET_OK;
     case GNUNET_P2P_PROTO_PONG:
       GNUNET_mutex_lock (lock);
@@ -1174,8 +1219,9 @@ static void realise (struct GNUNET_ClientHandle *c)
 
   GNUNET_mutex_lock (lock);
   /* make sure realised table can take the new routes - if it wont, abort now! */
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("realise alloc ram\n"));
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("realise alloc ram\n"));
   if (route_entries > realised_entries)
     {
       reqcapacity = sizeof (route_info) * route_entries;
@@ -1194,8 +1240,9 @@ static void realise (struct GNUNET_ClientHandle *c)
         }
     }
   /* add routes that are in the new table but not the old */
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("realise add routes\n"));
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("realise add routes\n"));
   for (i = 0; i < route_entries; i++)
     {
       found = 0;
@@ -1245,8 +1292,9 @@ static void realise (struct GNUNET_ClientHandle *c)
         }
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Removing routes\n");
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("realise pull routes\n"));
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("realise pull routes\n"));
   /* pull routes that are in the old table but not the new */
   for (i = 0; i < realised_entries; i++)
     {
@@ -1298,8 +1346,9 @@ static void realise (struct GNUNET_ClientHandle *c)
         }
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Copying table\n");
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("realise copy table\n"));
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("realise copy table\n"));
   realised_entries = route_entries;
   memcpy (realised_store, route_store, sizeof (route_info) * route_entries);
 
@@ -1330,8 +1379,9 @@ static void add_client (struct GNUNET_ClientHandle *c)
           /* not enough ram, warn in the logs that they
            * will forego receiving logging
            */
-          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Cannot store client info\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("Cannot store client info\n"));
           return;
         }
       clients_capacity = rcapacity;
@@ -1417,11 +1467,13 @@ static int csHandle (struct GNUNET_ClientHandle *c,
           id2ip (c, &id);
           if ((route_store + i)->hops == 0)
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 hops 0 (This Node)\n");
+              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                       "::/48 hops 0 (This Node)\n");
             }
           else
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 hops %d tunnel gnu%d\n",
+              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                       "::/48 hops %d tunnel gnu%d\n",
                        (route_store + i)->hops,
                        (store1 + ((route_store + i)->tunnel))->id);
             }
@@ -1438,16 +1490,19 @@ static int csHandle (struct GNUNET_ClientHandle *c,
           id2ip (c, &id);
           if ((realised_store + i)->hops == 0)
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 hops 0 (This Node)\n");
+              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                       "::/48 hops 0 (This Node)\n");
             }
           else
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 hops %d tunnel gnu%d\n",
+              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                       "::/48 hops %d tunnel gnu%d\n",
                        (realised_store + i)->hops,
                        (store1 + ((realised_store + i)->tunnel))->id);
             }
         }
-      cprintf (c, GNUNET_CS_PROTO_VPN_REALISED, "%d Realised\n", realised_entries);
+      cprintf (c, GNUNET_CS_PROTO_VPN_REALISED, "%d Realised\n",
+               realised_entries);
       GNUNET_mutex_unlock (lock);
     }
   /* add routes in route but not realised to OS
@@ -1476,16 +1531,19 @@ static int csHandle (struct GNUNET_ClientHandle *c,
           rgp->type = htons (GNUNET_P2P_PROTO_AIP_GETROUTE);
           rgp->size = htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
           *((int *) (rgp + 1)) = htonl ((store1 + i)->route_entry);
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Request level %d from peer %d ",
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                   "Request level %d from peer %d ",
                    (store1 + i)->route_entry, i);
           id2ip (c, &((store1 + i)->peer));
           cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "\n");
-          coreAPI->unicast (&((store1 + i)->peer), rgp, GNUNET_EXTREME_PRIORITY, 60);
+          coreAPI->unicast (&((store1 + i)->peer), rgp,
+                            GNUNET_EXTREME_PRIORITY, 60);
           GNUNET_free (rgp);
 /*  		}	*/
         }
       GNUNET_mutex_unlock (lock);
-      cprintf (c, GNUNET_CS_PROTO_VPN_RESET, "Rebuilding routing tables done\n");
+      cprintf (c, GNUNET_CS_PROTO_VPN_RESET,
+               "Rebuilding routing tables done\n");
     }
   if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_TRUST)
     {
@@ -1537,10 +1595,12 @@ static int csHandle (struct GNUNET_ClientHandle *c,
                                " schedule connection.\n");
                       break;
                     case GNUNET_SYSERR:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " core refused.\n");
+                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                               " core refused.\n");
                       break;
                     default:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " misc error.\n");
+                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                               " misc error.\n");
                       break;
                     }
 
@@ -1568,7 +1628,8 @@ static int csHandle (struct GNUNET_ClientHandle *c,
             }
           else
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_ADD, "Could not allocate for key.\n");
+              cprintf (c, GNUNET_CS_PROTO_VPN_ADD,
+                       "Could not allocate for key.\n");
             }
         }
       else
@@ -1613,8 +1674,8 @@ static int makeNonblocking (int handle)
   if (-1 == fcntl (handle, F_SETFL, flags))
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                       "fcntl");
+                              GNUNET_GE_WARNING | GNUNET_GE_USER |
+                              GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "fcntl");
       return GNUNET_SYSERR;
     }
 #endif
@@ -1658,12 +1719,15 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 
   admin_fd = socket (AF_INET6, SOCK_DGRAM, 0);
 
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("`%s' initialising RFC4913 module  %d and %d\n"), "template",
-          GNUNET_CS_PROTO_MAX_USED, GNUNET_P2P_PROTO_MAX_USED);
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          _("RFC4193 my First 4 hex digits of host id are %x\n"),
-          capi->myIdentity->hashPubKey.bits[0]);
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("`%s' initialising RFC4913 module  %d and %d\n"),
+                 "template", GNUNET_CS_PROTO_MAX_USED,
+                 GNUNET_P2P_PROTO_MAX_USED);
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 _("RFC4193 my First 4 hex digits of host id are %x\n"),
+                 capi->myIdentity->hashPubKey.bits[0]);
 
   /* core calls us to receive messages */
   /* get a PONG = peer is online */
@@ -1680,7 +1744,8 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_AIP_ROUTES, &handlep2pMSG))
     return GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG))
+  if (GNUNET_SYSERR ==
+      capi->registerHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG))
@@ -1745,12 +1810,12 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 
   /* use capi->unicast to send messages to connected peers */
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "vpn",
-                                                     _
-                                                     ("enables IPv6 over GNUnet (incomplete)")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "vpn",
+                                                                   _
+                                                                   ("enables IPv6 over GNUnet (incomplete)")));
 
   return GNUNET_OK;
 }
@@ -1784,7 +1849,7 @@ void done_module_vpn ()
   coreAPI->unregisterClientExitHandler (&clientExitHandler);
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("RFC4193 Waiting for tun thread to end\n"));
+                 _("RFC4193 Waiting for tun thread to end\n"));
 
   running = 0;
   /* thread should wake up and exit */
@@ -1792,13 +1857,14 @@ void done_module_vpn ()
   if (ret != sizeof (char))
     if (errno != EAGAIN)
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                       "RFC4193 can not tell thread to exit");
+                              GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                              GNUNET_GE_USER,
+                              "RFC4193 can not tell thread to exit");
 
   /* wait for it to exit */
   GNUNET_thread_join (tunThreadInfo, &returnval);
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("RFC4193 The tun thread has ended\n"));
+                 _("RFC4193 The tun thread has ended\n"));
 
   coreAPI->releaseService (identity);
   coreAPI->releaseService (session);
@@ -1814,9 +1880,10 @@ void done_module_vpn ()
       if (((store1 + i)->fd) != 0)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                  _("RFC4193 Closing tunnel %d fd %d\n"), i,
-                  (store1 + i)->fd);
+                         GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                         GNUNET_GE_REQUEST,
+                         _("RFC4193 Closing tunnel %d fd %d\n"), i,
+                         (store1 + i)->fd);
           close ((store1 + i)->fd);
           (store1 + i)->fd = 0;
         }

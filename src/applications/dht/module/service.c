@@ -122,7 +122,8 @@ dht_get_async_start (unsigned int type,
                      GNUNET_CronTime timeout,
                      GNUNET_DataProcessor callback,
                      void *cls,
-                     GNUNET_DHT_OperationCompleteCallback callbackComplete, void *closure)
+                     GNUNET_DHT_OperationCompleteCallback callbackComplete,
+                     void *closure)
 {
   struct GNUNET_DHT_GetHandle *ret;
 

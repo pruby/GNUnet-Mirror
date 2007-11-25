@@ -121,7 +121,8 @@ int forEachConnectedNode (GNUNET_NodeIteratorCallback method, void *arg);
  * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
-int sendPlaintext (GNUNET_TSession * tsession, const char *msg, unsigned int size);
+int sendPlaintext (GNUNET_TSession * tsession, const char *msg,
+                   unsigned int size);
 
 /**
  * Compute the hashtable index of a host id.

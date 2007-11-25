@@ -40,7 +40,8 @@ extern "C"
 /**
  * Initialize collection module.
  */
-void GNUNET_CO_init (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
+void GNUNET_CO_init (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Shutdown collection module.
@@ -53,9 +54,10 @@ void GNUNET_CO_done (void);
  * an existing collection).
  */
 int GNUNET_CO_collection_start (unsigned int anonymityLevel,
-                        unsigned int priority,
-                        GNUNET_Int32Time updateInterval,
-                        const char *name, const struct GNUNET_ECRS_MetaData *meta);
+                                unsigned int priority,
+                                GNUNET_Int32Time updateInterval,
+                                const char *name,
+                                const struct GNUNET_ECRS_MetaData *meta);
 
 /**
  * Stop collection.

@@ -170,7 +170,8 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i)
 
 static int
 iterateDelete (const GNUNET_HashCode * key,
-               const GNUNET_DatastoreValue * val, void *cls, unsigned long long uid)
+               const GNUNET_DatastoreValue * val, void *cls,
+               unsigned long long uid)
 {
   GNUNET_SQstore_ServiceAPI *api = cls;
   static int dc;

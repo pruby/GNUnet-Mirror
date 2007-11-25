@@ -81,9 +81,9 @@ init_thread (void *arg)
  */
 int
 GNUNET_URITRACK_register_track_callback (struct GNUNET_GE_Context *ectx,
-                                struct GNUNET_GC_Configuration *cfg,
-                                GNUNET_ECRS_SearchResultProcessor iterator,
-                                void *closure)
+                                         struct GNUNET_GC_Configuration *cfg,
+                                         GNUNET_ECRS_SearchResultProcessor
+                                         iterator, void *closure)
 {
   Callback *c;
 
@@ -105,8 +105,8 @@ GNUNET_URITRACK_register_track_callback (struct GNUNET_GE_Context *ectx,
  * Unregister a URI callback.
  */
 int
-GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor iterator,
-                                  void *closure)
+GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor
+                                           iterator, void *closure)
 {
   int i;
   void *unused;

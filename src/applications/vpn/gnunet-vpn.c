@@ -47,14 +47,14 @@ static char *cfgFilename = "~/.gnunet/gnunet.conf";
  * All gnunet-transport-check command line options
  */
 static struct GNUNET_CommandLineOption gnunetvpnOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-	GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'s', "silent", NULL,
    gettext_noop ("Suppress display of asynchronous log messages"),
    0, &GNUNET_getopt_configure_set_one, &silent},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -161,8 +161,8 @@ main (int argc, char *const *argv)
     GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
     GNUNET_GE_DIE_STRERROR (ectx,
-                     GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                     "pthread_create");
+                            GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                            | GNUNET_GE_IMMEDIATE, "pthread_create");
 
 
   /* accept keystrokes from user and send to gnunetd */

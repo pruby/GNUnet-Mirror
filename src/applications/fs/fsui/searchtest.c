@@ -150,21 +150,22 @@ main (int argc, char *argv[])
 #endif
   lock = GNUNET_mutex_create (GNUNET_NO);
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "fsuisearchtest", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "fsuisearchtest", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
-  search = GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, luri);
+  search =
+    GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, luri);
   GNUNET_ECRS_uri_destroy (luri);
   uri = NULL;
   CHECK (NULL != search);
   GNUNET_FSUI_stop (ctx);
   /* resume search! */
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "fsuisearchtest", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "fsuisearchtest", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   fn = makeName (42);
   GNUNET_disk_file_write (NULL,
                           fn, "foo bar test!", strlen ("foo bar test!"),
@@ -174,15 +175,12 @@ main (int argc, char *argv[])
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload =
     GNUNET_FSUI_upload_star (ctx,
-                      fn,
-                      (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan,
-                      NULL,
-                      0,
-                      0,
-                      GNUNET_YES,
-                      GNUNET_NO, GNUNET_NO,
-                      GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta, kuri,
-                      kuri);
+                             fn,
+                             (GNUNET_FSUI_DirectoryScanCallback) &
+                             GNUNET_disk_directory_scan, NULL, 0, 0,
+                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
+                             kuri, kuri);
   CHECK (NULL != upload);
   GNUNET_free (fn);
   fn = NULL;

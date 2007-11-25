@@ -60,8 +60,9 @@ get_path_from_proc_exe ()
   if ((size == 0) || (size >= 1024))
     {
       GNUNET_GE_LOG_STRERROR_FILE (NULL,
-                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                            "readlink", fn);
+                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                   "readlink", fn);
       GNUNET_free (lnk);
       return NULL;
     }

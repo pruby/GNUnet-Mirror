@@ -54,10 +54,13 @@ extern "C"
  * request.
  * @param verify check that content is valid? (GNUNET_YES/GNUNET_NO)
  */
-typedef int (*GNUNET_UniqueReplyIdentifierCallback) (const GNUNET_DataContainer * content,
-                                      unsigned int query_type,
-                                      int verify,
-                                      const GNUNET_HashCode * primaryKey);
+typedef int (*GNUNET_UniqueReplyIdentifierCallback) (const
+                                                     GNUNET_DataContainer *
+                                                     content,
+                                                     unsigned int query_type,
+                                                     int verify,
+                                                     const GNUNET_HashCode *
+                                                     primaryKey);
 
 /**
  * Given some content, compute the unique
@@ -65,7 +68,7 @@ typedef int (*GNUNET_UniqueReplyIdentifierCallback) (const GNUNET_DataContainer 
  * to sort out duplicates.
  */
 typedef int (*GNUNET_ReplyHashingCallback) (const GNUNET_DataContainer * data,
-                                  GNUNET_HashCode * hc);
+                                            GNUNET_HashCode * hc);
 
 /**
  * Functions of the GAP Service API.
@@ -80,7 +83,8 @@ typedef struct
    * @return GNUNET_SYSERR on error, GNUNET_OK on success
    */
   int (*init) (GNUNET_Blockstore * datastore,
-               GNUNET_UniqueReplyIdentifierCallback uri, GNUNET_ReplyHashingCallback rhf);
+               GNUNET_UniqueReplyIdentifierCallback uri,
+               GNUNET_ReplyHashingCallback rhf);
 
   /**
    * Perform a GET operation using 'key' as the key.  Note that no

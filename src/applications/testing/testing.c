@@ -37,19 +37,20 @@ updatePort (struct GNUNET_GC_Configuration *cfg,
   unsigned long long old;
 
   if ((GNUNET_YES == GNUNET_GC_have_configuration_value (cfg,
-                                                  section,
-                                                  "PORT")) &&
+                                                         section,
+                                                         "PORT")) &&
       (0 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               section,
-                                               "PORT",
-                                               0, 65535, 65535, &old)))
+                                                      section,
+                                                      "PORT",
+                                                      0, 65535, 65535, &old)))
     {
       old += offset;
       GNUNET_GE_ASSERT (NULL,
-                 0 == GNUNET_GC_set_configuration_value_number (cfg,
-                                                         NULL,
-                                                         section,
-                                                         "PORT", old));
+                        0 == GNUNET_GC_set_configuration_value_number (cfg,
+                                                                       NULL,
+                                                                       section,
+                                                                       "PORT",
+                                                                       old));
     }
 }
 
@@ -113,24 +114,28 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   updatePort (cfg, "HTTP", tra_offset);
   updatePort (cfg, "SMTP", tra_offset);
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     NULL,
-                                     "PATHS", "GNUNETD_HOME", gnunetd_home);
+                                            NULL,
+                                            "PATHS", "GNUNETD_HOME",
+                                            gnunetd_home);
   if (transports != NULL)
     GNUNET_GC_set_configuration_value_string (cfg,
-                                       NULL,
-                                       "GNUNETD", "TRANSPORTS", transports);
+                                              NULL,
+                                              "GNUNETD", "TRANSPORTS",
+                                              transports);
   if (applications != NULL)
     GNUNET_GC_set_configuration_value_string (cfg,
-                                       NULL,
-                                       "GNUNETD",
-                                       "APPLICATIONS", applications);
-  GNUNET_GC_set_configuration_value_number (cfg, NULL, "NETWORK", "PORT", app_port);
+                                              NULL,
+                                              "GNUNETD",
+                                              "APPLICATIONS", applications);
+  GNUNET_GC_set_configuration_value_number (cfg, NULL, "NETWORK", "PORT",
+                                            app_port);
   dpath = GNUNET_strdup ("/tmp/gnunet-config.XXXXXX");
   ret = mkstemp (dpath);
   if (ret == -1)
     {
       GNUNET_GE_LOG_STRERROR_FILE (NULL,
-                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "mkstemp", dpath);
+                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                   GNUNET_GE_BULK, "mkstemp", dpath);
       GNUNET_free (dpath);
       GNUNET_GC_free (cfg);
       return GNUNET_SYSERR;
@@ -149,7 +154,8 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   cfg = GNUNET_GC_create ();
   /* cfg is now client CFG for GNUNET_daemon_start */
   GNUNET_snprintf (host, 128, "localhost:%u", app_port);
-  GNUNET_GC_set_configuration_value_string (cfg, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg, NULL, "NETWORK", "HOST",
+                                            host);
 
   ret = GNUNET_daemon_start (NULL, cfg, dpath, GNUNET_NO);
   if (ret == -1)
@@ -224,13 +230,13 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
 
   ret = GNUNET_SYSERR;
   GNUNET_snprintf (host, 128, "localhost:%u", port1);
-  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST",
+                                            host);
   GNUNET_snprintf (host, 128, "localhost:%u", port2);
-  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
-  if ((GNUNET_OK == GNUNET_wait_for_daemon_running (NULL,
-                                                    cfg1,
-                                                    300 *
-                                                    GNUNET_CRON_SECONDS))
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST",
+                                            host);
+  if ((GNUNET_OK ==
+       GNUNET_wait_for_daemon_running (NULL, cfg1, 300 * GNUNET_CRON_SECONDS))
       && (GNUNET_OK ==
           GNUNET_wait_for_daemon_running (NULL, cfg2,
                                           300 * GNUNET_CRON_SECONDS)))

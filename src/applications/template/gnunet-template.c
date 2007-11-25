@@ -38,11 +38,11 @@ static char *cfgFilename;
  * All gnunetd command line options
  */
 static struct GNUNET_CommandLineOption gnunettemplateOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),    /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),     /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -101,8 +101,9 @@ main (int argc, char *const *argv)
   if (messageReceiveThread == NULL)
     {
       GNUNET_GE_DIE_STRERROR (ectx,
-                       GNUNET_GE_IMMEDIATE | GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                       "pthread_create");
+                              GNUNET_GE_IMMEDIATE | GNUNET_GE_FATAL |
+                              GNUNET_GE_USER | GNUNET_GE_ADMIN,
+                              "pthread_create");
     }
 
   /* wait for shutdown... */

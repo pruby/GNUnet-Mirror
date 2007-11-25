@@ -122,9 +122,10 @@ on_cmbNIC_changedsetup_gtk (GtkComboBox * combobox, gpointer user_data)
   nic = entry;
 #endif
   GNUNET_GC_set_configuration_value_string (editCfg,
-                                     err_ctx, "NETWORK", "INTERFACE", nic);
-  GNUNET_GC_set_configuration_value_string (editCfg,
-                                     err_ctx, "LOAD", "INTERFACES", nic);
+                                            err_ctx, "NETWORK", "INTERFACE",
+                                            nic);
+  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "LOAD",
+                                            "INTERFACES", nic);
 }
 
 static int
@@ -173,8 +174,8 @@ load_step2setup_gtk (GtkButton * button, gpointer prev_window)
   if (cls.nic_item_count != 0)
     {
       GNUNET_GC_get_configuration_value_string (editCfg,
-                                         "NETWORK",
-                                         "INTERFACE", "eth0", &val);
+                                                "NETWORK",
+                                                "INTERFACE", "eth0", &val);
       gtk_combo_box_append_text (GTK_COMBO_BOX (cls.cmbNIC), val);
       gtk_tree_model_get_iter_first (GTK_TREE_MODEL (model), &iter);
       gtk_combo_box_set_active_iter (GTK_COMBO_BOX (cls.cmbNIC), &iter);
@@ -185,17 +186,16 @@ load_step2setup_gtk (GtkButton * button, gpointer prev_window)
   gtk_widget_set_usize (cls.cmbNIC, 10, -1);
 
   entIP = lookup_widget ("entIP");
-  GNUNET_GC_get_configuration_value_string (editCfg, "NETWORK", "IP", "", &val);
+  GNUNET_GC_get_configuration_value_string (editCfg, "NETWORK", "IP", "",
+                                            &val);
   gtk_entry_set_text (GTK_ENTRY (entIP), val);
   GNUNET_free (val);
 
   chkFW = lookup_widget ("chkFW");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkFW),
-                                GNUNET_GC_get_configuration_value_yesno (editCfg,
-                                                                  "NAT",
-                                                                  "LIMITED",
-                                                                  GNUNET_NO)
-                                == GNUNET_YES);
+                                GNUNET_GC_get_configuration_value_yesno
+                                (editCfg, "NAT", "LIMITED",
+                                 GNUNET_NO) == GNUNET_YES);
 
   gtk_widget_show (curwnd);
 }
@@ -218,24 +218,26 @@ load_step3setup_gtk (GtkButton * button, gpointer prev_window)
   radShare = lookup_widget ("radShare");
   entCPU = lookup_widget ("entCPU");
   GNUNET_GC_get_configuration_value_string (editCfg,
-                                     "LOAD",
-                                     "MAXNETUPBPSTOTAL", "50000", &val);
+                                            "LOAD",
+                                            "MAXNETUPBPSTOTAL", "50000",
+                                            &val);
   gtk_entry_set_text (GTK_ENTRY (entUp), val);
   GNUNET_free (val);
   GNUNET_GC_get_configuration_value_string (editCfg,
-                                     "LOAD",
-                                     "MAXNETDOWNBPSTOTAL", "50000", &val);
+                                            "LOAD",
+                                            "MAXNETDOWNBPSTOTAL", "50000",
+                                            &val);
   gtk_entry_set_text (GTK_ENTRY (entDown), val);
   GNUNET_free (val);
   gtk_toggle_button_set_active
     (GTK_TOGGLE_BUTTON
      ((GNUNET_GC_get_configuration_value_yesno (editCfg,
-                                         "LOAD",
-                                         "BASICLIMITING",
-                                         GNUNET_NO) == GNUNET_YES)
+                                                "LOAD",
+                                                "BASICLIMITING",
+                                                GNUNET_NO) == GNUNET_YES)
       ? radGNUnet : radShare), TRUE);
   GNUNET_GC_get_configuration_value_string (editCfg,
-                                     "LOAD", "MAXCPULOAD", "50", &val);
+                                            "LOAD", "MAXCPULOAD", "50", &val);
   gtk_entry_set_text (GTK_ENTRY (entCPU), val);
   GNUNET_free (val);
 
@@ -259,14 +261,15 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
   if (NULL != user_name)
     {
       GNUNET_GC_get_configuration_value_string (editCfg,
-                                         "GNUNETD", "USER", "gnunet", &uname);
+                                                "GNUNETD", "USER", "gnunet",
+                                                &uname);
     }
 
   if (NULL != group_name)
     {
       GNUNET_GC_get_configuration_value_string (editCfg,
-                                         "GNUNETD",
-                                         "GROUP", "gnunet", &gname);
+                                                "GNUNETD",
+                                                "GROUP", "gnunet", &gname);
     }
 
 #ifndef MINGW
@@ -348,27 +351,24 @@ load_step5setup_gtk (GtkButton * button, gpointer prev_window)
   chkStart = lookup_widget ("chkStart");
   chkEnh = lookup_widget ("chkEnh");
 
-  GNUNET_GC_get_configuration_value_string (editCfg, "FS", "QUOTA", "1024", &val);
+  GNUNET_GC_get_configuration_value_string (editCfg, "FS", "QUOTA", "1024",
+                                            &val);
   gtk_entry_set_text (GTK_ENTRY (entQuota), val);
   GNUNET_free (val);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkMigr),
-                                GNUNET_GC_get_configuration_value_yesno (editCfg,
-                                                                  "FS",
-                                                                  "ACTIVEMIGRATION",
-                                                                  GNUNET_YES)
-                                == GNUNET_YES);
+                                GNUNET_GC_get_configuration_value_yesno
+                                (editCfg, "FS", "ACTIVEMIGRATION",
+                                 GNUNET_YES) == GNUNET_YES);
 
   if (GNUNET_configure_autostart (err_ctx, 1, 1, NULL, NULL, NULL))
     gtk_widget_set_sensitive (chkStart, TRUE);
 
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkStart),
-                                GNUNET_GC_get_configuration_value_yesno (editCfg,
-                                                                  "GNUNETD",
-                                                                  "AUTOSTART",
-                                                                  GNUNET_NO)
-                                == GNUNET_YES);
+                                GNUNET_GC_get_configuration_value_yesno
+                                (editCfg, "GNUNETD", "AUTOSTART",
+                                 GNUNET_NO) == GNUNET_YES);
 
   if (doOpenEnhConfigurator)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkEnh), 1);
@@ -508,7 +508,8 @@ on_entIP_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
   gchar *ret;
 
   ret = gtk_editable_get_chars (editable, 0, -1);
-  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "NETWORK", "IP", ret);
+  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "NETWORK", "IP",
+                                            ret);
   g_free (ret);
 }
 
@@ -516,9 +517,10 @@ on_entIP_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 void
 on_chkFW_toggledsetup_gtk (GtkToggleButton * togglebutton, gpointer user_data)
 {
-  GNUNET_GC_set_configuration_value_choice (editCfg, err_ctx, "NAT", "LIMITED",
-                                     gtk_toggle_button_get_active
-                                     (togglebutton) ? "YES" : "NO");
+  GNUNET_GC_set_configuration_value_choice (editCfg, err_ctx, "NAT",
+                                            "LIMITED",
+                                            gtk_toggle_button_get_active
+                                            (togglebutton) ? "YES" : "NO");
 }
 
 void
@@ -528,8 +530,8 @@ on_entUp_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 
   ret = gtk_editable_get_chars (editable, 0, -1);
   GNUNET_GC_set_configuration_value_string (editCfg,
-                                     err_ctx,
-                                     "LOAD", "MAXNETUPBPSTOTAL", ret);
+                                            err_ctx,
+                                            "LOAD", "MAXNETUPBPSTOTAL", ret);
   g_free (ret);
 }
 
@@ -541,8 +543,9 @@ on_entDown_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 
   ret = gtk_editable_get_chars (editable, 0, -1);
   GNUNET_GC_set_configuration_value_string (editCfg,
-                                     err_ctx,
-                                     "LOAD", "MAXNETDOWNBPSTOTAL", ret);
+                                            err_ctx,
+                                            "LOAD", "MAXNETDOWNBPSTOTAL",
+                                            ret);
   g_free (ret);
 }
 
@@ -552,11 +555,11 @@ on_radGNUnet_toggledsetup_gtk (GtkToggleButton * togglebutton,
                                gpointer user_data)
 {
   GNUNET_GC_set_configuration_value_choice (editCfg,
-                                     err_ctx,
-                                     "LOAD",
-                                     "BASICLIMITING",
-                                     gtk_toggle_button_get_active
-                                     (togglebutton) ? "YES" : "NO");
+                                            err_ctx,
+                                            "LOAD",
+                                            "BASICLIMITING",
+                                            gtk_toggle_button_get_active
+                                            (togglebutton) ? "YES" : "NO");
 }
 
 
@@ -565,11 +568,11 @@ on_radShare_toggledsetup_gtk (GtkToggleButton * togglebutton,
                               gpointer user_data)
 {
   GNUNET_GC_set_configuration_value_choice (editCfg,
-                                     err_ctx,
-                                     "LOAD",
-                                     "BASICLIMITING",
-                                     gtk_toggle_button_get_active
-                                     (togglebutton) ? "NO" : "YES");
+                                            err_ctx,
+                                            "LOAD",
+                                            "BASICLIMITING",
+                                            gtk_toggle_button_get_active
+                                            (togglebutton) ? "NO" : "YES");
 }
 
 
@@ -581,8 +584,8 @@ on_entCPU_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 
   ret = gtk_editable_get_chars (editable, 0, -1);
   num = atoi (ret);
-  GNUNET_GC_set_configuration_value_number (editCfg, err_ctx, "LOAD", "MAXCPULOAD",
-                                     num);
+  GNUNET_GC_set_configuration_value_number (editCfg, err_ctx, "LOAD",
+                                            "MAXCPULOAD", num);
   g_free (ret);
 }
 
@@ -591,11 +594,11 @@ on_chkMigr_toggledsetup_gtk (GtkToggleButton * togglebutton,
                              gpointer user_data)
 {
   GNUNET_GC_set_configuration_value_choice (editCfg,
-                                     err_ctx,
-                                     "FS",
-                                     "ACTIVEMIGRATION",
-                                     gtk_toggle_button_get_active
-                                     (togglebutton) ? "YES" : "NO");
+                                            err_ctx,
+                                            "FS",
+                                            "ACTIVEMIGRATION",
+                                            gtk_toggle_button_get_active
+                                            (togglebutton) ? "YES" : "NO");
 }
 
 void
@@ -604,7 +607,8 @@ on_entQuota_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
   gchar *ret;
 
   ret = gtk_editable_get_chars (editable, 0, -1);
-  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "FS", "QUOTA", ret);
+  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "FS", "QUOTA",
+                                            ret);
   g_free (ret);
 }
 
@@ -615,9 +619,10 @@ on_chkStart_toggledsetup_gtk (GtkToggleButton * togglebutton,
 {
   doAutoStart = gtk_toggle_button_get_active (togglebutton);
   GNUNET_GC_set_configuration_value_choice (editCfg,
-                                     err_ctx,
-                                     "GNUNETD",
-                                     "AUTOSTART", doAutoStart ? "YES" : "NO");
+                                            err_ctx,
+                                            "GNUNETD",
+                                            "AUTOSTART",
+                                            doAutoStart ? "YES" : "NO");
 }
 
 
@@ -642,8 +647,8 @@ on_entUser_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 
   ret = gtk_editable_get_chars (editable, 0, -1);
   GNUNET_GE_ASSERT (err_ctx, ret != NULL);
-  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "GNUNETD", "USER",
-                                     ret);
+  GNUNET_GC_set_configuration_value_string (editCfg, err_ctx, "GNUNETD",
+                                            "USER", ret);
   GNUNET_free_non_null (user_name);
   if (strlen (ret) != 0)
     user_name = GNUNET_strdup (ret);
@@ -662,7 +667,7 @@ on_entGroup_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
   ret = gtk_editable_get_chars (editable, 0, -1);
   GNUNET_GE_ASSERT (err_ctx, ret != NULL);
   GNUNET_GC_set_configuration_value_string (editCfg,
-                                     err_ctx, "GNUNETD", "GROUP", ret);
+                                            err_ctx, "GNUNETD", "GROUP", ret);
   if (strlen (ret) != 0)
     group_name = GNUNET_strdup (ret);
   else

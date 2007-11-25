@@ -84,11 +84,13 @@ GNUNET_FSUI_unindexThread (void *cls)
     }
   mem = GNUNET_GE_memory_create (2);
   ee =
-    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_WARNING |
-                              GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE, mem);
+    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_ERROR | GNUNET_GE_WARNING |
+                                     GNUNET_GE_FATAL | GNUNET_GE_BULK |
+                                     GNUNET_GE_IMMEDIATE, mem);
   ret =
-    GNUNET_ECRS_file_uninde (ee, utc->ctx->cfg, utc->filename, &progressCallback,
-                      utc, &tt, utc);
+    GNUNET_ECRS_file_uninde (ee, utc->ctx->cfg, utc->filename,
+                             &progressCallback, utc, &tt, utc);
   if (ret == GNUNET_OK)
     {
       utc->state = GNUNET_FSUI_COMPLETED;
@@ -127,8 +129,8 @@ GNUNET_FSUI_unindexThread (void *cls)
     }
 #if 0
   GNUNET_GE_LOG (utc->ctx->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "FSUI unindexThread exits in state %u.\n", utc->state);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "FSUI unindexThread exits in state %u.\n", utc->state);
 #endif
   GNUNET_GE_free_context (ee);
   GNUNET_GE_memory_free (mem);
@@ -172,7 +174,8 @@ GNUNET_FSUI_unindexThreadEvent (void *cls)
  *  running
  */
 struct GNUNET_FSUI_UnindexList *
-GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx, const char *filename)
+GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx,
+                           const char *filename)
 {
   GNUNET_FSUI_UnindexList *utc;
 
@@ -196,8 +199,9 @@ GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx, const char *filename
   if (utc->handle == NULL)
     {
       GNUNET_GE_LOG_STRERROR (ctx->ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                       "PTHREAD_CREATE");
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                              "PTHREAD_CREATE");
       GNUNET_free (utc->filename);
       GNUNET_free (utc);
       return NULL;
@@ -216,7 +220,8 @@ GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx, const char *filename
  * @return GNUNET_SYSERR if no such unindex is pending
  */
 int
-GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UnindexList *ul)
+GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx,
+                           struct GNUNET_FSUI_UnindexList *ul)
 {
   if ((ul->state != GNUNET_FSUI_ACTIVE) && (ul->state != GNUNET_FSUI_PENDING))
     return GNUNET_NO;
@@ -239,7 +244,8 @@ GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_U
  * @return GNUNET_SYSERR if no such unindex is pending
  */
 int
-GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UnindexList *dl)
+GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx,
+                          struct GNUNET_FSUI_UnindexList *dl)
 {
   GNUNET_FSUI_UnindexList *prev;
   struct GNUNET_GE_Context *ectx;
@@ -254,7 +260,8 @@ GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_Un
     }
 #if 0
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "GNUNET_FSUI_stopUnindex called.\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "GNUNET_FSUI_stopUnindex called.\n");
 #endif
   GNUNET_mutex_lock (ctx->lock);
   prev = ctx->unindexOperations;
@@ -264,8 +271,8 @@ GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_Un
     {
       GNUNET_mutex_unlock (ctx->lock);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "GNUNET_FSUI_stopUnindex failed to locate deletion operation.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "GNUNET_FSUI_stopUnindex failed to locate deletion operation.\n");
       return GNUNET_SYSERR;
     }
   if (prev == dl)

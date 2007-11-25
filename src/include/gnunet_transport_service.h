@@ -90,8 +90,8 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  GNUNET_TSession *(*connect) (const GNUNET_MessageHello * hello, const char *token,
-                        int may_reuse);
+  GNUNET_TSession *(*connect) (const GNUNET_MessageHello * hello,
+                               const char *token, int may_reuse);
 
   /**
    * Connect to another peer, picking any transport that
@@ -105,7 +105,7 @@ typedef struct
    * @return session handle on success, NULL on error
    */
   GNUNET_TSession *(*connectFreely) (const GNUNET_PeerIdentity * peer,
-                              int allowTempList, const char *token);
+                                     int allowTempList, const char *token);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -207,7 +207,8 @@ typedef struct
    *         GNUNET_NO if the transport would just drop the message,
    *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size, int important);
+  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size,
+                       int important);
 
   /**
    * Verify that this session is associated (with the given

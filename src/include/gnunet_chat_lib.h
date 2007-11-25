@@ -89,7 +89,7 @@ typedef enum
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*GNUNET_CHAT_RoomIterator) (const char *room,
-                                          const char *topic, void *cls);
+                                         const char *topic, void *cls);
 
 /**
  * List all of the (publically visible) chat rooms.
@@ -121,11 +121,11 @@ struct GNUNET_CHAT_Room;
  *         accept (but user is away), GNUNET_SYSERR to signal denied delivery
  */
 typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
-                                             struct GNUNET_CHAT_Room * room,
-                                             const char *senderNick,
-                                             const char *message,
-                                             GNUNET_CronTime timestamp,
-                                             GNUNET_CHAT_MSG_OPTIONS options);
+                                            struct GNUNET_CHAT_Room * room,
+                                            const char *senderNick,
+                                            const char *message,
+                                            GNUNET_CronTime timestamp,
+                                            GNUNET_CHAT_MSG_OPTIONS options);
 
 /**
  * Join a chat room.
@@ -137,9 +137,10 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  * @param cls argument to callback
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
-                                                struct GNUNET_GC_Configuration *cfg,
-                                                const char *nickname,
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
+                                                *ectx,
+                                                struct GNUNET_GC_Configuration
+                                                *cfg, const char *nickname,
                                                 const GNUNET_RSA_PublicKey *
                                                 me,
                                                 const struct
@@ -169,17 +170,17 @@ void GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *room);
  *         confirmations from anyone for this message
  */
 typedef int (*GNUNET_CHAT_MessageConfirmation) (void *cls,
-                                                 struct GNUNET_CHAT_Room *
-                                                 room,
-                                                 const char *receiverNick,
-                                                 const GNUNET_RSA_PublicKey *
-                                                 receiverKey,
-                                                 const char *message,
-                                                 GNUNET_CronTime timestamp,
-                                                 GNUNET_CHAT_MSG_OPTIONS
-                                                 options, int response,
-                                                 const GNUNET_RSA_Signature *
-                                                 receipt);
+                                                struct GNUNET_CHAT_Room *
+                                                room,
+                                                const char *receiverNick,
+                                                const GNUNET_RSA_PublicKey *
+                                                receiverKey,
+                                                const char *message,
+                                                GNUNET_CronTime timestamp,
+                                                GNUNET_CHAT_MSG_OPTIONS
+                                                options, int response,
+                                                const GNUNET_RSA_Signature *
+                                                receipt);
 
 
 /**
@@ -201,10 +202,10 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
  * Callback function to iterate over room members.
  */
 typedef int (*GNUNET_CHAT_MemberIterator) (const char *nickname,
-                                            const GNUNET_RSA_PublicKey *
-                                            owner, const char *memberInfo,
-                                            GNUNET_CronTime lastConfirmed,
-                                            void *cls);
+                                           const GNUNET_RSA_PublicKey *
+                                           owner, const char *memberInfo,
+                                           GNUNET_CronTime lastConfirmed,
+                                           void *cls);
 
 /**
  * List all of the (known) chat members.

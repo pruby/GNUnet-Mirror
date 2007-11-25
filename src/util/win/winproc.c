@@ -77,9 +77,10 @@ plibc_panic (int err, char *msg)
     fprintf (stderr, "%s", msg);
   else
     GNUNET_GE_LOG (pEctx,
-            ((err ==
-              INT_MAX) ? GNUNET_GE_DEBUG : GNUNET_GE_FATAL) | GNUNET_GE_USER | GNUNET_GE_ADMIN |
-            GNUNET_GE_IMMEDIATE, "%s", msg);
+                   ((err ==
+                     INT_MAX) ? GNUNET_GE_DEBUG : GNUNET_GE_FATAL) |
+                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                   "%s", msg);
 }
 
 /**

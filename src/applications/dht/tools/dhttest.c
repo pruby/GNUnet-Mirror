@@ -107,7 +107,8 @@ main (int argc, const char **argv)
   /* wait for some DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 30;                    /* how many iterations should we wait? */
-  while (GNUNET_OK == GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
+  while (GNUNET_OK ==
+         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
               left);
@@ -129,18 +130,20 @@ main (int argc, const char **argv)
   for (i = 0; i < NUM_PEERS; i++)
     {
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
-      GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
+                                                buf);
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
       value->size = ntohl (8);
       memset (&value[1], 'A' + i, 4);
       CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
-                                       ectx,
-                                       &key,
-                                       GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                       GNUNET_get_time () +
-                                       15 * GNUNET_CRON_MINUTES * NUM_ROUNDS *
-                                       NUM_PEERS * NUM_PEERS, value));
+                                          ectx,
+                                          &key,
+                                          GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                          GNUNET_get_time () +
+                                          15 * GNUNET_CRON_MINUTES *
+                                          NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
+                                          value));
     }
 
   /* get loops */
@@ -151,18 +154,19 @@ main (int argc, const char **argv)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
           GNUNET_GC_set_configuration_value_string (cfg,
-                                             ectx, "NETWORK", "HOST", buf);
+                                                    ectx, "NETWORK", "HOST",
+                                                    buf);
           for (j = 0; j < NUM_PEERS; j++)
             {
               GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
               GNUNET_hash (buf, 4, &key);
               fprintf (stderr, "Peer %d gets key %d", i, j);
               if (0 < GNUNET_DHT_get (cfg,
-                                   ectx,
-                                   GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                   &key,
-                                   (NUM_ROUNDS - k) * GNUNET_CRON_SECONDS,
-                                   NULL, NULL))
+                                      ectx,
+                                      GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      &key,
+                                      (NUM_ROUNDS - k) * GNUNET_CRON_SECONDS,
+                                      NULL, NULL))
                 {
                   fprintf (stderr, " - found!\n");
                   found++;

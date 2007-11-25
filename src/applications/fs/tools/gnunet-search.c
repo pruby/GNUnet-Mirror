@@ -92,14 +92,16 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_search_result:
       /* retain URIs for possible directory dump later */
       GNUNET_array_grow (fis, fiCount, fiCount + 1);
-      fis[fiCount - 1].uri = GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
-      fis[fiCount - 1].meta
-        = GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
+      fis[fiCount - 1].uri =
+        GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
+      fis[fiCount - 1].meta =
+        GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
 
       uri = GNUNET_ECRS_uri_to_string (event->data.SearchResult.fi.uri);
       printf ("%s:\n", uri);
-      filename = GNUNET_ECRS_meta_data_get_by_type (event->data.SearchResult.fi.meta,
-                                       EXTRACTOR_FILENAME);
+      filename =
+        GNUNET_ECRS_meta_data_get_by_type (event->data.SearchResult.fi.meta,
+                                           EXTRACTOR_FILENAME);
       if (filename != NULL)
         {
           char *dotdot;
@@ -133,8 +135,8 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   {'a', "anonymity", "LEVEL",
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
    1, &GNUNET_getopt_configure_set_uint, &anonymity},
-   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Search GNUnet for files.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Search GNUnet for files.")),  /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'m', "max", "LIMIT",
@@ -146,7 +148,7 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   {'t', "timeout", "DELAY",
    gettext_noop ("wait DELAY seconds for search results before aborting"),
    1, &GNUNET_getopt_configure_set_uint, &delay},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -176,7 +178,9 @@ main (int argc, char *const *argv)
       return -1;
     }
   /* convert args to URI */
-  uri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, argc - i, (const char **) &argv[i]);
+  uri =
+    GNUNET_ECRS_keyword_command_line_to_uri (ectx, argc - i,
+                                             (const char **) &argv[i]);
   if (uri == NULL)
     {
       printf (_("Error converting arguments to URI!\n"));
@@ -186,8 +190,8 @@ main (int argc, char *const *argv)
   if (max_results == 0)
     max_results = (unsigned int) -1;    /* infty */
   ctx =
-    GNUNET_FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO, &eventCallback,
-                NULL);
+    GNUNET_FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO,
+                       &eventCallback, NULL);
   if (ctx == NULL)
     {
       GNUNET_ECRS_uri_destroy (uri);
@@ -196,8 +200,8 @@ main (int argc, char *const *argv)
     }
   errorCode = 1;
   s = GNUNET_FSUI_search_start (ctx,
-                        anonymity, max_results, delay * GNUNET_CRON_SECONDS,
-                        uri);
+                                anonymity, max_results,
+                                delay * GNUNET_CRON_SECONDS, uri);
   GNUNET_ECRS_uri_destroy (uri);
   if (s == NULL)
     {

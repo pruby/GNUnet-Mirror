@@ -37,7 +37,8 @@
  *  if keywords is not legal (i.e. empty).
  */
 struct GNUNET_ECRS_URI *
-GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx, const char *input)
+GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx,
+                                   const char *input)
 {
   char **keywords;
   unsigned int num_Words;
@@ -70,8 +71,8 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx, const char *i
     {
       GNUNET_free_non_null (searchString);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
-              _("No keywords specified!\n"));
+                     GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
+                     _("No keywords specified!\n"));
       return NULL;
     }
   keywords = GNUNET_malloc (num_Words * sizeof (char *));
@@ -90,7 +91,9 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx, const char *i
           ++num_Words;
         }
     }
-  uri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, num_Words, (const char **) keywords);
+  uri =
+    GNUNET_ECRS_keyword_command_line_to_uri (ectx, num_Words,
+                                             (const char **) keywords);
   GNUNET_free (keywords);
   GNUNET_free (searchString);
   return uri;
@@ -106,7 +109,8 @@ GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx, const char *i
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
-                          unsigned int num_keywords, const char **keywords)
+                                         unsigned int num_keywords,
+                                         const char **keywords)
 {
   unsigned int i;
   unsigned int uriLen;
@@ -119,7 +123,8 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
   GNUNET_array_grow (uriString, uriSize, 4096);
   strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
   strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
-  uriLen = 1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
+  uriLen =
+    1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
 
 
   for (i = 0; i < num_keywords; i++)
@@ -160,7 +165,8 @@ GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_keyword_list_to_uri (struct GNUNET_GE_Context *ectx,
-                          unsigned int num_keywords, const char **keywords)
+                                 unsigned int num_keywords,
+                                 const char **keywords)
 {
   unsigned int i;
   unsigned int uriLen;
@@ -173,7 +179,8 @@ GNUNET_ECRS_keyword_list_to_uri (struct GNUNET_GE_Context *ectx,
   GNUNET_array_grow (uriString, uriSize, 4096);
   strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
   strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
-  uriLen = 1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
+  uriLen =
+    1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
 
 
   for (i = 0; i < num_keywords; i++)

@@ -95,8 +95,9 @@ typedef struct
  *         GNUNET_NO to delete the item and continue (if supported)
  */
 typedef int (*GNUNET_DatastoreValueIterator) (const GNUNET_HashCode * key,
-                               const GNUNET_DatastoreValue * value, void *closure,
-                               unsigned long long uid);
+                                              const GNUNET_DatastoreValue *
+                                              value, void *closure,
+                                              unsigned long long uid);
 
 
 /**
@@ -134,7 +135,8 @@ typedef struct
    *   to justify removing something else, GNUNET_SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*put) (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value);
+  int (*put) (const GNUNET_HashCode * key,
+              const GNUNET_DatastoreValue * value);
 
   /**
    * Store an item in the datastore.  If the item is already present,
@@ -163,7 +165,8 @@ typedef struct
    *   GNUNET_SYSERR unless the iterator aborted!
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure);
+              unsigned int type, GNUNET_DatastoreValueIterator iter,
+              void *closure);
 
   /**
    * Do a quick test if we MAY have the content.
@@ -182,7 +185,8 @@ typedef struct
   /**
    * Explicitly remove some content from the database.
    */
-  int (*del) (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value);
+  int (*del) (const GNUNET_HashCode * query,
+              const GNUNET_DatastoreValue * value);
 
 } GNUNET_Datastore_ServiceAPI;
 

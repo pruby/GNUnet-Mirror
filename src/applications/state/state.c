@@ -51,7 +51,8 @@ static char *handle;
  * @return the number of bytes read on success, -1 on failure
  */
 static int
-stateReadContent (struct GNUNET_GE_Context *ectx, const char *name, void **result)
+stateReadContent (struct GNUNET_GE_Context *ectx, const char *name,
+                  void **result)
 {
   /* open file, must exist, open read only */
   char *dbh = handle;
@@ -117,7 +118,8 @@ stateAppendContent (struct GNUNET_GE_Context *ectx,
   if (fd == -1)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, "open", fil);
+                                   GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                                   GNUNET_GE_USER, "open", fil);
       GNUNET_free (fil);
       return GNUNET_SYSERR;     /* failed! */
     }
@@ -153,14 +155,16 @@ stateWriteContent (struct GNUNET_GE_Context *ectx,
   if (fd == -1)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, "open", fil);
+                                   GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                                   GNUNET_GE_USER, "open", fil);
       GNUNET_free (fil);
       return GNUNET_SYSERR;     /* failed! */
     }
   WRITE (fd, block, len);
   if (0 != FTRUNCATE (fd, len))
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN, "ftruncate", fil);
+                                 GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                                 GNUNET_GE_ADMIN, "ftruncate", fil);
   GNUNET_disk_file_close (ectx, fil, fd);
   GNUNET_free (fil);
   return GNUNET_OK;
@@ -197,9 +201,10 @@ provide_module_state (GNUNET_CoreAPIForPlugins * capi)
 
   dbh = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_filename (capi->cfg,
-                                                 "GNUNETD",
-                                                 "GNUNETD_HOME",
-                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY, &dbh))
+                                                        "GNUNETD",
+                                                        "GNUNETD_HOME",
+                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
+                                                        &dbh))
     return NULL;
   GNUNET_GE_ASSERT (capi->ectx, dbh != NULL);
   n = strlen (dbh) + strlen (DIR_EXT) + 5;

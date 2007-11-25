@@ -45,15 +45,18 @@ testMeta ()
       GNUNET_ECRS_meta_data_destroy (m);
       ABORT ();
     }
-  if (GNUNET_OK != GNUNET_ECRS_meta_data_inser (m, EXTRACTOR_FILENAME, "lib-link.m4"))
+  if (GNUNET_OK !=
+      GNUNET_ECRS_meta_data_inser (m, EXTRACTOR_FILENAME, "lib-link.m4"))
     {
       GNUNET_ECRS_meta_data_destroy (m);
       ABORT ();
     }
-  size = GNUNET_ECRS_meta_data_get_serialized_size (m, GNUNET_ECRS_SERIALIZE_FULL);
+  size =
+    GNUNET_ECRS_meta_data_get_serialized_size (m, GNUNET_ECRS_SERIALIZE_FULL);
   val = GNUNET_malloc (size);
   if (size != GNUNET_ECRS_meta_data_serialize (NULL,
-                                      m, val, size, GNUNET_ECRS_SERIALIZE_FULL))
+                                               m, val, size,
+                                               GNUNET_ECRS_SERIALIZE_FULL))
     {
       GNUNET_ECRS_meta_data_destroy (m);
       GNUNET_free (val);

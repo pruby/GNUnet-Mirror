@@ -96,16 +96,18 @@ getVersionHash (struct GNUNET_GC_Configuration *cfg, GNUNET_EncName * enc)
 }
 
 static char *
-getVersionFileName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+getVersionFileName (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg)
 {
   char *en;
   char *cn;
 
   en = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
-                                                 "GNUNETD",
-                                                 "GNUNETD_HOME",
-                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY, &en))
+                                                        "GNUNETD",
+                                                        "GNUNETD_HOME",
+                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
+                                                        &en))
     return NULL;
   GNUNET_GE_ASSERT (ectx, en != NULL);
   cn = GNUNET_malloc (strlen (en) + strlen (VERSIONFILE) + 1);
@@ -125,7 +127,8 @@ getVersionFileName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configurati
  * @return GNUNET_OK if we are
  */
 int
-checkUpToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+checkUpToDate (struct GNUNET_GE_Context *ectx,
+               struct GNUNET_GC_Configuration *cfg)
 {
   char version[MAX_VS];
   int len;
@@ -136,9 +139,9 @@ checkUpToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *c
   if (fn == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("Failed to determine filename used to store GNUnet version information!\n"));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Failed to determine filename used to store GNUnet version information!\n"));
       return GNUNET_OK;         /* uh uh */
     }
   if (GNUNET_disk_file_test (ectx, fn) != GNUNET_YES)

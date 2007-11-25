@@ -529,13 +529,13 @@ hotpathSelectionCode (const GNUNET_PeerIdentity * peer, void *cls)
   GNUNET_hash_to_enc (&peer->hashPubKey, &enc2);
   ((char *) &enc2)[6] = '\0';
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Q %s peer %2u (%s) ranks (responses: %2u, distance %4d): %u%s\n",
-          &enc,
-          idx,
-          &enc2,
-          rp == NULL ? 0 : rp->responseCount,
-          distance, ranking, id == qr->noTarget ? " (no target)" : "");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Q %s peer %2u (%s) ranks (responses: %2u, distance %4d): %u%s\n",
+                 &enc,
+                 idx,
+                 &enc2,
+                 rp == NULL ? 0 : rp->responseCount,
+                 distance, ranking, id == qr->noTarget ? " (no target)" : "");
 #endif
   qr->rankings[idx] = ranking;
   change_pid_rc (id, -1);
@@ -594,8 +594,8 @@ sendToSelected (const GNUNET_PeerIdentity * peer, void *cls)
                 GNUNET_hash_to_enc (&peer->hashPubKey, &encp);
                 GNUNET_hash_to_enc (&qr->msg->queries[0], &encq));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Sending query `%s' to `%s'\n", &encq, &encp);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Sending query `%s' to `%s'\n", &encq, &encp);
 #endif
       if (stats != NULL)
         stats->change (stat_routing_forwards, 1);
@@ -854,7 +854,8 @@ useContentLater (void *data)
  */
 static int
 queueReply (const GNUNET_PeerIdentity * sender,
-            const GNUNET_HashCode * primaryKey, const GNUNET_DataContainer * data)
+            const GNUNET_HashCode * primaryKey,
+            const GNUNET_DataContainer * data)
 {
   P2P_gap_reply_MESSAGE *pmsg;
   IndirectionTableEntry *ite;
@@ -863,10 +864,10 @@ queueReply (const GNUNET_PeerIdentity * sender,
   GNUNET_EncName enc;
 
   IF_GELOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, GNUNET_hash_to_enc (primaryKey,
-                                                                 &enc));
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+            GNUNET_hash_to_enc (primaryKey, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Gap queues reply to query `%s' for later use.\n", &enc);
+                 "Gap queues reply to query `%s' for later use.\n", &enc);
 #endif
 
 #if EXTRA_CHECKS
@@ -879,8 +880,8 @@ queueReply (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
 #endif
       return GNUNET_NO;         /* we don't care for the reply (anymore) */
     }
@@ -888,8 +889,8 @@ queueReply (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_GAP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "GAP: Dropping reply, found reply locally during delay\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "GAP: Dropping reply, found reply locally during delay\n");
 #endif
       return GNUNET_NO;         /* wow, really bad concurrent DB lookup and processing for
                                    the same query.  Well, at least we should not also
@@ -1000,9 +1001,9 @@ addToSlot (int mode,
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (query, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "GAP: Queueing query '%s' in slot %p\n", &enc, ite);
+                 "GAP: Queueing query '%s' in slot %p\n", &enc, ite);
 #endif
-  GNUNET_GE_ASSERT (ectx, sender != 0);        /* do NOT add to RT for local clients! */
+  GNUNET_GE_ASSERT (ectx, sender != 0); /* do NOT add to RT for local clients! */
   now = GNUNET_get_time ();
   if ((stats != NULL) && (ite->ttl == 0))
     stats->change (stat_routing_slots_used, 1);
@@ -1035,8 +1036,8 @@ addToSlot (int mode,
   else
     {                           /* GNUNET_array_grow mode */
       GNUNET_GE_ASSERT (ectx,
-                 0 == memcmp (query, &ite->primaryKey,
-                              sizeof (GNUNET_HashCode)));
+                        0 == memcmp (query, &ite->primaryKey,
+                                     sizeof (GNUNET_HashCode)));
       /* extend lifetime */
       if (ite->ttl < now + ttl)
         ite->ttl = now + ttl;
@@ -1428,8 +1429,8 @@ sendReply (IndirectionTableEntry * ite, const GNUNET_MessageHeader * msg)
                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&recv.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "GAP sending reply to `%s'\n", &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "GAP sending reply to `%s'\n", &enc);
 #endif
       coreAPI->unicast (&recv, msg, BASE_REPLY_PRIORITY * (ite->priority + 5),
                         /* weigh priority */
@@ -1563,10 +1564,11 @@ execQuery (const GNUNET_PeerIdentity * sender,
             GNUNET_hash_to_enc (&query->queries[0], &enc));
   ((char *) &enc)[6] = '\0';
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
-          "GAP is executing request for `%s':%s%s (%d)\n",
-          &enc,
-          doForward ? " forwarding" : "", isRouted ? " routing" : "", i);
+                 GNUNET_GE_INFO | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
+                 "GAP is executing request for `%s':%s%s (%d)\n",
+                 &enc,
+                 doForward ? " forwarding" : "", isRouted ? " routing" : "",
+                 i);
 #endif
   if ((stats != NULL) && (isRouted || doForward))
     stats->change (stat_routing_processed, 1);
@@ -1686,9 +1688,9 @@ useContent (const GNUNET_PeerIdentity * host,
   GNUNET_hash_to_enc (&msg->primaryKey, &enc2);
   ((char *) &enc2)[6] = '\0';
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "GAP received content `%s' from `%s'\n",
-          &enc2, (host != NULL) ? (const char *) &enc : "myself");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "GAP received content `%s' from `%s'\n",
+                 &enc2, (host != NULL) ? (const char *) &enc : "myself");
 #endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex (&msg->primaryKey)];
@@ -1718,8 +1720,8 @@ useContent (const GNUNET_PeerIdentity * host,
                 if (host != NULL) GNUNET_hash_to_enc (&host->hashPubKey,
                                                       &enc));
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("GAP received invalid content from `%s'\n"),
-              (host != NULL) ? (const char *) &enc : _("myself"));
+                     _("GAP received invalid content from `%s'\n"),
+                     (host != NULL) ? (const char *) &enc : _("myself"));
       GNUNET_GE_BREAK_OP (ectx, 0);
       GNUNET_free (value);
       return GNUNET_SYSERR;     /* invalid */
@@ -1844,7 +1846,8 @@ useContent (const GNUNET_PeerIdentity * host,
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
-init (GNUNET_Blockstore * datastore, GNUNET_UniqueReplyIdentifierCallback uid, GNUNET_ReplyHashingCallback rh)
+init (GNUNET_Blockstore * datastore, GNUNET_UniqueReplyIdentifierCallback uid,
+      GNUNET_ReplyHashingCallback rh)
 {
   if (bs != NULL)
     {
@@ -1908,19 +1911,20 @@ get_start (const GNUNET_PeerIdentity * target,
       if (traffic == NULL)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _
-                  ("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
           return GNUNET_SYSERR;
         }
       if (GNUNET_OK !=
           traffic->get ((TTL_DECREMENT + timeout) / GNUNET_TRAFFIC_TIME_UNIT,
-                        GNUNET_P2P_PROTO_GAP_QUERY, GNUNET_TRAFFIC_TYPE_RECEIVED, &count, &peers,
-                        &sizes, &timevect))
+                        GNUNET_P2P_PROTO_GAP_QUERY,
+                        GNUNET_TRAFFIC_TYPE_RECEIVED, &count, &peers, &sizes,
+                        &timevect))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("Failed to get traffic stats.\n"));
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("Failed to get traffic stats.\n"));
           return GNUNET_SYSERR;
         }
       if (anonymityLevel > 1000)
@@ -1928,17 +1932,19 @@ get_start (const GNUNET_PeerIdentity * target,
           if (peers < anonymityLevel / 1000)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                      _
-                      ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
+                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                             GNUNET_GE_USER,
+                             _
+                             ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
               return GNUNET_SYSERR;
             }
           if (count < anonymityLevel % 1000)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                      _
-                      ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
+                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                             GNUNET_GE_USER,
+                             _
+                             ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
               return GNUNET_SYSERR;
             }
         }
@@ -1947,9 +1953,10 @@ get_start (const GNUNET_PeerIdentity * target,
           if (count < anonymityLevel)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                      _
-                      ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
+                             GNUNET_GE_WARNING | GNUNET_GE_BULK |
+                             GNUNET_GE_USER,
+                             _
+                             ("Cannot satisfy desired level of anonymity, ignoring request.\n"));
               return GNUNET_SYSERR;
             }
         }
@@ -2051,9 +2058,9 @@ handleQuery (const GNUNET_PeerIdentity * sender,
                     GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
         }
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Dropping query from %s, this peer is too busy.\n",
-              sender == NULL ? "localhost" : (char *) &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Dropping query from %s, this peer is too busy.\n",
+                     sender == NULL ? "localhost" : (char *) &enc);
 #endif
       return GNUNET_OK;
     }
@@ -2114,8 +2121,8 @@ handleQuery (const GNUNET_PeerIdentity * sender,
             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&qmsg->queries[0], &enc));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Received GAP query `%s'.\n", &enc);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Received GAP query `%s'.\n", &enc);
 #endif
   if ((policy & QUERY_DROPMASK) == 0)
     {
@@ -2125,13 +2132,14 @@ handleQuery (const GNUNET_PeerIdentity * sender,
 #if DEBUG_GAP
       if (sender != NULL)
         {
-          IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+          IF_GELOG (ectx,
+                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                     GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
         }
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Dropping query from %s, policy decided that this peer is too busy.\n",
-              sender == NULL ? "localhost" : (const char *) &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Dropping query from %s, policy decided that this peer is too busy.\n",
+                     sender == NULL ? "localhost" : (const char *) &enc);
 #endif
       if (stats != NULL)
         stats->change (stat_routing_direct_drops, 1);
@@ -2199,17 +2207,19 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
   cfg = capi->cfg;
   coreAPI = capi;
-  if ((-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "HARDCPULIMIT", 0, 100000, /* 1000 CPUs!? */
-                                                0,      /* 0 == no limit */
-                                                &hardCPULimit)) || (-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "HARDUPLIMIT", 0, 999999999, 0,       /* 0 == no limit */
-                                                                                                             &hardUpLimit))
+  if ((-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "HARDCPULIMIT", 0, 100000,  /* 1000 CPUs!? */
+                                                       0,       /* 0 == no limit */
+                                                       &hardCPULimit)) || (-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "HARDUPLIMIT", 0, 999999999, 0, /* 0 == no limit */
+                                                                                                                           &hardUpLimit))
       || (-1 ==
           GNUNET_GC_get_configuration_value_number (cfg, "GAP", "TABLESIZE",
-                                             MIN_INDIRECTION_TABLE_SIZE,
-                                             GNUNET_MAX_GNUNET_malloc_CHECKED
-                                             / sizeof (IndirectionTableEntry),
-                                             MIN_INDIRECTION_TABLE_SIZE,
-                                             &indirectionTableSize)))
+                                                    MIN_INDIRECTION_TABLE_SIZE,
+                                                    GNUNET_MAX_GNUNET_malloc_CHECKED
+                                                    /
+                                                    sizeof
+                                                    (IndirectionTableEntry),
+                                                    MIN_INDIRECTION_TABLE_SIZE,
+                                                    &indirectionTableSize)))
     return NULL;
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_reply_MESSAGE) == 68);
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_query_MESSAGE) == 144);
@@ -2279,9 +2289,10 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   traffic = coreAPI->requestService ("traffic");
   if (traffic == NULL)
     {
-      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _
-              ("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
     }
   random_qsel = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 0xFFFF);
   lookup_exclusion = GNUNET_mutex_create (GNUNET_NO);
@@ -2304,9 +2315,10 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
                        2 * GNUNET_CRON_MINUTES, NULL);
 
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("`%s' registering handlers %d %d\n"),
-          "gap", GNUNET_P2P_PROTO_GAP_QUERY, GNUNET_P2P_PROTO_GAP_RESULT);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("`%s' registering handlers %d %d\n"),
+                 "gap", GNUNET_P2P_PROTO_GAP_QUERY,
+                 GNUNET_P2P_PROTO_GAP_RESULT);
   capi->registerHandler (GNUNET_P2P_PROTO_GAP_QUERY, &handleQuery);
   capi->registerHandler (GNUNET_P2P_PROTO_GAP_RESULT, &useContent);
   coreAPI->registerSendCallback (sizeof (P2P_gap_query_MESSAGE),

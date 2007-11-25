@@ -34,7 +34,8 @@
 
 void release_module_bootstrap ();
 
-GNUNET_Bootstrap_ServiceAPI *provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi);
+GNUNET_Bootstrap_ServiceAPI
+  *provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi);
 
 static void *
 rs (const char *name)
@@ -89,10 +90,10 @@ main (int argc, char **argv)
   count = 0;
   cfg = GNUNET_GC_create ();
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     NULL,
-                                     "GNUNETD",
-                                     "HOSTLISTURL",
-                                     "http://gnunet.org/hostlist");
+                                            NULL,
+                                            "GNUNETD",
+                                            "HOSTLISTURL",
+                                            "http://gnunet.org/hostlist");
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
   capi.requestService = &rs;

@@ -244,7 +244,8 @@ is_prime (mpz_t n, int steps, GNUNET_HashCode * hc)
               set_highbit (x, nbits - 2);
               mpz_clrbit (x, nbits - 2);
             }
-          GNUNET_GE_ASSERT (NULL, mpz_cmp (x, nminus1) < 0 && mpz_cmp_ui (x, 1) > 0);
+          GNUNET_GE_ASSERT (NULL, mpz_cmp (x, nminus1) < 0
+                            && mpz_cmp_ui (x, 1) > 0);
         }
       mpz_powm (y, x, q, n);
       if (mpz_cmp_ui (y, 1) && mpz_cmp (y, nminus1))

@@ -114,8 +114,9 @@ isBlacklisted (const void *addr, unsigned int addr_len)
     {
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              "Rejecting connection (invalid address length %u)\n", addr_len);
+                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     "Rejecting connection (invalid address length %u)\n",
+                     addr_len);
 #endif
       return GNUNET_SYSERR;
     }
@@ -127,9 +128,9 @@ isBlacklisted (const void *addr, unsigned int addr_len)
 #if DEBUG_TCP
   if (ret != GNUNET_NO)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-            "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
-            GNUNET_PRIP (ntohl (*(int *) addr)));
+                   GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
+                   GNUNET_PRIP (ntohl (*(int *) addr)));
 #endif
   return ret;
 }
@@ -156,8 +157,9 @@ isWhitelisted (const void *addr, unsigned int addr_len)
     {
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              "Rejecting connection (invalid address length %u)\n", addr_len);
+                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     "Rejecting connection (invalid address length %u)\n",
+                     addr_len);
 #endif
       return GNUNET_SYSERR;
     }
@@ -170,9 +172,9 @@ isWhitelisted (const void *addr, unsigned int addr_len)
     {
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
-              GNUNET_PRIP (ntohl (*(int *) addr)));
+                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
+                     GNUNET_PRIP (ntohl (*(int *) addr)));
 #endif
     }
   return ret;
@@ -200,8 +202,9 @@ getGNUnetTCPPort ()
   unsigned long long port;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "TCP",
-                                               "PORT", 0, 65535, 2086, &port))
+                                                      "TCP",
+                                                      "PORT", 0, 65535, 2086,
+                                                      &port))
     {
       if ((pse = getservbyname ("gnunet", "tcp")))
         port = htons (pse->s_port);
@@ -239,8 +242,8 @@ verifyHello (const GNUNET_MessageHello * hello)
 
       GNUNET_hash_to_enc (&hello->senderIdentity.hashPubKey, &enc);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              "Rejecting HELLO from `%s'\n", &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     "Rejecting HELLO from `%s'\n", &enc);
 #endif
       return GNUNET_SYSERR;     /* obviously invalid */
     }
@@ -271,8 +274,8 @@ createhello ()
           once = 1;
 #if DEBUG_TCP
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  "TCP port is 0, will only send using TCP.\n");
+                         GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         "TCP port is 0, will only send using TCP.\n");
 #endif
         }
       return NULL;              /* TCP transport is configured SEND-only! */
@@ -288,8 +291,9 @@ createhello ()
     {
       GNUNET_free (msg);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("TCP: Could not determine my public IP address.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("TCP: Could not determine my public IP address.\n"));
       return NULL;
     }
   haddr->port = htons (port);
@@ -297,9 +301,9 @@ createhello ()
   if (0 != memcmp (haddr, &last_addr, sizeof (HostAddress)))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "TCP uses IP address %u.%u.%u.%u.\n",
-              GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "TCP uses IP address %u.%u.%u.%u.\n",
+                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
       last_addr = *haddr;
     }
   msg->senderAddressSize = htons (sizeof (HostAddress));
@@ -357,15 +361,17 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
   haddr = (HostAddress *) & hello[1];
 #if DEBUG_TCP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-          GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
-          ntohs (haddr->port));
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Creating TCP connection to %u.%u.%u.%u:%u.\n",
+                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
+                 ntohs (haddr->port));
 #endif
   sock = SOCKET (PF_INET, SOCK_STREAM, 6);      /* 6: TCP */
   if (sock == -1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "socket");
       return GNUNET_SYSERR;
     }
   s = socket_create (ectx, coreAPI->load_monitor, sock);
@@ -382,25 +388,29 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
   memset (&soaddr, 0, sizeof (soaddr));
   soaddr.sin_family = AF_INET;
 
-  GNUNET_GE_ASSERT (ectx, sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
+  GNUNET_GE_ASSERT (ectx,
+                    sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
   memcpy (&soaddr.sin_addr, &haddr->ip, sizeof (GNUNET_IPv4Address));
   soaddr.sin_port = haddr->port;
   i = CONNECT (sock, (struct sockaddr *) &soaddr, sizeof (soaddr));
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-              GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
-              ntohs (haddr->port), STRERROR (errno));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
+                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
+                     ntohs (haddr->port), STRERROR (errno));
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
 #if DEBUG_TCP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Establishing connection to %u.%u.%u.%u:%u\n",
-          GNUNET_PRIP (ntohl (*(int *) &haddr->ip)), ntohs (haddr->port));
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_USER |
+                 GNUNET_GE_BULK,
+                 "Establishing connection to %u.%u.%u.%u:%u\n",
+                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
+                 ntohs (haddr->port));
 #endif
   return tcpConnectHelper (hello, s, tcpAPI.protocolNumber, tsessionPtr);
 }
@@ -428,27 +438,34 @@ startTransportServer ()
       s = SOCKET (PF_INET, SOCK_STREAM, 0);
       if (s < 0)
         {
-          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_BULK, "socket");
           return GNUNET_SYSERR;
         }
       if (SETSOCKOPT (s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
         GNUNET_GE_DIE_STRERROR (ectx,
-                         GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "setsockopt");
+                                GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                GNUNET_GE_IMMEDIATE, "setsockopt");
       memset ((char *) &serverAddr, 0, sizeof (serverAddr));
       serverAddr.sin_family = AF_INET;
       serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
       serverAddr.sin_port = htons (getGNUnetTCPPort ());
       if (BIND (s, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
         {
-          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "bind");
+          GNUNET_GE_LOG_STRERROR (ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                  GNUNET_GE_IMMEDIATE, "bind");
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                  _("Failed to start transport service on port %d.\n"),
-                  getGNUnetTCPPort ());
+                         GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                         GNUNET_GE_IMMEDIATE,
+                         _("Failed to start transport service on port %d.\n"),
+                         getGNUnetTCPPort ());
           if (0 != CLOSE (s))
             GNUNET_GE_LOG_STRERROR (ectx,
-                             GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                             "close");
+                                    GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                    GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                                    "close");
           return GNUNET_SYSERR;
         }
     }
@@ -553,18 +570,19 @@ inittransport_tcp (CoreAPIForTransport * core)
       return NULL;
     }
   coreAPI = core;
-  if (GNUNET_GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", GNUNET_YES) ==
-      GNUNET_YES)
+  if (GNUNET_GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", GNUNET_YES)
+      == GNUNET_YES)
     {
       upnp = coreAPI->requestService ("upnp");
 
       if (upnp == NULL)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                  _
-                  ("The UPnP service could not be loaded. To disable UPnP, set the "
-                   "configuration option \"UPNP\" in section \"TCP\" to \"NO\"\n"));
+                         GNUNET_GE_ERROR | GNUNET_GE_USER |
+                         GNUNET_GE_IMMEDIATE,
+                         _
+                         ("The UPnP service could not be loaded. To disable UPnP, set the "
+                          "configuration option \"UPNP\" in section \"TCP\" to \"NO\"\n"));
 
         }
     }

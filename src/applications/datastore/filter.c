@@ -36,17 +36,18 @@
 static struct GNUNET_BloomFilter *filter;
 
 static char *
-getFilterName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+getFilterName (struct GNUNET_GE_Context *ectx,
+               struct GNUNET_GC_Configuration *cfg)
 {
   char *fn;
   char *bf;
 
   fn = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
-                                                 "FS",
-                                                 "DIR",
-                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/fs",
-                                                 &fn))
+                                                        "FS",
+                                                        "DIR",
+                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                                        "/fs", &fn))
     return NULL;
   if (GNUNET_OK != GNUNET_disk_directory_create (ectx, fn))
     {
@@ -61,18 +62,20 @@ getFilterName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *c
 }
 
 int
-initFilters (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+initFilters (struct GNUNET_GE_Context *ectx,
+             struct GNUNET_GC_Configuration *cfg)
 {
   char *bf;
   unsigned long long quota;     /* in kb */
   unsigned int bf_size;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "FS",
-                                               "QUOTA",
-                                               0,
-                                               ((unsigned long long) -1) /
-                                               1024 / 1024, 1024, &quota))
+                                                      "FS",
+                                                      "QUOTA",
+                                                      0,
+                                                      ((unsigned long long)
+                                                       -1) / 1024 / 1024,
+                                                      1024, &quota))
     return GNUNET_SYSERR;
   quota *= 1024;
   bf_size = quota / 32;         /* 8 bit per entry, 1 bit per 32 kb in DB */
@@ -94,7 +97,8 @@ doneFilters ()
 }
 
 void
-deleteFilter (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+deleteFilter (struct GNUNET_GE_Context *ectx,
+              struct GNUNET_GC_Configuration *cfg)
 {
   char *fn;
 

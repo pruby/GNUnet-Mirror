@@ -38,8 +38,9 @@
  * @return NULL on error (for both option not set and internal errors)
  */
 char *
-GNUNET_get_daemon_configuration_value (struct GNUNET_ClientServerConnection *sock,
-                             const char *section, const char *option)
+GNUNET_get_daemon_configuration_value (struct GNUNET_ClientServerConnection
+                                       *sock, const char *section,
+                                       const char *option)
 {
   CS_getoption_request_MESSAGE req;
   CS_getoption_reply_MESSAGE *reply;

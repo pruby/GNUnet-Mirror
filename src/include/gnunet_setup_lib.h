@@ -213,9 +213,14 @@ struct GNUNET_GNS_Context;
  * @param specification name of the guile file containing the spec
  * @return NULL on error (i.e. specification file not found)
  */
-struct GNUNET_GNS_Context *GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
-                                            struct GNUNET_GC_Configuration *cfg,
-                                            const char *specification);
+struct GNUNET_GNS_Context *GNUNET_GNS_load_specification (struct
+                                                          GNUNET_GE_Context
+                                                          *ectx,
+                                                          struct
+                                                          GNUNET_GC_Configuration
+                                                          *cfg,
+                                                          const char
+                                                          *specification);
 
 /**
  * Obtain the GNUNET_GNS_TreeNode from the GNS system.  The tree is only valid
@@ -225,7 +230,9 @@ struct GNUNET_GNS_Context *GNUNET_GNS_load_specification (struct GNUNET_GE_Conte
  *
  * @return NULL on error
  */
-struct GNUNET_GNS_TreeNode *GNUNET_GNS_get_tree_root (struct GNUNET_GNS_Context *ctx);
+struct GNUNET_GNS_TreeNode *GNUNET_GNS_get_tree_root (struct
+                                                      GNUNET_GNS_Context
+                                                      *ctx);
 
 /**
  * Free resources associated with the GNS context.
@@ -238,8 +245,9 @@ void GNUNET_GNS_free_specification (struct GNUNET_GNS_Context *ctx);
  *
  * @param node the node that has changed
  */
-typedef void (*GNUNET_GNS_TreeChangeListener) (const struct GNUNET_GNS_TreeNode * node,
-                                        void *cls);
+typedef void (*GNUNET_GNS_TreeChangeListener) (const struct
+                                               GNUNET_GNS_TreeNode * node,
+                                               void *cls);
 
 /**
  * Register a tree change listener with GNS.
@@ -248,8 +256,8 @@ typedef void (*GNUNET_GNS_TreeChangeListener) (const struct GNUNET_GNS_TreeNode 
  */
 void
 GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
-                                   GNUNET_GNS_TreeChangeListener listener,
-                                   void *cls);
+                                          GNUNET_GNS_TreeChangeListener
+                                          listener, void *cls);
 
 /**
  * Release a tree change listener from GNS (do not call the listener
@@ -257,8 +265,8 @@ GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
  */
 void
 GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
-                                     GNUNET_GNS_TreeChangeListener listener,
-                                     void *cls);
+                                            GNUNET_GNS_TreeChangeListener
+                                            listener, void *cls);
 
 /**
  * Convert the default value of the given tree entry to
@@ -266,7 +274,8 @@ GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
  *
  * @return NULL on error
  */
-char *GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType type,
-                                       const GNUNET_GNS_Value * value);
+char *GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType
+                                              type,
+                                              const GNUNET_GNS_Value * value);
 
 #endif

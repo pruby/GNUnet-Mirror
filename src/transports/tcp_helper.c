@@ -143,7 +143,9 @@ freeTCPSession (TCPSession * tcpsession)
       pos = pos->next;
     }
   GNUNET_mutex_unlock (tcplock);
-  GNUNET_GE_ASSERT (ectx, GNUNET_OK == coreAPI->assertUnused (tcpsession->tsession));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_OK ==
+                    coreAPI->assertUnused (tcpsession->tsession));
   GNUNET_mutex_lock (tcplock);
   GNUNET_free (tcpsession->tsession);
   GNUNET_free (tcpsession);
@@ -172,8 +174,8 @@ tcpDisconnect (GNUNET_TSession * tsession)
   GNUNET_mutex_unlock (tcplock);
 #if DEBUG_TCP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "TCP disconnect closes socket session.\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "TCP disconnect closes socket session.\n");
 #endif
   GNUNET_select_disconnect (selector, tcpsession->sock);
   GNUNET_mutex_lock (tcplock);
@@ -253,9 +255,9 @@ select_message_handler (void *mh_cls,
       if ((ntohs (welcome->header.type) != 0) || (len != sizeof (TCPWelcome)))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _
-                  ("Received malformed message instead of welcome message. Closing.\n"));
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _
+                         ("Received malformed message instead of welcome message. Closing.\n"));
           tcpDisconnect (tsession);
           return GNUNET_SYSERR;
         }
@@ -272,9 +274,9 @@ select_message_handler (void *mh_cls,
       if (len <= sizeof (GNUNET_MessageHeader))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _
-                  ("Received malformed message from tcp-peer connection. Closing.\n"));
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _
+                         ("Received malformed message from tcp-peer connection. Closing.\n"));
           tcpDisconnect (tsession);
           return GNUNET_SYSERR;
         }
@@ -311,13 +313,14 @@ select_accept_handler (void *ah_cls,
     {
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Rejecting TCP connection (blacklisted).\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Rejecting TCP connection (blacklisted).\n");
 #endif
       return NULL;
     }
 #if DEBUG_TCP
-  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK, "Accepting TCP connection.\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Accepting TCP connection.\n");
 #endif
   tcpSession = GNUNET_malloc (sizeof (TCPSession));
   memset (tcpSession, 0, sizeof (TCPSession));
@@ -371,8 +374,8 @@ select_close_handler (void *ch_cls,
             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
             GNUNET_hash_to_enc (&tcpSession->sender.hashPubKey, &enc));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Closed TCP socket of `%s'.\n", &enc);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Closed TCP socket of `%s'.\n", &enc);
 #endif
   GNUNET_mutex_lock (tcplock);
   GNUNET_mutex_lock (tcpSession->lock);
@@ -420,9 +423,9 @@ tcpSend (GNUNET_TSession * tsession,
                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&tcpSession->sender.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              "Cannot send message - TCP socket of `%s' already closed!\n",
-              &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                     "Cannot send message - TCP socket of `%s' already closed!\n",
+                     &enc);
 #endif
       return GNUNET_SYSERR;
     }
@@ -432,8 +435,8 @@ tcpSend (GNUNET_TSession * tsession,
         stats->change (stat_bytesDropped, size);
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Could not sent TCP message -- tcp transport is down.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Could not sent TCP message -- tcp transport is down.\n");
 #endif
       return GNUNET_SYSERR;
     }
@@ -448,8 +451,8 @@ tcpSend (GNUNET_TSession * tsession,
         stats->change (stat_bytesDropped, size);
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Could not sent TCP message -- other side closed connection.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Could not sent TCP message -- other side closed connection.\n");
 #endif
       return GNUNET_SYSERR;     /* other side closed connection */
     }
@@ -459,8 +462,8 @@ tcpSend (GNUNET_TSession * tsession,
   memcpy (&mp[1], msg, size);
 #if DEBUG_TCP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Transport asks select to queue message of size %u\n", size);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Transport asks select to queue message of size %u\n", size);
 #endif
   ok =
     GNUNET_select_write (selector, tcpSession->sock, mp, GNUNET_NO,
@@ -486,7 +489,8 @@ tcpSend (GNUNET_TSession * tsession,
  *         GNUNET_SYSERR if the size/session is invalid
  */
 static int
-tcpTestWouldTry (GNUNET_TSession * tsession, const unsigned int size, int important)
+tcpTestWouldTry (GNUNET_TSession * tsession, const unsigned int size,
+                 int important)
 {
   TCPSession *tcpSession = tsession->internal;
 
@@ -557,8 +561,8 @@ tcpConnectHelper (const GNUNET_MessageHello * hello,
     {
 #if DEBUG_TCP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Could not sent TCP welcome message, closing connection.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Could not sent TCP welcome message, closing connection.\n");
 #endif
       /* disconnect caller -- error! */
       tcpDisconnect (tsession);

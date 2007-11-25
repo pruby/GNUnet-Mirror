@@ -41,7 +41,8 @@ handlep2pMSG (const GNUNET_PeerIdentity * sender,
 }
 
 static int
-csHandle (struct GNUNET_ClientHandle *client, const GNUNET_MessageHeader * message)
+csHandle (struct GNUNET_ClientHandle *client,
+          const GNUNET_MessageHeader * message)
 {
   return GNUNET_OK;
 }
@@ -65,9 +66,10 @@ initialize_module_template (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
 
   GNUNET_GE_LOG (capi->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("`%s' registering client handler %d and %d\n"),
-          "template", GNUNET_CS_PROTO_MAX_USED, GNUNET_P2P_PROTO_MAX_USED);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("`%s' registering client handler %d and %d\n"),
+                 "template", GNUNET_CS_PROTO_MAX_USED,
+                 GNUNET_P2P_PROTO_MAX_USED);
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_MAX_USED, &handlep2pMSG))
     ok = GNUNET_SYSERR;

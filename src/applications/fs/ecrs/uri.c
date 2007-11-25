@@ -97,7 +97,8 @@ createKeywordURI (char **keywords, unsigned int keywordCount)
   unsigned int i;
 
   n =
-    keywordCount + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX) + 1;
+    keywordCount + strlen (GNUNET_ECRS_URI_PREFIX) +
+    strlen (GNUNET_ECRS_SEARCH_INFIX) + 1;
   for (i = 0; i < keywordCount; i++)
     n += strlen (keywords[i]);
   ret = GNUNET_malloc (n);
@@ -132,8 +133,8 @@ createSubspaceURI (const GNUNET_HashCode * namespace,
   GNUNET_hash_to_enc (identifier, &id);
   GNUNET_snprintf (ret, n,
                    "%s%s%s/%s",
-                   GNUNET_ECRS_URI_PREFIX, GNUNET_ECRS_SUBSPACE_INFIX, (char *) &ns,
-                   (char *) &id);
+                   GNUNET_ECRS_URI_PREFIX, GNUNET_ECRS_SUBSPACE_INFIX,
+                   (char *) &ns, (char *) &id);
   return ret;
 }
 
@@ -152,8 +153,8 @@ createFileURI (const FileIdentifier * fi)
   GNUNET_hash_to_enc (&fi->chk.query, &queryhash);
 
   n =
-    strlen (GNUNET_ECRS_URI_PREFIX) + 2 * sizeof (GNUNET_EncName) + 8 + 16 + 32 +
-    strlen (GNUNET_ECRS_FILE_INFIX);
+    strlen (GNUNET_ECRS_URI_PREFIX) + 2 * sizeof (GNUNET_EncName) + 8 + 16 +
+    32 + strlen (GNUNET_ECRS_FILE_INFIX);
   ret = GNUNET_malloc (n);
   GNUNET_snprintf (ret,
                    n,
@@ -238,7 +239,8 @@ GNUNET_ECRS_uri_to_string (const struct GNUNET_ECRS_URI *uri)
  *  the number of keywords placed in the array
  */
 static int
-parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri, char ***keywords)
+parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri,
+                 char ***keywords)
 {
   unsigned int pos;
   int ret;
@@ -254,7 +256,9 @@ parseKeywordURI (struct GNUNET_GE_Context *ectx, const char *uri, char ***keywor
 
   if (0 != strncmp (uri, GNUNET_ECRS_URI_PREFIX, pos))
     return GNUNET_SYSERR;
-  if (0 != strncmp (&uri[pos], GNUNET_ECRS_SEARCH_INFIX, strlen (GNUNET_ECRS_SEARCH_INFIX)))
+  if (0 !=
+      strncmp (&uri[pos], GNUNET_ECRS_SEARCH_INFIX,
+               strlen (GNUNET_ECRS_SEARCH_INFIX)))
     return GNUNET_SYSERR;
   pos += strlen (GNUNET_ECRS_SEARCH_INFIX);
   if (slen == pos)
@@ -318,7 +322,8 @@ parseSubspaceURI (struct GNUNET_GE_Context *ectx,
   if (0 != strncmp (uri, GNUNET_ECRS_URI_PREFIX, pos))
     return GNUNET_SYSERR;
   if (0 != strncmp (&uri[pos],
-                    GNUNET_ECRS_SUBSPACE_INFIX, strlen (GNUNET_ECRS_SUBSPACE_INFIX)))
+                    GNUNET_ECRS_SUBSPACE_INFIX,
+                    strlen (GNUNET_ECRS_SUBSPACE_INFIX)))
     return GNUNET_SYSERR;
   pos += strlen (GNUNET_ECRS_SUBSPACE_INFIX);
   if ((slen < pos + sizeof (GNUNET_EncName) + 1) ||
@@ -354,7 +359,8 @@ parseSubspaceURI (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_OK on success, GNUNET_SYSERR if this is not a file URI
  */
 static int
-parseFileURI (struct GNUNET_GE_Context *ectx, const char *uri, FileIdentifier * fi)
+parseFileURI (struct GNUNET_GE_Context *ectx, const char *uri,
+              FileIdentifier * fi)
 {
   unsigned int pos;
   size_t slen;
@@ -367,7 +373,9 @@ parseFileURI (struct GNUNET_GE_Context *ectx, const char *uri, FileIdentifier * 
 
   if (0 != strncmp (uri, GNUNET_ECRS_URI_PREFIX, pos))
     return GNUNET_SYSERR;
-  if (0 != strncmp (&uri[pos], GNUNET_ECRS_FILE_INFIX, strlen (GNUNET_ECRS_FILE_INFIX)))
+  if (0 !=
+      strncmp (&uri[pos], GNUNET_ECRS_FILE_INFIX,
+               strlen (GNUNET_ECRS_FILE_INFIX)))
     return GNUNET_SYSERR;
   pos += strlen (GNUNET_ECRS_FILE_INFIX);
   if ((slen < pos + 2 * sizeof (GNUNET_EncName) + 1) ||
@@ -402,7 +410,8 @@ parseFileURI (struct GNUNET_GE_Context *ectx, const char *uri, FileIdentifier * 
  * @return GNUNET_OK on success, GNUNET_SYSERR if this is not a file URI
  */
 static int
-parseLocationURI (struct GNUNET_GE_Context *ectx, const char *uri, Location * loc)
+parseLocationURI (struct GNUNET_GE_Context *ectx, const char *uri,
+                  Location * loc)
 {
   unsigned int pos;
   unsigned int npos;
@@ -420,7 +429,8 @@ parseLocationURI (struct GNUNET_GE_Context *ectx, const char *uri, Location * lo
   if (0 != strncmp (uri, GNUNET_ECRS_URI_PREFIX, pos))
     return GNUNET_SYSERR;
   if (0 != strncmp (&uri[pos],
-                    GNUNET_ECRS_LOCATION_INFIX, strlen (GNUNET_ECRS_LOCATION_INFIX)))
+                    GNUNET_ECRS_LOCATION_INFIX,
+                    strlen (GNUNET_ECRS_LOCATION_INFIX)))
     return GNUNET_SYSERR;
   pos += strlen (GNUNET_ECRS_LOCATION_INFIX);
   if ((slen < pos + 2 * sizeof (GNUNET_EncName) + 1) ||
@@ -573,7 +583,8 @@ GNUNET_ECRS_get_namespace_name (const GNUNET_HashCode * id)
  * @return GNUNET_OK on success
  */
 int
-GNUNET_ECRS_uri_get_namespace_from_sks (const struct GNUNET_ECRS_URI *uri, GNUNET_HashCode * id)
+GNUNET_ECRS_uri_get_namespace_from_sks (const struct GNUNET_ECRS_URI *uri,
+                                        GNUNET_HashCode * id)
 {
   if (!GNUNET_ECRS_uri_test_sks (uri))
     {
@@ -590,7 +601,8 @@ GNUNET_ECRS_uri_get_namespace_from_sks (const struct GNUNET_ECRS_URI *uri, GNUNE
  * @return GNUNET_OK on success
  */
 int
-GNUNET_ECRS_uri_get_content_hash_from_sks (const struct GNUNET_ECRS_URI *uri, GNUNET_HashCode * id)
+GNUNET_ECRS_uri_get_content_hash_from_sks (const struct GNUNET_ECRS_URI *uri,
+                                           GNUNET_HashCode * id)
 {
   if (!GNUNET_ECRS_uri_test_sks (uri))
     {
@@ -639,7 +651,8 @@ GNUNET_ECRS_uri_get_keyword_count_from_ksk (const struct GNUNET_ECRS_URI *uri)
  */
 int
 GNUNET_ECRS_uri_get_keywords_from_ksk (const struct GNUNET_ECRS_URI *uri,
-                         GNUNET_ECRS_KeywordIterator iterator, void *cls)
+                                       GNUNET_ECRS_KeywordIterator iterator,
+                                       void *cls)
 {
   int i;
   if (uri->type != ksk)
@@ -880,7 +893,8 @@ GNUNET_ECRS_keyword_strings_to_uri (const char *keyword[])
  * Are these two URIs equal?
  */
 int
-GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1, const struct GNUNET_ECRS_URI *uri2)
+GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1,
+                            const struct GNUNET_ECRS_URI *uri2)
 {
   int ret;
   int i;
@@ -945,7 +959,8 @@ GNUNET_ECRS_uri_test_equal (const struct GNUNET_ECRS_URI *uri1, const struct GNU
  * @return -1 if this is not a location URI, otherwise GNUNET_OK
  */
 int
-GNUNET_ECRS_uri_get_peer_identity_from_loc (const struct GNUNET_ECRS_URI *uri, GNUNET_PeerIdentity * peer)
+GNUNET_ECRS_uri_get_peer_identity_from_loc (const struct GNUNET_ECRS_URI *uri,
+                                            GNUNET_PeerIdentity * peer)
 {
   if (uri->type != loc)
     return -1;
@@ -987,9 +1002,10 @@ GNUNET_ECRS_uri_get_content_uri_from_loc (const struct GNUNET_ECRS_URI *uri)
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_location_to_uri (const struct GNUNET_ECRS_URI *baseUri,
-                      const GNUNET_RSA_PublicKey * sender,
-                      GNUNET_Int32Time expirationTime,
-                      GNUNET_ECRS_SignFunction signer, void *signer_cls)
+                             const GNUNET_RSA_PublicKey * sender,
+                             GNUNET_Int32Time expirationTime,
+                             GNUNET_ECRS_SignFunction signer,
+                             void *signer_cls)
 {
   struct GNUNET_ECRS_URI *uri;
 

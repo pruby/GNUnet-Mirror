@@ -160,13 +160,14 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "serializetest3", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "serializetest3", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
-  search = GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
+  search =
+    GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   prog = 0;
   suspendRestart = 10;
@@ -181,13 +182,13 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           CHECK (search == NULL);
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "serializetest3", 32, GNUNET_YES, &eventCallback,
-                            NULL);
+                                   cfg,
+                                   "serializetest3", 32, GNUNET_YES,
+                                   &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

@@ -99,7 +99,8 @@ main (int argc, const char **argv)
   /* wait for DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 30;                    /* how many iterations should we wait? */
-  while (GNUNET_OK == GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
+  while (GNUNET_OK ==
+         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
               left);
@@ -119,13 +120,15 @@ main (int argc, const char **argv)
 
   /* switch to peer2 */
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     "NETWORK", "HOST", "localhost:12087");
+                                            ectx,
+                                            "NETWORK", "HOST",
+                                            "localhost:12087");
   /* verify that peer2 also sees the other DHT! */
   ok = 0;
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 30;                    /* how many iterations should we wait? */
-  while (GNUNET_OK == GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
+  while (GNUNET_OK ==
+         GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
               left);
@@ -146,8 +149,9 @@ main (int argc, const char **argv)
 
   /* switch to peer1 */
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     "NETWORK", "HOST", "localhost:2087");
+                                            ectx,
+                                            "NETWORK", "HOST",
+                                            "localhost:2087");
 
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
@@ -156,52 +160,54 @@ main (int argc, const char **argv)
   memset (&value[1], 'A', 4);
   printf ("Peer1 stores key2\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
-                                   ectx,
-                                   &key,
-                                   GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                   GNUNET_get_time () +
-                                   5 * GNUNET_CRON_MINUTES, value));
+                                      ectx,
+                                      &key,
+                                      GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      GNUNET_get_time () +
+                                      5 * GNUNET_CRON_MINUTES, value));
   printf ("Peer1 gets key2\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
-                           ectx,
-                           GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                           &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              ectx,
+                              GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                              &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
   /* switch to peer2 */
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     "NETWORK", "HOST", "localhost:12087");
+                                            ectx,
+                                            "NETWORK", "HOST",
+                                            "localhost:12087");
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
   value->size = ntohl (8);
   memset (&value[1], 'B', 4);
   printf ("Peer2 stores key.\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
-                                   ectx,
-                                   &key,
-                                   GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                   GNUNET_get_time () +
-                                   5 * GNUNET_CRON_MINUTES, value));
+                                      ectx,
+                                      &key,
+                                      GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      GNUNET_get_time () +
+                                      5 * GNUNET_CRON_MINUTES, value));
   printf ("Peer2 gets key.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
-                           ectx,
-                           GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                           &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              ectx,
+                              GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                              &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
 
   GNUNET_hash ("key2", 4, &key);
   printf ("Peer2 gets key2.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
-                           ectx,
-                           GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                           &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              ectx,
+                              GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                              &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
   /* switch to peer1 */
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     "NETWORK", "HOST", "localhost:2087");
+                                            ectx,
+                                            "NETWORK", "HOST",
+                                            "localhost:2087");
   printf ("Peer1 gets key\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
-                           ectx,
-                           GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                           &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              ectx,
+                              GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                              &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
   /* end of actual test code */
 
 FAILURE:

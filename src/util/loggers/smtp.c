@@ -36,11 +36,11 @@
  */
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_email (struct GNUNET_GE_Context *ectx,
-                         GNUNET_GE_MASK mask,
-                         const char *address,
-                         const char *server,
-                         unsigned short port,
-                         int logDate, unsigned int bulkSize)
+                                GNUNET_GE_MASK mask,
+                                const char *address,
+                                const char *server,
+                                unsigned short port,
+                                int logDate, unsigned int bulkSize)
 {
   return NULL;
 }

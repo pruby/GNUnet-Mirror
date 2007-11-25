@@ -43,9 +43,9 @@ extern "C"
 #endif
 
 typedef void (*GNUNET_ResultProcessor) (const GNUNET_HashCode * key,
-                               unsigned int type,
-                               unsigned int size,
-                               const char *data, void *cls);
+                                        unsigned int type,
+                                        unsigned int size,
+                                        const char *data, void *cls);
 
 /**
  * @brief Definition of the SQ-Store API.
@@ -74,7 +74,8 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, GNUNET_ResultProcessor handler, void *closure);
+              unsigned int type, GNUNET_ResultProcessor handler,
+              void *closure);
 
 } GNUNET_Dstore_ServiceAPI;
 

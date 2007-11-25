@@ -50,7 +50,8 @@ typedef struct
    *        (*result should be NULL, sufficient space is allocated)
    * @return the number of bytes read on success, -1 on failure
    */
-  int (*read) (struct GNUNET_GE_Context * ectx, const char *name, void **result);
+  int (*read) (struct GNUNET_GE_Context * ectx, const char *name,
+               void **result);
 
   /**
    * Append content to file.

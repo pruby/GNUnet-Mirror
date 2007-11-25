@@ -191,10 +191,11 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
                                    &rxnew, &txnew))
                     {
                       GNUNET_GE_LOG (monitor->ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                              _
-                              ("Failed to parse interface data from `%s'.\n"),
-                              PROC_NET_DEV);
+                                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_BULK,
+                                     _
+                                     ("Failed to parse interface data from `%s'.\n"),
+                                     PROC_NET_DEV);
                       continue;
                     }
                   ifc->last_in = rxnew;
@@ -243,7 +244,8 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
               else
                 {
                   GNUNET_GE_LOG_STRERROR (monitor->ectx,
-                                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "sysctl");
+                                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                          GNUNET_GE_BULK, "sysctl");
                   break;
                 }
             }
@@ -264,7 +266,8 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
   else
     {
       GNUNET_GE_LOG_STRERROR (monitor->ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "sysctl");
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "sysctl");
     }
 #elif MINGW
   NetworkStats *ifc;
@@ -310,8 +313,8 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
       if ((command = popen ("netstat -e", "rt")) == NULL)
         {
           GNUNET_GE_LOG_STRERROR_FILE (monitor->ectx,
-                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                                "popen", "netstat -e");
+                                       GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                       GNUNET_GE_BULK, "popen", "netstat -e");
           return;
         }
       ifc = &monitor->ifcs[0];
@@ -333,9 +336,11 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
               else
                 {
                   GNUNET_GE_LOG (monitor->ectx,
-                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                          _("Failed to parse interface data from `%s'.\n"),
-                          PROC_NET_DEV);
+                                 GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                 GNUNET_GE_BULK,
+                                 _
+                                 ("Failed to parse interface data from `%s'.\n"),
+                                 PROC_NET_DEV);
                 }
             }
           iLine++;
@@ -353,7 +358,8 @@ updateInterfaceTraffic (struct GNUNET_LoadMonitor *monitor)
 static int
 resetStatusCalls (void *cls,
                   struct GNUNET_GC_Configuration *cfg,
-                  struct GNUNET_GE_Context *ectx, const char *sect, const char *op)
+                  struct GNUNET_GE_Context *ectx, const char *sect,
+                  const char *op)
 {
   struct GNUNET_LoadMonitor *monitor = cls;
   char *interfaces;
@@ -364,32 +370,32 @@ resetStatusCalls (void *cls,
   if (0 != strcmp (sect, "LOAD"))
     return 0;                   /* fast path */
   basic = GNUNET_GC_get_configuration_value_yesno (cfg,
-                                            "LOAD", "BASICLIMITING",
-                                            GNUNET_YES);
+                                                   "LOAD", "BASICLIMITING",
+                                                   GNUNET_YES);
   if (basic == GNUNET_SYSERR)
     return GNUNET_SYSERR;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "LOAD",
-                                               "INTERFACES",
-                                               "eth0", &interfaces))
+                                                      "LOAD",
+                                                      "INTERFACES",
+                                                      "eth0", &interfaces))
     return GNUNET_SYSERR;
   if (interfaces == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
-              "LOAD", "INTERFACES");
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
+                     "LOAD", "INTERFACES");
       return GNUNET_SYSERR;
     }
   if (strlen (interfaces) == 0)
     {
       GNUNET_free (interfaces);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
-              "LOAD", "INTERFACES");
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("No network interfaces defined in configuration section `%s' under `%s'!\n"),
+                     "LOAD", "INTERFACES");
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (monitor->statusMutex);
@@ -426,17 +432,15 @@ resetStatusCalls (void *cls,
   GNUNET_free (interfaces);
   monitor->useBasicMethod = basic;
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "LOAD",
-                                     "MAXNETDOWNBPSTOTAL",
-                                     0,
-                                     (unsigned long long) -1,
-                                     50000, &monitor->download_info.max);
-  GNUNET_GC_get_configuration_value_number (cfg,
-                                     "LOAD",
-                                     "MAXNETUPBPSTOTAL",
-                                     0,
-                                     (unsigned long long) -1,
-                                     50000, &monitor->upload_info.max);
+                                            "LOAD",
+                                            "MAXNETDOWNBPSTOTAL",
+                                            0,
+                                            (unsigned long long) -1,
+                                            50000,
+                                            &monitor->download_info.max);
+  GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL",
+                                            0, (unsigned long long) -1, 50000,
+                                            &monitor->upload_info.max);
   monitor->last_ifc_update = GNUNET_get_time ();
   updateInterfaceTraffic (monitor);
   GNUNET_mutex_unlock (monitor->statusMutex);
@@ -572,11 +576,13 @@ GNUNET_network_monitor_create (struct GNUNET_GE_Context *ectx,
   monitor->proc_net_dev = fopen (PROC_NET_DEV, "r");
   if (NULL == monitor->proc_net_dev)
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                          "fopen", PROC_NET_DEV);
+                                 GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                 GNUNET_GE_USER | GNUNET_GE_BULK, "fopen",
+                                 PROC_NET_DEV);
 #endif
   monitor->statusMutex = GNUNET_mutex_create (GNUNET_NO);
-  if (-1 == GNUNET_GC_attach_change_listener (cfg, &resetStatusCalls, monitor))
+  if (-1 ==
+      GNUNET_GC_attach_change_listener (cfg, &resetStatusCalls, monitor))
     {
       GNUNET_network_monitor_destroy (monitor);
       return NULL;

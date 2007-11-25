@@ -101,11 +101,12 @@ query_yesno (const char *title,
         case DLG_EXIT_OK:
         case DLG_EXIT_CANCEL:
           if (0 != GNUNET_GC_set_configuration_value_string (cfg,
-                                                      ectx,
-                                                      section,
-                                                      option,
-                                                      ret == DLG_EXIT_OK
-                                                      ? "YES" : "NO"))
+                                                             ectx,
+                                                             section,
+                                                             option,
+                                                             ret ==
+                                                             DLG_EXIT_OK ?
+                                                             "YES" : "NO"))
             {
               show_error (_("Internal error! (Choice invalid?)"));
               break;
@@ -167,9 +168,10 @@ query_string (const char *title,
         {
         case DLG_EXIT_OK:
           if (0 != GNUNET_GC_set_configuration_value_string (cfg,
-                                                      ectx,
-                                                      section,
-                                                      option, fitem.text))
+                                                             ectx,
+                                                             section,
+                                                             option,
+                                                             fitem.text))
             {
               show_error (_("Internal error! (Choice invalid?)"));
               ret = 2;
@@ -281,11 +283,11 @@ network_interface ()
             {
             case DLG_EXIT_OK:
               if (0 != GNUNET_GC_set_configuration_value_choice (cfg,
-                                                          ectx,
-                                                          "NETWORK",
-                                                          "INTERFACE",
-                                                          nic_items[msel].
-                                                          name))
+                                                                 ectx,
+                                                                 "NETWORK",
+                                                                 "INTERFACE",
+                                                                 nic_items
+                                                                 [msel].name))
                 {
                   show_error (_("Internal error! (Choice invalid?)"));
                   break;
@@ -461,25 +463,24 @@ finish ()
       ret = GNUNET_SYSERR;
     }
   user_name = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user_name);
-  GNUNET_GC_get_configuration_value_string (cfg,
-                                     "GNUNETD", "GROUP", "", &group_name);
-  if (((strlen (user_name) > 0) ||
-       (strlen (group_name) > 0)) &&
-      (GNUNET_OK == GNUNET_configure_user_account (GNUNET_YES,
-                                                   GNUNET_YES,
-                                                   user_name,
-                                                   group_name)) &&
-      (GNUNET_OK !=
-       GNUNET_configure_user_account (GNUNET_NO, GNUNET_YES, user_name,
-                                      group_name)))
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "",
+                                            &user_name);
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "GROUP", "",
+                                            &group_name);
+  if (((strlen (user_name) > 0) || (strlen (group_name) > 0))
+      && (GNUNET_OK ==
+          GNUNET_configure_user_account (GNUNET_YES, GNUNET_YES, user_name,
+                                         group_name))
+      && (GNUNET_OK !=
+          GNUNET_configure_user_account (GNUNET_NO, GNUNET_YES, user_name,
+                                         group_name)))
     {
       showCursErr (_("Unable to create user account for daemon."), "");
       ret = GNUNET_SYSERR;
     }
-  if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && (GNUNET_YES != GNUNET_configure_autostart (ectx, GNUNET_NO, GNUNET_YES, "gnunetd",   /* specify full path? */
-                                                                                                                                              user_name,
-                                                                                                                                              group_name)))
+  if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && (GNUNET_YES != GNUNET_configure_autostart (ectx, GNUNET_NO, GNUNET_YES, "gnunetd",    /* specify full path? */
+                                                                                                                                                     user_name,
+                                                                                                                                                     group_name)))
     {
       showCursErr (_("Unable to setup autostart for daemon."), "");
       ret = GNUNET_SYSERR;

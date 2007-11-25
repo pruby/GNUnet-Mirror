@@ -812,7 +812,8 @@ struct GNUNET_FSUI_Context;
  *
  * @return cctx for resume events, otherwise NULL
  */
-typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls, const GNUNET_FSUI_Event * event);
+typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls,
+                                             const GNUNET_FSUI_Event * event);
 
 /**
  * @brief Start the FSUI manager.  Use the given progress callback to
@@ -845,7 +846,7 @@ typedef void *(*GNUNET_FSUI_EventProcessor) (void *cls, const GNUNET_FSUI_Event 
  * @param closure extra argument to cb
  * @return NULL on error
  */
-struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *name, unsigned int threadPoolSize, int doResume, GNUNET_FSUI_EventProcessor cb, void *closure);     /* fsui.c */
+struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *name, unsigned int threadPoolSize, int doResume, GNUNET_FSUI_EventProcessor cb, void *closure); /* fsui.c */
 
 /**
  * Stop all processes under FSUI control (may serialize
@@ -853,7 +854,7 @@ struct GNUNET_FSUI_Context *GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx, s
  * uninterruptable activities complete (you may want to
  * signal the user that this may take a while).
  */
-void GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx);      /* fsui.c */
+void GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx);        /* fsui.c */
 
 
 /**
@@ -861,28 +862,28 @@ void GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx);      /* fsui.c */
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, unsigned int maxResults, GNUNET_CronTime timeout, const struct GNUNET_ECRS_URI *uri); /* search.c */
+struct GNUNET_FSUI_SearchList *GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, unsigned int maxResults, GNUNET_CronTime timeout, const struct GNUNET_ECRS_URI *uri);    /* search.c */
 
 /**
  * Abort a search.
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);    /* search.c */
+int GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);      /* search.c */
 
 /**
  * Stop a search.
  *
  * @return GNUNET_SYSERR if such a search is not known
  */
-int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);     /* search.c */
+int GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_SearchList *sl);       /* search.c */
 
 /**
  * Start to download a file or directory.
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_ECRS_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload);      /* download.c */
+struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx, unsigned int anonymityLevel, int doRecursive, const struct GNUNET_ECRS_URI *uri, const struct GNUNET_ECRS_MetaData *meta, const char *filename, struct GNUNET_FSUI_SearchList *parentSearch, struct GNUNET_FSUI_DownloadList *parentDownload);    /* download.c */
 
 /**
  * Abort a download.  If the dl is for a recursive
@@ -890,7 +891,7 @@ struct GNUNET_FSUI_DownloadList *GNUNET_FSUI_download_start (struct GNUNET_FSUI_
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl);        /* download.c */
+int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl);  /* download.c */
 
 /**
  * Stop a download.  If the dl is for a recursive
@@ -898,7 +899,7 @@ int GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_F
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl); /* download.c */
+int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl);   /* download.c */
 
 /**
  * Method that can be used to select files that
@@ -909,9 +910,9 @@ int GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FS
  * upload.
  */
 typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
-                                      const char *filename,
-                                      GNUNET_DirectoryEntryCallback dec,
-                                      void *decClosure);
+                                                  const char *filename,
+                                                  GNUNET_DirectoryEntryCallback
+                                                  dec, void *decClosure);
 
 /**
  * Start uploading a file or directory.
@@ -927,20 +928,30 @@ typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
  * @param keyURI keywords for top-level file
  * @return NULL on error
  */
-struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_star (struct GNUNET_FSUI_Context *ctx,
-                                          const char *filename,
-                                          GNUNET_FSUI_DirectoryScanCallback dsc,
-                                          void *dscClosure,
-                                          unsigned int anonymityLevel,
-                                          unsigned int priority,
-                                          int doIndex,
-                                          int doExtract,
-                                          int individualKeywords,
-                                          GNUNET_CronTime expiration,
-                                          const struct GNUNET_ECRS_MetaData
-                                          *topLevelMetaData,
-                                          const struct GNUNET_ECRS_URI *globalURI,
-                                          const struct GNUNET_ECRS_URI *keyUri);
+struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_star (struct
+                                                        GNUNET_FSUI_Context
+                                                        *ctx,
+                                                        const char *filename,
+                                                        GNUNET_FSUI_DirectoryScanCallback
+                                                        dsc, void *dscClosure,
+                                                        unsigned int
+                                                        anonymityLevel,
+                                                        unsigned int priority,
+                                                        int doIndex,
+                                                        int doExtract,
+                                                        int
+                                                        individualKeywords,
+                                                        GNUNET_CronTime
+                                                        expiration,
+                                                        const struct
+                                                        GNUNET_ECRS_MetaData
+                                                        *topLevelMetaData,
+                                                        const struct
+                                                        GNUNET_ECRS_URI
+                                                        *globalURI,
+                                                        const struct
+                                                        GNUNET_ECRS_URI
+                                                        *keyUri);
 
 
 /**
@@ -949,7 +960,8 @@ struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_star (struct GNUNET_FSUI_Conte
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UploadList *ul);
+int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx,
+                              struct GNUNET_FSUI_UploadList *ul);
 
 /**
  * Stop an upload.  Only to be called for the top-level
@@ -957,7 +969,8 @@ int GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSU
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UploadList *ul);
+int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx,
+                             struct GNUNET_FSUI_UploadList *ul);
 
 
 /**
@@ -966,8 +979,11 @@ int GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI
  *
  * @return NULL on error
  */
-struct GNUNET_FSUI_UnindexList *GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Context *ctx,
-                                            const char *filename);
+struct GNUNET_FSUI_UnindexList *GNUNET_FSUI_unindex_start (struct
+                                                           GNUNET_FSUI_Context
+                                                           *ctx,
+                                                           const char
+                                                           *filename);
 
 
 /**
@@ -975,7 +991,8 @@ struct GNUNET_FSUI_UnindexList *GNUNET_FSUI_unindex_start (struct GNUNET_FSUI_Co
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UnindexList *ul);
+int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx,
+                               struct GNUNET_FSUI_UnindexList *ul);
 
 
 /**
@@ -983,7 +1000,8 @@ int GNUNET_FSUI_unindex_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FS
  *
  * @return GNUNET_SYSERR on error
  */
-int GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UnindexList *ul);
+int GNUNET_FSUI_unindex_stop (struct GNUNET_FSUI_Context *ctx,
+                              struct GNUNET_FSUI_UnindexList *ul);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

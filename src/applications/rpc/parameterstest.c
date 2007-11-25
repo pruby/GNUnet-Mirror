@@ -36,10 +36,12 @@ main (int argc, char *argv[])
 
   p = GNUNET_RPC_parameters_create ();
 
-  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_index (p, 0, &len, &buf))
+  if (GNUNET_SYSERR !=
+      GNUNET_RPC_parameters_get_value_by_index (p, 0, &len, &buf))
     return 1;
 
-  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR !=
+      GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
     return 1;
 
   if (GNUNET_RPC_parameters_count (p) != 0)
@@ -62,23 +64,27 @@ main (int argc, char *argv[])
   if (p == NULL)
     return 1;
   buf = NULL;
-  if (GNUNET_OK != GNUNET_RPC_parameters_get_value_by_name (p, "foo", &len, &buf))
+  if (GNUNET_OK !=
+      GNUNET_RPC_parameters_get_value_by_name (p, "foo", &len, &buf))
     return 1;
   if (strcmp ("bar", buf) != 0)
     return 1;
   buf = NULL;
   if (4 != len)
     return 1;
-  if (GNUNET_OK != GNUNET_RPC_parameters_get_value_by_index (p, 1, &len, &buf))
+  if (GNUNET_OK !=
+      GNUNET_RPC_parameters_get_value_by_index (p, 1, &len, &buf))
     return 1;
   if (strcmp ("foo", buf) != 0)
     return 1;
   if (4 != len)
     return 1;
-  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_index (p, 2, &len, &buf))
+  if (GNUNET_SYSERR !=
+      GNUNET_RPC_parameters_get_value_by_index (p, 2, &len, &buf))
     return 1;
 
-  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR !=
+      GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
     return 1;
   GNUNET_RPC_parameters_destroy (p);
 

@@ -47,7 +47,8 @@ listURIfoundDirectory (const GNUNET_ECRS_FileInfo * fi,
   if (isRoot == GNUNET_YES)
     return GNUNET_OK;           /* namespace ad, ignore */
   GNUNET_URITRACK_add_state (dl->ctx->ectx,
-                     dl->ctx->cfg, fi->uri, GNUNET_URITRACK_DIRECTORY_FOUND);
+                             dl->ctx->cfg, fi->uri,
+                             GNUNET_URITRACK_DIRECTORY_FOUND);
 
   return GNUNET_OK;
 }
@@ -57,14 +58,19 @@ listURIfoundDirectory (const GNUNET_ECRS_FileInfo * fi,
 /**
  * Start to download a file.
  */
-static GNUNET_FSUI_DownloadList *startDownload (struct GNUNET_FSUI_Context *ctx,
-                                         unsigned int anonymityLevel,
-                                         int is_recursive,
-                                         const struct GNUNET_ECRS_URI *uri,
-                                         const struct GNUNET_ECRS_MetaData *meta,
-                                         const char *filename,
-                                         struct GNUNET_FSUI_SearchList *psearch,
-                                         GNUNET_FSUI_DownloadList * parent);
+static GNUNET_FSUI_DownloadList *startDownload (struct GNUNET_FSUI_Context
+                                                *ctx,
+                                                unsigned int anonymityLevel,
+                                                int is_recursive,
+                                                const struct GNUNET_ECRS_URI
+                                                *uri,
+                                                const struct
+                                                GNUNET_ECRS_MetaData *meta,
+                                                const char *filename,
+                                                struct GNUNET_FSUI_SearchList
+                                                *psearch,
+                                                GNUNET_FSUI_DownloadList *
+                                                parent);
 
 /**
  * Initiate a (recursive) download of the given
@@ -102,11 +108,13 @@ triggerRecursiveDownload (const GNUNET_ECRS_FileInfo * fi,
     {
       char *tmp = GNUNET_ECRS_uri_to_string (fi->uri);
       GNUNET_GE_ASSERT (ectx,
-                 strlen (tmp) >=
-                 strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_FILE_INFIX));
+                        strlen (tmp) >=
+                        strlen (GNUNET_ECRS_URI_PREFIX) +
+                        strlen (GNUNET_ECRS_FILE_INFIX));
       filename =
         GNUNET_strdup (&tmp
-                       [strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_FILE_INFIX)]);
+                       [strlen (GNUNET_ECRS_URI_PREFIX) +
+                        strlen (GNUNET_ECRS_FILE_INFIX)]);
       GNUNET_free (tmp);
     }
   fullName =
@@ -118,8 +126,8 @@ triggerRecursiveDownload (const GNUNET_ECRS_FileInfo * fi,
   GNUNET_free (filename);
 #if DEBUG_DTM
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Starting recursive download of `%s'\n", fullName);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Starting recursive download of `%s'\n", fullName);
 #endif
   startDownload (parent->ctx,
                  parent->anonymityLevel,
@@ -195,8 +203,9 @@ downloadProgressCallback (unsigned long long totalBytes,
     {
       md = NULL;
       GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                          lastBlock,
-                          lastBlockSize, &md, &listURIfoundDirectory, dl);
+                                           lastBlock,
+                                           lastBlockSize, &md,
+                                           &listURIfoundDirectory, dl);
       if (md != NULL)
         GNUNET_ECRS_meta_data_destroy (md);
     }
@@ -205,8 +214,9 @@ downloadProgressCallback (unsigned long long totalBytes,
       md = NULL;
       GNUNET_mutex_lock (dl->ctx->lock);
       GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                          lastBlock,
-                          lastBlockSize, &md, &triggerRecursiveDownload, dl);
+                                           lastBlock,
+                                           lastBlockSize, &md,
+                                           &triggerRecursiveDownload, dl);
       GNUNET_mutex_unlock (dl->ctx->lock);
       if (md != NULL)
         GNUNET_ECRS_meta_data_destroy (md);
@@ -245,19 +255,21 @@ downloadThread (void *cls)
   ectx = dl->ctx->ectx;
 #if DEBUG_DTM
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Download thread for `%s' started...\n", dl->filename);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Download thread for `%s' started...\n", dl->filename);
 #endif
   GNUNET_GE_ASSERT (ectx, dl->ctx != NULL);
   GNUNET_GE_ASSERT (ectx, dl->filename != NULL);
   mem = GNUNET_GE_memory_create (2);
   ee =
-    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_WARNING |
-                              GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE, mem);
+    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_ERROR | GNUNET_GE_WARNING |
+                                     GNUNET_GE_FATAL | GNUNET_GE_BULK |
+                                     GNUNET_GE_IMMEDIATE, mem);
   ret =
     GNUNET_ECRS_file_download (ee, dl->ctx->cfg, dl->fi.uri, dl->filename,
-                       dl->anonymityLevel, &downloadProgressCallback, dl,
-                       &testTerminate, dl);
+                               dl->anonymityLevel, &downloadProgressCallback,
+                               dl, &testTerminate, dl);
   if (ret == GNUNET_OK)
     {
       dl->state = GNUNET_FSUI_COMPLETED;
@@ -274,8 +286,9 @@ downloadThread (void *cls)
       event.data.DownloadCompleted.filename = dl->filename;
       event.data.DownloadCompleted.uri = dl->fi.uri;
       GNUNET_URITRACK_add_state (dl->ctx->ectx,
-                         dl->ctx->cfg,
-                         dl->fi.uri, GNUNET_URITRACK_DOWNLOAD_COMPLETED);
+                                 dl->ctx->cfg,
+                                 dl->fi.uri,
+                                 GNUNET_URITRACK_DOWNLOAD_COMPLETED);
       dl->ctx->ecb (dl->ctx->ecbClosure, &event);
     }
   else if (dl->state == GNUNET_FSUI_ACTIVE)
@@ -298,7 +311,8 @@ downloadThread (void *cls)
         error = _("Download failed (no reason given)");
       event.data.DownloadError.message = error;
       GNUNET_URITRACK_add_state (dl->ctx->ectx,
-                         dl->ctx->cfg, dl->fi.uri, GNUNET_URITRACK_DOWNLOAD_ABORTED);
+                                 dl->ctx->cfg, dl->fi.uri,
+                                 GNUNET_URITRACK_DOWNLOAD_ABORTED);
       dl->ctx->ecb (dl->ctx->ecbClosure, &event);
     }
   else if (dl->state == GNUNET_FSUI_ABORTED)
@@ -313,7 +327,7 @@ downloadThread (void *cls)
       event.data.DownloadAborted.dc.sctx =
         dl->search == NULL ? NULL : dl->search->cctx;
       GNUNET_URITRACK_add_state (dl->ctx->ectx, dl->ctx->cfg, dl->fi.uri,
-                         GNUNET_URITRACK_DOWNLOAD_ABORTED);
+                                 GNUNET_URITRACK_DOWNLOAD_ABORTED);
       dl->ctx->ecb (dl->ctx->ecbClosure, &event);
     }
   else
@@ -324,7 +338,8 @@ downloadThread (void *cls)
 
 
   if ((ret == GNUNET_OK) &&
-      (dl->is_directory == GNUNET_YES) && (GNUNET_ECRS_uri_get_file_siz (dl->fi.uri) > 0))
+      (dl->is_directory == GNUNET_YES)
+      && (GNUNET_ECRS_uri_get_file_siz (dl->fi.uri) > 0))
     {
       char *dirBlock;
       int fd;
@@ -350,16 +365,19 @@ downloadThread (void *cls)
           if (MAP_FAILED == dirBlock)
             {
               GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                    GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN | GNUNET_GE_USER,
-                                    "mmap", fn);
+                                           GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                           GNUNET_GE_ADMIN | GNUNET_GE_USER,
+                                           "mmap", fn);
             }
           else
             {
               md = NULL;
               GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                  dirBlock,
-                                  totalBytes,
-                                  &md, &listURIfoundDirectory, dl);
+                                                   dirBlock,
+                                                   totalBytes,
+                                                   &md,
+                                                   &listURIfoundDirectory,
+                                                   dl);
               if (md != NULL)
                 GNUNET_ECRS_meta_data_destroy (md);
 
@@ -369,9 +387,11 @@ downloadThread (void *cls)
                   md = NULL;
                   GNUNET_mutex_lock (dl->ctx->lock);
                   GNUNET_ECRS_directory_list_contents (dl->ctx->ectx,
-                                      dirBlock,
-                                      totalBytes,
-                                      &md, &triggerRecursiveDownload, dl);
+                                                       dirBlock,
+                                                       totalBytes,
+                                                       &md,
+                                                       &triggerRecursiveDownload,
+                                                       dl);
                   GNUNET_mutex_unlock (dl->ctx->lock);
                   GNUNET_ECRS_meta_data_destroy (md);
                   MUNMAP (dirBlock, totalBytes);
@@ -383,9 +403,9 @@ downloadThread (void *cls)
     }
 #if DEBUG_DTM
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Download thread for `%s' terminated (%s)...\n",
-          dl->filename, ret == GNUNET_OK ? "COMPLETED" : "ABORTED");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Download thread for `%s' terminated (%s)...\n",
+                 dl->filename, ret == GNUNET_OK ? "COMPLETED" : "ABORTED");
 #endif
   dl->runTime = GNUNET_get_time () - dl->startTime;
   GNUNET_GE_free_context (ee);
@@ -403,7 +423,8 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
                const struct GNUNET_ECRS_URI *uri,
                const struct GNUNET_ECRS_MetaData *meta,
                const char *filename,
-               struct GNUNET_FSUI_SearchList *psearch, GNUNET_FSUI_DownloadList * parent)
+               struct GNUNET_FSUI_SearchList *psearch,
+               GNUNET_FSUI_DownloadList * parent)
 {
   GNUNET_FSUI_DownloadList *dl;
   GNUNET_FSUI_Event event;
@@ -412,7 +433,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   GNUNET_GE_ASSERT (NULL, parent != NULL);
   if (!(GNUNET_ECRS_uri_test_chk (uri) || GNUNET_ECRS_uri_test_loc (uri)))
     {
-      GNUNET_GE_BREAK (NULL, 0);       /* wrong type of URI! */
+      GNUNET_GE_BREAK (NULL, 0);        /* wrong type of URI! */
       return NULL;
     }
   dl = GNUNET_malloc (sizeof (GNUNET_FSUI_DownloadList));
@@ -442,12 +463,14 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   event.data.DownloadStarted.dc.spos = dl->search;
   event.data.DownloadStarted.dc.sctx =
     dl->search == NULL ? NULL : dl->search->cctx;
-  event.data.DownloadStarted.total = GNUNET_ECRS_uri_get_file_siz (dl->fi.uri);
+  event.data.DownloadStarted.total =
+    GNUNET_ECRS_uri_get_file_siz (dl->fi.uri);
   event.data.DownloadStarted.filename = dl->filename;
   event.data.DownloadStarted.fi.uri = dl->fi.uri;
   event.data.DownloadStarted.fi.meta = dl->fi.meta;
   event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
-  GNUNET_URITRACK_add_state (ctx->ectx, ctx->cfg, uri, GNUNET_URITRACK_DOWNLOAD_STARTED);
+  GNUNET_URITRACK_add_state (ctx->ectx, ctx->cfg, uri,
+                             GNUNET_URITRACK_DOWNLOAD_STARTED);
   dl->cctx = dl->ctx->ecb (dl->ctx->ecbClosure, &event);
   dl->next = parent->child;
   parent->child = dl;
@@ -470,13 +493,13 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
  */
 struct GNUNET_FSUI_DownloadList *
 GNUNET_FSUI_download_start (struct GNUNET_FSUI_Context *ctx,
-                    unsigned int anonymityLevel,
-                    int doRecursive,
-                    const struct GNUNET_ECRS_URI *uri,
-                    const struct GNUNET_ECRS_MetaData *meta,
-                    const char *filename,
-                    struct GNUNET_FSUI_SearchList *psearch,
-                    struct GNUNET_FSUI_DownloadList *pdownload)
+                            unsigned int anonymityLevel,
+                            int doRecursive,
+                            const struct GNUNET_ECRS_URI *uri,
+                            const struct GNUNET_ECRS_MetaData *meta,
+                            const char *filename,
+                            struct GNUNET_FSUI_SearchList *psearch,
+                            struct GNUNET_FSUI_DownloadList *pdownload)
 {
   struct GNUNET_FSUI_DownloadList *ret;
 
@@ -511,10 +534,10 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
 
 #if DEBUG_DTM
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Download thread manager investigates pending download of file `%s' (%u/%u downloads)\n",
-          list->filename,
-          list->ctx->activeDownloadThreads, list->ctx->threadPoolSize);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Download thread manager investigates pending download of file `%s' (%u/%u downloads)\n",
+                 list->filename,
+                 list->ctx->activeDownloadThreads, list->ctx->threadPoolSize);
 #endif
   ret = GNUNET_NO;
   /* should this one be started? */
@@ -525,9 +548,9 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
     {
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Download thread manager starts download of file `%s'\n",
-              list->filename);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Download thread manager starts download of file `%s'\n",
+                     list->filename);
 #endif
       list->state = GNUNET_FSUI_ACTIVE;
       list->handle = GNUNET_thread_create (&downloadThread, list, 128 * 1024);
@@ -538,22 +561,25 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
       else
         {
           GNUNET_GE_LOG_STRERROR (ectx,
-                           GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
-                           "pthread_create");
+                                  GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                                  GNUNET_GE_BULK | GNUNET_GE_ERROR,
+                                  "pthread_create");
           list->state = GNUNET_FSUI_ERROR_JOINED;
         }
     }
 
   /* should this one be stopped? */
   if ((list->ctx->threadPoolSize
-       < list->ctx->activeDownloadThreads) && (list->state == GNUNET_FSUI_ACTIVE))
+       < list->ctx->activeDownloadThreads)
+      && (list->state == GNUNET_FSUI_ACTIVE))
     {
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
-              list->filename,
-              list->ctx->activeDownloadThreads, list->ctx->threadPoolSize);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
+                     list->filename,
+                     list->ctx->activeDownloadThreads,
+                     list->ctx->threadPoolSize);
 #endif
       list->state = GNUNET_FSUI_SUSPENDING;
       GNUNET_GE_ASSERT (ectx, list->handle != NULL);
@@ -567,13 +593,14 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
 
   /* has this one "died naturally"? */
   if ((list->state == GNUNET_FSUI_COMPLETED) ||
-      (list->state == GNUNET_FSUI_ABORTED) || (list->state == GNUNET_FSUI_ERROR))
+      (list->state == GNUNET_FSUI_ABORTED)
+      || (list->state == GNUNET_FSUI_ERROR))
     {
 #if DEBUG_DTM
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Download thread manager collects inactive download of file `%s'\n",
-              list->filename);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Download thread manager collects inactive download of file `%s'\n",
+                     list->filename);
 #endif
       GNUNET_thread_stop_sleep (list->handle);
       GNUNET_thread_join (list->handle, &unused);
@@ -601,7 +628,8 @@ GNUNET_FSUI_updateDownloadThread (GNUNET_FSUI_DownloadList * list)
  *         GNUNET_NO if the download has already finished
  */
 int
-GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl)
+GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx,
+                            struct GNUNET_FSUI_DownloadList *dl)
 {
   struct GNUNET_FSUI_DownloadList *c;
 
@@ -633,7 +661,8 @@ GNUNET_FSUI_download_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_
  * @return GNUNET_SYSERR if no such download is pending
  */
 int
-GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_DownloadList *dl)
+GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx,
+                           struct GNUNET_FSUI_DownloadList *dl)
 {
   void *unused;
   struct GNUNET_FSUI_DownloadList *prev;
@@ -652,8 +681,8 @@ GNUNET_FSUI_download_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_D
     {
       GNUNET_mutex_unlock (ctx->lock);
       GNUNET_GE_LOG (ctx->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "GNUNET_FSUI_stopDownload failed to locate download.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "GNUNET_FSUI_stopDownload failed to locate download.\n");
       return GNUNET_SYSERR;
     }
   if (prev == dl)

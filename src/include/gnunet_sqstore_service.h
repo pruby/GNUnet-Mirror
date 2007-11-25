@@ -64,7 +64,8 @@ typedef struct
    *
    * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO on temporary error
    */
-  int (*put) (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value);
+  int (*put) (const GNUNET_HashCode * key,
+              const GNUNET_DatastoreValue * value);
 
   /**
    * Iterate over the results for a particular key
@@ -78,7 +79,8 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure);
+              unsigned int type, GNUNET_DatastoreValueIterator iter,
+              void *closure);
 
   /**
    * Update the priority for a particular key in the datastore.  If
@@ -115,7 +117,8 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateLowPriority) (unsigned int type,
-                             GNUNET_DatastoreValueIterator iter, void *closure);
+                             GNUNET_DatastoreValueIterator iter,
+                             void *closure);
 
   /**
    * Iterate over content with anonymity zero.
@@ -127,7 +130,8 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateNonAnonymous) (unsigned int type,
-                              GNUNET_DatastoreValueIterator iter, void *closure);
+                              GNUNET_DatastoreValueIterator iter,
+                              void *closure);
 
   /**
    * Iterate over the items in the datastore in ascending
@@ -140,7 +144,8 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateExpirationTime) (unsigned int type,
-                                GNUNET_DatastoreValueIterator iter, void *closure);
+                                GNUNET_DatastoreValueIterator iter,
+                                void *closure);
 
 
   /**
@@ -151,7 +156,8 @@ typedef struct
    * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateMigrationOrder) (GNUNET_DatastoreValueIterator iter, void *closure);
+  int (*iterateMigrationOrder) (GNUNET_DatastoreValueIterator iter,
+                                void *closure);
 
   /**
    * Iterate over all the items in the datastore

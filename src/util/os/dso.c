@@ -115,9 +115,10 @@ GNUNET_plugin_load (struct GNUNET_GE_Context *ectx,
   if (libhandle == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed for library `%s' with error: %s\n"),
-              "lt_dlopenext", libname, lt_dlerror ());
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                     GNUNET_GE_IMMEDIATE,
+                     _("`%s' failed for library `%s' with error: %s\n"),
+                     "lt_dlopenext", libname, lt_dlerror ());
       GNUNET_free (libname);
       return NULL;
     }
@@ -156,9 +157,10 @@ GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plug,
     mptr = lt_dlsym (plug->handle, initName);
   if ((mptr == NULL) && (logError))
     GNUNET_GE_LOG (plug->ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-            _("`%s' failed to resolve method '%s' with error: %s\n"),
-            "lt_dlsym", &initName[1], lt_dlerror ());
+                   GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_IMMEDIATE,
+                   _("`%s' failed to resolve method '%s' with error: %s\n"),
+                   "lt_dlsym", &initName[1], lt_dlerror ());
   GNUNET_free (initName);
   return mptr;
 }

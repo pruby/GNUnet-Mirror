@@ -91,14 +91,15 @@ select_message_handler (void *mh_cls,
   if (len <= sizeof (UDPMessage))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("Received malformed message from udp-peer connection. Closing.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Received malformed message from udp-peer connection. Closing.\n"));
       return GNUNET_SYSERR;
     }
 #if DEBUG_UDP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK, "Received %d bytes via UDP\n", len);
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Received %d bytes via UDP\n", len);
 #endif
   um = (const UDPMessage *) msg;
   mp = GNUNET_malloc (sizeof (P2P_PACKET));

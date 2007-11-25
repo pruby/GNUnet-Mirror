@@ -32,9 +32,10 @@
  * @param scls must be of type "struct GNUNET_ECRS_URI **"
  */
 int
-GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext *
-                                      ctx, void *scls, const char *option,
-                                      const char *value)
+GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext
+                                           * ctx, void *scls,
+                                           const char *option,
+                                           const char *value)
 {
   struct GNUNET_ECRS_URI **uri = scls;
   struct GNUNET_ECRS_URI *u = *uri;
@@ -62,9 +63,10 @@ GNUNET_ECRS_getopt_configure_set_keywords (GNUNET_CommandLineProcessorContext *
  * @param scls must be of type "struct GNUNET_ECRS_MetaData **"
  */
 int
-GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext *
-                                      ctx, void *scls, const char *option,
-                                      const char *value)
+GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
+                                           * ctx, void *scls,
+                                           const char *option,
+                                           const char *value)
 {
   struct GNUNET_ECRS_MetaData **mm = scls;
   EXTRACTOR_KeywordType type;
@@ -97,7 +99,8 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext *
           (tmp[strlen (typename)] == ':') &&
           (0 == strncmp (typename, tmp, strlen (typename))))
         {
-          GNUNET_ECRS_meta_data_inser (meta, type, &tmp[strlen (typename) + 1]);
+          GNUNET_ECRS_meta_data_inser (meta, type,
+                                       &tmp[strlen (typename) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
           break;
@@ -106,7 +109,8 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext *
           (tmp[strlen (typename_i18n)] == ':') &&
           (0 == strncmp (typename_i18n, tmp, strlen (typename_i18n))))
         {
-          GNUNET_ECRS_meta_data_inser (meta, type, &tmp[strlen (typename_i18n) + 1]);
+          GNUNET_ECRS_meta_data_inser (meta, type,
+                                       &tmp[strlen (typename_i18n) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
           break;

@@ -59,8 +59,8 @@ extern "C"
  * @return GNUNET_OK to continue iteration
  */
 typedef int (*GNUNET_HostProcessor) (const GNUNET_PeerIdentity * identity,
-                             unsigned short protocol,
-                             int confirmed, void *data);
+                                     unsigned short protocol,
+                                     int confirmed, void *data);
 
 /**
  * @brief Definition of the Identity API.
@@ -131,7 +131,8 @@ typedef struct
    * @param data an argument to pass to the method
    * @return the number of known hosts matching
    */
-  int (*forEachHost) (GNUNET_CronTime now, GNUNET_HostProcessor callback, void *data);
+  int (*forEachHost) (GNUNET_CronTime now, GNUNET_HostProcessor callback,
+                      void *data);
 
   /**
    * Obtain the public key and address of a known host. If no specific

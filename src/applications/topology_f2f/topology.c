@@ -208,12 +208,12 @@ scanForHosts (unsigned int index)
   if (0 == memcmp (coreAPI->myIdentity,
                    &indexMatch.match, sizeof (GNUNET_PeerIdentity)))
     {
-      GNUNET_GE_BREAK (ectx, 0);       /* should not happen, at least not often... */
+      GNUNET_GE_BREAK (ectx, 0);        /* should not happen, at least not often... */
       return;
     }
   if (coreAPI->computeIndex (&indexMatch.match) != index)
     {
-      GNUNET_GE_BREAK (ectx, 0);       /* should REALLY not happen */
+      GNUNET_GE_BREAK (ectx, 0);        /* should REALLY not happen */
       return;
     }
 #if DEBUG_TOPOLOGY
@@ -221,8 +221,8 @@ scanForHosts (unsigned int index)
             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&indexMatch.match.hashPubKey, &enc));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Topology: trying to connect to `%s'.\n", &enc);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Topology: trying to connect to `%s'.\n", &enc);
 #endif
   if (GNUNET_NO == identity->isBlacklisted (&indexMatch.match, GNUNET_YES))
     {
@@ -246,8 +246,8 @@ notifyPONG (void *cls)
 
   GNUNET_hash_to_enc (&hostId->hashPubKey, &enc);
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Received pong from `%s', telling core that peer is still alive.\n",
-          (char *) &enc);
+                 "Received pong from `%s', telling core that peer is still alive.\n",
+                 (char *) &enc);
 #endif
   coreAPI->confirmSessionUp (hostId);
   GNUNET_free (hostId);
@@ -285,9 +285,9 @@ checkNeedForPing (const GNUNET_PeerIdentity * peer, void *unused)
 #if DEBUG_TOPOLOGY
       GNUNET_hash_to_enc (&hi->hashPubKey, &enc);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Sending ping to `%s' to prevent connection timeout.\n",
-              (char *) &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Sending ping to `%s' to prevent connection timeout.\n",
+                     (char *) &enc);
 #endif
       if (GNUNET_OK !=
           pingpong->ping (peer, &notifyPONG, hi, GNUNET_NO, rand ()))
@@ -309,9 +309,9 @@ cronCheckLiveness (void *unused)
   int autoconnect;
 
   autoconnect = GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                  "GNUNETD",
-                                                  "DISABLE-AUTOCONNECT",
-                                                  GNUNET_NO);
+                                                         "GNUNETD",
+                                                         "DISABLE-AUTOCONNECT",
+                                                         GNUNET_NO);
   slotCount = coreAPI->getSlotCount ();
   if ((GNUNET_NO == autoconnect) && (saturation < 1))
     {
@@ -361,15 +361,17 @@ rereadConfiguration (void *ctx,
   GNUNET_array_grow (friends, friendCount, 0);
   fn = NULL;
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                       "F2F",
-                                       "FRIENDS",
-                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/friends", &fn);
-  if ((0 == GNUNET_disk_file_test (ectx, fn)) ||
-      (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
+                                              "F2F",
+                                              "FRIENDS",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/friends", &fn);
+  if ((0 == GNUNET_disk_file_test (ectx, fn))
+      || (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE,
-              "Could not read friends list `%s'\n", fn);
+                     GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
+                     GNUNET_GE_IMMEDIATE,
+                     "Could not read friends list `%s'\n", fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
@@ -377,8 +379,8 @@ rereadConfiguration (void *ctx,
   if (size != GNUNET_disk_file_read (ectx, fn, size, data))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Failed to read friends list from `%s'\n"), fn);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Failed to read friends list from `%s'\n"), fn);
       GNUNET_free (fn);
       GNUNET_free (data);
       return GNUNET_SYSERR;
@@ -393,9 +395,9 @@ rereadConfiguration (void *ctx,
       if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _
-                  ("Syntax error in topology specification, skipping bytes.\n"));
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Syntax error in topology specification, skipping bytes.\n"));
           continue;
         }
       enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
@@ -407,10 +409,10 @@ rereadConfiguration (void *ctx,
       else
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _
-                  ("Syntax error in topology specification, skipping bytes `%s'.\n"),
-                  &enc);
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Syntax error in topology specification, skipping bytes `%s'.\n"),
+                         &enc);
         }
       pos = pos + sizeof (GNUNET_EncName);
       while ((pos < size) && isspace (data[pos]))
@@ -451,7 +453,7 @@ provide_module_topology_f2f (GNUNET_CoreAPIForPlugins * capi)
       return NULL;
     }
   if (0 != GNUNET_GC_attach_change_listener (coreAPI->cfg,
-                                      &rereadConfiguration, NULL))
+                                             &rereadConfiguration, NULL))
     {
       GNUNET_GE_BREAK (ectx, 0);
       capi->releaseService (identity);
@@ -512,12 +514,12 @@ initialize_module_topology_f2f (GNUNET_CoreAPIForPlugins * capi)
   myTopology = capi->requestService ("topology");
   GNUNET_GE_ASSERT (ectx, myTopology != NULL);
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "topology",
-                                                     gettext_noop
-                                                     ("maintains a friend-to-friend restricted topology")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "topology",
+                                                                   gettext_noop
+                                                                   ("maintains a friend-to-friend restricted topology")));
   return GNUNET_OK;
 }
 

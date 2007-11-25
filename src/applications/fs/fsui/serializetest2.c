@@ -362,8 +362,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "serializetest2", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "serializetest2", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   for (j = 4; j < 256; j += 4)
     {
@@ -377,9 +377,10 @@ main (int argc, char *argv[])
     }
   meta = GNUNET_ECRS_meta_data_create ();
   kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
-  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
-  upload = GNUNET_FSUI_upload_star (ctx,
-                             UPLOAD_PREFIX,
+  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE,
+                               GNUNET_DIRECTORY_MIME);
+  upload =
+    GNUNET_FSUI_upload_star (ctx, UPLOAD_PREFIX,
                              (GNUNET_FSUI_DirectoryScanCallback) &
                              GNUNET_disk_directory_scan, NULL, 0, 0,
                              GNUNET_YES, GNUNET_NO, GNUNET_NO,
@@ -393,14 +394,16 @@ main (int argc, char *argv[])
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
-  search = GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
+  search =
+    GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   download = GNUNET_FSUI_download_start (ctx,
-                                 0,
-                                 GNUNET_YES,
-                                 upURI,
-                                 meta,
-                                 UPLOAD_PREFIX "-download", search, NULL);
+                                         0,
+                                         GNUNET_YES,
+                                         upURI,
+                                         meta,
+                                         UPLOAD_PREFIX "-download", search,
+                                         NULL);
   GNUNET_ECRS_meta_data_destroy (meta);
   prog = 0;
   suspendRestart = 10;
@@ -415,14 +418,14 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           CHECK (search == NULL);
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "serializetest2", 32, GNUNET_YES, &eventCallback,
-                            NULL);
+                                   cfg,
+                                   "serializetest2", 32, GNUNET_YES,
+                                   &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

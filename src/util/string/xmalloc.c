@@ -51,8 +51,8 @@ GNUNET_xmalloc_ (size_t size,
   /* As a security precaution, we generally do not allow very large
      allocations using the default 'GNUNET_malloc' macro */
   GNUNET_GE_ASSERT_FLF (NULL,
-                 size <= GNUNET_MAX_GNUNET_malloc_CHECKED, filename,
-                 linenumber, function);
+                        size <= GNUNET_MAX_GNUNET_malloc_CHECKED, filename,
+                        linenumber, function);
   return GNUNET_xmalloc_unchecked_ (size, filename, linenumber, function);
 }
 
@@ -67,8 +67,9 @@ GNUNET_xmalloc_unchecked_ (size_t size,
   result = malloc (size);
   if (result == NULL)
     GNUNET_GE_DIE_STRERROR_FLF (NULL,
-                         GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
-                         "malloc", filename, linenumber, function);
+                                GNUNET_GE_IMMEDIATE | GNUNET_GE_USER |
+                                GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
+                                "malloc", filename, linenumber, function);
   memset (result, 0, size);     /* client code should not rely on this, though... */
   return result;
 }
@@ -94,8 +95,9 @@ GNUNET_xrealloc_ (void *ptr,
 
   if (!ptr)
     GNUNET_GE_DIE_STRERROR_FLF (NULL,
-                         GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
-                         "realloc", filename, linenumber, function);
+                                GNUNET_GE_IMMEDIATE | GNUNET_GE_USER |
+                                GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
+                                "realloc", filename, linenumber, function);
   return ptr;
 }
 
@@ -160,8 +162,8 @@ GNUNET_xgrow_ (void **old,
   size_t size;
 
   GNUNET_GE_ASSERT_FLF (NULL,
-                 INT_MAX / elementSize > newCount,
-                 filename, linenumber, function);
+                        INT_MAX / elementSize > newCount,
+                        filename, linenumber, function);
   size = newCount * elementSize;
   if (size == 0)
     {

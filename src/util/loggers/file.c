@@ -262,12 +262,16 @@ filelogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
     {
       ret = fprintf (fctx->handle,
                      "%s %s: %s",
-                     date, GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND), msg);
+                     date,
+                     GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND),
+                     msg);
     }
   else
     {
       ret = fprintf (fctx->handle,
-                     "%s: %s", GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND), msg);
+                     "%s: %s",
+                     GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND),
+                     msg);
     }
   if (ret < 0)
     fprintf (stderr,
@@ -306,9 +310,10 @@ fileclose (void *cls)
  */
 struct GNUNET_GE_Context *
 GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
-                           GNUNET_GE_KIND mask,
-                           const char *filename,
-                           const char *owner, int logDate, int logrotate)
+                                  GNUNET_GE_KIND mask,
+                                  const char *filename,
+                                  const char *owner, int logDate,
+                                  int logrotate)
 {
   FileContext *fctx;
   FILE *fd;
@@ -328,8 +333,9 @@ GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
   if (fd == NULL)
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
-                            GNUNET_GE_BULK, "fopen", name);
+                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
+                                   GNUNET_GE_BULK, "fopen", name);
       GNUNET_free (name);
       return NULL;              /* ERROR! */
     }
@@ -347,7 +353,8 @@ GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   purge_old_logs (fctx, name);
   return GNUNET_GE_create_context_callback (mask,
-                                     &filelogger, fctx, &fileclose, NULL);
+                                            &filelogger, fctx, &fileclose,
+                                            NULL);
 }
 
 
@@ -372,7 +379,8 @@ GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask)
   fctx->first_start = GNUNET_NO;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   return GNUNET_GE_create_context_callback (mask,
-                                     &filelogger, fctx, &fileclose, NULL);
+                                            &filelogger, fctx, &fileclose,
+                                            NULL);
 
 }
 
@@ -397,6 +405,7 @@ GNUNET_GE_create_context_stdout (int logDate, GNUNET_GE_KIND mask)
   fctx->logstart = 0;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   return GNUNET_GE_create_context_callback (mask,
-                                     &filelogger, fctx, &fileclose, NULL);
+                                            &filelogger, fctx, &fileclose,
+                                            NULL);
 
 }

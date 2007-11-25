@@ -184,8 +184,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "fsuiserializetest", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "fsuiserializetest", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   fn = makeName (42);
   buf = GNUNET_malloc (FILESIZE);
@@ -197,12 +197,12 @@ main (int argc, char *argv[])
   kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_star (ctx,
-                             fn,
-                             (GNUNET_FSUI_DirectoryScanCallback) &
-                             GNUNET_disk_directory_scan, NULL, 0, 0,
-                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
-                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
-                             kuri, kuri);
+                                    fn,
+                                    (GNUNET_FSUI_DirectoryScanCallback) &
+                                    GNUNET_disk_directory_scan, NULL, 0, 0,
+                                    GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                                    GNUNET_get_time () +
+                                    5 * GNUNET_CRON_HOURS, meta, kuri, kuri);
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   kuri = NULL;
@@ -218,12 +218,12 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "fsuiserializetest",
-                            32, GNUNET_YES, &eventCallback, NULL);
+                                   cfg,
+                                   "fsuiserializetest",
+                                   32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif
@@ -251,12 +251,12 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "fsuiserializetest",
-                            32, GNUNET_YES, &eventCallback, NULL);
+                                   cfg,
+                                   "fsuiserializetest",
+                                   32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

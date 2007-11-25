@@ -102,7 +102,8 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
         {
           char *u;
 
-          if (!GNUNET_ECRS_uri_test_equal (upURI, event->data.SearchResult.fi.uri))
+          if (!GNUNET_ECRS_uri_test_equal
+              (upURI, event->data.SearchResult.fi.uri))
             {
 #if DEBUG_VERBOSE
               printf
@@ -117,11 +118,12 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 #endif
           GNUNET_free (u);
           download = GNUNET_FSUI_download_start (ctx,
-                                         0,
-                                         GNUNET_NO,
-                                         event->data.SearchResult.fi.uri,
-                                         event->data.SearchResult.fi.meta,
-                                         fn, NULL, NULL);
+                                                 0,
+                                                 GNUNET_NO,
+                                                 event->data.SearchResult.fi.
+                                                 uri,
+                                                 event->data.SearchResult.fi.
+                                                 meta, fn, NULL, NULL);
           if (download == NULL)
             {
               GNUNET_GE_BREAK (ectx, 0);
@@ -254,8 +256,8 @@ main (int argc, char *argv[])
   /* ACTUAL TEST CODE */
 #endif
   ctx = GNUNET_FSUI_start (NULL,
-                    cfg, "fsuidownloadtest", 32, GNUNET_YES, &eventCallback,
-                    NULL);
+                           cfg, "fsuidownloadtest", 32, GNUNET_YES,
+                           &eventCallback, NULL);
   CHECK (ctx != NULL);
   fn = makeName (42);
   buf = GNUNET_malloc (FILESIZE);
@@ -267,12 +269,12 @@ main (int argc, char *argv[])
   kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
   waitForEvent = GNUNET_FSUI_upload_completed;
   upload = GNUNET_FSUI_upload_star (ctx,
-                             fn,
-                             (GNUNET_FSUI_DirectoryScanCallback) &
-                             GNUNET_disk_directory_scan, NULL, 0, 0,
-                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
-                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
-                             kuri, kuri);
+                                    fn,
+                                    (GNUNET_FSUI_DirectoryScanCallback) &
+                                    GNUNET_disk_directory_scan, NULL, 0, 0,
+                                    GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                                    GNUNET_get_time () +
+                                    5 * GNUNET_CRON_HOURS, meta, kuri, kuri);
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   kuri = NULL;
@@ -291,7 +293,8 @@ main (int argc, char *argv[])
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;
-  search = GNUNET_FSUI_search_start (ctx, 0, 10000, 240 * GNUNET_CRON_SECONDS, uri);
+  search =
+    GNUNET_FSUI_search_start (ctx, 0, 10000, 240 * GNUNET_CRON_SECONDS, uri);
   CHECK (search != NULL);
   prog = 0;
   while (search != NULL)
@@ -306,14 +309,14 @@ main (int argc, char *argv[])
 #if DEBUG_VERBOSE
           printf ("Testing FSUI suspend-resume\n");
 #endif
-          GNUNET_FSUI_stop (ctx);      /* download possibly incomplete
-                                   at this point, thus testing resume */
+          GNUNET_FSUI_stop (ctx);       /* download possibly incomplete
+                                           at this point, thus testing resume */
           CHECK (search == NULL);
           CHECK (download == NULL);
           ctx = GNUNET_FSUI_start (NULL,
-                            cfg,
-                            "fsuidownloadtest",
-                            32, GNUNET_YES, &eventCallback, NULL);
+                                   cfg,
+                                   "fsuidownloadtest",
+                                   32, GNUNET_YES, &eventCallback, NULL);
 #if DEBUG_VERBOSE
           printf ("Resumed...\n");
 #endif

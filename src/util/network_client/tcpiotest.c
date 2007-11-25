@@ -48,7 +48,9 @@ openServerSocket ()
   listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
   if (listenerFD < 0)
     {
-      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "socket");
+      GNUNET_GE_LOG_STRERROR (NULL,
+                              GNUNET_GE_BULK | GNUNET_GE_ERROR |
+                              GNUNET_GE_USER, "socket");
       return -1;
     }
 
@@ -60,7 +62,9 @@ openServerSocket ()
 
   if (SETSOCKOPT (listenerFD, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
     {
-      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "setsockopt");
+      GNUNET_GE_LOG_STRERROR (NULL,
+                              GNUNET_GE_BULK | GNUNET_GE_ERROR |
+                              GNUNET_GE_USER, "setsockopt");
       CLOSE (listenerFD);
       return -1;
     }
@@ -69,7 +73,9 @@ openServerSocket ()
   if (BIND (listenerFD,
             (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
     {
-      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "bind");
+      GNUNET_GE_LOG_STRERROR (NULL,
+                              GNUNET_GE_BULK | GNUNET_GE_ERROR |
+                              GNUNET_GE_USER, "bind");
       CLOSE (listenerFD);
       return -1;
     }
@@ -77,7 +83,9 @@ openServerSocket ()
   /* start listening for new connections */
   if (0 != LISTEN (listenerFD, 5))
     {
-      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "listen");
+      GNUNET_GE_LOG_STRERROR (NULL,
+                              GNUNET_GE_BULK | GNUNET_GE_ERROR |
+                              GNUNET_GE_USER, "listen");
       CLOSE (listenerFD);
       return -1;
     }
@@ -100,7 +108,9 @@ doAccept (int serverSocket)
                            &lenOfIncomingAddr);
       if (incomingFD < 0)
         {
-          GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "accept");
+          GNUNET_GE_LOG_STRERROR (NULL,
+                                  GNUNET_GE_BULK | GNUNET_GE_ERROR |
+                                  GNUNET_GE_USER, "accept");
           continue;
         }
     }

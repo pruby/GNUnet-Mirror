@@ -56,14 +56,14 @@ checkCoverTraffic (struct GNUNET_GE_Context *ectx,
   level--;
   if (traffic == NULL)
     return GNUNET_SYSERR;
-  if (GNUNET_OK != traffic->get (5 * GNUNET_CRON_SECONDS / GNUNET_TRAFFIC_TIME_UNIT,   /* TTL_DECREMENT/TTU */
+  if (GNUNET_OK != traffic->get (5 * GNUNET_CRON_SECONDS / GNUNET_TRAFFIC_TIME_UNIT,    /* TTL_DECREMENT/TTU */
                                  GNUNET_P2P_PROTO_GAP_RESULT,
-                                 GNUNET_TRAFFIC_TYPE_RECEIVED, &count, &peers, &sizes,
-                                 &timevect))
+                                 GNUNET_TRAFFIC_TYPE_RECEIVED, &count, &peers,
+                                 &sizes, &timevect))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Failed to get traffic stats.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Failed to get traffic stats.\n"));
       return GNUNET_SYSERR;
     }
   if (level > 1000)
@@ -71,17 +71,17 @@ checkCoverTraffic (struct GNUNET_GE_Context *ectx,
       if (peers < level / 1000)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
-                  "Result dropped.\n", level, peers);
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
+                         "Result dropped.\n", level, peers);
           return GNUNET_SYSERR;
         }
       if (count < level % 1000)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
-                  "Result dropped.\n", level, count);
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+                         "Result dropped.\n", level, count);
           return GNUNET_SYSERR;
         }
     }
@@ -90,9 +90,9 @@ checkCoverTraffic (struct GNUNET_GE_Context *ectx,
       if (count < level)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
-                  "Result dropped.\n", level, count);
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+                         "Result dropped.\n", level, count);
           return GNUNET_SYSERR;
         }
     }

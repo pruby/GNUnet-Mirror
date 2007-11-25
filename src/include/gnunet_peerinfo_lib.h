@@ -48,8 +48,8 @@ extern "C"
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
 typedef int (*GNUNET_PEERINFO_PeerProcessor) (const char *name,
-                                       const GNUNET_PeerIdentity * id,
-                                       unsigned int trust, void *cls);
+                                              const GNUNET_PeerIdentity * id,
+                                              unsigned int trust, void *cls);
 
 /**
  * Request information about peers.
@@ -60,9 +60,10 @@ typedef int (*GNUNET_PEERINFO_PeerProcessor) (const char *name,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_PEERINFO_get_information (struct GNUNET_GE_Context *ectx,
-                      struct GNUNET_ClientServerConnection *sock,
-                      int connected_only,
-                      GNUNET_PEERINFO_PeerProcessor processor, void *cls);
+                                     struct GNUNET_ClientServerConnection
+                                     *sock, int connected_only,
+                                     GNUNET_PEERINFO_PeerProcessor processor,
+                                     void *cls);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

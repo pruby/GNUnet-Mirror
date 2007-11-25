@@ -52,13 +52,13 @@ typedef enum
 {
   GNUNET_GE_NOTHING = 0x00000000,
   /* type of event */
-  GNUNET_GE_FATAL = 0x00000001,        /* FATAL/FAILURE/NOTHING */
+  GNUNET_GE_FATAL = 0x00000001, /* FATAL/FAILURE/NOTHING */
   GNUNET_GE_ERROR = 0x00000002,
   GNUNET_GE_WARNING = 0x00000004,
-  GNUNET_GE_INFO = 0x00000008,         /* normal program response */
-  GNUNET_GE_STATUS = 0x00000010,       /* status message */
-  GNUNET_GE_DEBUG = 0x00000020,        /* DEBUG/CRON/EVERYTHING */
-  GNUNET_GE_EVENTKIND = 0x000000FF,    /* bitmask */
+  GNUNET_GE_INFO = 0x00000008,  /* normal program response */
+  GNUNET_GE_STATUS = 0x00000010,        /* status message */
+  GNUNET_GE_DEBUG = 0x00000020, /* DEBUG/CRON/EVERYTHING */
+  GNUNET_GE_EVENTKIND = 0x000000FF,     /* bitmask */
 
   /* who should see the message? */
   /**
@@ -67,53 +67,54 @@ typedef enum
    * daemon, messages tagged just as GNUNET_GE_USER will
    * be discarded.
    */
-  GNUNET_GE_USER = 0x01000000,         /* current user, if possible */
+  GNUNET_GE_USER = 0x01000000,  /* current user, if possible */
   /**
    * These messages are sent to the logfile for the
    * administrator.  Note that normal users may not
    * always look there.
    */
-  GNUNET_GE_ADMIN = 0x02000000,        /* system administrator */
+  GNUNET_GE_ADMIN = 0x02000000, /* system administrator */
   /**
    * These messages are usually not logged or given
    * to the user.  They can be obtained when the tool
    * is run in debug mode.
    */
-  GNUNET_GE_DEVELOPER = 0x04000000,    /* GNUnet developers (bug!) */
+  GNUNET_GE_DEVELOPER = 0x04000000,     /* GNUnet developers (bug!) */
   /**
    * Mask for the type of user that should see the
    * message.
    */
-  GNUNET_GE_USERKIND = 0x0F000000,     /* bitmask */
+  GNUNET_GE_USERKIND = 0x0F000000,      /* bitmask */
 
   /* how event should be routed */
   /**
    * The message should only be shown upon specific
    * request.
    */
-  GNUNET_GE_REQUEST = 0x20000000,      /* display on request only (i.e. low-priority log, user demands verbose events) */
+  GNUNET_GE_REQUEST = 0x20000000,       /* display on request only (i.e. low-priority log, user demands verbose events) */
   /**
    * This type of message is not urgent and is likely
    * to occur in bulk.  Suitable for logging to a file
    * or in a generic, scrolling message window.
    */
-  GNUNET_GE_BULK = 0x40000000,         /* display in bulk output (i.e. log-file, scroll window, console) */
+  GNUNET_GE_BULK = 0x40000000,  /* display in bulk output (i.e. log-file, scroll window, console) */
   /**
    * This is a message that is urgent and should be
    * communicated as soon as possible.  Sending an
    * e-mail alert or opening a pop-up window maybe
    * appropriate.
    */
-  GNUNET_GE_IMMEDIATE = 0x80000000,    /* display immediately (i.e. pop-up, e-mail) */
+  GNUNET_GE_IMMEDIATE = 0x80000000,     /* display immediately (i.e. pop-up, e-mail) */
   /**
    * Mask for the routing type.
    */
-  GNUNET_GE_ROUTEKIND = 0xF0000000,    /* bitmask */
+  GNUNET_GE_ROUTEKIND = 0xF0000000,     /* bitmask */
   GNUNET_GE_ALL = 0xFFFFFFFF,
-  GNUNET_GE_INVALID = 0x08000000,      /* unused bit */
+  GNUNET_GE_INVALID = 0x08000000,       /* unused bit */
 } GNUNET_GE_KIND;
 
-void GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind, const char *message, ...);
+void GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind,
+                    const char *message, ...);
 
 /**
  * @brief Get user confirmation (e.g. before the app shuts down and closes the
@@ -127,8 +128,8 @@ void GNUNET_GE_setDefaultContext (struct GNUNET_GE_Context *ctx);
  * User-defined handler for log events.
  */
 typedef void (*GNUNET_GE_LogHandler) (void *ctx,
-                               GNUNET_GE_KIND kind,
-                               const char *date, const char *msg);
+                                      GNUNET_GE_KIND kind,
+                                      const char *date, const char *msg);
 
 /**
  * User-defined method to free handler context.
@@ -149,11 +150,15 @@ typedef void (*GNUNET_GE_Confirm) (void *ctx);
  *        to be passed to this handler
  * @param liberator callback to free ctx, maybe NULL
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_callback (GNUNET_GE_KIND mask,
-                                               GNUNET_GE_LogHandler handler,
-                                               void *ctx,
-                                               GNUNET_GE_CtxFree liberator,
-                                               GNUNET_GE_Confirm confirm);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_callback (GNUNET_GE_KIND
+                                                             mask,
+                                                             GNUNET_GE_LogHandler
+                                                             handler,
+                                                             void *ctx,
+                                                             GNUNET_GE_CtxFree
+                                                             liberator,
+                                                             GNUNET_GE_Confirm
+                                                             confirm);
 
 /**
  * Free a log context.
@@ -195,8 +200,12 @@ const char *GNUNET_GE_kindToString (GNUNET_GE_KIND kind);
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_multiplexer (struct GNUNET_GE_Context *ctx1,
-                                                  struct GNUNET_GE_Context *ctx2);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_multiplexer (struct
+                                                                GNUNET_GE_Context
+                                                                *ctx1,
+                                                                struct
+                                                                GNUNET_GE_Context
+                                                                *ctx2);
 
 const char *GNUNET_GE_strerror (int errnum);
 

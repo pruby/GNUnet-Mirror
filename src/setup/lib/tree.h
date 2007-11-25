@@ -29,12 +29,14 @@
  * Set all values to defaults.
  */
 struct GNUNET_GNS_TreeNode *tree_parse (struct GNUNET_GE_Context *ectx,
-                             const char *specification);
+                                        const char *specification);
 
 struct GNUNET_GNS_TreeNode *tree_lookup (struct GNUNET_GNS_TreeNode *root,
-                              const char *section, const char *option);
+                                         const char *section,
+                                         const char *option);
 
-typedef void (*VisibilityChangeListener) (void *ctx, struct GNUNET_GNS_TreeNode * tree);
+typedef void (*VisibilityChangeListener) (void *ctx,
+                                          struct GNUNET_GNS_TreeNode * tree);
 
 /**
  * A value in the tree has been changed.
@@ -44,4 +46,5 @@ void tree_notify_change (struct GNUNET_GC_Configuration *cfg,
                          VisibilityChangeListener vcl,
                          void *ctx,
                          struct GNUNET_GE_Context *ectx,
-                         struct GNUNET_GNS_TreeNode *root, struct GNUNET_GNS_TreeNode *change);
+                         struct GNUNET_GNS_TreeNode *root,
+                         struct GNUNET_GNS_TreeNode *change);

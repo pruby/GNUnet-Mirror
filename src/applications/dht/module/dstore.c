@@ -58,9 +58,10 @@ dht_store_put (unsigned int type,
     {
 #if DEBUG_DSTORE
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-              "Content already expired (%llu < %llu), will not keep.\n",
-              discard_time, GNUNET_get_time ());
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER,
+                     "Content already expired (%llu < %llu), will not keep.\n",
+                     discard_time, GNUNET_get_time ());
 #endif
       return;
     }

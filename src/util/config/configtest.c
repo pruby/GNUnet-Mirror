@@ -36,13 +36,15 @@ testConfig ()
   char *c;
   unsigned long long l;
 
-  if (0 != GNUNET_GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
+  if (0 !=
+      GNUNET_GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
     return 1;
   if (0 != strcmp ("b", c))
     return 1;
   GNUNET_free (c);
   if (0 != GNUNET_GC_get_configuration_value_number (cfg,
-                                              "test", "five", 0, 10, 9, &l))
+                                                     "test", "five", 0, 10, 9,
+                                                     &l))
     return 1;
   if (5 != l)
     return 1;
@@ -60,9 +62,12 @@ main (int argc, char *argv[])
   int failureCount = 0;
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
-                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
-                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+                                          GNUNET_GE_WARNING | GNUNET_GE_ERROR
+                                          | GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                          GNUNET_GE_ADMIN |
+                                          GNUNET_GE_DEVELOPER |
+                                          GNUNET_GE_IMMEDIATE |
+                                          GNUNET_GE_BULK);
   GNUNET_GE_setDefaultContext (ectx);
   cfg = GNUNET_GC_create ();
   if (0 != GNUNET_GC_parse_configuration (cfg, "testconfig.conf"))

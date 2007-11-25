@@ -105,14 +105,20 @@ struct GNUNET_TESTING_DaemonContext
  *
  * @return handle used to stop the daemons, NULL on error
  */
-struct GNUNET_TESTING_DaemonContext *GNUNET_TESTING_start_daemons (const char *transports,
-                                                    const char *applications,
-                                                    const char
-                                                    *gnunetd_home_prefix,
-                                                    unsigned short
-                                                    app_baseport,
-                                                    unsigned short delta,
-                                                    unsigned int count);
+struct GNUNET_TESTING_DaemonContext *GNUNET_TESTING_start_daemons (const char
+                                                                   *transports,
+                                                                   const char
+                                                                   *applications,
+                                                                   const char
+                                                                   *gnunetd_home_prefix,
+                                                                   unsigned
+                                                                   short
+                                                                   app_baseport,
+                                                                   unsigned
+                                                                   short
+                                                                   delta,
+                                                                   unsigned
+                                                                   int count);
 
 /**
  * Stop all of the daemons started with the start function.

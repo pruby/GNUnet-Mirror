@@ -115,15 +115,16 @@ postProcess (const struct GNUNET_ECRS_URI *uri)
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
   nsuri = GNUNET_NS_add_to_namespace (ectx,
-                             cfg,
-                             anonymity,
-                             priority,
-                             GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
-                             pseudonym,
-                             (GNUNET_Int32Time) interval,
-                             prev_id == NULL ? NULL : &prevId,
-                             this_id == NULL ? NULL : &thisId,
-                             next_id == NULL ? NULL : &nextId, uri, meta);
+                                      cfg,
+                                      anonymity,
+                                      priority,
+                                      GNUNET_get_time () +
+                                      2 * GNUNET_CRON_YEARS, pseudonym,
+                                      (GNUNET_Int32Time) interval,
+                                      prev_id == NULL ? NULL : &prevId,
+                                      this_id == NULL ? NULL : &thisId,
+                                      next_id == NULL ? NULL : &nextId, uri,
+                                      meta);
   if (nsuri != NULL)
     {
       us = GNUNET_ECRS_uri_to_string (nsuri);
@@ -266,7 +267,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
   {'a', "anonymity", "LEVEL",
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
    1, &GNUNET_getopt_configure_set_uint, &anonymity},
-   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'C', "copy", NULL,
    gettext_noop ("even if gnunetd is running on the local machine, force the"
                  " creation of a copy instead of making a link to the GNUnet share directory"),
@@ -283,7 +284,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop
    ("print list of extracted keywords that would be used, but do not perform upload"),
    0, &GNUNET_getopt_configure_set_one, &extract_only},
-   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Make files available to GNUnet for sharing.")),      /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Make files available to GNUnet for sharing.")),       /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   {'i', "interval", "SECONDS",
    gettext_noop ("set interval for availability of updates to SECONDS"
@@ -334,7 +335,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop ("ID of the previous version of the content"
                  " (for namespace update only)"),
    1, &GNUNET_getopt_configure_set_string, &prev_id},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -382,7 +383,8 @@ main (int argc, char *const *argv)
 
       l = EXTRACTOR_loadDefaultLibraries ();
       ex = NULL;
-      GNUNET_GC_get_configuration_value_string (cfg, "FS", "EXTRACTORS", "", &ex);
+      GNUNET_GC_get_configuration_value_string (cfg, "FS", "EXTRACTORS", "",
+                                                &ex);
       if (strlen (ex) > 0)
         l = EXTRACTOR_loadConfigLibraries (l, ex);
       GNUNET_free (ex);
@@ -407,12 +409,13 @@ main (int argc, char *const *argv)
 
 
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "GNUNET",
-                                     "VERBOSE", 0, 9999, 0, &verbose);
+                                            "GNUNET",
+                                            "VERBOSE", 0, 9999, 0, &verbose);
   /* check arguments */
   if (pseudonym != NULL)
     {
-      if (GNUNET_OK != GNUNET_ECRS_namespace_test_exists (ectx, cfg, pseudonym, NULL))
+      if (GNUNET_OK !=
+          GNUNET_ECRS_namespace_test_exists (ectx, cfg, pseudonym, NULL))
         {
           printf (_("Could not access namespace `%s' (does not exist?).\n"),
                   pseudonym);
@@ -432,7 +435,8 @@ main (int argc, char *const *argv)
           if ((NULL == strptime (creation_time, fmt, &t)))
             {
               GNUNET_GE_LOG_STRERROR (ectx,
-                               GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "strptime");
+                                      GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                      GNUNET_GE_IMMEDIATE, "strptime");
               printf (_("Parsing time failed. Use `%s' format.\n"), fmt);
               errorCode = -1;
               goto quit;
@@ -484,8 +488,8 @@ main (int argc, char *const *argv)
     }
 
   /* fundamental init */
-  ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,  /* make configurable */
-                    &printstatus, &verbose);
+  ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,   /* make configurable */
+                           &printstatus, &verbose);
 
   /* first insert all of the top-level files or directories */
   tmp = GNUNET_expand_file_name (ectx, filename);
@@ -494,16 +498,13 @@ main (int argc, char *const *argv)
   start_time = GNUNET_get_time ();
   errorCode = 1;
   ul = GNUNET_FSUI_upload_star (ctx,
-                         tmp,
-                         (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan,
-                         ectx,
-                         anonymity,
-                         priority,
-                         !do_insert,
-                         GNUNET_YES,
-                         !do_no_direct_references,
-                         start_time + 2 * GNUNET_CRON_YEARS,
-                         meta, gloKeywords, topKeywords);
+                                tmp,
+                                (GNUNET_FSUI_DirectoryScanCallback) &
+                                GNUNET_disk_directory_scan, ectx, anonymity,
+                                priority, !do_insert, GNUNET_YES,
+                                !do_no_direct_references,
+                                start_time + 2 * GNUNET_CRON_YEARS, meta,
+                                gloKeywords, topKeywords);
   if (gloKeywords != NULL)
     GNUNET_ECRS_uri_destroy (gloKeywords);
   if (topKeywords != NULL)

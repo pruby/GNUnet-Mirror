@@ -187,8 +187,9 @@ scanForHosts (unsigned int index)
     {
 #if DEBUG_TOPOLOGY
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-              "No peers found for slot %u\n", index);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER, "No peers found for slot %u\n",
+                     index);
 #endif
       return;                   /* no matching peers found! */
     }
@@ -202,22 +203,24 @@ scanForHosts (unsigned int index)
     return;                     /* should happen really rarely */
   if (coreAPI->computeIndex (&indexMatch.match) != index)
     {
-      GNUNET_GE_BREAK (NULL, 0);       /* should REALLY not happen */
+      GNUNET_GE_BREAK (NULL, 0);        /* should REALLY not happen */
       return;
     }
   if (GNUNET_OK == coreAPI->queryPeerStatus (&indexMatch.match, NULL, NULL))
     {
-      GNUNET_GE_BREAK (NULL, 0);       /* should REALLY not happen */
+      GNUNET_GE_BREAK (NULL, 0);        /* should REALLY not happen */
       return;
     }
 
 #if DEBUG_TOPOLOGY
   IF_GELOG (coreAPI->ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER | GNUNET_GE_DEVELOPER,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER |
+            GNUNET_GE_DEVELOPER,
             GNUNET_hash_to_enc (&indexMatch.match.hashPubKey, &enc));
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER | GNUNET_GE_DEVELOPER,
-          "Trying to connect to peer `%s'\n", &enc);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER |
+                 GNUNET_GE_DEVELOPER, "Trying to connect to peer `%s'\n",
+                 &enc);
 #endif
   if (GNUNET_NO == identity->isBlacklisted (&indexMatch.match, GNUNET_YES))
     {
@@ -243,8 +246,8 @@ notifyPONG (void *cls)
             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
             GNUNET_hash_to_enc (&hostId->hashPubKey, &enc));
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-          "Received liveness confirmation from `%s'.\n", &enc);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "Received liveness confirmation from `%s'.\n", &enc);
 #endif
 
   coreAPI->confirmSessionUp (hostId);
@@ -285,9 +288,10 @@ checkNeedForPing (const GNUNET_PeerIdentity * peer, void *unused)
                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&peer->hashPubKey, &enc));
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-              "Peer `%s' was inactive for %llus.  Sending PING.\n",
-              &enc, (now - act) / GNUNET_CRON_SECONDS);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER,
+                     "Peer `%s' was inactive for %llus.  Sending PING.\n",
+                     &enc, (now - act) / GNUNET_CRON_SECONDS);
 #endif
 
 
@@ -316,9 +320,9 @@ cronCheckLiveness (void *unused)
   int autoconnect;
 
   autoconnect = GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                  "GNUNETD",
-                                                  "DISABLE-AUTOCONNECT",
-                                                  GNUNET_NO);
+                                                         "GNUNETD",
+                                                         "DISABLE-AUTOCONNECT",
+                                                         GNUNET_NO);
   slotCount = coreAPI->getSlotCount ();
   if ((GNUNET_NO == autoconnect) && (saturation < 1))
     {
@@ -466,12 +470,12 @@ initialize_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
   myTopology = capi->requestService ("topology");
   GNUNET_GE_ASSERT (capi->ectx, myTopology != NULL);
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "topology",
-                                                     gettext_noop
-                                                     ("maintains GNUnet default mesh topology")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "topology",
+                                                                   gettext_noop
+                                                                   ("maintains GNUnet default mesh topology")));
   return GNUNET_OK;
 }
 

@@ -346,27 +346,29 @@ cronHelper (const char *filename, const char *dirname, void *unused)
     {
       if (0 == UNLINK (fullname))
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                _
-                ("File `%s' in directory `%s' does not match naming convention. "
-                 "Removed.\n"), filename, networkIdDirectory);
+                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                       GNUNET_GE_BULK,
+                       _
+                       ("File `%s' in directory `%s' does not match naming convention. "
+                        "Removed.\n"), filename, networkIdDirectory);
       else
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-                              "unlink", fullname);
+                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "unlink", fullname);
     }
   else if (GNUNET_disk_directory_test (ectx, fullname) == GNUNET_YES)
     {
       if (0 == RMDIR (fullname))
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                _
-                ("Directory `%s' in directory `%s' does not match naming convention. "
-                 "Removed.\n"), filename, networkIdDirectory);
+                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                       GNUNET_GE_BULK,
+                       _
+                       ("Directory `%s' in directory `%s' does not match naming convention. "
+                        "Removed.\n"), filename, networkIdDirectory);
       else
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-                              "rmdir", fullname);
+                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "rmdir", fullname);
     }
   GNUNET_free (fullname);
   return GNUNET_OK;
@@ -396,8 +398,9 @@ cronScanDirectoryDataHosts (void *unused)
       if ((retries & 32) > 0)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _("Still no peers found in `%s'!\n"), networkIdDirectory);
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Still no peers found in `%s'!\n"),
+                         networkIdDirectory);
         }
     }
   GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
@@ -525,8 +528,8 @@ delHostFromKnown (const GNUNET_PeerIdentity * identity,
           fn = getHostFileName (identity, protocol);
           if (0 != UNLINK (fn))
             GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                                  "unlink", fn);
+                                         GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                         GNUNET_GE_BULK, "unlink", fn);
           GNUNET_free (fn);
 
           if (entry->protocolCount == 0)
@@ -723,12 +726,15 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
     {
       if (0 == UNLINK (fn))
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                _("Removed file `%s' containing invalid HELLO data.\n"), fn);
+                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                       _
+                       ("Removed file `%s' containing invalid HELLO data.\n"),
+                       fn);
       else
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                              "unlink", fn);
+                                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_USER | GNUNET_GE_BULK,
+                                     "unlink", fn);
       GNUNET_free (fn);
       GNUNET_mutex_unlock (lock_);
       return NULL;
@@ -746,12 +752,15 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
     {
       if (0 == UNLINK (fn))
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                _("Removed file `%s' containing invalid HELLO data.\n"), fn);
+                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                       _
+                       ("Removed file `%s' containing invalid HELLO data.\n"),
+                       fn);
       else
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                              "unlink", fn);
+                                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                     GNUNET_GE_USER | GNUNET_GE_BULK,
+                                     "unlink", fn);
       GNUNET_free (fn);
       GNUNET_free (result);
       GNUNET_mutex_unlock (lock_);
@@ -784,7 +793,8 @@ verifyPeerSignature (const GNUNET_PeerIdentity * signer,
   GNUNET_MessageHello *hello;
   int res;
 
-  hello = identity2Hello (signer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_YES);
+  hello =
+    identity2Hello (signer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_YES);
   if (hello == NULL)
     {
 #if DEBUG_IDENTITY
@@ -794,17 +804,19 @@ verifyPeerSignature (const GNUNET_PeerIdentity * signer,
                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&signer->hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Signature failed verification: peer `%s' not known.\n"),
-              &enc);
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Signature failed verification: peer `%s' not known.\n"),
+                     &enc);
 #endif
       return GNUNET_SYSERR;
     }
   res = GNUNET_RSA_verify (message, size, sig, &hello->publicKey);
   if (res == GNUNET_SYSERR)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER | GNUNET_GE_USER,
-            _("Signature failed verification: signature invalid.\n"));
+                   GNUNET_GE_ERROR | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER |
+                   GNUNET_GE_USER,
+                   _("Signature failed verification: signature invalid.\n"));
   GNUNET_free (hello);
   return res;
 }
@@ -877,10 +889,11 @@ blacklistHost (const GNUNET_PeerIdentity * identity,
   GNUNET_hash_to_enc (&identity->hashPubKey, &hn);
 #if DEBUG_IDENTITY
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-          "Blacklisting host `%s' for %llu seconds"
-          " until %llu (strict=%d).\n",
-          &hn, entry->delta / GNUNET_CRON_SECONDS, entry->until, strict);
+                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "Blacklisting host `%s' for %llu seconds"
+                 " until %llu (strict=%d).\n",
+                 &hn, entry->delta / GNUNET_CRON_SECONDS, entry->until,
+                 strict);
 #endif
   GNUNET_mutex_unlock (lock_);
   return GNUNET_OK;
@@ -917,10 +930,10 @@ isBlacklisted (const GNUNET_PeerIdentity * identity, int strict)
                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&identity->hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("Peer `%s' is currently strictly blacklisted (for another %llums).\n"),
-              &enc, entry->until - now);
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Peer `%s' is currently strictly blacklisted (for another %llums).\n"),
+                     &enc, entry->until - now);
 #endif
       GNUNET_mutex_unlock (lock_);
       return GNUNET_YES;
@@ -1039,14 +1052,14 @@ forEachHost (GNUNET_CronTime now, GNUNET_HostProcessor callback, void *data)
                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                     GNUNET_hash_to_enc (&entry->identity.hashPubKey, &enc));
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  entry->strict ?
-                  _
-                  ("Peer `%s' is currently strictly blacklisted (for another %llums).\n")
-                  :
-                  _
-                  ("Peer `%s' is currently blacklisted (for another %llums).\n"),
-                  &enc, entry->until - now);
+                         GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         entry->strict ?
+                         _
+                         ("Peer `%s' is currently strictly blacklisted (for another %llums).\n")
+                         :
+                         _
+                         ("Peer `%s' is currently blacklisted (for another %llums).\n"),
+                         &enc, entry->until - now);
 #endif
 #endif
         }
@@ -1100,7 +1113,8 @@ flushHostCredit (HostEntry * host)
     {
       if ((0 != UNLINK (fn)) && (errno != ENOENT))
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "unlink", fn);
+                                     GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                     GNUNET_GE_BULK, "unlink", fn);
     }
   else
     {
@@ -1374,11 +1388,12 @@ provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
 
   gnHome = NULL;
   GNUNET_GE_ASSERT (ectx,
-             -1 != GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
-                                                        "GNUNETD",
-                                                        "GNUNETD_HOME",
-                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
-                                                        &gnHome));
+                    -1 !=
+                    GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
+                                                                "GNUNETD",
+                                                                "GNUNETD_HOME",
+                                                                GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
+                                                                &gnHome));
   if (gnHome == NULL)
     return NULL;
   GNUNET_disk_directory_create (ectx, gnHome);
@@ -1388,11 +1403,11 @@ provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
   strcat (tmp, HOST_DIR);
   networkIdDirectory = NULL;
   GNUNET_GE_ASSERT (ectx,
-             -1 != GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
-                                                        "GNUNETD",
-                                                        "HOSTS",
-                                                        tmp,
-                                                        &networkIdDirectory));
+                    -1 !=
+                    GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
+                                                                "GNUNETD",
+                                                                "HOSTS", tmp,
+                                                                &networkIdDirectory));
   GNUNET_free (tmp);
   GNUNET_disk_directory_create (ectx, networkIdDirectory);
   trustDirectory = GNUNET_malloc (strlen (gnHome) + strlen (TRUSTDIR) + 2);
@@ -1444,8 +1459,9 @@ release_module_identity ()
                                     &identityHelloHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
                                     &identityRequestHelloHandler);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
-                                    &identityRequestSignatureHandler);
+  coreAPI->
+    unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
+                             &identityRequestSignatureHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
                                     &identityRequestInfoHandler);
   for (i = 0; i < MAX_TEMP_HOSTS; i++)

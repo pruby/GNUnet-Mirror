@@ -49,8 +49,8 @@ updateDownloadThreads (void *c)
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
     GNUNET_GE_LOG (ctx->ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-            "Download thread manager schedules pending downloads...\n");
+                   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                   "Download thread manager schedules pending downloads...\n");
 #endif
   while (dpos != NULL)
     {
@@ -63,7 +63,8 @@ updateDownloadThreads (void *c)
 /* ******************* START code *********************** */
 
 static void
-signalDownloadResume (struct GNUNET_FSUI_DownloadList *ret, GNUNET_FSUI_Context * ctx)
+signalDownloadResume (struct GNUNET_FSUI_DownloadList *ret,
+                      GNUNET_FSUI_Context * ctx)
 {
   GNUNET_FSUI_Event event;
   GNUNET_CronTime now;
@@ -110,7 +111,8 @@ signalDownloadResume (struct GNUNET_FSUI_DownloadList *ret, GNUNET_FSUI_Context 
 }
 
 static void
-signalUploadResume (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ctx)
+signalUploadResume (struct GNUNET_FSUI_UploadList *ret,
+                    GNUNET_FSUI_Context * ctx)
 {
   GNUNET_FSUI_Event event;
   GNUNET_CronTime now;
@@ -157,18 +159,19 @@ signalUploadResume (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ct
  * threads below are controlled by the parent.
  */
 static void
-doResumeUploads (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ctx)
+doResumeUploads (struct GNUNET_FSUI_UploadList *ret,
+                 GNUNET_FSUI_Context * ctx)
 {
   while (ret != NULL)
     {
       if (ret->state == GNUNET_FSUI_ACTIVE)
         {
-          ret->shared->handle = GNUNET_thread_create (&GNUNET_FSUI_uploadThread,
-                                                      ret, 128 * 1024);
+          ret->shared->handle =
+            GNUNET_thread_create (&GNUNET_FSUI_uploadThread, ret, 128 * 1024);
           if (ret->shared->handle == NULL)
             GNUNET_GE_DIE_STRERROR (ctx->ectx,
-                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                             "pthread_create");
+                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "pthread_create");
         }
       ret = ret->next;
     }
@@ -184,10 +187,10 @@ doResumeUploads (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ctx)
  */
 struct GNUNET_FSUI_Context *
 GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
-            struct GNUNET_GC_Configuration *cfg,
-            const char *name,
-            unsigned int threadPoolSize,
-            int doResume, GNUNET_FSUI_EventProcessor cb, void *closure)
+                   struct GNUNET_GC_Configuration *cfg,
+                   const char *name,
+                   unsigned int threadPoolSize,
+                   int doResume, GNUNET_FSUI_EventProcessor cb, void *closure)
 {
   GNUNET_FSUI_Event event;
   GNUNET_FSUI_Context *ret;
@@ -200,7 +203,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   GNUNET_GE_ASSERT (ectx, cfg != NULL);
   ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));
   memset (ret, 0, sizeof (GNUNET_FSUI_Context));
-  ret->activeDownloads.state = GNUNET_FSUI_PENDING;    /* !? */
+  ret->activeDownloads.state = GNUNET_FSUI_PENDING;     /* !? */
   ret->activeDownloads.ctx = ret;
   ret->cfg = cfg;
   ret->ecb = cb;
@@ -211,9 +214,10 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   ret->activeDownloadThreads = 0;
 
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                       "GNUNET",
-                                       "GNUNET_HOME",
-                                       GNUNET_DEFAULT_HOME_DIRECTORY, &gh);
+                                              "GNUNET",
+                                              "GNUNET_HOME",
+                                              GNUNET_DEFAULT_HOME_DIRECTORY,
+                                              &gh);
   GNUNET_disk_directory_create (ectx, gh);
   fn = GNUNET_malloc (strlen (gh) + strlen (name) + 2 + 5);
   strcpy (fn, gh);
@@ -228,12 +232,14 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
       ret->ipc = GNUNET_IPC_semaphore_create (ectx, fn, 1);
 #if DEBUG_PERSISTENCE
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Getting IPC lock for FSUI (%s).\n", fn);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Getting IPC lock for FSUI (%s).\n", fn);
 #endif
       GNUNET_IPC_semaphore_down (ret->ipc, GNUNET_YES);
 #if DEBUG_PERSISTENCE
-      GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Aquired IPC lock.\n");
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Aquired IPC lock.\n");
 #endif
       strcat (fn, ".res");
       GNUNET_FSUI_deserialize (ret);
@@ -288,7 +294,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
   ret->cron = cron_create (ectx);
   /* 3a) resume downloads */
   GNUNET_cron_add_job (ret->cron,
-                       &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY, ret);
+                       &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY,
+                       ret);
   GNUNET_cron_start (ret->cron);
   /* 3b) resume uploads */
   doResumeUploads (ret->activeUploads.child, ret);
@@ -303,8 +310,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
                                                 xlist, 32 * 1024);
           if (xlist->handle == NULL)
             GNUNET_GE_DIE_STRERROR (ectx,
-                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                             "pthread_create");
+                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "pthread_create");
         }
       xlist = xlist->next;
     }
@@ -319,8 +326,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
             GNUNET_thread_create (&GNUNET_FSUI_searchThread, list, 32 * 1024);
           if (list->handle == NULL)
             GNUNET_GE_DIE_STRERROR (ectx,
-                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                             "pthread_create");
+                                    GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "pthread_create");
         }
       list = list->next;
     }
@@ -335,7 +342,8 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
  */
 static void
 signalDownloadSuspend (struct GNUNET_GE_Context *ectx,
-                       GNUNET_FSUI_Context * ctx, GNUNET_FSUI_DownloadList * list)
+                       GNUNET_FSUI_Context * ctx,
+                       GNUNET_FSUI_DownloadList * list)
 {
   GNUNET_FSUI_Event event;
   while (list != NULL)
@@ -405,7 +413,8 @@ freeDownloadList (GNUNET_FSUI_DownloadList * list)
  * (recursively) free upload list
  */
 static void
-freeUploadList (struct GNUNET_FSUI_Context *ctx, GNUNET_FSUI_UploadList * list)
+freeUploadList (struct GNUNET_FSUI_Context *ctx,
+                GNUNET_FSUI_UploadList * list)
 {
   GNUNET_FSUI_UploadList *next;
   GNUNET_FSUI_UploadShared *shared;
@@ -454,13 +463,13 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-            "FSUI shutdown.  This may take a while.\n");
+                   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                   "FSUI shutdown.  This may take a while.\n");
 
   /* 1) stop everything */
   GNUNET_cron_stop (ctx->cron);
-  GNUNET_cron_del_job (ctx->cron, &updateDownloadThreads, GNUNET_FSUI_UDT_FREQUENCY,
-                       ctx);
+  GNUNET_cron_del_job (ctx->cron, &updateDownloadThreads,
+                       GNUNET_FSUI_UDT_FREQUENCY, ctx);
   GNUNET_cron_destroy (ctx->cron);
 
   /* 1a) stop downloading */
@@ -477,7 +486,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     {
       if ((spos->state == GNUNET_FSUI_ACTIVE) ||
           (spos->state == GNUNET_FSUI_ABORTED) ||
-          (spos->state == GNUNET_FSUI_ERROR) || (spos->state == GNUNET_FSUI_COMPLETED))
+          (spos->state == GNUNET_FSUI_ERROR)
+          || (spos->state == GNUNET_FSUI_COMPLETED))
         {
           if (spos->state == GNUNET_FSUI_ACTIVE)
             spos->state = GNUNET_FSUI_PENDING;
@@ -494,7 +504,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     {
       if ((xpos->state == GNUNET_FSUI_ACTIVE) ||
           (xpos->state == GNUNET_FSUI_ABORTED) ||
-          (xpos->state == GNUNET_FSUI_ERROR) || (xpos->state == GNUNET_FSUI_COMPLETED))
+          (xpos->state == GNUNET_FSUI_ERROR)
+          || (xpos->state == GNUNET_FSUI_COMPLETED))
         {
           if (xpos->state == GNUNET_FSUI_ACTIVE)
             xpos->state = GNUNET_FSUI_PENDING;
@@ -511,7 +522,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
     {
       if ((upos->state == GNUNET_FSUI_ACTIVE) ||
           (upos->state == GNUNET_FSUI_ABORTED) ||
-          (upos->state == GNUNET_FSUI_ERROR) || (upos->state == GNUNET_FSUI_COMPLETED))
+          (upos->state == GNUNET_FSUI_ERROR)
+          || (upos->state == GNUNET_FSUI_COMPLETED))
         {
           /* NOTE: will force transitive termination
              of rest of tree! */
@@ -606,7 +618,8 @@ GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
   GNUNET_free (ctx->name);
   if (ctx->ipc != NULL)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "FSUI shutdown complete.\n");
+                   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                   "FSUI shutdown complete.\n");
   GNUNET_free (ctx);
 }
 

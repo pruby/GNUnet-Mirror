@@ -69,12 +69,12 @@ typedef struct
    * @return handle to stop the async get
    */
   struct GNUNET_DHT_GetHandle *(*get_start) (unsigned int type,
-                                       const GNUNET_HashCode * key,
-                                       GNUNET_CronTime timeout,
-                                       GNUNET_DataProcessor callback,
-                                       void *cls,
-                                       GNUNET_DHT_OperationCompleteCallback callbackComplete,
-                                       void *closure);
+                                             const GNUNET_HashCode * key,
+                                             GNUNET_CronTime timeout,
+                                             GNUNET_DataProcessor callback,
+                                             void *cls,
+                                             GNUNET_DHT_OperationCompleteCallback
+                                             callbackComplete, void *closure);
 
   /**
    * Stop async DHT-get.  Frees associated resources.

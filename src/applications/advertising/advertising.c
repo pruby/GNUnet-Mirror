@@ -189,10 +189,10 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _
-              ("HELLO message from `%s' has an invalid signature. Dropping.\n"),
-              (char *) &enc);
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("HELLO message from `%s' has an invalid signature. Dropping.\n"),
+                     (char *) &enc);
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* message invalid */
     }
@@ -200,9 +200,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
       GNUNET_get_time_int32 (NULL) + GNUNET_MAX_HELLO_EXPIRES)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _
-              ("HELLO message has expiration too far in the future. Dropping.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("HELLO message has expiration too far in the future. Dropping.\n"));
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;
     }
@@ -213,9 +213,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-              "Transport verification of HELLO message from `%s' failed (%u).\n",
-              &enc, ntohs (msg->protocol));
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Transport verification of HELLO message from `%s' failed (%u).\n",
+                     &enc, ntohs (msg->protocol));
 #endif
       return GNUNET_OK;         /* not good, but do process rest of message */
     }
@@ -226,9 +226,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
             GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "HELLO advertisement from `%s' for protocol %d received.\n",
-          &enc, ntohs (msg->protocol));
+                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "HELLO advertisement from `%s' for protocol %d received.\n",
+                 &enc, ntohs (msg->protocol));
 #endif
   if (ntohs (msg->protocol) == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
     {
@@ -250,9 +250,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "HELLO advertisement from `%s' for NAT, no verification required.\n",
-              &enc);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "HELLO advertisement from `%s' for NAT, no verification required.\n",
+                     &enc);
 #endif
       return GNUNET_OK;
     }
@@ -283,25 +283,26 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                     GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey,
                                         &enc));
-          GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  "HELLO advertisement from `%s' for protocol %d updates old advertisement, no verification required.\n",
-                  &enc, ntohs (msg->protocol));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         "HELLO advertisement from `%s' for protocol %d updates old advertisement, no verification required.\n",
+                         &enc, ntohs (msg->protocol));
 #endif
           return GNUNET_OK;
         }
 #if DEBUG_ADVERTISING
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "HELLO advertisement differs from prior knowledge,"
-              " requireing ping-pong confirmation.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "HELLO advertisement differs from prior knowledge,"
+                     " requireing ping-pong confirmation.\n");
 #endif
       GNUNET_free (copy);
     }
 
   if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                      "GNUNETD",
-                                                      "PRIVATE-NETWORK",
-                                                      GNUNET_NO))
+                                                             "GNUNETD",
+                                                             "PRIVATE-NETWORK",
+                                                             GNUNET_NO))
     {
       /* the option 'PRIVATE-NETWORK' can be used
          to limit the connections of this peer to
@@ -319,8 +320,8 @@ receivedhello (const GNUNET_PeerIdentity * sender,
          editing :-). */
 #if DEBUG_ADVERTISING
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
-              "Private network, discarding unknown advertisements\n");
+                     GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Private network, discarding unknown advertisements\n");
 #endif
       return GNUNET_SYSERR;
     }
@@ -348,13 +349,14 @@ receivedhello (const GNUNET_PeerIdentity * sender,
          hello-ing by ourselves. */
 #if DEBUG_ADVERTISING
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
-              "Not enough resources to verify HELLO message at this time (%u * %u < %u * 10)\n",
-              (unsigned int) ((now - lasthelloMsg) / GNUNET_CRON_SECONDS),
-              (unsigned int) GNUNET_network_monitor_get_limit (coreAPI->
-                                                               load_monitor,
-                                                               GNUNET_ND_DOWNLOAD),
-              (unsigned int) GNUNET_sizeof_hello (msg));
+                     GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     "Not enough resources to verify HELLO message at this time (%u * %u < %u * 10)\n",
+                     (unsigned int) ((now - lasthelloMsg) /
+                                     GNUNET_CRON_SECONDS),
+                     (unsigned int)
+                     GNUNET_network_monitor_get_limit (coreAPI->load_monitor,
+                                                       GNUNET_ND_DOWNLOAD),
+                     (unsigned int) GNUNET_sizeof_hello (msg));
 #endif
       if (stats != NULL)
         stats->change (stat_hello_discard, 1);
@@ -374,8 +376,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Failed to connect to `%s'.  Verification failed.\n", &enc);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Failed to connect to `%s'.  Verification failed.\n",
+                     &enc);
 #endif
       return GNUNET_SYSERR;     /* could not connect */
     }
@@ -400,8 +403,8 @@ receivedhello (const GNUNET_PeerIdentity * sender,
     {
       res = GNUNET_SYSERR;
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              _("Could not send HELLO+PING, ping buffer full.\n"));
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     _("Could not send HELLO+PING, ping buffer full.\n"));
       transport->disconnect (tsession, __FILE__);
       if (stats != NULL)
         stats->change (stat_hello_ping_busy, 1);
@@ -421,9 +424,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
   if (helloEnd <= 0)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _
-              ("Failed to create an advertisement for this peer. Will not send PING.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("Failed to create an advertisement for this peer. Will not send PING.\n"));
       GNUNET_free (buffer);
       if (stats != NULL)
         stats->change (stat_hello_noselfad, 1);
@@ -433,9 +436,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Failed to connect advertisement for myself.  Verification failed.\n",
-              &enc);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Failed to connect advertisement for myself.  Verification failed.\n",
+                     &enc);
 #endif
       return GNUNET_SYSERR;
     }
@@ -456,9 +459,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&msg->senderIdentity.hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Failed to transmit advertisement for myself.  Verification failed.\n",
-              &enc);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Failed to transmit advertisement for myself.  Verification failed.\n",
+                     &enc);
 #endif
       res = GNUNET_SYSERR;
     }
@@ -508,8 +511,8 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
             GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&hi->hashPubKey, &other));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "Entering `%s' with target `%s'.\n", __FUNCTION__, &other);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Entering `%s' with target `%s'.\n", __FUNCTION__, &other);
 #endif
   if (0 == memcmp (hi, coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity)))
     return GNUNET_OK;           /* never advertise to myself... */
@@ -537,9 +540,10 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
   if (NULL == hello)
     {
 #if DEBUG_ADVERTISING
-      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Exit from `%s' (error: `%s' failed).\n",
-              __FUNCTION__, "identity2Hello");
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Exit from `%s' (error: `%s' failed).\n", __FUNCTION__,
+                     "identity2Hello");
 #endif
       return GNUNET_OK;
     }
@@ -549,9 +553,9 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
     {
 #if DEBUG_ADVERTISING
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Exit from `%s' (%s error).\n",
-              __FUNCTION__, "transportConnect");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Exit from `%s' (%s error).\n",
+                     __FUNCTION__, "transportConnect");
 #endif
       return GNUNET_OK;         /* could not connect */
     }
@@ -563,7 +567,8 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
   transport->disconnect (tsession, __FILE__);
 #if DEBUG_ADVERTISING
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Exit from %s.\n", __FUNCTION__);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "Exit from %s.\n", __FUNCTION__);
 #endif
   return GNUNET_OK;
 }
@@ -592,18 +597,18 @@ broadcasthelloTransport (TransportAPI * tapi, void *cls)
     return;
 #if DEBUG_ADVERTISING
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("Advertising my transport %d to selected peers.\n"),
-          tapi->protocolNumber);
+                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("Advertising my transport %d to selected peers.\n"),
+                 tapi->protocolNumber);
 #endif
   identity->addHost (sd.m);
   if (sd.n < 1)
     {
       if (identity->forEachHost (0, NULL, NULL) == 0)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                _("Announcing ourselves pointless: "
-                  "no other peers are known to us so far.\n"));
+                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                       _("Announcing ourselves pointless: "
+                         "no other peers are known to us so far.\n"));
       GNUNET_free (sd.m);
       return;                   /* no point in trying... */
     }
@@ -691,9 +696,9 @@ forwardhelloHelper (const GNUNET_PeerIdentity * peer,
                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&peer->hashPubKey, &enc));
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Removing HELLO from peer `%s' (expired %ds ago).\n",
-              &enc, now - ntohl (hello->expirationTime));
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Removing HELLO from peer `%s' (expired %ds ago).\n",
+                     &enc, now - ntohl (hello->expirationTime));
 #endif
       identity->delHostFromKnown (peer, protocol);
       GNUNET_free (hello);
@@ -760,7 +765,8 @@ ehelloHandler (const GNUNET_PeerIdentity * sender,
  */
 static int
 phelloHandler (const GNUNET_PeerIdentity * sender,
-               const GNUNET_MessageHeader * message, GNUNET_TSession * session)
+               const GNUNET_MessageHeader * message,
+               GNUNET_TSession * session)
 {
   receivedhello (sender, message);
   return GNUNET_OK;
@@ -782,9 +788,9 @@ configurationUpdateCallback (void *ctx,
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE))
     {
       if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                          "NETWORK",
-                                                          "DISABLE-ADVERTISEMENTS",
-                                                          GNUNET_NO))
+                                                                 "NETWORK",
+                                                                 "DISABLE-ADVERTISEMENTS",
+                                                                 GNUNET_NO))
         GNUNET_cron_del_job (coreAPI->cron,
                              &broadcasthello, HELLO_BROADCAST_FREQUENCY,
                              NULL);
@@ -793,9 +799,9 @@ configurationUpdateCallback (void *ctx,
   else
     {
       if (GNUNET_YES != GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                          "NETWORK",
-                                                          "DISABLE-ADVERTISEMENTS",
-                                                          GNUNET_NO))
+                                                                 "NETWORK",
+                                                                 "DISABLE-ADVERTISEMENTS",
+                                                                 GNUNET_NO))
         GNUNET_cron_add_job (coreAPI->cron,
                              &broadcasthello,
                              15 * GNUNET_CRON_SECONDS,
@@ -805,9 +811,9 @@ configurationUpdateCallback (void *ctx,
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD))
     {
       if (GNUNET_YES != GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                          "NETWORK",
-                                                          "HELLOEXCHANGE",
-                                                          GNUNET_YES))
+                                                                 "NETWORK",
+                                                                 "HELLOEXCHANGE",
+                                                                 GNUNET_YES))
         {
           GNUNET_cron_del_job (coreAPI->cron, &forwardhello, HELLO_FORWARD_FREQUENCY, NULL);    /* seven minutes: exchange */
         }
@@ -816,9 +822,9 @@ configurationUpdateCallback (void *ctx,
   else
     {
       if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                          "NETWORK",
-                                                          "HELLOEXCHANGE",
-                                                          GNUNET_YES))
+                                                                 "NETWORK",
+                                                                 "HELLOEXCHANGE",
+                                                                 GNUNET_YES))
         {
           GNUNET_cron_add_job (coreAPI->cron,
                                &forwardhello,
@@ -917,24 +923,26 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
     }
 
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          _("`%s' registering handler %d (plaintext and ciphertext)\n"),
-          "advertising", GNUNET_P2P_PROTO_HELLO);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _
+                 ("`%s' registering handler %d (plaintext and ciphertext)\n"),
+                 "advertising", GNUNET_P2P_PROTO_HELLO);
 
   capi->registerHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
   capi->registerPlaintextHandler (GNUNET_P2P_PROTO_HELLO, &phelloHandler);
   if (0 != GNUNET_GC_attach_change_listener (capi->cfg,
-                                      &configurationUpdateCallback, NULL))
+                                             &configurationUpdateCallback,
+                                             NULL))
     GNUNET_GE_BREAK (capi->ectx, 0);
   startBootstrap (capi);
   GNUNET_GE_ASSERT (capi->ectx,
-             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
-                                                     capi->ectx,
-                                                     "ABOUT",
-                                                     "advertising",
-                                                     _
-                                                     ("ensures that this peer is known by other"
-                                                      " peers and discovers other peers")));
+                    0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
+                                                                   capi->ectx,
+                                                                   "ABOUT",
+                                                                   "advertising",
+                                                                   _
+                                                                   ("ensures that this peer is known by other"
+                                                                    " peers and discovers other peers")));
   return GNUNET_OK;
 }
 
@@ -946,7 +954,7 @@ done_module_advertising ()
 {
   stopBootstrap ();
   GNUNET_GC_detach_change_listener (coreAPI->cfg,
-                             &configurationUpdateCallback, NULL);
+                                    &configurationUpdateCallback, NULL);
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE))
     {
       GNUNET_cron_del_job (coreAPI->cron,
@@ -959,7 +967,8 @@ done_module_advertising ()
       activeCronJobs -= ACJ_FORWARD;
     }
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
-  coreAPI->unregisterPlaintextHandler (GNUNET_P2P_PROTO_HELLO, &phelloHandler);
+  coreAPI->unregisterPlaintextHandler (GNUNET_P2P_PROTO_HELLO,
+                                       &phelloHandler);
   coreAPI->releaseService (transport);
   transport = NULL;
   coreAPI->releaseService (identity);

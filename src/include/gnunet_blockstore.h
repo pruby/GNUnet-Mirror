@@ -59,7 +59,8 @@ typedef struct
  * @return GNUNET_OK to continue with iteration, GNUNET_SYSERR to abort
  */
 typedef int (*GNUNET_DataProcessor) (const GNUNET_HashCode * key,
-                              const GNUNET_DataContainer * value, void *cls);
+                                     const GNUNET_DataContainer * value,
+                                     void *cls);
 
 /**
  * GAP and DHT clients must implement this interface to tell
@@ -130,7 +131,8 @@ typedef struct
    * @return GNUNET_OK if the value could be removed, GNUNET_SYSERR if not (i.e. not present)
    */
   int (*del) (void *closure,
-              const GNUNET_HashCode * key, const GNUNET_DataContainer * value);
+              const GNUNET_HashCode * key,
+              const GNUNET_DataContainer * value);
 
   /**
    * Iterate over all keys in the local datastore

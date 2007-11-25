@@ -420,13 +420,13 @@ extern "C"
 
 /* ************* p2p VPN messages ************* */
 
-#define GNUNET_P2P_PROTO_AIP_IP 64     /* contains IPv6 frame */
+#define GNUNET_P2P_PROTO_AIP_IP 64      /* contains IPv6 frame */
 
-#define GNUNET_P2P_PROTO_AIP_ROUTE 65  /* a route to a node */
+#define GNUNET_P2P_PROTO_AIP_ROUTE 65   /* a route to a node */
 
-#define GNUNET_P2P_PROTO_AIP_ROUTES 66 /* no more routes in my table */
+#define GNUNET_P2P_PROTO_AIP_ROUTES 66  /* no more routes in my table */
 
-#define GNUNET_P2P_PROTO_AIP_GETROUTE 67       /* request for a table entry from a peer */
+#define GNUNET_P2P_PROTO_AIP_GETROUTE 67        /* request for a table entry from a peer */
 
 
 #define GNUNET_P2P_PROTO_MAX_USED 68

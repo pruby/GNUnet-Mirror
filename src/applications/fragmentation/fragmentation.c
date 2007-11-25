@@ -300,8 +300,9 @@ tryJoin (FC * entry,
   if (end <= ntohs (packet->off))
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_DEBUG | GNUNET_GE_BULK,
-              "Received invalid fragment at %s:%d\n", __FILE__, __LINE__);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_DEBUG | GNUNET_GE_BULK,
+                     "Received invalid fragment at %s:%d\n", __FILE__,
+                     __LINE__);
       return GNUNET_SYSERR;     /* yuck! integer overflow! */
     }
 
@@ -586,10 +587,12 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
                        &defragmentationPurgeCron,
                        60 * GNUNET_CRON_SECONDS, 60 * GNUNET_CRON_SECONDS,
                        NULL);
-  GNUNET_GE_LOG (capi->ectx, GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-          _("`%s' registering handler %d\n"), "fragmentation",
-          GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
-  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT, &processFragment);
+  GNUNET_GE_LOG (capi->ectx,
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                 _("`%s' registering handler %d\n"), "fragmentation",
+                 GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
+  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT,
+                         &processFragment);
 
   ret.fragment = &fragment;
   return &ret;
@@ -603,10 +606,10 @@ release_module_fragmentation ()
 {
   int i;
 
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT, &processFragment);
-  GNUNET_cron_del_job (coreAPI->cron,
-                       &defragmentationPurgeCron, 60 * GNUNET_CRON_SECONDS,
-                       NULL);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT,
+                              &processFragment);
+  GNUNET_cron_del_job (coreAPI->cron, &defragmentationPurgeCron,
+                       60 * GNUNET_CRON_SECONDS, NULL);
   for (i = 0; i < DEFRAG_BUCKET_COUNT; i++)
     {
       FC *pos = defragmentationCache[i];

@@ -74,8 +74,8 @@ GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
       if (1 != sscanf (str, "%d", &prio))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
-                  _("Invalid process priority `%s'\n"), str);
+                         GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
+                         _("Invalid process priority `%s'\n"), str);
           return GNUNET_SYSERR;
         }
 
@@ -102,7 +102,9 @@ GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
   nice (prio);
   if (errno != 0)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "nice");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "nice");
       return GNUNET_SYSERR;
     }
 #endif

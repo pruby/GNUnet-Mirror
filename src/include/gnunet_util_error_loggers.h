@@ -52,11 +52,16 @@ struct GNUNET_GE_Memory;
  *        value specifies after how many days logs should be deleted)
  *        (use 0 for no rotation)
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
-                                              GNUNET_GE_KIND mask,
-                                              const char *filename,
-                                              const char *owner,
-                                              int logDate, int logrotate);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_logfile (struct
+                                                            GNUNET_GE_Context
+                                                            *ectx,
+                                                            GNUNET_GE_KIND
+                                                            mask,
+                                                            const char
+                                                            *filename,
+                                                            const char *owner,
+                                                            int logDate,
+                                                            int logrotate);
 
 
 /**
@@ -64,21 +69,28 @@ struct GNUNET_GE_Context *GNUNET_GE_create_context_logfile (struct GNUNET_GE_Con
  *
  * @param mask which events should be logged?
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_stderr (int logDate,
+                                                           GNUNET_GE_KIND
+                                                           mask);
 
 /**
  * Create a logger that writes events to stderr
  *
  * @param mask which events should be logged?
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_stdout (int logDate, GNUNET_GE_KIND mask);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_stdout (int logDate,
+                                                           GNUNET_GE_KIND
+                                                           mask);
 
 /**
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask,
-                                             struct GNUNET_GE_Memory *memory);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_memory (GNUNET_GE_KIND
+                                                           mask,
+                                                           struct
+                                                           GNUNET_GE_Memory
+                                                           *memory);
 
 #if FICTION
 /**
@@ -90,13 +102,16 @@ struct GNUNET_GE_Context *GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask,
  * @param bulkSize for GNUNET_GE_BULK messages, how many lines of messages
  *        should be accumulated before an e-mail is transmitted?
  */
-struct GNUNET_GE_Context *GNUNET_GE_create_context_email (struct GNUNET_GE_Context *ectx,
-                                            GNUNET_GE_KIND mask,
-                                            const char *address,
-                                            const char *server,
-                                            unsigned short port,
-                                            int logDate,
-                                            unsigned int bulkSize);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_email (struct
+                                                          GNUNET_GE_Context
+                                                          *ectx,
+                                                          GNUNET_GE_KIND mask,
+                                                          const char *address,
+                                                          const char *server,
+                                                          unsigned short port,
+                                                          int logDate,
+                                                          unsigned int
+                                                          bulkSize);
 #endif
 
 /**
@@ -117,14 +132,15 @@ struct GNUNET_GE_Memory *GNUNET_GE_memory_create (unsigned int maxSize);
  * Also clears the memory.
  */
 void GNUNET_GE_memory_poll (struct GNUNET_GE_Memory *memory,
-                     GNUNET_GE_LogHandler handler, void *ctx);
+                            GNUNET_GE_LogHandler handler, void *ctx);
 
 void GNUNET_GE_memory_reset (struct GNUNET_GE_Memory *memory);
 
 /**
  * Get a particular log message from the store.
  */
-const char *GNUNET_GE_memory_get (struct GNUNET_GE_Memory *memory, unsigned int index);
+const char *GNUNET_GE_memory_get (struct GNUNET_GE_Memory *memory,
+                                  unsigned int index);
 
 void GNUNET_GE_memory_free (struct GNUNET_GE_Memory *memory);
 

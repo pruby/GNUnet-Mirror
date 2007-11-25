@@ -187,10 +187,10 @@ helloToAddress (const GNUNET_MessageHello * hello,
   if ((prot >= tapis_count) || (tapis[prot] == NULL))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              _
-              ("Converting peer address to string failed, transport type %d not supported\n"),
-              ntohs (hello->protocol));
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     _
+                     ("Converting peer address to string failed, transport type %d not supported\n"),
+                     ntohs (hello->protocol));
       return GNUNET_SYSERR;
     }
   return tapis[prot]->helloToAddress (hello, sa, sa_len);
@@ -241,10 +241,11 @@ transportConnect (const GNUNET_MessageHello * hello,
   if ((prot >= tapis_count) || (tapis[prot] == NULL))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-              _
-              ("Transport connection attempt failed, transport type %d not supported\n"),
-              prot);
+                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER |
+                     GNUNET_GE_ADMIN,
+                     _
+                     ("Transport connection attempt failed, transport type %d not supported\n"),
+                     prot);
       return NULL;
     }
   tsession = NULL;
@@ -294,10 +295,10 @@ transportConnectFreely (const GNUNET_PeerIdentity * peer, int useTempList,
 #if DEBUG_TRANSPORT
       GNUNET_hash_to_enc (&peer->hashPubKey, &enc);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-              _
-              ("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
-              &enc, hc);
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     _
+                     ("Transport failed to connect to peer `%s' (%u HELLOs known, none worked)\n"),
+                     &enc, hc);
 #endif
     }
   return ret;
@@ -360,8 +361,8 @@ transportSend (GNUNET_TSession * tsession,
   if (tsession == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              "Transmission attempted on uni-directional pipe, failing.\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                     "Transmission attempted on uni-directional pipe, failing.\n");
       return GNUNET_SYSERR;     /* can't do that, can happen for unidirectional pipes
                                    that call core with GNUNET_TSession being NULL. */
     }
@@ -371,9 +372,10 @@ transportSend (GNUNET_TSession * tsession,
   if ((tsession->ttype >= tapis_count) || (tapis[tsession->ttype] == NULL))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Transmission attempt failed, transport type %d unknown.\n"),
-              tsession->ttype);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("Transmission attempt failed, transport type %d unknown.\n"),
+                     tsession->ttype);
       return GNUNET_SYSERR;
     }
   return tapis[tsession->ttype]->send (tsession, msg, size, important);
@@ -416,15 +418,16 @@ transportDisconnect (GNUNET_TSession * tsession, const char *token)
     {
       GNUNET_GE_BREAK (ectx, 0);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              "Illegal call to `%s', do not have token `%s'\n",
-              __FUNCTION__, token);
+                     GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_USER |
+                     GNUNET_GE_IMMEDIATE,
+                     "Illegal call to `%s', do not have token `%s'\n",
+                     __FUNCTION__, token);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_unlock (lock);
   i = tapis[tsession->ttype]->disconnect (tsession);
-  GNUNET_GE_BREAK (NULL, i == GNUNET_OK);      /* should never fail */
+  GNUNET_GE_BREAK (NULL, i == GNUNET_OK);       /* should never fail */
   return i;
 }
 
@@ -493,8 +496,8 @@ transportCreatehello (unsigned short ttype)
   if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("No transport of type %d known.\n"), ttype);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("No transport of type %d known.\n"), ttype);
       GNUNET_mutex_unlock (tapis_lock);
       return NULL;
     }
@@ -552,8 +555,8 @@ getAdvertisedhellos (unsigned int maxLen, char *buff)
   if (tcount == 0)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-              _("No transport succeeded in creating a hello!\n"));
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                     _("No transport succeeded in creating a hello!\n"));
       GNUNET_free (hellos);
       return GNUNET_SYSERR;
     }
@@ -574,8 +577,8 @@ getAdvertisedhellos (unsigned int maxLen, char *buff)
   GNUNET_free (hellos);
   if (used == 0)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-            "No HELLOs fit in %u bytes.\n", maxLen);
+                   GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                   "No HELLOs fit in %u bytes.\n", maxLen);
   return used;
 }
 
@@ -709,11 +712,11 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
 
   ectx = capi->ectx;
   if (-1 == GNUNET_GC_get_configuration_value_number (capi->cfg,
-                                               "GNUNETD",
-                                               "HELLOEXPIRES",
-                                               1,
-                                               GNUNET_MAX_HELLO_EXPIRES / 60,
-                                               60, &hello_live))
+                                                      "GNUNETD",
+                                                      "HELLOEXPIRES",
+                                                      1,
+                                                      GNUNET_MAX_HELLO_EXPIRES
+                                                      / 60, 60, &hello_live))
     return NULL;
   hello_live *= 60;
 
@@ -736,7 +739,8 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
   ctapi.releaseService = coreAPI->releaseService;
   ctapi.assertUnused = coreAPI->assertUnused;
 
-  GNUNET_array_grow (tapis, tapis_count, GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP + 1);
+  GNUNET_array_grow (tapis, tapis_count,
+                     GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP + 1);
 
   tapis_lock = GNUNET_mutex_create (GNUNET_YES);
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -744,15 +748,16 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
   /* now load transports */
   dso = NULL;
   GNUNET_GE_ASSERT (ectx,
-             -1 != GNUNET_GC_get_configuration_value_string (capi->cfg,
-                                                      "GNUNETD",
-                                                      "TRANSPORTS",
-                                                      "udp tcp nat", &dso));
+                    -1 != GNUNET_GC_get_configuration_value_string (capi->cfg,
+                                                                    "GNUNETD",
+                                                                    "TRANSPORTS",
+                                                                    "udp tcp nat",
+                                                                    &dso));
   if (strlen (dso) != 0)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Loading transports `%s'\n"), dso);
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _("Loading transports `%s'\n"), dso);
       next = dso;
       do
         {
@@ -770,8 +775,10 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
           if (lib == NULL)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                      _("Could not load transport plugin `%s'\n"), pos);
+                             GNUNET_GE_ERROR | GNUNET_GE_USER |
+                             GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                             _("Could not load transport plugin `%s'\n"),
+                             pos);
               continue;
             }
           tptr =
@@ -780,11 +787,12 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
           if (tptr == NULL)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
-                      GNUNET_GE_IMMEDIATE,
-                      _
-                      ("Transport library `%s' did not provide required function '%s%s'.\n"),
-                      pos, "inittransport_", pos);
+                             GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                             GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_IMMEDIATE,
+                             _
+                             ("Transport library `%s' did not provide required function '%s%s'.\n"),
+                             pos, "inittransport_", pos);
               GNUNET_plugin_unload (lib);
               continue;
             }
@@ -811,8 +819,8 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
           else
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                      _("Loaded transport `%s'\n"), pos);
+                             GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                             _("Loaded transport `%s'\n"), pos);
             }
         }
       while (next != NULL);
@@ -823,7 +831,8 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
             GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &myself));
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER, _("I am peer `%s'.\n"), &myself);
+                 GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("I am peer `%s'.\n"), &myself);
   forEachTransport (&initHelper, NULL);
 
   ret.start = &startTransports;

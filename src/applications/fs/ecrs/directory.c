@@ -51,10 +51,11 @@
  */
 int
 GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
-                    const char *data,
-                    unsigned long long len,
-                    struct GNUNET_ECRS_MetaData **md,
-                    GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure)
+                                     const char *data,
+                                     unsigned long long len,
+                                     struct GNUNET_ECRS_MetaData **md,
+                                     GNUNET_ECRS_SearchResultProcessor spcb,
+                                     void *spcbClosure)
 {
   unsigned long long pos;
   unsigned long long align;
@@ -74,8 +75,9 @@ GNUNET_ECRS_directory_list_contents (struct GNUNET_GE_Context *ectx,
       if (mdSize > len - 8 - sizeof (unsigned int))
         return GNUNET_SYSERR;   /* invalid size */
       *md = GNUNET_ECRS_meta_data_deserialize (ectx,
-                                      &data[8 + sizeof (unsigned int)],
-                                      mdSize);
+                                               &data[8 +
+                                                     sizeof (unsigned int)],
+                                               mdSize);
       if (*md == NULL)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -260,10 +262,11 @@ block_align (unsigned long long start,
  */
 int
 GNUNET_ECRS_directory_create (struct GNUNET_GE_Context *ectx,
-                      char **data,
-                      unsigned long long *len,
-                      unsigned int count,
-                      const GNUNET_ECRS_FileInfo * fis, struct GNUNET_ECRS_MetaData *meta)
+                              char **data,
+                              unsigned long long *len,
+                              unsigned int count,
+                              const GNUNET_ECRS_FileInfo * fis,
+                              struct GNUNET_ECRS_MetaData *meta)
 {
   int i;
   int j;
@@ -285,7 +288,9 @@ GNUNET_ECRS_directory_create (struct GNUNET_GE_Context *ectx,
     }
   ucs = GNUNET_malloc (sizeof (char *) * count);
   size = 8 + sizeof (unsigned int);
-  size += GNUNET_ECRS_meta_data_get_serialized_size (meta, GNUNET_ECRS_SERIALIZE_FULL);
+  size +=
+    GNUNET_ECRS_meta_data_get_serialized_size (meta,
+                                               GNUNET_ECRS_SERIALIZE_FULL);
   sizes = GNUNET_malloc (count * sizeof (unsigned long long));
   perm = GNUNET_malloc (count * sizeof (int));
   for (i = 0; i < count; i++)
@@ -293,7 +298,9 @@ GNUNET_ECRS_directory_create (struct GNUNET_GE_Context *ectx,
       perm[i] = i;
       ucs[i] = GNUNET_ECRS_uri_to_string (fis[i].uri);
       GNUNET_GE_ASSERT (ectx, ucs[i] != NULL);
-      psize = GNUNET_ECRS_meta_data_get_serialized_size (fis[i].meta, GNUNET_ECRS_SERIALIZE_FULL);
+      psize =
+        GNUNET_ECRS_meta_data_get_serialized_size (fis[i].meta,
+                                                   GNUNET_ECRS_SERIALIZE_FULL);
       if (psize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -324,10 +331,11 @@ GNUNET_ECRS_directory_create (struct GNUNET_GE_Context *ectx,
   memcpy (*data, GNUNET_DIRECTORY_MAGIC, 8);
 
   ret = GNUNET_ECRS_meta_data_serialize (ectx,
-                                meta,
-                                &(*data)[pos + sizeof (unsigned int)],
-                                size - pos - sizeof (unsigned int),
-                                GNUNET_ECRS_SERIALIZE_FULL);
+                                         meta,
+                                         &(*data)[pos +
+                                                  sizeof (unsigned int)],
+                                         size - pos - sizeof (unsigned int),
+                                         GNUNET_ECRS_SERIALIZE_FULL);
   GNUNET_GE_ASSERT (ectx, ret != GNUNET_SYSERR);
   ret = htonl (ret);
   memcpy (&(*data)[pos], &ret, sizeof (unsigned int));
@@ -344,10 +352,12 @@ GNUNET_ECRS_directory_create (struct GNUNET_GE_Context *ectx,
       pos += strlen (ucs[i]) + 1;
       GNUNET_free (ucs[i]);
       ret = GNUNET_ECRS_meta_data_serialize (ectx,
-                                    fis[i].meta,
-                                    &(*data)[pos + sizeof (unsigned int)],
-                                    size - pos - sizeof (unsigned int),
-                                    GNUNET_ECRS_SERIALIZE_FULL);
+                                             fis[i].meta,
+                                             &(*data)[pos +
+                                                      sizeof (unsigned int)],
+                                             size - pos -
+                                             sizeof (unsigned int),
+                                             GNUNET_ECRS_SERIALIZE_FULL);
       GNUNET_GE_ASSERT (ectx, ret != GNUNET_SYSERR);
       ret = htonl (ret);
       memcpy (&(*data)[pos], &ret, sizeof (unsigned int));

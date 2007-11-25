@@ -176,9 +176,9 @@ checkQuota (sqlite3 * dbh)
     return GNUNET_OK;           /* we seem to be about 10% off */
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-          "DStore above qutoa (have %llu, allowed %llu), will delete some data.\n",
-          payload, quota);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "DStore above qutoa (have %llu, allowed %llu), will delete some data.\n",
+                 payload, quota);
 #endif
   stmt = NULL;
   dstmt = NULL;
@@ -191,9 +191,9 @@ checkQuota (sqlite3 * dbh)
                    &dstmt) != SQLITE_OK))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
       GNUNET_GE_BREAK (NULL, 0);
       if (dstmt != NULL)
         sqlite3_finalize (dstmt);
@@ -211,7 +211,8 @@ checkQuota (sqlite3 * dbh)
       dputtime = sqlite3_column_int64 (stmt, 2);
       dexpire = sqlite3_column_int64 (stmt, 3);
       GNUNET_GE_BREAK (NULL,
-                sqlite3_column_bytes (stmt, 4) == sizeof (GNUNET_HashCode));
+                       sqlite3_column_bytes (stmt,
+                                             4) == sizeof (GNUNET_HashCode));
       GNUNET_GE_BREAK (NULL, dsize == sqlite3_column_bytes (stmt, 5));
       memcpy (&dkey, sqlite3_column_blob (stmt, 4), sizeof (GNUNET_HashCode));
       if (dsize >= MAX_CONTENT_SIZE)
@@ -232,28 +233,31 @@ checkQuota (sqlite3 * dbh)
       if ((err = sqlite3_step (dstmt)) != SQLITE_DONE)
         {
           GNUNET_GE_LOG (coreAPI->ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                  _("`%s' failed at %s:%d with error: %s\n"),
-                  "sqlite3_step", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                         GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                         _("`%s' failed at %s:%d with error: %s\n"),
+                         "sqlite3_step", __FILE__, __LINE__,
+                         sqlite3_errmsg (dbh));
           sqlite3_reset (dstmt);
-          GNUNET_GE_BREAK (NULL, 0);   /* should delete but cannot!? */
+          GNUNET_GE_BREAK (NULL, 0);    /* should delete but cannot!? */
           break;
         }
       payload -= (dsize + OVERHEAD);
 #if DEBUG_DSTORE
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-              "Deleting %u bytes decreases DStore payload to %llu out of %llu\n",
-              dsize, payload, quota);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER,
+                     "Deleting %u bytes decreases DStore payload to %llu out of %llu\n",
+                     dsize, payload, quota);
 #endif
       sqlite3_reset (dstmt);
     }
   if (err != SQLITE_DONE)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sqlite3_step", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sqlite3_step", __FILE__, __LINE__,
+                     sqlite3_errmsg (dbh));
     }
   GNUNET_free (dcontent);
   sqlite3_finalize (dstmt);
@@ -262,9 +266,9 @@ checkQuota (sqlite3 * dbh)
     {
       /* we seem to be about 10% off */
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
-              "Failed to delete content to drop below quota (bug?).\n",
-              payload, quota);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
+                     "Failed to delete content to drop below quota (bug?).\n",
+                     payload, quota);
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
@@ -295,8 +299,8 @@ d_put (const GNUNET_HashCode * key,
     }
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-          "dstore processes put `%.*s\n", size, data);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "dstore processes put `%.*s\n", size, data);
 #endif
 
   /* first try UPDATE */
@@ -306,9 +310,9 @@ d_put (const GNUNET_HashCode * key,
                   &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
       sqlite3_close (dbh);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -324,9 +328,10 @@ d_put (const GNUNET_HashCode * key,
           sqlite3_bind_blob (stmt, 6, data, size, SQLITE_TRANSIENT)))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sqlite3_bind_xxx", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sqlite3_bind_xxx", __FILE__, __LINE__,
+                     sqlite3_errmsg (dbh));
       sqlite3_finalize (stmt);
       sqlite3_close (dbh);
       GNUNET_mutex_unlock (lock);
@@ -335,9 +340,10 @@ d_put (const GNUNET_HashCode * key,
   if (SQLITE_DONE != sqlite3_step (stmt))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sqlite3_step", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sqlite3_step", __FILE__, __LINE__,
+                     sqlite3_errmsg (dbh));
       sqlite3_finalize (stmt);
       sqlite3_close (dbh);
       GNUNET_mutex_unlock (lock);
@@ -366,9 +372,9 @@ d_put (const GNUNET_HashCode * key,
                   "VALUES (?, ?, ?, ?, ?, ?)", &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
       sqlite3_close (dbh);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -385,26 +391,26 @@ d_put (const GNUNET_HashCode * key,
     {
       if (SQLITE_DONE != sqlite3_step (stmt))
         LOG_SQLITE (dbh,
-                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                    "sqlite3_step");
+                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
+                    GNUNET_GE_BULK, "sqlite3_step");
       else
         payload += size + OVERHEAD;
       if (SQLITE_OK != sqlite3_finalize (stmt))
         LOG_SQLITE (dbh,
-                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                    "sqlite3_finalize");
+                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
+                    GNUNET_GE_BULK, "sqlite3_finalize");
     }
   else
     {
       LOG_SQLITE (dbh,
-                  GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                  "sqlite3_bind_xxx");
+                  GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_ADMIN |
+                  GNUNET_GE_BULK, "sqlite3_bind_xxx");
     }
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-          "Storing %u bytes increases DStore payload to %llu out of %llu\n",
-          size, payload, quota);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "Storing %u bytes increases DStore payload to %llu out of %llu\n",
+                 size, payload, quota);
 #endif
   checkQuota (dbh);
   sqlite3_close (dbh);
@@ -449,7 +455,8 @@ d_get (const GNUNET_HashCode * key,
     }
 #if DEBUG_DSTORE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER, "dstore processes get\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "dstore processes get\n");
 #endif
   now = GNUNET_get_time ();
   if (sq_prepare (dbh,
@@ -457,9 +464,9 @@ d_get (const GNUNET_HashCode * key,
                   &stmt) != SQLITE_OK)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _("`%s' failed at %s:%d with error: %s\n"),
-              "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "sq_prepare", __FILE__, __LINE__, sqlite3_errmsg (dbh));
       sqlite3_close (dbh);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -495,8 +502,8 @@ provide_module_dstore (GNUNET_CoreAPIForPlugins * capi)
 
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (capi->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "SQLite Dstore: initializing database\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite Dstore: initializing database\n");
 #endif
   if (GNUNET_OK != db_reset ())
     {
@@ -510,7 +517,8 @@ provide_module_dstore (GNUNET_CoreAPIForPlugins * capi)
   api.get = &d_get;
   api.put = &d_put;
   GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                     "DSTORE", "QUOTA", 1, 1024, 1, &quota);
+                                            "DSTORE", "QUOTA", 1, 1024, 1,
+                                            &quota);
   if (quota == 0)               /* error */
     quota = 1;
   quota *= 1024 * 1024;
@@ -553,8 +561,8 @@ release_module_dstore ()
     }
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (coreAPI->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "SQLite Dstore: database shutdown\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "SQLite Dstore: database shutdown\n");
 #endif
   GNUNET_mutex_destroy (lock);
   coreAPI = NULL;

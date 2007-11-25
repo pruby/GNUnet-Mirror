@@ -436,7 +436,8 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  */
 struct GNUNET_SelectHandle *GNUNET_select_create (const char *desc,
                                                   int is_udp,
-                                                  struct GNUNET_GE_Context *ectx,
+                                                  struct GNUNET_GE_Context
+                                                  *ectx,
                                                   struct GNUNET_LoadMonitor
                                                   *mon, int sock,
                                                   unsigned int max_addr_len,

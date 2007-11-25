@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetpeerinfoOptions[] = {
   {'n', "numeric", NULL,
    gettext_noop ("don't resolve host names"),
    0, &GNUNET_getopt_configure_set_one, &no_resolve},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -116,8 +116,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
   if (NULL == hello)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Could not get address of peer `%s'.\n"), &enc);
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Could not get address of peer `%s'.\n"), &enc);
       return GNUNET_OK;
     }
   if (GNUNET_SYSERR == GNUNET_RSA_verify (&hello->senderIdentity,
@@ -129,8 +129,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
                                           &hello->publicKey))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("hello message invalid (signature invalid).\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("hello message invalid (signature invalid).\n"));
     }
   addr = NULL;
   addr_len = 0;
@@ -149,8 +149,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
   if (info == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Could not get address of peer `%s'.\n"), &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Could not get address of peer `%s'.\n"), &enc);
       printf (_("Peer `%s' with trust %8u\n"),
               (char *) &enc, identity->getHostTrust (id));
       return GNUNET_OK;
@@ -178,10 +178,11 @@ main (int argc, char *const *argv)
       return -1;
     }
   GNUNET_GE_ASSERT (ectx,
-             0 == GNUNET_GC_set_configuration_value_string (cfg,
-                                                     ectx,
-                                                     "TCPSERVER",
-                                                     "DISABLE", "YES"));
+                    0 == GNUNET_GC_set_configuration_value_string (cfg,
+                                                                   ectx,
+                                                                   "TCPSERVER",
+                                                                   "DISABLE",
+                                                                   "YES"));
   cron = cron_create (ectx);
   initCore (ectx, cfg, cron, NULL);
   identity = requestService ("identity");

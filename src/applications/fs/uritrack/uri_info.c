@@ -41,9 +41,10 @@ getDBName (struct GNUNET_GC_Configuration *cfg)
   size_t n;
 
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                       "GNUNET",
-                                       "GNUNET_HOME",
-                                       GNUNET_DEFAULT_HOME_DIRECTORY, &basename);
+                                              "GNUNET",
+                                              "GNUNET_HOME",
+                                              GNUNET_DEFAULT_HOME_DIRECTORY,
+                                              &basename);
   n = strlen (basename) + 512;
   ipcName = GNUNET_malloc (n);
   GNUNET_snprintf (ipcName, n, "%s/uri_info.db", basename);
@@ -58,10 +59,11 @@ getDBSize (struct GNUNET_GC_Configuration *cfg)
 
   value = 1024 * 1024;
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "FS",
-                                     "URI_DB_SIZE",
-                                     1,
-                                     1024 * 1024 * 1024, 1024 * 1024, &value);
+                                            "FS",
+                                            "URI_DB_SIZE",
+                                            1,
+                                            1024 * 1024 * 1024, 1024 * 1024,
+                                            &value);
   return value;
 }
 
@@ -76,7 +78,8 @@ getDBSize (struct GNUNET_GC_Configuration *cfg)
  */
 enum GNUNET_URITRACK_STATE
 GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
-                   struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri)
+                           struct GNUNET_GC_Configuration *cfg,
+                           const struct GNUNET_ECRS_URI *uri)
 {
   char *s;
   int crc;
@@ -100,8 +103,9 @@ GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
   if (o != LSEEK (fd, o, SEEK_SET))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "lseek", s);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "lseek",
+                                   s);
       CLOSE (fd);
       return GNUNET_URITRACK_FRESH;
     }
@@ -121,8 +125,9 @@ GNUNET_URITRACK_get_state (struct GNUNET_GE_Context *ectx,
  */
 void
 GNUNET_URITRACK_add_state (struct GNUNET_GE_Context *ectx,
-                   struct GNUNET_GC_Configuration *cfg,
-                   const struct GNUNET_ECRS_URI *uri, enum GNUNET_URITRACK_STATE state)
+                           struct GNUNET_GC_Configuration *cfg,
+                           const struct GNUNET_ECRS_URI *uri,
+                           enum GNUNET_URITRACK_STATE state)
 {
   char *s;
   int crc;
@@ -146,8 +151,9 @@ GNUNET_URITRACK_add_state (struct GNUNET_GE_Context *ectx,
   if (o != LSEEK (fd, o, SEEK_SET))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "lseek", s);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "lseek",
+                                   s);
       CLOSE (fd);
       GNUNET_free (s);
       return;
@@ -166,16 +172,18 @@ GNUNET_URITRACK_add_state (struct GNUNET_GE_Context *ectx,
   if (o != LSEEK (fd, o, SEEK_SET))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                            "lseek", s);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_ADMIN | GNUNET_GE_BULK, "lseek",
+                                   s);
       CLOSE (fd);
       GNUNET_free (s);
       return;
     }
   if (2 != write (fd, io, 2))
     GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                          "write", s);
+                                 GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                 GNUNET_GE_ADMIN | GNUNET_GE_BULK, "write",
+                                 s);
   GNUNET_disk_file_close (ectx, s, fd);
   GNUNET_free (s);
 }

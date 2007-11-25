@@ -57,7 +57,7 @@ static struct GNUNET_CommandLineOption gnunetsetupOptions[] = {
    gettext_noop ("generate configuration for gnunetd, the GNUnet daemon"),
    0, &GNUNET_getopt_configure_set_one, &config_daemon},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to setup GNUnet.")),     /* -h */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -87,8 +87,9 @@ gns2cfg (struct GNUNET_GNS_TreeNode *pos)
       if (val != NULL)
         {
           GNUNET_GC_set_configuration_value_string (cfg,
-                                             ectx,
-                                             pos->section, pos->option, val);
+                                                    ectx,
+                                                    pos->section, pos->option,
+                                                    val);
           GNUNET_free (val);
         }
     }
@@ -151,9 +152,12 @@ main (int argc, char *const *argv)
   int i;
 
   ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
-                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
-                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+                                          GNUNET_GE_WARNING | GNUNET_GE_ERROR
+                                          | GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                          GNUNET_GE_ADMIN |
+                                          GNUNET_GE_DEVELOPER |
+                                          GNUNET_GE_IMMEDIATE |
+                                          GNUNET_GE_BULK);
   GNUNET_GE_setDefaultContext (ectx);
   GNUNET_os_init (ectx);
   cfg = GNUNET_GC_create ();
@@ -176,8 +180,8 @@ main (int argc, char *const *argv)
           return -1;
         }
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              _("No interface specified, using default\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     _("No interface specified, using default\n"));
       operation = "config";
 #if HAVE_DIALOG
       operation = "menuconfig";
@@ -214,8 +218,9 @@ main (int argc, char *const *argv)
   if (((0 != ACCESS (cfgFilename, W_OK)) &&
        ((errno != ENOENT) || (0 != ACCESS (dirname, W_OK)))))
     GNUNET_GE_DIE_STRERROR_FILE (ectx,
-                          GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                          "access", dirname);
+                                 GNUNET_GE_FATAL | GNUNET_GE_USER |
+                                 GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                                 "access", dirname);
   GNUNET_free (dirname);
 
   if (0 == ACCESS (cfgFilename, F_OK))
@@ -252,8 +257,9 @@ main (int argc, char *const *argv)
                           cfgFilename) != GNUNET_YES)
             {
               GNUNET_GE_LOG (ectx,
-                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                      _("`%s' is not available."), operation);
+                             GNUNET_GE_FATAL | GNUNET_GE_USER |
+                             GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                             _("`%s' is not available."), operation);
               GNUNET_GNS_free_specification (gns);
               GNUNET_GC_free (cfg);
               GNUNET_GE_free_context (ectx);

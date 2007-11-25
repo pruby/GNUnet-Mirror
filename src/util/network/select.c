@@ -193,11 +193,14 @@ signalSelect (SelectHandle * sh)
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "Signaling select %p.\n", sh);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Signaling select %p.\n", sh);
 #endif
   ret = WRITE (sh->signal_pipe[1], &i, sizeof (char));
   if (ret != sizeof (char))
-    GNUNET_GE_LOG_STRERROR (sh->ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "write");
+    GNUNET_GE_LOG_STRERROR (sh->ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                            GNUNET_GE_BULK, "write");
 }
 
 /**
@@ -223,9 +226,9 @@ destroySession (SelectHandle * sh, Session * s)
   s->locked = 2;
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Destroying session %p of select %p with %u in read and %u in write buffer.\n",
-          s, sh, s->rsize, s->wsize);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Destroying session %p of select %p with %u in read and %u in write buffer.\n",
+                 s, sh, s->rsize, s->wsize);
 #endif
 #if 0
   if ((s->pos > 0) || (s->wapos > s->wspos))
@@ -283,9 +286,9 @@ readAndProcess (SelectHandle * sh, Session * session)
                             session->rsize - session->pos, &recvd);
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Receiving from session %p of select %p return %d-%u (%s).\n",
-          sh, session, ret, recvd, STRERROR (errno));
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Receiving from session %p of select %p return %d-%u (%s).\n",
+                 sh, session, ret, recvd, STRERROR (errno));
 #endif
   if (ret != GNUNET_OK)
     {
@@ -302,9 +305,9 @@ readAndProcess (SelectHandle * sh, Session * session)
       if (len < sizeof (GNUNET_MessageHeader))
         {
           GNUNET_GE_LOG (sh->ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _
-                  ("Received malformed message (too small) from connection. Closing.\n"));
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _
+                         ("Received malformed message (too small) from connection. Closing.\n"));
           destroySession (sh, session);
           return GNUNET_SYSERR;
         }
@@ -360,9 +363,9 @@ writeAndProcess (SelectHandle * sh, Session * session)
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Write and process called for session %p of select %p status %d.\n",
-          sh, session, sh->shutdown);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Write and process called for session %p of select %p status %d.\n",
+                 sh, session, sh->shutdown);
 #endif
   sock = session->sock;
   while (sh->shutdown == GNUNET_NO)
@@ -373,14 +376,15 @@ writeAndProcess (SelectHandle * sh, Session * session)
                                 session->wapos - session->wspos, &size);
 #if DEBUG_SELECT
       GNUNET_GE_LOG (sh->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              "Sending %d bytes from session %p of select %p return %d.\n",
-              session->wapos - session->wspos, sh, session, ret);
+                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                     "Sending %d bytes from session %p of select %p return %d.\n",
+                     session->wapos - session->wspos, sh, session, ret);
 #endif
       if (ret == GNUNET_SYSERR)
         {
           GNUNET_GE_LOG_STRERROR (sh->ectx,
-                           GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
+                                  GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                  GNUNET_GE_ADMIN | GNUNET_GE_BULK, "send");
           destroySession (sh, session);
           return GNUNET_SYSERR;
         }
@@ -457,8 +461,9 @@ selectThread (void *ctx)
           if (-1 == FSTAT (sh->signal_pipe[0], &buf))
             {
               GNUNET_GE_LOG_STRERROR (sh->ectx,
-                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-                               "fstat");
+                                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                      GNUNET_GE_USER | GNUNET_GE_BULK,
+                                      "fstat");
               sh->signal_pipe[0] = -1;  /* prevent us from error'ing all the time */
             }
           else
@@ -473,9 +478,10 @@ selectThread (void *ctx)
             {
               GNUNET_socket_destroy (sh->listen_sock);
               GNUNET_GE_LOG (sh->ectx,
-                      GNUNET_GE_USER | GNUNET_GE_ERROR | GNUNET_GE_BULK,
-                      _("select listen socket for `%s' not valid!\n"),
-                      sh->description);
+                             GNUNET_GE_USER | GNUNET_GE_ERROR |
+                             GNUNET_GE_BULK,
+                             _("select listen socket for `%s' not valid!\n"),
+                             sh->description);
               sh->listen_sock = NULL;   /* prevent us from error'ing all the time */
             }
           else
@@ -492,9 +498,10 @@ selectThread (void *ctx)
             {
 #if DEBUG_SELECT
               GNUNET_GE_LOG (sh->ectx,
-                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                      "Select %p destroys invalid client handle %p\n",
-                      sh, session);
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Select %p destroys invalid client handle %p\n",
+                             sh, session);
 #endif
               destroySession (sh, session);
             }
@@ -520,13 +527,15 @@ selectThread (void *ctx)
           if (errno == EBADF)
             {
               GNUNET_GE_LOG_STRERROR (sh->ectx,
-                               GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "select");
+                                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                                      GNUNET_GE_BULK, "select");
             }
           else
             {
               GNUNET_GE_DIE_STRERROR (sh->ectx,
-                               GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                               "select");
+                                      GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                                      GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                                      "select");
             }
           continue;
         }
@@ -544,10 +553,13 @@ selectThread (void *ctx)
               if (s == -1)
                 {
                   GNUNET_GE_LOG_STRERROR (sh->ectx,
-                                   GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "accept");
+                                          GNUNET_GE_WARNING | GNUNET_GE_ADMIN
+                                          | GNUNET_GE_BULK, "accept");
                   GNUNET_GE_LOG (sh->ectx,
-                          GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                          "Select %s failed to accept!\n", sh->description);
+                                 GNUNET_GE_WARNING | GNUNET_GE_ADMIN |
+                                 GNUNET_GE_BULK,
+                                 "Select %s failed to accept!\n",
+                                 sh->description);
                   if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
                     continue;   /* not good, but not fatal either */
                   break;
@@ -557,16 +569,19 @@ selectThread (void *ctx)
                   SHUTDOWN (s, SHUT_WR);
                   if (0 != CLOSE (s))
                     GNUNET_GE_LOG_STRERROR (sh->ectx,
-                                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                                     "close");
+                                            GNUNET_GE_WARNING |
+                                            GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                                            "close");
                   s = -1;
                   continue;
                 }
               sh->socket_quota--;
 #if DEBUG_SELECT
               GNUNET_GE_LOG (sh->ectx,
-                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                      "Select %p is accepting connection: %d\n", sh, s);
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Select %p is accepting connection: %d\n", sh,
+                             s);
 #endif
               sock = socket_create (sh->ectx, sh->load_monitor, s);
               GNUNET_mutex_unlock (sh->lock);
@@ -575,8 +590,10 @@ selectThread (void *ctx)
               GNUNET_mutex_lock (sh->lock);
 #if DEBUG_SELECT
               GNUNET_GE_LOG (sh->ectx,
-                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                      "Select %p is accepting connection: %p\n", sh, sctx);
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Select %p is accepting connection: %p\n", sh,
+                             sctx);
 #endif
               if (sctx == NULL)
                 {
@@ -624,14 +641,16 @@ selectThread (void *ctx)
               if ((error != 0) || (optlen != sizeof (pending)))
                 {
                   GNUNET_GE_LOG_STRERROR (sh->ectx,
-                                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "ioctl");
+                                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                          GNUNET_GE_BULK, "ioctl");
                   pending = 65535;      /* max */
                 }
 #if DEBUG_SELECT
               GNUNET_GE_LOG (sh->ectx,
-                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                      "Select %p is preparing to receive %u bytes from UDP\n",
-                      sh, pending);
+                             GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Select %p is preparing to receive %u bytes from UDP\n",
+                             sh, pending);
 #endif
               GNUNET_GE_ASSERT (sh->ectx, pending >= 0);
               if (pending >= 65536)
@@ -687,9 +706,11 @@ selectThread (void *ctx)
                             {
 #if DEBUG_SELECT
                               GNUNET_GE_LOG (sh->ectx,
-                                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                                      "Select %p is passing %u bytes from UDP to handler\n",
-                                      sh, size);
+                                             GNUNET_GE_DEBUG |
+                                             GNUNET_GE_DEVELOPER |
+                                             GNUNET_GE_BULK,
+                                             "Select %p is passing %u bytes from UDP to handler\n",
+                                             sh, size);
 #endif
                               sh->mh (sh->mh_cls, sh, NULL, sctx, hdr);
                               sh->ch (sh->ch_cls, sh, NULL, sctx);
@@ -698,9 +719,11 @@ selectThread (void *ctx)
                             {
 #if DEBUG_SELECT
                               GNUNET_GE_LOG (sh->ectx,
-                                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                                      "Error in select %p -- connection refused\n",
-                                      sh);
+                                             GNUNET_GE_DEBUG |
+                                             GNUNET_GE_DEVELOPER |
+                                             GNUNET_GE_BULK,
+                                             "Error in select %p -- connection refused\n",
+                                             sh);
 #endif
                             }
                         }
@@ -709,10 +732,12 @@ selectThread (void *ctx)
 #if DEBUG_SELECT
                           GNUNET_GE_BREAK (sh->ectx, size == pending);
                           GNUNET_GE_BREAK (sh->ectx,
-                                    size >= sizeof (GNUNET_MessageHeader));
+                                           size >=
+                                           sizeof (GNUNET_MessageHeader));
                           GNUNET_GE_BREAK (sh->ectx,
-                                    (size >= sizeof (GNUNET_MessageHeader))
-                                    && (ntohs (hdr->size) == size));
+                                           (size >=
+                                            sizeof (GNUNET_MessageHeader))
+                                           && (ntohs (hdr->size) == size));
 #endif
                         }
                     }
@@ -730,7 +755,8 @@ selectThread (void *ctx)
           if (0 >= READ (sh->signal_pipe[0], &buf[0], MAXSIG_BUF))
             {
               GNUNET_GE_LOG_STRERROR (sh->ectx,
-                               GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "read");
+                                      GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                      GNUNET_GE_BULK, "read");
             }
         }
       for (i = 0; i < sh->sessionCount; i++)
@@ -793,8 +819,8 @@ GNUNET_pipe_make_nonblocking (struct GNUNET_GE_Context *ectx, int handle)
   if (-1 == fcntl (handle, F_SETFL, flags))
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                       "fcntl");
+                              GNUNET_GE_WARNING | GNUNET_GE_USER |
+                              GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "fcntl");
       return GNUNET_SYSERR;
     }
 #endif
@@ -834,7 +860,9 @@ GNUNET_select_create (const char *description,
 
   if ((is_udp == GNUNET_NO) && (sock != -1) && (0 != LISTEN (sock, 5)))
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "listen");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_USER |
+                              GNUNET_GE_IMMEDIATE, "listen");
       return NULL;
     }
   GNUNET_GE_ASSERT (ectx, description != NULL);
@@ -844,7 +872,9 @@ GNUNET_select_create (const char *description,
   sh->description = description;
   if (0 != PIPE (sh->signal_pipe))
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "pipe");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_USER |
+                              GNUNET_GE_IMMEDIATE, "pipe");
       GNUNET_free (sh);
       return NULL;
     }
@@ -853,7 +883,9 @@ GNUNET_select_create (const char *description,
     {
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
-        GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, "close");
+        GNUNET_GE_LOG_STRERROR (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                                GNUNET_GE_ADMIN, "close");
       GNUNET_free (sh);
       return NULL;
     }
@@ -880,12 +912,15 @@ GNUNET_select_create (const char *description,
   if (sh->thread == NULL)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, "pthread_create");
+                              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                              GNUNET_GE_ADMIN, "pthread_create");
       if (sh->listen_sock != NULL)
         GNUNET_socket_destroy (sh->listen_sock);
       if ((0 != CLOSE (sh->signal_pipe[0])) ||
           (0 != CLOSE (sh->signal_pipe[1])))
-        GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, "close");
+        GNUNET_GE_LOG_STRERROR (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                                GNUNET_GE_ADMIN, "close");
       GNUNET_mutex_destroy (sh->lock);
       GNUNET_free (sh);
       return NULL;
@@ -904,7 +939,8 @@ GNUNET_select_destroy (struct GNUNET_SelectHandle *sh)
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "Destroying select %p\n", sh);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Destroying select %p\n", sh);
 #endif
   sh->shutdown = GNUNET_YES;
   signalSelect (sh);
@@ -919,10 +955,12 @@ GNUNET_select_destroy (struct GNUNET_SelectHandle *sh)
   GNUNET_mutex_destroy (sh->lock);
   if (0 != CLOSE (sh->signal_pipe[1]))
     GNUNET_GE_LOG_STRERROR (sh->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "close");
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN
+                            | GNUNET_GE_BULK, "close");
   if (0 != CLOSE (sh->signal_pipe[0]))
     GNUNET_GE_LOG_STRERROR (sh->ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "close");
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN
+                            | GNUNET_GE_BULK, "close");
   if (sh->listen_sock != NULL)
     GNUNET_socket_destroy (sh->listen_sock);
   GNUNET_free (sh);
@@ -953,9 +991,9 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Adding message of size %u to %p of select %p\n",
-          ntohs (msg->size), sock, sh);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Adding message of size %u to %p of select %p\n",
+                 ntohs (msg->size), sock, sh);
 #endif
   session = NULL;
   len = ntohs (msg->size);
@@ -1007,7 +1045,8 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
               (newBufferSize > sh->memory_quota) && (force == GNUNET_NO))
             newBufferSize = sh->memory_quota;
           GNUNET_GE_ASSERT (NULL,
-                     newBufferSize >= len + session->wapos - session->wspos);
+                            newBufferSize >=
+                            len + session->wapos - session->wspos);
           newBuffer = GNUNET_malloc (newBufferSize);
           memcpy (newBuffer,
                   &session->wbuff[session->wspos],
@@ -1071,8 +1110,8 @@ GNUNET_select_connect (struct GNUNET_SelectHandle *sh,
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Adding connection %p to selector %p\n", sock, sh);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Adding connection %p to selector %p\n", sock, sh);
 #endif
   session = GNUNET_malloc (sizeof (Session));
   memset (session, 0, sizeof (Session));
@@ -1113,8 +1152,8 @@ GNUNET_select_disconnect (struct GNUNET_SelectHandle *sh,
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-          "Removing connection %p from selector %p\n", sock, sh);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                 "Removing connection %p from selector %p\n", sock, sh);
 #endif
   GNUNET_mutex_lock (sh->lock);
   session = findSession (sh, sock);

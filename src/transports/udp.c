@@ -83,8 +83,9 @@ getGNUnetUDPPort ()
   unsigned long long port;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "UDP",
-                                               "PORT", 1, 65535, 2086, &port))
+                                                      "UDP",
+                                                      "PORT", 1, 65535, 2086,
+                                                      &port))
     {
       if ((pse = getservbyname ("gnunet", "udp")))
         port = htons (pse->s_port);
@@ -107,13 +108,16 @@ listensock (unsigned short port)
   sock = SOCKET (PF_INET, SOCK_DGRAM, 17);
   if (sock < 0)
     {
-      GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "socket");
+      GNUNET_GE_DIE_STRERROR (ectx,
+                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                              GNUNET_GE_IMMEDIATE, "socket");
       return -1;
     }
   if (SETSOCKOPT (sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
     {
       GNUNET_GE_DIE_STRERROR (ectx,
-                       GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "setsockopt");
+                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                              GNUNET_GE_IMMEDIATE, "setsockopt");
       return -1;
     }
   GNUNET_GE_ASSERT (NULL, port != 0);
@@ -123,11 +127,15 @@ listensock (unsigned short port)
   sin.sin_port = htons (port);
   if (BIND (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "bind");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                              GNUNET_GE_IMMEDIATE, "bind");
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-              _("Failed to bind to UDP port %d.\n"), port);
-      GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "bind");
+                     GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
+                     _("Failed to bind to UDP port %d.\n"), port);
+      GNUNET_GE_DIE_STRERROR (ectx,
+                              GNUNET_GE_FATAL | GNUNET_GE_USER |
+                              GNUNET_GE_IMMEDIATE, "bind");
       return -1;
     }
   /* do not bind if port == 0, then we use
@@ -202,9 +210,9 @@ isRejected (const void *addr, unsigned int addr_len)
     {
 #if DEBUG_UDP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Rejecting traffic from %u.%u.%u.%u.\n",
-              GNUNET_PRIP (ntohl (*(int *) addr)));
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Rejecting traffic from %u.%u.%u.%u.\n",
+                     GNUNET_PRIP (ntohl (*(int *) addr)));
 #endif
       return GNUNET_YES;
     }
@@ -240,19 +248,19 @@ verifyHello (const GNUNET_MessageHello * hello)
     {
 #if DEBUG_UDP
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "Rejecting UDP HELLO from %u.%u.%u.%u:%u due to configuration.\n",
-              GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
-              ntohs (haddr->port));
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "Rejecting UDP HELLO from %u.%u.%u.%u:%u due to configuration.\n",
+                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
+                     ntohs (haddr->port));
 #endif
       return GNUNET_SYSERR;     /* obviously invalid */
     }
 #if DEBUG_UDP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Verified UDP HELLO from %u.%u.%u.%u:%u.\n",
-          GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
-          ntohs (haddr->port));
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Verified UDP HELLO from %u.%u.%u.%u:%u.\n",
+                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
+                 ntohs (haddr->port));
 #endif
   return GNUNET_OK;
 }
@@ -288,8 +296,9 @@ createhello ()
     {
       GNUNET_free (msg);
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("UDP: Could not determine my public IP address.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK,
+                     _("UDP: Could not determine my public IP address.\n"));
       return NULL;
     }
   haddr->port = htons (port);
@@ -297,9 +306,9 @@ createhello ()
   if (0 != memcmp (haddr, &last_addr, sizeof (HostAddress)))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "UDP uses IP address %u.%u.%u.%u.\n",
-              GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "UDP uses IP address %u.%u.%u.%u.\n",
+                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
       last_addr = *haddr;
     }
   msg->senderAddressSize = htons (sizeof (HostAddress));
@@ -357,14 +366,15 @@ udpSend (GNUNET_TSession * tsession,
   sin.sin_family = AF_INET;
   sin.sin_port = haddr->port;
 
-  GNUNET_GE_ASSERT (ectx, sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
+  GNUNET_GE_ASSERT (ectx,
+                    sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
   memcpy (&sin.sin_addr, &haddr->ip, sizeof (GNUNET_IPv4Address));
 #if DEBUG_UDP
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-          "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
-          ssize, GNUNET_PRIP (ntohl (*(int *) &sin.sin_addr)),
-          ntohs (sin.sin_port));
+                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                 "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
+                 ssize, GNUNET_PRIP (ntohl (*(int *) &sin.sin_addr)),
+                 ntohs (sin.sin_port));
 #endif
 #ifndef MINGW
   if (GNUNET_YES == GNUNET_socket_send_to (udp_sock,
@@ -385,11 +395,11 @@ udpSend (GNUNET_TSession * tsession,
   else
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-              _
-              ("Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"),
-              ssize, GNUNET_PRIP (ntohl (*(int *) &sin.sin_addr)),
-              ntohs (sin.sin_port), STRERROR (errno));
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                     _
+                     ("Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"),
+                     ssize, GNUNET_PRIP (ntohl (*(int *) &sin.sin_addr)),
+                     ntohs (sin.sin_port), STRERROR (errno));
       if (stats != NULL)
         stats->change (stat_bytesDropped, ssize);
     }
@@ -434,7 +444,9 @@ startTransportServer ()
 #endif
   if (sock == -1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_BULK, "socket");
       GNUNET_select_destroy (selector);
       selector = NULL;
       return GNUNET_SYSERR;
@@ -512,30 +524,34 @@ inittransport_udp (CoreAPIForTransport * core)
   GNUNET_GE_ASSERT (ectx, sizeof (UDPMessage) == 68);
   coreAPI = core;
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "UDP",
-                                               "MTU",
-                                               sizeof (UDPMessage)
-                                               + GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD
-                                               +
-                                               sizeof (GNUNET_MessageHeader) +
-                                               32, 65500, MESSAGNUNET_GE_SIZE, &mtu))
+                                                      "UDP",
+                                                      "MTU",
+                                                      sizeof (UDPMessage)
+                                                      +
+                                                      GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD
+                                                      +
+                                                      sizeof
+                                                      (GNUNET_MessageHeader) +
+                                                      32, 65500,
+                                                      MESSAGNUNET_GE_SIZE,
+                                                      &mtu))
     {
       return NULL;
     }
   if (mtu < 1200)
     GNUNET_GE_LOG (ectx,
-            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-            _("MTU %llu for `%s' is probably too low!\n"), mtu, "UDP");
-  if (GNUNET_GC_get_configuration_value_yesno (cfg, "UDP", "UPNP", GNUNET_YES) ==
-      GNUNET_YES)
+                   GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                   _("MTU %llu for `%s' is probably too low!\n"), mtu, "UDP");
+  if (GNUNET_GC_get_configuration_value_yesno (cfg, "UDP", "UPNP", GNUNET_YES)
+      == GNUNET_YES)
     {
       upnp = coreAPI->requestService ("upnp");
 
       if (upnp == NULL)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                "The UPnP service could not be loaded. To disable UPnP, set the "
-                "configuration option \"UPNP\" in section \"UDP\" to \"NO\"\n");
+                       GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                       "The UPnP service could not be loaded. To disable UPnP, set the "
+                       "configuration option \"UPNP\" in section \"UDP\" to \"NO\"\n");
     }
   stats = coreAPI->requestService ("stats");
   if (stats != NULL)

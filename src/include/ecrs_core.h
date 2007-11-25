@@ -241,7 +241,8 @@ typedef struct
  */
 int fileBlockEncode (const DBlock * data,
                      unsigned int len,
-                     const GNUNET_HashCode * query, GNUNET_DatastoreValue ** value);
+                     const GNUNET_HashCode * query,
+                     GNUNET_DatastoreValue ** value);
 
 /**
  * Get the query that will be used to query for

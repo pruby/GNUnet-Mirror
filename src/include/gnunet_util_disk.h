@@ -85,8 +85,8 @@ int GNUNET_disk_file_open (struct GNUNET_GE_Context *ectx,
 /**
  * Wrapper around "close()".  Closes a file.
  */
-void GNUNET_disk_file_close (struct GNUNET_GE_Context *ectx, const char *filename,
-                             int fd);
+void GNUNET_disk_file_close (struct GNUNET_GE_Context *ectx,
+                             const char *filename, int fd);
 
 /**
  * Read the contents of a binary file into a buffer.
@@ -162,7 +162,8 @@ int GNUNET_disk_directory_create_for_file (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_YES if yes, GNUNET_NO if does not exist, GNUNET_SYSERR
  *   on any error and if exists but not directory
  */
-int GNUNET_disk_directory_test (struct GNUNET_GE_Context *ectx, const char *fil);
+int GNUNET_disk_directory_test (struct GNUNET_GE_Context *ectx,
+                                const char *fil);
 
 /**
  * Remove all files in a directory (rm -rf). Call with
@@ -180,7 +181,8 @@ int GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx,
  * @param dir the directory to create
  * @returns GNUNET_SYSERR on failure, GNUNET_OK otherwise
  */
-int GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx, const char *dir);
+int GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx,
+                                  const char *dir);
 
 /**
  * @brief Removes special characters as ':' from a filename.

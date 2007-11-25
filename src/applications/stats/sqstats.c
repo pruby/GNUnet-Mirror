@@ -51,7 +51,8 @@ struct CD
 };
 
 static int
-iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value, void *cls)
+iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
+      void *cls)
 {
   struct CD *data = cls;
   GNUNET_CronTime expire;

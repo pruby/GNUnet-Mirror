@@ -100,18 +100,18 @@ configChangeListener (void *ctx,
   if (pos == NULL)
     {
       GNUNET_GE_LOG (g->ectx,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
-              "Tree lookup for unknown option `%s' in section `%s'!\n",
-              option, section);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
+                     "Tree lookup for unknown option `%s' in section `%s'!\n",
+                     option, section);
       return 0;                 /* or refuse? */
     }
   /* first, check if value is valid */
   if ((pos->type & GNUNET_GNS_KIND_MASK) != GNUNET_GNS_KIND_LEAF)
     {
       GNUNET_GE_LOG (g->ectx,
-              GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
-              "Tree value change for non-leaf option `%s' in section `%s'!\n",
-              option, section);
+                     GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
+                     "Tree value change for non-leaf option `%s' in section `%s'!\n",
+                     option, section);
       return 0;
     }
   switch (pos->type & GNUNET_GNS_TYPE_MASK)
@@ -121,9 +121,10 @@ configChangeListener (void *ctx,
         int val;
 
         val = GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                section,
-                                                option,
-                                                pos->value.Boolean.def);
+                                                       section,
+                                                       option,
+                                                       pos->value.Boolean.
+                                                       def);
         if (val == GNUNET_SYSERR)
           {
             return GNUNET_SYSERR;
@@ -136,15 +137,21 @@ configChangeListener (void *ctx,
         unsigned long long val;
 
         if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_number (cfg,
-                                                                section,
-                                                                option,
-                                                                pos->value.
-                                                                UInt64.min,
-                                                                pos->value.
-                                                                UInt64.max,
-                                                                pos->value.
-                                                                UInt64.def,
-                                                                &val))
+                                                                       section,
+                                                                       option,
+                                                                       pos->
+                                                                       value.
+                                                                       UInt64.
+                                                                       min,
+                                                                       pos->
+                                                                       value.
+                                                                       UInt64.
+                                                                       max,
+                                                                       pos->
+                                                                       value.
+                                                                       UInt64.
+                                                                       def,
+                                                                       &val))
           {
             return GNUNET_SYSERR;
           }
@@ -157,7 +164,8 @@ configChangeListener (void *ctx,
         double d;
 
         s = NULL;
-        GNUNET_GC_get_configuration_value_string (cfg, section, option, NULL, &s);
+        GNUNET_GC_get_configuration_value_string (cfg, section, option, NULL,
+                                                  &s);
         if (s == NULL)
           {
             pos->value.Double.val = pos->value.Double.def;
@@ -167,9 +175,10 @@ configChangeListener (void *ctx,
             if (1 != sscanf (s, "%lf", &d))
               {
                 GNUNET_GE_LOG (ectx,
-                        GNUNET_GE_USER | GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE,
-                        "`%s' is not a valid double-precision floating point number.\n",
-                        s);
+                               GNUNET_GE_USER | GNUNET_GE_ERROR |
+                               GNUNET_GE_IMMEDIATE,
+                               "`%s' is not a valid double-precision floating point number.\n",
+                               s);
                 GNUNET_free (s);
                 return GNUNET_SYSERR;
               }
@@ -184,11 +193,13 @@ configChangeListener (void *ctx,
         char *val;
 
         if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_string (cfg,
-                                                                section,
-                                                                option,
-                                                                pos->value.
-                                                                String.def,
-                                                                &val))
+                                                                       section,
+                                                                       option,
+                                                                       pos->
+                                                                       value.
+                                                                       String.
+                                                                       def,
+                                                                       &val))
           return GNUNET_SYSERR;
         GNUNET_free (pos->value.String.val);
         pos->value.String.val = val;
@@ -199,15 +210,20 @@ configChangeListener (void *ctx,
         const char *ival;
 
         if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_choice (cfg,
-                                                                section,
-                                                                option,
-                                                                (const char
-                                                                 **) pos->
-                                                                value.String.
-                                                                legalRange,
-                                                                pos->value.
-                                                                String.def,
-                                                                &ival))
+                                                                       section,
+                                                                       option,
+                                                                       (const
+                                                                        char
+                                                                        **)
+                                                                       pos->
+                                                                       value.
+                                                                       String.
+                                                                       legalRange,
+                                                                       pos->
+                                                                       value.
+                                                                       String.
+                                                                       def,
+                                                                       &ival))
           return GNUNET_SYSERR;
         GNUNET_free (pos->value.String.val);
         pos->value.String.val = GNUNET_strdup (ival);
@@ -276,8 +292,8 @@ free_tree (struct GNUNET_GNS_TreeNode *t)
  */
 struct GNUNET_GNS_Context *
 GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
-                        struct GNUNET_GC_Configuration *cfg,
-                        const char *specification)
+                               struct GNUNET_GC_Configuration *cfg,
+                               const char *specification)
 {
   struct GNUNET_GNS_Context *ctx;
   struct GNUNET_GNS_TreeNode *root;
@@ -290,13 +306,14 @@ GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
   ctx->cfg = cfg;
   ctx->root = root;
   ctx->in_notify = 0;
-  if (-1 == GNUNET_GC_attach_change_listener (cfg, &configChangeListener, ctx))
+  if (-1 ==
+      GNUNET_GC_attach_change_listener (cfg, &configChangeListener, ctx))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _
-              ("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
-              specification);
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _
+                     ("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
+                     specification);
       GNUNET_free (ctx);
       free_tree (root);
       return NULL;
@@ -337,7 +354,8 @@ GNUNET_GNS_free_specification (struct GNUNET_GNS_Context *ctx)
  */
 void
 GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
-                                   GNUNET_GNS_TreeChangeListener listener, void *cls)
+                                          GNUNET_GNS_TreeChangeListener
+                                          listener, void *cls)
 {
   GNS_TCL *n;
 
@@ -354,8 +372,8 @@ GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
  */
 void
 GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
-                                     GNUNET_GNS_TreeChangeListener listener,
-                                     void *cls)
+                                            GNUNET_GNS_TreeChangeListener
+                                            listener, void *cls)
 {
   GNS_TCL *pos;
   GNS_TCL *prev;
@@ -385,7 +403,8 @@ GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
  * @return NULL on error
  */
 char *
-GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType type, const GNUNET_GNS_Value * value)
+GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType type,
+                                        const GNUNET_GNS_Value * value)
 {
   char buf[48];
 

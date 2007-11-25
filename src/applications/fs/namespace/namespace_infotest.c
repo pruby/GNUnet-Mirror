@@ -72,21 +72,23 @@ main (int argc, char *argv[])
   GNUNET_ECRS_meta_data_inser (meta, 0, "test");
   GNUNET_create_random_hash (&root);
   uri = GNUNET_NS_namespace_create (ectx,
-                            cfg,
-                            1,
-                            1,
-                            GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,
-                            "test", meta, NULL, &root);
+                                    cfg,
+                                    1,
+                                    1,
+                                    GNUNET_get_time () +
+                                    10 * GNUNET_CRON_MINUTES, "test", meta,
+                                    NULL, &root);
   CHECK (uri != NULL);
   newVal = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
   old = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
   euri = GNUNET_NS_add_to_namespace (ectx,
-                            cfg,
-                            1,
-                            1,
-                            GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,
-                            "test", 42, NULL, &root, NULL, uri, meta);
+                                     cfg,
+                                     1,
+                                     1,
+                                     GNUNET_get_time () +
+                                     10 * GNUNET_CRON_MINUTES, "test", 42,
+                                     NULL, &root, NULL, uri, meta);
   CHECK (euri != NULL);
   newVal = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
   CHECK (old < newVal);

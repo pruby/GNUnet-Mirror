@@ -67,7 +67,9 @@ main (int argc, char *argv[])
       fprintf (stderr, "Call with name of FSUI resource file!\n");
       return -1;
     }
-  ctx = GNUNET_FSUI_start (NULL, cfg, argv[1], 16, GNUNET_YES, &eventCallback, NULL);
+  ctx =
+    GNUNET_FSUI_start (NULL, cfg, argv[1], 16, GNUNET_YES, &eventCallback,
+                       NULL);
   if (ctx != NULL)
     GNUNET_FSUI_stop (ctx);
   else

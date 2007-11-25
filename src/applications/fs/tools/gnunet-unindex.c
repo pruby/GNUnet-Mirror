@@ -104,11 +104,11 @@ printstatus (void *cls, const GNUNET_FSUI_Event * event)
  * All gnunet-unindex command line options
  */
 static struct GNUNET_CommandLineOption gnunetunindexOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Unindex files.")),   /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Unindex files.")),    /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -141,25 +141,27 @@ main (int argc, char *const *argv)
   if (i == argc)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Not enough arguments. " "You must specify a filename.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Not enough arguments. "
+                       "You must specify a filename.\n"));
       GNUNET_fini (ectx, cfg);
       return -1;
     }
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "GNUNET",
-                                     "VERBOSE", 0, 9999, 0, &verbose);
+                                            "GNUNET",
+                                            "VERBOSE", 0, 9999, 0, &verbose);
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx,
-                    cfg, "gnunet-unindex", 2, GNUNET_NO, &printstatus,
-                    &verbose);
+                           cfg, "gnunet-unindex", 2, GNUNET_NO, &printstatus,
+                           &verbose);
   errorCode = 1;
   start_time = GNUNET_get_time ();
   filename = GNUNET_expand_file_name (ectx, argv[i]);
   ul = GNUNET_FSUI_unindex_start (ctx, filename);
   if (ul == NULL)
     {
-      printf (_("`%s' failed.  Is `%s' a file?\n"), "GNUNET_FSUI_unindex", filename);
+      printf (_("`%s' failed.  Is `%s' a file?\n"), "GNUNET_FSUI_unindex",
+              filename);
       errorCode = 2;
     }
   else

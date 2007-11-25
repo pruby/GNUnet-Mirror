@@ -168,7 +168,8 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
 
   if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
     GNUNET_GE_DIE_STRERROR (NULL,
-                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "lseek");
+                            GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL
+                            | GNUNET_GE_IMMEDIATE, "lseek");
   value = 0;
   READ (fd, &value, 1);
 
@@ -188,10 +189,12 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
   value = ((high << 4) | low);
   if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
     GNUNET_GE_DIE_STRERROR (NULL,
-                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "lseek");
+                            GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL
+                            | GNUNET_GE_IMMEDIATE, "lseek");
   if (1 != WRITE (fd, &value, 1))
     GNUNET_GE_DIE_STRERROR (NULL,
-                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "write");
+                            GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL
+                            | GNUNET_GE_IMMEDIATE, "write");
 
 }
 
@@ -248,7 +251,8 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
   LSEEK (fd, fileSlot, SEEK_SET);
   if (1 != WRITE (fd, &value, 1))
     GNUNET_GE_DIE_STRERROR (NULL,
-                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "write");
+                            GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL
+                            | GNUNET_GE_IMMEDIATE, "write");
 }
 
 #define BUFFSIZE 65536
@@ -288,8 +292,9 @@ makeEmptyFile (int fd, unsigned int size)
       if (res == -1)
         {
           GNUNET_GE_DIE_STRERROR (NULL,
-                           GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
-                           "write");
+                                  GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                                  GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+                                  "write");
           GNUNET_free (buffer);
           return GNUNET_SYSERR;
         }

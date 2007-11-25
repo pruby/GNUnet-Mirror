@@ -142,8 +142,9 @@ GNUNET_convert_string_to_utf8 (struct GNUNET_GE_Context *ectx,
   if (cd == (iconv_t) - 1)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_BULK,
-                       "iconv_open");
+                              GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                              GNUNET_GE_WARNING | GNUNET_GE_BULK,
+                              "iconv_open");
       ret = GNUNET_malloc (len + 1);
       memcpy (ret, input, len);
       ret[len] = '\0';
@@ -155,7 +156,9 @@ GNUNET_convert_string_to_utf8 (struct GNUNET_GE_Context *ectx,
   finSize = tmpSize;
   if (iconv (cd, (char **) &input, &len, &itmp, &finSize) == (size_t) - 1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_BULK, "iconv");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_USER | GNUNET_GE_WARNING |
+                              GNUNET_GE_BULK, "iconv");
       iconv_close (cd);
       GNUNET_free (tmp);
       ret = GNUNET_malloc (len + 1);
@@ -168,7 +171,9 @@ GNUNET_convert_string_to_utf8 (struct GNUNET_GE_Context *ectx,
   ret[tmpSize - finSize] = '\0';
   GNUNET_free (tmp);
   if (0 != iconv_close (cd))
-    GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_REQUEST, "iconv_close");
+    GNUNET_GE_LOG_STRERROR (ectx,
+                            GNUNET_GE_ADMIN | GNUNET_GE_WARNING |
+                            GNUNET_GE_REQUEST, "iconv_close");
   return ret;
 #else
   ret = GNUNET_malloc (len + 1);
@@ -215,9 +220,10 @@ GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil)
       if (fm == NULL)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-                  _
-                  ("Failed to expand `$HOME': environment variable `HOME' not set"));
+                         GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_WARNING
+                         | GNUNET_GE_IMMEDIATE,
+                         _
+                         ("Failed to expand `$HOME': environment variable `HOME' not set"));
           return NULL;
         }
       fm = GNUNET_strdup (fm);
@@ -254,7 +260,8 @@ GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil)
       if (fm == NULL)
         {
           GNUNET_GE_LOG_STRERROR (ectx,
-                           GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE, "getcwd");
+                                  GNUNET_GE_USER | GNUNET_GE_WARNING |
+                                  GNUNET_GE_IMMEDIATE, "getcwd");
           buffer = getenv ("PWD");      /* alternative */
           if (buffer != NULL)
             fm = GNUNET_strdup (buffer);
@@ -274,8 +281,8 @@ GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil)
     {
       SetErrnoFromWinError (lRet);
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-                       "plibc_conv_to_win_path");
+                              GNUNET_GE_USER | GNUNET_GE_WARNING |
+                              GNUNET_GE_IMMEDIATE, "plibc_conv_to_win_path");
       return NULL;
     }
   /* is the path relative? */
@@ -287,8 +294,8 @@ GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil)
         {
           SetErrnoFromWinError (ERROR_BUFFER_OVERFLOW);
           GNUNET_GE_LOG_STRERROR (ectx,
-                           GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
-                           "GetCurrentDirectory");
+                                  GNUNET_GE_USER | GNUNET_GE_WARNING |
+                                  GNUNET_GE_IMMEDIATE, "GetCurrentDirectory");
           return NULL;
         }
       buffer = GNUNET_malloc (MAX_PATH + 1);

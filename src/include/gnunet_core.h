@@ -97,19 +97,23 @@ struct GNUNET_ClientHandle;
 /**
  * Type of a handler for messages from clients.
  */
-typedef int (*GNUNET_ClientRequestHandler) (struct GNUNET_ClientHandle * client,
-                          const GNUNET_MessageHeader * message);
+typedef int (*GNUNET_ClientRequestHandler) (struct GNUNET_ClientHandle *
+                                            client,
+                                            const GNUNET_MessageHeader *
+                                            message);
 
 /**
  * Method called whenever a given client disconnects.
  */
-typedef void (*GNUNET_ClientExitHandler) (struct GNUNET_ClientHandle * client);
+typedef void (*GNUNET_ClientExitHandler) (struct GNUNET_ClientHandle *
+                                          client);
 
 /**
  * Type of a handler for some message type.
  */
 typedef int (*GNUNET_P2PRequestHandler) (const GNUNET_PeerIdentity * sender,
-                                   const GNUNET_MessageHeader * message);
+                                         const GNUNET_MessageHeader *
+                                         message);
 
 /**
  * Type of a handler for plaintext messages.  Since we cannot
@@ -117,16 +121,17 @@ typedef int (*GNUNET_P2PRequestHandler) (const GNUNET_PeerIdentity * sender,
  * the callback.
  */
 typedef int (*GNUNET_P2PPlaintextRequestHandler) (const GNUNET_PeerIdentity *
-                                            sender,
-                                            const GNUNET_MessageHeader *
-                                            message, GNUNET_TSession * session);
+                                                  sender,
+                                                  const GNUNET_MessageHeader *
+                                                  message,
+                                                  GNUNET_TSession * session);
 
 /**
  * Type of a handler for some message type.
  * @param identity the id of the node
  */
-typedef void (*GNUNET_NodeIteratorCallback) (const GNUNET_PeerIdentity * identity,
-                                 void *data);
+typedef void (*GNUNET_NodeIteratorCallback) (const GNUNET_PeerIdentity *
+                                             identity, void *data);
 
 /**
  * Type of a send callback to fill up buffers.
@@ -139,8 +144,8 @@ typedef void (*GNUNET_NodeIteratorCallback) (const GNUNET_PeerIdentity * identit
  *   that buffer (must be a positive number).
  */
 typedef unsigned int (*GNUNET_BufferFillCallback) (const GNUNET_PeerIdentity *
-                                            receiver, void *position,
-                                            unsigned int padding);
+                                                   receiver, void *position,
+                                                   unsigned int padding);
 
 /**
  * Callback that is used to fill in a message into the send buffer.
@@ -155,7 +160,8 @@ typedef unsigned int (*GNUNET_BufferFillCallback) (const GNUNET_PeerIdentity *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 typedef int (*GNUNET_BuildMessageCallback) (void *buf,
-                                     void *closure, unsigned short len);
+                                            void *closure,
+                                            unsigned short len);
 
 /**
  * Send a message to the client identified by the handle.  Note that
@@ -166,9 +172,10 @@ typedef int (*GNUNET_BuildMessageCallback) (void *buf,
  *
  * @param force GNUNET_YES if this message MUST be queued
  */
-typedef int (*GNUNET_SendToClientCallback) (struct GNUNET_ClientHandle * handle,
-                                     const GNUNET_MessageHeader * message,
-                                     int force);
+typedef int (*GNUNET_SendToClientCallback) (struct GNUNET_ClientHandle *
+                                            handle,
+                                            const GNUNET_MessageHeader *
+                                            message, int force);
 
 /**
  * GNUnet CORE API for applications and services that are implemented
@@ -374,7 +381,8 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerHandler) (unsigned short type, GNUNET_P2PRequestHandler callback);
+  int (*registerHandler) (unsigned short type,
+                          GNUNET_P2PRequestHandler callback);
 
   /**
    * Unregister a method as a handler for specific message
@@ -385,7 +393,8 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterHandler) (unsigned short type, GNUNET_P2PRequestHandler callback);
+  int (*unregisterHandler) (unsigned short type,
+                            GNUNET_P2PRequestHandler callback);
 
   /**
    * Is a handler registered for messages of the given type?
@@ -411,7 +420,8 @@ typedef struct
    *         handler for that type
    */
   int (*registerPlaintextHandler) (unsigned short type,
-                                   GNUNET_P2PPlaintextRequestHandler callback);
+                                   GNUNET_P2PPlaintextRequestHandler
+                                   callback);
 
   /**
    * Unregister a method as a handler for specific message
@@ -424,7 +434,8 @@ typedef struct
    *         handler for that type
    */
   int (*unregisterPlaintextHandler) (unsigned short type,
-                                     GNUNET_P2PPlaintextRequestHandler callback);
+                                     GNUNET_P2PPlaintextRequestHandler
+                                     callback);
 
   /* ***************** traffic management ******************* */
 
@@ -535,7 +546,8 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerClientHandler) (unsigned short type, GNUNET_ClientRequestHandler callback);
+  int (*registerClientHandler) (unsigned short type,
+                                GNUNET_ClientRequestHandler callback);
 
   /**
    * Remove a method as a handler for specific message
@@ -546,7 +558,8 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterClientHandler) (unsigned short type, GNUNET_ClientRequestHandler callback);
+  int (*unregisterClientHandler) (unsigned short type,
+                                  GNUNET_ClientRequestHandler callback);
 
   /**
    * Register a handler to call if any client exits.
@@ -635,7 +648,9 @@ typedef struct
                                    GNUNET_GE_KIND kind, const char *value);
 
   struct GNUNET_GE_Context *(*createClientLogContext) (GNUNET_GE_KIND mask,
-                                                struct GNUNET_ClientHandle * handle);
+                                                       struct
+                                                       GNUNET_ClientHandle *
+                                                       handle);
 
   int (*assertUnused) (GNUNET_TSession * tsession);
 
@@ -648,7 +663,9 @@ typedef struct
  *
  * @param capi the core API
  */
-typedef int (*GNUNET_ApplicationPluginInitializationMethod) (GNUNET_CoreAPIForPlugins * capi);
+typedef
+  int (*GNUNET_ApplicationPluginInitializationMethod)
+  (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Type of the shutdown method implemented by GNUnet protocol
@@ -662,7 +679,9 @@ typedef void (*GNUNET_ApplicationPluginShutdownMethod) (void);
  *
  * @param capi the core API
  */
-typedef void *(*GNUNET_ServicePluginInitializationMethod) (GNUNET_CoreAPIForPlugins * capi);
+typedef void
+  *(*GNUNET_ServicePluginInitializationMethod) (GNUNET_CoreAPIForPlugins *
+                                                capi);
 
 /**
  * Type of the shutdown method implemented by GNUnet service

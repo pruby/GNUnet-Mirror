@@ -79,12 +79,12 @@ static void
 waitForSignalHandler (struct GNUNET_GE_Context *ectx)
 {
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-          _("`%s' startup complete.\n"), "gnunetd");
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                 _("`%s' startup complete.\n"), "gnunetd");
   GNUNET_shutdown_wait_for ();
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-          _("`%s' is shutting down.\n"), "gnunetd");
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                 _("`%s' is shutting down.\n"), "gnunetd");
 }
 
 /**
@@ -117,8 +117,8 @@ gnunet_main ()
   if (GNUNET_OK != initCore (ectx, cfg, cron, mon))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("Core initialization failed.\n"));
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _("Core initialization failed.\n"));
 
       GNUNET_cron_destroy (cron);
       GNUNET_network_monitor_destroy (mon);
@@ -191,7 +191,7 @@ static struct GNUNET_CommandLineOption gnunetdOptions[] = {
    gettext_noop ("specify username as which gnunetd should run"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNETD:USERNAME"},
 #endif
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -220,17 +220,19 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  GNUNET_pid_file_write(ectx, cfg, getpid());
-  if (GNUNET_OK != changeUser (ectx, cfg)) {
-    GNUNET_pid_file_delete(ectx, cfg);
-    GNUNET_fini (ectx, cfg);
-    return 1;
-  }
-  if (GNUNET_OK != checkPermissions (ectx, cfg)) {
-    GNUNET_pid_file_delete (ectx, cfg);
-    GNUNET_fini (ectx, cfg);
-    return 1;
-  }
+  GNUNET_pid_file_write (ectx, cfg, getpid ());
+  if (GNUNET_OK != changeUser (ectx, cfg))
+    {
+      GNUNET_pid_file_delete (ectx, cfg);
+      GNUNET_fini (ectx, cfg);
+      return 1;
+    }
+  if (GNUNET_OK != checkPermissions (ectx, cfg))
+    {
+      GNUNET_pid_file_delete (ectx, cfg);
+      GNUNET_fini (ectx, cfg);
+      return 1;
+    }
   if (GNUNET_YES == debug_flag)
     {
       int dev;
@@ -240,12 +242,12 @@ main (int argc, char *const *argv)
       GNUNET_GE_setDefaultContext (NULL);
       GNUNET_GE_free_context (ectx);
       GNUNET_GC_get_configuration_value_string (cfg,
-                                         "LOGGING",
-                                         "USER-LEVEL",
-                                         "WARNING", &user_log_level);
+                                                "LOGGING",
+                                                "USER-LEVEL",
+                                                "WARNING", &user_log_level);
       dev = GNUNET_GC_get_configuration_value_yesno (cfg,
-                                              "LOGGING", "DEVELOPER",
-                                              GNUNET_NO);
+                                                     "LOGGING", "DEVELOPER",
+                                                     GNUNET_NO);
       ull = GNUNET_GE_getKIND (user_log_level);
       ull |= (ull - 1);         /* set bits for all lower log-levels */
       if (dev == GNUNET_YES)
@@ -254,8 +256,10 @@ main (int argc, char *const *argv)
         ectx = GNUNET_GE_create_context_stderr (GNUNET_YES, GNUNET_GE_ALL);
       else
         ectx = GNUNET_GE_create_context_stderr (GNUNET_YES,
-                                         GNUNET_GE_USER | GNUNET_GE_ADMIN
-                                         | ull | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE);
+                                                GNUNET_GE_USER |
+                                                GNUNET_GE_ADMIN | ull |
+                                                GNUNET_GE_BULK |
+                                                GNUNET_GE_IMMEDIATE);
       GNUNET_GE_setDefaultContext (ectx);
       GNUNET_free (user_log_level);
     }
@@ -263,10 +267,10 @@ main (int argc, char *const *argv)
   if (GNUNET_OK != checkUpToDate (ectx, cfg))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
-              _
-              ("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
-              "gnunet-update");
+                     GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
+                     _
+                     ("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
+                     "gnunet-update");
       GNUNET_pid_file_delete (ectx, cfg);
       GNUNET_fini (ectx, cfg);
       return 1;
@@ -274,8 +278,8 @@ main (int argc, char *const *argv)
 
 #ifdef MINGW
   if (GNUNET_GC_get_configuration_value_yesno (cfg,
-                                        "GNUNETD", "WINSERVICE",
-                                        GNUNET_NO) == GNUNET_YES)
+                                               "GNUNETD", "WINSERVICE",
+                                               GNUNET_NO) == GNUNET_YES)
     {
       SERVICE_TABLE_ENTRY DispatchTable[] = { {"GNUnet", ServiceMain}
       , {NULL, NULL}

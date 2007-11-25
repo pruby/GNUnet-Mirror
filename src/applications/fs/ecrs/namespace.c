@@ -45,9 +45,10 @@ getPseudonymFileName (struct GNUNET_GE_Context *ectx,
   char *fileName;
 
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                       "GNUNET",
-                                       "GNUNET_HOME",
-                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fileName);
+                                              "GNUNET",
+                                              "GNUNET_HOME",
+                                              GNUNET_DEFAULT_HOME_DIRECTORY,
+                                              &fileName);
   gnHome = GNUNET_expand_file_name (ectx, fileName);
   GNUNET_free (fileName);
   fileName =
@@ -68,7 +69,8 @@ getPseudonymFileName (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
-                      struct GNUNET_GC_Configuration *cfg, const char *name)
+                              struct GNUNET_GC_Configuration *cfg,
+                              const char *name)
 {
   char *fileName;
 
@@ -81,8 +83,8 @@ GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
   if (0 != UNLINK (fileName))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-                            "unlink", fileName);
+                                   GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                   GNUNET_GE_BULK, "unlink", fileName);
       GNUNET_free (fileName);
       return GNUNET_SYSERR;
     }
@@ -112,14 +114,14 @@ GNUNET_ECRS_namespace_delete (struct GNUNET_GE_Context *ectx,
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
-                      struct GNUNET_GC_Configuration *cfg,
-                      const char *name,
-                      const struct GNUNET_ECRS_MetaData *meta,
-                      unsigned int anonymityLevel,
-                      unsigned int priority,
-                      GNUNET_CronTime expiration,
-                      const struct GNUNET_ECRS_URI *advertisementURI,
-                      const GNUNET_HashCode * rootEntry)
+                              struct GNUNET_GC_Configuration *cfg,
+                              const char *name,
+                              const struct GNUNET_ECRS_MetaData *meta,
+                              unsigned int anonymityLevel,
+                              unsigned int priority,
+                              GNUNET_CronTime expiration,
+                              const struct GNUNET_ECRS_URI *advertisementURI,
+                              const GNUNET_HashCode * rootEntry)
 {
   struct GNUNET_ECRS_URI *rootURI;
   char *fileName;
@@ -141,7 +143,8 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   int i;
   char *cpy;
 
-  if ((advertisementURI != NULL) && (!GNUNET_ECRS_uri_test_ksk (advertisementURI)))
+  if ((advertisementURI != NULL)
+      && (!GNUNET_ECRS_uri_test_ksk (advertisementURI)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return NULL;
@@ -150,9 +153,9 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   if (GNUNET_YES == GNUNET_disk_file_test (ectx, fileName))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Cannot create pseudonym `%s', file `%s' exists.\n"),
-              name, fileName);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Cannot create pseudonym `%s', file `%s' exists.\n"),
+                     name, fileName);
       GNUNET_free (fileName);
       return NULL;
     }
@@ -166,7 +169,9 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
 
   /* create advertisements */
 
-  mdsize = GNUNET_ECRS_meta_data_get_serialized_size (meta, GNUNET_ECRS_SERIALIZE_PART);
+  mdsize =
+    GNUNET_ECRS_meta_data_get_serialized_size (meta,
+                                               GNUNET_ECRS_SERIALIZE_PART);
   size = mdsize + sizeof (NBlock);
   if (size > MAX_NBLOCK_SIZE)
     {
@@ -176,9 +181,10 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       nb->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
       mdsize = size - sizeof (NBlock);
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
-                                       meta,
-                                       (char *) &nb[1],
-                                       mdsize, GNUNET_ECRS_SERIALIZE_PART);
+                                                meta,
+                                                (char *) &nb[1],
+                                                mdsize,
+                                                GNUNET_ECRS_SERIALIZE_PART);
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -194,8 +200,9 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
       nb = (NBlock *) & value[1];
       nb->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
       GNUNET_ECRS_meta_data_serialize (ectx,
-                              meta,
-                              (char *) &nb[1], mdsize, GNUNET_ECRS_SERIALIZE_FULL);
+                                       meta,
+                                       (char *) &nb[1], mdsize,
+                                       GNUNET_ECRS_SERIALIZE_FULL);
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE);
@@ -216,10 +223,12 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
   nb->rootEntry = *rootEntry;
 
   GNUNET_GE_ASSERT (ectx,
-             GNUNET_OK == GNUNET_RSA_sign (hk,
-                                           mdsize +
-                                           3 * sizeof (GNUNET_HashCode),
-                                           &nb->identifier, &nb->signature));
+                    GNUNET_OK == GNUNET_RSA_sign (hk,
+                                                  mdsize +
+                                                  3 *
+                                                  sizeof (GNUNET_HashCode),
+                                                  &nb->identifier,
+                                                  &nb->signature));
   if (GNUNET_OK != GNUNET_FS_insert (sock, value))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -254,18 +263,20 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
           GNUNET_hash (keywords[i], strlen (keywords[i]), &hc);
           pk = GNUNET_RSA_create_key_from_hash (&hc);
           GNUNET_RSA_get_public_key (pk, &knb->kblock.keyspace);
-          GNUNET_GE_ASSERT (ectx, size - sizeof (KBlock) - sizeof (unsigned int)
-                     == sizeof (NBlock) + mdsize);
-          GNUNET_ECRS_encryptInPlace (&hc,
-                               &knb->nblock,
-                               size - sizeof (KBlock) -
-                               sizeof (unsigned int));
+          GNUNET_GE_ASSERT (ectx,
+                            size - sizeof (KBlock) - sizeof (unsigned int) ==
+                            sizeof (NBlock) + mdsize);
+          GNUNET_ECRS_encryptInPlace (&hc, &knb->nblock,
+                                      size - sizeof (KBlock) -
+                                      sizeof (unsigned int));
 
           GNUNET_GE_ASSERT (ectx,
-                     GNUNET_OK == GNUNET_RSA_sign (pk,
-                                                   sizeof (NBlock) + mdsize,
-                                                   &knb->nblock,
-                                                   &knb->kblock.signature));
+                            GNUNET_OK == GNUNET_RSA_sign (pk,
+                                                          sizeof (NBlock) +
+                                                          mdsize,
+                                                          &knb->nblock,
+                                                          &knb->kblock.
+                                                          signature));
           /* extra check: verify sig */
           GNUNET_RSA_free_key (pk);
           if (GNUNET_OK != GNUNET_FS_insert (sock, knvalue))
@@ -303,8 +314,9 @@ GNUNET_ECRS_namespace_create (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
-                          struct GNUNET_GC_Configuration *cfg,
-                          const char *name, const GNUNET_HashCode * hc)
+                                   struct GNUNET_GC_Configuration *cfg,
+                                   const char *name,
+                                   const GNUNET_HashCode * hc)
 {
   struct GNUNET_RSA_PrivateKey *hk;
   char *fileName;
@@ -324,7 +336,8 @@ GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
   if (len < 2)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("File `%s' does not contain a pseudonym.\n"), fileName);
+                     _("File `%s' does not contain a pseudonym.\n"),
+                     fileName);
       GNUNET_free (fileName);
       return GNUNET_SYSERR;
     }
@@ -335,8 +348,8 @@ GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
   if (ntohs (hke->len) != len)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Format of pseudonym `%s' is invalid.\n"), name);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Format of pseudonym `%s' is invalid.\n"), name);
       GNUNET_free (hke);
       return GNUNET_SYSERR;
     }
@@ -365,17 +378,17 @@ GNUNET_ECRS_namespace_test_exists (struct GNUNET_GE_Context *ectx,
  */
 struct GNUNET_ECRS_URI *
 GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
-                     struct GNUNET_GC_Configuration *cfg,
-                     const char *name,
-                     unsigned int anonymityLevel,
-                     unsigned int priority,
-                     GNUNET_CronTime expiration,
-                     GNUNET_Int32Time creationTime,
-                     GNUNET_Int32Time updateInterval,
-                     const GNUNET_HashCode * thisId,
-                     const GNUNET_HashCode * nextId,
-                     const struct GNUNET_ECRS_URI *dstU,
-                     const struct GNUNET_ECRS_MetaData *md)
+                                   struct GNUNET_GC_Configuration *cfg,
+                                   const char *name,
+                                   unsigned int anonymityLevel,
+                                   unsigned int priority,
+                                   GNUNET_CronTime expiration,
+                                   GNUNET_Int32Time creationTime,
+                                   GNUNET_Int32Time updateInterval,
+                                   const GNUNET_HashCode * thisId,
+                                   const GNUNET_HashCode * nextId,
+                                   const struct GNUNET_ECRS_URI *dstU,
+                                   const struct GNUNET_ECRS_MetaData *md)
 {
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ClientServerConnection *sock;
@@ -404,7 +417,8 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   if (len < 2)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("File `%s' does not contain a pseudonym.\n"), fileName);
+                     _("File `%s' does not contain a pseudonym.\n"),
+                     fileName);
       GNUNET_free (fileName);
       return NULL;
     }
@@ -415,7 +429,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   if (ntohs (hke->len) != len)
     {
       GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Format of pseudonym `%s' is invalid.\n"), name);
+                     _("Format of pseudonym `%s' is invalid.\n"), name);
       GNUNET_free (hke);
       return NULL;
     }
@@ -426,7 +440,9 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
 
   /* THEN: construct SBlock */
   dstURI = GNUNET_ECRS_uri_to_string (dstU);
-  mdsize = GNUNET_ECRS_meta_data_get_serialized_size (md, GNUNET_ECRS_SERIALIZE_PART);
+  mdsize =
+    GNUNET_ECRS_meta_data_get_serialized_size (md,
+                                               GNUNET_ECRS_SERIALIZE_PART);
   size = mdsize + sizeof (SBlock) + strlen (dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE)
     {
@@ -438,9 +454,10 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
       mdsize = size - sizeof (SBlock) - strlen (dstURI) - 1;
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
-                                       md,
-                                       &destPos[strlen (dstURI) + 1],
-                                       mdsize, GNUNET_ECRS_SERIALIZE_PART);
+                                                md,
+                                                &destPos[strlen (dstURI) + 1],
+                                                mdsize,
+                                                GNUNET_ECRS_SERIALIZE_PART);
       if (mdsize == -1)
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -458,9 +475,9 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
       destPos = (char *) &sb[1];
       memcpy (destPos, dstURI, strlen (dstURI) + 1);
       GNUNET_ECRS_meta_data_serialize (ectx,
-                              md,
-                              &destPos[strlen (dstURI) + 1],
-                              mdsize, GNUNET_ECRS_SERIALIZE_FULL);
+                                       md,
+                                       &destPos[strlen (dstURI) + 1],
+                                       mdsize, GNUNET_ECRS_SERIALIZE_FULL);
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
   value->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED);
@@ -485,20 +502,24 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
   uri->data.sks.identifier = *thisId;
 
   GNUNET_ECRS_encryptInPlace (thisId,
-                       &sb->creationTime,
-                       size
-                       - sizeof (unsigned int)
-                       - sizeof (GNUNET_RSA_Signature)
-                       - sizeof (GNUNET_RSA_PublicKey) -
-                       sizeof (GNUNET_HashCode));
+                              &sb->creationTime,
+                              size
+                              - sizeof (unsigned int)
+                              - sizeof (GNUNET_RSA_Signature)
+                              - sizeof (GNUNET_RSA_PublicKey) -
+                              sizeof (GNUNET_HashCode));
   /* FINALLY: GNUNET_RSA_sign & publish SBlock */
   GNUNET_GE_ASSERT (ectx,
-             GNUNET_OK == GNUNET_RSA_sign (hk,
-                                           size
-                                           - sizeof (GNUNET_RSA_Signature)
-                                           - sizeof (GNUNET_RSA_PublicKey)
-                                           - sizeof (unsigned int),
-                                           &sb->identifier, &sb->signature));
+                    GNUNET_OK == GNUNET_RSA_sign (hk,
+                                                  size
+                                                  -
+                                                  sizeof
+                                                  (GNUNET_RSA_Signature) -
+                                                  sizeof
+                                                  (GNUNET_RSA_PublicKey) -
+                                                  sizeof (unsigned int),
+                                                  &sb->identifier,
+                                                  &sb->signature));
   GNUNET_RSA_free_key (hk);
 
   sock = GNUNET_client_connection_create (ectx, cfg);
@@ -546,8 +567,9 @@ processFile_ (const char *name, const char *dirName, void *cls)
   if (len < 2)
     {
       GNUNET_GE_LOG (c->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("File `%s' does not contain a pseudonym.\n"), fileName);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("File `%s' does not contain a pseudonym.\n"),
+                     fileName);
       GNUNET_free (fileName);
       return GNUNET_OK;
     }
@@ -557,8 +579,8 @@ processFile_ (const char *name, const char *dirName, void *cls)
   if (ntohs (hke->len) != len)
     {
       GNUNET_GE_LOG (c->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Format of file `%s' is invalid.\n"), fileName);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Format of file `%s' is invalid.\n"), fileName);
       GNUNET_free (hke);
       GNUNET_free (fileName);
       return GNUNET_OK;
@@ -568,8 +590,8 @@ processFile_ (const char *name, const char *dirName, void *cls)
   if (hk == NULL)
     {
       GNUNET_GE_LOG (c->ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Format of file `%s' is invalid.\n"), fileName);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Format of file `%s' is invalid.\n"), fileName);
       GNUNET_free (fileName);
       GNUNET_GE_BREAK (c->ectx, 0);
       return GNUNET_SYSERR;
@@ -598,8 +620,8 @@ processFile_ (const char *name, const char *dirName, void *cls)
  */
 int
 GNUNET_ECRS_get_namespaces (struct GNUNET_GE_Context *ectx,
-                     struct GNUNET_GC_Configuration *cfg,
-                     GNUNET_ECRS_NamespaceInfoProcessor cb, void *cls)
+                            struct GNUNET_GC_Configuration *cfg,
+                            GNUNET_ECRS_NamespaceInfoProcessor cb, void *cls)
 {
   char *dirName;
   struct lNCLS myCLS;

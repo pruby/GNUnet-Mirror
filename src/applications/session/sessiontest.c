@@ -89,9 +89,9 @@ main (int argc, char **argv)
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg);
       GNUNET_GC_set_configuration_value_string (cfg,
-                                         NULL,
-                                         "NETWORK",
-                                         "HOST", "localhost:12087");
+                                                NULL,
+                                                "NETWORK",
+                                                "HOST", "localhost:12087");
       sock2 = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
       while (GNUNET_OK ==
@@ -116,7 +116,8 @@ main (int argc, char **argv)
               while (GNUNET_shutdown_test () == GNUNET_NO)
                 {
                   printf ("Checking that peers are staying connected 1...\n");
-                  GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect, NULL);
+                  GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect,
+                                               NULL);
                   sleep (1);
                   if (ok == 0)
                     {
@@ -124,7 +125,8 @@ main (int argc, char **argv)
                       break;
                     }
                   printf ("Checking that peers are staying connected 2...\n");
-                  GNUNET_STATS_get_statistics (NULL, sock2, &waitForConnect, NULL);
+                  GNUNET_STATS_get_statistics (NULL, sock2, &waitForConnect,
+                                               NULL);
                   sleep (1);
                   if (ok == 0)
                     {

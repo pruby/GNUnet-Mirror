@@ -67,11 +67,11 @@ static int
 searchFile (const struct GNUNET_ECRS_URI *uri, int resultCount)
 {
   GNUNET_ECRS_search (NULL,
-               cfg,
-               uri,
-               0,
-               60 * 15 * GNUNET_CRON_SECONDS,
-               &searchCB, &resultCount, &testTerminate, NULL);
+                      cfg,
+                      uri,
+                      0,
+                      60 * 15 * GNUNET_CRON_SECONDS,
+                      &searchCB, &resultCount, &testTerminate, NULL);
   if (resultCount > 0)
     return GNUNET_SYSERR;
   return GNUNET_OK;
@@ -111,14 +111,14 @@ main (int argc, char *argv[])
   printf ("Testing search for 'XXtest' with one result.\n");
 #endif
   uri = GNUNET_ECRS_string_to_uri (NULL,
-                          "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
+                                   "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   meta = GNUNET_ECRS_meta_data_create ();
   keywords[0] = "XXtest";
   keywords[1] = NULL;
 
   key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
-  CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,  /* expire */
-                                          uri, meta));
+  CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
+                                                         uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 1));
   GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);
@@ -129,12 +129,12 @@ main (int argc, char *argv[])
   printf ("Testing search for 'XXtest AND binary' with two results.\n");
 #endif
   uri = GNUNET_ECRS_string_to_uri (NULL,
-                          "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
+                                   "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
   keywords[1] = "binary";
   keywords[2] = NULL;
   key = GNUNET_ECRS_keyword_string_to_uri (keywords);
-  CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,  /* expire */
-                                          uri, meta));
+  CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
+                                                         uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 2));
   GNUNET_ECRS_uri_destroy (key);
   GNUNET_ECRS_uri_destroy (uri);

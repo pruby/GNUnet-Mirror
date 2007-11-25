@@ -59,7 +59,8 @@ int decryptData (const GNUNET_RSA_EncryptedData * block,
 
 
 
-void initPrivateKey (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
+void initPrivateKey (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg);
 
 void donePrivateKey (void);
 

@@ -77,7 +77,8 @@ updateModule (const char *rpos)
 
   pos = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "MODULES", rpos, rpos, &pos))
+                                                      "MODULES", rpos, rpos,
+                                                      &pos))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx, pos != NULL);
 
@@ -117,10 +118,10 @@ updateApplicationModules ()
 
   dso = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "GNUNETD",
-                                               "APPLICATIONS",
-                                               "advertising fs getoption stats traffic",
-                                               &dso))
+                                                      "GNUNETD",
+                                                      "APPLICATIONS",
+                                                      "advertising fs getoption stats traffic",
+                                                      &dso))
     return;
   GNUNET_GE_ASSERT (ectx, dso != NULL);
   next = dso;
@@ -141,12 +142,13 @@ updateApplicationModules ()
       if (strlen (pos) > 0)
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  _("Updating data for module `%s'\n"), pos);
+                         GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Updating data for module `%s'\n"), pos);
           if (GNUNET_OK != updateModule (pos))
             GNUNET_GE_LOG (ectx,
-                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_USER,
-                    _("Failed to update data for module `%s'\n"), pos);
+                           GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER |
+                           GNUNET_GE_BULK | GNUNET_GE_USER,
+                           _("Failed to update data for module `%s'\n"), pos);
         }
     }
   while (next != NULL);
@@ -192,8 +194,9 @@ work ()
   cron = cron_create (ectx);
   if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
     {
-      GNUNET_GE_LOG (ectx, GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("Core initialization failed.\n"));
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
+                     _("Core initialization failed.\n"));
 
       return;
     }
@@ -246,7 +249,7 @@ static struct GNUNET_CommandLineOption gnunetupdateOptions[] = {
    gettext_noop
    ("run in client mode (for getting client configuration values)"),
    0, &set_client_config, NULL},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -268,7 +271,8 @@ main (int argc, char *const *argv)
       return -1;
     }
   get = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-UPDATE", "GET", "", &get);
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-UPDATE", "GET", "",
+                                            &get);
   if (strlen (get) > 0)
     doGet (get);
   else

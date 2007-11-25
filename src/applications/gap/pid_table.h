@@ -27,7 +27,8 @@
 #include "gnunet_util.h"
 #include "gnunet_stats_service.h"
 
-void init_pid_table (struct GNUNET_GE_Context *ectx, GNUNET_Stats_ServiceAPI * s);
+void init_pid_table (struct GNUNET_GE_Context *ectx,
+                     GNUNET_Stats_ServiceAPI * s);
 
 void done_pid_table (void);
 

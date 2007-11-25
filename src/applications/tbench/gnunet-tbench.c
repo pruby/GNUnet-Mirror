@@ -59,8 +59,8 @@ static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
  * All gnunet-tbench command line options
  */
 static struct GNUNET_CommandLineOption gnunettbenchOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
-	GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")), /* -h */
   {'g', "gnuplot", NULL,
    gettext_noop ("output in gnuplot format"), 0,
    &GNUNET_getopt_configure_set_one, &outputFormat},
@@ -85,7 +85,7 @@ static struct GNUNET_CommandLineOption gnunettbenchOptions[] = {
    gettext_noop ("time to wait for the completion of an iteration (in ms)"),
    1,
    &GNUNET_getopt_configure_set_ulong, &messageTimeOut},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   {'X', "xspace", "COUNT",
    gettext_noop ("number of messages in a message block"), 1,
    &GNUNET_getopt_configure_set_ulong, &messageTrainSize},
@@ -171,8 +171,8 @@ main (int argc, char *const *argv)
                                      (GNUNET_MessageHeader **) & buffer))
     {
       GNUNET_GE_ASSERT (ectx,
-                 ntohs (buffer->header.size) ==
-                 sizeof (CS_tbench_reply_MESSAGE));
+                        ntohs (buffer->header.size) ==
+                        sizeof (CS_tbench_reply_MESSAGE));
       if ((float) buffer->mean_loss < 0)
         {
           GNUNET_GE_BREAK (ectx, 0);

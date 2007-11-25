@@ -34,7 +34,8 @@
  * Initialize the migration module.
  */
 void initPrefetch (struct GNUNET_GE_Context *ectx,
-                   struct GNUNET_GC_Configuration *cfg, GNUNET_SQstore_ServiceAPI * sq);
+                   struct GNUNET_GC_Configuration *cfg,
+                   GNUNET_SQstore_ServiceAPI * sq);
 
 void donePrefetch (void);
 

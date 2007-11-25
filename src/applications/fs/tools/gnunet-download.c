@@ -68,12 +68,12 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
   {'a', "anonymity", "LEVEL",
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
    1, &GNUNET_getopt_configure_set_uint, &anonymity},
-   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'d', "directory", NULL,
    gettext_noop
    ("download a GNUnet directory that has already been downloaded.  Requires that a filename of an existing file is specified instead of the URI.  The download will only download the top-level files in the directory unless the `-R' option is also specified."),
    0, &GNUNET_getopt_configure_set_one, &do_directory},
-   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Download files from GNUnet.")),      /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Download files from GNUnet.")),       /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'o', "output", "FILENAME",
@@ -86,7 +86,7 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
   {'R', "recursive", NULL,
    gettext_noop ("download a GNUnet directory recursively"),
    0, &GNUNET_getopt_configure_set_one, &do_recursive},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -168,13 +168,14 @@ directoryIterator (const GNUNET_ECRS_FileInfo * fi,
   char *f;
 
   f = GNUNET_ECRS_meta_data_get_first_by_types (fi->meta,
-                                 EXTRACTOR_FILENAME,
-                                 EXTRACTOR_TITLE,
-                                 EXTRACTOR_ARTIST,
-                                 EXTRACTOR_AUTHOR,
-                                 EXTRACTOR_PUBLISHER,
-                                 EXTRACTOR_CREATOR,
-                                 EXTRACTOR_PRODUCER, EXTRACTOR_UNKNOWN, -1);
+                                                EXTRACTOR_FILENAME,
+                                                EXTRACTOR_TITLE,
+                                                EXTRACTOR_ARTIST,
+                                                EXTRACTOR_AUTHOR,
+                                                EXTRACTOR_PUBLISHER,
+                                                EXTRACTOR_CREATOR,
+                                                EXTRACTOR_PRODUCER,
+                                                EXTRACTOR_UNKNOWN, -1);
   if (f == NULL)
     f = GNUNET_strdup (_("no name given"));
   fn = GNUNET_malloc (strlen (filename) + strlen (f) + 4);
@@ -186,7 +187,8 @@ directoryIterator (const GNUNET_ECRS_FileInfo * fi,
   GNUNET_free (f);
   meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_FSUI_download_start (ctx,
-                      anonymity, do_recursive, fi->uri, meta, fn, NULL, NULL);
+                              anonymity, do_recursive, fi->uri, meta, fn,
+                              NULL, NULL);
   GNUNET_ECRS_meta_data_destroy (meta);
   GNUNET_free (fn);
   return GNUNET_OK;
@@ -222,25 +224,27 @@ main (int argc, char *const *argv)
   if (i == argc)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Not enough arguments. "
-                "You must specify a GNUnet file URI\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Not enough arguments. "
+                       "You must specify a GNUnet file URI\n"));
       errorCode = -1;
       goto quit;
     }
   GNUNET_GC_get_configuration_value_number (cfg,
-                                     "GNUNET",
-                                     "VERBOSE", 0, 9999, 0, &verbose);
+                                            "GNUNET",
+                                            "VERBOSE", 0, 9999, 0, &verbose);
   uri = NULL;
   if (!do_directory)
     {
       uri = GNUNET_ECRS_string_to_uri (ectx, argv[i]);
       if ((NULL == uri) ||
-          (!(GNUNET_ECRS_uri_test_loc (uri) || GNUNET_ECRS_uri_test_chk (uri))))
+          (!(GNUNET_ECRS_uri_test_loc (uri)
+             || GNUNET_ECRS_uri_test_chk (uri))))
         {
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                  _("URI `%s' invalid for gnunet-download.\n"), argv[i]);
+                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("URI `%s' invalid for gnunet-download.\n"),
+                         argv[i]);
           errorCode = -1;
           goto quit;
         }
@@ -270,26 +274,30 @@ main (int argc, char *const *argv)
       else
         {
           GNUNET_GE_ASSERT (ectx,
-                     strlen (argv[i]) >
-                     strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_FILE_INFIX));
-          filename = GNUNET_expand_file_name (ectx,
-                                              &argv[i][strlen
-                                                       (GNUNET_ECRS_URI_PREFIX) +
-                                                       strlen
-                                                       (GNUNET_ECRS_FILE_INFIX)]);
-          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                  _("No filename specified, using `%s' instead (for now).\n"),
-                  filename);
+                            strlen (argv[i]) >
+                            strlen (GNUNET_ECRS_URI_PREFIX) +
+                            strlen (GNUNET_ECRS_FILE_INFIX));
+          filename =
+            GNUNET_expand_file_name (ectx,
+                                     &argv[i][strlen (GNUNET_ECRS_URI_PREFIX)
+                                              +
+                                              strlen
+                                              (GNUNET_ECRS_FILE_INFIX)]);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         _
+                         ("No filename specified, using `%s' instead (for now).\n"),
+                         filename);
           try_rename = GNUNET_YES;
         }
     }
   ok = GNUNET_NO;
   lock = GNUNET_mutex_create (GNUNET_NO);
   ctx = GNUNET_FSUI_start (ectx,
-                    cfg,
-                    "gnunet-download",
-                    parallelism == 0 ? 1 : parallelism,
-                    GNUNET_NO, &progressModel, NULL);
+                           cfg,
+                           "gnunet-download",
+                           parallelism == 0 ? 1 : parallelism,
+                           GNUNET_NO, &progressModel, NULL);
   start_time = GNUNET_get_time ();
   errorCode = 1;
   if (do_directory)
@@ -318,8 +326,10 @@ main (int argc, char *const *argv)
           if (fd != -1)
             CLOSE (fd);
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
-                  _("Could not access gnunet-directory file `%s'\n"), efn);
+                         GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                         GNUNET_GE_USER,
+                         _("Could not access gnunet-directory file `%s'\n"),
+                         efn);
           GNUNET_FSUI_stop (ctx);
           GNUNET_mutex_destroy (lock);
           GNUNET_free (efn);
@@ -327,9 +337,10 @@ main (int argc, char *const *argv)
         }
       meta = GNUNET_ECRS_meta_data_create ();
       count = GNUNET_ECRS_directory_list_contents (ectx,
-                                  data,
-                                  sbuf.st_size,
-                                  &meta, &directoryIterator, ctx);
+                                                   data,
+                                                   sbuf.st_size,
+                                                   &meta, &directoryIterator,
+                                                   ctx);
       GNUNET_ECRS_meta_data_destroy (meta);
       MUNMAP (data, sbuf.st_size);
       CLOSE (fd);
@@ -347,8 +358,9 @@ main (int argc, char *const *argv)
     {
       meta = GNUNET_ECRS_meta_data_create ();
       dl = GNUNET_FSUI_download_start (ctx,
-                               anonymity,
-                               do_recursive, uri, meta, filename, NULL, NULL);
+                                       anonymity,
+                                       do_recursive, uri, meta, filename,
+                                       NULL, NULL);
       GNUNET_ECRS_meta_data_destroy (meta);
       if (dl == NULL)
         {
@@ -372,7 +384,7 @@ main (int argc, char *const *argv)
   if ((errorCode == 0) && (dl != NULL) && (try_rename == GNUNET_YES))
     {
       char *newname = GNUNET_ECRS_suggest_better_filename (ectx,
-                                            filename);
+                                                           filename);
 
       if (newname != NULL)
         {

@@ -599,7 +599,9 @@ considerPeer (const GNUNET_PeerIdentity * sender,
   if (NULL != findPeerEntryInBucket (bucket, peer))
     return;                     /* already have this peer in buckets */
   /* do we know how to contact this peer? */
-  hello = identity->identity2Hello (peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_NO);
+  hello =
+    identity->identity2Hello (peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
+                              GNUNET_NO);
   if (hello == NULL)
     {
       /* if identity not known, ask sender for HELLO of other peer */
@@ -691,7 +693,9 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
   if (NULL == findBucketFor (&ask->peer))
     return GNUNET_OK;
   hello =
-    identity->identity2Hello (&ask->peer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_NO);
+    identity->identity2Hello (&ask->peer,
+                              GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
+                              GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
   coreAPI->unicast (sender, &hello->header, 0, 5 * GNUNET_CRON_SECONDS);
@@ -758,8 +762,10 @@ done_dht_table ()
   unsigned int i;
   unsigned int j;
 
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY,
+                              &handleDiscovery);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO,
+                              &handleAskHello);
   GNUNET_cron_del_job (coreAPI->cron, &maintain_dht_job, MAINTAIN_FREQUENCY,
                        NULL);
   if (stats != NULL)

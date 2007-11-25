@@ -79,7 +79,8 @@ typedef struct GNUNET_ClientServerConnection
  * @return 0 on error
  */
 static unsigned short
-getGNUnetPort (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+getGNUnetPort (struct GNUNET_GE_Context *ectx,
+               struct GNUNET_GC_Configuration *cfg)
 {
   char *res;
   char *pos;
@@ -87,13 +88,14 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *c
 
   res = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "NETWORK",
-                                               "HOST",
-                                               "localhost:2087", &res))
+                                                      "NETWORK",
+                                                      "HOST",
+                                                      "localhost:2087", &res))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Could not find valid value for HOST in section NETWORK."));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Could not find valid value for HOST in section NETWORK."));
       return 2087;
     }
   pos = strstr (res, ":");
@@ -106,10 +108,10 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *c
   if (1 != SSCANF (pos, "%u", &port))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _
-              ("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
-              pos);
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Syntax error in configuration entry HOST in section NETWORK: `%s'"),
+                     pos);
       GNUNET_free (res);
       return 2087;
     }
@@ -124,20 +126,22 @@ getGNUnetPort (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *c
  * @return the name of the host, NULL on error
  */
 static char *
-getGNUnetdHost (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+getGNUnetdHost (struct GNUNET_GE_Context *ectx,
+                struct GNUNET_GC_Configuration *cfg)
 {
   char *res;
   char *pos;
 
   res = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "NETWORK",
-                                               "HOST",
-                                               "localhost:2087", &res))
+                                                      "NETWORK",
+                                                      "HOST",
+                                                      "localhost:2087", &res))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Could not find valid value for HOST in section NETWORK."));
+                     GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Could not find valid value for HOST in section NETWORK."));
       return NULL;
     }
   pos = strstr (res, ":");
@@ -276,7 +280,8 @@ GNUNET_client_connection_ensure_connected (struct
   if (osock == -1)
     {
       GNUNET_GE_LOG_STRERROR (sock->ectx,
-                       GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
+                              GNUNET_GE_ERROR | GNUNET_GE_USER |
+                              GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
       GNUNET_free (host);
       GNUNET_mutex_unlock (sock->destroylock);
       return GNUNET_SYSERR;
@@ -286,16 +291,16 @@ GNUNET_client_connection_ensure_connected (struct
   memset (&soaddr, 0, sizeof (soaddr));
   soaddr.sin_family = AF_INET;
   GNUNET_GE_ASSERT (sock->ectx,
-             sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
+                    sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
   memcpy (&soaddr.sin_addr, &ip, sizeof (struct in_addr));
   soaddr.sin_port = htons (port);
   ret = CONNECT (osock, (struct sockaddr *) &soaddr, sizeof (soaddr));
   if ((ret != 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG (sock->ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Cannot connect to %s:%u: %s\n"),
-              host, port, STRERROR (errno));
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _("Cannot connect to %s:%u: %s\n"),
+                     host, port, STRERROR (errno));
       GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
       GNUNET_free (host);
@@ -320,7 +325,8 @@ GNUNET_client_connection_ensure_connected (struct
     {
       if (errno != EINTR)
         GNUNET_GE_LOG_STRERROR (sock->ectx,
-                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "select");
+                                GNUNET_GE_WARNING | GNUNET_GE_USER |
+                                GNUNET_GE_BULK, "select");
       GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
       GNUNET_free (host);
@@ -330,8 +336,8 @@ GNUNET_client_connection_ensure_connected (struct
   if (FD_ISSET (osock, &eset))
     {
       GNUNET_GE_LOG (sock->ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Error connecting to %s:%u\n"), host, port);
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _("Error connecting to %s:%u\n"), host, port);
       GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
       GNUNET_free (host);
@@ -341,9 +347,9 @@ GNUNET_client_connection_ensure_connected (struct
   if (!FD_ISSET (osock, &wset))
     {
       GNUNET_GE_LOG (sock->ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("Failed to connect to %s:%u in %ds\n"),
-              host, port, WAIT_SECONDS);
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _("Failed to connect to %s:%u in %ds\n"),
+                     host, port, WAIT_SECONDS);
       GNUNET_socket_destroy (sock->sock);
       sock->sock = NULL;
       GNUNET_free (host);
@@ -455,8 +461,9 @@ GNUNET_client_connection_read (struct GNUNET_ClientServerConnection *sock,
         }
 #if DEBUG_TCPIO
       GNUNET_GE_LOG (sock->ectx,
-              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-              "Successfully received %d bytes from TCP socket.\n", size);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Successfully received %d bytes from TCP socket.\n",
+                     size);
 #endif
       *buffer = (GNUNET_MessageHeader *) buf;
       (*buffer)->size = htons (size);
@@ -475,7 +482,8 @@ GNUNET_client_connection_read (struct GNUNET_ClientServerConnection *sock,
         }
       size =
         ntohs (rem->header.size) - sizeof (GNUNET_MessageReturnErrorMessage);
-      GNUNET_GE_LOG (sock->ectx, ntohl (rem->kind), "%.*s", (int) size, &rem[1]);
+      GNUNET_GE_LOG (sock->ectx, ntohl (rem->kind), "%.*s", (int) size,
+                     &rem[1]);
       GNUNET_free (rem);
     }                           /* while (1) */
   GNUNET_mutex_unlock (sock->readlock);
@@ -504,8 +512,8 @@ GNUNET_client_connection_read_result (struct GNUNET_ClientServerConnection
       (ntohs (rv->header.type) != GNUNET_CS_PROTO_RETURN_VALUE))
     {
       GNUNET_GE_LOG (sock->ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-              _("`%s' failed, reply invalid!\n"), __FUNCTION__);
+                     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+                     _("`%s' failed, reply invalid!\n"), __FUNCTION__);
       GNUNET_free (rv);
       return GNUNET_SYSERR;
     }

@@ -291,8 +291,9 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
  */
 int
 GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
-                     struct GNUNET_ClientServerConnection *sock,
-                     GNUNET_STATS_StatisticsProcessor processor, void *cls)
+                             struct GNUNET_ClientServerConnection *sock,
+                             GNUNET_STATS_StatisticsProcessor processor,
+                             void *cls)
 {
   CS_stats_reply_MESSAGE *statMsg;
   GNUNET_MessageHeader csHdr;
@@ -340,8 +341,8 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
           if (mpos +
               strlen (&
                       ((char
-                        *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg)->
-                            values))[mpos]) + 1 >
+                        *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
+                             statMsg)->values))[mpos]) + 1 >
               ntohs (statMsg->header.size) - sizeof (CS_stats_reply_MESSAGE))
             {
               GNUNET_GE_BREAK (ectx, 0);
@@ -355,13 +356,13 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
                            ((char
                              *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
                                   statMsg)->values))[mpos],
-                           GNUNET_ntohll (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
-                                           statMsg)->values[i]), cls);
+                           GNUNET_ntohll (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg)->values[i]), cls);
             }
           mpos +=
             strlen (&
-                    ((char *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg)->
-                               values))[mpos]) + 1;
+                    ((char
+                      *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
+                           statMsg)->values))[mpos]) + 1;
         }
       count += ntohl (statMsg->statCounters);
     }                           /* end while */
@@ -378,8 +379,10 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_STATS_get_available_protocols (struct GNUNET_GE_Context *ectx,
-                             struct GNUNET_ClientServerConnection *sock,
-                             GNUNET_STATS_ProtocolProcessor processor, void *cls)
+                                      struct GNUNET_ClientServerConnection
+                                      *sock,
+                                      GNUNET_STATS_ProtocolProcessor
+                                      processor, void *cls)
 {
   CS_stats_get_supported_MESSAGE csStatMsg;
   unsigned short i;
@@ -389,7 +392,8 @@ GNUNET_STATS_get_available_protocols (struct GNUNET_GE_Context *ectx,
 
   ret = GNUNET_OK;
   csStatMsg.header.size = htons (sizeof (CS_stats_get_supported_MESSAGE));
-  csStatMsg.header.type = htons (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED);
+  csStatMsg.header.type =
+    htons (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED);
   for (j = 2; j < 4; j++)
     {
       csStatMsg.handlerType = htons (j);

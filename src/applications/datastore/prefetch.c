@@ -65,7 +65,8 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static int
 acquire (const GNUNET_HashCode * key,
-         const GNUNET_DatastoreValue * value, void *closure, unsigned long long uid)
+         const GNUNET_DatastoreValue * value, void *closure,
+         unsigned long long uid)
 {
   if (doneSignal)
     return GNUNET_SYSERR;
@@ -131,7 +132,8 @@ getRandom (GNUNET_HashCode * key, GNUNET_DatastoreValue ** value)
 
 void
 initPrefetch (struct GNUNET_GE_Context *e,
-              struct GNUNET_GC_Configuration *c, GNUNET_SQstore_ServiceAPI * s)
+              struct GNUNET_GC_Configuration *c,
+              GNUNET_SQstore_ServiceAPI * s)
 {
   ectx = e;
   cfg = c;
@@ -142,8 +144,8 @@ initPrefetch (struct GNUNET_GE_Context *e,
   gather_thread = GNUNET_thread_create (&rcbAcquire, NULL, 64 * 1024);
   if (gather_thread == NULL)
     GNUNET_GE_LOG_STRERROR (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                     "pthread_create");
+                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER
+                            | GNUNET_GE_IMMEDIATE, "pthread_create");
 }
 
 void

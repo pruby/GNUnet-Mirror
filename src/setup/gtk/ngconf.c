@@ -97,11 +97,11 @@ boolean_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
   struct GNUNET_GNS_TreeNode *pos = user_data;
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     pos->section,
-                                     pos->option,
-                                     gtk_toggle_button_get_active
-                                     (togglebutton) ? "YES" : "NO");
+                                            ectx,
+                                            pos->section,
+                                            pos->option,
+                                            gtk_toggle_button_get_active
+                                            (togglebutton) ? "YES" : "NO");
   update_visibility ();
 }
 
@@ -113,7 +113,8 @@ radio_update (GtkRadioButton * button, gpointer user_data)
 
   opt = g_object_get_data (G_OBJECT (button), "SC-value");
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx, pos->section, pos->option, opt);
+                                            ectx, pos->section, pos->option,
+                                            opt);
   update_visibility ();
 }
 
@@ -129,7 +130,8 @@ multi_update (GtkToggleButton * button, gpointer user_data)
 
   val = NULL;
   GNUNET_GC_get_configuration_value_string (cfg,
-                                     pos->section, pos->option, NULL, &val);
+                                            pos->section, pos->option, NULL,
+                                            &val);
   GNUNET_GE_ASSERT (ectx, val != NULL);
   opt = g_object_get_data (G_OBJECT (button), "MC-value");
   if (gtk_toggle_button_get_active (button))
@@ -155,7 +157,8 @@ multi_update (GtkToggleButton * button, gpointer user_data)
       strcat (ret, &s[strlen (opt)]);
     }
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx, pos->section, pos->option, ret);
+                                            ectx, pos->section, pos->option,
+                                            ret);
   GNUNET_free (ret);
   GNUNET_free (val);
   update_visibility ();
@@ -166,9 +169,10 @@ string_update (GtkEntry * entry, gpointer user_data)
 {
   struct GNUNET_GNS_TreeNode *pos = user_data;
   GNUNET_GC_set_configuration_value_string (cfg,
-                                     ectx,
-                                     pos->section,
-                                     pos->option, gtk_entry_get_text (entry));
+                                            ectx,
+                                            pos->section,
+                                            pos->option,
+                                            gtk_entry_get_text (entry));
   update_visibility ();
 }
 
@@ -460,7 +464,8 @@ gconf_main_post_init (struct
                       GNUNET_GC_Configuration
                       *c,
                       struct
-                      GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
+                      GNUNET_GNS_Context *gns, const char *filename,
+                      int is_daemon)
 {
   GtkWidget *mainWindow;
   cfg = c;
@@ -504,7 +509,8 @@ gconf_mainsetup_gtk (int argc,
                      GNUNET_GC_Configuration
                      *cfg,
                      struct
-                     GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
+                     GNUNET_GNS_Context *gns, const char *filename,
+                     int is_daemon)
 {
   g_thread_init (NULL);
   gtk_init (&argc, (char ***) &argv);

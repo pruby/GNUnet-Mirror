@@ -41,7 +41,7 @@ static struct GNUNET_GC_Configuration *cfg;
  * All gnunet-tracekit command line options
  */
 static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
-	GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),  /* -c */
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
   {'D', "depth", "DEPTH",
    gettext_noop ("probe network to the given DEPTH"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:HOPS"},
@@ -50,13 +50,13 @@ static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
    ("specify output format; 0 for human readable output, 1 for dot, 2 for vcg"),
    1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:FORMAT"},
-   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")),        /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'P', "priority", "PRIO",
    gettext_noop ("use PRIO for the priority of the trace request"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY"},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
   {'W', "wait", "DELAY",
    gettext_noop ("wait DELAY seconds for replies"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT"},
@@ -103,8 +103,8 @@ receiveThread (void *cls)
   buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
   if (-1 ==
       GNUNET_GC_get_configuration_value_number (cfg,
-                                         "GNUNET-TRACEKIT",
-                                         "FORMAT", 0, 2, 0, &format))
+                                                "GNUNET-TRACEKIT",
+                                                "FORMAT", 0, 2, 0, &format))
     {
       printf (_("Format specification invalid. "
                 "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
@@ -180,8 +180,10 @@ receiveThread (void *cls)
               match = GNUNET_NO;
               for (j = 0; j < psCount; j++)
                 if (0 ==
-                    memcmp (&((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *) buffer)->
-                            peerList[i].hashPubKey, &peersSeen[j].hashPubKey,
+                    memcmp (&
+                            ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *)
+                             buffer)->peerList[i].hashPubKey,
+                            &peersSeen[j].hashPubKey,
                             sizeof (GNUNET_HashCode)))
                   match = GNUNET_YES;
               if (match == GNUNET_NO)
@@ -189,14 +191,15 @@ receiveThread (void *cls)
                   if (psCount == psSize)
                     GNUNET_array_grow (peersSeen, psSize, psSize * 2);
                   memcpy (&peersSeen[psCount++],
-                          &((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *) buffer)->
-                          peerList[i].hashPubKey,
+                          &((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *)
+                            buffer)->peerList[i].hashPubKey,
                           sizeof (GNUNET_PeerIdentity));
                 }
 
               GNUNET_hash_to_enc (&
-                                  ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *)
-                                   buffer)->peerList[i].hashPubKey, &other);
+                                  ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC
+                                    *) buffer)->peerList[i].hashPubKey,
+                                  &other);
               switch (format)
                 {
                 case 0:
@@ -328,7 +331,8 @@ main (int argc, char *const *argv)
     GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
     GNUNET_GE_DIE_STRERROR (ectx,
-                     GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN, "pthread_create");
+                            GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE |
+                            GNUNET_GE_ADMIN, "pthread_create");
 
   probe.header.size = htons (sizeof (CS_tracekit_probe_MESSAGE));
   probe.header.type = htons (GNUNET_CS_PROTO_TRACEKIT_PROBE);
@@ -339,8 +343,8 @@ main (int argc, char *const *argv)
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &probe.header))
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("Could not send request to gnunetd.\n"));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Could not send request to gnunetd.\n"));
       return -1;
     }
   cron = cron_create (ectx);

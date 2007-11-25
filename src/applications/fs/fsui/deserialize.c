@@ -179,7 +179,8 @@ read_meta (struct GNUNET_GE_Context *ectx, int fd)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
-readFileInfo (struct GNUNET_GE_Context *ectx, int fd, GNUNET_ECRS_FileInfo * fi)
+readFileInfo (struct GNUNET_GE_Context *ectx, int fd,
+              GNUNET_ECRS_FileInfo * fi)
 {
   fi->meta = read_meta (ectx, fd);
   if (fi->meta == NULL)
@@ -211,7 +212,8 @@ readFileInfo (struct GNUNET_GE_Context *ectx, int fd, GNUNET_ECRS_FileInfo * fi)
  */
 static GNUNET_FSUI_DownloadList *
 readDownloadList (struct GNUNET_GE_Context *ectx,
-                  int fd, GNUNET_FSUI_Context * ctx, GNUNET_FSUI_DownloadList * parent)
+                  int fd, GNUNET_FSUI_Context * ctx,
+                  GNUNET_FSUI_DownloadList * parent)
 {
   GNUNET_FSUI_DownloadList *ret;
   GNUNET_FSUI_SearchList *pos;
@@ -318,9 +320,9 @@ readDownloadList (struct GNUNET_GE_Context *ectx,
   ret->child = readDownloadList (ectx, fd, ctx, ret);
 #if DEBUG_PERSISTENCE
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-          "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
-          ret->filename, ret->completed, ret->total);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
+                 ret->filename, ret->completed, ret->total);
 #endif
   return ret;
 }
@@ -422,12 +424,15 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
           GNUNET_GE_BREAK (NULL, 0);
           break;
         }
-      if (!(GNUNET_ECRS_uri_test_ksk (list->uri) || GNUNET_ECRS_uri_test_sks (list->uri)))
+      if (!
+          (GNUNET_ECRS_uri_test_ksk (list->uri)
+           || GNUNET_ECRS_uri_test_sks (list->uri)))
         {
           GNUNET_GE_BREAK (NULL, 0);
           break;
         }
-      list->numberOfURIKeys = GNUNET_ECRS_uri_get_keyword_count_from_ksk (list->uri);
+      list->numberOfURIKeys =
+        GNUNET_ECRS_uri_get_keyword_count_from_ksk (list->uri);
       if (list->sizeResultsReceived > 0)
         {
           list->resultsReceived
@@ -762,9 +767,10 @@ GNUNET_FSUI_deserialize (struct GNUNET_FSUI_Context *ctx)
     {
       GNUNET_GE_BREAK (ctx->ectx, 0);
       GNUNET_GE_LOG (ctx->ectx,
-              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-              _("FSUI state file `%s' had syntax error at offset %u.\n"),
-              ctx->name, LSEEK (fd, 0, SEEK_CUR));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("FSUI state file `%s' had syntax error at offset %u.\n"),
+                     ctx->name, LSEEK (fd, 0, SEEK_CUR));
     }
   CLOSE (fd);
   UNLINK (ctx->name);

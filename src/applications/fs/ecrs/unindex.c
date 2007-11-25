@@ -54,7 +54,8 @@
  */
 static int
 pushBlock (struct GNUNET_ClientServerConnection *sock,
-           const CHK * chk, unsigned int level, GNUNET_DatastoreValue ** iblocks)
+           const CHK * chk, unsigned int level,
+           GNUNET_DatastoreValue ** iblocks)
 {
   unsigned int size;
   unsigned int present;
@@ -91,7 +92,8 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   /* append CHK */
   memcpy (&((char *) db)[size], chk, sizeof (CHK));
   iblocks[level]->size = htonl (size +
-                                sizeof (CHK) + sizeof (GNUNET_DatastoreValue));
+                                sizeof (CHK) +
+                                sizeof (GNUNET_DatastoreValue));
   return GNUNET_OK;
 }
 
@@ -120,15 +122,17 @@ undoSymlinking (struct GNUNET_GE_Context *ectx,
   if (0 != LSTAT (fn, &buf))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                            "stat", fn);
+                                   GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN, "stat",
+                                   fn);
       return GNUNET_SYSERR;
     }
 #ifdef S_ISLNK
   if (!S_ISLNK (buf.st_mode))
     return GNUNET_OK;
 #endif
-  serverDir = GNUNET_get_daemon_configuration_value (sock, "FS", "INDEX-DIRECTORY");
+  serverDir =
+    GNUNET_get_daemon_configuration_value (sock, "FS", "INDEX-DIRECTORY");
   if (serverDir == NULL)
     return GNUNET_OK;
   serverFN = GNUNET_malloc (strlen (serverDir) + 2 + sizeof (GNUNET_EncName));
@@ -142,8 +146,9 @@ undoSymlinking (struct GNUNET_GE_Context *ectx,
   if (0 != UNLINK (serverFN))
     {
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER | GNUNET_GE_ADMIN,
-                            "unlink", serverFN);
+                                   GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN, "unlink",
+                                   serverFN);
       GNUNET_free (serverFN);
       return GNUNET_SYSERR;
     }
@@ -160,10 +165,11 @@ undoSymlinking (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
-                  struct GNUNET_GC_Configuration *cfg,
-                  const char *filename,
-                  GNUNET_ECRS_UploadProgressCallback upcb,
-                  void *upcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure)
+                         struct GNUNET_GC_Configuration *cfg,
+                         const char *filename,
+                         GNUNET_ECRS_UploadProgressCallback upcb,
+                         void *upcbClosure, GNUNET_ECRS_TestTerminate tt,
+                         void *ttClosure)
 {
   unsigned long long filesize;
   unsigned long long pos;
@@ -222,7 +228,8 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
   if (fd == -1)
     return GNUNET_SYSERR;
   dblock =
-    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE + sizeof (DBlock));
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
+                   sizeof (DBlock));
   dblock->size =
     htonl (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE + sizeof (DBlock));
   dblock->anonymityLevel = htonl (0);
@@ -231,18 +238,21 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
   dblock->expirationTime = GNUNET_htonll (0);
   db = (DBlock *) & dblock[1];
   db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
-  iblocks = GNUNET_malloc (sizeof (GNUNET_DatastoreValue *) * (treedepth + 1));
+  iblocks =
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue *) * (treedepth + 1));
   for (i = 0; i <= treedepth; i++)
     {
       iblocks[i] =
         GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + IBLOCK_SIZE +
                        sizeof (DBlock));
-      iblocks[i]->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock));
+      iblocks[i]->size =
+        htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock));
       iblocks[i]->anonymityLevel = htonl (0);
       iblocks[i]->prio = htonl (0);
       iblocks[i]->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
       iblocks[i]->expirationTime = GNUNET_htonll (0);
-      ((DBlock *) & iblocks[i][1])->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+      ((DBlock *) & iblocks[i][1])->type =
+        htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
     }
 
   pos = 0;
@@ -264,8 +274,9 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
       if (size != READ (fd, &db[1], size))
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
-                                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                                "READ", filename);
+                                       GNUNET_GE_ERROR | GNUNET_GE_USER |
+                                       GNUNET_GE_ADMIN | GNUNET_GE_BULK,
+                                       "READ", filename);
           goto FAILURE;
         }
       if (tt != NULL)

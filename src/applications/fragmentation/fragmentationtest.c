@@ -60,7 +60,8 @@ handleHelper (const GNUNET_PeerIdentity * sender,
               const unsigned int len, int wasEncrypted, GNUNET_TSession * ts)
 {
   GNUNET_GE_ASSERT (NULL,
-             0 == memcmp (sender, &mySender, sizeof (GNUNET_PeerIdentity)));
+                    0 == memcmp (sender, &mySender,
+                                 sizeof (GNUNET_PeerIdentity)));
   myMsg = resultBuffer;
   memcpy (resultBuffer, msg, len);
   myMsgLen = len;
@@ -367,13 +368,15 @@ testManyFragmentsMultiIdCollisions ()
 /* ************* driver ****************** */
 
 static int
-registerp2pHandler (const unsigned short type, GNUNET_P2PRequestHandler callback)
+registerp2pHandler (const unsigned short type,
+                    GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }
 
 static int
-unregisterp2pHandler (const unsigned short type, GNUNET_P2PRequestHandler callback)
+unregisterp2pHandler (const unsigned short type,
+                      GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }

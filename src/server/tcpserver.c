@@ -106,14 +106,15 @@ shutdownHandler (struct GNUNET_ClientHandle *client,
   if (ntohs (msg->size) != sizeof (GNUNET_MessageHeader))
     {
       GNUNET_GE_LOG (NULL,
-              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
-              _("The `%s' request received from client is malformed.\n"),
-              "shutdown");
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("The `%s' request received from client is malformed.\n"),
+                     "shutdown");
       return GNUNET_SYSERR;
     }
   GNUNET_GE_LOG (NULL,
-          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-          "shutdown request accepted from client\n");
+                 GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                 "shutdown request accepted from client\n");
   ret = sendTCPResultToClient (client, GNUNET_OK);
   shutdown_gnunetd (cfg, 0);
   return ret;
@@ -201,8 +202,8 @@ sendToClient (struct GNUNET_ClientHandle *handle,
 {
 #if DEBUG_TCPHANDLER
   GNUNET_GE_LOG (ectx,
-          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-          "%s: sending reply to client\n", __FUNCTION__);
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 "%s: sending reply to client\n", __FUNCTION__);
 #endif
   return GNUNET_select_write (selector, handle->sock, message, GNUNET_YES,
                               force);
@@ -232,9 +233,9 @@ select_message_handler (void *mh_cls,
   if (ptyp >= max_registeredType)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "%s: Message of type %d not understood: no handler registered\n",
-              __FUNCTION__, ptyp, max_registeredType);
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "%s: Message of type %d not understood: no handler registered\n",
+                     __FUNCTION__, ptyp, max_registeredType);
       GNUNET_mutex_unlock (handlerlock);
       return GNUNET_SYSERR;
     }
@@ -242,9 +243,9 @@ select_message_handler (void *mh_cls,
   if (callback == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-              "%s: Message of type %d not understood: no handler registered\n",
-              __FUNCTION__, ptyp);
+                     GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                     "%s: Message of type %d not understood: no handler registered\n",
+                     __FUNCTION__, ptyp);
       GNUNET_mutex_unlock (handlerlock);
       return GNUNET_SYSERR;
     }
@@ -257,9 +258,9 @@ select_message_handler (void *mh_cls,
         {
 #if 0
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
-                  "%s: Message of type %d caused error in handler\n",
-                  __FUNCTION__, ptyp);
+                         GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         "%s: Message of type %d caused error in handler\n",
+                         __FUNCTION__, ptyp);
 #endif
           GNUNET_mutex_unlock (handlerlock);
           return GNUNET_SYSERR;
@@ -267,9 +268,10 @@ select_message_handler (void *mh_cls,
 #if TIME_HANDLERS
       if (GNUNET_get_time () - start > GNUNET_CRON_SECONDS)
         GNUNET_GE_LOG (ectx,
-                GNUNET_GE_INFO | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
-                "Handling message of type %u took %llu s\n",
-                ptyp, (GNUNET_get_time () - start) / GNUNET_CRON_SECONDS);
+                       GNUNET_GE_INFO | GNUNET_GE_DEVELOPER |
+                       GNUNET_GE_IMMEDIATE,
+                       "Handling message of type %u took %llu s\n", ptyp,
+                       (GNUNET_get_time () - start) / GNUNET_CRON_SECONDS);
 #endif
     }
   GNUNET_mutex_unlock (handlerlock);
@@ -285,8 +287,9 @@ getGNUnetPort ()
   unsigned long long port;
 
   if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                               "NETWORK",
-                                               "PORT", 1, 65535, 2087, &port))
+                                                      "NETWORK",
+                                                      "PORT", 1, 65535, 2087,
+                                                      &port))
     port = 0;
   return (unsigned short) port;
 }
@@ -306,8 +309,8 @@ startTCPServer ()
   if (listenerFD < 0)
     {
       GNUNET_GE_LOG_STRERROR (ectx,
-                       GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                       "socket");
+                              GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
+                              GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "socket");
       return GNUNET_SYSERR;
     }
   /* fill in the inet address structure */
@@ -316,16 +319,22 @@ startTCPServer ()
   serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
   serverAddr.sin_port = htons (listenerPort);
   if (SETSOCKOPT (listenerFD, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
-    GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "setsockopt");
+    GNUNET_GE_LOG_STRERROR (ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                            GNUNET_GE_BULK, "setsockopt");
   /* bind the socket */
   if (BIND (listenerFD,
             (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
     {
-      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "bind");
+      GNUNET_GE_LOG_STRERROR (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_IMMEDIATE, "bind");
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-              _("`%s' failed for port %d. Is gnunetd already running?\n"),
-              "bind", listenerPort);
+                     GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_IMMEDIATE,
+                     _
+                     ("`%s' failed for port %d. Is gnunetd already running?\n"),
+                     "bind", listenerPort);
       CLOSE (listenerFD);
       return GNUNET_SYSERR;
     }
@@ -387,19 +396,20 @@ initTCPServer (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
   /* move to reload-configuration method! */
   ch = NULL;
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
-                                               "NETWORK",
-                                               "TRUSTED",
-                                               "127.0.0.0/8;", &ch))
+                                                      "NETWORK",
+                                                      "TRUSTED",
+                                                      "127.0.0.0/8;", &ch))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx, ch != NULL);
   trustedNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
   if (trustedNetworks_ == NULL)
     {
       GNUNET_GE_LOG (ectx,
-              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-              _
-              ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
-              "NETWORK", "TRUSTED", ch);
+                     GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                     GNUNET_GE_IMMEDIATE,
+                     _
+                     ("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+                     "NETWORK", "TRUSTED", ch);
       GNUNET_free (ch);
       return GNUNET_SYSERR;
     }
@@ -407,9 +417,9 @@ initTCPServer (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
 
   registerCSHandler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST, &shutdownHandler);
   if ((GNUNET_NO == GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                      "TCPSERVER",
-                                                      "DISABLE",
-                                                      GNUNET_NO)) &&
+                                                             "TCPSERVER",
+                                                             "DISABLE",
+                                                             GNUNET_NO)) &&
       (GNUNET_OK != startTCPServer ()))
     {
       doneTCPServer ();
@@ -453,9 +463,10 @@ registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback)
         {
           GNUNET_mutex_unlock (handlerlock);
           GNUNET_GE_LOG (ectx,
-                  GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                  _("%s failed, message type %d already in use.\n"),
-                  __FUNCTION__, type);
+                         GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
+                         GNUNET_GE_BULK,
+                         _("%s failed, message type %d already in use.\n"),
+                         __FUNCTION__, type);
           return GNUNET_SYSERR;
         }
     }
@@ -479,7 +490,8 @@ registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback)
  *         handler for that type
  */
 int
-unregisterCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback)
+unregisterCSHandler (unsigned short type,
+                     GNUNET_ClientRequestHandler callback)
 {
   GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
@@ -594,13 +606,14 @@ logClientLogContext (void *ctx,
 }
 
 struct GNUNET_GE_Context *
-createClientLogContext (GNUNET_GE_KIND mask, struct GNUNET_ClientHandle *handle)
+createClientLogContext (GNUNET_GE_KIND mask,
+                        struct GNUNET_ClientHandle *handle)
 {
   return GNUNET_GE_create_context_callback (mask,
-                                     &logClientLogContext,
-                                     handle,
-                                     &freeClientLogContext,
-                                     &confirmClientLogContext);
+                                            &logClientLogContext,
+                                            handle,
+                                            &freeClientLogContext,
+                                            &confirmClientLogContext);
 }
 
 /* end of tcpserver.c */

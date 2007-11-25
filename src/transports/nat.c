@@ -67,8 +67,8 @@ verifyHello (const GNUNET_MessageHello * hello)
       (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO))
     return GNUNET_SYSERR;       /* obviously invalid */
   if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                      "NAT", "LIMITED",
-                                                      GNUNET_NO))
+                                                             "NAT", "LIMITED",
+                                                             GNUNET_NO))
     {
       /* if WE are a NAT and this is not our hello,
          it is invalid since NAT-to-NAT is not possible! */
@@ -94,8 +94,8 @@ createhello ()
   GNUNET_MessageHello *msg;
 
   if (GNUNET_NO == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                     "NAT", "LIMITED",
-                                                     GNUNET_NO))
+                                                            "NAT", "LIMITED",
+                                                            GNUNET_NO))
     return NULL;
   msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   msg->senderAddressSize = htons (sizeof (HostAddress));
