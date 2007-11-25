@@ -91,7 +91,7 @@ int GNUNET_RPC_parameters_get_value_by_index (GNUNET_RPC_CallParameters *
  * @param value set to the value of the parameter
  */
 GNUNET_DataContainer
-  *GNUNET_RPC_parameters_get_data_container_by_index
+  * GNUNET_RPC_parameters_get_data_container_by_index
   (GNUNET_RPC_CallParameters * param, unsigned int i);
 
 /**
@@ -103,9 +103,9 @@ GNUNET_DataContainer
  * @return GNUNET_SYSERR on error
  */
 GNUNET_DataContainer
-  *GNUNET_RPC_parameters_get_data_container_by_name (GNUNET_RPC_CallParameters
-                                                     * param,
-                                                     const char *name);
+  *
+GNUNET_RPC_parameters_get_data_container_by_name (GNUNET_RPC_CallParameters *
+                                                  param, const char *name);
 
 /**
  * Serialize the param array.  target must point to at least

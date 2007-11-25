@@ -35,7 +35,7 @@
 void release_module_bootstrap ();
 
 GNUNET_Bootstrap_ServiceAPI
-  *provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi);
+  * provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi);
 
 static void *
 rs (const char *name)

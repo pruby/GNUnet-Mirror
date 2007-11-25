@@ -694,7 +694,7 @@ GNUNET_ECRS_uri_test_loc (const struct GNUNET_ECRS_URI *uri)
  * refers to?
  */
 unsigned long long
-GNUNET_ECRS_uri_get_file_siz (const struct GNUNET_ECRS_URI *uri)
+GNUNET_ECRS_uri_get_file_size (const struct GNUNET_ECRS_URI *uri)
 {
   switch (uri->type)
     {

@@ -339,7 +339,7 @@ downloadThread (void *cls)
 
   if ((ret == GNUNET_OK) &&
       (dl->is_directory == GNUNET_YES)
-      && (GNUNET_ECRS_uri_get_file_siz (dl->fi.uri) > 0))
+      && (GNUNET_ECRS_uri_get_file_size (dl->fi.uri) > 0))
     {
       char *dirBlock;
       int fd;
@@ -347,7 +347,7 @@ downloadThread (void *cls)
       size_t totalBytes;
       struct GNUNET_ECRS_MetaData *md;
 
-      totalBytes = GNUNET_ECRS_uri_get_file_siz (dl->fi.uri);
+      totalBytes = GNUNET_ECRS_uri_get_file_size (dl->fi.uri);
       fn =
         GNUNET_malloc (strlen (dl->filename) + strlen (GNUNET_DIRECTORY_EXT) +
                        1);
@@ -450,7 +450,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   dl->filename = GNUNET_strdup (filename);
   dl->fi.uri = GNUNET_ECRS_uri_duplicate (uri);
   dl->fi.meta = GNUNET_ECRS_meta_data_duplicate (meta);
-  dl->total = GNUNET_ECRS_uri_get_file_siz (uri);
+  dl->total = GNUNET_ECRS_uri_get_file_size (uri);
   dl->child = NULL;
   dl->cctx = NULL;
   /* signal start! */
@@ -464,7 +464,7 @@ startDownload (struct GNUNET_FSUI_Context *ctx,
   event.data.DownloadStarted.dc.sctx =
     dl->search == NULL ? NULL : dl->search->cctx;
   event.data.DownloadStarted.total =
-    GNUNET_ECRS_uri_get_file_siz (dl->fi.uri);
+    GNUNET_ECRS_uri_get_file_size (dl->fi.uri);
   event.data.DownloadStarted.filename = dl->filename;
   event.data.DownloadStarted.fi.uri = dl->fi.uri;
   event.data.DownloadStarted.fi.meta = dl->fi.meta;

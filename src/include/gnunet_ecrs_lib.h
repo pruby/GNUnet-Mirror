@@ -456,8 +456,8 @@ int GNUNET_ECRS_uri_test_chk (const struct GNUNET_ECRS_URI *uri);
  * What is the size of the file that this URI
  * refers to?
  */
-unsigned long long GNUNET_ECRS_uri_get_file_siz (const struct GNUNET_ECRS_URI
-                                                 *uri);
+unsigned long long GNUNET_ECRS_uri_get_file_size (const struct GNUNET_ECRS_URI
+                                                  *uri);
 
 /**
  * Is this a location URI?

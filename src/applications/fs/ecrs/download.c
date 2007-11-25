@@ -1315,7 +1315,7 @@ GNUNET_ECRS_file_download (struct GNUNET_GE_Context *ectx,
                                             uri,
                                             filename,
                                             0,
-                                            GNUNET_ECRS_uri_get_file_siz
+                                            GNUNET_ECRS_uri_get_file_size
                                             (uri), anonymityLevel, GNUNET_NO,
                                             dpcb, dpcbClosure, tt, ttClosure);
 }
@@ -1417,7 +1417,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
       GNUNET_free (realFN);
       return GNUNET_SYSERR;
     }
-  if (0 == GNUNET_ECRS_uri_get_file_siz (uri))
+  if (0 == GNUNET_ECRS_uri_get_file_size (uri))
     {
       ret = GNUNET_disk_file_open (ectx,
                                    realFN,
