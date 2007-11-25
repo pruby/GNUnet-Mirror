@@ -86,7 +86,7 @@ static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
   {'p', "protocols", NULL,
    gettext_noop ("prints supported protocol messages"),
    0, &GNUNET_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 

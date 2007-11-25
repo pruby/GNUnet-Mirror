@@ -148,7 +148,7 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   {'t', "timeout", "DELAY",
    gettext_noop ("wait DELAY seconds for search results before aborting"),
    1, &GNUNET_getopt_configure_set_uint, &delay},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

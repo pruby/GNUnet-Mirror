@@ -86,7 +86,7 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
   {'R', "recursive", NULL,
    gettext_noop ("download a GNUnet directory recursively"),
    0, &GNUNET_getopt_configure_set_one, &do_recursive},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetpeerinfoOptions[] = {
   {'n', "numeric", NULL,
    gettext_noop ("don't resolve host names"),
    0, &GNUNET_getopt_configure_set_one, &no_resolve},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 

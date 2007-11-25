@@ -85,7 +85,7 @@ static struct GNUNET_CommandLineOption gnunettbenchOptions[] = {
    gettext_noop ("time to wait for the completion of an iteration (in ms)"),
    1,
    &GNUNET_getopt_configure_set_ulong, &messageTimeOut},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   {'X', "xspace", "COUNT",
    gettext_noop ("number of messages in a message block"), 1,
    &GNUNET_getopt_configure_set_ulong, &messageTrainSize},

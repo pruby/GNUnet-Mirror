@@ -56,7 +56,7 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
    gettext_noop
    ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
    1, &GNUNET_getopt_configure_set_ulong, &timeout},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

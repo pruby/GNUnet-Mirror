@@ -249,7 +249,7 @@ static struct GNUNET_CommandLineOption gnunetupdateOptions[] = {
    gettext_noop
    ("run in client mode (for getting client configuration values)"),
    0, &set_client_config, NULL},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

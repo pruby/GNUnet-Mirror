@@ -42,7 +42,7 @@ static struct GNUNET_CommandLineOption gnunettemplateOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),     /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 

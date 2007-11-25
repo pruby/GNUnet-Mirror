@@ -56,7 +56,7 @@ static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
   {'P', "priority", "PRIO",
    gettext_noop ("use PRIO for the priority of the trace request"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
   {'W', "wait", "DELAY",
    gettext_noop ("wait DELAY seconds for replies"), 1,
    &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT"},
