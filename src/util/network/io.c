@@ -71,7 +71,7 @@ void __attribute__ ((destructor)) gnunet_network_io_fini ()
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_get_host_by_name (struct GE_Context *ectx, const char *hostname,
+GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx, const char *hostname,
                          GNUNET_IPv4Address * ip)
 {
   struct hostent *he;
@@ -81,8 +81,8 @@ GNUNET_get_host_by_name (struct GE_Context *ectx, const char *hostname,
   he = GETHOSTBYNAME (hostname);
   if (he == NULL)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_ADMIN | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
               _("Could not find IP of host `%s': %s\n"),
               hostname, hstrerror (h_errno));
       GNUNET_mutex_unlock (lock);
@@ -90,7 +90,7 @@ GNUNET_get_host_by_name (struct GE_Context *ectx, const char *hostname,
     }
   if (he->h_addrtype != AF_INET)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -104,7 +104,7 @@ GNUNET_get_host_by_name (struct GE_Context *ectx, const char *hostname,
 
 
 struct GNUNET_SocketHandle *
-socket_create (struct GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
+socket_create (struct GNUNET_GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
                int osSocket)
 {
   SocketHandle *ret;
@@ -120,17 +120,17 @@ socket_create (struct GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
 void
 GNUNET_socket_close (struct GNUNET_SocketHandle *s)
 {
-  GE_ASSERT (NULL, s != NULL);
+  GNUNET_GE_ASSERT (NULL, s != NULL);
   if ((0 != SHUTDOWN (s->handle, SHUT_RDWR)) &&
 #ifdef OSX
       (errno != EINVAL) &&      /* OS X returns these instead of ENOTCONN */
       (errno != EHOSTDOWN) && (errno != EHOSTUNREACH) &&
 #endif
       (errno != ENOTCONN))
-    GE_LOG_STRERROR (s->ectx, GE_WARNING | GE_ADMIN | GE_BULK, "shutdown");
+    GNUNET_GE_LOG_STRERROR (s->ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "shutdown");
   if (0 != CLOSE (s->handle))
-    GE_LOG_STRERROR (s->ectx,
-                     GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK, "close");
+    GNUNET_GE_LOG_STRERROR (s->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "close");
   s->handle = -1;
   s->checksum = 1;
 }
@@ -138,7 +138,7 @@ GNUNET_socket_close (struct GNUNET_SocketHandle *s)
 void
 GNUNET_socket_destroy (struct GNUNET_SocketHandle *s)
 {
-  GE_ASSERT (NULL, s != NULL);
+  GNUNET_GE_ASSERT (NULL, s != NULL);
   if (s->handle != -1)
     {
 #ifdef LINUX
@@ -154,11 +154,11 @@ GNUNET_socket_destroy (struct GNUNET_SocketHandle *s)
           (errno != EHOSTDOWN) && (errno != EHOSTUNREACH) &&
 #endif
           (errno != ENOTCONN))
-        GE_LOG_STRERROR (s->ectx,
-                         GE_WARNING | GE_ADMIN | GE_BULK, "shutdown");
+        GNUNET_GE_LOG_STRERROR (s->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "shutdown");
       if (0 != CLOSE (s->handle))
-        GE_LOG_STRERROR (s->ectx,
-                         GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
+        GNUNET_GE_LOG_STRERROR (s->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                          "close");
     }
   GNUNET_free (s);
@@ -236,7 +236,7 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
   size_t pos;
   size_t ret;
 
-  GE_ASSERT (NULL, s->checksum == -s->handle);
+  GNUNET_GE_ASSERT (NULL, s->checksum == -s->handle);
   GNUNET_socket_set_blocking (s, 0 != (nc & GNUNET_NC_BLOCKING));
   flags = 0;
 #ifdef CYGWIN
@@ -260,10 +260,10 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
   pos = 0;
   do
     {
-      GE_ASSERT (NULL, s->checksum == -s->handle);
-      GE_ASSERT (NULL, max > pos);
+      GNUNET_GE_ASSERT (NULL, s->checksum == -s->handle);
+      GNUNET_GE_ASSERT (NULL, max > pos);
       ret = (size_t) RECV (s->handle, &((char *) buf)[pos], max - pos, flags);
-      GE_ASSERT (NULL, s->checksum == -s->handle);
+      GNUNET_GE_ASSERT (NULL, s->checksum == -s->handle);
       if ((ret == (size_t) - 1) &&
           (errno == EINTR) && (0 != (nc & GNUNET_NC_IGNORE_INT)))
         continue;
@@ -282,7 +282,7 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
               return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
-          GE_LOG_STRERROR (s->ectx, GE_DEBUG | GE_USER | GE_REQUEST, "recv");
+          GNUNET_GE_LOG_STRERROR (s->ectx, GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST, "recv");
 #endif
           *read = pos;
           return GNUNET_SYSERR;
@@ -296,7 +296,7 @@ GNUNET_socket_recv (struct GNUNET_SocketHandle *s,
       if (s->mon != NULL)
         GNUNET_network_monitor_notify_transmission (s->mon,
                                                     GNUNET_ND_DOWNLOAD, ret);
-      GE_ASSERT (NULL, pos + ret >= pos);
+      GNUNET_GE_ASSERT (NULL, pos + ret >= pos);
       pos += ret;
     }
   while ((pos < max) && (0 != (nc & GNUNET_NC_BLOCKING)));
@@ -359,8 +359,8 @@ GNUNET_socket_recv_from (struct GNUNET_SocketHandle *s,
               *read = pos;
               return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
-          GE_LOG_STRERROR (s->ectx,
-                           GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
+          GNUNET_GE_LOG_STRERROR (s->ectx,
+                           GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                            "recvfrom");
           *read = pos;
           return GNUNET_SYSERR;
@@ -433,7 +433,7 @@ GNUNET_socket_send (struct GNUNET_SocketHandle *s,
               return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
-          GE_LOG_STRERROR (s->ectx, GE_DEBUG | GE_USER | GE_REQUEST, "send");
+          GNUNET_GE_LOG_STRERROR (s->ectx, GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST, "send");
 #endif
           *sent = pos;
           return GNUNET_SYSERR;
@@ -511,8 +511,8 @@ GNUNET_socket_send_to (struct GNUNET_SocketHandle *s,
               return (pos == 0) ? GNUNET_NO : GNUNET_YES;
             }
 #if DEBUG_IO
-          GE_LOG_STRERROR (s->ectx,
-                           GE_DEBUG | GE_USER | GE_REQUEST, "sendto");
+          GNUNET_GE_LOG_STRERROR (s->ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST, "sendto");
 #endif
           *sent = pos;
           return GNUNET_SYSERR;

@@ -64,12 +64,12 @@ main (int argc, char **argv)
   struct GNUNET_ClientServerConnection *sock1;
   struct GNUNET_ClientServerConnection *sock2;
   int left;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #if START_PEERS
@@ -79,7 +79,7 @@ main (int argc, char **argv)
                                         10000, 2);
   if (peers == NULL)
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
@@ -88,14 +88,14 @@ main (int argc, char **argv)
       GNUNET_wait_for_daemon_running (NULL, cfg, 30 * GNUNET_CRON_SECONDS))
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg);
-      GC_set_configuration_value_string (cfg,
+      GNUNET_GC_set_configuration_value_string (cfg,
                                          NULL,
                                          "NETWORK",
                                          "HOST", "localhost:12087");
       sock2 = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
       while (GNUNET_OK ==
-             STATS_getStatistics (NULL, sock1, &waitForConnect, NULL))
+             GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect, NULL))
         {
           printf ("Waiting for peers to connect (%u iterations left)...\n",
                   left);
@@ -116,7 +116,7 @@ main (int argc, char **argv)
               while (GNUNET_shutdown_test () == GNUNET_NO)
                 {
                   printf ("Checking that peers are staying connected 1...\n");
-                  STATS_getStatistics (NULL, sock1, &waitForConnect, NULL);
+                  GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect, NULL);
                   sleep (1);
                   if (ok == 0)
                     {
@@ -124,7 +124,7 @@ main (int argc, char **argv)
                       break;
                     }
                   printf ("Checking that peers are staying connected 2...\n");
-                  STATS_getStatistics (NULL, sock2, &waitForConnect, NULL);
+                  GNUNET_STATS_get_statistics (NULL, sock2, &waitForConnect, NULL);
                   sleep (1);
                   if (ok == 0)
                     {
@@ -151,7 +151,7 @@ main (int argc, char **argv)
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return (ok == 0) ? 1 : 0;
 }
 

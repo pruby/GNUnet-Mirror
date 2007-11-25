@@ -32,30 +32,30 @@
 
 #define CHECK(a) { if (! (a)) { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; } }
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static ECRS_FileInfo fi1;
+static GNUNET_ECRS_FileInfo fi1;
 
-static ECRS_FileInfo fi2;
+static GNUNET_ECRS_FileInfo fi2;
 
 static unsigned int notifications;
 
 static int
-notified (const ECRS_FileInfo * fi,
+notified (const GNUNET_ECRS_FileInfo * fi,
           const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
-      (ECRS_equalsMetaData (fi->meta,
-                            fi1.meta)) && (ECRS_equalsUri (fi->uri, fi1.uri)))
+      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+                            fi1.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
       notifications++;
       return GNUNET_OK;
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
-      (ECRS_equalsMetaData (fi->meta,
-                            fi2.meta)) && (ECRS_equalsUri (fi->uri, fi2.uri)))
+      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+                            fi2.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
       notifications++;
       return GNUNET_OK;
@@ -64,28 +64,28 @@ notified (const ECRS_FileInfo * fi,
 }
 
 static int
-processor (const ECRS_FileInfo * fi,
+processor (const GNUNET_ECRS_FileInfo * fi,
            const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   if ((fi1.meta != NULL) &&
       (fi1.uri != NULL) &&
-      (ECRS_equalsMetaData (fi->meta,
-                            fi1.meta)) && (ECRS_equalsUri (fi->uri, fi1.uri)))
+      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+                            fi1.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi1.uri)))
     {
-      ECRS_freeUri (fi1.uri);
+      GNUNET_ECRS_uri_destroy (fi1.uri);
       fi1.uri = NULL;
-      ECRS_freeMetaData (fi1.meta);
+      GNUNET_ECRS_meta_data_destroy (fi1.meta);
       fi1.meta = NULL;
       return GNUNET_OK;
     }
   if ((fi2.meta != NULL) &&
       (fi2.uri != NULL) &&
-      (ECRS_equalsMetaData (fi->meta,
-                            fi2.meta)) && (ECRS_equalsUri (fi->uri, fi2.uri)))
+      (GNUNET_ECRS_meta_data_test_equal (fi->meta,
+                            fi2.meta)) && (GNUNET_ECRS_uri_test_equal (fi->uri, fi2.uri)))
     {
-      ECRS_freeUri (fi2.uri);
+      GNUNET_ECRS_uri_destroy (fi2.uri);
       fi2.uri = NULL;
-      ECRS_freeMetaData (fi2.meta);
+      GNUNET_ECRS_meta_data_destroy (fi2.meta);
       fi2.meta = NULL;
       return GNUNET_OK;
     }
@@ -103,35 +103,35 @@ testTracking ()
     "foot",
     NULL,
   };
-  fi1.uri = ECRS_keywordsToUri (k1);
-  fi1.meta = ECRS_createMetaData ();
-  ECRS_addToMetaData (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
-  fi2.uri = ECRS_keywordsToUri (k2);
-  fi2.meta = ECRS_createMetaData ();
-  ECRS_addToMetaData (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  fi1.uri = GNUNET_ECRS_keyword_string_to_uri (k1);
+  fi1.meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_inser (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
+  fi2.uri = GNUNET_ECRS_keyword_string_to_uri (k2);
+  fi2.meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_inser (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
 
-  URITRACK_clearTrackedURIS (NULL, cfg);
-  URITRACK_registerTrackCallback (NULL, cfg, &notified, NULL);
-  URITRACK_trackURIS (NULL, cfg, GNUNET_NO);
-  URITRACK_clearTrackedURIS (NULL, cfg);
+  GNUNET_URITRACK_clear (NULL, cfg);
+  GNUNET_URITRACK_register_track_callback (NULL, cfg, &notified, NULL);
+  GNUNET_URITRACK_toggle_tracking (NULL, cfg, GNUNET_NO);
+  GNUNET_URITRACK_clear (NULL, cfg);
   /* test non-tracking */
-  URITRACK_trackURI (NULL, cfg, &fi1);
-  CHECK (0 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
-  CHECK (GNUNET_NO == URITRACK_trackStatus (NULL, cfg));
-  URITRACK_clearTrackedURIS (NULL, cfg);
-  URITRACK_trackURIS (NULL, cfg, GNUNET_YES);
-  URITRACK_clearTrackedURIS (NULL, cfg);
-  CHECK (0 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
-  CHECK (GNUNET_YES == URITRACK_trackStatus (NULL, cfg));
-  URITRACK_trackURI (NULL, cfg, &fi1);
-  CHECK (1 == URITRACK_listURIs (NULL, cfg, GNUNET_NO, NULL, NULL));
-  URITRACK_trackURI (NULL, cfg, &fi2);
-  CHECK (2 == URITRACK_listURIs (NULL, cfg, GNUNET_YES, &processor, NULL));
-  URITRACK_trackURIS (NULL, cfg, GNUNET_NO);
-  CHECK (GNUNET_NO == URITRACK_trackStatus (NULL, cfg));
-  URITRACK_clearTrackedURIS (NULL, cfg);
+  GNUNET_URITRACK_track (NULL, cfg, &fi1);
+  CHECK (0 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_NO, NULL, NULL));
+  CHECK (GNUNET_NO == GNUNET_URITRACK_get_tracking_status (NULL, cfg));
+  GNUNET_URITRACK_clear (NULL, cfg);
+  GNUNET_URITRACK_toggle_tracking (NULL, cfg, GNUNET_YES);
+  GNUNET_URITRACK_clear (NULL, cfg);
+  CHECK (0 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_NO, NULL, NULL));
+  CHECK (GNUNET_YES == GNUNET_URITRACK_get_tracking_status (NULL, cfg));
+  GNUNET_URITRACK_track (NULL, cfg, &fi1);
+  CHECK (1 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_NO, NULL, NULL));
+  GNUNET_URITRACK_track (NULL, cfg, &fi2);
+  CHECK (2 == GNUNET_URITRACK_list (NULL, cfg, GNUNET_YES, &processor, NULL));
+  GNUNET_URITRACK_toggle_tracking (NULL, cfg, GNUNET_NO);
+  CHECK (GNUNET_NO == GNUNET_URITRACK_get_tracking_status (NULL, cfg));
+  GNUNET_URITRACK_clear (NULL, cfg);
   CHECK (notifications == 2);
-  URITRACK_unregisterTrackCallback (&notified, NULL);
+  GNUNET_URITRACK_unregister_track_callback (&notified, NULL);
   return 0;
 }
 
@@ -140,14 +140,14 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   failureCount += testTracking ();
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   if (failureCount != 0)
     return 1;
   return 0;

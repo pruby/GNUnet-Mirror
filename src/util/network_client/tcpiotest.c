@@ -27,7 +27,7 @@
 #include "gnunet_util_config_impl.h"
 #include "platform.h"
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static unsigned short
 getGNUnetPort ()
@@ -48,7 +48,7 @@ openServerSocket ()
   listenerFD = SOCKET (PF_INET, SOCK_STREAM, 0);
   if (listenerFD < 0)
     {
-      GE_LOG_STRERROR (NULL, GE_BULK | GE_ERROR | GE_USER, "socket");
+      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "socket");
       return -1;
     }
 
@@ -60,7 +60,7 @@ openServerSocket ()
 
   if (SETSOCKOPT (listenerFD, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
     {
-      GE_LOG_STRERROR (NULL, GE_BULK | GE_ERROR | GE_USER, "setsockopt");
+      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "setsockopt");
       CLOSE (listenerFD);
       return -1;
     }
@@ -69,7 +69,7 @@ openServerSocket ()
   if (BIND (listenerFD,
             (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
     {
-      GE_LOG_STRERROR (NULL, GE_BULK | GE_ERROR | GE_USER, "bind");
+      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "bind");
       CLOSE (listenerFD);
       return -1;
     }
@@ -77,7 +77,7 @@ openServerSocket ()
   /* start listening for new connections */
   if (0 != LISTEN (listenerFD, 5))
     {
-      GE_LOG_STRERROR (NULL, GE_BULK | GE_ERROR | GE_USER, "listen");
+      GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "listen");
       CLOSE (listenerFD);
       return -1;
     }
@@ -100,7 +100,7 @@ doAccept (int serverSocket)
                            &lenOfIncomingAddr);
       if (incomingFD < 0)
         {
-          GE_LOG_STRERROR (NULL, GE_BULK | GE_ERROR | GE_USER, "accept");
+          GNUNET_GE_LOG_STRERROR (NULL, GNUNET_GE_BULK | GNUNET_GE_ERROR | GNUNET_GE_USER, "accept");
           continue;
         }
     }
@@ -175,10 +175,10 @@ main (int argc, char *argv[])
   int acceptSocket;
   struct GNUNET_SocketHandle *sh;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   serverSocket = openServerSocket ();
@@ -209,6 +209,6 @@ main (int argc, char *argv[])
   CLOSE (serverSocket);
   if (ret > 0)
     fprintf (stderr, "Error %d\n", ret);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return ret;
 }

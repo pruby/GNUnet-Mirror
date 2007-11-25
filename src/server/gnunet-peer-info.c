@@ -33,13 +33,13 @@
 #include "gnunet_core.h"
 #include "core.h"
 
-static Transport_ServiceAPI *transport;
+static GNUNET_Transport_ServiceAPI *transport;
 
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
 static int no_resolve = GNUNET_NO;
 
@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetpeerinfoOptions[] = {
   {'n', "numeric", NULL,
    gettext_noop ("don't resolve host names"),
    0, &GNUNET_getopt_configure_set_one, &no_resolve},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -115,8 +115,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
   hello = identity->identity2Hello (id, proto, GNUNET_NO);
   if (NULL == hello)
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Could not get address of peer `%s'.\n"), &enc);
       return GNUNET_OK;
     }
@@ -128,8 +128,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
                                           &hello->signature,
                                           &hello->publicKey))
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("hello message invalid (signature invalid).\n"));
     }
   addr = NULL;
@@ -148,8 +148,8 @@ printHostInfo (const GNUNET_PeerIdentity * id,
     }
   if (info == NULL)
     {
-      GE_LOG (ectx,
-              GE_DEBUG | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Could not get address of peer `%s'.\n"), &enc);
       printf (_("Peer `%s' with trust %8u\n"),
               (char *) &enc, identity->getHostTrust (id));
@@ -164,7 +164,7 @@ printHostInfo (const GNUNET_PeerIdentity * id,
 int
 main (int argc, char *const *argv)
 {
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
   int ret;
 
@@ -177,8 +177,8 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return -1;
     }
-  GE_ASSERT (ectx,
-             0 == GC_set_configuration_value_string (cfg,
+  GNUNET_GE_ASSERT (ectx,
+             0 == GNUNET_GC_set_configuration_value_string (cfg,
                                                      ectx,
                                                      "TCPSERVER",
                                                      "DISABLE", "YES"));

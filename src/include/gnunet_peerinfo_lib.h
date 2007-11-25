@@ -38,7 +38,7 @@ extern "C"
 #endif
 #endif
 
-#define PEERINFO_VERSION "0.0.0"
+#define GNUNET_PEERINFO_VERSION "0.0.0"
 
 /**
  * @param name the name of the peer
@@ -47,7 +47,7 @@ extern "C"
  *
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
-typedef int (*PEERINFO_PeerProcessor) (const char *name,
+typedef int (*GNUNET_PEERINFO_PeerProcessor) (const char *name,
                                        const GNUNET_PeerIdentity * id,
                                        unsigned int trust, void *cls);
 
@@ -59,10 +59,10 @@ typedef int (*PEERINFO_PeerProcessor) (const char *name,
  * @param connected_only only list currently connected peers
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int PEERINFO_getInfo (struct GE_Context *ectx,
+int GNUNET_PEERINFO_get_information (struct GNUNET_GE_Context *ectx,
                       struct GNUNET_ClientServerConnection *sock,
                       int connected_only,
-                      PEERINFO_PeerProcessor processor, void *cls);
+                      GNUNET_PEERINFO_PeerProcessor processor, void *cls);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

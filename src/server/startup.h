@@ -31,11 +31,11 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-int changeUser (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int changeUser (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
-int setFdLimit (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int setFdLimit (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
-int checkPermissions (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int checkPermissions (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
 /**
  * @brief Cap datastore limit to the filesystem's capabilities
@@ -43,14 +43,14 @@ int checkPermissions (struct GE_Context *ectx, struct GC_Configuration *cfg);
  * @param ectx error handler
  * @param cfg configuration manager
  */
-void capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg);
+void capFSQuotaSize (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Shutdown gnunetd
  * @param cfg configuration
  * @param sig signal code that causes shutdown, optional
  */
-void shutdown_gnunetd (struct GC_Configuration *cfg, int sig);
+void shutdown_gnunetd (struct GNUNET_GC_Configuration *cfg, int sig);
 
 
 #ifdef MINGW

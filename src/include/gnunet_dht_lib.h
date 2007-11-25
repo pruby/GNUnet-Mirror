@@ -50,12 +50,12 @@ extern "C"
  *        GNUNET_SYSERR
  * @return number of results on success, GNUNET_SYSERR on error (i.e. timeout)
  */
-int DHT_LIB_get (struct GC_Configuration *cfg,
-                 struct GE_Context *ectx,
+int GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
+                 struct GNUNET_GE_Context *ectx,
                  unsigned int type,
                  const GNUNET_HashCode * key,
                  GNUNET_CronTime timeout,
-                 DataProcessor resultCallback, void *resCallbackClosure);
+                 GNUNET_DataProcessor resultCallback, void *resCallbackClosure);
 
 /**
  * Perform a synchronous put operation.
@@ -65,11 +65,11 @@ int DHT_LIB_get (struct GC_Configuration *cfg,
  * @param value what to store
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int DHT_LIB_put (struct GC_Configuration *cfg,
-                 struct GE_Context *ectx,
+int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
+                 struct GNUNET_GE_Context *ectx,
                  const GNUNET_HashCode * key,
                  unsigned int type,
-                 GNUNET_CronTime expire, const DataContainer * value);
+                 GNUNET_CronTime expire, const GNUNET_DataContainer * value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

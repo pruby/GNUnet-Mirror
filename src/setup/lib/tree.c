@@ -35,8 +35,8 @@ typedef struct
 {
   VisibilityChangeListener vcl;
   void *ctx;
-  struct GNS_Tree *root;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GNS_TreeNode *root;
+  struct GNUNET_GC_Configuration *cfg;
 } TC;
 
 /* ********************** scheme smob boxing ***************** */
@@ -55,7 +55,7 @@ box_tc (TC * tc)
 }
 
 static SCM
-box_tree (struct GNS_Tree *tree)
+box_tree (struct GNUNET_GNS_TreeNode *tree)
 {
   SCM smob;
 
@@ -81,7 +81,7 @@ print_tc (SCM tc_smob, SCM port, scm_print_state * pstate)
 static int
 print_tree (SCM tree_smob, SCM port, scm_print_state * pstate)
 {
-  /* struct GNS_Tree * tree = (struct GNS_Tree *) SCM_SMOB_DATA (tree_smob); */
+  /* struct GNUNET_GNS_TreeNode * tree = (struct GNUNET_GNS_TreeNode *) SCM_SMOB_DATA (tree_smob); */
 
   scm_puts ("Tree", port);
   /* non-zero means success */
@@ -90,11 +90,11 @@ print_tree (SCM tree_smob, SCM port, scm_print_state * pstate)
 
 /* **************************** tree API ****************** */
 
-struct GNS_Tree *
-tree_lookup (struct GNS_Tree *root, const char *section, const char *option)
+struct GNUNET_GNS_TreeNode *
+tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section, const char *option)
 {
   int i;
-  struct GNS_Tree *ret;
+  struct GNUNET_GNS_TreeNode *ret;
 
   if ((root->section != NULL) &&
       (root->option != NULL) &&
@@ -118,7 +118,7 @@ get_option (SCM smob, SCM section, SCM option)
   TC *tc;
   char *opt;
   char *sec;
-  struct GNS_Tree *t;
+  struct GNUNET_GNS_TreeNode *t;
 
   SCM_ASSERT (SCM_SMOB_PREDICATE (tc_tag, smob), smob, SCM_ARG1,
               "get_option");
@@ -130,22 +130,22 @@ get_option (SCM smob, SCM section, SCM option)
   t = tree_lookup (tc->root, sec, opt);
   if (t == NULL)
     return SCM_EOL;
-  switch (t->type & GNS_TypeMask)
+  switch (t->type & GNUNET_GNS_TYPE_MASK)
     {
     case 0:
       return SCM_EOL;           /* no value */
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       return (t->value.Boolean.val) ? SCM_BOOL_T : SCM_BOOL_F;
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       return scm_from_uint64 (t->value.UInt64.val);
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       return scm_from_double (t->value.Double.val);
-    case GNS_String:
-    case GNS_MC:
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       return scm_from_locale_string (t->value.String.val);
     }
-  GE_BREAK (NULL, 0);
+  GNUNET_GE_BREAK (NULL, 0);
   return SCM_EOL;
 }
 
@@ -160,7 +160,7 @@ change_visible (SCM smob, SCM section, SCM option, SCM yesno)
   char *opt;
   char *sec;
   int val;
-  struct GNS_Tree *t;
+  struct GNUNET_GNS_TreeNode *t;
 
   SCM_ASSERT (SCM_SMOB_PREDICATE (tc_tag, smob), smob, SCM_ARG1,
               "change_visible");
@@ -174,7 +174,7 @@ change_visible (SCM smob, SCM section, SCM option, SCM yesno)
   val = scm_is_true (yesno) ? 1 : 0;
   if ((opt == NULL) || (sec == NULL))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return SCM_EOL;
     }
   t = tree_lookup (tc->root, sec, opt);
@@ -215,7 +215,7 @@ set_option (SCM smob, SCM section, SCM option, SCM value)
   opt = scm_to_locale_string (option);
   sec = scm_to_locale_string (section);
   val = scm_to_locale_string (value);
-  GC_set_configuration_value_string (tc->cfg, NULL, sec, opt, val);
+  GNUNET_GC_set_configuration_value_string (tc->cfg, NULL, sec, opt, val);
   if (sec != NULL)
     free (sec);
   if (val != NULL)
@@ -239,7 +239,7 @@ build_tree_node (SCM section,
                  SCM description,
                  SCM help, SCM children, SCM visible, SCM value, SCM range)
 {
-  struct GNS_Tree *tree;
+  struct GNUNET_GNS_TreeNode *tree;
   SCM child;
   int i;
   int clen;
@@ -292,19 +292,19 @@ build_tree_node (SCM section,
     }
 
   /* construct C object */
-  tree = GNUNET_malloc (sizeof (struct GNS_Tree));
+  tree = GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode));
   tree->section = scm_to_locale_string (section);
   tree->option = scm_to_locale_string (option);
   tree->description = scm_to_locale_string (description);
   tree->help = scm_to_locale_string (help);
-  tree->children = GNUNET_malloc (sizeof (struct GNS_Tree *) * (clen + 1));
+  tree->children = GNUNET_malloc (sizeof (struct GNUNET_GNS_TreeNode *) * (clen + 1));
   for (i = 0; i < clen; i++)
     {
       child = scm_list_ref (children, scm_from_signed_integer (i));
-      tree->children[i] = (struct GNS_Tree *) SCM_SMOB_DATA (child);
+      tree->children[i] = (struct GNUNET_GNS_TreeNode *) SCM_SMOB_DATA (child);
     }
   tree->children[clen] = NULL;
-  tree->type = (clen == 0) ? GNS_Leaf : GNS_Node;
+  tree->type = (clen == 0) ? GNUNET_GNS_KIND_LEAF : GNUNET_GNS_KIND_NODE;
   tree->visible = scm_is_true (visible);
 
   if (scm_is_string (value))
@@ -329,19 +329,19 @@ build_tree_node (SCM section,
                                                    (0)));
       else
         type = GNUNET_strdup ("*");
-      GE_ASSERT (NULL, type != NULL);
+      GNUNET_GE_ASSERT (NULL, type != NULL);
       if (0 == strcasecmp (type, "MC"))
         {
-          tree->type |= GNS_MC;
+          tree->type |= GNUNET_GNS_TYPE_MULTIPLE_CHOICE;
         }
       else if (0 == strcasecmp (type, "SC"))
         {
-          tree->type |= GNS_SC;
+          tree->type |= GNUNET_GNS_TYPE_SINGLE_CHOICE;
         }
       else
         {
-          GE_BREAK (NULL, 0 == strcasecmp (type, "*"));
-          tree->type |= GNS_String;
+          GNUNET_GE_BREAK (NULL, 0 == strcasecmp (type, "*"));
+          tree->type |= GNUNET_GNS_TYPE_STRING;
         }
       GNUNET_free (type);
     }
@@ -351,19 +351,19 @@ build_tree_node (SCM section,
       tree->value.UInt64.def = scm_to_uint64 (value);
       tree->value.UInt64.min = scm_to_uint64 (SCM_CAR (range));
       tree->value.UInt64.max = scm_to_uint64 (SCM_CDR (range));
-      tree->type |= GNS_UInt64;
+      tree->type |= GNUNET_GNS_TYPE_UINT64;
     }
   else if (scm_is_true (scm_real_p (value)))
     {
       tree->value.Double.val = scm_to_double (value);
       tree->value.Double.def = scm_to_double (value);
-      tree->type |= GNS_Double;
+      tree->type |= GNUNET_GNS_TYPE_DOUBLE;
     }
   else if (scm_is_true (scm_boolean_p (value)))
     {
       tree->value.Boolean.val = scm_is_true (value);
       tree->value.Boolean.def = scm_is_true (value);
-      tree->type |= GNS_Boolean;
+      tree->type |= GNUNET_GNS_TYPE_BOOLEAN;
     }
   /* box and return */
   return box_tree (tree);
@@ -387,14 +387,14 @@ parse_internal (void *spec)
 }
 
 
-struct GNS_Tree *
-tree_parse (struct GE_Context *ectx, const char *specification)
+struct GNUNET_GNS_TreeNode *
+tree_parse (struct GNUNET_GE_Context *ectx, const char *specification)
 {
-  struct GNS_Tree *ret;
+  struct GNUNET_GNS_TreeNode *ret;
 
   ret = parse_internal ((void *) specification);
   if (ret != NULL)
-    ret->type = GNS_Root;
+    ret->type = GNUNET_GNS_KIND_ROOT;
   return ret;
 }
 
@@ -419,11 +419,11 @@ notify_change_internal (void *cls)
  * Update visibility (and notify about changes).
  */
 void
-tree_notify_change (struct GC_Configuration *cfg,
+tree_notify_change (struct GNUNET_GC_Configuration *cfg,
                     VisibilityChangeListener vcl,
                     void *ctx,
-                    struct GE_Context *ectx,
-                    struct GNS_Tree *root, struct GNS_Tree *change)
+                    struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GNS_TreeNode *root, struct GNUNET_GNS_TreeNode *change)
 {
   TC tc;
 
@@ -474,7 +474,7 @@ void __attribute__ ((constructor)) gns_scheme_init ()
   scm_set_smob_free (tc_tag, free_box);
   scm_set_smob_print (tc_tag, print_tc);
 
-  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNS_Tree));
+  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNUNET_GNS_TreeNode));
   scm_set_smob_mark (tree_tag, NULL);
   scm_set_smob_free (tree_tag, free_box);
   scm_set_smob_print (tree_tag, print_tree);

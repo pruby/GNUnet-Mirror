@@ -186,7 +186,7 @@ getLogFileName (const char *name)
   lcltime = *localtime (&curtime);
 #endif
   /* Format current date for filename */
-  GE_ASSERT (NULL, 0 != strftime (date, 80, datefmt, &lcltime));
+  GNUNET_GE_ASSERT (NULL, 0 != strftime (date, 80, datefmt, &lcltime));
   GNUNET_free (datefmt);
 
   /* Remove special chars */
@@ -213,7 +213,7 @@ purge_old_logs (FileContext * fctx, const char *logfilename)
 }
 
 static void
-filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
+filelogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
 {
   FileContext *fctx = cls;
   char *name;
@@ -262,12 +262,12 @@ filelogger (void *cls, GE_KIND kind, const char *date, const char *msg)
     {
       ret = fprintf (fctx->handle,
                      "%s %s: %s",
-                     date, GE_kindToString (kind & GE_EVENTKIND), msg);
+                     date, GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND), msg);
     }
   else
     {
       ret = fprintf (fctx->handle,
-                     "%s: %s", GE_kindToString (kind & GE_EVENTKIND), msg);
+                     "%s: %s", GNUNET_GE_kindToString (kind & GNUNET_GE_EVENTKIND), msg);
     }
   if (ret < 0)
     fprintf (stderr,
@@ -304,9 +304,9 @@ fileclose (void *cls)
  * @param logrotate after how many days should rotated log
  *        files be deleted (use 0 for no rotation)
  */
-struct GE_Context *
-GE_create_context_logfile (struct GE_Context *ectx,
-                           GE_KIND mask,
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
+                           GNUNET_GE_KIND mask,
                            const char *filename,
                            const char *owner, int logDate, int logrotate)
 {
@@ -327,9 +327,9 @@ GE_create_context_logfile (struct GE_Context *ectx,
   fd = FOPEN (name, "a+");
   if (fd == NULL)
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE |
-                            GE_BULK, "fopen", name);
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
+                            GNUNET_GE_BULK, "fopen", name);
       GNUNET_free (name);
       return NULL;              /* ERROR! */
     }
@@ -346,7 +346,7 @@ GE_create_context_logfile (struct GE_Context *ectx,
   fctx->logstart = start;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
   purge_old_logs (fctx, name);
-  return GE_create_context_callback (mask,
+  return GNUNET_GE_create_context_callback (mask,
                                      &filelogger, fctx, &fileclose, NULL);
 }
 
@@ -356,8 +356,8 @@ GE_create_context_logfile (struct GE_Context *ectx,
  *
  * @param mask which events should be logged?
  */
-struct GE_Context *
-GE_create_context_stderr (int logDate, GE_KIND mask)
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask)
 {
   FileContext *fctx;
 
@@ -371,7 +371,7 @@ GE_create_context_stderr (int logDate, GE_KIND mask)
   fctx->logstart = 0;
   fctx->first_start = GNUNET_NO;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
-  return GE_create_context_callback (mask,
+  return GNUNET_GE_create_context_callback (mask,
                                      &filelogger, fctx, &fileclose, NULL);
 
 }
@@ -381,8 +381,8 @@ GE_create_context_stderr (int logDate, GE_KIND mask)
  *
  * @param mask which events should be logged?
  */
-struct GE_Context *
-GE_create_context_stdout (int logDate, GE_KIND mask)
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_stdout (int logDate, GNUNET_GE_KIND mask)
 {
   FileContext *fctx;
 
@@ -396,7 +396,7 @@ GE_create_context_stdout (int logDate, GE_KIND mask)
   fctx->user = NULL;
   fctx->logstart = 0;
   fctx->lock = GNUNET_mutex_create (GNUNET_YES);
-  return GE_create_context_callback (mask,
+  return GNUNET_GE_create_context_callback (mask,
                                      &filelogger, fctx, &fileclose, NULL);
 
 }

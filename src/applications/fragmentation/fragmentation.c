@@ -98,9 +98,9 @@ typedef struct FC
 
 #define FRAGSIZE(fl) ((ntohs(fl->frag->header.size)-sizeof(P2P_fragmentation_MESSAGE)))
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_defragmented;
 
@@ -195,7 +195,7 @@ checkComplete (FC * pep)
   unsigned short len;
   char *msg;
 
-  GE_ASSERT (NULL, pep != NULL);
+  GNUNET_GE_ASSERT (NULL, pep != NULL);
   pos = pep->head;
   if (pos == NULL)
     return;
@@ -269,7 +269,7 @@ tryJoin (FC * entry,
   FL *tmp;
   unsigned short end;
 
-  GE_ASSERT (NULL, entry != NULL);
+  GNUNET_GE_ASSERT (NULL, entry != NULL);
   if (0 != memcmp (sender, &entry->sender, sizeof (GNUNET_PeerIdentity)))
     return GNUNET_SYSERR;       /* wrong fragment list, try another! */
   if (ntohl (packet->id) != entry->id)
@@ -299,8 +299,8 @@ tryJoin (FC * entry,
     sizeof (P2P_fragmentation_MESSAGE);
   if (end <= ntohs (packet->off))
     {
-      GE_LOG (NULL,
-              GE_DEVELOPER | GE_DEBUG | GE_BULK,
+      GNUNET_GE_LOG (NULL,
+              GNUNET_GE_DEVELOPER | GNUNET_GE_DEBUG | GNUNET_GE_BULK,
               "Received invalid fragment at %s:%d\n", __FILE__, __LINE__);
       return GNUNET_SYSERR;     /* yuck! integer overflow! */
     }
@@ -454,7 +454,7 @@ typedef struct
  * Send a message that had to be fragmented (right now!).  First grabs
  * the first part of the message (obtained from ctx->se) and stores
  * that in a P2P_fragmentation_MESSAGE envelope.  The remaining fragments are
- * added to the send queue with EXTREME_PRIORITY (to ensure that they
+ * added to the send queue with GNUNET_EXTREME_PRIORITY (to ensure that they
  * will be transmitted next).  The logic here is that if the priority
  * for the first fragment was sufficiently high, the priority should
  * also have been sufficiently high for all of the other fragments (at
@@ -484,7 +484,7 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
   /* write first fragment to buf */
   frag = (P2P_fragmentation_MESSAGE *) buf;
   frag->header.size = htons (len);
-  frag->header.type = htons (P2P_PROTO_fragment);
+  frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
   frag->id = id;
   frag->off = htons (0);
   frag->len = htons (ctx->len);
@@ -498,9 +498,9 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
       mlen = sizeof (P2P_fragmentation_MESSAGE) + ctx->len - pos;
       if (mlen > ctx->mtu)
         mlen = ctx->mtu;
-      GE_ASSERT (NULL, mlen > sizeof (P2P_fragmentation_MESSAGE));
+      GNUNET_GE_ASSERT (NULL, mlen > sizeof (P2P_fragmentation_MESSAGE));
       frag->header.size = htons (mlen);
-      frag->header.type = htons (P2P_PROTO_fragment);
+      frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
       frag->id = id;
       frag->off = htons (pos);
       frag->len = htons (ctx->len);
@@ -509,11 +509,11 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
               mlen - sizeof (P2P_fragmentation_MESSAGE));
       coreAPI->unicast (&ctx->sender,
                         &frag->header,
-                        EXTREME_PRIORITY,
+                        GNUNET_EXTREME_PRIORITY,
                         ctx->transmissionTime - GNUNET_get_time ());
       pos += mlen - sizeof (P2P_fragmentation_MESSAGE);
     }
-  GE_ASSERT (NULL, pos == ctx->len);
+  GNUNET_GE_ASSERT (NULL, pos == ctx->len);
   GNUNET_free (frag);
   GNUNET_free (ctx);
   return GNUNET_OK;
@@ -530,13 +530,13 @@ fragment (const GNUNET_PeerIdentity * peer,
           unsigned int mtu,
           unsigned int prio,
           unsigned int targetTime,
-          unsigned int len, BuildMessageCallback bmc, void *bmcClosure)
+          unsigned int len, GNUNET_BuildMessageCallback bmc, void *bmcClosure)
 {
   FragmentBMC *fbmc;
   int xlen;
 
-  GE_ASSERT (NULL, len > mtu);
-  GE_ASSERT (NULL, mtu > sizeof (P2P_fragmentation_MESSAGE));
+  GNUNET_GE_ASSERT (NULL, len > mtu);
+  GNUNET_GE_ASSERT (NULL, mtu > sizeof (P2P_fragmentation_MESSAGE));
   fbmc = GNUNET_malloc (sizeof (FragmentBMC) + len);
   fbmc->mtu = mtu;
   fbmc->sender = *peer;
@@ -563,10 +563,10 @@ fragment (const GNUNET_PeerIdentity * peer,
 /**
  * Initialize Fragmentation module.
  */
-Fragmentation_ServiceAPI *
-provide_module_fragmentation (CoreAPIForApplication * capi)
+GNUNET_Fragmentation_ServiceAPI *
+provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
 {
-  static Fragmentation_ServiceAPI ret;
+  static GNUNET_Fragmentation_ServiceAPI ret;
   int i;
 
   coreAPI = capi;
@@ -586,10 +586,10 @@ provide_module_fragmentation (CoreAPIForApplication * capi)
                        &defragmentationPurgeCron,
                        60 * GNUNET_CRON_SECONDS, 60 * GNUNET_CRON_SECONDS,
                        NULL);
-  GE_LOG (capi->ectx, GE_INFO | GE_USER | GE_REQUEST,
+  GNUNET_GE_LOG (capi->ectx, GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
           _("`%s' registering handler %d\n"), "fragmentation",
-          P2P_PROTO_fragment);
-  capi->registerHandler (P2P_PROTO_fragment, &processFragment);
+          GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
+  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT, &processFragment);
 
   ret.fragment = &fragment;
   return &ret;
@@ -603,7 +603,7 @@ release_module_fragmentation ()
 {
   int i;
 
-  coreAPI->unregisterHandler (P2P_PROTO_fragment, &processFragment);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT, &processFragment);
   GNUNET_cron_del_job (coreAPI->cron,
                        &defragmentationPurgeCron, 60 * GNUNET_CRON_SECONDS,
                        NULL);

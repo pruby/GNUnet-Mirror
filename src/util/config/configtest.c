@@ -28,7 +28,7 @@
 #include "gnunet_util_config.h"
 #include "gnunet_util_error_loggers.h"
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static int
 testConfig ()
@@ -36,19 +36,19 @@ testConfig ()
   char *c;
   unsigned long long l;
 
-  if (0 != GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
+  if (0 != GNUNET_GC_get_configuration_value_string (cfg, "test", "b", NULL, &c))
     return 1;
   if (0 != strcmp ("b", c))
     return 1;
   GNUNET_free (c);
-  if (0 != GC_get_configuration_value_number (cfg,
+  if (0 != GNUNET_GC_get_configuration_value_number (cfg,
                                               "test", "five", 0, 10, 9, &l))
     return 1;
   if (5 != l)
     return 1;
-  GC_set_configuration_value_string (cfg, NULL, "more", "c", "YES");
+  GNUNET_GC_set_configuration_value_string (cfg, NULL, "more", "c", "YES");
   if (GNUNET_NO ==
-      GC_get_configuration_value_yesno (cfg, "more", "c", GNUNET_NO))
+      GNUNET_GC_get_configuration_value_yesno (cfg, "more", "c", GNUNET_NO))
     return 1;
   return 0;
 }
@@ -56,21 +56,21 @@ testConfig ()
 int
 main (int argc, char *argv[])
 {
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
   int failureCount = 0;
 
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (ectx);
-  cfg = GC_create ();
-  if (0 != GC_parse_configuration (cfg, "testconfig.conf"))
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (ectx);
+  cfg = GNUNET_GC_create ();
+  if (0 != GNUNET_GC_parse_configuration (cfg, "testconfig.conf"))
     {
       fprintf (stderr, "Failed to parse configuration file\n");
       return 1;
     }
-  GE_ASSERT (ectx, cfg != NULL);
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
   GNUNET_os_init (ectx);
   failureCount += testConfig ();
 

@@ -32,7 +32,7 @@
 #ifdef MINGW
 
 static HINSTANCE hNTDLL, hIphlpapi, hAdvapi, hNetapi;
-static struct GE_Context *pEctx = NULL;
+static struct GNUNET_GE_Context *pEctx = NULL;
 
 TNtQuerySystemInformation GNNtQuerySystemInformation;
 TGetIfEntry GNGetIfEntry;
@@ -76,10 +76,10 @@ plibc_panic (int err, char *msg)
   if (!pEctx)
     fprintf (stderr, "%s", msg);
   else
-    GE_LOG (pEctx,
+    GNUNET_GE_LOG (pEctx,
             ((err ==
-              INT_MAX) ? GE_DEBUG : GE_FATAL) | GE_USER | GE_ADMIN |
-            GE_IMMEDIATE, "%s", msg);
+              INT_MAX) ? GNUNET_GE_DEBUG : GNUNET_GE_FATAL) | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+            GNUNET_GE_IMMEDIATE, "%s", msg);
 }
 
 /**
@@ -88,7 +88,7 @@ plibc_panic (int err, char *msg)
  * @return Error code from winerror.h, ERROR_SUCCESS on success
 */
 int
-InitWinEnv (struct GE_Context *ectx)
+InitWinEnv (struct GNUNET_GE_Context *ectx)
 {
   int ret, init;
 

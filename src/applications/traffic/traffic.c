@@ -44,19 +44,19 @@
 /**
  * How many time-units back do we keep the history of?  (must really
  * be <=32 since we use the 32 bit in an unsigned int). The memory
- * impact of this value n is 4 * 3 * MAX_MESSAGE_ID * n, which is for
- * the default of n=32 with the current MAX_MESSAGE_ID being roughly a
+ * impact of this value n is 4 * 3 * MAX_MESSAGNUNET_GE_ID * n, which is for
+ * the default of n=32 with the current MAX_MESSAGNUNET_GE_ID being roughly a
  * dozen less than 2k.
  */
 #define HISTORY_SIZE 32
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
-static int stat_traffic_received_by_type[P2P_PROTO_MAX_USED];
+static int stat_traffic_received_by_type[GNUNET_P2P_PROTO_MAX_USED];
 
-static int stat_pt_traffic_received_by_type[P2P_PROTO_MAX_USED];
+static int stat_pt_traffic_received_by_type[GNUNET_P2P_PROTO_MAX_USED];
 
-static int stat_traffic_transmitted_by_type[P2P_PROTO_MAX_USED];
+static int stat_traffic_transmitted_by_type[GNUNET_P2P_PROTO_MAX_USED];
 
 /**
  * Macro to access the slot at time "t" in the history.
@@ -66,7 +66,7 @@ static int stat_traffic_transmitted_by_type[P2P_PROTO_MAX_USED];
 /**
  * Of how many peers do we keep track per message type
  * about "recent" interactions? The memory impact of
- * this value n is 8 * 3 * MAX_MESSAGE_ID * n. The current
+ * this value n is 8 * 3 * MAX_MESSAGNUNET_GE_ID * n. The current
  * number of messages is roughly a dozen, so the memory
  * impact is about 200 bytes * n, or for the default
  * of n=15 it is 3kb.
@@ -163,7 +163,7 @@ static TrafficCounter **counters = NULL;
 static unsigned long long server_port;
 #endif
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * Update the use table dtc. A message of the given
@@ -184,10 +184,10 @@ updateUse (DirectedTrafficCounter * dtc,
   unsigned int slot;
 
   now = GNUNET_get_time ();
-  unitNow = now / TRAFFIC_TIME_UNIT;
+  unitNow = now / GNUNET_TRAFFIC_TIME_UNIT;
   delta = now - dtc->lastUpdate;
   dtc->lastUpdate = now;
-  deltaUnits = delta / TRAFFIC_TIME_UNIT;
+  deltaUnits = delta / GNUNET_TRAFFIC_TIME_UNIT;
 
   if (GNUNET_NO == expireOnly)
     {
@@ -262,7 +262,7 @@ buildSummary (TRAFFIC_COUNTER * res,
 
   updateUse (dtc, 0, 0, GNUNET_YES);    /* expire old entries */
   now = GNUNET_get_time ();
-  unitNow = now / TRAFFIC_TIME_UNIT;
+  unitNow = now / GNUNET_TRAFFIC_TIME_UNIT;
 
   /* count number of peers that we interacted with in
      the last countTimeUnits */
@@ -313,7 +313,7 @@ buildReply (unsigned int countTimeUnits)
       }
   reply = GNUNET_malloc (sizeof (CS_traffic_info_MESSAGE) +
                          count * sizeof (TRAFFIC_COUNTER));
-  reply->header.type = htons (CS_PROTO_traffic_INFO);
+  reply->header.type = htons (GNUNET_CS_PROTO_TRAFFIC_INFO);
   reply->header.size = htons (sizeof (CS_traffic_info_MESSAGE) +
                               count * sizeof (TRAFFIC_COUNTER));
   reply->count = htonl (count);
@@ -322,12 +322,12 @@ buildReply (unsigned int countTimeUnits)
     if (counters[i] != NULL)
       {
         if (counters[i]->send.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->send, TC_SENT,
+          buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
+                        counters[count++], &counters[i]->send, GNUNET_TRAFFIC_TYPE_SENT,
                         countTimeUnits, i);
         if (counters[i]->receive.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
-                        counters[count++], &counters[i]->receive, TC_RECEIVED,
+          buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
+                        counters[count++], &counters[i]->receive, GNUNET_TRAFFIC_TYPE_RECEIVED,
                         countTimeUnits, i);
       }
 
@@ -336,7 +336,7 @@ buildReply (unsigned int countTimeUnits)
 }
 
 static int
-trafficQueryHandler (struct ClientHandle *sock,
+trafficQueryHandler (struct GNUNET_ClientHandle *sock,
                      const GNUNET_MessageHeader * message)
 {
   const CS_traffic_request_MESSAGE *msg;
@@ -358,7 +358,7 @@ trafficQueryHandler (struct ClientHandle *sock,
  * were received or send of a given type.
  *
  * @param messageType the type of the message
- * @param sendReceive TC_SENT for sending, TC_RECEIVED for receiving
+ * @param sendReceive GNUNET_TRAFFIC_TYPE_SENT for sending, GNUNET_TRAFFIC_TYPE_RECEIVED for receiving
  * @param timePeriod how many TRAFFIC_TIME_UNITs to take
  *        into consideration (limited by HISTORY_SIZE)
  * @param avgMessageSize average size of the messages (set)
@@ -394,13 +394,13 @@ getTrafficStats (unsigned int timePeriod,
       return GNUNET_OK;
     }
 
-  if (sendReceive == TC_SENT)
+  if (sendReceive == GNUNET_TRAFFIC_TYPE_SENT)
     dtc = &counters[messageType]->send;
   else
     dtc = &counters[messageType]->receive;
   updateUse (dtc, 0, 0, GNUNET_YES);
 
-  nowUnit = GNUNET_get_time () / TRAFFIC_TIME_UNIT;
+  nowUnit = GNUNET_get_time () / GNUNET_TRAFFIC_TIME_UNIT;
   *peerCount = 0;
   *messageCount = 0;
   totSize = 0;
@@ -445,7 +445,7 @@ checkPort (unsigned short port)
 static void
 updateTrafficSendCounter (unsigned short ptyp, unsigned short plen)
 {
-  if (ptyp >= P2P_PROTO_MAX_USED)
+  if (ptyp >= GNUNET_P2P_PROTO_MAX_USED)
     return;                     /* not tracked */
   if (0 == stat_traffic_transmitted_by_type[ptyp])
     {
@@ -461,7 +461,7 @@ updateTrafficSendCounter (unsigned short ptyp, unsigned short plen)
 static void
 updateTrafficReceiveCounter (unsigned short ptyp, unsigned short plen)
 {
-  if (ptyp < P2P_PROTO_MAX_USED)
+  if (ptyp < GNUNET_P2P_PROTO_MAX_USED)
     {
       if (0 == stat_traffic_received_by_type[ptyp])
         {
@@ -479,7 +479,7 @@ static void
 updatePlaintextTrafficReceiveCounter (unsigned short ptyp,
                                       unsigned short plen)
 {
-  if (ptyp < P2P_PROTO_MAX_USED)
+  if (ptyp < GNUNET_P2P_PROTO_MAX_USED)
     {
       if (0 == stat_pt_traffic_received_by_type[ptyp])
         {
@@ -549,7 +549,7 @@ trafficSend (const GNUNET_PeerIdentity * receiver,
  */
 static int
 plaintextReceive (const GNUNET_PeerIdentity * receiver,
-                  const GNUNET_MessageHeader * header, TSession * session)
+                  const GNUNET_MessageHeader * header, GNUNET_TSession * session)
 {
   unsigned short port;
 
@@ -564,30 +564,30 @@ plaintextReceive (const GNUNET_PeerIdentity * receiver,
 /**
  * Initialize the traffic module.
  */
-Traffic_ServiceAPI *
-provide_module_traffic (CoreAPIForApplication * capi)
+GNUNET_Traffic_ServiceAPI *
+provide_module_traffic (GNUNET_CoreAPIForPlugins * capi)
 {
-  static Traffic_ServiceAPI api;
+  static GNUNET_Traffic_ServiceAPI api;
   int i;
 
   coreAPI = capi;
 #if DEBUG
-  GC_get_configuration_value_number (capi->cfg,
+  GNUNET_GC_get_configuration_value_number (capi->cfg,
                                      "NETWORK",
                                      "PORT", 0, 65536, 2087, &server_port);
 #endif
   api.get = &getTrafficStats;
-  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+  for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     stat_traffic_transmitted_by_type[i] = 0;
   coreAPI->registerSendNotify (&trafficSend);
-  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+  for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     {
       stat_traffic_received_by_type[i] = 0;
       coreAPI->registerHandler (i, &trafficReceive);
       coreAPI->registerPlaintextHandler (i, &plaintextReceive);
     }
 
-  GE_ASSERT (coreAPI->ectx, counters == NULL);
+  GNUNET_GE_ASSERT (coreAPI->ectx, counters == NULL);
   lock = GNUNET_mutex_create (GNUNET_NO);
   stats = capi->requestService ("stats");
   return &api;
@@ -601,7 +601,7 @@ release_module_traffic ()
 {
   unsigned int i;
 
-  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+  for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     {
       coreAPI->unregisterHandler (i, &trafficReceive);
       coreAPI->unregisterPlaintextHandler (i, &plaintextReceive);
@@ -619,27 +619,27 @@ release_module_traffic ()
 
 
 
-static Traffic_ServiceAPI *myApi;
-static CoreAPIForApplication *myCoreAPI;
+static GNUNET_Traffic_ServiceAPI *myApi;
+static GNUNET_CoreAPIForPlugins *myCoreAPI;
 
 /**
  * Initialize the traffic module.
  */
 int
-initialize_module_traffic (CoreAPIForApplication * capi)
+initialize_module_traffic (GNUNET_CoreAPIForPlugins * capi)
 {
-  GE_ASSERT (capi->ectx, myCoreAPI == NULL);
+  GNUNET_GE_ASSERT (capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
   myApi = capi->requestService ("traffic");
   if (myApi == NULL)
     {
-      GE_BREAK (capi->ectx, 0);
+      GNUNET_GE_BREAK (capi->ectx, 0);
       myCoreAPI = NULL;
       return GNUNET_SYSERR;
     }
-  capi->registerClientHandler (CS_PROTO_traffic_QUERY, &trafficQueryHandler);
-  GE_ASSERT (capi->ectx,
-             0 == GC_set_configuration_value_string (capi->cfg,
+  capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY, &trafficQueryHandler);
+  GNUNET_GE_ASSERT (capi->ectx,
+             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
                                                      "ABOUT",
                                                      "traffic",
@@ -654,10 +654,10 @@ initialize_module_traffic (CoreAPIForApplication * capi)
 void
 done_module_traffic ()
 {
-  GE_ASSERT (NULL, myCoreAPI != NULL);
-  GE_ASSERT (myCoreAPI->ectx,
+  GNUNET_GE_ASSERT (NULL, myCoreAPI != NULL);
+  GNUNET_GE_ASSERT (myCoreAPI->ectx,
              GNUNET_SYSERR !=
-             myCoreAPI->unregisterClientHandler (CS_PROTO_traffic_QUERY,
+             myCoreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY,
                                                  &trafficQueryHandler));
   myCoreAPI->releaseService (myApi);
   myApi = NULL;

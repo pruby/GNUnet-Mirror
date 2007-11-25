@@ -30,9 +30,9 @@
 
 #define DEBUG_DSTORE GNUNET_NO
 
-static Dstore_ServiceAPI *dstore;
+static GNUNET_Dstore_ServiceAPI *dstore;
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * Lookup in the local datastore.
@@ -40,7 +40,7 @@ static CoreAPIForApplication *coreAPI;
  */
 int
 dht_store_get (const GNUNET_HashCode * key,
-               unsigned int type, ResultHandler handler, void *cls)
+               unsigned int type, GNUNET_ResultProcessor handler, void *cls)
 {
   return dstore->get (key, type, handler, cls);
 }
@@ -57,8 +57,8 @@ dht_store_put (unsigned int type,
   if (discard_time < GNUNET_get_time ())
     {
 #if DEBUG_DSTORE
-      GE_LOG (coreAPI->ectx,
-              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+      GNUNET_GE_LOG (coreAPI->ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
               "Content already expired (%llu < %llu), will not keep.\n",
               discard_time, GNUNET_get_time ());
 #endif
@@ -74,7 +74,7 @@ dht_store_put (unsigned int type,
  * @return GNUNET_OK on success
  */
 int
-init_dht_store (size_t max_size, CoreAPIForApplication * capi)
+init_dht_store (size_t max_size, GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   dstore = coreAPI->requestService ("dstore");

@@ -32,12 +32,12 @@
  * @brief Determine whether a NIC makes a good default
  */
 int
-wiz_is_nic_default (struct GC_Configuration *cfg, const char *name,
+wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
                     int suggestion)
 {
   char *nic;
 
-  GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE", "eth0",
+  GNUNET_GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE", "eth0",
                                      &nic);
 
 #ifdef WINDOWS

@@ -33,12 +33,12 @@
 
 static GNUNET_HashCode rkey;
 
-static Datastore_Value *rvalue;
+static GNUNET_DatastoreValue *rvalue;
 
 /**
  * SQ-store handle
  */
-static SQstore_ServiceAPI *sq;
+static GNUNET_SQstore_ServiceAPI *sq;
 
 /**
  * Semaphore on which the RCB acquire thread waits
@@ -58,14 +58,14 @@ static struct GNUNET_Mutex *lock;
 
 static struct GNUNET_ThreadHandle *gather_thread;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 
 static int
 acquire (const GNUNET_HashCode * key,
-         const Datastore_Value * value, void *closure, unsigned long long uid)
+         const GNUNET_DatastoreValue * value, void *closure, unsigned long long uid)
 {
   if (doneSignal)
     return GNUNET_SYSERR;
@@ -73,7 +73,7 @@ acquire (const GNUNET_HashCode * key,
   if (doneSignal)
     return GNUNET_SYSERR;
   GNUNET_mutex_lock (lock);
-  GE_ASSERT (NULL, rvalue == NULL);
+  GNUNET_GE_ASSERT (NULL, rvalue == NULL);
   rkey = *key;
   rvalue = GNUNET_malloc (ntohl (value->size));
   memcpy (rvalue, value, ntohl (value->size));
@@ -113,7 +113,7 @@ rcbAcquire (void *unused)
  * @return GNUNET_SYSERR if the RCB is empty
  */
 int
-getRandom (GNUNET_HashCode * key, Datastore_Value ** value)
+getRandom (GNUNET_HashCode * key, GNUNET_DatastoreValue ** value)
 {
   GNUNET_mutex_lock (lock);
   if (rvalue == NULL)
@@ -130,8 +130,8 @@ getRandom (GNUNET_HashCode * key, Datastore_Value ** value)
 }
 
 void
-initPrefetch (struct GE_Context *e,
-              struct GC_Configuration *c, SQstore_ServiceAPI * s)
+initPrefetch (struct GNUNET_GE_Context *e,
+              struct GNUNET_GC_Configuration *c, GNUNET_SQstore_ServiceAPI * s)
 {
   ectx = e;
   cfg = c;
@@ -141,8 +141,8 @@ initPrefetch (struct GE_Context *e,
   lock = GNUNET_mutex_create (GNUNET_NO);
   gather_thread = GNUNET_thread_create (&rcbAcquire, NULL, 64 * 1024);
   if (gather_thread == NULL)
-    GE_LOG_STRERROR (ectx,
-                     GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+    GNUNET_GE_LOG_STRERROR (ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                      "pthread_create");
 }
 

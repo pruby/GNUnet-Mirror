@@ -48,7 +48,7 @@ typedef struct
    * of data.
    */
   unsigned int size;
-} DataContainer;
+} GNUNET_DataContainer;
 
 /**
  * Callback function type for items in the GAP datastore.
@@ -58,8 +58,8 @@ typedef struct
  * @param cls argument passed for context (closure)
  * @return GNUNET_OK to continue with iteration, GNUNET_SYSERR to abort
  */
-typedef int (*DataProcessor) (const GNUNET_HashCode * key,
-                              const DataContainer * value, void *cls);
+typedef int (*GNUNET_DataProcessor) (const GNUNET_HashCode * key,
+                              const GNUNET_DataContainer * value, void *cls);
 
 /**
  * GAP and DHT clients must implement this interface to tell
@@ -71,7 +71,7 @@ typedef int (*DataProcessor) (const GNUNET_HashCode * key,
  * routing, the other parts are just passed along and untouched by the
  * routing code.  The type is typically used to tell what they refer
  * to.  The assumption is that they (including the type) can be
- * reproduced from the DataContainer and thus the Iterator
+ * reproduced from the GNUNET_DataContainer and thus the Iterator
  * methods do not communicate those values.
  *
  * The put method is (ab)used to check an item that is merely routed
@@ -106,7 +106,7 @@ typedef struct
               unsigned int prio,
               unsigned int keyCount,
               const GNUNET_HashCode * keys,
-              DataProcessor resultCallback, void *resCallbackClosure);
+              GNUNET_DataProcessor resultCallback, void *resCallbackClosure);
 
   /**
    * Store an item in the datastore.
@@ -120,7 +120,7 @@ typedef struct
    */
   int (*put) (void *closure,
               const GNUNET_HashCode * key,
-              const DataContainer * value, unsigned int prio);
+              const GNUNET_DataContainer * value, unsigned int prio);
 
   /**
    * Remove an item from the datastore.
@@ -130,7 +130,7 @@ typedef struct
    * @return GNUNET_OK if the value could be removed, GNUNET_SYSERR if not (i.e. not present)
    */
   int (*del) (void *closure,
-              const GNUNET_HashCode * key, const DataContainer * value);
+              const GNUNET_HashCode * key, const GNUNET_DataContainer * value);
 
   /**
    * Iterate over all keys in the local datastore
@@ -139,9 +139,9 @@ typedef struct
    * @param cls argument to processor
    * @return number of results, GNUNET_SYSERR on error
    */
-  int (*iterate) (void *closure, DataProcessor processor, void *cls);
+  int (*iterate) (void *closure, GNUNET_DataProcessor processor, void *cls);
 
-} Blockstore;
+} GNUNET_Blockstore;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

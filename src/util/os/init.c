@@ -33,7 +33,7 @@
  * @returns GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 int
-GNUNET_os_init (struct GE_Context *ectx)
+GNUNET_os_init (struct GNUNET_GE_Context *ectx)
 {
 #ifdef MINGW
   if (InitWinEnv (ectx) != ERROR_SUCCESS)

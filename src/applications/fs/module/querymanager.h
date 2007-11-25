@@ -31,7 +31,7 @@
 /**
  * Initialize the query management.
  */
-int initQueryManager (CoreAPIForApplication * capi);
+int initQueryManager (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Shutdown query management.
@@ -46,7 +46,7 @@ void doneQueryManager (void);
  * @param client where did the query come from?
  */
 void trackQuery (const GNUNET_HashCode * query,
-                 unsigned int type, struct ClientHandle *client);
+                 unsigned int type, struct GNUNET_ClientHandle *client);
 
 /**
  * Stop keeping track of a query.
@@ -55,7 +55,7 @@ void trackQuery (const GNUNET_HashCode * query,
  * @param client where did the query come from?
  */
 void untrackQuery (const GNUNET_HashCode * query,
-                   struct ClientHandle *client);
+                   struct GNUNET_ClientHandle *client);
 
 /**
  * We received a reply from 'responder'.
@@ -64,6 +64,6 @@ void untrackQuery (const GNUNET_HashCode * query,
  * @param value the response
  */
 void processResponse (const GNUNET_HashCode * key,
-                      const Datastore_Value * value);
+                      const GNUNET_DatastoreValue * value);
 
 #endif

@@ -30,86 +30,86 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 #define START_DAEMON 1
 
 int
 main (int argc, char *argv[])
 {
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 #if START_DAEMON
   pid_t daemon;
 #endif
   int ok;
   struct GNUNET_ClientServerConnection *sock;
-  struct ECRS_MetaData *meta;
-  ECRS_FileInfo fi;
+  struct GNUNET_ECRS_MetaData *meta;
+  GNUNET_ECRS_FileInfo fi;
   char *have;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   sock = NULL;
   meta = NULL;
 #if START_DAEMON
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
-  GE_ASSERT (NULL, daemon > 0);
+  GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          300 * GNUNET_CRON_SECONDS));
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 #endif
   ok = GNUNET_YES;
-  meta = ECRS_createMetaData ();
-  ECRS_addToMetaData (meta, EXTRACTOR_MIMETYPE, "test/foo");
+  meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_MIMETYPE, "test/foo");
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
-  CO_init (NULL, cfg);
+  GNUNET_CO_init (NULL, cfg);
 
   /* ACTUAL TEST CODE */
-  CO_stopCollection ();
-  ECRS_deleteNamespace (NULL, cfg, "test-collection");
-  CHECK (NULL == CO_getCollection ());
-  CHECK (GNUNET_OK == CO_startCollection (1, 100, 60,   /* 60s */
+  GNUNET_CO_collection_stop ();
+  GNUNET_ECRS_namespace_delete (NULL, cfg, "test-collection");
+  CHECK (NULL == GNUNET_CO_collection_get_name ());
+  CHECK (GNUNET_OK == GNUNET_CO_collection_start (1, 100, 60,   /* 60s */
                                           "test-collection", meta));
-  have = CO_getCollection ();
+  have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
   CHECK (0 == strcmp (have, "test-collection"));
   GNUNET_free (have);
   fi.meta = meta;
   fi.uri =
-    ECRS_stringToUri (NULL,
+    GNUNET_ECRS_string_to_uri (NULL,
                       "gnunet://ecrs/chk/0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0");
-  CO_publishToCollection (&fi);
-  ECRS_freeUri (fi.uri);
-  CO_done ();
-  CO_init (NULL, cfg);
-  have = CO_getCollection ();
+  GNUNET_CO_collection_add_item (&fi);
+  GNUNET_ECRS_uri_destroy (fi.uri);
+  GNUNET_CO_done ();
+  GNUNET_CO_init (NULL, cfg);
+  have = GNUNET_CO_collection_get_name ();
   CHECK (NULL != have);
   CHECK (0 == strcmp (have, "test-collection"));
   GNUNET_free (have);
-  CO_publishCollectionNow ();
-  CO_stopCollection ();
-  ECRS_deleteNamespace (NULL, cfg, "test-collection");
-  CHECK (NULL == CO_getCollection ());
+  GNUNET_CO_collection_publish_now ();
+  GNUNET_CO_collection_stop ();
+  GNUNET_ECRS_namespace_delete (NULL, cfg, "test-collection");
+  CHECK (NULL == GNUNET_CO_collection_get_name ());
 
   /* END OF TEST CODE */
 FAILURE:
   if (sock != NULL)
     {
-      CO_done ();
+      GNUNET_CO_done ();
       GNUNET_client_connection_destroy (sock);
     }
   if (meta != NULL)
-    ECRS_freeMetaData (meta);
+    GNUNET_ECRS_meta_data_destroy (meta);
 #if START_DAEMON
-  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 

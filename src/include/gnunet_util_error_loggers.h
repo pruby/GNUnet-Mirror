@@ -38,7 +38,7 @@ extern "C"
 
 #include "gnunet_util_error.h"
 
-struct GE_Memory;
+struct GNUNET_GE_Memory;
 
 
 /**
@@ -52,8 +52,8 @@ struct GE_Memory;
  *        value specifies after how many days logs should be deleted)
  *        (use 0 for no rotation)
  */
-struct GE_Context *GE_create_context_logfile (struct GE_Context *ectx,
-                                              GE_KIND mask,
+struct GNUNET_GE_Context *GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
+                                              GNUNET_GE_KIND mask,
                                               const char *filename,
                                               const char *owner,
                                               int logDate, int logrotate);
@@ -64,21 +64,21 @@ struct GE_Context *GE_create_context_logfile (struct GE_Context *ectx,
  *
  * @param mask which events should be logged?
  */
-struct GE_Context *GE_create_context_stderr (int logDate, GE_KIND mask);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_stderr (int logDate, GNUNET_GE_KIND mask);
 
 /**
  * Create a logger that writes events to stderr
  *
  * @param mask which events should be logged?
  */
-struct GE_Context *GE_create_context_stdout (int logDate, GE_KIND mask);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_stdout (int logDate, GNUNET_GE_KIND mask);
 
 /**
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */
-struct GE_Context *GE_create_context_memory (GE_KIND mask,
-                                             struct GE_Memory *memory);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask,
+                                             struct GNUNET_GE_Memory *memory);
 
 #if FICTION
 /**
@@ -87,11 +87,11 @@ struct GE_Context *GE_create_context_memory (GE_KIND mask,
  * @param server hostname of SMTP gateway, NULL for using local "mail" command
  * @param port port to use for SMTP
  * @param logDate should the date be each of the log lines?
- * @param bulkSize for GE_BULK messages, how many lines of messages
+ * @param bulkSize for GNUNET_GE_BULK messages, how many lines of messages
  *        should be accumulated before an e-mail is transmitted?
  */
-struct GE_Context *GE_create_context_email (struct GE_Context *ectx,
-                                            GE_KIND mask,
+struct GNUNET_GE_Context *GNUNET_GE_create_context_email (struct GNUNET_GE_Context *ectx,
+                                            GNUNET_GE_KIND mask,
                                             const char *address,
                                             const char *server,
                                             unsigned short port,
@@ -110,23 +110,23 @@ struct GE_Context *GE_create_context_email (struct GE_Context *ectx,
  *  (if more than maxSize messages are received, message number maxSize
  *   will be set to a corresponding warning)
  */
-struct GE_Memory *GE_memory_create (unsigned int maxSize);
+struct GNUNET_GE_Memory *GNUNET_GE_memory_create (unsigned int maxSize);
 
 /**
  * For all messages stored in the memory, call the handler.
  * Also clears the memory.
  */
-void GE_memory_poll (struct GE_Memory *memory,
-                     GE_LogHandler handler, void *ctx);
+void GNUNET_GE_memory_poll (struct GNUNET_GE_Memory *memory,
+                     GNUNET_GE_LogHandler handler, void *ctx);
 
-void GE_memory_reset (struct GE_Memory *memory);
+void GNUNET_GE_memory_reset (struct GNUNET_GE_Memory *memory);
 
 /**
  * Get a particular log message from the store.
  */
-const char *GE_memory_get (struct GE_Memory *memory, unsigned int index);
+const char *GNUNET_GE_memory_get (struct GNUNET_GE_Memory *memory, unsigned int index);
 
-void GE_memory_free (struct GE_Memory *memory);
+void GNUNET_GE_memory_free (struct GNUNET_GE_Memory *memory);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

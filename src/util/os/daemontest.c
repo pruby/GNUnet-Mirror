@@ -33,23 +33,23 @@ int
 main (int argc, const char *argv[])
 {
   int daemon;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
 
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (ectx);
-  cfg = GC_create ();
-  GE_ASSERT (ectx, cfg != NULL);
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (ectx);
+  cfg = GNUNET_GC_create ();
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
   GNUNET_os_init (ectx);
   daemon = GNUNET_daemon_start (ectx, cfg, "check.conf", GNUNET_NO);
   if (daemon <= 0)
     {
       fprintf (stderr, "Failed to start daemon.\n");
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
   if (GNUNET_OK !=
@@ -58,20 +58,20 @@ main (int argc, const char *argv[])
       fprintf (stderr, "Failed to confirm daemon running (after 30s).\n");
       /* try killing anyway, just to be sure */
       GNUNET_daemon_stop (ectx, daemon);
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
   if (GNUNET_OK != GNUNET_daemon_stop (ectx, daemon))
     {
       fprintf (stderr, "Failed to stop daemon.\n");
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
 
-  GC_free (cfg);
-  GE_free_context (ectx);
+  GNUNET_GC_free (cfg);
+  GNUNET_GE_free_context (ectx);
   return 0;
 }
 

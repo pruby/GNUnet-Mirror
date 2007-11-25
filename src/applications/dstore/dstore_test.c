@@ -55,7 +55,7 @@ checkIt (const GNUNET_HashCode * key,
  * Add testcode here!
  */
 static int
-test (Dstore_ServiceAPI * api)
+test (GNUNET_Dstore_ServiceAPI * api)
 {
   GNUNET_HashCode k;
   GNUNET_HashCode n;
@@ -90,15 +90,15 @@ FAILURE:
 int
 main (int argc, char *argv[])
 {
-  Dstore_ServiceAPI *api;
+  GNUNET_Dstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   cron = cron_create (NULL);

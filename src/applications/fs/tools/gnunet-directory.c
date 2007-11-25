@@ -32,7 +32,7 @@
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_util.h"
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static int do_list;
 
@@ -40,7 +40,7 @@ static int do_kill;
 
 static int do_track;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static int
 itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
@@ -52,18 +52,18 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 }
 
 static void
-printMeta (const struct ECRS_MetaData *meta)
+printMeta (const struct GNUNET_ECRS_MetaData *meta)
 {
-  ECRS_getMetaData (meta, &itemPrinter, NULL);
+  GNUNET_ECRS_meta_data_get_contents (meta, &itemPrinter, NULL);
 }
 
 static int
-printNode (const ECRS_FileInfo * fi,
+printNode (const GNUNET_ECRS_FileInfo * fi,
            const GNUNET_HashCode * key, int isRoot, void *unused)
 {
   char *string;
 
-  string = ECRS_uriToString (fi->uri);
+  string = GNUNET_ECRS_uri_to_string (fi->uri);
   printf ("%s:\n", string);
   GNUNET_free (string);
   printMeta (fi->meta);
@@ -74,7 +74,7 @@ static void
 printDirectory (const char *filename)
 {
   unsigned long long len;
-  struct ECRS_MetaData *md;
+  struct GNUNET_ECRS_MetaData *md;
   char *data;
   int ret;
   char *name;
@@ -100,13 +100,13 @@ printDirectory (const char *filename)
       data = MMAP (NULL, len, PROT_READ, MAP_SHARED, fd, 0);
       if (data == MAP_FAILED)
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_ERROR | GE_ADMIN | GE_BULK, "mmap", name);
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "mmap", name);
           ret = -1;
         }
       else
         {
-          ret = ECRS_listDirectory (ectx, data, len, &md, &printNode, NULL);
+          ret = GNUNET_ECRS_directory_list_contents (ectx, data, len, &md, &printNode, NULL);
           MUNMAP (data, len);
         }
       CLOSE (fd);
@@ -118,7 +118,7 @@ printDirectory (const char *filename)
   if (md != NULL)
     {
       printMeta (md);
-      ECRS_freeMetaData (md);
+      GNUNET_ECRS_meta_data_destroy (md);
     }
   printf ("\n");
   GNUNET_free (name);
@@ -141,7 +141,7 @@ static struct GNUNET_CommandLineOption gnunetdirectoryOptions[] = {
   {'t', "track", NULL,
    gettext_noop ("start tracking entries for the directory database"),
    0, &GNUNET_getopt_configure_set_one, &do_track},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -150,7 +150,7 @@ int
 main (int argc, char *const *argv)
 {
   int i;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
   i = GNUNET_init (argc,
                    argv,
@@ -163,14 +163,14 @@ main (int argc, char *const *argv)
     }
   if (do_list)
     printf (_("Listed %d matching entries.\n"),
-            URITRACK_listURIs (ectx, cfg, GNUNET_YES, &printNode, NULL));
+            GNUNET_URITRACK_list (ectx, cfg, GNUNET_YES, &printNode, NULL));
   if (do_kill)
     {
-      URITRACK_trackURIS (ectx, cfg, GNUNET_NO);
-      URITRACK_clearTrackedURIS (ectx, cfg);
+      GNUNET_URITRACK_toggle_tracking (ectx, cfg, GNUNET_NO);
+      GNUNET_URITRACK_clear (ectx, cfg);
     }
   if (do_track)
-    URITRACK_trackURIS (ectx, cfg, GNUNET_YES);
+    GNUNET_URITRACK_toggle_tracking (ectx, cfg, GNUNET_YES);
 
   while (i < argc)
     printDirectory (argv[i++]);

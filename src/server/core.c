@@ -73,7 +73,7 @@ typedef struct ShutdownList
 /**
  * Global for the core API.
  */
-static CoreAPIForApplication applicationCore;
+static GNUNET_CoreAPIForPlugins applicationCore;
 
 /**
  * List of loaded modules and their status.
@@ -87,7 +87,7 @@ static ShutdownList *shutdownList = NULL;
  */
 static GNUNET_PeerIdentity myIdentity;
 
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
 /**
  * Load the application module named "pos".
@@ -99,16 +99,16 @@ loadApplicationModule (const char *rpos)
   int ok;
   ShutdownList *nxt;
   ShutdownList *spos;
-  ApplicationInitMethod mptr;
+  GNUNET_ApplicationPluginInitializationMethod mptr;
   struct GNUNET_PluginHandle *library;
   char *name;
   char *pos;
 
   pos = NULL;
-  if (-1 == GC_get_configuration_value_string (applicationCore.cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (applicationCore.cfg,
                                                "MODULES", rpos, rpos, &pos))
     return GNUNET_SYSERR;
-  GE_ASSERT (applicationCore.ectx, pos != NULL);
+  GNUNET_GE_ASSERT (applicationCore.ectx, pos != NULL);
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
   strcat (name, pos);
@@ -121,8 +121,8 @@ loadApplicationModule (const char *rpos)
         {
           if (nxt->applicationInitialized == GNUNET_YES)
             {
-              GE_LOG (applicationCore.ectx,
-                      GE_WARNING | GE_DEVELOPER | GE_BULK,
+              GNUNET_GE_LOG (applicationCore.ectx,
+                      GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                       _("Application module `%s' already initialized!\n"),
                       name);
               GNUNET_free (name);
@@ -173,8 +173,8 @@ loadApplicationModule (const char *rpos)
   if (GNUNET_OK != ok)
     {
       /* undo loading */
-      GE_LOG (applicationCore.ectx,
-              GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
               _("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
               name, __FILE__, __LINE__);
       /* Note: we cannot assert that shutdownList == nxt here,
@@ -192,7 +192,7 @@ loadApplicationModule (const char *rpos)
               spos = spos->next;
               if (spos == NULL)
                 {
-                  GE_BREAK (applicationCore.ectx, 0);   /* should never happen! */
+                  GNUNET_GE_BREAK (applicationCore.ectx, 0);   /* should never happen! */
                   return ok;
                 }
             }
@@ -213,7 +213,7 @@ unloadApplicationModule (const char *name)
 {
   ShutdownList *pos;
   ShutdownList *prev;
-  ApplicationDoneMethod mptr;
+  GNUNET_ApplicationPluginShutdownMethod mptr;
 
   prev = NULL;
   pos = shutdownList;
@@ -222,16 +222,16 @@ unloadApplicationModule (const char *name)
 
   if (pos == NULL)
     {
-      GE_LOG (applicationCore.ectx,
-              GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               _("Could not shutdown `%s': application not loaded\n"), name);
       return GNUNET_SYSERR;
     }
 
   if (pos->applicationInitialized != GNUNET_YES)
     {
-      GE_LOG (applicationCore.ectx,
-              GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               _("Could not shutdown application `%s': not initialized\n"),
               name);
       return GNUNET_SYSERR;
@@ -239,8 +239,8 @@ unloadApplicationModule (const char *name)
   mptr = GNUNET_plugin_resolve_function (pos->library, "done_", GNUNET_YES);
   if (mptr == NULL)
     {
-      GE_LOG (applicationCore.ectx,
-              GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               _("Could not find '%s%s' method in library `%s'.\n"),
               "done_", pos->dsoName, pos->dsoName);
       return GNUNET_SYSERR;
@@ -275,7 +275,7 @@ void *
 requestService (const char *rpos)
 {
   ShutdownList *nxt;
-  ServiceInitMethod mptr;
+  GNUNET_ServicePluginInitializationMethod mptr;
   void *library;
   char *name;
   void *api;
@@ -283,10 +283,10 @@ requestService (const char *rpos)
 
   /* subtyping, GNUnet style */
   pos = NULL;
-  if (-1 == GC_get_configuration_value_string (applicationCore.cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (applicationCore.cfg,
                                                "MODULES", rpos, rpos, &pos))
     return NULL;
-  GE_ASSERT (applicationCore.ectx, pos != NULL);
+  GNUNET_GE_ASSERT (applicationCore.ectx, pos != NULL);
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
   strcat (name, pos);
@@ -348,8 +348,8 @@ requestService (const char *rpos)
   nxt->serviceCount = 1;
   nxt->servicePTR = NULL;
   shutdownList = nxt;
-  GE_LOG (applicationCore.ectx,
-          GE_INFO | GE_USER | GE_REQUEST, "Loading service `%s'\n", pos);
+  GNUNET_GE_LOG (applicationCore.ectx,
+          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST, "Loading service `%s'\n", pos);
   api = mptr (&applicationCore);
   if (api != NULL)
     {
@@ -357,8 +357,8 @@ requestService (const char *rpos)
     }
   else
     {
-      GE_LOG (applicationCore.ectx,
-              GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               "Failed to load service `%s'\n", pos);
       nxt->serviceCount = 0;
     }
@@ -371,7 +371,7 @@ releaseService (void *service)
 {
   ShutdownList *pos;
   ShutdownList *prev;
-  ApplicationDoneMethod mptr;
+  GNUNET_ApplicationPluginShutdownMethod mptr;
 
   if (service == NULL)
     return GNUNET_OK;
@@ -382,8 +382,8 @@ releaseService (void *service)
 
   if (pos == NULL)
     {
-      GE_LOG (applicationCore.ectx,
-              GE_BULK | GE_DEVELOPER | GE_ERROR,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_BULK | GNUNET_GE_DEVELOPER | GNUNET_GE_ERROR,
               _("Could not release %p: service not loaded\n"), service);
       return GNUNET_SYSERR;
     }
@@ -392,8 +392,8 @@ releaseService (void *service)
       pos->serviceCount--;
       return GNUNET_OK;         /* service still in use elsewhere! */
     }
-  GE_LOG (applicationCore.ectx,
-          GE_INFO | GE_USER | GE_REQUEST,
+  GNUNET_GE_LOG (applicationCore.ectx,
+          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
           "Unloading service `%s'.\n", pos->dsoName);
   mptr =
     GNUNET_plugin_resolve_function (pos->library, "release_", GNUNET_YES);
@@ -436,13 +436,13 @@ loadApplicationModules ()
 
   ok = GNUNET_OK;
   dso = NULL;
-  if (-1 == GC_get_configuration_value_string (applicationCore.cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (applicationCore.cfg,
                                                "GNUNETD",
                                                "APPLICATIONS",
                                                "advertising fs getoption stats traffic",
                                                &dso))
     return GNUNET_SYSERR;
-  GE_ASSERT (applicationCore.ectx, dso != NULL);
+  GNUNET_GE_ASSERT (applicationCore.ectx, dso != NULL);
   next = dso;
   do
     {
@@ -462,8 +462,8 @@ loadApplicationModules ()
         }
       if (strlen (pos) > 0)
         {
-          GE_LOG (applicationCore.ectx,
-                  GE_INFO | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (applicationCore.ectx,
+                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                   "Loading application `%s'\n", pos);
           if (GNUNET_OK != loadApplicationModule (pos))
             ok = GNUNET_SYSERR;
@@ -489,8 +489,8 @@ unloadApplicationModules ()
       if ((pos->applicationInitialized == GNUNET_YES) &&
           (GNUNET_OK != unloadApplicationModule (pos->dsoName)))
         {
-          GE_LOG (applicationCore.ectx,
-                  GE_ERROR | GE_DEVELOPER | GE_BULK,
+          GNUNET_GE_LOG (applicationCore.ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                   _("Could not properly shutdown application `%s'.\n"),
                   pos->dsoName);
           ok = GNUNET_SYSERR;
@@ -504,8 +504,8 @@ unloadApplicationModules ()
  * Initialize the CORE's globals.
  */
 int
-initCore (struct GE_Context *ectx,
-          struct GC_Configuration *cfg,
+initCore (struct GNUNET_GE_Context *ectx,
+          struct GNUNET_GC_Configuration *cfg,
           struct GNUNET_CronManager *cron, struct GNUNET_LoadMonitor *monitor)
 {
   applicationCore.ectx = ectx;
@@ -626,8 +626,8 @@ doneCore ()
   pos = shutdownList;
   while (pos != NULL)
     {
-      GE_LOG (applicationCore.ectx,
-              GE_ERROR | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (applicationCore.ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               _("Could not properly unload service `%s'!\n"), pos->dsoName);
       pos = pos->next;
     }

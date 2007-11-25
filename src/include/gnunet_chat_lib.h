@@ -95,8 +95,8 @@ typedef int (*GNUNET_CHAT_RoomIterator) (const char *room,
  * List all of the (publically visible) chat rooms.
  * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
  */
-int GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
-                            struct GC_Configuration *cfg,
+int GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg,
                             GNUNET_CHAT_RoomIterator it, void *cls);
 
 
@@ -137,8 +137,8 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  * @param cls argument to callback
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GE_Context *ectx,
-                                                struct GC_Configuration *cfg,
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
+                                                struct GNUNET_GC_Configuration *cfg,
                                                 const char *nickname,
                                                 const GNUNET_RSA_PublicKey *
                                                 me,

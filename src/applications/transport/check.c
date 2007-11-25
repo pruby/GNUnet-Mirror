@@ -15,7 +15,7 @@ typedef struct TCPSession
   /**
    * Our tsession.
    */
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
   /**
    * mutex for synchronized access to 'users'
@@ -50,14 +50,14 @@ typedef struct TCPSession
 } TCPSession;
 
 static void
-check (TSession * session)
+check (GNUNET_TSession * session)
 {
   TCPSession *tcp;
 
-  if (session->ttype != TCP_PROTOCOL_NUMBER)
+  if (session->ttype != GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP)
     return;
   tcp = session->internal;
-  GE_ASSERT (NULL, tcp->users >= session->token_count);
+  GNUNET_GE_ASSERT (NULL, tcp->users >= session->token_count);
 }
 
 #define CHECK(s) check(s)

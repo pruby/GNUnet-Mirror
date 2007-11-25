@@ -34,9 +34,9 @@
 int gtk_wizard_mainsetup_gtk (int argc,
                               char *const *argv,
                               struct GNUNET_PluginHandle *self,
-                              struct GE_Context *ectx,
-                              struct GC_Configuration *cfg,
-                              struct GNS_Context *gns,
+                              struct GNUNET_GE_Context *ectx,
+                              struct GNUNET_GC_Configuration *cfg,
+                              struct GNUNET_GNS_Context *gns,
                               const char *filename, int is_daemon);
 
 #endif

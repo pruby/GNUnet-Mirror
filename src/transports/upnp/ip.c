@@ -35,8 +35,8 @@
  * @return NULL on error
  */
 char *
-gaim_upnp_get_internal_ip (struct GC_Configuration *cfg,
-                           struct GE_Context *ectx)
+gaim_upnp_get_internal_ip (struct GNUNET_GC_Configuration *cfg,
+                           struct GNUNET_GE_Context *ectx)
 {
   GNUNET_IPv4Address address;
 

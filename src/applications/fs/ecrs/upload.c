@@ -50,12 +50,12 @@ static int
 pushBlock (struct GNUNET_ClientServerConnection *sock,
            const CHK * chk,
            unsigned int level,
-           Datastore_Value ** iblocks,
+           GNUNET_DatastoreValue ** iblocks,
            unsigned int prio, GNUNET_CronTime expirationTime)
 {
   unsigned int size;
   unsigned int present;
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *value;
   DBlock *db;
   CHK ichk;
 #if DEBUG_UPLOAD
@@ -63,9 +63,9 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
 #endif
 
   size = ntohl (iblocks[level]->size);
-  GE_ASSERT (NULL, size > sizeof (Datastore_Value));
-  size -= sizeof (Datastore_Value);
-  GE_ASSERT (NULL, size - sizeof (DBlock) <= IBLOCK_SIZE);
+  GNUNET_GE_ASSERT (NULL, size > sizeof (GNUNET_DatastoreValue));
+  size -= sizeof (GNUNET_DatastoreValue);
+  GNUNET_GE_ASSERT (NULL, size - sizeof (DBlock) <= IBLOCK_SIZE);
   present = (size - sizeof (DBlock)) / sizeof (CHK);
   db = (DBlock *) & iblocks[level][1];
   if (present == CHK_PER_INODE)
@@ -79,12 +79,12 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
       fileBlockEncode (db, size, &ichk.query, &value);
       if (value == NULL)
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           return GNUNET_SYSERR;
         }
       value->prio = htonl (prio);
       value->expirationTime = GNUNET_htonll (expirationTime);
-      if (GNUNET_OK != FS_insert (sock, value))
+      if (GNUNET_OK != GNUNET_FS_insert (sock, value))
         {
           GNUNET_free (value);
           return GNUNET_SYSERR;
@@ -94,8 +94,8 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
     }
   /* append CHK */
   memcpy (&((char *) db)[size], chk, sizeof (CHK));
-  size += sizeof (CHK) + sizeof (Datastore_Value);
-  GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
+  size += sizeof (CHK) + sizeof (GNUNET_DatastoreValue);
+  GNUNET_GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
   iblocks[level]->size = htonl (size);
 
   return GNUNET_OK;
@@ -113,17 +113,17 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
  *  or gnunetd not running)
  */
 int
-ECRS_uploadFile (struct GE_Context *ectx,
-                 struct GC_Configuration *cfg,
+GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg,
                  const char *filename,
                  int doIndex,
                  unsigned int anonymityLevel,
                  unsigned int priority,
                  GNUNET_CronTime expirationTime,
-                 ECRS_UploadProgressCallback upcb,
+                 GNUNET_ECRS_UploadProgressCallback upcb,
                  void *upcbClosure,
-                 ECRS_TestTerminate tt,
-                 void *ttClosure, struct ECRS_URI **uri)
+                 GNUNET_ECRS_TestTerminate tt,
+                 void *ttClosure, struct GNUNET_ECRS_URI **uri)
 {
   unsigned long long filesize;
   unsigned long long pos;
@@ -131,10 +131,10 @@ ECRS_uploadFile (struct GE_Context *ectx,
   int fd;
   int i;
   unsigned int size;
-  Datastore_Value **iblocks;
-  Datastore_Value *dblock;
+  GNUNET_DatastoreValue **iblocks;
+  GNUNET_DatastoreValue *dblock;
   DBlock *db;
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *value;
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_HashCode fileId;
   CHK mchk;
@@ -146,21 +146,21 @@ ECRS_uploadFile (struct GE_Context *ectx,
   GNUNET_EncName enc;
 #endif
 
-  GE_ASSERT (ectx, cfg != NULL);
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
   start = GNUNET_get_time ();
   memset (&mchk, 0, sizeof (CHK));
   if (GNUNET_YES != GNUNET_disk_file_test (ectx, filename))
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("`%s' is not a file.\n"), filename);
       return GNUNET_SYSERR;
     }
   if (GNUNET_OK !=
       GNUNET_disk_file_size (ectx, filename, &filesize, GNUNET_YES))
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Cannot get size of file `%s'"), filename);
 
       return GNUNET_SYSERR;
@@ -168,8 +168,8 @@ ECRS_uploadFile (struct GE_Context *ectx,
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Failed to connect to gnunetd."));
       return GNUNET_SYSERR;
     }
@@ -180,8 +180,8 @@ ECRS_uploadFile (struct GE_Context *ectx,
     {
       if (GNUNET_SYSERR == GNUNET_hash_file (ectx, filename, &fileId))
         {
-          GE_LOG (ectx,
-                  GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Cannot hash `%s'.\n"), filename);
           GNUNET_client_connection_destroy (sock);
           return GNUNET_SYSERR;
@@ -196,18 +196,18 @@ ECRS_uploadFile (struct GE_Context *ectx,
       /* reset the counter since the formula later does not
          take the time for GNUNET_hash_file into account */
 
-      switch (FS_initIndex (sock, &fileId, filename))
+      switch (GNUNET_FS_prepare_to_inde (sock, &fileId, filename))
         {
         case GNUNET_SYSERR:
-          GE_LOG (ectx,
-                  GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Initialization for indexing file `%s' failed.\n"),
                   filename);
           GNUNET_client_connection_destroy (sock);
           return GNUNET_SYSERR;
         case GNUNET_NO:
-          GE_LOG (ectx,
-                  GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Indexing file `%s' failed. Trying to insert file...\n"),
                   filename);
           doIndex = GNUNET_YES;
@@ -220,8 +220,8 @@ ECRS_uploadFile (struct GE_Context *ectx,
   fd = GNUNET_disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
   if (fd == -1)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Cannot open file `%s': `%s'"), filename, STRERROR (errno));
 
       GNUNET_client_connection_destroy (sock);
@@ -229,27 +229,27 @@ ECRS_uploadFile (struct GE_Context *ectx,
     }
 
   dblock =
-    GNUNET_malloc (sizeof (Datastore_Value) + DBLOCK_SIZE + sizeof (DBlock));
+    GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE + sizeof (DBlock));
   dblock->size =
-    htonl (sizeof (Datastore_Value) + DBLOCK_SIZE + sizeof (DBlock));
+    htonl (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE + sizeof (DBlock));
   dblock->anonymityLevel = htonl (anonymityLevel);
   dblock->prio = htonl (priority);
-  dblock->type = htonl (D_BLOCK);
+  dblock->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
   dblock->expirationTime = GNUNET_htonll (expirationTime);
   db = (DBlock *) & dblock[1];
-  db->type = htonl (D_BLOCK);
-  iblocks = GNUNET_malloc (sizeof (Datastore_Value *) * (treedepth + 1));
+  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  iblocks = GNUNET_malloc (sizeof (GNUNET_DatastoreValue *) * (treedepth + 1));
   for (i = 0; i <= treedepth; i++)
     {
       iblocks[i] =
-        GNUNET_malloc (sizeof (Datastore_Value) + IBLOCK_SIZE +
+        GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + IBLOCK_SIZE +
                        sizeof (DBlock));
-      iblocks[i]->size = htonl (sizeof (Datastore_Value) + sizeof (DBlock));
+      iblocks[i]->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock));
       iblocks[i]->anonymityLevel = htonl (anonymityLevel);
       iblocks[i]->prio = htonl (priority);
-      iblocks[i]->type = htonl (D_BLOCK);
+      iblocks[i]->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
       iblocks[i]->expirationTime = GNUNET_htonll (expirationTime);
-      ((DBlock *) & iblocks[i][1])->type = htonl (D_BLOCK);
+      ((DBlock *) & iblocks[i][1])->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
     }
 
   pos = 0;
@@ -266,15 +266,15 @@ ECRS_uploadFile (struct GE_Context *ectx,
           size = filesize - pos;
           memset (&db[1], 0, DBLOCK_SIZE);
         }
-      GE_ASSERT (ectx,
-                 sizeof (Datastore_Value) + size + sizeof (DBlock) <
+      GNUNET_GE_ASSERT (ectx,
+                 sizeof (GNUNET_DatastoreValue) + size + sizeof (DBlock) <
                  GNUNET_MAX_BUFFER_SIZE);
       dblock->size =
-        htonl (sizeof (Datastore_Value) + size + sizeof (DBlock));
+        htonl (sizeof (GNUNET_DatastoreValue) + size + sizeof (DBlock));
       if (size != READ (fd, &db[1], size))
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_ADMIN | GNUNET_GE_USER,
                                 "READ", filename);
           goto FAILURE;
         }
@@ -285,18 +285,18 @@ ECRS_uploadFile (struct GE_Context *ectx,
       fileBlockGetQuery (db, size + sizeof (DBlock), &mchk.query);
 #if DEBUG_UPLOAD
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&mchk.query, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Query for current block of size %u is %s\n", size, &enc);
 #endif
       if (doIndex)
         {
-          if (GNUNET_SYSERR == FS_index (sock, &fileId, dblock, pos))
+          if (GNUNET_SYSERR == GNUNET_FS_index (sock, &fileId, dblock, pos))
             {
-              GE_LOG (ectx,
-                      GE_ERROR | GE_BULK | GE_USER,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                       _("Indexing data failed at position %i.\n"), pos);
               goto FAILURE;
             }
@@ -308,15 +308,15 @@ ECRS_uploadFile (struct GE_Context *ectx,
               fileBlockEncode (db,
                                size + sizeof (DBlock), &mchk.query, &value))
             {
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
               goto FAILURE;
             }
-          GE_ASSERT (ectx, value != NULL);
+          GNUNET_GE_ASSERT (ectx, value != NULL);
           *value = *dblock;     /* copy options! */
 
-          if (GNUNET_SYSERR == FS_insert (sock, value))
+          if (GNUNET_SYSERR == GNUNET_FS_insert (sock, value))
             {
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
               GNUNET_free (value);
               goto FAILURE;
             }
@@ -338,56 +338,56 @@ ECRS_uploadFile (struct GE_Context *ectx,
     if (GNUNET_OK != tt (ttClosure))
       goto FAILURE;
 #if DEBUG_UPLOAD
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Tree depth is %u, walking up tree.\n", treedepth);
 #endif
   for (i = 0; i < treedepth; i++)
     {
-      size = ntohl (iblocks[i]->size) - sizeof (Datastore_Value);
-      GE_ASSERT (ectx, size < GNUNET_MAX_BUFFER_SIZE);
+      size = ntohl (iblocks[i]->size) - sizeof (GNUNET_DatastoreValue);
+      GNUNET_GE_ASSERT (ectx, size < GNUNET_MAX_BUFFER_SIZE);
       if (size == sizeof (DBlock))
         {
 #if DEBUG_UPLOAD
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER, "Level %u is empty\n", i);
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Level %u is empty\n", i);
 #endif
           continue;
         }
       db = (DBlock *) & iblocks[i][1];
       fileBlockGetKey (db, size, &mchk.key);
 #if DEBUG_UPLOAD
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Computing query for %u bytes content.\n", size);
 #endif
       fileBlockGetQuery (db, size, &mchk.query);
 #if DEBUG_UPLOAD
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&mchk.query, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Query for current block at level %u is `%s'.\n", i, &enc);
 #endif
       if (GNUNET_OK != pushBlock (sock,
                                   &mchk, i + 1, iblocks, priority,
                                   expirationTime))
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           goto FAILURE;
         }
       fileBlockEncode (db, size, &mchk.query, &value);
       if (value == NULL)
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           goto FAILURE;
         }
       value->expirationTime = GNUNET_htonll (expirationTime);
       value->prio = htonl (priority);
-      if (GNUNET_SYSERR == FS_insert (sock, value))
+      if (GNUNET_SYSERR == GNUNET_FS_insert (sock, value))
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (value);
           goto FAILURE;
         }
@@ -397,9 +397,9 @@ ECRS_uploadFile (struct GE_Context *ectx,
     }
 #if DEBUG_UPLOAD
   IF_GELOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER, GNUNET_hash_to_enc (&mchk.query,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, GNUNET_hash_to_enc (&mchk.query,
                                                                  &enc));
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Query for top block is %s\n", &enc);
 #endif
   /* build URI */

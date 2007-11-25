@@ -34,7 +34,7 @@ static int
 testEC ()
 {
   DBlock *data;
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *value;
   GNUNET_HashCode query;
   GNUNET_HashCode key;
   unsigned int len;
@@ -42,14 +42,14 @@ testEC ()
   len = sizeof (DBlock) + 42;
   data = GNUNET_malloc (len);
   memset (&data[1], rand (), len - sizeof (DBlock));
-  data->type = htonl (D_BLOCK);
-  CHECK (D_BLOCK == getTypeOfBlock (len, data), data);
+  data->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  CHECK (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA == getTypeOfBlock (len, data), data);
   fileBlockGetKey (data, len, &key);
   fileBlockGetQuery (data, len, &query);
   CHECK (GNUNET_OK == fileBlockEncode (data, len, &query, &value), data);
   memcpy (data, &value[1], len);
   GNUNET_free (value);
-  CHECK (GNUNET_YES == isDatumApplicable (D_BLOCK,
+  CHECK (GNUNET_YES == isDatumApplicable (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA,
                                           len, data, &query, 1, &query),
          data);
   GNUNET_free (data);

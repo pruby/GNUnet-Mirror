@@ -37,7 +37,7 @@
  * @param sock socket to query gnunetd over
  * @param timeframe what time interval should be considered
  * @param type what type of message do we care about?
- * @param direction TC_RECEIVED of TC_SEND?
+ * @param direction GNUNET_TRAFFIC_TYPE_RECEIVED of TC_SEND?
  * @param count set to number of messages
  * @param avg_size set to average size
  * @param peers set to number of peers involved
@@ -57,7 +57,7 @@ GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
   int i;
 
   req.header.size = htons (sizeof (CS_traffic_request_MESSAGE));
-  req.header.type = htons (CS_PROTO_traffic_QUERY);
+  req.header.type = htons (GNUNET_CS_PROTO_TRAFFIC_QUERY);
   req.timePeriod = htonl (timeframe);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &req.header))
     return GNUNET_SYSERR;
@@ -66,24 +66,24 @@ GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
       GNUNET_client_connection_read (sock, (GNUNET_MessageHeader **) & info))
     return GNUNET_SYSERR;
   if ((ntohs (info->header.type) !=
-       CS_PROTO_traffic_INFO) ||
+       GNUNET_CS_PROTO_TRAFFIC_INFO) ||
       (ntohs (info->header.size) !=
        sizeof (CS_traffic_info_MESSAGE) +
        ntohl (info->count) * sizeof (TRAFFIC_COUNTER)))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
 
   for (i = ntohl (info->count) - 1; i >= 0; i--)
     {
       const TRAFFIC_COUNTER *tc =
-        &((CS_traffic_info_MESSAGE_GENERIC *) info)->counters[i];
-      if ((tc->flags & TC_TYPE_MASK) == direction)
+        &((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) info)->counters[i];
+      if ((tc->flags & GNUNET_TRAFFIC_TYPE_MASK) == direction)
         {
           *count = ntohl (tc->count);
           *avg_size = ntohl (tc->avrg_size);
-          *peers = ntohs (tc->flags) & TC_DIVERSITY_MASK;
+          *peers = ntohs (tc->flags) & GNUNET_TRAFFIC_DIVERSITY_MASK;
           *time = ntohl (tc->time_slots);
         }                       /* end if received */
     }                           /* end for all counters */

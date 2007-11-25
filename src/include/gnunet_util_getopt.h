@@ -77,12 +77,12 @@ typedef struct
   /**
    * For logging errors
    */
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   /**
    * For configuration
    */
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
 } GNUNET_CommandLineProcessorContext;
 
@@ -205,8 +205,8 @@ typedef struct GNUNET_CommandLineOption
  *   argument, or -1 on error
  */
 int GNUNET_parse_options (const char *binaryName,
-                          struct GE_Context *ectx,
-                          struct GC_Configuration *cfg,
+                          struct GNUNET_GE_Context *ectx,
+                          struct GNUNET_GC_Configuration *cfg,
                           const GNUNET_CommandLineOption * allOptions,
                           unsigned int argc, char *const *argv);
 

@@ -32,17 +32,17 @@
 
 #define DEBUG_FSLIB GNUNET_NO
 
-typedef struct FS_SEARCH_HANDLE
+typedef struct GNUNET_FS_SearchHandle
 {
   CS_fs_request_search_MESSAGE *req;
-  Datum_Iterator callback;
+  GNUNET_DatastoreValueIterator callback;
   void *closure;
 } SEARCH_HANDLE;
 
-typedef struct FS_SEARCH_CONTEXT
+typedef struct GNUNET_FS_SearchContext
 {
-  struct GC_Configuration *cfg;
-  struct GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ThreadHandle *thread;
   struct GNUNET_Mutex *lock;
@@ -81,8 +81,8 @@ processReplies (void *cls)
       if (GNUNET_OK == GNUNET_client_connection_read (ctx->sock, &hdr))
         {
 #if DEBUG_FSLIB
-          GE_LOG (ctx->ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ctx->ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "FSLIB: received message from gnunetd\n");
 #endif
           delay = 100 * GNUNET_CRON_MILLISECONDS;
@@ -90,9 +90,9 @@ processReplies (void *cls)
              signal protocol problem; if ok, find
              matching callback, call on value */
           if ((ntohs (hdr->size) < sizeof (CS_fs_reply_content_MESSAGE)) ||
-              (ntohs (hdr->type) != CS_PROTO_gap_RESULT))
+              (ntohs (hdr->type) != GNUNET_CS_PROTO_GAP_RESULT))
             {
-              GE_BREAK (ctx->ectx, 0);
+              GNUNET_GE_BREAK (ctx->ectx, 0);
               GNUNET_free (hdr);
               continue;
             }
@@ -101,7 +101,7 @@ processReplies (void *cls)
           if (GNUNET_OK != getQueryFor (size, (DBlock *) & rep[1], GNUNET_NO,   /* gnunetd will have checked already */
                                         &query))
             {
-              GE_BREAK (ctx->ectx, 0);
+              GNUNET_GE_BREAK (ctx->ectx, 0);
               GNUNET_free (hdr);
               continue;
             }
@@ -113,13 +113,13 @@ processReplies (void *cls)
                   memcmp (&query, &ctx->handles[i]->req->query[0],
                           sizeof (GNUNET_HashCode)))
                 {
-                  Datastore_Value *value;
+                  GNUNET_DatastoreValue *value;
 
                   matched++;
                   if (ctx->handles[i]->callback != NULL)
                     {
-                      value = GNUNET_malloc (sizeof (Datastore_Value) + size);
-                      value->size = htonl (size + sizeof (Datastore_Value));
+                      value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
+                      value->size = htonl (size + sizeof (GNUNET_DatastoreValue));
                       value->type = htonl (getTypeOfBlock (size,
                                                            (DBlock *) &
                                                            rep[1]));
@@ -144,16 +144,16 @@ processReplies (void *cls)
           GNUNET_mutex_unlock (ctx->lock);
 #if DEBUG_FSLIB
           if (matched == 0)
-            GE_LOG (ctx->ectx,
-                    GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_GE_LOG (ctx->ectx,
+                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                     "FSLIB: received content but have no pending request\n");
 #endif
         }
       else
         {
 #if DEBUG_FSLIB
-          GE_LOG (ctx->ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ctx->ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
                   delay);
 #endif
@@ -169,13 +169,13 @@ processReplies (void *cls)
 }
 
 SEARCH_CONTEXT *
-FS_SEARCH_makeContext (struct GE_Context * ectx,
-                       struct GC_Configuration * cfg,
+GNUNET_FS_create_search_context (struct GNUNET_GE_Context * ectx,
+                       struct GNUNET_GC_Configuration * cfg,
                        struct GNUNET_Mutex * lock)
 {
   SEARCH_CONTEXT *ret;
 
-  GE_ASSERT (ectx, lock != NULL);
+  GNUNET_GE_ASSERT (ectx, lock != NULL);
   ret = GNUNET_malloc (sizeof (SEARCH_CONTEXT));
   ret->ectx = ectx;
   ret->cfg = cfg;
@@ -192,17 +192,17 @@ FS_SEARCH_makeContext (struct GE_Context * ectx,
   ret->abort = GNUNET_NO;
   ret->thread = GNUNET_thread_create (&processReplies, ret, 128 * 1024);
   if (ret->thread == NULL)
-    GE_DIE_STRERROR (ectx, GE_FATAL | GE_ADMIN | GE_BULK, "PTHREAD_CREATE");
+    GNUNET_GE_DIE_STRERROR (ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "PTHREAD_CREATE");
   return ret;
 }
 
 void
-FS_SEARCH_destroyContext (struct FS_SEARCH_CONTEXT *ctx)
+GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx)
 {
   void *unused;
 
   GNUNET_mutex_lock (ctx->lock);
-  GE_ASSERT (ctx->ectx, ctx->handleCount == 0);
+  GNUNET_GE_ASSERT (ctx->ectx, ctx->handleCount == 0);
   ctx->abort = GNUNET_YES;
   GNUNET_client_connection_close_forever (ctx->sock);
   GNUNET_mutex_unlock (ctx->lock);
@@ -225,14 +225,14 @@ FS_SEARCH_destroyContext (struct FS_SEARCH_CONTEXT *ctx)
  * @param prio priority to use for the search
  */
 SEARCH_HANDLE *
-FS_start_search (SEARCH_CONTEXT * ctx,
+GNUNET_FS_start_search (SEARCH_CONTEXT * ctx,
                  const GNUNET_PeerIdentity * target,
                  unsigned int type,
                  unsigned int keyCount,
                  const GNUNET_HashCode * keys,
                  unsigned int anonymityLevel,
                  unsigned int prio,
-                 GNUNET_CronTime timeout, Datum_Iterator callback,
+                 GNUNET_CronTime timeout, GNUNET_DatastoreValueIterator callback,
                  void *closure)
 {
   SEARCH_HANDLE *ret;
@@ -243,8 +243,8 @@ FS_start_search (SEARCH_CONTEXT * ctx,
 
   ret = GNUNET_malloc (sizeof (SEARCH_HANDLE));
 #if DEBUG_FSLIB
-  GE_LOG (ctx->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER, "FSLIB: start search (%p)\n", ret);
+  GNUNET_GE_LOG (ctx->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "FSLIB: start search (%p)\n", ret);
 #endif
   req =
     GNUNET_malloc (sizeof (CS_fs_request_search_MESSAGE) +
@@ -252,7 +252,7 @@ FS_start_search (SEARCH_CONTEXT * ctx,
   req->header.size =
     htons (sizeof (CS_fs_request_search_MESSAGE) +
            (keyCount - 1) * sizeof (GNUNET_HashCode));
-  req->header.type = htons (CS_PROTO_gap_QUERY_START);
+  req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_START);
   req->prio = htonl (prio);
   req->anonymityLevel = htonl (anonymityLevel);
   req->expiration = GNUNET_htonll (timeout);
@@ -275,20 +275,20 @@ FS_start_search (SEARCH_CONTEXT * ctx,
   GNUNET_mutex_unlock (ctx->lock);
 #if DEBUG_FSLIB
   IF_GELOG (ctx->ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&req->query[0], &enc));
-  GE_LOG (ctx->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ctx->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "FSLIB: initiating search for `%s' of type %u\n", &enc, type);
 #endif
-  GE_ASSERT (NULL, ctx->sock != NULL);
+  GNUNET_GE_ASSERT (NULL, ctx->sock != NULL);
   if (GNUNET_OK != GNUNET_client_connection_write (ctx->sock, &req->header))
     {
-      FS_stop_search (ctx, ret);
+      GNUNET_FS_stop_search (ctx, ret);
       return NULL;
     }
 #if DEBUG_FSLIB
-  GE_LOG (ctx->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ctx->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "FSLIB: search started (%p)\n", ret);
 #endif
   return ret;
@@ -298,22 +298,22 @@ FS_start_search (SEARCH_CONTEXT * ctx,
  * Stop searching.
  */
 void
-FS_stop_search (SEARCH_CONTEXT * ctx, SEARCH_HANDLE * handle)
+GNUNET_FS_stop_search (SEARCH_CONTEXT * ctx, SEARCH_HANDLE * handle)
 {
   int i;
 
 #if DEBUG_FSLIB
-  GE_LOG (ctx->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ctx->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "FSLIB: stop search (%p)\n", handle);
 #endif
-  handle->req->header.type = htons (CS_PROTO_gap_QUERY_STOP);
-  GE_ASSERT (NULL, ctx->sock != NULL);
+  handle->req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_STOP);
+  GNUNET_GE_ASSERT (NULL, ctx->sock != NULL);
   if (GNUNET_OK !=
       GNUNET_client_connection_write (ctx->sock, &handle->req->header))
     {
-      GE_LOG (ctx->ectx,
-              GE_WARNING | GE_REQUEST | GE_DEVELOPER,
+      GNUNET_GE_LOG (ctx->ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
               "FSLIB: failed to request stop search with gnunetd\n");
     }
   GNUNET_mutex_lock (ctx->lock);
@@ -326,8 +326,8 @@ FS_stop_search (SEARCH_CONTEXT * ctx, SEARCH_HANDLE * handle)
   GNUNET_mutex_unlock (ctx->lock);
   GNUNET_free (handle->req);
 #if DEBUG_FSLIB
-  GE_LOG (ctx->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ctx->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "FSLIB: search stopped (%p)\n", handle);
 #endif
   GNUNET_free (handle);
@@ -338,13 +338,13 @@ FS_stop_search (SEARCH_CONTEXT * ctx, SEARCH_HANDLE * handle)
  * in the routing table like?  Returns -1 on error.
  */
 int
-FS_getAveragePriority (struct GNUNET_ClientServerConnection *sock)
+GNUNET_FS_get_current_average_priority (struct GNUNET_ClientServerConnection *sock)
 {
   GNUNET_MessageHeader req;
   int ret;
 
   req.size = htons (sizeof (GNUNET_MessageHeader));
-  req.type = htons (CS_PROTO_gap_GET_AVG_PRIORITY);
+  req.type = htons (GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY);
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &req))
     return -1;
   if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
@@ -359,23 +359,23 @@ FS_getAveragePriority (struct GNUNET_ClientServerConnection *sock)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO on transient error
  */
 int
-FS_insert (struct GNUNET_ClientServerConnection *sock,
-           const Datastore_Value * block)
+GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
+           const GNUNET_DatastoreValue * block)
 {
   int ret;
   CS_fs_request_insert_MESSAGE *ri;
   unsigned int size;
   int retry;
 
-  if (ntohl (block->size) <= sizeof (Datastore_Value))
+  if (ntohl (block->size) <= sizeof (GNUNET_DatastoreValue))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  size = ntohl (block->size) - sizeof (Datastore_Value);
+  size = ntohl (block->size) - sizeof (GNUNET_DatastoreValue);
   ri = GNUNET_malloc (sizeof (CS_fs_request_insert_MESSAGE) + size);
   ri->header.size = htons (sizeof (CS_fs_request_insert_MESSAGE) + size);
-  ri->header.type = htons (CS_PROTO_gap_INSERT);
+  ri->header.type = htons (GNUNET_CS_PROTO_GAP_INSERT);
   ri->prio = block->prio;
   ri->expiration = block->expirationTime;
   ri->anonymityLevel = block->anonymityLevel;
@@ -390,7 +390,7 @@ FS_insert (struct GNUNET_ClientServerConnection *sock,
         }
       if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (ri);
           return GNUNET_SYSERR;
         }
@@ -404,7 +404,7 @@ FS_insert (struct GNUNET_ClientServerConnection *sock,
  * Initialize to index a file
  */
 int
-FS_initIndex (struct GNUNET_ClientServerConnection *sock,
+GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
               const GNUNET_HashCode * fileHc, const char *fn)
 {
   int ret;
@@ -415,18 +415,18 @@ FS_initIndex (struct GNUNET_ClientServerConnection *sock,
   fnSize = strlen (fn);
   fnSize = (fnSize + 7) & (~7); /* align */
   size = sizeof (CS_fs_request_init_index_MESSAGE) + fnSize;
-  GE_ASSERT (NULL, size < 65536);
+  GNUNET_GE_ASSERT (NULL, size < 65536);
   ri = GNUNET_malloc (size);
   memset (ri, 0, size);
   ri->header.size = htons (size);
-  ri->header.type = htons (CS_PROTO_gap_INIT_INDEX);
+  ri->header.type = htons (GNUNET_CS_PROTO_GAP_INIT_INDEX);
   ri->reserved = htonl (0);
   ri->fileId = *fileHc;
   memcpy (&ri[1], fn, strlen (fn));
 
 #if DEBUG_FSLIB
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Sending index initialization request to gnunetd\n");
 #endif
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &ri->header))
@@ -436,8 +436,8 @@ FS_initIndex (struct GNUNET_ClientServerConnection *sock,
     }
   GNUNET_free (ri);
 #if DEBUG_FSLIB
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Waiting for confirmation of index initialization request by gnunetd\n");
 #endif
   if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
@@ -454,19 +454,19 @@ FS_initIndex (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-FS_index (struct GNUNET_ClientServerConnection *sock,
+GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
           const GNUNET_HashCode * fileHc,
-          const Datastore_Value * block, unsigned long long offset)
+          const GNUNET_DatastoreValue * block, unsigned long long offset)
 {
   int ret;
   CS_fs_request_index_MESSAGE *ri;
   unsigned int size;
   int retry;
 
-  size = ntohl (block->size) - sizeof (Datastore_Value);
+  size = ntohl (block->size) - sizeof (GNUNET_DatastoreValue);
   ri = GNUNET_malloc (sizeof (CS_fs_request_index_MESSAGE) + size);
   ri->header.size = htons (sizeof (CS_fs_request_index_MESSAGE) + size);
-  ri->header.type = htons (CS_PROTO_gap_INDEX);
+  ri->header.type = htons (GNUNET_CS_PROTO_GAP_INDEX);
   ri->prio = block->prio;
   ri->expiration = block->expirationTime;
   ri->anonymityLevel = block->anonymityLevel;
@@ -474,8 +474,8 @@ FS_index (struct GNUNET_ClientServerConnection *sock,
   ri->fileOffset = GNUNET_htonll (offset);
   memcpy (&ri[1], &block[1], size);
 #if DEBUG_FSLIB
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Sending index request to gnunetd\n");
 #endif
   retry = AUTO_RETRY;
@@ -487,8 +487,8 @@ FS_index (struct GNUNET_ClientServerConnection *sock,
           return GNUNET_SYSERR;
         }
 #if DEBUG_FSLIB
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Waiting for confirmation of index request by gnunetd\n");
 #endif
       if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
@@ -504,25 +504,25 @@ FS_index (struct GNUNET_ClientServerConnection *sock,
 
 /**
  * Delete a block.  The arguments are the same as the ones for
- * FS_insert.
+ * GNUNET_FS_insert.
  *
  * @param block the block (properly encoded and all)
  * @return number of items deleted on success,
  *    GNUNET_SYSERR on error
  */
 int
-FS_delete (struct GNUNET_ClientServerConnection *sock,
-           const Datastore_Value * block)
+GNUNET_FS_delete (struct GNUNET_ClientServerConnection *sock,
+           const GNUNET_DatastoreValue * block)
 {
   int ret;
   CS_fs_request_delete_MESSAGE *rd;
   unsigned int size;
   int retry;
 
-  size = ntohl (block->size) - sizeof (Datastore_Value);
+  size = ntohl (block->size) - sizeof (GNUNET_DatastoreValue);
   rd = GNUNET_malloc (sizeof (CS_fs_request_delete_MESSAGE) + size);
   rd->header.size = htons (sizeof (CS_fs_request_delete_MESSAGE) + size);
-  rd->header.type = htons (CS_PROTO_gap_DELETE);
+  rd->header.type = htons (GNUNET_CS_PROTO_GAP_DELETE);
   memcpy (&rd[1], &block[1], size);
   retry = AUTO_RETRY;
   do
@@ -530,12 +530,12 @@ FS_delete (struct GNUNET_ClientServerConnection *sock,
       if (GNUNET_OK != GNUNET_client_connection_write (sock, &rd->header))
         {
           GNUNET_free (rd);
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           return GNUNET_SYSERR;
         }
       if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (rd);
           return GNUNET_SYSERR;
         }
@@ -552,14 +552,14 @@ FS_delete (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-FS_unindex (struct GNUNET_ClientServerConnection *sock,
+GNUNET_FS_unindex (struct GNUNET_ClientServerConnection *sock,
             unsigned int blocksize, const GNUNET_HashCode * hc)
 {
   int ret;
   CS_fs_request_unindex_MESSAGE ru;
 
   ru.header.size = htons (sizeof (CS_fs_request_unindex_MESSAGE));
-  ru.header.type = htons (CS_PROTO_gap_UNINDEX);
+  ru.header.type = htons (GNUNET_CS_PROTO_GAP_UNINDEX);
   ru.blocksize = htonl (blocksize);
   ru.fileId = *hc;
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &ru.header))
@@ -576,14 +576,14 @@ FS_unindex (struct GNUNET_ClientServerConnection *sock,
  * @return GNUNET_YES if so, GNUNET_NO if not, GNUNET_SYSERR on error
  */
 int
-FS_testIndexed (struct GNUNET_ClientServerConnection *sock,
+GNUNET_FS_test_indexed (struct GNUNET_ClientServerConnection *sock,
                 const GNUNET_HashCode * hc)
 {
   RequestTestindex ri;
   int ret;
 
   ri.header.size = htons (sizeof (RequestTestindex));
-  ri.header.type = htons (CS_PROTO_gap_TESTINDEX);
+  ri.header.type = htons (GNUNET_CS_PROTO_GAP_TESTINDEX);
   ri.reserved = htonl (0);
   ri.fileId = *hc;
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &ri.header))

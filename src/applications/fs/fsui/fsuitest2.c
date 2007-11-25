@@ -30,13 +30,13 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 
-static struct FSUI_Context *ctx;
+static struct GNUNET_FSUI_Context *ctx;
 
 static void *
-eventCallback (void *cls, const FSUI_Event * event)
+eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 {
   return NULL;
 }
@@ -50,17 +50,17 @@ main (int argc, char *argv[])
   pid_t daemon;
 #endif
   int ok;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #if START_DAEMON
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
-  GE_ASSERT (NULL, daemon > 0);
+  GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          60 * GNUNET_CRON_SECONDS));
@@ -69,20 +69,20 @@ main (int argc, char *argv[])
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES,     /* do resume! */
+  ctx = GNUNET_FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES,     /* do resume! */
                     &eventCallback, NULL);
   CHECK (ctx != NULL);
-  FSUI_stop (ctx);
+  GNUNET_FSUI_stop (ctx);
   ctx =
-    FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES, &eventCallback, NULL);
+    GNUNET_FSUI_start (NULL, cfg, "fsuitest2", 32, GNUNET_YES, &eventCallback, NULL);
   CHECK (ctx != NULL);
 FAILURE:
   if (ctx != NULL)
-    FSUI_stop (ctx);
+    GNUNET_FSUI_stop (ctx);
 #if START_DAEMON
-  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
 
   return (ok == GNUNET_YES) ? 0 : 1;
 }

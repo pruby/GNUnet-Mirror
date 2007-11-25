@@ -48,7 +48,7 @@ testMultiKey (const char *word)
   hostkey = GNUNET_RSA_create_key_from_hash (&in);
   if (hostkey == NULL)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_RSA_get_public_key (hostkey, &pkey);
@@ -63,7 +63,7 @@ testMultiKey (const char *word)
       hostkey = GNUNET_RSA_create_key_from_hash (&in);
       if (hostkey == NULL)
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           fprintf (stderr, " ERROR\n");
           return GNUNET_SYSERR;
         }
@@ -71,7 +71,7 @@ testMultiKey (const char *word)
       GNUNET_RSA_free_key (hostkey);
       if (0 != memcmp (&pkey, &pkey1, sizeof (GNUNET_RSA_PublicKey)))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           fprintf (stderr, " ERROR\n");
           return GNUNET_SYSERR;
         }

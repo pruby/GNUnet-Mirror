@@ -68,12 +68,12 @@
 /**
  * Transport service
  */
-static Transport_ServiceAPI *transport;
+static GNUNET_Transport_ServiceAPI *transport;
 
 /**
  * Identity service
  */
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
 
 static P2P_PACKET *bufferQueue_[QUEUE_LENGTH];
@@ -103,7 +103,7 @@ static unsigned int accepted;
 /**
  * Array of arrays of message handlers.
  */
-static MessagePartHandler **handlers = NULL;
+static GNUNET_P2PRequestHandler **handlers = NULL;
 
 /**
  * Number of handlers in the array (max, there
@@ -114,7 +114,7 @@ static unsigned int max_registeredType = 0;
 /**
  * Array of arrays of the message handlers for plaintext messages.
  */
-static PlaintextMessagePartHandler **plaintextHandlers = NULL;
+static GNUNET_P2PPlaintextRequestHandler **plaintextHandlers = NULL;
 
 /**
  * Number of handlers in the plaintextHandlers array (max, there
@@ -127,11 +127,11 @@ static unsigned int plaintextmax_registeredType = 0;
  */
 static struct GNUNET_Mutex *handlerLock;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 #if MEASURE_TIME
-static GNUNET_CronTime time_by_type[P2P_PROTO_MAX_USED];
-static unsigned int count_by_type[P2P_PROTO_MAX_USED];
+static GNUNET_CronTime time_by_type[GNUNET_P2P_PROTO_MAX_USED];
+static unsigned int count_by_type[GNUNET_P2P_PROTO_MAX_USED];
 #endif
 
 
@@ -149,13 +149,13 @@ static unsigned int count_by_type[P2P_PROTO_MAX_USED];
  *        and updates to the handler list are illegal!
  */
 int
-registerp2pHandler (unsigned short type, MessagePartHandler callback)
+registerp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
 {
   unsigned int last;
 
   if (threads_running == GNUNET_YES)
     {
-      GE_BREAK (ectx, NULL);
+      GNUNET_GE_BREAK (ectx, NULL);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (handlerLock);
@@ -192,14 +192,14 @@ registerp2pHandler (unsigned short type, MessagePartHandler callback)
  *        and updates to the handler list are illegal!
  */
 int
-unregisterp2pHandler (unsigned short type, MessagePartHandler callback)
+unregisterp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
 {
   unsigned int pos;
   unsigned int last;
 
   if (threads_running == GNUNET_YES)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (handlerLock);
@@ -246,13 +246,13 @@ unregisterp2pHandler (unsigned short type, MessagePartHandler callback)
  */
 int
 registerPlaintextHandler (unsigned short type,
-                          PlaintextMessagePartHandler callback)
+                          GNUNET_P2PPlaintextRequestHandler callback)
 {
   unsigned int last;
 
   if (threads_running == GNUNET_YES)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (handlerLock);
@@ -291,14 +291,14 @@ registerPlaintextHandler (unsigned short type,
  */
 int
 unregisterPlaintextHandler (unsigned short type,
-                            PlaintextMessagePartHandler callback)
+                            GNUNET_P2PPlaintextRequestHandler callback)
 {
   unsigned int pos;
   unsigned int last;
 
   if (threads_running == GNUNET_YES)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (handlerLock);
@@ -353,7 +353,7 @@ isHandlerRegistered (unsigned short type, unsigned short handlerType)
     return isCSHandlerRegistered (type);
   if (handlerType > 3)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   ret = 0;
@@ -391,7 +391,7 @@ isHandlerRegistered (unsigned short type, unsigned short handlerType)
 void
 injectMessage (const GNUNET_PeerIdentity * sender,
                const char *msg,
-               unsigned int size, int wasEncrypted, TSession * session)
+               unsigned int size, int wasEncrypted, GNUNET_TSession * session)
 {
   unsigned int pos;
   const GNUNET_MessageHeader *part;
@@ -422,16 +422,16 @@ injectMessage (const GNUNET_PeerIdentity * sender,
           if (sender != NULL)
             {
               IF_GELOG (ectx,
-                        GE_WARNING | GE_USER | GE_BULK,
+                        GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                         GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-              GE_LOG (ectx,
-                      GE_WARNING | GE_USER | GE_BULK,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                       _("Received corrupt message from peer `%s'in %s:%d.\n"),
                       &enc, __FILE__, __LINE__);
             }
           else
             {
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
             }
           return;
         }
@@ -457,21 +457,21 @@ injectMessage (const GNUNET_PeerIdentity * sender,
 #if DEBUG_HANDLER
       if (sender != NULL)
         {
-          IF_GELOG (ectx, GE_DEBUG,
+          IF_GELOG (ectx, GNUNET_GE_DEBUG,
                     GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-          GE_LOG (ectx, GE_DEBUG,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG,
                   "Received %s message of type %u from peer `%s'\n",
                   wasEncrypted ? "encrypted" : "plaintext", ptyp, &enc);
         }
 #endif
       if (GNUNET_YES == wasEncrypted)
         {
-          MessagePartHandler callback;
+          GNUNET_P2PRequestHandler callback;
 
           if ((ptyp >= max_registeredType) || (NULL == handlers[ptyp][0]))
             {
-              GE_LOG (ectx,
-                      GE_DEBUG | GE_USER | GE_REQUEST,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                       "Encrypted message of type '%d' not understood (no handler registered).\n",
                       ptyp);
               continue;         /* no handler registered, go to next part */
@@ -489,8 +489,8 @@ injectMessage (const GNUNET_PeerIdentity * sender,
               if (GNUNET_SYSERR == callback (sender, part))
                 {
 #if DEBUG_HANDLER
-                  GE_LOG (ectx,
-                          GE_DEBUG | GE_USER | GE_BULK,
+                  GNUNET_GE_LOG (ectx,
+                          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
                           "Handler aborted message processing after receiving message of type '%d'.\n",
                           ptyp);
 #endif
@@ -503,8 +503,8 @@ injectMessage (const GNUNET_PeerIdentity * sender,
                 }
 #if VALIDATE_CLIENT
               if (0 != memcmp (old_value, part, plen))
-                GE_LOG (ectx,
-                        GE_ERROR | GE_DEVELOPER | GE_IMMEDIATE,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
                         "Handler %d at %p violated const!\n", ptyp, callback);
               GNUNET_free (old_value);
 #endif
@@ -512,7 +512,7 @@ injectMessage (const GNUNET_PeerIdentity * sender,
               last++;
             }
 #if MEASURE_TIME
-          if (ptyp < P2P_PROTO_MAX_USED)
+          if (ptyp < GNUNET_P2P_PROTO_MAX_USED)
             {
               time_by_type[ptyp] += GNUNET_get_time () - now;
               count_by_type[ptyp]++;
@@ -521,13 +521,13 @@ injectMessage (const GNUNET_PeerIdentity * sender,
         }
       else
         {                       /* isEncrypted == GNUNET_NO */
-          PlaintextMessagePartHandler callback;
+          GNUNET_P2PPlaintextRequestHandler callback;
 
           if ((ptyp >= plaintextmax_registeredType) ||
               (NULL == plaintextHandlers[ptyp][0]))
             {
-              GE_LOG (ectx,
-                      GE_REQUEST | GE_DEBUG | GE_USER,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_REQUEST | GNUNET_GE_DEBUG | GNUNET_GE_USER,
                       "Plaintext message of type '%d' not understood (no handler registered).\n",
                       ptyp);
               continue;         /* no handler registered, go to next part */
@@ -541,8 +541,8 @@ injectMessage (const GNUNET_PeerIdentity * sender,
               if (GNUNET_SYSERR == callback (sender, part, session))
                 {
 #if DEBUG_HANDLER
-                  GE_LOG (ectx,
-                          GE_DEBUG | GE_USER | GE_BULK,
+                  GNUNET_GE_LOG (ectx,
+                          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
                           "Handler aborted message processing after receiving message of type '%d'.\n",
                           ptyp);
 #endif
@@ -553,7 +553,7 @@ injectMessage (const GNUNET_PeerIdentity * sender,
               last++;
             }
 #if MEASURE_TIME
-          if (ptyp < P2P_PROTO_MAX_USED)
+          if (ptyp < GNUNET_P2P_PROTO_MAX_USED)
             {
               time_by_type[ptyp] += GNUNET_get_time () - now;
               count_by_type[ptyp]++;
@@ -575,7 +575,7 @@ injectMessage (const GNUNET_PeerIdentity * sender,
  * @param size the size of the message
  */
 static void
-handleMessage (TSession * tsession,
+handleMessage (GNUNET_TSession * tsession,
                const GNUNET_PeerIdentity * sender,
                const char *msg, unsigned int size)
 {
@@ -585,7 +585,7 @@ handleMessage (TSession * tsession,
       (sender != NULL) &&
       (0 != memcmp (sender, &tsession->peer, sizeof (GNUNET_PeerIdentity))))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return;
     }
   ret = checkHeader (sender, (P2P_PACKET_HEADER *) msg, size);
@@ -646,7 +646,7 @@ core_receive (P2P_PACKET * mp)
        memcmp (&mp->sender, &mp->tsession->peer,
                sizeof (GNUNET_PeerIdentity))))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_free (mp->msg);
       GNUNET_free (mp);
       return;
@@ -658,8 +658,8 @@ core_receive (P2P_PACKET * mp)
         GNUNET_mutex_lock (globalLock_);
       discarded++;
       if (0 == discarded % 64)
-        GE_LOG (ectx,
-                GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                 "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
                 accepted,
                 discarded,
@@ -674,10 +674,10 @@ core_receive (P2P_PACKET * mp)
 #if DEBUG_HANDLER
       GNUNET_EncName enc;
       IF_GELOG (ectx,
-                GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                 GNUNET_hash_to_enc (&mp->sender.hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
               "Strictly blacklisted peer `%s' sent message, dropping for now.\n",
               (char *) &enc);
 #endif
@@ -685,8 +685,8 @@ core_receive (P2P_PACKET * mp)
       GNUNET_mutex_lock (globalLock_);
       blacklisted++;
       if (0 == blacklisted % 64)
-        GE_LOG (ectx,
-                GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                 "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
                 accepted,
                 discarded,
@@ -704,8 +704,8 @@ core_receive (P2P_PACKET * mp)
       /* discard message, buffer is full or
          we're shut down! */
 #if 0
-      GE_LOG (ectx,
-              GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
               "Discarding message of size %u -- buffer full!\n", mp->size);
 #endif
       GNUNET_free (mp->msg);
@@ -715,8 +715,8 @@ core_receive (P2P_PACKET * mp)
         GNUNET_mutex_lock (globalLock_);
       discarded++;
       if (0 == discarded % 64)
-        GE_LOG (ectx,
-                GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                 "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
                 accepted,
                 discarded,
@@ -738,8 +738,8 @@ core_receive (P2P_PACKET * mp)
 #if TRACK_DISCARD
   accepted++;
   if (0 == accepted % 64)
-    GE_LOG (ectx,
-            GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+    GNUNET_GE_LOG (ectx,
+            GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
             "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
             accepted,
             discarded,
@@ -769,7 +769,7 @@ enableCoreProcessing ()
     {
       threads_[i] = GNUNET_thread_create (&threadMain, &i, 128 * 1024);
       if (threads_[i] == NULL)
-        GE_LOG_STRERROR (ectx, GE_ERROR, "pthread_create");
+        GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR, "pthread_create");
     }
 }
 
@@ -805,14 +805,14 @@ disableCoreProcessing ()
  * Initialize message handling module.
  */
 void
-initHandler (struct GE_Context *e)
+initHandler (struct GNUNET_GE_Context *e)
 {
   ectx = e;
   handlerLock = GNUNET_mutex_create (GNUNET_NO);
   transport = requestService ("transport");
-  GE_ASSERT (ectx, transport != NULL);
+  GNUNET_GE_ASSERT (ectx, transport != NULL);
   identity = requestService ("identity");
-  GE_ASSERT (ectx, identity != NULL);
+  GNUNET_GE_ASSERT (ectx, identity != NULL);
   /* initialize sync mechanisms for message handling threads */
   bufferQueueRead_ = GNUNET_semaphore_create (0);
   bufferQueueWrite_ = GNUNET_semaphore_create (QUEUE_LENGTH);
@@ -862,12 +862,12 @@ doneHandler ()
   releaseService (identity);
   identity = NULL;
 #if MEASURE_TIME
-  for (i = 0; i < P2P_PROTO_MAX_USED; i++)
+  for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     {
       if (count_by_type[i] == 0)
         continue;
-      GE_LOG (ectx,
-              GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
               "%10u msgs of type %2u took %16llu ms (%llu on average)\n",
               count_by_type[i],
               i, time_by_type[i], time_by_type[i] / count_by_type[i]);

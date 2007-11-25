@@ -35,7 +35,7 @@
  * Create a fresh MetaData token.
  */
 MetaData *
-ECRS_createMetaData ()
+GNUNET_ECRS_meta_data_create ()
 {
   MetaData *ret;
   ret = GNUNET_malloc (sizeof (MetaData));
@@ -48,7 +48,7 @@ ECRS_createMetaData ()
  * Free meta data.
  */
 void
-ECRS_freeMetaData (MetaData * md)
+GNUNET_ECRS_meta_data_destroy (MetaData * md)
 {
   int i;
   for (i = 0; i < md->itemCount; i++)
@@ -62,15 +62,15 @@ ECRS_freeMetaData (MetaData * md)
  * to the meta-data.
  */
 void
-ECRS_addPublicationDateToMetaData (MetaData * md)
+GNUNET_ECRS_meta_data_add_publication_date (MetaData * md)
 {
   char *dat;
   GNUNET_Int32Time t;
 
   GNUNET_get_time_int32 (&t);
-  ECRS_delFromMetaData (md, EXTRACTOR_PUBLICATION_DATE, NULL);
+  GNUNET_ECRS_meta_data_delete (md, EXTRACTOR_PUBLICATION_DATE, NULL);
   dat = GNUNET_int32_time_to_string (&t);
-  ECRS_addToMetaData (md, EXTRACTOR_PUBLICATION_DATE, dat);
+  GNUNET_ECRS_meta_data_inser (md, EXTRACTOR_PUBLICATION_DATE, dat);
   GNUNET_free (dat);
 }
 
@@ -79,12 +79,12 @@ ECRS_addPublicationDateToMetaData (MetaData * md)
  * @return GNUNET_OK on success, GNUNET_SYSERR if this entry already exists
  */
 int
-ECRS_addToMetaData (MetaData * md,
+GNUNET_ECRS_meta_data_inser (MetaData * md,
                     EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
 
-  GE_ASSERT (NULL, data != NULL);
+  GNUNET_GE_ASSERT (NULL, data != NULL);
   for (idx = 0; idx < md->itemCount; idx++)
     {
       if ((md->items[idx].type == type) &&
@@ -103,7 +103,7 @@ ECRS_addToMetaData (MetaData * md,
  * @return GNUNET_OK on success, GNUNET_SYSERR if the item does not exist in md
  */
 int
-ECRS_delFromMetaData (MetaData * md,
+GNUNET_ECRS_meta_data_delete (MetaData * md,
                       EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
@@ -133,8 +133,8 @@ ECRS_delFromMetaData (MetaData * md,
  * @return number of entries
  */
 int
-ECRS_getMetaData (const MetaData * md,
-                  ECRS_MetaDataIterator iterator, void *closure)
+GNUNET_ECRS_meta_data_get_contents (const MetaData * md,
+                  GNUNET_ECRS_MetaDataProcessor iterator, void *closure)
 {
   int i;
   int sub;
@@ -161,7 +161,7 @@ ECRS_getMetaData (const MetaData * md,
  * @return number of entries
  */
 char *
-ECRS_getFromMetaData (const MetaData * md, EXTRACTOR_KeywordType type)
+GNUNET_ECRS_meta_data_get_by_type (const MetaData * md, EXTRACTOR_KeywordType type)
 {
   int i;
 
@@ -177,7 +177,7 @@ ECRS_getFromMetaData (const MetaData * md, EXTRACTOR_KeywordType type)
  * @return number of entries
  */
 char *
-ECRS_getFirstFromMetaData (const MetaData * md, ...)
+GNUNET_ECRS_meta_data_get_first_by_types (const MetaData * md, ...)
 {
   char *ret;
   va_list args;
@@ -190,7 +190,7 @@ ECRS_getFirstFromMetaData (const MetaData * md, ...)
       type = va_arg (args, EXTRACTOR_KeywordType);
       if (type == -1)
         break;
-      ret = ECRS_getFromMetaData (md, type);
+      ret = GNUNET_ECRS_meta_data_get_by_type (md, type);
       if (ret != NULL)
         break;
     }
@@ -252,14 +252,14 @@ decodeThumbnail (const char *in, unsigned char **out, size_t * outSize)
  * @return number of bytes in thumbnail, 0 if not available
  */
 size_t
-ECRS_getThumbnailFromMetaData (const struct ECRS_MetaData * md,
+GNUNET_ECRS_meta_data_get_thumbnail (const struct GNUNET_ECRS_MetaData * md,
                                unsigned char **thumb)
 {
   char *encoded;
   int ret;
   size_t size;
 
-  encoded = ECRS_getFromMetaData (md, EXTRACTOR_THUMBNAIL_DATA);
+  encoded = GNUNET_ECRS_meta_data_get_by_type (md, EXTRACTOR_THUMBNAIL_DATA);
   if (encoded == NULL)
     return 0;
   if (strlen (encoded) == 0)
@@ -280,16 +280,16 @@ ECRS_getThumbnailFromMetaData (const struct ECRS_MetaData * md,
  * Duplicate MetaData.
  */
 MetaData *
-ECRS_dupMetaData (const MetaData * md)
+GNUNET_ECRS_meta_data_duplicate (const MetaData * md)
 {
   int i;
   MetaData *ret;
 
   if (md == NULL)
     return NULL;
-  ret = ECRS_createMetaData ();
+  ret = GNUNET_ECRS_meta_data_create ();
   for (i = md->itemCount - 1; i >= 0; i--)
-    ECRS_addToMetaData (ret, md->items[i].type, md->items[i].data);
+    GNUNET_ECRS_meta_data_inser (ret, md->items[i].type, md->items[i].data);
   return ret;
 }
 
@@ -300,7 +300,7 @@ ECRS_dupMetaData (const MetaData * md)
  *   of meta-data items obtained
  */
 int
-ECRS_extractMetaData (struct GE_Context *ectx,
+GNUNET_ECRS_meta_data_extract_from_file (struct GNUNET_GE_Context *ectx,
                       MetaData * md,
                       const char *filename,
                       EXTRACTOR_ExtractorList * extractors)
@@ -321,7 +321,7 @@ ECRS_extractMetaData (struct GE_Context *ectx,
   while (pos != NULL)
     {
       if (GNUNET_OK ==
-          ECRS_addToMetaData (md, pos->keywordType, pos->keyword))
+          GNUNET_ECRS_meta_data_inser (md, pos->keywordType, pos->keyword))
         ret++;
       pos = pos->next;
     }
@@ -435,7 +435,7 @@ typedef struct
  *         space)
  */
 int
-ECRS_serializeMetaData (struct GE_Context *ectx,
+GNUNET_ECRS_meta_data_serialize (struct GNUNET_GE_Context *ectx,
                         const MetaData * md,
                         char *target, unsigned int max, int part)
 {
@@ -474,7 +474,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
         }
 
       hdr->size = htonl (size);
-      if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0)
+      if ((part & GNUNET_ECRS_SERIALIZE_NO_COMPRESS) == 0)
         {
           pos = tryCompression ((char *) &hdr[1],
                                 size - sizeof (MetaDataHeader));
@@ -493,7 +493,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
       GNUNET_free (hdr);
       hdr = NULL;
 
-      if ((part & ECRS_SERIALIZE_PART) == 0)
+      if ((part & GNUNET_ECRS_SERIALIZE_PART) == 0)
         {
           return GNUNET_SYSERR; /* does not fit! */
         }
@@ -503,16 +503,16 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
       else
         ic--;                   /* small steps, we're close */
     }
-  GE_ASSERT (ectx, size <= max);
+  GNUNET_GE_ASSERT (ectx, size <= max);
   memcpy (target, hdr, size);
   GNUNET_free (hdr);
   /* extra check: deserialize! */
 #if EXTRA_CHECKS
   {
     MetaData *mdx;
-    mdx = ECRS_deserializeMetaData (ectx, target, size);
-    GE_ASSERT (ectx, NULL != mdx);
-    ECRS_freeMetaData (mdx);
+    mdx = GNUNET_ECRS_meta_data_deserialize (ectx, target, size);
+    GNUNET_GE_ASSERT (ectx, NULL != mdx);
+    GNUNET_ECRS_meta_data_destroy (mdx);
   }
 #endif
   return size;
@@ -524,7 +524,7 @@ ECRS_serializeMetaData (struct GE_Context *ectx,
  * than what is strictly needed.
  */
 unsigned int
-ECRS_sizeofMetaData (const MetaData * md, int part)
+GNUNET_ECRS_meta_data_get_serialized_size (const MetaData * md, int part)
 {
   MetaDataHeader *hdr;
   size_t size;
@@ -553,7 +553,7 @@ ECRS_sizeofMetaData (const MetaData * md, int part)
       memcpy (&((char *) hdr)[pos], md->items[i].data, len);
       pos += len;
     }
-  if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0)
+  if ((part & GNUNET_ECRS_SERIALIZE_NO_COMPRESS) == 0)
     {
       pos = tryCompression ((char *) &hdr[1], size - sizeof (MetaDataHeader));
     }
@@ -575,8 +575,8 @@ ECRS_sizeofMetaData (const MetaData * md, int part)
  * @return MD on success, NULL on error (i.e.
  *         bad format)
  */
-struct ECRS_MetaData *
-ECRS_deserializeMetaData (struct GE_Context *ectx,
+struct GNUNET_ECRS_MetaData *
+GNUNET_ECRS_meta_data_deserialize (struct GNUNET_GE_Context *ectx,
                           const char *input, unsigned int size)
 {
   MetaData *md;
@@ -602,7 +602,7 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
       dataSize = ntohl (MAKE_UNALIGNED (hdr->size)) - sizeof (MetaDataHeader);
       if (dataSize > 2 * 1042 * 1024)
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           return NULL;          /* only 2 MB allowed [to make sure we don't blow
                                    our memory limit because of a mal-formed
                                    message... ] */
@@ -611,7 +611,7 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
                          size - sizeof (MetaDataHeader), dataSize);
       if (data == NULL)
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           return NULL;
         }
     }
@@ -621,23 +621,23 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
       dataSize = size - sizeof (MetaDataHeader);
       if (size != ntohl (MAKE_UNALIGNED (hdr->size)))
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           return NULL;
         }
     }
 
   if ((sizeof (unsigned int) * ic + ic) > dataSize)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       goto FAILURE;
     }
   if ((ic > 0) && (data[dataSize - 1] != '\0'))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       goto FAILURE;
     }
 
-  md = ECRS_createMetaData ();
+  md = GNUNET_ECRS_meta_data_create ();
   GNUNET_array_grow (md->items, md->itemCount, ic);
   i = 0;
   pos = sizeof (unsigned int) * ic;
@@ -652,7 +652,7 @@ ECRS_deserializeMetaData (struct GE_Context *ectx,
     }
   if (i < ic)
     {                           /* oops */
-      ECRS_freeMetaData (md);
+      GNUNET_ECRS_meta_data_destroy (md);
       goto FAILURE;
     }
   if (compressed)
@@ -669,7 +669,7 @@ FAILURE:
  * Checks if the mime-type is that of a GNUnet directory.
  */
 int
-ECRS_isDirectory (const MetaData * md)
+GNUNET_ECRS_meta_data_test_for_directory (const MetaData * md)
 {
   int i;
 
@@ -758,7 +758,7 @@ static char *mimeMap[][2] = {
  * @return the new filename
  */
 char *
-ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
+GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx, const char *filename)
 {
   EXTRACTOR_ExtractorList *l;
   EXTRACTOR_KeywordList *list;
@@ -797,7 +797,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
       while ((mimeMap[i][0] != NULL) && (0 != strcmp (mime, mimeMap[i][0])))
         i++;
       if (mimeMap[i][1] == NULL)
-        GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+        GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 "Did not find mime type `%s' in extension list.\n", mime);
       mime = mimeMap[i][1];
     }
@@ -873,7 +873,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
       if (0 != STAT (renameTo, &filestat))
         {
           if (0 != RENAME (filename, renameTo))
-            GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+            GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                     _("Renaming of file `%s' to `%s' failed: %s\n"),
                     filename, renameTo, STRERROR (errno));
           else
@@ -881,7 +881,7 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
         }
       else
         {
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Could not rename file `%s' to `%s': file exists\n"),
                   filename, renameTo);
         }
@@ -897,8 +897,8 @@ ECRS_suggestFilename (struct GE_Context *ectx, const char *filename)
  * Test if two MDs are equal.
  */
 int
-ECRS_equalsMetaData (const struct ECRS_MetaData *md1,
-                     const struct ECRS_MetaData *md2)
+GNUNET_ECRS_meta_data_test_equal (const struct GNUNET_ECRS_MetaData *md1,
+                     const struct GNUNET_ECRS_MetaData *md2)
 {
   int i;
   int j;

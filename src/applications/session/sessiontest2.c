@@ -59,8 +59,8 @@ static int
 connect_daemons (unsigned short port1, unsigned short port2)
 {
   char host[128];
-  GC_Configuration *cfg1 = GC_create ();
-  GC_Configuration *cfg2 = GC_create ();
+  GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
+  GNUNET_GC_Configuration *cfg2 = GNUNET_GC_create ();
   struct GNUNET_ClientServerConnection *sock1;
   struct GNUNET_ClientServerConnection *sock2;
   int ret;
@@ -68,9 +68,9 @@ connect_daemons (unsigned short port1, unsigned short port2)
 
   ret = GNUNET_SYSERR;
   GNUNET_snprintf (host, 128, "localhost:%u", port1);
-  GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
   GNUNET_snprintf (host, 128, "localhost:%u", port2);
-  GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
   if ((GNUNET_OK == GNUNET_wait_for_daemon_running (NULL,
                                                     cfg1,
                                                     300 *
@@ -100,8 +100,8 @@ connect_daemons (unsigned short port1, unsigned short port2)
     {
       fprintf (stderr, "Failed to establish connection with peers.\n");
     }
-  GC_free (cfg1);
-  GC_free (cfg2);
+  GNUNET_GC_free (cfg1);
+  GNUNET_GC_free (cfg2);
   return ret;
 }
 
@@ -123,26 +123,26 @@ main (int argc, char **argv)
   int ret;
   struct GNUNET_ClientServerConnection *sock;
   int left;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #if START_PEERS
   peer1 = GNUNET_daemon_start (NULL, cfg, "tcp-peer.conf", GNUNET_NO);
   if (peer1 == -1)
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   peer2 = GNUNET_daemon_start (NULL, cfg, "nat-peer.conf", GNUNET_NO);
   if (peer2 == -1)
     {
       GNUNET_daemon_stop (NULL, peer1);
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
@@ -153,7 +153,7 @@ main (int argc, char **argv)
       sock = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
       while (GNUNET_OK ==
-             STATS_getStatistics (NULL, sock, &waitForConnect, NULL))
+             GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
         {
           printf ("Waiting for peers to connect (%u iterations left)...\n",
                   left);
@@ -176,7 +176,7 @@ main (int argc, char **argv)
   GNUNET_daemon_stop (NULL, peer1);
   GNUNET_daemon_stop (NULL, peer2);
 #endif
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return (ok == 0) ? 1 : 0;
 }
 

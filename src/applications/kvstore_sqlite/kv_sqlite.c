@@ -41,14 +41,14 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_SQLITE(dbh, cmd) do { GE_LOG(ectx, GE_FATAL | GE_ADMIN | GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh)); abort(); } while(0);
+#define DIE_SQLITE(dbh, cmd) do { GNUNET_GE_LOG(ectx, GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh)); abort(); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_SQLITE(dbh, level, cmd) do { GE_LOG(ectx, GE_ERROR | GE_ADMIN | GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh)); } while(0);
+#define LOG_SQLITE(dbh, level, cmd) do { GNUNET_GE_LOG(ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh)); } while(0);
 
 /**
  * @brief Wrapper for SQLite
@@ -103,9 +103,9 @@ typedef struct
 
 } sqliteDatabase;
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static unsigned int databases;
 
@@ -200,10 +200,10 @@ getDBFileName (const char *name)
   char *fn;
   size_t mem;
 
-  GC_get_configuration_value_filename (coreAPI->cfg,
+  GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
                                        "KEYVALUE_DATABASE",
                                        "DIR",
-                                       VAR_DAEMON_DIRECTORY "/kvstore/",
+                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/kvstore/",
                                        &dir);
   GNUNET_disk_directory_create (ectx, dir);
   mem = strlen (dir) + strlen (name) + 6;
@@ -263,7 +263,7 @@ getDBHandle (const char *name)
   if (sqlite3_open (db->fn, &dbh->dbh) != SQLITE_OK)
     {
       printf ("FN: %s\n", db->fn);
-      LOG_SQLITE (dbh->dbh, GE_ERROR | GE_BULK | GE_USER, "sqlite3_open");
+      LOG_SQLITE (dbh->dbh, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER, "sqlite3_open");
       sqlite3_close (dbh->dbh);
       GNUNET_mutex_unlock (lock);
       GNUNET_thread_release_self (dbh->tid);
@@ -331,12 +331,12 @@ dropDatabase (const char *name)
  * @param table the name of the Key/Value-Table
  * @return a handle
  */
-static KVHandle *
+static GNUNET_KeyValueRecord *
 getTable (const char *database, const char *table)
 {
   sqlite3_stmt *stmt;
   unsigned int len;
-  KVHandle *ret;
+  GNUNET_KeyValueRecord *ret;
   sqliteHandle *dbh;
   char *idx;
 
@@ -371,7 +371,7 @@ getTable (const char *database, const char *table)
   sprintf (idx, "CREATE INDEX idx_key ON %s (gn_key)", table);
   sqlite3_exec (dbh->dbh, idx, NULL, NULL, NULL);
   GNUNET_free (idx);
-  ret = GNUNET_malloc (sizeof (KVHandle));
+  ret = GNUNET_malloc (sizeof (GNUNET_KeyValueRecord));
   ret->table = GNUNET_strdup (table);
   ret->db = GNUNET_strdup (database);
 
@@ -389,10 +389,10 @@ getTable (const char *database, const char *table)
  * @param closure optional parameter for handler
  */
 static void *
-get (KVHandle * kv,
+get (GNUNET_KeyValueRecord * kv,
      void *key,
      int keylen,
-     unsigned int sort, unsigned int limit, KVCallback handler, void *closure)
+     unsigned int sort, unsigned int limit, GNUNET_KeyValueProcessor handler, void *closure)
 {
   unsigned int len, enclen, retlen;
   char *sel, *order, *where, limit_spec[30];
@@ -489,7 +489,7 @@ get (KVHandle * kv,
  * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
-put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
+put (GNUNET_KeyValueRecord * kv, void *key, int keylen, void *val, int vallen,
      unsigned long long age)
 {
   unsigned int len;
@@ -544,7 +544,7 @@ put (KVHandle * kv, void *key, int keylen, void *val, int vallen,
  * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
-del (KVHandle * kv, void *key, int keylen, unsigned long long age)
+del (GNUNET_KeyValueRecord * kv, void *key, int keylen, unsigned long long age)
 {
   unsigned int len;
   char *del, *key_where, *age_where;
@@ -613,7 +613,7 @@ del (KVHandle * kv, void *key, int keylen, unsigned long long age)
  * @param kv the handle to close
  */
 static void
-closeTable (KVHandle * kv)
+closeTable (GNUNET_KeyValueRecord * kv)
 {
   GNUNET_free (kv->table);
   GNUNET_free (kv->db);
@@ -625,7 +625,7 @@ closeTable (KVHandle * kv)
  * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
 static int
-dropTable (KVHandle * kv)
+dropTable (GNUNET_KeyValueRecord * kv)
 {
   sqlite3_stmt *stmt;
   sqliteHandle *dbh;
@@ -650,15 +650,15 @@ dropTable (KVHandle * kv)
   return GNUNET_OK;
 }
 
-KVstore_ServiceAPI *
-provide_module_kvstore_sqlite (CoreAPIForApplication * capi)
+GNUNET_KVstore_ServiceAPI *
+provide_module_kvstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
 {
-  static KVstore_ServiceAPI api;
+  static GNUNET_KVstore_ServiceAPI api;
 
   ectx = capi->ectx;
 #if DEBUG_SQLITE
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "KV-SQLite: initializing database\n");
 #endif
 
@@ -687,8 +687,8 @@ release_module_kvstore_sqlite ()
   GNUNET_array_grow (dbs, databases, 0);
 
 #if DEBUG_SQLITE
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "SQLite KVStore: database shutdown\n");
 #endif
 

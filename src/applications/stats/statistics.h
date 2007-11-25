@@ -64,7 +64,7 @@ typedef struct
      last description is also terminated
      by a '\0'; again statCounters entries */
   /* char descriptions[0]; */
-} CS_stats_reply_MESSAGE_GENERIC;
+} CS_stats_reply_MESSAGNUNET_GE_GENERIC;
 
 /**
  * Query protocol supported message.  Contains the type of

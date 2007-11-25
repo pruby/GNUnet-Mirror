@@ -25,9 +25,9 @@
 #include <gtk/gtktext.h>
 #include <glade/glade.h>
 
-#define mainXML getMainXML()
+#define mainXML GNUNET_GTK_get_main_glade_XML()
 
-GladeXML *getMainXML (void);
+GladeXML *GNUNET_GTK_get_main_glade_XML (void);
 
 void destroyMainXML (void);
 

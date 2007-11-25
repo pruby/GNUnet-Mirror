@@ -98,7 +98,7 @@ testWeakKey ()
 
   if (size == -1)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return 1;
     }
 
@@ -106,12 +106,12 @@ testWeakKey ()
 
   if ((strlen (WEAK_KEY_TESTSTRING) + 1) != size)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return 1;
     }
   if (0 != strcmp (res, WEAK_KEY_TESTSTRING))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return 1;
     }
   else

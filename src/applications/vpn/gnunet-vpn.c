@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetvpnOptions[] = {
   {'s', "silent", NULL,
    gettext_noop ("Suppress display of asynchronous log messages"),
    0, &GNUNET_getopt_configure_set_one, &silent},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -70,15 +70,15 @@ receiveThread (void *arg)
     {
       switch (ntohs (buf->type))
         {
-        case CS_PROTO_VPN_DEBUGOFF:
-        case CS_PROTO_VPN_DEBUGON:
-        case CS_PROTO_VPN_TUNNELS:
-        case CS_PROTO_VPN_ROUTES:
-        case CS_PROTO_VPN_REALISED:
-        case CS_PROTO_VPN_RESET:
-        case CS_PROTO_VPN_REALISE:
-        case CS_PROTO_VPN_ADD:
-        case CS_PROTO_VPN_TRUST:
+        case GNUNET_CS_PROTO_VPN_DEBUGOFF:
+        case GNUNET_CS_PROTO_VPN_DEBUGON:
+        case GNUNET_CS_PROTO_VPN_TUNNELS:
+        case GNUNET_CS_PROTO_VPN_ROUTES:
+        case GNUNET_CS_PROTO_VPN_REALISED:
+        case GNUNET_CS_PROTO_VPN_RESET:
+        case GNUNET_CS_PROTO_VPN_REALISE:
+        case GNUNET_CS_PROTO_VPN_ADD:
+        case GNUNET_CS_PROTO_VPN_TRUST:
           if (ntohs (buf->size) > sizeof (GNUNET_MessageHeader))
             {
               fwrite (buffer + sizeof (GNUNET_MessageHeader),
@@ -98,10 +98,10 @@ receiveThread (void *arg)
             }
           GNUNET_mutex_unlock (lock);
           break;;
-        case CS_PROTO_VPN_MSG:
+        case GNUNET_CS_PROTO_VPN_MSG:
           if (silent == GNUNET_YES)
             break;;
-        case CS_PROTO_VPN_REPLY:
+        case GNUNET_CS_PROTO_VPN_REPLY:
 
           if (ntohs (buf->size) > sizeof (GNUNET_MessageHeader))
             {
@@ -131,8 +131,8 @@ main (int argc, char *const *argv)
   void *unused;
   char buffer[sizeof (GNUNET_MessageHeader) + 1024];
   int rancommand = 0;
-  struct GC_Configuration *cfg;
-  struct GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
   int i;
 
   i = GNUNET_init (argc,
@@ -160,8 +160,8 @@ main (int argc, char *const *argv)
   messageReceiveThread =
     GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
-    GE_DIE_STRERROR (ectx,
-                     GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+    GNUNET_GE_DIE_STRERROR (ectx,
+                     GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                      "pthread_create");
 
 
@@ -176,7 +176,7 @@ main (int argc, char *const *argv)
       if (strncmp (buffer, "debug0", 6) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_DEBUGOFF);
+            htons (GNUNET_CS_PROTO_VPN_DEBUGOFF);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -190,7 +190,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "debug1", 6) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_DEBUGON);
+            htons (GNUNET_CS_PROTO_VPN_DEBUGON);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -204,7 +204,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "tunnels", 7) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_TUNNELS);
+            htons (GNUNET_CS_PROTO_VPN_TUNNELS);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -218,7 +218,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "route", 5) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_ROUTES);
+            htons (GNUNET_CS_PROTO_VPN_ROUTES);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -232,7 +232,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "realised", 8) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_REALISED);
+            htons (GNUNET_CS_PROTO_VPN_REALISED);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -246,7 +246,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "reset", 5) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_RESET);
+            htons (GNUNET_CS_PROTO_VPN_RESET);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -260,7 +260,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "realise", 7) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_REALISE);
+            htons (GNUNET_CS_PROTO_VPN_REALISE);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -274,7 +274,7 @@ main (int argc, char *const *argv)
       else if (strncmp (buffer, "trust", 5) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (CS_PROTO_VPN_TRUST);
+            htons (GNUNET_CS_PROTO_VPN_TRUST);
           ((GNUNET_MessageHeader *) & buffer)->size =
             htons (sizeof (GNUNET_MessageHeader));
           if (GNUNET_SYSERR ==
@@ -293,7 +293,7 @@ main (int argc, char *const *argv)
           if (strlen (&buffer[4]) > 1)
             {
               ((GNUNET_MessageHeader *) & buffer)->type =
-                htons (CS_PROTO_VPN_ADD);
+                htons (GNUNET_CS_PROTO_VPN_ADD);
               ((GNUNET_MessageHeader *) & buffer)->size =
                 htons (sizeof (GNUNET_MessageHeader) + strlen (&buffer[5]));
               if (GNUNET_SYSERR ==

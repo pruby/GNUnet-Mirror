@@ -119,7 +119,7 @@ helperParseOptions (int argc, char *argv[])
             return GNUNET_SYSERR;
           }
         default:
-          GE_LOG (ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                   _("Use --help to get a list of options.\n"));
           return -1;
         }                       /* end of parsing commandline */
@@ -169,7 +169,7 @@ helper_main (int argc, char *argv[])
   res = CONNECT (sock, (struct sockaddr *) &soaddr, sizeof (soaddr));
   if ((res < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
-      GE_LOG (ectx, GE_INFO | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               _("Cannot connect to LOOPBACK port %d: %s\n"),
               PORT, STRERROR (errno));
       closefile (sock);
@@ -235,7 +235,7 @@ bash_main ()
   };
 
   configFile = getConfigurationString ("FILES", "gnunet.conf");
-  GE_ASSERT (ectx, configFile != NULL);
+  GNUNET_GE_ASSERT (ectx, configFile != NULL);
   argv[0] = SHELL;
   aliases = FOPEN (TB_ALIASES, "w+");
   fprintf (aliases, "export PS1=\"[GTB]%% \"\n");
@@ -306,7 +306,7 @@ CREATE_SOCKET:
   while ((ssock = SOCKET (PF_INET, SOCK_STREAM, 0)) < 0)
     {
       LOG_STRERROR (LOG_ERROR, "socket");
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("No client service started. Trying again in 30 seconds.\n"));
       sleep (30);
     }
@@ -321,7 +321,7 @@ CREATE_SOCKET:
   /* bind the socket */
   if (BIND (ssock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Error (%s) binding the TCP listener to "
                 "port %d. No proxy service started.\nTrying "
                 "again in %d seconds...\n"), STRERROR (errno), PORT, secs);
@@ -375,12 +375,12 @@ CREATE_SOCKET:
           continue;
         }
       /* access control! */
-      GE_ASSERT (ectx,
+      GNUNET_GE_ASSERT (ectx,
                  sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
       memcpy (&ipaddr, &clientAddr.sin_addr, sizeof (struct in_addr));
       if (GNUNET_NO == isWhitelisted (ipaddr))
         {
-          GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
                   PRIP (ntohl (*(int *) &clientAddr.sin_addr)));
           closefile (sock);
@@ -503,7 +503,7 @@ parseOptions (int argc, char *argv[])
             return GNUNET_SYSERR;
           }
         default:
-          GE_LOG (ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                   _("Use --help to get a list of options.\n"));
           return -1;
         }                       /* end of parsing commandline */

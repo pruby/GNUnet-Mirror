@@ -50,7 +50,7 @@ GNUNET_xmalloc_ (size_t size,
 {
   /* As a security precaution, we generally do not allow very large
      allocations using the default 'GNUNET_malloc' macro */
-  GE_ASSERT_FLF (NULL,
+  GNUNET_GE_ASSERT_FLF (NULL,
                  size <= GNUNET_MAX_GNUNET_malloc_CHECKED, filename,
                  linenumber, function);
   return GNUNET_xmalloc_unchecked_ (size, filename, linenumber, function);
@@ -63,11 +63,11 @@ GNUNET_xmalloc_unchecked_ (size_t size,
 {
   void *result;
 
-  GE_ASSERT_FLF (NULL, size < INT_MAX, filename, linenumber, function);
+  GNUNET_GE_ASSERT_FLF (NULL, size < INT_MAX, filename, linenumber, function);
   result = malloc (size);
   if (result == NULL)
-    GE_DIE_STRERROR_FLF (NULL,
-                         GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
+    GNUNET_GE_DIE_STRERROR_FLF (NULL,
+                         GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
                          "malloc", filename, linenumber, function);
   memset (result, 0, size);     /* client code should not rely on this, though... */
   return result;
@@ -93,8 +93,8 @@ GNUNET_xrealloc_ (void *ptr,
   ptr = realloc (ptr, n);
 
   if (!ptr)
-    GE_DIE_STRERROR_FLF (NULL,
-                         GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
+    GNUNET_GE_DIE_STRERROR_FLF (NULL,
+                         GNUNET_GE_IMMEDIATE | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL,
                          "realloc", filename, linenumber, function);
   return ptr;
 }
@@ -111,7 +111,7 @@ void
 GNUNET_xfree_ (void *ptr, const char *filename, int linenumber,
                const char *function)
 {
-  GE_ASSERT_FLF (NULL, ptr != NULL, filename, linenumber, function);
+  GNUNET_GE_ASSERT_FLF (NULL, ptr != NULL, filename, linenumber, function);
   free (ptr);
 }
 
@@ -129,7 +129,7 @@ GNUNET_xstrdup_ (const char *str,
 {
   char *res;
 
-  GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
+  GNUNET_GE_ASSERT_FLF (NULL, str != NULL, filename, linenumber, function);
   res =
     (char *) GNUNET_xmalloc_ (strlen (str) + 1, filename, linenumber,
                               function);
@@ -159,7 +159,7 @@ GNUNET_xgrow_ (void **old,
   void *tmp;
   size_t size;
 
-  GE_ASSERT_FLF (NULL,
+  GNUNET_GE_ASSERT_FLF (NULL,
                  INT_MAX / elementSize > newCount,
                  filename, linenumber, function);
   size = newCount * elementSize;
@@ -170,7 +170,7 @@ GNUNET_xgrow_ (void **old,
   else
     {
       tmp = GNUNET_xmalloc_ (size, filename, linenumber, function);
-      GE_ASSERT (NULL, tmp != NULL);
+      GNUNET_GE_ASSERT (NULL, tmp != NULL);
       memset (tmp, 0, size);    /* client code should not rely on this, though... */
       if (*oldCount > newCount)
         *oldCount = newCount;   /* shrink is also allowed! */

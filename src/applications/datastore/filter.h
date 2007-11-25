@@ -28,11 +28,11 @@
 
 #include "gnunet_util.h"
 
-int initFilters (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int initFilters (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
 void doneFilters (void);
 
-void deleteFilter (struct GE_Context *ectx, struct GC_Configuration *cfg);
+void deleteFilter (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
 void makeAvailable (const GNUNET_HashCode * key);
 

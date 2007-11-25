@@ -134,7 +134,7 @@ typedef struct GNUNET_CronManager
 
   void *runningData_;
 
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   /**
    * The cron thread.
@@ -180,7 +180,7 @@ typedef struct GNUNET_CronManager
 
 
 struct GNUNET_CronManager *
-cron_create (struct GE_Context *ectx)
+cron_create (struct GNUNET_GE_Context *ectx)
 {
   struct GNUNET_CronManager *cron;
   unsigned int i;
@@ -210,7 +210,7 @@ static void
 noJob (void *unused)
 {
 #if DEBUG_CRON
-  GE_LOG (NULL, GE_STATUS | GE_DEVELOPER | GE_BULK, "In noJob.\n");
+  GNUNET_GE_LOG (NULL, GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "In noJob.\n");
 #endif
 }
 
@@ -220,7 +220,7 @@ GNUNET_cron_stop (struct GNUNET_CronManager *cron)
   void *unused;
 
 #if DEBUG_CRON
-  GE_LOG (cron->ectx, GE_STATUS | GE_DEVELOPER | GE_BULK, "Stopping cron\n");
+  GNUNET_GE_LOG (cron->ectx, GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "Stopping cron\n");
 #endif
   cron->cron_shutdown = GNUNET_YES;
   GNUNET_cron_add_job (cron, &noJob, 0, 0, NULL);
@@ -229,7 +229,7 @@ GNUNET_cron_stop (struct GNUNET_CronManager *cron)
   cron->cron_signal = NULL;
   GNUNET_thread_join (cron->cron_handle, &unused);
 #if DEBUG_CRON
-  GE_LOG (NULL, GE_STATUS | GE_DEVELOPER | GE_BULK, "Cron stopped\n");
+  GNUNET_GE_LOG (NULL, GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "Cron stopped\n");
 #endif
 }
 
@@ -263,7 +263,7 @@ GNUNET_cron_suspend_jobs (struct GNUNET_CronManager *cron, int checkSelf)
       (cron->cron_shutdown == GNUNET_NO) &&
       (GNUNET_NO != GNUNET_thread_test_self (cron->cron_handle)))
     return;
-  GE_ASSERT (NULL, GNUNET_NO == GNUNET_thread_test_self (cron->cron_handle));
+  GNUNET_GE_ASSERT (NULL, GNUNET_NO == GNUNET_thread_test_self (cron->cron_handle));
   GNUNET_mutex_lock (cron->inBlockLock_);
   cron->inBlock++;
   if (cron->inBlock == 1)
@@ -293,7 +293,7 @@ GNUNET_cron_resume_jobs (struct GNUNET_CronManager *cron, int checkSelf)
       (cron->cron_shutdown == GNUNET_NO) &&
       (GNUNET_NO != GNUNET_thread_test_self (cron->cron_handle)))
     return;
-  GE_ASSERT (NULL, cron->inBlock > 0);
+  GNUNET_GE_ASSERT (NULL, cron->inBlock > 0);
   GNUNET_semaphore_up (cron->cron_signal_up);
 }
 
@@ -324,8 +324,8 @@ printCronTab (struct GNUNET_CronManager *cron)
   while (jobId != -1)
     {
       tab = &cron->deltaList_[jobId];
-      GE_LOG (NULL,
-              GE_STATUS | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (NULL,
+              GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               "%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
               jobId, tab->delta - now, (int) tab->method, tab->deltaRepeat);
       jobId = tab->next;
@@ -344,8 +344,8 @@ GNUNET_cron_advance_job (struct GNUNET_CronManager *cron,
   int jobId;
 
 #if DEBUG_CRON
-  GE_LOG (NULL,
-          GE_STATUS | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (NULL,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "Advancing job %p-%p\n", method, data);
 #endif
   GNUNET_mutex_lock (cron->deltaListLock_);
@@ -394,8 +394,8 @@ GNUNET_cron_add_job (struct GNUNET_CronManager *cron,
   int current;
 
 #if DEBUG_CRON
-  GE_LOG (cron->ectx,
-          GE_STATUS | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (cron->ectx,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "Adding job %p-%p to fire in %d CU\n", method, data, delta);
 #endif
 
@@ -505,8 +505,8 @@ runJob (struct GNUNET_CronManager *cron)
   if (repeat > 0)
     {
 #if DEBUG_CRON
-      GE_LOG (cron->ectx,
-              GE_STATUS | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (cron->ectx,
+              GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               "adding periodic job %p-%p to run again in %u\n",
               method, data, repeat);
 #endif
@@ -514,16 +514,16 @@ runJob (struct GNUNET_CronManager *cron)
     }
   /* run */
 #if DEBUG_CRON
-  GE_LOG (cron->ectx,
-          GE_STATUS | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (cron->ectx,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "running job %p-%p\n", method, data);
 #endif
   method (data);
   GNUNET_mutex_lock (cron->deltaListLock_);
   cron->runningJob_ = NULL;
 #if DEBUG_CRON
-  GE_LOG (cron->ectx,
-          GE_STATUS | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (cron->ectx,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "job %p-%p done\n", method, data);
 #endif
 }
@@ -553,15 +553,15 @@ cron_main_method (void *ctx)
           if (next <= now)
             {
 #if DEBUG_CRON
-              GE_LOG (cron->ectx,
-                      GE_STATUS | GE_DEVELOPER | GE_BULK,
+              GNUNET_GE_LOG (cron->ectx,
+                      GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                       "running cron job, table is\n");
               printCronTab (cron);
 #endif
               runJob (cron);
 #if DEBUG_CRON
-              GE_LOG (cron->ectx,
-                      GE_STATUS | GE_DEVELOPER | GE_BULK,
+              GNUNET_GE_LOG (cron->ectx,
+                      GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                       "job run, new table is\n");
               printCronTab (cron);
 #endif
@@ -572,8 +572,8 @@ cron_main_method (void *ctx)
       GNUNET_mutex_unlock (cron->deltaListLock_);
       next = next - now;        /* how long to sleep */
 #if DEBUG_CRON
-      GE_LOG (cron->ectx,
-              GE_STATUS | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (cron->ectx,
+              GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               "Sleeping at %llu for %llu CU (%llu s, %llu CU)\n",
               now, next, next / GNUNET_CRON_SECONDS, next);
 #endif
@@ -582,16 +582,16 @@ cron_main_method (void *ctx)
       if (cron->cron_shutdown == GNUNET_NO)
         GNUNET_thread_sleep (next);
 #if DEBUG_CRON
-      GE_LOG (cron->ectx,
-              GE_STATUS | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (cron->ectx,
+              GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               "woke up at  %llu - %lld CS late\n",
               GNUNET_get_time (), GNUNET_get_time () - (now + next));
 #endif
     }
   GNUNET_semaphore_up (cron->cron_signal);
 #if DEBUG_CRON
-  GE_LOG (cron->ectx,
-          GE_STATUS | GE_DEVELOPER | GE_BULK, "Cron thread exits.\n");
+  GNUNET_GE_LOG (cron->ectx,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK, "Cron thread exits.\n");
   printCronTab (cron);
 #endif
   return NULL;
@@ -606,7 +606,7 @@ GNUNET_cron_destroy (struct GNUNET_CronManager *cron)
 {
   int i;
 
-  GE_ASSERT (cron->ectx, cron->cron_signal == NULL);
+  GNUNET_GE_ASSERT (cron->ectx, cron->cron_signal == NULL);
   i = cron->firstUsed_;
   while (i != -1)
     {
@@ -626,7 +626,7 @@ GNUNET_cron_destroy (struct GNUNET_CronManager *cron)
 void
 GNUNET_cron_start (struct GNUNET_CronManager *cron)
 {
-  GE_ASSERT (cron->ectx, cron->cron_signal == NULL);
+  GNUNET_GE_ASSERT (cron->ectx, cron->cron_signal == NULL);
   cron->cron_shutdown = GNUNET_NO;
   cron->cron_signal = GNUNET_semaphore_create (0);
   /* large stack, we don't know for sure
@@ -634,8 +634,8 @@ GNUNET_cron_start (struct GNUNET_CronManager *cron)
   cron->cron_handle =
     GNUNET_thread_create (&cron_main_method, cron, 256 * 1024);
   if (cron->cron_handle == 0)
-    GE_DIE_STRERROR (cron->ectx,
-                     GE_FATAL | GE_ADMIN | GE_USER | GE_BULK,
+    GNUNET_GE_DIE_STRERROR (cron->ectx,
+                     GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                      "pthread_create");
 }
 
@@ -648,8 +648,8 @@ GNUNET_cron_del_job (struct GNUNET_CronManager *cron,
   int jobId;
 
 #if DEBUG_CRON
-  GE_LOG (cron->ectx,
-          GE_STATUS | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (cron->ectx,
+          GNUNET_GE_STATUS | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "deleting job %p-%p\n", method, data);
 #endif
   GNUNET_mutex_lock (cron->deltaListLock_);

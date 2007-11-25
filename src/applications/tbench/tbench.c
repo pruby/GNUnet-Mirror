@@ -73,9 +73,9 @@ static unsigned int currNounce;
  */
 static int timeoutOccured;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static IterationData *results;
 
@@ -98,11 +98,11 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
   const P2P_tbench_MESSAGE *msg;
 
 #if DEBUG_TBENCH
-  GE_LOG (ectx, GE_DEBUG | GE_BULK | GE_USER, "Received tbench request\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER, "Received tbench request\n");
 #endif
   if (ntohs (message->size) < sizeof (P2P_tbench_MESSAGE))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   msg = (const P2P_tbench_MESSAGE *) message;
@@ -110,20 +110,20 @@ handleTBenchReq (const GNUNET_PeerIdentity * sender,
                       ntohs (message->size) - sizeof (P2P_tbench_MESSAGE))
       != ntohl (msg->crc))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
 
 #if DEBUG_TBENCH
-  GE_LOG (ectx,
-          GE_DEBUG | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
           "Received request %u from iteration %u/%u\n",
           htonl (msg->packetNum),
           htonl (msg->iterationNum), htonl (msg->nounce));
 #endif
   reply = GNUNET_malloc (ntohs (message->size));
   memcpy (reply, message, ntohs (message->size));
-  reply->type = htons (P2P_PROTO_tbench_REPLY);
+  reply->type = htons (GNUNET_P2P_PROTO_TBENCH_REPLY);
   coreAPI->unicast (sender, reply, ntohl (msg->priority), 0);   /* no delay */
   GNUNET_free (reply);
   return GNUNET_OK;
@@ -142,7 +142,7 @@ handleTBenchReply (const GNUNET_PeerIdentity * sender,
 
   if (ntohs (message->size) < sizeof (P2P_tbench_MESSAGE))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   pmsg = (const P2P_tbench_MESSAGE *) message;
@@ -150,7 +150,7 @@ handleTBenchReply (const GNUNET_PeerIdentity * sender,
                       ntohs (message->size) - sizeof (P2P_tbench_MESSAGE))
       != ntohl (pmsg->crc))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   GNUNET_mutex_lock (lock);
@@ -175,8 +175,8 @@ handleTBenchReply (const GNUNET_PeerIdentity * sender,
             }
         }
 #if DEBUG_TBENCH
-      GE_LOG (ectx,
-              GE_DEBUG | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
               "Received response %u from iteration %u/%u on time!\n",
               htonl (pmsg->packetNum),
               htonl (pmsg->iterationNum), htonl (pmsg->nounce));
@@ -185,8 +185,8 @@ handleTBenchReply (const GNUNET_PeerIdentity * sender,
   else
     {
 #if DEBUG_TBENCH
-      GE_LOG (ectx,
-              GE_DEBUG | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
               "Received message %u from iteration %u too late (now at iteration %u)\n",
               ntohl (pmsg->packetNum),
               ntohl (pmsg->iterationNum), currIteration);
@@ -211,7 +211,7 @@ semaUp (void *cls)
  * Handle client request (main function)
  */
 static int
-csHandleTBenchRequest (struct ClientHandle *client,
+csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
                        const GNUNET_MessageHeader * message)
 {
   CS_tbench_request_MESSAGE *msg;
@@ -236,8 +236,8 @@ csHandleTBenchRequest (struct ClientHandle *client,
   unsigned int iterations;
 
 #if DEBUG_TBENCH
-  GE_LOG (ectx,
-          GE_DEBUG | GE_USER | GE_BULK,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
           "Tbench received request from client.\n", msgCnt, size, iterations);
 #endif
   if (ntohs (message->size) != sizeof (CS_tbench_request_MESSAGE))
@@ -251,16 +251,16 @@ csHandleTBenchRequest (struct ClientHandle *client,
   iterations = ntohl (msg->iterations);
   msgCnt = ntohl (msg->msgCnt);
 #if DEBUG_TBENCH
-  GE_LOG (ectx,
-          GE_INFO | GE_USER | GE_BULK,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
           "Tbench runs %u test messages of size %u in %u iterations.\n",
           msgCnt, size, iterations);
 #endif
   GNUNET_mutex_lock (lock);
   if (results != NULL)
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               "Cannot run multiple tbench sessions at the same time!\n");
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
@@ -270,7 +270,7 @@ csHandleTBenchRequest (struct ClientHandle *client,
   p2p = GNUNET_malloc (size);
   memset (p2p, 0, size);
   p2p->header.size = htons (size);
-  p2p->header.type = htons (P2P_PROTO_tbench_REQUEST);
+  p2p->header.type = htons (GNUNET_P2P_PROTO_TBENCH_REQUEST);
   p2p->priority = msg->priority;
 
   for (iteration = 0; iteration < iterations; iteration++)
@@ -307,8 +307,8 @@ csHandleTBenchRequest (struct ClientHandle *client,
           now = GNUNET_get_time ();
           p2p->packetNum = htonl (packetNum);
 #if DEBUG_TBENCH
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
                   "Sending message %u of size %u in iteration %u\n",
                   packetNum, size, iteration);
 #endif
@@ -330,8 +330,8 @@ csHandleTBenchRequest (struct ClientHandle *client,
   GNUNET_mutex_unlock (lock);
   GNUNET_free (p2p);
 #if DEBUG_TBENCH
-  GE_LOG (ectx,
-          GE_DEBUG | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
           "Done waiting for response.\n", packetNum, size, iteration);
 #endif
 
@@ -371,7 +371,7 @@ csHandleTBenchRequest (struct ClientHandle *client,
 
   /* send collected stats back to client */
   reply.header.size = htons (sizeof (CS_tbench_reply_MESSAGE));
-  reply.header.type = htons (CS_PROTO_tbench_REPLY);
+  reply.header.type = htons (GNUNET_CS_PROTO_TBENCH_REPLY);
   reply.max_loss = htonl (max_loss);
   reply.min_loss = htonl (min_loss);
   reply.mean_loss = ((float) sum_loss / (float) iterations);
@@ -391,25 +391,25 @@ csHandleTBenchRequest (struct ClientHandle *client,
  * @return GNUNET_SYSERR on errors
  */
 int
-initialize_module_tbench (CoreAPIForApplication * capi)
+initialize_module_tbench (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
 
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  if (GNUNET_SYSERR == capi->registerHandler (P2P_PROTO_tbench_REPLY,
+  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TBENCH_REPLY,
                                               &handleTBenchReply))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerHandler (P2P_PROTO_tbench_REQUEST,
+  if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST,
                                               &handleTBenchReq))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_tbench_REQUEST,
+  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                                     &csHandleTBenchRequest))
     ok = GNUNET_SYSERR;
 
-  GE_ASSERT (capi->ectx,
-             0 == GC_set_configuration_value_string (capi->cfg,
+  GNUNET_GE_ASSERT (capi->ectx,
+             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
                                                      "ABOUT",
                                                      "tbench",
@@ -422,9 +422,9 @@ initialize_module_tbench (CoreAPIForApplication * capi)
 void
 done_module_tbench ()
 {
-  coreAPI->unregisterHandler (P2P_PROTO_tbench_REQUEST, &handleTBenchReq);
-  coreAPI->unregisterHandler (P2P_PROTO_tbench_REPLY, &handleTBenchReply);
-  coreAPI->unregisterClientHandler (CS_PROTO_tbench_REQUEST,
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REQUEST, &handleTBenchReq);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TBENCH_REPLY, &handleTBenchReply);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TBENCH_REQUEST,
                                     &csHandleTBenchRequest);
   GNUNET_mutex_destroy (lock);
   lock = NULL;

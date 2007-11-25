@@ -39,27 +39,27 @@ extern char *strptime (const char *s, const char *format, struct tm *tm);
 
 static int errorCode;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct FSUI_Context *ctx;
+static struct GNUNET_FSUI_Context *ctx;
 
-static struct FSUI_UploadList *ul;
+static struct GNUNET_FSUI_UploadList *ul;
 
 static GNUNET_CronTime start_time;
 
 /* ************ config options ******** */
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
-static struct ECRS_MetaData *meta;
+static struct GNUNET_ECRS_MetaData *meta;
 
-static struct ECRS_URI *topKeywords;
+static struct GNUNET_ECRS_URI *topKeywords;
 
-static struct ECRS_URI *gloKeywords;
+static struct GNUNET_ECRS_URI *gloKeywords;
 
-static struct ECRS_MetaData *meta;
+static struct GNUNET_ECRS_MetaData *meta;
 
 static unsigned int anonymity = 1;
 
@@ -101,12 +101,12 @@ convertId (const char *s, GNUNET_HashCode * id)
  * post-processing.
  */
 static void
-postProcess (const struct ECRS_URI *uri)
+postProcess (const struct GNUNET_ECRS_URI *uri)
 {
   GNUNET_HashCode prevId;
   GNUNET_HashCode thisId;
   GNUNET_HashCode nextId;
-  struct ECRS_URI *nsuri;
+  struct GNUNET_ECRS_URI *nsuri;
   char *us;
 
   if (pseudonym == NULL)
@@ -114,7 +114,7 @@ postProcess (const struct ECRS_URI *uri)
   convertId (next_id, &nextId);
   convertId (this_id, &thisId);
   convertId (prev_id, &prevId);
-  nsuri = NS_addToNamespace (ectx,
+  nsuri = GNUNET_NS_add_to_namespace (ectx,
                              cfg,
                              anonymity,
                              priority,
@@ -126,8 +126,8 @@ postProcess (const struct ECRS_URI *uri)
                              next_id == NULL ? NULL : &nextId, uri, meta);
   if (nsuri != NULL)
     {
-      us = ECRS_uriToString (nsuri);
-      ECRS_freeUri (nsuri);
+      us = GNUNET_ECRS_uri_to_string (nsuri);
+      GNUNET_ECRS_uri_destroy (nsuri);
       printf (_("Created entry `%s' in namespace `%s'\n"), us, pseudonym);
       GNUNET_free (us);
     }
@@ -185,7 +185,7 @@ listKeywords (const char *fn, const char *dir, void *cls)
  * Print progess message.
  */
 static void *
-printstatus (void *ctx, const FSUI_Event * event)
+printstatus (void *ctx, const GNUNET_FSUI_Event * event)
 {
   unsigned long long *verboselevel = ctx;
   unsigned long long delta;
@@ -193,7 +193,7 @@ printstatus (void *ctx, const FSUI_Event * event)
 
   switch (event->type)
     {
-    case FSUI_upload_progress:
+    case GNUNET_FSUI_upload_progress:
       if (*verboselevel)
         {
           char *ret;
@@ -212,7 +212,7 @@ printstatus (void *ctx, const FSUI_Event * event)
           GNUNET_free (ret);
         }
       break;
-    case FSUI_upload_completed:
+    case GNUNET_FSUI_upload_completed:
       if (*verboselevel)
         {
           delta = GNUNET_get_time () - start_time;
@@ -226,7 +226,7 @@ printstatus (void *ctx, const FSUI_Event * event)
                   : (double) (event->data.UploadCompleted.total
                               / 1024.0 * GNUNET_CRON_SECONDS / delta));
         }
-      fstring = ECRS_uriToString (event->data.UploadCompleted.uri);
+      fstring = GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
       printf (_("File `%s' has URI: %s\n"),
               event->data.UploadCompleted.filename, fstring);
       GNUNET_free (fstring);
@@ -237,23 +237,23 @@ printstatus (void *ctx, const FSUI_Event * event)
           GNUNET_shutdown_initiate ();
         }
       break;
-    case FSUI_upload_aborted:
+    case GNUNET_FSUI_upload_aborted:
       printf (_("\nUpload aborted.\n"));
       errorCode = 2;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_upload_error:
+    case GNUNET_FSUI_upload_error:
       printf (_("\nError uploading file: %s"),
               event->data.UploadError.message);
       errorCode = 3;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_upload_started:
-    case FSUI_upload_stopped:
+    case GNUNET_FSUI_upload_started:
+    case GNUNET_FSUI_upload_stopped:
       break;
     default:
       printf (_("\nUnexpected event: %d\n"), event->type);
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       break;
     }
   return NULL;
@@ -293,15 +293,15 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop
    ("add an additional keyword for the top-level file or directory"
     " (this option can be specified multiple times)"),
-   1, &gnunet_getopt_configure_set_keywords, &topKeywords},
+   1, &GNUNET_ECRS_getopt_configure_set_keywords, &topKeywords},
   {'K', "global-key", "KEYWORD",
    gettext_noop ("add an additional keyword for all files and directories"
                  " (this option can be specified multiple times)"),
-   1, &gnunet_getopt_configure_set_keywords, &gloKeywords},
+   1, &GNUNET_ECRS_getopt_configure_set_keywords, &gloKeywords},
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'m', "meta", "TYPE:VALUE",
    gettext_noop ("set the meta-data for the given TYPE to the given VALUE"),
-   1, &gnunet_getopt_configure_set_metadata, &meta},
+   1, &GNUNET_ECRS_getopt_configure_set_metadata, &meta},
   {'n', "noindex", NULL,
    gettext_noop ("do not index, perform full insertion (stores entire "
                  "file in encrypted form in GNUnet database)"),
@@ -334,7 +334,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop ("ID of the previous version of the content"
                  " (for namespace update only)"),
    1, &GNUNET_getopt_configure_set_string, &prev_id},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -354,7 +354,7 @@ main (int argc, char *const *argv)
   char *tmp;
   unsigned long long verbose;
 
-  meta = ECRS_createMetaData ();
+  meta = GNUNET_ECRS_meta_data_create ();
   i = GNUNET_init (argc,
                    argv,
                    "gnunet-insert [OPTIONS] FILENAME",
@@ -382,37 +382,37 @@ main (int argc, char *const *argv)
 
       l = EXTRACTOR_loadDefaultLibraries ();
       ex = NULL;
-      GC_get_configuration_value_string (cfg, "FS", "EXTRACTORS", "", &ex);
+      GNUNET_GC_get_configuration_value_string (cfg, "FS", "EXTRACTORS", "", &ex);
       if (strlen (ex) > 0)
         l = EXTRACTOR_loadConfigLibraries (l, ex);
       GNUNET_free (ex);
       dirname = GNUNET_expand_file_name (ectx, filename);
-      GE_ASSERT (ectx, dirname != NULL);
+      GNUNET_GE_ASSERT (ectx, dirname != NULL);
       while ((strlen (dirname) > 0) &&
              (dirname[strlen (dirname) - 1] == DIR_SEPARATOR))
         dirname[strlen (dirname) - 1] = '\0';
       fname = dirname;
       while (strstr (fname, DIR_SEPARATOR_STR) != NULL)
         fname = strstr (fname, DIR_SEPARATOR_STR) + 1;
-      GE_ASSERT (ectx, fname != dirname);
+      GNUNET_GE_ASSERT (ectx, fname != dirname);
       fname[-1] = '\0';
       listKeywords (fname, dirname, l);
       GNUNET_free (dirname);
       EXTRACTOR_removeAll (l);
-      ECRS_freeMetaData (meta);
+      GNUNET_ECRS_meta_data_destroy (meta);
 
       errorCode = 0;
       goto quit;
     }
 
 
-  GC_get_configuration_value_number (cfg,
+  GNUNET_GC_get_configuration_value_number (cfg,
                                      "GNUNET",
                                      "VERBOSE", 0, 9999, 0, &verbose);
   /* check arguments */
   if (pseudonym != NULL)
     {
-      if (GNUNET_OK != ECRS_testNamespaceExists (ectx, cfg, pseudonym, NULL))
+      if (GNUNET_OK != GNUNET_ECRS_namespace_test_exists (ectx, cfg, pseudonym, NULL))
         {
           printf (_("Could not access namespace `%s' (does not exist?).\n"),
                   pseudonym);
@@ -431,8 +431,8 @@ main (int argc, char *const *argv)
 #endif
           if ((NULL == strptime (creation_time, fmt, &t)))
             {
-              GE_LOG_STRERROR (ectx,
-                               GE_FATAL | GE_USER | GE_IMMEDIATE, "strptime");
+              GNUNET_GE_LOG_STRERROR (ectx,
+                               GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "strptime");
               printf (_("Parsing time failed. Use `%s' format.\n"), fmt);
               errorCode = -1;
               goto quit;
@@ -484,18 +484,18 @@ main (int argc, char *const *argv)
     }
 
   /* fundamental init */
-  ctx = FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,  /* make configurable */
+  ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,  /* make configurable */
                     &printstatus, &verbose);
 
   /* first insert all of the top-level files or directories */
   tmp = GNUNET_expand_file_name (ectx, filename);
   if (!do_disable_creation_time)
-    ECRS_addPublicationDateToMetaData (meta);
+    GNUNET_ECRS_meta_data_add_publication_date (meta);
   start_time = GNUNET_get_time ();
   errorCode = 1;
-  ul = FSUI_startUpload (ctx,
+  ul = GNUNET_FSUI_upload_star (ctx,
                          tmp,
-                         (DirectoryScanCallback) & GNUNET_disk_directory_scan,
+                         (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan,
                          ectx,
                          anonymity,
                          priority,
@@ -505,19 +505,19 @@ main (int argc, char *const *argv)
                          start_time + 2 * GNUNET_CRON_YEARS,
                          meta, gloKeywords, topKeywords);
   if (gloKeywords != NULL)
-    ECRS_freeUri (gloKeywords);
+    GNUNET_ECRS_uri_destroy (gloKeywords);
   if (topKeywords != NULL)
-    ECRS_freeUri (topKeywords);
+    GNUNET_ECRS_uri_destroy (topKeywords);
   GNUNET_free (tmp);
   if (ul != NULL)
     {
       GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
-        FSUI_abortUpload (ctx, ul);
-      FSUI_stopUpload (ctx, ul);
+        GNUNET_FSUI_upload_abort (ctx, ul);
+      GNUNET_FSUI_upload_stop (ctx, ul);
     }
-  ECRS_freeMetaData (meta);
-  FSUI_stop (ctx);
+  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_FSUI_stop (ctx);
 
 quit:
   GNUNET_fini (ectx, cfg);

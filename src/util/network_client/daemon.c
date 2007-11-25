@@ -31,8 +31,8 @@
 #include "gnunet_util_threads.h"
 
 int
-GNUNET_test_daemon_running (struct GE_Context *ectx,
-                            struct GC_Configuration *cfg)
+GNUNET_test_daemon_running (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg)
 {
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_MessageHeader csHdr;
@@ -42,7 +42,7 @@ GNUNET_test_daemon_running (struct GE_Context *ectx,
   if (sock == NULL)
     return GNUNET_SYSERR;
   csHdr.size = htons (sizeof (GNUNET_MessageHeader));
-  csHdr.type = htons (CS_PROTO_traffic_COUNT);
+  csHdr.type = htons (GNUNET_CS_PROTO_TRAFFIC_COUNT);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
     {
       GNUNET_client_connection_destroy (sock);
@@ -66,7 +66,7 @@ GNUNET_client_connection_request_daemon_shutdown (struct
   int ret;
 
   csHdr.size = htons (sizeof (GNUNET_MessageHeader));
-  csHdr.type = htons (CS_PROTO_SHUTDOWN_REQUEST);
+  csHdr.type = htons (GNUNET_CS_PROTO_SHUTDOWN_REQUEST);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
     {
       GNUNET_client_connection_close_temporarily (sock);
@@ -88,8 +88,8 @@ GNUNET_client_connection_request_daemon_shutdown (struct
  * @return GNUNET_OK if gnunetd is now running
  */
 int
-GNUNET_wait_for_daemon_running (struct GE_Context *ectx,
-                                struct GC_Configuration *cfg,
+GNUNET_wait_for_daemon_running (struct GNUNET_GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg,
                                 GNUNET_CronTime timeout)
 {
   GNUNET_CronTime min;

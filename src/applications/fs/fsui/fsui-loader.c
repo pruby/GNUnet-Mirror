@@ -29,21 +29,21 @@
 #include "gnunet_util.h"
 
 static void *
-eventCallback (void *cls, const FSUI_Event * event)
+eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 {
 #if 0
   switch (event->type)
     {
-    case FSUI_search_result:
+    case GNUNET_FSUI_search_result:
       printf ("Received search result\n");
       break;
-    case FSUI_upload_complete:
+    case GNUNET_FSUI_upload_complete:
       printf ("Upload complete.\n");
       break;
-    case FSUI_download_complete:
+    case GNUNET_FSUI_download_complete:
       printf ("Download complete.\n");
       break;
-    case FSUI_unindex_complete:
+    case GNUNET_FSUI_unindex_complete:
       printf ("Unindex complete.\n");
       break;
     default:
@@ -57,21 +57,21 @@ eventCallback (void *cls, const FSUI_Event * event)
 int
 main (int argc, char *argv[])
 {
-  struct FSUI_Context *ctx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_FSUI_Context *ctx;
+  struct GNUNET_GC_Configuration *cfg;
 
   GNUNET_os_init (NULL);
-  cfg = GC_create ();
+  cfg = GNUNET_GC_create ();
   if (argc != 2)
     {
       fprintf (stderr, "Call with name of FSUI resource file!\n");
       return -1;
     }
-  ctx = FSUI_start (NULL, cfg, argv[1], 16, GNUNET_YES, &eventCallback, NULL);
+  ctx = GNUNET_FSUI_start (NULL, cfg, argv[1], 16, GNUNET_YES, &eventCallback, NULL);
   if (ctx != NULL)
-    FSUI_stop (ctx);
+    GNUNET_FSUI_stop (ctx);
   else
-    fprintf (stderr, "FSUI_start failed!\n");
-  GC_free (cfg);
+    fprintf (stderr, "GNUNET_FSUI_start failed!\n");
+  GNUNET_GC_free (cfg);
   return (ctx == NULL);
 }

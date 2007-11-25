@@ -60,7 +60,7 @@ typedef struct GNUNET_IPv6NetworkSet
  * @return the converted list, NULL if the synatx is flawed
  */
 CIDRNetwork *
-GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
+GNUNET_parse_ipv4_network_specification (struct GNUNET_GE_Context *ectx,
                                          const char *routeList)
 {
   unsigned int count;
@@ -100,8 +100,8 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
           for (j = 0; j < 8; j++)
             if (temps[j] > 0xFF)
               {
-                GE_LOG (ectx,
-                        GE_ERROR | GE_USER | GE_IMMEDIATE,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                         _("Invalid format for IP: `%s'\n"), &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
@@ -128,8 +128,8 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
           for (j = 0; j < 4; j++)
             if (temps[j] > 0xFF)
               {
-                GE_LOG (ectx,
-                        GE_ERROR | GE_USER | GE_IMMEDIATE,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                         _("Invalid format for IP: `%s'\n"), &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
@@ -156,8 +156,8 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
             }
           else
             {
-              GE_LOG (ectx,
-                      GE_ERROR | GE_USER | GE_IMMEDIATE,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                       _
                       ("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
                       slash);
@@ -175,8 +175,8 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
           for (j = 0; j < 4; j++)
             if (temps[j] > 0xFF)
               {
-                GE_LOG (ectx,
-                        GE_ERROR | GE_USER | GE_IMMEDIATE,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                         _("Invalid format for IP: `%s'\n"), &routeList[pos]);
                 GNUNET_free (result);
                 return NULL;
@@ -199,16 +199,16 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
           i++;
           continue;
         }
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Invalid format for IP: `%s'\n"), &routeList[pos]);
       GNUNET_free (result);
       return NULL;              /* error */
     }
   if (pos < strlen (routeList))
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Invalid format for IP: `%s'\n"), &routeList[pos]);
       GNUNET_free (result);
       return NULL;              /* oops */
@@ -229,7 +229,7 @@ GNUNET_parse_ipv4_network_specification (struct GE_Context *ectx,
  * @return the converted list, NULL if the synatx is flawed
  */
 CIDR6Network *
-GNUNET_parse_ipv6_network_specification (struct GE_Context * ectx,
+GNUNET_parse_ipv6_network_specification (struct GNUNET_GE_Context * ectx,
                                          const char *routeListX)
 {
   unsigned int count;
@@ -254,8 +254,8 @@ GNUNET_parse_ipv6_network_specification (struct GE_Context * ectx,
       count++;
   if (routeList[len - 1] != ';')
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Invalid network notation (does not end with ';': `%s')\n"),
               routeList);
       GNUNET_free (routeList);
@@ -286,8 +286,8 @@ GNUNET_parse_ipv6_network_specification (struct GE_Context * ectx,
                            &routeList[slash + 1], &result[i].netmask);
           if (ret <= 0)
             {
-              GE_LOG (ectx,
-                      GE_ERROR | GE_USER | GE_IMMEDIATE,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                       _("Wrong format `%s' for netmask: %s\n"),
                       &routeList[slash + 1], STRERROR (errno));
               GNUNET_free (result);
@@ -299,8 +299,8 @@ GNUNET_parse_ipv6_network_specification (struct GE_Context * ectx,
       ret = inet_pton (AF_INET6, &routeList[start], &result[i].network);
       if (ret <= 0)
         {
-          GE_LOG (ectx,
-                  GE_ERROR | GE_USER | GE_IMMEDIATE,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                   _("Wrong format `%s' for network: %s\n"),
                   &routeList[slash + 1], STRERROR (errno));
           GNUNET_free (result);

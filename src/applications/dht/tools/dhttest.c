@@ -50,7 +50,7 @@ waitForConnect (const char *name, unsigned long long value, void *cls)
   return GNUNET_OK;
 }
 
-#define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
+#define CHECK(a) do { if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
 /**
  * Testcase to test DHT routing (many peers).
@@ -62,9 +62,9 @@ main (int argc, const char **argv)
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret = 0;
   GNUNET_HashCode key;
-  DataContainer *value;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  GNUNET_DataContainer *value;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
   int left;
   int i;
@@ -74,10 +74,10 @@ main (int argc, const char **argv)
   char buf[128];
 
   ectx = NULL;
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   peers = GNUNET_TESTING_start_daemons ("tcp",
@@ -86,7 +86,7 @@ main (int argc, const char **argv)
                                         2087, 10, NUM_PEERS);
   if (peers == NULL)
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   for (i = 0; i < NUM_PEERS; i++)
@@ -98,7 +98,7 @@ main (int argc, const char **argv)
             {
               GNUNET_TESTING_stop_daemons (peers);
               fprintf (stderr, "Failed to connect the peers!\n");
-              GC_free (cfg);
+              GNUNET_GC_free (cfg);
               return -1;
             }
         }
@@ -107,7 +107,7 @@ main (int argc, const char **argv)
   /* wait for some DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
   left = 30;                    /* how many iterations should we wait? */
-  while (GNUNET_OK == STATS_getStatistics (NULL, sock, &waitForConnect, NULL))
+  while (GNUNET_OK == GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
       printf ("Waiting for peers to DHT-connect (%u iterations left)...\n",
               left);
@@ -121,7 +121,7 @@ main (int argc, const char **argv)
     {
       GNUNET_TESTING_stop_daemons (peers);
       fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 
@@ -129,15 +129,15 @@ main (int argc, const char **argv)
   for (i = 0; i < NUM_PEERS; i++)
     {
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
-      GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
       value->size = ntohl (8);
       memset (&value[1], 'A' + i, 4);
-      CHECK (GNUNET_OK == DHT_LIB_put (cfg,
+      CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                        ectx,
                                        &key,
-                                       DHT_STRING2STRING_BLOCK,
+                                       GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                        GNUNET_get_time () +
                                        15 * GNUNET_CRON_MINUTES * NUM_ROUNDS *
                                        NUM_PEERS * NUM_PEERS, value));
@@ -150,16 +150,16 @@ main (int argc, const char **argv)
       for (i = 0; i < NUM_PEERS; i++)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
-          GC_set_configuration_value_string (cfg,
+          GNUNET_GC_set_configuration_value_string (cfg,
                                              ectx, "NETWORK", "HOST", buf);
           for (j = 0; j < NUM_PEERS; j++)
             {
               GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
               GNUNET_hash (buf, 4, &key);
               fprintf (stderr, "Peer %d gets key %d", i, j);
-              if (0 < DHT_LIB_get (cfg,
+              if (0 < GNUNET_DHT_get (cfg,
                                    ectx,
-                                   DHT_STRING2STRING_BLOCK,
+                                   GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                    &key,
                                    (NUM_ROUNDS - k) * GNUNET_CRON_SECONDS,
                                    NULL, NULL))
@@ -178,7 +178,7 @@ main (int argc, const char **argv)
     }
 FAILURE:
   GNUNET_TESTING_stop_daemons (peers);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return ret;
 }
 

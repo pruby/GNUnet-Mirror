@@ -48,7 +48,7 @@ static struct GNUNET_SignalHandlerContext *shc_quit;
 void
 GNUNET_shutdown_initiate ()
 {
-  GE_ASSERT (NULL, shutdown_signal != NULL);
+  GNUNET_GE_ASSERT (NULL, shutdown_signal != NULL);
   shutdown_active = GNUNET_YES;
   GNUNET_semaphore_up (shutdown_signal);
 }
@@ -98,8 +98,8 @@ run_shutdown_win (DWORD dwCtrlType)
  */
 void __attribute__ ((constructor)) shutdown_handlers_ltdl_init ()
 {
-  GE_ASSERT (NULL, shutdown_signal == NULL);
-  GE_ASSERT (NULL, shutdown_active == GNUNET_NO);
+  GNUNET_GE_ASSERT (NULL, shutdown_signal == NULL);
+  GNUNET_GE_ASSERT (NULL, shutdown_active == GNUNET_NO);
   shutdown_signal = GNUNET_semaphore_create (0);
 #ifndef MINGW
   shc_int = GNUNET_signal_handler_install (SIGINT, &run_shutdown);

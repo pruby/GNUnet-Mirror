@@ -61,29 +61,29 @@
 /**
  * Datastore service.
  */
-static Datastore_ServiceAPI *datastore;
+static GNUNET_Datastore_ServiceAPI *datastore;
 
 /**
  * Global core API.
  */
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * GAP service.
  */
-static GAP_ServiceAPI *gap;
+static GNUNET_GAP_ServiceAPI *gap;
 
 /**
  * DHT service.  Maybe NULL!
  */
-static DHT_ServiceAPI *dht;
+static GNUNET_DHT_ServiceAPI *dht;
 
 /**
  * Traffic service.
  */
-static Traffic_ServiceAPI *traffic;
+static GNUNET_Traffic_ServiceAPI *traffic;
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_migration_count;
 
@@ -98,7 +98,7 @@ static struct GNUNET_Mutex *lock;
 
 struct MigrationRecord
 {
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *value;
   GNUNET_HashCode key;
   unsigned int receiverIndices[MAX_RECEIVERS];
   unsigned int sentCount;
@@ -106,7 +106,7 @@ struct MigrationRecord
 
 static struct MigrationRecord content[MAX_RECORDS];
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 /**
  * Callback method for pushing content into the network.
@@ -134,8 +134,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   GNUNET_CronTime et;
   GNUNET_CronTime now;
   unsigned int anonymity;
-  Datastore_Value *enc;
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *enc;
+  GNUNET_DatastoreValue *value;
   unsigned int index;
   int entry;
   int discard_entry;
@@ -174,7 +174,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         }
       match = 1;
       if (ntohl (content[i].value->size) + sizeof (GapWrapper) -
-          sizeof (Datastore_Value) <= padding)
+          sizeof (GNUNET_DatastoreValue) <= padding)
         {
           match = 0;
           for (j = 0; j < content[i].sentCount; j++)
@@ -232,8 +232,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   if (entry == -1)
     {
 #if DEBUG_MIGRATION
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Migration: no content available for migration.\n");
 #endif
       GNUNET_mutex_unlock (lock);
@@ -242,16 +242,16 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   value = content[entry].value;
   if (value == NULL)
     {
-      GE_ASSERT (NULL, 0);
+      GNUNET_GE_ASSERT (NULL, 0);
       GNUNET_mutex_unlock (lock);
       return 0;
     }
-  size = sizeof (GapWrapper) + ntohl (value->size) - sizeof (Datastore_Value);
+  size = sizeof (GapWrapper) + ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   if (size > padding)
     {
 #if DEBUG_MIGRATION
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Migration: available content too big (%u > %u) for migration.\n",
               size, padding);
 #endif
@@ -259,12 +259,12 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       return 0;
     }
 #if DEBUG_MIGRATION
-  GE_LOG (ectx,
-          GE_DEBUG | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
           "Migration: random lookup in datastore returned type %d.\n",
           ntohl (value->type));
 #endif
-  if (ntohl (value->type) == ONDEMAND_BLOCK)
+  if (ntohl (value->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
       if (ONDEMAND_getIndexed (datastore,
                                value, &content[entry].key, &enc) != GNUNET_OK)
@@ -273,8 +273,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
           content[entry].value = NULL;
           GNUNET_mutex_unlock (lock);
 #if DEBUG_MIGRATION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "Migration: failed to locate indexed content for migration.\n");
 #endif
           return 0;
@@ -286,13 +286,13 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       value = enc;
     }
 
-  size = sizeof (GapWrapper) + ntohl (value->size) - sizeof (Datastore_Value);
+  size = sizeof (GapWrapper) + ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   if (size > padding)
     {
       GNUNET_mutex_unlock (lock);
 #if DEBUG_MIGRATION
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Migration: available content too big (%u > %u) for migration.\n",
               size, padding);
 #endif
@@ -321,8 +321,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       ret = gap->tryMigrate (&gw->dc, &content[entry].key, position, padding);
       GNUNET_free (gw);
 #if DEBUG_MIGRATION
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "gap's tryMigrate returned %u\n", ret);
 #endif
       if (ret != 0)
@@ -342,8 +342,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       else
         {
 #if DEBUG_MIGRATION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "Migration: not enough cover traffic\n");
 #endif
         }
@@ -351,14 +351,14 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   GNUNET_mutex_unlock (lock);
   if ((ret > 0) && (stats != NULL))
     stats->change (stat_migration_count, 1);
-  GE_BREAK (NULL, ret <= padding);
+  GNUNET_GE_BREAK (NULL, ret <= padding);
   return ret;
 }
 
 void
-initMigration (CoreAPIForApplication * capi,
-               Datastore_ServiceAPI * ds,
-               GAP_ServiceAPI * g, DHT_ServiceAPI * d, Traffic_ServiceAPI * t)
+initMigration (GNUNET_CoreAPIForPlugins * capi,
+               GNUNET_Datastore_ServiceAPI * ds,
+               GNUNET_GAP_ServiceAPI * g, GNUNET_DHT_ServiceAPI * d, GNUNET_Traffic_ServiceAPI * t)
 {
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -367,7 +367,7 @@ initMigration (CoreAPIForApplication * capi,
   gap = g;
   dht = d;
   traffic = t;
-  coreAPI->registerSendCallback (GAP_ESTIMATED_DATA_SIZE,
+  coreAPI->registerSendCallback (GNUNET_GAP_ESTIMATED_DATA_SIZE,
                                  &activeMigrationCallback);
   stats = capi->requestService ("stats");
   if (stats != NULL)
@@ -387,7 +387,7 @@ void
 doneMigration ()
 {
   int i;
-  coreAPI->unregisterSendCallback (GAP_ESTIMATED_DATA_SIZE,
+  coreAPI->unregisterSendCallback (GNUNET_GAP_ESTIMATED_DATA_SIZE,
                                    &activeMigrationCallback);
   if (stats != NULL)
     {

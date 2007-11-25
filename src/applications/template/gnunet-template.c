@@ -42,7 +42,7 @@ static struct GNUNET_CommandLineOption gnunettemplateOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Template description.")),    /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -75,8 +75,8 @@ main (int argc, char *const *argv)
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ThreadHandle *messageReceiveThread;
   void *unused;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
   int i;
 
   i = GNUNET_init (argc,
@@ -100,8 +100,8 @@ main (int argc, char *const *argv)
     GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
   if (messageReceiveThread == NULL)
     {
-      GE_DIE_STRERROR (ectx,
-                       GE_IMMEDIATE | GE_FATAL | GE_USER | GE_ADMIN,
+      GNUNET_GE_DIE_STRERROR (ectx,
+                       GNUNET_GE_IMMEDIATE | GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN,
                        "pthread_create");
     }
 

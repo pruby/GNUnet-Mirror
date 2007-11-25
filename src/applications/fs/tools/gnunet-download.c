@@ -29,9 +29,9 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util.h"
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static unsigned long long verbose;
 
@@ -39,7 +39,7 @@ static int do_recursive;
 
 static int do_directory;
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static char *filename;
 
@@ -49,13 +49,13 @@ static unsigned int parallelism = 32;
 
 static GNUNET_CronTime start_time;
 
-static struct FSUI_DownloadList *dl;
+static struct GNUNET_FSUI_DownloadList *dl;
 
 static int errorCode;
 
 static unsigned int downloads_running;
 
-static struct FSUI_DownloadList **downloads;
+static struct GNUNET_FSUI_DownloadList **downloads;
 
 static unsigned int downloads_size;
 
@@ -86,7 +86,7 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
   {'R', "recursive", NULL,
    gettext_noop ("download a GNUnet directory recursively"),
    0, &GNUNET_getopt_configure_set_one, &do_recursive},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -97,12 +97,12 @@ static struct GNUNET_CommandLineOption gnunetdownloadOptions[] = {
  * method exits once the download is complete.
  */
 static void *
-progressModel (void *unused, const FSUI_Event * event)
+progressModel (void *unused, const GNUNET_FSUI_Event * event)
 {
   GNUNET_mutex_lock (lock);
   switch (event->type)
     {
-    case FSUI_download_progress:
+    case GNUNET_FSUI_download_progress:
       if (verbose)
         {
           PRINTF (_("Download of file `%s' at "
@@ -115,7 +115,7 @@ progressModel (void *unused, const FSUI_Event * event)
                    / (double) GNUNET_CRON_SECONDS));
         }
       break;
-    case FSUI_download_aborted:
+    case GNUNET_FSUI_download_aborted:
       if (dl == event->data.DownloadError.dc.pos)
         {
           /* top-download aborted */
@@ -124,13 +124,13 @@ progressModel (void *unused, const FSUI_Event * event)
           GNUNET_shutdown_initiate ();
         }
       break;
-    case FSUI_download_error:
+    case GNUNET_FSUI_download_error:
       printf (_("Error downloading: %s\n"),
               event->data.DownloadError.message);
       errorCode = 3;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_download_completed:
+    case GNUNET_FSUI_download_completed:
       PRINTF (_("Download of file `%s' complete.  "
                 "Speed was %8.3f KiB per second.\n"),
               event->data.DownloadCompleted.filename,
@@ -144,14 +144,14 @@ progressModel (void *unused, const FSUI_Event * event)
           GNUNET_shutdown_initiate ();
         }
       break;
-    case FSUI_download_started:
+    case GNUNET_FSUI_download_started:
       downloads_running++;
       GNUNET_array_append (downloads, downloads_size,
                            event->data.DownloadStarted.dc.pos);
-    case FSUI_download_stopped:
+    case GNUNET_FSUI_download_stopped:
       break;
     default:
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       break;
     }
   GNUNET_mutex_unlock (lock);
@@ -159,15 +159,15 @@ progressModel (void *unused, const FSUI_Event * event)
 }
 
 static int
-directoryIterator (const ECRS_FileInfo * fi,
+directoryIterator (const GNUNET_ECRS_FileInfo * fi,
                    const GNUNET_HashCode * key, int isRoot, void *cls)
 {
-  struct FSUI_Context *ctx = cls;
-  struct ECRS_MetaData *meta;
+  struct GNUNET_FSUI_Context *ctx = cls;
+  struct GNUNET_ECRS_MetaData *meta;
   char *fn;
   char *f;
 
-  f = ECRS_getFirstFromMetaData (fi->meta,
+  f = GNUNET_ECRS_meta_data_get_first_by_types (fi->meta,
                                  EXTRACTOR_FILENAME,
                                  EXTRACTOR_TITLE,
                                  EXTRACTOR_ARTIST,
@@ -184,10 +184,10 @@ directoryIterator (const ECRS_FileInfo * fi,
   if (verbose > 1)
     printf (_("Starting download `%s'\n"), f);
   GNUNET_free (f);
-  meta = ECRS_createMetaData ();
-  FSUI_startDownload (ctx,
+  meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_FSUI_download_start (ctx,
                       anonymity, do_recursive, fi->uri, meta, fn, NULL, NULL);
-  ECRS_freeMetaData (meta);
+  GNUNET_ECRS_meta_data_destroy (meta);
   GNUNET_free (fn);
   return GNUNET_OK;
 }
@@ -205,9 +205,9 @@ main (int argc, char *const *argv)
 {
   int ok;
   int try_rename;
-  struct FSUI_Context *ctx;
-  struct ECRS_URI *uri;
-  struct ECRS_MetaData *meta;
+  struct GNUNET_FSUI_Context *ctx;
+  struct GNUNET_ECRS_URI *uri;
+  struct GNUNET_ECRS_MetaData *meta;
   int i;
 
   i = GNUNET_init (argc,
@@ -221,25 +221,25 @@ main (int argc, char *const *argv)
     }
   if (i == argc)
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Not enough arguments. "
                 "You must specify a GNUnet file URI\n"));
       errorCode = -1;
       goto quit;
     }
-  GC_get_configuration_value_number (cfg,
+  GNUNET_GC_get_configuration_value_number (cfg,
                                      "GNUNET",
                                      "VERBOSE", 0, 9999, 0, &verbose);
   uri = NULL;
   if (!do_directory)
     {
-      uri = ECRS_stringToUri (ectx, argv[i]);
+      uri = GNUNET_ECRS_string_to_uri (ectx, argv[i]);
       if ((NULL == uri) ||
-          (!(ECRS_isLocationUri (uri) || ECRS_isFileUri (uri))))
+          (!(GNUNET_ECRS_uri_test_loc (uri) || GNUNET_ECRS_uri_test_chk (uri))))
         {
-          GE_LOG (ectx,
-                  GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("URI `%s' invalid for gnunet-download.\n"), argv[i]);
           errorCode = -1;
           goto quit;
@@ -269,15 +269,15 @@ main (int argc, char *const *argv)
         }
       else
         {
-          GE_ASSERT (ectx,
+          GNUNET_GE_ASSERT (ectx,
                      strlen (argv[i]) >
-                     strlen (ECRS_URI_PREFIX) + strlen (ECRS_FILE_INFIX));
+                     strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_FILE_INFIX));
           filename = GNUNET_expand_file_name (ectx,
                                               &argv[i][strlen
-                                                       (ECRS_URI_PREFIX) +
+                                                       (GNUNET_ECRS_URI_PREFIX) +
                                                        strlen
-                                                       (ECRS_FILE_INFIX)]);
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+                                                       (GNUNET_ECRS_FILE_INFIX)]);
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   _("No filename specified, using `%s' instead (for now).\n"),
                   filename);
           try_rename = GNUNET_YES;
@@ -285,7 +285,7 @@ main (int argc, char *const *argv)
     }
   ok = GNUNET_NO;
   lock = GNUNET_mutex_create (GNUNET_NO);
-  ctx = FSUI_start (ectx,
+  ctx = GNUNET_FSUI_start (ectx,
                     cfg,
                     "gnunet-download",
                     parallelism == 0 ? 1 : parallelism,
@@ -317,20 +317,20 @@ main (int argc, char *const *argv)
         {
           if (fd != -1)
             CLOSE (fd);
-          GE_LOG (ectx,
-                  GE_ERROR | GE_IMMEDIATE | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                   _("Could not access gnunet-directory file `%s'\n"), efn);
-          FSUI_stop (ctx);
+          GNUNET_FSUI_stop (ctx);
           GNUNET_mutex_destroy (lock);
           GNUNET_free (efn);
           goto quit;
         }
-      meta = ECRS_createMetaData ();
-      count = ECRS_listDirectory (ectx,
+      meta = GNUNET_ECRS_meta_data_create ();
+      count = GNUNET_ECRS_directory_list_contents (ectx,
                                   data,
                                   sbuf.st_size,
                                   &meta, &directoryIterator, ctx);
-      ECRS_freeMetaData (meta);
+      GNUNET_ECRS_meta_data_destroy (meta);
       MUNMAP (data, sbuf.st_size);
       CLOSE (fd);
       GNUNET_free (efn);
@@ -345,14 +345,14 @@ main (int argc, char *const *argv)
     }
   else
     {
-      meta = ECRS_createMetaData ();
-      dl = FSUI_startDownload (ctx,
+      meta = GNUNET_ECRS_meta_data_create ();
+      dl = GNUNET_FSUI_download_start (ctx,
                                anonymity,
                                do_recursive, uri, meta, filename, NULL, NULL);
-      ECRS_freeMetaData (meta);
+      GNUNET_ECRS_meta_data_destroy (meta);
       if (dl == NULL)
         {
-          FSUI_stop (ctx);
+          GNUNET_FSUI_stop (ctx);
           GNUNET_mutex_destroy (lock);
           goto quit;
         }
@@ -361,17 +361,17 @@ main (int argc, char *const *argv)
   if (errorCode == 1)
     {
       for (i = 0; i < downloads_size; i++)
-        FSUI_abortDownload (ctx, downloads[i]);
+        GNUNET_FSUI_download_abort (ctx, downloads[i]);
     }
   for (i = 0; i < downloads_size; i++)
-    FSUI_stopDownload (ctx, downloads[i]);
+    GNUNET_FSUI_download_stop (ctx, downloads[i]);
   GNUNET_array_grow (downloads, downloads_size, 0);
-  FSUI_stop (ctx);
+  GNUNET_FSUI_stop (ctx);
   GNUNET_mutex_destroy (lock);
 
   if ((errorCode == 0) && (dl != NULL) && (try_rename == GNUNET_YES))
     {
-      char *newname = ECRS_suggestFilename (ectx,
+      char *newname = GNUNET_ECRS_suggest_better_filename (ectx,
                                             filename);
 
       if (newname != NULL)
@@ -382,7 +382,7 @@ main (int argc, char *const *argv)
     }
   GNUNET_free (filename);
   if (uri != NULL)
-    ECRS_freeUri (uri);
+    GNUNET_ECRS_uri_destroy (uri);
 quit:
   GNUNET_fini (ectx, cfg);
   return errorCode;

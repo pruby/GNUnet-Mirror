@@ -58,9 +58,9 @@ typedef struct
                     unsigned int prio,
                     unsigned int targetTime,
                     unsigned int len,
-                    BuildMessageCallback bmc, void *bmcClosure);
+                    GNUNET_BuildMessageCallback bmc, void *bmcClosure);
 
-} Fragmentation_ServiceAPI;
+} GNUNET_Fragmentation_ServiceAPI;
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -43,7 +43,7 @@ GNUNET_IDENTITY_peer_add (struct GNUNET_ClientServerConnection *sock,
 
   msg = GNUNET_malloc (GNUNET_sizeof_hello (hello));
   memcpy (msg, hello, GNUNET_sizeof_hello (hello));
-  msg->header.type = htons (CS_PROTO_identity_HELLO);
+  msg->header.type = htons (GNUNET_CS_PROTO_IDENTITY_HELLO);
   /* check that signature is valid -- internal
      sanity check... */
   if (GNUNET_SYSERR == GNUNET_RSA_verify (&msg->senderIdentity,
@@ -53,7 +53,7 @@ GNUNET_IDENTITY_peer_add (struct GNUNET_ClientServerConnection *sock,
                                           - sizeof (GNUNET_MessageHeader),
                                           &msg->signature, &msg->publicKey))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_free (msg);
       return GNUNET_SYSERR;
     }
@@ -82,7 +82,7 @@ GNUNET_IDENTITY_sign_function (struct GNUNET_ClientServerConnection *sock,
 
   req = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
   req->size = htons (sizeof (GNUNET_MessageHeader) + size);
-  req->type = htons (CS_PROTO_identity_request_SIGN);
+  req->type = htons (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE);
   memcpy (&req[1], data, size);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, req))
     {
@@ -97,7 +97,7 @@ GNUNET_IDENTITY_sign_function (struct GNUNET_ClientServerConnection *sock,
       return GNUNET_SYSERR;
     }
   if ((ntohs (reply->header.size) != sizeof (CS_identity_signature_MESSAGE))
-      || (ntohs (reply->header.type) != CS_PROTO_identity_SIGNATURE))
+      || (ntohs (reply->header.type) != GNUNET_CS_PROTO_IDENTITY_SIGNATURE))
     {
       GNUNET_free (reply);
       return GNUNET_SYSERR;
@@ -122,7 +122,7 @@ GNUNET_IDENTITY_get_self (struct GNUNET_ClientServerConnection *sock,
   GNUNET_MessageHello *reply;
 
   req.size = htons (sizeof (GNUNET_MessageHeader));
-  req.type = htons (CS_PROTO_identity_request_HELLO);
+  req.type = htons (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &req))
     return GNUNET_SYSERR;
   if (GNUNET_OK !=
@@ -132,13 +132,13 @@ GNUNET_IDENTITY_get_self (struct GNUNET_ClientServerConnection *sock,
       return GNUNET_SYSERR;
     }
   if ((ntohs (reply->header.size) < sizeof (GNUNET_MessageHello)) ||
-      (ntohs (reply->header.type) != CS_PROTO_identity_HELLO) ||
+      (ntohs (reply->header.type) != GNUNET_CS_PROTO_IDENTITY_HELLO) ||
       (ntohs (reply->header.size) != GNUNET_sizeof_hello (reply)))
     {
       GNUNET_free (reply);
       return GNUNET_SYSERR;
     }
-  reply->header.type = htons (p2p_PROTO_hello);
+  reply->header.type = htons (GNUNET_P2P_PROTO_HELLO);
   *msg = reply;
   return GNUNET_OK;
 }
@@ -157,7 +157,7 @@ GNUNET_IDENTITY_request_connect (struct GNUNET_ClientServerConnection *sock,
   CS_identity_connect_MESSAGE msg;
   int result;
 
-  msg.header.type = htons (CS_PROTO_identity_CONNECT);
+  msg.header.type = htons (GNUNET_CS_PROTO_IDENTITY_CONNECT);
   msg.header.size = htons (sizeof (CS_identity_connect_MESSAGE));
   msg.other = *peer;
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &msg.header))
@@ -185,7 +185,7 @@ GNUNET_IDENTITY_request_peer_infos (struct GNUNET_ClientServerConnection
   unsigned int count;
 
   req.size = htons (sizeof (GNUNET_MessageHeader));
-  req.type = htons (CS_PROTO_identity_request_INFO);
+  req.type = htons (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &req))
     return GNUNET_SYSERR;
   count = 0;
@@ -193,20 +193,20 @@ GNUNET_IDENTITY_request_peer_infos (struct GNUNET_ClientServerConnection
     {
       if (ntohs (reply->size) < sizeof (GNUNET_MessageHeader))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (reply);
           return GNUNET_SYSERR;
         }
-      if (ntohs (reply->type) == CS_PROTO_RETURN_VALUE)
+      if (ntohs (reply->type) == GNUNET_CS_PROTO_RETURN_VALUE)
         {
           GNUNET_free (reply);
           return count;
         }
       count++;
-      if ((ntohs (reply->type) != CS_PROTO_identity_INFO) ||
+      if ((ntohs (reply->type) != GNUNET_CS_PROTO_IDENTITY_INFO) ||
           (ntohs (reply->size) < sizeof (CS_identity_peer_info_MESSAGE)))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           GNUNET_free (reply);
           return GNUNET_SYSERR;
         }

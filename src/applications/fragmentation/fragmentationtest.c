@@ -57,9 +57,9 @@ static char resultBuffer[65536];
 static void
 handleHelper (const GNUNET_PeerIdentity * sender,
               const char *msg,
-              const unsigned int len, int wasEncrypted, TSession * ts)
+              const unsigned int len, int wasEncrypted, GNUNET_TSession * ts)
 {
-  GE_ASSERT (NULL,
+  GNUNET_GE_ASSERT (NULL,
              0 == memcmp (sender, &mySender, sizeof (GNUNET_PeerIdentity)));
   myMsg = resultBuffer;
   memcpy (resultBuffer, msg, len);
@@ -115,10 +115,10 @@ checkPacket (int id, unsigned int len)
 {
   int i;
 
-  GE_ASSERT (NULL, myMsg != NULL);
-  GE_ASSERT (NULL, myMsgLen == len);
+  GNUNET_GE_ASSERT (NULL, myMsg != NULL);
+  GNUNET_GE_ASSERT (NULL, myMsgLen == len);
   for (i = 0; i < len; i++)
-    GE_ASSERT (NULL, myMsg[i] == (char) (i + id));
+    GNUNET_GE_ASSERT (NULL, myMsg[i] == (char) (i + id));
   myMsgLen = 0;
   myMsg = NULL;
 }
@@ -133,7 +133,7 @@ testSimpleFragment ()
 
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
-  GE_ASSERT (NULL, myMsg == NULL);
+  GNUNET_GE_ASSERT (NULL, myMsg == NULL);
   pep = makeFragment (16, 16, 32, 42);
   processFragment (&mySender, pep);
   checkPacket (42, 32);
@@ -146,11 +146,11 @@ testSimpleFragmentTimeout ()
 
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
-  GE_ASSERT (NULL, myMsg == NULL);
+  GNUNET_GE_ASSERT (NULL, myMsg == NULL);
   makeTimeout ();
   pep = makeFragment (16, 16, 32, 42);
   processFragment (&mySender, pep);
-  GE_ASSERT (NULL, myMsg == NULL);
+  GNUNET_GE_ASSERT (NULL, myMsg == NULL);
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
   checkPacket (42, 32);
@@ -163,7 +163,7 @@ testSimpleFragmentReverse ()
 
   pep = makeFragment (16, 16, 32, 42);
   processFragment (&mySender, pep);
-  GE_ASSERT (NULL, myMsg == NULL);
+  GNUNET_GE_ASSERT (NULL, myMsg == NULL);
   pep = makeFragment (0, 16, 32, 42);
   processFragment (&mySender, pep);
   checkPacket (42, 32);
@@ -179,7 +179,7 @@ testManyFragments ()
     {
       pep = makeFragment (i * 16, 16, 51 * 16, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (50 * 16, 16, 51 * 16, 42);
   processFragment (&mySender, pep);
@@ -196,7 +196,7 @@ testManyFragmentsMegaLarge ()
     {
       pep = makeFragment (i * 16, 16, 4001 * 16, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (4000 * 16, 16, 4001 * 16, 42);
   processFragment (&mySender, pep);
@@ -213,7 +213,7 @@ testLastFragmentEarly ()
     {
       pep = makeFragment (i * 16, 8, 6 * 16 + 8, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (5 * 16, 24, 6 * 16 + 8, 42);
   processFragment (&mySender, pep);
@@ -235,13 +235,13 @@ testManyInterleavedFragments ()
     {
       pep = makeFragment (i * 16, 8, 51 * 16 + 8, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   for (i = 0; i < 50; i++)
     {
       pep = makeFragment (i * 16 + 8, 8, 51 * 16 + 8, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (50 * 16, 24, 51 * 16 + 8, 42);
   processFragment (&mySender, pep);
@@ -258,13 +258,13 @@ testManyInterleavedOverlappingFragments ()
     {
       pep = makeFragment (i * 32, 16, 51 * 32, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   for (i = 0; i < 50; i++)
     {
       pep = makeFragment (i * 32 + 8, 24, 51 * 32, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (50 * 32, 32, 51 * 32, 42);
   processFragment (&mySender, pep);
@@ -281,7 +281,7 @@ testManyOverlappingFragments ()
     {
       pep = makeFragment (0, i * 16 + 16, 51 * 16, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   pep = makeFragment (50 * 16, 16, 51 * 16, 42);
   processFragment (&mySender, pep);
@@ -298,12 +298,12 @@ testManyOverlappingFragmentsTimeout ()
     {
       pep = makeFragment (0, i * 16 + 16, 51 * 16 + 8, 42);
       processFragment (&mySender, pep);
-      GE_ASSERT (NULL, myMsg == NULL);
+      GNUNET_GE_ASSERT (NULL, myMsg == NULL);
     }
   makeTimeout ();
   pep = makeFragment (50 * 16, 24, 51 * 16 + 8, 42);
   processFragment (&mySender, pep);
-  GE_ASSERT (NULL, myMsg == NULL);
+  GNUNET_GE_ASSERT (NULL, myMsg == NULL);
   for (i = 0; i < 50; i++)
     {
       pep = makeFragment (0, i * 16 + 16, 51 * 16 + 8, 42);
@@ -326,7 +326,7 @@ testManyFragmentsMultiId ()
           pep = makeFragment (i * 16, 16, 51 * 16, id + 5);
           mySender.hashPubKey.bits[0] = id;
           processFragment (&mySender, pep);
-          GE_ASSERT (NULL, myMsg == NULL);
+          GNUNET_GE_ASSERT (NULL, myMsg == NULL);
         }
     }
   for (id = 0; id < DEFRAG_BUCKET_COUNT; id++)
@@ -352,7 +352,7 @@ testManyFragmentsMultiIdCollisions ()
           pep = makeFragment (i * 16, 16, 6 * 16, id + 5);
           mySender.hashPubKey.bits[0] = id;
           processFragment (&mySender, pep);
-          GE_ASSERT (NULL, myMsg == NULL);
+          GNUNET_GE_ASSERT (NULL, myMsg == NULL);
         }
     }
   for (id = 0; id < DEFRAG_BUCKET_COUNT * 4; id++)
@@ -367,13 +367,13 @@ testManyFragmentsMultiIdCollisions ()
 /* ************* driver ****************** */
 
 static int
-registerp2pHandler (const unsigned short type, MessagePartHandler callback)
+registerp2pHandler (const unsigned short type, GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }
 
 static int
-unregisterp2pHandler (const unsigned short type, MessagePartHandler callback)
+unregisterp2pHandler (const unsigned short type, GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }
@@ -388,9 +388,9 @@ requestService (const char *name)
 int
 main (int argc, char *argv[])
 {
-  CoreAPIForApplication capi;
+  GNUNET_CoreAPIForPlugins capi;
 
-  memset (&capi, 0, sizeof (CoreAPIForApplication));
+  memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cron = cron_create (NULL);
   capi.injectMessage = &handleHelper;
   capi.requestService = &requestService;

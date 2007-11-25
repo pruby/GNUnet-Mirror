@@ -51,10 +51,10 @@ static SERVICE_STATUS_HANDLE hService;
  * @param sig signal code that causes shutdown, optional
  */
 void
-shutdown_gnunetd (struct GC_Configuration *cfg, int sig)
+shutdown_gnunetd (struct GNUNET_GC_Configuration *cfg, int sig)
 {
 #ifdef MINGW
-  if (!cfg || GC_get_configuration_value_yesno (cfg,
+  if (!cfg || GNUNET_GC_get_configuration_value_yesno (cfg,
                                                 "GNUNETD",
                                                 "WINSERVICE",
                                                 GNUNET_NO) == GNUNET_YES)
@@ -128,12 +128,12 @@ win_service_main (void (*gnunet_main) ())
 
 
 int
-changeUser (struct GE_Context *ectx, struct GC_Configuration *cfg)
+changeUser (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *user;
 
   user = NULL;
-  if (0 == GC_get_configuration_value_string (cfg,
+  if (0 == GNUNET_GC_get_configuration_value_string (cfg,
                                               "GNUNETD",
                                               "USER",
                                               "", &user) && strlen (user))
@@ -149,12 +149,12 @@ changeUser (struct GE_Context *ectx, struct GC_Configuration *cfg)
 }
 
 int
-setFdLimit (struct GE_Context *ectx, struct GC_Configuration *cfg)
+setFdLimit (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   unsigned long long limit;
 
   limit = 0;
-  if (0 == GC_get_configuration_value_number (cfg,
+  if (0 == GNUNET_GC_get_configuration_value_number (cfg,
                                               "GNUNETD",
                                               "FDLIMIT",
                                               0, 65536, 1024, &limit))
@@ -174,14 +174,14 @@ setFdLimit (struct GE_Context *ectx, struct GC_Configuration *cfg)
  * @param cfg configuration manager
  */
 void
-capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg)
+capFSQuotaSize (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
 #ifdef WINDOWS
   unsigned long long quota, cap;
   char *afsdir, fs[MAX_PATH + 1];
   DWORD flags;
 
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "FS",
                                                "QUOTA",
                                                0,
@@ -189,12 +189,12 @@ capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                                1024 / 1024, 1024, &quota))
     return;
 
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "FS",
                                        "DIR",
-                                       VAR_DAEMON_DIRECTORY "/data/fs/",
+                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/data/fs/",
                                        &afsdir);
-  GE_ASSERT (ectx, strlen (afsdir) > 2);
+  GNUNET_GE_ASSERT (ectx, strlen (afsdir) > 2);
 
   /* get root directory */
   afsdir[3] = '\0';
@@ -202,8 +202,8 @@ capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg)
   if (!GetVolumeInformation (afsdir,
                              NULL, 0, NULL, NULL, &flags, fs, _MAX_PATH + 1))
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Unable to obtain filesystem information for `%s': %u\n"),
               afsdir, GetLastError ());
 
@@ -219,8 +219,8 @@ capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg)
   else
     {
       /* unknown FS */
-      GE_LOG (ectx,
-              GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Filesystem `%s' of partition `%s' is unknown. Please "
                 "contact gnunet-developers@gnu.org!"), fs, afsdir);
 
@@ -232,21 +232,21 @@ capFSQuotaSize (struct GE_Context *ectx, struct GC_Configuration *cfg)
 
   if ((cap != 0) && (cap < quota))
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _
               ("Limiting datastore size to %llu GB, because the `%s' filesystem does "
                "not support larger files. Please consider storing the database on "
                "a NTFS partition!\n"), cap / 1000, fs);
 
-      GC_set_configuration_value_number (cfg, ectx, "FS", "QUOTA", cap);
+      GNUNET_GC_set_configuration_value_number (cfg, ectx, "FS", "QUOTA", cap);
     }
 #endif
 }
 
 int
-checkPermission (struct GE_Context *ectx,
-                 struct GC_Configuration *cfg,
+checkPermission (struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg,
                  const char *section,
                  const char *option,
                  const char *def, int is_directory, int mode)
@@ -254,7 +254,7 @@ checkPermission (struct GE_Context *ectx,
   char *fn;
   int i;
 
-  GC_get_configuration_value_filename (cfg, section, option, def, &fn);
+  GNUNET_GC_get_configuration_value_filename (cfg, section, option, def, &fn);
   if (is_directory)
     GNUNET_disk_directory_create (ectx, fn);
   else
@@ -270,8 +270,8 @@ checkPermission (struct GE_Context *ectx,
     }
   if (0 != ACCESS (fn, mode))
     {
-      GE_LOG (ectx,
-              GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
               _("Insufficient access permissions for `%s': %s\n"),
               fn, STRERROR (errno));
       GNUNET_free (fn);
@@ -284,7 +284,7 @@ checkPermission (struct GE_Context *ectx,
 #define CHECK(a,b,c,d,e) if (GNUNET_OK != checkPermission(ectx, cfg, a, b, c, d, e)) return GNUNET_SYSERR;
 
 int
-checkPermissions (struct GE_Context *ectx, struct GC_Configuration *cfg)
+checkPermissions (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   CHECK ("PATHS", "GNUNETD_HOME", "/var/lib/gnunet", GNUNET_YES, W_OK | X_OK);
   CHECK ("GNUNETD", "LOGFILE", "$GNUNETD_HOME/daemon-logs", GNUNET_NO, W_OK);

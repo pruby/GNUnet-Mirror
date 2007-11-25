@@ -38,9 +38,9 @@
  * Add testcode here!
  */
 static int
-test (KVstore_ServiceAPI * api)
+test (GNUNET_KVstore_ServiceAPI * api)
 {
-  KVHandle *kv;
+  GNUNET_KeyValueRecord *kv;
   GNUNET_HashCode k, v;
   GNUNET_HashCode *r;
 
@@ -78,15 +78,15 @@ FAILURE:
 int
 main (int argc, char *argv[])
 {
-  KVstore_ServiceAPI *api;
+  GNUNET_KVstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   cron = cron_create (NULL);

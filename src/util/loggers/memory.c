@@ -29,26 +29,26 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-typedef struct GE_Message
+typedef struct GNUNET_GE_Message
 {
   char *date;
   char *msg;
-  GE_KIND mask;
-} GE_Message;
+  GNUNET_GE_KIND mask;
+} GNUNET_GE_Message;
 
-typedef struct GE_Memory
+typedef struct GNUNET_GE_Memory
 {
-  GE_Message *messages;
+  GNUNET_GE_Message *messages;
   struct GNUNET_Mutex *lock;
   unsigned int maxSize;
   unsigned int size;
   unsigned int pos;
-} GE_Memory;
+} GNUNET_GE_Memory;
 
 static void
-memorylogger (void *cls, GE_KIND kind, const char *date, const char *msg)
+memorylogger (void *cls, GNUNET_GE_KIND kind, const char *date, const char *msg)
 {
-  GE_Memory *ctx = cls;
+  GNUNET_GE_Memory *ctx = cls;
   unsigned int max;
 
   GNUNET_mutex_lock (ctx->lock);
@@ -69,7 +69,7 @@ memorylogger (void *cls, GE_KIND kind, const char *date, const char *msg)
     {
       ctx->messages[ctx->pos].msg =
         GNUNET_strdup (_("Out of memory (for logging)"));
-      ctx->messages[ctx->pos].mask = GE_STATUS | GE_USER | GE_BULK;
+      ctx->messages[ctx->pos].mask = GNUNET_GE_STATUS | GNUNET_GE_USER | GNUNET_GE_BULK;
     }
   else
     {
@@ -84,10 +84,10 @@ memorylogger (void *cls, GE_KIND kind, const char *date, const char *msg)
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */
-struct GE_Context *
-GE_create_context_memory (GE_KIND mask, struct GE_Memory *memory)
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_memory (GNUNET_GE_KIND mask, struct GNUNET_GE_Memory *memory)
 {
-  return GE_create_context_callback (mask, &memorylogger, memory, NULL, NULL);
+  return GNUNET_GE_create_context_callback (mask, &memorylogger, memory, NULL, NULL);
 }
 
 /**
@@ -101,12 +101,12 @@ GE_create_context_memory (GE_KIND mask, struct GE_Memory *memory)
  *  (if more than maxSize messages are received, message number maxSize
  *   will be set to a corresponding warning)
  */
-struct GE_Memory *
-GE_memory_create (unsigned int maxSize)
+struct GNUNET_GE_Memory *
+GNUNET_GE_memory_create (unsigned int maxSize)
 {
-  GE_Memory *ret;
+  GNUNET_GE_Memory *ret;
 
-  ret = GNUNET_malloc (sizeof (GE_Memory));
+  ret = GNUNET_malloc (sizeof (GNUNET_GE_Memory));
   ret->maxSize = maxSize;
   ret->size = 0;
   ret->pos = 0;
@@ -119,7 +119,7 @@ GE_memory_create (unsigned int maxSize)
  * Get a particular log message from the store.
  */
 const char *
-GE_memory_get (struct GE_Memory *memory, unsigned int index)
+GNUNET_GE_memory_get (struct GNUNET_GE_Memory *memory, unsigned int index)
 {
   if (index > memory->pos || memory->messages == NULL)
     return NULL;
@@ -131,7 +131,7 @@ GE_memory_get (struct GE_Memory *memory, unsigned int index)
  * Also clears the memory.
  */
 void
-GE_memory_poll (struct GE_Memory *memory, GE_LogHandler handler, void *ctx)
+GNUNET_GE_memory_poll (struct GNUNET_GE_Memory *memory, GNUNET_GE_LogHandler handler, void *ctx)
 {
   int i;
 
@@ -149,7 +149,7 @@ GE_memory_poll (struct GE_Memory *memory, GE_LogHandler handler, void *ctx)
 }
 
 void
-GE_memory_reset (struct GE_Memory *memory)
+GNUNET_GE_memory_reset (struct GNUNET_GE_Memory *memory)
 {
   int i;
 
@@ -164,7 +164,7 @@ GE_memory_reset (struct GE_Memory *memory)
 }
 
 void
-GE_memory_free (struct GE_Memory *memory)
+GNUNET_GE_memory_free (struct GNUNET_GE_Memory *memory)
 {
   int i;
 

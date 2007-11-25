@@ -33,7 +33,7 @@
 
 static int lastIp2p = 42;       /* not GNUNET_YES or GNUNET_NO */
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * Print statistics received.
@@ -65,9 +65,9 @@ printProtocols (unsigned short type, int isP2P, void *cls)
       lastIp2p = isP2P;
     }
   if (isP2P)
-    name = STATS_p2pMessageName (type);
+    name = GNUNET_STATS_p2p_message_type_to_string (type);
   else
-    name = STATS_csMessageName (type);
+    name = GNUNET_STATS_cs_message_type_to_string (type);
   if (name == NULL)
     fprintf (stream, "\t%d\n", type);
   else
@@ -86,7 +86,7 @@ static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
   {'p', "protocols", NULL,
    gettext_noop ("prints supported protocol messages"),
    0, &GNUNET_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES"},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -103,8 +103,8 @@ main (int argc, char *const *argv)
 {
   int res;
   struct GNUNET_ClientServerConnection *sock;
-  struct GC_Configuration *cfg;
-  struct GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
 
   res = GNUNET_init (argc,
                      argv,
@@ -121,14 +121,14 @@ main (int argc, char *const *argv)
       fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
       return 1;
     }
-  res = STATS_getStatistics (ectx, sock, &printStatistics, stdout);
-  if ((GNUNET_YES == GC_get_configuration_value_yesno (cfg,
+  res = GNUNET_STATS_get_statistics (ectx, sock, &printStatistics, stdout);
+  if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg,
                                                        "STATS",
                                                        "PRINT-PROTOCOLS",
                                                        GNUNET_NO))
       && (res == GNUNET_OK))
     {
-      res = STATS_getAvailableProtocols (ectx, sock, &printProtocols, stdout);
+      res = GNUNET_STATS_get_available_protocols (ectx, sock, &printProtocols, stdout);
     }
   if (res != GNUNET_OK)
     fprintf (stderr, _("Error reading information from gnunetd.\n"));

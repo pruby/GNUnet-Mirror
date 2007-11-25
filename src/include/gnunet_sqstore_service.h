@@ -64,7 +64,7 @@ typedef struct
    *
    * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO on temporary error
    */
-  int (*put) (const GNUNET_HashCode * key, const Datastore_Value * value);
+  int (*put) (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value);
 
   /**
    * Iterate over the results for a particular key
@@ -78,7 +78,7 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, Datum_Iterator iter, void *closure);
+              unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Update the priority for a particular key in the datastore.  If
@@ -115,7 +115,7 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateLowPriority) (unsigned int type,
-                             Datum_Iterator iter, void *closure);
+                             GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Iterate over content with anonymity zero.
@@ -127,7 +127,7 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateNonAnonymous) (unsigned int type,
-                              Datum_Iterator iter, void *closure);
+                              GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Iterate over the items in the datastore in ascending
@@ -140,7 +140,7 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*iterateExpirationTime) (unsigned int type,
-                                Datum_Iterator iter, void *closure);
+                                GNUNET_DatastoreValueIterator iter, void *closure);
 
 
   /**
@@ -151,7 +151,7 @@ typedef struct
    * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateMigrationOrder) (Datum_Iterator iter, void *closure);
+  int (*iterateMigrationOrder) (GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Iterate over all the items in the datastore
@@ -163,7 +163,7 @@ typedef struct
    * @return the number of results, GNUNET_SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*iterateAllNow) (Datum_Iterator iter, void *closure);
+  int (*iterateAllNow) (GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Delete the database.  The next operation is
@@ -171,7 +171,7 @@ typedef struct
    */
   void (*drop) (void);
 
-} SQstore_ServiceAPI;
+} GNUNET_SQstore_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

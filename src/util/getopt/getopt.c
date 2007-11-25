@@ -1000,8 +1000,8 @@ GNgetopt_long (int argc,
  */
 int
 GNUNET_parse_options (const char *binaryOptions,
-                      struct GE_Context *ectx,
-                      struct GC_Configuration *cfg,
+                      struct GNUNET_GE_Context *ectx,
+                      struct GNUNET_GC_Configuration *cfg,
                       const GNUNET_CommandLineOption * allOptions,
                       unsigned int argc, char *const *argv)
 {
@@ -1014,7 +1014,7 @@ GNUNET_parse_options (const char *binaryOptions,
   int cont;
   int c;
 
-  GE_ASSERT (ectx, argc > 0);
+  GNUNET_GE_ASSERT (ectx, argc > 0);
   clpc.binaryName = argv[0];
   clpc.binaryOptions = binaryOptions;
   clpc.allOptions = allOptions;
@@ -1066,8 +1066,8 @@ GNUNET_parse_options (const char *binaryOptions,
         }
       if (i == count)
         {
-          GE_LOG (ectx,
-                  GE_INFO | GE_USER | GE_IMMEDIATE,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                   _("Use --help to get a list of options.\n"));
           cont = GNUNET_SYSERR;
         }

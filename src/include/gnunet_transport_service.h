@@ -40,7 +40,7 @@ extern "C"
 /**
  * Type of the per-transport callback method.
  */
-typedef void (*TransportCallback) (TransportAPI * tapi, void *data);
+typedef void (*GNUNET_TransportCallback) (TransportAPI * tapi, void *data);
 
 /**
  * @brief Transport service definition.
@@ -76,7 +76,7 @@ typedef struct
    * @param data second argument to callback
    * @return number of transports, GNUNET_SYSERR on error
    */
-  int (*forEach) (TransportCallback callback, void *data);
+  int (*forEach) (GNUNET_TransportCallback callback, void *data);
 
   /**
    * Connect to a remote host using the advertised transport
@@ -90,7 +90,7 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connect) (const GNUNET_MessageHello * hello, const char *token,
+  GNUNET_TSession *(*connect) (const GNUNET_MessageHello * hello, const char *token,
                         int may_reuse);
 
   /**
@@ -104,7 +104,7 @@ typedef struct
    *              (must match when disconnect is called)
    * @return session handle on success, NULL on error
    */
-  TSession *(*connectFreely) (const GNUNET_PeerIdentity * peer,
+  GNUNET_TSession *(*connectFreely) (const GNUNET_PeerIdentity * peer,
                               int allowTempList, const char *token);
 
   /**
@@ -122,7 +122,7 @@ typedef struct
    * @return GNUNET_OK if the session could be associated,
    *         GNUNET_SYSERR if not.
    */
-  int (*associate) (TSession * tsession, const char *token);
+  int (*associate) (GNUNET_TSession * tsession, const char *token);
 
   /**
    * Get the cost of a message in for the given transport mechanism.
@@ -139,7 +139,7 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR on persistent error, GNUNET_NO on
    *         temporary error
    */
-  int (*send) (TSession * session,
+  int (*send) (GNUNET_TSession * session,
                const void *msg, unsigned int size, int important);
 
   /**
@@ -150,7 +150,7 @@ typedef struct
    *
    * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*disconnect) (TSession * session, const char *token);
+  int (*disconnect) (GNUNET_TSession * session, const char *token);
 
   /**
    * Verify that a hello is ok. Call a method
@@ -207,15 +207,15 @@ typedef struct
    *         GNUNET_NO if the transport would just drop the message,
    *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
+  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size, int important);
 
   /**
    * Verify that this session is associated (with the given
    * token).
    */
-  int (*assertAssociated) (TSession * tsession, const char *token);
+  int (*assertAssociated) (GNUNET_TSession * tsession, const char *token);
 
-} Transport_ServiceAPI;
+} GNUNET_Transport_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

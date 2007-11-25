@@ -46,7 +46,7 @@ typedef struct
   /**
    * Callback to call for each result.
    */
-  DataProcessor processor;
+  GNUNET_DataProcessor processor;
 
   /**
    * Extra argument for processor.
@@ -80,7 +80,7 @@ poll_thread (void *cls)
   GetInfo *info = cls;
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
-  DataContainer *cont;
+  GNUNET_DataContainer *cont;
   unsigned short size;
 
   while (info->aborted == GNUNET_NO)
@@ -91,20 +91,20 @@ poll_thread (void *cls)
       if (GNUNET_OK != GNUNET_client_connection_read (info->sock, &reply))
         break;
       if ((sizeof (CS_dht_request_put_MESSAGE) > ntohs (reply->size)) ||
-          (CS_PROTO_dht_REQUEST_PUT != ntohs (reply->type)))
+          (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           info->total = GNUNET_SYSERR;
           break;                /*  invalid reply */
         }
 
       put = (CS_dht_request_put_MESSAGE *) reply;
       /* re-use "expire" field of the reply (which is 0 anyway)
-         for the header of DataContainer (which fits) to avoid
+         for the header of GNUNET_DataContainer (which fits) to avoid
          copying -- go C pointer arithmetic! */
-      cont = (DataContainer *) & ((char *) &put[1])[-sizeof (DataContainer)];
+      cont = (GNUNET_DataContainer *) & ((char *) &put[1])[-sizeof (GNUNET_DataContainer)];
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
-      cont->size = htonl (size + sizeof (DataContainer));
+      cont->size = htonl (size + sizeof (GNUNET_DataContainer));
       if ((info->processor != NULL) &&
           (GNUNET_OK != info->processor (&put->key, cont, info->closure)))
         info->aborted = GNUNET_YES;
@@ -137,11 +137,11 @@ poll_thread (void *cls)
  * @return number of results on success, GNUNET_SYSERR on error (i.e. timeout)
  */
 int
-DHT_LIB_get (struct GC_Configuration *cfg,
-             struct GE_Context *ectx,
+GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
+             struct GNUNET_GE_Context *ectx,
              unsigned int type,
              const GNUNET_HashCode * key,
-             GNUNET_CronTime timeout, DataProcessor processor, void *closure)
+             GNUNET_CronTime timeout, GNUNET_DataProcessor processor, void *closure)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_get_MESSAGE req;
@@ -156,7 +156,7 @@ DHT_LIB_get (struct GC_Configuration *cfg,
   if (sock == NULL)
     return GNUNET_SYSERR;
   req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
-  req.header.type = htons (CS_PROTO_dht_REQUEST_GET);
+  req.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET);
   req.type = htonl (type);
   req.timeout = GNUNET_htonll (timeout);
   req.key = *key;
@@ -202,11 +202,11 @@ DHT_LIB_get (struct GC_Configuration *cfg,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-DHT_LIB_put (struct GC_Configuration *cfg,
-             struct GE_Context *ectx,
+GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
+             struct GNUNET_GE_Context *ectx,
              const GNUNET_HashCode * key,
              unsigned int type, GNUNET_CronTime expire,
-             const DataContainer * value)
+             const GNUNET_DataContainer * value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
@@ -216,29 +216,29 @@ DHT_LIB_put (struct GC_Configuration *cfg,
   now = GNUNET_get_time ();
   if (expire < now)
     {
-      GE_BREAK (ectx, 0);       /* content already expired!? */
+      GNUNET_GE_BREAK (ectx, 0);       /* content already expired!? */
       return GNUNET_SYSERR;
     }
 #if DEBUG_DHT_API
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "DHT_LIB_put called with value '%.*s'\n",
           ntohl (value->size), &value[1]);
 #endif
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return GNUNET_SYSERR;
-  GE_ASSERT (NULL, ntohl (value->size) >= sizeof (DataContainer));
+  GNUNET_GE_ASSERT (NULL, ntohl (value->size) >= sizeof (GNUNET_DataContainer));
   req = GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) +
-                       ntohl (value->size) - sizeof (DataContainer));
+                       ntohl (value->size) - sizeof (GNUNET_DataContainer));
   req->header.size
     = htons (sizeof (CS_dht_request_put_MESSAGE) +
-             ntohl (value->size) - sizeof (DataContainer));
-  req->header.type = htons (CS_PROTO_dht_REQUEST_PUT);
+             ntohl (value->size) - sizeof (GNUNET_DataContainer));
+  req->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   req->key = *key;
   req->type = htonl (type);
   req->expire = GNUNET_htonll (expire - now);   /* convert to relative time */
-  memcpy (&req[1], &value[1], ntohl (value->size) - sizeof (DataContainer));
+  memcpy (&req[1], &value[1], ntohl (value->size) - sizeof (GNUNET_DataContainer));
   ret = GNUNET_client_connection_write (sock, &req->header);
   GNUNET_client_connection_destroy (sock);
   GNUNET_free (req);

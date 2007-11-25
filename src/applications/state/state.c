@@ -51,7 +51,7 @@ static char *handle;
  * @return the number of bytes read on success, -1 on failure
  */
 static int
-stateReadContent (struct GE_Context *ectx, const char *name, void **result)
+stateReadContent (struct GNUNET_GE_Context *ectx, const char *name, void **result)
 {
   /* open file, must exist, open read only */
   char *dbh = handle;
@@ -61,7 +61,7 @@ stateReadContent (struct GE_Context *ectx, const char *name, void **result)
   unsigned long long fsize;
   size_t n;
 
-  GE_ASSERT (ectx, handle != NULL);
+  GNUNET_GE_ASSERT (ectx, handle != NULL);
   if (result == NULL)
     return -1;
   n = strlen (dbh) + strlen (name) + 2;
@@ -101,7 +101,7 @@ stateReadContent (struct GE_Context *ectx, const char *name, void **result)
  * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
  */
 static int
-stateAppendContent (struct GE_Context *ectx,
+stateAppendContent (struct GNUNET_GE_Context *ectx,
                     const char *name, int len, const void *block)
 {
   char *dbh = handle;
@@ -109,15 +109,15 @@ stateAppendContent (struct GE_Context *ectx,
   int fd;
   size_t n;
 
-  GE_ASSERT (ectx, handle != NULL);
+  GNUNET_GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
   fil = GNUNET_malloc (n);
   GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
   fd = GNUNET_disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_WARNING | GE_BULK | GE_USER, "open", fil);
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, "open", fil);
       GNUNET_free (fil);
       return GNUNET_SYSERR;     /* failed! */
     }
@@ -137,7 +137,7 @@ stateAppendContent (struct GE_Context *ectx,
  * @return GNUNET_SYSERR on error, GNUNET_OK if ok.
  */
 static int
-stateWriteContent (struct GE_Context *ectx,
+stateWriteContent (struct GNUNET_GE_Context *ectx,
                    const char *name, int len, const void *block)
 {
   char *dbh = handle;
@@ -145,22 +145,22 @@ stateWriteContent (struct GE_Context *ectx,
   int fd;
   size_t n;
 
-  GE_ASSERT (ectx, handle != NULL);
+  GNUNET_GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
   fil = GNUNET_malloc (n);
   GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
   fd = GNUNET_disk_file_open (ectx, fil, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
   if (fd == -1)
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_WARNING | GE_BULK | GE_USER, "open", fil);
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, "open", fil);
       GNUNET_free (fil);
       return GNUNET_SYSERR;     /* failed! */
     }
   WRITE (fd, block, len);
   if (0 != FTRUNCATE (fd, len))
-    GE_LOG_STRERROR_FILE (ectx,
-                          GE_WARNING | GE_BULK | GE_ADMIN, "ftruncate", fil);
+    GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                          GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN, "ftruncate", fil);
   GNUNET_disk_file_close (ectx, fil, fd);
   GNUNET_free (fil);
   return GNUNET_OK;
@@ -172,13 +172,13 @@ stateWriteContent (struct GE_Context *ectx,
  *        (without directory)
  */
 static int
-stateUnlinkFromDB (struct GE_Context *ectx, const char *name)
+stateUnlinkFromDB (struct GNUNET_GE_Context *ectx, const char *name)
 {
   char *dbh = handle;
   char *fil;
   size_t n;
 
-  GE_ASSERT (ectx, handle != NULL);
+  GNUNET_GE_ASSERT (ectx, handle != NULL);
   n = strlen (dbh) + strlen (name) + 2;
   fil = GNUNET_malloc (n);
   GNUNET_snprintf (fil, n, "%s/%s", dbh, name);
@@ -187,21 +187,21 @@ stateUnlinkFromDB (struct GE_Context *ectx, const char *name)
   return GNUNET_OK;
 }
 
-State_ServiceAPI *
-provide_module_state (CoreAPIForApplication * capi)
+GNUNET_State_ServiceAPI *
+provide_module_state (GNUNET_CoreAPIForPlugins * capi)
 {
-  static State_ServiceAPI api;
+  static GNUNET_State_ServiceAPI api;
 
   char *dbh;
   size_t n;
 
   dbh = NULL;
-  if (-1 == GC_get_configuration_value_filename (capi->cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                                  "GNUNETD",
                                                  "GNUNETD_HOME",
-                                                 VAR_DAEMON_DIRECTORY, &dbh))
+                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY, &dbh))
     return NULL;
-  GE_ASSERT (capi->ectx, dbh != NULL);
+  GNUNET_GE_ASSERT (capi->ectx, dbh != NULL);
   n = strlen (dbh) + strlen (DIR_EXT) + 5;
   handle = GNUNET_malloc (n);
   GNUNET_snprintf (handle, n, "%s/%s/", dbh, DIR_EXT);
@@ -225,7 +225,7 @@ provide_module_state (CoreAPIForApplication * capi)
 void
 release_module_state ()
 {
-  GE_ASSERT (NULL, handle != NULL);
+  GNUNET_GE_ASSERT (NULL, handle != NULL);
   GNUNET_free (handle);
   handle = NULL;
 }

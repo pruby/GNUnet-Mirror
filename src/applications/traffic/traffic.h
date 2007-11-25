@@ -95,7 +95,7 @@ typedef struct
    */
   TRAFFIC_COUNTER counters[1];
 
-} CS_traffic_info_MESSAGE_GENERIC;
+} CS_traffic_info_MESSAGNUNET_GE_GENERIC;
 
 /**
  * Request for CS_traffic_info_MESSAGE.

@@ -353,7 +353,7 @@ gaim_upnp_parse_description_response (const char *httpResponse,
   return controlURL;
 }
 
-#define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GE_LOG(NULL, GE_WARNING | GE_USER | GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
+#define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GNUNET_GE_LOG(NULL, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
 
 /**
  * Do the generic curl setup.
@@ -389,7 +389,7 @@ gaim_upnp_generate_action_message_and_send (const char *proxy,
   char *soapMessage;
   struct curl_slist *headers = NULL;
 
-  GE_ASSERT (NULL, cb != NULL);
+  GNUNET_GE_ASSERT (NULL, cb != NULL);
   if (0 != curl_global_init (CURL_GLOBAL_WIN32))
     return GNUNET_SYSERR;
   /* set the soap message */
@@ -424,8 +424,8 @@ gaim_upnp_generate_action_message_and_send (const char *proxy,
     ret = curl_easy_perform (curl);
 #if 0
   if (ret != CURLE_OK)
-    GE_LOG (NULL,
-            GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+    GNUNET_GE_LOG (NULL,
+            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
             _("%s failed for url `%s' and post-data `%s' at %s:%d: `%s'\n"),
             "curl_easy_perform",
             control_info.control_url,
@@ -470,8 +470,8 @@ looked_up_public_ip_cb (void *url_data,
   if (temp2 - temp >= sizeof (control_info.publicip))
     temp2 = temp + sizeof (control_info.publicip) - 1;
   memcpy (control_info.publicip, temp + 1, temp2 - (temp + 1));
-  GE_LOG (NULL,
-          GE_INFO | GE_USER | GE_BULK,
+  GNUNET_GE_LOG (NULL,
+          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
           _("upnp: NAT Returned IP: %s\n"), control_info.publicip);
   return len;
 }
@@ -535,8 +535,8 @@ gaim_upnp_parse_description (char *proxy, UPnPDiscoveryData * dd)
   CURL_EASY_SETOPT (curl, CURLOPT_NOSIGNAL, 1);
   ret = curl_easy_perform (curl);
   if (ret != CURLE_OK)
-    GE_LOG (NULL,
-            GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+    GNUNET_GE_LOG (NULL,
+            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
             _("%s failed at %s:%d: `%s'\n"),
             "curl_easy_perform",
             __FILE__, __LINE__, curl_easy_strerror (ret));
@@ -548,8 +548,8 @@ gaim_upnp_parse_description (char *proxy, UPnPDiscoveryData * dd)
 }
 
 int
-gaim_upnp_discover (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg, int sock)
+gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg, int sock)
 {
   char *proxy;
   struct hostent *hp;
@@ -649,7 +649,7 @@ gaim_upnp_discover (struct GE_Context *ectx,
   dd.full_url = GNUNET_strdup (startDescURL);
   dd.full_url[endDescURL - startDescURL] = '\0';
   proxy = NULL;
-  GC_get_configuration_value_string (cfg,
+  GNUNET_GC_get_configuration_value_string (cfg,
                                      "GNUNETD", "HTTP-PROXY", "", &proxy);
   ret = gaim_upnp_parse_description (proxy, &dd);
   GNUNET_free (dd.full_url);
@@ -677,8 +677,8 @@ gaim_upnp_get_public_ip ()
 }
 
 int
-gaim_upnp_change_port_mapping (struct GE_Context *ectx,
-                               struct GC_Configuration *cfg,
+gaim_upnp_change_port_mapping (struct GNUNET_GE_Context *ectx,
+                               struct GNUNET_GC_Configuration *cfg,
                                int do_add,
                                unsigned short portmap, const char *protocol)
 {
@@ -712,7 +712,7 @@ gaim_upnp_change_port_mapping (struct GE_Context *ectx,
                                        portmap, protocol);
     }
   proxy = NULL;
-  GC_get_configuration_value_string (cfg,
+  GNUNET_GC_get_configuration_value_string (cfg,
                                      "GNUNETD", "HTTP-PROXY", "", &proxy);
   ret = gaim_upnp_generate_action_message_and_send (proxy,
                                                     action_name,

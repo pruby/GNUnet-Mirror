@@ -134,7 +134,7 @@ test_sah (void *ah_cls,
 {
   static int ret_addr;
 
-  GE_BREAK (NULL, in == NULL);
+  GNUNET_GE_BREAK (NULL, in == NULL);
   in = sock;
   return &ret_addr;             /* dummy value for accept */
 }
@@ -153,7 +153,7 @@ test_sch (void *ch_cls,
   else if (sock == out)
     out = NULL;
   else
-    GE_BREAK (NULL, 0);
+    GNUNET_GE_BREAK (NULL, 0);
 }
 
 
@@ -174,7 +174,7 @@ check ()
   listen_sock = SOCKET (PF_INET, SOCK_STREAM, 6);       /* 6: TCP */
   if (listen_sock == -1)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return 1;
     }
 #if TCP_SYNCNT

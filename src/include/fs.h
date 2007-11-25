@@ -78,7 +78,7 @@ typedef struct
 /**
  * Server to client: content (in response to a CS_fs_request_search_MESSAGE).  The
  * header is followed by variable size data (the data portion
- * of the Datastore_Value).
+ * of the GNUNET_DatastoreValue).
  */
 typedef struct
 {
@@ -235,7 +235,7 @@ typedef struct
  */
 typedef struct
 {
-  DataContainer dc;
+  GNUNET_DataContainer dc;
   unsigned int reserved;        /* for 64-bit alignment */
   unsigned long long timeout;
 } GapWrapper;

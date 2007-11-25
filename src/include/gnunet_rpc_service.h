@@ -30,6 +30,7 @@
 #include "gnunet_core.h"
 #include "gnunet_util_containers.h"
 #include "gnunet_blockstore.h"
+#include "gnunet_rpc_lib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -43,74 +44,69 @@ extern "C"
  * The function was called successfully and the return values
  * are included in the message.
  */
-#define RPC_ERROR_OK 0
+#define GNUNET_RPC_ERROR_OK 0
 
 /**
  * The peer does not know anything about the desired RPC function.
  */
-#define RPC_ERROR_UNKNOWN_FUNCTION 1
+#define GNUNET_RPC_ERROR_UNKNOWN_FUNCTION 1
 
 /**
  * The return value cannot be put into a single message (but
  * otherwise the call was received and processed).
  */
-#define RPC_ERROR_RETURN_VALUE_TOO_LARGE 2
+#define GNUNET_RPC_ERROR_RETURN_VALUE_TOO_LARGE 2
 
 /**
  * The RPC call timed out
  */
-#define RPC_ERROR_TIMEOUT 3
+#define GNUNET_RPC_ERROR_TIMEOUT 3
 
 /**
  * An unknown error occured during processing of the RPC call.
  */
-#define RPC_ERROR_UNKNOWN 4
+#define GNUNET_RPC_ERROR_UNKNOWN 4
 
 /**
  * Invalid reply format.
  */
-#define RPC_ERROR_REPLY_MALFORMED 5
-
-/**
- * Type of RPC arguments.
- */
-#define RPC_Param struct GNUNET_Vector
+#define GNUNET_RPC_ERROR_REPLY_MALFORMED 5
 
 /**
  * Prototype for synchronous RPC functions.
  */
-typedef void (*RPC_Function) (const GNUNET_PeerIdentity * caller,
-                              RPC_Param * arguments, RPC_Param * results);
+typedef void (*GNUNET_RPC_SynchronousFunction) (const GNUNET_PeerIdentity * caller,
+                              GNUNET_RPC_CallParameters * arguments, GNUNET_RPC_CallParameters * results);
 
 /**
  * Opaque RPC internal per-RPC data.
  */
-struct CallInstance;
+struct GNUNET_RPC_CallHandle;
 
 /**
  * GNUNET_RSA_Signature of the callback function for the ASYNC_RPC to
  * be called upon completion of the ASYNC function.
  */
-typedef void (*Async_RPC_Complete_Callback) (RPC_Param * results,
+typedef void (*GNUNET_RPC_CompleteCallback) (GNUNET_RPC_CallParameters * results,
                                              int errorCode,
-                                             struct CallInstance * context);
+                                             struct GNUNET_RPC_CallHandle * context);
 
 /**
  * Prototype for asynchronous RPC functions.
  */
-typedef void (*ASYNC_RPC_Function) (const GNUNET_PeerIdentity * caller,
-                                    RPC_Param * arguments,
-                                    Async_RPC_Complete_Callback callback,
-                                    struct CallInstance * context);
+typedef void (*GNUNET_RPC_AsynchronousFunction) (const GNUNET_PeerIdentity * caller,
+                                    GNUNET_RPC_CallParameters * arguments,
+                                    GNUNET_RPC_CompleteCallback callback,
+                                    struct GNUNET_RPC_CallHandle * context);
 
 
 /**
  * Function to call once an asynchronous RPC completes.
  */
-typedef void (*RPC_Complete) (const GNUNET_PeerIdentity * responder,
-                              RPC_Param * results, void *closure);
+typedef void (*GNUNET_RPC_AsynchronousCompletionCallback) (const GNUNET_PeerIdentity * responder,
+                              GNUNET_RPC_CallParameters * results, void *closure);
 
-struct RPC_Record;
+struct GNUNET_RPC_RequestHandle;
 
 /**
  * The RPC service API.
@@ -123,30 +119,30 @@ typedef struct
    */
   int (*RPC_execute) (const GNUNET_PeerIdentity * receiver,
                       const char *name,
-                      RPC_Param * request_param,
-                      RPC_Param * return_param,
+                      GNUNET_RPC_CallParameters * request_param,
+                      GNUNET_RPC_CallParameters * return_param,
                       unsigned int importance, GNUNET_CronTime timeout);
 
   /**
    * Register a synchronous RPC function.
    */
-  int (*RPC_register) (const char *name, RPC_Function func);
+  int (*RPC_register) (const char *name, GNUNET_RPC_SynchronousFunction func);
 
   /**
    * Unregister a synchronous RPC function.
    */
-  int (*RPC_unregister) (const char *name, RPC_Function func);
+  int (*RPC_unregister) (const char *name, GNUNET_RPC_SynchronousFunction func);
 
   /**
    * Register an asynchronous RPC function.
    */
-  int (*RPC_register_async) (const char *name, ASYNC_RPC_Function func);
+  int (*RPC_register_async) (const char *name, GNUNET_RPC_AsynchronousFunction func);
 
 
   /**
    * Unregister an asynchronous RPC function.
    */
-  int (*RPC_unregister_async) (const char *name, ASYNC_RPC_Function func);
+  int (*RPC_unregister_async) (const char *name, GNUNET_RPC_AsynchronousFunction func);
 
   /**
    * Start an asynchronous RPC.
@@ -158,96 +154,23 @@ typedef struct
    * @return value required to stop the RPC (and the RPC must
    *  be explicitly stopped to free resources!)
    */
-  struct RPC_Record *(*RPC_start) (const GNUNET_PeerIdentity * receiver,
+  struct GNUNET_RPC_RequestHandle *(*RPC_start) (const GNUNET_PeerIdentity * receiver,
                                    const char *name,
-                                   RPC_Param * request_param,
+                                   GNUNET_RPC_CallParameters * request_param,
                                    unsigned int importance,
                                    GNUNET_CronTime timeout,
-                                   RPC_Complete callback, void *closure);
+                                   GNUNET_RPC_AsynchronousCompletionCallback callback, void *closure);
 
   /**
    * Stop an asynchronous RPC.
    *
    * @param record the return value from RPC_start
-   * @return RPC_ERROR_OK if the RPC was successful
+   * @return GNUNET_RPC_ERROR_OK if the RPC was successful
    */
-  int (*RPC_stop) (struct RPC_Record * record);
+  int (*RPC_stop) (struct GNUNET_RPC_RequestHandle * record);
 
 
-} RPC_ServiceAPI;
-
-/* **************** RPC library functions ****************** */
-
-/**
- * RPC argument handling helper functions.
- */
-RPC_Param *RPC_paramNew (void);
-
-void RPC_paramFree (RPC_Param * param);
-
-unsigned int RPC_paramCount (RPC_Param * param);
-
-void RPC_paramAdd (RPC_Param * param,
-                   const char *name,
-                   unsigned int dataLength, const void *data);
-
-void RPC_paramAddDataContainer (RPC_Param * param,
-                                const char *name, const DataContainer * data);
-
-const char *RPC_paramName (RPC_Param * param, unsigned int i);
-
-unsigned int RPC_paramIndex (RPC_Param * param, const char *name);
-
-/**
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int RPC_paramValueByName (RPC_Param * param,
-                          const char *name,
-                          unsigned int *dataLength, void **data);
-
-/**
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int RPC_paramValueByPosition (RPC_Param * param,
-                              unsigned int i,
-                              unsigned int *dataLength, void **data);
-
-/**
- * Return the value of the given parameter in the RPC parameter structure.
- *
- * @param param Target RPC parameter structure
- * @param value set to the value of the parameter
- */
-DataContainer *RPC_paramDataContainerByPosition (RPC_Param * param,
-                                                 unsigned int i);
-
-/**
- * Return the value of the named parameter in the RPC parameter
- * structure.
- *
- * @param param Target RPC parameter structure
- * @param value set to the value of the named parameter
- * @return GNUNET_SYSERR on error
- */
-DataContainer *RPC_paramDataContainerByName (RPC_Param * param,
-                                             const char *name);
-
-/**
- * Serialize the param array.  target must point to at least
- * RPC_paramSize(param) bytes of memory.
- */
-void RPC_paramSerialize (RPC_Param * param, char *target);
-
-/**
- * Deserialize parameters from buffer.
- */
-RPC_Param *RPC_paramDeserialize (char *buffer, size_t size);
-
-/**
- * How many bytes are required to serialize the param array?
- */
-size_t RPC_paramSize (RPC_Param * param);
-
+} GNUNET_RPC_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

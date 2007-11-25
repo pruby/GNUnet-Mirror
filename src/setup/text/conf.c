@@ -68,24 +68,24 @@ iprintf (int indent, const char *format, ...)
 }
 
 static char *
-getValueAsString (GNS_Type type, GNS_Value * val)
+getValueAsString (GNUNET_GNS_TreeNodeKindAndType type, GNUNET_GNS_Value * val)
 {
   char buf[92];
 
-  switch (type & GNS_TypeMask)
+  switch (type & GNUNET_GNS_TYPE_MASK)
     {
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       if (val->Boolean.val)
         return GNUNET_strdup (_("yes"));
       return GNUNET_strdup (_("no"));
-    case GNS_String:
-    case GNS_SC:
-    case GNS_MC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
       return GNUNET_strdup (val->String.val);
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       GNUNET_snprintf (buf, 92, "%f", val->Double.val);
       return GNUNET_strdup (buf);
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       GNUNET_snprintf (buf, 92, "%llu", val->UInt64.val);
       return GNUNET_strdup (buf);
     }
@@ -93,21 +93,21 @@ getValueAsString (GNS_Type type, GNS_Value * val)
 }
 
 static void
-printChoice (int indent, GNS_Type type, GNS_Value * val)
+printChoice (int indent, GNUNET_GNS_TreeNodeKindAndType type, GNUNET_GNS_Value * val)
 {
   int i;
   char defLet;
 
-  switch (type & GNS_TypeMask)
+  switch (type & GNUNET_GNS_TYPE_MASK)
     {
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       iprintf (indent,
                _("\tEnter yes (%s), no (%s) or help (%s): "),
                val->Boolean.def ? "Y" : "y",
                val->Boolean.def ? "n" : "N", "d", "?");
       break;
-    case GNS_String:
-    case GNS_MC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
       i = 0;
       defLet = '\0';
       if (val->String.legalRange[0] != NULL)
@@ -124,7 +124,7 @@ printChoice (int indent, GNS_Type type, GNS_Value * val)
                _("\tEnter string (type '%s' for default value `%s'): "), "d",
                val->String.def);
       break;
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       i = 0;
       defLet = '\0';
       while (val->String.legalRange[i] != NULL)
@@ -137,16 +137,16 @@ printChoice (int indent, GNS_Type type, GNS_Value * val)
             defLet = (i < 10) ? '0' + i : 'a' + i - 10;
           i++;
         }
-      GE_ASSERT (NULL, defLet != '\0');
+      GNUNET_GE_ASSERT (NULL, defLet != '\0');
       iprintf (indent, "\n\t (?) Help\n");
       iprintf (indent, _("\t Enter choice (default is %c): "), defLet);
       break;
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       iprintf (indent,
                _("\tEnter floating point (type '%s' for default value %f): "),
                "d", val->Double.def);
       break;
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       iprintf (indent,
                _
                ("\tEnter unsigned integer in interval [%llu,%llu] (type '%s' for default value %llu): "),
@@ -161,7 +161,7 @@ printChoice (int indent, GNS_Type type, GNS_Value * val)
  * @return GNUNET_OK on success, GNUNET_NO to display help, GNUNET_SYSERR to abort
  */
 static int
-readValue (GNS_Type type, GNS_Value * val)
+readValue (GNUNET_GNS_TreeNodeKindAndType type, GNUNET_GNS_Value * val)
 {
   int c;
   char buf[1024];
@@ -169,9 +169,9 @@ readValue (GNS_Type type, GNS_Value * val)
   int j;
   unsigned long long l;
 
-  switch (type & GNS_TypeMask)
+  switch (type & GNUNET_GNS_TYPE_MASK)
     {
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       while (1)
         {
           c = rd ();
@@ -201,8 +201,8 @@ readValue (GNS_Type type, GNS_Value * val)
             }
         }
       break;
-    case GNS_String:
-    case GNS_MC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
       i = 0;
       while (1)
         {
@@ -256,7 +256,7 @@ readValue (GNS_Type type, GNS_Value * val)
       val->String.val = GNUNET_strdup (buf[0] == ' ' ? &buf[1] : buf);
       printf ("\n");
       return GNUNET_OK;
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       while (1)
         {
           c = rd ();
@@ -296,7 +296,7 @@ readValue (GNS_Type type, GNS_Value * val)
           return GNUNET_OK;
         }
       /* unreachable */
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       i = 0;
       while (1)
         {
@@ -354,7 +354,7 @@ readValue (GNS_Type type, GNS_Value * val)
           fflush (stdout);
         }
       break;
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       i = 0;
       while (1)
         {
@@ -419,7 +419,7 @@ readValue (GNS_Type type, GNS_Value * val)
     default:
       fprintf (stderr,
                _("Unknown kind %x (internal error).  Skipping option.\n"),
-               type & GNS_TypeMask);
+               type & GNUNET_GNS_TYPE_MASK);
       return GNUNET_OK;
     }
   return GNUNET_OK;
@@ -427,8 +427,8 @@ readValue (GNS_Type type, GNS_Value * val)
 
 static int
 conf (int indent,
-      struct GC_Configuration *cfg,
-      struct GE_Context *ectx, struct GNS_Tree *tree)
+      struct GNUNET_GC_Configuration *cfg,
+      struct GNUNET_GE_Context *ectx, struct GNUNET_GNS_TreeNode *tree)
 {
   char choice;
   char *value;
@@ -437,9 +437,9 @@ conf (int indent,
 
   if (!tree->visible)
     return GNUNET_OK;
-  switch (tree->type & GNS_KindMask)
+  switch (tree->type & GNUNET_GNS_KIND_MASK)
     {
-    case GNS_Leaf:
+    case GNUNET_GNS_KIND_LEAF:
       ovalue = getValueAsString (tree->type, &tree->value);
       while (1)
         {
@@ -461,7 +461,7 @@ conf (int indent,
         }
       value = getValueAsString (tree->type, &tree->value);
       if ((0 != strcmp (value, ovalue)) &&
-          (0 != GC_set_configuration_value_string (cfg,
+          (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                    ectx,
                                                    tree->section,
                                                    tree->option, value)))
@@ -473,7 +473,7 @@ conf (int indent,
       GNUNET_free (value);
       GNUNET_free (ovalue);
       return GNUNET_OK;
-    case GNS_Node:
+    case GNUNET_GNS_KIND_NODE:
       choice = '\0';
       while (choice == '\0')
         {
@@ -507,7 +507,7 @@ conf (int indent,
             }
         }
       /* fall-through! */
-    case GNS_Root:
+    case GNUNET_GNS_KIND_ROOT:
       i = 0;
       while (tree->children[i] != NULL)
         {
@@ -520,7 +520,7 @@ conf (int indent,
     default:
       fprintf (stderr,
                _("Unknown kind %x (internal error).  Aborting.\n"),
-               tree->type & GNS_KindMask);
+               tree->type & GNUNET_GNS_KIND_MASK);
       return GNUNET_SYSERR;
     }
   return GNUNET_SYSERR;
@@ -530,11 +530,11 @@ int
 main_setup_text (int argc,
                  const char **argv,
                  struct GNUNET_PluginHandle *self,
-                 struct GE_Context *ectx,
-                 struct GC_Configuration *cfg,
-                 struct GNS_Context *gns, const char *filename, int is_daemon)
+                 struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg,
+                 struct GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
 {
-  struct GNS_Tree *root;
+  struct GNUNET_GNS_TreeNode *root;
   struct termios oldT;
   struct termios newT;
   char c;
@@ -552,7 +552,7 @@ main_setup_text (int argc,
 
   printf (_("You can always press ENTER to keep the current value.\n"));
   printf (_("Use the '%s' key to abort.\n"), "q");
-  root = GNS_get_tree (gns);
+  root = GNUNET_GNS_get_tree_root (gns);
   c = 'r';
   while (c == 'r')
     {
@@ -561,7 +561,7 @@ main_setup_text (int argc,
           ioctl (0, TCSETS, &oldT);
           return 1;
         }
-      if ((0 == GC_test_dirty (cfg)) && (0 == ACCESS (filename, R_OK)))
+      if ((0 == GNUNET_GC_test_dirty (cfg)) && (0 == ACCESS (filename, R_OK)))
         {
           printf (_("Configuration unchanged, no need to save.\n"));
           ioctl (0, TCSETS, &oldT);
@@ -581,7 +581,7 @@ main_setup_text (int argc,
     }
   if (c == 'y')
     {
-      ret = GC_write_configuration (cfg, filename);
+      ret = GNUNET_GC_write_configuration (cfg, filename);
       if (ret == 1)
         {
           printf (_("Configuration was unchanged, no need to save.\n"));
@@ -608,9 +608,9 @@ int
 dump_setup_text (int argc,
                  const char **argv,
                  struct GNUNET_PluginHandle *self,
-                 struct GE_Context *ectx,
-                 struct GC_Configuration *cfg,
-                 struct GNS_Context *gns, const char *filename, int is_daemon)
+                 struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg,
+                 struct GNUNET_GNS_Context *gns, const char *filename, int is_daemon)
 {
-  return GC_write_configuration (cfg, filename);
+  return GNUNET_GC_write_configuration (cfg, filename);
 }

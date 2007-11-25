@@ -33,7 +33,7 @@
  * Initialize message handling module (make ready to register
  * handlers).
  */
-void initHandler (struct GE_Context *e);
+void initHandler (struct GNUNET_GE_Context *e);
 
 /**
  * Shutdown message handling module.
@@ -59,7 +59,7 @@ void disableCoreProcessing ();
  */
 void injectMessage (const GNUNET_PeerIdentity * sender,
                     const char *msg,
-                    unsigned int size, int wasEncrypted, TSession * session);
+                    unsigned int size, int wasEncrypted, GNUNET_TSession * session);
 
 /**
  * Processing of a message from the transport layer (receive
@@ -80,7 +80,7 @@ void core_receive (P2P_PACKET * mp);
  *         handler for that type
  */
 int registerp2pHandler (const unsigned short type,
-                        MessagePartHandler callback);
+                        GNUNET_P2PRequestHandler callback);
 
 
 /**
@@ -93,7 +93,7 @@ int registerp2pHandler (const unsigned short type,
  *         handler for that type
  */
 int unregisterp2pHandler (const unsigned short type,
-                          MessagePartHandler callback);
+                          GNUNET_P2PRequestHandler callback);
 
 
 /**
@@ -110,7 +110,7 @@ int unregisterp2pHandler (const unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int registerPlaintextHandler (const unsigned short type,
-                              PlaintextMessagePartHandler callback);
+                              GNUNET_P2PPlaintextRequestHandler callback);
 
 
 /**
@@ -125,7 +125,7 @@ int registerPlaintextHandler (const unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int unregisterPlaintextHandler (const unsigned short type,
-                                PlaintextMessagePartHandler callback);
+                                GNUNET_P2PPlaintextRequestHandler callback);
 
 /**
  * Is a handler registered for messages of the given type?

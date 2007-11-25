@@ -33,76 +33,76 @@
 #include "gnunet_util_crypto.h"
 #include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 int
 main (int argc, char *argv[])
 {
   pid_t daemon;
   int ok;
-  struct ECRS_URI *uri = NULL;
-  struct ECRS_URI *euri = NULL;
-  struct ECRS_MetaData *meta = NULL;
+  struct GNUNET_ECRS_URI *uri = NULL;
+  struct GNUNET_ECRS_URI *euri = NULL;
+  struct GNUNET_ECRS_MetaData *meta = NULL;
   GNUNET_HashCode root;
   int old;
   int newVal;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
-  GE_ASSERT (NULL, daemon > 0);
+  GNUNET_GE_ASSERT (NULL, daemon > 0);
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          30 * GNUNET_CRON_SECONDS));
   ok = GNUNET_YES;
-  NS_deleteNamespace (ectx, cfg, "test");
+  GNUNET_NS_namespace_delete (ectx, cfg, "test");
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  old = NS_listNamespaces (ectx, cfg, NULL, NULL);
+  old = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
 
-  meta = ECRS_createMetaData ();
-  ECRS_addToMetaData (meta, 0, "test");
+  meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_inser (meta, 0, "test");
   GNUNET_create_random_hash (&root);
-  uri = NS_createNamespace (ectx,
+  uri = GNUNET_NS_namespace_create (ectx,
                             cfg,
                             1,
                             1,
                             GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,
                             "test", meta, NULL, &root);
   CHECK (uri != NULL);
-  newVal = NS_listNamespaces (ectx, cfg, NULL, NULL);
+  newVal = GNUNET_NS_namespace_list_all (ectx, cfg, NULL, NULL);
   CHECK (old < newVal);
-  old = NS_listNamespaceContent (ectx, cfg, "test", NULL, NULL);
-  euri = NS_addToNamespace (ectx,
+  old = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
+  euri = GNUNET_NS_add_to_namespace (ectx,
                             cfg,
                             1,
                             1,
                             GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,
                             "test", 42, NULL, &root, NULL, uri, meta);
   CHECK (euri != NULL);
-  newVal = NS_listNamespaceContent (ectx, cfg, "test", NULL, NULL);
+  newVal = GNUNET_NS_namespace_list_contents (ectx, cfg, "test", NULL, NULL);
   CHECK (old < newVal);
-  CHECK (GNUNET_OK == NS_deleteNamespace (ectx, cfg, "test"));
+  CHECK (GNUNET_OK == GNUNET_NS_namespace_delete (ectx, cfg, "test"));
   /* END OF TEST CODE */
 FAILURE:
   if (uri != NULL)
-    ECRS_freeUri (uri);
+    GNUNET_ECRS_uri_destroy (uri);
   if (euri != NULL)
-    ECRS_freeUri (euri);
+    GNUNET_ECRS_uri_destroy (euri);
   if (meta != NULL)
-    ECRS_freeMetaData (meta);
-  ECRS_deleteNamespace (ectx, cfg, "test");
+    GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_ECRS_namespace_delete (ectx, cfg, "test");
 
-  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
-  GC_free (cfg);
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 

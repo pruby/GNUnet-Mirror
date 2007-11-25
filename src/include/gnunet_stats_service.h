@@ -75,7 +75,7 @@ typedef struct
    */
   void (*change) (const int handle, const int delta);
 
-} Stats_ServiceAPI;
+} GNUNET_Stats_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

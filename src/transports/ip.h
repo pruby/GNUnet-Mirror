@@ -45,8 +45,8 @@
  *
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
-int getPublicIPAddress (struct GC_Configuration *cfg,
-                        struct GE_Context *ectx,
+int getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
+                        struct GNUNET_GE_Context *ectx,
                         GNUNET_IPv4Address * address);
 
 /**

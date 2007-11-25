@@ -41,7 +41,7 @@ GNUNET_random_u32 (int mode, unsigned int i)
 #endif
   unsigned int ret;
 
-  GE_ASSERT (NULL, i > 0);
+  GNUNET_GE_ASSERT (NULL, i > 0);
 
   if (mode == GNUNET_RANDOM_QUALITY_STRONG)
     {
@@ -84,7 +84,7 @@ GNUNET_permute (int mode, unsigned int n)
   unsigned int tmp;
   unsigned int x;
 
-  GE_ASSERT (NULL, n > 0);
+  GNUNET_GE_ASSERT (NULL, n > 0);
   ret = GNUNET_malloc (n * sizeof (int));
   for (i = 0; i < n; i++)
     ret[i] = i;
@@ -106,7 +106,7 @@ GNUNET_random_u64 (int mode, unsigned long long u)
 {
   unsigned long long ret;
 
-  GE_ASSERT (NULL, u > 0);
+  GNUNET_GE_ASSERT (NULL, u > 0);
   if (mode == GNUNET_RANDOM_QUALITY_STRONG)
     {
       lockGcrypt ();

@@ -44,15 +44,15 @@ extern "C"
 #endif
 
 
-struct FS_SEARCH_CONTEXT;
+struct GNUNET_FS_SearchContext;
 
-struct FS_SEARCH_CONTEXT *FS_SEARCH_makeContext (struct GE_Context *ectx,
-                                                 struct GC_Configuration *cfg,
+struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
+                                                 struct GNUNET_GC_Configuration *cfg,
                                                  struct GNUNET_Mutex *lock);
 
-void FS_SEARCH_destroyContext (struct FS_SEARCH_CONTEXT *ctx);
+void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
 
-struct FS_SEARCH_HANDLE;
+struct GNUNET_FS_SearchHandle;
 
 /**
  * Search for blocks matching the given key and type.
@@ -66,7 +66,7 @@ struct FS_SEARCH_HANDLE;
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-struct FS_SEARCH_HANDLE *FS_start_search (struct FS_SEARCH_CONTEXT *ctx,
+struct GNUNET_FS_SearchHandle *GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
                                           const GNUNET_PeerIdentity * target,
                                           unsigned int type,
                                           unsigned int keyCount,
@@ -74,64 +74,64 @@ struct FS_SEARCH_HANDLE *FS_start_search (struct FS_SEARCH_CONTEXT *ctx,
                                           unsigned int anonymityLevel,
                                           unsigned int prio,
                                           GNUNET_CronTime timeout,
-                                          Datum_Iterator callback,
+                                          GNUNET_DatastoreValueIterator callback,
                                           void *closure);
 
 /**
  * Stop searching.
  */
-void FS_stop_search (struct FS_SEARCH_CONTEXT *ctx,
-                     struct FS_SEARCH_HANDLE *handle);
+void GNUNET_FS_stop_search (struct GNUNET_FS_SearchContext *ctx,
+                     struct GNUNET_FS_SearchHandle *handle);
 
 /**
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-int FS_getAveragePriority (struct GNUNET_ClientServerConnection *sock);
+int GNUNET_FS_get_current_average_priority (struct GNUNET_ClientServerConnection *sock);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to
- * FS_index in terms of signature, the block for FS_index must be in
- * plaintext, whereas the block passed to FS_insert must be encrypted!
+ * GNUNET_FS_index in terms of signature, the block for GNUNET_FS_index must be in
+ * plaintext, whereas the block passed to GNUNET_FS_insert must be encrypted!
  *
  * @param block the block (properly encoded and all)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  * @see ecrs_core.h::fileBlockEncode
  */
-int FS_insert (struct GNUNET_ClientServerConnection *sock,
-               const Datastore_Value * block);
+int GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
+               const GNUNET_DatastoreValue * block);
 
 
 /**
  * Initialize to index a file.  Tries to do the symlinking.
  */
-int FS_initIndex (struct GNUNET_ClientServerConnection *sock,
+int GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
                   const GNUNET_HashCode * fileHc, const char *fn);
 
 /**
  * Index a block.  Note that while the API is VERY similar to
- * FS_insert in terms of signature, the block for FS_index must be in
- * plaintext, whereas the block passed to FS_insert must be encrypted!
+ * GNUNET_FS_insert in terms of signature, the block for GNUNET_FS_index must be in
+ * plaintext, whereas the block passed to GNUNET_FS_insert must be encrypted!
  *
  * @param fileHc the GNUNET_hash of the entire file
  * @param block the data from the file (in plaintext)
  * @param offset the offset of the block into the file
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int FS_index (struct GNUNET_ClientServerConnection *sock,
+int GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
               const GNUNET_HashCode * fileHc,
-              const Datastore_Value * block, unsigned long long offset);
+              const GNUNET_DatastoreValue * block, unsigned long long offset);
 
 /**
  * Delete a block.  The arguments are the same as the ones for
- * FS_insert.
+ * GNUNET_FS_insert.
  *
  * @param block the block (properly encoded and all)
  * @return number of items deleted on success,
  *    GNUNET_SYSERR on error
  */
-int FS_delete (struct GNUNET_ClientServerConnection *sock,
-               const Datastore_Value * block);
+int GNUNET_FS_delete (struct GNUNET_ClientServerConnection *sock,
+               const GNUNET_DatastoreValue * block);
 
 /**
  * Unindex a file.
@@ -139,7 +139,7 @@ int FS_delete (struct GNUNET_ClientServerConnection *sock,
  * @param hc the GNUNET_hash of the entire file
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int FS_unindex (struct GNUNET_ClientServerConnection *sock,
+int GNUNET_FS_unindex (struct GNUNET_ClientServerConnection *sock,
                 unsigned int blocksize, const GNUNET_HashCode * hc);
 
 /**
@@ -148,7 +148,7 @@ int FS_unindex (struct GNUNET_ClientServerConnection *sock,
  * @param hc the GNUNET_hash of the entire file
  * @return GNUNET_YES if so, GNUNET_NO if not, GNUNET_SYSERR on error
  */
-int FS_testIndexed (struct GNUNET_ClientServerConnection *sock,
+int GNUNET_FS_test_indexed (struct GNUNET_ClientServerConnection *sock,
                     const GNUNET_HashCode * hc);
 
 #if 0                           /* keep Emacsens' auto-indent happy */

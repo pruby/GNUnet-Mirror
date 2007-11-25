@@ -34,7 +34,7 @@
  * Start using the bootstrap service to obtain
  * advertisements if needed.
  */
-void startBootstrap (CoreAPIForApplication * capi);
+void startBootstrap (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Stop the bootstap service.

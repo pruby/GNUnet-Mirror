@@ -69,7 +69,7 @@ struct GNUNET_Vector;
  *        element (number of bits set per element in the set)
  * @return the bloomfilter
  */
-struct GNUNET_BloomFilter *GNUNET_bloomfilter_load (struct GE_Context *ectx,
+struct GNUNET_BloomFilter *GNUNET_bloomfilter_load (struct GNUNET_GE_Context *ectx,
                                                     const char *filename,
                                                     unsigned int size,
                                                     unsigned int k);

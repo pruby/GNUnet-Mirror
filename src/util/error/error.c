@@ -31,18 +31,18 @@
 #endif
 /**
  * Default context for logging errors; used
- * if NULL is passed to GE_LOG.
+ * if NULL is passed to GNUNET_GE_LOG.
  */
-static struct GE_Context *defaultContext;
+static struct GNUNET_GE_Context *defaultContext;
 
-typedef struct GE_Context
+typedef struct GNUNET_GE_Context
 {
-  GE_KIND mask;
-  GE_LogHandler handler;
+  GNUNET_GE_KIND mask;
+  GNUNET_GE_LogHandler handler;
   void *cls;
-  GE_CtxFree destruct;
-  GE_Confirm confirm;
-} GE_Context;
+  GNUNET_GE_CtxFree destruct;
+  GNUNET_GE_Confirm confirm;
+} GNUNET_GE_Context;
 
 /**
  * Does the given event match the mask?
@@ -50,15 +50,15 @@ typedef struct GE_Context
  * @param mask the filter mask
  */
 int
-GE_applies (GE_KIND have, GE_KIND mask)
+GNUNET_GE_applies (GNUNET_GE_KIND have, GNUNET_GE_KIND mask)
 {
-  GE_KIND both = mask & have;
-  return ((both & GE_EVENTKIND) &&
-          (both & GE_USERKIND) && (both & GE_ROUTEKIND));
+  GNUNET_GE_KIND both = mask & have;
+  return ((both & GNUNET_GE_EVENTKIND) &&
+          (both & GNUNET_GE_USERKIND) && (both & GNUNET_GE_ROUTEKIND));
 }
 
 void
-GE_LOG (struct GE_Context *ctx, GE_KIND kind, const char *message, ...)
+GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind, const char *message, ...)
 {
   va_list va;
   char date[64];
@@ -70,11 +70,11 @@ GE_LOG (struct GE_Context *ctx, GE_KIND kind, const char *message, ...)
   if (ctx == NULL)
     ctx = defaultContext;
 
-  if ((ctx != NULL) && (!GE_applies (kind, ctx->mask)))
+  if ((ctx != NULL) && (!GNUNET_GE_applies (kind, ctx->mask)))
     return;
   if ((ctx == NULL) &&
-      (((kind & (GE_IMMEDIATE | GE_BULK)) == 0) ||
-       ((kind & (GE_FATAL | GE_ERROR | GE_WARNING)) == 0)))
+      (((kind & (GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK)) == 0) ||
+       ((kind & (GNUNET_GE_FATAL | GNUNET_GE_ERROR | GNUNET_GE_WARNING)) == 0)))
     return;
 
   va_start (va, message);
@@ -102,7 +102,7 @@ GE_LOG (struct GE_Context *ctx, GE_KIND kind, const char *message, ...)
  *        error message
  */
 void
-GE_CONFIRM (struct GE_Context *ctx)
+GNUNET_GE_CONFIRM (struct GNUNET_GE_Context *ctx)
 {
   if (ctx == NULL)
     {
@@ -126,21 +126,21 @@ GE_CONFIRM (struct GE_Context *ctx)
  * for matching events.
  *
  * @param mask which events is this handler willing to process?
- *        an event must be non-zero in all 3 GE_KIND categories
+ *        an event must be non-zero in all 3 GNUNET_GE_KIND categories
  *        to be passed to this handler
  */
-struct GE_Context *
-GE_create_context_callback (GE_KIND mask,
-                            GE_LogHandler handler,
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_callback (GNUNET_GE_KIND mask,
+                            GNUNET_GE_LogHandler handler,
                             void *ctx,
-                            GE_CtxFree liberator, GE_Confirm confirm)
+                            GNUNET_GE_CtxFree liberator, GNUNET_GE_Confirm confirm)
 {
-  GE_Context *ret;
+  GNUNET_GE_Context *ret;
 
-  ret = malloc (sizeof (GE_Context));
+  ret = malloc (sizeof (GNUNET_GE_Context));
   if (ret == NULL)
     return NULL;
-  memset (ret, 0, sizeof (GE_Context));
+  memset (ret, 0, sizeof (GNUNET_GE_Context));
   ret->mask = mask;
   ret->handler = handler;
   ret->cls = ctx;
@@ -153,7 +153,7 @@ GE_create_context_callback (GE_KIND mask,
  * Free a log context.
  */
 void
-GE_free_context (GE_Context * ctx)
+GNUNET_GE_free_context (GNUNET_GE_Context * ctx)
 {
   if (ctx == NULL)
     return;
@@ -169,78 +169,78 @@ GE_free_context (GE_Context * ctx)
  * @param have the kind of event
  */
 int
-GE_isLogged (GE_Context * ctx, GE_KIND kind)
+GNUNET_GE_isLogged (GNUNET_GE_Context * ctx, GNUNET_GE_KIND kind)
 {
   if (ctx == NULL)
     return GNUNET_YES;
-  return GE_applies (kind, ctx->mask);
+  return GNUNET_GE_applies (kind, ctx->mask);
 }
 
 /**
  * Convert a textual description of a loglevel
- * to the respective GE_KIND.
- * @returns GE_INVALID if log does not parse
+ * to the respective GNUNET_GE_KIND.
+ * @returns GNUNET_GE_INVALID if log does not parse
  */
-GE_KIND
-GE_getKIND (const char *log)
+GNUNET_GE_KIND
+GNUNET_GE_getKIND (const char *log)
 {
   if (0 == strcasecmp (log, _("DEBUG")))
-    return GE_DEBUG;
+    return GNUNET_GE_DEBUG;
   if (0 == strcasecmp (log, _("STATUS")))
-    return GE_STATUS;
+    return GNUNET_GE_STATUS;
   if (0 == strcasecmp (log, _("WARNING")))
-    return GE_WARNING;
+    return GNUNET_GE_WARNING;
   if (0 == strcasecmp (log, _("ERROR")))
-    return GE_ERROR;
+    return GNUNET_GE_ERROR;
   if (0 == strcasecmp (log, _("FATAL")))
-    return GE_FATAL;
+    return GNUNET_GE_FATAL;
   if (0 == strcasecmp (log, _("USER")))
-    return GE_USER;
+    return GNUNET_GE_USER;
   if (0 == strcasecmp (log, _("ADMIN")))
-    return GE_ADMIN;
+    return GNUNET_GE_ADMIN;
   if (0 == strcasecmp (log, _("DEVELOPER")))
-    return GE_DEVELOPER;
+    return GNUNET_GE_DEVELOPER;
   if (0 == strcasecmp (log, _("REQUEST")))
-    return GE_REQUEST;
+    return GNUNET_GE_REQUEST;
   if (0 == strcasecmp (log, _("BULK")))
-    return GE_BULK;
+    return GNUNET_GE_BULK;
   if (0 == strcasecmp (log, _("IMMEDIATE")))
-    return GE_IMMEDIATE;
+    return GNUNET_GE_IMMEDIATE;
   if (0 == strcasecmp (log, _("ALL")))
-    return GE_ALL;
+    return GNUNET_GE_ALL;
 
-  return GE_INVALID;
+  return GNUNET_GE_INVALID;
 }
 
 /**
  * Convert KIND to String
  */
 const char *
-GE_kindToString (GE_KIND kind)
+GNUNET_GE_kindToString (GNUNET_GE_KIND kind)
 {
-  if ((kind & GE_DEBUG) > 0)
+  if ((kind & GNUNET_GE_DEBUG) > 0)
     return _("DEBUG");
-  if ((kind & GE_STATUS) > 0)
+  if ((kind & GNUNET_GE_STATUS) > 0)
     return _("STATUS");
-  if ((kind & GE_INFO) > 0)
+  if ((kind & GNUNET_GE_INFO) > 0)
     return _("INFO");
-  if ((kind & GE_WARNING) > 0)
+  if ((kind & GNUNET_GE_WARNING) > 0)
     return _("WARNING");
-  if ((kind & GE_ERROR) > 0)
+  if ((kind & GNUNET_GE_ERROR) > 0)
     return _("ERROR");
-  if ((kind & GE_FATAL) > 0)
+  if ((kind & GNUNET_GE_FATAL) > 0)
     return _("FATAL");
-  if ((kind & GE_USER) > 0)
+  if ((kind & GNUNET_GE_USER) > 0)
     return _("USER");
-  if ((kind & GE_ADMIN) > 0)
+  if ((kind & GNUNET_GE_ADMIN) > 0)
     return _("ADMIN");
-  if ((kind & GE_DEVELOPER) > 0)
+  if ((kind & GNUNET_GE_DEVELOPER) > 0)
     return _("DEVELOPER");
-  if ((kind & GE_REQUEST) > 0)
+  if ((kind & GNUNET_GE_REQUEST) > 0)
     return _("REQUEST");
-  if ((kind & GE_BULK) > 0)
+  if ((kind & GNUNET_GE_BULK) > 0)
     return _("BULK");
-  if ((kind & GE_IMMEDIATE) > 0)
+  if ((kind & GNUNET_GE_IMMEDIATE) > 0)
     return _("IMMEDIATE");
   return _("NOTHING");
 }
@@ -248,18 +248,18 @@ GE_kindToString (GE_KIND kind)
 
 typedef struct
 {
-  struct GE_Context *c1;
-  struct GE_Context *c2;
+  struct GNUNET_GE_Context *c1;
+  struct GNUNET_GE_Context *c2;
 } CPair;
 
 static void
-multiplexer (void *ctx, GE_KIND kind, const char *date, const char *msg)
+multiplexer (void *ctx, GNUNET_GE_KIND kind, const char *date, const char *msg)
 {
   CPair *pair = ctx;
 
-  if (GE_applies (kind, pair->c1->mask))
+  if (GNUNET_GE_applies (kind, pair->c1->mask))
     pair->c1->handler (pair->c1->cls, kind, date, msg);
-  if (GE_applies (kind, pair->c2->mask))
+  if (GNUNET_GE_applies (kind, pair->c2->mask))
     pair->c2->handler (pair->c2->cls, kind, date, msg);
 }
 
@@ -280,8 +280,8 @@ pairdestruct (void *ctx)
 {
   CPair *pair = ctx;
 
-  GE_free_context (pair->c1);
-  GE_free_context (pair->c2);
+  GNUNET_GE_free_context (pair->c1);
+  GNUNET_GE_free_context (pair->c2);
   free (ctx);
 }
 
@@ -289,25 +289,25 @@ pairdestruct (void *ctx)
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GE_Context *
-GE_create_context_multiplexer (struct GE_Context *ctx1,
-                               struct GE_Context *ctx2)
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_multiplexer (struct GNUNET_GE_Context *ctx1,
+                               struct GNUNET_GE_Context *ctx2)
 {
   CPair *cls;
-  GE_Context *ret;
+  GNUNET_GE_Context *ret;
 
   cls = malloc (sizeof (CPair));
   if (cls == NULL)
     return NULL;
   cls->c1 = ctx1;
   cls->c2 = ctx2;
-  ret = malloc (sizeof (GE_Context));
+  ret = malloc (sizeof (GNUNET_GE_Context));
   if (ret == NULL)
     {
       free (cls);
       return NULL;
     }
-  memset (ret, 0, sizeof (GE_Context));
+  memset (ret, 0, sizeof (GNUNET_GE_Context));
   ret->cls = cls;
   ret->handler = &multiplexer;
   ret->mask = ctx1->mask | ctx2->mask;
@@ -318,13 +318,13 @@ GE_create_context_multiplexer (struct GE_Context *ctx1,
 
 
 void
-GE_setDefaultContext (struct GE_Context *ctx)
+GNUNET_GE_setDefaultContext (struct GNUNET_GE_Context *ctx)
 {
   defaultContext = ctx;
 }
 
 const char *
-GE_strerror (int errnum)
+GNUNET_GE_strerror (int errnum)
 {
   return STRERROR (errnum);
 }

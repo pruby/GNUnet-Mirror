@@ -39,7 +39,7 @@ typedef struct
   /**
    * The handle for the query.
    */
-  struct FS_SEARCH_HANDLE *handle;
+  struct GNUNET_FS_SearchHandle *handle;
 
   /**
    * The keys (for the search).
@@ -98,22 +98,22 @@ typedef struct
   /**
    * Search context
    */
-  struct FS_SEARCH_CONTEXT *sctx;
+  struct GNUNET_FS_SearchContext *sctx;
 
   /**
    * queryCount pending searches.
    */
   PendingSearch **queries;
 
-  ECRS_SearchProgressCallback spcb;
+  GNUNET_ECRS_SearchResultProcessor spcb;
 
   void *spcbClosure;
 
   struct GNUNET_Mutex *lock;
 
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
   int aborted;
 
@@ -156,15 +156,15 @@ addPS (unsigned int type,
  * to the SQC.
  */
 static void
-addQueryForURI (const struct ECRS_URI *uri, SendQueriesContext * sqc)
+addQueryForURI (const struct GNUNET_ECRS_URI *uri, SendQueriesContext * sqc)
 {
-  struct GE_Context *ectx = sqc->ectx;
+  struct GNUNET_GE_Context *ectx = sqc->ectx;
 
   switch (uri->type)
     {
     case chk:
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("CHK URI not allowed for search.\n"));
       break;
     case sks:
@@ -176,7 +176,7 @@ addQueryForURI (const struct ECRS_URI *uri, SendQueriesContext * sqc)
                      &hk);
         GNUNET_hash_xor (&hk, &uri->data.sks.namespace, &keys[0]);      /* compute routing key r = H(identifier) ^ namespace */
         keys[1] = uri->data.sks.namespace;
-        addPS (S_BLOCK, 2, &keys[0], &uri->data.sks.identifier, /* identifier = decryption key */
+        addPS (GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED, 2, &keys[0], &uri->data.sks.identifier, /* identifier = decryption key */
                sqc);
         break;
       }
@@ -189,8 +189,8 @@ addQueryForURI (const struct ECRS_URI *uri, SendQueriesContext * sqc)
         int i;
 
 #if DEBUG_SEARCH
-        GE_LOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 "Computing queries (this may take a while).\n");
 #endif
         for (i = 0; i < uri->data.ksk.keywordCount; i++)
@@ -200,22 +200,22 @@ addQueryForURI (const struct ECRS_URI *uri, SendQueriesContext * sqc)
             pk = GNUNET_RSA_create_key_from_hash (&hc);
             GNUNET_RSA_get_public_key (pk, &pub);
             GNUNET_hash (&pub, sizeof (GNUNET_RSA_PublicKey), &query);
-            addPS (ANY_BLOCK,   /* K_BLOCK, N_BLOCK or KN_BLOCK ok */
+            addPS (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,   /* GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD, GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE or GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE ok */
                    1, &query, &hc, sqc);
             GNUNET_RSA_free_key (pk);
           }
 #if DEBUG_SEARCH
-        GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Queries ready.\n");
+        GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Queries ready.\n");
 #endif
         break;
       }
     case loc:
-      GE_LOG (ectx,
-              GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("LOC URI not allowed for search.\n"));
       break;
     default:
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       /* unknown URI type */
       break;
     }
@@ -250,7 +250,7 @@ computeIdAtTime (const SBlock * sb, GNUNET_Int32Time now, GNUNET_HashCode * c)
                               c);
       return GNUNET_OK;
     }
-  GE_ASSERT (NULL, ntohl (sb->updateInterval) != 0);
+  GNUNET_GE_ASSERT (NULL, ntohl (sb->updateInterval) != 0);
   pos = ntohl (sb->creationTime);
   GNUNET_hash_difference (&sb->identifierIncrement, &sb->nextIdentifier, c);
 
@@ -278,17 +278,17 @@ processNBlock (const NBlock * nb,
                const GNUNET_HashCode * key,
                unsigned int size, SendQueriesContext * sqc)
 {
-  struct GE_Context *ectx = sqc->ectx;
-  ECRS_FileInfo fi;
-  struct ECRS_URI uri;
+  struct GNUNET_GE_Context *ectx = sqc->ectx;
+  GNUNET_ECRS_FileInfo fi;
+  struct GNUNET_ECRS_URI uri;
   int ret;
 
-  fi.meta = ECRS_deserializeMetaData (ectx,
+  fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
                                       (const char *) &nb[1],
                                       size - sizeof (NBlock));
   if (fi.meta == NULL)
     {
-      GE_BREAK (ectx, 0);       /* nblock malformed */
+      GNUNET_GE_BREAK (ectx, 0);       /* nblock malformed */
       return GNUNET_SYSERR;
     }
   fi.uri = &uri;
@@ -303,7 +303,7 @@ processNBlock (const NBlock * nb,
     }
   else
     ret = GNUNET_OK;
-  ECRS_freeMetaData (fi.meta);
+  GNUNET_ECRS_meta_data_destroy (fi.meta);
   return ret;
 }
 
@@ -316,11 +316,11 @@ processNBlock (const NBlock * nb,
  */
 static int
 receiveReplies (const GNUNET_HashCode * key,
-                const Datastore_Value * value, SendQueriesContext * sqc)
+                const GNUNET_DatastoreValue * value, SendQueriesContext * sqc)
 {
-  struct GE_Context *ectx = sqc->ectx;
+  struct GNUNET_GE_Context *ectx = sqc->ectx;
   unsigned int type;
-  ECRS_FileInfo fi;
+  GNUNET_ECRS_FileInfo fi;
   int i;
   unsigned int size;
   PendingSearch *ps;
@@ -328,10 +328,10 @@ receiveReplies (const GNUNET_HashCode * key,
   GNUNET_HashCode query;
 
   type = ntohl (value->type);
-  size = ntohl (value->size) - sizeof (Datastore_Value);
+  size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
 #if DEBUG_SEARCH
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Search received reply of type %u and size %u.\n", type, size);
 #endif
   if (GNUNET_OK !=
@@ -343,7 +343,7 @@ receiveReplies (const GNUNET_HashCode * key,
       if ((0 == memcmp (&query,
                         &ps->keys[0], sizeof (GNUNET_HashCode))) &&
           ((ps->type == type) ||
-           (ps->type == ANY_BLOCK)) &&
+           (ps->type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)) &&
           (GNUNET_YES == isDatumApplicable (type,
                                             size,
                                             (const DBlock *) &value[1],
@@ -351,7 +351,7 @@ receiveReplies (const GNUNET_HashCode * key,
         {
           switch (type)
             {
-            case K_BLOCK:
+            case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
               {
                 KBlock *kb;
                 const char *dstURI;
@@ -365,39 +365,39 @@ receiveReplies (const GNUNET_HashCode * key,
                 kb = GNUNET_malloc (size);
                 memcpy (kb, &value[1], size);
 #if DEBUG_SEARCH
-                IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+                IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                           GNUNET_hash_to_enc (&ps->decryptKey, &enc));
-                GE_LOG (ectx,
-                        GE_DEBUG | GE_REQUEST | GE_USER,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                         "Decrypting KBlock with key %s.\n", &enc);
 #endif
-                ECRS_decryptInPlace (&ps->decryptKey,
+                GNUNET_ECRS_decryptInPlace (&ps->decryptKey,
                                      &kb[1], size - sizeof (KBlock));
                 j = sizeof (KBlock);
                 while ((j < size) && (((const char *) kb)[j] != '\0'))
                   j++;
                 if (j == size)
                   {
-                    GE_BREAK (ectx, 0); /* kblock malformed */
+                    GNUNET_GE_BREAK (ectx, 0); /* kblock malformed */
                     GNUNET_free (kb);
                     return GNUNET_SYSERR;
                   }
                 dstURI = (const char *) &kb[1];
                 j++;
-                fi.meta = ECRS_deserializeMetaData (ectx,
+                fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
                                                     &((const char *) kb)[j],
                                                     size - j);
                 if (fi.meta == NULL)
                   {
-                    GE_BREAK (ectx, 0); /* kblock malformed */
+                    GNUNET_GE_BREAK (ectx, 0); /* kblock malformed */
                     GNUNET_free (kb);
                     return GNUNET_SYSERR;
                   }
-                fi.uri = ECRS_stringToUri (ectx, dstURI);
+                fi.uri = GNUNET_ECRS_string_to_uri (ectx, dstURI);
                 if (fi.uri == NULL)
                   {
-                    GE_BREAK (ectx, 0); /* kblock malformed */
-                    ECRS_freeMetaData (fi.meta);
+                    GNUNET_GE_BREAK (ectx, 0); /* kblock malformed */
+                    GNUNET_ECRS_meta_data_destroy (fi.meta);
                     GNUNET_free (kb);
                     return GNUNET_SYSERR;
                   }
@@ -411,12 +411,12 @@ receiveReplies (const GNUNET_HashCode * key,
                   }
                 else
                   ret = GNUNET_OK;
-                ECRS_freeUri (fi.uri);
-                ECRS_freeMetaData (fi.meta);
+                GNUNET_ECRS_uri_destroy (fi.uri);
+                GNUNET_ECRS_meta_data_destroy (fi.meta);
                 GNUNET_free (kb);
                 return ret;
               }
-            case N_BLOCK:
+            case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
               {
                 const NBlock *nb;
 
@@ -425,7 +425,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 nb = (const NBlock *) &value[1];
                 return processNBlock (nb, NULL, size, sqc);
               }
-            case KN_BLOCK:
+            case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
               {
                 KNBlock *kb;
                 int ret;
@@ -434,7 +434,7 @@ receiveReplies (const GNUNET_HashCode * key,
                   return GNUNET_SYSERR;
                 kb = GNUNET_malloc (size);
                 memcpy (kb, &value[1], size);
-                ECRS_decryptInPlace (&ps->decryptKey,
+                GNUNET_ECRS_decryptInPlace (&ps->decryptKey,
                                      &kb->nblock,
                                      size - sizeof (KBlock) -
                                      sizeof (unsigned int));
@@ -445,7 +445,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 GNUNET_free (kb);
                 return ret;
               }
-            case S_BLOCK:
+            case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
               {
                 SBlock *sb;
                 const char *dstURI;
@@ -458,7 +458,7 @@ receiveReplies (const GNUNET_HashCode * key,
                   return GNUNET_SYSERR;
                 sb = GNUNET_malloc (size);
                 memcpy (sb, &value[1], size);
-                ECRS_decryptInPlace (&ps->decryptKey,
+                GNUNET_ECRS_decryptInPlace (&ps->decryptKey,
                                      &sb->creationTime,
                                      size
                                      - sizeof (unsigned int)
@@ -471,27 +471,27 @@ receiveReplies (const GNUNET_HashCode * key,
                   j++;
                 if (j == size - sizeof (SBlock))
                   {
-                    GE_BREAK (ectx, 0); /* sblock malformed */
+                    GNUNET_GE_BREAK (ectx, 0); /* sblock malformed */
                     GNUNET_free (sb);
                     return GNUNET_SYSERR;
                   }
                 j++;
                 /* j == strlen(dstURI) + 1 */
-                fi.meta = ECRS_deserializeMetaData (ectx,
+                fi.meta = GNUNET_ECRS_meta_data_deserialize (ectx,
                                                     &dstURI[j],
                                                     size - j -
                                                     sizeof (SBlock));
                 if (fi.meta == NULL)
                   {
-                    GE_BREAK (ectx, 0); /* sblock malformed */
+                    GNUNET_GE_BREAK (ectx, 0); /* sblock malformed */
                     GNUNET_free (sb);
                     return GNUNET_SYSERR;
                   }
-                fi.uri = ECRS_stringToUri (ectx, dstURI);
+                fi.uri = GNUNET_ECRS_string_to_uri (ectx, dstURI);
                 if (fi.uri == NULL)
                   {
-                    GE_BREAK (ectx, 0); /* sblock malformed */
-                    ECRS_freeMetaData (fi.meta);
+                    GNUNET_GE_BREAK (ectx, 0); /* sblock malformed */
+                    GNUNET_ECRS_meta_data_destroy (fi.meta);
                     GNUNET_free (sb);
                     return GNUNET_SYSERR;
                   }
@@ -503,8 +503,8 @@ receiveReplies (const GNUNET_HashCode * key,
                   }
                 else
                   ret = GNUNET_OK;
-                ECRS_freeUri (fi.uri);
-                ECRS_freeMetaData (fi.meta);
+                GNUNET_ECRS_uri_destroy (fi.uri);
+                GNUNET_ECRS_meta_data_destroy (fi.meta);
 
                 /* compute current/NEXT URI (if updateable SBlock) and issue
                    respective query automatically! */
@@ -523,7 +523,7 @@ receiveReplies (const GNUNET_HashCode * key,
                   }
                 if (ps->keyCount != 2)
                   {
-                    GE_BREAK (ectx, 0);
+                    GNUNET_GE_BREAK (ectx, 0);
                     GNUNET_free (sb);
                     return GNUNET_SYSERR;
                   }
@@ -536,7 +536,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 return ret;
               }
             default:
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
               break;
             }                   /* end switch */
         }                       /* for all matches */
@@ -553,13 +553,13 @@ receiveReplies (const GNUNET_HashCode * key,
  * @param uri set to the URI of the uploaded file
  */
 int
-ECRS_search (struct GE_Context *ectx,
-             struct GC_Configuration *cfg,
-             const struct ECRS_URI *uri,
+GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
+             struct GNUNET_GC_Configuration *cfg,
+             const struct GNUNET_ECRS_URI *uri,
              unsigned int anonymityLevel,
              GNUNET_CronTime timeout,
-             ECRS_SearchProgressCallback spcb,
-             void *spcbClosure, ECRS_TestTerminate tt, void *ttClosure)
+             GNUNET_ECRS_SearchResultProcessor spcb,
+             void *spcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure)
 {
   SendQueriesContext ctx;
   PendingSearch *ps;
@@ -581,7 +581,7 @@ ECRS_search (struct GE_Context *ectx,
   ctx.spcbClosure = spcbClosure;
   ctx.aborted = GNUNET_NO;
   ctx.lock = GNUNET_mutex_create (GNUNET_YES);
-  ctx.sctx = FS_SEARCH_makeContext (ectx, cfg, ctx.lock);
+  ctx.sctx = GNUNET_FS_create_search_context (ectx, cfg, ctx.lock);
   addQueryForURI (uri, &ctx);
   while (((NULL == tt) ||
           (GNUNET_OK == tt (ttClosure))) &&
@@ -597,7 +597,7 @@ ECRS_search (struct GE_Context *ectx,
           if ((now < ps->timeout) && (ps->timeout != 0))
             continue;
           if (ps->handle != NULL)
-            FS_stop_search (ctx.sctx, ps->handle);
+            GNUNET_FS_stop_search (ctx.sctx, ps->handle);
           /* increase ttl/priority */
           new_ttl = ps->timeout - ps->lastTransmission;
           if (new_ttl < 4 * 5 * GNUNET_CRON_SECONDS)
@@ -623,13 +623,13 @@ ECRS_search (struct GE_Context *ectx,
           ps->priority = new_priority;
           ps->lastTransmission = now;
 #if DEBUG_SEARCH
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "ECRS initiating FS search with timeout %llus and priority %u.\n",
                   (ps->timeout - now) / GNUNET_CRON_SECONDS, ps->priority);
 #endif
           ps->handle
-            = FS_start_search (ctx.sctx,
+            = GNUNET_FS_start_search (ctx.sctx,
                                NULL,
                                ps->type,
                                ps->keyCount,
@@ -637,7 +637,7 @@ ECRS_search (struct GE_Context *ectx,
                                anonymityLevel,
                                ps->priority,
                                ps->timeout,
-                               (Datum_Iterator) & receiveReplies, &ctx);
+                               (GNUNET_DatastoreValueIterator) & receiveReplies, &ctx);
         }
       GNUNET_mutex_unlock (ctx.lock);
       if (((NULL != tt) &&
@@ -650,12 +650,12 @@ ECRS_search (struct GE_Context *ectx,
   for (i = 0; i < ctx.queryCount; i++)
     {
       if (ctx.queries[i]->handle != NULL)
-        FS_stop_search (ctx.sctx, ctx.queries[i]->handle);
+        GNUNET_FS_stop_search (ctx.sctx, ctx.queries[i]->handle);
       GNUNET_free (ctx.queries[i]->keys);
       GNUNET_free (ctx.queries[i]);
     }
   GNUNET_array_grow (ctx.queries, ctx.queryCount, 0);
-  FS_SEARCH_destroyContext (ctx.sctx);
+  GNUNET_FS_destroy_search_context (ctx.sctx);
   GNUNET_mutex_destroy (ctx.lock);
   return GNUNET_OK;
 }

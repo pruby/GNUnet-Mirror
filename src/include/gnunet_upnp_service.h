@@ -52,7 +52,7 @@ typedef struct
   int (*get_ip) (unsigned short port, const char *protocol,
                  GNUNET_IPv4Address * address);
 
-} UPnP_ServiceAPI;
+} GNUNET_UPnP_ServiceAPI;
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

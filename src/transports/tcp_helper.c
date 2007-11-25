@@ -28,7 +28,7 @@ typedef int (*BlacklistedTester) (const void *addr, unsigned int addr_len);
 
 /**
  * Initial handshake message. Note that the beginning
- * must match the CS_MESSAGE_HEADER since we are using tcpio.
+ * must match the CS_MESSAGNUNET_GE_HEADER since we are using tcpio.
  */
 typedef struct
 {
@@ -56,7 +56,7 @@ typedef struct TCPSession
   /**
    * Our tsession.
    */
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
   /**
    * mutex for synchronized access to 'users'
@@ -97,7 +97,7 @@ typedef struct TCPSession
  */
 static CoreAPIForTransport *coreAPI;
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_bytesReceived;
 
@@ -107,7 +107,7 @@ static int stat_bytesDropped;
 
 static struct GNUNET_SelectHandle *selector;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_Mutex *tcplock;
 
@@ -143,21 +143,21 @@ freeTCPSession (TCPSession * tcpsession)
       pos = pos->next;
     }
   GNUNET_mutex_unlock (tcplock);
-  GE_ASSERT (ectx, GNUNET_OK == coreAPI->assertUnused (tcpsession->tsession));
+  GNUNET_GE_ASSERT (ectx, GNUNET_OK == coreAPI->assertUnused (tcpsession->tsession));
   GNUNET_mutex_lock (tcplock);
   GNUNET_free (tcpsession->tsession);
   GNUNET_free (tcpsession);
 }
 
 static int
-tcpDisconnect (TSession * tsession)
+tcpDisconnect (GNUNET_TSession * tsession)
 {
   TCPSession *tcpsession = tsession->internal;
 
-  GE_ASSERT (ectx, selector != NULL);
+  GNUNET_GE_ASSERT (ectx, selector != NULL);
   GNUNET_mutex_lock (tcplock);
   GNUNET_mutex_lock (tcpsession->lock);
-  GE_ASSERT (ectx, tcpsession->users > 0);
+  GNUNET_GE_ASSERT (ectx, tcpsession->users > 0);
   tcpsession->users--;
   if ((tcpsession->users > 0) || (tcpsession->in_select == GNUNET_YES))
     {
@@ -171,8 +171,8 @@ tcpDisconnect (TSession * tsession)
   GNUNET_mutex_unlock (tcpsession->lock);
   GNUNET_mutex_unlock (tcplock);
 #if DEBUG_TCP
-  GE_LOG (ectx,
-          GE_DEBUG | GE_USER | GE_BULK,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
           "TCP disconnect closes socket session.\n");
 #endif
   GNUNET_select_disconnect (selector, tcpsession->sock);
@@ -202,11 +202,11 @@ tcpDisconnect (TSession * tsession)
  *         GNUNET_SYSERR if not.
  */
 static int
-tcpAssociate (TSession * tsession)
+tcpAssociate (GNUNET_TSession * tsession)
 {
   TCPSession *tcpSession;
 
-  GE_ASSERT (ectx, tsession != NULL);
+  GNUNET_GE_ASSERT (ectx, tsession != NULL);
   tcpSession = tsession->internal;
   GNUNET_mutex_lock (tcpSession->lock);
   if ((tcpSession->users == 0) && (tcpSession->in_select == GNUNET_YES))
@@ -229,7 +229,7 @@ select_message_handler (void *mh_cls,
                         struct GNUNET_SocketHandle *sock,
                         void *sock_ctx, const GNUNET_MessageHeader * msg)
 {
-  TSession *tsession = sock_ctx;
+  GNUNET_TSession *tsession = sock_ctx;
   TCPSession *tcpSession;
   unsigned int len;
   P2P_PACKET *mp;
@@ -237,7 +237,7 @@ select_message_handler (void *mh_cls,
 
   if (GNUNET_SYSERR == tcpAssociate (tsession))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   len = ntohs (msg->size);
@@ -247,13 +247,13 @@ select_message_handler (void *mh_cls,
   if (GNUNET_YES == tcpSession->expectingWelcome)
     {
       /* at this point, we should be the only user! */
-      GE_ASSERT (NULL, tcpSession->users == 1);
+      GNUNET_GE_ASSERT (NULL, tcpSession->users == 1);
 
       welcome = (const TCPWelcome *) msg;
       if ((ntohs (welcome->header.type) != 0) || (len != sizeof (TCPWelcome)))
         {
-          GE_LOG (ectx,
-                  GE_WARNING | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _
                   ("Received malformed message instead of welcome message. Closing.\n"));
           tcpDisconnect (tsession);
@@ -271,8 +271,8 @@ select_message_handler (void *mh_cls,
       /* send msg to core! */
       if (len <= sizeof (GNUNET_MessageHeader))
         {
-          GE_LOG (ectx,
-                  GE_WARNING | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _
                   ("Received malformed message from tcp-peer connection. Closing.\n"));
           tcpDisconnect (tsession);
@@ -303,21 +303,21 @@ select_accept_handler (void *ah_cls,
                        const void *addr, unsigned int addr_len)
 {
   BlacklistedTester blt = ah_cls;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
   TCPSession *tcpSession;
 
-  GE_ASSERT (NULL, sock != NULL);
+  GNUNET_GE_ASSERT (NULL, sock != NULL);
   if (GNUNET_NO != blt (addr, addr_len))
     {
 #if DEBUG_TCP
-      GE_LOG (ectx,
-              GE_DEBUG | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
               "Rejecting TCP connection (blacklisted).\n");
 #endif
       return NULL;
     }
 #if DEBUG_TCP
-  GE_LOG (ectx, GE_DEBUG | GE_USER | GE_BULK, "Accepting TCP connection.\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK, "Accepting TCP connection.\n");
 #endif
   tcpSession = GNUNET_malloc (sizeof (TCPSession));
   memset (tcpSession, 0, sizeof (TCPSession));
@@ -330,9 +330,9 @@ select_accept_handler (void *ah_cls,
   tcpSession->users = 0;
   tcpSession->in_select = GNUNET_YES;
 
-  tsession = GNUNET_malloc (sizeof (TSession));
-  memset (tsession, 0, sizeof (TSession));
-  tsession->ttype = TCP_PROTOCOL_NUMBER;
+  tsession = GNUNET_malloc (sizeof (GNUNET_TSession));
+  memset (tsession, 0, sizeof (GNUNET_TSession));
+  tsession->ttype = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
   tsession->internal = tcpSession;
   tcpSession->tsession = tsession;
   tsession->peer = *(coreAPI->myIdentity);
@@ -345,7 +345,7 @@ select_accept_handler (void *ah_cls,
     }
   else
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       tcpSession->addr_len = 0;
       tcpSession->accept_addr = NULL;
     }
@@ -361,17 +361,17 @@ select_close_handler (void *ch_cls,
                       struct GNUNET_SelectHandle *sh,
                       struct GNUNET_SocketHandle *sock, void *sock_ctx)
 {
-  TSession *tsession = sock_ctx;
+  GNUNET_TSession *tsession = sock_ctx;
   TCPSession *tcpSession = tsession->internal;
 
 #if DEBUG_TCP
   GNUNET_EncName enc;
 
   IF_GELOG (ectx,
-            GE_DEBUG | GE_DEVELOPER | GE_BULK,
+            GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
             GNUNET_hash_to_enc (&tcpSession->sender.hashPubKey, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "Closed TCP socket of `%s'.\n", &enc);
 #endif
   GNUNET_mutex_lock (tcplock);
@@ -398,7 +398,7 @@ select_close_handler (void *ch_cls,
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 static int
-tcpSend (TSession * tsession,
+tcpSend (GNUNET_TSession * tsession,
          const void *msg, unsigned int size, int important)
 {
   TCPSession *tcpSession;
@@ -408,7 +408,7 @@ tcpSend (TSession * tsession,
   tcpSession = tsession->internal;
   if (size >= GNUNET_MAX_BUFFER_SIZE - sizeof (GNUNET_MessageHeader))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;     /* too big */
     }
   if (tcpSession->in_select == GNUNET_NO)
@@ -417,10 +417,10 @@ tcpSend (TSession * tsession,
       GNUNET_EncName enc;
 
       IF_GELOG (ectx,
-                GE_DEBUG | GE_DEVELOPER | GE_BULK,
+                GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&tcpSession->sender.hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_DEVELOPER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
               "Cannot send message - TCP socket of `%s' already closed!\n",
               &enc);
 #endif
@@ -431,15 +431,15 @@ tcpSend (TSession * tsession,
       if (stats != NULL)
         stats->change (stat_bytesDropped, size);
 #if DEBUG_TCP
-      GE_LOG (ectx,
-              GE_DEBUG | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
               "Could not sent TCP message -- tcp transport is down.\n");
 #endif
       return GNUNET_SYSERR;
     }
   if (size == 0)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (tcpSession->sock == NULL)
@@ -447,8 +447,8 @@ tcpSend (TSession * tsession,
       if (stats != NULL)
         stats->change (stat_bytesDropped, size);
 #if DEBUG_TCP
-      GE_LOG (ectx,
-              GE_DEBUG | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
               "Could not sent TCP message -- other side closed connection.\n");
 #endif
       return GNUNET_SYSERR;     /* other side closed connection */
@@ -458,8 +458,8 @@ tcpSend (TSession * tsession,
   mp->type = 0;
   memcpy (&mp[1], msg, size);
 #if DEBUG_TCP
-  GE_LOG (ectx,
-          GE_DEBUG | GE_DEVELOPER | GE_BULK,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
           "Transport asks select to queue message of size %u\n", size);
 #endif
   ok =
@@ -486,20 +486,20 @@ tcpSend (TSession * tsession,
  *         GNUNET_SYSERR if the size/session is invalid
  */
 static int
-tcpTestWouldTry (TSession * tsession, const unsigned int size, int important)
+tcpTestWouldTry (GNUNET_TSession * tsession, const unsigned int size, int important)
 {
   TCPSession *tcpSession = tsession->internal;
 
   if (size >= GNUNET_MAX_BUFFER_SIZE - sizeof (GNUNET_MessageHeader))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (selector == NULL)
     return GNUNET_SYSERR;
   if (size == 0)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (tcpSession->sock == NULL)
@@ -519,10 +519,10 @@ tcpTestWouldTry (TSession * tsession, const unsigned int size, int important)
 static int
 tcpConnectHelper (const GNUNET_MessageHello * hello,
                   struct GNUNET_SocketHandle *s,
-                  unsigned int protocolNumber, TSession ** tsessionPtr)
+                  unsigned int protocolNumber, GNUNET_TSession ** tsessionPtr)
 {
   TCPWelcome welcome;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
   TCPSession *tcpSession;
 
   tcpSession = GNUNET_malloc (sizeof (TCPSession));
@@ -530,8 +530,8 @@ tcpConnectHelper (const GNUNET_MessageHello * hello,
   tcpSession->addr_len = 0;
   tcpSession->accept_addr = NULL;
   tcpSession->sock = s;
-  tsession = GNUNET_malloc (sizeof (TSession));
-  memset (tsession, 0, sizeof (TSession));
+  tsession = GNUNET_malloc (sizeof (GNUNET_TSession));
+  memset (tsession, 0, sizeof (GNUNET_TSession));
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tsession->peer = hello->senderIdentity;
@@ -556,8 +556,8 @@ tcpConnectHelper (const GNUNET_MessageHello * hello,
                            GNUNET_YES))
     {
 #if DEBUG_TCP
-      GE_LOG (ectx,
-              GE_DEBUG | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
               "Could not sent TCP welcome message, closing connection.\n");
 #endif
       /* disconnect caller -- error! */

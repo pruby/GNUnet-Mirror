@@ -65,7 +65,7 @@ extern "C"
 /* Conflicts with our definitions */
 #define __G_WIN32_H__
 
-/* Convert LARGE_INTEGER to double */
+/* Convert LARGNUNET_GE_INTEGER to double */
 #define Li2Double(x) ((double)((x).HighPart) * 4.294967296E9 + \
   (double)((x).LowPart))
 
@@ -263,10 +263,10 @@ extern "C"
 
   typedef struct
   {
-    LARGE_INTEGER IdleTime;
-    LARGE_INTEGER KernelTime;
-    LARGE_INTEGER UserTime;
-    LARGE_INTEGER Reserved1[2];
+    LARGNUNET_GE_INTEGER IdleTime;
+    LARGNUNET_GE_INTEGER KernelTime;
+    LARGNUNET_GE_INTEGER UserTime;
+    LARGNUNET_GE_INTEGER Reserved1[2];
     ULONG Reserved2;
   } SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
 

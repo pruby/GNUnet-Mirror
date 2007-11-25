@@ -55,7 +55,7 @@ typedef struct
    */
   int (*tryConnect) (const GNUNET_PeerIdentity * peer);
 
-} Session_ServiceAPI;
+} GNUNET_Session_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

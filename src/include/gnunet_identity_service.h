@@ -45,7 +45,7 @@ extern "C"
  * change (would break compatibility with peers that have a different
  * limit).
  */
-#define MAX_HELLO_EXPIRES (60 * 60 * 24 * 10)
+#define GNUNET_MAX_HELLO_EXPIRES (60 * 60 * 24 * 10)
 
 /**
  * Type of an iterator over the hosts.  Note that each
@@ -58,7 +58,7 @@ extern "C"
  * @param data callback closure
  * @return GNUNET_OK to continue iteration
  */
-typedef int (*HostIterator) (const GNUNET_PeerIdentity * identity,
+typedef int (*GNUNET_HostProcessor) (const GNUNET_PeerIdentity * identity,
                              unsigned short protocol,
                              int confirmed, void *data);
 
@@ -131,16 +131,16 @@ typedef struct
    * @param data an argument to pass to the method
    * @return the number of known hosts matching
    */
-  int (*forEachHost) (GNUNET_CronTime now, HostIterator callback, void *data);
+  int (*forEachHost) (GNUNET_CronTime now, GNUNET_HostProcessor callback, void *data);
 
   /**
    * Obtain the public key and address of a known host. If no specific
-   * protocol is specified (ANY_PROTOCOL_NUMBER), the hello for the
+   * protocol is specified (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY), the hello for the
    * cheapest confirmed protocol is returned.
    *
    * @param hostId the host id
    * @param protocol the protocol that we need,
-   *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
+   *        GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY  if we do not care which protocol
    * @return NULL on failure, the hello on success
    */
   GNUNET_MessageHello *(*identity2Hello) (const GNUNET_PeerIdentity * hostId,
@@ -213,7 +213,7 @@ typedef struct
    */
   unsigned int (*getHostTrust) (const GNUNET_PeerIdentity * hostId);
 
-} Identity_ServiceAPI;
+} GNUNET_Identity_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

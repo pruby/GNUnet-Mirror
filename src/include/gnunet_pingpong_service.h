@@ -77,7 +77,7 @@ typedef struct
 
   unsigned int ping_size;
 
-} Pingpong_ServiceAPI;
+} GNUNET_Pingpong_ServiceAPI;
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -33,7 +33,7 @@ typedef struct GNUNET_SocketHandle
 
   struct GNUNET_LoadMonitor *mon;
 
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   int handle;
 

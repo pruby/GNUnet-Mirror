@@ -35,47 +35,47 @@
 int
 main (int argc, const char *argv[])
 {
-  static CoreAPIForApplication capi;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  static GNUNET_CoreAPIForPlugins capi;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
   GNUNET_IPv4Address addr;
   int i;
-  UPnP_ServiceAPI *upnp;
+  GNUNET_UPnP_ServiceAPI *upnp;
   struct GNUNET_PluginHandle *plug;
-  ServiceInitMethod init;
-  ServiceDoneMethod done;
+  GNUNET_ServicePluginInitializationMethod init;
+  GNUNET_ServicePluginShutdownMethod done;
 
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (ectx);
-  cfg = GC_create ();
-  GE_ASSERT (ectx, cfg != NULL);
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (ectx);
+  cfg = GNUNET_GC_create ();
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
   GNUNET_os_init (ectx);
   capi.ectx = ectx;
   capi.cfg = cfg;
   plug = GNUNET_plugin_load (ectx, "libgnunet", "module_upnp");
   if (plug == NULL)
     {
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
   init = GNUNET_plugin_resolve_function (plug, "provide_", GNUNET_YES);
   if (init == NULL)
     {
       GNUNET_plugin_unload (plug);
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
   upnp = init (&capi);
   if (upnp == NULL)
     {
       GNUNET_plugin_unload (plug);
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
   for (i = 0; i < 10; i++)
@@ -100,8 +100,8 @@ main (int argc, const char *argv[])
   if (done != NULL)
     done ();
   GNUNET_plugin_unload (plug);
-  GC_free (cfg);
-  GE_free_context (ectx);
+  GNUNET_GC_free (cfg);
+  GNUNET_GE_free_context (ectx);
   return 0;
 }
 

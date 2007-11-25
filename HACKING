@@ -2,16 +2,6 @@ NEW naming conventions for GNUnet:
 
 1) All exported symbols (function names, macros and structures) should begin
    with the prefix "GNUNET_".  No global variables should be exported.  
-   Accepted exceptions (for now, to be reconsidered):
-   a) This rule only applies to exported symbols in normal shared libraries.  
-      For all plugins, the exported symbols must end in "_libraryname" (and 
-      follow other conventions as established by the plugin API).  Plugins
-      should avoid exporting symbols other than those used by the plugin API.
-   b) Error handling and logging functions have the prefix "GE_" (for now).
-   c) Configuration functions have the prefix "GC_" (for now).
-   d) Certain very specific libraries (ECRS, FSUI, DHT) have their own
-      prefix.  This can be ok if the prefix alone is long enough and the
-      library is highly application specific.  
 2) All function names should use lower-caps names with underscores.  Common
    abbreviations like "RSA" should be in all-caps in function names.  Example:
    "GNUNET_semaphore_create".
@@ -26,15 +16,24 @@ NEW naming conventions for GNUnet:
    conventions (except for the "GNUNET_" prefix).
 6) Global symbols that are exported but should not usually be used directly
    (i.e., because a convenience macro is provided), should end with an underscore.
+7) For all plugins, the exported symbols must end in "_libraryname" (and 
+   follow other conventions as established by the plugin API).  Plugins should 
+   avoid exporting symbols other than those used by the plugin API.
+8) Libraries (other than gnunetutil and plugins) should add a second prefix after 
+   the "GNUNET_" to indicate the specific GNUnet library that the functions
+   belong to, for example,  "GNUNET_ECRS_foo_bar" for "libgnunetecrs". 
 
 NOTE:
 =====
 
 The existing codebase does not yet follow these conventions in many
-places (especially with respect to local symbols).  libgnunetutil.so
-should be clean.  Patches to fix things are welcome.
+places (especially with respect to local symbols and exported symbols
+from plugins).  Patches to fix these are welcome.
 
-Also, we should have a naming convention for fields of a struct.  
+Also, the above does not specify a naming convention for fields of structs.  
 Using the simple no-caps with underscores notation that is also
-used for local functions would make sense.
+used for local functions would make sense.  An open question is if
+we should distinguish function pointer in structs and normal value
+fields by using a different naming convention for one of these.
+Comments on this would be welcome.
 

@@ -53,7 +53,7 @@ int select_dht_peer (GNUNET_PeerIdentity * set,
  * @param capi the core API
  * @return GNUNET_OK on success
  */
-int init_dht_table (CoreAPIForApplication * capi);
+int init_dht_table (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Shutdown table DHT component.

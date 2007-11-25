@@ -42,7 +42,7 @@ extern "C"
 #endif
 #endif
 
-typedef void (*ResultHandler) (const GNUNET_HashCode * key,
+typedef void (*GNUNET_ResultProcessor) (const GNUNET_HashCode * key,
                                unsigned int type,
                                unsigned int size,
                                const char *data, void *cls);
@@ -74,9 +74,9 @@ typedef struct
    *   iter is non-NULL and aborted the iteration
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, ResultHandler handler, void *closure);
+              unsigned int type, GNUNET_ResultProcessor handler, void *closure);
 
-} Dstore_ServiceAPI;
+} GNUNET_Dstore_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

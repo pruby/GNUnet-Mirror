@@ -33,8 +33,8 @@
  *
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
-int getPublicIP6Address (struct GC_Configuration *cfg,
-                         struct GE_Context *ectx,
+int getPublicIP6Address (struct GNUNET_GC_Configuration *cfg,
+                         struct GNUNET_GE_Context *ectx,
                          GNUNET_IPv6Address * address);
 
 #endif

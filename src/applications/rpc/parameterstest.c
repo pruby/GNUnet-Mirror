@@ -29,58 +29,58 @@
 int
 main (int argc, char *argv[])
 {
-  RPC_Param *p;
+  GNUNET_RPC_CallParameters *p;
   void *buf;
   size_t size;
   unsigned int len;
 
-  p = RPC_paramNew ();
+  p = GNUNET_RPC_parameters_create ();
 
-  if (GNUNET_SYSERR != RPC_paramValueByPosition (p, 0, &len, &buf))
-    return 1;
-
-  if (GNUNET_SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_index (p, 0, &len, &buf))
     return 1;
 
-  if (RPC_paramCount (p) != 0)
-    return 1;
-  RPC_paramAdd (p, "foo", 4, "bar");
-  RPC_paramAdd (p, "bar", 4, "foo");
-  if (RPC_paramCount (p) != 2)
-    return 1;
-  if (0 != strcmp (RPC_paramName (p, 0), "foo"))
-    return 1;
-  if (0 != strcmp (RPC_paramName (p, 1), "bar"))
+  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
     return 1;
 
-  size = RPC_paramSize (p);
+  if (GNUNET_RPC_parameters_count (p) != 0)
+    return 1;
+  GNUNET_RPC_parameters_add (p, "foo", 4, "bar");
+  GNUNET_RPC_parameters_add (p, "bar", 4, "foo");
+  if (GNUNET_RPC_parameters_count (p) != 2)
+    return 1;
+  if (0 != strcmp (GNUNET_RPC_parameters_get_name (p, 0), "foo"))
+    return 1;
+  if (0 != strcmp (GNUNET_RPC_parameters_get_name (p, 1), "bar"))
+    return 1;
+
+  size = GNUNET_RPC_parameters_get_serialized_size (p);
   buf = GNUNET_malloc (size);
-  RPC_paramSerialize (p, buf);
-  RPC_paramFree (p);
-  p = RPC_paramDeserialize (buf, size);
+  GNUNET_RPC_parameters_serialize (p, buf);
+  GNUNET_RPC_parameters_destroy (p);
+  p = GNUNET_RPC_parameters_deserialize (buf, size);
   GNUNET_free (buf);
   if (p == NULL)
     return 1;
   buf = NULL;
-  if (GNUNET_OK != RPC_paramValueByName (p, "foo", &len, &buf))
+  if (GNUNET_OK != GNUNET_RPC_parameters_get_value_by_name (p, "foo", &len, &buf))
     return 1;
   if (strcmp ("bar", buf) != 0)
     return 1;
   buf = NULL;
   if (4 != len)
     return 1;
-  if (GNUNET_OK != RPC_paramValueByPosition (p, 1, &len, &buf))
+  if (GNUNET_OK != GNUNET_RPC_parameters_get_value_by_index (p, 1, &len, &buf))
     return 1;
   if (strcmp ("foo", buf) != 0)
     return 1;
   if (4 != len)
     return 1;
-  if (GNUNET_SYSERR != RPC_paramValueByPosition (p, 2, &len, &buf))
+  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_index (p, 2, &len, &buf))
     return 1;
 
-  if (GNUNET_SYSERR != RPC_paramValueByName (p, "not there", &len, &buf))
+  if (GNUNET_SYSERR != GNUNET_RPC_parameters_get_value_by_name (p, "not there", &len, &buf))
     return 1;
-  RPC_paramFree (p);
+  GNUNET_RPC_parameters_destroy (p);
 
   return 0;
 }

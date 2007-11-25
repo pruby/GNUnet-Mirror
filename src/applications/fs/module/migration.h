@@ -81,10 +81,10 @@
 /**
  * Initialize the migration module.
  */
-void initMigration (CoreAPIForApplication * capi,
-                    Datastore_ServiceAPI * s,
-                    GAP_ServiceAPI * g,
-                    DHT_ServiceAPI * d, Traffic_ServiceAPI * t);
+void initMigration (GNUNET_CoreAPIForPlugins * capi,
+                    GNUNET_Datastore_ServiceAPI * s,
+                    GNUNET_GAP_ServiceAPI * g,
+                    GNUNET_DHT_ServiceAPI * d, GNUNET_Traffic_ServiceAPI * t);
 
 void doneMigration (void);
 

@@ -31,22 +31,22 @@
 #include "gnunet_testing_lib.h"
 
 static void
-updatePort (struct GC_Configuration *cfg,
+updatePort (struct GNUNET_GC_Configuration *cfg,
             const char *section, unsigned short offset)
 {
   unsigned long long old;
 
-  if ((GNUNET_YES == GC_have_configuration_value (cfg,
+  if ((GNUNET_YES == GNUNET_GC_have_configuration_value (cfg,
                                                   section,
                                                   "PORT")) &&
-      (0 == GC_get_configuration_value_number (cfg,
+      (0 == GNUNET_GC_get_configuration_value_number (cfg,
                                                section,
                                                "PORT",
                                                0, 65535, 65535, &old)))
     {
       old += offset;
-      GE_ASSERT (NULL,
-                 0 == GC_set_configuration_value_number (cfg,
+      GNUNET_GE_ASSERT (NULL,
+                 0 == GNUNET_GC_set_configuration_value_number (cfg,
                                                          NULL,
                                                          section,
                                                          "PORT", old));
@@ -77,7 +77,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   int ret;
   char *ipath;
   char *dpath;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
   char host[128];
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_MessageHello *hello;
@@ -96,12 +96,12 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   strcpy (dpath, ipath);
   GNUNET_free (ipath);
   strcat (dpath, DIR_SEPARATOR_STR "gnunet-testing.conf");
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, dpath))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, dpath))
     {
       fprintf (stderr,
                "Failed to read default configuration file `%s'\n", dpath);
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       GNUNET_free (dpath);
       return GNUNET_SYSERR;
     }
@@ -112,50 +112,50 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   updatePort (cfg, "UDP6", tra_offset);
   updatePort (cfg, "HTTP", tra_offset);
   updatePort (cfg, "SMTP", tra_offset);
-  GC_set_configuration_value_string (cfg,
+  GNUNET_GC_set_configuration_value_string (cfg,
                                      NULL,
                                      "PATHS", "GNUNETD_HOME", gnunetd_home);
   if (transports != NULL)
-    GC_set_configuration_value_string (cfg,
+    GNUNET_GC_set_configuration_value_string (cfg,
                                        NULL,
                                        "GNUNETD", "TRANSPORTS", transports);
   if (applications != NULL)
-    GC_set_configuration_value_string (cfg,
+    GNUNET_GC_set_configuration_value_string (cfg,
                                        NULL,
                                        "GNUNETD",
                                        "APPLICATIONS", applications);
-  GC_set_configuration_value_number (cfg, NULL, "NETWORK", "PORT", app_port);
+  GNUNET_GC_set_configuration_value_number (cfg, NULL, "NETWORK", "PORT", app_port);
   dpath = GNUNET_strdup ("/tmp/gnunet-config.XXXXXX");
   ret = mkstemp (dpath);
   if (ret == -1)
     {
-      GE_LOG_STRERROR_FILE (NULL,
-                            GE_ERROR | GE_USER | GE_BULK, "mkstemp", dpath);
+      GNUNET_GE_LOG_STRERROR_FILE (NULL,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "mkstemp", dpath);
       GNUNET_free (dpath);
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return GNUNET_SYSERR;
     }
   CLOSE (ret);
-  if (0 != GC_write_configuration (cfg, dpath))
+  if (0 != GNUNET_GC_write_configuration (cfg, dpath))
     {
       fprintf (stderr,
                "Failed to write peer configuration file `%s'\n", dpath);
       GNUNET_free (dpath);
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return GNUNET_SYSERR;
     }
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
 
-  cfg = GC_create ();
+  cfg = GNUNET_GC_create ();
   /* cfg is now client CFG for GNUNET_daemon_start */
   GNUNET_snprintf (host, 128, "localhost:%u", app_port);
-  GC_set_configuration_value_string (cfg, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg, NULL, "NETWORK", "HOST", host);
 
   ret = GNUNET_daemon_start (NULL, cfg, dpath, GNUNET_NO);
   if (ret == -1)
     {
       fprintf (stderr, "Failed to start daemon!\n");
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return GNUNET_SYSERR;
     }
   *pid = ret;
@@ -168,7 +168,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
       GNUNET_wait_for_daemon_running (NULL, cfg, 15 * GNUNET_CRON_MINUTES))
     {
       fprintf (stderr, "Failed to confirm daemon running!\n");
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       UNLINK (dpath);
       GNUNET_free (dpath);
       return GNUNET_SYSERR;
@@ -193,7 +193,7 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
         }
       GNUNET_client_connection_destroy (sock);
     }
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   if (ret == GNUNET_SYSERR)
     fprintf (stderr,
              "Failed to obtain daemon's identity (is a transport loaded?)!\n");
@@ -214,8 +214,8 @@ int
 GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
 {
   char host[128];
-  struct GC_Configuration *cfg1 = GC_create ();
-  struct GC_Configuration *cfg2 = GC_create ();
+  struct GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
+  struct GNUNET_GC_Configuration *cfg2 = GNUNET_GC_create ();
   struct GNUNET_ClientServerConnection *sock1;
   struct GNUNET_ClientServerConnection *sock2;
   int ret;
@@ -224,9 +224,9 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
 
   ret = GNUNET_SYSERR;
   GNUNET_snprintf (host, 128, "localhost:%u", port1);
-  GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg1, NULL, "NETWORK", "HOST", host);
   GNUNET_snprintf (host, 128, "localhost:%u", port2);
-  GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
+  GNUNET_GC_set_configuration_value_string (cfg2, NULL, "NETWORK", "HOST", host);
   if ((GNUNET_OK == GNUNET_wait_for_daemon_running (NULL,
                                                     cfg1,
                                                     300 *
@@ -279,8 +279,8 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
     {
       fprintf (stderr, "Failed to establish connection with peers.\n");
     }
-  GC_free (cfg1);
-  GC_free (cfg2);
+  GNUNET_GC_free (cfg1);
+  GNUNET_GC_free (cfg2);
   return ret;
 }
 

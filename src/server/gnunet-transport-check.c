@@ -48,13 +48,13 @@ static int terminate;
 
 static unsigned long long timeout;
 
-static Transport_ServiceAPI *transport;
+static GNUNET_Transport_ServiceAPI *transport;
 
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
-static Pingpong_ServiceAPI *pingpong;
+static GNUNET_Pingpong_ServiceAPI *pingpong;
 
-static Bootstrap_ServiceAPI *bootstrap;
+static GNUNET_Bootstrap_ServiceAPI *bootstrap;
 
 static int ok;
 
@@ -64,13 +64,13 @@ static char *expectedValue;
 
 static unsigned long long expectedSize;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_CronManager *cron;
 
-static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
 static void
 semUp (void *arg)
@@ -83,7 +83,7 @@ semUp (void *arg)
 
 static int
 noiseHandler (const GNUNET_PeerIdentity * peer,
-              const GNUNET_MessageHeader * msg, TSession * s)
+              const GNUNET_MessageHeader * msg, GNUNET_TSession * s)
 {
   if ((ntohs (msg->size) ==
        sizeof (GNUNET_MessageHeader) + expectedSize) &&
@@ -101,7 +101,7 @@ testTAPI (TransportAPI * tapi, void *ctx)
 {
   int *res = ctx;
   GNUNET_MessageHello *helo;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
   unsigned long long repeat;
   unsigned long long total;
   GNUNET_CronTime start;
@@ -109,8 +109,8 @@ testTAPI (TransportAPI * tapi, void *ctx)
   GNUNET_MessageHeader *noise;
   int ret;
 
-  GE_ASSERT (ectx, tapi != NULL);
-  if (tapi->protocolNumber == NAT_PROTOCOL_NUMBER)
+  GNUNET_GE_ASSERT (ectx, tapi != NULL);
+  if (tapi->protocolNumber == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
     {
       *res = GNUNET_OK;
       return;                   /* NAT cannot be tested */
@@ -131,7 +131,7 @@ testTAPI (TransportAPI * tapi, void *ctx)
       return;
     }
   GNUNET_free (helo);
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "TRANSPORT-CHECK",
                                                "REPEAT",
                                                1,
@@ -145,7 +145,7 @@ testTAPI (TransportAPI * tapi, void *ctx)
   sem = GNUNET_semaphore_create (0);
   start = GNUNET_get_time ();
   noise = GNUNET_malloc (expectedSize + sizeof (GNUNET_MessageHeader));
-  noise->type = htons (P2P_PROTO_noise);
+  noise->type = htons (GNUNET_P2P_PROTO_NOISE);
   noise->size = htons (expectedSize + sizeof (GNUNET_MessageHeader));
   memcpy (&noise[1], expectedValue, expectedSize);
   while ((repeat > 0) && (GNUNET_shutdown_test () == GNUNET_NO))
@@ -209,7 +209,7 @@ static void
 testPING (const GNUNET_MessageHello * xhello, void *arg)
 {
   int *stats = arg;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
   GNUNET_MessageHello *hello;
   GNUNET_MessageHello *myHello;
   GNUNET_MessageHeader *ping;
@@ -221,17 +221,17 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   stats[0]++;                   /* one more seen */
   if (GNUNET_NO == transport->isAvailable (ntohs (xhello->protocol)))
     {
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               _(" Transport %d is not being tested\n"),
               ntohs (xhello->protocol));
       return;
     }
-  if (ntohs (xhello->protocol) == NAT_PROTOCOL_NUMBER)
+  if (ntohs (xhello->protocol) == GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT)
     return;                     /* NAT cannot be tested */
 
   stats[1]++;                   /* one more with transport 'available' */
-  GC_get_configuration_value_number (cfg,
+  GNUNET_GC_get_configuration_value_number (cfg,
                                      "GNUNET",
                                      "VERBOSE",
                                      0, (unsigned long long) -1, 0, &verbose);
@@ -263,7 +263,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   myHello = transport->createhello (ntohs (xhello->protocol));
   if (myHello == NULL)
     /* try NAT */
-    myHello = transport->createhello (NAT_PROTOCOL_NUMBER);
+    myHello = transport->createhello (GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
   if (myHello == NULL)
     {
       GNUNET_free (hello);
@@ -282,7 +282,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
     }
   if (tsession == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       fprintf (stderr, _(" Connection failed (bug?)\n"));
       return;
     }
@@ -311,7 +311,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
     fprintf (stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Waiting for PONG\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Waiting for PONG\n");
 #endif
   terminate = GNUNET_NO;
   GNUNET_cron_add_job (cron, &semUp, timeout, 5 * GNUNET_CRON_SECONDS, sem);
@@ -368,7 +368,7 @@ static struct GNUNET_CommandLineOption gnunettransportcheckOptions[] = {
   {'u', "user", "LOGIN",
    gettext_noop ("run as user LOGIN"),
    1, &GNUNET_getopt_configure_set_option, "GNUNETD:USER"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   {'X', "Xrepeat", "X",
    gettext_noop ("repeat each test X times"),
@@ -395,7 +395,7 @@ main (int argc, char *const *argv)
       return -1;
     }
 
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "TRANSPORT-CHECK",
                                                "SIZE",
                                                1, 60000, 12, &expectedSize))
@@ -403,7 +403,7 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "TRANSPORT-CHECK",
                                                "TIMEOUT",
                                                1,
@@ -422,7 +422,7 @@ main (int argc, char *const *argv)
     expectedValue[pos] = 'A' + (pos % 26);
 
   trans = NULL;
-  if (-1 == GC_get_configuration_value_string (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
                                                "GNUNETD",
                                                "TRANSPORTS",
                                                "udp tcp http", &trans))
@@ -431,7 +431,7 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  GE_ASSERT (ectx, trans != NULL);
+  GNUNET_GE_ASSERT (ectx, trans != NULL);
   if (ping)
     printf (_("Testing transport(s) %s\n"), trans);
   else
@@ -440,11 +440,11 @@ main (int argc, char *const *argv)
   if (!ping)
     {
       /* disable blacklists (loopback is often blacklisted)... */
-      GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLIST", "");
-      GC_set_configuration_value_string (cfg, ectx, "TCP6", "BLACKLIST", "");
-      GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLIST", "");
-      GC_set_configuration_value_string (cfg, ectx, "UDP6", "BLACKLIST", "");
-      GC_set_configuration_value_string (cfg, ectx, "HTTP", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "TCP6", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "UDP6", "BLACKLIST", "");
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP", "BLACKLIST", "");
     }
   cron = cron_create (ectx);
   if (GNUNET_OK != initCore (ectx, cfg, cron, NULL))
@@ -455,14 +455,14 @@ main (int argc, char *const *argv)
       return 1;
     }
   initConnection (ectx, cfg, NULL, cron);
-  registerPlaintextHandler (P2P_PROTO_noise, &noiseHandler);
+  registerPlaintextHandler (GNUNET_P2P_PROTO_NOISE, &noiseHandler);
   enableCoreProcessing ();
   identity = requestService ("identity");
   transport = requestService ("transport");
   pingpong = requestService ("pingpong");
   GNUNET_cron_start (cron);
 
-  GC_get_configuration_value_number (cfg,
+  GNUNET_GC_get_configuration_value_number (cfg,
                                      "TRANSPORT-CHECK",
                                      "X-REPEAT",
                                      1, (unsigned long long) -1, 1, &Xrepeat);
@@ -490,7 +490,7 @@ main (int argc, char *const *argv)
   releaseService (transport);
   releaseService (pingpong);
   disableCoreProcessing ();
-  unregisterPlaintextHandler (P2P_PROTO_noise, &noiseHandler);
+  unregisterPlaintextHandler (GNUNET_P2P_PROTO_NOISE, &noiseHandler);
   doneConnection ();
   doneCore ();
   GNUNET_free (expectedValue);

@@ -43,122 +43,122 @@ extern "C"
 /**
  * Context required to log messages.
  */
-struct GE_Context;
+struct GNUNET_GE_Context;
 
 /**
  * Classes of log messages.
  */
 typedef enum
 {
-  GE_NOTHING = 0x00000000,
+  GNUNET_GE_NOTHING = 0x00000000,
   /* type of event */
-  GE_FATAL = 0x00000001,        /* FATAL/FAILURE/NOTHING */
-  GE_ERROR = 0x00000002,
-  GE_WARNING = 0x00000004,
-  GE_INFO = 0x00000008,         /* normal program response */
-  GE_STATUS = 0x00000010,       /* status message */
-  GE_DEBUG = 0x00000020,        /* DEBUG/CRON/EVERYTHING */
-  GE_EVENTKIND = 0x000000FF,    /* bitmask */
+  GNUNET_GE_FATAL = 0x00000001,        /* FATAL/FAILURE/NOTHING */
+  GNUNET_GE_ERROR = 0x00000002,
+  GNUNET_GE_WARNING = 0x00000004,
+  GNUNET_GE_INFO = 0x00000008,         /* normal program response */
+  GNUNET_GE_STATUS = 0x00000010,       /* status message */
+  GNUNET_GE_DEBUG = 0x00000020,        /* DEBUG/CRON/EVERYTHING */
+  GNUNET_GE_EVENTKIND = 0x000000FF,    /* bitmask */
 
   /* who should see the message? */
   /**
    * These messages are sent to the console / UI.
    * Note that when running as an administrative
-   * daemon, messages tagged just as GE_USER will
+   * daemon, messages tagged just as GNUNET_GE_USER will
    * be discarded.
    */
-  GE_USER = 0x01000000,         /* current user, if possible */
+  GNUNET_GE_USER = 0x01000000,         /* current user, if possible */
   /**
    * These messages are sent to the logfile for the
    * administrator.  Note that normal users may not
    * always look there.
    */
-  GE_ADMIN = 0x02000000,        /* system administrator */
+  GNUNET_GE_ADMIN = 0x02000000,        /* system administrator */
   /**
    * These messages are usually not logged or given
    * to the user.  They can be obtained when the tool
    * is run in debug mode.
    */
-  GE_DEVELOPER = 0x04000000,    /* GNUnet developers (bug!) */
+  GNUNET_GE_DEVELOPER = 0x04000000,    /* GNUnet developers (bug!) */
   /**
    * Mask for the type of user that should see the
    * message.
    */
-  GE_USERKIND = 0x0F000000,     /* bitmask */
+  GNUNET_GE_USERKIND = 0x0F000000,     /* bitmask */
 
   /* how event should be routed */
   /**
    * The message should only be shown upon specific
    * request.
    */
-  GE_REQUEST = 0x20000000,      /* display on request only (i.e. low-priority log, user demands verbose events) */
+  GNUNET_GE_REQUEST = 0x20000000,      /* display on request only (i.e. low-priority log, user demands verbose events) */
   /**
    * This type of message is not urgent and is likely
    * to occur in bulk.  Suitable for logging to a file
    * or in a generic, scrolling message window.
    */
-  GE_BULK = 0x40000000,         /* display in bulk output (i.e. log-file, scroll window, console) */
+  GNUNET_GE_BULK = 0x40000000,         /* display in bulk output (i.e. log-file, scroll window, console) */
   /**
    * This is a message that is urgent and should be
    * communicated as soon as possible.  Sending an
    * e-mail alert or opening a pop-up window maybe
    * appropriate.
    */
-  GE_IMMEDIATE = 0x80000000,    /* display immediately (i.e. pop-up, e-mail) */
+  GNUNET_GE_IMMEDIATE = 0x80000000,    /* display immediately (i.e. pop-up, e-mail) */
   /**
    * Mask for the routing type.
    */
-  GE_ROUTEKIND = 0xF0000000,    /* bitmask */
-  GE_ALL = 0xFFFFFFFF,
-  GE_INVALID = 0x08000000,      /* unused bit */
-} GE_KIND;
+  GNUNET_GE_ROUTEKIND = 0xF0000000,    /* bitmask */
+  GNUNET_GE_ALL = 0xFFFFFFFF,
+  GNUNET_GE_INVALID = 0x08000000,      /* unused bit */
+} GNUNET_GE_KIND;
 
-void GE_LOG (struct GE_Context *ctx, GE_KIND kind, const char *message, ...);
+void GNUNET_GE_LOG (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind, const char *message, ...);
 
 /**
  * @brief Get user confirmation (e.g. before the app shuts down and closes the
  *        error message
  */
-void GE_CONFIRM (struct GE_Context *ctx);
+void GNUNET_GE_CONFIRM (struct GNUNET_GE_Context *ctx);
 
-void GE_setDefaultContext (struct GE_Context *ctx);
+void GNUNET_GE_setDefaultContext (struct GNUNET_GE_Context *ctx);
 
 /**
  * User-defined handler for log events.
  */
-typedef void (*GE_LogHandler) (void *ctx,
-                               GE_KIND kind,
+typedef void (*GNUNET_GE_LogHandler) (void *ctx,
+                               GNUNET_GE_KIND kind,
                                const char *date, const char *msg);
 
 /**
  * User-defined method to free handler context.
  */
-typedef void (*GE_CtxFree) (void *ctx);
+typedef void (*GNUNET_GE_CtxFree) (void *ctx);
 
 /**
  * User-defined method to wait for user confirmation
  */
-typedef void (*GE_Confirm) (void *ctx);
+typedef void (*GNUNET_GE_Confirm) (void *ctx);
 
 /**
  * Create a log context that calls a callback function
  * for matching events.
  *
  * @param mask which events is this handler willing to process?
- *        an event must be non-zero in all 3 GE_MASK categories
+ *        an event must be non-zero in all 3 GNUNET_GE_MASK categories
  *        to be passed to this handler
  * @param liberator callback to free ctx, maybe NULL
  */
-struct GE_Context *GE_create_context_callback (GE_KIND mask,
-                                               GE_LogHandler handler,
+struct GNUNET_GE_Context *GNUNET_GE_create_context_callback (GNUNET_GE_KIND mask,
+                                               GNUNET_GE_LogHandler handler,
                                                void *ctx,
-                                               GE_CtxFree liberator,
-                                               GE_Confirm confirm);
+                                               GNUNET_GE_CtxFree liberator,
+                                               GNUNET_GE_Confirm confirm);
 
 /**
  * Free a log context.
  */
-void GE_free_context (struct GE_Context *ctx);
+void GNUNET_GE_free_context (struct GNUNET_GE_Context *ctx);
 
 /**
  * Does the given event match the mask?
@@ -167,7 +167,7 @@ void GE_free_context (struct GE_Context *ctx);
  * @param mask the filter mask
  * @return GNUNET_YES or GNUNET_NO
  */
-int GE_applies (GE_KIND have, GE_KIND mask);
+int GNUNET_GE_applies (GNUNET_GE_KIND have, GNUNET_GE_KIND mask);
 
 /**
  * Would an event of this kind be possibly
@@ -177,47 +177,47 @@ int GE_applies (GE_KIND have, GE_KIND mask);
  * @param have the kind of event
  * @return GNUNET_YES or GNUNET_NO
  */
-int GE_isLogged (struct GE_Context *ctx, GE_KIND kind);
+int GNUNET_GE_isLogged (struct GNUNET_GE_Context *ctx, GNUNET_GE_KIND kind);
 
 /**
  * Convert a textual description of a loglevel
- * to the respective GE_KIND.
- * @returns GE_INVALID if log does not parse
+ * to the respective GNUNET_GE_KIND.
+ * @returns GNUNET_GE_INVALID if log does not parse
  */
-GE_KIND GE_getKIND (const char *log);
+GNUNET_GE_KIND GNUNET_GE_getKIND (const char *log);
 
 /**
  * Convert KIND to String
  */
-const char *GE_kindToString (GE_KIND kind);
+const char *GNUNET_GE_kindToString (GNUNET_GE_KIND kind);
 
 /**
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GE_Context *GE_create_context_multiplexer (struct GE_Context *ctx1,
-                                                  struct GE_Context *ctx2);
+struct GNUNET_GE_Context *GNUNET_GE_create_context_multiplexer (struct GNUNET_GE_Context *ctx1,
+                                                  struct GNUNET_GE_Context *ctx2);
 
-const char *GE_strerror (int errnum);
+const char *GNUNET_GE_strerror (int errnum);
 
 /**
  * If this context would log an event of the given kind,
  * execute statement "a".
  */
-#define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0)
+#define IF_GELOG(ctx, kind, a) do { if (GNUNET_GE_isLogged(ctx, kind)) { a; } } while(0)
 
 /**
  * Use this for fatal errors that cannot be handled
  */
-#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0)
+#define GNUNET_GE_ASSERT(ctx, cond) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0)
+#define GNUNET_GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); GNUNET_GE_CONFIRM(ctx); abort(); } } while(0)
 
 /**
  * Use this for internal assertion violations that are
  * not fatal (can be handled) but should not occur.
  */
-#define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
+#define GNUNET_GE_BREAK(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
 /**
  * Use this for assertion violations caused by other
@@ -227,55 +227,55 @@ const char *GE_strerror (int errnum);
  * we still want to see these problems during
  * development and testing.  "OP == other peer".
  */
-#define GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_FATAL | GE_IMMEDIATE), _("External protocol violation: assertion failed at %s:%d in %s (no need to panic, we can handle this).\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
+#define GNUNET_GE_BREAK_OP(ctx, cond)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("External protocol violation: assertion failed at %s:%d in %s (no need to panic, we can handle this).\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0)
 
 /**
- * Just like GE_BREAK just with file/line/function
+ * Just like GNUNET_GE_BREAK just with file/line/function
  * information given as part of the call.
  */
-#define GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GE_LOG(ctx, (GE_KIND) (GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
+#define GNUNET_GE_BREAK_FLF(ctx, cond, file, line, function)  do { if (! (cond)) { GNUNET_GE_LOG(ctx, (GNUNET_GE_KIND) (GNUNET_GE_DEVELOPER | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE), _("Internal error: assertion failed at %s:%d in %s.\n"), file, line, function); } } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_LOG_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
+#define GNUNET_GE_LOG_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR(ctx, level, cmd) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0)
+#define GNUNET_GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
+#define GNUNET_GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0)
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0)
+#define GNUNET_GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GNUNET_GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GNUNET_GE_CONFIRM(ctx); abort(); } while(0)
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

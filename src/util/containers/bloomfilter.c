@@ -59,7 +59,7 @@ typedef struct GNUNET_BloomFilter
   /**
    * For error handling.
    */
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   /**
    * Filename of the filter
@@ -167,8 +167,8 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
   targetLoc = bitIdx % 2;
 
   if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
-    GE_DIE_STRERROR (NULL,
-                     GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "lseek");
+    GNUNET_GE_DIE_STRERROR (NULL,
+                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "lseek");
   value = 0;
   READ (fd, &value, 1);
 
@@ -187,11 +187,11 @@ incrementBit (char *bitArray, unsigned int bitIdx, int fd)
     }
   value = ((high << 4) | low);
   if (fileSlot != (unsigned int) LSEEK (fd, fileSlot, SEEK_SET))
-    GE_DIE_STRERROR (NULL,
-                     GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "lseek");
+    GNUNET_GE_DIE_STRERROR (NULL,
+                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "lseek");
   if (1 != WRITE (fd, &value, 1))
-    GE_DIE_STRERROR (NULL,
-                     GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "write");
+    GNUNET_GE_DIE_STRERROR (NULL,
+                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "write");
 
 }
 
@@ -214,7 +214,7 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
 
   if (fd == -1)
     return;                     /* cannot decrement! */
-  GE_ASSERT (NULL, fd != -1);
+  GNUNET_GE_ASSERT (NULL, fd != -1);
   /* Each char slot in the counter file holds two 4 bit counters */
   fileSlot = bitIdx / 2;
   targetLoc = bitIdx % 2;
@@ -247,8 +247,8 @@ decrementBit (char *bitArray, unsigned int bitIdx, int fd)
   value = ((high << 4) | low);
   LSEEK (fd, fileSlot, SEEK_SET);
   if (1 != WRITE (fd, &value, 1))
-    GE_DIE_STRERROR (NULL,
-                     GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE, "write");
+    GNUNET_GE_DIE_STRERROR (NULL,
+                     GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE, "write");
 }
 
 #define BUFFSIZE 65536
@@ -287,8 +287,8 @@ makeEmptyFile (int fd, unsigned int size)
         }
       if (res == -1)
         {
-          GE_DIE_STRERROR (NULL,
-                           GE_ADMIN | GE_USER | GE_FATAL | GE_IMMEDIATE,
+          GNUNET_GE_DIE_STRERROR (NULL,
+                           GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
                            "write");
           GNUNET_free (buffer);
           return GNUNET_SYSERR;
@@ -408,7 +408,7 @@ testBitCallback (Bloomfilter * bf, unsigned int bit, void *cls)
  * @return the bloomfilter
  */
 Bloomfilter *
-GNUNET_bloomfilter_load (struct GE_Context *ectx,
+GNUNET_bloomfilter_load (struct GNUNET_GE_Context *ectx,
                          const char *filename, unsigned int size,
                          unsigned int k)
 {

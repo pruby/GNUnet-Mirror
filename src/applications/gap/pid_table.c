@@ -30,13 +30,13 @@
 /**
  * Statistics service.
  */
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_pid_entries;
 
 static int stat_pid_rc;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 typedef struct
 {
@@ -95,7 +95,7 @@ intern_pid (const GNUNET_PeerIdentity * pid)
     }
   if (ret == 0)
     ret = 1;
-  GE_ASSERT (ectx, ret < size);
+  GNUNET_GE_ASSERT (ectx, ret < size);
   table[ret].id = pid->hashPubKey;
   table[ret].rc = 1;
   GNUNET_mutex_unlock (lock);
@@ -118,8 +118,8 @@ decrement_pid_rcs (const PID_INDEX * ids, unsigned int count)
   for (i = count - 1; i >= 0; i--)
     {
       id = ids[i];
-      GE_ASSERT (ectx, id < size);
-      GE_ASSERT (ectx, table[id].rc > 0);
+      GNUNET_GE_ASSERT (ectx, id < size);
+      GNUNET_GE_ASSERT (ectx, table[id].rc > 0);
       table[id].rc--;
       if ((table[id].rc == 0) && (stats != NULL))
         stats->change (stat_pid_entries, -1);
@@ -135,8 +135,8 @@ change_pid_rc (PID_INDEX id, int delta)
   if (id == 0)
     return;
   GNUNET_mutex_lock (lock);
-  GE_ASSERT (ectx, id < size);
-  GE_ASSERT (ectx, table[id].rc > 0);
+  GNUNET_GE_ASSERT (ectx, id < size);
+  GNUNET_GE_ASSERT (ectx, table[id].rc > 0);
   table[id].rc += delta;
   if (stats != NULL)
     {
@@ -153,19 +153,19 @@ resolve_pid (PID_INDEX id, GNUNET_PeerIdentity * pid)
   if (id == 0)
     {
       memset (pid, 0, sizeof (GNUNET_PeerIdentity));
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return;
     }
   GNUNET_mutex_lock (lock);
-  GE_ASSERT (ectx, id < size);
-  GE_ASSERT (ectx, table[id].rc > 0);
+  GNUNET_GE_ASSERT (ectx, id < size);
+  GNUNET_GE_ASSERT (ectx, table[id].rc > 0);
   pid->hashPubKey = table[id].id;
   GNUNET_mutex_unlock (lock);
 }
 
 
 void
-init_pid_table (struct GE_Context *e, Stats_ServiceAPI * s)
+init_pid_table (struct GNUNET_GE_Context *e, GNUNET_Stats_ServiceAPI * s)
 {
   ectx = e;
   stats = s;

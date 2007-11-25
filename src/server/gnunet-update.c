@@ -41,17 +41,17 @@
  */
 #define DSO_PREFIX "libgnunet"
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static char **processed;
 
 static unsigned int processedCount;
 
-static UpdateAPI uapi;
+static GNUNET_UpdateAPI uapi;
 
-static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 
 
 /**
@@ -61,7 +61,7 @@ static char *cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 static int
 updateModule (const char *rpos)
 {
-  UpdateMethod mptr;
+  GNUNET_UpdatePluginMainMethod mptr;
   struct GNUNET_PluginHandle *library;
   char *name;
   int i;
@@ -76,10 +76,10 @@ updateModule (const char *rpos)
   processed[processedCount - 1] = GNUNET_strdup (rpos);
 
   pos = NULL;
-  if (-1 == GC_get_configuration_value_string (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
                                                "MODULES", rpos, rpos, &pos))
     return GNUNET_SYSERR;
-  GE_ASSERT (ectx, pos != NULL);
+  GNUNET_GE_ASSERT (ectx, pos != NULL);
 
   name = GNUNET_malloc (strlen (pos) + strlen ("module_") + 1);
   strcpy (name, "module_");
@@ -116,13 +116,13 @@ updateApplicationModules ()
   char *pos;
 
   dso = NULL;
-  if (-1 == GC_get_configuration_value_string (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
                                                "GNUNETD",
                                                "APPLICATIONS",
                                                "advertising fs getoption stats traffic",
                                                &dso))
     return;
-  GE_ASSERT (ectx, dso != NULL);
+  GNUNET_GE_ASSERT (ectx, dso != NULL);
   next = dso;
   do
     {
@@ -140,12 +140,12 @@ updateApplicationModules ()
         }
       if (strlen (pos) > 0)
         {
-          GE_LOG (ectx,
-                  GE_INFO | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _("Updating data for module `%s'\n"), pos);
           if (GNUNET_OK != updateModule (pos))
-            GE_LOG (ectx,
-                    GE_ERROR | GE_DEVELOPER | GE_BULK | GE_USER,
+            GNUNET_GE_LOG (ectx,
+                    GNUNET_GE_ERROR | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_USER,
                     _("Failed to update data for module `%s'\n"), pos);
         }
     }
@@ -169,9 +169,9 @@ doGet (char *get)
       *ent = '\0';
       ent++;
     }
-  if (GNUNET_YES == GC_have_configuration_value (cfg, sec, ent))
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (cfg, sec, ent))
     {
-      GC_get_configuration_value_string (cfg, sec, ent, NULL, &val);
+      GNUNET_GC_get_configuration_value_string (cfg, sec, ent, NULL, &val);
       printf ("%s\n", val);
       GNUNET_free (val);
     }
@@ -192,7 +192,7 @@ work ()
   cron = cron_create (ectx);
   if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
     {
-      GE_LOG (ectx, GE_FATAL | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Core initialization failed.\n"));
 
       return;
@@ -223,7 +223,7 @@ static int
 set_client_config (GNUNET_CommandLineProcessorContext * ctx,
                    void *scls, const char *option, const char *value)
 {
-  cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+  cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
   return GNUNET_OK;
 }
 
@@ -246,7 +246,7 @@ static struct GNUNET_CommandLineOption gnunetupdateOptions[] = {
    gettext_noop
    ("run in client mode (for getting client configuration values)"),
    0, &set_client_config, NULL},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -268,7 +268,7 @@ main (int argc, char *const *argv)
       return -1;
     }
   get = NULL;
-  GC_get_configuration_value_string (cfg, "GNUNET-UPDATE", "GET", "", &get);
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNET-UPDATE", "GET", "", &get);
   if (strlen (get) > 0)
     doGet (get);
   else

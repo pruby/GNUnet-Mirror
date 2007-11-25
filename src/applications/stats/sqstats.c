@@ -27,7 +27,7 @@
 #include "gnunet_sqstore_service.h"
 #include "gnunet_protocols.h"
 
-static SQstore_ServiceAPI *sq;
+static GNUNET_SQstore_ServiceAPI *sq;
 
 /* block types */
 static int stat_block[8];
@@ -51,7 +51,7 @@ struct CD
 };
 
 static int
-iter (const GNUNET_HashCode * key, const Datastore_Value * value, void *cls)
+iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value, void *cls)
 {
   struct CD *data = cls;
   GNUNET_CronTime expire;
@@ -59,25 +59,25 @@ iter (const GNUNET_HashCode * key, const Datastore_Value * value, void *cls)
 
   switch (ntohl (value->type))
     {
-    case ANY_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY:
       data->stat_block[0]++;
       break;
-    case D_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA:
       data->stat_block[1]++;
       break;
-    case S_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
       data->stat_block[2]++;
       break;
-    case K_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
       data->stat_block[3]++;
       break;
-    case N_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
       data->stat_block[4]++;
       break;
-    case KN_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
       data->stat_block[5]++;
       break;
-    case ONDEMAND_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
       data->stat_block[6]++;
       break;
     default:

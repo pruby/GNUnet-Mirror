@@ -31,7 +31,7 @@
 #include "gnunet_util_network_client.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 /**
  * Must be a multiple of 16k.
@@ -58,7 +58,7 @@ static void progress_check
 }
 
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static char *
 makeName (unsigned int i)
@@ -73,14 +73,14 @@ makeName (unsigned int i)
   return fn;
 }
 
-static struct ECRS_URI *
+static struct GNUNET_ECRS_URI *
 uploadFile (unsigned int size)
 {
   int ret;
   char *name;
   int fd;
   char *buf;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
 
   name = makeName (size);
@@ -95,7 +95,7 @@ uploadFile (unsigned int size)
   WRITE (fd, buf, size);
   GNUNET_free (buf);
   CLOSE (fd);
-  ret = ECRS_uploadFile (NULL, cfg, name, GNUNET_YES,   /* index */
+  ret = GNUNET_ECRS_file_upload (NULL, cfg, name, GNUNET_YES,   /* index */
                          0,     /* anon */
                          0,     /* prio */
                          GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
@@ -106,7 +106,7 @@ uploadFile (unsigned int size)
 }
 
 static int
-downloadFile (unsigned int size, const struct ECRS_URI *uri)
+downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
 {
   int ret;
   char *tmpName;
@@ -117,16 +117,16 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   int j;
   char *tmp;
 
-  tmp = ECRS_uriToString (uri);
-  GE_LOG (NULL,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  tmp = GNUNET_ECRS_uri_to_string (uri);
+  GNUNET_GE_LOG (NULL,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
   ret = GNUNET_SYSERR;
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
-      if (GNUNET_OK == ECRS_downloadPartialFile (NULL,
+      if (GNUNET_OK == GNUNET_ECRS_file_download_partial (NULL,
                                                  cfg,
                                                  uri,
                                                  tmpName,
@@ -168,7 +168,7 @@ unindexFile (unsigned int size)
   char *name;
 
   name = makeName (size);
-  ret = ECRS_unindexFile (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
+  ret = GNUNET_ECRS_file_uninde (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);
@@ -181,16 +181,16 @@ main (int argc, char *argv[])
   pid_t daemon;
   int ok;
   struct GNUNET_ClientServerConnection *sock;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
-  GE_ASSERT (NULL, daemon > 0);
+  GNUNET_GE_ASSERT (NULL, daemon > 0);
   sock = NULL;
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
@@ -204,7 +204,7 @@ main (int argc, char *argv[])
   uri = uploadFile (SIZE);
   CHECK (NULL != uri);
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
-  ECRS_freeUri (uri);
+  GNUNET_ECRS_uri_destroy (uri);
   CHECK (GNUNET_OK == unindexFile (SIZE));
   fprintf (stderr, " Ok.\n");
 
@@ -213,8 +213,8 @@ main (int argc, char *argv[])
 FAILURE:
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
-  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
-  GC_free (cfg);
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 

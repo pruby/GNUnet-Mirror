@@ -31,12 +31,12 @@
  * @param server hostname of SMTP gateway, NULL for using local "mail" command
  * @param port port to use for SMTP
  * @param logDate should the date be each of the log lines?
- * @param bulkSize for GE_BULK messages, how many lines of messages
+ * @param bulkSize for GNUNET_GE_BULK messages, how many lines of messages
  *        should be accumulated before an e-mail is transmitted?
  */
-struct GE_Context *
-GE_create_context_email (struct GE_Context *ectx,
-                         GE_MASK mask,
+struct GNUNET_GE_Context *
+GNUNET_GE_create_context_email (struct GNUNET_GE_Context *ectx,
+                         GNUNET_GE_MASK mask,
                          const char *address,
                          const char *server,
                          unsigned short port,

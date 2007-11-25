@@ -34,13 +34,13 @@
 
 struct PCLS
 {
-  ECRS_FileInfo *fi;
+  GNUNET_ECRS_FileInfo *fi;
   unsigned int pos;
   unsigned int max;
 };
 
 static int
-processor (const ECRS_FileInfo * fi,
+processor (const GNUNET_ECRS_FileInfo * fi,
            const GNUNET_HashCode * key, int isRoot, void *cls)
 {
   struct PCLS *p = cls;
@@ -48,9 +48,9 @@ processor (const ECRS_FileInfo * fi,
 
   for (i = 0; i < p->max; i++)
     {
-      if (ECRS_equalsMetaData (p->fi[i].meta,
+      if (GNUNET_ECRS_meta_data_test_equal (p->fi[i].meta,
                                fi->meta) &&
-          ECRS_equalsUri (p->fi[i].uri, fi->uri))
+          GNUNET_ECRS_uri_test_equal (p->fi[i].uri, fi->uri))
         {
           p->pos++;
           return GNUNET_OK;
@@ -65,9 +65,9 @@ testDirectory (unsigned int i)
 {
   char *data;
   unsigned long long dlen;
-  ECRS_FileInfo *fis;
-  struct ECRS_MetaData *meta;
-  struct ECRS_MetaData *meta2;
+  GNUNET_ECRS_FileInfo *fis;
+  struct GNUNET_ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *meta2;
   struct PCLS cls;
   int p;
   int q;
@@ -76,14 +76,14 @@ testDirectory (unsigned int i)
   int ret = 0;
 
   cls.max = i;
-  fis = GNUNET_malloc (sizeof (ECRS_FileInfo) * i);
+  fis = GNUNET_malloc (sizeof (GNUNET_ECRS_FileInfo) * i);
   for (p = 0; p < i; p++)
     {
-      fis[p].meta = ECRS_createMetaData ();
+      fis[p].meta = GNUNET_ECRS_meta_data_create ();
       for (q = 0; q <= p; q++)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
-          ECRS_addToMetaData (fis[p].meta,
+          GNUNET_ECRS_meta_data_inser (fis[p].meta,
                               q % EXTRACTOR_getHighestKeywordTypeNumber (),
                               txt);
         }
@@ -91,54 +91,54 @@ testDirectory (unsigned int i)
                        512,
                        "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
                        p);
-      fis[p].uri = ECRS_stringToUri (NULL, uri);
+      fis[p].uri = GNUNET_ECRS_string_to_uri (NULL, uri);
       if (fis[p].uri == NULL)
         {
-          ECRS_freeMetaData (fis[p].meta);
+          GNUNET_ECRS_meta_data_destroy (fis[p].meta);
           while (--p > 0)
             {
-              ECRS_freeMetaData (fis[p].meta);
-              ECRS_freeUri (fis[p].uri);
+              GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+              GNUNET_ECRS_uri_destroy (fis[p].uri);
             }
           GNUNET_free (fis);
           ABORT ();             /* error in testcase */
         }
     }
-  meta = ECRS_createMetaData ();
-  ECRS_addToMetaData (meta, EXTRACTOR_TITLE, "A title");
-  ECRS_addToMetaData (meta, EXTRACTOR_AUTHOR, "An author");
-  if (GNUNET_OK != ECRS_createDirectory (NULL, &data, &dlen, i, fis, meta))
+  meta = GNUNET_ECRS_meta_data_create ();
+  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_TITLE, "A title");
+  GNUNET_ECRS_meta_data_inser (meta, EXTRACTOR_AUTHOR, "An author");
+  if (GNUNET_OK != GNUNET_ECRS_directory_create (NULL, &data, &dlen, i, fis, meta))
     {
-      ECRS_freeMetaData (meta);
+      GNUNET_ECRS_meta_data_destroy (meta);
       for (p = 0; p < i; p++)
         {
-          ECRS_freeMetaData (fis[p].meta);
-          ECRS_freeUri (fis[p].uri);
+          GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+          GNUNET_ECRS_uri_destroy (fis[p].uri);
         }
       GNUNET_free (fis);
       ABORT ();
     }
   cls.pos = 0;
   cls.fi = fis;
-  if (i != ECRS_listDirectory (NULL, data, dlen, &meta2, &processor, &cls))
+  if (i != GNUNET_ECRS_directory_list_contents (NULL, data, dlen, &meta2, &processor, &cls))
     {
       printf ("expected %u\n", i);
       ret = 1;
       goto END;
     }
-  if (!ECRS_equalsMetaData (meta, meta2))
+  if (!GNUNET_ECRS_meta_data_test_equal (meta, meta2))
     {
       ret = 1;
       goto END;
     }
 END:
   GNUNET_free (data);
-  ECRS_freeMetaData (meta);
-  ECRS_freeMetaData (meta2);
+  GNUNET_ECRS_meta_data_destroy (meta);
+  GNUNET_ECRS_meta_data_destroy (meta2);
   for (p = 0; p < i; p++)
     {
-      ECRS_freeMetaData (fis[p].meta);
-      ECRS_freeUri (fis[p].uri);
+      GNUNET_ECRS_meta_data_destroy (fis[p].meta);
+      GNUNET_ECRS_uri_destroy (fis[p].uri);
     }
   GNUNET_free (fis);
   return ret;

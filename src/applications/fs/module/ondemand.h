@@ -38,15 +38,15 @@
  * @return GNUNET_SYSERR on error, GNUNET_NO if symlinking failed,
  *         GNUNET_YES on success
  */
-int ONDEMAND_initIndex (struct GE_Context *cectx,
+int ONDEMAND_initIndex (struct GNUNET_GE_Context *cectx,
                         const GNUNET_HashCode * fileId, const char *fn);
 
 /**
  * @return GNUNET_NO if already present, GNUNET_YES on success,
  *  GNUNET_SYSERR on other error (i.e. datastore full)
  */
-int ONDEMAND_index (struct GE_Context *cectx,
-                    Datastore_ServiceAPI * datastore,
+int ONDEMAND_index (struct GNUNET_GE_Context *cectx,
+                    GNUNET_Datastore_ServiceAPI * datastore,
                     unsigned int prio,
                     GNUNET_CronTime expiration,
                     unsigned long long fileOffset,
@@ -62,10 +62,10 @@ int ONDEMAND_index (struct GE_Context *cectx,
  * this function also removes the OD-Entry
  * @return GNUNET_OK on success, GNUNET_SYSERR if there was an error
  */
-int ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
-                         const Datastore_Value * odb,
+int ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
+                         const GNUNET_DatastoreValue * odb,
                          const GNUNET_HashCode * query,
-                         Datastore_Value ** enc);
+                         GNUNET_DatastoreValue ** enc);
 
 /**
  * Unindex the file with the given ID.  Removes the file from the
@@ -77,8 +77,8 @@ int ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
  *        up the file properly when computing
  *        the keys of the odb blocks).
  */
-int ONDEMAND_unindex (struct GE_Context *cectx,
-                      Datastore_ServiceAPI * datastore,
+int ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
+                      GNUNET_Datastore_ServiceAPI * datastore,
                       unsigned int blocksize, const GNUNET_HashCode * fileId);
 
 /**
@@ -86,10 +86,10 @@ int ONDEMAND_unindex (struct GE_Context *cectx,
  * indexed.
  * @return GNUNET_YES if so, GNUNET_NO if not.
  */
-int ONDEMAND_testindexed (Datastore_ServiceAPI * datastore,
+int ONDEMAND_testindexed (GNUNET_Datastore_ServiceAPI * datastore,
                           const GNUNET_HashCode * fileId);
 
-int ONDEMAND_init (CoreAPIForApplication * capi);
+int ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi);
 
 int ONDEMAND_done (void);
 

@@ -31,7 +31,7 @@
 /**
  * @brief configuration entry
  */
-typedef struct GC_Entry
+typedef struct GNUNET_GC_Entry
 {
 
   /**
@@ -48,12 +48,12 @@ typedef struct GC_Entry
    * non-null during uncommited update
    */
   char *dirty_val;
-} GC_Entry;
+} GNUNET_GC_Entry;
 
 /**
  * @brief configuration section
  */
-typedef struct GC_Section
+typedef struct GNUNET_GC_Section
 {
 
   /**
@@ -69,30 +69,30 @@ typedef struct GC_Section
   /**
    * entries in the section
    */
-  GC_Entry *entries;
-} GC_Section;
+  GNUNET_GC_Entry *entries;
+} GNUNET_GC_Section;
 
 /**
- * @brief GC_ChangeListener and context
+ * @brief GNUNET_GC_ChangeListener and context
  */
-typedef struct GC_Listener
+typedef struct GNUNET_GC_Listener
 {
 
   /**
    * Callback.
    */
-  GC_ChangeListener listener;
+  GNUNET_GC_ChangeListener listener;
 
   /**
    * Context for callback.
    */
   void *ctx;
-} GC_Listener;
+} GNUNET_GC_Listener;
 
 /**
  * @brief configuration data
  */
-typedef struct GC_Configuration
+typedef struct GNUNET_GC_Configuration
 {
 
   /**
@@ -103,7 +103,7 @@ typedef struct GC_Configuration
   /**
    * Context for logging errors, maybe NULL.
    */
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   /**
    * Modification indication since last save
@@ -119,7 +119,7 @@ typedef struct GC_Configuration
   /**
    * Array with "ssize" entries.
    */
-  GC_Section *sections;
+  GNUNET_GC_Section *sections;
 
   /**
    * How many listeners do we have?
@@ -129,15 +129,15 @@ typedef struct GC_Configuration
   /**
    * Array with "lsize" entries.
    */
-  GC_Listener *listeners;
+  GNUNET_GC_Listener *listeners;
 
-} GC_Configuration;
+} GNUNET_GC_Configuration;
 
 void
-GC_free (struct GC_Configuration *cfg)
+GNUNET_GC_free (struct GNUNET_GC_Configuration *cfg)
 {
-  GC_Section *sec;
-  GC_Entry *e;
+  GNUNET_GC_Section *sec;
+  GNUNET_GC_Entry *e;
   int i;
   int j;
 
@@ -149,25 +149,25 @@ GC_free (struct GC_Configuration *cfg)
           e = &sec->entries[j];
           GNUNET_free (e->key);
           GNUNET_free_non_null (e->val);
-          GE_ASSERT (cfg->ectx, e->dirty_val == NULL);
+          GNUNET_GE_ASSERT (cfg->ectx, e->dirty_val == NULL);
         }
       GNUNET_array_grow (sec->entries, sec->size, 0);
       GNUNET_free (sec->name);
     }
   GNUNET_array_grow (cfg->sections, cfg->ssize, 0);
-  GE_ASSERT (cfg->ectx, cfg->listeners == 0);
+  GNUNET_GE_ASSERT (cfg->ectx, cfg->listeners == 0);
   GNUNET_mutex_destroy (cfg->lock);
   GNUNET_free (cfg);
 }
 
 void
-GC_set_error_context (struct GC_Configuration *cfg, struct GE_Context *ectx)
+GNUNET_GC_set_error_context (struct GNUNET_GC_Configuration *cfg, struct GNUNET_GE_Context *ectx)
 {
   cfg->ectx = ectx;
 }
 
 int
-GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
+GNUNET_GC_parse_configuration (struct GNUNET_GC_Configuration *cfg, const char *filename)
 {
   int dirty;
   char line[256];
@@ -186,9 +186,9 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
   dirty = cfg->dirty;           /* back up value! */
   if (NULL == (fp = FOPEN (fn, "r")))
     {
-      GE_LOG_STRERROR_FILE (cfg->ectx,
-                            GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK |
-                            GE_REQUEST, "fopen", fn);
+      GNUNET_GE_LOG_STRERROR_FILE (cfg->ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK |
+                            GNUNET_GE_REQUEST, "fopen", fn);
       GNUNET_mutex_unlock (cfg->lock);
       GNUNET_free (fn);
       return -1;
@@ -221,7 +221,7 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
           /* @INLINE@ value */
           char *expanded = GNUNET_expand_file_name (cfg->ectx,
                                                     value);
-          if (0 != GC_parse_configuration (cfg, expanded))
+          if (0 != GNUNET_GC_parse_configuration (cfg, expanded))
             ret = -1;           /* failed to parse included config */
         }
       else if (1 == sscanf (line, "[%99[^]]]", value))
@@ -256,10 +256,10 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
              this could happen if the value was changed
              using a command-line option; only set it
              if we do not have a value already... */
-          if ((GNUNET_NO == GC_have_configuration_value (cfg,
+          if ((GNUNET_NO == GNUNET_GC_have_configuration_value (cfg,
                                                          section,
                                                          tag)) &&
-              (0 != GC_set_configuration_value_string (cfg,
+              (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                        cfg->ectx,
                                                        section,
                                                        tag, &value[i])))
@@ -272,10 +272,10 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
              this could happen if the value was changed
              using a command-line option; only set it
              if we do not have a value already... */
-          if ((GNUNET_NO == GC_have_configuration_value (cfg,
+          if ((GNUNET_NO == GNUNET_GC_have_configuration_value (cfg,
                                                          section,
                                                          tag)) &&
-              (0 != GC_set_configuration_value_string (cfg,
+              (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                        cfg->ectx,
                                                        section, tag, "")))
             ret = -1;           /* could not set value */
@@ -283,8 +283,8 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
       else
         {
           /* parse error */
-          GE_LOG (cfg->ectx,
-                  GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK,
+          GNUNET_GE_LOG (cfg->ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK,
                   _("Syntax error in configuration file `%s' at line %d.\n"),
                   filename, nr);
           ret = -1;
@@ -293,9 +293,9 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
     }
   if (0 != fclose (fp))
     {
-      GE_LOG_STRERROR_FILE (cfg->ectx,
-                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE |
-                            GE_BULK | GE_REQUEST, "fclose", filename);
+      GNUNET_GE_LOG_STRERROR_FILE (cfg->ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
+                            GNUNET_GE_BULK | GNUNET_GE_REQUEST, "fclose", filename);
       ret = -1;
     }
   /* restore dirty flag - anything we set in the meantime
@@ -307,16 +307,16 @@ GC_parse_configuration (struct GC_Configuration *cfg, const char *filename)
 }
 
 int
-GC_test_dirty (struct GC_Configuration *cfg)
+GNUNET_GC_test_dirty (struct GNUNET_GC_Configuration *cfg)
 {
   return cfg->dirty;
 }
 
 int
-GC_write_configuration (struct GC_Configuration *data, const char *filename)
+GNUNET_GC_write_configuration (struct GNUNET_GC_Configuration *data, const char *filename)
 {
-  GC_Section *sec;
-  GC_Entry *e;
+  GNUNET_GC_Section *sec;
+  GNUNET_GC_Entry *e;
   int i;
   int j;
   FILE *fp;
@@ -330,8 +330,8 @@ GC_write_configuration (struct GC_Configuration *data, const char *filename)
   GNUNET_disk_directory_create_for_file (NULL, fn);
   if (NULL == (fp = FOPEN (fn, "w")))
     {
-      GE_LOG_STRERROR_FILE (data->ectx,
-                            GE_ERROR | GE_USER | GE_IMMEDIATE, "fopen", fn);
+      GNUNET_GE_LOG_STRERROR_FILE (data->ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE, "fopen", fn);
       GNUNET_free (fn);
       return -1;
     }
@@ -350,7 +350,7 @@ GC_write_configuration (struct GC_Configuration *data, const char *filename)
       for (j = 0; j < sec->size; j++)
         {
           e = &sec->entries[j];
-          GE_ASSERT (data->ectx, e->dirty_val == NULL);
+          GNUNET_GE_ASSERT (data->ectx, e->dirty_val == NULL);
           if (e->val != NULL)
             {
               val = GNUNET_malloc (strlen (e->val) * 2 + 1);
@@ -379,14 +379,14 @@ GC_write_configuration (struct GC_Configuration *data, const char *filename)
         }
     }
   if (error != 0)
-    GE_LOG_STRERROR_FILE (data->ectx,
-                          GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK |
-                          GE_REQUEST, "fprintf", filename);
+    GNUNET_GE_LOG_STRERROR_FILE (data->ectx,
+                          GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK |
+                          GNUNET_GE_REQUEST, "fprintf", filename);
   if (0 != fclose (fp))
     {
-      GE_LOG_STRERROR_FILE (data->ectx,
-                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE |
-                            GE_BULK | GE_REQUEST, "fclose", filename);
+      GNUNET_GE_LOG_STRERROR_FILE (data->ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE |
+                            GNUNET_GE_BULK | GNUNET_GE_REQUEST, "fclose", filename);
       error = 1;
     }
   if (error == 0)
@@ -406,8 +406,8 @@ GC_write_configuration (struct GC_Configuration *data, const char *filename)
 /**
  * Call only with lock held!
  */
-static GC_Section *
-findSection (GC_Configuration * data, const char *section)
+static GNUNET_GC_Section *
+findSection (GNUNET_GC_Configuration * data, const char *section)
 {
   int i;
   for (i = data->ssize - 1; i >= 0; i--)
@@ -419,11 +419,11 @@ findSection (GC_Configuration * data, const char *section)
 /**
  * Call only with lock held!
  */
-static GC_Entry *
-findEntry (GC_Configuration * data, const char *section, const char *key)
+static GNUNET_GC_Entry *
+findEntry (GNUNET_GC_Configuration * data, const char *section, const char *key)
 {
   int i;
-  GC_Section *sec;
+  GNUNET_GC_Section *sec;
 
   sec = findSection (data, section);
   if (sec == NULL)
@@ -435,15 +435,15 @@ findEntry (GC_Configuration * data, const char *section, const char *key)
 }
 
 int
-GC_set_configuration_value_string (struct GC_Configuration *data,
-                                   struct GE_Context *ectx,
+GNUNET_GC_set_configuration_value_string (struct GNUNET_GC_Configuration *data,
+                                   struct GNUNET_GE_Context *ectx,
                                    const char *section,
                                    const char *option, const char *value)
 {
-  GC_Section *sec;
-  GC_Section nsec;
-  GC_Entry *e;
-  GC_Entry ne;
+  GNUNET_GC_Section *sec;
+  GNUNET_GC_Section nsec;
+  GNUNET_GC_Entry *e;
+  GNUNET_GC_Entry ne;
   int ret;
   int i;
 
@@ -475,7 +475,7 @@ GC_set_configuration_value_string (struct GC_Configuration *data,
       else
         {
           /* recursive update to different value -- not allowed! */
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           ret = -1;
         }
     }
@@ -503,7 +503,7 @@ GC_set_configuration_value_string (struct GC_Configuration *data,
               if (0 != data->listeners[i].listener (data->listeners[i].ctx,
                                                     data,
                                                     ectx, section, option))
-                GE_ASSERT (ectx, 0);    /* refused the refusal!? */
+                GNUNET_GE_ASSERT (ectx, 0);    /* refused the refusal!? */
               e = findEntry (data, section, option);    /* side-effects of callback are possible! */
               i++;
             }
@@ -521,8 +521,8 @@ GC_set_configuration_value_string (struct GC_Configuration *data,
         }
     }
   if (ret == -1)
-    GE_LOG (ectx,
-            GE_USER | GE_BULK | GE_WARNING,
+    GNUNET_GE_LOG (ectx,
+            GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_WARNING,
             _
             ("Setting option `%s' in section `%s' to value `%s' was refused.\n"),
             option, section, value);
@@ -531,19 +531,19 @@ GC_set_configuration_value_string (struct GC_Configuration *data,
 }
 
 int
-GC_set_configuration_value_number (struct GC_Configuration *cfg,
-                                   struct GE_Context *ectx,
+GNUNET_GC_set_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
+                                   struct GNUNET_GE_Context *ectx,
                                    const char *section,
                                    const char *option,
                                    unsigned long long number)
 {
   char s[64];
   GNUNET_snprintf (s, 64, "%llu", number);
-  return GC_set_configuration_value_string (cfg, ectx, section, option, s);
+  return GNUNET_GC_set_configuration_value_string (cfg, ectx, section, option, s);
 }
 
 int
-GC_get_configuration_value_number (struct GC_Configuration *cfg,
+GNUNET_GC_get_configuration_value_number (struct GNUNET_GC_Configuration *cfg,
                                    const char *section,
                                    const char *option,
                                    unsigned long long min,
@@ -551,7 +551,7 @@ GC_get_configuration_value_number (struct GC_Configuration *cfg,
                                    unsigned long long def,
                                    unsigned long long *number)
 {
-  GC_Entry *e;
+  GNUNET_GC_Entry *e;
   const char *val;
   int ret;
 
@@ -568,8 +568,8 @@ GC_get_configuration_value_number (struct GC_Configuration *cfg,
             }
           else
             {
-              GE_LOG (cfg->ectx,
-                      GE_ERROR | GE_USER | GE_BULK,
+              GNUNET_GE_LOG (cfg->ectx,
+                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                       _("Configuration value '%llu' for '%s' "
                         "in section '%s' is out of legal bounds [%llu,%llu]\n"),
                       *number, option, section, min, max);
@@ -578,8 +578,8 @@ GC_get_configuration_value_number (struct GC_Configuration *cfg,
         }
       else
         {
-          GE_LOG (cfg->ectx,
-                  GE_ERROR | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (cfg->ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _("Configuration value '%s' for '%s'"
                     " in section '%s' should be a number\n"),
                   val, option, section, min, max);
@@ -589,7 +589,7 @@ GC_get_configuration_value_number (struct GC_Configuration *cfg,
   else
     {
       *number = def;
-      GC_set_configuration_value_number (cfg,
+      GNUNET_GC_set_configuration_value_number (cfg,
                                          cfg->ectx, section, option, def);
       ret = 1;                  /* default */
     }
@@ -598,12 +598,12 @@ GC_get_configuration_value_number (struct GC_Configuration *cfg,
 }
 
 int
-GC_get_configuration_value_string (struct GC_Configuration *cfg,
+GNUNET_GC_get_configuration_value_string (struct GNUNET_GC_Configuration *cfg,
                                    const char *section,
                                    const char *option,
                                    const char *def, char **value)
 {
-  GC_Entry *e;
+  GNUNET_GC_Entry *e;
   const char *val;
   int ret;
 
@@ -620,14 +620,14 @@ GC_get_configuration_value_string (struct GC_Configuration *cfg,
       if (def == NULL)
         {
           GNUNET_mutex_unlock (cfg->lock);
-          GE_LOG (cfg->ectx,
-                  GE_USER | GE_IMMEDIATE | GE_ERROR,
+          GNUNET_GE_LOG (cfg->ectx,
+                  GNUNET_GE_USER | GNUNET_GE_IMMEDIATE | GNUNET_GE_ERROR,
                   "Configuration value for option `%s' in section `%s' required.\n",
                   option, section);
           return -1;
         }
       *value = GNUNET_strdup (def);
-      GC_set_configuration_value_string (cfg,
+      GNUNET_GC_set_configuration_value_string (cfg,
                                          cfg->ectx, section, option, def);
       ret = 1;                  /* default */
     }
@@ -636,13 +636,13 @@ GC_get_configuration_value_string (struct GC_Configuration *cfg,
 }
 
 int
-GC_get_configuration_value_choice (struct GC_Configuration *cfg,
+GNUNET_GC_get_configuration_value_choice (struct GNUNET_GC_Configuration *cfg,
                                    const char *section,
                                    const char *option,
                                    const char **choices,
                                    const char *def, const char **value)
 {
-  GC_Entry *e;
+  GNUNET_GC_Entry *e;
   const char *val;
   int i;
   int ret;
@@ -661,8 +661,8 @@ GC_get_configuration_value_choice (struct GC_Configuration *cfg,
         }
       if (choices[i] == NULL)
         {
-          GE_LOG (cfg->ectx,
-                  GE_ERROR | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (cfg->ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _("Configuration value '%s' for '%s'"
                     " in section '%s' is not in set of legal choices\n"),
                   val, option, section);
@@ -691,10 +691,10 @@ GC_get_configuration_value_choice (struct GC_Configuration *cfg,
  * @return GNUNET_YES if so, GNUNET_NO if not.
  */
 int
-GC_have_configuration_value (struct GC_Configuration *cfg,
+GNUNET_GC_have_configuration_value (struct GNUNET_GC_Configuration *cfg,
                              const char *section, const char *option)
 {
-  GC_Entry *e;
+  GNUNET_GC_Entry *e;
   int ret;
 
   GNUNET_mutex_lock (cfg->lock);
@@ -716,7 +716,7 @@ GC_have_configuration_value (struct GC_Configuration *cfg,
  * @return $-expanded string
  */
 char *
-GC_configuration_expand_dollar (struct GC_Configuration *cfg, char *orig)
+GNUNET_GC_configuration_expand_dollar (struct GNUNET_GC_Configuration *cfg, char *orig)
 {
   int i;
   char *prefix;
@@ -738,13 +738,13 @@ GC_configuration_expand_dollar (struct GC_Configuration *cfg, char *orig)
       post = &orig[i + 1];
     }
   prefix = NULL;
-  if (GNUNET_YES == GC_have_configuration_value (cfg, "PATHS", &orig[1]))
+  if (GNUNET_YES == GNUNET_GC_have_configuration_value (cfg, "PATHS", &orig[1]))
     {
-      if (0 != GC_get_configuration_value_string (cfg,
+      if (0 != GNUNET_GC_get_configuration_value_string (cfg,
                                                   "PATHS",
                                                   &orig[1], NULL, &prefix))
         {
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           return orig;
         }
     }
@@ -782,7 +782,7 @@ GC_configuration_expand_dollar (struct GC_Configuration *cfg, char *orig)
  * @return 0 on success, -1 on error, 1 for default
  */
 int
-GC_get_configuration_value_filename (struct GC_Configuration *data,
+GNUNET_GC_get_configuration_value_filename (struct GNUNET_GC_Configuration *data,
                                      const char *section,
                                      const char *option,
                                      const char *def, char **value)
@@ -791,10 +791,10 @@ GC_get_configuration_value_filename (struct GC_Configuration *data,
   char *tmp;
 
   tmp = NULL;
-  ret = GC_get_configuration_value_string (data, section, option, def, &tmp);
+  ret = GNUNET_GC_get_configuration_value_string (data, section, option, def, &tmp);
   if (tmp != NULL)
     {
-      tmp = GC_configuration_expand_dollar (data, tmp);
+      tmp = GNUNET_GC_configuration_expand_dollar (data, tmp);
       *value = GNUNET_expand_file_name (data->ectx, tmp);
       GNUNET_free (tmp);
     }
@@ -806,30 +806,30 @@ GC_get_configuration_value_filename (struct GC_Configuration *data,
 }
 
 int
-GC_set_configuration_value_choice (struct GC_Configuration *cfg,
-                                   struct GE_Context *ectx,
+GNUNET_GC_set_configuration_value_choice (struct GNUNET_GC_Configuration *cfg,
+                                   struct GNUNET_GE_Context *ectx,
                                    const char *section,
                                    const char *option, const char *choice)
 {
-  return GC_set_configuration_value_string (cfg, ectx, section, option,
+  return GNUNET_GC_set_configuration_value_string (cfg, ectx, section, option,
                                             choice);
 }
 
 int
-GC_attach_change_listener (struct GC_Configuration *cfg,
-                           GC_ChangeListener callback, void *ctx)
+GNUNET_GC_attach_change_listener (struct GNUNET_GC_Configuration *cfg,
+                           GNUNET_GC_ChangeListener callback, void *ctx)
 {
-  GC_Listener l;
+  GNUNET_GC_Listener l;
   int i;
   int j;
 
   GNUNET_mutex_lock (cfg->lock);
   for (i = 0; i < cfg->ssize; i++)
     {
-      GC_Section *s = &cfg->sections[i];
+      GNUNET_GC_Section *s = &cfg->sections[i];
       for (j = 0; j < s->size; j++)
         {
-          GC_Entry *e = &s->entries[j];
+          GNUNET_GC_Entry *e = &s->entries[j];
           if (0 != callback (ctx, cfg, cfg->ectx, s->name, e->key))
             {
               GNUNET_mutex_unlock (cfg->lock);
@@ -846,11 +846,11 @@ GC_attach_change_listener (struct GC_Configuration *cfg,
 }
 
 int
-GC_detach_change_listener (struct GC_Configuration *cfg,
-                           GC_ChangeListener callback, void *ctx)
+GNUNET_GC_detach_change_listener (struct GNUNET_GC_Configuration *cfg,
+                           GNUNET_GC_ChangeListener callback, void *ctx)
 {
   int i;
-  GC_Listener *l;
+  GNUNET_GC_Listener *l;
 
   GNUNET_mutex_lock (cfg->lock);
   for (i = cfg->lsize - 1; i >= 0; i--)
@@ -869,15 +869,15 @@ GC_detach_change_listener (struct GC_Configuration *cfg,
 }
 
 /**
- * Create a GC_Configuration.
+ * Create a GNUNET_GC_Configuration.
  */
-GC_Configuration *
-GC_create ()
+GNUNET_GC_Configuration *
+GNUNET_GC_create ()
 {
-  GC_Configuration *ret;
+  GNUNET_GC_Configuration *ret;
 
-  ret = GNUNET_malloc (sizeof (GC_Configuration));
-  memset (ret, 0, sizeof (GC_Configuration));
+  ret = GNUNET_malloc (sizeof (GNUNET_GC_Configuration));
+  memset (ret, 0, sizeof (GNUNET_GC_Configuration));
   ret->lock = GNUNET_mutex_create (GNUNET_YES);
   return ret;
 }
@@ -891,7 +891,7 @@ GC_create ()
  * @return GNUNET_YES, GNUNET_NO or GNUNET_SYSERR
  */
 int
-GC_get_configuration_value_yesno (struct GC_Configuration *cfg,
+GNUNET_GC_get_configuration_value_yesno (struct GNUNET_GC_Configuration *cfg,
                                   const char *section,
                                   const char *option, int def)
 {
@@ -899,7 +899,7 @@ GC_get_configuration_value_yesno (struct GC_Configuration *cfg,
   const char *val;
   int ret;
 
-  ret = GC_get_configuration_value_choice (cfg,
+  ret = GNUNET_GC_get_configuration_value_choice (cfg,
                                            section,
                                            option,
                                            yesno,

@@ -27,6 +27,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_rpc_service.h"
+#include "gnunet_rpc_lib.h"
 
 /**
  * Flag that determines if the RPC test will be build as
@@ -63,7 +64,7 @@
 
 
 #if DEBUG_RPC_CLIENT
-#define RPC_STATUS(a,b,c) GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "RPC: `%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
+#define RPC_STATUS(a,b,c) GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "RPC: `%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
 #else
 #define RPC_STATUS(a,b,c)
 #endif
@@ -72,7 +73,7 @@
 /**
  * Access to GNUnet core API.
  */
-static CoreAPIForApplication *coreAPI = NULL;
+static GNUNET_CoreAPIForPlugins *coreAPI = NULL;
 
 /**
  * A mutex for synchronous access to all module-wide data structures. This
@@ -81,7 +82,7 @@ static CoreAPIForApplication *coreAPI = NULL;
  */
 static struct GNUNET_Mutex *rpcLock;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 /* *************** RPC registration ****************** */
 
@@ -94,12 +95,12 @@ typedef struct
   /**
    * Callback for a synchronous RPC.  NULL for async RPCs.
    */
-  RPC_Function callback;
+  GNUNET_RPC_SynchronousFunction callback;
 
   /**
    * Callback for an asynchronous RPC.  NULL for sync RPCs.
    */
-  ASYNC_RPC_Function async_callback;
+  GNUNET_RPC_AsynchronousFunction async_callback;
 } RegisteredRPC;
 
 /**
@@ -117,12 +118,12 @@ static struct GNUNET_Vector *list_of_callbacks;
  *   (typically if a callback of that name is already in use).
  */
 static int
-RPC_register (const char *name, RPC_Function callback)
+RPC_register (const char *name, GNUNET_RPC_SynchronousFunction callback)
 {
   RegisteredRPC *rrpc;
 
-  GE_ASSERT (ectx, name != NULL);
-  GE_ASSERT (ectx, callback != NULL);
+  GNUNET_GE_ASSERT (ectx, name != NULL);
+  GNUNET_GE_ASSERT (ectx, callback != NULL);
   GNUNET_mutex_lock (rpcLock);
   rrpc = GNUNET_vector_get_first (list_of_callbacks);
   while (rrpc != NULL)
@@ -130,7 +131,7 @@ RPC_register (const char *name, RPC_Function callback)
       if (0 == strcmp (rrpc->name, name))
         {
           GNUNET_mutex_unlock (rpcLock);
-          GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("%s::%s - RPC %s:%p could not be registered:"
                     " another callback is already using this name (%p)\n"),
                   __FILE__, __FUNCTION__, name, callback, rrpc->callback);
@@ -143,7 +144,7 @@ RPC_register (const char *name, RPC_Function callback)
   rrpc->callback = callback;
   rrpc->async_callback = NULL;
   GNUNET_vector_insert_last (list_of_callbacks, rrpc);
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "%s::%s - Registered RPC %d: %s\n",
           __FILE__, __FUNCTION__, GNUNET_vector_get_size (list_of_callbacks),
           name);
@@ -159,12 +160,12 @@ RPC_register (const char *name, RPC_Function callback)
  *   (typically if a callback of that name is already in use).
  */
 static int
-RPC_register_async (const char *name, ASYNC_RPC_Function callback)
+RPC_register_async (const char *name, GNUNET_RPC_AsynchronousFunction callback)
 {
   RegisteredRPC *rrpc;
 
-  GE_ASSERT (ectx, name != NULL);
-  GE_ASSERT (ectx, callback != NULL);
+  GNUNET_GE_ASSERT (ectx, name != NULL);
+  GNUNET_GE_ASSERT (ectx, callback != NULL);
   GNUNET_mutex_lock (rpcLock);
   rrpc = GNUNET_vector_get_first (list_of_callbacks);
   while (rrpc != NULL)
@@ -172,7 +173,7 @@ RPC_register_async (const char *name, ASYNC_RPC_Function callback)
       if (0 == strcmp (rrpc->name, name))
         {
           GNUNET_mutex_unlock (rpcLock);
-          GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("%s::%s - RPC %s:%p could not be registered:"
                     " another callback is already using this name (%p)\n"),
                   __FILE__, __FUNCTION__, name, callback, rrpc->callback);
@@ -185,7 +186,7 @@ RPC_register_async (const char *name, ASYNC_RPC_Function callback)
   rrpc->callback = NULL;
   rrpc->async_callback = callback;
   GNUNET_vector_insert_last (list_of_callbacks, rrpc);
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "%s::%s - Registered asynchronous RPC %d: %s\n",
           __FILE__, __FUNCTION__, GNUNET_vector_get_size (list_of_callbacks),
           name);
@@ -203,11 +204,11 @@ RPC_register_async (const char *name, ASYNC_RPC_Function callback)
  *    bound to a different function).
  */
 static int
-RPC_unregister (const char *name, RPC_Function callback)
+RPC_unregister (const char *name, GNUNET_RPC_SynchronousFunction callback)
 {
   RegisteredRPC *rrpc;
 
-  GE_ASSERT (ectx, name != NULL);
+  GNUNET_GE_ASSERT (ectx, name != NULL);
   GNUNET_mutex_lock (rpcLock);
   rrpc = GNUNET_vector_get_first (list_of_callbacks);
   while (rrpc != NULL)
@@ -216,7 +217,7 @@ RPC_unregister (const char *name, RPC_Function callback)
         {
           if ((rrpc->callback != callback) && (callback != NULL))
             {
-              GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                       _("%s::%s - RPC %s:%p could not be unregistered:"
                         " another callback registered under that name: %p\n"),
                       __FILE__, __FUNCTION__, name, callback, rrpc->callback);
@@ -227,7 +228,7 @@ RPC_unregister (const char *name, RPC_Function callback)
           GNUNET_free (rrpc->name);
           GNUNET_free (rrpc);
           GNUNET_mutex_unlock (rpcLock);
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "%s::%s - Unregistered RPC %s\n",
                   __FILE__, __FUNCTION__, name);
           return GNUNET_OK;
@@ -235,7 +236,7 @@ RPC_unregister (const char *name, RPC_Function callback)
       rrpc = GNUNET_vector_get_next (list_of_callbacks);
     }
   GNUNET_mutex_unlock (rpcLock);
-  GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
           _("%s::%s - RPC %s:%p could not be unregistered: not found\n"),
           __FILE__, __FUNCTION__, name, callback);
   return GNUNET_SYSERR;
@@ -250,11 +251,11 @@ RPC_unregister (const char *name, RPC_Function callback)
  *    bound to a different function).
  */
 static int
-RPC_unregister_async (const char *name, ASYNC_RPC_Function callback)
+RPC_unregister_async (const char *name, GNUNET_RPC_AsynchronousFunction callback)
 {
   RegisteredRPC *rrpc;
 
-  GE_ASSERT (ectx, name != NULL);
+  GNUNET_GE_ASSERT (ectx, name != NULL);
   GNUNET_mutex_lock (rpcLock);
   rrpc = GNUNET_vector_get_first (list_of_callbacks);
   while (rrpc != NULL)
@@ -263,7 +264,7 @@ RPC_unregister_async (const char *name, ASYNC_RPC_Function callback)
         {
           if ((rrpc->async_callback != callback) && (callback != NULL))
             {
-              GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                       _("%s::%s - RPC %s:%p could not be unregistered:"
                         " another callback registered under that name: %p\n"),
                       __FILE__, __FUNCTION__, name, callback, rrpc->callback);
@@ -274,7 +275,7 @@ RPC_unregister_async (const char *name, ASYNC_RPC_Function callback)
           GNUNET_free (rrpc->name);
           GNUNET_free (rrpc);
           GNUNET_mutex_unlock (rpcLock);
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "%s::%s - Unregistered asynchronous RPC %s\n",
                   __FILE__, __FUNCTION__, name);
           return GNUNET_OK;
@@ -282,7 +283,7 @@ RPC_unregister_async (const char *name, ASYNC_RPC_Function callback)
       rrpc = GNUNET_vector_get_next (list_of_callbacks);
     }
   GNUNET_mutex_unlock (rpcLock);
-  GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
           _
           ("%s::%s - async RPC %s:%p could not be unregistered: not found\n"),
           __FILE__, __FUNCTION__, name, callback);
@@ -417,7 +418,7 @@ agePeerStats (void *unused)
  * Ensure replies and requests have different IDs when dealing
  * with the same peer.
  */
-#define MINGLE(a,b) (((b) == P2P_PROTO_rpc_RES) ? (a) : (a) ^ 0x12345678)
+#define MINGLE(a,b) (((b) == GNUNET_P2P_PROTO_RPC_RES) ? (a) : (a) ^ 0x12345678)
 
 /**
  * Notification: we sent a message to the peer.
@@ -532,7 +533,7 @@ typedef struct
    * followed by a serialization of argumentCount arguments.
    */
   char data[1];
-} P2P_rpc_MESSAGE_GENERIC;
+} P2P_rpc_MESSAGNUNET_GE_GENERIC;
 
 
 /**
@@ -562,12 +563,12 @@ typedef struct
 typedef void (*RPCFinishedCallback) (void *context,
                                      unsigned int sequenceNumber,
                                      unsigned short errorCode,
-                                     RPC_Param * result);
+                                     GNUNET_RPC_CallParameters * result);
 
 /**
  * A per-RPC structure.
  */
-typedef struct CallInstance
+typedef struct GNUNET_RPC_CallHandle
 {
   /**
    * The sequence number of this RPC.
@@ -629,13 +630,13 @@ typedef struct CallInstance
 } CallInstance;
 
 /**
- * A set of CallInstance structures for active incoming rpc calls.
+ * A set of GNUNET_RPC_CallHandle structures for active incoming rpc calls.
  * (requests without a reply).
  */
 static struct GNUNET_Vector *incomingCalls;
 
 /**
- * A set of CallInstance structures for active outgoing rpc calls.
+ * A set of GNUNET_RPC_CallHandle structures for active outgoing rpc calls.
  * (reply messages without an ACK).
  */
 static struct GNUNET_Vector *outgoingCalls;
@@ -650,7 +651,7 @@ static unsigned int rpcIdentifier = 0;
 
 /**
  * Cron-job that processes the RPC queues.  Created for
- * each CallInstance.  Not renewed if the call times out,
+ * each GNUNET_RPC_CallHandle.  Not renewed if the call times out,
  * deleted if the appropriate response is received.
  */
 static void
@@ -660,7 +661,7 @@ retryRPCJob (void *ctx)
   GNUNET_CronTime now;
 
   now = GNUNET_get_time ();
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              (GNUNET_get_time () + 1 * GNUNET_CRON_MINUTES >
               call->expirationTime)
              || (call->expirationTime - GNUNET_get_time () <
@@ -669,14 +670,14 @@ retryRPCJob (void *ctx)
   if (now > call->expirationTime)
     {
 #if DEBUG_RPC
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Completed RPC %p (timeout).\n", call);
 #endif
       if (call->finishedCallback != NULL)
         {
           call->finishedCallback (call->rpcCallbackArgs,
                                   call->sequenceNumber,
-                                  RPC_ERROR_TIMEOUT, NULL);
+                                  GNUNET_RPC_ERROR_TIMEOUT, NULL);
           GNUNET_vector_delete (outgoingCalls, call);
         }
       else
@@ -711,19 +712,19 @@ retryRPCJob (void *ctx)
                              MINGLE (call->sequenceNumber,
                                      ntohs (call->msg->header.type)));
 #if DEBUG_RPC
-          if (ntohs (call->msg->header.type) == P2P_PROTO_rpc_REQ)
+          if (ntohs (call->msg->header.type) == GNUNET_P2P_PROTO_RPC_REQ)
             {
-              GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                       "Sending RPC request %p: '%.*s' (expires in %llums, last attempt %llums ago; attempt %u).\n",
                       call,
                       ntohs (call->msg->functionNameLength),
-                      &((P2P_rpc_MESSAGE_GENERIC *) call->msg)->data[0],
+                      &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) call->msg)->data[0],
                       call->expirationTime - now,
                       now - call->lastAttempt, call->attempts);
             }
           else
             {
-              GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                       "Sending RPC reply %p (expires in %llums, last attempt %llums ago, attempt %u).\n",
                       call,
                       call->expirationTime - now,
@@ -736,7 +737,7 @@ retryRPCJob (void *ctx)
                             &call->msg->header,
                             ntohl (call->msg->importance), maxdelay);
         }
-      GE_ASSERT (ectx,
+      GNUNET_GE_ASSERT (ectx,
                  (GNUNET_get_time () + 1 * GNUNET_CRON_MINUTES >
                   call->expirationTime)
                  || (call->expirationTime - GNUNET_get_time () <
@@ -758,7 +759,7 @@ sendAck (const GNUNET_PeerIdentity * receiver,
   RPC_ACK_Message msg;
 
   msg.header.size = htons (sizeof (RPC_ACK_Message));
-  msg.header.type = htons (P2P_PROTO_rpc_ACK);
+  msg.header.type = htons (GNUNET_P2P_PROTO_RPC_ACK);
   msg.sequenceNumber = htonl (sequenceNumber);
   coreAPI->unicast (receiver, &msg.header, importance, maxDelay);
 }
@@ -773,29 +774,29 @@ getFunctionName (P2P_rpc_MESSAGE * req)
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
   ret = GNUNET_malloc (slen + 1);
-  memcpy (ret, &((P2P_rpc_MESSAGE_GENERIC *) req)->data[0], slen);
+  memcpy (ret, &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) req)->data[0], slen);
   ret[slen] = '\0';
   return ret;
 }
 
-static RPC_Param *
+static GNUNET_RPC_CallParameters *
 deserializeArguments (P2P_rpc_MESSAGE * req)
 {
   unsigned short slen;
-  RPC_Param *ret;
+  GNUNET_RPC_CallParameters *ret;
 
-  if (ntohs (req->header.type) == P2P_PROTO_rpc_REQ)
+  if (ntohs (req->header.type) == GNUNET_P2P_PROTO_RPC_REQ)
     slen = ntohs (req->functionNameLength);
   else
     slen = 0;
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
-  ret = RPC_paramDeserialize (&((P2P_rpc_MESSAGE_GENERIC *) req)->data[slen],
+  ret = GNUNET_RPC_parameters_deserialize (&((P2P_rpc_MESSAGNUNET_GE_GENERIC *) req)->data[slen],
                               ntohs (req->header.size) -
                               sizeof (P2P_rpc_MESSAGE) - slen);
-  if (RPC_paramCount (ret) != ntohs (req->argumentCount))
+  if (GNUNET_RPC_parameters_count (ret) != ntohs (req->argumentCount))
     {
-      RPC_paramFree (ret);
+      GNUNET_RPC_parameters_destroy (ret);
       return NULL;              /* invalid! */
     }
   return ret;
@@ -815,7 +816,7 @@ static P2P_rpc_MESSAGE *
 buildMessage (unsigned short errorCode,
               const char *name,
               unsigned int sequenceNumber,
-              unsigned int importance, RPC_Param * values)
+              unsigned int importance, GNUNET_RPC_CallParameters * values)
 {
   P2P_rpc_MESSAGE *ret;
   size_t size = sizeof (P2P_rpc_MESSAGE);
@@ -829,7 +830,7 @@ buildMessage (unsigned short errorCode,
   else
     slen = 0;
   if (values != NULL)
-    size += RPC_paramSize (values);
+    size += GNUNET_RPC_parameters_get_serialized_size (values);
   if (size >= GNUNET_MAX_BUFFER_SIZE)
     return NULL;                /* message to big! */
   ret = GNUNET_malloc (size);
@@ -841,17 +842,17 @@ buildMessage (unsigned short errorCode,
     ret->functionNameLength = htons (errorCode);
   else
     ret->functionNameLength = htons (slen);
-  ret->argumentCount = htons (RPC_paramCount (values));
+  ret->argumentCount = htons (GNUNET_RPC_parameters_count (values));
   if (name != NULL)
     {
-      memcpy (&((P2P_rpc_MESSAGE_GENERIC *) ret)->data[0], name, slen);
+      memcpy (&((P2P_rpc_MESSAGNUNET_GE_GENERIC *) ret)->data[0], name, slen);
     }
-  RPC_paramSerialize (values, &((P2P_rpc_MESSAGE_GENERIC *) ret)->data[slen]);
+  GNUNET_RPC_parameters_serialize (values, &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) ret)->data[slen]);
 
   if (name == NULL)
-    ret->header.type = htons (P2P_PROTO_rpc_RES);
+    ret->header.type = htons (GNUNET_P2P_PROTO_RPC_RES);
   else
-    ret->header.type = htons (P2P_PROTO_rpc_REQ);
+    ret->header.type = htons (GNUNET_P2P_PROTO_RPC_REQ);
 
   return ret;
 }
@@ -867,7 +868,7 @@ buildMessage (unsigned short errorCode,
  * case o complete the reply (since it's the same code).
  */
 static void
-async_rpc_complete_callback (RPC_Param * results,
+async_rpc_complete_callback (GNUNET_RPC_CallParameters * results,
                              int errorCode, CallInstance * calls)
 {
   GNUNET_mutex_lock (rpcLock);
@@ -877,13 +878,13 @@ async_rpc_complete_callback (RPC_Param * results,
                              calls->sequenceNumber,
                              calls->importance, results);
   if (calls->msg == NULL)
-    calls->msg = buildMessage (RPC_ERROR_RETURN_VALUE_TOO_LARGE,
+    calls->msg = buildMessage (GNUNET_RPC_ERROR_RETURN_VALUE_TOO_LARGE,
                                NULL,
                                calls->sequenceNumber,
                                calls->importance, results);
   GNUNET_vector_insert_last (incomingCalls, calls);
 
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              (GNUNET_get_time () + 1 * GNUNET_CRON_MINUTES >
               calls->expirationTime)
              || (calls->expirationTime - GNUNET_get_time () <
@@ -908,16 +909,16 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
   unsigned int sq;
   unsigned short errorCode;
   char *functionName;
-  RPC_Param *argumentValues;
-  RPC_Param *returnValues;
+  GNUNET_RPC_CallParameters *argumentValues;
+  GNUNET_RPC_CallParameters *returnValues;
   RegisteredRPC *rpc;
   unsigned int minSQ;
 
-  if ((ntohs (message->type) != P2P_PROTO_rpc_REQ) ||
+  if ((ntohs (message->type) != GNUNET_P2P_PROTO_RPC_REQ) ||
       (ntohs (message->size) < sizeof (P2P_rpc_MESSAGE)))
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_REQUEST | GE_ADMIN,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_REQUEST | GNUNET_GE_ADMIN,
               _("Invalid message of type %u received.  Dropping.\n"),
               ntohs (message->type));
       return GNUNET_SYSERR;
@@ -925,8 +926,8 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
   req = (P2P_rpc_MESSAGE *) message;
   sq = ntohl (req->sequenceNumber);
 #if DEBUG_RPC
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Received RPC request with id %u.\n", sq);
 #endif
   GNUNET_mutex_lock (rpcLock);
@@ -961,14 +962,14 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
         }
       RPC_STATUS ("", "received duplicate request", calls);
       calls->expirationTime = GNUNET_get_time () + MAX_RPC_TIMEOUT;
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Dropping RPC request %u, duplicate.\n", sq);
       GNUNET_mutex_unlock (rpcLock);
       return GNUNET_OK;         /* seen before */
     }
   if (minSQ > sq)
     {
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Dropping RPC request %u, sequence number too old (current minimum is %u).\n",
               sq, minSQ);
       GNUNET_mutex_unlock (rpcLock);
@@ -982,9 +983,9 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
     {
       GNUNET_free_non_null (functionName);
       if (argumentValues != NULL)
-        RPC_paramFree (argumentValues);
+        GNUNET_RPC_parameters_destroy (argumentValues);
       GNUNET_mutex_unlock (rpcLock);
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Dropping RPC request %u: message malformed.\n"));
       return GNUNET_SYSERR;     /* message malformed */
     }
@@ -1012,9 +1013,9 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
   /* if possible, perform RPC call */
   if (rpc == NULL)
     {
-      RPC_paramFree (argumentValues);
+      GNUNET_RPC_parameters_destroy (argumentValues);
       returnValues = NULL;
-      errorCode = RPC_ERROR_UNKNOWN_FUNCTION;
+      errorCode = GNUNET_RPC_ERROR_UNKNOWN_FUNCTION;
     }
   else
     {
@@ -1027,10 +1028,10 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
           GNUNET_mutex_unlock (rpcLock);
           return GNUNET_OK;
         }
-      returnValues = RPC_paramNew ();
+      returnValues = GNUNET_RPC_parameters_create ();
       rpc->callback (sender, argumentValues, returnValues);
-      RPC_paramFree (argumentValues);
-      errorCode = RPC_ERROR_OK;
+      GNUNET_RPC_parameters_destroy(argumentValues);
+      errorCode = GNUNET_RPC_ERROR_OK;
     }
   GNUNET_mutex_unlock (rpcLock);
   async_rpc_complete_callback (returnValues, errorCode, calls);
@@ -1049,25 +1050,25 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
   P2P_rpc_MESSAGE *res;
   CallInstance *call;
 
-  if ((ntohs (message->type) != P2P_PROTO_rpc_RES) ||
+  if ((ntohs (message->type) != GNUNET_P2P_PROTO_RPC_RES) ||
       (ntohs (message->size) < sizeof (P2P_rpc_MESSAGE)))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Invalid message of type %u received.  Dropping.\n"),
               ntohs (message->type));
       return GNUNET_SYSERR;
     }
   res = (P2P_rpc_MESSAGE *) message;
 #if DEBUG_RPC
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Received RPC reply with id %u.\n", ntohl (res->sequenceNumber));
 #endif
 
   GNUNET_cron_suspend_jobs (coreAPI->cron, GNUNET_NO);
   GNUNET_mutex_lock (rpcLock);
 
-  /* Locate the CallInstance structure. */
+  /* Locate the GNUNET_RPC_CallHandle structure. */
   call = GNUNET_vector_get_first (outgoingCalls);
   while (call != NULL)
     {
@@ -1080,25 +1081,25 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
     }
   if (NULL != call)
     {
-      RPC_Param *reply;
-      P2P_rpc_MESSAGE_GENERIC *gen;
+      GNUNET_RPC_CallParameters *reply;
+      P2P_rpc_MESSAGNUNET_GE_GENERIC *gen;
       unsigned short error;
 
       RPC_STATUS ("", "received reply", call);
-      gen = (P2P_rpc_MESSAGE_GENERIC *) res;
+      gen = (P2P_rpc_MESSAGNUNET_GE_GENERIC *) res;
       reply = NULL;
       error = ntohs (res->functionNameLength);
 
-      if (error == RPC_ERROR_OK)
+      if (error == GNUNET_RPC_ERROR_OK)
         {
-          reply = RPC_paramDeserialize (&gen->data[0],
+          reply = GNUNET_RPC_parameters_deserialize (&gen->data[0],
                                         ntohs (message->size) -
                                         sizeof (P2P_rpc_MESSAGE));
-          if (ntohs (res->argumentCount) != RPC_paramCount (reply))
+          if (ntohs (res->argumentCount) != GNUNET_RPC_parameters_count (reply))
             {
-              RPC_paramFree (reply);
+              GNUNET_RPC_parameters_destroy(reply);
               reply = NULL;
-              error = RPC_ERROR_REPLY_MALFORMED;
+              error = GNUNET_RPC_ERROR_REPLY_MALFORMED;
             }
         }
       if (call->finishedCallback != NULL)
@@ -1109,12 +1110,12 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
         }
       GNUNET_vector_delete (outgoingCalls, call);
       notifyPeerReply (sender,
-                       MINGLE (call->sequenceNumber, P2P_PROTO_rpc_REQ));
+                       MINGLE (call->sequenceNumber, GNUNET_P2P_PROTO_RPC_REQ));
       GNUNET_cron_del_job (coreAPI->cron, &retryRPCJob, 0, call);
       GNUNET_free (call->msg);
       GNUNET_free (call);
       if (reply != NULL)
-        RPC_paramFree (reply);
+        GNUNET_RPC_parameters_destroy (reply);
     }
   sendAck (sender, ntohl (res->sequenceNumber), 0,      /* not important, ACK should be tiny enough to go through anyway */
            0 /* right away */ );
@@ -1125,7 +1126,7 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
 
 
 /**
- * Handle a peer-to-peer message of type P2P_PROTO_rpc_ACK.
+ * Handle a peer-to-peer message of type GNUNET_P2P_PROTO_RPC_ACK.
  */
 static int
 handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
@@ -1134,11 +1135,11 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
   RPC_ACK_Message *ack;
   CallInstance *call;
 
-  if ((ntohs (message->type) != P2P_PROTO_rpc_ACK) ||
+  if ((ntohs (message->type) != GNUNET_P2P_PROTO_RPC_ACK) ||
       (ntohs (message->size) != sizeof (RPC_ACK_Message)))
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_REQUEST | GE_ADMIN,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_REQUEST | GNUNET_GE_ADMIN,
               _("Invalid message of type %u received.  Dropping.\n"),
               ntohs (message->type));
       return GNUNET_SYSERR;
@@ -1146,13 +1147,13 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
 
   ack = (RPC_ACK_Message *) message;
 #if DEBUG_RPC
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Received RPC ACK with id %u.\n", ntohl (ack->sequenceNumber));
 #endif
   GNUNET_cron_suspend_jobs (coreAPI->cron, GNUNET_NO);
   GNUNET_mutex_lock (rpcLock);
 
-  /* Locate the CallInstance structure. */
+  /* Locate the GNUNET_RPC_CallHandle structure. */
   call = (CallInstance *) GNUNET_vector_get_first (incomingCalls);
   while (call != NULL)
     {
@@ -1170,7 +1171,7 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
       RPC_STATUS ("", "acknowledged reply", call);
       notifyPeerReply (sender,
                        MINGLE (ntohl (ack->sequenceNumber),
-                               P2P_PROTO_rpc_RES));
+                               GNUNET_P2P_PROTO_RPC_RES));
       GNUNET_cron_del_job (coreAPI->cron, &retryRPCJob, 0, call);
       GNUNET_vector_delete (incomingCalls, call);
       GNUNET_free (call->msg);
@@ -1185,7 +1186,7 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
             pi->averageResponseTime *= 2;
         }
 #if DEBUG_RPC
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "ACK is a duplicate (or invalid).\n");
 #endif
     }
@@ -1200,7 +1201,7 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
 typedef struct
 {
   struct GNUNET_Semaphore *sem;
-  RPC_Param *result;
+  GNUNET_RPC_CallParameters *result;
   unsigned short ec;
 } RPC_EXEC_CLS;
 
@@ -1210,17 +1211,17 @@ typedef struct
  */
 static void
 RPC_execute_callback (RPC_EXEC_CLS * context,
-                      unsigned int sq, unsigned short ec, RPC_Param * res)
+                      unsigned int sq, unsigned short ec, GNUNET_RPC_CallParameters * res)
 {
   int i;
   unsigned int dl;
   void *data;
 
-  for (i = RPC_paramCount (res) - 1; i >= 0; i--)
+  for (i = GNUNET_RPC_parameters_count (res) - 1; i >= 0; i--)
     {
       data = NULL;
-      RPC_paramValueByPosition (res, i, &dl, &data);
-      RPC_paramAdd (context->result, RPC_paramName (res, i), dl, data);
+      GNUNET_RPC_parameters_get_value_by_index (res, i, &dl, &data);
+      GNUNET_RPC_parameters_add (context->result, GNUNET_RPC_parameters_get_name (res, i), dl, data);
     }
   context->ec = ec;
   GNUNET_semaphore_up (context->sem);
@@ -1239,8 +1240,8 @@ RPC_execute_callback (RPC_EXEC_CLS * context,
 static int
 RPC_execute (const GNUNET_PeerIdentity * receiver,
              const char *name,
-             RPC_Param * requestParam,
-             RPC_Param * returnParam, unsigned int importance,
+             GNUNET_RPC_CallParameters * requestParam,
+             GNUNET_RPC_CallParameters * returnParam, unsigned int importance,
              GNUNET_CronTime timeout)
 {
   RPC_EXEC_CLS cls;
@@ -1257,13 +1258,13 @@ RPC_execute (const GNUNET_PeerIdentity * receiver,
   call->expirationTime = GNUNET_get_time () + timeout;
   call->receiver = *receiver;
   call->sequenceNumber = rpcIdentifier++;
-  call->msg = buildMessage (RPC_ERROR_OK,
+  call->msg = buildMessage (GNUNET_RPC_ERROR_OK,
                             name,
                             call->sequenceNumber, importance, requestParam);
   call->finishedCallback = (RPCFinishedCallback) & RPC_execute_callback;
   call->rpcCallbackArgs = &cls;
   GNUNET_vector_insert_last (outgoingCalls, call);
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              (GNUNET_get_time () + 1 * GNUNET_CRON_MINUTES >
               call->expirationTime)
              || (call->expirationTime - GNUNET_get_time () <
@@ -1276,11 +1277,11 @@ RPC_execute (const GNUNET_PeerIdentity * receiver,
   return cls.ec;
 }
 
-typedef struct RPC_Record
+typedef struct GNUNET_RPC_RequestHandle
 {
   GNUNET_PeerIdentity peer;
   CallInstance *call;
-  RPC_Complete callback;
+  GNUNET_RPC_AsynchronousCompletionCallback callback;
   void *closure;
   unsigned short errorCode;
 } RPC_Record;
@@ -1288,9 +1289,9 @@ typedef struct RPC_Record
 static void
 RPC_async_callback (RPC_Record * rec,
                     unsigned int sequenceNumber,
-                    unsigned short errorCode, RPC_Param * result)
+                    unsigned short errorCode, GNUNET_RPC_CallParameters * result)
 {
-  if ((errorCode == RPC_ERROR_OK) && (rec->callback != NULL))
+  if ((errorCode == GNUNET_RPC_ERROR_OK) && (rec->callback != NULL))
     {
       rec->callback (&rec->peer, result, rec->closure);
       rec->callback = NULL;     /* never call callback twice */
@@ -1311,15 +1312,15 @@ RPC_async_callback (RPC_Record * rec,
 static RPC_Record *
 RPC_start (const GNUNET_PeerIdentity * receiver,
            const char *name,
-           RPC_Param * request_param,
+           GNUNET_RPC_CallParameters * request_param,
            unsigned int importance,
-           GNUNET_CronTime timeout, RPC_Complete callback, void *closure)
+           GNUNET_CronTime timeout, GNUNET_RPC_AsynchronousCompletionCallback callback, void *closure)
 {
   RPC_Record *ret;
 
   if (timeout > 1 * GNUNET_CRON_HOURS)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("`%s' called with timeout above 1 hour (bug?)\n"),
               __FUNCTION__);
       timeout = 1 * GNUNET_CRON_HOURS;
@@ -1329,7 +1330,7 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   ret->peer = *receiver;
   ret->callback = callback;
   ret->closure = closure;
-  ret->errorCode = RPC_ERROR_TIMEOUT;
+  ret->errorCode = GNUNET_RPC_ERROR_TIMEOUT;
   GNUNET_mutex_lock (rpcLock);
   ret->call = GNUNET_malloc (sizeof (CallInstance));
   ret->call->lastAttempt = 0;
@@ -1338,14 +1339,14 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   ret->call->expirationTime = GNUNET_get_time () + timeout;
   ret->call->receiver = *receiver;
   ret->call->sequenceNumber = rpcIdentifier++;
-  ret->call->msg = buildMessage (RPC_ERROR_OK,
+  ret->call->msg = buildMessage (GNUNET_RPC_ERROR_OK,
                                  name,
                                  ret->call->sequenceNumber,
                                  importance, request_param);
   ret->call->finishedCallback = (RPCFinishedCallback) & RPC_async_callback;
   ret->call->rpcCallbackArgs = ret;
   GNUNET_vector_insert_last (outgoingCalls, ret->call);
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              (GNUNET_get_time () + 1 * GNUNET_CRON_MINUTES >
               ret->call->expirationTime)
              || (ret->call->expirationTime - GNUNET_get_time () <
@@ -1359,7 +1360,7 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
  * Stop an asynchronous RPC (and free associated resources)
  *
  * @param record the return value from RPC_start
- * @return RPC_ERROR_OK if the RPC was successful,
+ * @return GNUNET_RPC_ERROR_OK if the RPC was successful,
  *  another RPC_ERROR code if it was aborted
  */
 static int
@@ -1396,9 +1397,9 @@ release_module_rpc ()
 
   GNUNET_cron_del_job (coreAPI->cron,
                        &agePeerStats, PEER_TRACKING_TIME_INTERVAL, NULL);
-  coreAPI->unregisterHandler (P2P_PROTO_rpc_REQ, &handleRPCMessageReq);
-  coreAPI->unregisterHandler (P2P_PROTO_rpc_RES, &handleRPCMessageRes);
-  coreAPI->unregisterHandler (P2P_PROTO_rpc_ACK, &handleRPCMessageAck);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_REQ, &handleRPCMessageReq);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_RES, &handleRPCMessageRes);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_ACK, &handleRPCMessageAck);
   if (NULL != peerInformation)
     {
       while (GNUNET_vector_get_size (peerInformation) > 0)
@@ -1437,7 +1438,7 @@ release_module_rpc ()
           RegisteredRPC *rpc;
           rpc =
             (RegisteredRPC *) GNUNET_vector_delete_last (list_of_callbacks);
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("RPC not unregistered: %s:%p\n"), rpc->name,
                   rpc->callback);
           GNUNET_free (rpc->name);
@@ -1453,10 +1454,10 @@ release_module_rpc ()
 /**
  * Initialize the RPC service.
  */
-RPC_ServiceAPI *
-provide_module_rpc (CoreAPIForApplication * capi)
+GNUNET_RPC_ServiceAPI *
+provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
 {
-  static RPC_ServiceAPI rpcAPI;
+  static GNUNET_RPC_ServiceAPI rpcAPI;
   int rvalue;
 
   ectx = capi->ectx;
@@ -1466,23 +1467,23 @@ provide_module_rpc (CoreAPIForApplication * capi)
   incomingCalls = GNUNET_vector_create (16);
   outgoingCalls = GNUNET_vector_create (16);
   list_of_callbacks = GNUNET_vector_create (16);
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("`%s' registering handlers %d %d %d\n"),
-          "rpc", P2P_PROTO_rpc_REQ, P2P_PROTO_rpc_RES, P2P_PROTO_rpc_ACK);
+          "rpc", GNUNET_P2P_PROTO_RPC_REQ, GNUNET_P2P_PROTO_RPC_RES, GNUNET_P2P_PROTO_RPC_ACK);
   rvalue = GNUNET_OK;
-  if (capi->registerHandler (P2P_PROTO_rpc_REQ,
+  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_REQ,
                              &handleRPCMessageReq) == GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
-  if (capi->registerHandler (P2P_PROTO_rpc_RES,
+  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_RES,
                              &handleRPCMessageRes) == GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
-  if (capi->registerHandler (P2P_PROTO_rpc_ACK,
+  if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_ACK,
                              &handleRPCMessageAck) == GNUNET_SYSERR)
     rvalue = GNUNET_SYSERR;
   if (rvalue == GNUNET_SYSERR)
     {
       release_module_rpc ();
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Failed to initialize `%s' service.\n"), "rpc");
       return NULL;
     }
@@ -1507,123 +1508,123 @@ provide_module_rpc (CoreAPIForApplication * capi)
 
 static void
 testCallback (const GNUNET_PeerIdentity * sender,
-              RPC_Param * arguments, RPC_Param * results)
+              GNUNET_RPC_CallParameters * arguments, GNUNET_RPC_CallParameters * results)
 {
   unsigned int dl;
   char *data;
 
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "RPC callback invoked!\n");
-  if ((GNUNET_OK == RPC_paramValueByName (arguments,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "RPC callback invoked!\n");
+  if ((GNUNET_OK == GNUNET_RPC_parameters_get_value_by_name (arguments,
                                           "command",
                                           &dl,
                                           (void **) &data)) &&
       (strncmp ("Hello", data, dl) == 0))
     {
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "RPC callback received Hello command!\n");
-      RPC_paramAdd (results,
+      GNUNET_RPC_parameters_add (results,
                     "response",
                     strlen ("Hello RPC World") + 1, "Hello RPC World");
     }
 }
 
 static void
-async_RPC_Complete_callback (RPC_Param * results,
+async_RPC_Complete_callback (GNUNET_RPC_CallParameters * results,
                              struct GNUNET_Semaphore *GNUNET_RSA_sign)
 {
   unsigned int dl;
   char *reply;
 
   GNUNET_semaphore_down (GNUNET_RSA_sign, GNUNET_YES);
-  if ((GNUNET_OK != RPC_paramValueByName (results,
+  if ((GNUNET_OK != GNUNET_RPC_parameters_get_value_by_name (results,
                                           "response",
                                           &dl,
                                           (void **) &reply)) ||
       (strncmp ("Hello RPC World", reply, dl) != 0))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("RPC async reply invalid.\n"));
     }
   else
-    GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             "RPC async reply received.\n");
 }
 
 int
-initialize_module_rpc (CoreAPIForApplication * capi)
+initialize_module_rpc (GNUNET_CoreAPIForPlugins * capi)
 {
-  RPC_ServiceAPI *rpcAPI;
+  GNUNET_RPC_ServiceAPI *rpcAPI;
   int ret;
-  RPC_Param *args;
-  RPC_Param *rets;
+  GNUNET_RPC_CallParameters *args;
+  GNUNET_RPC_CallParameters *rets;
   unsigned int dl;
   char *reply;
   int code;
-  RPC_Record *record;
+  struct GNUNET_RPC_RequestHandle *record;
   struct GNUNET_Semaphore *GNUNET_RSA_sign;
 
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "RPC testcase starting\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "RPC testcase starting\n");
   rpcAPI = capi->requestService ("rpc");
   if (rpcAPI == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   ret = GNUNET_OK;
 
   if (GNUNET_OK != rpcAPI->RPC_register ("testFunction", &testCallback))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
 
-  args = RPC_paramNew ();
-  RPC_paramAdd (args, "command", strlen ("Hello") + 1, "Hello");
+  args = GNUNET_RPC_parameters_create ();
+  GNUNET_RPC_parameters_add (args, "command", strlen ("Hello") + 1, "Hello");
   GNUNET_RSA_sign = GNUNET_semaphore_create (0);
   record = rpcAPI->RPC_start (coreAPI->myIdentity,
                               "testFunction",
                               args,
                               0,
                               5 * GNUNET_CRON_SECONDS,
-                              (RPC_Complete) & async_RPC_Complete_callback,
+                              (GNUNET_RPC_AsynchronousCompletionCallback) & async_RPC_Complete_callback,
                               GNUNET_RSA_sign);
   GNUNET_semaphore_up (GNUNET_RSA_sign);        /* allow callback now - forces async! */
-  rets = RPC_paramNew ();
+  rets = GNUNET_RPC_parameters_create ();
   code = rpcAPI->RPC_execute (coreAPI->myIdentity,
                               "testFunction", args, rets, 0,
                               5 * GNUNET_CRON_SECONDS);
-  if (code != RPC_ERROR_OK)
+  if (code != GNUNET_RPC_ERROR_OK)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
-  RPC_paramFree (args);
-  if ((GNUNET_OK != RPC_paramValueByName (rets,
+  GNUNET_RPC_parameters_destroy (args);
+  if ((GNUNET_OK != GNUNET_RPC_parameters_get_value_by_name (rets,
                                           "response",
                                           &dl,
                                           (void **) &reply)) ||
       (strncmp ("Hello RPC World", reply, dl) != 0))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
-  RPC_paramFree (rets);
+  GNUNET_RPC_parameters_destroy (rets);
   GNUNET_thread_sleep (1 * GNUNET_CRON_SECONDS);
-  if (RPC_ERROR_OK != rpcAPI->RPC_stop (record))
-    GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+  if (GNUNET_RPC_ERROR_OK != rpcAPI->RPC_stop (record))
+    GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
             _("async RPC reply not received.\n"));
 
   if (GNUNET_OK != rpcAPI->RPC_unregister ("testFunction", &testCallback))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
   if (GNUNET_OK != capi->releaseService (rpcAPI))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "RPC testcase completed with status %s\n",
           ret == GNUNET_OK ? "SUCCESS" : "FAILURE");
   return ret;

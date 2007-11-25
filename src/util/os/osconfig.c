@@ -35,7 +35,7 @@
  * @param callback the callback function
  */
 void
-GNUNET_list_network_interfaces (struct GE_Context *ectx,
+GNUNET_list_network_interfaces (struct GNUNET_GE_Context *ectx,
                                 GNUNET_NetworkInterfaceProcessor proc,
                                 void *cls)
 {
@@ -54,8 +54,8 @@ GNUNET_list_network_interfaces (struct GE_Context *ectx,
     f = popen ("ifconfig 2> /dev/null", "r");
   if (!f)
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_USER | GE_ADMIN | GE_BULK | GE_WARNING,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK | GNUNET_GE_WARNING,
                             "popen", "ifconfig");
       return;
     }
@@ -101,7 +101,7 @@ GNUNET_list_network_interfaces (struct GE_Context *ectx,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_set_fd_limit (struct GE_Context *ectx, int n)
+GNUNET_set_fd_limit (struct GNUNET_GE_Context *ectx, int n)
 {
   if (n == 0)
     return GNUNET_OK;
@@ -114,14 +114,14 @@ GNUNET_set_fd_limit (struct GE_Context *ectx, int n)
   ret = setrlimit (RLIMIT_NOFILE, &rlim);
   if (ret != 0)
     {
-      GE_LOG_STRERROR (ectx,
-                       GE_INFO | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+      GNUNET_GE_LOG_STRERROR (ectx,
+                       GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                        "setrlimit");
       return GNUNET_SYSERR;
     }
 #else
-  GE_LOG (ectx,
-          GE_INFO | GE_USER | GE_ADMIN,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_ADMIN,
           _("Setting open descriptor limit not supported.\n"));
 #endif
   return GNUNET_OK;
@@ -182,7 +182,7 @@ isOSAutostartCapable ()
  *    2 startup script could not be opened
  */
 int
-GNUNET_configure_autostart (struct GE_Context *ectx,
+GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                             int testCapability,
                             int doAutoStart,
                             const char *application,
@@ -300,8 +300,8 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
   /* Unix */
   if ((ACCESS ("/usr/sbin/update-rc.d", X_OK) != 0))
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                             "access", "/usr/sbin/update-rc.d");
       return GNUNET_SYSERR;
     }
@@ -312,8 +312,8 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
 
       if (ACCESS (application, X_OK) != 0)
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                                 "access", application);
         }
       if (STAT ("/etc/init.d/gnunetd", &buf) == -1)
@@ -322,9 +322,9 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
           FILE *f = FOPEN ("/etc/init.d/gnunetd", "w");
           if (f == NULL)
             {
-              GE_LOG_STRERROR_FILE (ectx,
-                                    GE_ERROR | GE_USER | GE_ADMIN |
-                                    GE_IMMEDIATE, "fopen",
+              GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                    GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "fopen",
                                     "/etc/init.d/gnunetd");
               return 2;
             }
@@ -365,9 +365,9 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
           if (0 != CHMOD ("/etc/init.d/gnunetd",
                           S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
             {
-              GE_LOG_STRERROR_FILE (ectx,
-                                    GE_WARNING | GE_USER | GE_ADMIN |
-                                    GE_IMMEDIATE, "chmod",
+              GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                    GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                    GNUNET_GE_IMMEDIATE, "chmod",
                                     "/etc/init.d/gnunetd");
               return GNUNET_SYSERR;
             }
@@ -380,15 +380,15 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
             {
               if (errno != 0)
                 {
-                  GE_LOG_STRERROR_FILE (ectx,
-                                        GE_WARNING | GE_USER | GE_ADMIN |
-                                        GE_IMMEDIATE, "system",
+                  GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                        GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                        GNUNET_GE_IMMEDIATE, "system",
                                         "/usr/sbin/update-rc.d");
                 }
               else
                 {
-                  GE_LOG (ectx,
-                          GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+                  GNUNET_GE_LOG (ectx,
+                          GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                           _("Command `%s' failed with error code %u\n"),
                           "/usr/sbin/update-rc.d gnunetd defaults",
                           WEXITSTATUS (ret));
@@ -402,18 +402,18 @@ GNUNET_configure_autostart (struct GE_Context *ectx,
     {                           /* REMOVE autostart */
       if ((UNLINK ("/etc/init.d/gnunetd") == -1) && (errno != ENOENT))
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_WARNING | GE_USER | GE_ADMIN |
-                                GE_IMMEDIATE, "unlink",
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                GNUNET_GE_IMMEDIATE, "unlink",
                                 "/etc/init.d/gnunetd");
           return GNUNET_SYSERR;
         }
       errno = 0;
       if (-1 != system ("/usr/sbin/update-rc.d gnunetd remove"))
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_WARNING | GE_USER | GE_ADMIN |
-                                GE_IMMEDIATE, "system",
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN |
+                                GNUNET_GE_IMMEDIATE, "system",
                                 "/usr/sbin/update-rc.d");
           return GNUNET_SYSERR;
         }

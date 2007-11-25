@@ -31,7 +31,7 @@
 #include "gnunet_util_network_client.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GE_BREAK(NULL, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 static int
 testTerminate (void *unused)
@@ -39,7 +39,7 @@ testTerminate (void *unused)
   return GNUNET_OK;
 }
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static char *
 makeName (unsigned int i)
@@ -54,14 +54,14 @@ makeName (unsigned int i)
   return fn;
 }
 
-static struct ECRS_URI *
+static struct GNUNET_ECRS_URI *
 uploadFile (unsigned int size)
 {
   int ret;
   char *name;
   int fd;
   char *buf;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
 
   name = makeName (size);
@@ -76,7 +76,7 @@ uploadFile (unsigned int size)
   WRITE (fd, buf, size);
   GNUNET_free (buf);
   CLOSE (fd);
-  ret = ECRS_uploadFile (NULL, cfg, name, GNUNET_YES,   /* index */
+  ret = GNUNET_ECRS_file_upload (NULL, cfg, name, GNUNET_YES,   /* index */
                          0,     /* anon */
                          0,     /* prio */
                          GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
@@ -84,19 +84,19 @@ uploadFile (unsigned int size)
                          NULL, &testTerminate, NULL, &uri);
   if (ret != GNUNET_SYSERR)
     {
-      struct ECRS_MetaData *meta;
-      struct ECRS_URI *key;
+      struct GNUNET_ECRS_MetaData *meta;
+      struct GNUNET_ECRS_URI *key;
       const char *keywords[2];
 
       keywords[0] = name;
       keywords[1] = NULL;
 
-      meta = ECRS_createMetaData ();
-      key = ECRS_keywordsToUri (keywords);
-      ret = ECRS_addToKeyspace (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,    /* expire */
+      meta = GNUNET_ECRS_meta_data_create ();
+      key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
+      ret = GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,    /* expire */
                                 uri, meta);
-      ECRS_freeMetaData (meta);
-      ECRS_freeUri (uri);
+      GNUNET_ECRS_meta_data_destroy (meta);
+      GNUNET_ECRS_uri_destroy (uri);
       GNUNET_free (name);
       if (ret == GNUNET_OK)
         {
@@ -104,7 +104,7 @@ uploadFile (unsigned int size)
         }
       else
         {
-          ECRS_freeUri (key);
+          GNUNET_ECRS_uri_destroy (key);
           return NULL;
         }
     }
@@ -116,18 +116,18 @@ uploadFile (unsigned int size)
 }
 
 static int
-searchCB (const ECRS_FileInfo * fi,
+searchCB (const GNUNET_ECRS_FileInfo * fi,
           const GNUNET_HashCode * key, int isRoot, void *closure)
 {
-  struct ECRS_URI **my = closure;
+  struct GNUNET_ECRS_URI **my = closure;
   char *tmp;
 
-  tmp = ECRS_uriToString (fi->uri);
-  GE_LOG (NULL,
-          GE_DEBUG | GE_REQUEST | GE_USER, "Search found URI `%s'\n", tmp);
+  tmp = GNUNET_ECRS_uri_to_string (fi->uri);
+  GNUNET_GE_LOG (NULL,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Search found URI `%s'\n", tmp);
   GNUNET_free (tmp);
-  GE_ASSERT (NULL, NULL == *my);
-  *my = ECRS_dupUri (fi->uri);
+  GNUNET_GE_ASSERT (NULL, NULL == *my);
+  *my = GNUNET_ECRS_uri_duplicate (fi->uri);
   return GNUNET_SYSERR;         /* abort search */
 }
 
@@ -136,19 +136,19 @@ searchCB (const ECRS_FileInfo * fi,
  * @return GNUNET_OK on success
  */
 static int
-searchFile (struct ECRS_URI **uri)
+searchFile (struct GNUNET_ECRS_URI **uri)
 {
   int ret;
-  struct ECRS_URI *myURI;
+  struct GNUNET_ECRS_URI *myURI;
 
   myURI = NULL;
-  ret = ECRS_search (NULL,
+  ret = GNUNET_ECRS_search (NULL,
                      cfg,
                      *uri,
                      0,
                      15 * GNUNET_CRON_SECONDS,
                      &searchCB, &myURI, &testTerminate, NULL);
-  ECRS_freeUri (*uri);
+  GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))
     return GNUNET_OK;
@@ -157,7 +157,7 @@ searchFile (struct ECRS_URI **uri)
 }
 
 static int
-downloadFile (unsigned int size, const struct ECRS_URI *uri)
+downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
 {
   int ret;
   char *tmpName;
@@ -167,14 +167,14 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   int i;
   char *tmp;
 
-  tmp = ECRS_uriToString (uri);
-  GE_LOG (NULL,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  tmp = GNUNET_ECRS_uri_to_string (uri);
+  GNUNET_GE_LOG (NULL,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
   ret = GNUNET_SYSERR;
-  if (GNUNET_OK == ECRS_downloadFile (NULL,
+  if (GNUNET_OK == GNUNET_ECRS_file_download (NULL,
                                       cfg,
                                       uri,
                                       tmpName, 0, NULL, NULL, &testTerminate,
@@ -210,7 +210,7 @@ unindexFile (unsigned int size)
   char *name;
 
   name = makeName (size);
-  ret = ECRS_unindexFile (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
+  ret = GNUNET_ECRS_file_uninde (NULL, cfg, name, NULL, NULL, &testTerminate, NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);
@@ -238,17 +238,17 @@ main (int argc, char *argv[])
   pid_t daemon;
   int ok;
   struct GNUNET_ClientServerConnection *sock;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
-  GE_ASSERT (NULL, daemon > 0);
+  GNUNET_GE_ASSERT (NULL, daemon > 0);
   sock = NULL;
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
@@ -267,7 +267,7 @@ main (int argc, char *argv[])
       CHECK (NULL != uri);
       CHECK (GNUNET_OK == searchFile (&uri));
       CHECK (GNUNET_OK == downloadFile (filesizes[i], uri));
-      ECRS_freeUri (uri);
+      GNUNET_ECRS_uri_destroy (uri);
       CHECK (GNUNET_OK == unindexFile (filesizes[i]));
       fprintf (stderr, " Ok.\n");
       i++;
@@ -277,8 +277,8 @@ main (int argc, char *argv[])
 FAILURE:
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
-  GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
-  GC_free (cfg);
+  GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 

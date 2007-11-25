@@ -33,7 +33,7 @@
 
 /* ***************** CRON code ***************** */
 
-#define FSUI_UDT_FREQUENCY (2 * GNUNET_CRON_SECONDS)
+#define GNUNET_FSUI_UDT_FREQUENCY (2 * GNUNET_CRON_SECONDS)
 
 /**
  * Cron job for download load management.
@@ -41,20 +41,20 @@
 static void
 updateDownloadThreads (void *c)
 {
-  FSUI_Context *ctx = c;
-  FSUI_DownloadList *dpos;
+  GNUNET_FSUI_Context *ctx = c;
+  GNUNET_FSUI_DownloadList *dpos;
 
   GNUNET_mutex_lock (ctx->lock);
   dpos = ctx->activeDownloads.child;
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
-    GE_LOG (ctx->ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER,
+    GNUNET_GE_LOG (ctx->ectx,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             "Download thread manager schedules pending downloads...\n");
 #endif
   while (dpos != NULL)
     {
-      FSUI_updateDownloadThread (dpos);
+      GNUNET_FSUI_updateDownloadThread (dpos);
       dpos = dpos->next;
     }
   GNUNET_mutex_unlock (ctx->lock);
@@ -63,15 +63,15 @@ updateDownloadThreads (void *c)
 /* ******************* START code *********************** */
 
 static void
-signalDownloadResume (struct FSUI_DownloadList *ret, FSUI_Context * ctx)
+signalDownloadResume (struct GNUNET_FSUI_DownloadList *ret, GNUNET_FSUI_Context * ctx)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
   GNUNET_CronTime now;
   GNUNET_CronTime eta;
 
   while (ret != NULL)
     {
-      event.type = FSUI_download_resumed;
+      event.type = GNUNET_FSUI_download_resumed;
       event.data.DownloadResumed.dc.pos = ret;
       event.data.DownloadResumed.dc.cctx = ret->cctx;
       event.data.DownloadResumed.dc.ppos =
@@ -110,15 +110,15 @@ signalDownloadResume (struct FSUI_DownloadList *ret, FSUI_Context * ctx)
 }
 
 static void
-signalUploadResume (struct FSUI_UploadList *ret, FSUI_Context * ctx)
+signalUploadResume (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ctx)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
   GNUNET_CronTime now;
   GNUNET_CronTime eta;
 
   while (ret != NULL)
     {
-      event.type = FSUI_upload_resumed;
+      event.type = GNUNET_FSUI_upload_resumed;
       event.data.UploadResumed.uc.pos = ret;
       event.data.UploadResumed.uc.cctx = NULL;
       event.data.UploadResumed.uc.ppos = ret->parent;
@@ -157,17 +157,17 @@ signalUploadResume (struct FSUI_UploadList *ret, FSUI_Context * ctx)
  * threads below are controlled by the parent.
  */
 static void
-doResumeUploads (struct FSUI_UploadList *ret, FSUI_Context * ctx)
+doResumeUploads (struct GNUNET_FSUI_UploadList *ret, GNUNET_FSUI_Context * ctx)
 {
   while (ret != NULL)
     {
-      if (ret->state == FSUI_ACTIVE)
+      if (ret->state == GNUNET_FSUI_ACTIVE)
         {
-          ret->shared->handle = GNUNET_thread_create (&FSUI_uploadThread,
+          ret->shared->handle = GNUNET_thread_create (&GNUNET_FSUI_uploadThread,
                                                       ret, 128 * 1024);
           if (ret->shared->handle == NULL)
-            GE_DIE_STRERROR (ctx->ectx,
-                             GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+            GNUNET_GE_DIE_STRERROR (ctx->ectx,
+                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                              "pthread_create");
         }
       ret = ret->next;
@@ -177,30 +177,30 @@ doResumeUploads (struct FSUI_UploadList *ret, FSUI_Context * ctx)
 /**
  * Start FSUI manager.  Use the given progress callback to notify the
  * UI about events.  Start processing pending activities that were
- * running when FSUI_stop was called previously.
+ * running when GNUNET_FSUI_stop was called previously.
  *
  * @param name name of the context, must not be NULL
  * @return NULL on error
  */
-struct FSUI_Context *
-FSUI_start (struct GE_Context *ectx,
-            struct GC_Configuration *cfg,
+struct GNUNET_FSUI_Context *
+GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
+            struct GNUNET_GC_Configuration *cfg,
             const char *name,
             unsigned int threadPoolSize,
-            int doResume, FSUI_EventCallback cb, void *closure)
+            int doResume, GNUNET_FSUI_EventProcessor cb, void *closure)
 {
-  FSUI_Event event;
-  FSUI_Context *ret;
-  FSUI_SearchList *list;
-  FSUI_UnindexList *xlist;
+  GNUNET_FSUI_Event event;
+  GNUNET_FSUI_Context *ret;
+  GNUNET_FSUI_SearchList *list;
+  GNUNET_FSUI_UnindexList *xlist;
   char *fn;
   char *gh;
   unsigned long long size;
 
-  GE_ASSERT (ectx, cfg != NULL);
-  ret = GNUNET_malloc (sizeof (FSUI_Context));
-  memset (ret, 0, sizeof (FSUI_Context));
-  ret->activeDownloads.state = FSUI_PENDING;    /* !? */
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
+  ret = GNUNET_malloc (sizeof (GNUNET_FSUI_Context));
+  memset (ret, 0, sizeof (GNUNET_FSUI_Context));
+  ret->activeDownloads.state = GNUNET_FSUI_PENDING;    /* !? */
   ret->activeDownloads.ctx = ret;
   ret->cfg = cfg;
   ret->ecb = cb;
@@ -210,10 +210,10 @@ FSUI_start (struct GE_Context *ectx,
     ret->threadPoolSize = 32;
   ret->activeDownloadThreads = 0;
 
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &gh);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &gh);
   GNUNET_disk_directory_create (ectx, gh);
   fn = GNUNET_malloc (strlen (gh) + strlen (name) + 2 + 5);
   strcpy (fn, gh);
@@ -227,16 +227,16 @@ FSUI_start (struct GE_Context *ectx,
     {
       ret->ipc = GNUNET_IPC_semaphore_create (ectx, fn, 1);
 #if DEBUG_PERSISTENCE
-      GE_LOG (ectx,
-              GE_INFO | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Getting IPC lock for FSUI (%s).\n", fn);
 #endif
       GNUNET_IPC_semaphore_down (ret->ipc, GNUNET_YES);
 #if DEBUG_PERSISTENCE
-      GE_LOG (ectx, GE_INFO | GE_REQUEST | GE_USER, "Aquired IPC lock.\n");
+      GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER, "Aquired IPC lock.\n");
 #endif
       strcat (fn, ".res");
-      FSUI_deserialize (ret);
+      GNUNET_FSUI_deserialize (ret);
     }
   else
     {
@@ -251,7 +251,7 @@ FSUI_start (struct GE_Context *ectx,
   list = ret->activeSearches;
   while (list != NULL)
     {
-      event.type = FSUI_search_resumed;
+      event.type = GNUNET_FSUI_search_resumed;
       event.data.SearchResumed.sc.pos = list;
       event.data.SearchResumed.sc.cctx = NULL;
       event.data.SearchResumed.fis = list->resultsReceived;
@@ -271,11 +271,11 @@ FSUI_start (struct GE_Context *ectx,
       if (GNUNET_OK !=
           GNUNET_disk_file_size (ectx, xlist->filename, &size, GNUNET_YES))
         size = 0;
-      event.type = FSUI_unindex_resumed;
+      event.type = GNUNET_FSUI_unindex_resumed;
       event.data.UnindexResumed.uc.pos = xlist;
       event.data.UnindexResumed.uc.cctx = NULL;
       event.data.UnindexResumed.completed =
-        (xlist->state == FSUI_COMPLETED_JOINED) ? size : 0;
+        (xlist->state == GNUNET_FSUI_COMPLETED_JOINED) ? size : 0;
       event.data.UnindexResumed.total = size;
       event.data.UnindexResumed.eta = GNUNET_get_time ();
       event.data.UnindexResumed.filename = xlist->filename;
@@ -288,7 +288,7 @@ FSUI_start (struct GE_Context *ectx,
   ret->cron = cron_create (ectx);
   /* 3a) resume downloads */
   GNUNET_cron_add_job (ret->cron,
-                       &updateDownloadThreads, 0, FSUI_UDT_FREQUENCY, ret);
+                       &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY, ret);
   GNUNET_cron_start (ret->cron);
   /* 3b) resume uploads */
   doResumeUploads (ret->activeUploads.child, ret);
@@ -296,14 +296,14 @@ FSUI_start (struct GE_Context *ectx,
   xlist = ret->unindexOperations;
   while (xlist != NULL)
     {
-      if (xlist->state == FSUI_PENDING)
+      if (xlist->state == GNUNET_FSUI_PENDING)
         {
-          xlist->state = FSUI_ACTIVE;
-          xlist->handle = GNUNET_thread_create (&FSUI_unindexThread,
+          xlist->state = GNUNET_FSUI_ACTIVE;
+          xlist->handle = GNUNET_thread_create (&GNUNET_FSUI_unindexThread,
                                                 xlist, 32 * 1024);
           if (xlist->handle == NULL)
-            GE_DIE_STRERROR (ectx,
-                             GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+            GNUNET_GE_DIE_STRERROR (ectx,
+                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                              "pthread_create");
         }
       xlist = xlist->next;
@@ -312,14 +312,14 @@ FSUI_start (struct GE_Context *ectx,
   list = ret->activeSearches;
   while (list != NULL)
     {
-      if (list->state == FSUI_PENDING)
+      if (list->state == GNUNET_FSUI_PENDING)
         {
-          list->state = FSUI_ACTIVE;
+          list->state = GNUNET_FSUI_ACTIVE;
           list->handle =
-            GNUNET_thread_create (&FSUI_searchThread, list, 32 * 1024);
+            GNUNET_thread_create (&GNUNET_FSUI_searchThread, list, 32 * 1024);
           if (list->handle == NULL)
-            GE_DIE_STRERROR (ectx,
-                             GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+            GNUNET_GE_DIE_STRERROR (ectx,
+                             GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                              "pthread_create");
         }
       list = list->next;
@@ -334,14 +334,14 @@ FSUI_start (struct GE_Context *ectx,
  * (recursively) signal download suspension.
  */
 static void
-signalDownloadSuspend (struct GE_Context *ectx,
-                       FSUI_Context * ctx, FSUI_DownloadList * list)
+signalDownloadSuspend (struct GNUNET_GE_Context *ectx,
+                       GNUNET_FSUI_Context * ctx, GNUNET_FSUI_DownloadList * list)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
   while (list != NULL)
     {
       signalDownloadSuspend (ectx, ctx, list->child);
-      event.type = FSUI_download_suspended;
+      event.type = GNUNET_FSUI_download_suspended;
       event.data.DownloadSuspended.dc.pos = list;
       event.data.DownloadSuspended.dc.cctx = list->cctx;
       event.data.DownloadSuspended.dc.ppos =
@@ -359,14 +359,14 @@ signalDownloadSuspend (struct GE_Context *ectx,
  * (recursively) signal upload suspension.
  */
 static void
-signalUploadSuspend (struct GE_Context *ectx,
-                     FSUI_Context * ctx, FSUI_UploadList * upos)
+signalUploadSuspend (struct GNUNET_GE_Context *ectx,
+                     GNUNET_FSUI_Context * ctx, GNUNET_FSUI_UploadList * upos)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
   while (upos != NULL)
     {
       signalUploadSuspend (ectx, ctx, upos->child);
-      event.type = FSUI_upload_suspended;
+      event.type = GNUNET_FSUI_upload_suspended;
       event.data.UploadSuspended.uc.pos = upos;
       event.data.UploadSuspended.uc.cctx = upos->cctx;
       event.data.UploadSuspended.uc.ppos = upos->parent;
@@ -380,19 +380,19 @@ signalUploadSuspend (struct GE_Context *ectx,
  * (recursively) free download list
  */
 static void
-freeDownloadList (FSUI_DownloadList * list)
+freeDownloadList (GNUNET_FSUI_DownloadList * list)
 {
-  FSUI_DownloadList *next;
+  GNUNET_FSUI_DownloadList *next;
   int i;
 
   while (list != NULL)
     {
       freeDownloadList (list->child);
-      ECRS_freeUri (list->fi.uri);
-      ECRS_freeMetaData (list->fi.meta);
+      GNUNET_ECRS_uri_destroy (list->fi.uri);
+      GNUNET_ECRS_meta_data_destroy (list->fi.meta);
       GNUNET_free (list->filename);
       for (i = 0; i < list->completedDownloadsCount; i++)
-        ECRS_freeUri (list->completedDownloads[i]);
+        GNUNET_ECRS_uri_destroy (list->completedDownloads[i]);
       GNUNET_array_grow (list->completedDownloads,
                          list->completedDownloadsCount, 0);
       next = list->next;
@@ -405,10 +405,10 @@ freeDownloadList (FSUI_DownloadList * list)
  * (recursively) free upload list
  */
 static void
-freeUploadList (struct FSUI_Context *ctx, FSUI_UploadList * list)
+freeUploadList (struct GNUNET_FSUI_Context *ctx, GNUNET_FSUI_UploadList * list)
 {
-  FSUI_UploadList *next;
-  FSUI_UploadShared *shared;
+  GNUNET_FSUI_UploadList *next;
+  GNUNET_FSUI_UploadShared *shared;
 
   while (list != NULL)
     {
@@ -416,17 +416,17 @@ freeUploadList (struct FSUI_Context *ctx, FSUI_UploadList * list)
       next = list->next;
       GNUNET_free (list->filename);
       if (list->meta != NULL)
-        ECRS_freeMetaData (list->meta);
+        GNUNET_ECRS_meta_data_destroy (list->meta);
       if (list->keywords != NULL)
-        ECRS_freeUri (list->keywords);
+        GNUNET_ECRS_uri_destroy (list->keywords);
       if (list->uri != NULL)
-        ECRS_freeUri (list->uri);
+        GNUNET_ECRS_uri_destroy (list->uri);
       if (list->parent == &ctx->activeUploads)
         {
           shared = list->shared;
           EXTRACTOR_removeAll (shared->extractors);
           if (shared->global_keywords != NULL)
-            ECRS_freeUri (shared->global_keywords);
+            GNUNET_ECRS_uri_destroy (shared->global_keywords);
           GNUNET_free_non_null (shared->extractor_config);
           GNUNET_free (shared);
         }
@@ -440,26 +440,26 @@ freeUploadList (struct FSUI_Context *ctx, FSUI_UploadList * list)
  * later if possible).
  */
 void
-FSUI_stop (struct FSUI_Context *ctx)
+GNUNET_FSUI_stop (struct GNUNET_FSUI_Context *ctx)
 {
-  struct GE_Context *ectx;
-  FSUI_SearchList *spos;
-  FSUI_DownloadList *dpos;
-  FSUI_UnindexList *xpos;
-  FSUI_UploadList *upos;
-  FSUI_Event event;
+  struct GNUNET_GE_Context *ectx;
+  GNUNET_FSUI_SearchList *spos;
+  GNUNET_FSUI_DownloadList *dpos;
+  GNUNET_FSUI_UnindexList *xpos;
+  GNUNET_FSUI_UploadList *upos;
+  GNUNET_FSUI_Event event;
   void *unused;
   int i;
 
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
-    GE_LOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER,
+    GNUNET_GE_LOG (ectx,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             "FSUI shutdown.  This may take a while.\n");
 
   /* 1) stop everything */
   GNUNET_cron_stop (ctx->cron);
-  GNUNET_cron_del_job (ctx->cron, &updateDownloadThreads, FSUI_UDT_FREQUENCY,
+  GNUNET_cron_del_job (ctx->cron, &updateDownloadThreads, GNUNET_FSUI_UDT_FREQUENCY,
                        ctx);
   GNUNET_cron_destroy (ctx->cron);
 
@@ -468,22 +468,22 @@ FSUI_stop (struct FSUI_Context *ctx)
   dpos = ctx->activeDownloads.child;
   while (dpos != NULL)
     {
-      FSUI_updateDownloadThread (dpos);
+      GNUNET_FSUI_updateDownloadThread (dpos);
       dpos = dpos->next;
     }
   /* 1b) stop searching */
   spos = ctx->activeSearches;
   while (spos != NULL)
     {
-      if ((spos->state == FSUI_ACTIVE) ||
-          (spos->state == FSUI_ABORTED) ||
-          (spos->state == FSUI_ERROR) || (spos->state == FSUI_COMPLETED))
+      if ((spos->state == GNUNET_FSUI_ACTIVE) ||
+          (spos->state == GNUNET_FSUI_ABORTED) ||
+          (spos->state == GNUNET_FSUI_ERROR) || (spos->state == GNUNET_FSUI_COMPLETED))
         {
-          if (spos->state == FSUI_ACTIVE)
-            spos->state = FSUI_PENDING;
+          if (spos->state == GNUNET_FSUI_ACTIVE)
+            spos->state = GNUNET_FSUI_PENDING;
           GNUNET_thread_stop_sleep (spos->handle);
           GNUNET_thread_join (spos->handle, &unused);
-          if (spos->state != FSUI_PENDING)
+          if (spos->state != GNUNET_FSUI_PENDING)
             spos->state++;      /* _JOINED */
         }
       spos = spos->next;
@@ -492,15 +492,15 @@ FSUI_stop (struct FSUI_Context *ctx)
   xpos = ctx->unindexOperations;
   while (xpos != NULL)
     {
-      if ((xpos->state == FSUI_ACTIVE) ||
-          (xpos->state == FSUI_ABORTED) ||
-          (xpos->state == FSUI_ERROR) || (xpos->state == FSUI_COMPLETED))
+      if ((xpos->state == GNUNET_FSUI_ACTIVE) ||
+          (xpos->state == GNUNET_FSUI_ABORTED) ||
+          (xpos->state == GNUNET_FSUI_ERROR) || (xpos->state == GNUNET_FSUI_COMPLETED))
         {
-          if (xpos->state == FSUI_ACTIVE)
-            xpos->state = FSUI_PENDING;
+          if (xpos->state == GNUNET_FSUI_ACTIVE)
+            xpos->state = GNUNET_FSUI_PENDING;
           GNUNET_thread_stop_sleep (xpos->handle);
           GNUNET_thread_join (xpos->handle, &unused);
-          if (xpos->state != FSUI_PENDING)
+          if (xpos->state != GNUNET_FSUI_PENDING)
             xpos->state++;      /* _JOINED */
         }
       xpos = xpos->next;
@@ -509,17 +509,17 @@ FSUI_stop (struct FSUI_Context *ctx)
   upos = ctx->activeUploads.child;
   while (upos != NULL)
     {
-      if ((upos->state == FSUI_ACTIVE) ||
-          (upos->state == FSUI_ABORTED) ||
-          (upos->state == FSUI_ERROR) || (upos->state == FSUI_COMPLETED))
+      if ((upos->state == GNUNET_FSUI_ACTIVE) ||
+          (upos->state == GNUNET_FSUI_ABORTED) ||
+          (upos->state == GNUNET_FSUI_ERROR) || (upos->state == GNUNET_FSUI_COMPLETED))
         {
           /* NOTE: will force transitive termination
              of rest of tree! */
-          if (upos->state == FSUI_ACTIVE)
-            upos->state = FSUI_PENDING;
+          if (upos->state == GNUNET_FSUI_ACTIVE)
+            upos->state = GNUNET_FSUI_PENDING;
           GNUNET_thread_stop_sleep (upos->shared->handle);
           GNUNET_thread_join (upos->shared->handle, &unused);
-          if (upos->state != FSUI_PENDING)
+          if (upos->state != GNUNET_FSUI_PENDING)
             upos->state++;      /* _JOINED */
         }
       upos = upos->next;
@@ -530,7 +530,7 @@ FSUI_stop (struct FSUI_Context *ctx)
   spos = ctx->activeSearches;
   while (spos != NULL)
     {
-      event.type = FSUI_search_suspended;
+      event.type = GNUNET_FSUI_search_suspended;
       event.data.SearchSuspended.sc.pos = spos;
       event.data.SearchSuspended.sc.cctx = spos->cctx;
       ctx->ecb (ctx->ecbClosure, &event);
@@ -544,7 +544,7 @@ FSUI_stop (struct FSUI_Context *ctx)
   xpos = ctx->unindexOperations;
   while (xpos != NULL)
     {
-      event.type = FSUI_unindex_suspended;
+      event.type = GNUNET_FSUI_unindex_suspended;
       event.data.UnindexSuspended.uc.pos = xpos;
       event.data.UnindexSuspended.uc.cctx = xpos->cctx;
       ctx->ecb (ctx->ecbClosure, &event);
@@ -553,7 +553,7 @@ FSUI_stop (struct FSUI_Context *ctx)
 
   /* 3) serialize all of the FSUI state */
   if (ctx->ipc != NULL)
-    FSUI_serialize (ctx);
+    GNUNET_FSUI_serialize (ctx);
 
   /* 4) finally, free memory */
   /* 4a) free search memory */
@@ -561,13 +561,13 @@ FSUI_stop (struct FSUI_Context *ctx)
     {
       spos = ctx->activeSearches;
       ctx->activeSearches = spos->next;
-      ECRS_freeUri (spos->uri);
+      GNUNET_ECRS_uri_destroy (spos->uri);
       for (i = spos->sizeResultsReceived - 1; i >= 0; i--)
         {
-          ECRS_FileInfo *fi;
+          GNUNET_ECRS_FileInfo *fi;
           fi = &spos->resultsReceived[i];
-          ECRS_freeMetaData (fi->meta);
-          ECRS_freeUri (fi->uri);
+          GNUNET_ECRS_meta_data_destroy (fi->meta);
+          GNUNET_ECRS_uri_destroy (fi->uri);
         }
       GNUNET_array_grow (spos->resultsReceived, spos->sizeResultsReceived, 0);
       for (i = spos->sizeUnmatchedResultsReceived - 1; i >= 0; i--)
@@ -576,8 +576,8 @@ FSUI_stop (struct FSUI_Context *ctx)
 
           rp = &spos->unmatchedResultsReceived[i];
           GNUNET_array_grow (rp->matchingKeys, rp->matchingKeyCount, 0);
-          ECRS_freeMetaData (rp->fi.meta);
-          ECRS_freeUri (rp->fi.uri);
+          GNUNET_ECRS_meta_data_destroy (rp->fi.meta);
+          GNUNET_ECRS_uri_destroy (rp->fi.uri);
         }
       GNUNET_array_grow (spos->unmatchedResultsReceived,
                          spos->sizeUnmatchedResultsReceived, 0);
@@ -605,8 +605,8 @@ FSUI_stop (struct FSUI_Context *ctx)
   GNUNET_mutex_destroy (ctx->lock);
   GNUNET_free (ctx->name);
   if (ctx->ipc != NULL)
-    GE_LOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER, "FSUI shutdown complete.\n");
+    GNUNET_GE_LOG (ectx,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "FSUI shutdown complete.\n");
   GNUNET_free (ctx);
 }
 

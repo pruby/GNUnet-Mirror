@@ -37,7 +37,7 @@
 
 static struct GNUNET_CronManager *cron;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 
 #define ASSERT(cond) do { \
@@ -54,8 +54,8 @@ static struct GC_Configuration *cfg;
 static int
 runTest ()
 {
-  Identity_ServiceAPI *identity;
-  Transport_ServiceAPI *transport;
+  GNUNET_Identity_ServiceAPI *identity;
+  GNUNET_Transport_ServiceAPI *transport;
   GNUNET_PeerIdentity pid;
   const GNUNET_RSA_PublicKey *pkey;
   GNUNET_RSA_Signature sig;
@@ -66,7 +66,7 @@ runTest ()
   GNUNET_cron_start (cron);
   /* give cron job chance to run */
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
-  hello = transport->createhello (ANY_PROTOCOL_NUMBER);
+  hello = transport->createhello (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY);
   if (NULL == hello)
     {
       printf ("Cannot run test, failed to create any hello.\n");
@@ -136,10 +136,10 @@ main (int argc, char *argv[])
 {
   int err;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   cron = cron_create (NULL);
@@ -151,7 +151,7 @@ main (int argc, char *argv[])
     err = 1;
   doneCore ();
   GNUNET_cron_destroy (cron);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return err;
 }
 

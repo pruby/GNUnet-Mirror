@@ -33,7 +33,7 @@
  * Initialize the TCP port and listen for incoming client connections.
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int initTCPServer (struct GE_Context *ectx, struct GC_Configuration *cfg);
+int initTCPServer (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Stop the server (but do not yet destroy the data structures)
@@ -57,7 +57,7 @@ int doneTCPServer (void);
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
-int registerCSHandler (unsigned short type, CSHandler callback);
+int registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback);
 
 /**
  * Unregister a method as a handler for specific message
@@ -70,11 +70,11 @@ int registerCSHandler (unsigned short type, CSHandler callback);
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is no or another
  *         handler for that type
  */
-int unregisterCSHandler (unsigned short type, CSHandler callback);
+int unregisterCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback);
 
-int registerClientExitHandler (ClientExitHandler callback);
+int registerClientExitHandler (GNUNET_ClientExitHandler callback);
 
-int unregisterClientExitHandler (ClientExitHandler callback);
+int unregisterClientExitHandler (GNUNET_ClientExitHandler callback);
 
 /**
  * Send a message to the client identified by the handle.  Note that
@@ -83,7 +83,7 @@ int unregisterClientExitHandler (ClientExitHandler callback);
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
-int sendToClient (struct ClientHandle *handle,
+int sendToClient (struct GNUNET_ClientHandle *handle,
                   const GNUNET_MessageHeader * message, int force);
 
 
@@ -95,7 +95,7 @@ int sendToClient (struct ClientHandle *handle,
  * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
-int sendTCPResultToClient (struct ClientHandle *sock, int ret);
+int sendTCPResultToClient (struct GNUNET_ClientHandle *sock, int ret);
 
 /**
  * Send an error message to the caller of a remote call via
@@ -105,10 +105,10 @@ int sendTCPResultToClient (struct ClientHandle *sock, int ret);
  * @return GNUNET_SYSERR on error, GNUNET_OK if the return value was
  *         send successfully
  */
-int sendTCPErrorToClient (struct ClientHandle *sock,
-                          GE_KIND kind, const char *message);
+int sendTCPErrorToClient (struct GNUNET_ClientHandle *sock,
+                          GNUNET_GE_KIND kind, const char *message);
 
-void terminateClientConnection (struct ClientHandle *sock);
+void terminateClientConnection (struct GNUNET_ClientHandle *sock);
 
 /**
  * Check if a handler is registered for a given
@@ -119,8 +119,8 @@ void terminateClientConnection (struct ClientHandle *sock);
  */
 unsigned int isCSHandlerRegistered (unsigned short type);
 
-struct GE_Context *createClientLogContext (GE_KIND mask,
-                                           struct ClientHandle *handle);
+struct GNUNET_GE_Context *createClientLogContext (GNUNET_GE_KIND mask,
+                                           struct GNUNET_ClientHandle *handle);
 
 #endif
 /* end of tcpserver.h */

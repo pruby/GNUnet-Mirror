@@ -32,11 +32,11 @@
  * Set our process priority
  */
 int
-GNUNET_set_process_priority (struct GE_Context *ectx, const char *str)
+GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str)
 {
   int prio = 0;
 
-  GE_ASSERT (ectx, str != NULL);
+  GNUNET_GE_ASSERT (ectx, str != NULL);
   /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
    * and the usual numeric nice() increments */
   if (strcmp (str, "NORMAL") == 0)
@@ -73,8 +73,8 @@ GNUNET_set_process_priority (struct GE_Context *ectx, const char *str)
     {
       if (1 != sscanf (str, "%d", &prio))
         {
-          GE_LOG (ectx,
-                  GE_USER | GE_BULK | GE_ERROR,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
                   _("Invalid process priority `%s'\n"), str);
           return GNUNET_SYSERR;
         }
@@ -102,7 +102,7 @@ GNUNET_set_process_priority (struct GE_Context *ectx, const char *str)
   nice (prio);
   if (errno != 0)
     {
-      GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "nice");
+      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "nice");
       return GNUNET_SYSERR;
     }
 #endif

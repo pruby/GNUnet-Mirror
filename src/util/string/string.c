@@ -41,7 +41,7 @@ GNUNET_snprintf (char *buf, size_t size, const char *format, ...)
   va_start (args, format);
   ret = VSNPRINTF (buf, size, format, args);
   va_end (args);
-  GE_ASSERT (NULL, ret <= size);
+  GNUNET_GE_ASSERT (NULL, ret <= size);
   return ret;
 }
 
@@ -126,7 +126,7 @@ GNUNET_get_byte_size_as_fancy_string (unsigned long long size)
  *  string is returned.
  */
 char *
-GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
+GNUNET_convert_string_to_utf8 (struct GNUNET_GE_Context *ectx,
                                const char *input, size_t len,
                                const char *charset)
 {
@@ -141,8 +141,8 @@ GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
   cd = iconv_open ("UTF-8", charset);
   if (cd == (iconv_t) - 1)
     {
-      GE_LOG_STRERROR (ectx,
-                       GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
+      GNUNET_GE_LOG_STRERROR (ectx,
+                       GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_BULK,
                        "iconv_open");
       ret = GNUNET_malloc (len + 1);
       memcpy (ret, input, len);
@@ -155,7 +155,7 @@ GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
   finSize = tmpSize;
   if (iconv (cd, (char **) &input, &len, &itmp, &finSize) == (size_t) - 1)
     {
-      GE_LOG_STRERROR (ectx, GE_USER | GE_WARNING | GE_BULK, "iconv");
+      GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_BULK, "iconv");
       iconv_close (cd);
       GNUNET_free (tmp);
       ret = GNUNET_malloc (len + 1);
@@ -168,7 +168,7 @@ GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
   ret[tmpSize - finSize] = '\0';
   GNUNET_free (tmp);
   if (0 != iconv_close (cd))
-    GE_LOG_STRERROR (ectx, GE_ADMIN | GE_WARNING | GE_REQUEST, "iconv_close");
+    GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_REQUEST, "iconv_close");
   return ret;
 #else
   ret = GNUNET_malloc (len + 1);
@@ -189,7 +189,7 @@ GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
  *          NULL is returned on error
  */
 char *
-GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
+GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil)
 {
   char *buffer;
 #ifndef MINGW
@@ -214,8 +214,8 @@ GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
       fm = getenv ("HOME");
       if (fm == NULL)
         {
-          GE_LOG (ectx,
-                  GE_USER | GE_ADMIN | GE_WARNING | GE_IMMEDIATE,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
                   _
                   ("Failed to expand `$HOME': environment variable `HOME' not set"));
           return NULL;
@@ -253,8 +253,8 @@ GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
         }
       if (fm == NULL)
         {
-          GE_LOG_STRERROR (ectx,
-                           GE_USER | GE_WARNING | GE_IMMEDIATE, "getcwd");
+          GNUNET_GE_LOG_STRERROR (ectx,
+                           GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE, "getcwd");
           buffer = getenv ("PWD");      /* alternative */
           if (buffer != NULL)
             fm = GNUNET_strdup (buffer);
@@ -273,8 +273,8 @@ GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
   if ((lRet = plibc_conv_to_win_path (fil, fn)) != ERROR_SUCCESS)
     {
       SetErrnoFromWinError (lRet);
-      GE_LOG_STRERROR (ectx,
-                       GE_USER | GE_WARNING | GE_IMMEDIATE,
+      GNUNET_GE_LOG_STRERROR (ectx,
+                       GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
                        "plibc_conv_to_win_path");
       return NULL;
     }
@@ -286,8 +286,8 @@ GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil)
       if (lRet + strlen (fn) + 1 > (MAX_PATH + 1))
         {
           SetErrnoFromWinError (ERROR_BUFFER_OVERFLOW);
-          GE_LOG_STRERROR (ectx,
-                           GE_USER | GE_WARNING | GE_IMMEDIATE,
+          GNUNET_GE_LOG_STRERROR (ectx,
+                           GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
                            "GetCurrentDirectory");
           return NULL;
         }

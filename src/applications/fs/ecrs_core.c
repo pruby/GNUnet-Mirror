@@ -46,28 +46,28 @@
 int
 fileBlockEncode (const DBlock * data,
                  unsigned int len,
-                 const GNUNET_HashCode * query, Datastore_Value ** value)
+                 const GNUNET_HashCode * query, GNUNET_DatastoreValue ** value)
 {
   GNUNET_HashCode hc;
   GNUNET_AES_SessionKey skey;
   GNUNET_AES_InitializationVector iv;   /* initial value */
-  Datastore_Value *val;
+  GNUNET_DatastoreValue *val;
   DBlock *db;
 
-  GE_ASSERT (NULL, len >= sizeof (DBlock));
-  GE_ASSERT (NULL, (data != NULL) && (query != NULL));
+  GNUNET_GE_ASSERT (NULL, len >= sizeof (DBlock));
+  GNUNET_GE_ASSERT (NULL, (data != NULL) && (query != NULL));
   GNUNET_hash (&data[1], len - sizeof (DBlock), &hc);
   GNUNET_hash_to_AES_key (&hc, &skey, &iv);
-  val = GNUNET_malloc (sizeof (Datastore_Value) + len);
-  val->size = htonl (sizeof (Datastore_Value) + len);
-  val->type = htonl (D_BLOCK);
+  val = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + len);
+  val->size = htonl (sizeof (GNUNET_DatastoreValue) + len);
+  val->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
   val->prio = htonl (0);
   val->anonymityLevel = htonl (0);
   val->expirationTime = GNUNET_htonll (0);
   db = (DBlock *) & val[1];
-  db->type = htonl (D_BLOCK);
-  GE_ASSERT (NULL, len - sizeof (DBlock) < GNUNET_MAX_BUFFER_SIZE);
-  GE_ASSERT (NULL,
+  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  GNUNET_GE_ASSERT (NULL, len - sizeof (DBlock) < GNUNET_MAX_BUFFER_SIZE);
+  GNUNET_GE_ASSERT (NULL,
              len - sizeof (DBlock)
              == GNUNET_AES_encrypt (&data[1],
                                     len - sizeof (DBlock), &skey, &iv,
@@ -90,7 +90,7 @@ fileBlockEncode (const DBlock * data,
 void
 fileBlockGetKey (const DBlock * data, unsigned int len, GNUNET_HashCode * key)
 {
-  GE_ASSERT (NULL, len >= sizeof (DBlock));
+  GNUNET_GE_ASSERT (NULL, len >= sizeof (DBlock));
   GNUNET_hash (&data[1], len - sizeof (DBlock), key);
 }
 
@@ -110,14 +110,14 @@ fileBlockGetQuery (const DBlock * db, unsigned int len,
   GNUNET_AES_SessionKey skey;
   GNUNET_AES_InitializationVector iv;
 
-  GE_ASSERT (NULL, len >= sizeof (DBlock));
+  GNUNET_GE_ASSERT (NULL, len >= sizeof (DBlock));
   data = (const char *) &db[1];
   len -= sizeof (DBlock);
-  GE_ASSERT (NULL, len < GNUNET_MAX_BUFFER_SIZE);
+  GNUNET_GE_ASSERT (NULL, len < GNUNET_MAX_BUFFER_SIZE);
   GNUNET_hash (data, len, &hc);
   GNUNET_hash_to_AES_key (&hc, &skey, &iv);
   tmp = GNUNET_malloc (len);
-  GE_ASSERT (NULL, len == GNUNET_AES_encrypt (data, len, &skey, &iv, tmp));
+  GNUNET_GE_ASSERT (NULL, len == GNUNET_AES_encrypt (data, len, &skey, &iv, tmp));
   GNUNET_hash (tmp, len, query);
   GNUNET_free (tmp);
 }
@@ -127,8 +127,8 @@ getTypeOfBlock (unsigned int size, const DBlock * data)
 {
   if (size <= 4)
     {
-      GE_BREAK (NULL, 0);
-      return ANY_BLOCK;         /* signal error */
+      GNUNET_GE_BREAK (NULL, 0);
+      return GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY;         /* signal error */
     }
   return ntohl (*((const unsigned int *) data));
 }
@@ -149,23 +149,23 @@ getQueryFor (unsigned int size,
   unsigned int type;
 
   type = getTypeOfBlock (size, data);
-  if (type == ANY_BLOCK)
+  if (type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   switch (type)
     {
-    case D_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA:
       /* CHK: GNUNET_hash of content == query */
       GNUNET_hash (&data[1], size - sizeof (DBlock), query);
       return GNUNET_OK;
-    case S_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
       {
         const SBlock *sb;
         if (size < sizeof (SBlock))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         sb = (const SBlock *) data;
@@ -177,18 +177,18 @@ getQueryFor (unsigned int size,
                                              - sizeof (unsigned int),
                                              &sb->signature, &sb->subspace)))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         *query = sb->identifier;
         return GNUNET_OK;
       }
-    case K_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
       {
         const KBlock *kb;
         if (size < sizeof (KBlock))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         kb = (const KBlock *) data;
@@ -198,18 +198,18 @@ getQueryFor (unsigned int size,
                                               &kb->signature,
                                               &kb->keyspace))))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         GNUNET_hash (&kb->keyspace, sizeof (GNUNET_RSA_PublicKey), query);
         return GNUNET_OK;
       }
-    case N_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
       {
         const NBlock *nb;
         if (size < sizeof (NBlock))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         nb = (const NBlock *) data;
@@ -221,18 +221,18 @@ getQueryFor (unsigned int size,
                                              - sizeof (unsigned int),
                                              &nb->signature, &nb->subspace)))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         *query = nb->namespace; /* XOR with all zeros makes no difference... */
         return GNUNET_OK;
       }
-    case KN_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
       {
         const KNBlock *kb;
         if (size < sizeof (KNBlock))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         kb = (const KNBlock *) data;
@@ -244,21 +244,21 @@ getQueryFor (unsigned int size,
                                               &kb->kblock.signature,
                                               &kb->kblock.keyspace))))
           {
-            GE_BREAK (NULL, 0);
+            GNUNET_GE_BREAK (NULL, 0);
             return GNUNET_SYSERR;
           }
         GNUNET_hash (&kb->kblock.keyspace, sizeof (GNUNET_RSA_PublicKey),
                      query);
         return GNUNET_OK;
       }
-    case ONDEMAND_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
       {
-        GE_BREAK (NULL, 0);     /* should never be used here! */
+        GNUNET_GE_BREAK (NULL, 0);     /* should never be used here! */
         return GNUNET_SYSERR;
       }
     default:
       {
-        GE_BREAK (NULL, 0);     /* unknown block type */
+        GNUNET_GE_BREAK (NULL, 0);     /* unknown block type */
         return GNUNET_SYSERR;
       }
     }                           /* end switch */
@@ -291,12 +291,12 @@ isDatumApplicable (unsigned int type,
 
   if (type != getTypeOfBlock (size, data))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* type mismatch */
     }
   if (0 != memcmp (hc, &keys[0], sizeof (GNUNET_HashCode)))
     {
-      GE_BREAK (NULL, 0);       /* mismatch between primary queries,
+      GNUNET_GE_BREAK (NULL, 0);       /* mismatch between primary queries,
                                    we should not even see those here. */
       return GNUNET_SYSERR;
     }
@@ -304,7 +304,7 @@ isDatumApplicable (unsigned int type,
     return GNUNET_YES;          /* request was to match only primary key */
   switch (type)
     {
-    case S_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
       if (keyCount != 2)
         return GNUNET_SYSERR;   /* no match */
       GNUNET_hash (&((const SBlock *) data)->subspace,
@@ -312,7 +312,7 @@ isDatumApplicable (unsigned int type,
       if (0 == memcmp (&keys[1], &h, sizeof (GNUNET_HashCode)))
         return GNUNET_OK;
       return GNUNET_SYSERR;
-    case N_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
       if (keyCount != 2)
         return GNUNET_SYSERR;   /* no match */
       GNUNET_hash (&((const NBlock *) data)->subspace,
@@ -320,17 +320,17 @@ isDatumApplicable (unsigned int type,
       if (0 != memcmp (&keys[1], &h, sizeof (GNUNET_HashCode)))
         return GNUNET_SYSERR;
       return GNUNET_OK;
-    case D_BLOCK:
-    case K_BLOCK:
-    case KN_BLOCK:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
       if (keyCount != 1)
-        GE_BREAK (NULL, 0);     /* keyCount should be 1 */
+        GNUNET_GE_BREAK (NULL, 0);     /* keyCount should be 1 */
       return GNUNET_OK;         /* if query matches, everything matches! */
-    case ANY_BLOCK:
-      GE_BREAK (NULL, 0);       /* block type should be known */
+    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY:
+      GNUNET_GE_BREAK (NULL, 0);       /* block type should be known */
       return GNUNET_SYSERR;
     default:
-      GE_BREAK (NULL, 0);       /* unknown block type */
+      GNUNET_GE_BREAK (NULL, 0);       /* unknown block type */
       return GNUNET_SYSERR;
     }
 }

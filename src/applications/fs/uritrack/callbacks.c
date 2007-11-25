@@ -34,11 +34,11 @@
  */
 typedef struct
 {
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  ECRS_SearchProgressCallback iterator;
+  GNUNET_ECRS_SearchResultProcessor iterator;
 
   void *closure;
 
@@ -54,7 +54,7 @@ static Callback **callbacks;
 static unsigned int callbacks_size;
 
 static int
-init_iterator (const ECRS_FileInfo * fi,
+init_iterator (const GNUNET_ECRS_FileInfo * fi,
                const GNUNET_HashCode * key, int isRoot, void *closure)
 {
   Callback *c = closure;
@@ -69,7 +69,7 @@ static void *
 init_thread (void *arg)
 {
   Callback *c = arg;
-  URITRACK_listURIs (c->ectx, c->cfg, GNUNET_YES, &init_iterator, arg);
+  GNUNET_URITRACK_list (c->ectx, c->cfg, GNUNET_YES, &init_iterator, arg);
   return NULL;
 }
 
@@ -80,9 +80,9 @@ init_thread (void *arg)
  * for all existing URIs as well.
  */
 int
-URITRACK_registerTrackCallback (struct GE_Context *ectx,
-                                struct GC_Configuration *cfg,
-                                ECRS_SearchProgressCallback iterator,
+GNUNET_URITRACK_register_track_callback (struct GNUNET_GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg,
+                                GNUNET_ECRS_SearchResultProcessor iterator,
                                 void *closure)
 {
   Callback *c;
@@ -105,7 +105,7 @@ URITRACK_registerTrackCallback (struct GE_Context *ectx,
  * Unregister a URI callback.
  */
 int
-URITRACK_unregisterTrackCallback (ECRS_SearchProgressCallback iterator,
+GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor iterator,
                                   void *closure)
 {
   int i;
@@ -135,7 +135,7 @@ URITRACK_unregisterTrackCallback (ECRS_SearchProgressCallback iterator,
  * Internal notification about new tracked URI.
  */
 void
-URITRACK_internal_notify (const ECRS_FileInfo * fi)
+URITRACK_internal_notify (const GNUNET_ECRS_FileInfo * fi)
 {
   int i;
 

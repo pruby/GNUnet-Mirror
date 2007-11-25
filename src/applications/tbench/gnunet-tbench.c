@@ -30,14 +30,14 @@
 #include "gnunet_util.h"
 #include "tbench.h"
 
-#define DEFAULT_MESSAGE_SIZE  10
+#define DEFAULT_MESSAGNUNET_GE_SIZE  10
 #define DEFAULT_TIMEOUT  	(2 * GNUNET_CRON_SECONDS)
 #define DEFAULT_SPACING  	0
 
 #define OF_HUMAN_READABLE 0
 #define OF_GNUPLOT_INPUT 1
 
-static unsigned long long messageSize = DEFAULT_MESSAGE_SIZE;
+static unsigned long long messageSize = DEFAULT_MESSAGNUNET_GE_SIZE;
 
 static unsigned long long messageCnt = 1;
 
@@ -53,7 +53,7 @@ static GNUNET_CronTime messageSpacing = DEFAULT_SPACING;
 
 static int outputFormat = OF_HUMAN_READABLE;
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-tbench command line options
@@ -85,7 +85,7 @@ static struct GNUNET_CommandLineOption gnunettbenchOptions[] = {
    gettext_noop ("time to wait for the completion of an iteration (in ms)"),
    1,
    &GNUNET_getopt_configure_set_ulong, &messageTimeOut},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   {'X', "xspace", "COUNT",
    gettext_noop ("number of messages in a message block"), 1,
    &GNUNET_getopt_configure_set_ulong, &messageTrainSize},
@@ -107,8 +107,8 @@ main (int argc, char *const *argv)
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE *buffer;
   float messagesPercentLoss;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
   int res;
 
   res = GNUNET_init (argc,
@@ -129,7 +129,7 @@ main (int argc, char *const *argv)
     }
 
   msg.header.size = htons (sizeof (CS_tbench_request_MESSAGE));
-  msg.header.type = htons (CS_PROTO_tbench_REQUEST);
+  msg.header.type = htons (GNUNET_CS_PROTO_TBENCH_REQUEST);
   msg.msgSize = htonl (messageSize);
   msg.msgCnt = htonl (messageCnt);
   msg.iterations = htonl (messageIterations);
@@ -170,12 +170,12 @@ main (int argc, char *const *argv)
       GNUNET_client_connection_read (sock,
                                      (GNUNET_MessageHeader **) & buffer))
     {
-      GE_ASSERT (ectx,
+      GNUNET_GE_ASSERT (ectx,
                  ntohs (buffer->header.size) ==
                  sizeof (CS_tbench_reply_MESSAGE));
       if ((float) buffer->mean_loss < 0)
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           messagesPercentLoss = 0.0;
         }
       else

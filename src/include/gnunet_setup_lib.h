@@ -27,7 +27,7 @@
  *  <li>libguile must be initialized by the main method of any
  *     program using it
  *  <li>the API does not support concurrent calls
- *  <li>GNS_TreeChangeListener callbacks must not call back
+ *  <li>GNUNET_GNS_TreeChangeListener callbacks must not call back
  *     into the API (in particular not unregister themselves)
  *  <li>clients may only read the tree, not modify it
  *  <li>values and visibility flags in the tree may change
@@ -50,45 +50,45 @@
  */
 typedef enum
 {
-  GNS_Root = 0,
-  GNS_Node = 1,
-  GNS_Leaf = 2,
-  GNS_KindMask = 3,
+  GNUNET_GNS_KIND_ROOT = 0,
+  GNUNET_GNS_KIND_NODE = 1,
+  GNUNET_GNS_KIND_LEAF = 2,
+  GNUNET_GNS_KIND_MASK = 3,
 
   /**
    * Binary type (yes/no).
    */
-  GNS_Boolean = 4,
+  GNUNET_GNS_TYPE_BOOLEAN = 4,
 
   /**
    * Unsigned integer type.
    */
-  GNS_UInt64 = 8,
+  GNUNET_GNS_TYPE_UINT64 = 8,
 
   /**
    * Double value type.
    */
-  GNS_Double = 16,
+  GNUNET_GNS_TYPE_DOUBLE = 16,
 
   /**
    * Free-form string (possibly with suggestions)
    */
-  GNS_String = 32,
+  GNUNET_GNS_TYPE_STRING = 32,
 
   /**
    * Multiple choice (results in space-seperated
    * strings, one for each choice).
    */
-  GNS_MC = 64,
+  GNUNET_GNS_TYPE_MULTIPLE_CHOICE = 64,
 
   /**
    * Single choice (results in individual string
    * representing the choice).
    */
-  GNS_SC = 128,
+  GNUNET_GNS_TYPE_SINGLE_CHOICE = 128,
 
-  GNS_TypeMask = 252,
-} GNS_Type;
+  GNUNET_GNS_TYPE_MASK = 252,
+} GNUNET_GNS_TreeNodeKindAndType;
 
 /**
  * @brief configuration value
@@ -121,7 +121,7 @@ typedef union
   } Double;
 
   /**
-   * Data for GNS_String, GNS_MC and GNS_SC.
+   * Data for GNUNET_GNS_TYPE_STRING, GNUNET_GNS_TYPE_MULTIPLE_CHOICE and GNUNET_GNS_TYPE_SINGLE_CHOICE.
    */
   struct
   {
@@ -140,7 +140,7 @@ typedef union
 
   } String;
 
-} GNS_Value;
+} GNUNET_GNS_Value;
 
 /**
  * @brief node in the configuration tree
@@ -152,7 +152,7 @@ typedef union
  * may change are the concrete values and the visibility
  * attribute, but not the overall tree structure.
  */
-typedef struct GNS_Tree
+typedef struct GNUNET_GNS_TreeNode
 {
 
   /**
@@ -179,7 +179,7 @@ typedef struct GNS_Tree
    * NULL-terminated list of subnodes (must be empty for
    * nodes of type "leaf")
    */
-  struct GNS_Tree **children;
+  struct GNUNET_GNS_TreeNode **children;
 
   /**
    * Is this node visible to the user at this point?
@@ -189,20 +189,20 @@ typedef struct GNS_Tree
   /**
    * Type of the node (bitmask).
    */
-  GNS_Type type;
+  GNUNET_GNS_TreeNodeKindAndType type;
 
   /**
    * Value for this node (type of pointer is determined
    * by the type field)
    */
-  GNS_Value value;
+  GNUNET_GNS_Value value;
 
-} GNS_Tree;
+} GNUNET_GNS_TreeNode;
 
 /**
  * @brief gnunet setup context
  */
-struct GNS_Context;
+struct GNUNET_GNS_Context;
 
 /**
  * Start the setup process by loading a scheme file that
@@ -213,32 +213,32 @@ struct GNS_Context;
  * @param specification name of the guile file containing the spec
  * @return NULL on error (i.e. specification file not found)
  */
-struct GNS_Context *GNS_load_specification (struct GE_Context *ectx,
-                                            struct GC_Configuration *cfg,
+struct GNUNET_GNS_Context *GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
+                                            struct GNUNET_GC_Configuration *cfg,
                                             const char *specification);
 
 /**
- * Obtain the GNS_Tree from the GNS system.  The tree is only valid
- * until GNS_free_specification is called.  Note that visibility and
+ * Obtain the GNUNET_GNS_TreeNode from the GNS system.  The tree is only valid
+ * until GNUNET_GNS_free_specification is called.  Note that visibility and
  * values in the tree may change whenever the configuration of the GNS
  * context changes.
  *
  * @return NULL on error
  */
-struct GNS_Tree *GNS_get_tree (struct GNS_Context *ctx);
+struct GNUNET_GNS_TreeNode *GNUNET_GNS_get_tree_root (struct GNUNET_GNS_Context *ctx);
 
 /**
  * Free resources associated with the GNS context.
  */
-void GNS_free_specification (struct GNS_Context *ctx);
+void GNUNET_GNS_free_specification (struct GNUNET_GNS_Context *ctx);
 
 /**
- * Callback that GNS will call whenever the GNS_Tree
+ * Callback that GNS will call whenever the GNUNET_GNS_TreeNode
  * is changed.
  *
  * @param node the node that has changed
  */
-typedef void (*GNS_TreeChangeListener) (const struct GNS_Tree * node,
+typedef void (*GNUNET_GNS_TreeChangeListener) (const struct GNUNET_GNS_TreeNode * node,
                                         void *cls);
 
 /**
@@ -247,8 +247,8 @@ typedef void (*GNS_TreeChangeListener) (const struct GNS_Tree * node,
  * @param listener callback to call whenever the tree changes
  */
 void
-GNS_register_tree_change_listener (struct GNS_Context *ctx,
-                                   GNS_TreeChangeListener listener,
+GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
+                                   GNUNET_GNS_TreeChangeListener listener,
                                    void *cls);
 
 /**
@@ -256,8 +256,8 @@ GNS_register_tree_change_listener (struct GNS_Context *ctx,
  * in the future for change events).
  */
 void
-GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
-                                     GNS_TreeChangeListener listener,
+GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
+                                     GNUNET_GNS_TreeChangeListener listener,
                                      void *cls);
 
 /**
@@ -266,7 +266,7 @@ GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
  *
  * @return NULL on error
  */
-char *GNS_get_default_value_as_string (GNS_Type type,
-                                       const GNS_Value * value);
+char *GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType type,
+                                       const GNUNET_GNS_Value * value);
 
 #endif

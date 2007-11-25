@@ -45,7 +45,7 @@ extern "C"
  * @param sock socket to query gnunetd over
  * @param timeframe what time interval should be considered
  * @param type what type of message do we care about?
- * @param direction TC_RECEIVED of TC_SEND?
+ * @param direction GNUNET_TRAFFIC_TYPE_RECEIVED of TC_SEND?
  * @param count set to number of messages
  * @param avg_size set to average size
  * @param peers set to number of peers involved

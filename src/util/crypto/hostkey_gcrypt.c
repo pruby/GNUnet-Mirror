@@ -41,7 +41,7 @@
  * Use LOG_ERROR for anything that should never happen
  * (indicates a bug).
  */
-#define LOG_ERROR (GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK)
+#define LOG_ERROR (GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK)
 
 /**
  * The private information of an RSA key pair.
@@ -61,14 +61,14 @@ struct GNUNET_RSA_PrivateKey
  * a failure of the command 'cmd' with the message given
  * by gcry_strerror(rc).
  */
-#define LOG_GCRY(ectx, level, cmd, rc) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); } while(0);
+#define LOG_GCRY(ectx, level, cmd, rc) do { GNUNET_GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); } while(0);
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' with the message given
  * by gcry_strerror(rc).
  */
-#define DIE_GCRY(ectx, cmd, rc) do { GE_LOG(ectx, GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); abort(); } while(0);
+#define DIE_GCRY(ectx, cmd, rc) do { GNUNET_GE_LOG(ectx, GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); abort(); } while(0);
 
 
 
@@ -269,7 +269,7 @@ public2PrivateKey (const GNUNET_RSA_PublicKey * publicKey)
       (ntohs (publicKey->len) !=
        sizeof (GNUNET_RSA_PublicKey) - sizeof (publicKey->padding)))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return NULL;
     }
   size = GNUNET_RSA_DATA_ENCODING_LEN;
@@ -330,7 +330,7 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
 #if EXTRA_CHECKS
   if (gcry_pk_testkey (hostkey->sexp))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       unlockGcrypt ();
       return NULL;
     }
@@ -382,7 +382,7 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
           sizes[i] = 0;
         }
     }
-  GE_ASSERT (NULL, size < 65536);
+  GNUNET_GE_ASSERT (NULL, size < 65536);
   retval = GNUNET_malloc (size);
   retval->len = htons (size);
   i = 0;
@@ -612,7 +612,7 @@ GNUNET_RSA_encrypt (const void *block,
   size_t erroff;
   int rc;
 
-  GE_ASSERT (NULL, size <= sizeof (GNUNET_HashCode));
+  GNUNET_GE_ASSERT (NULL, size <= sizeof (GNUNET_HashCode));
   pubkey = public2PrivateKey (publicKey);
   isize = size;
   lockGcrypt ();
@@ -901,8 +901,8 @@ GNUNET_RSA_verify (const void *block,
   gcry_sexp_release (sigdata);
   if (rc)
     {
-      GE_LOG (NULL,
-              GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (NULL,
+              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               _("RSA signature verification failed at %s:%d: %s\n"),
               __FILE__, __LINE__, gcry_strerror (rc));
       unlockGcrypt ();

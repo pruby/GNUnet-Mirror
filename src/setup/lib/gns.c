@@ -33,7 +33,7 @@
 typedef struct GNS_TCL
 {
 
-  GNS_TreeChangeListener l;
+  GNUNET_GNS_TreeChangeListener l;
 
   void *c;
 
@@ -44,14 +44,14 @@ typedef struct GNS_TCL
 /**
  * @brief gnunet setup context
  */
-struct GNS_Context
+struct GNUNET_GNS_Context
 {
 
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
-  struct GNS_Tree *root;
+  struct GNUNET_GNS_TreeNode *root;
 
   GNS_TCL *listeners;
 
@@ -60,9 +60,9 @@ struct GNS_Context
 };
 
 static void
-notify_listeners (void *ctx, struct GNS_Tree *tree)
+notify_listeners (void *ctx, struct GNUNET_GNS_TreeNode *tree)
 {
-  struct GNS_Context *g = ctx;
+  struct GNUNET_GNS_Context *g = ctx;
   GNS_TCL *lpos;
 
   if (g->in_notify > 0)
@@ -89,38 +89,38 @@ notify_listeners (void *ctx, struct GNS_Tree *tree)
  */
 int
 configChangeListener (void *ctx,
-                      struct GC_Configuration *cfg,
-                      struct GE_Context *ectx,
+                      struct GNUNET_GC_Configuration *cfg,
+                      struct GNUNET_GE_Context *ectx,
                       const char *section, const char *option)
 {
-  struct GNS_Context *g = ctx;
-  struct GNS_Tree *pos;
+  struct GNUNET_GNS_Context *g = ctx;
+  struct GNUNET_GNS_TreeNode *pos;
 
   pos = tree_lookup (g->root, section, option);
   if (pos == NULL)
     {
-      GE_LOG (g->ectx,
-              GE_DEVELOPER | GE_BULK | GE_ERROR,
+      GNUNET_GE_LOG (g->ectx,
+              GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
               "Tree lookup for unknown option `%s' in section `%s'!\n",
               option, section);
       return 0;                 /* or refuse? */
     }
   /* first, check if value is valid */
-  if ((pos->type & GNS_KindMask) != GNS_Leaf)
+  if ((pos->type & GNUNET_GNS_KIND_MASK) != GNUNET_GNS_KIND_LEAF)
     {
-      GE_LOG (g->ectx,
-              GE_DEVELOPER | GE_BULK | GE_ERROR,
+      GNUNET_GE_LOG (g->ectx,
+              GNUNET_GE_DEVELOPER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
               "Tree value change for non-leaf option `%s' in section `%s'!\n",
               option, section);
       return 0;
     }
-  switch (pos->type & GNS_TypeMask)
+  switch (pos->type & GNUNET_GNS_TYPE_MASK)
     {
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       {
         int val;
 
-        val = GC_get_configuration_value_yesno (cfg,
+        val = GNUNET_GC_get_configuration_value_yesno (cfg,
                                                 section,
                                                 option,
                                                 pos->value.Boolean.def);
@@ -131,11 +131,11 @@ configChangeListener (void *ctx,
         pos->value.Boolean.val = val;
         break;
       }
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       {
         unsigned long long val;
 
-        if (GNUNET_SYSERR == GC_get_configuration_value_number (cfg,
+        if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_number (cfg,
                                                                 section,
                                                                 option,
                                                                 pos->value.
@@ -151,13 +151,13 @@ configChangeListener (void *ctx,
         pos->value.UInt64.val = val;
         break;
       }
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       {
         char *s;
         double d;
 
         s = NULL;
-        GC_get_configuration_value_string (cfg, section, option, NULL, &s);
+        GNUNET_GC_get_configuration_value_string (cfg, section, option, NULL, &s);
         if (s == NULL)
           {
             pos->value.Double.val = pos->value.Double.def;
@@ -166,8 +166,8 @@ configChangeListener (void *ctx,
           {
             if (1 != sscanf (s, "%lf", &d))
               {
-                GE_LOG (ectx,
-                        GE_USER | GE_ERROR | GE_IMMEDIATE,
+                GNUNET_GE_LOG (ectx,
+                        GNUNET_GE_USER | GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE,
                         "`%s' is not a valid double-precision floating point number.\n",
                         s);
                 GNUNET_free (s);
@@ -178,12 +178,12 @@ configChangeListener (void *ctx,
           }
         break;
       }
-    case GNS_String:
-    case GNS_MC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
       {
         char *val;
 
-        if (GNUNET_SYSERR == GC_get_configuration_value_string (cfg,
+        if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_string (cfg,
                                                                 section,
                                                                 option,
                                                                 pos->value.
@@ -194,11 +194,11 @@ configChangeListener (void *ctx,
         pos->value.String.val = val;
         break;
       }
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       {
         const char *ival;
 
-        if (GNUNET_SYSERR == GC_get_configuration_value_choice (cfg,
+        if (GNUNET_SYSERR == GNUNET_GC_get_configuration_value_choice (cfg,
                                                                 section,
                                                                 option,
                                                                 (const char
@@ -224,7 +224,7 @@ configChangeListener (void *ctx,
 }
 
 static void
-free_tree (struct GNS_Tree *t)
+free_tree (struct GNUNET_GNS_TreeNode *t)
 {
   int i;
 
@@ -234,17 +234,17 @@ free_tree (struct GNS_Tree *t)
       free_tree (t->children[i]);
       i++;
     }
-  switch (t->type & GNS_TypeMask)
+  switch (t->type & GNUNET_GNS_TYPE_MASK)
     {
     case 0:
       break;                    /* no value */
-    case GNS_Boolean:
-    case GNS_UInt64:
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_BOOLEAN:
+    case GNUNET_GNS_TYPE_UINT64:
+    case GNUNET_GNS_TYPE_DOUBLE:
       break;                    /* nothing to free */
-    case GNS_String:
-    case GNS_MC:
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       i = 0;
       while (t->value.String.legalRange[i] != NULL)
         {
@@ -255,7 +255,7 @@ free_tree (struct GNS_Tree *t)
       GNUNET_free (t->value.String.val);
       break;
     default:
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       break;
     }
   GNUNET_free (t->description);
@@ -274,26 +274,26 @@ free_tree (struct GNS_Tree *t)
  * @param specification name of the guile file containing the spec
  * @return NULL on error (i.e. specification file not found)
  */
-struct GNS_Context *
-GNS_load_specification (struct GE_Context *ectx,
-                        struct GC_Configuration *cfg,
+struct GNUNET_GNS_Context *
+GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
+                        struct GNUNET_GC_Configuration *cfg,
                         const char *specification)
 {
-  struct GNS_Context *ctx;
-  struct GNS_Tree *root;
+  struct GNUNET_GNS_Context *ctx;
+  struct GNUNET_GNS_TreeNode *root;
 
   root = tree_parse (ectx, specification);
   if (root == NULL)
     return NULL;
-  ctx = GNUNET_malloc (sizeof (struct GNS_Context));
+  ctx = GNUNET_malloc (sizeof (struct GNUNET_GNS_Context));
   ctx->ectx = ectx;
   ctx->cfg = cfg;
   ctx->root = root;
   ctx->in_notify = 0;
-  if (-1 == GC_attach_change_listener (cfg, &configChangeListener, ctx))
+  if (-1 == GNUNET_GC_attach_change_listener (cfg, &configChangeListener, ctx))
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _
               ("Configuration does not satisfy constraints of configuration specification file `%s'!\n"),
               specification);
@@ -305,15 +305,15 @@ GNS_load_specification (struct GE_Context *ectx,
 }
 
 /**
- * Obtain the GNS_Tree from the GNS system.  The tree is only valid
- * until GNS_free_specification is called.  Note that visibility and
+ * Obtain the GNUNET_GNS_TreeNode from the GNS system.  The tree is only valid
+ * until GNUNET_GNS_free_specification is called.  Note that visibility and
  * values in the tree may change whenever the configuration of the GNS
  * context changes.
  *
  * @return NULL on error
  */
-struct GNS_Tree *
-GNS_get_tree (struct GNS_Context *ctx)
+struct GNUNET_GNS_TreeNode *
+GNUNET_GNS_get_tree_root (struct GNUNET_GNS_Context *ctx)
 {
   return ctx->root;
 }
@@ -322,11 +322,11 @@ GNS_get_tree (struct GNS_Context *ctx)
  * Free resources associated with the GNS context.
  */
 void
-GNS_free_specification (struct GNS_Context *ctx)
+GNUNET_GNS_free_specification (struct GNUNET_GNS_Context *ctx)
 {
-  GC_detach_change_listener (ctx->cfg, &configChangeListener, ctx);
+  GNUNET_GC_detach_change_listener (ctx->cfg, &configChangeListener, ctx);
   free_tree (ctx->root);
-  GE_ASSERT (ctx->ectx, ctx->listeners == NULL);
+  GNUNET_GE_ASSERT (ctx->ectx, ctx->listeners == NULL);
   GNUNET_free (ctx);
 }
 
@@ -336,8 +336,8 @@ GNS_free_specification (struct GNS_Context *ctx)
  * @param listener callback to call whenever the tree changes
  */
 void
-GNS_register_tree_change_listener (struct GNS_Context *ctx,
-                                   GNS_TreeChangeListener listener, void *cls)
+GNUNET_GNS_register_tree_change_listener (struct GNUNET_GNS_Context *ctx,
+                                   GNUNET_GNS_TreeChangeListener listener, void *cls)
 {
   GNS_TCL *n;
 
@@ -353,8 +353,8 @@ GNS_register_tree_change_listener (struct GNS_Context *ctx,
  * in the future for change events).
  */
 void
-GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
-                                     GNS_TreeChangeListener listener,
+GNUNET_GNS_unregister_tree_change_listener (struct GNUNET_GNS_Context *ctx,
+                                     GNUNET_GNS_TreeChangeListener listener,
                                      void *cls)
 {
   GNS_TCL *pos;
@@ -385,28 +385,28 @@ GNS_unregister_tree_change_listener (struct GNS_Context *ctx,
  * @return NULL on error
  */
 char *
-GNS_get_default_value_as_string (GNS_Type type, const GNS_Value * value)
+GNUNET_GNS_get_default_value_as_string (GNUNET_GNS_TreeNodeKindAndType type, const GNUNET_GNS_Value * value)
 {
   char buf[48];
 
   if (value == NULL)
     return NULL;
-  switch (type & GNS_TypeMask)
+  switch (type & GNUNET_GNS_TYPE_MASK)
     {
-    case GNS_Boolean:
+    case GNUNET_GNS_TYPE_BOOLEAN:
       if (value->Boolean.def)
         return GNUNET_strdup ("YES");
       return GNUNET_strdup ("NO");
-    case GNS_String:
-    case GNS_MC:
-    case GNS_SC:
+    case GNUNET_GNS_TYPE_STRING:
+    case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
+    case GNUNET_GNS_TYPE_SINGLE_CHOICE:
       if (value->String.def == NULL)
         return NULL;
       return GNUNET_strdup (value->String.def);
-    case GNS_Double:
+    case GNUNET_GNS_TYPE_DOUBLE:
       GNUNET_snprintf (buf, 48, "%f", value->Double.def);
       return GNUNET_strdup (buf);
-    case GNS_UInt64:
+    case GNUNET_GNS_TYPE_UINT64:
       GNUNET_snprintf (buf, 48, "%llu", value->UInt64.def);
       return GNUNET_strdup (buf);
     default:

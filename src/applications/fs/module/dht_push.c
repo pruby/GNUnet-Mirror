@@ -43,17 +43,17 @@
 /**
  * DHT service.  Set to NULL to terminate
  */
-static DHT_ServiceAPI *dht;
+static GNUNET_DHT_ServiceAPI *dht;
 
 /**
  * Global core API.
  */
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * SQStore service.
  */
-static SQstore_ServiceAPI *sqstore;
+static GNUNET_SQstore_ServiceAPI *sqstore;
 
 
 /**
@@ -68,14 +68,14 @@ static struct GNUNET_ThreadHandle *thread;
  */
 static int total;
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_push_count;
 
 
 static int
 push_callback (const GNUNET_HashCode * key,
-               const Datastore_Value * value, void *closure,
+               const GNUNET_DatastoreValue * value, void *closure,
                unsigned long long uid)
 {
   GNUNET_CronTime delay;
@@ -94,7 +94,7 @@ push_callback (const GNUNET_HashCode * key,
     return GNUNET_SYSERR;
   dht->put (key,
             ntohl (value->type),
-            ntohl (value->size) - sizeof (Datastore_Value),
+            ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
             GNUNET_ntohll (value->expirationTime), (const char *) &value[1]);
   if (stats != NULL)
     stats->change (stat_push_count, 1);
@@ -122,14 +122,14 @@ push_thread (void *cls)
  * Initialize the migration module.
  */
 void
-init_dht_push (CoreAPIForApplication * capi, DHT_ServiceAPI * d)
+init_dht_push (GNUNET_CoreAPIForPlugins * capi, GNUNET_DHT_ServiceAPI * d)
 {
   coreAPI = capi;
   dht = d;
   sqstore = capi->requestService ("sqstore");
   if (sqstore == NULL)
     {
-      GE_BREAK (capi->ectx, 0);
+      GNUNET_GE_BREAK (capi->ectx, 0);
       return;
     }
   stats = capi->requestService ("stats");

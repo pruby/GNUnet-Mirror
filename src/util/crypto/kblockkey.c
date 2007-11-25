@@ -244,7 +244,7 @@ is_prime (mpz_t n, int steps, GNUNET_HashCode * hc)
               set_highbit (x, nbits - 2);
               mpz_clrbit (x, nbits - 2);
             }
-          GE_ASSERT (NULL, mpz_cmp (x, nminus1) < 0 && mpz_cmp_ui (x, 1) > 0);
+          GNUNET_GE_ASSERT (NULL, mpz_cmp (x, nminus1) < 0 && mpz_cmp_ui (x, 1) > 0);
         }
       mpz_powm (y, x, q, n);
       if (mpz_cmp_ui (y, 1) && mpz_cmp (y, nminus1))
@@ -281,7 +281,7 @@ gen_prime (mpz_t ptest, unsigned int nbits, GNUNET_HashCode * hc)
   int *mods;
   mpz_t tmp;
 
-  GE_ASSERT (NULL, nbits >= 16);
+  GNUNET_GE_ASSERT (NULL, nbits >= 16);
 
   mods = GNUNET_malloc (no_of_small_prime_numbers * sizeof (*mods));
   /* Make nbits fit into mpz_t implementation. */
@@ -485,7 +485,7 @@ makeKblockKeyInternal (const GNUNET_HashCode * hc)
                            *pkv[i]);
       size += sizes[i];
     }
-  GE_ASSERT (NULL, size < 65536);
+  GNUNET_GE_ASSERT (NULL, size < 65536);
   retval = GNUNET_malloc (size);
   retval->len = htons (size);
   i = 0;

@@ -249,7 +249,7 @@ typedef struct SendCallbackList__
   /**
    * The callback method.
    */
-  BufferFillCallback callback;
+  GNUNET_BufferFillCallback callback;
 
   /**
    * Minimum number of bytes that must be available
@@ -262,7 +262,7 @@ typedef struct SendCallbackList__
 
 typedef struct fENHWrap
 {
-  PerNodeCallback method;
+  GNUNET_NodeIteratorCallback method;
   void *arg;
 } fENHWrap;
 
@@ -328,7 +328,7 @@ typedef struct
   /**
    * callback to call to create the message part
    */
-  BuildMessageCallback callback;
+  GNUNET_BuildMessageCallback callback;
 
   /**
    * argument to callback, call GNUNET_free_non_null(closure) if we
@@ -362,7 +362,7 @@ typedef struct
   /**
    * The session handle specific for the transport service.
    */
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
 } Session;
 
@@ -542,32 +542,32 @@ typedef void (*BufferEntryCallback) (BufferEntry * be, void *data);
 /**
  * Transport service
  */
-static Transport_ServiceAPI *transport;
+static GNUNET_Transport_ServiceAPI *transport;
 
 /**
  * Identity service
  */
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
 /**
  * Session service
  */
-static Session_ServiceAPI *session;
+static GNUNET_Session_ServiceAPI *session;
 
 /**
  * Fragmentation service
  */
-static Fragmentation_ServiceAPI *fragmentation;
+static GNUNET_Fragmentation_ServiceAPI *fragmentation;
 
 /**
  * Topology service
  */
-static Topology_ServiceAPI *topology;
+static GNUNET_Topology_ServiceAPI *topology;
 
 /**
  * Stats service (maybe NULL!)
  */
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 /**
  * The buffer containing all current connections.
@@ -611,11 +611,11 @@ static unsigned long long max_bpm_up;
 /**
  * Registered Send-Notify handlers.
  */
-static MessagePartHandler *rsns;
+static GNUNET_P2PRequestHandler *rsns;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static struct GNUNET_LoadMonitor *load_monitor;
 
@@ -674,7 +674,7 @@ check_invariants ()
       while (NULL != root)
         {
           if (root->session.tsession != NULL)
-            GE_ASSERT (NULL,
+            GNUNET_GE_ASSERT (NULL,
                        GNUNET_OK ==
                        transport->assertAssociated (root->session.tsession,
                                                     __FILE__));
@@ -867,7 +867,7 @@ solveKnapsack (BufferEntry * be, unsigned int available)
   for (i = 0; i < count; i++)
     if (entries[i]->len > 0)
       max = gcd (max, entries[i]->len);
-  GE_ASSERT (ectx, max != 0);
+  GNUNET_GE_ASSERT (ectx, max != 0);
   available = available / max;
   for (i = 0; i < count; i++)
     efflen[i] = entries[i]->len / max;
@@ -930,7 +930,7 @@ solveKnapsack (BufferEntry * be, unsigned int available)
             }
         }
     }
-  GE_ASSERT (ectx, j == 0);
+  GNUNET_GE_ASSERT (ectx, j == 0);
   GNUNET_free (v);
   GNUNET_free (efflen);
 
@@ -959,7 +959,7 @@ outgoingCheck (unsigned int priority, unsigned int overhead)
     return GNUNET_SYSERR;       /* => always drop */
   if (load > 100)
     {
-      if (priority >= EXTREME_PRIORITY)
+      if (priority >= GNUNET_EXTREME_PRIORITY)
         return GNUNET_OK;       /* allow administrative msgs */
       return GNUNET_SYSERR;     /* but nothing else */
     }
@@ -970,8 +970,8 @@ outgoingCheck (unsigned int priority, unsigned int overhead)
   if (delta * delta * delta > priority)
     {
 #if DEBUG_POLICY
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Network load is too high (%d%%, priority is %u, require %d), "
               "dropping outgoing.\n", load, priority, delta * delta * delta);
 #endif
@@ -980,8 +980,8 @@ outgoingCheck (unsigned int priority, unsigned int overhead)
   else
     {
 #if DEBUG_POLICY
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Network load is ok (%d%%, priority is %u >= %d), "
               "sending outgoing.\n", load, priority, delta * delta * delta);
 #endif
@@ -1003,7 +1003,7 @@ checkSendFrequency (BufferEntry * be)
   unsigned int i;
 
   for (i = 0; i < be->sendBufferSize; i++)
-    if (be->sendBuffer[i]->pri >= EXTREME_PRIORITY)
+    if (be->sendBuffer[i]->pri >= GNUNET_EXTREME_PRIORITY)
       return GNUNET_OK;
 
   if (be->max_bpm == 0)
@@ -1040,8 +1040,8 @@ checkSendFrequency (BufferEntry * be)
   if (be->lastSendAttempt + msf > GNUNET_get_time ())
     {
 #if DEBUG_CONNECTION
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Send frequency too high (CPU load), send deferred.\n");
 #endif
       return GNUNET_NO;         /* frequency too high, wait */
@@ -1083,7 +1083,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
         {
           entry = be->sendBuffer[i];
           if ((totalMessageSize + entry->len < GNUNET_MAX_BUFFER_SIZE - 64) &&
-              (entry->pri >= EXTREME_PRIORITY))
+              (entry->pri >= GNUNET_EXTREME_PRIORITY))
             {
               entry->knapsackSolution = GNUNET_YES;
               if (entry->transmissionTime < deadline)
@@ -1132,7 +1132,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
           i++;
         }
       if ((totalMessageSize == sizeof (P2P_PACKET_HEADER)) ||
-          (((*priority) < EXTREME_PRIORITY) &&
+          (((*priority) < GNUNET_EXTREME_PRIORITY) &&
            ((totalMessageSize / sizeof (P2P_PACKET_HEADER)) < 4) &&
            (deadline > GNUNET_get_time () + 500 * GNUNET_CRON_MILLISECONDS) &&
            (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 16) != 0)))
@@ -1199,9 +1199,9 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
       if ((j == 0) ||
           (totalMessageSize > be->session.mtu - sizeof (P2P_PACKET_HEADER)))
         {
-          GE_BREAK (ectx, 0);
-          GE_LOG (ectx,
-                  GE_ERROR | GE_BULK | GE_DEVELOPER,
+          GNUNET_GE_BREAK (ectx, 0);
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                   _("`%s' selected %d out of %d messages (MTU: %d).\n"),
                   __FUNCTION__,
                   j,
@@ -1209,8 +1209,8 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
                   be->session.mtu - sizeof (P2P_PACKET_HEADER));
 
           for (j = 0; j < be->sendBufferSize; j++)
-            GE_LOG (ectx,
-                    GE_ERROR | GE_BULK | GE_DEVELOPER,
+            GNUNET_GE_LOG (ectx,
+                    GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                     _("Message details: %u: length %d, priority: %d\n"),
                     j, be->sendBuffer[j]->len, be->sendBuffer[j]->pri);
           return 0;
@@ -1220,12 +1220,12 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
         {
           /* if we have a very high priority, we may
              want to ignore bandwidth availability (e.g. for HANGUP,
-             which  has EXTREME_PRIORITY) */
-          if ((*priority) < EXTREME_PRIORITY)
+             which  has GNUNET_EXTREME_PRIORITY) */
+          if ((*priority) < GNUNET_EXTREME_PRIORITY)
             {
 #if DEBUG_CONNECTION
-              GE_LOG (ectx,
-                      GE_DEBUG | GE_REQUEST | GE_USER,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                       "bandwidth limits prevent sending (send window %u too small).\n",
                       be->available_send_window);
 #endif
@@ -1283,8 +1283,8 @@ expireSendBufferEntries (BufferEntry * be)
       if ((entry->transmissionTime <= expired) || (usedBytes > msgCap))
         {
 #if DEBUG_CONNECTION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
                   (int) ((GNUNET_get_time () -
                           entry->transmissionTime) / GNUNET_CRON_SECONDS),
@@ -1367,10 +1367,10 @@ prepareSelectedMessages (BufferEntry * be)
 
             hdr = (GNUNET_MessageHeader *) entry->closure;
             IF_GELOG (ectx,
-                      GE_DEBUG | GE_REQUEST | GE_USER,
+                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                       GNUNET_hash_to_enc (&be->session.sender.hashPubKey,
                                           &enc));
-            GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                     "Core selected message of type %u and size %u for sending to peer `%s'.\n",
                     ntohs (hdr->type), ntohs (hdr->size), &enc);
           }
@@ -1469,10 +1469,10 @@ freeSelectedEntries (BufferEntry * be)
   for (i = 0; i < be->sendBufferSize; i++)
     {
       entry = be->sendBuffer[i];
-      GE_ASSERT (ectx, entry != NULL);
+      GNUNET_GE_ASSERT (ectx, entry != NULL);
       if (entry->knapsackSolution == GNUNET_YES)
         {
-          GE_ASSERT (ectx, entry->callback == NULL);
+          GNUNET_GE_ASSERT (ectx, entry->callback == NULL);
           GNUNET_free_non_null (entry->closure);
           GNUNET_free (entry);
           be->sendBuffer[i] = NULL;
@@ -1586,13 +1586,13 @@ sendBuffer (BufferEntry * be)
   int ret;
   SendEntry **entries;
   unsigned int stotal;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
   ENTRY ();
   /* fast ways out */
   if (be == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if ((be->status != STAT_UP) ||
@@ -1621,17 +1621,17 @@ sendBuffer (BufferEntry * be)
     }
   if (totalMessageSize == 0)
     totalMessageSize = EXPECTED_MTU + sizeof (P2P_PACKET_HEADER);
-  GE_ASSERT (ectx, totalMessageSize > sizeof (P2P_PACKET_HEADER));
+  GNUNET_GE_ASSERT (ectx, totalMessageSize > sizeof (P2P_PACKET_HEADER));
   if ((be->session.mtu != 0) && (totalMessageSize > be->session.mtu))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       be->inSendBuffer = GNUNET_NO;
       return GNUNET_NO;
     }
   ret = transport->testWouldTry (be->session.tsession,
                                  totalMessageSize,
                                  (priority >=
-                                  EXTREME_PRIORITY) ? GNUNET_YES : GNUNET_NO);
+                                  GNUNET_EXTREME_PRIORITY) ? GNUNET_YES : GNUNET_NO);
   /* ret: GNUNET_YES: ok to send, GNUNET_NO: not ready yet, GNUNET_SYSERR: session down
      or serious internal error */
   if (ret == GNUNET_SYSERR)
@@ -1647,10 +1647,10 @@ sendBuffer (BufferEntry * be)
 #if DEBUG_CONNECTION
           GNUNET_EncName enc;
           IF_GELOG (ectx,
-                    GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                     GNUNET_hash_to_enc (&be->session.sender.hashPubKey,
                                         &enc));
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                   "Session is DOWN for `%s' due to transport disconnect\n",
                   &enc);
 #endif
@@ -1701,7 +1701,7 @@ sendBuffer (BufferEntry * be)
       if ((stotal == 0) || (entries == NULL))
         {
           /* no messages selected!? */
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           be->inSendBuffer = GNUNET_NO;
           GNUNET_free (entries);
           return GNUNET_NO;
@@ -1724,7 +1724,7 @@ sendBuffer (BufferEntry * be)
     {
       SendEntry *entry = entries[i];
 
-      GE_ASSERT (ectx,
+      GNUNET_GE_ASSERT (ectx,
                  (entry != NULL) &&
                  (entry->knapsackSolution == GNUNET_YES) &&
                  (entry->callback == NULL) &&
@@ -1736,7 +1736,7 @@ sendBuffer (BufferEntry * be)
   entries = NULL;
   if (p > totalMessageSize)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (plaintextMsg);
       be->inSendBuffer = GNUNET_NO;
       return GNUNET_NO;
@@ -1750,10 +1750,10 @@ sendBuffer (BufferEntry * be)
         {
           rsi = pos->callback (&be->session.sender,
                                &plaintextMsg[p], totalMessageSize - p);
-          GE_BREAK (ectx, rsi + p <= totalMessageSize);
+          GNUNET_GE_BREAK (ectx, rsi + p <= totalMessageSize);
           if ((rsi + p < p) || (rsi + p > totalMessageSize))
             {
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
               GNUNET_free (plaintextMsg);
               be->inSendBuffer = GNUNET_NO;
               return GNUNET_NO;
@@ -1765,7 +1765,7 @@ sendBuffer (BufferEntry * be)
   if (((be->session.mtu != 0) &&
        (p > be->session.mtu)) || (p > totalMessageSize))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (plaintextMsg);
       be->inSendBuffer = GNUNET_NO;
       return GNUNET_NO;
@@ -1780,7 +1780,7 @@ sendBuffer (BufferEntry * be)
       unsigned short noiseLen = totalMessageSize - p;
 
       part.size = htons (noiseLen);
-      part.type = htons (P2P_PROTO_noise);
+      part.type = htons (GNUNET_P2P_PROTO_NOISE);
       memcpy (&plaintextMsg[p], &part, sizeof (GNUNET_MessageHeader));
       for (i = p + sizeof (GNUNET_MessageHeader); i < totalMessageSize; i++)
         plaintextMsg[i] = (char) rand ();
@@ -1791,7 +1791,7 @@ sendBuffer (BufferEntry * be)
   if (((be->session.mtu != 0) &&
        (p > be->session.mtu)) || (p > totalMessageSize))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free (plaintextMsg);
       be->inSendBuffer = GNUNET_NO;
       return GNUNET_NO;
@@ -1806,9 +1806,9 @@ sendBuffer (BufferEntry * be)
                             sequenceNumber);
   if (stats != NULL)
     stats->change (stat_encrypted, p - sizeof (GNUNET_HashCode));
-  GE_ASSERT (ectx, be->session.tsession != NULL);
+  GNUNET_GE_ASSERT (ectx, be->session.tsession != NULL);
   ret = transport->send (be->session.tsession, encryptedMsg, p, GNUNET_NO);
-  if ((ret == GNUNET_NO) && (priority >= EXTREME_PRIORITY))
+  if ((ret == GNUNET_NO) && (priority >= GNUNET_EXTREME_PRIORITY))
     {
       ret =
         transport->send (be->session.tsession, encryptedMsg, p, GNUNET_YES);
@@ -1835,7 +1835,7 @@ sendBuffer (BufferEntry * be)
               unsigned short plen = ntohs (MAKE_UNALIGNED (part->size));
               if (plen < sizeof (GNUNET_MessageHeader))
                 {
-                  GE_BREAK (ectx, 0);
+                  GNUNET_GE_BREAK (ectx, 0);
                   break;
                 }
               for (rsi = 0; rsi < rsnSize; rsi++)
@@ -1850,10 +1850,10 @@ sendBuffer (BufferEntry * be)
 #if DEBUG_CONNECTION
       GNUNET_EncName enc;
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&be->session.sender.hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
               "Session is DOWN for `%s' due to transmission error\n", &enc);
 #endif
       tsession = be->session.tsession;
@@ -1901,7 +1901,7 @@ appendToBuffer (BufferEntry * be, SendEntry * se)
   ENTRY ();
   if ((se == NULL) || (se->len == 0))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       GNUNET_free_non_null (se);
       return;
     }
@@ -1925,10 +1925,10 @@ appendToBuffer (BufferEntry * be, SendEntry * se)
          connection, do NOT queue messages! */
 #if DEBUG_CONNECTION
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&be->session.sender.hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "not connected to `%s', message dropped\n", &enc);
 #endif
       GNUNET_free (se->closure);
@@ -1960,7 +1960,7 @@ appendToBuffer (BufferEntry * be, SendEntry * se)
     }
   /* grow send buffer, insertion sort! */
   ne = GNUNET_malloc ((be->sendBufferSize + 1) * sizeof (SendEntry *));
-  GE_ASSERT (ectx, se->len != 0);
+  GNUNET_GE_ASSERT (ectx, se->len != 0);
   apri = (float) se->pri / (float) se->len;
   i = 0;
   while ((i < be->sendBufferSize) &&
@@ -2122,7 +2122,7 @@ shutdownConnection (BufferEntry * be)
 {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 #if DEBUG_CONNECTION
   GNUNET_EncName enc;
 #endif
@@ -2130,10 +2130,10 @@ shutdownConnection (BufferEntry * be)
   ENTRY ();
 #if DEBUG_CONNECTION
   IF_GELOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_USER,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&be->session.sender.hashPubKey, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Shutting down connection with `%s'\n", &enc);
 #endif
   if (be->status == STAT_DOWN)
@@ -2144,20 +2144,20 @@ shutdownConnection (BufferEntry * be)
 #if DEBUG_CONNECTION
       GNUNET_EncName enc;
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&be->session.sender.hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
               "Session DOWN for `%s' due to HANGUP received\n", &enc);
 #endif
-      hangup.header.type = htons (P2P_PROTO_hangup);
+      hangup.header.type = htons (GNUNET_P2P_PROTO_HANG_UP);
       hangup.header.size = htons (sizeof (P2P_hangup_MESSAGE));
       identity->getPeerIdentity (identity->getPublicPrivateKey (),
                                  &hangup.sender);
       se = GNUNET_malloc (sizeof (SendEntry));
       se->len = sizeof (P2P_hangup_MESSAGE);
       se->flags = SE_FLAG_PLACE_TAIL;
-      se->pri = EXTREME_PRIORITY;
+      se->pri = GNUNET_EXTREME_PRIORITY;
       se->transmissionTime = GNUNET_get_time ();        /* now */
       se->callback = NULL;
       se->closure = GNUNET_malloc (sizeof (P2P_hangup_MESSAGE));
@@ -2353,7 +2353,7 @@ scheduleInboundTraffic ()
     schedulableBandwidth = schedulableBandwidth * 100 / load;
   /* compute recent activity profile of the peer */
   adjustedRR = GNUNET_malloc (sizeof (long long) * activePeerCount);
-  GE_ASSERT (ectx, timeDifference != 0);
+  GNUNET_GE_ASSERT (ectx, timeDifference != 0);
   for (u = 0; u < activePeerCount; u++)
     {
       adjustedRR[u]
@@ -2365,10 +2365,10 @@ scheduleInboundTraffic ()
       if (adjustedRR[u] > entries[u]->idealized_limit)
         {
           IF_GELOG (ectx,
-                    GE_INFO | GE_BULK | GE_USER,
+                    GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                     GNUNET_hash_to_enc (&entries[u]->session.sender.
                                         hashPubKey, &enc));
-          GE_LOG (ectx, GE_INFO | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                   "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
                   &enc, adjustedRR[u], entries[u]->idealized_limit);
         }
@@ -2388,10 +2388,10 @@ scheduleInboundTraffic ()
             {
 #if DEBUG_CONNECTION
               IF_GELOG (ectx,
-                        GE_INFO | GE_BULK | GE_DEVELOPER,
+                        GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                         GNUNET_hash_to_enc (&entries[u]->session.sender.
                                             hashPubKey, &enc));
-              GE_LOG (ectx, GE_INFO | GE_BULK | GE_DEVELOPER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                       "blacklisting `%s': sent repeatedly %llu bpm "
                       "(limit %u bpm, target %u bpm)\n", &enc, adjustedRR[u],
                       entries[u]->max_transmitted_limit,
@@ -2605,10 +2605,10 @@ scheduleInboundTraffic ()
     {
 #if DEBUG_CONNECTION
       IF_GELOG (ectx,
-                GE_DEBUG | GE_BULK | GE_USER,
+                GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
                 GNUNET_hash_to_enc (&entries[u]->session.sender.hashPubKey,
                                     &enc));
-      GE_LOG (ectx, GE_DEBUG | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
               "inbound limit for peer %u: %4s set to %u bpm (ARR: %lld, uptime: %llus, value: %lf)\n",
               u, &enc, entries[u]->idealized_limit, adjustedRR[u],
               (GNUNET_get_time () -
@@ -2646,10 +2646,10 @@ scheduleInboundTraffic ()
         {
 #if DEBUG_CONNECTION
           IF_GELOG (ectx,
-                    GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                     GNUNET_hash_to_enc (&be->session.sender.hashPubKey,
                                         &enc));
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                   "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
                   &enc, be->idealized_limit);
 #endif
@@ -2706,7 +2706,7 @@ cronDecreaseLiveness (void *unused)
   unsigned long long total_send_buffer_size;
   int load_nup;
   int load_cpu;
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
   ENTRY ();
   load_cpu = GNUNET_cpu_get_load (ectx, cfg);
@@ -2751,10 +2751,10 @@ cronDecreaseLiveness (void *unused)
 
                   /* switch state form UP to DOWN: too much inactivity */
                   IF_GELOG (ectx,
-                            GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                             GNUNET_hash_to_enc (&root->session.sender.
                                                 hashPubKey, &enc));
-                  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                           "Closing connection with `%s': "
                           "too much inactivity (%llu ms)\n", &enc,
                           now - root->isAlive);
@@ -2768,9 +2768,9 @@ cronDecreaseLiveness (void *unused)
               if ((root->consider_transport_switch == GNUNET_YES)
                   && (load_cpu < GNUNET_IDLE_LOAD_THRESHOLD))
                 {
-                  TSession *alternative;
+                  GNUNET_TSession *alternative;
 
-                  GE_BREAK (NULL, root->session.mtu != 0);
+                  GNUNET_GE_BREAK (NULL, root->session.mtu != 0);
                   alternative =
                     transport->connectFreely (&root->session.sender,
                                               GNUNET_NO, __FILE__);
@@ -2820,7 +2820,7 @@ cronDecreaseLiveness (void *unused)
                                        0, 5 * GNUNET_CRON_MINUTES);
                               if (mSize > hSize)
                                 {
-                                  GE_BREAK (ectx, 0);
+                                  GNUNET_GE_BREAK (ectx, 0);
                                   hSize = 0;
                                 }
                               else
@@ -2843,10 +2843,10 @@ cronDecreaseLiveness (void *unused)
                   GNUNET_EncName enc;
 
                   IF_GELOG (ectx,
-                            GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                             GNUNET_hash_to_enc (&root->session.sender.
                                                 hashPubKey, &enc));
-                  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                           "closing connection to %s: %s not answered.\n",
                           &enc,
                           (root->status ==
@@ -2906,15 +2906,15 @@ checkHeader (const GNUNET_PeerIdentity * sender,
   GNUNET_EncName enc;
 
   ENTRY ();
-  GE_ASSERT (ectx, msg != NULL);
-  GE_ASSERT (ectx, sender != NULL);
+  GNUNET_GE_ASSERT (ectx, msg != NULL);
+  GNUNET_GE_ASSERT (ectx, sender != NULL);
   if (size < sizeof (P2P_PACKET_HEADER))
     {
       IF_GELOG (ectx,
-                GE_WARNING | GE_BULK | GE_DEVELOPER,
+                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_WARNING | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               _("Message from `%s' discarded: invalid format.\n"), &enc);
       EXIT ();
       return GNUNET_SYSERR;
@@ -2939,10 +2939,10 @@ checkHeader (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_CONNECTION
       IF_GELOG (ectx,
-                GE_INFO | GE_BULK | GE_DEVELOPER,
+                GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_INFO | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
               &enc);
 #endif
@@ -2964,10 +2964,10 @@ checkHeader (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_CONNECTION
       IF_GELOG (ectx,
-                GE_INFO | GE_BULK | GE_DEVELOPER,
+                GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_INFO | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               "Decrypting message from host `%s' failed, wrong sessionkey!\n",
               &enc);
 #endif
@@ -3000,8 +3000,8 @@ checkHeader (const GNUNET_PeerIdentity * sender,
       if (res == GNUNET_SYSERR)
         {
 #if DEBUG_CONNECTION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                   _("Invalid sequence number"
                     " %u <= %u, dropping message.\n"),
                   sequenceNumber, be->lastSequenceNumberReceived);
@@ -3022,8 +3022,8 @@ checkHeader (const GNUNET_PeerIdentity * sender,
   if (stamp + 1 * GNUNET_CRON_DAYS < GNUNET_get_time_int32 (NULL))
     {
 #if DEBUG_CONNECTION
-      GE_LOG (ectx,
-              GE_INFO | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Message received more than one day old. Dropped.\n"));
 #endif
       GNUNET_mutex_unlock (lock);
@@ -3073,10 +3073,10 @@ handleHANGUP (const GNUNET_PeerIdentity * sender,
     return GNUNET_SYSERR;
 #if DEBUG_CONNECTION
   IF_GELOG (ectx,
-            GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+            GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
             GNUNET_hash_to_enc (&sender->hashPubKey, &enc));
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
           "received HANGUP from `%s'\n", &enc);
 #endif
   GNUNET_mutex_lock (lock);
@@ -3172,10 +3172,10 @@ confirmSessionUp (const GNUNET_PeerIdentity * peer)
 #if DEBUG_CONNECTION
           GNUNET_EncName enc;
           IF_GELOG (ectx,
-                    GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                    GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                     GNUNET_hash_to_enc (&peer->hashPubKey, &enc));
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                   "Received confirmation that session is UP for `%s'\n",
                   &enc);
 #endif
@@ -3328,18 +3328,18 @@ getCurrentSessionKey (const GNUNET_PeerIdentity * peer,
  * @param sender the identity of the other node
  */
 void
-considerTakeover (const GNUNET_PeerIdentity * sender, TSession * tsession)
+considerTakeover (const GNUNET_PeerIdentity * sender, GNUNET_TSession * tsession)
 {
   BufferEntry *be;
   unsigned int cost;
-  TSession *ts;
+  GNUNET_TSession *ts;
 
   ENTRY ();
   if (tsession == NULL)
     return;
   if (0 != memcmp (sender, &tsession->peer, sizeof (GNUNET_PeerIdentity)))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return;
     }
   GNUNET_mutex_lock (lock);
@@ -3369,7 +3369,7 @@ considerTakeover (const GNUNET_PeerIdentity * sender, TSession * tsession)
         (transport->getMTU (tsession->ttype) == 0))) &&
       (GNUNET_OK == transport->associate (tsession, __FILE__)))
     {
-      GE_ASSERT (NULL,
+      GNUNET_GE_ASSERT (NULL,
                  GNUNET_OK == transport->assertAssociated (tsession,
                                                            __FILE__));
       ts = be->session.tsession;
@@ -3399,8 +3399,8 @@ considerTakeover (const GNUNET_PeerIdentity * sender, TSession * tsession)
  */
 static int
 connectionConfigChangeCallback (void *ctx,
-                                struct GC_Configuration *cfg,
-                                struct GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg,
+                                struct GNUNET_GE_Context *ectx,
                                 const char *section, const char *option)
 {
   unsigned long long new_max_bpm;
@@ -3408,10 +3408,10 @@ connectionConfigChangeCallback (void *ctx,
 
   if (0 != strcmp (section, "LOAD"))
     return 0;                   /* fast path */
-  if (-1 == GC_get_configuration_value_number (cfg, "LOAD", "MAXNETDOWNBPSTOTAL", 0, ((unsigned long long) -1) / 60, 50000,     /* default: 50 kbps */
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETDOWNBPSTOTAL", 0, ((unsigned long long) -1) / 60, 50000,     /* default: 50 kbps */
                                                &new_max_bpm))
     return GNUNET_SYSERR;
-  GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL", 0, ((unsigned long long) -1) / 60, 50000, /* default: 50 kbps */
+  GNUNET_GC_get_configuration_value_number (cfg, "LOAD", "MAXNETUPBPSTOTAL", 0, ((unsigned long long) -1) / 60, 50000, /* default: 50 kbps */
                                      &max_bpm_up);
   max_bpm_up *= 60;             /* bps -> bpm */
   GNUNET_mutex_lock (lock);
@@ -3436,8 +3436,8 @@ connectionConfigChangeCallback (void *ctx,
 
           olen = CONNECTION_MAX_HOSTS_;
           CONNECTION_MAX_HOSTS_ = newMAXHOSTS;
-          GE_BREAK (ectx,
-                    0 == GC_set_configuration_value_number (cfg,
+          GNUNET_GE_BREAK (ectx,
+                    0 == GNUNET_GC_set_configuration_value_number (cfg,
                                                             ectx,
                                                             "gnunetd",
                                                             "connection-max-hosts",
@@ -3469,14 +3469,14 @@ connectionConfigChangeCallback (void *ctx,
           GNUNET_free_non_null (CONNECTION_buffer_);
           CONNECTION_buffer_ = newBuffer;
 
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "connection goal is %s%d peers (%llu BPM bandwidth downstream)\n",
                   (olen == 0) ? "" : "now ", CONNECTION_MAX_HOSTS_, max_bpm);
 
         }
     }
-  disable_random_padding = GC_get_configuration_value_yesno (cfg,
+  disable_random_padding = GNUNET_GC_get_configuration_value_yesno (cfg,
                                                              "GNUNETD-EXPERIMENTAL",
                                                              "PADDING",
                                                              GNUNET_NO);
@@ -3488,26 +3488,26 @@ connectionConfigChangeCallback (void *ctx,
  * Initialize this module.
  */
 void
-initConnection (struct GE_Context *e,
-                struct GC_Configuration *c,
+initConnection (struct GNUNET_GE_Context *e,
+                struct GNUNET_GC_Configuration *c,
                 struct GNUNET_LoadMonitor *m, struct GNUNET_CronManager *cm)
 {
   ectx = e;
   cfg = c;
   load_monitor = m;
   cron = cm;
-  GE_ASSERT (ectx, P2P_MESSAGE_OVERHEAD == sizeof (P2P_PACKET_HEADER));
-  GE_ASSERT (ectx, sizeof (P2P_hangup_MESSAGE) == 68);
+  GNUNET_GE_ASSERT (ectx, GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD == sizeof (P2P_PACKET_HEADER));
+  GNUNET_GE_ASSERT (ectx, sizeof (P2P_hangup_MESSAGE) == 68);
   ENTRY ();
   scl_nextHead = NULL;
   scl_nextTail = NULL;
   connectionConfigChangeCallback (NULL, cfg, ectx, "LOAD", "NOTHING");
-  GE_ASSERT (ectx,
-             0 == GC_attach_change_listener (cfg,
+  GNUNET_GE_ASSERT (ectx,
+             0 == GNUNET_GC_attach_change_listener (cfg,
                                              &connectionConfigChangeCallback,
                                              NULL));
-  GE_ASSERT (ectx, CONNECTION_MAX_HOSTS_ != 0);
-  registerp2pHandler (P2P_PROTO_hangup, &handleHANGUP);
+  GNUNET_GE_ASSERT (ectx, CONNECTION_MAX_HOSTS_ != 0);
+  registerp2pHandler (GNUNET_P2P_PROTO_HANG_UP, &handleHANGUP);
   GNUNET_cron_add_job (cron,
                        &cronDecreaseLiveness, CDL_FREQUENCY, CDL_FREQUENCY,
                        NULL);
@@ -3516,15 +3516,15 @@ initConnection (struct GE_Context *e,
 #endif
 
   transport = requestService ("transport");
-  GE_ASSERT (ectx, transport != NULL);
+  GNUNET_GE_ASSERT (ectx, transport != NULL);
   identity = requestService ("identity");
-  GE_ASSERT (ectx, identity != NULL);
+  GNUNET_GE_ASSERT (ectx, identity != NULL);
   session = requestService ("session");
-  GE_ASSERT (ectx, session != NULL);
+  GNUNET_GE_ASSERT (ectx, session != NULL);
   fragmentation = requestService ("fragmentation");
-  GE_ASSERT (ectx, fragmentation != NULL);
+  GNUNET_GE_ASSERT (ectx, fragmentation != NULL);
   topology = requestService ("topology");
-  GE_ASSERT (ectx, topology != NULL);
+  GNUNET_GE_ASSERT (ectx, topology != NULL);
   stats = requestService ("stats");
   if (stats != NULL)
     {
@@ -3595,7 +3595,7 @@ doneConnection ()
   SendCallbackList *scl;
 
   ENTRY ();
-  GC_detach_change_listener (cfg, &connectionConfigChangeCallback, NULL);
+  GNUNET_GC_detach_change_listener (cfg, &connectionConfigChangeCallback, NULL);
   GNUNET_cron_del_job (cron, &cronDecreaseLiveness, CDL_FREQUENCY, NULL);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
     {
@@ -3606,8 +3606,8 @@ doneConnection ()
       while (be != NULL)
         {
 #if DEBUG_CONNECTION
-          GE_LOG (ectx,
-                  GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "Closing connection: shutdown\n");
 #endif
           shutdownConnection (be);
@@ -3663,7 +3663,7 @@ doneConnection ()
  * @return number of connected nodes
  */
 int
-forEachConnectedNode (PerNodeCallback method, void *arg)
+forEachConnectedNode (GNUNET_NodeIteratorCallback method, void *arg)
 {
   fENHWrap wrap;
   int ret;
@@ -3711,8 +3711,8 @@ printConnectionBuffer ()
               ttype = 0;
               if (tmp->session.tsession != NULL)
                 ttype = tmp->session.tsession->ttype;
-              GE_LOG (ectx,
-                      GE_INFO | GE_REQUEST | GE_USER,
+              GNUNET_GE_LOG (ectx,
+                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                       "CONNECTION-TABLE: %3d-%1d-%2d-%4ds"
                       " (of %ds) BPM %4llu %8ut-%3u: %s-%s-%s\n",
                       i,
@@ -3752,7 +3752,7 @@ printConnectionBuffer ()
  */
 int
 registerSendCallback (const unsigned int minimumPadding,
-                      BufferFillCallback callback)
+                      GNUNET_BufferFillCallback callback)
 {
   SendCallbackList *scl;
 
@@ -3792,7 +3792,7 @@ registerSendCallback (const unsigned int minimumPadding,
  */
 int
 unregisterSendCallback (const unsigned int minimumPadding,
-                        BufferFillCallback callback)
+                        GNUNET_BufferFillCallback callback)
 {
   SendCallbackList *pos;
   SendCallbackList *prev;
@@ -3834,23 +3834,23 @@ unregisterSendCallback (const unsigned int minimumPadding,
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain MESSAGE_HEADERs
+ * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure, GNUNET_NO on temporary failure
  */
 int
-sendPlaintext (TSession * tsession, const char *msg, unsigned int size)
+sendPlaintext (GNUNET_TSession * tsession, const char *msg, unsigned int size)
 {
   char *buf;
   int ret;
   P2P_PACKET_HEADER *hdr;
 
   ENTRY ();
-  GE_ASSERT (ectx, tsession != NULL);
+  GNUNET_GE_ASSERT (ectx, tsession != NULL);
   if ((transport->getMTU (tsession->ttype) > 0) &&
       (transport->getMTU (tsession->ttype) <
        size + sizeof (P2P_PACKET_HEADER)))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   buf = GNUNET_malloc (size + sizeof (P2P_PACKET_HEADER));
@@ -3883,7 +3883,7 @@ sendPlaintext (TSession * tsession, const char *msg, unsigned int size)
  */
 void
 unicastCallback (const GNUNET_PeerIdentity * hostId,
-                 BuildMessageCallback callback,
+                 GNUNET_BuildMessageCallback callback,
                  void *closure,
                  unsigned short len,
                  unsigned int importance, unsigned int maxdelay)
@@ -3943,8 +3943,8 @@ unicast (const GNUNET_PeerIdentity * receiver,
   len = ntohs (msg->size);
   if (len == 0)
     {
-      GE_LOG (ectx,
-              GE_DEBUG | GE_BULK | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
               "Empty message send (hopefully used to initiate connection attempt)\n");
       EXIT ();
       return;
@@ -3969,7 +3969,7 @@ computeIndex (const GNUNET_PeerIdentity * hostId)
   ENTRY ();
   res = (((unsigned int) hostId->hashPubKey.bits[0]) &
          ((unsigned int) (CONNECTION_MAX_HOSTS_ - 1)));
-  GE_ASSERT (ectx, res < CONNECTION_MAX_HOSTS_);
+  GNUNET_GE_ASSERT (ectx, res < CONNECTION_MAX_HOSTS_);
   return res;
 }
 
@@ -3981,7 +3981,7 @@ computeIndex (const GNUNET_PeerIdentity * hostId)
 struct GNUNET_Mutex *
 getConnectionModuleLock ()
 {
-  GE_ASSERT (NULL, lock != NULL);
+  GNUNET_GE_ASSERT (NULL, lock != NULL);
   return lock;
 }
 
@@ -4051,10 +4051,10 @@ disconnectFromPeer (const GNUNET_PeerIdentity * node)
       GNUNET_EncName enc;
 
       IF_GELOG (ectx,
-                GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                 GNUNET_hash_to_enc (&node->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
               "Closing connection to `%s' as requested by application.\n",
               &enc);
 #endif
@@ -4077,7 +4077,7 @@ disconnectFromPeer (const GNUNET_PeerIdentity * node)
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
 int
-registerSendNotify (MessagePartHandler callback)
+registerSendNotify (GNUNET_P2PRequestHandler callback)
 {
   if (callback == NULL)
     return GNUNET_SYSERR;
@@ -4099,7 +4099,7 @@ registerSendNotify (MessagePartHandler callback)
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
 int
-unregisterSendNotify (MessagePartHandler callback)
+unregisterSendNotify (GNUNET_P2PRequestHandler callback)
 {
   int i;
 
@@ -4129,7 +4129,7 @@ unregisterSendNotify (MessagePartHandler callback)
  * @return GNUNET_OK if that is true, GNUNET_SYSERR if not.
  */
 int
-assertUnused (TSession * tsession)
+assertUnused (GNUNET_TSession * tsession)
 {
   int i;
   BufferEntry *root;
@@ -4143,7 +4143,7 @@ assertUnused (TSession * tsession)
         {
           if (root->session.tsession == tsession)
             {
-              GE_BREAK (ectx, 0);
+              GNUNET_GE_BREAK (ectx, 0);
               GNUNET_mutex_unlock (lock);
               EXIT ();
               return GNUNET_SYSERR;

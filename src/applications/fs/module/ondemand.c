@@ -42,7 +42,7 @@
  */
 typedef struct
 {
-  Datastore_Value header;
+  GNUNET_DatastoreValue header;
 
   unsigned int type;
 
@@ -69,11 +69,11 @@ typedef struct
 
 static char *index_directory;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static State_ServiceAPI *state;
+static GNUNET_State_ServiceAPI *state;
 
 static char *
 getOnDemandFile (const GNUNET_HashCode * fileId)
@@ -97,15 +97,15 @@ getOnDemandFile (const GNUNET_HashCode * fileId)
  */
 static int
 checkPresent (const GNUNET_HashCode * key,
-              const Datastore_Value * value, void *closure,
+              const GNUNET_DatastoreValue * value, void *closure,
               unsigned long long uid)
 {
-  Datastore_Value *comp = closure;
+  GNUNET_DatastoreValue *comp = closure;
 
   if ((comp->size != value->size) ||
       (0 != memcmp (&value[1],
                     &comp[1],
-                    ntohl (value->size) - sizeof (Datastore_Value))))
+                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
     return GNUNET_OK;
   return GNUNET_SYSERR;
 }
@@ -119,7 +119,7 @@ checkPresent (const GNUNET_HashCode * key,
  *         GNUNET_YES on success
  */
 int
-ONDEMAND_initIndex (struct GE_Context *cectx,
+ONDEMAND_initIndex (struct GNUNET_GE_Context *cectx,
                     const GNUNET_HashCode * fileId, const char *fn)
 {
   GNUNET_EncName enc;
@@ -145,11 +145,11 @@ ONDEMAND_initIndex (struct GE_Context *cectx,
   GNUNET_disk_directory_create_for_file (cectx, serverFN);
   if (0 != SYMLINK (fn, serverFN))
     {
-      GE_LOG_STRERROR_FILE (cectx,
-                            GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (cectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "symlink", fn);
-      GE_LOG_STRERROR_FILE (cectx,
-                            GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (cectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "symlink", serverFN);
       GNUNET_free (serverFN);
       return GNUNET_NO;
@@ -168,8 +168,8 @@ ONDEMAND_initIndex (struct GE_Context *cectx,
  *  GNUNET_SYSERR on other error (i.e. datastore full)
  */
 int
-ONDEMAND_index (struct GE_Context *cectx,
-                Datastore_ServiceAPI * datastore,
+ONDEMAND_index (struct GNUNET_GE_Context *cectx,
+                GNUNET_Datastore_ServiceAPI * datastore,
                 unsigned int prio,
                 GNUNET_CronTime expiration,
                 unsigned long long fileOffset,
@@ -189,8 +189,8 @@ ONDEMAND_index (struct GE_Context *cectx,
 
   if (size <= sizeof (DBlock))
     {
-      GE_BREAK (cectx, 0);
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (cectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
 
@@ -205,8 +205,8 @@ ONDEMAND_index (struct GE_Context *cectx,
 
       /* not sym-linked, write content to offset! */
 #if DEBUG_ONDEMAND
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Storing on-demand encoded data in `%s'.\n", fn);
 #endif
       fd = GNUNET_disk_file_open (cectx, fn, O_LARGEFILE | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);  /* 644 */
@@ -223,8 +223,8 @@ ONDEMAND_index (struct GE_Context *cectx,
         }
       else
         {
-          GE_LOG_STRERROR_FILE (cectx,
-                                GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+          GNUNET_GE_LOG_STRERROR_FILE (cectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                                 "write", fn);
           ret = GNUNET_SYSERR;
         }
@@ -238,11 +238,11 @@ ONDEMAND_index (struct GE_Context *cectx,
   GNUNET_free (fn);
 
   odb.header.size = htonl (sizeof (OnDemandBlock));
-  odb.header.type = htonl (ONDEMAND_BLOCK);
+  odb.header.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
   odb.header.prio = htonl (prio);
   odb.header.anonymityLevel = htonl (anonymityLevel);
   odb.header.expirationTime = GNUNET_htonll (expiration);
-  odb.type = htonl (ONDEMAND_BLOCK);
+  odb.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
   odb.fileOffset = GNUNET_htonll (fileOffset);
   odb.blockSize = htonl (size - sizeof (DBlock));
   odb.fileId = *fileId;
@@ -250,11 +250,11 @@ ONDEMAND_index (struct GE_Context *cectx,
   fileBlockGetQuery (content, size, &key);
 #if EXTRA_CHECKS
   {
-    Datastore_Value *dsvalue;
+    GNUNET_DatastoreValue *dsvalue;
     if (GNUNET_OK != fileBlockEncode (content, size, &key, &dsvalue))
       {
-        GE_BREAK (cectx, 0);
-        GE_BREAK (ectx, 0);
+        GNUNET_GE_BREAK (cectx, 0);
+        GNUNET_GE_BREAK (ectx, 0);
       }
     else
       {
@@ -264,13 +264,13 @@ ONDEMAND_index (struct GE_Context *cectx,
 #endif
 
 #if DEBUG_ONDEMAND
-  IF_GELOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&key, &enc));
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Storing on-demand content for query `%s'\n", &enc);
 #endif
 
-  ret = datastore->get (&key, ONDEMAND_BLOCK, &checkPresent, &odb.header);
+  ret = datastore->get (&key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkPresent, &odb.header);
   if (ret >= 0)
     {
       ret = datastore->put (&key, &odb.header);
@@ -284,8 +284,8 @@ ONDEMAND_index (struct GE_Context *cectx,
 
 struct adJ
 {
-  Datastore_ServiceAPI *datastore;
-  Datastore_Value *dbv;
+  GNUNET_Datastore_ServiceAPI *datastore;
+  GNUNET_DatastoreValue *dbv;
   GNUNET_HashCode query;
 };
 
@@ -304,8 +304,8 @@ asyncDelJob (void *cls)
  * a del operation during "get" would deadlock!
  */
 static void
-asyncDelete (Datastore_ServiceAPI * datastore,
-             const Datastore_Value * dbv, const GNUNET_HashCode * query)
+asyncDelete (GNUNET_Datastore_ServiceAPI * datastore,
+             const GNUNET_DatastoreValue * dbv, const GNUNET_HashCode * query)
 {
   struct adJ *job;
 #if DEBUG_ONDEMAND
@@ -319,8 +319,8 @@ asyncDelete (Datastore_ServiceAPI * datastore,
   memcpy (job->dbv, dbv, ntohl (dbv->size));
 #if DEBUG_ONDEMAND
   GNUNET_hash_to_enc (query, &enc);
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("Indexed file disappeared, deleting block for query `%s'\n"),
           &enc);
 #endif
@@ -338,9 +338,9 @@ asyncDelete (Datastore_ServiceAPI * datastore,
  * @return GNUNET_OK on success, GNUNET_SYSERR if there was an error
  */
 int
-ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
-                     const Datastore_Value * dbv,
-                     const GNUNET_HashCode * query, Datastore_Value ** enc)
+ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
+                     const GNUNET_DatastoreValue * dbv,
+                     const GNUNET_HashCode * query, GNUNET_DatastoreValue ** enc)
 {
   char *fn;
   char *iobuf;
@@ -352,7 +352,7 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
 
   if (ntohl (dbv->size) != sizeof (OnDemandBlock))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   odb = (OnDemandBlock *) dbv;
@@ -368,8 +368,8 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
       unsigned long long *first_unavail;
       struct stat linkStat;
 
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "open", fn);
 
       /* Is the symlink there? */
@@ -407,7 +407,7 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
                          (errno == ENAMETOOLONG) && (len < 4 * 1024 * 1024))
                     if (len * 2 < len)
                       {
-                        GE_BREAK (ectx, 0);
+                        GNUNET_GE_BREAK (ectx, 0);
                         GNUNET_array_grow (ofn, len, 0);
                         GNUNET_free (fn);
                         return GNUNET_SYSERR;
@@ -416,8 +416,8 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
 
                   if (ret != -1)
                     {
-                      GE_LOG (ectx,
-                              GE_ERROR | GE_BULK | GE_USER,
+                      GNUNET_GE_LOG (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                               _
                               ("Because the file `%s' has been unavailable for 3 days"
                                " it got removed from your share.  Please unindex files before"
@@ -466,8 +466,8 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
                                                                fileOffset),
                                                 SEEK_SET))
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "lseek", fn);
       GNUNET_free (fn);
       CLOSE (fileHandle);
@@ -475,13 +475,13 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
       return GNUNET_SYSERR;
     }
   db = GNUNET_malloc (sizeof (DBlock) + ntohl (odb->blockSize));
-  db->type = htonl (D_BLOCK);
+  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
   iobuf = (char *) &db[1];
   blen = READ (fileHandle, iobuf, ntohl (odb->blockSize));
   if (blen != ntohl (odb->blockSize))
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "read", fn);
       GNUNET_free (fn);
       GNUNET_free (db);
@@ -497,8 +497,8 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
   GNUNET_free (fn);
   if (ret == GNUNET_SYSERR)
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Indexed content changed (does not match its hash).\n"));
       asyncDelete (datastore, dbv, query);
       return GNUNET_SYSERR;
@@ -516,7 +516,7 @@ ONDEMAND_getIndexed (Datastore_ServiceAPI * datastore,
  * @return GNUNET_YES if so, GNUNET_NO if not.
  */
 int
-ONDEMAND_testindexed (Datastore_ServiceAPI * datastore,
+ONDEMAND_testindexed (GNUNET_Datastore_ServiceAPI * datastore,
                       const GNUNET_HashCode * fileId)
 {
   char *fn;
@@ -540,19 +540,19 @@ ONDEMAND_testindexed (Datastore_ServiceAPI * datastore,
  */
 static int
 completeValue (const GNUNET_HashCode * key,
-               const Datastore_Value * value, void *closure,
+               const GNUNET_DatastoreValue * value, void *closure,
                unsigned long long uid)
 {
-  Datastore_Value *comp = closure;
+  GNUNET_DatastoreValue *comp = closure;
 
   if ((comp->size != value->size) ||
       (0 != memcmp (&value[1],
                     &comp[1],
-                    ntohl (value->size) - sizeof (Datastore_Value))))
+                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
     {
 #if DEBUG_ONDEMAND
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "`%s' found value that does not match (%u, %u).\n",
               __FUNCTION__, ntohl (comp->size), ntohl (value->size));
 #endif
@@ -560,8 +560,8 @@ completeValue (const GNUNET_HashCode * key,
     }
   *comp = *value;               /* make copy! */
 #if DEBUG_ONDEMAND
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "`%s' found value that matches.\n", __FUNCTION__);
 #endif
   return GNUNET_SYSERR;
@@ -578,8 +578,8 @@ completeValue (const GNUNET_HashCode * key,
  *        the keys of the odb blocks).
  */
 int
-ONDEMAND_unindex (struct GE_Context *cectx,
-                  Datastore_ServiceAPI * datastore,
+ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
+                  GNUNET_Datastore_ServiceAPI * datastore,
                   unsigned int blocksize, const GNUNET_HashCode * fileId)
 {
   char *fn;
@@ -596,8 +596,8 @@ ONDEMAND_unindex (struct GE_Context *cectx,
 
   fn = getOnDemandFile (fileId);
 #if DEBUG_ONDEMAND
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Removing on-demand encoded data stored in `%s'.\n", fn);
 #endif
   fd = GNUNET_disk_file_open (cectx, fn, O_RDONLY | O_LARGEFILE, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        /* 644 */
@@ -613,7 +613,7 @@ ONDEMAND_unindex (struct GE_Context *cectx,
       return GNUNET_SYSERR;
     }
   block = GNUNET_malloc (sizeof (DBlock) + blocksize);
-  block->type = htonl (D_BLOCK);
+  block->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
   while (pos < size)
     {
       delta = size - pos;
@@ -621,8 +621,8 @@ ONDEMAND_unindex (struct GE_Context *cectx,
         delta = blocksize;
       if (delta != READ (fd, &block[1], delta))
         {
-          GE_LOG_STRERROR_FILE (cectx,
-                                GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+          GNUNET_GE_LOG_STRERROR_FILE (cectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                                 "read", fn);
           CLOSE (fd);
           GNUNET_free (fn);
@@ -630,26 +630,26 @@ ONDEMAND_unindex (struct GE_Context *cectx,
           return GNUNET_SYSERR;
         }
       odb.header.size = htonl (sizeof (OnDemandBlock));
-      odb.header.type = htonl (ONDEMAND_BLOCK);
+      odb.header.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
       odb.header.prio = 0;
       odb.header.anonymityLevel = 0;
       odb.header.expirationTime = 0;
-      odb.type = htonl (ONDEMAND_BLOCK);
+      odb.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
       odb.fileOffset = GNUNET_htonll (pos);
       odb.blockSize = htonl (delta);
       odb.fileId = *fileId;
       /* compute the primary key */
       fileBlockGetQuery (block, delta + sizeof (DBlock), &key);
-      if (GNUNET_SYSERR == datastore->get (&key, ONDEMAND_BLOCK, &completeValue, &odb.header))  /* aborted == found! */
+      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))  /* aborted == found! */
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;
       if (ret == GNUNET_SYSERR)
         {
           IF_GELOG (cectx,
-                    GE_WARNING | GE_BULK | GE_USER, GNUNET_hash_to_enc (&key,
+                    GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, GNUNET_hash_to_enc (&key,
                                                                         &enc));
-          GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _
                   ("Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"),
                   &enc, pos);
@@ -668,7 +668,7 @@ ONDEMAND_unindex (struct GE_Context *cectx,
 }
 
 int
-ONDEMAND_init (CoreAPIForApplication * capi)
+ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
 {
   char *tmp;
 
@@ -676,18 +676,18 @@ ONDEMAND_init (CoreAPIForApplication * capi)
   state = capi->requestService ("state");
   if (state == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   ectx = capi->ectx;
-  GC_get_configuration_value_filename (capi->cfg,
+  GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                        "GNUNETD",
                                        "GNUNETD_HOME",
-                                       VAR_DAEMON_DIRECTORY, &tmp);
-  GE_ASSERT (ectx, NULL != tmp);
+                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY, &tmp);
+  GNUNET_GE_ASSERT (ectx, NULL != tmp);
   tmp = GNUNET_realloc (tmp, strlen (tmp) + strlen ("/data/shared/") + 1);
   strcat (tmp, "/data/shared/");
-  GC_get_configuration_value_filename (capi->cfg,
+  GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                        "FS",
                                        "INDEX-DIRECTORY",
                                        tmp, &index_directory);

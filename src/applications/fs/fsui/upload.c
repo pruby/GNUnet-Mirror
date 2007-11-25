@@ -48,19 +48,19 @@ progressCallbackR (unsigned long long totalBytes,
                    unsigned long long completedBytes, GNUNET_CronTime eta,
                    void *ptr, int direct, int add, int unaccounted)
 {
-  FSUI_UploadList *utc = ptr;
-  FSUI_Event event;
+  GNUNET_FSUI_UploadList *utc = ptr;
+  GNUNET_FSUI_Event event;
   unsigned long long subtotal;
-  FSUI_UploadList *pos;
+  GNUNET_FSUI_UploadList *pos;
   GNUNET_CronTime xeta;
   GNUNET_CronTime now;
 
-  event.type = FSUI_upload_progress;
+  event.type = GNUNET_FSUI_upload_progress;
   event.data.UploadProgress.uc.pos = utc;
   event.data.UploadProgress.uc.cctx = utc->cctx;
   event.data.UploadProgress.uc.ppos = utc->parent;
   event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
-  if (GNUNET_YES == ECRS_isDirectory (utc->meta))
+  if (GNUNET_YES == GNUNET_ECRS_meta_data_test_for_directory (utc->meta))
     {
       if (direct == GNUNET_YES)
         unaccounted = GNUNET_YES;
@@ -77,7 +77,7 @@ progressCallbackR (unsigned long long totalBytes,
         }
       else
         {
-          GE_ASSERT (NULL, totalBytes == completedBytes);
+          GNUNET_GE_ASSERT (NULL, totalBytes == completedBytes);
           event.data.UploadProgress.completed =
             completedBytes + utc->completed;
           event.data.UploadProgress.total = totalBytes + utc->total;
@@ -133,8 +133,8 @@ progressCallback (unsigned long long totalBytes,
 static int
 testTerminate (void *cls)
 {
-  FSUI_UploadList *utc = cls;
-  if (utc->state != FSUI_ACTIVE)
+  GNUNET_FSUI_UploadList *utc = cls;
+  if (utc->state != GNUNET_FSUI_ACTIVE)
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
@@ -144,22 +144,22 @@ testTerminate (void *cls)
  * a directory, upload it and store the uri in  *uri.
  */
 static char *
-createDirectoryHelper (struct GE_Context *ectx,
-                       struct GC_Configuration *cfg,
-                       struct FSUI_UploadList *children,
-                       struct ECRS_MetaData *meta, char **error)
+createDirectoryHelper (struct GNUNET_GE_Context *ectx,
+                       struct GNUNET_GC_Configuration *cfg,
+                       struct GNUNET_FSUI_UploadList *children,
+                       struct GNUNET_ECRS_MetaData *meta, char **error)
 {
-  ECRS_FileInfo *fis;
+  GNUNET_ECRS_FileInfo *fis;
   unsigned int count;
   unsigned int size;
   char *data;
   unsigned long long len;
   int ret;
   char *tempName;
-  struct FSUI_UploadList *pos;
+  struct GNUNET_FSUI_UploadList *pos;
   int handle;
-  struct GE_Memory *mem;
-  struct GE_Context *ee;
+  struct GNUNET_GE_Memory *mem;
+  struct GNUNET_GE_Context *ee;
 
   fis = NULL;
   size = 0;
@@ -184,54 +184,54 @@ createDirectoryHelper (struct GE_Context *ectx,
         }
       pos = pos->next;
     }
-  GE_BREAK (ectx, count == size);
-  mem = GE_memory_create (2);
+  GNUNET_GE_BREAK (ectx, count == size);
+  mem = GNUNET_GE_memory_create (2);
   ee =
-    GE_create_context_memory (GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING |
-                              GE_FATAL | GE_BULK | GE_IMMEDIATE, mem);
-  ret = ECRS_createDirectory (ee, &data, &len, size, fis, meta);
+    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_WARNING |
+                              GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE, mem);
+  ret = GNUNET_ECRS_directory_create (ee, &data, &len, size, fis, meta);
   GNUNET_array_grow (fis, size, 0);
   if (ret != GNUNET_OK)
     {
-      *error = GNUNET_strdup (GE_memory_get (mem, 0));
-      GE_free_context (ee);
-      GE_memory_free (mem);
+      *error = GNUNET_strdup (GNUNET_GE_memory_get (mem, 0));
+      GNUNET_GE_free_context (ee);
+      GNUNET_GE_memory_free (mem);
       return NULL;
     }
   pos = children;
   while (pos != NULL)
     {
       if (pos->uri != NULL)
-        URITRACK_addState (ectx, cfg, pos->uri, URITRACK_DIRECTORY_ADDED);
+        GNUNET_URITRACK_add_state (ectx, cfg, pos->uri, GNUNET_URITRACK_DIRECTORY_ADDED);
       pos = pos->next;
     }
-  GE_memory_reset (mem);
+  GNUNET_GE_memory_reset (mem);
   tempName = GNUNET_strdup ("/tmp/gnunet-upload-dir.XXXXXX");
   handle = mkstemp (tempName);
   if (handle == -1)
     {
-      GE_LOG_STRERROR_FILE (ee,
-                            GE_ERROR | GE_USER | GE_BULK,
+      GNUNET_GE_LOG_STRERROR_FILE (ee,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                             "mkstemp", tempName);
       GNUNET_free (tempName);
       GNUNET_free (data);
-      *error = GNUNET_strdup (GE_memory_get (mem, 0));
-      GE_free_context (ee);
-      GE_memory_free (mem);
+      *error = GNUNET_strdup (GNUNET_GE_memory_get (mem, 0));
+      GNUNET_GE_free_context (ee);
+      GNUNET_GE_memory_free (mem);
       return NULL;
     }
   if (len != WRITE (handle, data, len))
     {
-      GE_LOG_STRERROR_FILE (ee,
-                            GE_ERROR | GE_USER | GE_BULK, "write", tempName);
-      *error = GNUNET_strdup (GE_memory_get (mem, 0));
-      GE_free_context (ee);
-      GE_memory_free (mem);
+      GNUNET_GE_LOG_STRERROR_FILE (ee,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "write", tempName);
+      *error = GNUNET_strdup (GNUNET_GE_memory_get (mem, 0));
+      GNUNET_GE_free_context (ee);
+      GNUNET_GE_memory_free (mem);
       GNUNET_free (data);
       return NULL;
     }
-  GE_free_context (ee);
-  GE_memory_free (mem);
+  GNUNET_GE_free_context (ee);
+  GNUNET_GE_memory_free (mem);
   CLOSE (handle);
   GNUNET_free (data);
   return tempName;
@@ -241,12 +241,12 @@ createDirectoryHelper (struct GE_Context *ectx,
  * Signal upload error to client.
  */
 static void
-signalError (FSUI_UploadList * utc, const char *message)
+signalError (GNUNET_FSUI_UploadList * utc, const char *message)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
 
-  utc->state = FSUI_ERROR;
-  event.type = FSUI_upload_error;
+  utc->state = GNUNET_FSUI_ERROR;
+  event.type = GNUNET_FSUI_upload_error;
   event.data.UploadError.uc.pos = utc;
   event.data.UploadError.uc.cctx = utc->cctx;
   event.data.UploadError.uc.ppos = utc->parent;
@@ -256,13 +256,13 @@ signalError (FSUI_UploadList * utc, const char *message)
 }
 
 static void
-signalUploadStarted (struct FSUI_UploadList *utc, int first_only)
+signalUploadStarted (struct GNUNET_FSUI_UploadList *utc, int first_only)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
 
   while (utc != NULL)
     {
-      event.type = FSUI_upload_started;
+      event.type = GNUNET_FSUI_upload_started;
       event.data.UploadStarted.uc.pos = utc;
       event.data.UploadStarted.uc.cctx = utc->cctx;
       event.data.UploadStarted.uc.ppos = utc->parent;
@@ -283,34 +283,34 @@ signalUploadStarted (struct FSUI_UploadList *utc, int first_only)
  * Thread that does the upload.
  */
 void *
-FSUI_uploadThread (void *cls)
+GNUNET_FSUI_uploadThread (void *cls)
 {
-  FSUI_UploadList *utc = cls;
-  FSUI_UploadList *cpos;
-  FSUI_Event event;
-  ECRS_FileInfo fi;
+  GNUNET_FSUI_UploadList *utc = cls;
+  GNUNET_FSUI_UploadList *cpos;
+  GNUNET_FSUI_Event event;
+  GNUNET_ECRS_FileInfo fi;
   int ret;
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
   char *filename;
   char *pfn;
-  struct ECRS_URI *uri;
-  struct ECRS_URI *loc;
+  struct GNUNET_ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *loc;
   size_t tpos;
   char *error;
-  struct GE_Memory *mem;
-  struct GE_Context *ee;
+  struct GNUNET_GE_Memory *mem;
+  struct GNUNET_GE_Context *ee;
 
 
   ectx = utc->shared->ctx->ectx;
-  GE_ASSERT (ectx, utc->filename != NULL);
+  GNUNET_GE_ASSERT (ectx, utc->filename != NULL);
   cpos = utc->child;
   while (cpos != NULL)
     {
-      if (cpos->state == FSUI_ACTIVE)
-        FSUI_uploadThread (cpos);
+      if (cpos->state == GNUNET_FSUI_ACTIVE)
+        GNUNET_FSUI_uploadThread (cpos);
       cpos = cpos->next;
     }
-  if (utc->state != FSUI_ACTIVE)
+  if (utc->state != GNUNET_FSUI_ACTIVE)
     return NULL;                /* aborted or suspended */
   if (GNUNET_YES == GNUNET_disk_directory_test (ectx, utc->filename))
     {
@@ -333,12 +333,12 @@ FSUI_uploadThread (void *cls)
       filename = GNUNET_strdup (utc->filename);
     }
   utc->start_time = GNUNET_get_time ();
-  mem = GE_memory_create (2);
+  mem = GNUNET_GE_memory_create (2);
   ee =
-    GE_create_context_memory (GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING |
-                              GE_FATAL | GE_BULK | GE_IMMEDIATE, mem);
+    GNUNET_GE_create_context_memory (GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_WARNING |
+                              GNUNET_GE_FATAL | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE, mem);
   ret =
-    ECRS_uploadFile (ee, utc->shared->ctx->cfg, filename,
+    GNUNET_ECRS_file_upload (ee, utc->shared->ctx->cfg, filename,
                      utc->shared->doIndex == GNUNET_YES ? (utc->child ==
                                                            NULL ? GNUNET_YES :
                                                            GNUNET_NO) :
@@ -347,16 +347,16 @@ FSUI_uploadThread (void *cls)
                      &progressCallback, utc, &testTerminate, utc, &utc->uri);
   if (ret != GNUNET_OK)
     {
-      if (utc->state == FSUI_ACTIVE)
+      if (utc->state == GNUNET_FSUI_ACTIVE)
         {
           const char *err;
 
-          err = GE_memory_get (mem, 0);
+          err = GNUNET_GE_memory_get (mem, 0);
           signalError (utc, err ? err : "");
         }
-      else if (utc->state == FSUI_ABORTED)
+      else if (utc->state == GNUNET_FSUI_ABORTED)
         {
-          event.type = FSUI_upload_aborted;
+          event.type = GNUNET_FSUI_upload_aborted;
           event.data.UploadAborted.uc.pos = utc;
           event.data.UploadAborted.uc.cctx = utc->cctx;
           event.data.UploadAborted.uc.ppos = utc->parent;
@@ -366,21 +366,21 @@ FSUI_uploadThread (void *cls)
       else
         {
           /* must be suspended */
-          GE_BREAK (NULL, utc->state == FSUI_PENDING);
+          GNUNET_GE_BREAK (NULL, utc->state == GNUNET_FSUI_PENDING);
         }
       if (utc->child != NULL)
         UNLINK (filename);
       GNUNET_free (filename);
-      GE_free_context (ee);
-      GE_memory_free (mem);
+      GNUNET_GE_free_context (ee);
+      GNUNET_GE_memory_free (mem);
       return NULL;
     }
-  utc->state = FSUI_COMPLETED;
+  utc->state = GNUNET_FSUI_COMPLETED;
   if (utc->child == NULL)
-    ECRS_extractMetaData (utc->shared->ctx->ectx,
+    GNUNET_ECRS_meta_data_extract_from_file (utc->shared->ctx->ectx,
                           utc->meta, utc->filename, utc->shared->extractors);
   while (GNUNET_OK ==
-         ECRS_delFromMetaData (utc->meta, EXTRACTOR_FILENAME, NULL));
+         GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_FILENAME, NULL));
   /* only publish the last part of the path
      -- we do not want to publish $HOME or similar
      trivially deanonymizing information */
@@ -394,7 +394,7 @@ FSUI_uploadThread (void *cls)
   if ((utc->child != NULL) &&
       ((strlen (pfn) == 0) || (pfn[strlen (pfn) - 1] != DIR_SEPARATOR)))
     strcat (pfn, DIR_SEPARATOR_STR);
-  ECRS_addToMetaData (utc->meta, EXTRACTOR_FILENAME, pfn);
+  GNUNET_ECRS_meta_data_inser (utc->meta, EXTRACTOR_FILENAME, pfn);
   GNUNET_free (pfn);
   if ((utc->shared->anonymityLevel == 0)
       && (utc->shared->doIndex == GNUNET_YES))
@@ -408,10 +408,10 @@ FSUI_uploadThread (void *cls)
 
       if (GNUNET_OK == GNUNET_IDENTITY_get_self (sock, &hello))
         {
-          loc = ECRS_uriFromLocation (utc->uri,
+          loc = GNUNET_ECRS_location_to_uri (utc->uri,
                                       &hello->publicKey,
                                       ntohl (hello->expirationTime),
-                                      (ECRS_SignFunction) &
+                                      (GNUNET_ECRS_SignFunction) &
                                       GNUNET_IDENTITY_sign_function, sock);
 
           GNUNET_free (hello);
@@ -419,7 +419,7 @@ FSUI_uploadThread (void *cls)
       else
         {
           /* may happen if no transports are available... */
-          loc = ECRS_dupUri (utc->uri);
+          loc = GNUNET_ECRS_uri_duplicate (utc->uri);
         }
       GNUNET_client_connection_destroy (sock);
     }
@@ -427,17 +427,17 @@ FSUI_uploadThread (void *cls)
     {
       /* no location URI, use standard URI
          (copied here to allow free later) */
-      loc = ECRS_dupUri (utc->uri);
+      loc = GNUNET_ECRS_uri_duplicate (utc->uri);
     }
   if (utc->shared->global_keywords != NULL)
-    ECRS_addToKeyspace (ectx,
+    GNUNET_ECRS_publish_under_keyword (ectx,
                         utc->shared->ctx->cfg,
                         utc->shared->global_keywords,
                         utc->shared->anonymityLevel,
                         utc->shared->priority,
                         utc->shared->expiration, loc, utc->meta);
   if (utc->keywords != NULL)
-    ECRS_addToKeyspace (ectx,
+    GNUNET_ECRS_publish_under_keyword (ectx,
                         utc->shared->ctx->cfg,
                         utc->keywords,
                         utc->shared->anonymityLevel,
@@ -445,28 +445,28 @@ FSUI_uploadThread (void *cls)
                         utc->shared->expiration, loc, utc->meta);
   if (utc->shared->individualKeywords == GNUNET_YES)
     {
-      uri = ECRS_metaDataToUri (utc->meta);
-      ECRS_addToKeyspace (ectx,
+      uri = GNUNET_ECRS_meta_data_to_uri (utc->meta);
+      GNUNET_ECRS_publish_under_keyword (ectx,
                           utc->shared->ctx->cfg,
                           uri,
                           utc->shared->anonymityLevel,
                           utc->shared->priority,
                           utc->shared->expiration, loc, utc->meta);
-      ECRS_freeUri (uri);
+      GNUNET_ECRS_uri_destroy (uri);
     }
-  ECRS_freeUri (loc);
+  GNUNET_ECRS_uri_destroy (loc);
   loc = NULL;
   while (GNUNET_OK ==
-         ECRS_delFromMetaData (utc->meta, EXTRACTOR_SPLIT, NULL));
+         GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
   fi.meta = utc->meta;
   fi.uri = utc->uri;
-  URITRACK_trackURI (ectx, utc->shared->ctx->cfg, &fi);
-  URITRACK_addState (ectx,
+  GNUNET_URITRACK_track (ectx, utc->shared->ctx->cfg, &fi);
+  GNUNET_URITRACK_add_state (ectx,
                      utc->shared->ctx->cfg,
                      utc->uri,
                      utc->shared->doIndex ==
-                     GNUNET_YES ? URITRACK_INDEXED : URITRACK_INSERTED);
-  event.type = FSUI_upload_completed;
+                     GNUNET_YES ? GNUNET_URITRACK_INDEXED : GNUNET_URITRACK_INSERTED);
+  event.type = GNUNET_FSUI_upload_completed;
   event.data.UploadCompleted.uc.pos = utc;
   event.data.UploadCompleted.uc.cctx = utc->cctx;
   event.data.UploadCompleted.uc.ppos = utc->parent;
@@ -478,8 +478,8 @@ FSUI_uploadThread (void *cls)
   if (utc->child != NULL)
     UNLINK (filename);
   GNUNET_free (filename);
-  GE_free_context (ee);
-  GE_memory_free (mem);
+  GNUNET_GE_free_context (ee);
+  GNUNET_GE_memory_free (mem);
   return NULL;
 }
 
@@ -487,24 +487,24 @@ FSUI_uploadThread (void *cls)
  * Thread that does the upload.
  */
 static void *
-FSUI_uploadThreadEvent (void *cls)
+GNUNET_FSUI_uploadThreadEvent (void *cls)
 {
-  FSUI_UploadList *utc = cls;
+  GNUNET_FSUI_UploadList *utc = cls;
 
   if (utc->parent == &utc->shared->ctx->activeUploads)
     {
       /* top-level call: signal client! */
       signalUploadStarted (utc, 1);
     }
-  return FSUI_uploadThread (utc);
+  return GNUNET_FSUI_uploadThread (utc);
 }
 
 
 static void
-freeUploadList (struct FSUI_UploadList *ul)
+freeUploadList (struct GNUNET_FSUI_UploadList *ul)
 {
-  struct FSUI_UploadList *next;
-  struct FSUI_Context *ctx;
+  struct GNUNET_FSUI_UploadList *next;
+  struct GNUNET_FSUI_Context *ctx;
 
   ctx = ul->shared->ctx;
   while (ul->child != NULL)
@@ -512,16 +512,16 @@ freeUploadList (struct FSUI_UploadList *ul)
   GNUNET_mutex_lock (ctx->lock);
   GNUNET_free (ul->filename);
   if (ul->keywords != NULL)
-    ECRS_freeUri (ul->keywords);
+    GNUNET_ECRS_uri_destroy (ul->keywords);
   if (ul->uri != NULL)
-    ECRS_freeUri (ul->uri);
+    GNUNET_ECRS_uri_destroy (ul->uri);
   if (ul->meta != NULL)
-    ECRS_freeMetaData (ul->meta);
+    GNUNET_ECRS_meta_data_destroy (ul->meta);
   /* unlink from parent */
   next = ul->parent->child;
   if (next == NULL)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       GNUNET_mutex_unlock (ctx->lock);
       return;
     }
@@ -536,7 +536,7 @@ freeUploadList (struct FSUI_UploadList *ul)
           next = next->next;
           if (next == NULL)
             {
-              GE_BREAK (NULL, 0);
+              GNUNET_GE_BREAK (NULL, 0);
               GNUNET_mutex_unlock (ctx->lock);
               return;
             }
@@ -547,43 +547,43 @@ freeUploadList (struct FSUI_UploadList *ul)
   GNUNET_mutex_unlock (ctx->lock);
 }
 
-static struct FSUI_UploadList *addUploads (struct FSUI_UploadShared *shared,
+static struct GNUNET_FSUI_UploadList *addUploads (struct GNUNET_FSUI_UploadShared *shared,
                                            const char *filename,
-                                           const struct ECRS_URI *keywords,
-                                           const struct ECRS_MetaData *md,
-                                           struct FSUI_UploadList *parent);
+                                           const struct GNUNET_ECRS_URI *keywords,
+                                           const struct GNUNET_ECRS_MetaData *md,
+                                           struct GNUNET_FSUI_UploadList *parent);
 
 static int
 addChildUpload (const char *name, const char *dirName, void *data)
 {
-  struct FSUI_UploadList *parent = data;
+  struct GNUNET_FSUI_UploadList *parent = data;
   char *filename;
-  struct FSUI_UploadList *child;
-  struct ECRS_MetaData *md;
+  struct GNUNET_FSUI_UploadList *child;
+  struct GNUNET_ECRS_MetaData *md;
 
   filename = GNUNET_malloc (strlen (dirName) + strlen (name) + 2);
   strcpy (filename, dirName);
   strcat (filename, DIR_SEPARATOR_STR);
   strcat (filename, name);
-  md = ECRS_createMetaData ();
+  md = GNUNET_ECRS_meta_data_create ();
   child = addUploads (parent->shared, filename, NULL, md, parent);
   GNUNET_free (filename);
-  ECRS_freeMetaData (md);
+  GNUNET_ECRS_meta_data_destroy (md);
   if (child == NULL)
     return GNUNET_SYSERR;
   parent->total += child->total;
   return GNUNET_OK;
 }
 
-static struct FSUI_UploadList *
-addUploads (struct FSUI_UploadShared *shared,
+static struct GNUNET_FSUI_UploadList *
+addUploads (struct GNUNET_FSUI_UploadShared *shared,
             const char *filename,
-            const struct ECRS_URI *keywords,
-            const struct ECRS_MetaData *md, struct FSUI_UploadList *parent)
+            const struct GNUNET_ECRS_URI *keywords,
+            const struct GNUNET_ECRS_MetaData *md, struct GNUNET_FSUI_UploadList *parent)
 {
-  FSUI_UploadList *utc;
+  GNUNET_FSUI_UploadList *utc;
 
-  utc = GNUNET_malloc (sizeof (FSUI_UploadList));
+  utc = GNUNET_malloc (sizeof (GNUNET_FSUI_UploadList));
   utc->completed = 0;
   utc->total = 0;               /* to be set later */
   utc->start_time = GNUNET_get_time ();
@@ -593,7 +593,7 @@ addUploads (struct FSUI_UploadShared *shared,
   utc->parent = parent;
   utc->uri = NULL;
   utc->cctx = NULL;             /* to be set later */
-  utc->state = FSUI_ACTIVE;
+  utc->state = GNUNET_FSUI_ACTIVE;
   if (GNUNET_YES == GNUNET_disk_file_test (shared->ctx->ectx, filename))
     {
       /* add this file */
@@ -604,7 +604,7 @@ addUploads (struct FSUI_UploadShared *shared,
           GNUNET_free (utc);
           return NULL;
         }
-      utc->meta = ECRS_dupMetaData (md);
+      utc->meta = GNUNET_ECRS_meta_data_duplicate (md);
     }
   else
     {
@@ -617,12 +617,12 @@ addUploads (struct FSUI_UploadShared *shared,
           GNUNET_free (utc);
           return NULL;
         }
-      utc->meta = ECRS_dupMetaData (md);
-      ECRS_addToMetaData (utc->meta,
+      utc->meta = GNUNET_ECRS_meta_data_duplicate (md);
+      GNUNET_ECRS_meta_data_inser (utc->meta,
                           EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
     }
   if (keywords != NULL)
-    utc->keywords = ECRS_dupUri (keywords);
+    utc->keywords = GNUNET_ECRS_uri_duplicate (keywords);
   else
     utc->keywords = NULL;
   utc->filename = GNUNET_strdup (filename);
@@ -636,14 +636,14 @@ addUploads (struct FSUI_UploadShared *shared,
 }
 
 static void
-signalUploadStopped (struct FSUI_UploadList *ul, int first_only)
+signalUploadStopped (struct GNUNET_FSUI_UploadList *ul, int first_only)
 {
-  FSUI_Event event;
+  GNUNET_FSUI_Event event;
 
   while (ul != NULL)
     {
       signalUploadStopped (ul->child, 0);
-      event.type = FSUI_upload_stopped;
+      event.type = GNUNET_FSUI_upload_stopped;
       event.data.UploadStopped.uc.pos = ul;
       event.data.UploadStopped.uc.cctx = ul->cctx;
       event.data.UploadStopped.uc.ppos = ul->parent;
@@ -656,10 +656,10 @@ signalUploadStopped (struct FSUI_UploadList *ul, int first_only)
 }
 
 static void
-freeShared (struct FSUI_UploadShared *shared)
+freeShared (struct GNUNET_FSUI_UploadShared *shared)
 {
   if (shared->global_keywords != NULL)
-    ECRS_freeUri (shared->global_keywords);
+    GNUNET_ECRS_uri_destroy (shared->global_keywords);
   EXTRACTOR_removeAll (shared->extractors);
   GNUNET_free_non_null (shared->extractor_config);
   GNUNET_free (shared);
@@ -675,10 +675,10 @@ freeShared (struct FSUI_UploadShared *shared)
  *  GNUNET_SYSERR if the file does not exist or gnunetd is not
  *  running
  */
-struct FSUI_UploadList *
-FSUI_startUpload (struct FSUI_Context *ctx,
+struct GNUNET_FSUI_UploadList *
+GNUNET_FSUI_upload_star (struct GNUNET_FSUI_Context *ctx,
                   const char *filename,
-                  DirectoryScanCallback dsc,
+                  GNUNET_FSUI_DirectoryScanCallback dsc,
                   void *dscClosure,
                   unsigned int anonymityLevel,
                   unsigned int priority,
@@ -686,23 +686,23 @@ FSUI_startUpload (struct FSUI_Context *ctx,
                   int doExtract,
                   int individualKeywords,
                   GNUNET_CronTime expiration,
-                  const struct ECRS_MetaData *md,
-                  const struct ECRS_URI *globalURI,
-                  const struct ECRS_URI *keyUri)
+                  const struct GNUNET_ECRS_MetaData *md,
+                  const struct GNUNET_ECRS_URI *globalURI,
+                  const struct GNUNET_ECRS_URI *keyUri)
 {
   char *config;
   EXTRACTOR_ExtractorList *extractors;
-  struct FSUI_UploadShared *shared;
-  struct FSUI_UploadList *ul;
+  struct GNUNET_FSUI_UploadShared *shared;
+  struct GNUNET_FSUI_UploadList *ul;
 
   config = NULL;
   extractors = NULL;
   if (doExtract)
     {
       extractors = EXTRACTOR_loadDefaultLibraries ();
-      if (GC_have_configuration_value (ctx->cfg, "FS", "EXTRACTORS"))
+      if (GNUNET_GC_have_configuration_value (ctx->cfg, "FS", "EXTRACTORS"))
         {
-          GC_get_configuration_value_string (ctx->cfg,
+          GNUNET_GC_get_configuration_value_string (ctx->cfg,
                                              "FS",
                                              "EXTRACTORS", NULL, &config);
           if (config != NULL)
@@ -711,7 +711,7 @@ FSUI_startUpload (struct FSUI_Context *ctx,
             }
         }
     }
-  shared = GNUNET_malloc (sizeof (FSUI_UploadShared));
+  shared = GNUNET_malloc (sizeof (GNUNET_FSUI_UploadShared));
   shared->dsc = dsc;
   shared->dscClosure = dscClosure;
   shared->extractors = extractors;
@@ -719,7 +719,7 @@ FSUI_startUpload (struct FSUI_Context *ctx,
   shared->ctx = ctx;
   shared->handle = NULL;
   shared->global_keywords =
-    globalURI != NULL ? ECRS_dupUri (globalURI) : NULL;
+    globalURI != NULL ? GNUNET_ECRS_uri_duplicate (globalURI) : NULL;
   shared->extractor_config = config;
   shared->doIndex = doIndex;
   shared->anonymityLevel = anonymityLevel;
@@ -733,16 +733,16 @@ FSUI_startUpload (struct FSUI_Context *ctx,
       return NULL;
     }
   shared->handle =
-    GNUNET_thread_create (&FSUI_uploadThreadEvent, ul, 128 * 1024);
+    GNUNET_thread_create (&GNUNET_FSUI_uploadThreadEvent, ul, 128 * 1024);
   if (shared->handle == NULL)
     {
-      GE_LOG_STRERROR (ctx->ectx,
-                       GE_ERROR | GE_USER | GE_BULK, "PTHREAD_CREATE");
+      GNUNET_GE_LOG_STRERROR (ctx->ectx,
+                       GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK, "PTHREAD_CREATE");
       freeUploadList (ul);
       freeShared (shared);
       return NULL;
     }
-  GE_ASSERT (ctx->ectx, ul->shared == shared);
+  GNUNET_GE_ASSERT (ctx->ectx, ul->shared == shared);
   return ul;
 }
 
@@ -756,31 +756,31 @@ FSUI_startUpload (struct FSUI_Context *ctx,
  * @return GNUNET_SYSERR on error
  */
 int
-FSUI_abortUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul)
+GNUNET_FSUI_upload_abort (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UploadList *ul)
 {
-  FSUI_UploadList *c;
+  GNUNET_FSUI_UploadList *c;
 
-  GE_ASSERT (ctx->ectx, ul != NULL);
-  if ((ul->state != FSUI_ACTIVE) && (ul->state != FSUI_PENDING))
+  GNUNET_GE_ASSERT (ctx->ectx, ul != NULL);
+  if ((ul->state != GNUNET_FSUI_ACTIVE) && (ul->state != GNUNET_FSUI_PENDING))
     return GNUNET_NO;
-  if (ul->state == FSUI_ACTIVE)
+  if (ul->state == GNUNET_FSUI_ACTIVE)
     {
-      ul->state = FSUI_ABORTED;
+      ul->state = GNUNET_FSUI_ABORTED;
       c = ul->child;
       while (c != NULL)
         {
-          FSUI_abortUpload (ctx, c);
+          GNUNET_FSUI_upload_abort (ctx, c);
           c = c->next;
         }
       GNUNET_thread_stop_sleep (ul->shared->handle);
     }
   else
     {
-      ul->state = FSUI_ABORTED_JOINED;
+      ul->state = GNUNET_FSUI_ABORTED_JOINED;
       c = ul->child;
       while (c != NULL)
         {
-          FSUI_abortUpload (ctx, c);
+          GNUNET_FSUI_upload_abort (ctx, c);
           c = c->next;
         }
     }
@@ -794,28 +794,28 @@ FSUI_abortUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul)
  * @return GNUNET_SYSERR on error
  */
 int
-FSUI_stopUpload (struct FSUI_Context *ctx, struct FSUI_UploadList *ul)
+GNUNET_FSUI_upload_stop (struct GNUNET_FSUI_Context *ctx, struct GNUNET_FSUI_UploadList *ul)
 {
   void *unused;
-  struct FSUI_UploadShared *shared;
+  struct GNUNET_FSUI_UploadShared *shared;
 
-  GE_ASSERT (ctx->ectx, ul != NULL);
-  GE_ASSERT (ctx->ectx, ul->parent == &ctx->activeUploads);
-  if ((ul->state == FSUI_ACTIVE) ||
-      (ul->state == FSUI_COMPLETED) ||
-      (ul->state == FSUI_ABORTED) || (ul->state == FSUI_ERROR))
+  GNUNET_GE_ASSERT (ctx->ectx, ul != NULL);
+  GNUNET_GE_ASSERT (ctx->ectx, ul->parent == &ctx->activeUploads);
+  if ((ul->state == GNUNET_FSUI_ACTIVE) ||
+      (ul->state == GNUNET_FSUI_COMPLETED) ||
+      (ul->state == GNUNET_FSUI_ABORTED) || (ul->state == GNUNET_FSUI_ERROR))
     {
-      GE_ASSERT (ctx->ectx, ul->shared->handle != NULL);
+      GNUNET_GE_ASSERT (ctx->ectx, ul->shared->handle != NULL);
       GNUNET_thread_join (ul->shared->handle, &unused);
       ul->shared->handle = NULL;
-      if (ul->state == FSUI_ACTIVE)
-        ul->state = FSUI_PENDING;
+      if (ul->state == GNUNET_FSUI_ACTIVE)
+        ul->state = GNUNET_FSUI_PENDING;
       else
         ul->state++;            /* add _JOINED */
     }
   else
     {
-      GE_ASSERT (ctx->ectx, ul->shared->handle == NULL);
+      GNUNET_GE_ASSERT (ctx->ectx, ul->shared->handle == NULL);
     }
   signalUploadStopped (ul, 1);
   shared = ul->shared;

@@ -33,8 +33,8 @@
 /**
  * Initialize the CORE's globals.
  */
-int initCore (struct GE_Context *ectx,
-              struct GC_Configuration *cfg,
+int initCore (struct GNUNET_GE_Context *ectx,
+              struct GNUNET_GC_Configuration *cfg,
               struct GNUNET_CronManager *cron,
               struct GNUNET_LoadMonitor *monitor);
 

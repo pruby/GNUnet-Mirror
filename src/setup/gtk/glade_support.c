@@ -33,7 +33,7 @@ static struct GNUNET_PluginHandle *library;
 static GladeXML *mainXML_;
 
 GladeXML *
-getMainXML ()
+GNUNET_GTK_get_main_glade_XML ()
 {
   return mainXML_;
 }
@@ -41,7 +41,7 @@ getMainXML ()
 void
 destroyMainXML ()
 {
-  GE_ASSERT (NULL, mainXML_ != NULL);
+  GNUNET_GE_ASSERT (NULL, mainXML_ != NULL);
   g_object_unref (mainXML_);
   mainXML_ = NULL;
 }
@@ -71,7 +71,7 @@ connector (const gchar * handler_name,
   GladeXML *xml = user_data;
   void *method;
 
-  GE_ASSERT (NULL, xml != NULL);
+  GNUNET_GE_ASSERT (NULL, xml != NULL);
   method = GNUNET_plugin_resolve_function (library, handler_name, GNUNET_YES);
   if (method == NULL)
     return;
@@ -85,10 +85,10 @@ load_xml (const char *dialog_name)
   GladeXML *ret;
 
   gladeFile = get_glade_filename ();
-  ret = glade_xml_new (gladeFile, dialog_name, PACKAGE_NAME);
+  ret = glade_xml_new (gladeFile, dialog_name, PACKAGNUNET_GE_NAME);
   if (ret == NULL)
-    GE_DIE_STRERROR_FILE (NULL,
-                          GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+    GNUNET_GE_DIE_STRERROR_FILE (NULL,
+                          GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
                           "open", gladeFile);
   GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (ret, &connector, ret);
@@ -120,10 +120,10 @@ showDialog (const char *name)
   GladeXML *myXML;
 
   gladeFile = get_glade_filename ();
-  myXML = glade_xml_new (gladeFile, name, PACKAGE_NAME);
+  myXML = glade_xml_new (gladeFile, name, PACKAGNUNET_GE_NAME);
   if (mainXML_ == NULL)
-    GE_DIE_STRERROR_FILE (NULL,
-                          GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+    GNUNET_GE_DIE_STRERROR_FILE (NULL,
+                          GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,
                           "open", gladeFile);
   GNUNET_free (gladeFile);
   glade_xml_signal_autoconnect_full (myXML, &connector, myXML);

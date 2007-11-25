@@ -35,36 +35,36 @@
 static int
 testMeta ()
 {
-  struct ECRS_MetaData *m;
+  struct GNUNET_ECRS_MetaData *m;
   char *val;
   unsigned int size;
 
-  m = ECRS_createMetaData ();
-  if (GNUNET_OK != ECRS_addToMetaData (m, EXTRACTOR_UNKNOWN, "link"))
+  m = GNUNET_ECRS_meta_data_create ();
+  if (GNUNET_OK != GNUNET_ECRS_meta_data_inser (m, EXTRACTOR_UNKNOWN, "link"))
     {
-      ECRS_freeMetaData (m);
+      GNUNET_ECRS_meta_data_destroy (m);
       ABORT ();
     }
-  if (GNUNET_OK != ECRS_addToMetaData (m, EXTRACTOR_FILENAME, "lib-link.m4"))
+  if (GNUNET_OK != GNUNET_ECRS_meta_data_inser (m, EXTRACTOR_FILENAME, "lib-link.m4"))
     {
-      ECRS_freeMetaData (m);
+      GNUNET_ECRS_meta_data_destroy (m);
       ABORT ();
     }
-  size = ECRS_sizeofMetaData (m, ECRS_SERIALIZE_FULL);
+  size = GNUNET_ECRS_meta_data_get_serialized_size (m, GNUNET_ECRS_SERIALIZE_FULL);
   val = GNUNET_malloc (size);
-  if (size != ECRS_serializeMetaData (NULL,
-                                      m, val, size, ECRS_SERIALIZE_FULL))
+  if (size != GNUNET_ECRS_meta_data_serialize (NULL,
+                                      m, val, size, GNUNET_ECRS_SERIALIZE_FULL))
     {
-      ECRS_freeMetaData (m);
+      GNUNET_ECRS_meta_data_destroy (m);
       GNUNET_free (val);
       ABORT ();
     }
-  ECRS_freeMetaData (m);
-  m = ECRS_deserializeMetaData (NULL, val, size);
+  GNUNET_ECRS_meta_data_destroy (m);
+  m = GNUNET_ECRS_meta_data_deserialize (NULL, val, size);
   GNUNET_free (val);
   if (m == NULL)
     ABORT ();
-  ECRS_freeMetaData (m);
+  GNUNET_ECRS_meta_data_destroy (m);
   return 0;
 }
 

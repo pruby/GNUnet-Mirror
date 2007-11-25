@@ -39,8 +39,8 @@
  *  be notified that 'something is wrong')
  */
 int
-ECRS_isFileIndexed (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg, const char *filename)
+GNUNET_ECRS_file_test_indexed (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg, const char *filename)
 {
   GNUNET_HashCode hc;
   struct GNUNET_ClientServerConnection *sock;
@@ -51,15 +51,15 @@ ECRS_isFileIndexed (struct GE_Context *ectx,
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return GNUNET_SYSERR;
-  ret = FS_testIndexed (sock, &hc);
+  ret = GNUNET_FS_test_indexed (sock, &hc);
   GNUNET_client_connection_destroy (sock);
   return ret;
 }
 
 struct iiC
 {
-  struct GE_Context *ectx;
-  ECRS_FileIterator iterator;
+  struct GNUNET_GE_Context *ectx;
+  GNUNET_ECRS_FileProcessor iterator;
   void *closure;
   int cnt;
 };
@@ -97,8 +97,8 @@ iiHelper (const char *fn, const char *dir, void *ptr)
             }
           if (errno != EINVAL)
             {
-              GE_LOG_STRERROR_FILE (cls->ectx,
-                                    GE_WARNING | GE_BULK | GE_ADMIN | GE_USER,
+              GNUNET_GE_LOG_STRERROR_FILE (cls->ectx,
+                                    GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_ADMIN | GNUNET_GE_USER,
                                     "readlink", fullName);
             }
           GNUNET_free (lnkName);
@@ -137,9 +137,9 @@ iiHelper (const char *fn, const char *dir, void *ptr)
  * @return number of files indexed, GNUNET_SYSERR if iterator aborted
  */
 int
-ECRS_iterateIndexedFiles (struct GE_Context *ectx,
-                          struct GC_Configuration *cfg,
-                          ECRS_FileIterator iterator, void *closure)
+GNUNET_ECRS_get_indexed_files (struct GNUNET_GE_Context *ectx,
+                          struct GNUNET_GC_Configuration *cfg,
+                          GNUNET_ECRS_FileProcessor iterator, void *closure)
 {
   char *tmp;
   char *indexDirectory;

@@ -57,8 +57,8 @@ typedef struct
 /**
  * Initialize this module.
  */
-void initConnection (struct GE_Context *ectx,
-                     struct GC_Configuration *cfg,
+void initConnection (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg,
                      struct GNUNET_LoadMonitor *mon,
                      struct GNUNET_CronManager *cron);
 
@@ -99,14 +99,14 @@ int checkHeader (const GNUNET_PeerIdentity * sender,
  * @param sender the identity of the other node
  */
 void considerTakeover (const GNUNET_PeerIdentity * sender,
-                       TSession * tsession);
+                       GNUNET_TSession * tsession);
 
 /* ***************** CORE API methods ************* */
 
 /**
  * Call method for every connected node.
  */
-int forEachConnectedNode (PerNodeCallback method, void *arg);
+int forEachConnectedNode (GNUNET_NodeIteratorCallback method, void *arg);
 
 
 /**
@@ -118,10 +118,10 @@ int forEachConnectedNode (PerNodeCallback method, void *arg);
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain MESSAGE_HEADERs
+ * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
-int sendPlaintext (TSession * tsession, const char *msg, unsigned int size);
+int sendPlaintext (GNUNET_TSession * tsession, const char *msg, unsigned int size);
 
 /**
  * Compute the hashtable index of a host id.
@@ -149,14 +149,14 @@ unsigned int computeIndex (const GNUNET_PeerIdentity * hostId);
  * @return GNUNET_OK if the handler was registered, GNUNET_SYSERR on error
  */
 int registerSendCallback (const unsigned int minimumPadding,
-                          BufferFillCallback callback);
+                          GNUNET_BufferFillCallback callback);
 
 /**
  * Unregister a handler that was registered with registerSendCallback.
  * @return GNUNET_OK if the handler was removed, GNUNET_SYSERR on error
  */
 int unregisterSendCallback (const unsigned int minimumPadding,
-                            BufferFillCallback callback);
+                            GNUNET_BufferFillCallback callback);
 
 /**
  * Send an encrypted, on-demand build message to another node.
@@ -169,7 +169,7 @@ int unregisterSendCallback (const unsigned int minimumPadding,
  * @param maxdelay how long can the message wait?
  */
 void unicastCallback (const GNUNET_PeerIdentity * hostId,
-                      BuildMessageCallback callback,
+                      GNUNET_BuildMessageCallback callback,
                       void *closure,
                       unsigned short len,
                       unsigned int importance, unsigned int maxdelay);
@@ -288,7 +288,7 @@ void confirmSessionUp (const GNUNET_PeerIdentity * peer);
  *        P2P message part that is transmitted
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
-int registerSendNotify (MessagePartHandler callback);
+int registerSendNotify (GNUNET_P2PRequestHandler callback);
 
 /**
  * Unregister a handler that is to be called for each
@@ -298,13 +298,13 @@ int registerSendNotify (MessagePartHandler callback);
  *        P2P message part that is transmitted
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
-int unregisterSendNotify (MessagePartHandler callback);
+int unregisterSendNotify (GNUNET_P2PRequestHandler callback);
 
 /**
  * Verify that the given session handle is not in use.
  * @return GNUNET_OK if that is true, GNUNET_SYSERR if not.
  */
-int assertUnused (TSession * tsession);
+int assertUnused (GNUNET_TSession * tsession);
 
 #endif
 /* end of connection.h */

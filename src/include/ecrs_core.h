@@ -27,8 +27,8 @@
  * @author Christian Grothoff
  */
 
-#ifndef ECRS_CORE_H
-#define ECRS_CORE_H
+#ifndef GNUNET_ECRS_CORE_H
+#define GNUNET_ECRS_CORE_H
 
 #include "gnunet_util.h"
 #include "gnunet_datastore_service.h"
@@ -151,8 +151,8 @@ typedef struct
 
   /**
    * Interval (in seconds) how often the publisher intends to produce
-   * an updated SBlock; ECRS_SBLOCK_UPDATE_NONE(0) is used for
-   * non-updateable SBlocks, ECRS_SBLOCK_UPDATE_SPORADIC(-1) is used
+   * an updated SBlock; GNUNET_ECRS_SBLOCK_UPDATE_NONE(0) is used for
+   * non-updateable SBlocks, GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC(-1) is used
    * for entries without a fixed update frequency; in network byte
    * order
    */
@@ -241,7 +241,7 @@ typedef struct
  */
 int fileBlockEncode (const DBlock * data,
                      unsigned int len,
-                     const GNUNET_HashCode * query, Datastore_Value ** value);
+                     const GNUNET_HashCode * query, GNUNET_DatastoreValue ** value);
 
 /**
  * Get the query that will be used to query for

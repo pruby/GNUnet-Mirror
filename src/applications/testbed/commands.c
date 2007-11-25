@@ -116,9 +116,9 @@ sendMessage (unsigned msgType, int peer, unsigned short argSize, void *arg)
   msgsz = sizeof (TESTBED_CS_MESSAGE) + argSize;
   msg = GNUNET_malloc (msgsz);
   msg->header.size = htons (msgsz);
-  msg->header.type = htons (CS_PROTO_testbed_REQUEST);
+  msg->header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->msgType = htonl (msgType);
-  memcpy (&((TESTBED_CS_MESSAGE_GENERIC *) msg)->data[0], arg, argSize);
+  memcpy (&((TESTBED_CS_MESSAGNUNET_GE_GENERIC *) msg)->data[0], arg, argSize);
   msgsz = GNUNET_client_connection_write (&nodes[peer].sock, &msg->header);
   GNUNET_free (msg);
   if (msgsz == GNUNET_SYSERR)
@@ -217,7 +217,7 @@ addNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGE_HEADER **) &
+                                                      (CS_MESSAGNUNET_GE_HEADER **) &
                                                       hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
@@ -226,7 +226,7 @@ addNode (int argc, char *argv[])
       GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
-  if ((ntohs (hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
+  if ((ntohs (hdr->header.header.type) == GNUNET_CS_PROTO_TESTBED_REPLY) &&
       (ntohs (hdr->header.header.size) >= sizeof (TESTBED_hello_MESSAGE)) &&
       (ntohl (hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
       (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) >=
@@ -343,7 +343,7 @@ addSshNode (int argc, char *argv[])
       sargv[5] = argv[1];       /* remote hostname */
       sargv[6] = NULL;          /* last argument */
       execvp ("ssh", sargv);
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               " execvp failed: %s\n", STRERROR (errno));
       exit (-1);
     }
@@ -408,7 +408,7 @@ addSshNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGE_HEADER **) &
+                                                      (CS_MESSAGNUNET_GE_HEADER **) &
                                                       hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
@@ -420,7 +420,7 @@ addSshNode (int argc, char *argv[])
       GNUNET_array_grow (nodes, nnodes, nnodes - 1);
       return -1;
     }
-  if ((ntohs (hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
+  if ((ntohs (hdr->header.header.type) == GNUNET_CS_PROTO_TESTBED_REPLY) &&
       (ntohs (hdr->header.header.size) >= sizeof (TESTBED_hello_MESSAGE)) &&
       (ntohl (hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
       (ntohs (hdr->header.header.size) - sizeof (TESTBED_CS_MESSAGE) >=
@@ -1005,7 +1005,7 @@ dumpProcessOutput (int argc, char *argv[])
           reply = NULL;
           if (GNUNET_SYSERR ==
               GNUNET_client_connection_read (&nodes[dst].sock,
-                                             (CS_MESSAGE_HEADER **) & reply))
+                                             (CS_MESSAGNUNET_GE_HEADER **) & reply))
             {
               XPRINTF (" peer %s is not responding after %d of %d bytes.\n",
                        nodes[dst].ips, pos, ack);
@@ -1017,7 +1017,7 @@ dumpProcessOutput (int argc, char *argv[])
             sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
           tmp = GNUNET_malloc (size + 1);
           memcpy (tmp,
-                  &((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) reply)->data[0],
+                  &((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) reply)->data[0],
                   size);
           tmp[size] = '\0';
           XPRINTF ("%s", tmp);
@@ -1303,10 +1303,10 @@ uploadFile (int argc, char *argv[])
                    TESTBED_FILE_BLK_SIZE);
   msg->header.header.size =
     htons (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) + flen);
-  msg->header.header.type = htons (CS_PROTO_testbed_REQUEST);
+  msg->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->header.msgType = htonl (TESTBED_UPLOAD_FILE);
   msg->type = htonl (TESTBED_FILE_DELETE);
-  memcpy (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf, argv[2], flen);
+  memcpy (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf, argv[2], flen);
 
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (&nodes[peer].sock, &msg->header.header))
@@ -1333,7 +1333,7 @@ uploadFile (int argc, char *argv[])
       return -1;
     }
   msg->type = htonl (TESTBED_FILE_GNUNET_array_append);
-  buf = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + flen;
+  buf = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf + flen;
   while ((nbytes = GN_FREAD (buf, 1,
                              (TESTBED_FILE_BLK_SIZE -
                               sizeof (TESTBED_UPLOAD_FILE_MESSAGE) - flen),
@@ -1602,7 +1602,7 @@ addAvailable (int argc, char *argv[])
   hostname[k] = '\0';
 
 #if DEBUG_TESTBED
-  GE_LOG (ectx, GE_INFO | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           " Trying to download a hostlist from %s\n", reg);
 #endif
 

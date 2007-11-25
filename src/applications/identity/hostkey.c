@@ -73,7 +73,7 @@ signData (const void *data, unsigned short size,
 #if EXTRA_CHECKS
   if (ret == GNUNET_OK)
     {
-      GE_ASSERT (NULL,
+      GNUNET_GE_ASSERT (NULL,
                  GNUNET_OK == GNUNET_RSA_verify (data, size, result,
                                                  &publicKey));
     }
@@ -98,7 +98,7 @@ decryptData (const GNUNET_RSA_EncryptedData * block, void *result,
 }
 
 void
-initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
+initPrivateKey (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *gnHome;
   char *hostkeyfile;
@@ -106,17 +106,17 @@ initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
   unsigned short len;
   int res;
 
-  GE_ASSERT (ectx,
-             -1 != GC_get_configuration_value_filename (cfg,
+  GNUNET_GE_ASSERT (ectx,
+             -1 != GNUNET_GC_get_configuration_value_filename (cfg,
                                                         "GNUNETD",
                                                         "GNUNETD_HOME",
-                                                        VAR_DAEMON_DIRECTORY,
+                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
                                                         &gnHome));
   GNUNET_disk_directory_create (ectx, gnHome);
   if (GNUNET_YES != GNUNET_disk_directory_test (ectx, gnHome))
     {
-      GE_LOG (ectx,
-              GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
               _("Failed to access GNUnet home directory `%s'\n"), gnHome);
       abort ();
     }
@@ -145,8 +145,8 @@ initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
                                  encPrivateKey))
         {
           GNUNET_free (encPrivateKey);
-          GE_LOG (ectx,
-                  GE_WARNING | GE_USER | GE_IMMEDIATE | GE_ADMIN,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE | GNUNET_GE_ADMIN,
                   _
                   ("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
                   hostkeyfile);
@@ -155,20 +155,20 @@ initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
     }
   if (encPrivateKey == NULL)
     {                           /* make new hostkey */
-      GE_LOG (ectx,
-              GE_INFO | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
               _("Creating new hostkey (this may take a while).\n"));
       hostkey = GNUNET_RSA_create_key ();
-      GE_ASSERT (ectx, hostkey != NULL);
+      GNUNET_GE_ASSERT (ectx, hostkey != NULL);
       encPrivateKey = GNUNET_RSA_encode_key (hostkey);
-      GE_ASSERT (ectx, encPrivateKey != NULL);
+      GNUNET_GE_ASSERT (ectx, encPrivateKey != NULL);
       GNUNET_disk_file_write (ectx,
                               hostkeyfile,
                               encPrivateKey, ntohs (encPrivateKey->len),
                               "600");
       GNUNET_free (encPrivateKey);
-      GE_LOG (ectx,
-              GE_INFO | GE_USER | GE_BULK, _("Done creating hostkey.\n"));
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK, _("Done creating hostkey.\n"));
     }
   else
     {
@@ -176,7 +176,7 @@ initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
       GNUNET_free (encPrivateKey);
     }
   GNUNET_free (hostkeyfile);
-  GE_ASSERT (ectx, hostkey != NULL);
+  GNUNET_GE_ASSERT (ectx, hostkey != NULL);
   GNUNET_RSA_get_public_key (hostkey, &publicKey);
 }
 
@@ -184,7 +184,7 @@ initPrivateKey (struct GE_Context *ectx, struct GC_Configuration *cfg)
 void
 donePrivateKey ()
 {
-  GE_ASSERT (NULL, hostkey != NULL);
+  GNUNET_GE_ASSERT (NULL, hostkey != NULL);
   GNUNET_RSA_free_key (hostkey);
   hostkey = NULL;
 }

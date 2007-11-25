@@ -172,7 +172,7 @@ char *GNUNET_get_byte_size_as_fancy_string (unsigned long long size);
  *
  * @return the converted string (0-terminated)
  */
-char *GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
+char *GNUNET_convert_string_to_utf8 (struct GNUNET_GE_Context *ectx,
                                      const char *input,
                                      size_t len, const char *charset);
 
@@ -184,7 +184,7 @@ char *GNUNET_convert_string_to_utf8 (struct GE_Context *ectx,
  * @returns the full file name,
  *          NULL is returned on error
  */
-char *GNUNET_expand_file_name (struct GE_Context *ectx, const char *fil);
+char *GNUNET_expand_file_name (struct GNUNET_GE_Context *ectx, const char *fil);
 
 /* ************** internal implementations, use macros above! ************** */
 

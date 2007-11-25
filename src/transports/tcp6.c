@@ -86,7 +86,7 @@ static struct GNUNET_IPv6NetworkSet *filteredNetworks_;
 
 static struct GNUNET_IPv6NetworkSet *allowedNetworks_;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static struct GNUNET_Mutex *tcpblacklistlock;
 
@@ -173,7 +173,7 @@ getGNUnetTCP6Port ()
   struct servent *pse;          /* pointer to service information entry        */
   unsigned long long port;
 
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "TCP6",
                                                "PORT", 1, 65535, 2086, &port))
     {
@@ -202,8 +202,8 @@ verifyHello (const GNUNET_MessageHello * hello)
   haddr = (Host6Address *) & hello[1];
   if ((ntohs (hello->senderAddressSize) != sizeof (Host6Address)) ||
       (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
-      (ntohs (hello->header.type) != p2p_PROTO_hello) ||
-      (ntohs (hello->protocol) != TCP6_PROTOCOL_NUMBER) ||
+      (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) ||
+      (ntohs (hello->protocol) != GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6) ||
       (GNUNET_YES == isBlacklisted (&haddr->ip,
                                     sizeof (GNUNET_IPv6Address))) ||
       (GNUNET_YES != isWhitelisted (&haddr->ip, sizeof (GNUNET_IPv6Address))))
@@ -230,7 +230,7 @@ createhello ()
   if (0 == port)
     {
 #if DEBUG_TCP6
-      GE_LOG (ectx, GE_DEBUG, "TCP6 port is 0, will only send using TCP6\n");
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG, "TCP6 port is 0, will only send using TCP6\n");
 #endif
       return NULL;              /* TCP6 transport is configured SEND-only! */
     }
@@ -242,15 +242,15 @@ createhello ()
   if (GNUNET_SYSERR == getPublicIP6Address (cfg, ectx, &haddr->ip))
     {
       GNUNET_free (msg);
-      GE_LOG (ectx,
-              GE_WARNING | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
               _("Could not determine my public IPv6 address.\n"));
       return NULL;
     }
   haddr->port = htons (port);
   haddr->reserved = htons (0);
   msg->senderAddressSize = htons (sizeof (Host6Address));
-  msg->protocol = htons (TCP6_PROTOCOL_NUMBER);
+  msg->protocol = htons (GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6);
   msg->MTU = htonl (tcp6API.mtu);
   return msg;
 }
@@ -263,7 +263,7 @@ createhello ()
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-tcp6Connect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
+tcp6Connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
              int may_reuse)
 {
   int i;
@@ -310,16 +310,16 @@ tcp6Connect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
   rtn = getaddrinfo (hostname, NULL, &hints, &res0);
   if (rtn != 0)
     {
-      GE_LOG (ectx,
-              GE_WARNING | GE_ADMIN | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
               _("`%s': unknown service: %s\n"),
               __FUNCTION__, gai_strerror (rtn));
       return GNUNET_SYSERR;
     }
 
 #if DEBUG_TCP6
-  GE_LOG (ectx,
-          GE_DEBUG,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG,
           "Creating TCP6 connection to %s:%d\n",
           inet_ntop (AF_INET6,
                      haddr,
@@ -335,7 +335,7 @@ tcp6Connect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
       sock = SOCKET (res->ai_family, res->ai_socktype, res->ai_protocol);
       if (sock < 0)
         {
-          GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "socket");
+          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
           sock = -1;
           continue;
         }
@@ -350,7 +350,7 @@ tcp6Connect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
       i = CONNECT (sock, res->ai_addr, res->ai_addrlen);
       if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
         {
-          GE_LOG_STRERROR (ectx, GE_WARNING | GE_ADMIN | GE_BULK, "connect");
+          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "connect");
           GNUNET_socket_destroy (s);
           s = NULL;
           sock = -1;
@@ -361,7 +361,7 @@ tcp6Connect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
   freeaddrinfo (res0);
   if (sock == -1)
     return GNUNET_SYSERR;
-  GE_ASSERT (ectx, s != NULL);
+  GNUNET_GE_ASSERT (ectx, s != NULL);
   return tcpConnectHelper (hello, s, tcp6API.protocolNumber, tsessionPtr);
 }
 
@@ -379,7 +379,7 @@ startTransportServer ()
 
   if (selector != NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   port = getGNUnetTCP6Port ();
@@ -388,12 +388,12 @@ startTransportServer ()
       s = SOCKET (PF_INET6, SOCK_STREAM, 0);
       if (s < 0)
         {
-          GE_LOG_STRERROR (ectx, GE_ERROR | GE_ADMIN | GE_BULK, "socket");
+          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_BULK, "socket");
           return GNUNET_SYSERR;
         }
       if (SETSOCKOPT (s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
-        GE_DIE_STRERROR (ectx,
-                         GE_FATAL | GE_ADMIN | GE_IMMEDIATE, "setsockopt");
+        GNUNET_GE_DIE_STRERROR (ectx,
+                         GNUNET_GE_FATAL | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "setsockopt");
       memset ((char *) &serverAddr, 0, sizeof (serverAddr));
       serverAddr.sin6_family = AF_INET6;
       serverAddr.sin6_flowinfo = 0;
@@ -401,14 +401,14 @@ startTransportServer ()
       serverAddr.sin6_port = htons (getGNUnetTCP6Port ());
       if (BIND (s, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
         {
-          GE_LOG_STRERROR (ectx, GE_ERROR | GE_ADMIN | GE_IMMEDIATE, "bind");
-          GE_LOG (ectx,
-                  GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+          GNUNET_GE_LOG_STRERROR (ectx, GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "bind");
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
                   _("Failed to start transport service on port %d.\n"),
                   getGNUnetTCP6Port ());
           if (0 != CLOSE (s))
-            GE_LOG_STRERROR (ectx,
-                             GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+            GNUNET_GE_LOG_STRERROR (ectx,
+                             GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                              "close");
           return GNUNET_SYSERR;
         }
@@ -440,8 +440,8 @@ startTransportServer ()
  */
 static int
 reloadConfiguration (void *ctx,
-                     struct GC_Configuration *cfg,
-                     struct GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg,
+                     struct GNUNET_GE_Context *ectx,
                      const char *section, const char *option)
 {
   char *ch;
@@ -451,10 +451,10 @@ reloadConfiguration (void *ctx,
   GNUNET_mutex_lock (tcpblacklistlock);
   GNUNET_free_non_null (filteredNetworks_);
   GNUNET_free_non_null (allowedNetworks_);
-  GC_get_configuration_value_string (cfg, "TCP6", "BLACKLIST", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, "TCP6", "BLACKLIST", "", &ch);
   filteredNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
   GNUNET_free (ch);
-  GC_get_configuration_value_string (cfg, "TCP6", "WHITELIST", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, "TCP6", "WHITELIST", "", &ch);
   if (strlen (ch) > 0)
     allowedNetworks_ = GNUNET_parse_ipv6_network_specification (ectx, ch);
   else
@@ -499,7 +499,7 @@ inittransport_tcp6 (CoreAPIForTransport * core)
   cfg = core->cfg;
   tcplock = GNUNET_mutex_create (GNUNET_YES);
   tcpblacklistlock = GNUNET_mutex_create (GNUNET_YES);
-  if (0 != GC_attach_change_listener (cfg, &reloadConfiguration, NULL))
+  if (0 != GNUNET_GC_attach_change_listener (cfg, &reloadConfiguration, NULL))
     {
       GNUNET_mutex_destroy (tcplock);
       GNUNET_mutex_destroy (tcpblacklistlock);
@@ -517,7 +517,7 @@ inittransport_tcp6 (CoreAPIForTransport * core)
       stat_bytesDropped
         = stats->create (gettext_noop ("# bytes dropped by TCP6 (outgoing)"));
     }
-  tcp6API.protocolNumber = TCP6_PROTOCOL_NUMBER;
+  tcp6API.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6;
   tcp6API.mtu = 0;
   tcp6API.cost = 19950;         /* about equal to udp6 */
   tcp6API.verifyHello = &verifyHello;
@@ -537,7 +537,7 @@ inittransport_tcp6 (CoreAPIForTransport * core)
 void
 donetransport_tcp6 ()
 {
-  GC_detach_change_listener (cfg, &reloadConfiguration, NULL);
+  GNUNET_GC_detach_change_listener (cfg, &reloadConfiguration, NULL);
   coreAPI->releaseService (stats);
   stats = NULL;
   GNUNET_free_non_null (filteredNetworks_);

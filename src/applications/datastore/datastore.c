@@ -43,12 +43,12 @@
 /**
  * SQ-store handle
  */
-static SQstore_ServiceAPI *sq;
+static GNUNET_SQstore_ServiceAPI *sq;
 
 /**
  * Core API handle.
  */
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * Minimum priority in the DB.
@@ -67,7 +67,7 @@ static unsigned long long quota;
 
 static struct GNUNET_CronManager *cron;
 
-static Stats_ServiceAPI *stats;
+static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_filtered;
 
@@ -106,7 +106,7 @@ getSize ()
 
 static int
 get (const GNUNET_HashCode * query,
-     unsigned int type, Datum_Iterator iter, void *closure)
+     unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
 {
   int ret;
 
@@ -116,9 +116,9 @@ get (const GNUNET_HashCode * query,
       GNUNET_EncName enc;
 
       IF_GELOG (coreAPI->ectx,
-                GE_DEBUG | GE_REQUEST | GE_USER, GNUNET_hash_to_enc (query,
+                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, GNUNET_hash_to_enc (query,
                                                                      &enc));
-      GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Datastore availability pre-test failed for `%s'.\n", &enc);
 #endif
       if (stats != NULL)
@@ -134,16 +134,16 @@ get (const GNUNET_HashCode * query,
 
 static int
 deleteCB (const GNUNET_HashCode * key,
-          const Datastore_Value * value, void *closure,
+          const GNUNET_DatastoreValue * value, void *closure,
           unsigned long long uid)
 {
-  const Datastore_Value *have = closure;
+  const GNUNET_DatastoreValue *have = closure;
   if (have == NULL)
     return GNUNET_NO;
   if ((value->size == have->size) &&
       (0 == memcmp (&have[1],
                     &value[1],
-                    ntohl (value->size) - sizeof (Datastore_Value))))
+                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
     return GNUNET_NO;
   return GNUNET_OK;
 }
@@ -152,7 +152,7 @@ deleteCB (const GNUNET_HashCode * key,
  * Explicitly remove some content from the database.
  */
 static int
-del (const GNUNET_HashCode * query, const Datastore_Value * value)
+del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
 {
   int ok;
   GNUNET_EncName enc;
@@ -160,9 +160,9 @@ del (const GNUNET_HashCode * query, const Datastore_Value * value)
   if (!testAvailable (query))
     {
       IF_GELOG (coreAPI->ectx,
-                GE_WARNING | GE_BULK | GE_USER, GNUNET_hash_to_enc (query,
+                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER, GNUNET_hash_to_enc (query,
                                                                     &enc));
-      GE_LOG (coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Availability test failed for `%s' at %s:%d.\n"), &enc,
               __FILE__, __LINE__);
       return 0;
@@ -186,24 +186,24 @@ del (const GNUNET_HashCode * query, const Datastore_Value * value)
  *   other serious error (i.e. IO permission denied)
  */
 static int
-put (const GNUNET_HashCode * key, const Datastore_Value * value)
+put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 {
   int ok;
-  Datastore_Value *nvalue;
+  GNUNET_DatastoreValue *nvalue;
 
   /* check if we have enough space / priority */
   if (GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ())
     {
-      GE_LOG (coreAPI->ectx,
-              GE_INFO | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx,
+              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Received content for put already expired!\n");
       return GNUNET_NO;
     }
   if ((available < ntohl (value->size)) &&
       (minPriority > ntohl (value->prio) + comp_priority ()))
     {
-      GE_LOG (coreAPI->ectx,
-              GE_INFO | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx,
+              GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
               sq->getSize (), quota);
       return GNUNET_NO;         /* new content has such a low priority that
@@ -229,21 +229,21 @@ put (const GNUNET_HashCode * key, const Datastore_Value * value)
 typedef struct
 {
   int exists;
-  const Datastore_Value *value;
+  const GNUNET_DatastoreValue *value;
   unsigned long long uid;
   unsigned long long expiration;
 } CE;
 
 static int
 checkExists (const GNUNET_HashCode * key,
-             const Datastore_Value * value, void *cls, unsigned long long uid)
+             const GNUNET_DatastoreValue * value, void *cls, unsigned long long uid)
 {
   CE *ce = cls;
 
   if ((value->size != ce->value->size) ||
       (0 != memcmp (&value[1],
                     &ce->value[1],
-                    ntohl (value->size) - sizeof (Datastore_Value))))
+                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
     return GNUNET_OK;           /* found another value, but different content! */
   ce->uid = uid;
   ce->expiration = GNUNET_ntohll (value->expirationTime);
@@ -262,19 +262,19 @@ checkExists (const GNUNET_HashCode * key,
  *   other serious error (i.e. IO permission denied)
  */
 static int
-putUpdate (const GNUNET_HashCode * key, const Datastore_Value * value)
+putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
 {
   CE cls;
   int ok;
   int comp_prio;
-  Datastore_Value *nvalue;
+  GNUNET_DatastoreValue *nvalue;
 
   /* check if it already exists... */
   cls.exists = GNUNET_NO;
   cls.value = value;
   sq->get (key, ntohl (value->type), &checkExists, &cls);
-  if (ntohl (value->type) == D_BLOCK)
-    sq->get (key, ONDEMAND_BLOCK, &checkExists, &cls);
+  if (ntohl (value->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)
+    sq->get (key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
 
   if (cls.exists)
     {
@@ -290,8 +290,8 @@ putUpdate (const GNUNET_HashCode * key, const Datastore_Value * value)
     }
   comp_prio = comp_priority ();
 #if DEBUG_DATASTORE
-  GE_LOG (coreAPI->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Migration: available %llu (need %u), min priority %u have %u\n",
           available, ntohl (value->size), minPriority,
           ntohl (value->prio) + comp_prio);
@@ -325,7 +325,7 @@ putUpdate (const GNUNET_HashCode * key, const Datastore_Value * value)
  */
 static int
 freeSpaceExpired (const GNUNET_HashCode * key,
-                  const Datastore_Value * value, void *closure,
+                  const GNUNET_DatastoreValue * value, void *closure,
                   unsigned long long uid)
 {
   if ((available > 0) && (available >= MIN_GNUNET_free))
@@ -338,7 +338,7 @@ freeSpaceExpired (const GNUNET_HashCode * key,
 
 static int
 freeSpaceLow (const GNUNET_HashCode * key,
-              const Datastore_Value * value, void *closure,
+              const GNUNET_DatastoreValue * value, void *closure,
               unsigned long long uid)
 {
   if ((available > 0) && (available >= MIN_GNUNET_free))
@@ -360,9 +360,9 @@ cronMaintenance (void *unused)
   available = quota - sq->getSize ();
   if ((available < 0) || (available < MIN_GNUNET_free))
     {
-      sq->iterateExpirationTime (ANY_BLOCK, &freeSpaceExpired, NULL);
+      sq->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, &freeSpaceExpired, NULL);
       if ((available < 0) || (available < MIN_GNUNET_free))
-        sq->iterateLowPriority (ANY_BLOCK, &freeSpaceLow, NULL);
+        sq->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, &freeSpaceLow, NULL);
     }
   else
     {
@@ -373,24 +373,24 @@ cronMaintenance (void *unused)
 /**
  * Initialize the manager-module.
  */
-Datastore_ServiceAPI *
-provide_module_datastore (CoreAPIForApplication * capi)
+GNUNET_Datastore_ServiceAPI *
+provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
 {
-  static Datastore_ServiceAPI api;
+  static GNUNET_Datastore_ServiceAPI api;
   unsigned long long lquota;
   unsigned long long sqot;
-  State_ServiceAPI *state;
+  GNUNET_State_ServiceAPI *state;
   struct stat sbuf;
   char *fsdir;
 
-  if (-1 == GC_get_configuration_value_number (capi->cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (capi->cfg,
                                                "FS",
                                                "QUOTA",
                                                0,
                                                ((unsigned long long) -1) /
                                                1024 / 1024, 1024, &lquota))
     {
-      GE_BREAK (capi->ectx, 0);
+      GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;              /* OOPS */
     }
   quota = lquota * 1024 * 1024; /* MB to bytes */
@@ -416,8 +416,8 @@ provide_module_datastore (CoreAPIForApplication * capi)
     }
   else
     {
-      GE_LOG (capi->ectx,
-              GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+      GNUNET_GE_LOG (capi->ectx,
+              GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_BULK,
               _("Failed to load state service. Trying to do without.\n"));
     }
   sq = capi->requestService ("sqstore");
@@ -428,14 +428,14 @@ provide_module_datastore (CoreAPIForApplication * capi)
           capi->releaseService (stats);
           stats = NULL;
         }
-      GE_BREAK (capi->ectx, 0);
+      GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;
     }
   coreAPI = capi;
   initPrefetch (capi->ectx, capi->cfg, sq);
   if (GNUNET_OK != initFilters (capi->ectx, capi->cfg))
     {
-      GE_BREAK (capi->ectx, 0);
+      GNUNET_GE_BREAK (capi->ectx, 0);
       donePrefetch ();
       capi->releaseService (sq);
       if (stats != NULL)
@@ -446,10 +446,10 @@ provide_module_datastore (CoreAPIForApplication * capi)
       return NULL;
     }
   fsdir = NULL;
-  GC_get_configuration_value_filename (capi->cfg,
+  GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                        "FS",
                                        "DIR",
-                                       VAR_DAEMON_DIRECTORY "/data/fs/",
+                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/data/fs/",
                                        &fsdir);
   /* just in case dir does not exist ... */
   GNUNET_disk_directory_create (NULL, fsdir);
@@ -503,7 +503,7 @@ release_module_datastore ()
  */
 static int
 filterAddAll (const GNUNET_HashCode * key,
-              const Datastore_Value * value, void *closure,
+              const GNUNET_DatastoreValue * value, void *closure,
               unsigned long long uid)
 {
   makeAvailable (key);
@@ -516,14 +516,14 @@ filterAddAll (const GNUNET_HashCode * key,
  * different sqstore's here, too.
  */
 void
-update_module_datastore (UpdateAPI * uapi)
+update_module_datastore (GNUNET_UpdateAPI * uapi)
 {
   unsigned long long quota;
   unsigned long long lastQuota;
   unsigned long long *lq;
-  State_ServiceAPI *state;
+  GNUNET_State_ServiceAPI *state;
 
-  if (-1 == GC_get_configuration_value_number (uapi->cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (uapi->cfg,
                                                "FS",
                                                "QUOTA",
                                                0,
@@ -554,8 +554,8 @@ update_module_datastore (UpdateAPI * uapi)
     }
   else
     {
-      GE_LOG (uapi->ectx,
-              GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+      GNUNET_GE_LOG (uapi->ectx,
+              GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR | GNUNET_GE_BULK,
               _
               ("Failed to load sqstore service.  Check your configuration!\n"));
     }

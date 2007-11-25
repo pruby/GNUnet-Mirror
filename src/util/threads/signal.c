@@ -66,7 +66,7 @@ GNUNET_signal_handler_uninstall (int signal,
 {
   struct sigaction sig;
 
-  GE_ASSERT (NULL, (ctx->sig == signal) && (ctx->method == handler));
+  GNUNET_GE_ASSERT (NULL, (ctx->sig == signal) && (ctx->method == handler));
   sigemptyset (&sig.sa_mask);
   sigaction (signal, &ctx->oldsig, &sig);
   GNUNET_free (ctx);

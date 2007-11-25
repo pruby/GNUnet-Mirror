@@ -36,103 +36,103 @@ static int
 testKeyword ()
 {
   char *uri;
-  struct ECRS_URI *ret;
+  struct GNUNET_ECRS_URI *ret;
 
-  if (NULL != ECRS_stringToUri (NULL, "gnunet://ecrs/ksk/++"))
+  if (NULL != GNUNET_ECRS_string_to_uri (NULL, "gnunet://ecrs/ksk/++"))
     ABORT ();
-  ret = ECRS_stringToUri (NULL, "gnunet://ecrs/ksk/foo+bar");
+  ret = GNUNET_ECRS_string_to_uri (NULL, "gnunet://ecrs/ksk/foo+bar");
   if (ret == NULL)
     ABORT ();
-  if (!ECRS_isKeywordUri (ret))
+  if (!GNUNET_ECRS_uri_test_ksk (ret))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
   if ((2 != ret->data.ksk.keywordCount) ||
       (0 != strcmp ("foo", ret->data.ksk.keywords[0])) ||
       (0 != strcmp ("bar", ret->data.ksk.keywords[1])))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
 
-  uri = ECRS_uriToString (ret);
+  uri = GNUNET_ECRS_uri_to_string (ret);
   if (0 != strcmp (uri, "gnunet://ecrs/ksk/foo+bar"))
     {
       GNUNET_free (uri);
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
   GNUNET_free (uri);
-  ECRS_freeUri (ret);
+  GNUNET_ECRS_uri_destroy (ret);
   return 0;
 }
 
 static int
 testLocation ()
 {
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   char *uric;
-  struct ECRS_URI *uri2;
+  struct GNUNET_ECRS_URI *uri2;
   GNUNET_RSA_PublicKey pk;
   struct GNUNET_RSA_PrivateKey *hk;
-  struct ECRS_URI *baseURI;
+  struct GNUNET_ECRS_URI *baseURI;
 
   baseURI =
-    ECRS_stringToUri (NULL,
+    GNUNET_ECRS_string_to_uri (NULL,
                       "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   hk = GNUNET_RSA_create_key ();
   GNUNET_RSA_get_public_key (hk, &pk);
-  uri = ECRS_uriFromLocation (baseURI,
-                              &pk, 43, (ECRS_SignFunction) & GNUNET_RSA_sign,
+  uri = GNUNET_ECRS_location_to_uri (baseURI,
+                              &pk, 43, (GNUNET_ECRS_SignFunction) & GNUNET_RSA_sign,
                               hk);
   GNUNET_RSA_free_key (hk);
   if (uri == NULL)
     {
-      GE_BREAK (NULL, 0);
-      ECRS_freeUri (baseURI);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_ECRS_uri_destroy (baseURI);
       return 1;
     }
-  if (!ECRS_isLocationUri (uri))
+  if (!GNUNET_ECRS_uri_test_loc (uri))
     {
-      GE_BREAK (NULL, 0);
-      ECRS_freeUri (uri);
-      ECRS_freeUri (baseURI);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_ECRS_uri_destroy (uri);
+      GNUNET_ECRS_uri_destroy (baseURI);
       return 1;
     }
-  uri2 = ECRS_getContentUri (uri);
-  if (!ECRS_equalsUri (baseURI, uri2))
+  uri2 = GNUNET_ECRS_uri_get_content_uri_from_loc (uri);
+  if (!GNUNET_ECRS_uri_test_equal (baseURI, uri2))
     {
-      GE_BREAK (NULL, 0);
-      ECRS_freeUri (uri);
-      ECRS_freeUri (uri2);
-      ECRS_freeUri (baseURI);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_ECRS_uri_destroy (uri);
+      GNUNET_ECRS_uri_destroy (uri2);
+      GNUNET_ECRS_uri_destroy (baseURI);
       return 1;
     }
-  ECRS_freeUri (uri2);
-  ECRS_freeUri (baseURI);
-  uric = ECRS_uriToString (uri);
+  GNUNET_ECRS_uri_destroy (uri2);
+  GNUNET_ECRS_uri_destroy (baseURI);
+  uric = GNUNET_ECRS_uri_to_string (uri);
 #if 0
   /* not for the faint of heart: */
   printf ("URI: `%s'\n", uric);
 #endif
-  uri2 = ECRS_stringToUri (NULL, uric);
+  uri2 = GNUNET_ECRS_string_to_uri (NULL, uric);
   GNUNET_free (uric);
   if (uri2 == NULL)
     {
-      GE_BREAK (NULL, 0);
-      ECRS_freeUri (uri);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_ECRS_uri_destroy (uri);
       return 1;
     }
-  if (GNUNET_YES != ECRS_equalsUri (uri, uri2))
+  if (GNUNET_YES != GNUNET_ECRS_uri_test_equal (uri, uri2))
     {
-      GE_BREAK (NULL, 0);
-      ECRS_freeUri (uri);
-      ECRS_freeUri (uri2);
+      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_ECRS_uri_destroy (uri);
+      GNUNET_ECRS_uri_destroy (uri2);
       return 1;
     }
-  ECRS_freeUri (uri2);
-  ECRS_freeUri (uri);
+  GNUNET_ECRS_uri_destroy (uri2);
+  GNUNET_ECRS_uri_destroy (uri);
   return 0;
 }
 
@@ -140,44 +140,44 @@ static int
 testNamespace (int i)
 {
   char *uri;
-  struct ECRS_URI *ret;
+  struct GNUNET_ECRS_URI *ret;
 
   if (NULL !=
-      ECRS_stringToUri (NULL,
+      GNUNET_ECRS_string_to_uri (NULL,
                         "gnunet://ecrs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3VUK"))
     ABORT ();
   if (NULL !=
-      ECRS_stringToUri (NULL,
+      GNUNET_ECRS_string_to_uri (NULL,
                         "gnunet://ecrs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3V/test"))
     ABORT ();
-  if (NULL != ECRS_stringToUri (NULL, "gnunet://ecrs/sks/test"))
+  if (NULL != GNUNET_ECRS_string_to_uri (NULL, "gnunet://ecrs/sks/test"))
     ABORT ();
   ret =
-    ECRS_stringToUri (NULL,
+    GNUNET_ECRS_string_to_uri (NULL,
                       "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   if (ret == NULL)
     ABORT ();
-  if (ECRS_isKeywordUri (ret))
+  if (GNUNET_ECRS_uri_test_ksk (ret))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
-  if (!ECRS_isNamespaceUri (ret))
+  if (!GNUNET_ECRS_uri_test_sks (ret))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
 
-  uri = ECRS_uriToString (ret);
+  uri = GNUNET_ECRS_uri_to_string (ret);
   if (0 != strcmp (uri,
                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO"))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       GNUNET_free (uri);
       ABORT ();
     }
   GNUNET_free (uri);
-  ECRS_freeUri (ret);
+  GNUNET_ECRS_uri_destroy (ret);
   return 0;
 }
 
@@ -185,51 +185,51 @@ static int
 testFile (int i)
 {
   char *uri;
-  struct ECRS_URI *ret;
+  struct GNUNET_ECRS_URI *ret;
 
   if (NULL !=
-      ECRS_stringToUri (NULL,
+      GNUNET_ECRS_string_to_uri (NULL,
                         "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H00000440000.42"))
     ABORT ();
   if (NULL !=
-      ECRS_stringToUri (NULL,
+      GNUNET_ECRS_string_to_uri (NULL,
                         "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000"))
     ABORT ();
   if (NULL !=
-      ECRS_stringToUri (NULL,
+      GNUNET_ECRS_string_to_uri (NULL,
                         "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.FGH"))
     ABORT ();
   ret =
-    ECRS_stringToUri (NULL,
+    GNUNET_ECRS_string_to_uri (NULL,
                       "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   if (ret == NULL)
     ABORT ();
-  if (ECRS_isKeywordUri (ret))
+  if (GNUNET_ECRS_uri_test_ksk (ret))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
-  if (ECRS_isNamespaceUri (ret))
+  if (GNUNET_ECRS_uri_test_sks (ret))
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
   if (GNUNET_ntohll (ret->data.fi.file_length) != 42)
     {
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
 
-  uri = ECRS_uriToString (ret);
+  uri = GNUNET_ECRS_uri_to_string (ret);
   if (0 != strcmp (uri,
                    "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42"))
     {
       GNUNET_free (uri);
-      ECRS_freeUri (ret);
+      GNUNET_ECRS_uri_destroy (ret);
       ABORT ();
     }
   GNUNET_free (uri);
-  ECRS_freeUri (ret);
+  GNUNET_ECRS_uri_destroy (ret);
   return 0;
 }
 

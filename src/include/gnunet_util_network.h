@@ -124,7 +124,7 @@ typedef struct
 {
 
   /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, GNUNET_CS_PROTO_RETURN_VALUE)
    */
   GNUNET_MessageHeader header;
 
@@ -142,14 +142,14 @@ typedef struct
 {
 
   /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, GNUNET_CS_PROTO_RETURN_VALUE)
    */
   GNUNET_MessageHeader header;
 
   /**
    * The return value (network byte order)
    */
-  GE_KIND kind;
+  GNUNET_GE_KIND kind;
 
 } GNUNET_MessageReturnErrorMessage;
 
@@ -266,7 +266,7 @@ unsigned long long GNUNET_htonll (unsigned long long n);
  * @return the converted list, NULL if the synatx is flawed
  */
 struct GNUNET_IPv4NetworkSet *GNUNET_parse_ipv4_network_specification (struct
-                                                                       GE_Context
+                                                                       GNUNET_GE_Context
                                                                        *ectx,
                                                                        const
                                                                        char
@@ -284,7 +284,7 @@ struct GNUNET_IPv4NetworkSet *GNUNET_parse_ipv4_network_specification (struct
  * @return the converted list, NULL if the synatx is flawed
  */
 struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
-                                                                       GE_Context
+                                                                       GNUNET_GE_Context
                                                                        *ectx,
                                                                        const
                                                                        char
@@ -320,7 +320,7 @@ int GNUNET_check_ipv6_listed (const struct GNUNET_IPv6NetworkSet *list,
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_get_host_by_name (struct GE_Context *ectx,
+int GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx,
                              const char *hostname, GNUNET_IPv4Address * ip);
 
 /* ********************* low-level socket operations **************** */
@@ -330,7 +330,7 @@ int GNUNET_get_host_by_name (struct GE_Context *ectx,
  * The OS socket should henceforth be no longer used
  * directly.  GNUNET_socket_destroy will close it.
  */
-struct GNUNET_SocketHandle *socket_create (struct GE_Context *ectx,
+struct GNUNET_SocketHandle *socket_create (struct GNUNET_GE_Context *ectx,
                                            struct GNUNET_LoadMonitor *mon,
                                            int osSocket);
 
@@ -436,7 +436,7 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  */
 struct GNUNET_SelectHandle *GNUNET_select_create (const char *desc,
                                                   int is_udp,
-                                                  struct GE_Context *ectx,
+                                                  struct GNUNET_GE_Context *ectx,
                                                   struct GNUNET_LoadMonitor
                                                   *mon, int sock,
                                                   unsigned int max_addr_len,
@@ -535,8 +535,8 @@ char *GNUNET_get_ip_as_string (const void *sa,
  * Get the IP address for the local machine.
  * @return NULL on error, IP as string otherwise
  */
-char *GNUNET_get_local_ip (struct GC_Configuration *cfg,
-                           struct GE_Context *ectx,
+char *GNUNET_get_local_ip (struct GNUNET_GC_Configuration *cfg,
+                           struct GNUNET_GE_Context *ectx,
                            GNUNET_IPv4Address * addr);
 
 
@@ -545,7 +545,7 @@ char *GNUNET_get_local_ip (struct GC_Configuration *cfg,
  * to non-blocking IO.
  * @return GNUNET_OK on success
  */
-int GNUNET_pipe_make_nonblocking (struct GE_Context *ectx, int pipe);
+int GNUNET_pipe_make_nonblocking (struct GNUNET_GE_Context *ectx, int pipe);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

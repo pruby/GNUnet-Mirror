@@ -36,14 +36,14 @@
  * with anonymity and GAP messages).  So we should
  * probably move it below the callback by passing
  * the anonymity level along.  But that would
- * require changing the DataProcessor somewhat,
+ * require changing the GNUNET_DataProcessor somewhat,
  * which would also be ugly.  So to keep things
  * simple, we do the anonymity-level check for
  * outgoing content right here.
  *
  * @return GNUNET_OK if cover traffic is sufficient
  */
-int checkCoverTraffic (struct GE_Context *ectx,
-                       Traffic_ServiceAPI * traffic, unsigned int level);
+int checkCoverTraffic (struct GNUNET_GE_Context *ectx,
+                       GNUNET_Traffic_ServiceAPI * traffic, unsigned int level);
 
 #endif

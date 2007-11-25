@@ -39,16 +39,16 @@
 #define HTTP_URL "http://"
 
 /* */
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static Identity_ServiceAPI *identity;
+static GNUNET_Identity_ServiceAPI *identity;
 
 static void
-sendAcknowledgement (ClientHandle client, int ack)
+sendAcknowledgement (GNUNET_ClientHandle client, int ack)
 {
   if (GNUNET_OK != coreAPI->sendValueToClient (client, ack))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Could not send acknowledgement back to client.\n"));
     }
 }
@@ -57,9 +57,9 @@ sendAcknowledgement (ClientHandle client, int ack)
  * Handler that is called for "message not understood" cases.
  */
 static void
-tb_undefined (ClientHandle client, TESTBED_CS_MESSAGE * msg)
+tb_undefined (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 {
-  GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
           _("Received unknown testbed message of type %u.\n"),
           ntohl (msg->msgType));
 }
@@ -68,15 +68,15 @@ tb_undefined (ClientHandle client, TESTBED_CS_MESSAGE * msg)
  * Connect to another peer.
  */
 static void
-tb_ADD_PEER (ClientHandle client, TESTBED_CS_MESSAGE * msg)
+tb_ADD_PEER (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 {
   GNUNET_MessageHeader noise;
   TESTBED_ADD_PEER_MESSAGE *hm = (TESTBED_ADD_PEER_MESSAGE *) msg;
 
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, " tb_ADD_PEER\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, " tb_ADD_PEER\n");
   if (sizeof (TESTBED_ADD_PEER_MESSAGE) > ntohs (msg->header.size))
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("size of `%s' message is too short. Ignoring.\n"),
               "ADD_PEER");
       return;
@@ -84,15 +84,15 @@ tb_ADD_PEER (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   if (GNUNET_sizeof_hello (&hm->helo) !=
       ntohs (msg->header.size) - sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("size of `%s' message is wrong. Ignoring.\n"), "_ADD_PEER");
       return;
     }
 
   identity->addHost (&hm->helo);
   noise.size = htons (sizeof (GNUNET_MessageHeader));
-  noise.type = htons (P2P_PROTO_noise);
-  coreAPI->unicast (&hm->helo.senderIdentity, &noise, EXTREME_PRIORITY, 0);
+  noise.type = htons (GNUNET_P2P_PROTO_NOISE);
+  coreAPI->unicast (&hm->helo.senderIdentity, &noise, GNUNET_EXTREME_PRIORITY, 0);
   sendAcknowledgement (client, GNUNET_OK);
 }
 
@@ -100,7 +100,7 @@ tb_ADD_PEER (ClientHandle client, TESTBED_CS_MESSAGE * msg)
  * Disconnect from another peer.
  */
 static void
-tb_DEL_PEER (ClientHandle client, TESTBED_DEL_PEER_MESSAGE * msg)
+tb_DEL_PEER (GNUNET_ClientHandle client, TESTBED_DEL_PEER_MESSAGE * msg)
 {
   coreAPI->disconnectFromPeer (&msg->host);
   sendAcknowledgement (client, GNUNET_OK);
@@ -116,7 +116,7 @@ doDisconnect (const GNUNET_PeerIdentity * id, void *unused)
  * Disconnect from all other peers.
  */
 static void
-tb_DEL_ALL_PEERS (ClientHandle client, TESTBED_DEL_ALL_PEERS_MESSAGE * msg)
+tb_DEL_ALL_PEERS (GNUNET_ClientHandle client, TESTBED_DEL_ALL_PEERS_MESSAGE * msg)
 {
   coreAPI->forAllConnectedNodes (&doDisconnect, NULL);
   sendAcknowledgement (client, GNUNET_OK);
@@ -126,7 +126,7 @@ tb_DEL_ALL_PEERS (ClientHandle client, TESTBED_DEL_ALL_PEERS_MESSAGE * msg)
  * Get a hello message for this peer.
  */
 static void
-tb_GET_hello (ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
+tb_GET_hello (GNUNET_ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
 {
   GNUNET_MessageHello *helo;
   unsigned int proto = ntohs (msg->proto);
@@ -134,7 +134,7 @@ tb_GET_hello (ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
   helo = identity->identity2Helo (coreAPI->myIdentity, proto, GNUNET_NO);
   if (NULL == helo)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("TESTBED could not generate hello message for protocol %u\n"),
               proto);
       sendAcknowledgement (client, GNUNET_SYSERR);
@@ -147,11 +147,11 @@ tb_GET_hello (ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
                        sizeof (TESTBED_CS_MESSAGE));
       reply->header.header.size =
         htons (ntohs (helo->header.size) + sizeof (TESTBED_CS_MESSAGE));
-      reply->header.header.type = htons (CS_PROTO_testbed_REPLY);
+      reply->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REPLY);
       reply->header.msgType = htonl (TESTBED_hello_RESPONSE);
       memcpy (&reply->helo, helo, ntohs (helo->header.size));
       coreAPI->sendToClient (client, &reply->header.header);
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "%s: returning from sendToClient\n", __FUNCTION__);
       GNUNET_free (helo);
       GNUNET_free (reply);
@@ -162,7 +162,7 @@ tb_GET_hello (ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
  * Set a trust value.
  */
 static void
-tb_SET_TVALUE (ClientHandle client, TESTBED_SET_TVALUE_MESSAGE * msg)
+tb_SET_TVALUE (GNUNET_ClientHandle client, TESTBED_SET_TVALUE_MESSAGE * msg)
 {
   int trust;
 
@@ -175,7 +175,7 @@ tb_SET_TVALUE (ClientHandle client, TESTBED_SET_TVALUE_MESSAGE * msg)
  * Get a trust value.
  */
 static void
-tb_GET_TVALUE (ClientHandle client, TESTBED_GET_TVALUE_MESSAGE * msg)
+tb_GET_TVALUE (GNUNET_ClientHandle client, TESTBED_GET_TVALUE_MESSAGE * msg)
 {
   unsigned int trust;
 
@@ -187,9 +187,9 @@ tb_GET_TVALUE (ClientHandle client, TESTBED_GET_TVALUE_MESSAGE * msg)
  * Change the bandwidth limitations.
  */
 static void
-tb_SET_BW (ClientHandle client, TESTBED_SET_BW_MESSAGE * msg)
+tb_SET_BW (GNUNET_ClientHandle client, TESTBED_SET_BW_MESSAGE * msg)
 {
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "gnunet-testbed: tb_SET_BW\n");
   setConfigurationInt ("LOAD", "MAXNETDOWNBPSTOTAL", ntohl (msg->in_bw));
   setConfigurationInt ("LOAD", "MAXNETUPBPSTOTAL", ntohl (msg->out_bw));
@@ -201,7 +201,7 @@ tb_SET_BW (ClientHandle client, TESTBED_SET_BW_MESSAGE * msg)
  * Load an application module.
  */
 static void
-tb_LOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
+tb_LOAD_MODULE (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 {
   unsigned short size;
   char *name;
@@ -210,7 +210,7 @@ tb_LOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   size = ntohs (msg->header.size);
   if (size <= sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "LOAD_MODULE");
       return;
     }
@@ -222,18 +222,18 @@ tb_LOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
     }
 
   name =
-    STRNDUP (&((TESTBED_LOAD_MODULE_MESSAGE_GENERIC *) msg)->modulename[0],
+    STRNDUP (&((TESTBED_LOAD_MODULE_MESSAGNUNET_GE_GENERIC *) msg)->modulename[0],
              size - sizeof (TESTBED_CS_MESSAGE));
   if (strlen (name) == 0)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message (empty module name)\n"),
               "LOAD_MODULE");
       return;
     }
   ok = coreAPI->loadApplicationModule (name);
   if (ok != GNUNET_OK)
-    GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+    GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
             _("loading module `%s' failed.  Notifying client.\n"), name);
   GNUNET_free (name);
   sendAcknowledgement (client, ok);
@@ -243,7 +243,7 @@ tb_LOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
  * Unload an application module.
  */
 static void
-tb_UNLOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
+tb_UNLOAD_MODULE (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 {
   unsigned short size;
   char *name;
@@ -252,7 +252,7 @@ tb_UNLOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   size = ntohs (msg->header.size);
   if (size <= sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "UNLOAD_MODULE");
       return;
     }
@@ -263,18 +263,18 @@ tb_UNLOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
     }
 
   name =
-    STRNDUP (&((TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC *) msg)->modulename[0],
+    STRNDUP (&((TESTBED_UNLOAD_MODULE_MESSAGNUNET_GE_GENERIC *) msg)->modulename[0],
              size - sizeof (TESTBED_CS_MESSAGE));
   if (strlen (name) == 0)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message (empty module name)\n"),
               "UNLOAD_MODULE");
       return;
     }
   ok = coreAPI->unloadApplicationModule (name);
   if (ok != GNUNET_OK)
-    GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+    GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
             _("unloading module failed.  Notifying client.\n"));
   GNUNET_free (name);
   sendAcknowledgement (client, ok);
@@ -286,7 +286,7 @@ tb_UNLOAD_MODULE (ClientHandle client, TESTBED_CS_MESSAGE * msg)
  * random).
  */
 static void
-tb_DISABLE_AUTOCONNECT (ClientHandle client,
+tb_DISABLE_AUTOCONNECT (GNUNET_ClientHandle client,
                         TESTBED_DISABLE_AUTOCONNECT_MESSAGE * msg)
 {
   GNUNET_free_non_null (setConfigurationString ("GNUNETD",
@@ -302,7 +302,7 @@ tb_DISABLE_AUTOCONNECT (ClientHandle client,
  * random).
  */
 static void
-tb_ENABLE_AUTOCONNECT (ClientHandle client,
+tb_ENABLE_AUTOCONNECT (GNUNET_ClientHandle client,
                        TESTBED_ENABLE_AUTOCONNECT_MESSAGE * msg)
 {
   GNUNET_free_non_null (setConfigurationString ("GNUNETD",
@@ -317,7 +317,7 @@ tb_ENABLE_AUTOCONNECT (ClientHandle client,
  * random).
  */
 static void
-tb_DISABLE_hello (ClientHandle client, TESTBED_DISABLE_hello_MESSAGE * msg)
+tb_DISABLE_hello (GNUNET_ClientHandle client, TESTBED_DISABLE_hello_MESSAGE * msg)
 {
   GNUNET_free_non_null (setConfigurationString ("NETWORK",
                                                 "DISABLE-ADVERTISEMENTS",
@@ -334,7 +334,7 @@ tb_DISABLE_hello (ClientHandle client, TESTBED_DISABLE_hello_MESSAGE * msg)
  * random).
  */
 static void
-tb_ENABLE_hello (ClientHandle client, TESTBED_ENABLE_hello_MESSAGE * msg)
+tb_ENABLE_hello (GNUNET_ClientHandle client, TESTBED_ENABLE_hello_MESSAGE * msg)
 {
   GNUNET_free_non_null (setConfigurationString ("NETWORK",
                                                 "DISABLE-ADVERTISEMENTS",
@@ -349,7 +349,7 @@ tb_ENABLE_hello (ClientHandle client, TESTBED_ENABLE_hello_MESSAGE * msg)
  * Allow only certain peers to connect.
  */
 static void
-tb_ALLOW_CONNECT (ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
+tb_ALLOW_CONNECT (GNUNET_ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
 {
   char *value;
   unsigned short size;
@@ -360,7 +360,7 @@ tb_ALLOW_CONNECT (ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
   size = ntohs (msg->header.header.size);
   if (size <= sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "ALLOW_CONNECT");
       return;
     }
@@ -368,7 +368,7 @@ tb_ALLOW_CONNECT (ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
   if (count * sizeof (GNUNET_PeerIdentity) + sizeof (TESTBED_CS_MESSAGE) !=
       size)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "ALLOW_CONNECT");
       return;
     }
@@ -383,7 +383,7 @@ tb_ALLOW_CONNECT (ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
       for (i = 0; i < count; i++)
         {
           GNUNET_hash_to_enc (&
-                              ((TESTBED_ALLOW_CONNECT_MESSAGE_GENERIC *)
+                              ((TESTBED_ALLOW_CONNECT_MESSAGNUNET_GE_GENERIC *)
                                msg)->peers[i].hashPubKey, &enc);
           strcat (value, (char *) &enc);
         }
@@ -399,7 +399,7 @@ tb_ALLOW_CONNECT (ClientHandle client, TESTBED_ALLOW_CONNECT_MESSAGE * msg)
  * Deny certain peers the right to connect.
  */
 static void
-tb_DENY_CONNECT (ClientHandle client, TESTBED_DENY_CONNECT_MESSAGE * msg)
+tb_DENY_CONNECT (GNUNET_ClientHandle client, TESTBED_DENY_CONNECT_MESSAGE * msg)
 {
   char *value;
   unsigned short size;
@@ -410,7 +410,7 @@ tb_DENY_CONNECT (ClientHandle client, TESTBED_DENY_CONNECT_MESSAGE * msg)
   size = ntohs (msg->header.header.size);
   if (size <= sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "DENY_CONNECT");
       return;
     }
@@ -418,7 +418,7 @@ tb_DENY_CONNECT (ClientHandle client, TESTBED_DENY_CONNECT_MESSAGE * msg)
   if (count * sizeof (GNUNET_PeerIdentity) + sizeof (TESTBED_CS_MESSAGE) !=
       size)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message\n"), "DENY_CONNECT");
       return;
     }
@@ -433,7 +433,7 @@ tb_DENY_CONNECT (ClientHandle client, TESTBED_DENY_CONNECT_MESSAGE * msg)
       for (i = 0; i < count; i++)
         {
           GNUNET_hash_to_enc (&
-                              ((TESTBED_DENY_CONNECT_MESSAGE_GENERIC *) msg)->
+                              ((TESTBED_DENY_CONNECT_MESSAGNUNET_GE_GENERIC *) msg)->
                               peers[i].hashPubKey, &enc);
           strcat (value, (char *) &enc);
         }
@@ -473,7 +473,7 @@ typedef struct
   /** Client responsible for this process
       (if that client disconnects, the process
       will be killed!) */
-  ClientHandle client;
+  GNUNET_ClientHandle client;
   /** arguments for exec */
   char **argv;
   int argc;
@@ -519,10 +519,10 @@ pipeReaderThread (ProcessInfo * pi)
       GNUNET_mutex_unlock (&lock);
       return -1;
     }
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "exec'ing: %s with %d arguments\n", pi->argv[0], pi->argc - 1);
   for (i = 1; i < pi->argc; i++)
-    GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             "exec argument %d is %s\n", i, pi->argv[i]);
   tmp = getConfigurationString ("TESTBED", "UPLOAD-DIR");
   if (tmp == NULL)
@@ -549,7 +549,7 @@ pipeReaderThread (ProcessInfo * pi)
       CHDIR (dir);
       GNUNET_free (dir);
       execvp (pi->argv[0], &pi->argv[0]);
-      GE_LOG_STRERROR_FILE (ectx, LOG_ERROR, "execvp", pi->argv[0]);
+      GNUNET_GE_LOG_STRERROR_FILE (ectx, LOG_ERROR, "execvp", pi->argv[0]);
       fprintf (stderr,
                _("`%s' %s failed: %s\n"),
                "execvp", pi->argv[0], STRERROR (errno));
@@ -614,7 +614,7 @@ pipeReaderThread (ProcessInfo * pi)
  * Execute a command.
  */
 static void
-tb_EXEC (ClientHandle client, TESTBED_CS_MESSAGE * msg)
+tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 {
   int argc2;
   unsigned short size;
@@ -628,10 +628,10 @@ tb_EXEC (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   emsg = (TESTBED_EXEC_MESSAGE *) msg;
   size = htons (msg->header.size);
   if ((size <= sizeof (TESTBED_CS_MESSAGE)) ||
-      (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
+      (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->
        commandLine[size - sizeof (TESTBED_CS_MESSAGE) - 1] != '\0'))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid `%s' message: %s.\n"),
               "EXEC",
               (size <= sizeof (TESTBED_CS_MESSAGE))
@@ -644,10 +644,10 @@ tb_EXEC (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi = GNUNET_malloc (sizeof (ProcessInfo));
   pi->argc = 0;
   for (pos = 0; pos < size; pos++)
-    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] == '\0')
+    if (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->commandLine[pos] == '\0')
       pi->argc++;
   mainName =
-    GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[0]);
+    GNUNET_strdup (&((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->commandLine[0]);
   clientConfig = NULL;
   if (0 == strncmp ("gnunet", mainName, strlen ("gnunet")))
     clientConfig = getConfigurationString ("TESTBED", "CLIENTCONFIG");
@@ -658,9 +658,9 @@ tb_EXEC (ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi->argv[0] = mainName;
   pi->argv[pi->argc] = NULL;    /* termination! */
   for (pos = size - 2; pos >= 0; pos--)
-    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] == '\0')
+    if (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->commandLine[pos] == '\0')
       pi->argv[--argc2] =
-        GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
+        GNUNET_strdup (&((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->
                        commandLine[pos + 1]);
   if (clientConfig != NULL)
     {
@@ -700,7 +700,7 @@ tb_EXEC (ClientHandle client, TESTBED_CS_MESSAGE * msg)
  * process on exit.
  */
 static void
-tb_SIGNAL (ClientHandle client, TESTBED_SIGNAL_MESSAGE * msg)
+tb_SIGNAL (GNUNET_ClientHandle client, TESTBED_SIGNAL_MESSAGE * msg)
 {
   int ret;
   int i;
@@ -755,7 +755,7 @@ tb_SIGNAL (ClientHandle client, TESTBED_SIGNAL_MESSAGE * msg)
  * Get the output of a process.
  */
 static void
-tb_GET_OUTPUT (ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
+tb_GET_OUTPUT (GNUNET_ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
 {
   int i;
   unsigned int uid;
@@ -773,7 +773,7 @@ tb_GET_OUTPUT (ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
           TESTBED_OUTPUT_REPLY_MESSAGE *msg;
 
           msg = GNUNET_malloc (65532);
-          msg->header.header.type = htons (CS_PROTO_testbed_REPLY);
+          msg->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REPLY);
           msg->header.msgType = htonl (TESTBED_OUTPUT_RESPONSE);
 
           sendAcknowledgement (client, pi->outputSize);
@@ -785,7 +785,7 @@ tb_GET_OUTPUT (ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
                 run = 65532 - sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
               msg->header.header.size
                 = htons (run + sizeof (TESTBED_OUTPUT_REPLY_MESSAGE));
-              memcpy (&((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) msg)->
+              memcpy (&((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) msg)->
                       data[0], &pi->output[pos], run);
               coreAPI->sendToClient (client, &msg->header.header);
               pos += run;
@@ -805,7 +805,7 @@ tb_GET_OUTPUT (ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
  * The client is uploading a file to this peer.
  */
 static void
-tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
+tb_UPLOAD_FILE (GNUNET_ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
 {
   int ack;
   unsigned int size;
@@ -814,22 +814,22 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   char *tmp;
   FILE *outfile;
 
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER, "tb_UPLOAD_FILE\n");
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "tb_UPLOAD_FILE\n");
   if (sizeof (TESTBED_UPLOAD_FILE_MESSAGE) > ntohs (msg->header.header.size))
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("size of `%s' message is too short. Ignoring.\n"),
               "UPLOAD_FILE");
       sendAcknowledgement (client, GNUNET_SYSERR);
       return;
     }
   end = &((char *) msg)[ntohs (msg->header.header.size)];
-  s = filename = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf;
+  s = filename = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf;
   while ((*s) && (s != end))
     {
       if (*s == '.' && *(s + 1) == '.')
         {
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("\'..\' is not allowed in file name (%s).\n"), filename);
           return;
         }
@@ -838,7 +838,7 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   if (s == filename)
     {
       /* filename empty, not allowed! */
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Empty filename for UPLOAD_FILE message is invalid!\n"));
       sendAcknowledgement (client, GNUNET_SYSERR);
       return;
@@ -846,7 +846,7 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   if (s == end)
     {
       /* filename empty, not allowed! */
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _
               ("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"));
       sendAcknowledgement (client, GNUNET_SYSERR);
@@ -855,7 +855,7 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   tmp = getConfigurationString ("TESTBED", "UPLOAD-DIR");
   if (tmp == NULL)
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER, _("Upload refused!"));
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER, _("Upload refused!"));
       sendAcknowledgement (client, GNUNET_SYSERR);
       return;
     }
@@ -867,13 +867,13 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   strcpy (filename, gnHome);
   strcat (filename, DIR_SEPARATOR_STR);
   strncat (filename,
-           ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf,
-           end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf);
+           ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf,
+           end - ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf);
   if (htonl (msg->type) == TESTBED_FILE_DELETE)
     {
       if (REMOVE (filename) && errno != ENOENT)
         {
-          GE_LOG_STRERROR_FILE (ectx, LOG_WARNING, "remove", filename);
+          GNUNET_GE_LOG_STRERROR_FILE (ectx, LOG_WARNING, "remove", filename);
           ack = GNUNET_SYSERR;
         }
       else
@@ -884,7 +884,7 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
     }
   if (htonl (msg->type) != TESTBED_FILE_GNUNET_array_append)
     {
-      GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Invalid message received at %s:%d."), __FILE__, __LINE__);
       GNUNET_free (filename);
       return;
@@ -893,16 +893,16 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   if (outfile == NULL)
     {
       /* Send nack back to control point. */
-      GE_LOG_STRERROR_FILE (ectx, LOG_ERROR, "fopen", filename);
+      GNUNET_GE_LOG_STRERROR_FILE (ectx, LOG_ERROR, "fopen", filename);
       sendAcknowledgement (client, GNUNET_SYSERR);
       GNUNET_free (filename);
       return;
     }
   GNUNET_free (filename);
-  s = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1;     /* \0 added */
+  s = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf) + 1;     /* \0 added */
   size = ntohs (msg->header.header.size) -
     sizeof (TESTBED_UPLOAD_FILE_MESSAGE) -
-    (strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1);
+    (strlen (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf) + 1);
   if (GN_FWRITE (s, 1, size, outfile) != size)
     ack = GNUNET_SYSERR;
   else
@@ -914,7 +914,7 @@ tb_UPLOAD_FILE (ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
 /**
  * General type of a message handler.
  */
-typedef void (*THandler) (ClientHandle client, TESTBED_CS_MESSAGE * msg);
+typedef void (*THandler) (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg);
 
 /**
  * @brief Entry in the handlers array that describes a testbed message handler.
@@ -989,20 +989,20 @@ static HD handlers[] = {
  * on the testbed-message type.
  */
 static void
-csHandleTestbedRequest (ClientHandle client, CS_MESSAGE_HEADER * message)
+csHandleTestbedRequest (GNUNET_ClientHandle client, CS_MESSAGNUNET_GE_HEADER * message)
 {
   TESTBED_CS_MESSAGE *msg;
   unsigned short size;
   unsigned int id;
 
 #if DEBUG_TESTBED
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "TESTBED handleTestbedRequest\n");
 #endif
   size = ntohs (message->size);
   if (size < sizeof (TESTBED_CS_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("received invalid testbed message of size %u\n"), size);
       return;
     }
@@ -1013,7 +1013,7 @@ csHandleTestbedRequest (ClientHandle client, CS_MESSAGE_HEADER * message)
       if ((handlers[id].expectedSize == 0) ||
           (handlers[id].expectedSize == size))
         {
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   "TESTBED received message of type %u.\n", id);
 
           handlers[id].handler (client, msg);
@@ -1021,7 +1021,7 @@ csHandleTestbedRequest (ClientHandle client, CS_MESSAGE_HEADER * message)
         }
       else
         {
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _
                   ("Received testbed message of type %u but unexpected size %u, expected %u\n"),
                   id, size, handlers[id].expectedSize);
@@ -1067,7 +1067,7 @@ httpRegister (char *cmd)
   reg = getConfigurationString ("TESTBED", "REGISTERURL");
   if (reg == NULL)
     {
-      GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               _("No testbed URL given, not registered.\n"));
       return;
     }
@@ -1077,7 +1077,7 @@ httpRegister (char *cmd)
     {
       if (GNUNET_OK != GNUNET_get_host_by_name (ectx, proxy, &ip_info))
         {
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Could not resolve name of HTTP proxy `%s'.\n"), proxy);
           theProxy.sin_addr.s_addr = 0;
         }
@@ -1105,7 +1105,7 @@ httpRegister (char *cmd)
 
   if (0 != strncmp (HTTP_URL, reg, strlen (HTTP_URL)))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Invalid URL `%s' (must begin with `%s')\n"), reg, HTTP_URL);
       return;
     }
@@ -1145,7 +1145,7 @@ httpRegister (char *cmd)
       port = strtol (pstring, &buffer, 10);
       if ((port < 0) || (port > 65536))
         {
-          GE_LOG (ectx, GE_ERROR | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _
                   ("Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"),
                   reg, buffer);
@@ -1159,7 +1159,7 @@ httpRegister (char *cmd)
   hostname[k] = '\0';
 
 #if DEBUG_TESTBED
-  GE_LOG (ectx, GE_INFO | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Trying to (un)register testbed client at %s\n", reg);
 #endif
 
@@ -1180,7 +1180,7 @@ httpRegister (char *cmd)
       /* no proxy */
       if (GNUNET_OK != GNUNET_get_host_by_name (ectx, hostname, &ip_info))
         {
-          GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                   _("Could not register testbed, host `%s' unknown\n"),
                   hostname);
           GNUNET_free (reg);
@@ -1201,7 +1201,7 @@ httpRegister (char *cmd)
                (struct sockaddr *) &soaddr,
                sizeof (soaddr)) < 0 && errno != EWOULDBLOCK)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Failed to send HTTP request to host `%s': %s\n"),
               hostname, STRERROR (errno));
       GNUNET_free (reg);
@@ -1238,7 +1238,7 @@ httpRegister (char *cmd)
   curpos = SEND_BLOCKING_ALL (sock, command, curpos);
   if (GNUNET_SYSERR == (int) curpos)
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Failed so send HTTP request `%s' to host `%s': %s\n"),
               command, hostname, STRERROR (errno));
       GNUNET_free (command);
@@ -1275,11 +1275,11 @@ httpRegister (char *cmd)
   closefile (sock);
   if (curpos < 4)
     {                           /* invalid response */
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Exit register (error: no http response read).\n"));
     }
 #if DEBUG_TESTBED
-  GE_LOG (ectx, GE_INFO | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Exit register (%d seconds before timeout)\n",
           (int) (start + 300 * GNUNET_CRON_SECONDS -
                  GNUNET_get_time ()) / GNUNET_CRON_SECONDS);
@@ -1290,7 +1290,7 @@ httpRegister (char *cmd)
  * When a client exits, kill all associated processes.
  */
 static void
-testbedClientExitHandler (ClientHandle client)
+testbedClientExitHandler (GNUNET_ClientHandle client)
 {
   int i;
   int pding;
@@ -1347,35 +1347,35 @@ testbedClientExitHandler (ClientHandle client)
  * @return GNUNET_SYSERR on errors
  */
 int
-initialize_module_testbed (CoreAPIForApplication * capi)
+initialize_module_testbed (GNUNET_CoreAPIForPlugins * capi)
 {
   unsigned int i;
 
   /* some checks */
   for (i = 0; i < TESTBED_MAX_MSG; i++)
     if ((handlers[i].msgId != i) && (handlers[i].handler != &tb_undefined))
-      GE_ASSERT (ectx, 0);
-  GE_ASSERT (ectx, handlers[TESTBED_MAX_MSG].handler == NULL);
+      GNUNET_GE_ASSERT (ectx, 0);
+  GNUNET_GE_ASSERT (ectx, handlers[TESTBED_MAX_MSG].handler == NULL);
   identity = capi->requestService ("identity");
   if (identity == NULL)
     return GNUNET_SYSERR;
 
   GNUNET_mutex_create (&lock);
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "TESTBED registering handler %d!\n", CS_PROTO_testbed_REQUEST);
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+          "TESTBED registering handler %d!\n", GNUNET_CS_PROTO_TESTBED_REQUEST);
   coreAPI = capi;
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              GNUNET_SYSERR !=
              capi->registerClientExitHandler (&testbedClientExitHandler));
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              GNUNET_SYSERR !=
-             capi->registerClientHandler (CS_PROTO_testbed_REQUEST,
-                                          (CSHandler) &
+             capi->registerClientHandler (GNUNET_CS_PROTO_TESTBED_REQUEST,
+                                          (GNUNET_ClientRequestHandler) &
                                           csHandleTestbedRequest));
   httpRegister ("startup");
 
-  GE_ASSERT (capi->ectx,
-             0 == GC_set_configuration_value_string (capi->cfg,
+  GNUNET_GE_ASSERT (capi->ectx,
+             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
                                                      "ABOUT",
                                                      "testbed",
@@ -1410,10 +1410,10 @@ done_module_testbed ()
 
   httpRegister ("shutdown");
   GNUNET_mutex_destroy (&lock);
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "TESTBED unregistering handler %d\n", CS_PROTO_testbed_REQUEST);
-  coreAPI->unregisterClientHandler (CS_PROTO_testbed_REQUEST,
-                                    (CSHandler) & csHandleTestbedRequest);
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+          "TESTBED unregistering handler %d\n", GNUNET_CS_PROTO_TESTBED_REQUEST);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TESTBED_REQUEST,
+                                    (GNUNET_ClientRequestHandler) & csHandleTestbedRequest);
   coreAPI->unregisterClientExitHandler (&testbedClientExitHandler);
   coreAPI->releaseService (identity);
   identity = NULL;

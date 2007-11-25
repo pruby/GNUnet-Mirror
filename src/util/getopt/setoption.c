@@ -37,23 +37,23 @@ GNUNET_getopt_configure_set_option (GNUNET_CommandLineProcessorContext * ctx,
                                     const char *value)
 {
   char *section = GNUNET_strdup (scls);
-  struct GC_Configuration *cfg = ctx->cfg;
+  struct GNUNET_GC_Configuration *cfg = ctx->cfg;
   char *option;
   int ret;
 
   option = strstr (section, ":");
-  GE_ASSERT (ctx->ectx, option != NULL);
+  GNUNET_GE_ASSERT (ctx->ectx, option != NULL);
   option[0] = '\0';
   option++;
   if (value == NULL)
     value = "YES";
-  ret = GC_set_configuration_value_string (cfg,
+  ret = GNUNET_GC_set_configuration_value_string (cfg,
                                            ctx->ectx, section, option, value);
 
   if (ret != 0)
     {
-      GE_LOG (ctx->ectx,
-              GE_USER | GE_BULK | GE_ERROR,
+      GNUNET_GE_LOG (ctx->ectx,
+              GNUNET_GE_USER | GNUNET_GE_BULK | GNUNET_GE_ERROR,
               _
               ("Setting option `%s' in section `%s' to `%s' when processing command line option `%s' was denied.\n"),
               option, section, value, cmdLineOption);
@@ -71,16 +71,16 @@ GNUNET_getopt_configure_increment_value (GNUNET_CommandLineProcessorContext *
                                          const char *value)
 {
   char *section = GNUNET_strdup (scls);
-  struct GC_Configuration *cfg = ctx->cfg;
+  struct GNUNET_GC_Configuration *cfg = ctx->cfg;
   char *option;
   int ret;
   unsigned long long old;
 
   option = strstr (section, ":");
-  GE_ASSERT (ctx->ectx, option != NULL);
+  GNUNET_GE_ASSERT (ctx->ectx, option != NULL);
   option[0] = '\0';
   option++;
-  ret = GC_get_configuration_value_number (cfg,
+  ret = GNUNET_GC_get_configuration_value_number (cfg,
                                            section,
                                            option,
                                            0,
@@ -90,7 +90,7 @@ GNUNET_getopt_configure_increment_value (GNUNET_CommandLineProcessorContext *
       GNUNET_free (section);
       return GNUNET_SYSERR;
     }
-  ret = GC_set_configuration_value_number (cfg,
+  ret = GNUNET_GC_set_configuration_value_number (cfg,
                                            ctx->ectx,
                                            section, option, old + 1);
   GNUNET_free (section);
@@ -118,7 +118,7 @@ GNUNET_getopt_configure_set_string (GNUNET_CommandLineProcessorContext * ctx,
 {
   char **val = scls;
 
-  GE_ASSERT (NULL, value != NULL);
+  GNUNET_GE_ASSERT (NULL, value != NULL);
   *val = GNUNET_strdup (value);
   return GNUNET_OK;
 }
@@ -131,8 +131,8 @@ GNUNET_getopt_configure_set_ulong (GNUNET_CommandLineProcessorContext * ctx,
   unsigned long long *val = scls;
   if (1 != SSCANF (value, "%llu", val))
     {
-      GE_LOG (ctx->ectx,
-              GE_ERROR | GE_IMMEDIATE | GE_USER,
+      GNUNET_GE_LOG (ctx->ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
               _("You must pass a number to the `%s' option.\n"), "-X");
       return GNUNET_SYSERR;
     }
@@ -148,8 +148,8 @@ GNUNET_getopt_configure_set_uint (GNUNET_CommandLineProcessorContext * ctx,
 
   if (1 != SSCANF (value, "%u", val))
     {
-      GE_LOG (ctx->ectx,
-              GE_ERROR | GE_IMMEDIATE | GE_USER,
+      GNUNET_GE_LOG (ctx->ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
               _("You must pass a number to the `%s' option.\n"), "-X");
       return GNUNET_SYSERR;
     }

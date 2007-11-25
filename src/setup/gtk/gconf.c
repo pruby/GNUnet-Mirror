@@ -57,14 +57,14 @@ enum
 
 static GtkListStore *no_model;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static const char *cfg_filename;
 
 static void
-addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
+addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNUNET_GNS_TreeNode *pos)
 {
   GtkTreeIter it;
   GtkTreeIter it2;
@@ -99,9 +99,9 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                       SETUP_COMBO_VIS, FALSE,
                       SETUP_DESCRIPTION, pos->description,
                       SETUP_HELPTEXT, pos->help, -1);
-  switch (pos->type & GNS_KindMask)
+  switch (pos->type & GNUNET_GNS_KIND_MASK)
     {
-    case GNS_Node:
+    case GNUNET_GNS_KIND_NODE:
       i = 0;
       while (pos->children[i] != NULL)
         {
@@ -109,10 +109,10 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
           i++;
         }
       break;
-    case GNS_Leaf:
-      switch (pos->type & GNS_TypeMask)
+    case GNUNET_GNS_KIND_LEAF:
+      switch (pos->type & GNUNET_GNS_TYPE_MASK)
         {
-        case GNS_Boolean:
+        case GNUNET_GNS_TYPE_BOOLEAN:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           gtk_list_store_insert_with_values (cmodel, &it2, -1, 0, "YES", -1);
           gtk_list_store_insert_with_values (cmodel, &it2, -1, 0, "NO", -1);
@@ -125,7 +125,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                               SETUP_TEXT_VALUE,
                               pos->value.Boolean.val ? "YES" : "NO", -1);
           break;
-        case GNS_String:
+        case GNUNET_GNS_TYPE_STRING:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           gtk_tree_store_set (model,
                               &it,
@@ -148,7 +148,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                               SETUP_TEXT_VIS, TRUE,
                               SETUP_COMBO_VIS, TRUE, -1);
           break;
-        case GNS_MC:
+        case GNUNET_GNS_TYPE_MULTIPLE_CHOICE:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           gtk_tree_store_set (model,
                               &it,
@@ -190,7 +190,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
               fprintf (stderr,
                        "Too many choices in multiple choice for `%s': %d\n",
                        pos->option, i);
-              GE_BREAK (NULL, 0);
+              GNUNET_GE_BREAK (NULL, 0);
             }
           GNUNET_free (tmp);
           gtk_tree_store_set (model,
@@ -198,7 +198,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                               SETUP_TEXT_VIS, TRUE,
                               SETUP_COMBO_VIS, TRUE, -1);
           break;
-        case GNS_SC:
+        case GNUNET_GNS_TYPE_SINGLE_CHOICE:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           gtk_tree_store_set (model,
                               &it,
@@ -218,7 +218,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
             }
           gtk_tree_store_set (model, &it, SETUP_COMBO_VIS, TRUE, -1);
           break;
-        case GNS_Double:
+        case GNUNET_GNS_TYPE_DOUBLE:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           GNUNET_snprintf (defStr, 128, "%f", pos->value.Double.def);
           GNUNET_snprintf (valStr, 128, "%f", pos->value.Double.val);
@@ -236,7 +236,7 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                               SETUP_TEXT_VIS, TRUE,
                               SETUP_COMBO_MODEL, cmodel, -1);
           break;
-        case GNS_UInt64:
+        case GNUNET_GNS_TYPE_UINT64:
           cmodel = gtk_list_store_new (1, G_TYPE_STRING);
           GNUNET_snprintf (defStr, 128, "%llu", pos->value.UInt64.def);
           GNUNET_snprintf (valStr, 128, "%llu", pos->value.UInt64.val);
@@ -255,14 +255,14 @@ addToTree (GtkTreeStore * model, GtkTreeIter * parent, struct GNS_Tree *pos)
                               SETUP_COMBO_MODEL, cmodel, -1);
           break;
         default:
-          GE_ASSERT (NULL, 0);
+          GNUNET_GE_ASSERT (NULL, 0);
           gtk_tree_store_remove (model, &it);
           return;
         }
       break;
-    case GNS_Root:
+    case GNUNET_GNS_KIND_ROOT:
     default:
-      GE_ASSERT (NULL, 0);
+      GNUNET_GE_ASSERT (NULL, 0);
       gtk_tree_store_remove (model, &it);
       return;
     }
@@ -284,11 +284,11 @@ collectRows (GtkTreeView * tree_view, GtkTreePath * path, gpointer user_data)
 }
 
 static void
-updateTreeModel (struct GNS_Context *gns)
+updateTreeModel (struct GNUNET_GNS_Context *gns)
 {
   GtkWidget *treeView;
   GtkTreeStore *model;
-  struct GNS_Tree *tree;
+  struct GNUNET_GNS_TreeNode *tree;
   CR_Context crCTX;
   GtkTreePath *path;
   int i;
@@ -312,7 +312,7 @@ updateTreeModel (struct GNS_Context *gns)
                               G_TYPE_STRING,    /* description */
                               G_TYPE_STRING);   /* help text */
 
-  tree = GNS_get_tree (gns);
+  tree = GNUNET_GNS_get_tree_root (gns);
   i = 0;
   while (tree->children[i] != NULL)
     {
@@ -343,7 +343,7 @@ static void
 editedTextHandler (GtkCellRendererToggle * rdner,
                    gchar * path, gchar * new_value, gpointer user_data)
 {
-  struct GNS_Context *gns = user_data;
+  struct GNUNET_GNS_Context *gns = user_data;
   GtkTreePath *gtk_path;
   GtkTreeIter iter;
   GtkWidget *treeView;
@@ -356,7 +356,7 @@ editedTextHandler (GtkCellRendererToggle * rdner,
   gtk_path = gtk_tree_path_new_from_string (path);
   if (TRUE != gtk_tree_model_get_iter (model, &iter, gtk_path))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       gtk_tree_path_free (gtk_path);
       return;
     }
@@ -364,14 +364,14 @@ editedTextHandler (GtkCellRendererToggle * rdner,
   gtk_tree_model_get (model,
                       &iter,
                       SETUP_SECTION, &section, SETUP_OPTION, &option, -1);
-  GC_set_configuration_value_string (cfg, ectx, section, option, new_value);
+  GNUNET_GC_set_configuration_value_string (cfg, ectx, section, option, new_value);
   updateTreeModel (gns);
   free (section);
   free (option);
 }
 
 static void
-initTreeView (struct GNS_Context *gns)
+initTreeView (struct GNUNET_GNS_Context *gns)
 {
   GtkWidget *treeView;
   GtkTreeViewColumn *column;
@@ -481,7 +481,7 @@ on_saveButton_activatesetup_gtk ()
 {
   GtkWidget *dialog;
 
-  if (0 == GC_write_configuration (cfg, cfg_filename))
+  if (0 == GNUNET_GC_write_configuration (cfg, cfg_filename))
     {
       dialog = gtk_message_dialog_new (NULL,
                                        GTK_DIALOG_MODAL,
@@ -517,7 +517,7 @@ on_main_window_delete_eventsetup_gtk ()
   GtkWidget *dialog;
   gint ret;
 
-  if (GC_test_dirty (cfg))
+  if (GNUNET_GC_test_dirty (cfg))
     {
       dialog = gtk_message_dialog_new (NULL,
                                        GTK_DIALOG_MODAL,
@@ -529,7 +529,7 @@ on_main_window_delete_eventsetup_gtk ()
       switch (ret)
         {
         case GTK_RESPONSE_YES:
-          if (0 != GC_write_configuration (cfg, cfg_filename))
+          if (0 != GNUNET_GC_write_configuration (cfg, cfg_filename))
             {
               dialog = gtk_message_dialog_new (NULL,
                                                GTK_DIALOG_MODAL,
@@ -564,9 +564,9 @@ gtk_main_quitsetup_gtk ()
 
 int
 gconf_main_post_init (struct GNUNET_PluginHandle *self,
-                      struct GE_Context *e,
-                      struct GC_Configuration *c,
-                      struct GNS_Context *gns,
+                      struct GNUNET_GE_Context *e,
+                      struct GNUNET_GC_Configuration *c,
+                      struct GNUNET_GNS_Context *gns,
                       const char *filename, int is_daemon)
 {
   GtkWidget *mainWindow;
@@ -600,9 +600,9 @@ int
 gconf_mainsetup_gtk (int argc,
                      const char **argv,
                      struct GNUNET_PluginHandle *self,
-                     struct GE_Context *ectx,
-                     struct GC_Configuration *cfg,
-                     struct GNS_Context *gns,
+                     struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg,
+                     struct GNUNET_GNS_Context *gns,
                      const char *filename, int is_daemon)
 {
   g_thread_init (NULL);

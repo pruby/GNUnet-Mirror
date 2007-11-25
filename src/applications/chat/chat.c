@@ -30,12 +30,12 @@
 #include "gnunet_protocols.h"
 #include "chat.h"
 
-static CoreAPIForApplication *coreAPI = NULL;
+static GNUNET_CoreAPIForPlugins *coreAPI = NULL;
 
 #define MAX_LAST_MESSAGES 12
 #define MAX_CLIENTS 4
 
-static ClientHandle clients[MAX_CLIENTS];
+static GNUNET_ClientHandle clients[MAX_CLIENTS];
 static int clientCount;
 static GNUNET_HashCode lastMsgs[MAX_LAST_MESSAGES];
 static int ringIndex;
@@ -70,7 +70,7 @@ broadcastToConnected (const GNUNET_MessageHeader * message,
   bcc.message = message;
   bcc.prio = prio;
   bcc.delay = delay;
-  coreAPI->forAllConnectedNodes ((PerNodeCallback) bccHelper, &bcc);
+  coreAPI->forAllConnectedNodes ((GNUNET_NodeIteratorCallback) bccHelper, &bcc);
 }
 
 static int
@@ -85,7 +85,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
 
   if (ntohs (message->size) != sizeof (P2P_chat_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Message received from peer is invalid.\n"));
       return GNUNET_SYSERR;
     }
@@ -105,13 +105,13 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
          and broadcast to all peers */
       markSeen (&hc);
       broadcastToConnected (message, 5, 1);
-      cmsg->header.type = htons (CS_PROTO_chat_MSG);
+      cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
         coreAPI->sendToClient (clients[j], &cmsg->header);
       pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
       pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';
       /*
-         GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+         GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
          " CHAT: received new message from %s: %s\n",
          &pmsg->nick[0],
          &pmsg->message[0]);
@@ -122,7 +122,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
 }
 
 static int
-csHandleChatRequest (ClientHandle client, const CS_MESSAGE_HEADER * message)
+csHandleChatRequest (GNUNET_ClientHandle client, const CS_MESSAGNUNET_GE_HEADER * message)
 {
   int i;
   int j;
@@ -132,7 +132,7 @@ csHandleChatRequest (ClientHandle client, const CS_MESSAGE_HEADER * message)
 
   if (ntohs (message->size) != sizeof (CS_chat_MESSAGE))
     {
-      GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+      GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
               _("Message received from client is invalid\n"));
       return GNUNET_SYSERR;     /* invalid message */
     }
@@ -152,32 +152,32 @@ csHandleChatRequest (ClientHandle client, const CS_MESSAGE_HEADER * message)
   if (j == -1)
     {
       if (clientCount == MAX_CLIENTS)
-        GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+        GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                 _("Maximum number of chat clients reached.\n"));
       else
         {
           clients[clientCount++] = client;
-          GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+          GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                   _("Now %d of %d chat clients at this node.\n"),
                   clientCount, MAX_CLIENTS);
         }
     }
   /* forward to all other nodes in the network */
-  pmsg->header.type = htons (P2P_PROTO_chat_MSG);
+  pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
   broadcastToConnected (&pmsg->header, 5, 1);
   GNUNET_mutex_unlock (&chatMutex);
   return GNUNET_OK;
 }
 
 static void
-chatClientExitHandler (ClientHandle client)
+chatClientExitHandler (GNUNET_ClientHandle client)
 {
   int i;
   GNUNET_mutex_lock (&chatMutex);
   for (i = 0; i < clientCount; i++)
     if (clients[i] == client)
       {
-        GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+        GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                 "Chat client exits.\n");
         clients[i] = clients[--clientCount];
         break;
@@ -191,30 +191,30 @@ chatClientExitHandler (ClientHandle client)
  * @return GNUNET_SYSERR on errors
  */
 int
-initialize_module_chat (CoreAPIForApplication * capi)
+initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
 
-  GE_ASSERT (ectx, sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
+  GNUNET_GE_ASSERT (ectx, sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
   GNUNET_mutex_create (&chatMutex);
   clientCount = 0;
   coreAPI = capi;
-  GE_LOG (ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("`%s' registering handlers %d and %d\n"),
-          "chat", P2P_PROTO_chat_MSG, CS_PROTO_chat_MSG);
+          "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
 
   if (GNUNET_SYSERR ==
-      capi->registerHandler (P2P_PROTO_chat_MSG, &handleChatMSG))
+      capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientExitHandler (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_chat_MSG,
+  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                                     &csHandleChatRequest))
     ok = GNUNET_SYSERR;
 
-  GE_ASSERT (capi->ectx,
-             0 == GC_set_configuration_value_string (capi->cfg,
+  GNUNET_GE_ASSERT (capi->ectx,
+             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
                                                      "ABOUT",
                                                      "chat",
@@ -226,9 +226,9 @@ initialize_module_chat (CoreAPIForApplication * capi)
 void
 done_module_chat ()
 {
-  coreAPI->unregisterHandler (P2P_PROTO_chat_MSG, &handleChatMSG);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG);
   coreAPI->unregisterClientExitHandler (&chatClientExitHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_chat_MSG, &csHandleChatRequest);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG, &csHandleChatRequest);
   GNUNET_mutex_destroy (&chatMutex);
   coreAPI = NULL;
 }

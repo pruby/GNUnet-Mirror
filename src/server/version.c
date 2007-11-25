@@ -39,7 +39,7 @@
  * configuration file.
  */
 static void
-dyncat (struct GC_Configuration *cfg,
+dyncat (struct GNUNET_GC_Configuration *cfg,
         char **string, const char *section, const char *part)
 {
   int len;
@@ -50,7 +50,7 @@ dyncat (struct GC_Configuration *cfg,
   len += strlen (section) + 1;
   len += strlen (part) + 1;
   val = NULL;
-  GC_get_configuration_value_string (cfg, section, part, "", &val);
+  GNUNET_GC_get_configuration_value_string (cfg, section, part, "", &val);
   if (val == NULL)
     val = GNUNET_strdup ("");
   len += strlen (val) + 2;
@@ -76,7 +76,7 @@ dyncat (struct GC_Configuration *cfg,
  * require us to run gnunet-update!
  */
 static void
-getVersionHash (struct GC_Configuration *cfg, GNUNET_EncName * enc)
+getVersionHash (struct GNUNET_GC_Configuration *cfg, GNUNET_EncName * enc)
 {
   GNUNET_HashCode hc;
   char *string;
@@ -96,18 +96,18 @@ getVersionHash (struct GC_Configuration *cfg, GNUNET_EncName * enc)
 }
 
 static char *
-getVersionFileName (struct GE_Context *ectx, struct GC_Configuration *cfg)
+getVersionFileName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *en;
   char *cn;
 
   en = NULL;
-  if (-1 == GC_get_configuration_value_filename (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
                                                  "GNUNETD",
                                                  "GNUNETD_HOME",
-                                                 VAR_DAEMON_DIRECTORY, &en))
+                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY, &en))
     return NULL;
-  GE_ASSERT (ectx, en != NULL);
+  GNUNET_GE_ASSERT (ectx, en != NULL);
   cn = GNUNET_malloc (strlen (en) + strlen (VERSIONFILE) + 1);
   strcpy (cn, en);
   strcat (cn, VERSIONDIR);
@@ -125,7 +125,7 @@ getVersionFileName (struct GE_Context *ectx, struct GC_Configuration *cfg)
  * @return GNUNET_OK if we are
  */
 int
-checkUpToDate (struct GE_Context *ectx, struct GC_Configuration *cfg)
+checkUpToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char version[MAX_VS];
   int len;
@@ -135,8 +135,8 @@ checkUpToDate (struct GE_Context *ectx, struct GC_Configuration *cfg)
   fn = getVersionFileName (ectx, cfg);
   if (fn == NULL)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
               _
               ("Failed to determine filename used to store GNUnet version information!\n"));
       return GNUNET_OK;         /* uh uh */
@@ -169,7 +169,7 @@ checkUpToDate (struct GE_Context *ectx, struct GC_Configuration *cfg)
  * Writes the version tag
  */
 void
-upToDate (struct GE_Context *ectx, struct GC_Configuration *cfg)
+upToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char version[MAX_VS];
   int len;
@@ -178,7 +178,7 @@ upToDate (struct GE_Context *ectx, struct GC_Configuration *cfg)
 
   fn = getVersionFileName (ectx, cfg);
   len = strlen (VERSION) + 1 + sizeof (GNUNET_EncName);
-  GE_ASSERT (ectx, len < MAX_VS);
+  GNUNET_GE_ASSERT (ectx, len < MAX_VS);
   memcpy (version, VERSION, strlen (VERSION) + 1);
   getVersionHash (cfg, &enc);
   memcpy (&version[strlen (VERSION) + 1], &enc, sizeof (GNUNET_EncName));

@@ -45,7 +45,7 @@ typedef struct
 {
   char *table;
   char *db;
-} KVHandle;
+} GNUNET_KeyValueRecord;
 
 /**
  * @brief Callback for multiple results from Key/Value-Tables
@@ -54,7 +54,7 @@ typedef struct
  * @param vallen the length von val
  * @return GNUNET_OK on success
  */
-typedef int (*KVCallback) (void *closure, void *val, int vallen);
+typedef int (*GNUNET_KeyValueProcessor) (void *closure, void *val, int vallen);
 
 
 /**
@@ -67,7 +67,7 @@ typedef struct
    * @param table the name of the Key/Value-Table
    * @return a handle
    */
-  KVHandle *(*getTable) (const char *database, const char *table);
+  GNUNET_KeyValueRecord *(*getTable) (const char *database, const char *table);
 
   /**
    * @brief Get data from a Key/Value-Table
@@ -79,11 +79,11 @@ typedef struct
    * @param handler callback function to be called for every result (may be NULL)
    * @param closure optional parameter for handler
    */
-  void *(*get) (KVHandle * kv,
+  void *(*get) (GNUNET_KeyValueRecord * kv,
                 void *key,
                 int keylen,
                 unsigned int sort,
-                unsigned int limit, KVCallback handler, void *closure);
+                unsigned int limit, GNUNET_KeyValueProcessor handler, void *closure);
 
   /**
    * @brief Store Key/Value-Pair in a table
@@ -95,7 +95,7 @@ typedef struct
    * @param optional creation time
    * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
-  int (*put) (KVHandle * kv,
+  int (*put) (GNUNET_KeyValueRecord * kv,
               void *key,
               int keylen, void *val, int vallen, unsigned long long age);
 
@@ -106,27 +106,27 @@ typedef struct
    * @param age age of the items to delete (may be 0)
    * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
-  int (*del) (KVHandle * kv, void *key, int keylen, unsigned long long age);
+  int (*del) (GNUNET_KeyValueRecord * kv, void *key, int keylen, unsigned long long age);
 
   /**
    * @brief Close a handle to a Key/Value-Table
    * @param kv the handle to close
    */
-  void (*closeTable) (KVHandle * kv);
+  void (*closeTable) (GNUNET_KeyValueRecord * kv);
 
   /**
    * @brief Drop a Key/Value-Table
    * @param the handle to the table
    * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
    */
-  int (*dropTable) (KVHandle * kv);
+  int (*dropTable) (GNUNET_KeyValueRecord * kv);
 
   /**
    * @brief Delete the database.
    */
   void (*dropDatabase) (const char *name);
 
-} KVstore_ServiceAPI;
+} GNUNET_KVstore_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

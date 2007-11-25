@@ -61,7 +61,7 @@ typedef struct
    * in order to send replies on a bi-directional pipe (if
    * possible).
    */
-  TSession *tsession;
+  GNUNET_TSession *tsession;
 
   /**
    * The identity of the sender node
@@ -113,12 +113,12 @@ typedef struct
   /**
    * System error context
    */
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
   /**
    * System configuration
    */
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
   /**
    * System load monitor
@@ -158,7 +158,7 @@ typedef struct
    */
   int (*releaseService) (void *service);
 
-  int (*assertUnused) (TSession * tsession);
+  int (*assertUnused) (GNUNET_TSession * tsession);
 
 
 } CoreAPIForTransport;
@@ -260,7 +260,7 @@ typedef struct
    * @param may_reuse can an existing connection be re-used?
    * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
-  int (*connect) (const GNUNET_MessageHello * hello, TSession ** tsession,
+  int (*connect) (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsession,
                   int may_reuse);
 
   /**
@@ -277,7 +277,7 @@ typedef struct
    *         using the session afterwards (useful if the other
    *         side closed the connection).
    */
-  int (*send) (TSession * tsession,
+  int (*send) (GNUNET_TSession * tsession,
                const void *msg, unsigned int size, int important);
 
   /**
@@ -299,7 +299,7 @@ typedef struct
    * @return GNUNET_OK if the session could be associated,
    *         GNUNET_SYSERR if not.
    */
-  int (*associate) (TSession * tsession);
+  int (*associate) (GNUNET_TSession * tsession);
 
   /**
    * Disconnect from a remote node. A session can be closed
@@ -314,7 +314,7 @@ typedef struct
    * @param tsession the session that is to be closed
    * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
    */
-  int (*disconnect) (TSession * tsession);
+  int (*disconnect) (GNUNET_TSession * tsession);
 
   /**
    * Start the server process to receive inbound traffic.
@@ -348,7 +348,7 @@ typedef struct
    *         GNUNET_NO if the transport would just drop the message,
    *         GNUNET_SYSERR if the size/session is invalid
    */
-  int (*testWouldTry) (TSession * tsession, unsigned int size, int important);
+  int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size, int important);
 
 } TransportAPI;
 

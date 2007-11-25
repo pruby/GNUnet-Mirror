@@ -33,16 +33,16 @@ main (int argc, char *argv[])
   static long k;
   int ret;
   GNUNET_CronTime start;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
 
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (ectx);
-  cfg = GC_create ();
-  GE_ASSERT (ectx, cfg != NULL);
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (ectx);
+  cfg = GNUNET_GC_create ();
+  GNUNET_GE_ASSERT (ectx, cfg != NULL);
   GNUNET_os_init (ectx);
   /* need to run each phase for more than 10s since
      statuscalls only refreshes that often... */
@@ -63,7 +63,7 @@ main (int argc, char *argv[])
     {
       ret = 0;
     }
-  GC_free (cfg);
-  GE_free_context (ectx);
+  GNUNET_GC_free (cfg);
+  GNUNET_GE_free_context (ectx);
   return ret;
 }

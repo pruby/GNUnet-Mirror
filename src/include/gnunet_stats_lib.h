@@ -38,24 +38,24 @@ extern "C"
 #endif
 #endif
 
-#define STATS_VERSION "4.0.0"
+#define GNUNET_STATS_VERSION "5.0.0"
 
 /**
  * Return a descriptive name for a p2p message type
  */
-const char *STATS_p2pMessageName (unsigned short type);
+const char *GNUNET_STATS_p2p_message_type_to_string (unsigned short type);
 
 /**
  * Return a descriptive name for a client server message type
  */
-const char *STATS_csMessageName (unsigned short type);
+const char *GNUNET_STATS_cs_message_type_to_string (unsigned short type);
 
 /**
  * @param name the name of the datum
  * @param value the value
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
-typedef int (*STATS_StatProcessor) (const char *name,
+typedef int (*GNUNET_STATS_StatisticsProcessor) (const char *name,
                                     unsigned long long value, void *cls);
 
 /**
@@ -64,16 +64,16 @@ typedef int (*STATS_StatProcessor) (const char *name,
  * @param processor function to call on each value
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int STATS_getStatistics (struct GE_Context *ectx,
+int GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
                          struct GNUNET_ClientServerConnection *sock,
-                         STATS_StatProcessor processor, void *cls);
+                         GNUNET_STATS_StatisticsProcessor processor, void *cls);
 
 /**
  * @param type the type ID of the message
  * @param isP2P GNUNET_YES for P2P, GNUNET_NO for CS types
  * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
  */
-typedef int (*STATS_ProtocolProcessor) (unsigned short type,
+typedef int (*GNUNET_STATS_ProtocolProcessor) (unsigned short type,
                                         int isP2P, void *cls);
 
 /**
@@ -82,9 +82,9 @@ typedef int (*STATS_ProtocolProcessor) (unsigned short type,
  * @param processor function to call on each value
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int STATS_getAvailableProtocols (struct GE_Context *ectx,
+int GNUNET_STATS_get_available_protocols (struct GNUNET_GE_Context *ectx,
                                  struct GNUNET_ClientServerConnection *sock,
-                                 STATS_ProtocolProcessor processor,
+                                 GNUNET_STATS_ProtocolProcessor processor,
                                  void *cls);
 
 #if 0                           /* keep Emacsens' auto-indent happy */

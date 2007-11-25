@@ -31,9 +31,9 @@
 #include "gnunet_upnp_service.h"
 #include "gnunet_core.h"
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static struct GNUNET_CronManager *cron;
 
@@ -151,10 +151,10 @@ gnunet_upnp_get_ip (unsigned short port,
 /**
  * Get the external IP address for the local machine.
  */
-UPnP_ServiceAPI *
-provide_module_upnp (CoreAPIForApplication * capi)
+GNUNET_UPnP_ServiceAPI *
+provide_module_upnp (GNUNET_CoreAPIForPlugins * capi)
 {
-  static UPnP_ServiceAPI api;
+  static GNUNET_UPnP_ServiceAPI api;
 
   ectx = capi->ectx;
   cfg = capi->cfg;

@@ -36,16 +36,16 @@
 static struct GNUNET_BloomFilter *filter;
 
 static char *
-getFilterName (struct GE_Context *ectx, struct GC_Configuration *cfg)
+getFilterName (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *fn;
   char *bf;
 
   fn = NULL;
-  if (-1 == GC_get_configuration_value_filename (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_filename (cfg,
                                                  "FS",
                                                  "DIR",
-                                                 VAR_DAEMON_DIRECTORY "/fs",
+                                                 GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/fs",
                                                  &fn))
     return NULL;
   if (GNUNET_OK != GNUNET_disk_directory_create (ectx, fn))
@@ -61,13 +61,13 @@ getFilterName (struct GE_Context *ectx, struct GC_Configuration *cfg)
 }
 
 int
-initFilters (struct GE_Context *ectx, struct GC_Configuration *cfg)
+initFilters (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *bf;
   unsigned long long quota;     /* in kb */
   unsigned int bf_size;
 
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "FS",
                                                "QUOTA",
                                                0,
@@ -94,11 +94,11 @@ doneFilters ()
 }
 
 void
-deleteFilter (struct GE_Context *ectx, struct GC_Configuration *cfg)
+deleteFilter (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *fn;
 
-  GE_ASSERT (ectx, filter == NULL);
+  GNUNET_GE_ASSERT (ectx, filter == NULL);
   fn = getFilterName (ectx, cfg);
   UNLINK (fn);
   GNUNET_free (fn);

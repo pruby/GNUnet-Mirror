@@ -143,9 +143,9 @@ static HostEntry tempHosts[MAX_TEMP_HOSTS];
 
 static GNUNET_PeerIdentity myIdentity;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * Get the filename under which we would store the GNUNET_MessageHello
@@ -177,7 +177,7 @@ findHost (const GNUNET_PeerIdentity * id)
 {
   int i;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   for (i = 0; i < numberOfHosts_; i++)
     if ((0 ==
          memcmp (id, &hosts_[i]->identity, sizeof (GNUNET_PeerIdentity))))
@@ -200,7 +200,7 @@ addHostToKnown (const GNUNET_PeerIdentity * identity, unsigned short protocol)
   char *fn;
   unsigned int trust;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
   entry = findHost (identity);
   if (entry == NULL)
@@ -271,11 +271,11 @@ changeHostTrust (const GNUNET_PeerIdentity * hostId, int value)
   host = findHost (hostId);
   if (host == NULL)
     {
-      addHostToKnown (hostId, NAT_PROTOCOL_NUMBER);
+      addHostToKnown (hostId, GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
       host = findHost (hostId);
       if (host == NULL)
         {
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           GNUNET_mutex_unlock (lock_);
           return 0;
         }
@@ -325,8 +325,8 @@ cronHelper (const char *filename, const char *dirname, void *unused)
   unsigned int protoNumber;
   char *fullname;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
-  GE_ASSERT (ectx, sizeof (GNUNET_EncName) == 104);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_EncName) == 104);
   if (2 == sscanf (filename, "%103c.%u", (char *) &id, &protoNumber))
     {
       id.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
@@ -345,27 +345,27 @@ cronHelper (const char *filename, const char *dirname, void *unused)
   if (GNUNET_disk_file_test (ectx, fullname) == GNUNET_YES)
     {
       if (0 == UNLINK (fullname))
-        GE_LOG (ectx,
-                GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                 _
                 ("File `%s' in directory `%s' does not match naming convention. "
                  "Removed.\n"), filename, networkIdDirectory);
       else
-        GE_LOG_STRERROR_FILE (ectx,
-                              GE_ERROR | GE_USER | GE_BULK,
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                               "unlink", fullname);
     }
   else if (GNUNET_disk_directory_test (ectx, fullname) == GNUNET_YES)
     {
       if (0 == RMDIR (fullname))
-        GE_LOG (ectx,
-                GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                 _
                 ("Directory `%s' in directory `%s' does not match naming convention. "
                  "Removed.\n"), filename, networkIdDirectory);
       else
-        GE_LOG_STRERROR_FILE (ectx,
-                              GE_ERROR | GE_USER | GE_BULK,
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
                               "rmdir", fullname);
     }
   GNUNET_free (fullname);
@@ -395,12 +395,12 @@ cronScanDirectoryDataHosts (void *unused)
       retries++;
       if ((retries & 32) > 0)
         {
-          GE_LOG (ectx,
-                  GE_WARNING | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                   _("Still no peers found in `%s'!\n"), networkIdDirectory);
         }
     }
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
 }
 
 
@@ -440,7 +440,7 @@ addHostTemporarily (const GNUNET_MessageHello * tmp)
   getPeerIdentity (&tmp->publicKey, &have);
   if (0 != memcmp (&have, &tmp->senderIdentity, sizeof (GNUNET_PeerIdentity)))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return;
     }
   GNUNET_mutex_lock (lock_);
@@ -490,8 +490,8 @@ delHostFromKnown (const GNUNET_PeerIdentity * identity,
   int i;
   int j;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
-  GE_ASSERT (ectx, protocol != ANY_PROTOCOL_NUMBER);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, protocol != GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY);
   GNUNET_mutex_lock (lock_);
   for (i = 0; i < numberOfHosts_; i++)
     {
@@ -524,8 +524,8 @@ delHostFromKnown (const GNUNET_PeerIdentity * identity,
           /* also remove hello file itself */
           fn = getHostFileName (identity, protocol);
           if (0 != UNLINK (fn))
-            GE_LOG_STRERROR_FILE (ectx,
-                                  GE_WARNING | GE_USER | GE_BULK,
+            GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                  GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                                   "unlink", fn);
           GNUNET_free (fn);
 
@@ -541,7 +541,7 @@ delHostFromKnown (const GNUNET_PeerIdentity * identity,
               GNUNET_free (entry);
             }
           GNUNET_mutex_unlock (lock_);
-          GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+          GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
           return;               /* deleted */
         }
     }
@@ -566,11 +566,11 @@ bindAddress (const GNUNET_MessageHello * msg)
   getPeerIdentity (&msg->publicKey, &have);
   if (0 != memcmp (&have, &msg->senderIdentity, sizeof (GNUNET_PeerIdentity)))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return;
     }
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
-  GE_ASSERT (ectx, msg != NULL);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, msg != NULL);
   fn = getHostFileName (&msg->senderIdentity, ntohs (msg->protocol));
   buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
   if (GNUNET_disk_file_test (ectx, fn) == GNUNET_YES)
@@ -598,7 +598,7 @@ bindAddress (const GNUNET_MessageHello * msg)
   GNUNET_mutex_lock (lock_);
   addHostToKnown (&msg->senderIdentity, ntohs (msg->protocol));
   host = findHost (&msg->senderIdentity);
-  GE_ASSERT (ectx, host != NULL);
+  GNUNET_GE_ASSERT (ectx, host != NULL);
 
   for (i = 0; i < host->helloCount; i++)
     {
@@ -614,17 +614,17 @@ bindAddress (const GNUNET_MessageHello * msg)
   host->hellos[i] = GNUNET_malloc (GNUNET_sizeof_hello (msg));
   memcpy (host->hellos[i], msg, GNUNET_sizeof_hello (msg));
   GNUNET_mutex_unlock (lock_);
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
  * Obtain the public key and address of a known host.  If no specific
- * protocol is specified (ANY_PROTOCOL_NUMBER), hellos for cheaper
+ * protocol is specified (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY), hellos for cheaper
  * protocols are returned with preference (randomness!).
  *
  * @param hostId the host id
  * @param protocol the protocol that we need,
- *        ANY_PROTOCOL_NUMBER if we do not care which protocol
+ *        GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY if we do not care which protocol
  * @param tryTemporaryList is it ok to check the unverified hellos?
  * @param result where to store the result
  * @returns GNUNET_SYSERR on failure, GNUNET_OK on success
@@ -642,7 +642,7 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
   int i;
   int j;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
   if (GNUNET_YES == tryTemporaryList)
     {
@@ -656,7 +656,7 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
                memcmp (hostId, &host->identity,
                        sizeof (GNUNET_PeerIdentity))))
             {
-              if (protocol == ANY_PROTOCOL_NUMBER)
+              if (protocol == GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY)
                 {
                   j =
                     GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
@@ -691,7 +691,7 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
       return NULL;
     }
 
-  if (protocol == ANY_PROTOCOL_NUMBER)
+  if (protocol == GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY)
     protocol =
       host->
       protocols[GNUNET_random_u32
@@ -722,12 +722,12 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
   if (size != sizeof (GNUNET_MessageHello))
     {
       if (0 == UNLINK (fn))
-        GE_LOG (ectx,
-                GE_WARNING | GE_USER | GE_BULK,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                 _("Removed file `%s' containing invalid HELLO data.\n"), fn);
       else
-        GE_LOG_STRERROR_FILE (ectx,
-                              GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                               "unlink", fn);
       GNUNET_free (fn);
       GNUNET_mutex_unlock (lock_);
@@ -745,12 +745,12 @@ identity2Hello (const GNUNET_PeerIdentity * hostId,
        memcmp (&have, &result->senderIdentity, sizeof (GNUNET_PeerIdentity))))
     {
       if (0 == UNLINK (fn))
-        GE_LOG (ectx,
-                GE_WARNING | GE_USER | GE_BULK,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
                 _("Removed file `%s' containing invalid HELLO data.\n"), fn);
       else
-        GE_LOG_STRERROR_FILE (ectx,
-                              GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER | GNUNET_GE_BULK,
                               "unlink", fn);
       GNUNET_free (fn);
       GNUNET_free (result);
@@ -784,17 +784,17 @@ verifyPeerSignature (const GNUNET_PeerIdentity * signer,
   GNUNET_MessageHello *hello;
   int res;
 
-  hello = identity2Hello (signer, ANY_PROTOCOL_NUMBER, GNUNET_YES);
+  hello = identity2Hello (signer, GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_YES);
   if (hello == NULL)
     {
 #if DEBUG_IDENTITY
       GNUNET_EncName enc;
 
       IF_GELOG (ectx,
-                GE_INFO | GE_USER | GE_BULK,
+                GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&signer->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_INFO | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
               _("Signature failed verification: peer `%s' not known.\n"),
               &enc);
 #endif
@@ -802,8 +802,8 @@ verifyPeerSignature (const GNUNET_PeerIdentity * signer,
     }
   res = GNUNET_RSA_verify (message, size, sig, &hello->publicKey);
   if (res == GNUNET_SYSERR)
-    GE_LOG (ectx,
-            GE_ERROR | GE_REQUEST | GE_DEVELOPER | GE_USER,
+    GNUNET_GE_LOG (ectx,
+            GNUNET_GE_ERROR | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER | GNUNET_GE_USER,
             _("Signature failed verification: signature invalid.\n"));
   GNUNET_free (hello);
   return res;
@@ -827,7 +827,7 @@ blacklistHost (const GNUNET_PeerIdentity * identity,
   int i;
   GNUNET_CronTime now;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
   entry = findHost (identity);
   if (entry == NULL)
@@ -876,8 +876,8 @@ blacklistHost (const GNUNET_PeerIdentity * identity,
   entry->strict = strict;
   GNUNET_hash_to_enc (&identity->hashPubKey, &hn);
 #if DEBUG_IDENTITY
-  GE_LOG (ectx,
-          GE_INFO | GE_REQUEST | GE_DEVELOPER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
           "Blacklisting host `%s' for %llu seconds"
           " until %llu (strict=%d).\n",
           &hn, entry->delta / GNUNET_CRON_SECONDS, entry->until, strict);
@@ -898,7 +898,7 @@ isBlacklisted (const GNUNET_PeerIdentity * identity, int strict)
   GNUNET_CronTime now;
   HostEntry *entry;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
   entry = findHost (identity);
   if (entry == NULL)
@@ -914,10 +914,10 @@ isBlacklisted (const GNUNET_PeerIdentity * identity, int strict)
       GNUNET_EncName enc;
 
       IF_GELOG (ectx,
-                GE_INFO | GE_USER | GE_BULK,
+                GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                 GNUNET_hash_to_enc (&identity->hashPubKey, &enc));
-      GE_LOG (ectx,
-              GE_INFO | GE_USER | GE_BULK,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
               _
               ("Peer `%s' is currently strictly blacklisted (for another %llums).\n"),
               &enc, entry->until - now);
@@ -944,7 +944,7 @@ whitelistHost (const GNUNET_PeerIdentity * identity)
   HostEntry *entry;
   int i;
 
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   GNUNET_mutex_lock (lock_);
   entry = findHost (identity);
   if (entry == NULL)
@@ -983,7 +983,7 @@ whitelistHost (const GNUNET_PeerIdentity * identity)
  * @return the number of hosts matching
  */
 static int
-forEachHost (GNUNET_CronTime now, HostIterator callback, void *data)
+forEachHost (GNUNET_CronTime now, GNUNET_HostProcessor callback, void *data)
 {
   int i;
   int j;
@@ -994,7 +994,7 @@ forEachHost (GNUNET_CronTime now, HostIterator callback, void *data)
   int ret;
 
   ret = GNUNET_OK;
-  GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
+  GNUNET_GE_ASSERT (ectx, numberOfHosts_ <= sizeOfHosts_);
   count = 0;
   GNUNET_mutex_lock (lock_);
   for (i = 0; i < numberOfHosts_; i++)
@@ -1036,10 +1036,10 @@ forEachHost (GNUNET_CronTime now, HostIterator callback, void *data)
           GNUNET_EncName enc;
 
           IF_GELOG (ectx,
-                    GE_INFO | GE_USER | GE_BULK,
+                    GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                     GNUNET_hash_to_enc (&entry->identity.hashPubKey, &enc));
-          GE_LOG (ectx,
-                  GE_INFO | GE_USER | GE_BULK,
+          GNUNET_GE_LOG (ectx,
+                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                   entry->strict ?
                   _
                   ("Peer `%s' is currently strictly blacklisted (for another %llums).\n")
@@ -1099,8 +1099,8 @@ flushHostCredit (HostEntry * host)
   if (host->trust == 0)
     {
       if ((0 != UNLINK (fn)) && (errno != ENOENT))
-        GE_LOG_STRERROR_FILE (ectx,
-                              GE_WARNING | GE_USER | GE_BULK, "unlink", fn);
+        GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                              GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, "unlink", fn);
     }
   else
     {
@@ -1169,7 +1169,7 @@ cronDiscardHosts (void *unused)
 
 
 static int
-identityRequestConnectHandler (struct ClientHandle *sock,
+identityRequestConnectHandler (struct GNUNET_ClientHandle *sock,
                                const GNUNET_MessageHeader * message)
 {
   const CS_identity_connect_MESSAGE *msg;
@@ -1186,7 +1186,7 @@ identityRequestConnectHandler (struct ClientHandle *sock,
 }
 
 static int
-identityHelloHandler (struct ClientHandle *sock,
+identityHelloHandler (struct GNUNET_ClientHandle *sock,
                       const GNUNET_MessageHeader * message)
 {
   const GNUNET_MessageHello *msg;
@@ -1194,18 +1194,18 @@ identityHelloHandler (struct ClientHandle *sock,
 
   if (sizeof (GNUNET_MessageHello) > ntohs (message->size))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   msg = (const GNUNET_MessageHello *) message;
   if (GNUNET_sizeof_hello (msg) != ntohs (message->size))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   hello = GNUNET_malloc (ntohs (msg->header.size));
   memcpy (hello, msg, ntohs (msg->header.size));
-  hello->header.type = htons (p2p_PROTO_hello);
+  hello->header.type = htons (GNUNET_P2P_PROTO_HELLO);
   coreAPI->injectMessage (NULL,
                           (const char *) hello,
                           ntohs (msg->header.size), GNUNET_NO, NULL);
@@ -1214,23 +1214,23 @@ identityHelloHandler (struct ClientHandle *sock,
 }
 
 static int
-identityRequestHelloHandler (struct ClientHandle *sock,
+identityRequestHelloHandler (struct GNUNET_ClientHandle *sock,
                              const GNUNET_MessageHeader * message)
 {
   /* transport types in order of preference
      for location URIs (by best guess at what
      people are most likely to actually run) */
   static unsigned short types[] = {
-    TCP_PROTOCOL_NUMBER,
-    UDP_PROTOCOL_NUMBER,
-    HTTP_PROTOCOL_NUMBER,
-    TCP6_PROTOCOL_NUMBER,
-    UDP6_PROTOCOL_NUMBER,
-    SMTP_PROTOCOL_NUMBER,
-    NAT_PROTOCOL_NUMBER,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP6,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_SMTP,
+    GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT,
     0,
   };
-  Transport_ServiceAPI *tapi;
+  GNUNET_Transport_ServiceAPI *tapi;
   GNUNET_MessageHello *hello;
   int pos;
   int ret;
@@ -1248,14 +1248,14 @@ identityRequestHelloHandler (struct ClientHandle *sock,
   coreAPI->releaseService (tapi);
   if (hello == NULL)
     return GNUNET_SYSERR;
-  hello->header.type = htons (CS_PROTO_identity_HELLO);
+  hello->header.type = htons (GNUNET_CS_PROTO_IDENTITY_HELLO);
   ret = coreAPI->sendToClient (sock, &hello->header, GNUNET_YES);
   GNUNET_free (hello);
   return ret;
 }
 
 static int
-identityRequestSignatureHandler (struct ClientHandle *sock,
+identityRequestSignatureHandler (struct GNUNET_ClientHandle *sock,
                                  const GNUNET_MessageHeader * message)
 {
   CS_identity_signature_MESSAGE reply;
@@ -1263,7 +1263,7 @@ identityRequestSignatureHandler (struct ClientHandle *sock,
   if (ntohs (message->size) <= sizeof (GNUNET_MessageHeader))
     return GNUNET_SYSERR;
   reply.header.size = htons (sizeof (CS_identity_signature_MESSAGE));
-  reply.header.type = htons (CS_PROTO_identity_SIGNATURE);
+  reply.header.type = htons (GNUNET_CS_PROTO_IDENTITY_SIGNATURE);
   if (GNUNET_OK != signData (&message[1],
                              ntohs (message->size) -
                              sizeof (GNUNET_MessageHeader), &reply.sig))
@@ -1275,8 +1275,8 @@ static int
 hostInfoIterator (const GNUNET_PeerIdentity * identity,
                   unsigned short protocol, int confirmed, void *data)
 {
-  struct ClientHandle *sock = data;
-  Transport_ServiceAPI *transport;
+  struct GNUNET_ClientHandle *sock = data;
+  GNUNET_Transport_ServiceAPI *transport;
   CS_identity_peer_info_MESSAGE *reply;
   GNUNET_MessageHello *hello;
   void *address;
@@ -1315,7 +1315,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
     }
   reply = GNUNET_malloc (sizeof (CS_identity_peer_info_MESSAGE) + len);
   reply->header.size = htons (sizeof (CS_identity_peer_info_MESSAGE) + len);
-  reply->header.type = htons (CS_PROTO_identity_INFO);
+  reply->header.type = htons (GNUNET_CS_PROTO_IDENTITY_INFO);
   reply->peer = *identity;
   reply->last_message = GNUNET_htonll (last);
   reply->trust = htonl (getHostTrust (identity));
@@ -1328,7 +1328,7 @@ hostInfoIterator (const GNUNET_PeerIdentity * identity,
 }
 
 static int
-identityRequestInfoHandler (struct ClientHandle *sock,
+identityRequestInfoHandler (struct GNUNET_ClientHandle *sock,
                             const GNUNET_MessageHeader * message)
 {
   forEachHost (0, &hostInfoIterator, sock);
@@ -1342,10 +1342,10 @@ identityRequestInfoHandler (struct ClientHandle *sock,
  * @param capi the core API
  * @return NULL on errors, ID_API otherwise
  */
-Identity_ServiceAPI *
-provide_module_identity (CoreAPIForApplication * capi)
+GNUNET_Identity_ServiceAPI *
+provide_module_identity (GNUNET_CoreAPIForPlugins * capi)
 {
-  static Identity_ServiceAPI id;
+  static GNUNET_Identity_ServiceAPI id;
   char *gnHome;
   char *tmp;
   int i;
@@ -1373,11 +1373,11 @@ provide_module_identity (CoreAPIForApplication * capi)
   numberOfHosts_ = 0;
 
   gnHome = NULL;
-  GE_ASSERT (ectx,
-             -1 != GC_get_configuration_value_filename (coreAPI->cfg,
+  GNUNET_GE_ASSERT (ectx,
+             -1 != GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
                                                         "GNUNETD",
                                                         "GNUNETD_HOME",
-                                                        VAR_DAEMON_DIRECTORY,
+                                                        GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY,
                                                         &gnHome));
   if (gnHome == NULL)
     return NULL;
@@ -1387,8 +1387,8 @@ provide_module_identity (CoreAPIForApplication * capi)
   strcat (tmp, DIR_SEPARATOR_STR);
   strcat (tmp, HOST_DIR);
   networkIdDirectory = NULL;
-  GE_ASSERT (ectx,
-             -1 != GC_get_configuration_value_filename (coreAPI->cfg,
+  GNUNET_GE_ASSERT (ectx,
+             -1 != GNUNET_GC_get_configuration_value_filename (coreAPI->cfg,
                                                         "GNUNETD",
                                                         "HOSTS",
                                                         tmp,
@@ -1415,15 +1415,15 @@ provide_module_identity (CoreAPIForApplication * capi)
   GNUNET_cron_add_job (coreAPI->cron,
                        &cronDiscardHosts, 0, CRON_DISCARD_HOSTS_INTERVAL,
                        NULL);
-  coreAPI->registerClientHandler (CS_PROTO_identity_CONNECT,
+  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_CONNECT,
                                   &identityRequestConnectHandler);
-  coreAPI->registerClientHandler (CS_PROTO_identity_HELLO,
+  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_HELLO,
                                   &identityHelloHandler);
-  coreAPI->registerClientHandler (CS_PROTO_identity_request_HELLO,
+  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
                                   &identityRequestHelloHandler);
-  coreAPI->registerClientHandler (CS_PROTO_identity_request_SIGN,
+  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
                                   &identityRequestSignatureHandler);
-  coreAPI->registerClientHandler (CS_PROTO_identity_request_INFO,
+  coreAPI->registerClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
                                   &identityRequestInfoHandler);
   return &id;
 }
@@ -1438,15 +1438,15 @@ release_module_identity ()
   int j;
   HostEntry *entry;
 
-  coreAPI->unregisterClientHandler (CS_PROTO_identity_CONNECT,
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_CONNECT,
                                     &identityRequestConnectHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_identity_HELLO,
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_HELLO,
                                     &identityHelloHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_identity_request_HELLO,
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO,
                                     &identityRequestHelloHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_identity_request_SIGN,
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE,
                                     &identityRequestSignatureHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_identity_request_INFO,
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO,
                                     &identityRequestInfoHandler);
   for (i = 0; i < MAX_TEMP_HOSTS; i++)
     {

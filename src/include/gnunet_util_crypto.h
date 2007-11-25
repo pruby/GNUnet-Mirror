@@ -274,7 +274,7 @@ void GNUNET_hash (const void *block, unsigned int size,
  * Compute the GNUNET_hash of an entire file.
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_hash_file (struct GE_Context *ectx,
+int GNUNET_hash_file (struct GNUNET_GE_Context *ectx,
                       const char *filename, GNUNET_HashCode * ret);
 
 void GNUNET_create_random_hash (GNUNET_HashCode * result);

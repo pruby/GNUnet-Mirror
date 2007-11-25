@@ -30,9 +30,9 @@
 #include "gnunet_util.h"
 
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static unsigned int anonymity = 1;
 
@@ -40,13 +40,13 @@ static unsigned int delay = 300;
 
 static unsigned int max_results;
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static char *output_filename;
 
 static int errorCode;
 
-static ECRS_FileInfo *fis;
+static GNUNET_ECRS_FileInfo *fis;
 
 static unsigned int fiCount;
 
@@ -61,44 +61,44 @@ itemPrinter (EXTRACTOR_KeywordType type, const char *data, void *closure)
 }
 
 static void
-printMeta (const struct ECRS_MetaData *meta)
+printMeta (const struct GNUNET_ECRS_MetaData *meta)
 {
-  ECRS_getMetaData (meta, &itemPrinter, NULL);
+  GNUNET_ECRS_meta_data_get_contents (meta, &itemPrinter, NULL);
 }
 
 /**
  * Handle the search result.
  */
 static void *
-eventCallback (void *cls, const FSUI_Event * event)
+eventCallback (void *cls, const GNUNET_FSUI_Event * event)
 {
   char *uri;
   char *filename;
 
   switch (event->type)
     {
-    case FSUI_search_error:
+    case GNUNET_FSUI_search_error:
       errorCode = 3;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_search_aborted:
+    case GNUNET_FSUI_search_aborted:
       errorCode = 4;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_search_completed:
+    case GNUNET_FSUI_search_completed:
       errorCode = 0;
       GNUNET_shutdown_initiate ();
       break;
-    case FSUI_search_result:
+    case GNUNET_FSUI_search_result:
       /* retain URIs for possible directory dump later */
       GNUNET_array_grow (fis, fiCount, fiCount + 1);
-      fis[fiCount - 1].uri = ECRS_dupUri (event->data.SearchResult.fi.uri);
+      fis[fiCount - 1].uri = GNUNET_ECRS_uri_duplicate (event->data.SearchResult.fi.uri);
       fis[fiCount - 1].meta
-        = ECRS_dupMetaData (event->data.SearchResult.fi.meta);
+        = GNUNET_ECRS_meta_data_duplicate (event->data.SearchResult.fi.meta);
 
-      uri = ECRS_uriToString (event->data.SearchResult.fi.uri);
+      uri = GNUNET_ECRS_uri_to_string (event->data.SearchResult.fi.uri);
       printf ("%s:\n", uri);
-      filename = ECRS_getFromMetaData (event->data.SearchResult.fi.meta,
+      filename = GNUNET_ECRS_meta_data_get_by_type (event->data.SearchResult.fi.meta,
                                        EXTRACTOR_FILENAME);
       if (filename != NULL)
         {
@@ -116,11 +116,11 @@ eventCallback (void *cls, const FSUI_Event * event)
       GNUNET_free_non_null (filename);
       GNUNET_free (uri);
       break;
-    case FSUI_search_started:
-    case FSUI_search_stopped:
+    case GNUNET_FSUI_search_started:
+    case GNUNET_FSUI_search_stopped:
       break;
     default:
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       break;
     }
   return NULL;
@@ -146,7 +146,7 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   {'t', "timeout", "DELAY",
    gettext_noop ("wait DELAY seconds for search results before aborting"),
    1, &GNUNET_getopt_configure_set_uint, &delay},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -161,10 +161,10 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
 int
 main (int argc, char *const *argv)
 {
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
-  struct FSUI_Context *ctx;
-  struct FSUI_SearchList *s;
+  struct GNUNET_FSUI_Context *ctx;
+  struct GNUNET_FSUI_SearchList *s;
 
   i = GNUNET_init (argc,
                    argv,
@@ -176,7 +176,7 @@ main (int argc, char *const *argv)
       return -1;
     }
   /* convert args to URI */
-  uri = ECRS_parseArgvKeywordURI (ectx, argc - i, (const char **) &argv[i]);
+  uri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, argc - i, (const char **) &argv[i]);
   if (uri == NULL)
     {
       printf (_("Error converting arguments to URI!\n"));
@@ -186,42 +186,42 @@ main (int argc, char *const *argv)
   if (max_results == 0)
     max_results = (unsigned int) -1;    /* infty */
   ctx =
-    FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO, &eventCallback,
+    GNUNET_FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO, &eventCallback,
                 NULL);
   if (ctx == NULL)
     {
-      ECRS_freeUri (uri);
+      GNUNET_ECRS_uri_destroy (uri);
       GNUNET_fini (ectx, cfg);
       return GNUNET_SYSERR;
     }
   errorCode = 1;
-  s = FSUI_startSearch (ctx,
+  s = GNUNET_FSUI_search_start (ctx,
                         anonymity, max_results, delay * GNUNET_CRON_SECONDS,
                         uri);
-  ECRS_freeUri (uri);
+  GNUNET_ECRS_uri_destroy (uri);
   if (s == NULL)
     {
       errorCode = 2;
-      FSUI_stop (ctx);
+      GNUNET_FSUI_stop (ctx);
       goto quit;
     }
   GNUNET_shutdown_wait_for ();
   if (errorCode == 1)
-    FSUI_abortSearch (ctx, s);
-  FSUI_stopSearch (ctx, s);
-  FSUI_stop (ctx);
+    GNUNET_FSUI_search_abort (ctx, s);
+  GNUNET_FSUI_search_stop (ctx, s);
+  GNUNET_FSUI_stop (ctx);
 
   if (output_filename != NULL)
     {
       char *outfile;
       unsigned long long n;
       char *data;
-      struct ECRS_MetaData *meta;
+      struct GNUNET_ECRS_MetaData *meta;
 
-      meta = ECRS_createMetaData ();
+      meta = GNUNET_ECRS_meta_data_create ();
       /* ?: anything here to put into meta? */
       if (GNUNET_OK ==
-          ECRS_createDirectory (ectx, &data, &n, fiCount, fis, meta))
+          GNUNET_ECRS_directory_create (ectx, &data, &n, fiCount, fis, meta))
         {
           outfile = GNUNET_expand_file_name (ectx, output_filename);
           GNUNET_disk_file_write (ectx, outfile, data, n, "600");
@@ -232,8 +232,8 @@ main (int argc, char *const *argv)
     }
   for (i = 0; i < fiCount; i++)
     {
-      ECRS_freeUri (fis[i].uri);
-      ECRS_freeMetaData (fis[i].meta);
+      GNUNET_ECRS_uri_destroy (fis[i].uri);
+      GNUNET_ECRS_meta_data_destroy (fis[i].meta);
     }
   GNUNET_array_grow (fis, fiCount, 0);
 quit:

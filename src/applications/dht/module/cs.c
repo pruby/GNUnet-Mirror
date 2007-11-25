@@ -38,19 +38,19 @@
 /**
  * Global core API.
  */
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * Reference to the DHT service API.
  */
-static DHT_ServiceAPI *dhtAPI;
+static GNUNET_DHT_ServiceAPI *dhtAPI;
 
 typedef struct
 {
 
-  struct ClientHandle *client;
+  struct GNUNET_ClientHandle *client;
 
-  struct DHT_GET_RECORD *get_record;
+  struct GNUNET_DHT_GetHandle *get_record;
 
 } DHT_CLIENT_GET_RECORD;
 
@@ -67,22 +67,22 @@ static struct GNUNET_Mutex *lock;
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
 static int
-csPut (struct ClientHandle *client, const GNUNET_MessageHeader * message)
+csPut (struct GNUNET_ClientHandle *client, const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_put_MESSAGE *req;
   unsigned int size;
 
   if (ntohs (message->size) < sizeof (CS_dht_request_put_MESSAGE))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   req = (const CS_dht_request_put_MESSAGE *) message;
   size = ntohs (req->header.size) - sizeof (CS_dht_request_put_MESSAGE);
-  GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
+  GNUNET_GE_ASSERT (NULL, size < GNUNET_MAX_BUFFER_SIZE);
 #if DEBUG_CS
-  GE_LOG (coreAPI->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "`%s' at %s:%d processes put '%.*s'\n",
           __FUNCTION__, __FILE__, __LINE__, size, &req[1]);
 #endif
@@ -92,41 +92,41 @@ csPut (struct ClientHandle *client, const GNUNET_MessageHeader * message)
 }
 
 int
-get_result (const GNUNET_HashCode * key, const DataContainer * value,
+get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
             void *cls)
 {
   DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
   size_t n;
 
-  GE_ASSERT (NULL, ntohl (value->size) >= sizeof (DataContainer));
+  GNUNET_GE_ASSERT (NULL, ntohl (value->size) >= sizeof (GNUNET_DataContainer));
   n =
     sizeof (CS_dht_request_put_MESSAGE) + ntohl (value->size) -
-    sizeof (DataContainer);
+    sizeof (GNUNET_DataContainer);
   if (n > GNUNET_MAX_BUFFER_SIZE)
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
-  msg->header.type = htons (CS_PROTO_dht_REQUEST_PUT);
+  msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   msg->expire = 0;              /* unknown */
   msg->key = *key;
-  memcpy (&msg[1], &value[1], ntohl (value->size) - sizeof (DataContainer));
+  memcpy (&msg[1], &value[1], ntohl (value->size) - sizeof (GNUNET_DataContainer));
 #if DEBUG_CS
-  GE_LOG (coreAPI->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "`%s' at %s:%d processes reply '%.*s'\n",
           __FUNCTION__,
           __FILE__,
-          __LINE__, ntohl (value->size) - sizeof (DataContainer), &value[1]);
+          __LINE__, ntohl (value->size) - sizeof (GNUNET_DataContainer), &value[1]);
 #endif
   if (GNUNET_OK !=
       coreAPI->sendToClient (record->client, &msg->header, GNUNET_YES))
     {
-      GE_LOG (coreAPI->ectx,
-              GE_ERROR | GE_IMMEDIATE | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
               _("`%s' failed. Terminating connection to client.\n"),
               "sendToClient");
       coreAPI->terminateClientConnection (record->client);
@@ -164,19 +164,19 @@ get_timeout (void *cls)
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
 static int
-csGet (struct ClientHandle *client, const GNUNET_MessageHeader * message)
+csGet (struct GNUNET_ClientHandle *client, const GNUNET_MessageHeader * message)
 {
   const CS_dht_request_get_MESSAGE *get;
   DHT_CLIENT_GET_RECORD *cpc;
 
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
-      GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
 #if DEBUG_CS
-  GE_LOG (coreAPI->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "`%s' at %s:%d processes get\n", __FUNCTION__, __FILE__, __LINE__);
 #endif
   get = (const CS_dht_request_get_MESSAGE *) message;
@@ -197,10 +197,10 @@ csGet (struct ClientHandle *client, const GNUNET_MessageHeader * message)
  * get_stop for all operations that rely on this client.
  */
 static void
-csClientExit (struct ClientHandle *client)
+csClientExit (struct GNUNET_ClientHandle *client)
 {
   int i;
-  struct DHT_GET_RECORD *gr;
+  struct GNUNET_DHT_GetHandle *gr;
   DHT_CLIENT_GET_RECORD *cgr;
   GNUNET_mutex_lock (lock);
   for (i = 0; i < getRecordsSize; i++)
@@ -222,7 +222,7 @@ csClientExit (struct ClientHandle *client)
 }
 
 int
-initialize_module_dht (CoreAPIForApplication * capi)
+initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
 
@@ -230,22 +230,22 @@ initialize_module_dht (CoreAPIForApplication * capi)
   if (dhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
-  GE_LOG (coreAPI->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("`%s' registering client handlers: %d %d\n"),
-          "dht", CS_PROTO_dht_REQUEST_PUT, CS_PROTO_dht_REQUEST_GET);
+          "dht", GNUNET_CS_PROTO_DHT_REQUEST_PUT, GNUNET_CS_PROTO_DHT_REQUEST_GET);
   status = GNUNET_OK;
   lock = GNUNET_mutex_create (GNUNET_NO);
-  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_PUT,
+  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_PUT,
                                                     &csPut))
     status = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientHandler (CS_PROTO_dht_REQUEST_GET,
+  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET,
                                                     &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->registerClientExitHandler (&csClientExit))
     status = GNUNET_SYSERR;
-  GE_ASSERT (capi->ectx,
-             0 == GC_set_configuration_value_string (capi->cfg,
+  GNUNET_GE_ASSERT (capi->ectx,
+             0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
                                                      capi->ectx,
                                                      "ABOUT",
                                                      "dht",
@@ -263,11 +263,11 @@ done_module_dht ()
   int status;
 
   status = GNUNET_OK;
-  GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER, "DHT: shutdown\n");
-  if (GNUNET_OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_PUT,
+  GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER, "DHT: shutdown\n");
+  if (GNUNET_OK != coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_PUT,
                                                      &csPut))
     status = GNUNET_SYSERR;
-  if (GNUNET_OK != coreAPI->unregisterClientHandler (CS_PROTO_dht_REQUEST_GET,
+  if (GNUNET_OK != coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET,
                                                      &csGet))
     status = GNUNET_SYSERR;
   if (GNUNET_OK != coreAPI->unregisterClientExitHandler (&csClientExit))

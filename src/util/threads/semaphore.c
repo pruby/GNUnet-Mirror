@@ -101,27 +101,27 @@ GNUNET_semaphore_create (int value)
 
   pthread_mutexattr_init (&attr);
 #if LINUX
-  GE_ASSERT (NULL,
+  GNUNET_GE_ASSERT (NULL,
              0 == pthread_mutexattr_setkind_np
              (&attr, PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
-  GE_ASSERT (NULL,
+  GNUNET_GE_ASSERT (NULL,
              0 == pthread_mutexattr_settype
              (&attr, PTHREAD_MUTEX_ERRORCHECK));
 #endif
   s = GNUNET_malloc (sizeof (Semaphore));
   s->v = value;
-  GE_ASSERT (NULL, 0 == pthread_mutex_init (&s->mutex, &attr));
-  GE_ASSERT (NULL, 0 == pthread_cond_init (&s->cond, NULL));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_init (&s->mutex, &attr));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_cond_init (&s->cond, NULL));
   return s;
 }
 
 void
 GNUNET_semaphore_destroy (Semaphore * s)
 {
-  GE_ASSERT (NULL, s != NULL);
-  GE_ASSERT (NULL, 0 == pthread_cond_destroy (&s->cond));
-  GE_ASSERT (NULL, 0 == pthread_mutex_destroy (&s->mutex));
+  GNUNET_GE_ASSERT (NULL, s != NULL);
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_cond_destroy (&s->cond));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_destroy (&s->mutex));
   GNUNET_free (s);
 }
 
@@ -130,11 +130,11 @@ GNUNET_semaphore_up (Semaphore * s)
 {
   int ret;
 
-  GE_ASSERT (NULL, s != NULL);
-  GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
+  GNUNET_GE_ASSERT (NULL, s != NULL);
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
   ret = ++(s->v);
-  GE_ASSERT (NULL, 0 == pthread_cond_signal (&s->cond));
-  GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_cond_signal (&s->cond));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
   return ret;
 }
 
@@ -148,22 +148,22 @@ GNUNET_semaphore_down_at_file_line_ (Semaphore * s,
   GNUNET_CronTime start;
   GNUNET_CronTime end;
 
-  GE_ASSERT (NULL, s != NULL);
+  GNUNET_GE_ASSERT (NULL, s != NULL);
   start = GNUNET_get_time ();
-  GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_lock (&s->mutex));
   while ((s->v <= 0) && mayblock)
-    GE_ASSERT (NULL, 0 == pthread_cond_wait (&s->cond, &s->mutex));
+    GNUNET_GE_ASSERT (NULL, 0 == pthread_cond_wait (&s->cond, &s->mutex));
   if (s->v > 0)
     ret = --(s->v);
   else
     ret = GNUNET_SYSERR;
-  GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
+  GNUNET_GE_ASSERT (NULL, 0 == pthread_mutex_unlock (&s->mutex));
   end = GNUNET_get_time ();
   if ((longwait == GNUNET_NO) &&
       (end - start > GNUNET_REALTIME_LIMIT) && (GNUNET_REALTIME_LIMIT != 0))
     {
-      GE_LOG (NULL,
-              GE_DEVELOPER | GE_WARNING | GE_IMMEDIATE,
+      GNUNET_GE_LOG (NULL,
+              GNUNET_GE_DEVELOPER | GNUNET_GE_WARNING | GNUNET_GE_IMMEDIATE,
               _("Real-time delay violation (%llu ms) at %s:%u\n"),
               end - start, file, line);
     }

@@ -85,7 +85,7 @@ typedef enum
 
 struct GNUNET_LoadMonitor;
 
-struct GNUNET_IPC_Semaphore *GNUNET_IPC_semaphore_create (struct GE_Context
+struct GNUNET_IPC_Semaphore *GNUNET_IPC_semaphore_create (struct GNUNET_GE_Context
                                                           *ectx,
                                                           const char
                                                           *basename,
@@ -105,7 +105,7 @@ int GNUNET_IPC_semaphore_down (struct GNUNET_IPC_Semaphore *sem,
 /**
  * Load plugin
  */
-struct GNUNET_PluginHandle *GNUNET_plugin_load (struct GE_Context *ectx,
+struct GNUNET_PluginHandle *GNUNET_plugin_load (struct GNUNET_GE_Context *ectx,
                                                 const char *libprefix,
                                                 const char *dsoname);
 
@@ -123,10 +123,10 @@ void *GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plugin,
 
 void GNUNET_plugin_unload (struct GNUNET_PluginHandle *plugin);
 
-struct GNUNET_LoadMonitor *GNUNET_network_monitor_create (struct GE_Context
+struct GNUNET_LoadMonitor *GNUNET_network_monitor_create (struct GNUNET_GE_Context
                                                           *ectx,
                                                           struct
-                                                          GC_Configuration
+                                                          GNUNET_GC_Configuration
                                                           *cfg);
 
 void GNUNET_network_monitor_destroy (struct GNUNET_LoadMonitor *mon);
@@ -163,7 +163,7 @@ void GNUNET_network_monitor_notify_transmission (struct GNUNET_LoadMonitor
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
-void GNUNET_list_network_interfaces (struct GE_Context *ectx,
+void GNUNET_list_network_interfaces (struct GNUNET_GE_Context *ectx,
                                      GNUNET_NetworkInterfaceProcessor proc,
                                      void *cls);
 
@@ -171,13 +171,13 @@ void GNUNET_list_network_interfaces (struct GE_Context *ectx,
  * @brief Set maximum number of open file descriptors
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_set_fd_limit (struct GE_Context *ectx, int n);
+int GNUNET_set_fd_limit (struct GNUNET_GE_Context *ectx, int n);
 
 /**
  * Set our process priority
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_set_process_priority (struct GE_Context *ectx, const char *str);
+int GNUNET_set_process_priority (struct GNUNET_GE_Context *ectx, const char *str);
 
 /**
  * @brief Make "application" start automatically
@@ -209,7 +209,7 @@ int GNUNET_set_process_priority (struct GE_Context *ectx, const char *str);
  *  Unix
  *    2 startup script could not be opened
  */
-int GNUNET_configure_autostart (struct GE_Context *ectx,
+int GNUNET_configure_autostart (struct GNUNET_GE_Context *ectx,
                                 int testCapability,
                                 int doAutoStart,
                                 const char *application,
@@ -241,12 +241,12 @@ int GNUNET_configure_user_account (int testCapability,
  * user
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_change_user (struct GE_Context *ectx, const char *user);
+int GNUNET_change_user (struct GNUNET_GE_Context *ectx, const char *user);
 
 /**
  * @brief Change owner of a file
  */
-int GNUNET_file_change_owner (struct GE_Context *ectx,
+int GNUNET_file_change_owner (struct GNUNET_GE_Context *ectx,
                               const char *filename, const char *user);
 
 /**
@@ -256,8 +256,8 @@ int GNUNET_file_change_owner (struct GE_Context *ectx,
  * @return -1 on error, otherwise load value (between 0 and 100,
  *        (100 is equivalent to full load for one CPU)
  */
-int GNUNET_cpu_get_load (struct GE_Context *ectx,
-                         struct GC_Configuration *cfg);
+int GNUNET_cpu_get_load (struct GNUNET_GE_Context *ectx,
+                         struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Get the current IO load.
@@ -268,8 +268,8 @@ int GNUNET_cpu_get_load (struct GE_Context *ectx,
  *       100 means that we spend all of our cycles waiting for
  *       the disk)
  */
-int GNUNET_disk_get_load (struct GE_Context *ectx,
-                          struct GC_Configuration *cfg);
+int GNUNET_disk_get_load (struct GNUNET_GE_Context *ectx,
+                          struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Start gnunetd process
@@ -279,8 +279,8 @@ int GNUNET_disk_get_load (struct GE_Context *ectx,
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
  */
-int GNUNET_daemon_start (struct GE_Context *ectx,
-                         struct GC_Configuration *cfg,
+int GNUNET_daemon_start (struct GNUNET_GE_Context *ectx,
+                         struct GNUNET_GC_Configuration *cfg,
                          const char *cfgFile, int daemonize);
 
 /**
@@ -294,7 +294,7 @@ int GNUNET_daemon_start (struct GE_Context *ectx,
  *  failed, GNUNET_NO if gnunetd shutdown with
  *  some error
  */
-int GNUNET_daemon_stop (struct GE_Context *ectx, int pid);
+int GNUNET_daemon_stop (struct GNUNET_GE_Context *ectx, int pid);
 
 /**
  * List of install paths
@@ -324,15 +324,15 @@ char *GNUNET_get_installation_path (enum GNUNET_INSTALL_PATH_KIND dirkind);
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_pid_file_write (struct GE_Context *ectx,
-                           struct GC_Configuration *cfg, unsigned int pid);
+int GNUNET_pid_file_write (struct GNUNET_GE_Context *ectx,
+                           struct GNUNET_GC_Configuration *cfg, unsigned int pid);
 
 /**
  * Delete the PID file (to be called when the daemon
  * shuts down)
  */
-int GNUNET_pid_file_delete (struct GE_Context *ectx,
-                            struct GC_Configuration *cfg);
+int GNUNET_pid_file_delete (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg);
 
 
 /**
@@ -343,14 +343,14 @@ int GNUNET_pid_file_delete (struct GE_Context *ectx,
  * @param filedes pointer to an array of 2 file descriptors
  *        to complete the detachment protocol (handshake)
  */
-int GNUNET_terminal_detach (struct GE_Context *ectx,
-                            struct GC_Configuration *cfg, int *filedes);
+int GNUNET_terminal_detach (struct GNUNET_GE_Context *ectx,
+                            struct GNUNET_GC_Configuration *cfg, int *filedes);
 
 /**
  * Complete the handshake of detaching from the terminal.
  * @param success use GNUNET_NO for error, GNUNET_YES for successful start
  */
-void GNUNET_terminal_detach_complete (struct GE_Context *ectx,
+void GNUNET_terminal_detach_complete (struct GNUNET_GE_Context *ectx,
                                       int *filedes, int success);
 
 /**
@@ -358,7 +358,7 @@ void GNUNET_terminal_detach_complete (struct GE_Context *ectx,
  * @param ectx logging context, NULL means stderr
  * @returns GNUNET_OK on success, GNUNET_SYSERR otherwise
  */
-int GNUNET_os_init (struct GE_Context *ectx);
+int GNUNET_os_init (struct GNUNET_GE_Context *ectx);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

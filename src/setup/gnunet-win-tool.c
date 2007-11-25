@@ -42,7 +42,7 @@ static unsigned int bPrintAdapters = 0, bInstall = 0, bUninstall = 0, bConn =
   0;
 static char *hashFile = NULL;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 /**
  * All gnunet-win-tool command line options
@@ -352,17 +352,17 @@ main (int argc, char **argv)
   res = GNUNET_OK;
 
   /* startup */
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
   res = GNUNET_parse_options ("gnunet-win-tool [OPTIONS] [KEYWORDS]",
                               ectx,
                               NULL,
                               gnunetwinOptions, (unsigned int) argc, argv);
   if (res == GNUNET_SYSERR)
     {
-      GE_free_context (ectx);
+      GNUNET_GE_free_context (ectx);
       return -1;
     }
 
@@ -377,7 +377,7 @@ main (int argc, char **argv)
   if (hashFile)
     doHash ();
 
-  GE_free_context (ectx);
+  GNUNET_GE_free_context (ectx);
 
   return (res == GNUNET_OK) ? 0 : 1;
 }

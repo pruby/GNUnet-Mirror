@@ -35,7 +35,7 @@
  * @return total number of results found
  */
 int dht_store_get (const GNUNET_HashCode * key,
-                   unsigned int type, ResultHandler handler, void *cls);
+                   unsigned int type, GNUNET_ResultProcessor handler, void *cls);
 
 /**
  * Store the given data in the local datastore.
@@ -51,7 +51,7 @@ void dht_store_put (unsigned int type,
  * @param capi the core API
  * @return GNUNET_OK on success
  */
-int init_dht_store (size_t max_size, CoreAPIForApplication * capi);
+int init_dht_store (size_t max_size, GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Shutdown dstore DHT component.

@@ -64,9 +64,9 @@ verifyHello (const GNUNET_MessageHello * hello)
 {
   if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
       (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
-      (ntohs (hello->header.type) != p2p_PROTO_hello))
+      (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO))
     return GNUNET_SYSERR;       /* obviously invalid */
-  if (GNUNET_YES == GC_get_configuration_value_yesno (coreAPI->cfg,
+  if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
                                                       "NAT", "LIMITED",
                                                       GNUNET_NO))
     {
@@ -93,13 +93,13 @@ createhello ()
 {
   GNUNET_MessageHello *msg;
 
-  if (GNUNET_NO == GC_get_configuration_value_yesno (coreAPI->cfg,
+  if (GNUNET_NO == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
                                                      "NAT", "LIMITED",
                                                      GNUNET_NO))
     return NULL;
   msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   msg->senderAddressSize = htons (sizeof (HostAddress));
-  msg->protocol = htons (NAT_PROTOCOL_NUMBER);
+  msg->protocol = htons (GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
   msg->MTU = htonl (0);
   return msg;
 }
@@ -111,7 +111,7 @@ createhello ()
  * @return always fails (returns GNUNET_SYSERR)
  */
 static int
-natConnect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
+natConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
             int may_reuse)
 {
   return GNUNET_SYSERR;
@@ -129,7 +129,7 @@ natConnect (const GNUNET_MessageHello * hello, TSession ** tsessionPtr,
  *         GNUNET_SYSERR if not.
  */
 int
-natAssociate (TSession * tsession)
+natAssociate (GNUNET_TSession * tsession)
 {
   return GNUNET_SYSERR;         /* NAT connections can never be associated */
 }
@@ -143,7 +143,7 @@ natAssociate (TSession * tsession)
  * @return GNUNET_SYSERR (always fails)
  */
 static int
-natSend (TSession * tsession,
+natSend (GNUNET_TSession * tsession,
          const void *message, const unsigned int size, int important)
 {
   return GNUNET_SYSERR;
@@ -156,7 +156,7 @@ natSend (TSession * tsession,
  * @return always GNUNET_SYSERR
  */
 static int
-natDisconnect (TSession * tsession)
+natDisconnect (GNUNET_TSession * tsession)
 {
   return GNUNET_SYSERR;
 }
@@ -193,7 +193,7 @@ helloToAddress (const GNUNET_MessageHello * hello,
 }
 
 static int
-testWouldTry (TSession * tsession, unsigned int size, int important)
+testWouldTry (GNUNET_TSession * tsession, unsigned int size, int important)
 {
   return GNUNET_SYSERR;
 }
@@ -206,7 +206,7 @@ TransportAPI *
 inittransport_nat (CoreAPIForTransport * core)
 {
   coreAPI = core;
-  natAPI.protocolNumber = NAT_PROTOCOL_NUMBER;
+  natAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;
   natAPI.mtu = 0;
   natAPI.cost = 30000;
   natAPI.verifyHello = &verifyHello;

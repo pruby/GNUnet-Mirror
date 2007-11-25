@@ -30,7 +30,7 @@
 
 static struct GNUNET_IPC_Semaphore *ipc;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
 static int
 testIPCSemaphore ()
@@ -128,12 +128,12 @@ END:
     }
   else
     {
-      GE_LOG (ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "waiting for other process to exit.\n");
       if (-1 == waitpid (me, &j, 0))
-        GE_LOG (ectx,
-                GE_ERROR | GE_BULK | GE_USER,
+        GNUNET_GE_LOG (ectx,
+                GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                 "waitpid failed: %s\n", STRERROR (errno));
       if ((!WIFEXITED (j)) || WEXITSTATUS (j) == 1)
         ret = 1;                /* error in child */
@@ -146,14 +146,14 @@ main (int argc, char *argv[])
 {
   int ret = 0;
 
-  ectx = GE_create_context_stderr (GNUNET_NO,
-                                   GE_WARNING | GE_ERROR | GE_FATAL |
-                                   GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                   GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (ectx);
+  ectx = GNUNET_GE_create_context_stderr (GNUNET_NO,
+                                   GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                   GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                   GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (ectx);
   GNUNET_os_init (ectx);
   ret += testIPCSemaphore ();
   fprintf (stderr, "\n");
-  GE_free_context (ectx);
+  GNUNET_GE_free_context (ectx);
   return ret;
 }

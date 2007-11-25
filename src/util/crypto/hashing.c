@@ -379,7 +379,7 @@ GNUNET_hash (const void *block, unsigned int size, GNUNET_HashCode * ret)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-GNUNET_hash_file (struct GE_Context *ectx, const char *filename,
+GNUNET_hash_file (struct GNUNET_GE_Context *ectx, const char *filename,
                   GNUNET_HashCode * ret)
 {
   unsigned char *buf;
@@ -396,8 +396,8 @@ GNUNET_hash_file (struct GE_Context *ectx, const char *filename,
   fh = GNUNET_disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
   if (fh == -1)
     {
-      GE_LOG_STRERROR_FILE (ectx,
-                            GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
+      GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_REQUEST,
                             "open", filename);
       return GNUNET_SYSERR;
     }
@@ -411,12 +411,12 @@ GNUNET_hash_file (struct GE_Context *ectx, const char *filename,
         delta = len - pos;
       if (delta != READ (fh, buf, delta))
         {
-          GE_LOG_STRERROR_FILE (ectx,
-                                GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+          GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                                 "read", filename);
           if (0 != CLOSE (fh))
-            GE_LOG_STRERROR_FILE (ectx,
-                                  GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+            GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                                  GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                                   "close", filename);
           GNUNET_free (buf);
           return GNUNET_SYSERR;
@@ -428,8 +428,8 @@ GNUNET_hash_file (struct GE_Context *ectx, const char *filename,
         break;
     }
   if (0 != CLOSE (fh))
-    GE_LOG_STRERROR_FILE (ectx,
-                          GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+    GNUNET_GE_LOG_STRERROR_FILE (ectx,
+                          GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                           "close", filename);
   sha512_final (&ctx, (unsigned char *) ret);
   GNUNET_free (buf);
@@ -473,8 +473,8 @@ GNUNET_hash_to_enc (const GNUNET_HashCode * block, GNUNET_EncName * result)
   unsigned int bits;
   unsigned int vbit;
 
-  GE_ASSERT (NULL, block != NULL);
-  GE_ASSERT (NULL, result != NULL);
+  GNUNET_GE_ASSERT (NULL, block != NULL);
+  GNUNET_GE_ASSERT (NULL, result != NULL);
   vbit = 0;
   wpos = 0;
   rpos = 0;
@@ -489,15 +489,15 @@ GNUNET_hash_to_enc (const GNUNET_HashCode * block, GNUNET_EncName * result)
       if (vbit < 5)
         {
           bits <<= (5 - vbit);  /* zero-padding */
-          GE_ASSERT (NULL, vbit == 2);  /* padding by 3: 512+3 mod 5 == 0 */
+          GNUNET_GE_ASSERT (NULL, vbit == 2);  /* padding by 3: 512+3 mod 5 == 0 */
           vbit = 5;
         }
-      GE_ASSERT (NULL, wpos < sizeof (GNUNET_EncName) - 1);
+      GNUNET_GE_ASSERT (NULL, wpos < sizeof (GNUNET_EncName) - 1);
       result->encoding[wpos++] = encTable__[(bits >> (vbit - 5)) & 31];
       vbit -= 5;
     }
-  GE_ASSERT (NULL, wpos == sizeof (GNUNET_EncName) - 1);
-  GE_ASSERT (NULL, vbit == 0);
+  GNUNET_GE_ASSERT (NULL, wpos == sizeof (GNUNET_EncName) - 1);
+  GNUNET_GE_ASSERT (NULL, vbit == 0);
   result->encoding[wpos] = '\0';
 }
 
@@ -525,7 +525,7 @@ GNUNET_enc_to_hash (const char *enc, GNUNET_HashCode * result)
   bits = getValue__ (enc[--rpos]) >> 3;
   while (wpos > 0)
     {
-      GE_ASSERT (NULL, rpos > 0);
+      GNUNET_GE_ASSERT (NULL, rpos > 0);
       bits = (getValue__ (enc[--rpos]) << vbit) | bits;
       vbit += 5;
       if (vbit >= 8)
@@ -535,8 +535,8 @@ GNUNET_enc_to_hash (const char *enc, GNUNET_HashCode * result)
           vbit -= 8;
         }
     }
-  GE_ASSERT (NULL, rpos == 0);
-  GE_ASSERT (NULL, vbit == 0);
+  GNUNET_GE_ASSERT (NULL, rpos == 0);
+  GNUNET_GE_ASSERT (NULL, vbit == 0);
   return GNUNET_OK;
 }
 
@@ -604,7 +604,7 @@ GNUNET_hash_to_AES_key (const GNUNET_HashCode * hc,
                         GNUNET_AES_SessionKey * skey,
                         GNUNET_AES_InitializationVector * iv)
 {
-  GE_ASSERT (NULL,
+  GNUNET_GE_ASSERT (NULL,
              sizeof (GNUNET_HashCode) >=
              GNUNET_SESSIONKEY_LEN +
              sizeof (GNUNET_AES_InitializationVector));
@@ -625,7 +625,7 @@ GNUNET_hash_get_bit (const GNUNET_HashCode * code, unsigned int bit)
 {
   if (bit >= 8 * sizeof (GNUNET_HashCode))
     {
-      GE_ASSERT (NULL, 0);
+      GNUNET_GE_ASSERT (NULL, 0);
       return -1;                /* error */
     }
   return (((unsigned char *) code)[bit >> 3] & (1 << bit & 7)) > 0;

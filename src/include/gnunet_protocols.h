@@ -55,58 +55,48 @@ extern "C"
 /**
  * protocol number for "unspecified"
  */
-#define ANY_PROTOCOL_NUMBER 0
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY 0
 
 /**
  * protocol number for 'NAT'.  Used as the advertisements for peers behind
  * a NAT box.
  */
-#define NAT_PROTOCOL_NUMBER 1
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT 1
 
 /**
  * protocol number of TCP.
  */
-#define TCP_PROTOCOL_NUMBER 2
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP 2
 
 /**
  * protocol number of UDP.
  */
-#define UDP_PROTOCOL_NUMBER 3
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP 3
 
 /**
  * Protocol number for TCP on IPv6 (TCP+6)
  */
-#define TCP6_PROTOCOL_NUMBER 4
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6 4
 
 /**
  * Protocol number for UDP on IPv6 (UDP+6)
  */
-#define UDP6_PROTOCOL_NUMBER 5
-
-/**
- * protocol number of TCP.
- */
-#define TCP_OLD_PROTOCOL_NUMBER 6
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP6 5
 
 /**
  * protocol number for HTTP (80 is too big, so 8 will have to do)
  */
-#define HTTP_PROTOCOL_NUMBER 8
-
-/**
- * protocol number of UDP. Do NEVER change, also used in other context!
- */
-#define UDP_OLD_PROTOCOL_NUMBER 17
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP 8
 
 /**
  * protocol number for SMTP
  */
-#define SMTP_PROTOCOL_NUMBER 25
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_SMTP 25
 
 /**
  * Largest protocol number.
  */
-#define MAX_PROTOCOL_NUMBER 26
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX 26
 
 /* ********* client-server protocol (over TCP) ********** */
 /* ********* CS CORE messages ********** */
@@ -114,27 +104,27 @@ extern "C"
 /**
  * return value for remote calls (generic message)
  */
-#define CS_PROTO_RETURN_VALUE 0
+#define GNUNET_CS_PROTO_RETURN_VALUE 0
 
 /**
  * client to gnunetd: shutdown
  */
-#define CS_PROTO_SHUTDOWN_REQUEST 1
+#define GNUNET_CS_PROTO_SHUTDOWN_REQUEST 1
 
 /**
  * client to gnunetd: get configuration option
  */
-#define CS_PROTO_GET_OPTION_REQUEST 2
+#define GNUNET_CS_PROTO_GET_OPTION_REQUEST 2
 
 /**
  * gnunetd to client: option value
  */
-#define CS_PROTO_GET_OPTION_REPLY 3
+#define GNUNET_CS_PROTO_GET_OPTION_REPLY 3
 
 /**
  * gnunetd to client: error message
  */
-#define CS_PROTO_RETURN_ERROR 4
+#define GNUNET_CS_PROTO_RETURN_ERROR 4
 
 
 /* ********** CS FS application messages ********** */
@@ -142,53 +132,53 @@ extern "C"
 /**
  * client to gnunetd: send queries
  */
-#define CS_PROTO_gap_QUERY_START 8
+#define GNUNET_CS_PROTO_GAP_QUERY_START 8
 
 /**
  * client to gnunetd: stop query
  */
-#define CS_PROTO_gap_QUERY_STOP 9
+#define GNUNET_CS_PROTO_GAP_QUERY_STOP 9
 
 /**
  * gnunetd to client: here is your answer
  */
-#define CS_PROTO_gap_RESULT 9
+#define GNUNET_CS_PROTO_GAP_RESULT 9
 
 /**
  * client to gnunetd: insert CHK content (no index)
  */
-#define CS_PROTO_gap_INSERT 10
+#define GNUNET_CS_PROTO_GAP_INSERT 10
 
 /**
  * client to gnunetd: index content
  */
-#define CS_PROTO_gap_INDEX 11
+#define GNUNET_CS_PROTO_GAP_INDEX 11
 
 /**
  * client to gnunetd: delete content
  */
-#define CS_PROTO_gap_DELETE 12
+#define GNUNET_CS_PROTO_GAP_DELETE 12
 
 /**
  * client to gnunetd: unindex content
  */
-#define CS_PROTO_gap_UNINDEX 13
+#define GNUNET_CS_PROTO_GAP_UNINDEX 13
 
 /**
  * client to gnunetd: test if content is indexed
  */
-#define CS_PROTO_gap_TESTINDEX 14
+#define GNUNET_CS_PROTO_GAP_TESTINDEX 14
 
 /**
  * Client to gnunetd: what is the average priority of entries in the
  * routing table?
  */
-#define CS_PROTO_gap_GET_AVG_PRIORITY 15
+#define GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY 15
 
 /**
  * client to gnunetd: initialize to index file
  */
-#define CS_PROTO_gap_INIT_INDEX 16
+#define GNUNET_CS_PROTO_GAP_INIT_INDEX 16
 
 
 /* *********** messages for identity module ************* */
@@ -197,41 +187,41 @@ extern "C"
  * Client asks daemon for information about
  * all known peers
  */
-#define CS_PROTO_identity_request_INFO 25
+#define GNUNET_CS_PROTO_IDENTITY_REQUEST_INFO 25
 
 /**
  * Deamon responds with information about a peer.
  */
-#define CS_PROTO_identity_INFO 26
+#define GNUNET_CS_PROTO_IDENTITY_INFO 26
 
 /**
  * Client asks the Daemon about how to contact
  * it.
  */
-#define CS_PROTO_identity_request_HELLO 27
+#define GNUNET_CS_PROTO_IDENTITY_REQUEST_HELLO 27
 
 /**
  * Client informs the Daemon about how to contact
  * a particular peer -- or daemon informs client
  * about how other peers should contact it.
  */
-#define CS_PROTO_identity_HELLO 28
+#define GNUNET_CS_PROTO_IDENTITY_HELLO 28
 
 /**
  * Client asks the Daemon to GNUNET_RSA_sign a message.
  */
-#define CS_PROTO_identity_request_SIGN 29
+#define GNUNET_CS_PROTO_IDENTITY_REQUEST_SIGNATURE 29
 
 /**
  * Daemon sends client a signature
  */
-#define CS_PROTO_identity_SIGNATURE 30
+#define GNUNET_CS_PROTO_IDENTITY_SIGNATURE 30
 
 /**
  * Client asks the daemon to try to connect to
  * a particular peer.
  */
-#define CS_PROTO_identity_CONNECT 31
+#define GNUNET_CS_PROTO_IDENTITY_CONNECT 31
 
 
 /* *********** messages for traffic module ************* */
@@ -240,17 +230,17 @@ extern "C"
  * client to traffic module: to how many nodes are we connected?
  * reply is a CS_returnvalue_MESSAGE message.
  */
-#define CS_PROTO_traffic_COUNT 32
+#define GNUNET_CS_PROTO_TRAFFIC_COUNT 32
 
 /**
  * Client to traffic module: how much traffic do we have at the moment?
  */
-#define CS_PROTO_traffic_QUERY 33
+#define GNUNET_CS_PROTO_TRAFFIC_QUERY 33
 
 /**
  * traffic module to client: traffic statistics
  */
-#define CS_PROTO_traffic_INFO 34
+#define GNUNET_CS_PROTO_TRAFFIC_INFO 34
 
 
 /* *********** messages for stats module ************* */
@@ -258,39 +248,39 @@ extern "C"
 /**
  * client to stats module: request statistics
  */
-#define CS_PROTO_stats_GET_STATISTICS 36
+#define GNUNET_CS_PROTO_STATS_GET_STATISTICS 36
 
 /**
  * stats module to client: statistics
  */
-#define CS_PROTO_stats_STATISTICS 37
+#define GNUNET_CS_PROTO_STATS_STATISTICS 37
 
 /**
  * client to stats module: is client server message supported
  */
-#define CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED 38
+#define GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED 38
 
 /**
  * client to stats module: is p2p message supported
  */
-#define CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED 39
+#define GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED 39
 
 
 /* ********** CS TBENCH application messages ********** */
 
-#define CS_PROTO_tbench_REQUEST	40
-#define CS_PROTO_tbench_REPLY	41
+#define GNUNET_CS_PROTO_TBENCH_REQUEST	40
+#define GNUNET_CS_PROTO_TBENCH_REPLY	41
 
 
 /* ********** CS TRACEKIT application messages ********* */
 
-#define CS_PROTO_tracekit_PROBE 42
-#define CS_PROTO_tracekit_REPLY 43
+#define GNUNET_CS_PROTO_TRACEKIT_PROBE 42
+#define GNUNET_CS_PROTO_TRACEKIT_REPLY 43
 
 
 /* ********** CS CHAT application messages ********** */
 
-#define CS_PROTO_chat_MSG 44
+#define GNUNET_CS_PROTO_CHAT_MSG 44
 
 
 /* ********** CS DHT application messages ********** */
@@ -298,19 +288,19 @@ extern "C"
 /**
  * Client to CS or CS to client: get from table
  */
-#define CS_PROTO_dht_REQUEST_GET      48
+#define GNUNET_CS_PROTO_DHT_REQUEST_GET      48
 
 /**
  * Client to CS or CS to client: put into table
  */
-#define CS_PROTO_dht_REQUEST_PUT      49
+#define GNUNET_CS_PROTO_DHT_REQUEST_PUT      49
 
 
 /* ********** CS TESTBED application messages ********** */
 
-#define CS_PROTO_testbed_REQUEST 50
+#define GNUNET_CS_PROTO_TESTBED_REQUEST 50
 
-#define CS_PROTO_testbed_REPLY   51
+#define GNUNET_CS_PROTO_TESTBED_REPLY   51
 
 
 
@@ -324,20 +314,20 @@ extern "C"
  * instead of the VPN_REPLY so the UI knows it has
  * seen all the output.
  */
-#define CS_PROTO_VPN_MSG 92
-#define CS_PROTO_VPN_REPLY 93
-#define CS_PROTO_VPN_DEBUGOFF 94
-#define CS_PROTO_VPN_DEBUGON 95
-#define CS_PROTO_VPN_TUNNELS 96
-#define CS_PROTO_VPN_ROUTES 97
-#define CS_PROTO_VPN_REALISED 98
-#define CS_PROTO_VPN_RESET 99
-#define CS_PROTO_VPN_REALISE 100
-#define CS_PROTO_VPN_ADD 101
-#define CS_PROTO_VPN_TRUST 102
+#define GNUNET_CS_PROTO_VPN_MSG 92
+#define GNUNET_CS_PROTO_VPN_REPLY 93
+#define GNUNET_CS_PROTO_VPN_DEBUGOFF 94
+#define GNUNET_CS_PROTO_VPN_DEBUGON 95
+#define GNUNET_CS_PROTO_VPN_TUNNELS 96
+#define GNUNET_CS_PROTO_VPN_ROUTES 97
+#define GNUNET_CS_PROTO_VPN_REALISED 98
+#define GNUNET_CS_PROTO_VPN_RESET 99
+#define GNUNET_CS_PROTO_VPN_REALISE 100
+#define GNUNET_CS_PROTO_VPN_ADD 101
+#define GNUNET_CS_PROTO_VPN_TRUST 102
 
 
-#define CS_PROTO_MAX_USED 80
+#define GNUNET_CS_PROTO_MAX_USED 80
 
 /* ******** node-to-node (p2p) messages (over anything) ********* */
 
@@ -346,38 +336,38 @@ extern "C"
 /**
  * announcement of public key
  */
-#define p2p_PROTO_hello 0
+#define GNUNET_P2P_PROTO_HELLO 0
 
 /**
  * session key exchange, session key is encrypted with hostkey
  */
-#define P2P_PROTO_setkey 1
+#define GNUNET_P2P_PROTO_SET_KEY 1
 
 /**
  * PING
  */
-#define p2p_PROTO_PING 2
+#define GNUNET_P2P_PROTO_PING 2
 
 /**
  * PONG (response to PING)
  */
-#define p2p_PROTO_PONG 3
+#define GNUNET_P2P_PROTO_PONG 3
 
 /**
  * termination of connection (other host is nice
  * and tells us, there is GNUNET_NO requirement to do so!)
  */
-#define P2P_PROTO_hangup 4
+#define GNUNET_P2P_PROTO_HANG_UP 4
 
 /**
  * Fragmented message.
  */
-#define P2P_PROTO_fragment 5
+#define GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT 5
 
 /**
  * noise, used to fill packets to sizes >1k.
  */
-#define P2P_PROTO_noise 6
+#define GNUNET_P2P_PROTO_NOISE 6
 
 
 /* ************* p2p GAP application messages *********** */
@@ -385,61 +375,61 @@ extern "C"
 /**
  * Query for content.
  */
-#define P2P_PROTO_gap_QUERY 16
+#define GNUNET_P2P_PROTO_GAP_QUERY 16
 
 /**
  * receive content
  */
-#define P2P_PROTO_gap_RESULT 17
+#define GNUNET_P2P_PROTO_GAP_RESULT 17
 
 /* ************** p2p CHAT application messages *********** */
 
 /**
  * chat message
  */
-#define P2P_PROTO_chat_MSG 32
+#define GNUNET_P2P_PROTO_CHAT_MSG 32
 
 /* *************** p2p TRACEKIT application messages ******** */
 
-#define P2P_PROTO_tracekit_PROBE 36
+#define GNUNET_P2P_PROTO_TRACEKIT_PROBE 36
 
-#define P2P_PROTO_tracekit_REPLY 37
+#define GNUNET_P2P_PROTO_TRACEKIT_REPLY 37
 
 /* ********** p2p TBENCH application messages ********** */
 
 /**
  * benchmark message: send back reply asap
  */
-#define P2P_PROTO_tbench_REQUEST 40
-#define P2P_PROTO_tbench_REPLY 	 41
+#define GNUNET_P2P_PROTO_TBENCH_REQUEST 40
+#define GNUNET_P2P_PROTO_TBENCH_REPLY 	 41
 
 /************** p2p RPC application messages ************/
 
-#define P2P_PROTO_rpc_REQ 42
-#define P2P_PROTO_rpc_RES 43
-#define P2P_PROTO_rpc_ACK 44
+#define GNUNET_P2P_PROTO_RPC_REQ 42
+#define GNUNET_P2P_PROTO_RPC_RES 43
+#define GNUNET_P2P_PROTO_RPC_ACK 44
 
 /************** p2p DHT application messages ************/
 
-#define P2P_PROTO_DHT_DISCOVERY 45
-#define P2P_PROTO_DHT_ASK_HELLO 46
-#define P2P_PROTO_DHT_GET       47
-#define P2P_PROTO_DHT_PUT       48
-#define P2P_PROTO_DHT_RESULT    49
+#define GNUNET_P2P_PROTO_DHT_DISCOVERY 45
+#define GNUNET_P2P_PROTO_DHT_ASK_HELLO 46
+#define GNUNET_P2P_PROTO_DHT_GET       47
+#define GNUNET_P2P_PROTO_DHT_PUT       48
+#define GNUNET_P2P_PROTO_DHT_RESULT    49
 
 
 /* ************* p2p VPN messages ************* */
 
-#define P2P_PROTO_aip_IP 64     /* contains IPv6 frame */
+#define GNUNET_P2P_PROTO_AIP_IP 64     /* contains IPv6 frame */
 
-#define P2P_PROTO_aip_ROUTE 65  /* a route to a node */
+#define GNUNET_P2P_PROTO_AIP_ROUTE 65  /* a route to a node */
 
-#define P2P_PROTO_aip_ROUTES 66 /* no more routes in my table */
+#define GNUNET_P2P_PROTO_AIP_ROUTES 66 /* no more routes in my table */
 
-#define P2P_PROTO_aip_GETROUTE 67       /* request for a table entry from a peer */
+#define GNUNET_P2P_PROTO_AIP_GETROUTE 67       /* request for a table entry from a peer */
 
 
-#define P2P_PROTO_MAX_USED 68
+#define GNUNET_P2P_PROTO_MAX_USED 68
 
 
 
@@ -448,47 +438,47 @@ extern "C"
 /**
  * Reserved number for "any type".
  */
-#define ANY_BLOCK 0
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY 0
 
 /**
  * Data block (leaf or inner block).
  */
-#define D_BLOCK 1
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA 1
 
 /**
  * Namespace binding (subspace entry)
  */
-#define S_BLOCK 2
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED 2
 
 /**
  * Keyword binding (entry in keyword space)
  */
-#define K_BLOCK 3
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD 3
 
 /**
  * Namespace advertisement.
  */
-#define N_BLOCK 4
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE 4
 
 /**
  * Namespace advertisement in keyword space.
  */
-#define KN_BLOCK 5
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE 5
 
 /**
  * DHT String2String (for dht-testing)
  */
-#define DHT_STRING2STRING_BLOCK 7
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING 7
 
 /**
  * Reserved for internal usage
  */
-#define RESERVED_BLOCK 0xFFFFFFFE
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_RESERVED 0xFFFFFFFE
 
 /**
  * Type of OnDemand encoded blocks.
  */
-#define ONDEMAND_BLOCK 0xFFFFFFFF
+#define GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND 0xFFFFFFFF
 
 
 

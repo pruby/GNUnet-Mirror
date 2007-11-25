@@ -124,18 +124,18 @@ static unsigned long long stored_ops;
 static GNUNET_CronTime start_time;
 
 static int
-putValue (SQstore_ServiceAPI * api, int i)
+putValue (GNUNET_SQstore_ServiceAPI * api, int i)
 {
-  Datastore_Value *value;
+  GNUNET_DatastoreValue *value;
   size_t size;
   static GNUNET_HashCode key;
   static int ic;
 
   /* most content is 32k */
-  size = sizeof (Datastore_Value) + 32 * 1024;
+  size = sizeof (GNUNET_DatastoreValue) + 32 * 1024;
   if (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 16) == 0)  /* but some of it is less! */
     size =
-      sizeof (Datastore_Value) +
+      sizeof (GNUNET_DatastoreValue) +
       GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */
 
@@ -149,7 +149,7 @@ putValue (SQstore_ServiceAPI * api, int i)
   value->expirationTime =
     GNUNET_htonll (GNUNET_get_time () +
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
-  memset (&value[1], i, size - sizeof (Datastore_Value));
+  memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));
   if (GNUNET_OK != api->put (&key, value))
     {
       GNUNET_free (value);
@@ -170,9 +170,9 @@ putValue (SQstore_ServiceAPI * api, int i)
 
 static int
 iterateDelete (const GNUNET_HashCode * key,
-               const Datastore_Value * val, void *cls, unsigned long long uid)
+               const GNUNET_DatastoreValue * val, void *cls, unsigned long long uid)
 {
-  SQstore_ServiceAPI *api = cls;
+  GNUNET_SQstore_ServiceAPI *api = cls;
   static int dc;
 
   if (api->getSize () < MAX_SIZE)
@@ -193,7 +193,7 @@ iterateDelete (const GNUNET_HashCode * key,
  * Add testcode here!
  */
 static int
-test (SQstore_ServiceAPI * api)
+test (GNUNET_SQstore_ServiceAPI * api)
 {
   int i;
   int j;
@@ -249,15 +249,15 @@ FAILURE:
 int
 main (int argc, char *argv[])
 {
-  SQstore_ServiceAPI *api;
+  GNUNET_SQstore_ServiceAPI *api;
   int ok;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_CronManager *cron;
 
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   cron = cron_create (NULL);
@@ -273,7 +273,7 @@ main (int argc, char *argv[])
     ok = GNUNET_SYSERR;
   doneCore ();
   GNUNET_cron_destroy (cron);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   if (ok == GNUNET_SYSERR)
     return 1;
   return 0;

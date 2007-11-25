@@ -29,8 +29,8 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 
-static CoreAPIForApplication *coreAPI = NULL;
-static struct ClientHandle *client;
+static GNUNET_CoreAPIForPlugins *coreAPI = NULL;
+static struct GNUNET_ClientHandle *client;
 static struct GNUNET_Mutex *lock;
 
 static int
@@ -41,13 +41,13 @@ handlep2pMSG (const GNUNET_PeerIdentity * sender,
 }
 
 static int
-csHandle (struct ClientHandle *client, const GNUNET_MessageHeader * message)
+csHandle (struct GNUNET_ClientHandle *client, const GNUNET_MessageHeader * message)
 {
   return GNUNET_OK;
 }
 
 static void
-clientExitHandler (struct ClientHandle *c)
+clientExitHandler (struct GNUNET_ClientHandle *c)
 {
   GNUNET_mutex_lock (lock);
   if (c == client)
@@ -56,7 +56,7 @@ clientExitHandler (struct ClientHandle *c)
 }
 
 int
-initialize_module_template (CoreAPIForApplication * capi)
+initialize_module_template (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
 
@@ -64,17 +64,17 @@ initialize_module_template (CoreAPIForApplication * capi)
   client = NULL;
   coreAPI = capi;
 
-  GE_LOG (capi->ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (capi->ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("`%s' registering client handler %d and %d\n"),
-          "template", CS_PROTO_MAX_USED, P2P_PROTO_MAX_USED);
+          "template", GNUNET_CS_PROTO_MAX_USED, GNUNET_P2P_PROTO_MAX_USED);
   if (GNUNET_SYSERR ==
-      capi->registerHandler (P2P_PROTO_MAX_USED, &handlep2pMSG))
+      capi->registerHandler (GNUNET_P2P_PROTO_MAX_USED, &handlep2pMSG))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->registerClientExitHandler (&clientExitHandler))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (CS_PROTO_MAX_USED, &csHandle))
+      capi->registerClientHandler (GNUNET_CS_PROTO_MAX_USED, &csHandle))
     ok = GNUNET_SYSERR;
   return ok;
 }
@@ -82,9 +82,9 @@ initialize_module_template (CoreAPIForApplication * capi)
 void
 done_module_template ()
 {
-  coreAPI->unregisterHandler (P2P_PROTO_MAX_USED, &handlep2pMSG);
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MAX_USED, &handlep2pMSG);
   coreAPI->unregisterClientExitHandler (&clientExitHandler);
-  coreAPI->unregisterClientHandler (CS_PROTO_MAX_USED, &csHandle);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_MAX_USED, &csHandle);
   GNUNET_mutex_destroy (lock);
   coreAPI = NULL;
 }

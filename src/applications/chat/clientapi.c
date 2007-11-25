@@ -39,9 +39,9 @@ struct GNUNET_CHAT_Room
 
   struct GNUNET_ThreadHandle *listen_thread;
 
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
 
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
   char *nickname;
 
@@ -69,8 +69,8 @@ thread_main (void *rcls)
  * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
  */
 int
-GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
-                        struct GC_Configuration *cfg,
+GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
+                        struct GNUNET_GC_Configuration *cfg,
                         GNUNET_CHAT_RoomIterator it, void *cls)
 {
   return GNUNET_SYSERR;
@@ -87,8 +87,8 @@ GNUNET_CHAT_list_rooms (struct GE_Context *ectx,
  * @return NULL on error
  */
 struct GNUNET_CHAT_Room *
-GNUNET_CHAT_join_room (struct GE_Context *ectx,
-                       struct GC_Configuration *cfg,
+GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
+                       struct GNUNET_GC_Configuration *cfg,
                        const char *nickname,
                        const GNUNET_RSA_PublicKey * me,
                        const struct GNUNET_RSA_PrivateKey *key,

@@ -30,7 +30,7 @@
 
 typedef struct GNUNET_PluginHandle
 {
-  struct GE_Context *ectx;
+  struct GNUNET_GE_Context *ectx;
   char *libprefix;
   char *dsoname;
   void *handle;
@@ -101,7 +101,7 @@ void __attribute__ ((destructor)) gnc_ltdl_fini ()
 }
 
 struct GNUNET_PluginHandle *
-GNUNET_plugin_load (struct GE_Context *ectx,
+GNUNET_plugin_load (struct GNUNET_GE_Context *ectx,
                     const char *libprefix, const char *dsoname)
 {
   void *libhandle;
@@ -114,8 +114,8 @@ GNUNET_plugin_load (struct GE_Context *ectx,
   libhandle = lt_dlopenext (libname);
   if (libhandle == NULL)
     {
-      GE_LOG (ectx,
-              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
               _("`%s' failed for library `%s' with error: %s\n"),
               "lt_dlopenext", libname, lt_dlerror ());
       GNUNET_free (libname);
@@ -155,8 +155,8 @@ GNUNET_plugin_resolve_function (struct GNUNET_PluginHandle *plug,
   if (mptr == NULL)
     mptr = lt_dlsym (plug->handle, initName);
   if ((mptr == NULL) && (logError))
-    GE_LOG (plug->ectx,
-            GE_ERROR | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+    GNUNET_GE_LOG (plug->ectx,
+            GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER | GNUNET_GE_IMMEDIATE,
             _("`%s' failed to resolve method '%s' with error: %s\n"),
             "lt_dlsym", &initName[1], lt_dlerror ());
   GNUNET_free (initName);

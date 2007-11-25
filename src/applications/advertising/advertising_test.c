@@ -63,8 +63,8 @@ main (int argc, const char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret = 0;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
   int i;
   int k;
@@ -74,10 +74,10 @@ main (int argc, const char **argv)
   int min;
 
   ectx = NULL;
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   peers =
@@ -87,7 +87,7 @@ main (int argc, const char **argv)
                                   NUM_PEERS);
   if (peers == NULL)
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   /* do circular connect */
@@ -102,7 +102,7 @@ main (int argc, const char **argv)
           fprintf (stderr,
                    "Failed to connect peers %d and %d!\n",
                    i, (i + 1) % NUM_PEERS);
-          GC_free (cfg);
+          GNUNET_GC_free (cfg);
           return -1;
         }
     }
@@ -118,10 +118,10 @@ main (int argc, const char **argv)
       for (i = 0; i < NUM_PEERS; i++)
         {
           GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
-          GC_set_configuration_value_string (cfg,
+          GNUNET_GC_set_configuration_value_string (cfg,
                                              ectx, "NETWORK", "HOST", buf);
           sock = GNUNET_client_connection_create (NULL, cfg);
-          STATS_getStatistics (NULL, sock, &countConnections, &have);
+          GNUNET_STATS_get_statistics (NULL, sock, &countConnections, &have);
           GNUNET_client_connection_destroy (sock);
           found += have;
           if (have < min)
@@ -134,7 +134,7 @@ main (int argc, const char **argv)
         GNUNET_thread_sleep (45 * GNUNET_CRON_SECONDS); /* one hello-forward round is 45s! */
     }
   GNUNET_TESTING_stop_daemons (peers);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return ret;
 }
 

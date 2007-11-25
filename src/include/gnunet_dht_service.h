@@ -42,12 +42,12 @@ extern "C"
 #endif
 #endif
 
-struct DHT_GET_RECORD;
+struct GNUNET_DHT_GetHandle;
 
 /**
  * DHT operation 'complete' (i.e timed out).
  */
-typedef void (*DHT_OP_Complete) (void *closure);
+typedef void (*GNUNET_DHT_OperationCompleteCallback) (void *closure);
 
 /**
  * Functions of the DHT Service API.
@@ -68,18 +68,18 @@ typedef struct
    * @param closure extra argument to callback
    * @return handle to stop the async get
    */
-  struct DHT_GET_RECORD *(*get_start) (unsigned int type,
+  struct GNUNET_DHT_GetHandle *(*get_start) (unsigned int type,
                                        const GNUNET_HashCode * key,
                                        GNUNET_CronTime timeout,
-                                       DataProcessor callback,
+                                       GNUNET_DataProcessor callback,
                                        void *cls,
-                                       DHT_OP_Complete callbackComplete,
+                                       GNUNET_DHT_OperationCompleteCallback callbackComplete,
                                        void *closure);
 
   /**
    * Stop async DHT-get.  Frees associated resources.
    */
-  int (*get_stop) (struct DHT_GET_RECORD * record);
+  int (*get_stop) (struct GNUNET_DHT_GetHandle * record);
 
   /**
    * Perform a PUT operation on the DHT identified by 'table' storing
@@ -92,7 +92,7 @@ typedef struct
                unsigned int type,
                unsigned int size, GNUNET_CronTime expire, const char *data);
 
-} DHT_ServiceAPI;
+} GNUNET_DHT_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

@@ -30,24 +30,24 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-static GE_KIND
+static GNUNET_GE_KIND
 convertLogLevel (const char *level)
 {
-  GE_KIND ret;
+  GNUNET_GE_KIND ret;
 
   ret = 0;
   if (ret || (0 == strcasecmp ("debug", level)))
-    ret |= GE_DEBUG;
+    ret |= GNUNET_GE_DEBUG;
   if (ret || (0 == strcasecmp ("status", level)))
-    ret |= GE_STATUS;
+    ret |= GNUNET_GE_STATUS;
   if (ret || (0 == strcasecmp ("info", level)))
-    ret |= GE_INFO;
+    ret |= GNUNET_GE_INFO;
   if (ret || (0 == strcasecmp ("warning", level)))
-    ret |= GE_WARNING;
+    ret |= GNUNET_GE_WARNING;
   if (ret || (0 == strcasecmp ("error", level)))
-    ret |= GE_ERROR;
+    ret |= GNUNET_GE_ERROR;
   if (ret || (0 == strcasecmp ("fatal", level)))
-    ret = ret | GE_FATAL;
+    ret = ret | GNUNET_GE_FATAL;
   return ret;
 }
 
@@ -58,15 +58,15 @@ convertLogLevel (const char *level)
  * @return 0 on success, 1 on error
  */
 static int
-configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
+configure_logging (struct GNUNET_GE_Context **ectx, struct GNUNET_GC_Configuration *cfg)
 {
   char *admin_log_file;
   char *admin_log_level;
   char *user_log_level;
-  GE_KIND all;
-  GE_KIND ull;
-  struct GE_Context *nctx;
-  struct GE_Context *tetx;
+  GNUNET_GE_KIND all;
+  GNUNET_GE_KIND ull;
+  struct GNUNET_GE_Context *nctx;
+  struct GNUNET_GE_Context *tetx;
   unsigned long long logrotate;
   int dev;
   char * user;
@@ -79,25 +79,25 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
   admin_log_level = NULL;
   user_log_level = NULL;
   user = NULL;
-  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user);
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user);
   if (strlen(user) == 0) {
     GNUNET_free(user);
     user = NULL;
   }
   logrotate = 7;
-  if (-1 == GC_get_configuration_value_number (cfg,
+  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
                                                "GNUNETD",
                                                "KEEPLOG",
                                                0, 36500, 3, &logrotate))
     return 1;                   /* error! */
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNETD",
                                        "LOGFILE",
-                                       VAR_DAEMON_DIRECTORY "/logs",
+                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/logs",
                                        &admin_log_file);
   if (user != NULL) {
     rdir = GNUNET_expand_file_name (NULL, admin_log_file);
-    GE_ASSERT(NULL, rdir != NULL);
+    GNUNET_GE_ASSERT(NULL, rdir != NULL);
     len = strlen (rdir);
     pos = 1;
     while (pos < len) {
@@ -108,8 +108,8 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
 				   rdir,
 				   user);
 	} else if (errno != EEXIST) {
-	  GE_LOG_STRERROR_FILE (NULL,
-				GE_ERROR | GE_USER | GE_BULK,
+	  GNUNET_GE_LOG_STRERROR_FILE (NULL,
+				GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_BULK,
 				"mkdir", rdir);      
 	}
 	rdir[pos] = DIR_SEPARATOR;
@@ -118,50 +118,50 @@ configure_logging (struct GE_Context **ectx, struct GC_Configuration *cfg)
     }
     GNUNET_free(rdir);
   }
-  GC_get_configuration_value_string (cfg,
+  GNUNET_GC_get_configuration_value_string (cfg,
                                      "LOGGING",
                                      "ADMIN-LEVEL",
                                      "WARNING", &admin_log_level);
-  GC_get_configuration_value_string (cfg,
+  GNUNET_GC_get_configuration_value_string (cfg,
                                      "LOGGING",
                                      "USER-LEVEL",
                                      "WARNING", &user_log_level);
   dev =
-    GC_get_configuration_value_yesno (cfg, "LOGGING", "DEVELOPER", GNUNET_NO);
+    GNUNET_GC_get_configuration_value_yesno (cfg, "LOGGING", "DEVELOPER", GNUNET_NO);
   all = convertLogLevel (admin_log_level);
   ull = convertLogLevel (user_log_level);
   if (dev == GNUNET_YES)
     {
-      all |= GE_DEVELOPER | GE_REQUEST;
-      ull |= GE_DEVELOPER | GE_REQUEST;
+      all |= GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST;
+      ull |= GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST;
     }
   GNUNET_free (admin_log_level);
   GNUNET_free (user_log_level);
   if (all != 0)
     {
-      nctx = GE_create_context_logfile (NULL,
+      nctx = GNUNET_GE_create_context_logfile (NULL,
                                         all
-                                        | GE_ADMIN
-                                        | GE_BULK
-                                        | GE_IMMEDIATE,
+                                        | GNUNET_GE_ADMIN
+                                        | GNUNET_GE_BULK
+                                        | GNUNET_GE_IMMEDIATE,
                                         admin_log_file,
                                         user, GNUNET_YES, (int) logrotate);
     }
   GNUNET_free (admin_log_file);
   if (ull != 0)
     {
-      tetx = GE_create_context_stderr (GNUNET_YES,
+      tetx = GNUNET_GE_create_context_stderr (GNUNET_YES,
                                        ull
-                                       | GE_USERKIND
-                                       | GE_BULK | GE_IMMEDIATE);
+                                       | GNUNET_GE_USERKIND
+                                       | GNUNET_GE_BULK | GNUNET_GE_IMMEDIATE);
       if (nctx == NULL)
         nctx = tetx;
       else
-        nctx = GE_create_context_multiplexer (nctx, tetx);
+        nctx = GNUNET_GE_create_context_multiplexer (nctx, tetx);
     }
   GNUNET_free_non_null(user);
-  GE_setDefaultContext (nctx);
-  GE_free_context (*ectx);
+  GNUNET_GE_setDefaultContext (nctx);
+  GNUNET_GE_free_context (*ectx);
   *ectx = nctx;
   return 0;
 }
@@ -181,7 +181,7 @@ GNUNET_init (int argc,
              const char *binaryName,
              char **cfgFileName,
              const struct GNUNET_CommandLineOption *options,
-             struct GE_Context **ectx, struct GC_Configuration **cfg)
+             struct GNUNET_GE_Context **ectx, struct GNUNET_GC_Configuration **cfg)
 {
   int i;
   char *path;
@@ -197,18 +197,18 @@ GNUNET_init (int argc,
   GNUNET_free (path);
   textdomain ("GNUnet");
 #endif
-  is_daemon = 0 == strcmp (DEFAULT_DAEMON_CONFIG_FILE, *cfgFileName);
+  is_daemon = 0 == strcmp (GNUNET_DEFAULT_DAEMON_CONFIG_FILE, *cfgFileName);
 
   /* during startup, log all warnings and higher
      for anybody to stderr */
-  *ectx = GE_create_context_stderr (GNUNET_YES,
-                                    GE_WARNING | GE_ERROR | GE_FATAL |
-                                    GE_USER | GE_ADMIN | GE_DEVELOPER |
-                                    GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext (*ectx);
+  *ectx = GNUNET_GE_create_context_stderr (GNUNET_YES,
+                                    GNUNET_GE_WARNING | GNUNET_GE_ERROR | GNUNET_GE_FATAL |
+                                    GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_DEVELOPER |
+                                    GNUNET_GE_IMMEDIATE | GNUNET_GE_BULK);
+  GNUNET_GE_setDefaultContext (*ectx);
   GNUNET_os_init (*ectx);
-  *cfg = GC_create ();
-  GE_ASSERT (*ectx, *cfg != NULL);
+  *cfg = GNUNET_GC_create ();
+  GNUNET_GE_ASSERT (*ectx, *cfg != NULL);
   i = GNUNET_parse_options (binaryName,
                             *ectx, *cfg, options, (unsigned int) argc, argv);
   if (i == -1)
@@ -230,22 +230,22 @@ GNUNET_init (int argc,
       GNUNET_free (bindir);
       ret = system (run);
       if (0 != ret)
-        GE_LOG (*ectx,
-                GE_ERROR | GE_USER | GE_IMMEDIATE,
+        GNUNET_GE_LOG (*ectx,
+                GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                 _("Failed to run %s: %s %d\n"),
                 run, strerror (errno), WEXITSTATUS (ret));
       GNUNET_free (run);
     }
-  if (0 != GC_parse_configuration (*cfg, *cfgFileName))
+  if (0 != GNUNET_GC_parse_configuration (*cfg, *cfgFileName))
     return -1;
   /* if PATHS/GNUNETD_HOME is not set, set it to
      the default value! */
-  GC_get_configuration_value_string (*cfg,
+  GNUNET_GC_get_configuration_value_string (*cfg,
                                      "PATHS",
                                      "GNUNETD_HOME",
                                      "/var/lib/gnunet", &path);
   GNUNET_free (path);
-  GC_get_configuration_value_string (*cfg,
+  GNUNET_GC_get_configuration_value_string (*cfg,
                                      "PATHS",
                                      "GNUNET_HOME", "~/.gnunet", &path);
   GNUNET_free (path);
@@ -258,11 +258,11 @@ GNUNET_init (int argc,
  * Free resources allocated during GNUnet_init.
  */
 void
-GNUNET_fini (struct GE_Context *ectx, struct GC_Configuration *cfg)
+GNUNET_fini (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
 {
-  GC_free (cfg);
-  GE_setDefaultContext (NULL);
-  GE_free_context (ectx);
+  GNUNET_GC_free (cfg);
+  GNUNET_GE_setDefaultContext (NULL);
+  GNUNET_GE_free_context (ectx);
 }
 
 /* end of startup.c */

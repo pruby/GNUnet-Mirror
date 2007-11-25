@@ -48,10 +48,10 @@ struct GNUNET_ClientServerConnection;
  * Get a connection with gnunetd.
  */
 struct GNUNET_ClientServerConnection *GNUNET_client_connection_create (struct
-                                                                       GE_Context
+                                                                       GNUNET_GE_Context
                                                                        *ectx,
                                                                        struct
-                                                                       GC_Configuration
+                                                                       GNUNET_GC_Configuration
                                                                        *cfg);
 
 /**
@@ -185,13 +185,13 @@ int GNUNET_client_connection_request_daemon_shutdown (struct
 /**
  * Checks if gnunetd is running
  *
- * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
+ * Uses GNUNET_CS_PROTO_TRAFFIC_COUNT query to determine if gnunetd is
  * running.
  *
  * @return GNUNET_OK if gnunetd is running, GNUNET_SYSERR if not
  */
-int GNUNET_test_daemon_running (struct GE_Context *ectx,
-                                struct GC_Configuration *cfg);
+int GNUNET_test_daemon_running (struct GNUNET_GE_Context *ectx,
+                                struct GNUNET_GC_Configuration *cfg);
 
 /**
  * Wait until the gnunet daemon is
@@ -200,8 +200,8 @@ int GNUNET_test_daemon_running (struct GE_Context *ectx,
  * @param timeout how long to wait at most in ms
  * @return GNUNET_OK if gnunetd is now running
  */
-int GNUNET_wait_for_daemon_running (struct GE_Context *ectx,
-                                    struct GC_Configuration *cfg,
+int GNUNET_wait_for_daemon_running (struct GNUNET_GE_Context *ectx,
+                                    struct GNUNET_GC_Configuration *cfg,
                                     GNUNET_CronTime timeout);
 
 #if 0                           /* keep Emacsens' auto-indent happy */

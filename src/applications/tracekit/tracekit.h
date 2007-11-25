@@ -98,7 +98,7 @@ typedef struct
    * currently connected to.
    */
   GNUNET_PeerIdentity peerList[1];
-} P2P_tracekit_reply_MESSAGE_GENERIC;
+} P2P_tracekit_reply_MESSAGNUNET_GE_GENERIC;
 
 
 typedef struct
@@ -137,6 +137,6 @@ typedef struct
    * currently connected to.
    */
   GNUNET_PeerIdentity peerList[1];
-} CS_tracekit_reply_MESSAGE_GENERIC;
+} CS_tracekit_reply_MESSAGNUNET_GE_GENERIC;
 
 #endif

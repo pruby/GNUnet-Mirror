@@ -34,7 +34,7 @@
 
 void release_module_bootstrap ();
 
-Bootstrap_ServiceAPI *provide_module_bootstrap (CoreAPIForApplication * capi);
+GNUNET_Bootstrap_ServiceAPI *provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi);
 
 static void *
 rs (const char *name)
@@ -68,7 +68,7 @@ terminate (void *arg)
 static void *
 pt (void *b)
 {
-  Bootstrap_ServiceAPI *boot = b;
+  GNUNET_Bootstrap_ServiceAPI *boot = b;
 
   boot->bootstrap (&hello, NULL, &terminate, NULL);
   return NULL;
@@ -77,23 +77,23 @@ pt (void *b)
 int
 main (int argc, char **argv)
 {
-  static CoreAPIForApplication capi;
-  struct GC_Configuration *cfg;
+  static GNUNET_CoreAPIForPlugins capi;
+  struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_PluginHandle *plugin;
-  Bootstrap_ServiceAPI *boot;
+  GNUNET_Bootstrap_ServiceAPI *boot;
   struct GNUNET_ThreadHandle *p;
   void *unused;
-  ServiceInitMethod init;
-  ServiceDoneMethod done;
+  GNUNET_ServicePluginInitializationMethod init;
+  GNUNET_ServicePluginShutdownMethod done;
 
   count = 0;
-  cfg = GC_create ();
-  GC_set_configuration_value_string (cfg,
+  cfg = GNUNET_GC_create ();
+  GNUNET_GC_set_configuration_value_string (cfg,
                                      NULL,
                                      "GNUNETD",
                                      "HOSTLISTURL",
                                      "http://gnunet.org/hostlist");
-  memset (&capi, 0, sizeof (CoreAPIForApplication));
+  memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
   capi.requestService = &rs;
   capi.releaseService = &rsx;
@@ -107,7 +107,7 @@ main (int argc, char **argv)
     GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
   done ();
   GNUNET_plugin_unload (plugin);
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   if (count == 0)
     return 1;
   return 0;

@@ -36,19 +36,19 @@
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI *
-ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_keyword_string_to_uri (struct GNUNET_GE_Context *ectx, const char *input)
 {
   char **keywords;
   unsigned int num_Words;
   int inWord;
   char *c;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   char *searchString;
 
   if (input == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return NULL;
     }
   searchString = GNUNET_strdup (input);
@@ -69,8 +69,8 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
   if (num_Words == 0)
     {
       GNUNET_free_non_null (searchString);
-      GE_LOG (ectx,
-              GE_ERROR | GE_IMMEDIATE | GE_USER,
+      GNUNET_GE_LOG (ectx,
+              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
               _("No keywords specified!\n"));
       return NULL;
     }
@@ -90,7 +90,7 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
           ++num_Words;
         }
     }
-  uri = ECRS_parseArgvKeywordURI (ectx, num_Words, (const char **) keywords);
+  uri = GNUNET_ECRS_keyword_command_line_to_uri (ectx, num_Words, (const char **) keywords);
   GNUNET_free (keywords);
   GNUNET_free (searchString);
   return uri;
@@ -104,22 +104,22 @@ ECRS_parseCharKeywordURI (struct GE_Context *ectx, const char *input)
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI *
-ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_keyword_command_line_to_uri (struct GNUNET_GE_Context *ectx,
                           unsigned int num_keywords, const char **keywords)
 {
   unsigned int i;
   unsigned int uriLen;
   char *uriString;
   unsigned int uriSize;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
 
   uriString = NULL;
   uriSize = 0;
   GNUNET_array_grow (uriString, uriSize, 4096);
-  strcpy (uriString, ECRS_URI_PREFIX);
-  strcat (uriString, ECRS_SEARCH_INFIX);
-  uriLen = 1 + strlen (ECRS_URI_PREFIX) + strlen (ECRS_SEARCH_INFIX);
+  strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
+  strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
+  uriLen = 1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
 
 
   for (i = 0; i < num_keywords; i++)
@@ -145,7 +145,7 @@ ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
           uriLen += strlen (keywords[i]);
         }
     }
-  uri = ECRS_stringToUri (ectx, uriString);
+  uri = GNUNET_ECRS_string_to_uri (ectx, uriString);
   GNUNET_array_grow (uriString, uriSize, 0);
   return uri;
 }
@@ -158,22 +158,22 @@ ECRS_parseArgvKeywordURI (struct GE_Context *ectx,
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI *
-ECRS_parseListKeywordURI (struct GE_Context *ectx,
+struct GNUNET_ECRS_URI *
+GNUNET_ECRS_keyword_list_to_uri (struct GNUNET_GE_Context *ectx,
                           unsigned int num_keywords, const char **keywords)
 {
   unsigned int i;
   unsigned int uriLen;
   char *uriString;
   unsigned int uriSize;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
 
   uriString = NULL;
   uriSize = 0;
   GNUNET_array_grow (uriString, uriSize, 4096);
-  strcpy (uriString, ECRS_URI_PREFIX);
-  strcat (uriString, ECRS_SEARCH_INFIX);
-  uriLen = 1 + strlen (ECRS_URI_PREFIX) + strlen (ECRS_SEARCH_INFIX);
+  strcpy (uriString, GNUNET_ECRS_URI_PREFIX);
+  strcat (uriString, GNUNET_ECRS_SEARCH_INFIX);
+  uriLen = 1 + strlen (GNUNET_ECRS_URI_PREFIX) + strlen (GNUNET_ECRS_SEARCH_INFIX);
 
 
   for (i = 0; i < num_keywords; i++)
@@ -189,7 +189,7 @@ ECRS_parseListKeywordURI (struct GE_Context *ectx,
       strcat (uriString, keywords[i]);
       uriLen += strlen (keywords[i]);
     }
-  uri = ECRS_stringToUri (ectx, uriString);
+  uri = GNUNET_ECRS_string_to_uri (ectx, uriString);
   GNUNET_array_grow (uriString, uriSize, 0);
   return uri;
 }

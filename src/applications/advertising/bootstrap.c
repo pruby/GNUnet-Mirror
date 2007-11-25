@@ -35,11 +35,11 @@
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
-static CoreAPIForApplication *coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static Bootstrap_ServiceAPI *bootstrap;
+static GNUNET_Bootstrap_ServiceAPI *bootstrap;
 
-static State_ServiceAPI *state;
+static GNUNET_State_ServiceAPI *state;
 
 static struct GNUNET_ThreadHandle *pt;
 
@@ -69,7 +69,7 @@ processhellos (HelloListClosure * hcq)
 
   if (NULL == hcq)
     {
-      GE_BREAK (coreAPI->ectx, 0);
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return;
     }
   while ((!hcq->do_shutdown) && (hcq->hellosCount > 0))
@@ -78,8 +78,8 @@ processhellos (HelloListClosure * hcq)
       rndidx =
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, hcq->hellosCount);
 #if DEBUG_BOOTSTRAP
-      GE_LOG (coreAPI->ectx,
-              GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx,
+              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "%s chose hello %d of %d\n",
               __FUNCTION__, rndidx, hcq->hellosCount);
 #endif
@@ -205,7 +205,7 @@ processThread (void *unused)
       if (GNUNET_YES == hlc.do_shutdown)
         break;
 #if DEBUG_BOOTSTRAP
-      GE_LOG (coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
               "Starting bootstrap.\n");
 #endif
       hlc.hellosLen = 0;
@@ -223,16 +223,16 @@ processThread (void *unused)
  * advertisements if needed.
  */
 void
-startBootstrap (CoreAPIForApplication * capi)
+startBootstrap (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   state = capi->requestService ("state");
-  GE_ASSERT (capi->ectx, state != NULL);
+  GNUNET_GE_ASSERT (capi->ectx, state != NULL);
   bootstrap = capi->requestService ("bootstrap");
-  GE_ASSERT (capi->ectx, bootstrap != NULL);
+  GNUNET_GE_ASSERT (capi->ectx, bootstrap != NULL);
   hlc.do_shutdown = GNUNET_NO;
   pt = GNUNET_thread_create (&processThread, NULL, 64 * 1024);
-  GE_ASSERT (capi->ectx, pt != NULL);
+  GNUNET_GE_ASSERT (capi->ectx, pt != NULL);
 }
 
 /**

@@ -28,11 +28,11 @@
 #include "gnunet_protocols.h"
 #include "gnunet_chat_lib.h"
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static char *nickname;
 
@@ -51,7 +51,7 @@ static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
   {'r', "room", "NAME",
    gettext_noop ("set the chat room to join (requred)"),
    1, &GNUNET_getopt_configure_set_string, &roomname},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

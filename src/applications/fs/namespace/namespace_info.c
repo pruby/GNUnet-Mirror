@@ -39,7 +39,7 @@
 struct DiscoveryCallback
 {
   struct DiscoveryCallback *next;
-  NS_NamespaceIterator callback;
+  GNUNET_NS_NamespaceIterator callback;
   void *closure;
 };
 
@@ -53,7 +53,7 @@ static struct GNUNET_Mutex *lock;
 static void
 internal_notify (const char *name,
                  const GNUNET_HashCode * id,
-                 const struct ECRS_MetaData *md, int rating)
+                 const struct GNUNET_ECRS_MetaData *md, int rating)
 {
   struct DiscoveryCallback *pos;
 
@@ -68,10 +68,10 @@ internal_notify (const char *name,
 }
 
 static void
-writeNamespaceInfo (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg,
+writeNamespaceInfo (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg,
                     const char *namespaceName,
-                    const struct ECRS_MetaData *meta, int ranking)
+                    const struct GNUNET_ECRS_MetaData *meta, int ranking)
 {
   unsigned int size;
   unsigned int tag;
@@ -80,10 +80,10 @@ writeNamespaceInfo (struct GE_Context *ectx,
   char *fnBase;
 
 
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &fnBase);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
   fn = GNUNET_malloc (strlen (fnBase) +
                       strlen (NS_DIR) + strlen (namespaceName) + 6);
   strcpy (fn, fnBase);
@@ -94,25 +94,25 @@ writeNamespaceInfo (struct GE_Context *ectx,
   strcat (fn, namespaceName);
   GNUNET_free (fnBase);
 
-  size = ECRS_sizeofMetaData (meta, ECRS_SERIALIZE_FULL);
+  size = GNUNET_ECRS_meta_data_get_serialized_size (meta, GNUNET_ECRS_SERIALIZE_FULL);
   tag = size + sizeof (int);
   buf = GNUNET_malloc (tag);
   ((int *) buf)[0] = htonl (ranking);   /* ranking */
-  GE_ASSERT (ectx,
-             size == ECRS_serializeMetaData (ectx,
+  GNUNET_GE_ASSERT (ectx,
+             size == GNUNET_ECRS_meta_data_serialize (ectx,
                                              meta,
                                              &buf[sizeof (int)],
-                                             size, ECRS_SERIALIZE_FULL));
+                                             size, GNUNET_ECRS_SERIALIZE_FULL));
   GNUNET_disk_file_write (ectx, fn, buf, tag, "660");
   GNUNET_free (fn);
   GNUNET_free (buf);
 }
 
 static int
-readNamespaceInfo (struct GE_Context *ectx,
-                   struct GC_Configuration *cfg,
+readNamespaceInfo (struct GNUNET_GE_Context *ectx,
+                   struct GNUNET_GC_Configuration *cfg,
                    const char *namespaceName,
-                   struct ECRS_MetaData **meta, int *ranking)
+                   struct GNUNET_ECRS_MetaData **meta, int *ranking)
 {
   unsigned long long len;
   unsigned int size;
@@ -121,10 +121,10 @@ readNamespaceInfo (struct GE_Context *ectx,
   char *fnBase;
 
   *meta = NULL;
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &fnBase);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
   fn = GNUNET_malloc (strlen (fnBase) +
                       strlen (NS_DIR) + strlen (namespaceName) + 6);
   strcpy (fn, fnBase);
@@ -150,7 +150,7 @@ readNamespaceInfo (struct GE_Context *ectx,
   if (len > 16 * 1024 * 1024)
     {
       /* too big, must be invalid! remove! */
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       UNLINK (fn);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
@@ -165,11 +165,11 @@ readNamespaceInfo (struct GE_Context *ectx,
 
   size = len - sizeof (int);
   *ranking = ntohl (((int *) buf)[0]);
-  *meta = ECRS_deserializeMetaData (ectx, &buf[sizeof (int)], size);
+  *meta = GNUNET_ECRS_meta_data_deserialize (ectx, &buf[sizeof (int)], size);
   if ((*meta) == NULL)
     {
       /* invalid data! remove! */
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       UNLINK (fn);
       GNUNET_free (buf);
       GNUNET_free (fn);
@@ -189,20 +189,20 @@ readNamespaceInfo (struct GE_Context *ectx,
  * @param meta meta-data about the namespace (maybe NULL)
  * @return namespace root URI on success, NULL on error (namespace already exists)
  */
-struct ECRS_URI *
-NS_createNamespace (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg,
+struct GNUNET_ECRS_URI *
+GNUNET_NS_namespace_create (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg,
                     unsigned int anonymityLevel,
                     unsigned int insertPriority,
                     GNUNET_CronTime insertExpiration,
                     const char *namespaceName,
-                    const struct ECRS_MetaData *meta,
-                    const struct ECRS_URI *advertisementURI,
+                    const struct GNUNET_ECRS_MetaData *meta,
+                    const struct GNUNET_ECRS_URI *advertisementURI,
                     const GNUNET_HashCode * rootEntry)
 {
-  struct ECRS_URI *ret;
+  struct GNUNET_ECRS_URI *ret;
 
-  ret = ECRS_createNamespace (ectx,
+  ret = GNUNET_ECRS_namespace_create (ectx,
                               cfg,
                               namespaceName,
                               meta,
@@ -215,9 +215,9 @@ NS_createNamespace (struct GE_Context *ectx,
       GNUNET_HashCode id;
       char *name;
 
-      NS_setNamespaceRoot (ectx, cfg, ret);
-      ECRS_getNamespaceId (ret, &id);
-      name = ECRS_getNamespaceName (&id);
+      GNUNET_NS_namespace_set_root (ectx, cfg, ret);
+      GNUNET_ECRS_uri_get_namespace_from_sks (ret, &id);
+      name = GNUNET_ECRS_get_namespace_name (&id);
       writeNamespaceInfo (ectx, cfg, name, meta, 0);
       internal_notify (namespaceName, &id, meta, 0);
       GNUNET_free (name);
@@ -232,18 +232,18 @@ NS_createNamespace (struct GE_Context *ectx,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-NS_deleteNamespace (struct GE_Context *ectx,
-                    struct GC_Configuration *cfg, const char *namespaceName)
+GNUNET_NS_namespace_delete (struct GNUNET_GE_Context *ectx,
+                    struct GNUNET_GC_Configuration *cfg, const char *namespaceName)
 {
   int ret;
   char *tmp;
   char *fn;
 
-  ret = ECRS_deleteNamespace (ectx, cfg, namespaceName);
-  GC_get_configuration_value_filename (cfg,
+  ret = GNUNET_ECRS_namespace_delete (ectx, cfg, namespaceName);
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &tmp);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &tmp);
   fn = GNUNET_malloc (strlen (tmp) + strlen (NS_UPDATE_DIR) +
                       strlen (namespaceName) + 20);
   strcpy (fn, tmp);
@@ -263,16 +263,16 @@ NS_deleteNamespace (struct GE_Context *ectx,
  * Change the ranking of a (non-local) namespace.
  *
  * @param ns the name of the namespace, as obtained
- *  from ECRS_getNamespaceName
+ *  from GNUNET_ECRS_get_namespace_name
  * @param delta by how much should the rating be
  *  changed?
  * @return new rating of the namespace
  */
 int
-NS_rankNamespace (struct GE_Context *ectx,
-                  struct GC_Configuration *cfg, const char *ns, int delta)
+GNUNET_NS_namespace_rank (struct GNUNET_GE_Context *ectx,
+                  struct GNUNET_GC_Configuration *cfg, const char *ns, int delta)
 {
-  struct ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *meta;
   int ret;
   int ranking;
 
@@ -280,20 +280,20 @@ NS_rankNamespace (struct GE_Context *ectx,
   if (ret == GNUNET_SYSERR)
     {
       ranking = 0;
-      meta = ECRS_createMetaData ();
+      meta = GNUNET_ECRS_meta_data_create ();
     }
   ranking += delta;
   writeNamespaceInfo (ectx, cfg, ns, meta, ranking);
-  ECRS_freeMetaData (meta);
+  GNUNET_ECRS_meta_data_destroy (meta);
   return ranking;
 }
 
 typedef struct
 {
-  NS_NamespaceIterator iterator;
+  GNUNET_NS_NamespaceIterator iterator;
   void *closure;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
 } LNClosure;
 
 static int
@@ -302,21 +302,21 @@ localListNamespaceHelper (const GNUNET_HashCode * nsid,
 {
   LNClosure *c = cls;
   int ret;
-  struct ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *meta;
   int rating;
 
   meta = NULL;
   rating = 0;
   readNamespaceInfo (c->ectx, c->cfg, name, &meta, &rating);
   if (meta == NULL)
-    meta = ECRS_createMetaData ();
+    meta = GNUNET_ECRS_meta_data_create ();
   if (c->iterator != NULL)
     {
       ret = c->iterator (c->closure, name, nsid, meta, rating);
     }
   else
     ret = GNUNET_OK;
-  ECRS_freeMetaData (meta);
+  GNUNET_ECRS_meta_data_destroy (meta);
   return ret;
 }
 
@@ -325,7 +325,7 @@ listNamespaceHelper (const char *fn, const char *dirName, void *cls)
 {
   LNClosure *c = cls;
   int ret;
-  struct ECRS_MetaData *meta;
+  struct GNUNET_ECRS_MetaData *meta;
   int rating;
   GNUNET_HashCode id;
 
@@ -339,7 +339,7 @@ listNamespaceHelper (const char *fn, const char *dirName, void *cls)
     }
   else
     ret = GNUNET_OK;
-  ECRS_freeMetaData (meta);
+  GNUNET_ECRS_meta_data_destroy (meta);
   return GNUNET_OK;
 }
 
@@ -348,9 +348,9 @@ listNamespaceHelper (const char *fn, const char *dirName, void *cls)
  *
  */
 int
-NS_listNamespaces (struct GE_Context *ectx,
-                   struct GC_Configuration *cfg,
-                   NS_NamespaceIterator iterator, void *closure)
+GNUNET_NS_namespace_list_all (struct GNUNET_GE_Context *ectx,
+                   struct GNUNET_GC_Configuration *cfg,
+                   GNUNET_NS_NamespaceIterator iterator, void *closure)
 {
   LNClosure cls;
   char *fn;
@@ -362,13 +362,13 @@ NS_listNamespaces (struct GE_Context *ectx,
   cls.closure = closure;
   cls.ectx = ectx;
   cls.cfg = cfg;
-  ret1 = ECRS_listNamespaces (ectx, cfg, &localListNamespaceHelper, &cls);
+  ret1 = GNUNET_ECRS_get_namespaces (ectx, cfg, &localListNamespaceHelper, &cls);
   if (ret1 == -1)
     return ret1;
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &fnBase);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
   fn = GNUNET_malloc (strlen (fnBase) + strlen (NS_DIR) + 4);
   strcpy (fn, fnBase);
   GNUNET_free (fnBase);
@@ -388,17 +388,17 @@ NS_listNamespaces (struct GE_Context *ectx,
  * @param lastId maybe NULL
  */
 static char *
-getUpdateDataFilename (struct GE_Context *ectx,
-                       struct GC_Configuration *cfg,
+getUpdateDataFilename (struct GNUNET_GE_Context *ectx,
+                       struct GNUNET_GC_Configuration *cfg,
                        const char *nsname, const GNUNET_HashCode * lastId)
 {
   char *tmp;
   char *ret;
 
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &tmp);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &tmp);
   ret = GNUNET_malloc (strlen (tmp) + strlen (NS_UPDATE_DIR) +
                        strlen (nsname) + sizeof (GNUNET_EncName) + 20);
   strcpy (ret, tmp);
@@ -434,12 +434,12 @@ struct UpdateData
  * @return GNUNET_OK if update data was found, GNUNET_SYSERR if not.
  */
 static int
-readUpdateData (struct GE_Context *ectx,
-                struct GC_Configuration *cfg,
+readUpdateData (struct GNUNET_GE_Context *ectx,
+                struct GNUNET_GC_Configuration *cfg,
                 const char *nsname,
                 const GNUNET_HashCode * lastId,
                 GNUNET_HashCode * nextId,
-                ECRS_FileInfo * fi,
+                GNUNET_ECRS_FileInfo * fi,
                 GNUNET_Int32Time * updateInterval,
                 GNUNET_Int32Time * lastPubTime)
 {
@@ -485,25 +485,25 @@ readUpdateData (struct GE_Context *ectx,
   if (size == 0)
     {
       GNUNET_free (buf);
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
   if (fi != NULL)
     {
-      fi->meta = ECRS_deserializeMetaData (ectx, &uri[pos], size);
+      fi->meta = GNUNET_ECRS_meta_data_deserialize (ectx, &uri[pos], size);
       if (fi->meta == NULL)
         {
           GNUNET_free (buf);
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           return GNUNET_SYSERR;
         }
-      fi->uri = ECRS_stringToUri (ectx, uri);
+      fi->uri = GNUNET_ECRS_string_to_uri (ectx, uri);
       if (fi->uri == NULL)
         {
-          ECRS_freeMetaData (fi->meta);
+          GNUNET_ECRS_meta_data_destroy (fi->meta);
           fi->meta = NULL;
           GNUNET_free (buf);
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           return GNUNET_SYSERR;
         }
     }
@@ -521,12 +521,12 @@ readUpdateData (struct GE_Context *ectx,
  * Write content update information.
  */
 static int
-writeUpdateData (struct GE_Context *ectx,
-                 struct GC_Configuration *cfg,
+writeUpdateData (struct GNUNET_GE_Context *ectx,
+                 struct GNUNET_GC_Configuration *cfg,
                  const char *nsname,
                  const GNUNET_HashCode * thisId,
                  const GNUNET_HashCode * nextId,
-                 const ECRS_FileInfo * fi,
+                 const GNUNET_ECRS_FileInfo * fi,
                  const GNUNET_Int32Time updateInterval,
                  const GNUNET_Int32Time lastPubTime)
 {
@@ -536,8 +536,8 @@ writeUpdateData (struct GE_Context *ectx,
   size_t size;
   struct UpdateData *buf;
 
-  uri = ECRS_uriToString (fi->uri);
-  metaSize = ECRS_sizeofMetaData (fi->meta, ECRS_SERIALIZE_FULL);
+  uri = GNUNET_ECRS_uri_to_string (fi->uri);
+  metaSize = GNUNET_ECRS_meta_data_get_serialized_size (fi->meta, GNUNET_ECRS_SERIALIZE_FULL);
   size = sizeof (struct UpdateData) + metaSize + strlen (uri) + 1;
   buf = GNUNET_malloc (size);
   buf->nextId = *nextId;
@@ -545,12 +545,12 @@ writeUpdateData (struct GE_Context *ectx,
   buf->updateInterval = htonl (updateInterval);
   buf->lastPubTime = htonl (lastPubTime);
   memcpy (&buf[1], uri, strlen (uri) + 1);
-  GE_ASSERT (ectx,
+  GNUNET_GE_ASSERT (ectx,
              metaSize ==
-             ECRS_serializeMetaData (ectx,
+             GNUNET_ECRS_meta_data_serialize (ectx,
                                      fi->meta,
                                      &((char *) &buf[1])[strlen (uri) + 1],
-                                     metaSize, ECRS_SERIALIZE_FULL));
+                                     metaSize, GNUNET_ECRS_SERIALIZE_FULL));
   GNUNET_free (uri);
   fn = getUpdateDataFilename (ectx, cfg, nsname, thisId);
   GNUNET_disk_file_write (ectx, fn, buf, size, "400");  /* no editing, just deletion */
@@ -567,8 +567,8 @@ writeUpdateData (struct GE_Context *ectx,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-NS_computeNextId (struct GE_Context *ectx,
-                  struct GC_Configuration *cfg,
+GNUNET_NS_compute_next_identifier (struct GNUNET_GE_Context *ectx,
+                  struct GNUNET_GC_Configuration *cfg,
                   const char *name,
                   const GNUNET_HashCode * lastId,
                   const GNUNET_HashCode * thisId,
@@ -580,8 +580,8 @@ NS_computeNextId (struct GE_Context *ectx,
   GNUNET_Int32Time lastTime;
   GNUNET_Int32Time ui;
 
-  if ((updateInterval == ECRS_SBLOCK_UPDATE_SPORADIC) ||
-      (updateInterval == ECRS_SBLOCK_UPDATE_NONE))
+  if ((updateInterval == GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC) ||
+      (updateInterval == GNUNET_ECRS_SBLOCK_UPDATE_NONE))
     return GNUNET_SYSERR;
 
   if (GNUNET_OK != readUpdateData (ectx,
@@ -615,9 +615,9 @@ NS_computeNextId (struct GE_Context *ectx,
  *        entry?
  * @param uri set to the resulting URI
  */
-struct ECRS_URI *
-NS_addToNamespace (struct GE_Context *ectx,
-                   struct GC_Configuration *cfg,
+struct GNUNET_ECRS_URI *
+GNUNET_NS_add_to_namespace (struct GNUNET_GE_Context *ectx,
+                   struct GNUNET_GC_Configuration *cfg,
                    unsigned int anonymityLevel,
                    unsigned int insertPriority,
                    GNUNET_CronTime insertExpiration,
@@ -626,7 +626,7 @@ NS_addToNamespace (struct GE_Context *ectx,
                    const GNUNET_HashCode * lastId,
                    const GNUNET_HashCode * thisId,
                    const GNUNET_HashCode * nextId,
-                   const struct ECRS_URI *dst, const struct ECRS_MetaData *md)
+                   const struct GNUNET_ECRS_URI *dst, const struct GNUNET_ECRS_MetaData *md)
 {
   GNUNET_Int32Time creationTime;
   GNUNET_HashCode nid;
@@ -634,15 +634,15 @@ NS_addToNamespace (struct GE_Context *ectx,
   GNUNET_Int32Time now;
   GNUNET_Int32Time lastTime;
   GNUNET_Int32Time lastInterval;
-  ECRS_FileInfo fi;
+  GNUNET_ECRS_FileInfo fi;
   char *old;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
 
   /* computation of IDs of update(s).  Not as terrible as
      it looks, just enumerating all of the possible cases
      of periodic/sporadic updates and how IDs are computed. */
   creationTime = GNUNET_get_time_int32 (&now);
-  if (updateInterval != ECRS_SBLOCK_UPDATE_NONE)
+  if (updateInterval != GNUNET_ECRS_SBLOCK_UPDATE_NONE)
     {
       if ((lastId != NULL) &&
           (GNUNET_OK == readUpdateData (ectx,
@@ -654,14 +654,14 @@ NS_addToNamespace (struct GE_Context *ectx,
         {
           if (lastInterval != updateInterval)
             {
-              GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+              GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                       _
                       ("Publication interval for periodic publication changed."));
             }
           /* try to compute tid and/or
              nid based on information read from lastId */
 
-          if (updateInterval != ECRS_SBLOCK_UPDATE_SPORADIC)
+          if (updateInterval != GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
             {
               GNUNET_HashCode delta;
 
@@ -675,7 +675,7 @@ NS_addToNamespace (struct GE_Context *ectx,
                 }
               if (creationTime > GNUNET_get_time () + 7 * GNUNET_CRON_DAYS)
                 {
-                  GE_LOG (ectx, GE_WARNING | GE_BULK | GE_USER,
+                  GNUNET_GE_LOG (ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                           _("Publishing update for periodically updated "
                             "content more than a week ahead of schedule.\n"));
                 }
@@ -736,7 +736,7 @@ NS_addToNamespace (struct GE_Context *ectx,
           nid = tid;
         }
     }
-  uri = ECRS_addToNamespace (ectx,
+  uri = GNUNET_ECRS_namespace_add_content (ectx,
                              cfg,
                              name,
                              anonymityLevel,
@@ -746,12 +746,12 @@ NS_addToNamespace (struct GE_Context *ectx,
                              updateInterval, &tid, &nid, dst, md);
   if ((uri != NULL) && (dst != NULL))
     {
-      fi.uri = ECRS_dupUri (dst);
-      fi.meta = (struct ECRS_MetaData *) md;
+      fi.uri = GNUNET_ECRS_uri_duplicate (dst);
+      fi.meta = (struct GNUNET_ECRS_MetaData *) md;
       writeUpdateData (ectx,
                        cfg,
                        name, &tid, &nid, &fi, updateInterval, creationTime);
-      ECRS_freeUri (fi.uri);
+      GNUNET_ECRS_uri_destroy (fi.uri);
       if (lastId != NULL)
         {
           old = getUpdateDataFilename (ectx, cfg, name, lastId);
@@ -765,18 +765,18 @@ NS_addToNamespace (struct GE_Context *ectx,
 struct lNCC
 {
   const char *name;
-  NS_UpdateIterator it;
+  GNUNET_NS_UpdateIterator it;
   void *closure;
   int cnt;
-  struct GE_Context *ectx;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GE_Context *ectx;
+  struct GNUNET_GC_Configuration *cfg;
 };
 
 static int
 lNCHelper (const char *fil, const char *dir, void *ptr)
 {
   struct lNCC *cls = ptr;
-  ECRS_FileInfo fi;
+  GNUNET_ECRS_FileInfo fi;
   GNUNET_HashCode lastId;
   GNUNET_HashCode nextId;
   GNUNET_Int32Time pubFreq;
@@ -786,7 +786,7 @@ lNCHelper (const char *fil, const char *dir, void *ptr)
 
   if (GNUNET_OK != GNUNET_enc_to_hash (fil, &lastId))
     {
-      GE_BREAK (cls->ectx, 0);
+      GNUNET_GE_BREAK (cls->ectx, 0);
       return GNUNET_OK;
     }
   fi.uri = NULL;
@@ -797,11 +797,11 @@ lNCHelper (const char *fil, const char *dir, void *ptr)
                                    &lastId, &nextId, &fi, &pubFreq,
                                    &lastTime))
     {
-      GE_BREAK (cls->ectx, 0);
+      GNUNET_GE_BREAK (cls->ectx, 0);
       return GNUNET_OK;
     }
   cls->cnt++;
-  if (pubFreq == ECRS_SBLOCK_UPDATE_SPORADIC)
+  if (pubFreq == GNUNET_ECRS_SBLOCK_UPDATE_SPORADIC)
     {
       nextTime = 0;
     }
@@ -817,13 +817,13 @@ lNCHelper (const char *fil, const char *dir, void *ptr)
       if (GNUNET_OK != cls->it (cls->closure,
                                 &fi, &lastId, &nextId, pubFreq, nextTime))
         {
-          ECRS_freeUri (fi.uri);
-          ECRS_freeMetaData (fi.meta);
+          GNUNET_ECRS_uri_destroy (fi.uri);
+          GNUNET_ECRS_meta_data_destroy (fi.meta);
           return GNUNET_SYSERR;
         }
     }
-  ECRS_freeUri (fi.uri);
-  ECRS_freeMetaData (fi.meta);
+  GNUNET_ECRS_uri_destroy (fi.uri);
+  GNUNET_ECRS_meta_data_destroy (fi.meta);
   return GNUNET_OK;
 }
 
@@ -831,10 +831,10 @@ lNCHelper (const char *fil, const char *dir, void *ptr)
  * List all updateable content in a given namespace.
  */
 int
-NS_listNamespaceContent (struct GE_Context *ectx,
-                         struct GC_Configuration *cfg,
+GNUNET_NS_namespace_list_contents (struct GNUNET_GE_Context *ectx,
+                         struct GNUNET_GC_Configuration *cfg,
                          const char *name,
-                         NS_UpdateIterator iterator, void *closure)
+                         GNUNET_NS_UpdateIterator iterator, void *closure)
 {
   struct lNCC cls;
   char *dirName;
@@ -860,8 +860,8 @@ NS_listNamespaceContent (struct GE_Context *ectx,
 static int
 mergeMeta (EXTRACTOR_KeywordType type, const char *data, void *cls)
 {
-  struct ECRS_MetaData *meta = cls;
-  ECRS_addToMetaData (meta, type, data);
+  struct GNUNET_ECRS_MetaData *meta = cls;
+  GNUNET_ECRS_meta_data_inser (meta, type, data);
   return GNUNET_OK;
 }
 
@@ -873,34 +873,34 @@ mergeMeta (EXTRACTOR_KeywordType type, const char *data, void *cls)
  * @param ns the namespace identifier
  */
 void
-NS_addNamespaceInfo (struct GE_Context *ectx,
-                     struct GC_Configuration *cfg,
-                     const struct ECRS_URI *uri,
-                     const struct ECRS_MetaData *meta)
+GNUNET_NS_namespace_add_information (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg,
+                     const struct GNUNET_ECRS_URI *uri,
+                     const struct GNUNET_ECRS_MetaData *meta)
 {
   char *name;
   int ranking;
-  struct ECRS_MetaData *old;
+  struct GNUNET_ECRS_MetaData *old;
   GNUNET_HashCode id;
 
-  if (!ECRS_isNamespaceUri (uri))
+  if (!GNUNET_ECRS_uri_test_sks (uri))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return;
     }
-  ECRS_getNamespaceId (uri, &id);
-  name = ECRS_getNamespaceName (&id);
+  GNUNET_ECRS_uri_get_namespace_from_sks (uri, &id);
+  name = GNUNET_ECRS_get_namespace_name (&id);
   if (name == NULL)
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return;
     }
   ranking = 0;
   if (GNUNET_OK == readNamespaceInfo (ectx, cfg, name, &old, &ranking))
     {
-      ECRS_getMetaData (meta, &mergeMeta, old);
+      GNUNET_ECRS_meta_data_get_contents (meta, &mergeMeta, old);
       writeNamespaceInfo (ectx, cfg, name, old, ranking);
-      ECRS_freeMetaData (old);
+      GNUNET_ECRS_meta_data_destroy (old);
     }
   else
     {
@@ -916,18 +916,18 @@ NS_addNamespaceInfo (struct GE_Context *ectx,
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int
-NS_getNamespaceRoot (struct GE_Context *ectx,
-                     struct GC_Configuration *cfg,
+GNUNET_NS_namespace_get_root (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg,
                      const char *ns, GNUNET_HashCode * root)
 {
   char *fn;
   char *fnBase;
   int ret;
 
-  GC_get_configuration_value_filename (cfg,
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &fnBase);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
   fn = GNUNET_malloc (strlen (fnBase) + strlen (NS_ROOTS) + strlen (ns) + 6);
   strcpy (fn, fnBase);
   strcat (fn, DIR_SEPARATOR_STR);
@@ -946,24 +946,24 @@ NS_getNamespaceRoot (struct GE_Context *ectx,
 }
 
 void
-NS_setNamespaceRoot (struct GE_Context *ectx,
-                     struct GC_Configuration *cfg, const struct ECRS_URI *uri)
+GNUNET_NS_namespace_set_root (struct GNUNET_GE_Context *ectx,
+                     struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri)
 {
   char *fn;
   char *fnBase;
   GNUNET_HashCode ns;
   char *name;
 
-  if (GNUNET_OK != ECRS_getNamespaceId (uri, &ns))
+  if (GNUNET_OK != GNUNET_ECRS_uri_get_namespace_from_sks (uri, &ns))
     {
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       return;
     }
-  name = ECRS_getNamespaceName (&ns);
-  GC_get_configuration_value_filename (cfg,
+  name = GNUNET_ECRS_get_namespace_name (&ns);
+  GNUNET_GC_get_configuration_value_filename (cfg,
                                        "GNUNET",
                                        "GNUNET_HOME",
-                                       GNUNET_HOME_DIRECTORY, &fnBase);
+                                       GNUNET_DEFAULT_HOME_DIRECTORY, &fnBase);
   fn =
     GNUNET_malloc (strlen (fnBase) + strlen (NS_ROOTS) + strlen (name) + 6);
   strcpy (fn, fnBase);
@@ -974,7 +974,7 @@ NS_setNamespaceRoot (struct GE_Context *ectx,
   strcat (fn, name);
   GNUNET_free (name);
   GNUNET_free (fnBase);
-  if (GNUNET_OK == ECRS_getSKSContentHash (uri, &ns))
+  if (GNUNET_OK == GNUNET_ECRS_uri_get_content_hash_from_sks (uri, &ns))
     {
       GNUNET_disk_file_write (ectx, fn, &ns, sizeof (GNUNET_HashCode), "644");
     }
@@ -986,9 +986,9 @@ NS_setNamespaceRoot (struct GE_Context *ectx,
  * a new namespace.
  */
 int
-NS_registerDiscoveryCallback (struct GE_Context *ectx,
-                              struct GC_Configuration *cfg,
-                              NS_NamespaceIterator iterator, void *closure)
+GNUNET_NS_register_discovery_callback (struct GNUNET_GE_Context *ectx,
+                              struct GNUNET_GC_Configuration *cfg,
+                              GNUNET_NS_NamespaceIterator iterator, void *closure)
 {
   struct DiscoveryCallback *list;
 
@@ -998,7 +998,7 @@ NS_registerDiscoveryCallback (struct GE_Context *ectx,
   GNUNET_mutex_lock (lock);
   list->next = head;
   head = list;
-  NS_listNamespaces (ectx, cfg, iterator, closure);
+  GNUNET_NS_namespace_list_all (ectx, cfg, iterator, closure);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -1007,7 +1007,7 @@ NS_registerDiscoveryCallback (struct GE_Context *ectx,
  * Unregister namespace discovery callback.
  */
 int
-NS_unregisterDiscoveryCallback (NS_NamespaceIterator iterator, void *closure)
+GNUNET_NS_unregister_discovery_callback (GNUNET_NS_NamespaceIterator iterator, void *closure)
 {
   struct DiscoveryCallback *prev;
   struct DiscoveryCallback *pos;

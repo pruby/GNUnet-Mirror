@@ -55,7 +55,7 @@ test (struct GNUNET_ClientServerConnection *sock,
   printf (_("Using %u messages of size %u for %u times.\n"),
           messageCnt, messageSize, messageIterations);
   msg.header.size = htons (sizeof (CS_tbench_request_MESSAGE));
-  msg.header.type = htons (CS_PROTO_tbench_REQUEST);
+  msg.header.type = htons (GNUNET_CS_PROTO_TBENCH_REQUEST);
   msg.msgSize = htonl (messageSize);
   msg.msgCnt = htonl (messageCnt);
   msg.iterations = htonl (messageIterations);
@@ -119,14 +119,14 @@ main (int argc, char **argv)
   int ok;
   int ret;
   struct GNUNET_ClientServerConnection *sock;
-  struct GC_Configuration *cfg;
+  struct GNUNET_GC_Configuration *cfg;
 
   ret = 0;
   ok = 1;
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #if START_PEERS
@@ -136,7 +136,7 @@ main (int argc, char **argv)
                                   "/tmp/gnunet-tbench-test", 2087, 10000, 2);
   if (peers == NULL)
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
@@ -146,7 +146,7 @@ main (int argc, char **argv)
     {
       GNUNET_TESTING_stop_daemons (peers);
       fprintf (stderr, "Failed to connect the peers!\n");
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
   sock = GNUNET_client_connection_create (NULL, cfg);
@@ -174,7 +174,7 @@ main (int argc, char **argv)
   if (ok == 0)
     ret = 1;
 
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return ret;
 }
 

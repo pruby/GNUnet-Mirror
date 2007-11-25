@@ -46,7 +46,7 @@ extern "C"
  * Estimated size of most blocks transported with
  * the GAP protocol.  32k DBlocks plus overhead.
  */
-#define GAP_ESTIMATED_DATA_SIZE (33*1024)
+#define GNUNET_GAP_ESTIMATED_DATA_SIZE (33*1024)
 
 /**
  * Function that helps the routing code to find out if
@@ -54,7 +54,7 @@ extern "C"
  * request.
  * @param verify check that content is valid? (GNUNET_YES/GNUNET_NO)
  */
-typedef int (*UniqueReplyIdentifier) (const DataContainer * content,
+typedef int (*GNUNET_UniqueReplyIdentifierCallback) (const GNUNET_DataContainer * content,
                                       unsigned int query_type,
                                       int verify,
                                       const GNUNET_HashCode * primaryKey);
@@ -64,7 +64,7 @@ typedef int (*UniqueReplyIdentifier) (const DataContainer * content,
  * GNUNET_hash of the content that can then be used
  * to sort out duplicates.
  */
-typedef int (*ReplyHashFunction) (const DataContainer * data,
+typedef int (*GNUNET_ReplyHashingCallback) (const GNUNET_DataContainer * data,
                                   GNUNET_HashCode * hc);
 
 /**
@@ -79,8 +79,8 @@ typedef struct
    * @param datastore the storage callbacks to use for storing data
    * @return GNUNET_SYSERR on error, GNUNET_OK on success
    */
-  int (*init) (Blockstore * datastore,
-               UniqueReplyIdentifier uri, ReplyHashFunction rhf);
+  int (*init) (GNUNET_Blockstore * datastore,
+               GNUNET_UniqueReplyIdentifierCallback uri, GNUNET_ReplyHashingCallback rhf);
 
   /**
    * Perform a GET operation using 'key' as the key.  Note that no
@@ -120,7 +120,7 @@ typedef struct
    * @return the number of bytes written to
    *   that buffer (must be a positive number).
    */
-  unsigned int (*tryMigrate) (const DataContainer * data,
+  unsigned int (*tryMigrate) (const GNUNET_DataContainer * data,
                               const GNUNET_HashCode * primaryKey,
                               char *position, unsigned int padding);
 
@@ -130,7 +130,7 @@ typedef struct
    */
   unsigned int (*getAvgPriority) (void);
 
-} GAP_ServiceAPI;
+} GNUNET_GAP_ServiceAPI;
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -49,7 +49,7 @@ extern "C"
  * @param part a file on the partition to check
  * @return -1 on errors, otherwise the number of free blocks
  */
-long GNUNET_disk_get_blocks_available (struct GE_Context *ectx,
+long GNUNET_disk_get_blocks_available (struct GNUNET_GE_Context *ectx,
                                        const char *part);
 
 /**
@@ -59,7 +59,7 @@ long GNUNET_disk_get_blocks_available (struct GE_Context *ectx,
  * @returns GNUNET_YES if yes, GNUNET_NO if not a file, GNUNET_SYSERR if something
  * else (will print an error message in that case, too).
  */
-int GNUNET_disk_file_test (struct GE_Context *ectx, const char *fil);
+int GNUNET_disk_file_test (struct GNUNET_GE_Context *ectx, const char *fil);
 
 /**
  * Get the size of the file (or directory)
@@ -70,7 +70,7 @@ int GNUNET_disk_file_test (struct GE_Context *ectx, const char *fil);
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_disk_file_size (struct GE_Context *ectx,
+int GNUNET_disk_file_size (struct GNUNET_GE_Context *ectx,
                            const char *filename,
                            unsigned long long *size, int includeSymLinks);
 
@@ -79,13 +79,13 @@ int GNUNET_disk_file_size (struct GE_Context *ectx,
  *
  * @return file handle, -1 on error
  */
-int GNUNET_disk_file_open (struct GE_Context *ectx,
+int GNUNET_disk_file_open (struct GNUNET_GE_Context *ectx,
                            const char *filename, int oflag, ...);
 
 /**
  * Wrapper around "close()".  Closes a file.
  */
-void GNUNET_disk_file_close (struct GE_Context *ectx, const char *filename,
+void GNUNET_disk_file_close (struct GNUNET_GE_Context *ectx, const char *filename,
                              int fd);
 
 /**
@@ -96,7 +96,7 @@ void GNUNET_disk_file_close (struct GE_Context *ectx, const char *filename,
  * @param result the buffer to write the result to
  * @return the number of bytes read on success, -1 on failure
  */
-int GNUNET_disk_file_read (struct GE_Context *ectx,
+int GNUNET_disk_file_read (struct GNUNET_GE_Context *ectx,
                            const char *fileName, int len, void *result);
 
 /**
@@ -107,7 +107,7 @@ int GNUNET_disk_file_read (struct GE_Context *ectx,
  * @param mode the mode for file permissions
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_disk_file_write (struct GE_Context *ectx,
+int GNUNET_disk_file_write (struct GNUNET_GE_Context *ectx,
                             const char *fileName,
                             const void *buffer, unsigned int n,
                             const char *mode);
@@ -116,7 +116,7 @@ int GNUNET_disk_file_write (struct GE_Context *ectx,
  * Copy a file.
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_disk_file_copy (struct GE_Context *ectx,
+int GNUNET_disk_file_copy (struct GNUNET_GE_Context *ectx,
                            const char *src, const char *dst);
 
 /**
@@ -137,7 +137,7 @@ typedef int (*GNUNET_DirectoryEntryCallback) (const char *filename,
  * @param data argument to pass to callback
  * @return the number of files found, -1 on error
  */
-int GNUNET_disk_directory_scan (struct GE_Context *ectx,
+int GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
                                 const char *dirName,
                                 GNUNET_DirectoryEntryCallback callback,
                                 void *data);
@@ -150,7 +150,7 @@ int GNUNET_disk_directory_scan (struct GE_Context *ectx,
  * @param filename name of a file in the directory
  * @returns GNUNET_OK on success, GNUNET_SYSERR on failure
  */
-int GNUNET_disk_directory_create_for_file (struct GE_Context *ectx,
+int GNUNET_disk_directory_create_for_file (struct GNUNET_GE_Context *ectx,
                                            const char *filename);
 
 /**
@@ -162,7 +162,7 @@ int GNUNET_disk_directory_create_for_file (struct GE_Context *ectx,
  * @return GNUNET_YES if yes, GNUNET_NO if does not exist, GNUNET_SYSERR
  *   on any error and if exists but not directory
  */
-int GNUNET_disk_directory_test (struct GE_Context *ectx, const char *fil);
+int GNUNET_disk_directory_test (struct GNUNET_GE_Context *ectx, const char *fil);
 
 /**
  * Remove all files in a directory (rm -rf). Call with
@@ -171,7 +171,7 @@ int GNUNET_disk_directory_test (struct GE_Context *ectx, const char *fil);
  * @param fileName the file to remove
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_disk_directory_remove (struct GE_Context *ectx,
+int GNUNET_disk_directory_remove (struct GNUNET_GE_Context *ectx,
                                   const char *fileName);
 
 /**
@@ -180,7 +180,7 @@ int GNUNET_disk_directory_remove (struct GE_Context *ectx,
  * @param dir the directory to create
  * @returns GNUNET_SYSERR on failure, GNUNET_OK otherwise
  */
-int GNUNET_disk_directory_create (struct GE_Context *ectx, const char *dir);
+int GNUNET_disk_directory_create (struct GNUNET_GE_Context *ectx, const char *dir);
 
 /**
  * @brief Removes special characters as ':' from a filename.

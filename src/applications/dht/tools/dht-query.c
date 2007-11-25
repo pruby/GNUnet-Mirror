@@ -38,11 +38,11 @@
  */
 static GNUNET_CronTime timeout;
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
-static char *cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-dht-query command line options
@@ -56,20 +56,20 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
    gettext_noop
    ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
    1, &GNUNET_getopt_configure_set_ulong, &timeout},
-   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGNUNET_GE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
 static int
 printCallback (const GNUNET_HashCode * hash,
-               const DataContainer * data, void *cls)
+               const GNUNET_DataContainer * data, void *cls)
 {
   char *key = cls;
   printf ("%s(%s): '%.*s'\n",
           "get",
           key,
-          (int) (ntohl (data->size) - sizeof (DataContainer)),
+          (int) (ntohl (data->size) - sizeof (GNUNET_DataContainer)),
           (char *) &data[1]);
   return GNUNET_OK;
 }
@@ -82,15 +82,15 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
 
   GNUNET_hash (key, strlen (key), &hc);
 #if DEBUG_DHT_QUERY
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Issuing '%s(%s)' command.\n", "get", key);
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_SECONDS;
-  ret = DHT_LIB_get (cfg,
+  ret = GNUNET_DHT_get (cfg,
                      ectx,
-                     DHT_STRING2STRING_BLOCK,
+                     GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                      &hc, timeout, &printCallback, (void *) key);
   if (ret == 0)
     printf (_("%s(%s) operation returned no results.\n"), "get", key);
@@ -100,21 +100,21 @@ static void
 do_put (struct GNUNET_ClientServerConnection *sock,
         const char *key, const char *value)
 {
-  DataContainer *dc;
+  GNUNET_DataContainer *dc;
   GNUNET_HashCode hc;
 
   GNUNET_hash (key, strlen (key), &hc);
-  dc = GNUNET_malloc (sizeof (DataContainer) + strlen (value));
-  dc->size = htonl (strlen (value) + sizeof (DataContainer));
+  dc = GNUNET_malloc (sizeof (GNUNET_DataContainer) + strlen (value));
+  dc->size = htonl (strlen (value) + sizeof (GNUNET_DataContainer));
   memcpy (&dc[1], value, strlen (value));
 #if DEBUG_DHT_QUERY
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           _("Issuing '%s(%s,%s)' command.\n"), "put", key, value);
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_MINUTES;
-  if (GNUNET_OK == DHT_LIB_put (cfg, ectx, &hc, DHT_STRING2STRING_BLOCK, timeout + GNUNET_get_time (),  /* convert to absolute time */
+  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),  /* convert to absolute time */
                                 dc))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
@@ -146,8 +146,8 @@ main (int argc, char *const *argv)
   if (handle == NULL)
     {
       fprintf (stderr, _("Failed to connect to gnunetd.\n"));
-      GC_free (cfg);
-      GE_free_context (ectx);
+      GNUNET_GC_free (cfg);
+      GNUNET_GE_free_context (ectx);
       return 1;
     }
 

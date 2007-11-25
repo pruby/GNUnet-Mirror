@@ -81,7 +81,7 @@ typedef struct
    */
   GNUNET_CronTime expirationTime;
 
-} Datastore_Value;
+} GNUNET_DatastoreValue;
 
 /**
  * An iterator over a set of Datastore items.
@@ -94,8 +94,8 @@ typedef struct
  * @return GNUNET_SYSERR to abort the iteration, GNUNET_OK to continue,
  *         GNUNET_NO to delete the item and continue (if supported)
  */
-typedef int (*Datum_Iterator) (const GNUNET_HashCode * key,
-                               const Datastore_Value * value, void *closure,
+typedef int (*GNUNET_DatastoreValueIterator) (const GNUNET_HashCode * key,
+                               const GNUNET_DatastoreValue * value, void *closure,
                                unsigned long long uid);
 
 
@@ -134,7 +134,7 @@ typedef struct
    *   to justify removing something else, GNUNET_SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*put) (const GNUNET_HashCode * key, const Datastore_Value * value);
+  int (*put) (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value);
 
   /**
    * Store an item in the datastore.  If the item is already present,
@@ -147,7 +147,7 @@ typedef struct
    *   other serious error (i.e. IO permission denied)
    */
   int (*putUpdate) (const GNUNET_HashCode * key,
-                    const Datastore_Value * value);
+                    const GNUNET_DatastoreValue * value);
 
   /**
    * Iterate over the results for a particular key
@@ -163,7 +163,7 @@ typedef struct
    *   GNUNET_SYSERR unless the iterator aborted!
    */
   int (*get) (const GNUNET_HashCode * key,
-              unsigned int type, Datum_Iterator iter, void *closure);
+              unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure);
 
   /**
    * Do a quick test if we MAY have the content.
@@ -177,14 +177,14 @@ typedef struct
    * @param value set to an approximate match
    * @return GNUNET_OK if a value was found, GNUNET_SYSERR if not
    */
-  int (*getRandom) (GNUNET_HashCode * key, Datastore_Value ** value);
+  int (*getRandom) (GNUNET_HashCode * key, GNUNET_DatastoreValue ** value);
 
   /**
    * Explicitly remove some content from the database.
    */
-  int (*del) (const GNUNET_HashCode * query, const Datastore_Value * value);
+  int (*del) (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value);
 
-} Datastore_ServiceAPI;
+} GNUNET_Datastore_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

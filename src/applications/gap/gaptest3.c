@@ -41,9 +41,9 @@
 
 #define SIZE 1024*1024*2
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static int
 testTerminate (void *unused)
@@ -82,14 +82,14 @@ makeName (unsigned int i)
   return fn;
 }
 
-static struct ECRS_URI *
+static struct GNUNET_ECRS_URI *
 uploadFile (unsigned int size)
 {
   int ret;
   char *name;
   int fd;
   char *buf;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
 
   name = makeName (size);
@@ -104,7 +104,7 @@ uploadFile (unsigned int size)
   WRITE (fd, buf, size);
   GNUNET_free (buf);
   GNUNET_disk_file_close (ectx, name, fd);
-  ret = ECRS_uploadFile (ectx, cfg, name, GNUNET_YES,   /* index */
+  ret = GNUNET_ECRS_file_upload (ectx, cfg, name, GNUNET_YES,   /* index */
                          1,     /* anon */
                          0,     /* prio */
                          GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
@@ -116,7 +116,7 @@ uploadFile (unsigned int size)
 }
 
 static int
-downloadFile (unsigned int size, const struct ECRS_URI *uri)
+downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
 {
   int ret;
   char *tmpName;
@@ -126,14 +126,14 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   int i;
   char *tmp;
 
-  tmp = ECRS_uriToString (uri);
-  GE_LOG (ectx,
-          GE_DEBUG | GE_REQUEST | GE_USER,
+  tmp = GNUNET_ECRS_uri_to_string (uri);
+  GNUNET_GE_LOG (ectx,
+          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
           "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
   ret = GNUNET_SYSERR;
-  if (GNUNET_OK == ECRS_downloadFile (ectx,
+  if (GNUNET_OK == GNUNET_ECRS_file_download (ectx,
                                       cfg,
                                       uri,
                                       tmpName,
@@ -162,7 +162,7 @@ downloadFile (unsigned int size, const struct ECRS_URI *uri)
   return ret;
 }
 
-#define CHECK(a) if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ret = 1; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
 static GNUNET_PeerIdentity goodPeers[PEER_COUNT];
 static unsigned int goodPeerPos;
@@ -202,7 +202,7 @@ main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret;
-  struct ECRS_URI *uri;
+  struct GNUNET_ECRS_URI *uri;
   int i;
   char buf[128];
   GNUNET_MessageHello *hello;
@@ -211,10 +211,10 @@ main (int argc, char **argv)
   GNUNET_EncName enc;
 
   ret = 0;
-  cfg = GC_create ();
-  if (-1 == GC_parse_configuration (cfg, "check.conf"))
+  cfg = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #if START_PEERS
@@ -225,7 +225,7 @@ main (int argc, char **argv)
   if (peers == NULL)
     {
       fprintf (stderr, "Failed to start the gnunetd daemons!\n");
-      GC_free (cfg);
+      GNUNET_GC_free (cfg);
       return -1;
     }
 #endif
@@ -236,7 +236,7 @@ main (int argc, char **argv)
         {
           GNUNET_TESTING_stop_daemons (peers);
           fprintf (stderr, "Failed to connect the peers!\n");
-          GC_free (cfg);
+          GNUNET_GC_free (cfg);
           return -1;
         }
     }
@@ -246,17 +246,17 @@ main (int argc, char **argv)
   for (i = 1; i < PEER_COUNT; i += 2)
     {
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
-      GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
+      GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST", buf);
       sock = GNUNET_client_connection_create (NULL, cfg);
       if (GNUNET_OK != GNUNET_IDENTITY_get_self (sock, &hello))
         {
           GNUNET_client_connection_destroy (sock);
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           break;
         }
       GNUNET_client_connection_destroy (sock);
       if (uri != NULL)
-        ECRS_freeUri (uri);
+        GNUNET_ECRS_uri_destroy (uri);
       GNUNET_hash_to_enc (&hello->senderIdentity.hashPubKey, &enc);
       printf ("Uploading to peer `%8s'\n", (const char *) &enc);
       uri = uploadFile (SIZE);
@@ -266,7 +266,7 @@ main (int argc, char **argv)
       GNUNET_free (hello);
 
     }
-  GC_set_configuration_value_string (cfg,
+  GNUNET_GC_set_configuration_value_string (cfg,
                                      ectx,
                                      "NETWORK", "HOST", "localhost:2087");
   printf ("Downloading...\n");
@@ -285,7 +285,7 @@ FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  GC_free (cfg);
+  GNUNET_GC_free (cfg);
   return ret;
 }
 

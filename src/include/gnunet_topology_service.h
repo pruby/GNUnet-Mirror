@@ -81,7 +81,7 @@ typedef struct
   int (*allowConnectionFrom) (const GNUNET_PeerIdentity * peer);
 
 
-} Topology_ServiceAPI;
+} GNUNET_Topology_ServiceAPI;
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

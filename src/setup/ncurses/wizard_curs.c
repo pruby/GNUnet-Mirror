@@ -47,9 +47,9 @@
 #include <grp.h>
 #endif
 
-static struct GE_Context *ectx;
+static struct GNUNET_GE_Context *ectx;
 
-static struct GC_Configuration *cfg;
+static struct GNUNET_GC_Configuration *cfg;
 
 static int last;
 
@@ -100,7 +100,7 @@ query_yesno (const char *title,
         {
         case DLG_EXIT_OK:
         case DLG_EXIT_CANCEL:
-          if (0 != GC_set_configuration_value_string (cfg,
+          if (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                       ectx,
                                                       section,
                                                       option,
@@ -119,7 +119,7 @@ query_yesno (const char *title,
         case DLG_EXIT_EXTRA:
           return -1;            /* back */
         default:
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           break;
         }
     }
@@ -166,7 +166,7 @@ query_string (const char *title,
       switch (ret)
         {
         case DLG_EXIT_OK:
-          if (0 != GC_set_configuration_value_string (cfg,
+          if (0 != GNUNET_GC_set_configuration_value_string (cfg,
                                                       ectx,
                                                       section,
                                                       option, fitem.text))
@@ -191,7 +191,7 @@ query_string (const char *title,
           ret = -1;             /* back */
           break;
         default:
-          GE_BREAK (ectx, 0);
+          GNUNET_GE_BREAK (ectx, 0);
           ret = 0;
           break;
         }
@@ -280,7 +280,7 @@ network_interface ()
           switch (ret)
             {
             case DLG_EXIT_OK:
-              if (0 != GC_set_configuration_value_choice (cfg,
+              if (0 != GNUNET_GC_set_configuration_value_choice (cfg,
                                                           ectx,
                                                           "NETWORK",
                                                           "INTERFACE",
@@ -451,8 +451,8 @@ finish ()
 
   ret = GNUNET_OK;
 
-  if ((0 != GC_test_dirty (cfg)) &&
-      (0 != GC_write_configuration (cfg, cfg_fn)))
+  if ((0 != GNUNET_GC_test_dirty (cfg)) &&
+      (0 != GNUNET_GC_write_configuration (cfg, cfg_fn)))
     {
       prefix = _("Unable to save configuration file `%s':");
       err = GNUNET_malloc (strlen (cfg_fn) + strlen (prefix) + 1);
@@ -461,8 +461,8 @@ finish ()
       ret = GNUNET_SYSERR;
     }
   user_name = NULL;
-  GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user_name);
-  GC_get_configuration_value_string (cfg,
+  GNUNET_GC_get_configuration_value_string (cfg, "GNUNETD", "USER", "", &user_name);
+  GNUNET_GC_get_configuration_value_string (cfg,
                                      "GNUNETD", "GROUP", "", &group_name);
   if (((strlen (user_name) > 0) ||
        (strlen (group_name) > 0)) &&
@@ -477,7 +477,7 @@ finish ()
       showCursErr (_("Unable to create user account for daemon."), "");
       ret = GNUNET_SYSERR;
     }
-  if ((GNUNET_YES == GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && (GNUNET_YES != GNUNET_configure_autostart (ectx, GNUNET_NO, GNUNET_YES, "gnunetd",   /* specify full path? */
+  if ((GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (cfg, "GNUNETD", "AUTOSTART", GNUNET_NO)) && (GNUNET_YES != GNUNET_configure_autostart (ectx, GNUNET_NO, GNUNET_YES, "gnunetd",   /* specify full path? */
                                                                                                                                               user_name,
                                                                                                                                               group_name)))
     {
@@ -511,7 +511,7 @@ save_config ()
     case DLG_EXIT_EXTRA:
       return -1;                /* back */
     default:
-      GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (ectx, 0);
       break;
     }
   return 1;
@@ -521,9 +521,9 @@ int
 wizard_curs_mainsetup_curses (int argc,
                               const char **argv,
                               struct GNUNET_PluginHandle *self,
-                              struct GE_Context *e,
-                              struct GC_Configuration *c,
-                              struct GNS_Context *gns,
+                              struct GNUNET_GE_Context *e,
+                              struct GNUNET_GC_Configuration *c,
+                              struct GNUNET_GNS_Context *gns,
                               const char *filename, int is_daemon)
 {
   struct termios ios_org;
@@ -588,7 +588,7 @@ wizard_curs_mainsetup_curses (int argc,
           ret = GNUNET_OK;
           break;
         default:
-          GE_BREAK (NULL, 0);
+          GNUNET_GE_BREAK (NULL, 0);
           dir = 0;
           break;
         }
