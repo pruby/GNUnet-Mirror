@@ -40,7 +40,8 @@ testMeta ()
   unsigned int size;
 
   m = GNUNET_ECRS_meta_data_create ();
-  if (GNUNET_OK != GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
+  if (GNUNET_OK !=
+      GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_UNKNOWN, "link"))
     {
       GNUNET_ECRS_meta_data_destroy (m);
       ABORT ();

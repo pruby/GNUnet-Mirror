@@ -84,9 +84,9 @@ testDirectory (unsigned int i)
         {
           GNUNET_snprintf (txt, 128, "%u -- %u\n", p, q);
           GNUNET_ECRS_meta_data_insert (fis[p].meta,
-                                       q %
-                                       EXTRACTOR_getHighestKeywordTypeNumber
-                                       (), txt);
+                                        q %
+                                        EXTRACTOR_getHighestKeywordTypeNumber
+                                        (), txt);
         }
       GNUNET_snprintf (uri,
                        512,

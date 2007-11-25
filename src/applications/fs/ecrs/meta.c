@@ -80,7 +80,7 @@ GNUNET_ECRS_meta_data_add_publication_date (MetaData * md)
  */
 int
 GNUNET_ECRS_meta_data_insert (MetaData * md,
-                             EXTRACTOR_KeywordType type, const char *data)
+                              EXTRACTOR_KeywordType type, const char *data)
 {
   int idx;
 

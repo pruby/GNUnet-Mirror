@@ -100,7 +100,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (0 == strncmp (typename, tmp, strlen (typename))))
         {
           GNUNET_ECRS_meta_data_insert (meta, type,
-                                       &tmp[strlen (typename) + 1]);
+                                        &tmp[strlen (typename) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
           break;
@@ -110,7 +110,7 @@ GNUNET_ECRS_getopt_configure_set_metadata (GNUNET_CommandLineProcessorContext
           (0 == strncmp (typename_i18n, tmp, strlen (typename_i18n))))
         {
           GNUNET_ECRS_meta_data_insert (meta, type,
-                                       &tmp[strlen (typename_i18n) + 1]);
+                                        &tmp[strlen (typename_i18n) + 1]);
           GNUNET_free (tmp);
           tmp = NULL;
           break;

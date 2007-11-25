@@ -928,30 +928,32 @@ typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
  * @param keyURI keywords for top-level file
  * @return NULL on error
  */
-struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_star (struct
-                                                        GNUNET_FSUI_Context
-                                                        *ctx,
-                                                        const char *filename,
-                                                        GNUNET_FSUI_DirectoryScanCallback
-                                                        dsc, void *dscClosure,
-                                                        unsigned int
-                                                        anonymityLevel,
-                                                        unsigned int priority,
-                                                        int doIndex,
-                                                        int doExtract,
-                                                        int
-                                                        individualKeywords,
-                                                        GNUNET_CronTime
-                                                        expiration,
-                                                        const struct
-                                                        GNUNET_ECRS_MetaData
-                                                        *topLevelMetaData,
-                                                        const struct
-                                                        GNUNET_ECRS_URI
-                                                        *globalURI,
-                                                        const struct
-                                                        GNUNET_ECRS_URI
-                                                        *keyUri);
+struct GNUNET_FSUI_UploadList *GNUNET_FSUI_upload_start (struct
+                                                         GNUNET_FSUI_Context
+                                                         *ctx,
+                                                         const char *filename,
+                                                         GNUNET_FSUI_DirectoryScanCallback
+                                                         dsc,
+                                                         void *dscClosure,
+                                                         unsigned int
+                                                         anonymityLevel,
+                                                         unsigned int
+                                                         priority,
+                                                         int doIndex,
+                                                         int doExtract,
+                                                         int
+                                                         individualKeywords,
+                                                         GNUNET_CronTime
+                                                         expiration,
+                                                         const struct
+                                                         GNUNET_ECRS_MetaData
+                                                         *topLevelMetaData,
+                                                         const struct
+                                                         GNUNET_ECRS_URI
+                                                         *globalURI,
+                                                         const struct
+                                                         GNUNET_ECRS_URI
+                                                         *keyUri);
 
 
 /**

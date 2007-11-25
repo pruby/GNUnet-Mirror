@@ -153,13 +153,13 @@ main (int argc, char *argv[])
                           "foo bar test!", strlen ("foo bar test!"), "600");
   meta = GNUNET_ECRS_meta_data_create ();
   kuri = GNUNET_ECRS_keyword_list_to_uri (NULL, 2, (const char **) keywords);
-  upload = GNUNET_FSUI_upload_star (ctx, filename, (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan, NULL, 0,   /* anonymity */
-                                    0,  /* priority */
-                                    GNUNET_YES,
-                                    GNUNET_NO,
-                                    GNUNET_NO,
-                                    GNUNET_get_time () +
-                                    5 * GNUNET_CRON_HOURS, meta, kuri, kuri);
+  upload = GNUNET_FSUI_upload_start (ctx, filename, (GNUNET_FSUI_DirectoryScanCallback) & GNUNET_disk_directory_scan, NULL, 0,  /* anonymity */
+                                     0, /* priority */
+                                     GNUNET_YES,
+                                     GNUNET_NO,
+                                     GNUNET_NO,
+                                     GNUNET_get_time () +
+                                     5 * GNUNET_CRON_HOURS, meta, kuri, kuri);
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   GNUNET_ECRS_meta_data_destroy (meta);

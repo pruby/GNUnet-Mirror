@@ -639,7 +639,8 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
         }
       utc->meta = GNUNET_ECRS_meta_data_duplicate (md);
       GNUNET_ECRS_meta_data_insert (utc->meta,
-                                   EXTRACTOR_MIMETYPE, GNUNET_DIRECTORY_MIME);
+                                    EXTRACTOR_MIMETYPE,
+                                    GNUNET_DIRECTORY_MIME);
     }
   if (keywords != NULL)
     utc->keywords = GNUNET_ECRS_uri_duplicate (keywords);
@@ -696,19 +697,19 @@ freeShared (struct GNUNET_FSUI_UploadShared *shared)
  *  running
  */
 struct GNUNET_FSUI_UploadList *
-GNUNET_FSUI_upload_star (struct GNUNET_FSUI_Context *ctx,
-                         const char *filename,
-                         GNUNET_FSUI_DirectoryScanCallback dsc,
-                         void *dscClosure,
-                         unsigned int anonymityLevel,
-                         unsigned int priority,
-                         int doIndex,
-                         int doExtract,
-                         int individualKeywords,
-                         GNUNET_CronTime expiration,
-                         const struct GNUNET_ECRS_MetaData *md,
-                         const struct GNUNET_ECRS_URI *globalURI,
-                         const struct GNUNET_ECRS_URI *keyUri)
+GNUNET_FSUI_upload_start (struct GNUNET_FSUI_Context *ctx,
+                          const char *filename,
+                          GNUNET_FSUI_DirectoryScanCallback dsc,
+                          void *dscClosure,
+                          unsigned int anonymityLevel,
+                          unsigned int priority,
+                          int doIndex,
+                          int doExtract,
+                          int individualKeywords,
+                          GNUNET_CronTime expiration,
+                          const struct GNUNET_ECRS_MetaData *md,
+                          const struct GNUNET_ECRS_URI *globalURI,
+                          const struct GNUNET_ECRS_URI *keyUri)
 {
   char *config;
   EXTRACTOR_ExtractorList *extractors;

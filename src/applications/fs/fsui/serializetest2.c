@@ -378,14 +378,14 @@ main (int argc, char *argv[])
   meta = GNUNET_ECRS_meta_data_create ();
   kuri = GNUNET_ECRS_keyword_list_to_uri (ectx, 2, (const char **) keywords);
   GNUNET_ECRS_meta_data_insert (meta, EXTRACTOR_MIMETYPE,
-                               GNUNET_DIRECTORY_MIME);
+                                GNUNET_DIRECTORY_MIME);
   upload =
-    GNUNET_FSUI_upload_star (ctx, UPLOAD_PREFIX,
-                             (GNUNET_FSUI_DirectoryScanCallback) &
-                             GNUNET_disk_directory_scan, NULL, 0, 0,
-                             GNUNET_YES, GNUNET_NO, GNUNET_NO,
-                             GNUNET_get_time () + 5 * GNUNET_CRON_HOURS, meta,
-                             kuri, kuri);
+    GNUNET_FSUI_upload_start (ctx, UPLOAD_PREFIX,
+                              (GNUNET_FSUI_DirectoryScanCallback) &
+                              GNUNET_disk_directory_scan, NULL, 0, 0,
+                              GNUNET_YES, GNUNET_NO, GNUNET_NO,
+                              GNUNET_get_time () + 5 * GNUNET_CRON_HOURS,
+                              meta, kuri, kuri);
   CHECK (upload != NULL);
   GNUNET_ECRS_uri_destroy (kuri);
   kuri = NULL;

@@ -129,8 +129,8 @@ int GNUNET_ECRS_meta_data_test_equal (const struct GNUNET_ECRS_MetaData *md1,
  * @return GNUNET_OK on success, GNUNET_SYSERR if this entry already exists
  */
 int GNUNET_ECRS_meta_data_insert (struct GNUNET_ECRS_MetaData *md,
-                                 EXTRACTOR_KeywordType type,
-                                 const char *data);
+                                  EXTRACTOR_KeywordType type,
+                                  const char *data);
 
 /**
  * Remove an item.

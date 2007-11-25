@@ -497,14 +497,14 @@ main (int argc, char *const *argv)
     GNUNET_ECRS_meta_data_add_publication_date (meta);
   start_time = GNUNET_get_time ();
   errorCode = 1;
-  ul = GNUNET_FSUI_upload_star (ctx,
-                                tmp,
-                                (GNUNET_FSUI_DirectoryScanCallback) &
-                                GNUNET_disk_directory_scan, ectx, anonymity,
-                                priority, !do_insert, GNUNET_YES,
-                                !do_no_direct_references,
-                                start_time + 2 * GNUNET_CRON_YEARS, meta,
-                                gloKeywords, topKeywords);
+  ul = GNUNET_FSUI_upload_start (ctx,
+                                 tmp,
+                                 (GNUNET_FSUI_DirectoryScanCallback) &
+                                 GNUNET_disk_directory_scan, ectx, anonymity,
+                                 priority, !do_insert, GNUNET_YES,
+                                 !do_no_direct_references,
+                                 start_time + 2 * GNUNET_CRON_YEARS, meta,
+                                 gloKeywords, topKeywords);
   if (gloKeywords != NULL)
     GNUNET_ECRS_uri_destroy (gloKeywords);
   if (topKeywords != NULL)

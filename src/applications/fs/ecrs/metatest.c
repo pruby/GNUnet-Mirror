@@ -47,9 +47,9 @@ testMeta (int i)
   if (GNUNET_OK !=
       GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))
     ABORT (m);
-  if (GNUNET_OK == GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))       /* dup! */
+  if (GNUNET_OK == GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_TITLE, "TestTitle"))      /* dup! */
     ABORT (m);
-  if (GNUNET_OK == GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))      /* dup! */
+  if (GNUNET_OK == GNUNET_ECRS_meta_data_insert (m, EXTRACTOR_AUTHOR, "TestTitle"))     /* dup! */
     ABORT (m);
   if (2 != GNUNET_ECRS_meta_data_get_contents (m, NULL, NULL))
     ABORT (m);
@@ -133,9 +133,9 @@ testMetaMore (int i)
     {
       GNUNET_snprintf (txt, 128, "%u -- %u\n", i, q);
       GNUNET_ECRS_meta_data_insert (meta,
-                                   q %
-                                   EXTRACTOR_getHighestKeywordTypeNumber (),
-                                   txt);
+                                    q %
+                                    EXTRACTOR_getHighestKeywordTypeNumber (),
+                                    txt);
     }
   size =
     GNUNET_ECRS_meta_data_get_serialized_size (meta,
