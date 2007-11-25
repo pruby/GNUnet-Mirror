@@ -209,7 +209,9 @@ static int stat_handle_cpu_load;
 static int stat_handle_io_load;
 static int stat_bytes_noise_received;
 static int stat_connected;
+#ifdef MINGW
 static int stat_handles;
+#endif
 static GNUNET_Stats_ServiceAPI *stats;
 static GNUNET_CoreAPIForPlugins *myCoreAPI;
 
@@ -231,7 +233,9 @@ initializeStats ()
   stat_connected = statHandle (gettext_noop ("# of connected peers"));
   stat_bytes_noise_received
     = statHandle (gettext_noop ("# bytes of noise received"));
+#ifdef MINGW
   stat_handles = statHandle (gettext_noop ("# plibc handles"));
+#endif
 }
 
 static void
@@ -262,7 +266,9 @@ immediateUpdates ()
     load = 0;
   statSet (stat_handle_network_load_down, load);
   statSet (stat_connected, coreAPI->forAllConnectedNodes (NULL, NULL));
+#ifdef MINGW
   statSet (stat_handles, plibc_get_handle_count ());
+#endif
 }
 
 
