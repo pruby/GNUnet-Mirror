@@ -85,7 +85,7 @@ load_xml (const char *dialog_name)
   GladeXML *ret;
 
   gladeFile = get_glade_filename ();
-  ret = glade_xml_new (gladeFile, dialog_name, PACKAGNUNET_GE_NAME);
+  ret = glade_xml_new (gladeFile, dialog_name, PACKAGE_NAME);
   if (ret == NULL)
     GNUNET_GE_DIE_STRERROR_FILE (NULL,
                                  GNUNET_GE_USER | GNUNET_GE_ADMIN |
@@ -121,7 +121,7 @@ showDialog (const char *name)
   GladeXML *myXML;
 
   gladeFile = get_glade_filename ();
-  myXML = glade_xml_new (gladeFile, name, PACKAGNUNET_GE_NAME);
+  myXML = glade_xml_new (gladeFile, name, PACKAGE_NAME);
   if (mainXML_ == NULL)
     GNUNET_GE_DIE_STRERROR_FILE (NULL,
                                  GNUNET_GE_USER | GNUNET_GE_ADMIN |
