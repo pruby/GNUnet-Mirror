@@ -726,7 +726,6 @@ src/applications/vpn/Makefile
 src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
-src/setup/qt/qt.pro
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
