@@ -1387,6 +1387,10 @@ create_curl_get (HTTPSession * httpSession)
   CURL_EASY_SETOPT (curl_get, CURLOPT_VERBOSE, 1);
 #endif
   CURL_EASY_SETOPT (curl_get, CURLOPT_CONNECTTIMEOUT, 150L);
+  /* NOTE: use of CONNECTTIMEOUT without also
+     setting NOSIGNAL results in really weird
+     crashes on my system! */
+  CURL_EASY_SETOPT (curl_get, CURLOPT_NOSIGNAL, 1);
   CURL_EASY_SETOPT (curl_get, CURLOPT_TIMEOUT, 150L);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEFUNCTION, &receiveContentCallback);
   CURL_EASY_SETOPT (curl_get, CURLOPT_WRITEDATA, httpSession);
@@ -1554,6 +1558,10 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   CURL_EASY_SETOPT (curl_put, CURLOPT_VERBOSE, 1);
 #endif
   CURL_EASY_SETOPT (curl_put, CURLOPT_CONNECTTIMEOUT, 150L);
+  /* NOTE: use of CONNECTTIMEOUT without also
+     setting NOSIGNAL results in really weird
+     crashes on my system! */
+  CURL_EASY_SETOPT (curl_put, CURLOPT_NOSIGNAL, 1);
   CURL_EASY_SETOPT (curl_put, CURLOPT_TIMEOUT, 150L);
   size = put->size;
   CURL_EASY_SETOPT (curl_put, CURLOPT_INFILESIZE, size);
