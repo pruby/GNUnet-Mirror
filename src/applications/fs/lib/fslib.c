@@ -413,7 +413,7 @@ GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
  * Initialize to index a file
  */
 int
-GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
+GNUNET_FS_prepare_to_index (struct GNUNET_ClientServerConnection *sock,
                            const GNUNET_HashCode * fileHc, const char *fn)
 {
   int ret;

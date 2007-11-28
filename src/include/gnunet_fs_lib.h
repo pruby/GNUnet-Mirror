@@ -121,7 +121,7 @@ int GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
 /**
  * Initialize to index a file.  Tries to do the symlinking.
  */
-int GNUNET_FS_prepare_to_inde (struct GNUNET_ClientServerConnection *sock,
+int GNUNET_FS_prepare_to_index (struct GNUNET_ClientServerConnection *sock,
                                const GNUNET_HashCode * fileHc,
                                const char *fn);
 

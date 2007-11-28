@@ -278,7 +278,7 @@ main (int argc, char *argv[])
                           ntohl (block->size) -
                           sizeof (GNUNET_DatastoreValue) - sizeof (DBlock)));
       CLOSE (fd);
-      CHECK (GNUNET_FS_prepare_to_inde (sock, &hc, tmpName) == GNUNET_YES);
+      CHECK (GNUNET_FS_prepare_to_index (sock, &hc, tmpName) == GNUNET_YES);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
       CHECK (GNUNET_OK == trySearch (ctx, i));
       CHECK (GNUNET_OK ==

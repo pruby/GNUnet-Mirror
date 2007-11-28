@@ -196,7 +196,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       /* reset the counter since the formula later does not
          take the time for GNUNET_hash_file into account */
 
-      switch (GNUNET_FS_prepare_to_inde (sock, &fileId, filename))
+      switch (GNUNET_FS_prepare_to_index (sock, &fileId, filename))
         {
         case GNUNET_SYSERR:
           GNUNET_GE_LOG (ectx,
