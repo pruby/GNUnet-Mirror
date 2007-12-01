@@ -166,7 +166,6 @@ src/util/getopt/setoption.c
 src/util/getopt/printhelp.c
 src/util/containers/bloomfilter.c
 src/util/containers/vector.c
-src/util/containers/hashtable.c
 src/util/config/config.c
 src/util/string/xmalloc.c
 src/util/string/string.c
