@@ -25,13 +25,14 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "tracekit.h"
 
 static struct GNUNET_Semaphore *doneSem;
 
-static char *cfgFilename;
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static struct GNUNET_GE_Context *ectx;
 
