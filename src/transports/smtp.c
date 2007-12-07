@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -394,7 +394,9 @@ listenAndDistribute (void *unused)
               GNUNET_free (out);
               goto END;
             }
-          coreMP = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
+	  if (stats != NULL)
+	    stats->change (stat_bytesReceived, size);
+	  coreMP = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
           coreMP->msg = out;
           coreMP->size = size - sizeof (SMTPMessage);
           coreMP->tsession = NULL;
@@ -691,6 +693,8 @@ api_send (GNUNET_TSession * tsession,
       GNUNET_free (gm_cls.ebody);
       return GNUNET_SYSERR;
     }
+  if (stats != NULL)
+    stats->change (stat_bytesSent, size); 
   GNUNET_network_monitor_notify_transmission (coreAPI->load_monitor,
                                               GNUNET_ND_UPLOAD, gm_cls.esize);
   smtp_destroy_session (session);
@@ -828,10 +832,10 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
   if (stats != NULL)
     {
       stat_bytesReceived
-        = stats->create (gettext_noop ("# bytes received via TCP"));
-      stat_bytesSent = stats->create (gettext_noop ("# bytes sent via TCP"));
+        = stats->create (gettext_noop ("# bytes received via SMTP"));
+      stat_bytesSent = stats->create (gettext_noop ("# bytes sent via SMTP"));
       stat_bytesDropped
-        = stats->create (gettext_noop ("# bytes dropped by TCP (outgoing)"));
+        = stats->create (gettext_noop ("# bytes dropped by SMTP (outgoing)"));
     }
   lock = GNUNET_mutex_create (GNUNET_NO);
   GNUNET_GC_get_configuration_value_string (coreAPI->cfg,
