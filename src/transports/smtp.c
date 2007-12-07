@@ -26,10 +26,19 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "gnunet_stats_service.h"
 #include "platform.h"
 #include <libesmtp.h>
+#include <signal.h>
+
+
+/**
+ * The default maximum size of each outbound SMTP message.
+ */
+#define SMTP_MESSAGE_SIZE 65528
 
 #define DEBUG_SMTP GNUNET_NO
 
@@ -73,14 +82,7 @@ typedef struct
  */
 typedef struct
 {
-  /* this struct is always preceeded by n bytes of p2p messages
-     that the GNUnet core will process */
-
-  /**
-   * size of the message, in bytes, including this header; max
-   * 65536-header (network byte order)
-   */
-  unsigned short size;
+  GNUNET_MessageHeader header;
 
   /**
    * What is the identity of the sender (GNUNET_hash of public key)
@@ -94,11 +96,9 @@ typedef struct
 /**
  * apis (our advertised API and the core api )
  */
-static CoreAPIForTransport *coreAPI;
+static GNUNET_CoreAPIForTransport *coreAPI;
 
 static struct GNUNET_GE_Context *ectx;
-
-static TransportAPI smtpAPI;
 
 /**
  * Thread that listens for inbound messages
@@ -109,6 +109,32 @@ static struct GNUNET_ThreadHandle *dispatchThread;
  * Flag to indicate that server has been shut down.
  */
 static int smtp_shutdown = GNUNET_YES;
+
+/**
+ * Set to the SMTP server hostname (and port) for outgoing messages.
+ */
+static char * smtp_server_name;
+
+/**
+ * Lock for uses of libesmtp (not thread-safe).
+ */ 
+static struct GNUNET_Mutex * lock;
+
+/**
+ * Old handler for SIGPIPE (kept to be able to restore).
+ */
+static struct sigaction old_handler;
+
+static GNUNET_TransportAPI smtpAPI;
+
+static GNUNET_Stats_ServiceAPI *stats;
+
+static int stat_bytesReceived;
+
+static int stat_bytesSent;
+
+static int stat_bytesDropped;
+
 
 
 /** ******************** Base64 encoding ***********/
@@ -127,7 +153,7 @@ static char *cvt = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
  * @return the size of the output
  */
 static unsigned int
-base64_encode (char *data, unsigned int len, char **output)
+base64_encode (const char *data, unsigned int len, char **output)
 {
   unsigned int i;
   char c;
@@ -196,7 +222,7 @@ base64_encode (char *data, unsigned int len, char **output)
  * @return the size of the output
  */
 static unsigned int
-base64_decode (char *data, unsigned int len, char **output)
+base64_decode (const char *data, unsigned int len, char **output)
 {
   unsigned int i;
   char c;
@@ -263,41 +289,40 @@ listenAndDistribute (void *unused)
 {
   char *pipename;
   char *line;
-  unsigned int LINESIZE;
+  unsigned int linesize;
   SMTPMessage *mp;
+  FILE * fdes;
+  char *retl;
+  char *boundary;
+  char *out;
+  unsigned int size;
+  GNUNET_TransportPacket *coreMP;
+  int fd;
 
-  pipename = getFileName ("SMTP",
-                          "PIPE",
-                          _("You must specify the name of a "
-                            "pipe for the SMTP transport in section `%s' under `%s'.\n"));
-  GNUNET_GE_ASSERT (ectx, pipename != NULL);
+  GNUNET_GC_get_configuration_value_filename(coreAPI->cfg,
+					     "SMTP",
+					     "PIPE",
+					     GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY "/smtp-pipe",
+					     &pipename);
   UNLINK (pipename);
   if (0 != mkfifo (pipename, S_IWUSR | S_IRUSR))
     GNUNET_GE_DIE_STRERROR (ectx,
                             GNUNET_GE_ADMIN | GNUNET_GE_BULK |
                             GNUNET_GE_FATAL, "mkfifo");
-  LINESIZE = ((smtpAPI.mtu * 4 / 3) + 8) * (MAX_CHAR_PER_LINE + 2) / MAX_CHAR_PER_LINE; /* maximum size of a line supported */
-  line = GNUNET_malloc (LINESIZE + 2);  /* 2 bytes for off-by-one errors, just to be safe... */
+  linesize = ((smtpAPI.mtu * 4 / 3) + 8) * (MAX_CHAR_PER_LINE + 2) / MAX_CHAR_PER_LINE; /* maximum size of a line supported */
+  line = GNUNET_malloc (linesize + 2);  /* 2 bytes for off-by-one errors, just to be safe... */
 
 #define READLINE(l,limit) \
   do { retl = fgets(l, limit, fdes); \
     if ( (retl == NULL) || (smtp_shutdown == GNUNET_YES)) {\
   goto END; \
     }\
-    incrementBytesReceived(strlen(retl));\
+    GNUNET_network_monitor_notify_transmission(coreAPI->load_monitor, GNUNET_ND_DOWNLOAD, strlen(retl)); \
   } while (0)
 
 
   while (smtp_shutdown == GNUNET_NO)
     {
-      FILE *fdes;
-      char *retl;
-      char *boundary;
-      char *out;
-      unsigned int size;
-      P2P_PACKET *coreMP;
-      int fd;
-
       fd = GNUNET_disk_file_open (ectx, pipename, O_RDONLY);
       if (fd == -1)
         {
@@ -310,10 +335,10 @@ listenAndDistribute (void *unused)
         {
           do
             {
-              READLINE (line, LINESIZE);
+              READLINE (line, linesize);
             }
           while (0 != strAUTOncmp (line, CONTENT_TYPE_MULTIPART));
-          READLINE (line, LINESIZE);
+          READLINE (line, linesize);
           if (strlen (line) < strlen ("  boundary=\""))
             {
               goto END;
@@ -331,18 +356,18 @@ listenAndDistribute (void *unused)
             }
           do
             {
-              READLINE (line, LINESIZE);
+              READLINE (line, linesize);
             }
           while (0 != strAUTOncmp (line, boundary));
           do
             {
-              READLINE (line, LINESIZE);        /* content type, etc. */
+              READLINE (line, linesize);        /* content type, etc. */
             }
           while (0 != strAUTOncmp (line, ""));
-          READLINE (line, LINESIZE);    /* read base64 encoded message; decode, process */
+          READLINE (line, linesize);    /* read base64 encoded message; decode, process */
           while ((line[strlen (line) - 2] != FILLCHAR) &&
-                 (strlen (line) < LINESIZE))
-            READLINE (&line[strlen (line) - 1], LINESIZE - strlen (line));
+                 (strlen (line) < linesize))
+            READLINE (&line[strlen (line) - 1], linesize - strlen (line));
           size = base64_decode (line, strlen (line) - 1, &out);
           if (size < sizeof (SMTPMessage))
             {
@@ -351,8 +376,8 @@ listenAndDistribute (void *unused)
               goto END;
             }
 
-          mp = (SMTPMessage *) & out[size - sizeof (SMTPMessage)];
-          if (ntohs (mp->size) != size)
+          mp = (SMTPMessage *) &out[size - sizeof(SMTPMessage)];
+          if (ntohs (mp->header.size) != size)
             {
               GNUNET_GE_LOG (ectx,
                              GNUNET_GE_WARNING | GNUNET_GE_BULK |
@@ -366,13 +391,14 @@ listenAndDistribute (void *unused)
                              "Size returned by base64=%d, in the msg=%d.\n",
                              size, ntohl (mp->size));
 #endif
+	      GNUNET_free(out);
               goto END;
             }
-          coreMP = GNUNET_malloc (sizeof (P2P_PACKET));
+          coreMP = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
           coreMP->msg = out;
           coreMP->size = size - sizeof (SMTPMessage);
           coreMP->tsession = NULL;
-          memcpy (&coreMP->sender, &mp->sender, sizeof (GNUNET_PeerIdentity));
+          coreMP->sender = mp->sender;
 #if DEBUG_SMTP
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -380,7 +406,7 @@ listenAndDistribute (void *unused)
 #endif
 
           coreAPI->receive (coreMP);
-          READLINE (line, LINESIZE);    /* new line at the end */
+          READLINE (line, linesize);    /* new line at the end */
         }
     END:
 #if DEBUG_SMTP
@@ -404,35 +430,26 @@ listenAndDistribute (void *unused)
  * address). Since the reply will be asynchronous, a method must be
  * called on success.
  *
- * @param helo the hello message to verify
+ * @param hello the hello message to verify
  *        (the signature/crc have been verified before)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 static int
-verifyHelo (const GNUNET_MessageHello * helo)
+api_verify_hello (const GNUNET_MessageHello * hello)
 {
-  EmailAddress *maddr;
+  const EmailAddress *maddr;
 
-  maddr = (EmailAddress *) & helo[1];
-  if ((ntohs (helo->header.size) !=
-       sizeof (GNUNET_MessageHello) + ntohs (helo->senderAddressSize)) ||
+  maddr = (const EmailAddress *) & hello[1];
+  if ((ntohs (hello->header.size) !=
+       sizeof (GNUNET_MessageHello) + ntohs (hello->senderAddressSize)) ||
       (maddr->
-       senderAddress[ntohs (helo->senderAddressSize) - 1 -
+       senderAddress[ntohs (hello->senderAddressSize) - 1 -
                      FILTER_STRING_SIZE] != '\0'))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;     /* obviously invalid */
     }
-  else
-    {
-#if DEBUG_SMTP
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Verified SMTP helo from `%s'.\n",
-                     &maddr->senderAddress[0]);
-#endif
-      return GNUNET_OK;
-    }
+  return GNUNET_OK;  
 }
 
 /**
@@ -443,7 +460,7 @@ verifyHelo (const GNUNET_MessageHello * helo)
  * @return hello on success, NULL on error
  */
 static GNUNET_MessageHello *
-createhello ()
+api_create_hello ()
 {
   GNUNET_MessageHello *msg;
   char *email;
@@ -451,8 +468,9 @@ createhello ()
   EmailAddress *haddr;
   int i;
 
-  email = getConfigurationString ("SMTP", "EMAIL");
-  if (email == NULL)
+  if (! GNUNET_GC_have_configuration_value(coreAPI->cfg,
+					   "SMTP",
+					 "EMAIL") )
     {
       static int once;
       if (once == 0)
@@ -464,15 +482,30 @@ createhello ()
         }
       return NULL;
     }
-  filter = getConfigurationString ("SMTP", "FILTER");
-  if (filter == NULL)
+  if (! GNUNET_GC_have_configuration_value(coreAPI->cfg,
+					   "SMTP",
+					 "FILTER") )
     {
-      GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+      static int once;
+      if (once == 0)
+        {
+         GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _
                      ("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
-      GNUNET_free (email);
+         once = 1;
+        }
       return NULL;
     }
+  GNUNET_GC_get_configuration_value_string(coreAPI->cfg,
+					   "SMTP",
+					   "EMAIL",
+					   NULL,
+					   &email);
+  GNUNET_GC_get_configuration_value_string(coreAPI->cfg,
+					   "SMTP",
+					   "FILTER",
+					   NULL,
+					   &filter);
   if (strlen (filter) > FILTER_STRING_SIZE)
     {
       filter[FILTER_STRING_SIZE] = '\0';
@@ -494,9 +527,181 @@ createhello ()
   msg->MTU = htonl (smtpAPI.mtu);
   msg->header.size = htons (GNUNET_sizeof_hello (msg));
   GNUNET_free (email);
-  if (verifyHelo (msg) == GNUNET_SYSERR)
+  if (api_verify_hello (msg) == GNUNET_SYSERR)
     GNUNET_GE_ASSERT (ectx, 0);
   return msg;
+}
+
+struct GetMessageClosure {
+  unsigned int esize;
+  unsigned int pos;
+  char * ebody;
+};
+
+static const char * 
+get_message(void ** buf, int * len, void * cls) {
+  struct GetMessageClosure * gmc = cls;
+
+  *buf = NULL;
+  if (len == NULL) {
+    gmc->pos = 0;
+    return NULL;
+  }
+  if (gmc->pos == gmc->esize)
+    return NULL; /* done */
+  *len = gmc->esize;
+  gmc->pos = gmc->esize;
+  return gmc->ebody;  
+}
+
+/**
+ * Send a message to the specified remote node.
+ *
+ * @param tsession the GNUNET_MessageHello identifying the remote node
+ * @param message what to send
+ * @param size the size of the message
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ */
+static int
+api_send (GNUNET_TSession * tsession,
+          const void *msg, const unsigned int size, int important)
+{
+  const GNUNET_MessageHello * hello;
+  const EmailAddress * haddr;
+  char * m;
+  SMTPMessage * mp;
+  struct GetMessageClosure gm_cls;
+  smtp_session_t session;
+  smtp_message_t message;
+  smtp_recipient_t recipient;
+#define EBUF_LEN 128
+  char ebuf[EBUF_LEN];
+
+  if (smtp_shutdown == GNUNET_YES)
+    return GNUNET_SYSERR;
+  if ((size == 0) || (size > smtpAPI.mtu))
+    {
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  hello = (const GNUNET_MessageHello *) tsession->internal;
+  if (hello == NULL)
+    return GNUNET_SYSERR;
+  GNUNET_mutex_lock(lock);
+  session = smtp_create_session ();
+  if (session == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_create_session",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  if (0 == smtp_set_server (session, smtp_server_name)) 
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_IMMEDIATE,
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_set_server",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  message = smtp_add_message (session);
+  if (message == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_add_message",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  haddr = (const EmailAddress *) &hello[1];
+  recipient = smtp_add_recipient (message, haddr->senderAddress);
+  if (recipient == NULL)
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_add_recipient",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }
+  if (0 == smtp_set_header(message,
+			   haddr->filter)) 
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_set_header",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_SYSERR;
+    }  
+  m = GNUNET_malloc (size + sizeof(SMTPMessage));
+  memcpy (m, msg, size);
+  mp = (SMTPMessage*) &m[size];
+  mp->header.size = htons (size + sizeof(SMTPMessage));
+  mp->header.type = htons (0);
+  mp->sender = *coreAPI->myIdentity;
+  gm_cls.ebody = NULL;
+  gm_cls.pos = 0;
+  gm_cls.esize = base64_encode (m, size + sizeof(SMTPMessage), &gm_cls.ebody);
+  GNUNET_free (m);
+  if (0 == smtp_size_set_estimate (message, gm_cls.esize)) 
+    {
+     GNUNET_GE_LOG (ectx,
+		    GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+		    _("SMTP: `%s' failed: %s.\n"),
+		    "smtp_size_set_estimate",
+		    smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+    }
+  if (0 == smtp_set_messagecb (message, &get_message, &gm_cls)) 
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_set_messagecb",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      GNUNET_free (gm_cls.ebody);
+      return GNUNET_SYSERR;
+    }
+  if (0 == smtp_start_session(session)) 
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                     GNUNET_GE_BULK, 
+                     _("SMTP: `%s' failed: %s.\n"),
+		     "smtp_start_session",
+                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
+      smtp_destroy_session(session);
+      GNUNET_mutex_unlock(lock);
+      GNUNET_free (gm_cls.ebody);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_network_monitor_notify_transmission(coreAPI->load_monitor, GNUNET_ND_UPLOAD, gm_cls.esize);
+  smtp_destroy_session (session);
+  GNUNET_mutex_unlock(lock);
+  GNUNET_free (gm_cls.ebody);
+  return GNUNET_OK;
 }
 
 /**
@@ -506,8 +711,9 @@ createhello ()
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-smtpConnect (const GNUNET_MessageHello * hello,
-             GNUNET_TSession ** tsessionPtr)
+api_connect (const GNUNET_MessageHello * hello,
+             GNUNET_TSession ** tsessionPtr,
+            int may_reuse)
 {
   GNUNET_TSession *tsession;
 
@@ -520,137 +726,6 @@ smtpConnect (const GNUNET_MessageHello * hello,
   return GNUNET_OK;
 }
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
-/**
- * A (core) Session is to be associated with a transport session. The
- * transport service may want to know in order to call back on the
- * core if the connection is being closed.
- *
- * @param tsession the session handle passed along
- *   from the call to receive that was made by the transport
- *   layer
- * @return GNUNET_OK if the session could be associated,
- *         GNUNET_SYSERR if not.
- */
-int
-smtpAssociate (GNUNET_TSession * tsession)
-{
-  return GNUNET_SYSERR;         /* SMTP connections can never be associated */
-}
-
-/**
- * Send a message to the specified remote node.
- *
- * @param tsession the GNUNET_MessageHello identifying the remote node
- * @param message what to send
- * @param size the size of the message
- * @return GNUNET_SYSERR on error, GNUNET_OK on success
- */
-static int
-smtpSend (GNUNET_TSession * tsession,
-          const void *message, const unsigned int size, int important)
-{
-  char *msg;
-  SMTPMessage *mp;
-  GNUNET_MessageHello *helo;
-  EmailAddress *haddr;
-  char *ebody;
-  int res;
-  int ssize;
-  int ssize2;
-  smtp_session_t smtp_sock;
-  smtp_message_t message;
-  smtp_recipient_t recipient;
-  char ebuf[EBUF_LEN];
-  char *smtpServer;
-
-  if (smtp_shutdown == GNUNET_YES)
-    return GNUNET_SYSERR;
-  if ((size == 0) || (size > smtpAPI.mtu))
-    {
-      GNUNET_GE_BREAK (ectx, 0);
-      return GNUNET_SYSERR;
-    }
-  helo = (GNUNET_MessageHello *) tsession->internal;
-  if (helo == NULL)
-    return GNUNET_SYSERR;
-
-  smtp_sock = smtp_create_session ();
-  if (smtp_sock == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_IMMEDIATE,
-                     _("Failed to initialize libesmtp: %s.\n"),
-                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
-      return NULL;
-    }
-  smtpServer = "localhost:587"; /* fixme */
-  smtp_set_server (smtp_sock, smtpServer);
-
-
-  haddr = (EmailAddress *) & helo[1];
-  ssize2 = ssize = size + sizeof (SMTPMessage);
-  msg = GNUNET_malloc (ssize);
-  mp = (SMTPMessage *) & msg[size];
-  mp->size = htons (ssize);
-  mp->sender = *coreAPI->myIdentity;
-  memcpy (msg, message, size);
-  ebody = NULL;
-#if DEBUG_SMTP
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Base64-encoding %d byte message.\n", ssize);
-#endif
-  ssize = base64_encode (msg, ssize, &ebody);
-#if DEBUG_SMTP
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Base64-encoded message size is %d bytes.\n", ssize);
-#endif
-  GNUNET_free (msg);
-  res = GNUNET_SYSERR;
-
-  message = smtp_add_message (smtp_sock);
-  if (message == NULL)
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK, "Failed to create smtp message: %s\n",
-                     smtp_strerror (smtp_errno (), ebuf, EBUF_LEN));
-      return GNUNET_SYSERR;
-    }
-  smtp_size_set_estimate (message, ssize);
-  smtp_set_messagecb (message, &getMessage, &msg);
-
-#if 0
-  if (GNUNET_OK == writeSMTPLine (smtp_sock,
-                                  "%-*s\r\n",
-                                  MIN (FILTER_STRING_SIZE,
-                                       strlen (&haddr->filter[0])),
-                                  &haddr->filter[0]))
-    {
-    }
-#endif
-  recipient = smtp_add_recipient (message, haddr->senderAddress);
-  if (recipient == NULL)
-    {
-      /* FIXME */
-    }
-  if (res != GNUNET_OK)
-    GNUNET_GE_LOG (ectx,
-                   GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                   _("Sending E-mail to `%s' failed.\n"),
-                   &haddr->senderAddress[0]);
-  incrementBytesSent (ssize);
-  GNUNET_free (ebody);
-  smtp_destroy_session (smtp_sock);
-
-
-  return res;
-}
-
 /**
  * Disconnect from a remote node.
  *
@@ -658,7 +733,7 @@ smtpSend (GNUNET_TSession * tsession,
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-smtpDisconnect (GNUNET_TSession * tsession)
+api_disconnect (GNUNET_TSession * tsession)
 {
   if (tsession != NULL)
     {
@@ -674,16 +749,18 @@ smtpDisconnect (GNUNET_TSession * tsession)
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-startTransportServer (void)
+api_start_transport_server ()
 {
   smtp_shutdown = GNUNET_NO;
   /* initialize SMTP network */
   dispatchThread =
     GNUNET_thread_create (&listenAndDistribute, NULL, 1024 * 4);
-  if (dispatchThread == NULL)
+  if (dispatchThread == NULL) {
     GNUNET_GE_DIE_STRERROR (ectx,
                             GNUNET_GE_ADMIN | GNUNET_GE_BULK |
                             GNUNET_GE_FATAL, "pthread_create");
+    return GNUNET_SYSERR;
+  }
   return GNUNET_OK;
 }
 
@@ -692,7 +769,7 @@ startTransportServer (void)
  * restarted later!
  */
 static int
-stopTransportServer ()
+api_stop_transport_server ()
 {
   void *unused;
 
@@ -703,70 +780,104 @@ stopTransportServer ()
 }
 
 /**
- * Convert TCP address to a string.
+ * Convert SMTP hello to an IP address (always fails).
  */
-static char *
-addressToString (const GNUNET_MessageHello * helo)
+static int
+api_hello_to_address (const GNUNET_MessageHello * hello,
+		      void ** sa,
+		      unsigned int * sa_len)
 {
-  char *ret;
-  EmailAddress *addr;
-  size_t n;
-
-  addr = (EmailAddress *) & helo[1];
-  n = FILTER_STRING_SIZE + strlen (addr->senderAddress) + 16;
-  ret = GNUNET_malloc (n);
-  GNUNET_snprintf (ret,
-                   n,
-                   _("%.*s filter %s (SMTP)"),
-                   FILTER_STRING_SIZE, addr->filter, addr->senderAddress);
-  return ret;
+  return GNUNET_SYSERR;
 }
 
 /**
- * The default maximum size of each outbound SMTP message.
+ * Always fails.
  */
-#define MESSAGNUNET_GE_SIZE 65528
+static int
+api_associate (GNUNET_TSession * tsession)
+{
+  return GNUNET_SYSERR;         /* SMTP connections can never be associated */
+}
+
+/**
+ * Always succeeds (for now; we should look at adding
+ * frequency limits to SMTP in the future!).
+ */
+static int
+api_test_would_try (GNUNET_TSession * tsession, const unsigned int size,
+		    int important)
+{
+  return GNUNET_OK; /* we always try... */
+}
 
 /**
  * The exported method. Makes the core api available via a global and
  * returns the smtp transport API.
  */
-TransportAPI *
-inittransport_smtp (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_smtp (GNUNET_CoreAPIForTransport * core)
 {
-  int mtu;
+
+
+  unsigned long long mtu;
+  struct sigaction sa;
 
   coreAPI = core;
   ectx = core->ectx;
-  mtu = getConfigurationInt ("SMTP", "MTU");
-  if (mtu == 0)
-    mtu = MESSAGNUNET_GE_SIZE;
-  if (mtu < 1200)
-    GNUNET_GE_LOG (ectx,
-                   GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                   _
-                   ("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
-                   "SMTP");
-  if (mtu > MESSAGNUNET_GE_SIZE)
-    mtu = MESSAGNUNET_GE_SIZE;
+  GNUNET_GC_get_configuration_value_number(coreAPI->cfg,
+					   "SMTP", 
+					   "MTU",
+					   1200,
+					   SMTP_MESSAGE_SIZE,
+					   SMTP_MESSAGE_SIZE,
+					   &mtu);
+  stats = coreAPI->requestService ("stats");
+  if (stats != NULL)
+    {
+      stat_bytesReceived
+        = stats->create (gettext_noop ("# bytes received via TCP"));
+      stat_bytesSent = stats->create (gettext_noop ("# bytes sent via TCP"));
+      stat_bytesDropped
+        = stats->create (gettext_noop ("# bytes dropped by TCP (outgoing)"));
+    }
+  lock = GNUNET_mutex_create(GNUNET_NO);
+  GNUNET_GC_get_configuration_value_string(coreAPI->cfg,
+					   "SMTP",
+					   "SERVER",
+					   "localhost:25",
+					   &smtp_server_name);
+  sa.sa_handler = SIG_IGN;
+  sigemptyset (&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction (SIGPIPE, &sa, &old_handler); 
   smtpAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_SMTP;
   smtpAPI.mtu = mtu - sizeof (SMTPMessage);
   smtpAPI.cost = 50;
-  smtpAPI.verifyHelo = &verifyHelo;
-  smtpAPI.createhello = &createhello;
-  smtpAPI.connect = &smtpConnect;
-  smtpAPI.send = &smtpSend;
-  smtpAPI.associate = &smtpAssociate;
-  smtpAPI.disconnect = &smtpDisconnect;
-  smtpAPI.startTransportServer = &startTransportServer;
-  smtpAPI.stopTransportServer = &stopTransportServer;
-  smtpAPI.addressToString = &addressToString;
+  smtpAPI.verifyHello = &api_verify_hello;
+  smtpAPI.createhello = &api_create_hello;
+  smtpAPI.connect = &api_connect;
+  smtpAPI.send = &api_send;
+  smtpAPI.associate = &api_associate;
+  smtpAPI.disconnect = &api_disconnect;
+  smtpAPI.startTransportServer = &api_start_transport_server;
+  smtpAPI.stopTransportServer = &api_stop_transport_server;
+  smtpAPI.helloToAddress = &api_hello_to_address;
+  smtpAPI.testWouldTry = &api_test_would_try;
   return &smtpAPI;
 }
 
 void
 donetransport_smtp ()
 {
+  sigaction (SIGPIPE, &old_handler, NULL); 
+  GNUNET_free(smtp_server_name);
+  if (stats != NULL)
+    {
+      coreAPI->releaseService (stats);
+      stats = NULL;
+    }
+  GNUNET_mutex_destroy(lock);
+  lock = NULL;
 }
 
 /* end of smtp.c */
