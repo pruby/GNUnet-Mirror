@@ -30,6 +30,7 @@ dialog (optional)
 libglade2-dev (recommended)
 libgtk2.0-dev (recommended)
 libxml2-dev (recommended, especially with NAT)
+libesmtp-dev (optional -- only for SMTP transport)
 
 
 Additional libextractor dependencies:
