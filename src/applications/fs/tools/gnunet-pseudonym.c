@@ -105,7 +105,7 @@ static struct GNUNET_CommandLineOption gnunetpseudonymOptions[] = {
   {'s', "set-rating", "ID:VALUE",
    gettext_noop ("set the rating of a namespace"),
    0, &GNUNET_getopt_configure_set_string, &set_rating},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

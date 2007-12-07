@@ -372,7 +372,8 @@ typedef struct
  *
  * The type of inittransport_XXX is GNUNET_TransportMainMethod.
  */
-typedef GNUNET_TransportAPI *(*GNUNET_TransportMainMethod) (GNUNET_CoreAPIForTransport *);
+typedef GNUNET_TransportAPI
+  *(*GNUNET_TransportMainMethod) (GNUNET_CoreAPIForTransport *);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

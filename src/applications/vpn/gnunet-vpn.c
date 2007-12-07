@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetvpnOptions[] = {
   {'s', "silent", NULL,
    gettext_noop ("Suppress display of asynchronous log messages"),
    0, &GNUNET_getopt_configure_set_one, &silent},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 

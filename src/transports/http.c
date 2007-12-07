@@ -2031,19 +2031,19 @@ curl_runner (void *unused)
         {
           timeout = ms;
           have_tv = MHD_YES;
-        } 
-      else 
-	{
-	  /* curl_multi_timeout is buggy, don't believe
-	     it --- otherwise we may sit here forever on
-	     connect...; this is a bug which can be
-	     demonstrated using the daemontest_post_loop
-	     testcase from MHD.  Once fixed in CURL, this 
-	     else-clause should be removed. 
-	  */
-	  timeout = 500;
-	  have_tv = MHD_YES;
-	}
+        }
+      else
+        {
+          /* curl_multi_timeout is buggy, don't believe
+             it --- otherwise we may sit here forever on
+             connect...; this is a bug which can be
+             demonstrated using the daemontest_post_loop
+             testcase from MHD.  Once fixed in CURL, this
+             else-clause should be removed.
+           */
+          timeout = 500;
+          have_tv = MHD_YES;
+        }
       GNUNET_mutex_unlock (curllock);
       STEP ();
       FD_SET (signal_pipe[0], &rs);

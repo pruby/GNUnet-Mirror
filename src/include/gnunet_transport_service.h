@@ -40,7 +40,8 @@ extern "C"
 /**
  * Type of the per-transport callback method.
  */
-typedef void (*GNUNET_TransportCallback) (GNUNET_TransportAPI * tapi, void *data);
+typedef void (*GNUNET_TransportCallback) (GNUNET_TransportAPI * tapi,
+                                          void *data);
 
 /**
  * @brief Transport service definition.

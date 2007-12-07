@@ -335,7 +335,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    gettext_noop ("ID of the previous version of the content"
                  " (for namespace update only)"),
    1, &GNUNET_getopt_configure_set_string, &prev_id},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

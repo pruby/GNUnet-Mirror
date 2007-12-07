@@ -57,7 +57,7 @@ static struct GNUNET_CommandLineOption gnunetsetupOptions[] = {
    gettext_noop ("generate configuration for gnunetd, the GNUnet daemon"),
    0, &GNUNET_getopt_configure_set_one, &config_daemon},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Tool to setup GNUnet.")),     /* -h */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };

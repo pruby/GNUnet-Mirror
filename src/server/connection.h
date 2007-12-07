@@ -50,7 +50,7 @@ typedef struct
   GNUNET_Int32Time timeStamp;
   /* desired bandwidth, 0 for plaintext messages! */
   unsigned int bandwidth;
-} GNUNET_TransportPacket_HEADER;            /* 76 bytes */
+} GNUNET_TransportPacket_HEADER;        /* 76 bytes */
 
 /* ***************** GNUnet core internals ************ */
 

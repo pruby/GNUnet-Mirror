@@ -604,7 +604,8 @@ handleMessage (GNUNET_TSession * tsession,
     considerTakeover (sender, tsession);
   injectMessage (sender,
                  &msg[sizeof (GNUNET_TransportPacket_HEADER)],
-                 size - sizeof (GNUNET_TransportPacket_HEADER), ret, tsession);
+                 size - sizeof (GNUNET_TransportPacket_HEADER), ret,
+                 tsession);
 }
 
 /**

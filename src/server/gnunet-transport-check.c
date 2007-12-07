@@ -370,7 +370,7 @@ static struct GNUNET_CommandLineOption gnunettransportcheckOptions[] = {
   {'u', "user", "LOGIN",
    gettext_noop ("run as user LOGIN"),
    1, &GNUNET_getopt_configure_set_option, "GNUNETD:USER"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   {'X', "Xrepeat", "X",
    gettext_noop ("repeat each test X times"),

@@ -144,7 +144,7 @@ static struct GNUNET_CommandLineOption gnunetdirectoryOptions[] = {
   {'t', "track", NULL,
    gettext_noop ("start tracking entries for the directory database"),
    0, &GNUNET_getopt_configure_set_one, &do_track},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),  /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
