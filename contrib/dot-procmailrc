@@ -2,18 +2,18 @@
 # if you want to receive messages from the SMTP transport.
 #
 # If you want logging...
-# LOGFILE=/tmp/procmail-log
+LOGFILE=/tmp/procmail-log
 
 # Set to yes when debugging
-VERBOSE=no
+VERBOSE=yes
 
 # set to "all" if you want lots of output
-LOGABSTRACT=no
+LOGABSTRACT=all
 
-# replace "X-mailer: 590N" with the appropriate filter string from your gnunet.conf file
+# replace "X-mailer: GNUnet" with the appropriate filter string from your gnunet.conf file
 :0:
-* ^X-mailer: 590N
-/tmp/gnunet.smtp
+* ^X-mailer: GNUnet
+/var/lib/gnunet/smtp-pipe
 
 # where do you want your other e-mail delivered to
 # (default: /var/spool/mail/$USER)

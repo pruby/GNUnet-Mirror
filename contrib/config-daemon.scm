@@ -203,6 +203,20 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   'advanced) )
 
 
+(define (general-hosts builder)
+ (builder
+  "GNUNETD"
+  "HOSTS"
+  (_ "Name of the directory where gnunetd should store contact information about peers")
+  (_ 
+"Unless you want to share the directory directly using a webserver, the default is most likely just fine." )
+  '()
+  #t
+  "/var/lib/gnunet/data/hosts/"
+  '()
+  'rare) )
+
+
 ;; logging options
 
 (define (log-level description option builder)
@@ -255,6 +269,18 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   '()
   'rare) )
 
+(define (log-devel builder)
+ (builder
+  "LOGGING"
+  "DEVELOPER"
+  (_ "Enable for extra-verbose logging.")
+  (nohelp)
+  '()
+  #f
+  #f
+  #f
+  'rare) )
+
 (define (logging builder)
  (builder
    "LOGGING"
@@ -264,6 +290,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
    (list 
      (log-keeplog builder)
      (log-logfile builder)
+     (log-devel builder)
      (log-level (_ "Logging of events for users") "USER-LEVEL" builder) 
      (log-level (_ "Logging of events for the system administrator") "ADMIN-LEVEL" builder) 
    )
@@ -325,8 +352,8 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
 Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that cannot directly be reached from the outside.  Peers that are NOT behind a NAT box and that want to *allow* peers that ARE behind a NAT box to connect must ALSO load the 'nat' module.  Note that the actual transfer will always be via tcp initiated by the peer behind the NAT box.  The nat transport requires the use of tcp, http, smtp and/or tcp6 in addition to nat itself.")
   '()
   #t
-  "udp tcp nat"
-  (list "MC" "udp" "udp6" "tcp" "tcp6" "nat")
+  "udp tcp http nat"
+  (list "MC" "udp" "udp6" "tcp" "tcp6" "nat" "http" "smtp")
   'always) )
  
 
@@ -514,6 +541,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (network-port builder) 
     (network-trusted builder) 
     (general-hostlisturl builder)
+    (general-hosts builder)
     (general-http-proxy builder)
     (f2f builder) 
     (fs-path builder) 
@@ -855,6 +883,18 @@ The size of the DSTORE QUOTA is specified in MB.")
  (cons 0 65535)
  'nat-unlimited))
 
+(define (http-upnp builder)
+ (builder
+ "HTTP"
+ "UPNP"
+ (_ "Should we try to determine our external IP using UPnP?")
+ (_ "You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP. You should disable this option if you are sure that you are not behind a NAT.  If your NAT box does not support UPnP, having this on will not do much harm (only cost a small amount of resources).")
+ '()
+ #t
+ #t
+ #f
+ 'http-port-nz))
+
 (define (http-advertised-port builder)
  (builder
  "HTTP"
@@ -875,11 +915,97 @@ The size of the DSTORE QUOTA is specified in MB.")
  (nohelp)
  (list 
    (http-port builder)
+   (http-advertised-port builder)
+   (http-upnp builder)
  )
  #t
  #f
  #f
  'http-loaded) )
+
+
+
+
+(define (smtp-mtu builder)
+ (builder
+ "SMTP"
+ "MTU"
+ (_ "What is the maximum transfer unit for SMTP?")
+ (nohelp)
+ '()
+ #t
+ 65528
+ (cons 1200 65528)
+ 'smtp-loaded))
+
+(define (smtp-email builder)
+ (builder
+ "SMTP"
+ "EMAIL"
+ (_ "Which e-mail address should be used to send e-mail to this peer?")
+ (_ "You must make sure that e-mail received at this address is forwarded to the PIPE which is read by gnunetd.  Use the FILTER option to filter e-mail with procmail and the PIPE option to set the name of the pipe.")
+ '()
+ #t
+ "gnunet@localhost"
+ '()
+ 'smtp-loaded))
+
+(define (smtp-filter builder)
+ (builder
+ "SMTP"
+ "FILTER"
+ (_ "Which header line should other peers include in e-mails to enable filtering?")
+ (_ "You can specify a header line here which can then be used by procmail to filter GNUnet e-mail from your inbox and forward it to gnunetd.")
+ '()
+ #t
+ "X-mailer: GNUnet"
+ '()
+ 'smtp-loaded))
+
+(define (smtp-pipe builder)
+ (builder
+ "SMTP"
+ "PIPE"
+ (_ "What is the filename of the pipe where gnunetd can read its e-mail?")
+ (_ "Have a look at contrib/dot-procmailrc for an example .procmailrc file.")
+ '()
+ #t
+ "/var/lib/gnunet/smtp-pipe"
+ '()
+ 'smtp-loaded))
+
+(define (smtp-server builder)
+ (builder
+ "SMTP"
+ "PIPE"
+ (_ "What is the name and port of the server for outgoing e-mail?")
+ (_ "The basic format is HOSTNAME:PORT.")
+ '()
+ #t
+ "localhost:25"
+ '()
+ 'smtp-loaded))
+
+(define (smtp builder)
+ (builder
+ "SMTP"
+ ""
+ (_ "SMTP transport")
+ (nohelp)
+ (list 
+   (smtp-email builder)
+   (smtp-filter builder)
+   (smtp-pipe builder)
+   (smtp-server builder)
+   (smtp-mtu builder)
+ )
+ #t
+ #f
+ #f
+ 'smtp-loaded) )
+
+
+
 
 
 (define (udp-port builder)
@@ -1131,6 +1257,7 @@ The size of the DSTORE QUOTA is specified in MB.")
     (udp builder)
     (udp6 builder)
     (http builder)
+    (smtp builder)
   )
   #t
   #f
@@ -1328,6 +1455,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (f2f (string= (get-option ctx "MODULES" "topology") "topology_f2f") )
      (tcp-port-nz (eq? (get-option ctx "TCP" "PORT") 0) )
      (udp-port-nz (eq? (get-option ctx "UDP" "PORT") 0) )
+     (http-port-nz (eq? (get-option ctx "HTTP" "PORT") 0) )
      (mysql (string= (get-option ctx "MODULES" "sqstore") "sqstore_mysql") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
@@ -1338,6 +1466,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (tcp6-loaded (list? (member "tcp6" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (udp6-loaded (list? (member "udp6" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (http-loaded (list? (member "http" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
+     (smtp-loaded (list? (member "smtp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
    )
   (begin 
     (if (and nat-loaded nat-limited tcp-loaded)
