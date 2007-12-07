@@ -80,7 +80,7 @@ typedef struct
 
 /* *********** globals ************* */
 
-static TransportAPI tcpAPI;
+static GNUNET_TransportAPI tcpAPI;
 
 static GNUNET_UPnP_ServiceAPI *upnp;
 
@@ -551,8 +551,8 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
  */
-TransportAPI *
-inittransport_tcp (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 {
   ectx = core->ectx;
   cfg = core->cfg;

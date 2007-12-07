@@ -578,7 +578,7 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
  * that we exist (called for each transport)...
  */
 static void
-broadcasthelloTransport (TransportAPI * tapi, void *cls)
+broadcasthelloTransport (GNUNET_TransportAPI * tapi, void *cls)
 {
   const int *prob = cls;
   SendData sd;

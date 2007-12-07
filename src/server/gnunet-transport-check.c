@@ -97,7 +97,7 @@ noiseHandler (const GNUNET_PeerIdentity * peer,
  * Test the given transport API.
  */
 static void
-testTAPI (TransportAPI * tapi, void *ctx)
+testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
 {
   int *res = ctx;
   GNUNET_MessageHello *helo;

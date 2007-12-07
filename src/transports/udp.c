@@ -512,8 +512,8 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The exported method. Makes the core api available via a global and
  * returns the udp transport API.
  */
-TransportAPI *
-inittransport_udp (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_udp (GNUNET_CoreAPIForTransport * core)
 {
   unsigned long long mtu;
 

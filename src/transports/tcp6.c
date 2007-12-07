@@ -80,7 +80,7 @@ typedef struct
 
 /* *********** globals ************* */
 
-static TransportAPI tcp6API;
+static GNUNET_TransportAPI tcp6API;
 
 static struct GNUNET_IPv6NetworkSet *filteredNetworks_;
 
@@ -508,8 +508,8 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
  */
-TransportAPI *
-inittransport_tcp6 (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_tcp6 (GNUNET_CoreAPIForTransport * core)
 {
   ectx = core->ectx;
   cfg = core->cfg;

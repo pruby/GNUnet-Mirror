@@ -34,7 +34,7 @@
 
 #define DEBUG_TRANSPORT GNUNET_NO
 
-static CoreAPIForTransport ctapi;
+static GNUNET_CoreAPIForTransport ctapi;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -45,7 +45,7 @@ static GNUNET_Identity_ServiceAPI *identity;
  * (in size/NULLs) after gnunetd has started
  * to go multi-threaded!
  */
-static TransportAPI **tapis = NULL;
+static GNUNET_TransportAPI **tapis = NULL;
 
 static unsigned int tapis_count = 0;
 
@@ -107,7 +107,7 @@ assertAssociated (GNUNET_TSession * tsession, const char *token)
 static void
 createSignedhello (void *cls)
 {
-  TransportAPI *tapi = cls;
+  GNUNET_TransportAPI *tapi = cls;
   GNUNET_mutex_lock (tapis_lock);
   GNUNET_free_non_null (tapi->hello);
   tapi->hello = tapi->createhello ();
@@ -157,7 +157,7 @@ isTransportAvailable (unsigned short ttype)
  * Add an implementation of a transport protocol.
  */
 static int
-addTransport (TransportAPI * tapi)
+addTransport (GNUNET_TransportAPI * tapi)
 {
   if (tapi->protocolNumber >= tapis_count)
     GNUNET_array_grow (tapis, tapis_count, tapi->protocolNumber + 1);
@@ -469,7 +469,7 @@ transportGetMTU (unsigned short ttype)
 static GNUNET_MessageHello *
 transportCreatehello (unsigned short ttype)
 {
-  TransportAPI *tapi;
+  GNUNET_TransportAPI *tapi;
   GNUNET_MessageHello *hello;
 
   GNUNET_mutex_lock (tapis_lock);
@@ -585,7 +585,7 @@ getAdvertisedhellos (unsigned int maxLen, char *buff)
 static void
 initHello (void *cls)
 {
-  TransportAPI *tapi = cls;
+  GNUNET_TransportAPI *tapi = cls;
   GNUNET_MessageHello *hello;
 
   createSignedhello (tapi);
@@ -599,7 +599,7 @@ initHello (void *cls)
 
 
 static void
-doneHelper (TransportAPI * tapi, void *unused)
+doneHelper (GNUNET_TransportAPI * tapi, void *unused)
 {
   /* In the (rare) case that we shutdown transports
      before the cron-jobs had a chance to run, stop
@@ -632,7 +632,7 @@ unloadTransport (int i)
  * receiving messages.
  */
 static void
-startTransports (P2P_PACKETProcessor mpp)
+startTransports (GNUNET_TransportPacketProcessor mpp)
 {
   int i;
 
@@ -660,7 +660,7 @@ stopTransports ()
 }
 
 static void
-initHelper (TransportAPI * tapi, void *unused)
+initHelper (GNUNET_TransportAPI * tapi, void *unused)
 {
   /* Creation of HELLOs takes longer if a locally
      unresolvable hostname ((Dyn)DNS) was specified
@@ -702,8 +702,8 @@ GNUNET_Transport_ServiceAPI *
 provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_Transport_ServiceAPI ret;
-  TransportAPI *tapi;
-  TransportMainMethod tptr;
+  GNUNET_TransportAPI *tapi;
+  GNUNET_TransportMainMethod tptr;
   char *dso;
   char *next;
   char *pos;

@@ -386,7 +386,7 @@ typedef struct HTTPSession
 /**
  * apis (our advertised API and the core api )
  */
-static CoreAPIForTransport *coreAPI;
+static GNUNET_CoreAPIForTransport *coreAPI;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
@@ -1006,7 +1006,7 @@ accessHandlerCallback (void *cls,
   int i;
   unsigned int have;
   GNUNET_MessageHeader *hdr;
-  P2P_PACKET *mp;
+  GNUNET_TransportPacket *mp;
   unsigned int cpy;
   unsigned int poff;
 
@@ -1185,7 +1185,7 @@ accessHandlerCallback (void *cls,
             }
           if (put->rpos2 < ntohs (hdr->size) - sizeof (GNUNET_MessageHeader))
             break;
-          mp = GNUNET_malloc (sizeof (P2P_PACKET));
+          mp = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
           mp->msg = put->rbuff2;
           mp->sender = httpSession->sender;
           mp->tsession = httpSession->tsession;
@@ -1225,7 +1225,7 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
   size_t poff = 0;
   size_t cpy;
   GNUNET_MessageHeader *hdr;
-  P2P_PACKET *mp;
+  GNUNET_TransportPacket *mp;
 
   ENTER ();
   httpSession->cs.client.last_get_activity = GNUNET_get_time ();
@@ -1272,7 +1272,7 @@ receiveContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
       if (httpSession->cs.client.rpos2 <
           ntohs (hdr->size) - sizeof (GNUNET_MessageHeader))
         break;
-      mp = GNUNET_malloc (sizeof (P2P_PACKET));
+      mp = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
       mp->msg = httpSession->cs.client.rbuff2;
       mp->sender = httpSession->sender;
       mp->tsession = httpSession->tsession;
@@ -2031,7 +2031,19 @@ curl_runner (void *unused)
         {
           timeout = ms;
           have_tv = MHD_YES;
-        }
+        } 
+      else 
+	{
+	  /* curl_multi_timeout is buggy, don't believe
+	     it --- otherwise we may sit here forever on
+	     connect...; this is a bug which can be
+	     demonstrated using the daemontest_post_loop
+	     testcase from MHD.  Once fixed in CURL, this 
+	     else-clause should be removed. 
+	  */
+	  timeout = 500;
+	  have_tv = MHD_YES;
+	}
       GNUNET_mutex_unlock (curllock);
       STEP ();
       FD_SET (signal_pipe[0], &rs);
@@ -2237,10 +2249,10 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
  */
-TransportAPI *
-inittransport_http (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_http (GNUNET_CoreAPIForTransport * core)
 {
-  static TransportAPI httpAPI;
+  static GNUNET_TransportAPI httpAPI;
 
   ENTER ();
   coreAPI = core;

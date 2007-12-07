@@ -50,7 +50,7 @@ typedef struct
   GNUNET_Int32Time timeStamp;
   /* desired bandwidth, 0 for plaintext messages! */
   unsigned int bandwidth;
-} P2P_PACKET_HEADER;            /* 76 bytes */
+} GNUNET_TransportPacket_HEADER;            /* 76 bytes */
 
 /* ***************** GNUnet core internals ************ */
 
@@ -85,7 +85,7 @@ void printConnectionBuffer (void);
  *         GNUNET_SYSERR if it was malformed
  */
 int checkHeader (const GNUNET_PeerIdentity * sender,
-                 P2P_PACKET_HEADER * msg, unsigned short size);
+                 GNUNET_TransportPacket_HEADER * msg, unsigned short size);
 
 /**
  * Consider switching the transport mechanism used for contacting the

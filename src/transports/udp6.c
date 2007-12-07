@@ -463,8 +463,8 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The exported method. Makes the core api available via a global and
  * returns the udp6 transport API.
  */
-TransportAPI *
-inittransport_udp6 (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_udp6 (GNUNET_CoreAPIForTransport * core)
 {
   unsigned long long mtu;
 

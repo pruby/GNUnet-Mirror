@@ -45,9 +45,9 @@ typedef struct
 
 /* *********** globals ************* */
 
-static CoreAPIForTransport *coreAPI;
+static GNUNET_CoreAPIForTransport *coreAPI;
 
-static TransportAPI udpAPI;
+static GNUNET_TransportAPI udpAPI;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
@@ -84,7 +84,7 @@ select_message_handler (void *mh_cls,
                         void *sock_ctx, const GNUNET_MessageHeader * msg)
 {
   unsigned int len;
-  P2P_PACKET *mp;
+  GNUNET_TransportPacket *mp;
   const UDPMessage *um;
 
   len = ntohs (msg->size);
@@ -102,7 +102,7 @@ select_message_handler (void *mh_cls,
                  "Received %d bytes via UDP\n", len);
 #endif
   um = (const UDPMessage *) msg;
-  mp = GNUNET_malloc (sizeof (P2P_PACKET));
+  mp = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
   mp->msg = GNUNET_malloc (len - sizeof (UDPMessage));
   memcpy (mp->msg, &um[1], len - sizeof (UDPMessage));
   mp->sender = um->sender;

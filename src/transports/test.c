@@ -46,7 +46,7 @@ static char *cfgFilename = "test.conf";
 /**
  * Transport being tested.
  */
-static TransportAPI *transport;
+static GNUNET_TransportAPI *transport;
 
 /**
  * What response do we currently expect to receive?
@@ -101,7 +101,7 @@ assertUnused (GNUNET_TSession * tsession)
  * the "server" should validate that it got the right reply.
  */
 static void
-receive (P2P_PACKET * mp)
+receive (GNUNET_TransportPacket * mp)
 {
   unsigned int retries;
   GNUNET_TSession *tsession;
@@ -164,9 +164,9 @@ receive (P2P_PACKET * mp)
 int
 main (int argc, char *const *argv)
 {
-  CoreAPIForTransport api;
+  GNUNET_CoreAPIForTransport api;
   struct GNUNET_PluginHandle *plugin;
-  TransportMainMethod init;
+  GNUNET_TransportMainMethod init;
   void (*done) ();
   GNUNET_PeerIdentity me;
   char *trans;
@@ -175,7 +175,7 @@ main (int argc, char *const *argv)
   GNUNET_TSession *tsession;
   GNUNET_MessageHello *hello;
 
-  memset (&api, 0, sizeof (CoreAPIForTransport));
+  memset (&api, 0, sizeof (GNUNET_CoreAPIForTransport));
   pid = fork ();
   res = GNUNET_init (argc,
                      argv,

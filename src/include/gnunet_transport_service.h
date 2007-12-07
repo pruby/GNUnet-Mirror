@@ -40,7 +40,7 @@ extern "C"
 /**
  * Type of the per-transport callback method.
  */
-typedef void (*GNUNET_TransportCallback) (TransportAPI * tapi, void *data);
+typedef void (*GNUNET_TransportCallback) (GNUNET_TransportAPI * tapi, void *data);
 
 /**
  * @brief Transport service definition.
@@ -52,7 +52,7 @@ typedef struct
    * Actually start the transport services and begin
    * receiving messages.
    */
-  void (*start) (P2P_PACKETProcessor mpp);
+  void (*start) (GNUNET_TransportPacketProcessor mpp);
 
   /**
    * Stop the transport services, stop receiving messages.
@@ -68,7 +68,7 @@ typedef struct
   /**
    * Add an implementation of a transport protocol.
    */
-  int (*add) (TransportAPI * tapi);
+  int (*add) (GNUNET_TransportAPI * tapi);
 
   /**
    * Iterate over all available transport mechanisms.

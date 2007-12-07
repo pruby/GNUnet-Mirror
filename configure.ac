@@ -502,6 +502,38 @@ AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
 
 
+# libesmtp
+esmtp=0
+AC_MSG_CHECKING([for libesmtp])
+AC_ARG_WITH(esmtp,
+   [  --with-esmtp=PFX    Base of libesmtp installation],
+   [AC_MSG_RESULT([$with_esmtp])
+    case $with_esmtp in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(libesmtp.h,
+          AC_CHECK_LIB([esmtp], [smtp_start_session],
+            esmtp=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_esmtp/lib $LDFLAGS"
+        CPPFLAGS="-I$with_esmtp/include $CPPFLAGS"
+        AC_CHECK_HEADERS(libesmtp.h,
+          AC_CHECK_LIB([esmtp], [smtp_start_session],
+            EXT_LIB_PATH="-L$with_esmtp/lib $EXT_LIB_PATH"
+              esmtp=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-esmtp not specified])
+    AC_CHECK_HEADERS(libesmtp.h,
+      AC_CHECK_LIB([esmtp], [smtp_start_session],
+          esmtp=1))])
+AM_CONDITIONAL(HAVE_ESMTP, test x$esmtp = x1)
+AC_DEFINE_UNQUOTED([HAVE_ESMTP], $esmtp, [We have libesmtp])
+
+
 
 # GNU adns
 adns=0
@@ -776,6 +808,11 @@ fi
 if test "$lmhd" != 1
 then
  AC_MSG_NOTICE([NOTICE: libmicrohttpd not found, http transport will not be installed.])
+fi
+
+if test "$esmtp" != 1
+then
+ AC_MSG_NOTICE([NOTICE: libesmtp not found, smtp transport will not be installed.])
 fi
 
 if test "$ipv6" = "0"

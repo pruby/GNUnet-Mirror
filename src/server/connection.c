@@ -1077,7 +1077,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
 
   if (be->session.mtu == 0)
     {
-      totalMessageSize = sizeof (P2P_PACKET_HEADER);
+      totalMessageSize = sizeof (GNUNET_TransportPacket_HEADER);
       deadline = (GNUNET_CronTime) - 1L;        /* infinity */
 
       i = 0;
@@ -1123,7 +1123,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
           else
             {
               entry->knapsackSolution = GNUNET_NO;
-              if (totalMessageSize == sizeof (P2P_PACKET_HEADER))
+              if (totalMessageSize == sizeof (GNUNET_TransportPacket_HEADER))
                 {
                   /* if the highest-priority message does not yet
                      fit, wait for send window to grow so that
@@ -1134,9 +1134,9 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
             }
           i++;
         }
-      if ((totalMessageSize == sizeof (P2P_PACKET_HEADER)) ||
+      if ((totalMessageSize == sizeof (GNUNET_TransportPacket_HEADER)) ||
           (((*priority) < GNUNET_EXTREME_PRIORITY) &&
-           ((totalMessageSize / sizeof (P2P_PACKET_HEADER)) < 4) &&
+           ((totalMessageSize / sizeof (GNUNET_TransportPacket_HEADER)) < 4) &&
            (deadline > GNUNET_get_time () + 500 * GNUNET_CRON_MILLISECONDS) &&
            (GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 16) != 0)))
         {
@@ -1163,7 +1163,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
             {
               (*priority) = approximateKnapsack (be,
                                                  be->session.mtu -
-                                                 sizeof (P2P_PACKET_HEADER));
+                                                 sizeof (GNUNET_TransportPacket_HEADER));
 #if DEBUG_COLLECT_PRIO
               FPRINTF (prioFile, "%llu 0 %u\n", GNUNET_get_time (),
                        *priority);
@@ -1173,7 +1173,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
             {
               (*priority) = solveKnapsack (be,
                                            be->session.mtu -
-                                           sizeof (P2P_PACKET_HEADER));
+                                           sizeof (GNUNET_TransportPacket_HEADER));
 #if DEBUG_COLLECT_PRIO
               FPRINTF (prioFile, "%llu 1 %u\n", GNUNET_get_time (),
                        *priority);
@@ -1184,7 +1184,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
         {                       /* never approximate < 50% CPU load */
           (*priority) = solveKnapsack (be,
                                        be->session.mtu -
-                                       sizeof (P2P_PACKET_HEADER));
+                                       sizeof (GNUNET_TransportPacket_HEADER));
 #if DEBUG_COLLECT_PRIO
           FPRINTF (prioFile, "%llu 2 %u\n", GNUNET_get_time (), *priority);
 #endif
@@ -1200,7 +1200,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
             }
         }
       if ((j == 0) ||
-          (totalMessageSize > be->session.mtu - sizeof (P2P_PACKET_HEADER)))
+          (totalMessageSize > be->session.mtu - sizeof (GNUNET_TransportPacket_HEADER)))
         {
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_GE_LOG (ectx,
@@ -1209,7 +1209,7 @@ selectMessagesToSend (BufferEntry * be, unsigned int *priority)
                          _
                          ("`%s' selected %d out of %d messages (MTU: %d).\n"),
                          __FUNCTION__, j, be->sendBufferSize,
-                         be->session.mtu - sizeof (P2P_PACKET_HEADER));
+                         be->session.mtu - sizeof (GNUNET_TransportPacket_HEADER));
 
           for (j = 0; j < be->sendBufferSize; j++)
             GNUNET_GE_LOG (ectx,
@@ -1521,7 +1521,7 @@ fragmentIfNecessary (BufferEntry * be)
       for (i = 0; i < ret; i++)
         {
           entry = entries[i];
-          if (entry->len <= be->session.mtu - sizeof (P2P_PACKET_HEADER))
+          if (entry->len <= be->session.mtu - sizeof (GNUNET_TransportPacket_HEADER))
             continue;
           ret--;
           for (j = i; j < ret; j++)
@@ -1532,7 +1532,7 @@ fragmentIfNecessary (BufferEntry * be)
           be->consider_transport_switch = GNUNET_YES;
           fragmentation->fragment (&be->session.sender,
                                    be->session.mtu -
-                                   sizeof (P2P_PACKET_HEADER), entry->pri,
+                                   sizeof (GNUNET_TransportPacket_HEADER), entry->pri,
                                    entry->transmissionTime, entry->len,
                                    entry->callback, entry->closure);
           GNUNET_free (entry);
@@ -1586,7 +1586,7 @@ sendBuffer (BufferEntry * be)
   unsigned int p;
   unsigned int rsi;
   SendCallbackList *pos;
-  P2P_PACKET_HEADER *p2pHdr;
+  GNUNET_TransportPacket_HEADER *p2pHdr;
   unsigned int priority;
   char *plaintextMsg;
   void *encryptedMsg;
@@ -1628,8 +1628,8 @@ sendBuffer (BufferEntry * be)
       return GNUNET_NO;         /* deferr further */
     }
   if (totalMessageSize == 0)
-    totalMessageSize = EXPECTED_MTU + sizeof (P2P_PACKET_HEADER);
-  GNUNET_GE_ASSERT (ectx, totalMessageSize > sizeof (P2P_PACKET_HEADER));
+    totalMessageSize = EXPECTED_MTU + sizeof (GNUNET_TransportPacket_HEADER);
+  GNUNET_GE_ASSERT (ectx, totalMessageSize > sizeof (GNUNET_TransportPacket_HEADER));
   if ((be->session.mtu != 0) && (totalMessageSize > be->session.mtu))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -1697,7 +1697,7 @@ sendBuffer (BufferEntry * be)
      fails, return (but clean up garbage) */
   if (GNUNET_SYSERR == outgoingCheck (priority,
                                       totalMessageSize /
-                                      sizeof (P2P_PACKET_HEADER)))
+                                      sizeof (GNUNET_TransportPacket_HEADER)))
     {
       expireSendBufferEntries (be);
       be->inSendBuffer = GNUNET_NO;
@@ -1726,11 +1726,11 @@ sendBuffer (BufferEntry * be)
 
   /* build message */
   plaintextMsg = GNUNET_malloc (totalMessageSize);
-  p2pHdr = (P2P_PACKET_HEADER *) plaintextMsg;
+  p2pHdr = (GNUNET_TransportPacket_HEADER *) plaintextMsg;
   p2pHdr->timeStamp = htonl (GNUNET_get_time_int32 (NULL));
   p2pHdr->sequenceNumber = htonl (be->lastSequenceNumberSend);
   p2pHdr->bandwidth = htonl (be->idealized_limit);
-  p = sizeof (P2P_PACKET_HEADER);
+  p = sizeof (GNUNET_TransportPacket_HEADER);
   for (i = 0; i < stotal; i++)
     {
       SendEntry *entry = entries[i];
@@ -1813,7 +1813,7 @@ sendBuffer (BufferEntry * be)
                p - sizeof (GNUNET_HashCode),
                (GNUNET_HashCode *) encryptedMsg);
   ret = GNUNET_AES_encrypt (&p2pHdr->sequenceNumber, p - sizeof (GNUNET_HashCode), &be->skey_local, (const GNUNET_AES_InitializationVector *) encryptedMsg,     /* IV */
-                            &((P2P_PACKET_HEADER *) encryptedMsg)->
+                            &((GNUNET_TransportPacket_HEADER *) encryptedMsg)->
                             sequenceNumber);
   if (stats != NULL)
     stats->change (stat_encrypted, p - sizeof (GNUNET_HashCode));
@@ -1838,7 +1838,7 @@ sendBuffer (BufferEntry * be)
 
       if (rsnSize > 0)
         {
-          j = sizeof (P2P_PACKET_HEADER);
+          j = sizeof (GNUNET_TransportPacket_HEADER);
           while (j < p)
             {
               GNUNET_MessageHeader *part =
@@ -1919,12 +1919,12 @@ appendToBuffer (BufferEntry * be, SendEntry * se)
       return;
     }
   if ((be->session.mtu != 0) &&
-      (se->len > be->session.mtu - sizeof (P2P_PACKET_HEADER)))
+      (se->len > be->session.mtu - sizeof (GNUNET_TransportPacket_HEADER)))
     {
       be->consider_transport_switch = GNUNET_YES;
       /* this message is so big that it must be fragmented! */
       fragmentation->fragment (&be->session.sender,
-                               be->session.mtu - sizeof (P2P_PACKET_HEADER),
+                               be->session.mtu - sizeof (GNUNET_TransportPacket_HEADER),
                                se->pri,
                                se->transmissionTime,
                                se->len, se->callback, se->closure);
@@ -2920,7 +2920,7 @@ cronDecreaseLiveness (void *unused)
  */
 int
 checkHeader (const GNUNET_PeerIdentity * sender,
-             P2P_PACKET_HEADER * msg, unsigned short size)
+             GNUNET_TransportPacket_HEADER * msg, unsigned short size)
 {
   BufferEntry *be;
   int res;
@@ -2933,7 +2933,7 @@ checkHeader (const GNUNET_PeerIdentity * sender,
   ENTRY ();
   GNUNET_GE_ASSERT (ectx, msg != NULL);
   GNUNET_GE_ASSERT (ectx, sender != NULL);
-  if (size < sizeof (P2P_PACKET_HEADER))
+  if (size < sizeof (GNUNET_TransportPacket_HEADER))
     {
       IF_GELOG (ectx,
                 GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_DEVELOPER,
@@ -3528,7 +3528,7 @@ initConnection (struct GNUNET_GE_Context *e,
   cron = cm;
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD ==
-                    sizeof (P2P_PACKET_HEADER));
+                    sizeof (GNUNET_TransportPacket_HEADER));
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_hangup_MESSAGE) == 68);
   ENTRY ();
   scl_nextHead = NULL;
@@ -3874,28 +3874,28 @@ sendPlaintext (GNUNET_TSession * tsession, const char *msg, unsigned int size)
 {
   char *buf;
   int ret;
-  P2P_PACKET_HEADER *hdr;
+  GNUNET_TransportPacket_HEADER *hdr;
 
   ENTRY ();
   GNUNET_GE_ASSERT (ectx, tsession != NULL);
   if ((transport->getMTU (tsession->ttype) > 0) &&
       (transport->getMTU (tsession->ttype) <
-       size + sizeof (P2P_PACKET_HEADER)))
+       size + sizeof (GNUNET_TransportPacket_HEADER)))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  buf = GNUNET_malloc (size + sizeof (P2P_PACKET_HEADER));
-  hdr = (P2P_PACKET_HEADER *) buf;
+  buf = GNUNET_malloc (size + sizeof (GNUNET_TransportPacket_HEADER));
+  hdr = (GNUNET_TransportPacket_HEADER *) buf;
   hdr->sequenceNumber = 0;
   hdr->timeStamp = 0;
   hdr->bandwidth = 0;
-  memcpy (&buf[sizeof (P2P_PACKET_HEADER)], msg, size);
+  memcpy (&buf[sizeof (GNUNET_TransportPacket_HEADER)], msg, size);
   GNUNET_hash (&hdr->sequenceNumber,
-               size + sizeof (P2P_PACKET_HEADER) - sizeof (GNUNET_HashCode),
+               size + sizeof (GNUNET_TransportPacket_HEADER) - sizeof (GNUNET_HashCode),
                &hdr->hash);
   ret =
-    transport->send (tsession, buf, size + sizeof (P2P_PACKET_HEADER),
+    transport->send (tsession, buf, size + sizeof (GNUNET_TransportPacket_HEADER),
                      GNUNET_YES);
   GNUNET_free (buf);
   EXIT ();

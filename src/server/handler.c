@@ -76,7 +76,7 @@ static GNUNET_Transport_ServiceAPI *transport;
 static GNUNET_Identity_ServiceAPI *identity;
 
 
-static P2P_PACKET *bufferQueue_[QUEUE_LENGTH];
+static GNUNET_TransportPacket *bufferQueue_[QUEUE_LENGTH];
 
 static int bq_firstFree_;
 
@@ -597,14 +597,14 @@ handleMessage (GNUNET_TSession * tsession,
       GNUNET_GE_BREAK (NULL, 0);
       return;
     }
-  ret = checkHeader (sender, (P2P_PACKET_HEADER *) msg, size);
+  ret = checkHeader (sender, (GNUNET_TransportPacket_HEADER *) msg, size);
   if (ret == GNUNET_SYSERR)
     return;                     /* message malformed or failed to decrypt */
   if ((ret == GNUNET_YES) && (tsession != NULL) && (sender != NULL))
     considerTakeover (sender, tsession);
   injectMessage (sender,
-                 &msg[sizeof (P2P_PACKET_HEADER)],
-                 size - sizeof (P2P_PACKET_HEADER), ret, tsession);
+                 &msg[sizeof (GNUNET_TransportPacket_HEADER)],
+                 size - sizeof (GNUNET_TransportPacket_HEADER), ret, tsession);
 }
 
 /**
@@ -615,7 +615,7 @@ handleMessage (GNUNET_TSession * tsession,
 static void *
 threadMain (void *cls)
 {
-  P2P_PACKET *mp;
+  GNUNET_TransportPacket *mp;
 
   while (mainShutdownSignal == NULL)
     {
@@ -648,7 +648,7 @@ threadMain (void *cls)
  * (receive implementation).
  */
 void
-core_receive (P2P_PACKET * mp)
+core_receive (GNUNET_TransportPacket * mp)
 {
   if ((mp->tsession != NULL) &&
       (0 !=

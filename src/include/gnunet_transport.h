@@ -79,7 +79,7 @@ typedef struct
    */
   unsigned int size;
 
-} P2P_PACKET;
+} GNUNET_TransportPacket;
 
 /**
  * Function that is to be used to process messages
@@ -87,7 +87,7 @@ typedef struct
  *
  * @param mp the message, freed by the callee once processed!
  */
-typedef void (*P2P_PACKETProcessor) (P2P_PACKET * mp);
+typedef void (*GNUNET_TransportPacketProcessor) (GNUNET_TransportPacket * mp);
 
 /**
  * This header file contains a draft for the gnunetd
@@ -134,7 +134,7 @@ typedef struct
    * Data was received (potentially encrypted), make the core process
    * it.
    */
-  P2P_PACKETProcessor receive;
+  GNUNET_TransportPacketProcessor receive;
 
   /**
    * Load a service module of the given name. This function must be
@@ -161,7 +161,7 @@ typedef struct
   int (*assertUnused) (GNUNET_TSession * tsession);
 
 
-} CoreAPIForTransport;
+} GNUNET_CoreAPIForTransport;
 
 
 /**
@@ -170,18 +170,18 @@ typedef struct
  * gnunetd calls "inittransport_XXX" on every transport-api, passing a
  * struct with gnunetd core services to the transport api, and getting
  * a struct with services provided by the transport api back (or null
- * on error). The return value of init is of type TransportAPI.
+ * on error). The return value of init is of type GNUNET_TransportAPI.
  *
  * Example:
  *
- * TransportAPI * inittransport_XXX(CoreTransportAPI * api) {
+ * GNUNET_TransportAPI * inittransport_XXX(CoreGNUNET_TransportAPI * api) {
  *   if (api->version != 0)
  *     return NULL;
  *   // ...
  *   return myApi;
  * }
  *
- * The type of inittransport_XXX is TransportMainMethod.
+ * The type of inittransport_XXX is GNUNET_TransportMainMethod.
  */
 typedef struct
 {
@@ -351,7 +351,7 @@ typedef struct
   int (*testWouldTry) (GNUNET_TSession * tsession, unsigned int size,
                        int important);
 
-} TransportAPI;
+} GNUNET_TransportAPI;
 
 /**
  * This header file contains a draft of the methods that every
@@ -359,20 +359,20 @@ typedef struct
  * that gnunetd calls "inittransport_XXX" on every transport-api, passing a struct
  * with gnunetd core services to the transport api, and getting a
  * struct with services provided by the transport api back (or null
- * on error). The return value of init is of type TransportAPI.
+ * on error). The return value of init is of type GNUNET_TransportAPI.
  *
  * Example:
  *
- * TransportAPI * inittransport_XXX(CoreTransportAPI * api) {
+ * GNUNET_TransportAPI * inittransport_XXX(CoreGNUNET_TransportAPI * api) {
  *   if (api->version != 0)
  *     return NULL;
  *   // ...
  *   return myApi;
  * }
  *
- * The type of inittransport_XXX is TransportMainMethod.
+ * The type of inittransport_XXX is GNUNET_TransportMainMethod.
  */
-typedef TransportAPI *(*TransportMainMethod) (CoreAPIForTransport *);
+typedef GNUNET_TransportAPI *(*GNUNET_TransportMainMethod) (GNUNET_CoreAPIForTransport *);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

@@ -67,7 +67,7 @@ void injectMessage (const GNUNET_PeerIdentity * sender,
  * implementation).  Detects if the message is encrypted, possibly
  * decrypts and calls injectMessage.
  */
-void core_receive (P2P_PACKET * mp);
+void core_receive (GNUNET_TransportPacket * mp);
 
 /**
  * Register a method as a handler for specific message

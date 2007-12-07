@@ -95,7 +95,7 @@ typedef struct TCPSession
 /**
  * apis (our advertised API and the core api )
  */
-static CoreAPIForTransport *coreAPI;
+static GNUNET_CoreAPIForTransport *coreAPI;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
@@ -234,7 +234,7 @@ select_message_handler (void *mh_cls,
   GNUNET_TSession *tsession = sock_ctx;
   TCPSession *tcpSession;
   unsigned int len;
-  P2P_PACKET *mp;
+  GNUNET_TransportPacket *mp;
   const TCPWelcome *welcome;
 
   if (GNUNET_SYSERR == tcpAssociate (tsession))
@@ -280,7 +280,7 @@ select_message_handler (void *mh_cls,
           tcpDisconnect (tsession);
           return GNUNET_SYSERR;
         }
-      mp = GNUNET_malloc (sizeof (P2P_PACKET));
+      mp = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
       mp->msg = GNUNET_malloc (len - sizeof (GNUNET_MessageHeader));
       memcpy (mp->msg, &msg[1], len - sizeof (GNUNET_MessageHeader));
       mp->sender = tcpSession->sender;

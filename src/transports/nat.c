@@ -44,9 +44,9 @@ typedef struct
 /* *********** globals ************* */
 
 /* apis (our advertised API and the core api ) */
-static TransportAPI natAPI;
+static GNUNET_TransportAPI natAPI;
 
-static CoreAPIForTransport *coreAPI;
+static GNUNET_CoreAPIForTransport *coreAPI;
 
 
 /* *************** API implementation *************** */
@@ -202,8 +202,8 @@ testWouldTry (GNUNET_TSession * tsession, unsigned int size, int important)
  * The exported method. Makes the core api available via a global and
  * returns the nat transport API.
  */
-TransportAPI *
-inittransport_nat (CoreAPIForTransport * core)
+GNUNET_TransportAPI *
+inittransport_nat (GNUNET_CoreAPIForTransport * core)
 {
   coreAPI = core;
   natAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;
