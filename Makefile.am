@@ -6,6 +6,7 @@ EXTRA_DIST = \
  config.rpath \
  install-sh \
  mkinstalldirs \
+ HACKING \
  README.fr \
  README.win32 \
  README.debian \
