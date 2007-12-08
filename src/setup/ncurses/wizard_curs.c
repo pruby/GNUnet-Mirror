@@ -315,20 +315,6 @@ network_interface ()
 }
 
 static int
-nat_limited ()
-{
-  /* TODO: try autodetect! */
-  return query_yesno (_("Network configuration: NAT"),
-                      _("Is this machine behind "
-                        "NAT?\n\nIf you are connected to the internet through another computer "
-                        "doing SNAT, a router or a \"hardware firewall\" and other computers "
-                        "on the internet cannot connect to this computer, say \"yes\" here. "
-                        "Answer \"no\" on direct connections through modems, ISDN cards and "
-                        "DNAT (also known as \"port forwarding\")."),
-                      NULL, "NAT", "LIMITED");
-}
-
-static int
 ip_address ()
 {
   /* TODO: try autodetect! */
@@ -558,33 +544,30 @@ wizard_curs_mainsetup_curses (int argc,
           dir = network_interface ();
           break;
         case 2:
-          dir = nat_limited ();
-          break;
-        case 3:
           dir = ip_address ();
           break;
-        case 4:
+        case 3:
           dir = network_load_up ();
           break;
-        case 5:
+        case 4:
           dir = network_load_down ();
           break;
-        case 6:
+        case 5:
           dir = disk_quota ();
           break;
-        case 7:
+        case 6:
           dir = user ();
           break;
-        case 8:
+        case 7:
           dir = group ();
           break;
-        case 9:
+        case 8:
           dir = autostart ();
           break;
-        case 10:
+        case 9:
           dir = save_config ();
           break;
-        case 11:
+        case 10:
           dir = 0;
           ret = GNUNET_OK;
           break;

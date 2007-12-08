@@ -192,10 +192,14 @@ load_step2setup_gtk (GtkButton * button, gpointer prev_window)
   GNUNET_free (val);
 
   chkFW = lookup_widget ("chkFW");
+#if 0
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkFW),
                                 GNUNET_GC_get_configuration_value_yesno
                                 (editCfg, "NAT", "LIMITED",
                                  GNUNET_NO) == GNUNET_YES);
+#else
+  gtk_widget_hide (chkFW);
+#endif
 
   gtk_widget_show (curwnd);
 }
@@ -517,10 +521,12 @@ on_entIP_changedsetup_gtk (GtkEditable * editable, gpointer user_data)
 void
 on_chkFW_toggledsetup_gtk (GtkToggleButton * togglebutton, gpointer user_data)
 {
+#if 0
   GNUNET_GC_set_configuration_value_choice (editCfg, err_ctx, "NAT",
                                             "LIMITED",
                                             gtk_toggle_button_get_active
                                             (togglebutton) ? "YES" : "NO");
+#endif
 }
 
 void

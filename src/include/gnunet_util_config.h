@@ -136,6 +136,7 @@ int GNUNET_GC_get_configuration_value_filename (struct GNUNET_GC_Configuration
 /**
  * Get a configuration value that should be in a set of
  * predefined strings
+ *
  * @param choices NULL-terminated list of legal values
  * @param default default value (use indicated by return value;
  *        will NOT be aliased, maybe NULL), must be reference

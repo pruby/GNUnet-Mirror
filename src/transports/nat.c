@@ -32,15 +32,6 @@
 
 #define DEBUG_NAT GNUNET_NO
 
-/**
- * Host-Address in a NAT network.  Since the idea behind
- * NAT is that it can not be contacted from the outside,
- * the address is empty.
- */
-typedef struct
-{
-} HostAddress;
-
 /* *********** globals ************* */
 
 /* apis (our advertised API and the core api ) */
@@ -48,8 +39,33 @@ static GNUNET_TransportAPI natAPI;
 
 static GNUNET_CoreAPIForTransport *coreAPI;
 
+static const char * nat_limited_choices[] = { "YES", "NO", "AUTO", NULL };
+
 
 /* *************** API implementation *************** */
+
+static int
+lan_ip_detected () {
+  GNUNET_IPv4Address addr;
+  unsigned int anum;
+  
+  if (GNUNET_SYSERR == getPublicIPAddress (coreAPI->cfg,
+					   coreAPI->ectx,
+					   &addr) )
+    return GNUNET_YES; /* kind-of */
+  anum = ntohl(addr.addr);
+  if ( ( (anum >= 0x0a000000) &&
+	 (anum <= 0x0affffff) ) || /* 10.x.x.x */
+       ( (anum >= 0xac100000) &&
+	 (anum <= 0xac10ffff) ) || /* 172.16.0.0-172.31.0.0 */
+       ( (anum >= 0xc0a80000) &&
+	 (anum <= 0xc0a8ffff) ) || /* 192.168.x.x */
+       ( (anum >= 0x7f000000) &&
+	 (anum <= 0x7fffffff) ) /* 127.x.x.x */
+       )
+    return GNUNET_YES;
+  return GNUNET_NO;
+}
 
 /**
  * Verify that a hello-Message is correct (a node is reachable at that
@@ -62,20 +78,28 @@ static GNUNET_CoreAPIForTransport *coreAPI;
 static int
 verifyHello (const GNUNET_MessageHello * hello)
 {
-  if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
+  const char * choice;
+
+  if ((ntohs (hello->senderAddressSize) != 0) ||
       (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
       (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO))
     return GNUNET_SYSERR;       /* obviously invalid */
-  if (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                             "NAT", "LIMITED",
-                                                             GNUNET_NO))
+
+  choice = "AUTO";
+  GNUNET_GC_get_configuration_value_choice (coreAPI->cfg,
+					    "NAT", "LIMITED",
+					    nat_limited_choices,
+					    "AUTO",
+					    &choice);
+  if ( ( (0 == strcmp(choice, "YES")) ||
+	 ( (0 == strcmp(choice, "AUTO")) &&
+	   (lan_ip_detected()) ) ) &&
+       (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
+		     &hello->senderIdentity.hashPubKey,
+		     sizeof (GNUNET_HashCode))) )
     {
       /* if WE are a NAT and this is not our hello,
          it is invalid since NAT-to-NAT is not possible! */
-      if (0 == memcmp (&coreAPI->myIdentity->hashPubKey,
-                       &hello->senderIdentity.hashPubKey,
-                       sizeof (GNUNET_HashCode)))
-        return GNUNET_OK;
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
@@ -91,14 +115,21 @@ verifyHello (const GNUNET_MessageHello * hello)
 static GNUNET_MessageHello *
 createhello ()
 {
+  const char * choice;
   GNUNET_MessageHello *msg;
 
-  if (GNUNET_NO == GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
-                                                            "NAT", "LIMITED",
-                                                            GNUNET_NO))
+  choice = "AUTO";
+  GNUNET_GC_get_configuration_value_choice (coreAPI->cfg,
+					    "NAT", "LIMITED",
+					    nat_limited_choices,
+					    "AUTO",
+					    &choice);
+  if ( ( (0 == strcmp(choice, "YES")) ||
+	 ( (0 == strcmp(choice, "AUTO")) &&
+	   (! lan_ip_detected()) ) ) )
     return NULL;
-  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
-  msg->senderAddressSize = htons (sizeof (HostAddress));
+  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello));
+  msg->senderAddressSize = htons (0);
   msg->protocol = htons (GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT);
   msg->MTU = htonl (0);
   return msg;

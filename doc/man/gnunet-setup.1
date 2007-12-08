@@ -1,4 +1,4 @@
-.TH GNUNET-SETUP "1" "11 Nov 2006" "GNUnet"
+.TH GNUNET-SETUP "1" "8 Dec 2007" "GNUnet"
 .SH NAME
 gnunet\-setup \- configuring GNUnet
 .SH SYNOPSIS
@@ -17,8 +17,15 @@ specify location of the configuration file (default: /etc/gnunetd.conf or ~/.gnu
 \fB\-d\fR, \fB\-\-daemon\fR
 generate configuration for gnunetd (gnunetd.conf).  If run without this option, gnunet\-setup will generate a configuration for GNUnet clients.
 .TP
+\fB\-g \fISECTION:OPTION\fR, \fB\-\-get=\fISECTION:OPTION\fR
+display the value of the given OPTION from the given SECTION in the configuration file.
+.TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING..TP
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.TP
+\fB\-s \fISECTION:OPTION=VALUE\fR, \fB\-\-set=\fISECTION:OPTION=VALUE\fR
+set the value of the given OPTION from the given SECTION to the specified VALUE.  If this change implies other options also changing, perform those changes as well.
+.TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
 .TP

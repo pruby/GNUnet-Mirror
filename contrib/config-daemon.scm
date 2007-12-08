@@ -798,11 +798,11 @@ The size of the DSTORE QUOTA is specified in MB.")
  "NAT"
  "LIMITED"
  (_ "Is this machine unreachable behind a NAT?")
- (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port and that cannot be traversed using UPnP.  Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports or if GNUnet can open ports using UPnP, you should set the option to NO.  Set this only to YES if other peers cannot contact you directly.  You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You can also use gnunet-transport-check with the '-p' option in order to determine which setting results in more connections.  Use YES only if you get no connections otherwise.")
+ (_ "Set to YES if this machine is behind a NAT that limits connections from the outside to the GNUnet port and that cannot be traversed using UPnP.  Note that if you have configured your NAT box to allow direct connections from other machines to the GNUnet ports or if GNUnet can open ports using UPnP, you should set the option to NO.  Set this only to YES if other peers cannot contact you directly.  You can use 'make check' in src/transports/upnp/ to find out if your NAT supports UPnP.  You can also use gnunet-transport-check with the '-p' option in order to determine which setting results in more connections.  Use YES only if you get no connections otherwise.  Set to AUTO to use YES if the local IP is belongs to a private IP network and NO otherwise.")
  '()
  #t
- #f
- #f
+ "AUTO"
+ (list "SC" "YES" "AUTO" "NO")
  'nat-loaded) )
 
 (define (tcp-port builder)
@@ -815,7 +815,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  2086
  (cons 0 65535)
- 'nat-unlimited))
+ 'advanced))
 
 (define (tcp-upnp builder)
  (builder
@@ -881,7 +881,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  1080
  (cons 0 65535)
- 'nat-unlimited))
+ 'advanced))
 
 (define (http-upnp builder)
  (builder
@@ -905,7 +905,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  80
  (cons 0 65535)
- 'nat-unlimited))
+ 'advanced))
 
 (define (http builder)
  (builder
@@ -1097,7 +1097,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  2088
  (cons 0 65535)
- 'nat-unlimited))
+ 'advanced))
 
 (define (tcp6-blacklist builder)
  (builder
@@ -1216,7 +1216,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  "eth0"
  '()
- 'nat-unlimited) )
+ 'advanced) )
 
 (define (network-ip builder)
  (builder
@@ -1228,7 +1228,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  #t
  ""
  '()
- 'nat-unlimited) )
+ 'advanced) )
 
 (define (network-ip6 builder)
  (builder
@@ -1459,8 +1459,6 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (mysql (string= (get-option ctx "MODULES" "sqstore") "sqstore_mysql") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
-     (nat-limited (get-option ctx "NAT" "LIMITED"))
-     (nat-unlimited (not (get-option ctx "NAT" "LIMITED")))
      (tcp-loaded (list? (member "tcp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (udp-loaded (list? (member "udp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (tcp6-loaded (list? (member "tcp6" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
@@ -1469,15 +1467,6 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (smtp-loaded (list? (member "smtp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
    )
   (begin 
-    (if (and nat-loaded nat-limited tcp-loaded)
-        (set-option ctx "TCP" "PORT" "0")
-        'nothing)
-    (if (and nat-loaded nat-limited tcp6-loaded)
-        (set-option ctx "TCP6" "PORT" "0")
-        'nothing)
-    (if (and nat-loaded nat-limited http-loaded)
-        (set-option ctx "HTTP" "PORT" "0")
-        'nothing) 
     (main
      (lambda (a b c d e f g h i) 
         (begin 
