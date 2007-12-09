@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/pixmaps" >
+        <file>about.png</file>
+        <file>close.png</file>
+        <file>exit.png</file>
+        <file>gnunet-logo-small.png</file>
+        <file>go-next.png</file>
+        <file>go-previous.png</file>
+        <file>media-floppy.png</file>
+        <file>sect-apps.png</file>
+        <file>sect-general.png</file>
+        <file>sect-load.png</file>
+        <file>sect-log.png</file>
+        <file>sect-meta.png</file>
+        <file>sect-modules.png</file>
+        <file>sect-paths.png</file>
+        <file>sect-transports.png</file>
+    </qresource>
+</RCC>

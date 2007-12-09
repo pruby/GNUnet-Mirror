@@ -159,6 +159,19 @@ dyn_config (const char *module,
   ConfigurationPluginMain mptr;
   struct GNUNET_PluginHandle *library;
 
+#ifdef MINGW
+  if (strcmp(module, "setup_qt") == 0)
+    {
+      char sz[1000];
+      int i;
+      
+      plibc_conv_to_win_path("/bin/gnunetsetup_qt ", sz);
+      for (i = 1; i < argc; i++)
+        strncat(sz, argv[i], 1000);
+      return system(sz) != -1 ? GNUNET_YES : GNUNET_NO;
+    }
+#endif
+
   library = GNUNET_plugin_load (ectx, "libgnunet", module);
   if (!library)
     return GNUNET_SYSERR;
@@ -193,6 +206,7 @@ static const char *modules[] = {
   "config", "setup_text", "main_",
   "wizard-curses", "setup_curses", "wizard_curs_main",
   "wizard-gtk", "setup_gtk", "gtk_wizard_main",
+  "wizard-qt", "setup_qt", "qt_wizard_main",
   "generate-defaults", "setup_text", "dump_",
   NULL,
 };

@@ -1,0 +1,29 @@
+BUILD_TARGET=@build_target@
+contains(BUILD_TARGET, mingw) {
+	# Since this library cannot be loaded on Win32 (invalid memory access when 
+	# <QApplication> is included), we build an executable
+
+	TEMPLATE = app
+	TARGET = gnunetsetup_qt
+	CONFIG += @QT_CONFIG@
+	target.path = @prefix@/bin
+} else {
+	TEMPLATE = lib
+	TARGET = @LIBPREFIX@gnunetsetup_qt
+	dlltarget = $(TARGET)
+	CONFIG += @QT_CONFIG@ dll
+	DLLDESTDIR = .
+	QMAKE_LFLAGS += -shared
+	target.path = @prefix@/@DLLDIR@
+}
+QMAKE_CXXFLAGS = @CPPFLAGS@
+INCLUDEPATH = ../../include ../lib . @CPPFLAGS@ @top_builddir@
+LIBS = -L@top_builddir@/src/util -lgnunetutil -L@top_builddir@/src/setup/lib -lgnunetsetup -lplibc
+QMAKE_LIBDIR += @EXT_LIB_PATH@
+
+INSTALLS += target
+
+SOURCES = qtconfig.cc \
+					setupWizard.cc
+HEADERS = setupWizard.h
+FORMS = gnunet-setup.ui enhanced.ui
