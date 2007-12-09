@@ -91,7 +91,7 @@ static MYSQL_STMT *select_old_value;
                           "expire = ? AND puttime = ? AND size = ? AND value = ?"
 static MYSQL_STMT *delete_value;
 
-#define INSERT_VALUE_STMT "INSERT INTO gn073dstore (hash, type, expire, puttime, size, value) "\
+#define INSERT_VALUE_STMT "INSERT INTO gn073dstore (puttime, expire, hash, type, size, value) "\
                           "VALUES (?, ?, ?, ?, ?, ?)"
 static MYSQL_STMT *insert_value;
 
