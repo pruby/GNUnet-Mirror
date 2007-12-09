@@ -668,7 +668,7 @@ api_send (GNUNET_TSession * tsession,
     GNUNET_network_monitor_notify_transmission (coreAPI->load_monitor,
                                                 GNUNET_ND_UPLOAD,
                                                 gm_cls.esize);
-  smtp_message_reset_status(message); /* this is needed to plug a 28-byte/message memory leak in libesmtp */
+  smtp_message_reset_status (message);  /* this is needed to plug a 28-byte/message memory leak in libesmtp */
   smtp_destroy_session (session);
   GNUNET_mutex_unlock (lock);
   GNUNET_free (gm_cls.ebody);

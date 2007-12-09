@@ -39,30 +39,26 @@ static GNUNET_TransportAPI natAPI;
 
 static GNUNET_CoreAPIForTransport *coreAPI;
 
-static const char * nat_limited_choices[] = { "YES", "NO", "AUTO", NULL };
+static const char *nat_limited_choices[] = { "YES", "NO", "AUTO", NULL };
 
 
 /* *************** API implementation *************** */
 
 static int
-lan_ip_detected () {
+lan_ip_detected ()
+{
   GNUNET_IPv4Address addr;
   unsigned int anum;
-  
+
   if (GNUNET_SYSERR == getPublicIPAddress (coreAPI->cfg,
-					   coreAPI->ectx,
-					   &addr) )
-    return GNUNET_YES; /* kind-of */
-  anum = ntohl(addr.addr);
-  if ( ( (anum >= 0x0a000000) &&
-	 (anum <= 0x0affffff) ) || /* 10.x.x.x */
-       ( (anum >= 0xac100000) &&
-	 (anum <= 0xac10ffff) ) || /* 172.16.0.0-172.31.0.0 */
-       ( (anum >= 0xc0a80000) &&
-	 (anum <= 0xc0a8ffff) ) || /* 192.168.x.x */
-       ( (anum >= 0x7f000000) &&
-	 (anum <= 0x7fffffff) ) /* 127.x.x.x */
-       )
+                                           coreAPI->ectx, &addr))
+    return GNUNET_YES;          /* kind-of */
+  anum = ntohl (addr.addr);
+  if (((anum >= 0x0a000000) && (anum <= 0x0affffff)) || /* 10.x.x.x */
+      ((anum >= 0xac100000) && (anum <= 0xac10ffff)) || /* 172.16.0.0-172.31.0.0 */
+      ((anum >= 0xc0a80000) && (anum <= 0xc0a8ffff)) || /* 192.168.x.x */
+      ((anum >= 0x7f000000) && (anum <= 0x7fffffff))    /* 127.x.x.x */
+    )
     return GNUNET_YES;
   return GNUNET_NO;
 }
@@ -78,7 +74,7 @@ lan_ip_detected () {
 static int
 verifyHello (const GNUNET_MessageHello * hello)
 {
-  const char * choice;
+  const char *choice;
 
   if ((ntohs (hello->senderAddressSize) != 0) ||
       (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
@@ -87,16 +83,15 @@ verifyHello (const GNUNET_MessageHello * hello)
 
   choice = "AUTO";
   GNUNET_GC_get_configuration_value_choice (coreAPI->cfg,
-					    "NAT", "LIMITED",
-					    nat_limited_choices,
-					    "AUTO",
-					    &choice);
-  if ( ( (0 == strcmp(choice, "YES")) ||
-	 ( (0 == strcmp(choice, "AUTO")) &&
-	   (lan_ip_detected()) ) ) &&
-       (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
-		     &hello->senderIdentity.hashPubKey,
-		     sizeof (GNUNET_HashCode))) )
+                                            "NAT", "LIMITED",
+                                            nat_limited_choices,
+                                            "AUTO", &choice);
+  if (((0 == strcmp (choice, "YES")) ||
+       ((0 == strcmp (choice, "AUTO")) &&
+        (lan_ip_detected ()))) &&
+      (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
+                    &hello->senderIdentity.hashPubKey,
+                    sizeof (GNUNET_HashCode))))
     {
       /* if WE are a NAT and this is not our hello,
          it is invalid since NAT-to-NAT is not possible! */
@@ -115,18 +110,16 @@ verifyHello (const GNUNET_MessageHello * hello)
 static GNUNET_MessageHello *
 createhello ()
 {
-  const char * choice;
+  const char *choice;
   GNUNET_MessageHello *msg;
 
   choice = "AUTO";
   GNUNET_GC_get_configuration_value_choice (coreAPI->cfg,
-					    "NAT", "LIMITED",
-					    nat_limited_choices,
-					    "AUTO",
-					    &choice);
-  if ( ( (0 == strcmp(choice, "YES")) ||
-	 ( (0 == strcmp(choice, "AUTO")) &&
-	   (! lan_ip_detected()) ) ) )
+                                            "NAT", "LIMITED",
+                                            nat_limited_choices,
+                                            "AUTO", &choice);
+  if (((0 == strcmp (choice, "YES")) ||
+       ((0 == strcmp (choice, "AUTO")) && (!lan_ip_detected ()))))
     return NULL;
   msg = GNUNET_malloc (sizeof (GNUNET_MessageHello));
   msg->senderAddressSize = htons (0);

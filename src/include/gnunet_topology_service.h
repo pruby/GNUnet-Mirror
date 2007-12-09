@@ -37,9 +37,8 @@ extern "C"
 #endif
 #endif
 
-typedef int (*GNUNET_ConnectionIterator)(GNUNET_NodeIteratorCallback method,
-					 void * ni_arg,
-					 void * cls);
+typedef int (*GNUNET_ConnectionIterator) (GNUNET_NodeIteratorCallback method,
+                                          void *ni_arg, void *cls);
 
 /**
  * @brief topology service API
@@ -91,9 +90,8 @@ typedef struct
    *         would like to see the connection dropped.
    */
   int (*isConnectionGuarded) (const GNUNET_PeerIdentity * peer,
-			      GNUNET_ConnectionIterator iterator,
-			      void * cls);
-  
+                              GNUNET_ConnectionIterator iterator, void *cls);
+
   /**
    * How many connections are currently guarded by the
    * topology?

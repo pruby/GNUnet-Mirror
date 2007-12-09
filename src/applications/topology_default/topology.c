@@ -408,40 +408,42 @@ estimateSaturation ()
   return saturation;
 }
 
-static int 
-is_friend (const GNUNET_PeerIdentity  * peer) {
+static int
+is_friend (const GNUNET_PeerIdentity * peer)
+{
   unsigned int i;
 
-  for (i=0;i<friendCount;i++)
-    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity))) 
+  for (i = 0; i < friendCount; i++)
+    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity)))
       return 1;
   return 0;
 }
 
 static void
-friend_counter (const GNUNET_PeerIdentity * peer,
-		void * cls) {
-  unsigned int * cnt = cls;
+friend_counter (const GNUNET_PeerIdentity * peer, void *cls)
+{
+  unsigned int *cnt = cls;
 
-  if (is_friend(peer))
+  if (is_friend (peer))
     (*cnt)++;
 }
 
 static unsigned int
-count_connected_friends(GNUNET_ConnectionIterator connectionIterator,
-			void * cls) {
+count_connected_friends (GNUNET_ConnectionIterator connectionIterator,
+                         void *cls)
+{
   unsigned int i;
 
   i = 0;
-  connectionIterator(&friend_counter, &i, cls);
+  connectionIterator (&friend_counter, &i, cls);
   return i;
 }
 
 static int
-core_wrapper(GNUNET_NodeIteratorCallback callback,
-	     void * cb_arg,
-	     void * unused) {
-  return coreAPI->forAllConnectedNodes(callback, cb_arg);
+core_wrapper (GNUNET_NodeIteratorCallback callback,
+              void *cb_arg, void *unused)
+{
+  return coreAPI->forAllConnectedNodes (callback, cb_arg);
 }
 
 static int
@@ -450,11 +452,11 @@ allowConnection (const GNUNET_PeerIdentity * peer)
   if ((coreAPI->myIdentity != NULL) &&
       (0 == memcmp (coreAPI->myIdentity, peer, sizeof (GNUNET_PeerIdentity))))
     return GNUNET_SYSERR;       /* disallow connections to self */
-  if (is_friend(peer))
+  if (is_friend (peer))
     return GNUNET_OK;
   if (friends_only)
-    return GNUNET_SYSERR; 
-  if (count_connected_friends(&core_wrapper, NULL) >= minimum_friend_count)
+    return GNUNET_SYSERR;
+  if (count_connected_friends (&core_wrapper, NULL) >= minimum_friend_count)
     return GNUNET_OK;
   return GNUNET_SYSERR;
 }
@@ -465,17 +467,19 @@ allowConnection (const GNUNET_PeerIdentity * peer)
  */
 static int
 isConnectionGuarded (const GNUNET_PeerIdentity * peer,
-		     GNUNET_ConnectionIterator connectionIterator,
-		     void * cls) {
-  if (! is_friend(peer))
+                     GNUNET_ConnectionIterator connectionIterator, void *cls)
+{
+  if (!is_friend (peer))
     return GNUNET_NO;
-  if (count_connected_friends(connectionIterator, cls) <= minimum_friend_count)
+  if (count_connected_friends (connectionIterator, cls) <=
+      minimum_friend_count)
     return GNUNET_YES;
   return GNUNET_NO;
 }
 
 static unsigned int
-countGuardedConnections() {
+countGuardedConnections ()
+{
   return minimum_friend_count;
 }
 
@@ -499,19 +503,16 @@ rereadConfiguration (void *ctx,
   if (0 != strcmp (section, "F2F"))
     return 0;
   friends_only = GNUNET_GC_get_configuration_value_yesno (cfg,
-							  "F2F",
-							  "FRIENDS-ONLY",
-							  GNUNET_NO);
+                                                          "F2F",
+                                                          "FRIENDS-ONLY",
+                                                          GNUNET_NO);
   if (friends_only == GNUNET_SYSERR)
-    return GNUNET_SYSERR; /* invalid */
+    return GNUNET_SYSERR;       /* invalid */
   opt = 0;
   GNUNET_GC_get_configuration_value_number (cfg,
-					    "F2F",
-					    "MINIMUM",
-					    0,
-					    1024 * 1024,
-					    0,
-					    &opt);
+                                            "F2F",
+                                            "MINIMUM",
+                                            0, 1024 * 1024, 0, &opt);
   minimum_friend_count = (unsigned int) opt;
   GNUNET_array_grow (friends, friendCount, 0);
   fn = NULL;
@@ -573,21 +574,20 @@ rereadConfiguration (void *ctx,
       while ((pos < size) && isspace (data[pos]))
         pos++;
     }
-  if ( (minimum_friend_count > friendCount)  &&
-       (friends_only == GNUNET_NO) )
+  if ((minimum_friend_count > friendCount) && (friends_only == GNUNET_NO))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _
-		     ("Fewer friends specified than required by minimum friend count. Will only connect to friends.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("Fewer friends specified than required by minimum friend count. Will only connect to friends.\n"));
     }
-  if ( (minimum_friend_count > coreAPI->getSlotCount())  &&
-       (friends_only == GNUNET_NO) )
+  if ((minimum_friend_count > coreAPI->getSlotCount ()) &&
+      (friends_only == GNUNET_NO))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _
-		     ("More friendly connections required than target total number of connections.\n"));
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _
+                     ("More friendly connections required than target total number of connections.\n"));
     }
 
   return 0;
@@ -624,8 +624,8 @@ provide_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
       transport = NULL;
       return NULL;
     }
- if (0 != GNUNET_GC_attach_change_listener (coreAPI->cfg,
-					    &rereadConfiguration, NULL))
+  if (0 != GNUNET_GC_attach_change_listener (coreAPI->cfg,
+                                             &rereadConfiguration, NULL))
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
       capi->releaseService (identity);
@@ -636,7 +636,7 @@ provide_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
       pingpong = NULL;
       return NULL;
     }
- GNUNET_cron_add_job (capi->cron,
+  GNUNET_cron_add_job (capi->cron,
                        &cronCheckLiveness,
                        LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
   api.estimateNetworkSize = &estimateNetworkSize;

@@ -2257,22 +2257,21 @@ minConnect ()
 }
 
 static int
-remaining_connection_iterator(GNUNET_NodeIteratorCallback callback,
-			      void * cb_arg,
-			      void * cls) {
+remaining_connection_iterator (GNUNET_NodeIteratorCallback callback,
+                               void *cb_arg, void *cls)
+{
   UTL_Closure *utl = cls;
   unsigned int u;
   unsigned int r;
-  
+
   r = 0;
-  for (u = 0; u < utl->pos; u++) 
-    if (utl->e[u]->idealized_limit >= MIN_BPM_PER_PEER) 
+  for (u = 0; u < utl->pos; u++)
+    if (utl->e[u]->idealized_limit >= MIN_BPM_PER_PEER)
       {
-	r++;
-	if (callback != NULL)
-	  callback(&utl->e[u]->session.sender,
-		   cb_arg);
-      } 
+        r++;
+        if (callback != NULL)
+          callback (&utl->e[u]->session.sender, cb_arg);
+      }
   return r;
 }
 
@@ -2381,7 +2380,7 @@ scheduleInboundTraffic ()
 
   /* compute how much bandwidth we can bargain with */
   minCon = minConnect ();
-  guardCon = topology->countGuardedConnections();
+  guardCon = topology->countGuardedConnections ();
   if (guardCon > minCon)
     minCon = guardCon;
   if (minCon > activePeerCount)
@@ -2516,21 +2515,23 @@ scheduleInboundTraffic ()
               if ((share > adjustedRR[u] * 2) && (firstRound == GNUNET_YES))
                 share = adjustedRR[u] * 2;
               /* always allow allocating MIN_BPM_PER_PEER */
-              if ( (share < MIN_BPM_PER_PEER) && 
-		   ( (minCon > 0) &&
-		     ( (guardCon < minCon) ||
-		       (topology->isConnectionGuarded(&entries[u]->session.sender,
-						      &remaining_connection_iterator,
-						      &utl)) ) ) ) 
-		{
+              if ((share < MIN_BPM_PER_PEER) &&
+                  ((minCon > 0) &&
+                   ((guardCon < minCon) ||
+                    (topology->
+                     isConnectionGuarded (&entries[u]->session.sender,
+                                          &remaining_connection_iterator,
+                                          &utl)))))
+                {
                   /* use one of the minCon's to keep the connection! */
                   share += MIN_BPM_PER_PEER;
                   decrementSB -= MIN_BPM_PER_PEER;      /* do not count */
                   minCon--;
-		  if (topology->isConnectionGuarded(&entries[u]->session.sender,
-						    &remaining_connection_iterator,
-						    &utl) )
-		    guardCon--;
+                  if (topology->
+                      isConnectionGuarded (&entries[u]->session.sender,
+                                           &remaining_connection_iterator,
+                                           &utl))
+                    guardCon--;
                 }
               if (share > entries[u]->idealized_limit)
                 {
