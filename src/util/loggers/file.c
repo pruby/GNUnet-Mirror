@@ -329,7 +329,7 @@ GNUNET_GE_create_context_logfile (struct GNUNET_GE_Context *ectx,
     {
       name = GNUNET_strdup (filename);
     }
-  GNUNET_disk_directory_create_for_file(ectx,name);
+  GNUNET_disk_directory_create_for_file (ectx, name);
   fd = FOPEN (name, "a+");
   if (fd == NULL)
     {
