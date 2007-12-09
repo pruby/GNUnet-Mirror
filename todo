@@ -4,7 +4,6 @@ Annotations:
   RC == Release Critical
 
 0.7.3 [12'07] (aka "features"):
-- mysql implementation of dstore
 - Testcases:
   * more XFS/DHT
   * tracekit
