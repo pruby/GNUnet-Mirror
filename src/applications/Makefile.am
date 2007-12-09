@@ -16,7 +16,6 @@ endif
 SUBDIRS	= \
  identity \
  testing \
- advertising \
  bootstrap_http \
  datastore \
  rpc \
@@ -37,6 +36,7 @@ SUBDIRS	= \
  tracekit \
  traffic \
  transport \
+ advertising \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat
