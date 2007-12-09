@@ -800,6 +800,13 @@ then
   AC_MSG_NOTICE([NOTICE: MySQL found, but too old. MySQL support will not be compiled.])
 fi
 
+# sqlite
+if test "x$sqlite" = "x0"
+then
+  AC_MSG_NOTICE([NOTICE: sqlite not found.  sqLite support will not be compiled.])
+fi
+
+
 if test "$dialog" != 1
 then
  AC_MSG_NOTICE([NOTICE: curses based gnunet-setup frontends will not be installed.])
@@ -832,12 +839,6 @@ fi
 if test "$adns" != 1
 then
  AC_MSG_NOTICE([WARNING: GNU adns not found, will use synchronous DNS resolution.])
-fi
-
-# sqlite
-if test "x$sqlite" = "x0"
-then
-  AC_MSG_NOTICE([WARNING: sqlite not found, this will cause problems with file-sharing.])
 fi
 
 AC_MSG_NOTICE([********************************************
