@@ -3,17 +3,14 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.7.3 [8'07] (aka "features"):
-- http transport needs more testing (still not 100% sure it is working)
-- fix strange crash-bug(s) in gnunetd and gnunet-setup
-- chat support basics [RC]
+0.7.3 [12'07] (aka "features"):
+- mysql implementation of dstore
 - Testcases:
   * more XFS/DHT
   * tracekit
   * RPC
-  * chat
 
-0.8.0 [12'07] (aka "advanced features"):
+0.8.0 [2'08] (aka "advanced features"):
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
@@ -21,10 +18,7 @@ Annotations:
   a keyword of the document has been requested (so we would 
   add a special block to the datastore and then trigger
   gnunet-insert only if the file is actually needed!)
-- guard friendly connection count (#1018) [RC]
 - power insert [#854]
-- old/new features:
-  * SMTP transport (libesmtp)
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
@@ -35,7 +29,6 @@ Small extensions (that could be done any time):
   as keyword (to allow getting meta-data from URI only) [RC]
 - support NAT-PMP (in addition to UPnP)
 - SMTP logger 
-- mysql implementation of dstore
 
 
 

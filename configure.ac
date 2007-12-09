@@ -750,7 +750,6 @@ src/applications/tbench/Makefile
 src/applications/template/Makefile
 src/applications/testing/Makefile
 src/applications/topology_default/Makefile
-src/applications/topology_f2f/Makefile
 src/applications/tracekit/Makefile
 src/applications/traffic/Makefile
 src/applications/transport/Makefile

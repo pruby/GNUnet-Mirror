@@ -184,12 +184,40 @@ work ()
 {
   int i;
   struct GNUNET_CronManager *cron;
+  char * topo;
 
   uapi.updateModule = &updateModule;
   uapi.requestService = &requestService;
   uapi.releaseService = &releaseService;
   uapi.ectx = ectx;
   uapi.cfg = cfg;
+
+  GNUNET_GC_get_configuration_value_string(cfg,
+					   "MODULES",
+					   "topology",
+					   "topology_default",
+					   &topo);
+  /* Code specific for update from 0.7.2c to 0.7.3 */
+  if (0 == strcmp(topo, "topology_f2f")) 
+    {
+      GNUNET_GC_set_configuration_value_string(cfg,
+					       ectx,
+					       "MODULES",
+					       "topology",
+					       "topology_default");
+      GNUNET_GC_set_configuration_value_string(cfg,
+					       ectx,
+					       "F2F",
+					       "FRIENDS-ONLY",
+					       "YES");
+      if (GNUNET_OK == GNUNET_GC_write_configuration(cfg,
+						     cfgFilename))
+	fprintf(stdout,
+		"Updated F2F configuration options successfully.\n");
+      else
+	fprintf(stdout,
+		"Failed to write configuration with updated F2F configuration.\n");
+    }
 
   cron = cron_create (ectx);
   if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
@@ -200,6 +228,8 @@ work ()
 
       return;
     }
+
+  
 
   /* enforce filesystem limits */
   capFSQuotaSize (ectx, cfg);

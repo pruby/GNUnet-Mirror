@@ -32,6 +32,7 @@
 
 #include "platform.h"
 #include "gnunet_core.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
 #include "gnunet_state_service.h"
@@ -82,6 +83,29 @@ static GNUNET_Pingpong_ServiceAPI *pingpong;
  * too many: > 1). Maybe 0!
  */
 static double saturation = 0.0;
+
+/**
+ * Array of our friends.
+ */
+static GNUNET_PeerIdentity *friends;
+
+/**
+ * Number of friends that we have.
+ */
+static unsigned int friendCount;
+
+/**
+ * Minimum number of friends to have in the
+ * connection set.
+ */
+static unsigned int minimum_friend_count;
+
+/**
+ * Flag to disallow non-friend connections (pure F2F mode).
+ */
+static int friends_only;
+
+
 
 /**
  * Record for state maintanance between scanHelperCount,
@@ -384,14 +408,191 @@ estimateSaturation ()
   return saturation;
 }
 
+static int 
+is_friend (const GNUNET_PeerIdentity  * peer) {
+  unsigned int i;
+
+  for (i=0;i<friendCount;i++)
+    if (0 == memcmp (&friends[i], peer, sizeof (GNUNET_PeerIdentity))) 
+      return 1;
+  return 0;
+}
+
+static void
+friend_counter (const GNUNET_PeerIdentity * peer,
+		void * cls) {
+  unsigned int * cnt = cls;
+
+  if (is_friend(peer))
+    (*cnt)++;
+}
+
+static unsigned int
+count_connected_friends(GNUNET_ConnectionIterator connectionIterator,
+			void * cls) {
+  unsigned int i;
+
+  i = 0;
+  connectionIterator(&friend_counter, &i, cls);
+  return i;
+}
+
+static int
+core_wrapper(GNUNET_NodeIteratorCallback callback,
+	     void * cb_arg,
+	     void * unused) {
+  return coreAPI->forAllConnectedNodes(callback, cb_arg);
+}
+
 static int
 allowConnection (const GNUNET_PeerIdentity * peer)
 {
   if ((coreAPI->myIdentity != NULL) &&
       (0 == memcmp (coreAPI->myIdentity, peer, sizeof (GNUNET_PeerIdentity))))
     return GNUNET_SYSERR;       /* disallow connections to self */
-  return GNUNET_OK;             /* allow everything else */
+  if (is_friend(peer))
+    return GNUNET_OK;
+  if (friends_only)
+    return GNUNET_SYSERR; 
+  if (count_connected_friends(&core_wrapper, NULL) >= minimum_friend_count)
+    return GNUNET_OK;
+  return GNUNET_SYSERR;
 }
+
+/**
+ * Would it be ok to drop the connection to this
+ * peer?
+ */
+static int
+isConnectionGuarded (const GNUNET_PeerIdentity * peer,
+		     GNUNET_ConnectionIterator connectionIterator,
+		     void * cls) {
+  if (! is_friend(peer))
+    return GNUNET_NO;
+  if (count_connected_friends(connectionIterator, cls) <= minimum_friend_count)
+    return GNUNET_YES;
+  return GNUNET_NO;
+}
+
+static unsigned int
+countGuardedConnections() {
+  return minimum_friend_count;
+}
+
+/**
+ * @return 0 on success.
+ */
+static int
+rereadConfiguration (void *ctx,
+                     struct GNUNET_GC_Configuration *cfg,
+                     struct GNUNET_GE_Context *ectx,
+                     const char *section, const char *option)
+{
+  char *fn;
+  char *data;
+  unsigned long long size;
+  size_t pos;
+  GNUNET_EncName enc;
+  GNUNET_HashCode hc;
+  unsigned long long opt;
+
+  if (0 != strcmp (section, "F2F"))
+    return 0;
+  friends_only = GNUNET_GC_get_configuration_value_yesno (cfg,
+							  "F2F",
+							  "FRIENDS-ONLY",
+							  GNUNET_NO);
+  if (friends_only == GNUNET_SYSERR)
+    return GNUNET_SYSERR; /* invalid */
+  opt = 0;
+  GNUNET_GC_get_configuration_value_number (cfg,
+					    "F2F",
+					    "MINIMUM",
+					    0,
+					    1024 * 1024,
+					    0,
+					    &opt);
+  minimum_friend_count = (unsigned int) opt;
+  GNUNET_array_grow (friends, friendCount, 0);
+  fn = NULL;
+  GNUNET_GC_get_configuration_value_filename (cfg,
+                                              "F2F",
+                                              "FRIENDS",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/friends", &fn);
+  if ((0 == GNUNET_disk_file_test (ectx, fn))
+      || (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
+                     GNUNET_GE_IMMEDIATE,
+                     "Could not read friends list `%s'\n", fn);
+      GNUNET_free (fn);
+      return GNUNET_SYSERR;
+    }
+  data = GNUNET_malloc (size);
+  if (size != GNUNET_disk_file_read (ectx, fn, size, data))
+    {
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Failed to read friends list from `%s'\n"), fn);
+      GNUNET_free (fn);
+      GNUNET_free (data);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_free (fn);
+  pos = 0;
+  while ((pos < size) && isspace (data[pos]))
+    pos++;
+  while (pos <= size - sizeof (GNUNET_EncName))
+    {
+      memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
+      if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Syntax error in topology specification, skipping bytes.\n"));
+          continue;
+        }
+      enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';
+      if (GNUNET_OK == GNUNET_enc_to_hash ((char *) &enc, &hc))
+        {
+          GNUNET_array_grow (friends, friendCount, friendCount + 1);
+          friends[friendCount - 1].hashPubKey = hc;
+        }
+      else
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _
+                         ("Syntax error in topology specification, skipping bytes `%s'.\n"),
+                         &enc);
+        }
+      pos = pos + sizeof (GNUNET_EncName);
+      while ((pos < size) && isspace (data[pos]))
+        pos++;
+    }
+  if ( (minimum_friend_count > friendCount)  &&
+       (friends_only == GNUNET_NO) )
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _
+		     ("Fewer friends specified than required by minimum friend count. Will only connect to friends.\n"));
+    }
+  if ( (minimum_friend_count > coreAPI->getSlotCount())  &&
+       (friends_only == GNUNET_NO) )
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _
+		     ("More friendly connections required than target total number of connections.\n"));
+    }
+
+  return 0;
+}
+
 
 GNUNET_Topology_ServiceAPI *
 provide_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
@@ -423,12 +624,26 @@ provide_module_topology_default (GNUNET_CoreAPIForPlugins * capi)
       transport = NULL;
       return NULL;
     }
-  GNUNET_cron_add_job (capi->cron,
+ if (0 != GNUNET_GC_attach_change_listener (coreAPI->cfg,
+					    &rereadConfiguration, NULL))
+    {
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      capi->releaseService (identity);
+      identity = NULL;
+      capi->releaseService (transport);
+      transport = NULL;
+      capi->releaseService (pingpong);
+      pingpong = NULL;
+      return NULL;
+    }
+ GNUNET_cron_add_job (capi->cron,
                        &cronCheckLiveness,
                        LIVE_SCAN_FREQUENCY, LIVE_SCAN_FREQUENCY, NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
+  api.isConnectionGuarded = &isConnectionGuarded;
+  api.countGuardedConnections = &countGuardedConnections;
   return &api;
 }
 
@@ -437,6 +652,7 @@ release_module_topology_default ()
 {
   GNUNET_cron_del_job (coreAPI->cron, &cronCheckLiveness, LIVE_SCAN_FREQUENCY,
                        NULL);
+  GNUNET_GC_detach_change_listener (coreAPI->cfg, &rereadConfiguration, NULL);
   coreAPI->releaseService (identity);
   identity = NULL;
   coreAPI->releaseService (transport);

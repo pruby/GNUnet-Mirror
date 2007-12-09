@@ -1,3 +1,9 @@
+Sat Dec  8 15:15:53 MST 2007
+	Integrated F2F topology into main topology module 
+	(options are used to choose between F2F-only (old F2F), 
+	 minimum number of friend connections (NEW) or entirely
+	 arbitrary connection set (default)).
+
 Thu Dec  6 20:51:17 MST 2007
 	The SMTP transport is working again.
 

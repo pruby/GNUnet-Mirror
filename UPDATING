@@ -12,6 +12,8 @@ you're on your own.
 ==============
 
 Run gnunet-update.
+Run "gnunet-setup -d", some options have changed and some are
+new.  You might want to consider enabling the HTTP transport.
 
 
 0.7.2b to 0.7.2c

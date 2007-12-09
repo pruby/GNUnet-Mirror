@@ -616,19 +616,41 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
   "topology"
   (_ "Which topology should be used?")
   (_ 
-"Which topology should be used?  The only options at the moment are \"topology_default\" and \"topology_f2f\".  In default mode, GNUnet will try to connect to a diverse set of peers, and welcome connections from anyone.  In f2f (friend-to-friend) mode, GNUnet will only allow connections from peers that are explicitly listed in a FRIENDS file.  Note that you can list peers in the FRIENDS file that run in default mode.
-
-Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of establishing (direct) connections to unknown peers." )
+"Which topology should be used?  The only option at the moment is \"topology_default\"" )
   '()
   #t
   "topology_default"
-  (list "SC" "topology_default" "topology_f2f")
-  'advanced) )
+  (list "SC" "topology_default")
+  'rare) )
 
 
 ;; f2f menu
 
-(define (f2f builder)
+(define (f2f-minimum builder)
+ (builder
+ "F2F"
+ "MINIMUM"
+ (_ "Minimum number of connected friends before this peer is allowed to connect to peers that are not listed as friends")
+ (_ "Note that this option does not guarantee that the peer will be able to connect to the specified number of friends.  Also, if the peer had connected to a sufficient number of friends and then established non-friend connections, some of the friends may drop out of the network, temporarily resulting in having fewer than the specified number of friends connected while being connected to non-friends.  However, it is guaranteed that the peer itself will never choose to drop a friend's connection if this would result in dropping below the specified number of friends (unless that number is higher than the overall connection target).")
+ '()
+ #t
+ 0
+ (cons 0 1024)
+ 'f2fr) )
+
+(define (f2f-restrict builder)
+ (builder
+ "F2F"
+ "FRIENDS-ONLY"
+ (_ "If set to YES, the peer is only allowed to connect to other peers that are explicitly specified as friends")
+ (_ "Use YES only if you have (trustworthy) friends that use GNUnet and are afraid of establishing (direct) connections to unknown peers")
+ '()
+ #t
+ #f
+ #f
+ 'advanced) )
+
+(define (f2f-friends builder)
  (builder
   "F2F"
   "FRIENDS"
@@ -640,6 +662,21 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   '()
   'f2f) )
 
+(define (f2f builder)
+ (builder
+  "F2F"
+  ""
+ (_ "Friend-to-Friend Topology Specification")
+ (_ "Settings for restricting connections to friends")
+ (list
+    (f2f-restrict builder) 
+    (f2f-minimum builder) 
+    (f2f-friends builder) 
+ )
+  #t
+  #f
+  #f
+  'advanced) )
 
 ;; mysql menu
 
@@ -1452,7 +1489,9 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (rare (get-option ctx "Meta" "RARE"))
      (nobasiclimit (not (get-option ctx "LOAD" "BASICLIMITING")))
      (experimental (get-option ctx "Meta" "EXPERIMENTAL"))
-     (f2f (string= (get-option ctx "MODULES" "topology") "topology_f2f") )
+     (f2fr (string= (get-option ctx "F2F" "RESTRICT") "NO") )
+     (f2f (or (string= (get-option ctx "F2F" "RESTRICT") "YES") 
+              (not (eq? (get-option ctx "F2F" "MINIMUM") 0) ) ) )
      (tcp-port-nz (eq? (get-option ctx "TCP" "PORT") 0) )
      (udp-port-nz (eq? (get-option ctx "UDP" "PORT") 0) )
      (http-port-nz (eq? (get-option ctx "HTTP" "PORT") 0) )
@@ -1475,6 +1514,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'rare)         (change-visible ctx a b (and advanced rare)))
             ((eq? i 'experimental) (change-visible ctx a b (and advanced experimental)))
             ((eq? i 'f2f)          (change-visible ctx a b f2f))
+            ((eq? i 'f2fr)         (change-visible ctx a b f2fr))
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
             ((eq? i 'nat-unlimited)(change-visible ctx a b nat-unlimited))
