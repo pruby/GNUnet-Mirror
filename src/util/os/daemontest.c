@@ -24,9 +24,6 @@
  */
 
 #include "gnunet_util.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
-#include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
 int

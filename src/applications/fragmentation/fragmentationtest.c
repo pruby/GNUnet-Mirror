@@ -42,7 +42,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_cron.h"
 
 #include "fragmentation.c"
 

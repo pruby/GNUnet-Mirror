@@ -26,8 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 

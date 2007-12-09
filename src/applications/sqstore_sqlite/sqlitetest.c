@@ -25,8 +25,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_cron.h"
-#include "gnunet_util_config_impl.h"
 #include "gnunet_protocols.h"
 #include "gnunet_sqstore_service.h"
 #include "core.h"

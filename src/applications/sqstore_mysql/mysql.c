@@ -657,7 +657,7 @@ assembleDatum (MYSQL_BIND * result)
   /* now do query on gn072 */
   length = contentSize;
   memset (qbind, 0, sizeof (qbind));
-  qbind[0].is_unsigned = GNUNET_YES;
+  qbind[0].is_unsigned = 1;
   qbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[0].buffer = &vkey;
   memset (rbind, 0, sizeof (rbind));
@@ -793,25 +793,25 @@ put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   memset (qbind, 0, sizeof (qbind));
   qbind[0].buffer_type = MYSQL_TYPE_LONG;       /* size */
   qbind[0].buffer = &size;
-  qbind[0].is_unsigned = GNUNET_YES;
+  qbind[0].is_unsigned = 1;
   qbind[1].buffer_type = MYSQL_TYPE_LONG;       /* type */
-  qbind[1].is_unsigned = GNUNET_YES;
+  qbind[1].is_unsigned = 1;
   qbind[1].buffer = &type;
   qbind[2].buffer_type = MYSQL_TYPE_LONG;       /* prio */
-  qbind[2].is_unsigned = GNUNET_YES;
+  qbind[2].is_unsigned = 1;
   qbind[2].buffer = &prio;
   qbind[3].buffer_type = MYSQL_TYPE_LONG;       /* anon level */
-  qbind[3].is_unsigned = GNUNET_YES;
+  qbind[3].is_unsigned = 1;
   qbind[3].buffer = &level;
   qbind[4].buffer_type = MYSQL_TYPE_LONGLONG;   /* expiration */
-  qbind[4].is_unsigned = GNUNET_YES;
+  qbind[4].is_unsigned = 1;
   qbind[4].buffer = &expiration;
   qbind[5].buffer_type = MYSQL_TYPE_BLOB;       /* GNUNET_hash */
   qbind[5].buffer = (void *) key;
   qbind[5].length = &hashSize;
   qbind[5].buffer_length = hashSize;
   qbind[6].buffer_type = MYSQL_TYPE_LONGLONG;   /* vkey */
-  qbind[6].is_unsigned = GNUNET_YES;
+  qbind[6].is_unsigned = 1;
   qbind[6].buffer = &vkey;
 
   if (mysql_stmt_bind_param (dbh->insert_entry, qbind))
@@ -911,53 +911,53 @@ iterateHelper (unsigned int type,
     {
       qbind[0].buffer_type = MYSQL_TYPE_LONG;
       qbind[0].buffer = &last_prio;
-      qbind[0].is_unsigned = GNUNET_YES;
+      qbind[0].is_unsigned = 1;
       qbind[2 + is_migr].buffer_type = MYSQL_TYPE_LONG;
       qbind[2 + is_migr].buffer = &last_prio;
-      qbind[2 + is_migr].is_unsigned = GNUNET_YES;
+      qbind[2 + is_migr].is_unsigned = 1;
     }
   else
     {
       qbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
       qbind[0].buffer = &last_expire;
-      qbind[0].is_unsigned = GNUNET_YES;
+      qbind[0].is_unsigned = 1;
       qbind[2 + is_migr].buffer_type = MYSQL_TYPE_LONGLONG;
       qbind[2 + is_migr].buffer = &last_expire;
-      qbind[2 + is_migr].is_unsigned = GNUNET_YES;
+      qbind[2 + is_migr].is_unsigned = 1;
     }
   qbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[1].buffer = &last_vkey;
-  qbind[1].is_unsigned = GNUNET_YES;
+  qbind[1].is_unsigned = 1;
   qbind[3 + is_migr].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[3 + is_migr].buffer = &last_vkey;
-  qbind[3 + is_migr].is_unsigned = GNUNET_YES;
+  qbind[3 + is_migr].is_unsigned = 1;
   if (is_migr)
     {
       qbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
       qbind[2].buffer = &now;
-      qbind[2].is_unsigned = GNUNET_YES;
+      qbind[2].is_unsigned = 1;
       qbind[5].buffer_type = MYSQL_TYPE_LONGLONG;
       qbind[5].buffer = &now;
-      qbind[5].is_unsigned = GNUNET_YES;
+      qbind[5].is_unsigned = 1;
     }
 
   hashSize = sizeof (GNUNET_HashCode);
   memset (rbind, 0, sizeof (rbind));
   rbind[0].buffer_type = MYSQL_TYPE_LONG;
   rbind[0].buffer = &size;
-  rbind[0].is_unsigned = GNUNET_YES;
+  rbind[0].is_unsigned = 1;
   rbind[1].buffer_type = MYSQL_TYPE_LONG;
   rbind[1].buffer = &rtype;
-  rbind[1].is_unsigned = GNUNET_YES;
+  rbind[1].is_unsigned = 1;
   rbind[2].buffer_type = MYSQL_TYPE_LONG;
   rbind[2].buffer = &prio;
-  rbind[2].is_unsigned = GNUNET_YES;
+  rbind[2].is_unsigned = 1;
   rbind[3].buffer_type = MYSQL_TYPE_LONG;
   rbind[3].buffer = &level;
-  rbind[3].is_unsigned = GNUNET_YES;
+  rbind[3].is_unsigned = 1;
   rbind[4].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[4].buffer = &expiration;
-  rbind[4].is_unsigned = GNUNET_YES;
+  rbind[4].is_unsigned = 1;
   rbind[5].buffer_type = MYSQL_TYPE_BLOB;
   rbind[5].buffer = &key;
   rbind[5].buffer_length = hashSize;
@@ -1469,7 +1469,9 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
   FILE *fp;
   struct passwd *pw;
   size_t nX;
+#ifndef WINDOWS
   char *home_dir;
+#endif
   unsigned long long *sb;
   MYSQL_RES *sql_res;
   MYSQL_ROW sql_row;

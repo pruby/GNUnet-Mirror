@@ -39,7 +39,7 @@
 #include "gnunet_blockstore.h"
 #include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 
 /**
  * Filename used to store collection information

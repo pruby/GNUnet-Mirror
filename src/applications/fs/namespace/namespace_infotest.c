@@ -29,9 +29,6 @@
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_crypto.h"
-#include "gnunet_util_network_client.h"
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 

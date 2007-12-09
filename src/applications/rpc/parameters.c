@@ -26,7 +26,6 @@
  */
 
 #include "gnunet_util.h"
-#include "gnunet_util_containers.h"
 #include "gnunet_rpc_lib.h"
 #include "platform.h"
 

@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 
 #define NS_DIR "data" DIR_SEPARATOR_STR "namespaces" DIR_SEPARATOR_STR
 #define NS_UPDATE_DIR "data" DIR_SEPARATOR_STR "namespace-updates" DIR_SEPARATOR_STR

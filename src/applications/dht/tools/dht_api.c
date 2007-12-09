@@ -28,7 +28,7 @@
 #include "gnunet_protocols.h"
 #include "dht.h"
 #include "gnunet_dht_lib.h"
-#include "gnunet_util_network_client.h"
+#include "gnunet_util.h"
 
 #define DEBUG_DHT_API GNUNET_NO
 

@@ -23,7 +23,6 @@
  */
 
 #include "gnunet_util.h"
-#include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
 #include <sys/types.h>

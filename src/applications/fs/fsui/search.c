@@ -27,7 +27,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util.h"
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_fsui_lib.h"

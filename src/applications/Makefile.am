@@ -1,9 +1,9 @@
 if HAVE_MYSQL
- MYSQL_DIR = sqstore_mysql
+ MYSQL_DIR = sqstore_mysql dstore_mysql
 endif
 
 if HAVE_SQLITE
- SQLITE_DIR = sqstore_sqlite kvstore_sqlite dstore dht
+ SQLITE_DIR = sqstore_sqlite kvstore_sqlite dstore_sqlite
 endif
 
 if !MINGW
@@ -28,6 +28,7 @@ SUBDIRS	= \
  gap \
  pingpong \
  session \
+ dht \
  $(MYSQL_DIR) \
  $(SQLITE_DIR) \
  tbench \

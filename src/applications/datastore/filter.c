@@ -26,7 +26,6 @@
 
 #include "gnunet_directories.h"
 #include "gnunet_util.h"
-#include "gnunet_util_containers.h"
 #include "filter.h"
 #include "platform.h"
 

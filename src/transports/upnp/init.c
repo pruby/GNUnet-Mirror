@@ -26,7 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_cron.h"
 #include "upnp.h"
 #include "gnunet_upnp_service.h"
 #include "gnunet_core.h"

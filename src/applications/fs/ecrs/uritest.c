@@ -26,7 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_crypto.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 

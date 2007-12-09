@@ -28,9 +28,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_stats_lib.h"
 #include "gnunet_testing_lib.h"
-#include "gnunet_util_crypto.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
+#include "gnunet_util.h"
 #include "tbench.h"
 
 #define START_PEERS 1

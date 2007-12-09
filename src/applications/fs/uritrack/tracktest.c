@@ -28,7 +28,6 @@
 #include <extractor.h>
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
-#include "gnunet_util_config_impl.h"
 
 #define CHECK(a) { if (! (a)) { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; } }
 

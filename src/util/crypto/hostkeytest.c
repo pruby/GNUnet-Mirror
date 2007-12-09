@@ -29,7 +29,7 @@
 #include "platform.h"
 
 #define TESTSTRING "Hello World\0"
-#define MAX_TESTVAL sizeof(SESSIONKEY)
+#define MAX_TESTVAL sizeof(GNUNET_AES_SessionKey)
 #define ITER 10
 
 #define PERF GNUNET_NO

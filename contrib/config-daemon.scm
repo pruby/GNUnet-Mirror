@@ -565,6 +565,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "Settings that select specific implementations for GNUnet modules")
   (list 
     (modules-sqstore builder) 
+    (modules-dstore builder) 
     (modules-topology builder) 
   )
   #t
@@ -609,6 +610,19 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
   "sqstore_sqlite"
   (list "SC" "sqstore_sqlite" "sqstore_mysql")
   'fs-loaded) )
+
+(define (modules-dstore builder)
+ (builder
+  "MODULES"
+  "topology"
+  (_ "Which topology should be used?")
+  (_ "Which database should be used for the temporary datastore of the DHT?" )
+  '()
+  #t
+  "dstore_sqlite"
+  (list "SC" "dstore_sqlite" "dstore_mysql")
+  'advanced) )
+
 
 (define (modules-topology builder)
  (builder

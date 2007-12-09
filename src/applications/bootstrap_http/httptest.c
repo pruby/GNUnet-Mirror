@@ -25,10 +25,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_crypto.h"
+#include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
-#include "gnunet_util_config_impl.h"
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_stats_service.h"
 

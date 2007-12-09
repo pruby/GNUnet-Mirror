@@ -29,9 +29,7 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
-#include "gnunet_util_cron.h"
+#include "gnunet_util.h"
 
 
 #define START_PEERS 1

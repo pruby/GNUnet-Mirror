@@ -35,8 +35,6 @@
 #include "gnunet_protocols.h"
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
 
 #define NUM_PEERS 12
 

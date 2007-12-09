@@ -31,8 +31,6 @@
 #include "gnunet_identity_lib.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_core.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_network_client.h"
 #include "core.h"
 
 static struct GNUNET_CronManager *cron;
