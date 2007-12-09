@@ -257,6 +257,7 @@ doneQueryManager ()
 
   coreAPI->unregisterClientExitHandler (&ceh);
   GNUNET_mutex_destroy (queryManagerLock);
+  queryManagerLock = NULL;
   coreAPI = NULL;
   ectx = NULL;
 }

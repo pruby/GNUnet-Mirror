@@ -1370,7 +1370,6 @@ done_module_fs ()
                     unregisterClientHandler
                     (GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY,
                      &csHandleRequestGetAvgPriority));
-  doneQueryManager ();
   while (lg_jobs != NULL)
     {
       job = lg_jobs->next;
@@ -1380,6 +1379,7 @@ done_module_fs ()
     }
   GNUNET_semaphore_up (ltgSignal);      /* lg_jobs == NULL => thread will terminate */
   GNUNET_thread_join (localGetProcessor, &unused);
+  doneQueryManager ();
   coreAPI->releaseService (datastore);
   datastore = NULL;
   if (stats != NULL)
