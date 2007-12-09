@@ -157,6 +157,7 @@ AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
 AM_CONDITIONAL(OPENBSD, test "$build_target" = "openbsd")
 AM_CONDITIONAL(LINUX, test "$build_target" = "linux")
 AC_MSG_RESULT([$build_target])
+AC_SUBST(build_target)
 
 
 CHECK_PTHREAD
@@ -758,6 +759,7 @@ src/applications/vpn/Makefile
 src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
+src/setup/qt/qt.pro
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
