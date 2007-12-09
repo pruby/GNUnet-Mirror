@@ -1,3 +1,7 @@
+Sun Dec  9 14:34:32 MST 2007
+	Implemented MySQL version of the dstore-module.  This
+	means that sqLite is now again truly optional.
+
 Sat Dec  8 15:15:53 MST 2007
 	Integrated F2F topology into main topology module 
 	(options are used to choose between F2F-only (old F2F), 

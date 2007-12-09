@@ -14,6 +14,12 @@ you're on your own.
 Run gnunet-update.
 Run "gnunet-setup -d", some options have changed and some are
 new.  You might want to consider enabling the HTTP transport.
+Also, for the dstore you can now select an implementation using
+MySQL -- previously we only had an sqLite implementation.  Note
+that this is a new option and one of the two choices must be
+selected.  "gnunet-setup -d" should pick "dstore_sqlite" by 
+default, but if you are using MySQL for the main database, you
+may want to change this.
 
 
 0.7.2b to 0.7.2c
