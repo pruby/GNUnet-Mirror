@@ -130,7 +130,7 @@ main (int argc, char *argv[])
                                    "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
   keywords[1] = "binary";
   keywords[2] = NULL;
-  key = GNUNET_ECRS_keyword_string_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
   CHECK (GNUNET_OK == GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,   /* expire */
                                                          uri, meta));
   CHECK (GNUNET_OK == searchFile (key, 2));
@@ -143,7 +143,7 @@ main (int argc, char *argv[])
   printf ("Testing search for 'XXtest' with two results.\n");
 #endif
   keywords[1] = NULL;
-  key = GNUNET_ECRS_keyword_string_to_uri (keywords);
+  key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
   CHECK (GNUNET_OK == searchFile (key, 2));
   GNUNET_ECRS_uri_destroy (key);
 
