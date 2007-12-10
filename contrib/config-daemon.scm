@@ -1028,7 +1028,7 @@ The size of the DSTORE QUOTA is specified in MB.")
 (define (smtp-server builder)
  (builder
  "SMTP"
- "PIPE"
+ "SERVER"
  (_ "What is the name and port of the server for outgoing e-mail?")
  (_ "The basic format is HOSTNAME:PORT.")
  '()
