@@ -74,12 +74,19 @@ case "$host_os" in
      build_target="macosx"
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
      build_target="linux"
      LIBPREFIX=
      DLLDIR=lib
+     AC_PATH_XTRA
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 freebsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
@@ -88,6 +95,9 @@ freebsd*)
      build_target="freebsd"
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 openbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
@@ -96,12 +106,18 @@ openbsd*)
      build_target="openbsd"
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 netbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(NETBSD,1,[This is a NetBSD system])
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 *solaris*)
      AC_DEFINE_UNQUOTED(SOLARIS,1,[This is a Solaris system])
@@ -111,6 +127,9 @@ netbsd*)
      build_target="solaris"
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 *arm-linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
@@ -118,6 +137,9 @@ netbsd*)
      build_target="linux"
      LIBPREFIX=
      DLLDIR=lib
+     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
+     QTBIN="$QTDIR/bin"
      ;;
 *cygwin*)
      AC_DEFINE_UNQUOTED(CYGWIN,1,[This is a Cygwin system])
@@ -129,6 +151,9 @@ netbsd*)
      LIBPREFIX=lib
      DLLDIR=bin
      AC_PROG_CXX
+     QTLIBS="-L$QTDIR/lib -lopengl32 -lglu32 -lgdi32 -luser32 -lmingw32 -lqtmain -lQtOpenGL4 -lQtGui4 -lQtCore4 -mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-s -Wl,-subsystem,windows"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtCore -I$QTDIR/include/QtGui -I$QTDIR/include/QtOpenGL -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_NEEDS_QMAIN -frtti -fexceptions"
+     QTBIN="$QTDIR/bin"
      ;;
 *mingw*)
      AC_DEFINE_UNQUOTED(MINGW,1,[This is a MinGW system])
@@ -141,6 +166,9 @@ netbsd*)
      AC_PROG_CXX
      LIBPREFIX=lib
      DLLDIR=bin
+     QTLIBS="-L$QTDIR/lib -lopengl32 -lglu32 -lgdi32 -luser32 -lmingw32 -lqtmain -lQtOpenGL4 -lQtGui4 -lQtCore4 -mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-s -Wl,-subsystem,windows"
+     QTINC="-I$QTDIR/include -I$QTDIR/include/QtCore -I$QTDIR/include/QtGui -I$QTDIR/include/QtOpenGL -DUNICODE -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_NEEDS_QMAIN -frtti -fexceptions"
+     QTBIN="$QTDIR/bin"
      ;;
 *)
      AC_MSG_RESULT(Unrecognised OS $host_os)
@@ -169,9 +197,6 @@ AC_CHECK_LIB(nsl, gethostbyname)
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
-
-# test for qmake
-AC_CHECK_PROG([QMAKE], [qmake-qt4], [qmake-qt4], [qmake])
 
 # 'save' libs; only those libs found so far will be
 # linked against _everywhere_.  For the others, we
@@ -432,44 +457,110 @@ AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
 # check for Qt 4
 AC_LANG_PUSH([C++])
-qt=0
+qt=1
 AC_MSG_CHECKING(for Qt)
-AC_ARG_WITH(qt,
-   [  --with-qt=PFX    Base of Qt installation],
-   [AC_MSG_RESULT([$with_qt])
-    case $with_qt in
-      no)
-        ;;
-      yes)
-        AC_CHECK_HEADERS([Qt/qpixmap.h],
-          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
-            qt=1,
-              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
-              qt=1)))
-        ;;
-      *)
-        LDFLAGS="-L$with_qt/lib $LDFLAGS"
-        CPPFLAGS="-I$with_qt/include -I$with_qt/include/qt4 $CPPFLAGS"
-        AC_CHECK_HEADERS([Qt/qpixmap.h],
-          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
-            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
-            qt=1,
-              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
-              EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
-              qt=1)))
-        ;;
-    esac
-   ],
-   [AC_MSG_RESULT([--with-qt not specified])
-    LDFLAGS="-L/usr/lib $LDFLAGS"
-    CPPFLAGS="-I/usr/include -I/usr/include/qt4 $CPPFLAGS"    
-    AC_CHECK_HEADERS([Qt/qpixmap.h],
-          AC_CHECK_LIB([QtGui4], [_ZN7QPixmap12defaultDepthEv],
-            EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
-            qt=1,
-              AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
-              EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
-              qt=1)))])
+# Verbatim from http://qtnode.net/wiki?title=Qt_with_autotools
+AC_MSG_CHECKING(QT4.1 directory)
+QTDIR=xxx
+AC_ARG_WITH([qt-dir],
+             AC_HELP_STRING([--with-qt-dir=/path/to/Qt-4.1.0],
+                            [to specify the path to the Qt-4.1.0 directory.]),
+             [QTPATHS="$withval"],
+             [QTPATHS="/usr/local/Trolltech/Qt-4.1.0 /c/Qt/4.1.0"])
+
+for x in $QTPATHS; do
+    if test -d $x ; then
+       QTDIR="$x"
+    fi
+done
+if test $QTDIR = xxx ; then
+   AC_MSG_RESULT(Could not locate QT 4.1)
+   qt=0
+fi
+AC_MSG_RESULT($QTDIR)
+
+LIBS="$LIBS $QTLIBS"
+INCLUDES="$INCLUDES $QTINC"
+PATH="$PATH:$QTBIN"
+CXXFLAGS="$CXXFLAGS $QTINC"
+AC_SUBST(QTINC)
+AC_SUBST(QTLIBS)
+
+# Now we check whether we can actually build a Qt app.
+cat > myqt.h << EOF
+#include <QObject>
+class Test : public QObject
+{
+Q_OBJECT
+public:
+  Test() {}
+  ~Test() {}
+public slots:
+  void receive() {}
+signals:
+  void send();
+};
+EOF
+
+cat > myqt.cpp << EOF
+#include "myqt.h"
+#include <QApplication>
+int main( int argc, char **argv )
+{
+  QApplication app( argc, argv );
+  Test t;
+  QObject::connect( &t, SIGNAL(send()), &t, SLOT(receive()) );
+}
+EOF
+
+AC_MSG_CHECKING(does moc work?)
+bnv_try_1="moc myqt.h -o moc_myqt.cpp"
+AC_TRY_EVAL(bnv_try_1)
+if test x"$ac_status" != x0; then
+   AC_MSG_RESULT(moc doesn't work)
+   qt=0
+else
+   AC_MSG_RESULT(yes)
+fi
+AC_MSG_CHECKING(can I compile moc_myqt.cpp?)
+bnv_try_2="$CXX -c $CXXFLAGS -o moc_myqt.o moc_myqt.cpp"
+AC_TRY_EVAL(bnv_try_2)
+if test x"$ac_status" != x0; then
+   AC_MSG_RESULT(couldn't compile moc_myqt.cpp)
+   qt=0
+else
+   AC_MSG_RESULT(yes)
+fi
+AC_MSG_CHECKING(can I compile myqt.cpp?)
+bnv_try_3="$CXX $QTINC -c $CXXFLAGS -o myqt.o myqt.cpp"
+AC_TRY_EVAL(bnv_try_3)
+if test x"$ac_status" != x0; then
+   AC_MSG_RESULT(couldn't compile myqt.cpp)
+   qt=0
+else
+   AC_MSG_RESULT(yes)
+fi
+AC_MSG_CHECKING(can I link against QT?)
+nv_try_4="$CXX $LIBS -o myqt myqt.o moc_myqt.o"
+AC_TRY_EVAL(bnv_try_4)
+if test x"$ac_status" != x0; then
+   AC_MSG_RESULT(couldn't link)
+   qt=0
+else
+   AC_MSG_RESULT(yes)
+fi
+
+AC_MSG_CHECKING(for mkoctfile)
+AC_TRY_EVAL(mkoctfile)
+if test x"$ac_status" != x0; then
+   AC_MSG_RESULT(mkoctfile is not in the path)
+   qt=0
+else
+  AC_MSG_RESULT(yes)
+fi
+rm -f moc_myqt.cpp myqt.h myqt.cpp myqt.o myqt moc_myqt.o
+
+
 
 # libmicrohttpd
 lmhd=0
@@ -759,7 +850,7 @@ src/applications/vpn/Makefile
 src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
-src/setup/qt/qt.pro
+src/setup/qt/Makefile
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
@@ -784,15 +875,6 @@ src/util/threads/Makefile
 src/util/win/Makefile
 ])
 AC_OUTPUT
-
-if test "$qt" = 1
-then
-	AC_MSG_NOTICE([Running qmake])
-	PWD=$(pwd)
-	cd src/setup/qt
-	MINGW_IN_SHELL=1 $QMAKE qt.pro -unix -recursive
-	cd $PWD
-fi
 
 # Finally: summary!
 

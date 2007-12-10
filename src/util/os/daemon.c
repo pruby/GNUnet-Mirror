@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_threads.h"
 #include "gnunet_util_string.h"
 
 #if LINUX || OSX || SOLARIS || SOMEBSD || MINGW

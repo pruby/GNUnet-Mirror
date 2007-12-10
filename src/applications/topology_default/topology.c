@@ -531,7 +531,7 @@ rereadConfiguration (void *ctx,
 	GNUNET_GE_LOG (ectx,
 		       GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
 		       GNUNET_GE_IMMEDIATE,
-		       "Could not read friends list `%s'\n", fn);
+		       _("Could not read friends list `%s'\n"), fn);
 	return GNUNET_SYSERR;
       }
     }
