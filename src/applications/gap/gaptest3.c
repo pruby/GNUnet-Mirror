@@ -93,7 +93,7 @@ uploadFile (unsigned int size)
   name = makeName (size);
   fd =
     GNUNET_disk_file_open (ectx, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
-  buf = GNUNET_malloc_LARGE (size);
+  buf = GNUNET_malloc_large (size);
   memset (buf, size + size / 253, size);
   for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
        i += sizeof (GNUNET_HashCode))
