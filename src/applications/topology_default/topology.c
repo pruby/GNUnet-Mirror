@@ -665,9 +665,9 @@ release_module_topology_default ()
   coreAPI->releaseService (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
-  GROW(friends,
-       friendCount,
-       0);
+  GNUNET_array_grow(friends,
+		    friendCount,
+		    0);
   return GNUNET_OK;
 }
 
