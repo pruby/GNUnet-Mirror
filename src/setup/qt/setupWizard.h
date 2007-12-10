@@ -3,16 +3,20 @@
 
 #include "ui_gnunet-setup.h"
 
-class GSetupWizard : public QDialog, private Ui::SetupWizard 
+class GSetupWizard:public QDialog, private
+  Ui::SetupWizard
 {
   Q_OBJECT
-  
 public:
-  GSetupWizard(QDialog *parent = NULL);
-  void setErrorContext(struct GNUNET_GE_Context *ectx);
-  void setConfig(struct GNUNET_GC_Configuration *cfg);
+  GSetupWizard (QDialog * parent = NULL);
+  void
+  setErrorContext (struct GNUNET_GE_Context *ectx);
+  void
+  setConfig (struct GNUNET_GC_Configuration *cfg);
 
 protected:
-  struct GNUNET_GE_Context *ectx;
-  struct GNUNET_GC_Configuration *cfg;
+  struct GNUNET_GE_Context *
+    ectx;
+  struct GNUNET_GC_Configuration *
+    cfg;
 };

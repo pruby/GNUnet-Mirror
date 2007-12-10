@@ -160,15 +160,15 @@ dyn_config (const char *module,
   struct GNUNET_PluginHandle *library;
 
 #ifdef MINGW
-  if (strcmp(module, "setup_qt") == 0)
+  if (strcmp (module, "setup_qt") == 0)
     {
       char sz[1000];
       int i;
-      
-      plibc_conv_to_win_path("/bin/gnunetsetup_qt ", sz);
+
+      plibc_conv_to_win_path ("/bin/gnunetsetup_qt ", sz);
       for (i = 1; i < argc; i++)
-        strncat(sz, argv[i], 1000);
-      return system(sz) != -1 ? GNUNET_YES : GNUNET_NO;
+        strncat (sz, argv[i], 1000);
+      return system (sz) != -1 ? GNUNET_YES : GNUNET_NO;
     }
 #endif
 
@@ -327,12 +327,12 @@ main (int argc, char *const *argv)
   gns2cfg (GNUNET_GNS_get_tree_root (gns));
   if (option_processing)
     {
+      done = 0;
       if (get_option != NULL)
         {
           option = strstr (get_option, ":");
           option[0] = '\0';
           option++;
-          done = 0;
           if (GNUNET_NO == GNUNET_GC_have_configuration_value (cfg,
                                                                get_option,
                                                                option))

@@ -49,7 +49,7 @@ wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
     }
 #endif
 
-  if (nic)
+  if (NULL != nic)
     {
       /* The user has selected a NIC before */
       int niclen, inslen;
@@ -67,6 +67,7 @@ wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
 #endif
             suggestion = 1;     /* This is the previous selection */
         }
+      GNUNET_free (nic);
     }
 
   return suggestion;

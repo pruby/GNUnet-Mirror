@@ -616,12 +616,12 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
                  type);
 #endif
   GNUNET_mutex_lock (lock);
-  if (GNUNET_SYSERR == datastore->get (&query, type, &completeValue, value)) 
-    {    /* aborted == found! */ 
+  if (GNUNET_SYSERR == datastore->get (&query, type, &completeValue, value))
+    {                           /* aborted == found! */
       ret = datastore->del (&query, value);
     }
-  else 
-    {                         /* not found */
+  else
+    {                           /* not found */
       ret = GNUNET_SYSERR;
     }
   GNUNET_mutex_unlock (lock);

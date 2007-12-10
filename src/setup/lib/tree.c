@@ -217,12 +217,10 @@ set_option (SCM smob, SCM section, SCM option, SCM value)
   sec = scm_to_locale_string (section);
   val = scm_to_locale_string (value);
   GNUNET_GC_set_configuration_value_string (tc->cfg, NULL, sec, opt, val);
-  if (sec != NULL)
-    free (sec);
+  free (sec);
+  free (opt);
   if (val != NULL)
     free (val);
-  if (opt != NULL)
-    free (opt);
   return SCM_EOL;
 }
 

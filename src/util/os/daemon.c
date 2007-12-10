@@ -128,7 +128,11 @@ launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile,
       pid_t ret;
       int status;
 
-      ret = waitpid (pid, &status, 0);
+      do
+        {
+          ret = waitpid (pid, &status, 0);
+        }
+      while ((errno == EINTR) && (GNUNET_shutdown_test () == GNUNET_NO));
       if (ret == -1)
         {
           GNUNET_GE_LOG_STRERROR (ectx,

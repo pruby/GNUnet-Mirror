@@ -104,7 +104,7 @@ abortSem (void *cls)
 static int
 countCallback (const GNUNET_HashCode * key,
                const GNUNET_DatastoreValue * value, void *cls,
-	       unsigned long long uid)
+               unsigned long long uid)
 {
   int *cnt = cls;
   (*cnt)--;
@@ -305,7 +305,7 @@ main (int argc, char *argv[])
       GNUNET_free (eblock);
       GNUNET_hash (&((DBlock *) & block[1])[1],
                    ntohl (block->size) - sizeof (GNUNET_DatastoreValue) -
-		   sizeof (DBlock), &hc);
+                   sizeof (DBlock), &hc);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
       CHECK (GNUNET_OK == trySearch (ctx, i));
       CHECK (GNUNET_OK ==

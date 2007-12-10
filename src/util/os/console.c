@@ -40,12 +40,11 @@ getPIDFile (struct GNUNET_GC_Configuration *cfg)
 {
   char *pif;
 
-  if (0 != GNUNET_GC_get_configuration_value_filename (cfg,
-                                                       "GNUNETD",
-                                                       "PIDFILE",
-                                                       GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
-                                                       "/gnunetd/pid", &pif))
-    return NULL;
+  GNUNET_GC_get_configuration_value_filename (cfg,
+                                              "GNUNETD",
+                                              "PIDFILE",
+                                              GNUNET_DEFAULT_DAEMON_VAR_DIRECTORY
+                                              "/gnunetd/pid", &pif);
   return pif;
 }
 

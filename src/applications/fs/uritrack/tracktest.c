@@ -106,10 +106,10 @@ testTracking ()
     "foot",
     NULL,
   };
-  fi1.uri = GNUNET_ECRS_keyword_string_to_uri (k1);
+  fi1.uri = GNUNET_ECRS_keyword_strings_to_uri (k1);
   fi1.meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (fi1.meta, EXTRACTOR_MIMETYPE, "foo/bar");
-  fi2.uri = GNUNET_ECRS_keyword_string_to_uri (k2);
+  fi2.uri = GNUNET_ECRS_keyword_strings_to_uri (k2);
   fi2.meta = GNUNET_ECRS_meta_data_create ();
   GNUNET_ECRS_meta_data_insert (fi2.meta, EXTRACTOR_MIMETYPE, "foo/bar");
 

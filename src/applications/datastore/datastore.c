@@ -174,16 +174,17 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
   ok = sq->get (query, ntohl (value->type), &deleteCB, (void *) value);
   if (ok == GNUNET_SYSERR)
     return GNUNET_SYSERR;
-  if (ok == 0) {
-    IF_GELOG (coreAPI->ectx,
-	      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-	      GNUNET_hash_to_enc (query, &enc));
-    GNUNET_GE_LOG (coreAPI->ectx,
-		   GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-		   _("Availability test failed for `%s' at %s:%d.\n"), &enc,
-		   __FILE__, __LINE__);
-    return GNUNET_NO;
-  }
+  if (ok == 0)
+    {
+      IF_GELOG (coreAPI->ectx,
+                GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                GNUNET_hash_to_enc (query, &enc));
+      GNUNET_GE_LOG (coreAPI->ectx,
+                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("Availability test failed for `%s' at %s:%d.\n"), &enc,
+                     __FILE__, __LINE__);
+      return GNUNET_NO;
+    }
   ret = ok;
   while (ok-- > 0)
     {
