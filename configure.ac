@@ -459,25 +459,38 @@ AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 AC_LANG_PUSH([C++])
 qt=1
 AC_MSG_CHECKING(for Qt)
-# Verbatim from http://qtnode.net/wiki?title=Qt_with_autotools
-AC_MSG_CHECKING(QT4.1 directory)
-QTDIR=xxx
-AC_ARG_WITH([qt-dir],
-             AC_HELP_STRING([--with-qt-dir=/path/to/Qt-4.1.0],
-                            [to specify the path to the Qt-4.1.0 directory.]),
-             [QTPATHS="$withval"],
-             [QTPATHS="/usr/local/Trolltech/Qt-4.1.0 /c/Qt/4.1.0"])
-
-for x in $QTPATHS; do
-    if test -d $x ; then
-       QTDIR="$x"
-    fi
-done
-if test $QTDIR = xxx ; then
-   AC_MSG_RESULT(Could not locate QT 4.1)
-   qt=0
-fi
-AC_MSG_RESULT($QTDIR)
+AC_ARG_WITH(qt,
+   [  --with-qt=PFX    Base of Qt installation],
+   [AC_MSG_RESULT([$with_qt])
+    case $with_qt in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS([Qt/qpixmap.h],
+           AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+              qt=1))
+        ;;
+      *)
+        QTLIBS="-L$with_qt/lib"
+        LDFLAGS="$QTLIBS $LDFLAGS"
+        QTINC="-I$with_qt/include -I$with_qt/include/qt4"
+        CPPFLAGS="$QTINC $CPPFLAGS"
+        AC_CHECK_HEADERS([Qt/qpixmap.h],
+           AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+           EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+           qt=1))
+        ;;
+    esac
+   ],
+  [AC_MSG_RESULT([--with-qt not specified])
+    QTLIBS="-L/usr/lib"
+    LDFLAGS="$QTLIBS $LDFLAGS"
+    QTINC="-I/usr/include -I/usr/include/qt4"
+    CPPFLAGS="$QTINC $CPPFLAGS"
+    AC_CHECK_HEADERS([Qt/qpixmap.h],
+          AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
+           EXT_LIB_PATH="-L$with_qt/lib $EXT_LIB_PATH"
+              qt=1))])
 
 LIBS="$LIBS $QTLIBS"
 INCLUDES="$INCLUDES $QTINC"
@@ -485,10 +498,11 @@ PATH="$PATH:$QTBIN"
 CXXFLAGS="$CXXFLAGS $QTINC"
 AC_SUBST(QTINC)
 AC_SUBST(QTLIBS)
+# Verbatim from http://qtnode.net/wiki?title=Qt_with_autotools
 
 # Now we check whether we can actually build a Qt app.
 cat > myqt.h << EOF
-#include <QObject>
+#include <Qt/qobject.h>
 class Test : public QObject
 {
 Q_OBJECT
@@ -504,7 +518,7 @@ EOF
 
 cat > myqt.cpp << EOF
 #include "myqt.h"
-#include <QApplication>
+#include <Qt/qapplication.h>
 int main( int argc, char **argv )
 {
   QApplication app( argc, argv );
@@ -550,6 +564,7 @@ else
    AC_MSG_RESULT(yes)
 fi
 
+
 AC_MSG_CHECKING(for mkoctfile)
 AC_TRY_EVAL(mkoctfile)
 if test x"$ac_status" != x0; then
@@ -560,6 +575,7 @@ else
 fi
 rm -f moc_myqt.cpp myqt.h myqt.cpp myqt.o myqt moc_myqt.o
 
+AC_LANG_POP([C++])
 
 
 # libmicrohttpd
