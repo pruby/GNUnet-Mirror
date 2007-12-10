@@ -15,6 +15,7 @@ gnunet-peer-info.1 \
 gnunet-pseudonym.1 \
 gnunet-unindex.1 \
 gnunet-update.1 \
+gnunet-vpn.1 \
 gnunetd.1 \
 gnunet.conf.5 \
 gnunetd.conf.5

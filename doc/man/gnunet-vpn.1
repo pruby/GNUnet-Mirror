@@ -1,0 +1,62 @@
+.TH GNUNET-VPN "1" "10 Dec 2007" "GNUnet"
+.SH NAME
+gnunet\-vpn \- maintain your GNUbone connection
+.SH SYNOPSIS
+.B gnunet\-vpn
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+gnunet\-vpn is a tool to be used together with the GNUnet VPN module.
+See http://uk.gnunet.org/vpn/ for more information about the VPN module.
+.SH USAGE
+
+These are the more interesting commands available in gnunet-vpn. For normal operation you would invoke "reset", and "realise", alternately every hour or so. To give you something to access, you may do "add " so long as you have this node?s hello files in your cache, that can be found in my hosts area. Then try ping6 vpn1.wensley.org.uk, if address unreachable comes back, ping6 that instead. I do have an ftp and gopher server accessible here. 
+
+.TP
+\fBreset\fR
+Clears prototype routing table and start requesting routes from peers to rebuild it
+.TP
+\fBrealise\fR
+Realise prototype table into the real routing table, and adds and pulls IPv6 routes to match it. You use this when you think your prototype table is complete. I.e. peers have stopped giving you more routes.
+.TP
+\fBtunnel\fR
+Show tunnels to peers
+\fBroutes\fR
+Show prototype routing table contents
+.TP
+\fBrealised\fR
+Show real routing table contents
+.TP
+\fbadd \fIHASH\fR
+Persuade GNUnet to connect to the peer with the given hash.
+.TP
+\fBdebug0\fR
+Hide activity output.
+\fBdebug1\fR
+Show activity output.
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.TP
+\fB\-s\fR, \fB\-\-silent\fR
+run silently
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+
+.SH AUTHOR
+Michael John Wensley
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
