@@ -1541,6 +1541,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'tcp6-loaded)  (change-visible ctx a b tcp6-loaded))
             ((eq? i 'ip6-loaded)   (change-visible ctx a b (or (tcp6-loaded udp6-loaded))))
             ((eq? i 'http-loaded)  (change-visible ctx a b http-loaded))
+            ((eq? i 'smtp-loaded)  (change-visible ctx a b smtp-loaded))
             ((eq? i 'nobasiclimit) (change-visible ctx a b nobasiclimit))
             (else 'nothing)
           )
