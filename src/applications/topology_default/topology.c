@@ -524,15 +524,16 @@ rereadConfiguration (void *ctx,
   if ((0 == GNUNET_disk_file_test (ectx, fn))
       || (GNUNET_OK != GNUNET_disk_file_size (ectx, fn, &size, GNUNET_YES)))
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
-                     GNUNET_GE_IMMEDIATE,
-                     "Could not read friends list `%s'\n", fn);
       GNUNET_free (fn);
       fn = NULL;
       if ( (friends_only) ||
-	   (minimum_friend_count > 0) )
+	   (minimum_friend_count > 0) ) {
+	GNUNET_GE_LOG (ectx,
+		       GNUNET_GE_USER | GNUNET_GE_ADMIN | GNUNET_GE_ERROR |
+		       GNUNET_GE_IMMEDIATE,
+		       "Could not read friends list `%s'\n", fn);
 	return GNUNET_SYSERR;
+      }
     }
   if (fn != NULL) 
     {
