@@ -4,6 +4,14 @@ Annotations:
   RC == Release Critical
 
 0.7.3 [12'07] (aka "features"):
+- sqlite index migration (1298)
+- man pages (1258)
+- gnunet-setup qt plugin:
+  * integration (into gnunet-setup.c)
+  * make it actually work: 
+    - Linux
+    - XP
+    - Vista?
 - Testcases:
   * more XFS/DHT
   * tracekit
