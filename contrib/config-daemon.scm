@@ -614,7 +614,7 @@ In order to use sqstore_mysql, you must configure the mysql database, which is r
 (define (modules-dstore builder)
  (builder
   "MODULES"
-  "topology"
+  "dstore"
   (_ "Which topology should be used?")
   (_ "Which database should be used for the temporary datastore of the DHT?" )
   '()
