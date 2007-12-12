@@ -134,7 +134,7 @@ GNUNET_mutex_lock_at_file_line_ (Mutex * mutex, const char *file,
   GNUNET_CronTime start;
   GNUNET_CronTime end;
 
-  GNUNET_GE_ASSERT (NULL, mutex != NULL);
+  GNUNET_GE_ASSERT_FLF (NULL, mutex != NULL, file, line, __FUNCTION__);
   start = GNUNET_get_time ();
   ret = pthread_mutex_lock (&mutex->pt);
   end = GNUNET_get_time ();
