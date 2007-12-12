@@ -57,8 +57,8 @@ static int
 connect_daemons (unsigned short port1, unsigned short port2)
 {
   char host[128];
-  GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
-  GNUNET_GC_Configuration *cfg2 = GNUNET_GC_create ();
+  struct GNUNET_GC_Configuration *cfg1 = GNUNET_GC_create ();
+  struct GNUNET_GC_Configuration *cfg2 = GNUNET_GC_create ();
   struct GNUNET_ClientServerConnection *sock1;
   struct GNUNET_ClientServerConnection *sock2;
   int ret;
