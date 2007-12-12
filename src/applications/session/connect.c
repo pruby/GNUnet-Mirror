@@ -509,9 +509,19 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     hello = transport->createhello (GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY);
   if (NULL == hello)
     {
+      char * tports;
+
+      tports = NULL;
+      GNUNET_GC_get_configuration_value_string(coreAPI->cfg,
+					       "GNUNETD",
+					       "TRANSPORTS",
+					       NULL,
+					       &tports);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
-                     _("Could not create any HELLO for myself!\n"));
+                     _("Could not create any HELLO for myself (have transports `%s')!\n"),
+		     tports);
+      GNUNET_free_non_null(tports);
     }
 #if DEBUG_SESSION
   GNUNET_GE_LOG (ectx,

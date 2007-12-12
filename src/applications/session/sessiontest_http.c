@@ -79,20 +79,26 @@ connect_daemons (unsigned short port1, unsigned short port2)
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
-      h1 = NULL;
-      fprintf (stderr, "Notifying NATed peer about other peer");
-      if ((GNUNET_OK == GNUNET_IDENTITY_get_self (sock1,
-                                                  &h1)) &&
-          (GNUNET_OK == GNUNET_IDENTITY_peer_add (sock2, h1)))
-        {
-          fprintf (stderr, "!\n");
-          ret = GNUNET_OK;
-        }
-      else
-        fprintf (stderr, "?\n");
-      GNUNET_free_non_null (h1);
-      GNUNET_client_connection_destroy (sock1);
-      GNUNET_client_connection_destroy (sock2);
+      if ( (sock1 != NULL)&&
+	   (sock2 != NULL) ) 
+	{
+	  h1 = NULL;
+	  fprintf (stderr, "Notifying NATed peer about other peer");
+	  if ((GNUNET_OK == GNUNET_IDENTITY_get_self (sock1,
+						      &h1)) &&
+	      (GNUNET_OK == GNUNET_IDENTITY_peer_add (sock2, h1)))
+	    {
+	      fprintf (stderr, "!\n");
+	      ret = GNUNET_OK;
+	    }
+	  else
+	    fprintf (stderr, "?\n");
+	  GNUNET_free_non_null (h1);
+	}
+      if (sock1 != NULL)
+	GNUNET_client_connection_destroy (sock1);
+      if (sock2 != NULL)
+	GNUNET_client_connection_destroy (sock2);
     }
   else
     {
