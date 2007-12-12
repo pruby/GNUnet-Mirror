@@ -119,7 +119,7 @@ createhello ()
                                             "NAT", "LIMITED",
                                             nat_limited_choices,
                                             "AUTO", &choice);
-  if (((0 == strcmp (choice, "YES")) ||
+  if (((0 == strcmp (choice, "NO")) ||
        ((0 == strcmp (choice, "AUTO")) && (!lan_ip_detected ()))))
     return NULL;
   msg = GNUNET_malloc (sizeof (GNUNET_MessageHello));
