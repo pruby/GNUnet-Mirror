@@ -869,13 +869,20 @@ tryConnect (const GNUNET_PeerIdentity * peer)
 #endif
       return GNUNET_YES;        /* trivial case */
     }
+  if (GNUNET_YES == identity->isBlacklisted (peer, GNUNET_NO))
+    {
+#if DEBUG_SESSION
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                     "Peer `%s' blacklisted, cannot connect right now\n", &enc);
+#endif
+      return GNUNET_NO;           /* not allowed right now! */
+    }
 #if DEBUG_SESSION
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  "Trying to exchange key with `%s'.\n", &enc);
 #endif
-  if (GNUNET_YES == identity->isBlacklisted (peer, GNUNET_NO))
-    return GNUNET_NO;           /* not allowed right now! */
   if (GNUNET_OK == exchangeKey (peer, NULL, NULL))
     return GNUNET_NO;
   return GNUNET_SYSERR;

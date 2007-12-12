@@ -30,6 +30,8 @@
 #include "gnunet_util.h"
 #include "gnunet_testing_lib.h"
 
+#define VERBOSE GNUNET_NO
+
 static void
 updatePort (struct GNUNET_GC_Configuration *cfg,
             const char *section, unsigned short offset)
@@ -208,6 +210,26 @@ GNUNET_TESTING_start_daemon (unsigned short app_port,
   return ret;
 }
 
+#if VERBOSE
+static int printInfo(void *data,
+		     const GNUNET_PeerIdentity *
+		     identity,
+		     const void *address,
+		     unsigned int addr_len,
+		     GNUNET_CronTime last_message,
+		     unsigned int trust,
+		     unsigned int bpmFromPeer) {
+  GNUNET_EncName oth;
+  GNUNET_hash_to_enc(&identity->hashPubKey, &oth);
+  fprintf(stderr,
+	  "%s: %llu - %u\n",
+	  (const char*) &oth,
+	  last_message,
+	  bpmFromPeer);
+  return GNUNET_OK;
+}
+#endif
+
 /**
  * Establish a connection between two GNUnet daemons
  * (both must run on this machine).
@@ -243,7 +265,7 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
     {
       sock1 = GNUNET_client_connection_create (NULL, cfg1);
       sock2 = GNUNET_client_connection_create (NULL, cfg2);
-      ret = -10;
+      ret = -20;
       fprintf (stderr, _("Waiting for peers to connect"));
       while ((ret++ < -1) && (GNUNET_shutdown_test () == GNUNET_NO))
         {
@@ -277,6 +299,33 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
           GNUNET_free_non_null (h1);
           GNUNET_free_non_null (h2);
         }
+      if (ret != GNUNET_OK) 
+	{
+#if VERBOSE
+	  GNUNET_EncName e1;
+	  GNUNET_EncName e2;
+	  GNUNET_hash_to_enc(&h1->senderIdentity.hashPubKey,
+			     &e1);
+	  GNUNET_hash_to_enc(&h2->senderIdentity.hashPubKey,
+			     &e2);
+	  fprintf(stderr,
+		  "\nFailed to connect `%s' and `%s'\n",
+		  (const char*) &e1,
+		  (const char*) &e2);
+	  fprintf(stderr,
+		  "Connections of `%s':\n",
+		  (const char*) &e1);
+	  GNUNET_IDENTITY_request_peer_infos(sock1,
+					     &printInfo,
+					     NULL);
+	  fprintf(stderr,
+		  "Connections of `%s':\n",
+		  (const char*) &e2);
+	  GNUNET_IDENTITY_request_peer_infos(sock2,
+					     &printInfo,
+					     NULL);
+#endif
+	}
       fprintf (stderr, "%s\n", ret == GNUNET_OK ? "!" : "?");
       GNUNET_client_connection_destroy (sock1);
       GNUNET_client_connection_destroy (sock2);

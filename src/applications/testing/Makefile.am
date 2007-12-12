@@ -13,13 +13,21 @@ libgnunettesting_api_la_LIBADD = \
 
 
 check_PROGRAMS = \
-  testingtest
+  testingtest \
+  testingtest_loop
 
 TESTS = $(check_PROGRAMS)
 
 testingtest_SOURCES = \
  testingtest.c 
 testingtest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/applications/testing/libgnunettesting_api.la
+
+
+testingtest_loop_SOURCES = \
+ testingtest_loop.c 
+testingtest_loop_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/applications/testing/libgnunettesting_api.la
 
