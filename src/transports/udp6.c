@@ -493,7 +493,7 @@ inittransport_udp6 (GNUNET_CoreAPIForTransport * core)
                    GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
                    _("MTU %llu for `%s' is probably too low!\n"), mtu,
                    "UDP6");
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -526,7 +526,7 @@ donetransport_udp6 ()
 {
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (configLock);

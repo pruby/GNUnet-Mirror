@@ -87,7 +87,7 @@ notify_listeners (void *ctx, struct GNUNET_GNS_TreeNode *tree)
  * @return 0 if the change is ok, -1 if the change must be
  *         refused
  */
-int
+static int
 configChangeListener (void *ctx,
                       struct GNUNET_GC_Configuration *cfg,
                       struct GNUNET_GE_Context *ectx,
@@ -96,7 +96,7 @@ configChangeListener (void *ctx,
   struct GNUNET_GNS_Context *g = ctx;
   struct GNUNET_GNS_TreeNode *pos;
 
-  pos = tree_lookup (g->root, section, option);
+  pos = GNUNET_GNS_tree_lookup (g->root, section, option);
   if (pos == NULL)
     {
       GNUNET_GE_LOG (g->ectx,
@@ -235,7 +235,8 @@ configChangeListener (void *ctx,
   notify_listeners (g, pos);
 
   /* allow tree to update visibility */
-  tree_notify_change (cfg, &notify_listeners, g, g->ectx, g->root, pos);
+  GNUNET_GNS_tree_notify_change (cfg, &notify_listeners, g, g->ectx, g->root,
+                                 pos);
   return 0;
 }
 
@@ -298,7 +299,7 @@ GNUNET_GNS_load_specification (struct GNUNET_GE_Context *ectx,
   struct GNUNET_GNS_Context *ctx;
   struct GNUNET_GNS_TreeNode *root;
 
-  root = tree_parse (ectx, specification);
+  root = GNUNET_GNS_tree_parse (ectx, specification);
   if (root == NULL)
     return NULL;
   ctx = GNUNET_malloc (sizeof (struct GNUNET_GNS_Context));

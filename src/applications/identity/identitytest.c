@@ -43,8 +43,8 @@ static struct GNUNET_GC_Configuration *cfg;
    printf("Assertion failed at %s:%d\n", \
           __FILE__, __LINE__); \
    GNUNET_cron_stop(cron); \
-   releaseService(identity); \
-   releaseService(transport); \
+   GNUNET_CORE_release_service(identity); \
+   GNUNET_CORE_release_service(transport); \
    return GNUNET_SYSERR; \
   } \
 } while (0)
@@ -59,8 +59,8 @@ runTest ()
   GNUNET_RSA_Signature sig;
   GNUNET_MessageHello *hello;
 
-  transport = requestService ("transport");
-  identity = requestService ("identity");
+  transport = GNUNET_CORE_request_service ("transport");
+  identity = GNUNET_CORE_request_service ("identity");
   GNUNET_cron_start (cron);
   /* give cron job chance to run */
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
@@ -69,8 +69,8 @@ runTest ()
     {
       printf ("Cannot run test, failed to create any hello.\n");
       GNUNET_cron_stop (cron);
-      releaseService (identity);
-      releaseService (transport);
+      GNUNET_CORE_release_service (identity);
+      GNUNET_CORE_release_service (transport);
       return GNUNET_SYSERR;
     }
   identity->addHost (hello);
@@ -79,9 +79,9 @@ runTest ()
 
   identity->changeHostTrust (&pid, -identity->getHostTrust (&pid));
   ASSERT (4 == identity->changeHostTrust (&pid, 4));
-  releaseService (identity);
+  GNUNET_CORE_release_service (identity);
 
-  identity = requestService ("identity");
+  identity = GNUNET_CORE_request_service ("identity");
   ASSERT (4 == identity->getHostTrust (&pid));
   ASSERT (5 == identity->changeHostTrust (&pid, 5));
   ASSERT (-2 == identity->changeHostTrust (&pid, -2));
@@ -99,8 +99,8 @@ runTest ()
      hello verification, temporary storage,
      permanent storage, blacklisting, etc. */
   GNUNET_cron_stop (cron);
-  releaseService (identity);
-  releaseService (transport);
+  GNUNET_CORE_release_service (identity);
+  GNUNET_CORE_release_service (transport);
   return GNUNET_OK;
 }
 
@@ -141,13 +141,13 @@ main (int argc, char *argv[])
       return -1;
     }
   cron = GNUNET_cron_create (NULL);
-  initCore (NULL, cfg, cron, NULL);
+  GNUNET_CORE_init (NULL, cfg, cron, NULL);
   err = 0;
   if (GNUNET_OK != runTest ())
     err = 1;
   if (GNUNET_OK != runClientTest ())
     err = 1;
-  doneCore ();
+  GNUNET_CORE_done ();
   GNUNET_cron_destroy (cron);
   GNUNET_GC_free (cfg);
   return err;

@@ -149,7 +149,8 @@ static unsigned int count_by_type[GNUNET_P2P_PROTO_MAX_USED];
  *        and updates to the handler list are illegal!
  */
 int
-registerp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
+GNUNET_CORE_p2p_register_handler (unsigned short type,
+                                  GNUNET_P2PRequestHandler callback)
 {
   unsigned int last;
 
@@ -192,7 +193,8 @@ registerp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
  *        and updates to the handler list are illegal!
  */
 int
-unregisterp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
+GNUNET_CORE_p2p_unregister_handler (unsigned short type,
+                                    GNUNET_P2PRequestHandler callback)
 {
   unsigned int pos;
   unsigned int last;
@@ -245,8 +247,9 @@ unregisterp2pHandler (unsigned short type, GNUNET_P2PRequestHandler callback)
  *        and updates to the handler list are illegal!
  */
 int
-registerPlaintextHandler (unsigned short type,
-                          GNUNET_P2PPlaintextRequestHandler callback)
+GNUNET_CORE_plaintext_register_handler (unsigned short type,
+                                        GNUNET_P2PPlaintextRequestHandler
+                                        callback)
 {
   unsigned int last;
 
@@ -290,8 +293,9 @@ registerPlaintextHandler (unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int
-unregisterPlaintextHandler (unsigned short type,
-                            GNUNET_P2PPlaintextRequestHandler callback)
+GNUNET_CORE_plaintext_unregister_handler (unsigned short type,
+                                          GNUNET_P2PPlaintextRequestHandler
+                                          callback)
 {
   unsigned int pos;
   unsigned int last;
@@ -344,13 +348,14 @@ unregisterPlaintextHandler (unsigned short type,
  *        and updates to the handler list are illegal!
  */
 int
-isHandlerRegistered (unsigned short type, unsigned short handlerType)
+GNUNET_CORE_p2p_test_handler_registered (unsigned short type,
+                                         unsigned short handlerType)
 {
   int pos;
   int ret;
 
   if (handlerType == 3)
-    return isCSHandlerRegistered (type);
+    return GNUNET_CORE_cs_test_handler_registered (type);
   if (handlerType > 3)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -389,9 +394,10 @@ isHandlerRegistered (unsigned short type, unsigned short handlerType)
  * @param session NULL if not available
  */
 void
-injectMessage (const GNUNET_PeerIdentity * sender,
-               const char *msg,
-               unsigned int size, int wasEncrypted, GNUNET_TSession * session)
+GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
+                                const char *msg,
+                                unsigned int size, int wasEncrypted,
+                                GNUNET_TSession * session)
 {
   unsigned int pos;
   const GNUNET_MessageHeader *part;
@@ -597,15 +603,20 @@ handleMessage (GNUNET_TSession * tsession,
       GNUNET_GE_BREAK (NULL, 0);
       return;
     }
-  ret = checkHeader (sender, (GNUNET_TransportPacket_HEADER *) msg, size);
+  ret =
+    GNUNET_CORE_connection_check_header (sender,
+                                         (GNUNET_TransportPacket_HEADER *)
+                                         msg, size);
   if (ret == GNUNET_SYSERR)
     return;                     /* message malformed or failed to decrypt */
   if ((ret == GNUNET_YES) && (tsession != NULL) && (sender != NULL))
-    considerTakeover (sender, tsession);
-  injectMessage (sender,
-                 &msg[sizeof (GNUNET_TransportPacket_HEADER)],
-                 size - sizeof (GNUNET_TransportPacket_HEADER), ret,
-                 tsession);
+    GNUNET_CORE_connection_consider_takeover (sender, tsession);
+  GNUNET_CORE_p2p_inject_message (sender,
+                                  &msg[sizeof
+                                       (GNUNET_TransportPacket_HEADER)],
+                                  size -
+                                  sizeof (GNUNET_TransportPacket_HEADER), ret,
+                                  tsession);
 }
 
 /**
@@ -649,7 +660,7 @@ threadMain (void *cls)
  * (receive implementation).
  */
 void
-core_receive (GNUNET_TransportPacket * mp)
+GNUNET_CORE_p2p_receive (GNUNET_TransportPacket * mp)
 {
   if (threads_running != GNUNET_YES)
     {
@@ -769,7 +780,7 @@ core_receive (GNUNET_TransportPacket * mp)
  * Start processing p2p messages.
  */
 void
-enableCoreProcessing ()
+GNUNET_CORE_p2p_enable_processing ()
 {
   int i;
 
@@ -787,7 +798,7 @@ enableCoreProcessing ()
  * Stop processing (p2p) messages.
  */
 void
-disableCoreProcessing ()
+GNUNET_CORE_p2p_disable_processing ()
 {
   int i;
   void *unused;
@@ -813,15 +824,15 @@ disableCoreProcessing ()
  * Initialize message handling module.
  */
 void
-initHandler (struct GNUNET_GE_Context *e)
+GNUNET_CORE_p2p_init (struct GNUNET_GE_Context *e)
 {
   int i;
 
   ectx = e;
   handlerLock = GNUNET_mutex_create (GNUNET_NO);
-  transport = requestService ("transport");
+  transport = GNUNET_CORE_request_service ("transport");
   GNUNET_GE_ASSERT (ectx, transport != NULL);
-  identity = requestService ("identity");
+  identity = GNUNET_CORE_request_service ("identity");
   GNUNET_GE_ASSERT (ectx, identity != NULL);
   /* initialize sync mechanisms for message handling threads */
   bufferQueueRead_ = GNUNET_semaphore_create (0);
@@ -837,7 +848,7 @@ initHandler (struct GNUNET_GE_Context *e)
  * Shutdown message handling module.
  */
 void
-doneHandler ()
+GNUNET_CORE_p2p_done ()
 {
   unsigned int i;
 
@@ -874,9 +885,9 @@ doneHandler ()
       GNUNET_array_grow (plaintextHandlers[i], last, 0);
     }
   GNUNET_array_grow (plaintextHandlers, plaintextmax_registeredType, 0);
-  releaseService (transport);
+  GNUNET_CORE_release_service (transport);
   transport = NULL;
-  releaseService (identity);
+  GNUNET_CORE_release_service (identity);
   identity = NULL;
 #if MEASURE_TIME
   for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)

@@ -218,7 +218,7 @@ GNUNET_URITRACK_track (struct GNUNET_GE_Context *ectx,
   GNUNET_IPC_semaphore_destroy (sem);
   GNUNET_free (data);
   GNUNET_free (suri);
-  URITRACK_internal_notify (fi);
+  GNUNET_URITRACK_internal_notify (fi);
 }
 
 /**

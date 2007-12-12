@@ -184,9 +184,9 @@ main (int argc, char *const *argv)
                                                                    "DISABLE",
                                                                    "YES"));
   cron = GNUNET_cron_create (ectx);
-  initCore (ectx, cfg, cron, NULL);
-  identity = requestService ("identity");
-  transport = requestService ("transport");
+  GNUNET_CORE_init (ectx, cfg, cron, NULL);
+  identity = GNUNET_CORE_request_service ("identity");
+  transport = GNUNET_CORE_request_service ("transport");
   if (no_resolve != GNUNET_YES)
     {
 #if HAVE_ADNS
@@ -198,9 +198,9 @@ main (int argc, char *const *argv)
     }
   identity->forEachHost (0,     /* no timeout */
                          &printHostInfo, NULL);
-  releaseService (identity);
-  releaseService (transport);
-  doneCore ();
+  GNUNET_CORE_release_service (identity);
+  GNUNET_CORE_release_service (transport);
+  GNUNET_CORE_done ();
   GNUNET_cron_destroy (cron);
   GNUNET_fini (ectx, cfg);
   return 0;

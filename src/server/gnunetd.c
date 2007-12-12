@@ -114,7 +114,7 @@ gnunet_main ()
 #ifndef WINDOWS
   shc_hup = GNUNET_signal_handler_install (SIGHUP, &reread_config);
 #endif
-  if (GNUNET_OK != initCore (ectx, cfg, cron, mon))
+  if (GNUNET_OK != GNUNET_CORE_init (ectx, cfg, cron, mon))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
@@ -131,21 +131,21 @@ gnunet_main ()
     }
 
   /* enforce filesystem limits */
-  capFSQuotaSize (ectx, cfg);
+  GNUNET_CORE_startup_cap_fs_quota_size (ectx, cfg);
 
-  initConnection (ectx, cfg, mon, cron);
-  loadApplicationModules ();
+  GNUNET_CORE_connection_init (ectx, cfg, mon, cron);
+  GNUNET_CORE_load_application_modules ();
   if (GNUNET_NO == debug_flag)
     GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   GNUNET_cron_start (cron);
-  enableCoreProcessing ();
+  GNUNET_CORE_p2p_enable_processing ();
   waitForSignalHandler (ectx);
-  disableCoreProcessing ();
+  GNUNET_CORE_p2p_disable_processing ();
   GNUNET_cron_stop (cron);
-  stopTCPServer ();
-  unloadApplicationModules ();
-  doneConnection ();
-  doneCore ();
+  GNUNET_CORE_stop_cs_server ();
+  GNUNET_CORE_unload_application_modules ();
+  GNUNET_CORE_connection_done ();
+  GNUNET_CORE_done ();
   GNUNET_network_monitor_destroy (mon);
 #ifndef WINDOWS
   GNUNET_signal_handler_uninstall (SIGHUP, &reread_config, shc_hup);
@@ -161,7 +161,7 @@ gnunet_main ()
 void WINAPI
 ServiceMain (DWORD argc, LPSTR * argv)
 {
-  win_service_main (gnunet_main);
+  GNUNET_CORE_w32_service_main (gnunet_main);
 }
 #endif
 
@@ -221,13 +221,13 @@ main (int argc, char *const *argv)
       return 1;
     }
   GNUNET_pid_file_write (ectx, cfg, getpid ());
-  if (GNUNET_OK != changeUser (ectx, cfg))
+  if (GNUNET_OK != GNUNET_CORE_startup_change_user (ectx, cfg))
     {
       GNUNET_pid_file_delete (ectx, cfg);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  if (GNUNET_OK != checkPermissions (ectx, cfg))
+  if (GNUNET_OK != GNUNET_CORE_startup_check_permissions (ectx, cfg))
     {
       GNUNET_pid_file_delete (ectx, cfg);
       GNUNET_fini (ectx, cfg);
@@ -263,8 +263,8 @@ main (int argc, char *const *argv)
       GNUNET_GE_setDefaultContext (ectx);
       GNUNET_free (user_log_level);
     }
-  setFdLimit (ectx, cfg);
-  if (GNUNET_OK != checkUpToDate (ectx, cfg))
+  GNUNET_CORE_startup_set_fd_limit (ectx, cfg);
+  if (GNUNET_OK != GNUNET_CORE_version_check_up_to_date (ectx, cfg))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_USER | GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE,

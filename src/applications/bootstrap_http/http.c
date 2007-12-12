@@ -390,7 +390,7 @@ provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi)
 
   coreAPI = capi;
   ectx = capi->ectx;
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_hellodownloaded
@@ -404,7 +404,7 @@ void
 release_module_bootstrap ()
 {
   if (stats != NULL)
-    coreAPI->releaseService (stats);
+    coreAPI->GNUNET_CORE_release_service (stats);
   coreAPI = NULL;
 }
 

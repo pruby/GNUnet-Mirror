@@ -217,7 +217,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           break;
         }
     }
-  treedepth = computeDepth (filesize);
+  treedepth = GNUNET_ECRS_compute_depth (filesize);
   fd = GNUNET_disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
   if (fd == -1)
     {

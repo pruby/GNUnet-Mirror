@@ -115,13 +115,13 @@ shutdownHandler (struct GNUNET_ClientHandle *client,
   GNUNET_GE_LOG (NULL,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  "shutdown request accepted from client\n");
-  ret = sendTCPResultToClient (client, GNUNET_OK);
-  shutdown_gnunetd (cfg, 0);
+  ret = GNUNET_CORE_cs_send_result_to_client (client, GNUNET_OK);
+  GNUNET_CORE_shutdown (cfg, 0);
   return ret;
 }
 
 int
-registerClientExitHandler (GNUNET_ClientExitHandler callback)
+GNUNET_CORE_cs_register_exit_handler (GNUNET_ClientExitHandler callback)
 {
   GNUNET_mutex_lock (handlerlock);
   GNUNET_array_grow (exitHandlers, exitHandlerCount, exitHandlerCount + 1);
@@ -131,7 +131,7 @@ registerClientExitHandler (GNUNET_ClientExitHandler callback)
 }
 
 int
-unregisterClientExitHandler (GNUNET_ClientExitHandler callback)
+GNUNET_CORE_cs_exit_handler_unregister (GNUNET_ClientExitHandler callback)
 {
   int i;
 
@@ -197,8 +197,9 @@ select_close_handler (void *ch_cls,
  * @param force GNUNET_YES if this message MUST be queued
  */
 int
-sendToClient (struct GNUNET_ClientHandle *handle,
-              const GNUNET_MessageHeader * message, int force)
+GNUNET_CORE_cs_send_to_client (struct GNUNET_ClientHandle *handle,
+                               const GNUNET_MessageHeader * message,
+                               int force)
 {
 #if DEBUG_TCPHANDLER
   GNUNET_GE_LOG (ectx,
@@ -210,7 +211,7 @@ sendToClient (struct GNUNET_ClientHandle *handle,
 }
 
 void
-terminateClientConnection (struct GNUNET_ClientHandle *sock)
+GNUNET_CORE_cs_terminate_client_connection (struct GNUNET_ClientHandle *sock)
 {
   GNUNET_select_disconnect (selector, sock->sock);
 }
@@ -357,26 +358,27 @@ startTCPServer ()
 }
 
 int
-doneTCPServer ()
+GNUNET_CORE_cs_done ()
 {
   if (selector != NULL)
-    stopTCPServer ();           /* just to be sure; used mostly
-                                   for the benefit of gnunet-update
-                                   and other gnunet-tools that are
-                                   not gnunetd */
-  unregisterCSHandler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST, &shutdownHandler);
+    GNUNET_CORE_stop_cs_server ();      /* just to be sure; used mostly
+                                           for the benefit of gnunet-update
+                                           and other gnunet-tools that are
+                                           not gnunetd */
+  GNUNET_CORE_unregister_handler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST,
+                                  &shutdownHandler);
   GNUNET_array_grow (handlers, max_registeredType, 0);
   GNUNET_array_grow (exitHandlers, exitHandlerCount, 0);
   GNUNET_free (trustedNetworks_);
   return GNUNET_OK;
 }
 
-void __attribute__ ((constructor)) gnunet_tcpserver_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_CORE_cs_ltdl_init ()
 {
   handlerlock = GNUNET_mutex_create (GNUNET_YES);
 }
 
-void __attribute__ ((destructor)) gnunet_tcpserver_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_CORE_cs_ltdl_fini ()
 {
   GNUNET_mutex_destroy (handlerlock);
   handlerlock = NULL;
@@ -386,7 +388,8 @@ void __attribute__ ((destructor)) gnunet_tcpserver_ltdl_fini ()
  * Initialize the TCP port and listen for incoming client connections.
  */
 int
-initTCPServer (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
+GNUNET_CORE_cs_init (struct GNUNET_GE_Context *e,
+                     struct GNUNET_GC_Configuration *c)
 {
   char *ch;
 
@@ -415,14 +418,14 @@ initTCPServer (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
     }
   GNUNET_free (ch);
 
-  registerCSHandler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST, &shutdownHandler);
-  if ((GNUNET_NO == GNUNET_GC_get_configuration_value_yesno (cfg,
-                                                             "TCPSERVER",
-                                                             "DISABLE",
-                                                             GNUNET_NO)) &&
-      (GNUNET_OK != startTCPServer ()))
+  GNUNET_CORE_register_handler (GNUNET_CS_PROTO_SHUTDOWN_REQUEST,
+                                &shutdownHandler);
+  if ((GNUNET_NO ==
+       GNUNET_GC_get_configuration_value_yesno (cfg, "TCPSERVER", "DISABLE",
+                                                GNUNET_NO))
+      && (GNUNET_OK != startTCPServer ()))
     {
-      doneTCPServer ();
+      GNUNET_CORE_cs_done ();
       return GNUNET_SYSERR;
     }
   return GNUNET_OK;
@@ -432,7 +435,7 @@ initTCPServer (struct GNUNET_GE_Context *e, struct GNUNET_GC_Configuration *c)
  * Shutdown the module.
  */
 int
-stopTCPServer ()
+GNUNET_CORE_stop_cs_server ()
 {
   if (selector != NULL)
     {
@@ -454,7 +457,8 @@ stopTCPServer ()
  *         handler for that type
  */
 int
-registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback)
+GNUNET_CORE_register_handler (unsigned short type,
+                              GNUNET_ClientRequestHandler callback)
 {
   GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
@@ -490,8 +494,8 @@ registerCSHandler (unsigned short type, GNUNET_ClientRequestHandler callback)
  *         handler for that type
  */
 int
-unregisterCSHandler (unsigned short type,
-                     GNUNET_ClientRequestHandler callback)
+GNUNET_CORE_unregister_handler (unsigned short type,
+                                GNUNET_ClientRequestHandler callback)
 {
   GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
@@ -524,14 +528,15 @@ unregisterCSHandler (unsigned short type,
  *         send successfully
  */
 int
-sendTCPResultToClient (struct GNUNET_ClientHandle *sock, int ret)
+GNUNET_CORE_cs_send_result_to_client (struct GNUNET_ClientHandle *sock,
+                                      int ret)
 {
   GNUNET_MessageReturnValue rv;
 
   rv.header.size = htons (sizeof (GNUNET_MessageReturnValue));
   rv.header.type = htons (GNUNET_CS_PROTO_RETURN_VALUE);
   rv.return_value = htonl (ret);
-  return sendToClient (sock, &rv.header, GNUNET_YES);
+  return GNUNET_CORE_cs_send_to_client (sock, &rv.header, GNUNET_YES);
 }
 
 /**
@@ -543,8 +548,8 @@ sendTCPResultToClient (struct GNUNET_ClientHandle *sock, int ret)
  *         send successfully
  */
 int
-sendTCPErrorToClient (struct GNUNET_ClientHandle *sock,
-                      GNUNET_GE_KIND kind, const char *message)
+GNUNET_CORE_cs_send_error_to_client (struct GNUNET_ClientHandle *sock,
+                                     GNUNET_GE_KIND kind, const char *message)
 {
   GNUNET_MessageReturnErrorMessage *rv;
   size_t msgLen;
@@ -560,7 +565,7 @@ sendTCPErrorToClient (struct GNUNET_ClientHandle *sock,
   rv->header.type = htons (GNUNET_CS_PROTO_RETURN_ERROR);
   rv->kind = htonl (kind);
   memcpy (&rv[1], message, strlen (message));
-  ret = sendToClient (sock, &rv->header, GNUNET_YES);
+  ret = GNUNET_CORE_cs_send_to_client (sock, &rv->header, GNUNET_YES);
   GNUNET_free (rv);
   return ret;
 }
@@ -573,7 +578,7 @@ sendTCPErrorToClient (struct GNUNET_ClientHandle *sock,
  * @return number of registered handlers (0 or 1)
  */
 unsigned int
-isCSHandlerRegistered (unsigned short type)
+GNUNET_CORE_cs_test_handler_registered (unsigned short type)
 {
   GNUNET_mutex_lock (handlerlock);
   if (type < max_registeredType)
@@ -602,12 +607,12 @@ static void
 logClientLogContext (void *ctx,
                      GNUNET_GE_KIND kind, const char *date, const char *msg)
 {
-  sendTCPErrorToClient (ctx, kind, msg);
+  GNUNET_CORE_cs_send_error_to_client (ctx, kind, msg);
 }
 
 struct GNUNET_GE_Context *
-createClientLogContext (GNUNET_GE_KIND mask,
-                        struct GNUNET_ClientHandle *handle)
+GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_KIND mask,
+                                          struct GNUNET_ClientHandle *handle)
 {
   return GNUNET_GE_create_context_callback (mask,
                                             &logClientLogContext,

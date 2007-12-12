@@ -144,7 +144,7 @@ typedef struct
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void *(*requestService) (const char *name);
+  void *(*GNUNET_CORE_request_service) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -156,9 +156,10 @@ typedef struct
    *
    * @return GNUNET_OK if service was successfully released, GNUNET_SYSERR on error
    */
-  int (*releaseService) (void *service);
+  int (*GNUNET_CORE_release_service) (void *service);
 
-  int (*assertUnused) (GNUNET_TSession * tsession);
+  int (*GNUNET_CORE_connection_assert_tsession_unused) (GNUNET_TSession *
+                                                        tsession);
 
 
 } GNUNET_CoreAPIForTransport;

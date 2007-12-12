@@ -717,7 +717,9 @@ init_dht_table (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   /* use less than 50% of peer's ideal number of
      connections for DHT table size */
-  i = coreAPI->getSlotCount () / MAINTAIN_BUCKET_SIZE / 2;
+  i =
+    coreAPI->GNUNET_CORE_connection_get_slot_count () / MAINTAIN_BUCKET_SIZE /
+    2;
   if (i < 4)
     i = 4;
   GNUNET_array_grow (buckets, bucketCount, i);
@@ -726,8 +728,8 @@ init_dht_table (GNUNET_CoreAPIForPlugins * capi)
       buckets[i].bstart = 512 * i / bucketCount;
       buckets[i].bend = 512 * (i + 1) / bucketCount;
     }
-  lock = capi->getConnectionModuleLock ();
-  stats = capi->requestService ("stats");
+  lock = capi->GNUNET_CORE_connection_get_lock ();
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_dht_total_peers =
@@ -739,9 +741,9 @@ init_dht_table (GNUNET_CoreAPIForPlugins * capi)
       stat_dht_advertisements =
         stats->create (gettext_noop ("# dht discovery messages sent"));
     }
-  identity = coreAPI->requestService ("identity");
+  identity = coreAPI->GNUNET_CORE_request_service ("identity");
   GNUNET_GE_ASSERT (coreAPI->ectx, identity != NULL);
-  pingpong = coreAPI->requestService ("pingpong");
+  pingpong = coreAPI->GNUNET_CORE_request_service ("pingpong");
   GNUNET_GE_ASSERT (coreAPI->ectx, pingpong != NULL);
   capi->registerHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
   capi->registerHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
@@ -770,12 +772,12 @@ done_dht_table ()
                        NULL);
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
-  coreAPI->releaseService (identity);
+  coreAPI->GNUNET_CORE_release_service (identity);
   identity = NULL;
-  coreAPI->releaseService (pingpong);
+  coreAPI->GNUNET_CORE_release_service (pingpong);
   pingpong = NULL;
   for (i = 0; i < bucketCount; i++)
     {

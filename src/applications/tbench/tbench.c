@@ -384,7 +384,8 @@ csHandleTBenchRequest (struct GNUNET_ClientHandle *client,
   reply.variance_loss = sum_variance_loss / (iterations - 1);
   GNUNET_free (results);
   results = NULL;
-  return coreAPI->sendToClient (client, &reply.header, GNUNET_YES);
+  return coreAPI->GNUNET_CORE_cs_send_to_client (client, &reply.header,
+                                                 GNUNET_YES);
 }
 
 /**

@@ -78,7 +78,7 @@ int
 init_dht_store (size_t max_size, GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  dstore = coreAPI->requestService ("dstore");
+  dstore = coreAPI->GNUNET_CORE_request_service ("dstore");
   if (dstore == NULL)
     return GNUNET_SYSERR;
   return GNUNET_OK;
@@ -92,7 +92,7 @@ init_dht_store (size_t max_size, GNUNET_CoreAPIForPlugins * capi)
 int
 done_dht_store ()
 {
-  coreAPI->releaseService (dstore);
+  coreAPI->GNUNET_CORE_release_service (dstore);
   coreAPI = NULL;
   dstore = NULL;
   return GNUNET_OK;

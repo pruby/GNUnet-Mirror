@@ -199,7 +199,8 @@ processResponse (const GNUNET_HashCode * key,
 #endif
           if (stats != NULL)
             stats->change (stat_replies_transmitted, 1);
-          coreAPI->sendToClient (trackers[i]->client, &rc->header, GNUNET_NO);
+          coreAPI->GNUNET_CORE_cs_send_to_client (trackers[i]->client,
+                                                  &rc->header, GNUNET_NO);
           GNUNET_free (rc);
         }
     }
@@ -222,10 +223,10 @@ initQueryManager (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   ectx = capi->ectx;
-  capi->registerClientExitHandler (&ceh);
+  capi->GNUNET_CORE_cs_register_exit_handler (&ceh);
   GNUNET_array_grow (trackers, trackerSize, 64);
   queryManagerLock = GNUNET_mutex_create (GNUNET_NO);
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_queries_tracked
@@ -251,11 +252,11 @@ doneQueryManager ()
   if (stats != NULL)
     {
       stats->set (stat_queries_tracked, 0);
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
 
-  coreAPI->unregisterClientExitHandler (&ceh);
+  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&ceh);
   GNUNET_mutex_destroy (queryManagerLock);
   queryManagerLock = NULL;
   coreAPI = NULL;

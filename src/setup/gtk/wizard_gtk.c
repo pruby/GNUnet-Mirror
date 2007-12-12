@@ -142,7 +142,7 @@ insert_nic (const char *name, int defaultNIC, void *cls)
 
   gtk_combo_box_append_text (GTK_COMBO_BOX (cmbNIC), utf8_name);
   free (utf8_name);
-  defaultNIC = wiz_is_nic_default (editCfg, name, defaultNIC);
+  defaultNIC = GNUNET_GNS_wiz_is_nic_default (editCfg, name, defaultNIC);
   if (defaultNIC)
     gtk_combo_box_set_active (GTK_COMBO_BOX (cmbNIC), inc->nic_item_count);
 
@@ -465,7 +465,7 @@ on_finish_clickedsetup_gtk (GtkButton * button, gpointer user_data)
   char *gup;
   char *bin;
   if (doAutoStart && (user_name != NULL))
-    if (!wiz_createGroupUser (group_name, user_name))
+    if (!GNUNET_GNS_wiz_create_group_user (group_name, user_name))
       {
 #ifndef MINGW
         showErr (_("Unable to create user account:"), STRERROR (errno));
@@ -473,7 +473,8 @@ on_finish_clickedsetup_gtk (GtkButton * button, gpointer user_data)
         return;
       }
 
-  if (wiz_autostartService (doAutoStart, user_name, group_name) != GNUNET_OK)
+  if (GNUNET_GNS_wiz_autostart_service (doAutoStart, user_name, group_name) !=
+      GNUNET_OK)
     {
 #ifndef MINGW
       showErr (_("Unable to change startup process:"), STRERROR (errno));

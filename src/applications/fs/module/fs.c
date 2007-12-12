@@ -332,8 +332,9 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    createClientLogContext (GNUNET_GE_USER | GNUNET_GE_EVENTKIND |
-                            GNUNET_GE_ROUTEKIND, sock);
+    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
+                                              GNUNET_GE_EVENTKIND |
+                                              GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_insert_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -447,8 +448,9 @@ csHandleCS_fs_request_init_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    createClientLogContext (GNUNET_GE_USER | GNUNET_GE_EVENTKIND |
-                            GNUNET_GE_ROUTEKIND, sock);
+    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
+                                              GNUNET_GE_EVENTKIND |
+                                              GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_init_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -499,8 +501,9 @@ csHandleCS_fs_request_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    createClientLogContext (GNUNET_GE_USER | GNUNET_GE_EVENTKIND |
-                            GNUNET_GE_ROUTEKIND, sock);
+    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
+                                              GNUNET_GE_EVENTKIND |
+                                              GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -585,8 +588,9 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    createClientLogContext (GNUNET_GE_USER | GNUNET_GE_EVENTKIND |
-                            GNUNET_GE_ROUTEKIND, sock);
+    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
+                                              GNUNET_GE_EVENTKIND |
+                                              GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_delete_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -662,8 +666,9 @@ csHandleCS_fs_request_unindex_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    createClientLogContext (GNUNET_GE_USER | GNUNET_GE_EVENTKIND |
-                            GNUNET_GE_ROUTEKIND, sock);
+    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
+                                              GNUNET_GE_EVENTKIND |
+                                              GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) != sizeof (CS_fs_request_unindex_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -1224,14 +1229,14 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                      "QUOTA", "FS");
       return GNUNET_SYSERR;
     }
-  datastore = capi->requestService ("datastore");
+  datastore = capi->GNUNET_CORE_request_service ("datastore");
   if (datastore == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  traffic = capi->requestService ("traffic");
-  stats = capi->requestService ("stats");
+  traffic = capi->GNUNET_CORE_request_service ("traffic");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_expired_replies_dropped
@@ -1239,17 +1244,17 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
       stat_valid_replies_received
         = stats->create (gettext_noop ("# FS valid replies received"));
     }
-  gap = capi->requestService ("gap");
+  gap = capi->GNUNET_CORE_request_service ("gap");
   if (gap == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->releaseService (datastore);
+      capi->GNUNET_CORE_release_service (datastore);
       if (stats != NULL)
-        capi->releaseService (stats);
-      capi->releaseService (traffic);
+        capi->GNUNET_CORE_release_service (stats);
+      capi->GNUNET_CORE_release_service (traffic);
       return GNUNET_SYSERR;
     }
-  dht = capi->requestService ("dht");
+  dht = capi->GNUNET_CORE_request_service ("dht");
   if (dht != NULL)
     init_dht_push (capi, dht);
   ltgSignal = GNUNET_semaphore_create (0);
@@ -1399,24 +1404,24 @@ done_module_fs ()
   GNUNET_semaphore_up (ltgSignal);      /* lg_jobs == NULL => thread will terminate */
   GNUNET_thread_join (localGetProcessor, &unused);
   doneQueryManager ();
-  coreAPI->releaseService (datastore);
+  coreAPI->GNUNET_CORE_release_service (datastore);
   datastore = NULL;
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
-  coreAPI->releaseService (gap);
+  coreAPI->GNUNET_CORE_release_service (gap);
   gap = NULL;
   if (dht != NULL)
     {
       done_dht_push ();
-      coreAPI->releaseService (dht);
+      coreAPI->GNUNET_CORE_release_service (dht);
       dht = NULL;
     }
   if (traffic != NULL)
     {
-      coreAPI->releaseService (traffic);
+      coreAPI->GNUNET_CORE_release_service (traffic);
       traffic = NULL;
     }
   coreAPI = NULL;

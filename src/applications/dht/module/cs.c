@@ -128,13 +128,14 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
                  &value[1]);
 #endif
   if (GNUNET_OK !=
-      coreAPI->sendToClient (record->client, &msg->header, GNUNET_YES))
+      coreAPI->GNUNET_CORE_cs_send_to_client (record->client, &msg->header,
+                                              GNUNET_YES))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _("`%s' failed. Terminating connection to client.\n"),
-                     "sendToClient");
-      coreAPI->terminateClientConnection (record->client);
+                     "GNUNET_CORE_cs_send_to_client");
+      coreAPI->GNUNET_CORE_cs_terminate_client_connection (record->client);
     }
   GNUNET_free (msg);
   return GNUNET_OK;
@@ -233,7 +234,7 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
 
-  dhtAPI = capi->requestService ("dht");
+  dhtAPI = capi->GNUNET_CORE_request_service ("dht");
   if (dhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
@@ -250,7 +251,8 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientExitHandler (&csClientExit))
+  if (GNUNET_SYSERR ==
+      capi->GNUNET_CORE_cs_register_exit_handler (&csClientExit))
     status = GNUNET_SYSERR;
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -282,12 +284,13 @@ done_module_dht ()
       coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET,
                                         &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_OK != coreAPI->unregisterClientExitHandler (&csClientExit))
+  if (GNUNET_OK !=
+      coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&csClientExit))
     status = GNUNET_SYSERR;
 
   while (getRecordsSize > 0)
     get_timeout (getRecords[0]);
-  coreAPI->releaseService (dhtAPI);
+  coreAPI->GNUNET_CORE_release_service (dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;
   GNUNET_mutex_destroy (lock);

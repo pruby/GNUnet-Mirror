@@ -524,7 +524,7 @@ inittransport_tcp6 (GNUNET_CoreAPIForTransport * core)
       return NULL;
     }
   coreAPI = core;
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -554,7 +554,7 @@ void
 donetransport_tcp6 ()
 {
   GNUNET_GC_detach_change_listener (cfg, &reloadConfiguration, NULL);
-  coreAPI->releaseService (stats);
+  coreAPI->GNUNET_CORE_release_service (stats);
   stats = NULL;
   GNUNET_free_non_null (filteredNetworks_);
   GNUNET_mutex_destroy (tcplock);

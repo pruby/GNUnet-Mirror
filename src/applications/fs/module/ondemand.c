@@ -688,7 +688,7 @@ ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
   char *tmp;
 
   coreAPI = capi;
-  state = capi->requestService ("state");
+  state = capi->GNUNET_CORE_request_service ("state");
   if (state == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -715,7 +715,7 @@ ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
 int
 ONDEMAND_done ()
 {
-  coreAPI->releaseService (state);
+  coreAPI->GNUNET_CORE_release_service (state);
   state = NULL;
   GNUNET_free (index_directory);
   return GNUNET_OK;

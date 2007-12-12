@@ -154,7 +154,9 @@ testTAPI (GNUNET_TransportAPI * tapi, void *ctx)
       ok = GNUNET_NO;
       ret = GNUNET_NO;
       while (ret == GNUNET_NO)
-        ret = sendPlaintext (tsession, (char *) noise, ntohs (noise->size));
+        ret =
+          GNUNET_CORE_connection_send_plaintext (tsession, (char *) noise,
+                                                 ntohs (noise->size));
       if (ret != GNUNET_OK)
         {
           fprintf (stderr, _("`%s': Could not send.\n"), tapi->transName);
@@ -300,7 +302,7 @@ testPING (const GNUNET_MessageHello * xhello, void *arg)
   GNUNET_free (ping);
   /* send ping */
   ok = GNUNET_NO;
-  if (GNUNET_OK != sendPlaintext (tsession, msg, len))
+  if (GNUNET_OK != GNUNET_CORE_connection_send_plaintext (tsession, msg, len))
     {
       fprintf (stderr, "Send failed.\n");
       GNUNET_free (msg);
@@ -391,7 +393,8 @@ main (int argc, char *const *argv)
                      argv,
                      "gnunet-transport-check",
                      &cfgFilename, gnunettransportcheckOptions, &ectx, &cfg);
-  if ((res == -1) || (GNUNET_OK != changeUser (ectx, cfg)))
+  if ((res == -1)
+      || (GNUNET_OK != GNUNET_CORE_startup_change_user (ectx, cfg)))
     {
       GNUNET_fini (ectx, cfg);
       return -1;
@@ -456,19 +459,20 @@ main (int argc, char *const *argv)
                                                 "BLACKLIST", "");
     }
   cron = GNUNET_cron_create (ectx);
-  if (GNUNET_OK != initCore (ectx, cfg, cron, NULL))
+  if (GNUNET_OK != GNUNET_CORE_init (ectx, cfg, cron, NULL))
     {
       GNUNET_free (expectedValue);
       GNUNET_cron_destroy (cron);
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  initConnection (ectx, cfg, NULL, cron);
-  registerPlaintextHandler (GNUNET_P2P_PROTO_NOISE, &noiseHandler);
-  enableCoreProcessing ();
-  identity = requestService ("identity");
-  transport = requestService ("transport");
-  pingpong = requestService ("pingpong");
+  GNUNET_CORE_connection_init (ectx, cfg, NULL, cron);
+  GNUNET_CORE_plaintext_register_handler (GNUNET_P2P_PROTO_NOISE,
+                                          &noiseHandler);
+  GNUNET_CORE_p2p_enable_processing ();
+  identity = GNUNET_CORE_request_service ("identity");
+  transport = GNUNET_CORE_request_service ("transport");
+  pingpong = GNUNET_CORE_request_service ("pingpong");
   GNUNET_cron_start (cron);
 
   GNUNET_GC_get_configuration_value_number (cfg,
@@ -479,7 +483,7 @@ main (int argc, char *const *argv)
   res = GNUNET_OK;
   if (ping)
     {
-      bootstrap = requestService ("bootstrap");
+      bootstrap = GNUNET_CORE_request_service ("bootstrap");
 
       stats[0] = 0;
       stats[1] = 0;
@@ -488,7 +492,7 @@ main (int argc, char *const *argv)
       printf (_
               ("\n%d out of %d peers contacted successfully (%d times transport unavailable).\n"),
               stats[2], stats[1], stats[0] - stats[1]);
-      releaseService (bootstrap);
+      GNUNET_CORE_release_service (bootstrap);
     }
   else
     {
@@ -496,13 +500,14 @@ main (int argc, char *const *argv)
         transport->forEach (&testTAPI, &res);
     }
   GNUNET_cron_stop (cron);
-  releaseService (identity);
-  releaseService (transport);
-  releaseService (pingpong);
-  disableCoreProcessing ();
-  unregisterPlaintextHandler (GNUNET_P2P_PROTO_NOISE, &noiseHandler);
-  doneConnection ();
-  doneCore ();
+  GNUNET_CORE_release_service (identity);
+  GNUNET_CORE_release_service (transport);
+  GNUNET_CORE_release_service (pingpong);
+  GNUNET_CORE_p2p_disable_processing ();
+  GNUNET_CORE_plaintext_unregister_handler (GNUNET_P2P_PROTO_NOISE,
+                                            &noiseHandler);
+  GNUNET_CORE_connection_done ();
+  GNUNET_CORE_done ();
   GNUNET_free (expectedValue);
   GNUNET_cron_destroy (cron);
   GNUNET_fini (ectx, cfg);

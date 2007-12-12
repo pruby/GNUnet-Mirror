@@ -449,7 +449,9 @@ receivedhello (const GNUNET_PeerIdentity * sender,
 
   /* ok, finally we can send! */
   if ((res == GNUNET_OK) &&
-      (GNUNET_SYSERR == coreAPI->sendPlaintext (tsession, buffer, helloEnd)))
+      (GNUNET_SYSERR ==
+       coreAPI->GNUNET_CORE_connection_send_plaintext (tsession, buffer,
+                                                       helloEnd)))
     {
 
       if (stats != NULL)
@@ -561,9 +563,10 @@ broadcastHelper (const GNUNET_PeerIdentity * hi,
     }
   if (stats != NULL)
     stats->change (stat_hello_out, 1);
-  coreAPI->sendPlaintext (tsession,
-                          (char *) &sd->m->header,
-                          GNUNET_sizeof_hello (sd->m));
+  coreAPI->GNUNET_CORE_connection_send_plaintext (tsession,
+                                                  (char *) &sd->m->header,
+                                                  GNUNET_sizeof_hello (sd->
+                                                                       m));
   transport->disconnect (tsession, __FILE__);
 #if DEBUG_ADVERTISING
   GNUNET_GE_LOG (ectx,
@@ -844,43 +847,43 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   ectx = capi->ectx;
-  identity = capi->requestService ("identity");
+  identity = capi->GNUNET_CORE_request_service ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  transport = capi->requestService ("transport");
+  transport = capi->GNUNET_CORE_request_service ("transport");
   if (transport == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->releaseService (identity);
+      capi->GNUNET_CORE_release_service (identity);
       identity = NULL;
       return GNUNET_SYSERR;
     }
-  pingpong = capi->requestService ("pingpong");
+  pingpong = capi->GNUNET_CORE_request_service ("pingpong");
   if (pingpong == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->releaseService (identity);
+      capi->GNUNET_CORE_release_service (identity);
       identity = NULL;
-      capi->releaseService (transport);
+      capi->GNUNET_CORE_release_service (transport);
       transport = NULL;
       return GNUNET_SYSERR;
     }
-  topology = capi->requestService ("topology");
+  topology = capi->GNUNET_CORE_request_service ("topology");
   if (topology == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->releaseService (identity);
+      capi->GNUNET_CORE_release_service (identity);
       identity = NULL;
-      capi->releaseService (transport);
+      capi->GNUNET_CORE_release_service (transport);
       transport = NULL;
-      capi->releaseService (pingpong);
+      capi->GNUNET_CORE_release_service (pingpong);
       pingpong = NULL;
       return GNUNET_SYSERR;
     }
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_hello_in =
@@ -929,10 +932,11 @@ initialize_module_advertising (GNUNET_CoreAPIForPlugins * capi)
                  "advertising", GNUNET_P2P_PROTO_HELLO);
 
   capi->registerHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
-  capi->registerPlaintextHandler (GNUNET_P2P_PROTO_HELLO, &phelloHandler);
-  if (0 != GNUNET_GC_attach_change_listener (capi->cfg,
-                                             &configurationUpdateCallback,
-                                             NULL))
+  capi->GNUNET_CORE_plaintext_register_handler (GNUNET_P2P_PROTO_HELLO,
+                                                &phelloHandler);
+  if (0 !=
+      GNUNET_GC_attach_change_listener (capi->cfg,
+                                        &configurationUpdateCallback, NULL))
     GNUNET_GE_BREAK (capi->ectx, 0);
   startBootstrap (capi);
   GNUNET_GE_ASSERT (capi->ectx,
@@ -967,19 +971,19 @@ done_module_advertising ()
       activeCronJobs -= ACJ_FORWARD;
     }
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HELLO, &ehelloHandler);
-  coreAPI->unregisterPlaintextHandler (GNUNET_P2P_PROTO_HELLO,
-                                       &phelloHandler);
-  coreAPI->releaseService (transport);
+  coreAPI->GNUNET_CORE_plaintext_unregister_handler (GNUNET_P2P_PROTO_HELLO,
+                                                     &phelloHandler);
+  coreAPI->GNUNET_CORE_release_service (transport);
   transport = NULL;
-  coreAPI->releaseService (identity);
+  coreAPI->GNUNET_CORE_release_service (identity);
   identity = NULL;
-  coreAPI->releaseService (pingpong);
+  coreAPI->GNUNET_CORE_release_service (pingpong);
   pingpong = NULL;
-  coreAPI->releaseService (topology);
+  coreAPI->GNUNET_CORE_release_service (topology);
   topology = NULL;
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   coreAPI = NULL;

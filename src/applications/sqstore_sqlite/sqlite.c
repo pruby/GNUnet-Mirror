@@ -1331,7 +1331,7 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
     }
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats)
     stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 
@@ -1355,7 +1355,7 @@ void
 release_module_sqstore_sqlite ()
 {
   if (stats != NULL)
-    coreAPI->releaseService (stats);
+    coreAPI->GNUNET_CORE_release_service (stats);
   sqlite_shutdown ();
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,

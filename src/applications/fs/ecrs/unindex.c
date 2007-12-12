@@ -219,7 +219,7 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
   start = now;
   /* reset the counter since the formula later does not
      take the time for GNUNET_hash_file into account */
-  treedepth = computeDepth (filesize);
+  treedepth = GNUNET_ECRS_compute_depth (filesize);
 
   /* Test if file is indexed! */
   wasIndexed = GNUNET_FS_test_indexed (sock, &fileId);

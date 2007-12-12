@@ -91,8 +91,8 @@ print_tree (SCM tree_smob, SCM port, scm_print_state * pstate)
 /* **************************** tree API ****************** */
 
 struct GNUNET_GNS_TreeNode *
-tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section,
-             const char *option)
+GNUNET_GNS_tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section,
+                        const char *option)
 {
   int i;
   struct GNUNET_GNS_TreeNode *ret;
@@ -105,7 +105,7 @@ tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section,
   i = 0;
   while (root->children[i] != NULL)
     {
-      ret = tree_lookup (root->children[i], section, option);
+      ret = GNUNET_GNS_tree_lookup (root->children[i], section, option);
       if (ret != NULL)
         return ret;
       i++;
@@ -113,7 +113,7 @@ tree_lookup (struct GNUNET_GNS_TreeNode *root, const char *section,
   return NULL;
 }
 
-SCM
+static SCM
 get_option (SCM smob, SCM section, SCM option)
 {
   TC *tc;
@@ -128,7 +128,7 @@ get_option (SCM smob, SCM section, SCM option)
   tc = (TC *) SCM_SMOB_DATA (smob);
   opt = scm_to_locale_string (option);
   sec = scm_to_locale_string (section);
-  t = tree_lookup (tc->root, sec, opt);
+  t = GNUNET_GNS_tree_lookup (tc->root, sec, opt);
   if (t == NULL)
     return SCM_EOL;
   switch (t->type & GNUNET_GNS_TYPE_MASK)
@@ -154,7 +154,7 @@ get_option (SCM smob, SCM section, SCM option)
  * Change the visibility of an entry in the
  * tree (and notify listeners about change).
  */
-SCM
+static SCM
 change_visible (SCM smob, SCM section, SCM option, SCM yesno)
 {
   TC *tc;
@@ -178,7 +178,7 @@ change_visible (SCM smob, SCM section, SCM option, SCM yesno)
       GNUNET_GE_BREAK (NULL, 0);
       return SCM_EOL;
     }
-  t = tree_lookup (tc->root, sec, opt);
+  t = GNUNET_GNS_tree_lookup (tc->root, sec, opt);
   if (t != NULL)
     {
       t->visible = val;
@@ -199,7 +199,7 @@ change_visible (SCM smob, SCM section, SCM option, SCM yesno)
 /**
  * Set an option.
  */
-SCM
+static SCM
 set_option (SCM smob, SCM section, SCM option, SCM value)
 {
   TC *tc;
@@ -232,7 +232,7 @@ set_option (SCM smob, SCM section, SCM option, SCM value)
  *        maybe list of strings for string values or pair
  *        min/max for integers
  */
-SCM
+static SCM
 build_tree_node (SCM section,
                  SCM option,
                  SCM description,
@@ -389,7 +389,8 @@ parse_internal (void *spec)
 
 
 struct GNUNET_GNS_TreeNode *
-tree_parse (struct GNUNET_GE_Context *ectx, const char *specification)
+GNUNET_GNS_tree_parse (struct GNUNET_GE_Context *ectx,
+                       const char *specification)
 {
   struct GNUNET_GNS_TreeNode *ret;
 
@@ -414,18 +415,18 @@ notify_change_internal (void *cls)
 
 /**
  * A value in the tree has been changed.  Must only
- * be called after "tree_parse" has already been
+ * be called after "GNUNET_GNS_tree_parse" has already been
  * executed.
  *
  * Update visibility (and notify about changes).
  */
 void
-tree_notify_change (struct GNUNET_GC_Configuration *cfg,
-                    VisibilityChangeListener vcl,
-                    void *ctx,
-                    struct GNUNET_GE_Context *ectx,
-                    struct GNUNET_GNS_TreeNode *root,
-                    struct GNUNET_GNS_TreeNode *change)
+GNUNET_GNS_tree_notify_change (struct GNUNET_GC_Configuration *cfg,
+                               VisibilityChangeListener vcl,
+                               void *ctx,
+                               struct GNUNET_GE_Context *ectx,
+                               struct GNUNET_GNS_TreeNode *root,
+                               struct GNUNET_GNS_TreeNode *change)
 {
   TC tc;
 
@@ -442,7 +443,7 @@ tree_notify_change (struct GNUNET_GC_Configuration *cfg,
  * If not, we'll have to move it into the
  * _internal methods.
  */
-void __attribute__ ((constructor)) gns_scheme_init ()
+void __attribute__ ((constructor)) GNUNET_GNS_scheme_init ()
 {
 #ifdef MINGW
   char *oldpath, *env;
@@ -486,7 +487,7 @@ void __attribute__ ((constructor)) gns_scheme_init ()
   scm_c_define_gsubr ("set-option", 4, 0, 0, &set_option);
 }
 
-void __attribute__ ((destructor)) gns_scheme_fin ()
+void __attribute__ ((destructor)) GNUNET_GNS_scheme_fin ()
 {
 #ifdef MINGW
   ShutdownWinEnv ();

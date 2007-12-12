@@ -1072,12 +1072,12 @@ GNUNET_NS_unregister_discovery_callback (GNUNET_NS_NamespaceIterator iterator,
 }
 
 
-void __attribute__ ((constructor)) gnunet_namespace_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_NS_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
-void __attribute__ ((destructor)) gnunet_namespace_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_NS_ltdl_fini ()
 {
   GNUNET_mutex_destroy (lock);
   lock = NULL;

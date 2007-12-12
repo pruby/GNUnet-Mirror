@@ -241,7 +241,7 @@ testTerminate (void *cls)
 /**
  * Thread that downloads a file.
  */
-void *
+static void *
 downloadThread (void *cls)
 {
   GNUNET_FSUI_DownloadList *dl = cls;

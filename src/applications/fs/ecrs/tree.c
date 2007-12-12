@@ -28,7 +28,7 @@
  * @return depth of the tree
  */
 unsigned int
-computeDepth (unsigned long long flen)
+GNUNET_ECRS_compute_depth (unsigned long long flen)
 {
   unsigned int treeDepth;
   unsigned long long fl;

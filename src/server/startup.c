@@ -51,7 +51,7 @@ static SERVICE_STATUS_HANDLE hService;
  * @param sig signal code that causes shutdown, optional
  */
 void
-shutdown_gnunetd (struct GNUNET_GC_Configuration *cfg, int sig)
+GNUNET_CORE_shutdown (struct GNUNET_GC_Configuration *cfg, int sig)
 {
 #ifdef MINGW
   if (!cfg || GNUNET_GC_get_configuration_value_yesno (cfg,
@@ -100,14 +100,14 @@ static void WINAPI
 ServiceCtrlHandler (DWORD dwOpcode)
 {
   if (dwOpcode == SERVICE_CONTROL_STOP)
-    shutdown_gnunetd (NULL, dwOpcode);
+    GNUNET_CORE_shutdown (NULL, dwOpcode);
 }
 
 /**
  * called by gnunetd.c::ServiceMain()
  */
 void
-win_service_main (void (*gnunet_main) ())
+GNUNET_CORE_w32_service_main (void (*gnunet_main) ())
 {
   memset (&theServiceStatus, 0, sizeof (theServiceStatus));
   theServiceStatus.dwServiceType = SERVICE_WIN32;
@@ -129,8 +129,8 @@ win_service_main (void (*gnunet_main) ())
 
 
 int
-changeUser (struct GNUNET_GE_Context *ectx,
-            struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_startup_change_user (struct GNUNET_GE_Context *ectx,
+                                 struct GNUNET_GC_Configuration *cfg)
 {
   char *user;
 
@@ -152,8 +152,8 @@ changeUser (struct GNUNET_GE_Context *ectx,
 }
 
 int
-setFdLimit (struct GNUNET_GE_Context *ectx,
-            struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_startup_set_fd_limit (struct GNUNET_GE_Context *ectx,
+                                  struct GNUNET_GC_Configuration *cfg)
 {
   unsigned long long limit;
 
@@ -178,8 +178,8 @@ setFdLimit (struct GNUNET_GE_Context *ectx,
  * @param cfg configuration manager
  */
 void
-capFSQuotaSize (struct GNUNET_GE_Context *ectx,
-                struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_startup_cap_fs_quota_size (struct GNUNET_GE_Context *ectx,
+                                       struct GNUNET_GC_Configuration *cfg)
 {
 #ifdef WINDOWS
   unsigned long long quota, cap;
@@ -255,7 +255,7 @@ capFSQuotaSize (struct GNUNET_GE_Context *ectx,
 #endif
 }
 
-int
+static int
 checkPermission (struct GNUNET_GE_Context *ectx,
                  struct GNUNET_GC_Configuration *cfg,
                  const char *section,
@@ -296,8 +296,8 @@ checkPermission (struct GNUNET_GE_Context *ectx,
 #define CHECK(a,b,c,d,e) if (GNUNET_OK != checkPermission(ectx, cfg, a, b, c, d, e)) return GNUNET_SYSERR;
 
 int
-checkPermissions (struct GNUNET_GE_Context *ectx,
-                  struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_startup_check_permissions (struct GNUNET_GE_Context *ectx,
+                                       struct GNUNET_GC_Configuration *cfg)
 {
   CHECK ("PATHS", "GNUNETD_HOME", "/var/lib/gnunet", GNUNET_YES, W_OK | X_OK);
   CHECK ("GNUNETD", "LOGFILE", "$GNUNETD_HOME/daemon-logs", GNUNET_NO, W_OK);

@@ -32,8 +32,8 @@
  * @brief Determine whether a NIC makes a good default
  */
 int
-wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
-                    int suggestion)
+GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
+                               const char *name, int suggestion)
 {
   char *nic;
 
@@ -82,7 +82,8 @@ wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-wiz_autostartService (int doAutoStart, char *username, char *groupname)
+GNUNET_GNS_wiz_autostart_service (int doAutoStart, char *username,
+                                  char *groupname)
 {
   int ret;
   char *exe;
@@ -154,7 +155,7 @@ wiz_autostartService (int doAutoStart, char *username, char *groupname)
  * @return 1 on success
  */
 int
-wiz_createGroupUser (char *group_name, char *user_name)
+GNUNET_GNS_wiz_create_group_user (char *group_name, char *user_name)
 {
   int ret;
 

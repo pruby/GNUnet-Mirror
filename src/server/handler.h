@@ -33,22 +33,22 @@
  * Initialize message handling module (make ready to register
  * handlers).
  */
-void initHandler (struct GNUNET_GE_Context *e);
+void GNUNET_CORE_p2p_init (struct GNUNET_GE_Context *e);
 
 /**
  * Shutdown message handling module.
  */
-void doneHandler ();
+void GNUNET_CORE_p2p_done (void);
 
 /**
  * Start processing messages from the transports.
  */
-void enableCoreProcessing ();
+void GNUNET_CORE_p2p_enable_processing (void);
 
 /**
  * Stop processing messages from the transports.
  */
-void disableCoreProcessing ();
+void GNUNET_CORE_p2p_disable_processing (void);
 
 /**
  * Handle a message (that was decrypted if needed).  Processes the
@@ -57,17 +57,17 @@ void disableCoreProcessing ();
  * @param wasEncrypted GNUNET_YES if it was encrypted,
  *                     GNUNET_NO if plaintext,
  */
-void injectMessage (const GNUNET_PeerIdentity * sender,
-                    const char *msg,
-                    unsigned int size, int wasEncrypted,
-                    GNUNET_TSession * session);
+void GNUNET_CORE_p2p_inject_message (const GNUNET_PeerIdentity * sender,
+                                     const char *msg,
+                                     unsigned int size, int wasEncrypted,
+                                     GNUNET_TSession * session);
 
 /**
  * Processing of a message from the transport layer (receive
  * implementation).  Detects if the message is encrypted, possibly
- * decrypts and calls injectMessage.
+ * decrypts and calls GNUNET_CORE_p2p_inject_message.
  */
-void core_receive (GNUNET_TransportPacket * mp);
+void GNUNET_CORE_p2p_receive (GNUNET_TransportPacket * mp);
 
 /**
  * Register a method as a handler for specific message
@@ -80,8 +80,8 @@ void core_receive (GNUNET_TransportPacket * mp);
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
  *         handler for that type
  */
-int registerp2pHandler (const unsigned short type,
-                        GNUNET_P2PRequestHandler callback);
+int GNUNET_CORE_p2p_register_handler (const unsigned short type,
+                                      GNUNET_P2PRequestHandler callback);
 
 
 /**
@@ -93,8 +93,8 @@ int registerp2pHandler (const unsigned short type,
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
  *         handler for that type
  */
-int unregisterp2pHandler (const unsigned short type,
-                          GNUNET_P2PRequestHandler callback);
+int GNUNET_CORE_p2p_unregister_handler (const unsigned short type,
+                                        GNUNET_P2PRequestHandler callback);
 
 
 /**
@@ -110,8 +110,9 @@ int unregisterp2pHandler (const unsigned short type,
  * @return GNUNET_OK on success, GNUNET_SYSERR if core threads are running
  *        and updates to the handler list are illegal!
  */
-int registerPlaintextHandler (const unsigned short type,
-                              GNUNET_P2PPlaintextRequestHandler callback);
+int GNUNET_CORE_plaintext_register_handler (const unsigned short type,
+                                            GNUNET_P2PPlaintextRequestHandler
+                                            callback);
 
 
 /**
@@ -125,8 +126,9 @@ int registerPlaintextHandler (const unsigned short type,
  *        handler for that type or if core threads are running
  *        and updates to the handler list are illegal!
  */
-int unregisterPlaintextHandler (const unsigned short type,
-                                GNUNET_P2PPlaintextRequestHandler callback);
+int GNUNET_CORE_plaintext_unregister_handler (const unsigned short type,
+                                              GNUNET_P2PPlaintextRequestHandler
+                                              callback);
 
 /**
  * Is a handler registered for messages of the given type?
@@ -139,7 +141,8 @@ int unregisterPlaintextHandler (const unsigned short type,
  * @return number of handlers registered, 0 for none,
  *        GNUNET_SYSERR for invalid value of handlerType
  */
-int isHandlerRegistered (unsigned short type, unsigned short handlerType);
+int GNUNET_CORE_p2p_test_handler_registered (unsigned short type,
+                                             unsigned short handlerType);
 
 
 #endif

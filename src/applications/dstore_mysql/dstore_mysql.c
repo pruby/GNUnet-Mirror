@@ -656,7 +656,7 @@ provide_module_dstore_mysql (GNUNET_CoreAPIForPlugins * capi)
                                        5);
       CLOSE (fd);
     }
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     stat_dstore_size = stats->create (gettext_noop ("# bytes in dstore"));
   return &api;
@@ -678,7 +678,7 @@ release_module_dstore_mysql ()
   bloom_name = NULL;
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
 #if DEBUG_SQLITE

@@ -282,7 +282,7 @@ unloadApplicationModule (const char *name)
 }
 
 void *
-requestService (const char *rpos)
+GNUNET_CORE_request_service (const char *rpos)
 {
   ShutdownList *nxt;
   GNUNET_ServicePluginInitializationMethod mptr;
@@ -380,7 +380,7 @@ requestService (const char *rpos)
 }
 
 int
-releaseService (void *service)
+GNUNET_CORE_release_service (void *service)
 {
   ShutdownList *pos;
   ShutdownList *prev;
@@ -441,7 +441,7 @@ releaseService (void *service)
 }
 
 int
-loadApplicationModules ()
+GNUNET_CORE_load_application_modules ()
 {
   char *dso;
   char *next;
@@ -489,7 +489,7 @@ loadApplicationModules ()
 }
 
 int
-unloadApplicationModules ()
+GNUNET_CORE_unload_application_modules ()
 {
   ShutdownList *pos;
   ShutdownList *nxt;
@@ -519,9 +519,10 @@ unloadApplicationModules ()
  * Initialize the CORE's globals.
  */
 int
-initCore (struct GNUNET_GE_Context *ectx,
-          struct GNUNET_GC_Configuration *cfg,
-          struct GNUNET_CronManager *cron, struct GNUNET_LoadMonitor *monitor)
+GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
+                  struct GNUNET_GC_Configuration *cfg,
+                  struct GNUNET_CronManager *cron,
+                  struct GNUNET_LoadMonitor *monitor)
 {
   applicationCore.ectx = ectx;
   applicationCore.cfg = cfg;
@@ -531,62 +532,65 @@ initCore (struct GNUNET_GE_Context *ectx,
   applicationCore.myIdentity = NULL;    /* for now */
   applicationCore.loadApplicationModule = &loadApplicationModule;       /* core.c */
   applicationCore.unloadApplicationModule = &unloadApplicationModule;   /* core.c */
-  applicationCore.requestService = &requestService;     /* core.c */
-  applicationCore.releaseService = &releaseService;     /* core.c */
+  applicationCore.GNUNET_CORE_request_service = &GNUNET_CORE_request_service;   /* core.c */
+  applicationCore.GNUNET_CORE_release_service = &GNUNET_CORE_release_service;   /* core.c */
 
-  applicationCore.sendPlaintext = &sendPlaintext;       /* connection.c */
-  applicationCore.unicast = &unicast;   /* connection.c */
-  applicationCore.unicastCallback = &unicastCallback;   /* connection.c */
-  applicationCore.forAllConnectedNodes = &forEachConnectedNode; /* connection.c */
-  applicationCore.registerSendCallback = &registerSendCallback; /* connection.c */
-  applicationCore.unregisterSendCallback = &unregisterSendCallback;     /* connection.c */
+  applicationCore.GNUNET_CORE_connection_send_plaintext = &GNUNET_CORE_connection_send_plaintext;       /* connection.c */
+  applicationCore.unicast = &GNUNET_CORE_connection_unicast;    /* connection.c */
+  applicationCore.GNUNET_CORE_connection_send_using_callback = &GNUNET_CORE_connection_send_using_callback;     /* connection.c */
+  applicationCore.forAllConnectedNodes = &GNUNET_CORE_connection_iterate_peers; /* connection.c */
+  applicationCore.GNUNET_CORE_connection_register_send_callback = &GNUNET_CORE_connection_register_send_callback;       /* connection.c */
+  applicationCore.GNUNET_CORE_connection_unregister_send_callback = &GNUNET_CORE_connection_unregister_send_callback;   /* connection.c */
 
-  applicationCore.registerSendNotify = &registerSendNotify;
-  applicationCore.unregisterSendNotify = &unregisterSendNotify;
-  applicationCore.registerHandler = &registerp2pHandler;        /* handler.c */
-  applicationCore.unregisterHandler = &unregisterp2pHandler;    /* handler.c */
-  applicationCore.registerPlaintextHandler = &registerPlaintextHandler; /* handler.c */
-  applicationCore.unregisterPlaintextHandler = &unregisterPlaintextHandler;     /* handler.c */
-  applicationCore.isHandlerRegistered = &isHandlerRegistered;   /* handler.c */
+  applicationCore.GNUNET_CORE_connection_register_send_notification_callback =
+    &GNUNET_CORE_connection_register_send_notification_callback;
+  applicationCore.
+    GNUNET_CORE_connection_unregister_send_notification_callback =
+    &GNUNET_CORE_connection_unregister_send_notification_callback;
+  applicationCore.registerHandler = &GNUNET_CORE_p2p_register_handler;  /* handler.c */
+  applicationCore.unregisterHandler = &GNUNET_CORE_p2p_unregister_handler;      /* handler.c */
+  applicationCore.GNUNET_CORE_plaintext_register_handler = &GNUNET_CORE_plaintext_register_handler;     /* handler.c */
+  applicationCore.GNUNET_CORE_plaintext_unregister_handler = &GNUNET_CORE_plaintext_unregister_handler; /* handler.c */
+  applicationCore.GNUNET_CORE_p2p_test_handler_registered = &GNUNET_CORE_p2p_test_handler_registered;   /* handler.c */
 
-  applicationCore.offerTSessionFor = &considerTakeover; /* connection.c */
-  applicationCore.assignSessionKey = &assignSessionKey; /* connection.c */
-  applicationCore.getCurrentSessionKey = &getCurrentSessionKey; /* connection.c */
-  applicationCore.confirmSessionUp = &confirmSessionUp; /* connection.c */
-  applicationCore.preferTrafficFrom = &updateTrafficPreference; /* connection.c */
-  applicationCore.queryPeerStatus = &getBandwidthAssignedTo;    /* connection.c */
-  applicationCore.disconnectFromPeer = &disconnectFromPeer;     /* connection.c */
+  applicationCore.offerTSessionFor = &GNUNET_CORE_connection_consider_takeover; /* connection.c */
+  applicationCore.GNUNET_CORE_connection_assign_session_key_to_peer = &GNUNET_CORE_connection_assign_session_key_to_peer;       /* connection.c */
+  applicationCore.GNUNET_CORE_connection_get_session_key_of_peer = &GNUNET_CORE_connection_get_session_key_of_peer;     /* connection.c */
+  applicationCore.GNUNET_CORE_connection_mark_session_as_confirmed = &GNUNET_CORE_connection_mark_session_as_confirmed; /* connection.c */
+  applicationCore.preferTrafficFrom = &GNUNET_CORE_connection_update_traffic_preference_for_peer;       /* connection.c */
+  applicationCore.queryPeerStatus = &GNUNET_CORE_connection_get_bandwidth_assigned_to_peer;     /* connection.c */
+  applicationCore.GNUNET_CORE_connection_disconnect_from_peer = &GNUNET_CORE_connection_disconnect_from_peer;   /* connection.c */
 
-  applicationCore.sendValueToClient = &sendTCPResultToClient;   /* tcpserver.c */
-  applicationCore.sendToClient = &sendToClient; /* tcpserver.c */
-  applicationCore.registerClientHandler = &registerCSHandler;   /* tcpserver.c */
-  applicationCore.unregisterClientHandler = &unregisterCSHandler;       /* tcpserver.c */
-  applicationCore.registerClientExitHandler = &registerClientExitHandler;       /* tcpserver.c */
-  applicationCore.unregisterClientExitHandler = &unregisterClientExitHandler;   /* tcpserver.c */
-  applicationCore.terminateClientConnection = &terminateClientConnection;       /* tcpserver.c */
+  applicationCore.sendValueToClient = &GNUNET_CORE_cs_send_result_to_client;    /* tcpserver.c */
+  applicationCore.GNUNET_CORE_cs_send_to_client = &GNUNET_CORE_cs_send_to_client;       /* tcpserver.c */
+  applicationCore.registerClientHandler = &GNUNET_CORE_register_handler;        /* tcpserver.c */
+  applicationCore.unregisterClientHandler = &GNUNET_CORE_unregister_handler;    /* tcpserver.c */
+  applicationCore.GNUNET_CORE_cs_register_exit_handler = &GNUNET_CORE_cs_register_exit_handler; /* tcpserver.c */
+  applicationCore.GNUNET_CORE_cs_exit_handler_unregister = &GNUNET_CORE_cs_exit_handler_unregister;     /* tcpserver.c */
+  applicationCore.GNUNET_CORE_cs_terminate_client_connection = &GNUNET_CORE_cs_terminate_client_connection;     /* tcpserver.c */
 
-  applicationCore.injectMessage = &injectMessage;       /* handler.c */
-  applicationCore.computeIndex = &computeIndex; /* connection.c */
-  applicationCore.getConnectionModuleLock = &getConnectionModuleLock;   /* connection.c */
-  applicationCore.getSlotCount = &getSlotCount; /* connection.c */
-  applicationCore.isSlotUsed = &isSlotUsed;     /* connection.c */
-  applicationCore.getLastActivityOf = &getLastActivityOf;       /* connection.c */
-  applicationCore.assertUnused = &assertUnused; /* connection.c */
+  applicationCore.GNUNET_CORE_p2p_inject_message = &GNUNET_CORE_p2p_inject_message;     /* handler.c */
+  applicationCore.GNUNET_CORE_connection_compute_index_of_peer = &GNUNET_CORE_connection_compute_index_of_peer; /* connection.c */
+  applicationCore.GNUNET_CORE_connection_get_lock = &GNUNET_CORE_connection_get_lock;   /* connection.c */
+  applicationCore.GNUNET_CORE_connection_get_slot_count = &GNUNET_CORE_connection_get_slot_count;       /* connection.c */
+  applicationCore.GNUNET_CORE_connection_is_slot_used = &GNUNET_CORE_connection_is_slot_used;   /* connection.c */
+  applicationCore.GNUNET_CORE_connection_get_last_activity_of_peer = &GNUNET_CORE_connection_get_last_activity_of_peer; /* connection.c */
+  applicationCore.GNUNET_CORE_connection_assert_tsession_unused = &GNUNET_CORE_connection_assert_tsession_unused;       /* connection.c */
 
-  applicationCore.sendErrorMessageToClient = &sendTCPErrorToClient;     /* tcpserver.c */
-  applicationCore.createClientLogContext = &createClientLogContext;     /* tcpserver.c */
+  applicationCore.sendErrorMessageToClient = &GNUNET_CORE_cs_send_error_to_client;      /* tcpserver.c */
+  applicationCore.GNUNET_CORE_cs_create_client_log_context = &GNUNET_CORE_cs_create_client_log_context; /* tcpserver.c */
 
-  identity = requestService ("identity");
+  identity = GNUNET_CORE_request_service ("identity");
   if (identity == NULL)
     return GNUNET_SYSERR;
   identity->getPeerIdentity (identity->getPublicPrivateKey (), &myIdentity);
   applicationCore.myIdentity = &myIdentity;     /* core.c */
-  if (initTCPServer (ectx, cfg) != GNUNET_OK)
+  if (GNUNET_CORE_cs_init (ectx, cfg) != GNUNET_OK)
     {
-      releaseService (identity);
+      GNUNET_CORE_release_service (identity);
       return GNUNET_SYSERR;
     }
-  initHandler (ectx);
+  GNUNET_CORE_p2p_init (ectx);
   return GNUNET_OK;
 }
 
@@ -594,15 +598,15 @@ initCore (struct GNUNET_GE_Context *ectx,
  * Shutdown the CORE modules (shuts down all application modules).
  */
 void
-doneCore ()
+GNUNET_CORE_done ()
 {
   ShutdownList *pos;
   ShutdownList *prev;
   ShutdownList *nxt;
   int change;
 
-  doneHandler ();
-  releaseService (identity);
+  GNUNET_CORE_p2p_done ();
+  GNUNET_CORE_release_service (identity);
   identity = NULL;
 
   /* unload all modules;
@@ -647,7 +651,7 @@ doneCore ()
                      pos->dsoName);
       pos = pos->next;
     }
-  doneTCPServer ();
+  GNUNET_CORE_cs_done ();
 }
 
 /* end of core.c */

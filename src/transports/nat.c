@@ -50,8 +50,9 @@ lan_ip_detected ()
   GNUNET_IPv4Address addr;
   unsigned int anum;
 
-  if (GNUNET_SYSERR == getPublicIPAddress (coreAPI->cfg,
-                                           coreAPI->ectx, &addr))
+  if (GNUNET_SYSERR == GNUNET_IP_get_public_ipv4_address (coreAPI->cfg,
+                                                          coreAPI->ectx,
+                                                          &addr))
     return GNUNET_YES;          /* kind-of */
   anum = ntohl (addr.addr);
   if (((anum >= 0x0a000000) && (anum <= 0x0affffff)) || /* 10.x.x.x */
@@ -213,7 +214,8 @@ static int
 helloToAddress (const GNUNET_MessageHello * hello,
                 void **sa, unsigned int *sa_len)
 {
-  return getIPaddressFromPID (&hello->senderIdentity, sa, sa_len);
+  return GNUNET_IP_get_address_from_peer_identity (&hello->senderIdentity, sa,
+                                                   sa_len);
 }
 
 static int

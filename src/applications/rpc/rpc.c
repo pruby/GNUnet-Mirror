@@ -1501,7 +1501,7 @@ provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
   int rvalue;
 
   ectx = capi->ectx;
-  rpcLock = capi->getConnectionModuleLock ();
+  rpcLock = capi->GNUNET_CORE_connection_get_lock ();
   coreAPI = capi;
   peerInformation = GNUNET_vector_create (16);
   incomingCalls = GNUNET_vector_create (16);
@@ -1611,7 +1611,7 @@ initialize_module_rpc (GNUNET_CoreAPIForPlugins * capi)
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "RPC testcase starting\n");
-  rpcAPI = capi->requestService ("rpc");
+  rpcAPI = capi->GNUNET_CORE_request_service ("rpc");
   if (rpcAPI == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -1667,7 +1667,7 @@ initialize_module_rpc (GNUNET_CoreAPIForPlugins * capi)
       GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;
     }
-  if (GNUNET_OK != capi->releaseService (rpcAPI))
+  if (GNUNET_OK != capi->GNUNET_CORE_release_service (rpcAPI))
     {
       GNUNET_GE_BREAK (ectx, 0);
       ret = GNUNET_SYSERR;

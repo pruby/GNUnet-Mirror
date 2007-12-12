@@ -73,7 +73,8 @@ initialize_module_template (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_MAX_USED, &handlep2pMSG))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientExitHandler (&clientExitHandler))
+  if (GNUNET_SYSERR ==
+      capi->GNUNET_CORE_cs_register_exit_handler (&clientExitHandler))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_MAX_USED, &csHandle))
@@ -85,7 +86,7 @@ void
 done_module_template ()
 {
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MAX_USED, &handlep2pMSG);
-  coreAPI->unregisterClientExitHandler (&clientExitHandler);
+  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&clientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_MAX_USED, &csHandle);
   GNUNET_mutex_destroy (lock);
   coreAPI = NULL;

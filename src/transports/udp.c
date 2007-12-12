@@ -292,7 +292,8 @@ createhello ()
          (GNUNET_OK == upnp->get_ip (port,
                                      "UDP",
                                      &haddr->ip))) ||
-        (GNUNET_SYSERR != getPublicIPAddress (cfg, ectx, &haddr->ip))))
+        (GNUNET_SYSERR !=
+         GNUNET_IP_get_public_ipv4_address (cfg, ectx, &haddr->ip))))
     {
       GNUNET_free (msg);
       GNUNET_GE_LOG (ectx,
@@ -544,7 +545,7 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
   if (GNUNET_GC_get_configuration_value_yesno (cfg, "UDP", "UPNP", GNUNET_YES)
       == GNUNET_YES)
     {
-      upnp = coreAPI->requestService ("upnp");
+      upnp = coreAPI->GNUNET_CORE_request_service ("upnp");
 
       if (upnp == NULL)
         GNUNET_GE_LOG (ectx,
@@ -552,7 +553,7 @@ inittransport_udp (GNUNET_CoreAPIForTransport * core)
                        "The UPnP service could not be loaded. To disable UPnP, set the "
                        "configuration option \"UPNP\" in section \"UDP\" to \"NO\"\n");
     }
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -587,12 +588,12 @@ donetransport_udp ()
 {
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   if (upnp != NULL)
     {
-      coreAPI->releaseService (upnp);
+      coreAPI->GNUNET_CORE_release_service (upnp);
       upnp = NULL;
     }
   GNUNET_mutex_destroy (configLock);

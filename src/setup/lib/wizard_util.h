@@ -27,10 +27,11 @@
 #ifndef WIZARD_UTIL_H_
 #define WIZARD_UTIL_H_
 
-int wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg, const char *name,
-                        int suggestion);
-int wiz_autostartService (int doAutoStart, char *username, char *groupname);
-int wiz_createGroupUser (char *group_name, char *user_name);
+int GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
+                                   const char *name, int suggestion);
+int GNUNET_GNS_wiz_autostart_service (int doAutoStart, char *username,
+                                      char *groupname);
+int GNUNET_GNS_wiz_create_group_user (char *group_name, char *user_name);
 
 
 #endif /*WIZARD_UTIL_H_ */

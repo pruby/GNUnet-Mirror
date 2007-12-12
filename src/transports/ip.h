@@ -45,9 +45,9 @@
  *
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
-int getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
-                        struct GNUNET_GE_Context *ectx,
-                        GNUNET_IPv4Address * address);
+int GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
+                                       struct GNUNET_GE_Context *ectx,
+                                       GNUNET_IPv4Address * address);
 
 /**
  * We only have the GNUNET_PeerIdentity.  Do we have any
@@ -58,8 +58,9 @@ int getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
  * @param sa set to the address
  * @return GNUNET_OK if we found an address, GNUNET_SYSERR if not
  */
-int getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
-                         void **sa, unsigned int *salen);
+int GNUNET_IP_get_address_from_peer_identity (const GNUNET_PeerIdentity *
+                                              peer, void **sa,
+                                              unsigned int *salen);
 
 /**
  * We have accepted a connection from a particular
@@ -69,7 +70,8 @@ int getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
  * NOT validated (and it may well be impossible for
  * us to validate the address).
  */
-void setIPaddressFromPID (const GNUNET_PeerIdentity * peer,
-                          const void *sa, unsigned int salen);
+void GNUNET_IP_set_address_for_peer_identity (const GNUNET_PeerIdentity *
+                                              peer, const void *sa,
+                                              unsigned int salen);
 
 #endif

@@ -337,7 +337,8 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
          ntohs(statMsg->header.size),
          start, end, statCounters); */
       if (GNUNET_SYSERR ==
-          coreAPI->sendToClient (sock, &statMsg->header, GNUNET_YES))
+          coreAPI->GNUNET_CORE_cs_send_to_client (sock, &statMsg->header,
+                                                  GNUNET_YES))
         break;                  /* abort, socket error! */
       start = end;
     }
@@ -365,7 +366,7 @@ handleMessageSupported (struct GNUNET_ClientHandle *sock,
   cmsg = (CS_stats_get_supported_MESSAGE *) message;
   type = ntohs (cmsg->type);
   htype = ntohs (cmsg->handlerType);
-  supported = coreAPI->isHandlerRegistered (type, htype);
+  supported = coreAPI->GNUNET_CORE_p2p_test_handler_registered (type, htype);
   return coreAPI->sendValueToClient (sock, supported);
 }
 
@@ -407,7 +408,7 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
 {
   GNUNET_GE_ASSERT (capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -468,7 +469,7 @@ done_module_stats ()
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                     &processGetConnectionCountRequest);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_NOISE, &processNoise);
-  myCoreAPI->releaseService (stats);
+  myCoreAPI->GNUNET_CORE_release_service (stats);
   stats = NULL;
   myCoreAPI = NULL;
   return GNUNET_OK;

@@ -2224,7 +2224,7 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_reply_MESSAGE) == 68);
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_query_MESSAGE) == 144);
 
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_routing_totals =
@@ -2282,11 +2282,11 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_array_grow (rewards, rewardSize, MAX_REWARD_TRACKS);
 
 
-  identity = coreAPI->requestService ("identity");
+  identity = coreAPI->GNUNET_CORE_request_service ("identity");
   GNUNET_GE_ASSERT (ectx, identity != NULL);
-  topology = coreAPI->requestService ("topology");
+  topology = coreAPI->GNUNET_CORE_request_service ("topology");
   GNUNET_GE_ASSERT (ectx, topology != NULL);
-  traffic = coreAPI->requestService ("traffic");
+  traffic = coreAPI->GNUNET_CORE_request_service ("traffic");
   if (traffic == NULL)
     {
       GNUNET_GE_LOG (ectx,
@@ -2310,7 +2310,7 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
       queries[i].expires = 0;   /* all expired */
       queries[i].msg = NULL;
     }
-  lock = coreAPI->getConnectionModuleLock ();
+  lock = coreAPI->GNUNET_CORE_connection_get_lock ();
   GNUNET_cron_add_job (capi->cron, &ageRTD, 2 * GNUNET_CRON_MINUTES,
                        2 * GNUNET_CRON_MINUTES, NULL);
 
@@ -2321,8 +2321,10 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_P2P_PROTO_GAP_RESULT);
   capi->registerHandler (GNUNET_P2P_PROTO_GAP_QUERY, &handleQuery);
   capi->registerHandler (GNUNET_P2P_PROTO_GAP_RESULT, &useContent);
-  coreAPI->registerSendCallback (sizeof (P2P_gap_query_MESSAGE),
-                                 &fillInQuery);
+  coreAPI->
+    GNUNET_CORE_connection_register_send_callback (sizeof
+                                                   (P2P_gap_query_MESSAGE),
+                                                   &fillInQuery);
 
   api.init = &init;
   api.get_start = &get_start;
@@ -2342,8 +2344,10 @@ release_module_gap ()
 
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_GAP_QUERY, &handleQuery);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_GAP_RESULT, &useContent);
-  coreAPI->unregisterSendCallback (sizeof (P2P_gap_query_MESSAGE),
-                                   &fillInQuery);
+  coreAPI->
+    GNUNET_CORE_connection_unregister_send_callback (sizeof
+                                                     (P2P_gap_query_MESSAGE),
+                                                     &fillInQuery);
 
   GNUNET_cron_del_job (coreAPI->cron, &ageRTD, 2 * GNUNET_CRON_MINUTES, NULL);
 
@@ -2372,13 +2376,13 @@ release_module_gap ()
   for (i = 0; i < QUERY_RECORD_COUNT; i++)
     GNUNET_free_non_null (queries[i].msg);
 
-  coreAPI->releaseService (identity);
+  coreAPI->GNUNET_CORE_release_service (identity);
   identity = NULL;
-  coreAPI->releaseService (topology);
+  coreAPI->GNUNET_CORE_release_service (topology);
   topology = NULL;
   if (traffic != NULL)
     {
-      coreAPI->releaseService (traffic);
+      coreAPI->GNUNET_CORE_release_service (traffic);
       traffic = NULL;
     }
   GNUNET_free (ROUTING_indTable_);
@@ -2387,7 +2391,7 @@ release_module_gap ()
   if (stats != NULL)
     {
       stats->set (stat_pending_rewards, 0);
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   lock = NULL;

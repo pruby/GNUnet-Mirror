@@ -146,7 +146,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   unsigned int dist;
   unsigned int minDist;
 
-  index = coreAPI->computeIndex (receiver);
+  index = coreAPI->GNUNET_CORE_connection_compute_index_of_peer (receiver);
   GNUNET_mutex_lock (lock);
   now = GNUNET_get_time ();
   entry = -1;
@@ -372,9 +372,10 @@ initMigration (GNUNET_CoreAPIForPlugins * capi,
   gap = g;
   dht = d;
   traffic = t;
-  coreAPI->registerSendCallback (GNUNET_GAP_ESTIMATED_DATA_SIZE,
-                                 &activeMigrationCallback);
-  stats = capi->requestService ("stats");
+  coreAPI->
+    GNUNET_CORE_connection_register_send_callback
+    (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_migration_count
@@ -392,11 +393,12 @@ void
 doneMigration ()
 {
   int i;
-  coreAPI->unregisterSendCallback (GNUNET_GAP_ESTIMATED_DATA_SIZE,
-                                   &activeMigrationCallback);
+  coreAPI->
+    GNUNET_CORE_connection_unregister_send_callback
+    (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   datastore = NULL;

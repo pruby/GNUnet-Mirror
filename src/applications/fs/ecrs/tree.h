@@ -50,6 +50,6 @@
  * @param flen file length for which to compute the depth
  * @return depth of the tree
  */
-unsigned int computeDepth (unsigned long long flen);
+unsigned int GNUNET_ECRS_compute_depth (unsigned long long flen);
 
 #endif

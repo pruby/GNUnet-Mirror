@@ -38,9 +38,9 @@
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int
-getPublicIPAddress (struct GNUNET_GC_Configuration *cfg,
-                    struct GNUNET_GE_Context *ectx,
-                    GNUNET_IPv4Address * address)
+GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
+                                   struct GNUNET_GE_Context *ectx,
+                                   GNUNET_IPv4Address * address)
 {
   static GNUNET_IPv4Address myAddress;
   static GNUNET_CronTime last;
@@ -123,8 +123,8 @@ expirePICache ()
  * @return GNUNET_OK if we found an address, GNUNET_SYSERR if not
  */
 int
-getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
-                     void **sa, unsigned int *salen)
+GNUNET_IP_get_address_from_peer_identity (const GNUNET_PeerIdentity * peer,
+                                          void **sa, unsigned int *salen)
 {
   struct PICache *cache;
 
@@ -156,8 +156,8 @@ getIPaddressFromPID (const GNUNET_PeerIdentity * peer,
  * us to validate the address).
  */
 void
-setIPaddressFromPID (const GNUNET_PeerIdentity * peer,
-                     const void *sa, unsigned int salen)
+GNUNET_IP_set_address_for_peer_identity (const GNUNET_PeerIdentity * peer,
+                                         const void *sa, unsigned int salen)
 {
   struct PICache *next;
 
@@ -198,12 +198,12 @@ setIPaddressFromPID (const GNUNET_PeerIdentity * peer,
 
 
 
-void __attribute__ ((constructor)) gnunet_ip_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_IP_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_YES);
 }
 
-void __attribute__ ((destructor)) gnunet_ip_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_IP_ltdl_fini ()
 {
   struct PICache *ppos;
   GNUNET_mutex_destroy (lock);

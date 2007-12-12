@@ -145,7 +145,9 @@ freeTCPSession (TCPSession * tcpsession)
   GNUNET_mutex_unlock (tcplock);
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_OK ==
-                    coreAPI->assertUnused (tcpsession->tsession));
+                    coreAPI->
+                    GNUNET_CORE_connection_assert_tsession_unused
+                    (tcpsession->tsession));
   GNUNET_mutex_lock (tcplock);
   GNUNET_free (tcpsession->tsession);
   GNUNET_free (tcpsession);
@@ -265,8 +267,9 @@ select_message_handler (void *mh_cls,
       tcpSession->sender = welcome->clientIdentity;
       tsession->peer = welcome->clientIdentity;
       if (tcpSession->accept_addr != NULL)
-        setIPaddressFromPID (&welcome->clientIdentity,
-                             tcpSession->accept_addr, tcpSession->addr_len);
+        GNUNET_IP_set_address_for_peer_identity (&welcome->clientIdentity,
+                                                 tcpSession->accept_addr,
+                                                 tcpSession->addr_len);
     }
   else
     {

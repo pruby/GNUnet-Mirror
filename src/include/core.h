@@ -33,30 +33,30 @@
 /**
  * Initialize the CORE's globals.
  */
-int initCore (struct GNUNET_GE_Context *ectx,
-              struct GNUNET_GC_Configuration *cfg,
-              struct GNUNET_CronManager *cron,
-              struct GNUNET_LoadMonitor *monitor);
+int GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
+                      struct GNUNET_GC_Configuration *cfg,
+                      struct GNUNET_CronManager *cron,
+                      struct GNUNET_LoadMonitor *monitor);
 
 /**
  * Shutdown the CORE modules (also shuts down all
  * application modules).
  */
-void doneCore (void);
+void GNUNET_CORE_done (void);
 
-void *requestService (const char *pos);
+void *GNUNET_CORE_request_service (const char *pos);
 
-int releaseService (void *service);
+int GNUNET_CORE_release_service (void *service);
 
 /**
  * @return GNUNET_OK on success, GNUNET_SYSERR if some modules failed to unload
  */
-int unloadApplicationModules (void);
+int GNUNET_CORE_unload_application_modules (void);
 
 /**
  * @return GNUNET_OK on success, GNUNET_SYSERR if some modules failed to load
  */
-int loadApplicationModules (void);
+int GNUNET_CORE_load_application_modules (void);
 
 
 

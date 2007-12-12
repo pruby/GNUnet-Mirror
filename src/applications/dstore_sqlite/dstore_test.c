@@ -100,16 +100,16 @@ main (int argc, char *argv[])
       return -1;
     }
   cron = GNUNET_cron_create (NULL);
-  initCore (NULL, cfg, cron, NULL);
-  api = requestService ("dstore");
+  GNUNET_CORE_init (NULL, cfg, cron, NULL);
+  api = GNUNET_CORE_request_service ("dstore");
   if (api != NULL)
     {
       ok = test (api);
-      releaseService (api);
+      GNUNET_CORE_release_service (api);
     }
   else
     ok = GNUNET_SYSERR;
-  doneCore ();
+  GNUNET_CORE_done ();
   if (ok == GNUNET_SYSERR)
     return 1;
   return error;

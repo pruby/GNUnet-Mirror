@@ -31,14 +31,15 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-int changeUser (struct GNUNET_GE_Context *ectx,
-                struct GNUNET_GC_Configuration *cfg);
+int GNUNET_CORE_startup_change_user (struct GNUNET_GE_Context *ectx,
+                                     struct GNUNET_GC_Configuration *cfg);
 
-int setFdLimit (struct GNUNET_GE_Context *ectx,
-                struct GNUNET_GC_Configuration *cfg);
+int GNUNET_CORE_startup_set_fd_limit (struct GNUNET_GE_Context *ectx,
+                                      struct GNUNET_GC_Configuration *cfg);
 
-int checkPermissions (struct GNUNET_GE_Context *ectx,
-                      struct GNUNET_GC_Configuration *cfg);
+int GNUNET_CORE_startup_check_permissions (struct GNUNET_GE_Context *ectx,
+                                           struct GNUNET_GC_Configuration
+                                           *cfg);
 
 /**
  * @brief Cap datastore limit to the filesystem's capabilities
@@ -46,19 +47,20 @@ int checkPermissions (struct GNUNET_GE_Context *ectx,
  * @param ectx error handler
  * @param cfg configuration manager
  */
-void capFSQuotaSize (struct GNUNET_GE_Context *ectx,
-                     struct GNUNET_GC_Configuration *cfg);
+void GNUNET_CORE_startup_cap_fs_quota_size (struct GNUNET_GE_Context *ectx,
+                                            struct GNUNET_GC_Configuration
+                                            *cfg);
 
 /**
  * Shutdown gnunetd
  * @param cfg configuration
  * @param sig signal code that causes shutdown, optional
  */
-void shutdown_gnunetd (struct GNUNET_GC_Configuration *cfg, int sig);
+void GNUNET_CORE_shutdown (struct GNUNET_GC_Configuration *cfg, int sig);
 
 
 #ifdef MINGW
-void win_service_main (void (*gnunet_main) ());
+void GNUNET_CORE_w32_service_main (void (*gnunet_main) ());
 #endif
 #endif
 /* end of startup.h */

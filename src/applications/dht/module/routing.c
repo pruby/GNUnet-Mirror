@@ -740,7 +740,7 @@ init_dht_routing (GNUNET_CoreAPIForPlugins * capi)
                                             128, 1024 * 1024, 1024, &rts);
   GNUNET_array_grow (records, rt_size, rts);
   lock = GNUNET_mutex_create (GNUNET_NO);
-  stats = capi->requestService ("stats");
+  stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_replies_routed =
@@ -762,8 +762,9 @@ init_dht_routing (GNUNET_CoreAPIForPlugins * capi)
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_GET, &handleGet);
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_PUT, &handlePut);
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_RESULT, &handleResult);
-  coreAPI->registerSendCallback (sizeof (DHT_GET_MESSAGE),
-                                 &extra_get_callback);
+  coreAPI->
+    GNUNET_CORE_connection_register_send_callback (sizeof (DHT_GET_MESSAGE),
+                                                   &extra_get_callback);
   return GNUNET_OK;
 }
 
@@ -777,14 +778,15 @@ done_dht_routing ()
 {
   unsigned int i;
 
-  coreAPI->unregisterSendCallback (sizeof (DHT_GET_MESSAGE),
-                                   &extra_get_callback);
+  coreAPI->
+    GNUNET_CORE_connection_unregister_send_callback (sizeof (DHT_GET_MESSAGE),
+                                                     &extra_get_callback);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_GET, &handleGet);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_PUT, &handlePut);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_RESULT, &handleResult);
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (lock);

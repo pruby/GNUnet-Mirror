@@ -292,7 +292,7 @@ typedef struct
   PID_INDEX noTarget;
 
   /**
-   * Bit-map marking the hostIndices (computeIndex) of nodes that have
+   * Bit-map marking the hostIndices (GNUNET_CORE_connection_compute_index_of_peer) of nodes that have
    * received this query already.  Note that the bit-map has a maximum
    * size, if the index is out-of-bounds, it is hashed into the
    * smaller size of the bitmap. There may thus be nodes with

@@ -28,12 +28,14 @@
  * Parse the specification file and create the tree.
  * Set all values to defaults.
  */
-struct GNUNET_GNS_TreeNode *tree_parse (struct GNUNET_GE_Context *ectx,
-                                        const char *specification);
+struct GNUNET_GNS_TreeNode *GNUNET_GNS_tree_parse (struct GNUNET_GE_Context
+                                                   *ectx,
+                                                   const char *specification);
 
-struct GNUNET_GNS_TreeNode *tree_lookup (struct GNUNET_GNS_TreeNode *root,
-                                         const char *section,
-                                         const char *option);
+struct GNUNET_GNS_TreeNode *GNUNET_GNS_tree_lookup (struct GNUNET_GNS_TreeNode
+                                                    *root,
+                                                    const char *section,
+                                                    const char *option);
 
 typedef void (*VisibilityChangeListener) (void *ctx,
                                           struct GNUNET_GNS_TreeNode * tree);
@@ -42,9 +44,9 @@ typedef void (*VisibilityChangeListener) (void *ctx,
  * A value in the tree has been changed.
  * Update visibility (and notify about changes).
  */
-void tree_notify_change (struct GNUNET_GC_Configuration *cfg,
-                         VisibilityChangeListener vcl,
-                         void *ctx,
-                         struct GNUNET_GE_Context *ectx,
-                         struct GNUNET_GNS_TreeNode *root,
-                         struct GNUNET_GNS_TreeNode *change);
+void GNUNET_GNS_tree_notify_change (struct GNUNET_GC_Configuration *cfg,
+                                    VisibilityChangeListener vcl,
+                                    void *ctx,
+                                    struct GNUNET_GE_Context *ectx,
+                                    struct GNUNET_GNS_TreeNode *root,
+                                    struct GNUNET_GNS_TreeNode *change);

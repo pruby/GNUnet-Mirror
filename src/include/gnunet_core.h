@@ -249,7 +249,7 @@ typedef struct
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void *(*requestService) (const char *name);
+  void *(*GNUNET_CORE_request_service) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -261,7 +261,7 @@ typedef struct
    *
    * @return GNUNET_OK if service was successfully released, GNUNET_SYSERR on error
    */
-  int (*releaseService) (void *service);
+  int (*GNUNET_CORE_release_service) (void *service);
 
   /* ****************** P2P data exchange **************** */
 
@@ -277,8 +277,9 @@ typedef struct
    * @param msg the message to transmit, should contain MESSAGE_HEADERs
    * @return GNUNET_OK on success, GNUNET_SYSERR on failure
    */
-  int (*sendPlaintext) (GNUNET_TSession * session,
-                        const char *msg, unsigned int size);
+  int (*GNUNET_CORE_connection_send_plaintext) (GNUNET_TSession * session,
+                                                const char *msg,
+                                                unsigned int size);
 
   /**
    * Send an encrypted message to another node.
@@ -303,11 +304,14 @@ typedef struct
    * @param importance how important is the message?
    * @param maxdelay how long can the message wait?
    */
-  void (*unicastCallback) (const GNUNET_PeerIdentity * receiver,
-                           GNUNET_BuildMessageCallback callback,
-                           void *closure,
-                           unsigned short len,
-                           unsigned int importance, unsigned int maxdelay);
+  void (*GNUNET_CORE_connection_send_using_callback) (const
+                                                      GNUNET_PeerIdentity *
+                                                      receiver,
+                                                      GNUNET_BuildMessageCallback
+                                                      callback, void *closure,
+                                                      unsigned short len,
+                                                      unsigned int importance,
+                                                      unsigned int maxdelay);
 
   /**
    * Perform an operation for all connected hosts.
@@ -339,15 +343,19 @@ typedef struct
    *   that buffer (must be a positive number).
    * @return GNUNET_OK if the handler was registered, GNUNET_SYSERR on error
    */
-  int (*registerSendCallback) (const unsigned int minimumPadding,
-                               GNUNET_BufferFillCallback callback);
+  int (*GNUNET_CORE_connection_register_send_callback) (const unsigned int
+                                                        minimumPadding,
+                                                        GNUNET_BufferFillCallback
+                                                        callback);
 
   /**
-   * Unregister a handler that was registered with registerSendCallback.
+   * Unregister a handler that was registered with GNUNET_CORE_connection_register_send_callback.
    * @return GNUNET_OK if the handler was removed, GNUNET_SYSERR on error
    */
-  int (*unregisterSendCallback) (const unsigned int minimumPadding,
-                                 GNUNET_BufferFillCallback callback);
+  int (*GNUNET_CORE_connection_unregister_send_callback) (const unsigned int
+                                                          minimumPadding,
+                                                          GNUNET_BufferFillCallback
+                                                          callback);
 
   /**
    * Register a handler that is to be called for each
@@ -357,7 +365,8 @@ typedef struct
    *        P2P message part that is transmitted
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
    */
-  int (*registerSendNotify) (GNUNET_P2PRequestHandler callback);
+  int (*GNUNET_CORE_connection_register_send_notification_callback)
+    (GNUNET_P2PRequestHandler callback);
 
   /**
    * Unregister a handler that is to be called for each
@@ -367,7 +376,8 @@ typedef struct
    *        P2P message part that is transmitted
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
    */
-  int (*unregisterSendNotify) (GNUNET_P2PRequestHandler callback);
+  int (*GNUNET_CORE_connection_unregister_send_notification_callback)
+    (GNUNET_P2PRequestHandler callback);
 
 
   /* ********************* handlers ***************** */
@@ -407,8 +417,8 @@ typedef struct
    * @return number of handlers registered, 0 for none,
    *        GNUNET_SYSERR for invalid value of handlerType
    */
-  int (*isHandlerRegistered) (unsigned short type,
-                              unsigned short handlerType);
+  int (*GNUNET_CORE_p2p_test_handler_registered) (unsigned short type,
+                                                  unsigned short handlerType);
 
   /**
    * Register a method as a handler for specific message
@@ -419,9 +429,9 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerPlaintextHandler) (unsigned short type,
-                                   GNUNET_P2PPlaintextRequestHandler
-                                   callback);
+  int (*GNUNET_CORE_plaintext_register_handler) (unsigned short type,
+                                                 GNUNET_P2PPlaintextRequestHandler
+                                                 callback);
 
   /**
    * Unregister a method as a handler for specific message
@@ -433,9 +443,9 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterPlaintextHandler) (unsigned short type,
-                                     GNUNET_P2PPlaintextRequestHandler
-                                     callback);
+  int (*GNUNET_CORE_plaintext_unregister_handler) (unsigned short type,
+                                                   GNUNET_P2PPlaintextRequestHandler
+                                                   callback);
 
   /* ***************** traffic management ******************* */
 
@@ -461,9 +471,15 @@ typedef struct
    * @param forSending GNUNET_NO if it is the key for receiving,
    *                   GNUNET_YES if it is the key for sending
    */
-  void (*assignSessionKey) (const GNUNET_AES_SessionKey * key,
-                            const GNUNET_PeerIdentity * peer,
-                            GNUNET_Int32Time age, int forSending);
+  void (*GNUNET_CORE_connection_assign_session_key_to_peer) (const
+                                                             GNUNET_AES_SessionKey
+                                                             * key,
+                                                             const
+                                                             GNUNET_PeerIdentity
+                                                             * peer,
+                                                             GNUNET_Int32Time
+                                                             age,
+                                                             int forSending);
 
   /**
    * Obtain the session key used for traffic from or to a given peer.
@@ -476,9 +492,13 @@ typedef struct
    * @return GNUNET_SYSERR if no sessionkey is known to the core,
    *         GNUNET_OK if the sessionkey was set.
    */
-  int (*getCurrentSessionKey) (const GNUNET_PeerIdentity * peer,
-                               GNUNET_AES_SessionKey * key,
-                               GNUNET_Int32Time * age, int forSending);
+  int (*GNUNET_CORE_connection_get_session_key_of_peer) (const
+                                                         GNUNET_PeerIdentity *
+                                                         peer,
+                                                         GNUNET_AES_SessionKey
+                                                         * key,
+                                                         GNUNET_Int32Time *
+                                                         age, int forSending);
 
   /**
    * We have confirmed that the other peer is communicating with us,
@@ -487,7 +507,9 @@ typedef struct
    * this could happen if in between the core has discarded
    * the session information).
    */
-  void (*confirmSessionUp) (const GNUNET_PeerIdentity * peer);
+  void (*GNUNET_CORE_connection_mark_session_as_confirmed) (const
+                                                            GNUNET_PeerIdentity
+                                                            * peer);
 
   /**
    * Increase the preference for traffic from some other peer.
@@ -515,7 +537,9 @@ typedef struct
    *
    * @param peer  the peer to disconnect
    */
-  void (*disconnectFromPeer) (const GNUNET_PeerIdentity * peer);
+  void (*GNUNET_CORE_connection_disconnect_from_peer) (const
+                                                       GNUNET_PeerIdentity *
+                                                       peer);
 
   /* **************** Client-server interaction **************** */
 
@@ -535,7 +559,7 @@ typedef struct
    * on the other hand does NOT confirm delivery since the actual
    * transfer happens asynchronously.
    */
-  GNUNET_SendToClientCallback sendToClient;
+  GNUNET_SendToClientCallback GNUNET_CORE_cs_send_to_client;
 
   /**
    * Register a method as a handler for specific message
@@ -567,7 +591,8 @@ typedef struct
    *   of every client that disconnected.
    * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*registerClientExitHandler) (GNUNET_ClientExitHandler callback);
+  int (*GNUNET_CORE_cs_register_exit_handler) (GNUNET_ClientExitHandler
+                                               callback);
 
   /**
    * Unregister a handler to call if any client exits.
@@ -575,13 +600,16 @@ typedef struct
    *   of every client that disconnected.
    * @return GNUNET_OK on success, GNUNET_SYSERR on error
    */
-  int (*unregisterClientExitHandler) (GNUNET_ClientExitHandler callback);
+  int (*GNUNET_CORE_cs_exit_handler_unregister) (GNUNET_ClientExitHandler
+                                                 callback);
 
   /**
    * Terminate the connection with the given client (asynchronous
    * detection of a protocol violation).
    */
-  void (*terminateClientConnection) (struct GNUNET_ClientHandle * handle);
+  void (*GNUNET_CORE_cs_terminate_client_connection) (struct
+                                                      GNUNET_ClientHandle *
+                                                      handle);
 
 
   /* ************************ MISC ************************ */
@@ -596,35 +624,38 @@ typedef struct
    * @param session for plaintext messages, the
    *  assumed transport session.  Maybe NULL.
    */
-  void (*injectMessage) (const GNUNET_PeerIdentity * sender,
-                         const char *msg,
-                         unsigned int size,
-                         int wasEncrypted, GNUNET_TSession * session);
+  void (*GNUNET_CORE_p2p_inject_message) (const GNUNET_PeerIdentity * sender,
+                                          const char *msg,
+                                          unsigned int size,
+                                          int wasEncrypted,
+                                          GNUNET_TSession * session);
 
   /**
    * Compute the index (small, positive, pseudo-unique identification
    * number) of a hostId.
    */
-  unsigned int (*computeIndex) (const GNUNET_PeerIdentity * hostId);
+  unsigned int (*GNUNET_CORE_connection_compute_index_of_peer) (const
+                                                                GNUNET_PeerIdentity
+                                                                * hostId);
 
   /**
    * The the lock of the connection module. A module that registers
    * callbacks may need this.
    */
-  struct GNUNET_Mutex *(*getConnectionModuleLock) (void);
+  struct GNUNET_Mutex *(*GNUNET_CORE_connection_get_lock) (void);
 
   /**
    * Get the current number of slots in the connection table (as computed
    * from the available bandwidth).
    */
-  int (*getSlotCount) (void);
+  int (*GNUNET_CORE_connection_get_slot_count) (void);
 
   /**
    * Is the given slot used?
    * @return 0 if not, otherwise number of peers in
    * the slot
    */
-  int (*isSlotUsed) (int slot);
+  int (*GNUNET_CORE_connection_is_slot_used) (int slot);
 
   /**
    * Get the time of the last encrypted message that was received
@@ -632,8 +663,11 @@ typedef struct
    * @param time updated with the time
    * @return GNUNET_SYSERR if we are not connected to the peer at the moment
    */
-  int (*getLastActivityOf) (const GNUNET_PeerIdentity * peer,
-                            GNUNET_CronTime * time);
+  int (*GNUNET_CORE_connection_get_last_activity_of_peer) (const
+                                                           GNUNET_PeerIdentity
+                                                           * peer,
+                                                           GNUNET_CronTime *
+                                                           time);
 
   /* here for binary compatibility (for now) */
 
@@ -647,12 +681,13 @@ typedef struct
   int (*sendErrorMessageToClient) (struct GNUNET_ClientHandle * handle,
                                    GNUNET_GE_KIND kind, const char *value);
 
-  struct GNUNET_GE_Context *(*createClientLogContext) (GNUNET_GE_KIND mask,
-                                                       struct
-                                                       GNUNET_ClientHandle *
-                                                       handle);
+  struct GNUNET_GE_Context
+    *(*GNUNET_CORE_cs_create_client_log_context) (GNUNET_GE_KIND mask,
+                                                  struct GNUNET_ClientHandle *
+                                                  handle);
 
-  int (*assertUnused) (GNUNET_TSession * tsession);
+  int (*GNUNET_CORE_connection_assert_tsession_unused) (GNUNET_TSession *
+                                                        tsession);
 
 } GNUNET_CoreAPIForPlugins;
 
@@ -724,7 +759,7 @@ typedef struct
    * loaded or unloaded inside the module initialization or shutdown
    * code.
    */
-  void *(*requestService) (const char *name);
+  void *(*GNUNET_CORE_request_service) (const char *name);
 
   /**
    * Notification that the given service is no longer required. This
@@ -736,7 +771,7 @@ typedef struct
    *
    * @return GNUNET_OK if service was successfully released, GNUNET_SYSERR on error
    */
-  int (*releaseService) (void *service);
+  int (*GNUNET_CORE_release_service) (void *service);
 
 
 } GNUNET_UpdateAPI;

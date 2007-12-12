@@ -109,7 +109,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
       broadcastToConnected (message, 5, 1);
       cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
-        coreAPI->sendToClient (clients[j], &cmsg->header);
+        coreAPI->GNUNET_CORE_cs_send_to_client (clients[j], &cmsg->header);
       pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
       pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';
       /*
@@ -152,7 +152,7 @@ csHandleChatRequest (GNUNET_ClientHandle client,
     if (clients[i] == client)
       j = i;
     else
-      coreAPI->sendToClient (clients[i], message);
+      coreAPI->GNUNET_CORE_cs_send_to_client (clients[i], message);
   if (j == -1)
     {
       if (clientCount == MAX_CLIENTS)
@@ -215,7 +215,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
       capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientExitHandler (&chatClientExitHandler))
+      capi->GNUNET_CORE_cs_register_exit_handler (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                                     &csHandleChatRequest))
@@ -235,7 +235,7 @@ void
 done_module_chat ()
 {
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG);
-  coreAPI->unregisterClientExitHandler (&chatClientExitHandler);
+  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&chatClientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                     &csHandleChatRequest);
   GNUNET_mutex_destroy (&chatMutex);

@@ -159,7 +159,7 @@ createIOContext (struct GNUNET_GE_Context *ectx,
 
   this->ectx = ectx;
   GNUNET_GE_ASSERT (ectx, filename != NULL);
-  this->treedepth = computeDepth (filesize);
+  this->treedepth = GNUNET_ECRS_compute_depth (filesize);
   this->lock = GNUNET_mutex_create (GNUNET_NO);
   this->handles = GNUNET_malloc (sizeof (int) * (this->treedepth + 1));
   this->filename = GNUNET_strdup (filename);
@@ -215,7 +215,7 @@ createIOContext (struct GNUNET_GE_Context *ectx,
  * @param len how many bytes to read or write
  * @return number of bytes read, GNUNET_SYSERR on error
  */
-int
+static int
 readFromIOC (IOContext * this,
              unsigned int level,
              unsigned long long pos, void *buf, unsigned int len)
@@ -250,7 +250,7 @@ readFromIOC (IOContext * this,
  * @param len how many bytes to write
  * @return number of bytes written, GNUNET_SYSERR on error
  */
-int
+static int
 writeToIOC (IOContext * this,
             unsigned int level,
             unsigned long long pos, void *buf, unsigned int len)
@@ -1481,7 +1481,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   top->ctx = &ctx;
   top->chk = fid.chk;
   top->offset = 0;
-  top->level = computeDepth (ctx.total);
+  top->level = GNUNET_ECRS_compute_depth (ctx.total);
   if (GNUNET_NO == checkPresent (top))
     addRequest (rm, top);
   else

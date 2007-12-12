@@ -106,14 +106,14 @@ tb_ADD_PEER (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
 static void
 tb_DEL_PEER (GNUNET_ClientHandle client, TESTBED_DEL_PEER_MESSAGE * msg)
 {
-  coreAPI->disconnectFromPeer (&msg->host);
+  coreAPI->GNUNET_CORE_connection_disconnect_from_peer (&msg->host);
   sendAcknowledgement (client, GNUNET_OK);
 }
 
 static void
 doDisconnect (const GNUNET_PeerIdentity * id, void *unused)
 {
-  coreAPI->disconnectFromPeer (id);
+  coreAPI->GNUNET_CORE_connection_disconnect_from_peer (id);
 }
 
 /**
@@ -157,10 +157,11 @@ tb_GET_hello (GNUNET_ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
       reply->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REPLY);
       reply->header.msgType = htonl (TESTBED_hello_RESPONSE);
       memcpy (&reply->helo, helo, ntohs (helo->header.size));
-      coreAPI->sendToClient (client, &reply->header.header);
+      coreAPI->GNUNET_CORE_cs_send_to_client (client, &reply->header.header);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "%s: returning from sendToClient\n", __FUNCTION__);
+                     "%s: returning from GNUNET_CORE_cs_send_to_client\n",
+                     __FUNCTION__);
       GNUNET_free (helo);
       GNUNET_free (reply);
     }
@@ -810,7 +811,8 @@ tb_GET_OUTPUT (GNUNET_ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
                 = htons (run + sizeof (TESTBED_OUTPUT_REPLY_MESSAGE));
               memcpy (&((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) msg)->
                       data[0], &pi->output[pos], run);
-              coreAPI->sendToClient (client, &msg->header.header);
+              coreAPI->GNUNET_CORE_cs_send_to_client (client,
+                                                      &msg->header.header);
               pos += run;
             }
           GNUNET_free (msg);
@@ -1401,7 +1403,7 @@ initialize_module_testbed (GNUNET_CoreAPIForPlugins * capi)
     if ((handlers[i].msgId != i) && (handlers[i].handler != &tb_undefined))
       GNUNET_GE_ASSERT (ectx, 0);
   GNUNET_GE_ASSERT (ectx, handlers[TESTBED_MAX_MSG].handler == NULL);
-  identity = capi->requestService ("identity");
+  identity = capi->GNUNET_CORE_request_service ("identity");
   if (identity == NULL)
     return GNUNET_SYSERR;
 
@@ -1413,7 +1415,8 @@ initialize_module_testbed (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
-                    registerClientExitHandler (&testbedClientExitHandler));
+                    GNUNET_CORE_cs_register_exit_handler
+                    (&testbedClientExitHandler));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
@@ -1464,8 +1467,8 @@ done_module_testbed ()
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TESTBED_REQUEST,
                                     (GNUNET_ClientRequestHandler) &
                                     csHandleTestbedRequest);
-  coreAPI->unregisterClientExitHandler (&testbedClientExitHandler);
-  coreAPI->releaseService (identity);
+  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&testbedClientExitHandler);
+  coreAPI->GNUNET_CORE_release_service (identity);
   identity = NULL;
   coreAPI = NULL;
 }

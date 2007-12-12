@@ -187,8 +187,8 @@ work ()
   char *topo;
 
   uapi.updateModule = &updateModule;
-  uapi.requestService = &requestService;
-  uapi.releaseService = &releaseService;
+  uapi.GNUNET_CORE_request_service = &GNUNET_CORE_request_service;
+  uapi.GNUNET_CORE_release_service = &GNUNET_CORE_release_service;
   uapi.ectx = ectx;
   uapi.cfg = cfg;
 
@@ -215,7 +215,7 @@ work ()
     }
   GNUNET_free (topo);
   cron = GNUNET_cron_create (ectx);
-  if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
+  if (GNUNET_CORE_init (ectx, cfg, cron, NULL) != GNUNET_OK)
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_FATAL | GNUNET_GE_USER | GNUNET_GE_IMMEDIATE,
@@ -227,7 +227,7 @@ work ()
 
 
   /* enforce filesystem limits */
-  capFSQuotaSize (ectx, cfg);
+  GNUNET_CORE_startup_cap_fs_quota_size (ectx, cfg);
 
   /* force update of common modules (used by core) */
   updateModule ("transport");
@@ -238,12 +238,12 @@ work ()
   /* then update active application modules */
   updateApplicationModules ();
   /* store information about update */
-  upToDate (ectx, cfg);
+  GNUNET_CORE_version_mark_as_up_to_date (ectx, cfg);
 
   for (i = 0; i < processedCount; i++)
     GNUNET_free (processed[i]);
   GNUNET_array_grow (processed, processedCount, 0);
-  doneCore ();
+  GNUNET_CORE_done ();
   GNUNET_cron_destroy (cron);
 }
 
@@ -290,7 +290,8 @@ main (int argc, char *const *argv)
                      argv,
                      "gnunet-update",
                      &cfgFilename, gnunetupdateOptions, &ectx, &cfg);
-  if ((ret == -1) || (GNUNET_OK != changeUser (ectx, cfg)))
+  if ((ret == -1)
+      || (GNUNET_OK != GNUNET_CORE_startup_change_user (ectx, cfg)))
     {
       GNUNET_fini (ectx, cfg);
       return -1;

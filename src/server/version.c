@@ -126,8 +126,8 @@ getVersionFileName (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_OK if we are
  */
 int
-checkUpToDate (struct GNUNET_GE_Context *ectx,
-               struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_version_check_up_to_date (struct GNUNET_GE_Context *ectx,
+                                      struct GNUNET_GC_Configuration *cfg)
 {
   char version[MAX_VS];
   int len;
@@ -146,14 +146,14 @@ checkUpToDate (struct GNUNET_GE_Context *ectx,
   if (GNUNET_disk_file_test (ectx, fn) != GNUNET_YES)
     {
       GNUNET_free (fn);
-      upToDate (ectx, cfg);     /* first start */
+      GNUNET_CORE_version_mark_as_up_to_date (ectx, cfg);       /* first start */
       return GNUNET_OK;
     }
   len = GNUNET_disk_file_read (ectx, fn, MAX_VS, version);
   GNUNET_free (fn);
   if (len == -1)
     {                           /* should never happen -- file should exist */
-      upToDate (ectx, cfg);     /* first start */
+      GNUNET_CORE_version_mark_as_up_to_date (ectx, cfg);       /* first start */
       return GNUNET_OK;
     }
   if ((len != strlen (VERSION) + 1 + sizeof (GNUNET_EncName)) ||
@@ -171,7 +171,8 @@ checkUpToDate (struct GNUNET_GE_Context *ectx,
  * Writes the version tag
  */
 void
-upToDate (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg)
+GNUNET_CORE_version_mark_as_up_to_date (struct GNUNET_GE_Context *ectx,
+                                        struct GNUNET_GC_Configuration *cfg)
 {
   char version[MAX_VS];
   int len;

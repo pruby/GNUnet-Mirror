@@ -865,8 +865,9 @@ createhello ()
          (GNUNET_OK == upnp->get_ip (port,
                                      "TCP",
                                      &haddr->ip))) ||
-        (GNUNET_SYSERR != getPublicIPAddress (coreAPI->cfg,
-                                              coreAPI->ectx, &haddr->ip))))
+        (GNUNET_SYSERR != GNUNET_IP_get_public_ipv4_address (coreAPI->cfg,
+                                                             coreAPI->ectx,
+                                                             &haddr->ip))))
     {
       GNUNET_free (msg);
       GNUNET_GE_LOG (coreAPI->ectx,
@@ -2279,7 +2280,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                                                "HTTP", "UPNP",
                                                GNUNET_YES) == GNUNET_YES)
     {
-      upnp = coreAPI->requestService ("upnp");
+      upnp = coreAPI->GNUNET_CORE_request_service ("upnp");
 
       if (upnp == NULL)
         {
@@ -2292,7 +2293,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
         }
     }
 
-  stats = coreAPI->requestService ("stats");
+  stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -2330,12 +2331,12 @@ donetransport_http ()
   GNUNET_GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
   if (stats != NULL)
     {
-      coreAPI->releaseService (stats);
+      coreAPI->GNUNET_CORE_release_service (stats);
       stats = NULL;
     }
   if (upnp != NULL)
     {
-      coreAPI->releaseService (upnp);
+      coreAPI->GNUNET_CORE_release_service (upnp);
       stats = NULL;
     }
   GNUNET_free_non_null (filteredNetworks_);

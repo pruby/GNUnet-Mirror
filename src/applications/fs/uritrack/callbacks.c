@@ -135,7 +135,7 @@ GNUNET_URITRACK_unregister_track_callback (GNUNET_ECRS_SearchResultProcessor
  * Internal notification about new tracked URI.
  */
 void
-URITRACK_internal_notify (const GNUNET_ECRS_FileInfo * fi)
+GNUNET_URITRACK_internal_notify (const GNUNET_ECRS_FileInfo * fi)
 {
   int i;
 
@@ -145,12 +145,12 @@ URITRACK_internal_notify (const GNUNET_ECRS_FileInfo * fi)
   GNUNET_mutex_unlock (lock);
 }
 
-void __attribute__ ((constructor)) gnunet_uritrack_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_URITRACK_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
-void __attribute__ ((destructor)) gnunet_uritrack_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_URITRACK_ltdl_fini ()
 {
   GNUNET_mutex_destroy (lock);
   lock = NULL;
