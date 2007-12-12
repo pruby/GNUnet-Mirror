@@ -1192,6 +1192,7 @@ identityRequestConnectHandler (struct GNUNET_ClientHandle *sock,
   if (sizeof (CS_identity_connect_MESSAGE) != ntohs (message->size))
     return GNUNET_SYSERR;
   msg = (const CS_identity_connect_MESSAGE *) message;
+  whitelistHost(&msg->other);
   coreAPI->unicast (&msg->other, NULL, 0, 0);
   ret = coreAPI->queryPeerStatus (&msg->other, NULL, NULL);
   return coreAPI->sendValueToClient (sock,
