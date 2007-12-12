@@ -78,7 +78,7 @@ GNUNET_traffic_poll (struct GNUNET_ClientServerConnection *sock,
   for (i = ntohl (info->count) - 1; i >= 0; i--)
     {
       const TRAFFIC_COUNTER *tc =
-        &((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) info)->counters[i];
+        &((CS_traffic_info_MESSAGE_GENERIC *) info)->counters[i];
       if ((tc->flags & GNUNET_TRAFFIC_TYPE_MASK) == direction)
         {
           *count = ntohl (tc->count);

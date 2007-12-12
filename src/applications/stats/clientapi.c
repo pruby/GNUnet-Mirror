@@ -56,7 +56,7 @@ GNUNET_STATS_p2p_message_type_to_string (unsigned short type)
     case GNUNET_P2P_PROTO_HANG_UP:
       name = "P2P_PROTO_hangup";
       break;
-    case GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT:
+    case GNUNET_P2P_PROTO_MESSAGE_FRAGMENT:
       name = "P2P_PROTO_fragment";
       break;
     case GNUNET_P2P_PROTO_NOISE:
@@ -206,11 +206,11 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
     case GNUNET_CS_PROTO_STATS_STATISTICS:
       name = "GNUNET_CS_PROTO_STATS_STATISTICS";
       break;
-    case GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED:
-      name = "GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED";
+    case GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED:
+      name = "GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED";
       break;
-    case GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED:
-      name = "GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED";
+    case GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED:
+      name = "GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED";
       break;
 
     case GNUNET_CS_PROTO_TBENCH_REQUEST:
@@ -341,7 +341,7 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
           if (mpos +
               strlen (&
                       ((char
-                        *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
+                        *) (((CS_stats_reply_MESSAGE_GENERIC *)
                              statMsg)->values))[mpos]) + 1 >
               ntohs (statMsg->header.size) - sizeof (CS_stats_reply_MESSAGE))
             {
@@ -354,14 +354,14 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
               ret =
                 processor (&
                            ((char
-                             *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
+                             *) (((CS_stats_reply_MESSAGE_GENERIC *)
                                   statMsg)->values))[mpos],
-                           GNUNET_ntohll (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg)->values[i]), cls);
+                           GNUNET_ntohll (((CS_stats_reply_MESSAGE_GENERIC *) statMsg)->values[i]), cls);
             }
           mpos +=
             strlen (&
                     ((char
-                      *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *)
+                      *) (((CS_stats_reply_MESSAGE_GENERIC *)
                            statMsg)->values))[mpos]) + 1;
         }
       count += ntohl (statMsg->statCounters);
@@ -393,7 +393,7 @@ GNUNET_STATS_get_available_protocols (struct GNUNET_GE_Context *ectx,
   ret = GNUNET_OK;
   csStatMsg.header.size = htons (sizeof (CS_stats_get_supported_MESSAGE));
   csStatMsg.header.type =
-    htons (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED);
+    htons (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED);
   for (j = 2; j < 4; j++)
     {
       csStatMsg.handlerType = htons (j);

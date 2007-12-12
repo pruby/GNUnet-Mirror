@@ -50,8 +50,8 @@ GNUNET_get_daemon_configuration_value (struct GNUNET_ClientServerConnection
   memset (&req, 0, sizeof (CS_getoption_request_MESSAGE));
   req.header.type = htons (GNUNET_CS_PROTO_GET_OPTION_REQUEST);
   req.header.size = htons (sizeof (CS_getoption_request_MESSAGE));
-  if ((strlen (section) >= CS_getoption_request_MESSAGNUNET_GE_OPT_LEN) ||
-      (strlen (option) >= CS_getoption_request_MESSAGNUNET_GE_OPT_LEN))
+  if ((strlen (section) >= CS_getoption_request_MESSAGE_OPT_LEN) ||
+      (strlen (option) >= CS_getoption_request_MESSAGE_OPT_LEN))
     return NULL;
   strcpy (&req.section[0], section);
   strcpy (&req.option[0], option);

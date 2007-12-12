@@ -69,7 +69,7 @@ extern "C"
  * the amount of space available for an unfragmented
  * message.
  */
-#define GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD 76
+#define GNUNET_P2P_MESSAGE_OVERHEAD 76
 
 /**
  * Opaque handle for a session representation on the transport
@@ -274,7 +274,7 @@ typedef struct
    * from the GNUnet core.
    *
    * @param session the transport session
-   * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
+   * @param msg the message to transmit, should contain MESSAGE_HEADERs
    * @return GNUNET_OK on success, GNUNET_SYSERR on failure
    */
   int (*sendPlaintext) (GNUNET_TSession * session,

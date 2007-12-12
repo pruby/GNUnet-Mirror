@@ -118,7 +118,7 @@ int forEachConnectedNode (GNUNET_NodeIteratorCallback method, void *arg);
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
+ * @param msg the message to transmit, should contain MESSAGE_HEADERs
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure
  */
 int sendPlaintext (GNUNET_TSession * tsession, const char *msg,

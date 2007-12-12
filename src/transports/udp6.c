@@ -457,7 +457,7 @@ helloToAddress (const GNUNET_MessageHello * hello,
  * The default maximum size of each outbound UDP6 message,
  * optimal value for Ethernet (10 or 100 MBit).
  */
-#define MESSAGNUNET_GE_SIZE 1452
+#define MESSAGE_SIZE 1452
 
 /**
  * The exported method. Makes the core api available via a global and
@@ -479,12 +479,12 @@ inittransport_udp6 (GNUNET_CoreAPIForTransport * core)
                                                       "UDP6",
                                                       "MTU",
                                                       sizeof (UDPMessage) +
-                                                      GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD
+                                                      GNUNET_P2P_MESSAGE_OVERHEAD
                                                       +
                                                       sizeof
                                                       (GNUNET_MessageHeader) +
                                                       32, 65500,
-                                                      MESSAGNUNET_GE_SIZE,
+                                                      MESSAGE_SIZE,
                                                       &mtu))
     {
       return NULL;

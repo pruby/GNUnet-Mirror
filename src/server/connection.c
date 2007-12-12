@@ -3570,7 +3570,7 @@ initConnection (struct GNUNET_GE_Context *e,
   load_monitor = m;
   cron = cm;
   GNUNET_GE_ASSERT (ectx,
-                    GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD ==
+                    GNUNET_P2P_MESSAGE_OVERHEAD ==
                     sizeof (GNUNET_TransportPacket_HEADER));
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_hangup_MESSAGE) == 68);
   ENTRY ();
@@ -3909,7 +3909,7 @@ unregisterSendCallback (const unsigned int minimumPadding,
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain MESSAGNUNET_GE_HEADERs
+ * @param msg the message to transmit, should contain MESSAGE_HEADERs
  * @return GNUNET_OK on success, GNUNET_SYSERR on failure, GNUNET_NO on temporary failure
  */
 int

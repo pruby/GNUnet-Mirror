@@ -314,7 +314,7 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
       end = pos;
       /* second pass: copy values and messages to message */
       for (pos = start; pos < end; pos++)
-        ((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg)->values[pos -
+        ((CS_stats_reply_MESSAGE_GENERIC *) statMsg)->values[pos -
                                                                     start] =
           GNUNET_htonll (entries[pos].value);
       mpos = sizeof (unsigned long long) * (end - start);
@@ -322,7 +322,7 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
         {
           memcpy (&
                   ((char
-                    *) (((CS_stats_reply_MESSAGNUNET_GE_GENERIC *) statMsg))->
+                    *) (((CS_stats_reply_MESSAGE_GENERIC *) statMsg))->
                    values)[mpos], entries[pos].description,
                   entries[pos].descStrLen + 1);
           mpos += entries[pos].descStrLen + 1;
@@ -421,17 +421,17 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
                  ("`%s' registering client handlers %d %d %d and p2p handler %d\n"),
                  "stats", GNUNET_CS_PROTO_TRAFFIC_COUNT,
                  GNUNET_CS_PROTO_STATS_GET_STATISTICS,
-                 GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED,
+                 GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
                  GNUNET_P2P_PROTO_NOISE);
   capi->registerClientHandler (GNUNET_CS_PROTO_STATS_GET_STATISTICS,
                                &sendStatistics);
   capi->
     registerClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED,
+    (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   capi->
     registerClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED,
+    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                &processGetConnectionCountRequest);
@@ -461,11 +461,11 @@ done_module_stats ()
                                     &sendStatistics);
   coreAPI->
     unregisterClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED,
+    (GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   coreAPI->
     unregisterClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED,
+    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED,
      &handleMessageSupported);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                     &processGetConnectionCountRequest);

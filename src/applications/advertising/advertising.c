@@ -392,8 +392,8 @@ receivedhello (const GNUNET_PeerIdentity * sender,
     }
   else
     {
-      GNUNET_GE_ASSERT (ectx, mtu > GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD);
-      mtu -= GNUNET_P2P_MESSAGNUNET_GE_OVERHEAD;
+      GNUNET_GE_ASSERT (ectx, mtu > GNUNET_P2P_MESSAGE_OVERHEAD);
+      mtu -= GNUNET_P2P_MESSAGE_OVERHEAD;
     }
   copy = GNUNET_malloc (GNUNET_sizeof_hello (msg));
   memcpy (copy, msg, GNUNET_sizeof_hello (msg));

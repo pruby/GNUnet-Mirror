@@ -134,9 +134,9 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
               csReply->header.type = htons (GNUNET_CS_PROTO_TRACEKIT_REPLY);
               csReply->responderId = reply->responderId;
               memcpy (&
-                      ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *) csReply)->
+                      ((CS_tracekit_reply_MESSAGE_GENERIC *) csReply)->
                       peerList[0],
-                      &((P2P_tracekit_reply_MESSAGNUNET_GE_GENERIC *) reply)->
+                      &((P2P_tracekit_reply_MESSAGE_GENERIC *) reply)->
                       peerList[0], hostCount * sizeof (GNUNET_PeerIdentity));
               coreAPI->sendToClient (clients[idx], &csReply->header,
                                      GNUNET_YES);

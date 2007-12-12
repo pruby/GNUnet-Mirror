@@ -118,7 +118,7 @@ sendMessage (unsigned msgType, int peer, unsigned short argSize, void *arg)
   msg->header.size = htons (msgsz);
   msg->header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->msgType = htonl (msgType);
-  memcpy (&((TESTBED_CS_MESSAGNUNET_GE_GENERIC *) msg)->data[0], arg,
+  memcpy (&((TESTBED_CS_MESSAGE_GENERIC *) msg)->data[0], arg,
           argSize);
   msgsz = GNUNET_client_connection_write (&nodes[peer].sock, &msg->header);
   GNUNET_free (msg);
@@ -218,7 +218,7 @@ addNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGNUNET_GE_HEADER
+                                                      (CS_MESSAGE_HEADER
                                                        **) & hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
@@ -409,7 +409,7 @@ addSshNode (int argc, char *argv[])
 
   hdr = NULL;
   if (GNUNET_SYSERR == GNUNET_client_connection_read (&nodes[currindex].sock,
-                                                      (CS_MESSAGNUNET_GE_HEADER
+                                                      (CS_MESSAGE_HEADER
                                                        **) & hdr))
     {
       XPRINTF (" peer %s is not responding.\n", nodes[currindex].ips);
@@ -1006,7 +1006,7 @@ dumpProcessOutput (int argc, char *argv[])
           reply = NULL;
           if (GNUNET_SYSERR ==
               GNUNET_client_connection_read (&nodes[dst].sock,
-                                             (CS_MESSAGNUNET_GE_HEADER **) &
+                                             (CS_MESSAGE_HEADER **) &
                                              reply))
             {
               XPRINTF (" peer %s is not responding after %d of %d bytes.\n",
@@ -1019,7 +1019,7 @@ dumpProcessOutput (int argc, char *argv[])
             sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
           tmp = GNUNET_malloc (size + 1);
           memcpy (tmp,
-                  &((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) reply)->
+                  &((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) reply)->
                   data[0], size);
           tmp[size] = '\0';
           XPRINTF ("%s", tmp);
@@ -1310,7 +1310,7 @@ uploadFile (int argc, char *argv[])
   msg->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->header.msgType = htonl (TESTBED_UPLOAD_FILE);
   msg->type = htonl (TESTBED_FILE_DELETE);
-  memcpy (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf, argv[2],
+  memcpy (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf, argv[2],
           flen);
 
   if (GNUNET_SYSERR ==
@@ -1338,7 +1338,7 @@ uploadFile (int argc, char *argv[])
       return -1;
     }
   msg->type = htonl (TESTBED_FILE_GNUNET_array_append);
-  buf = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf + flen;
+  buf = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + flen;
   while ((nbytes = GN_FREAD (buf, 1,
                              (TESTBED_FILE_BLK_SIZE -
                               sizeof (TESTBED_UPLOAD_FILE_MESSAGE) - flen),

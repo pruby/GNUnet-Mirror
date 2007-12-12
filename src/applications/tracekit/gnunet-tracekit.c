@@ -182,7 +182,7 @@ receiveThread (void *cls)
               for (j = 0; j < psCount; j++)
                 if (0 ==
                     memcmp (&
-                            ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *)
+                            ((CS_tracekit_reply_MESSAGE_GENERIC *)
                              buffer)->peerList[i].hashPubKey,
                             &peersSeen[j].hashPubKey,
                             sizeof (GNUNET_HashCode)))
@@ -192,13 +192,13 @@ receiveThread (void *cls)
                   if (psCount == psSize)
                     GNUNET_array_grow (peersSeen, psSize, psSize * 2);
                   memcpy (&peersSeen[psCount++],
-                          &((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC *)
+                          &((CS_tracekit_reply_MESSAGE_GENERIC *)
                             buffer)->peerList[i].hashPubKey,
                           sizeof (GNUNET_PeerIdentity));
                 }
 
               GNUNET_hash_to_enc (&
-                                  ((CS_tracekit_reply_MESSAGNUNET_GE_GENERIC
+                                  ((CS_tracekit_reply_MESSAGE_GENERIC
                                     *) buffer)->peerList[i].hashPubKey,
                                   &other);
               switch (format)

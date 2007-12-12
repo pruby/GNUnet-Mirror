@@ -548,7 +548,7 @@ typedef struct
    * followed by a serialization of argumentCount arguments.
    */
   char data[1];
-} P2P_rpc_MESSAGNUNET_GE_GENERIC;
+} P2P_rpc_MESSAGE_GENERIC;
 
 
 /**
@@ -735,7 +735,7 @@ retryRPCJob (void *ctx)
                              GNUNET_GE_USER,
                              "Sending RPC request %p: '%.*s' (expires in %llums, last attempt %llums ago; attempt %u).\n",
                              call, ntohs (call->msg->functionNameLength),
-                             &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) call->msg)->
+                             &((P2P_rpc_MESSAGE_GENERIC *) call->msg)->
                              data[0], call->expirationTime - now,
                              now - call->lastAttempt, call->attempts);
             }
@@ -792,7 +792,7 @@ getFunctionName (P2P_rpc_MESSAGE * req)
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
   ret = GNUNET_malloc (slen + 1);
-  memcpy (ret, &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) req)->data[0], slen);
+  memcpy (ret, &((P2P_rpc_MESSAGE_GENERIC *) req)->data[0], slen);
   ret[slen] = '\0';
   return ret;
 }
@@ -811,7 +811,7 @@ deserializeArguments (P2P_rpc_MESSAGE * req)
     return NULL;                /* invalid! */
   ret =
     GNUNET_RPC_parameters_deserialize (&
-                                       ((P2P_rpc_MESSAGNUNET_GE_GENERIC *)
+                                       ((P2P_rpc_MESSAGE_GENERIC *)
                                         req)->data[slen],
                                        ntohs (req->header.size) -
                                        sizeof (P2P_rpc_MESSAGE) - slen);
@@ -866,10 +866,10 @@ buildMessage (unsigned short errorCode,
   ret->argumentCount = htons (GNUNET_RPC_parameters_count (values));
   if (name != NULL)
     {
-      memcpy (&((P2P_rpc_MESSAGNUNET_GE_GENERIC *) ret)->data[0], name, slen);
+      memcpy (&((P2P_rpc_MESSAGE_GENERIC *) ret)->data[0], name, slen);
     }
   GNUNET_RPC_parameters_serialize (values,
-                                   &((P2P_rpc_MESSAGNUNET_GE_GENERIC *) ret)->
+                                   &((P2P_rpc_MESSAGE_GENERIC *) ret)->
                                    data[slen]);
 
   if (name == NULL)
@@ -1110,11 +1110,11 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
   if (NULL != call)
     {
       GNUNET_RPC_CallParameters *reply;
-      P2P_rpc_MESSAGNUNET_GE_GENERIC *gen;
+      P2P_rpc_MESSAGE_GENERIC *gen;
       unsigned short error;
 
       RPC_STATUS ("", "received reply", call);
-      gen = (P2P_rpc_MESSAGNUNET_GE_GENERIC *) res;
+      gen = (P2P_rpc_MESSAGE_GENERIC *) res;
       reply = NULL;
       error = ntohs (res->functionNameLength);
 

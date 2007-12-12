@@ -21,7 +21,7 @@
 #ifndef GETOPTION_H
 #define GETOPTION_H
 
-#define CS_getoption_request_MESSAGNUNET_GE_OPT_LEN 32
+#define CS_getoption_request_MESSAGE_OPT_LEN 32
 
 /**
  * Request for option value.
@@ -29,8 +29,8 @@
 typedef struct
 {
   GNUNET_MessageHeader header;
-  char section[CS_getoption_request_MESSAGNUNET_GE_OPT_LEN];
-  char option[CS_getoption_request_MESSAGNUNET_GE_OPT_LEN];
+  char section[CS_getoption_request_MESSAGE_OPT_LEN];
+  char option[CS_getoption_request_MESSAGE_OPT_LEN];
 } CS_getoption_request_MESSAGE;
 
 /**

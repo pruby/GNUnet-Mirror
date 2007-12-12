@@ -231,7 +231,7 @@ tb_LOAD_MODULE (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
     }
 
   name =
-    STRNDUP (&((TESTBED_LOAD_MODULE_MESSAGNUNET_GE_GENERIC *) msg)->
+    STRNDUP (&((TESTBED_LOAD_MODULE_MESSAGE_GENERIC *) msg)->
              modulename[0], size - sizeof (TESTBED_CS_MESSAGE));
   if (strlen (name) == 0)
     {
@@ -275,7 +275,7 @@ tb_UNLOAD_MODULE (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
     }
 
   name =
-    STRNDUP (&((TESTBED_UNLOAD_MODULE_MESSAGNUNET_GE_GENERIC *) msg)->
+    STRNDUP (&((TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC *) msg)->
              modulename[0], size - sizeof (TESTBED_CS_MESSAGE));
   if (strlen (name) == 0)
     {
@@ -401,7 +401,7 @@ tb_ALLOW_CONNECT (GNUNET_ClientHandle client,
       for (i = 0; i < count; i++)
         {
           GNUNET_hash_to_enc (&
-                              ((TESTBED_ALLOW_CONNECT_MESSAGNUNET_GE_GENERIC
+                              ((TESTBED_ALLOW_CONNECT_MESSAGE_GENERIC
                                 *) msg)->peers[i].hashPubKey, &enc);
           strcat (value, (char *) &enc);
         }
@@ -454,7 +454,7 @@ tb_DENY_CONNECT (GNUNET_ClientHandle client,
       for (i = 0; i < count; i++)
         {
           GNUNET_hash_to_enc (&
-                              ((TESTBED_DENY_CONNECT_MESSAGNUNET_GE_GENERIC *)
+                              ((TESTBED_DENY_CONNECT_MESSAGE_GENERIC *)
                                msg)->peers[i].hashPubKey, &enc);
           strcat (value, (char *) &enc);
         }
@@ -650,7 +650,7 @@ tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
   emsg = (TESTBED_EXEC_MESSAGE *) msg;
   size = htons (msg->header.size);
   if ((size <= sizeof (TESTBED_CS_MESSAGE)) ||
-      (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->
+      (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
        commandLine[size - sizeof (TESTBED_CS_MESSAGE) - 1] != '\0'))
     {
       GNUNET_GE_LOG (ectx,
@@ -667,11 +667,11 @@ tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi = GNUNET_malloc (sizeof (ProcessInfo));
   pi->argc = 0;
   for (pos = 0; pos < size; pos++)
-    if (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->commandLine[pos] ==
+    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] ==
         '\0')
       pi->argc++;
   mainName =
-    GNUNET_strdup (&((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->
+    GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
                    commandLine[0]);
   clientConfig = NULL;
   if (0 == strncmp ("gnunet", mainName, strlen ("gnunet")))
@@ -683,10 +683,10 @@ tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi->argv[0] = mainName;
   pi->argv[pi->argc] = NULL;    /* termination! */
   for (pos = size - 2; pos >= 0; pos--)
-    if (((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->commandLine[pos] ==
+    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] ==
         '\0')
       pi->argv[--argc2] =
-        GNUNET_strdup (&((TESTBED_EXEC_MESSAGNUNET_GE_GENERIC *) emsg)->
+        GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
                        commandLine[pos + 1]);
   if (clientConfig != NULL)
     {
@@ -811,7 +811,7 @@ tb_GET_OUTPUT (GNUNET_ClientHandle client, TESTBED_GET_OUTPUT_MESSAGE * msg)
                 run = 65532 - sizeof (TESTBED_OUTPUT_REPLY_MESSAGE);
               msg->header.header.size
                 = htons (run + sizeof (TESTBED_OUTPUT_REPLY_MESSAGE));
-              memcpy (&((TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC *) msg)->
+              memcpy (&((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC *) msg)->
                       data[0], &pi->output[pos], run);
               coreAPI->sendToClient (client, &msg->header.header);
               pos += run;
@@ -851,7 +851,7 @@ tb_UPLOAD_FILE (GNUNET_ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
       return;
     }
   end = &((char *) msg)[ntohs (msg->header.header.size)];
-  s = filename = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf;
+  s = filename = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf;
   while ((*s) && (s != end))
     {
       if (*s == '.' && *(s + 1) == '.')
@@ -898,8 +898,8 @@ tb_UPLOAD_FILE (GNUNET_ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
   strcpy (filename, gnHome);
   strcat (filename, DIR_SEPARATOR_STR);
   strncat (filename,
-           ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf,
-           end - ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf);
+           ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf,
+           end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf);
   if (htonl (msg->type) == TESTBED_FILE_DELETE)
     {
       if (REMOVE (filename) && errno != ENOENT)
@@ -931,10 +931,10 @@ tb_UPLOAD_FILE (GNUNET_ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
       return;
     }
   GNUNET_free (filename);
-  s = ((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf) + 1;       /* \0 added */
+  s = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1;       /* \0 added */
   size = ntohs (msg->header.header.size) -
     sizeof (TESTBED_UPLOAD_FILE_MESSAGE) -
-    (strlen (((TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC *) msg)->buf) + 1);
+    (strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1);
   if (GN_FWRITE (s, 1, size, outfile) != size)
     ack = GNUNET_SYSERR;
   else
@@ -1023,7 +1023,7 @@ static HD handlers[] = {
  */
 static void
 csHandleTestbedRequest (GNUNET_ClientHandle client,
-                        CS_MESSAGNUNET_GE_HEADER * message)
+                        CS_MESSAGE_HEADER * message)
 {
   TESTBED_CS_MESSAGE *msg;
   unsigned short size;

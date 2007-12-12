@@ -125,7 +125,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
 
 static int
 csHandleChatRequest (GNUNET_ClientHandle client,
-                     const CS_MESSAGNUNET_GE_HEADER * message)
+                     const CS_MESSAGE_HEADER * message)
 {
   int i;
   int j;

@@ -45,8 +45,8 @@ handleGetOption (struct GNUNET_ClientHandle *sock,
   if (ntohs (message->size) != sizeof (CS_getoption_request_MESSAGE))
     return GNUNET_SYSERR;
   req = (CS_getoption_request_MESSAGE *) message;
-  req->section[CS_getoption_request_MESSAGNUNET_GE_OPT_LEN - 1] = '\0';
-  req->option[CS_getoption_request_MESSAGNUNET_GE_OPT_LEN - 1] = '\0';
+  req->section[CS_getoption_request_MESSAGE_OPT_LEN - 1] = '\0';
+  req->option[CS_getoption_request_MESSAGE_OPT_LEN - 1] = '\0';
   val = NULL;
   if (GNUNET_NO == GNUNET_GC_have_configuration_value (coreAPI->cfg,
                                                        req->section,

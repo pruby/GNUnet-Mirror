@@ -39,7 +39,7 @@ typedef struct
 
 typedef struct
 {
-  CS_MESSAGNUNET_GE_HEADER header;
+  CS_MESSAGE_HEADER header;
   char nick[CHAT_NICK_LENGTH];
   char message[CHAT_MSG_LENGTH];
 } CS_chat_MESSAGE;

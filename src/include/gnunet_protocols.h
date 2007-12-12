@@ -258,12 +258,12 @@ extern "C"
 /**
  * client to stats module: is client server message supported
  */
-#define GNUNET_CS_PROTO_STATS_GET_CS_MESSAGNUNET_GE_SUPPORTED 38
+#define GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED 38
 
 /**
  * client to stats module: is p2p message supported
  */
-#define GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGNUNET_GE_SUPPORTED 39
+#define GNUNET_CS_PROTO_STATS_GET_P2P_MESSAGE_SUPPORTED 39
 
 
 /* ********** CS TBENCH application messages ********** */
@@ -362,7 +362,7 @@ extern "C"
 /**
  * Fragmented message.
  */
-#define GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT 5
+#define GNUNET_P2P_PROTO_MESSAGE_FRAGMENT 5
 
 /**
  * noise, used to fill packets to sizes >1k.

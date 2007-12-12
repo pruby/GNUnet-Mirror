@@ -44,8 +44,8 @@
 /**
  * How many time-units back do we keep the history of?  (must really
  * be <=32 since we use the 32 bit in an unsigned int). The memory
- * impact of this value n is 4 * 3 * MAX_MESSAGNUNET_GE_ID * n, which is for
- * the default of n=32 with the current MAX_MESSAGNUNET_GE_ID being roughly a
+ * impact of this value n is 4 * 3 * MAX_MESSAGE_ID * n, which is for
+ * the default of n=32 with the current MAX_MESSAGE_ID being roughly a
  * dozen less than 2k.
  */
 #define HISTORY_SIZE 32
@@ -66,7 +66,7 @@ static int stat_traffic_transmitted_by_type[GNUNET_P2P_PROTO_MAX_USED];
 /**
  * Of how many peers do we keep track per message type
  * about "recent" interactions? The memory impact of
- * this value n is 8 * 3 * MAX_MESSAGNUNET_GE_ID * n. The current
+ * this value n is 8 * 3 * MAX_MESSAGE_ID * n. The current
  * number of messages is roughly a dozen, so the memory
  * impact is about 200 bytes * n, or for the default
  * of n=15 it is 3kb.
@@ -322,11 +322,11 @@ buildReply (unsigned int countTimeUnits)
     if (counters[i] != NULL)
       {
         if (counters[i]->send.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
                         counters[count++], &counters[i]->send,
                         GNUNET_TRAFFIC_TYPE_SENT, countTimeUnits, i);
         if (counters[i]->receive.slots != 0)
-          buildSummary (&((CS_traffic_info_MESSAGNUNET_GE_GENERIC *) reply)->
+          buildSummary (&((CS_traffic_info_MESSAGE_GENERIC *) reply)->
                         counters[count++], &counters[i]->receive,
                         GNUNET_TRAFFIC_TYPE_RECEIVED, countTimeUnits, i);
       }

@@ -485,7 +485,7 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
   /* write first fragment to buf */
   frag = (P2P_fragmentation_MESSAGE *) buf;
   frag->header.size = htons (len);
-  frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
+  frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT);
   frag->id = id;
   frag->off = htons (0);
   frag->len = htons (ctx->len);
@@ -501,7 +501,7 @@ fragmentBMC (void *buf, void *cls, unsigned short len)
         mlen = ctx->mtu;
       GNUNET_GE_ASSERT (NULL, mlen > sizeof (P2P_fragmentation_MESSAGE));
       frag->header.size = htons (mlen);
-      frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
+      frag->header.type = htons (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT);
       frag->id = id;
       frag->off = htons (pos);
       frag->len = htons (ctx->len);
@@ -590,8 +590,8 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_LOG (capi->ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _("`%s' registering handler %d\n"), "fragmentation",
-                 GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT);
-  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT,
+                 GNUNET_P2P_PROTO_MESSAGE_FRAGMENT);
+  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
                          &processFragment);
 
   ret.fragment = &fragment;
@@ -606,7 +606,7 @@ release_module_fragmentation ()
 {
   int i;
 
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGNUNET_GE_FRAGMENT,
+  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
                               &processFragment);
   GNUNET_cron_del_job (coreAPI->cron, &defragmentationPurgeCron,
                        60 * GNUNET_CRON_SECONDS, NULL);

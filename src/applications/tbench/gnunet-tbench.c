@@ -30,14 +30,14 @@
 #include "gnunet_util.h"
 #include "tbench.h"
 
-#define DEFAULT_MESSAGNUNET_GE_SIZE  10
+#define DEFAULT_MESSAGE_SIZE  10
 #define DEFAULT_TIMEOUT  	(2 * GNUNET_CRON_SECONDS)
 #define DEFAULT_SPACING  	0
 
 #define OF_HUMAN_READABLE 0
 #define OF_GNUPLOT_INPUT 1
 
-static unsigned long long messageSize = DEFAULT_MESSAGNUNET_GE_SIZE;
+static unsigned long long messageSize = DEFAULT_MESSAGE_SIZE;
 
 static unsigned long long messageCnt = 1;
 

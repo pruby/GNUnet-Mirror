@@ -28,7 +28,7 @@ typedef int (*BlacklistedTester) (const void *addr, unsigned int addr_len);
 
 /**
  * Initial handshake message. Note that the beginning
- * must match the CS_MESSAGNUNET_GE_HEADER since we are using tcpio.
+ * must match the CS_MESSAGE_HEADER since we are using tcpio.
  */
 typedef struct
 {

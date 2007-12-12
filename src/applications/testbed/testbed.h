@@ -73,7 +73,7 @@
 
 typedef struct
 {
-  CS_MESSAGNUNET_GE_HEADER header;
+  CS_MESSAGE_HEADER header;
   unsigned int msgType;         /* The message types listed above       */
 } TESTBED_CS_MESSAGE;
 
@@ -81,7 +81,7 @@ typedef struct
 {
   TESTBED_CS_MESSAGE testbed_cs_message;
   char data[1];                 /* Value is dependent on the type field */
-} TESTBED_CS_MESSAGNUNET_GE_GENERIC;
+} TESTBED_CS_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -160,7 +160,7 @@ typedef struct
 {
   TESTBED_LOAD_MODULE_MESSAGE load_module_message;
   char modulename[1];
-} TESTBED_LOAD_MODULE_MESSAGNUNET_GE_GENERIC;
+} TESTBED_LOAD_MODULE_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -171,7 +171,7 @@ typedef struct
 {
   TESTBED_UNLOAD_MODULE_MESSAGE unload_module_message;
   char modulename[1];
-} TESTBED_UNLOAD_MODULE_MESSAGNUNET_GE_GENERIC;
+} TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC;
 
 #define TESTBED_FILE_GNUNET_array_append	1
 #define TESTBED_FILE_DELETE	2
@@ -188,7 +188,7 @@ typedef struct
 {
   TESTBED_UPLOAD_FILE_MESSAGE upload_file_message;
   char buf[1];
-} TESTBED_UPLOAD_FILE_MESSAGNUNET_GE_GENERIC;
+} TESTBED_UPLOAD_FILE_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -219,7 +219,7 @@ typedef struct
 {
   TESTBED_ALLOW_CONNECT_MESSAGE allow_connect_message;
   GNUNET_PeerIdentity peers[1];
-} TESTBED_ALLOW_CONNECT_MESSAGNUNET_GE_GENERIC;
+} TESTBED_ALLOW_CONNECT_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -230,7 +230,7 @@ typedef struct
 {
   TESTBED_DENY_CONNECT_MESSAGE deny_connect_message;
   GNUNET_PeerIdentity peers[1];
-} TESTBED_DENY_CONNECT_MESSAGNUNET_GE_GENERIC;
+} TESTBED_DENY_CONNECT_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -241,7 +241,7 @@ typedef struct
 {
   TESTBED_EXEC_MESSAGE exec_message;
   char commandLine[1];
-} TESTBED_EXEC_MESSAGNUNET_GE_GENERIC;
+} TESTBED_EXEC_MESSAGE_GENERIC;
 
 typedef struct
 {
@@ -265,6 +265,6 @@ typedef struct
 {
   TESTBED_OUTPUT_REPLY_MESSAGE output_reply_message;
   char data[1];
-} TESTBED_OUTPUT_REPLY_MESSAGNUNET_GE_GENERIC;
+} TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC;
 
 #endif
