@@ -159,7 +159,7 @@ GNUNET_mutex_lock_at_file_line_ (Mutex * mutex, const char *file,
                        GNUNET_GE_FATAL | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
                        | GNUNET_GE_IMMEDIATE, _("Deadlock due to `%s'.\n"),
                        "pthread_mutex_lock");
-      GNUNET_GE_ASSERT (NULL, 0);
+      GNUNET_GE_ASSERT_FLF (NULL, 0, file, line, __FUNCTION__);
     }
   if (mutex->locked_depth++ == 0)
     {
