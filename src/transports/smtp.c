@@ -135,7 +135,12 @@ static int stat_bytesSent;
 
 static int stat_bytesDropped;
 
+/**
+ * How many e-mails are we allowed to send per hour?
+ */
+static unsigned long long rate_limit;
 
+static GNUNET_CronTime last_transmission;
 
 /** ******************** Base64 encoding ***********/
 
@@ -531,6 +536,7 @@ api_send (GNUNET_TSession * tsession,
   smtp_recipient_t recipient;
 #define EBUF_LEN 128
   char ebuf[EBUF_LEN];
+  GNUNET_CronTime now;
 
   if (smtp_shutdown == GNUNET_YES)
     return GNUNET_SYSERR;
@@ -539,6 +545,12 @@ api_send (GNUNET_TSession * tsession,
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
+  now = GNUNET_get_time ();
+  if ((important != GNUNET_YES) &&
+      ((now - last_transmission) * rate_limit) < GNUNET_CRON_HOURS)
+    return GNUNET_NO;           /* rate too high */
+  last_transmission = now;
+
   hello = (const GNUNET_MessageHello *) tsession->internal;
   if (hello == NULL)
     return GNUNET_SYSERR;
@@ -808,6 +820,10 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
                                             1200,
                                             SMTP_MESSAGE_SIZE,
                                             SMTP_MESSAGE_SIZE, &mtu);
+  GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
+                                            "SMTP",
+                                            "RATELIMIT",
+                                            0, 0, 1024 * 1024, &rate_limit);
   stats = coreAPI->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
     {

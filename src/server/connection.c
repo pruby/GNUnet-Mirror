@@ -4189,7 +4189,7 @@ GNUNET_CORE_connection_disconnect_from_peer (const GNUNET_PeerIdentity * node)
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
 int
-GNUNET_CORE_connection_register_send_notification_callback
+  GNUNET_CORE_connection_register_send_notification_callback
   (GNUNET_P2PRequestHandler callback)
 {
   if (callback == NULL)
@@ -4212,7 +4212,7 @@ GNUNET_CORE_connection_register_send_notification_callback
  * @return GNUNET_OK on success, GNUNET_SYSERR if there is a problem
  */
 int
-GNUNET_CORE_connection_unregister_send_notification_callback
+  GNUNET_CORE_connection_unregister_send_notification_callback
   (GNUNET_P2PRequestHandler callback)
 {
   int i;

@@ -495,13 +495,13 @@ transportCreatehello (unsigned short ttype)
   else
     {
       if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
-	{
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-			 _("No transport of type %d known.\n"), ttype);
-	  GNUNET_mutex_unlock (tapis_lock);
-	  return NULL;
-	}
+        {
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+                         _("No transport of type %d known.\n"), ttype);
+          GNUNET_mutex_unlock (tapis_lock);
+          return NULL;
+        }
     }
   tapi = tapis[ttype];
   if (tapi->hello == NULL)

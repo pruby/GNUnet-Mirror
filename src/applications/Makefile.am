@@ -24,7 +24,6 @@ SUBDIRS	= \
  fs \
  state \
  stats \
- gap \
  pingpong \
  session \
  dht \
@@ -37,6 +36,7 @@ SUBDIRS	= \
  traffic \
  transport \
  advertising \
+ gap \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat

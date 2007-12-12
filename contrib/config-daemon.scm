@@ -989,6 +989,18 @@ The size of the DSTORE QUOTA is specified in MB.")
  (cons 1200 65528)
  'smtp-loaded))
 
+(define (smtp-ratelimit builder)
+ (builder
+ "SMTP"
+ "RATELIMIT"
+ (_ "What is the maximum number of e-mails that gnunetd would be allowed to send per hour?")
+ (_ "Use 0 for unlimited")
+ '()
+ #t
+ 0
+ (cons 0 1048576)
+ 'smtp-loaded))
+
 (define (smtp-email builder)
  (builder
  "SMTP"
@@ -1045,6 +1057,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  (nohelp)
  (list 
    (smtp-email builder)
+   (smtp-ratelimit builder)
    (smtp-filter builder)
    (smtp-pipe builder)
    (smtp-server builder)
