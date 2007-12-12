@@ -643,7 +643,7 @@ GNUNET_disk_get_load (struct GNUNET_GE_Context *ectx,
  * routines.  After that it is safe to call each of the status calls separately
  * @return GNUNET_OK on success and GNUNET_SYSERR on error (or calls errexit).
  */
-void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_cpustats_ltdl_init ()
 {
   statusMutex = GNUNET_mutex_create (GNUNET_NO);
 #ifdef LINUX
@@ -664,7 +664,7 @@ void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init ()
 /**
  * Shutdown the status calls module.
  */
-void __attribute__ ((destructor)) gnunet_cpustats_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_cpustats_ltdl_fini ()
 {
 #ifdef LINUX
   if (proc_stat != NULL)

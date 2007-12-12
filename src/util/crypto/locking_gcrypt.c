@@ -44,7 +44,7 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 
 void
-lockGcrypt ()
+GNUNET_lock_gcrypt_ ()
 {
 #if USE_LOCK
   GNUNET_mutex_lock (gcrypt_shared_lock);
@@ -52,7 +52,7 @@ lockGcrypt ()
 }
 
 void
-unlockGcrypt ()
+GNUNET_unlock_gcrypt_ ()
 {
 #if USE_LOCK
   GNUNET_mutex_unlock (gcrypt_shared_lock);
@@ -65,7 +65,7 @@ dummy_logger (void *arg, int level, const char *format, va_list args)
   /* do nothing -- ignore libgcyrpt errors */
 }
 
-void __attribute__ ((constructor)) gnunet_crypto_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_crypto_ltdl_init ()
 {
 #if USE_LOCK
   gcrypt_shared_lock = GNUNET_mutex_create (GNUNET_YES);
@@ -84,13 +84,13 @@ void __attribute__ ((constructor)) gnunet_crypto_ltdl_init ()
   srand ((unsigned int) time (NULL));
   gcry_set_log_handler (&dummy_logger, NULL);
 #ifdef gcry_fast_random_poll
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   gcry_fast_random_poll ();
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
 #endif
 }
 
-void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_crypto_ltdl_fini ()
 {
 #if USE_LOCK
   GNUNET_mutex_destroy (gcrypt_shared_lock);

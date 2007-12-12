@@ -70,13 +70,13 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   db = (DBlock *) & iblocks[level][1];
   if (present == CHK_PER_INODE)
     {
-      fileBlockGetKey (db, size, &ichk.key);
-      fileBlockGetQuery (db, size, &ichk.query);
+      GNUNET_EC_file_block_get_key (db, size, &ichk.key);
+      GNUNET_EC_file_block_get_query (db, size, &ichk.query);
       if (GNUNET_OK != pushBlock (sock,
                                   &ichk, level + 1, iblocks, prio,
                                   expirationTime))
         return GNUNET_SYSERR;
-      fileBlockEncode (db, size, &ichk.query, &value);
+      GNUNET_EC_file_block_encode (db, size, &ichk.query, &value);
       if (value == NULL)
         {
           GNUNET_GE_BREAK (NULL, 0);
@@ -288,8 +288,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       if (tt != NULL)
         if (GNUNET_OK != tt (ttClosure))
           goto FAILURE;
-      fileBlockGetKey (db, size + sizeof (DBlock), &mchk.key);
-      fileBlockGetQuery (db, size + sizeof (DBlock), &mchk.query);
+      GNUNET_EC_file_block_get_key (db, size + sizeof (DBlock), &mchk.key);
+      GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock), &mchk.query);
 #if DEBUG_UPLOAD
       IF_GELOG (ectx,
                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -315,7 +315,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
         {
           value = NULL;
           if (GNUNET_OK !=
-              fileBlockEncode (db,
+              GNUNET_EC_file_block_encode (db,
                                size + sizeof (DBlock), &mchk.query, &value))
             {
               GNUNET_GE_BREAK (ectx, 0);
@@ -366,13 +366,13 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           continue;
         }
       db = (DBlock *) & iblocks[i][1];
-      fileBlockGetKey (db, size, &mchk.key);
+      GNUNET_EC_file_block_get_key (db, size, &mchk.key);
 #if DEBUG_UPLOAD
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Computing query for %u bytes content.\n", size);
 #endif
-      fileBlockGetQuery (db, size, &mchk.query);
+      GNUNET_EC_file_block_get_query (db, size, &mchk.query);
 #if DEBUG_UPLOAD
       IF_GELOG (ectx,
                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -389,7 +389,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           GNUNET_GE_BREAK (ectx, 0);
           goto FAILURE;
         }
-      fileBlockEncode (db, size, &mchk.query, &value);
+      GNUNET_EC_file_block_encode (db, size, &mchk.query, &value);
       if (value == NULL)
         {
           GNUNET_GE_BREAK (ectx, 0);

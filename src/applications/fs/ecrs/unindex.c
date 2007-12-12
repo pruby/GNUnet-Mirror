@@ -68,14 +68,14 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   db = (DBlock *) & iblocks[level][1];
   if (present == CHK_PER_INODE)
     {
-      fileBlockGetKey (db, size, &ichk.key);
-      fileBlockGetQuery (db, size, &ichk.query);
+      GNUNET_EC_file_block_get_key (db, size, &ichk.key);
+      GNUNET_EC_file_block_get_query (db, size, &ichk.query);
       if (GNUNET_OK != pushBlock (sock, &ichk, level + 1, iblocks))
         {
           GNUNET_GE_BREAK (NULL, 0);
           return GNUNET_SYSERR;
         }
-      fileBlockEncode (db, size, &ichk.query, &value);
+      GNUNET_EC_file_block_encode (db, size, &ichk.query, &value);
 #if STRICT_CHECKS
       if (GNUNET_SYSERR == GNUNET_FS_delete (sock, value))
         {
@@ -282,8 +282,8 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
       if (tt != NULL)
         if (GNUNET_OK != tt (ttClosure))
           goto FAILURE;
-      fileBlockGetKey (db, size + sizeof (DBlock), &chk.key);
-      fileBlockGetQuery (db, size + sizeof (DBlock), &chk.query);
+      GNUNET_EC_file_block_get_key (db, size + sizeof (DBlock), &chk.key);
+      GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock), &chk.query);
       if (GNUNET_OK != pushBlock (sock, &chk, 0,        /* dblocks are on level 0 */
                                   iblocks))
         {
@@ -292,7 +292,7 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
         }
       if (!wasIndexed)
         {
-          if (GNUNET_OK == fileBlockEncode (db, size, &chk.query, &value))
+          if (GNUNET_OK == GNUNET_EC_file_block_encode (db, size, &chk.query, &value))
             {
               *value = *dblock; /* copy options! */
 #if STRICT_CHECKS
@@ -325,14 +325,14 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
     {
       size = ntohl (iblocks[i]->size) - sizeof (GNUNET_DatastoreValue);
       db = (DBlock *) & iblocks[i][1];
-      fileBlockGetKey (db, size, &chk.key);
-      fileBlockGetQuery (db, size, &chk.query);
+      GNUNET_EC_file_block_get_key (db, size, &chk.key);
+      GNUNET_EC_file_block_get_query (db, size, &chk.query);
       if (GNUNET_OK != pushBlock (sock, &chk, i + 1, iblocks))
         {
           GNUNET_GE_BREAK (ectx, 0);
           goto FAILURE;
         }
-      fileBlockEncode (db, size, &chk.query, &value);
+      GNUNET_EC_file_block_encode (db, size, &chk.query, &value);
 #if STRICT_CHECKS
       if (GNUNET_OK != GNUNET_FS_delete (sock, value))
         {

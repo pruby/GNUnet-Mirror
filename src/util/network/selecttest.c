@@ -215,7 +215,7 @@ check ()
       GNUNET_select_destroy (sh);
       return 1;
     }
-  out = socket_create (NULL, NULL, write_sock);
+  out = GNUNET_socket_create (NULL, NULL, write_sock);
   if (-1 == GNUNET_socket_set_blocking (out, GNUNET_NO))
     {
       GNUNET_socket_destroy (out);

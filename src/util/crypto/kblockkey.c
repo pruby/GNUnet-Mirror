@@ -558,12 +558,12 @@ GNUNET_RSA_create_key_from_hash (const GNUNET_HashCode * hc)
   return GNUNET_RSA_decode_key (line->pke);
 }
 
-void __attribute__ ((constructor)) gnunet_crypto_kblock_ltdl_init (void)
+void __attribute__ ((constructor)) GNUNET_crypto_kblock_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
-void __attribute__ ((destructor)) gnunet_crypto_kblock_ltdl_fini (void)
+void __attribute__ ((destructor)) GNUNET_crypto_kblock_ltdl_fini ()
 {
   int i;
   for (i = 0; i < cacheSize; i++)

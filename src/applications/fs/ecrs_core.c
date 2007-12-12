@@ -44,7 +44,7 @@
  *  match the query
  */
 int
-fileBlockEncode (const DBlock * data,
+GNUNET_EC_file_block_encode (const DBlock * data,
                  unsigned int len,
                  const GNUNET_HashCode * query,
                  GNUNET_DatastoreValue ** value)
@@ -89,7 +89,7 @@ fileBlockEncode (const DBlock * data,
  * a certain block of data.
  */
 void
-fileBlockGetKey (const DBlock * data, unsigned int len, GNUNET_HashCode * key)
+GNUNET_EC_file_block_get_key (const DBlock * data, unsigned int len, GNUNET_HashCode * key)
 {
   GNUNET_GE_ASSERT (NULL, len >= sizeof (DBlock));
   GNUNET_hash (&data[1], len - sizeof (DBlock), key);
@@ -102,7 +102,7 @@ fileBlockGetKey (const DBlock * data, unsigned int len, GNUNET_HashCode * key)
  * @param db the block in plaintext
  */
 void
-fileBlockGetQuery (const DBlock * db, unsigned int len,
+GNUNET_EC_file_block_get_query (const DBlock * db, unsigned int len,
                    GNUNET_HashCode * query)
 {
   char *tmp;
@@ -125,7 +125,7 @@ fileBlockGetQuery (const DBlock * db, unsigned int len,
 }
 
 unsigned int
-getTypeOfBlock (unsigned int size, const DBlock * data)
+GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * data)
 {
   if (size <= 4)
     {
@@ -145,12 +145,12 @@ getTypeOfBlock (unsigned int size, const DBlock * data)
  *   the content type is not known
  */
 int
-getQueryFor (unsigned int size,
+GNUNET_EC_file_block_check_and_get_query (unsigned int size,
              const DBlock * data, int verify, GNUNET_HashCode * query)
 {
   unsigned int type;
 
-  type = getTypeOfBlock (size, data);
+  type = GNUNET_EC_file_block_get_type (size, data);
   if (type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)
     {
       GNUNET_GE_BREAK (NULL, 0);
@@ -274,7 +274,7 @@ getQueryFor (unsigned int size,
  * @param type the type of the query
  * @param size the size of the data
  * @param data the encoded data
- * @param hc result of getQueryFor
+ * @param hc result of GNUNET_EC_file_block_check_and_get_query
  * @param keyCount the number of keys in the query,
  *        use 0 to match only primary key
  * @param keys the keys of the query
@@ -283,7 +283,7 @@ getQueryFor (unsigned int size,
  *         query type
  */
 int
-isDatumApplicable (unsigned int type,
+GNUNET_EC_is_block_applicable_for_query (unsigned int type,
                    unsigned int size,
                    const DBlock * data,
                    const GNUNET_HashCode * hc,
@@ -291,7 +291,7 @@ isDatumApplicable (unsigned int type,
 {
   GNUNET_HashCode h;
 
-  if (type != getTypeOfBlock (size, data))
+  if (type != GNUNET_EC_file_block_get_type (size, data))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;     /* type mismatch */

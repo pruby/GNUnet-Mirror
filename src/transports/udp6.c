@@ -404,7 +404,7 @@ startTransportServer ()
       selector = NULL;
       return GNUNET_SYSERR;
     }
-  udp_sock = socket_create (ectx, load_monitor, sock);
+  udp_sock = GNUNET_socket_create (ectx, load_monitor, sock);
   return GNUNET_OK;
 }
 

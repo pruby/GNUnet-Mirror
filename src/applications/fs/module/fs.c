@@ -125,7 +125,7 @@ gapWrapperToDatastoreValue (const GNUNET_DataContainer * value, int prio)
     sizeof (GNUNET_DatastoreValue);
   dv = GNUNET_malloc (size);
   dv->size = htonl (size);
-  dv->type = htonl (getTypeOfBlock (size - sizeof (GNUNET_DatastoreValue),
+  dv->type = htonl (GNUNET_EC_file_block_get_type (size - sizeof (GNUNET_DatastoreValue),
                                     (DBlock *) & gw[1]));
   dv->prio = htonl (prio);
   dv->anonymityLevel = htonl (0);
@@ -170,7 +170,7 @@ gapPut (void *closure,
 
   gw = (const GapWrapper *) value;
   size = ntohl (gw->dc.size) - sizeof (GapWrapper);
-  if ((GNUNET_OK != getQueryFor (size,
+  if ((GNUNET_OK != GNUNET_EC_file_block_check_and_get_query (size,
                                  (const DBlock *) &gw[1],
                                  GNUNET_YES, &hc))
       || (0 != memcmp (&hc, query, sizeof (GNUNET_HashCode))))
@@ -184,7 +184,7 @@ gapPut (void *closure,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;
     }
-  if (GNUNET_YES != isDatumApplicable (ntohl (dv->type),
+  if (GNUNET_YES != GNUNET_EC_is_block_applicable_for_query (ntohl (dv->type),
                                        ntohl (dv->size) -
                                        sizeof (GNUNET_DatastoreValue),
                                        (const DBlock *) &dv[1], &hc, 0,
@@ -247,7 +247,7 @@ get_result_callback (const GNUNET_HashCode * query,
 #endif
   gw = (const GapWrapper *) value;
   size = ntohl (gw->dc.size) - sizeof (GapWrapper);
-  if ((GNUNET_OK != getQueryFor (size,
+  if ((GNUNET_OK != GNUNET_EC_file_block_check_and_get_query (size,
                                  (const DBlock *) &gw[1],
                                  GNUNET_YES, &hc))
       || (0 != memcmp (&hc, query, sizeof (GNUNET_HashCode))))
@@ -344,7 +344,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
   if (GNUNET_OK !=
-      getQueryFor (ntohs (ri->header.size) -
+      GNUNET_EC_file_block_check_and_get_query (ntohs (ri->header.size) -
                    sizeof (CS_fs_request_insert_MESSAGE),
                    (const DBlock *) &ri[1], GNUNET_YES, &query))
     {
@@ -355,7 +355,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
       return GNUNET_SYSERR;
     }
   type =
-    getTypeOfBlock (ntohs (ri->header.size) -
+    GNUNET_EC_file_block_get_type (ntohs (ri->header.size) -
                     sizeof (CS_fs_request_insert_MESSAGE),
                     (const DBlock *) &ri[1]);
 #if DEBUG_FS
@@ -402,7 +402,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
       gw->timeout = GNUNET_htonll (et);
       memcpy (&gw[1], &ri[1], size - sizeof (GapWrapper));
       /* sanity check */
-      if ((GNUNET_OK != getQueryFor (size - sizeof (GapWrapper),
+      if ((GNUNET_OK != GNUNET_EC_file_block_check_and_get_query (size - sizeof (GapWrapper),
                                      (const DBlock *) &gw[1],
                                      GNUNET_YES,
                                      &hc))
@@ -591,14 +591,14 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
     ntohl (sizeof (GNUNET_DatastoreValue) + ntohs (req->size) -
            sizeof (CS_fs_request_delete_MESSAGE));
   type =
-    getTypeOfBlock (ntohs (rd->header.size) -
+    GNUNET_EC_file_block_get_type (ntohs (rd->header.size) -
                     sizeof (CS_fs_request_delete_MESSAGE),
                     (const DBlock *) &rd[1]);
   value->type = htonl (type);
   memcpy (&value[1],
           &rd[1], ntohs (req->size) - sizeof (CS_fs_request_delete_MESSAGE));
   if (GNUNET_OK !=
-      getQueryFor (ntohs (rd->header.size) -
+      GNUNET_EC_file_block_check_and_get_query (ntohs (rd->header.size) -
                    sizeof (CS_fs_request_delete_MESSAGE),
                    (const DBlock *) &rd[1], GNUNET_NO, &query))
     {
@@ -776,7 +776,7 @@ gapGetConverter (const GNUNET_HashCode * key,
     }
 #if EXTRA_CHECKS
   if ((GNUNET_OK !=
-       getQueryFor (ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
+       GNUNET_EC_file_block_check_and_get_query (ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
                     (const DBlock *) &value[1], GNUNET_YES, &hc))
       || (!equalsGNUNET_HashCode (&hc, key)))
     {
@@ -784,7 +784,7 @@ gapGetConverter (const GNUNET_HashCode * key,
       return GNUNET_SYSERR;
     }
 #endif
-  ret = isDatumApplicable (ntohl (value->type),
+  ret = GNUNET_EC_is_block_applicable_for_query (ntohl (value->type),
                            ntohl (value->size) -
                            sizeof (GNUNET_DatastoreValue),
                            (const DBlock *) &value[1], key, ggc->keyCount,
@@ -967,14 +967,14 @@ uniqueReplyIdentifier (const GNUNET_DataContainer * content,
       return GNUNET_NO;
     }
   gw = (const GapWrapper *) content;
-  if ((GNUNET_OK == getQueryFor (size - sizeof (GapWrapper),
+  if ((GNUNET_OK == GNUNET_EC_file_block_check_and_get_query (size - sizeof (GapWrapper),
                                  (const DBlock *) &gw[1],
                                  verify,
                                  &q)) &&
       (0 == memcmp (&q,
                     primaryKey, sizeof (GNUNET_HashCode))) &&
       ((type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY) ||
-       (type == (t = getTypeOfBlock (size - sizeof (GapWrapper),
+       (type == (t = GNUNET_EC_file_block_get_type (size - sizeof (GapWrapper),
                                      (const DBlock *) &gw[1])))))
     {
       switch (type)

@@ -96,7 +96,7 @@ run_shutdown_win (DWORD dwCtrlType)
 /**
  * Initialize the signal handlers, etc.
  */
-void __attribute__ ((constructor)) shutdown_handlers_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_shutdown_handlers_ltdl_init ()
 {
   GNUNET_GE_ASSERT (NULL, shutdown_signal == NULL);
   GNUNET_GE_ASSERT (NULL, shutdown_active == GNUNET_NO);
@@ -110,7 +110,7 @@ void __attribute__ ((constructor)) shutdown_handlers_ltdl_init ()
 #endif
 }
 
-void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_shutdown_handlers_ltdl_fini ()
 {
 #ifndef MINGW
   GNUNET_signal_handler_uninstall (SIGINT, &run_shutdown, shc_int);

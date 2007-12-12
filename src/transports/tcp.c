@@ -374,7 +374,7 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
                               GNUNET_GE_BULK, "socket");
       return GNUNET_SYSERR;
     }
-  s = socket_create (ectx, coreAPI->load_monitor, sock);
+  s = GNUNET_socket_create (ectx, coreAPI->load_monitor, sock);
 #if TCP_SYNCNT
   /* only try a single packet to establish connection,
      if that does not work, abort instantly */

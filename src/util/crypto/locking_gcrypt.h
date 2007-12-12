@@ -22,8 +22,8 @@
 #ifndef LOCKING_GCRYPT_H
 #define LOCKING_GCRYPT_H
 
-void lockGcrypt ();
+void GNUNET_lock_gcrypt_ (void);
 
-void unlockGcrypt ();
+void GNUNET_unlock_gcrypt_ (void);
 
 #endif

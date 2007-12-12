@@ -208,7 +208,7 @@ main (int argc, char *argv[])
           ret = 43;
           break;
         }
-      sh = socket_create (NULL, NULL, acceptSocket);
+      sh = GNUNET_socket_create (NULL, NULL, acceptSocket);
       ret = ret | testTransmission (clientSocket, sh);
       GNUNET_client_connection_close_temporarily (clientSocket);
       GNUNET_socket_destroy (sh);

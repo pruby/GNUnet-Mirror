@@ -44,7 +44,7 @@ catcher ()
 }
 #endif
 
-void __attribute__ ((constructor)) gnunet_network_io_init ()
+void __attribute__ ((constructor)) GNUNET_network_io_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_NO);
 #ifndef MINGW
@@ -54,7 +54,7 @@ void __attribute__ ((constructor)) gnunet_network_io_init ()
 #endif
 }
 
-void __attribute__ ((destructor)) gnunet_network_io_fini ()
+void __attribute__ ((destructor)) GNUNET_network_io_fini ()
 {
   GNUNET_mutex_destroy (lock);
   lock = NULL;
@@ -104,7 +104,7 @@ GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx, const char *hostname,
 
 
 struct GNUNET_SocketHandle *
-socket_create (struct GNUNET_GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
+GNUNET_socket_create (struct GNUNET_GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
                int osSocket)
 {
   SocketHandle *ret;

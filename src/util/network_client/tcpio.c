@@ -286,7 +286,7 @@ GNUNET_client_connection_ensure_connected (struct
       GNUNET_mutex_unlock (sock->destroylock);
       return GNUNET_SYSERR;
     }
-  sock->sock = socket_create (sock->ectx, NULL, osock);
+  sock->sock = GNUNET_socket_create (sock->ectx, NULL, osock);
   GNUNET_socket_set_blocking (sock->sock, GNUNET_NO);
   memset (&soaddr, 0, sizeof (soaddr));
   soaddr.sin_family = AF_INET;

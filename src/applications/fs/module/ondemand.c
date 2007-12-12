@@ -250,11 +250,11 @@ ONDEMAND_index (struct GNUNET_GE_Context *cectx,
   odb.blockSize = htonl (size - sizeof (DBlock));
   odb.fileId = *fileId;
   /* compute the primary key */
-  fileBlockGetQuery (content, size, &key);
+  GNUNET_EC_file_block_get_query (content, size, &key);
 #if EXTRA_CHECKS
   {
     GNUNET_DatastoreValue *dsvalue;
-    if (GNUNET_OK != fileBlockEncode (content, size, &key, &dsvalue))
+    if (GNUNET_OK != GNUNET_EC_file_block_encode (content, size, &key, &dsvalue))
       {
         GNUNET_GE_BREAK (cectx, 0);
         GNUNET_GE_BREAK (ectx, 0);
@@ -501,7 +501,7 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
       return GNUNET_SYSERR;
     }
   CLOSE (fileHandle);
-  ret = fileBlockEncode (db,
+  ret = GNUNET_EC_file_block_encode (db,
                          ntohl (odb->blockSize) + sizeof (DBlock),
                          query, enc);
   GNUNET_free (db);
@@ -652,7 +652,7 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
       odb.blockSize = htonl (delta);
       odb.fileId = *fileId;
       /* compute the primary key */
-      fileBlockGetQuery (block, delta + sizeof (DBlock), &key);
+      GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
       if (GNUNET_SYSERR == datastore->get (&key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))   /* aborted == found! */
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */

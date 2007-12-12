@@ -583,7 +583,7 @@ selectThread (void *ctx)
                              "Select %p is accepting connection: %d\n", sh,
                              s);
 #endif
-              sock = socket_create (sh->ectx, sh->load_monitor, s);
+              sock = GNUNET_socket_create (sh->ectx, sh->load_monitor, s);
               GNUNET_mutex_unlock (sh->lock);
               sctx = sh->ah (sh->ah_cls,
                              sh, sock, clientAddr, lenOfIncomingAddr);
@@ -905,7 +905,7 @@ GNUNET_select_create (const char *description,
   sh->timeout = timeout;
   sh->lock = GNUNET_mutex_create (GNUNET_YES);
   if (sock != -1)
-    sh->listen_sock = socket_create (ectx, mon, sock);
+    sh->listen_sock = GNUNET_socket_create (ectx, mon, sock);
   else
     sh->listen_sock = NULL;
   sh->thread = GNUNET_thread_create (&selectThread, sh, 256 * 1024);

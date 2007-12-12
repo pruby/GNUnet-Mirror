@@ -298,7 +298,7 @@ static struct sigaction old;
 /**
  * Initialize the signal handlers, etc.
  */
-void __attribute__ ((constructor)) pthread_handlers_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_pthread_handlers_ltdl_init ()
 {
   /* make sure SIGALRM does not kill us */
 #ifndef MINGW
@@ -315,7 +315,7 @@ void __attribute__ ((constructor)) pthread_handlers_ltdl_init ()
 #endif
 }
 
-void __attribute__ ((destructor)) pthread_handlers_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_pthread_handlers_ltdl_fini ()
 {
 #ifndef MINGW
   if (0 != sigaction (SIGALRM, &old, &sig))

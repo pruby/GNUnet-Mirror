@@ -41,7 +41,7 @@ static char *old_dlsearchpath;
 
 
 /* using libtool, needs init! */
-void __attribute__ ((constructor)) gnc_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_dso_ltdl_init ()
 {
   int err;
   const char *opath;
@@ -84,7 +84,7 @@ void __attribute__ ((constructor)) gnc_ltdl_init ()
     }
 }
 
-void __attribute__ ((destructor)) gnc_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_dso_ltdl_fini ()
 {
   lt_dlsetsearchpath (old_dlsearchpath);
   if (old_dlsearchpath != NULL)

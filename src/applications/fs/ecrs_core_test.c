@@ -43,14 +43,14 @@ testEC ()
   data = GNUNET_malloc (len);
   memset (&data[1], rand (), len - sizeof (DBlock));
   data->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
-  CHECK (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA == getTypeOfBlock (len, data),
+  CHECK (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA == GNUNET_EC_file_block_get_type (len, data),
          data);
-  fileBlockGetKey (data, len, &key);
-  fileBlockGetQuery (data, len, &query);
-  CHECK (GNUNET_OK == fileBlockEncode (data, len, &query, &value), data);
+  GNUNET_EC_file_block_get_key (data, len, &key);
+  GNUNET_EC_file_block_get_query (data, len, &query);
+  CHECK (GNUNET_OK == GNUNET_EC_file_block_encode (data, len, &query, &value), data);
   memcpy (data, &value[1], len);
   GNUNET_free (value);
-  CHECK (GNUNET_YES == isDatumApplicable (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA,
+  CHECK (GNUNET_YES == GNUNET_EC_is_block_applicable_for_query (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA,
                                           len, data, &query, 1, &query),
          data);
   GNUNET_free (data);

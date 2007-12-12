@@ -338,7 +338,7 @@ receiveReplies (const GNUNET_HashCode * key,
                  size);
 #endif
   if (GNUNET_OK !=
-      getQueryFor (size, (const DBlock *) &value[1], GNUNET_YES, &query))
+      GNUNET_EC_file_block_check_and_get_query (size, (const DBlock *) &value[1], GNUNET_YES, &query))
     return GNUNET_SYSERR;
   for (i = 0; i < sqc->queryCount; i++)
     {
@@ -347,7 +347,7 @@ receiveReplies (const GNUNET_HashCode * key,
                         &ps->keys[0], sizeof (GNUNET_HashCode))) &&
           ((ps->type == type) ||
            (ps->type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)) &&
-          (GNUNET_YES == isDatumApplicable (type,
+          (GNUNET_YES == GNUNET_EC_is_block_applicable_for_query (type,
                                             size,
                                             (const DBlock *) &value[1],
                                             &query, ps->keyCount, ps->keys)))

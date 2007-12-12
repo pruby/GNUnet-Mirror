@@ -274,12 +274,12 @@ GNUNET_get_ip_as_string (const void *sav, unsigned int salen, int do_resolve)
 
 
 
-void __attribute__ ((constructor)) gnunet_dns_ltdl_init ()
+void __attribute__ ((constructor)) GNUNET_dns_ltdl_init ()
 {
   lock = GNUNET_mutex_create (GNUNET_YES);
 }
 
-void __attribute__ ((destructor)) gnunet_dns_ltdl_fini ()
+void __attribute__ ((destructor)) GNUNET_dns_ltdl_fini ()
 {
   struct IPCache *pos;
   GNUNET_mutex_destroy (lock);

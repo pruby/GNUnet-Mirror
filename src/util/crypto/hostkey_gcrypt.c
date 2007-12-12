@@ -98,7 +98,7 @@ GNUNET_RSA_create_key ()
   gcry_sexp_t s_keyparam;
   int rc;
 
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_sexp_build (&s_keyparam,
                         NULL,
                         "(genkey(rsa(nbits %d)(rsa-use-e 3:257)))",
@@ -106,7 +106,7 @@ GNUNET_RSA_create_key ()
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_build", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   rc = gcry_pk_genkey (&s_key, s_keyparam);
@@ -114,7 +114,7 @@ GNUNET_RSA_create_key ()
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_genkey", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
 
@@ -122,11 +122,11 @@ GNUNET_RSA_create_key ()
   if ((rc = gcry_pk_testkey (s_key)))
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_testkey", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
 #endif
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   ret = GNUNET_malloc (sizeof (struct GNUNET_RSA_PrivateKey));
   ret->sexp = s_key;
   return ret;
@@ -138,9 +138,9 @@ GNUNET_RSA_create_key ()
 void
 GNUNET_RSA_free_key (struct GNUNET_RSA_PrivateKey *hostkey)
 {
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   gcry_sexp_release (hostkey->sexp);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   GNUNET_free (hostkey);
 }
 
@@ -152,11 +152,11 @@ key_from_sexp (gcry_mpi_t * array,
   const char *s;
   int i, idx;
 
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   list = gcry_sexp_find_token (sexp, topname, 0);
   if (!list)
     {
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return 1;
     }
   l2 = gcry_sexp_cadr (list);
@@ -164,7 +164,7 @@ key_from_sexp (gcry_mpi_t * array,
   list = l2;
   if (!list)
     {
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return 2;
     }
 
@@ -180,7 +180,7 @@ key_from_sexp (gcry_mpi_t * array,
               array[i] = NULL;
             }
           gcry_sexp_release (list);
-          unlockGcrypt ();
+          GNUNET_unlock_gcrypt_ ();
           return 3;             /* required parameter not found */
         }
       array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
@@ -193,12 +193,12 @@ key_from_sexp (gcry_mpi_t * array,
               array[i] = NULL;
             }
           gcry_sexp_release (list);
-          unlockGcrypt ();
+          GNUNET_unlock_gcrypt_ ();
           return 4;             /* required parameter is invalid */
         }
     }
   gcry_sexp_release (list);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return 0;
 }
 
@@ -215,7 +215,7 @@ GNUNET_RSA_get_public_key (const struct GNUNET_RSA_PrivateKey *hostkey,
   size_t size;
   int rc;
 
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = key_from_sexp (skey, hostkey->sexp, "public-key", "ne");
   if (rc)
     rc = key_from_sexp (skey, hostkey->sexp, "private-key", "ne");
@@ -244,7 +244,7 @@ GNUNET_RSA_get_public_key (const struct GNUNET_RSA_PrivateKey *hostkey,
           GNUNET_RSA_KEY_LEN - GNUNET_RSA_DATA_ENCODING_LEN);
   gcry_mpi_release (skey[0]);
   gcry_mpi_release (skey[1]);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
 }
 
 
@@ -273,12 +273,12 @@ public2PrivateKey (const GNUNET_RSA_PublicKey * publicKey)
       return NULL;
     }
   size = GNUNET_RSA_DATA_ENCODING_LEN;
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_mpi_scan (&n, GCRYMPI_FMT_USG, &publicKey->key[0], size, &size);
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   size = GNUNET_RSA_KEY_LEN - GNUNET_RSA_DATA_ENCODING_LEN;
@@ -290,7 +290,7 @@ public2PrivateKey (const GNUNET_RSA_PublicKey * publicKey)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
       gcry_mpi_release (n);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   rc = gcry_sexp_build (&result,
@@ -300,10 +300,10 @@ public2PrivateKey (const GNUNET_RSA_PublicKey * publicKey)
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_build", rc);        /* erroff gives more info */
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   ret = GNUNET_malloc (sizeof (struct GNUNET_RSA_PrivateKey));
   ret->sexp = result;
   return ret;
@@ -326,12 +326,12 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
   int i;
   int size;
 
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
 #if EXTRA_CHECKS
   if (gcry_pk_testkey (hostkey->sexp))
     {
       GNUNET_GE_BREAK (NULL, 0);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
 #endif
@@ -351,7 +351,7 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "key_from_sexp", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   size = sizeof (GNUNET_RSA_PrivateKeyEncoded);
@@ -372,7 +372,7 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
               for (i = 0; i < 6; i++)
                 if (pkv[i] != NULL)
                   gcry_mpi_release (pkv[i]);
-              unlockGcrypt ();
+              GNUNET_unlock_gcrypt_ ();
               return NULL;
             }
         }
@@ -412,7 +412,7 @@ GNUNET_RSA_encode_key (const struct GNUNET_RSA_PrivateKey * hostkey)
       if (pbu[i] != NULL)
         free (pbu[i]);
     }
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return retval;
 }
 
@@ -432,7 +432,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
 
   pos = 0;
   size = ntohs (encoding->sizen);
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_mpi_scan (&n,
                       GCRYMPI_FMT_USG,
                       &((const unsigned char *) (&encoding[1]))[pos],
@@ -441,7 +441,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   size = ntohs (encoding->sizee);
@@ -454,7 +454,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
       gcry_mpi_release (n);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   size = ntohs (encoding->sized);
@@ -468,7 +468,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
       gcry_mpi_release (n);
       gcry_mpi_release (e);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
   /* swap p and q! */
@@ -486,7 +486,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
           gcry_mpi_release (n);
           gcry_mpi_release (e);
           gcry_mpi_release (d);
-          unlockGcrypt ();
+          GNUNET_unlock_gcrypt_ ();
           return NULL;
         }
     }
@@ -508,7 +508,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
           gcry_mpi_release (d);
           if (q != NULL)
             gcry_mpi_release (q);
-          unlockGcrypt ();
+          GNUNET_unlock_gcrypt_ ();
           return NULL;
         }
     }
@@ -533,7 +533,7 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
             gcry_mpi_release (p);
           if (q != NULL)
             gcry_mpi_release (q);
-          unlockGcrypt ();
+          GNUNET_unlock_gcrypt_ ();
           return NULL;
         }
     }
@@ -577,13 +577,13 @@ GNUNET_RSA_decode_key (const GNUNET_RSA_PrivateKeyEncoded * encoding)
   if (gcry_pk_testkey (res))
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_testkey", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return NULL;
     }
 #endif
   ret = GNUNET_malloc (sizeof (struct GNUNET_RSA_PrivateKey));
   ret->sexp = res;
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return ret;
 }
 
@@ -615,13 +615,13 @@ GNUNET_RSA_encrypt (const void *block,
   GNUNET_GE_ASSERT (NULL, size <= sizeof (GNUNET_HashCode));
   pubkey = public2PrivateKey (publicKey);
   isize = size;
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_mpi_scan (&val, GCRYMPI_FMT_USG, block, isize, &isize);
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
       GNUNET_RSA_free_key (pubkey);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = gcry_sexp_build (&data,
@@ -631,7 +631,7 @@ GNUNET_RSA_encrypt (const void *block,
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_build", rc);        /* more info in erroff */
       GNUNET_RSA_free_key (pubkey);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
 
@@ -641,7 +641,7 @@ GNUNET_RSA_encrypt (const void *block,
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_encrypt", rc);
       gcry_sexp_release (data);
       GNUNET_RSA_free_key (pubkey);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   gcry_sexp_release (data);
@@ -652,7 +652,7 @@ GNUNET_RSA_encrypt (const void *block,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "key_from_sexp", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   isize = sizeof (GNUNET_RSA_EncryptedData);
@@ -662,11 +662,11 @@ GNUNET_RSA_encrypt (const void *block,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_print", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   adjust (&target->encoding[0], isize, sizeof (GNUNET_RSA_EncryptedData));
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return GNUNET_OK;
 }
 
@@ -694,13 +694,13 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   unsigned char *endp;
   unsigned char *tmp;
 
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
 #if EXTRA_CHECKS
   rc = gcry_pk_testkey (hostkey->sexp);
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_testkey", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
 #endif
@@ -710,7 +710,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = gcry_sexp_build (&data, &erroff, "(enc-val(flags)(rsa(a %m)))", val);
@@ -718,7 +718,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_build", rc);        /* more info in erroff */
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = gcry_pk_decrypt (&resultsexp, data, hostkey->sexp);
@@ -726,7 +726,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_decrypt", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
 
@@ -736,7 +736,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (val == NULL)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_nth_mpi", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   tmp = GNUNET_malloc (max + HOSTKEY_LEN / 8);
@@ -747,7 +747,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_print", rc);
       GNUNET_free (tmp);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
 
@@ -756,7 +756,7 @@ GNUNET_RSA_decrypt (const struct GNUNET_RSA_PrivateKey *hostkey,
   size = max;
   memcpy (result, endp, size);
   GNUNET_free (tmp);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return size;
 }
 
@@ -793,13 +793,13 @@ GNUNET_RSA_sign (const struct GNUNET_RSA_PrivateKey *hostkey,
            strlen
            ("0123456789012345678901234567890123456789012345678901234567890123))")
            - 1], &hc, sizeof (GNUNET_HashCode));
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_sexp_new (&data, buff, bufSize, 0);
   GNUNET_free (buff);
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_new", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = gcry_pk_sign (&result, data, hostkey->sexp);
@@ -807,7 +807,7 @@ GNUNET_RSA_sign (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_pk_sign", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = key_from_sexp (&rval, result, "rsa", "s");
@@ -815,7 +815,7 @@ GNUNET_RSA_sign (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "key_from_sexp", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   ssize = sizeof (GNUNET_RSA_Signature);
@@ -825,11 +825,11 @@ GNUNET_RSA_sign (const struct GNUNET_RSA_PrivateKey *hostkey,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_print", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   adjust (&sig->sig[0], ssize, sizeof (GNUNET_RSA_Signature));
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return GNUNET_OK;
 }
 
@@ -860,14 +860,14 @@ GNUNET_RSA_verify (const void *block,
   int rc;
 
   size = sizeof (GNUNET_RSA_Signature);
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_mpi_scan (&val,
                       GCRYMPI_FMT_USG,
                       (const unsigned char *) sig, size, &size);
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_mpi_scan", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   rc = gcry_sexp_build (&sigdata, &erroff, "(sig-val(rsa(s %m)))", val);
@@ -875,7 +875,7 @@ GNUNET_RSA_verify (const void *block,
   if (rc)
     {
       LOG_GCRY (NULL, LOG_ERROR, "gcry_sexp_build", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   GNUNET_hash (block, len, &hc);
@@ -906,12 +906,12 @@ GNUNET_RSA_verify (const void *block,
                      GNUNET_GE_DEVELOPER,
                      _("RSA signature verification failed at %s:%d: %s\n"),
                      __FILE__, __LINE__, gcry_strerror (rc));
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_SYSERR;
     }
   else
     {
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return GNUNET_OK;
     }
 }

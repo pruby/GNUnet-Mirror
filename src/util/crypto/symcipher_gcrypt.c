@@ -59,9 +59,9 @@
 void
 GNUNET_AES_create_session_key (GNUNET_AES_SessionKey * key)
 {
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   gcry_randomize (&key->key[0], GNUNET_SESSIONKEY_LEN, GCRY_STRONG_RANDOM);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   key->crc32 = htonl (GNUNET_crc32_n (key, GNUNET_SESSIONKEY_LEN));
 }
 
@@ -91,7 +91,7 @@ GNUNET_AES_encrypt (const void *block,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_cipher_open (&handle,
                          GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB, 0);
   if (rc)
@@ -99,7 +99,7 @@ GNUNET_AES_encrypt (const void *block,
       LOG_GCRY (NULL,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_open", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   rc = gcry_cipher_setkey (handle, sessionkey, GNUNET_SESSIONKEY_LEN);
@@ -110,7 +110,7 @@ GNUNET_AES_encrypt (const void *block,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_setkey", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   rc =
@@ -121,7 +121,7 @@ GNUNET_AES_encrypt (const void *block,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_setiv", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
 
@@ -132,11 +132,11 @@ GNUNET_AES_encrypt (const void *block,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_encrypt", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   gcry_cipher_close (handle);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return len;
 }
 
@@ -165,7 +165,7 @@ GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  lockGcrypt ();
+  GNUNET_lock_gcrypt_ ();
   rc = gcry_cipher_open (&handle,
                          GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CFB, 0);
   if (rc)
@@ -173,7 +173,7 @@ GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
       LOG_GCRY (NULL,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_open", rc);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   rc = gcry_cipher_setkey (handle, sessionkey, GNUNET_SESSIONKEY_LEN);
@@ -184,7 +184,7 @@ GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_setkey", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   rc =
@@ -196,7 +196,7 @@ GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_setiv", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   rc = gcry_cipher_decrypt (handle, result, size, block, size);
@@ -206,11 +206,11 @@ GNUNET_AES_decrypt (const GNUNET_AES_SessionKey * sessionkey,
                 GNUNET_GE_ERROR | GNUNET_GE_USER | GNUNET_GE_DEVELOPER |
                 GNUNET_GE_BULK, "gcry_cipher_decrypt", rc);
       gcry_cipher_close (handle);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return -1;
     }
   gcry_cipher_close (handle);
-  unlockGcrypt ();
+  GNUNET_unlock_gcrypt_ ();
   return size;
 }
 

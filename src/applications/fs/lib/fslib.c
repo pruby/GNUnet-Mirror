@@ -98,7 +98,7 @@ processReplies (void *cls)
             }
           rep = (const CS_fs_reply_content_MESSAGE *) hdr;
           size = ntohs (hdr->size) - sizeof (CS_fs_reply_content_MESSAGE);
-          if (GNUNET_OK != getQueryFor (size, (DBlock *) & rep[1], GNUNET_NO,   /* gnunetd will have checked already */
+          if (GNUNET_OK != GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) & rep[1], GNUNET_NO,   /* gnunetd will have checked already */
                                         &query))
             {
               GNUNET_GE_BREAK (ctx->ectx, 0);
@@ -123,7 +123,7 @@ processReplies (void *cls)
                       value->size =
                         htonl (size + sizeof (GNUNET_DatastoreValue));
                       value->type =
-                        htonl (getTypeOfBlock (size, (DBlock *) & rep[1]));
+                        htonl (GNUNET_EC_file_block_get_type (size, (DBlock *) & rep[1]));
                       value->prio = htonl (0);
                       value->anonymityLevel = rep->anonymityLevel;
                       value->expirationTime = rep->expirationTime;

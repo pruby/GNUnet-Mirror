@@ -46,7 +46,7 @@ GNUNET_os_init (struct GNUNET_GE_Context *ectx)
 /**
  * @brief Perform OS specific cleanup
  */
-void __attribute__ ((destructor)) os_fini ()
+void __attribute__ ((destructor)) GNUNET_os_fini ()
 {
 #ifdef MINGW
   ShutdownWinEnv ();

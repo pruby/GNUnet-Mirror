@@ -45,7 +45,7 @@ GNUNET_random_u32 (int mode, unsigned int i)
 
   if (mode == GNUNET_RANDOM_QUALITY_STRONG)
     {
-      lockGcrypt ();
+      GNUNET_lock_gcrypt_ ();
       /* see http://lists.gnupg.org/pipermail/gcrypt-devel/2004-May/000613.html */
 #ifdef gcry_fast_random_poll
       if ((invokeCount++ % 256) == 0)
@@ -56,7 +56,7 @@ GNUNET_random_u32 (int mode, unsigned int i)
                                    random number this way */
       gcry_randomize ((unsigned char *) &ret,
                       sizeof (unsigned int), GCRY_STRONG_RANDOM);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return ret % i;
     }
   else
@@ -109,10 +109,10 @@ GNUNET_random_u64 (int mode, unsigned long long u)
   GNUNET_GE_ASSERT (NULL, u > 0);
   if (mode == GNUNET_RANDOM_QUALITY_STRONG)
     {
-      lockGcrypt ();
+      GNUNET_lock_gcrypt_ ();
       gcry_randomize ((unsigned char *) &ret,
                       sizeof (unsigned long long), GCRY_STRONG_RANDOM);
-      unlockGcrypt ();
+      GNUNET_unlock_gcrypt_ ();
       return ret % u;
     }
   else

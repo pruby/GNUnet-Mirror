@@ -344,7 +344,7 @@ tcp6Connect (const GNUNET_MessageHello * hello,
           sock = -1;
           continue;
         }
-      s = socket_create (ectx, coreAPI->load_monitor, sock);
+      s = GNUNET_socket_create (ectx, coreAPI->load_monitor, sock);
       if (-1 == GNUNET_socket_set_blocking (s, GNUNET_NO))
         {
           GNUNET_socket_destroy (s);

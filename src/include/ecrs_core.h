@@ -239,7 +239,7 @@ typedef struct
  * @return GNUNET_OK on success, GNUNET_SYSERR if data does not
  *  match the query
  */
-int fileBlockEncode (const DBlock * data,
+int GNUNET_EC_file_block_encode (const DBlock * data,
                      unsigned int len,
                      const GNUNET_HashCode * query,
                      GNUNET_DatastoreValue ** value);
@@ -248,7 +248,7 @@ int fileBlockEncode (const DBlock * data,
  * Get the query that will be used to query for
  * a certain block of data.
  */
-void fileBlockGetQuery (const DBlock * data,
+void GNUNET_EC_file_block_get_query (const DBlock * data,
                         unsigned int len, GNUNET_HashCode * query);
 
 
@@ -256,13 +256,13 @@ void fileBlockGetQuery (const DBlock * data,
  * Get the key that will be used to decrypt
  * a certain block of data.
  */
-void fileBlockGetKey (const DBlock * data,
+void GNUNET_EC_file_block_get_key (const DBlock * data,
                       unsigned int len, GNUNET_HashCode * key);
 
 /**
  * What is the type of the given block of data?
  */
-unsigned int getTypeOfBlock (unsigned int size, const DBlock * data);
+unsigned int GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * data);
 
 /**
  * What is the main query (the one that is used in
@@ -277,7 +277,7 @@ unsigned int getTypeOfBlock (unsigned int size, const DBlock * data);
  * @return GNUNET_SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor (unsigned int size,
+int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
                  const DBlock * data, int verify, GNUNET_HashCode * query);
 
 /**
@@ -287,14 +287,14 @@ int getQueryFor (unsigned int size,
  * @param type the type of the queryo
  * @param size the size of the data
  * @param data the encoded data
- * @param knownDatumQuery result of getQueryFor
+ * @param knownDatumQuery result of GNUNET_EC_file_block_check_and_get_query
  * @param keyCount the number of keys in the query
  * @param keys the keys of the query
  * @return GNUNET_YES if this data matches the query, otherwise
  *         GNUNET_NO; GNUNET_SYSERR if the keyCount does not match the
  *         query type
  */
-int isDatumApplicable (unsigned int type,
+int GNUNET_EC_is_block_applicable_for_query (unsigned int type,
                        unsigned int size,
                        const DBlock * data,
                        const GNUNET_HashCode * knownDatumQuery,

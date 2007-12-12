@@ -112,7 +112,7 @@ int GNUNET_FS_get_current_average_priority (struct
  *
  * @param block the block (properly encoded and all)
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
- * @see ecrs_core.h::fileBlockEncode
+ * @see ecrs_core.h::GNUNET_EC_file_block_encode
  */
 int GNUNET_FS_insert (struct GNUNET_ClientServerConnection *sock,
                       const GNUNET_DatastoreValue * block);
