@@ -37,3 +37,12 @@ we should distinguish function pointer in structs and normal value
 fields by using a different naming convention for one of these.
 Comments on this would be welcome.
 
+
+HOW TO CHECK:
+=============
+
+Before every release, we should run
+
+$ nm lib/libgnunet*.so | grep " T " | grep -v GNUNET_ | grep -v " T _"
+
+on the installed GNUnet libraries.  The output should be empty.
