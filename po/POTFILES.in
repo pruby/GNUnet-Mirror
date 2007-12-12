@@ -1,4 +1,3 @@
-libltdl/ltdl.c
 src/transports/upnp/upnp.c
 src/transports/upnp/upnptest.c
 src/transports/upnp/init.c
@@ -267,10 +266,6 @@ src/util/string/xmalloc.c
 src/util/string/xmalloctest.c
 src/util/string/string.c
 src/util/libgnunetutil.c
-confdefs.h
-config.h
-libltdl/ltdl.h
-libltdl/config.h
 src/transports/upnp/error.h
 src/transports/upnp/util.h
 src/transports/upnp/upnp.h
@@ -393,7 +388,6 @@ contrib/config-daemon.scm
 contrib/gnunet-download-manager.scm
 contrib/config-client.scm
 src/setup/gtk/gnunet-setup.glade
-GNUnet-0.7.2c/src/util/win/win.cc
 src/setup/qt/setupWizard.cc
 src/setup/qt/qtconfig.cc
 src/util/win/win.cc

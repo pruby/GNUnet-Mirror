@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-09 19:48-0700\n"
+"POT-Creation-Date: 2007-12-12 00:58-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -18,9 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/transports/upnp/upnp.c:356 src/transports/upnp/upnp.c:541
-#: src/transports/http.c:1320 src/transports/http.c:1413
-#: src/transports/http.c:1588 src/transports/http.c:2014
-#: src/transports/http.c:2075 src/applications/bootstrap_http/http.c:123
+#: src/transports/http.c:1321 src/transports/http.c:1414
+#: src/transports/http.c:1589 src/transports/http.c:2015
+#: src/transports/http.c:2076 src/applications/bootstrap_http/http.c:123
 #: src/applications/bootstrap_http/http.c:257
 #: src/applications/bootstrap_http/http.c:274
 #: src/applications/bootstrap_http/http.c:306
@@ -81,7 +81,7 @@ msgstr "Die öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 msgid "`%s': unknown service: %s\n"
 msgstr "`%s': unbekannter Dienst: %s\n"
 
-#: src/transports/tcp6.c:420 src/transports/tcp.c:462
+#: src/transports/tcp6.c:420 src/transports/tcp.c:463
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
@@ -110,51 +110,51 @@ msgstr "Fehler beim Binden an UDP Port %d.\n"
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr "UDP6: Öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/udp6.c:495 src/transports/udp.c:544
+#: src/transports/udp6.c:494 src/transports/udp.c:544
 #, fuzzy, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr ""
 "MTU für `%s' ist möglicherweise zu gering (Fragmentierung ist nicht "
 "implementiert!)\n"
 
-#: src/transports/udp6.c:501
+#: src/transports/udp6.c:500
 #, fuzzy
 msgid "# bytes received via UDP6"
 msgstr "# Bytes empfangen über UDP"
 
-#: src/transports/udp6.c:502
+#: src/transports/udp6.c:501
 #, fuzzy
 msgid "# bytes sent via UDP6"
 msgstr "# Bytes gesendet über UDP"
 
-#: src/transports/udp6.c:504
+#: src/transports/udp6.c:503
 #, fuzzy
 msgid "# bytes dropped by UDP6 (outgoing)"
 msgstr "# Bytes verworfen von UDP (outgoing)"
 
-#: src/transports/udp6.c:506
+#: src/transports/udp6.c:505
 msgid "# UDP6 connections (right now)"
 msgstr ""
 
-#: src/transports/http.c:875
+#: src/transports/http.c:876
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/http.c:2290
+#: src/transports/http.c:2291
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2299
+#: src/transports/http.c:2300
 msgid "# bytes received via HTTP"
 msgstr "# Bytes empfangen über HTTP"
 
-#: src/transports/http.c:2300
+#: src/transports/http.c:2301
 msgid "# bytes sent via HTTP"
 msgstr "# Bytes gesendet über HTTP"
 
-#: src/transports/http.c:2302
+#: src/transports/http.c:2303
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# Bytes verworfen von HTTP"
 
@@ -203,53 +203,53 @@ msgstr "# Bytes gesendet über TCP"
 msgid "# bytes dropped by SMTP (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
 
-#: src/transports/tcp_helper.c:260
+#: src/transports/tcp_helper.c:262
 #, fuzzy
 msgid "Received malformed message instead of welcome message. Closing.\n"
 msgstr ""
 "Es wurde per TCP von einem anderen Knoten eine ungültige Nachricht (Größe %"
 "u) empfangen. Verbindung wird geschlossen.\n"
 
-#: src/transports/tcp_helper.c:279
+#: src/transports/tcp_helper.c:282
 #, fuzzy
 msgid "Received malformed message from tcp-peer connection. Closing.\n"
 msgstr ""
 "Es wurde per TCP von einem anderen Knoten eine ungültige Nachricht (Größe %"
 "u) empfangen. Verbindung wird geschlossen.\n"
 
-#: src/transports/tcp.c:296
+#: src/transports/tcp.c:297
 #, fuzzy
 msgid "TCP: Could not determine my public IP address.\n"
 msgstr "HTTP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/tcp.c:401
+#: src/transports/tcp.c:402
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
 
-#: src/transports/tcp.c:584
+#: src/transports/tcp.c:585
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"TCP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/tcp.c:593
+#: src/transports/tcp.c:594
 msgid "# bytes received via TCP"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/tcp.c:594
+#: src/transports/tcp.c:595
 msgid "# bytes sent via TCP"
 msgstr "# Bytes gesendet über TCP"
 
-#: src/transports/tcp.c:596
+#: src/transports/tcp.c:597
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
 
-#: src/transports/udp.c:301
+#: src/transports/udp.c:302
 msgid "UDP: Could not determine my public IP address.\n"
 msgstr "UDP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/udp.c:400
+#: src/transports/udp.c:401
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
@@ -347,8 +347,8 @@ msgid ""
 "Your configuration changes were NOT saved.\n"
 msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 
-#: src/setup/ncurses/wizard_curs.c:65 src/setup/lib/wizard_util.c:140
-#: src/setup/lib/wizard_util.c:195
+#: src/setup/ncurses/wizard_curs.c:65 src/setup/lib/wizard_util.c:141
+#: src/setup/lib/wizard_util.c:196
 msgid "Error"
 msgstr "Fehler"
 
@@ -361,11 +361,11 @@ msgstr "Hilfe"
 msgid "Error!"
 msgstr "Fehler"
 
-#: src/setup/ncurses/wizard_curs.c:94 src/applications/vpn/vpn.c:1454
+#: src/setup/ncurses/wizard_curs.c:94 src/applications/vpn/vpn.c:1455
 msgid "No"
 msgstr "Nein"
 
-#: src/setup/ncurses/wizard_curs.c:95 src/applications/vpn/vpn.c:1454
+#: src/setup/ncurses/wizard_curs.c:95 src/applications/vpn/vpn.c:1455
 msgid "Yes"
 msgstr "Ja"
 
@@ -810,11 +810,11 @@ msgstr "Möchten Sie Ihre Einstellungen speichern?"
 msgid "Unable to create user account:"
 msgstr "Fehler beim Anlegen des Benutzerkontos:"
 
-#: src/setup/gtk/wizard_gtk.c:479
+#: src/setup/gtk/wizard_gtk.c:480
 msgid "Unable to change startup process:"
 msgstr "Startprozeß konnte nicht geändert werden:"
 
-#: src/setup/gtk/wizard_gtk.c:494
+#: src/setup/gtk/wizard_gtk.c:495
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -873,7 +873,7 @@ msgid ""
 "Internal error: entry `%s' in section `%s' not found for visibility change!\n"
 msgstr ""
 
-#: src/setup/lib/gns.c:315
+#: src/setup/lib/gns.c:316
 #, fuzzy, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
@@ -882,51 +882,51 @@ msgstr ""
 "Die Konfigurationsdatei muss in der Sektion `%s' unter `%s' ein Verzeichnis "
 "für FS Daten angeben.\n"
 
-#: src/setup/lib/wizard_util.c:111
+#: src/setup/lib/wizard_util.c:112
 msgid "Can't open Service Control Manager"
 msgstr "Der Dienstemanager konnte nicht geöffnet werden"
 
-#: src/setup/lib/wizard_util.c:117
+#: src/setup/lib/wizard_util.c:118
 msgid "Can't create service"
 msgstr "Der Dienst konnte nicht angelegt werden"
 
-#: src/setup/lib/wizard_util.c:121
+#: src/setup/lib/wizard_util.c:122
 msgid "Error changing the permissions of the GNUnet directory"
 msgstr "Fehler beim Ändern der Berechtigungen des GNUnet Verzeichnisses"
 
-#: src/setup/lib/wizard_util.c:126
+#: src/setup/lib/wizard_util.c:127
 msgid "Cannot write to the regisitry"
 msgstr "Konnte nicht in die Registry schreiben"
 
-#: src/setup/lib/wizard_util.c:129
+#: src/setup/lib/wizard_util.c:130
 msgid "Can't access the service"
 msgstr "Auf den Dienst konnte nicht zugegriffen werden"
 
-#: src/setup/lib/wizard_util.c:132
+#: src/setup/lib/wizard_util.c:133
 msgid "Can't delete the service"
 msgstr "Dienst konnte nicht gelöscht werden"
 
-#: src/setup/lib/wizard_util.c:135
+#: src/setup/lib/wizard_util.c:136
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
-#: src/setup/lib/wizard_util.c:171
+#: src/setup/lib/wizard_util.c:172
 msgid "This version of Windows does not support multiple users."
 msgstr "Diese Version von Windows ist nicht Mehrbenutzerfähig."
 
-#: src/setup/lib/wizard_util.c:175
+#: src/setup/lib/wizard_util.c:176
 msgid "Error creating user"
 msgstr "Fehler beim Anlegen des Benutzers"
 
-#: src/setup/lib/wizard_util.c:179
+#: src/setup/lib/wizard_util.c:180
 msgid "Error accessing local security policy"
 msgstr "Fehler beim Zugriff auf die lokale Sicherheitsrichtlinie"
 
-#: src/setup/lib/wizard_util.c:184
+#: src/setup/lib/wizard_util.c:185
 msgid "Error granting service right to user"
 msgstr "Fehler beim Zuweisen des Dienstrechtes dem Benutzer"
 
-#: src/setup/lib/wizard_util.c:189
+#: src/setup/lib/wizard_util.c:190
 msgid "Unknown error while creating a new user"
 msgstr "Unbekannter Fehler beim Anlegen des neuen Benutzers"
 
@@ -953,7 +953,7 @@ msgid ""
 "Invalid synatx, argument to 'get' must have the format SECTION:OPTION.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:107
+#: src/setup/gnunet-setup.c:107 src/setup/qt/qtconfig.cc:24
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr "Generiere Konfiguration für gnunetd, den GNUnet Daemon"
 
@@ -962,7 +962,7 @@ msgid "print a value from the configuration file to stdout"
 msgstr ""
 "Einen Wert aus der Konfigurationsdatei auf der Standardausgabe ausgeben"
 
-#: src/setup/gnunet-setup.c:112
+#: src/setup/gnunet-setup.c:112 src/setup/qt/qtconfig.cc:26
 msgid "Tool to setup GNUnet."
 msgstr "Werkzeug für die Einrichtung von GNUnet."
 
@@ -972,31 +972,31 @@ msgid "update a value in the configuration file"
 msgstr ""
 "Einen Wert aus der Konfigurationsdatei auf der Standardausgabe ausgeben"
 
-#: src/setup/gnunet-setup.c:257
+#: src/setup/gnunet-setup.c:261 src/setup/qt/qtconfig.cc:132
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Ungültige Kommandozeilen Parameter.\n"
 
-#: src/setup/gnunet-setup.c:263
+#: src/setup/gnunet-setup.c:267
 msgid "No interface specified, using default\n"
 msgstr "Keine Oberfläche angegeben, verwende Standard\n"
 
-#: src/setup/gnunet-setup.c:340
+#: src/setup/gnunet-setup.c:347
 #, fuzzy, c-format
 msgid "Undefined option.\n"
 msgstr "Weitere Einstellungen"
 
-#: src/setup/gnunet-setup.c:391
+#: src/setup/gnunet-setup.c:398
 #, c-format
 msgid "`%s' is not available."
 msgstr "`%s' ist nicht verfügbar."
 
-#: src/setup/gnunet-setup.c:409
+#: src/setup/gnunet-setup.c:416
 #, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Unbekannte Operation `%s'\n"
 
-#: src/setup/gnunet-setup.c:410 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1064,7 +1064,7 @@ msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
 
 #: src/applications/dht/tools/dhttest.c:43
 #: src/applications/dht/tools/dhttest2.c:43
-#: src/applications/dht/module/table.c:734
+#: src/applications/dht/module/table.c:736
 msgid "# dht connections"
 msgstr ""
 
@@ -1119,17 +1119,17 @@ msgstr "Kommando `%s' benötigt zwei zusätzliche Angaben (`%s' und `%s').\n"
 msgid "Unsupported command `%s'.  Aborting.\n"
 msgstr "Kommando `%s' wird nicht unterstützt. Vorgang wird abgebrochen.\n"
 
-#: src/applications/dht/module/cs.c:135
+#: src/applications/dht/module/cs.c:136
 #, c-format
 msgid "`%s' failed. Terminating connection to client.\n"
 msgstr "`%s' fehlgeschlagen. Beende Verbindung zu Client.\n"
 
-#: src/applications/dht/module/cs.c:242
+#: src/applications/dht/module/cs.c:243
 #, fuzzy, c-format
 msgid "`%s' registering client handlers: %d %d\n"
 msgstr "`%s' registriert Client-Handler %d\n"
 
-#: src/applications/dht/module/cs.c:261
+#: src/applications/dht/module/cs.c:263
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
@@ -1161,46 +1161,51 @@ msgstr "# Bytes empfangen über TCP"
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "`%s' registriert Handler %d %d %d\n"
 
-#: src/applications/dht/module/table.c:736
+#: src/applications/dht/module/table.c:738
 #, fuzzy
 msgid "# dht discovery messages received"
 msgstr "# verschlüsselter PING Nachrichten empfangen"
 
-#: src/applications/dht/module/table.c:738
+#: src/applications/dht/module/table.c:740
 msgid "# dht route host lookups performed"
 msgstr ""
 
-#: src/applications/dht/module/table.c:740
+#: src/applications/dht/module/table.c:742
 #, fuzzy
 msgid "# dht discovery messages sent"
 msgstr "# verschlüsselter PING Nachrichten empfangen"
 
-#: src/applications/topology_default/topology.c:545
+#: src/applications/topology_default/topology.c:537
+#, fuzzy, c-format
+msgid "Could not read friends list `%s'\n"
+msgstr "Fehler beim Lesen der Freunde-Liste von `%s'\n"
+
+#: src/applications/topology_default/topology.c:548
 #, c-format
 msgid "Failed to read friends list from `%s'\n"
 msgstr "Fehler beim Lesen der Freunde-Liste von `%s'\n"
 
-#: src/applications/topology_default/topology.c:562
+#: src/applications/topology_default/topology.c:566
 msgid "Syntax error in topology specification, skipping bytes.\n"
 msgstr "Syntaxfehler in Topolgieangabe, Bytes werden übersprungen.\n"
 
-#: src/applications/topology_default/topology.c:576
+#: src/applications/topology_default/topology.c:581
 #, c-format
 msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
 msgstr "Syntaxfehler in Topologieangabe, überspringe Bytes `%s'.\n"
 
-#: src/applications/topology_default/topology.c:588
+#: src/applications/topology_default/topology.c:593
 msgid ""
 "Fewer friends specified than required by minimum friend count. Will only "
 "connect to friends.\n"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:596
+#: src/applications/topology_default/topology.c:602
 msgid ""
 "More friendly connections required than target total number of connections.\n"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:703
+#: src/applications/topology_default/topology.c:707
 msgid "maintains GNUnet default mesh topology"
 msgstr ""
 
@@ -1300,19 +1305,19 @@ msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
 msgid "Failed to load sqstore service.  Check your configuration!\n"
 msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
 
-#: src/applications/fragmentation/fragmentation.c:578
+#: src/applications/fragmentation/fragmentation.c:579
 msgid "# messages defragmented"
 msgstr "# defragmentierter Nachrichten"
 
-#: src/applications/fragmentation/fragmentation.c:580
+#: src/applications/fragmentation/fragmentation.c:581
 msgid "# messages fragmented"
 msgstr "# fragmentierter Nachrichten"
 
-#: src/applications/fragmentation/fragmentation.c:581
+#: src/applications/fragmentation/fragmentation.c:582
 msgid "# fragments discarded"
 msgstr "# verworfener Nachrichten"
 
-#: src/applications/fragmentation/fragmentation.c:592
+#: src/applications/fragmentation/fragmentation.c:593
 #, c-format
 msgid "`%s' registering handler %d\n"
 msgstr "`%s' registriert Handler %d\n"
@@ -1329,244 +1334,244 @@ msgstr ""
 #: src/applications/vpn/gnunet-vpn.c:149
 #: src/applications/stats/gnunet-stats.c:121
 #: src/applications/tbench/gnunet-tbench.c:126
-#: src/applications/tracekit/gnunet-tracekit.c:325
+#: src/applications/tracekit/gnunet-tracekit.c:407
 #: src/applications/template/gnunet-template.c:95
 #, c-format
 msgid "Error establishing connection with gnunetd.\n"
 msgstr "Fehler beim Aufbauen einer Verbindung mit gnunetd.\n"
 
-#: src/applications/vpn/vpn.c:368
+#: src/applications/vpn/vpn.c:369
 #, c-format
 msgid "Not storing route to myself from peer %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:379
+#: src/applications/vpn/vpn.c:380
 #, c-format
 msgid "Duplicate route to node from peer %d, choosing minimum hops"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:412
+#: src/applications/vpn/vpn.c:413
 #, c-format
 msgid "Inserting route from peer %d in route table at location %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:468
+#: src/applications/vpn/vpn.c:469
 #, c-format
 msgid "RFC4193 Frame length %d is too big for GNUnet!\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:475
+#: src/applications/vpn/vpn.c:476
 #, c-format
 msgid "RFC4193 Frame length %d too small\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:491
+#: src/applications/vpn/vpn.c:492
 #, c-format
 msgid "RFC4193 Ethertype %x and IP version %x do not match!\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:563
+#: src/applications/vpn/vpn.c:564
 #, c-format
 msgid "RFC4193 Going to try and make a tunnel in slot %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:569
+#: src/applications/vpn/vpn.c:570
 #, c-format
 msgid "Cannot open tunnel device because of %s"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:606
+#: src/applications/vpn/vpn.c:607
 #, c-format
 msgid "RFC4193 Create skips gnu%d as we are already using it\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:621
+#: src/applications/vpn/vpn.c:622
 #, c-format
 msgid "Cannot set tunnel name to %s because of %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:631
+#: src/applications/vpn/vpn.c:632
 #, c-format
 msgid "Configured tunnel name to %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:673
+#: src/applications/vpn/vpn.c:674
 #, c-format
 msgid "Cannot get socket flags for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:683
+#: src/applications/vpn/vpn.c:684
 #, c-format
 msgid "Cannot set socket flags for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:693
+#: src/applications/vpn/vpn.c:694
 #, c-format
 msgid "Cannot set MTU for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:701
+#: src/applications/vpn/vpn.c:702
 #, c-format
 msgid "Cannot get interface index for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:715
+#: src/applications/vpn/vpn.c:716
 #, c-format
 msgid "IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:730
+#: src/applications/vpn/vpn.c:731
 #, fuzzy, c-format
 msgid "Cannot set interface IPv6 address for gnu%d because %s\n"
 msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
 
-#: src/applications/vpn/vpn.c:746
+#: src/applications/vpn/vpn.c:747
 #, c-format
 msgid "IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:760
+#: src/applications/vpn/vpn.c:761
 #, fuzzy, c-format
 msgid "Cannot add route IPv6 address for gnu%s because %s\n"
 msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
 
-#: src/applications/vpn/vpn.c:803
+#: src/applications/vpn/vpn.c:804
 msgid ""
 "RFC4193 We have run out of memory and so I can't store a tunnel for this "
 "peer.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:853
+#: src/applications/vpn/vpn.c:854
 #, c-format
 msgid "RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:932
+#: src/applications/vpn/vpn.c:933
 #, c-format
 msgid "VPN dropping connection %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:941
+#: src/applications/vpn/vpn.c:942
 #, c-format
 msgid "VPN cannot drop connection %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:961
+#: src/applications/vpn/vpn.c:962
 msgid "RFC4193 Thread exiting\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1010
+#: src/applications/vpn/vpn.c:1011
 msgid "VPN IP src not anonymous. drop..\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1018
+#: src/applications/vpn/vpn.c:1019
 msgid "VPN IP not anonymous, drop.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1027
+#: src/applications/vpn/vpn.c:1028
 msgid "VPN Received, not anonymous, drop.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1032
+#: src/applications/vpn/vpn.c:1033
 #, fuzzy, c-format
 msgid "VPN Received unknown IP version %d...\n"
 msgstr "Es wurde eine unbekannte Testbed Nachricht des Typs %u empfangen.\n"
 
-#: src/applications/vpn/vpn.c:1043
+#: src/applications/vpn/vpn.c:1044
 #, c-format
 msgid "<- GNUnet(%d) : %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1071
+#: src/applications/vpn/vpn.c:1072
 msgid "Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1092
+#: src/applications/vpn/vpn.c:1093
 msgid "Receive route request\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1099
+#: src/applications/vpn/vpn.c:1100
 #, c-format
 msgid "Prepare route announcement level %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1117
+#: src/applications/vpn/vpn.c:1118
 #, c-format
 msgid "Send route announcement %d with route announce\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1123
+#: src/applications/vpn/vpn.c:1124
 #, c-format
 msgid "Send outside table info %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1140
+#: src/applications/vpn/vpn.c:1141
 msgid "Receive route announce.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1146
+#: src/applications/vpn/vpn.c:1147
 msgid "Going to try insert route into local table.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1152
+#: src/applications/vpn/vpn.c:1153
 #, c-format
 msgid "Inserting with hops %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1173
+#: src/applications/vpn/vpn.c:1174
 #, c-format
 msgid "Request level %d from peer %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1191
+#: src/applications/vpn/vpn.c:1192
 #, c-format
 msgid "Receive table limit on peer reached %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1223
+#: src/applications/vpn/vpn.c:1224
 msgid "realise alloc ram\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1244
+#: src/applications/vpn/vpn.c:1245
 msgid "realise add routes\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1296
+#: src/applications/vpn/vpn.c:1297
 msgid "realise pull routes\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1350
+#: src/applications/vpn/vpn.c:1351
 msgid "realise copy table\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1383
+#: src/applications/vpn/vpn.c:1384
 msgid "Cannot store client info\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1723
+#: src/applications/vpn/vpn.c:1724
 #, fuzzy, c-format
 msgid "`%s' initialising RFC4913 module  %d and %d\n"
 msgstr "`%s' registriert Handler %d und %d\n"
 
-#: src/applications/vpn/vpn.c:1728
+#: src/applications/vpn/vpn.c:1729
 #, c-format
 msgid "RFC4193 my First 4 hex digits of host id are %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1817
+#: src/applications/vpn/vpn.c:1819
 #, fuzzy
 msgid "enables IPv6 over GNUnet (incomplete)"
 msgstr "Ermöglicht P2P-Chat"
 
-#: src/applications/vpn/vpn.c:1851
+#: src/applications/vpn/vpn.c:1853
 msgid "RFC4193 Waiting for tun thread to end\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1866
+#: src/applications/vpn/vpn.c:1868
 msgid "RFC4193 The tun thread has ended\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1884
+#: src/applications/vpn/vpn.c:1886
 #, c-format
 msgid "RFC4193 Closing tunnel %d fd %d\n"
 msgstr ""
@@ -2247,22 +2252,22 @@ msgstr ""
 msgid "# blocks pushed into DHT"
 msgstr ""
 
-#: src/applications/fs/module/querymanager.c:234
+#: src/applications/fs/module/querymanager.c:235
 #, fuzzy
 msgid "# FS currently tracked queries from clients"
 msgstr "# Client Trace-Antworten gesendet"
 
-#: src/applications/fs/module/querymanager.c:236
+#: src/applications/fs/module/querymanager.c:237
 msgid "# FS replies passed to clients"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:330
+#: src/applications/fs/module/ondemand.c:331
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr ""
 "Indizierte Datei ist verschwunden, Block für Anfrage `%s' wird gelöscht\n"
 
-#: src/applications/fs/module/ondemand.c:431
+#: src/applications/fs/module/ondemand.c:432
 #, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -2273,7 +2278,7 @@ msgstr ""
 "aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie "
 "löschen, da Ihr Index nun ungültige Referenzen enthält!\n"
 
-#: src/applications/fs/module/ondemand.c:457
+#: src/applications/fs/module/ondemand.c:458
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
@@ -2282,11 +2287,11 @@ msgstr ""
 "Die Konfigurationsdatei muss ein Verzeichnis für die Speicherung von FS "
 "Daten in der Sektion `%s' unter `%s' angeben.\n"
 
-#: src/applications/fs/module/ondemand.c:514
+#: src/applications/fs/module/ondemand.c:515
 msgid "Indexed content changed (does not match its hash).\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:668
+#: src/applications/fs/module/ondemand.c:669
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
@@ -2294,7 +2299,7 @@ msgstr ""
 "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/module/fs.c:1204
+#: src/applications/fs/module/fs.c:1228
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -2303,34 +2308,34 @@ msgstr ""
 "Sie müssen für `%s' in der Sektion `%s' der Konfigurationsdatei eine "
 "positive Zahl angeben.\n"
 
-#: src/applications/fs/module/fs.c:1219
+#: src/applications/fs/module/fs.c:1243
 msgid "# FS expired replies dropped"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1221
+#: src/applications/fs/module/fs.c:1245
 #, fuzzy
 msgid "# FS valid replies received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/applications/fs/module/fs.c:1257
+#: src/applications/fs/module/fs.c:1281
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1314
+#: src/applications/fs/module/fs.c:1338
 msgid "enables (anonymous) file-sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
 
-#: src/applications/fs/module/migration.c:381
+#: src/applications/fs/module/migration.c:382
 msgid "# blocks migrated"
 msgstr "# Blöcke migriert"
 
-#: src/applications/fs/module/migration.c:383
+#: src/applications/fs/module/migration.c:384
 #, fuzzy
 msgid "# blocks fetched for migration"
 msgstr "# Blöcke migriert"
 
-#: src/applications/fs/module/migration.c:386
+#: src/applications/fs/module/migration.c:387
 msgid "# on-demand block migration attempts"
 msgstr ""
 
@@ -2439,7 +2444,7 @@ msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufügen...\n"
 msgid "Cannot open file `%s': `%s'"
 msgstr "Konfigurationsdatei `%s' konnte nicht geöffnet werden.\n"
 
-#: src/applications/fs/ecrs/upload.c:309
+#: src/applications/fs/ecrs/upload.c:310
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Indizierung der Daten schlug an Position %i fehl.\n"
@@ -2501,7 +2506,7 @@ msgstr ""
 "Veröffentlichungsdatum für periodisch aktualisierten Inhalt ist mehr als "
 "eine Woche früher als geplant.\n"
 
-#: src/applications/testing/testing.c:247
+#: src/applications/testing/testing.c:267
 #, fuzzy, c-format
 msgid "Waiting for peers to connect"
 msgstr ""
@@ -2595,82 +2600,82 @@ msgstr "Hellos+PING konnten nicht gesendet werden, Ping Puffer ist voll.\n"
 msgid "Failed to create an advertisement for this peer. Will not send PING.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:601
+#: src/applications/advertising/advertising.c:604
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr "Transport %d wird ausgewählten anderen Knoten bekannt gegeben.\n"
 
-#: src/applications/advertising/advertising.c:610
+#: src/applications/advertising/advertising.c:613
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr ""
 "Bekanntmachung von uns zwecklos: bis jetzt sind uns keine anderen Knoten "
 "bekannt.\n"
 
-#: src/applications/advertising/advertising.c:887
-msgid "# Peer advertisements received"
-msgstr "# Knotenankündigungen empfangen"
-
 #: src/applications/advertising/advertising.c:890
-#, fuzzy
-msgid "# Peer advertisements of type NAT received"
+msgid "# Peer advertisements received"
 msgstr "# Knotenankündigungen empfangen"
 
 #: src/applications/advertising/advertising.c:893
 #, fuzzy
-msgid "# Peer advertisements confirmed via PONG"
+msgid "# Peer advertisements of type NAT received"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:897
+#: src/applications/advertising/advertising.c:896
 #, fuzzy
-msgid "# Peer advertisements updating earlier HELLOs"
+msgid "# Peer advertisements confirmed via PONG"
 msgstr "# Knotenankündigungen empfangen"
 
 #: src/applications/advertising/advertising.c:900
 #, fuzzy
+msgid "# Peer advertisements updating earlier HELLOs"
+msgstr "# Knotenankündigungen empfangen"
+
+#: src/applications/advertising/advertising.c:903
+#, fuzzy
 msgid "# Peer advertisements discarded due to load"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:904
+#: src/applications/advertising/advertising.c:907
 #, fuzzy
 msgid "# Peer advertisements for unsupported transport"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:908
+#: src/applications/advertising/advertising.c:911
 #, fuzzy
 msgid "# Peer advertisements not confirmed due to ping busy"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:912
+#: src/applications/advertising/advertising.c:915
 #, fuzzy
 msgid "# Peer advertisements not confirmed due to lack of self ad"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:916
+#: src/applications/advertising/advertising.c:919
 #, fuzzy
 msgid "# Peer advertisements not confirmed due to send error"
 msgstr "# Knotenankündigungen empfangen"
 
-#: src/applications/advertising/advertising.c:918
+#: src/applications/advertising/advertising.c:921
 msgid "# Self advertisments transmitted"
 msgstr "# Selbstbekanntmachungen übertragen"
 
-#: src/applications/advertising/advertising.c:920
+#: src/applications/advertising/advertising.c:923
 msgid "# Foreign advertisements forwarded"
 msgstr "# Bekanntmachungen von anderen übertragen"
 
-#: src/applications/advertising/advertising.c:922
-#: src/applications/pingpong/pingpong.c:527
+#: src/applications/advertising/advertising.c:925
+#: src/applications/pingpong/pingpong.c:532
 msgid "# plaintext PING messages sent"
 msgstr "# Klartext PING Nachrichten gesendet"
 
-#: src/applications/advertising/advertising.c:928
-#: src/applications/session/connect.c:953
+#: src/applications/advertising/advertising.c:931
+#: src/applications/session/connect.c:971
 #, c-format
 msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr "`%s' registriert Handler %d (Plaintext und Ciphertext)\n"
 
-#: src/applications/advertising/advertising.c:944
+#: src/applications/advertising/advertising.c:948
 msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
@@ -2756,9 +2761,9 @@ msgid "# bytes in datastore"
 msgstr "# bytes in der Datenbank"
 
 #: src/applications/pingpong/pingpong.c:134
-#: src/applications/pingpong/pingpong.c:205
-#: src/applications/pingpong/pingpong.c:273
-#: src/applications/pingpong/pingpong.c:345
+#: src/applications/pingpong/pingpong.c:207
+#: src/applications/pingpong/pingpong.c:276
+#: src/applications/pingpong/pingpong.c:348
 #, c-format
 msgid "Received malformed `%s' message. Dropping.\n"
 msgstr "Beschädigte `%s' Nachricht empfangen. Nachricht wird verworfen.\n"
@@ -2767,12 +2772,12 @@ msgstr "Beschädigte `%s' Nachricht empfangen. Nachricht wird verworfen.\n"
 msgid "Received ping for another peer. Dropping.\n"
 msgstr "Ping für einen anderen Knoten empfangen. Ping wird verworfen.\n"
 
-#: src/applications/pingpong/pingpong.c:216
+#: src/applications/pingpong/pingpong.c:218
 msgid "Received PING not destined for us!\n"
 msgstr "Empfangener PING ist nicht an uns gerichtet!\n"
 
-#: src/applications/pingpong/pingpong.c:315
-#: src/applications/pingpong/pingpong.c:381
+#: src/applications/pingpong/pingpong.c:318
+#: src/applications/pingpong/pingpong.c:384
 msgid ""
 "Could not match PONG against any PING. Try increasing MAX_PING_PONG "
 "constant.\n"
@@ -2780,49 +2785,49 @@ msgstr ""
 "PONG konnte keinem PING zugeordnet werden. Versuchen Sie die Konstante "
 "MAX_PING_PONG hochzusetzen.\n"
 
-#: src/applications/pingpong/pingpong.c:425
+#: src/applications/pingpong/pingpong.c:428
 msgid "Cannot create PING, table full. Try increasing MAX_PING_PONG.\n"
 msgstr ""
 "PING konnte nicht erstellt werden, da die Tabelle voll ist. Versuchen Sie, "
 "die Konstante MAX_PING_PONG hochzusetzen.\n"
 
-#: src/applications/pingpong/pingpong.c:517
+#: src/applications/pingpong/pingpong.c:522
 msgid "# encrypted PONG messages received"
 msgstr "# verschlüsselter PONG Nachrichten empfangen"
 
-#: src/applications/pingpong/pingpong.c:519
+#: src/applications/pingpong/pingpong.c:524
 msgid "# plaintext PONG messages received"
 msgstr "# Klartext PONG Nachrichten empfangen"
 
-#: src/applications/pingpong/pingpong.c:521
+#: src/applications/pingpong/pingpong.c:526
 msgid "# encrypted PING messages received"
 msgstr "# verschlüsselter PING Nachrichten empfangen"
 
-#: src/applications/pingpong/pingpong.c:523
+#: src/applications/pingpong/pingpong.c:528
 msgid "# PING messages created"
 msgstr "# PING Nachrichten erstellt"
 
-#: src/applications/pingpong/pingpong.c:525
-#: src/applications/session/connect.c:947
+#: src/applications/pingpong/pingpong.c:530
+#: src/applications/session/connect.c:965
 msgid "# encrypted PONG messages sent"
 msgstr "# verschlüsselter PONG Nachrichten gesendet"
 
-#: src/applications/pingpong/pingpong.c:529
-#: src/applications/session/connect.c:945
+#: src/applications/pingpong/pingpong.c:534
+#: src/applications/session/connect.c:963
 msgid "# encrypted PING messages sent"
 msgstr "# verschlüsselter PING Nachrichten gesendet"
 
-#: src/applications/pingpong/pingpong.c:531
+#: src/applications/pingpong/pingpong.c:536
 #, fuzzy
 msgid "# plaintext PONG messages sent"
 msgstr "# Klartext PING Nachrichten gesendet"
 
-#: src/applications/pingpong/pingpong.c:535
+#: src/applications/pingpong/pingpong.c:540
 #, fuzzy
 msgid "# plaintext PONG transmissions failed"
 msgstr "# Klartext PONG Nachrichten empfangen"
 
-#: src/applications/pingpong/pingpong.c:545
+#: src/applications/pingpong/pingpong.c:550
 #, c-format
 msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
 msgstr "`%s' registriert Handler %d %d (Plaintext und Ciphertext)\n"
@@ -2840,34 +2845,34 @@ msgstr ""
 "Sitzungsschlüssel kann nicht verschlüsselt werden, Knoten `%s' ist uns nicht "
 "bekannt!\n"
 
-#: src/applications/session/connect.c:512
+#: src/applications/session/connect.c:514
 #, fuzzy
 msgid "Could not create any HELLO for myself!\n"
 msgstr "Hostkey konnte nicht erzeugt werden!\n"
 
-#: src/applications/session/connect.c:615
+#: src/applications/session/connect.c:622
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' has invalid format (discarded).\n"
 msgstr "Empfangene Nachricht ist ungültig.\n"
 
-#: src/applications/session/connect.c:649
+#: src/applications/session/connect.c:656
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
 msgstr "Empfangene Nachricht ist ungültig.\n"
 
-#: src/applications/session/connect.c:683
+#: src/applications/session/connect.c:690
 #, c-format
 msgid "Invalid `%s' message received from peer `%s'.\n"
 msgstr "Ungültige `%s' Nachricht von Knoten `%s' empfangen.\n"
 
-#: src/applications/session/connect.c:694
+#: src/applications/session/connect.c:701
 #, c-format
 msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
 msgstr ""
 "setkey `%s' von `%s' hat eine ungültige CRC Prüfsumme (tatsächlich: %u, "
 "erwartet: %u).\n"
 
-#: src/applications/session/connect.c:763
+#: src/applications/session/connect.c:772
 #, fuzzy, c-format
 msgid ""
 "Error parsing encrypted session key from `%s', given message part size is "
@@ -2876,24 +2881,24 @@ msgstr ""
 "Fehler beim Parsen des Verschlüsselten Sitzungsschlüssels, gegebene "
 "Nachrichtenteilgröße ist ungültig.\n"
 
-#: src/applications/session/connect.c:776
+#: src/applications/session/connect.c:785
 #, fuzzy, c-format
 msgid "Unknown type in embedded message from `%s': %u (size: %u)\n"
 msgstr "Unbekannter Typ in engebetteter Nachricht: %u (%u bytes)\n"
 
-#: src/applications/session/connect.c:937
+#: src/applications/session/connect.c:955
 msgid "# session keys sent"
 msgstr "# Sitzungsschlüssel gesendet"
 
-#: src/applications/session/connect.c:939
+#: src/applications/session/connect.c:957
 msgid "# session keys rejected"
 msgstr "# Sitzungsschlüssel abgelehnt"
 
-#: src/applications/session/connect.c:941
+#: src/applications/session/connect.c:959
 msgid "# session keys accepted"
 msgstr "# Sitzungsschlüssel akzeptiert"
 
-#: src/applications/session/connect.c:943
+#: src/applications/session/connect.c:961
 msgid "# sessions established"
 msgstr "# Sitzungen aufgebaut"
 
@@ -2994,13 +2999,13 @@ msgstr ""
 msgid "Peer `%s' is currently blacklisted (for another %llums).\n"
 msgstr ""
 
-#: src/applications/testbed/commands.c:1179
+#: src/applications/testbed/commands.c:1177
 #: src/applications/stats/gnunet-stats.c:61
 #, c-format
 msgid "Supported peer-to-peer messages:\n"
 msgstr "unterstützte Peer-to-Peer Nachrichten:\n"
 
-#: src/applications/testbed/commands.c:1181
+#: src/applications/testbed/commands.c:1179
 #: src/applications/stats/gnunet-stats.c:64
 #, c-format
 msgid "Supported client-server messages:\n"
@@ -3069,7 +3074,7 @@ msgid "Received unknown testbed message of type %u.\n"
 msgstr "Es wurde eine unbekannte Testbed Nachricht des Typs %u empfangen.\n"
 
 #: src/applications/testbed/testbed.c:82
-#: src/applications/testbed/testbed.c:848
+#: src/applications/testbed/testbed.c:847
 #, c-format
 msgid "size of `%s' message is too short. Ignoring.\n"
 msgstr "Größe der `%s' Nachricht ist zu kurz. Nachricht wird ignoriert.\n"
@@ -3085,70 +3090,70 @@ msgid "TESTBED could not generate hello message for protocol %u\n"
 msgstr ""
 "Das TESTBED konnte keine Hello Nachricht für das Protokoll %u erzeugen\n"
 
-#: src/applications/testbed/testbed.c:223
-#: src/applications/testbed/testbed.c:268
-#: src/applications/testbed/testbed.c:381
-#: src/applications/testbed/testbed.c:390
-#: src/applications/testbed/testbed.c:434
-#: src/applications/testbed/testbed.c:443
+#: src/applications/testbed/testbed.c:224
+#: src/applications/testbed/testbed.c:269
+#: src/applications/testbed/testbed.c:382
+#: src/applications/testbed/testbed.c:391
+#: src/applications/testbed/testbed.c:435
+#: src/applications/testbed/testbed.c:444
 #, c-format
 msgid "received invalid `%s' message\n"
 msgstr "ungültige `%s' Nachricht empfangen\n"
 
-#: src/applications/testbed/testbed.c:240
-#: src/applications/testbed/testbed.c:284
+#: src/applications/testbed/testbed.c:241
+#: src/applications/testbed/testbed.c:285
 #, c-format
 msgid "received invalid `%s' message (empty module name)\n"
 msgstr "ungültige `%s' Nachricht empfangen (leerer Modulname)\n"
 
-#: src/applications/testbed/testbed.c:247
+#: src/applications/testbed/testbed.c:248
 #, c-format
 msgid "loading module `%s' failed.  Notifying client.\n"
 msgstr "das Laden von Modul `%s' schlug fehl. Client wird benachrichtigt.\n"
 
-#: src/applications/testbed/testbed.c:291
+#: src/applications/testbed/testbed.c:292
 msgid "unloading module failed.  Notifying client.\n"
 msgstr "das Entladen des Moduls schlug fehl. Client wird benachrichtigt.\n"
 
-#: src/applications/testbed/testbed.c:576
+#: src/applications/testbed/testbed.c:577
 #, c-format
 msgid "`%s' %s failed: %s\n"
 msgstr "`%s' %s schlug fehl: %s\n"
 
-#: src/applications/testbed/testbed.c:658
+#: src/applications/testbed/testbed.c:659
 #, c-format
 msgid "received invalid `%s' message: %s.\n"
 msgstr "ungültige `%s' Nachricht empfangen: %s.\n"
 
-#: src/applications/testbed/testbed.c:861
+#: src/applications/testbed/testbed.c:860
 #, c-format
 msgid "'..' is not allowed in file name (%s).\n"
 msgstr "'..' ist nicht erlaubt in einem Dateinamen (%s).\n"
 
-#: src/applications/testbed/testbed.c:872
+#: src/applications/testbed/testbed.c:871
 msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
 msgstr "Leerer Dateiname für UPLOAD_FILE Nachricht ist ungültig!\n"
 
-#: src/applications/testbed/testbed.c:881
+#: src/applications/testbed/testbed.c:880
 msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
 msgstr ""
 "Dateiname für UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungültig!)\n"
 
-#: src/applications/testbed/testbed.c:889
+#: src/applications/testbed/testbed.c:888
 msgid "Upload refused!"
 msgstr "Upload abgewiesen!"
 
-#: src/applications/testbed/testbed.c:919
+#: src/applications/testbed/testbed.c:918
 #, c-format
 msgid "Invalid message received at %s:%d."
 msgstr "Ungültige Nachricht empfangen bei %s:%d."
 
-#: src/applications/testbed/testbed.c:1041
+#: src/applications/testbed/testbed.c:1040
 #, c-format
 msgid "received invalid testbed message of size %u\n"
 msgstr "ungültige Testbed Nachricht der Größe %u empfangen\n"
 
-#: src/applications/testbed/testbed.c:1064
+#: src/applications/testbed/testbed.c:1063
 #, c-format
 msgid ""
 "Received testbed message of type %u but unexpected size %u, expected %u\n"
@@ -3156,45 +3161,45 @@ msgstr ""
 "Empfangene Testbed Nachricht des Typs %u hat die unerwartete Größe %u, es "
 "wurde %u erwartet\n"
 
-#: src/applications/testbed/testbed.c:1110
+#: src/applications/testbed/testbed.c:1109
 msgid "No testbed URL given, not registered.\n"
 msgstr ""
 "Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n"
 
-#: src/applications/testbed/testbed.c:1121
+#: src/applications/testbed/testbed.c:1120
 #, c-format
 msgid "Could not resolve name of HTTP proxy `%s'.\n"
 msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelöst werden.\n"
 
-#: src/applications/testbed/testbed.c:1151
+#: src/applications/testbed/testbed.c:1150
 #, c-format
 msgid "Invalid URL `%s' (must begin with `%s')\n"
 msgstr "Ungültige URL `%s' (muss mit `%s' beginnen)\n"
 
-#: src/applications/testbed/testbed.c:1194
+#: src/applications/testbed/testbed.c:1193
 #, c-format
 msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
 msgstr ""
 "Beschädigte HTTP URL: `%s' bei `%s'. Testbed-Client wurde nicht "
 "registriert.\n"
 
-#: src/applications/testbed/testbed.c:1229
+#: src/applications/testbed/testbed.c:1228
 #, c-format
 msgid "Could not register testbed, host `%s' unknown\n"
 msgstr ""
 "Testbed konnte nicht registriert werden, Host `%s' ist nicht bekannt.\n"
 
-#: src/applications/testbed/testbed.c:1251
+#: src/applications/testbed/testbed.c:1250
 #, c-format
 msgid "Failed to send HTTP request to host `%s': %s\n"
 msgstr "HTTP Anfrage konnte nicht an Host `%s' gesendet werden: %s\n"
 
-#: src/applications/testbed/testbed.c:1289
+#: src/applications/testbed/testbed.c:1288
 #, c-format
 msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
 msgstr "Fehler beim Senden der HTTP Anfrage `%s' an Host `%s': %s\n"
 
-#: src/applications/testbed/testbed.c:1327
+#: src/applications/testbed/testbed.c:1326
 msgid "Exit register (error: no http response read).\n"
 msgstr "Abbruch der Registrierung (Fehler: keine HTTP Antwort gelesen).\n"
 
@@ -3233,29 +3238,29 @@ msgstr "Kein Transport des Typs %d bekannt.\n"
 msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:760
+#: src/applications/transport/transport.c:761
 #, fuzzy, c-format
 msgid "Loading transports `%s'\n"
 msgstr "Teste Transport(e) %s\n"
 
-#: src/applications/transport/transport.c:780
+#: src/applications/transport/transport.c:781
 #, fuzzy, c-format
 msgid "Could not load transport plugin `%s'\n"
 msgstr "Anwendung `%s' konnte nicht initialisiert werden.\n"
 
-#: src/applications/transport/transport.c:794
+#: src/applications/transport/transport.c:795
 #, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
 msgstr ""
 "Transport Bibliothek `%s' stellt nicht die benötigte Funktion '%s%s' zur "
 "Verfügung.\n"
 
-#: src/applications/transport/transport.c:823
+#: src/applications/transport/transport.c:824
 #, fuzzy, c-format
 msgid "Loaded transport `%s'\n"
 msgstr "Verfügbare(r) Transport(e): %s\n"
 
-#: src/applications/transport/transport.c:835
+#: src/applications/transport/transport.c:836
 #, c-format
 msgid "I am peer `%s'.\n"
 msgstr "Ich bin Peer `%s'.\n"
@@ -3368,7 +3373,7 @@ msgstr "# Bytes Rauschen empfangen"
 msgid "# plibc handles"
 msgstr ""
 
-#: src/applications/stats/statistics.c:421
+#: src/applications/stats/statistics.c:422
 #, fuzzy, c-format
 msgid "`%s' registering client handlers %d %d %d and p2p handler %d\n"
 msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
@@ -3387,7 +3392,7 @@ msgid "Error reading information from gnunetd.\n"
 msgstr "Fehler beim Lesen von Informationen von gnunetd.\n"
 
 #: src/applications/tbench/gnunet-tbench.c:63
-#: src/applications/tracekit/gnunet-tracekit.c:54
+#: src/applications/tracekit/gnunet-tracekit.c:357
 msgid "Start GNUnet transport benchmarking tool."
 msgstr "GNUnet Transport Benchmarking Werkzeug starten."
 
@@ -3498,7 +3503,7 @@ msgstr ""
 "\n"
 "Es wurde keine Nachricht von gnunetd empfangen. Läuft gnunetd?\n"
 
-#: src/applications/tbench/tbench.c:420
+#: src/applications/tbench/tbench.c:421
 msgid "allows profiling of direct peer-to-peer connections"
 msgstr "Ermöglicht das Untersuchen direkter Peer-to-Peer Verbindungen"
 
@@ -3531,24 +3536,35 @@ msgstr ""
 msgid "Running benchmark...\n"
 msgstr "Benchmark läuft...\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:47
+#: src/applications/tracekit/gnunet-tracekit.c:104
+#, c-format
+msgid "`%s' connected to `%s'.\n"
+msgstr "`%s' hat sich mit `%s' verbunden.\n"
+
+#: src/applications/tracekit/gnunet-tracekit.c:110
+#, c-format
+msgid "`%s' is not connected to any peer.\n"
+msgstr "`%s' ist zu keinem Knoten verbunden.\n"
+
+#: src/applications/tracekit/gnunet-tracekit.c:350
 msgid "probe network to the given DEPTH"
 msgstr "Netzwerk bis zur angegebenen Tiefe DEPTH sondieren"
 
-#: src/applications/tracekit/gnunet-tracekit.c:51
+#: src/applications/tracekit/gnunet-tracekit.c:354
 msgid ""
 "specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
 msgstr "Gibt das Ausgabeformat an: 0 für menschen-lesbar, 1 für dot, 2 für vcg"
 
-#: src/applications/tracekit/gnunet-tracekit.c:58
-msgid "use PRIO for the priority of the trace request"
+#: src/applications/tracekit/gnunet-tracekit.c:361
+#, fuzzy
+msgid "use PRIORITY for the priority of the trace request"
 msgstr "PRIO als Priorität für die Trace Anfragen verwenden"
 
-#: src/applications/tracekit/gnunet-tracekit.c:62
+#: src/applications/tracekit/gnunet-tracekit.c:365
 msgid "wait DELAY seconds for replies"
 msgstr "DELAY Sekunden auf Antworten warten"
 
-#: src/applications/tracekit/gnunet-tracekit.c:110
+#: src/applications/tracekit/gnunet-tracekit.c:399
 #, c-format
 msgid ""
 "Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for "
@@ -3557,56 +3573,31 @@ msgstr ""
 "Formatangabe ungültig. Verwenden Sie 0 für menschen-lesbar, 1 für dot und 2 "
 "für vcg.\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:164
-#, c-format
-msgid "`%s' is not connected to any peer.\n"
-msgstr "`%s' ist zu keinem Knoten verbunden.\n"
-
-#: src/applications/tracekit/gnunet-tracekit.c:207
-#, c-format
-msgid "`%s' connected to `%s'.\n"
-msgstr "`%s' hat sich mit `%s' verbunden.\n"
-
-#: src/applications/tracekit/gnunet-tracekit.c:220
-#, c-format
-msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
-msgstr ""
-"Formatangabe ungültig. Verwenden Sie 0 für menschen-lesbar und 1 für dot\n"
-
-#: src/applications/tracekit/gnunet-tracekit.c:246
-#, c-format
-msgid "Peer `%s' did not report back.\n"
-msgstr "Knoten `%s' hat sich nicht zurückgemeldet.\n"
-
-#: src/applications/tracekit/gnunet-tracekit.c:348
-msgid "Could not send request to gnunetd.\n"
-msgstr "Anfrage konnte nicht an gnunetd gesendet werden.\n"
-
 #: src/applications/tracekit/tracekit.c:74
-#: src/applications/tracekit/tracekit.c:216
+#: src/applications/tracekit/tracekit.c:217
 #, c-format
 msgid "Received invalid `%s' message from `%s'.\n"
 msgstr "Ungültige `%s' Anfrage von `%s' empfangen.\n"
 
-#: src/applications/tracekit/tracekit.c:283
+#: src/applications/tracekit/tracekit.c:284
 msgid "TRACEKIT: routing table full, trace request dropped\n"
 msgstr "TRACEKIT: Routing-Tabelle ist voll, Trace-Anfrage wird verworfen\n"
 
-#: src/applications/tracekit/tracekit.c:362
+#: src/applications/tracekit/tracekit.c:363
 #, c-format
 msgid "TRACEKIT: received invalid `%s' message\n"
 msgstr "TRACEKIT: ungültige `%s' Nachricht empfangen\n"
 
-#: src/applications/tracekit/tracekit.c:462
+#: src/applications/tracekit/tracekit.c:464
 msgid "allows mapping of the network topology"
 msgstr "Erlaubt die Kartographierung der Netzwerktopologie"
 
-#: src/applications/getoption/getoption.c:78
+#: src/applications/getoption/getoption.c:79
 #, c-format
 msgid "`%s' registering client handler %d\n"
 msgstr "`%s' registriert Client-Handler %d\n"
 
-#: src/applications/getoption/getoption.c:88
+#: src/applications/getoption/getoption.c:89
 msgid "allows clients to determine gnunetd's configuration"
 msgstr "Erlaubt es Clients die Konfiguration von gnunetd abzufragen"
 
@@ -3648,22 +3639,22 @@ msgstr "Dateien aus dem GNUnet herunterladen."
 msgid "# HELLOs downloaded via http"
 msgstr "# Hellos per HTTP heruntergeladen"
 
-#: src/applications/traffic/traffic.c:454
+#: src/applications/traffic/traffic.c:455
 #, c-format
 msgid "# bytes transmitted of type %d"
 msgstr "# Bytes des Typs %d übertragen"
 
-#: src/applications/traffic/traffic.c:470
+#: src/applications/traffic/traffic.c:471
 #, c-format
 msgid "# bytes received of type %d"
 msgstr "# Bytes des Typs %d empfangen"
 
-#: src/applications/traffic/traffic.c:489
+#: src/applications/traffic/traffic.c:490
 #, fuzzy, c-format
 msgid "# bytes received in plaintext of type %d"
 msgstr "# Bytes des Typs %d empfangen"
 
-#: src/applications/traffic/traffic.c:650
+#: src/applications/traffic/traffic.c:655
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr "Verfolgt die Bandbreitennutzung von gnunetd"
 
@@ -3688,88 +3679,88 @@ msgstr "`%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
 
-#: src/server/connection.c:2986
+#: src/server/connection.c:2991
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Nachricht von `%s' verworfen: ungültiges Format.\n"
 
-#: src/server/connection.c:3075
+#: src/server/connection.c:3080
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3097
+#: src/server/connection.c:3102
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:3608
+#: src/server/connection.c:3624
 msgid "# outgoing messages dropped"
 msgstr "# ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3611
+#: src/server/connection.c:3627
 msgid "# bytes of outgoing messages dropped"
 msgstr "# Bytes ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:3613
+#: src/server/connection.c:3629
 msgid "# connections closed (HANGUP sent)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3617
+#: src/server/connection.c:3633
 #, fuzzy
 msgid "# connections closed (transport issue)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:3620
+#: src/server/connection.c:3636
 msgid "# bytes encrypted"
 msgstr "# Bytes verschlüsselt"
 
-#: src/server/connection.c:3624
+#: src/server/connection.c:3640
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# Bytes des Typs %d übertragen"
 
-#: src/server/connection.c:3628
+#: src/server/connection.c:3644
 #, fuzzy
 msgid "# bytes received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/server/connection.c:3630
+#: src/server/connection.c:3646
 msgid "# bytes decrypted"
 msgstr "# Bytes entschlüsselt"
 
-#: src/server/connection.c:3631
+#: src/server/connection.c:3647
 msgid "# bytes noise sent"
 msgstr "# Bytes Rauschen gesendet"
 
-#: src/server/connection.c:3634
+#: src/server/connection.c:3650
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3637
+#: src/server/connection.c:3653
 #, fuzzy
 msgid "# total bytes per second receive limit"
 msgstr "# Bytes Rauschen empfangen"
 
-#: src/server/connection.c:3640
+#: src/server/connection.c:3656
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3644
+#: src/server/connection.c:3660
 msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
-#: src/server/connection.c:3648
+#: src/server/connection.c:3664
 #, fuzzy
 msgid "# total number of bytes we were allowed to sent"
 msgstr "Anzahl an Nachrichten in einem Nachrichtenblock"
 
-#: src/server/connection.c:3652
+#: src/server/connection.c:3668
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3655
+#: src/server/connection.c:3671
 msgid "# transports switched to stream transport"
 msgstr ""
 
@@ -3856,22 +3847,22 @@ msgstr "`%s': Hello konnte nicht erzeugt werden.\n"
 msgid "`%s': Could not connect.\n"
 msgstr "`%s': Verbindung konnte nicht hergestellt werden.\n"
 
-#: src/server/gnunet-transport-check.c:160
+#: src/server/gnunet-transport-check.c:162
 #, c-format
 msgid "`%s': Could not send.\n"
 msgstr "`%s': Kann nicht senden.\n"
 
-#: src/server/gnunet-transport-check.c:175
+#: src/server/gnunet-transport-check.c:177
 #, c-format
 msgid "`%s': Did not receive message within %llu ms.\n"
 msgstr "`%s': Nachricht wurde nicht innerhalb %llu ms empfangen.\n"
 
-#: src/server/gnunet-transport-check.c:188
+#: src/server/gnunet-transport-check.c:190
 #, c-format
 msgid "`%s': Could not disconnect.\n"
 msgstr "`%s': Verbindung konnte nicht getrennt werden.\n"
 
-#: src/server/gnunet-transport-check.c:195
+#: src/server/gnunet-transport-check.c:197
 #, fuzzy, c-format
 msgid ""
 "`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes "
@@ -3880,12 +3871,12 @@ msgstr ""
 "`%s' Transport funktioniert. Es dauerte %ums, um %d Nachrichten zu je %d "
 "Bytes zu übertragen.\n"
 
-#: src/server/gnunet-transport-check.c:226
+#: src/server/gnunet-transport-check.c:228
 #, fuzzy, c-format
 msgid " Transport %d is not being tested\n"
 msgstr " Transport %d ist nicht verfügbar\n"
 
-#: src/server/gnunet-transport-check.c:256
+#: src/server/gnunet-transport-check.c:258
 #, c-format
 msgid ""
 "\n"
@@ -3894,71 +3885,71 @@ msgstr ""
 "\n"
 "Kontaktiere `%s'."
 
-#: src/server/gnunet-transport-check.c:281
+#: src/server/gnunet-transport-check.c:283
 #, c-format
 msgid " Connection failed\n"
 msgstr " Verbindung fehlgeschlagen\n"
 
-#: src/server/gnunet-transport-check.c:287
+#: src/server/gnunet-transport-check.c:289
 #, c-format
 msgid " Connection failed (bug?)\n"
 msgstr " Verbindung fehlgeschlagen (Bug?)\n"
 
-#: src/server/gnunet-transport-check.c:325
+#: src/server/gnunet-transport-check.c:327
 #, c-format
 msgid "Timeout after %llums.\n"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:327
+#: src/server/gnunet-transport-check.c:329
 #, fuzzy, c-format
 msgid "OK!\n"
 msgstr "OK"
 
-#: src/server/gnunet-transport-check.c:352
+#: src/server/gnunet-transport-check.c:354
 msgid "Tool to test if GNUnet transport services are operational."
 msgstr ""
 "Werkzeug, mit dem getestet werden kann, ob die GNUnet Transport Dienste "
 "funktionsfähig sind."
 
-#: src/server/gnunet-transport-check.c:356
+#: src/server/gnunet-transport-check.c:358
 msgid "ping peers from HOSTLISTURL that match transports"
 msgstr "Knoten aus HOSTLISTURL anpingen, deren Transports passen"
 
-#: src/server/gnunet-transport-check.c:359
+#: src/server/gnunet-transport-check.c:361
 msgid "send COUNT messages"
 msgstr "COUNT Nachrichten versenden"
 
-#: src/server/gnunet-transport-check.c:362
+#: src/server/gnunet-transport-check.c:364
 msgid "send messages with SIZE bytes payload"
 msgstr "Nachrichten mit SIZE Bytes Nutzlast versenden"
 
-#: src/server/gnunet-transport-check.c:365
+#: src/server/gnunet-transport-check.c:367
 msgid "specifies which TRANSPORT should be tested"
 msgstr "Gibt an, welcher TRANSPORT getestet werden soll"
 
-#: src/server/gnunet-transport-check.c:368
+#: src/server/gnunet-transport-check.c:370
 msgid "specifies after how many MS to time-out"
 msgstr "Gibt an, nach wievielen MS die Zeit abgelaufen sein soll"
 
-#: src/server/gnunet-transport-check.c:371 src/server/gnunet-update.c:271
+#: src/server/gnunet-transport-check.c:373 src/server/gnunet-update.c:271
 msgid "run as user LOGIN"
 msgstr "als Benutzer LOGIN ausführen"
 
-#: src/server/gnunet-transport-check.c:376
+#: src/server/gnunet-transport-check.c:378
 msgid "repeat each test X times"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:440
+#: src/server/gnunet-transport-check.c:443
 #, c-format
 msgid "Testing transport(s) %s\n"
 msgstr "Teste Transport(e) %s\n"
 
-#: src/server/gnunet-transport-check.c:442
+#: src/server/gnunet-transport-check.c:445
 #, c-format
 msgid "Available transport(s): %s\n"
 msgstr "Verfügbare(r) Transport(e): %s\n"
 
-#: src/server/gnunet-transport-check.c:489
+#: src/server/gnunet-transport-check.c:493
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3972,12 +3963,12 @@ msgstr ""
 msgid "The `%s' request received from client is malformed.\n"
 msgstr "Die `%s' Anfrage, die vom Client empfangen wurde, ist beschädigt.\n"
 
-#: src/server/tcpserver.c:336
+#: src/server/tcpserver.c:337
 #, fuzzy, c-format
 msgid "`%s' failed for port %d. Is gnunetd already running?\n"
 msgstr "`%s' schlug fehl für Port %d: %s. Läuft gnunetd bereits?\n"
 
-#: src/server/tcpserver.c:411
+#: src/server/tcpserver.c:414
 #, c-format
 msgid ""
 "Malformed network specification in the configuration in section `%s' for "
@@ -3986,12 +3977,12 @@ msgstr ""
 "Beschädigte Netzwerkangabe in der Konfigurationsdatei in Sektion `%s' für "
 "Eintrag `%s': %s\n"
 
-#: src/server/tcpserver.c:468
+#: src/server/tcpserver.c:472
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%s schlug fehl, Nachrichten Typ %d ist bereits in Verwendung.\n"
 
-#: src/server/handler.c:431
+#: src/server/handler.c:437
 #, c-format
 msgid "Received corrupt message from peer `%s'in %s:%d.\n"
 msgstr "Beschädigte Nachricht von Knoten `%s' in %s:%d empfangen.\n"
@@ -4085,7 +4076,7 @@ msgstr "%p kann nicht freigegeben werden: Dienst ist nicht geladen\n"
 msgid "Could not properly shutdown application `%s'.\n"
 msgstr "Anwendung `%s' konnte nicht ordentlich heruntergefahren werden.\n"
 
-#: src/server/core.c:646
+#: src/server/core.c:650
 #, c-format
 msgid "Could not properly unload service `%s'!\n"
 msgstr "Dienst `%s' konnte nicht ordentlich entladen werden!\n"
@@ -6299,6 +6290,16 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr "Nils Durner and Christian Grothoff"
+
+#~ msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
+#~ msgstr ""
+#~ "Formatangabe ungültig. Verwenden Sie 0 für menschen-lesbar und 1 für dot\n"
+
+#~ msgid "Peer `%s' did not report back.\n"
+#~ msgstr "Knoten `%s' hat sich nicht zurückgemeldet.\n"
+
+#~ msgid "Could not send request to gnunetd.\n"
+#~ msgstr "Anfrage konnte nicht an gnunetd gesendet werden.\n"
 
 #~ msgid ""
 #~ "You must specify the name of a pipe for the SMTP transport in section `%"
