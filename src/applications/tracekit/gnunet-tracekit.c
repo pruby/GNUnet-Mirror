@@ -390,7 +390,6 @@ main (int argc, char *const *argv)
 {
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ThreadHandle * myThread;
-  struct GNUNET_GE_Context *ectx;
   struct GNUNET_CronManager *cron;
   void * unused;
 
