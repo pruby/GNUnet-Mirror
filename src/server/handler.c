@@ -82,7 +82,7 @@ static int bq_firstFree_;
 
 static int bq_firstFull_;
 
-static int threads_running = GNUNET_NO;
+static volatile int threads_running = GNUNET_NO;
 
 static struct GNUNET_Semaphore *bufferQueueRead_;
 
@@ -651,6 +651,12 @@ threadMain (void *cls)
 void
 core_receive (GNUNET_TransportPacket * mp)
 {
+  if (threads_running != GNUNET_YES) 
+    {
+      GNUNET_free (mp->msg);
+      GNUNET_free (mp);
+      return;
+    }
   if ((mp->tsession != NULL) &&
       (0 !=
        memcmp (&mp->sender, &mp->tsession->peer,
@@ -664,8 +670,7 @@ core_receive (GNUNET_TransportPacket * mp)
   if ((threads_running == GNUNET_NO) || (mainShutdownSignal != NULL))
     {
 #if TRACK_DISCARD
-      if (globalLock_ != NULL)
-        GNUNET_mutex_lock (globalLock_);
+      GNUNET_mutex_lock (globalLock_);
       discarded++;
       if (0 == discarded % 64)
         GNUNET_GE_LOG (ectx,
@@ -674,8 +679,7 @@ core_receive (GNUNET_TransportPacket * mp)
                        "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
                        accepted, discarded, blacklisted,
                        1.0 * accepted / (blacklisted + discarded + 1));
-      if (globalLock_ != NULL)
-        GNUNET_mutex_unlock (globalLock_);
+      GNUNET_mutex_unlock (globalLock_);
 #endif
     }
   /* check for blacklisting */
@@ -724,8 +728,7 @@ core_receive (GNUNET_TransportPacket * mp)
       GNUNET_free (mp->msg);
       GNUNET_free (mp);
 #if TRACK_DISCARD
-      if (globalLock_ != NULL)
-        GNUNET_mutex_lock (globalLock_);
+      GNUNET_mutex_lock (globalLock_);
       discarded++;
       if (0 == discarded % 64)
         GNUNET_GE_LOG (ectx,
@@ -734,8 +737,7 @@ core_receive (GNUNET_TransportPacket * mp)
                        "Accepted: %u discarded: %u blacklisted: %u, ratio: %f\n",
                        accepted, discarded, blacklisted,
                        1.0 * accepted / (blacklisted + discarded + 1));
-      if (globalLock_ != NULL)
-        GNUNET_mutex_unlock (globalLock_);
+      GNUNET_mutex_unlock (globalLock_);
 #endif
       return;
     }
@@ -771,12 +773,6 @@ enableCoreProcessing ()
 {
   int i;
 
-  globalLock_ = GNUNET_mutex_create (GNUNET_NO);
-  for (i = 0; i < QUEUE_LENGTH; i++)
-    bufferQueue_[i] = NULL;
-  bq_firstFree_ = 0;
-  bq_firstFull_ = 0;
-
   /* create message handling threads */
   threads_running = GNUNET_YES;
   for (i = 0; i < THREAD_COUNT; i++)
@@ -811,8 +807,6 @@ disableCoreProcessing ()
     }
   GNUNET_semaphore_destroy (mainShutdownSignal);
   mainShutdownSignal = NULL;
-  GNUNET_mutex_destroy (globalLock_);
-  globalLock_ = NULL;
 }
 
 /**
@@ -821,6 +815,8 @@ disableCoreProcessing ()
 void
 initHandler (struct GNUNET_GE_Context *e)
 {
+  int i;
+
   ectx = e;
   handlerLock = GNUNET_mutex_create (GNUNET_NO);
   transport = requestService ("transport");
@@ -830,6 +826,11 @@ initHandler (struct GNUNET_GE_Context *e)
   /* initialize sync mechanisms for message handling threads */
   bufferQueueRead_ = GNUNET_semaphore_create (0);
   bufferQueueWrite_ = GNUNET_semaphore_create (QUEUE_LENGTH);
+  globalLock_ = GNUNET_mutex_create (GNUNET_NO);
+  for (i = 0; i < QUEUE_LENGTH; i++)
+    bufferQueue_[i] = NULL;
+  bq_firstFree_ = 0;
+  bq_firstFull_ = 0;
 }
 
 /**
@@ -840,6 +841,8 @@ doneHandler ()
 {
   unsigned int i;
 
+  GNUNET_mutex_destroy (globalLock_);
+  globalLock_ = NULL;
   /* free datastructures */
   GNUNET_semaphore_destroy (bufferQueueRead_);
   bufferQueueRead_ = NULL;
