@@ -254,7 +254,8 @@ ONDEMAND_index (struct GNUNET_GE_Context *cectx,
 #if EXTRA_CHECKS
   {
     GNUNET_DatastoreValue *dsvalue;
-    if (GNUNET_OK != GNUNET_EC_file_block_encode (content, size, &key, &dsvalue))
+    if (GNUNET_OK !=
+        GNUNET_EC_file_block_encode (content, size, &key, &dsvalue))
       {
         GNUNET_GE_BREAK (cectx, 0);
         GNUNET_GE_BREAK (ectx, 0);
@@ -502,8 +503,8 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
     }
   CLOSE (fileHandle);
   ret = GNUNET_EC_file_block_encode (db,
-                         ntohl (odb->blockSize) + sizeof (DBlock),
-                         query, enc);
+                                     ntohl (odb->blockSize) + sizeof (DBlock),
+                                     query, enc);
   GNUNET_free (db);
   GNUNET_free (fn);
   if (ret == GNUNET_SYSERR)

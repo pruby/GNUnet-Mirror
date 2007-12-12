@@ -330,9 +330,10 @@ int GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx,
  * The OS socket should henceforth be no longer used
  * directly.  GNUNET_socket_destroy will close it.
  */
-struct GNUNET_SocketHandle *GNUNET_socket_create (struct GNUNET_GE_Context *ectx,
-                                           struct GNUNET_LoadMonitor *mon,
-                                           int osSocket);
+struct GNUNET_SocketHandle *GNUNET_socket_create (struct GNUNET_GE_Context
+                                                  *ectx,
+                                                  struct GNUNET_LoadMonitor
+                                                  *mon, int osSocket);
 
 /**
  * Close the socket (does NOT destroy it)

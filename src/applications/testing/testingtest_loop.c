@@ -45,28 +45,30 @@ main (int argc, char **argv)
   int j;
   int i;
 
-  for (j=0;j<LOOP_COUNT; j++) {
-    peers = GNUNET_TESTING_start_daemons ("tcp",
-					  "advertising topology stats",
-					  "/tmp/gnunet-testing-test-loop",
-					  2087, 10, PEER_COUNT);
-    if (peers == NULL)
-      {
-	fprintf (stderr, "Failed to start the gnunetd daemons!\n");
-	return -1;
-      }
-    /* connect as star-topology */
-    for (i = 1; i < PEER_COUNT; i++)
-      {
-	if (GNUNET_OK != GNUNET_TESTING_connect_daemons (2087, 2087 + 10 * i))
-	  {
-	    GNUNET_TESTING_stop_daemons (peers);
-	    fprintf (stderr, "Failed to connect the peers!\n");
-	    return -1;
-	  }
-      }
-    GNUNET_TESTING_stop_daemons (peers);
-  }
+  for (j = 0; j < LOOP_COUNT; j++)
+    {
+      peers = GNUNET_TESTING_start_daemons ("tcp",
+                                            "advertising topology stats",
+                                            "/tmp/gnunet-testing-test-loop",
+                                            2087, 10, PEER_COUNT);
+      if (peers == NULL)
+        {
+          fprintf (stderr, "Failed to start the gnunetd daemons!\n");
+          return -1;
+        }
+      /* connect as star-topology */
+      for (i = 1; i < PEER_COUNT; i++)
+        {
+          if (GNUNET_OK !=
+              GNUNET_TESTING_connect_daemons (2087, 2087 + 10 * i))
+            {
+              GNUNET_TESTING_stop_daemons (peers);
+              fprintf (stderr, "Failed to connect the peers!\n");
+              return -1;
+            }
+        }
+      GNUNET_TESTING_stop_daemons (peers);
+    }
   return 0;
 }
 

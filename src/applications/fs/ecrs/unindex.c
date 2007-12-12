@@ -292,7 +292,8 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
         }
       if (!wasIndexed)
         {
-          if (GNUNET_OK == GNUNET_EC_file_block_encode (db, size, &chk.query, &value))
+          if (GNUNET_OK ==
+              GNUNET_EC_file_block_encode (db, size, &chk.query, &value))
             {
               *value = *dblock; /* copy options! */
 #if STRICT_CHECKS

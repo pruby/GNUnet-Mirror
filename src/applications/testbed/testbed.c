@@ -667,12 +667,10 @@ tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi = GNUNET_malloc (sizeof (ProcessInfo));
   pi->argc = 0;
   for (pos = 0; pos < size; pos++)
-    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] ==
-        '\0')
+    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] == '\0')
       pi->argc++;
   mainName =
-    GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
-                   commandLine[0]);
+    GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[0]);
   clientConfig = NULL;
   if (0 == strncmp ("gnunet", mainName, strlen ("gnunet")))
     clientConfig = getConfigurationString ("TESTBED", "CLIENTCONFIG");
@@ -683,8 +681,7 @@ tb_EXEC (GNUNET_ClientHandle client, TESTBED_CS_MESSAGE * msg)
   pi->argv[0] = mainName;
   pi->argv[pi->argc] = NULL;    /* termination! */
   for (pos = size - 2; pos >= 0; pos--)
-    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] ==
-        '\0')
+    if (((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->commandLine[pos] == '\0')
       pi->argv[--argc2] =
         GNUNET_strdup (&((TESTBED_EXEC_MESSAGE_GENERIC *) emsg)->
                        commandLine[pos + 1]);
@@ -931,7 +928,7 @@ tb_UPLOAD_FILE (GNUNET_ClientHandle client, TESTBED_UPLOAD_FILE_MESSAGE * msg)
       return;
     }
   GNUNET_free (filename);
-  s = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1;       /* \0 added */
+  s = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf + strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1;     /* \0 added */
   size = ntohs (msg->header.header.size) -
     sizeof (TESTBED_UPLOAD_FILE_MESSAGE) -
     (strlen (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf) + 1);

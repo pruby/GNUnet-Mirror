@@ -651,7 +651,7 @@ threadMain (void *cls)
 void
 core_receive (GNUNET_TransportPacket * mp)
 {
-  if (threads_running != GNUNET_YES) 
+  if (threads_running != GNUNET_YES)
     {
       GNUNET_free (mp->msg);
       GNUNET_free (mp);

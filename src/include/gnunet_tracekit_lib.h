@@ -48,9 +48,11 @@ extern "C"
  * @return GNUNET_OK to continue data gathering,
  *         GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_TRACEKIT_ReportCallback)(void * cls,
-					      const GNUNET_PeerIdentity * reporter,
-					      const GNUNET_PeerIdentity * link);
+typedef int (*GNUNET_TRACEKIT_ReportCallback) (void *cls,
+                                               const GNUNET_PeerIdentity *
+                                               reporter,
+                                               const GNUNET_PeerIdentity *
+                                               link);
 
 /**
  * Ask gnunetd to perform a network topology trace
@@ -64,10 +66,9 @@ typedef int (*GNUNET_TRACEKIT_ReportCallback)(void * cls,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_TRACEKIT_run (struct GNUNET_ClientServerConnection *sock,
-			 unsigned int depth,
-			 unsigned int priority,
-			 GNUNET_TRACEKIT_ReportCallback report,
-			 void * cls);
+                         unsigned int depth,
+                         unsigned int priority,
+                         GNUNET_TRACEKIT_ReportCallback report, void *cls);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

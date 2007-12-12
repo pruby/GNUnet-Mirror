@@ -240,16 +240,17 @@ typedef struct
  *  match the query
  */
 int GNUNET_EC_file_block_encode (const DBlock * data,
-                     unsigned int len,
-                     const GNUNET_HashCode * query,
-                     GNUNET_DatastoreValue ** value);
+                                 unsigned int len,
+                                 const GNUNET_HashCode * query,
+                                 GNUNET_DatastoreValue ** value);
 
 /**
  * Get the query that will be used to query for
  * a certain block of data.
  */
 void GNUNET_EC_file_block_get_query (const DBlock * data,
-                        unsigned int len, GNUNET_HashCode * query);
+                                     unsigned int len,
+                                     GNUNET_HashCode * query);
 
 
 /**
@@ -257,12 +258,13 @@ void GNUNET_EC_file_block_get_query (const DBlock * data,
  * a certain block of data.
  */
 void GNUNET_EC_file_block_get_key (const DBlock * data,
-                      unsigned int len, GNUNET_HashCode * key);
+                                   unsigned int len, GNUNET_HashCode * key);
 
 /**
  * What is the type of the given block of data?
  */
-unsigned int GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * data);
+unsigned int GNUNET_EC_file_block_get_type (unsigned int size,
+                                            const DBlock * data);
 
 /**
  * What is the main query (the one that is used in
@@ -278,7 +280,8 @@ unsigned int GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * da
  *   the content type is not known
  */
 int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
-                 const DBlock * data, int verify, GNUNET_HashCode * query);
+                                              const DBlock * data, int verify,
+                                              GNUNET_HashCode * query);
 
 /**
  * Verify that the given Datum is a valid response
@@ -295,9 +298,11 @@ int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
  *         query type
  */
 int GNUNET_EC_is_block_applicable_for_query (unsigned int type,
-                       unsigned int size,
-                       const DBlock * data,
-                       const GNUNET_HashCode * knownDatumQuery,
-                       unsigned int keyCount, const GNUNET_HashCode * keys);
+                                             unsigned int size,
+                                             const DBlock * data,
+                                             const GNUNET_HashCode *
+                                             knownDatumQuery,
+                                             unsigned int keyCount,
+                                             const GNUNET_HashCode * keys);
 
 #endif

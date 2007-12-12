@@ -591,8 +591,7 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _("`%s' registering handler %d\n"), "fragmentation",
                  GNUNET_P2P_PROTO_MESSAGE_FRAGMENT);
-  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT,
-                         &processFragment);
+  capi->registerHandler (GNUNET_P2P_PROTO_MESSAGE_FRAGMENT, &processFragment);
 
   ret.fragment = &fragment;
   return &ret;

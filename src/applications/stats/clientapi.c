@@ -356,7 +356,8 @@ GNUNET_STATS_get_statistics (struct GNUNET_GE_Context *ectx,
                            ((char
                              *) (((CS_stats_reply_MESSAGE_GENERIC *)
                                   statMsg)->values))[mpos],
-                           GNUNET_ntohll (((CS_stats_reply_MESSAGE_GENERIC *) statMsg)->values[i]), cls);
+                           GNUNET_ntohll (((CS_stats_reply_MESSAGE_GENERIC *)
+                                           statMsg)->values[i]), cls);
             }
           mpos +=
             strlen (&

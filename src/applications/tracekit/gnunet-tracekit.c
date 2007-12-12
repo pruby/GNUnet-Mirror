@@ -31,7 +31,8 @@
 #include "gnunet_tracekit_lib.h"
 #include "tracekit.h"
 
-struct SeenRecord {
+struct SeenRecord
+{
   GNUNET_PeerIdentity src;
   GNUNET_PeerIdentity dst;
 };
@@ -50,31 +51,27 @@ static unsigned int format = 0;
 
 static unsigned int delay = 300;
 
-static struct SeenRecord * seen;
+static struct SeenRecord *seen;
 
 static unsigned int count;
 
 static int
-check_seen(const GNUNET_PeerIdentity * src,
-	   const GNUNET_PeerIdentity * dst) {
+check_seen (const GNUNET_PeerIdentity * src, const GNUNET_PeerIdentity * dst)
+{
   static GNUNET_PeerIdentity null_peer;
   unsigned int j;
 
   if (dst == NULL)
     dst = &null_peer;
   for (j = 0; j < count; j++)
-    if ( (0 == memcmp (src,
-		       &seen[j].src,
-		       sizeof (GNUNET_HashCode)) ) &&
-	 (0 == memcmp (dst,
-		       &seen[j].dst,
-		       sizeof (GNUNET_HashCode) ) ) )
+    if ((0 == memcmp (src,
+                      &seen[j].src,
+                      sizeof (GNUNET_HashCode))) &&
+        (0 == memcmp (dst, &seen[j].dst, sizeof (GNUNET_HashCode))))
       return GNUNET_YES;
-  GNUNET_array_grow(seen,
-		    count,
-		    count+1);
-  seen[count-1].src = *src;
-  seen[count-1].dst = *dst;
+  GNUNET_array_grow (seen, count, count + 1);
+  seen[count - 1].src = *src;
+  seen[count - 1].dst = *dst;
   return GNUNET_NO;
 }
 
@@ -89,29 +86,29 @@ check_seen(const GNUNET_PeerIdentity * src,
  *         GNUNET_SYSERR to abort
  */
 static int
-human_readable(void * unused,
-	       const GNUNET_PeerIdentity * reporter,
-	       const GNUNET_PeerIdentity * link) {
+human_readable (void *unused,
+                const GNUNET_PeerIdentity * reporter,
+                const GNUNET_PeerIdentity * link)
+{
   GNUNET_EncName src;
   GNUNET_EncName dst;
 
-  if (check_seen(reporter, link))
+  if (check_seen (reporter, link))
     return GNUNET_OK;
-  
-  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
-  if (link != NULL) 
+
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);
+  if (link != NULL)
     {
       GNUNET_hash_to_enc (&link->hashPubKey, &dst);
-      fprintf(stdout,
-	      _("`%s' connected to `%s'.\n"),
-	      (const char*) &src,
-	      (const char*) &dst);
+      fprintf (stdout,
+               _("`%s' connected to `%s'.\n"),
+               (const char *) &src, (const char *) &dst);
     }
-  else 
+  else
     {
-      fprintf(stdout,
-	      _("`%s' is not connected to any peer.\n"),
-	      (const char*) &src);
+      fprintf (stdout,
+               _("`%s' is not connected to any peer.\n"),
+               (const char *) &src);
     }
   return GNUNET_OK;
 }
@@ -127,26 +124,27 @@ human_readable(void * unused,
  *         GNUNET_SYSERR to abort
  */
 static int
-dot_format(void * unused,
-	   const GNUNET_PeerIdentity * reporter,
-	   const GNUNET_PeerIdentity * link) {
+dot_format (void *unused,
+            const GNUNET_PeerIdentity * reporter,
+            const GNUNET_PeerIdentity * link)
+{
   GNUNET_EncName src;
   GNUNET_EncName dst;
 
-  if (check_seen(reporter, link))
+  if (check_seen (reporter, link))
     return GNUNET_OK;
-  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);
   if (link != NULL)
     {
       GNUNET_hash_to_enc (&link->hashPubKey, &dst);
       printf ("  \"%.*s\" -> \"%.*s\";\n",
-	      4, (char *) &src, 4, (char *) &dst);
-    } 
+              4, (char *) &src, 4, (char *) &dst);
+    }
   else
     {
       printf ("  %.*s;\n", 4, (char *) &src);
     }
-  
+
   return GNUNET_OK;
 }
 
@@ -161,23 +159,24 @@ dot_format(void * unused,
  *         GNUNET_SYSERR to abort
  */
 static int
-vcg_format(void * unused,
-	   const GNUNET_PeerIdentity * reporter,
-	   const GNUNET_PeerIdentity * link) {
+vcg_format (void *unused,
+            const GNUNET_PeerIdentity * reporter,
+            const GNUNET_PeerIdentity * link)
+{
   GNUNET_EncName src;
   GNUNET_EncName dst;
 
-  if (check_seen(reporter, link))
+  if (check_seen (reporter, link))
     return GNUNET_OK;
-  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);
   if (link != NULL)
     {
       GNUNET_hash_to_enc (&link->hashPubKey, &dst);
       printf
-	("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
-	 (char *) &src, (char *) &dst);
+        ("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
+         (char *) &src, (char *) &dst);
     }
-  else 
+  else
     {
       /* deferred -- vcg needs all node data in one line */
     }
@@ -189,7 +188,7 @@ static void *
 process (void *cls)
 {
   static GNUNET_PeerIdentity null_peer;
-  GNUNET_PeerIdentity * current;
+  GNUNET_PeerIdentity *current;
   struct GNUNET_ClientServerConnection *sock = cls;
   GNUNET_TRACEKIT_ReportCallback report;
   GNUNET_EncName enc;
@@ -199,13 +198,13 @@ process (void *cls)
   int is_first;
 
   report = NULL;
-  switch (format) 
+  switch (format)
     {
     case 0:
       report = &human_readable;
       break;
     case 1:
-    printf ("digraph G {\n");
+      printf ("digraph G {\n");
       report = &dot_format;
       break;
     case 2:
@@ -213,74 +212,67 @@ process (void *cls)
       printf ("graph: {\n");
       break;
     default:
-      GNUNET_GE_BREAK(NULL, 0);      
+      GNUNET_GE_BREAK (NULL, 0);
     }
-  GNUNET_TRACEKIT_run(sock,
-		      depth,
-		      priority,
-		      report,
-		      NULL);
+  GNUNET_TRACEKIT_run (sock, depth, priority, report, NULL);
   /* final processing loop */
-  for (i=0;i<count*2;i++) 
+  for (i = 0; i < count * 2; i++)
     {
       if (0 == i % 2)
-	current = &seen[i / 2].src;
+        current = &seen[i / 2].src;
       else
-	current = &seen[i / 2].dst;
-      if (0 == memcmp(current,
-		      &null_peer,
-		      sizeof(GNUNET_PeerIdentity)) )
-	continue;
+        current = &seen[i / 2].dst;
+      if (0 == memcmp (current, &null_peer, sizeof (GNUNET_PeerIdentity)))
+        continue;
       is_first = GNUNET_YES;
-      for (j=0;j<count*2;j++)
-	if (0 == memcmp(current,
-			(0 == i % 2) ? &seen[i/2].src : &seen[i/2].dst,
-			sizeof(GNUNET_PeerIdentity)) )
-	  {
-	    is_first = GNUNET_NO;
-	    break;
-	  }
+      for (j = 0; j < count * 2; j++)
+        if (0 == memcmp (current,
+                         (0 == i % 2) ? &seen[i / 2].src : &seen[i / 2].dst,
+                         sizeof (GNUNET_PeerIdentity)))
+          {
+            is_first = GNUNET_NO;
+            break;
+          }
       if (is_first != GNUNET_YES)
-	continue; /* only each peer once */
+        continue;               /* only each peer once */
       is_source = GNUNET_NO;
-      for (j=0;j<count;j++)
-	{
-	  if (0 == memcmp(current,
-			  &seen[i].src,
-			  sizeof(GNUNET_PeerIdentity)) ) 
-	    {
-	      is_source = GNUNET_YES;	     
-	      break;
-	    }
-	}
-      switch (format) 
-	{
-	case 0:
-	  break;
-	case 1:
-	  if (is_source == GNUNET_NO) 
-	    {	      
-	      printf ("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
-		      4, (char *) &enc);
-	    }
-	  break;
-	case 2:
-	  if (is_source == GNUNET_NO) 
-	    {
-	      printf
+      for (j = 0; j < count; j++)
+        {
+          if (0 == memcmp (current,
+                           &seen[i].src, sizeof (GNUNET_PeerIdentity)))
+            {
+              is_source = GNUNET_YES;
+              break;
+            }
+        }
+      switch (format)
+        {
+        case 0:
+          break;
+        case 1:
+          if (is_source == GNUNET_NO)
+            {
+              printf ("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
+                      4, (char *) &enc);
+            }
+          break;
+        case 2:
+          if (is_source == GNUNET_NO)
+            {
+              printf
                 ("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
                  (char *) &enc, 4, (char *) &enc);
-	    }
-	  else 
-	    {
+            }
+          else
+            {
               printf ("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
                       (char *) &enc, 4, (char *) &enc);
-	    }
-    	  break;	  
-	}
+            }
+          break;
+        }
     }
   /* close syntax */
-  switch (format) 
+  switch (format)
     {
     case 0:
       break;
@@ -295,56 +287,57 @@ process (void *cls)
 }
 
 #if 0
-  for (i = 0; i < psCount; i++)
-    {
-      GNUNET_EncName enc;
+for (i = 0; i < psCount; i++)
+  {
+    GNUNET_EncName enc;
 
-      match = GNUNET_NO;
-      for (j = 0; j < prCount; j++)
-        if (0 == memcmp (&peersResponding[j].hashPubKey,
-                         &peersSeen[i].hashPubKey, sizeof (GNUNET_HashCode)))
+    match = GNUNET_NO;
+    for (j = 0; j < prCount; j++)
+      if (0 == memcmp (&peersResponding[j].hashPubKey,
+                       &peersSeen[i].hashPubKey, sizeof (GNUNET_HashCode)))
+        {
+          match = GNUNET_YES;
+          break;
+        }
+    if (match == GNUNET_NO)
+      {
+        GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
+        switch (format)
           {
-            match = GNUNET_YES;
+          case 1:
+            break;
+          case 2:
+            printf
+              ("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
+               (char *) &enc, 4, (char *) &enc);
+            break;
+          default:
             break;
           }
-      if (match == GNUNET_NO)
-        {
-          GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
-          switch (format)
-            {
-            case 1:
-              break;
-            case 2:
-              printf
-                ("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
-                 (char *) &enc, 4, (char *) &enc);
-              break;
-            default:
-              break;
-            }
-        }
-      else
-        {
-          switch (format)
-            {
-            case 2:
-              break;
-            default:
-              break;
-            }
-        }
-    }
-  if (psCount == 0)
-    {
-      switch (format)
-        {
-        case 2:
-          printf ("\tnode: { title: \"NO CONNECTIONS\" }\n");
-          break;
-        default:
-          break;
-        }
-    }
+      }
+    else
+      {
+        switch (format)
+          {
+          case 2:
+            break;
+          default:
+            break;
+          }
+      }
+  }
+
+if (psCount == 0)
+  {
+    switch (format)
+      {
+      case 2:
+        printf ("\tnode: { title: \"NO CONNECTIONS\" }\n");
+        break;
+      default:
+        break;
+      }
+  }
 #endif
 
 
@@ -360,17 +353,17 @@ static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
    gettext_noop
    ("specify output format; 0 for human readable output, 1 for dot, 2 for vcg"),
    1,
-   &GNUNET_getopt_configure_set_uint, &format} ,
+   &GNUNET_getopt_configure_set_uint, &format},
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'P', "priority", "PRIORITY",
    gettext_noop ("use PRIORITY for the priority of the trace request"), 1,
-   &GNUNET_getopt_configure_set_uint, &priority, },
+   &GNUNET_getopt_configure_set_uint, &priority,},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   {'W', "wait", "DELAY",
    gettext_noop ("wait DELAY seconds for replies"), 1,
-   &GNUNET_getopt_configure_set_uint, &delay },
+   &GNUNET_getopt_configure_set_uint, &delay},
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
@@ -389,22 +382,22 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_ClientServerConnection *sock;
-  struct GNUNET_ThreadHandle * myThread;
+  struct GNUNET_ThreadHandle *myThread;
   struct GNUNET_CronManager *cron;
-  void * unused;
+  void *unused;
 
-  if (-1 ==  GNUNET_init (argc,
-			  argv,
-			  "gnunet-tracekit",
-			  &cfgFilename, gnunettracekitOptions, &ectx, &cfg)) 
+  if (-1 == GNUNET_init (argc,
+                         argv,
+                         "gnunet-tracekit",
+                         &cfgFilename, gnunettracekitOptions, &ectx, &cfg))
     {
       GNUNET_fini (ectx, cfg);
       return -1;
     }
-  if (format > 2) 
+  if (format > 2)
     {
       printf (_("Format specification invalid. "
-		"Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
+                "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
       return -1;
     }
 
@@ -415,8 +408,7 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  myThread =
-    GNUNET_thread_create (&process, sock, 128 * 1024);
+  myThread = GNUNET_thread_create (&process, sock, 128 * 1024);
   if (myThread == NULL)
     GNUNET_GE_DIE_STRERROR (ectx,
                             GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE |
@@ -431,7 +423,7 @@ main (int argc, char *const *argv)
   GNUNET_client_connection_destroy (sock);
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
-  GNUNET_array_grow(seen, count, 0);
+  GNUNET_array_grow (seen, count, 0);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

@@ -874,9 +874,10 @@ tryConnect (const GNUNET_PeerIdentity * peer)
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-                     "Peer `%s' blacklisted, cannot connect right now\n", &enc);
+                     "Peer `%s' blacklisted, cannot connect right now\n",
+                     &enc);
 #endif
-      return GNUNET_NO;           /* not allowed right now! */
+      return GNUNET_NO;         /* not allowed right now! */
     }
 #if DEBUG_SESSION
   GNUNET_GE_LOG (ectx,

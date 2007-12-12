@@ -66,7 +66,8 @@ verifyKBlock (struct GNUNET_GE_Context *ectx,
   type = ntohl (value->type);
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   if (GNUNET_OK !=
-      GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) & value[1], GNUNET_YES, &query))
+      GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) & value[1],
+                                                GNUNET_YES, &query))
     return GNUNET_SYSERR;
   GNUNET_GE_ASSERT (ectx, type == GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
 
@@ -237,8 +238,12 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
 #if EXTRA_CHECKS
       /* extra check: verify sig */
       GNUNET_GE_ASSERT (ectx,
-                        GNUNET_OK == GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) kb,
-                                                  GNUNET_YES, &hc));
+                        GNUNET_OK ==
+                        GNUNET_EC_file_block_check_and_get_query (size,
+                                                                  (DBlock *)
+                                                                  kb,
+                                                                  GNUNET_YES,
+                                                                  &hc));
 #endif
       GNUNET_RSA_free_key (pk);
       if (GNUNET_OK != GNUNET_FS_insert (sock, value))

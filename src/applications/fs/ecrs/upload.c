@@ -289,7 +289,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
         if (GNUNET_OK != tt (ttClosure))
           goto FAILURE;
       GNUNET_EC_file_block_get_key (db, size + sizeof (DBlock), &mchk.key);
-      GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock), &mchk.query);
+      GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock),
+                                      &mchk.query);
 #if DEBUG_UPLOAD
       IF_GELOG (ectx,
                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -316,7 +317,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
           value = NULL;
           if (GNUNET_OK !=
               GNUNET_EC_file_block_encode (db,
-                               size + sizeof (DBlock), &mchk.query, &value))
+                                           size + sizeof (DBlock),
+                                           &mchk.query, &value))
             {
               GNUNET_GE_BREAK (ectx, 0);
               goto FAILURE;

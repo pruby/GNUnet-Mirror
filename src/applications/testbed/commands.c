@@ -118,8 +118,7 @@ sendMessage (unsigned msgType, int peer, unsigned short argSize, void *arg)
   msg->header.size = htons (msgsz);
   msg->header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->msgType = htonl (msgType);
-  memcpy (&((TESTBED_CS_MESSAGE_GENERIC *) msg)->data[0], arg,
-          argSize);
+  memcpy (&((TESTBED_CS_MESSAGE_GENERIC *) msg)->data[0], arg, argSize);
   msgsz = GNUNET_client_connection_write (&nodes[peer].sock, &msg->header);
   GNUNET_free (msg);
   if (msgsz == GNUNET_SYSERR)
@@ -1006,8 +1005,7 @@ dumpProcessOutput (int argc, char *argv[])
           reply = NULL;
           if (GNUNET_SYSERR ==
               GNUNET_client_connection_read (&nodes[dst].sock,
-                                             (CS_MESSAGE_HEADER **) &
-                                             reply))
+                                             (CS_MESSAGE_HEADER **) & reply))
             {
               XPRINTF (" peer %s is not responding after %d of %d bytes.\n",
                        nodes[dst].ips, pos, ack);
@@ -1310,8 +1308,7 @@ uploadFile (int argc, char *argv[])
   msg->header.header.type = htons (GNUNET_CS_PROTO_TESTBED_REQUEST);
   msg->header.msgType = htonl (TESTBED_UPLOAD_FILE);
   msg->type = htonl (TESTBED_FILE_DELETE);
-  memcpy (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf, argv[2],
-          flen);
+  memcpy (((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC *) msg)->buf, argv[2], flen);
 
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (&nodes[peer].sock, &msg->header.header))

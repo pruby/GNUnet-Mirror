@@ -41,63 +41,59 @@
  * @param cls extra argument to report function
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_TRACEKIT_run (struct GNUNET_ClientServerConnection *sock,
-			 unsigned int depth,
-			 unsigned int priority,
-			 GNUNET_TRACEKIT_ReportCallback report,
-			 void * cls) {
+int
+GNUNET_TRACEKIT_run (struct GNUNET_ClientServerConnection *sock,
+                     unsigned int depth,
+                     unsigned int priority,
+                     GNUNET_TRACEKIT_ReportCallback report, void *cls)
+{
   CS_tracekit_probe_MESSAGE probe;
   CS_tracekit_reply_MESSAGE *reply;
   int i;
   int count;
- 
+
   probe.header.size = htons (sizeof (CS_tracekit_probe_MESSAGE));
   probe.header.type = htons (GNUNET_CS_PROTO_TRACEKIT_PROBE);
-  probe.hops = htonl(depth);
-  probe.priority = htonl(priority);
+  probe.hops = htonl (depth);
+  probe.priority = htonl (priority);
   if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &probe.header))
-      return GNUNET_SYSERR;
+    return GNUNET_SYSERR;
   reply = NULL;
   while (GNUNET_OK ==
          GNUNET_client_connection_read (sock,
-                                        (GNUNET_MessageHeader **) &reply))
+                                        (GNUNET_MessageHeader **) & reply))
     {
-      count =
-        ntohs (reply->header.size) - sizeof (CS_tracekit_reply_MESSAGE);
-      if ( (count < 0) ||
-	   (0 != count % sizeof (GNUNET_PeerIdentity)) )
+      count = ntohs (reply->header.size) - sizeof (CS_tracekit_reply_MESSAGE);
+      if ((count < 0) || (0 != count % sizeof (GNUNET_PeerIdentity)))
         {
           GNUNET_GE_BREAK (NULL, 0);
           return GNUNET_SYSERR;
         }
       count = count / sizeof (GNUNET_PeerIdentity);
-      if (count == 0) 
-	{
-	  if (GNUNET_OK != 
-	      report(cls,
-		     &reply->responderId,
-		     NULL) ) {
-	    GNUNET_free(reply);
-	    return GNUNET_OK; /* application aborted */
-	  }  
-	}
-      else 
-	{      
-	  for (i=0;i<count;i++)
-	    {
-	      if (GNUNET_OK != 
-		  report(cls,
-			 &reply->responderId,
-			 &((GNUNET_PeerIdentity*) &reply[1])[i])) 
-		{
-		  GNUNET_free(reply);
-		  return GNUNET_OK; /* application aborted */
-		}
-	    }
-	}
+      if (count == 0)
+        {
+          if (GNUNET_OK != report (cls, &reply->responderId, NULL))
+            {
+              GNUNET_free (reply);
+              return GNUNET_OK; /* application aborted */
+            }
+        }
+      else
+        {
+          for (i = 0; i < count; i++)
+            {
+              if (GNUNET_OK !=
+                  report (cls,
+                          &reply->responderId,
+                          &((GNUNET_PeerIdentity *) & reply[1])[i]))
+                {
+                  GNUNET_free (reply);
+                  return GNUNET_OK;     /* application aborted */
+                }
+            }
+        }
       GNUNET_free (reply);
       reply = NULL;
     }
   return GNUNET_OK;
 }
-

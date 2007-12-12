@@ -484,8 +484,7 @@ inittransport_udp6 (GNUNET_CoreAPIForTransport * core)
                                                       sizeof
                                                       (GNUNET_MessageHeader) +
                                                       32, 65500,
-                                                      MESSAGE_SIZE,
-                                                      &mtu))
+                                                      MESSAGE_SIZE, &mtu))
     {
       return NULL;
     }

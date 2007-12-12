@@ -104,8 +104,8 @@ GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx, const char *hostname,
 
 
 struct GNUNET_SocketHandle *
-GNUNET_socket_create (struct GNUNET_GE_Context *ectx, struct GNUNET_LoadMonitor *mon,
-               int osSocket)
+GNUNET_socket_create (struct GNUNET_GE_Context *ectx,
+                      struct GNUNET_LoadMonitor *mon, int osSocket)
 {
   SocketHandle *ret;
 

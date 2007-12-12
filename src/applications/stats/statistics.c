@@ -315,7 +315,7 @@ sendStatistics (struct GNUNET_ClientHandle *sock,
       /* second pass: copy values and messages to message */
       for (pos = start; pos < end; pos++)
         ((CS_stats_reply_MESSAGE_GENERIC *) statMsg)->values[pos -
-                                                                    start] =
+                                                             start] =
           GNUNET_htonll (entries[pos].value);
       mpos = sizeof (unsigned long long) * (end - start);
       for (pos = start; pos < end; pos++)
@@ -431,8 +431,7 @@ initialize_module_stats (GNUNET_CoreAPIForPlugins * capi)
      &handleMessageSupported);
   capi->
     registerClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED,
-     &handleMessageSupported);
+    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
   capi->registerClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                &processGetConnectionCountRequest);
   capi->registerHandler (GNUNET_P2P_PROTO_NOISE, &processNoise);
@@ -465,8 +464,7 @@ done_module_stats ()
      &handleMessageSupported);
   coreAPI->
     unregisterClientHandler
-    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED,
-     &handleMessageSupported);
+    (GNUNET_CS_PROTO_STATS_GET_CS_MESSAGE_SUPPORTED, &handleMessageSupported);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_COUNT,
                                     &processGetConnectionCountRequest);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_NOISE, &processNoise);

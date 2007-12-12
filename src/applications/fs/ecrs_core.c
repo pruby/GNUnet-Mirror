@@ -45,9 +45,9 @@
  */
 int
 GNUNET_EC_file_block_encode (const DBlock * data,
-                 unsigned int len,
-                 const GNUNET_HashCode * query,
-                 GNUNET_DatastoreValue ** value)
+                             unsigned int len,
+                             const GNUNET_HashCode * query,
+                             GNUNET_DatastoreValue ** value)
 {
   GNUNET_HashCode hc;
   GNUNET_AES_SessionKey skey;
@@ -89,7 +89,8 @@ GNUNET_EC_file_block_encode (const DBlock * data,
  * a certain block of data.
  */
 void
-GNUNET_EC_file_block_get_key (const DBlock * data, unsigned int len, GNUNET_HashCode * key)
+GNUNET_EC_file_block_get_key (const DBlock * data, unsigned int len,
+                              GNUNET_HashCode * key)
 {
   GNUNET_GE_ASSERT (NULL, len >= sizeof (DBlock));
   GNUNET_hash (&data[1], len - sizeof (DBlock), key);
@@ -103,7 +104,7 @@ GNUNET_EC_file_block_get_key (const DBlock * data, unsigned int len, GNUNET_Hash
  */
 void
 GNUNET_EC_file_block_get_query (const DBlock * db, unsigned int len,
-                   GNUNET_HashCode * query)
+                                GNUNET_HashCode * query)
 {
   char *tmp;
   const char *data;
@@ -146,7 +147,8 @@ GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * data)
  */
 int
 GNUNET_EC_file_block_check_and_get_query (unsigned int size,
-             const DBlock * data, int verify, GNUNET_HashCode * query)
+                                          const DBlock * data, int verify,
+                                          GNUNET_HashCode * query)
 {
   unsigned int type;
 
@@ -284,10 +286,11 @@ GNUNET_EC_file_block_check_and_get_query (unsigned int size,
  */
 int
 GNUNET_EC_is_block_applicable_for_query (unsigned int type,
-                   unsigned int size,
-                   const DBlock * data,
-                   const GNUNET_HashCode * hc,
-                   unsigned int keyCount, const GNUNET_HashCode * keys)
+                                         unsigned int size,
+                                         const DBlock * data,
+                                         const GNUNET_HashCode * hc,
+                                         unsigned int keyCount,
+                                         const GNUNET_HashCode * keys)
 {
   GNUNET_HashCode h;
 
