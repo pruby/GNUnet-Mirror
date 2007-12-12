@@ -481,8 +481,7 @@ transportCreatehello (unsigned short ttype)
       ttype = tapis_count - 1;
       while ((ttype < tapis_count) &&
              ((tapis[perm[ttype]] == NULL) ||
-              (tapis[perm[ttype]] != NULL &&
-               tapis[perm[ttype]]->hello == NULL)))
+              (tapis[perm[ttype]]->hello == NULL)))
         ttype--;                /* unsigned, will wrap around! */
       if (ttype >= tapis_count)
         {
@@ -493,13 +492,16 @@ transportCreatehello (unsigned short ttype)
       ttype = perm[ttype];
       GNUNET_free (perm);
     }
-  if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
+  else
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("No transport of type %d known.\n"), ttype);
-      GNUNET_mutex_unlock (tapis_lock);
-      return NULL;
+      if ((ttype >= tapis_count) || (tapis[ttype] == NULL))
+	{
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_USER,
+			 _("No transport of type %d known.\n"), ttype);
+	  GNUNET_mutex_unlock (tapis_lock);
+	  return NULL;
+	}
     }
   tapi = tapis[ttype];
   if (tapi->hello == NULL)
