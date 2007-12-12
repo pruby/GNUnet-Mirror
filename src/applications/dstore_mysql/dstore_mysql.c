@@ -229,7 +229,7 @@ iopen ()
 
 /**
  * Check that we are within quota.
- * @return GNUNET_OK if we are, GNUNET_NO if not, GNUNET_SYSERR if 
+ * @return GNUNET_OK if we are, GNUNET_NO if not, GNUNET_SYSERR if
  *         there was an internal error
  */
 static int
