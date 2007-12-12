@@ -140,7 +140,7 @@ main (int argc, char *argv[])
       GNUNET_GC_free (cfg);
       return -1;
     }
-  cron = cron_create (NULL);
+  cron = GNUNET_cron_create (NULL);
   initCore (NULL, cfg, cron, NULL);
   err = 0;
   if (GNUNET_OK != runTest ())

@@ -291,7 +291,7 @@ GNUNET_FSUI_start (struct GNUNET_GE_Context *ectx,
     }
 
   /* 3) restart processing */
-  ret->cron = cron_create (ectx);
+  ret->cron = GNUNET_cron_create (ectx);
   /* 3a) resume downloads */
   GNUNET_cron_add_job (ret->cron,
                        &updateDownloadThreads, 0, GNUNET_FSUI_UDT_FREQUENCY,

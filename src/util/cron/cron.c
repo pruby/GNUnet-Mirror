@@ -180,7 +180,7 @@ typedef struct GNUNET_CronManager
 
 
 struct GNUNET_CronManager *
-cron_create (struct GNUNET_GE_Context *ectx)
+GNUNET_cron_create (struct GNUNET_GE_Context *ectx)
 {
   struct GNUNET_CronManager *cron;
   unsigned int i;

@@ -165,7 +165,7 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_DHT_ServiceAPI api;
 
-  cron = cron_create (capi->ectx);
+  cron = GNUNET_cron_create (capi->ectx);
   GNUNET_cron_start (cron);
   if (GNUNET_OK != init_dht_store (1024 * 1024, capi))
     {

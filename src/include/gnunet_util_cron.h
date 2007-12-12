@@ -47,7 +47,7 @@ typedef void (*GNUNET_CronJob) (void *);
 
 struct GNUNET_CronManager;
 
-struct GNUNET_CronManager *cron_create (struct GNUNET_GE_Context *ectx);
+struct GNUNET_CronManager * GNUNET_cron_create (struct GNUNET_GE_Context *ectx);
 
 void GNUNET_cron_destroy (struct GNUNET_CronManager *mgr);
 

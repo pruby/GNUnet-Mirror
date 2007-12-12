@@ -157,7 +157,7 @@ provide_module_upnp (GNUNET_CoreAPIForPlugins * capi)
 
   ectx = capi->ectx;
   cfg = capi->cfg;
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   lock = GNUNET_mutex_create (GNUNET_NO);
   GNUNET_cron_start (cron);
   GNUNET_cron_add_job (cron, &discover, 0, 5 * GNUNET_CRON_MINUTES, NULL);

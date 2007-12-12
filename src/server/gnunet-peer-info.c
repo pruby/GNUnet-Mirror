@@ -183,7 +183,7 @@ main (int argc, char *const *argv)
                                                                    "TCPSERVER",
                                                                    "DISABLE",
                                                                    "YES"));
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   initCore (ectx, cfg, cron, NULL);
   identity = requestService ("identity");
   transport = requestService ("transport");

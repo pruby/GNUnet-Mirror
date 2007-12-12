@@ -248,7 +248,7 @@ main (int argc, char *const *argv)
       GNUNET_plugin_unload (plugin);
       goto cleanup;
     }
-  api.cron = cron_create (api.ectx);
+  api.cron = GNUNET_cron_create (api.ectx);
   api.myIdentity = &me;
   api.receive = &receive;
   api.requestService = &requestService;

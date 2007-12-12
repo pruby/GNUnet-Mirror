@@ -109,7 +109,7 @@ gnunet_main ()
         GNUNET_pid_file_delete (ectx, cfg);
       return GNUNET_SYSERR;
     }
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   GNUNET_GE_ASSERT (ectx, cron != NULL);
 #ifndef WINDOWS
   shc_hup = GNUNET_signal_handler_install (SIGHUP, &reread_config);

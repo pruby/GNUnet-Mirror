@@ -214,7 +214,7 @@ work ()
                  "Failed to write configuration with updated F2F configuration.\n");
     }
   GNUNET_free (topo);
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   if (initCore (ectx, cfg, cron, NULL) != GNUNET_OK)
     {
       GNUNET_GE_LOG (ectx,

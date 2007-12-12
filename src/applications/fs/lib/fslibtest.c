@@ -224,7 +224,7 @@ main (int argc, char *argv[])
       return -1;
     }
   now = GNUNET_get_time ();
-  cron = cron_create (NULL);
+  cron = GNUNET_cron_create (NULL);
 #if START_DAEMON
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);

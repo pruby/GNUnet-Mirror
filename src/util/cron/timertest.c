@@ -89,7 +89,7 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
-  cron = cron_create (NULL);
+  cron = GNUNET_cron_create (NULL);
   GNUNET_cron_start (cron);
   failureCount += check ();
   GNUNET_cron_stop (cron);

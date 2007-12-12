@@ -482,7 +482,7 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_free (fsdir);
 
   available = quota - sq->getSize ();
-  cron = cron_create (capi->ectx);
+  cron = GNUNET_cron_create (capi->ectx);
   GNUNET_cron_add_job (cron,
                        &cronMaintenance, 10 * GNUNET_CRON_SECONDS,
                        10 * GNUNET_CRON_SECONDS, NULL);

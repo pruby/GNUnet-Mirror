@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2006, 2007 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,9 +28,13 @@
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
+#include "gnunet_tracekit_lib.h"
 #include "tracekit.h"
 
-static struct GNUNET_Semaphore *doneSem;
+struct SeenRecord {
+  GNUNET_PeerIdentity src;
+  GNUNET_PeerIdentity dst;
+};
 
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
@@ -38,193 +42,259 @@ static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_GC_Configuration *cfg;
 
+static unsigned int priority = 0;
+
+static unsigned int depth = 5;
+
+static unsigned int format = 0;
+
+static unsigned int delay = 300;
+
+static struct SeenRecord * seen;
+
+static unsigned int count;
+
+static int
+check_seen(const GNUNET_PeerIdentity * src,
+	   const GNUNET_PeerIdentity * dst) {
+  static GNUNET_PeerIdentity null_peer;
+  unsigned int j;
+
+  if (dst == NULL)
+    dst = &null_peer;
+  for (j = 0; j < count; j++)
+    if ( (0 == memcmp (src,
+		       &seen[j].src,
+		       sizeof (GNUNET_HashCode)) ) &&
+	 (0 == memcmp (dst,
+		       &seen[j].dst,
+		       sizeof (GNUNET_HashCode) ) ) )
+      return GNUNET_YES;
+  GNUNET_array_grow(seen,
+		    count,
+		    count+1);
+  seen[count-1].src = *src;
+  seen[count-1].dst = *dst;
+  return GNUNET_NO;
+}
+
 /**
- * All gnunet-tracekit command line options
+ * Generate a human-readable report.
+ *
+ * @param reporter identity of the peer reporting a connection
+ * @param link identity of another peer that the reporting peer
+ *             is reported to be connected to, or NULL if the
+ *             peer is reporting to have no connections at all
+ * @return GNUNET_OK to continue data gathering,
+ *         GNUNET_SYSERR to abort
  */
-static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
-  {'D', "depth", "DEPTH",
-   gettext_noop ("probe network to the given DEPTH"), 1,
-   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:HOPS"},
-  {'F', "format", "FORMAT",
-   gettext_noop
-   ("specify output format; 0 for human readable output, 1 for dot, 2 for vcg"),
-   1,
-   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:FORMAT"},
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")), /* -h */
-  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
-  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  {'P', "priority", "PRIO",
-   gettext_noop ("use PRIO for the priority of the trace request"), 1,
-   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY"},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
-  {'W', "wait", "DELAY",
-   gettext_noop ("wait DELAY seconds for replies"), 1,
-   &GNUNET_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT"},
-  GNUNET_COMMAND_LINE_OPTION_END,
-};
+static int
+human_readable(void * unused,
+	       const GNUNET_PeerIdentity * reporter,
+	       const GNUNET_PeerIdentity * link) {
+  GNUNET_EncName src;
+  GNUNET_EncName dst;
 
-static unsigned int
-getConfigurationInt (const char *sec, const char *opt, unsigned int max)
-{
-  unsigned long long val;
-
-  GNUNET_GC_get_configuration_value_number (cfg, sec, opt, 0, max, 0, &val);
-  return (unsigned int) val;
+  if (check_seen(reporter, link))
+    return GNUNET_OK;
+  
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
+  if (link != NULL) 
+    {
+      GNUNET_hash_to_enc (&link->hashPubKey, &dst);
+      fprintf(stdout,
+	      _("`%s' connected to `%s'.\n"),
+	      (const char*) &src,
+	      (const char*) &dst);
+    }
+  else 
+    {
+      fprintf(stdout,
+	      _("`%s' is not connected to any peer.\n"),
+	      (const char*) &src);
+    }
+  return GNUNET_OK;
 }
 
-static void
-run_shutdown (void *unused)
-{
-  GNUNET_shutdown_initiate ();
+/**
+ * Generate dot-format.
+ *
+ * @param reporter identity of the peer reporting a connection
+ * @param link identity of another peer that the reporting peer
+ *             is reported to be connected to, or NULL if the
+ *             peer is reporting to have no connections at all
+ * @return GNUNET_OK to continue data gathering,
+ *         GNUNET_SYSERR to abort
+ */
+static int
+dot_format(void * unused,
+	   const GNUNET_PeerIdentity * reporter,
+	   const GNUNET_PeerIdentity * link) {
+  GNUNET_EncName src;
+  GNUNET_EncName dst;
+
+  if (check_seen(reporter, link))
+    return GNUNET_OK;
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
+  if (link != NULL)
+    {
+      GNUNET_hash_to_enc (&link->hashPubKey, &dst);
+      printf ("  \"%.*s\" -> \"%.*s\";\n",
+	      4, (char *) &src, 4, (char *) &dst);
+    } 
+  else
+    {
+      printf ("  %.*s;\n", 4, (char *) &src);
+    }
+  
+  return GNUNET_OK;
 }
+
+/**
+ * Generate vcg-format.
+ *
+ * @param reporter identity of the peer reporting a connection
+ * @param link identity of another peer that the reporting peer
+ *             is reported to be connected to, or NULL if the
+ *             peer is reporting to have no connections at all
+ * @return GNUNET_OK to continue data gathering,
+ *         GNUNET_SYSERR to abort
+ */
+static int
+vcg_format(void * unused,
+	   const GNUNET_PeerIdentity * reporter,
+	   const GNUNET_PeerIdentity * link) {
+  GNUNET_EncName src;
+  GNUNET_EncName dst;
+
+  if (check_seen(reporter, link))
+    return GNUNET_OK;
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);  
+  if (link != NULL)
+    {
+      GNUNET_hash_to_enc (&link->hashPubKey, &dst);
+      printf
+	("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
+	 (char *) &src, (char *) &dst);
+    }
+  else 
+    {
+      /* deferred -- vcg needs all node data in one line */
+    }
+  return GNUNET_OK;
+}
+
 
 static void *
-receiveThread (void *cls)
+process (void *cls)
 {
+  static GNUNET_PeerIdentity null_peer;
+  GNUNET_PeerIdentity * current;
   struct GNUNET_ClientServerConnection *sock = cls;
-  CS_tracekit_reply_MESSAGE *buffer;
-  unsigned long long format;
-  GNUNET_PeerIdentity *peersSeen;
-  unsigned int psCount;
-  unsigned int psSize;
-  GNUNET_PeerIdentity *peersResponding;
-  unsigned int prCount;
-  unsigned int prSize;
-  int i;
-  int j;
-  int match;
+  GNUNET_TRACEKIT_ReportCallback report;
+  GNUNET_EncName enc;
+  unsigned int i;
+  unsigned int j;
+  int is_source;
+  int is_first;
 
-  psCount = 0;
-  psSize = 1;
-  peersSeen = GNUNET_malloc (psSize * sizeof (GNUNET_PeerIdentity));
-  prCount = 0;
-  prSize = 1;
-  peersResponding = GNUNET_malloc (prSize * sizeof (GNUNET_PeerIdentity));
-  buffer = GNUNET_malloc (GNUNET_MAX_BUFFER_SIZE);
-  if (-1 ==
-      GNUNET_GC_get_configuration_value_number (cfg,
-                                                "GNUNET-TRACEKIT",
-                                                "FORMAT", 0, 2, 0, &format))
+  report = NULL;
+  switch (format) 
     {
-      printf (_("Format specification invalid. "
-                "Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
-      GNUNET_semaphore_up (doneSem);
-      GNUNET_free (peersResponding);
-      GNUNET_free (peersSeen);
-      GNUNET_free (buffer);
-      return NULL;
-    }
-  if (format == 1)
+    case 0:
+      report = &human_readable;
+      break;
+    case 1:
     printf ("digraph G {\n");
-  if (format == 2)
-    printf ("graph: {\n");
-  while (GNUNET_OK ==
-         GNUNET_client_connection_read (sock,
-                                        (GNUNET_MessageHeader **) & buffer))
-    {
-      int count;
-      GNUNET_EncName enc;
-
-      count =
-        ntohs (buffer->header.size) - sizeof (CS_tracekit_reply_MESSAGE);
-      if (count < 0)
-        {
-          GNUNET_GE_BREAK (ectx, 0);
-          break;                /* faulty reply */
-        }
-      GNUNET_hash_to_enc (&buffer->responderId.hashPubKey, &enc);
-      match = GNUNET_NO;
-      for (j = 0; j < prCount; j++)
-        if (0 == memcmp (&buffer->responderId.hashPubKey,
-                         &peersResponding[j].hashPubKey,
-                         sizeof (GNUNET_HashCode)))
-          match = GNUNET_YES;
-      if (match == GNUNET_NO)
-        {
-          if (prCount == prSize)
-            GNUNET_array_grow (peersResponding, prSize, prSize * 2);
-          memcpy (&peersResponding[prCount++],
-                  &buffer->responderId.hashPubKey,
-                  sizeof (GNUNET_PeerIdentity));
-        }
-      count = count / sizeof (GNUNET_PeerIdentity);
-      if (ntohs (buffer->header.size) !=
-          sizeof (CS_tracekit_reply_MESSAGE) +
-          count * sizeof (GNUNET_PeerIdentity))
-        {
-          GNUNET_GE_BREAK (ectx, 0);
-          break;
-        }
-      if (count == 0)
-        {
-          switch (format)
-            {
-            case 0:
-              printf (_("`%s' is not connected to any peer.\n"),
-                      (char *) &enc);
-              break;
-            case 1:
-              printf ("  %.*s;\n", 4, (char *) &enc);
-              break;
-            case 2:
-              /* deferred -- vcg needs all node data in one line */
-              break;
-            }
-        }
-      else
-        {
-          GNUNET_EncName other;
-
-          for (i = 0; i < count; i++)
-            {
-              match = GNUNET_NO;
-              for (j = 0; j < psCount; j++)
-                if (0 ==
-                    memcmp (&
-                            ((CS_tracekit_reply_MESSAGE_GENERIC *)
-                             buffer)->peerList[i].hashPubKey,
-                            &peersSeen[j].hashPubKey,
-                            sizeof (GNUNET_HashCode)))
-                  match = GNUNET_YES;
-              if (match == GNUNET_NO)
-                {
-                  if (psCount == psSize)
-                    GNUNET_array_grow (peersSeen, psSize, psSize * 2);
-                  memcpy (&peersSeen[psCount++],
-                          &((CS_tracekit_reply_MESSAGE_GENERIC *)
-                            buffer)->peerList[i].hashPubKey,
-                          sizeof (GNUNET_PeerIdentity));
-                }
-
-              GNUNET_hash_to_enc (&
-                                  ((CS_tracekit_reply_MESSAGE_GENERIC
-                                    *) buffer)->peerList[i].hashPubKey,
-                                  &other);
-              switch (format)
-                {
-                case 0:
-                  printf (_("`%s' connected to `%s'.\n"),
-                          (char *) &enc, (char *) &other);
-                  break;
-                case 1:        /* dot */
-                  printf ("  \"%.*s\" -> \"%.*s\";\n",
-                          4, (char *) &enc, 4, (char *) &other);
-                  break;
-                case 2:        /* vcg */
-                  printf
-                    ("\tedge: { sourcename: \"%s\" targetname: \"%s\" }\n",
-                     (char *) &enc, (char *) &other);
-                  break;
-                default:       /* undef */
-                  printf (_("Format specification invalid. "
-                            "Use 0 for user-readable, 1 for dot\n"));
-                  break;
-                }
-            }
-        }
+      report = &dot_format;
+      break;
+    case 2:
+      report = &vcg_format;
+      printf ("graph: {\n");
+      break;
+    default:
+      GNUNET_GE_BREAK(NULL, 0);      
     }
-  GNUNET_free (buffer);
+  GNUNET_TRACEKIT_run(sock,
+		      depth,
+		      priority,
+		      report,
+		      NULL);
+  /* final processing loop */
+  for (i=0;i<count*2;i++) 
+    {
+      if (0 == i % 2)
+	current = &seen[i / 2].src;
+      else
+	current = &seen[i / 2].dst;
+      if (0 == memcmp(current,
+		      &null_peer,
+		      sizeof(GNUNET_PeerIdentity)) )
+	continue;
+      is_first = GNUNET_YES;
+      for (j=0;j<count*2;j++)
+	if (0 == memcmp(current,
+			(0 == i % 2) ? &seen[i/2].src : &seen[i/2].dst,
+			sizeof(GNUNET_PeerIdentity)) )
+	  {
+	    is_first = GNUNET_NO;
+	    break;
+	  }
+      if (is_first != GNUNET_YES)
+	continue; /* only each peer once */
+      is_source = GNUNET_NO;
+      for (j=0;j<count;j++)
+	{
+	  if (0 == memcmp(current,
+			  &seen[i].src,
+			  sizeof(GNUNET_PeerIdentity)) ) 
+	    {
+	      is_source = GNUNET_YES;	     
+	      break;
+	    }
+	}
+      switch (format) 
+	{
+	case 0:
+	  break;
+	case 1:
+	  if (is_source == GNUNET_NO) 
+	    {	      
+	      printf ("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
+		      4, (char *) &enc);
+	    }
+	  break;
+	case 2:
+	  if (is_source == GNUNET_NO) 
+	    {
+	      printf
+                ("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
+                 (char *) &enc, 4, (char *) &enc);
+	    }
+	  else 
+	    {
+              printf ("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
+                      (char *) &enc, 4, (char *) &enc);
+	    }
+    	  break;	  
+	}
+    }
+  /* close syntax */
+  switch (format) 
+    {
+    case 0:
+      break;
+    case 1:
+      printf ("}\n");
+      break;
+    case 2:
+      printf ("}\n");
+      break;
+    }
+  return NULL;
+}
+
+#if 0
   for (i = 0; i < psCount; i++)
     {
       GNUNET_EncName enc;
@@ -242,12 +312,7 @@ receiveThread (void *cls)
           GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
           switch (format)
             {
-            case 0:
-              printf (_("Peer `%s' did not report back.\n"), (char *) &enc);
-              break;
             case 1:
-              printf ("  \"%.*s\" [style=filled,color=\".7 .3 1.0\"];\n",
-                      4, (char *) &enc);
               break;
             case 2:
               printf
@@ -263,9 +328,6 @@ receiveThread (void *cls)
           switch (format)
             {
             case 2:
-              GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
-              printf ("\tnode: { title: \"%s\" label: \"%.*s\" }\n",
-                      (char *) &enc, 4, (char *) &enc);
               break;
             default:
               break;
@@ -283,14 +345,39 @@ receiveThread (void *cls)
           break;
         }
     }
-  if (format == 1)
-    printf ("}\n");
-  if (format == 2)
-    printf ("}\n");
-  GNUNET_semaphore_up (doneSem);
-  GNUNET_free (peersResponding);
-  GNUNET_free (peersSeen);
-  return NULL;
+#endif
+
+
+/**
+ * All gnunet-tracekit command line options
+ */
+static struct GNUNET_CommandLineOption gnunettracekitOptions[] = {
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  {'D', "depth", "DEPTH",
+   gettext_noop ("probe network to the given DEPTH"), 1,
+   &GNUNET_getopt_configure_set_uint, &depth},
+  {'F', "format", "FORMAT",
+   gettext_noop
+   ("specify output format; 0 for human readable output, 1 for dot, 2 for vcg"),
+   1,
+   &GNUNET_getopt_configure_set_uint, &format} ,
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Start GNUnet transport benchmarking tool.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
+  {'P', "priority", "PRIORITY",
+   gettext_noop ("use PRIORITY for the priority of the trace request"), 1,
+   &GNUNET_getopt_configure_set_uint, &priority, },
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
+  {'W', "wait", "DELAY",
+   gettext_noop ("wait DELAY seconds for replies"), 1,
+   &GNUNET_getopt_configure_set_uint, &delay },
+  GNUNET_COMMAND_LINE_OPTION_END,
+};
+
+static void
+run_shutdown (void *unused)
+{
+  GNUNET_shutdown_initiate ();
 }
 
 /**
@@ -302,23 +389,26 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_ClientServerConnection *sock;
-  struct GNUNET_ThreadHandle *messageReceiveThread;
-  void *unused;
-  CS_tracekit_probe_MESSAGE probe;
-  int sleepTime;
+  struct GNUNET_ThreadHandle * myThread;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_CronManager *cron;
-  int res;
+  void * unused;
 
-  res = GNUNET_init (argc,
-                     argv,
-                     "gnunet-tracekit",
-                     &cfgFilename, gnunettracekitOptions, &ectx, &cfg);
-  if (res == -1)
+  if (-1 ==  GNUNET_init (argc,
+			  argv,
+			  "gnunet-tracekit",
+			  &cfgFilename, gnunettracekitOptions, &ectx, &cfg)) 
     {
       GNUNET_fini (ectx, cfg);
       return -1;
     }
+  if (format > 2) 
+    {
+      printf (_("Format specification invalid. "
+		"Use 0 for user-readable, 1 for dot, 2 for vcg.\n"));
+      return -1;
+    }
+
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
@@ -326,43 +416,23 @@ main (int argc, char *const *argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-
-  doneSem = GNUNET_semaphore_create (0);
-  messageReceiveThread =
-    GNUNET_thread_create (&receiveThread, sock, 128 * 1024);
-  if (messageReceiveThread == NULL)
+  myThread =
+    GNUNET_thread_create (&process, sock, 128 * 1024);
+  if (myThread == NULL)
     GNUNET_GE_DIE_STRERROR (ectx,
                             GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE |
                             GNUNET_GE_ADMIN, "pthread_create");
-
-  probe.header.size = htons (sizeof (CS_tracekit_probe_MESSAGE));
-  probe.header.type = htons (GNUNET_CS_PROTO_TRACEKIT_PROBE);
-  probe.hops
-    = htonl (getConfigurationInt ("GNUNET-TRACEKIT", "HOPS", 0xFFFFFFFF));
-  probe.priority
-    = htonl (getConfigurationInt ("GNUNET-TRACEKIT", "PRIORITY", 0xFFFFFFFF));
-  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &probe.header))
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Could not send request to gnunetd.\n"));
-      return -1;
-    }
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   GNUNET_cron_start (cron);
-  sleepTime = getConfigurationInt ("GNUNET-TRACEKIT", "WAIT", 0xFFFFFFFF);
-  if (sleepTime == 0)
-    sleepTime = 5;
-  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * sleepTime,
+  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * delay,
                        0, NULL);
   GNUNET_shutdown_wait_for ();
   GNUNET_client_connection_close_forever (sock);
-  GNUNET_semaphore_down (doneSem, GNUNET_YES);
-  GNUNET_semaphore_destroy (doneSem);
-  GNUNET_thread_join (messageReceiveThread, &unused);
+  GNUNET_thread_join (myThread, &unused);
   GNUNET_client_connection_destroy (sock);
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
+  GNUNET_array_grow(seen, count, 0);
   GNUNET_fini (ectx, cfg);
   return 0;
 }

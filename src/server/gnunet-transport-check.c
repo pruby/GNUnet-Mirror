@@ -455,7 +455,7 @@ main (int argc, char *const *argv)
       GNUNET_GC_set_configuration_value_string (cfg, ectx, "HTTP",
                                                 "BLACKLIST", "");
     }
-  cron = cron_create (ectx);
+  cron = GNUNET_cron_create (ectx);
   if (GNUNET_OK != initCore (ectx, cfg, cron, NULL))
     {
       GNUNET_free (expectedValue);

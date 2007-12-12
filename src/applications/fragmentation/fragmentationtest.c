@@ -393,7 +393,7 @@ main (int argc, char *argv[])
   GNUNET_CoreAPIForPlugins capi;
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
-  capi.cron = cron_create (NULL);
+  capi.cron = GNUNET_cron_create (NULL);
   capi.injectMessage = &handleHelper;
   capi.requestService = &requestService;
   capi.registerHandler = &registerp2pHandler;
