@@ -233,8 +233,7 @@ evaluateQuery (const GNUNET_PeerIdentity * sender, unsigned int *priority)
     return QUERY_ANSWER | QUERY_FORWARD;
   else if (netLoad < 100)
     return QUERY_ANSWER;
-  else
-    return 0;                   /* drop entirely */
+  return 0;                   /* drop entirely */
 }
 
 /**
