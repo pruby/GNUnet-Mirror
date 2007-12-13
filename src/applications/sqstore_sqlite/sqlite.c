@@ -183,6 +183,7 @@ createIndices (sqlite3 * dbh)
                        NULL, NULL, ENULL));
   sqlite3_exec (dbh, "DROP INDEX idx_comb1", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb2", NULL, NULL, ENULL);
+  sqlite3_exec (dbh, "DROP INDEX idx_comb6", NULL, NULL, ENULL);
   CHECK (SQLITE_OK ==
          sqlite3_exec (dbh,
                        "CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
@@ -194,10 +195,6 @@ createIndices (sqlite3 * dbh)
   CHECK (SQLITE_OK ==
          sqlite3_exec (dbh,
                        "CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
-                       NULL, NULL, ENULL));
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb6 ON gn070 (prio,type,hash)",
                        NULL, NULL, ENULL));
 }
 
@@ -277,9 +274,9 @@ getDBHandle ()
           GNUNET_free (ret);
           return NULL;
         }
-      createIndices (ret->dbh);
     }
   sqlite3_finalize (stmt);
+  createIndices (ret->dbh);
 
   CHECK (SQLITE_OK ==
          sq_prepare (ret->dbh,
