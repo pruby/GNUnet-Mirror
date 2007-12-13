@@ -115,16 +115,25 @@ main (int argc, const char **argv)
       min = NUM_PEERS;
       for (i = 0; i < NUM_PEERS; i++)
         {
-          GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
+          GNUNET_snprintf (buf, 128, "localhost:%u", 12087 + i * 10);
           GNUNET_GC_set_configuration_value_string (cfg,
                                                     ectx, "NETWORK", "HOST",
                                                     buf);
           sock = GNUNET_client_connection_create (NULL, cfg);
+	  have = -1;
           GNUNET_STATS_get_statistics (NULL, sock, &countConnections, &have);
           GNUNET_client_connection_destroy (sock);
-          found += have;
-          if (have < min)
-            min = have;
+	  if (have == -1)
+	    {
+	      fprintf(stderr,
+		      "Trouble getting statistics!\n");
+	    }
+	  else 
+	    {
+	      found += have;
+	      if (have < min)
+		min = have;
+	    }
         }
       fprintf (stderr,
                "Have %d connections total in round %d, minimum number was %d\n",
