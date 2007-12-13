@@ -89,27 +89,6 @@ getOnDemandFile (const GNUNET_HashCode * fileId)
   return fn;
 }
 
-
-/**
- * Test if the 'closure' OnDemandBlock is already
- * present in the datastore.  Presence is indicated
- * by aborting the iteration.
- */
-static int
-checkPresent (const GNUNET_HashCode * key,
-              const GNUNET_DatastoreValue * value, void *closure,
-              unsigned long long uid)
-{
-  GNUNET_DatastoreValue *comp = closure;
-
-  if ((comp->size != value->size) ||
-      (0 != memcmp (&value[1],
-                    &comp[1],
-                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
 /**
  * Creates a symlink to the given file in the shared directory
  *
@@ -274,17 +253,7 @@ ONDEMAND_index (struct GNUNET_GE_Context *cectx,
                  "Storing on-demand content for query `%s'\n", &enc);
 #endif
 
-  ret =
-    datastore->get (&key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                    &checkPresent, &odb.header);
-  if (ret >= 0)
-    {
-      ret = datastore->put (&key, &odb.header);
-    }
-  else
-    {
-      ret = GNUNET_NO;          /* already present! */
-    }
+  ret = datastore->putUpdate(&key, &odb.header);
   return ret;
 }
 

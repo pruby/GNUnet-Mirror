@@ -772,15 +772,6 @@ gapGetConverter (const GNUNET_HashCode * key,
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Converting reply for query `%s' for gap.\n", &enc);
 #endif
-  et = GNUNET_ntohll (invalue->expirationTime);
-  now = GNUNET_get_time ();
-  if ((et <= now)
-      && (ntohl (invalue->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
-    {
-      /* content expired and not just data -- drop! */
-      return GNUNET_OK;
-    }
-
   if (ntohl (invalue->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
       if (GNUNET_OK != ONDEMAND_getIndexed (datastore, invalue, key, &xvalue))
@@ -792,6 +783,17 @@ gapGetConverter (const GNUNET_HashCode * key,
       xvalue = NULL;
       value = invalue;
     }
+
+  et = GNUNET_ntohll (value->expirationTime);
+  now = GNUNET_get_time ();
+  if ((et <= now)
+      && (ntohl (value->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
+    {
+      /* content expired and not just data -- drop! */
+      GNUNET_free_non_null (xvalue);
+      return GNUNET_OK;
+    }
+
 #if EXTRA_CHECKS
   if ((GNUNET_OK !=
        GNUNET_EC_file_block_check_and_get_query (ntohl (value->size) -
@@ -911,18 +913,16 @@ gapGet (void *closure,
   myClosure.resultCallback = resultCallback;
   myClosure.resCallbackClosure = resCallbackClosure;
   ret = GNUNET_OK;
-  if (type == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)
-    {
-      ret = datastore->get (&keys[0],
-                            GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                            &gapGetConverter, &myClosure);
-    }
-  if (ret != GNUNET_SYSERR)
+  if (type == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)     
+    ret = datastore->get (&keys[0],
+			  GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+			  &gapGetConverter, &myClosure);    
+  if (myClosure.count == 0)
     ret = datastore->get (&keys[0], type, &gapGetConverter, &myClosure);
   if (ret != GNUNET_SYSERR)
-    ret = myClosure.count;      /* return number of actual
-                                   results (unfiltered) that
-                                   were found */
+    ret = myClosure.count; /* return number of actual
+			      results (unfiltered) that
+			      were found */
   return ret;
 }
 
