@@ -125,8 +125,9 @@ priorityCheck (const GNUNET_HashCode * key,
   id = (*closure);
   if (id + 1 == ntohl (val->prio))
     return GNUNET_OK;
-  else
-    return GNUNET_SYSERR;
+  fprintf (stderr,
+           "Wrong priority, wanted %u got %u\n", id + 1, ntohl (val->prio));
+  return GNUNET_SYSERR;
 }
 
 static int
@@ -168,6 +169,11 @@ test (GNUNET_SQstore_ServiceAPI * api)
       GNUNET_free (value);
     }
   ASSERT (oldSize < api->getSize ());
+  for (i = 255; i >= 0; i--)
+    {
+      memset (&key, 256 - i, sizeof (GNUNET_HashCode));
+      ASSERT (1 == api->get (&key, i, &checkValue, (void *) &i));
+    }
   ASSERT (256 ==
           api->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
                                    NULL));
@@ -201,15 +207,18 @@ test (GNUNET_SQstore_ServiceAPI * api)
   ASSERT (128 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
                                              (GNUNET_DatastoreValueIterator) &
                                              iterateDelete, api));
+  i = 0;
   ASSERT (0 ==
           api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
                                       (GNUNET_DatastoreValueIterator) &
                                       iterateDown, &i));
-
   i = 42;
   value = initValue (i);
   memset (&key, 256 - i, sizeof (GNUNET_HashCode));
   api->put (&key, value);
+  ASSERT (1 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+                                           (GNUNET_DatastoreValueIterator) &
+                                           priorityCheck, &i));
   ASSERT (1 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
                                            (GNUNET_DatastoreValueIterator) &
                                            priorityCheck, &i));

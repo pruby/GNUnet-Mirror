@@ -191,6 +191,7 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
   GNUNET_thread_join (thread, &unused);
   GNUNET_thread_release_self (info.parent);
   GNUNET_client_connection_destroy (sock);
+  fprintf (stderr, "Returning %d\n", info.total);
   return info.total;
 }
 

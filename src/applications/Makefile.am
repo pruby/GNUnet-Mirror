@@ -26,7 +26,6 @@ SUBDIRS	= \
  stats \
  pingpong \
  session \
- dht \
  $(MYSQL_DIR) \
  $(SQLITE_DIR) \
  tbench \
@@ -37,6 +36,7 @@ SUBDIRS	= \
  transport \
  advertising \
  gap \
+ dht \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat
