@@ -169,33 +169,27 @@ static void
 createIndices (sqlite3 * dbh)
 {
   /* create indices */
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_hash ON gn070 (hash)",
-                       NULL, NULL, ENULL));
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_prio ON gn070 (prio)",
-                       NULL, NULL, ENULL));
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_expire ON gn070 (expire)",
-                       NULL, NULL, ENULL));
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_hash ON gn070 (hash)",
+		NULL, NULL, ENULL);
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_prio ON gn070 (prio)",
+		NULL, NULL, ENULL);
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_expire ON gn070 (expire)",
+		NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb1", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb2", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb6", NULL, NULL, ENULL);
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
-                       NULL, NULL, ENULL));
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb4 ON gn070 (prio,hash,anonLevel)",
-                       NULL, NULL, ENULL));
-  CHECK (SQLITE_OK ==
-         sqlite3_exec (dbh,
-                       "CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
-                       NULL, NULL, ENULL));
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
+		NULL, NULL, ENULL);
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_comb4 ON gn070 (prio,hash,anonLevel)",
+		NULL, NULL, ENULL);
+  sqlite3_exec (dbh,
+		"CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
+		NULL, NULL, ENULL);
 }
 
 /**
