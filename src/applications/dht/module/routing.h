@@ -35,17 +35,17 @@
 /**
  * Start a DHT get operation.
  */
-void dht_get_start (const GNUNET_HashCode * key,
-                    unsigned int type, GNUNET_ResultProcessor handler,
-                    void *cls);
+int GNUNET_DHT_get_start (const GNUNET_HashCode * key,
+			  unsigned int type, GNUNET_ResultProcessor handler,
+			  void *cls);
 
 /**
  * Stop a DHT get operation (prevents calls to
  * the given iterator).
  */
-void dht_get_stop (const GNUNET_HashCode * key,
-                   unsigned int type, GNUNET_ResultProcessor handler,
-                   void *cls);
+int GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
+			 unsigned int type, GNUNET_ResultProcessor handler,
+			 void *cls);
 
 /**
  * Perform a DHT put operation.  Note that PUT operations always
@@ -56,10 +56,10 @@ void dht_get_stop (const GNUNET_HashCode * key,
  *
  * @param expirationTime absolute expiration time
  */
-void dht_put (const GNUNET_HashCode * key,
-              unsigned int type,
-              unsigned int size, GNUNET_CronTime expirationTime,
-              const char *data);
+int GNUNET_DHT_put (const GNUNET_HashCode * key,
+		    unsigned int type,
+		    unsigned int size, GNUNET_CronTime expirationTime,
+		    const char *data);
 
 /**
  * Initialize routing DHT component.
@@ -67,13 +67,13 @@ void dht_put (const GNUNET_HashCode * key,
  * @param capi the core API
  * @return GNUNET_OK on success
  */
-int init_dht_routing (GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Shutdown routing DHT component.
  *
  * @return GNUNET_OK on success
  */
-int done_dht_routing (void);
+int GNUNET_DHT_done_routing (void);
 
 #endif

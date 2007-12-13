@@ -234,10 +234,10 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
     htonl (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE + sizeof (DBlock));
   dblock->anonymityLevel = htonl (0);
   dblock->prio = htonl (0);
-  dblock->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  dblock->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   dblock->expirationTime = GNUNET_htonll (0);
   db = (DBlock *) & dblock[1];
-  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  db->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   iblocks =
     GNUNET_malloc (sizeof (GNUNET_DatastoreValue *) * (treedepth + 1));
   for (i = 0; i <= treedepth; i++)
@@ -249,10 +249,10 @@ GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
         htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock));
       iblocks[i]->anonymityLevel = htonl (0);
       iblocks[i]->prio = htonl (0);
-      iblocks[i]->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+      iblocks[i]->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
       iblocks[i]->expirationTime = GNUNET_htonll (0);
       ((DBlock *) & iblocks[i][1])->type =
-        htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+        htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
     }
 
   pos = 0;

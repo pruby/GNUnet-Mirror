@@ -31,12 +31,12 @@ SUBDIRS	= \
  tbench \
  template \
  topology_default \
- tracekit \
  traffic \
  transport \
  advertising \
  gap \
  dht \
+ tracekit \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat

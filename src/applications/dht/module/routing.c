@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2006 Christian Grothoff (and other contributing authors)
+      (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -24,8 +24,9 @@
  * @author Christian Grothoff
  *
  * LATER:
- * - prioritization
- * - delay selection
+ * - better selection of timeouts / htl
+ * - add code to cleanup routing/request table!
+ * - optimize memory use of routing table
  * - implement extra_get_callback
  * - add similar callback for discovery in table.c
  */
@@ -38,6 +39,38 @@
 #include "gnunet_stats_service.h"
 
 #define DEBUG_ROUTING GNUNET_NO
+
+/**
+ * Larger factors will result in more aggressive routing of GET
+ * operations (each peer will either forward to GET_TRIES peers that
+ * are closer to the key).
+ */
+#define GET_TRIES 4
+
+/**
+ * Larger factors will result in more replication and
+ * more aggressive routing of PUT operations (each
+ * peer will either forward to PUT_TRIES peers that
+ * are closer to the key, or replicate the content).
+ */
+#define PUT_TRIES 2
+
+/**
+ * FIXME: replace this by an estimate of the
+ * network size (and then log of that).
+ */
+#define MAX_HOPS 10
+
+/**
+ * How long do we keep track of requests?
+ */
+#define MAX_REQUEST_LIFETIME (5 * GNUNET_CRON_MINUTES)
+
+
+/**
+ * How long do we keep track of requests?
+ */
+#define CONTENT_LIFETIME (12 * GNUNET_CRON_HOURS)
 
 /**
  * @brief record used for sending response back
@@ -64,10 +97,19 @@ typedef struct DHT_Source_Route
 
   void *receiver_closure;
 
+  /**
+   * At what time will this record automatically
+   * expire?
+   */
+  GNUNET_CronTime expires;
+
 } DHT_Source_Route;
 
 /**
- * @brief message send for DHT lookup
+ * @brief message send for DHT get, put or result.
+ *        PUT and RESULT messages are followed by
+ *        the content.  "header.type" distinguishes
+ *        the three types of messages.
  */
 typedef struct
 {
@@ -80,70 +122,21 @@ typedef struct
   unsigned int type;
 
   /**
-   * Priority of requested content (NBO)
+   * Number of hops this message has passed (NBO)
    */
-  unsigned int prio;
+  unsigned int hop_count;
 
   /**
-   * Relative time to live in GNUNET_CRON_MILLISECONDS (NBO)
+   * Reserved (use 0).
    */
-  int ttl;
-
+  unsigned int reserved;
+  
   /**
    * Search key.
    */
   GNUNET_HashCode key;
 
-} DHT_GET_MESSAGE;
-
-/**
- * @brief message send for DHT put
- *
- * Message is followed by the data.
- */
-typedef struct
-{
-
-  GNUNET_MessageHeader header;
-
-  /**
-   * Type of the content (NBO)
-   */
-  unsigned int type;
-
-  /**
-   * When to discard the content (relative time, NBO)
-   */
-  GNUNET_CronTime timeout;
-
-  /**
-   * Key for the content.
-   */
-  GNUNET_HashCode key;
-
-} DHT_PUT_MESSAGE;
-
-/**
- * @brief message send for DHT put
- *
- * Message is followed by the data.
- */
-typedef struct
-{
-
-  GNUNET_MessageHeader header;
-
-  /**
-   * Type of the content (NBO)
-   */
-  unsigned int type;
-
-  /**
-   * Key for the content.
-   */
-  GNUNET_HashCode key;
-
-} DHT_RESULT_MESSAGE;
+} DHT_MESSAGE;
 
 /**
  * Entry in the DHT routing table.
@@ -152,7 +145,9 @@ typedef struct DHTQueryRecord
 {
 
   /**
-   * When do we stop forwarding this request?
+   * When do we stop forwarding this request? (Note that
+   * this time should be before the last of the source
+   * routes expire).
    */
   GNUNET_CronTime expires;
 
@@ -162,28 +157,22 @@ typedef struct DHTQueryRecord
   DHT_Source_Route *sources;
 
   /**
-   * GET message of this record.
+   * GET message of this record (what we are forwarding).
    */
-  DHT_GET_MESSAGE *get;
+  DHT_MESSAGE * get;
 
   /**
    * Hashcodes of the results that we have send back
    * so far.
    */
-  GNUNET_HashCode *results;
+  GNUNET_HashCode * results;
 
   /**
    * Number of entries in results.
    */
   unsigned int result_count;
-} DHTQueryRecord;
 
-/**
- * How far into the future can requests continue?
- * Note that this also caps the frequency of how
- * often peers will re-issue requests.
- */
-#define MAX_TTL (5 * GNUNET_CRON_MINUTES)
+} DHTQueryRecord;
 
 /**
  * Linked list of active records.
@@ -228,10 +217,11 @@ routeResult (const GNUNET_HashCode * key,
   int j;
   int found;
   GNUNET_HashCode hc;
-  DHT_RESULT_MESSAGE *result;
+  DHT_MESSAGE *result;
   unsigned int routed;
   unsigned int tracked;
   DHT_Source_Route *pos;
+  GNUNET_CronTime now;
 
   if (cls != NULL)
     {
@@ -239,10 +229,12 @@ routeResult (const GNUNET_HashCode * key,
     }
   else
     {
-      result = GNUNET_malloc (sizeof (DHT_RESULT_MESSAGE) + size);
-      result->header.size = htons (sizeof (DHT_RESULT_MESSAGE) + size);
+      result = GNUNET_malloc (sizeof (DHT_MESSAGE) + size);
+      result->header.size = htons (sizeof (DHT_MESSAGE) + size);
       result->header.type = htons (GNUNET_P2P_PROTO_DHT_RESULT);
       result->type = htonl (type);
+      result->hop_count = htonl(0);
+      result->reserved = htonl(0);
       result->key = *key;
       memcpy (&result[1], data, size);
     }
@@ -250,6 +242,7 @@ routeResult (const GNUNET_HashCode * key,
   routed = 0;
   tracked = 0;
   GNUNET_mutex_lock (lock);
+  now = GNUNET_get_time();
   for (i = 0; i < rt_size; i++)
     {
       q = records[i];
@@ -268,14 +261,15 @@ routeResult (const GNUNET_HashCode * key,
           }
       if (found == GNUNET_YES)
         continue;
-      GNUNET_array_grow (q->results, q->result_count, q->result_count + 1);
       routed++;
+      GNUNET_array_grow (q->results, q->result_count, q->result_count + 1);
       q->results[q->result_count - 1] = hc;
       pos = q->sources;
       while (pos != NULL)
         {
-          if (0 != memcmp (&pos->source,
-                           coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity)))
+          if ( (pos->expires < now) &&
+	       (0 != memcmp (&pos->source,
+			     coreAPI->myIdentity, sizeof (GNUNET_PeerIdentity))) )
             {
 #if DEBUG_ROUTING
               GNUNET_GE_LOG (coreAPI->ectx,
@@ -283,12 +277,13 @@ routeResult (const GNUNET_HashCode * key,
                              GNUNET_GE_DEVELOPER,
                              "Routing result to other peer\n");
 #endif
-              coreAPI->unicast (&pos->source, &result->header, 0,       /* FIXME: priority */
-                                5 * GNUNET_CRON_SECONDS);       /* FIXME */
+              coreAPI->unicast (&pos->source,
+				&result->header, 0,  
+                                pos->expires - now);
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
-          else if (pos->receiver != NULL)
+	  if (pos->receiver != NULL)
             {
 #if DEBUG_ROUTING
               GNUNET_GE_LOG (coreAPI->ectx,
@@ -320,75 +315,66 @@ routeResult (const GNUNET_HashCode * key,
 static int
 addRoute (const GNUNET_PeerIdentity * sender,
           GNUNET_ResultProcessor handler, void *cls,
-          const DHT_GET_MESSAGE * get)
+          const DHT_MESSAGE * get)
 {
   DHTQueryRecord *q;
   unsigned int i;
   unsigned int rt_pos;
   GNUNET_CronTime expire;
   GNUNET_CronTime now;
-  int ttl;
+  unsigned int hops;
   struct DHT_Source_Route *pos;
 
-  ttl = ntohl (get->ttl);
-  if (ttl > MAX_TTL)
-    ttl = 0;                    /* implausibly high */
+  hops = ntohl (get->hop_count);
+  if (hops > MAX_HOPS)
+    return GNUNET_SYSERR;
   now = GNUNET_get_time ();
-  expire = now + ttl;
+  expire = now + MAX_REQUEST_LIFETIME;
   GNUNET_mutex_lock (lock);
   rt_pos = rt_size;
   for (i = 0; i < rt_size; i++)
     {
-      if ((sender != NULL) &&
-          (records[i] != NULL) &&
-          (0 == memcmp (&records[i]->get->key,
-                        &get->key,
-                        sizeof (GNUNET_HashCode))) &&
-          (records[i]->get->type == get->type) &&
-          (records[i]->expires > now - MAX_TTL))
+      if ( (records[i] != NULL) &&
+	   (0 == memcmp (&records[i]->get->key,
+			 &get->key,
+			 sizeof (GNUNET_HashCode))) &&
+	   (records[i]->get->type == get->type) )
         {
-          /* do not route, same request already (recently)
-             active (possibly from other initiator) */
-          /* FIXME: support sending replies back to
-             multiple peers!? */
-          GNUNET_mutex_unlock (lock);
-          return GNUNET_SYSERR;
+	  rt_pos = i;
+	  break;
         }
-      if (records[i] == NULL)
-        {
-          rt_pos = i;
-          expire = 0;
-        }
-      else if (records[i]->expires < expire)
-        {
-          expire = records[i]->expires;
-          rt_pos = i;
-        }
+      if (records[i] == NULL) 
+	{
+	  rt_pos = i;
+	  break;
+	}
+      if (records[i]->expires < now) 
+	{
+	  rt_pos = i;
+	  GNUNET_free(records[rt_pos]->get);
+	  records[rt_pos]->get = NULL;
+	  while (records[rt_pos]->sources != NULL)
+	    {
+	      pos = records[rt_pos]->sources;
+	      records[rt_pos]->sources = pos->next;
+	      GNUNET_free (pos);
+	    }    
+	  break;
+	}
     }
   if (rt_pos == rt_size)
     {
-      /* do not route, expiration time too high */
+      /* do not route, no slot available */
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   if (records[rt_pos] == NULL)
     {
       records[rt_pos] = GNUNET_malloc (sizeof (DHTQueryRecord));
-      records[rt_pos]->get = NULL;
-    }
-  if (records[rt_pos]->get != NULL)
-    {
-      GNUNET_free (records[rt_pos]->get);
-      while (records[rt_pos]->sources != NULL)
-        {
-          pos = records[rt_pos]->sources;
-          records[rt_pos]->sources = pos->next;
-          GNUNET_free (pos);
-        }
+      memset (records[rt_pos], 0, sizeof (DHTQueryRecord));
     }
   q = records[rt_pos];
-  memset (q, 0, sizeof (DHTQueryRecord));
-  q->expires = now + ttl;
+  q->expires = expire;
   q->get = GNUNET_malloc (ntohs (get->header.size));
   memcpy (q->get, get, ntohs (get->header.size));
   pos = GNUNET_malloc (sizeof (DHT_Source_Route));
@@ -398,6 +384,7 @@ addRoute (const GNUNET_PeerIdentity * sender,
     pos->source = *sender;
   else
     pos->source = *coreAPI->myIdentity;
+  pos->expires = expire;
   pos->receiver = handler;
   pos->receiver_closure = cls;
 #if DEBUG_ROUTING
@@ -405,19 +392,11 @@ addRoute (const GNUNET_PeerIdentity * sender,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                  "Tracking request in slot %u\n", rt_pos);
 #endif
-  rt_pos = (rt_pos + 1) % rt_size;
   GNUNET_mutex_unlock (lock);
   if (stats != NULL)
     stats->change (stat_requests_routed, 1);
   return GNUNET_OK;
 }
-
-/**
- * Larger factors will result in more aggressive routing of GET
- * operations (each peer will either forward to GET_TRIES peers that
- * are closer to the key).
- */
-#define GET_TRIES 4
 
 /**
  * Handle GET message.
@@ -427,21 +406,20 @@ handleGet (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
   GNUNET_PeerIdentity next[GET_TRIES];
-  const DHT_GET_MESSAGE *get;
-  DHT_GET_MESSAGE aget;
+  const DHT_MESSAGE *get;
+  DHT_MESSAGE aget;
   int total;
-  int ttl;
   int i;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
 #endif
 
-  if (ntohs (msg->size) != sizeof (DHT_GET_MESSAGE))
+  if (ntohs (msg->size) != sizeof (DHT_MESSAGE))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
-  get = (const DHT_GET_MESSAGE *) msg;
+  get = (const DHT_MESSAGE *) msg;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&get->key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
@@ -464,39 +442,19 @@ handleGet (const GNUNET_PeerIdentity * sender,
 #endif
       return GNUNET_OK;
     }
-  total = 0;
+  aget = *get;
+  aget.hop_count = htonl(1 + ntohl(get->hop_count));
   for (i = 0; i < GET_TRIES; i++)
     {
       if (GNUNET_OK != select_dht_peer (&next[i], &get->key, &next[0], i))
         break;
       if (-1 == GNUNET_hash_xorcmp (&next[i].hashPubKey,
                                     &coreAPI->myIdentity->hashPubKey,
-                                    &get->key))
-        {
-          if (total == 0)
-            {
-              aget = *get;
-              ttl = ntohl (get->ttl);
-              if (ttl > MAX_TTL)
-                ttl = MAX_TTL;
-              ttl -= 5 * GNUNET_CRON_SECONDS;
-              aget.ttl = htonl (ttl);
-              total = 1;
-            }
-          coreAPI->unicast (&next[i], msg, 0,   /* FIXME: priority */
-                            5 * GNUNET_CRON_SECONDS);   /* FIXME */
-        }
+                                    &get->key))        
+	coreAPI->unicast (&next[i], &aget.header, 0, 5 * GNUNET_CRON_SECONDS);        
     }
   return GNUNET_OK;
 }
-
-/**
- * Larger factors will result in more replication and
- * more aggressive routing of PUT operations (each
- * peer will either forward to PUT_TRIES peers that
- * are closer to the key, or replicate the content).
- */
-#define PUT_TRIES 2
 
 /**
  * Handle PUT message.
@@ -506,7 +464,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
   GNUNET_PeerIdentity next[PUT_TRIES];
-  const DHT_PUT_MESSAGE *put;
+  const DHT_MESSAGE * put;
   GNUNET_CronTime now;
   int store;
   int i;
@@ -514,14 +472,14 @@ handlePut (const GNUNET_PeerIdentity * sender,
   GNUNET_EncName enc;
 #endif
 
-  if (ntohs (msg->size) < sizeof (DHT_PUT_MESSAGE))
+  if (ntohs (msg->size) < sizeof (DHT_MESSAGE))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   if (stats != NULL)
     stats->change (stat_put_requests_received, 1);
-  put = (const DHT_PUT_MESSAGE *) msg;
+  put = (const DHT_MESSAGE *) msg;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&put->key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
@@ -529,6 +487,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                  "Received DHT PUT for key `%s'.\n", &enc);
 #endif
   store = 0;
+  /* FIXME: increase hop counter! */
   for (i = 0; i < PUT_TRIES; i++)
     {
       if (GNUNET_OK != select_dht_peer (&next[i], &put->key, &next[0], i))
@@ -541,8 +500,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                                    &put->key))
         store = 1;              /* we're closer than the selected target */
       else
-        coreAPI->unicast (&next[i], msg, 0,     /* FIXME: priority */
-                          5 * GNUNET_CRON_SECONDS);     /* FIXME */
+        coreAPI->unicast (&next[i], msg, 0, 5 * GNUNET_CRON_SECONDS); 
     }
   if (store != 0)
     {
@@ -552,14 +510,14 @@ handlePut (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                      GNUNET_GE_DEVELOPER,
                      "Decided to cache data `%.*s' locally until %llu (for %llu ms)\n",
-                     ntohs (put->header.size) - sizeof (DHT_PUT_MESSAGE),
-                     &put[1], GNUNET_ntohll (put->timeout) + now,
+                     ntohs (put->header.size) - sizeof (DHT_MESSAGE),
+                     &put[1], CONTENT_LIFETIME + now,
                      GNUNET_ntohll (put->timeout));
 #endif
       dht_store_put (ntohl (put->type),
                      &put->key,
-                     GNUNET_ntohll (MAKE_UNALIGNED (put->timeout)) + now,
-                     ntohs (put->header.size) - sizeof (DHT_PUT_MESSAGE),
+                     CONTENT_LIFETIME + now,
+                     ntohs (put->header.size) - sizeof (DHT_MESSAGE),
                      (const char *) &put[1]);
     }
   else
@@ -569,7 +527,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                      GNUNET_GE_DEVELOPER,
                      "Decided NOT to cache data `%.*s' locally\n",
-                     ntohs (put->header.size) - sizeof (DHT_PUT_MESSAGE),
+                     ntohs (put->header.size) - sizeof (DHT_MESSAGE),
                      &put[1]);
 #endif
     }
@@ -583,19 +541,19 @@ static int
 handleResult (const GNUNET_PeerIdentity * sender,
               const GNUNET_MessageHeader * msg)
 {
-  const DHT_RESULT_MESSAGE *result;
+  const DHT_MESSAGE *result;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
 #endif
 
-  if (ntohs (msg->size) < sizeof (DHT_RESULT_MESSAGE))
+  if (ntohs (msg->size) < sizeof (DHT_MESSAGE))
     {
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
   if (stats != NULL)
     stats->change (stat_results_received, 1);
-  result = (const DHT_RESULT_MESSAGE *) msg;
+  result = (const DHT_MESSAGE *) msg;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&result->key, &enc);
   GNUNET_GE_LOG (coreAPI->ectx,
@@ -604,7 +562,7 @@ handleResult (const GNUNET_PeerIdentity * sender,
 #endif
   routeResult (&result->key,
                ntohl (result->type),
-               ntohs (result->header.size) - sizeof (DHT_RESULT_MESSAGE),
+               ntohs (result->header.size) - sizeof (DHT_MESSAGE),
                (const char *) &result[1], (void *) msg);
   return GNUNET_OK;
 }
@@ -612,29 +570,31 @@ handleResult (const GNUNET_PeerIdentity * sender,
 /**
  * Start a DHT get operation.
  */
-void
-dht_get_start (const GNUNET_HashCode * key,
+int
+GNUNET_DHT_get_start (const GNUNET_HashCode * key,
                unsigned int type, GNUNET_ResultProcessor handler, void *cls)
 {
-  DHT_GET_MESSAGE get;
+  DHT_MESSAGE get;
 
-  get.header.size = htons (sizeof (DHT_GET_MESSAGE));
+  get.header.size = htons (sizeof (DHT_MESSAGE));
   get.header.type = htons (GNUNET_P2P_PROTO_DHT_GET);
   get.type = htonl (type);
-  get.prio = htonl (0);         /* FIXME */
-  get.ttl = htonl (MAX_TTL);    /* FIXME? */
+  get.hop_count = htonl(0);
+  get.reserved = htonl(0);
   get.key = *key;
-  if (GNUNET_OK == addRoute (NULL, handler, cls, &get))
-    handleGet (NULL, &get.header);
+  if (GNUNET_OK != addRoute (NULL, handler, cls, &get))
+    return GNUNET_SYSERR;
+  handleGet (NULL, &get.header);  
+  return GNUNET_OK;
 }
 
 /**
  * Stop a DHT get operation (prevents calls to
  * the given iterator).
  */
-void
-dht_get_stop (const GNUNET_HashCode * key,
-              unsigned int type, GNUNET_ResultProcessor handler, void *cls)
+int
+GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
+		     unsigned int type, GNUNET_ResultProcessor handler, void *cls)
 {
   int i;
   struct DHT_Source_Route *pos;
@@ -677,6 +637,9 @@ dht_get_stop (const GNUNET_HashCode * key,
         break;
     }
   GNUNET_mutex_unlock (lock);
+  if (done != GNUNET_YES)
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
 }
 
 /**
@@ -688,22 +651,24 @@ dht_get_stop (const GNUNET_HashCode * key,
  *
  * @param expirationTime absolute expiration time
  */
-void
-dht_put (const GNUNET_HashCode * key,
-         unsigned int type,
-         unsigned int size, GNUNET_CronTime expirationTime, const char *data)
+int
+GNUNET_DHT_put (const GNUNET_HashCode * key,
+		unsigned int type,
+		unsigned int size, GNUNET_CronTime expirationTime, const char *data)
 {
-  DHT_PUT_MESSAGE *put;
+  DHT_MESSAGE *put;
 
-  put = GNUNET_malloc (sizeof (DHT_PUT_MESSAGE) + size);
-  put->header.size = htons (sizeof (DHT_PUT_MESSAGE) + size);
+  put = GNUNET_malloc (sizeof (DHT_MESSAGE) + size);
+  put->header.size = htons (sizeof (DHT_MESSAGE) + size);
   put->header.type = htons (GNUNET_P2P_PROTO_DHT_PUT);
   put->key = *key;
   put->type = htonl (type);
-  put->timeout = GNUNET_htonll (expirationTime - GNUNET_get_time ());   /* convert to relative time */
+  put->hop_count = htonl(0);
+  put->reserved = htonl(0);
   memcpy (&put[1], data, size);
   handlePut (NULL, &put->header);
   GNUNET_free (put);
+  return GNUNET_OK;
 }
 
 /**
@@ -718,6 +683,7 @@ static unsigned int
 extra_get_callback (const GNUNET_PeerIdentity * receiver,
                     void *position, unsigned int padding)
 {
+  /* FIXME */
   return 0;
 }
 
@@ -728,7 +694,7 @@ extra_get_callback (const GNUNET_PeerIdentity * receiver,
  * @return GNUNET_OK on success
  */
 int
-init_dht_routing (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
 {
   unsigned long long rts;
 
@@ -763,7 +729,7 @@ init_dht_routing (GNUNET_CoreAPIForPlugins * capi)
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_PUT, &handlePut);
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_RESULT, &handleResult);
   coreAPI->
-    GNUNET_CORE_connection_register_send_callback (sizeof (DHT_GET_MESSAGE),
+    GNUNET_CORE_connection_register_send_callback (sizeof (DHT_MESSAGE),
                                                    &extra_get_callback);
   return GNUNET_OK;
 }
@@ -774,12 +740,12 @@ init_dht_routing (GNUNET_CoreAPIForPlugins * capi)
  * @return GNUNET_OK on success
  */
 int
-done_dht_routing ()
+GNUNET_DHT_done_routing ()
 {
   unsigned int i;
 
   coreAPI->
-    GNUNET_CORE_connection_unregister_send_callback (sizeof (DHT_GET_MESSAGE),
+    GNUNET_CORE_connection_unregister_send_callback (sizeof (DHT_MESSAGE),
                                                      &extra_get_callback);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_GET, &handleGet);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_PUT, &handlePut);

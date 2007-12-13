@@ -162,7 +162,7 @@ processResponse (const GNUNET_HashCode * key,
   GNUNET_GE_ASSERT (ectx,
                     ntohl (value->size) > sizeof (GNUNET_DatastoreValue));
   if ((GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ())
-      && (ntohl (value->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
+      && (ntohl (value->type) != GNUNET_ECRS_BLOCKTYPE_DATA))
     return;                     /* ignore expired, non-data responses! */
 
   matchCount = 0;
@@ -175,7 +175,7 @@ processResponse (const GNUNET_HashCode * key,
     {
       if ((0 == memcmp (&trackers[i]->query,
                         key, sizeof (GNUNET_HashCode))) &&
-          ((trackers[i]->type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY) ||
+          ((trackers[i]->type == GNUNET_ECRS_BLOCKTYPE_ANY) ||
            (trackers[i]->type == ntohl (value->type))))
         {
           matchCount++;

@@ -146,4 +146,4 @@ main (int argc, const char **argv)
   return ret;
 }
 
-/* end of dhttest.c */
+/* end of advertising_test.c */

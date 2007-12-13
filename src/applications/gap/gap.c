@@ -871,7 +871,7 @@ queueReply (const GNUNET_PeerIdentity * sender,
 
 #if EXTRA_CHECKS
   /* verify data is valid */
-  uri (data, GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, GNUNET_YES, primaryKey);
+  uri (data, GNUNET_ECRS_BLOCKTYPE_ANY, GNUNET_YES, primaryKey);
 #endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex (primaryKey)];
@@ -1465,7 +1465,7 @@ queryLocalResultCallback (const GNUNET_HashCode * primaryKey,
 
 #if EXTRA_CHECKS
   /* verify data is valid */
-  uri (value, GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, GNUNET_YES, primaryKey);
+  uri (value, GNUNET_ECRS_BLOCKTYPE_ANY, GNUNET_YES, primaryKey);
 #endif
   /* check seen */
   if ((cls->valueCount > MAX_SEEN_VALUES) &&

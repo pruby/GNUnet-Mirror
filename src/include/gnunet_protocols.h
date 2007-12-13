@@ -438,47 +438,47 @@ extern "C"
 /**
  * Reserved number for "any type".
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY 0
+#define GNUNET_ECRS_BLOCKTYPE_ANY 0
 
 /**
  * Data block (leaf or inner block).
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA 1
+#define GNUNET_ECRS_BLOCKTYPE_DATA 1
 
 /**
  * Namespace binding (subspace entry)
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED 2
+#define GNUNET_ECRS_BLOCKTYPE_SIGNED 2
 
 /**
  * Keyword binding (entry in keyword space)
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD 3
+#define GNUNET_ECRS_BLOCKTYPE_KEYWORD 3
 
 /**
  * Namespace advertisement.
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE 4
+#define GNUNET_ECRS_BLOCKTYPE_NAMESPACE 4
 
 /**
  * Namespace advertisement in keyword space.
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE 5
+#define GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE 5
 
 /**
  * DHT String2String (for dht-testing)
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING 7
+#define GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING 7
 
 /**
  * Reserved for internal usage
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_RESERVED 0xFFFFFFFE
+#define GNUNET_ECRS_BLOCKTYPE_RESERVED 0xFFFFFFFE
 
 /**
  * Type of OnDemand encoded blocks.
  */
-#define GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND 0xFFFFFFFF
+#define GNUNET_ECRS_BLOCKTYPE_ONDEMAND 0xFFFFFFFF
 
 
 

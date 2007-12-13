@@ -1168,7 +1168,7 @@ issueRequest (RequestManager * rm, int requestIndex)
     = GNUNET_FS_start_search (rm->sctx,
                               rm->have_target ==
                               GNUNET_NO ? NULL : &rm->target,
-                              GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA, 1,
+                              GNUNET_ECRS_BLOCKTYPE_DATA, 1,
                               &entry->node->chk.query,
                               entry->node->ctx->anonymityLevel, priority,
                               timeout, &nodeReceive, entry->node);

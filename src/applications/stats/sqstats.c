@@ -60,25 +60,25 @@ iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
 
   switch (ntohl (value->type))
     {
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY:
+    case GNUNET_ECRS_BLOCKTYPE_ANY:
       data->stat_block[0]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA:
+    case GNUNET_ECRS_BLOCKTYPE_DATA:
       data->stat_block[1]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
+    case GNUNET_ECRS_BLOCKTYPE_SIGNED:
       data->stat_block[2]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
+    case GNUNET_ECRS_BLOCKTYPE_KEYWORD:
       data->stat_block[3]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
+    case GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
       data->stat_block[4]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
+    case GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
       data->stat_block[5]++;
       break;
-    case GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
+    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
       data->stat_block[6]++;
       break;
     default:

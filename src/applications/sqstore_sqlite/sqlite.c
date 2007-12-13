@@ -836,7 +836,7 @@ sqlite_iterate (unsigned int type,
 #endif
       if (((GNUNET_NO == limit_nonanonymous) ||
            (ntohl (datum->anonymityLevel) == 0)) &&
-          ((type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY) ||
+          ((type == GNUNET_ECRS_BLOCKTYPE_ANY) ||
            (type == ntohl (datum->type))))
         {
           count++;

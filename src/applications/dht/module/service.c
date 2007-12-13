@@ -134,8 +134,12 @@ dht_get_async_start (unsigned int type,
   ret->callbackComplete = callbackComplete;
   ret->closure = closure;
   ret->type = type;
+  if (GNUNET_OK != GNUNET_DHT_get_start (key, type, &client_result_converter, ret))
+    {
+      GNUNET_free(ret);
+      return NULL;
+    }
   GNUNET_cron_add_job (cron, &timeout_callback, timeout, 0, ret);
-  dht_get_start (key, type, &client_result_converter, ret);
   return ret;
 }
 
@@ -148,7 +152,7 @@ dht_get_async_stop (struct GNUNET_DHT_GetHandle *record)
   GNUNET_cron_suspend_jobs (cron, GNUNET_YES);
   GNUNET_cron_del_job (cron, &timeout_callback, 0, record);
   GNUNET_cron_resume_jobs (cron, GNUNET_YES);
-  dht_get_stop (&record->key, record->type, &client_result_converter, record);
+  GNUNET_DHT_get_stop (&record->key, record->type, &client_result_converter, record);
   GNUNET_free (record);
   return GNUNET_OK;
 }
@@ -178,7 +182,7 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
       done_dht_store ();
       return NULL;
     }
-  if (GNUNET_OK != init_dht_routing (capi))
+  if (GNUNET_OK != GNUNET_DHT_init_routing (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       done_dht_table ();
@@ -188,7 +192,7 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   api.get_start = &dht_get_async_start;
   api.get_stop = &dht_get_async_stop;
-  api.put = &dht_put;
+  api.put = &GNUNET_DHT_put;
   return &api;
 }
 
@@ -199,7 +203,7 @@ int
 release_module_dht ()
 {
   GNUNET_cron_stop (cron);
-  done_dht_routing ();
+  GNUNET_DHT_done_routing ();
   done_dht_table ();
   done_dht_store ();
   GNUNET_cron_destroy (cron);

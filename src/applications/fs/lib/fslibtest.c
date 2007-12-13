@@ -46,12 +46,12 @@ makeBlock (int i)
   block =
     GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock) + i);
   block->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (DBlock) + i);
-  block->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  block->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   block->prio = htonl (0);
   block->anonymityLevel = htonl (0);
   block->expirationTime = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
   db = (DBlock *) & block[1];
-  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  db->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   memset (&db[1], i + (i / 253), i);
   return block;
 }
@@ -67,12 +67,12 @@ makeKBlock (unsigned int i, const GNUNET_HashCode * key,
   block =
     GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + sizeof (KBlock) + i);
   block->size = htonl (sizeof (GNUNET_DatastoreValue) + sizeof (KBlock) + i);
-  block->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+  block->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
   block->prio = htonl (0);
   block->anonymityLevel = htonl (0);
   block->expirationTime = GNUNET_htonll (now + 1 * GNUNET_CRON_HOURS);
   db = (KBlock *) & block[1];
-  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+  db->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
   memset (&db[1], i + (i / 253), i);
   kkey = GNUNET_RSA_create_key_from_hash (key);
   GNUNET_RSA_sign (kkey, i, &db[1], &db->signature);
@@ -178,7 +178,7 @@ trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
   now = GNUNET_get_time ();
   handle = GNUNET_FS_start_search (ctx,
                                    NULL,
-                                   GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA,
+                                   GNUNET_ECRS_BLOCKTYPE_DATA,
                                    1,
                                    &query,
                                    0,
@@ -330,7 +330,7 @@ main (int argc, char *argv[])
   mainThread = GNUNET_thread_get_self ();
   hnd = GNUNET_FS_start_search (ctx,
                                 NULL,
-                                GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+                                GNUNET_ECRS_BLOCKTYPE_ANY,
                                 1,
                                 &query, 0, 0, 10 * GNUNET_CRON_SECONDS,
                                 &countCallback, &i);

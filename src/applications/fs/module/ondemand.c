@@ -220,11 +220,11 @@ ONDEMAND_index (struct GNUNET_GE_Context *cectx,
   GNUNET_free (fn);
 
   odb.header.size = htonl (sizeof (OnDemandBlock));
-  odb.header.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+  odb.header.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
   odb.header.prio = htonl (prio);
   odb.header.anonymityLevel = htonl (anonymityLevel);
   odb.header.expirationTime = GNUNET_htonll (expiration);
-  odb.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+  odb.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
   odb.fileOffset = GNUNET_htonll (fileOffset);
   odb.blockSize = htonl (size - sizeof (DBlock));
   odb.fileId = *fileId;
@@ -455,7 +455,7 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
       return GNUNET_SYSERR;
     }
   db = GNUNET_malloc (sizeof (DBlock) + ntohl (odb->blockSize));
-  db->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  db->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   iobuf = (char *) &db[1];
   blen = READ (fileHandle, iobuf, ntohl (odb->blockSize));
   if (blen != ntohl (odb->blockSize))
@@ -595,7 +595,7 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
       return GNUNET_SYSERR;
     }
   block = GNUNET_malloc (sizeof (DBlock) + blocksize);
-  block->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA);
+  block->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
   while (pos < size)
     {
       delta = size - pos;
@@ -613,17 +613,17 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
           return GNUNET_SYSERR;
         }
       odb.header.size = htonl (sizeof (OnDemandBlock));
-      odb.header.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+      odb.header.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
       odb.header.prio = 0;
       odb.header.anonymityLevel = 0;
       odb.header.expirationTime = 0;
-      odb.type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+      odb.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
       odb.fileOffset = GNUNET_htonll (pos);
       odb.blockSize = htonl (delta);
       odb.fileId = *fileId;
       /* compute the primary key */
       GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
-      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))   /* aborted == found! */
+      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))   /* aborted == found! */
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;

@@ -208,7 +208,7 @@ gapPut (void *closure,
          _except_ if it is pure content that one
          of our clients has requested -- then we
          should ignore expiration */
-      if (ntohl (dv->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)
+      if (ntohl (dv->type) == GNUNET_ECRS_BLOCKTYPE_DATA)
         processResponse (query, dv);
       else if (stats != NULL)
         stats->change (stat_expired_replies_dropped, 1);
@@ -380,7 +380,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
   memcpy (&datum[1],
           &ri[1], ntohs (req->size) - sizeof (CS_fs_request_insert_MESSAGE));
   GNUNET_mutex_lock (lock);
-  if ((type != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)
+  if ((type != GNUNET_ECRS_BLOCKTYPE_DATA)
       || (0 == datastore->get (&query, type, NULL, NULL)))
     ret = datastore->put (&query, datum);
   else
@@ -772,7 +772,7 @@ gapGetConverter (const GNUNET_HashCode * key,
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Converting reply for query `%s' for gap.\n", &enc);
 #endif
-  if (ntohl (invalue->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
+  if (ntohl (invalue->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
       if (GNUNET_OK != ONDEMAND_getIndexed (datastore, invalue, key, &xvalue))
         return GNUNET_SYSERR;
@@ -787,7 +787,7 @@ gapGetConverter (const GNUNET_HashCode * key,
   et = GNUNET_ntohll (value->expirationTime);
   now = GNUNET_get_time ();
   if ((et <= now)
-      && (ntohl (value->type) != GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA))
+      && (ntohl (value->type) != GNUNET_ECRS_BLOCKTYPE_DATA))
     {
       /* content expired and not just data -- drop! */
       GNUNET_free_non_null (xvalue);
@@ -913,9 +913,9 @@ gapGet (void *closure,
   myClosure.resultCallback = resultCallback;
   myClosure.resCallbackClosure = resCallbackClosure;
   ret = GNUNET_OK;
-  if (type == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)     
+  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)     
     ret = datastore->get (&keys[0],
-			  GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+			  GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
 			  &gapGetConverter, &myClosure);    
   if (myClosure.count == 0)
     ret = datastore->get (&keys[0], type, &gapGetConverter, &myClosure);
@@ -995,7 +995,7 @@ uniqueReplyIdentifier (const GNUNET_DataContainer * content,
                                                  (const DBlock *) &gw[1],
                                                  verify, &q))
       && (0 == memcmp (&q, primaryKey, sizeof (GNUNET_HashCode)))
-      && ((type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)
+      && ((type == GNUNET_ECRS_BLOCKTYPE_ANY)
           || (type ==
               (t =
                GNUNET_EC_file_block_get_type (size - sizeof (GapWrapper),
@@ -1003,7 +1003,7 @@ uniqueReplyIdentifier (const GNUNET_DataContainer * content,
     {
       switch (type)
         {
-        case GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA:
+        case GNUNET_ECRS_BLOCKTYPE_DATA:
           return GNUNET_YES;
         default:
           return GNUNET_NO;

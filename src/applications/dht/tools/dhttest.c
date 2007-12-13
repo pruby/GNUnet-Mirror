@@ -137,7 +137,7 @@ main (int argc, const char **argv)
       CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                           ectx,
                                           &key,
-                                          GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                          GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                           GNUNET_get_time () +
                                           15 * GNUNET_CRON_MINUTES *
                                           NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
@@ -161,7 +161,7 @@ main (int argc, const char **argv)
               fprintf (stderr, "Peer %d gets key %d", i, j);
               if (0 < GNUNET_DHT_get (cfg,
                                       ectx,
-                                      GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                       &key,
                                       (NUM_ROUNDS - k) * GNUNET_CRON_SECONDS,
                                       NULL, NULL))

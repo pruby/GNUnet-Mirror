@@ -176,7 +176,7 @@ addQueryForURI (const struct GNUNET_ECRS_URI *uri, SendQueriesContext * sqc)
                      &hk);
         GNUNET_hash_xor (&hk, &uri->data.sks.namespace, &keys[0]);      /* compute routing key r = H(identifier) ^ namespace */
         keys[1] = uri->data.sks.namespace;
-        addPS (GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED, 2, &keys[0], &uri->data.sks.identifier,     /* identifier = decryption key */
+        addPS (GNUNET_ECRS_BLOCKTYPE_SIGNED, 2, &keys[0], &uri->data.sks.identifier,     /* identifier = decryption key */
                sqc);
         break;
       }
@@ -200,7 +200,7 @@ addQueryForURI (const struct GNUNET_ECRS_URI *uri, SendQueriesContext * sqc)
             pk = GNUNET_RSA_create_key_from_hash (&hc);
             GNUNET_RSA_get_public_key (pk, &pub);
             GNUNET_hash (&pub, sizeof (GNUNET_RSA_PublicKey), &query);
-            addPS (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,    /* GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD, GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE or GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE ok */
+            addPS (GNUNET_ECRS_BLOCKTYPE_ANY,    /* GNUNET_ECRS_BLOCKTYPE_KEYWORD, GNUNET_ECRS_BLOCKTYPE_NAMESPACE or GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE ok */
                    1, &query, &hc, sqc);
             GNUNET_RSA_free_key (pk);
           }
@@ -348,7 +348,7 @@ receiveReplies (const GNUNET_HashCode * key,
       if ((0 == memcmp (&query,
                         &ps->keys[0], sizeof (GNUNET_HashCode))) &&
           ((ps->type == type) ||
-           (ps->type == GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY)) &&
+           (ps->type == GNUNET_ECRS_BLOCKTYPE_ANY)) &&
           (GNUNET_YES == GNUNET_EC_is_block_applicable_for_query (type,
                                                                   size,
                                                                   (const
@@ -361,7 +361,7 @@ receiveReplies (const GNUNET_HashCode * key,
         {
           switch (type)
             {
-            case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD:
+            case GNUNET_ECRS_BLOCKTYPE_KEYWORD:
               {
                 KBlock *kb;
                 const char *dstURI;
@@ -430,7 +430,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 GNUNET_free (kb);
                 return ret;
               }
-            case GNUNET_GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
+            case GNUNET_ECRS_BLOCKTYPE_NAMESPACE:
               {
                 const NBlock *nb;
 
@@ -439,7 +439,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 nb = (const NBlock *) &value[1];
                 return processNBlock (nb, NULL, size, sqc);
               }
-            case GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
+            case GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE:
               {
                 KNBlock *kb;
                 int ret;
@@ -459,7 +459,7 @@ receiveReplies (const GNUNET_HashCode * key,
                 GNUNET_free (kb);
                 return ret;
               }
-            case GNUNET_GNUNET_ECRS_BLOCKTYPE_SIGNED:
+            case GNUNET_ECRS_BLOCKTYPE_SIGNED:
               {
                 SBlock *sb;
                 const char *dstURI;

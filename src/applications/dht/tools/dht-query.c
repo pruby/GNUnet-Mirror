@@ -90,7 +90,7 @@ do_get (struct GNUNET_ClientServerConnection *sock, const char *key)
     timeout = 30 * GNUNET_CRON_SECONDS;
   ret = GNUNET_DHT_get (cfg,
                         ectx,
-                        GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                        GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                         &hc, timeout, &printCallback, (void *) key);
   if (ret == 0)
     printf (_("%s(%s) operation returned no results.\n"), "get", key);
@@ -114,7 +114,7 @@ do_put (struct GNUNET_ClientServerConnection *sock,
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_MINUTES;
-  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),        /* convert to absolute time */
+  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),        /* convert to absolute time */
                                    dc))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);

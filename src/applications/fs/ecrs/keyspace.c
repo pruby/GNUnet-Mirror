@@ -69,7 +69,7 @@ verifyKBlock (struct GNUNET_GE_Context *ectx,
       GNUNET_EC_file_block_check_and_get_query (size, (DBlock *) & value[1],
                                                 GNUNET_YES, &query))
     return GNUNET_SYSERR;
-  GNUNET_GE_ASSERT (ectx, type == GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+  GNUNET_GE_ASSERT (ectx, type == GNUNET_ECRS_BLOCKTYPE_KEYWORD);
 
   if (size < sizeof (KBlock))
     return GNUNET_SYSERR;
@@ -163,7 +163,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
       size = MAX_KBLOCK_SIZE;
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
       kb = (KBlock *) & value[1];
-      kb->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+      kb->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
       mdsize = size - sizeof (KBlock) - strlen (dstURI) - 1;
       mdsize = GNUNET_ECRS_meta_data_serialize (ectx,
@@ -184,7 +184,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
     {
       value = GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + size);
       kb = (KBlock *) & value[1];
-      kb->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+      kb->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
       memcpy (&kb[1], dstURI, strlen (dstURI) + 1);
       GNUNET_GE_ASSERT (ectx,
                         mdsize ==
@@ -197,7 +197,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
                                                          GNUNET_ECRS_SERIALIZE_FULL));
     }
   value->size = htonl (sizeof (GNUNET_DatastoreValue) + size);
-  value->type = htonl (GNUNET_GNUNET_ECRS_BLOCKTYPE_KEYWORD);
+  value->type = htonl (GNUNET_ECRS_BLOCKTYPE_KEYWORD);
   value->prio = htonl (priority);
   value->anonymityLevel = htonl (anonymityLevel);
   value->expirationTime = GNUNET_htonll (expirationTime);

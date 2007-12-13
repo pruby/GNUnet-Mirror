@@ -169,10 +169,10 @@ test (GNUNET_SQstore_ServiceAPI * api)
     }
   ASSERT (oldSize < api->getSize ());
   ASSERT (256 ==
-          api->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
+          api->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
                                    NULL));
   ASSERT (256 ==
-          api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
+          api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
                                       NULL));
   for (i = 255; i >= 0; i--)
     {
@@ -190,19 +190,19 @@ test (GNUNET_SQstore_ServiceAPI * api)
     }
   ASSERT (oldSize > api->getSize ());
   i = 0;
-  ASSERT (128 == api->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (128 == api->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
                                           (GNUNET_DatastoreValueIterator) &
                                           iterateUp, &i));
   ASSERT (256 == i);
-  ASSERT (128 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (128 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                              (GNUNET_DatastoreValueIterator) &
                                              iterateDown, &i));
   ASSERT (0 == i);
-  ASSERT (128 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (128 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                              (GNUNET_DatastoreValueIterator) &
                                              iterateDelete, api));
   ASSERT (0 ==
-          api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+          api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                       (GNUNET_DatastoreValueIterator) &
                                       iterateDown, &i));
 
@@ -210,7 +210,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
   value = initValue (i);
   memset (&key, 256 - i, sizeof (GNUNET_HashCode));
   api->put (&key, value);
-  ASSERT (1 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (1 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                            (GNUNET_DatastoreValueIterator) &
                                            priorityCheck, &i));
   ASSERT (1 ==
@@ -218,7 +218,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
           iterateAllNow ((GNUNET_DatastoreValueIterator) & iteratePriority,
                          api));
   i += 4;
-  ASSERT (1 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (1 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                            (GNUNET_DatastoreValueIterator) &
                                            priorityCheck, &i));
   GNUNET_free (value);
@@ -229,7 +229,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
   GNUNET_free (value);
 
   value = NULL;
-  ASSERT (2 == api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+  ASSERT (2 == api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                            (GNUNET_DatastoreValueIterator) &
                                            multipleCheck, &value));
   GNUNET_free (value);
@@ -237,7 +237,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
           api->iterateAllNow ((GNUNET_DatastoreValueIterator) & iterateDelete,
                               api));
   ASSERT (0 ==
-          api->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
+          api->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY, NULL,
                                       NULL));
   api->drop ();
 

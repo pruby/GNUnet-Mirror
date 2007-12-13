@@ -35,11 +35,36 @@
 
 #define PEER_COUNT 4
 
-#define SIZE 1024 * 1024 * 2
+#define TEST_DEPTH PEER_COUNT
 
 static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_GC_Configuration *cfg;
+
+static int
+report (void *unused,
+	const GNUNET_PeerIdentity * reporter,
+	const GNUNET_PeerIdentity * link)
+{
+  GNUNET_EncName src;
+  GNUNET_EncName dst;
+
+  GNUNET_hash_to_enc (&reporter->hashPubKey, &src);
+  if (link != NULL)
+    {
+      GNUNET_hash_to_enc (&link->hashPubKey, &dst);
+      fprintf (stdout,
+               _("`%s' connected to `%s'.\n"),
+               (const char *) &src, (const char *) &dst);
+    }
+  else
+    {
+      fprintf (stdout,
+               _("`%s' is not connected to any peer.\n"),
+               (const char *) &src);
+    }
+  return GNUNET_OK;
+}
 
 /**
  * Testcase to test tracekit
@@ -49,10 +74,9 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
+  struct GNUNET_ClientServerConnection *sock;
   int ret;
   int i;
-  char buf[128];
-  GNUNET_CronTime start;
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -84,9 +108,17 @@ main (int argc, char **argv)
           return -1;
         }
     }
+  sock = GNUNET_client_connection_create (ectx, cfg);
+  if (sock == NULL)
+    {
+      fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
+      GNUNET_fini (ectx, cfg);
+      return 1;
+    }
+  ret = 0; /* FIXME: set to 1 here, to 0 in report! */
+  GNUNET_TRACEKIT_run (sock, TEST_DEPTH, 0, &report, &ret);
+  GNUNET_client_connection_destroy (sock);
 
-
-FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif

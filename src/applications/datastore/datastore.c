@@ -292,8 +292,8 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   cls.exists = GNUNET_NO;
   cls.value = value;
   sq->get (key, ntohl (value->type), &checkExists, &cls);
-  if (ntohl (value->type) == GNUNET_GNUNET_ECRS_BLOCKTYPE_DATA)
-    sq->get (key, GNUNET_GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
+  if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA)
+    sq->get (key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
 
   if (cls.exists)
     {
@@ -379,10 +379,10 @@ cronMaintenance (void *unused)
   available = quota - sq->getSize ();
   if ((available < 0) || (available < MIN_GNUNET_free))
     {
-      sq->iterateExpirationTime (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+      sq->iterateExpirationTime (GNUNET_ECRS_BLOCKTYPE_ANY,
                                  &freeSpaceExpired, NULL);
       if ((available < 0) || (available < MIN_GNUNET_free))
-        sq->iterateLowPriority (GNUNET_GNUNET_ECRS_BLOCKTYPE_ANY,
+        sq->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY,
                                 &freeSpaceLow, NULL);
     }
   else

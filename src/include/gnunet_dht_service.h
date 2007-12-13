@@ -88,9 +88,9 @@ typedef struct
    *
    * @param key the key to store under
    */
-  void (*put) (const GNUNET_HashCode * key,
-               unsigned int type,
-               unsigned int size, GNUNET_CronTime expire, const char *data);
+  int (*put) (const GNUNET_HashCode * key,
+	      unsigned int type,
+	      unsigned int size, GNUNET_CronTime expire, const char *data);
 
 } GNUNET_DHT_ServiceAPI;
 
