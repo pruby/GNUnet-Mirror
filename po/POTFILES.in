@@ -172,8 +172,6 @@ src/applications/bootstrap_http/http.c
 src/applications/bootstrap_http/httptest.c
 src/applications/traffic/traffic.c
 src/applications/traffic/clientapi.c
-src/applications/kvstore_mysql/kv_mysql.c
-src/applications/kvstore_mysql/kv_mysqltest.c
 src/applications/dstore_mysql/dstore_test.c
 src/applications/dstore_mysql/dstore_mysql.c
 src/applications/dstore_sqlite/dstore_test.c
