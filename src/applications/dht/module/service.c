@@ -25,7 +25,6 @@
  */
 
 #include "platform.h"
-#include "dstore.h"
 #include "table.h"
 #include "routing.h"
 #include "gnunet_dht_service.h"
@@ -171,22 +170,15 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
 
   cron = GNUNET_cron_create (capi->ectx);
   GNUNET_cron_start (cron);
-  if (GNUNET_OK != init_dht_store (1024 * 1024, capi))
-    {
-      GNUNET_GE_BREAK (capi->ectx, 0);
-      return NULL;
-    }
   if (GNUNET_OK != init_dht_table (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
-      done_dht_store ();
       return NULL;
     }
   if (GNUNET_OK != GNUNET_DHT_init_routing (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       done_dht_table ();
-      done_dht_store ();
       return NULL;
     }
   coreAPI = capi;
@@ -205,7 +197,6 @@ release_module_dht ()
   GNUNET_cron_stop (cron);
   GNUNET_DHT_done_routing ();
   done_dht_table ();
-  done_dht_store ();
   GNUNET_cron_destroy (cron);
   return GNUNET_OK;
 }

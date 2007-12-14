@@ -29,8 +29,7 @@
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
-#include "dstore.h"
-
+#include "gnunet_dstore_service.h"
 
 /**
  * Start a DHT get operation.

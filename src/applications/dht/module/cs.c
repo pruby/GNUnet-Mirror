@@ -45,7 +45,7 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  */
 static GNUNET_DHT_ServiceAPI *dhtAPI;
 
-typedef struct DHT_CLIENT_GET_RECORD
+struct DHT_CLIENT_GET_RECORD
 {
 
   struct DHT_CLIENT_GET_RECORD * next;
@@ -150,10 +150,7 @@ get_timeout (void *cls)
   struct DHT_CLIENT_GET_RECORD *record = cls;
   struct DHT_CLIENT_GET_RECORD * pos;
   struct DHT_CLIENT_GET_RECORD * prev;
-  int i;
-  int found;
 
-  found = GNUNET_NO;
   GNUNET_mutex_lock (lock);
   pos = getRecords;
   prev = NULL;
@@ -306,8 +303,8 @@ done_module_dht ()
       coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&csClientExit))
     status = GNUNET_SYSERR;
 
-  while (getRecordsSize > 0)
-    get_timeout (getRecords[0]);
+  while (getRecords != NULL)
+    get_timeout (getRecords);
   coreAPI->GNUNET_CORE_release_service (dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;

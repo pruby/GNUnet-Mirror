@@ -34,7 +34,6 @@
 #include "platform.h"
 #include "routing.h"
 #include "table.h"
-#include "dstore.h"
 #include "gnunet_protocols.h"
 #include "gnunet_core.h"
 #include "gnunet_stats_service.h"
@@ -615,8 +614,8 @@ handlePut (const GNUNET_PeerIdentity * sender,
                      &put[1], CONTENT_LIFETIME + now,
                      CONTENT_LIFETIME);
 #endif
-      dstore->put (ntohl (put->type),
-		   &put->key,
+      dstore->put (&put->key,
+		   ntohl (put->type),
 		   CONTENT_LIFETIME + now,
 		   ntohs (put->header.size) - sizeof (DHT_MESSAGE),
 		   (const char *) &put[1]);
