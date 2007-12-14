@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -45,18 +45,18 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  */
 static GNUNET_DHT_ServiceAPI *dhtAPI;
 
-typedef struct
+typedef struct DHT_CLIENT_GET_RECORD
 {
+
+  struct DHT_CLIENT_GET_RECORD * next;
 
   struct GNUNET_ClientHandle *client;
 
   struct GNUNET_DHT_GetHandle *get_record;
 
-} DHT_CLIENT_GET_RECORD;
+};
 
-static DHT_CLIENT_GET_RECORD **getRecords;
-
-static unsigned int getRecordsSize;
+static struct DHT_CLIENT_GET_RECORD * getRecords;
 
 /**
  * Lock.
@@ -92,11 +92,11 @@ csPut (struct GNUNET_ClientHandle *client,
   return GNUNET_OK;
 }
 
-int
+static int
 get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
             void *cls)
 {
-  DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
   size_t n;
 
@@ -140,29 +140,41 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
   return GNUNET_OK;
 }
 
+/**
+ * Find the record, remove it from the linked list
+ * and cancel the operation with the DHT API.
+ */
 static void
 get_timeout (void *cls)
 {
-  DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD * pos;
+  struct DHT_CLIENT_GET_RECORD * prev;
   int i;
   int found;
 
   found = GNUNET_NO;
   GNUNET_mutex_lock (lock);
-  for (i = getRecordsSize - 1; i >= 0; i--)
-    if (getRecords[i] == record)
-      {
-        getRecords[i] = getRecords[getRecordsSize - 1];
-        GNUNET_array_grow (getRecords, getRecordsSize, getRecordsSize - 1);
-        found = GNUNET_YES;
-        break;
-      }
-  GNUNET_mutex_unlock (lock);
-  if (found == GNUNET_YES)
+  pos = getRecords;
+  prev = NULL;
+  while (pos != NULL)
     {
-      dhtAPI->get_stop (record->get_record);
-      GNUNET_free (record);
+      if (pos == record)
+	break;
+      prev = pos;
+      pos = pos->next;
     }
+  if (pos == NULL) {
+    GNUNET_mutex_unlock (lock);
+    return;
+  }
+  if (prev == NULL)
+    getRecords = pos->next;
+  else
+    prev->next = pos->next;
+  GNUNET_mutex_unlock (lock);
+  dhtAPI->get_stop (record->get_record);
+  GNUNET_free (record);
 }
 
 /**
@@ -172,8 +184,8 @@ static int
 csGet (struct GNUNET_ClientHandle *client,
        const GNUNET_MessageHeader * message)
 {
-  const CS_dht_request_get_MESSAGE *get;
-  DHT_CLIENT_GET_RECORD *cpc;
+  const CS_dht_request_get_MESSAGE * get;
+  struct DHT_CLIENT_GET_RECORD * cpc;
 
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
@@ -187,14 +199,15 @@ csGet (struct GNUNET_ClientHandle *client,
                  __LINE__);
 #endif
   get = (const CS_dht_request_get_MESSAGE *) message;
-  cpc = GNUNET_malloc (sizeof (DHT_CLIENT_GET_RECORD));
+  cpc = GNUNET_malloc (sizeof (struct DHT_CLIENT_GET_RECORD));
   cpc->client = client;
   cpc->get_record = dhtAPI->get_start (ntohl (get->type),
                                        &get->key,
                                        GNUNET_ntohll (get->timeout),
-                                       &get_result, cpc, &get_timeout, cpc);
+                                       &get_result, cpc, &get_timeout, cpc);  
   GNUNET_mutex_lock (lock);
-  GNUNET_array_append (getRecords, getRecordsSize, cpc);
+  cpc->next = getRecords;
+  getRecords = cpc;
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
@@ -206,24 +219,30 @@ csGet (struct GNUNET_ClientHandle *client,
 static void
 csClientExit (struct GNUNET_ClientHandle *client)
 {
-  int i;
-  struct GNUNET_DHT_GetHandle *gr;
-  DHT_CLIENT_GET_RECORD *cgr;
+  struct GNUNET_DHT_GetHandle * gr;
+  struct DHT_CLIENT_GET_RECORD * pos;
+  struct DHT_CLIENT_GET_RECORD * prev;
+
   GNUNET_mutex_lock (lock);
-  for (i = 0; i < getRecordsSize; i++)
+  pos = getRecords;
+  prev = NULL;
+  while (pos != NULL) 
     {
-      cgr = getRecords[i];
-      if (cgr->client == client)
-        {
-          gr = cgr->get_record;
-          getRecords[i] = getRecords[getRecordsSize - 1];
-          GNUNET_array_grow (getRecords, getRecordsSize, getRecordsSize - 1);
+      if (pos->client == client)
+	{
+	  gr = pos->get_record;
+	  if (prev == NULL)
+	    getRecords = pos->next;
+	  else
+	    prev->next = pos->next;
           GNUNET_mutex_unlock (lock);
           dhtAPI->get_stop (gr);
-          GNUNET_free (cgr);
+          GNUNET_free (pos);
           GNUNET_mutex_lock (lock);
-          i--;
+	  pos = getRecords;
         }
+      prev = pos;
+      pos = pos->next;
     }
   GNUNET_mutex_unlock (lock);
 }

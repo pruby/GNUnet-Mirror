@@ -194,6 +194,8 @@ static unsigned int rt_size;
  */
 static GNUNET_Stats_ServiceAPI *stats;
 
+static GNUNET_Dstore_ServiceAPI *dstore;
+
 static struct GNUNET_Mutex *lock;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
@@ -476,7 +478,7 @@ handleGet (const GNUNET_PeerIdentity * sender,
 #endif
       return GNUNET_OK;           /* could not route */
     }
-  total = dht_store_get (&get->key, ntohl (get->type), &routeResult, NULL);
+  total = dstore->get (&get->key, ntohl (get->type), &routeResult, NULL);
   if ((total > GET_TRIES) && (sender != NULL))
     {
 #if DEBUG_ROUTING
@@ -613,11 +615,11 @@ handlePut (const GNUNET_PeerIdentity * sender,
                      &put[1], CONTENT_LIFETIME + now,
                      CONTENT_LIFETIME);
 #endif
-      dht_store_put (ntohl (put->type),
-                     &put->key,
-                     CONTENT_LIFETIME + now,
-                     ntohs (put->header.size) - sizeof (DHT_MESSAGE),
-                     (const char *) &put[1]);
+      dstore->put (ntohl (put->type),
+		   &put->key,
+		   CONTENT_LIFETIME + now,
+		   ntohs (put->header.size) - sizeof (DHT_MESSAGE),
+		   (const char *) &put[1]);
     }
   else
     {
@@ -812,7 +814,11 @@ GNUNET_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
                                             "DHT",
                                             "TABLESIZE",
                                             128, 1024 * 1024, 1024, &rts);
+  dstore = coreAPI->GNUNET_CORE_request_service ("dstore");
+  if (dstore == NULL) 
+    return GNUNET_SYSERR;    
   GNUNET_array_grow (records, rt_size, rts);
+
   lock = GNUNET_mutex_create (GNUNET_NO);
   stats = capi->GNUNET_CORE_request_service ("stats");
   if (stats != NULL)
@@ -828,6 +834,7 @@ GNUNET_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
       stat_results_received =
         stats->create (gettext_noop ("# dht results received"));
     }
+
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering p2p handlers: %d %d %d\n"),
@@ -873,6 +880,7 @@ GNUNET_DHT_done_routing ()
         }
     }
   GNUNET_array_grow (records, rt_size, 0);
+  coreAPI->GNUNET_CORE_release_service (dstore);
   return GNUNET_OK;
 }
 
