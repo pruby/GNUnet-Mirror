@@ -35,7 +35,6 @@ src/applications/dht/tools/dhttest.c
 src/applications/dht/tools/dhttest2.c
 src/applications/dht/tools/dht-query.c
 src/applications/dht/tools/dht_api.c
-src/applications/dht/module/dstore.c
 src/applications/dht/module/service.c
 src/applications/dht/module/cs.c
 src/applications/dht/module/routing.c
@@ -346,7 +345,6 @@ src/include/gnunet_datastore_service.h
 src/include/gnunet_blockstore.h
 src/include/gnunet_chat_lib.h
 src/include/gnunet_rpc_lib.h
-src/applications/dht/module/dstore.h
 src/applications/dht/module/routing.h
 src/applications/dht/module/table.h
 src/applications/datastore/prefetch.h
