@@ -191,7 +191,6 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
   GNUNET_thread_join (thread, &unused);
   GNUNET_thread_release_self (info.parent);
   GNUNET_client_connection_destroy (sock);
-  fprintf (stderr, "Returning %d\n", info.total);
   return info.total;
 }
 
@@ -209,7 +208,7 @@ int
 GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                 struct GNUNET_GE_Context *ectx,
                 const GNUNET_HashCode * key,
-                unsigned int type, GNUNET_CronTime expire,
+                unsigned int type,
                 const GNUNET_DataContainer * value)
 {
   struct GNUNET_ClientServerConnection *sock;
@@ -218,11 +217,6 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
   GNUNET_CronTime now;
 
   now = GNUNET_get_time ();
-  if (expire < now)
-    {
-      GNUNET_GE_BREAK (ectx, 0);        /* content already expired!? */
-      return GNUNET_SYSERR;
-    }
 #if DEBUG_DHT_API
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -243,7 +237,6 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
   req->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   req->key = *key;
   req->type = htonl (type);
-  req->expire = GNUNET_htonll (expire - now);   /* convert to relative time */
   memcpy (&req[1], &value[1],
           ntohl (value->size) - sizeof (GNUNET_DataContainer));
   ret = GNUNET_client_connection_write (sock, &req->header);

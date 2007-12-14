@@ -424,7 +424,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
         }
       else
         {
-          dht->put (&query, type, size, et, (const char *) gw);
+          dht->put (&query, type, size, (const char *) gw);
         }
       GNUNET_free (gw);
     }

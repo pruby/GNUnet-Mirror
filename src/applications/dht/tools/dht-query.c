@@ -54,7 +54,7 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'T', "timeout", "TIME",
    gettext_noop
-   ("allow TIME ms to process a GET command or expire PUT content after ms TIME"),
+   ("allow TIME ms to process a GET command"),
    1, &GNUNET_getopt_configure_set_ulong, &timeout},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
@@ -114,7 +114,7 @@ do_put (struct GNUNET_ClientServerConnection *sock,
 #endif
   if (timeout == 0)
     timeout = 30 * GNUNET_CRON_MINUTES;
-  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING, timeout + GNUNET_get_time (),        /* convert to absolute time */
+  if (GNUNET_OK == GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                    dc))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);

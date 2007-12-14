@@ -33,7 +33,7 @@
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
-#define DEBUG_CS GNUNET_NO
+#define DEBUG_CS GNUNET_YES
 
 /**
  * Global core API.
@@ -87,7 +87,7 @@ csPut (struct GNUNET_ClientHandle *client,
                  "`%s' at %s:%d processes put '%.*s'\n",
                  __FUNCTION__, __FILE__, __LINE__, size, &req[1]);
 #endif
-  dhtAPI->put (&req->key, ntohl (req->type), size, GNUNET_ntohll (req->expire) + GNUNET_get_time (),    /* convert to absolute time */
+  dhtAPI->put (&req->key, ntohl (req->type), size,
                (const char *) &req[1]);
   return GNUNET_OK;
 }
@@ -113,7 +113,6 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
   msg = GNUNET_malloc (n);
   msg->header.size = htons (n);
   msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
-  msg->expire = 0;              /* unknown */
   msg->key = *key;
   memcpy (&msg[1], &value[1],
           ntohl (value->size) - sizeof (GNUNET_DataContainer));

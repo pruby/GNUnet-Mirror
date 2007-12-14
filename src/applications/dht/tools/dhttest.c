@@ -138,9 +138,6 @@ main (int argc, const char **argv)
                                           ectx,
                                           &key,
                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                          GNUNET_get_time () +
-                                          15 * GNUNET_CRON_MINUTES *
-                                          NUM_ROUNDS * NUM_PEERS * NUM_PEERS,
                                           value));
     }
 

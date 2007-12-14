@@ -50,15 +50,13 @@ int GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
 /**
  * Perform a DHT put operation.  Note that PUT operations always
  * expire after a period of time and the client is responsible for
- * doing periodic refreshs.  The given expiration time is ONLY used to
- * ensure that the datum is certainly deleted by that time (it maybe
- * deleted earlier).
+ * doing periodic refreshs. 
  *
  * @param expirationTime absolute expiration time
  */
 int GNUNET_DHT_put (const GNUNET_HashCode * key,
 		    unsigned int type,
-		    unsigned int size, GNUNET_CronTime expirationTime,
+		    unsigned int size,
 		    const char *data);
 
 /**

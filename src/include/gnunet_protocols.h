@@ -382,6 +382,14 @@ extern "C"
  */
 #define GNUNET_P2P_PROTO_GAP_RESULT 17
 
+/************** p2p DHT application messages ************/
+
+#define GNUNET_P2P_PROTO_DHT_DISCOVERY 18
+#define GNUNET_P2P_PROTO_DHT_ASK_HELLO 19
+#define GNUNET_P2P_PROTO_DHT_GET       20
+#define GNUNET_P2P_PROTO_DHT_PUT       21
+#define GNUNET_P2P_PROTO_DHT_RESULT    22
+
 /* ************** p2p CHAT application messages *********** */
 
 /**
@@ -408,15 +416,6 @@ extern "C"
 #define GNUNET_P2P_PROTO_RPC_REQ 42
 #define GNUNET_P2P_PROTO_RPC_RES 43
 #define GNUNET_P2P_PROTO_RPC_ACK 44
-
-/************** p2p DHT application messages ************/
-
-#define GNUNET_P2P_PROTO_DHT_DISCOVERY 45
-#define GNUNET_P2P_PROTO_DHT_ASK_HELLO 46
-#define GNUNET_P2P_PROTO_DHT_GET       47
-#define GNUNET_P2P_PROTO_DHT_PUT       48
-#define GNUNET_P2P_PROTO_DHT_RESULT    49
-
 
 /* ************* p2p VPN messages ************* */
 

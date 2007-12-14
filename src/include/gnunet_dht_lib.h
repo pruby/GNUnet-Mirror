@@ -62,7 +62,6 @@ int GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
  * Perform a synchronous put operation.
  *
  * @param key the key to store
- * @param expire when should the content expire
  * @param value what to store
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
@@ -70,7 +69,6 @@ int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                     struct GNUNET_GE_Context *ectx,
                     const GNUNET_HashCode * key,
                     unsigned int type,
-                    GNUNET_CronTime expire,
                     const GNUNET_DataContainer * value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -90,7 +90,7 @@ typedef struct
    */
   int (*put) (const GNUNET_HashCode * key,
 	      unsigned int type,
-	      unsigned int size, GNUNET_CronTime expire, const char *data);
+	      unsigned int size, const char *data);
 
 } GNUNET_DHT_ServiceAPI;
 

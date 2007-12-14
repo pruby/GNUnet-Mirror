@@ -58,8 +58,6 @@ typedef struct
 
   GNUNET_HashCode key;
 
-  unsigned long long expire;    /* nbo */
-
 } CS_dht_request_put_MESSAGE;
 
 /**

@@ -161,8 +161,7 @@ main (int argc, const char **argv)
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      GNUNET_get_time () +
-                                      5 * GNUNET_CRON_MINUTES, value));
+                                      value));
   printf ("Peer1 gets key2\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
@@ -182,30 +181,40 @@ main (int argc, const char **argv)
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      GNUNET_get_time () +
-                                      5 * GNUNET_CRON_MINUTES, value));
+                                      value));
   printf ("Peer2 gets key.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                               &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
-
   GNUNET_hash ("key2", 4, &key);
   printf ("Peer2 gets key2.\n");
-  CHECK (1 == GNUNET_DHT_get (cfg,
-                              ectx,
-                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
+  left = 10;
+  do {
+    if (1 == GNUNET_DHT_get (cfg,
+			     ectx,
+			     GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+			     &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL))
+      break;
+    left--;
+  } while (left > 0);
+  CHECK (left > 0);
   /* switch to peer1 */
   GNUNET_GC_set_configuration_value_string (cfg,
                                             ectx,
                                             "NETWORK", "HOST",
                                             "localhost:2087");
   printf ("Peer1 gets key\n");
-  CHECK (1 == GNUNET_DHT_get (cfg,
-                              ectx,
-                              GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 30 * GNUNET_CRON_SECONDS, NULL, NULL));
+  left = 10;
+  do {
+    if (1 == GNUNET_DHT_get (cfg,
+			     ectx,
+			     GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+			     &key, 300 * GNUNET_CRON_SECONDS, NULL, NULL))
+      break;
+    left--;
+  } while (left > 0);
+  CHECK(left > 0);
   /* end of actual test code */
 
 FAILURE:

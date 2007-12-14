@@ -95,7 +95,7 @@ push_callback (const GNUNET_HashCode * key,
   dht->put (key,
             ntohl (value->type),
             ntohl (value->size) - sizeof (GNUNET_DatastoreValue),
-            GNUNET_ntohll (value->expirationTime), (const char *) &value[1]);
+            (const char *) &value[1]);
   if (stats != NULL)
     stats->change (stat_push_count, 1);
   if (dht == NULL)
