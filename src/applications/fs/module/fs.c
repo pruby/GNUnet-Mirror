@@ -1248,7 +1248,10 @@ csHandleClientExit (struct GNUNET_ClientHandle *client)
             prev->next = pos->next;
           dht->get_stop (pos->rec);
           GNUNET_free (pos);
-          pos = prev->next;
+          if (prev == NULL)
+            pos = dht_pending;
+          else
+	    pos = prev->next;
           continue;
         }
       prev = pos;
