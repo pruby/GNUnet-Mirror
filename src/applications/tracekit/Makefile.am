@@ -43,6 +43,8 @@ EXTRA_DIST = check.conf
 check_PROGRAMS = \
   tracekittest
 
+TESTS = $(check_PROGRAMS)
+
 tracekittest_SOURCES = \
   tracekittest.c 
 tracekittest_LDADD = \

@@ -66,6 +66,12 @@ report (void *unused,
   return GNUNET_OK;
 }
 
+static void
+run_shutdown (void *unused)
+{
+  GNUNET_shutdown_initiate ();
+}
+
 /**
  * Testcase to test tracekit
  * @return 0: ok, -1: error
@@ -75,6 +81,7 @@ main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
   struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_CronManager *cron;
   int ret;
   int i;
 
@@ -116,8 +123,16 @@ main (int argc, char **argv)
       return 1;
     }
   ret = 0; /* FIXME: set to 1 here, to 0 in report! */
+  cron = GNUNET_cron_create (ectx);
+  GNUNET_cron_start (cron);
+  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * 60,
+                       0, NULL);
+  GNUNET_shutdown_wait_for ();
+  GNUNET_client_connection_close_forever (sock);
   GNUNET_TRACEKIT_run (sock, TEST_DEPTH, 0, &report, &ret);
   GNUNET_client_connection_destroy (sock);
+  GNUNET_cron_stop (cron);
+  GNUNET_cron_destroy (cron);
 
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
