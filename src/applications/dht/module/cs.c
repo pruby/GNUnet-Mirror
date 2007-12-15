@@ -139,7 +139,7 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _("`%s' failed. Terminating connection to client.\n"),
-                     "GNUNET_CORE_cs_send_to_client");
+                     "cs_send_to_client");
       coreAPI->cs_terminate_client_connection (record->client);
     }
   GNUNET_free (msg);

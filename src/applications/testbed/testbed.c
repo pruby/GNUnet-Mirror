@@ -160,7 +160,7 @@ tb_GET_hello (GNUNET_ClientHandle client, TESTBED_GET_hello_MESSAGE * msg)
       coreAPI->cs_send_to_client (client, &reply->header.header);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "%s: returning from GNUNET_CORE_cs_send_to_client\n",
+                     "%s: returning from cs_send_to_client\n",
                      __FUNCTION__);
       GNUNET_free (helo);
       GNUNET_free (reply);
@@ -1414,7 +1414,7 @@ initialize_module_testbed (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
-                    GNUNET_CORE_cs_register_exit_handler
+                    cs_exit_handler_register
                     (&testbedClientExitHandler));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=

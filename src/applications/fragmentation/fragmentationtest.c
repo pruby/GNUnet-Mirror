@@ -367,14 +367,14 @@ testManyFragmentsMultiIdCollisions ()
 /* ************* driver ****************** */
 
 static int
-GNUNET_CORE_p2p_register_handler (const unsigned short type,
+p2p_register_handler (const unsigned short type,
                                   GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }
 
 static int
-GNUNET_CORE_p2p_unregister_handler (const unsigned short type,
+p2p_unregister_handler (const unsigned short type,
                                     GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
@@ -382,7 +382,7 @@ GNUNET_CORE_p2p_unregister_handler (const unsigned short type,
 
 
 static void *
-GNUNET_CORE_request_service (const char *name)
+request_service (const char *name)
 {
   return NULL;
 }
@@ -394,10 +394,10 @@ main (int argc, char *argv[])
 
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cron = GNUNET_cron_create (NULL);
-  capi.GNUNET_CORE_p2p_inject_message = &handleHelper;
-  capi.GNUNET_CORE_request_service = &GNUNET_CORE_request_service;
-  capi.registerHandler = &GNUNET_CORE_p2p_register_handler;
-  capi.unregisterHandler = &GNUNET_CORE_p2p_unregister_handler;
+  capi.p2p_inject_message = &handleHelper;
+  capi.request_service = &request_service;
+  capi.registerHandler = &p2p_register_handler;
+  capi.unregisterHandler = &p2p_unregister_handler;
   provide_module_fragmentation (&capi);
 
   fprintf (stderr, ".");

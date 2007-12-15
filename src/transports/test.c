@@ -81,7 +81,7 @@ static struct GNUNET_CommandLineOption testOptions[] = {
 };
 
 static void *
-GNUNET_CORE_request_service (const char *name)
+request_service (const char *name)
 {
   /* we expect only "stats" to be requested... */
   if (0 != strcmp (name, "stats"))
@@ -90,7 +90,7 @@ GNUNET_CORE_request_service (const char *name)
 }
 
 static int
-GNUNET_CORE_connection_assert_tsession_unused (GNUNET_TSession * tsession)
+connection_assert_tsession_unused (GNUNET_TSession * tsession)
 {
   return GNUNET_OK;
 }
@@ -248,10 +248,10 @@ main (int argc, char *const *argv)
   api.cron = GNUNET_cron_create (api.ectx);
   api.myIdentity = &me;
   api.receive = &receive;
-  api.GNUNET_CORE_request_service = &GNUNET_CORE_request_service;
-  api.GNUNET_CORE_release_service = NULL;       /* not needed */
-  api.GNUNET_CORE_connection_assert_tsession_unused =
-    &GNUNET_CORE_connection_assert_tsession_unused;
+  api.request_service = &request_service;
+  api.release_service = NULL;       /* not needed */
+  api.connection_assert_tsession_unused =
+    &connection_assert_tsession_unused;
   GNUNET_cron_start (api.cron);
   res = GNUNET_OK;
   transport = init (&api);
