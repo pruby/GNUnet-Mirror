@@ -207,6 +207,7 @@ csClientExit (struct GNUNET_ClientHandle *client)
           GNUNET_free (pos);
           GNUNET_mutex_lock (lock);
           pos = getRecords;
+	  continue;
         }
       prev = pos;
       pos = pos->next;
