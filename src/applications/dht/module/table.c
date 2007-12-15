@@ -329,10 +329,10 @@ inverse_distance (const GNUNET_HashCode * target,
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int
-select_dht_peer (GNUNET_PeerIdentity * set,
-                 const GNUNET_HashCode * target,
-                 const GNUNET_PeerIdentity * blocked,
-                 unsigned int blocked_size)
+GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
+                        const GNUNET_HashCode * target,
+                        const GNUNET_PeerIdentity * blocked,
+                        unsigned int blocked_size)
 {
   unsigned long long total_distance;
   unsigned long long selected;
@@ -452,7 +452,8 @@ broadcast_dht_discovery (const GNUNET_PeerIdentity * other, void *cls)
     }
   while (i < pc)
     {
-      if (GNUNET_OK != select_dht_peer (&pos[i], &other->hashPubKey, pos, i))
+      if (GNUNET_OK !=
+          GNUNET_DHT_select_peer (&pos[i], &other->hashPubKey, pos, i))
         pc--;
       else
         i++;
@@ -710,7 +711,7 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
  * @return GNUNET_OK on success
  */
 int
-init_dht_table (GNUNET_CoreAPIForPlugins * capi)
+GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
 {
   unsigned long long i;
 
@@ -757,7 +758,7 @@ init_dht_table (GNUNET_CoreAPIForPlugins * capi)
  * @return GNUNET_OK on success
  */
 int
-done_dht_table ()
+GNUNET_DHT_table_done ()
 {
   unsigned int i;
   unsigned int j;
