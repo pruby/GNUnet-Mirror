@@ -359,8 +359,8 @@ GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
   unsigned int ec;
   unsigned int i;
   int match;
-  PeerBucket *bucket;
-  PeerInfo *pi;
+  const PeerBucket *bucket;
+  const PeerInfo *pi;
 
   GNUNET_mutex_lock (lock);
   if (stats != NULL)
