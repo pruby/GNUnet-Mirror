@@ -91,18 +91,6 @@ typedef struct
 
 typedef struct
 {
-  P2P_tracekit_reply_MESSAGE p2p_reply;
-
-  /**
-   * List of peers that the responder is
-   * currently connected to.
-   */
-  GNUNET_PeerIdentity peerList[1];
-} P2P_tracekit_reply_MESSAGE_GENERIC;
-
-
-typedef struct
-{
   GNUNET_MessageHeader header;
 
   /**
@@ -128,15 +116,5 @@ typedef struct
 
 } CS_tracekit_reply_MESSAGE;
 
-typedef struct
-{
-  CS_tracekit_reply_MESSAGE cs_reply;
-
-  /**
-   * List of peers that the responder is
-   * currently connected to.
-   */
-  GNUNET_PeerIdentity peerList[1];
-} CS_tracekit_reply_MESSAGE_GENERIC;
 
 #endif
