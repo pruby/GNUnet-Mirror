@@ -34,7 +34,7 @@
 #include "gnunet_core.h"
 #include "gnunet_stats_service.h"
 
-#define DEBUG_ROUTING GNUNET_YES
+#define DEBUG_ROUTING GNUNET_NO
 
 /**
  * What is the request priority for DHT operations?

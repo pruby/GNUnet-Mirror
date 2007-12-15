@@ -37,6 +37,7 @@
  *     TODO: better randomized neighbor selection in DHT_select_peer
  *     TODO: add callback for discovery-message padding (use core callback
  *           for extra-available bandwidth)
+ *     TODO: add LAN tunnels for increased connectivity choices
  *   + routing.c: tracking of get/put operations, retry, reply handling
  *     code tries best-match routing among entries in table
  *   + service.c: provide DHT services to rest of GNUnet process
