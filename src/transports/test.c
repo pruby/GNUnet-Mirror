@@ -249,9 +249,8 @@ main (int argc, char *const *argv)
   api.myIdentity = &me;
   api.receive = &receive;
   api.request_service = &request_service;
-  api.release_service = NULL;       /* not needed */
-  api.connection_assert_tsession_unused =
-    &connection_assert_tsession_unused;
+  api.release_service = NULL;   /* not needed */
+  api.connection_assert_tsession_unused = &connection_assert_tsession_unused;
   GNUNET_cron_start (api.cron);
   res = GNUNET_OK;
   transport = init (&api);

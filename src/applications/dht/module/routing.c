@@ -184,7 +184,7 @@ typedef struct DHTQueryRecord
 /**
  * Linked list of active records.
  */
-static DHTQueryRecord * records;
+static DHTQueryRecord *records;
 
 /**
  * Size of records
@@ -219,21 +219,21 @@ static unsigned int stat_put_requests_received;
  * target_replication count (on average).
  */
 static unsigned int
-get_forward_count(unsigned int hop_count,
-		  double target_replication) 
+get_forward_count (unsigned int hop_count, double target_replication)
 {
   double target_count;
   unsigned int target_value;
   unsigned int diameter;
 
-  diameter = GNUNET_DHT_estimate_network_diameter();
+  diameter = GNUNET_DHT_estimate_network_diameter ();
   if (hop_count > (diameter + 1) * 2)
     return 0;
-  target_count = target_replication / (target_replication * hop_count + diameter);
+  target_count =
+    target_replication / (target_replication * hop_count + diameter);
   target_value = 0;
   while (target_value < target_count)
     target_value++;
-  if ( (target_count + 1 - target_value ) > drand48())
+  if ((target_count + 1 - target_value) > drand48 ())
     target_value++;
   return target_value;
 }
@@ -330,15 +330,15 @@ routeResult (const GNUNET_HashCode * key,
                              "Route to peer `%s' has expired (%llu < %llu)\n",
                              &enc, pos->expire, now);
 #endif
-	      if (prev == NULL)
-		q->sources = pos->next;
-	      else
-		prev->next = pos->next;
-	      GNUNET_free(pos);
-	      if (prev == NULL)
-		pos = q->sources;
-	      else
-		pos = prev->next;	      
+              if (prev == NULL)
+                q->sources = pos->next;
+              else
+                prev->next = pos->next;
+              GNUNET_free (pos);
+              if (prev == NULL)
+                pos = q->sources;
+              else
+                pos = prev->next;
               continue;
             }
           if (0 != memcmp (&pos->source,
@@ -352,8 +352,7 @@ routeResult (const GNUNET_HashCode * key,
                              "Routing result to `%s'\n", &enc);
 #endif
               coreAPI->unicast (&pos->source,
-                                &result->header, DHT_PRIORITY,
-                                DHT_DELAY);
+                                &result->header, DHT_PRIORITY, DHT_DELAY);
               if (stats != NULL)
                 stats->change (stat_replies_routed, 1);
             }
@@ -372,7 +371,7 @@ routeResult (const GNUNET_HashCode * key,
           pos = pos->next;
         }
       if (q->result_count >= MAX_RESULTS)
-	  q->expire = 0;	  
+        q->expire = 0;
       break;
     }
   GNUNET_mutex_unlock (lock);
@@ -403,7 +402,7 @@ addRoute (const GNUNET_PeerIdentity * sender,
   struct DHT_Source_Route *pos;
 
   hops = ntohl (get->hop_count);
-  diameter = GNUNET_DHT_estimate_network_diameter();
+  diameter = GNUNET_DHT_estimate_network_diameter ();
   if (hops > 2 * diameter)
     return GNUNET_SYSERR;
   now = GNUNET_get_time ();
@@ -413,12 +412,12 @@ addRoute (const GNUNET_PeerIdentity * sender,
   for (i = 0; i < rt_size; i++)
     {
       q = &records[i];
-      if ( (q->expire > now) &&
-	   ( (0 != memcmp (&q->get.key,
-			   &get->key,
-			   sizeof (GNUNET_HashCode))) ||
-	     (q->get.type == get->type)) )
-	continue; /* used and not an identical request */
+      if ((q->expire > now) &&
+          ((0 != memcmp (&q->get.key,
+                         &get->key,
+                         sizeof (GNUNET_HashCode))) ||
+           (q->get.type == get->type)))
+        continue;               /* used and not an identical request */
       if (q->expire < now)
         {
           rt_pos = i;
@@ -428,22 +427,18 @@ addRoute (const GNUNET_PeerIdentity * sender,
               q->sources = pos->next;
               GNUNET_free (pos);
             }
-	  GNUNET_array_grow(q->results,
-			    q->result_count,
-			    0);
-	  q->expire = 0;
+          GNUNET_array_grow (q->results, q->result_count, 0);
+          q->expire = 0;
         }
-      if ( (0 == memcmp (&q->get.key,
-			 &get->key,
-			 sizeof (GNUNET_HashCode)) &&
-	    (q->get.type == get->type)) ) 
-	{
-	  GNUNET_array_grow(q->results,
-			    q->result_count,
-			    0);
-	  rt_pos = i;
-	  break;
-	}
+      if ((0 == memcmp (&q->get.key,
+                        &get->key,
+                        sizeof (GNUNET_HashCode)) &&
+           (q->get.type == get->type)))
+        {
+          GNUNET_array_grow (q->results, q->result_count, 0);
+          rt_pos = i;
+          break;
+        }
     }
   if (rt_pos == rt_size)
     {
@@ -535,8 +530,8 @@ handleGet (const GNUNET_PeerIdentity * sender,
       return GNUNET_OK;
     }
   aget = *get;
-  hop_count = ntohl(get->hop_count);
-  target_value = get_forward_count(hop_count, GET_TRIES);
+  hop_count = ntohl (get->hop_count);
+  target_value = get_forward_count (hop_count, GET_TRIES);
   aget.hop_count = htonl (1 + hop_count);
   for (i = 0; i < target_value; i++)
     {
@@ -555,9 +550,9 @@ handleGet (const GNUNET_PeerIdentity * sender,
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[i].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-		     GNUNET_GE_DEVELOPER,
-                         "Forwarding DHT GET request to peer `%s'.\n", &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER,
+                     "Forwarding DHT GET request to peer `%s'.\n", &enc);
 #endif
       coreAPI->unicast (&next[i], &aget.header, DHT_PRIORITY, DHT_DELAY);
     }
@@ -572,8 +567,8 @@ handlePut (const GNUNET_PeerIdentity * sender,
            const GNUNET_MessageHeader * msg)
 {
   GNUNET_PeerIdentity next[PUT_TRIES];
-  const DHT_MESSAGE * put;
-  DHT_MESSAGE * aput;
+  const DHT_MESSAGE *put;
+  DHT_MESSAGE *aput;
   GNUNET_CronTime now;
   unsigned int hop_count;
   unsigned int target_value;
@@ -598,13 +593,11 @@ handlePut (const GNUNET_PeerIdentity * sender,
                  "Received DHT PUT for key `%s'.\n", &enc);
 #endif
   store = 0;
-  hop_count = htons(put->hop_count);
-  target_value = get_forward_count(hop_count, PUT_TRIES);
-  aput = GNUNET_malloc(ntohs(msg->size));
-  memcpy(aput,
-	 put,
-	 ntohs(msg->size));
-  aput->hop_count = htons(hop_count + 1);
+  hop_count = htons (put->hop_count);
+  target_value = get_forward_count (hop_count, PUT_TRIES);
+  aput = GNUNET_malloc (ntohs (msg->size));
+  memcpy (aput, put, ntohs (msg->size));
+  aput->hop_count = htons (hop_count + 1);
 
 
   for (i = 0; i < target_value; i++)
@@ -624,17 +617,17 @@ handlePut (const GNUNET_PeerIdentity * sender,
       if (1 == GNUNET_hash_xorcmp (&next[i].hashPubKey,
                                    &coreAPI->myIdentity->hashPubKey,
                                    &put->key))
-	store = 1;            /* we're closer than the selected target */
+        store = 1;              /* we're closer than the selected target */
 #if DEBUG_ROUTING
       GNUNET_hash_to_enc (&next[i].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-		     GNUNET_GE_DEVELOPER,
-		     "Forwarding DHT PUT request to peer `%s'.\n", &enc);
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                     GNUNET_GE_DEVELOPER,
+                     "Forwarding DHT PUT request to peer `%s'.\n", &enc);
 #endif
       coreAPI->unicast (&next[i], &aput->header, DHT_PRIORITY, DHT_DELAY);
     }
-  GNUNET_free(aput);
+  GNUNET_free (aput);
   if (store != 0)
     {
       now = GNUNET_get_time ();
@@ -753,10 +746,10 @@ GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
       pos = records[i].sources;
       while (pos != NULL)
         {
-          if ( (pos->receiver == handler) &&
-	       (pos->receiver_closure == cls) &&
-	       (0 == memcmp (key,
-			     &records[i].get.key, sizeof (GNUNET_HashCode))))
+          if ((pos->receiver == handler) &&
+              (pos->receiver_closure == cls) &&
+              (0 == memcmp (key,
+                            &records[i].get.key, sizeof (GNUNET_HashCode))))
             {
               if (prev == NULL)
                 records[i].sources = pos->next;
@@ -771,9 +764,7 @@ GNUNET_DHT_get_stop (const GNUNET_HashCode * key,
         }
       if (records[i].sources == NULL)
         {
-	  GNUNET_array_grow(records[i].results,
-			    records[i].result_count,
-			    0);
+          GNUNET_array_grow (records[i].results, records[i].result_count, 0);
           records[i].expire = 0;
         }
       if (done == GNUNET_YES)
@@ -904,17 +895,15 @@ GNUNET_DHT_done_routing ()
       stats = NULL;
     }
   GNUNET_mutex_destroy (lock);
- for (i = 0; i < rt_size; i++)
+  for (i = 0; i < rt_size; i++)
     {
       while (records[i].sources != NULL)
         {
-	  pos = records[i].sources;
-	  records[i].sources = pos->next;
-	  GNUNET_free (pos);
+          pos = records[i].sources;
+          records[i].sources = pos->next;
+          GNUNET_free (pos);
         }
-      GNUNET_array_grow(records[i].results,
-			records[i].result_count,
-			0);
+      GNUNET_array_grow (records[i].results, records[i].result_count, 0);
     }
   GNUNET_array_grow (records, rt_size, 0);
   coreAPI->release_service (dstore);

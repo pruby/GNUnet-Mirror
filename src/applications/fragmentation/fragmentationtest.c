@@ -368,14 +368,14 @@ testManyFragmentsMultiIdCollisions ()
 
 static int
 p2p_register_handler (const unsigned short type,
-                                  GNUNET_P2PRequestHandler callback)
+                      GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }
 
 static int
 p2p_unregister_handler (const unsigned short type,
-                                    GNUNET_P2PRequestHandler callback)
+                        GNUNET_P2PRequestHandler callback)
 {
   return GNUNET_OK;
 }

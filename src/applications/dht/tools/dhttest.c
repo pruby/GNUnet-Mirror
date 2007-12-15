@@ -118,25 +118,25 @@ main (int argc, const char **argv)
                                                 buf);
       /* wait for some DHT's to find each other! */
       sock = GNUNET_client_connection_create (NULL, cfg);
-      left = 30;                    /* how many iterations should we wait? */
+      left = 30;                /* how many iterations should we wait? */
       while (GNUNET_OK ==
-	     GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
-	{
-	  printf ("Waiting for peer to DHT-connect (%u iterations left)...\n",
-		  left);
-	  sleep (5);
-	  left--;
-	  if (left == 0)
-	    break;
-	}
+             GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
+        {
+          printf ("Waiting for peer to DHT-connect (%u iterations left)...\n",
+                  left);
+          sleep (5);
+          left--;
+          if (left == 0)
+            break;
+        }
       GNUNET_client_connection_destroy (sock);
       if (ok == 0)
-	{
-	  GNUNET_TESTING_stop_daemons (peers);
-	  fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
-	  GNUNET_GC_free (cfg);
-	  return -1;
-	}
+        {
+          GNUNET_TESTING_stop_daemons (peers);
+          fprintf (stderr, "Peers' DHTs failed to DHT-connect!\n");
+          GNUNET_GC_free (cfg);
+          return -1;
+        }
 
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
@@ -147,7 +147,7 @@ main (int argc, const char **argv)
                                           &key,
                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
                                           value));
-      GNUNET_free(value);
+      GNUNET_free (value);
     }
 
   /* get loop */
@@ -156,39 +156,36 @@ main (int argc, const char **argv)
     {
       GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + i * 10);
       GNUNET_GC_set_configuration_value_string (cfg,
-						ectx, "NETWORK", "HOST",
-						buf);
+                                                ectx, "NETWORK", "HOST", buf);
       for (j = 0; j < NUM_PEERS; j++)
-	{
-	  GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
-	  GNUNET_hash (buf, 4, &key);
-	  fprintf (stderr, "Peer %d gets key %d", i, j);
-	  for (k = 0; k < NUM_ROUNDS; k++)
-	      {
-		fprintf (stderr, ".");
-		if (0 < GNUNET_DHT_get (cfg,
-					ectx,
-					GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-					&key,
-					15 * GNUNET_CRON_SECONDS,
-					NULL, NULL))
-		  break;
-	      }
-	  if (k < NUM_ROUNDS)
-	    {
-	      fprintf (stderr, "!\n");
-	      found++;
-	    }
-	  else
-	    {
-	      fprintf (stderr, "?\n");
-	    }
+        {
+          GNUNET_snprintf (buf, 128, "localhost:%u", 2087 + j * 10);
+          GNUNET_hash (buf, 4, &key);
+          fprintf (stderr, "Peer %d gets key %d", i, j);
+          for (k = 0; k < NUM_ROUNDS; k++)
+            {
+              fprintf (stderr, ".");
+              if (0 < GNUNET_DHT_get (cfg,
+                                      ectx,
+                                      GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+                                      &key,
+                                      15 * GNUNET_CRON_SECONDS, NULL, NULL))
+                break;
+            }
+          if (k < NUM_ROUNDS)
+            {
+              fprintf (stderr, "!\n");
+              found++;
+            }
+          else
+            {
+              fprintf (stderr, "?\n");
+            }
         }
     }
   /* end of actual test code */
   fprintf (stderr,
-	   "Found %u out of %u attempts.\n",
-	   found, NUM_PEERS * NUM_PEERS);
+           "Found %u out of %u attempts.\n", found, NUM_PEERS * NUM_PEERS);
 FAILURE:
   GNUNET_TESTING_stop_daemons (peers);
   GNUNET_GC_free (cfg);

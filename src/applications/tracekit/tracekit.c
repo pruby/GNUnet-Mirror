@@ -55,7 +55,7 @@ static int
 handlep2pReply (const GNUNET_PeerIdentity * sender,
                 const GNUNET_MessageHeader * message)
 {
-  struct RTE * rte;
+  struct RTE *rte;
   unsigned int i;
   unsigned int hostCount;
   const P2P_tracekit_reply_MESSAGE *reply;
@@ -93,15 +93,13 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
            (GNUNET_Int32Time) ntohl (reply->initiatorTimestamp))
           && (0 ==
               memcmp (&rte->initiator,
-                      &reply->initiatorId,
-                      sizeof (GNUNET_HashCode))))
+                      &reply->initiatorId, sizeof (GNUNET_HashCode))))
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                          "TRACEKIT: found matching entry in routing table\n");
           if (0 == memcmp (coreAPI->myIdentity,
-                           &rte->replyTo,
-                           sizeof (GNUNET_HashCode)))
+                           &rte->replyTo, sizeof (GNUNET_HashCode)))
             {
               idx = ntohl (reply->clientId);
               GNUNET_GE_LOG (ectx,
@@ -128,12 +126,11 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
               /* build msg */
               csReply->header.size
                 = htons (sizeof (CS_tracekit_reply_MESSAGE) +
-			 hostCount * sizeof (GNUNET_PeerIdentity));
+                         hostCount * sizeof (GNUNET_PeerIdentity));
               csReply->header.type = htons (GNUNET_CS_PROTO_TRACEKIT_REPLY);
               csReply->responderId = reply->responderId;
               memcpy (&csReply[1],
-                      &reply[1],
-		      hostCount * sizeof (GNUNET_PeerIdentity));
+                      &reply[1], hostCount * sizeof (GNUNET_PeerIdentity));
               coreAPI->cs_send_to_client (clients[idx],
                                           &csReply->header, GNUNET_YES);
               GNUNET_free (csReply);
@@ -145,8 +142,7 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
                              GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                              GNUNET_GE_USER,
                              "TRACEKIT: forwarding to next hop `%s'\n", &hop);
-              coreAPI->unicast (&rte->replyTo, message,
-                                rte->priority, 0);
+              coreAPI->unicast (&rte->replyTo, message, rte->priority, 0);
             }
         }
     }
@@ -201,7 +197,7 @@ handlep2pProbe (const GNUNET_PeerIdentity * sender,
   GNUNET_EncName init;
   GNUNET_EncName sen;
   GNUNET_Int32Time now;
-  struct RTE * rte;
+  struct RTE *rte;
 
   GNUNET_hash_to_enc (&sender->hashPubKey, &sen);
   if (ntohs (message->size) != sizeof (P2P_tracekit_probe_MESSAGE))
@@ -231,10 +227,9 @@ handlep2pProbe (const GNUNET_PeerIdentity * sender,
   for (i = 0; i < MAXROUTE; i++)
     {
       rte = &routeTable[i];
-      if ( (rte->timestamp == ntohl (msg->timestamp))
-	   && 0 == memcmp (&rte->initiator,
-			   &msg->initiatorId,
-			   sizeof (GNUNET_HashCode)))
+      if ((rte->timestamp == ntohl (msg->timestamp))
+          && 0 == memcmp (&rte->initiator,
+                          &msg->initiatorId, sizeof (GNUNET_HashCode)))
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,

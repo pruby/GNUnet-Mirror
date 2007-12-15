@@ -167,7 +167,7 @@ pingReceived (const GNUNET_PeerIdentity * sender,
 
 static int
 connection_send_plaintext (const GNUNET_PeerIdentity * peer,
-			   const P2P_pingpong_MESSAGE * msg)
+                           const P2P_pingpong_MESSAGE * msg)
 {
   GNUNET_TSession *mytsession;
   int ret;
@@ -470,8 +470,7 @@ initiatePing (const GNUNET_PeerIdentity * receiver,
     {
       if (GNUNET_OK !=
           connection_send_plaintext (receiver,
-                                                 (const P2P_pingpong_MESSAGE
-                                                  *) pmsg))
+                                     (const P2P_pingpong_MESSAGE *) pmsg))
         {
           GNUNET_free (pmsg);
           return GNUNET_SYSERR;

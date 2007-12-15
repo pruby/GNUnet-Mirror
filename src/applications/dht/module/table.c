@@ -232,13 +232,14 @@ typedef struct
  *
  * @return estimated network diameter
  */
-unsigned int GNUNET_DHT_estimate_network_diameter () 
+unsigned int
+GNUNET_DHT_estimate_network_diameter ()
 {
   unsigned int i;
-  for (i=bucketCount-1;i>0;i--)
+  for (i = bucketCount - 1; i > 0; i--)
     {
       if (buckets[i].peers_size > 0)
-	break;
+        break;
     }
   return i + 1;
 }
@@ -592,7 +593,7 @@ checkExpiration (PeerBucket * bucket)
           bucket->peers[i] = bucket->peers[bucket->peers_size - 1];
           GNUNET_array_grow (bucket->peers, bucket->peers_size,
                              bucket->peers_size - 1);
-	  i--;
+          i--;
         }
     }
 }
