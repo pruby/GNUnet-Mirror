@@ -11,7 +11,6 @@ Annotations:
     - XP
     - Vista?
 - Testcases:
-  * more XFS/DHT
   * tracekit:
     - actual testcase (beyond just printing)
     - make it actually work...

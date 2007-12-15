@@ -33,8 +33,8 @@
  * - modules:
  *   + table.c: DHT-peer table, peer discovery cron jobs;
  *     code tries to fill table "as much as possible" over time;
- *     TODO: expose and improve reliabily metrics (to be added later)
- *     TODO: better randomized neighbor selection in DHT_select_peer
+ *     TODO: expose and improve reliabily metrics (to be added later)???
+ *     TODO: better randomized neighbor selection in DHT_select_peer???
  *     TODO: add callback for discovery-message padding (use core callback
  *           for extra-available bandwidth)
  *     TODO: add LAN tunnels for increased connectivity choices

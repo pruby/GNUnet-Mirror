@@ -25,6 +25,8 @@
  *
  * TODO:
  * - implement extra_get_callback
+ * - use "reserved" field to communicate information
+ *   about network size estimate(s)
  */
 
 #include "platform.h"
