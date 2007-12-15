@@ -48,6 +48,13 @@ int GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
                             unsigned int blocked_size);
 
 /**
+ * Compute a (rough) estimate of the networks diameter.
+ *
+ * @return estimated network diameter
+ */
+unsigned int GNUNET_DHT_estimate_network_diameter (void);
+
+/**
  * Initialize table DHT component.
  *
  * @param capi the core API

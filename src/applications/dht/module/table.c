@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2006 Christian Grothoff (and other contributing authors)
+      (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -34,8 +34,9 @@
  *   + table.c: DHT-peer table, peer discovery cron jobs;
  *     code tries to fill table "as much as possible" over time;
  *     TODO: expose and improve reliabily metrics (to be added later)
- *   + dstore.c + plugin: SQL-based datastore: key, value, expiration
- *     (bounded FIFO-datastore, when full, kill oldest entry first)
+ *     TODO: better randomized neighbor selection in DHT_select_peer
+ *     TODO: add callback for discovery-message padding (use core callback
+ *           for extra-available bandwidth)
  *   + routing.c: tracking of get/put operations, retry, reply handling
  *     code tries best-match routing among entries in table
  *   + service.c: provide DHT services to rest of GNUnet process
@@ -224,6 +225,22 @@ typedef struct
   GNUNET_PeerIdentity peer;
 
 } P2P_DHT_ASK_HELLO;
+
+/**
+ * Compute a (rough) estimate of the networks diameter.
+ *
+ * @return estimated network diameter
+ */
+unsigned int GNUNET_DHT_estimate_network_diameter () 
+{
+  unsigned int i;
+  for (i=bucketCount-1;i>0;i--)
+    {
+      if (buckets[i].peers_size > 0)
+	break;
+    }
+  return i + 1;
+}
 
 /**
  * Get the index of the lowest bit of the two GNUNET_hash codes that
@@ -574,6 +591,7 @@ checkExpiration (PeerBucket * bucket)
           bucket->peers[i] = bucket->peers[bucket->peers_size - 1];
           GNUNET_array_grow (bucket->peers, bucket->peers_size,
                              bucket->peers_size - 1);
+	  i--;
         }
     }
 }
@@ -652,13 +670,13 @@ handleDiscovery (const GNUNET_PeerIdentity * sender,
      sizeof (P2P_DHT_Discovery)) / sizeof (GNUNET_PeerIdentity);
   if (pc > MAINTAIN_ADV_CAP * 8)
     {
-      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
       return GNUNET_SYSERR;     /* far too big */
     }
   if (ntohs (msg->size) !=
       sizeof (P2P_DHT_Discovery) + pc * sizeof (GNUNET_PeerIdentity))
     {
-      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
       return GNUNET_SYSERR;     /* malformed */
     }
   disco = (const P2P_DHT_Discovery *) msg;
@@ -689,7 +707,10 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
   GNUNET_MessageHello *hello;
 
   if (ntohs (msg->size) != sizeof (P2P_DHT_ASK_HELLO))
-    return GNUNET_SYSERR;
+    {
+      GNUNET_GE_BREAK_OP (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;
+    }
   ask = (const P2P_DHT_ASK_HELLO *) msg;
   if (NULL == findBucketFor (&ask->peer))
     return GNUNET_OK;
