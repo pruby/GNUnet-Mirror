@@ -1478,7 +1478,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
 
   ectx = capi->ectx;
   coreAPI = capi;
-  stats = coreAPI->GNUNET_CORE_request_service ("stats");
+  stats = coreAPI->request_service ("stats");
   if (stats)
     stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 
@@ -1514,7 +1514,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
                                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                                    GNUNET_GE_BULK, "fopen", cnffile);
       if (stats != NULL)
-        coreAPI->GNUNET_CORE_release_service (stats);
+        coreAPI->release_service (stats);
       GNUNET_free (cnffile);
       return NULL;
     }
@@ -1535,12 +1535,12 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
                      ("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
       dbh = NULL;
       if (stats != NULL)
-        coreAPI->GNUNET_CORE_release_service (stats);
+        coreAPI->release_service (stats);
       return NULL;
     }
 
   lock = GNUNET_mutex_create (GNUNET_NO);
-  state = coreAPI->GNUNET_CORE_request_service ("state");
+  state = coreAPI->request_service ("state");
   sb = NULL;
   if (sizeof (unsigned long long)
       != state->read (ectx, "mysql-size", (void *) &sb))
@@ -1584,7 +1584,7 @@ provide_module_sqstore_mysql (GNUNET_CoreAPIForPlugins * capi)
          the outdated state file! */
       state->unlink (ectx, "mysql-size");
     }
-  coreAPI->GNUNET_CORE_release_service (state);
+  coreAPI->release_service (state);
   api.getSize = &getSize;
   api.put = &put;
   api.get = &get;
@@ -1611,12 +1611,12 @@ release_module_sqstore_mysql ()
   GNUNET_free (dbh);
   dbh = NULL;
   if (stats != NULL)
-    coreAPI->GNUNET_CORE_release_service (stats);
+    coreAPI->release_service (stats);
   GNUNET_mutex_destroy (lock);
-  state = coreAPI->GNUNET_CORE_request_service ("state");
+  state = coreAPI->request_service ("state");
   state->write (ectx,
                 "mysql-size", sizeof (unsigned long long), &content_size);
-  coreAPI->GNUNET_CORE_release_service (state);
+  coreAPI->release_service (state);
   mysql_library_end ();
   ectx = NULL;
   coreAPI = NULL;

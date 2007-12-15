@@ -416,7 +416,7 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
       return NULL;              /* OOPS */
     }
   quota = lquota * 1024 * 1024; /* MB to bytes */
-  stats = capi->GNUNET_CORE_request_service ("stats");
+  stats = capi->request_service ("stats");
   if (stats != NULL)
     {
       stat_filtered =
@@ -428,13 +428,13 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
                   create (gettext_noop ("# bytes allowed in datastore")),
                   quota);
     }
-  state = capi->GNUNET_CORE_request_service ("state");
+  state = capi->request_service ("state");
   if (state != NULL)
     {
       sqot = GNUNET_htonll (lquota);
       state->write (capi->ectx,
                     "FS-LAST-QUOTA", sizeof (unsigned long long), &sqot);
-      capi->GNUNET_CORE_release_service (state);
+      capi->release_service (state);
     }
   else
     {
@@ -444,12 +444,12 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
                      _
                      ("Failed to load state service. Trying to do without.\n"));
     }
-  sq = capi->GNUNET_CORE_request_service ("sqstore");
+  sq = capi->request_service ("sqstore");
   if (sq == NULL)
     {
       if (stats != NULL)
         {
-          capi->GNUNET_CORE_release_service (stats);
+          capi->release_service (stats);
           stats = NULL;
         }
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -461,10 +461,10 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       donePrefetch ();
-      capi->GNUNET_CORE_release_service (sq);
+      capi->release_service (sq);
       if (stats != NULL)
         {
-          capi->GNUNET_CORE_release_service (stats);
+          capi->release_service (stats);
           stats = NULL;
         }
       return NULL;
@@ -511,10 +511,10 @@ release_module_datastore ()
   cron = NULL;
   donePrefetch ();
   doneFilters ();
-  coreAPI->GNUNET_CORE_release_service (sq);
+  coreAPI->release_service (sq);
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
   sq = NULL;
@@ -555,7 +555,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                                                        -1) / 1024 / 1024,
                                                       1024, &quota))
     return;                     /* OOPS */
-  state = uapi->GNUNET_CORE_request_service ("state");
+  state = uapi->request_service ("state");
   lq = NULL;
   if ((state != NULL) &&
       (sizeof (unsigned long long) == state->read (uapi->ectx,
@@ -563,7 +563,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
                                                    (void **) &lq)) &&
       (GNUNET_ntohll (*lq) == quota))
     {
-      uapi->GNUNET_CORE_release_service (state);
+      uapi->release_service (state);
       GNUNET_free (lq);
       return;                   /* no change */
     }
@@ -571,11 +571,11 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
   /* ok, need to convert! */
   deleteFilter (uapi->ectx, uapi->cfg);
   initFilters (uapi->ectx, uapi->cfg);
-  sq = uapi->GNUNET_CORE_request_service ("sqstore");
+  sq = uapi->request_service ("sqstore");
   if (sq != NULL)
     {
       sq->iterateAllNow (&filterAddAll, NULL);
-      uapi->GNUNET_CORE_release_service (sq);
+      uapi->release_service (sq);
     }
   else
     {
@@ -592,7 +592,7 @@ update_module_datastore (GNUNET_UpdateAPI * uapi)
       lastQuota = GNUNET_htonll (quota);
       state->write (uapi->ectx,
                     "FS-LAST-QUOTA", sizeof (unsigned long long), &lastQuota);
-      uapi->GNUNET_CORE_release_service (state);
+      uapi->release_service (state);
     }
 }
 

@@ -170,26 +170,24 @@ createIndices (sqlite3 * dbh)
 {
   /* create indices */
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_hash ON gn070 (hash)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_hash ON gn070 (hash)", NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_prio ON gn070 (prio)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_prio ON gn070 (prio)", NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_expire ON gn070 (expire)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_expire ON gn070 (expire)",
+                NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb1", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb2", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb6", NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
+                NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_comb4 ON gn070 (prio,hash,anonLevel)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_comb4 ON gn070 (prio,hash,anonLevel)",
+                NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-		"CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
-		NULL, NULL, ENULL);
+                "CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
+                NULL, NULL, ENULL);
 }
 
 /**
@@ -1394,7 +1392,7 @@ provide_module_sqstore_sqlite (GNUNET_CoreAPIForPlugins * capi)
     }
   lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI = capi;
-  stats = coreAPI->GNUNET_CORE_request_service ("stats");
+  stats = coreAPI->request_service ("stats");
   if (stats)
     stat_size = stats->create (gettext_noop ("# bytes in datastore"));
 
@@ -1418,7 +1416,7 @@ void
 release_module_sqstore_sqlite ()
 {
   if (stats != NULL)
-    coreAPI->GNUNET_CORE_release_service (stats);
+    coreAPI->release_service (stats);
   sqlite_shutdown ();
 #if DEBUG_SQLITE
   GNUNET_GE_LOG (ectx,

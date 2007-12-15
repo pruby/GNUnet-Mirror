@@ -12,7 +12,9 @@ Annotations:
     - Vista?
 - Testcases:
   * more XFS/DHT
-  * tracekit
+  * tracekit:
+    - actual testcase (beyond just printing)
+    - make it actually work...
   * RPC
 
 0.8.0 [2'08] (aka "advanced features"):

@@ -824,7 +824,7 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
                                             "SMTP",
                                             "RATELIMIT",
                                             0, 0, 1024 * 1024, &rate_limit);
-  stats = coreAPI->GNUNET_CORE_request_service ("stats");
+  stats = coreAPI->request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -845,7 +845,7 @@ inittransport_smtp (GNUNET_CoreAPIForTransport * core)
                               GNUNET_GE_ADMIN | GNUNET_GE_BULK |
                               GNUNET_GE_FATAL, "mkfifo");
       GNUNET_free (pipename);
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
       return NULL;
     }
@@ -891,7 +891,7 @@ donetransport_smtp ()
   GNUNET_free (smtp_server_name);
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (lock);

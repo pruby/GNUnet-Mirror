@@ -146,8 +146,7 @@ freeTCPSession (TCPSession * tcpsession)
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_OK ==
                     coreAPI->
-                    GNUNET_CORE_connection_assert_tsession_unused
-                    (tcpsession->tsession));
+                    connection_assert_tsession_unused (tcpsession->tsession));
   GNUNET_mutex_lock (tcplock);
   GNUNET_free (tcpsession->tsession);
   GNUNET_free (tcpsession);

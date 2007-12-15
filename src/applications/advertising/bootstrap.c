@@ -87,10 +87,9 @@ processhellos (HelloListClosure * hcq)
       hcq->hellos[rndidx] = hcq->hellos[hcq->hellosCount - 1];
       GNUNET_array_grow (hcq->hellos, hcq->hellosCount, hcq->hellosCount - 1);
 
-      coreAPI->GNUNET_CORE_p2p_inject_message (NULL,
-                                               (const char *) msg,
-                                               ntohs (msg->header.size),
-                                               GNUNET_NO, NULL);
+      coreAPI->p2p_inject_message (NULL,
+                                   (const char *) msg,
+                                   ntohs (msg->header.size), GNUNET_NO, NULL);
       GNUNET_free (msg);
       if ((hcq->hellosCount > 0) && (!hlc.do_shutdown))
         {
@@ -228,9 +227,9 @@ void
 startBootstrap (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  state = capi->GNUNET_CORE_request_service ("state");
+  state = capi->request_service ("state");
   GNUNET_GE_ASSERT (capi->ectx, state != NULL);
-  bootstrap = capi->GNUNET_CORE_request_service ("bootstrap");
+  bootstrap = capi->request_service ("bootstrap");
   GNUNET_GE_ASSERT (capi->ectx, bootstrap != NULL);
   hlc.do_shutdown = GNUNET_NO;
   pt = GNUNET_thread_create (&processThread, NULL, 64 * 1024);
@@ -249,9 +248,9 @@ stopBootstrap ()
   GNUNET_thread_stop_sleep (pt);
   GNUNET_thread_join (pt, &unused);
   pt = NULL;
-  coreAPI->GNUNET_CORE_release_service (bootstrap);
+  coreAPI->release_service (bootstrap);
   bootstrap = NULL;
-  coreAPI->GNUNET_CORE_release_service (state);
+  coreAPI->release_service (state);
   state = NULL;
   coreAPI = NULL;
 }

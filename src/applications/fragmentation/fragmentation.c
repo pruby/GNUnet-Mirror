@@ -229,8 +229,7 @@ checkComplete (FC * pep)
   printf ("Finished defragmentation!\n");
 #endif
   /* handle message! */
-  coreAPI->GNUNET_CORE_p2p_inject_message (&pep->sender, msg, len, GNUNET_YES,
-                                           NULL);
+  coreAPI->p2p_inject_message (&pep->sender, msg, len, GNUNET_YES, NULL);
   GNUNET_free (msg);
 CLEANUP:
   /* free fragment buffers */
@@ -558,8 +557,8 @@ fragment (const GNUNET_PeerIdentity * peer,
         }
     }
   xlen = mtu - sizeof (P2P_fragmentation_MESSAGE);
-  coreAPI->GNUNET_CORE_connection_send_using_callback (peer, &fragmentBMC, fbmc, mtu, prio * xlen / len,        /* compute new prio */
-                                                       targetTime);
+  coreAPI->connection_send_using_callback (peer, &fragmentBMC, fbmc, mtu, prio * xlen / len,    /* compute new prio */
+                                           targetTime);
 }
 
 /**
@@ -572,7 +571,7 @@ provide_module_fragmentation (GNUNET_CoreAPIForPlugins * capi)
   int i;
 
   coreAPI = capi;
-  stats = coreAPI->GNUNET_CORE_request_service ("stats");
+  stats = coreAPI->request_service ("stats");
   if (stats != NULL)
     {
       stat_defragmented =
@@ -623,7 +622,7 @@ release_module_fragmentation ()
     }
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
   GNUNET_mutex_destroy (defragCacheLock);

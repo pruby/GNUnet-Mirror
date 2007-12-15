@@ -187,8 +187,8 @@ work ()
   char *topo;
 
   uapi.updateModule = &updateModule;
-  uapi.GNUNET_CORE_request_service = &GNUNET_CORE_request_service;
-  uapi.GNUNET_CORE_release_service = &GNUNET_CORE_release_service;
+  uapi.request_service = &GNUNET_CORE_request_service;
+  uapi.release_service = &GNUNET_CORE_release_service;
   uapi.ectx = ectx;
   uapi.cfg = cfg;
 

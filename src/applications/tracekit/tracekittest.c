@@ -43,8 +43,8 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static int
 report (void *unused,
-	const GNUNET_PeerIdentity * reporter,
-	const GNUNET_PeerIdentity * link)
+        const GNUNET_PeerIdentity * reporter,
+        const GNUNET_PeerIdentity * link)
 {
   GNUNET_EncName src;
   GNUNET_EncName dst;
@@ -122,7 +122,7 @@ main (int argc, char **argv)
       GNUNET_fini (ectx, cfg);
       return 1;
     }
-  ret = 0; /* FIXME: set to 1 here, to 0 in report! */
+  ret = 0;                      /* FIXME: set to 1 here, to 0 in report! */
   cron = GNUNET_cron_create (ectx);
   GNUNET_cron_start (cron);
   GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * 60,

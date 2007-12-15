@@ -63,8 +63,7 @@ handleGetOption (struct GNUNET_ClientHandle *sock,
   rep->header.size = htons (sizeof (GNUNET_MessageHeader) + strlen (val) + 1);
   memcpy (rep->value, val, strlen (val) + 1);
   rep->header.type = htons (GNUNET_CS_PROTO_GET_OPTION_REPLY);
-  ret =
-    coreAPI->GNUNET_CORE_cs_send_to_client (sock, &rep->header, GNUNET_YES);
+  ret = coreAPI->cs_send_to_client (sock, &rep->header, GNUNET_YES);
   GNUNET_free (rep);
   GNUNET_free (val);
   return ret;

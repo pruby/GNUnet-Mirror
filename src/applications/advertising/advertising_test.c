@@ -120,20 +120,19 @@ main (int argc, const char **argv)
                                                     ectx, "NETWORK", "HOST",
                                                     buf);
           sock = GNUNET_client_connection_create (NULL, cfg);
-	  have = -1;
+          have = -1;
           GNUNET_STATS_get_statistics (NULL, sock, &countConnections, &have);
           GNUNET_client_connection_destroy (sock);
-	  if (have == -1)
-	    {
-	      fprintf(stderr,
-		      "Trouble getting statistics!\n");
-	    }
-	  else 
-	    {
-	      found += have;
-	      if (have < min)
-		min = have;
-	    }
+          if (have == -1)
+            {
+              fprintf (stderr, "Trouble getting statistics!\n");
+            }
+          else
+            {
+              found += have;
+              if (have < min)
+                min = have;
+            }
         }
       fprintf (stderr,
                "Have %d connections total in round %d, minimum number was %d\n",

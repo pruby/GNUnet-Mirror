@@ -176,7 +176,7 @@ addQueryForURI (const struct GNUNET_ECRS_URI *uri, SendQueriesContext * sqc)
                      &hk);
         GNUNET_hash_xor (&hk, &uri->data.sks.namespace, &keys[0]);      /* compute routing key r = H(identifier) ^ namespace */
         keys[1] = uri->data.sks.namespace;
-        addPS (GNUNET_ECRS_BLOCKTYPE_SIGNED, 2, &keys[0], &uri->data.sks.identifier,     /* identifier = decryption key */
+        addPS (GNUNET_ECRS_BLOCKTYPE_SIGNED, 2, &keys[0], &uri->data.sks.identifier,    /* identifier = decryption key */
                sqc);
         break;
       }
@@ -200,7 +200,7 @@ addQueryForURI (const struct GNUNET_ECRS_URI *uri, SendQueriesContext * sqc)
             pk = GNUNET_RSA_create_key_from_hash (&hc);
             GNUNET_RSA_get_public_key (pk, &pub);
             GNUNET_hash (&pub, sizeof (GNUNET_RSA_PublicKey), &query);
-            addPS (GNUNET_ECRS_BLOCKTYPE_ANY,    /* GNUNET_ECRS_BLOCKTYPE_KEYWORD, GNUNET_ECRS_BLOCKTYPE_NAMESPACE or GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE ok */
+            addPS (GNUNET_ECRS_BLOCKTYPE_ANY,   /* GNUNET_ECRS_BLOCKTYPE_KEYWORD, GNUNET_ECRS_BLOCKTYPE_NAMESPACE or GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE ok */
                    1, &query, &hc, sqc);
             GNUNET_RSA_free_key (pk);
           }

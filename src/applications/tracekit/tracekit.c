@@ -138,9 +138,8 @@ handlep2pReply (const GNUNET_PeerIdentity * sender,
                       peerList[0],
                       &((P2P_tracekit_reply_MESSAGE_GENERIC *) reply)->
                       peerList[0], hostCount * sizeof (GNUNET_PeerIdentity));
-              coreAPI->GNUNET_CORE_cs_send_to_client (clients[idx],
-                                                      &csReply->header,
-                                                      GNUNET_YES);
+              coreAPI->cs_send_to_client (clients[idx],
+                                          &csReply->header, GNUNET_YES);
               GNUNET_free (csReply);
             }
           else
@@ -448,8 +447,7 @@ initialize_module_tracekit (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR == capi->registerHandler (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
                                               &handlep2pReply))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->GNUNET_CORE_cs_register_exit_handler (&clientExitHandler))
+  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&clientExitHandler))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_TRACEKIT_PROBE,
@@ -474,7 +472,7 @@ done_module_tracekit ()
                               &handlep2pProbe);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_TRACEKIT_REPLY,
                               &handlep2pReply);
-  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&clientExitHandler);
+  coreAPI->cs_exit_handler_unregister (&clientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_TRACEKIT_PROBE,
                                     &csHandle);
   for (i = 0; i < MAXROUTE; i++)

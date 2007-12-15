@@ -74,8 +74,6 @@ typedef struct
 
   GNUNET_HashCode key;
 
-  unsigned long long timeout;   /* nbo */
-
 } CS_dht_request_get_MESSAGE;
 
 #if 0                           /* keep Emacsens' auto-indent happy */

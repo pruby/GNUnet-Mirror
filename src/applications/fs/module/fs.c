@@ -45,11 +45,22 @@
 
 #define DEBUG_FS GNUNET_NO
 
-typedef struct
+struct DHT_GET_CLS
 {
+
+  struct DHT_GET_CLS *next;
+
   struct GNUNET_DHT_GetHandle *rec;
+
+  struct GNUNET_ClientHandle *sock;
+
+  GNUNET_CronTime expires;
+
+  GNUNET_HashCode key;
+
   unsigned int prio;
-} DHT_GET_CLS;
+
+};
 
 typedef struct LG_Job
 {
@@ -58,6 +69,11 @@ typedef struct LG_Job
   GNUNET_HashCode *queries;
   struct LG_Job *next;
 } LG_Job;
+
+/**
+ * DHT GET operations that are currently pending.
+ */
+static struct DHT_GET_CLS *dht_pending;
 
 /**
  * Global core API.
@@ -239,7 +255,7 @@ static int
 get_result_callback (const GNUNET_HashCode * query,
                      const GNUNET_DataContainer * value, void *ctx)
 {
-  DHT_GET_CLS *cls = ctx;
+  struct DHT_GET_CLS *cls = ctx;
   const GapWrapper *gw;
   unsigned int size;
   GNUNET_HashCode hc;
@@ -268,14 +284,6 @@ get_result_callback (const GNUNET_HashCode * query,
   return GNUNET_OK;
 }
 
-static void
-get_complete_callback (void *ctx)
-{
-  DHT_GET_CLS *cls = ctx;
-  dht->get_stop (cls->rec);
-  GNUNET_free (cls);
-}
-
 /**
  * Stop processing a query.
  *
@@ -286,6 +294,8 @@ csHandleRequestQueryStop (struct GNUNET_ClientHandle *sock,
                           const GNUNET_MessageHeader * req)
 {
   const CS_fs_request_search_MESSAGE *rs;
+  struct DHT_GET_CLS *pos;
+  struct DHT_GET_CLS *prev;
 #if DEBUG_FS
   GNUNET_EncName enc;
 #endif
@@ -308,6 +318,27 @@ csHandleRequestQueryStop (struct GNUNET_ClientHandle *sock,
                       sizeof (CS_fs_request_search_MESSAGE)) /
                  sizeof (GNUNET_HashCode), &rs->query[0]);
   untrackQuery (&rs->query[0], sock);
+  GNUNET_mutex_lock (lock);
+  prev = NULL;
+  pos = dht_pending;
+  while (pos != NULL)
+    {
+      if ((pos->sock == sock) &&
+          (0 == memcmp (&pos->key, &rs->query[0], sizeof (GNUNET_HashCode))))
+        {
+          if (prev == NULL)
+            dht_pending = pos->next;
+          else
+            prev->next = pos->next;
+          dht->get_stop (pos->rec);
+          GNUNET_free (pos);
+          break;
+        }
+      prev = pos;
+      pos = pos->next;
+    }
+  GNUNET_mutex_unlock (lock);
+
   return GNUNET_OK;
 }
 
@@ -332,9 +363,9 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
-                                              GNUNET_GE_EVENTKIND |
-                                              GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (GNUNET_GE_USER |
+                                  GNUNET_GE_EVENTKIND |
+                                  GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_insert_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -448,9 +479,9 @@ csHandleCS_fs_request_init_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
-                                              GNUNET_GE_EVENTKIND |
-                                              GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (GNUNET_GE_USER |
+                                  GNUNET_GE_EVENTKIND |
+                                  GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_init_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -501,9 +532,9 @@ csHandleCS_fs_request_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
-                                              GNUNET_GE_EVENTKIND |
-                                              GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (GNUNET_GE_USER |
+                                  GNUNET_GE_EVENTKIND |
+                                  GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -588,9 +619,9 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
-                                              GNUNET_GE_EVENTKIND |
-                                              GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (GNUNET_GE_USER |
+                                  GNUNET_GE_EVENTKIND |
+                                  GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_delete_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -666,9 +697,9 @@ csHandleCS_fs_request_unindex_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    GNUNET_CORE_cs_create_client_log_context (GNUNET_GE_USER |
-                                              GNUNET_GE_EVENTKIND |
-                                              GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (GNUNET_GE_USER |
+                                  GNUNET_GE_EVENTKIND |
+                                  GNUNET_GE_ROUTEKIND, sock);
   if (ntohs (req->size) != sizeof (CS_fs_request_unindex_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -786,8 +817,7 @@ gapGetConverter (const GNUNET_HashCode * key,
 
   et = GNUNET_ntohll (value->expirationTime);
   now = GNUNET_get_time ();
-  if ((et <= now)
-      && (ntohl (value->type) != GNUNET_ECRS_BLOCKTYPE_DATA))
+  if ((et <= now) && (ntohl (value->type) != GNUNET_ECRS_BLOCKTYPE_DATA))
     {
       /* content expired and not just data -- drop! */
       GNUNET_free_non_null (xvalue);
@@ -913,16 +943,16 @@ gapGet (void *closure,
   myClosure.resultCallback = resultCallback;
   myClosure.resCallbackClosure = resCallbackClosure;
   ret = GNUNET_OK;
-  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)     
+  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     ret = datastore->get (&keys[0],
-			  GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-			  &gapGetConverter, &myClosure);    
+                          GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+                          &gapGetConverter, &myClosure);
   if (myClosure.count == 0)
     ret = datastore->get (&keys[0], type, &gapGetConverter, &myClosure);
   if (ret != GNUNET_SYSERR)
-    ret = myClosure.count; /* return number of actual
-			      results (unfiltered) that
-			      were found */
+    ret = myClosure.count;      /* return number of actual
+                                   results (unfiltered) that
+                                   were found */
   return ret;
 }
 
@@ -1168,17 +1198,24 @@ csHandleRequestQueryStart (struct GNUNET_ClientHandle *sock,
   if ((ntohl (rs->anonymityLevel) == 0) && (have_target == GNUNET_NO)
       && (dht != NULL))
     {
-      DHT_GET_CLS *cls;
+      struct DHT_GET_CLS *cls;
 
-      cls = GNUNET_malloc (sizeof (DHT_GET_CLS));
+      cls = GNUNET_malloc (sizeof (struct DHT_GET_CLS));
+      cls->sock = sock;
       cls->prio = ntohl (rs->prio);
+      cls->key = rs->query[0];
       cls->rec = dht->get_start (type,
-                                 &rs->query[0],
-                                 GNUNET_ntohll (rs->expiration),
-                                 &get_result_callback,
-                                 cls, &get_complete_callback, cls);
+                                 &rs->query[0], &get_result_callback, cls);
+      cls->expires = GNUNET_ntohll (rs->expiration);
       if (cls->rec == NULL)
         GNUNET_free (cls);      /* should never happen... */
+      else
+        {
+          GNUNET_mutex_lock (lock);
+          cls->next = dht_pending;
+          dht_pending = cls;
+          GNUNET_mutex_unlock (lock);
+        }
     }
   return GNUNET_OK;
 }
@@ -1187,6 +1224,37 @@ static int
 fastGet (const GNUNET_HashCode * key)
 {
   return datastore->fast_get (key);
+}
+
+/**
+ * Method called whenever a given client disconnects.
+ */
+static void
+csHandleClientExit (struct GNUNET_ClientHandle *client)
+{
+  struct DHT_GET_CLS *pos;
+  struct DHT_GET_CLS *prev;
+
+  GNUNET_mutex_lock (lock);
+  prev = NULL;
+  pos = dht_pending;
+  while (pos != NULL)
+    {
+      if (pos->sock == client)
+        {
+          if (prev == NULL)
+            dht_pending = pos->next;
+          else
+            prev->next = pos->next;
+          dht->get_stop (pos->rec);
+          GNUNET_free (pos);
+	  pos = prev->next;
+          continue;
+        }
+      prev = pos;
+      pos = pos->next;
+    }
+  GNUNET_mutex_unlock (lock);
 }
 
 /**
@@ -1229,14 +1297,14 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                      "QUOTA", "FS");
       return GNUNET_SYSERR;
     }
-  datastore = capi->GNUNET_CORE_request_service ("datastore");
+  datastore = capi->request_service ("datastore");
   if (datastore == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  traffic = capi->GNUNET_CORE_request_service ("traffic");
-  stats = capi->GNUNET_CORE_request_service ("stats");
+  traffic = capi->request_service ("traffic");
+  stats = capi->request_service ("stats");
   if (stats != NULL)
     {
       stat_expired_replies_dropped
@@ -1244,17 +1312,17 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
       stat_valid_replies_received
         = stats->create (gettext_noop ("# FS valid replies received"));
     }
-  gap = capi->GNUNET_CORE_request_service ("gap");
+  gap = capi->request_service ("gap");
   if (gap == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
-      capi->GNUNET_CORE_release_service (datastore);
+      capi->release_service (datastore);
       if (stats != NULL)
-        capi->GNUNET_CORE_release_service (stats);
-      capi->GNUNET_CORE_release_service (traffic);
+        capi->release_service (stats);
+      capi->release_service (traffic);
       return GNUNET_SYSERR;
     }
-  dht = capi->GNUNET_CORE_request_service ("dht");
+  dht = capi->request_service ("dht");
   if (dht != NULL)
     init_dht_push (capi, dht);
   ltgSignal = GNUNET_semaphore_create (0);
@@ -1286,6 +1354,9 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                  GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY,
                  GNUNET_CS_PROTO_GAP_INIT_INDEX);
 
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    capi->cs_exit_handler_register (&csHandleClientExit));
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     capi->
@@ -1351,6 +1422,10 @@ done_module_fs ()
   GNUNET_GE_ASSERT (ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
+                    cs_exit_handler_unregister (&csHandleClientExit));
+  GNUNET_GE_ASSERT (ectx,
+                    GNUNET_SYSERR !=
+                    coreAPI->
                     unregisterClientHandler (GNUNET_CS_PROTO_GAP_QUERY_START,
                                              &csHandleRequestQueryStart));
   GNUNET_GE_ASSERT (ectx,
@@ -1404,24 +1479,24 @@ done_module_fs ()
   GNUNET_semaphore_up (ltgSignal);      /* lg_jobs == NULL => thread will terminate */
   GNUNET_thread_join (localGetProcessor, &unused);
   doneQueryManager ();
-  coreAPI->GNUNET_CORE_release_service (datastore);
+  coreAPI->release_service (datastore);
   datastore = NULL;
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
-  coreAPI->GNUNET_CORE_release_service (gap);
+  coreAPI->release_service (gap);
   gap = NULL;
   if (dht != NULL)
     {
       done_dht_push ();
-      coreAPI->GNUNET_CORE_release_service (dht);
+      coreAPI->release_service (dht);
       dht = NULL;
     }
   if (traffic != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (traffic);
+      coreAPI->release_service (traffic);
       traffic = NULL;
     }
   coreAPI = NULL;

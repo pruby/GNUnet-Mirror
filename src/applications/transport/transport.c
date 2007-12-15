@@ -723,7 +723,7 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
   hello_live *= 60;
 
   GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_MessageHello) == 600);
-  identity = capi->GNUNET_CORE_request_service ("identity");
+  identity = capi->request_service ("identity");
   if (identity == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -737,10 +737,10 @@ provide_module_transport (GNUNET_CoreAPIForPlugins * capi)
   ctapi.load_monitor = coreAPI->load_monitor;
   ctapi.cron = coreAPI->cron;
   ctapi.receive = NULL;         /* initialized LATER! */
-  ctapi.GNUNET_CORE_request_service = coreAPI->GNUNET_CORE_request_service;
-  ctapi.GNUNET_CORE_release_service = coreAPI->GNUNET_CORE_release_service;
-  ctapi.GNUNET_CORE_connection_assert_tsession_unused =
-    coreAPI->GNUNET_CORE_connection_assert_tsession_unused;
+  ctapi.request_service = coreAPI->request_service;
+  ctapi.release_service = coreAPI->release_service;
+  ctapi.connection_assert_tsession_unused =
+    coreAPI->connection_assert_tsession_unused;
 
   GNUNET_array_grow (tapis, tapis_count,
                      GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP + 1);
@@ -878,7 +878,7 @@ release_module_transport ()
   tapis_lock = NULL;
   GNUNET_array_grow (tapis, tapis_count, 0);
 
-  coreAPI->GNUNET_CORE_release_service (identity);
+  coreAPI->release_service (identity);
   identity = NULL;
   coreAPI = NULL;
   return GNUNET_OK;

@@ -145,7 +145,7 @@ update_sqstore_stats ()
 static int
 init_sqstore_stats ()
 {
-  sq = myCoreAPI->GNUNET_CORE_request_service ("sqstore");
+  sq = myCoreAPI->request_service ("sqstore");
   if (sq == NULL)
     return GNUNET_SYSERR;
   stat_block[0] = stats->create (gettext_noop ("# Any-Blocks"));
@@ -175,6 +175,6 @@ done_sqstore_stats ()
 {
   if (sq == NULL)
     return;
-  myCoreAPI->GNUNET_CORE_release_service (sq);
+  myCoreAPI->release_service (sq);
   sq = NULL;
 }

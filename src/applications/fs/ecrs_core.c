@@ -131,7 +131,7 @@ GNUNET_EC_file_block_get_type (unsigned int size, const DBlock * data)
   if (size <= 4)
     {
       GNUNET_GE_BREAK (NULL, 0);
-      return GNUNET_ECRS_BLOCKTYPE_ANY;  /* signal error */
+      return GNUNET_ECRS_BLOCKTYPE_ANY; /* signal error */
     }
   return ntohl (*((const unsigned int *) data));
 }

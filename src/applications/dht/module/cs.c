@@ -45,10 +45,15 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  */
 static GNUNET_DHT_ServiceAPI *dhtAPI;
 
+/**
+ * Type of the linked list that is used by CS to
+ * keep track of clients and their pending GET 
+ * requests.
+ */
 struct DHT_CLIENT_GET_RECORD
 {
 
-  struct DHT_CLIENT_GET_RECORD * next;
+  struct DHT_CLIENT_GET_RECORD *next;
 
   struct GNUNET_ClientHandle *client;
 
@@ -56,7 +61,10 @@ struct DHT_CLIENT_GET_RECORD
 
 };
 
-static struct DHT_CLIENT_GET_RECORD * getRecords;
+/**
+ * Linked list of active GET requests.
+ */
+static struct DHT_CLIENT_GET_RECORD *getRecords;
 
 /**
  * Lock.
@@ -87,8 +95,7 @@ csPut (struct GNUNET_ClientHandle *client,
                  "`%s' at %s:%d processes put '%.*s'\n",
                  __FUNCTION__, __FILE__, __LINE__, size, &req[1]);
 #endif
-  dhtAPI->put (&req->key, ntohl (req->type), size,
-               (const char *) &req[1]);
+  dhtAPI->put (&req->key, ntohl (req->type), size, (const char *) &req[1]);
   return GNUNET_OK;
 }
 
@@ -127,51 +134,16 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
                  &value[1]);
 #endif
   if (GNUNET_OK !=
-      coreAPI->GNUNET_CORE_cs_send_to_client (record->client, &msg->header,
-                                              GNUNET_YES))
+      coreAPI->cs_send_to_client (record->client, &msg->header, GNUNET_YES))
     {
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE | GNUNET_GE_USER,
                      _("`%s' failed. Terminating connection to client.\n"),
                      "GNUNET_CORE_cs_send_to_client");
-      coreAPI->GNUNET_CORE_cs_terminate_client_connection (record->client);
+      coreAPI->cs_terminate_client_connection (record->client);
     }
   GNUNET_free (msg);
   return GNUNET_OK;
-}
-
-/**
- * Find the record, remove it from the linked list
- * and cancel the operation with the DHT API.
- */
-static void
-get_timeout (void *cls)
-{
-  struct DHT_CLIENT_GET_RECORD *record = cls;
-  struct DHT_CLIENT_GET_RECORD * pos;
-  struct DHT_CLIENT_GET_RECORD * prev;
-
-  GNUNET_mutex_lock (lock);
-  pos = getRecords;
-  prev = NULL;
-  while (pos != NULL)
-    {
-      if (pos == record)
-	break;
-      prev = pos;
-      pos = pos->next;
-    }
-  if (pos == NULL) {
-    GNUNET_mutex_unlock (lock);
-    return;
-  }
-  if (prev == NULL)
-    getRecords = pos->next;
-  else
-    prev->next = pos->next;
-  GNUNET_mutex_unlock (lock);
-  dhtAPI->get_stop (record->get_record);
-  GNUNET_free (record);
 }
 
 /**
@@ -181,8 +153,8 @@ static int
 csGet (struct GNUNET_ClientHandle *client,
        const GNUNET_MessageHeader * message)
 {
-  const CS_dht_request_get_MESSAGE * get;
-  struct DHT_CLIENT_GET_RECORD * cpc;
+  const CS_dht_request_get_MESSAGE *get;
+  struct DHT_CLIENT_GET_RECORD *cpc;
 
   if (ntohs (message->size) != sizeof (CS_dht_request_get_MESSAGE))
     {
@@ -199,9 +171,7 @@ csGet (struct GNUNET_ClientHandle *client,
   cpc = GNUNET_malloc (sizeof (struct DHT_CLIENT_GET_RECORD));
   cpc->client = client;
   cpc->get_record = dhtAPI->get_start (ntohl (get->type),
-                                       &get->key,
-                                       GNUNET_ntohll (get->timeout),
-                                       &get_result, cpc, &get_timeout, cpc);  
+                                       &get->key, &get_result, cpc);
   GNUNET_mutex_lock (lock);
   cpc->next = getRecords;
   getRecords = cpc;
@@ -216,27 +186,27 @@ csGet (struct GNUNET_ClientHandle *client,
 static void
 csClientExit (struct GNUNET_ClientHandle *client)
 {
-  struct GNUNET_DHT_GetHandle * gr;
-  struct DHT_CLIENT_GET_RECORD * pos;
-  struct DHT_CLIENT_GET_RECORD * prev;
+  struct GNUNET_DHT_GetHandle *gr;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
 
   GNUNET_mutex_lock (lock);
   pos = getRecords;
   prev = NULL;
-  while (pos != NULL) 
+  while (pos != NULL)
     {
       if (pos->client == client)
-	{
-	  gr = pos->get_record;
-	  if (prev == NULL)
-	    getRecords = pos->next;
-	  else
-	    prev->next = pos->next;
+        {
+          gr = pos->get_record;
+          if (prev == NULL)
+            getRecords = pos->next;
+          else
+            prev->next = pos->next;
           GNUNET_mutex_unlock (lock);
           dhtAPI->get_stop (gr);
           GNUNET_free (pos);
           GNUNET_mutex_lock (lock);
-	  pos = getRecords;
+          pos = getRecords;
         }
       prev = pos;
       pos = pos->next;
@@ -249,7 +219,7 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   int status;
 
-  dhtAPI = capi->GNUNET_CORE_request_service ("dht");
+  dhtAPI = capi->request_service ("dht");
   if (dhtAPI == NULL)
     return GNUNET_SYSERR;
   coreAPI = capi;
@@ -266,8 +236,7 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET, &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->GNUNET_CORE_cs_register_exit_handler (&csClientExit))
+  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&csClientExit))
     status = GNUNET_SYSERR;
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -277,6 +246,41 @@ initialize_module_dht (GNUNET_CoreAPIForPlugins * capi)
                                                                    gettext_noop
                                                                    ("Enables efficient non-anonymous routing")));
   return status;
+}
+
+/**
+ * Find the record, remove it from the linked list
+ * and cancel the operation with the DHT API.
+ */
+static void
+kill_record (void *cls)
+{
+  struct DHT_CLIENT_GET_RECORD *record = cls;
+  struct DHT_CLIENT_GET_RECORD *pos;
+  struct DHT_CLIENT_GET_RECORD *prev;
+
+  GNUNET_mutex_lock (lock);
+  pos = getRecords;
+  prev = NULL;
+  while (pos != NULL)
+    {
+      if (pos == record)
+        break;
+      prev = pos;
+      pos = pos->next;
+    }
+  if (pos == NULL)
+    {
+      GNUNET_mutex_unlock (lock);
+      return;
+    }
+  if (prev == NULL)
+    getRecords = pos->next;
+  else
+    prev->next = pos->next;
+  GNUNET_mutex_unlock (lock);
+  dhtAPI->get_stop (record->get_record);
+  GNUNET_free (record);
 }
 
 /**
@@ -299,13 +303,12 @@ done_module_dht ()
       coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_DHT_REQUEST_GET,
                                         &csGet))
     status = GNUNET_SYSERR;
-  if (GNUNET_OK !=
-      coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&csClientExit))
+  if (GNUNET_OK != coreAPI->cs_exit_handler_unregister (&csClientExit))
     status = GNUNET_SYSERR;
 
   while (getRecords != NULL)
-    get_timeout (getRecords);
-  coreAPI->GNUNET_CORE_release_service (dhtAPI);
+    kill_record (getRecords);
+  coreAPI->release_service (dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;
   GNUNET_mutex_destroy (lock);

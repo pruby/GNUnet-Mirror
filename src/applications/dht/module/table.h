@@ -42,10 +42,10 @@
  *
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int select_dht_peer (GNUNET_PeerIdentity * set,
-                     const GNUNET_HashCode * target,
-                     const GNUNET_PeerIdentity * blocked,
-                     unsigned int blocked_size);
+int GNUNET_DHT_select_peer (GNUNET_PeerIdentity * set,
+                            const GNUNET_HashCode * target,
+                            const GNUNET_PeerIdentity * blocked,
+                            unsigned int blocked_size);
 
 /**
  * Initialize table DHT component.
@@ -53,13 +53,13 @@ int select_dht_peer (GNUNET_PeerIdentity * set,
  * @param capi the core API
  * @return GNUNET_OK on success
  */
-int init_dht_table (GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi);
 
 /**
  * Shutdown table DHT component.
  *
  * @return GNUNET_OK on success
  */
-int done_dht_table (void);
+int GNUNET_DHT_table_done (void);
 
 #endif

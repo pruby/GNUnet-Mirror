@@ -126,13 +126,13 @@ init_dht_push (GNUNET_CoreAPIForPlugins * capi, GNUNET_DHT_ServiceAPI * d)
 {
   coreAPI = capi;
   dht = d;
-  sqstore = capi->GNUNET_CORE_request_service ("sqstore");
+  sqstore = capi->request_service ("sqstore");
   if (sqstore == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       return;
     }
-  stats = capi->GNUNET_CORE_request_service ("stats");
+  stats = capi->request_service ("stats");
   if (stats != NULL)
     stat_push_count
       = stats->create (gettext_noop ("# blocks pushed into DHT"));
@@ -155,10 +155,10 @@ done_dht_push (void)
       GNUNET_thread_stop_sleep (thread);
       GNUNET_thread_join (thread, &unused);
     }
-  coreAPI->GNUNET_CORE_release_service (sqstore);
+  coreAPI->release_service (sqstore);
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
   coreAPI = NULL;

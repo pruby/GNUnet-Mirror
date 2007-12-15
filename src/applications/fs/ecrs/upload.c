@@ -254,8 +254,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       iblocks[i]->prio = htonl (priority);
       iblocks[i]->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
       iblocks[i]->expirationTime = GNUNET_htonll (expirationTime);
-      ((DBlock *) & iblocks[i][1])->type =
-        htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
+      ((DBlock *) & iblocks[i][1])->type = htonl (GNUNET_ECRS_BLOCKTYPE_DATA);
     }
 
   pos = 0;

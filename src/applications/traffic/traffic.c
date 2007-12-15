@@ -347,8 +347,7 @@ trafficQueryHandler (struct GNUNET_ClientHandle *sock,
     return GNUNET_SYSERR;
   msg = (const CS_traffic_request_MESSAGE *) message;
   reply = buildReply (ntohl (msg->timePeriod));
-  ret =
-    coreAPI->GNUNET_CORE_cs_send_to_client (sock, &reply->header, GNUNET_YES);
+  ret = coreAPI->cs_send_to_client (sock, &reply->header, GNUNET_YES);
   GNUNET_free (reply);
   return ret;
 }
@@ -582,18 +581,17 @@ provide_module_traffic (GNUNET_CoreAPIForPlugins * capi)
   api.get = &getTrafficStats;
   for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     stat_traffic_transmitted_by_type[i] = 0;
-  coreAPI->
-    GNUNET_CORE_connection_register_send_notification_callback (&trafficSend);
+  coreAPI->connection_register_send_notification_callback (&trafficSend);
   for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     {
       stat_traffic_received_by_type[i] = 0;
       coreAPI->registerHandler (i, &trafficReceive);
-      coreAPI->GNUNET_CORE_plaintext_register_handler (i, &plaintextReceive);
+      coreAPI->plaintext_register_handler (i, &plaintextReceive);
     }
 
   GNUNET_GE_ASSERT (coreAPI->ectx, counters == NULL);
   lock = GNUNET_mutex_create (GNUNET_NO);
-  stats = capi->GNUNET_CORE_request_service ("stats");
+  stats = capi->request_service ("stats");
   return &api;
 }
 
@@ -608,13 +606,10 @@ release_module_traffic ()
   for (i = 0; i < GNUNET_P2P_PROTO_MAX_USED; i++)
     {
       coreAPI->unregisterHandler (i, &trafficReceive);
-      coreAPI->GNUNET_CORE_plaintext_unregister_handler (i,
-                                                         &plaintextReceive);
+      coreAPI->plaintext_unregister_handler (i, &plaintextReceive);
     }
-  coreAPI->
-    GNUNET_CORE_connection_unregister_send_notification_callback
-    (&trafficSend);
-  coreAPI->GNUNET_CORE_release_service (stats);
+  coreAPI->connection_unregister_send_notification_callback (&trafficSend);
+  coreAPI->release_service (stats);
   stats = NULL;
   for (i = 0; i < max_message_type; i++)
     GNUNET_free_non_null (counters[i]);
@@ -637,7 +632,7 @@ initialize_module_traffic (GNUNET_CoreAPIForPlugins * capi)
 {
   GNUNET_GE_ASSERT (capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
-  myApi = capi->GNUNET_CORE_request_service ("traffic");
+  myApi = capi->request_service ("traffic");
   if (myApi == NULL)
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
@@ -668,7 +663,7 @@ done_module_traffic ()
                     myCoreAPI->
                     unregisterClientHandler (GNUNET_CS_PROTO_TRAFFIC_QUERY,
                                              &trafficQueryHandler));
-  myCoreAPI->GNUNET_CORE_release_service (myApi);
+  myCoreAPI->release_service (myApi);
   myApi = NULL;
   myCoreAPI = NULL;
 }

@@ -53,8 +53,7 @@ testEC ()
   GNUNET_free (value);
   CHECK (GNUNET_YES ==
          GNUNET_EC_is_block_applicable_for_query
-         (GNUNET_ECRS_BLOCKTYPE_DATA, len, data, &query, 1, &query),
-         data);
+         (GNUNET_ECRS_BLOCKTYPE_DATA, len, data, &query, 1, &query), data);
   GNUNET_free (data);
   return 0;
 }

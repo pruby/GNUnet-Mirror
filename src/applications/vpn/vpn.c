@@ -241,14 +241,13 @@ cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
   b->size = htons (sizeof (GNUNET_MessageHeader) + strlen ((char *) (b + 1)));
   if (c != NULL)
     {
-      coreAPI->GNUNET_CORE_cs_send_to_client (c, b, GNUNET_YES);
+      coreAPI->cs_send_to_client (c, b, GNUNET_YES);
     }
   else
     {
       for (r = 0; r < clients_entries; r++)
         {
-          coreAPI->GNUNET_CORE_cs_send_to_client (*(clients_store + r), b,
-                                                  GNUNET_YES);
+          coreAPI->cs_send_to_client (*(clients_store + r), b, GNUNET_YES);
         }
     }
   GNUNET_free (b);
@@ -1750,8 +1749,7 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG))
     return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->GNUNET_CORE_cs_register_exit_handler (&clientExitHandler))
+  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&clientExitHandler))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_MSG, &csHandle))
@@ -1787,8 +1785,8 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle))
     return GNUNET_SYSERR;
 
-  identity = coreAPI->GNUNET_CORE_request_service ("identity");
-  session = coreAPI->GNUNET_CORE_request_service ("session");
+  identity = coreAPI->request_service ("identity");
+  session = coreAPI->request_service ("session");
 
   GNUNET_GE_ASSERT (ectx, identity != NULL);
   GNUNET_GE_ASSERT (ectx, session != NULL);
@@ -1847,7 +1845,7 @@ void done_module_vpn ()
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);
-  coreAPI->GNUNET_CORE_cs_exit_handler_unregister (&clientExitHandler);
+  coreAPI->cs_exit_handler_unregister (&clientExitHandler);
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 Waiting for tun thread to end\n"));
@@ -1867,8 +1865,8 @@ void done_module_vpn ()
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 The tun thread has ended\n"));
 
-  coreAPI->GNUNET_CORE_release_service (identity);
-  coreAPI->GNUNET_CORE_release_service (session);
+  coreAPI->release_service (identity);
+  coreAPI->release_service (session);
 
   identity = NULL;
 

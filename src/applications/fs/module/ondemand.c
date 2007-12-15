@@ -253,7 +253,7 @@ ONDEMAND_index (struct GNUNET_GE_Context *cectx,
                  "Storing on-demand content for query `%s'\n", &enc);
 #endif
 
-  ret = datastore->putUpdate(&key, &odb.header);
+  ret = datastore->putUpdate (&key, &odb.header);
   return ret;
 }
 
@@ -623,7 +623,7 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
       odb.fileId = *fileId;
       /* compute the primary key */
       GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
-      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))   /* aborted == found! */
+      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &completeValue, &odb.header))  /* aborted == found! */
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;
@@ -657,7 +657,7 @@ ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
   char *tmp;
 
   coreAPI = capi;
-  state = capi->GNUNET_CORE_request_service ("state");
+  state = capi->request_service ("state");
   if (state == NULL)
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -684,7 +684,7 @@ ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
 int
 ONDEMAND_done ()
 {
-  coreAPI->GNUNET_CORE_release_service (state);
+  coreAPI->release_service (state);
   state = NULL;
   GNUNET_free (index_directory);
   return GNUNET_OK;

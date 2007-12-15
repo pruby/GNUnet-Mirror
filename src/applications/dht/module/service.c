@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2006 Christian Grothoff (and other contributing authors)
+      (C) 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -35,9 +35,10 @@
  */
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static struct GNUNET_CronManager *cron;
-
-typedef struct GNUNET_DHT_GetHandle
+/**
+ * Handle used to track GET activity.
+ */
+struct GNUNET_DHT_GetHandle
 {
   /**
    * Key that we are looking for.
@@ -55,21 +56,11 @@ typedef struct GNUNET_DHT_GetHandle
   void *cls;
 
   /**
-   * Function to call once we are done
-   */
-  GNUNET_DHT_OperationCompleteCallback callbackComplete;
-
-  /**
-   * Extra argument to callbackComplete
-   */
-  void *closure;
-
-  /**
    * Type of the content that we are looking for.
    */
   unsigned int type;
 
-} DHT_GET_RECORD;
+};
 
 static void
 client_result_converter (const GNUNET_HashCode * key,
@@ -87,17 +78,6 @@ client_result_converter (const GNUNET_HashCode * key,
 }
 
 /**
- * Cron job that notifies the client.
- */
-static void
-timeout_callback (void *cls)
-{
-  struct GNUNET_DHT_GetHandle *rec = cls;
-
-  rec->callbackComplete (rec->closure);
-}
-
-/**
  * Perform an asynchronous GET operation on the DHT identified by
  * 'table' using 'key' as the key.  The peer does not have to be part
  * of the table (if so, we will attempt to locate a peer that is!).
@@ -110,35 +90,27 @@ timeout_callback (void *cls)
  * @param timeout how long to wait until this operation should
  *        automatically time-out
  * @param callback function to call on each result
- * @param closure extra argument to callback
- * @param callbackComplete function called on time-out
- *        (but not on explicit async_stop).
+ * @param cls extra argument to callback
  * @return handle to stop the async get
  */
 static struct GNUNET_DHT_GetHandle *
 dht_get_async_start (unsigned int type,
                      const GNUNET_HashCode * key,
-                     GNUNET_CronTime timeout,
-                     GNUNET_DataProcessor callback,
-                     void *cls,
-                     GNUNET_DHT_OperationCompleteCallback callbackComplete,
-                     void *closure)
+                     GNUNET_DataProcessor callback, void *cls)
 {
   struct GNUNET_DHT_GetHandle *ret;
 
-  ret = GNUNET_malloc (sizeof (DHT_GET_RECORD));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_DHT_GetHandle));
   ret->key = *key;
   ret->callback = callback;
   ret->cls = cls;
-  ret->callbackComplete = callbackComplete;
-  ret->closure = closure;
   ret->type = type;
-  if (GNUNET_OK != GNUNET_DHT_get_start (key, type, &client_result_converter, ret))
+  if (GNUNET_OK !=
+      GNUNET_DHT_get_start (key, type, &client_result_converter, ret))
     {
-      GNUNET_free(ret);
+      GNUNET_free (ret);
       return NULL;
     }
-  GNUNET_cron_add_job (cron, &timeout_callback, timeout, 0, ret);
   return ret;
 }
 
@@ -148,10 +120,8 @@ dht_get_async_start (unsigned int type,
 static int
 dht_get_async_stop (struct GNUNET_DHT_GetHandle *record)
 {
-  GNUNET_cron_suspend_jobs (cron, GNUNET_YES);
-  GNUNET_cron_del_job (cron, &timeout_callback, 0, record);
-  GNUNET_cron_resume_jobs (cron, GNUNET_YES);
-  GNUNET_DHT_get_stop (&record->key, record->type, &client_result_converter, record);
+  GNUNET_DHT_get_stop (&record->key, record->type, &client_result_converter,
+                       record);
   GNUNET_free (record);
   return GNUNET_OK;
 }
@@ -168,9 +138,7 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
 {
   static GNUNET_DHT_ServiceAPI api;
 
-  cron = GNUNET_cron_create (capi->ectx);
-  GNUNET_cron_start (cron);
-  if (GNUNET_OK != init_dht_table (capi))
+  if (GNUNET_OK != GNUNET_DHT_table_init (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
       return NULL;
@@ -178,7 +146,7 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_OK != GNUNET_DHT_init_routing (capi))
     {
       GNUNET_GE_BREAK (capi->ectx, 0);
-      done_dht_table ();
+      GNUNET_DHT_table_done ();
       return NULL;
     }
   coreAPI = capi;
@@ -194,10 +162,8 @@ provide_module_dht (GNUNET_CoreAPIForPlugins * capi)
 int
 release_module_dht ()
 {
-  GNUNET_cron_stop (cron);
   GNUNET_DHT_done_routing ();
-  done_dht_table ();
-  GNUNET_cron_destroy (cron);
+  GNUNET_DHT_table_done ();
   return GNUNET_OK;
 }
 

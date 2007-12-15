@@ -45,11 +45,6 @@ extern "C"
 struct GNUNET_DHT_GetHandle;
 
 /**
- * DHT operation 'complete' (i.e timed out).
- */
-typedef void (*GNUNET_DHT_OperationCompleteCallback) (void *closure);
-
-/**
  * Functions of the DHT Service API.
  */
 typedef struct
@@ -70,11 +65,8 @@ typedef struct
    */
   struct GNUNET_DHT_GetHandle *(*get_start) (unsigned int type,
                                              const GNUNET_HashCode * key,
-                                             GNUNET_CronTime timeout,
                                              GNUNET_DataProcessor callback,
-                                             void *cls,
-                                             GNUNET_DHT_OperationCompleteCallback
-                                             callbackComplete, void *closure);
+                                             void *cls);
 
   /**
    * Stop async DHT-get.  Frees associated resources.
@@ -89,8 +81,7 @@ typedef struct
    * @param key the key to store under
    */
   int (*put) (const GNUNET_HashCode * key,
-	      unsigned int type,
-	      unsigned int size, const char *data);
+              unsigned int type, unsigned int size, const char *data);
 
 } GNUNET_DHT_ServiceAPI;
 

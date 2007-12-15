@@ -68,8 +68,7 @@ int GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
 int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                     struct GNUNET_GE_Context *ectx,
                     const GNUNET_HashCode * key,
-                    unsigned int type,
-                    const GNUNET_DataContainer * value);
+                    unsigned int type, const GNUNET_DataContainer * value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

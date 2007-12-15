@@ -574,7 +574,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
   if (GNUNET_GC_get_configuration_value_yesno (cfg, "TCP", "UPNP", GNUNET_YES)
       == GNUNET_YES)
     {
-      upnp = coreAPI->GNUNET_CORE_request_service ("upnp");
+      upnp = coreAPI->request_service ("upnp");
 
       if (upnp == NULL)
         {
@@ -587,7 +587,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 
         }
     }
-  stats = coreAPI->GNUNET_CORE_request_service ("stats");
+  stats = coreAPI->request_service ("stats");
   if (stats != NULL)
     {
       stat_bytesReceived
@@ -619,12 +619,12 @@ donetransport_tcp ()
   GNUNET_GC_detach_change_listener (cfg, &reloadConfiguration, NULL);
   if (stats != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (stats);
+      coreAPI->release_service (stats);
       stats = NULL;
     }
   if (upnp != NULL)
     {
-      coreAPI->GNUNET_CORE_release_service (upnp);
+      coreAPI->release_service (upnp);
       upnp = NULL;
     }
   GNUNET_free_non_null (filteredNetworks_);

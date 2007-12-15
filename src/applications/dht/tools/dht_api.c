@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -68,9 +68,10 @@ typedef struct
   int aborted;
 
   /**
-   * Total number of results obtained, or -1 on error.
+   * Total number of results obtained
    */
-  int total;
+  unsigned int total;
+
 } GetInfo;
 
 
@@ -81,7 +82,7 @@ poll_thread (void *cls)
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
   GNUNET_DataContainer *cont;
-  unsigned short size;
+  unsigned int size;
 
   while (info->aborted == GNUNET_NO)
     {
@@ -94,22 +95,20 @@ poll_thread (void *cls)
           (GNUNET_CS_PROTO_DHT_REQUEST_PUT != ntohs (reply->type)))
         {
           GNUNET_GE_BREAK (NULL, 0);
-          info->total = GNUNET_SYSERR;
+          GNUNET_free (reply);
           break;                /*  invalid reply */
         }
-
-      put = (CS_dht_request_put_MESSAGE *) reply;
-      /* re-use "expire" field of the reply (which is 0 anyway)
-         for the header of GNUNET_DataContainer (which fits) to avoid
-         copying -- go C pointer arithmetic! */
-      cont =
-        (GNUNET_DataContainer *) & ((char *)
-                                    &put[1])[-sizeof (GNUNET_DataContainer)];
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
-      cont->size = htonl (size + sizeof (GNUNET_DataContainer));
-      if ((info->processor != NULL) &&
-          (GNUNET_OK != info->processor (&put->key, cont, info->closure)))
-        info->aborted = GNUNET_YES;
+      put = (CS_dht_request_put_MESSAGE *) reply;
+      if (info->processor != NULL)
+        {
+          cont = GNUNET_malloc (sizeof (GNUNET_DataContainer) + size);
+          cont->size = htonl (sizeof (GNUNET_DataContainer) + size);
+          memcpy (&cont[1], &put[1], size);
+          if (GNUNET_OK != info->processor (&put->key, cont, info->closure))
+            info->aborted = GNUNET_YES;
+          GNUNET_free (cont);
+        }
       info->total++;
       GNUNET_free (reply);
     }
@@ -161,7 +160,6 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
   req.header.size = htons (sizeof (CS_dht_request_get_MESSAGE));
   req.header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_GET);
   req.type = htonl (type);
-  req.timeout = GNUNET_htonll (timeout);
   req.key = *key;
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &req.header))
     {
@@ -208,15 +206,12 @@ int
 GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                 struct GNUNET_GE_Context *ectx,
                 const GNUNET_HashCode * key,
-                unsigned int type,
-                const GNUNET_DataContainer * value)
+                unsigned int type, const GNUNET_DataContainer * value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
   int ret;
-  GNUNET_CronTime now;
 
-  now = GNUNET_get_time ();
 #if DEBUG_DHT_API
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
