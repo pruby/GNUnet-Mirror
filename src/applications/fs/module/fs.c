@@ -1251,7 +1251,7 @@ csHandleClientExit (struct GNUNET_ClientHandle *client)
           if (prev == NULL)
             pos = dht_pending;
           else
-	    pos = prev->next;
+            pos = prev->next;
           continue;
         }
       prev = pos;
