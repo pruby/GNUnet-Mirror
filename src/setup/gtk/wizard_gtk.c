@@ -283,6 +283,7 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
         user_name = GNUNET_strdup ("gnunet");
       else
         {
+	  GNUNET_free_non_null(uname);
           uname = getenv ("USER");
           if (uname != NULL)
             user_name = GNUNET_strdup (uname);
@@ -297,6 +298,7 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
   if (NULL == gname || strlen (gname) == 0)
     {
       struct group *grp;
+      
       if ((geteuid () == 0) || (NULL != getgrnam ("gnunet")))
         group_name = GNUNET_strdup ("gnunet");
       else
@@ -336,6 +338,8 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
   gtk_widget_set_sensitive (entGroup, cap);
 
   gtk_widget_show (curwnd);
+  GNUNET_free_non_null(uname);
+  GNUNET_free_non_null(gname);
 }
 
 
