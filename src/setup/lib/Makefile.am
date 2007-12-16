@@ -9,9 +9,14 @@ LIBS = @LIBINTL@ @LIBS@
 
 lib_LTLIBRARIES = libgnunetsetup.la
 
+if HAVE_GUILE
+	GUILE_SRC = \
+	  gns.c \
+	  tree.c tree.h
+endif
+
 libgnunetsetup_la_SOURCES = \
-  gns.c \
-  tree.c tree.h \
+	$(GUILE_SRC) \
   wizard_util.c wizard_util.h
 
 libgnunetsetup_la_LIBADD = \

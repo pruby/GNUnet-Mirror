@@ -716,8 +716,10 @@ gtk_wizard_mainsetup_gtk (int argc,
   gtk_main ();
   gdk_threads_leave ();
   destroyMainXML ();
+#if HAVE_GUILE
   if (doOpenEnhConfigurator)
     gconf_main_post_init (self, ectx, cfg, gns, filename, is_daemon);
+#endif
   GNUNET_free_non_null (user_name);
   GNUNET_free_non_null (group_name);
   setLibrary (NULL);
