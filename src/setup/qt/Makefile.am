@@ -9,6 +9,7 @@ libgnunetsetup_qt_la_SOURCES = \
         qtconfig.cc \
         setupWizard.cc setupWizard.h \
         moc_setupWizard.cpp \
+        resources.cpp \
         ui_enhanced.h ui_gnunet-setup.h
 
 libgnunetsetup_qt_la_LDFLAGS = \
@@ -32,6 +33,9 @@ EXTRA_DIST = \
   enhanced.ui \
   gnunet-setup.ui 
 
+ui_%.h: %.ui
+	uic $< -o $@ 
+
 # This rule lets GNU make create any moc_*.cpp from the equivalent *.h
 moc_%.cpp: %.h
 	moc $< -o $@
@@ -39,6 +43,9 @@ moc_%.cpp: %.h
 # Adjust this line according to your resources.qrc
 # resources.cpp : resources.qrc octave-gui.png
 #         rcc resources.qrc -o resources.cpp
+
+resources.cpp : pixmaps/pixmaps.qrc
+	rcc pixmaps/pixmaps.qrc -o resources.cpp
 
 # This line ensures that generated moc_*.cpp and resources.cpp files are
 # deleted when we make clean.

@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>SetupWizard</class>
  <widget class="QWidget" name="SetupWizard" >
   <property name="geometry" >
@@ -19,11 +16,20 @@
    <iconset resource="pixmaps/pixmaps.qrc" >:/pixmaps/gnunet-logo-small.png</iconset>
   </property>
   <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
    <property name="spacing" >
     <number>6</number>
+   </property>
+   <property name="leftMargin" >
+    <number>9</number>
+   </property>
+   <property name="topMargin" >
+    <number>9</number>
+   </property>
+   <property name="rightMargin" >
+    <number>9</number>
+   </property>
+   <property name="bottomMargin" >
+    <number>9</number>
    </property>
    <item>
     <widget class="QStackedWidget" name="stackedWidget" >
@@ -32,24 +38,42 @@
      </property>
      <widget class="QWidget" name="page" >
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
        </property>
+       <property name="leftMargin" >
+        <number>9</number>
+       </property>
+       <property name="topMargin" >
+        <number>9</number>
+       </property>
+       <property name="rightMargin" >
+        <number>9</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>9</number>
+       </property>
        <item>
-        <widget class="QTextBrowser" name="textBrowser" />
+        <widget class="QTextBrowser" name="htmlWelcome" />
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="page_2" >
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
+       </property>
+       <property name="leftMargin" >
+        <number>9</number>
+       </property>
+       <property name="topMargin" >
+        <number>9</number>
+       </property>
+       <property name="rightMargin" >
+        <number>9</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>9</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox" >
@@ -57,11 +81,20 @@
           <string>Network connection - enter information about your network connection here</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="leftMargin" >
+           <number>9</number>
+          </property>
+          <property name="topMargin" >
+           <number>9</number>
+          </property>
+          <property name="rightMargin" >
+           <number>9</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label" >
@@ -78,11 +111,20 @@
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_2" >
@@ -119,7 +161,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox" >
+             <widget class="QComboBox" name="cmbIF" >
               <property name="minimumSize" >
                <size>
                 <width>420</width>
@@ -149,7 +191,7 @@
           <item>
            <widget class="QLabel" name="label_3" >
             <property name="text" >
-             <string>If your provider always assigns the same IP-Address to you (a "static" IP-Address), enter it into this field. If your IP-Address changes every now and then ("dynamic" IP-Address) but there's a hostname that always points to your actual IP-Address ("Dynamic DNS"), you can also enter it here.
+             <string>If your provider always assigns the same IP-Address to you (a "static" IP-Address), enter it into this field. If your IP-Address changes every now and then ("dynamic" IP-Address) but there's a hostname that always points to your actual IP-Address ("Dynamic DNS"), you can also enter it here.&#xd;
 If in doubt, leave the field empty. GNUnet will then try to determine your IP-Address.</string>
             </property>
             <property name="wordWrap" >
@@ -159,11 +201,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_4" >
@@ -200,7 +251,7 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit" >
+             <widget class="QLineEdit" name="editIP" >
               <property name="minimumSize" >
                <size>
                 <width>420</width>
@@ -239,14 +290,23 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>6</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
             </property>
+            <property name="leftMargin" >
+             <number>6</number>
+            </property>
+            <property name="topMargin" >
+             <number>6</number>
+            </property>
+            <property name="rightMargin" >
+             <number>6</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>6</number>
+            </property>
             <item>
-             <widget class="QCheckBox" name="checkBox" >
+             <widget class="QCheckBox" name="cbSNAT" >
               <property name="font" >
                <font>
                 <family>MS Shell Dlg 2</family>
@@ -285,11 +345,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
      </widget>
      <widget class="QWidget" name="page_3" >
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
+       </property>
+       <property name="leftMargin" >
+        <number>9</number>
+       </property>
+       <property name="topMargin" >
+        <number>9</number>
+       </property>
+       <property name="rightMargin" >
+        <number>9</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>9</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox_2" >
@@ -297,11 +366,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           <string>Load limitation - limit GNUnet's ressource usage here</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="leftMargin" >
+           <number>9</number>
+          </property>
+          <property name="topMargin" >
+           <number>9</number>
+          </property>
+          <property name="rightMargin" >
+           <number>9</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label_6" >
@@ -315,11 +393,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_7" >
@@ -353,7 +440,7 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_2" >
+             <widget class="QLineEdit" name="editUp" >
               <property name="minimumSize" >
                <size>
                 <width>420</width>
@@ -366,11 +453,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_8" >
@@ -407,7 +503,7 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_3" >
+             <widget class="QLineEdit" name="editDown" >
               <property name="minimumSize" >
                <size>
                 <width>420</width>
@@ -435,7 +531,7 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
            </spacer>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButton" >
+           <widget class="QRadioButton" name="rbFull" >
             <property name="font" >
              <font>
               <family>MS Shell Dlg 2</family>
@@ -453,7 +549,7 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radioButton_2" >
+           <widget class="QRadioButton" name="rbShared" >
             <property name="font" >
              <font>
               <family>MS Shell Dlg 2</family>
@@ -498,11 +594,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_10" >
@@ -539,12 +644,15 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
              </spacer>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox" >
+             <widget class="QSpinBox" name="spinCPU" >
               <property name="minimumSize" >
                <size>
                 <width>420</width>
                 <height>0</height>
                </size>
+              </property>
+              <property name="maximum" >
+               <number>100</number>
               </property>
              </widget>
             </item>
@@ -570,11 +678,20 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
      </widget>
      <widget class="QWidget" name="page_4" >
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
+       </property>
+       <property name="leftMargin" >
+        <number>9</number>
+       </property>
+       <property name="topMargin" >
+        <number>9</number>
+       </property>
+       <property name="rightMargin" >
+        <number>9</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>9</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox_3" >
@@ -582,19 +699,28 @@ If in doubt, leave the field empty. GNUnet will then try to determine your IP-Ad
           <string>Security settings - specify the user and the group owning the GNUnet service here</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="leftMargin" >
+           <number>9</number>
+          </property>
+          <property name="topMargin" >
+           <number>9</number>
+          </property>
+          <property name="rightMargin" >
+           <number>9</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label_11" >
             <property name="text" >
-             <string>For security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.
-
-However, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You will have to grant read permissions to the user specified below.
-
+             <string>For security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.&#xd;
+&#xd;
+However, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You will have to grant read permissions to the user specified below.&#xd;
+&#xd;
 Leave the fields empty to run GNUnet with system privileges.</string>
             </property>
             <property name="wordWrap" >
@@ -604,11 +730,20 @@ Leave the fields empty to run GNUnet with system privileges.</string>
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_12" >
@@ -642,7 +777,7 @@ Leave the fields empty to run GNUnet with system privileges.</string>
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_4" >
+             <widget class="QLineEdit" name="editUser" >
               <property name="minimumSize" >
                <size>
                 <width>440</width>
@@ -655,11 +790,20 @@ Leave the fields empty to run GNUnet with system privileges.</string>
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_13" >
@@ -693,7 +837,7 @@ Leave the fields empty to run GNUnet with system privileges.</string>
              </spacer>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_5" >
+             <widget class="QLineEdit" name="editGroup" >
               <property name="minimumSize" >
                <size>
                 <width>440</width>
@@ -724,11 +868,20 @@ Leave the fields empty to run GNUnet with system privileges.</string>
      </widget>
      <widget class="QWidget" name="page_5" >
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
+       </property>
+       <property name="leftMargin" >
+        <number>9</number>
+       </property>
+       <property name="topMargin" >
+        <number>9</number>
+       </property>
+       <property name="rightMargin" >
+        <number>9</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>9</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox_4" >
@@ -736,16 +889,25 @@ Leave the fields empty to run GNUnet with system privileges.</string>
           <string>Other settings</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="leftMargin" >
+           <number>9</number>
+          </property>
+          <property name="topMargin" >
+           <number>9</number>
+          </property>
+          <property name="rightMargin" >
+           <number>9</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label_14" >
             <property name="text" >
-             <string>GNUnet is able to store data from other peers in your datastore. This is useful if an adversary has access to your inserted content and you need to deny that the content is yours. With "content migration" on, the content could have "migrated" over the internet to your node without your knowledge.
+             <string>GNUnet is able to store data from other peers in your datastore. This is useful if an adversary has access to your inserted content and you need to deny that the content is yours. With "content migration" on, the content could have "migrated" over the internet to your node without your knowledge.&#xd;
 It also helps to spread popular content over different peers to enhance availability.</string>
             </property>
             <property name="wordWrap" >
@@ -754,7 +916,7 @@ It also helps to spread popular content over different peers to enhance availabi
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2" >
+           <widget class="QCheckBox" name="cbMigr" >
             <property name="font" >
              <font>
               <family>MS Shell Dlg 2</family>
@@ -799,11 +961,20 @@ It also helps to spread popular content over different peers to enhance availabi
           </item>
           <item>
            <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
             <property name="spacing" >
              <number>6</number>
+            </property>
+            <property name="leftMargin" >
+             <number>0</number>
+            </property>
+            <property name="topMargin" >
+             <number>0</number>
+            </property>
+            <property name="rightMargin" >
+             <number>0</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="label_16" >
@@ -824,7 +995,27 @@ It also helps to spread popular content over different peers to enhance availabi
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_6" />
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>50</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinQuota" >
+              <property name="minimumSize" >
+               <size>
+                <width>370</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -845,6 +1036,32 @@ It also helps to spread popular content over different peers to enhance availabi
            </spacer>
           </item>
           <item>
+           <widget class="QCheckBox" name="cbAutostart" >
+            <property name="font" >
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Start GNUnet background process on computer startup</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QLabel" name="label_17" >
             <property name="text" >
              <string>If you are an experienced user, you may want to tweak your GNUnet installation using the enhanced configurator.</string>
@@ -855,7 +1072,10 @@ It also helps to spread popular content over different peers to enhance availabi
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_3" >
+           <widget class="QCheckBox" name="cbEnhConfig" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
             <property name="font" >
              <font>
               <family>MS Shell Dlg 2</family>
@@ -899,7 +1119,7 @@ It also helps to spread popular content over different peers to enhance availabi
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_4" >
+           <widget class="QCheckBox" name="cbGNUpdate" >
             <property name="font" >
              <font>
               <family>MS Shell Dlg 2</family>
@@ -913,6 +1133,9 @@ It also helps to spread popular content over different peers to enhance availabi
             </property>
             <property name="text" >
              <string>Run gnunet-update</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -938,11 +1161,20 @@ It also helps to spread popular content over different peers to enhance availabi
    </item>
    <item>
     <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
      <property name="spacing" >
       <number>6</number>
+     </property>
+     <property name="leftMargin" >
+      <number>0</number>
+     </property>
+     <property name="topMargin" >
+      <number>0</number>
+     </property>
+     <property name="rightMargin" >
+      <number>0</number>
+     </property>
+     <property name="bottomMargin" >
+      <number>0</number>
      </property>
      <item>
       <spacer>
@@ -1027,7 +1259,6 @@ It also helps to spread popular content over different peers to enhance availabi
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources>
   <include location="pixmaps/pixmaps.qrc" />
  </resources>

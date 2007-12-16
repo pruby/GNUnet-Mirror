@@ -8,13 +8,19 @@ class GSetupWizard:public QDialog, private
 {
   Q_OBJECT
 public:
-  GSetupWizard (QDialog * parent = NULL);
-  void
-  setErrorContext (struct GNUNET_GE_Context *ectx);
-  void
-  setConfig (struct GNUNET_GC_Configuration *cfg);
+  GSetupWizard (QDialog * parent, struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *cfg_fn);
 
+protected slots:
+  void nextClicked();
+  void prevClicked();
+  void abortClicked();
 protected:
+  QString header();
+  void loadDefaults();
+  int saveConf();
+
+  unsigned int curPage;
+  const char *cfg_fn;
   struct GNUNET_GE_Context *
     ectx;
   struct GNUNET_GC_Configuration *

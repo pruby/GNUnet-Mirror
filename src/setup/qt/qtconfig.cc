@@ -83,9 +83,7 @@ qt_wizard_mainsetup_qt (int argc,
 
     app = new QApplication(argc, (char **) argv);
 
-    wiz = new GSetupWizard();
-    wiz->setErrorContext(ectx);
-    wiz->setConfig(cfg);
+    wiz = new GSetupWizard(NULL, ectx, cfg, filename);
     wiz->show();
     
     ret = app->exec();
