@@ -49,7 +49,7 @@ extern "C"
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
  */
-#define GNUNET_CORE_VERSION 0x00070100
+#define GNUNET_CORE_VERSION 0x00070300
 
 
 /**

@@ -38,7 +38,7 @@ extern "C"
 #endif
 #endif
 
-#define GNUNET_STATS_VERSION "5.0.0"
+#define GNUNET_STATS_VERSION "5.0.1"
 
 /**
  * Return a descriptive name for a p2p message type

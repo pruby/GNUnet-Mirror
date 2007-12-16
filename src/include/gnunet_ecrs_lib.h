@@ -55,7 +55,7 @@ extern "C"
  * 5.0.x: with location URIs
  * 6.x.x: who knows? :-)
  */
-#define GNUNET_ECRS_VERSION "5.0.0"
+#define GNUNET_ECRS_VERSION "5.0.1"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
