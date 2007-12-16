@@ -86,7 +86,7 @@ main (int argc, const char *argv[])
       if (GNUNET_OK == upnp->get_ip (2086, "TCP", &addr))
         {
           printf ("UPnP returned external IP %u.%u.%u.%u\n",
-                  PRIP (ntohl (*(int *) &addr)));
+                  GNUNET_PRIP (ntohl (*(int *) &addr)));
         }
       else
         {

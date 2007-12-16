@@ -36,9 +36,9 @@
 #include "gnunet_testing_lib.h"
 #include "gnunet_stats_lib.h"
 
-#define NUM_PEERS 12
+#define NUM_PEERS 6
 
-#define NUM_ROUNDS 10
+#define NUM_ROUNDS 5
 
 static int
 countConnections (const char *name, unsigned long long value, void *cls)
