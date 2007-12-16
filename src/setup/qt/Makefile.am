@@ -8,6 +8,7 @@ plugin_LTLIBRARIES = \
 libgnunetsetup_qt_la_SOURCES = \
         qtconfig.cc \
         setupWizard.cc setupWizard.h \
+        moc_setupWizard.cpp \
         ui_enhanced.h ui_gnunet-setup.h
 
 libgnunetsetup_qt_la_LDFLAGS = \

@@ -471,9 +471,9 @@ AC_ARG_WITH(qt,
               qt=1))
         ;;
       *)
-        QTLIBS="-L$with_qt/lib"
+        QTLIBS="$QTLIBS -L$with_qt/lib"
         LDFLAGS="$QTLIBS $LDFLAGS"
-        QTINC="-I$with_qt/include -I$with_qt/include/qt4"
+        QTINC="$QTINC -I$with_qt/include -I$with_qt/include/qt4"
         CPPFLAGS="$QTINC $CPPFLAGS"
         AC_CHECK_HEADERS([Qt/qpixmap.h],
            AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
@@ -483,9 +483,9 @@ AC_ARG_WITH(qt,
     esac
    ],
   [AC_MSG_RESULT([--with-qt not specified])
-    QTLIBS="-L/usr/lib"
+    QTLIBS="$QTLIBS -L/usr/lib"
     LDFLAGS="$QTLIBS $LDFLAGS"
-    QTINC="-I/usr/include -I/usr/include/qt4"
+    QTINC="$QTINC -I/usr/include -I/usr/include/qt4"
     CPPFLAGS="$QTINC $CPPFLAGS"
     AC_CHECK_HEADERS([Qt/qpixmap.h],
           AC_CHECK_LIB([QtGui], [_ZN7QPixmap12defaultDepthEv],
