@@ -614,6 +614,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                          i, PUT_TRIES);
 #endif
           store = 1;
+	  continue;
         }
       else
 	{
