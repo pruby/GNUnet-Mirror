@@ -545,7 +545,7 @@ rereadConfiguration (void *ctx,
                          GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                          _("Failed to read friends list from `%s'\n"), fn);
           GNUNET_free (fn);
-          GNUNET_free (data);
+          GNUNET_free (data);	  
           return GNUNET_SYSERR;
         }
       GNUNET_free (fn);
@@ -599,6 +599,7 @@ rereadConfiguration (void *ctx,
                          _
                          ("More friendly connections required than target total number of connections.\n"));
         }
+      GNUNET_free (data);	  
     }
   return 0;
 }

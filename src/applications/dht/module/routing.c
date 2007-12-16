@@ -574,6 +574,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
   unsigned int target_value;
   int store;
   int i;
+  unsigned int j;
 #if DEBUG_ROUTING
   GNUNET_EncName enc;
 #endif
@@ -599,11 +600,11 @@ handlePut (const GNUNET_PeerIdentity * sender,
   memcpy (aput, put, ntohs (msg->size));
   aput->hop_count = htons (hop_count + 1);
 
-
+  j = 0;
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
-          GNUNET_DHT_select_peer (&next[i], &put->key, &next[0], i))
+          GNUNET_DHT_select_peer (&next[j], &put->key, &next[0], j))
         {
 #if DEBUG_ROUTING
           GNUNET_GE_LOG (coreAPI->ectx,
@@ -614,18 +615,22 @@ handlePut (const GNUNET_PeerIdentity * sender,
 #endif
           store = 1;
         }
-      if (1 == GNUNET_hash_xorcmp (&next[i].hashPubKey,
+      else
+	{
+	  j++;
+	}
+      if (1 == GNUNET_hash_xorcmp (&next[j].hashPubKey,
                                    &coreAPI->myIdentity->hashPubKey,
                                    &put->key))
         store = 1;              /* we're closer than the selected target */
 #if DEBUG_ROUTING
-      GNUNET_hash_to_enc (&next[i].hashPubKey, &enc);
+      GNUNET_hash_to_enc (&next[j].hashPubKey, &enc);
       GNUNET_GE_LOG (coreAPI->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
                      GNUNET_GE_DEVELOPER,
                      "Forwarding DHT PUT request to peer `%s'.\n", &enc);
 #endif
-      coreAPI->unicast (&next[i], &aput->header, DHT_PRIORITY, DHT_DELAY);
+      coreAPI->unicast (&next[j], &aput->header, DHT_PRIORITY, DHT_DELAY);
     }
   GNUNET_free (aput);
   if (store != 0)
