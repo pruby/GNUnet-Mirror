@@ -41,21 +41,25 @@ static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_GC_Configuration *cfg;
 
+static struct GNUNET_ClientServerConnection *sock;
+
 static int
-report (void *unused,
+report (void * cls,
         const GNUNET_PeerIdentity * reporter,
         const GNUNET_PeerIdentity * link)
 {
   GNUNET_EncName src;
   GNUNET_EncName dst;
+  unsigned int * ret = cls;
 
   GNUNET_hash_to_enc (&reporter->hashPubKey, &src);
   if (link != NULL)
     {
       GNUNET_hash_to_enc (&link->hashPubKey, &dst);
       fprintf (stdout,
-               _("`%s' connected to `%s'.\n"),
-               (const char *) &src, (const char *) &dst);
+               _("`%.*s' connected to `%.*s'.\n"),
+               4, (const char *) &src, 4, (const char *) &dst);      
+      (*ret)++;
     }
   else
     {
@@ -72,6 +76,13 @@ run_shutdown (void *unused)
   GNUNET_shutdown_initiate ();
 }
 
+static void *
+process (void * cls)
+{
+  GNUNET_TRACEKIT_run (sock, TEST_DEPTH, 0, &report, cls);
+  return NULL;
+}
+
 /**
  * Testcase to test tracekit
  * @return 0: ok, -1: error
@@ -80,8 +91,9 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_TESTING_DaemonContext *peers;
-  struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_CronManager *cron;
+  struct GNUNET_ThreadHandle * myThread;
+  void * unused;
   int ret;
   int i;
 
@@ -123,13 +135,19 @@ main (int argc, char **argv)
       return 1;
     }
   ret = 0;                      /* FIXME: set to 1 here, to 0 in report! */
+  myThread = GNUNET_thread_create (&process, &ret, 128 * 1024);
+  if (myThread == NULL)
+    GNUNET_GE_DIE_STRERROR (ectx,
+                            GNUNET_GE_FATAL | GNUNET_GE_IMMEDIATE |
+                            GNUNET_GE_ADMIN, "pthread_create");
   cron = GNUNET_cron_create (ectx);
   GNUNET_cron_start (cron);
-  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * 60,
+  GNUNET_cron_add_job (cron, &run_shutdown, GNUNET_CRON_SECONDS * 15,
                        0, NULL);
+  
   GNUNET_shutdown_wait_for ();
   GNUNET_client_connection_close_forever (sock);
-  GNUNET_TRACEKIT_run (sock, TEST_DEPTH, 0, &report, &ret);
+  GNUNET_thread_join (myThread, &unused);
   GNUNET_client_connection_destroy (sock);
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
@@ -139,7 +157,11 @@ main (int argc, char **argv)
 #endif
 
   GNUNET_GC_free (cfg);
-  return ret;
+  if (ret < 6)
+    return 1; /* have at least 3 (bi-directional) connections */
+  if (ret > 12)
+    return 2; /* have at most 12 connections */
+  return 0;
 }
 
 /* end of tracekittest.c */

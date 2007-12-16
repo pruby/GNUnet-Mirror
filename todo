@@ -10,11 +10,6 @@ Annotations:
     - Linux
     - XP
     - Vista?
-- Testcases:
-  * tracekit:
-    - actual testcase (beyond just printing)
-    - make it actually work...
-  * RPC
 
 0.8.0 [2'08] (aka "advanced features"):
 - gnunet-chat [ RC ]
@@ -25,6 +20,8 @@ Annotations:
   add a special block to the datastore and then trigger
   gnunet-insert only if the file is actually needed!)
 - power insert [#854]
+- RPC API and testcase
+
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling

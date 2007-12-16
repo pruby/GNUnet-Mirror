@@ -286,61 +286,6 @@ process (void *cls)
   return NULL;
 }
 
-#if 0
-for (i = 0; i < psCount; i++)
-  {
-    GNUNET_EncName enc;
-
-    match = GNUNET_NO;
-    for (j = 0; j < prCount; j++)
-      if (0 == memcmp (&peersResponding[j].hashPubKey,
-                       &peersSeen[i].hashPubKey, sizeof (GNUNET_HashCode)))
-        {
-          match = GNUNET_YES;
-          break;
-        }
-    if (match == GNUNET_NO)
-      {
-        GNUNET_hash_to_enc (&peersSeen[i].hashPubKey, &enc);
-        switch (format)
-          {
-          case 1:
-            break;
-          case 2:
-            printf
-              ("\tnode: { title: \"%s\" label: \"%.*s\" shape: \"ellipse\" }\n",
-               (char *) &enc, 4, (char *) &enc);
-            break;
-          default:
-            break;
-          }
-      }
-    else
-      {
-        switch (format)
-          {
-          case 2:
-            break;
-          default:
-            break;
-          }
-      }
-  }
-
-if (psCount == 0)
-  {
-    switch (format)
-      {
-      case 2:
-        printf ("\tnode: { title: \"NO CONNECTIONS\" }\n");
-        break;
-      default:
-        break;
-      }
-  }
-#endif
-
-
 /**
  * All gnunet-tracekit command line options
  */
