@@ -3,10 +3,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 if HAVE_GTK
  gtk_dir = gtk
 endif
-if 0
 if HAVE_QT
  qt_dir = qt
-endif
 endif
 if HAVE_DIALOG
  curses_dir = ncurses
