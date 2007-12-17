@@ -204,7 +204,7 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
   "|gconfig|wizard-gtk"
 #endif
 #if HAVE_QT
-  "|qconfig|wizard-qt"
+  "|wizard-qt"
 #endif
   "";
 
@@ -215,7 +215,6 @@ static const char *INFO = "gnunet-setup [OPTIONS] config|generate-defaults"
  */
 static const char *modules[] = {
   "gconfig", "setup_gtk", "gconf_main",
-  "qconfig", "setup_qt", "qconf_main",
   "menuconfig", "setup_curses", "mconf_main",
   "config", "setup_text", "main_",
   "wizard-curses", "setup_curses", "wizard_curs_main",
@@ -278,9 +277,6 @@ main (int argc, char *const *argv)
           operation = "config";
 #if HAVE_DIALOG
           operation = "menuconfig";
-#endif
-#if HAVE_QT
-          operation = "qconfig";
 #endif
 #if HAVE_GTK
           operation = "gconfig";
