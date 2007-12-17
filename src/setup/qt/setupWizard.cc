@@ -1,5 +1,5 @@
-#include <QObject>
-#include <QMessageBox>
+#include <Qt/QObject>
+#include <Qt/QMessageBox>
 
 #include "setupWizard.h"
 #include "config.h"
