@@ -110,7 +110,11 @@ configure_logging (struct GNUNET_GE_Context **ectx,
           if (rdir[pos] == DIR_SEPARATOR)
             {
               rdir[pos] = '\0';
-              if (mkdir (rdir, S_IRUSR | S_IWUSR | S_IXUSR) == 0)
+              if (mkdir (rdir
+#ifndef MINGW
+              , S_IRUSR | S_IWUSR | S_IXUSR
+#endif
+              ) == 0)
                 {
                   GNUNET_file_change_owner (nctx, rdir, user);
                 }
