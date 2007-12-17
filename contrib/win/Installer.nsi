@@ -45,7 +45,7 @@ var ICONS_GROUP
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "-d wizard-gtk"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "-d wizard-qt"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -124,7 +124,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		
 	  SetOutPath "$INSTDIR\bin"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
-	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-gtk" "$INSTDIR\bin\config.ico"
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-qt" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "gconfig" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
