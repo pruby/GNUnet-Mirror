@@ -6,6 +6,7 @@ plugin_LTLIBRARIES = \
 # You have two .cpp files you wrote, myapp.cpp and another.cpp
 # Remember to include the name of the resource file with the .cpp extension.
 libgnunetsetup_qt_la_SOURCES = \
+				gstring.cc gstring.h \
         qtconfig.cc \
         setupWizard.cc setupWizard.h \
         moc_setupWizard.cpp \

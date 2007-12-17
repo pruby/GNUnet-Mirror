@@ -1,11 +1,32 @@
-#include <Qt/QObject>
-#include <Qt/QMessageBox>
+/*
+     This file is part of GNUnet.
+     (C) 2007 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+#include <QtCore/QObject>
+#include <QtGui/QMessageBox>
 
 #include "setupWizard.h"
 #include "config.h"
 #include "plibc.h"
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
+#include "gstring.h"
 extern "C" {
 #include "wizard_util.h"
 }
@@ -160,7 +181,7 @@ void GSetupWizard::loadDefaults()
   }
   else
   {
-    rbFull->setChecked(false);
+    rbShared->setChecked(true);
   }
   
   GNUNET_GC_get_configuration_value_string (cfg,
@@ -181,7 +202,7 @@ void GSetupWizard::loadDefaults()
                                             "GNUNETD",
                                             "GROUP", "gnunet", &gname);
 
-#ifndef MINGW
+#ifndef Q_OS_WIN32
   if (NULL == uname || strlen (uname) == 0)
     {
       if ((geteuid () == 0) || (NULL != getpwnam ("gnunet")))
@@ -264,32 +285,37 @@ void GSetupWizard::loadDefaults()
 
 int GSetupWizard::saveConf()
 {
-  QString iface;
+  GString str;
   
-  iface = cmbIF->currentText();
+  str = cmbIF->currentText();
 #ifdef Q_OS_WIN32
   int idx;
   
-  idx = iface.lastIndexOf("- ");
+  idx = str.lastIndexOf("- ");
   if (idx == -1)
   {
-    QMessageBox::critical(this, tr("Error"), tr("Malformed interface name. Please report this to gnunet-developers@gnu.org: ") + iface);
+    QMessageBox::critical(this, tr("Error"), tr("Malformed interface name. Please report this to gnunet-developers@gnu.org: ") + str);
     return GNUNET_NO;
   }
-  iface.remove(0, idx + 2);
-  iface.remove(iface.length() - 1, 1);
+  str.remove(0, idx + 2);
+  str.remove(str.length() - 1, 1);
 #endif
 
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "NETWORK", "INTERFACE", qPrintable(iface));
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "INTERFACES", qPrintable(iface));
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "NETWORK", "IP", qPrintable(editIP->text()));
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "NETWORK", "INTERFACE", str.toUtf8CStr());
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "INTERFACES", str.toUtf8CStr());
+  str = editIP->text();
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "NETWORK", "IP", str.toUtf8CStr());
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "NAT", "LIMITED", cbSNAT->isChecked() ? "YES" : "NO");
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETDOWNBPSTOTAL", qPrintable(editDown->text()));
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETUPBPSTOTAL", qPrintable(editUp->text()));  
+  str = editDown->text();
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETDOWNBPSTOTAL", str.toUtf8CStr());
+  str = editUp->text();
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "LOAD", "MAXNETUPBPSTOTAL", str.toUtf8CStr());  
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "LOAD", "BASICLIMITING", rbFull->isChecked() ? "YES" : "NO");
   GNUNET_GC_set_configuration_value_number(cfg, ectx, "LOAD", "MAXCPULOAD", spinCPU->value());  
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "USER", qPrintable(editUser->text()));  
-  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "GROUP", qPrintable(editGroup->text()));  
+  str = editUser->text();
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "USER", str.toUtf8CStr());
+  str = editGroup->text();
+  GNUNET_GC_set_configuration_value_string(cfg, ectx, "GNUNETD", "GROUP", str.toUtf8CStr());  
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "FS", "ACTIVEMIGRATION", cbMigr->isChecked() ? "YES" : "NO");
   GNUNET_GC_set_configuration_value_number(cfg, ectx, "FS", "QUOTA", spinQuota->value());  
   GNUNET_GC_set_configuration_value_choice(cfg, ectx, "GNUNETD", "AUTOSTART", cbAutostart->isChecked() ? "YES" : "NO");
@@ -336,15 +362,18 @@ void GSetupWizard::nextClicked()
   }
   else if (curPage == 4)
   {
+    GString str;
     char *gup, *bin, *user_name, *group_name;
     
-    group_name = strdup(qPrintable(editUser->text()));
-    user_name = strdup(qPrintable(editGroup->text()));
+    str = editUser->text();
+    user_name = strdup(str.toUtf8CStr());
+    str = editGroup->text();
+    group_name = strdup(str.toUtf8CStr());
     
     if (cbAutostart->isChecked() && strlen(user_name))
       if (!GNUNET_GNS_wiz_create_group_user (group_name, user_name))
         {
-#ifndef MINGW
+#ifndef Q_OS_WIN32
           QMessageBox::critical(this, tr("Error"), QString("Unable to create user account: ") +
             STRERROR(errno));
 #endif
@@ -356,7 +385,7 @@ void GSetupWizard::nextClicked()
     if (GNUNET_GNS_wiz_autostart_service (cbAutostart->isChecked(), user_name, group_name) !=
         GNUNET_OK)
       {
-#ifndef MINGW
+#ifndef Q_OS_WIN32
           QMessageBox::critical(this, tr("Error"), QString("Unable to change startup process: ") +
             STRERROR(errno));
 #endif
