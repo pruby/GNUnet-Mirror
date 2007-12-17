@@ -259,11 +259,18 @@ void GSetupWizard::loadDefaults()
   cap = GNUNET_configure_autostart (ectx, 1, 1, NULL, NULL, NULL);
   cbAutostart->setEnabled(cap);
   cap = GNUNET_configure_user_account(1, 1, NULL, NULL);
-  editUser->setEnabled(cap);
+  if (!cap) {
+    editUser->setEnabled(false);
+    editUser->setText("");
+  }
 #ifdef WINDOWS
   cap = FALSE;
 #endif
-  editGroup->setEnabled(cap);
+  
+  if (!cap) {
+    editGroup->setEnabled(false);
+    editGroup->setText("");
+  }
 
   GNUNET_free_non_null(uname);
   GNUNET_free_non_null(gname);
