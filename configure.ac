@@ -74,7 +74,7 @@ case "$host_os" in
      build_target="macosx"
      LIBPREFIX=
      DLLDIR=lib
-     QTLIBS="-Wl,-rpath,$QTDIR/lib -L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
+     QTLIBS="-L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
      QTINC="-I$QTDIR/include -I$QTDIR/include/QtGui -I$QTDIR/include/QtCore -I$QTDIR/include/QtOpenGL $X_CFLAGS -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED"
      QTBIN="$QTDIR/bin"
      ;;
@@ -465,6 +465,8 @@ AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 LIBS=$SAVE_LIBS
 
 # check for Qt 4
+SAVE_LDFLAGS=$LDFLAGS
+SAVE_CPPFLAGS=$CPPFLAGS
 AC_LANG_PUSH([C++])
 qt=1
 AC_MSG_CHECKING(for Qt)
@@ -587,6 +589,8 @@ rm -f moc_myqt.cpp myqt.h myqt.cpp myqt.o myqt moc_myqt.o
 AC_LANG_POP([C++])
 # restore LIBS
 LIBS=$SAVE_LIBS
+LDFLAGS=$SAVE_LDFLAGS
+CPPFLAGS=$SAVE_CPPFLAGS
 
 # libmicrohttpd
 lmhd=0
