@@ -185,6 +185,14 @@ else
   echo "GNU adns       : Not found"
 fi
 
+TEST=`which qmake 2> /dev/null`
+if test -x "$TEST"; then
+  qmake --version | tail -n 1 | awk '{print "Qt             : "$4}'
+else
+  echo "Qt             : Not found"
+fi
+
+
 
 
 
