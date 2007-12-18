@@ -307,11 +307,6 @@ extern "C"
 
 #define SetErrnoFromWinError(e) _SetErrnoFromWinError(e, __FILE__, __LINE__)
 
-/**
- * @brief index() - same as strchr()
- */
-#define index(s, c) strchr(s, c)
-
   BOOL _plibc_CreateShortcut (const char *pszSrc, const char *pszDest);
   BOOL _plibc_DereferenceShortcut (char *pszShortcut);
   char *plibc_ChooseDir (char *pszTitle, unsigned long ulFlags);
@@ -428,6 +423,7 @@ extern "C"
   struct hostent *_win_gethostbyname (const char *name);
   char *_win_strerror (int errnum);
   int IsWinNT ();
+  char *index (const char *s, int c);
 
 #if !HAVE_STRNDUP
   char *strndup (const char *s, size_t n);
