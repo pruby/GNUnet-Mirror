@@ -27,6 +27,10 @@
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
 #include "gstring.h"
+#include <errno.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
 extern "C" {
 #include "wizard_util.h"
 }
