@@ -27,10 +27,12 @@
 #include "gnunet_util.h"
 #include "gnunet_setup_lib.h"
 #include "gstring.h"
+#ifndef Q_OS_WIN32
 #include <errno.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <grp.h>
+#endif
 extern "C" {
 #include "wizard_util.h"
 }
