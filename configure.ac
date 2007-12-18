@@ -223,10 +223,14 @@ fi
 
 # libcurl
 LIBCURL_CHECK_CONFIG(,7.15.4,,AC_MSG_ERROR([GNUnet requires libcurl >= 7.15.4]))
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # libxml2
 AM_PATH_XML2(,xml=1,xml=0)
 AM_CONDITIONAL(HAVE_XML2, test x$xml = x1)
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # test for kvm and kstat (for CPU stats under BSD/Solaris)
 AC_CHECK_LIB([kvm],[kvm_open])
@@ -264,6 +268,8 @@ if test "$extractor" != 1
 then
  AC_MSG_ERROR([GNUnet requires libextractor])
 fi
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # test for libgmp
 gmp=0
@@ -412,7 +418,8 @@ then
 fi
 AM_CONDITIONAL(HAVE_MYSQL, test x$mysql = xtrue)
 AM_CONDITIONAL(HAVE_MYSQLE, test "0" = "1")
-
+# restore LIBS
+LIBS=$SAVE_LIBS
 LDFLAGS=$SAVE_LDFLAGS
 CPPFLAGS=$SAVE_CPPFLAGS
 
@@ -454,6 +461,8 @@ AC_ARG_WITH(dialog,
 
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # check for Qt 4
 AC_LANG_PUSH([C++])
@@ -576,7 +585,8 @@ fi
 rm -f moc_myqt.cpp myqt.h myqt.cpp myqt.o myqt moc_myqt.o
 
 AC_LANG_POP([C++])
-
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # libmicrohttpd
 lmhd=0
@@ -608,7 +618,8 @@ AC_ARG_WITH(microhttpd,
           lmhd=1))])
 AM_CONDITIONAL(HAVE_MHD, test x$lmhd = x1)
 AC_DEFINE_UNQUOTED([HAVE_MHD], $lmhd, [We have libmicrohttpd])
-
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 # libesmtp
 esmtp=0
@@ -640,7 +651,8 @@ AC_ARG_WITH(esmtp,
           esmtp=1))])
 AM_CONDITIONAL(HAVE_ESMTP, test x$esmtp = x1)
 AC_DEFINE_UNQUOTED([HAVE_ESMTP], $esmtp, [We have libesmtp])
-
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 
 # GNU adns
@@ -675,6 +687,9 @@ AC_ARG_WITH(adns,
 
 AM_CONDITIONAL(HAVE_ADNS, test x$adns = x1)
 AC_DEFINE_UNQUOTED([HAVE_ADNS], $adns, [We have GNU adns])
+# restore LIBS
+LIBS=$SAVE_LIBS
+
 
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)

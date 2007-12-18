@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'gnunet-setup.ui'
 **
-** Created: Sun Dec 16 19:36:44 2007
+** Created: Mon Dec 17 18:28:24 2007
 **      by: Qt User Interface Compiler version 4.3.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -504,6 +504,7 @@ public:
     spinQuota = new QSpinBox(groupBox_4);
     spinQuota->setObjectName(QString::fromUtf8("spinQuota"));
     spinQuota->setMinimumSize(QSize(370, 0));
+    spinQuota->setMaximum(1000000);
 
     hboxLayout8->addWidget(spinQuota);
 
