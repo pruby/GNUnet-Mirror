@@ -34,6 +34,8 @@ EXTRA_DIST = \
   enhanced.ui \
   gnunet-setup.ui 
 
+qtconfig.cc: ui_gnunet-setup.h
+
 ui_%.h: %.ui
 	uic $< -o $@ 
 
