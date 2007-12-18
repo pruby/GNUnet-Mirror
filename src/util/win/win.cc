@@ -238,9 +238,9 @@ int InstallAsService(char *username)
   	sprintf(user, ".\\%s", username);
   }
 
-  hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
-    SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
-    NULL, NULL, NULL, user, username);
+  hService = GNCreateService(hManager, (LPCTSTR) "GNUnet", (LPCTSTR) "GNUnet", 0,
+    SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, (LPCTSTR) szEXE,
+    NULL, NULL, NULL, (LPCTSTR) user, (LPCTSTR) username);
   
   if (user)
     free(user);
@@ -272,7 +272,7 @@ int UninstallService()
   if (! hManager)
     return 2;
 
-  if (! (hService = GNOpenService(hManager, "GNUnet", DELETE)))
+  if (! (hService = GNOpenService(hManager, (LPCTSTR) "GNUnet", DELETE)))
     if (GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST)
       return 3;
      else
@@ -490,7 +490,7 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
   										STATUS_SUCCESS)
   	return 3;
   	
-  _GetAccountSid(NULL, pszName, &pSID);
+  _GetAccountSid(NULL, (LPTSTR) pszName, &pSID);
   
   if (_SetPrivilegeOnAccount(hPolicy, pSID, L"SeServiceLogonRight", TRUE) != STATUS_SUCCESS)
   	return 4;
@@ -554,8 +554,8 @@ BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
   /**
    * STEP 1: Get SID of the account name specified.
    */
-  fAPISuccess = GNLookupAccountName(NULL, lpszAccountName,
-        pUserSID, &cbUserSID, szDomain, &cbDomain, &snuType);
+  fAPISuccess = GNLookupAccountName(NULL, (LPCTSTR) lpszAccountName,
+        pUserSID, &cbUserSID, (LPTSTR) szDomain, &cbDomain, &snuType);
   
   /* API should have failed with insufficient buffer. */
   if (fAPISuccess)
@@ -574,8 +574,8 @@ BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
      goto end;
   }
   
-  fAPISuccess = GNLookupAccountName(NULL, lpszAccountName,
-        pUserSID, &cbUserSID, szDomain, &cbDomain, &snuType);
+  fAPISuccess = GNLookupAccountName(NULL, (LPCTSTR) lpszAccountName,
+        pUserSID, &cbUserSID, (LPTSTR) szDomain, &cbDomain, &snuType);
   if (!fAPISuccess) {
      goto end;
   }
@@ -583,7 +583,7 @@ BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
   /**
    *  STEP 2: Get security descriptor (SD) of the file specified.
    */
-  fAPISuccess = GNGetFileSecurity(lpszFileName,
+  fAPISuccess = GNGetFileSecurity((LPCTSTR) lpszFileName,
         secInfo, pFileSD, 0, &cbFileSD);
   
   /* API should have failed with insufficient buffer. */
@@ -599,7 +599,7 @@ BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
      goto end;
   }
   
-  fAPISuccess = GNGetFileSecurity(lpszFileName,
+  fAPISuccess = GNGetFileSecurity((LPCTSTR) lpszFileName,
         secInfo, pFileSD, cbFileSD, &cbFileSD);
   if (!fAPISuccess) {
      goto end;
@@ -769,7 +769,7 @@ BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
   /**
    * STEP 18: Set permissions
    */
-  if (GNSetNamedSecurityInfo(lpszFileName, SE_FILE_OBJECT,
+  if (GNSetNamedSecurityInfo((LPTSTR) lpszFileName, SE_FILE_OBJECT,
     DACL_SECURITY_INFORMATION, NULL, NULL, pNewACL, NULL) != ERROR_SUCCESS) {
     	goto end;
   }
