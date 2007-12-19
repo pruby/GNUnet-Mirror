@@ -77,7 +77,7 @@
 
 #define SELECT_IT_MIGRATION_ORDER_1 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (expire = ? AND hash < ?) "\
-  " ORDER BY expire DESC, hash DESC LIMIT 1"
+  " ORDER BY hash DESC LIMIT 1"
 
 #define SELECT_IT_MIGRATION_ORDER_2 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (expire < ?) "\
