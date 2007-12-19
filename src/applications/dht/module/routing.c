@@ -229,7 +229,7 @@ get_forward_count (unsigned int hop_count, double target_replication)
   if (hop_count > (diameter + 1) * 2)
     return 0;
   target_count =
-    target_replication / (target_replication * hop_count + diameter);
+    target_replication / (target_replication * (hop_count+1) + diameter);
   target_value = 0;
   while (target_value < target_count)
     target_value++;
@@ -533,6 +533,8 @@ handleGet (const GNUNET_PeerIdentity * sender,
   hop_count = ntohl (get->hop_count);
   target_value = get_forward_count (hop_count, GET_TRIES);
   aget.hop_count = htonl (1 + hop_count);
+  if (target_value > GET_TRIES)
+    target_value = GET_TRIES;
   for (i = 0; i < target_value; i++)
     {
       if (GNUNET_OK !=
@@ -599,7 +601,8 @@ handlePut (const GNUNET_PeerIdentity * sender,
   aput = GNUNET_malloc (ntohs (msg->size));
   memcpy (aput, put, ntohs (msg->size));
   aput->hop_count = htons (hop_count + 1);
-
+  if (target_value > PUT_TRIES)
+    target_value = PUT_TRIES;
   j = 0;
   for (i = 0; i < target_value; i++)
     {
