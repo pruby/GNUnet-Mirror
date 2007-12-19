@@ -941,6 +941,11 @@ then
  AC_MSG_NOTICE([NOTICE: libesmtp not found, smtp transport will not be installed.])
 fi
 
+if test "$qt" != 1
+then
+ AC_MSG_NOTICE([NOTICE: qt not found, will not build gnunet-setup qt plugin.])
+fi
+
 if test "$ipv6" = "0"
 then
   AC_MSG_NOTICE([NOTICE: IPv6 support will NOT be compiled.])
