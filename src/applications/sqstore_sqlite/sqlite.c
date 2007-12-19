@@ -53,7 +53,7 @@
 
 #define SELECT_IT_LOW_PRIORITY_1 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (prio = ? AND hash > ?) "\
-  "ORDER BY prio ASC, hash ASC LIMIT 1"
+  "ORDER BY hash ASC LIMIT 1"
 
 #define SELECT_IT_LOW_PRIORITY_2 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (prio > ?) "\
@@ -61,7 +61,7 @@
 
 #define SELECT_IT_NON_ANONYMOUS_1 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (prio = ? AND hash < ? AND anonLevel = 0) "\
-  " ORDER BY prio DESC, hash DESC LIMIT 1"
+  " ORDER BY hash DESC LIMIT 1"
 
 #define SELECT_IT_NON_ANONYMOUS_2 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (prio < ? AND anonLevel = 0)"\
@@ -69,7 +69,7 @@
 
 #define SELECT_IT_EXPIRATION_TIME_1 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (expire = ? AND hash > ?) "\
-  " ORDER BY expire ASC, hash ASC LIMIT 1"
+  " ORDER BY hash ASC LIMIT 1"
 
 #define SELECT_IT_EXPIRATION_TIME_2 \
   "SELECT size,type,prio,anonLevel,expire,hash,value,_ROWID_ FROM gn070 WHERE (expire > ?) "\
