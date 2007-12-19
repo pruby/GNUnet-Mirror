@@ -178,6 +178,7 @@ createIndices (sqlite3 * dbh)
                 NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb1", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb2", NULL, NULL, ENULL);
+  sqlite3_exec (dbh, "DROP INDEX idx_comb5", NULL, NULL, ENULL);
   sqlite3_exec (dbh, "DROP INDEX idx_comb6", NULL, NULL, ENULL);
   sqlite3_exec (dbh,
                 "CREATE INDEX idx_comb3 ON gn070 (prio,anonLevel)",
@@ -186,7 +187,7 @@ createIndices (sqlite3 * dbh)
                 "CREATE INDEX idx_comb4 ON gn070 (prio,hash,anonLevel)",
                 NULL, NULL, ENULL);
   sqlite3_exec (dbh,
-                "CREATE INDEX idx_comb5 ON gn070 (expire,hash)",
+                "CREATE INDEX idx_comb7 ON gn070 (expire,hash)",
                 NULL, NULL, ENULL);
 }
 
