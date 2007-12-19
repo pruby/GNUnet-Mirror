@@ -233,7 +233,8 @@ get_forward_count (unsigned int hop_count, double target_replication)
   target_value = 0;
   while (target_value < target_count)
     target_value++;
-  if ((target_count + 1 - target_value) > drand48 ())
+#define LARGE_INT 0xFFFFFF
+  if ((target_count + 1 - target_value) > GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, LARGE_INT) / ((double) LARGE_INT))
     target_value++;
   return target_value;
 }
