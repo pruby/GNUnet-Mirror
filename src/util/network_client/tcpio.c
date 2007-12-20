@@ -316,7 +316,7 @@ GNUNET_client_connection_ensure_connected (struct
   FD_ZERO (&eset);
   FD_SET (osock, &wset);
   FD_SET (osock, &eset);
-#define WAIT_SECONDS 1
+#define WAIT_SECONDS 10
   timeout.tv_sec = WAIT_SECONDS;
   timeout.tv_usec = 0;
   errno = 0;
