@@ -45,7 +45,7 @@ libgcj-dev (optional)
 Additional gnunet-gtk dependencies:
 
 libnotify-dev (optional)
-libgksu1.2-dev (optional)
+libgksu2-dev (optional)
 
 
 For running GNUnet with the MySQL database:
