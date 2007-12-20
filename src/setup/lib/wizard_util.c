@@ -38,11 +38,11 @@ GNUNET_GNS_wiz_is_nic_default (struct GNUNET_GC_Configuration *cfg,
   char *nic;
 
   GNUNET_GC_get_configuration_value_string (cfg, "NETWORK", "INTERFACE",
-                                            "eth0", &nic);
+                                            GNUNET_DEFAULT_INTERFACE, &nic);
 
 #ifdef WINDOWS
   /* default NIC for unixes */
-  if (strcmp (nic, "eth0") == 0)
+  if (strcmp (nic, GNUNET_DEFAULT_INTERFACE) == 0)
     {
       GNUNET_free (nic);
       nic = NULL;

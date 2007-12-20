@@ -377,7 +377,7 @@ resetStatusCalls (void *cls,
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
                                                       "LOAD",
                                                       "INTERFACES",
-                                                      "eth0", &interfaces))
+                                                      GNUNET_DEFAULT_INTERFACE, &interfaces))
     return GNUNET_SYSERR;
   if (interfaces == NULL)
     {

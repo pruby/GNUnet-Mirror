@@ -63,6 +63,8 @@ then
  CFLAGS="-fno-strict-aliasing $CFLAGS"
 fi
 
+# Use Linux interface name unless the OS has a different preference
+DEFAULT_INTERFACE="eth0"
 
 # Check system type
 case "$host_os" in
@@ -72,6 +74,7 @@ case "$host_os" in
      LDFLAGS="-flat_namespace -undefined suppress $LDFLAGS"
      AC_MSG_WARN([The VPN application cannot be compiled on your OS])
      build_target="macosx"
+     DEFAULT_INTERFACE="en0"
      LIBPREFIX=
      DLLDIR=lib
      QTLIBS="-L$QTDIR/lib -lQtGui -lQtOpenGL -lQtCore $X_LIBS -lX11 -lXext -lXmu -lXt -lXi $X_EXTRA_LIBS -lGLU -lGL -lpthread"
@@ -175,6 +178,7 @@ netbsd*)
      AC_DEFINE_UNQUOTED(OTHEROS,1,[Some strange OS])
 ;;
 esac
+AC_DEFINE_UNQUOTED([GNUNET_DEFAULT_INTERFACE], $DEFAULT_INTERFACE, [This should be the default choice for the name of the first network interface])
 
 AC_MSG_CHECKING([for build target])
 AM_CONDITIONAL(MACOSX,  test "$build_target" = "macosx")

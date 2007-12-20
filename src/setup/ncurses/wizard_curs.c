@@ -311,7 +311,7 @@ network_interface ()
                        _("The \"Network interface\" is the device "
                          "that connects your computer to the internet. This is usually a modem, "
                          "an ISDN card or a network card in case you are using DSL."),
-                       "NETWORK", "INTERFACE", "eth0");
+                       "NETWORK", "INTERFACE", GNUNET_DEFAULT_INTERFACE);
 }
 
 static int

@@ -87,7 +87,7 @@ GNUNET_list_network_interfaces (struct GNUNET_GE_Context *ectx,
       *dst = 0;
 
       if ((entry[0] != '\0') &&
-          (GNUNET_OK != proc (entry, strcmp (entry, "eth0") == 0, cls)))
+          (GNUNET_OK != proc (entry, strcmp (entry, GNUNET_DEFAULT_INTERFACE) == 0, cls)))
         break;
 
       while ((c != '\n') && (c != EOF))
