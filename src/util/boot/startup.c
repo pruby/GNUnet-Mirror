@@ -112,9 +112,9 @@ configure_logging (struct GNUNET_GE_Context **ectx,
               rdir[pos] = '\0';
               if (mkdir (rdir
 #ifndef MINGW
-              , S_IRUSR | S_IWUSR | S_IXUSR
+                         , S_IRUSR | S_IWUSR | S_IXUSR
 #endif
-              ) == 0)
+                  ) == 0)
                 {
                   GNUNET_file_change_owner (nctx, rdir, user);
                 }

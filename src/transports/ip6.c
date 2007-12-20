@@ -101,7 +101,8 @@ getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
   if (-1 == GNUNET_GC_get_configuration_value_string (cfg,
                                                       "NETWORK",
                                                       "INTERFACE",
-                                                      GNUNET_DEFAULT_INTERFACE, &interfaces))
+                                                      GNUNET_DEFAULT_INTERFACE,
+                                                      &interfaces))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,

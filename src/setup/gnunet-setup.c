@@ -173,11 +173,11 @@ dyn_config (const char *module,
     }
   mptr (argc, argv, library, ectx, cfg,
 #if HAVE_GUILE
-   gns,
+        gns,
 #else
-   NULL,
+        NULL,
 #endif
-    filename, config_daemon);
+        filename, config_daemon);
   GNUNET_plugin_unload (library);
   return GNUNET_YES;
 }

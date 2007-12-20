@@ -175,7 +175,9 @@ load_step2setup_gtk (GtkButton * button, gpointer prev_window)
     {
       GNUNET_GC_get_configuration_value_string (editCfg,
                                                 "NETWORK",
-                                                "INTERFACE", GNUNET_DEFAULT_INTERFACE, &val);
+                                                "INTERFACE",
+                                                GNUNET_DEFAULT_INTERFACE,
+                                                &val);
       gtk_combo_box_append_text (GTK_COMBO_BOX (cls.cmbNIC), val);
       gtk_tree_model_get_iter_first (GTK_TREE_MODEL (model), &iter);
       gtk_combo_box_set_active_iter (GTK_COMBO_BOX (cls.cmbNIC), &iter);
@@ -283,7 +285,7 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
         user_name = GNUNET_strdup ("gnunet");
       else
         {
-	  GNUNET_free_non_null(uname);
+          GNUNET_free_non_null (uname);
           uname = getenv ("USER");
           if (uname != NULL)
             user_name = GNUNET_strdup (uname);
@@ -298,7 +300,7 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
   if (NULL == gname || strlen (gname) == 0)
     {
       struct group *grp;
-      
+
       if ((geteuid () == 0) || (NULL != getgrnam ("gnunet")))
         group_name = GNUNET_strdup ("gnunet");
       else
@@ -338,8 +340,8 @@ load_step4setup_gtk (GtkButton * button, gpointer prev_window)
   gtk_widget_set_sensitive (entGroup, cap);
 
   gtk_widget_show (curwnd);
-  GNUNET_free_non_null(uname);
-  GNUNET_free_non_null(gname);
+  GNUNET_free_non_null (uname);
+  GNUNET_free_non_null (gname);
 }
 
 

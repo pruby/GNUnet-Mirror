@@ -229,12 +229,14 @@ get_forward_count (unsigned int hop_count, double target_replication)
   if (hop_count > (diameter + 1) * 2)
     return 0;
   target_count =
-    target_replication / (target_replication * (hop_count+1) + diameter);
+    target_replication / (target_replication * (hop_count + 1) + diameter);
   target_value = 0;
   while (target_value < target_count)
     target_value++;
 #define LARGE_INT 0xFFFFFF
-  if ((target_count + 1 - target_value) > GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, LARGE_INT) / ((double) LARGE_INT))
+  if ((target_count + 1 - target_value) >
+      GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                         LARGE_INT) / ((double) LARGE_INT))
     target_value++;
   return target_value;
 }
@@ -618,12 +620,12 @@ handlePut (const GNUNET_PeerIdentity * sender,
                          i, PUT_TRIES);
 #endif
           store = 1;
-	  continue;
+          continue;
         }
       else
-	{
-	  j++;
-	}
+        {
+          j++;
+        }
       if (1 == GNUNET_hash_xorcmp (&next[j].hashPubKey,
                                    &coreAPI->myIdentity->hashPubKey,
                                    &put->key))

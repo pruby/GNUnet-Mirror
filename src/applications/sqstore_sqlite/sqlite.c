@@ -768,7 +768,7 @@ sqlite_iterate (unsigned int type,
                   sqlite3_finalize (stmt_1);
                   sqlite3_finalize (stmt_2);
                   GNUNET_mutex_unlock (lock);
-		  GNUNET_free(datum_1);
+                  GNUNET_free (datum_1);
                   return GNUNET_SYSERR;
                 }
               sqlite3_reset (stmt_2);

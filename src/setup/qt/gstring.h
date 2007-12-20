@@ -29,31 +29,31 @@
 
 #include <QtCore/QString>
 
-class GString : public QString
+class GString:public QString
 {
 public:
-  GString();
-  GString(const char *str);
-  GString(QString &src);
-  ~GString();
-  GString &operator=(const QString &src);
-  GString &operator=(const GString &src);
-  GString &operator=(const char *src);
+  GString ();
+  GString (const char *str);
+    GString (QString & src);
+   ~GString ();
+    GString & operator= (const QString & src);
+    GString & operator= (const GString & src);
+    GString & operator= (const char *src);
 
  /**
   * @brief Return the content as C string
   */
- char *toCString();
+  char *toCString ();
 
  /**
   * @brief Return the content as UTF-8 encoded C string
   */
- char *toUtf8CStr();
- 
+  char *toUtf8CStr ();
+
 protected:
   char *cstr;
 };
 
-#endif /*GNUNET_STRING_H_*/
+#endif /*GNUNET_STRING_H_ */
 
 /* end of gstring.h */
