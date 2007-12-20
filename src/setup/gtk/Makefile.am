@@ -17,7 +17,7 @@ EXTRA_DIST = \
 	$(pkgdata_DATA)
 
 if HAVE_GUILE
-	GUILE_SRC = \
+GUILE_SRC = \
 	 about.c \
 	 ngconf.c gconf.h
 endif
