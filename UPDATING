@@ -8,8 +8,8 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
-0.7.2c to HEAD
-==============
+0.7.2c to 0.7.3
+===============
 
 Run gnunet-update.
 Run "gnunet-setup -d", some options have changed and some are
