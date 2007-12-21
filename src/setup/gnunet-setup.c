@@ -391,7 +391,7 @@ main (int argc, char *const *argv)
                   GNUNET_GE_LOG (ectx,
                                  GNUNET_GE_FATAL | GNUNET_GE_USER |
                                  GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE,
-                                 _("`%s' is not available."), operation);
+                                 _("`%s' is not available.\n"), operation);
 #if HAVE_GUILE
                   GNUNET_GNS_free_specification (gns);
 #endif

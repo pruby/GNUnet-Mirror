@@ -30,11 +30,22 @@ running GNUnet:
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
 - libcurl      >= 7.15.4
-- sqlite       >= 3.0
 - libltdl      >= 1.5 (part of GNU libtool)
-- libguile     >= 1.8 (strongly recommended)
-- mysql        >= 5.0 (recommended)
-- GNU adns     >= 1.0 (recommended)
+- libguile     >= 1.8 (required for gnunet-setup)
+- GNU adns     >= 1.0 (strongly recommended)
+- mysql        >= 5.0 (strongly recommended)
+- sqlite       >= 3.0 (alternative to MySQL)
+
+Certain gnunet-setup plugins would also like to have:
+- GTK          >= 2.6.0
+- Qt           >= 4.0
+- dialog       >= 1.0-20051207
+- ncurses
+
+Certain transports would also like to have:
+- libmicrohttpd >= 0.1.2  (available from http://gnunet.org/libmicrohttpd/)
+- libcurl       >= 7.15.4
+- libesmtp      >= 1.0.4
 
 
 Recommended autotools for compiling the SVN version are:
@@ -153,7 +164,12 @@ downloading and installing gnunet-gtk, you can invoke the GUI with:
 
 $ gnunet-gtk
 
-If you want to use the shell, use
+For Qt/KDE users, there is also a QT user interface (also shipped 
+separately).  If you install gnunet-qt, you can invoke the GUI with:
+
+$ gnunet-qt
+
+If you want to use the shell (part of this distribution), use
 
 $ gnunet-search KEYWORD
 
@@ -210,11 +226,17 @@ Then set in the HTTP section of gnunetd.conf the "ADVERTISED-PORT"
 to "80" and "PORT" to 8080. 
 
 
+Running the SMTP transport
+==========================
+
+Running GNUnet over SMTP (e-mail) is a bit more involved.  Read the
+instructions at http://gnunet.org/smtp.php3
+
 
 Stay tuned
 ==========
 
-* http://www.gnu.org/software/GNUnet/
+* http://www.gnu.org/software/gnunet/
 * http://gnunet.org/
 * https://gnunet.org/mantis/
 * https://gnunet.org/drupal/

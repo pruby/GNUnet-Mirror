@@ -25,8 +25,7 @@
  *
  * TODO:
  * - implement extra_get_callback
- * - use "reserved" field to communicate information
- *   about network size estimate(s)
+ * - use "network_size" field to improve our network size estimate(s)
  */
 
 #include "platform.h"
@@ -135,9 +134,11 @@ typedef struct
   unsigned int hop_count;
 
   /**
-   * Reserved (use 0).
+   * Network size estimate -- sum of the logs of the
+   * network size estimates of all hops this message
+   * has passed so far.
    */
-  unsigned int reserved;
+  unsigned int network_size;
 
   /**
    * Search key.
@@ -283,7 +284,7 @@ routeResult (const GNUNET_HashCode * key,
       result->header.type = htons (GNUNET_P2P_PROTO_DHT_RESULT);
       result->type = htonl (type);
       result->hop_count = htonl (0);
-      result->reserved = htonl (0);
+      result->network_size = htonl (GNUNET_DHT_estimate_network_diameter());
       result->key = *key;
       memcpy (&result[1], data, size);
     }
@@ -536,6 +537,7 @@ handleGet (const GNUNET_PeerIdentity * sender,
   hop_count = ntohl (get->hop_count);
   target_value = get_forward_count (hop_count, GET_TRIES);
   aget.hop_count = htonl (1 + hop_count);
+  aget.network_size = htonl(ntohl(get->network_size) + GNUNET_DHT_estimate_network_diameter());
   if (target_value > GET_TRIES)
     target_value = GET_TRIES;
   for (i = 0; i < target_value; i++)
@@ -604,6 +606,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
   aput = GNUNET_malloc (ntohs (msg->size));
   memcpy (aput, put, ntohs (msg->size));
   aput->hop_count = htons (hop_count + 1);
+  aput->network_size = htonl(ntohl(put->network_size) + GNUNET_DHT_estimate_network_diameter());
   if (target_value > PUT_TRIES)
     target_value = PUT_TRIES;
   j = 0;
@@ -721,7 +724,7 @@ GNUNET_DHT_get_start (const GNUNET_HashCode * key,
   get.header.type = htons (GNUNET_P2P_PROTO_DHT_GET);
   get.type = htonl (type);
   get.hop_count = htonl (0);
-  get.reserved = htonl (0);
+  get.network_size = htonl (GNUNET_DHT_estimate_network_diameter());
   get.key = *key;
 #if DEBUG_ROUTING
   GNUNET_hash_to_enc (&get.key, &enc);
@@ -809,7 +812,7 @@ GNUNET_DHT_put (const GNUNET_HashCode * key,
   put->key = *key;
   put->type = htonl (type);
   put->hop_count = htonl (0);
-  put->reserved = htonl (0);
+  put->network_size = htonl (GNUNET_DHT_estimate_network_diameter());
   memcpy (&put[1], data, size);
   handlePut (NULL, &put->header);
   GNUNET_free (put);
