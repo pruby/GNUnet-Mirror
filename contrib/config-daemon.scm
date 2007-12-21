@@ -441,12 +441,12 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  (builder
  "NETWORK"
  "HELLOEXCHANGE"
- (_ "Disable advertising of other peers by this peer")
+ (_ "Enable advertising of other peers by this peer")
  (_ "This option maybe useful during testing, but turning it off is dangerous! If in any doubt, set it to YES (which is the default).")
  '()
  #t
- #f
- #f
+ #t
+ #t
  'experimental) )
 
 (define (network-port builder)
