@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-15 21:21-0700\n"
+"POT-Creation-Date: 2007-12-20 19:57-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -46,24 +46,24 @@ msgstr ""
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "Không tìm thấy IP của máy '%s': %s\n"
 
-#: src/transports/ip6.c:109 src/util/network/ip.c:87 src/util/network/ip.c:151
+#: src/transports/ip6.c:110 src/util/network/ip.c:88 src/util/network/ip.c:153
 #, fuzzy, c-format
 msgid "No interface specified in section `%s' under `%s'!\n"
 msgstr ""
 "Không có giao diện mạng được xác định trong cấu hình phần '%s' dưới '%s'!\n"
 
-#: src/transports/ip6.c:140 src/util/network/ip.c:118
-#: src/util/network/ip.c:237
+#: src/transports/ip6.c:141 src/util/network/ip.c:119
+#: src/util/network/ip.c:239
 #, fuzzy, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr "Không lấy được IP cho giao diện '%s' đang dùng '%s'.\n"
 
-#: src/transports/ip6.c:174
+#: src/transports/ip6.c:175
 #, fuzzy, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "Không tìm thấy '%s': %s\n"
 
-#: src/transports/ip6.c:228 src/transports/ip.c:61
+#: src/transports/ip6.c:229 src/transports/ip.c:61
 #, fuzzy, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Lấy địa chỉ IP (ngoài) của tôi không thành công!\n"
@@ -343,7 +343,7 @@ msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 msgid "Error"
 msgstr "Lỗi"
 
-#: src/setup/ncurses/wizard_curs.c:73 src/setup/gtk/gconf.c:444
+#: src/setup/ncurses/wizard_curs.c:73
 msgid "Help"
 msgstr "Trợ giúp"
 
@@ -620,7 +620,7 @@ msgstr ""
 "Nếu chọn \"yes\", tiến trình nền sau GNUnet sẽ tự động chạy khi bật máy "
 "tính. Nếu chọn \"no\", thì cần chạy GNUnet mỗi khi muốn sử dụng."
 
-#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:415
+#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:421
 #, fuzzy, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Không ghi được tập tin cấu hình %s:"
@@ -780,20 +780,20 @@ msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 msgid "(unknown connection)"
 msgstr "Kết nối mạng"
 
-#: src/setup/gtk/wizard_gtk.c:439
+#: src/setup/gtk/wizard_gtk.c:445
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "Ghi thiết lập?"
 
-#: src/setup/gtk/wizard_gtk.c:471
+#: src/setup/gtk/wizard_gtk.c:477
 msgid "Unable to create user account:"
 msgstr "Không tạo được tài khoản người dùng:"
 
-#: src/setup/gtk/wizard_gtk.c:480
+#: src/setup/gtk/wizard_gtk.c:486
 msgid "Unable to change startup process:"
 msgstr "Không thay đổi được tiến trình khởi động:"
 
-#: src/setup/gtk/wizard_gtk.c:495
+#: src/setup/gtk/wizard_gtk.c:501
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -801,48 +801,25 @@ msgid ""
 "Finally, run gnunet-update manually."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:383 src/setup/gtk/gconf.c:492
+#: src/setup/gtk/ngconf.c:383
 #, fuzzy
 msgid "Configuration saved."
 msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 
-#: src/setup/gtk/ngconf.c:393 src/setup/gtk/gconf.c:502
+#: src/setup/gtk/ngconf.c:393
 #, fuzzy
 msgid "Failed to save configuration."
 msgstr "Không ghi được thiết lập!"
 
-#: src/setup/gtk/ngconf.c:418 src/setup/gtk/gconf.c:528
+#: src/setup/gtk/ngconf.c:418
 #, fuzzy
 msgid "Configuration changed. Save?"
 msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 
-#: src/setup/gtk/ngconf.c:431 src/setup/gtk/gconf.c:541
+#: src/setup/gtk/ngconf.c:431
 #, fuzzy
 msgid "Error saving configuration."
 msgstr "Không ghi được thiết lập!"
-
-#: src/setup/gtk/gconf.c:389
-#, fuzzy
-msgid "Description"
-msgstr "Câu hỏi"
-
-#: src/setup/gtk/gconf.c:405
-msgid "Value"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:429
-msgid "Default"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:458
-#, fuzzy
-msgid "Section"
-msgstr "Câu hỏi"
-
-#: src/setup/gtk/gconf.c:469
-#, fuzzy
-msgid "Option"
-msgstr "Tùy _chọn"
 
 #: src/setup/lib/tree.c:191
 #, c-format
@@ -905,72 +882,72 @@ msgstr "Lỗi chuyển quyền hạn dịch vụ tới cho người dùng"
 msgid "Unknown error while creating a new user"
 msgstr "Lỗi không rõ khi tạo một người dùng mới"
 
-#: src/setup/gnunet-setup.c:64
+#: src/setup/gnunet-setup.c:66
 #, c-format
 msgid "Can only set one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:72
+#: src/setup/gnunet-setup.c:74
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'set' must have the format SECTION:"
 "OPTION=VALUE.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:86
+#: src/setup/gnunet-setup.c:88
 #, c-format
 msgid "Can only display one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:93
+#: src/setup/gnunet-setup.c:95
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'get' must have the format SECTION:OPTION.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:107 src/setup/qt/qtconfig.cc:24
+#: src/setup/gnunet-setup.c:109 src/setup/qt/qtconfig.cc:24
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:110 src/server/gnunet-update.c:265
+#: src/setup/gnunet-setup.c:112 src/server/gnunet-update.c:265
 msgid "print a value from the configuration file to stdout"
 msgstr "in một giá trị từ tập tin cấu hình ra stdout"
 
-#: src/setup/gnunet-setup.c:112 src/setup/qt/qtconfig.cc:26
+#: src/setup/gnunet-setup.c:114 src/setup/qt/qtconfig.cc:26
 msgid "Tool to setup GNUnet."
 msgstr ""
 
-#: src/setup/gnunet-setup.c:114
+#: src/setup/gnunet-setup.c:116
 #, fuzzy
 msgid "update a value in the configuration file"
 msgstr "in một giá trị từ tập tin cấu hình ra stdout"
 
-#: src/setup/gnunet-setup.c:261 src/setup/qt/qtconfig.cc:132
+#: src/setup/gnunet-setup.c:256
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Sai tham số dòng lệnh.\n"
 
-#: src/setup/gnunet-setup.c:267
+#: src/setup/gnunet-setup.c:262
 #, fuzzy
 msgid "No interface specified, using default\n"
 msgstr "Chưa chỉ ra tên bảng, đang dùng '%s'.\n"
 
-#: src/setup/gnunet-setup.c:347
+#: src/setup/gnunet-setup.c:341
 #, fuzzy, c-format
 msgid "Undefined option.\n"
 msgstr "Hiển thị mọi tùy chọn"
 
-#: src/setup/gnunet-setup.c:398
+#: src/setup/gnunet-setup.c:394
 #, fuzzy, c-format
-msgid "`%s' is not available."
+msgid "`%s' is not available.\n"
 msgstr "'%s' không phải là một tập tin thông thường.\n"
 
-#: src/setup/gnunet-setup.c:416
+#: src/setup/gnunet-setup.c:414
 #, fuzzy, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Lỗi không rõ.\n"
 
-#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:415 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1107,31 +1084,31 @@ msgstr "'%s' đăng ký trình điều khiển máy khách %d\n"
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:850
+#: src/applications/dht/module/routing.c:865
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:852
+#: src/applications/dht/module/routing.c:867
 #, fuzzy
 msgid "# dht requests routed"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/dht/module/routing.c:854
+#: src/applications/dht/module/routing.c:869
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/dht/module/routing.c:856
+#: src/applications/dht/module/routing.c:871
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/dht/module/routing.c:858
+#: src/applications/dht/module/routing.c:873
 #, fuzzy
 msgid "# dht results received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/dht/module/routing.c:863
+#: src/applications/dht/module/routing.c:878
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d %d %d\n"
@@ -1180,7 +1157,7 @@ msgid ""
 "More friendly connections required than target total number of connections.\n"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:705
+#: src/applications/topology_default/topology.c:706
 msgid "maintains GNUnet default mesh topology"
 msgstr ""
 
@@ -2664,27 +2641,27 @@ msgstr "Không kết gắn được tới cổng UDP %d.\n"
 msgid "Failed to send message.\n"
 msgstr "Phân phát tin nhắn '%s' không thành công.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:222
+#: src/applications/sqstore_sqlite/sqlite.c:223
 #, fuzzy, c-format
 msgid "Unable to initialize SQLite: %s.\n"
 msgstr "Không chạy được SQLite.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:443
+#: src/applications/sqstore_sqlite/sqlite.c:444
 #, c-format
 msgid "Invalid data in %s (NCS).  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:444
-#: src/applications/sqstore_sqlite/sqlite.c:479
+#: src/applications/sqstore_sqlite/sqlite.c:445
+#: src/applications/sqstore_sqlite/sqlite.c:480
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:478
+#: src/applications/sqstore_sqlite/sqlite.c:479
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1397
+#: src/applications/sqstore_sqlite/sqlite.c:1399
 #: src/applications/sqstore_mysql/mysql.c:1483
 msgid "# bytes in datastore"
 msgstr ""
@@ -3985,18 +3962,18 @@ msgstr "libgcrypt không có phiên bản mong đợi (yêu cầu phiên bản %
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Thất bại khi phân tích dữ liệu giao diện từ '%s' tại %s:%d.\n"
 
-#: src/util/os/statuscalls.c:387 src/util/os/statuscalls.c:397
+#: src/util/os/statuscalls.c:388 src/util/os/statuscalls.c:398
 #, fuzzy, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
 msgstr ""
 "Không có giao diện mạng được xác định trong cấu hình phần '%s' dưới '%s'!\n"
 
-#: src/util/os/osconfig.c:127
+#: src/util/os/osconfig.c:128
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:402
+#: src/util/os/osconfig.c:403
 #, fuzzy, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
@@ -4119,7 +4096,7 @@ msgstr "Định dạng sai '%s' cho mặt nạ mạng: %s\n"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Định dạng sai '%s' cho mạng: %s\n"
 
-#: src/util/network/ip.c:207
+#: src/util/network/ip.c:209
 #, fuzzy, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
@@ -4127,12 +4104,12 @@ msgstr ""
 "Không tìm thấy giao diện '%s' trong '%s', đang thử kết gắn tới giao diện "
 "khác.\n"
 
-#: src/util/network/ip.c:285
+#: src/util/network/ip.c:287
 #, fuzzy, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Không tìm thấy một địa chỉ IP cho giao diện '%s'.\n"
 
-#: src/util/network/ip.c:295
+#: src/util/network/ip.c:297
 #, fuzzy, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -4141,12 +4118,12 @@ msgstr ""
 "Có vài địa chỉ IP chỉ ra cho giao diện '%s'.\n"
 "GNUnet sẽ dùng %u.%u.%u.%u.\n"
 
-#: src/util/network/ip.c:317
+#: src/util/network/ip.c:319
 #, fuzzy, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr "Không tìm thấy '%s' để nhận ra địa chỉ IP của chúng ta: %s\n"
 
-#: src/util/network/ip.c:350
+#: src/util/network/ip.c:352
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet bây giờ sử dụng địa chỉ IP %u.%u.%u.%u.\n"
@@ -4354,7 +4331,7 @@ msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr "Tham số cho tùy chọn dài cũng là tham số cho tùy chọn ngắn.\n"
 
-#: src/util/boot/startup.c:251
+#: src/util/boot/startup.c:255
 #, fuzzy, c-format
 msgid "Failed to run %s: %s %d\n"
 msgstr "Kết nối tới gnunetd không thành công.\n"
@@ -6143,6 +6120,18 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Description"
+#~ msgstr "Câu hỏi"
+
+#, fuzzy
+#~ msgid "Section"
+#~ msgstr "Câu hỏi"
+
+#, fuzzy
+#~ msgid "Option"
+#~ msgstr "Tùy _chọn"
 
 #, fuzzy
 #~ msgid "Received invalid `%s' message from `%s'.\n"

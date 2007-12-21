@@ -890,6 +890,7 @@ src/setup/Makefile
 src/setup/lib/Makefile
 src/setup/gtk/Makefile
 src/setup/qt/Makefile
+src/setup/qt/pixmaps/Makefile
 src/setup/ncurses/Makefile
 src/setup/text/Makefile
 src/server/Makefile
@@ -898,7 +899,6 @@ src/transports/upnp/Makefile
 src/util/Makefile
 src/util/boot/Makefile
 src/util/config/Makefile
-src/util/config_impl/Makefile
 src/util/containers/Makefile
 src/util/cron/Makefile
 src/util/crypto/Makefile

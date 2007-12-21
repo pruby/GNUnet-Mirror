@@ -25,7 +25,6 @@ src/setup/gtk/wizard_gtk.c
 src/setup/gtk/glade_support.c
 src/setup/gtk/about.c
 src/setup/gtk/ngconf.c
-src/setup/gtk/gconf.c
 src/setup/lib/tree.c
 src/setup/lib/gns.c
 src/setup/lib/wizard_util.c
@@ -214,8 +213,6 @@ src/util/os/semaphore.c
 src/util/os/installpath.c
 src/util/os/dso.c
 src/util/os/cpustatus.c
-src/util/config_impl/impl.c
-src/util/config_impl/configtest.c
 src/util/network_client/tcpio.c
 src/util/network_client/tcpiotest.c
 src/util/network_client/daemon.c
@@ -280,7 +277,6 @@ src/setup/lib/wizard_util.h
 src/setup/lib/tree.h
 src/setup/qt/ui_gnunet-setup.h
 src/setup/qt/setupWizard.h
-src/setup/qt/ui_enhanced.h
 src/include/gnunet_directories.h
 src/include/gnunet_util.h
 src/include/gnunet_kvstore_service.h

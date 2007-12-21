@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-15 21:21-0700\n"
+"POT-Creation-Date: 2007-12-20 19:57-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -55,23 +55,23 @@ msgstr ""
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "OYA Gushaka Bya Ubuturo"
 
-#: src/transports/ip6.c:109 src/util/network/ip.c:87 src/util/network/ip.c:151
+#: src/transports/ip6.c:110 src/util/network/ip.c:88 src/util/network/ip.c:153
 #, fuzzy, c-format
 msgid "No interface specified in section `%s' under `%s'!\n"
 msgstr "urusobe in Iboneza Icyiciro"
 
-#: src/transports/ip6.c:140 src/util/network/ip.c:118
-#: src/util/network/ip.c:237
+#: src/transports/ip6.c:141 src/util/network/ip.c:119
+#: src/util/network/ip.c:239
 #, fuzzy, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr "OYA kugirango ikoresha"
 
-#: src/transports/ip6.c:174
+#: src/transports/ip6.c:175
 #, fuzzy, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "OYA"
 
-#: src/transports/ip6.c:228 src/transports/ip.c:61
+#: src/transports/ip6.c:229 src/transports/ip.c:61
 #, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr ""
@@ -379,7 +379,7 @@ msgid "Error"
 msgstr ""
 
 # sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/setup/ncurses/wizard_curs.c:73 src/setup/gtk/gconf.c:444
+#: src/setup/ncurses/wizard_curs.c:73
 #, fuzzy
 msgid "Help"
 msgstr "/Kugoboka"
@@ -578,7 +578,7 @@ msgid ""
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:415
+#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:421
 #, fuzzy, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "OYA Iboneza IDOSIYE"
@@ -734,19 +734,19 @@ msgstr "Gufungura Iboneza IDOSIYE"
 msgid "(unknown connection)"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:439
+#: src/setup/gtk/wizard_gtk.c:445
 msgid "Do you want to save the new configuration?"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:471
+#: src/setup/gtk/wizard_gtk.c:477
 msgid "Unable to create user account:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:480
+#: src/setup/gtk/wizard_gtk.c:486
 msgid "Unable to change startup process:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:495
+#: src/setup/gtk/wizard_gtk.c:501
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -754,45 +754,23 @@ msgid ""
 "Finally, run gnunet-update manually."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:383 src/setup/gtk/gconf.c:492
+#: src/setup/gtk/ngconf.c:383
 msgid "Configuration saved."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:393 src/setup/gtk/gconf.c:502
+#: src/setup/gtk/ngconf.c:393
 #, fuzzy
 msgid "Failed to save configuration."
 msgstr "OYA Iboneza IDOSIYE"
 
-#: src/setup/gtk/ngconf.c:418 src/setup/gtk/gconf.c:528
+#: src/setup/gtk/ngconf.c:418
 msgid "Configuration changed. Save?"
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:431 src/setup/gtk/gconf.c:541
+#: src/setup/gtk/ngconf.c:431
 #, fuzzy
 msgid "Error saving configuration."
 msgstr "Zimya Iyemeza Bivuye"
-
-#: src/setup/gtk/gconf.c:389
-msgid "Description"
-msgstr "Insobanuramiterere"
-
-#: src/setup/gtk/gconf.c:405
-msgid "Value"
-msgstr "Agaciro"
-
-#: src/setup/gtk/gconf.c:429
-msgid "Default"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:458
-#, fuzzy
-msgid "Section"
-msgstr "Insobanuramiterere"
-
-#: src/setup/gtk/gconf.c:469
-#, fuzzy
-msgid "Option"
-msgstr "ibirindiro"
 
 #: src/setup/lib/tree.c:191
 #, c-format
@@ -857,74 +835,74 @@ msgstr ""
 msgid "Unknown error while creating a new user"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:64
+#: src/setup/gnunet-setup.c:66
 #, c-format
 msgid "Can only set one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:72
+#: src/setup/gnunet-setup.c:74
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'set' must have the format SECTION:"
 "OPTION=VALUE.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:86
+#: src/setup/gnunet-setup.c:88
 #, c-format
 msgid "Can only display one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:93
+#: src/setup/gnunet-setup.c:95
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'get' must have the format SECTION:OPTION.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:107 src/setup/qt/qtconfig.cc:24
+#: src/setup/gnunet-setup.c:109 src/setup/qt/qtconfig.cc:24
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:110 src/server/gnunet-update.c:265
+#: src/setup/gnunet-setup.c:112 src/server/gnunet-update.c:265
 #, fuzzy
 msgid "print a value from the configuration file to stdout"
 msgstr "Gucapa a Agaciro Bivuye i Iboneza IDOSIYE Kuri"
 
-#: src/setup/gnunet-setup.c:112 src/setup/qt/qtconfig.cc:26
+#: src/setup/gnunet-setup.c:114 src/setup/qt/qtconfig.cc:26
 msgid "Tool to setup GNUnet."
 msgstr ""
 
-#: src/setup/gnunet-setup.c:114
+#: src/setup/gnunet-setup.c:116
 #, fuzzy
 msgid "update a value in the configuration file"
 msgstr "Gucapa a Agaciro Bivuye i Iboneza IDOSIYE Kuri"
 
-#: src/setup/gnunet-setup.c:261 src/setup/qt/qtconfig.cc:132
+#: src/setup/gnunet-setup.c:256
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Komandi: Umurongo ingingo"
 
-#: src/setup/gnunet-setup.c:267
+#: src/setup/gnunet-setup.c:262
 #, fuzzy
 msgid "No interface specified, using default\n"
 msgstr "imbonerahamwe# Izina: ikoresha"
 
-#: src/setup/gnunet-setup.c:347
+#: src/setup/gnunet-setup.c:341
 #, c-format
 msgid "Undefined option.\n"
 msgstr ""
 
 # uui/source\ids.src:RID_UUI_ERRHDL.(ERRCODE_UUI_IO_NOTAFILE_&_ERRCODE_RES_MASK).text
-#: src/setup/gnunet-setup.c:398
+#: src/setup/gnunet-setup.c:394
 #, fuzzy, c-format
-msgid "`%s' is not available."
+msgid "`%s' is not available.\n"
 msgstr "'%s'ntabwo ari idosiye"
 
-#: src/setup/gnunet-setup.c:416
+#: src/setup/gnunet-setup.c:414
 #, fuzzy, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Imiterere Verisiyo"
 
-#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:415 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, fuzzy, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1060,31 +1038,31 @@ msgstr ""
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:850
+#: src/applications/dht/module/routing.c:865
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:852
+#: src/applications/dht/module/routing.c:867
 #, fuzzy
 msgid "# dht requests routed"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:854
+#: src/applications/dht/module/routing.c:869
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:856
+#: src/applications/dht/module/routing.c:871
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:858
+#: src/applications/dht/module/routing.c:873
 #, fuzzy
 msgid "# dht results received"
 msgstr "#Gushaka Ibisubizo ku BYAKIRIWE KB"
 
-#: src/applications/dht/module/routing.c:863
+#: src/applications/dht/module/routing.c:878
 #, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr ""
@@ -1132,7 +1110,7 @@ msgid ""
 "More friendly connections required than target total number of connections.\n"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:705
+#: src/applications/topology_default/topology.c:706
 msgid "maintains GNUnet default mesh topology"
 msgstr ""
 
@@ -2651,27 +2629,27 @@ msgstr "Kuri Kuri Umuyoboro"
 msgid "Failed to send message.\n"
 msgstr "Kuri Kohereza Ubutumwa Kuri"
 
-#: src/applications/sqstore_sqlite/sqlite.c:222
+#: src/applications/sqstore_sqlite/sqlite.c:223
 #, fuzzy, c-format
 msgid "Unable to initialize SQLite: %s.\n"
 msgstr "Kuri gutangiza"
 
-#: src/applications/sqstore_sqlite/sqlite.c:443
+#: src/applications/sqstore_sqlite/sqlite.c:444
 #, c-format
 msgid "Invalid data in %s (NCS).  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:444
-#: src/applications/sqstore_sqlite/sqlite.c:479
+#: src/applications/sqstore_sqlite/sqlite.c:445
+#: src/applications/sqstore_sqlite/sqlite.c:480
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:478
+#: src/applications/sqstore_sqlite/sqlite.c:479
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1397
+#: src/applications/sqstore_sqlite/sqlite.c:1399
 #: src/applications/sqstore_mysql/mysql.c:1483
 #, fuzzy
 msgid "# bytes in datastore"
@@ -4041,17 +4019,17 @@ msgstr "OYA i Ikitezwe: Verisiyo Verisiyo ni Bya ngombwa"
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Kuri Ibyatanzwe Bivuye ku"
 
-#: src/util/os/statuscalls.c:387 src/util/os/statuscalls.c:397
+#: src/util/os/statuscalls.c:388 src/util/os/statuscalls.c:398
 #, fuzzy, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
 msgstr "urusobe in Iboneza Icyiciro"
 
-#: src/util/os/osconfig.c:127
+#: src/util/os/osconfig.c:128
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:402
+#: src/util/os/osconfig.c:403
 #, fuzzy, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr "'%s'Byanze ku Na: Ikosa"
@@ -4186,18 +4164,18 @@ msgstr "Imiterere kugirango"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Imiterere kugirango urusobe"
 
-#: src/util/network/ip.c:207
+#: src/util/network/ip.c:209
 #, fuzzy, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
 msgstr "OYA Gushaka in Kuri Gushaka"
 
-#: src/util/network/ip.c:285
+#: src/util/network/ip.c:287
 #, fuzzy, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "OYA Gushaka Aderesi kugirango"
 
-#: src/util/network/ip.c:295
+#: src/util/network/ip.c:297
 #, fuzzy, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -4226,12 +4204,12 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 "."
 
-#: src/util/network/ip.c:317
+#: src/util/network/ip.c:319
 #, fuzzy, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr "OYA Kuri Aderesi"
 
-#: src/util/network/ip.c:350
+#: src/util/network/ip.c:352
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr ""
@@ -4440,7 +4418,7 @@ msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr "kugirango Amahitamo kugirango Amahitamo"
 
-#: src/util/boot/startup.c:251
+#: src/util/boot/startup.c:255
 #, fuzzy, c-format
 msgid "Failed to run %s: %s %d\n"
 msgstr "Byanze Kuri Kwihuza Kuri"
@@ -6175,6 +6153,20 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr ""
+
+#~ msgid "Description"
+#~ msgstr "Insobanuramiterere"
+
+#~ msgid "Value"
+#~ msgstr "Agaciro"
+
+#, fuzzy
+#~ msgid "Section"
+#~ msgstr "Insobanuramiterere"
+
+#, fuzzy
+#~ msgid "Option"
+#~ msgstr "ibirindiro"
 
 #, fuzzy
 #~ msgid "Received invalid `%s' message from `%s'.\n"

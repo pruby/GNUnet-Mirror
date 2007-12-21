@@ -3,14 +3,6 @@ This is just the current plan, plans change.
 Annotations:
   RC == Release Critical
 
-0.7.3 [12'07] (aka "features"):
-- gnunet-setup qt plugin:
-  * integration (into gnunet-setup.c)
-  * make it actually work: 
-    - Linux
-    - XP
-    - Vista?
-
 0.8.0 [2'08] (aka "advanced features"):
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]

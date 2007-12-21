@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-15 21:21-0700\n"
+"POT-Creation-Date: 2007-12-20 19:57-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -47,27 +47,27 @@ msgstr ""
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
 
-#: src/transports/ip6.c:109 src/util/network/ip.c:87 src/util/network/ip.c:151
+#: src/transports/ip6.c:110 src/util/network/ip.c:88 src/util/network/ip.c:153
 #, fuzzy, c-format
 msgid "No interface specified in section `%s' under `%s'!\n"
 msgstr ""
 "Es sind keine Netzwerkgeräte in der Konfigurationsdatei in der Sektion `%s' "
 "unter `%s' definiert!\n"
 
-#: src/transports/ip6.c:140 src/util/network/ip.c:118
-#: src/util/network/ip.c:237
+#: src/transports/ip6.c:141 src/util/network/ip.c:119
+#: src/util/network/ip.c:239
 #, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr ""
 "Es konnte keine IP für das Gerät `%s' unter Verwendung von `%s' ermittelt "
 "werden.\n"
 
-#: src/transports/ip6.c:174
+#: src/transports/ip6.c:175
 #, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "`%s' konnte nicht aufgelöst werden: %s\n"
 
-#: src/transports/ip6.c:228 src/transports/ip.c:61
+#: src/transports/ip6.c:229 src/transports/ip.c:61
 #, fuzzy, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Fehler beim Bestimmen der (externen) IP-Adresse!\n"
@@ -352,7 +352,7 @@ msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 msgid "Error"
 msgstr "Fehler"
 
-#: src/setup/ncurses/wizard_curs.c:73 src/setup/gtk/gconf.c:444
+#: src/setup/ncurses/wizard_curs.c:73
 msgid "Help"
 msgstr "Hilfe"
 
@@ -640,7 +640,7 @@ msgstr ""
 "\"Nein\" sagen, so müssen Sie GNUnet jedesmal selbst starten, wenn Sie es "
 "verwenden möchten."
 
-#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:415
+#: src/setup/ncurses/wizard_curs.c:445 src/setup/gtk/wizard_gtk.c:421
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Fehler beim Speichern der Konfigurationsdatei `%s':"
@@ -801,20 +801,20 @@ msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 msgid "(unknown connection)"
 msgstr "Netzwerkverbindung"
 
-#: src/setup/gtk/wizard_gtk.c:439
+#: src/setup/gtk/wizard_gtk.c:445
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "Möchten Sie Ihre Einstellungen speichern?"
 
-#: src/setup/gtk/wizard_gtk.c:471
+#: src/setup/gtk/wizard_gtk.c:477
 msgid "Unable to create user account:"
 msgstr "Fehler beim Anlegen des Benutzerkontos:"
 
-#: src/setup/gtk/wizard_gtk.c:480
+#: src/setup/gtk/wizard_gtk.c:486
 msgid "Unable to change startup process:"
 msgstr "Startprozeß konnte nicht geändert werden:"
 
-#: src/setup/gtk/wizard_gtk.c:495
+#: src/setup/gtk/wizard_gtk.c:501
 msgid ""
 "Running gnunet-update failed.\n"
 "This maybe due to insufficient permissions, please check your "
@@ -822,50 +822,27 @@ msgid ""
 "Finally, run gnunet-update manually."
 msgstr ""
 
-#: src/setup/gtk/ngconf.c:383 src/setup/gtk/gconf.c:492
+#: src/setup/gtk/ngconf.c:383
 #, fuzzy
 msgid "Configuration saved."
 msgstr "GNUnet Konfiguration"
 
-#: src/setup/gtk/ngconf.c:393 src/setup/gtk/gconf.c:502
+#: src/setup/gtk/ngconf.c:393
 #, fuzzy
 msgid "Failed to save configuration."
 msgstr "Fehler beim Speichern der Konfiguration!"
 
-#: src/setup/gtk/ngconf.c:418 src/setup/gtk/gconf.c:528
+#: src/setup/gtk/ngconf.c:418
 #, fuzzy
 msgid "Configuration changed. Save?"
 msgstr ""
 "Konfiguration oder die GNUnet Version hat sich geändert. Sie müssen `%s' "
 "ausführen!\n"
 
-#: src/setup/gtk/ngconf.c:431 src/setup/gtk/gconf.c:541
+#: src/setup/gtk/ngconf.c:431
 #, fuzzy
 msgid "Error saving configuration."
 msgstr "Fehler beim Speichern der Konfiguration!"
-
-#: src/setup/gtk/gconf.c:389
-#, fuzzy
-msgid "Description"
-msgstr "Frage"
-
-#: src/setup/gtk/gconf.c:405
-msgid "Value"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:429
-msgid "Default"
-msgstr ""
-
-#: src/setup/gtk/gconf.c:458
-#, fuzzy
-msgid "Section"
-msgstr "Frage"
-
-#: src/setup/gtk/gconf.c:469
-#, fuzzy
-msgid "Option"
-msgstr "_Optionen"
 
 #: src/setup/lib/tree.c:191
 #, c-format
@@ -930,73 +907,73 @@ msgstr "Fehler beim Zuweisen des Dienstrechtes dem Benutzer"
 msgid "Unknown error while creating a new user"
 msgstr "Unbekannter Fehler beim Anlegen des neuen Benutzers"
 
-#: src/setup/gnunet-setup.c:64
+#: src/setup/gnunet-setup.c:66
 #, c-format
 msgid "Can only set one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:72
+#: src/setup/gnunet-setup.c:74
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'set' must have the format SECTION:"
 "OPTION=VALUE.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:86
+#: src/setup/gnunet-setup.c:88
 #, c-format
 msgid "Can only display one option per invocation.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:93
+#: src/setup/gnunet-setup.c:95
 #, c-format
 msgid ""
 "Invalid synatx, argument to 'get' must have the format SECTION:OPTION.\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:107 src/setup/qt/qtconfig.cc:24
+#: src/setup/gnunet-setup.c:109 src/setup/qt/qtconfig.cc:24
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr "Generiere Konfiguration für gnunetd, den GNUnet Daemon"
 
-#: src/setup/gnunet-setup.c:110 src/server/gnunet-update.c:265
+#: src/setup/gnunet-setup.c:112 src/server/gnunet-update.c:265
 msgid "print a value from the configuration file to stdout"
 msgstr ""
 "Einen Wert aus der Konfigurationsdatei auf der Standardausgabe ausgeben"
 
-#: src/setup/gnunet-setup.c:112 src/setup/qt/qtconfig.cc:26
+#: src/setup/gnunet-setup.c:114 src/setup/qt/qtconfig.cc:26
 msgid "Tool to setup GNUnet."
 msgstr "Werkzeug für die Einrichtung von GNUnet."
 
-#: src/setup/gnunet-setup.c:114
+#: src/setup/gnunet-setup.c:116
 #, fuzzy
 msgid "update a value in the configuration file"
 msgstr ""
 "Einen Wert aus der Konfigurationsdatei auf der Standardausgabe ausgeben"
 
-#: src/setup/gnunet-setup.c:261 src/setup/qt/qtconfig.cc:132
+#: src/setup/gnunet-setup.c:256
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Ungültige Kommandozeilen Parameter.\n"
 
-#: src/setup/gnunet-setup.c:267
+#: src/setup/gnunet-setup.c:262
 msgid "No interface specified, using default\n"
 msgstr "Keine Oberfläche angegeben, verwende Standard\n"
 
-#: src/setup/gnunet-setup.c:347
+#: src/setup/gnunet-setup.c:341
 #, fuzzy, c-format
 msgid "Undefined option.\n"
 msgstr "Weitere Einstellungen"
 
-#: src/setup/gnunet-setup.c:398
-#, c-format
-msgid "`%s' is not available."
+#: src/setup/gnunet-setup.c:394
+#, fuzzy, c-format
+msgid "`%s' is not available.\n"
 msgstr "`%s' ist nicht verfügbar."
 
-#: src/setup/gnunet-setup.c:416
+#: src/setup/gnunet-setup.c:414
 #, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Unbekannte Operation `%s'\n"
 
-#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:415 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1132,30 +1109,30 @@ msgstr "`%s' registriert Client-Handler %d\n"
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:850
+#: src/applications/dht/module/routing.c:865
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:852
+#: src/applications/dht/module/routing.c:867
 msgid "# dht requests routed"
 msgstr "# dht Anfragen weitergeleitet"
 
-#: src/applications/dht/module/routing.c:854
+#: src/applications/dht/module/routing.c:869
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "# Client Trace-Anfragen empfangen"
 
-#: src/applications/dht/module/routing.c:856
+#: src/applications/dht/module/routing.c:871
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "# Client Trace-Anfragen empfangen"
 
-#: src/applications/dht/module/routing.c:858
+#: src/applications/dht/module/routing.c:873
 #, fuzzy
 msgid "# dht results received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/applications/dht/module/routing.c:863
+#: src/applications/dht/module/routing.c:878
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "`%s' registriert Handler %d %d %d\n"
@@ -1204,7 +1181,7 @@ msgid ""
 "More friendly connections required than target total number of connections.\n"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:705
+#: src/applications/topology_default/topology.c:706
 msgid "maintains GNUnet default mesh topology"
 msgstr ""
 
@@ -2732,27 +2709,27 @@ msgstr "Fehler beim Binden an UDP Port %d.\n"
 msgid "Failed to send message.\n"
 msgstr "Zustellung der Nachricht `%s' fehlgeschlagen.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:222
+#: src/applications/sqstore_sqlite/sqlite.c:223
 #, c-format
 msgid "Unable to initialize SQLite: %s.\n"
 msgstr "SQLite Datenbank konnte nicht initialisiert werden: %s.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:443
+#: src/applications/sqstore_sqlite/sqlite.c:444
 #, fuzzy, c-format
 msgid "Invalid data in %s (NCS).  Trying to fix (by deletion).\n"
 msgstr "Ungültige Daten in %s. Korrektur wird versucht (durch Löschung).\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:444
-#: src/applications/sqstore_sqlite/sqlite.c:479
+#: src/applications/sqstore_sqlite/sqlite.c:445
+#: src/applications/sqstore_sqlite/sqlite.c:480
 msgid "sqlite datastore"
 msgstr "sqlite Datenspeicher"
 
-#: src/applications/sqstore_sqlite/sqlite.c:478
+#: src/applications/sqstore_sqlite/sqlite.c:479
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr "Ungültige Daten in %s. Korrektur wird versucht (durch Löschung).\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1397
+#: src/applications/sqstore_sqlite/sqlite.c:1399
 #: src/applications/sqstore_mysql/mysql.c:1483
 msgid "# bytes in datastore"
 msgstr "# bytes in der Datenbank"
@@ -4079,7 +4056,7 @@ msgstr ""
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Fehler beim Parsen der Gerätedaten von `%s' bei %s:%d.\n"
 
-#: src/util/os/statuscalls.c:387 src/util/os/statuscalls.c:397
+#: src/util/os/statuscalls.c:388 src/util/os/statuscalls.c:398
 #, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -4087,11 +4064,11 @@ msgstr ""
 "Es sind keine Netzwerkgeräte in der Konfigurationsdatei in der Sektion `%s' "
 "unter `%s' definiert!\n"
 
-#: src/util/os/osconfig.c:127
+#: src/util/os/osconfig.c:128
 msgid "Setting open descriptor limit not supported.\n"
 msgstr ""
 
-#: src/util/os/osconfig.c:402
+#: src/util/os/osconfig.c:403
 #, fuzzy, c-format
 msgid "Command `%s' failed with error code %u\n"
 msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
@@ -4212,7 +4189,7 @@ msgstr "Falsches Format `%s' für Netzmaske: %s\n"
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Falsches Format `%s' für Netzwerk: %s\n"
 
-#: src/util/network/ip.c:207
+#: src/util/network/ip.c:209
 #, fuzzy, c-format
 msgid ""
 "Could not find interface `%s' using `%s', trying to find another interface.\n"
@@ -4220,12 +4197,12 @@ msgstr ""
 "Gerät `%s' konnte in `%s' nicht gefunden werden, es wird versucht, ein "
 "anderes Gerät zu finden.\n"
 
-#: src/util/network/ip.c:285
+#: src/util/network/ip.c:287
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
 
-#: src/util/network/ip.c:295
+#: src/util/network/ip.c:297
 #, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -4234,13 +4211,13 @@ msgstr ""
 "Es ist mehr als eine IP-Adresse für das Gerät `%s' angegeben.\n"
 "GNUnet wird %u.%u.%u.%u. verwenden.\n"
 
-#: src/util/network/ip.c:317
+#: src/util/network/ip.c:319
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr ""
 "`%s' konnte nicht aufgelöst werden, um unsere IP-Adresse zu ermitteln: %s\n"
 
-#: src/util/network/ip.c:350
+#: src/util/network/ip.c:352
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
@@ -4451,7 +4428,7 @@ msgstr ""
 "Parameter, die für lange Optionen zwingend sind, sind auch für kurze "
 "Optionen zwingend.\n"
 
-#: src/util/boot/startup.c:251
+#: src/util/boot/startup.c:255
 #, fuzzy, c-format
 msgid "Failed to run %s: %s %d\n"
 msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden.\n"
@@ -6282,6 +6259,18 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr "Nils Durner and Christian Grothoff"
+
+#, fuzzy
+#~ msgid "Description"
+#~ msgstr "Frage"
+
+#, fuzzy
+#~ msgid "Section"
+#~ msgstr "Frage"
+
+#, fuzzy
+#~ msgid "Option"
+#~ msgstr "_Optionen"
 
 #~ msgid "Received invalid `%s' message from `%s'.\n"
 #~ msgstr "Ungültige `%s' Anfrage von `%s' empfangen.\n"

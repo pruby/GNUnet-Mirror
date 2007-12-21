@@ -14,13 +14,15 @@ pkgdata_DATA = \
   gnunet-setup.glade
 
 EXTRA_DIST = \
-	$(pkgdata_DATA)
+	$(pkgdata_DATA) \
+        about.c ngconf.c gconf.h
 
 if HAVE_GUILE
 GUILE_SRC = \
 	 about.c \
 	 ngconf.c gconf.h
 endif
+
 
 libgnunetsetup_gtk_la_SOURCES = \
  $(GUILE_SRC) \

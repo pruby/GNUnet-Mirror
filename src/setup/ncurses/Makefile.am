@@ -9,9 +9,11 @@ plugin_LTLIBRARIES = \
  libgnunetsetup_curses.la
 
 if HAVE_GUILE
-	GUILE_SRC = \
+GUILE_SRC = \
 	 mconf.c mconf.h
 endif
+
+EXTRA_DIST = mconf.c mconf.h
 
 libgnunetsetup_curses_la_SOURCES = \
  $(GUILE_SRC) \
