@@ -472,7 +472,7 @@ LIBS=$SAVE_LIBS
 SAVE_LDFLAGS=$LDFLAGS
 SAVE_CPPFLAGS=$CPPFLAGS
 AC_LANG_PUSH([C++])
-qt=1
+qt=0
 AC_MSG_CHECKING(for Qt)
 AC_ARG_WITH(qt,
    [  --with-qt=PFX    Base of Qt installation],
