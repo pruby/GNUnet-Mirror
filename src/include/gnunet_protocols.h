@@ -465,6 +465,11 @@ extern "C"
 #define GNUNET_ECRS_BLOCKTYPE_KEYWORD_FOR_NAMESPACE 5
 
 /**
+ * Type of OnDemand encoded blocks.
+ */
+#define GNUNET_ECRS_BLOCKTYPE_ONDEMAND 6
+
+/**
  * DHT String2String (for dht-testing)
  */
 #define GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING 7
@@ -475,9 +480,9 @@ extern "C"
 #define GNUNET_ECRS_BLOCKTYPE_RESERVED 0xFFFFFFFE
 
 /**
- * Type of OnDemand encoded blocks.
+ * Type of OLD OnDemand encoded blocks.
  */
-#define GNUNET_ECRS_BLOCKTYPE_ONDEMAND 0xFFFFFFFF
+#define GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD 0xFFFFFFFF
 
 
 

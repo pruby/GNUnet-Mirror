@@ -38,10 +38,52 @@
 #define TRACKFILE "indexed_requests.txt"
 
 /**
+ * Use GNUnet 0.7.2 compatibility mode?
+ */
+#define MIG72 GNUNET_YES
+
+/**
  * Format of an on-demand block.
  */
 typedef struct
 {
+  /**
+   * 
+   */ 
+  GNUNET_DatastoreValue header;
+
+  unsigned int type;
+
+  /**
+   * Size of the on-demand encoded part of the file
+   * that this Block represents.
+   */
+  unsigned int blockSize;
+
+  /**
+   * At what offset in the plaintext file is
+   * this content stored?
+   */
+  unsigned long long fileOffset;
+
+  /**
+   * What is the GNUNET_hash of the file that contains
+   * this block?  Used to determine the name
+   * of the file in the on-demand datastore.
+   */
+  GNUNET_HashCode fileId;
+
+} OnDemandBlock;
+
+#if MIG72
+/**
+ * Format of an OLD on-demand block.
+ */
+typedef struct
+{
+  /**
+   * 
+   */ 
   GNUNET_DatastoreValue header;
 
   unsigned int type;
@@ -65,7 +107,8 @@ typedef struct
    */
   GNUNET_HashCode fileId;
 
-} OnDemandBlock;
+} OnDemandBlock72;
+#endif
 
 static char *index_directory;
 
@@ -324,15 +367,42 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
   int blen;
   int fileHandle;
   int ret;
-  OnDemandBlock *odb;
+  const OnDemandBlock *odb;
   DBlock *db;
 
+#if MIG72
+  const OnDemandBlock72 * odb_old;
+  OnDemandBlock odb_stack;
+  if (ntohl (dbv->size) != sizeof (OnDemandBlock))
+    {
+      if (ntohl(dbv->size) != sizeof (OnDemandBlock72))
+	{
+	  GNUNET_GE_BREAK (ectx, 0);
+	  return GNUNET_SYSERR;
+	}
+      else
+	{
+	  odb_old = (OnDemandBlock72*) dbv;
+	  odb_stack.header = odb_old->header;
+	  odb_stack.type = odb_old->type;
+	  odb_stack.fileOffset = odb_old->fileOffset;
+	  odb_stack.blockSize = odb_old->blockSize;
+	  odb_stack.fileId = odb_old->fileId;
+	  odb = &odb_stack;
+	}
+    }
+  else
+    {
+      odb = (const OnDemandBlock *) dbv;
+    }  
+#else
   if (ntohl (dbv->size) != sizeof (OnDemandBlock))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  odb = (OnDemandBlock *) dbv;
+  odb = (const OnDemandBlock *) dbv;
+#endif  
   fn = getOnDemandFile (&odb->fileId);
   if ((GNUNET_YES != GNUNET_disk_file_test (ectx,
                                             fn)) ||
@@ -527,10 +597,26 @@ completeValue (const GNUNET_HashCode * key,
 {
   GNUNET_DatastoreValue *comp = closure;
 
+#if MIG72
+  const OnDemandBlock72 * odb1 = (const OnDemandBlock72*) &value[1];
+  const OnDemandBlock72 * odb2 = (const OnDemandBlock72*) &comp[1];
+  if ( (comp->size != value->size) ||
+       ( ( (ntohl(value->size) - sizeof(GNUNET_DatastoreValue) != sizeof(OnDemandBlock72)) ||
+	   (odb1->type != odb2->type) ||
+	   (odb1->fileOffset != odb2->fileOffset) ||
+	   (odb1->blockSize != odb2->blockSize) ||
+	   (0 != memcmp(&odb1->fileId,
+			&odb2->fileId,
+			sizeof(GNUNET_HashCode)) ) ) &&
+	 (0 != memcmp (&value[1],
+		       &comp[1],
+		       ntohl (value->size) - sizeof (GNUNET_DatastoreValue)))) )    
+#else
   if ((comp->size != value->size) ||
       (0 != memcmp (&value[1],
                     &comp[1],
                     ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
+#endif
     {
 #if DEBUG_ONDEMAND
       GNUNET_GE_LOG (ectx,
@@ -568,6 +654,9 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
   int fd;
   int ret;
   OnDemandBlock odb;
+#if MIG72
+  OnDemandBlock72 odb_old;
+#endif
   GNUNET_HashCode key;
   unsigned long long pos;
   unsigned long long size;
@@ -627,6 +716,27 @@ ONDEMAND_unindex (struct GNUNET_GE_Context *cectx,
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;
+#if MIG72
+      if (ret == GNUNET_SYSERR)
+	{
+	  memset(&odb_old,
+		 0,
+		 sizeof(OnDemandBlock72));
+	  odb_old.header.size = htonl (sizeof (OnDemandBlock));
+	  odb_old.header.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+	  odb_old.header.prio = 0;
+	  odb_old.header.anonymityLevel = 0;
+	  odb_old.header.expirationTime = 0;
+	  odb_old.type = htonl (GNUNET_ECRS_BLOCKTYPE_ONDEMAND);
+	  odb_old.fileOffset = GNUNET_htonll (pos);
+	  odb_old.blockSize = htonl (delta);
+	  odb_old.fileId = *fileId;
+	  if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD, &completeValue, &odb_old.header))  /* aborted == found! */
+	    ret = datastore->del (&key, &odb_old.header);
+	  else                      /* not found */
+	    ret = GNUNET_SYSERR;
+	}
+#endif
       if (ret == GNUNET_SYSERR)
         {
           IF_GELOG (cectx,
