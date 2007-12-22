@@ -76,6 +76,8 @@ GSetupWizard::GSetupWizard(QDialog *parent, struct GNUNET_GE_Context *ectx, stru
   this->cfg = cfg;
   this->cfg_fn = cfg_fn;
   
+  pbPrev->setHidden(true);
+  
   connect(pbNext, SIGNAL(clicked()), this, SLOT(nextClicked()));
   connect(pbPrev, SIGNAL(clicked()), this, SLOT(prevClicked()));
   connect(pbClose, SIGNAL(clicked()) , this, SLOT(abortClicked()));
@@ -373,6 +375,8 @@ void GSetupWizard::abortClicked()
 
 void GSetupWizard::nextClicked()
 {
+  pbPrev->setHidden(false);
+  
   if (curPage == 3)
   {
     pbNext->setIcon(QIcon(":/pixmaps/exit.png"));
@@ -447,6 +451,8 @@ void GSetupWizard::prevClicked()
     pbNext->setIcon(QIcon(":/pixmaps/go-next.png"));
     pbNext->setText(tr("Next"));    
   }
+  else if (curPage == 1)
+    pbPrev->setHidden(true);
   else if (curPage == 0)
     return;
   
