@@ -19,6 +19,10 @@
 */
 
 #include <QtCore/QObject>
+#include <QtCore/QProcess>
+#include <QtCore/QStringList>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
 #include <QtGui/QMessageBox>
 #include <QtGui/QDesktopServices>
 
@@ -336,7 +340,7 @@ void GSetupWizard::nextClicked()
   else if (curPage == 4)
   {
     GString str;
-    char *gup, *bin, *user_name, *group_name;
+    char *user_name, *group_name;
     
     str = editUser->text();
     user_name = strdup(str.toUtf8CStr());
@@ -372,19 +376,30 @@ void GSetupWizard::nextClicked()
     
     if (cbGNUpdate->isChecked())
       {
-        bin = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
-        gup = (char *) GNUNET_malloc (strlen (bin) + 30 + strlen (cfg_fn));
-        strcpy (gup, bin);
-        GNUNET_free (bin);
-        strcat (gup, "/gnunet-update -c ");
-        strcat (gup, cfg_fn);
-        if (system (gup) != 0)
+        QProcess proc;
+        QStringList args;
+        char *bin;
+        
+        args << "-L" << "INFO" << "-c" << cfg_fn;
+        bin = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);        
+        proc.setWorkingDirectory(bin);
+        proc.setStandardErrorFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.err");
+        proc.setStandardOutputFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out");        
+        GNUNET_free_non_null(bin);
+        proc.start("gnunet-update", args);
+        proc.waitForFinished(-1);
+        if (proc.error() != QProcess::UnknownError || proc.exitCode() != 0)
         {
-          QMessageBox::critical(this, tr("Error"), "Running gnunet-update failed.\n"
+          QMessageBox::critical(this, tr("Error"), "Running gnunet-setup failed, its output has been saved to " +
+                     QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.*\n" +
                      "This maybe due to insufficient permissions, please check your configuration.\n"
                      "Finally, run gnunet-update manually.");
         }
-        GNUNET_free (gup);
+        else
+        {
+          QFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.err").remove();
+          QFile(QDir::tempPath() + DIR_SEPARATOR_STR "gnunet-setup.out").remove();
+        }
       }
     qApp->quit();
 
