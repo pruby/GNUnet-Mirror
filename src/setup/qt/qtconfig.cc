@@ -81,6 +81,10 @@ qt_wizard_mainsetup_qt (int argc,
     
     GNUNET_GE_ASSERT (ectx, is_daemon);
 
+#ifdef WINDOWS
+  FreeConsole ();
+#endif
+
     app = new QApplication(argc, (char **) argv);
 
     wiz = new GSetupWizard(NULL, ectx, cfg, filename);
