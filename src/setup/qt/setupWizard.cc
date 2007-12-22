@@ -108,9 +108,14 @@ GSetupWizard::GSetupWizard(QDialog *parent, struct GNUNET_GE_Context *ectx, stru
     tr("on Freenode") +
                     "</li>" +
                   "</ul>" +
-                  "<br /><br />" +
                   "</font>"
               "</td>"
+            "</tr>"
+            "<tr>"
+              "<td colspan=\"2\">&nbsp;</td>"
+            "</tr>"
+            "<tr>"
+              "<td colspan=\"2\">&nbsp;</td>"
             "</tr>"
             "<tr>"
               "<td>"
