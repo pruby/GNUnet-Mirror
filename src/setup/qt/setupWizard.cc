@@ -20,6 +20,7 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QMessageBox>
+#include <QtGui/QDesktopServices>
 
 #include "setupWizard.h"
 #include "config.h"
@@ -69,6 +70,7 @@ QString GSetupWizard::header()
 GSetupWizard::GSetupWizard(QDialog *parent, struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *cfg_fn) : QDialog(parent)
 {
   setupUi(this);
+  welcome();
   
   curPage = 0;
 
@@ -81,60 +83,9 @@ GSetupWizard::GSetupWizard(QDialog *parent, struct GNUNET_GE_Context *ectx, stru
   connect(pbNext, SIGNAL(clicked()), this, SLOT(nextClicked()));
   connect(pbPrev, SIGNAL(clicked()), this, SLOT(prevClicked()));
   connect(pbClose, SIGNAL(clicked()) , this, SLOT(abortClicked()));
+  connect(htmlWelcome, SIGNAL(anchorClicked(const QUrl &)), this, SLOT(linkHandler(const QUrl &)));
   
-  htmlWelcome->setHtml(
-    "<html>"
-      "<body>" +
-        header() +
-        "<center>"
-          "<font size=\"5\"><b>" + tr("Welcome to ") + PACKAGE_STRING "</b></font>"
-          "<br />"
-          "<br />"
-          "<table width=\"91%\">"
-            "<tr>"
-              "<td>"
-                "<font size=\"4\">" +
-    tr("This assistant will ask you a few basic questions in order to configure GNUnet.") +
-                  "<br /><br />" +
-    tr("Please visit our homepage at") +
-                  "<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"http://gnunet.org\">http://gnunet.org</a><br /><br />" +
-    tr("and join our community:") +
-                  "<ul>" +
-                    "<li>" +
-    tr("Help, discussion and polls: ") +
-                      "<a href=\"http://gnunet.org/drupal/\">http://gnunet.org/drupal/</a>" +
-                    "</li>" +
-                    "<li>" +
-    tr("IRC chat with users and developers: ") +
-                      "<a href=\"http://irc://irc.freenode.net/#gnunet\">#gnunet</a> " +
-    tr("on Freenode") +
-                    "</li>" +
-                  "</ul>" +
-                  "</font>"
-              "</td>"
-            "</tr>"
-            "<tr>"
-              "<td colspan=\"2\">&nbsp;</td>"
-            "</tr>"
-            "<tr>"
-              "<td colspan=\"2\">&nbsp;</td>"
-            "</tr>"
-            "<tr>"
-              "<td>"
-               "<font size=\"4\">" +
-                  tr("Have a lot fun,") +
-                  "<br /><br />"
-                  "&nbsp;&nbsp;&nbsp;&nbsp;" +
-                  tr("The GNUnet team") +
-                "</font>"
-              "</td>"
-            "</tr>"
-          "</table>"
-        "</center>"
-      "</body>"
-    "</html>");
-    
-    loadDefaults();
+  loadDefaults();
 }
 
 static int insert_nic (const char *name, int defaultNIC, void *cls)
@@ -458,4 +409,65 @@ void GSetupWizard::prevClicked()
   
   curPage--;
   stackedWidget->setCurrentIndex(curPage);
+}
+
+void GSetupWizard::welcome()
+{
+  htmlWelcome->setHtml(
+    "<html>"
+      "<body>" +
+        header() +
+        "<center>"
+          "<font size=\"5\"><b>" + tr("Welcome to ") + PACKAGE_STRING "</b></font>"
+          "<br />"
+          "<br />"
+          "<table width=\"91%\">"
+            "<tr>"
+              "<td>"
+                "<font size=\"4\">" +
+    tr("This assistant will ask you a few basic questions in order to configure GNUnet.") +
+                  "<br /><br />" +
+    tr("Please visit our homepage at") +
+                  "<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"http://gnunet.org\">http://gnunet.org</a><br /><br />" +
+    tr("and join our community:") +
+                  "<ul>" +
+                    "<li>" +
+    tr("Help, discussion and polls: ") +
+                      "<a href=\"http://gnunet.org/drupal/\">http://gnunet.org/drupal/</a>" +
+                    "</li>" +
+                    "<li>" +
+    tr("IRC chat with users and developers: ") +
+                      "<a href=\"http://irc.netsplit.de/channels/?chat=gnunet\">#gnunet</a> " +
+    tr("on Freenode") +
+                    "</li>" +
+                  "</ul>" +
+                  "</font>"
+              "</td>"
+            "</tr>"
+            "<tr>"
+              "<td colspan=\"2\">&nbsp;</td>"
+            "</tr>"
+            "<tr>"
+              "<td colspan=\"2\">&nbsp;</td>"
+            "</tr>"
+            "<tr>"
+              "<td>"
+               "<font size=\"4\">" +
+                  tr("Have a lot fun,") +
+                  "<br /><br />"
+                  "&nbsp;&nbsp;&nbsp;&nbsp;" +
+                  tr("The GNUnet team") +
+                "</font>"
+              "</td>"
+            "</tr>"
+          "</table>"
+        "</center>"
+      "</body>"
+    "</html>");
+}
+
+void GSetupWizard::linkHandler(const QUrl &link)
+{
+  QDesktopServices::openUrl(link);
+  welcome();
 }
