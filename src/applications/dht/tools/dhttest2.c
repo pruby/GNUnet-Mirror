@@ -96,7 +96,7 @@ main (int argc, const char **argv)
 
   /* wait for DHT's to find each other! */
   sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 30;                    /* how many iterations should we wait? */
+  left = 60;                    /* how many iterations should we wait? */
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
@@ -124,7 +124,7 @@ main (int argc, const char **argv)
   /* verify that peer2 also sees the other DHT! */
   ok = 0;
   sock = GNUNET_client_connection_create (NULL, cfg);
-  left = 30;                    /* how many iterations should we wait? */
+  left = 60;                    /* how many iterations should we wait? */
   while (GNUNET_OK ==
          GNUNET_STATS_get_statistics (NULL, sock, &waitForConnect, NULL))
     {
@@ -166,7 +166,7 @@ main (int argc, const char **argv)
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
   /* switch to peer2 */
   GNUNET_GC_set_configuration_value_string (cfg,
                                             ectx,
@@ -186,7 +186,7 @@ main (int argc, const char **argv)
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
                               GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                              &key, 2 * GNUNET_CRON_SECONDS, NULL, NULL));
+                              &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL));
   GNUNET_hash ("key2", 4, &key);
   fprintf (stderr, "Peer2 gets key2");
   left = 10;
@@ -196,7 +196,7 @@ main (int argc, const char **argv)
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL))
+                               &key, 15 * GNUNET_CRON_SECONDS, NULL, NULL))
         break;
       left--;
     }
@@ -217,7 +217,7 @@ main (int argc, const char **argv)
       if (1 == GNUNET_DHT_get (cfg,
                                ectx,
                                GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                               &key, 10 * GNUNET_CRON_SECONDS, NULL, NULL))
+                               &key, 15 * GNUNET_CRON_SECONDS, NULL, NULL))
         break;
       left--;
     }

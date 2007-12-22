@@ -47,7 +47,7 @@ static GNUNET_DHT_ServiceAPI *dhtAPI;
 
 /**
  * Type of the linked list that is used by CS to
- * keep track of clients and their pending GET 
+ * keep track of clients and their pending GET
  * requests.
  */
 struct DHT_CLIENT_GET_RECORD

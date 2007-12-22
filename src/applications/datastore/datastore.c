@@ -292,11 +292,9 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   cls.exists = GNUNET_NO;
   cls.value = value;
   sq->get (key, ntohl (value->type), &checkExists, &cls);
-  if ( (! cls.exists) &&
-       (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA) )
+  if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
     sq->get (key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
-  if ( (! cls.exists) &&
-       (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA) )
+  if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
     sq->get (key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD, &checkExists, &cls);
   if (cls.exists)
     {

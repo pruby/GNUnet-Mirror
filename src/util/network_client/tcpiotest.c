@@ -215,6 +215,7 @@ main (int argc, char *argv[])
     }
   GNUNET_client_connection_destroy (clientSocket);
   CLOSE (serverSocket);
+  fprintf (stderr, "\n");
   if (ret > 0)
     fprintf (stderr, "Error %d\n", ret);
   GNUNET_GC_free (cfg);

@@ -803,8 +803,8 @@ gapGetConverter (const GNUNET_HashCode * key,
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "Converting reply for query `%s' for gap.\n", &enc);
 #endif
-  if ( (ntohl (invalue->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) ||
-       (ntohl (invalue->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD) )
+  if ((ntohl (invalue->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) ||
+      (ntohl (invalue->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD))
     {
       if (GNUNET_OK != ONDEMAND_getIndexed (datastore, invalue, key, &xvalue))
         return GNUNET_SYSERR;
@@ -948,8 +948,7 @@ gapGet (void *closure,
     ret = datastore->get (&keys[0],
                           GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
                           &gapGetConverter, &myClosure);
-  if ( (myClosure.count == 0) &&
-       (type == GNUNET_ECRS_BLOCKTYPE_DATA) )
+  if ((myClosure.count == 0) && (type == GNUNET_ECRS_BLOCKTYPE_DATA))
     ret = datastore->get (&keys[0],
                           GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD,
                           &gapGetConverter, &myClosure);

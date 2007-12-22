@@ -31,7 +31,7 @@
 
 #define DEBUG_VERBOSE GNUNET_NO
 
-#define UPLOAD_PREFIX "/tmp/gnunet-fsui-searializetest4"
+#define UPLOAD_PREFIX "/tmp/gnunet-fsui-serializetest4"
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(ectx, 0); goto FAILURE; }
 
