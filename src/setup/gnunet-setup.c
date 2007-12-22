@@ -217,7 +217,9 @@ main (int argc, char *const *argv)
   const char *operation;
   int done;
   char *dirname;
+#if HAVE_GUILE
   char *specname;
+#endif
   char *value;
   char *option;
   int i;
