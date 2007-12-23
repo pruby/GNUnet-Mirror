@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.2c"
+!define PRODUCT_VERSION "0.7.3"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -104,15 +104,18 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 	  File "gnu.ico"	
 	  File "config.ico"	
+		Delete "$INSTDIR\bin\libgnunetmodule_rpc.dll"
+		Delete "$INSTDIR\bin\libgnunetutil-1.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_boot-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_config-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_cron-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_crypto-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_containers-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_logging-0.dll" 
+		Delete "$INSTDIR\bin\libgnunetutil_network_client-0.dll" 
+
 		File "C:\GNUnet\bin\libgnunetmodule_state.dll" 
-		File "C:\GNUnet\bin\libgnunetutil-1.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_boot-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_config-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_cron-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_crypto-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_containers-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_logging-0.dll" 
-		File "C:\GNUnet\bin\libgnunetutil_network_client-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil-2.dll" 
     File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
     ; Fixme: client only
     File "C:\GNUnet\bin\libgnunettraffic_api-0.dll"
@@ -125,8 +128,10 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-qt" "$INSTDIR\bin\config.ico"
-	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
-	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "gconfig" "$INSTDIR\bin\config.ico"
+    Delete "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk"
+    Delete $SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk"
+;	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
+;	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "gconfig" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-qt.exe" "" "$INSTDIR\bin\gnu.ico"
 	SectionEnd
 	
@@ -167,7 +172,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
 		File "C:\GNUnet\bin\libgnunetsetup-0.dll"
-		File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
+    File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
+    File "C:\GNUnet\bin\libgnunetsetup_qt.dll"
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
 		File "C:\GNUnet\share\GNUnet\config-client.scm" 
@@ -190,6 +196,7 @@ SectionGroup "GNUnet" SEC_GNUNET
       File "C:\GNUnet\bin\libgnunettransport_http.dll"
 			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
       Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
+      Delete "$INSTDIR\bin\libgnunetmodule_topology_f2f.dll"
 			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
 			File "C:\GNUnet\bin\libgnunettransport_nat.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
@@ -201,9 +208,17 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_session.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_stats.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_topology_default.dll"
-			File "C:\GNUnet\bin\libgnunetmodule_topology_f2f.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_traffic.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
+
+      FindFirst $0 $1 "$INSTDIR\etc\gnunetd.conf"
+      StrCmp $1 "" inst_conf
+      goto noinst_conf
+      inst_conf:
+        SetOutPath "$INSTDIR\etc"
+        File "C:\GNUnet\etc\gnunetd.conf"
+      noinst_conf:
+        FileClose $0
 		SectionEnd
 
 		Section "Filesharing" SEC_SERVER_FS
@@ -326,7 +341,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 		  SetOutPath "$INSTDIR\bin"
 
 			File "C:\GNUnet\bin\gnunet-tracekit.exe"			
-			File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"			
+      		File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"     
+      		File "C:\GNUnet\bin\libgnunettracekit_api-0.dll"     
 		SectionEnd
 
 		Section "TBench" SEC_TBENCH
@@ -341,7 +357,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 2 4
 		  SetOutPath "$INSTDIR\bin"
 
-      File "C:\GNUnet\bin\libgnunetmodule_dstore.dll"
+			Delete "$INSTDIR\bin\libgnunetmodule_dstore.dll"
+     	 	File "C:\GNUnet\bin\libgnunetmodule_dstore_sqlite.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
 			File "C:\GNUnet\bin\libgnunetdht_api-0.dll"
 		SectionEnd
@@ -410,6 +427,8 @@ SectionGroup "Dependencies"
 		SectionIn RO
 
 		SetOutPath "$INSTDIR\bin"
+    Delete "$INSTDIR\bin\libmicrohttpd-2.dll"
+    
 		File "C:\GNUnet\bin\iconv.dll"
 		File "C:\GNUnet\bin\intl.dll"
 		File "C:\GNUnet\bin\libcurl-3.dll"		
@@ -421,7 +440,7 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libintl-2.dll"
 		File "C:\GNUnet\bin\libintl-3.dll"
 		File "C:\GNUnet\bin\libltdl-3.dll"
-    File "C:\GNUnet\bin\libmicrohttpd-2.dll"
+    File "C:\GNUnet\bin\libmicrohttpd-3.dll"
 		File "C:\GNUnet\bin\libmysql.dll"
 		File "C:\GNUnet\bin\libplibc-1.dll"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
@@ -863,6 +882,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetdht_api-0.dll"
 	Delete "$INSTDIR\bin\libgnunetdht_datastore_memory-0.dll"
   Delete "$INSTDIR\bin\ibgnunetmodule_dstore.dll"
+  Delete "$INSTDIR\bin\libgnunetmodule_dstore_sqlite.dll"
 	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
   Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
@@ -909,7 +929,8 @@ Section Uninstall
   Delete "$INSTDIR\bin\libgnunettransport_tcp_old.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
   Delete "$INSTDIR\bin\libgnunetmodule_upnp.dll"
-	Delete "$INSTDIR\bin\libgnunetutil-1.dll"
+  Delete "$INSTDIR\bin\libgnunetutil-1.dll"
+  Delete "$INSTDIR\bin\libgnunetutil-2.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
   Delete "$INSTDIR\bin\libgnunetip-0.dll"
   Delete "$INSTDIR\bin\libgnunettraffic_api-0.dll"
@@ -929,6 +950,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libintl-3.dll"
 	Delete "$INSTDIR\bin\libltdl-3.dll"
   Delete "$INSTDIR\bin\libmicrohttpd-2.dll"
+  Delete "$INSTDIR\bin\libmicrohttpd-3.dll"
   Delete "$INSTDIR\bin\libmysql.dll"
 	Delete "$INSTDIR\bin\libogg-0.dll"
 	Delete "$INSTDIR\bin\libpango-1.0-0.dll"
