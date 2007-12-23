@@ -373,30 +373,37 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
 #if MIG72
   const OnDemandBlock72 *odb_old;
   OnDemandBlock odb_stack;
-  if (ntohl (dbv->size) != sizeof (OnDemandBlock))
+  switch (ntohl (dbv->type))
     {
+    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
+      if (ntohl (dbv->size) != sizeof (OnDemandBlock))
+	{
+          GNUNET_GE_BREAK (ectx, 0);
+          return GNUNET_SYSERR;
+	}
+      odb = (const OnDemandBlock *) dbv;
+      break;
+    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD:    
       if (ntohl (dbv->size) != sizeof (OnDemandBlock72))
         {
           GNUNET_GE_BREAK (ectx, 0);
           return GNUNET_SYSERR;
         }
-      else
-        {
-          odb_old = (OnDemandBlock72 *) dbv;
-          odb_stack.header = odb_old->header;
-          odb_stack.type = odb_old->type;
-          odb_stack.fileOffset = odb_old->fileOffset;
-          odb_stack.blockSize = odb_old->blockSize;
-          odb_stack.fileId = odb_old->fileId;
-          odb = &odb_stack;
-        }
-    }
-  else
-    {
-      odb = (const OnDemandBlock *) dbv;
+      odb_old = (OnDemandBlock72 *) dbv;
+      odb_stack.header = odb_old->header;
+      odb_stack.type = odb_old->type;
+      odb_stack.fileOffset = odb_old->fileOffset;
+      odb_stack.blockSize = odb_old->blockSize;
+      odb_stack.fileId = odb_old->fileId;
+      odb = &odb_stack;
+      break;
+    default:
+      GNUNET_GE_BREAK (ectx, 0);
+      return GNUNET_SYSERR;
     }
 #else
-  if (ntohl (dbv->size) != sizeof (OnDemandBlock))
+  if ( (ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
+       (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND) )
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
