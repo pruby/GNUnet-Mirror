@@ -33,9 +33,8 @@ files listed in the directory.  Directories can contain pointers to
 other directories.
 .PP
 With gnunet\-insert, it is easy to create new directories
-simultaneously when adding the files.  Simply add the option \-R to
-recursively insert an entire directory and create the corresponding
-directory structure in GNUnet.
+simultaneously when adding the files.  Simply pass the name of
+a directory instead of a file.
 .PP
 Since keywords can be spammed (any user can add any content under any
 keyword), GNUnet supports namespaces.  A namespace is a subset of the
@@ -293,9 +292,9 @@ libextractor:
 
 Neatly publish an image gallery in \fBkittendir/\fR and its subdirs
 with keyword \fBkittens\fR for the directory but no keywords for the
-individual files or subdirs (\-Rn).  Force description for all files:
+individual files or subdirs (\-n).  Force description for all files:
 
-# gnunet\-insert \-Rn \-m "description:Kitten collection" \-k kittens kittendir/
+# gnunet\-insert \-n \-m "description:Kitten collection" \-k kittens kittendir/
 
 \fBSecure publishing with namespaces\fR
 
@@ -303,15 +302,15 @@ Insert file COPYING with pseudonym RIAA (\-P) and with identifier \fBgpl\fR (\-t
 
 # gnunet\-insert \-P RIAA \-t gpl COPYING
 
-Recursively (\-R) index /home/ogg and build a matching directory
+Recursively index /home/ogg and build a matching directory
 structure.  Insert the top\-level directory into the namespace under
 the pseudonym RIAA (\-P) under identifier MUSIC (\-t) and promise to
 provide an update with identifier VIDEOS (\-N) at an arbitrary point
 in the future (\-S is implied by lack of \-i and presence of \-N):
 
-# gnunet\-insert \-R \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
+# gnunet\-insert \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
 
-Recursively (\-R) insert (\-n) /var/lib/mysql and build a matching
+Recursively insert (\-n) /var/lib/mysql and build a matching
 directory structure, but disable the use of libextractor to extract
 keywords (\-n).  Print the file identifiers (\-V) that can be used to
 retrieve the files.  This will store a copy of the MySQL database in
@@ -319,7 +318,7 @@ GNUnet but without adding any keywords to search for it.  Thus only
 people that have been told the secret file identifiers printed with
 the \-V option can retrieve the (secret?) files:
 
-# gnunet\-insert \-RnV /var/lib/mysql
+# gnunet\-insert \-nV /var/lib/mysql
 
 Create a periodical SBlock with a sporadic update interval and announce
 that the next update will be called 'next':
