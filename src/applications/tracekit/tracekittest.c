@@ -157,7 +157,7 @@ main (int argc, char **argv)
 #endif
 
   GNUNET_GC_free (cfg);
-  if (ret < 6)
+  if (ret < 5)
     return 1;                   /* have at least 3 (bi-directional) connections */
   if (ret > 12)
     return 2;                   /* have at most 12 connections */
