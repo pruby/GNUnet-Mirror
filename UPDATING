@@ -20,6 +20,12 @@ that this is a new option and one of the two choices must be
 selected.  "gnunet-setup -d" should pick "dstore_sqlite" by 
 default, but if you are using MySQL for the main database, you
 may want to change this.
+You need to grant the gnunet MySQL user additional priviledges
+for the dstore (creation of temporary tables), something like:
+
+GRANT CREATE TEMPORARY TABLES ON gnunet.* TO gnunet@localhost;
+
+should do the trick.
 
 
 0.7.2b to 0.7.2c

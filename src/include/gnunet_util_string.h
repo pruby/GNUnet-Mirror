@@ -89,7 +89,7 @@ extern "C"
  * @param ptr location where to free the memory. ptr must have
  *     been returned by GNUNET_strdup, GNUNET_malloc or GNUNET_array_grow earlier.
  */
-#define GNUNET_free(ptr) GNUNET_xfree_(ptr, __FILE__, __LINE__,  __FUNCTION__)
+#define GNUNET_free(ptr) GNUNET_xfree_(ptr, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * Free the memory pointed to by ptr if ptr is not NULL.

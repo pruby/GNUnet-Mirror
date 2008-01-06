@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-20 19:57-0700\n"
+"POT-Creation-Date: 2007-12-22 17:30-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -949,31 +949,31 @@ msgid "update a value in the configuration file"
 msgstr ""
 "Einen Wert aus der Konfigurationsdatei auf der Standardausgabe ausgeben"
 
-#: src/setup/gnunet-setup.c:256
+#: src/setup/gnunet-setup.c:258
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Ungültige Kommandozeilen Parameter.\n"
 
-#: src/setup/gnunet-setup.c:262
+#: src/setup/gnunet-setup.c:264
 msgid "No interface specified, using default\n"
 msgstr "Keine Oberfläche angegeben, verwende Standard\n"
 
-#: src/setup/gnunet-setup.c:341
+#: src/setup/gnunet-setup.c:343
 #, fuzzy, c-format
 msgid "Undefined option.\n"
 msgstr "Weitere Einstellungen"
 
-#: src/setup/gnunet-setup.c:394
+#: src/setup/gnunet-setup.c:396
 #, fuzzy, c-format
 msgid "`%s' is not available.\n"
 msgstr "`%s' ist nicht verfügbar."
 
-#: src/setup/gnunet-setup.c:414
+#: src/setup/gnunet-setup.c:416
 #, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Unbekannte Operation `%s'\n"
 
-#: src/setup/gnunet-setup.c:415 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1109,30 +1109,30 @@ msgstr "`%s' registriert Client-Handler %d\n"
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:865
+#: src/applications/dht/module/routing.c:869
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:867
+#: src/applications/dht/module/routing.c:871
 msgid "# dht requests routed"
 msgstr "# dht Anfragen weitergeleitet"
 
-#: src/applications/dht/module/routing.c:869
+#: src/applications/dht/module/routing.c:873
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "# Client Trace-Anfragen empfangen"
 
-#: src/applications/dht/module/routing.c:871
+#: src/applications/dht/module/routing.c:875
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "# Client Trace-Anfragen empfangen"
 
-#: src/applications/dht/module/routing.c:873
+#: src/applications/dht/module/routing.c:877
 #, fuzzy
 msgid "# dht results received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/applications/dht/module/routing.c:878
+#: src/applications/dht/module/routing.c:882
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "`%s' registriert Handler %d %d %d\n"
@@ -1259,24 +1259,24 @@ msgstr "async RPC Antwort nicht empfangen.\n"
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "Verfügbarkeitstest für `%s' fehlgeschlagen bei %s:%d.\n"
 
-#: src/applications/datastore/datastore.c:423
+#: src/applications/datastore/datastore.c:424
 msgid "# requests filtered by bloom filter"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:425
+#: src/applications/datastore/datastore.c:426
 msgid "# bloom filter false positives"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:428
+#: src/applications/datastore/datastore.c:429
 msgid "# bytes allowed in datastore"
 msgstr "# bytes erlaubt in der Datenbank"
 
-#: src/applications/datastore/datastore.c:445
+#: src/applications/datastore/datastore.c:446
 #, fuzzy
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
 
-#: src/applications/datastore/datastore.c:586
+#: src/applications/datastore/datastore.c:587
 #, fuzzy
 msgid "Failed to load sqstore service.  Check your configuration!\n"
 msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
@@ -2237,13 +2237,13 @@ msgstr "# Client Trace-Antworten gesendet"
 msgid "# FS replies passed to clients"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:300
+#: src/applications/fs/module/ondemand.c:343
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr ""
 "Indizierte Datei ist verschwunden, Block für Anfrage `%s' wird gelöscht\n"
 
-#: src/applications/fs/module/ondemand.c:401
+#: src/applications/fs/module/ondemand.c:478
 #, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -2254,7 +2254,7 @@ msgstr ""
 "aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie "
 "löschen, da Ihr Index nun ungültige Referenzen enthält!\n"
 
-#: src/applications/fs/module/ondemand.c:427
+#: src/applications/fs/module/ondemand.c:504
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
@@ -2263,11 +2263,11 @@ msgstr ""
 "Die Konfigurationsdatei muss ein Verzeichnis für die Speicherung von FS "
 "Daten in der Sektion `%s' unter `%s' angeben.\n"
 
-#: src/applications/fs/module/ondemand.c:484
+#: src/applications/fs/module/ondemand.c:561
 msgid "Indexed content changed (does not match its hash).\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:638
+#: src/applications/fs/module/ondemand.c:752
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
@@ -2275,7 +2275,7 @@ msgstr ""
 "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/module/fs.c:1299
+#: src/applications/fs/module/fs.c:1304
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -2284,34 +2284,34 @@ msgstr ""
 "Sie müssen für `%s' in der Sektion `%s' der Konfigurationsdatei eine "
 "positive Zahl angeben.\n"
 
-#: src/applications/fs/module/fs.c:1314
+#: src/applications/fs/module/fs.c:1319
 msgid "# FS expired replies dropped"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1316
+#: src/applications/fs/module/fs.c:1321
 #, fuzzy
 msgid "# FS valid replies received"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/applications/fs/module/fs.c:1352
+#: src/applications/fs/module/fs.c:1357
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1412
+#: src/applications/fs/module/fs.c:1417
 msgid "enables (anonymous) file-sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
 
-#: src/applications/fs/module/migration.c:382
+#: src/applications/fs/module/migration.c:383
 msgid "# blocks migrated"
 msgstr "# Blöcke migriert"
 
-#: src/applications/fs/module/migration.c:384
+#: src/applications/fs/module/migration.c:385
 #, fuzzy
 msgid "# blocks fetched for migration"
 msgstr "# Blöcke migriert"
 
-#: src/applications/fs/module/migration.c:387
+#: src/applications/fs/module/migration.c:388
 msgid "# on-demand block migration attempts"
 msgstr ""
 
@@ -3239,79 +3239,79 @@ msgstr "Verfügbare(r) Transport(e): %s\n"
 msgid "I am peer `%s'.\n"
 msgstr "Ich bin Peer `%s'.\n"
 
-#: src/applications/stats/sqstats.c:151
+#: src/applications/stats/sqstats.c:152
 msgid "# Any-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:152
+#: src/applications/stats/sqstats.c:153
 msgid "# DBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:153
+#: src/applications/stats/sqstats.c:154
 msgid "# SBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:154
+#: src/applications/stats/sqstats.c:155
 msgid "# KBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:155
+#: src/applications/stats/sqstats.c:156
 msgid "# NBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:156
+#: src/applications/stats/sqstats.c:157
 msgid "# KNBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:157
+#: src/applications/stats/sqstats.c:158
 msgid "# OnDemand-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:158
+#: src/applications/stats/sqstats.c:159
 msgid "# Unknown-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:159
+#: src/applications/stats/sqstats.c:160
 msgid "# expired"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:160
+#: src/applications/stats/sqstats.c:161
 msgid "# expire in 1h"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:161
+#: src/applications/stats/sqstats.c:162
 msgid "# expire in 24h"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:162
+#: src/applications/stats/sqstats.c:163
 msgid "# expire in 1 week"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:163
+#: src/applications/stats/sqstats.c:164
 msgid "# expire in 1 month"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:164
+#: src/applications/stats/sqstats.c:165
 msgid "# zero priority"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:165
+#: src/applications/stats/sqstats.c:166
 msgid "# priority one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:166
+#: src/applications/stats/sqstats.c:167
 msgid "# priority larger than one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:167
+#: src/applications/stats/sqstats.c:168
 msgid "# no anonymity"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:168
+#: src/applications/stats/sqstats.c:169
 msgid "# anonymity one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:169
+#: src/applications/stats/sqstats.c:170
 msgid "# anonymity larger than one"
 msgstr ""
 
@@ -4888,7 +4888,7 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:444
-msgid "Disable advertising of other peers by this peer"
+msgid "Enable advertising of other peers by this peer"
 msgstr ""
 
 #: contrib/config-daemon.scm:445

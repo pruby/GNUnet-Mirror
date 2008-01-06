@@ -64,7 +64,7 @@
  *    <pre>
  *
       CREATE DATABASE gnunet;
-      GRANT select,insert,update,delete,create,alter,drop
+      GRANT select,insert,update,delete,create,alter,drop,create temporary tables
          ON gnunet.* TO $USER@localhost;
       SET PASSWORD FOR $USER@localhost=PASSWORD('$the_password_you_like');
       FLUSH PRIVILEGES;

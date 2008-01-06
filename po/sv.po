@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-20 19:57-0700\n"
+"POT-Creation-Date: 2007-12-22 17:30-0700\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -853,31 +853,31 @@ msgstr "Verktyg för att ställa in GNUnet."
 msgid "update a value in the configuration file"
 msgstr "skriv ut ett värde från konfigurationsfilen till standard ut"
 
-#: src/setup/gnunet-setup.c:256
+#: src/setup/gnunet-setup.c:258
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Ogiltiga kommandoradsargument.\n"
 
-#: src/setup/gnunet-setup.c:262
+#: src/setup/gnunet-setup.c:264
 msgid "No interface specified, using default\n"
 msgstr ""
 
-#: src/setup/gnunet-setup.c:341
+#: src/setup/gnunet-setup.c:343
 #, fuzzy, c-format
 msgid "Undefined option.\n"
 msgstr "Visa alla alternativ"
 
-#: src/setup/gnunet-setup.c:394
+#: src/setup/gnunet-setup.c:396
 #, fuzzy, c-format
 msgid "`%s' is not available.\n"
 msgstr "\"%s\" är inte tillgänglig."
 
-#: src/setup/gnunet-setup.c:414
+#: src/setup/gnunet-setup.c:416
 #, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Okänd operation \"%s\"\n"
 
-#: src/setup/gnunet-setup.c:415 src/applications/testbed/gnunet-testbed.c:125
+#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
@@ -1013,28 +1013,28 @@ msgstr "\"%s\" registrerar klienthandtag %d\n"
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:865
+#: src/applications/dht/module/routing.c:869
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:867
+#: src/applications/dht/module/routing.c:871
 msgid "# dht requests routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:869
+#: src/applications/dht/module/routing.c:873
 msgid "# dht get requests received"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:871
+#: src/applications/dht/module/routing.c:875
 msgid "# dht put requests received"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:873
+#: src/applications/dht/module/routing.c:877
 #, fuzzy
 msgid "# dht results received"
 msgstr "# byte mottogs via TCP"
 
-#: src/applications/dht/module/routing.c:878
+#: src/applications/dht/module/routing.c:882
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "\"%s\" registrerar handtag %d %d %d\n"
@@ -1156,23 +1156,23 @@ msgstr ""
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "Tillgänglighetstest misslyckades för \"%s\" vid %s:%d.\n"
 
-#: src/applications/datastore/datastore.c:423
+#: src/applications/datastore/datastore.c:424
 msgid "# requests filtered by bloom filter"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:425
+#: src/applications/datastore/datastore.c:426
 msgid "# bloom filter false positives"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:428
+#: src/applications/datastore/datastore.c:429
 msgid "# bytes allowed in datastore"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:445
+#: src/applications/datastore/datastore.c:446
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:586
+#: src/applications/datastore/datastore.c:587
 #, fuzzy
 msgid "Failed to load sqstore service.  Check your configuration!\n"
 msgstr "Kunde inte spara konfiguration!"
@@ -2082,12 +2082,12 @@ msgstr ""
 msgid "# FS replies passed to clients"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:300
+#: src/applications/fs/module/ondemand.c:343
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr "Indexerad fil försvann, tar bort block för fråga \"%s\"\n"
 
-#: src/applications/fs/module/ondemand.c:401
+#: src/applications/fs/module/ondemand.c:478
 #, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -2095,24 +2095,24 @@ msgid ""
 "contains invalid references!\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:427
+#: src/applications/fs/module/ondemand.c:504
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
 "%s' under `%s'.\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:484
+#: src/applications/fs/module/ondemand.c:561
 msgid "Indexed content changed (does not match its hash).\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:638
+#: src/applications/fs/module/ondemand.c:752
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1299
+#: src/applications/fs/module/fs.c:1304
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -2121,33 +2121,33 @@ msgstr ""
 "Du måste ange ett positivt nummer för \"%s\" i konfigurationen i sektion \"%s"
 "\".\n"
 
-#: src/applications/fs/module/fs.c:1314
+#: src/applications/fs/module/fs.c:1319
 msgid "# FS expired replies dropped"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1316
+#: src/applications/fs/module/fs.c:1321
 #, fuzzy
 msgid "# FS valid replies received"
 msgstr "# byte mottogs via TCP"
 
-#: src/applications/fs/module/fs.c:1352
+#: src/applications/fs/module/fs.c:1357
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1412
+#: src/applications/fs/module/fs.c:1417
 msgid "enables (anonymous) file-sharing"
 msgstr "aktiverar (anonym) fildelning"
 
-#: src/applications/fs/module/migration.c:382
+#: src/applications/fs/module/migration.c:383
 msgid "# blocks migrated"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:384
+#: src/applications/fs/module/migration.c:385
 msgid "# blocks fetched for migration"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:387
+#: src/applications/fs/module/migration.c:388
 msgid "# on-demand block migration attempts"
 msgstr ""
 
@@ -3021,79 +3021,79 @@ msgstr "Tillgängliga transport(er): %s\n"
 msgid "I am peer `%s'.\n"
 msgstr "Jag är ändpunkt \"%s\".\n"
 
-#: src/applications/stats/sqstats.c:151
+#: src/applications/stats/sqstats.c:152
 msgid "# Any-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:152
+#: src/applications/stats/sqstats.c:153
 msgid "# DBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:153
+#: src/applications/stats/sqstats.c:154
 msgid "# SBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:154
+#: src/applications/stats/sqstats.c:155
 msgid "# KBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:155
+#: src/applications/stats/sqstats.c:156
 msgid "# NBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:156
+#: src/applications/stats/sqstats.c:157
 msgid "# KNBlocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:157
+#: src/applications/stats/sqstats.c:158
 msgid "# OnDemand-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:158
+#: src/applications/stats/sqstats.c:159
 msgid "# Unknown-Blocks"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:159
+#: src/applications/stats/sqstats.c:160
 msgid "# expired"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:160
+#: src/applications/stats/sqstats.c:161
 msgid "# expire in 1h"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:161
+#: src/applications/stats/sqstats.c:162
 msgid "# expire in 24h"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:162
+#: src/applications/stats/sqstats.c:163
 msgid "# expire in 1 week"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:163
+#: src/applications/stats/sqstats.c:164
 msgid "# expire in 1 month"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:164
+#: src/applications/stats/sqstats.c:165
 msgid "# zero priority"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:165
+#: src/applications/stats/sqstats.c:166
 msgid "# priority one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:166
+#: src/applications/stats/sqstats.c:167
 msgid "# priority larger than one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:167
+#: src/applications/stats/sqstats.c:168
 msgid "# no anonymity"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:168
+#: src/applications/stats/sqstats.c:169
 msgid "# anonymity one"
 msgstr ""
 
-#: src/applications/stats/sqstats.c:169
+#: src/applications/stats/sqstats.c:170
 msgid "# anonymity larger than one"
 msgstr ""
 
@@ -4633,7 +4633,7 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:444
-msgid "Disable advertising of other peers by this peer"
+msgid "Enable advertising of other peers by this peer"
 msgstr ""
 
 #: contrib/config-daemon.scm:445
