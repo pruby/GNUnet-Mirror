@@ -28,6 +28,7 @@
 #include "gnunet_util_boot.h"
 #include "gnunet_util_config.h"
 #include "gnunet_util_error_loggers.h"
+#include <gcrypt.h>
 #include "platform.h"
 
 static GNUNET_GE_KIND
@@ -270,6 +271,16 @@ GNUNET_init (int argc,
                                             "GNUNET_HOME", "~/.gnunet",
                                             &path);
   GNUNET_free (path);
+  if ( (GNUNET_YES == GNUNET_GC_have_configuration_value(*cfg,
+							 "TESTING",
+							 "WEAKRANDOM")) &&
+       (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno(*cfg,
+							      "TESTING",
+							      "WEAKRANDOM",
+							      GNUNET_NO)) )
+    {
+      gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+    }
   if (configure_logging (ectx, *cfg) != 0)
     return -1;
   return i;
