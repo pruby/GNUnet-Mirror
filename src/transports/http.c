@@ -2153,7 +2153,9 @@ startTransportServer ()
                                      MHD_OPTION_CONNECTION_MEMORY_LIMIT,
                                      (unsigned int) 1024 * 128,
                                      MHD_OPTION_CONNECTION_LIMIT,
-                                     (unsigned int) 64,
+                                     (unsigned int) 128,
+                                     MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+                                     (unsigned int) 8,
                                      MHD_OPTION_NOTIFY_COMPLETED,
                                      &requestCompletedCallback, NULL,
                                      MHD_OPTION_END);
