@@ -2,6 +2,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 SUBDIRS = .
 
+EXTRA_DIST = timertimer.c
+
 noinst_LTLIBRARIES = \
   libthreads.la
 
