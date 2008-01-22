@@ -629,10 +629,6 @@ handlePut (const GNUNET_PeerIdentity * sender,
           store = 1;
           continue;
         }
-      else
-        {
-          j++;
-        }
       if (1 == GNUNET_hash_xorcmp (&next[j].hashPubKey,
                                    &coreAPI->myIdentity->hashPubKey,
                                    &put->key))
@@ -645,6 +641,7 @@ handlePut (const GNUNET_PeerIdentity * sender,
                      "Forwarding DHT PUT request to peer `%s'.\n", &enc);
 #endif
       coreAPI->unicast (&next[j], &aput->header, DHT_PRIORITY, DHT_DELAY);
+      j++;
     }
   GNUNET_free (aput);
   if (store != 0)
