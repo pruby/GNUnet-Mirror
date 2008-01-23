@@ -126,6 +126,27 @@ struct GNUNET_TESTING_DaemonContext *GNUNET_TESTING_start_daemons (const char
  */
 int GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers);
 
+int GNUNET_TESTING_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg);
+
+int GNUNET_TESTING_check_config(struct GNUNET_GC_Configuration **newcfg);
+
+/**
+ * Starts a single gnunet daemon on a remote machine
+ *
+ * @param gnunetd_home directory where gnunetd is on remote machine
+ * @param localConfigPath local configuration path for config file
+ * @param remote_config_path remote path to copy local config to
+ * @param configFileName  file to copy and use on remote machine
+ * @param ip_address ip address of remote machine
+ * @param username username to use for ssh (assumed to be used with ssh-agent)
+ */
+int
+GNUNET_TESTING_start_single_remote_daemon (char *gnunetd_home,
+                             char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
+                             char *username);
+                             
+int GNUNET_TESTING_parse_config_start_daemons(struct GNUNET_GC_Configuration **newcfg);
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
