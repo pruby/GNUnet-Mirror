@@ -412,7 +412,205 @@ GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers)
   return ret;
 }
 
+int GNUNET_TESTING_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg)
+{
+	struct GNUNET_GC_Configuration *cfg;
+		
+	if (config_file == NULL) {
+		printf("config_file is null pointer\n");
+		return GNUNET_SYSERR;
+	}
+	else {
+		cfg = GNUNET_GC_create ();
+		if (-1 == GNUNET_GC_parse_configuration (cfg, config_file))
+		{
+			printf("Problem parsing config file...\n");
+			  fprintf (stderr,
+			           "Failed to read configuration file `%s'\n", config_file);
+			  GNUNET_GC_free (cfg);
+			  return GNUNET_SYSERR;
+		}
+		printf("Assigning new config to return pointer\n");
+		*newcfg = cfg;
+	}
+	return GNUNET_OK;	
+}
 
+int GNUNET_TESTING_check_config(struct GNUNET_GC_Configuration **newcfg)
+{
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","SSH_USERNAME"))
+		return GNUNET_SYSERR;
+		
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","CONTROL_HOST"))
+		return GNUNET_SYSERR;
+		
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","CLIENT_IPS"))
+		return GNUNET_SYSERR;
+		
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","STARTING_PORT"))
+		return GNUNET_SYSERR;
+	
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","PORT_INCREMENT"))
+		return GNUNET_SYSERR;
+		
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","NUMBER_OF_DAEMONS"))
+		return GNUNET_SYSERR;
+		
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_CONFIG_PATH"))
+		return GNUNET_SYSERR;
+	
+	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_GNUNETD_PATH"))
+		return GNUNET_SYSERR;
+		
+	return GNUNET_OK;
+}
 
+/**
+ * Starts a single gnunet daemon on a remote machine
+ *
+ * @param gnunetd_home directory where gnunetd is on remote machine
+ * @param localConfigPath local configuration path for config file
+ * @param remote_config_path remote path to copy local config to
+ * @param configFileName  file to copy and use on remote machine
+ * @param ip_address ip address of remote machine
+ * @param username username to use for ssh (assumed to be used with ssh-agent)
+ */
+int
+GNUNET_TESTING_start_single_remote_daemon (char *gnunetd_home,
+                             char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
+                             char *username)
+{
+	char *cmd;
+	char *newcmd;
+	
+	cmd = "scp ";
+	newcmd = GNUNET_malloc (strlen (cmd) + 128);
+	strcpy(newcmd,cmd);
+	//strcat(newcmd,(localConfigFile) " " (username) "@" (ip_address) ":" (remote_config_path));
+	strcat(newcmd,localConfigPath);
+	strcat(newcmd,configFileName);
+	strcat(newcmd," ");
+	strcat(newcmd,username);
+	strcat(newcmd,"@");
+	strcat(newcmd,ip_address);
+	strcat(newcmd,":");
+	strcat(newcmd,remote_config_path);
+	
+	printf("scp command is : %s \n",newcmd);
+	//system(newcmd);
+	
+	cmd = "ssh ";
+	GNUNET_free(newcmd);
+	newcmd = GNUNET_malloc (strlen (cmd) + 128);
+	strcpy(newcmd,cmd);
+	strcat(newcmd,username);
+	strcat(newcmd,"@");
+	strcat(newcmd,ip_address);
+	strcat(newcmd," ");
+	strcat(newcmd,gnunetd_home);
+	strcat(newcmd, DIR_SEPARATOR_STR "gnunetd -c ");
+	strcat(newcmd, remote_config_path);
+	strcat(newcmd, configFileName);
+	
+	printf("ssh command is : %s \n",newcmd);
+	
+	//system(newcmd);
+		
+	return GNUNET_OK;
+}
 
+int
+GNUNET_TESTING_parse_config_start_daemons(struct GNUNET_GC_Configuration **newcfg)
+{
+	const unsigned long long MIN_STARTING_PORT = 1001;
+	const unsigned long long MAX_STARTING_PORT = 30000;
+	const unsigned long long MIN_PORT_INCREMENT = 1;
+	const unsigned long long MAX_PORT_INCREMENT = 100;
+	const unsigned long long MIN_NUMBER_DAEMONS = 1;
+	const unsigned long long MAX_NUMBER_DAEMONS = 20000;
+	
+	char *ssh_username;
+	char *control_host;
+	char *remote_config_path;
+	char *remote_gnunetd_path;
+	unsigned long long starting_port;
+	unsigned long long port_increment;
+	unsigned long long number_of_daemons;
+	char *client_ips;
+	
+	unsigned int count = 0;
+	unsigned int length;
+	unsigned int temp[4];
+	unsigned int num_machines = 0;
+	unsigned int i;
+	unsigned int j;
+	unsigned int pos;
+	unsigned int cnt;
+	
+	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","SSH_USERNAME",NULL,&ssh_username);
+	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","CONTROL_HOST",NULL,&control_host);
+	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","CLIENT_IPS",NULL,&client_ips);
+	GNUNET_GC_get_configuration_value_number(*newcfg,"MULTIPLE_SERVER_TESTING","STARTING_PORT",MIN_STARTING_PORT,MAX_STARTING_PORT,0,&starting_port);
+	GNUNET_GC_get_configuration_value_number(*newcfg,"MULTIPLE_SERVER_TESTING","PORT_INCREMENT",MIN_PORT_INCREMENT,MAX_PORT_INCREMENT,0,&port_increment);
+	GNUNET_GC_get_configuration_value_number(*newcfg,"MULTIPLE_SERVER_TESTING","NUMBER_OF_DAEMONS",MIN_NUMBER_DAEMONS,MAX_NUMBER_DAEMONS,0,&number_of_daemons);
+	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_CONFIG_PATH",NULL,&remote_config_path);
+	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_GNUNETD_PATH",NULL,&remote_gnunetd_path);
+	
+	
+	printf("username : %s\n", ssh_username);
+	printf("control host : %s\n", control_host);
+	printf("client ip string : %s\n", client_ips);
+	printf("remote config path : %s\n", remote_config_path);
+	printf("remote gnunetd path : %s\n", remote_gnunetd_path);
+
+	printf("starting port : %lld\n", starting_port);
+	printf("port increment : %lld\n", port_increment);
+	printf("# of daemons : %lld\n", number_of_daemons);
+	
+	if (client_ips == NULL)
+		return GNUNET_SYSERR;
+		
+	length = strlen(client_ips);
+	
+	if (length == 0)
+	{
+		printf("No clients specified in config file!\n");	
+	}
+	
+	while(count < length)
+	{
+		if (client_ips[count] == ';')
+			++num_machines;
+		++count;		
+	}
+	
+	i = 0;
+    pos = 0;
+    
+  	while (i < num_machines)
+    {
+		cnt = sscanf (&client_ips[pos],
+	                    "%u.%u.%u.%u;",
+	                    &temp[0], &temp[1], &temp[2], &temp[3]);
+	      if (cnt == 4)
+	        {
+	          for (j = 0; j < 4; j++)
+	            if (temp[j] > 0xFF)
+	              {
+	                printf("Error with ip address in config file...\n");
+	                return NULL;
+	              }
+	
+	        }
+	        
+	        while(client_ips[pos] != ';' && pos<length-1)
+	        	pos++;
+        	pos++;
+        	i++;
+        	
+        printf("ip address is %u.%u.%u.%u\n",temp[0],temp[1],temp[2],temp[3]);
+    }
+	
+		
+}
 /* end of testing.c */
