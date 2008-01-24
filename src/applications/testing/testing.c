@@ -412,31 +412,28 @@ GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers)
   return ret;
 }
 
-int GNUNET_TESTING_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg)
+int GNUNET_TESTING_remote_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg)
 {
 	struct GNUNET_GC_Configuration *cfg;
 		
-	if (config_file == NULL) {
-		printf("config_file is null pointer\n");
+	if (config_file == NULL) 
 		return GNUNET_SYSERR;
+	
+	cfg = GNUNET_GC_create ();
+	if (-1 == GNUNET_GC_parse_configuration (cfg, config_file))
+	{
+	  fprintf (stderr,
+	          "Failed to read configuration file `%s'\n", config_file);
+	  GNUNET_GC_free (cfg);
+	  return GNUNET_SYSERR;
 	}
-	else {
-		cfg = GNUNET_GC_create ();
-		if (-1 == GNUNET_GC_parse_configuration (cfg, config_file))
-		{
-			printf("Problem parsing config file...\n");
-			  fprintf (stderr,
-			           "Failed to read configuration file `%s'\n", config_file);
-			  GNUNET_GC_free (cfg);
-			  return GNUNET_SYSERR;
-		}
-		printf("Assigning new config to return pointer\n");
-		*newcfg = cfg;
-	}
+	
+	*newcfg = cfg;
+	
 	return GNUNET_OK;	
 }
 
-int GNUNET_TESTING_check_config(struct GNUNET_GC_Configuration **newcfg)
+int GNUNET_TESTING_remote_check_config(struct GNUNET_GC_Configuration **newcfg)
 {
 	if (GNUNET_NO == GNUNET_GC_have_configuration_value(*newcfg,"MULTIPLE_SERVER_TESTING","SSH_USERNAME"))
 		return GNUNET_SYSERR;
@@ -476,7 +473,7 @@ int GNUNET_TESTING_check_config(struct GNUNET_GC_Configuration **newcfg)
  * @param username username to use for ssh (assumed to be used with ssh-agent)
  */
 int
-GNUNET_TESTING_start_single_remote_daemon (char *gnunetd_home,
+GNUNET_TESTING_remote_start_daemon (char *gnunetd_home,
                              char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
                              char *username)
 {
@@ -520,7 +517,7 @@ GNUNET_TESTING_start_single_remote_daemon (char *gnunetd_home,
 }
 
 int
-GNUNET_TESTING_parse_config_start_daemons(struct GNUNET_GC_Configuration **newcfg)
+GNUNET_TESTING_remote_start_daemons(struct GNUNET_GC_Configuration **newcfg)
 {
 	const unsigned long long MIN_STARTING_PORT = 1001;
 	const unsigned long long MAX_STARTING_PORT = 30000;
