@@ -41,39 +41,10 @@ main (int argc, const char **argv)
   GNUNET_PeerIdentity p2;
   char *c1 = NULL;
   char *c2 = NULL;
-  static char *configFile = "/tmp/fake.conf";
-  static char *path;
   int ret = 0;
   int res;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
-  
-
-static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),   /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")), /* -h */
-  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
-  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
-  GNUNET_COMMAND_LINE_OPTION_END,
-};
-
-  
-
-  res = GNUNET_init (argc,
-                     argv,
-                     "testingtest",
-                     &configFile, gnunetstatsOptions, &ectx, &cfg);
-  if (res == -1)
-    {
-      GNUNET_fini (ectx, cfg);
-      return -1;
-    }
-
-  GNUNET_GC_get_configuration_value_filename(cfg,"","CONFIG","",&path);
-  
-  configFile = strcat(path,configFile);
-  
   
   if (GNUNET_OK != GNUNET_TESTING_start_daemon (12087,
                                                 10000,
