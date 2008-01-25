@@ -20,13 +20,13 @@
 
 /**
  * @file applications/testing/remotetest.c
- * @brief testcase for testing library
- * @author Not Christian Grothoff
+ * @brief Testcase for remote library
+ * @author Nathan Evans
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
-#include "gnunet_testing_lib.h"
+#include "gnunet_remote_lib.h"
 
 /**
  * Testcase
@@ -44,9 +44,9 @@ main (int argc, const char **argv)
   struct GNUNET_GC_Configuration *hostConfig;
   
 
-static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
+static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),   /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Print statistics about GNUnet operations.")), /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Set up multiple gnunetd daemons across multiple hosts.")), /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
@@ -58,7 +58,7 @@ static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
   res = GNUNET_init (argc,
                      argv,
                      "testingtest",
-                     &configFile, gnunetstatsOptions, &ectx, &cfg);
+                     &configFile, gnunetRemoteOptions, &ectx, &cfg);
   if (res == -1)
   {
     GNUNET_fini (ectx, cfg);
@@ -73,23 +73,18 @@ static struct GNUNET_CommandLineOption gnunetstatsOptions[] = {
     
   
     
-  if (GNUNET_OK != GNUNET_TESTING_remote_read_config (fullpath,&hostConfig))
+  if (GNUNET_OK != GNUNET_REMOTE_read_config (fullpath,&hostConfig))
   {
    	printf("Problem with main host configuration file...\n");
    	exit(1);	
   }
-    
-  if (GNUNET_TESTING_remote_check_config(&hostConfig) != GNUNET_OK)
-  {
-   	printf("Problem with main host configuration file...\n");
-   	exit(1);	
-  }
+   
                       
   //GNUNET_TESTING_remote_start_daemon(one,two,six,three,four,five);
 	
-  GNUNET_TESTING_remote_start_daemons(&hostConfig);
+  GNUNET_REMOTE_start_daemons(&hostConfig);
 	
   return GNUNET_OK;
 }
 
-/* end of testingtest.c */
+/* end of remotetest.c */
