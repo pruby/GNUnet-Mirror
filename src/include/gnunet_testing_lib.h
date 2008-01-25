@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2007 Christian Grothoff (and other contributing authors)
+      (C) 2008 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -125,28 +125,6 @@ struct GNUNET_TESTING_DaemonContext *GNUNET_TESTING_start_daemons (const char
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
 int GNUNET_TESTING_stop_daemons (struct GNUNET_TESTING_DaemonContext *peers);
-
-int GNUNET_TESTING_remote_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg);
-
-int GNUNET_TESTING_remote_check_config(struct GNUNET_GC_Configuration **newcfg);
-
-/**
- * Starts a single gnunet daemon on a remote machine
- *
- * @param gnunetd_home directory where gnunetd is on remote machine
- * @param localConfigPath local configuration path for config file
- * @param remote_config_path remote path to copy local config to
- * @param configFileName  file to copy and use on remote machine
- * @param ip_address ip address of remote machine
- * @param username username to use for ssh (assumed to be used with ssh-agent)
- */
-int
-GNUNET_TESTING_remote_start_daemon (char *gnunetd_home,
-                             char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
-                             char *username);
-                             
-int GNUNET_TESTING_remote_start_daemons(struct GNUNET_GC_Configuration **newcfg);
-
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
