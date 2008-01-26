@@ -55,7 +55,7 @@ main (int argc, const char **argv)
  
   res = GNUNET_init (argc,
                      argv,
-                     "testingtest",
+                     "remotetest",
                      &configFile, gnunetRemoteOptions, &ectx, &cfg);
   if (res == -1)
   {
