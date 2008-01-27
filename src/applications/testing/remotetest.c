@@ -43,7 +43,7 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
  * @return 0: ok, -1: error
  */
 int
-main (int argc, const char **argv)
+main (int argc, char *const *argv)
 {  
   configFile = "/tmp/fake.conf";
   static char *path;
@@ -53,9 +53,8 @@ main (int argc, const char **argv)
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *hostConfig;
  
-  res = GNUNET_init (argc,
-                     argv,
-                     "remotetest",
+  res = GNUNET_init (argc,argv,
+  					"remotetest",
                      &configFile, gnunetRemoteOptions, &ectx, &cfg);
   if (res == -1)
   {
