@@ -27,16 +27,21 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_remote_lib.h"
+#include "gnunet_directories.h"
 
-static char *configFile;
+static char *configFile = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
+static unsigned long long number_of_daemons;
+
 static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),   /* -c */
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Set up multiple gnunetd daemons across multiple hosts.")), /* -h */
-  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
-  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
-  GNUNET_COMMAND_LINE_OPTION_END,
-};
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),   /* -c */ 
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Set up multiple gnunetd daemons across multiple hosts.")), /* -h */ 
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */ 
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */ 
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */ 
+  {'n', "number_of_daemons", "NUMBER_OF_DAEMONS",
+   gettext_noop ("set number of daemons to start"),
+   1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons}, /* -n */ 
+  GNUNET_COMMAND_LINE_OPTION_END};
 
 /**
  * Testcase
@@ -45,40 +50,34 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
 int
 main (int argc, char *const *argv)
 {  
-  configFile = "/tmp/fake.conf";
-  static char *path;
-  static char *fullpath;
   int res;
+  
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *hostConfig;
  
-  res = GNUNET_init (argc,argv,
-  					"remotetest",
-                     &configFile, gnunetRemoteOptions, &ectx, &cfg);
+  res = GNUNET_init(argc,argv,"remotetest",&configFile, gnunetRemoteOptions, &ectx, &cfg);
+  
   if (res == -1)
   {
     GNUNET_fini (ectx, cfg);
     return -1;
   }
-
-  GNUNET_GC_get_configuration_value_filename(cfg,"","CONFIG","",&path);
   
-  fullpath = GNUNET_malloc(strlen(path) + strlen(configFile) + 1);
-  strcpy(fullpath,path);
-  strcat(fullpath,configFile);
-    
-  
-    
-  if (GNUNET_OK != GNUNET_REMOTE_read_config (fullpath,&hostConfig))
+  hostConfig = GNUNET_GC_create();
+  if (-1 == GNUNET_GC_parse_configuration (hostConfig, configFile))
   {
-   	printf("Problem with main host configuration file...\n");
-   	return(-1);	
+  	GNUNET_free(hostConfig);	
+    GNUNET_free(configFile);
+    GNUNET_fini (ectx, cfg);	
+    return -1;
   }
   	
-  GNUNET_REMOTE_start_daemons(&hostConfig);
+  GNUNET_REMOTE_start_daemons(&hostConfig,number_of_daemons);
 
-  GNUNET_free(fullpath); 	
+  GNUNET_free(hostConfig);	
+  GNUNET_free(configFile);
+  GNUNET_fini (ectx, cfg);	
   return GNUNET_OK;
 }
 

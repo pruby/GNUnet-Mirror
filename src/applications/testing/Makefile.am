@@ -1,3 +1,4 @@
+#
 INCLUDES = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/GNUnet
