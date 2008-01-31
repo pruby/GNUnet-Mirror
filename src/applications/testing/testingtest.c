@@ -45,7 +45,7 @@ main (int argc, const char **argv)
   int res;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
-  
+
   if (GNUNET_OK != GNUNET_TESTING_start_daemon (12087,
                                                 10000,
                                                 "/tmp/gnunet-testing-1",
@@ -76,7 +76,7 @@ main (int argc, const char **argv)
       UNLINK (c2);
       GNUNET_free (c2);
     }
-    
+
   return ret;
 }
 

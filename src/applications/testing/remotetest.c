@@ -33,15 +33,16 @@ static char *configFile = GNUNET_DEFAULT_DAEMON_CONFIG_FILE;
 static unsigned long long number_of_daemons;
 
 static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),   /* -c */ 
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Set up multiple gnunetd daemons across multiple hosts.")), /* -h */ 
-  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */ 
-  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */ 
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */ 
+  GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&configFile),    /* -c */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Set up multiple gnunetd daemons across multiple hosts.")),    /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
+  GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   {'n', "number_of_daemons", "NUMBER_OF_DAEMONS",
    gettext_noop ("set number of daemons to start"),
-   1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons}, /* -n */ 
-  GNUNET_COMMAND_LINE_OPTION_END};
+   1, &GNUNET_getopt_configure_set_ulong, &number_of_daemons},  /* -n */
+  GNUNET_COMMAND_LINE_OPTION_END
+};
 
 /**
  * Testcase
@@ -49,35 +50,36 @@ static struct GNUNET_CommandLineOption gnunetRemoteOptions[] = {
  */
 int
 main (int argc, char *const *argv)
-{  
+{
   int res;
-  
+
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *hostConfig;
- 
-  res = GNUNET_init(argc,argv,"remotetest",&configFile, gnunetRemoteOptions, &ectx, &cfg);
-  
-  if (res == -1)
-  {
-    GNUNET_fini (ectx, cfg);
-    return -1;
-  }
-  
-  hostConfig = GNUNET_GC_create();
-  if (-1 == GNUNET_GC_parse_configuration (hostConfig, configFile))
-  {
-  	GNUNET_free(hostConfig);	
-    GNUNET_free(configFile);
-    GNUNET_fini (ectx, cfg);	
-    return -1;
-  }
-  	
-  GNUNET_REMOTE_start_daemons(&hostConfig,number_of_daemons);
 
-  GNUNET_free(hostConfig);	
-  GNUNET_free(configFile);
-  GNUNET_fini (ectx, cfg);	
+  res =
+    GNUNET_init (argc, argv, "remotetest", &configFile, gnunetRemoteOptions,
+                 &ectx, &cfg);
+
+  if (res == -1)
+    {
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+
+  hostConfig = GNUNET_GC_create ();
+  if (-1 == GNUNET_GC_parse_configuration (hostConfig, configFile))
+    {
+      GNUNET_free (hostConfig);
+      GNUNET_free (configFile);
+      GNUNET_fini (ectx, cfg);
+      return -1;
+    }
+
+  GNUNET_REMOTE_start_daemons (hostConfig, number_of_daemons);
+
+  GNUNET_GC_free (hostConfig);
+  GNUNET_fini (ectx, cfg);
   return GNUNET_OK;
 }
 

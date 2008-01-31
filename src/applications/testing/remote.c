@@ -76,213 +76,278 @@ updatePort (struct GNUNET_GC_Configuration *cfg,
  */
 int
 GNUNET_REMOTE_start_daemon (char *gnunetd_home,
-                             char *localConfigPath,char *configFileName,char *remote_config_path,char *hostname,
-                             char *username)
+                            char *localConfigPath, char *configFileName,
+                            char *remote_config_path, char *hostname,
+                            char *username)
 {
-	char *cmd;
-	int length;
-	
-	length = snprintf(NULL,0,"scp %s%s %s@%s:%s",localConfigPath,configFileName,username,hostname,remote_config_path);
-	cmd = GNUNET_malloc (length + 1);
-	snprintf(cmd,length + 1 ,"scp %s%s %s@%s:%s",localConfigPath,configFileName,username,hostname,remote_config_path);
-	
-	printf("scp command is : %s \n",cmd);
-	system(cmd);
+  char *cmd;
+  int length;
 
-	GNUNET_free(cmd);
-	length = snprintf(NULL,0,"ssh %s@%s %sgnunetd -c %s%s",username,hostname,gnunetd_home,remote_config_path,configFileName);
-	cmd = GNUNET_malloc (length + 1);
-	snprintf(cmd,length + 1,"ssh %s@%s %sgnunetd -c %s%s",username,hostname,gnunetd_home,remote_config_path,configFileName);
-	
-	printf("ssh command is : %s \n",cmd);
-	
-	system(cmd);
-		
-	return GNUNET_OK;
+  length =
+    snprintf (NULL, 0, "scp %s%s %s@%s:%s", localConfigPath, configFileName,
+              username, hostname, remote_config_path);
+  cmd = GNUNET_malloc (length + 1);
+  snprintf (cmd, length + 1, "scp %s%s %s@%s:%s", localConfigPath,
+            configFileName, username, hostname, remote_config_path);
+
+  printf ("scp command is : %s \n", cmd);
+  system (cmd);
+
+  GNUNET_free (cmd);
+  length =
+    snprintf (NULL, 0, "ssh %s@%s %sgnunetd -c %s%s", username, hostname,
+              gnunetd_home, remote_config_path, configFileName);
+  cmd = GNUNET_malloc (length + 1);
+  snprintf (cmd, length + 1, "ssh %s@%s %sgnunetd -c %s%s", username,
+            hostname, gnunetd_home, remote_config_path, configFileName);
+
+  printf ("ssh command is : %s \n", cmd);
+
+  system (cmd);
+
+  return GNUNET_OK;
 }
 
 int
-GNUNET_REMOTE_start_daemons(struct GNUNET_GC_Configuration **newcfg,unsigned int number_of_daemons)
+GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
+                             unsigned int number_of_daemons)
 {
-	struct GNUNET_GC_Configuration *basecfg;
-	
-	char *ssh_username;
-	char *control_host;
-	char *remote_config_path;
-	char *remote_gnunetd_path;
-	char *remote_pid_path;
-	char *base_config;
-	char *data_dir;
-	unsigned long long starting_port;
-	unsigned long long port_increment;
-	unsigned long long daemons_per_machine;
-	
-	char *hostnames;
-	char *temp;
-	char *temphost;
-	char *temp_path;
-	char *temp_pid_file;
-	
-	unsigned int extra_daemons = 0;
-	unsigned int count = 0;
-	unsigned int length;
-	unsigned int num_machines = 0;
-	unsigned int i;
-	unsigned int j;
-	unsigned int pos;
-	int ret;
-	
-	length = 0;
-	length = snprintf(NULL,0,"%s%s",GNUNET_get_installation_path (GNUNET_IPK_DATADIR),"gnunetd.conf.skel");
-	data_dir = GNUNET_malloc(length + 1);
-	snprintf(data_dir,length+1,"%s%s",GNUNET_get_installation_path (GNUNET_IPK_DATADIR),"gnunetd.conf.skel");
-	length = 0;
-	
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","SSH_USERNAME","",&ssh_username);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","CONTROL_HOST","localhost",&control_host);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","HOSTNAMES","localhost",&hostnames);
-	GNUNET_GC_get_configuration_value_number(*newcfg,"MULTIPLE_SERVER_TESTING","STARTING_PORT",MIN_STARTING_PORT,MAX_STARTING_PORT,1,&starting_port);
-	GNUNET_GC_get_configuration_value_number(*newcfg,"MULTIPLE_SERVER_TESTING","PORT_INCREMENT",MIN_PORT_INCREMENT,MAX_PORT_INCREMENT,2,&port_increment);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_CONFIG_PATH","/tmp/",&remote_config_path);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","REMOTE_GNUNETD_PATH",GNUNET_get_installation_path (GNUNET_IPK_BINDIR),&remote_gnunetd_path);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","BASE_CONFIG","gnunetd.conf.skel",&base_config);
-	GNUNET_GC_get_configuration_value_string(*newcfg,"MULTIPLE_SERVER_TESTING","PID_PATH","/tmp/",&remote_pid_path);
-			
-	length = strlen(hostnames);
-		
-	while(count <= length)
-	{
-		if (hostnames[count] == ' ' || hostnames[count]=='\0')
-			++num_machines;
-		++count;		
-	}
-	    
-    daemons_per_machine = number_of_daemons / num_machines;
-    extra_daemons = number_of_daemons - (daemons_per_machine * num_machines);
-        
-    i = 0;
-    pos = 0;
-    
-   	while (i < num_machines)
+  struct GNUNET_GC_Configuration *basecfg;
+
+  char *ssh_username;
+  char *control_host;
+  char *remote_config_path;
+  char *remote_gnunetd_path;
+  char *remote_pid_path;
+  char *base_config;
+  char *data_dir;
+  unsigned long long starting_port;
+  unsigned long long port_increment;
+  unsigned long long daemons_per_machine;
+
+  char *hostnames;
+  char *temp;
+  char *temphost;
+  char *temp_path;
+  char *temp_pid_file;
+
+  unsigned int extra_daemons;
+  unsigned int count;
+  unsigned int length;
+  unsigned int num_machines;
+  unsigned int i;
+  unsigned int j;
+  unsigned int pos;
+  int ret;
+  char *ipk_dir;
+
+  length = 0;
+  ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_DATADIR);
+  length = snprintf (NULL, 0, "%s%s", ipk_dir, "gnunetd.conf.skel");
+  data_dir = GNUNET_malloc (length + 1);
+  snprintf (data_dir, length + 1, "%s%s", ipk_dir, "gnunetd.conf.skel");
+  GNUNET_free (ipk_dir);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "SSH_USERNAME", "",
+                                            &ssh_username);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "CONTROL_HOST", "localhost",
+                                            &control_host);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "HOSTNAMES", "localhost",
+                                            &hostnames);
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "STARTING_PORT",
+                                            MIN_STARTING_PORT,
+                                            MAX_STARTING_PORT, 1,
+                                            &starting_port);
+  GNUNET_GC_get_configuration_value_number (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "PORT_INCREMENT",
+                                            MIN_PORT_INCREMENT,
+                                            MAX_PORT_INCREMENT, 2,
+                                            &port_increment);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "REMOTE_CONFIG_PATH", "/tmp/",
+                                            &remote_config_path);
+  ipk_dir = GNUNET_get_installation_path (GNUNET_IPK_BINDIR);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "REMOTE_GNUNETD_PATH", ipk_dir,
+                                            &remote_gnunetd_path);
+  GNUNET_free (ipk_dir);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "BASE_CONFIG",
+                                            "gnunetd.conf.skel",
+                                            &base_config);
+  GNUNET_GC_get_configuration_value_string (newcfg, "MULTIPLE_SERVER_TESTING",
+                                            "PID_PATH", "/tmp/",
+                                            &remote_pid_path);
+
+  length = strlen (hostnames);
+  num_machines = 1;
+  for (count = 0; count < length; count++)
+    if (hostnames[count] == ' ')
+      ++num_machines;
+
+  daemons_per_machine = number_of_daemons / num_machines;
+  extra_daemons = number_of_daemons - (daemons_per_machine * num_machines);
+
+  i = 0;
+  pos = 0;
+
+  while (i < num_machines)
     {
-    	basecfg = GNUNET_GC_create();
-    
-	    if (-1 == GNUNET_GC_parse_configuration (basecfg, base_config))
-	    {
-	      fprintf (stderr,
-	               "Failed to read default configuration file `%s'\n", base_config);
-	      GNUNET_GC_free (basecfg);
-	      return -1;
-	    }
-	    
-	    GNUNET_GC_set_configuration_value_number (basecfg,NULL,"NETWORK","PORT",starting_port);
-	    GNUNET_GC_set_configuration_value_string (basecfg,NULL,"NETWORK","TRUSTED",control_host);
-	    GNUNET_GC_set_configuration_value_string (basecfg,NULL,"PATHS", "GNUNETD_HOME",remote_config_path);
-	    
-	    temphost = GNUNET_malloc(length);
-	    if (1 == sscanf (&hostnames[pos],"%s",temphost))
-	    {      
-		    while(hostnames[pos] != ' ' && hostnames[pos] != '\0' && pos<=length)
-		      	pos++;
-		      	
-	        ++pos;
-	        
-	        for(j=0;j<daemons_per_machine;++j)
-	    	{   
-	    		length = snprintf(NULL,0,"%s%s%d",remote_pid_path,"pid",j);
-	    		temp_pid_file = GNUNET_malloc(length + 1);
-	    		snprintf(temp_pid_file,length + 1,"%s%s%d",remote_pid_path,"pid",j);
-	    		length = 0;
-	    		GNUNET_GC_set_configuration_value_string (basecfg,NULL,"GNUNETD", "PIDFILE",temp_pid_file); 		
-	    		GNUNET_free(temp_pid_file);
-	    		
-	    		updatePort(basecfg,"NETWORK",j+port_increment);
-	    		updatePort(basecfg,"TCP",j+port_increment);
-	    		updatePort(basecfg,"UDP",j+port_increment);
-	    		
-	    		temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
-	  			ret = mkstemp (temp_path);
-	  			
-	  			if (ret == -1)
-			    {
-			      GNUNET_GE_LOG_STRERROR_FILE (NULL,
-			                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
-			                                   GNUNET_GE_BULK, "mkstemp", temp_path);
-	              GNUNET_GC_free(basecfg);
-	              break;
-			    }
-			  	CLOSE (ret);
-			  	if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
-			    {
-			      fprintf (stderr,
-			               "Failed to write peer configuration file `%s'\n", temp_path);
-			      GNUNET_GC_free(basecfg);
-			      break;
-			    }
-			    
-			    temp = GNUNET_malloc(32);
-			    if (1 == sscanf (temp_path,"/tmp/%s",temp))
-			    {	    	
-			    	GNUNET_REMOTE_start_daemon (remote_gnunetd_path,"/tmp/",temp,remote_config_path,temphost,ssh_username);
-			    }
-			    GNUNET_free(temp);
-	    		
-	    		if ((i<extra_daemons)&&(j==daemons_per_machine-1))
-	    		{   
-	    			length = snprintf(NULL,0,"%s%s%d",remote_pid_path,"pid",j+1);
-	    			temp_pid_file = GNUNET_malloc(length + 1);
-	    			snprintf(temp_pid_file,length + 1,"%s%s%d",remote_pid_path,"pid",j+1);
-	    			length = 0;
-	    			GNUNET_GC_set_configuration_value_string (basecfg,NULL,"GNUNETD", "PIDFILE",temp_pid_file); 		
-	    		    GNUNET_free(temp_pid_file);
-	    		 		
-	    			updatePort(basecfg,"NETWORK",(j+1)+port_increment);
-	    			updatePort(basecfg,"TCP",(j+1)+port_increment);
-	    			updatePort(basecfg,"UDP",(j+1)+port_increment);
-	    			temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
-		  			ret = mkstemp (temp_path);
-		  			
-		  			if (ret == -1)
-				    {
-				      GNUNET_GE_LOG_STRERROR_FILE (NULL,
-				                                   GNUNET_GE_ERROR | GNUNET_GE_USER |
-				                                   GNUNET_GE_BULK, "mkstemp", temp_path);
-                      GNUNET_GC_free(basecfg);
-		              break;
-				    }
-				  	CLOSE (ret);
-				  	if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
-				    {
-				      fprintf (stderr,
-				               "Failed to write peer configuration file `%s'\n", temp_path);
-				      GNUNET_GC_free(basecfg);
-				      break;
-				    }
-				    
-				    temp = GNUNET_malloc(32);
-				    if (1 == sscanf (temp_path,"/tmp/%s",temp))
-				    {
-				    	printf("calling start on %s\n",temphost);
-				    	GNUNET_REMOTE_start_daemon (remote_gnunetd_path,"/tmp/",temp,remote_config_path,temphost,ssh_username);
-				    }
-				    GNUNET_free(temp);
-	    		}
-	    	}
-	    }   		
-    	
-    	GNUNET_GC_free(basecfg);
-    	++i;
+      basecfg = GNUNET_GC_create ();
+
+      if (-1 == GNUNET_GC_parse_configuration (basecfg, base_config))
+        {
+          GNUNET_GC_free (basecfg);
+          GNUNET_free (data_dir);
+          GNUNET_free (ssh_username);
+          GNUNET_free (control_host);
+          GNUNET_free (hostnames);
+          GNUNET_free (remote_config_path);
+          GNUNET_free (remote_gnunetd_path);
+          GNUNET_free (base_config);
+          GNUNET_free (remote_pid_path);
+          return GNUNET_SYSERR;
+        }
+
+      GNUNET_GC_set_configuration_value_number (basecfg, NULL, "NETWORK",
+                                                "PORT", starting_port);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL, "NETWORK",
+                                                "TRUSTED", control_host);
+      GNUNET_GC_set_configuration_value_string (basecfg, NULL, "PATHS",
+                                                "GNUNETD_HOME",
+                                                remote_config_path);
+
+      temphost = GNUNET_malloc (length + 1);
+      if (1 == sscanf (&hostnames[pos], "%s", temphost))
+        {
+          while (hostnames[pos] != ' ' && hostnames[pos] != '\0'
+                 && pos <= length)
+            pos++;
+
+          ++pos;
+
+          for (j = 0; j < daemons_per_machine; ++j)
+            {
+              length = /* YUCK! !!!! */
+                snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j);
+              temp_pid_file = GNUNET_malloc (length + 1);
+              snprintf (temp_pid_file, length + 1, "%s%s%d", remote_pid_path,
+                        "pid", j);
+              length = 0;
+              GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                        "GNUNETD", "PIDFILE",
+                                                        temp_pid_file);
+              GNUNET_free (temp_pid_file);
+
+              updatePort (basecfg, "NETWORK", j + port_increment);
+              updatePort (basecfg, "TCP", j + port_increment);
+              updatePort (basecfg, "UDP", j + port_increment);
+
+              temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
+              ret = mkstemp (temp_path);
+
+              if (ret == -1)
+                {
+                  GNUNET_GE_LOG_STRERROR_FILE (NULL,
+                                               GNUNET_GE_ERROR |
+                                               GNUNET_GE_USER |
+                                               GNUNET_GE_BULK, "mkstemp",
+                                               temp_path);
+                  GNUNET_GC_free (basecfg);
+                  break;
+                }
+              CLOSE (ret);
+              if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
+                {
+                  fprintf (stderr,
+                           "Failed to write peer configuration file `%s'\n",
+                           temp_path);
+                  GNUNET_GC_free (basecfg);
+                  break;
+                }
+
+              temp = GNUNET_malloc (32);
+              if (1 == sscanf (temp_path, "/tmp/%s", temp))
+                {
+                  GNUNET_REMOTE_start_daemon (remote_gnunetd_path, "/tmp/",
+                                              temp, remote_config_path,
+                                              temphost, ssh_username);
+                }
+              GNUNET_free (temp);
+
+              if ((i < extra_daemons) && (j == daemons_per_machine - 1))
+                {
+                  length =
+                    snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid",
+                              j + 1);
+                  temp_pid_file = GNUNET_malloc (length + 1);
+                  snprintf (temp_pid_file, length + 1, "%s%s%d",
+                            remote_pid_path, "pid", j + 1);
+                  length = 0;
+                  GNUNET_GC_set_configuration_value_string (basecfg, NULL,
+                                                            "GNUNETD",
+                                                            "PIDFILE",
+                                                            temp_pid_file);
+                  GNUNET_free (temp_pid_file);
+
+                  updatePort (basecfg, "NETWORK", (j + 1) + port_increment);
+                  updatePort (basecfg, "TCP", (j + 1) + port_increment);
+                  updatePort (basecfg, "UDP", (j + 1) + port_increment);
+                  temp_path = GNUNET_strdup ("/tmp/gnunetd.conf.XXXXXX");
+                  ret = mkstemp (temp_path);
+
+                  if (ret == -1)
+                    {
+                      GNUNET_GE_LOG_STRERROR_FILE (NULL,
+                                                   GNUNET_GE_ERROR |
+                                                   GNUNET_GE_USER |
+                                                   GNUNET_GE_BULK, "mkstemp",
+                                                   temp_path);
+                      GNUNET_GC_free (basecfg);
+                      break;
+                    }
+                  CLOSE (ret);
+                  if (0 != GNUNET_GC_write_configuration (basecfg, temp_path))
+                    {
+                      fprintf (stderr,
+                               "Failed to write peer configuration file `%s'\n",
+                               temp_path);
+                      GNUNET_GC_free (basecfg);
+                      break;
+                    }
+
+                  temp = GNUNET_malloc (32);
+                  if (1 == sscanf (temp_path, "/tmp/%s", temp))
+                    {
+                      printf ("calling start on %s\n", temphost);
+                      GNUNET_REMOTE_start_daemon (remote_gnunetd_path,
+                                                  "/tmp/", temp,
+                                                  remote_config_path,
+                                                  temphost, ssh_username);
+                    }
+                  GNUNET_free (temp);
+                }
+            }
+        }
+
+      GNUNET_GC_free (basecfg);
+      GNUNET_free(temphost);
+      ++i;
     }
-    
-    GNUNET_free(remote_pid_path);
-    GNUNET_free(data_dir);
-	GNUNET_free(ssh_username);
-	GNUNET_free(control_host);
-	GNUNET_free(hostnames);
-	GNUNET_free(remote_config_path);
-	GNUNET_free(remote_gnunetd_path);
-	
-	return GNUNET_OK;
+
+  GNUNET_free (base_config);
+  GNUNET_free (remote_pid_path);
+  GNUNET_free (data_dir);
+  GNUNET_free (ssh_username);
+  GNUNET_free (control_host);
+  GNUNET_free (hostnames);
+  GNUNET_free (remote_config_path);
+  GNUNET_free (remote_gnunetd_path);
+
+  return GNUNET_OK;
 }
 
 /* end of remote.c */
