@@ -24,6 +24,9 @@
  * @author Christian Grothoff
  */
 
+#ifndef GNUNET_PID_TABLE_H
+#define GNUNET_PID_TABLE_H
+
 #include "gnunet_util.h"
 #include "gnunet_stats_service.h"
 
@@ -41,3 +44,5 @@ void change_pid_rc (PID_INDEX id, int delta);
 void decrement_pid_rcs (const PID_INDEX * ids, unsigned int count);
 
 void resolve_pid (PID_INDEX id, GNUNET_PeerIdentity * pid);
+
+#endif

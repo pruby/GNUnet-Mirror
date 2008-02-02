@@ -136,7 +136,7 @@ static GNUNET_ReplyHashingCallback rhf;
 static IndirectionTableEntry *ROUTING_indTable_;
 
 /**
- * Size of the indirection table specified in gnunet.conf
+ * Size of the indirection table specified in gnunetd.conf
  */
 static unsigned long long indirectionTableSize;
 
