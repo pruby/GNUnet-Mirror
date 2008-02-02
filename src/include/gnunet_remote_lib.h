@@ -51,8 +51,6 @@ struct GNUNET_REMOTE_DaemonContext
 };
 
 
-int GNUNET_REMOTE_read_config(const char *config_file,struct GNUNET_GC_Configuration **newcfg);
-
 /**
  * Starts a single gnunet daemon on a remote machine
  *
@@ -68,7 +66,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                              char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
                              char *username);
                              
-int GNUNET_REMOTE_start_daemons(struct GNUNET_GC_Configuration **newcfg);
+int GNUNET_REMOTE_start_daemons(struct GNUNET_GC_Configuration *newcfg,unsigned long long number_of_daemons);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
