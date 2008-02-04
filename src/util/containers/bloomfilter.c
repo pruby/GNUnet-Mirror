@@ -515,9 +515,6 @@ GNUNET_bloomfilter_init (struct GNUNET_GE_Context
 			 unsigned int k)
 {
   Bloomfilter *bf;
-  char *rbuff;
-  unsigned int pos;
-  int i;
   unsigned int ui;
 
   if ((k == 0) || (size == 0))
