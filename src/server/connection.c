@@ -659,6 +659,8 @@ static int stat_total_send_buffer_size;
 
 static int stat_transport_switches;
 
+static int stat_avg_lifetime;
+
 /* ******************** CODE ********************* */
 
 static void
@@ -2767,6 +2769,8 @@ cronDecreaseLiveness (void *unused)
   unsigned long long total_allowed_now;
   unsigned long long total_allowed_recv;
   unsigned long long total_send_buffer_size;
+  GNUNET_CronTime total_connection_lifetime;
+  unsigned int connection_count;
   int load_nup;
   int load_cpu;
   GNUNET_TSession *tsession;
@@ -2780,7 +2784,9 @@ cronDecreaseLiveness (void *unused)
   total_allowed_recv = 0;
   total_allowed_now = 0;
   total_send_buffer_size = 0;
-  GNUNET_mutex_lock (lock);
+  connection_count = 0;
+  total_connection_lifetime = 0;
+  GNUNET_mutex_lock (lock);  
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
     {
       root = CONNECTION_buffer_[i];
@@ -2801,6 +2807,12 @@ cronDecreaseLiveness (void *unused)
               GNUNET_free (tmp);
               continue;         /* no need to call 'send buffer' */
             case STAT_UP:
+	      if ( (root->time_established > now) &&
+		   (root->time_established != 0) )
+		{
+		  connection_count++;
+		  total_connection_lifetime += root->time_established - now;
+		}
               updateCurBPS (root);
               total_allowed_sent += root->max_bpm;
               total_allowed_recv += root->idealized_limit;
@@ -2949,6 +2961,10 @@ cronDecreaseLiveness (void *unused)
       stats->set (stat_total_allowed_recv, total_allowed_recv / 60);    /* bpm to bps */
       stats->set (stat_total_allowed_now, total_allowed_now);
       stats->set (stat_total_send_buffer_size, total_send_buffer_size);
+      if (connection_count > 0)
+	stats->set(stat_avg_lifetime, total_connection_lifetime / connection_count);
+      else
+	stats->set(stat_avg_lifetime, 0);
     }
   EXIT ();
 }
@@ -3669,6 +3685,9 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
       stat_transport_switches =
         stats->
         create (gettext_noop ("# transports switched to stream transport"));
+      stat_avg_lifetime =
+        stats->
+        create (gettext_noop ("# average connection lifetime (in ms)"));
     }
   transport->start (&GNUNET_CORE_p2p_receive);
   EXIT ();
