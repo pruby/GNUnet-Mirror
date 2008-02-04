@@ -52,8 +52,12 @@ struct GNUNET_BloomFilter;
 
 /**
  * Iterator over HashCodes.
+ *
+ * @return GNUNET_YES if next was updated
+ *         GNUNET_NO if there are no more entries
  */
-typedef GNUNET_HashCode *(*GNUNET_HashCodeIterator) (void *arg);
+typedef int (*GNUNET_HashCodeIterator) (GNUNET_HashCode * next,
+					void *arg);
 
 /**
  * @brief a GNUNET_Vector (ordered variable size set of elements), opaque
@@ -69,11 +73,44 @@ struct GNUNET_Vector;
  *        element (number of bits set per element in the set)
  * @return the bloomfilter
  */
-struct GNUNET_BloomFilter *GNUNET_bloomfilter_load (struct GNUNET_GE_Context
-                                                    *ectx,
-                                                    const char *filename,
-                                                    unsigned int size,
-                                                    unsigned int k);
+struct GNUNET_BloomFilter *
+GNUNET_bloomfilter_load (struct GNUNET_GE_Context
+			 *ectx,
+			 const char *filename,
+			 unsigned int size,
+			 unsigned int k);
+
+/**
+ * Create a bloom filter from raw bits.
+ *
+ * @param data the raw bits in memory (maybe NULL,
+ *        in which case all bits should be considered
+ *        to be zero).
+ * @param size the size of the bloom-filter (number of
+ *        bytes of storage space to use); also size of data
+ *        -- unless data is NULL.  Must be a power of 2.
+ * @param k the number of GNUNET_hash-functions to apply per
+ *        element (number of bits set per element in the set)
+ * @return the bloomfilter
+ */
+struct GNUNET_BloomFilter *
+GNUNET_bloomfilter_init (struct GNUNET_GE_Context
+			 *ectx,
+			 const char * data,
+			 unsigned int size,
+			 unsigned int k);
+
+/**
+ * Copy the raw data of this bloomfilter into
+ * the given data array.
+ *
+ * @param data where to write the data
+ * @param size the size of the given data array
+ * @return GNUNET_SYSERR if the data array of the wrong size
+ */
+int GNUNET_bloomfilter_get_raw_data(struct GNUNET_BloomFilter * bf,
+				    char * data,
+				    unsigned int size);
 
 /**
  * Test if an element is in the filter.
