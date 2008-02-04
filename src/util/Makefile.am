@@ -71,5 +71,5 @@ EXTRA_DIST = \
 
 libgnunetutil_la_LDFLAGS = \
  -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
- -version-info 2:0:0
+ -version-info 3:0:0
 

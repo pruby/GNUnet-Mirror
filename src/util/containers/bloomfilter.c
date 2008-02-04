@@ -493,6 +493,73 @@ GNUNET_bloomfilter_load (struct GNUNET_GE_Context *ectx,
   return bf;
 }
 
+
+/**
+ * Create a bloom filter from raw bits.
+ *
+ * @param data the raw bits in memory (maybe NULL,
+ *        in which case all bits should be considered
+ *        to be zero).
+ * @param size the size of the bloom-filter (number of
+ *        bytes of storage space to use); also size of data
+ *        -- unless data is NULL
+ * @param k the number of GNUNET_hash-functions to apply per
+ *        element (number of bits set per element in the set)
+ * @return the bloomfilter
+ */
+struct GNUNET_BloomFilter *
+GNUNET_bloomfilter_init (struct GNUNET_GE_Context
+			 *ectx,
+			 const char * data,
+			 unsigned int size,
+			 unsigned int k)
+{
+  Bloomfilter *bf;
+  char *rbuff;
+  unsigned int pos;
+  int i;
+  unsigned int ui;
+
+  if ((k == 0) || (size == 0))
+    return NULL;
+  ui = 1;
+  while (ui < size)
+    ui *= 2;
+  size = ui;                    /* make sure it's a power of 2 */
+
+  bf = GNUNET_malloc (sizeof (Bloomfilter));
+  bf->ectx = ectx;
+  bf->fd = -1;
+  bf->filename = NULL;
+  bf->lock = GNUNET_mutex_create (GNUNET_YES);
+  bf->bitArray = GNUNET_malloc_large (size);
+  bf->bitArraySize = size;
+  bf->addressesPerElement = k;
+  memset (bf->bitArray, 0, bf->bitArraySize);
+  return bf;
+}
+
+
+/**
+ * Copy the raw data of this bloomfilter into
+ * the given data array.
+ *
+ * @param data where to write the data
+ * @param size the size of the given data array
+ * @return GNUNET_SYSERR if the data array is not big enough
+ */
+int GNUNET_bloomfilter_get_raw_data(struct GNUNET_BloomFilter * bf,
+				    char * data,
+				    unsigned int size)
+{
+  if (bf->bitArraySize != size)
+    return GNUNET_SYSERR;
+  memcpy(data,
+	 bf->bitArray,
+	 size);
+  return GNUNET_OK;
+}
+
 /**
  * Free the space associated with a filter
  * in memory, flush to drive if needed (do not
@@ -603,7 +670,7 @@ GNUNET_bloomfilter_resize (Bloomfilter * bf,
                            void *iterator_arg, unsigned int size,
                            unsigned int k)
 {
-  GNUNET_HashCode *e;
+  GNUNET_HashCode hc;
   unsigned int i;
 
   GNUNET_mutex_lock (bf->lock);
@@ -618,13 +685,9 @@ GNUNET_bloomfilter_resize (Bloomfilter * bf,
   memset (bf->bitArray, 0, bf->bitArraySize);
   if (bf->fd != -1)
     makeEmptyFile (bf->fd, bf->bitArraySize * 4);
-  e = iterator (iterator_arg);
-  while (e != NULL)
-    {
-      GNUNET_bloomfilter_add (bf, e);
-      GNUNET_free (e);
-      e = iterator (iterator_arg);
-    }
+  while (GNUNET_YES == iterator(&hc,
+				iterator_arg))
+    GNUNET_bloomfilter_add (bf, &hc);
   GNUNET_mutex_unlock (bf->lock);
 }
 
