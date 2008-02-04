@@ -672,8 +672,7 @@ typedef struct
                                    GNUNET_GE_KIND kind, const char *value);
 
   struct GNUNET_GE_Context
-    *(*cs_create_client_log_context) (GNUNET_GE_KIND mask,
-                                      struct GNUNET_ClientHandle * handle);
+    *(*cs_create_client_log_context) (struct GNUNET_ClientHandle * handle);
 
   int (*connection_assert_tsession_unused) (GNUNET_TSession * tsession);
 
