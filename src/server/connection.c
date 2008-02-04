@@ -2807,11 +2807,11 @@ cronDecreaseLiveness (void *unused)
               GNUNET_free (tmp);
               continue;         /* no need to call 'send buffer' */
             case STAT_UP:
-	      if ( (root->time_established > now) &&
+	      if ( (root->time_established < now) &&
 		   (root->time_established != 0) )
 		{
 		  connection_count++;
-		  total_connection_lifetime += root->time_established - now;
+		  total_connection_lifetime += now - root->time_established;
 		}
               updateCurBPS (root);
               total_allowed_sent += root->max_bpm;
