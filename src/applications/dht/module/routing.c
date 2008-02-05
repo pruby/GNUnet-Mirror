@@ -883,7 +883,7 @@ GNUNET_DHT_init_routing (GNUNET_CoreAPIForPlugins * capi)
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_PUT, &handlePut);
   coreAPI->registerHandler (GNUNET_P2P_PROTO_DHT_RESULT, &handleResult);
   coreAPI->
-    connection_register_send_callback (sizeof (DHT_MESSAGE),
+    connection_register_send_callback (sizeof (DHT_MESSAGE), 0,
                                        &extra_get_callback);
   return GNUNET_OK;
 }

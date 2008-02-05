@@ -375,7 +375,7 @@ initMigration (GNUNET_CoreAPIForPlugins * capi,
   traffic = t;
   coreAPI->
     connection_register_send_callback
-    (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
+    (GNUNET_GAP_ESTIMATED_DATA_SIZE, 0, &activeMigrationCallback);
   stats = capi->request_service ("stats");
   if (stats != NULL)
     {

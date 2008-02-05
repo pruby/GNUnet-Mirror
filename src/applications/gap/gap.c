@@ -2322,7 +2322,7 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   capi->registerHandler (GNUNET_P2P_PROTO_GAP_RESULT, &useContent);
   coreAPI->
     connection_register_send_callback (sizeof
-                                       (P2P_gap_query_MESSAGE), &fillInQuery);
+                                       (P2P_gap_query_MESSAGE), 0, &fillInQuery);
 
   api.init = &init;
   api.get_start = &get_start;

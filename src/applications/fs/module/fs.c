@@ -363,9 +363,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    cs_create_client_log_context (GNUNET_GE_USER |
-                                  GNUNET_GE_EVENTKIND |
-                                  GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_insert_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -479,9 +477,7 @@ csHandleCS_fs_request_init_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    cs_create_client_log_context (GNUNET_GE_USER |
-                                  GNUNET_GE_EVENTKIND |
-                                  GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_init_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -532,9 +528,7 @@ csHandleCS_fs_request_index_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    cs_create_client_log_context (GNUNET_GE_USER |
-                                  GNUNET_GE_EVENTKIND |
-                                  GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -619,9 +613,7 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    cs_create_client_log_context (GNUNET_GE_USER |
-                                  GNUNET_GE_EVENTKIND |
-                                  GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_delete_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -697,9 +689,7 @@ csHandleCS_fs_request_unindex_MESSAGE (struct GNUNET_ClientHandle *sock,
 
   cectx =
     coreAPI->
-    cs_create_client_log_context (GNUNET_GE_USER |
-                                  GNUNET_GE_EVENTKIND |
-                                  GNUNET_GE_ROUTEKIND, sock);
+    cs_create_client_log_context (sock);
   if (ntohs (req->size) != sizeof (CS_fs_request_unindex_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
