@@ -334,6 +334,11 @@ typedef struct
    * send.
    * @param minimumPadding how large must the padding be in order
    *   to call this method?
+   * @param priority the higher the priority, the higher preference
+   *        will be given to polling this callback (compared to
+   *        other callbacks).  Note that polling will always
+   *        only be done after all push requests (unicast) have
+   *        been considered
    * @param callback the method to invoke. The receiver is the
    *   receiver of the message, position is the reference to the
    *   first unused position in the buffer where GNUnet is building
@@ -342,8 +347,9 @@ typedef struct
    *   that buffer (must be a positive number).
    * @return GNUNET_OK if the handler was registered, GNUNET_SYSERR on error
    */
-  int (*connection_register_send_callback) (const unsigned int
+  int (*connection_register_send_callback) (unsigned int
                                             minimumPadding,
+					    unsigned int priority,
                                             GNUNET_BufferFillCallback
                                             callback);
 
@@ -351,7 +357,7 @@ typedef struct
    * Unregister a handler that was registered with GNUNET_CORE_connection_register_send_callback.
    * @return GNUNET_OK if the handler was removed, GNUNET_SYSERR on error
    */
-  int (*connection_unregister_send_callback) (const unsigned int
+  int (*connection_unregister_send_callback) (unsigned int
                                               minimumPadding,
                                               GNUNET_BufferFillCallback
                                               callback);
