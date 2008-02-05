@@ -257,6 +257,14 @@ typedef struct SendCallbackList__
    */
   unsigned int minimumPadding;
 
+  /**
+   * The higher the priority, the higher preference
+   * will be given to polling this callback (compared to
+   * other callbacks).  This linked list should be
+   * sorted by descending priority value.
+   */
+  unsigned int priority;
+
 } SendCallbackList;
 
 
@@ -306,26 +314,6 @@ typedef struct
 {
 
   /**
-   * how long is this message part expected to be?
-   */
-  unsigned short len;
-
-  /**
-   * flags
-   */
-  unsigned short flags;
-
-  /**
-   * how important is this message part?
-   */
-  unsigned int pri;
-
-  /**
-   * when do/did we intend to transmit?
-   */
-  GNUNET_CronTime transmissionTime;
-
-  /**
    * callback to call to create the message part
    */
   GNUNET_BuildMessageCallback callback;
@@ -337,9 +325,30 @@ typedef struct
   void *closure;
 
   /**
+   * when do/did we intend to transmit?
+   */
+  GNUNET_CronTime transmissionTime;
+
+  /**
+   * how important is this message part?
+   */
+  unsigned int pri;
+
+  /**
    * GNUNET_YES if selected by knapsack for sending
    */
   int knapsackSolution;
+
+  /**
+   * how long is this message part expected to be?
+   */
+  unsigned short len;
+
+  /**
+   * flags
+   */
+  unsigned short flags;
+
 } SendEntry;
 
 /**
@@ -355,14 +364,14 @@ typedef struct
   GNUNET_PeerIdentity sender;
 
   /**
-   * The MTU for this session, 0 for streaming transports.
-   */
-  unsigned short mtu;
-
-  /**
    * The session handle specific for the transport service.
    */
   GNUNET_TSession *tsession;
+
+  /**
+   * The MTU for this session, 0 for streaming transports.
+   */
+  unsigned short mtu;
 
 } Session;
 
@@ -588,8 +597,7 @@ static int disable_random_padding = GNUNET_NO;
 /**
  * Send callbacks for making better use of noise padding...
  */
-static SendCallbackList *scl_nextHead;
-static SendCallbackList *scl_nextTail;
+static SendCallbackList * scl_head;
 
 /**
  * Lock for the connection module.
@@ -1764,7 +1772,7 @@ sendBuffer (BufferEntry * be)
       return GNUNET_NO;
     }
   /* still room left? try callbacks! */
-  pos = scl_nextHead;
+  pos = scl_head;
   while ((pos != NULL) && (p < totalMessageSize))
     {
       if ((pos->minimumPadding + p >= p) &&
@@ -2870,7 +2878,7 @@ cronDecreaseLiveness (void *unused)
                 }
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&
-                  (scl_nextHead != NULL) &&
+                  (scl_head != NULL) &&
                   (load_nup < GNUNET_IDLE_LOAD_THRESHOLD) &&
                   (load_cpu < GNUNET_IDLE_LOAD_THRESHOLD))
                 {
@@ -2884,7 +2892,7 @@ cronDecreaseLiveness (void *unused)
                   if (hSize > 63 * 1024)
                     hSize = 63 * 1024;
                   msgBuf = GNUNET_malloc (hSize);
-                  pos = scl_nextHead;
+                  pos = scl_head;
                   while ((pos != NULL) && (hSize > 0))
                     {
                       if (pos->minimumPadding <= hSize)
@@ -3606,8 +3614,7 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
                     sizeof (GNUNET_TransportPacket_HEADER));
   GNUNET_GE_ASSERT (ectx, sizeof (P2P_hangup_MESSAGE) == 68);
   ENTRY ();
-  scl_nextHead = NULL;
-  scl_nextTail = NULL;
+  scl_head = NULL;
   connectionConfigChangeCallback (NULL, cfg, ectx, "LOAD", "NOTHING");
   GNUNET_GE_ASSERT (ectx,
                     0 == GNUNET_GC_attach_change_listener (cfg,
@@ -3731,13 +3738,12 @@ GNUNET_CORE_connection_done ()
   GNUNET_free_non_null (CONNECTION_buffer_);
   CONNECTION_buffer_ = NULL;
   CONNECTION_MAX_HOSTS_ = 0;
-  while (scl_nextHead != NULL)
+  while (scl_head != NULL)
     {
-      scl = scl_nextHead;
-      scl_nextHead = scl_nextHead->next;
+      scl = scl_head;
+      scl_head = scl->next;
       GNUNET_free (scl);
     }
-  scl_nextTail = NULL;
   transport->stop ();
   GNUNET_CORE_release_service (transport);
   transport = NULL;
@@ -3853,6 +3859,11 @@ GNUNET_CORE_connection_print_buffer ()
  *
  * @param minimumPadding how large must the padding be in order
  *   to call this method?
+ * @param priority the higher the priority, the higher preference
+ *        will be given to polling this callback (compared to
+ *        other callbacks).  Note that polling will always
+ *        only be done after all push requests (unicast) have
+ *        been considered
  * @param callback the method to invoke. The receiver is the
  *   receiver of the message, position is the reference to the
  *   first unused position in the buffer where GNUnet is building
@@ -3862,29 +3873,35 @@ GNUNET_CORE_connection_print_buffer ()
  * @return GNUNET_OK if the handler was registered, GNUNET_SYSERR on error
  */
 int
-GNUNET_CORE_connection_register_send_callback (const unsigned int
+GNUNET_CORE_connection_register_send_callback (unsigned int
                                                minimumPadding,
+					       unsigned int priority,
                                                GNUNET_BufferFillCallback
                                                callback)
 {
   SendCallbackList *scl;
+  SendCallbackList *pos;
+  SendCallbackList *prev;
 
   ENTRY ();
   scl = GNUNET_malloc (sizeof (SendCallbackList));
   scl->minimumPadding = minimumPadding;
   scl->callback = callback;
-  scl->next = NULL;
+  scl->priority = priority;
   GNUNET_mutex_lock (lock);
-  if (scl_nextTail == NULL)
+  pos = scl_head;
+  prev = NULL;
+  while ( (pos != NULL) &&
+	  (pos->priority > priority) )
     {
-      scl_nextHead = scl;
-      scl_nextTail = scl;
+      prev = pos;
+      pos = pos->next;
     }
+  scl->next = pos;
+  if (prev == NULL)
+    scl_head = scl;
   else
-    {
-      scl_nextTail->next = scl;
-      scl_nextTail = scl;
-    }
+    prev->next = scl;
   GNUNET_mutex_unlock (lock);
   EXIT ();
   return GNUNET_OK;
@@ -3904,7 +3921,7 @@ GNUNET_CORE_connection_register_send_callback (const unsigned int
  * @return GNUNET_OK if the handler was removed, GNUNET_SYSERR on error
  */
 int
-GNUNET_CORE_connection_unregister_send_callback (const unsigned int
+GNUNET_CORE_connection_unregister_send_callback (unsigned int
                                                  minimumPadding,
                                                  GNUNET_BufferFillCallback
                                                  callback)
@@ -3915,18 +3932,16 @@ GNUNET_CORE_connection_unregister_send_callback (const unsigned int
   ENTRY ();
   prev = NULL;
   GNUNET_mutex_lock (lock);
-  pos = scl_nextHead;
+  pos = scl_head;
   while (pos != NULL)
     {
       if ((pos->callback == callback) &&
           (pos->minimumPadding == minimumPadding))
         {
           if (prev == NULL)
-            scl_nextHead = pos->next;
+            scl_head = pos->next;
           else
             prev->next = pos->next;
-          if (scl_nextTail == pos)
-            scl_nextTail = prev;
           GNUNET_free (pos);
           GNUNET_mutex_unlock (lock);
           EXIT ();

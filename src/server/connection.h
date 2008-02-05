@@ -155,8 +155,9 @@ unsigned int GNUNET_CORE_connection_compute_index_of_peer (const
  *   that buffer (must be a positive number).
  * @return GNUNET_OK if the handler was registered, GNUNET_SYSERR on error
  */
-int GNUNET_CORE_connection_register_send_callback (const unsigned int
+int GNUNET_CORE_connection_register_send_callback (unsigned int
                                                    minimumPadding,
+						   unsigned int prio,
                                                    GNUNET_BufferFillCallback
                                                    callback);
 
@@ -164,7 +165,7 @@ int GNUNET_CORE_connection_register_send_callback (const unsigned int
  * Unregister a handler that was registered with GNUNET_CORE_connection_register_send_callback.
  * @return GNUNET_OK if the handler was removed, GNUNET_SYSERR on error
  */
-int GNUNET_CORE_connection_unregister_send_callback (const unsigned int
+int GNUNET_CORE_connection_unregister_send_callback (unsigned int
                                                      minimumPadding,
                                                      GNUNET_BufferFillCallback
                                                      callback);
