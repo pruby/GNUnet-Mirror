@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2007 Christian Grothoff (and other contributing authors)
+     (C) 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -137,17 +137,13 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  * @param cls argument to callback
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
-                                                *ectx,
-                                                struct GNUNET_GC_Configuration
-                                                *cfg, const char *nickname,
-                                                const GNUNET_RSA_PublicKey *
-                                                me,
-                                                const struct
-                                                GNUNET_RSA_PrivateKey *key,
-                                                const char *memberInfo,
-                                                GNUNET_CHAT_MessageCallback
-                                                callback, void *cls);
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
+                       struct GNUNET_GC_Configuration *cfg,
+                       const char *nickname,
+                       const GNUNET_RSA_PublicKey * me,
+                       const struct GNUNET_RSA_PrivateKey *key,
+                       const char *memberInfo,
+                       GNUNET_CHAT_MessageCallback callback, void *cls);
 
 /**
  * Leave a chat room.
@@ -224,3 +220,5 @@ int GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
 #endif
 
 #endif
+
+/* end of gnunet_chat_lib.h */

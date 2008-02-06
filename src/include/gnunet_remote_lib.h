@@ -41,15 +41,16 @@ extern "C"
 /**
  * Linked list of information about daemon processes.
  */
-struct GNUNET_REMOTE_DaemonContext
+struct GNUNET_remote_host
 {
-  struct GNUNET_TESTING_DaemonContext *next;
-  GNUNET_PeerIdentity peer;
-  pid_t pid;
-  unsigned short port;
-  char *configFile;
+	GNUNET_PeerIdentity identity;
+	struct GNUNET_remote_host *next; 
+	
+	char *hostname;
+	unsigned long long controlPort;
+	pid_t pid;
+		
 };
-
 
 /**
  * Starts a single gnunet daemon on a remote machine
@@ -61,8 +62,7 @@ struct GNUNET_REMOTE_DaemonContext
  * @param ip_address ip address of remote machine
  * @param username username to use for ssh (assumed to be used with ssh-agent)
  */
-int
-GNUNET_REMOTE_start_daemon (char *gnunetd_home,
+int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
                              char *localConfigPath,char *configFileName,char *remote_config_path,char *ip_address,
                              char *username);
                              
