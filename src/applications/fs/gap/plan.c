@@ -339,7 +339,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   unsigned int prio;
   unsigned int ttl;
   unsigned int allowable_prio;
-  int score;
+  long long score;
 
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
@@ -367,17 +367,19 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
 	 significant the more recent the last
 	 response was */
       history_score
-	= ((1LL<<30) * history->response_count) / (history->request_count * (now - last));
+	= (MAX_GAP_DELAY * history->response_count) / (history->request_count * (now - last));
       if (history->response_count == 0)
-	history_score = - history->request_count;
+	history_score = - history->request_count * coreAPI->forAllConnectedNodes(NULL, NULL);
+      if (history_score > (1 << 30))
+	history_score = (1 << 30);
     }
   /* check query proximity */
   proximity_score = GNUNET_hash_distance_u32 (&rpc->request->queries[0], &identity->hashPubKey);
 
   /* generate score, ttl and priority */
-  prio = rpc->request->last_prio_used + 1; /* increase over time */
+  prio = rpc->request->last_prio_used + GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2); /* increase over time */
   if (prio < history->last_good_prio)
-    prio = history->last_good_prio - 1; /* fall over time */
+    prio = history->last_good_prio - GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2); /* fall over time */
   if (prio > 1)
     {
       allowable_prio = GNUNET_FS_GAP_get_average_priority() + 1;
@@ -387,7 +389,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   ttl = rpc->request->last_ttl_used;
   if (prio > 0)
     {
-      ttl = 1 << 30; /* bound only by prio */
+      ttl = (1 << 30); /* bound only by prio */
     }
   else
     {
@@ -405,11 +407,19 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   rank->ttl = ttl;
 
   /* compute combined score */
-  score = 0; /* FIXME */
+  /* open question: any good weights for the scoring? */
+  score = history_score + rank->reserved_bandwidth - proximity_score;
   if (score <= - (1<<16))
-    rank->score = 1;
+    {
+      /* would underflow, use lowest legal score */
+      rank->score = 1;
+    }
   else
-    rank->score = (1<<16) + score;
+    {
+      rank->score = (unsigned int) ( (1<<16) + score);
+      if (rank->score < score) /* integer overflow */
+	rank->score = -1; /* max int */
+    }
 
   /* insert into ranking list */
   rank->next = rpc->rankings;
