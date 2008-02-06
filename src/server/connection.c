@@ -70,11 +70,6 @@
 #define DEBUG_COLLECT_PRIO GNUNET_NO
 
 /**
- * strictly mark TSessions as down
- */
-#define STRICT_STAT_DOWN GNUNET_YES
-
-/**
  * If an attempt to establish a connection is not answered
  * within 150s, drop.
  */
@@ -266,6 +261,16 @@ typedef struct SendCallbackList__
   unsigned int priority;
 
 } SendCallbackList;
+
+struct DisconnectNotificationList {
+  
+  struct DisconnectNotificationList * next;
+
+  GNUNET_NodeIteratorCallback callback;
+
+  void * cls;
+  
+};
 
 
 typedef struct fENHWrap
@@ -600,6 +605,11 @@ static int disable_random_padding = GNUNET_NO;
 static SendCallbackList * scl_head;
 
 /**
+ * Callbacks for disconnect notifications.
+ */
+static struct DisconnectNotificationList * disconnect_notification_list;
+
+/**
  * Lock for the connection module.
  */
 static struct GNUNET_Mutex *lock;
@@ -693,6 +703,22 @@ check_invariants ()
         }
     }
   GNUNET_mutex_unlock (lock);
+}
+
+/**
+ * Notify all disconnect-callbacks that a peer
+ * was disconnected.
+ */
+static void
+notify_disconnect(BufferEntry * be)
+{
+  struct DisconnectNotificationList * l = disconnect_notification_list;
+  while (l != NULL)
+    {
+      l->callback(&be->session.sender,
+		  l->cls);
+      l = l->next;
+    }
 }
 
 /**
@@ -1684,10 +1710,9 @@ sendBuffer (BufferEntry * be)
                          "Session is DOWN for `%s' due to transport disconnect\n",
                          &enc);
 #endif
-#if STRICT_STAT_DOWN
           be->status = STAT_DOWN;
           be->time_established = 0;
-#endif
+	  notify_disconnect(be);
           if (stats != NULL)
             stats->change (stat_closedTransport, 1);
           for (i = 0; i < be->sendBufferSize; i++)
@@ -1890,10 +1915,9 @@ sendBuffer (BufferEntry * be)
 #endif
       tsession = be->session.tsession;
       be->session.tsession = NULL;
-#if STRICT_STAT_DOWN
       be->status = STAT_DOWN;
       be->time_established = 0;
-#endif
+      notify_disconnect(be);
       if (stats != NULL)
         stats->change (stat_closedTransport, 1);
       transport->disconnect (tsession, __FILE__);
@@ -2208,6 +2232,7 @@ shutdownConnection (BufferEntry * be)
     }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
+  notify_disconnect(be);
   be->time_established = 0;
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
@@ -4304,6 +4329,87 @@ GNUNET_CORE_connection_assert_tsession_unused (GNUNET_TSession * tsession)
   return GNUNET_OK;
 }
 
+
+
+/**
+ * Call the given function whenever we get
+ * disconnected from a particular peer.
+ *
+ * @return GNUNET_OK
+ */
+int
+GNUNET_CORE_connection_register_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
+						       void * cls)
+{
+  struct DisconnectNotificationList * l;
+
+  l = GNUNET_malloc(sizeof(struct DisconnectNotificationList));
+  l->callback = callback;
+  l->cls = cls;
+  GNUNET_mutex_lock(lock);
+  l->next = disconnect_notification_list;
+  disconnect_notification_list = l;
+  GNUNET_mutex_unlock(lock);
+  return GNUNET_OK;
+}
+
+/**
+ * Stop calling the given function whenever we get
+ * disconnected from a particular peer.
+ *
+ * @return GNUNET_OK on success, GNUNET_SYSERR
+ *         if this callback is not registered
+ */
+int 
+GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
+							 void * cls)
+{
+  struct DisconnectNotificationList * pos;
+  struct DisconnectNotificationList * prev;
+
+  prev = NULL;
+  GNUNET_mutex_lock(lock);
+  pos = disconnect_notification_list;
+  while (pos != NULL)
+    {
+      if ( (pos->callback == callback) &&
+	   (pos->cls == cls) )
+	{
+	  if (prev == NULL)
+	    disconnect_notification_list = pos->next;
+	  else
+	    prev->next = pos->next;
+	  GNUNET_free(pos);
+	  GNUNET_mutex_unlock(lock);
+	  return GNUNET_OK;
+	}
+      prev = pos;
+      pos = pos->next;
+    }
+  GNUNET_mutex_unlock(lock);
+  return GNUNET_SYSERR;
+ 
+}
+
+/**
+ * Try to reserve downstream bandwidth for a particular peer.
+ *
+ * @param peer with whom should bandwidth be reserved?
+ * @param amount how many bytes should we expect to receive?
+ *        (negative amounts can be used to undo a (recent)
+ *        reservation request
+ * @param timeframe in what time interval should the other
+ *        peer be able to transmit the amount?  Use zero
+ *        when undoing a reservation
+ * @return amount that could actually be reserved 
+ */
+int 
+GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_NodeIteratorCallback * peer,
+						    int amount,
+						    GNUNET_CronTime timeframe)
+{
+  return 0; /* not implemented */
+}
 
 void __attribute__ ((constructor)) GNUNET_CORE_connection_ltdl_init ()
 {
