@@ -410,7 +410,7 @@ GNUNET_FS_PLAN_request(struct GNUNET_ClientHandle * client,
   rpc.info = info;
   rpc.request = request;
   rpc.rankings = NULL;
-  total_peers = coreAPI->(rank_peers,
+  total_peers = coreAPI->forAllConnectedNodes(rank_peers,
 					      &rpc);
   /* use request type, priority, system load and
      entropy of ranking to determine number of peers

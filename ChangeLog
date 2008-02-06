@@ -1,3 +1,14 @@
+Sun Feb  3 13:17:09 MST 2008
+	Dramatic changes to the GAP implementation (breaking
+	protocol compatibility).  Essentially, we can save
+	a few bytes in each reply.  More importantly, the new
+	code allows the searching client to specify a set of
+	replies that are not desired (hopefully helping to
+	dramatically increase the diversity of search replies
+	obtained over time).  Note that the actual encoding
+	and databases are not affected (just P2P protocol).
+	The update is not complete yet, but should compile.
+
 Tue Jan  8 20:07:20 MST 2008
 	Added option for testing ("make check") to use weak(er)
 	PRNG for key generation (thanks to Werner Koch for 

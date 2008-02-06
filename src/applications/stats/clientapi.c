@@ -164,9 +164,8 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
     case GNUNET_CS_PROTO_GAP_QUERY_START:
       name = "CS_PROTO_gap_QUERY_START";
       break;
-    case GNUNET_CS_PROTO_GAP_QUERY_STOP:
-      /* case GNUNET_CS_PROTO_GAP_RESULT : */
-      name = "CS_PROTO_gap_QUERY_STOP or CS_PROTO_gap_RESULT";
+    case GNUNET_CS_PROTO_GAP_RESULT : 
+      name = "CS_PROTO_gap_RESULT";
       break;
     case GNUNET_CS_PROTO_GAP_INSERT:
       name = "CS_PROTO_gap_INSERT";
@@ -182,9 +181,6 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
       break;
     case GNUNET_CS_PROTO_GAP_TESTINDEX:
       name = "CS_PROTO_gap_TESTINDEX";
-      break;
-    case GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY:
-      name = "CS_PROTO_gap_GET_AVG_PRIORITY";
       break;
     case GNUNET_CS_PROTO_GAP_INIT_INDEX:
       name = "CS_PROTO_gap_INIT_INDEX";

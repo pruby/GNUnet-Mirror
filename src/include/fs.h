@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,13 +20,13 @@
 
 /**
  * @file applications/fs/module/fs.h
- * @brief FS Client-Server messages
+ * @brief FS Client-Server and P2P message formats
  * @author Christian Grothoff
  */
 #ifndef FS_H
 #define FS_H
 
-#include "gnunet_blockstore.h"
+#include "gnunet_util.h"
 
 /**
  * Client to server: search for content.  Variable
@@ -39,14 +39,9 @@ typedef struct
   GNUNET_MessageHeader header;
 
   /**
-   * Priority of the search.
+   * Should be zero.
    */
-  unsigned int prio;
-
-  /**
-   * At what time does the search expire?
-   */
-  GNUNET_CronTime expiration;
+  int reserved;
 
   /**
    * Type of the content that we're looking for.
@@ -77,15 +72,22 @@ typedef struct
 
 /**
  * Server to client: content (in response to a CS_fs_request_search_MESSAGE).  The
- * header is followed by variable size data (the data portion
- * of the GNUNET_DatastoreValue).
+ * header is followed by the variable size data of a DBlock (as 
+ * defined in ecrs_core.h).
  */
 typedef struct
 {
   GNUNET_MessageHeader header;
 
+  /** 
+   * Anonymity level for the content, maybe
+   * 0 if not known.
+   */
   unsigned int anonymityLevel;
 
+  /**
+   * Expiration time of the response (relative to now).
+   */
   GNUNET_CronTime expirationTime;
 
 } CS_fs_reply_content_MESSAGE;
@@ -94,11 +96,16 @@ typedef struct
 /**
  * Client to server: insert content.
  * This struct is followed by a variable
- * number of bytes of content.
+ * number of bytes of content (a DBlock).
  */
 typedef struct
 {
   GNUNET_MessageHeader header;
+
+  /**
+   * Reserved (should be zero).  For alignment.
+   */
+  int reserved;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -106,16 +113,16 @@ typedef struct
   unsigned int prio;
 
   /**
-   * At what time does the entry expire?
-   */
-  GNUNET_CronTime expiration;
-
-  /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
    */
   unsigned int anonymityLevel;
+
+  /**
+   * At what time does the entry expire?
+   */
+  GNUNET_CronTime expiration;
 
 } CS_fs_request_insert_MESSAGE;
 
@@ -148,9 +155,21 @@ typedef struct
   GNUNET_MessageHeader header;
 
   /**
+   * Reserved (should be zero).  For alignment.
+   */
+  int reserved;
+
+  /**
    * Priority for the on-demand encoded entry.
    */
   unsigned int prio;
+
+  /**
+   * What are the anonymity requirements for this content?
+   * Use 0 if anonymity is not required (enables direct
+   * sharing / DHT routing).
+   */
+  unsigned int anonymityLevel;
 
   /**
    * At what time does the entry expire?
@@ -170,25 +189,22 @@ typedef struct
    */
   GNUNET_HashCode fileId;
 
-  /**
-   * What are the anonymity requirements for this content?
-   * Use 0 if anonymity is not required (enables direct
-   * sharing / DHT routing).
-   */
-  unsigned int anonymityLevel;
-
 } CS_fs_request_index_MESSAGE;
 
 /**
- * Client to server: delete content.  This struct is followed by a
- * variable number of bytes of the content that is to be deleted.
+ * Client to server: delete content.  This struct is followed by 
+ * the DBlock (of variable size) of the content that is to be deleted.
  */
 typedef struct
 {
   GNUNET_MessageHeader header;
 
-} CS_fs_request_delete_MESSAGE;
+  /**
+   * Reserved (should be zero).  For alignment.
+   */
+  int reserved;
 
+} CS_fs_request_delete_MESSAGE;
 
 /**
  * Client to server: unindex file.
@@ -225,20 +241,208 @@ typedef struct
    */
   GNUNET_HashCode fileId;
 
-} RequestTestindex;
+} CS_fs_request_test_index_MESSAGE;
 
 
 /**
- * Encapsulation of the data in the format that is passed through gap.
- * We essentially add the timeout value since that part is supposed to
- * be communicated to other peers.
+ * Request for content. The number of queries can
+ * be determined from the header.  This struct
+ * maybe followed by a bloom filter (size determined
+ * by the header) which includes hashes of responses
+ * that should NOT be returned.  If there is no 
+ * bloom filter, the filter_mutator
+ * should be zero.
  */
 typedef struct
 {
-  GNUNET_DataContainer dc;
-  unsigned int reserved;        /* for 64-bit alignment */
-  unsigned long long timeout;
-} GapWrapper;
+  GNUNET_MessageHeader header;
+
+  /**
+   * Type of the query (block type).
+   */
+  unsigned int type;
+
+  /**
+   * How important is this request (network byte order)
+   */
+  unsigned int priority;
+
+  /**
+   * Relative time to live in GNUNET_CRON_MILLISECONDS (network byte order)
+   */
+  int ttl;
+
+  /**
+   * The content hash should be mutated using this value
+   * before checking against the bloomfilter (used to
+   * get many different filters for the same hash codes).
+   */
+  int filter_mutator;
+
+  /**
+   * How many queries do we have (should be 
+   * greater than zero).
+   */
+  unsigned int number_of_queries;
+
+  /**
+   * To whom to return results?
+   */
+  GNUNET_PeerIdentity returnTo;
+
+  /**
+   * Hashcodes of the file(s) we're looking for.
+   * Details depend on the query type.
+   */
+  GNUNET_HashCode queries[1];
+
+} P2P_gap_query_MESSAGE;
+
+/**
+ * Return message for search result.  This struct
+ * is always followed by a DBlock (see ecrs_core.h) 
+ * which contains the GNUNET_ECRS_BLOCKTYPE followed
+ * by the actual (encrypted) data.
+ */
+typedef struct
+{
+  GNUNET_MessageHeader header;
+
+  /**
+   * Always zero (for now).
+   */
+  unsigned int reserved; /* for 64-bit alignment */
+
+  /**
+   * When does this result expire?  The given time
+   * is relative (and in big-endian).
+   */
+  unsigned long long expiration; 
+
+} P2P_gap_reply_MESSAGE;
+
+
+/* ***************** policy constants **************** */
+
+/**
+ * Bandwidth value of an (effectively) 0-priority query.
+ */
+#define QUERY_BANDWIDTH_VALUE 0.001
+
+/**
+ * Bandwidth value of a 0-priority content (must be
+ * fairly high compared to query since content is
+ * typically significantly larger -- and more valueable
+ * since it can take many queries to get one piece of
+ * content).
+ */
+#define CONTENT_BANDWIDTH_VALUE 0.8
+
+/**
+ * By which amount do we decrement the TTL for simple forwarding /
+ * indirection of the query; in milli-seconds.  Set somewhat in
+ * accordance to your network latency (above the time it'll take you
+ * to send a packet and get a reply).
+ */
+#define TTL_DECREMENT (5 * GNUNET_CRON_SECONDS)
+
+/**
+ * Until which load do we consider the peer idle and do not
+ * charge at all? (should be larger than GNUNET_IDLE_LOAD_THRESHOLD used
+ * by the rest of the code)!
+ */
+#define GAP_IDLE_LOAD_THRESHOLD ((100 + GNUNET_IDLE_LOAD_THRESHOLD) / 2)
+
+/**
+ * How many bits should we have per entry in the
+ * bloomfilter?
+ */
+#define GAP_BLOOMFILTER_K 16
+
+/**
+ * Minimum size of the GAP routing table.
+ */
+#define MIN_INDIRECTION_TABLE_SIZE 4
+
+
+/**
+ * How much is a response worth 'in general'.  Since replies are
+ * roughly 1k and should be much (factor of 4) preferred over queries
+ * (which have a base priority of 20, which yields a base unit of
+ * roughly 1 per byte).  Thus if we set this value to 4092 we'd rather
+ * send a reply instead of a query unless the queries have (on
+ * average) a priority that is more than double the reply priority
+ * (note that querymanager multiplies the query priority with 2 to
+ * compute the scheduling priority).
+ */
+#define BASE_REPLY_PRIORITY 4092
+
+/**
+ * What is the maximum time that any peer
+ * should delay forwarding a response (when
+ * waiting for bandwidth).
+ */
+#define MAX_GAP_DELAY (60 * GNUNET_CRON_SECONDS)
+
+
+/**
+ * How long should DHT requests live?
+ */
+#define MAX_DHT_DELAY (60 * GNUNET_CRON_SECONDS)
+
+
+/**
+ * What is the maximum expiration time for migrated content?
+ *
+ * This is a non-trivial issue.  If we have a ceiling for migration
+ * time, it would violate anonymity if we send out content with an
+ * expiration time above that ceiling (since it would expose the
+ * content to originate from this peer).  But we want to store a
+ * higher expiration time for our content in the DB.
+ *
+ * A first idea would be to pick a random time smaller than the limit
+ * for outgoing content; that does not _quite_ work since that could
+ * also expose us as the originator: only for our own content the
+ * expiration time would randomly go up and down.
+ *
+ * The current best solution is to first bound the expiration time by
+ * this ceiling (for inbound and outbound ETs, not for the database
+ * entries locally) using modulo (to, in practice, get a constant
+ * bound for the local content just like for the migrated content).
+ * Then that number is randomized for _all_ outgoing content.  This
+ * way, the time left changes for all entries, but statistically
+ * always decreases on average as time progresses (also for all
+ * entries).
+ *
+ * Now, for local content eventually modulo will rebound to the MAX
+ * (whereas for migrated content it will hit 0 and disappear).  But
+ * that is GNUNET_OK: the adversary cannot distinguish the modulo wraparound
+ * from content migration (refresh with higher lifetime) which could
+ * plausibly happen from the original node (and in fact would happen
+ * around the same time!).  This design also achieves the design goal
+ * that if the original node disappears, the migrated content will
+ * eventually time-out (which is good since we don't want dangling
+ * search results to stay around).
+ *
+ * However, this does NOT mean that migrated content cannot live
+ * longer than 1 month -- remember, GNUnet peers discard expired
+ * content _if they run out of space_.  So it is perfectly plausible
+ * that content stays around longer.  Finally, clients (UI) may want
+ * to filter / rank / display search results with their current
+ * expiration to give the user some indication about availability.
+ *
+ */
+#define MAX_MIGRATION_EXP (1L * GNUNET_CRON_MONTHS)
+
+/**
+ * Estimated size of most blocks transported with
+ * the GAP protocol.  32k DBlocks plus overhead.
+ */
+#define GNUNET_GAP_ESTIMATED_DATA_SIZE (33*1024)
+
+
+
+
 
 
 #endif

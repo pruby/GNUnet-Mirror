@@ -6,9 +6,6 @@ if HAVE_SQLITE
  SQLITE_DIR = sqstore_sqlite kvstore_sqlite dstore_sqlite
 endif
 
-if !MINGW
-# TESTBED_DIR = testbed
-endif
 if LINUX
  VPN_DIR = vpn
 endif
@@ -34,9 +31,7 @@ SUBDIRS	= \
  traffic \
  transport \
  advertising \
- gap \
  dht \
  tracekit \
  $(VPN_DIR)
-# $(TESTBED_DIR) 
 # chat

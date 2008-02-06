@@ -247,6 +247,8 @@ int GNUNET_EC_file_block_encode (const DBlock * data,
 /**
  * Get the query that will be used to query for
  * a certain block of data.
+ *
+ * @param db the block in plaintext
  */
 void GNUNET_EC_file_block_get_query (const DBlock * data,
                                      unsigned int len,
@@ -287,7 +289,7 @@ int GNUNET_EC_file_block_check_and_get_query (unsigned int size,
  * Verify that the given Datum is a valid response
  * to a given query.
  *
- * @param type the type of the queryo
+ * @param type the type of the query
  * @param size the size of the data
  * @param data the encoded data
  * @param knownDatumQuery result of GNUNET_EC_file_block_check_and_get_query

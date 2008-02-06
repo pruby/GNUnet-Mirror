@@ -135,11 +135,6 @@ extern "C"
 #define GNUNET_CS_PROTO_GAP_QUERY_START 8
 
 /**
- * client to gnunetd: stop query
- */
-#define GNUNET_CS_PROTO_GAP_QUERY_STOP 9
-
-/**
  * gnunetd to client: here is your answer
  */
 #define GNUNET_CS_PROTO_GAP_RESULT 9
@@ -168,12 +163,6 @@ extern "C"
  * client to gnunetd: test if content is indexed
  */
 #define GNUNET_CS_PROTO_GAP_TESTINDEX 14
-
-/**
- * Client to gnunetd: what is the average priority of entries in the
- * routing table?
- */
-#define GNUNET_CS_PROTO_GAP_GET_AVG_PRIORITY 15
 
 /**
  * client to gnunetd: initialize to index file
@@ -375,12 +364,12 @@ extern "C"
 /**
  * Query for content.
  */
-#define GNUNET_P2P_PROTO_GAP_QUERY 16
+#define GNUNET_P2P_PROTO_GAP_QUERY 8
 
 /**
  * receive content
  */
-#define GNUNET_P2P_PROTO_GAP_RESULT 17
+#define GNUNET_P2P_PROTO_GAP_RESULT 9
 
 /************** p2p DHT application messages ************/
 
@@ -483,6 +472,20 @@ extern "C"
  * Type of OLD OnDemand encoded blocks.
  */
 #define GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD 0xFFFFFFFF
+
+
+/* ************* priorities for poll-content ************ */
+
+/* note that the absolute values do not matter;
+   highest priority first is the rule!
+   The naming-prefix used is after the name of
+   the module using the respective constant.  */
+
+#define GNUNET_FS_GAP_QUERY_POLL_PRIORITY 100
+
+#define GNUNET_DHT_QUERY_POLL_PRIORITY 2
+
+#define GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY 1
 
 
 

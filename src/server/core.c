@@ -530,8 +530,6 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
   applicationCore.cron = cron;
   applicationCore.version = 0;
   applicationCore.myIdentity = NULL;    /* for now */
-  applicationCore.loadApplicationModule = &loadApplicationModule;       /* core.c */
-  applicationCore.unloadApplicationModule = &unloadApplicationModule;   /* core.c */
   applicationCore.request_service = &GNUNET_CORE_request_service;       /* core.c */
   applicationCore.release_service = &GNUNET_CORE_release_service;       /* core.c */
 

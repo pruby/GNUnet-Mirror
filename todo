@@ -13,6 +13,7 @@ Annotations:
   gnunet-insert only if the file is actually needed!)
 - power insert [#854]
 - RPC API and testcase
+- switch libgcrypt to not use entropy during testcases
 
 
 1.0.0 (aka "userfriendly"):

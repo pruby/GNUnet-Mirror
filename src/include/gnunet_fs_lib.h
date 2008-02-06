@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -46,64 +46,46 @@ extern "C"
 
 struct GNUNET_FS_SearchContext;
 
-struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct
-                                                                 GNUNET_GE_Context
-                                                                 *ectx,
-                                                                 struct
-                                                                 GNUNET_GC_Configuration
-                                                                 *cfg,
-                                                                 struct
-                                                                 GNUNET_Mutex
-                                                                 *lock);
+struct GNUNET_FS_SearchContext *
+GNUNET_FS_create_search_context (struct
+				 GNUNET_GE_Context
+				 *ectx,
+				 struct
+				 GNUNET_GC_Configuration
+				 *cfg,
+				 struct
+				 GNUNET_Mutex
+				 *lock);
 
 void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
-
-struct GNUNET_FS_SearchHandle;
 
 /**
  * Search for blocks matching the given key and type.
  *
  * @param target identity of host known to have the
  *        content, NULL if no such identity is known
- * @param timeout how long to search
  * @param anonymityLevel what are the anonymity
  *        requirements for this request? 0 for no
  *        anonymity (DHT/direct transfer ok)
  * @param callback method to call for each result
- * @param prio priority to use for the search
+ * @return GNUNET_OK
  */
-struct GNUNET_FS_SearchHandle *GNUNET_FS_start_search (struct
-                                                       GNUNET_FS_SearchContext
-                                                       *ctx,
-                                                       const
-                                                       GNUNET_PeerIdentity *
-                                                       target,
-                                                       unsigned int type,
-                                                       unsigned int keyCount,
-                                                       const GNUNET_HashCode *
-                                                       keys,
-                                                       unsigned int
-                                                       anonymityLevel,
-                                                       unsigned int prio,
-                                                       GNUNET_CronTime
-                                                       timeout,
-                                                       GNUNET_DatastoreValueIterator
-                                                       callback,
-                                                       void *closure);
-
-/**
- * Stop searching.
- */
-void GNUNET_FS_stop_search (struct GNUNET_FS_SearchContext *ctx,
-                            struct GNUNET_FS_SearchHandle *handle);
-
-/**
- * What is the current average priority of entries
- * in the routing table like?  Returns -1 on error.
- */
-int GNUNET_FS_get_current_average_priority (struct
-                                            GNUNET_ClientServerConnection
-                                            *sock);
+int
+GNUNET_FS_start_search (struct
+			GNUNET_FS_SearchContext
+			*ctx,
+			const
+			GNUNET_PeerIdentity *
+			target,
+			unsigned int type,
+			unsigned int keyCount,
+			const GNUNET_HashCode *
+			keys,
+			unsigned int
+			anonymityLevel,
+			GNUNET_DatastoreValueIterator
+			callback,
+			void *closure);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -49,7 +49,7 @@ extern "C"
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
  */
-#define GNUNET_CORE_VERSION 0x00070300
+#define GNUNET_CORE_VERSION 0x00070399
 
 
 /**
@@ -164,20 +164,6 @@ typedef int (*GNUNET_BuildMessageCallback) (void *buf,
                                             unsigned short len);
 
 /**
- * Send a message to the client identified by the handle.  Note that
- * the core will typically buffer these messages as much as possible
- * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
- * on the other hand does NOT confirm delivery since the actual
- * transfer happens asynchronously.
- *
- * @param force GNUNET_YES if this message MUST be queued
- */
-typedef int (*GNUNET_SendToClientCallback) (struct GNUNET_ClientHandle *
-                                            handle,
-                                            const GNUNET_MessageHeader *
-                                            message, int force);
-
-/**
  * GNUnet CORE API for applications and services that are implemented
  * on top of the GNUnet core.
  */
@@ -215,31 +201,7 @@ typedef struct
   struct GNUNET_CronManager *cron;
 
 
-  /* ****************** services and applications **************** */
-
-  /**
-   * Load an application module.  This function must be called
-   * while cron is suspended.  Note that the initialization and
-   * shutdown function of modules are always run while cron is
-   * disabled, so suspending cron is not necesary if modules
-   * are loaded or unloaded inside the module initialization or
-   * shutdown code.
-   *
-   * @return GNUNET_OK on success, GNUNET_SYSERR on error
-   */
-  int (*loadApplicationModule) (const char *name);
-
-  /**
-   * Unload an application module.  This function must be called
-   * while cron is suspended.  Note that the initialization and
-   * shutdown function of modules are always run while cron is
-   * disabled, so suspending cron is not necesary if modules
-   * are loaded or unloaded inside the module initialization or
-   * shutdown code.
-   *
-   * @return GNUNET_OK on success, GNUNET_SYSERR on error
-   */
-  int (*unloadApplicationModule) (const char *name);
+  /* ****************** services **************** */
 
   /**
    * Load a service module of the given name. This function must be
@@ -266,6 +228,19 @@ typedef struct
   /* ****************** P2P data exchange **************** */
 
   /**
+   * Send an encrypted message to another node.
+   *
+   * @param receiver the target node
+   * @param msg the message to send, NULL to tell
+   *   the core to try to establish a session
+   * @param importance how important is the message?
+   * @param maxdelay how long can the message be delayed?
+   */
+  void (*unicast) (const GNUNET_PeerIdentity * receiver,
+                   const GNUNET_MessageHeader * msg,
+                   unsigned int importance, unsigned int maxdelay);
+
+  /**
    * Send a plaintext message to another node.  This is
    * not the usual way for communication and should ONLY be
    * used by modules that are responsible for setting up
@@ -279,19 +254,6 @@ typedef struct
    */
   int (*connection_send_plaintext) (GNUNET_TSession * session,
                                     const char *msg, unsigned int size);
-
-  /**
-   * Send an encrypted message to another node.
-   *
-   * @param receiver the target node
-   * @param msg the message to send, NULL to tell
-   *   the core to try to establish a session
-   * @param importance how important is the message?
-   * @param maxdelay how long can the message be delayed?
-   */
-  void (*unicast) (const GNUNET_PeerIdentity * receiver,
-                   const GNUNET_MessageHeader * msg,
-                   unsigned int importance, unsigned int maxdelay);
 
   /**
    * Send an encrypted, on-demand build message to another node.
@@ -312,15 +274,6 @@ typedef struct
                                           unsigned int importance,
                                           unsigned int maxdelay);
 
-  /**
-   * Perform an operation for all connected hosts.
-   * No synchronization or other checks are performed.
-   *
-   * @param method the method to invoke (NULL for counting only)
-   * @param arg the second argument to the method
-   * @return the number of connected hosts
-   */
-  int (*forAllConnectedNodes) (GNUNET_NodeIteratorCallback method, void *arg);
 
   /**
    * Register a callback method that should be invoked whenever a message
@@ -361,6 +314,27 @@ typedef struct
                                               minimumPadding,
                                               GNUNET_BufferFillCallback
                                               callback);
+
+  /* *********************** notifications ********************* */
+
+  /**
+   * Call the given function whenever we get
+   * disconnected from a particular peer.
+   *
+   * @return GNUNET_OK
+   */
+  int (*register_notify_peer_disconnect)(GNUNET_NodeIteratorCallback callback,
+					 void * cls);
+
+  /**
+   * Stop calling the given function whenever we get
+   * disconnected from a particular peer.
+   *
+   * @return GNUNET_OK on success, GNUNET_SYSERR
+   *         if this callback is not registered
+   */
+  int (*unregister_notify_peer_disconnect)(GNUNET_NodeIteratorCallback callback,
+					   void * cls);
 
   /**
    * Register a handler that is to be called for each
@@ -453,6 +427,33 @@ typedef struct
                                        callback);
 
   /* ***************** traffic management ******************* */
+
+
+  /**
+   * Perform an operation for all connected hosts.
+   * No synchronization or other checks are performed.
+   *
+   * @param method the method to invoke (NULL for counting only)
+   * @param arg the second argument to the method
+   * @return the number of connected hosts
+   */
+  int (*forAllConnectedNodes) (GNUNET_NodeIteratorCallback method, void *arg);
+
+  /**
+   * Try to reserve downstream bandwidth for a particular peer.
+   *
+   * @param peer with whom should bandwidth be reserved?
+   * @param amount how many bytes should we expect to receive?
+   *        (negative amounts can be used to undo a (recent)
+   *        reservation request
+   * @param timeframe in what time interval should the other
+   *        peer be able to transmit the amount?  Use zero
+   *        when undoing a reservation
+   * @return amount that could actually be reserved 
+   */
+  int (*reserve_downstream_bandwidth)(const GNUNET_NodeIteratorCallback * peer,
+				      int amount,
+				      GNUNET_CronTime timeframe);
 
   /**
    * Offer the core a session for communication with the
@@ -559,8 +560,23 @@ typedef struct
    * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
    * on the other hand does NOT confirm delivery since the actual
    * transfer happens asynchronously.
+   *
+   * @param force GNUNET_YES if this message MUST be queued
    */
-  GNUNET_SendToClientCallback cs_send_to_client;
+  int (*cs_send_to_client)(struct GNUNET_ClientHandle *
+			   handle,
+			   const GNUNET_MessageHeader *
+			   message, int force);
+  
+  /**
+   * Send a message to the client identified by the handle.  Note that
+   * the core will typically buffer these messages as much as possible
+   * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
+   * on the other hand does NOT confirm delivery since the actual
+   * transfer happens asynchronously.
+   */
+  int (*sendErrorMessageToClient) (struct GNUNET_ClientHandle * handle,
+                                   GNUNET_GE_KIND kind, const char *value);
 
   /**
    * Register a method as a handler for specific message
@@ -608,6 +624,13 @@ typedef struct
    */
   void (*cs_terminate_client_connection) (struct
                                           GNUNET_ClientHandle * handle);
+
+  /**
+   * Create a log context that will transmit errors to the
+   * given client.
+   */
+  struct GNUNET_GE_Context
+    *(*cs_create_client_log_context) (struct GNUNET_ClientHandle * handle);
 
 
   /* ************************ MISC ************************ */
@@ -665,21 +688,10 @@ typedef struct
                                                * peer,
                                                GNUNET_CronTime * time);
 
-  /* here for binary compatibility (for now) */
-
   /**
-   * Send a message to the client identified by the handle.  Note that
-   * the core will typically buffer these messages as much as possible
-   * and only return GNUNET_SYSERR if it runs out of buffers.  Returning GNUNET_OK
-   * on the other hand does NOT confirm delivery since the actual
-   * transfer happens asynchronously.
+   * Assert that the given tsession is no longer
+   * in use by the core.
    */
-  int (*sendErrorMessageToClient) (struct GNUNET_ClientHandle * handle,
-                                   GNUNET_GE_KIND kind, const char *value);
-
-  struct GNUNET_GE_Context
-    *(*cs_create_client_log_context) (struct GNUNET_ClientHandle * handle);
-
   int (*connection_assert_tsession_unused) (GNUNET_TSession * tsession);
 
 } GNUNET_CoreAPIForPlugins;

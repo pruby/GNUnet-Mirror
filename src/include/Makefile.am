@@ -26,7 +26,6 @@ gnunetinclude_HEADERS = \
   gnunet_fragmentation_service.h \
   gnunet_fs_lib.h \
   gnunet_fsui_lib.h \
-  gnunet_gap_service.h \
   gnunet_getoption_lib.h \
   gnunet_identity_lib.h \
   gnunet_identity_service.h \
