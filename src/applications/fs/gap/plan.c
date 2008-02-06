@@ -22,11 +22,6 @@
  * @file fs/gap/plan.c
  * @brief code to plan when to send requests where
  * @author Christian Grothoff
- *
- * TODO:
- * - code to clean up plans (remove
- *   plans for peers that we are no longer
- *   connected to) -- using cron?
  */
 
 #include "platform.h"
@@ -158,6 +153,13 @@ struct PeerRankings
    * Client score (higher is better).
    */
   unsigned int score;
+
+  /**
+   * How much bandwidth were we able to
+   * reserve from gnunetd (0 to 32k) for
+   * responses to an eventual query.
+   */
+  int reserved_bandwidth;
 
 };
 
@@ -333,7 +335,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
   rank->peer = GNUNET_FS_PT_intern (identity);
-
+  rank->reserved_bandwidth = coreAPI->reserve_downstream_bandwidth(identity,
+								   GNUNET_GAP_ESTIMATED_DATA_SIZE);
   history = NULL;
   if (rpc->info != NULL)
     {
@@ -387,6 +390,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   struct ClientInfoList *info;
   struct PeerRankings *rank;
   struct RankingPeerContext rpc;
+  GNUNET_PeerIdentity peer;
   unsigned int target_count;
   unsigned int i;
   unsigned int total_peers;
@@ -444,6 +448,10 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
     {
       rank = rpc.rankings;
       rpc.rankings = rank->next;
+      GNUNET_FS_PT_resolve(rank->peer, &peer);
+      if (rank->score != 0)
+	coreAPI->reserve_downstream_bandwidth(&peer,
+					      - rank->reserved_bandwidth);
       GNUNET_FS_PT_change_rc (rank->peer, -1);
       GNUNET_free (rank);
     }
@@ -483,14 +491,9 @@ try_add_request (struct RequestList *req,
     GNUNET_bloomfilter_get_raw_data (req->bloomfilter,
                                      (char *) &msg->queries[req->key_count],
                                      req->bloomfilter_size);
-
-  /* FIXME: update state tracking
-     what queries were sent with
-     what priorities/ ttls / etc */
   req->last_request_time = GNUNET_get_time ();
   req->last_ttl_used = ttl;
   req->value = prio;
-
   return size;
 }
 
@@ -574,6 +577,22 @@ query_fill_callback (const GNUNET_PeerIdentity *
   return off;
 }
 
+static void
+free_client_info_list(struct ClientInfoList * pos)
+{
+  struct PeerHistoryList *ph;
+
+  while (pos->history != NULL)
+    {
+      ph = pos->history;
+      pos->history = ph->next;
+      GNUNET_FS_PT_change_rc (ph->peer, -1);
+      GNUNET_free (ph);
+    }
+  GNUNET_FS_PT_change_rc (pos->peer, -1);
+  GNUNET_free (pos);
+}
+
 /**
  * Method called whenever a given client disconnects.
  * Frees all of the associated data structures.
@@ -583,7 +602,6 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
 {
   struct ClientInfoList *pos;
   struct ClientInfoList *prev;
-  struct PeerHistoryList *ph;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);
   pos = clients;
@@ -596,15 +614,7 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
             clients = pos->next;
           else
             prev->next = pos->next;
-          while (pos->history != NULL)
-            {
-              ph = pos->history;
-              pos->history = ph->next;
-              GNUNET_FS_PT_change_rc (ph->peer, -1);
-              GNUNET_free (ph);
-            }
-          GNUNET_FS_PT_change_rc (pos->peer, -1);
-          GNUNET_free (pos);
+	  free_client_info_list(pos);
           if (prev == NULL)
             pos = clients;
           else
@@ -612,6 +622,7 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
         }
       else
         {
+	  prev = pos;
           pos = pos->next;
         }
     }
@@ -641,6 +652,98 @@ GNUNET_FS_PLAN_success (PID_INDEX responder,
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
+/**
+ * Free the given query plan list and all of its entries.
+ */ 
+static void
+free_query_plan_list(struct QueryPlanList * qpl)
+{
+  struct QueryPlanEntry *el;
+  struct QueryPlanEntry *pred;
+
+  while (qpl->head != NULL)
+    {
+      el = qpl->head;
+      qpl->head = el->next;
+      pred = el->request->plan_entries;
+      if (pred == el)
+	el->request->plan_entries = el->plan_entries_next;
+      else
+	{
+	  while (pred->plan_entries_next != el)
+	    pred = pred->plan_entries_next;
+	  pred->plan_entries_next = el->plan_entries_next;
+	}
+      GNUNET_free (el);
+    }
+  GNUNET_FS_PT_change_rc (qpl->peer, -1);
+  GNUNET_free (qpl);
+}
+
+/**
+ * Connection to another peer was cut.  Clean up
+ * all state associated with that peer (except for
+ * active requests, that's not our job).
+ */
+static void
+peer_disconnect_handler(const GNUNET_PeerIdentity * peer,
+			void * unused) 
+{
+  PID_INDEX pid;
+  struct QueryPlanList * qpos;
+  struct QueryPlanList * qprev;
+  struct ClientInfoList * cpos;
+  struct ClientInfoList * cprev;
+    
+  GNUNET_mutex_lock(GNUNET_FS_lock);
+  pid = GNUNET_FS_PT_intern(peer);
+  qprev = NULL;
+  qpos = queries;
+  while (qpos != NULL)
+    {
+      if (qpos->peer == pid)
+	{
+	  if (qprev != NULL)
+	    qprev->next = qpos->next;
+	  else
+	    queries = qpos->next;
+	  free_query_plan_list(qpos);
+	  if (qprev != NULL)
+	    qpos = qprev->next;
+	  else
+	    qpos = queries;
+	  continue;
+	}     
+      qprev = qpos;
+      qpos = qpos->next;
+    }
+  cprev = NULL;
+  cpos = clients;
+  while (cpos != NULL)
+    {
+      if ( (cpos->peer == pid) &&
+	   (cpos->client == NULL) )
+	{
+	  if (cprev == NULL)
+	    clients = cpos->next;
+          else
+            cprev->next = cpos->next;
+	  free_client_info_list(cpos);
+          if (cprev == NULL)
+            cpos = clients;
+          else
+            cpos = cprev->next;
+	}
+      else
+	{
+	  cprev = cpos;
+	  cpos = cpos->next;
+	}
+    }
+  GNUNET_FS_PT_change_rc(pid, -1);
+  GNUNET_mutex_unlock(GNUNET_FS_lock);
+}
+
 
 int
 GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
@@ -649,6 +752,9 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
                     capi->cs_exit_handler_register (&handle_client_exit));
+  GNUNET_GE_ASSERT (capi->ectx,
+                    GNUNET_SYSERR !=
+                    capi->register_notify_peer_disconnect (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->
@@ -663,30 +769,12 @@ int
 GNUNET_FS_PLAN_done ()
 {
   struct QueryPlanList *qpl;
-  struct QueryPlanEntry *el;
-  struct QueryPlanEntry *pred;
 
   while (queries != NULL)
     {
       qpl = queries;
       queries = qpl->next;
-      while (qpl->head != NULL)
-        {
-          el = qpl->head;
-          qpl->head = el->next;
-          pred = el->request->plan_entries;
-          if (pred == el)
-            el->request->plan_entries = el->plan_entries_next;
-          else
-            {
-              while (pred->plan_entries_next != el)
-                pred = pred->plan_entries_next;
-              pred->plan_entries_next = el->plan_entries_next;
-            }
-          GNUNET_free (el);
-        }
-      GNUNET_FS_PT_change_rc (qpl->peer, -1);
-      GNUNET_free (qpl);
+      free_query_plan_list(qpl);
     }
   /* clean up clients */
   while (clients != NULL)
@@ -695,6 +783,9 @@ GNUNET_FS_PLAN_done ()
                     GNUNET_SYSERR !=
                     coreAPI->
                     cs_exit_handler_unregister (&handle_client_exit));
+  GNUNET_GE_ASSERT (coreAPI->ectx,
+                    GNUNET_SYSERR !=
+                    coreAPI->unregister_notify_peer_disconnect (&peer_disconnect_handler, NULL));
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->

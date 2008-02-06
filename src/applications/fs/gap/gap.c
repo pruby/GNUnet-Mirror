@@ -22,6 +22,10 @@
  * @file fs/gap/gap.c
  * @brief protocol that performs anonymous routing
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - clean up active requests from another peer
+ *   if that peer disconnects
  */
 
 #include "platform.h"
