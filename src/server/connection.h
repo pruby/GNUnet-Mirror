@@ -373,14 +373,10 @@ int GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIterator
  * @param amount how many bytes should we expect to receive?
  *        (negative amounts can be used to undo a (recent)
  *        reservation request
- * @param timeframe in what time interval should the other
- *        peer be able to transmit the amount?  Use zero
- *        when undoing a reservation
  * @return amount that could actually be reserved 
  */
-int GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_NodeIteratorCallback * peer,
-							int amount,
-							GNUNET_CronTime timeframe);
+int GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_PeerIdentity * peer,
+							int amount);
 
 #endif
 /* end of connection.h */

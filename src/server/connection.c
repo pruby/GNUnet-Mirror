@@ -233,13 +233,13 @@ FILE *prioFile;
  * Type of the linked list of send callbacks (to
  * implement a round-robbin invocation chain).
  */
-typedef struct SendCallbackList__
+struct SendCallbackList
 {
 
   /**
    * Did we say that this is a linked list?
    */
-  struct SendCallbackList__ *next;
+  struct SendCallbackList *next;
 
   /**
    * The callback method.
@@ -260,7 +260,7 @@ typedef struct SendCallbackList__
    */
   unsigned int priority;
 
-} SendCallbackList;
+};
 
 struct DisconnectNotificationList {
   
@@ -271,13 +271,6 @@ struct DisconnectNotificationList {
   void * cls;
   
 };
-
-
-typedef struct fENHWrap
-{
-  GNUNET_NodeIteratorCallback method;
-  void *arg;
-} fENHWrap;
 
 
 /**
@@ -492,6 +485,18 @@ typedef struct BufferEntry_
   /* *********** inbound bandwidth accounting ******** */
 
   /**
+   * How much downstream capacity of this peer
+   * has been reserved for our traffic?
+   */
+  long long available_downstream;
+
+  /**
+   * When did we last update the reserved downstream
+   * availability data?
+   */
+  GNUNET_CronTime last_reservation_update;
+
+  /**
    * how much traffic (bytes) did we receive on this connection since
    * the last update-round?
    */
@@ -602,7 +607,7 @@ static int disable_random_padding = GNUNET_NO;
 /**
  * Send callbacks for making better use of noise padding...
  */
-static SendCallbackList * scl_head;
+static struct SendCallbackList * scl_head;
 
 /**
  * Callbacks for disconnect notifications.
@@ -729,6 +734,7 @@ static BufferEntry *
 initBufferEntry ()
 {
   BufferEntry *be;
+  GNUNET_CronTime now;
 
   be = GNUNET_malloc (sizeof (BufferEntry));
   memset (be, 0, sizeof (BufferEntry));
@@ -746,7 +752,9 @@ initBufferEntry ()
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
   be->lastSendAttempt = 0;      /* never */
   be->inSendBuffer = GNUNET_NO;
-  be->last_bps_update = GNUNET_get_time ();     /* now */
+  now = GNUNET_get_time ();
+  be->last_bps_update = now;
+  be->last_reservation_update = now;
   return be;
 }
 
@@ -1628,7 +1636,7 @@ sendBuffer (BufferEntry * be)
   unsigned int j;
   unsigned int p;
   unsigned int rsi;
-  SendCallbackList *pos;
+  struct SendCallbackList *pos;
   GNUNET_TransportPacket_HEADER *p2pHdr;
   unsigned int priority;
   char *plaintextMsg;
@@ -1874,6 +1882,8 @@ sendBuffer (BufferEntry * be)
         stats->change (stat_transmitted, p);
       be->available_send_window -= p;
       be->lastSequenceNumberSend++;
+      GNUNET_CORE_connection_reserve_downstream_bandwidth(&be->session.sender,
+							  0);
       if (be->idealized_limit > be->max_transmitted_limit)
         be->max_transmitted_limit = be->idealized_limit;
       else                      /* age */
@@ -2150,6 +2160,12 @@ forAllConnectedHosts (BufferEntryCallback method, void *arg)
   return count;
 }
 
+struct fENHWrap
+{
+  GNUNET_NodeIteratorCallback method;
+  void *arg;
+};
+
 /**
  * Little helper function for GNUNET_CORE_connection_iterate_peers.
  *
@@ -2160,9 +2176,8 @@ forAllConnectedHosts (BufferEntryCallback method, void *arg)
 static void
 fENHCallback (BufferEntry * be, void *arg)
 {
-  fENHWrap *wrap;
+  struct fENHWrap *wrap = arg;
 
-  wrap = (fENHWrap *) arg;
   if (wrap->method != NULL)
     wrap->method (&be->session.sender, wrap->arg);
 }
@@ -2530,7 +2545,11 @@ scheduleInboundTraffic ()
   /* in the first round we cap by 2* previous utilization */
   firstRound = GNUNET_YES;
   for (u = 0; u < activePeerCount; u++)
-    entries[u]->idealized_limit = 0;
+    {
+      GNUNET_CORE_connection_reserve_downstream_bandwidth(&entries[u]->session.sender,
+							  0);
+      entries[u]->idealized_limit = 0;
+    }
   while ((schedulableBandwidth > activePeerCount * 100) &&
          (activePeerCount > 0) && (didAssign == GNUNET_YES))
     {
@@ -2910,7 +2929,7 @@ cronDecreaseLiveness (void *unused)
                   /* create some traffic by force! */
                   char *msgBuf;
                   unsigned int mSize;
-                  SendCallbackList *pos;
+                  struct SendCallbackList *pos;
                   unsigned int hSize;
 
                   hSize = root->available_send_window;
@@ -3734,7 +3753,7 @@ GNUNET_CORE_connection_done ()
 {
   unsigned int i;
   BufferEntry *be;
-  SendCallbackList *scl;
+  struct SendCallbackList *scl;
 
   ENTRY ();
   GNUNET_GC_detach_change_listener (cfg, &connectionConfigChangeCallback,
@@ -3808,7 +3827,7 @@ int
 GNUNET_CORE_connection_iterate_peers (GNUNET_NodeIteratorCallback method,
                                       void *arg)
 {
-  fENHWrap wrap;
+  struct fENHWrap wrap;
   int ret;
 
   ENTRY ();
@@ -3904,12 +3923,12 @@ GNUNET_CORE_connection_register_send_callback (unsigned int
                                                GNUNET_BufferFillCallback
                                                callback)
 {
-  SendCallbackList *scl;
-  SendCallbackList *pos;
-  SendCallbackList *prev;
+  struct SendCallbackList *scl;
+  struct SendCallbackList *pos;
+  struct SendCallbackList *prev;
 
   ENTRY ();
-  scl = GNUNET_malloc (sizeof (SendCallbackList));
+  scl = GNUNET_malloc (sizeof (struct SendCallbackList));
   scl->minimumPadding = minimumPadding;
   scl->callback = callback;
   scl->priority = priority;
@@ -3951,8 +3970,8 @@ GNUNET_CORE_connection_unregister_send_callback (unsigned int
                                                  GNUNET_BufferFillCallback
                                                  callback)
 {
-  SendCallbackList *pos;
-  SendCallbackList *prev;
+  struct SendCallbackList *pos;
+  struct SendCallbackList *prev;
 
   ENTRY ();
   prev = NULL;
@@ -4404,11 +4423,38 @@ GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIteratorCall
  * @return amount that could actually be reserved 
  */
 int 
-GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_NodeIteratorCallback * peer,
-						    int amount,
-						    GNUNET_CronTime timeframe)
+GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_PeerIdentity * peer,
+						    int amount)
 {
-  return 0; /* not implemented */
+  BufferEntry * be;
+  unsigned long long available;
+  GNUNET_CronTime now;
+  GNUNET_CronTime delta;
+
+  GNUNET_mutex_lock(lock);
+  be = lookForHost(peer);
+  if ( (be == NULL) ||
+       (be->status != STAT_UP) )
+    {
+      GNUNET_mutex_unlock(lock);
+      return 0; /* not connected */
+    }
+  now = GNUNET_get_time();
+  delta = now - be->last_reservation_update;
+  available = be->available_downstream + be->idealized_limit * delta / GNUNET_CRON_MINUTES;
+  if (amount < 0)
+    available -= amount;
+  if (available > be->idealized_limit * MAX_BUF_FACT)
+    available = be->idealized_limit * MAX_BUF_FACT;
+  if ( (amount > 0) &&
+       (available < amount) )
+    amount = (int) available;
+  if (amount > 0)
+    available -= amount;
+  be->last_reservation_update = now;
+  be->available_downstream = available;  
+  GNUNET_mutex_unlock(lock);
+  return available;
 }
 
 void __attribute__ ((constructor)) GNUNET_CORE_connection_ltdl_init ()

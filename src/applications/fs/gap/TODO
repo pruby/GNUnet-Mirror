@@ -1,9 +1,9 @@
 CORRECTNESS:
-1) (periodic?) clean up of stale data in plan.c datastructures -- easy  --- 45 minutes
+1) (periodic?) clean up of stale data in plan.c datastructures
+   -- use core's new disconnect notification!
 
 PERFORMANCE:
-1) core reservation of response bandwidth --- medium --- 60 minutes
-2) core notification of P2P-level disconnect (to call cleanup functions!)
+1) core reservation of response bandwidth
 
 
 HARD STUFF:

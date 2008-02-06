@@ -446,14 +446,10 @@ typedef struct
    * @param amount how many bytes should we expect to receive?
    *        (negative amounts can be used to undo a (recent)
    *        reservation request
-   * @param timeframe in what time interval should the other
-   *        peer be able to transmit the amount?  Use zero
-   *        when undoing a reservation
    * @return amount that could actually be reserved 
    */
-  int (*reserve_downstream_bandwidth)(const GNUNET_NodeIteratorCallback * peer,
-				      int amount,
-				      GNUNET_CronTime timeframe);
+  int (*reserve_downstream_bandwidth)(const GNUNET_PeerIdentity * peer,
+				      int amount);
 
   /**
    * Offer the core a session for communication with the
