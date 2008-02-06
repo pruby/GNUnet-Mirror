@@ -70,7 +70,7 @@ typedef struct
  * Name of the directory where we store symlinks to indexed
  * files.
  */
-static char * index_directory;
+static char *index_directory;
 
 static GNUNET_State_ServiceAPI *state;
 
@@ -105,16 +105,14 @@ get_indexed_filename (const GNUNET_HashCode * fileId)
  * @param fileId hash of the file for which the marker
  *        should be removed
  */
-static void 
-remove_unavailable_mark(const GNUNET_HashCode * fileId)
+static void
+remove_unavailable_mark (const GNUNET_HashCode * fileId)
 {
   GNUNET_EncName enc;
   char unavail_key[256];
- 
-  GNUNET_hash_to_enc (fileId, &enc); 
-  GNUNET_snprintf (unavail_key, 
-		   256, 
-		   "FIRST_UNAVAILABLE-%s", (char *) &enc);
+
+  GNUNET_hash_to_enc (fileId, &enc);
+  GNUNET_snprintf (unavail_key, 256, "FIRST_UNAVAILABLE-%s", (char *) &enc);
   state->unlink (coreAPI->ectx, unavail_key);
 }
 
@@ -127,8 +125,8 @@ remove_unavailable_mark(const GNUNET_HashCode * fileId)
  * or, if the condition persists, to trigger its
  * removal from the database.
  */
-static void 
-publish_unavailable_mark(const GNUNET_HashCode * fileId)
+static void
+publish_unavailable_mark (const GNUNET_HashCode * fileId)
 {
   char unavail_key[256];
   GNUNET_EncName enc;
@@ -141,44 +139,41 @@ publish_unavailable_mark(const GNUNET_HashCode * fileId)
 
   now = GNUNET_get_time ();
   GNUNET_hash_to_enc (fileId, &enc);
-  GNUNET_snprintf (unavail_key, 256, "FIRST_UNVAILABLE-%s",
-		   (char *) &enc);
+  GNUNET_snprintf (unavail_key, 256, "FIRST_UNVAILABLE-%s", (char *) &enc);
   if (state->read (coreAPI->ectx, unavail_key, (void *) &first_unavail) !=
       sizeof (GNUNET_CronTime))
     {
       now = GNUNET_htonll (now);
       state->write (coreAPI->ectx,
-		    unavail_key, sizeof (GNUNET_CronTime),
-		    (void *) &now);
+                    unavail_key, sizeof (GNUNET_CronTime), (void *) &now);
       return;
     }
-  if (GNUNET_ntohll (*first_unavail) - now <
-      3 * GNUNET_CRON_DAYS)
-    return; /* do nothing for first 3 days */
-  fn = get_indexed_filename(fileId);
+  if (GNUNET_ntohll (*first_unavail) - now < 3 * GNUNET_CRON_DAYS)
+    return;                     /* do nothing for first 3 days */
+  fn = get_indexed_filename (fileId);
   /* Delete it after 3 days */
   len = 256;
   ofn = GNUNET_malloc (len);
   while (((ret = READLINK (fn, ofn, len)) == -1) &&
-	 (errno == ENAMETOOLONG) && (len < 4 * 1024 * 1024))
+         (errno == ENAMETOOLONG) && (len < 4 * 1024 * 1024))
     if (len * 2 < len)
       {
-	GNUNET_GE_BREAK (coreAPI->ectx, 0);
-	GNUNET_array_grow (ofn, len, 0);
-	GNUNET_free (fn);
-	return;
+        GNUNET_GE_BREAK (coreAPI->ectx, 0);
+        GNUNET_array_grow (ofn, len, 0);
+        GNUNET_free (fn);
+        return;
       }
-  GNUNET_array_grow (ofn, len, len * 2); 
+  GNUNET_array_grow (ofn, len, len * 2);
   if (ret != -1)
     {
       GNUNET_GE_LOG (coreAPI->ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK |
-		     GNUNET_GE_USER,
-		     _
-		     ("Because the file `%s' has been unavailable for 3 days"
-		      " it got removed from your share.  Please unindex files before"
-		      " deleting them as the index now contains invalid references!\n"),
-		     ofn);
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK |
+                     GNUNET_GE_USER,
+                     _
+                     ("Because the file `%s' has been unavailable for 3 days"
+                      " it got removed from your share.  Please unindex files before"
+                      " deleting them as the index now contains invalid references!\n"),
+                     ofn);
     }
   GNUNET_free (ofn);
   state->unlink (coreAPI->ectx, unavail_key);
@@ -195,17 +190,18 @@ publish_unavailable_mark(const GNUNET_HashCode * fileId)
  *         GNUNET_YES on success
  */
 int
-GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context * ectx,
-                    const GNUNET_HashCode * fileId, const char *fn)
+GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context *ectx,
+                                               const GNUNET_HashCode * fileId,
+                                               const char *fn)
 {
   GNUNET_EncName enc;
   char *serverFN;
   GNUNET_HashCode linkId;
 
-  if ( (GNUNET_SYSERR == GNUNET_hash_file (ectx,
-					   fn,
-					   &linkId)) ||
-       (0 != memcmp (&linkId, fileId, sizeof (GNUNET_HashCode))) )
+  if ((GNUNET_SYSERR == GNUNET_hash_file (ectx,
+                                          fn,
+                                          &linkId)) ||
+      (0 != memcmp (&linkId, fileId, sizeof (GNUNET_HashCode))))
     return GNUNET_SYSERR;
   serverFN =
     GNUNET_malloc (strlen (index_directory) + 2 + sizeof (GNUNET_EncName));
@@ -231,7 +227,7 @@ GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context * ectx,
     }
   GNUNET_GE_free_context (ectx);
   GNUNET_free (serverFN);
-  remove_unavailable_mark(fileId);
+  remove_unavailable_mark (fileId);
   return GNUNET_YES;
 }
 
@@ -243,14 +239,15 @@ GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context * ectx,
  *  GNUNET_SYSERR on other error (i.e. datastore full)
  */
 int
-GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context * ectx,
-                GNUNET_Datastore_ServiceAPI * datastore,
-                unsigned int prio,
-                GNUNET_CronTime expiration,
-                unsigned long long fileOffset,
-                unsigned int anonymityLevel,
-                const GNUNET_HashCode * fileId,
-                unsigned int size, const DBlock * content)
+GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *ectx,
+                                        GNUNET_Datastore_ServiceAPI *
+                                        datastore, unsigned int prio,
+                                        GNUNET_CronTime expiration,
+                                        unsigned long long fileOffset,
+                                        unsigned int anonymityLevel,
+                                        const GNUNET_HashCode * fileId,
+                                        unsigned int size,
+                                        const DBlock * content)
 {
   int ret;
   OnDemandBlock odb;
@@ -272,7 +269,7 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context * ectx,
     )
     {
       /* not sym-linked, write content to offset! */
-      fd = GNUNET_disk_file_open (ectx, fn, O_LARGEFILE | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);  /* 644 */
+      fd = GNUNET_disk_file_open (ectx, fn, O_LARGEFILE | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);   /* 644 */
       if (fd == -1)
         {
           GNUNET_free (fn);
@@ -338,8 +335,8 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context * ectx,
 static void
 async_delete_job (void *cls)
 {
-  GNUNET_HashCode * query = cls;
-  GNUNET_DatastoreValue * dbv = (GNUNET_DatastoreValue*) &query[1];
+  GNUNET_HashCode *query = cls;
+  GNUNET_DatastoreValue *dbv = (GNUNET_DatastoreValue *) & query[1];
 
   datastore->del (query, dbv);
   GNUNET_free (query);
@@ -351,11 +348,12 @@ async_delete_job (void *cls)
  * a del operation during "get" would deadlock!
  */
 static void
-delete_content_asynchronously (const GNUNET_DatastoreValue * dbv, const GNUNET_HashCode * query)
+delete_content_asynchronously (const GNUNET_DatastoreValue * dbv,
+                               const GNUNET_HashCode * query)
 {
-  GNUNET_HashCode * ctx;
+  GNUNET_HashCode *ctx;
 
-  ctx = GNUNET_malloc (sizeof (GNUNET_HashCode) + ntohl(dbv->size));
+  ctx = GNUNET_malloc (sizeof (GNUNET_HashCode) + ntohl (dbv->size));
   *ctx = *query;
   memcpy (&ctx[1], dbv, ntohl (dbv->size));
   GNUNET_cron_add_job (coreAPI->cron, &async_delete_job, 0, 0, ctx);
@@ -372,8 +370,8 @@ delete_content_asynchronously (const GNUNET_DatastoreValue * dbv, const GNUNET_H
  */
 int
 GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
-                     const GNUNET_HashCode * query,
-                     GNUNET_DatastoreValue ** enc)
+                                        const GNUNET_HashCode * query,
+                                        GNUNET_DatastoreValue ** enc)
 {
   char *fn;
   char *iobuf;
@@ -385,8 +383,8 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
   struct stat linkStat;
 
 
-  if ( (ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
-       (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND) )
+  if ((ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
+      (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND))
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return GNUNET_SYSERR;
@@ -405,9 +403,9 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
                                    fn);
       /* Is the symlink (still) there? */
       if (LSTAT (fn, &linkStat) == -1)
-	delete_content_asynchronously (dbv, query);
+        delete_content_asynchronously (dbv, query);
       else
-	publish_unavailable_mark(&odb->fileId);
+        publish_unavailable_mark (&odb->fileId);
       GNUNET_free (fn);
       return GNUNET_SYSERR;
     }
@@ -470,7 +468,7 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
  */
 int
 GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
-                      const GNUNET_HashCode * fileId)
+                                      const GNUNET_HashCode * fileId)
 {
   char *fn;
   int fd;
@@ -495,9 +493,10 @@ GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
  *        the keys of the odb blocks).
  */
 int
-GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context * ectx,
-                  GNUNET_Datastore_ServiceAPI * datastore,
-                  unsigned int blocksize, const GNUNET_HashCode * fileId)
+GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *ectx,
+                                           GNUNET_Datastore_ServiceAPI *
+                                           datastore, unsigned int blocksize,
+                                           const GNUNET_HashCode * fileId)
 {
   char *fn;
   int fd;
@@ -552,7 +551,7 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context * ectx,
       odb.fileId = *fileId;
       /* compute the primary key */
       GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
-      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &GNUNET_FS_HELPER_complete_value_from_database_callback, &odb.header))  /* aborted == found! */
+      if (GNUNET_SYSERR == datastore->get (&key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &GNUNET_FS_HELPER_complete_value_from_database_callback, &odb.header)) /* aborted == found! */
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
         ret = GNUNET_SYSERR;
@@ -573,15 +572,16 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context * ectx,
   CLOSE (fd);
   UNLINK (fn);
   GNUNET_free (fn);
-  remove_unavailable_mark(fileId);
+  remove_unavailable_mark (fileId);
   return GNUNET_OK;
 }
 
 
 
-int GNUNET_FS_ONDEMAND_init(GNUNET_CoreAPIForPlugins * capi)
+int
+GNUNET_FS_ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
 {
-  char * tmp;
+  char *tmp;
 
   coreAPI = capi;
   GNUNET_GC_get_configuration_value_filename (capi->cfg,
@@ -596,8 +596,8 @@ int GNUNET_FS_ONDEMAND_init(GNUNET_CoreAPIForPlugins * capi)
                                               "INDEX-DIRECTORY",
                                               tmp, &index_directory);
   GNUNET_free (tmp);
-  GNUNET_disk_directory_create (coreAPI->ectx, index_directory); /* just in case */  
-       
+  GNUNET_disk_directory_create (coreAPI->ectx, index_directory);        /* just in case */
+
   state = capi->request_service ("state");
   if (state == NULL)
     {
@@ -608,8 +608,9 @@ int GNUNET_FS_ONDEMAND_init(GNUNET_CoreAPIForPlugins * capi)
   return 0;
 }
 
-int GNUNET_FS_ONDEMAND_done() 
-{ 
+int
+GNUNET_FS_ONDEMAND_done ()
+{
   coreAPI->release_service (state);
   state = NULL;
   GNUNET_free (index_directory);

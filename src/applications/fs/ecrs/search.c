@@ -34,7 +34,7 @@
 #define DEBUG_SEARCH GNUNET_NO
 
 /**
- * This struct is followed by keyCount keys of 
+ * This struct is followed by keyCount keys of
  * type "GNUNET_HashCode".
  */
 struct PendingSearch

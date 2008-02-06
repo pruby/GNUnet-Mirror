@@ -377,13 +377,13 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
     {
     case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
       if (ntohl (dbv->size) != sizeof (OnDemandBlock))
-	{
+        {
           GNUNET_GE_BREAK (ectx, 0);
           return GNUNET_SYSERR;
-	}
+        }
       odb = (const OnDemandBlock *) dbv;
       break;
-    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD:    
+    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD:
       if (ntohl (dbv->size) != sizeof (OnDemandBlock72))
         {
           GNUNET_GE_BREAK (ectx, 0);
@@ -402,8 +402,8 @@ ONDEMAND_getIndexed (GNUNET_Datastore_ServiceAPI * datastore,
       return GNUNET_SYSERR;
     }
 #else
-  if ( (ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
-       (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND) )
+  if ((ntohl (dbv->size) != sizeof (OnDemandBlock)) ||
+      (ntohl (dbv->type) != GNUNET_ECRS_BLOCKTYPE_ONDEMAND))
     {
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;

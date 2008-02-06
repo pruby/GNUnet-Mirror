@@ -34,43 +34,43 @@
  * plans for various peers and known responses.
  */
 void
-GNUNET_FS_SHARED_free_request_list(struct RequestList * rl)
+GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
 {
-  struct ResponseList * repl;
-  struct QueryPlanEntry * planl;
-  
+  struct ResponseList *repl;
+  struct QueryPlanEntry *planl;
+
   while (rl->responses != NULL)
     {
       repl = rl->responses;
       rl->responses = repl->next;
-      GNUNET_free(repl);
+      GNUNET_free (repl);
     }
   while (rl->plan_entries != NULL)
     {
       planl = rl->plan_entries;
       rl->plan_entries = planl->plan_entries_next;
       if (planl->next != NULL)
-	planl->next->prev = planl->prev;
+        planl->next->prev = planl->prev;
       else
-	planl->list->tail = planl->prev;
+        planl->list->tail = planl->prev;
       if (planl->prev != NULL)
-	planl->prev->next = planl->next;
+        planl->prev->next = planl->next;
       else
-	planl->list->head = planl->next;
-      GNUNET_free(planl);
+        planl->list->head = planl->next;
+      GNUNET_free (planl);
     }
   if (rl->bloomfilter != NULL)
-    GNUNET_bloomfilter_free(rl->bloomfilter);
-  GNUNET_FS_PT_change_rc(rl->primary_target, -1); 
-  GNUNET_FS_PT_change_rc(rl->response_target, -1); 
-  GNUNET_free(rl); 
+    GNUNET_bloomfilter_free (rl->bloomfilter);
+  GNUNET_FS_PT_change_rc (rl->primary_target, -1);
+  GNUNET_FS_PT_change_rc (rl->response_target, -1);
+  GNUNET_free (rl);
 }
 
 
 
 /**
  * Check if the given value is a valid
- * and new response for the given request list 
+ * and new response for the given request list
  * entry.
  *
  * @param hc set to the hash of the data if successful
@@ -78,51 +78,43 @@ GNUNET_FS_SHARED_free_request_list(struct RequestList * rl)
  *         applicable, GNUNET_SYSERR on error
  */
 int
-GNUNET_FS_SHARED_test_valid_new_response(struct RequestList * rl,
-					 const GNUNET_HashCode * primary_key,
-					 unsigned int size,
-					 const DBlock * data,
-					 GNUNET_HashCode * hc)
+GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
+                                          const GNUNET_HashCode * primary_key,
+                                          unsigned int size,
+                                          const DBlock * data,
+                                          GNUNET_HashCode * hc)
 {
-  struct ResponseList * seen;
+  struct ResponseList *seen;
   GNUNET_HashCode m;
   int ret;
 
   /* check that type and primary key match */
-  if ( (rl->type != ntohl(data->type)) ||
-       (0 != memcmp(primary_key,
-		    &rl->queries[0],
-		    sizeof(GNUNET_HashCode))) )
+  if ((rl->type != ntohl (data->type)) ||
+      (0 != memcmp (primary_key, &rl->queries[0], sizeof (GNUNET_HashCode))))
     return GNUNET_NO;
 
   /* check that content matches query */
-  ret = GNUNET_EC_is_block_applicable_for_query(rl->type,
-						size,
-						data,
-						&rl->queries[0],
-						rl->key_count,
-						&rl->queries[0]);
+  ret = GNUNET_EC_is_block_applicable_for_query (rl->type,
+                                                 size,
+                                                 data,
+                                                 &rl->queries[0],
+                                                 rl->key_count,
+                                                 &rl->queries[0]);
   if (ret != GNUNET_OK)
-    return ret;	
+    return ret;
 
   /* check that this is a new response */
-  GNUNET_hash(data, size, 
-	      hc);
-  GNUNET_FS_HELPER_mingle_hash(hc,
-			       rl->bloomfilter_mutator,
-			       &m);
-  if ( (rl->bloomfilter != NULL) &&
-       (GNUNET_YES == GNUNET_bloomfilter_test(rl->bloomfilter,
-					      &m)) )
-    return GNUNET_NO; /* not useful */		  
+  GNUNET_hash (data, size, hc);
+  GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
+  if ((rl->bloomfilter != NULL) &&
+      (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
+    return GNUNET_NO;           /* not useful */
   seen = rl->responses;
   while (seen != NULL)
     {
-      if (0 == memcmp(hc,
-		      &seen->hash,
-		      sizeof(GNUNET_HashCode)))
-	return GNUNET_NO;
-      seen = seen->next;    
+      if (0 == memcmp (hc, &seen->hash, sizeof (GNUNET_HashCode)))
+        return GNUNET_NO;
+      seen = seen->next;
     }
   return GNUNET_OK;
 }
@@ -133,15 +125,14 @@ GNUNET_FS_SHARED_test_valid_new_response(struct RequestList * rl,
  * hash code as seen (update linked list and bloom filter).
  */
 void
-GNUNET_FS_SHARED_mark_response_seen(struct RequestList * rl,
-				    GNUNET_HashCode * hc)
+GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
+                                     GNUNET_HashCode * hc)
 {
-  struct ResponseList * seen;
+  struct ResponseList *seen;
 
-  GNUNET_bloomfilter_add(rl->bloomfilter,
-			 hc);      
+  GNUNET_bloomfilter_add (rl->bloomfilter, hc);
   /* update seen list */
-  seen = GNUNET_malloc(sizeof(struct ResponseList));
+  seen = GNUNET_malloc (sizeof (struct ResponseList));
   seen->hash = *hc;
   seen->next = rl->responses;
   rl->responses = seen;
@@ -155,9 +146,14 @@ GNUNET_FS_SHARED_mark_response_seen(struct RequestList * rl,
  * continue.
  */
 int
-GNUNET_FS_HELPER_complete_value_from_database_callback (const GNUNET_HashCode * key,
-							const GNUNET_DatastoreValue * value, void *closure,
-							unsigned long long uid)
+GNUNET_FS_HELPER_complete_value_from_database_callback (const GNUNET_HashCode
+                                                        * key,
+                                                        const
+                                                        GNUNET_DatastoreValue
+                                                        * value,
+                                                        void *closure,
+                                                        unsigned long long
+                                                        uid)
 {
   GNUNET_DatastoreValue *comp = closure;
 
@@ -165,25 +161,24 @@ GNUNET_FS_HELPER_complete_value_from_database_callback (const GNUNET_HashCode * 
       (0 != memcmp (&value[1],
                     &comp[1],
                     ntohl (value->size) - sizeof (GNUNET_DatastoreValue))))
-      return GNUNET_OK;
-  *comp = *value; 
+    return GNUNET_OK;
+  *comp = *value;
   return GNUNET_SYSERR;
 }
 
 
 /**
- * Mingle hash with the mingle_number to 
+ * Mingle hash with the mingle_number to
  * produce different bits.
  */
-void 
-GNUNET_FS_HELPER_mingle_hash(const GNUNET_HashCode * in,
-			     int mingle_number,
-			     GNUNET_HashCode * hc)
+void
+GNUNET_FS_HELPER_mingle_hash (const GNUNET_HashCode * in,
+                              int mingle_number, GNUNET_HashCode * hc)
 {
   GNUNET_HashCode m;
 
-  GNUNET_hash(&mingle_number, sizeof(int), &m);
-  GNUNET_hash_xor(&m, in, hc);
+  GNUNET_hash (&mingle_number, sizeof (int), &m);
+  GNUNET_hash_xor (&m, in, hc);
 }
 
 
@@ -197,14 +192,16 @@ GNUNET_FS_HELPER_mingle_hash(const GNUNET_HashCode * in,
  *         otherwise the ttl-limit for the given priority
  */
 int
-GNUNET_FS_HELPER_bound_ttl(int ttl_in,
-			   unsigned int prio) 
+GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio)
 {
-  if (ttl_in > ((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS)
+  if (ttl_in >
+      ((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS)
     {
-      if (((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS >= (1 <<30) )
-	return 1<<30;
-      return (int) ((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS;
+      if (((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS >=
+          (1 << 30))
+        return 1 << 30;
+      return (int) ((unsigned long long) prio) * TTL_DECREMENT /
+        GNUNET_CRON_SECONDS;
     }
   return ttl_in;
 }

@@ -72,14 +72,14 @@ typedef struct
 
 /**
  * Server to client: content (in response to a CS_fs_request_search_MESSAGE).  The
- * header is followed by the variable size data of a DBlock (as 
+ * header is followed by the variable size data of a DBlock (as
  * defined in ecrs_core.h).
  */
 typedef struct
 {
   GNUNET_MessageHeader header;
 
-  /** 
+  /**
    * Anonymity level for the content, maybe
    * 0 if not known.
    */
@@ -192,7 +192,7 @@ typedef struct
 } CS_fs_request_index_MESSAGE;
 
 /**
- * Client to server: delete content.  This struct is followed by 
+ * Client to server: delete content.  This struct is followed by
  * the DBlock (of variable size) of the content that is to be deleted.
  */
 typedef struct
@@ -249,7 +249,7 @@ typedef struct
  * be determined from the header.  This struct
  * maybe followed by a bloom filter (size determined
  * by the header) which includes hashes of responses
- * that should NOT be returned.  If there is no 
+ * that should NOT be returned.  If there is no
  * bloom filter, the filter_mutator
  * should be zero.
  */
@@ -280,7 +280,7 @@ typedef struct
   int filter_mutator;
 
   /**
-   * How many queries do we have (should be 
+   * How many queries do we have (should be
    * greater than zero).
    */
   unsigned int number_of_queries;
@@ -300,7 +300,7 @@ typedef struct
 
 /**
  * Return message for search result.  This struct
- * is always followed by a DBlock (see ecrs_core.h) 
+ * is always followed by a DBlock (see ecrs_core.h)
  * which contains the GNUNET_ECRS_BLOCKTYPE followed
  * by the actual (encrypted) data.
  */
@@ -311,13 +311,13 @@ typedef struct
   /**
    * Always zero (for now).
    */
-  unsigned int reserved; /* for 64-bit alignment */
+  unsigned int reserved;        /* for 64-bit alignment */
 
   /**
    * When does this result expire?  The given time
    * is relative (and in big-endian).
    */
-  unsigned long long expiration; 
+  unsigned long long expiration;
 
 } P2P_gap_reply_MESSAGE;
 

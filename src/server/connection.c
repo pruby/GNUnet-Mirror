@@ -262,14 +262,15 @@ struct SendCallbackList
 
 };
 
-struct DisconnectNotificationList {
-  
-  struct DisconnectNotificationList * next;
+struct DisconnectNotificationList
+{
+
+  struct DisconnectNotificationList *next;
 
   GNUNET_NodeIteratorCallback callback;
 
-  void * cls;
-  
+  void *cls;
+
 };
 
 
@@ -607,12 +608,12 @@ static int disable_random_padding = GNUNET_NO;
 /**
  * Send callbacks for making better use of noise padding...
  */
-static struct SendCallbackList * scl_head;
+static struct SendCallbackList *scl_head;
 
 /**
  * Callbacks for disconnect notifications.
  */
-static struct DisconnectNotificationList * disconnect_notification_list;
+static struct DisconnectNotificationList *disconnect_notification_list;
 
 /**
  * Lock for the connection module.
@@ -715,13 +716,12 @@ check_invariants ()
  * was disconnected.
  */
 static void
-notify_disconnect(BufferEntry * be)
+notify_disconnect (BufferEntry * be)
 {
-  struct DisconnectNotificationList * l = disconnect_notification_list;
+  struct DisconnectNotificationList *l = disconnect_notification_list;
   while (l != NULL)
     {
-      l->callback(&be->session.sender,
-		  l->cls);
+      l->callback (&be->session.sender, l->cls);
       l = l->next;
     }
 }
@@ -1720,7 +1720,7 @@ sendBuffer (BufferEntry * be)
 #endif
           be->status = STAT_DOWN;
           be->time_established = 0;
-	  notify_disconnect(be);
+          notify_disconnect (be);
           if (stats != NULL)
             stats->change (stat_closedTransport, 1);
           for (i = 0; i < be->sendBufferSize; i++)
@@ -1882,8 +1882,8 @@ sendBuffer (BufferEntry * be)
         stats->change (stat_transmitted, p);
       be->available_send_window -= p;
       be->lastSequenceNumberSend++;
-      GNUNET_CORE_connection_reserve_downstream_bandwidth(&be->session.sender,
-							  0);
+      GNUNET_CORE_connection_reserve_downstream_bandwidth (&be->session.
+                                                           sender, 0);
       if (be->idealized_limit > be->max_transmitted_limit)
         be->max_transmitted_limit = be->idealized_limit;
       else                      /* age */
@@ -1927,7 +1927,7 @@ sendBuffer (BufferEntry * be)
       be->session.tsession = NULL;
       be->status = STAT_DOWN;
       be->time_established = 0;
-      notify_disconnect(be);
+      notify_disconnect (be);
       if (stats != NULL)
         stats->change (stat_closedTransport, 1);
       transport->disconnect (tsession, __FILE__);
@@ -2247,7 +2247,7 @@ shutdownConnection (BufferEntry * be)
     }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
-  notify_disconnect(be);
+  notify_disconnect (be);
   be->time_established = 0;
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
@@ -2546,8 +2546,8 @@ scheduleInboundTraffic ()
   firstRound = GNUNET_YES;
   for (u = 0; u < activePeerCount; u++)
     {
-      GNUNET_CORE_connection_reserve_downstream_bandwidth(&entries[u]->session.sender,
-							  0);
+      GNUNET_CORE_connection_reserve_downstream_bandwidth (&entries[u]->
+                                                           session.sender, 0);
       entries[u]->idealized_limit = 0;
     }
   while ((schedulableBandwidth > activePeerCount * 100) &&
@@ -2838,7 +2838,7 @@ cronDecreaseLiveness (void *unused)
   total_send_buffer_size = 0;
   connection_count = 0;
   total_connection_lifetime = 0;
-  GNUNET_mutex_lock (lock);  
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < CONNECTION_MAX_HOSTS_; i++)
     {
       root = CONNECTION_buffer_[i];
@@ -2859,12 +2859,12 @@ cronDecreaseLiveness (void *unused)
               GNUNET_free (tmp);
               continue;         /* no need to call 'send buffer' */
             case STAT_UP:
-	      if ( (root->time_established < now) &&
-		   (root->time_established != 0) )
-		{
-		  connection_count++;
-		  total_connection_lifetime += now - root->time_established;
-		}
+              if ((root->time_established < now) &&
+                  (root->time_established != 0))
+                {
+                  connection_count++;
+                  total_connection_lifetime += now - root->time_established;
+                }
               updateCurBPS (root);
               total_allowed_sent += root->max_bpm;
               total_allowed_recv += root->idealized_limit;
@@ -3014,9 +3014,10 @@ cronDecreaseLiveness (void *unused)
       stats->set (stat_total_allowed_now, total_allowed_now);
       stats->set (stat_total_send_buffer_size, total_send_buffer_size);
       if (connection_count > 0)
-	stats->set(stat_avg_lifetime, total_connection_lifetime / connection_count);
+        stats->set (stat_avg_lifetime,
+                    total_connection_lifetime / connection_count);
       else
-	stats->set(stat_avg_lifetime, 0);
+        stats->set (stat_avg_lifetime, 0);
     }
   EXIT ();
 }
@@ -3919,7 +3920,7 @@ GNUNET_CORE_connection_print_buffer ()
 int
 GNUNET_CORE_connection_register_send_callback (unsigned int
                                                minimumPadding,
-					       unsigned int priority,
+                                               unsigned int priority,
                                                GNUNET_BufferFillCallback
                                                callback)
 {
@@ -3935,8 +3936,7 @@ GNUNET_CORE_connection_register_send_callback (unsigned int
   GNUNET_mutex_lock (lock);
   pos = scl_head;
   prev = NULL;
-  while ( (pos != NULL) &&
-	  (pos->priority > priority) )
+  while ((pos != NULL) && (pos->priority > priority))
     {
       prev = pos;
       pos = pos->next;
@@ -4357,18 +4357,18 @@ GNUNET_CORE_connection_assert_tsession_unused (GNUNET_TSession * tsession)
  * @return GNUNET_OK
  */
 int
-GNUNET_CORE_connection_register_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
-						       void * cls)
+GNUNET_CORE_connection_register_notify_peer_disconnect
+  (GNUNET_NodeIteratorCallback callback, void *cls)
 {
-  struct DisconnectNotificationList * l;
+  struct DisconnectNotificationList *l;
 
-  l = GNUNET_malloc(sizeof(struct DisconnectNotificationList));
+  l = GNUNET_malloc (sizeof (struct DisconnectNotificationList));
   l->callback = callback;
   l->cls = cls;
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   l->next = disconnect_notification_list;
   disconnect_notification_list = l;
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
@@ -4379,35 +4379,34 @@ GNUNET_CORE_connection_register_notify_peer_disconnect(GNUNET_NodeIteratorCallba
  * @return GNUNET_OK on success, GNUNET_SYSERR
  *         if this callback is not registered
  */
-int 
-GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
-							 void * cls)
+int
+GNUNET_CORE_connection_unregister_notify_peer_disconnect
+  (GNUNET_NodeIteratorCallback callback, void *cls)
 {
-  struct DisconnectNotificationList * pos;
-  struct DisconnectNotificationList * prev;
+  struct DisconnectNotificationList *pos;
+  struct DisconnectNotificationList *prev;
 
   prev = NULL;
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   pos = disconnect_notification_list;
   while (pos != NULL)
     {
-      if ( (pos->callback == callback) &&
-	   (pos->cls == cls) )
-	{
-	  if (prev == NULL)
-	    disconnect_notification_list = pos->next;
-	  else
-	    prev->next = pos->next;
-	  GNUNET_free(pos);
-	  GNUNET_mutex_unlock(lock);
-	  return GNUNET_OK;
-	}
+      if ((pos->callback == callback) && (pos->cls == cls))
+        {
+          if (prev == NULL)
+            disconnect_notification_list = pos->next;
+          else
+            prev->next = pos->next;
+          GNUNET_free (pos);
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
+        }
       prev = pos;
       pos = pos->next;
     }
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_SYSERR;
- 
+
 }
 
 /**
@@ -4420,40 +4419,40 @@ GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIteratorCall
  * @param timeframe in what time interval should the other
  *        peer be able to transmit the amount?  Use zero
  *        when undoing a reservation
- * @return amount that could actually be reserved 
+ * @return amount that could actually be reserved
  */
-int 
-GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_PeerIdentity * peer,
-						    int amount)
+int
+GNUNET_CORE_connection_reserve_downstream_bandwidth (const GNUNET_PeerIdentity
+                                                     * peer, int amount)
 {
-  BufferEntry * be;
+  BufferEntry *be;
   unsigned long long available;
   GNUNET_CronTime now;
   GNUNET_CronTime delta;
 
-  GNUNET_mutex_lock(lock);
-  be = lookForHost(peer);
-  if ( (be == NULL) ||
-       (be->status != STAT_UP) )
+  GNUNET_mutex_lock (lock);
+  be = lookForHost (peer);
+  if ((be == NULL) || (be->status != STAT_UP))
     {
-      GNUNET_mutex_unlock(lock);
-      return 0; /* not connected */
+      GNUNET_mutex_unlock (lock);
+      return 0;                 /* not connected */
     }
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   delta = now - be->last_reservation_update;
-  available = be->available_downstream + be->idealized_limit * delta / GNUNET_CRON_MINUTES;
+  available =
+    be->available_downstream +
+    be->idealized_limit * delta / GNUNET_CRON_MINUTES;
   if (amount < 0)
     available -= amount;
   if (available > be->idealized_limit * MAX_BUF_FACT)
     available = be->idealized_limit * MAX_BUF_FACT;
-  if ( (amount > 0) &&
-       (available < amount) )
+  if ((amount > 0) && (available < amount))
     amount = (int) available;
   if (amount > 0)
     available -= amount;
   be->last_reservation_update = now;
-  be->available_downstream = available;  
-  GNUNET_mutex_unlock(lock);
+  be->available_downstream = available;
+  GNUNET_mutex_unlock (lock);
   return available;
 }
 

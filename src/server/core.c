@@ -532,16 +532,16 @@ GNUNET_CORE_init (struct GNUNET_GE_Context *ectx,
   applicationCore.myIdentity = NULL;    /* for now */
   applicationCore.request_service = &GNUNET_CORE_request_service;       /* core.c */
   applicationCore.release_service = &GNUNET_CORE_release_service;       /* core.c */
-    
+
   applicationCore.connection_send_plaintext = &GNUNET_CORE_connection_send_plaintext;   /* connection.c */
   applicationCore.unicast = &GNUNET_CORE_connection_unicast;    /* connection.c */
   applicationCore.connection_send_using_callback = &GNUNET_CORE_connection_send_using_callback; /* connection.c */
   applicationCore.forAllConnectedNodes = &GNUNET_CORE_connection_iterate_peers; /* connection.c */
   applicationCore.connection_register_send_callback = &GNUNET_CORE_connection_register_send_callback;   /* connection.c */
   applicationCore.connection_unregister_send_callback = &GNUNET_CORE_connection_unregister_send_callback;       /* connection.c */
-  applicationCore.reserve_downstream_bandwidth = &GNUNET_CORE_connection_reserve_downstream_bandwidth; /* connection.c */
-  applicationCore.register_notify_peer_disconnect = &GNUNET_CORE_connection_register_notify_peer_disconnect; /* connection .c */
-  applicationCore.unregister_notify_peer_disconnect = &GNUNET_CORE_connection_unregister_notify_peer_disconnect; /* connection .c */
+  applicationCore.reserve_downstream_bandwidth = &GNUNET_CORE_connection_reserve_downstream_bandwidth;  /* connection.c */
+  applicationCore.register_notify_peer_disconnect = &GNUNET_CORE_connection_register_notify_peer_disconnect;    /* connection .c */
+  applicationCore.unregister_notify_peer_disconnect = &GNUNET_CORE_connection_unregister_notify_peer_disconnect;        /* connection .c */
 
 
   applicationCore.connection_register_send_notification_callback =

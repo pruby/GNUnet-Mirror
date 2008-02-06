@@ -43,32 +43,33 @@
 /**
  * Linked list with information for each client.
  */
-struct ClientDataList {
+struct ClientDataList
+{
 
   /**
    * This is a linked list.
    */
-  struct ClientDataList * next;
+  struct ClientDataList *next;
 
   /**
    * For which client is this data kept?
    */
-  struct GNUNET_ClientHandle * client;
+  struct GNUNET_ClientHandle *client;
 
   /**
    * List of active requests for the client.
    */
-  struct RequestList * requests;
+  struct RequestList *requests;
 
 };
 
-static GNUNET_CoreAPIForPlugins * coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 /**
  * List of all clients, their active requests and other
  * per-client information.
  */
-static struct ClientDataList * clients;
+static struct ClientDataList *clients;
 
 /**
  * A client is asking us to run a query.  The query should be issued
@@ -79,54 +80,52 @@ static struct ClientDataList * clients;
  */
 void
 GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
-				    unsigned int key_count,
-				    unsigned int anonymityLevel,
-				    unsigned int type,
-				    struct GNUNET_ClientHandle * client,
-				    const GNUNET_PeerIdentity * target)
+                                    unsigned int key_count,
+                                    unsigned int anonymityLevel,
+                                    unsigned int type,
+                                    struct GNUNET_ClientHandle *client,
+                                    const GNUNET_PeerIdentity * target)
 {
-  struct ClientDataList * cl;
-  struct RequestList * request;
+  struct ClientDataList *cl;
+  struct RequestList *request;
 
-  GNUNET_GE_ASSERT(NULL, key_count > 0);
-    
-  request = GNUNET_malloc(sizeof(struct RequestList) + (key_count-1) * sizeof(GNUNET_HashCode));
-  memset(request, 0, sizeof(struct RequestList));
+  GNUNET_GE_ASSERT (NULL, key_count > 0);
+
+  request =
+    GNUNET_malloc (sizeof (struct RequestList) +
+                   (key_count - 1) * sizeof (GNUNET_HashCode));
+  memset (request, 0, sizeof (struct RequestList));
   request->anonymityLevel = anonymityLevel;
   request->key_count = key_count;
   request->type = type;
-  request->primary_target = GNUNET_FS_PT_intern(target);
+  request->primary_target = GNUNET_FS_PT_intern (target);
   request->response_client = client;
-  memcpy(&request->queries[0],
-	 query,
-	 sizeof(GNUNET_HashCode)*key_count);
-  GNUNET_mutex_lock(GNUNET_FS_lock);
+  memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
-  while ( (cl != NULL) &&
-	  (cl->client != client) )
+  while ((cl != NULL) && (cl->client != client))
     cl = cl->next;
   if (cl == NULL)
     {
-      cl = GNUNET_malloc(sizeof(struct ClientDataList));
-      memset(cl, 0, sizeof(struct ClientDataList));
+      cl = GNUNET_malloc (sizeof (struct ClientDataList));
+      memset (cl, 0, sizeof (struct ClientDataList));
       cl->next = clients;
       clients = cl;
     }
   request->next = cl->requests;
   cl->requests = request;
-  GNUNET_FS_PLAN_request(client, 0, request);
-  if (request->anonymityLevel == 0) 
+  GNUNET_FS_PLAN_request (client, 0, request);
+  if (request->anonymityLevel == 0)
     {
-      request->last_dht_get = GNUNET_get_time();
+      request->last_dht_get = GNUNET_get_time ();
       request->dht_back_off = MAX_DHT_DELAY;
-      GNUNET_FS_DHT_execute_query(request->type,
-				  &request->queries[0]);
+      GNUNET_FS_DHT_execute_query (request->type, &request->queries[0]);
     }
-  GNUNET_mutex_unlock(GNUNET_FS_lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
 /**
- * How many bytes should a bloomfilter be if 
+ * How many bytes should a bloomfilter be if
  * we have already seen entry_count responses?
  * Note that GAP_BLOOMFILTER_K gives us the
  * number of bits set per entry.  Furthermore,
@@ -137,26 +136,26 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
  * not resize the filter, we should generally
  * pick a slightly larger size than what the
  * strict math would suggest.
- * 
+ *
  * @return must be a power of two and smaller
  *         or equal to 2^15.
  */
 static unsigned int
-compute_bloomfilter_size(unsigned int entry_count)
+compute_bloomfilter_size (unsigned int entry_count)
 {
   unsigned short size;
   unsigned short max = 1 << 15;
   unsigned int ideal = (entry_count * GAP_BLOOMFILTER_K) / 8;
 
   size = 8;
-  while ( (size < max) &&
-	  (size < ideal) )
+  while ((size < max) && (size < ideal))
     size *= 2;
   return size;
 }
 
-struct IteratorClosure {
-  struct ResponseList * pos;
+struct IteratorClosure
+{
+  struct ResponseList *pos;
   int mingle_number;
 };
 
@@ -168,20 +167,17 @@ struct IteratorClosure {
  * @return GNUNET_YES if we have more,
  *         GNUNET_NO if this is the last entry
  */
-static int 
-response_bf_iterator(GNUNET_HashCode * next,
-		     void *arg)
+static int
+response_bf_iterator (GNUNET_HashCode * next, void *arg)
 {
-  struct IteratorClosure * cls = arg;
-  struct ResponseList * r = cls->pos;
+  struct IteratorClosure *cls = arg;
+  struct ResponseList *r = cls->pos;
 
   if (NULL == r)
     return GNUNET_NO;
-  GNUNET_FS_HELPER_mingle_hash(&r->hash,
-			       cls->mingle_number,
-			       next);
+  GNUNET_FS_HELPER_mingle_hash (&r->hash, cls->mingle_number, next);
   cls->pos = r->next;
-  return GNUNET_YES;  
+  return GNUNET_YES;
 }
 
 /**
@@ -200,81 +196,71 @@ response_bf_iterator(GNUNET_HashCode * next,
  *         GNUNET_SYSERR on serious errors
  */
 static int
-handle_response(PID_INDEX sender,
-		struct GNUNET_ClientHandle * client,
-		struct RequestList * rl,
-		const GNUNET_HashCode * primary_key,
-		GNUNET_CronTime expirationTime,
-		unsigned int size,
-		const DBlock * data,
-		unsigned int * value) 
+handle_response (PID_INDEX sender,
+                 struct GNUNET_ClientHandle *client,
+                 struct RequestList *rl,
+                 const GNUNET_HashCode * primary_key,
+                 GNUNET_CronTime expirationTime,
+                 unsigned int size, const DBlock * data, unsigned int *value)
 {
   struct IteratorClosure ic;
-  CS_fs_reply_content_MESSAGE * msg;
+  CS_fs_reply_content_MESSAGE *msg;
   GNUNET_HashCode hc;
   int ret;
   unsigned int bf_size;
 
   /* check that content matches query */
-  ret = GNUNET_FS_SHARED_test_valid_new_response(rl,
-						 primary_key,
-						 size,
-						 data,
-						 &hc);
+  ret = GNUNET_FS_SHARED_test_valid_new_response (rl,
+                                                  primary_key,
+                                                  size, data, &hc);
   if (ret != GNUNET_OK)
-    return ret;	
-  if (sender == 0) /* dht produced response */
-    rl->dht_back_off = MAX_DHT_DELAY; /* go back! */
+    return ret;
+  if (sender == 0)              /* dht produced response */
+    rl->dht_back_off = MAX_DHT_DELAY;   /* go back! */
   /* send to client */
-  msg = GNUNET_malloc(sizeof(CS_fs_reply_content_MESSAGE) + size);
-  msg->header.size = htons(sizeof(CS_fs_reply_content_MESSAGE) + size);
-  msg->header.type = htons(GNUNET_CS_PROTO_GAP_RESULT);
-  msg->anonymityLevel = htonl(0); /* unknown */
-  msg->expirationTime = GNUNET_htonll(expirationTime);
-  memcpy(&msg[1],
-	 data,
-	 size);
-  coreAPI->cs_send_to_client(client,
-			     &msg->header,
-			     (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
-			     ? GNUNET_NO
-			     : GNUNET_YES);
-  GNUNET_free(msg);
+  msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
+  msg->header.size = htons (sizeof (CS_fs_reply_content_MESSAGE) + size);
+  msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
+  msg->anonymityLevel = htonl (0);      /* unknown */
+  msg->expirationTime = GNUNET_htonll (expirationTime);
+  memcpy (&msg[1], data, size);
+  coreAPI->cs_send_to_client (client,
+                              &msg->header,
+                              (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
+                              ? GNUNET_NO : GNUNET_YES);
+  GNUNET_free (msg);
 
-  /* update *value */ 
+  /* update *value */
   *value += 1 + rl->value;
-  GNUNET_FS_PLAN_success(sender, client, 0, rl);
+  GNUNET_FS_PLAN_success (sender, client, 0, rl);
 
   if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
-    return GNUNET_OK; /* the end */
+    return GNUNET_OK;           /* the end */
 
   /* update bloom filter */
   rl->bloomfilter_entry_count++;
-  bf_size = compute_bloomfilter_size(rl->bloomfilter_entry_count);
-  if (rl->bloomfilter == NULL) 
+  bf_size = compute_bloomfilter_size (rl->bloomfilter_entry_count);
+  if (rl->bloomfilter == NULL)
     {
-      rl->bloomfilter_mutator 
-	= GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, -1);
+      rl->bloomfilter_mutator
+        = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
       rl->bloomfilter_size = bf_size;
-      rl->bloomfilter = GNUNET_bloomfilter_init(NULL,
-						NULL,
-						rl->bloomfilter_size,
-						GAP_BLOOMFILTER_K);
-    } 
+      rl->bloomfilter = GNUNET_bloomfilter_init (NULL,
+                                                 NULL,
+                                                 rl->bloomfilter_size,
+                                                 GAP_BLOOMFILTER_K);
+    }
   else if (rl->bloomfilter_size != bf_size)
     {
-      rl->bloomfilter_mutator 
-	= GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, -1);
+      rl->bloomfilter_mutator
+        = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
       ic.pos = rl->responses;
       ic.mingle_number = rl->bloomfilter_mutator;
-      GNUNET_bloomfilter_resize(rl->bloomfilter,
-				&response_bf_iterator,
-				&ic,
-				bf_size,
-				GAP_BLOOMFILTER_K);
+      GNUNET_bloomfilter_resize (rl->bloomfilter,
+                                 &response_bf_iterator,
+                                 &ic, bf_size, GAP_BLOOMFILTER_K);
     }
-  GNUNET_FS_SHARED_mark_response_seen(rl,
-				      &hc);
+  GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
 
   /* we want more */
   return GNUNET_NO;
@@ -282,11 +268,11 @@ handle_response(PID_INDEX sender,
 
 /**
  * Handle the given response (by forwarding it to
- * other peers as necessary).  
+ * other peers as necessary).
  *
  * @param sender who send the response (good too know
  *        for future routing decisions)
- * @param primary_query hash code used for lookup 
+ * @param primary_query hash code used for lookup
  *        (note that namespace membership may
  *        require additional verification that has
  *        not yet been performed; checking the
@@ -296,20 +282,20 @@ handle_response(PID_INDEX sender,
  * @return how much was this content worth to us?
  */
 unsigned int
-GNUNET_FS_QUERYMANAGER_handle_response(const GNUNET_PeerIdentity * sender,
-				       const GNUNET_HashCode * primary_query,
-				       GNUNET_CronTime expirationTime,
-				       unsigned int size,
-				       const DBlock * data) 
+GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
+                                        const GNUNET_HashCode * primary_query,
+                                        GNUNET_CronTime expirationTime,
+                                        unsigned int size,
+                                        const DBlock * data)
 {
-  struct ClientDataList * cl;
-  struct RequestList * rl;
-  struct RequestList * prev;
+  struct ClientDataList *cl;
+  struct RequestList *rl;
+  struct RequestList *prev;
   unsigned int value;
   PID_INDEX rid;
 
-  rid = GNUNET_FS_PT_intern(sender);
-  GNUNET_mutex_lock(GNUNET_FS_lock);
+  rid = GNUNET_FS_PT_intern (sender);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   value = 0;
   cl = clients;
   while (cl != NULL)
@@ -317,38 +303,35 @@ GNUNET_FS_QUERYMANAGER_handle_response(const GNUNET_PeerIdentity * sender,
       rl = cl->requests;
       prev = NULL;
       while (rl != NULL)
-	{
-	  if (GNUNET_OK ==
-	      handle_response(rid,
-			      cl->client,
-			      rl,
-			      primary_query,
-			      expirationTime,
-			      size,
-			      data,
-			      &value))
-	    {
-	      if (prev != NULL)
-		prev->next = rl->next;
-	      else
-		cl->requests = rl->next;
-	      GNUNET_FS_SHARED_free_request_list(rl);
-	      if (prev == NULL)
-		rl = cl->requests;
-	      else
-		rl = prev->next;
-	    }	    
-	  else
-	    {
-	      prev = rl;
-	      rl = rl->next;
-	    }
-	}
+        {
+          if (GNUNET_OK ==
+              handle_response (rid,
+                               cl->client,
+                               rl,
+                               primary_query,
+                               expirationTime, size, data, &value))
+            {
+              if (prev != NULL)
+                prev->next = rl->next;
+              else
+                cl->requests = rl->next;
+              GNUNET_FS_SHARED_free_request_list (rl);
+              if (prev == NULL)
+                rl = cl->requests;
+              else
+                rl = prev->next;
+            }
+          else
+            {
+              prev = rl;
+              rl = rl->next;
+            }
+        }
       cl = cl->next;
     }
 
-  GNUNET_mutex_unlock(GNUNET_FS_lock);
-  GNUNET_FS_PT_change_rc(rid, -1);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
+  GNUNET_FS_PT_change_rc (rid, -1);
   return value;
 }
 
@@ -357,34 +340,33 @@ GNUNET_FS_QUERYMANAGER_handle_response(const GNUNET_PeerIdentity * sender,
  * Frees all of the associated data structures.
  */
 static void
-handle_client_exit (struct GNUNET_ClientHandle *client) 
+handle_client_exit (struct GNUNET_ClientHandle *client)
 {
-  struct ClientDataList * cl;
-  struct ClientDataList * prev;
-  struct RequestList * rl;
+  struct ClientDataList *cl;
+  struct ClientDataList *prev;
+  struct RequestList *rl;
 
-  GNUNET_mutex_lock(GNUNET_FS_lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
   prev = NULL;
-  while ( (cl != NULL) &&
-	  (cl->client != client) )
+  while ((cl != NULL) && (cl->client != client))
     {
       prev = cl;
       cl = cl->next;
     }
   if (cl != NULL)
     {
-      while (cl->requests != NULL) 
-	{
-	  rl = cl->requests;
-	  cl->requests = rl->next;
-	  GNUNET_FS_SHARED_free_request_list(rl);
-	}
+      while (cl->requests != NULL)
+        {
+          rl = cl->requests;
+          cl->requests = rl->next;
+          GNUNET_FS_SHARED_free_request_list (rl);
+        }
       if (prev == NULL)
-	clients = cl->next;
+        clients = cl->next;
       else
-	prev->next = cl->next;
-      GNUNET_free(cl);
+        prev->next = cl->next;
+      GNUNET_free (cl);
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
@@ -394,68 +376,61 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
  * repeat requests.
  */
 static void
-repeat_requests_job(void * unused)
+repeat_requests_job (void *unused)
 {
-  struct ClientDataList * client;
-  struct RequestList * request;
+  struct ClientDataList *client;
+  struct RequestList *request;
   GNUNET_CronTime now;
 
-  GNUNET_mutex_lock(GNUNET_FS_lock);
-  now = GNUNET_get_time();
+  GNUNET_mutex_lock (GNUNET_FS_lock);
+  now = GNUNET_get_time ();
   client = clients;
   while (client != NULL)
     {
       request = client->requests;
       while (request != NULL)
-	{
-	  if ( (NULL == request->plan_entries) &&
-		( (request->expiration == 0) ||
-		 (request->expiration > now) ) &&
-	       (request->last_ttl_used * GNUNET_CRON_SECONDS +
-		request->last_request_time > now) )
-	    GNUNET_FS_PLAN_request(client->client,
-				   0,
-				   request);	    
+        {
+          if ((NULL == request->plan_entries) &&
+              ((request->expiration == 0) ||
+               (request->expiration > now)) &&
+              (request->last_ttl_used * GNUNET_CRON_SECONDS +
+               request->last_request_time > now))
+            GNUNET_FS_PLAN_request (client->client, 0, request);
 
-	  if ( (request->anonymityLevel == 0) &&
-	       (request->last_dht_get + request->dht_back_off < now) )
-	    {
-	      if (request->dht_back_off * 2 >
-		  request->dht_back_off) 
-		request->dht_back_off *= 2;
-	      request->last_dht_get = now;
-	      GNUNET_FS_DHT_execute_query(request->type,
-					  &request->queries[0]);
-	    }
-	  request = request->next;
-	}
+          if ((request->anonymityLevel == 0) &&
+              (request->last_dht_get + request->dht_back_off < now))
+            {
+              if (request->dht_back_off * 2 > request->dht_back_off)
+                request->dht_back_off *= 2;
+              request->last_dht_get = now;
+              GNUNET_FS_DHT_execute_query (request->type,
+                                           &request->queries[0]);
+            }
+          request = request->next;
+        }
       client = client->next;
     }
-  GNUNET_mutex_unlock(GNUNET_FS_lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
-int 
-GNUNET_FS_QUERYMANAGER_init(GNUNET_CoreAPIForPlugins * capi) 
+int
+GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
                     capi->cs_exit_handler_register (&handle_client_exit));
-  GNUNET_cron_add_job(capi->cron,
-		      &repeat_requests_job,
-		      CHECK_REPEAT_FREQUENCY,
-		      CHECK_REPEAT_FREQUENCY,
-		      NULL);
+  GNUNET_cron_add_job (capi->cron,
+                       &repeat_requests_job,
+                       CHECK_REPEAT_FREQUENCY, CHECK_REPEAT_FREQUENCY, NULL);
   return 0;
 }
 
 int
-GNUNET_FS_QUERYMANAGER_done()
+GNUNET_FS_QUERYMANAGER_done ()
 {
-  GNUNET_cron_del_job(coreAPI->cron,
-		      &repeat_requests_job,
-		      CHECK_REPEAT_FREQUENCY,
-		      NULL);
+  GNUNET_cron_del_job (coreAPI->cron,
+                       &repeat_requests_job, CHECK_REPEAT_FREQUENCY, NULL);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
                     coreAPI->

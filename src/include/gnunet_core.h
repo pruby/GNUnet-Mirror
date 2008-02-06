@@ -302,7 +302,7 @@ typedef struct
    */
   int (*connection_register_send_callback) (unsigned int
                                             minimumPadding,
-					    unsigned int priority,
+                                            unsigned int priority,
                                             GNUNET_BufferFillCallback
                                             callback);
 
@@ -323,8 +323,8 @@ typedef struct
    *
    * @return GNUNET_OK
    */
-  int (*register_notify_peer_disconnect)(GNUNET_NodeIteratorCallback callback,
-					 void * cls);
+  int (*register_notify_peer_disconnect) (GNUNET_NodeIteratorCallback
+                                          callback, void *cls);
 
   /**
    * Stop calling the given function whenever we get
@@ -333,8 +333,8 @@ typedef struct
    * @return GNUNET_OK on success, GNUNET_SYSERR
    *         if this callback is not registered
    */
-  int (*unregister_notify_peer_disconnect)(GNUNET_NodeIteratorCallback callback,
-					   void * cls);
+  int (*unregister_notify_peer_disconnect) (GNUNET_NodeIteratorCallback
+                                            callback, void *cls);
 
   /**
    * Register a handler that is to be called for each
@@ -446,10 +446,10 @@ typedef struct
    * @param amount how many bytes should we expect to receive?
    *        (negative amounts can be used to undo a (recent)
    *        reservation request
-   * @return amount that could actually be reserved 
+   * @return amount that could actually be reserved
    */
-  int (*reserve_downstream_bandwidth)(const GNUNET_PeerIdentity * peer,
-				      int amount);
+  int (*reserve_downstream_bandwidth) (const GNUNET_PeerIdentity * peer,
+                                       int amount);
 
   /**
    * Offer the core a session for communication with the
@@ -559,11 +559,10 @@ typedef struct
    *
    * @param force GNUNET_YES if this message MUST be queued
    */
-  int (*cs_send_to_client)(struct GNUNET_ClientHandle *
-			   handle,
-			   const GNUNET_MessageHeader *
-			   message, int force);
-  
+  int (*cs_send_to_client) (struct GNUNET_ClientHandle *
+                            handle,
+                            const GNUNET_MessageHeader * message, int force);
+
   /**
    * Send a message to the client identified by the handle.  Note that
    * the core will typically buffer these messages as much as possible

@@ -29,16 +29,17 @@
 #include "gnunet_util.h"
 #include "ecrs_core.h"
 
-enum GNUNET_FS_RoutingPolicy {
+enum GNUNET_FS_RoutingPolicy
+{
   GNUNET_FS_RoutingPolicy_ANSWER = 1,
   GNUNET_FS_RoutingPolicy_FORWARD = 2,
   GNUNET_FS_RoutingPolicy_INDIRECT = 4,
   GNUNET_FS_RoutingPolicy_ALL = 7
 };
 
-int GNUNET_FS_GAP_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_GAP_done(void);
+int GNUNET_FS_GAP_done (void);
 
 /**
  * Execute a GAP query.  Determines where to forward
@@ -56,39 +57,38 @@ int GNUNET_FS_GAP_done(void);
  * @param bloomfilter_data the bloom filter bits
  */
 void
-GNUNET_FS_GAP_execute_query(const GNUNET_PeerIdentity * respond_to,
-			    unsigned int priority,
-			    enum GNUNET_FS_RoutingPolicy policy,
-			    int ttl,
-			    unsigned int type,
-			    unsigned int query_count,
-			    const GNUNET_HashCode * queries,
-			    int filter_mutator,
-			    unsigned int filter_size,
-			    const void * bloomfilter_data);
+GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
+                             unsigned int priority,
+                             enum GNUNET_FS_RoutingPolicy policy,
+                             int ttl,
+                             unsigned int type,
+                             unsigned int query_count,
+                             const GNUNET_HashCode * queries,
+                             int filter_mutator,
+                             unsigned int filter_size,
+                             const void *bloomfilter_data);
 
 /**
  * Handle the given response (by forwarding it to
- * other peers as necessary).  
+ * other peers as necessary).
  *
  * @param sender who send the response (good too know
  *        for future routing decisions)
- * @param primary_query hash code used for lookup 
+ * @param primary_query hash code used for lookup
  *        (note that namespace membership may
  *        require additional verification that has
  *        not yet been performed; checking the
  *        signature has already been done)
  * @param expiration relative time until the content
- *        will expire 
+ *        will expire
  * @param size size of the data
  * @param data the data itself
  * @return how much was this content worth to us?
  */
 unsigned int
-GNUNET_FS_GAP_handle_response(const GNUNET_PeerIdentity * sender,
-			      const GNUNET_HashCode * primary_query,
-			      GNUNET_CronTime expiration,
-			      unsigned int size,
-			      const DBlock * data);
+GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
+                               const GNUNET_HashCode * primary_query,
+                               GNUNET_CronTime expiration,
+                               unsigned int size, const DBlock * data);
 
 #endif

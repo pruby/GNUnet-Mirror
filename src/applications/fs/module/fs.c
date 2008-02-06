@@ -361,9 +361,7 @@ csHandleCS_fs_request_insert_MESSAGE (struct GNUNET_ClientHandle *sock,
   GNUNET_EncName enc;
 #endif
 
-  cectx =
-    coreAPI->
-    cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_insert_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -475,9 +473,7 @@ csHandleCS_fs_request_init_index_MESSAGE (struct GNUNET_ClientHandle *sock,
   int fnLen;
   struct GNUNET_GE_Context *cectx;
 
-  cectx =
-    coreAPI->
-    cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_init_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -526,9 +522,7 @@ csHandleCS_fs_request_index_MESSAGE (struct GNUNET_ClientHandle *sock,
   const CS_fs_request_index_MESSAGE *ri;
   struct GNUNET_GE_Context *cectx;
 
-  cectx =
-    coreAPI->
-    cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_index_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -611,9 +605,7 @@ csHandleCS_fs_request_delete_MESSAGE (struct GNUNET_ClientHandle *sock,
 #endif
   struct GNUNET_GE_Context *cectx;
 
-  cectx =
-    coreAPI->
-    cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_create_client_log_context (sock);
   if (ntohs (req->size) < sizeof (CS_fs_request_delete_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);
@@ -687,9 +679,7 @@ csHandleCS_fs_request_unindex_MESSAGE (struct GNUNET_ClientHandle *sock,
   const CS_fs_request_unindex_MESSAGE *ru;
   struct GNUNET_GE_Context *cectx;
 
-  cectx =
-    coreAPI->
-    cs_create_client_log_context (sock);
+  cectx = coreAPI->cs_create_client_log_context (sock);
   if (ntohs (req->size) != sizeof (CS_fs_request_unindex_MESSAGE))
     {
       GNUNET_GE_BREAK (ectx, 0);

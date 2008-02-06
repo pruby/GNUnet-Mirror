@@ -30,9 +30,9 @@
 #include "gnunet_core.h"
 #include "ecrs_core.h"
 
-int GNUNET_FS_QUERYMANAGER_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_QUERYMANAGER_done(void);
+int GNUNET_FS_QUERYMANAGER_done (void);
 
 
 /**
@@ -44,19 +44,19 @@ int GNUNET_FS_QUERYMANAGER_done(void);
  */
 void
 GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
-				    unsigned int key_count,
-				    unsigned int anonymityLevel,
-				    unsigned int type,
-				    struct GNUNET_ClientHandle * client,
-				    const GNUNET_PeerIdentity * target);
+                                    unsigned int key_count,
+                                    unsigned int anonymityLevel,
+                                    unsigned int type,
+                                    struct GNUNET_ClientHandle *client,
+                                    const GNUNET_PeerIdentity * target);
 
 /**
  * Handle the given response (by forwarding it to
- * other peers as necessary).  
+ * other peers as necessary).
  *
  * @param sender who send the response (good too know
  *        for future routing decisions)
- * @param primary_query hash code used for lookup 
+ * @param primary_query hash code used for lookup
  *        (note that namespace membership may
  *        require additional verification that has
  *        not yet been performed; checking the
@@ -66,11 +66,11 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
  * @return how much was this content worth to us?
  */
 unsigned int
-GNUNET_FS_QUERYMANAGER_handle_response(const GNUNET_PeerIdentity * sender,
-				       const GNUNET_HashCode * primary_query,
-				       GNUNET_CronTime expirationTime,
-				       unsigned int size,
-				       const DBlock * data);
+GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
+                                        const GNUNET_HashCode * primary_query,
+                                        GNUNET_CronTime expirationTime,
+                                        unsigned int size,
+                                        const DBlock * data);
 
 
 #endif

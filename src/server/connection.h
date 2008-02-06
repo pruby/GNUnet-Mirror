@@ -157,7 +157,7 @@ unsigned int GNUNET_CORE_connection_compute_index_of_peer (const
  */
 int GNUNET_CORE_connection_register_send_callback (unsigned int
                                                    minimumPadding,
-						   unsigned int prio,
+                                                   unsigned int prio,
                                                    GNUNET_BufferFillCallback
                                                    callback);
 
@@ -352,8 +352,9 @@ int GNUNET_CORE_connection_assert_tsession_unused (GNUNET_TSession *
  *
  * @return GNUNET_OK
  */
-int GNUNET_CORE_connection_register_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
-							   void * cls);
+int
+GNUNET_CORE_connection_register_notify_peer_disconnect
+(GNUNET_NodeIteratorCallback callback, void *cls);
 
 /**
  * Stop calling the given function whenever we get
@@ -362,8 +363,9 @@ int GNUNET_CORE_connection_register_notify_peer_disconnect(GNUNET_NodeIteratorCa
  * @return GNUNET_OK on success, GNUNET_SYSERR
  *         if this callback is not registered
  */
-int GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIteratorCallback callback,
-							     void * cls);
+int
+GNUNET_CORE_connection_unregister_notify_peer_disconnect
+(GNUNET_NodeIteratorCallback callback, void *cls);
 
 
 /**
@@ -373,10 +375,11 @@ int GNUNET_CORE_connection_unregister_notify_peer_disconnect(GNUNET_NodeIterator
  * @param amount how many bytes should we expect to receive?
  *        (negative amounts can be used to undo a (recent)
  *        reservation request
- * @return amount that could actually be reserved 
+ * @return amount that could actually be reserved
  */
-int GNUNET_CORE_connection_reserve_downstream_bandwidth(const GNUNET_PeerIdentity * peer,
-							int amount);
+int GNUNET_CORE_connection_reserve_downstream_bandwidth (const
+                                                         GNUNET_PeerIdentity *
+                                                         peer, int amount);
 
 #endif
 /* end of connection.h */

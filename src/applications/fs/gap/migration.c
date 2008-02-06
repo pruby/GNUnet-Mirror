@@ -124,8 +124,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   GNUNET_CronTime now;
   unsigned int anonymity;
   GNUNET_DatastoreValue *enc;
-  GNUNET_DatastoreValue *value;  
-  P2P_gap_reply_MESSAGE * msg;
+  GNUNET_DatastoreValue *value;
+  P2P_gap_reply_MESSAGE *msg;
   unsigned int index;
   int entry;
   int discard_entry;
@@ -259,7 +259,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   if ((ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) ||
       (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD))
     {
-      if (GNUNET_FS_ONDEMAND_get_indexed_content (value, &content[entry].key, &enc) != GNUNET_OK)
+      if (GNUNET_FS_ONDEMAND_get_indexed_content
+          (value, &content[entry].key, &enc) != GNUNET_OK)
         {
           GNUNET_free_non_null (value);
           content[entry].value = NULL;
@@ -294,44 +295,41 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   msg = position;
   et = GNUNET_ntohll (value->expirationTime);
   if (et > now)
-    et -= now;    
+    et -= now;
   else
     et = 0;
   et %= MAX_MIGRATION_EXP;
   anonymity = ntohl (value->anonymityLevel);
   ret = 0;
-  if ( (anonymity == 0) ||
-       (GNUNET_OK == GNUNET_FS_ANONYMITY_check(anonymity,
-					       GNUNET_P2P_PROTO_GAP_RESULT)) )
+  if ((anonymity == 0) ||
+      (GNUNET_OK == GNUNET_FS_ANONYMITY_check (anonymity,
+                                               GNUNET_P2P_PROTO_GAP_RESULT)))
     {
-      msg->header.type = htons(GNUNET_P2P_PROTO_GAP_RESULT);
-      msg->header.size = htons(size);
-      msg->reserved = htonl(0);
-      msg->expiration = GNUNET_htonll(et);
-      memcpy(&msg[1],
-	     &value[1],
-	     size - sizeof(P2P_gap_reply_MESSAGE));
+      msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
+      msg->header.size = htons (size);
+      msg->reserved = htonl (0);
+      msg->expiration = GNUNET_htonll (et);
+      memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
       ret = size;
       if (content[entry].sentCount == MAX_RECEIVERS)
-	{
-	  GNUNET_free (content[entry].value);
-	  content[entry].value = NULL;
-	  content[entry].sentCount = 0;
-	}
+        {
+          GNUNET_free (content[entry].value);
+          content[entry].value = NULL;
+          content[entry].sentCount = 0;
+        }
       else
-	{
-	  content[entry].receiverIndices[content[entry].sentCount++] =
-	    index;
-	}
+        {
+          content[entry].receiverIndices[content[entry].sentCount++] = index;
+        }
     }
   else
     {
 #if DEBUG_MIGRATION
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-		     "Migration: not enough cover traffic\n");
+                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                     "Migration: not enough cover traffic\n");
 #endif
-    }    
+    }
   GNUNET_mutex_unlock (lock);
   if ((ret > 0) && (stats != NULL))
     stats->change (stat_migration_count, 1);
@@ -347,8 +345,7 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
   coreAPI->
     connection_register_send_callback
     (GNUNET_GAP_ESTIMATED_DATA_SIZE,
-     GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY,
-     &activeMigrationCallback);
+     GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY, &activeMigrationCallback);
   datastore = capi->request_service ("datastore");
   dht = capi->request_service ("dht");
   stats = capi->request_service ("stats");

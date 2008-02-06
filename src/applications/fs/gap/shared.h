@@ -33,15 +33,16 @@
 /**
  * Linked list of responses that we have gotten for
  * this request.  Used to avoid forwarding the same
- * response to the client multiple times and to 
+ * response to the client multiple times and to
  * construct the bloom filter to block duplicates.
  */
-struct ResponseList {
+struct ResponseList
+{
 
   /**
    * This is a linked list.
    */
-  struct ResponseList * next;
+  struct ResponseList *next;
 
   /**
    * Hash of the dblocks of the responses.
@@ -53,18 +54,19 @@ struct ResponseList {
 /**
  * Linked list with the active requests of a client.
  */
-struct RequestList {
-  
+struct RequestList
+{
+
   /**
    * This is a linked list.
    */
-  struct RequestList * next;
+  struct RequestList *next;
 
   /**
    * Linked list of responses that we have
    * already received for this request.
    */
-  struct ResponseList * responses;
+  struct ResponseList *responses;
 
   /**
    * Linked list of query plan entries that this
@@ -74,19 +76,19 @@ struct RequestList {
    * of a linked list that is constructed using
    * the "plan_entries_next" field of QueryPlanEntry.
    */
-  struct QueryPlanEntry * plan_entries;
+  struct QueryPlanEntry *plan_entries;
 
   /**
    * Bloomfilter for the query (maybe NULL).
    */
-  struct GNUNET_BloomFilter * bloomfilter;
+  struct GNUNET_BloomFilter *bloomfilter;
 
   /**
    * NULL if this request is for another peer,
    * otherwise the handle of the client for which
    * this request is made.
    */
-  struct GNUNET_ClientHandle * response_client;
+  struct GNUNET_ClientHandle *response_client;
 
   /**
    * Last time we tried to get a response for this
@@ -100,7 +102,7 @@ struct RequestList {
    * DHT-get operation?
    */
   GNUNET_CronTime dht_back_off;
-  
+
   /**
    * When does this query record expire? (0 for never).
    */
@@ -124,7 +126,7 @@ struct RequestList {
 
   /**
    * Mutator used for the bloom filter.
-   */  
+   */
   int bloomfilter_mutator;
 
   /**
@@ -146,18 +148,18 @@ struct RequestList {
    * If there is no peer that is suspected to have the result,
    * the PID_INDEX will be zero.
    */
-  PID_INDEX primary_target; 
+  PID_INDEX primary_target;
 
   /**
    * Where to send a response (if we get one).
    * Maybe zero (if we are the peer that cares).
    */
-  PID_INDEX response_target; 
+  PID_INDEX response_target;
 
   /**
    * (Relative) TTL used in the last request.
    */
-  int last_ttl_used;  
+  int last_ttl_used;
 
   /**
    * Priority used for the last request.
@@ -179,34 +181,35 @@ struct RequestList {
  * simple linked list starting at the respective
  * RequestList.
  */
-struct QueryPlanEntry {
+struct QueryPlanEntry
+{
 
   /**
    * This is a doubly-linked list.
    */
-  struct QueryPlanEntry * next;
+  struct QueryPlanEntry *next;
 
   /**
    * This is a doubly-linked list.
    */
-  struct QueryPlanEntry * prev;
+  struct QueryPlanEntry *prev;
 
   /**
    * Query plan that this entry belongs to.
    */
-  struct QueryPlanList * list;
+  struct QueryPlanList *list;
 
   /**
    * Details about the request in the plan.
    */
-  struct RequestList * request;
+  struct RequestList *request;
 
   /**
    * Other query plan entires for the same
    * request (those entries will be part of
    * other query plan lists).
    */
-  struct QueryPlanEntry * plan_entries_next;
+  struct QueryPlanEntry *plan_entries_next;
 
   /**
    * Request priority that should be used.
@@ -215,7 +218,7 @@ struct QueryPlanEntry {
 
   /**
    * Request TTL that should be used.
-   */ 
+   */
   int ttl;
 
 };
@@ -224,27 +227,28 @@ struct QueryPlanEntry {
 /**
  * Linked list of queries to consider for each peer.
  */
-struct QueryPlanList {
+struct QueryPlanList
+{
 
   /**
    * This is a linked list.
    */
-  struct QueryPlanList * next;
+  struct QueryPlanList *next;
 
   /**
    * Head of the doubly-linked list of queries to consider.
    */
-  struct QueryPlanEntry * head;
+  struct QueryPlanEntry *head;
 
   /**
    * Tail of the doubly-linked list of queries to consider.
    */
-  struct QueryPlanEntry * tail;
+  struct QueryPlanEntry *tail;
 
   /**
    * For which peer is this the current plan?
    */
-  PID_INDEX peer;  
+  PID_INDEX peer;
 
 };
 
@@ -252,19 +256,18 @@ struct QueryPlanList {
  * Lock used to synchronize access to
  * all shared datastructures.
  */
-extern struct GNUNET_Mutex * GNUNET_FS_lock;
+extern struct GNUNET_Mutex *GNUNET_FS_lock;
 
 /**
  * Free the request list, including the associated
  * list of pending requests, its entries in the
  * plans for various peers and known responses.
  */
-void
-GNUNET_FS_SHARED_free_request_list(struct RequestList * rl);
+void GNUNET_FS_SHARED_free_request_list (struct RequestList *rl);
 
 /**
  * Check if the given value is a valid
- * and new response for the given request list 
+ * and new response for the given request list
  * entry.
  *
  * @param hc set to the hash of the data if successful
@@ -272,19 +275,19 @@ GNUNET_FS_SHARED_free_request_list(struct RequestList * rl);
  *         applicable, GNUNET_SYSERR on error
  */
 int
-GNUNET_FS_SHARED_test_valid_new_response(struct RequestList * rl,
-					 const GNUNET_HashCode * primary_key,
-					 unsigned int size,
-					 const DBlock * data,
-					 GNUNET_HashCode * hc);
+GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
+                                          const GNUNET_HashCode * primary_key,
+                                          unsigned int size,
+                                          const DBlock * data,
+                                          GNUNET_HashCode * hc);
 
 /**
  * Mark the response corresponding to the given
  * hash code as seen (update linked list and bloom filter).
  */
 void
-GNUNET_FS_SHARED_mark_response_seen(struct RequestList * rl,
-				    GNUNET_HashCode * hc);
+GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
+                                     GNUNET_HashCode * hc);
 
 /**
  * If the data portion and type of the value match our value in the
@@ -293,21 +296,25 @@ GNUNET_FS_SHARED_mark_response_seen(struct RequestList * rl,
  * continue.
  */
 int
-GNUNET_FS_HELPER_complete_value_from_database_callback (const GNUNET_HashCode * key,
-							const GNUNET_DatastoreValue * value, void *closure,
-							unsigned long long uid);
+GNUNET_FS_HELPER_complete_value_from_database_callback (const GNUNET_HashCode
+                                                        * key,
+                                                        const
+                                                        GNUNET_DatastoreValue
+                                                        * value,
+                                                        void *closure,
+                                                        unsigned long long
+                                                        uid);
 
 
 /**
- * Mingle hash with the mingle_number to 
- * produce different bits.  We use this 
+ * Mingle hash with the mingle_number to
+ * produce different bits.  We use this
  * to generate many different bloomfilters
  * for the same data.
  */
-void 
-GNUNET_FS_HELPER_mingle_hash(const GNUNET_HashCode * in,
-			     int mingle_number,
-			     GNUNET_HashCode * hc);
+void
+GNUNET_FS_HELPER_mingle_hash (const GNUNET_HashCode * in,
+                              int mingle_number, GNUNET_HashCode * hc);
 
 /**
  * The priority level imposes a bound on the maximum
@@ -318,8 +325,6 @@ GNUNET_FS_HELPER_mingle_hash(const GNUNET_HashCode * in,
  * @return ttl_in if ttl_in is below the limit,
  *         otherwise the ttl-limit for the given priority
  */
-int
-GNUNET_FS_HELPER_bound_ttl(int ttl_in,
-			   unsigned int prio);
+int GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio);
 
 #endif

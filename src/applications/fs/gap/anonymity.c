@@ -29,13 +29,12 @@
 #include "gnunet_protocols.h"
 #include "gnunet_traffic_service.h"
 
-static GNUNET_Traffic_ServiceAPI * traffic;
+static GNUNET_Traffic_ServiceAPI *traffic;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 int
-GNUNET_FS_ANONYMITY_check (unsigned int level,
-			   unsigned short content_type)
+GNUNET_FS_ANONYMITY_check (unsigned int level, unsigned short content_type)
 {
   unsigned int count;
   unsigned int peers;
@@ -94,18 +93,18 @@ GNUNET_FS_ANONYMITY_check (unsigned int level,
 /**
  * Initialize the migration module.
  */
-void 
+void
 GNUNET_FS_ANONYMITY_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  traffic = capi->request_service("traffic");
+  traffic = capi->request_service ("traffic");
 }
 
-void 
+void
 GNUNET_FS_ANONYMITY_done ()
 {
   if (traffic != NULL)
-    coreAPI->release_service("traffic");
+    coreAPI->release_service ("traffic");
 }
 
 /* end of anonymity.c */

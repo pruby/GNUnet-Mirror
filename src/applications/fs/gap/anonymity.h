@@ -32,11 +32,9 @@
 /**
  * Initialize the migration module.
  */
-void 
-GNUNET_FS_ANONYMITY_init (GNUNET_CoreAPIForPlugins * capi);
+void GNUNET_FS_ANONYMITY_init (GNUNET_CoreAPIForPlugins * capi);
 
-void 
-GNUNET_FS_ANONYMITY_done (void);
+void GNUNET_FS_ANONYMITY_done (void);
 
 /**
  * Consider traffic volume before sending out content or
@@ -46,6 +44,6 @@ GNUNET_FS_ANONYMITY_done (void);
  */
 int
 GNUNET_FS_ANONYMITY_check (unsigned int anonymityLevel,
-			   unsigned short content_type);
+                           unsigned short content_type);
 
 #endif

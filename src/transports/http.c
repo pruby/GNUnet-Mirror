@@ -623,7 +623,7 @@ destroy_tsession (GNUNET_TSession * tsession)
           next = pos->next;
           STEP ();
           curl_multi_remove_handle (curl_multi, pos->curl_put);
-	  http_requests_pending--;
+          http_requests_pending--;
           STEP ();
           signal_select ();
           curl_easy_cleanup (pos->curl_put);
@@ -1043,12 +1043,13 @@ accessHandlerCallback (void *cls,
   if (httpSession == NULL)
     {
       /* new http connection */
-      if (stats != NULL) {
-	if (0 == strcasecmp (MHD_HTTP_METHOD_PUT, method)) 
-	  stats->change(stat_put_received, 1);
-	else 
-	  stats->change(stat_get_received, 1);
-      }  
+      if (stats != NULL)
+        {
+          if (0 == strcasecmp (MHD_HTTP_METHOD_PUT, method))
+            stats->change (stat_put_received, 1);
+          else
+            stats->change (stat_get_received, 1);
+        }
       GNUNET_mutex_lock (httplock);
       for (i = 0; i < tsessionCount; i++)
         {
@@ -1432,7 +1433,7 @@ create_curl_get (HTTPSession * httpSession)
   http_requests_pending++;
   GNUNET_mutex_unlock (curllock);
   if (stats != NULL)
-    stats->change(stat_get_issued, 1);
+    stats->change (stat_get_issued, 1);
   STEP ();
   if (mret != CURLM_OK)
     {
@@ -1610,7 +1611,7 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   http_requests_pending++;
   GNUNET_mutex_unlock (curllock);
   if (stats != NULL)
-    stats->change(stat_put_issued, 1);
+    stats->change (stat_put_issued, 1);
   STEP ();
   if (mret != CURLM_OK)
     {
@@ -1909,7 +1910,7 @@ cleanup_connections ()
                   STEP ();
                   GNUNET_mutex_lock (curllock);
                   curl_multi_remove_handle (curl_multi, pos->curl_put);
-		  http_requests_pending--;
+                  http_requests_pending--;
                   GNUNET_mutex_unlock (curllock);
                   STEP ();
                   signal_select ();
@@ -2334,12 +2335,10 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
       stat_bytesSent = stats->create (gettext_noop ("# bytes sent via HTTP"));
       stat_bytesDropped
         = stats->create (gettext_noop ("# bytes dropped by HTTP (outgoing)"));
-      stat_get_issued
-        = stats->create (gettext_noop ("# HTTP GET issued"));
+      stat_get_issued = stats->create (gettext_noop ("# HTTP GET issued"));
       stat_get_received
         = stats->create (gettext_noop ("# HTTP GET received"));
-      stat_put_issued
-        = stats->create (gettext_noop ("# HTTP PUT issued"));
+      stat_put_issued = stats->create (gettext_noop ("# HTTP PUT issued"));
       stat_put_received
         = stats->create (gettext_noop ("# HTTP PUT received"));
     }

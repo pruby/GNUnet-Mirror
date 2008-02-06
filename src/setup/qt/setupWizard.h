@@ -38,7 +38,8 @@ public:
   prevClicked ();
   void
   abortClicked ();
-  void linkHandler(const QUrl &link);
+  void
+  linkHandler (const QUrl & link);
 protected:
   QString
   header ();
@@ -46,7 +47,8 @@ protected:
   loadDefaults ();
   int
   saveConf ();
-  void welcome();
+  void
+  welcome ();
 
   unsigned int
     curPage;

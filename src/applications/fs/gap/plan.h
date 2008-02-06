@@ -35,23 +35,21 @@
  * Plan the transmission of the given request.
  * Use the history of the request and the client
  * to schedule the request for transmission.
- */ 
+ */
 void
-GNUNET_FS_PLAN_request(struct GNUNET_ClientHandle * client,
-		       PID_INDEX peer,
-		       struct RequestList * request);
+GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
+                        PID_INDEX peer, struct RequestList *request);
 
 /**
  * Notify the plan that a request succeeded.
  */
 void
-GNUNET_FS_PLAN_success(PID_INDEX responder,
-		       struct GNUNET_ClientHandle * client,
-		       PID_INDEX peer,
-		       const struct RequestList * success);
+GNUNET_FS_PLAN_success (PID_INDEX responder,
+                        struct GNUNET_ClientHandle *client,
+                        PID_INDEX peer, const struct RequestList *success);
 
-int GNUNET_FS_PLAN_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_PLAN_done(void);
+int GNUNET_FS_PLAN_done (void);
 
 #endif

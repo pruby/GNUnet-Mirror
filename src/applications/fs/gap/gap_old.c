@@ -524,9 +524,7 @@ adjustTTL (int ttl, unsigned int prio)
 static QUERY_POLICY
 evaluateQuery (const GNUNET_PeerIdentity * sender, unsigned int *priority)
 {
-  unsigned int 
-
-}
+unsigned int}
 
 /**
  * Map the id to an index into the bitmap array.
@@ -875,15 +873,15 @@ sendToSelected (const GNUNET_PeerIdentity * peer, void *cls)
                      "Sending query `%s' to `%s'\n", &encq, &encp);
 #endif
       if (stats != NULL)
-	{
-	  stats->change (stat_routing_forwards, 1);
-	  GNUNET_mutex_lock(lock);
-	  outbound_query_count++;
-	  outbound_total_ttls += (int) ntohl(qr->msg->ttl);
-	  stats->set (stat_routing_outbound_ttl,
-		      outbound_total_ttls / outbound_query_count);	
-	  GNUNET_mutex_unlock(lock);
-	}
+        {
+          stats->change (stat_routing_forwards, 1);
+          GNUNET_mutex_lock (lock);
+          outbound_query_count++;
+          outbound_total_ttls += (int) ntohl (qr->msg->ttl);
+          stats->set (stat_routing_outbound_ttl,
+                      outbound_total_ttls / outbound_query_count);
+          GNUNET_mutex_unlock (lock);
+        }
       coreAPI->unicast (peer,
                         &qr->msg->header,
                         BASE_QUERY_PRIORITY * ntohl (qr->msg->priority) * 2,
@@ -998,8 +996,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
     qr->noTarget = intern_pid (coreAPI->myIdentity);
   qr->totalDistance = 0;
   qr->rankings = GNUNET_malloc (sizeof (int) * 8 * BITMAP_SIZE);
-  qr->activeConnections
-    = coreAPI-> (&hotpathSelectionCode, qr);
+  qr->activeConnections = coreAPI->(&hotpathSelectionCode, qr);
   /* actual selection, proportional to rankings
      assigned by hotpathSelectionCode ... */
   rankingSum = 0;
@@ -1037,7 +1034,7 @@ forwardQuery (const P2P_gap_query_MESSAGE * msg,
       change_pid_rc (tpid, -1);
     }
   /* now forward to a couple of selected nodes */
-  coreAPI-> (&sendToSelected, qr);
+  coreAPI->(&sendToSelected, qr);
   if (qr == &dummy)
     {
       change_pid_rc (dummy.noTarget, -1);
@@ -1468,7 +1465,7 @@ needsForwarding (const GNUNET_HashCode * query,
                   *isRouted = GNUNET_YES;
                   *doForward = GNUNET_YES;
                   if (stats != NULL)
-                      stats->change (stat_routing_request_repeat, 1);
+                    stats->change (stat_routing_request_repeat, 1);
                   addToSlot (ITE_REPLACE, ite, query, ttl, priority, sender);
                   return 4;
                 }
@@ -1534,7 +1531,7 @@ needsForwarding (const GNUNET_HashCode * query,
                     {
                       *doForward = GNUNET_YES;
                       if (stats != NULL)
-                          stats->change (stat_routing_request_repeat, 1);
+                        stats->change (stat_routing_request_repeat, 1);
                     }
                   else
                     *doForward = GNUNET_NO;
@@ -2229,15 +2226,15 @@ get_start (const GNUNET_PeerIdentity * target,
         }
     }
 
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   if (stats != NULL)
     {
-      GNUNET_mutex_lock(lock);
+      GNUNET_mutex_lock (lock);
       internal_total_ttls += timeout - now;
-      internal_query_count++;	
+      internal_query_count++;
       stats->set (stat_routing_internal_ttl,
-		  internal_total_ttls / internal_query_count);
-      GNUNET_mutex_unlock(lock);
+                  internal_total_ttls / internal_query_count);
+      GNUNET_mutex_unlock (lock);
     }
 
   msg = GNUNET_malloc (size);
@@ -2372,12 +2369,12 @@ handleQuery (const GNUNET_PeerIdentity * sender,
 
   if (stats != NULL)
     {
-      GNUNET_mutex_lock(lock);
-      external_total_ttls += (int) ntohl(qmsg->ttl);
+      GNUNET_mutex_lock (lock);
+      external_total_ttls += (int) ntohl (qmsg->ttl);
       external_query_count++;
       stats->set (stat_routing_external_ttl,
-		  external_total_ttls / external_query_count);
-      GNUNET_mutex_unlock(lock);
+                  external_total_ttls / external_query_count);
+      GNUNET_mutex_unlock (lock);
     }
 
   /* decrement ttl (always) */
@@ -2494,15 +2491,15 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   ectx = capi->ectx;
   cfg = capi->cfg;
   coreAPI = capi;
-      || (-1 ==
-          GNUNET_GC_get_configuration_value_number (cfg, "GAP", "TABLESIZE",
-                                                    MIN_INDIRECTION_TABLE_SIZE,
-                                                    GNUNET_MAX_GNUNET_malloc_CHECKED
-                                                    /
-                                                    sizeof
-                                                    (IndirectionTableEntry),
-                                                    MIN_INDIRECTION_TABLE_SIZE,
-                                                    &indirectionTableSize)))
+  ||(-1 ==
+     GNUNET_GC_get_configuration_value_number (cfg, "GAP", "TABLESIZE",
+                                               MIN_INDIRECTION_TABLE_SIZE,
+                                               GNUNET_MAX_GNUNET_malloc_CHECKED
+                                               /
+                                               sizeof
+                                               (IndirectionTableEntry),
+                                               MIN_INDIRECTION_TABLE_SIZE,
+                                               &indirectionTableSize)))
     return NULL;
 
   stats = capi->request_service ("stats");
@@ -2539,14 +2536,11 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
         stats->
         create (gettext_noop ("# gap duplicate requests that were re-tried"));
       stat_routing_external_ttl =
-        stats->
-        create (gettext_noop ("# gap average inbound ttl"));
+        stats->create (gettext_noop ("# gap average inbound ttl"));
       stat_routing_internal_ttl =
-        stats->
-        create (gettext_noop ("# gap average client ttl"));
+        stats->create (gettext_noop ("# gap average client ttl"));
       stat_routing_outbound_ttl =
-        stats->
-        create (gettext_noop ("# gap average outbound ttl"));
+        stats->create (gettext_noop ("# gap average outbound ttl"));
 
       stat_routing_reply_dups =
         stats->create (gettext_noop ("# gap reply duplicates"));
@@ -2619,8 +2613,7 @@ provide_module_gap (GNUNET_CoreAPIForPlugins * capi)
   return &api;
 }
 
-void
-release_module_gap ()
+void release_module_gap ()
 {
   unsigned int i;
   ResponseList *rpos;

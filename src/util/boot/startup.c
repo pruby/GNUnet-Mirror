@@ -271,13 +271,13 @@ GNUNET_init (int argc,
                                             "GNUNET_HOME", "~/.gnunet",
                                             &path);
   GNUNET_free (path);
-  if ( (GNUNET_YES == GNUNET_GC_have_configuration_value(*cfg,
-							 "TESTING",
-							 "WEAKRANDOM")) &&
-       (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno(*cfg,
-							      "TESTING",
-							      "WEAKRANDOM",
-							      GNUNET_NO)) )
+  if ((GNUNET_YES == GNUNET_GC_have_configuration_value (*cfg,
+                                                         "TESTING",
+                                                         "WEAKRANDOM")) &&
+      (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (*cfg,
+                                                              "TESTING",
+                                                              "WEAKRANDOM",
+                                                              GNUNET_NO)))
     {
       gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
     }

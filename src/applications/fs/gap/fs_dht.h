@@ -29,11 +29,9 @@
 
 #include "gnunet_util.h"
 
-int
-GNUNET_FS_DHT_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi);
 
-int
-GNUNET_FS_DHT_done(void);
+int GNUNET_FS_DHT_done (void);
 
 /**
  * Execute a GAP query.  Determines where to forward
@@ -44,7 +42,7 @@ GNUNET_FS_DHT_done(void);
  * @param querie hash code of the query
  */
 void
-GNUNET_FS_DHT_execute_query(unsigned int type,
-			    const GNUNET_HashCode * query);
+GNUNET_FS_DHT_execute_query (unsigned int type,
+                             const GNUNET_HashCode * query);
 
 #endif

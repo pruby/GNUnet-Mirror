@@ -509,10 +509,8 @@ GNUNET_bloomfilter_load (struct GNUNET_GE_Context *ectx,
  */
 struct GNUNET_BloomFilter *
 GNUNET_bloomfilter_init (struct GNUNET_GE_Context
-			 *ectx,
-			 const char * data,
-			 unsigned int size,
-			 unsigned int k)
+                         *ectx,
+                         const char *data, unsigned int size, unsigned int k)
 {
   Bloomfilter *bf;
   unsigned int ui;
@@ -545,15 +543,13 @@ GNUNET_bloomfilter_init (struct GNUNET_GE_Context
  * @param size the size of the given data array
  * @return GNUNET_SYSERR if the data array is not big enough
  */
-int GNUNET_bloomfilter_get_raw_data(struct GNUNET_BloomFilter * bf,
-				    char * data,
-				    unsigned int size)
+int
+GNUNET_bloomfilter_get_raw_data (struct GNUNET_BloomFilter *bf,
+                                 char *data, unsigned int size)
 {
   if (bf->bitArraySize != size)
     return GNUNET_SYSERR;
-  memcpy(data,
-	 bf->bitArray,
-	 size);
+  memcpy (data, bf->bitArray, size);
   return GNUNET_OK;
 }
 
@@ -682,8 +678,7 @@ GNUNET_bloomfilter_resize (Bloomfilter * bf,
   memset (bf->bitArray, 0, bf->bitArraySize);
   if (bf->fd != -1)
     makeEmptyFile (bf->fd, bf->bitArraySize * 4);
-  while (GNUNET_YES == iterator(&hc,
-				iterator_arg))
+  while (GNUNET_YES == iterator (&hc, iterator_arg))
     GNUNET_bloomfilter_add (bf, &hc);
   GNUNET_mutex_unlock (bf->lock);
 }

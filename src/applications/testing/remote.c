@@ -37,7 +37,7 @@ const unsigned long long MAX_STARTING_PORT = -1;
 const unsigned long long MIN_PORT_INCREMENT = 1;
 const unsigned long long MAX_PORT_INCREMENT = -1;
 const unsigned long long MIN_NUMBER_DAEMONS = 1;
-const unsigned long long MAX_NUMBER_DAEMONS = -1;   
+const unsigned long long MAX_NUMBER_DAEMONS = -1;
 
 static void
 updatePort (struct GNUNET_GC_Configuration *cfg,
@@ -105,7 +105,7 @@ GNUNET_REMOTE_start_daemon (char *gnunetd_home,
 
   system (cmd);
 
-  GNUNET_free(cmd);
+  GNUNET_free (cmd);
   return GNUNET_OK;
 }
 
@@ -213,26 +213,27 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                 "GNUNETD_HOME",
                                                 remote_config_path);
 
-      while (hostnames[pos] != ' ' && pos>0)
+      while (hostnames[pos] != ' ' && pos > 0)
         pos--;
       if (pos != 0)
-      {
-	  	hostnames[pos]='\0';
-	  	curr_host = &hostnames[pos+1];
-      }
+        {
+          hostnames[pos] = '\0';
+          curr_host = &hostnames[pos + 1];
+        }
       else
-      {
-      	curr_host = &hostnames[pos];
-      }
-	  printf("curr_host is %s\n",curr_host);	
-      
+        {
+          curr_host = &hostnames[pos];
+        }
+      printf ("curr_host is %s\n", curr_host);
+
       for (j = 0; j < daemons_per_machine; ++j)
         {
-          length_temp = snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j);
+          length_temp =
+            snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j);
           temp_pid_file = GNUNET_malloc (length_temp + 1);
           snprintf (temp_pid_file, length_temp + 1, "%s%s%d", remote_pid_path,
                     "pid", j);
-        
+
           GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                     "GNUNETD", "PIDFILE",
                                                     temp_pid_file);
@@ -253,7 +254,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                            GNUNET_GE_BULK, "mkstemp",
                                            temp_path);
               GNUNET_GC_free (basecfg);
-              GNUNET_free(temp_path);
+              GNUNET_free (temp_path);
               break;
             }
           CLOSE (ret);
@@ -263,7 +264,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                        "Failed to write peer configuration file `%s'\n",
                        temp_path);
               GNUNET_GC_free (basecfg);
-              GNUNET_free(temp_path);
+              GNUNET_free (temp_path);
               break;
             }
 
@@ -275,16 +276,17 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                           curr_host, ssh_username);
             }
           GNUNET_free (temp);
-          UNLINK(temp_path);
-          GNUNET_free(temp_path);
+          UNLINK (temp_path);
+          GNUNET_free (temp_path);
 
           if ((i < extra_daemons) && (j == daemons_per_machine - 1))
             {
-              length_temp = snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid",j + 1);
+              length_temp =
+                snprintf (NULL, 0, "%s%s%d", remote_pid_path, "pid", j + 1);
               temp_pid_file = GNUNET_malloc (length_temp + 1);
               snprintf (temp_pid_file, length_temp + 1, "%s%s%d",
                         remote_pid_path, "pid", j + 1);
-              
+
               GNUNET_GC_set_configuration_value_string (basecfg, NULL,
                                                         "GNUNETD",
                                                         "PIDFILE",
@@ -305,7 +307,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                                GNUNET_GE_BULK, "mkstemp",
                                                temp_path);
                   GNUNET_GC_free (basecfg);
-                  GNUNET_free(temp_path);
+                  GNUNET_free (temp_path);
                   break;
                 }
               CLOSE (ret);
@@ -315,7 +317,7 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                            "Failed to write peer configuration file `%s'\n",
                            temp_path);
                   GNUNET_GC_free (basecfg);
-                  GNUNET_free(temp_path);
+                  GNUNET_free (temp_path);
                   break;
                 }
 
@@ -328,8 +330,8 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                               remote_config_path,
                                               curr_host, ssh_username);
                 }
-              UNLINK(temp_path);  
-              GNUNET_free(temp_path);
+              UNLINK (temp_path);
+              GNUNET_free (temp_path);
               GNUNET_free (temp);
             }
         }

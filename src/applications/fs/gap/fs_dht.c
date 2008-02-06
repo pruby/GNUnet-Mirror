@@ -40,9 +40,9 @@
 struct ActiveRequestRecords
 {
 
-  struct ActiveRequestRecords * next;
+  struct ActiveRequestRecords *next;
 
-  struct GNUNET_DHT_GetHandle * handle;
+  struct GNUNET_DHT_GetHandle *handle;
 
   GNUNET_CronTime end_time;
 
@@ -50,53 +50,53 @@ struct ActiveRequestRecords
 
 };
 
-static GNUNET_DHT_ServiceAPI * dht;
+static GNUNET_DHT_ServiceAPI *dht;
 
-static GNUNET_CoreAPIForPlugins * coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
-static struct GNUNET_Mutex * lock;
+static struct GNUNET_Mutex *lock;
 
-static struct ActiveRequestRecords * records;
+static struct ActiveRequestRecords *records;
 
 /**
  * Cancel all requests with the DHT that
  * are older than a certain time limit.
  */
 static void
-purge_old_records(GNUNET_CronTime limit)
+purge_old_records (GNUNET_CronTime limit)
 {
-  struct ActiveRequestRecords * pos;
-  struct ActiveRequestRecords * prev;
+  struct ActiveRequestRecords *pos;
+  struct ActiveRequestRecords *prev;
 
   prev = NULL;
   pos = records;
   while (pos != NULL)
     {
       if (pos->end_time < limit)
-	{
-	  if (prev == NULL)
-	    records = pos->next;
-	  else
-	    prev->next = pos->next;
-	  dht->get_stop(pos->handle);
-	  GNUNET_free(pos);
-	  if (prev == NULL)
-	    pos = records;
-	  else
-	    pos = prev->next;
-	}
+        {
+          if (prev == NULL)
+            records = pos->next;
+          else
+            prev->next = pos->next;
+          dht->get_stop (pos->handle);
+          GNUNET_free (pos);
+          if (prev == NULL)
+            pos = records;
+          else
+            pos = prev->next;
+        }
       else
-	{
-	  prev = pos;
-	  pos = pos->next;
-	}
+        {
+          prev = pos;
+          pos = pos->next;
+        }
     }
 }
 
 
 /**
  * We got a result from the DHT.  Check that it is valid
- * and pass to our clients.  
+ * and pass to our clients.
  *
  * @param key the current key
  * @param value the current value
@@ -104,43 +104,36 @@ purge_old_records(GNUNET_CronTime limit)
  * @return GNUNET_OK to continue with iteration, GNUNET_SYSERR to abort
  */
 static int
-response_callback(const GNUNET_HashCode * key,
-		  const GNUNET_DataContainer * value,
-		  void *cls)
+response_callback (const GNUNET_HashCode * key,
+                   const GNUNET_DataContainer * value, void *cls)
 {
-  struct ActiveRequestRecords * record = cls;
+  struct ActiveRequestRecords *record = cls;
   unsigned int size;
-  const DBlock * dblock;
+  const DBlock *dblock;
   GNUNET_HashCode hc;
 
-  size = ntohl(value->size);
+  size = ntohl (value->size);
   if (size < 4)
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_OK;
     }
-  dblock = (const DBlock*) &value[1];
-  if ( (GNUNET_SYSERR ==
-	GNUNET_EC_file_block_check_and_get_query(size,
-						 dblock,
-						 GNUNET_YES,
-						 &hc)) ||
-       (0 != memcmp(key,
-		    &hc,
-		    sizeof(GNUNET_HashCode))) )
-    { 
-      GNUNET_GE_BREAK_OP(NULL, 0);
+  dblock = (const DBlock *) &value[1];
+  if ((GNUNET_SYSERR ==
+       GNUNET_EC_file_block_check_and_get_query (size,
+                                                 dblock,
+                                                 GNUNET_YES,
+                                                 &hc)) ||
+      (0 != memcmp (key, &hc, sizeof (GNUNET_HashCode))))
+    {
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_OK;
     }
-  GNUNET_FS_QUERYMANAGER_handle_response(NULL,
-					 &hc,
-					 0,
-					 size,
-					 dblock); 
+  GNUNET_FS_QUERYMANAGER_handle_response (NULL, &hc, 0, size, dblock);
   if (record->type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
-      record->end_time = 0; /* delete ASAP */
-      return GNUNET_SYSERR; /* no more! */
+      record->end_time = 0;     /* delete ASAP */
+      return GNUNET_SYSERR;     /* no more! */
     }
   return GNUNET_OK;
 }
@@ -154,48 +147,43 @@ response_callback(const GNUNET_HashCode * key,
  * @param querie hash code of the query
  */
 void
-GNUNET_FS_DHT_execute_query(unsigned int type,
-			    const GNUNET_HashCode * query)
+GNUNET_FS_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query)
 {
-  struct ActiveRequestRecords * record;
+  struct ActiveRequestRecords *record;
   GNUNET_CronTime now;
 
   if (dht == NULL)
     return;
-  now = GNUNET_get_time();
-  record = GNUNET_malloc(sizeof(struct ActiveRequestRecords));
+  now = GNUNET_get_time ();
+  record = GNUNET_malloc (sizeof (struct ActiveRequestRecords));
   record->end_time = now + MAX_DHT_DELAY;
-  record->handle = dht->get_start(type,
-				  query,
-				  &response_callback,
-				  record);
+  record->handle = dht->get_start (type, query, &response_callback, record);
   record->type = type;
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   record->next = records;
   records = record;
-  purge_old_records(now);
-  GNUNET_mutex_unlock(lock);
+  purge_old_records (now);
+  GNUNET_mutex_unlock (lock);
 }
 
 
 int
-GNUNET_FS_DHT_init(GNUNET_CoreAPIForPlugins * capi)
+GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  lock = GNUNET_mutex_create(GNUNET_YES);
-  dht = capi->request_service("dht");  
+  lock = GNUNET_mutex_create (GNUNET_YES);
+  dht = capi->request_service ("dht");
   return 0;
 }
 
 int
-GNUNET_FS_DHT_done()  
+GNUNET_FS_DHT_done ()
 {
-  purge_old_records(-1);
+  purge_old_records (-1);
   if (dht != NULL)
-    coreAPI->release_service(dht);
+    coreAPI->release_service (dht);
   coreAPI = NULL;
-  GNUNET_mutex_destroy(lock);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
   return 0;
 }
-

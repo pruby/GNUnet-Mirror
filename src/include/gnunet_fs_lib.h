@@ -46,16 +46,15 @@ extern "C"
 
 struct GNUNET_FS_SearchContext;
 
-struct GNUNET_FS_SearchContext *
-GNUNET_FS_create_search_context (struct
-				 GNUNET_GE_Context
-				 *ectx,
-				 struct
-				 GNUNET_GC_Configuration
-				 *cfg,
-				 struct
-				 GNUNET_Mutex
-				 *lock);
+struct GNUNET_FS_SearchContext *GNUNET_FS_create_search_context (struct
+                                                                 GNUNET_GE_Context
+                                                                 *ectx,
+                                                                 struct
+                                                                 GNUNET_GC_Configuration
+                                                                 *cfg,
+                                                                 struct
+                                                                 GNUNET_Mutex
+                                                                 *lock);
 
 void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
 
@@ -72,20 +71,19 @@ void GNUNET_FS_destroy_search_context (struct GNUNET_FS_SearchContext *ctx);
  */
 int
 GNUNET_FS_start_search (struct
-			GNUNET_FS_SearchContext
-			*ctx,
-			const
-			GNUNET_PeerIdentity *
-			target,
-			unsigned int type,
-			unsigned int keyCount,
-			const GNUNET_HashCode *
-			keys,
-			unsigned int
-			anonymityLevel,
-			GNUNET_DatastoreValueIterator
-			callback,
-			void *closure);
+                        GNUNET_FS_SearchContext
+                        *ctx,
+                        const
+                        GNUNET_PeerIdentity *
+                        target,
+                        unsigned int type,
+                        unsigned int keyCount,
+                        const GNUNET_HashCode *
+                        keys,
+                        unsigned int
+                        anonymityLevel,
+                        GNUNET_DatastoreValueIterator
+                        callback, void *closure);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to

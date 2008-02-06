@@ -95,19 +95,19 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        const char *memberInfo,
                        GNUNET_CHAT_MessageCallback callback, void *cls)
 {
-  CS_chat_MESSAGE *chat_msg;	 
+  CS_chat_MESSAGE *chat_msg;	
   GNUNET_MessageHeader csHdr;
   struct GNUNET_CHAT_Room *chat_room;
   struct GNUNET_ClientServerConnection *sock;
-  
+
   int ret;
 
   ret = GNUNET_OK;
   csHdr.size = htons (sizeof (GNUNET_MessageHeader));
   csHdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
-  
+
   sock = GNUNET_client_connection_create(ectx,cfg);
-  
+
   if (sock == NULL)
   {
     fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
@@ -119,9 +119,9 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   	fprintf (stderr, _("Error writing to socket.\n"));
     ret = GNUNET_SYSERR;
   }
-    
+
   chat_msg = GNUNET_malloc (sizeof (CS_chat_MESSAGE));
-  
+
   // connect
 
   // allocate & init room struct

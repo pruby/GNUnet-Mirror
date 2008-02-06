@@ -34,7 +34,7 @@
 
 /**
  * How often should we automatically retry a request
- * that failed? (Note that searches are retried 
+ * that failed? (Note that searches are retried
  * indefinitely in any case; this only applies
  * to upload/delete operations).
  */
@@ -105,7 +105,7 @@ struct GNUNET_FS_SearchContext
 };
 
 /**
- * Retransmit all of the requests to gnunetd 
+ * Retransmit all of the requests to gnunetd
  * (used after a disconnect).
  */
 static int

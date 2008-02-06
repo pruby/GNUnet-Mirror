@@ -189,7 +189,7 @@ GNUNET_FS_PT_done ()
 {
   unsigned int i;
 
-  for (i = 0;i<size; i++)
+  for (i = 0; i < size; i++)
     GNUNET_GE_ASSERT (ectx, table[i].rc == 0);
   GNUNET_array_grow (table, size, 0);
   stats = NULL;

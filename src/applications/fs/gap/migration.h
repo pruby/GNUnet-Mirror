@@ -32,11 +32,9 @@
 /**
  * Initialize the migration module.
  */
-void 
-GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi);
+void GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi);
 
-void 
-GNUNET_FS_MIGRATION_done (void);
+void GNUNET_FS_MIGRATION_done (void);
 
 /* end of migration.h */
 #endif

@@ -41,8 +41,8 @@
  */
 int
 GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
-					const GNUNET_HashCode * query,
-					GNUNET_DatastoreValue ** enc);
+                                        const GNUNET_HashCode * query,
+                                        GNUNET_DatastoreValue ** enc);
 
 
 /**
@@ -54,8 +54,10 @@ GNUNET_FS_ONDEMAND_get_indexed_content (const GNUNET_DatastoreValue * dbv,
  *         GNUNET_YES on success
  */
 int
-GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context *cectx,
-					       const GNUNET_HashCode * fileId, const char *fn);
+GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context
+                                               *cectx,
+                                               const GNUNET_HashCode * fileId,
+                                               const char *fn);
 
 /**
  * Writes the given content to the file at the specified offset
@@ -66,13 +68,14 @@ GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context *cectx,
  */
 int
 GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *cectx,
-                GNUNET_Datastore_ServiceAPI * datastore,
-                unsigned int prio,
-                GNUNET_CronTime expiration,
-                unsigned long long fileOffset,
-                unsigned int anonymityLevel,
-                const GNUNET_HashCode * fileId,
-					unsigned int size, const DBlock * content);
+                                        GNUNET_Datastore_ServiceAPI *
+                                        datastore, unsigned int prio,
+                                        GNUNET_CronTime expiration,
+                                        unsigned long long fileOffset,
+                                        unsigned int anonymityLevel,
+                                        const GNUNET_HashCode * fileId,
+                                        unsigned int size,
+                                        const DBlock * content);
 
 /**
  * Test if the file with the given ID is
@@ -81,7 +84,7 @@ GNUNET_FS_ONDEMAND_add_indexed_content (struct GNUNET_GE_Context *cectx,
  */
 int
 GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
-				      const GNUNET_HashCode * fileId);
+                                      const GNUNET_HashCode * fileId);
 
 /**
  * Unindex the file with the given ID.  Removes the file from the
@@ -95,11 +98,12 @@ GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
  */
 int
 GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *cectx,
-                  GNUNET_Datastore_ServiceAPI * datastore,
-					   unsigned int blocksize, const GNUNET_HashCode * fileId);
+                                           GNUNET_Datastore_ServiceAPI *
+                                           datastore, unsigned int blocksize,
+                                           const GNUNET_HashCode * fileId);
 
-int GNUNET_FS_ONDEMAND_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_FS_ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_FS_ONDEMAND_done(void);
+int GNUNET_FS_ONDEMAND_done (void);
 
 #endif

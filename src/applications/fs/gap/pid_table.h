@@ -31,7 +31,7 @@
 #include "gnunet_stats_service.h"
 
 void GNUNET_FS_PT_init (struct GNUNET_GE_Context *ectx,
-			GNUNET_Stats_ServiceAPI * s);
+                        GNUNET_Stats_ServiceAPI * s);
 
 void GNUNET_FS_PT_done (void);
 

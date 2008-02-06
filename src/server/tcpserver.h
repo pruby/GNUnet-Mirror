@@ -127,9 +127,9 @@ void GNUNET_CORE_cs_terminate_client_connection (struct GNUNET_ClientHandle
  */
 unsigned int GNUNET_CORE_cs_test_handler_registered (unsigned short type);
 
-struct GNUNET_GE_Context *
-GNUNET_CORE_cs_create_client_log_context (struct GNUNET_ClientHandle
-                                             *handle);
+struct GNUNET_GE_Context *GNUNET_CORE_cs_create_client_log_context (struct
+                                                                    GNUNET_ClientHandle
+                                                                    *handle);
 
 #endif
 /* end of tcpserver.h */

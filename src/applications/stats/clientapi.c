@@ -164,7 +164,7 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
     case GNUNET_CS_PROTO_GAP_QUERY_START:
       name = "CS_PROTO_gap_QUERY_START";
       break;
-    case GNUNET_CS_PROTO_GAP_RESULT : 
+    case GNUNET_CS_PROTO_GAP_RESULT:
       name = "CS_PROTO_gap_RESULT";
       break;
     case GNUNET_CS_PROTO_GAP_INSERT:

@@ -614,8 +614,8 @@ struct GNUNET_GE_Context *
 GNUNET_CORE_cs_create_client_log_context (struct GNUNET_ClientHandle *handle)
 {
   return GNUNET_GE_create_context_callback (GNUNET_GE_USER |
-					    GNUNET_GE_EVENTKIND |
-					    GNUNET_GE_ROUTEKIND, 
+                                            GNUNET_GE_EVENTKIND |
+                                            GNUNET_GE_ROUTEKIND,
                                             &logClientLogContext,
                                             handle,
                                             &freeClientLogContext,

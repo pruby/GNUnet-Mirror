@@ -48,13 +48,13 @@ struct Node
 
   /**
    * Previous entry in DLL.
-   */ 
-  struct Node * prev;
+   */
+  struct Node *prev;
 
   /**
    * Next entry in DLL.
    */
-  struct Node * next;
+  struct Node *next;
 
   /**
    * What is the CHK for this block?
@@ -94,7 +94,7 @@ struct RequestManager
    * Number of bytes already obtained
    */
   unsigned long long completed;
-  
+
   /**
    * Starting-offset in file (for partial download)
    */
@@ -118,12 +118,12 @@ struct RequestManager
   /**
    * Doubly linked list of all pending requests (head)
    */
-  struct Node * head;
+  struct Node *head;
 
   /**
    * Doubly linked list of all pending requests (tail)
    */
-  struct Node * tail;
+  struct Node *tail;
 
   /**
    * FSLIB context for issuing requests.
@@ -153,7 +153,7 @@ struct RequestManager
   /**
    * Main thread running the operation.
    */
-  struct GNUNET_ThreadHandle * main;
+  struct GNUNET_ThreadHandle *main;
 
   /**
    * Function to call when we make progress.
@@ -208,12 +208,11 @@ struct RequestManager
  *     is not complete and may be resumed later.
  */
 static void
-free_request_manager(struct RequestManager * rm,
-		     int unlinkTreeFiles)
+free_request_manager (struct RequestManager *rm, int unlinkTreeFiles)
 {
   int i;
   char *fn;
-  struct Node * pos;
+  struct Node *pos;
 
   GNUNET_mutex_lock (rm->lock);
   /* cannot hold lock during shutdown since
@@ -222,13 +221,13 @@ free_request_manager(struct RequestManager * rm,
      and start to ignore fslib events! */
   rm->abortFlag = GNUNET_YES;
   GNUNET_mutex_unlock (rm->lock);
-  GNUNET_FS_destroy_search_context(rm->sctx);
+  GNUNET_FS_destroy_search_context (rm->sctx);
   rm->sctx = NULL;
   while (rm->head != NULL)
     {
       pos = rm->head;
       rm->head = pos->next;
-      GNUNET_free(pos);
+      GNUNET_free (pos);
     }
   rm->tail = NULL;
   for (i = 0; i <= rm->treedepth; i++)
@@ -242,7 +241,7 @@ free_request_manager(struct RequestManager * rm,
   if (rm->lock != NULL)
     GNUNET_mutex_destroy (rm->lock);
   if (rm->main != NULL)
-    GNUNET_thread_release_self(rm->main);
+    GNUNET_thread_release_self (rm->main);
   if (GNUNET_YES == unlinkTreeFiles)
     {
       for (i = 1; i <= rm->treedepth; i++)
@@ -275,14 +274,14 @@ free_request_manager(struct RequestManager * rm,
  * @return number of bytes read, GNUNET_SYSERR on error
  */
 static int
-read_from_files (struct RequestManager * this,
-             unsigned int level,
-             unsigned long long pos, void *buf, unsigned int len)
+read_from_files (struct RequestManager *this,
+                 unsigned int level,
+                 unsigned long long pos, void *buf, unsigned int len)
 {
   int ret;
 
   if (this->handles[level] == -1)
-    return GNUNET_SYSERR;    
+    return GNUNET_SYSERR;
   LSEEK (this->handles[level], pos, SEEK_SET);
   ret = READ (this->handles[level], buf, len);
 #if DEBUG_DOWNLOAD
@@ -305,14 +304,14 @@ read_from_files (struct RequestManager * this,
  * @return number of bytes written, GNUNET_SYSERR on error
  */
 static int
-write_to_files (struct RequestManager * this,
-            unsigned int level,
-            unsigned long long pos, void *buf, unsigned int len)
+write_to_files (struct RequestManager *this,
+                unsigned int level,
+                unsigned long long pos, void *buf, unsigned int len)
 {
   int ret;
 
   if ((this->handles[level] == -1) && (level > 0))
-    return len;               /* lie -- no temps allowed... */    
+    return len;                 /* lie -- no temps allowed... */
   LSEEK (this->handles[level], pos, SEEK_SET);
   ret = WRITE (this->handles[level], buf, len);
   if (ret != len)
@@ -327,8 +326,8 @@ write_to_files (struct RequestManager * this,
 
 static int
 content_receive_callback (const GNUNET_HashCode * query,
-             const GNUNET_DatastoreValue * reply, void *cls,
-             unsigned long long uid);
+                          const GNUNET_DatastoreValue * reply, void *cls,
+                          unsigned long long uid);
 
 /**
  * Queue a request for execution.
@@ -337,9 +336,9 @@ content_receive_callback (const GNUNET_HashCode * query,
  * @param node the node to call once a reply is received
  */
 static void
-addRequest (struct Node * node)
+addRequest (struct Node *node)
 {
-  struct RequestManager * rm = node->ctx;
+  struct RequestManager *rm = node->ctx;
 
   node->next = rm->head;
   node->next->prev = node;
@@ -348,19 +347,18 @@ addRequest (struct Node * node)
   if (rm->tail == NULL)
     rm->tail = node;
   GNUNET_FS_start_search (rm->sctx,
-			  rm->have_target == GNUNET_NO ? NULL : &rm->target,
-			  GNUNET_ECRS_BLOCKTYPE_DATA, 1,
-			  &node->chk.query,
-			  rm->anonymityLevel,
-			  &content_receive_callback, 
-			  node);
+                          rm->have_target == GNUNET_NO ? NULL : &rm->target,
+                          GNUNET_ECRS_BLOCKTYPE_DATA, 1,
+                          &node->chk.query,
+                          rm->anonymityLevel,
+                          &content_receive_callback, node);
 }
 
 static void
-signal_abort(struct RequestManager * rm)
+signal_abort (struct RequestManager *rm)
 {
   rm->abortFlag = GNUNET_YES;
-  GNUNET_thread_stop_sleep(rm->main);
+  GNUNET_thread_stop_sleep (rm->main);
 }
 
 /**
@@ -370,9 +368,9 @@ signal_abort(struct RequestManager * rm)
  * @param node the block for which the request is canceled
  */
 static void
-delete_node (struct Node * node)
+delete_node (struct Node *node)
 {
-  struct RequestManager * rm = node->ctx;
+  struct RequestManager *rm = node->ctx;
 
   if (node->prev == NULL)
     rm->head = node->next;
@@ -382,9 +380,9 @@ delete_node (struct Node * node)
     rm->tail = node->prev;
   else
     node->next->prev = node->prev;
-  GNUNET_free(node);
+  GNUNET_free (node);
   if (rm->head == NULL)
-    signal_abort(rm);
+    signal_abort (rm);
 }
 
 /**
@@ -392,7 +390,7 @@ delete_node (struct Node * node)
  * this node.
  */
 static unsigned int
-get_node_size (const struct Node * node)
+get_node_size (const struct Node *node)
 {
   unsigned int i;
   unsigned int ret;
@@ -437,26 +435,24 @@ get_node_size (const struct Node * node)
  * Notify client about progress.
  */
 static void
-notify_client_about_progress (const struct Node * node, const char *data, unsigned int size)
+notify_client_about_progress (const struct Node *node, const char *data,
+                              unsigned int size)
 {
   struct RequestManager *rm = node->ctx;
   GNUNET_CronTime eta;
 
-  if ( (rm->abortFlag == GNUNET_YES) ||
-       (node->level != 0) )
-    return;    
+  if ((rm->abortFlag == GNUNET_YES) || (node->level != 0))
+    return;
   rm->completed += size;
   eta = GNUNET_get_time ();
-  if (rm->completed > 0)        
+  if (rm->completed > 0)
     eta = (GNUNET_CronTime) (rm->startTime +
-			     (((double) (eta - rm->startTime) /
-			       (double) rm->completed)) *
-			     (double) rm->length);        
+                             (((double) (eta - rm->startTime) /
+                               (double) rm->completed)) *
+                             (double) rm->length);
   if (rm->dpcb != NULL)
     rm->dpcb (rm->length,
-	      rm->completed,
-	      eta,
-	      node->offset, data, size, rm->dpcbClosure);   
+              rm->completed, eta, node->offset, data, size, rm->dpcbClosure);
 }
 
 
@@ -465,7 +461,7 @@ notify_client_about_progress (const struct Node * node, const char *data, unsign
  *
  * @param rm the node that should downloaded
  */
-static void iblock_download_children (struct Node * node,
+static void iblock_download_children (struct Node *node,
                                       char *data, unsigned int size);
 
 /**
@@ -483,7 +479,7 @@ static void iblock_download_children (struct Node * node,
  * @return GNUNET_YES if present, GNUNET_NO if not.
  */
 static int
-check_node_present (struct Node * node)
+check_node_present (struct Node *node)
 {
   int res;
   int ret;
@@ -495,9 +491,9 @@ check_node_present (struct Node * node)
   /* first check if node is within range.
      For now, keeping it simple, we only do
      this for level-0 nodes */
-  if ( (node->level == 0) &&
-       ((node->offset + size < node->ctx->offset) ||
-	(node->offset >= node->ctx->offset + node->ctx->length)) )
+  if ((node->level == 0) &&
+      ((node->offset + size < node->ctx->offset) ||
+       (node->offset >= node->ctx->offset + node->ctx->length)))
     return GNUNET_YES;
   data = GNUNET_malloc (size);
   res = read_from_files (node->ctx, node->level, node->offset, data, size);
@@ -526,7 +522,7 @@ check_node_present (struct Node * node)
  * @param this the node that should downloaded
  */
 static void
-iblock_download_children (struct Node * node, char *data, unsigned int size)
+iblock_download_children (struct Node *node, char *data, unsigned int size)
 {
   struct GNUNET_GE_Context *ectx = node->ctx->ectx;
   int i;
@@ -556,7 +552,7 @@ iblock_download_children (struct Node * node, char *data, unsigned int size)
   chks = (CHK *) data;
   for (i = 0; i < childcount; i++)
     {
-      child = GNUNET_malloc (sizeof (struct Node));      
+      child = GNUNET_malloc (sizeof (struct Node));
       child->ctx = node->ctx;
       child->chk = chks[i];
       child->offset = baseOffset + i * levelSize;
@@ -583,8 +579,8 @@ iblock_download_children (struct Node * node, char *data, unsigned int size)
  */
 static int
 decrypt_content (const char *data,
-                unsigned int size, const GNUNET_HashCode * hashcode,
-                char *result)
+                 unsigned int size, const GNUNET_HashCode * hashcode,
+                 char *result)
 {
   GNUNET_AES_InitializationVector iv;
   GNUNET_AES_SessionKey skey;
@@ -609,21 +605,22 @@ decrypt_content (const char *data,
  */
 static int
 content_receive_callback (const GNUNET_HashCode * query,
-             const GNUNET_DatastoreValue * reply, void *cls,
-             unsigned long long uid)
+                          const GNUNET_DatastoreValue * reply, void *cls,
+                          unsigned long long uid)
 {
   struct Node *node = cls;
-  struct RequestManager * rm = node->ctx;
+  struct RequestManager *rm = node->ctx;
   struct GNUNET_GE_Context *ectx = rm->ectx;
   GNUNET_HashCode hc;
   unsigned int size;
   char *data;
 
   GNUNET_mutex_lock (rm->lock);
-  if (rm->abortFlag != GNUNET_NO) {
-    GNUNET_mutex_unlock (rm->lock);
-    return GNUNET_SYSERR;
-  }
+  if (rm->abortFlag != GNUNET_NO)
+    {
+      GNUNET_mutex_unlock (rm->lock);
+      return GNUNET_SYSERR;
+    }
   GNUNET_GE_ASSERT (ectx,
                     0 == memcmp (query, &node->chk.query,
                                  sizeof (GNUNET_HashCode)));
@@ -638,7 +635,7 @@ content_receive_callback (const GNUNET_HashCode * query,
   size -= sizeof (DBlock);
   data = GNUNET_malloc (size);
   if (GNUNET_SYSERR == decrypt_content ((char *) &((DBlock *) & reply[1])[1],
-                                       size, &node->chk.key, data))
+                                        size, &node->chk.key, data))
     GNUNET_GE_ASSERT (ectx, 0);
   GNUNET_hash (data, size, &hc);
   if (0 != memcmp (&hc, &node->chk.key, sizeof (GNUNET_HashCode)))
@@ -649,17 +646,16 @@ content_receive_callback (const GNUNET_HashCode * query,
                      _("Decrypted content does not match key. "
                        "This is either a bug or a maliciously inserted "
                        "file. Download aborted.\n"));
-      signal_abort(rm);
+      signal_abort (rm);
       GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;
     }
-  if (size != write_to_files (rm,
-                          node->level, node->offset, data, size))
+  if (size != write_to_files (rm, node->level, node->offset, data, size))
     {
       GNUNET_GE_LOG_STRERROR (ectx,
                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                               GNUNET_GE_USER | GNUNET_GE_BULK, "WRITE");
-      signal_abort(rm);
+      signal_abort (rm);
       GNUNET_mutex_unlock (rm->lock);
       return GNUNET_SYSERR;
     }
@@ -676,11 +672,11 @@ content_receive_callback (const GNUNET_HashCode * query,
 
 /**
  * Helper function to sanitize filename
- * and create necessary directories. 
+ * and create necessary directories.
  */
 static char *
-get_real_download_filename(struct GNUNET_GE_Context * ectx,
-			   const char * filename)
+get_real_download_filename (struct GNUNET_GE_Context *ectx,
+                            const char *filename)
 {
   struct stat buf;
   char *realFN;
@@ -725,7 +721,7 @@ get_real_download_filename(struct GNUNET_GE_Context * ectx,
       pos++;
     }
   GNUNET_free (realFN);
-  return path;  
+  return path;
 }
 
 /* ***************** main method **************** */
@@ -778,7 +774,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
       return GNUNET_SYSERR;
     }
 
-  memset(&rm, 0, sizeof(struct RequestManager));
+  memset (&rm, 0, sizeof (struct RequestManager));
   rm.ectx = ectx;
   rm.cfg = cfg;
   rm.startTime = GNUNET_get_time ();
@@ -787,14 +783,14 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   rm.length = length;
   rm.dpcb = dpcb;
   rm.dpcbClosure = dpcbClosure;
-  rm.main = GNUNET_thread_get_self();
+  rm.main = GNUNET_thread_get_self ();
   rm.total = GNUNET_ntohll (uri->data.fi.file_length);
-  rm.filename = get_real_download_filename(ectx,
-					   filename);
- 
-  if (GNUNET_SYSERR == GNUNET_disk_directory_create_for_file (ectx, rm.filename))
+  rm.filename = get_real_download_filename (ectx, filename);
+
+  if (GNUNET_SYSERR ==
+      GNUNET_disk_directory_create_for_file (ectx, rm.filename))
     {
-      free_request_manager(&rm, GNUNET_NO);
+      free_request_manager (&rm, GNUNET_NO);
       return GNUNET_SYSERR;
     }
   if (0 == rm.total)
@@ -804,13 +800,13 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                    O_CREAT | O_WRONLY | O_TRUNC,
                                    S_IRUSR | S_IWUSR);
       if (ret == -1)
-	{
-	  free_request_manager(&rm, GNUNET_NO);
-	  return GNUNET_SYSERR;
-	}
+        {
+          free_request_manager (&rm, GNUNET_NO);
+          return GNUNET_SYSERR;
+        }
       CLOSE (ret);
       dpcb (0, 0, rm.startTime, 0, NULL, 0, dpcbClosure);
-      free_request_manager(&rm, GNUNET_NO);
+      free_request_manager (&rm, GNUNET_NO);
       return GNUNET_OK;
     }
   rm.treedepth = GNUNET_ECRS_compute_depth (rm.total);
@@ -824,8 +820,9 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
         {
           GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                        GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
-                                       GNUNET_GE_BULK, "truncate", rm.filename);
-	  free_request_manager(&rm, GNUNET_NO);
+                                       GNUNET_GE_BULK, "truncate",
+                                       rm.filename);
+          free_request_manager (&rm, GNUNET_NO);
           return GNUNET_SYSERR;
         }
     }
@@ -841,12 +838,12 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
               fn[strlen (fn) - 1] += i;
             }
           rm.handles[i] = GNUNET_disk_file_open (ectx,
-						  fn,
-						  O_CREAT | O_RDWR,
-						  S_IRUSR | S_IWUSR);
+                                                 fn,
+                                                 O_CREAT | O_RDWR,
+                                                 S_IRUSR | S_IWUSR);
           if (rm.handles[i] < 0)
             {
-	      free_request_manager(&rm, GNUNET_NO);
+              free_request_manager (&rm, GNUNET_NO);
               return GNUNET_SYSERR;
             }
           GNUNET_free (fn);
@@ -856,7 +853,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   rm.sctx = GNUNET_FS_create_search_context (ectx, cfg, rm.lock);
   if (rm.sctx == NULL)
     {
-      free_request_manager(&rm, GNUNET_NO);
+      free_request_manager (&rm, GNUNET_NO);
       return GNUNET_SYSERR;
     }
   if (GNUNET_ECRS_uri_test_loc (uri))
@@ -867,7 +864,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
     }
 
   top = GNUNET_malloc (sizeof (struct Node));
-  memset(top, 0, sizeof(struct Node));
+  memset (top, 0, sizeof (struct Node));
   top->ctx = &rm;
   top->chk = uri->data.fi.chk;
   top->offset = 0;
@@ -879,9 +876,8 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   else
     GNUNET_free (top);
   GNUNET_mutex_unlock (rm.lock);
-  while ( (GNUNET_OK == tt (ttClosure)) &&
-	  (rm.abortFlag == GNUNET_NO) && 
-	  (rm.head != NULL) )
+  while ((GNUNET_OK == tt (ttClosure)) &&
+         (rm.abortFlag == GNUNET_NO) && (rm.head != NULL))
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
   if ((rm.head == NULL) &&
       ((rm.completed == rm.total) ||
@@ -908,8 +904,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                  __FUNCTION__, filename,
                  ret == GNUNET_OK ? "SUCCESS" : "INCOMPLETE");
 #endif
-  if ( (ret == GNUNET_SYSERR) &&
-       (tt(ttClosure) == GNUNET_SYSERR) )
+  if ((ret == GNUNET_SYSERR) && (tt (ttClosure) == GNUNET_SYSERR))
     {
       if (0 != UNLINK (rm.filename))
         {
@@ -919,7 +914,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
         }
       else
         {
-	  /* delete empty directories */
+          /* delete empty directories */
           rdir = GNUNET_strdup (rm.filename);
           len = strlen (rdir);
           do
@@ -931,12 +926,11 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
           while ((len > 0) && (0 == rmdir (rdir)));
           GNUNET_free (rdir);
         }
-    }    
-  free_request_manager (&rm, 
-			( (ret == GNUNET_OK) ||
-			  (tt(ttClosure) == GNUNET_SYSERR) ) 
-			? GNUNET_YES 
-			: GNUNET_NO);
+    }
+  free_request_manager (&rm,
+                        ((ret == GNUNET_OK) ||
+                         (tt (ttClosure) == GNUNET_SYSERR))
+                        ? GNUNET_YES : GNUNET_NO);
   return ret;
 }
 
