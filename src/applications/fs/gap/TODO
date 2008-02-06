@@ -1,0 +1,36 @@
+CORRECTNESS:
+1) (periodic?) clean up of stale data in plan.c datastructures -- easy  --- 45 minutes
+
+PERFORMANCE:
+1) core reservation of response bandwidth --- medium --- 60 minutes
+2) core notification of P2P-level disconnect (to call cleanup functions!)
+
+
+HARD STUFF:
+1) priority determination
+   - theoretically unbounded (important not to have a max!)
+   - bound by inbound priorities for forwarded queries
+   - start with priorities similar to current inbound priorities for our own requests
+2) TTL determination
+   - if priority non-zero, use maximum permitted TTL (for ours as well as forwarded;
+     make sure to decrement forwarded priority by at least one; one trust unit
+     should correspond to TTL_DECREMENT loss in max TTL)
+   - if priority is zero: 
+     - decrement inbound TTL randomly
+     - use single random TTL decrement for local queries (especially for the first run if we are initiator)
+3) implement PLAN_request target count calculation 
+   Strategy:
+   - if entropy of ratings is high, increase #targets
+   - make it possible (even likely) that we only pick one target (keeping most of the priority!)
+4) implement PLAN_request peer ranking calculation 
+   
+
+DETAILS:
+1) make sure that anonymity-level zero content is pushed into
+   the DHT by both fs (on insert/index) and by migration (for refresh)
+
+
+OUT-OF-SCOPE:
+1) modify datastore to return diverse subsets of large response sets,
+   except when processing for loopback! -- medium  --- 100 minutes
+2) make sure core polls whenever outbound bandwidth is available

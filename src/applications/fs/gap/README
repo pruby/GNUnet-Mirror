@@ -1,0 +1,6 @@
+Main data flow:
+
+       -> client ->      -> querymanager ->        ->
+core                fs.c                    plan.c    core
+       -> peer   ->      -> gap          ->        ->
+
