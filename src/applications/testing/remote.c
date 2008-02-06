@@ -37,7 +37,7 @@ const unsigned long long MAX_STARTING_PORT = -1;
 const unsigned long long MIN_PORT_INCREMENT = 1;
 const unsigned long long MAX_PORT_INCREMENT = -1;
 const unsigned long long MIN_NUMBER_DAEMONS = 1;
-const unsigned long long MAX_NUMBER_DAEMONS = -1;
+const unsigned long long MAX_NUMBER_DAEMONS = -1;   
 
 static void
 updatePort (struct GNUNET_GC_Configuration *cfg,
