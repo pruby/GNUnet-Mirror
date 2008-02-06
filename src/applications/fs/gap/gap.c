@@ -244,6 +244,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->anonymityLevel = 1;
   rl->type = type;
   rl->value = priority;
+  rl->remaining_value = priority > 0 ? priority - 1 : 0;
   rl->expiration = GNUNET_get_time () + ttl * GNUNET_CRON_SECONDS;
   rl->next = table[index];
   rl->response_target = GNUNET_FS_PT_intern (respond_to);
@@ -323,6 +324,37 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   GNUNET_FS_PT_change_rc (rid, -1);
   return value;
+}
+
+/**
+ * Compute the average priority of inbound requests
+ * (rounded up).
+ */
+unsigned int
+GNUNET_FS_GAP_get_average_priority()
+{
+  struct RequestList * rl;
+  unsigned long long tot;
+  unsigned int i;
+  unsigned int active;
+
+  tot = 0;
+  active = 0;
+  GNUNET_mutex_lock (GNUNET_FS_lock);
+  for (i = 0; i < table_size; i++)
+    {
+      rl = table[i];
+      while (rl != NULL)
+	{	
+          tot += rl->value;
+          active++;
+	  rl = rl->next;
+        }
+    }   
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
+  if (active == 0)
+    return 0;
+  return (unsigned int) (tot / active);
 }
 
 int

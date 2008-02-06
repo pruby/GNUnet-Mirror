@@ -30,6 +30,7 @@
 #include "pid_table.h"
 #include "fs_dht.h"
 #include "fs.h"
+#include "gap.h"
 #include "shared.h"
 
 /**
@@ -331,6 +332,14 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   struct RankingPeerContext *rpc = data;
   struct PeerRankings *rank;
   struct PeerHistoryList *history;
+  long long history_score;
+  unsigned int proximity_score;
+  GNUNET_CronTime now;
+  GNUNET_CronTime last;
+  unsigned int prio;
+  unsigned int ttl;
+  unsigned int allowable_prio;
+  int score;
 
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
@@ -343,22 +352,64 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       history = rpc->info->history;
       while ((history != NULL) && (history->peer != rank->peer))
         history = history->next;
-    }
-  if (history != NULL)
+    }  
+  now = GNUNET_get_time();
+  history_score = 0; /* no bias from history */
+  if ( (history != NULL) &&
+       (history->request_count > 0) )
     {
-      /* how do we score the history? */
+      last = history->last_response_time;
+      if (last >= now)
+	last = now - 1;      
+      /* the more responses we have in relation
+	 to the number of requests we sent, the
+	 higher we score; the score is the more
+	 significant the more recent the last
+	 response was */
+      history_score
+	= ((1LL<<30) * history->response_count) / (history->request_count * (now - last));
+      if (history->response_count == 0)
+	history_score = - history->request_count;
+    }
+  /* check query proximity */
+  proximity_score = GNUNET_hash_distance_u32 (&rpc->request->queries[0], &identity->hashPubKey);
+
+  /* generate score, ttl and priority */
+  prio = rpc->request->last_prio_used + 1; /* increase over time */
+  if (prio < history->last_good_prio)
+    prio = history->last_good_prio - 1; /* fall over time */
+  if (prio > 1)
+    {
+      allowable_prio = GNUNET_FS_GAP_get_average_priority() + 1;
+      if (prio > allowable_prio)
+	prio = allowable_prio;
+    }
+  ttl = rpc->request->last_ttl_used;
+  if (prio > 0)
+    {
+      ttl = 1 << 30; /* bound only by prio */
     }
   else
     {
-      /* what are good start values? */
-    }
+      if (rpc->request->response_client == NULL) 
+	ttl = 0; /* initiator expiration is always "now" */
+      else    
+	ttl = (int) (((long long) (rpc->request->expiration - now)) / GNUNET_CRON_SECONDS);
+      ttl = ttl - TTL_DECREMENT -
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 2 * TTL_DECREMENT);
+      if (ttl > 0) /* integer underflow */
+	ttl = - (1<<30);
+    } 
+  ttl = GNUNET_FS_HELPER_bound_ttl(ttl, prio);
+  rank->prio = prio;
+  rank->ttl = ttl;
 
-  /* check query proximity */
-
-  /* generate score, ttl and priority */
-  rank->prio = 42;              /* FIXME */
-  rank->ttl = 112;              /* FIXME */
-  rank->score = 1;              /* FIXME */
+  /* compute combined score */
+  score = 0; /* FIXME */
+  if (score <= - (1<<16))
+    rank->score = 1;
+  else
+    rank->score = (1<<16) + score;
 
   /* insert into ranking list */
   rank->next = rpc->rankings;
@@ -385,7 +436,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   struct ClientInfoList *info;
   struct PeerRankings *rank;
   struct RankingPeerContext rpc;
-  GNUNET_PeerIdentity peer;
+  GNUNET_PeerIdentity peerId;
   unsigned int target_count;
   unsigned int i;
   unsigned int total_peers;
@@ -443,9 +494,9 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
     {
       rank = rpc.rankings;
       rpc.rankings = rank->next;
-      GNUNET_FS_PT_resolve(rank->peer, &peer);
+      GNUNET_FS_PT_resolve(rank->peer, &peerId);
       if (rank->score != 0)
-	coreAPI->reserve_downstream_bandwidth(&peer,
+	coreAPI->reserve_downstream_bandwidth(&peerId,
 					      - rank->reserved_bandwidth);
       GNUNET_FS_PT_change_rc (rank->peer, -1);
       GNUNET_free (rank);
@@ -472,6 +523,10 @@ try_add_request (struct RequestList *req,
     + req->bloomfilter_size + (req->key_count - 1) * sizeof (GNUNET_HashCode);
   if (size > available)
     return 0;
+  if ( (prio > req->remaining_value) &&
+       (req->response_client == NULL) )    
+    prio = req->remaining_value;
+  ttl = GNUNET_FS_HELPER_bound_ttl(ttl, prio);
   msg->header.size = htons (size);
   msg->header.type = htons (GNUNET_P2P_PROTO_GAP_QUERY);
   msg->type = htonl (req->type);
@@ -487,8 +542,9 @@ try_add_request (struct RequestList *req,
                                      (char *) &msg->queries[req->key_count],
                                      req->bloomfilter_size);
   req->last_request_time = GNUNET_get_time ();
+  req->last_prio_used = prio; 
   req->last_ttl_used = ttl;
-  req->value = prio;
+  req->remaining_value -= prio;
   return size;
 }
 
@@ -641,7 +697,7 @@ GNUNET_FS_PLAN_success (PID_INDEX responder,
   hl = find_or_create_history_entry (cl, responder);
   hl->response_count++;
   hl->last_good_ttl = success->last_ttl_used;
-  hl->last_good_prio = success->value;
+  hl->last_good_prio = success->last_prio_used;
   hl->last_response_time = GNUNET_get_time ();
   hl->response_count++;
   GNUNET_mutex_unlock (GNUNET_FS_lock);

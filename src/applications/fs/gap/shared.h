@@ -164,7 +164,19 @@ struct RequestList
   /**
    * Priority used for the last request.
    */
+  unsigned int last_prio_used;
+
+  /**
+   * Total value of the request (the priority
+   * that we accepted for the inbound query).
+   */
   unsigned int value;
+
+  /**
+   * Remaining value of the request (invalid
+   * if response_client == NULL).
+   */
+  unsigned int remaining_value;
 
   /**
    * The queries of this request.  At least one,
