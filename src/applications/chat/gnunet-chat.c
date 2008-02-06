@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2007 Christian Grothoff (and other contributing authors)
+     (C) 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_directories.h"
 #include "gnunet_chat_lib.h"
 
 static struct GNUNET_GC_Configuration *cfg;
@@ -42,7 +43,7 @@ static char *roomname = "gnunet";
  * All gnunet-chat command line options
  */
 static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
-  COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),   /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),   /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'n', "nick", "NAME",
@@ -51,7 +52,7 @@ static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
   {'r', "room", "NAME",
    gettext_noop ("set the chat room to join (requred)"),
    1, &GNUNET_getopt_configure_set_string, &roomname},
-  COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -119,21 +120,23 @@ confirmation_callback (void *cls,
 int
 main (int argc, char **argv)
 {
+  struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_CHAT_Room *room;
   GNUNET_RSA_PublicKey *my_pub;
   struct GNUNET_RSA_PrivateKey *my_priv;
   char message[1024];
+  int ret = GNUNET_OK;
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
                                     "gnunet-chat [OPTIONS]",
                                     &cfgFilename, gnunetchatOptions, &ectx,
                                     &cfg))
-    return 1;                   /* parse error, --help, etc. */
+    ret = GNUNET_SYSERR;                   /* parse error, --help, etc. */
   if (nickname == NULL)
     {
       fprintf (stderr, _("You must specify a nickname\n"));
-      return 1;
+      ret = GNUNET_SYSERR;
     }
   /* FIXME: load/generate private key! */
   room = GNUNET_CHAT_join_room (ectx,
@@ -143,11 +146,11 @@ main (int argc, char **argv)
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join the room\n"));
-      return 1;
+      ret = GNUNET_SYSERR;
     }
 
   /* read messages from command line and send */
-  while (1)
+  while (ret == GNUNET_OK)
     {
       memset (message, 0, 1024);
       if (NULL == fgets (message, 1023, stdin))
@@ -164,7 +167,7 @@ main (int argc, char **argv)
     }
   GNUNET_CHAT_leave_room (room);
   GNUNET_fini (ectx, cfg);
-  return 0;
+  return GNUNET_OK;
 }
 
 /* end of gnunet-chat.c */

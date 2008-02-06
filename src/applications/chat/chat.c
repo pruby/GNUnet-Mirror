@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,18 +28,22 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_util.h"
+#include "gnunet_core.h"
 #include "chat.h"
 
-static GNUNET_CoreAPIForPlugins *coreAPI = NULL;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 #define MAX_LAST_MESSAGES 12
 #define MAX_CLIENTS 4
 
-static GNUNET_ClientHandle clients[MAX_CLIENTS];
+static struct GNUNET_ClientHandle **clients;
 static int clientCount;
-static GNUNET_HashCode lastMsgs[MAX_LAST_MESSAGES];
+static struct GNUNET_HashCode **lastMsgs;
 static int ringIndex;
-static Mutex chatMutex;
+static struct GNUNET_Mutex *chatMutex;
+static struct GNUNET_GE_Context *ectx;
+static struct GNUNET_GC_Configuration *cfg;
 
 static void
 markSeen (GNUNET_HashCode * hc)
@@ -97,7 +101,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
   /* check if we have seen this message already */
   GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
   j = -1;
-  GNUNET_mutex_lock (&chatMutex);
+  GNUNET_mutex_lock (chatMutex);
   for (i = 0; i < MAX_LAST_MESSAGES; i++)
     if (0 == memcmp (&hc, &lastMsgs[i], sizeof (GNUNET_HashCode)))
       j = i;
@@ -109,7 +113,7 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
       broadcastToConnected (message, 5, 1);
       cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
-        coreAPI->cs_send_to_client (clients[j], &cmsg->header);
+        coreAPI->cs_send_to_client (clients[j], &cmsg->header,GNUNET_YES);
       pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
       pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';
       /*
@@ -119,13 +123,13 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
          &pmsg->message[0]);
        */
     }
-  GNUNET_mutex_unlock (&chatMutex);
+  GNUNET_mutex_unlock (chatMutex);
   return GNUNET_OK;
 }
 
 static int
-csHandleChatRequest (GNUNET_ClientHandle client,
-                     const CS_MESSAGE_HEADER * message)
+csHandleChatRequest (struct GNUNET_ClientHandle *client,
+                     const GNUNET_MessageHeader * message)
 {
   int i;
   int j;
@@ -143,7 +147,7 @@ csHandleChatRequest (GNUNET_ClientHandle client,
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
   GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
-  GNUNET_mutex_lock (&chatMutex);
+  GNUNET_mutex_lock (chatMutex);
   markSeen (&hc);
 
   /* forward to all other TCP chat clients */
@@ -152,7 +156,7 @@ csHandleChatRequest (GNUNET_ClientHandle client,
     if (clients[i] == client)
       j = i;
     else
-      coreAPI->cs_send_to_client (clients[i], message);
+      coreAPI->cs_send_to_client (clients[i], message,GNUNET_YES);
   if (j == -1)
     {
       if (clientCount == MAX_CLIENTS)
@@ -171,15 +175,15 @@ csHandleChatRequest (GNUNET_ClientHandle client,
   /* forward to all other nodes in the network */
   pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
   broadcastToConnected (&pmsg->header, 5, 1);
-  GNUNET_mutex_unlock (&chatMutex);
+  GNUNET_mutex_unlock (chatMutex);
   return GNUNET_OK;
 }
 
 static void
-chatClientExitHandler (GNUNET_ClientHandle client)
+chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
   int i;
-  GNUNET_mutex_lock (&chatMutex);
+  GNUNET_mutex_lock (chatMutex);
   for (i = 0; i < clientCount; i++)
     if (clients[i] == client)
       {
@@ -189,14 +193,10 @@ chatClientExitHandler (GNUNET_ClientHandle client)
         clients[i] = clients[--clientCount];
         break;
       }
-  GNUNET_mutex_unlock (&chatMutex);
+  GNUNET_mutex_unlock (chatMutex);
 }
 
-/**
- * Initialize the AFS module. This method name must match
- * the library name (libgnunet_XXX => initialize_XXX).
- * @return GNUNET_SYSERR on errors
- */
+
 int
 initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
@@ -204,7 +204,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 
   GNUNET_GE_ASSERT (ectx,
                     sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
-  GNUNET_mutex_create (&chatMutex);
+  chatMutex = GNUNET_mutex_create (GNUNET_NO);
   clientCount = 0;
   coreAPI = capi;
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -215,7 +215,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
       capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->cs_register_exit_handler (&chatClientExitHandler))
+      capi->cs_exit_handler_register (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                                     &csHandleChatRequest))
@@ -238,8 +238,8 @@ done_module_chat ()
   coreAPI->cs_exit_handler_unregister (&chatClientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                     &csHandleChatRequest);
-  GNUNET_mutex_destroy (&chatMutex);
+  GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;
 }
 
-/* end of afs.c */
+/* end of chat.c */

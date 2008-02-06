@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,6 +20,7 @@
 
 /**
  * @author Christian Grothoff
+ * @author Nathan Evans
  * @file applications/chat/chat.h
  **/
 #ifndef CHAT_CHAT_H
@@ -39,7 +40,7 @@ typedef struct
 
 typedef struct
 {
-  CS_MESSAGE_HEADER header;
+  GNUNET_MessageHeader header;
   char nick[CHAT_NICK_LENGTH];
   char message[CHAT_MSG_LENGTH];
 } CS_chat_MESSAGE;
@@ -47,3 +48,5 @@ typedef struct
 
 
 #endif
+
+/* end of chat.h */

@@ -95,14 +95,56 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
                        const char *memberInfo,
                        GNUNET_CHAT_MessageCallback callback, void *cls)
 {
+  CS_chat_MESSAGE *chat_msg;	 
+  GNUNET_MessageHeader csHdr;
+  struct GNUNET_CHAT_Room *chat_room;
+  struct GNUNET_ClientServerConnection *sock;
+  
+  int ret;
+
+  ret = GNUNET_OK;
+  csHdr.size = htons (sizeof (GNUNET_MessageHeader));
+  csHdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
+  
+  sock = GNUNET_client_connection_create(ectx,cfg);
+  
+  if (sock == NULL)
+  {
+    fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
+    ret = GNUNET_SYSERR;
+  }
+
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (sock, &csHdr))
+  {
+  	fprintf (stderr, _("Error writing to socket.\n"));
+    ret = GNUNET_SYSERR;
+  }
+    
+  chat_msg = GNUNET_malloc (sizeof (CS_chat_MESSAGE));
+  
   // connect
 
   // allocate & init room struct
+  chat_room = GNUNET_malloc(sizeof(struct GNUNET_CHAT_Room));
+  chat_room->nickname = GNUNET_malloc(sizeof(nickname));
+  strncpy(chat_room->nickname,nickname,sizeof(nickname));
+  chat_room->my_public_key = me;
+  chat_room->my_private_key = key;
+  chat_room->callback = callback;
+  chat_room->callback_cls = cls;
+  chat_room->ectx = ectx;
+  chat_room->cfg = cfg;
+  chat_room->memberInfo = GNUNET_malloc(sizeof(memberInfo));
+  strncpy(chat_room->memberInfo,memberInfo,sizeof(memberInfo));
+  chat_room->sock = sock;
 
   // create pthread
 
   // return room struct
-  return NULL;
+  if (ret != GNUNET_OK)
+  	return NULL;
+  	
+  return chat_room;
 }
 
 /**
