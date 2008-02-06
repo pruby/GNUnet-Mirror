@@ -353,11 +353,6 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       /* what are good start values? */
     }
 
-  /* reserve response-bandwidth from core!
-     (also, don't forget to unreserve for
-     peers that were not selected!) */
-
-
   /* check query proximity */
 
   /* generate score, ttl and priority */
