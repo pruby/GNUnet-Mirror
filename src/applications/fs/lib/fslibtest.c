@@ -117,8 +117,10 @@ countCallback (const GNUNET_HashCode * key,
 
 static int
 searchResultCB (const GNUNET_HashCode * key,
-                const GNUNET_DatastoreValue * value, TSC * cls)
+                const GNUNET_DatastoreValue * value, void * ctx,
+		unsigned long long uid)
 {
+  TSC * cls = ctx;
   GNUNET_HashCode ekey;
   GNUNET_DatastoreValue *blk;
   GNUNET_DatastoreValue *eblk;
@@ -159,7 +161,6 @@ searchResultCB (const GNUNET_HashCode * key,
 static int
 trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
 {
-  struct GNUNET_FS_SearchHandle *handle;
   GNUNET_CronTime now;
   GNUNET_HashCode query;
   TSC closure;
@@ -176,20 +177,16 @@ trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
   closure.i = i;
   closure.sem = GNUNET_semaphore_create (0);
   now = GNUNET_get_time ();
-  handle = GNUNET_FS_start_search (ctx,
-                                   NULL,
-                                   GNUNET_ECRS_BLOCKTYPE_DATA,
-                                   1,
-                                   &query,
-                                   0,
-                                   0,
-                                   now + 30 * GNUNET_CRON_SECONDS,
-                                   (GNUNET_DatastoreValueIterator) &
-                                   searchResultCB, &closure);
+  GNUNET_FS_start_search (ctx,
+			  NULL,
+			  GNUNET_ECRS_BLOCKTYPE_DATA,
+			  1,
+			  &query,
+			  0,
+			  &searchResultCB, &closure);
   GNUNET_cron_add_job (cron, &abortSem, 30 * GNUNET_CRON_SECONDS, 0,
                        closure.sem);
   GNUNET_semaphore_down (closure.sem, GNUNET_YES);
-  GNUNET_FS_stop_search (ctx, handle);
   GNUNET_cron_suspend_jobs (cron, GNUNET_NO);
   GNUNET_cron_del_job (cron, &abortSem, 0, closure.sem);
   GNUNET_cron_resume_jobs (cron, GNUNET_NO);
@@ -207,7 +204,6 @@ main (int argc, char *argv[])
 #endif
   int ok;
   struct GNUNET_FS_SearchContext *ctx = NULL;
-  struct GNUNET_FS_SearchHandle *hnd;
   struct GNUNET_Mutex *lock;
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_DatastoreValue *block;
@@ -328,21 +324,16 @@ main (int argc, char *argv[])
   GNUNET_free (block);
   i = 2;
   mainThread = GNUNET_thread_get_self ();
-  hnd = GNUNET_FS_start_search (ctx,
-                                NULL,
-                                GNUNET_ECRS_BLOCKTYPE_ANY,
-                                1,
-                                &query, 0, 0, 10 * GNUNET_CRON_SECONDS,
+  GNUNET_FS_start_search (ctx,
+			  NULL,
+			  GNUNET_ECRS_BLOCKTYPE_ANY,
+			  1,
+			  &query, 0, 
                                 &countCallback, &i);
-  CHECK (hnd != NULL);
   GNUNET_thread_sleep (10 * GNUNET_CRON_SECONDS);
-  GNUNET_FS_stop_search (ctx, hnd);
   GNUNET_thread_release_self (mainThread);
   CHECK (i <= 0);
 
-
-  /* just to check if it crashes... */
-  GNUNET_FS_get_current_average_priority (sock);
   /* END OF TEST CODE */
 
 FAILURE:
