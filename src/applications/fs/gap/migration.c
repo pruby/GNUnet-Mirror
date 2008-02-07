@@ -29,7 +29,6 @@
 #include "migration.h"
 #include "fs.h"
 #include "gnunet_datastore_service.h"
-#include "gnunet_dht_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_protocols.h"
 #include "anonymity.h"
@@ -69,11 +68,6 @@ static GNUNET_Datastore_ServiceAPI *datastore;
  * Global core API.
  */
 static GNUNET_CoreAPIForPlugins *coreAPI;
-
-/**
- * DHT service.  Maybe NULL!
- */
-static GNUNET_DHT_ServiceAPI *dht;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
@@ -347,7 +341,6 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
     (GNUNET_GAP_ESTIMATED_DATA_SIZE,
      GNUNET_FS_GAP_CONTENT_MIGRATION_PRIORITY, &activeMigrationCallback);
   datastore = capi->request_service ("datastore");
-  dht = capi->request_service ("dht");
   stats = capi->request_service ("stats");
   if (stats != NULL)
     {
@@ -375,8 +368,6 @@ GNUNET_FS_MIGRATION_done ()
     }
   coreAPI->release_service (datastore);
   datastore = NULL;
-  coreAPI->release_service (dht);
-  dht = NULL;
   coreAPI = NULL;
   for (i = 0; i < MAX_RECORDS; i++)
     {

@@ -1,9 +1,1 @@
-DETAILS:
-1) make sure that anonymity-level zero content is pushed into
-   the DHT by both fs (on insert/index) and by migration (for refresh)
 
-
-OUT-OF-SCOPE:
-1) modify datastore to return diverse subsets of large response sets,
-   except when processing for loopback!
-2) make sure core polls whenever outbound bandwidth is available
