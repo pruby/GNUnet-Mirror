@@ -280,6 +280,11 @@ GNUNET_FS_DHT_done ()
       GNUNET_thread_stop_sleep (thread);
       GNUNET_thread_join (thread, &unused);
     }
+  if (stats != NULL)
+    {
+      coreAPI->release_service (stats);
+      stats = NULL;
+    }
   if (dht != NULL)
     coreAPI->release_service (dht);
   dht = NULL;
