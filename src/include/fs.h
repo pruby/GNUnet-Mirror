@@ -436,9 +436,9 @@ typedef struct
 
 /**
  * Estimated size of most blocks transported with
- * the GAP protocol.  32k DBlocks plus overhead.
+ * the GAP protocol.  32k DBlocks are the norm.
  */
-#define GNUNET_GAP_ESTIMATED_DATA_SIZE (33*1024)
+#define GNUNET_GAP_ESTIMATED_DATA_SIZE (32 * 1024)
 
 
 
