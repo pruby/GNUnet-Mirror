@@ -29,6 +29,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_chat_lib.h"
 
+static const int MAX_MESSAGE_LENGTH = 1024;
 static struct GNUNET_GC_Configuration *cfg;
 
 static struct GNUNET_GE_Context *ectx;
@@ -38,6 +39,8 @@ static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 static char *nickname;
 
 static char *roomname = "gnunet";
+
+static char *quit = "quit";
 
 /**
  * All gnunet-chat command line options
@@ -124,7 +127,13 @@ main (int argc, char **argv)
   struct GNUNET_CHAT_Room *room;
   GNUNET_RSA_PublicKey *my_pub;
   struct GNUNET_RSA_PrivateKey *my_priv;
-  char message[1024];
+  char *message;
+  /*char *quit;
+  
+  quit = GNUNET_malloc(sizeof("quit")+1);
+  quit = strdup("quit");*/
+  message = GNUNET_malloc(MAX_MESSAGE_LENGTH+1);
+ 
   int ret = GNUNET_OK;
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
@@ -150,11 +159,19 @@ main (int argc, char **argv)
     }
 
   /* read messages from command line and send */
-  while (ret == GNUNET_OK)
+  while ((ret == GNUNET_OK)&&(strcmp(message,quit)!=0))
     {
-      memset (message, 0, 1024);
-      if (NULL == fgets (message, 1023, stdin))
+
+      bzero(message, MAX_MESSAGE_LENGTH+1);
+      if (NULL == fgets (message, MAX_MESSAGE_LENGTH, stdin))
         break;
+      else if (strncmp(message,quit,sizeof(quit))==0)
+        break;
+      else
+      {
+      	if(message[strlen(message)-1] == '\n')
+      	  message[strlen(message)-1] = '\0';
+      }
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
                                                  &confirmation_callback,
@@ -164,8 +181,13 @@ main (int argc, char **argv)
         {
           fprintf (stderr, _("Failed to send message.\n"));
         }
+        
     }
+    
+  
   GNUNET_CHAT_leave_room (room);
+  GNUNET_free(room);
+  GNUNET_free(message);
   GNUNET_fini (ectx, cfg);
   return GNUNET_OK;
 }

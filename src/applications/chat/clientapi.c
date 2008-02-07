@@ -121,7 +121,12 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   }
 
   chat_msg = GNUNET_malloc (sizeof (CS_chat_MESSAGE));
+<<<<<<< .mine
+  GNUNET_free(chat_msg);
+  
+=======
 
+>>>>>>> .r6183
   // connect
 
   // allocate & init room struct
@@ -151,11 +156,16 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
  * Leave a chat room.
  */
 void
-GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *room)
+GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
   // stop thread
   // join thread
-  // free room struct
+  // free room struct  
+  
+  GNUNET_free(chat_room->nickname);
+  GNUNET_free(chat_room->memberInfo);
+  GNUNET_client_connection_destroy(chat_room->sock);
+  
 }
 
 /**
@@ -172,7 +182,24 @@ GNUNET_CHAT_send_message (struct GNUNET_CHAT_Room *room,
                           GNUNET_CHAT_MSG_OPTIONS options,
                           const GNUNET_RSA_PublicKey * receiver)
 {
-  return GNUNET_SYSERR;
+  int ret = GNUNET_OK;
+  GNUNET_MessageHeader cs_msg_hdr;
+  CS_chat_MESSAGE *msg_to_send;
+  
+  msg_to_send = GNUNET_malloc(sizeof(CS_chat_MESSAGE));
+  
+  cs_msg_hdr.size = htons (sizeof (GNUNET_MessageHeader));
+  cs_msg_hdr.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
+  msg_to_send->header = cs_msg_hdr;
+  
+  if (GNUNET_SYSERR == GNUNET_client_connection_write (room->sock, (GNUNET_MessageHeader *)&msg_to_send))
+  {
+  	fprintf (stderr, _("Error writing to socket.\n"));
+    ret = GNUNET_SYSERR;
+  }
+    
+  
+  return ret;
 }
 
 /**
