@@ -22,10 +22,6 @@
  * @file fs/gap/gap.c
  * @brief protocol that performs anonymous routing
  * @author Christian Grothoff
- *
- * TODO:
- * - clean up active requests from another peer
- *   if that peer disconnects
  */
 
 #include "platform.h"
@@ -359,6 +355,50 @@ GNUNET_FS_GAP_get_average_priority()
   return (unsigned int) (tot / active);
 }
 
+/**
+ * We were disconnected from another peer.
+ * Remove all of its pending queries.
+ */
+static void
+cleanup_on_peer_disconnect(const GNUNET_PeerIdentity * peer,
+			   void * unused)
+{
+  unsigned int i;
+  struct RequestList * rl;
+  struct RequestList * prev;
+  PID_INDEX pid;
+
+  GNUNET_mutex_lock (GNUNET_FS_lock);
+  pid = GNUNET_FS_PT_intern(peer);
+  for (i=0;i<table_size;i++)
+    {
+      rl = table[i];
+      prev = NULL;
+      while (rl != NULL)
+	{
+	  if (pid == rl->response_target)
+	    {
+	      if (prev == NULL)
+		table[i] = rl->next;
+	      else
+		prev->next = rl->next;
+	      GNUNET_FS_SHARED_free_request_list(rl);
+	      if (prev == NULL)
+		rl = table[i];
+	      else
+		rl = prev->next;	      
+	    } 
+	  else
+	    {
+	      prev = rl;
+	      rl = rl->next;
+	    }
+	}
+    }
+  GNUNET_FS_PT_change_rc(pid, -1);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
+}
+
 int
 GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
 {
@@ -380,6 +420,9 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   table_size = ts;
   table = GNUNET_malloc (sizeof (struct RequestList *) * table_size);
   memset (table, 0, sizeof (struct RequestList *) * table_size);
+  GNUNET_GE_ASSERT (coreAPI->ectx,
+                    GNUNET_SYSERR !=
+                    coreAPI->register_notify_peer_disconnect (&cleanup_on_peer_disconnect, NULL));
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);
   return 0;
@@ -400,6 +443,9 @@ GNUNET_FS_GAP_done ()
         }
     }
   GNUNET_free (table);
+  GNUNET_GE_ASSERT (coreAPI->ectx,
+                    GNUNET_SYSERR !=
+                    coreAPI->unregister_notify_peer_disconnect (&cleanup_on_peer_disconnect, NULL));
   coreAPI->release_service (datastore);
   datastore = NULL;
   GNUNET_cron_stop (cron);
