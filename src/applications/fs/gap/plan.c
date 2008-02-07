@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include <math.h>
 #include "gnunet_protocols.h"
 #include "plan.h"
 #include "pid_table.h"
@@ -179,6 +180,11 @@ static struct QueryPlanList *queries;
  * for requests from various clients.
  */
 static struct ClientInfoList *clients;
+
+/**
+ * Log_e(2).
+ */
+static double LOG_2;
 
 /**
  * Find the entry in the client list corresponding
@@ -452,6 +458,8 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   unsigned int total_peers;
   unsigned long long total_score;
   unsigned long long selector;
+  double entropy;
+  double prob;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);   /* needed? */
   info = clients;
@@ -466,11 +474,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   /* use request type, priority, system load and
      entropy of ranking to determine number of peers
      to queue */
-  target_count = 2;             /* FIXME */
-
-  if (target_count > total_peers)
-    target_count = total_peers;
-
+  
   /* use biased random selection to select
      peers according to ranking; add requests */
   total_score = 0;
@@ -481,6 +485,27 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       total_score += rank->score;
       rank = rank->next;
     }
+
+  entropy = 0;
+  rank = rpc.rankings;
+  while (rank != NULL)
+    {
+      prob = 1.0 * rank->score / total_score;
+      if (prob > 0.000000001)
+	entropy -= prob * log(prob) / LOG_2;
+      rank = rank->next;
+    }
+
+  if (entropy < 0.001)
+    entropy = 0.001; /* should only be possible if we have virtually only one choice */
+  target_count = (unsigned int) ceil(entropy); 
+  /* limit target count based on value of the reqeust */
+  if (target_count > 2 * request->value + 3)
+    target_count = 2 * request->value + 3; 
+
+  if (target_count > total_peers)
+    target_count = total_peers;
+
   /* select target_count peers */
   for (i = 0; i < target_count; i++)
     {
@@ -809,6 +834,7 @@ peer_disconnect_handler(const GNUNET_PeerIdentity * peer,
 int
 GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
 {
+  LOG_2 = log(2);
   coreAPI = capi;
   GNUNET_GE_ASSERT (capi->ectx,
                     GNUNET_SYSERR !=
