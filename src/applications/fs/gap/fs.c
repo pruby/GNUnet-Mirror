@@ -690,8 +690,6 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx, sizeof (SBlock) == 724);
   GNUNET_GE_ASSERT (ectx, sizeof (NBlock) == 716);
   GNUNET_GE_ASSERT (ectx, sizeof (KNBlock) == 1244);
-  GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_reply_MESSAGE) == 68);
-  GNUNET_GE_ASSERT (ectx, sizeof (P2P_gap_query_MESSAGE) == 144);
 
   if ((-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "LOAD", "HARDCPULIMIT", 0, 100000, /* 1000 CPUs!? */
                                                        0,       /* 0 == no limit */
