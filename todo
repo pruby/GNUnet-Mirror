@@ -4,6 +4,9 @@ Annotations:
   RC == Release Critical
 
 0.8.0 [2'08] (aka "advanced features"):
+- modify datastore to return diverse subsets of large response sets,
+  except when processing for loopback!
+- make sure core polls whenever outbound bandwidth is available
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
