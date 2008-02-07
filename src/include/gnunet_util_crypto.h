@@ -423,6 +423,14 @@ int GNUNET_RSA_verify (const void *block,
                        const GNUNET_RSA_Signature * sig,
                        const GNUNET_RSA_PublicKey * publicKey);
 
+
+/**
+ * This function should only be called in testcases
+ * where strong entropy gathering is not desired
+ * (for example, for hostkey generation).
+ */
+void GNUNET_disable_entropy_gathering(void);
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif

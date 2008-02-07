@@ -277,10 +277,8 @@ GNUNET_init (int argc,
       (GNUNET_YES == GNUNET_GC_get_configuration_value_yesno (*cfg,
                                                               "TESTING",
                                                               "WEAKRANDOM",
-                                                              GNUNET_NO)))
-    {
-      gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
-    }
+                                                              GNUNET_NO)))    
+      GNUNET_disable_entropy_gathering();    
   if (configure_logging (ectx, *cfg) != 0)
     return -1;
   return i;

@@ -175,6 +175,7 @@ main (int argc, char *argv[])
 {
   int weak_keys;
 
+  GNUNET_disable_entropy_gathering();
   if (GENERATE_WEAK_KEYS)
     {
       weak_keys = getWeakKeys ();

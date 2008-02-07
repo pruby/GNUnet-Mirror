@@ -158,6 +158,7 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
+  GNUNET_disable_entropy_gathering();
   GNUNET_GE_ASSERT (NULL,
                     strlen (INITVALUE) >
                     sizeof (GNUNET_AES_InitializationVector));

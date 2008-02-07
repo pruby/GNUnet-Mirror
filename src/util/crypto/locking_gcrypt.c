@@ -90,6 +90,17 @@ void __attribute__ ((constructor)) GNUNET_crypto_ltdl_init ()
 #endif
 }
 
+/**
+ * This function should only be called in testcases
+ * where strong entropy gathering is not desired
+ * (for example, for hostkey generation).
+ */
+void GNUNET_disable_entropy_gathering()
+{
+  gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+}
+
+
 void __attribute__ ((destructor)) GNUNET_crypto_ltdl_fini ()
 {
 #if USE_LOCK

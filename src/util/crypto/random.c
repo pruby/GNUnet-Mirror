@@ -72,7 +72,8 @@ GNUNET_random_u32 (int mode, unsigned int i)
 /**
  * Get an array with a random permutation of the
  * numbers 0...n-1.
- * @param mode GNUNET_RANDOM_QUALITY_STRONG if the strong (but expensive) PRNG should be used, GNUNET_RANDOM_QUALITY_WEAK otherwise
+ * @param mode GNUNET_RANDOM_QUALITY_STRONG if the strong (but expensive)
+ *        PRNG should be used, GNUNET_RANDOM_QUALITY_WEAK otherwise
  * @param n the size of the array
  * @return the permutation array (allocated from heap)
  */
