@@ -42,9 +42,6 @@ main (int argc, const char **argv)
   char *c1 = NULL;
   char *c2 = NULL;
   int ret = 0;
-  int res;
-  struct GNUNET_GC_Configuration *cfg;
-  struct GNUNET_GE_Context *ectx;
 
   if (GNUNET_OK != GNUNET_TESTING_start_daemon (12087,
                                                 10000,
