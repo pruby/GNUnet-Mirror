@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0e\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-22 17:30-0700\n"
+"POT-Creation-Date: 2008-02-07 00:26-0700\n"
 "PO-Revision-Date: 2006-06-29 12:05+0200\n"
 "Last-Translator: Miguel Angel Arruga <miguel.13@telefonica.net>\n"
 "Language-Team: Spanish\n"
@@ -20,9 +20,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/transports/upnp/upnp.c:356 src/transports/upnp/upnp.c:541
-#: src/transports/http.c:1321 src/transports/http.c:1414
-#: src/transports/http.c:1589 src/transports/http.c:2015
-#: src/transports/http.c:2076 src/applications/bootstrap_http/http.c:123
+#: src/transports/http.c:1345 src/transports/http.c:1442
+#: src/transports/http.c:1620 src/transports/http.c:2047
+#: src/transports/http.c:2108 src/applications/bootstrap_http/http.c:123
 #: src/applications/bootstrap_http/http.c:257
 #: src/applications/bootstrap_http/http.c:274
 #: src/applications/bootstrap_http/http.c:306
@@ -132,27 +132,45 @@ msgstr "# bytes omitidos por UDP (salientes)"
 msgid "# UDP6 connections (right now)"
 msgstr ""
 
-#: src/transports/http.c:876
+#: src/transports/http.c:892
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: Imposible determinar mi dirección IP pública.\n"
 
-#: src/transports/http.c:2291
+#: src/transports/http.c:2325
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2300
+#: src/transports/http.c:2334
 msgid "# bytes received via HTTP"
 msgstr "# bytes recibidos vía HTTP"
 
-#: src/transports/http.c:2301
+#: src/transports/http.c:2335
 msgid "# bytes sent via HTTP"
 msgstr "# bytes mandados vía HTTP"
 
-#: src/transports/http.c:2303
+#: src/transports/http.c:2337
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "#bytes omitidos vía HTTP (salientes)"
+
+#: src/transports/http.c:2338
+msgid "# HTTP GET issued"
+msgstr ""
+
+#: src/transports/http.c:2340
+#, fuzzy
+msgid "# HTTP GET received"
+msgstr "# bytes recibidos por TCP"
+
+#: src/transports/http.c:2341
+msgid "# HTTP PUT issued"
+msgstr ""
+
+#: src/transports/http.c:2343
+#, fuzzy
+msgid "# HTTP PUT received"
+msgstr "# bytes recibidos por TCP"
 
 #: src/transports/smtp.c:367
 msgid "Received malformed message via SMTP (size mismatch).\n"
@@ -952,8 +970,7 @@ msgstr "'%s' no esta disponible."
 msgid "Unknown operation `%s'\n"
 msgstr "Operación desconocida '%s'\n"
 
-#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
-#: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
+#: src/setup/gnunet-setup.c:417 src/util/getopt/getopt.c:1072
 #, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Usar --help para obtener una lista de opciones.\n"
@@ -1088,30 +1105,30 @@ msgstr "'%s' registrando un manejador de clientes %d\n"
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:869
+#: src/applications/dht/module/routing.c:866
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:871
+#: src/applications/dht/module/routing.c:868
 msgid "# dht requests routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:873
+#: src/applications/dht/module/routing.c:870
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "# mensajes PONG encriptados recibidos"
 
-#: src/applications/dht/module/routing.c:875
+#: src/applications/dht/module/routing.c:872
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/applications/dht/module/routing.c:877
+#: src/applications/dht/module/routing.c:874
 #, fuzzy
 msgid "# dht results received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/applications/dht/module/routing.c:882
+#: src/applications/dht/module/routing.c:879
 #, fuzzy, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr "'%s' registrando manejadores %d %d %d\n"
@@ -1285,7 +1302,7 @@ msgstr "Imprime estadísticas acerca de las operaciones de GNUnet."
 msgid "Suppress display of asynchronous log messages"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:149
+#: src/applications/vpn/gnunet-vpn.c:149 src/applications/chat/clientapi.c:113
 #: src/applications/stats/gnunet-stats.c:121
 #: src/applications/tbench/gnunet-tbench.c:126
 #: src/applications/tracekit/gnunet-tracekit.c:352
@@ -1529,127 +1546,6 @@ msgstr ""
 #, c-format
 msgid "RFC4193 Closing tunnel %d fd %d\n"
 msgstr ""
-
-#: src/applications/gap/pid_table.c:177
-msgid "# distinct interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/pid_table.c:181
-msgid "# total RC of interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/gap.c:1722
-#, c-format
-msgid "GAP received invalid content from `%s'\n"
-msgstr "GAP recibido contenido no válido de '%s'\n"
-
-#: src/applications/gap/gap.c:1723
-msgid "myself"
-msgstr "yo"
-
-#: src/applications/gap/gap.c:1915
-msgid ""
-"Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
-msgstr ""
-"Solicitada la cobertura de tráfico pero el servicio de tráfico no ha sido "
-"cargado. Rechazando la petición.\n"
-
-#: src/applications/gap/gap.c:1926 src/applications/fs/module/anonymity.c:66
-msgid "Failed to get traffic stats.\n"
-msgstr "Fallo en las estadísticas del tráfico.\n"
-
-#: src/applications/gap/gap.c:1937 src/applications/gap/gap.c:1946
-#: src/applications/gap/gap.c:1958
-msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
-msgstr ""
-"Imposible satisfacer el nivel deseado de anonimato, ignorando la petición.\n"
-
-#: src/applications/gap/gap.c:2230
-msgid "# gap requests total received"
-msgstr ""
-
-#: src/applications/gap/gap.c:2233
-msgid "# gap requests policy: immediate drop"
-msgstr ""
-
-#: src/applications/gap/gap.c:2235
-msgid "# gap requests policy: not routed"
-msgstr ""
-
-#: src/applications/gap/gap.c:2237
-msgid "# gap requests policy: not answered"
-msgstr ""
-
-#: src/applications/gap/gap.c:2241
-msgid "# gap requests processed: attempted add to RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2244
-msgid "# gap requests processed: local result"
-msgstr ""
-
-#: src/applications/gap/gap.c:2246
-msgid "# gap routing successes (total)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2249
-msgid "# gap requests dropped: collision in RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2253
-msgid "# gap requests forwarded (counting each peer)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2255
-msgid "# gap duplicate requests (pending)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2258
-msgid "# gap duplicate requests that were re-tried"
-msgstr ""
-
-#: src/applications/gap/gap.c:2261
-msgid "# gap re-try ttl difference (cummulative)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2263
-msgid "# gap reply duplicates"
-msgstr ""
-
-#: src/applications/gap/gap.c:2265
-msgid "# gap spurious replies (dropped)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2267
-msgid "# gap routing slots currently in use"
-msgstr ""
-
-#: src/applications/gap/gap.c:2270
-msgid "# gap memory used for tracking seen content"
-msgstr ""
-
-#: src/applications/gap/gap.c:2274
-msgid "# gap memory used for tracking routing destinations"
-msgstr ""
-
-#: src/applications/gap/gap.c:2276
-msgid "# gap rewards pending"
-msgstr ""
-
-#: src/applications/gap/gap.c:2278
-msgid "# gap response weights"
-msgstr ""
-
-#: src/applications/gap/gap.c:2294
-msgid ""
-"Traffic service failed to load; gap cannot ensure cover-traffic "
-"availability.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:2318
-#, c-format
-msgid "`%s' registering handlers %d %d\n"
-msgstr "'%s' registrando manejadores %d %d\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
 #: src/applications/fs/tools/gnunet-insert.c:268
@@ -2191,95 +2087,6 @@ msgstr "Recolección de identificadores de fichero desactivada.\n"
 msgid "Deleted corrupt URI database in `%s'."
 msgstr "Borrada base de datos de URIs corrupta en '%s'."
 
-#: src/applications/fs/module/dht_push.c:138
-msgid "# blocks pushed into DHT"
-msgstr ""
-
-#: src/applications/fs/module/querymanager.c:235
-msgid "# FS currently tracked queries from clients"
-msgstr ""
-
-#: src/applications/fs/module/querymanager.c:237
-msgid "# FS replies passed to clients"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:343
-#, fuzzy, c-format
-msgid "Indexed file disappeared, deleting block for query `%s'\n"
-msgstr ""
-"Fichero indexado desaparecido, borrando el bloque para preguntas '%s'\n"
-
-#: src/applications/fs/module/ondemand.c:478
-#, c-format
-msgid ""
-"Because the file `%s' has been unavailable for 3 days it got removed from "
-"your share.  Please unindex files before deleting them as the index now "
-"contains invalid references!\n"
-msgstr ""
-"El fichero '%s' se ha eliminado de tus compartidos porque no ha estado "
-"disponible durante tres días.  Por favor, desindexa los ficheros antes de "
-"borrarlos porque eso causa que el índice tenga referencias no válidas.\n"
-
-#: src/applications/fs/module/ondemand.c:504
-#, c-format
-msgid ""
-"Configuration file must specify directory for storage of FS data in section `"
-"%s' under `%s'.\n"
-msgstr ""
-"El fichero de configuración debe especificar un directorio para el "
-"almacenamiento de los datos de FS en la sección '%s' bajo '%s'.\n"
-
-#: src/applications/fs/module/ondemand.c:561
-msgid "Indexed content changed (does not match its hash).\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:752
-#, fuzzy, c-format
-msgid ""
-"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
-msgstr ""
-"Bloque ODB '%s' desindexado del offset %llu perdido de la base de datos.\n"
-
-#: src/applications/fs/module/fs.c:1304
-#, c-format
-msgid ""
-"You must specify a postive number for `%s' in the configuration in section `%"
-"s'.\n"
-msgstr ""
-"Debes especificar un número positivo para '%s' en la configuración en la "
-"sección '%s'.\n"
-
-#: src/applications/fs/module/fs.c:1319
-msgid "# FS expired replies dropped"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1321
-#, fuzzy
-msgid "# FS valid replies received"
-msgstr "# bytes recibidos por TCP"
-
-#: src/applications/fs/module/fs.c:1357
-#, c-format
-msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
-msgstr "'%s' registrando manejadores de clientes %d %d %d %d %d %d %d %d %d\n"
-
-#: src/applications/fs/module/fs.c:1417
-msgid "enables (anonymous) file-sharing"
-msgstr "activa la compartición de ficheros anónima"
-
-#: src/applications/fs/module/migration.c:383
-msgid "# blocks migrated"
-msgstr "# blocks migrados"
-
-#: src/applications/fs/module/migration.c:385
-#, fuzzy
-msgid "# blocks fetched for migration"
-msgstr "# blocks migrados"
-
-#: src/applications/fs/module/migration.c:388
-msgid "# on-demand block migration attempts"
-msgstr ""
-
 #: src/applications/fs/fsui/deserialize.c:772
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
@@ -2317,39 +2124,31 @@ msgstr ""
 msgid "Failed to create temporary directory."
 msgstr "Error en el formato del fichero (¿no es un directorio de GNUnet?)\n"
 
-#: src/applications/fs/ecrs/search.c:168
+#: src/applications/fs/ecrs/search.c:156
 msgid "CHK URI not allowed for search.\n"
 msgstr "CHK URI no autorizado para buscar.\n"
 
-#: src/applications/fs/ecrs/search.c:217
+#: src/applications/fs/ecrs/search.c:205
 msgid "LOC URI not allowed for search.\n"
 msgstr "LOC URI no autorizado para buscar.\n"
 
-#: src/applications/fs/ecrs/download.c:132
+#: src/applications/fs/ecrs/download.c:257
 #, c-format
 msgid "Could not unlink temporary file `%s': %s\n"
 msgstr "Imposible desenlazar temporalmente el fichero '%s': %s\n"
 
-#: src/applications/fs/ecrs/download.c:272
+#: src/applications/fs/ecrs/download.c:321
 #, c-format
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr "Escribiendo(%d, %p, %d) se produjo un fallo: %s\n"
 
-#: src/applications/fs/ecrs/download.c:1010
+#: src/applications/fs/ecrs/download.c:646
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
 msgstr ""
 "El contenido desencriptado no encuentra una clave. Esto puede ser un bug o "
 "un fichero introducido maliciosamente. Descarga abortada.\n"
-
-#: src/applications/fs/ecrs/download.c:1205
-#, c-format
-msgid ""
-"Content `%s' seems to be not available on the network (tried %u times).\n"
-msgstr ""
-"El contenido '%s' parece no estar disponible en la red (intentado %u "
-"veces).\n"
 
 #: src/applications/fs/ecrs/helper.c:75
 msgid "No keywords specified!\n"
@@ -2617,19 +2416,19 @@ msgid ""
 msgstr ""
 "Asegura que este par es conocido por otros pares y descubre otros pares"
 
-#: src/applications/chat/chat.c:91
+#: src/applications/chat/chat.c:95
 msgid "Message received from peer is invalid.\n"
 msgstr "El mensaje recibido del par es inválido.\n"
 
-#: src/applications/chat/chat.c:140
+#: src/applications/chat/chat.c:144
 msgid "Message received from client is invalid\n"
 msgstr "El mensaje recibido del cliente es inválido\n"
 
-#: src/applications/chat/chat.c:161
+#: src/applications/chat/chat.c:165
 msgid "Maximum number of chat clients reached.\n"
 msgstr "Número máximo de clientes en el chat alcanzado.\n"
 
-#: src/applications/chat/chat.c:167
+#: src/applications/chat/chat.c:171
 #, c-format
 msgid "Now %d of %d chat clients at this node.\n"
 msgstr "Ahora hay %d de %d clientes de chat en este nodo.\n"
@@ -2643,29 +2442,34 @@ msgstr "'%s' registrando manejadores %d y %d\n"
 msgid "enables P2P-chat (incomplete)"
 msgstr "Activa el chat P2P (incompleto)"
 
-#: src/applications/chat/gnunet-chat.c:45
+#: src/applications/chat/clientapi.c:119 src/applications/chat/clientapi.c:197
+#, fuzzy, c-format
+msgid "Error writing to socket.\n"
+msgstr "Error creando usuario"
+
+#: src/applications/chat/gnunet-chat.c:49
 msgid "Join a chat on GNUnet."
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:49
+#: src/applications/chat/gnunet-chat.c:53
 msgid "set the nickname to use (requred)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:52
+#: src/applications/chat/gnunet-chat.c:56
 msgid "set the chat room to join (requred)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:135
+#: src/applications/chat/gnunet-chat.c:147
 #, fuzzy, c-format
 msgid "You must specify a nickname\n"
 msgstr "¡Debes especificar un receptor!\n"
 
-#: src/applications/chat/gnunet-chat.c:145
+#: src/applications/chat/gnunet-chat.c:157
 #, c-format
 msgid "Failed to join the room\n"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:162
+#: src/applications/chat/gnunet-chat.c:182
 #, fuzzy, c-format
 msgid "Failed to send message.\n"
 msgstr "Falló al entregar el mensaje '%s'.\n"
@@ -2926,212 +2730,6 @@ msgstr ""
 msgid "Peer `%s' is currently blacklisted (for another %llums).\n"
 msgstr ""
 
-#: src/applications/testbed/commands.c:1177
-#: src/applications/stats/gnunet-stats.c:61
-#, c-format
-msgid "Supported peer-to-peer messages:\n"
-msgstr "Mensajes P2P soportados:\n"
-
-#: src/applications/testbed/commands.c:1179
-#: src/applications/stats/gnunet-stats.c:64
-#, c-format
-msgid "Supported client-server messages:\n"
-msgstr "Mensajes cliente-servidor soportados:\n"
-
-#: src/applications/testbed/gnunet-testbed.c:118
-#, fuzzy
-msgid "Start GNUnet-testbed helper."
-msgstr "Arranca el cliente de chat de GNUnet"
-
-#: src/applications/testbed/gnunet-testbed.c:176
-#, c-format
-msgid "Cannot connect to LOOPBACK port %d: %s\n"
-msgstr "Imposible conectar al puerto de LOOPBACK %d: %s\n"
-
-#: src/applications/testbed/gnunet-testbed.c:268
-#, c-format
-msgid "Could not execute `%s': %s\n"
-msgstr "Imposible ejecutar '%s': %s\n"
-
-#: src/applications/testbed/gnunet-testbed.c:314
-msgid "No client service started. Trying again in 30 seconds.\n"
-msgstr ""
-"No hay ningún servicio de cliente ejecutandose. Se volverá a intentar en 30 "
-"segundos.\n"
-
-#: src/applications/testbed/gnunet-testbed.c:329
-#, fuzzy, c-format
-msgid ""
-"Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
-"Trying again in %d seconds...\n"
-msgstr ""
-"No hay ningún servicio de cliente ejecutandose. Se volverá a intentar en 30 "
-"segundos.\n"
-
-#: src/applications/testbed/gnunet-testbed.c:392
-#, c-format
-msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
-msgstr "Rechazada conexión no autorizada de %u.%u.%u.%u.\n"
-
-#: src/applications/testbed/gnunet-testbed.c:406
-#, c-format
-msgid "Protocol violation on socket. Expected command.\n"
-msgstr "Violación del protocolo en el socket. Esperando comando.\n"
-
-#: src/applications/testbed/gnunet-testbed.c:446
-#, c-format
-msgid "Command `%s' not found!\n"
-msgstr "¡Comando '%s' no encontrado!\n"
-
-#: src/applications/testbed/gnunet-testbed.c:510
-#, fuzzy
-msgid "Start GNUnet testbed controller."
-msgstr "Arranca el cliente de chat de GNUnet"
-
-#: src/applications/testbed/gnunet-testbed.c:572
-#, c-format
-msgid "Malformed entry in the configuration in section %s under %s: %s\n"
-msgstr "Entrada mal formada en la configuración en la sección %s bajo %s: %s\n"
-
-#: src/applications/testbed/testbed.c:53
-#, fuzzy
-msgid "Could not send acknowledgement back to client.\n"
-msgstr "Imposible mandar el mensaje a gnunetd\n"
-
-#: src/applications/testbed/testbed.c:64
-#, fuzzy, c-format
-msgid "Received unknown testbed message of type %u.\n"
-msgstr "Recibida petición de tipo desconocido %d en %s: %d\n"
-
-#: src/applications/testbed/testbed.c:82
-#: src/applications/testbed/testbed.c:845
-#, c-format
-msgid "size of `%s' message is too short. Ignoring.\n"
-msgstr "el tamaño del '%s' mensaje es demasiado corto. Ignorandolo.\n"
-
-#: src/applications/testbed/testbed.c:90
-#, c-format
-msgid "size of `%s' message is wrong. Ignoring.\n"
-msgstr "el tamaño del mensaje '%s' es erroneo. Se ignora.\n"
-
-#: src/applications/testbed/testbed.c:145
-#, c-format
-msgid "TESTBED could not generate hello message for protocol %u\n"
-msgstr "TESTBED no puede generar el mensaje de saludo para el protocolo %u\n"
-
-#: src/applications/testbed/testbed.c:223
-#: src/applications/testbed/testbed.c:268
-#: src/applications/testbed/testbed.c:381
-#: src/applications/testbed/testbed.c:390
-#: src/applications/testbed/testbed.c:434
-#: src/applications/testbed/testbed.c:443
-#, c-format
-msgid "received invalid `%s' message\n"
-msgstr "recibido mensaje '%s' no válido\n"
-
-#: src/applications/testbed/testbed.c:240
-#: src/applications/testbed/testbed.c:284
-#, c-format
-msgid "received invalid `%s' message (empty module name)\n"
-msgstr "recibido mensaje '%s' no válido (nombre del módulo vacío)\n"
-
-#: src/applications/testbed/testbed.c:247
-#, c-format
-msgid "loading module `%s' failed.  Notifying client.\n"
-msgstr ""
-"se produjo un fallo al cargar el módulo '%s'.  Notificando al cliente.\n"
-
-#: src/applications/testbed/testbed.c:291
-msgid "unloading module failed.  Notifying client.\n"
-msgstr "se produjo un fallo al descargar el módulo.  Notificando al cliente.\n"
-
-#: src/applications/testbed/testbed.c:576
-#, c-format
-msgid "`%s' %s failed: %s\n"
-msgstr "'%s' %s falló: %s\n"
-
-#: src/applications/testbed/testbed.c:658
-#, c-format
-msgid "received invalid `%s' message: %s.\n"
-msgstr "recibido mensaje '%s' no válido: %s.\n"
-
-#: src/applications/testbed/testbed.c:858
-#, c-format
-msgid "'..' is not allowed in file name (%s).\n"
-msgstr "'..' no esta permitido en el nombre del fichero(%s).\n"
-
-#: src/applications/testbed/testbed.c:869
-msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
-msgstr "¡Nombre del fichero vacío para el mensaje UPLOAD_FILE es inválido!\n"
-
-#: src/applications/testbed/testbed.c:878
-msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
-msgstr ""
-"Nombre del fichero para el mensaje UPLOAD_FILE no esta terminado en null "
-"(¡inválido!)\n"
-
-#: src/applications/testbed/testbed.c:886
-msgid "Upload refused!"
-msgstr "¡Subida rechazada!"
-
-#: src/applications/testbed/testbed.c:916
-#, c-format
-msgid "Invalid message received at %s:%d."
-msgstr "Mensaje inválido recibido en %s:%d."
-
-#: src/applications/testbed/testbed.c:1038
-#, fuzzy, c-format
-msgid "received invalid testbed message of size %u\n"
-msgstr "recibido mensaje '%s' no válido: %s.\n"
-
-#: src/applications/testbed/testbed.c:1061
-#, c-format
-msgid ""
-"Received testbed message of type %u but unexpected size %u, expected %u\n"
-msgstr ""
-
-#: src/applications/testbed/testbed.c:1107
-msgid "No testbed URL given, not registered.\n"
-msgstr ""
-
-#: src/applications/testbed/testbed.c:1118
-#, c-format
-msgid "Could not resolve name of HTTP proxy `%s'.\n"
-msgstr "Imposible resolver el nombre del proxy HTTP '%s'.\n"
-
-#: src/applications/testbed/testbed.c:1148
-#, c-format
-msgid "Invalid URL `%s' (must begin with `%s')\n"
-msgstr "URL invalida '%s' (debe comenzar por '%s')\n"
-
-#: src/applications/testbed/testbed.c:1191
-#, c-format
-msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
-msgstr ""
-
-#: src/applications/testbed/testbed.c:1226
-#, fuzzy, c-format
-msgid "Could not register testbed, host `%s' unknown\n"
-msgstr "Imposible descargar lista de contactos, servidor '%s' desconocido.\n"
-
-#: src/applications/testbed/testbed.c:1248
-#, c-format
-msgid "Failed to send HTTP request to host `%s': %s\n"
-msgstr "Falló al mandar la petición HTTP al host '%s': %s\n"
-
-#: src/applications/testbed/testbed.c:1286
-#, c-format
-msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
-msgstr "Falló al mandar la petición HTTP '%s' al host '%s': %s\n"
-
-#: src/applications/testbed/testbed.c:1324
-msgid "Exit register (error: no http response read).\n"
-msgstr "Saliendo del registro (error: no se leyó una respuesta de http).\n"
-
-#: src/applications/testbed/testbed.c:1431
-msgid "allows construction of a P2P-testbed (incomplete)"
-msgstr ""
-
 #: src/applications/transport/transport.c:192
 #, c-format
 msgid ""
@@ -3265,7 +2863,7 @@ msgstr ""
 msgid "# anonymity larger than one"
 msgstr ""
 
-#: src/applications/stats/clientapi.c:333
+#: src/applications/stats/clientapi.c:329
 msgid "Uptime (seconds)"
 msgstr ""
 
@@ -3305,6 +2903,16 @@ msgstr "'%s' registrando manejadores de clientes %d %d %d %d %d %d %d %d %d\n"
 #: src/applications/stats/statistics.c:444
 msgid "keeps statistics about gnunetd's operation"
 msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:61
+#, c-format
+msgid "Supported peer-to-peer messages:\n"
+msgstr "Mensajes P2P soportados:\n"
+
+#: src/applications/stats/gnunet-stats.c:64
+#, c-format
+msgid "Supported client-server messages:\n"
+msgstr "Mensajes cliente-servidor soportados:\n"
 
 #: src/applications/stats/gnunet-stats.c:87
 msgid "prints supported protocol messages"
@@ -3576,97 +3184,101 @@ msgstr "Imposible inicializar SQLite.\n"
 msgid "# bytes in dstore"
 msgstr "# bytes en la base de datos"
 
-#: src/server/connection.c:1214
+#: src/server/connection.c:1258
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr ""
 
-#: src/server/connection.c:1224
+#: src/server/connection.c:1268
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Detalles del mensaje: %u: longitud %d, prioridad: %d\n"
 
-#: src/server/connection.c:2991
+#: src/server/connection.c:3060
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Mensaje de '%s' descartado: formato inválido.\n"
 
-#: src/server/connection.c:3080
+#: src/server/connection.c:3149
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Secuencia de números no válida %u <= %u, omitiendo mensaje.\n"
 
-#: src/server/connection.c:3102
+#: src/server/connection.c:3171
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Mensajes recibidos de mas de un día de antigüedad. Omitidos.\n"
 
-#: src/server/connection.c:3624
+#: src/server/connection.c:3692
 msgid "# outgoing messages dropped"
 msgstr "# mensajes salientes omitidos"
 
-#: src/server/connection.c:3627
+#: src/server/connection.c:3695
 msgid "# bytes of outgoing messages dropped"
 msgstr "# bytes de mensajes salientes omitidos"
 
-#: src/server/connection.c:3629
+#: src/server/connection.c:3697
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:3633
+#: src/server/connection.c:3701
 msgid "# connections closed (transport issue)"
 msgstr ""
 
-#: src/server/connection.c:3636
+#: src/server/connection.c:3704
 msgid "# bytes encrypted"
 msgstr "# bytes encriptados"
 
-#: src/server/connection.c:3640
+#: src/server/connection.c:3708
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# bytes desencriptados"
 
-#: src/server/connection.c:3644
+#: src/server/connection.c:3712
 #, fuzzy
 msgid "# bytes received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/server/connection.c:3646
+#: src/server/connection.c:3714
 msgid "# bytes decrypted"
 msgstr "# bytes desencriptados"
 
-#: src/server/connection.c:3647
+#: src/server/connection.c:3715
 msgid "# bytes noise sent"
 msgstr "# \"bytes-ruido\" mandados"
 
-#: src/server/connection.c:3650
+#: src/server/connection.c:3718
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3653
+#: src/server/connection.c:3721
 #, fuzzy
 msgid "# total bytes per second receive limit"
 msgstr "# bytes de ruido recibidos"
 
-#: src/server/connection.c:3656
+#: src/server/connection.c:3724
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "número de mensajes en un bloque de mensajes"
 
-#: src/server/connection.c:3660
+#: src/server/connection.c:3728
 msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
-#: src/server/connection.c:3664
+#: src/server/connection.c:3732
 #, fuzzy
 msgid "# total number of bytes we were allowed to sent"
 msgstr "número de mensajes en un bloque de mensajes"
 
-#: src/server/connection.c:3668
+#: src/server/connection.c:3736
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3671
+#: src/server/connection.c:3739
 msgid "# transports switched to stream transport"
+msgstr ""
+
+#: src/server/connection.c:3742
+msgid "# average connection lifetime (in ms)"
 msgstr ""
 
 #: src/server/startup.c:215
@@ -3969,7 +3581,7 @@ msgstr ""
 msgid "Could not properly shutdown application `%s'.\n"
 msgstr "Imposible apagar la aplicación '%s' adecuadamente.\n"
 
-#: src/server/core.c:650
+#: src/server/core.c:652
 #, c-format
 msgid "Could not properly unload service `%s'!\n"
 msgstr "¡Imposible descargar adecuadamente el servicio '%s'!\n"
@@ -4352,7 +3964,7 @@ msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr ""
 
-#: src/util/boot/startup.c:255
+#: src/util/boot/startup.c:256
 #, fuzzy, c-format
 msgid "Failed to run %s: %s %d\n"
 msgstr "Fallo al conectar a gnunetd.\n"
@@ -6171,6 +5783,251 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr ""
+
+#: src/applications/fs/gap/fs.c:704
+msgid "# gap requests total received"
+msgstr ""
+
+#: src/applications/fs/gap/fs.c:706
+msgid "# gap content total received"
+msgstr ""
+
+#: src/applications/fs/gap/fs.c:708
+msgid "# gap total trust awarded"
+msgstr ""
+
+#: src/applications/fs/gap/fs.c:736
+#, fuzzy, c-format
+msgid ""
+"`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
+"d\n"
+msgstr "'%s' registrando manejadores de clientes %d %d %d %d %d %d %d %d %d\n"
+
+#: src/applications/fs/gap/fs.c:788
+msgid "enables (anonymous) file-sharing"
+msgstr "activa la compartición de ficheros anónima"
+
+#: src/applications/fs/gap/pid_table.c:177
+msgid "# distinct interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/fs/gap/pid_table.c:181
+msgid "# total RC of interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/fs/gap/fs_dht.c:261
+msgid "# blocks pushed into DHT"
+msgstr ""
+
+#: src/applications/fs/gap/migration.c:348
+msgid "# blocks migrated"
+msgstr "# blocks migrados"
+
+#: src/applications/fs/gap/migration.c:350
+#, fuzzy
+msgid "# blocks fetched for migration"
+msgstr "# blocks migrados"
+
+#: src/applications/fs/gap/migration.c:353
+msgid "# on-demand block migration attempts"
+msgstr ""
+
+#: src/applications/fs/gap/ondemand.c:173
+#, c-format
+msgid ""
+"Because the file `%s' has been unavailable for 3 days it got removed from "
+"your share.  Please unindex files before deleting them as the index now "
+"contains invalid references!\n"
+msgstr ""
+"El fichero '%s' se ha eliminado de tus compartidos porque no ha estado "
+"disponible durante tres días.  Por favor, desindexa los ficheros antes de "
+"borrarlos porque eso causa que el índice tenga referencias no válidas.\n"
+
+#: src/applications/fs/gap/ondemand.c:454
+msgid "Indexed content changed (does not match its hash).\n"
+msgstr ""
+
+#: src/applications/fs/gap/ondemand.c:566
+#, fuzzy, c-format
+msgid ""
+"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
+msgstr ""
+"Bloque ODB '%s' desindexado del offset %llu perdido de la base de datos.\n"
+
+#: src/applications/fs/gap/anonymity.c:56
+msgid "Failed to get traffic stats.\n"
+msgstr "Fallo en las estadísticas del tráfico.\n"
+
+#~ msgid "GAP received invalid content from `%s'\n"
+#~ msgstr "GAP recibido contenido no válido de '%s'\n"
+
+#~ msgid "myself"
+#~ msgstr "yo"
+
+#~ msgid ""
+#~ "Cover traffic requested but traffic service not loaded.  Rejecting "
+#~ "request.\n"
+#~ msgstr ""
+#~ "Solicitada la cobertura de tráfico pero el servicio de tráfico no ha sido "
+#~ "cargado. Rechazando la petición.\n"
+
+#~ msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
+#~ msgstr ""
+#~ "Imposible satisfacer el nivel deseado de anonimato, ignorando la "
+#~ "petición.\n"
+
+#~ msgid "`%s' registering handlers %d %d\n"
+#~ msgstr "'%s' registrando manejadores %d %d\n"
+
+#, fuzzy
+#~ msgid "Indexed file disappeared, deleting block for query `%s'\n"
+#~ msgstr ""
+#~ "Fichero indexado desaparecido, borrando el bloque para preguntas '%s'\n"
+
+#~ msgid ""
+#~ "Configuration file must specify directory for storage of FS data in "
+#~ "section `%s' under `%s'.\n"
+#~ msgstr ""
+#~ "El fichero de configuración debe especificar un directorio para el "
+#~ "almacenamiento de los datos de FS en la sección '%s' bajo '%s'.\n"
+
+#~ msgid ""
+#~ "You must specify a postive number for `%s' in the configuration in "
+#~ "section `%s'.\n"
+#~ msgstr ""
+#~ "Debes especificar un número positivo para '%s' en la configuración en la "
+#~ "sección '%s'.\n"
+
+#, fuzzy
+#~ msgid "# FS valid replies received"
+#~ msgstr "# bytes recibidos por TCP"
+
+#~ msgid ""
+#~ "Content `%s' seems to be not available on the network (tried %u times).\n"
+#~ msgstr ""
+#~ "El contenido '%s' parece no estar disponible en la red (intentado %u "
+#~ "veces).\n"
+
+#, fuzzy
+#~ msgid "Start GNUnet-testbed helper."
+#~ msgstr "Arranca el cliente de chat de GNUnet"
+
+#~ msgid "Cannot connect to LOOPBACK port %d: %s\n"
+#~ msgstr "Imposible conectar al puerto de LOOPBACK %d: %s\n"
+
+#~ msgid "Could not execute `%s': %s\n"
+#~ msgstr "Imposible ejecutar '%s': %s\n"
+
+#~ msgid "No client service started. Trying again in 30 seconds.\n"
+#~ msgstr ""
+#~ "No hay ningún servicio de cliente ejecutandose. Se volverá a intentar en "
+#~ "30 segundos.\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Error (%s) binding the TCP listener to port %d. No proxy service "
+#~ "started.\n"
+#~ "Trying again in %d seconds...\n"
+#~ msgstr ""
+#~ "No hay ningún servicio de cliente ejecutandose. Se volverá a intentar en "
+#~ "30 segundos.\n"
+
+#~ msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
+#~ msgstr "Rechazada conexión no autorizada de %u.%u.%u.%u.\n"
+
+#~ msgid "Protocol violation on socket. Expected command.\n"
+#~ msgstr "Violación del protocolo en el socket. Esperando comando.\n"
+
+#~ msgid "Command `%s' not found!\n"
+#~ msgstr "¡Comando '%s' no encontrado!\n"
+
+#, fuzzy
+#~ msgid "Start GNUnet testbed controller."
+#~ msgstr "Arranca el cliente de chat de GNUnet"
+
+#~ msgid "Malformed entry in the configuration in section %s under %s: %s\n"
+#~ msgstr ""
+#~ "Entrada mal formada en la configuración en la sección %s bajo %s: %s\n"
+
+#, fuzzy
+#~ msgid "Could not send acknowledgement back to client.\n"
+#~ msgstr "Imposible mandar el mensaje a gnunetd\n"
+
+#, fuzzy
+#~ msgid "Received unknown testbed message of type %u.\n"
+#~ msgstr "Recibida petición de tipo desconocido %d en %s: %d\n"
+
+#~ msgid "size of `%s' message is too short. Ignoring.\n"
+#~ msgstr "el tamaño del '%s' mensaje es demasiado corto. Ignorandolo.\n"
+
+#~ msgid "size of `%s' message is wrong. Ignoring.\n"
+#~ msgstr "el tamaño del mensaje '%s' es erroneo. Se ignora.\n"
+
+#~ msgid "TESTBED could not generate hello message for protocol %u\n"
+#~ msgstr ""
+#~ "TESTBED no puede generar el mensaje de saludo para el protocolo %u\n"
+
+#~ msgid "received invalid `%s' message\n"
+#~ msgstr "recibido mensaje '%s' no válido\n"
+
+#~ msgid "received invalid `%s' message (empty module name)\n"
+#~ msgstr "recibido mensaje '%s' no válido (nombre del módulo vacío)\n"
+
+#~ msgid "loading module `%s' failed.  Notifying client.\n"
+#~ msgstr ""
+#~ "se produjo un fallo al cargar el módulo '%s'.  Notificando al cliente.\n"
+
+#~ msgid "unloading module failed.  Notifying client.\n"
+#~ msgstr ""
+#~ "se produjo un fallo al descargar el módulo.  Notificando al cliente.\n"
+
+#~ msgid "`%s' %s failed: %s\n"
+#~ msgstr "'%s' %s falló: %s\n"
+
+#~ msgid "received invalid `%s' message: %s.\n"
+#~ msgstr "recibido mensaje '%s' no válido: %s.\n"
+
+#~ msgid "'..' is not allowed in file name (%s).\n"
+#~ msgstr "'..' no esta permitido en el nombre del fichero(%s).\n"
+
+#~ msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
+#~ msgstr ""
+#~ "¡Nombre del fichero vacío para el mensaje UPLOAD_FILE es inválido!\n"
+
+#~ msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
+#~ msgstr ""
+#~ "Nombre del fichero para el mensaje UPLOAD_FILE no esta terminado en null "
+#~ "(¡inválido!)\n"
+
+#~ msgid "Upload refused!"
+#~ msgstr "¡Subida rechazada!"
+
+#~ msgid "Invalid message received at %s:%d."
+#~ msgstr "Mensaje inválido recibido en %s:%d."
+
+#, fuzzy
+#~ msgid "received invalid testbed message of size %u\n"
+#~ msgstr "recibido mensaje '%s' no válido: %s.\n"
+
+#~ msgid "Could not resolve name of HTTP proxy `%s'.\n"
+#~ msgstr "Imposible resolver el nombre del proxy HTTP '%s'.\n"
+
+#~ msgid "Invalid URL `%s' (must begin with `%s')\n"
+#~ msgstr "URL invalida '%s' (debe comenzar por '%s')\n"
+
+#, fuzzy
+#~ msgid "Could not register testbed, host `%s' unknown\n"
+#~ msgstr ""
+#~ "Imposible descargar lista de contactos, servidor '%s' desconocido.\n"
+
+#~ msgid "Failed to send HTTP request to host `%s': %s\n"
+#~ msgstr "Falló al mandar la petición HTTP al host '%s': %s\n"
+
+#~ msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
+#~ msgstr "Falló al mandar la petición HTTP '%s' al host '%s': %s\n"
+
+#~ msgid "Exit register (error: no http response read).\n"
+#~ msgstr "Saliendo del registro (error: no se leyó una respuesta de http).\n"
 
 #, fuzzy
 #~ msgid "Description"

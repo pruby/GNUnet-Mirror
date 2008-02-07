@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2007-12-22 17:30-0700\n"
+"POT-Creation-Date: 2008-02-07 00:26-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -26,9 +26,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/transports/upnp/upnp.c:356 src/transports/upnp/upnp.c:541
-#: src/transports/http.c:1321 src/transports/http.c:1414
-#: src/transports/http.c:1589 src/transports/http.c:2015
-#: src/transports/http.c:2076 src/applications/bootstrap_http/http.c:123
+#: src/transports/http.c:1345 src/transports/http.c:1442
+#: src/transports/http.c:1620 src/transports/http.c:2047
+#: src/transports/http.c:2108 src/applications/bootstrap_http/http.c:123
 #: src/applications/bootstrap_http/http.c:257
 #: src/applications/bootstrap_http/http.c:274
 #: src/applications/bootstrap_http/http.c:306
@@ -138,30 +138,48 @@ msgstr ""
 msgid "# UDP6 connections (right now)"
 msgstr ""
 
-#: src/transports/http.c:876
+#: src/transports/http.c:892
 #, fuzzy
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "OYA Rusange Aderesi"
 
-#: src/transports/http.c:2291
+#: src/transports/http.c:2325
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2300
+#: src/transports/http.c:2334
 #, fuzzy
 msgid "# bytes received via HTTP"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/transports/http.c:2301
+#: src/transports/http.c:2335
 #, fuzzy
 msgid "# bytes sent via HTTP"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/transports/http.c:2303
+#: src/transports/http.c:2337
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr ""
+
+#: src/transports/http.c:2338
+msgid "# HTTP GET issued"
+msgstr ""
+
+#: src/transports/http.c:2340
+#, fuzzy
+msgid "# HTTP GET received"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/transports/http.c:2341
+msgid "# HTTP PUT issued"
+msgstr ""
+
+#: src/transports/http.c:2343
+#, fuzzy
+msgid "# HTTP PUT received"
+msgstr "#Bayite Bya BYAKIRIWE"
 
 #: src/transports/smtp.c:367
 #, fuzzy
@@ -902,8 +920,7 @@ msgstr "'%s'ntabwo ari idosiye"
 msgid "Unknown operation `%s'\n"
 msgstr "Imiterere Verisiyo"
 
-#: src/setup/gnunet-setup.c:417 src/applications/testbed/gnunet-testbed.c:125
-#: src/applications/testbed/gnunet-testbed.c:517 src/util/getopt/getopt.c:1072
+#: src/setup/gnunet-setup.c:417 src/util/getopt/getopt.c:1072
 #, fuzzy, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Ifashayobora Kuri Kubona a Urutonde Bya Amahitamo"
@@ -1038,31 +1055,31 @@ msgstr ""
 msgid "Enables efficient non-anonymous routing"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:869
+#: src/applications/dht/module/routing.c:866
 msgid "# dht replies routed"
 msgstr ""
 
-#: src/applications/dht/module/routing.c:871
+#: src/applications/dht/module/routing.c:868
 #, fuzzy
 msgid "# dht requests routed"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:873
+#: src/applications/dht/module/routing.c:870
 #, fuzzy
 msgid "# dht get requests received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:875
+#: src/applications/dht/module/routing.c:872
 #, fuzzy
 msgid "# dht put requests received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/dht/module/routing.c:877
+#: src/applications/dht/module/routing.c:874
 #, fuzzy
 msgid "# dht results received"
 msgstr "#Gushaka Ibisubizo ku BYAKIRIWE KB"
 
-#: src/applications/dht/module/routing.c:882
+#: src/applications/dht/module/routing.c:879
 #, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
 msgstr ""
@@ -1236,7 +1253,7 @@ msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
 msgid "Suppress display of asynchronous log messages"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:149
+#: src/applications/vpn/gnunet-vpn.c:149 src/applications/chat/clientapi.c:113
 #: src/applications/stats/gnunet-stats.c:121
 #: src/applications/tbench/gnunet-tbench.c:126
 #: src/applications/tracekit/gnunet-tracekit.c:352
@@ -1480,128 +1497,6 @@ msgstr ""
 #: src/applications/vpn/vpn.c:1884
 #, c-format
 msgid "RFC4193 Closing tunnel %d fd %d\n"
-msgstr ""
-
-#: src/applications/gap/pid_table.c:177
-msgid "# distinct interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/pid_table.c:181
-msgid "# total RC of interned peer IDs in pid table"
-msgstr ""
-
-#: src/applications/gap/gap.c:1722
-#, fuzzy, c-format
-msgid "GAP received invalid content from `%s'\n"
-msgstr "Sibyo Ubutumwa Bivuye"
-
-#: src/applications/gap/gap.c:1723
-msgid "myself"
-msgstr ""
-
-#: src/applications/gap/gap.c:1915
-msgid ""
-"Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:1926 src/applications/fs/module/anonymity.c:66
-#, fuzzy
-msgid "Failed to get traffic stats.\n"
-msgstr "Kuri Ikibazo# Ibyerekeye"
-
-#: src/applications/gap/gap.c:1937 src/applications/gap/gap.c:1946
-#: src/applications/gap/gap.c:1958
-msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:2230
-#, fuzzy
-msgid "# gap requests total received"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2233
-msgid "# gap requests policy: immediate drop"
-msgstr ""
-
-#: src/applications/gap/gap.c:2235
-msgid "# gap requests policy: not routed"
-msgstr ""
-
-#: src/applications/gap/gap.c:2237
-msgid "# gap requests policy: not answered"
-msgstr ""
-
-#: src/applications/gap/gap.c:2241
-msgid "# gap requests processed: attempted add to RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2244
-msgid "# gap requests processed: local result"
-msgstr ""
-
-#: src/applications/gap/gap.c:2246
-msgid "# gap routing successes (total)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2249
-msgid "# gap requests dropped: collision in RT"
-msgstr ""
-
-#: src/applications/gap/gap.c:2253
-msgid "# gap requests forwarded (counting each peer)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2255
-msgid "# gap duplicate requests (pending)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2258
-#, fuzzy
-msgid "# gap duplicate requests that were re-tried"
-msgstr "#BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2261
-msgid "# gap re-try ttl difference (cummulative)"
-msgstr ""
-
-#: src/applications/gap/gap.c:2263
-msgid "# gap reply duplicates"
-msgstr ""
-
-#: src/applications/gap/gap.c:2265
-#, fuzzy
-msgid "# gap spurious replies (dropped)"
-msgstr "#hejuru Ibibazo BYAKIRIWE"
-
-#: src/applications/gap/gap.c:2267
-msgid "# gap routing slots currently in use"
-msgstr ""
-
-#: src/applications/gap/gap.c:2270
-msgid "# gap memory used for tracking seen content"
-msgstr ""
-
-#: src/applications/gap/gap.c:2274
-msgid "# gap memory used for tracking routing destinations"
-msgstr ""
-
-#: src/applications/gap/gap.c:2276
-msgid "# gap rewards pending"
-msgstr ""
-
-#: src/applications/gap/gap.c:2278
-msgid "# gap response weights"
-msgstr ""
-
-#: src/applications/gap/gap.c:2294
-msgid ""
-"Traffic service failed to load; gap cannot ensure cover-traffic "
-"availability.\n"
-msgstr ""
-
-#: src/applications/gap/gap.c:2318
-#, c-format
-msgid "`%s' registering handlers %d %d\n"
 msgstr ""
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
@@ -2164,86 +2059,6 @@ msgstr ""
 msgid "Deleted corrupt URI database in `%s'."
 msgstr ""
 
-#: src/applications/fs/module/dht_push.c:138
-msgid "# blocks pushed into DHT"
-msgstr ""
-
-#: src/applications/fs/module/querymanager.c:235
-#, fuzzy
-msgid "# FS currently tracked queries from clients"
-msgstr "#Umukiriya Yoherejwe:"
-
-#: src/applications/fs/module/querymanager.c:237
-msgid "# FS replies passed to clients"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:343
-#, c-format
-msgid "Indexed file disappeared, deleting block for query `%s'\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:478
-#, c-format
-msgid ""
-"Because the file `%s' has been unavailable for 3 days it got removed from "
-"your share.  Please unindex files before deleting them as the index now "
-"contains invalid references!\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:504
-#, fuzzy, c-format
-msgid ""
-"Configuration file must specify directory for storage of FS data in section `"
-"%s' under `%s'.\n"
-msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
-
-#: src/applications/fs/module/ondemand.c:561
-msgid "Indexed content changed (does not match its hash).\n"
-msgstr ""
-
-#: src/applications/fs/module/ondemand.c:752
-#, c-format
-msgid ""
-"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1304
-#, fuzzy, c-format
-msgid ""
-"You must specify a postive number for `%s' in the configuration in section `%"
-"s'.\n"
-msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
-
-#: src/applications/fs/module/fs.c:1319
-msgid "# FS expired replies dropped"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1321
-#, fuzzy
-msgid "# FS valid replies received"
-msgstr "#Gushaka Ibisubizo ku BYAKIRIWE KB"
-
-#: src/applications/fs/module/fs.c:1357
-#, c-format
-msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
-msgstr ""
-
-#: src/applications/fs/module/fs.c:1417
-msgid "enables (anonymous) file-sharing"
-msgstr ""
-
-#: src/applications/fs/module/migration.c:383
-msgid "# blocks migrated"
-msgstr ""
-
-#: src/applications/fs/module/migration.c:385
-msgid "# blocks fetched for migration"
-msgstr ""
-
-#: src/applications/fs/module/migration.c:388
-msgid "# on-demand block migration attempts"
-msgstr ""
-
 #: src/applications/fs/fsui/deserialize.c:772
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
@@ -2278,36 +2093,30 @@ msgstr ""
 msgid "Failed to create temporary directory."
 msgstr "Kuri Kurema"
 
-#: src/applications/fs/ecrs/search.c:168
+#: src/applications/fs/ecrs/search.c:156
 msgid "CHK URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/search.c:217
+#: src/applications/fs/ecrs/search.c:205
 msgid "LOC URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:132
+#: src/applications/fs/ecrs/download.c:257
 #, fuzzy, c-format
 msgid "Could not unlink temporary file `%s': %s\n"
 msgstr "OYA Kwandika Kuri IDOSIYE"
 
-#: src/applications/fs/ecrs/download.c:272
+#: src/applications/fs/ecrs/download.c:321
 #, fuzzy, c-format
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr "'%s'%sByanze"
 
-#: src/applications/fs/ecrs/download.c:1010
+#: src/applications/fs/ecrs/download.c:646
 #, fuzzy
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
 msgstr "Ibikubiyemo OYA BIHUYE Urufunguzo ni a Cyangwa a Byinjijwemo IDOSIYE"
-
-#: src/applications/fs/ecrs/download.c:1205
-#, fuzzy, c-format
-msgid ""
-"Content `%s' seems to be not available on the network (tried %u times).\n"
-msgstr "Kuri OYA Bihari ku i urusobe"
 
 #: src/applications/fs/ecrs/helper.c:75
 #, fuzzy
@@ -2573,22 +2382,22 @@ msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
 
-#: src/applications/chat/chat.c:91
+#: src/applications/chat/chat.c:95
 #, fuzzy
 msgid "Message received from peer is invalid.\n"
 msgstr "BYAKIRIWE Bivuye ni Sibyo"
 
-#: src/applications/chat/chat.c:140
+#: src/applications/chat/chat.c:144
 #, fuzzy
 msgid "Message received from client is invalid\n"
 msgstr "BYAKIRIWE Bivuye Umukiriya ni"
 
-#: src/applications/chat/chat.c:161
+#: src/applications/chat/chat.c:165
 #, fuzzy
 msgid "Maximum number of chat clients reached.\n"
 msgstr "Umubare Bya"
 
-#: src/applications/chat/chat.c:167
+#: src/applications/chat/chat.c:171
 #, fuzzy, c-format
 msgid "Now %d of %d chat clients at this node.\n"
 msgstr "Bya ku iyi"
@@ -2602,29 +2411,34 @@ msgstr ""
 msgid "enables P2P-chat (incomplete)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:45
+#: src/applications/chat/clientapi.c:119 src/applications/chat/clientapi.c:197
+#, fuzzy, c-format
+msgid "Error writing to socket.\n"
+msgstr "Ivugurura Verisiyo"
+
+#: src/applications/chat/gnunet-chat.c:49
 msgid "Join a chat on GNUnet."
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:49
+#: src/applications/chat/gnunet-chat.c:53
 msgid "set the nickname to use (requred)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:52
+#: src/applications/chat/gnunet-chat.c:56
 msgid "set the chat room to join (requred)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:135
+#: src/applications/chat/gnunet-chat.c:147
 #, fuzzy, c-format
 msgid "You must specify a nickname\n"
 msgstr "a Ijambo- banze"
 
-#: src/applications/chat/gnunet-chat.c:145
+#: src/applications/chat/gnunet-chat.c:157
 #, fuzzy, c-format
 msgid "Failed to join the room\n"
 msgstr "Kuri Kuri Umuyoboro"
 
-#: src/applications/chat/gnunet-chat.c:162
+#: src/applications/chat/gnunet-chat.c:182
 #, fuzzy, c-format
 msgid "Failed to send message.\n"
 msgstr "Kuri Kohereza Ubutumwa Kuri"
@@ -2883,248 +2697,6 @@ msgstr ""
 msgid "Peer `%s' is currently blacklisted (for another %llums).\n"
 msgstr ""
 
-#: src/applications/testbed/commands.c:1177
-#: src/applications/stats/gnunet-stats.c:61
-#, fuzzy, c-format
-msgid "Supported peer-to-peer messages:\n"
-msgstr "Kuri Ubutumwa"
-
-#: src/applications/testbed/commands.c:1179
-#: src/applications/stats/gnunet-stats.c:64
-#, fuzzy, c-format
-msgid "Supported client-server messages:\n"
-msgstr "Umukiriya Seriveri Ubutumwa"
-
-#: src/applications/testbed/gnunet-testbed.c:118
-#, fuzzy
-msgid "Start GNUnet-testbed helper."
-msgstr "Gutangira"
-
-#: src/applications/testbed/gnunet-testbed.c:176
-#, fuzzy, c-format
-msgid "Cannot connect to LOOPBACK port %d: %s\n"
-msgstr "Kwihuza Kuri Umuyoboro"
-
-#: src/applications/testbed/gnunet-testbed.c:268
-#, fuzzy, c-format
-msgid "Could not execute `%s': %s\n"
-msgstr "OYA Gukora"
-
-#: src/applications/testbed/gnunet-testbed.c:314
-#, fuzzy
-msgid "No client service started. Trying again in 30 seconds.\n"
-msgstr "Umukiriya Serivisi in amasogonda"
-
-#: src/applications/testbed/gnunet-testbed.c:329
-#, fuzzy, c-format
-msgid ""
-"Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
-"Trying again in %d seconds...\n"
-msgstr "Bifatanya i Kuri Umuyoboro Porogisi Serivisi in amasogonda"
-
-#: src/applications/testbed/gnunet-testbed.c:392
-#, fuzzy, c-format
-msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/testbed/gnunet-testbed.c:406
-#, fuzzy, c-format
-msgid "Protocol violation on socket. Expected command.\n"
-msgstr "ku Itegerejwe Komandi:"
-
-#: src/applications/testbed/gnunet-testbed.c:446
-#, fuzzy, c-format
-msgid "Command `%s' not found!\n"
-msgstr "OYA Byabonetse"
-
-#: src/applications/testbed/gnunet-testbed.c:510
-#, fuzzy
-msgid "Start GNUnet testbed controller."
-msgstr "Gutangira"
-
-#: src/applications/testbed/gnunet-testbed.c:572
-#, fuzzy, c-format
-msgid "Malformed entry in the configuration in section %s under %s: %s\n"
-msgstr "Icyinjijwe in i Iboneza in Icyiciro"
-
-#: src/applications/testbed/testbed.c:53
-#, fuzzy
-msgid "Could not send acknowledgement back to client.\n"
-msgstr "OYA Kohereza Inyuma Kuri Umukiriya"
-
-#: src/applications/testbed/testbed.c:64
-#, fuzzy, c-format
-msgid "Received unknown testbed message of type %u.\n"
-msgstr "Kitazwi Ubutumwa Bya Ubwoko"
-
-#: src/applications/testbed/testbed.c:82
-#: src/applications/testbed/testbed.c:845
-#, fuzzy, c-format
-msgid "size of `%s' message is too short. Ignoring.\n"
-msgstr "Kwirengagiza."
-
-#: src/applications/testbed/testbed.c:90
-#, fuzzy, c-format
-msgid "size of `%s' message is wrong. Ignoring.\n"
-msgstr "Kwirengagiza."
-
-#: src/applications/testbed/testbed.c:145
-#, fuzzy, c-format
-msgid "TESTBED could not generate hello message for protocol %u\n"
-msgstr "OYA Ubutumwa kugirango Porotokole"
-
-#: src/applications/testbed/testbed.c:223
-#: src/applications/testbed/testbed.c:268
-#: src/applications/testbed/testbed.c:381
-#: src/applications/testbed/testbed.c:390
-#: src/applications/testbed/testbed.c:434
-#: src/applications/testbed/testbed.c:443
-#, fuzzy, c-format
-msgid "received invalid `%s' message\n"
-msgstr "BYAKIRIWE Sibyo"
-
-#: src/applications/testbed/testbed.c:240
-#: src/applications/testbed/testbed.c:284
-#, fuzzy, c-format
-msgid "received invalid `%s' message (empty module name)\n"
-msgstr "BYAKIRIWE Sibyo Ubutumwa ubusa Modire Izina:"
-
-#: src/applications/testbed/testbed.c:247
-#, fuzzy, c-format
-msgid "loading module `%s' failed.  Notifying client.\n"
-msgstr "Itangira... Modire Byanze Umukiriya"
-
-#: src/applications/testbed/testbed.c:291
-#, fuzzy
-msgid "unloading module failed.  Notifying client.\n"
-msgstr "Modire Byanze Umukiriya"
-
-#: src/applications/testbed/testbed.c:576
-#, fuzzy, c-format
-msgid "`%s' %s failed: %s\n"
-msgstr "'%s'%sByanze"
-
-#: src/applications/testbed/testbed.c:658
-#, fuzzy, c-format
-msgid "received invalid `%s' message: %s.\n"
-msgstr "BYAKIRIWE Sibyo Ubutumwa"
-
-#: src/applications/testbed/testbed.c:858
-#, fuzzy, c-format
-msgid "'..' is not allowed in file name (%s).\n"
-msgstr ""
-"'..'Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
-
-#: src/applications/testbed/testbed.c:869
-#, fuzzy
-msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
-msgstr "Izina ry'idosiye: kugirango Ubutumwa ni Sibyo"
-
-#: src/applications/testbed/testbed.c:878
-#, fuzzy
-msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
-msgstr "kugirango Ubutumwa ni OYA NTAGIHARI Sibyo"
-
-#: src/applications/testbed/testbed.c:886
-msgid "Upload refused!"
-msgstr ""
-
-#: src/applications/testbed/testbed.c:916
-#, fuzzy, c-format
-msgid "Invalid message received at %s:%d."
-msgstr "Ubutumwa BYAKIRIWE ku"
-
-#: src/applications/testbed/testbed.c:1038
-#, fuzzy, c-format
-msgid "received invalid testbed message of size %u\n"
-msgstr "BYAKIRIWE Sibyo Ubutumwa Bya Ingano"
-
-#: src/applications/testbed/testbed.c:1061
-#, fuzzy, c-format
-msgid ""
-"Received testbed message of type %u but unexpected size %u, expected %u\n"
-msgstr "Ubutumwa Bya Ubwoko Ingano Ikitezwe:"
-
-#: src/applications/testbed/testbed.c:1107
-#, fuzzy
-msgid "No testbed URL given, not registered.\n"
-msgstr "OYA"
-
-#: src/applications/testbed/testbed.c:1118
-#, fuzzy, c-format
-msgid "Could not resolve name of HTTP proxy `%s'.\n"
-msgstr "OYA Izina: Bya Porogisi"
-
-#: src/applications/testbed/testbed.c:1148
-#, fuzzy, c-format
-msgid "Invalid URL `%s' (must begin with `%s')\n"
-msgstr "Na:"
-
-#: src/applications/testbed/testbed.c:1191
-#, fuzzy, c-format
-msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
-msgstr "HTTP ku Umukiriya OYA"
-
-#: src/applications/testbed/testbed.c:1226
-#, fuzzy, c-format
-msgid "Could not register testbed, host `%s' unknown\n"
-msgstr "OYA Kwiyandikisha Ubuturo"
-
-#: src/applications/testbed/testbed.c:1248
-#, fuzzy, c-format
-msgid "Failed to send HTTP request to host `%s': %s\n"
-msgstr "Kuri Kohereza Kubaza... Kuri Ubuturo"
-
-#: src/applications/testbed/testbed.c:1286
-#, fuzzy, c-format
-msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
-msgstr "Kohereza Kubaza... Kuri Ubuturo"
-
-#: src/applications/testbed/testbed.c:1324
-#, fuzzy
-msgid "Exit register (error: no http response read).\n"
-msgstr "Kwiyandikisha Ikosa Oya HTTP Gusoma"
-
-#: src/applications/testbed/testbed.c:1431
-msgid "allows construction of a P2P-testbed (incomplete)"
-msgstr ""
-
 #: src/applications/transport/transport.c:192
 #, c-format
 msgid ""
@@ -3257,7 +2829,7 @@ msgstr ""
 msgid "# anonymity larger than one"
 msgstr ""
 
-#: src/applications/stats/clientapi.c:333
+#: src/applications/stats/clientapi.c:329
 #, fuzzy
 msgid "Uptime (seconds)"
 msgstr "amasogonda"
@@ -3300,6 +2872,16 @@ msgstr ""
 #, fuzzy
 msgid "keeps statistics about gnunetd's operation"
 msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
+
+#: src/applications/stats/gnunet-stats.c:61
+#, fuzzy, c-format
+msgid "Supported peer-to-peer messages:\n"
+msgstr "Kuri Ubutumwa"
+
+#: src/applications/stats/gnunet-stats.c:64
+#, fuzzy, c-format
+msgid "Supported client-server messages:\n"
+msgstr "Umukiriya Seriveri Ubutumwa"
 
 #: src/applications/stats/gnunet-stats.c:87
 #, fuzzy
@@ -3596,102 +3178,106 @@ msgstr "Kuri gutangiza Ububikoshingiro"
 msgid "# bytes in dstore"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/server/connection.c:1214
+#: src/server/connection.c:1258
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s'Byahiswemo Inyuma Bya Ubutumwa"
 
-#: src/server/connection.c:1224
+#: src/server/connection.c:1268
 #, fuzzy, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Birambuye Uburebure By'ibanze"
 
-#: src/server/connection.c:2991
+#: src/server/connection.c:3060
 #, fuzzy, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bivuye Sibyo Imiterere"
 
-#: src/server/connection.c:3080
+#: src/server/connection.c:3149
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Umubare Bya"
 
-#: src/server/connection.c:3102
+#: src/server/connection.c:3171
 #, fuzzy
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
 
-#: src/server/connection.c:3624
+#: src/server/connection.c:3692
 #, fuzzy
 msgid "# outgoing messages dropped"
 msgstr "#Ubutumwa"
 
-#: src/server/connection.c:3627
+#: src/server/connection.c:3695
 #, fuzzy
 msgid "# bytes of outgoing messages dropped"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3629
+#: src/server/connection.c:3697
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:3633
+#: src/server/connection.c:3701
 msgid "# connections closed (transport issue)"
 msgstr ""
 
-#: src/server/connection.c:3636
+#: src/server/connection.c:3704
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:3640
+#: src/server/connection.c:3708
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "#Bayite Bya Ubwoko"
 
-#: src/server/connection.c:3644
+#: src/server/connection.c:3712
 #, fuzzy
 msgid "# bytes received"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3646
+#: src/server/connection.c:3714
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:3647
+#: src/server/connection.c:3715
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/server/connection.c:3650
+#: src/server/connection.c:3718
 msgid "# total bytes per second send limit"
 msgstr ""
 
-#: src/server/connection.c:3653
+#: src/server/connection.c:3721
 #, fuzzy
 msgid "# total bytes per second receive limit"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:3656
+#: src/server/connection.c:3724
 #, fuzzy
 msgid "# total number of messages in send buffers"
 msgstr "Umubare Bya Ubutumwa Kuri Gukoresha"
 
-#: src/server/connection.c:3660
+#: src/server/connection.c:3728
 msgid "# total number of bytes we were allowed to sent but did not"
 msgstr ""
 
-#: src/server/connection.c:3664
+#: src/server/connection.c:3732
 msgid "# total number of bytes we were allowed to sent"
 msgstr ""
 
-#: src/server/connection.c:3668
+#: src/server/connection.c:3736
 msgid "# total number of bytes we are currently allowed to send"
 msgstr ""
 
-#: src/server/connection.c:3671
+#: src/server/connection.c:3739
 msgid "# transports switched to stream transport"
+msgstr ""
+
+#: src/server/connection.c:3742
+msgid "# average connection lifetime (in ms)"
 msgstr ""
 
 #: src/server/startup.c:215
@@ -3999,7 +3585,7 @@ msgstr "OYA Serivisi OYA"
 msgid "Could not properly shutdown application `%s'.\n"
 msgstr "OYA Zimya Porogaramu"
 
-#: src/server/core.c:650
+#: src/server/core.c:652
 #, fuzzy, c-format
 msgid "Could not properly unload service `%s'!\n"
 msgstr "OYA Kureka gufungura Serivisi"
@@ -4418,7 +4004,7 @@ msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr "kugirango Amahitamo kugirango Amahitamo"
 
-#: src/util/boot/startup.c:255
+#: src/util/boot/startup.c:256
 #, fuzzy, c-format
 msgid "Failed to run %s: %s %d\n"
 msgstr "Byanze Kuri Kwihuza Kuri"
@@ -6153,6 +5739,296 @@ msgstr ""
 #: src/setup/gtk/gnunet-setup.glade:1917
 msgid "Not for English ;-)"
 msgstr ""
+
+#: src/applications/fs/gap/fs.c:704
+#, fuzzy
+msgid "# gap requests total received"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/fs/gap/fs.c:706
+#, fuzzy
+msgid "# gap content total received"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/fs/gap/fs.c:708
+msgid "# gap total trust awarded"
+msgstr ""
+
+#: src/applications/fs/gap/fs.c:736
+#, c-format
+msgid ""
+"`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
+"d\n"
+msgstr ""
+
+#: src/applications/fs/gap/fs.c:788
+msgid "enables (anonymous) file-sharing"
+msgstr ""
+
+#: src/applications/fs/gap/pid_table.c:177
+msgid "# distinct interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/fs/gap/pid_table.c:181
+msgid "# total RC of interned peer IDs in pid table"
+msgstr ""
+
+#: src/applications/fs/gap/fs_dht.c:261
+msgid "# blocks pushed into DHT"
+msgstr ""
+
+#: src/applications/fs/gap/migration.c:348
+msgid "# blocks migrated"
+msgstr ""
+
+#: src/applications/fs/gap/migration.c:350
+msgid "# blocks fetched for migration"
+msgstr ""
+
+#: src/applications/fs/gap/migration.c:353
+msgid "# on-demand block migration attempts"
+msgstr ""
+
+#: src/applications/fs/gap/ondemand.c:173
+#, c-format
+msgid ""
+"Because the file `%s' has been unavailable for 3 days it got removed from "
+"your share.  Please unindex files before deleting them as the index now "
+"contains invalid references!\n"
+msgstr ""
+
+#: src/applications/fs/gap/ondemand.c:454
+msgid "Indexed content changed (does not match its hash).\n"
+msgstr ""
+
+#: src/applications/fs/gap/ondemand.c:566
+#, c-format
+msgid ""
+"Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
+msgstr ""
+
+#: src/applications/fs/gap/anonymity.c:56
+#, fuzzy
+msgid "Failed to get traffic stats.\n"
+msgstr "Kuri Ikibazo# Ibyerekeye"
+
+#, fuzzy
+#~ msgid "GAP received invalid content from `%s'\n"
+#~ msgstr "Sibyo Ubutumwa Bivuye"
+
+#, fuzzy
+#~ msgid "# gap duplicate requests that were re-tried"
+#~ msgstr "#BYAKIRIWE"
+
+#, fuzzy
+#~ msgid "# gap spurious replies (dropped)"
+#~ msgstr "#hejuru Ibibazo BYAKIRIWE"
+
+#, fuzzy
+#~ msgid "# FS currently tracked queries from clients"
+#~ msgstr "#Umukiriya Yoherejwe:"
+
+#, fuzzy
+#~ msgid ""
+#~ "Configuration file must specify directory for storage of FS data in "
+#~ "section `%s' under `%s'.\n"
+#~ msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
+
+#, fuzzy
+#~ msgid ""
+#~ "You must specify a postive number for `%s' in the configuration in "
+#~ "section `%s'.\n"
+#~ msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
+
+#, fuzzy
+#~ msgid "# FS valid replies received"
+#~ msgstr "#Gushaka Ibisubizo ku BYAKIRIWE KB"
+
+#, fuzzy
+#~ msgid ""
+#~ "Content `%s' seems to be not available on the network (tried %u times).\n"
+#~ msgstr "Kuri OYA Bihari ku i urusobe"
+
+#, fuzzy
+#~ msgid "Start GNUnet-testbed helper."
+#~ msgstr "Gutangira"
+
+#, fuzzy
+#~ msgid "Cannot connect to LOOPBACK port %d: %s\n"
+#~ msgstr "Kwihuza Kuri Umuyoboro"
+
+#, fuzzy
+#~ msgid "Could not execute `%s': %s\n"
+#~ msgstr "OYA Gukora"
+
+#, fuzzy
+#~ msgid "No client service started. Trying again in 30 seconds.\n"
+#~ msgstr "Umukiriya Serivisi in amasogonda"
+
+#, fuzzy
+#~ msgid ""
+#~ "Error (%s) binding the TCP listener to port %d. No proxy service "
+#~ "started.\n"
+#~ "Trying again in %d seconds...\n"
+#~ msgstr "Bifatanya i Kuri Umuyoboro Porogisi Serivisi in amasogonda"
+
+#, fuzzy
+#~ msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
+#~ msgstr ""
+#~ "Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ "."
+
+#, fuzzy
+#~ msgid "Protocol violation on socket. Expected command.\n"
+#~ msgstr "ku Itegerejwe Komandi:"
+
+#, fuzzy
+#~ msgid "Command `%s' not found!\n"
+#~ msgstr "OYA Byabonetse"
+
+#, fuzzy
+#~ msgid "Start GNUnet testbed controller."
+#~ msgstr "Gutangira"
+
+#, fuzzy
+#~ msgid "Malformed entry in the configuration in section %s under %s: %s\n"
+#~ msgstr "Icyinjijwe in i Iboneza in Icyiciro"
+
+#, fuzzy
+#~ msgid "Could not send acknowledgement back to client.\n"
+#~ msgstr "OYA Kohereza Inyuma Kuri Umukiriya"
+
+#, fuzzy
+#~ msgid "Received unknown testbed message of type %u.\n"
+#~ msgstr "Kitazwi Ubutumwa Bya Ubwoko"
+
+#, fuzzy
+#~ msgid "size of `%s' message is too short. Ignoring.\n"
+#~ msgstr "Kwirengagiza."
+
+#, fuzzy
+#~ msgid "size of `%s' message is wrong. Ignoring.\n"
+#~ msgstr "Kwirengagiza."
+
+#, fuzzy
+#~ msgid "TESTBED could not generate hello message for protocol %u\n"
+#~ msgstr "OYA Ubutumwa kugirango Porotokole"
+
+#, fuzzy
+#~ msgid "received invalid `%s' message\n"
+#~ msgstr "BYAKIRIWE Sibyo"
+
+#, fuzzy
+#~ msgid "received invalid `%s' message (empty module name)\n"
+#~ msgstr "BYAKIRIWE Sibyo Ubutumwa ubusa Modire Izina:"
+
+#, fuzzy
+#~ msgid "loading module `%s' failed.  Notifying client.\n"
+#~ msgstr "Itangira... Modire Byanze Umukiriya"
+
+#, fuzzy
+#~ msgid "unloading module failed.  Notifying client.\n"
+#~ msgstr "Modire Byanze Umukiriya"
+
+#, fuzzy
+#~ msgid "`%s' %s failed: %s\n"
+#~ msgstr "'%s'%sByanze"
+
+#, fuzzy
+#~ msgid "received invalid `%s' message: %s.\n"
+#~ msgstr "BYAKIRIWE Sibyo Ubutumwa"
+
+#, fuzzy
+#~ msgid "'..' is not allowed in file name (%s).\n"
+#~ msgstr ""
+#~ "'..'Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ "."
+
+#, fuzzy
+#~ msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
+#~ msgstr "Izina ry'idosiye: kugirango Ubutumwa ni Sibyo"
+
+#, fuzzy
+#~ msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
+#~ msgstr "kugirango Ubutumwa ni OYA NTAGIHARI Sibyo"
+
+#, fuzzy
+#~ msgid "Invalid message received at %s:%d."
+#~ msgstr "Ubutumwa BYAKIRIWE ku"
+
+#, fuzzy
+#~ msgid "received invalid testbed message of size %u\n"
+#~ msgstr "BYAKIRIWE Sibyo Ubutumwa Bya Ingano"
+
+#, fuzzy
+#~ msgid ""
+#~ "Received testbed message of type %u but unexpected size %u, expected %u\n"
+#~ msgstr "Ubutumwa Bya Ubwoko Ingano Ikitezwe:"
+
+#, fuzzy
+#~ msgid "No testbed URL given, not registered.\n"
+#~ msgstr "OYA"
+
+#, fuzzy
+#~ msgid "Could not resolve name of HTTP proxy `%s'.\n"
+#~ msgstr "OYA Izina: Bya Porogisi"
+
+#, fuzzy
+#~ msgid "Invalid URL `%s' (must begin with `%s')\n"
+#~ msgstr "Na:"
+
+#, fuzzy
+#~ msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
+#~ msgstr "HTTP ku Umukiriya OYA"
+
+#, fuzzy
+#~ msgid "Could not register testbed, host `%s' unknown\n"
+#~ msgstr "OYA Kwiyandikisha Ubuturo"
+
+#, fuzzy
+#~ msgid "Failed to send HTTP request to host `%s': %s\n"
+#~ msgstr "Kuri Kohereza Kubaza... Kuri Ubuturo"
+
+#, fuzzy
+#~ msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
+#~ msgstr "Kohereza Kubaza... Kuri Ubuturo"
+
+#, fuzzy
+#~ msgid "Exit register (error: no http response read).\n"
+#~ msgstr "Kwiyandikisha Ikosa Oya HTTP Gusoma"
 
 #~ msgid "Description"
 #~ msgstr "Insobanuramiterere"
