@@ -104,7 +104,7 @@ void
 GNUNET_FS_ANONYMITY_done ()
 {
   if (traffic != NULL)
-    coreAPI->release_service ("traffic");
+    coreAPI->release_service (traffic);
 }
 
 /* end of anonymity.c */
