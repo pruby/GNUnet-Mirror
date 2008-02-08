@@ -120,7 +120,7 @@ reissue_requests (struct GNUNET_FS_SearchContext *ctx)
       req = (const CS_fs_request_search_MESSAGE *) &pos[1];
       if (GNUNET_OK !=
           GNUNET_client_connection_write (ctx->sock, &req->header))
-        return GNUNET_SYSERR;
+	return GNUNET_SYSERR;	
       pos = pos->next;
     }
   if (GNUNET_SYSERR == GNUNET_client_connection_ensure_connected (ctx->sock))

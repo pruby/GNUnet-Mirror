@@ -38,6 +38,11 @@ static GNUNET_CronTime now;
 
 static struct GNUNET_ThreadHandle *mainThread;
 
+static struct GNUNET_Mutex *lock;
+
+static struct GNUNET_GC_Configuration *cfg;
+
+
 static GNUNET_DatastoreValue *
 makeBlock (int i)
 {
@@ -160,14 +165,16 @@ searchResultCB (const GNUNET_HashCode * key,
 }
 
 static int
-trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
+trySearch (int i)
 {
   GNUNET_CronTime now;
   GNUNET_HashCode query;
   TSC closure;
   GNUNET_DatastoreValue *dv;
   DBlock *db;
+  struct GNUNET_FS_SearchContext *ctx;
 
+  ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
   dv = makeBlock (i);
   db = (DBlock *) & dv[1];
   GNUNET_EC_file_block_get_query (db,
@@ -192,6 +199,7 @@ trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
   GNUNET_cron_del_job (cron, &abortSem, 0, closure.sem);
   GNUNET_cron_resume_jobs (cron, GNUNET_NO);
   GNUNET_semaphore_destroy (closure.sem);
+  GNUNET_FS_destroy_search_context (ctx);
   return closure.found;
 }
 
@@ -205,7 +213,6 @@ main (int argc, char *argv[])
 #endif
   int ok;
   struct GNUNET_FS_SearchContext *ctx = NULL;
-  struct GNUNET_Mutex *lock;
   struct GNUNET_ClientServerConnection *sock;
   GNUNET_DatastoreValue *block;
   GNUNET_DatastoreValue *eblock;
@@ -214,7 +221,6 @@ main (int argc, char *argv[])
   int i;
   char *tmpName;
   int fd;
-  struct GNUNET_GC_Configuration *cfg;
 
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
@@ -231,15 +237,15 @@ main (int argc, char *argv[])
   ok = GNUNET_YES;
   GNUNET_cron_start (cron);
   lock = GNUNET_mutex_create (GNUNET_NO);
+#if START_DAEMON
   GNUNET_GE_ASSERT (NULL,
                     GNUNET_OK == GNUNET_wait_for_daemon_running (NULL, cfg,
                                                                  60 *
                                                                  GNUNET_CRON_SECONDS));
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
+#endif
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
-  ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
-  CHECK (ctx != NULL);
 
   /* ACTUAL TEST CODE */
   for (i = 1; i < 32; i++)
@@ -257,7 +263,7 @@ main (int argc, char *argv[])
       eblock->expirationTime = block->expirationTime;
       eblock->prio = block->prio;
       CHECK (GNUNET_OK == GNUNET_FS_insert (sock, eblock));
-      CHECK (GNUNET_OK == trySearch (ctx, i));
+      CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_SYSERR != GNUNET_FS_delete (sock, eblock));
       GNUNET_free (eblock);
       GNUNET_hash (&((DBlock *) & block[1])[1],
@@ -265,7 +271,7 @@ main (int argc, char *argv[])
                    sizeof (DBlock), &hc);
       /* indexing without symlink */
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
-      CHECK (GNUNET_OK == trySearch (ctx, i));
+      CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_OK ==
              GNUNET_FS_unindex (sock, GNUNET_MAX_BUFFER_SIZE, &hc));
       /* indexing with symlink */
@@ -278,7 +284,7 @@ main (int argc, char *argv[])
       CLOSE (fd);
       CHECK (GNUNET_FS_prepare_to_index (sock, &hc, tmpName) == GNUNET_YES);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
-      CHECK (GNUNET_OK == trySearch (ctx, i));
+      CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_OK ==
              GNUNET_FS_unindex (sock, GNUNET_MAX_BUFFER_SIZE, &hc));
       UNLINK (tmpName);
@@ -301,14 +307,14 @@ main (int argc, char *argv[])
       eblock->expirationTime = block->expirationTime;
       eblock->prio = block->prio;
       CHECK (GNUNET_OK == GNUNET_FS_insert (sock, eblock));
-      CHECK (GNUNET_OK == trySearch (ctx, i));
+      CHECK (GNUNET_OK == trySearch (i));
       CHECK (1 == GNUNET_FS_delete (sock, eblock));
       GNUNET_free (eblock);
       GNUNET_hash (&((DBlock *) & block[1])[1],
                    ntohl (block->size) - sizeof (GNUNET_DatastoreValue) -
                    sizeof (DBlock), &hc);
       CHECK (GNUNET_OK == GNUNET_FS_index (sock, &hc, block, 0));
-      CHECK (GNUNET_OK == trySearch (ctx, i));
+      CHECK (GNUNET_OK == trySearch (i));
       CHECK (GNUNET_OK ==
              GNUNET_FS_unindex (sock, GNUNET_MAX_BUFFER_SIZE, &hc));
       GNUNET_free (block);
@@ -325,22 +331,22 @@ main (int argc, char *argv[])
   GNUNET_free (block);
   i = 2;
   mainThread = GNUNET_thread_get_self ();
+  ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
   GNUNET_FS_start_search (ctx,
 			  NULL,
 			  GNUNET_ECRS_BLOCKTYPE_ANY,
 			  1,
 			  &query, 0, 
-                                &countCallback, &i);
+			  &countCallback, &i);
   GNUNET_thread_sleep (10 * GNUNET_CRON_SECONDS);
   GNUNET_thread_release_self (mainThread);
+  GNUNET_FS_destroy_search_context (ctx);
   CHECK (i <= 0);
 
   /* END OF TEST CODE */
 
 FAILURE:
   fprintf (stderr, "\n");
-  if (ctx != NULL)
-    GNUNET_FS_destroy_search_context (ctx);
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
   GNUNET_mutex_destroy (lock);
