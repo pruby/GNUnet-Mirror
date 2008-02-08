@@ -387,6 +387,7 @@ fast_path_processor (const GNUNET_HashCode * key,
   unsigned int size;
   GNUNET_DatastoreValue *enc;
   const GNUNET_DatastoreValue *use;
+  unsigned int type;
 
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   dblock = (const DBlock *) &value[1];
@@ -409,8 +410,9 @@ fast_path_processor (const GNUNET_HashCode * key,
   memcpy (&msg[1], dblock, size);
   GNUNET_free_non_null (enc);
   coreAPI->cs_send_to_client (sock, &msg->header, GNUNET_YES);
+  type = ntohl (dblock->type);
   GNUNET_free (msg);
-  if (ntohl (dblock->type) == GNUNET_ECRS_BLOCKTYPE_DATA)
+  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     return GNUNET_SYSERR;       /* unique response */
   return GNUNET_OK;
 }
@@ -440,10 +442,19 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   rs = (const CS_fs_request_search_MESSAGE *) req;
   type = ntohl (rs->type);
   /* try "fast path" avoiding gap/dht if unique reply is locally available */
-  if ( (1 == datastore->get (&rs->query[0],
-			     type, &fast_path_processor, sock)) &&
-       (type == GNUNET_ECRS_BLOCKTYPE_DATA) )
-    return GNUNET_OK;
+  if (type == GNUNET_ECRS_BLOCKTYPE_DATA) 
+    {
+      if ( (1 == datastore->get (&rs->query[0],
+				 type, &fast_path_processor, sock)) ||
+	   (1 == datastore->get (&rs->query[0],
+				 GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+				 &fast_path_processor, sock)) )
+	return GNUNET_OK;
+    } 
+  else
+    datastore->get (&rs->query[0],
+		    type, &fast_path_processor, sock);
+
   anonymityLevel = ntohl (rs->anonymityLevel);
   keyCount =
     1 + (ntohs (req->size) -

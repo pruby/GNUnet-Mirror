@@ -221,11 +221,9 @@ GNUNET_FS_ONDEMAND_index_prepare_with_symlink (struct GNUNET_GE_Context *ectx,
                                    GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                                    GNUNET_GE_USER | GNUNET_GE_BULK, "symlink",
                                    serverFN);
-      GNUNET_GE_free_context (ectx);
       GNUNET_free (serverFN);
       return GNUNET_NO;
     }
-  GNUNET_GE_free_context (ectx);
   GNUNET_free (serverFN);
   remove_unavailable_mark (fileId);
   return GNUNET_YES;
