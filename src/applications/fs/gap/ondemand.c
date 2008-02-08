@@ -549,9 +549,9 @@ GNUNET_FS_ONDEMAND_delete_indexed_content (struct GNUNET_GE_Context *ectx,
       odb.fileId = *fileId;
       /* compute the primary key */
       GNUNET_EC_file_block_get_query (block, delta + sizeof (DBlock), &key);
-      if ( (1 == datastore->get (&key,
-				 GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-				 &GNUNET_FS_HELPER_complete_value_from_database_callback, &odb.header)) &&
+      if ( (0 < datastore->get (&key,
+				GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+				&GNUNET_FS_HELPER_complete_value_from_database_callback, &odb.header)) &&
 	   (odb.header.expirationTime != 0) )
         ret = datastore->del (&key, &odb.header);
       else                      /* not found */
