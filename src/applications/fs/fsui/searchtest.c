@@ -195,7 +195,8 @@ main (int argc, char *argv[])
                    lastEvent);
         }
       CHECK (prog <
-             10000) GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+             10000);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
     }
@@ -205,7 +206,8 @@ main (int argc, char *argv[])
     {
       prog++;
       CHECK (prog <
-             10000) GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
+             10000);
+      GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
     }
   GNUNET_FSUI_search_abort (ctx, search);
   GNUNET_FSUI_search_stop (ctx, search);
