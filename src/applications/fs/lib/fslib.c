@@ -145,6 +145,7 @@ reply_process_thread (void *cls)
   const CS_fs_request_search_MESSAGE *req;
   GNUNET_DatastoreValue *value;
   struct GNUNET_FS_SearchHandle *pos;
+  struct GNUNET_FS_SearchHandle *spos;
   struct GNUNET_FS_SearchHandle *prev;
   int unique;
 
@@ -202,23 +203,30 @@ reply_process_thread (void *cls)
                   memcmp (&query, &req->query[0], sizeof (GNUNET_HashCode)))
                 {
                   matched++;
-                  if ((pos->callback != NULL) &&
-                      (GNUNET_SYSERR == pos->callback (&query,
-                                                       value,
-                                                       pos->closure, 0)))
-                    pos->callback = NULL;
-                }
-              if (unique)
-                {
-                  if (prev == NULL)
-                    ctx->handles = pos->next;
-                  else
-                    prev->next = pos->next;
-                  GNUNET_free (pos);
-                  if (prev == NULL)
-                    pos = ctx->handles;
-                  else
-                    pos = prev->next;
+		  spos = pos;
+		  if (unique)
+		    {
+		      if (prev == NULL)
+			ctx->handles = pos->next;
+		      else
+			prev->next = pos->next;
+		      if (prev == NULL)
+			pos = ctx->handles;
+		      else
+			pos = prev->next;
+		    }
+		  else
+		    {
+		      prev = pos;
+		      pos = pos->next;
+		    }
+                  if ( (spos->callback != NULL) &&
+                       (GNUNET_SYSERR == spos->callback (&query,
+							 value,
+							 spos->closure, 0)))
+                    spos->callback = NULL;
+		  if (unique)
+		    GNUNET_free(spos);
                 }
               else
                 {
@@ -227,14 +235,14 @@ reply_process_thread (void *cls)
                 }
             }
           GNUNET_free (value);
-          GNUNET_mutex_unlock (ctx->lock);
 #if DEBUG_FSLIB
           if (matched == 0)
-            GNUNET_GE_LOG (ctx->ectx,
-                           GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                           GNUNET_GE_USER,
-                           "FSLIB: received content but have no pending request\n");
+	    GNUNET_GE_LOG (ctx->ectx,
+			   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+			   GNUNET_GE_USER,
+			   "FSLIB: received content but have no pending request\n");	    
 #endif
+          GNUNET_mutex_unlock (ctx->lock);
         }
       else
         {

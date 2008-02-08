@@ -190,6 +190,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   PID_INDEX peer;
   unsigned int index;
   GNUNET_CronTime now;
+  int ret;
 
   GNUNET_GE_ASSERT (NULL, query_count > 0);
   peer = GNUNET_FS_PT_intern (respond_to);
@@ -247,9 +248,18 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   table[index] = rl;
 
   /* check local data store */
-  datastore->get (&queries[0], type, datastore_value_processor, rl);
+  ret = datastore->get (&queries[0], type, datastore_value_processor, rl);
+  if ( (type == GNUNET_ECRS_BLOCKTYPE_DATA) &&
+       (ret != 1) )
+    ret = datastore->get (&queries[0],
+			  GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+			  datastore_value_processor, rl);
+
   /* if not found or not unique, forward */
-  GNUNET_FS_PLAN_request (NULL, peer, rl);
+  if ( (ret != 1) ||
+       (type != GNUNET_ECRS_BLOCKTYPE_DATA) )
+    GNUNET_FS_PLAN_request (NULL, peer, rl);
+  
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 

@@ -341,7 +341,8 @@ addRequest (struct Node *node)
   struct RequestManager *rm = node->ctx;
 
   node->next = rm->head;
-  node->next->prev = node;
+  if (node->next != NULL)
+    node->next->prev = node;
   node->prev = NULL;
   rm->head = node;
   if (rm->tail == NULL)

@@ -29,6 +29,8 @@
 #include "gnunet_ecrs_lib.h"
 #include "tree.h"
 
+#define START_DAEMONS 0
+
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 /**
@@ -124,6 +126,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
   ret = GNUNET_SYSERR;
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
+      fprintf(stderr, ".");
       if (GNUNET_OK == GNUNET_ECRS_file_download_partial (NULL,
                                                           cfg,
                                                           uri,
@@ -180,9 +183,11 @@ unindexFile (unsigned int size)
 int
 main (int argc, char *argv[])
 {
+#if START_DAEMONS
   pid_t daemon;
+#endif
   int ok;
-  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock = NULL;
   struct GNUNET_ECRS_URI *uri;
 
   cfg = GNUNET_GC_create ();
@@ -191,31 +196,37 @@ main (int argc, char *argv[])
       GNUNET_GC_free (cfg);
       return -1;
     }
+#if START_DAEMONS
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
-  sock = NULL;
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          30 * GNUNET_CRON_SECONDS));
-  ok = GNUNET_YES;
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
+#endif
+  ok = GNUNET_YES;
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
 
   /* ACTUAL TEST CODE */
+  fprintf(stderr, "Uploading...\n");
   uri = uploadFile (SIZE);
-  CHECK (NULL != uri);
+  CHECK (NULL != uri)
+  fprintf(stderr, "Downloading...");
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   GNUNET_ECRS_uri_destroy (uri);
+  fprintf(stderr, "\nUnindexing...\n");
   CHECK (GNUNET_OK == unindexFile (SIZE));
-  fprintf (stderr, " Ok.\n");
+  fprintf (stderr, "Ok.\n");
 
 
   /* END OF TEST CODE */
 FAILURE:
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
+#if START_DAEMONS
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+#endif
   GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }

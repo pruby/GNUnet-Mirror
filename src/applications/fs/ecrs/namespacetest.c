@@ -118,6 +118,7 @@ main (int argc, char *argv[])
   pid_t daemon;
   int failureCount = 0;
 
+  GNUNET_disable_entropy_gathering();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {
