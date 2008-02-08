@@ -384,7 +384,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
 
   /* generate score, ttl and priority */
   prio = rpc->request->last_prio_used + GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2); /* increase over time */
-  if (prio < history->last_good_prio)
+  if ( (history != NULL) &&
+       (prio < history->last_good_prio) )
     prio = history->last_good_prio - GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, 2); /* fall over time */
   if (prio > 1)
     {
