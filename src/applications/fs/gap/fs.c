@@ -288,11 +288,13 @@ handle_cs_delete_request (struct GNUNET_ClientHandle *sock,
                  type);
 #endif
   GNUNET_mutex_lock (GNUNET_FS_lock);
-  if (GNUNET_SYSERR ==
-      datastore->get (&query, type,
-                      &GNUNET_FS_HELPER_complete_value_from_database_callback,
-                      value))
-    {                           /* aborted == found! */
+  value->type = htonl(GNUNET_ECRS_BLOCKTYPE_ANY);
+  if ( (1 ==
+	datastore->get (&query, type,
+			&GNUNET_FS_HELPER_complete_value_from_database_callback,
+			value)) &&
+       (value->type != htonl(GNUNET_ECRS_BLOCKTYPE_ANY)) )
+    {
       ret = datastore->del (&query, value);
     }
   else
