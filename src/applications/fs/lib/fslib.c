@@ -356,6 +356,8 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   GNUNET_mutex_lock (ctx->lock);
   ret->next = ctx->handles;
   ctx->handles = ret;
+  GNUNET_client_connection_write (ctx->sock,
+				  &req->header);
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }

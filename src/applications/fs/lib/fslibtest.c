@@ -29,6 +29,7 @@
 #include "gnunet_protocols.h"
 #include "ecrs_core.h"
 
+
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 static struct GNUNET_CronManager *cron;
@@ -194,7 +195,7 @@ trySearch (struct GNUNET_FS_SearchContext *ctx, int i)
   return closure.found;
 }
 
-#define START_DAEMON 1
+#define START_DAEMON 0
 
 int
 main (int argc, char *argv[])

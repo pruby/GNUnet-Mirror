@@ -438,8 +438,9 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   rs = (const CS_fs_request_search_MESSAGE *) req;
   type = ntohl (rs->type);
   /* try "fast path" avoiding gap/dht if unique reply is locally available */
-  if (GNUNET_SYSERR == datastore->get (&rs->query[0],
-                                       type, &fast_path_processor, sock))
+  if ( (1 == datastore->get (&rs->query[0],
+			     type, &fast_path_processor, sock)) &&
+       (type == GNUNET_ECRS_BLOCKTYPE_DATA) )
     return GNUNET_OK;
   anonymityLevel = ntohl (rs->anonymityLevel);
   keyCount =
