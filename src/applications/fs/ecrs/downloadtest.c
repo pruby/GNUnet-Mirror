@@ -29,7 +29,7 @@
 #include "gnunet_ecrs_lib.h"
 #include "tree.h"
 
-#define START_DAEMONS 0
+#define START_DAEMONS 1
 
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 

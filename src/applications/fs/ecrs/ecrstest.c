@@ -29,6 +29,8 @@
 #include "gnunet_ecrs_lib.h"
 #include "tree.h"
 
+#define START_DAEMON 1
+
 #define CHECK(a) if (!(a)) { ok = GNUNET_NO; GNUNET_GE_BREAK(NULL, 0); goto FAILURE; }
 
 static int
@@ -179,7 +181,6 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                                               tmpName, 0, NULL, NULL,
                                               &testTerminate, NULL))
     {
-
       fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
       buf = GNUNET_malloc (size);
       in = GNUNET_malloc (size);
@@ -195,6 +196,10 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
       GNUNET_free (buf);
       GNUNET_free (in);
       CLOSE (fd);
+    }
+  else
+    {
+      fprintf(stderr, "? ");
     }
   UNLINK (tmpName);
   GNUNET_free (tmpName);
@@ -236,9 +241,11 @@ main (int argc, char *argv[])
     1024,
     0
   };
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
-  struct GNUNET_ClientServerConnection *sock;
+  struct GNUNET_ClientServerConnection *sock = NULL;
   struct GNUNET_ECRS_URI *uri;
   int i;
 
@@ -248,14 +255,15 @@ main (int argc, char *argv[])
       GNUNET_GC_free (cfg);
       return -1;
     }
+#if START_DAEMON
   daemon = GNUNET_daemon_start (NULL, cfg, "peer.conf", GNUNET_NO);
   GNUNET_GE_ASSERT (NULL, daemon > 0);
-  sock = NULL;
   CHECK (GNUNET_OK ==
          GNUNET_wait_for_daemon_running (NULL, cfg,
                                          30 * GNUNET_CRON_SECONDS));
-  ok = GNUNET_YES;
   GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);        /* give apps time to start */
+#endif
+  ok = GNUNET_YES;
   sock = GNUNET_client_connection_create (NULL, cfg);
   CHECK (sock != NULL);
 
@@ -263,14 +271,14 @@ main (int argc, char *argv[])
   i = 0;
   while (filesizes[i] != 0)
     {
-      fprintf (stderr, "Testing filesize %u", filesizes[i]);
+      fprintf (stderr, "Testing filesize %u ", filesizes[i]);
       uri = uploadFile (filesizes[i]);
       CHECK (NULL != uri);
       CHECK (GNUNET_OK == searchFile (&uri));
       CHECK (GNUNET_OK == downloadFile (filesizes[i], uri));
       GNUNET_ECRS_uri_destroy (uri);
       CHECK (GNUNET_OK == unindexFile (filesizes[i]));
-      fprintf (stderr, " Ok.\n");
+      fprintf (stderr, "Ok.\n");
       i++;
     }
 
@@ -278,7 +286,9 @@ main (int argc, char *argv[])
 FAILURE:
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
+#if START_DAEMON
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+#endif
   GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }

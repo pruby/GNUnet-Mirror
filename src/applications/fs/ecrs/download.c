@@ -883,7 +883,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
   if ((rm.head == NULL) &&
       ((rm.completed == rm.total) ||
        ((rm.total != rm.length) &&
-        (rm.completed >= rm.length))) && (rm.abortFlag == GNUNET_NO))
+        (rm.completed >= rm.length))))
     {
       ret = GNUNET_OK;
     }
@@ -894,7 +894,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                      GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                      "Download ends prematurely: %d %llu == %llu %d TT: %d\n",
                      rm.requestListIndex,
-                     ctx.completed, ctx.total, rm.abortFlag, tt (ttClosure));
+                     rm.completed, rm.total, rm.abortFlag, tt (ttClosure));
 #endif
       ret = GNUNET_SYSERR;
     }
