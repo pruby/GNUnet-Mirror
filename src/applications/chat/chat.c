@@ -87,19 +87,28 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
   CS_chat_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
+  char *nick;
+  char *message_content;
 
-  if (ntohs (message->size) != sizeof (P2P_chat_MESSAGE))
-    {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Message received from peer is invalid.\n"));
-      return GNUNET_SYSERR;
-    }
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
 
+  cmsg->header.size = ntohs(cmsg->header.size);
+  cmsg->nick_len = ntohl(cmsg->nick_len);
+  cmsg->msg_len = ntohl(cmsg->msg_len);
+  
+  nick = GNUNET_malloc(cmsg->nick_len + 1);
+  message_content = GNUNET_malloc(cmsg->msg_len + 1);
+  bzero(nick,sizeof(nick));
+  bzero(message_content,sizeof(message_content));
+  
+  memcpy(nick,&cmsg->nick[0],cmsg->nick_len);
+  memcpy(message_content,&cmsg->nick[sizeof(nick)],cmsg->msg_len);
+      
+  
+  GNUNET_hash (pmsg, cmsg->header.size, &hc);
   /* check if we have seen this message already */
-  GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
+
   j = -1;
   GNUNET_mutex_lock (chatMutex);
   for (i = 0; i < MAX_LAST_MESSAGES; i++)
@@ -114,8 +123,9 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
       cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
         coreAPI->cs_send_to_client (clients[j], &cmsg->header,GNUNET_YES);
-      pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
-      pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';
+      /*pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
+      pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';*/
+      
       /*
          GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
          " CHAT: received new message from %s: %s\n",
@@ -136,17 +146,36 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   CS_chat_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
+  char *nick;
+  char *message_content;
 
-  if (ntohs (message->size) != sizeof (CS_chat_MESSAGE))
+  /*if (ntohs (message->size) != sizeof (CS_chat_MESSAGE))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Message received from client is invalid\n"));
-      return GNUNET_SYSERR;     /* invalid message */
+      return GNUNET_SYSERR; */    /* invalid message */
+      /*
     }
+  */
+    
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
-  GNUNET_hash (pmsg, sizeof (P2P_chat_MESSAGE), &hc);
+  
+  cmsg->header.size = ntohs(cmsg->header.size);
+  cmsg->nick_len = ntohl(cmsg->nick_len);
+  cmsg->msg_len = ntohl(cmsg->msg_len);
+  
+  nick = GNUNET_malloc(cmsg->nick_len + 1);
+  message_content = GNUNET_malloc(cmsg->msg_len + 1);
+  bzero(nick,sizeof(nick));
+  bzero(message_content,sizeof(message_content));
+  
+  memcpy(nick,&cmsg->nick[0],cmsg->nick_len);
+  memcpy(message_content,&cmsg->nick[sizeof(nick)],cmsg->msg_len);
+      
+  
+  GNUNET_hash (pmsg, cmsg->header.size, &hc);
   GNUNET_mutex_lock (chatMutex);
   markSeen (&hc);
 

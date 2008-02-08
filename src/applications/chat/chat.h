@@ -28,21 +28,24 @@
 
 #include "gnunet_core.h"
 
-#define CHAT_NICK_LENGTH 32
-#define CHAT_MSG_LENGTH 1024
-
 typedef struct
 {
   GNUNET_MessageHeader header;
-  char nick[CHAT_NICK_LENGTH];
-  char message[CHAT_MSG_LENGTH];
+  unsigned long nick_len;
+  unsigned long msg_len;
+  char nick[1];
+  char message[1];
 } P2P_chat_MESSAGE;
 
 typedef struct
 {
   GNUNET_MessageHeader header;
-  char nick[CHAT_NICK_LENGTH];
-  char message[CHAT_MSG_LENGTH];
+  unsigned long nick_len;
+  unsigned long msg_len;
+  unsigned long room_name_len;
+  char nick[1];
+  char message[1];
+  char room_name[1];
 } CS_chat_MESSAGE;
 
 
