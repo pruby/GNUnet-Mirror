@@ -302,7 +302,10 @@ add_request (PID_INDEX target,
   /* insert into datastructure at pos */
   if (pos == NULL)
     {
-      qpl->tail->next = entry;
+      if (qpl->tail != NULL)
+	qpl->tail->next = entry;
+      else
+	qpl->head = entry;
       entry->prev = qpl->tail;
       qpl->tail = entry;
     }
