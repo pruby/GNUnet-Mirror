@@ -1147,7 +1147,10 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
  * @param key maybe NULL (to match all entries)
  * @param type entries of which type are relevant?
  *     Use 0 for any type.
- * @param iter maybe NULL (to just count)
+ * @param iter maybe NULL (to just count); iter
+ *     should return GNUNET_SYSERR to abort the
+ *     iteration, GNUNET_NO to delete the entry and
+ *     continue and GNUNET_OK to continue iterating
  * @return the number of results, GNUNET_SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */

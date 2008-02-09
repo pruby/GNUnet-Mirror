@@ -634,7 +634,12 @@ syncStats (sqliteHandle * handle)
  * call the callback method on it.
  *
  * @param type entries of which type should be considered?
- * @return the number of items stored in the content database
+ * @param iter maybe NULL (to just count); iter
+ *     should return GNUNET_SYSERR to abort the
+ *     iteration, GNUNET_NO to delete the entry and
+ *     continue and GNUNET_OK to continue iterating
+ * @return the number of results processed,
+ *         GNUNET_SYSERR on error
  */
 static int
 sqlite_iterate (unsigned int type,
@@ -848,7 +853,6 @@ sqlite_iterate (unsigned int type,
               if (ret == GNUNET_SYSERR)
                 {
                   GNUNET_free (datum);
-                  count = GNUNET_SYSERR;
                   break;
                 }
               if (ret == GNUNET_NO)
@@ -877,8 +881,7 @@ sqlite_iterate (unsigned int type,
  *   type. 0 for all entries.
  * @param iter the callback method
  * @param closure argument to all callback calls
- * @return the number of results, GNUNET_SYSERR if the
- *   iter is non-NULL and aborted the iteration
+ * @return the number of results, GNUNET_SYSERR on error
  */
 static int
 iterateLowPriority (unsigned int type, GNUNET_DatastoreValueIterator iter,
@@ -896,8 +899,7 @@ iterateLowPriority (unsigned int type, GNUNET_DatastoreValueIterator iter,
  *   type. 0 for all entries.
   * @param iter the callback method
  * @param closure argument to all callback calls
- * @return the number of results, GNUNET_SYSERR if the
- *   iter is non-NULL and aborted the iteration
+ * @return the number of results, GNUNET_SYSERR on error
  */
 static int
 iterateNonAnonymous (unsigned int type, GNUNET_DatastoreValueIterator iter,
@@ -931,8 +933,7 @@ iterateExpirationTime (unsigned int type, GNUNET_DatastoreValueIterator iter,
  * order.
  *
  * @param iter never NULL
- * @return the number of results, GNUNET_SYSERR if the
- *   iter is non-NULL and aborted the iteration
+ * @return the number of results, GNUNET_SYSERR on error
  */
 static int
 iterateMigrationOrder (GNUNET_DatastoreValueIterator iter, void *closure)
@@ -1003,6 +1004,7 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
       if (datum == NULL)
         continue;
       newpayload += getContentDatastoreSize (datum);
+      count++;
       if (iter != NULL)
         {
           GNUNET_mutex_unlock (lock);
@@ -1014,7 +1016,6 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
       if (ret == GNUNET_SYSERR)
         {
           GNUNET_free (datum);
-          count = GNUNET_SYSERR;
           break;
         }
       if (ret == GNUNET_NO)
@@ -1023,7 +1024,6 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
           delete_by_rowid (handle, rowid);
         }
       GNUNET_free (datum);
-      count++;
     }
   sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
@@ -1102,9 +1102,12 @@ drop ()
  * @param key maybe NULL (to match all entries)
  * @param type entries of which type are relevant?
  *     Use 0 for any type.
- * @param iter maybe NULL (to just count)
- * @return the number of results, GNUNET_SYSERR if the
- *   iter is non-NULL and aborted the iteration
+ * @param iter maybe NULL (to just count); iter
+ *     should return GNUNET_SYSERR to abort the
+ *     iteration, GNUNET_NO to delete the entry and
+ *     continue and GNUNET_OK to continue iterating
+ * @return the number of results processed,
+ *         GNUNET_SYSERR on error
  */
 static int
 get (const GNUNET_HashCode * key,
@@ -1182,11 +1185,11 @@ get (const GNUNET_HashCode * key,
               continue;
             }
           GNUNET_mutex_unlock (lock);
+          count++;
           ret = iter (&rkey, datum, closure, rowid);
           GNUNET_mutex_lock (lock);
           if (ret == GNUNET_SYSERR)
             {
-              count = GNUNET_SYSERR;
               GNUNET_free (datum);
               ret = SQLITE_DONE;
               break;
@@ -1197,7 +1200,6 @@ get (const GNUNET_HashCode * key,
               delete_by_rowid (handle, rowid);
             }
           GNUNET_free (datum);
-          count++;
         }
     }
   sqlite3_reset (stmt);

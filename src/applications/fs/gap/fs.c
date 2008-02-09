@@ -289,10 +289,10 @@ handle_cs_delete_request (struct GNUNET_ClientHandle *sock,
 #endif
   GNUNET_mutex_lock (GNUNET_FS_lock);
   value->type = htonl(GNUNET_ECRS_BLOCKTYPE_ANY);
-  if ( (1 ==
-	datastore->get (&query, type,
+  ret = datastore->get (&query, type,
 			&GNUNET_FS_HELPER_complete_value_from_database_callback,
-			value)) &&
+			value);
+  if ( (0 < ret) &&	
        (value->type != htonl(GNUNET_ECRS_BLOCKTYPE_ANY)) )
     {
       ret = datastore->del (&query, value);
@@ -658,7 +658,6 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
                                                   &query,
                                                   expiration,
                                                   data_size, dblock);
-  /* FIXME: offer to migration module? */
   if ((sender != NULL) && ((prio > 0) || (!test_load_too_high ())))
     {
       /* consider storing in local datastore */
