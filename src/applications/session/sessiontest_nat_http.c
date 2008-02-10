@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/session/sessiontest_http.c
+ * @file applications/session/sessiontest_nat_http.c
  * @brief Session establishment testcase for NAT over HTTP
  * @author Christian Grothoff
  */
@@ -183,4 +183,4 @@ main (int argc, char **argv)
   return (ok == 0) ? 1 : 0;
 }
 
-/* end of sessiontest2.c */
+/* end of sessiontest_nat_http.c */

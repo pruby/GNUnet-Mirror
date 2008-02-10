@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/session/sessiontest2.c
+ * @file applications/session/sessiontest_nat.c
  * @brief Session establishment testcase for NAT
  * @author Christian Grothoff
  */
