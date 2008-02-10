@@ -54,6 +54,13 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
   return GNUNET_OK;
 }
 
+static int tt(void * unused) 
+{
+  if (match == 1)
+    return GNUNET_SYSERR;
+  return GNUNET_OK;
+}
+
 static int
 testNamespace ()
 {
@@ -98,7 +105,7 @@ testNamespace ()
   fprintf (stderr, "Starting namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_search (NULL,
                                           cfg,
-                                          advURI, 1, &spcb, uri, NULL, NULL));
+                                          advURI, 1, &spcb, uri, &tt, NULL));
   fprintf (stderr, "Completed namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME));
   CHECK (GNUNET_SYSERR ==
