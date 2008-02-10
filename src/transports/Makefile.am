@@ -1,16 +1,9 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
-EXTRA_DIST = tcp_helper.c udp_helper.c test.conf
+EXTRA_DIST = common.c test.conf
 
 plugindir = $(libdir)/GNUnet
 
-if HAVE_IPV6
- v6transports = \
-  libgnunettransport_tcp6.la \
-  libgnunettransport_udp6.la 
- v6ip = \
-  libgnunetip6.la
-endif
 if HAVE_XML2
   build_upnp=upnp
 endif
@@ -26,9 +19,6 @@ endif
 endif
 
 SUBDIRS = . $(build_upnp)
-
-noinst_LTLIBRARIES = \
-  $(v6ip) 
 
 lib_LTLIBRARIES = \
   libgnunetip.la
@@ -48,14 +38,11 @@ libgnunetip_la_SOURCES = \
 libgnunetip_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
-libgnunetip6_la_SOURCES = \
-  ip6.c ip6.h
-
 plugin_LTLIBRARIES = \
  libgnunettransport_tcp.la \
  libgnunettransport_udp.la \
  libgnunettransport_nat.la \
- $(v6transports) $(httptransport) $(smtptransport)
+ $(httptransport) $(smtptransport)
 
 libgnunettransport_smtp_la_SOURCES = smtp.c
 libgnunettransport_smtp_la_LIBADD = \
@@ -93,23 +80,6 @@ libgnunettransport_udp_la_LIBADD = \
  libgnunetip.la
 libgnunettransport_udp_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 
-
-libgnunettransport_tcp6_la_SOURCES = tcp6.c
-libgnunettransport_tcp6_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunetip.la \
- libgnunetip6.la
-libgnunettransport_tcp6_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
-
-libgnunettransport_udp6_la_SOURCES = udp6.c
-libgnunettransport_udp6_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunetip.la \
- libgnunetip6.la
-libgnunettransport_udp6_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
-
 
 
 

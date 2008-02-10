@@ -347,13 +347,13 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   "TRANSPORTS"
   (_ "Which transport mechanisms should GNUnet use?")
   (_ 
-"Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The available transports are udp, tcp, http, smtp, tcp6, udp6 and nat.
+"Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The available transports are udp, tcp, http, smtp and nat.
 		
-Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that cannot directly be reached from the outside.  Peers that are NOT behind a NAT box and that want to *allow* peers that ARE behind a NAT box to connect must ALSO load the 'nat' module.  Note that the actual transfer will always be via tcp initiated by the peer behind the NAT box.  The nat transport requires the use of tcp, http, smtp and/or tcp6 in addition to nat itself.")
+Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that cannot directly be reached from the outside.  Peers that are NOT behind a NAT box and that want to *allow* peers that ARE behind a NAT box to connect must ALSO load the 'nat' module.  Note that the actual transfer will always be via tcp initiated by the peer behind the NAT box.  The nat transport requires the use of tcp, http and/or smtp in addition to nat itself.")
   '()
   #t
   "udp tcp http nat"
-  (list "MC" "udp" "udp6" "tcp" "tcp6" "nat" "http" "smtp")
+  (list "MC" "udp" "tcp" "nat" "http" "smtp")
   'always) )
  
 
@@ -884,7 +884,7 @@ The size of the DSTORE QUOTA is specified in MB.")
  (builder
  "TCP"
  "BLACKLIST"
- (_ "Which IPs are not allowed to connect?")
+ (_ "Which IP(v4)s are not allowed to connect?")
  (nohelp)
  '()
  #t
@@ -896,13 +896,38 @@ The size of the DSTORE QUOTA is specified in MB.")
  (builder
  "TCP"
  "WHITELIST"
- (_ "Which IPs are allowed to connect? Leave empty to use the IP of your primary network interface.")
+ (_ "Which IP(v4)s are allowed to connect? Leave empty to use the IP of your primary network interface.")
  (nohelp)
  '()
  #t
  ""
  '()
  'advanced))
+
+(define (tcp6-blacklist builder)
+ (builder
+ "TCP"
+ "BLACKLISTV6"
+ (_ "Which IPv6s are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
+(define (tcp6-whitelist builder)
+ (builder
+ "TCP"
+ "WHITELISTV6"
+ (_ "Which IPv6s are allowed to connect? Leave empty to allow any IP to connect.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 
 (define (tcp builder)
  (builder
@@ -1132,6 +1157,30 @@ The size of the DSTORE QUOTA is specified in MB.")
  '()
  'advanced))
 
+(define (udp6-blacklist builder)
+ (builder
+ "UDP"
+ "BLACKLISTV6"
+ (_ "Which IPv6s are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
+(define (udp6-whitelist builder)
+ (builder
+ "UDP6"
+ "WHITELISTV6"
+ (_ "Which IPv6s are allowed to connect? Leave empty to allow any IP to connect.")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (udp builder)
  (builder
  "UDP"
@@ -1144,130 +1193,14 @@ The size of the DSTORE QUOTA is specified in MB.")
    (udp-mtu builder)
    (udp-blacklist builder)
    (udp-whitelist builder)
- )
- #t
- #f
- #f
- 'udp-loaded) )
-
-
-(define (tcp6-port builder)
- (builder
- "TCP6"
- "PORT"
- (_ "Which port should be used by the TCP IPv6 transport?")
- (nohelp)
- '()
- #t
- 2088
- (cons 0 65535)
- 'advanced))
-
-(define (tcp6-blacklist builder)
- (builder
- "TCP6"
- "BLACKLIST"
- (_ "Which IPs are not allowed to connect?")
- (nohelp)
- '()
- #t
- ""
- '()
- 'advanced))
-
-(define (tcp6-whitelist builder)
- (builder
- "TCP6"
- "WHITELIST"
- (_ "Which IPs are allowed to connect? Leave empty to allow any IP to connect.")
- (nohelp)
- '()
- #t
- ""
- '()
- 'advanced))
-
-(define (tcp6 builder)
- (builder
- "TCP6"
- ""
- (_ "TCP6 transport")
- (nohelp)
- (list 
-   (tcp6-port builder)
-   (tcp6-blacklist builder)
-   (tcp6-whitelist builder)
- )
- #t
- #f
- #f
- 'tcp6-loaded) )
-
-
-(define (udp6-port builder)
- (builder
- "UDP6"
- "PORT"
- (_ "Which port should be used by the UDP IPv6 transport?")
- (nohelp)
- '()
- #t
- 2088
- (cons 0 65535)
- 'advanced))
-
-(define (udp6-mtu builder)
- (builder
- "UDP6"
- "MTU"
- (_ "What is the maximum transfer unit for UDP 6?")
- (nohelp)
- '()
- #t
- 1452
- (cons 1200 65500)
- 'rare))
-
-(define (udp6-blacklist builder)
- (builder
- "UDP6"
- "BLACKLIST"
- (_ "Which IPs are not allowed to connect?")
- (nohelp)
- '()
- #t
- ""
- '()
- 'advanced))
-
-(define (udp6-whitelist builder)
- (builder
- "UDP6"
- "WHITELIST"
- (_ "Which IPs are allowed to connect? Leave empty to allow any IP to connect.")
- (nohelp)
- '()
- #t
- ""
- '()
- 'advanced))
-
-(define (udp6 builder)
- (builder
- "UDP6"
- ""
- (_ "UDP6 transport")
- (nohelp)
- (list 
-   (udp6-port builder)
-   (udp6-mtu builder)
    (udp6-blacklist builder)
    (udp6-whitelist builder)
  )
  #t
  #f
  #f
- 'udp6-loaded) )
+ 'udp-loaded) )
+
 
 
 (define (network-interface builder)
@@ -1317,9 +1250,7 @@ The size of the DSTORE QUOTA is specified in MB.")
     (network-interface builder)
     (network-ip builder)
     (tcp builder)
-    (tcp6 builder)
     (udp builder)
-    (udp6 builder)
     (http builder)
     (smtp builder)
   )
@@ -1527,8 +1458,6 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (tcp-loaded (list? (member "tcp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (udp-loaded (list? (member "udp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
-     (tcp6-loaded (list? (member "tcp6" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
-     (udp6-loaded (list? (member "udp6" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (http-loaded (list? (member "http" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (smtp-loaded (list? (member "smtp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
    )
@@ -1550,9 +1479,6 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'nat-loaded)   (change-visible ctx a b nat-loaded))
             ((eq? i 'udp-loaded)   (change-visible ctx a b udp-loaded))
             ((eq? i 'tcp-loaded)   (change-visible ctx a b tcp-loaded))
-            ((eq? i 'udp6-loaded)  (change-visible ctx a b udp6-loaded))
-            ((eq? i 'tcp6-loaded)  (change-visible ctx a b tcp6-loaded))
-            ((eq? i 'ip6-loaded)   (change-visible ctx a b (or (tcp6-loaded udp6-loaded))))
             ((eq? i 'http-loaded)  (change-visible ctx a b http-loaded))
             ((eq? i 'smtp-loaded)  (change-visible ctx a b smtp-loaded))
             ((eq? i 'nobasiclimit) (change-visible ctx a b nobasiclimit))

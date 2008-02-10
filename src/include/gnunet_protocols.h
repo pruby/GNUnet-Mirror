@@ -66,22 +66,12 @@ extern "C"
 /**
  * protocol number of TCP.
  */
-#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP 2
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP 6
 
 /**
  * protocol number of UDP.
  */
-#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP 3
-
-/**
- * Protocol number for TCP on IPv6 (TCP+6)
- */
-#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP6 4
-
-/**
- * Protocol number for UDP on IPv6 (UDP+6)
- */
-#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP6 5
+#define GNUNET_TRANSPORT_PROTOCOL_NUMBER_UDP 7
 
 /**
  * protocol number for HTTP (80 is too big, so 8 will have to do)

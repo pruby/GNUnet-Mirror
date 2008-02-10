@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -54,263 +54,469 @@
 
 #define TARGET_BUFFER_SIZE 4092
 
-#include "tcp_helper.c"
-
 /**
- * Host-Address in a TCP network.
+ * Initial handshake message. Note that the beginning
+ * must match the GNUNET_MessageHeader since we are using tcpio.
  */
 typedef struct
 {
-  /**
-   * claimed IP of the sender, network byte order
-   */
-  GNUNET_IPv4Address ip;
+  GNUNET_MessageHeader header;
 
   /**
-   * claimed port of the sender, network byte order
+   * Identity of the node connecting (TCP client)
    */
-  unsigned short port;
+  GNUNET_PeerIdentity clientIdentity;
+
+} TCPWelcome;
+
+/**
+ * Transport Session handle.
+ */
+typedef struct TCPSession
+{
+
+  struct TCPSession *next;
 
   /**
-   * reserved (set to 0 for signature verification)
+   * the tcp socket (used to identify this connection with selector)
    */
-  unsigned short reserved;
+  struct GNUNET_SocketHandle *sock;
 
-} HostAddress;
+  /**
+   * Our tsession.
+   */
+  GNUNET_TSession *tsession;
+
+  /**
+   * To whom are we talking to (set to our identity
+   * if we are still waiting for the welcome message)
+   */
+  GNUNET_PeerIdentity sender;
+
+  /**
+   * Are we still expecting the welcome? (GNUNET_YES/GNUNET_NO)
+   */
+  int expectingWelcome;
+
+  /**
+   * number of users of this session (reference count)
+   */
+  int users;
+
+  /**
+   * Is this session active with select?
+   */
+  int in_select;
+
+  /**
+   * Address of the other peer (from accept)
+   */
+  void *accept_addr;
+
+  /**
+   * Length of accept_addr.
+   */
+  unsigned int addr_len;
+
+} TCPSession;
+
+#define MY_TRANSPORT_NAME "TCP"
+#include "common.c"
 
 /* *********** globals ************* */
 
-static GNUNET_TransportAPI tcpAPI;
 
-static GNUNET_UPnP_ServiceAPI *upnp;
+static int stat_bytesReceived;
 
-static struct GNUNET_IPv4NetworkSet *filteredNetworks_;
+static int stat_bytesSent;
 
-static struct GNUNET_IPv4NetworkSet *allowedNetworks_;
+static int stat_bytesDropped;
 
-static struct GNUNET_GC_Configuration *cfg;
+static struct GNUNET_SelectHandle *selector;
 
-static struct GNUNET_Mutex *tcpblacklistlock;
-
-/**
- * Check if we are allowed to connect to the given IP.
- */
-static int
-isBlacklisted (const void *addr, unsigned int addr_len)
-{
-  GNUNET_IPv4Address ip;
-  int ret;
-
-  if (addr_len == sizeof (struct sockaddr_in))
-    {
-      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr,
-              sizeof (GNUNET_IPv4Address));
-    }
-  else if (addr_len == sizeof (GNUNET_IPv4Address))
-    {
-      memcpy (&ip, addr, addr_len);
-    }
-  else
-    {
-#if DEBUG_TCP
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     "Rejecting connection (invalid address length %u)\n",
-                     addr_len);
-#endif
-      return GNUNET_SYSERR;
-    }
-  if (ip.addr == 0)
-    return GNUNET_SYSERR;
-  GNUNET_mutex_lock (tcpblacklistlock);
-  ret = GNUNET_check_ipv4_listed (filteredNetworks_, ip);
-  GNUNET_mutex_unlock (tcpblacklistlock);
-#if DEBUG_TCP
-  if (ret != GNUNET_NO)
-    GNUNET_GE_LOG (ectx,
-                   GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                   "Rejecting connection from address %u.%u.%u.%u (blacklisted)\n",
-                   GNUNET_PRIP (ntohl (*(int *) addr)));
-#endif
-  return ret;
-}
+static struct TCPSession *sessions;
 
 /**
- * Check if we are allowed to connect to the given IP.
+ * You must hold the lock when calling this
+ * function (and should not hold the tcpsession's lock
+ * any more).
  */
-static int
-isWhitelisted (const void *addr, unsigned int addr_len)
+static void
+tcp_session_free (TCPSession * tcpsession)
 {
-  GNUNET_IPv4Address ip;
-  int ret;
+  TCPSession *pos;
+  TCPSession *prev;
 
-  if (addr_len == sizeof (struct sockaddr_in))
+  GNUNET_free_non_null (tcpsession->accept_addr);
+  pos = sessions;
+  prev = NULL;
+  while (pos != NULL)
     {
-      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr,
-              sizeof (GNUNET_IPv4Address));
+      if (pos == tcpsession)
+        {
+          if (prev == NULL)
+            sessions = pos->next;
+          else
+            prev->next = pos->next;
+          break;
+        }
+      prev = pos;
+      pos = pos->next;
     }
-  else if (addr_len == sizeof (GNUNET_IPv4Address))
-    {
-      memcpy (&ip, addr, addr_len);
-    }
-  else
-    {
-#if DEBUG_TCP
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     "Rejecting connection (invalid address length %u)\n",
-                     addr_len);
-#endif
-      return GNUNET_SYSERR;
-    }
-  ret = GNUNET_YES;
-  GNUNET_mutex_lock (tcpblacklistlock);
-  if (allowedNetworks_ != NULL)
-    ret = GNUNET_check_ipv4_listed (allowedNetworks_, ip);
-  GNUNET_mutex_unlock (tcpblacklistlock);
-  if (ret != GNUNET_YES)
-    {
-#if DEBUG_TCP
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     "Rejecting HELLO from address %u.%u.%u.%u (not whitelisted)\n",
-                     GNUNET_PRIP (ntohl (*(int *) addr)));
-#endif
-    }
-  return ret;
+  GNUNET_mutex_unlock (lock);
+  GNUNET_GE_ASSERT (coreAPI->ectx,
+                    GNUNET_OK ==
+                    coreAPI->
+                    connection_assert_tsession_unused (tcpsession->tsession));
+  GNUNET_mutex_lock (lock);
+  GNUNET_free (tcpsession->tsession);
+  GNUNET_free (tcpsession);
 }
 
 static int
-isRejected (const void *addr, unsigned int addr_len)
+tcp_disconnect (GNUNET_TSession * tsession)
 {
-  if ((GNUNET_NO != isBlacklisted (addr,
-                                   addr_len)) ||
-      (GNUNET_YES != isWhitelisted (addr, addr_len)))
-    return GNUNET_YES;
-  return GNUNET_NO;
-}
+  TCPSession *tcpsession = tsession->internal;
 
-/**
- * Get the GNUnet UDP port from the configuration,
- * or from /etc/services if it is not specified in
- * the config file.
- */
-static unsigned short
-getGNUnetTCPPort ()
-{
-  struct servent *pse;          /* pointer to service information entry        */
-  unsigned long long port;
-
-  if (-1 == GNUNET_GC_get_configuration_value_number (cfg,
-                                                      "TCP",
-                                                      "PORT", 0, 65535, 2086,
-                                                      &port))
+  GNUNET_GE_ASSERT (coreAPI->ectx, selector != NULL);
+  GNUNET_mutex_lock (lock);
+  GNUNET_GE_ASSERT (coreAPI->ectx, tcpsession->users > 0);
+  tcpsession->users--;
+  if ((tcpsession->users > 0) || (tcpsession->in_select == GNUNET_YES))
     {
-      if ((pse = getservbyname ("gnunet", "tcp")))
-        port = htons (pse->s_port);
-      else
-        port = 0;
+      if (tcpsession->users == 0)
+        GNUNET_select_change_timeout (selector, tcpsession->sock,
+                                      TCP_FAST_TIMEOUT);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_OK;
     }
-  return (unsigned short) port;
-}
-
-/**
- * Verify that a Hello-Message is correct (a node
- * is reachable at that address). Since the reply
- * will be asynchronous, a method must be called on
- * success.
- * @param hello the Hello message to verify
- *        (the signature/crc have been verified before)
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-static int
-verifyHello (const GNUNET_MessageHello * hello)
-{
-  HostAddress *haddr;
-
-  haddr = (HostAddress *) & hello[1];
-  if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
-      (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) ||
-      (ntohs (hello->protocol) != GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP) ||
-      (GNUNET_YES == isBlacklisted (&haddr->ip,
-                                    sizeof (GNUNET_IPv4Address))) ||
-      (GNUNET_YES != isWhitelisted (&haddr->ip, sizeof (GNUNET_IPv4Address))))
-    {
-#if DEBUG_TCP
-      GNUNET_EncName enc;
-
-      GNUNET_hash_to_enc (&hello->senderIdentity.hashPubKey, &enc);
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_ADMIN | GNUNET_GE_BULK,
-                     "Rejecting HELLO from `%s'\n", &enc);
-#endif
-      return GNUNET_SYSERR;     /* obviously invalid */
-    }
+  GNUNET_mutex_unlock (lock);
+  GNUNET_select_disconnect (selector, tcpsession->sock);
+  GNUNET_mutex_lock (lock);
+  tcp_session_free (tcpsession);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
 /**
- * Create a hello-Message for the current node. The hello is
- * created without signature and without a timestamp. The
- * GNUnet core will GNUNET_RSA_sign the message and add an expiration time.
+ * A (core) Session is to be associated with a transport session. The
+ * transport service may want to know in order to call back on the
+ * core if the connection is being closed. Associate can also be
+ * called to test if it would be possible to associate the session
+ * later, in this case the argument session is NULL. This can be used
+ * to test if the connection must be closed by the core or if the core
+ * can assume that it is going to be self-managed (if associate
+ * returns GNUNET_OK and session was NULL, the transport layer is responsible
+ * for eventually freeing resources associated with the tesession). If
+ * session is not NULL, the core takes responsbility for eventually
+ * calling disconnect.
  *
- * @return hello on success, NULL on error
+ * @param tsession the session handle passed along
+ *   from the call to receive that was made by the transport
+ *   layer
+ * @return GNUNET_OK if the session could be associated,
+ *         GNUNET_SYSERR if not.
  */
-static GNUNET_MessageHello *
-createhello ()
+static int
+tcp_associate (GNUNET_TSession * tsession)
 {
-  static HostAddress last_addr;
-  GNUNET_MessageHello *msg;
-  HostAddress *haddr;
-  unsigned short port;
+  TCPSession *tcpSession;
 
-  port = getGNUnetTCPPort ();
-  if (0 == port)
+  GNUNET_GE_ASSERT (coreAPI->ectx, tsession != NULL);
+  tcpSession = tsession->internal;
+  GNUNET_mutex_lock (lock);
+  if ((tcpSession->users == 0) && (tcpSession->in_select == GNUNET_YES))
+    GNUNET_select_change_timeout (selector, tcpSession->sock, TCP_TIMEOUT);
+  tcpSession->users++;
+  GNUNET_mutex_unlock (lock);
+  return GNUNET_OK;
+}
+
+/**
+ * The socket of session has data waiting, process!
+ *
+ * This function may only be called if the lock is
+ * already held by the caller.
+ */
+static int
+select_message_handler (void *mh_cls,
+                        struct GNUNET_SelectHandle *sh,
+                        struct GNUNET_SocketHandle *sock,
+                        void *sock_ctx, const GNUNET_MessageHeader * msg)
+{
+  GNUNET_TSession *tsession = sock_ctx;
+  TCPSession *tcpSession;
+  unsigned int len;
+  GNUNET_TransportPacket *mp;
+  const TCPWelcome *welcome;
+
+  if (GNUNET_SYSERR == tcp_associate (tsession))
     {
-      static int once = 0;
-      if (once == 0)
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  len = ntohs (msg->size);
+  if (stats != NULL)
+    stats->change (stat_bytesReceived, len);
+  tcpSession = tsession->internal;
+  if (GNUNET_YES == tcpSession->expectingWelcome)
+    {
+      /* at this point, we should be the only user! */
+      GNUNET_GE_ASSERT (NULL, tcpSession->users == 1);
+
+      welcome = (const TCPWelcome *) msg;
+      if ((ntohs (welcome->header.type) != 0) || (len != sizeof (TCPWelcome)))
         {
-          once = 1;
-#if DEBUG_TCP
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         "TCP port is 0, will only send using TCP.\n");
-#endif
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Received malformed message via TCP. Closing.\n"));
+          tcp_disconnect (tsession);
+          return GNUNET_SYSERR;
         }
-      return NULL;              /* TCP transport is configured SEND-only! */
+      tcpSession->expectingWelcome = GNUNET_NO;
+      tcpSession->sender = welcome->clientIdentity;
+      tsession->peer = welcome->clientIdentity;
+      if (tcpSession->accept_addr != NULL)
+        GNUNET_IP_set_address_for_peer_identity (&welcome->clientIdentity,
+                                                 tcpSession->accept_addr,
+                                                 tcpSession->addr_len);
     }
-  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
-  haddr = (HostAddress *) & msg[1];
+  else
+    {
+      /* send msg to core! */
+      if (len <= sizeof (GNUNET_MessageHeader))
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         _("Received malformed message via TCP. Closing.\n"));
+          tcp_disconnect (tsession);
+          return GNUNET_SYSERR;
+        }
+      mp = GNUNET_malloc (sizeof (GNUNET_TransportPacket));
+      mp->msg = GNUNET_malloc (len - sizeof (GNUNET_MessageHeader));
+      memcpy (mp->msg, &msg[1], len - sizeof (GNUNET_MessageHeader));
+      mp->sender = tcpSession->sender;
+      mp->size = len - sizeof (GNUNET_MessageHeader);
+      mp->tsession = tsession;
+      coreAPI->receive (mp);
+    }
+  tcp_disconnect (tsession);
+  return GNUNET_OK;
+}
 
-  if (!(((upnp != NULL) &&
-         (GNUNET_OK == upnp->get_ip (port,
-                                     "TCP",
-                                     &haddr->ip))) ||
-        (GNUNET_SYSERR !=
-         GNUNET_IP_get_public_ipv4_address (cfg, ectx, &haddr->ip))))
+
+/**
+ * Create a new session for an inbound connection on the given
+ * socket. Adds the session to the array of sessions watched
+ * by the select thread.
+ */
+static void *
+select_accept_handler (void *ah_cls,
+                       struct GNUNET_SelectHandle *sh,
+                       struct GNUNET_SocketHandle *sock,
+                       const void *addr, unsigned int addr_len)
+{
+  GNUNET_TSession *tsession;
+  TCPSession *tcpSession;
+
+  GNUNET_GE_ASSERT (NULL, sock != NULL);
+  if (GNUNET_NO != is_rejected_tester (addr, addr_len))
+    return NULL;    
+  tcpSession = GNUNET_malloc (sizeof (TCPSession));
+  memset (tcpSession, 0, sizeof (TCPSession));
+  tcpSession->sock = sock;
+  /* fill in placeholder identity to mark that we
+     are waiting for the welcome message */
+  tcpSession->sender = *(coreAPI->myIdentity);
+  tcpSession->expectingWelcome = GNUNET_YES;
+  tcpSession->users = 0;
+  tcpSession->in_select = GNUNET_YES;
+
+  tsession = GNUNET_malloc (sizeof (GNUNET_TSession));
+  memset (tsession, 0, sizeof (GNUNET_TSession));
+  tsession->ttype = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
+  tsession->internal = tcpSession;
+  tcpSession->tsession = tsession;
+  tsession->peer = *(coreAPI->myIdentity);
+  if (addr_len > 0)
     {
-      GNUNET_free (msg);
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     _("TCP: Could not determine my public IP address.\n"));
-      return NULL;
+      tcpSession->accept_addr = GNUNET_malloc (addr_len);
+      memcpy (tcpSession->accept_addr,
+	      addr, sizeof (struct sockaddr_in));
     }
-  haddr->port = htons (port);
-  haddr->reserved = htons (0);
-  if (0 != memcmp (haddr, &last_addr, sizeof (HostAddress)))
+  tcpSession->addr_len = addr_len;
+  GNUNET_mutex_lock (lock);
+  tcpSession->next = sessions;
+  sessions = tcpSession;
+  GNUNET_mutex_unlock (lock);
+  return tsession;
+}
+
+static void
+select_close_handler (void *ch_cls,
+                      struct GNUNET_SelectHandle *sh,
+                      struct GNUNET_SocketHandle *sock, void *sock_ctx)
+{
+  GNUNET_TSession *tsession = sock_ctx;
+  TCPSession *tcpSession = tsession->internal;
+
+  GNUNET_mutex_lock (lock);
+  tcpSession->in_select = GNUNET_NO;
+  if (tcpSession->users == 0)
+      tcp_session_free (tcpSession);
+  GNUNET_mutex_unlock (lock);
+}
+
+/**
+ * Send a message to the specified remote node.
+ *
+ * @param tsession the handle identifying the remote node
+ * @param msg the message
+ * @param size the size of the message
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ */
+static int
+tcp_send (GNUNET_TSession * tsession,
+         const void *msg, unsigned int size, int important)
+{
+  TCPSession *tcpSession;
+  GNUNET_MessageHeader *mp;
+  int ok;
+
+  tcpSession = tsession->internal;
+  if (size >= GNUNET_MAX_BUFFER_SIZE - sizeof (GNUNET_MessageHeader))
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                     "TCP uses IP address %u.%u.%u.%u.\n",
-                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
-      last_addr = *haddr;
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;     /* too big */
     }
-  msg->senderAddressSize = htons (sizeof (HostAddress));
-  msg->protocol = htons (GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP);
-  msg->MTU = htonl (tcpAPI.mtu);
-  return msg;
+  if (tcpSession->in_select == GNUNET_NO)
+    return GNUNET_SYSERR;
+  if (selector == NULL)
+    {
+      if (stats != NULL)
+        stats->change (stat_bytesDropped, size);
+      return GNUNET_SYSERR;
+    }
+  if (size == 0)
+    {
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  if (tcpSession->sock == NULL)
+    {
+      if (stats != NULL)
+        stats->change (stat_bytesDropped, size);
+      return GNUNET_SYSERR;     /* other side closed connection */
+    }
+  mp = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
+  mp->size = htons (size + sizeof (GNUNET_MessageHeader));
+  mp->type = 0;
+  memcpy (&mp[1], msg, size);
+  ok =
+    GNUNET_select_write (selector, tcpSession->sock, mp, GNUNET_NO,
+                         important);
+  if ((GNUNET_OK == ok) && (stats != NULL))
+    stats->change (stat_bytesSent, size + sizeof (GNUNET_MessageHeader));
+
+  GNUNET_free (mp);
+  return ok;
+}
+
+/**
+ * Test if the transport would even try to send
+ * a message of the given size and importance
+ * for the given session.<br>
+ * This function is used to check if the core should
+ * even bother to construct (and encrypt) this kind
+ * of message.
+ *
+ * @return GNUNET_YES if the transport would try (i.e. queue
+ *         the message or call the OS to send),
+ *         GNUNET_NO if the transport would just drop the message,
+ *         GNUNET_SYSERR if the size/session is invalid
+ */
+static int
+tcp_test_would_try (GNUNET_TSession * tsession, unsigned int size,
+                 int important)
+{
+  TCPSession *tcpSession = tsession->internal;
+
+  if (size >= GNUNET_MAX_BUFFER_SIZE - sizeof (GNUNET_MessageHeader))
+    {
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  if (selector == NULL)
+    return GNUNET_SYSERR;
+  if (size == 0)
+    {
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      return GNUNET_SYSERR;
+    }
+  if (tcpSession->sock == NULL)
+    return GNUNET_SYSERR;       /* other side closed connection */
+  return GNUNET_select_test_write_now (selector, tcpSession->sock, size,
+                                       GNUNET_NO, important);
+}
+
+
+/**
+ * Establish a connection to a remote node.
+ *
+ * @param helo the hello-Message for the target node
+ * @param tsessionPtr the session handle that is set
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
+ */
+static int
+tcp_connect_helper (const GNUNET_MessageHello * hello,
+                  struct GNUNET_SocketHandle *s,
+                  unsigned int protocolNumber, GNUNET_TSession ** tsessionPtr)
+{
+  TCPWelcome welcome;
+  GNUNET_TSession *tsession;
+  TCPSession *tcpSession;
+
+  tcpSession = GNUNET_malloc (sizeof (TCPSession));
+  memset (tcpSession, 0, sizeof (TCPSession));
+  tcpSession->addr_len = 0;
+  tcpSession->accept_addr = NULL;
+  tcpSession->sock = s;
+  tsession = GNUNET_malloc (sizeof (GNUNET_TSession));
+  memset (tsession, 0, sizeof (GNUNET_TSession));
+  tsession->internal = tcpSession;
+  tsession->ttype = protocolNumber;
+  tsession->peer = hello->senderIdentity;
+  tcpSession->tsession = tsession;
+  tcpSession->users = 1;        /* caller */
+  tcpSession->in_select = GNUNET_NO;
+  tcpSession->sender = hello->senderIdentity;
+  tcpSession->expectingWelcome = GNUNET_NO;
+  GNUNET_mutex_lock (lock);
+  if (GNUNET_OK ==
+      GNUNET_select_connect (selector, tcpSession->sock, tsession))
+    tcpSession->in_select = GNUNET_YES;
+
+  /* send our node identity to the other side to fully establish the
+     connection! */
+  welcome.header.size = htons (sizeof (TCPWelcome));
+  welcome.header.type = htons (0);
+  welcome.clientIdentity = *(coreAPI->myIdentity);
+  if (GNUNET_OK !=
+      GNUNET_select_write (selector, s, &welcome.header, GNUNET_NO,
+                           GNUNET_YES))
+    {
+      /* disconnect caller -- error! */
+      tcp_disconnect (tsession);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  else if (stats != NULL)
+    stats->change (stat_bytesSent, sizeof (TCPWelcome));
+  tcpSession->next = sessions;
+  sessions = tcpSession;
+  GNUNET_mutex_unlock (lock);
+  *tsessionPtr = tsession;
+  return GNUNET_OK;
 }
 
 /**
@@ -321,22 +527,26 @@ createhello ()
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
+tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
             int may_reuse)
 {
   static int zero = 0;
   HostAddress *haddr;
   int sock;
-  struct sockaddr_in soaddr;
+  struct sockaddr_in soaddr4;
+  struct sockaddr_in6 soaddr6;
+  struct sockaddr * soaddr;
+  socklen_t soaddrlen;
   struct GNUNET_SocketHandle *s;
   int i;
   TCPSession *session;
+  unsigned short available;
 
   if (selector == NULL)
     return GNUNET_SYSERR;
   if (may_reuse != GNUNET_NO)
     {
-      GNUNET_mutex_lock (tcplock);
+      GNUNET_mutex_lock (lock);
       session = sessions;
       while (session != NULL)
         {
@@ -344,38 +554,35 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
                            &hello->senderIdentity,
                            sizeof (GNUNET_PeerIdentity)))
             {
-              GNUNET_mutex_lock (session->lock);
               if (session->in_select)
                 {
                   session->users++;
-                  GNUNET_mutex_unlock (session->lock);
-                  GNUNET_mutex_unlock (tcplock);
+                  GNUNET_mutex_unlock (lock);
                   *tsessionPtr = session->tsession;
                   return GNUNET_OK;
                 }
-              GNUNET_mutex_unlock (session->lock);
             }
           session = session->next;
         }
-      GNUNET_mutex_unlock (tcplock);
+      GNUNET_mutex_unlock (lock);
     }
   haddr = (HostAddress *) & hello[1];
-#if DEBUG_TCP
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                 "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip.addr)),
-                 ntohs (haddr->port));
-#endif
-  sock = SOCKET (PF_INET, SOCK_STREAM, 6);      /* 6: TCP */
+  available = ntohs(haddr->availability) & available_protocols;
+
+  if ( (available & VERSION_AVAILABLE_IPV4) > 0)
+    sock = SOCKET (PF_INET, SOCK_STREAM, 0);
+  else if ( (available & VERSION_AVAILABLE_IPV6) > 0)
+    sock = SOCKET (PF_INET6, SOCK_STREAM, 0);
+  else
+    return GNUNET_SYSERR; /* incompatible */
   if (sock == -1)
     {
-      GNUNET_GE_LOG_STRERROR (ectx,
+      GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                               GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                               GNUNET_GE_BULK, "socket");
       return GNUNET_SYSERR;
     }
-  s = GNUNET_socket_create (ectx, coreAPI->load_monitor, sock);
+  s = GNUNET_socket_create (coreAPI->ectx, coreAPI->load_monitor, sock);
 #if TCP_SYNCNT
   /* only try a single packet to establish connection,
      if that does not work, abort instantly */
@@ -387,33 +594,37 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
       return GNUNET_SYSERR;
     }
   memset (&soaddr, 0, sizeof (soaddr));
-  soaddr.sin_family = AF_INET;
-
-  GNUNET_GE_ASSERT (ectx,
-                    sizeof (struct in_addr) == sizeof (GNUNET_IPv4Address));
-  memcpy (&soaddr.sin_addr, &haddr->ip, sizeof (GNUNET_IPv4Address));
-  soaddr.sin_port = haddr->port;
-  i = CONNECT (sock, (struct sockaddr *) &soaddr, sizeof (soaddr));
+  if ( (available & VERSION_AVAILABLE_IPV4) > 0)
+    {
+      soaddr4.sin_family = AF_INET;
+      memcpy (&soaddr4.sin_addr, 
+	      &haddr->ipv4,
+	      sizeof (GNUNET_IPv4Address));
+      soaddr4.sin_port = haddr->port;    
+      soaddr = (struct sockaddr*) &soaddr4;
+      soaddrlen = sizeof(soaddr4);
+    }  
+  else
+    {
+      soaddr6.sin6_family = AF_INET6;
+      memcpy (&soaddr6.sin6_addr, 
+	      &haddr->ipv6,
+	      sizeof (GNUNET_IPv6Address));
+      soaddr6.sin6_port = haddr->port;    
+      soaddr = (struct sockaddr*) &soaddr6;
+      soaddrlen = sizeof(soaddr6);
+   }
+  i = CONNECT (sock, soaddr, soaddrlen);
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-                     GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
-                     ntohs (haddr->port), STRERROR (errno));
+      GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
+			      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+			      GNUNET_GE_BULK,
+			      "connect");
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
-#if DEBUG_TCP
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_USER |
-                 GNUNET_GE_BULK,
-                 "Establishing connection to %u.%u.%u.%u:%u\n",
-                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip)),
-                 ntohs (haddr->port));
-#endif
-  return tcpConnectHelper (hello, s, tcpAPI.protocolNumber, tsessionPtr);
+  return tcp_connect_helper (hello, s, myAPI.protocolNumber, tsessionPtr);
 }
 
 /**
@@ -421,49 +632,77 @@ tcpConnect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-startTransportServer ()
+tcp_transport_server_start ()
 {
-  struct sockaddr_in serverAddr;
+  struct sockaddr_in serverAddrv4;
+  struct sockaddr_in6 serverAddrv6;
+  struct sockaddr * serverAddr;
+  socklen_t addrlen;
   const int on = 1;
   unsigned short port;
   int s;
 
   if (selector != NULL)
     {
-      GNUNET_GE_BREAK (ectx, 0);
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
       return GNUNET_SYSERR;
     }
-  port = getGNUnetTCPPort ();
+  port = get_port ();
   if (port != 0)
     {
-      s = SOCKET (PF_INET, SOCK_STREAM, 0);
+      available_protocols = VERSION_AVAILABLE_NONE;
+      s = SOCKET (PF_INET6, SOCK_STREAM, 0);
       if (s < 0)
-        {
-          GNUNET_GE_LOG_STRERROR (ectx,
-                                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
-                                  GNUNET_GE_BULK, "socket");
-          return GNUNET_SYSERR;
-        }
+	{
+	  s = SOCKET (PF_INET, SOCK_STREAM, 0);
+	  if (s < 0)
+	    {
+	      GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
+				      GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+				      GNUNET_GE_BULK, "socket");
+	      return GNUNET_SYSERR;
+	    }
+	  available_protocols = VERSION_AVAILABLE_IPV4;
+	}
+      else
+	{
+	  available_protocols = VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4;
+	}
       if (SETSOCKOPT (s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
-        GNUNET_GE_DIE_STRERROR (ectx,
+        GNUNET_GE_DIE_STRERROR (coreAPI->ectx,
                                 GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
                                 GNUNET_GE_IMMEDIATE, "setsockopt");
-      memset ((char *) &serverAddr, 0, sizeof (serverAddr));
-      serverAddr.sin_family = AF_INET;
-      serverAddr.sin_addr.s_addr = htonl (INADDR_ANY);
-      serverAddr.sin_port = htons (getGNUnetTCPPort ());
-      if (BIND (s, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
+      if (available_protocols == VERSION_AVAILABLE_IPV4)
+	{
+	  memset (&serverAddr, 0, sizeof (serverAddr));
+	  serverAddrv4.sin_family = AF_INET;
+	  serverAddrv4.sin_addr.s_addr = INADDR_ANY;
+	  serverAddrv4.sin_port = htons (port);
+	  serverAddr = (struct sockaddr *) &serverAddrv4;
+	  addrlen = sizeof(serverAddrv4);
+	}
+      else
+	{
+	  memset (&serverAddrv6, 0, sizeof (serverAddrv6));
+	  serverAddrv6.sin6_family = AF_INET6;
+	  serverAddrv6.sin6_addr = in6addr_any;
+	  serverAddrv6.sin6_port = htons (port);
+	  serverAddr = (struct sockaddr *) &serverAddrv6;
+	  addrlen = sizeof(serverAddrv6);
+   	}
+      if (BIND (s, serverAddr, addrlen) < 0)
         {
-          GNUNET_GE_LOG_STRERROR (ectx,
+          GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                                   GNUNET_GE_IMMEDIATE, "bind");
-          GNUNET_GE_LOG (ectx,
+          GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                          GNUNET_GE_IMMEDIATE,
-                         _("Failed to start transport service on port %d.\n"),
-                         getGNUnetTCPPort ());
+                         _("Failed to bind to %s port %d.\n"),
+			 MY_TRANSPORT_NAME,
+                         port);
           if (0 != CLOSE (s))
-            GNUNET_GE_LOG_STRERROR (ectx,
+            GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
                                     GNUNET_GE_ADMIN | GNUNET_GE_BULK,
                                     "close");
@@ -476,15 +715,15 @@ startTransportServer ()
     }
   selector = GNUNET_select_create ("tcp",
                                    GNUNET_NO,
-                                   ectx,
+                                   coreAPI->ectx,
                                    coreAPI->load_monitor,
                                    s,
-                                   sizeof (struct sockaddr_in),
+                                   addrlen,
                                    TCP_FAST_TIMEOUT,
                                    &select_message_handler,
                                    NULL,
                                    &select_accept_handler,
-                                   &isRejected,
+                                   NULL,
                                    &select_close_handler,
                                    NULL, 128 * 1024 /* max memory */ ,
                                    128 /* max sockets */ );
@@ -492,59 +731,20 @@ startTransportServer ()
 }
 
 /**
- * Reload the configuration. Should never fail (keep old
- * configuration on error, syslog errors!)
+ * Shutdown the server process (stop receiving inbound
+ * traffic). Maybe restarted later!
  */
 static int
-reloadConfiguration (void *ctx,
-                     struct GNUNET_GC_Configuration *cfg,
-                     struct GNUNET_GE_Context *ectx,
-                     const char *section, const char *option)
+tcp_transport_server_stop ()
 {
-  char *ch;
-
-  if (0 != strcmp (section, "TCP"))
-    return 0;                   /* fast path */
-
-  GNUNET_mutex_lock (tcpblacklistlock);
-  GNUNET_free_non_null (filteredNetworks_);
-  GNUNET_free_non_null (allowedNetworks_);
-  ch = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, "TCP", "BLACKLIST", "", &ch);
-  filteredNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
-  GNUNET_free (ch);
-  ch = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, "TCP", "WHITELIST", "", &ch);
-  if (strlen (ch) > 0)
-    allowedNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
-  else
-    allowedNetworks_ = NULL;
-  GNUNET_free (ch);
-  GNUNET_mutex_unlock (tcpblacklistlock);
-  /* TODO: error handling! */
-  return 0;
-}
-
-/**
- * Convert TCP hello to IP address
- */
-static int
-helloToAddress (const GNUNET_MessageHello * hello,
-                void **sa, unsigned int *sa_len)
-{
-  const HostAddress *haddr = (const HostAddress *) &hello[1];
-  struct sockaddr_in *serverAddr;
-
-  *sa_len = sizeof (struct sockaddr_in);
-  serverAddr = GNUNET_malloc (sizeof (struct sockaddr_in));
-  *sa = serverAddr;
-  memset (serverAddr, 0, sizeof (struct sockaddr_in));
-  serverAddr->sin_family = AF_INET;
-  memcpy (&serverAddr->sin_addr, haddr, sizeof (GNUNET_IPv4Address));
-  serverAddr->sin_port = haddr->port;
+  if (selector != NULL)
+    {
+      GNUNET_select_destroy (selector);
+      selector = NULL;
+    }
+  available_protocols = VERSION_AVAILABLE_NONE;
   return GNUNET_OK;
 }
-
 
 /* ******************** public API ******************** */
 
@@ -555,19 +755,14 @@ helloToAddress (const GNUNET_MessageHello * hello,
 GNUNET_TransportAPI *
 inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 {
-  ectx = core->ectx;
   cfg = core->cfg;
-  GNUNET_GE_ASSERT (ectx, sizeof (HostAddress) == 8);
-  GNUNET_GE_ASSERT (ectx, sizeof (GNUNET_MessageHeader) == 4);
-  GNUNET_GE_ASSERT (ectx, sizeof (TCPWelcome) == 68);
-  tcplock = GNUNET_mutex_create (GNUNET_YES);
-  tcpblacklistlock = GNUNET_mutex_create (GNUNET_YES);
-  if (0 != GNUNET_GC_attach_change_listener (cfg, &reloadConfiguration, NULL))
+  GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (GNUNET_MessageHeader) == 4);
+  GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (TCPWelcome) == 68);
+  lock = GNUNET_mutex_create (GNUNET_YES);
+  if (0 != GNUNET_GC_attach_change_listener (cfg, &reload_configuration, NULL))
     {
-      GNUNET_mutex_destroy (tcplock);
-      GNUNET_mutex_destroy (tcpblacklistlock);
-      tcplock = NULL;
-      tcpblacklistlock = NULL;
+      GNUNET_mutex_destroy (lock);
+      lock = NULL;
       return NULL;
     }
   coreAPI = core;
@@ -578,7 +773,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 
       if (upnp == NULL)
         {
-          GNUNET_GE_LOG (ectx,
+          GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_USER |
                          GNUNET_GE_IMMEDIATE,
                          _
@@ -596,41 +791,27 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
       stat_bytesDropped
         = stats->create (gettext_noop ("# bytes dropped by TCP (outgoing)"));
     }
-  tcpAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
-  tcpAPI.mtu = 0;
-  tcpAPI.cost = 20000;          /* about equal to udp */
-  tcpAPI.verifyHello = &verifyHello;
-  tcpAPI.createhello = &createhello;
-  tcpAPI.connect = &tcpConnect;
-  tcpAPI.associate = &tcpAssociate;
-  tcpAPI.send = &tcpSend;
-  tcpAPI.disconnect = &tcpDisconnect;
-  tcpAPI.startTransportServer = &startTransportServer;
-  tcpAPI.stopTransportServer = &stopTransportServer;
-  tcpAPI.helloToAddress = &helloToAddress;
-  tcpAPI.testWouldTry = &tcpTestWouldTry;
+  myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
+  myAPI.mtu = 0;
+  myAPI.cost = 20000;          /* about equal to udp */
+  myAPI.verifyHello = &verify_hello;
+  myAPI.createhello = &create_hello;
+  myAPI.connect = &tcp_connect;
+  myAPI.associate = &tcp_associate;
+  myAPI.send = &tcp_send;
+  myAPI.disconnect = &tcp_disconnect;
+  myAPI.startTransportServer = &tcp_transport_server_start;
+  myAPI.stopTransportServer = &tcp_transport_server_stop;
+  myAPI.helloToAddress = &hello_to_address;
+  myAPI.testWouldTry = &tcp_test_would_try;
 
-  return &tcpAPI;
+  return &myAPI;
 }
 
 void
 donetransport_tcp ()
 {
-  GNUNET_GC_detach_change_listener (cfg, &reloadConfiguration, NULL);
-  if (stats != NULL)
-    {
-      coreAPI->release_service (stats);
-      stats = NULL;
-    }
-  if (upnp != NULL)
-    {
-      coreAPI->release_service (upnp);
-      upnp = NULL;
-    }
-  GNUNET_free_non_null (filteredNetworks_);
-  GNUNET_free_non_null (allowedNetworks_);
-  GNUNET_mutex_destroy (tcplock);
-  GNUNET_mutex_destroy (tcpblacklistlock);
+  do_shutdown();
 }
 
 /* end of tcp.c */

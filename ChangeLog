@@ -1,3 +1,18 @@
+Sat Feb  9 22:06:23 MST 2008
+	Minor changes to the ECRS/FSUI APIs for searches
+	(no more timeouts and/or max-results).  Clients who
+	need these features could easily implement them 
+	directly (and they are not really useful to begin
+	with).  
+	Also, the IPv4 and IPv6 protocols are being integrated
+	so that we only listen to one port (running both IPv4
+	and IPv6 over the same port).  This break transport
+	compatibility, but given that we're breaking protocol
+	compatibility for file-sharing already, this may 
+	actually be a bit of a good thing (since it will now
+	be possible to tell if peers running the new GAP code
+	are connected to other peers running the new GAP code).
+	
 Sun Feb  3 13:17:09 MST 2008
 	Dramatic changes to the GAP implementation (breaking
 	protocol compatibility).  Essentially, we can save

@@ -5,8 +5,10 @@ Annotations:
 
 0.7.4 [4'08] (aka "fix search"):
 - modify datastore to return diverse subsets of large response sets,
-  except when processing for loopback!
-- make sure core polls whenever outbound bandwidth is available
+  except when processing for loopback! [RC]
+- make sure core polls whenever outbound bandwidth is available [RC]
+- complete IPv4/IPv6 integration of transports (http is missing!) [RC]
+- integrated hostlist server application using libmicrohttpd [RC]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
   Furthermore: Blake suggested indexing a document only after

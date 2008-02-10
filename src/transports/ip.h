@@ -50,6 +50,16 @@ int GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
                                        GNUNET_IPv4Address * address);
 
 /**
+ * @brief Get the IPv6 address for the local machine.
+ *
+ * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ */
+int GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
+				       struct GNUNET_GE_Context *ectx,
+				       GNUNET_IPv6Address * address);
+
+
+/**
  * We only have the GNUNET_PeerIdentity.  Do we have any
  * clue about the address based on
  * the "accept" of the connection?  Note that the
