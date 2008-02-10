@@ -283,6 +283,8 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
                                                                  senderIdentity))
                 {
                   ret = GNUNET_OK;
+		  GNUNET_free_non_null (h1);
+		  GNUNET_free_non_null (h2);
                   break;
                 }
               if (GNUNET_YES == GNUNET_IDENTITY_request_connect (sock2,
@@ -290,6 +292,8 @@ GNUNET_TESTING_connect_daemons (unsigned short port1, unsigned short port2)
                                                                  senderIdentity))
                 {
                   ret = GNUNET_OK;
+		  GNUNET_free_non_null (h1);
+		  GNUNET_free_non_null (h2);
                   break;
                 }
               GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
