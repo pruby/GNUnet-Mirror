@@ -99,7 +99,7 @@ testNamespace ()
   CHECK (GNUNET_OK == GNUNET_ECRS_search (NULL,
                                           cfg,
                                           advURI,
-                                          1, 60 * GNUNET_CRON_SECONDS, &spcb,
+                                          1, &spcb,
                                           uri, NULL, NULL));
   fprintf (stderr, "Completed namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME));

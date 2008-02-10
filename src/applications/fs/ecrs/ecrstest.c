@@ -214,7 +214,7 @@ unindexFile (unsigned int size)
 
   name = makeName (size);
   ret =
-    GNUNET_ECRS_file_uninde (NULL, cfg, name, NULL, NULL, &testTerminate,
+    GNUNET_ECRS_file_unindex(NULL, cfg, name, NULL, NULL, &testTerminate,
                              NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
