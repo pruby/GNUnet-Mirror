@@ -123,7 +123,15 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                  "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
-  ret = GNUNET_SYSERR;
+  ret = GNUNET_OK;
+  buf = GNUNET_malloc (size);
+  in = GNUNET_malloc (size);
+  memset (buf, size + size / 253, size);
+  for (i = 0; i < (int) (size - 42 - 2 * sizeof (GNUNET_HashCode));
+       i += sizeof (GNUNET_HashCode))
+    GNUNET_hash (&buf[i], 42,
+		 (GNUNET_HashCode *) & buf[i +
+					   sizeof (GNUNET_HashCode)]);
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
       fprintf (stderr, ".");
@@ -141,23 +149,18 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                                                           NULL))
         {
           fd = GNUNET_disk_file_open (NULL, tmpName, O_RDONLY);
-          buf = GNUNET_malloc (size);
-          in = GNUNET_malloc (size);
-          memset (buf, size + size / 253, size);
-          for (i = 0; i < (int) (size - 42 - 2 * sizeof (GNUNET_HashCode));
-               i += sizeof (GNUNET_HashCode))
-            GNUNET_hash (&buf[i], 42,
-                         (GNUNET_HashCode *) & buf[i +
-                                                   sizeof (GNUNET_HashCode)]);
-          if (size != READ (fd, in, size))
-            ret = GNUNET_SYSERR;
-          else if (0 == memcmp (&buf[j], &in[j], 16 * 1024))
-            ret = GNUNET_OK;
-          GNUNET_free (buf);
-          GNUNET_free (in);
+	  if ( (size != READ (fd, in, size)) ||
+	       (0 != memcmp (&buf[j], &in[j], 16 * 1024)) )
+	    {
+	      ret = GNUNET_SYSERR;
+	      CLOSE (fd);
+	      break;
+	    }
           CLOSE (fd);
         }
     }
+  GNUNET_free (buf);
+  GNUNET_free (in);
   UNLINK (tmpName);
   GNUNET_free (tmpName);
   return ret;
