@@ -62,11 +62,6 @@ typedef struct GNUNET_FSUI_SearchList
 {
 
   /**
-   * Desired timeout (relative) for this search
-   */
-  GNUNET_CronTime timeout;
-
-  /**
    * start time of the search
    */
   GNUNET_CronTime start_time;
@@ -109,11 +104,6 @@ typedef struct GNUNET_FSUI_SearchList
    * Desired anonymity level for this search
    */
   unsigned int anonymityLevel;
-
-  /**
-   * Maximum number of results requested.
-   */
-  unsigned int maxResults;
 
   /**
    * Of how many individual queries does the

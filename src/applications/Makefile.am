@@ -12,13 +12,11 @@ endif
 
 SUBDIRS	= \
  identity \
- testing \
  bootstrap_http \
  datastore \
  rpc \
  fragmentation \
  getoption \
- fs \
  state \
  stats \
  pingpong \
@@ -33,5 +31,7 @@ SUBDIRS	= \
  advertising \
  dht \
  tracekit \
- $(VPN_DIR)
+ $(VPN_DIR) \
+ fs \
+ testing
 # chat

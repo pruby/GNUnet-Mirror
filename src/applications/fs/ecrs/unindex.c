@@ -164,12 +164,12 @@ undoSymlinking (struct GNUNET_GE_Context *ectx,
  * @return GNUNET_SYSERR if the unindexing failed (i.e. not indexed)
  */
 int
-GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx,
-                         struct GNUNET_GC_Configuration *cfg,
-                         const char *filename,
-                         GNUNET_ECRS_UploadProgressCallback upcb,
-                         void *upcbClosure, GNUNET_ECRS_TestTerminate tt,
-                         void *ttClosure)
+GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
+			  struct GNUNET_GC_Configuration *cfg,
+			  const char *filename,
+			  GNUNET_ECRS_UploadProgressCallback upcb,
+			  void *upcbClosure, GNUNET_ECRS_TestTerminate tt,
+			  void *ttClosure)
 {
   unsigned long long filesize;
   unsigned long long pos;

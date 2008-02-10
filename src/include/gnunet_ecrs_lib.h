@@ -586,7 +586,7 @@ int GNUNET_ECRS_get_indexed_files (struct GNUNET_GE_Context *ectx,
  *
  * @return GNUNET_SYSERR if the unindexing failed (i.e. not indexed)
  */
-int GNUNET_ECRS_file_uninde (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *filename, GNUNET_ECRS_UploadProgressCallback upcb, void *upcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);     /* unindex.c */
+int GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const char *filename, GNUNET_ECRS_UploadProgressCallback upcb, void *upcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);     /* unindex.c */
 
 
 /**
@@ -691,11 +691,10 @@ typedef int (*GNUNET_ECRS_SearchResultProcessor)
 /**
  * Search for content.
  *
- * @param timeout how long to wait (relative)
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_CronTime timeout, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);        /* search.c */
+int GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx, struct GNUNET_GC_Configuration *cfg, const struct GNUNET_ECRS_URI *uri, unsigned int anonymityLevel, GNUNET_ECRS_SearchResultProcessor spcb, void *spcbClosure, GNUNET_ECRS_TestTerminate tt, void *ttClosure);        /* search.c */
 
 /**
  * Notification of ECRS to a client about the progress of an insertion

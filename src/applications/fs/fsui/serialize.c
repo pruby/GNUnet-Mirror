@@ -204,8 +204,6 @@ writeSearches (int fd, struct GNUNET_FSUI_Context *ctx)
                         GNUNET_ECRS_uri_test_sks (spos->uri));
       WRITEINT (fd, 1);
       WRITEINT (fd, spos->state);
-      WRITEINT (fd, spos->maxResults);
-      WRITELONG (fd, spos->timeout);
       WRITELONG (fd, spos->start_time);
       WRITELONG (fd, GNUNET_get_time ());
       WRITEINT (fd, spos->anonymityLevel);

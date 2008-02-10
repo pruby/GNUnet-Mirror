@@ -202,8 +202,7 @@ static int
 testTerminate (void *cls)
 {
   GNUNET_FSUI_SearchList *pos = cls;
-  if ((pos->state == GNUNET_FSUI_ACTIVE) &&
-      (pos->maxResults > pos->sizeResultsReceived))
+  if (pos->state == GNUNET_FSUI_ACTIVE) 
     return GNUNET_OK;
   return GNUNET_SYSERR;
 }
@@ -227,7 +226,7 @@ GNUNET_FSUI_searchThread (void *cls)
                                         GNUNET_GE_IMMEDIATE, mem);
   ret =
     GNUNET_ECRS_search (ee, pos->ctx->cfg, pos->uri, pos->anonymityLevel,
-                        pos->timeout, &spcb, pos, &testTerminate, pos);
+			&spcb, pos, &testTerminate, pos);
   if (ret != GNUNET_OK)
     {
       const char *error;
@@ -292,8 +291,6 @@ GNUNET_FSUI_searchThreadSignal (void *cls)
 struct GNUNET_FSUI_SearchList *
 GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
                           unsigned int anonymityLevel,
-                          unsigned int maxResults,
-                          GNUNET_CronTime timeout,
                           const struct GNUNET_ECRS_URI *uri)
 {
   GNUNET_FSUI_SearchList *pos;
@@ -302,7 +299,6 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   ectx = ctx->ectx;
   GNUNET_mutex_lock (ctx->lock);
   pos = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
-  pos->maxResults = maxResults;
   pos->state = GNUNET_FSUI_ACTIVE;
   pos->uri = GNUNET_ECRS_uri_duplicate (uri);
   pos->numberOfURIKeys = GNUNET_ECRS_uri_get_keyword_count_from_ksk (uri);
@@ -313,7 +309,6 @@ GNUNET_FSUI_search_start (struct GNUNET_FSUI_Context *ctx,
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
   pos->start_time = GNUNET_get_time ();
-  pos->timeout = timeout;
   pos->handle =
     GNUNET_thread_create (&GNUNET_FSUI_searchThreadSignal, pos, 32 * 1024);
   if (pos->handle == NULL)
@@ -366,6 +361,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   int i;
 
   GNUNET_mutex_lock (ctx->lock);
+  if (sl->state == GNUNET_FSUI_ACTIVE) 
+    GNUNET_FSUI_search_abort(ctx, sl);
   prev = NULL;
   pos = ctx->activeSearches;
   while ((pos != sl) && (pos != NULL))
@@ -387,8 +384,7 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   GNUNET_array_grow (sl->my_downloads, sl->my_downloads_size, 0);
   GNUNET_mutex_unlock (ctx->lock);
   pos->next = NULL;
-  if ((pos->state == GNUNET_FSUI_ACTIVE) ||
-      (pos->state == GNUNET_FSUI_COMPLETED) ||
+  if ((pos->state == GNUNET_FSUI_COMPLETED) ||
       (pos->state == GNUNET_FSUI_ABORTED)
       || (pos->state == GNUNET_FSUI_ERROR))
     {

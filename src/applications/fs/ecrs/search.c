@@ -549,24 +549,17 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
                     struct GNUNET_GC_Configuration *cfg,
                     const struct GNUNET_ECRS_URI *uri,
                     unsigned int anonymityLevel,
-                    GNUNET_CronTime timeout,
                     GNUNET_ECRS_SearchResultProcessor spcb,
                     void *spcbClosure, GNUNET_ECRS_TestTerminate tt,
                     void *ttClosure)
 {
   struct PendingSearch *pos;
   struct SearchContext ctx;
-  GNUNET_CronTime now;
-  GNUNET_CronTime remTime;
 
-  now = GNUNET_get_time ();
-  ctx.start = now;
+  ctx.start = GNUNET_get_time ();
   ctx.anonymityLevel = anonymityLevel;
-  if (timeout != 0)
-    timeout += now;
   ctx.ectx = ectx;
   ctx.cfg = cfg;
-  ctx.timeout = timeout;
   ctx.queries = NULL;
   ctx.spcb = spcb;
   ctx.spcbClosure = spcbClosure;
@@ -577,14 +570,8 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
   while (((NULL == tt) ||
           (GNUNET_OK == tt (ttClosure))) &&
          (GNUNET_NO == GNUNET_shutdown_test ()) &&
-         ((timeout == 0) || (timeout > now)) && (ctx.aborted == GNUNET_NO))
-    {
-      remTime = timeout - now;
-      if (remTime > 100 * GNUNET_CRON_MILLISECONDS)
-        remTime = 100 * GNUNET_CRON_MILLISECONDS;
-      GNUNET_thread_sleep (remTime);
-      now = GNUNET_get_time ();
-    }
+         (ctx.aborted == GNUNET_NO))
+    GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);    
   GNUNET_FS_destroy_search_context (ctx.sctx);
   while (ctx.queries != NULL)
     {

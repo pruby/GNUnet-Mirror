@@ -36,10 +36,6 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static unsigned int anonymity = 1;
 
-static unsigned int delay = 300;
-
-static unsigned int max_results;
-
 static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static char *output_filename;
@@ -139,15 +135,9 @@ static struct GNUNET_CommandLineOption gnunetsearchOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Search GNUnet for files.")),  /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
-  {'m', "max", "LIMIT",
-   gettext_noop ("exit after receiving LIMIT results"),
-   1, &GNUNET_getopt_configure_set_uint, &max_results},
   {'o', "output", "FILENAME",
    gettext_noop ("write encountered (decrypted) search results to FILENAME"),
    1, &GNUNET_getopt_configure_set_string, &output_filename},
-  {'t', "timeout", "DELAY",
-   gettext_noop ("wait DELAY seconds for search results before aborting"),
-   1, &GNUNET_getopt_configure_set_uint, &delay},
   GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
@@ -187,8 +177,6 @@ main (int argc, char *const *argv)
       errorCode = -1;
       goto quit;
     }
-  if (max_results == 0)
-    max_results = (unsigned int) -1;    /* infty */
   ctx =
     GNUNET_FSUI_start (ectx, cfg, "gnunet-search", 4, GNUNET_NO,
                        &eventCallback, NULL);
@@ -200,8 +188,7 @@ main (int argc, char *const *argv)
     }
   errorCode = 1;
   s = GNUNET_FSUI_search_start (ctx,
-                                anonymity, max_results,
-                                delay * GNUNET_CRON_SECONDS, uri);
+                                anonymity, uri);
   GNUNET_ECRS_uri_destroy (uri);
   if (s == NULL)
     {

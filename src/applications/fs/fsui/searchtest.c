@@ -155,7 +155,7 @@ main (int argc, char *argv[])
                    keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
   search =
-    GNUNET_FSUI_search_start (ctx, 0, 100, 240 * GNUNET_CRON_SECONDS, luri);
+    GNUNET_FSUI_search_start (ctx, 0, luri);
   GNUNET_ECRS_uri_destroy (luri);
   uri = NULL;
   CHECK (NULL != search);

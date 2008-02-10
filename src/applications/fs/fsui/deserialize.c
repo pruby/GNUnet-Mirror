@@ -393,8 +393,6 @@ readSearches (int fd, struct GNUNET_FSUI_Context *ctx)
       list = GNUNET_malloc (sizeof (GNUNET_FSUI_SearchList));
       memset (list, 0, sizeof (GNUNET_FSUI_SearchList));
       if ((GNUNET_OK != read_int (fd, (int *) &list->state)) ||
-          (GNUNET_OK != read_int (fd, (int *) &list->maxResults)) ||
-          (GNUNET_OK != read_long (fd, (long long *) &list->timeout)) ||
           (GNUNET_OK != read_long (fd, (long long *) &list->start_time)) ||
           (GNUNET_OK != read_long (fd, (long long *) &stime)) ||
           (GNUNET_OK != read_int (fd, (int *) &list->anonymityLevel)) ||

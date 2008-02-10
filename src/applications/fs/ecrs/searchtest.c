@@ -68,7 +68,6 @@ searchFile (const struct GNUNET_ECRS_URI *uri, int resultCount)
                       cfg,
                       uri,
                       0,
-                      60 * 15 * GNUNET_CRON_SECONDS,
                       &searchCB, &resultCount, &testTerminate, NULL);
   if (resultCount > 0)
     return GNUNET_SYSERR;

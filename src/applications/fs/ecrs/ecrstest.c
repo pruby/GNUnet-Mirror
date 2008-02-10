@@ -69,7 +69,7 @@ uploadFile (unsigned int size)
     GNUNET_disk_file_open (NULL, name, O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
   buf = GNUNET_malloc (size);
   memset (buf, size + size / 253, size);
-  for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
+  for (i = 0; i < (int) (size - 42 - 2 * sizeof (GNUNET_HashCode));
        i += sizeof (GNUNET_HashCode))
     GNUNET_hash (&buf[i], 42,
                  (GNUNET_HashCode *) & buf[i + sizeof (GNUNET_HashCode)]);
@@ -147,7 +147,6 @@ searchFile (struct GNUNET_ECRS_URI **uri)
                             cfg,
                             *uri,
                             0,
-                            15 * GNUNET_CRON_SECONDS,
                             &searchCB, &myURI, &testTerminate, NULL);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
@@ -185,7 +184,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
       buf = GNUNET_malloc (size);
       in = GNUNET_malloc (size);
       memset (buf, size + size / 253, size);
-      for (i = 0; i < (int) (size - 42 - sizeof (GNUNET_HashCode));
+      for (i = 0; i < (int) (size - 42 - 2 * sizeof (GNUNET_HashCode));
            i += sizeof (GNUNET_HashCode))
         GNUNET_hash (&buf[i], 42,
                      (GNUNET_HashCode *) & buf[i + sizeof (GNUNET_HashCode)]);
