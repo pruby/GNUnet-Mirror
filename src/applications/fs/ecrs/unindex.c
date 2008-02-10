@@ -165,11 +165,11 @@ undoSymlinking (struct GNUNET_GE_Context *ectx,
  */
 int
 GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
-			  struct GNUNET_GC_Configuration *cfg,
-			  const char *filename,
-			  GNUNET_ECRS_UploadProgressCallback upcb,
-			  void *upcbClosure, GNUNET_ECRS_TestTerminate tt,
-			  void *ttClosure)
+                          struct GNUNET_GC_Configuration *cfg,
+                          const char *filename,
+                          GNUNET_ECRS_UploadProgressCallback upcb,
+                          void *upcbClosure, GNUNET_ECRS_TestTerminate tt,
+                          void *ttClosure)
 {
   unsigned long long filesize;
   unsigned long long pos;

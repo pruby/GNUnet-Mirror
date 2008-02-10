@@ -202,7 +202,7 @@ static int
 testTerminate (void *cls)
 {
   GNUNET_FSUI_SearchList *pos = cls;
-  if (pos->state == GNUNET_FSUI_ACTIVE) 
+  if (pos->state == GNUNET_FSUI_ACTIVE)
     return GNUNET_OK;
   return GNUNET_SYSERR;
 }
@@ -226,7 +226,7 @@ GNUNET_FSUI_searchThread (void *cls)
                                         GNUNET_GE_IMMEDIATE, mem);
   ret =
     GNUNET_ECRS_search (ee, pos->ctx->cfg, pos->uri, pos->anonymityLevel,
-			&spcb, pos, &testTerminate, pos);
+                        &spcb, pos, &testTerminate, pos);
   if (ret != GNUNET_OK)
     {
       const char *error;
@@ -361,8 +361,8 @@ GNUNET_FSUI_search_stop (struct GNUNET_FSUI_Context *ctx,
   int i;
 
   GNUNET_mutex_lock (ctx->lock);
-  if (sl->state == GNUNET_FSUI_ACTIVE) 
-    GNUNET_FSUI_search_abort(ctx, sl);
+  if (sl->state == GNUNET_FSUI_ACTIVE)
+    GNUNET_FSUI_search_abort (ctx, sl);
   prev = NULL;
   pos = ctx->activeSearches;
   while ((pos != sl) && (pos != NULL))

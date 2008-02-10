@@ -66,9 +66,7 @@ searchFile (const struct GNUNET_ECRS_URI *uri, int resultCount)
 {
   GNUNET_ECRS_search (NULL,
                       cfg,
-                      uri,
-                      0,
-                      &searchCB, &resultCount, &testTerminate, NULL);
+                      uri, 0, &searchCB, &resultCount, &testTerminate, NULL);
   if (resultCount > 0)
     return GNUNET_SYSERR;
   return GNUNET_OK;

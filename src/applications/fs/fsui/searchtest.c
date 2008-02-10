@@ -154,8 +154,7 @@ main (int argc, char *argv[])
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   luri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
-  search =
-    GNUNET_FSUI_search_start (ctx, 0, luri);
+  search = GNUNET_FSUI_search_start (ctx, 0, luri);
   GNUNET_ECRS_uri_destroy (luri);
   uri = NULL;
   CHECK (NULL != search);
@@ -194,8 +193,7 @@ main (int argc, char *argv[])
                    "Upload failed to complete -- last event: %u\n",
                    lastEvent);
         }
-      CHECK (prog <
-             10000);
+      CHECK (prog < 10000);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
       if (GNUNET_shutdown_test () == GNUNET_YES)
         break;
@@ -205,8 +203,7 @@ main (int argc, char *argv[])
   while (uri == NULL)
     {
       prog++;
-      CHECK (prog <
-             10000);
+      CHECK (prog < 10000);
       GNUNET_thread_sleep (50 * GNUNET_CRON_MILLISECONDS);
     }
   GNUNET_FSUI_search_abort (ctx, search);

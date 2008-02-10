@@ -35,7 +35,7 @@ typedef struct
   unsigned long msg_len;
   unsigned long room_name_len;
   char nick[1];
-  
+
 } P2P_chat_MESSAGE;
 
 typedef struct

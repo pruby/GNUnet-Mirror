@@ -249,17 +249,15 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 
   /* check local data store */
   ret = datastore->get (&queries[0], type, datastore_value_processor, rl);
-  if ( (type == GNUNET_ECRS_BLOCKTYPE_DATA) &&
-       (ret != 1) )
+  if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) && (ret != 1))
     ret = datastore->get (&queries[0],
-			  GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-			  datastore_value_processor, rl);
+                          GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
+                          datastore_value_processor, rl);
 
   /* if not found or not unique, forward */
-  if ( (ret != 1) ||
-       (type != GNUNET_ECRS_BLOCKTYPE_DATA) )
+  if ((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA))
     GNUNET_FS_PLAN_request (NULL, peer, rl);
-  
+
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
@@ -337,9 +335,9 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
  * (rounded up).
  */
 unsigned int
-GNUNET_FS_GAP_get_average_priority()
+GNUNET_FS_GAP_get_average_priority ()
 {
-  struct RequestList * rl;
+  struct RequestList *rl;
   unsigned long long tot;
   unsigned int i;
   unsigned int active;
@@ -351,12 +349,12 @@ GNUNET_FS_GAP_get_average_priority()
     {
       rl = table[i];
       while (rl != NULL)
-	{	
+        {
           tot += rl->value;
           active++;
-	  rl = rl->next;
+          rl = rl->next;
         }
-    }   
+    }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (active == 0)
     return 0;
@@ -370,42 +368,41 @@ GNUNET_FS_GAP_get_average_priority()
  * Remove all of its pending queries.
  */
 static void
-cleanup_on_peer_disconnect(const GNUNET_PeerIdentity * peer,
-			   void * unused)
+cleanup_on_peer_disconnect (const GNUNET_PeerIdentity * peer, void *unused)
 {
   unsigned int i;
-  struct RequestList * rl;
-  struct RequestList * prev;
+  struct RequestList *rl;
+  struct RequestList *prev;
   PID_INDEX pid;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);
-  pid = GNUNET_FS_PT_intern(peer);
-  for (i=0;i<table_size;i++)
+  pid = GNUNET_FS_PT_intern (peer);
+  for (i = 0; i < table_size; i++)
     {
       rl = table[i];
       prev = NULL;
       while (rl != NULL)
-	{
-	  if (pid == rl->response_target)
-	    {
-	      if (prev == NULL)
-		table[i] = rl->next;
-	      else
-		prev->next = rl->next;
-	      GNUNET_FS_SHARED_free_request_list(rl);
-	      if (prev == NULL)
-		rl = table[i];
-	      else
-		rl = prev->next;	      
-	    } 
-	  else
-	    {
-	      prev = rl;
-	      rl = rl->next;
-	    }
-	}
+        {
+          if (pid == rl->response_target)
+            {
+              if (prev == NULL)
+                table[i] = rl->next;
+              else
+                prev->next = rl->next;
+              GNUNET_FS_SHARED_free_request_list (rl);
+              if (prev == NULL)
+                rl = table[i];
+              else
+                rl = prev->next;
+            }
+          else
+            {
+              prev = rl;
+              rl = rl->next;
+            }
+        }
     }
-  GNUNET_FS_PT_change_rc(pid, -1);
+  GNUNET_FS_PT_change_rc (pid, -1);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
@@ -432,7 +429,9 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
   memset (table, 0, sizeof (struct RequestList *) * table_size);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->register_notify_peer_disconnect (&cleanup_on_peer_disconnect, NULL));
+                    coreAPI->
+                    register_notify_peer_disconnect
+                    (&cleanup_on_peer_disconnect, NULL));
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);
   return 0;
@@ -455,7 +454,9 @@ GNUNET_FS_GAP_done ()
   GNUNET_free (table);
   GNUNET_GE_ASSERT (coreAPI->ectx,
                     GNUNET_SYSERR !=
-                    coreAPI->unregister_notify_peer_disconnect (&cleanup_on_peer_disconnect, NULL));
+                    coreAPI->
+                    unregister_notify_peer_disconnect
+                    (&cleanup_on_peer_disconnect, NULL));
   coreAPI->release_service (datastore);
   datastore = NULL;
   GNUNET_cron_stop (cron);

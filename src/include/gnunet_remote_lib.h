@@ -43,13 +43,13 @@ extern "C"
  */
 struct GNUNET_remote_host
 {
-	GNUNET_PeerIdentity identity;
-	struct GNUNET_remote_host *next;
-	
-	char *hostname;
-	unsigned long long controlPort;
-	pid_t pid;
-		
+  GNUNET_PeerIdentity identity;
+  struct GNUNET_remote_host *next;
+
+  char *hostname;
+  unsigned long long controlPort;
+  pid_t pid;
+
 };
 
 /**
@@ -63,9 +63,9 @@ struct GNUNET_remote_host
  * @param username username to use for ssh (assumed to be used with ssh-agent)
  */
 int GNUNET_REMOTE_start_daemon (char *gnunetd_home,
-                            char *localConfigPath, char *configFileName,
-                            char *remote_config_path, char *ip_address,
-                            char *username);
+                                char *localConfigPath, char *configFileName,
+                                char *remote_config_path, char *ip_address,
+                                char *username);
 
 int GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                  unsigned long long number_of_daemons);

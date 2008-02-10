@@ -187,8 +187,7 @@ main (int argc, char *const *argv)
       return GNUNET_SYSERR;
     }
   errorCode = 1;
-  s = GNUNET_FSUI_search_start (ctx,
-                                anonymity, uri);
+  s = GNUNET_FSUI_search_start (ctx, anonymity, uri);
   GNUNET_ECRS_uri_destroy (uri);
   if (s == NULL)
     {

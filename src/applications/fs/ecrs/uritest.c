@@ -239,7 +239,7 @@ main (int argc, char *argv[])
   int failureCount = 0;
   int i;
 
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
   failureCount += testKeyword ();
   failureCount += testLocation ();
   for (i = 0; i < 255; i++)

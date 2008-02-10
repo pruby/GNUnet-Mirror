@@ -569,9 +569,8 @@ GNUNET_ECRS_search (struct GNUNET_GE_Context *ectx,
   add_search_for_uri (uri, &ctx);
   while (((NULL == tt) ||
           (GNUNET_OK == tt (ttClosure))) &&
-         (GNUNET_NO == GNUNET_shutdown_test ()) &&
-         (ctx.aborted == GNUNET_NO))
-    GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);    
+         (GNUNET_NO == GNUNET_shutdown_test ()) && (ctx.aborted == GNUNET_NO))
+    GNUNET_thread_sleep (100 * GNUNET_CRON_MILLISECONDS);
   GNUNET_FS_destroy_search_context (ctx.sctx);
   while (ctx.queries != NULL)
     {

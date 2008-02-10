@@ -137,13 +137,18 @@ typedef int (*GNUNET_CHAT_MessageCallback) (void *cls,
  * @param cls argument to callback
  * @return NULL on error
  */
-struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
-                       struct GNUNET_GC_Configuration *cfg,
-                       const char *nickname,const char *room_name,
-                       const GNUNET_RSA_PublicKey * me,
-                       const struct GNUNET_RSA_PrivateKey *key,
-                       const char *memberInfo,
-                       GNUNET_CHAT_MessageCallback callback, void *cls);
+struct GNUNET_CHAT_Room *GNUNET_CHAT_join_room (struct GNUNET_GE_Context
+                                                *ectx,
+                                                struct GNUNET_GC_Configuration
+                                                *cfg, const char *nickname,
+                                                const char *room_name,
+                                                const GNUNET_RSA_PublicKey *
+                                                me,
+                                                const struct
+                                                GNUNET_RSA_PrivateKey *key,
+                                                const char *memberInfo,
+                                                GNUNET_CHAT_MessageCallback
+                                                callback, void *cls);
 
 /**
  * Leave a chat room.

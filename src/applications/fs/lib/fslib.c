@@ -120,7 +120,7 @@ reissue_requests (struct GNUNET_FS_SearchContext *ctx)
       req = (const CS_fs_request_search_MESSAGE *) &pos[1];
       if (GNUNET_OK !=
           GNUNET_client_connection_write (ctx->sock, &req->header))
-	return GNUNET_SYSERR;	
+        return GNUNET_SYSERR;
       pos = pos->next;
     }
   if (GNUNET_SYSERR == GNUNET_client_connection_ensure_connected (ctx->sock))
@@ -203,30 +203,30 @@ reply_process_thread (void *cls)
                   memcmp (&query, &req->query[0], sizeof (GNUNET_HashCode)))
                 {
                   matched++;
-		  spos = pos;
-		  if (unique)
-		    {
-		      if (prev == NULL)
-			ctx->handles = pos->next;
-		      else
-			prev->next = pos->next;
-		      if (prev == NULL)
-			pos = ctx->handles;
-		      else
-			pos = prev->next;
-		    }
-		  else
-		    {
-		      prev = pos;
-		      pos = pos->next;
-		    }
-                  if ( (spos->callback != NULL) &&
-                       (GNUNET_SYSERR == spos->callback (&query,
-							 value,
-							 spos->closure, 0)))
+                  spos = pos;
+                  if (unique)
+                    {
+                      if (prev == NULL)
+                        ctx->handles = pos->next;
+                      else
+                        prev->next = pos->next;
+                      if (prev == NULL)
+                        pos = ctx->handles;
+                      else
+                        pos = prev->next;
+                    }
+                  else
+                    {
+                      prev = pos;
+                      pos = pos->next;
+                    }
+                  if ((spos->callback != NULL) &&
+                      (GNUNET_SYSERR == spos->callback (&query,
+                                                        value,
+                                                        spos->closure, 0)))
                     spos->callback = NULL;
-		  if (unique)
-		    GNUNET_free(spos);
+                  if (unique)
+                    GNUNET_free (spos);
                 }
               else
                 {
@@ -237,10 +237,10 @@ reply_process_thread (void *cls)
           GNUNET_free (value);
 #if DEBUG_FSLIB
           if (matched == 0)
-	    GNUNET_GE_LOG (ctx->ectx,
-			   GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-			   GNUNET_GE_USER,
-			   "FSLIB: received content but have no pending request\n");	    
+            GNUNET_GE_LOG (ctx->ectx,
+                           GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
+                           GNUNET_GE_USER,
+                           "FSLIB: received content but have no pending request\n");
 #endif
           GNUNET_mutex_unlock (ctx->lock);
         }
@@ -364,8 +364,7 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   GNUNET_mutex_lock (ctx->lock);
   ret->next = ctx->handles;
   ctx->handles = ret;
-  GNUNET_client_connection_write (ctx->sock,
-				  &req->header);
+  GNUNET_client_connection_write (ctx->sock, &req->header);
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }

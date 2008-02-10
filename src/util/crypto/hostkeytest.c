@@ -315,7 +315,7 @@ main (int argc, char *argv[])
 {
   int failureCount = 0;
 
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
 #if PERF
   if (GNUNET_OK != testEncryptPerformance ())
     failureCount++;

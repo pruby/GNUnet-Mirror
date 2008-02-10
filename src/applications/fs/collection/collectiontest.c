@@ -45,7 +45,7 @@ main (int argc, char *argv[])
   GNUNET_ECRS_FileInfo fi;
   char *have;
 
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {

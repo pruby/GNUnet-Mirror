@@ -98,9 +98,7 @@ testNamespace ()
   fprintf (stderr, "Starting namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_search (NULL,
                                           cfg,
-                                          advURI,
-                                          1, &spcb,
-                                          uri, NULL, NULL));
+                                          advURI, 1, &spcb, uri, NULL, NULL));
   fprintf (stderr, "Completed namespace search...\n");
   CHECK (GNUNET_OK == GNUNET_ECRS_namespace_delete (NULL, cfg, CHECKNAME));
   CHECK (GNUNET_SYSERR ==
@@ -118,7 +116,7 @@ main (int argc, char *argv[])
   pid_t daemon;
   int failureCount = 0;
 
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {

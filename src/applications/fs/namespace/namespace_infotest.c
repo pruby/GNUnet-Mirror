@@ -47,7 +47,7 @@ main (int argc, char *argv[])
   int newVal;
   struct GNUNET_GC_Configuration *cfg;
 
-  GNUNET_disable_entropy_gathering();
+  GNUNET_disable_entropy_gathering ();
   cfg = GNUNET_GC_create ();
   if (-1 == GNUNET_GC_parse_configuration (cfg, "check.conf"))
     {

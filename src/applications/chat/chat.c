@@ -87,11 +87,11 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
   CS_chat_MESSAGE *cmsg;
 
   GNUNET_HashCode hc;
-  
+
   char *nick;
   char *message_content;
   char *room_name;
-  
+
   int header_size;
   unsigned long nick_len;
   unsigned long msg_len;
@@ -99,34 +99,35 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
 
   cmsg = (CS_chat_MESSAGE *) message;
 
-   if (ntohs (message->size) < sizeof (CS_chat_MESSAGE))
+  if (ntohs (message->size) < sizeof (CS_chat_MESSAGE))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Message received from client is invalid\n"));
-      return GNUNET_SYSERR;    /* invalid message */
- 
-    }
-  
+      return GNUNET_SYSERR;     /* invalid message */
 
-  header_size = ntohs(cmsg->header.size);
-  nick_len = ntohl(cmsg->nick_len);
-  msg_len = ntohl(cmsg->msg_len);
-  room_size = ntohl(cmsg->nick_len);
-  
-  nick = GNUNET_malloc(nick_len + 1);
-  message_content = GNUNET_malloc(msg_len + 1);
-  room_name = GNUNET_malloc(room_size + 1);
-    
-  memcpy(nick,&cmsg->nick[0],nick_len);
-  memcpy(message_content,&cmsg->nick[sizeof(nick)],msg_len);
-  memcpy(room_name,&cmsg->nick[sizeof(nick) + sizeof(message_content)],msg_len);  
-  
+    }
+
+
+  header_size = ntohs (cmsg->header.size);
+  nick_len = ntohl (cmsg->nick_len);
+  msg_len = ntohl (cmsg->msg_len);
+  room_size = ntohl (cmsg->nick_len);
+
+  nick = GNUNET_malloc (nick_len + 1);
+  message_content = GNUNET_malloc (msg_len + 1);
+  room_name = GNUNET_malloc (room_size + 1);
+
+  memcpy (nick, &cmsg->nick[0], nick_len);
+  memcpy (message_content, &cmsg->nick[sizeof (nick)], msg_len);
+  memcpy (room_name, &cmsg->nick[sizeof (nick) + sizeof (message_content)],
+          msg_len);
+
   nick[nick_len] = '\0';
   message_content[msg_len] = '\0';
   room_name[room_size] = '\0';
-      
-  
+
+
   GNUNET_hash (cmsg, header_size, &hc);
   /* check if we have seen this message already */
 
@@ -143,10 +144,10 @@ handleChatMSG (const GNUNET_PeerIdentity * sender,
       broadcastToConnected (message, 5, 1);
       cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
-        coreAPI->cs_send_to_client (clients[j], &cmsg->header,GNUNET_YES);
+        coreAPI->cs_send_to_client (clients[j], &cmsg->header, GNUNET_YES);
       /*pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
-      pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';*/
-      
+         pmsg->message[CHAT_MSG_LENGTH - 1] = '\0'; */
+
       /*
          GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
          " CHAT: received new message from %s: %s\n",
@@ -170,12 +171,12 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   char *nick;
   char *message_content;
   char *room_name;
-  
+
   int header_size;
   unsigned long nick_len;
   unsigned long msg_len;
   unsigned long room_size;
-  
+
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_MESSAGE *) message;
 
@@ -184,27 +185,28 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Message received from client is invalid\n"));
-      return GNUNET_SYSERR;  /* invalid message */
- 
+      return GNUNET_SYSERR;     /* invalid message */
+
     }
-   
-  header_size = ntohs(cmsg->header.size);
-  nick_len = ntohl(cmsg->nick_len);
-  msg_len = ntohl(cmsg->msg_len);
-  room_size = ntohl(cmsg->nick_len);
-  
-  nick = GNUNET_malloc(nick_len + 1);
-  message_content = GNUNET_malloc(msg_len + 1);
-  room_name = GNUNET_malloc(room_size + 1);
-    
-  memcpy(nick,&cmsg->nick[0],nick_len);
-  memcpy(message_content,&cmsg->nick[sizeof(nick)],msg_len);
-  memcpy(room_name,&cmsg->nick[sizeof(nick) + sizeof(message_content)],msg_len);  
-  
+
+  header_size = ntohs (cmsg->header.size);
+  nick_len = ntohl (cmsg->nick_len);
+  msg_len = ntohl (cmsg->msg_len);
+  room_size = ntohl (cmsg->nick_len);
+
+  nick = GNUNET_malloc (nick_len + 1);
+  message_content = GNUNET_malloc (msg_len + 1);
+  room_name = GNUNET_malloc (room_size + 1);
+
+  memcpy (nick, &cmsg->nick[0], nick_len);
+  memcpy (message_content, &cmsg->nick[sizeof (nick)], msg_len);
+  memcpy (room_name, &cmsg->nick[sizeof (nick) + sizeof (message_content)],
+          msg_len);
+
   nick[nick_len] = '\0';
   message_content[msg_len] = '\0';
-  room_name[room_size] = '\0';  
-  
+  room_name[room_size] = '\0';
+
   GNUNET_hash (pmsg, header_size, &hc);
   GNUNET_mutex_lock (chatMutex);
   markSeen (&hc);
@@ -215,7 +217,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
     if (clients[i] == client)
       j = i;
     else
-      coreAPI->cs_send_to_client (clients[i], message,GNUNET_YES);
+      coreAPI->cs_send_to_client (clients[i], message, GNUNET_YES);
   if (j == -1)
     {
       if (clientCount == MAX_CLIENTS)

@@ -429,7 +429,7 @@ int GNUNET_RSA_verify (const void *block,
  * where strong entropy gathering is not desired
  * (for example, for hostkey generation).
  */
-void GNUNET_disable_entropy_gathering(void);
+void GNUNET_disable_entropy_gathering (void);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

@@ -126,7 +126,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
   ret = GNUNET_SYSERR;
   for (j = SIZE - 16 * 1024; j >= 0; j -= 16 * 1024)
     {
-      fprintf(stderr, ".");
+      fprintf (stderr, ".");
       if (GNUNET_OK == GNUNET_ECRS_file_download_partial (NULL,
                                                           cfg,
                                                           uri,
@@ -173,7 +173,7 @@ unindexFile (unsigned int size)
   name = makeName (size);
   ret =
     GNUNET_ECRS_file_unindex (NULL, cfg, name, NULL, NULL, &testTerminate,
-                             NULL);
+                              NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);
@@ -209,13 +209,12 @@ main (int argc, char *argv[])
   CHECK (sock != NULL);
 
   /* ACTUAL TEST CODE */
-  fprintf(stderr, "Uploading...\n");
+  fprintf (stderr, "Uploading...\n");
   uri = uploadFile (SIZE);
-  CHECK (NULL != uri)
-  fprintf(stderr, "Downloading...");
+  CHECK (NULL != uri) fprintf (stderr, "Downloading...");
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   GNUNET_ECRS_uri_destroy (uri);
-  fprintf(stderr, "\nUnindexing...\n");
+  fprintf (stderr, "\nUnindexing...\n");
   CHECK (GNUNET_OK == unindexFile (SIZE));
   fprintf (stderr, "Ok.\n");
 

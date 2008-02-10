@@ -95,9 +95,10 @@ void __attribute__ ((constructor)) GNUNET_crypto_ltdl_init ()
  * where strong entropy gathering is not desired
  * (for example, for hostkey generation).
  */
-void GNUNET_disable_entropy_gathering()
+void
+GNUNET_disable_entropy_gathering ()
 {
-  gcry_control(GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+  gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
 }
 
 

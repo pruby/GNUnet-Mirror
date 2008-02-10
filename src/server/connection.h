@@ -353,8 +353,8 @@ int GNUNET_CORE_connection_assert_tsession_unused (GNUNET_TSession *
  * @return GNUNET_OK
  */
 int
-GNUNET_CORE_connection_register_notify_peer_disconnect
-(GNUNET_NodeIteratorCallback callback, void *cls);
+  GNUNET_CORE_connection_register_notify_peer_disconnect
+  (GNUNET_NodeIteratorCallback callback, void *cls);
 
 /**
  * Stop calling the given function whenever we get
@@ -364,8 +364,8 @@ GNUNET_CORE_connection_register_notify_peer_disconnect
  *         if this callback is not registered
  */
 int
-GNUNET_CORE_connection_unregister_notify_peer_disconnect
-(GNUNET_NodeIteratorCallback callback, void *cls);
+  GNUNET_CORE_connection_unregister_notify_peer_disconnect
+  (GNUNET_NodeIteratorCallback callback, void *cls);
 
 
 /**

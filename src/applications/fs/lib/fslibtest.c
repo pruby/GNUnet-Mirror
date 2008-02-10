@@ -123,10 +123,10 @@ countCallback (const GNUNET_HashCode * key,
 
 static int
 searchResultCB (const GNUNET_HashCode * key,
-                const GNUNET_DatastoreValue * value, void * ctx,
-		unsigned long long uid)
+                const GNUNET_DatastoreValue * value, void *ctx,
+                unsigned long long uid)
 {
-  TSC * cls = ctx;
+  TSC *cls = ctx;
   GNUNET_HashCode ekey;
   GNUNET_DatastoreValue *blk;
   GNUNET_DatastoreValue *eblk;
@@ -186,12 +186,9 @@ trySearch (int i)
   closure.sem = GNUNET_semaphore_create (0);
   now = GNUNET_get_time ();
   GNUNET_FS_start_search (ctx,
-			  NULL,
-			  GNUNET_ECRS_BLOCKTYPE_DATA,
-			  1,
-			  &query,
-			  0,
-			  &searchResultCB, &closure);
+                          NULL,
+                          GNUNET_ECRS_BLOCKTYPE_DATA,
+                          1, &query, 0, &searchResultCB, &closure);
   GNUNET_cron_add_job (cron, &abortSem, 30 * GNUNET_CRON_SECONDS, 0,
                        closure.sem);
   GNUNET_semaphore_down (closure.sem, GNUNET_YES);
@@ -336,11 +333,9 @@ main (int argc, char *argv[])
   mainThread = GNUNET_thread_get_self ();
   ctx = GNUNET_FS_create_search_context (NULL, cfg, lock);
   GNUNET_FS_start_search (ctx,
-			  NULL,
-			  GNUNET_ECRS_BLOCKTYPE_ANY,
-			  1,
-			  &query, 0, 
-			  &countCallback, &i);
+                          NULL,
+                          GNUNET_ECRS_BLOCKTYPE_ANY,
+                          1, &query, 0, &countCallback, &i);
   if (i > 0)
     GNUNET_thread_sleep (1 * GNUNET_CRON_SECONDS);
   GNUNET_thread_release_self (mainThread);
@@ -356,7 +351,7 @@ FAILURE:
   GNUNET_mutex_destroy (lock);
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
-  GNUNET_free_non_null(block);
+  GNUNET_free_non_null (block);
 #if START_DAEMON
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
 #endif

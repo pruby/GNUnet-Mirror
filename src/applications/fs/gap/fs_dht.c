@@ -233,15 +233,13 @@ push_callback (const GNUNET_HashCode * key,
 static void *
 push_thread (void *cls)
 {
-  while ( (shutdown_requested == GNUNET_NO) &&
-	  (dht != NULL) && 
-	  (sqstore != NULL) )
+  while ((shutdown_requested == GNUNET_NO) &&
+         (dht != NULL) && (sqstore != NULL))
     {
       if (total == 0)
         total = 1;
       total = sqstore->iterateNonAnonymous (0, &push_callback, NULL);
-      if ( (shutdown_requested == GNUNET_NO) &&
-	   (total == 0) )
+      if ((shutdown_requested == GNUNET_NO) && (total == 0))
         GNUNET_thread_sleep (5 * GNUNET_CRON_MINUTES);
     }
   return NULL;
@@ -259,8 +257,7 @@ GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
   if (stats != NULL)
     stat_push_count
       = stats->create (gettext_noop ("# blocks pushed into DHT"));
-  if ( (dht != NULL) &&
-       (sqstore != NULL) )
+  if ((dht != NULL) && (sqstore != NULL))
     {
       shutdown_requested = GNUNET_NO;
       thread = GNUNET_thread_create (&push_thread, NULL, 1024 * 128);
@@ -271,7 +268,7 @@ GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 int
 GNUNET_FS_DHT_done ()
 {
-  void * unused;
+  void *unused;
 
   purge_old_records (-1);
   if (thread != NULL)

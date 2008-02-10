@@ -882,8 +882,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
   if ((rm.head == NULL) &&
       ((rm.completed == rm.total) ||
-       ((rm.total != rm.length) &&
-        (rm.completed >= rm.length))))
+       ((rm.total != rm.length) && (rm.completed >= rm.length))))
     {
       ret = GNUNET_OK;
     }
