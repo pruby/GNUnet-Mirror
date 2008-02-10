@@ -340,11 +340,11 @@ udp_send (GNUNET_TSession * tsession,
   if (hello == NULL)
     return GNUNET_SYSERR;
 
+  haddr = (const HostAddress *) & hello[1];
   available = ntohs(haddr->availability) & available_protocols;
   if (available  == VERSION_AVAILABLE_NONE)
     return GNUNET_SYSERR;
 
-  haddr = (const HostAddress *) & hello[1];
   ssize = size + sizeof (UDPMessage);
   mp = GNUNET_malloc (ssize);
   mp->header.size = htons (ssize);
