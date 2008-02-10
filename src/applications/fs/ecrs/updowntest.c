@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/ecrstest.c
+ * @file applications/fs/ecrs/updowntest.c
  * @brief testcase for ecrs (upload-download)
  * @author Christian Grothoff
  */
@@ -39,28 +39,17 @@ testTerminate (void *unused)
   return GNUNET_OK;
 }
 
-static int
-testTerminateNC (void * ptr)
-{
-  void ** p = ptr;
-  if (NULL == (*p))
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
 static struct GNUNET_GC_Configuration *cfg;
-
-static struct GNUNET_ECRS_URI * want;
 
 static char *
 makeName (unsigned int i)
 {
   char *fn;
 
-  fn = GNUNET_malloc (strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14);
+  fn = GNUNET_malloc (strlen ("/tmp/gnunet-updown/ECRSTEST") + 14);
   GNUNET_snprintf (fn,
-                   strlen ("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
-                   "/tmp/gnunet-ecrstest/ECRSTEST%u", i);
+                   strlen ("/tmp/gnunet-updown/ECRSTEST") + 14,
+                   "/tmp/gnunet-updown/ECRSTEST%u", i);
   GNUNET_disk_directory_create_for_file (NULL, fn);
   return fn;
 }
@@ -87,85 +76,15 @@ uploadFile (unsigned int size)
   WRITE (fd, buf, size);
   GNUNET_free (buf);
   CLOSE (fd);
+  uri = NULL;
   ret = GNUNET_ECRS_file_upload (NULL, cfg, name, GNUNET_YES,   /* index */
                                  0,     /* anon */
                                  0,     /* prio */
                                  GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
                                  NULL,  /* progress */
                                  NULL, &testTerminate, NULL, &uri);
-  if (ret != GNUNET_SYSERR)
-    {
-      struct GNUNET_ECRS_MetaData *meta;
-      struct GNUNET_ECRS_URI *key;
-      const char *keywords[2];
-      
-      keywords[0] = name;
-      keywords[1] = NULL;
-
-      meta = GNUNET_ECRS_meta_data_create ();
-      key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
-      ret = GNUNET_ECRS_publish_under_keyword (NULL, cfg, key, 0, 0, GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES,     /* expire */
-                                               uri, meta);
-      GNUNET_ECRS_meta_data_destroy (meta);
-      want = uri;
-      GNUNET_free (name);
-      if (ret == GNUNET_OK)
-        {
-          return key;
-        }
-      else
-        {
-          GNUNET_ECRS_uri_destroy (key);
-          return NULL;
-        }
-    }
-  else
-    {
-      GNUNET_free (name);
-      return NULL;
-    }
-}
-
-static int
-searchCB (const GNUNET_ECRS_FileInfo * fi,
-          const GNUNET_HashCode * key, int isRoot, void *closure)
-{
-  struct GNUNET_ECRS_URI **my = closure;
-  char *tmp;
-
-  if (! GNUNET_ECRS_uri_test_equal(want,
-				   fi->uri))
-    return GNUNET_OK;
-  tmp = GNUNET_ECRS_uri_to_string (fi->uri);
-  GNUNET_GE_LOG (NULL,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Search found URI `%s'\n", tmp);
-  GNUNET_free (tmp);
-  GNUNET_GE_ASSERT (NULL, NULL == *my);
-  *my = want;
-  return GNUNET_SYSERR;         /* abort search */
-}
-
-/**
- * @param *uri In: keyword URI, out: file URI
- * @return GNUNET_OK on success
- */
-static int
-searchFile (struct GNUNET_ECRS_URI **uri)
-{
-  int ret;
-  struct GNUNET_ECRS_URI *myURI;
-
-  myURI = NULL;
-  ret = GNUNET_ECRS_search (NULL,
-                            cfg,
-                            *uri, 0, &searchCB, &myURI, &testTerminateNC, &myURI);
-  GNUNET_ECRS_uri_destroy (*uri);
-  *uri = myURI;
-  if ((ret != GNUNET_SYSERR) && (myURI != NULL))
-    return GNUNET_OK;
-  else
-    return GNUNET_SYSERR;
+  GNUNET_free(name);
+  return uri;
 }
 
 static int
@@ -284,8 +203,11 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, "Testing filesize %u ", filesizes[i]);
       uri = uploadFile (filesizes[i]);
-      CHECK (NULL != uri);
-      CHECK (GNUNET_OK == searchFile (&uri));
+      if (uri == NULL)
+	{
+	  fprintf (stderr, "Error.\n");
+	  CHECK(0);
+	}
       CHECK (GNUNET_OK == downloadFile (filesizes[i], uri));
       GNUNET_ECRS_uri_destroy (uri);
       CHECK (GNUNET_OK == unindexFile (filesizes[i]));
@@ -304,4 +226,4 @@ FAILURE:
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
-/* end of ecrstest.c */
+/* end of updowntest.c */

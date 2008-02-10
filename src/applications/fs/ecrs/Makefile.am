@@ -37,7 +37,8 @@ check_PROGRAMS = \
   metatest2 \
   searchtest \
   directorytest \
-  ecrstest 
+  ecrstest \
+  updowntest 
 
 TESTS = $(check_PROGRAMS)
 
@@ -70,6 +71,11 @@ metatest2_LDADD = \
 ecrstest_SOURCES = \
   ecrstest.c
 ecrstest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+
+updowntest_SOURCES = \
+  updowntest.c
+updowntest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
 downloadtest_SOURCES = \

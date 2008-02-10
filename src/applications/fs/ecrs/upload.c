@@ -58,9 +58,6 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
   GNUNET_DatastoreValue *value;
   DBlock *db;
   CHK ichk;
-#if DEBUG_UPLOAD
-  GNUNET_EncName enc;
-#endif
 
   size = ntohl (iblocks[level]->size);
   GNUNET_GE_ASSERT (NULL, size > sizeof (GNUNET_DatastoreValue));
@@ -290,14 +287,11 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       GNUNET_EC_file_block_get_key (db, size + sizeof (DBlock), &mchk.key);
       GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock),
                                       &mchk.query);
-#if DEBUG_UPLOAD
-      IF_GELOG (ectx,
-                GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                GNUNET_hash_to_enc (&mchk.query, &enc));
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Query for current block of size %u is %s\n", size,
-                     &enc);
+#if DEBUG_UPLOAD 
+      GNUNET_hash_to_enc (&mchk.query, &enc);
+      fprintf(stderr,
+	      "Query for current block of size %u is `%s'\n", size,
+	      (const char*) &enc);
 #endif
       if (doIndex)
         {
