@@ -520,8 +520,8 @@ typedef void (*GNUNET_ECRS_UploadProgressCallback)
 /**
  * Should the operation be aborted?  Callback used by many functions
  * below to check if the user has aborted the operation early.  Can
- * also be used for time-outs.  Note that sending a signal (SIGALRM,
- * SIGINT) might be required in addition to TestTerminate to achieve
+ * also be used for time-outs.  Note that sending a signal (SIGALRM)
+ * might be required in addition to TestTerminate to achieve
  * an 'instant' time-out in case that the function is currently
  * sleeping or performing some other blocking operation (which would
  * be aborted by any signal, after which the functions will call
