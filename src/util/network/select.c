@@ -449,7 +449,10 @@ selectThread (void *ctx)
   size_t size;
   int old_errno;
 
-  clientAddr = GNUNET_malloc (sh->max_addr_len);
+  if (sh->max_addr_len != 0)
+    clientAddr = GNUNET_malloc (sh->max_addr_len);
+  else
+    clientAddr = NULL;
   GNUNET_mutex_lock (sh->lock);
   while (sh->shutdown == GNUNET_NO)
     {
@@ -794,7 +797,7 @@ selectThread (void *ctx)
     }
   sh->description = "DEAD";
   GNUNET_mutex_unlock (sh->lock);
-  GNUNET_free (clientAddr);
+  GNUNET_free_non_null (clientAddr);
   return NULL;
 }
 
