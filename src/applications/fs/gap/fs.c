@@ -139,7 +139,7 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
             GNUNET_hash_to_enc (&query, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
-                 &enc, type, ntohl (ri->prio));
+                 &enc, ntohl(datum->type), ntohl (ri->prio));
 #endif
   memcpy (&datum[1],
           &ri[1], ntohs (req->size) - sizeof (CS_fs_request_insert_MESSAGE));
@@ -201,6 +201,10 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
   int ret;
   const CS_fs_request_index_MESSAGE *ri;
   struct GNUNET_GE_Context *cectx;
+#if DEBUG_FS
+  GNUNET_HashCode hc;
+  GNUNET_EncName enc;
+#endif
 
   if (ntohs (req->size) < sizeof (CS_fs_request_index_MESSAGE))
     {
@@ -209,6 +213,18 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
     }
   cectx = coreAPI->cs_create_client_log_context (sock);
   ri = (const CS_fs_request_index_MESSAGE *) req;
+#if DEBUG_FS
+  GNUNET_EC_file_block_get_query((const DBlock *) &ri[1],
+				 ntohs (ri->header.size) -
+				 sizeof
+				 (CS_fs_request_index_MESSAGE),
+				 &hc);
+  IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+            GNUNET_hash_to_enc (&hc, &enc));
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "FS received REQUEST INDEX (query: `%s', priority %u)\n",
+                 &enc, ntohl (ri->prio));
+#endif
   ret = GNUNET_FS_ONDEMAND_add_indexed_content (cectx,
                                                 datastore,
                                                 ntohl (ri->prio),
@@ -432,6 +448,9 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   unsigned int type;
   unsigned int anonymityLevel;
   int have_target;
+#if DEBUG_FS
+  GNUNET_EncName enc;
+#endif
 
   if (ntohs (req->size) < sizeof (CS_fs_request_search_MESSAGE))
     {
@@ -441,6 +460,13 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   rs = (const CS_fs_request_search_MESSAGE *) req;
   type = ntohl (rs->type);
   /* try "fast path" avoiding gap/dht if unique reply is locally available */
+#if DEBUG_FS
+  IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+            GNUNET_hash_to_enc (&rs->query[0], &enc));
+  GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "FS received QUERY (query: `%s', type: %u)\n", &enc,
+                 type);
+#endif
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
       if ((1 == datastore->get (&rs->query[0],
@@ -452,7 +478,6 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
     }
   else
     datastore->get (&rs->query[0], type, &fast_path_processor, sock);
-
   anonymityLevel = ntohl (rs->anonymityLevel);
   keyCount =
     1 + (ntohs (req->size) -

@@ -102,6 +102,10 @@ struct GNUNET_FS_SearchContext
    * Flag to signal that we should abort.
    */
   int abort;
+
+  unsigned int total_received;
+
+  unsigned int total_requested;
 };
 
 /**
@@ -156,9 +160,8 @@ reply_process_thread (void *cls)
       if (GNUNET_OK == GNUNET_client_connection_read (ctx->sock, &hdr))
         {
 #if DEBUG_FSLIB
-          GNUNET_GE_LOG (ctx->ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                         "FSLIB: received message from gnunetd\n");
+          fprintf(stderr,
+		  "FSLIB: received message from gnunetd\n");
 #endif
           delay = 100 * GNUNET_CRON_MILLISECONDS;
           /* verify hdr, if reply, process, otherwise
@@ -191,7 +194,7 @@ reply_process_thread (void *cls)
           value->prio = htonl (0);
           value->anonymityLevel = rep->anonymityLevel;
           value->expirationTime = rep->expirationTime;
-          memcpy (&value[1], &rep[1], size);
+          memcpy (&value[1], &rep[1], size);	  
           matched = 0;
           GNUNET_mutex_lock (ctx->lock);
           prev = NULL;
@@ -220,6 +223,12 @@ reply_process_thread (void *cls)
                       prev = pos;
                       pos = pos->next;
                     }
+#if DEBUG_FSLIB
+		  fprintf(stderr,
+			  "FSLIB passes response %u to client (%d)\n",
+			  ctx->total_received++,
+			  unique);
+#endif
                   if ((spos->callback != NULL) &&
                       (GNUNET_SYSERR == spos->callback (&query,
                                                         value,
@@ -237,10 +246,8 @@ reply_process_thread (void *cls)
           GNUNET_free (value);
 #if DEBUG_FSLIB
           if (matched == 0)
-            GNUNET_GE_LOG (ctx->ectx,
-                           GNUNET_GE_DEBUG | GNUNET_GE_REQUEST |
-                           GNUNET_GE_USER,
-                           "FSLIB: received content but have no pending request\n");
+            fprintf(stderr,
+		    "FSLIB: received content but have no pending request\n");
 #endif
           GNUNET_mutex_unlock (ctx->lock);
         }
@@ -272,6 +279,7 @@ GNUNET_FS_create_search_context (struct GNUNET_GE_Context *ectx,
 
   GNUNET_GE_ASSERT (ectx, lock != NULL);
   ret = GNUNET_malloc (sizeof (struct GNUNET_FS_SearchContext));
+  memset(ret, 0, sizeof (struct GNUNET_FS_SearchContext));
   ret->ectx = ectx;
   ret->cfg = cfg;
   ret->lock = lock;
@@ -344,9 +352,11 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
                        (keyCount - 1) * sizeof (GNUNET_HashCode));
   req = (CS_fs_request_search_MESSAGE *) & ret[1];
 #if DEBUG_FSLIB
-  GNUNET_GE_LOG (ctx->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "FSLIB: start search (%p)\n", ret);
+  GNUNET_hash_to_enc (keys, &enc);
+  fprintf(stderr,
+	  "FSLIB: start search for `%s' (%p)\n",
+	  (char*) &enc,
+	  ret);
 #endif
   req->header.size =
     htons (sizeof (CS_fs_request_search_MESSAGE) +
@@ -364,6 +374,12 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
   GNUNET_mutex_lock (ctx->lock);
   ret->next = ctx->handles;
   ctx->handles = ret;
+#if DEBUG_FSLIB
+  fprintf(stderr,
+	  "FSLIB passes request %u to daemon (%d)\n",
+	  ctx->total_requested++,
+	  type);
+#endif
   GNUNET_client_connection_write (ctx->sock, &req->header);
   GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
@@ -442,9 +458,8 @@ GNUNET_FS_prepare_to_index (struct GNUNET_ClientServerConnection *sock,
   memcpy (&ri[1], fn, strlen (fn));
 
 #if DEBUG_FSLIB
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Sending index initialization request to gnunetd\n");
+  fprintf(stderr,
+	  "Sending index initialization request to gnunetd\n");
 #endif
   if (GNUNET_OK != GNUNET_client_connection_write (sock, &ri->header))
     {
@@ -453,9 +468,8 @@ GNUNET_FS_prepare_to_index (struct GNUNET_ClientServerConnection *sock,
     }
   GNUNET_free (ri);
 #if DEBUG_FSLIB
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Waiting for confirmation of index initialization request by gnunetd\n");
+  fprintf(stderr,
+	  "Waiting for confirmation of index initialization request by gnunetd\n");
 #endif
   if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
     return GNUNET_SYSERR;
@@ -480,6 +494,10 @@ GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
   CS_fs_request_index_MESSAGE *ri;
   unsigned int size;
   int retry;
+#if DEBUG_FSLIB
+  GNUNET_HashCode hc;
+  GNUNET_EncName enc;
+#endif
 
   size = ntohl (block->size) - sizeof (GNUNET_DatastoreValue);
   ri = GNUNET_malloc (sizeof (CS_fs_request_index_MESSAGE) + size);
@@ -492,9 +510,13 @@ GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
   ri->fileOffset = GNUNET_htonll (offset);
   memcpy (&ri[1], &block[1], size);
 #if DEBUG_FSLIB
-  GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "Sending index request to gnunetd\n");
+  GNUNET_EC_file_block_get_query((const DBlock *) &block[1],
+				 size,
+				 &hc);
+  GNUNET_hash_to_enc (&hc, &enc);
+  fprintf(stderr,
+	  "Sending index request for `%s' to gnunetd)\n",
+	  (const char*) &enc);
 #endif
   retry = AUTO_RETRY;
   do
@@ -505,9 +527,8 @@ GNUNET_FS_index (struct GNUNET_ClientServerConnection *sock,
           return GNUNET_SYSERR;
         }
 #if DEBUG_FSLIB
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Waiting for confirmation of index request by gnunetd\n");
+      fprintf(stderr,
+	      "Waiting for confirmation of index request by gnunetd\n");
 #endif
       if (GNUNET_OK != GNUNET_client_connection_read_result (sock, &ret))
         {
