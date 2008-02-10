@@ -855,10 +855,10 @@ done_module_fs ()
   GNUNET_FS_GAP_done ();
   GNUNET_FS_DHT_done ();
   GNUNET_FS_QUERYMANAGER_done ();
-  GNUNET_FS_PT_done ();
   GNUNET_FS_ONDEMAND_done ();
   GNUNET_FS_PLAN_done ();
   GNUNET_FS_ANONYMITY_done ();
+  GNUNET_FS_PT_done ();
   if (stats != NULL)
     {
       coreAPI->release_service (stats);
