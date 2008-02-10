@@ -712,6 +712,7 @@ tcp_transport_server_start ()
   else
     {
       s = -1;                   /* no listening! */
+      addrlen = 0;
     }
   selector = GNUNET_select_create ("tcp",
                                    GNUNET_NO,
