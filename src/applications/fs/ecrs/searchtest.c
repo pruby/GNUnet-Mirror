@@ -152,6 +152,7 @@ FAILURE:
   if (sock != NULL)
     GNUNET_client_connection_destroy (sock);
   GNUNET_GE_ASSERT (NULL, GNUNET_OK == GNUNET_daemon_stop (NULL, daemon));
+  GNUNET_GC_free (cfg);
   return (ok == GNUNET_YES) ? 0 : 1;
 }
 
