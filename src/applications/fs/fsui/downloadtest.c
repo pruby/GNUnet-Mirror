@@ -291,7 +291,7 @@ main (int argc, char *argv[])
   uri = GNUNET_ECRS_keyword_string_to_uri (ectx, keyword);
   waitForEvent = GNUNET_FSUI_download_completed;
   search =
-    GNUNET_FSUI_search_start (ctx, 0, 10000, 240 * GNUNET_CRON_SECONDS, uri);
+    GNUNET_FSUI_search_start (ctx, 0, uri);
   CHECK (search != NULL);
   prog = 0;
   while (search != NULL)
