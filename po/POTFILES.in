@@ -5,18 +5,14 @@ src/transports/upnp/xmlnode.c
 src/transports/upnp/ip.c
 src/transports/upnp/error.c
 src/transports/upnp/util.c
-src/transports/ip6.c
 src/transports/ip.c
-src/transports/tcp6.c
-src/transports/udp6.c
 src/transports/http.c
 src/transports/test.c
 src/transports/nat.c
 src/transports/smtp.c
-src/transports/tcp_helper.c
+src/transports/common.c
 src/transports/tcp.c
 src/transports/udp.c
-src/transports/udp_helper.c
 src/transports/test_repeat.c
 src/setup/ncurses/mconf.c
 src/setup/ncurses/wizard_curs.c
@@ -250,7 +246,6 @@ src/transports/upnp/util.h
 src/transports/upnp/upnp.h
 src/transports/upnp/xmlnode.h
 src/transports/upnp/ip.h
-src/transports/ip6.h
 src/transports/ip.h
 src/setup/ncurses/wizard_curs.h
 src/setup/ncurses/mconf.h
