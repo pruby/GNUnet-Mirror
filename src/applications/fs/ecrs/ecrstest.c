@@ -39,6 +39,15 @@ testTerminate (void *unused)
   return GNUNET_OK;
 }
 
+static int
+testTerminateNC (void * ptr)
+{
+  void ** p = ptr;
+  if (NULL == (*p))
+    return GNUNET_OK;
+  return GNUNET_SYSERR;
+}
+
 static struct GNUNET_GC_Configuration *cfg;
 
 static char *
@@ -145,7 +154,7 @@ searchFile (struct GNUNET_ECRS_URI **uri)
   myURI = NULL;
   ret = GNUNET_ECRS_search (NULL,
                             cfg,
-                            *uri, 0, &searchCB, &myURI, &testTerminate, NULL);
+                            *uri, 0, &searchCB, &myURI, &testTerminateNC, &myURI);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))
