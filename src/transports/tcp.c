@@ -225,7 +225,7 @@ tcp_associate (GNUNET_TSession * tsession)
   GNUNET_GE_ASSERT (coreAPI->ectx, tsession != NULL);
   tcpSession = tsession->internal;
   GNUNET_mutex_lock (lock);
-  if ((tcpSession->users == 0) && (tcpSession->in_select == GNUNET_YES))
+  if (tcpSession->in_select == GNUNET_YES)
     GNUNET_select_change_timeout (selector, tcpSession->sock, TCP_TIMEOUT);
   tcpSession->users++;
   GNUNET_mutex_unlock (lock);
@@ -363,7 +363,7 @@ select_close_handler (void *ch_cls,
   GNUNET_mutex_lock (lock);
   tcpSession->in_select = GNUNET_NO;
   if (tcpSession->users == 0)
-      tcp_session_free (tcpSession);
+    tcp_session_free (tcpSession);
   GNUNET_mutex_unlock (lock);
 }
 
@@ -494,8 +494,10 @@ tcp_connect_helper (const GNUNET_MessageHello * hello,
   GNUNET_mutex_lock (lock);
   if (GNUNET_OK ==
       GNUNET_select_connect (selector, tcpSession->sock, tsession))
-    tcpSession->in_select = GNUNET_YES;
-
+    {
+      tcpSession->in_select = GNUNET_YES;
+      GNUNET_select_change_timeout (selector, tcpSession->sock, TCP_TIMEOUT);
+    }
   /* send our node identity to the other side to fully establish the
      connection! */
   welcome.header.size = htons (sizeof (TCPWelcome));
