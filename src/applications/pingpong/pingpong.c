@@ -191,9 +191,7 @@ plaintextPingReceived (const GNUNET_PeerIdentity * sender,
                        const GNUNET_MessageHeader * hmsg,
                        GNUNET_TSession * tsession)
 {
-#if DEBUG_PINGPONG
   GNUNET_EncName enc;
-#endif
   const P2P_pingpong_MESSAGE *pmsg;
   P2P_pingpong_MESSAGE pong;
   int ret;
@@ -212,9 +210,11 @@ plaintextPingReceived (const GNUNET_PeerIdentity * sender,
   if (0 != memcmp (coreAPI->myIdentity,
                    &pmsg->receiver, sizeof (GNUNET_PeerIdentity)))
     {
+      GNUNET_hash_to_enc (&sender->hashPubKey, &enc);
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_ADMIN,
-                     _("Received PING not destined for us!\n"));
+                     _("Received PING from `%s' not destined for us!\n"),
+		     &enc);
       GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;     /* not for us */
     }
