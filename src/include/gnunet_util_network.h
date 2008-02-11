@@ -430,7 +430,11 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  * @param max_addr_len maximum expected length of addresses for
  *        connections accepted on the given socket
  * @param timeout after how long should inactive connections be
- *        closed?  Use 0 for no timeout
+ *        closed?  Use 0 for no timeout.  The specified timeout
+ *        will be the default for all new connections; 
+ *        after (!) returning (!) from the accept handler,
+ *        clients can change the timeout of an individual
+ *        socket using GNUNET_select_change_timeout.
  * @param mon maybe NULL
  * @param memory_quota amount of memory available for
  *        queueing messages (in bytes)
