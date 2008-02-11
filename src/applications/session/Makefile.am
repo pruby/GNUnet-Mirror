@@ -6,6 +6,7 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_session.la 
 
 libgnunetmodule_session_la_SOURCES = \
+  cache.c cache.h \
   connect.c 
 libgnunetmodule_session_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
@@ -13,7 +14,7 @@ libgnunetmodule_session_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 
 if HAVE_MHD
-  httptest = sessiontest_http sessiontest2_http
+  httptest = sessiontest_http sessiontest_nat_http
 endif
 
 check_PROGRAMS = \
