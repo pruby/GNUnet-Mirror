@@ -536,7 +536,7 @@ selectThread (void *ctx)
         }
       GNUNET_mutex_unlock (sh->lock);
       tv.tv_sec = timeout / GNUNET_CRON_SECONDS;
-      tv.tv_usec = (timeout % GNUNET_CRON_SECONDS) * 1000 * 1000;
+      tv.tv_usec = (timeout % GNUNET_CRON_SECONDS) * 1000;
       ret = SELECT (max + 1, &readSet, &writeSet, &errorSet, (timeout == -1) ? NULL : &tv);
       old_errno = errno;
       GNUNET_mutex_lock (sh->lock);
