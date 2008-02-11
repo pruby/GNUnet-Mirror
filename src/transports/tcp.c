@@ -557,6 +557,10 @@ tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
               if (session->in_select)
                 {
                   session->users++;
+		  if (session->in_select == GNUNET_YES)
+		    GNUNET_select_change_timeout (selector,
+						  session->sock, 
+						  TCP_TIMEOUT);
                   GNUNET_mutex_unlock (lock);
                   *tsessionPtr = session->tsession;
                   return GNUNET_OK;
@@ -713,6 +717,7 @@ tcp_transport_server_start ()
     {
       s = -1;                   /* no listening! */
       addrlen = 0;
+      available_protocols = VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4;
     }
   selector = GNUNET_select_create ("tcp",
                                    GNUNET_NO,
@@ -743,7 +748,8 @@ tcp_transport_server_stop ()
       GNUNET_select_destroy (selector);
       selector = NULL;
     }
-  available_protocols = VERSION_AVAILABLE_NONE;
+  if (get_port() == 0)
+    available_protocols = VERSION_AVAILABLE_NONE;
   return GNUNET_OK;
 }
 
