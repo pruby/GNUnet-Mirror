@@ -524,6 +524,9 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   GNUNET_PeerIdentity respond_to;
   double preference;
 
+  fprintf(stderr,
+	  "FS received P2P query from `%p'\n",
+	  sender);
   if (test_load_too_high ())
     {
 #if DEBUG_GAP
@@ -538,6 +541,9 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                      "Dropping query from %s, this peer is too busy.\n",
                      sender == NULL ? "localhost" : (char *) &enc);
 #endif
+      fprintf(stderr,
+	      "FS dropped P2P query from `%p' due to high load\n",
+	      sender);
       return GNUNET_OK;
     }
   size = ntohs (msg->size);
@@ -546,6 +552,8 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* malformed query */
     }
+  fprintf(stderr,
+	  "FS is processing P2P query\n");
   req = (const P2P_gap_query_MESSAGE *) msg;
   query_count = ntohl (req->number_of_queries);
   if ((query_count == 0) ||
@@ -659,6 +667,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
+  fprintf(stderr,
+	  "FS received P2P response from `%p'\n",
+	  sender);
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
   data_size = size - sizeof (P2P_gap_reply_MESSAGE);
   dblock = (const DBlock *) &msg[1];
@@ -758,7 +769,7 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  GNUNET_FS_lock = GNUNET_mutex_create (GNUNET_YES);
+  GNUNET_FS_lock = capi->connection_get_lock(); // GNUNET_mutex_create (GNUNET_YES);
   GNUNET_FS_ANONYMITY_init (capi);
   GNUNET_FS_PLAN_init (capi);
   GNUNET_FS_ONDEMAND_init (capi);
@@ -895,7 +906,7 @@ done_module_fs ()
   identity = NULL;
 
 
-  GNUNET_mutex_destroy (GNUNET_FS_lock);
+  // GNUNET_mutex_destroy (GNUNET_FS_lock);
   GNUNET_FS_lock = NULL;
 }
 

@@ -34,6 +34,10 @@
 #include "anonymity.h"
 #include "ondemand.h"
 
+#define ENABLE_MIGRATION GNUNET_NO
+
+#if ENABLE_MIGRATION
+
 #define DEBUG_MIGRATION GNUNET_NO
 
 /**
@@ -131,7 +135,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   unsigned int minDist;
 
   index = coreAPI->connection_compute_index_of_peer (receiver);
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   now = GNUNET_get_time ();
   entry = -1;
   discard_entry = -1;
@@ -220,14 +224,14 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                      "Migration: no content available for migration.\n");
 #endif
-      GNUNET_mutex_unlock (lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return 0;
     }
   value = content[entry].value;
   if (value == NULL)
     {
       GNUNET_GE_ASSERT (NULL, 0);
-      GNUNET_mutex_unlock (lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return 0;
     }
   size =
@@ -241,7 +245,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      "Migration: available content too big (%u > %u) for migration.\n",
                      size, padding);
 #endif
-      GNUNET_mutex_unlock (lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
       return 0;
     }
 #if DEBUG_MIGRATION
@@ -258,7 +262,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         {
           GNUNET_free_non_null (value);
           content[entry].value = NULL;
-          GNUNET_mutex_unlock (lock);
+          GNUNET_mutex_unlock (GNUNET_FS_lock);
 #if DEBUG_MIGRATION
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -277,7 +281,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
     sizeof (GNUNET_DatastoreValue);
   if (size > padding)
     {
-      GNUNET_mutex_unlock (lock);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
 #if DEBUG_MIGRATION
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -324,18 +328,20 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      "Migration: not enough cover traffic\n");
 #endif
     }
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
   if ((ret > 0) && (stats != NULL))
     stats->change (stat_migration_count, 1);
   GNUNET_GE_BREAK (NULL, ret <= padding);
   return ret;
 }
 
+#endif
+
 void
 GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
 {
+#if ENABLE_MIGRATION
   coreAPI = capi;
-  lock = GNUNET_mutex_create (GNUNET_NO);
   coreAPI->
     connection_register_send_callback
     (GNUNET_GAP_ESTIMATED_DATA_SIZE,
@@ -352,11 +358,13 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
         =
         stats->create (gettext_noop ("# on-demand block migration attempts"));
     }
+#endif
 }
 
 void
 GNUNET_FS_MIGRATION_done ()
 {
+#if ENABLE_MIGRATION
   int i;
   coreAPI->
     connection_unregister_send_callback
@@ -374,8 +382,8 @@ GNUNET_FS_MIGRATION_done ()
       GNUNET_free_non_null (content[i].value);
       content[i].value = NULL;
     }
-  GNUNET_mutex_destroy (lock);
   lock = NULL;
+#endif
 }
 
 /* end of migration.c */

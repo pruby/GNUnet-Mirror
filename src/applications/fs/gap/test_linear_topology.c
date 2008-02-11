@@ -33,11 +33,11 @@
 #include "gnunet_stats_lib.h"
 
 
-#define START_PEERS 1
+#define START_PEERS 0
 
-#define PEER_COUNT 4
+#define PEER_COUNT 2
 
-#define SIZE 1024 * 1024 * 2
+#define SIZE 1024 * 32 * 2
 
 static struct GNUNET_GE_Context *ectx;
 

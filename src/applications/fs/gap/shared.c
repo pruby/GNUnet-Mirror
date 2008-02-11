@@ -91,7 +91,11 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
   /* check that type and primary key match */
   if ((rl->type != ntohl (data->type)) ||
       (0 != memcmp (primary_key, &rl->queries[0], sizeof (GNUNET_HashCode))))
-    return GNUNET_NO;
+    {
+      fprintf(stderr,
+	      "Response does not match request\n");
+      return GNUNET_NO;
+    }
 
   /* check that content matches query */
   ret = GNUNET_EC_is_block_applicable_for_query (rl->type,
@@ -101,19 +105,31 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
                                                  rl->key_count,
                                                  &rl->queries[0]);
   if (ret != GNUNET_OK)
-    return ret;
+    {
+      fprintf(stderr,
+	      "Response does not match request (EC)\n");
+      return ret;
+    }
 
   /* check that this is a new response */
   GNUNET_hash (data, size, hc);
   GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
   if ((rl->bloomfilter != NULL) &&
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
-    return GNUNET_NO;           /* not useful */
+    {
+      fprintf(stderr,
+	      "Response does not match request (BF)\n");
+      return GNUNET_NO;           /* not useful */
+    }
   seen = rl->responses;
   while (seen != NULL)
     {
       if (0 == memcmp (hc, &seen->hash, sizeof (GNUNET_HashCode)))
-        return GNUNET_NO;
+	{
+	  fprintf(stderr,
+		  "Response does not match request (seen)\n");
+	  return GNUNET_NO;
+	}
       seen = seen->next;
     }
   return GNUNET_OK;

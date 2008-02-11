@@ -213,6 +213,7 @@ find_or_create_client_entry (struct GNUNET_ClientHandle *client,
   clients = cl;
   cl->client = client;
   cl->peer = peer;
+  GNUNET_FS_PT_change_rc(peer, 1);
   return cl;
 }
 
@@ -282,7 +283,7 @@ add_request (PID_INDEX target,
   entry->request = request;
   entry->prio = prio;
   entry->ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
-
+  entry->list = qpl;
   /* insert entry into request plan entries list */
   entry->plan_entries_next = request->plan_entries;
   request->plan_entries = entry;
@@ -473,6 +474,10 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   double prob;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);   /* needed? */
+  fprintf(stderr,
+	  "Planning query of %p/%u\n",
+	  client, 
+	  peer);
   info = clients;
   while ((info != NULL) && ((info->client != client) || (info->peer != peer)))
     info = info->next;
@@ -517,6 +522,12 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   if (target_count > total_peers)
     target_count = total_peers;
 
+  fprintf(stderr,
+	  "Will adding query from %p/%u to %u peers\n",
+	  client,
+	  peer,
+	  target_count);
+
   /* select target_count peers */
   for (i = 0; i < target_count; i++)
     {
@@ -526,6 +537,11 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
         {
           if (rank->score > selector)
             {
+	      fprintf(stderr,
+		      "Adding query from %p/%u to plan for peer %u\n",
+		      client,
+		      peer,
+		      rank->peer);
               add_request (rank->peer, request, rank->ttl, rank->prio);
               total_score -= rank->score;
               rank->score = 0;  /* mark as used */
@@ -535,6 +551,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
           rank = rank->next;
         }
     }
+
   /* free rpc.rankings list */
   while (rpc.rankings != NULL)
     {
@@ -569,6 +586,8 @@ try_add_request (struct RequestList *req,
     + req->bloomfilter_size + (req->key_count - 1) * sizeof (GNUNET_HashCode);
   if (size > available)
     return 0;
+  fprintf(stderr,
+	  "Adding request to send buffer (plan.c)\n");
   if ((prio > req->remaining_value) && (req->response_client == NULL))
     prio = req->remaining_value;
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
@@ -629,6 +648,10 @@ query_fill_callback (const GNUNET_PeerIdentity *
   if (pl != NULL)
     {
       e = pl->head;
+      if (e != NULL)
+	fprintf(stderr,
+		"Asked to fill buffer for %u - and I have a plan!\n",
+		peer);
       while ((e != NULL) && (padding - off >= sizeof (P2P_gap_query_MESSAGE)))
         {
           ret = try_add_request (e->request,
@@ -657,9 +680,9 @@ query_fill_callback (const GNUNET_PeerIdentity *
                 e->request->plan_entries = e->plan_entries_next;
               else
                 prev->plan_entries_next = e->plan_entries_next;
-              GNUNET_free (e);
               cl = find_or_create_client_entry (e->request->response_client,
                                                 e->request->response_target);
+              GNUNET_free (e);
               hl = find_or_create_history_entry (cl, peer);
               hl->last_request_time = GNUNET_get_time ();
               hl->request_count++;
@@ -827,12 +850,10 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
             cpos = clients;
           else
             cpos = cprev->next;
+	  continue;
         }
-      else
-        {
-          cprev = cpos;
-          cpos = cpos->next;
-        }
+      cprev = cpos;
+      cpos = cpos->next;
     }
   GNUNET_FS_PT_change_rc (pid, -1);
   GNUNET_mutex_unlock (GNUNET_FS_lock);

@@ -32,6 +32,7 @@
 #include "gnunet_protocols.h"
 #include "ecrs_core.h"
 #include "fs.h"
+#include "shared.h"
 #include "fs_dht.h"
 #include "querymanager.h"
 
@@ -61,8 +62,6 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
 static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_push_count;
-
-static struct GNUNET_Mutex *lock;
 
 static struct ActiveRequestRecords *records;
 
@@ -185,11 +184,11 @@ GNUNET_FS_DHT_execute_query (unsigned int type, const GNUNET_HashCode * query)
   record->end_time = now + MAX_DHT_DELAY;
   record->handle = dht->get_start (type, query, &response_callback, record);
   record->type = type;
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   record->next = records;
   records = record;
   purge_old_records (now);
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
 /**
@@ -250,7 +249,6 @@ int
 GNUNET_FS_DHT_init (GNUNET_CoreAPIForPlugins * capi)
 {
   coreAPI = capi;
-  lock = GNUNET_mutex_create (GNUNET_YES);
   dht = capi->request_service ("dht");
   sqstore = capi->request_service ("sqstore");
   stats = capi->request_service ("stats");
@@ -289,7 +287,5 @@ GNUNET_FS_DHT_done ()
     coreAPI->release_service (sqstore);
   sqstore = NULL;
   coreAPI = NULL;
-  GNUNET_mutex_destroy (lock);
-  lock = NULL;
   return 0;
 }

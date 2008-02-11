@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "pid_table.h"
+#include "shared.h"
 
 /**
  * Statistics service.
@@ -55,8 +56,6 @@ static unsigned int size;
 
 static PID_Entry *table;
 
-static struct GNUNET_Mutex *lock;
-
 
 PID_INDEX
 GNUNET_FS_PT_intern (const GNUNET_PeerIdentity * pid)
@@ -67,7 +66,7 @@ GNUNET_FS_PT_intern (const GNUNET_PeerIdentity * pid)
   if (pid == NULL)
     return 0;
   zero = size;
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   for (ret = 1; ret < size; ret++)
     {
       if (0 == memcmp (&pid->hashPubKey,
@@ -80,7 +79,7 @@ GNUNET_FS_PT_intern (const GNUNET_PeerIdentity * pid)
               if (table[ret].rc == 1)
                 stats->change (stat_pid_entries, 1);
             }
-          GNUNET_mutex_unlock (lock);
+          GNUNET_mutex_unlock (GNUNET_FS_lock);
           return ret;
         }
       else if ((zero == size) && (table[ret].rc == 0))
@@ -98,7 +97,7 @@ GNUNET_FS_PT_intern (const GNUNET_PeerIdentity * pid)
   GNUNET_GE_ASSERT (ectx, ret < size);
   table[ret].id = pid->hashPubKey;
   table[ret].rc = 1;
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (stats != NULL)
     {
       stats->change (stat_pid_rc, 1);
@@ -114,7 +113,7 @@ GNUNET_FS_PT_decrement_rcs (const PID_INDEX * ids, unsigned int count)
   PID_INDEX id;
   if (count == 0)
     return;
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   for (i = count - 1; i >= 0; i--)
     {
       id = ids[i];
@@ -124,7 +123,7 @@ GNUNET_FS_PT_decrement_rcs (const PID_INDEX * ids, unsigned int count)
       if ((table[id].rc == 0) && (stats != NULL))
         stats->change (stat_pid_entries, -1);
     }
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (stats != NULL)
     stats->change (stat_pid_rc, -count);
 }
@@ -134,9 +133,10 @@ GNUNET_FS_PT_change_rc (PID_INDEX id, int delta)
 {
   if (id == 0)
     return;
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   GNUNET_GE_ASSERT (ectx, id < size);
   GNUNET_GE_ASSERT (ectx, table[id].rc > 0);
+  GNUNET_GE_ASSERT (ectx, (delta >= 0) || (table[id].rc >= -delta));
   table[id].rc += delta;
   if (stats != NULL)
     {
@@ -144,7 +144,7 @@ GNUNET_FS_PT_change_rc (PID_INDEX id, int delta)
       if (table[id].rc == 0)
         stats->change (stat_pid_entries, -1);
     }
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
 void
@@ -156,11 +156,11 @@ GNUNET_FS_PT_resolve (PID_INDEX id, GNUNET_PeerIdentity * pid)
       GNUNET_GE_BREAK (ectx, 0);
       return;
     }
-  GNUNET_mutex_lock (lock);
+  GNUNET_mutex_lock (GNUNET_FS_lock);
   GNUNET_GE_ASSERT (ectx, id < size);
   GNUNET_GE_ASSERT (ectx, table[id].rc > 0);
   pid->hashPubKey = table[id].id;
-  GNUNET_mutex_unlock (lock);
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
 
@@ -180,7 +180,6 @@ GNUNET_FS_PT_init (struct GNUNET_GE_Context *e, GNUNET_Stats_ServiceAPI * s)
         create (gettext_noop
                 ("# total RC of interned peer IDs in pid table"));
     }
-  lock = GNUNET_mutex_create (GNUNET_NO);
 }
 
 
@@ -193,8 +192,6 @@ GNUNET_FS_PT_done ()
     GNUNET_GE_ASSERT (ectx, table[i].rc == 0);
   GNUNET_array_grow (table, size, 0);
   stats = NULL;
-  GNUNET_mutex_destroy (lock);
-  lock = NULL;
   ectx = NULL;
 }
 

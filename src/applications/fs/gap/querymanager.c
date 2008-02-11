@@ -101,6 +101,10 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   request->primary_target = GNUNET_FS_PT_intern (target);
   request->response_client = client;
   memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
+  fprintf(stderr,
+	  "Tracking request of type %u from client %p\n", 
+	  type,
+	  client);
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
   while ((cl != NULL) && (cl->client != client))
@@ -109,6 +113,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
     {
       cl = GNUNET_malloc (sizeof (struct ClientDataList));
       memset (cl, 0, sizeof (struct ClientDataList));
+      cl->client = client;
       cl->next = clients;
       clients = cl;
     }
@@ -224,6 +229,8 @@ handle_response (PID_INDEX sender,
   msg->anonymityLevel = htonl (0);      /* unknown */
   msg->expirationTime = GNUNET_htonll (expirationTime);
   memcpy (&msg[1], data, size);
+  fprintf(stderr,
+	  "Forwarding response to client\n");
   coreAPI->cs_send_to_client (client,
                               &msg->header,
                               (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
@@ -435,6 +442,8 @@ GNUNET_FS_QUERYMANAGER_done ()
                     GNUNET_SYSERR !=
                     coreAPI->
                     cs_exit_handler_unregister (&handle_client_exit));
+  while (clients != NULL)
+    handle_client_exit(clients->client);    
   return 0;
 }
 
