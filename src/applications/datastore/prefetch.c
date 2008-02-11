@@ -117,6 +117,14 @@ int
 getRandom (GNUNET_HashCode * key, GNUNET_DatastoreValue ** value)
 {
   GNUNET_mutex_lock (lock);
+  if (gather_thread == NULL)
+    {
+      gather_thread = GNUNET_thread_create (&rcbAcquire, NULL, 64 * 1024);
+      if (gather_thread == NULL)
+	GNUNET_GE_LOG_STRERROR (ectx,
+				GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER
+				| GNUNET_GE_IMMEDIATE, "pthread_create");
+    }    
   if (rvalue == NULL)
     {
       GNUNET_mutex_unlock (lock);
@@ -141,11 +149,6 @@ initPrefetch (struct GNUNET_GE_Context *e,
   acquireMoreSignal = GNUNET_semaphore_create (1);
   doneSignal = GNUNET_NO;
   lock = GNUNET_mutex_create (GNUNET_NO);
-  gather_thread = GNUNET_thread_create (&rcbAcquire, NULL, 64 * 1024);
-  if (gather_thread == NULL)
-    GNUNET_GE_LOG_STRERROR (ectx,
-                            GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER
-                            | GNUNET_GE_IMMEDIATE, "pthread_create");
 }
 
 void
