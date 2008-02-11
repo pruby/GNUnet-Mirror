@@ -178,4 +178,4 @@ main (int argc, char **argv)
   return (ok == 0) ? 1 : 0;
 }
 
-/* end of sessiontest2.c */
+/* end of sessiontest_nat.c */
