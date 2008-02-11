@@ -30,7 +30,7 @@
 #include "gnunet_identity_lib.h"
 #include "gnunet_stats_lib.h"
 
-#define START_PEERS 0
+#define START_PEERS 1
 
 static int ok;
 
