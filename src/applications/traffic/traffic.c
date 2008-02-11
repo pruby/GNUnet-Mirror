@@ -507,6 +507,8 @@ trafficReceive (const GNUNET_PeerIdentity * sender,
 {
   unsigned short port;
 
+  if (sender == NULL)
+    return GNUNET_OK;
   port = ntohs (header->type);
   updateTrafficReceiveCounter (port, ntohs (header->size));
   GNUNET_mutex_lock (lock);
