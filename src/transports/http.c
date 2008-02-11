@@ -2058,23 +2058,12 @@ curl_runner (void *unused)
       if (mhd_daemon != NULL)
         have_tv = MHD_get_timeout (mhd_daemon, &timeout);
       STEP ();
+
       GNUNET_mutex_lock (curllock);
       if ((CURLM_OK == curl_multi_timeout (curl_multi, &ms)) &&
           (ms != -1) && ((ms < timeout) || (have_tv == MHD_NO)))
         {
           timeout = ms;
-          have_tv = MHD_YES;
-        }
-      else
-        {
-          /* curl_multi_timeout is buggy, don't believe
-             it --- otherwise we may sit here forever on
-             connect...; this is a bug which can be
-             demonstrated using the daemontest_post_loop
-             testcase from MHD.  Once fixed in CURL, this
-             else-clause should be removed.
-           */
-          timeout = 500;
           have_tv = MHD_YES;
         }
       GNUNET_mutex_unlock (curllock);
