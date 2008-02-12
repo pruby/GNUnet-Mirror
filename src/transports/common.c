@@ -422,7 +422,7 @@ hello_to_address (const GNUNET_MessageHello * hello,
 {
   const HostAddress *haddr = (const HostAddress *) &hello[1];
   struct sockaddr_in *serverAddr4;
-  struct sockaddr_in *serverAddr6;
+  struct sockaddr_in6 *serverAddr6;
   unsigned short available;
   
   available = ntohs(haddr->availability);
@@ -442,9 +442,9 @@ hello_to_address (const GNUNET_MessageHello * hello,
       serverAddr6 = GNUNET_malloc (sizeof (struct sockaddr_in6));
       *sa = serverAddr6;
       memset (serverAddr6, 0, sizeof (struct sockaddr_in6));
-      serverAddr6->sin_family = AF_INET6;
-      memcpy (&serverAddr6->sin_addr, &haddr->ipv6, sizeof (GNUNET_IPv6Address));
-      serverAddr6->sin_port = haddr->port;
+      serverAddr6->sin6_family = AF_INET6;
+      memcpy (&serverAddr6->sin6_addr, &haddr->ipv6, sizeof (GNUNET_IPv6Address));
+      serverAddr6->sin6_port = haddr->port;
     }
   else
     return GNUNET_SYSERR;
