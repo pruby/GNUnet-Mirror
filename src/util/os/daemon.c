@@ -113,12 +113,12 @@ launchWithExec (struct GNUNET_GE_Context *ectx, const char *cfgFile,
       else
         pid = i = spawnvp (_P_NOWAIT, "gnunetd", (const char *const *) args);
 #endif
-      GNUNET_free_non_null (path);
       if (i == -1)
         GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                      GNUNET_GE_ERROR | GNUNET_GE_USER |
                                      GNUNET_GE_BULK, "exec",
                                      path == NULL ? "gnunetd" : path);
+      GNUNET_free_non_null (path);
 #ifndef MINGW
       _exit (-1);
 #endif

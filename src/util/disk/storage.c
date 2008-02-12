@@ -550,6 +550,8 @@ GNUNET_disk_directory_scan (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG_STRERROR_FILE (ectx,
                                    GNUNET_GE_WARNING | GNUNET_GE_USER |
                                    GNUNET_GE_BULK, "opendir", dirName);
+      if (dinfo != NULL)
+	closedir(dinfo);
       return GNUNET_SYSERR;
     }
   while ((finfo = readdir (dinfo)) != NULL)
