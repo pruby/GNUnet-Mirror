@@ -695,6 +695,7 @@ assembleDatum (MYSQL_BIND * result)
                      __FILE__, __LINE__,
                      mysql_stmt_error (dbh->select_value));
       iclose ();
+      GNUNET_mutex_unlock (lock);
       GNUNET_free (datum);
       return NULL;
     }
