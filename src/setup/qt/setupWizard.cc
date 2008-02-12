@@ -244,8 +244,6 @@ void GSetupWizard::loadDefaults()
   GNUNET_free_non_null(gname);
   
   // page 5
-  GNUNET_GC_get_configuration_value_string (cfg, "FS", "QUOTA", "1024",
-                                            &val);
   GNUNET_GC_get_configuration_value_number(cfg, "FS", "QUOTA", 1, 1000000, 1024, &num);
   spinQuota->setValue(num);
   
