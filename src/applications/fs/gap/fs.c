@@ -622,7 +622,11 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       ttl -= 2 * TTL_DECREMENT +
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
     }
-
+  fprintf(stderr,
+	  "TTL in: %d out: %d (prio: %u)\n", 
+	  ntohl(req->type),
+	  ttl, 
+	  prio);
 
   preference = (double) prio;
   if (preference < QUERY_BANDWIDTH_VALUE)

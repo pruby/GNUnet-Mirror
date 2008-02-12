@@ -313,7 +313,10 @@ add_request (PID_INDEX target,
   else
     {
       entry->next = pos->next;
-      pos->next->prev = entry;
+      if (pos->next == NULL)
+	qpl->tail = entry;
+      else
+	pos->next->prev = entry;
       entry->prev = pos;
       pos->next = entry;
     }
@@ -347,7 +350,7 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   GNUNET_CronTime now;
   GNUNET_CronTime last;
   unsigned int prio;
-  unsigned int ttl;
+  int ttl;
   unsigned int allowable_prio;
   long long score;
 
@@ -420,6 +423,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       if (ttl > 0)              /* integer underflow */
         ttl = -(1 << 30);
     }
+  fprintf(stderr,
+	  "Plan's TTL is %d (%u)\n", ttl, prio);
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
   rank->prio = prio;
   rank->ttl = ttl;
@@ -538,10 +543,12 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
           if (rank->score > selector)
             {
 	      fprintf(stderr,
-		      "Adding query from %p/%u to plan for peer %u\n",
+		      "Adding query from %p/%u to plan for peer %u with ttl %d and prio %u\n",
 		      client,
 		      peer,
-		      rank->peer);
+		      rank->peer,
+		      rank->ttl,
+		      rank->prio);
               add_request (rank->peer, request, rank->ttl, rank->prio);
               total_score -= rank->score;
               rank->score = 0;  /* mark as used */
@@ -587,9 +594,10 @@ try_add_request (struct RequestList *req,
   if (size > available)
     return 0;
   fprintf(stderr,
-	  "Adding request to send buffer (plan.c)\n");
+	  "Adding request to send buffer (plan.c) with TTL %d (%d) and prio %u\n",
+	  ttl, GNUNET_FS_HELPER_bound_ttl(ttl, prio), prio);
   if ((prio > req->remaining_value) && (req->response_client == NULL))
-    prio = req->remaining_value;
+    prio = req->remaining_value; 
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
   msg->header.size = htons (size);
   msg->header.type = htons (GNUNET_P2P_PROTO_GAP_QUERY);

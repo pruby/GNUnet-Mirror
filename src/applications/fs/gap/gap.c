@@ -255,8 +255,10 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->response_target = GNUNET_FS_PT_intern (respond_to);
   table[index] = rl;
   fprintf(stderr,
-	  "GAP creates RT entry `%p' for query from `%u' in slot %u\n",
+	  "GAP creates RT entry `%p' for query with ttl %d prio %u from `%u' in slot %u\n",
 	  rl,
+	  ttl, 
+	  priority,
 	  rl->response_target,
 	  index);
 
