@@ -33,7 +33,7 @@
 #include "gnunet_stats_lib.h"
 
 
-#define START_PEERS 0
+#define START_PEERS 1
 
 #define PEER_COUNT 2
 

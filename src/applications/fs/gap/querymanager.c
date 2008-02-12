@@ -38,7 +38,7 @@
 #include "pid_table.h"
 #include "shared.h"
 
-#define CHECK_REPEAT_FREQUENCY (5 * GNUNET_CRON_SECONDS)
+#define CHECK_REPEAT_FREQUENCY (1 * GNUNET_CRON_SECONDS)
 
 /**
  * Linked list with information for each client.

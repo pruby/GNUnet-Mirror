@@ -35,6 +35,12 @@
 #include "shared.h"
 
 /**
+ * How many entires are we allowed to plan-ahead
+ * per peer (at most)?
+ */ 
+#define MAX_ENTRIES_PER_PEER 64
+
+/**
  * Linked list summarizing how good other peers
  * were at producing responses for a client.
  */
@@ -245,6 +251,43 @@ find_or_create_history_entry (struct ClientInfoList *cl, PID_INDEX responder)
   return hl;
 }
 
+struct QueryPlanList *
+find_or_create_query_plan_list(PID_INDEX target)
+{
+  struct QueryPlanList *qpl;
+
+  /* find query plan for target */
+  qpl = queries;
+  while ((qpl != NULL) && (qpl->peer != target))
+    qpl = qpl->next;  
+  if (qpl == NULL)
+    {
+      qpl = GNUNET_malloc (sizeof (struct QueryPlanList));
+      memset (qpl, 0, sizeof (struct QueryPlanList));
+      qpl->peer = target;
+      GNUNET_FS_PT_change_rc (target, 1);
+      qpl->next = queries;
+      queries = qpl;
+    }
+  return qpl;
+}
+
+static unsigned int
+count_query_plan_entries(struct QueryPlanList * qpl)
+{
+  struct QueryPlanEntry *pos;
+  unsigned int total;
+  
+  total = 0;
+  pos = qpl->head;
+  while (pos != NULL)
+    {
+      total++;
+      pos = pos->next;
+    }
+  return total;
+}
+
 /**
  * Add the given request to the list of pending requests for the
  * specified target.  A random position in the queue will
@@ -264,19 +307,8 @@ add_request (PID_INDEX target,
   struct QueryPlanEntry *pos;
   unsigned int total;
 
-  /* find query plan for target */
-  qpl = queries;
-  while ((qpl != NULL) && (qpl->peer != target))
-    qpl = qpl->next;
-  if (qpl == NULL)
-    {
-      qpl = GNUNET_malloc (sizeof (struct QueryPlanList));
-      memset (qpl, 0, sizeof (struct QueryPlanList));
-      qpl->peer = target;
-      GNUNET_FS_PT_change_rc (target, 1);
-      qpl->next = queries;
-      queries = qpl;
-    }
+ /* find query plan for target */
+  qpl = find_or_create_query_plan_list(target);
   /* construct entry */
   entry = GNUNET_malloc (sizeof (struct QueryPlanEntry));
   memset (entry, 0, sizeof (struct QueryPlanEntry));
@@ -289,13 +321,7 @@ add_request (PID_INDEX target,
   request->plan_entries = entry;
 
   /* compute (random) insertion position in doubly-linked list */
-  total = 0;
-  pos = qpl->head;
-  while (pos != NULL)
-    {
-      total++;
-      pos = pos->next;
-    }
+  total = count_query_plan_entries(qpl);
   total = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total + 1);
   pos = qpl->head;
   while (total-- > 0)
@@ -353,10 +379,18 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   int ttl;
   unsigned int allowable_prio;
   long long score;
+  PID_INDEX peer;
 
+  peer = GNUNET_FS_PT_intern (identity);
+  if ( (peer == rpc->request->response_target) ||
+       (count_query_plan_entries(find_or_create_query_plan_list(peer)) > MAX_ENTRIES_PER_PEER) )
+    {
+      GNUNET_FS_PT_change_rc(peer, -1);
+      return; /* ignore! */
+    }
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
-  rank->peer = GNUNET_FS_PT_intern (identity);
+  rank->peer = peer;
   rank->reserved_bandwidth = coreAPI->reserve_downstream_bandwidth (identity,
                                                                     GNUNET_GAP_ESTIMATED_DATA_SIZE);
   history = NULL;
@@ -511,6 +545,11 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       total_score += rank->score;
       rank = rank->next;
     }
+  if (total_score == 0)
+    {
+      GNUNET_mutex_unlock(GNUNET_FS_lock);
+      return; /* no peers available */
+    }
 
   entropy = 0;
   rank = rpc.rankings;
@@ -622,6 +661,7 @@ try_add_request (struct RequestList *req,
   req->last_prio_used = prio;
   req->last_ttl_used = ttl;
   req->remaining_value -= prio;
+  fprintf(stderr, "!");
   return size;
 }
 

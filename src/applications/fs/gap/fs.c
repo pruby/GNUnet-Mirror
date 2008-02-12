@@ -524,8 +524,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   double preference;
 
   fprintf(stderr,
-	  "FS received P2P query from `%p'\n",
-	  sender);
+	  "R");
   if (test_load_too_high ())
     {
 #if DEBUG_GAP
@@ -645,9 +644,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   unsigned long long expiration;
   double preference;
 
-  fprintf(stderr,
-	  "FS received P2P content from `%p'\n",
-	  sender);
+  if (sender != NULL)
+    fprintf(stderr,
+	    "C");
   size = ntohs (pmsg->size);
   if (size < sizeof (P2P_gap_reply_MESSAGE))
     {

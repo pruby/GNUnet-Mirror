@@ -35,6 +35,12 @@
 #include "pid_table.h"
 
 /**
+ * How many entries are allowed per slot in the
+ * collision list?
+ */
+#define MAX_ENTRIES_PER_SLOT 2
+
+/**
  * The GAP routing table.
  */
 static struct RequestList **table;
@@ -186,10 +192,13 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                              const void *bloomfilter_data)
 {
   struct RequestList *rl;
+  struct RequestList *prev;
   PID_INDEX peer;
   unsigned int index;
   GNUNET_CronTime now;
   GNUNET_CronTime newTTL;
+  GNUNET_CronTime minTTL;
+  unsigned int total;
   int ret;
 
   GNUNET_GE_ASSERT (NULL, query_count > 0);
@@ -197,29 +206,86 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   index = get_table_index (&queries[0]);
   now = GNUNET_get_time ();
   newTTL = now + ttl * GNUNET_CRON_SECONDS;
-  
-  /* check if table is full (and/or delete old entries!) */
-  if ((table[index] != NULL) && (table[index]->next != NULL))
+  peer = GNUNET_FS_PT_intern (respond_to);
+  /* check if entry already exists and compute
+     maxTTL if not */
+  minTTL = -1;
+  total = 0;
+  rl = table[index];
+  while (rl != NULL)
     {
-      /* limit to at most two entries per slot in table */
-      if ((newTTL < table[index]->expiration) &&
-          (newTTL < table[index]->next->expiration))
-        {
-          /* do not process */
-          GNUNET_mutex_unlock (GNUNET_FS_lock);
-          return;
-        }
-      if (table[index]->expiration > table[index]->next->expiration)
-        {
-          GNUNET_FS_SHARED_free_request_list (table[index]->next);
-          table[index]->next = NULL;
-        }
+      if ( (rl->type == type) &&
+	   (rl->response_target == peer) &&
+	   (0 == memcmp(&rl->queries[0], queries,
+			query_count * sizeof(GNUNET_HashCode))) )
+	{
+	  if (rl->expiration > newTTL)
+	    {
+	      /* ignore */
+	      GNUNET_FS_PT_change_rc (peer, -1);
+	      GNUNET_mutex_unlock (GNUNET_FS_lock);
+	      return;
+	    }
+	  rl->value += priority;
+	  rl->remaining_value += priority;
+	  rl->expiration = newTTL;
+	  rl->policy = policy;	  
+	  if ( (rl->bloomfilter_size == filter_size) &&
+	       (rl->bloomfilter_mutator == filter_mutator) )
+	    {
+	      /* update ttl / BF */
+	      GNUNET_bloomfilter_or(rl->bloomfilter,
+				    bloomfilter_data,
+				    filter_size);
+	      GNUNET_FS_PT_change_rc (peer, -1);
+	      GNUNET_mutex_unlock (GNUNET_FS_lock);
+	      return;
+	    }
+	  /* update BF */
+	  if (rl->bloomfilter != NULL)
+	    GNUNET_bloomfilter_free(rl->bloomfilter);
+	  rl->bloomfilter_mutator = filter_mutator;
+	  rl->bloomfilter_size = filter_size;
+	  if (filter_size > 0)
+	    rl->bloomfilter = GNUNET_bloomfilter_init (coreAPI->ectx,
+						       bloomfilter_data,
+						       filter_size,
+						       GAP_BLOOMFILTER_K);
+	  else
+	    rl->bloomfilter = NULL;	    
+	  GNUNET_FS_PT_change_rc (peer, -1);
+	  GNUNET_mutex_unlock (GNUNET_FS_lock);
+	  return;
+	}
+     if (rl->expiration < minTTL)
+	minTTL = rl->expiration;
+      total++;
+      rl = rl->next;
+    }
+
+  if ( (total >= MAX_ENTRIES_PER_SLOT) &&
+       (minTTL > newTTL) )
+    {
+      /* do not process */
+      GNUNET_FS_PT_change_rc (peer, -1);
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
+      return;
+    }
+  /* delete oldest table entry */
+  prev = NULL;
+  rl = table[index];
+  if (total >= MAX_ENTRIES_PER_SLOT)
+    {
+      while (rl->expiration != minTTL) 
+	{
+	  prev = rl;
+	  rl = rl->next;
+	}
+      if (prev == NULL)
+	table[index] = rl->next;
       else
-        {
-          rl = table[index];
-          table[index] = rl->next;
-          GNUNET_FS_SHARED_free_request_list (rl);
-        }
+	prev->next = rl->next;
+      GNUNET_FS_SHARED_free_request_list (rl);
     }
   /* create new table entry */
   rl =
@@ -243,10 +309,9 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->remaining_value = priority > 0 ? priority - 1 : 0;
   rl->expiration = newTTL;
   rl->next = table[index];
-  rl->response_target = GNUNET_FS_PT_intern (respond_to);
+  rl->response_target = peer;
   rl->policy = policy;
   table[index] = rl;
-
   /* check local data store */
   ret = datastore->get (&queries[0], type, datastore_value_processor, rl);
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) && (ret != 1))
@@ -256,12 +321,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 
   /* if not found or not unique, forward */
   if ((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA))
-    {
-      peer = GNUNET_FS_PT_intern (respond_to);
-      GNUNET_FS_PLAN_request (NULL, peer, rl);
-      GNUNET_FS_PT_change_rc (peer, -1);
-    }
-
+    GNUNET_FS_PLAN_request (NULL, peer, rl);    
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
@@ -302,11 +362,6 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   rid = GNUNET_FS_PT_intern (sender);
   index = get_table_index (primary_query);
   rl = table[index];
-  fprintf(stderr,
-	  "GAP received response from `%u' - slot: %u == %p\n",
-	  rid,
-	  get_table_index (primary_query),
-	  rl);
   prev = NULL;
   while (rl != NULL)
     {
@@ -325,9 +380,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           msg->expiration = GNUNET_htonll (expiration);
           memcpy (&msg[1], data, size);
 	  fprintf(stderr,
-		  "GAP forwards response from `%u' to `%u'\n",
-		  rid,
-		  rl->response_target);
+		  "F");
           coreAPI->unicast (&target,
                             &msg->header,
                             BASE_REPLY_PRIORITY * (1 + rl->value),
