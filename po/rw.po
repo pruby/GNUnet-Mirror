@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2008-02-07 00:26-0700\n"
+"POT-Creation-Date: 2008-02-12 00:40-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -28,7 +28,7 @@ msgstr ""
 #: src/transports/upnp/upnp.c:356 src/transports/upnp/upnp.c:541
 #: src/transports/http.c:1345 src/transports/http.c:1442
 #: src/transports/http.c:1620 src/transports/http.c:2047
-#: src/transports/http.c:2108 src/applications/bootstrap_http/http.c:123
+#: src/transports/http.c:2097 src/applications/bootstrap_http/http.c:123
 #: src/applications/bootstrap_http/http.c:257
 #: src/applications/bootstrap_http/http.c:274
 #: src/applications/bootstrap_http/http.c:306
@@ -50,133 +50,70 @@ msgstr "'%s'Byanze kugirango Isomero ku Na: Ikosa"
 msgid "upnp: NAT Returned IP: %s\n"
 msgstr ""
 
-#: src/transports/ip6.c:77 src/util/network/io.c:86
-#, fuzzy, c-format
-msgid "Could not find IP of host `%s': %s\n"
-msgstr "OYA Gushaka Bya Ubuturo"
-
-#: src/transports/ip6.c:110 src/util/network/ip.c:88 src/util/network/ip.c:153
-#, fuzzy, c-format
-msgid "No interface specified in section `%s' under `%s'!\n"
-msgstr "urusobe in Iboneza Icyiciro"
-
-#: src/transports/ip6.c:141 src/util/network/ip.c:119
-#: src/util/network/ip.c:239
-#, fuzzy, c-format
-msgid "Could not obtain IP for interface `%s' using `%s'.\n"
-msgstr "OYA kugirango ikoresha"
-
-#: src/transports/ip6.c:175
-#, fuzzy, c-format
-msgid "Could not resolve `%s': %s\n"
-msgstr "OYA"
-
-#: src/transports/ip6.c:229 src/transports/ip.c:61
+#: src/transports/ip.c:70 src/transports/ip.c:390
 #, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr ""
 
-#: src/transports/tcp6.c:249
-#, fuzzy
-msgid "Could not determine my public IPv6 address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/tcp6.c:317
+#: src/transports/ip.c:238
 #, fuzzy, c-format
-msgid "`%s': unknown service: %s\n"
-msgstr "'%s':Kitazwi Serivisi"
+msgid "Could not find IPv6 address of host `%s': %s\n"
+msgstr "OYA Gushaka Bya Ubuturo"
 
-#: src/transports/tcp6.c:420 src/transports/tcp.c:463
+#: src/transports/ip.c:271 src/util/network/ip.c:88 src/util/network/ip.c:153
 #, fuzzy, c-format
-msgid "Failed to start transport service on port %d.\n"
-msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
+msgid "No interface specified in section `%s' under `%s'!\n"
+msgstr "urusobe in Iboneza Icyiciro"
 
-#: src/transports/tcp6.c:531
-#, fuzzy
-msgid "# bytes received via TCP6"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/tcp6.c:532
-#, fuzzy
-msgid "# bytes sent via TCP6"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/tcp6.c:534
-msgid "# bytes dropped by TCP6 (outgoing)"
-msgstr ""
-
-#: src/transports/udp6.c:131 src/transports/udp.c:135
+#: src/transports/ip.c:302 src/util/network/ip.c:119 src/util/network/ip.c:239
 #, fuzzy, c-format
-msgid "Failed to bind to UDP port %d.\n"
-msgstr "Kuri Kuri Umuyoboro"
+msgid "Could not obtain IP for interface `%s' using `%s'.\n"
+msgstr "OYA kugirango ikoresha"
 
-#: src/transports/udp6.c:277
-#, fuzzy
-msgid "UDP6: Could not determine my public IPv6 address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/udp6.c:494 src/transports/udp.c:544
+#: src/transports/ip.c:336
 #, fuzzy, c-format
-msgid "MTU %llu for `%s' is probably too low!\n"
-msgstr "kugirango ni Byo hasi OYA"
-
-#: src/transports/udp6.c:500
-#, fuzzy
-msgid "# bytes received via UDP6"
-msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
-
-#: src/transports/udp6.c:501
-#, fuzzy
-msgid "# bytes sent via UDP6"
-msgstr "#Bayite Yoherejwe:"
-
-#: src/transports/udp6.c:503
-msgid "# bytes dropped by UDP6 (outgoing)"
-msgstr ""
-
-#: src/transports/udp6.c:505
-msgid "# UDP6 connections (right now)"
-msgstr ""
+msgid "Could not resolve `%s': %s\n"
+msgstr "OYA"
 
 #: src/transports/http.c:892
 #, fuzzy
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "OYA Rusange Aderesi"
 
-#: src/transports/http.c:2325
+#: src/transports/http.c:2314
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"HTTP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/http.c:2334
+#: src/transports/http.c:2323
 #, fuzzy
 msgid "# bytes received via HTTP"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/transports/http.c:2335
+#: src/transports/http.c:2324
 #, fuzzy
 msgid "# bytes sent via HTTP"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/transports/http.c:2337
+#: src/transports/http.c:2326
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr ""
 
-#: src/transports/http.c:2338
+#: src/transports/http.c:2327
 msgid "# HTTP GET issued"
 msgstr ""
 
-#: src/transports/http.c:2340
+#: src/transports/http.c:2329
 #, fuzzy
 msgid "# HTTP GET received"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/transports/http.c:2341
+#: src/transports/http.c:2330
 msgid "# HTTP PUT issued"
 msgstr ""
 
-#: src/transports/http.c:2343
+#: src/transports/http.c:2332
 #, fuzzy
 msgid "# HTTP PUT received"
 msgstr "#Bayite Bya BYAKIRIWE"
@@ -223,108 +160,68 @@ msgstr "#Bayite Yoherejwe:"
 msgid "# bytes dropped by SMTP (outgoing)"
 msgstr ""
 
-#: src/transports/tcp_helper.c:261
-#, fuzzy
-msgid "Received malformed message instead of welcome message. Closing.\n"
-msgstr "Ubutumwa Bivuye Ukwihuza"
-
-#: src/transports/tcp_helper.c:281
-#, fuzzy
-msgid "Received malformed message from tcp-peer connection. Closing.\n"
-msgstr "Ubutumwa Bivuye Ukwihuza"
-
-#: src/transports/tcp.c:297
-#, fuzzy
-msgid "TCP: Could not determine my public IP address.\n"
-msgstr "OYA Rusange Aderesi"
-
-#: src/transports/tcp.c:402
-#, fuzzy, c-format
-msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
+#: src/transports/common.c:369
+#, c-format
+msgid "Port is 0, will only send using %s.\n"
 msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
 
-#: src/transports/tcp.c:585
+#: src/transports/tcp.c:272 src/transports/tcp.c:291
+#, fuzzy
+msgid "Received malformed message via TCP. Closing.\n"
+msgstr "Ubutumwa Biturutse Ingano"
+
+#: src/transports/tcp.c:707 src/transports/udp.c:458
+#, fuzzy, c-format
+msgid "Failed to bind to %s port %d.\n"
+msgstr "Kuri Kuri Umuyoboro"
+
+#: src/transports/tcp.c:789
 msgid ""
 "The UPnP service could not be loaded. To disable UPnP, set the configuration "
 "option \"UPNP\" in section \"TCP\" to \"NO\"\n"
 msgstr ""
 
-#: src/transports/tcp.c:594
+#: src/transports/tcp.c:798
 #, fuzzy
 msgid "# bytes received via TCP"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/transports/tcp.c:595
+#: src/transports/tcp.c:799
 #, fuzzy
 msgid "# bytes sent via TCP"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/transports/tcp.c:597
+#: src/transports/tcp.c:801
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr ""
 
-#: src/transports/udp.c:302
+#: src/transports/udp.c:107
 #, fuzzy
-msgid "UDP: Could not determine my public IP address.\n"
-msgstr "OYA Rusange Aderesi"
+msgid "Received malformed message via UDP. Ignored.\n"
+msgstr "Ubutumwa Biturutse Ingano"
 
-#: src/transports/udp.c:401
+#: src/transports/udp.c:525
 #, fuzzy, c-format
-msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
-msgstr ""
-"Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-". Project- Id- Version: basctl\n"
-"POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
-"PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
-"Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
-"Content- Type: text/ plain; charset= UTF- 8\n"
-"Content- Transfer- Encoding: 8bit\n"
-"X- Generator: KBabel 1. 0\n"
-"."
+msgid "MTU %llu for `%s' is probably too low!\n"
+msgstr "kugirango ni Byo hasi OYA"
 
-#: src/transports/udp.c:560
+#: src/transports/udp.c:547
 #, fuzzy
 msgid "# bytes received via UDP"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/transports/udp.c:561
+#: src/transports/udp.c:548
 #, fuzzy
 msgid "# bytes sent via UDP"
 msgstr "#Bayite Yoherejwe:"
 
-#: src/transports/udp.c:563
+#: src/transports/udp.c:550
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr ""
 
-#: src/transports/udp.c:565
+#: src/transports/udp.c:552
 msgid "# UDP connections (right now)"
 msgstr ""
-
-#: src/transports/udp_helper.c:96
-#, fuzzy
-msgid "Received malformed message from udp-peer connection. Closing.\n"
-msgstr "Ubutumwa Bivuye Ukwihuza"
 
 #: src/setup/ncurses/mconf.c:86
 msgid "Exit"
@@ -363,7 +260,7 @@ msgstr ""
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:515 src/setup/ncurses/wizard_curs.c:527
+#: src/setup/ncurses/mconf.c:515 src/setup/ncurses/wizard_curs.c:528
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "Umubare Bya Amasubiramo"
@@ -601,24 +498,24 @@ msgstr ""
 msgid "Unable to save configuration file `%s':"
 msgstr "OYA Iboneza IDOSIYE"
 
-#: src/setup/ncurses/wizard_curs.c:464
+#: src/setup/ncurses/wizard_curs.c:465
 msgid "Unable to create user account for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:471
+#: src/setup/ncurses/wizard_curs.c:472
 msgid "Unable to setup autostart for daemon."
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:486
+#: src/setup/ncurses/wizard_curs.c:487
 #, fuzzy
 msgid "Save configuration?"
 msgstr "Gukoresha Iboneza IDOSIYE"
 
-#: src/setup/ncurses/wizard_curs.c:487
+#: src/setup/ncurses/wizard_curs.c:488
 msgid "Save configuration now?"
 msgstr ""
 
-#: src/setup/ncurses/wizard_curs.c:531 src/setup/gtk/gnunet-setup.glade:723
+#: src/setup/ncurses/wizard_curs.c:532 src/setup/gtk/gnunet-setup.glade:723
 #: src/setup/gtk/gnunet-setup.glade:1056 src/setup/gtk/gnunet-setup.glade:1340
 msgid "Back"
 msgstr ""
@@ -985,12 +882,6 @@ msgstr ""
 msgid "Error: can't delete service: %s\n"
 msgstr ""
 
-#: src/applications/dht/tools/dhttest.c:51
-#: src/applications/dht/tools/dhttest2.c:43
-#: src/applications/dht/module/table.c:758
-msgid "# dht connections"
-msgstr ""
-
 #: src/applications/dht/tools/dht-query.c:52
 #, fuzzy
 msgid "Query (get KEY, put KEY VALUE) DHT table."
@@ -1082,6 +973,10 @@ msgstr "#Gushaka Ibisubizo ku BYAKIRIWE KB"
 #: src/applications/dht/module/routing.c:879
 #, c-format
 msgid "`%s' registering p2p handlers: %d %d %d\n"
+msgstr ""
+
+#: src/applications/dht/module/table.c:758
+msgid "# dht connections"
 msgstr ""
 
 #: src/applications/dht/module/table.c:760
@@ -1253,7 +1148,7 @@ msgstr "Sitatisitiki Ibyerekeye Ibikorwa:"
 msgid "Suppress display of asynchronous log messages"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:149 src/applications/chat/clientapi.c:113
+#: src/applications/vpn/gnunet-vpn.c:149 src/applications/chat/clientapi.c:116
 #: src/applications/stats/gnunet-stats.c:121
 #: src/applications/tbench/gnunet-tbench.c:126
 #: src/applications/tracekit/gnunet-tracekit.c:352
@@ -1501,7 +1396,7 @@ msgstr ""
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:70
 #: src/applications/fs/tools/gnunet-insert.c:268
-#: src/applications/fs/tools/gnunet-search.c:136
+#: src/applications/fs/tools/gnunet-search.c:132
 #: src/applications/fs/tools/gnunet-download.c:69
 #, fuzzy
 msgid "set the desired LEVEL of sender-anonymity"
@@ -1897,27 +1792,17 @@ msgstr "Igihe Byanze Imiterere"
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr "Oya Ihitamo"
 
-#: src/applications/fs/tools/gnunet-search.c:139
+#: src/applications/fs/tools/gnunet-search.c:135
 #, fuzzy
 msgid "Search GNUnet for files."
 msgstr "kugirango Idosiye"
 
-#: src/applications/fs/tools/gnunet-search.c:143
-#, fuzzy
-msgid "exit after receiving LIMIT results"
-msgstr "Gusohoka Nyuma Ibisubizo ku"
-
-#: src/applications/fs/tools/gnunet-search.c:146
+#: src/applications/fs/tools/gnunet-search.c:139
 #, fuzzy
 msgid "write encountered (decrypted) search results to FILENAME"
 msgstr "Kwandika Gushaka Ibisubizo ku Kuri i IDOSIYE"
 
-#: src/applications/fs/tools/gnunet-search.c:149
-#, fuzzy
-msgid "wait DELAY seconds for search results before aborting"
-msgstr "Tegereza amasogonda kugirango Gushaka Ibisubizo ku Mbere"
-
-#: src/applications/fs/tools/gnunet-search.c:186
+#: src/applications/fs/tools/gnunet-search.c:176
 #, c-format
 msgid "Error converting arguments to URI!\n"
 msgstr ""
@@ -2059,23 +1944,12 @@ msgstr ""
 msgid "Deleted corrupt URI database in `%s'."
 msgstr ""
 
-#: src/applications/fs/fsui/deserialize.c:772
+#: src/applications/fs/fsui/deserialize.c:770
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/searchtest.c:154
-#: src/applications/fs/fsui/fsuitest.c:173
-#: src/applications/fs/fsui/downloadtest.c:289
-#: src/applications/fs/fsui/serializetest2.c:391
-#: src/applications/fs/fsui/serializetest3.c:163
-#: src/applications/fs/fsui/serializetest4.c:358
-#: src/applications/fs/ecrs/helper.c:132 src/applications/fs/ecrs/helper.c:135
-#: src/applications/fs/ecrs/helper.c:139 src/applications/fs/ecrs/helper.c:144
-msgid "AND"
-msgstr ""
-
-#: src/applications/fs/fsui/search.c:241
+#: src/applications/fs/fsui/search.c:240
 msgid "Error running search (no reason given)."
 msgstr ""
 
@@ -2111,7 +1985,7 @@ msgstr "OYA Kwandika Kuri IDOSIYE"
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr "'%s'%sByanze"
 
-#: src/applications/fs/ecrs/download.c:646
+#: src/applications/fs/ecrs/download.c:647
 #, fuzzy
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
@@ -2123,43 +1997,48 @@ msgstr "Ibikubiyemo OYA BIHUYE Urufunguzo ni a Cyangwa a Byinjijwemo IDOSIYE"
 msgid "No keywords specified!\n"
 msgstr "Amagambo fatizo"
 
+#: src/applications/fs/ecrs/helper.c:132 src/applications/fs/ecrs/helper.c:135
+#: src/applications/fs/ecrs/helper.c:139 src/applications/fs/ecrs/helper.c:144
+msgid "AND"
+msgstr ""
+
 # uui/source\ids.src:RID_UUI_ERRHDL.(ERRCODE_UUI_IO_NOTAFILE_&_ERRCODE_RES_MASK).text
-#: src/applications/fs/ecrs/upload.c:156
+#: src/applications/fs/ecrs/upload.c:153
 #, fuzzy, c-format
 msgid "`%s' is not a file.\n"
 msgstr "'%s'ntabwo ari idosiye"
 
-#: src/applications/fs/ecrs/upload.c:164
+#: src/applications/fs/ecrs/upload.c:161
 #, fuzzy, c-format
 msgid "Cannot get size of file `%s'"
 msgstr "Gufungura Iboneza IDOSIYE"
 
-#: src/applications/fs/ecrs/upload.c:173
+#: src/applications/fs/ecrs/upload.c:170
 #, fuzzy
 msgid "Failed to connect to gnunetd."
 msgstr "Kuri Kwihuza Kuri"
 
-#: src/applications/fs/ecrs/upload.c:185
+#: src/applications/fs/ecrs/upload.c:182
 #, fuzzy, c-format
 msgid "Cannot hash `%s'.\n"
 msgstr "Ibirimo"
 
-#: src/applications/fs/ecrs/upload.c:204
+#: src/applications/fs/ecrs/upload.c:201
 #, fuzzy, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Bya in IDOSIYE"
 
-#: src/applications/fs/ecrs/upload.c:212
+#: src/applications/fs/ecrs/upload.c:209
 #, fuzzy, c-format
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "Kuri Umubarendanga Urutonde Byanze Iyinjizamo"
 
-#: src/applications/fs/ecrs/upload.c:226
+#: src/applications/fs/ecrs/upload.c:223
 #, fuzzy, c-format
 msgid "Cannot open file `%s': `%s'"
 msgstr "Gufungura Iboneza IDOSIYE"
 
-#: src/applications/fs/ecrs/upload.c:309
+#: src/applications/fs/ecrs/upload.c:303
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr ""
@@ -2181,7 +2060,7 @@ msgstr "Kurema IDOSIYE"
 
 #: src/applications/fs/ecrs/namespace.c:339
 #: src/applications/fs/ecrs/namespace.c:420
-#: src/applications/fs/ecrs/namespace.c:571
+#: src/applications/fs/ecrs/namespace.c:572
 #, fuzzy, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr "Idosiye OYA a"
@@ -2192,8 +2071,8 @@ msgstr "Idosiye OYA a"
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr "Bya ni Sibyo Ijambobanga..."
 
-#: src/applications/fs/ecrs/namespace.c:583
-#: src/applications/fs/ecrs/namespace.c:594
+#: src/applications/fs/ecrs/namespace.c:584
+#: src/applications/fs/ecrs/namespace.c:595
 #, fuzzy, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr "Bya ni Sibyo Ijambobanga..."
@@ -2234,17 +2113,17 @@ msgstr ""
 #: src/applications/sqstore_mysql/mysql.c:582
 #: src/applications/sqstore_mysql/mysql.c:680
 #: src/applications/sqstore_mysql/mysql.c:693
-#: src/applications/sqstore_mysql/mysql.c:706
-#: src/applications/sqstore_mysql/mysql.c:721
-#: src/applications/sqstore_mysql/mysql.c:821
-#: src/applications/sqstore_mysql/mysql.c:836
-#: src/applications/sqstore_mysql/mysql.c:988
-#: src/applications/sqstore_mysql/mysql.c:1000
-#: src/applications/sqstore_mysql/mysql.c:1012
-#: src/applications/sqstore_mysql/mysql.c:1260
-#: src/applications/sqstore_mysql/mysql.c:1272
-#: src/applications/sqstore_mysql/mysql.c:1284
-#: src/applications/sqstore_mysql/mysql.c:1369
+#: src/applications/sqstore_mysql/mysql.c:707
+#: src/applications/sqstore_mysql/mysql.c:722
+#: src/applications/sqstore_mysql/mysql.c:822
+#: src/applications/sqstore_mysql/mysql.c:837
+#: src/applications/sqstore_mysql/mysql.c:989
+#: src/applications/sqstore_mysql/mysql.c:1001
+#: src/applications/sqstore_mysql/mysql.c:1013
+#: src/applications/sqstore_mysql/mysql.c:1264
+#: src/applications/sqstore_mysql/mysql.c:1276
+#: src/applications/sqstore_mysql/mysql.c:1288
+#: src/applications/sqstore_mysql/mysql.c:1373
 #: src/applications/dstore_mysql/dstore_mysql.c:107
 #: src/applications/dstore_mysql/dstore_mysql.c:114
 #: src/applications/dstore_mysql/dstore_mysql.c:286
@@ -2273,15 +2152,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "'%s'Byanze ku Na: Ikosa"
-
-#: src/applications/advertising/advertising_test.c:47
-#: src/applications/session/sessiontest_http.c:40
-#: src/applications/session/sessiontest.c:40
-#: src/applications/session/sessiontest2.c:40
-#: src/applications/stats/statistics.c:233
-#, fuzzy
-msgid "# of connected peers"
-msgstr "#Bya"
 
 #: src/applications/advertising/advertising.c:194
 #, fuzzy, c-format
@@ -2372,7 +2242,7 @@ msgid "# plaintext PING messages sent"
 msgstr ""
 
 #: src/applications/advertising/advertising.c:929
-#: src/applications/session/connect.c:974
+#: src/applications/session/connect.c:945
 #, c-format
 msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
@@ -2382,36 +2252,31 @@ msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
 
-#: src/applications/chat/chat.c:95
-#, fuzzy
-msgid "Message received from peer is invalid.\n"
-msgstr "BYAKIRIWE Bivuye ni Sibyo"
-
-#: src/applications/chat/chat.c:144
+#: src/applications/chat/chat.c:106 src/applications/chat/chat.c:187
 #, fuzzy
 msgid "Message received from client is invalid\n"
 msgstr "BYAKIRIWE Bivuye Umukiriya ni"
 
-#: src/applications/chat/chat.c:165
+#: src/applications/chat/chat.c:226
 #, fuzzy
 msgid "Maximum number of chat clients reached.\n"
 msgstr "Umubare Bya"
 
-#: src/applications/chat/chat.c:171
+#: src/applications/chat/chat.c:232
 #, fuzzy, c-format
 msgid "Now %d of %d chat clients at this node.\n"
 msgstr "Bya ku iyi"
 
-#: src/applications/chat/chat.c:211
+#: src/applications/chat/chat.c:272
 #, c-format
 msgid "`%s' registering handlers %d and %d\n"
 msgstr ""
 
-#: src/applications/chat/chat.c:230
+#: src/applications/chat/chat.c:291
 msgid "enables P2P-chat (incomplete)"
 msgstr ""
 
-#: src/applications/chat/clientapi.c:119 src/applications/chat/clientapi.c:197
+#: src/applications/chat/clientapi.c:122 src/applications/chat/clientapi.c:216
 #, fuzzy, c-format
 msgid "Error writing to socket.\n"
 msgstr "Ivugurura Verisiyo"
@@ -2428,17 +2293,17 @@ msgstr ""
 msgid "set the chat room to join (requred)"
 msgstr ""
 
-#: src/applications/chat/gnunet-chat.c:147
+#: src/applications/chat/gnunet-chat.c:146
 #, fuzzy, c-format
 msgid "You must specify a nickname\n"
 msgstr "a Ijambo- banze"
 
-#: src/applications/chat/gnunet-chat.c:157
+#: src/applications/chat/gnunet-chat.c:156
 #, fuzzy, c-format
 msgid "Failed to join the room\n"
 msgstr "Kuri Kuri Umuyoboro"
 
-#: src/applications/chat/gnunet-chat.c:182
+#: src/applications/chat/gnunet-chat.c:181
 #, fuzzy, c-format
 msgid "Failed to send message.\n"
 msgstr "Kuri Kohereza Ubutumwa Kuri"
@@ -2463,14 +2328,14 @@ msgstr ""
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1399
-#: src/applications/sqstore_mysql/mysql.c:1483
+#: src/applications/sqstore_sqlite/sqlite.c:1401
+#: src/applications/sqstore_mysql/mysql.c:1487
 #, fuzzy
 msgid "# bytes in datastore"
 msgstr "#Bayite Yoherejwe:"
 
 #: src/applications/pingpong/pingpong.c:134
-#: src/applications/pingpong/pingpong.c:206
+#: src/applications/pingpong/pingpong.c:204
 #: src/applications/pingpong/pingpong.c:274
 #: src/applications/pingpong/pingpong.c:346
 #, fuzzy, c-format
@@ -2482,9 +2347,9 @@ msgstr "Ubutumwa"
 msgid "Received ping for another peer. Dropping.\n"
 msgstr "kugirango"
 
-#: src/applications/pingpong/pingpong.c:217
-#, fuzzy
-msgid "Received PING not destined for us!\n"
+#: src/applications/pingpong/pingpong.c:216
+#, fuzzy, c-format
+msgid "Received PING from `%s' not destined for us!\n"
 msgstr "OYA kugirango RW"
 
 #: src/applications/pingpong/pingpong.c:316
@@ -2519,13 +2384,13 @@ msgid "# PING messages created"
 msgstr "#Ubutumwa"
 
 #: src/applications/pingpong/pingpong.c:527
-#: src/applications/session/connect.c:968
+#: src/applications/session/connect.c:939
 #, fuzzy
 msgid "# encrypted PONG messages sent"
 msgstr "#Bishunzwe: Bayite Yoherejwe:"
 
 #: src/applications/pingpong/pingpong.c:531
-#: src/applications/session/connect.c:966
+#: src/applications/session/connect.c:937
 #, fuzzy
 msgid "# encrypted PING messages sent"
 msgstr "#Bishunzwe: Bayite Yoherejwe:"
@@ -2545,67 +2410,66 @@ msgstr "#Umukiriya Ibibazo BYAKIRIWE"
 msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/session/connect.c:260
-#: src/applications/session/connect.c:279
+#: src/applications/session/connect.c:235
 #, fuzzy, c-format
 msgid "Session key from peer `%s' could not be verified.\n"
 msgstr "Urufunguzo Bivuye OYA Byagenzuwe"
 
-#: src/applications/session/connect.c:323
+#: src/applications/session/connect.c:279
 #, fuzzy, c-format
 msgid "Cannot encrypt sessionkey, peer `%s' not known!\n"
 msgstr "Shyiraho Umutekano Ikindi OYA"
 
-#: src/applications/session/connect.c:520
+#: src/applications/session/connect.c:496
 #, c-format
 msgid "Could not create any HELLO for myself (have transports `%s')!\n"
 msgstr ""
 
-#: src/applications/session/connect.c:627
+#: src/applications/session/connect.c:605
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' has invalid format (discarded).\n"
 msgstr "'%s'Ubutumwa BYAKIRIWE Bivuye"
 
-#: src/applications/session/connect.c:661
+#: src/applications/session/connect.c:639
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' is for `%s' and not for me!\n"
 msgstr "'%s'Ubutumwa BYAKIRIWE Bivuye"
 
-#: src/applications/session/connect.c:695
+#: src/applications/session/connect.c:668
 #, fuzzy, c-format
 msgid "Invalid `%s' message received from peer `%s'.\n"
 msgstr "Ubutumwa BYAKIRIWE Bivuye"
 
-#: src/applications/session/connect.c:706
+#: src/applications/session/connect.c:680
 #, c-format
 msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
 msgstr ""
 
-#: src/applications/session/connect.c:776
+#: src/applications/session/connect.c:742
 #, fuzzy, c-format
 msgid ""
 "Error parsing encrypted session key from `%s', given message part size is "
 "invalid.\n"
 msgstr "Bishunzwe: Umukoro Urufunguzo Ubutumwa Ingano ni Sibyo"
 
-#: src/applications/session/connect.c:789
+#: src/applications/session/connect.c:755
 #, c-format
 msgid "Unknown type in embedded message from `%s': %u (size: %u)\n"
 msgstr ""
 
-#: src/applications/session/connect.c:958
+#: src/applications/session/connect.c:929
 msgid "# session keys sent"
 msgstr ""
 
-#: src/applications/session/connect.c:960
+#: src/applications/session/connect.c:931
 msgid "# session keys rejected"
 msgstr ""
 
-#: src/applications/session/connect.c:962
+#: src/applications/session/connect.c:933
 msgid "# session keys accepted"
 msgstr ""
 
-#: src/applications/session/connect.c:964
+#: src/applications/session/connect.c:935
 msgid "# sessions established"
 msgstr ""
 
@@ -2615,20 +2479,20 @@ msgstr ""
 msgid "`%s' failed at %s:%d with error: %s"
 msgstr "'%s'Byanze ku Na: Ikosa"
 
-#: src/applications/sqstore_mysql/mysql.c:1388
+#: src/applications/sqstore_mysql/mysql.c:1392
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error `%s' after %llums\n"
 msgstr "'%s'Byanze ku Na: Ikosa"
 
-#: src/applications/sqstore_mysql/mysql.c:1508
-#: src/applications/sqstore_mysql/mysql.c:1661
+#: src/applications/sqstore_mysql/mysql.c:1512
+#: src/applications/sqstore_mysql/mysql.c:1665
 #: src/applications/dstore_mysql/dstore_mysql.c:627
 #, fuzzy, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Kuri Gukoresha IDOSIYE kugirango Iboneza"
 
-#: src/applications/sqstore_mysql/mysql.c:1535
-#: src/applications/sqstore_mysql/mysql.c:1686
+#: src/applications/sqstore_mysql/mysql.c:1539
+#: src/applications/sqstore_mysql/mysql.c:1690
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
@@ -2854,6 +2718,11 @@ msgstr "%Bya CPU Ibirimo"
 msgid "% of allowed io load"
 msgstr "%Bya CPU Ibirimo"
 
+#: src/applications/stats/statistics.c:233
+#, fuzzy
+msgid "# of connected peers"
+msgstr "#Bya"
+
 #: src/applications/stats/statistics.c:235
 #, fuzzy
 msgid "# bytes of noise received"
@@ -3029,33 +2898,6 @@ msgstr "OYA Akira i Ubutumwa Bivuye"
 msgid "allows profiling of direct peer-to-peer connections"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:53
-#, c-format
-msgid "Using %u messages of size %u for %u times.\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest.c:85
-#, c-format
-msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest.c:89
-#, c-format
-msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
-msgstr ""
-
-#: src/applications/tbench/tbenchtest.c:95
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Failed to receive reply from gnunetd.\n"
-msgstr "Kuri Akira Kuri Ubutumwa Bivuye"
-
-#: src/applications/tbench/tbenchtest.c:151
-#, c-format
-msgid "Running benchmark...\n"
-msgstr ""
-
 #: src/applications/tracekit/gnunet-tracekit.c:104
 #, fuzzy, c-format
 msgid "`%s' connected to `%s'.\n"
@@ -3163,7 +3005,7 @@ msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 msgid "# bytes received in plaintext of type %d"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/applications/traffic/traffic.c:650
+#: src/applications/traffic/traffic.c:652
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr ""
 
@@ -3718,7 +3560,7 @@ msgstr "'%s'Byanze Subiza Sibyo"
 msgid "Received malformed message (too small) from connection. Closing.\n"
 msgstr "Ubutumwa Bivuye Ukwihuza"
 
-#: src/util/network/select.c:483
+#: src/util/network/select.c:489
 #, c-format
 msgid "select listen socket for `%s' not valid!\n"
 msgstr ""
@@ -3749,6 +3591,11 @@ msgstr "Imiterere kugirango"
 #, fuzzy, c-format
 msgid "Wrong format `%s' for network: %s\n"
 msgstr "Imiterere kugirango urusobe"
+
+#: src/util/network/io.c:86
+#, fuzzy, c-format
+msgid "Could not find IP of host `%s': %s\n"
+msgstr "OYA Gushaka Bya Ubuturo"
 
 #: src/util/network/ip.c:209
 #, fuzzy, c-format
@@ -4366,14 +4213,14 @@ msgstr ""
 #: contrib/config-daemon.scm:350
 msgid ""
 "Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The "
-"available transports are udp, tcp, http, smtp, tcp6, udp6 and nat.\n"
+"available transports are udp, tcp, http, smtp and nat.\n"
 "\t\t\n"
 "Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes "
 "that cannot directly be reached from the outside.  Peers that are NOT behind "
 "a NAT box and that want to *allow* peers that ARE behind a NAT box to "
 "connect must ALSO load the 'nat' module.  Note that the actual transfer will "
 "always be via tcp initiated by the peer behind the NAT box.  The nat "
-"transport requires the use of tcp, http, smtp and/or tcp6 in addition to nat "
+"transport requires the use of tcp, http and/or smtp in addition to nat "
 "itself."
 msgstr ""
 
@@ -4736,8 +4583,8 @@ msgstr ""
 msgid "Which port should be used by the TCP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:875 contrib/config-daemon.scm:941
-#: contrib/config-daemon.scm:1091
+#: contrib/config-daemon.scm:875 contrib/config-daemon.scm:966
+#: contrib/config-daemon.scm:1116
 msgid "Should we try to determine our external IP using UPnP?"
 msgstr ""
 
@@ -4749,26 +4596,34 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:887 contrib/config-daemon.scm:1115
-#: contrib/config-daemon.scm:1170 contrib/config-daemon.scm:1235
-msgid "Which IPs are not allowed to connect?"
+#: contrib/config-daemon.scm:887
+msgid "Which IP(v4)s are not allowed to connect?"
 msgstr ""
 
 #: contrib/config-daemon.scm:899
 msgid ""
-"Which IPs are allowed to connect? Leave empty to use the IP of your primary "
-"network interface."
+"Which IP(v4)s are allowed to connect? Leave empty to use the IP of your "
+"primary network interface."
 msgstr ""
 
-#: contrib/config-daemon.scm:911
+#: contrib/config-daemon.scm:911 contrib/config-daemon.scm:1164
+msgid "Which IPv6s are not allowed to connect?"
+msgstr ""
+
+#: contrib/config-daemon.scm:923 contrib/config-daemon.scm:1176
+msgid ""
+"Which IPv6s are allowed to connect? Leave empty to allow any IP to connect."
+msgstr ""
+
+#: contrib/config-daemon.scm:936
 msgid "TCP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:929
+#: contrib/config-daemon.scm:954
 msgid "Which port should be used by the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:942 contrib/config-daemon.scm:1092
+#: contrib/config-daemon.scm:967 contrib/config-daemon.scm:1117
 msgid ""
 "You can use 'make check' in src/transports/upnp/ to find out if your NAT "
 "supports UPnP. You should disable this option if you are sure that you are "
@@ -4776,11 +4631,11 @@ msgid ""
 "will not do much harm (only cost a small amount of resources)."
 msgstr ""
 
-#: contrib/config-daemon.scm:953
+#: contrib/config-daemon.scm:978
 msgid "Which is the external port of the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:954
+#: contrib/config-daemon.scm:979
 msgid ""
 "Use this option if your firewall maps say port 80 to your real HTTP port.  "
 "This can be useful in making the HTTP messages appear even more legit "
@@ -4788,138 +4643,117 @@ msgid ""
 "priviledged port)."
 msgstr ""
 
-#: contrib/config-daemon.scm:965
+#: contrib/config-daemon.scm:990
 msgid "HTTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:984
+#: contrib/config-daemon.scm:1009
 msgid "What is the maximum transfer unit for SMTP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:996
+#: contrib/config-daemon.scm:1021
 msgid ""
 "What is the maximum number of e-mails that gnunetd would be allowed to send "
 "per hour?"
 msgstr ""
 
-#: contrib/config-daemon.scm:997
+#: contrib/config-daemon.scm:1022
 msgid "Use 0 for unlimited"
 msgstr ""
 
-#: contrib/config-daemon.scm:1008
+#: contrib/config-daemon.scm:1033
 msgid "Which e-mail address should be used to send e-mail to this peer?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1009
+#: contrib/config-daemon.scm:1034
 msgid ""
 "You must make sure that e-mail received at this address is forwarded to the "
 "PIPE which is read by gnunetd.  Use the FILTER option to filter e-mail with "
 "procmail and the PIPE option to set the name of the pipe."
 msgstr ""
 
-#: contrib/config-daemon.scm:1020
+#: contrib/config-daemon.scm:1045
 msgid ""
 "Which header line should other peers include in e-mails to enable filtering?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1021
+#: contrib/config-daemon.scm:1046
 msgid ""
 "You can specify a header line here which can then be used by procmail to "
 "filter GNUnet e-mail from your inbox and forward it to gnunetd."
 msgstr ""
 
-#: contrib/config-daemon.scm:1032
+#: contrib/config-daemon.scm:1057
 msgid "What is the filename of the pipe where gnunetd can read its e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1033
+#: contrib/config-daemon.scm:1058
 msgid "Have a look at contrib/dot-procmailrc for an example .procmailrc file."
 msgstr ""
 
-#: contrib/config-daemon.scm:1044
+#: contrib/config-daemon.scm:1069
 msgid "What is the name and port of the server for outgoing e-mail?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1045
+#: contrib/config-daemon.scm:1070
 msgid "The basic format is HOSTNAME:PORT."
 msgstr ""
 
-#: contrib/config-daemon.scm:1056
+#: contrib/config-daemon.scm:1081
 msgid "SMTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1079
+#: contrib/config-daemon.scm:1104
 msgid "Which port should be used by the UDP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1103
+#: contrib/config-daemon.scm:1128
 msgid "What is the maximum transfer unit for UDP?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1127
+#: contrib/config-daemon.scm:1140
+msgid "Which IPs are not allowed to connect?"
+msgstr ""
+
+#: contrib/config-daemon.scm:1152
 msgid ""
 "Which IPs are allowed to connect? Leave empty to allow connections from any "
 "IP."
 msgstr ""
 
-#: contrib/config-daemon.scm:1139
+#: contrib/config-daemon.scm:1188
 msgid "UDP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:1158
-msgid "Which port should be used by the TCP IPv6 transport?"
-msgstr ""
-
-#: contrib/config-daemon.scm:1182 contrib/config-daemon.scm:1247
-msgid ""
-"Which IPs are allowed to connect? Leave empty to allow any IP to connect."
-msgstr ""
-
-#: contrib/config-daemon.scm:1194
-msgid "TCP6 transport"
-msgstr ""
-
-#: contrib/config-daemon.scm:1211
-msgid "Which port should be used by the UDP IPv6 transport?"
-msgstr ""
-
-#: contrib/config-daemon.scm:1223
-msgid "What is the maximum transfer unit for UDP 6?"
-msgstr ""
-
-#: contrib/config-daemon.scm:1259
-msgid "UDP6 transport"
-msgstr ""
-
-#: contrib/config-daemon.scm:1277
+#: contrib/config-daemon.scm:1210
 msgid "Network interface"
 msgstr ""
 
-#: contrib/config-daemon.scm:1289
+#: contrib/config-daemon.scm:1222
 msgid "External IP address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1301
+#: contrib/config-daemon.scm:1234
 msgid "External IPv6 address (leave empty to try auto-detection)"
 msgstr ""
 
-#: contrib/config-daemon.scm:1313
+#: contrib/config-daemon.scm:1246
 msgid "Transports"
 msgstr ""
 
-#: contrib/config-daemon.scm:1337
+#: contrib/config-daemon.scm:1268
 msgid "What is the maximum number of bytes per second that we may receive?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1349
+#: contrib/config-daemon.scm:1280
 msgid "What is the maximum number of bytes per second that we may send?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1361
+#: contrib/config-daemon.scm:1292
 msgid "What is the maximum CPU load (percentage)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1363
+#: contrib/config-daemon.scm:1294
 msgid ""
 "Which CPU load can be tolerated.  Load here always refers to the total "
 "system load, that is it includes CPU utilization by other processes.  A "
@@ -4929,11 +4763,11 @@ msgid ""
 "Multiprocessors may use values above 100."
 msgstr ""
 
-#: contrib/config-daemon.scm:1374
+#: contrib/config-daemon.scm:1305
 msgid "What is the maximum IO load (permille)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1376
+#: contrib/config-daemon.scm:1307
 msgid ""
 "Which IO load can be tolerated.  Load here refers to the percentage of CPU "
 "cycles wasted waiting for IO for the entire system, that is it includes disk "
@@ -4943,36 +4777,36 @@ msgid ""
 "values are typically between 10 and 75."
 msgstr ""
 
-#: contrib/config-daemon.scm:1387
+#: contrib/config-daemon.scm:1318
 msgid "What is the maximum CPU load (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1388
+#: contrib/config-daemon.scm:1319
 msgid ""
 "Which CPU load can be tolerated.  This is the hard limit, so once it is "
 "reached, gnunetd will start to massively drop data to reduce the load.  Use "
 "with caution."
 msgstr ""
 
-#: contrib/config-daemon.scm:1399
+#: contrib/config-daemon.scm:1330
 msgid "What is the maximum upstream bandwidth (hard limit)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1400
+#: contrib/config-daemon.scm:1331
 msgid ""
 "The limit is given as a percentage of the MAXNETUPBPS limit.  Use 100 to "
 "have MAXNETUPBPS be the hard limit.  Use zero for no limit."
 msgstr ""
 
-#: contrib/config-daemon.scm:1411
+#: contrib/config-daemon.scm:1342
 msgid "Should we disable random padding (experimental option)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1423
+#: contrib/config-daemon.scm:1354
 msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
 msgstr ""
 
-#: contrib/config-daemon.scm:1425
+#: contrib/config-daemon.scm:1356
 msgid ""
 "Basic bandwidth limitation (YES) means simply that the bandwidth limits "
 "specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
@@ -5017,11 +4851,11 @@ msgid ""
 "since it is irrelevant)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1442
+#: contrib/config-daemon.scm:1373
 msgid "Network interface to monitor"
 msgstr ""
 
-#: contrib/config-daemon.scm:1443
+#: contrib/config-daemon.scm:1374
 msgid ""
 "For which interfaces should we do accounting?  GNUnet will evaluate the "
 "total traffic (not only the GNUnet related traffic) and adjust its bandwidth "
@@ -5032,11 +4866,11 @@ msgid ""
 "number reported by  'gnunet-win-tool -n'."
 msgstr ""
 
-#: contrib/config-daemon.scm:1454
+#: contrib/config-daemon.scm:1385
 msgid "Load management"
 msgstr ""
 
-#: contrib/config-daemon.scm:1479 contrib/config-client.scm:379
+#: contrib/config-daemon.scm:1410 contrib/config-client.scm:379
 msgid "Root node"
 msgstr ""
 
@@ -5740,28 +5574,28 @@ msgstr ""
 msgid "Not for English ;-)"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:704
+#: src/applications/fs/gap/fs.c:735
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/fs/gap/fs.c:706
+#: src/applications/fs/gap/fs.c:737
 #, fuzzy
 msgid "# gap content total received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/fs/gap/fs.c:708
+#: src/applications/fs/gap/fs.c:739
 msgid "# gap total trust awarded"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:736
+#: src/applications/fs/gap/fs.c:767
 #, c-format
 msgid ""
 "`%s' registering client handlers %d %d %d %d %d %d %d and P2P handlers %d %"
 "d\n"
 msgstr ""
 
-#: src/applications/fs/gap/fs.c:788
+#: src/applications/fs/gap/fs.c:819
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -5773,19 +5607,19 @@ msgstr ""
 msgid "# total RC of interned peer IDs in pid table"
 msgstr ""
 
-#: src/applications/fs/gap/fs_dht.c:261
+#: src/applications/fs/gap/fs_dht.c:257
 msgid "# blocks pushed into DHT"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:348
+#: src/applications/fs/gap/migration.c:354
 msgid "# blocks migrated"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:350
+#: src/applications/fs/gap/migration.c:356
 msgid "# blocks fetched for migration"
 msgstr ""
 
-#: src/applications/fs/gap/migration.c:353
+#: src/applications/fs/gap/migration.c:359
 msgid "# on-demand block migration attempts"
 msgstr ""
 
@@ -5797,11 +5631,11 @@ msgid ""
 "contains invalid references!\n"
 msgstr ""
 
-#: src/applications/fs/gap/ondemand.c:454
+#: src/applications/fs/gap/ondemand.c:452
 msgid "Indexed content changed (does not match its hash).\n"
 msgstr ""
 
-#: src/applications/fs/gap/ondemand.c:566
+#: src/applications/fs/gap/ondemand.c:568
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
@@ -5811,6 +5645,114 @@ msgstr ""
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
+
+#, fuzzy
+#~ msgid "Could not determine my public IPv6 address.\n"
+#~ msgstr "OYA Rusange Aderesi"
+
+#, fuzzy
+#~ msgid "`%s': unknown service: %s\n"
+#~ msgstr "'%s':Kitazwi Serivisi"
+
+#, fuzzy
+#~ msgid "Failed to start transport service on port %d.\n"
+#~ msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
+
+#, fuzzy
+#~ msgid "# bytes received via TCP6"
+#~ msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#, fuzzy
+#~ msgid "# bytes sent via TCP6"
+#~ msgstr "#Bayite Yoherejwe:"
+
+#, fuzzy
+#~ msgid "UDP6: Could not determine my public IPv6 address.\n"
+#~ msgstr "OYA Rusange Aderesi"
+
+#, fuzzy
+#~ msgid "# bytes received via UDP6"
+#~ msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
+
+#, fuzzy
+#~ msgid "# bytes sent via UDP6"
+#~ msgstr "#Bayite Yoherejwe:"
+
+#, fuzzy
+#~ msgid "Received malformed message instead of welcome message. Closing.\n"
+#~ msgstr "Ubutumwa Bivuye Ukwihuza"
+
+#, fuzzy
+#~ msgid "Received malformed message from tcp-peer connection. Closing.\n"
+#~ msgstr "Ubutumwa Bivuye Ukwihuza"
+
+#, fuzzy
+#~ msgid "TCP: Could not determine my public IP address.\n"
+#~ msgstr "OYA Rusange Aderesi"
+
+#, fuzzy
+#~ msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
+#~ msgstr ""
+#~ "Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ "."
+
+#, fuzzy
+#~ msgid "UDP: Could not determine my public IP address.\n"
+#~ msgstr "OYA Rusange Aderesi"
+
+#, fuzzy
+#~ msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
+#~ msgstr ""
+#~ "Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ ". Project- Id- Version: basctl\n"
+#~ "POT- Creation- Date: 2003- 12- 07 17: 13+ 02\n"
+#~ "PO- Revision- Date: 2004- 11- 04 10: 13- 0700\n"
+#~ "Last- Translator: Language- Team:< en@ li. org> MIME- Version: 1. 0\n"
+#~ "Content- Type: text/ plain; charset= UTF- 8\n"
+#~ "Content- Transfer- Encoding: 8bit\n"
+#~ "X- Generator: KBabel 1. 0\n"
+#~ "."
+
+#, fuzzy
+#~ msgid "Received malformed message from udp-peer connection. Closing.\n"
+#~ msgstr "Ubutumwa Bivuye Ukwihuza"
+
+#, fuzzy
+#~ msgid "exit after receiving LIMIT results"
+#~ msgstr "Gusohoka Nyuma Ibisubizo ku"
+
+#, fuzzy
+#~ msgid "wait DELAY seconds for search results before aborting"
+#~ msgstr "Tegereza amasogonda kugirango Gushaka Ibisubizo ku Mbere"
+
+#, fuzzy
+#~ msgid "Message received from peer is invalid.\n"
+#~ msgstr "BYAKIRIWE Bivuye ni Sibyo"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "Failed to receive reply from gnunetd.\n"
+#~ msgstr "Kuri Akira Kuri Ubutumwa Bivuye"
 
 #, fuzzy
 #~ msgid "GAP received invalid content from `%s'\n"

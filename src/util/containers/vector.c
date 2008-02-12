@@ -392,7 +392,7 @@ void *
 GNUNET_vector_get (Vector * v, unsigned int index)
 {
   int ret;
-  if ((index < 0) || (index >= v->size))
+  if (index >= v->size)
     return NULL;
   ret = vectorFindIndex (v, index, &v->iteratorSegment);
   if (ret == -1)

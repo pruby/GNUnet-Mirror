@@ -672,8 +672,8 @@ gaim_upnp_discover (struct GNUNET_GE_Context *ectx,
 const char *
 gaim_upnp_get_public_ip ()
 {
-  if (control_info.status == GAIM_UPNP_STATUS_DISCOVERED
-      && control_info.publicip && strlen (control_info.publicip) > 0)
+  if ((control_info.status == GAIM_UPNP_STATUS_DISCOVERED)
+      && (strlen (control_info.publicip) > 0))
     return control_info.publicip;
   return NULL;
 }
