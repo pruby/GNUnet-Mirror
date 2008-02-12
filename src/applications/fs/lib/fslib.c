@@ -343,6 +343,7 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
 {
   struct GNUNET_FS_SearchHandle *ret;
   CS_fs_request_search_MESSAGE *req;
+  int ok;
 #if DEBUG_FSLIB
   GNUNET_EncName enc;
 #endif
@@ -380,9 +381,9 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
 	  ctx->total_requested++,
 	  type);
 #endif
-  GNUNET_client_connection_write (ctx->sock, &req->header);
+  ok = GNUNET_client_connection_write (ctx->sock, &req->header);
   GNUNET_mutex_unlock (ctx->lock);
-  return GNUNET_OK;
+  return ok;
 }
 
 /**
