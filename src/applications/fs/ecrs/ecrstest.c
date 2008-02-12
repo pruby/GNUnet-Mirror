@@ -40,9 +40,9 @@ testTerminate (void *unused)
 }
 
 static int
-testTerminateNC (void * ptr)
+testTerminateNC (void *ptr)
 {
-  void ** p = ptr;
+  void **p = ptr;
   if (NULL == (*p))
     return GNUNET_OK;
   return GNUNET_SYSERR;
@@ -50,7 +50,7 @@ testTerminateNC (void * ptr)
 
 static struct GNUNET_GC_Configuration *cfg;
 
-static struct GNUNET_ECRS_URI * want;
+static struct GNUNET_ECRS_URI *want;
 
 static char *
 makeName (unsigned int i)
@@ -98,7 +98,7 @@ uploadFile (unsigned int size)
       struct GNUNET_ECRS_MetaData *meta;
       struct GNUNET_ECRS_URI *key;
       const char *keywords[2];
-      
+
       keywords[0] = name;
       keywords[1] = NULL;
 
@@ -133,8 +133,7 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
   struct GNUNET_ECRS_URI **my = closure;
   char *tmp;
 
-  if (! GNUNET_ECRS_uri_test_equal(want,
-				   fi->uri))
+  if (!GNUNET_ECRS_uri_test_equal (want, fi->uri))
     return GNUNET_OK;
   tmp = GNUNET_ECRS_uri_to_string (fi->uri);
   GNUNET_GE_LOG (NULL,
@@ -159,7 +158,8 @@ searchFile (struct GNUNET_ECRS_URI **uri)
   myURI = NULL;
   ret = GNUNET_ECRS_search (NULL,
                             cfg,
-                            *uri, 0, &searchCB, &myURI, &testTerminateNC, &myURI);
+                            *uri, 0, &searchCB, &myURI, &testTerminateNC,
+                            &myURI);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))

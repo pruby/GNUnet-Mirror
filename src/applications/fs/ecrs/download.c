@@ -842,12 +842,12 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
                                                  fn,
                                                  O_CREAT | O_RDWR,
                                                  S_IRUSR | S_IWUSR);
+          GNUNET_free (fn);
           if (rm.handles[i] < 0)
             {
               free_request_manager (&rm, GNUNET_NO);
               return GNUNET_SYSERR;
             }
-          GNUNET_free (fn);
         }
     }
   rm.lock = GNUNET_mutex_create (GNUNET_YES);
@@ -878,6 +878,7 @@ GNUNET_ECRS_file_download_partial (struct GNUNET_GE_Context *ectx,
     GNUNET_free (top);
   GNUNET_mutex_unlock (rm.lock);
   while ((GNUNET_OK == tt (ttClosure)) &&
+         (GNUNET_YES != GNUNET_shutdown_test ()) &&
          (rm.abortFlag == GNUNET_NO) && (rm.head != NULL))
     GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
   if ((rm.head == NULL) &&

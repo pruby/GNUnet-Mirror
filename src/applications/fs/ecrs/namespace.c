@@ -463,6 +463,7 @@ GNUNET_ECRS_namespace_add_content (struct GNUNET_GE_Context *ectx,
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (dstURI);
           GNUNET_RSA_free_key (hk);
+          GNUNET_free (value);
           return NULL;
         }
       size = sizeof (SBlock) + mdsize + strlen (dstURI) + 1;

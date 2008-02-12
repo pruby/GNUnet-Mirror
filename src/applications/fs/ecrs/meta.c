@@ -826,7 +826,7 @@ GNUNET_ECRS_suggest_better_filename (struct GNUNET_GE_Context *ectx,
              (filename[i] != '.') && (filename[i] != DIR_SEPARATOR))
         i--;
       if (filename[i] == '.')
-        mime = GNUNET_strdup (&filename[i]);
+        mime = &filename[i];
     }
   if (mime == NULL)
     {

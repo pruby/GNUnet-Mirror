@@ -83,7 +83,7 @@ uploadFile (unsigned int size)
                                  GNUNET_get_time () + 10 * GNUNET_CRON_MINUTES, /* expire */
                                  NULL,  /* progress */
                                  NULL, &testTerminate, NULL, &uri);
-  GNUNET_free(name);
+  GNUNET_free (name);
   return uri;
 }
 
@@ -204,10 +204,10 @@ main (int argc, char *argv[])
       fprintf (stderr, "Testing filesize %u ", filesizes[i]);
       uri = uploadFile (filesizes[i]);
       if (uri == NULL)
-	{
-	  fprintf (stderr, "Error.\n");
-	  CHECK(0);
-	}
+        {
+          fprintf (stderr, "Error.\n");
+          CHECK (0);
+        }
       CHECK (GNUNET_OK == downloadFile (filesizes[i], uri));
       GNUNET_ECRS_uri_destroy (uri);
       CHECK (GNUNET_OK == unindexFile (filesizes[i]));

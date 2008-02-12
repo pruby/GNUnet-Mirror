@@ -287,11 +287,11 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
       GNUNET_EC_file_block_get_key (db, size + sizeof (DBlock), &mchk.key);
       GNUNET_EC_file_block_get_query (db, size + sizeof (DBlock),
                                       &mchk.query);
-#if DEBUG_UPLOAD 
+#if DEBUG_UPLOAD
       GNUNET_hash_to_enc (&mchk.query, &enc);
-      fprintf(stderr,
-	      "Query for current block of size %u is `%s'\n", size,
-	      (const char*) &enc);
+      fprintf (stderr,
+               "Query for current block of size %u is `%s'\n", size,
+               (const char *) &enc);
 #endif
       if (doIndex)
         {

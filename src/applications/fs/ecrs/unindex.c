@@ -226,7 +226,10 @@ GNUNET_ECRS_file_unindex (struct GNUNET_GE_Context *ectx,
 
   fd = GNUNET_disk_file_open (ectx, filename, O_RDONLY | O_LARGEFILE);
   if (fd == -1)
-    return GNUNET_SYSERR;
+    {
+      GNUNET_client_connection_destroy (sock);
+      return GNUNET_SYSERR;
+    }
   dblock =
     GNUNET_malloc (sizeof (GNUNET_DatastoreValue) + DBLOCK_SIZE +
                    sizeof (DBlock));

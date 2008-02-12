@@ -176,6 +176,7 @@ GNUNET_ECRS_publish_under_keyword (struct GNUNET_GE_Context *ectx,
         {
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (dstURI);
+          GNUNET_free (value);
           return GNUNET_SYSERR;
         }
       size = sizeof (KBlock) + strlen (dstURI) + 1 + mdsize;

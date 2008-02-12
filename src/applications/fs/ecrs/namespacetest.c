@@ -54,7 +54,8 @@ spcb (const GNUNET_ECRS_FileInfo * fi,
   return GNUNET_OK;
 }
 
-static int tt(void * unused) 
+static int
+tt (void *unused)
 {
   if (match == 1)
     return GNUNET_SYSERR;
