@@ -4,7 +4,7 @@
 // Minor improvements by Christian Grothoff <christian@grothoff.org>
 header("Content-Type: application/octet-stream\r\n\r\n");
 $extmas = array('2','3','4','5','6','8','12','17','23','25');
-$path = '/var/lib/GNUnet/data/hosts/'; // adjust as necessary
+$path = '/var/lib/gnunet/data/hosts/'; // adjust as necessary
 $dir = opendir($path);
 if (! $dir)
   die("Cannot open directory $path.\n");
