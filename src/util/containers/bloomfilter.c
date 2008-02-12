@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -628,6 +628,29 @@ GNUNET_bloomfilter_add (Bloomfilter * bf, const GNUNET_HashCode * e)
   GNUNET_mutex_lock (bf->lock);
   iterateBits (bf, &incrementBitCallback, NULL, e);
   GNUNET_mutex_unlock (bf->lock);
+}
+
+
+/**
+ * Or the entries of the given raw data array with the
+ * data of the given bloom filter.  Assumes that
+ * the size of the data array and the current filter
+ * match.
+ * @param bf the filter
+ */
+int GNUNET_bloomfilter_or (struct GNUNET_BloomFilter *bf,
+			   const char * data,
+			   unsigned int size)
+{
+  unsigned int i;
+
+  if (bf->bitArraySize != size)
+    return GNUNET_SYSERR;
+  /* FIXME: we could do this 4-8x faster by 
+     going over int/long arrays */
+  for (i=0;i<size;i++)
+    bf->bitArray[i] |= data[i];  
+  return GNUNET_OK;
 }
 
 /**
