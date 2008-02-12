@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_protocols.h"
 #include "shared.h"
 #include "fs.h"
 
@@ -84,54 +85,44 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
                                           const DBlock * data,
                                           GNUNET_HashCode * hc)
 {
+#if 0
   struct ResponseList *seen;
+#endif
   GNUNET_HashCode m;
   int ret;
 
   /* check that type and primary key match */
-  if ((rl->type != ntohl (data->type)) ||
+  if ( ( (rl->type != GNUNET_ECRS_BLOCKTYPE_ANY) &&
+	 (rl->type != ntohl (data->type)) ) ||
       (0 != memcmp (primary_key, &rl->queries[0], sizeof (GNUNET_HashCode))))
-    {
-      fprintf(stderr,
-	      "Response does not match request\n");
-      return GNUNET_NO;
-    }
+    return GNUNET_NO;    
 
   /* check that content matches query */
-  ret = GNUNET_EC_is_block_applicable_for_query (rl->type,
+  ret = GNUNET_EC_is_block_applicable_for_query (ntohl(data->type),
                                                  size,
                                                  data,
                                                  &rl->queries[0],
                                                  rl->key_count,
                                                  &rl->queries[0]);
   if (ret != GNUNET_OK)
-    {
-      fprintf(stderr,
-	      "Response does not match request (EC)\n");
-      return ret;
-    }
+    return ret;    
 
   /* check that this is a new response */
   GNUNET_hash (data, size, hc);
   GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
   if ((rl->bloomfilter != NULL) &&
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
-    {
-      fprintf(stderr,
-	      "Response does not match request (BF)\n");
-      return GNUNET_NO;           /* not useful */
-    }
+    return GNUNET_NO;           /* not useful */    
+#if 0
+  /* bloomfilter should cover these already */
   seen = rl->responses;
   while (seen != NULL)
     {
       if (0 == memcmp (hc, &seen->hash, sizeof (GNUNET_HashCode)))
-	{
-	  fprintf(stderr,
-		  "Response does not match request (seen)\n");
-	  return GNUNET_NO;
-	}
+	return GNUNET_NO;	
       seen = seen->next;
     }
+#endif
   return GNUNET_OK;
 }
 
@@ -145,8 +136,12 @@ GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
                                      GNUNET_HashCode * hc)
 {
   struct ResponseList *seen;
+  GNUNET_HashCode m;
 
-  GNUNET_bloomfilter_add (rl->bloomfilter, hc);
+  GNUNET_FS_HELPER_mingle_hash (hc,
+				rl->bloomfilter_mutator,
+				&m);
+  GNUNET_bloomfilter_add (rl->bloomfilter, &m);
   /* update seen list */
   seen = GNUNET_malloc (sizeof (struct ResponseList));
   seen->hash = *hc;
@@ -210,6 +205,8 @@ GNUNET_FS_HELPER_mingle_hash (const GNUNET_HashCode * in,
 int
 GNUNET_FS_HELPER_bound_ttl (int ttl_in, unsigned int prio)
 {
+  if (ttl_in <= 0)
+    return ttl_in;
   if (ttl_in >
       ((unsigned long long) prio) * TTL_DECREMENT / GNUNET_CRON_SECONDS)
     {

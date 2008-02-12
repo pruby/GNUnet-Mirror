@@ -76,8 +76,6 @@ send_delayed (void *cls)
 {
   GNUNET_MessageHeader *msg = cls;
 
-  fprintf(stderr,
-	  "!!!!!!!!!!!!!!!!!!!!!Injecting local result!!!!!!!!!!!!!!!!!!!!!!!\n");
   coreAPI->p2p_inject_message (NULL,
                                (const char *) msg,
                                ntohs (msg->size), GNUNET_YES, NULL);
@@ -149,8 +147,6 @@ datastore_value_processor (const GNUNET_HashCode * key,
   msg->reserved = htonl (0);
   msg->expiration = et;
   memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
-  fprintf(stderr,
-	  "GAP found response, queuing for delayed sending\n");
   GNUNET_cron_add_job (cron,
                        send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
@@ -193,27 +189,23 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   PID_INDEX peer;
   unsigned int index;
   GNUNET_CronTime now;
+  GNUNET_CronTime newTTL;
   int ret;
 
   GNUNET_GE_ASSERT (NULL, query_count > 0);
   GNUNET_mutex_lock (GNUNET_FS_lock);
   index = get_table_index (&queries[0]);
   now = GNUNET_get_time ();
-
+  newTTL = now + ttl * GNUNET_CRON_SECONDS;
+  
   /* check if table is full (and/or delete old entries!) */
   if ((table[index] != NULL) && (table[index]->next != NULL))
     {
-      fprintf(stderr,
-	      "New TTL: %llu + %d = %llu, Old: %llu and %llu\n",
-	      now, ttl, now+ttl, table[index]->expiration, table[index]->next->expiration);
       /* limit to at most two entries per slot in table */
-      if ((now + ttl < table[index]->expiration) &&
-          (now + ttl < table[index]->next->expiration))
+      if ((newTTL < table[index]->expiration) &&
+          (newTTL < table[index]->next->expiration))
         {
           /* do not process */
-	  fprintf(stderr,
-		  "GAP too busy to create RT entry for query in slot %u\n",
-		  index);
           GNUNET_mutex_unlock (GNUNET_FS_lock);
           return;
         }
@@ -229,7 +221,6 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
           GNUNET_FS_SHARED_free_request_list (rl);
         }
     }
-
   /* create new table entry */
   rl =
     GNUNET_malloc (sizeof (struct RequestList) +
@@ -250,17 +241,11 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->type = type;
   rl->value = priority;
   rl->remaining_value = priority > 0 ? priority - 1 : 0;
-  rl->expiration = GNUNET_get_time () + ttl * GNUNET_CRON_SECONDS;
+  rl->expiration = newTTL;
   rl->next = table[index];
   rl->response_target = GNUNET_FS_PT_intern (respond_to);
+  rl->policy = policy;
   table[index] = rl;
-  fprintf(stderr,
-	  "GAP creates RT entry `%p' for query with ttl %d prio %u from `%u' in slot %u\n",
-	  rl,
-	  ttl, 
-	  priority,
-	  rl->response_target,
-	  index);
 
   /* check local data store */
   ret = datastore->get (&queries[0], type, datastore_value_processor, rl);
@@ -306,19 +291,23 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   GNUNET_HashCode hc;
   GNUNET_PeerIdentity target;
   struct RequestList *rl;
+  struct RequestList *prev;
   unsigned int value;
   P2P_gap_reply_MESSAGE *msg;
   PID_INDEX rid;
+  unsigned int index;
 
   value = 0;
   GNUNET_mutex_lock (GNUNET_FS_lock);
   rid = GNUNET_FS_PT_intern (sender);
-  rl = table[get_table_index (primary_query)];
+  index = get_table_index (primary_query);
+  rl = table[index];
   fprintf(stderr,
 	  "GAP received response from `%u' - slot: %u == %p\n",
 	  rid,
 	  get_table_index (primary_query),
 	  rl);
+  prev = NULL;
   while (rl != NULL)
     {
       if (GNUNET_OK == GNUNET_FS_SHARED_test_valid_new_response (rl,
@@ -330,7 +319,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           GNUNET_FS_PT_resolve (rl->response_target, &target);
           /* queue response */
           msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
-          msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
+          msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
           msg->header.size = htons (sizeof (P2P_gap_reply_MESSAGE) + size);
           msg->reserved = 0;
           msg->expiration = GNUNET_htonll (expiration);
@@ -350,7 +339,21 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
           value += rl->value;
           rl->value = 0;
+          if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA) 
+	    {
+	      if (prev == NULL)
+		table[index] = rl->next;
+	      else
+		prev->next = rl->next;
+	      GNUNET_FS_SHARED_free_request_list (rl);
+	      if (prev == NULL)
+		rl = table[index];
+	      else
+		rl = prev->next;
+	      continue;
+	    }
         }
+      prev = rl;
       rl = rl->next;
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
@@ -413,9 +416,6 @@ cleanup_on_peer_disconnect (const GNUNET_PeerIdentity * peer, void *unused)
         {
           if (pid == rl->response_target)
             {
-	      fprintf(stderr,
-		      "GAP cleans up table due to disconnect from `%u'\n",
-		      pid);
               if (prev == NULL)
                 table[i] = rl->next;
               else

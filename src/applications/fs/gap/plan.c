@@ -404,27 +404,36 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       if (prio > allowable_prio)
         prio = allowable_prio;
     }
-  ttl = rpc->request->last_ttl_used;
+  if ( (rpc->request->response_client == NULL) &&
+       (prio > rpc->request->remaining_value) )
+    prio = rpc->request->remaining_value;
   if (prio > 0)
     {
       ttl = (1 << 30);          /* bound only by prio */
     }
   else
     {
-      if (rpc->request->response_client == NULL)
+      if (rpc->request->response_client != NULL)
         ttl = 0;                /* initiator expiration is always "now" */
       else
-        ttl =
-          (int) (((long long) (rpc->request->expiration -
-                               now)) / GNUNET_CRON_SECONDS);
-      ttl =
-        ttl - TTL_DECREMENT - GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-                                                 2 * TTL_DECREMENT);
-      if (ttl > 0)              /* integer underflow */
-        ttl = -(1 << 30);
+	{
+	  ttl =
+	    (int) (((long long) (rpc->request->expiration -
+				 now)) / (long long)GNUNET_CRON_SECONDS);
+	}
+      if (ttl < 0)
+	{
+	  ttl -= TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+						    2 * TTL_DECREMENT);
+	  if (ttl > 0)              /* integer underflow */
+	    ttl = -(1 << 30);
+	} 
+      else
+	{
+	  ttl -= TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+						     2 * TTL_DECREMENT);
+	}
     }
-  fprintf(stderr,
-	  "Plan's TTL is %d (%u)\n", ttl, prio);
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
   rank->prio = prio;
   rank->ttl = ttl;
@@ -479,10 +488,6 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   double prob;
 
   GNUNET_mutex_lock (GNUNET_FS_lock);   /* needed? */
-  fprintf(stderr,
-	  "Planning query of %p/%u\n",
-	  client, 
-	  peer);
   info = clients;
   while ((info != NULL) && ((info->client != client) || (info->peer != peer)))
     info = info->next;
@@ -527,12 +532,6 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   if (target_count > total_peers)
     target_count = total_peers;
 
-  fprintf(stderr,
-	  "Will adding query from %p/%u to %u peers\n",
-	  client,
-	  peer,
-	  target_count);
-
   /* select target_count peers */
   for (i = 0; i < target_count; i++)
     {
@@ -542,13 +541,18 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
         {
           if (rank->score > selector)
             {
-	      fprintf(stderr,
-		      "Adding query from %p/%u to plan for peer %u with ttl %d and prio %u\n",
-		      client,
-		      peer,
-		      rank->peer,
-		      rank->ttl,
-		      rank->prio);
+	      if (request->response_client == NULL)
+		{
+		  if (rank->prio > request->remaining_value)    
+		    {
+		      if ( (i == target_count - 1) ||
+			   (request->remaining_value == 0) )
+			rank->prio = request->remaining_value;
+		      else
+			rank->prio = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, request->remaining_value);
+		    }
+		  request->remaining_value -= rank->prio;
+		}
               add_request (rank->peer, request, rank->ttl, rank->prio);
               total_score -= rank->score;
               rank->score = 0;  /* mark as used */
@@ -593,9 +597,6 @@ try_add_request (struct RequestList *req,
     + req->bloomfilter_size + (req->key_count - 1) * sizeof (GNUNET_HashCode);
   if (size > available)
     return 0;
-  fprintf(stderr,
-	  "Adding request to send buffer (plan.c) with TTL %d (%d) and prio %u\n",
-	  ttl, GNUNET_FS_HELPER_bound_ttl(ttl, prio), prio);
   if ((prio > req->remaining_value) && (req->response_client == NULL))
     prio = req->remaining_value; 
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
@@ -606,7 +607,11 @@ try_add_request (struct RequestList *req,
   msg->ttl = htonl (ttl);
   msg->filter_mutator = htonl (req->bloomfilter_mutator);
   msg->number_of_queries = htonl (req->key_count);
-  msg->returnTo = *coreAPI->myIdentity; /* FIXME? */
+  if (0 != (req->policy & GNUNET_FS_RoutingPolicy_INDIRECT))
+    msg->returnTo = *coreAPI->myIdentity; 
+  else
+    GNUNET_FS_PT_resolve(req->response_target,
+			 &msg->returnTo);
   memcpy (&msg->queries[0],
           &req->queries[0], req->key_count * sizeof (GNUNET_HashCode));
   if (req->bloomfilter != NULL)
@@ -656,10 +661,6 @@ query_fill_callback (const GNUNET_PeerIdentity *
   if (pl != NULL)
     {
       e = pl->head;
-      if (e != NULL)
-	fprintf(stderr,
-		"Asked to fill buffer for %u - and I have a plan!\n",
-		peer);
       while ((e != NULL) && (padding - off >= sizeof (P2P_gap_query_MESSAGE)))
         {
           ret = try_add_request (e->request,

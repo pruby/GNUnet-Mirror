@@ -100,11 +100,8 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   request->type = type;
   request->primary_target = GNUNET_FS_PT_intern (target);
   request->response_client = client;
+  request->policy = GNUNET_FS_RoutingPolicy_ALL;
   memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
-  fprintf(stderr,
-	  "Tracking request of type %u from client %p\n", 
-	  type,
-	  client);
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
   while ((cl != NULL) && (cl->client != client))
@@ -229,8 +226,6 @@ handle_response (PID_INDEX sender,
   msg->anonymityLevel = htonl (0);      /* unknown */
   msg->expirationTime = GNUNET_htonll (expirationTime);
   memcpy (&msg[1], data, size);
-  fprintf(stderr,
-	  "Forwarding response to client\n");
   coreAPI->cs_send_to_client (client,
                               &msg->header,
                               (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
@@ -398,10 +393,10 @@ repeat_requests_job (void *unused)
       while (request != NULL)
         {
           if ((NULL == request->plan_entries) &&
-              ((request->expiration == 0) ||
+              ((client->client != NULL) ||
                (request->expiration > now)) &&
               (request->last_ttl_used * GNUNET_CRON_SECONDS +
-               request->last_request_time > now))
+               request->last_request_time < now))
             GNUNET_FS_PLAN_request (client->client, 0, request);
 
           if ((request->anonymityLevel == 0) &&

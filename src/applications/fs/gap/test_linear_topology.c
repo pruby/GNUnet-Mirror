@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -37,7 +37,7 @@
 
 #define PEER_COUNT 2
 
-#define SIZE 1024 * 32 * 2
+#define SIZE 1024 * 1024 * 2
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -198,6 +198,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                  "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
+  unlink(tmpName);
   ret = GNUNET_SYSERR;
   if (GNUNET_OK == GNUNET_ECRS_file_download (ectx,
                                               cfg,
@@ -303,8 +304,7 @@ main (int argc, char **argv)
   printf ("Downloading...\n");
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   printf ("Download successful at %llu kbps!\n",
-          (SIZE / 1024) / ((GNUNET_get_time () - start) /
-                           GNUNET_CRON_SECONDS));
+          (SIZE * GNUNET_CRON_SECONDS/ 1024) / ((1 + GNUNET_get_time () - start)));
   GNUNET_ECRS_uri_destroy (uri);
   GNUNET_GC_set_configuration_value_string (cfg,
                                             ectx,

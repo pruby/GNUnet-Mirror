@@ -29,6 +29,7 @@
 #include "gnunet_util.h"
 #include "ecrs_core.h"
 #include "pid_table.h"
+#include "gap.h"
 
 /**
  * Linked list of responses that we have gotten for
@@ -177,6 +178,11 @@ struct RequestList
    * if response_client == NULL).
    */
   unsigned int remaining_value;
+
+  /**
+   * Routing policy for the request (foward, indirect).
+   */
+  enum GNUNET_FS_RoutingPolicy policy;
 
   /**
    * The queries of this request.  At least one,

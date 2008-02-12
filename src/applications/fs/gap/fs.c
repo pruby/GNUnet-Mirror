@@ -521,7 +521,6 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   unsigned int type;
   unsigned int netLoad;
   enum GNUNET_FS_RoutingPolicy policy;
-  GNUNET_PeerIdentity respond_to;
   double preference;
 
   fprintf(stderr,
@@ -541,9 +540,6 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                      "Dropping query from %s, this peer is too busy.\n",
                      sender == NULL ? "localhost" : (char *) &enc);
 #endif
-      fprintf(stderr,
-	      "FS dropped P2P query from `%p' due to high load\n",
-	      sender);
       return GNUNET_OK;
     }
   size = ntohs (msg->size);
@@ -552,8 +548,6 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* malformed query */
     }
-  fprintf(stderr,
-	  "FS is processing P2P query\n");
   req = (const P2P_gap_query_MESSAGE *) msg;
   query_count = ntohl (req->number_of_queries);
   if ((query_count == 0) ||
@@ -595,17 +589,9 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
         policy = GNUNET_FS_RoutingPolicy_ANSWER;
       return GNUNET_OK;         /* drop */
     }
-  if ((policy & GNUNET_FS_RoutingPolicy_INDIRECT) > 0)
-    {
-      respond_to = *coreAPI->myIdentity;
-    }
-  else
-    {
-      /* otherwise we preserve the original sender
-         and kill the priority (since we cannot benefit) */
-      respond_to = *sender;
-      prio = 0;
-    }
+  if ((policy & GNUNET_FS_RoutingPolicy_INDIRECT) == 0)
+      /* kill the priority (since we cannot benefit) */
+    prio = 0;
   ttl = GNUNET_FS_HELPER_bound_ttl (ntohl (req->ttl), prio);
   type = ntohl (req->type);
   /* decrement ttl (always) */
@@ -622,17 +608,11 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       ttl -= 2 * TTL_DECREMENT +
         GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, TTL_DECREMENT);
     }
-  fprintf(stderr,
-	  "TTL in: %d out: %d (prio: %u)\n", 
-	  ntohl(req->type),
-	  ttl, 
-	  prio);
-
   preference = (double) prio;
   if (preference < QUERY_BANDWIDTH_VALUE)
     preference = QUERY_BANDWIDTH_VALUE;
   coreAPI->preferTrafficFrom (sender, preference);
-  GNUNET_FS_GAP_execute_query (&respond_to,
+  GNUNET_FS_GAP_execute_query (sender,
                                prio,
                                policy,
                                ttl,
@@ -665,15 +645,15 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   unsigned long long expiration;
   double preference;
 
+  fprintf(stderr,
+	  "FS received P2P content from `%p'\n",
+	  sender);
   size = ntohs (pmsg->size);
   if (size < sizeof (P2P_gap_reply_MESSAGE))
     {
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
-  fprintf(stderr,
-	  "FS received P2P response from `%p'\n",
-	  sender);
   msg = (const P2P_gap_reply_MESSAGE *) pmsg;
   data_size = size - sizeof (P2P_gap_reply_MESSAGE);
   dblock = (const DBlock *) &msg[1];
