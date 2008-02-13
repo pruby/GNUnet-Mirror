@@ -407,8 +407,7 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                             BASE_REPLY_PRIORITY * (1 + rl->value),
                             MAX_GAP_DELAY);
           GNUNET_free (msg);
-          if ((rl->type != GNUNET_ECRS_BLOCKTYPE_DATA) &&
-              (rl->bloomfilter != NULL))
+          if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA) 
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
           value += rl->value;

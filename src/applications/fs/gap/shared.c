@@ -86,9 +86,7 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
                                           const DBlock * data,
                                           GNUNET_HashCode * hc)
 {
-#if 0
   struct ResponseList *seen;
-#endif
   GNUNET_HashCode m;
   int ret;
 
@@ -114,7 +112,6 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
   if ((rl->bloomfilter != NULL) &&
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
     return GNUNET_NO;           /* not useful */    
-#if 0
   /* bloomfilter should cover these already */
   seen = rl->responses;
   while (seen != NULL)
@@ -123,7 +120,6 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
 	return GNUNET_NO;	
       seen = seen->next;
     }
-#endif
   return GNUNET_OK;
 }
 
