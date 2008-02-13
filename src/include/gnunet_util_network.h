@@ -265,13 +265,12 @@ unsigned long long GNUNET_htonll (unsigned long long n);
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the syntax is flawed
  */
-struct GNUNET_IPv4NetworkSet *
-GNUNET_parse_ipv4_network_specification (struct
-					 GNUNET_GE_Context
-					 *ectx,
-					 const
-					 char
-					 *routeList);
+struct GNUNET_IPv4NetworkSet *GNUNET_parse_ipv4_network_specification (struct
+                                                                       GNUNET_GE_Context
+                                                                       *ectx,
+                                                                       const
+                                                                       char
+                                                                       *routeList);
 
 /**
  * Parse a network specification. The argument specifies
@@ -284,13 +283,12 @@ GNUNET_parse_ipv4_network_specification (struct
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the syntax is flawed
  */
-struct GNUNET_IPv6NetworkSet *
-GNUNET_parse_ipv6_network_specification (struct
-					 GNUNET_GE_Context
-					 *ectx,
-					 const
-					 char
-					 *routeList);
+struct GNUNET_IPv6NetworkSet *GNUNET_parse_ipv6_network_specification (struct
+                                                                       GNUNET_GE_Context
+                                                                       *ectx,
+                                                                       const
+                                                                       char
+                                                                       *routeList);
 
 /**
  * Check if the given IP address is in the list of
@@ -332,11 +330,10 @@ int GNUNET_get_host_by_name (struct GNUNET_GE_Context *ectx,
  * The OS socket should henceforth be no longer used
  * directly.  GNUNET_socket_destroy will close it.
  */
-struct GNUNET_SocketHandle *
-GNUNET_socket_create (struct GNUNET_GE_Context
-		      *ectx,
-		      struct GNUNET_LoadMonitor
-		      *mon, int osSocket);
+struct GNUNET_SocketHandle *GNUNET_socket_create (struct GNUNET_GE_Context
+                                                  *ectx,
+                                                  struct GNUNET_LoadMonitor
+                                                  *mon, int osSocket);
 
 /**
  * Close the socket (does NOT destroy it)
@@ -431,7 +428,7 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  *        connections accepted on the given socket
  * @param timeout after how long should inactive connections be
  *        closed?  Use 0 for no timeout.  The specified timeout
- *        will be the default for all new connections; 
+ *        will be the default for all new connections;
  *        after (!) returning (!) from the accept handler,
  *        clients can change the timeout of an individual
  *        socket using GNUNET_select_change_timeout.
@@ -442,23 +439,22 @@ int GNUNET_socket_test_valid (struct GNUNET_SocketHandle *s);
  *        accept at most? 0 for unbounded
  * @return NULL on error
  */
-struct GNUNET_SelectHandle *
-GNUNET_select_create (const char *desc,
-		      int is_udp,
-		      struct GNUNET_GE_Context
-		      *ectx,
-		      struct GNUNET_LoadMonitor
-		      *mon, int sock,
-		      unsigned int max_addr_len,
-		      GNUNET_CronTime timeout,
-		      GNUNET_SelectMessageHandler
-		      mh, void *mh_cls,
-		      GNUNET_SelectAcceptHandler
-		      ah, void *ah_cls,
-		      GNUNET_SelectCloseHandler
-		      ch, void *ch_cls,
-		      unsigned int memory_quota,
-		      int socket_quota);
+struct GNUNET_SelectHandle *GNUNET_select_create (const char *desc,
+                                                  int is_udp,
+                                                  struct GNUNET_GE_Context
+                                                  *ectx,
+                                                  struct GNUNET_LoadMonitor
+                                                  *mon, int sock,
+                                                  unsigned int max_addr_len,
+                                                  GNUNET_CronTime timeout,
+                                                  GNUNET_SelectMessageHandler
+                                                  mh, void *mh_cls,
+                                                  GNUNET_SelectAcceptHandler
+                                                  ah, void *ah_cls,
+                                                  GNUNET_SelectCloseHandler
+                                                  ch, void *ch_cls,
+                                                  unsigned int memory_quota,
+                                                  int socket_quota);
 
 /**
  * Terminate the select thread, close the socket and

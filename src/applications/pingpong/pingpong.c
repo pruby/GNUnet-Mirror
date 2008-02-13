@@ -214,7 +214,7 @@ plaintextPingReceived (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_ADMIN,
                      _("Received PING from `%s' not destined for us!\n"),
-		     &enc);
+                     &enc);
       GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;     /* not for us */
     }

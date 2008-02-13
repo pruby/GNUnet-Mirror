@@ -638,18 +638,18 @@ GNUNET_bloomfilter_add (Bloomfilter * bf, const GNUNET_HashCode * e)
  * match.
  * @param bf the filter
  */
-int GNUNET_bloomfilter_or (struct GNUNET_BloomFilter *bf,
-			   const char * data,
-			   unsigned int size)
+int
+GNUNET_bloomfilter_or (struct GNUNET_BloomFilter *bf,
+                       const char *data, unsigned int size)
 {
   unsigned int i;
 
   if (bf->bitArraySize != size)
     return GNUNET_SYSERR;
-  /* FIXME: we could do this 4-8x faster by 
+  /* FIXME: we could do this 4-8x faster by
      going over int/long arrays */
-  for (i=0;i<size;i++)
-    bf->bitArray[i] |= data[i];  
+  for (i = 0; i < size; i++)
+    bf->bitArray[i] |= data[i];
   return GNUNET_OK;
 }
 

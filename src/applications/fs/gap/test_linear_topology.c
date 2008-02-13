@@ -170,9 +170,7 @@ searchFile (struct GNUNET_ECRS_URI **uri)
   myURI = NULL;
   ret = GNUNET_ECRS_search (ectx,
                             cfg,
-                            *uri,
-                            1,
-                            &searchCB, &myURI, &testTerminate, NULL);
+                            *uri, 1, &searchCB, &myURI, &testTerminate, NULL);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))
@@ -198,7 +196,7 @@ downloadFile (unsigned int size, const struct GNUNET_ECRS_URI *uri)
                  "Starting download of `%s'\n", tmp);
   GNUNET_free (tmp);
   tmpName = makeName (0);
-  unlink(tmpName);
+  unlink (tmpName);
   ret = GNUNET_SYSERR;
   if (GNUNET_OK == GNUNET_ECRS_file_download (ectx,
                                               cfg,
@@ -238,7 +236,7 @@ unindexFile (unsigned int size)
   name = makeName (size);
   ret =
     GNUNET_ECRS_file_unindex (ectx, cfg, name, NULL, NULL, &testTerminate,
-                             NULL);
+                              NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);
@@ -304,7 +302,8 @@ main (int argc, char **argv)
   printf ("Downloading...\n");
   CHECK (GNUNET_OK == downloadFile (SIZE, uri));
   printf ("Download successful at %llu kbps!\n",
-          (SIZE * GNUNET_CRON_SECONDS/ 1024) / ((1 + GNUNET_get_time () - start)));
+          (SIZE * GNUNET_CRON_SECONDS / 1024) /
+          ((1 + GNUNET_get_time () - start)));
   GNUNET_ECRS_uri_destroy (uri);
   GNUNET_GC_set_configuration_value_string (cfg,
                                             ectx,

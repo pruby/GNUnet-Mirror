@@ -522,22 +522,25 @@ selectThread (void *ctx)
             }
         }
       timeout = -1;
-      now = GNUNET_get_time();
+      now = GNUNET_get_time ();
       for (i = 0; i < sh->sessionCount; i++)
         {
           session = sh->sessions[i];
-	  if (session->timeout != 0) 
-	    {
-	      if (now > session->lastUse + session->timeout)
-		timeout = 0;
-	      else
-		timeout = MIN(timeout, session->lastUse + session->timeout - now);
+          if (session->timeout != 0)
+            {
+              if (now > session->lastUse + session->timeout)
+                timeout = 0;
+              else
+                timeout =
+                  MIN (timeout, session->lastUse + session->timeout - now);
             }
         }
       GNUNET_mutex_unlock (sh->lock);
       tv.tv_sec = timeout / GNUNET_CRON_SECONDS;
       tv.tv_usec = (timeout % GNUNET_CRON_SECONDS) * 1000;
-      ret = SELECT (max + 1, &readSet, &writeSet, &errorSet, (timeout == -1) ? NULL : &tv);
+      ret =
+        SELECT (max + 1, &readSet, &writeSet, &errorSet,
+                (timeout == -1) ? NULL : &tv);
       old_errno = errno;
       GNUNET_mutex_lock (sh->lock);
       if ((ret == -1) && ((old_errno == EAGAIN) || (old_errno == EINTR)))
@@ -625,7 +628,7 @@ selectThread (void *ctx)
                 {
                   session = GNUNET_malloc (sizeof (Session));
                   memset (session, 0, sizeof (Session));
-		  session->timeout = sh->timeout;
+                  session->timeout = sh->timeout;
                   session->sock = sock;
                   session->sock_ctx = sctx;
                   session->lastUse = GNUNET_get_time ();
@@ -781,7 +784,7 @@ selectThread (void *ctx)
                                       GNUNET_GE_BULK, "read");
             }
         }
-      now = GNUNET_get_time();
+      now = GNUNET_get_time ();
       for (i = 0; i < sh->sessionCount; i++)
         {
           session = sh->sessions[i];
@@ -804,8 +807,8 @@ selectThread (void *ctx)
               i--;
               continue;
             }
-          if ( (session->timeout != 0) &&
-               (now > session->lastUse + session->timeout) )
+          if ((session->timeout != 0) &&
+              (now > session->lastUse + session->timeout))
             {
               destroySession (sh, session);
               i--;

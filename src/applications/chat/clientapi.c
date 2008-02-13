@@ -161,7 +161,7 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
   // stop thread
   // join thread
-  // free room struct  
+  // free room struct
 
   GNUNET_free (chat_room->nickname);
   GNUNET_free (chat_room->memberInfo);

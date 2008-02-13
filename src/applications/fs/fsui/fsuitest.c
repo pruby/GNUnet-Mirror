@@ -173,8 +173,7 @@ main (int argc, char *argv[])
   GNUNET_snprintf (keyword, 40, "%s %s %s", keywords[0], _("AND"),
                    keywords[1]);
   uri = GNUNET_ECRS_keyword_string_to_uri (NULL, keyword);
-  search =
-    GNUNET_FSUI_search_start (ctx, 0, uri);
+  search = GNUNET_FSUI_search_start (ctx, 0, uri);
   GNUNET_ECRS_uri_destroy (uri);
   CHECK (search != NULL);
   prog = 0;

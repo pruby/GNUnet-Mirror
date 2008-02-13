@@ -38,7 +38,7 @@
 /**
  * How many entires are we allowed to plan-ahead
  * per peer (at most)?
- */ 
+ */
 #define MAX_ENTRIES_PER_PEER 64
 
 
@@ -229,7 +229,7 @@ find_or_create_client_entry (struct GNUNET_ClientHandle *client,
   clients = cl;
   cl->client = client;
   cl->peer = peer;
-  GNUNET_FS_PT_change_rc(peer, 1);
+  GNUNET_FS_PT_change_rc (peer, 1);
   return cl;
 }
 
@@ -262,14 +262,14 @@ find_or_create_history_entry (struct ClientInfoList *cl, PID_INDEX responder)
 }
 
 struct QueryPlanList *
-find_or_create_query_plan_list(PID_INDEX target)
+find_or_create_query_plan_list (PID_INDEX target)
 {
   struct QueryPlanList *qpl;
 
   /* find query plan for target */
   qpl = queries;
   while ((qpl != NULL) && (qpl->peer != target))
-    qpl = qpl->next;  
+    qpl = qpl->next;
   if (qpl == NULL)
     {
       qpl = GNUNET_malloc (sizeof (struct QueryPlanList));
@@ -283,11 +283,11 @@ find_or_create_query_plan_list(PID_INDEX target)
 }
 
 static unsigned int
-count_query_plan_entries(struct QueryPlanList * qpl)
+count_query_plan_entries (struct QueryPlanList *qpl)
 {
   struct QueryPlanEntry *pos;
   unsigned int total;
-  
+
   total = 0;
   pos = qpl->head;
   while (pos != NULL)
@@ -317,8 +317,8 @@ add_request (PID_INDEX target,
   struct QueryPlanEntry *pos;
   unsigned int total;
 
- /* find query plan for target */
-  qpl = find_or_create_query_plan_list(target);
+  /* find query plan for target */
+  qpl = find_or_create_query_plan_list (target);
   /* construct entry */
   entry = GNUNET_malloc (sizeof (struct QueryPlanEntry));
   memset (entry, 0, sizeof (struct QueryPlanEntry));
@@ -331,9 +331,9 @@ add_request (PID_INDEX target,
   request->plan_entries = entry;
 
   if (stats != NULL)
-    stats->change(stat_gap_query_planned, 1);
+    stats->change (stat_gap_query_planned, 1);
   /* compute (random) insertion position in doubly-linked list */
-  total = count_query_plan_entries(qpl);
+  total = count_query_plan_entries (qpl);
   total = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total + 1);
   pos = qpl->head;
   while (total-- > 0)
@@ -352,9 +352,9 @@ add_request (PID_INDEX target,
     {
       entry->next = pos->next;
       if (pos->next == NULL)
-	qpl->tail = entry;
+        qpl->tail = entry;
       else
-	pos->next->prev = entry;
+        pos->next->prev = entry;
       entry->prev = pos;
       pos->next = entry;
     }
@@ -394,11 +394,12 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
   PID_INDEX peer;
 
   peer = GNUNET_FS_PT_intern (identity);
-  if ( (peer == rpc->request->response_target) ||
-       (count_query_plan_entries(find_or_create_query_plan_list(peer)) > MAX_ENTRIES_PER_PEER) )
+  if ((peer == rpc->request->response_target) ||
+      (count_query_plan_entries (find_or_create_query_plan_list (peer)) >
+       MAX_ENTRIES_PER_PEER))
     {
-      GNUNET_FS_PT_change_rc(peer, -1);
-      return; /* ignore! */
+      GNUNET_FS_PT_change_rc (peer, -1);
+      return;                   /* ignore! */
     }
   rank = GNUNET_malloc (sizeof (struct PeerRankings));
   memset (rank, 0, sizeof (struct PeerRankings));
@@ -450,8 +451,8 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       if (prio > allowable_prio)
         prio = allowable_prio;
     }
-  if ( (rpc->request->response_client == NULL) &&
-       (prio > rpc->request->remaining_value) )
+  if ((rpc->request->response_client == NULL) &&
+      (prio > rpc->request->remaining_value))
     prio = rpc->request->remaining_value;
   if (prio > 0)
     {
@@ -462,23 +463,25 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
       if (rpc->request->response_client != NULL)
         ttl = 0;                /* initiator expiration is always "now" */
       else
-	{
-	  ttl =
-	    (int) (((long long) (rpc->request->expiration -
-				 now)) / (long long)GNUNET_CRON_SECONDS);
-	}
+        {
+          ttl =
+            (int) (((long long) (rpc->request->expiration -
+                                 now)) / (long long) GNUNET_CRON_SECONDS);
+        }
       if (ttl < 0)
-	{
-	  ttl -= TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-						    2 * TTL_DECREMENT);
-	  if (ttl > 0)              /* integer underflow */
-	    ttl = -(1 << 30);
-	} 
+        {
+          ttl -=
+            TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                                               2 * TTL_DECREMENT);
+          if (ttl > 0)          /* integer underflow */
+            ttl = -(1 << 30);
+        }
       else
-	{
-	  ttl -= TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
-						     2 * TTL_DECREMENT);
-	}
+        {
+          ttl -=
+            TTL_DECREMENT + GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                                               2 * TTL_DECREMENT);
+        }
     }
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
   rank->prio = prio;
@@ -559,8 +562,8 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
     }
   if (total_score == 0)
     {
-      GNUNET_mutex_unlock(GNUNET_FS_lock);
-      return; /* no peers available */
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
+      return;                   /* no peers available */
     }
 
   entropy = 0;
@@ -592,18 +595,20 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
         {
           if (rank->score > selector)
             {
-	      if (request->response_client == NULL)
-		{
-		  if (rank->prio > request->remaining_value)    
-		    {
-		      if ( (i == target_count - 1) ||
-			   (request->remaining_value == 0) )
-			rank->prio = request->remaining_value;
-		      else
-			rank->prio = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, request->remaining_value);
-		    }
-		  request->remaining_value -= rank->prio;
-		}
+              if (request->response_client == NULL)
+                {
+                  if (rank->prio > request->remaining_value)
+                    {
+                      if ((i == target_count - 1) ||
+                          (request->remaining_value == 0))
+                        rank->prio = request->remaining_value;
+                      else
+                        rank->prio =
+                          GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
+                                             request->remaining_value);
+                    }
+                  request->remaining_value -= rank->prio;
+                }
               add_request (rank->peer, request, rank->ttl, rank->prio);
               total_score -= rank->score;
               rank->score = 0;  /* mark as used */
@@ -649,7 +654,7 @@ try_add_request (struct RequestList *req,
   if (size > available)
     return 0;
   if ((prio > req->remaining_value) && (req->response_client == NULL))
-    prio = req->remaining_value; 
+    prio = req->remaining_value;
   ttl = GNUNET_FS_HELPER_bound_ttl (ttl, prio);
   msg->header.size = htons (size);
   msg->header.type = htons (GNUNET_P2P_PROTO_GAP_QUERY);
@@ -659,10 +664,9 @@ try_add_request (struct RequestList *req,
   msg->filter_mutator = htonl (req->bloomfilter_mutator);
   msg->number_of_queries = htonl (req->key_count);
   if (0 != (req->policy & GNUNET_FS_RoutingPolicy_INDIRECT))
-    msg->returnTo = *coreAPI->myIdentity; 
+    msg->returnTo = *coreAPI->myIdentity;
   else
-    GNUNET_FS_PT_resolve(req->response_target,
-			 &msg->returnTo);
+    GNUNET_FS_PT_resolve (req->response_target, &msg->returnTo);
   memcpy (&msg->queries[0],
           &req->queries[0], req->key_count * sizeof (GNUNET_HashCode));
   if (req->bloomfilter != NULL)
@@ -674,7 +678,7 @@ try_add_request (struct RequestList *req,
   req->last_ttl_used = ttl;
   req->remaining_value -= prio;
   if (stats != NULL)
-    stats->change(stat_gap_query_sent, 1);
+    stats->change (stat_gap_query_sent, 1);
   return size;
 }
 
@@ -832,7 +836,7 @@ GNUNET_FS_PLAN_success (PID_INDEX responder,
   hl->response_count++;
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (stats != NULL)
-    stats->change(stat_gap_query_success, 1);
+    stats->change (stat_gap_query_success, 1);
 }
 
 /**
@@ -914,7 +918,7 @@ peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
             cpos = clients;
           else
             cpos = cprev->next;
-	  continue;
+          continue;
         }
       cprev = cpos;
       cpos = cpos->next;

@@ -149,7 +149,7 @@ multi_update (GtkToggleButton * button, gpointer user_data)
                (s[strlen (opt)] != ' ')) || ((s != val) && (s[-1] != ' '))))
         v = s + 1;
       GNUNET_GE_ASSERT (NULL, s != NULL);
-      ret = GNUNET_malloc (strlen (val)+1);
+      ret = GNUNET_malloc (strlen (val) + 1);
       s[0] = '\0';
       if (s != val)
         s[-1] = '\0';           /* kill space */

@@ -112,10 +112,9 @@ void GNUNET_thread_release_self (struct GNUNET_ThreadHandle *pt);
  *        will just segfault and gdb will give a messed-up stacktrace.
  * @return the handle
  */
-struct GNUNET_ThreadHandle *
-GNUNET_thread_create (GNUNET_ThreadMainFunction
-		      main, void *arg,
-		      unsigned int stackSize);
+struct GNUNET_ThreadHandle *GNUNET_thread_create (GNUNET_ThreadMainFunction
+                                                  main, void *arg,
+                                                  unsigned int stackSize);
 
 
 

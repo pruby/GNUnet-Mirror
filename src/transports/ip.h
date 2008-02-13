@@ -55,8 +55,8 @@ int GNUNET_IP_get_public_ipv4_address (struct GNUNET_GC_Configuration *cfg,
  * @return GNUNET_SYSERR on error, GNUNET_OK on success
  */
 int GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
-				       struct GNUNET_GE_Context *ectx,
-				       GNUNET_IPv6Address * address);
+                                       struct GNUNET_GE_Context *ectx,
+                                       GNUNET_IPv6Address * address);
 
 
 /**

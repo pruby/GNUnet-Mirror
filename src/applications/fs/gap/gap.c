@@ -225,70 +225,68 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl = table[index];
   while (rl != NULL)
     {
-      if ( (rl->type == type) &&
-	   (rl->response_target == peer) &&
-	   (0 == memcmp(&rl->queries[0], queries,
-			query_count * sizeof(GNUNET_HashCode))) )
-	{
-	  if (rl->expiration > newTTL)
-	    {
-	      /* ignore */
-	      GNUNET_FS_PT_change_rc (peer, -1);
-	      GNUNET_mutex_unlock (GNUNET_FS_lock);
-	      if (stats != NULL)
-		stats->change(stat_gap_query_dropped_redundant, 1);
-	      return;
-	    }
-	  if (stats != NULL)
-	    stats->change(stat_gap_query_refreshed, 1);
-	  rl->value += priority;
-	  rl->remaining_value += priority;
-	  rl->expiration = newTTL;
-	  rl->policy = policy;	  
-	  if ( (rl->bloomfilter_size == filter_size) &&
-	       (rl->bloomfilter_mutator == filter_mutator) )
-	    {
-	      if (rl->bloomfilter_size > 0)
-		{
-		  /* update ttl / BF */
-		  GNUNET_bloomfilter_or(rl->bloomfilter,
-					bloomfilter_data,
-					filter_size);
-		}
-	      GNUNET_FS_PT_change_rc (peer, -1);
-	      GNUNET_mutex_unlock (GNUNET_FS_lock);
-	      return;
-	    }
-	  /* update BF */
-	  if (rl->bloomfilter != NULL)
-	    GNUNET_bloomfilter_free(rl->bloomfilter);
-	  rl->bloomfilter_mutator = filter_mutator;
-	  rl->bloomfilter_size = filter_size;
-	  if (filter_size > 0)
-	    rl->bloomfilter = GNUNET_bloomfilter_init (coreAPI->ectx,
-						       bloomfilter_data,
-						       filter_size,
-						       GAP_BLOOMFILTER_K);
-	  else
-	    rl->bloomfilter = NULL;	    
-	  GNUNET_FS_PT_change_rc (peer, -1);
-	  GNUNET_mutex_unlock (GNUNET_FS_lock);
-	  return;
-	}
-     if (rl->expiration < minTTL)
-	minTTL = rl->expiration;
+      if ((rl->type == type) &&
+          (rl->response_target == peer) &&
+          (0 == memcmp (&rl->queries[0], queries,
+                        query_count * sizeof (GNUNET_HashCode))))
+        {
+          if (rl->expiration > newTTL)
+            {
+              /* ignore */
+              GNUNET_FS_PT_change_rc (peer, -1);
+              GNUNET_mutex_unlock (GNUNET_FS_lock);
+              if (stats != NULL)
+                stats->change (stat_gap_query_dropped_redundant, 1);
+              return;
+            }
+          if (stats != NULL)
+            stats->change (stat_gap_query_refreshed, 1);
+          rl->value += priority;
+          rl->remaining_value += priority;
+          rl->expiration = newTTL;
+          rl->policy = policy;
+          if ((rl->bloomfilter_size == filter_size) &&
+              (rl->bloomfilter_mutator == filter_mutator))
+            {
+              if (rl->bloomfilter_size > 0)
+                {
+                  /* update ttl / BF */
+                  GNUNET_bloomfilter_or (rl->bloomfilter,
+                                         bloomfilter_data, filter_size);
+                }
+              GNUNET_FS_PT_change_rc (peer, -1);
+              GNUNET_mutex_unlock (GNUNET_FS_lock);
+              return;
+            }
+          /* update BF */
+          if (rl->bloomfilter != NULL)
+            GNUNET_bloomfilter_free (rl->bloomfilter);
+          rl->bloomfilter_mutator = filter_mutator;
+          rl->bloomfilter_size = filter_size;
+          if (filter_size > 0)
+            rl->bloomfilter = GNUNET_bloomfilter_init (coreAPI->ectx,
+                                                       bloomfilter_data,
+                                                       filter_size,
+                                                       GAP_BLOOMFILTER_K);
+          else
+            rl->bloomfilter = NULL;
+          GNUNET_FS_PT_change_rc (peer, -1);
+          GNUNET_mutex_unlock (GNUNET_FS_lock);
+          return;
+        }
+      if (rl->expiration < minTTL)
+        minTTL = rl->expiration;
       total++;
       rl = rl->next;
     }
 
-  if ( (total >= MAX_ENTRIES_PER_SLOT) &&
-       (minTTL > newTTL) )
+  if ((total >= MAX_ENTRIES_PER_SLOT) && (minTTL > newTTL))
     {
       /* do not process */
       GNUNET_FS_PT_change_rc (peer, -1);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       if (stats != NULL)
-	stats->change(stat_gap_query_dropped, 1);
+        stats->change (stat_gap_query_dropped, 1);
       return;
     }
   /* delete oldest table entry */
@@ -296,15 +294,15 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl = table[index];
   if (total >= MAX_ENTRIES_PER_SLOT)
     {
-      while (rl->expiration != minTTL) 
-	{
-	  prev = rl;
-	  rl = rl->next;
-	}
+      while (rl->expiration != minTTL)
+        {
+          prev = rl;
+          rl = rl->next;
+        }
       if (prev == NULL)
-	table[index] = rl->next;
+        table[index] = rl->next;
       else
-	prev->next = rl->next;
+        prev->next = rl->next;
       GNUNET_FS_SHARED_free_request_list (rl);
     }
   /* create new table entry */
@@ -340,12 +338,12 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                           datastore_value_processor, rl);
 
   /* if not found or not unique, forward */
-  if ( ((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
-       (0 != (policy & GNUNET_FS_RoutingPolicy_FORWARD)) )
-    GNUNET_FS_PLAN_request (NULL, peer, rl);    
+  if (((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
+      (0 != (policy & GNUNET_FS_RoutingPolicy_FORWARD)))
+    GNUNET_FS_PLAN_request (NULL, peer, rl);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   if (stats != NULL)
-    stats->change(stat_gap_query_routed, 1);
+    stats->change (stat_gap_query_routed, 1);
 }
 
 /**
@@ -407,24 +405,24 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
                             BASE_REPLY_PRIORITY * (1 + rl->value),
                             MAX_GAP_DELAY);
           GNUNET_free (msg);
-          if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA) 
+          if (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
             GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
           GNUNET_FS_PLAN_success (rid, NULL, rl->response_target, rl);
           value += rl->value;
           rl->value = 0;
-          if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA) 
-	    {
-	      if (prev == NULL)
-		table[index] = rl->next;
-	      else
-		prev->next = rl->next;
-	      GNUNET_FS_SHARED_free_request_list (rl);
-	      if (prev == NULL)
-		rl = table[index];
-	      else
-		rl = prev->next;
-	      continue;
-	    }
+          if (rl->type == GNUNET_ECRS_BLOCKTYPE_DATA)
+            {
+              if (prev == NULL)
+                table[index] = rl->next;
+              else
+                prev->next = rl->next;
+              GNUNET_FS_SHARED_free_request_list (rl);
+              if (prev == NULL)
+                rl = table[index];
+              else
+                rl = prev->next;
+              continue;
+            }
         }
       prev = rl;
       rl = rl->next;
@@ -546,7 +544,8 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_query_routed =
         stats->create (gettext_noop ("# gap queries routed"));
       stat_gap_query_refreshed =
-        stats->create (gettext_noop ("# gap queries refreshed existing record"));
+        stats->
+        create (gettext_noop ("# gap queries refreshed existing record"));
     }
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);

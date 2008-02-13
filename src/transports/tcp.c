@@ -321,7 +321,7 @@ select_accept_handler (void *ah_cls,
 
   GNUNET_GE_ASSERT (NULL, sock != NULL);
   if (GNUNET_NO != is_rejected_tester (addr, addr_len))
-    return NULL;    
+    return NULL;
   tcpSession = GNUNET_malloc (sizeof (TCPSession));
   memset (tcpSession, 0, sizeof (TCPSession));
   tcpSession->sock = sock;
@@ -341,8 +341,7 @@ select_accept_handler (void *ah_cls,
   if (addr_len > 0)
     {
       tcpSession->accept_addr = GNUNET_malloc (addr_len);
-      memcpy (tcpSession->accept_addr,
-	      addr, sizeof (struct sockaddr_in));
+      memcpy (tcpSession->accept_addr, addr, sizeof (struct sockaddr_in));
     }
   tcpSession->addr_len = addr_len;
   GNUNET_mutex_lock (lock);
@@ -377,7 +376,7 @@ select_close_handler (void *ch_cls,
  */
 static int
 tcp_send (GNUNET_TSession * tsession,
-         const void *msg, unsigned int size, int important)
+          const void *msg, unsigned int size, int important)
 {
   TCPSession *tcpSession;
   GNUNET_MessageHeader *mp;
@@ -437,7 +436,7 @@ tcp_send (GNUNET_TSession * tsession,
  */
 static int
 tcp_test_would_try (GNUNET_TSession * tsession, unsigned int size,
-                 int important)
+                    int important)
 {
   TCPSession *tcpSession = tsession->internal;
 
@@ -469,8 +468,9 @@ tcp_test_would_try (GNUNET_TSession * tsession, unsigned int size,
  */
 static int
 tcp_connect_helper (const GNUNET_MessageHello * hello,
-                  struct GNUNET_SocketHandle *s,
-                  unsigned int protocolNumber, GNUNET_TSession ** tsessionPtr)
+                    struct GNUNET_SocketHandle *s,
+                    unsigned int protocolNumber,
+                    GNUNET_TSession ** tsessionPtr)
 {
   TCPWelcome welcome;
   GNUNET_TSession *tsession;
@@ -529,15 +529,15 @@ tcp_connect_helper (const GNUNET_MessageHello * hello,
  * @return GNUNET_OK on success, GNUNET_SYSERR if the operation failed
  */
 static int
-tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
-            int may_reuse)
+tcp_connect (const GNUNET_MessageHello * hello,
+             GNUNET_TSession ** tsessionPtr, int may_reuse)
 {
   static int zero = 0;
   HostAddress *haddr;
   int sock;
   struct sockaddr_in soaddr4;
   struct sockaddr_in6 soaddr6;
-  struct sockaddr * soaddr;
+  struct sockaddr *soaddr;
   socklen_t soaddrlen;
   struct GNUNET_SocketHandle *s;
   int i;
@@ -559,10 +559,9 @@ tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
               if (session->in_select)
                 {
                   session->users++;
-		  if (session->in_select == GNUNET_YES)
-		    GNUNET_select_change_timeout (selector,
-						  session->sock, 
-						  TCP_TIMEOUT);
+                  if (session->in_select == GNUNET_YES)
+                    GNUNET_select_change_timeout (selector,
+                                                  session->sock, TCP_TIMEOUT);
                   GNUNET_mutex_unlock (lock);
                   *tsessionPtr = session->tsession;
                   return GNUNET_OK;
@@ -573,14 +572,14 @@ tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
       GNUNET_mutex_unlock (lock);
     }
   haddr = (HostAddress *) & hello[1];
-  available = ntohs(haddr->availability) & available_protocols;
+  available = ntohs (haddr->availability) & available_protocols;
 
-  if ( (available & VERSION_AVAILABLE_IPV4) > 0)
+  if ((available & VERSION_AVAILABLE_IPV4) > 0)
     sock = SOCKET (PF_INET, SOCK_STREAM, 0);
-  else if ( (available & VERSION_AVAILABLE_IPV6) > 0)
+  else if ((available & VERSION_AVAILABLE_IPV6) > 0)
     sock = SOCKET (PF_INET6, SOCK_STREAM, 0);
   else
-    return GNUNET_SYSERR; /* incompatible */
+    return GNUNET_SYSERR;       /* incompatible */
   if (sock == -1)
     {
       GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
@@ -600,33 +599,28 @@ tcp_connect (const GNUNET_MessageHello * hello, GNUNET_TSession ** tsessionPtr,
       return GNUNET_SYSERR;
     }
   memset (&soaddr, 0, sizeof (soaddr));
-  if ( (available & VERSION_AVAILABLE_IPV4) > 0)
+  if ((available & VERSION_AVAILABLE_IPV4) > 0)
     {
       soaddr4.sin_family = AF_INET;
-      memcpy (&soaddr4.sin_addr, 
-	      &haddr->ipv4,
-	      sizeof (GNUNET_IPv4Address));
-      soaddr4.sin_port = haddr->port;    
-      soaddr = (struct sockaddr*) &soaddr4;
-      soaddrlen = sizeof(soaddr4);
-    }  
+      memcpy (&soaddr4.sin_addr, &haddr->ipv4, sizeof (GNUNET_IPv4Address));
+      soaddr4.sin_port = haddr->port;
+      soaddr = (struct sockaddr *) &soaddr4;
+      soaddrlen = sizeof (soaddr4);
+    }
   else
     {
       soaddr6.sin6_family = AF_INET6;
-      memcpy (&soaddr6.sin6_addr, 
-	      &haddr->ipv6,
-	      sizeof (GNUNET_IPv6Address));
-      soaddr6.sin6_port = haddr->port;    
-      soaddr = (struct sockaddr*) &soaddr6;
-      soaddrlen = sizeof(soaddr6);
-   }
+      memcpy (&soaddr6.sin6_addr, &haddr->ipv6, sizeof (GNUNET_IPv6Address));
+      soaddr6.sin6_port = haddr->port;
+      soaddr = (struct sockaddr *) &soaddr6;
+      soaddrlen = sizeof (soaddr6);
+    }
   i = CONNECT (sock, soaddr, soaddrlen);
   if ((i < 0) && (errno != EINPROGRESS) && (errno != EWOULDBLOCK))
     {
       GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
-			      GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-			      GNUNET_GE_BULK,
-			      "connect");
+                              GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                              GNUNET_GE_USER | GNUNET_GE_BULK, "connect");
       GNUNET_socket_destroy (s);
       return GNUNET_SYSERR;
     }
@@ -642,7 +636,7 @@ tcp_transport_server_start ()
 {
   struct sockaddr_in serverAddrv4;
   struct sockaddr_in6 serverAddrv6;
-  struct sockaddr * serverAddr;
+  struct sockaddr *serverAddr;
   socklen_t addrlen;
   const int on = 1;
   unsigned short port;
@@ -659,43 +653,44 @@ tcp_transport_server_start ()
       available_protocols = VERSION_AVAILABLE_NONE;
       s = SOCKET (PF_INET6, SOCK_STREAM, 0);
       if (s < 0)
-	{
-	  s = SOCKET (PF_INET, SOCK_STREAM, 0);
-	  if (s < 0)
-	    {
-	      GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
-				      GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
-				      GNUNET_GE_BULK, "socket");
-	      return GNUNET_SYSERR;
-	    }
-	  available_protocols = VERSION_AVAILABLE_IPV4;
-	}
+        {
+          s = SOCKET (PF_INET, SOCK_STREAM, 0);
+          if (s < 0)
+            {
+              GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
+                                      GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
+                                      GNUNET_GE_BULK, "socket");
+              return GNUNET_SYSERR;
+            }
+          available_protocols = VERSION_AVAILABLE_IPV4;
+        }
       else
-	{
-	  available_protocols = VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4;
-	}
+        {
+          available_protocols =
+            VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4;
+        }
       if (SETSOCKOPT (s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) < 0)
         GNUNET_GE_DIE_STRERROR (coreAPI->ectx,
                                 GNUNET_GE_FATAL | GNUNET_GE_ADMIN |
                                 GNUNET_GE_IMMEDIATE, "setsockopt");
       if (available_protocols == VERSION_AVAILABLE_IPV4)
-	{
-	  memset (&serverAddr, 0, sizeof (serverAddr));
-	  serverAddrv4.sin_family = AF_INET;
-	  serverAddrv4.sin_addr.s_addr = INADDR_ANY;
-	  serverAddrv4.sin_port = htons (port);
-	  serverAddr = (struct sockaddr *) &serverAddrv4;
-	  addrlen = sizeof(serverAddrv4);
-	}
+        {
+          memset (&serverAddr, 0, sizeof (serverAddr));
+          serverAddrv4.sin_family = AF_INET;
+          serverAddrv4.sin_addr.s_addr = INADDR_ANY;
+          serverAddrv4.sin_port = htons (port);
+          serverAddr = (struct sockaddr *) &serverAddrv4;
+          addrlen = sizeof (serverAddrv4);
+        }
       else
-	{
-	  memset (&serverAddrv6, 0, sizeof (serverAddrv6));
-	  serverAddrv6.sin6_family = AF_INET6;
-	  serverAddrv6.sin6_addr = in6addr_any;
-	  serverAddrv6.sin6_port = htons (port);
-	  serverAddr = (struct sockaddr *) &serverAddrv6;
-	  addrlen = sizeof(serverAddrv6);
-   	}
+        {
+          memset (&serverAddrv6, 0, sizeof (serverAddrv6));
+          serverAddrv6.sin6_family = AF_INET6;
+          serverAddrv6.sin6_addr = in6addr_any;
+          serverAddrv6.sin6_port = htons (port);
+          serverAddr = (struct sockaddr *) &serverAddrv6;
+          addrlen = sizeof (serverAddrv6);
+        }
       if (BIND (s, serverAddr, addrlen) < 0)
         {
           GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
@@ -705,8 +700,7 @@ tcp_transport_server_start ()
                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN |
                          GNUNET_GE_IMMEDIATE,
                          _("Failed to bind to %s port %d.\n"),
-			 MY_TRANSPORT_NAME,
-                         port);
+                         MY_TRANSPORT_NAME, port);
           if (0 != CLOSE (s))
             GNUNET_GE_LOG_STRERROR (coreAPI->ectx,
                                     GNUNET_GE_ERROR | GNUNET_GE_USER |
@@ -750,7 +744,7 @@ tcp_transport_server_stop ()
       GNUNET_select_destroy (selector);
       selector = NULL;
     }
-  if (get_port() == 0)
+  if (get_port () == 0)
     available_protocols = VERSION_AVAILABLE_NONE;
   return GNUNET_OK;
 }
@@ -768,7 +762,8 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
   GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (GNUNET_MessageHeader) == 4);
   GNUNET_GE_ASSERT (coreAPI->ectx, sizeof (TCPWelcome) == 68);
   lock = GNUNET_mutex_create (GNUNET_YES);
-  if (0 != GNUNET_GC_attach_change_listener (cfg, &reload_configuration, NULL))
+  if (0 !=
+      GNUNET_GC_attach_change_listener (cfg, &reload_configuration, NULL))
     {
       GNUNET_mutex_destroy (lock);
       lock = NULL;
@@ -802,7 +797,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
     }
   myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_TCP;
   myAPI.mtu = 0;
-  myAPI.cost = 20000;          /* about equal to udp */
+  myAPI.cost = 20000;           /* about equal to udp */
   myAPI.verifyHello = &verify_hello;
   myAPI.createhello = &create_hello;
   myAPI.connect = &tcp_connect;
@@ -820,7 +815,7 @@ inittransport_tcp (GNUNET_CoreAPIForTransport * core)
 void
 donetransport_tcp ()
 {
-  do_shutdown();
+  do_shutdown ();
 }
 
 /* end of tcp.c */

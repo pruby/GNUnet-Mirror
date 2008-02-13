@@ -105,9 +105,9 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   GNUNET_GE_ASSERT (NULL, key_count > 0);
   if (stats != NULL)
     {
-      stats->change(stat_gap_client_query_tracked, 1);
-      stats->change(stat_gap_client_query_received, 1);
-      stats->change(stat_gap_client_query_injected, 1);
+      stats->change (stat_gap_client_query_tracked, 1);
+      stats->change (stat_gap_client_query_received, 1);
+      stats->change (stat_gap_client_query_injected, 1);
     }
   request =
     GNUNET_malloc (sizeof (struct RequestList) +
@@ -248,7 +248,7 @@ handle_response (PID_INDEX sender,
                               (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
                               ? GNUNET_NO : GNUNET_YES);
   if (stats != NULL)
-    stats->change(stat_gap_client_response_sent, 1);    
+    stats->change (stat_gap_client_response_sent, 1);
   GNUNET_free (msg);
 
   /* update *value */
@@ -337,8 +337,8 @@ GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
               else
                 cl->requests = rl->next;
               GNUNET_FS_SHARED_free_request_list (rl);
-	      if (stats != NULL)
-		stats->change(stat_gap_client_query_tracked, -1);
+              if (stats != NULL)
+                stats->change (stat_gap_client_query_tracked, -1);
               if (prev == NULL)
                 rl = cl->requests;
               else
@@ -384,8 +384,8 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
           rl = cl->requests;
           cl->requests = rl->next;
           GNUNET_FS_SHARED_free_request_list (rl);
-	  if (stats != NULL)
-	    stats->change(stat_gap_client_query_tracked, -1);
+          if (stats != NULL)
+            stats->change (stat_gap_client_query_tracked, -1);
         }
       if (prev == NULL)
         clients = cl->next;
@@ -420,11 +420,11 @@ repeat_requests_job (void *unused)
                (request->expiration > now)) &&
               (request->last_ttl_used * GNUNET_CRON_SECONDS +
                request->last_request_time < now))
-	    {
-	      GNUNET_FS_PLAN_request (client->client, 0, request);
-	      if (stats != NULL)
-		stats->change(stat_gap_client_query_injected, 1);
-	    }
+            {
+              GNUNET_FS_PLAN_request (client->client, 0, request);
+              if (stats != NULL)
+                stats->change (stat_gap_client_query_injected, 1);
+            }
 
           if ((request->anonymityLevel == 0) &&
               (request->last_dht_get + request->dht_back_off < now))
@@ -478,7 +478,7 @@ GNUNET_FS_QUERYMANAGER_done ()
                     coreAPI->
                     cs_exit_handler_unregister (&handle_client_exit));
   while (clients != NULL)
-    handle_client_exit(clients->client);    
+    handle_client_exit (clients->client);
   if (stats != NULL)
     {
       coreAPI->release_service (stats);

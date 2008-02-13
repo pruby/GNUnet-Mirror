@@ -22,7 +22,6 @@ Annotations:
 - tune GAP query planning code [RC]
 - reenable and test GAP migration code [RC]
 - complete IPv4/IPv6 integration of transports (http is missing!) [RC]
-- integrated hostlist server application using libmicrohttpd [RC]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
   Furthermore: Blake suggested indexing a document only after

@@ -152,7 +152,7 @@ static int
 is_rejected_ipv6 (const void *addr, unsigned int addr_len)
 {
   if ((GNUNET_YES == is_blacklisted_ipv6 (addr,
-					  addr_len)) ||
+                                          addr_len)) ||
       (GNUNET_YES != is_whitelisted_ipv6 (addr, addr_len)))
     return GNUNET_YES;
   return GNUNET_NO;
@@ -222,19 +222,18 @@ static int
 is_rejected_ipv4 (const void *addr, unsigned int addr_len)
 {
   if ((GNUNET_NO != is_blacklisted_ipv4 (addr,
-                                   addr_len)) ||
+                                         addr_len)) ||
       (GNUNET_YES != is_whitelisted_ipv4 (addr, addr_len)))
     return GNUNET_YES;
   return GNUNET_NO;
 }
 
 static int
-is_rejected_tester(const void *addr, 
-		   unsigned int addr_len)
+is_rejected_tester (const void *addr, unsigned int addr_len)
 {
   if (addr_len == sizeof (struct sockaddr_in))
-    return is_rejected_ipv4(addr, addr_len);
-  return is_rejected_ipv6(addr, addr_len);
+    return is_rejected_ipv4 (addr, addr_len);
+  return is_rejected_ipv6 (addr, addr_len);
 }
 
 /**
@@ -256,16 +255,24 @@ verify_hello (const GNUNET_MessageHello * hello)
       (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
       (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) ||
       (ntohs (hello->protocol) != myAPI.protocolNumber) ||
-      (0 == (ntohs (haddr->availability) & ( VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4)) ) ||
-      ( (0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4)) &&
-	( (GNUNET_YES == is_blacklisted_ipv4 (&haddr->ipv4,
-					      sizeof (GNUNET_IPv4Address))) ||
-	  (GNUNET_YES != is_whitelisted_ipv4 (&haddr->ipv4, sizeof (GNUNET_IPv4Address))) ) ) ||
-      ( (0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV6)) &&
-	( (GNUNET_YES == is_blacklisted_ipv6 (&haddr->ipv6,
-					      sizeof (GNUNET_IPv6Address))) ||
-	  (GNUNET_YES != is_whitelisted_ipv6 (&haddr->ipv6, sizeof (GNUNET_IPv6Address))) ) ) )
-    return GNUNET_SYSERR; /* invalid */    
+      (0 ==
+       (ntohs (haddr->availability) &
+        (VERSION_AVAILABLE_IPV6 | VERSION_AVAILABLE_IPV4)))
+      || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV4))
+          &&
+          ((GNUNET_YES ==
+            is_blacklisted_ipv4 (&haddr->ipv4, sizeof (GNUNET_IPv4Address)))
+           || (GNUNET_YES !=
+               is_whitelisted_ipv4 (&haddr->ipv4,
+                                    sizeof (GNUNET_IPv4Address)))))
+      || ((0 != (ntohs (haddr->availability) & VERSION_AVAILABLE_IPV6))
+          &&
+          ((GNUNET_YES ==
+            is_blacklisted_ipv6 (&haddr->ipv6, sizeof (GNUNET_IPv6Address)))
+           || (GNUNET_YES !=
+               is_whitelisted_ipv6 (&haddr->ipv6,
+                                    sizeof (GNUNET_IPv6Address))))))
+    return GNUNET_SYSERR;       /* invalid */
   return GNUNET_OK;
 }
 
@@ -276,9 +283,9 @@ verify_hello (const GNUNET_MessageHello * hello)
  */
 static int
 reload_configuration (void *ctx,
-		      struct GNUNET_GC_Configuration *cfg,
-		      struct GNUNET_GE_Context *ectx,
-		      const char *section, const char *option)
+                      struct GNUNET_GC_Configuration *cfg,
+                      struct GNUNET_GE_Context *ectx,
+                      const char *section, const char *option)
 {
   char *ch;
 
@@ -289,11 +296,13 @@ reload_configuration (void *ctx,
   GNUNET_free_non_null (filteredNetworksIPv4);
   GNUNET_free_non_null (allowedNetworksIPv4);
   ch = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME, "BLACKLISTV4", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+                                            "BLACKLISTV4", "", &ch);
   filteredNetworksIPv4 = GNUNET_parse_ipv4_network_specification (ectx, ch);
   GNUNET_free (ch);
   ch = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME, "WHITELISTV4", "", &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+                                            "WHITELISTV4", "", &ch);
   if (strlen (ch) > 0)
     allowedNetworksIPv4 = GNUNET_parse_ipv4_network_specification (ectx, ch);
   else
@@ -301,12 +310,12 @@ reload_configuration (void *ctx,
   GNUNET_free (ch);
   GNUNET_free_non_null (filteredNetworksIPv6);
   GNUNET_free_non_null (allowedNetworksIPv6);
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME, "BLACKLISTV6", "",
-                                            &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+                                            "BLACKLISTV6", "", &ch);
   filteredNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
   GNUNET_free (ch);
-  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME, "WHITELISTV6", "",
-                                            &ch);
+  GNUNET_GC_get_configuration_value_string (cfg, MY_TRANSPORT_NAME,
+                                            "WHITELISTV6", "", &ch);
   if (strlen (ch) > 0)
     allowedNetworksIPv6 = GNUNET_parse_ipv6_network_specification (ectx, ch);
   else
@@ -356,7 +365,7 @@ create_hello ()
   HostAddress *haddr;
   unsigned short port;
   unsigned short available;
-  
+
   port = get_port ();
   if (0 == port)
     {
@@ -367,7 +376,7 @@ create_hello ()
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_BULK,
                          _("Port is 0, will only send using %s.\n"),
-			 MY_TRANSPORT_NAME);
+                         MY_TRANSPORT_NAME);
         }
       return NULL;              /* TCP transport is configured SEND-only! */
     }
@@ -375,34 +384,35 @@ create_hello ()
   haddr = (HostAddress *) & msg[1];
 
   available = VERSION_AVAILABLE_NONE;
-  if ( (((upnp != NULL) &&
-         (GNUNET_OK == upnp->get_ip (port,
-                                     MY_TRANSPORT_NAME,
-                                     &haddr->ipv4))) ||
-        (GNUNET_SYSERR !=
-         GNUNET_IP_get_public_ipv4_address (cfg, coreAPI->ectx, &haddr->ipv4))))
+  if ((((upnp != NULL) &&
+        (GNUNET_OK == upnp->get_ip (port,
+                                    MY_TRANSPORT_NAME,
+                                    &haddr->ipv4))) ||
+       (GNUNET_SYSERR !=
+        GNUNET_IP_get_public_ipv4_address (cfg, coreAPI->ectx,
+                                           &haddr->ipv4))))
     {
       if (0 != memcmp (&haddr->ipv4,
-		       &last_addrv4, 
-		       sizeof (GNUNET_IPv4Address)))
-	{
-	  GNUNET_GE_LOG (coreAPI->ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-			 "%s uses IPv4 address %u.%u.%u.%u.\n",
-			 MY_TRANSPORT_NAME,
-			 GNUNET_PRIP (ntohl (*(int *) &haddr->ipv4)));
-	  last_addrv4 = haddr->ipv4;
-	}
+                       &last_addrv4, sizeof (GNUNET_IPv4Address)))
+        {
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         "%s uses IPv4 address %u.%u.%u.%u.\n",
+                         MY_TRANSPORT_NAME,
+                         GNUNET_PRIP (ntohl (*(int *) &haddr->ipv4)));
+          last_addrv4 = haddr->ipv4;
+        }
       available |= VERSION_AVAILABLE_IPV4;
     }
-  
-  if (GNUNET_SYSERR != GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6))
+
+  if (GNUNET_SYSERR !=
+      GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6))
     {
       available |= VERSION_AVAILABLE_IPV6;
     }
   if (available == VERSION_AVAILABLE_NONE)
     {
-      GNUNET_free(msg);
+      GNUNET_free (msg);
       return NULL;
     }
   haddr->port = htons (port);
@@ -418,14 +428,14 @@ create_hello ()
  */
 static int
 hello_to_address (const GNUNET_MessageHello * hello,
-		  void **sa, unsigned int *sa_len)
+                  void **sa, unsigned int *sa_len)
 {
   const HostAddress *haddr = (const HostAddress *) &hello[1];
   struct sockaddr_in *serverAddr4;
   struct sockaddr_in6 *serverAddr6;
   unsigned short available;
-  
-  available = ntohs(haddr->availability);
+
+  available = ntohs (haddr->availability);
   if (0 != (available & VERSION_AVAILABLE_IPV4))
     {
       *sa_len = sizeof (struct sockaddr_in);
@@ -433,7 +443,8 @@ hello_to_address (const GNUNET_MessageHello * hello,
       *sa = serverAddr4;
       memset (serverAddr4, 0, sizeof (struct sockaddr_in));
       serverAddr4->sin_family = AF_INET;
-      memcpy (&serverAddr4->sin_addr, &haddr->ipv4, sizeof (GNUNET_IPv4Address));
+      memcpy (&serverAddr4->sin_addr, &haddr->ipv4,
+              sizeof (GNUNET_IPv4Address));
       serverAddr4->sin_port = haddr->port;
     }
   else if (0 != (available & VERSION_AVAILABLE_IPV6))
@@ -443,7 +454,8 @@ hello_to_address (const GNUNET_MessageHello * hello,
       *sa = serverAddr6;
       memset (serverAddr6, 0, sizeof (struct sockaddr_in6));
       serverAddr6->sin6_family = AF_INET6;
-      memcpy (&serverAddr6->sin6_addr, &haddr->ipv6, sizeof (GNUNET_IPv6Address));
+      memcpy (&serverAddr6->sin6_addr, &haddr->ipv6,
+              sizeof (GNUNET_IPv6Address));
       serverAddr6->sin6_port = haddr->port;
     }
   else
@@ -452,8 +464,8 @@ hello_to_address (const GNUNET_MessageHello * hello,
 }
 
 
-static void 
-do_shutdown()
+static void
+do_shutdown ()
 {
   GNUNET_GC_detach_change_listener (cfg, &reload_configuration, NULL);
   if (stats != NULL)
@@ -477,4 +489,3 @@ do_shutdown()
   GNUNET_mutex_destroy (lock);
   lock = NULL;
 }
-

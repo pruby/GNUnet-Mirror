@@ -64,7 +64,7 @@ GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
     GNUNET_bloomfilter_free (rl->bloomfilter);
   GNUNET_FS_PT_change_rc (rl->primary_target, -1);
   GNUNET_FS_PT_change_rc (rl->response_target, -1);
-  memset(rl, 0, sizeof(struct RequestList)); /* mark as freed */
+  memset (rl, 0, sizeof (struct RequestList));  /* mark as freed */
   GNUNET_free (rl);
 }
 
@@ -91,33 +91,33 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
   int ret;
 
   /* check that type and primary key match */
-  if ( ( (rl->type != GNUNET_ECRS_BLOCKTYPE_ANY) &&
-	 (rl->type != ntohl (data->type)) ) ||
+  if (((rl->type != GNUNET_ECRS_BLOCKTYPE_ANY) &&
+       (rl->type != ntohl (data->type))) ||
       (0 != memcmp (primary_key, &rl->queries[0], sizeof (GNUNET_HashCode))))
-    return GNUNET_NO;    
+    return GNUNET_NO;
 
   /* check that content matches query */
-  ret = GNUNET_EC_is_block_applicable_for_query (ntohl(data->type),
+  ret = GNUNET_EC_is_block_applicable_for_query (ntohl (data->type),
                                                  size,
                                                  data,
                                                  &rl->queries[0],
                                                  rl->key_count,
                                                  &rl->queries[0]);
   if (ret != GNUNET_OK)
-    return ret;    
+    return ret;
 
   /* check that this is a new response */
   GNUNET_hash (data, size, hc);
   GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
   if ((rl->bloomfilter != NULL) &&
       (GNUNET_YES == GNUNET_bloomfilter_test (rl->bloomfilter, &m)))
-    return GNUNET_NO;           /* not useful */    
+    return GNUNET_NO;           /* not useful */
   /* bloomfilter should cover these already */
   seen = rl->responses;
   while (seen != NULL)
     {
       if (0 == memcmp (hc, &seen->hash, sizeof (GNUNET_HashCode)))
-	return GNUNET_NO;	
+        return GNUNET_NO;
       seen = seen->next;
     }
   return GNUNET_OK;
@@ -135,9 +135,7 @@ GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
   struct ResponseList *seen;
   GNUNET_HashCode m;
 
-  GNUNET_FS_HELPER_mingle_hash (hc,
-				rl->bloomfilter_mutator,
-				&m);
+  GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
   GNUNET_bloomfilter_add (rl->bloomfilter, &m);
   /* update seen list */
   seen = GNUNET_malloc (sizeof (struct ResponseList));

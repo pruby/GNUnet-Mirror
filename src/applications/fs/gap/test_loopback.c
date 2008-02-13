@@ -166,9 +166,7 @@ searchFile (struct GNUNET_ECRS_URI **uri)
   myURI = NULL;
   ret = GNUNET_ECRS_search (ectx,
                             cfg,
-                            *uri,
-                            0,
-                            &searchCB, &myURI, &testTerminate, NULL);
+                            *uri, 0, &searchCB, &myURI, &testTerminate, NULL);
   GNUNET_ECRS_uri_destroy (*uri);
   *uri = myURI;
   if ((ret != GNUNET_SYSERR) && (myURI != NULL))
@@ -233,7 +231,7 @@ unindexFile (unsigned int size)
   name = makeName (size);
   ret =
     GNUNET_ECRS_file_unindex (ectx, cfg, name, NULL, NULL, &testTerminate,
-                             NULL);
+                              NULL);
   if (0 != UNLINK (name))
     ret = GNUNET_SYSERR;
   GNUNET_free (name);

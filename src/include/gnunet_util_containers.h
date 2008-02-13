@@ -155,8 +155,7 @@ void GNUNET_bloomfilter_clear (struct GNUNET_BloomFilter *bf);
  * @param bf the filter
  */
 int GNUNET_bloomfilter_or (struct GNUNET_BloomFilter *bf,
-			    const char * data,
-			    unsigned int size);
+                           const char *data, unsigned int size);
 
 /**
  * Resize a bloom filter.  Note that this operation

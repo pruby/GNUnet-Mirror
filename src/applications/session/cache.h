@@ -38,11 +38,10 @@
  * @return GNUNET_OK on success
  */
 int
-GNUNET_session_cache_get(const GNUNET_PeerIdentity * peer,
-			 GNUNET_Int32Time time_limit,
-			 const GNUNET_AES_SessionKey * key,
-			 unsigned short size,
-			 GNUNET_MessageHeader ** msg);
+GNUNET_session_cache_get (const GNUNET_PeerIdentity * peer,
+                          GNUNET_Int32Time time_limit,
+                          const GNUNET_AES_SessionKey * key,
+                          unsigned short size, GNUNET_MessageHeader ** msg);
 
 /**
  * Store a message in the cache.
@@ -52,9 +51,9 @@ GNUNET_session_cache_get(const GNUNET_PeerIdentity * peer,
  * @return GNUNET_OK on success
  */
 void
-GNUNET_session_cache_put(const GNUNET_PeerIdentity * peer,
-			 GNUNET_Int32Time time_limit,
-			 const GNUNET_AES_SessionKey * key,
-			 const GNUNET_MessageHeader * msg);
+GNUNET_session_cache_put (const GNUNET_PeerIdentity * peer,
+                          GNUNET_Int32Time time_limit,
+                          const GNUNET_AES_SessionKey * key,
+                          const GNUNET_MessageHeader * msg);
 
 #endif

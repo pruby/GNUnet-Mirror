@@ -34,7 +34,7 @@ detect_entity (const char *text, int *length)
   int len;
   int pound;
   char b[7];
-  char * buf;
+  char *buf;
 
   if (!text || *text != '&')
     return NULL;
@@ -61,9 +61,8 @@ detect_entity (const char *text, int *length)
            pound != 0 && *(text + 3 + (int) log10 (pound)) == ';')
     {
       buf = GNUNET_convert_string_to_utf8 (NULL,
-					   (const char *) &pound,
-					   2,
-					   "UNICODE");
+                                           (const char *) &pound,
+                                           2, "UNICODE");
       if (strlen (buf) > 6)
         buf[6] = '\0';
       strcpy (b, buf);

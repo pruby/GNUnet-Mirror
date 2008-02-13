@@ -446,7 +446,7 @@ finish ()
       err = GNUNET_malloc (strlen (cfg_fn) + strlen (prefix) + 1);
       sprintf (err, prefix, cfg_fn);
       showCursErr (err, STRERROR (errno));
-      GNUNET_free(err);
+      GNUNET_free (err);
       ret = GNUNET_SYSERR;
     }
   user_name = NULL;

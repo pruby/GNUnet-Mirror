@@ -55,7 +55,7 @@ static GNUNET_Topology_ServiceAPI *topology;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
-static struct GNUNET_Mutex * lock;
+static struct GNUNET_Mutex *lock;
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -166,9 +166,9 @@ notifyPONG (void *arg)
  *  connections are disallowed
  */
 static int
-verifySKS (const GNUNET_PeerIdentity * hostId,
-           const P2P_setkey_MESSAGE * sks) {
-  const GNUNET_RSA_Signature * signature = &sks->signature;
+verifySKS (const GNUNET_PeerIdentity * hostId, const P2P_setkey_MESSAGE * sks)
+{
+  const GNUNET_RSA_Signature *signature = &sks->signature;
   char *limited;
   GNUNET_EncName enc;
 
@@ -221,7 +221,10 @@ verifySKS (const GNUNET_PeerIdentity * hostId,
   GNUNET_free (limited);
   if (GNUNET_OK != identity->verifyPeerSignature (hostId,
                                                   sks,
-                                                  sizeof(P2P_setkey_MESSAGE) - sizeof(GNUNET_RSA_Signature),
+                                                  sizeof (P2P_setkey_MESSAGE)
+                                                  -
+                                                  sizeof
+                                                  (GNUNET_RSA_Signature),
                                                   signature))
     {
 #if DEBUG_SESSION
@@ -306,49 +309,43 @@ makeSessionKeySigned (const GNUNET_PeerIdentity * hostId,
     size += ntohs (ping->size);
   if (pong != NULL)
     size += ntohs (pong->size);
-  
+
   if (GNUNET_OK !=
-      GNUNET_session_cache_get(&hc,
-			       created,
-			       sk,
-			       size,
-			       (GNUNET_MessageHeader**)&msg))
+      GNUNET_session_cache_get (&hc,
+                                created,
+                                sk, size, (GNUNET_MessageHeader **) & msg))
     {
       msg = GNUNET_malloc (size);
       msg->target = *hostId;
       if (GNUNET_SYSERR == GNUNET_RSA_encrypt (sk,
-					       sizeof (GNUNET_AES_SessionKey),
-					       &foreignHello->publicKey,
-					       &msg->key))
-	{
-	  GNUNET_GE_BREAK_OP (ectx, 0);
-	  GNUNET_free (foreignHello);
-	  GNUNET_free (msg);
-	  return NULL;              /* encrypt failed */
-	}
+                                               sizeof (GNUNET_AES_SessionKey),
+                                               &foreignHello->publicKey,
+                                               &msg->key))
+        {
+          GNUNET_GE_BREAK_OP (ectx, 0);
+          GNUNET_free (foreignHello);
+          GNUNET_free (msg);
+          return NULL;          /* encrypt failed */
+        }
 
       /* complete header */
       msg->header.size = htons (size);
       msg->header.type = htons (GNUNET_P2P_PROTO_SET_KEY);
       msg->creationTime = htonl (created);
       GNUNET_GE_ASSERT (ectx,
-			GNUNET_SYSERR !=
-			identity->signData (msg,
-					    sizeof (P2P_setkey_MESSAGE)
-					    - sizeof (GNUNET_RSA_Signature),
-					    &msg->signature));
-      GNUNET_session_cache_put(&hc,
-			       created,
-			       sk,
-			       &msg->header);
+                        GNUNET_SYSERR !=
+                        identity->signData (msg,
+                                            sizeof (P2P_setkey_MESSAGE)
+                                            - sizeof (GNUNET_RSA_Signature),
+                                            &msg->signature));
+      GNUNET_session_cache_put (&hc, created, sk, &msg->header);
     }
   GNUNET_free (foreignHello);
 
 #if EXTRA_CHECKS
   /* verify signature/SKS */
   GNUNET_GE_ASSERT (ectx,
-                    GNUNET_SYSERR != verifySKS (coreAPI->myIdentity,                                               
-                                                msg));
+                    GNUNET_SYSERR != verifySKS (coreAPI->myIdentity, msg));
 #endif
 
   size = 0;
@@ -375,9 +372,9 @@ makeSessionKeySigned (const GNUNET_PeerIdentity * hostId,
                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                      "Encrypting %d bytes of %s%s with key %s and IV %u\n",
                      size,
-		     (ping == NULL) ? "" : "PING",
-		     (pong == NULL) ? "" : "PONG",
-		     printSKEY (sk), *(int *) &msg->signature);
+                     (ping == NULL) ? "" : "PING",
+                     (pong == NULL) ? "" : "PONG",
+                     printSKEY (sk), *(int *) &msg->signature);
 #endif
       GNUNET_GE_ASSERT (ectx,
                         -1 != GNUNET_AES_encrypt (pt,
@@ -451,7 +448,7 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     }
 
   /* get or create our session key */
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   if (GNUNET_OK !=
       coreAPI->connection_get_session_key_of_peer (receiver, &sk,
                                                    &age, GNUNET_YES))
@@ -459,7 +456,7 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
       age = GNUNET_get_time_int32 (NULL);
       GNUNET_AES_create_session_key (&sk);
       coreAPI->connection_assign_session_key_to_peer (&sk, receiver,
-						      age, GNUNET_YES);
+                                                      age, GNUNET_YES);
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
@@ -467,7 +464,7 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
                      printSKEY (&sk), &enc);
 #endif
     }
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
 
   /* build SKEY message */
   skey = makeSessionKeySigned (receiver, &sk, age, ping, pong);
@@ -591,12 +588,12 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                  "Received session key from peer `%s'.\n", &enc);
 #endif
 
-  if ( (ntohs (msg->size) < sizeof (P2P_setkey_MESSAGE)) ||
-       (! ( ((ntohs (msg->size) == sizeof (P2P_setkey_MESSAGE)) ||
-	     (ntohs (msg->size) ==
-	      sizeof (P2P_setkey_MESSAGE) + pingpong->ping_size)
-	     || (ntohs (msg->size) ==
-		 sizeof (P2P_setkey_MESSAGE) + pingpong->ping_size * 2)) )) )	   
+  if ((ntohs (msg->size) < sizeof (P2P_setkey_MESSAGE)) ||
+      (!(((ntohs (msg->size) == sizeof (P2P_setkey_MESSAGE)) ||
+          (ntohs (msg->size) ==
+           sizeof (P2P_setkey_MESSAGE) + pingpong->ping_size)
+          || (ntohs (msg->size) ==
+              sizeof (P2P_setkey_MESSAGE) + pingpong->ping_size * 2)))))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_USER
@@ -606,7 +603,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      &enc);
       return GNUNET_SYSERR;
     }
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   if ((GNUNET_OK !=
        coreAPI->connection_get_session_key_of_peer (sender, NULL,
                                                     NULL,
@@ -618,28 +615,29 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
     {
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
-		     "Received session key from peer `%s', but that peer is not allowed to connect right now!\n", &enc);
-#endif      
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_SYSERR;       /* other peer initiated but is
-				     listed as not allowed => discard */
+                     GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
+                     "Received session key from peer `%s', but that peer is not allowed to connect right now!\n",
+                     &enc);
+#endif
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;     /* other peer initiated but is
+                                   listed as not allowed => discard */
     }
 
   newMsg = (const P2P_setkey_MESSAGE *) msg;
   if (0 != memcmp (&coreAPI->myIdentity->hashPubKey,
-		   &newMsg->target.hashPubKey, sizeof (GNUNET_HashCode)))
+                   &newMsg->target.hashPubKey, sizeof (GNUNET_HashCode)))
     {
       GNUNET_EncName ta;
       GNUNET_hash_to_enc (&newMsg->target.hashPubKey, &ta);
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
-		     GNUNET_GE_USER | GNUNET_GE_BULK,
-		     _
-		     ("Session key received from peer `%s' is for `%s' and not for me!\n"),
-		     &enc, &ta);
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_SYSERR; /* not for us! */
+                     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
+                     GNUNET_GE_USER | GNUNET_GE_BULK,
+                     _
+                     ("Session key received from peer `%s' is for `%s' and not for me!\n"),
+                     &enc, &ta);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;     /* not for us! */
     }
   ret = verifySKS (sender, newMsg);
   if (GNUNET_OK != ret)
@@ -654,7 +652,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
 #endif
       if (stats != NULL)
         stats->change (stat_skeyRejected, 1);
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;     /* rejected */
     }
   memset (&key, 0, sizeof (GNUNET_AES_SessionKey));
@@ -667,7 +665,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      | GNUNET_GE_BULK,
                      _("Invalid `%s' message received from peer `%s'.\n"),
                      "setkey", &enc);
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   if (key.crc32 != htonl (GNUNET_crc32_n (&key, GNUNET_SESSIONKEY_LEN)))
@@ -683,7 +681,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
 #endif
       GNUNET_GE_BREAK_OP (ectx, 0);
       stats->change (stat_skeyRejected, 1);
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
 
@@ -691,8 +689,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  "Received setkey message from `%s' with %u bytes of data and key `%s'.\n",
-                 &enc, ntohs (newMsg->header.size),
-                 printSKEY (&key));
+                 &enc, ntohs (newMsg->header.size), printSKEY (&key));
 #endif
   if (stats != NULL)
     stats->change (stat_skeyAccepted, 1);
@@ -809,7 +806,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
         }
     }
   GNUNET_free_non_null (plaintext);
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
@@ -859,7 +856,7 @@ tryConnect (const GNUNET_PeerIdentity * peer)
 #endif
       return GNUNET_NO;         /* not allowed right now! */
     }
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
 #if DEBUG_SESSION
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_REQUEST,
@@ -867,10 +864,10 @@ tryConnect (const GNUNET_PeerIdentity * peer)
 #endif
   if (GNUNET_OK == exchangeKey (peer, NULL, NULL))
     {
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_NO;
     }
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return GNUNET_SYSERR;
 }
 
@@ -938,7 +935,7 @@ provide_module_session (GNUNET_CoreAPIForPlugins * capi)
       stat_pongSent
         = stats->create (gettext_noop ("# encrypted PONG messages sent"));
     }
-  lock = GNUNET_mutex_create(GNUNET_YES);
+  lock = GNUNET_mutex_create (GNUNET_YES);
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _
@@ -976,7 +973,7 @@ release_module_session ()
   coreAPI->release_service (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
-  GNUNET_mutex_destroy(lock);
+  GNUNET_mutex_destroy (lock);
   lock = NULL;
   return GNUNET_OK;
 }

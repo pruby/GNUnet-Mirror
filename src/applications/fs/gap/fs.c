@@ -143,7 +143,7 @@ handle_cs_insert_request (struct GNUNET_ClientHandle *sock,
             GNUNET_hash_to_enc (&query, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
-                 &enc, ntohl(datum->type), ntohl (ri->prio));
+                 &enc, ntohl (datum->type), ntohl (ri->prio));
 #endif
   memcpy (&datum[1],
           &ri[1], ntohs (req->size) - sizeof (CS_fs_request_insert_MESSAGE));
@@ -218,11 +218,9 @@ handle_cs_index_request (struct GNUNET_ClientHandle *sock,
   cectx = coreAPI->cs_create_client_log_context (sock);
   ri = (const CS_fs_request_index_MESSAGE *) req;
 #if DEBUG_FS
-  GNUNET_EC_file_block_get_query((const DBlock *) &ri[1],
-				 ntohs (ri->header.size) -
-				 sizeof
-				 (CS_fs_request_index_MESSAGE),
-				 &hc);
+  GNUNET_EC_file_block_get_query ((const DBlock *) &ri[1],
+                                  ntohs (ri->header.size) -
+                                  sizeof (CS_fs_request_index_MESSAGE), &hc);
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&hc, &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -468,8 +466,7 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   IF_GELOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
             GNUNET_hash_to_enc (&rs->query[0], &enc));
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "FS received QUERY (query: `%s', type: %u)\n", &enc,
-                 type);
+                 "FS received QUERY (query: `%s', type: %u)\n", &enc, type);
 #endif
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
@@ -544,7 +541,7 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                      sender == NULL ? "localhost" : (char *) &enc);
 #endif
       if (stats != NULL)
-	stats->change (stat_gap_query_drop_busy, 1);
+        stats->change (stat_gap_query_drop_busy, 1);
       return GNUNET_OK;
     }
   size = ntohs (msg->size);
@@ -583,27 +580,27 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
     {
       prio = -identity->changeHostTrust (sender, -prio);
       if (netLoad < GAP_IDLE_LOAD_THRESHOLD + prio)
-	{
-	  policy = GNUNET_FS_RoutingPolicy_ALL;
-	}
+        {
+          policy = GNUNET_FS_RoutingPolicy_ALL;
+        }
       else if (netLoad < 90 + 10 * prio)
-	{
-	  policy =
-	    GNUNET_FS_RoutingPolicy_ANSWER | GNUNET_FS_RoutingPolicy_FORWARD;
-	}
+        {
+          policy =
+            GNUNET_FS_RoutingPolicy_ANSWER | GNUNET_FS_RoutingPolicy_FORWARD;
+        }
       else if (netLoad < 100)
-	{
-        policy = GNUNET_FS_RoutingPolicy_ANSWER;
-	}
+        {
+          policy = GNUNET_FS_RoutingPolicy_ANSWER;
+        }
       else
-	{
-	  if (stats != NULL)
-	    stats->change (stat_gap_query_drop_busy, 1);
-	  return GNUNET_OK;         /* drop */
-	}
+        {
+          if (stats != NULL)
+            stats->change (stat_gap_query_drop_busy, 1);
+          return GNUNET_OK;     /* drop */
+        }
     }
   if ((policy & GNUNET_FS_RoutingPolicy_INDIRECT) == 0)
-      /* kill the priority (since we cannot benefit) */
+    /* kill the priority (since we cannot benefit) */
     prio = 0;
   ttl = GNUNET_FS_HELPER_bound_ttl (ntohl (req->ttl), prio);
   type = ntohl (req->type);
@@ -674,12 +671,12 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
-  if (stats != NULL) 
+  if (stats != NULL)
     {
-      if (sender != NULL) 
-	stats->change (stat_gap_content_received, 1);
+      if (sender != NULL)
+        stats->change (stat_gap_content_received, 1);
       else
-	stats->change (stat_gap_content_found_locally, 1);
+        stats->change (stat_gap_content_found_locally, 1);
     }
   expiration = GNUNET_ntohll (msg->expiration);
   /* forward to other peers */
@@ -772,7 +769,7 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
       GNUNET_GE_BREAK (ectx, 0);
       return GNUNET_SYSERR;
     }
-  GNUNET_FS_lock = capi->connection_get_lock(); // GNUNET_mutex_create (GNUNET_YES);
+  GNUNET_FS_lock = capi->connection_get_lock ();        // GNUNET_mutex_create (GNUNET_YES);
   GNUNET_FS_ANONYMITY_init (capi);
   GNUNET_FS_PLAN_init (capi);
   GNUNET_FS_ONDEMAND_init (capi);

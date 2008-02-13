@@ -23,7 +23,7 @@
  * @brief module responsible for caching
  *   sessionkey exchange requests
  * @author Christian Grothoff
- * 
+ *
  * TODO: add code to evict very old entries from the cache!
  */
 #include "platform.h"
@@ -31,9 +31,10 @@
 
 #define MAX_CACHE_ENTRIES 8
 
-struct Entry {
-  struct Entry * next;
-  GNUNET_MessageHeader * msg;
+struct Entry
+{
+  struct Entry *next;
+  GNUNET_MessageHeader *msg;
   GNUNET_PeerIdentity peer;
   GNUNET_AES_SessionKey key;
   GNUNET_Int32Time time_limit;
@@ -41,23 +42,23 @@ struct Entry {
 
 static unsigned int count;
 
-static struct Entry * cache;
+static struct Entry *cache;
 
-static struct GNUNET_Mutex * lock;
+static struct GNUNET_Mutex *lock;
 
 static void
-expire_oldest_entries()
+expire_oldest_entries ()
 {
-  struct Entry * e;
-  struct Entry * prev;
+  struct Entry *e;
+  struct Entry *prev;
   GNUNET_Int32Time oldest;
 
-  oldest = -1; /* infinity */
+  oldest = -1;                  /* infinity */
   e = cache;
   while (e != NULL)
     {
       if (e->time_limit < oldest)
-	oldest = e->time_limit;
+        oldest = e->time_limit;
       e = e->next;
     }
   e = cache;
@@ -65,16 +66,16 @@ expire_oldest_entries()
   while (e != NULL)
     {
       if (e->time_limit == oldest)
-	{
-	  if (prev == NULL)
-	    cache = e->next;
-	  else
-	    prev->next = e->next;
-	  GNUNET_free(e->msg);
-	  GNUNET_free(e);
-	  count--;
-	  return;
-	}
+        {
+          if (prev == NULL)
+            cache = e->next;
+          else
+            prev->next = e->next;
+          GNUNET_free (e->msg);
+          GNUNET_free (e);
+          count--;
+          return;
+        }
       prev = e;
       e = e->next;
     }
@@ -89,37 +90,33 @@ expire_oldest_entries()
  * @return GNUNET_OK on success
  */
 int
-GNUNET_session_cache_get(const GNUNET_PeerIdentity * peer,
-			 GNUNET_Int32Time time_limit,
-			 const GNUNET_AES_SessionKey * key,
-			 unsigned short size,
-			 GNUNET_MessageHeader ** msg)
+GNUNET_session_cache_get (const GNUNET_PeerIdentity * peer,
+                          GNUNET_Int32Time time_limit,
+                          const GNUNET_AES_SessionKey * key,
+                          unsigned short size, GNUNET_MessageHeader ** msg)
 {
-  struct Entry * e;
+  struct Entry *e;
 
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   e = cache;
   while (e != NULL)
     {
-      if ( (0 == memcmp(&e->peer,
-			peer,
-			sizeof(GNUNET_PeerIdentity))) &&
-	   (0 == memcmp(&e->key,
-			key,
-			sizeof(GNUNET_AES_SessionKey))) &&
-	   (e->time_limit == time_limit) &&
-	   (ntohs(e->msg->size) == size) )
-	{
-	  *msg = GNUNET_malloc(ntohs(e->msg->size));
-	  memcpy(*msg,
-		 e->msg,
-		 ntohs(e->msg->size));
-	  GNUNET_mutex_unlock(lock);
-	  return GNUNET_OK;
-	}			
+      if ((0 == memcmp (&e->peer,
+                        peer,
+                        sizeof (GNUNET_PeerIdentity))) &&
+          (0 == memcmp (&e->key,
+                        key,
+                        sizeof (GNUNET_AES_SessionKey))) &&
+          (e->time_limit == time_limit) && (ntohs (e->msg->size) == size))
+        {
+          *msg = GNUNET_malloc (ntohs (e->msg->size));
+          memcpy (*msg, e->msg, ntohs (e->msg->size));
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
+        }
       e = e->next;
-    } 
-  GNUNET_mutex_unlock(lock);
+    }
+  GNUNET_mutex_unlock (lock);
   return GNUNET_SYSERR;
 }
 
@@ -131,42 +128,38 @@ GNUNET_session_cache_get(const GNUNET_PeerIdentity * peer,
  * @return GNUNET_OK on success
  */
 void
-GNUNET_session_cache_put(const GNUNET_PeerIdentity * peer,
-			 GNUNET_Int32Time time_limit,
-			 const GNUNET_AES_SessionKey * key,
-			 const GNUNET_MessageHeader * msg)
+GNUNET_session_cache_put (const GNUNET_PeerIdentity * peer,
+                          GNUNET_Int32Time time_limit,
+                          const GNUNET_AES_SessionKey * key,
+                          const GNUNET_MessageHeader * msg)
 {
-  struct Entry * e;
+  struct Entry *e;
 
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   e = cache;
   while (e != NULL)
     {
-      if (0 == memcmp(&e->peer,
-		      peer,
-		      sizeof(GNUNET_PeerIdentity)))
-	break;
+      if (0 == memcmp (&e->peer, peer, sizeof (GNUNET_PeerIdentity)))
+        break;
       e = e->next;
     }
   if (e == NULL)
     {
-      e = GNUNET_malloc(sizeof(struct Entry));
+      e = GNUNET_malloc (sizeof (struct Entry));
       e->msg = NULL;
       e->peer = *peer;
       e->next = cache;
       cache = e;
       count++;
     }
-  GNUNET_free_non_null(e->msg);
+  GNUNET_free_non_null (e->msg);
   e->key = *key;
   e->time_limit = time_limit;
-  e->msg = GNUNET_malloc(ntohs(msg->size));
-  memcpy(e->msg,
-	 msg,
-	 ntohs(msg->size));
+  e->msg = GNUNET_malloc (ntohs (msg->size));
+  memcpy (e->msg, msg, ntohs (msg->size));
   if (count > MAX_CACHE_ENTRIES)
-    expire_oldest_entries();
-  GNUNET_mutex_unlock(lock);
+    expire_oldest_entries ();
+  GNUNET_mutex_unlock (lock);
 }
 
 void __attribute__ ((constructor)) GNUNET_session_cache_ltdl_init ()
@@ -176,13 +169,13 @@ void __attribute__ ((constructor)) GNUNET_session_cache_ltdl_init ()
 
 void __attribute__ ((destructor)) GNUNET_session_cache_ltdl_fini ()
 {
-  struct Entry * e;
+  struct Entry *e;
   while (cache != NULL)
     {
       e = cache;
       cache = e->next;
-      GNUNET_free(e->msg);
-      GNUNET_free(e);
+      GNUNET_free (e->msg);
+      GNUNET_free (e);
     }
   GNUNET_mutex_destroy (lock);
   lock = NULL;

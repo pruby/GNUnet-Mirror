@@ -235,8 +235,8 @@ getAddress6FromHostname (struct GNUNET_GE_Context *ectx,
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_INFO | GNUNET_GE_ADMIN | GNUNET_GE_USER |
                      GNUNET_GE_BULK,
-                     _("Could not find IPv6 address of host `%s': %s\n"), hostname,
-                     hstrerror (h_errno));
+                     _("Could not find IPv6 address of host `%s': %s\n"),
+                     hostname, hstrerror (h_errno));
       return GNUNET_SYSERR;
     }
   if (ip->h_addrtype != AF_INET6)
@@ -369,8 +369,8 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
  */
 int
 GNUNET_IP_get_public_ipv6_address (struct GNUNET_GC_Configuration *cfg,
-				   struct GNUNET_GE_Context *ectx,
-				   GNUNET_IPv6Address * address)
+                                   struct GNUNET_GE_Context *ectx,
+                                   GNUNET_IPv6Address * address)
 {
   static GNUNET_IPv6Address myAddress;
   static GNUNET_CronTime last;
