@@ -10,6 +10,10 @@ if LINUX
  VPN_DIR = vpn
 endif
 
+if HAVE_MHD
+ HOSTLIST_DIR = hostlist
+endif
+
 SUBDIRS	= \
  identity \
  bootstrap_http \
@@ -17,6 +21,7 @@ SUBDIRS	= \
  rpc \
  fragmentation \
  getoption \
+ $(HOSTLIST_DIR) \
  state \
  stats \
  pingpong \

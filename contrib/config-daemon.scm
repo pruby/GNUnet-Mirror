@@ -375,6 +375,8 @@ traffic: keeps track of how many messages were recently received and transmitted
 
 fs: needed for anonymous file sharing. You should always load this module.
 
+hostlist: integrated hostlist HTTP server.  Useful if you want to offer a hostlist and running Apache would be overkill.
+
 chat: broadcast chat (demo-application, ALPHA quality).	Required for gnunet-chat.  Note that the current implementation of chat is not considered to be secure.
 
 tbench: benchmark transport performance.  Required for gnunet-tbench.  Note that tbench allows other users to abuse your resources.
@@ -383,7 +385,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   '()
   #t
   "advertising getoption fs stats traffic"
-  (list "MC" "advertising" "getoption" "fs" "stats" "traffic" "dht" "tracekit" "tbench" "vpn" "chat")
+  (list "MC" "advertising" "getoption" "fs" "hostlist" "stats" "traffic" "dht" "tracekit" "tbench" "vpn" "chat")
   'always) )
  
 
@@ -460,6 +462,18 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  2087
  (cons 1 65535)
  'advanced) )
+
+(define (hostlist-port builder)
+ (builder
+ "HOSTLIST"
+ "PORT"
+ (_ "Port for the integrated hostlist HTTP server")
+ (nohelp)
+ '()
+ #t
+ 8080
+ (cons 1 65535)
+ 'hostlist-loaded) )
 
 (define (network-trusted builder)
  (builder
@@ -539,6 +553,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
     (network-port builder) 
+    (hostlist-port builder)
     (network-trusted builder) 
     (general-hostlisturl builder)
     (general-hosts builder)
@@ -1455,6 +1470,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (http-port-nz (eq? (get-option ctx "HTTP" "PORT") 0) )
      (mysql (string= (get-option ctx "MODULES" "sqstore") "sqstore_mysql") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
+     (hostlist-loaded (list? (member "hostlist" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (tcp-loaded (list? (member "tcp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (udp-loaded (list? (member "udp" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
@@ -1473,6 +1489,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'f2fr)         (change-visible ctx a b f2fr))
             ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
+            ((eq? i 'hostlist-loaded)    (change-visible ctx a b hostlist-loaded))
             ((eq? i 'nat-unlimited)(change-visible ctx a b nat-unlimited))
             ((eq? i 'tcp-port-nz)  (change-visible ctx a b tcp-port-nz))
             ((eq? i 'udp-port-nz)  (change-visible ctx a b udp-port-nz))

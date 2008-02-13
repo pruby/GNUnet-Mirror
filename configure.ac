@@ -868,6 +868,7 @@ src/applications/fs/namespace/Makefile
 src/applications/fs/uritrack/Makefile
 src/applications/fs/tools/Makefile
 src/applications/getoption/Makefile
+src/applications/hostlist/Makefile
 src/applications/identity/Makefile
 src/applications/kvstore_sqlite/Makefile
 src/applications/pingpong/Makefile

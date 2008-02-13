@@ -5,8 +5,22 @@ Annotations:
 
 0.7.4 [4'08] (aka "fix search"):
 - modify datastore to return diverse subsets of large response sets,
-  except when processing for loopback! [RC]
-- make sure core polls whenever outbound bandwidth is available [RC]
+  except when processing for loopback [RC]
+  IDEA: do pre-pass over result set, count # number; then LIMIT with OFFSET 
+        by RAND(total) for the first result and then wrap around
+        to the beginning if the iterator reaches total.
+        + reasonably fast for arbitrary large result sets
+        - except measureable slowdown (?) for result sets of size 1?)
+        + equal chance to get any result first
+        + no need for threads per multi-result query
+        - non-trivial code required in every sqstore implementation
+        o testable, but not trivial to test fully
+- modify gap.c to NOT do full iteration over result set (current code
+  might take forever; add bound in # replies (prio+1?) and 
+  # iterations (10*(prio+1)?)done!)
+- fix pid-table assertion crash (rare, produced with linear-gap test) [RC]
+- tune GAP query planning code [RC]
+- reenable and test GAP migration code [RC]
 - complete IPv4/IPv6 integration of transports (http is missing!) [RC]
 - integrated hostlist server application using libmicrohttpd [RC]
 - Insert/Index a "shared directory" automatically [Nils]
