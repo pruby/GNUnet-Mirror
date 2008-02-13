@@ -2815,6 +2815,7 @@ cronDecreaseLiveness (void *unused)
   BufferEntry *root;
   BufferEntry *prev;
   BufferEntry *tmp;
+  SendEntry *entry;
   GNUNET_CronTime now;
   int i;
   unsigned long long total_allowed_sent;
@@ -2931,40 +2932,43 @@ cronDecreaseLiveness (void *unused)
                   unsigned int mSize;
                   struct SendCallbackList *pos;
                   unsigned int hSize;
+                  unsigned int off;
 
                   hSize = root->available_send_window;
                   if (hSize > 63 * 1024)
                     hSize = 63 * 1024;
                   msgBuf = GNUNET_malloc (hSize);
                   pos = scl_head;
+                  off = 0;
                   while ((pos != NULL) && (hSize > 0))
                     {
-                      if (pos->minimumPadding <= hSize)
+                      if (pos->minimumPadding <= hSize - off)
                         {
                           mSize = pos->callback (&root->session.sender,
-                                                 msgBuf, hSize);
-                          if (mSize > 0)
-                            {
-                              GNUNET_CORE_connection_unicast (&root->session.
-                                                              sender,
-                                                              (GNUNET_MessageHeader
-                                                               *) msgBuf, 0,
-                                                              5 *
-                                                              GNUNET_CRON_MINUTES);
-                              if (mSize > hSize)
-                                {
-                                  GNUNET_GE_BREAK (ectx, 0);
-                                  hSize = 0;
-                                }
-                              else
-                                {
-                                  hSize -= mSize;
-                                }
-                            }
+                                                 &msgBuf[off], hSize - off);
+                          GNUNET_GE_BREAK (ectx, mSize <= hSize - off);
+                          off += mSize;
                         }
                       pos = pos->next;
                     }
-                  GNUNET_free (msgBuf);
+                  if (off > 0)
+                    {
+                      msgBuf = GNUNET_realloc (msgBuf, off);
+                      entry = GNUNET_malloc (sizeof (SendEntry));
+                      entry->len = off;
+                      entry->flags = SE_FLAG_NONE;
+                      entry->pri = 0;
+                      entry->transmissionTime =
+                        GNUNET_get_time () + 5 * GNUNET_CRON_MINUTES;
+                      entry->callback = NULL;
+                      entry->closure = msgBuf;
+                      entry->knapsackSolution = GNUNET_NO;
+                      appendToBuffer (root, entry);
+                    }
+                  else
+                    {
+                      GNUNET_free (msgBuf);
+                    }
                 }
               break;
             default:           /* not up, not down - partial SETKEY exchange */
@@ -4067,14 +4071,13 @@ GNUNET_CORE_connection_send_using_callback (const GNUNET_PeerIdentity *
                                             unsigned int maxdelay)
 {
   BufferEntry *be;
+  SendEntry *entry;
 
   ENTRY ();
   GNUNET_mutex_lock (lock);
   be = addHost (hostId, GNUNET_YES);
   if ((be != NULL) && (be->status != STAT_DOWN))
     {
-      SendEntry *entry;
-
       entry = GNUNET_malloc (sizeof (SendEntry));
       entry->len = len;
       entry->flags = SE_FLAG_NONE;
