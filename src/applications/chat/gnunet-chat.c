@@ -46,7 +46,7 @@ static char *quit = "quit";
  * All gnunet-chat command line options
  */
 static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),   /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Join a chat on GNUnet.")),    /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   GNUNET_COMMAND_LINE_OPTION_LOGGING,   /* -L */
   {'n', "nick", "NAME",
@@ -55,7 +55,7 @@ static struct GNUNET_CommandLineOption gnunetchatOptions[] = {
   {'r', "room", "NAME",
    gettext_noop ("set the chat room to join (requred)"),
    1, &GNUNET_getopt_configure_set_string, &room_name},
-  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION),        /* -v */
+  GNUNET_COMMAND_LINE_OPTION_VERSION (PACKAGE_VERSION), /* -v */
   GNUNET_COMMAND_LINE_OPTION_VERBOSE,
   GNUNET_COMMAND_LINE_OPTION_END,
 };
@@ -124,27 +124,27 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_CHAT_Room *room;
-  
+
   struct GNUNET_RSA_PrivateKey *my_priv;
   GNUNET_RSA_PublicKey my_pub;
-  
+
   char *message;
   int ret = GNUNET_OK;
-  
-  GNUNET_disable_entropy_gathering();
-  
-  fprintf(stderr,"Generating public/private key pair\n");
+
+  GNUNET_disable_entropy_gathering ();
+
+  fprintf (stderr, "Generating public/private key pair\n");
   my_priv = GNUNET_RSA_create_key ();
-  GNUNET_RSA_get_public_key(my_priv,&my_pub); 
-  message = GNUNET_malloc(MAX_MESSAGE_LENGTH+1);
-  
+  GNUNET_RSA_get_public_key (my_priv, &my_pub);
+  message = GNUNET_malloc (MAX_MESSAGE_LENGTH + 1);
+
 
   if (GNUNET_SYSERR == GNUNET_init (argc,
                                     argv,
                                     "gnunet-chat [OPTIONS]",
                                     &cfgFilename, gnunetchatOptions, &ectx,
                                     &cfg))
-    ret = GNUNET_SYSERR;                   /* parse error, --help, etc. */
+    ret = GNUNET_SYSERR;        /* parse error, --help, etc. */
   if (nickname == NULL)
     {
       fprintf (stderr, _("You must specify a nickname\n"));
@@ -153,34 +153,36 @@ main (int argc, char **argv)
 
   room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
-                                nickname,room_name,
-                                &my_pub, my_priv, "", &receive_callback, NULL);
+                                nickname, room_name,
+                                &my_pub, my_priv, "", &receive_callback,
+                                NULL);
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join the room\n"));
       ret = GNUNET_SYSERR;
     }
   else
-  {
-  	fprintf(stdout,"Room joined, type message and hit return to send.\nType quit when ready to quit\n");
-  }
+    {
+      fprintf (stdout,
+               "Room joined, type message and hit return to send.\nType quit when ready to quit\n");
+    }
 
   /* read messages from command line and send */
-  while ((ret == GNUNET_OK)&&(strcmp(message,quit)!=0))
+  while ((ret == GNUNET_OK) && (strcmp (message, quit) != 0))
     {
-	 
-      bzero(message, MAX_MESSAGE_LENGTH+1);
+
+      bzero (message, MAX_MESSAGE_LENGTH + 1);
       if (NULL == fgets (message, MAX_MESSAGE_LENGTH, stdin))
         break;
-      else if (strncmp(message,quit,sizeof(quit))==0)
+      else if (strncmp (message, quit, sizeof (quit)) == 0)
         break;
       else
-      {
-      	if(message[strlen(message)-1] == '\n')
-      	  message[strlen(message)-1] = '\0';
-      }
-      fprintf(stderr,"quit: %s message: %s\n",quit,message);
-      
+        {
+          if (message[strlen (message) - 1] == '\n')
+            message[strlen (message) - 1] = '\0';
+        }
+      fprintf (stderr, "quit: %s message: %s\n", quit, message);
+
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
                                                  &confirmation_callback,
@@ -190,13 +192,13 @@ main (int argc, char **argv)
         {
           fprintf (stderr, _("Failed to send message.\n"));
         }
-        
+
     }
-    
-  
+
+
   GNUNET_CHAT_leave_room (room);
-  GNUNET_free(room);
-  GNUNET_free(message);
+  GNUNET_free (room);
+  GNUNET_free (message);
   GNUNET_fini (ectx, cfg);
   return GNUNET_OK;
 }

@@ -80,18 +80,18 @@ broadcastToConnected (const GNUNET_MessageHeader * message,
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
-               const GNUNET_MessageHeader * message)
+                 const GNUNET_MessageHeader * message)
 {
   int i;
   int j;
   CS_chat_MESSAGE *cmsg;
 
   GNUNET_HashCode hc;
-  
+
   char *nick;
   char *message_content;
   char *room_name;
-  
+
   int header_size;
   unsigned long nick_len;
   unsigned long msg_len;
@@ -99,37 +99,38 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
 
   cmsg = (CS_chat_MESSAGE *) message;
 
-   if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
+  if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                      _("Message received from client is invalid\n"));
-      return GNUNET_SYSERR;    /* invalid message */
- 
-    }
-  
+      return GNUNET_SYSERR;     /* invalid message */
 
-  header_size = ntohs(cmsg->header.size);
-  nick_len = ntohl(cmsg->nick_len);
-  msg_len = ntohl(cmsg->msg_len);
-  room_name_len = ntohl(cmsg->room_name_len);
-  
-  nick = GNUNET_malloc(nick_len + 1);
-  message_content = GNUNET_malloc(msg_len + 1);
-  room_name = GNUNET_malloc(room_name_len + 1);
-    
-  memcpy(nick,&cmsg->nick[0],nick_len);
-  memcpy(message_content,&cmsg->nick[nick_len],msg_len);
-  memcpy(room_name,&cmsg->nick[nick_len+msg_len],room_name_len);  
-	
-	nick[nick_len] = '\0';
+    }
+
+
+  header_size = ntohs (cmsg->header.size);
+  nick_len = ntohl (cmsg->nick_len);
+  msg_len = ntohl (cmsg->msg_len);
+  room_name_len = ntohl (cmsg->room_name_len);
+
+  nick = GNUNET_malloc (nick_len + 1);
+  message_content = GNUNET_malloc (msg_len + 1);
+  room_name = GNUNET_malloc (room_name_len + 1);
+
+  memcpy (nick, &cmsg->nick[0], nick_len);
+  memcpy (message_content, &cmsg->nick[nick_len], msg_len);
+  memcpy (room_name, &cmsg->nick[nick_len + msg_len], room_name_len);
+
+  nick[nick_len] = '\0';
   message_content[msg_len] = '\0';
   room_name[room_name_len] = '\0';
-  
+
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                 "Received chat message from client.\n Message is %s\n from %s\n intended for room %s\n",message_content,nick,room_name);
-    
+                 "Received chat message from client.\n Message is %s\n from %s\n intended for room %s\n",
+                 message_content, nick, room_name);
+
   GNUNET_hash (cmsg, header_size, &hc);
   /* check if we have seen this message already */
 
@@ -146,10 +147,10 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
       broadcastToConnected (message, 5, 1);
       cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
       for (j = 0; j < clientCount; j++)
-        coreAPI->cs_send_to_client (clients[j], &cmsg->header,GNUNET_YES);
+        coreAPI->cs_send_to_client (clients[j], &cmsg->header, GNUNET_YES);
       /*pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
-      pmsg->message[CHAT_MSG_LENGTH - 1] = '\0';*/
-      
+         pmsg->message[CHAT_MSG_LENGTH - 1] = '\0'; */
+
       /*
          GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
          " CHAT: received new message from %s: %s\n",
@@ -170,16 +171,16 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   const CS_chat_JOIN_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
-  
+
   char *nick;
   GNUNET_RSA_PublicKey *client_key;
   char *room_name;
-  
+
   int header_size;
   unsigned long nick_len;
   unsigned long pubkey_len;
   unsigned long room_name_len;
-  
+
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_JOIN_MESSAGE *) message;
 
@@ -187,28 +188,32 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
     {
       GNUNET_GE_LOG (ectx,
                      GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Room join from client is invalid! Size is: %d, should be at least %d\n"),ntohs(cmsg->header.size),sizeof(CS_chat_JOIN_MESSAGE));
-      return GNUNET_SYSERR;  /* invalid message */
- 
+                     _
+                     ("Room join from client is invalid! Size is: %d, should be at least %d\n"),
+                     ntohs (cmsg->header.size),
+                     sizeof (CS_chat_JOIN_MESSAGE));
+      return GNUNET_SYSERR;     /* invalid message */
+
     }
-   
-  header_size = ntohs(cmsg->header.size);
-  nick_len = ntohl(cmsg->nick_len);
-  pubkey_len = ntohl(cmsg->pubkey_len);
-  room_name_len = ntohl(cmsg->room_name_len);
-  
-  nick = GNUNET_malloc(nick_len + 1);
-  client_key = GNUNET_malloc(sizeof(GNUNET_RSA_PublicKey));
-  room_name = GNUNET_malloc(room_name_len + 1);
-    
-  memcpy(nick,&cmsg->nick[0],nick_len);
-  memcpy(client_key,&cmsg->nick[nick_len],pubkey_len);
-  memcpy(room_name,&cmsg->nick[nick_len + pubkey_len],room_name_len);
-  
+
+  header_size = ntohs (cmsg->header.size);
+  nick_len = ntohl (cmsg->nick_len);
+  pubkey_len = ntohl (cmsg->pubkey_len);
+  room_name_len = ntohl (cmsg->room_name_len);
+
+  nick = GNUNET_malloc (nick_len + 1);
+  client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
+  room_name = GNUNET_malloc (room_name_len + 1);
+
+  memcpy (nick, &cmsg->nick[0], nick_len);
+  memcpy (client_key, &cmsg->nick[nick_len], pubkey_len);
+  memcpy (room_name, &cmsg->nick[nick_len + pubkey_len], room_name_len);
+
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
-                 "Received join chat room message from client.\n From %s\n for room %s\n",nick,room_name);
-    
+                 "Received join chat room message from client.\n From %s\n for room %s\n",
+                 nick, room_name);
+
   nick[nick_len] = '\0';
   room_name[room_name_len] = '\0';
   GNUNET_hash (cmsg, header_size, &hc);
@@ -221,7 +226,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
     if (clients[i] == client)
       j = i;
     else
-      coreAPI->cs_send_to_client (clients[i], message,GNUNET_YES);
+      coreAPI->cs_send_to_client (clients[i], message, GNUNET_YES);
   if (j == -1)
     {
       if (clientCount == MAX_CLIENTS)
@@ -230,7 +235,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
                        _("Maximum number of chat clients reached.\n"));
       else
         {
-          GNUNET_array_grow (clients, clientCount, clientCount + 1);	
+          GNUNET_array_grow (clients, clientCount, clientCount + 1);
           clients[clientCount] = client;
           ++clientCount;
           GNUNET_GE_LOG (ectx,
@@ -241,9 +246,9 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
     }
   /* forward to all other nodes in the network */
   /*pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
-  broadcastToConnected (&pmsg->header, 5, 1);*/
+     broadcastToConnected (&pmsg->header, 5, 1); */
   GNUNET_mutex_unlock (chatMutex);
-  fprintf(stderr,"End of handleChatRequest\n");
+  fprintf (stderr, "End of handleChatRequest\n");
   return GNUNET_OK;
 }
 
@@ -270,8 +275,8 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
   clientCount = 0;
-  
-  lastMsgs = GNUNET_malloc(sizeof(GNUNET_HashCode) * MAX_LAST_MESSAGES);
+
+  lastMsgs = GNUNET_malloc (sizeof (GNUNET_HashCode) * MAX_LAST_MESSAGES);
 
   GNUNET_GE_ASSERT (ectx,
                     sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
@@ -283,13 +288,14 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
                  "chat", GNUNET_P2P_PROTO_CHAT_MSG, GNUNET_CS_PROTO_CHAT_MSG);
 
   /*if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
-    ok = GNUNET_SYSERR;*/
+     capi->registerHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG))
+     ok = GNUNET_SYSERR; */
   if (GNUNET_SYSERR ==
       capi->cs_exit_handler_register (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
-                                                    &csHandleChatRequest))
+  if (GNUNET_SYSERR ==
+      capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
+                                   &csHandleChatRequest))
     ok = GNUNET_SYSERR;
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                                     &csHandleChatMSG))
@@ -308,7 +314,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_chat ()
 {
-  /*coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG);*/
+  /*coreAPI->unregisterHandler (GNUNET_P2P_PROTO_CHAT_MSG, &handleChatMSG); */
   coreAPI->cs_exit_handler_unregister (&chatClientExitHandler);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                     &csHandleChatMSG);
