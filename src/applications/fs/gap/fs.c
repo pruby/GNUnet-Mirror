@@ -523,8 +523,6 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   enum GNUNET_FS_RoutingPolicy policy;
   double preference;
 
-  fprintf(stderr,
-	  "R");
   if (test_load_too_high ())
     {
 #if DEBUG_GAP
@@ -644,9 +642,6 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
   unsigned long long expiration;
   double preference;
 
-  if (sender != NULL)
-    fprintf(stderr,
-	    "C");
   size = ntohs (pmsg->size);
   if (size < sizeof (P2P_gap_reply_MESSAGE))
     {

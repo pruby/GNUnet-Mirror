@@ -233,10 +233,13 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 	  if ( (rl->bloomfilter_size == filter_size) &&
 	       (rl->bloomfilter_mutator == filter_mutator) )
 	    {
-	      /* update ttl / BF */
-	      GNUNET_bloomfilter_or(rl->bloomfilter,
-				    bloomfilter_data,
-				    filter_size);
+	      if (rl->bloomfilter_size > 0)
+		{
+		  /* update ttl / BF */
+		  GNUNET_bloomfilter_or(rl->bloomfilter,
+					bloomfilter_data,
+					filter_size);
+		}
 	      GNUNET_FS_PT_change_rc (peer, -1);
 	      GNUNET_mutex_unlock (GNUNET_FS_lock);
 	      return;
@@ -379,8 +382,6 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
           msg->reserved = 0;
           msg->expiration = GNUNET_htonll (expiration);
           memcpy (&msg[1], data, size);
-	  fprintf(stderr,
-		  "F");
           coreAPI->unicast (&target,
                             &msg->header,
                             BASE_REPLY_PRIORITY * (1 + rl->value),

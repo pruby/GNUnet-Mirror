@@ -661,7 +661,6 @@ try_add_request (struct RequestList *req,
   req->last_prio_used = prio;
   req->last_ttl_used = ttl;
   req->remaining_value -= prio;
-  fprintf(stderr, "!");
   return size;
 }
 
