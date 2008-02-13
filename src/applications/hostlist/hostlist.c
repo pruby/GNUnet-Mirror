@@ -31,7 +31,7 @@
 
 #define DEBUG_HOSTLIST GNUNET_NO
 
-static struct MHD_Daemon * daemon_handle;
+static struct MHD_Daemon *daemon_handle;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -42,17 +42,17 @@ static GNUNET_Stats_ServiceAPI *stats;
 static int stat_request_count;
 
 static int
-accept_policy_callback(void * cls,
-		       const struct sockaddr * addr,
-		       socklen_t addrlen)
+accept_policy_callback (void *cls,
+                        const struct sockaddr *addr, socklen_t addrlen)
 {
-  return MHD_YES; /* accept all */
+  return MHD_YES;               /* accept all */
 }
 
 /**
  * Context for host processor.
- */ 
-struct HostSet {
+ */
+struct HostSet
+{
   /**
    * Bitmap describing acceptable protocols.
    */
@@ -60,73 +60,63 @@ struct HostSet {
 
   unsigned int size;
 
-  unsigned char * data;
+  unsigned char *data;
 };
 
 static int
 host_processor (const GNUNET_PeerIdentity * peer,
-		unsigned short protocol,
-		int confirmed, void *data)
+                unsigned short protocol, int confirmed, void *data)
 {
-  struct HostSet * results = data;
-  GNUNET_MessageHello * hello;
+  struct HostSet *results = data;
+  GNUNET_MessageHello *hello;
   unsigned int old;
 
-  if ( (GNUNET_YES != confirmed) ||
-       ((results->protocols & (1LL << protocol)) == 0) )
+  if ((GNUNET_YES != confirmed) ||
+      ((results->protocols & (1LL << protocol)) == 0))
     return GNUNET_OK;
-  hello = identity->identity2Hello(peer,
-				   protocol,
-				   GNUNET_NO);
+  hello = identity->identity2Hello (peer, protocol, GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
   old = results->size;
-  GNUNET_array_grow(results->data,
-		    results->size,
-		    results->size + ntohs(hello->header.size));
-  memcpy(&results->data[old],
-	 hello,
-	 ntohs(hello->header.size));
-  GNUNET_free(hello);
+  GNUNET_array_grow (results->data,
+                     results->size,
+                     results->size + ntohs (hello->header.size));
+  memcpy (&results->data[old], hello, ntohs (hello->header.size));
+  GNUNET_free (hello);
   return GNUNET_OK;
 }
 
 static int
-access_handler_callback(void *cls,
-			struct MHD_Connection * connection,
-			const char *url,
-			const char *method,
-			const char *version,
-			const char *upload_data,
-			unsigned int *upload_data_size,
-			void **con_cls)
+access_handler_callback (void *cls,
+                         struct MHD_Connection *connection,
+                         const char *url,
+                         const char *method,
+                         const char *version,
+                         const char *upload_data,
+                         unsigned int *upload_data_size, void **con_cls)
 {
   static int dummy;
-  struct MHD_Response * response;
-  struct HostSet results;  
+  struct MHD_Response *response;
+  struct HostSet results;
 
-  if (0 != strcmp(method, MHD_HTTP_METHOD_GET))
+  if (0 != strcmp (method, MHD_HTTP_METHOD_GET))
     return MHD_NO;
   if (NULL == *con_cls)
     {
       (*con_cls) = &dummy;
-      return MHD_YES; /* send 100 continue */
+      return MHD_YES;           /* send 100 continue */
     }
   if (*upload_data_size != 0)
-    return MHD_NO; /* do not support upload data */
-  memset(&results, 0, sizeof(struct HostSet));
-  results.protocols = -1; /* for now */
-  identity->forEachHost(GNUNET_get_time(), &host_processor, &results);
+    return MHD_NO;              /* do not support upload data */
+  memset (&results, 0, sizeof (struct HostSet));
+  results.protocols = -1;       /* for now */
+  identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
-    return MHD_NO; /* no known hosts!? */
-  response = MHD_create_response_from_data(results.size,
-					   results.data,
-					   MHD_YES,
-					   MHD_NO);
-  MHD_queue_response(connection,
-		     MHD_HTTP_OK,
-		     response);
-  MHD_destroy_response(response);  
+    return MHD_NO;              /* no known hosts!? */
+  response = MHD_create_response_from_data (results.size,
+                                            results.data, MHD_YES, MHD_NO);
+  MHD_queue_response (connection, MHD_HTTP_OK, response);
+  MHD_destroy_response (response);
   return MHD_NO;
 }
 
@@ -145,7 +135,7 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
                                                       "HOSTLIST",
                                                       "PORT", 0, 65535, 8080,
                                                       &port))
-    return GNUNET_SYSERR; 
+    return GNUNET_SYSERR;
   identity = capi->request_service ("identity");
   if (identity == NULL)
     {
@@ -159,24 +149,24 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
       stat_request_count
         = stats->create (gettext_noop ("# hostlist requests received"));
     }
-  daemon_handle = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_IPv6,
-				   (unsigned short) port,
-				   &accept_policy_callback,
-				   NULL,
-				   &access_handler_callback,
-				   NULL,
-				   MHD_OPTION_CONNECTION_LIMIT, 16,
-				   MHD_OPTION_PER_IP_CONNECTION_LIMIT, 1,
-				   MHD_OPTION_CONNECTION_TIMEOUT, 16,
-				   MHD_OPTION_CONNECTION_MEMORY_LIMIT, 16 * 1024,
-				   MHD_OPTION_END);
+  daemon_handle = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_IPv6,
+                                    (unsigned short) port,
+                                    &accept_policy_callback,
+                                    NULL,
+                                    &access_handler_callback,
+                                    NULL,
+                                    MHD_OPTION_CONNECTION_LIMIT, 16,
+                                    MHD_OPTION_PER_IP_CONNECTION_LIMIT, 1,
+                                    MHD_OPTION_CONNECTION_TIMEOUT, 16,
+                                    MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+                                    16 * 1024, MHD_OPTION_END);
   if (daemon_handle == NULL)
     {
       if (stats != NULL)
-	{
-	  coreAPI->release_service (stats);
-	  stats = NULL;
-	}
+        {
+          coreAPI->release_service (stats);
+          stats = NULL;
+        }
       coreAPI->release_service (identity);
       identity = NULL;
       return GNUNET_SYSERR;
@@ -194,7 +184,7 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
 void
 done_module_hostlist ()
 {
-  MHD_stop_daemon(daemon_handle);
+  MHD_stop_daemon (daemon_handle);
   daemon_handle = NULL;
   if (stats != NULL)
     {
