@@ -64,6 +64,7 @@ GNUNET_FS_SHARED_free_request_list (struct RequestList *rl)
     GNUNET_bloomfilter_free (rl->bloomfilter);
   GNUNET_FS_PT_change_rc (rl->primary_target, -1);
   GNUNET_FS_PT_change_rc (rl->response_target, -1);
+  memset(rl, 0, sizeof(struct RequestList)); /* mark as freed */
   GNUNET_free (rl);
 }
 

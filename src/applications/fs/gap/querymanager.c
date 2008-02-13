@@ -29,6 +29,7 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_stats_service.h"
 #include "querymanager.h"
 #include "fs.h"
 #include "fs_dht.h"
@@ -71,6 +72,18 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
  */
 static struct ClientDataList *clients;
 
+
+static GNUNET_Stats_ServiceAPI *stats;
+
+static int stat_gap_client_query_received;
+
+static int stat_gap_client_response_sent;
+
+static int stat_gap_client_query_tracked;
+
+static int stat_gap_client_query_injected;
+
+
 /**
  * A client is asking us to run a query.  The query should be issued
  * until either a unique response has been obtained or until the
@@ -90,7 +103,12 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   struct RequestList *request;
 
   GNUNET_GE_ASSERT (NULL, key_count > 0);
-
+  if (stats != NULL)
+    {
+      stats->change(stat_gap_client_query_tracked, 1);
+      stats->change(stat_gap_client_query_received, 1);
+      stats->change(stat_gap_client_query_injected, 1);
+    }
   request =
     GNUNET_malloc (sizeof (struct RequestList) +
                    (key_count - 1) * sizeof (GNUNET_HashCode));
@@ -189,7 +207,6 @@ response_bf_iterator (GNUNET_HashCode * next, void *arg)
  * If so, transmit to client and update response
  * lists and bloomfilter accordingly.
  *
- * @
  * @param value how much is this response worth to us?
  *        the function should increment value accordingly
  * @return GNUNET_OK if this was the last response
@@ -230,6 +247,8 @@ handle_response (PID_INDEX sender,
                               &msg->header,
                               (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
                               ? GNUNET_NO : GNUNET_YES);
+  if (stats != NULL)
+    stats->change(stat_gap_client_response_sent, 1);    
   GNUNET_free (msg);
 
   /* update *value */
@@ -318,6 +337,8 @@ GNUNET_FS_QUERYMANAGER_handle_response (const GNUNET_PeerIdentity * sender,
               else
                 cl->requests = rl->next;
               GNUNET_FS_SHARED_free_request_list (rl);
+	      if (stats != NULL)
+		stats->change(stat_gap_client_query_tracked, -1);
               if (prev == NULL)
                 rl = cl->requests;
               else
@@ -363,6 +384,8 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
           rl = cl->requests;
           cl->requests = rl->next;
           GNUNET_FS_SHARED_free_request_list (rl);
+	  if (stats != NULL)
+	    stats->change(stat_gap_client_query_tracked, -1);
         }
       if (prev == NULL)
         clients = cl->next;
@@ -397,7 +420,11 @@ repeat_requests_job (void *unused)
                (request->expiration > now)) &&
               (request->last_ttl_used * GNUNET_CRON_SECONDS +
                request->last_request_time < now))
-            GNUNET_FS_PLAN_request (client->client, 0, request);
+	    {
+	      GNUNET_FS_PLAN_request (client->client, 0, request);
+	      if (stats != NULL)
+		stats->change(stat_gap_client_query_injected, 1);
+	    }
 
           if ((request->anonymityLevel == 0) &&
               (request->last_dht_get + request->dht_back_off < now))
@@ -425,6 +452,19 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_cron_add_job (capi->cron,
                        &repeat_requests_job,
                        CHECK_REPEAT_FREQUENCY, CHECK_REPEAT_FREQUENCY, NULL);
+
+  stats = capi->request_service ("stats");
+  if (stats != NULL)
+    {
+      stat_gap_client_query_received =
+        stats->create (gettext_noop ("# gap client queries received"));
+      stat_gap_client_response_sent =
+        stats->create (gettext_noop ("# gap replies sent to clients"));
+      stat_gap_client_query_tracked =
+        stats->create (gettext_noop ("# gap client requests tracked"));
+      stat_gap_client_query_injected =
+        stats->create (gettext_noop ("# gap client requests injected"));
+    }
   return 0;
 }
 
@@ -439,6 +479,11 @@ GNUNET_FS_QUERYMANAGER_done ()
                     cs_exit_handler_unregister (&handle_client_exit));
   while (clients != NULL)
     handle_client_exit(clients->client);    
+  if (stats != NULL)
+    {
+      coreAPI->release_service (stats);
+      stats = NULL;
+    }
   return 0;
 }
 

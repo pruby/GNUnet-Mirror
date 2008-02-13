@@ -35,7 +35,7 @@
 
 #define START_PEERS 1
 
-#define PEER_COUNT 2
+#define PEER_COUNT 4
 
 #define SIZE 1024 * 1024 * 2
 

@@ -28,6 +28,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_datastore_service.h"
+#include "gnunet_stats_service.h"
 #include "gap.h"
 #include "fs.h"
 #include "ondemand.h"
@@ -62,6 +63,16 @@ static unsigned int table_size;
  * computeRoutingIndex.
  */
 static unsigned int random_qsel;
+
+static GNUNET_Stats_ServiceAPI *stats;
+
+static int stat_gap_query_dropped;
+
+static int stat_gap_query_dropped_redundant;
+
+static int stat_gap_query_routed;
+
+static int stat_gap_query_refreshed;
 
 
 static unsigned int
@@ -224,8 +235,12 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 	      /* ignore */
 	      GNUNET_FS_PT_change_rc (peer, -1);
 	      GNUNET_mutex_unlock (GNUNET_FS_lock);
+	      if (stats != NULL)
+		stats->change(stat_gap_query_dropped_redundant, 1);
 	      return;
 	    }
+	  if (stats != NULL)
+	    stats->change(stat_gap_query_refreshed, 1);
 	  rl->value += priority;
 	  rl->remaining_value += priority;
 	  rl->expiration = newTTL;
@@ -272,6 +287,8 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
       /* do not process */
       GNUNET_FS_PT_change_rc (peer, -1);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
+      if (stats != NULL)
+	stats->change(stat_gap_query_dropped, 1);
       return;
     }
   /* delete oldest table entry */
@@ -323,9 +340,12 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                           datastore_value_processor, rl);
 
   /* if not found or not unique, forward */
-  if ((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA))
+  if ( ((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
+       (0 != (policy & GNUNET_FS_RoutingPolicy_FORWARD)) )
     GNUNET_FS_PLAN_request (NULL, peer, rl);    
   GNUNET_mutex_unlock (GNUNET_FS_lock);
+  if (stats != NULL)
+    stats->change(stat_gap_query_routed, 1);
 }
 
 /**
@@ -517,6 +537,18 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
                     coreAPI->
                     register_notify_peer_disconnect
                     (&cleanup_on_peer_disconnect, NULL));
+  stats = capi->request_service ("stats");
+  if (stats != NULL)
+    {
+      stat_gap_query_dropped =
+        stats->create (gettext_noop ("# gap queries dropped (table full)"));
+      stat_gap_query_dropped_redundant =
+        stats->create (gettext_noop ("# gap queries dropped (redundant)"));
+      stat_gap_query_routed =
+        stats->create (gettext_noop ("# gap queries routed"));
+      stat_gap_query_refreshed =
+        stats->create (gettext_noop ("# gap queries refreshed existing record"));
+    }
   cron = GNUNET_cron_create (coreAPI->ectx);
   GNUNET_cron_start (cron);
   return 0;
@@ -547,6 +579,11 @@ GNUNET_FS_GAP_done ()
   datastore = NULL;
   GNUNET_cron_stop (cron);
   GNUNET_cron_destroy (cron);
+  if (stats != NULL)
+    {
+      coreAPI->release_service (stats);
+      stats = NULL;
+    }
   return 0;
 }
 

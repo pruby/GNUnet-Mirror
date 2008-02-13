@@ -27,6 +27,7 @@
 #include "platform.h"
 #include <math.h>
 #include "gnunet_protocols.h"
+#include "gnunet_stats_service.h"
 #include "plan.h"
 #include "pid_table.h"
 #include "fs_dht.h"
@@ -39,6 +40,7 @@
  * per peer (at most)?
  */ 
 #define MAX_ENTRIES_PER_PEER 64
+
 
 /**
  * Linked list summarizing how good other peers
@@ -192,6 +194,14 @@ static struct ClientInfoList *clients;
  */
 static double LOG_2;
 
+static GNUNET_Stats_ServiceAPI *stats;
+
+static int stat_gap_query_sent;
+
+static int stat_gap_query_planned;
+
+static int stat_gap_query_success;
+
 /**
  * Find the entry in the client list corresponding
  * to the given client information.  If no such entry
@@ -320,6 +330,8 @@ add_request (PID_INDEX target,
   entry->plan_entries_next = request->plan_entries;
   request->plan_entries = entry;
 
+  if (stats != NULL)
+    stats->change(stat_gap_query_planned, 1);
   /* compute (random) insertion position in doubly-linked list */
   total = count_query_plan_entries(qpl);
   total = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total + 1);
@@ -661,6 +673,8 @@ try_add_request (struct RequestList *req,
   req->last_prio_used = prio;
   req->last_ttl_used = ttl;
   req->remaining_value -= prio;
+  if (stats != NULL)
+    stats->change(stat_gap_query_sent, 1);
   return size;
 }
 
@@ -817,6 +831,8 @@ GNUNET_FS_PLAN_success (PID_INDEX responder,
   hl->last_response_time = GNUNET_get_time ();
   hl->response_count++;
   GNUNET_mutex_unlock (GNUNET_FS_lock);
+  if (stats != NULL)
+    stats->change(stat_gap_query_success, 1);
 }
 
 /**
@@ -928,6 +944,16 @@ GNUNET_FS_PLAN_init (GNUNET_CoreAPIForPlugins * capi)
                                                        (P2P_gap_query_MESSAGE),
                                                        GNUNET_FS_GAP_QUERY_POLL_PRIORITY,
                                                        &query_fill_callback));
+  stats = capi->request_service ("stats");
+  if (stats != NULL)
+    {
+      stat_gap_query_sent =
+        stats->create (gettext_noop ("# gap requests total sent"));
+      stat_gap_query_planned =
+        stats->create (gettext_noop ("# gap content total planned"));
+      stat_gap_query_success =
+        stats->create (gettext_noop ("# gap routes succeeded"));
+    }
   return 0;
 }
 
@@ -960,6 +986,11 @@ GNUNET_FS_PLAN_done ()
                     connection_unregister_send_callback (sizeof
                                                          (P2P_gap_query_MESSAGE),
                                                          &query_fill_callback));
+  if (stats != NULL)
+    {
+      coreAPI->release_service (stats);
+      stats = NULL;
+    }
   return 0;
 }
 

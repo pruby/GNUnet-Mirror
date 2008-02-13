@@ -74,7 +74,11 @@ static GNUNET_Datastore_ServiceAPI *datastore;
 
 static int stat_gap_query_received;
 
+static int stat_gap_query_drop_busy;
+
 static int stat_gap_content_received;
+
+static int stat_gap_content_found_locally;
 
 static int stat_gap_trust_awarded;
 
@@ -523,6 +527,8 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
   enum GNUNET_FS_RoutingPolicy policy;
   double preference;
 
+  if (stats != NULL)
+    stats->change (stat_gap_query_received, 1);
   if (test_load_too_high ())
     {
 #if DEBUG_GAP
@@ -537,6 +543,8 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
                      "Dropping query from %s, this peer is too busy.\n",
                      sender == NULL ? "localhost" : (char *) &enc);
 #endif
+      if (stats != NULL)
+	stats->change (stat_gap_query_drop_busy, 1);
       return GNUNET_OK;
     }
   size = ntohs (msg->size);
@@ -559,9 +567,6 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* malformed query */
     }
-  if (stats != NULL)
-    stats->change (stat_gap_query_received, 1);
-
   bloomfilter_size =
     size - (sizeof (P2P_gap_query_MESSAGE) +
             (query_count - 1) * sizeof (GNUNET_HashCode));
@@ -578,13 +583,24 @@ handle_p2p_query (const GNUNET_PeerIdentity * sender,
     {
       prio = -identity->changeHostTrust (sender, -prio);
       if (netLoad < GAP_IDLE_LOAD_THRESHOLD + prio)
-        policy = GNUNET_FS_RoutingPolicy_ALL;
+	{
+	  policy = GNUNET_FS_RoutingPolicy_ALL;
+	}
       else if (netLoad < 90 + 10 * prio)
-        policy =
-          GNUNET_FS_RoutingPolicy_ANSWER | GNUNET_FS_RoutingPolicy_FORWARD;
+	{
+	  policy =
+	    GNUNET_FS_RoutingPolicy_ANSWER | GNUNET_FS_RoutingPolicy_FORWARD;
+	}
       else if (netLoad < 100)
+	{
         policy = GNUNET_FS_RoutingPolicy_ANSWER;
-      return GNUNET_OK;         /* drop */
+	}
+      else
+	{
+	  if (stats != NULL)
+	    stats->change (stat_gap_query_drop_busy, 1);
+	  return GNUNET_OK;         /* drop */
+	}
     }
   if ((policy & GNUNET_FS_RoutingPolicy_INDIRECT) == 0)
       /* kill the priority (since we cannot benefit) */
@@ -658,8 +674,13 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
-  if (stats != NULL)
-    stats->change (stat_gap_content_received, 1);
+  if (stats != NULL) 
+    {
+      if (sender != NULL) 
+	stats->change (stat_gap_content_received, 1);
+      else
+	stats->change (stat_gap_content_found_locally, 1);
+    }
   expiration = GNUNET_ntohll (msg->expiration);
   /* forward to other peers */
   prio = GNUNET_FS_GAP_handle_response (sender,
@@ -727,8 +748,12 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
     {
       stat_gap_query_received =
         stats->create (gettext_noop ("# gap requests total received"));
+      stat_gap_query_drop_busy =
+        stats->create (gettext_noop ("# gap requests dropped due to load"));
       stat_gap_content_received =
         stats->create (gettext_noop ("# gap content total received"));
+      stat_gap_content_received =
+        stats->create (gettext_noop ("# gap content found locally"));
       stat_gap_trust_awarded =
         stats->create (gettext_noop ("# gap total trust awarded"));
     }
