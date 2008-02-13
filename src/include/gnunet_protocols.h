@@ -259,7 +259,8 @@ extern "C"
 
 /* ********** CS CHAT application messages ********** */
 
-#define GNUNET_CS_PROTO_CHAT_MSG 44
+#define GNUNET_CS_PROTO_CHAT_JOIN_MSG 44
+#define GNUNET_CS_PROTO_CHAT_MSG 45
 
 
 /* ********** CS DHT application messages ********** */
