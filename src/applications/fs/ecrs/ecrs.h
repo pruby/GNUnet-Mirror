@@ -66,7 +66,6 @@ typedef struct Location
   /**
    * RSA signature over the FileIdentifier,
    * GNUNET_hash of the peer and expiration time.
-   * (everything until proto).
    */
   GNUNET_RSA_Signature contentSignature;
 

@@ -67,10 +67,9 @@
  * </li><li>
  *
  * The last category identifies a datum on a specific machine.  The
- * format is "gnunet://ecrs/loc/HEX1.HEX2.SIZE.PEER.SIG1.EXPTIME".  PEER is
- * the BinName of the public key of the peer storing the datum, SIG1 certifies
- * that this peer has this content; SIG2 is a signature for a HELLO
- * about peer, which is encoded in PROTO, SAS, MTU, EXPTIME and ADDR.
+ * format is "gnunet://ecrs/loc/HEX1.HEX2.SIZE.PEER.SIG.EXPTIME".  PEER is
+ * the BinName of the public key of the peer storing the datum.  The
+ * signature (SIG) certifies that this peer has this content.
  * HEX1, HEX2 and SIZE correspond to a 'chk' URI.
  *
  * </li></ul>
