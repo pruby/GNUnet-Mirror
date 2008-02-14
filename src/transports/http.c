@@ -67,27 +67,8 @@
 #define EXIT()                  /* fprintf(stderr, "X(%u-%s)\n", __LINE__, __FUNCTION__) */
 #define STEP()                  /* fprintf(stderr, "S(%u-%s)\n", __LINE__, __FUNCTION__) */
 
-/**
- * Host-Address in a HTTP network.
- */
-typedef struct
-{
-  /**
-   * claimed IP of the sender, network byte order
-   */
-  GNUNET_IPv4Address ip;
-
-  /**
-   * claimed port of the sender, network byte order
-   */
-  unsigned short port;
-
-  /**
-   * reserved (set to 0 for signature verification)
-   */
-  unsigned short reserved;
-
-} HostAddress;
+#define MY_TRANSPORT_NAME "HTTP"
+#include "common.c"
 
 /**
  * Client-side data per PUT request.
@@ -383,13 +364,6 @@ typedef struct HTTPSession
 
 /* *********** globals ************* */
 
-/**
- * apis (our advertised API and the core api )
- */
-static GNUNET_CoreAPIForTransport *coreAPI;
-
-static GNUNET_Stats_ServiceAPI *stats;
-
 static int stat_bytesReceived;
 
 static int stat_bytesSent;
@@ -450,30 +424,6 @@ static unsigned int tsessionCount;
 static unsigned int tsessionArrayLength;
 
 /**
- * Blacklist configuration
- */
-static struct GNUNET_IPv4NetworkSet *filteredNetworks_;
-
-/**
- * Universal plug & play (firewall hole punching)
- */
-static GNUNET_UPnP_ServiceAPI *upnp;
-
-/**
- * Lock for access to mutable state of the module,
- * that is the configuration and the tsessions array.
- * Note that we ONLY need to synchronize access to
- * the tsessions array when adding or removing sessions,
- * since removing is done only by one thread and we just
- * need to avoid another thread adding an element at the
- * same point in time. We do not need to synchronize at
- * every access point since adding new elements does not
- * prevent the select thread from operating and removing
- * is done by the only therad that reads from the array.
- */
-static struct GNUNET_Mutex *httplock;
-
-/**
  * CURL requires that only one thread manipulates each
  * handle.  This lock is used to ensure that.
  */
@@ -500,48 +450,10 @@ static int
 acceptPolicyCallback (void *cls,
                       const struct sockaddr *addr, socklen_t addr_len)
 {
-  GNUNET_IPv4Address ip;
-  int ret;
-
-  ENTER ();
-  if (addr_len == sizeof (struct sockaddr_in))
-    {
-      memcpy (&ip, &((struct sockaddr_in *) addr)->sin_addr,
-              sizeof (GNUNET_IPv4Address));
-    }
-  else if (addr_len == sizeof (GNUNET_IPv4Address))
-    {
-      memcpy (&ip, addr, addr_len);
-    }
-  else
-    {
-#if DEBUG_HTTP
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                     "Rejecting HTTP connection\n");
-#endif
-      EXIT ();
-      return MHD_NO;
-    }
-  GNUNET_mutex_lock (httplock);
-  ret = GNUNET_check_ipv4_listed (filteredNetworks_, ip);
-  GNUNET_mutex_unlock (httplock);
-  if (GNUNET_YES == ret)
-    {
-#if DEBUG_HTTP
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                     "Rejecting HTTP connection\n");
-#endif
-      EXIT ();
-      return MHD_NO;
-    }
-#if DEBUG_HTTP
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                 "Accepting HTTP connection\n");
-#endif
-  EXIT ();
+  if (GNUNET_NO !=
+      is_rejected_tester(addr,
+			 addr_len))
+    return MHD_NO;
   return MHD_YES;
 }
 
@@ -591,7 +503,7 @@ destroy_tsession (GNUNET_TSession * tsession)
   int i;
 
   ENTER ();
-  GNUNET_mutex_lock (httplock);
+  GNUNET_mutex_lock (lock);
   for (i = 0; i < tsessionCount; i++)
     {
       if (tsessions[i] == tsession)
@@ -600,7 +512,7 @@ destroy_tsession (GNUNET_TSession * tsession)
           break;
         }
     }
-  GNUNET_mutex_unlock (httplock);
+  GNUNET_mutex_unlock (lock);
   if (httpsession->is_client)
     {
       GNUNET_mutex_lock (curllock);
@@ -616,7 +528,7 @@ destroy_tsession (GNUNET_TSession * tsession)
       GNUNET_array_grow (httpsession->cs.client.rbuff2,
                          httpsession->cs.client.rsize2, 0);
 #endif
-      GNUNET_free (httpsession->cs.client.url);
+      GNUNET_free_non_null (httpsession->cs.client.url);
       pos = httpsession->cs.client.puts;
       while (pos != NULL)
         {
@@ -727,50 +639,6 @@ requestCompletedCallback (void *unused,
 }
 
 /**
- * Get the GNUnet HTTP port from the configuration, or from
- * /etc/services if it is not specified in the config file.
- */
-static unsigned short
-getGNUnetHTTPPort ()
-{
-  unsigned long long port;
-
-  ENTER ();
-  if (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                                      "HTTP",
-                                                      "PORT", 0, 65535, 1080,
-                                                      &port))
-    port = 1080;
-  EXIT ();
-  return (unsigned short) port;
-}
-
-/**
- * Get the GNUnet HTTP port from the configuration, or from
- * /etc/services if it is not specified in the config file.
- */
-static unsigned short
-getGNUnetAdvertisedHTTPPort ()
-{
-  unsigned long long port;
-
-  ENTER ();
-  if (!GNUNET_GC_have_configuration_value
-      (coreAPI->cfg, "HTTP", "ADVERTISED-PORT"))
-    {
-      port = getGNUnetHTTPPort ();
-    }
-  else if (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
-                                                           "HTTP",
-                                                           "ADVERTISED-PORT",
-                                                           0, 65535, 80,
-                                                           &port))
-    port = getGNUnetHTTPPort ();
-  EXIT ();
-  return (unsigned short) port;
-}
-
-/**
  * A (core) Session is to be associated with a transport session. The
  * transport service may want to know in order to call back on the
  * core if the connection is being closed. Associate can also be
@@ -815,98 +683,6 @@ httpAssociate (GNUNET_TSession * tsession)
   return GNUNET_OK;
 }
 
-
-/**
- * Verify that a hello-Message is correct (a node
- * is reachable at that address). Since the reply
- * will be asynchronous, a method must be called on
- * success.
- * @param helo the hello message to verify
- *        (the signature/crc have been verified before)
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-static int
-verifyHello (const GNUNET_MessageHello * hello)
-{
-  const HostAddress *haddr;
-
-  ENTER ();
-  haddr = (const HostAddress *) &hello[1];
-  if ((ntohs (hello->senderAddressSize) != sizeof (HostAddress)) ||
-      (ntohs (hello->header.size) != GNUNET_sizeof_hello (hello)) ||
-      (ntohs (hello->header.type) != GNUNET_P2P_PROTO_HELLO) ||
-      (ntohs (hello->protocol) != GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP) ||
-      (MHD_NO == acceptPolicyCallback (NULL,
-                                       (const struct sockaddr *) haddr,
-                                       sizeof (GNUNET_IPv4Address))))
-    {
-      GNUNET_GE_BREAK_OP (NULL, 0);
-      EXIT ();
-      return GNUNET_SYSERR;     /* obviously invalid */
-    }
-  EXIT ();
-  return GNUNET_OK;
-}
-
-/**
- * Create a hello-Message for the current node. The hello is
- * created without signature and without a timestamp. The
- * GNUnet core will GNUNET_RSA_sign the message and add an expiration time.
- *
- * @return hello on success, NULL on error
- */
-static GNUNET_MessageHello *
-createhello ()
-{
-  GNUNET_MessageHello *msg;
-  HostAddress *haddr;
-  unsigned short port;
-
-  ENTER ();
-  port = getGNUnetAdvertisedHTTPPort ();
-  if (0 == port)
-    {
-#if DEBUG_HTTP
-      GNUNET_GE_LOG (NULL,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "HTTP port is 0, will only send using HTTP.\n");
-#endif
-      EXIT ();
-      return NULL;              /* HTTP transport is configured SEND-only! */
-    }
-  msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
-  haddr = (HostAddress *) & msg[1];
-
-  if (!(((upnp != NULL) &&
-         (GNUNET_OK == upnp->get_ip (port,
-                                     "TCP",
-                                     &haddr->ip))) ||
-        (GNUNET_SYSERR != GNUNET_IP_get_public_ipv4_address (coreAPI->cfg,
-                                                             coreAPI->ectx,
-                                                             &haddr->ip))))
-    {
-      GNUNET_free (msg);
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                     GNUNET_GE_BULK,
-                     _("HTTP: Could not determine my public IP address.\n"));
-      return NULL;
-    }
-#if DEBUG_HTTP
-  GNUNET_GE_LOG (coreAPI->ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "HTTP uses IP address %u.%u.%u.%u.\n",
-                 GNUNET_PRIP (ntohl (*(int *) &haddr->ip)));
-#endif
-  haddr->port = htons (port);
-  haddr->reserved = htons (0);
-  msg->senderAddressSize = htons (sizeof (HostAddress));
-  msg->protocol = htons (GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP);
-  msg->MTU = htonl (0);
-  EXIT ();
-  return msg;
-}
-
 /**
  * Add a new session to the array watched by the select thread.  Grows
  * the array if needed.  If the caller wants to do anything useful
@@ -920,13 +696,13 @@ addTSession (GNUNET_TSession * tsession)
   unsigned int i;
 
   ENTER ();
-  GNUNET_mutex_lock (httplock);
+  GNUNET_mutex_lock (lock);
   if (tsessionCount == tsessionArrayLength)
     GNUNET_array_grow (tsessions, tsessionArrayLength,
                        tsessionArrayLength * 2);
   i = tsessionCount;
   tsessions[tsessionCount++] = tsession;
-  GNUNET_mutex_unlock (httplock);
+  GNUNET_mutex_unlock (lock);
   EXIT ();
   return i;
 }
@@ -1050,7 +826,7 @@ accessHandlerCallback (void *cls,
           else
             stats->change (stat_get_received, 1);
         }
-      GNUNET_mutex_lock (httplock);
+      GNUNET_mutex_lock (lock);
       for (i = 0; i < tsessionCount; i++)
         {
           tsession = tsessions[i];
@@ -1063,7 +839,7 @@ accessHandlerCallback (void *cls,
           tsession = NULL;
           httpSession = NULL;
         }
-      GNUNET_mutex_unlock (httplock);
+      GNUNET_mutex_unlock (lock);
     }
   /* create new session if necessary */
   if (httpSession == NULL)
@@ -1343,26 +1119,55 @@ sendContentCallback (void *ptr, size_t size, size_t nmemb, void *ctx)
 }
 
 #define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GNUNET_GE_LOG(coreAPI->ectx, GNUNET_GE_WARNING | GNUNET_GE_USER | GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
+#define IP_BUF_LEN 128
 
 static void
 create_session_url (HTTPSession * httpSession)
 {
+  char buf[IP_BUF_LEN];
   char *url;
   GNUNET_EncName enc;
+  unsigned short available;
+  const HostAddress * haddr = (const HostAddress *) &httpSession->cs.client.address;
 
   ENTER ();
   url = httpSession->cs.client.url;
   if (url == NULL)
     {
       GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &enc);
-      url = GNUNET_malloc (64 + sizeof (GNUNET_EncName));
+      available = ntohs (haddr->availability) & available_protocols;
+      if (available == 0)
+	return;	
+      if ((available & VERSION_AVAILABLE_IPV6) > 0)
+	{
+	  if (NULL == inet_ntop(AF_INET6,
+				&haddr->ipv6,
+				buf,
+				IP_BUF_LEN))
+	    {
+	      /* log? */
+	      return;
+	      EXIT ();
+	    }
+	}
+      else
+	{
+	  if (NULL == inet_ntop(AF_INET,
+				&haddr->ipv4,
+				buf,
+				IP_BUF_LEN))
+	    {
+	      /* log? */
+	      EXIT ();
+	      return;
+	    }
+	}      
+      url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen(buf));
       GNUNET_snprintf (url,
-                       64 + sizeof (GNUNET_EncName),
-                       "http://%u.%u.%u.%u:%u/%s",
-                       GNUNET_PRIP (ntohl
-                                    (*(int *) &httpSession->cs.client.address.
-                                     ip.addr)),
-                       ntohs (httpSession->cs.client.address.port), &enc);
+		       64 + sizeof (GNUNET_EncName),
+		       "http://%s:%u/%s",
+		       buf,
+		       ntohs (haddr->port), &enc);	
       httpSession->cs.client.url = url;
     }
   EXIT ();
@@ -1383,6 +1188,8 @@ create_curl_get (HTTPSession * httpSession)
   CURLMcode mret;
 
   ENTER ();
+  if (httpSession->cs.client.url == NULL)
+    return GNUNET_SYSERR;
   curl_get = httpSession->cs.client.get;
   if (curl_get != NULL)
     {
@@ -1480,7 +1287,7 @@ httpConnect (const GNUNET_MessageHello * hello,
   tsession = NULL;
   if (may_reuse)
     {
-      GNUNET_mutex_lock (httplock);
+      GNUNET_mutex_lock (lock);
       for (i = 0; i < tsessionCount; i++)
         {
           if (0 == memcmp (&hello->senderIdentity,
@@ -1493,11 +1300,11 @@ httpConnect (const GNUNET_MessageHello * hello,
       if ((tsession != NULL) && (GNUNET_OK == httpAssociate (tsession)))
         {
           *tsessionPtr = tsession;
-          GNUNET_mutex_unlock (httplock);
+          GNUNET_mutex_unlock (lock);
           EXIT ();
           return GNUNET_OK;
         }
-      GNUNET_mutex_unlock (httplock);
+      GNUNET_mutex_unlock (lock);
     }
   /* no session pending, initiate a new one! */
   httpSession = GNUNET_malloc (sizeof (HTTPSession));
@@ -1569,7 +1376,8 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   ENTER ();
   /* we should have initiated a GET earlier,
      so URL must not be NULL here */
-  GNUNET_GE_ASSERT (NULL, httpSession->cs.client.url != NULL);
+  if (httpSession->cs.client.url == NULL)
+    return GNUNET_SYSERR;
   STEP ();
   curl_put = curl_easy_init ();
   STEP ();
@@ -1620,7 +1428,7 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
                      GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
                      "curl_multi_add_handle", __FILE__, __LINE__,
                      curl_multi_strerror (mret));
-      GNUNET_mutex_unlock (httplock);
+      GNUNET_mutex_unlock (lock);
       EXIT ();
       return GNUNET_SYSERR;
     }
@@ -1865,7 +1673,7 @@ cleanup_connections ()
   GNUNET_CronTime now;
 
   ENTER ();
-  GNUNET_mutex_lock (httplock);
+  GNUNET_mutex_lock (lock);
   now = GNUNET_get_time ();
   for (i = 0; i < tsessionCount; i++)
     {
@@ -2001,7 +1809,7 @@ cleanup_connections ()
         }
       GNUNET_mutex_unlock (s->lock);
     }
-  GNUNET_mutex_unlock (httplock);
+  GNUNET_mutex_unlock (lock);
   EXIT ();
 }
 
@@ -2130,11 +1938,11 @@ startTransportServer ()
   STEP ();
   if (curl_multi == NULL)
     return GNUNET_SYSERR;
-  port = getGNUnetHTTPPort ();
+  port = get_port();
   if ((mhd_daemon == NULL) && (port != 0))
     {
       STEP ();
-      mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
+      mhd_daemon = MHD_start_daemon (MHD_USE_IPv6,
                                      port,
                                      &acceptPolicyCallback,
                                      NULL, &accessHandlerCallback, NULL,
@@ -2149,7 +1957,38 @@ startTransportServer ()
                                      MHD_OPTION_NOTIFY_COMPLETED,
                                      &requestCompletedCallback, NULL,
                                      MHD_OPTION_END);
+      if (mhd_daemon == NULL)
+	{
+	  /* try without IPv6 */
+	  mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
+					 port,
+					 &acceptPolicyCallback,
+					 NULL, &accessHandlerCallback, NULL,
+					 MHD_OPTION_CONNECTION_TIMEOUT,
+					 (unsigned int) HTTP_TIMEOUT,
+					 MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+					 (unsigned int) 1024 * 128,
+					 MHD_OPTION_CONNECTION_LIMIT,
+					 (unsigned int) 128,
+					 MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+					 (unsigned int) 8,
+					 MHD_OPTION_NOTIFY_COMPLETED,
+					 &requestCompletedCallback, NULL,
+					 MHD_OPTION_END);
+	}
+      else
+	{
+	  available_protocols |= VERSION_AVAILABLE_IPV6;
+	}
+      if (mhd_daemon != NULL)
+	available_protocols |= VERSION_AVAILABLE_IPV4;
       STEP ();
+    }
+  if (port == 0)
+    {
+      /* assume both work for NAT */
+      available_protocols |= VERSION_AVAILABLE_IPV4;
+      available_protocols |= VERSION_AVAILABLE_IPV6;
     }
   if (0 != PIPE (signal_pipe))
     {
@@ -2217,56 +2056,6 @@ stopTransportServer ()
   return GNUNET_OK;
 }
 
-/**
- * Reload the configuration. Should never fail (keep old
- * configuration on error, syslog errors!)
- */
-static int
-reloadConfiguration (void *ctx,
-                     struct GNUNET_GC_Configuration *cfg,
-                     struct GNUNET_GE_Context *ectx,
-                     const char *section, const char *option)
-{
-  char *ch;
-
-  ENTER ();
-  if (0 != strcmp (section, "HTTP"))
-    return 0;                   /* fast path */
-  GNUNET_mutex_lock (httplock);
-  GNUNET_free_non_null (filteredNetworks_);
-  ch = NULL;
-  GNUNET_GC_get_configuration_value_string (cfg, "HTTP", "BLACKLIST", "",
-                                            &ch);
-  filteredNetworks_ = GNUNET_parse_ipv4_network_specification (ectx, ch);
-  GNUNET_free (ch);
-  GNUNET_mutex_unlock (httplock);
-  EXIT ();
-  return 0;
-}
-
-/**
- * Convert HTTP hello to IP address
- */
-static int
-helloToAddress (const GNUNET_MessageHello * hello,
-                void **sa, unsigned int *sa_len)
-{
-  const HostAddress *haddr = (const HostAddress *) &hello[1];
-  struct sockaddr_in *serverAddr;
-
-  ENTER ();
-  *sa_len = sizeof (struct sockaddr_in);
-  serverAddr = GNUNET_malloc (sizeof (struct sockaddr_in));
-  *sa = serverAddr;
-  memset (serverAddr, 0, sizeof (struct sockaddr_in));
-  serverAddr->sin_family = AF_INET;
-  memcpy (&serverAddr->sin_addr, haddr, sizeof (GNUNET_IPv4Address));
-  serverAddr->sin_port = haddr->port;
-  EXIT ();
-  return GNUNET_OK;
-}
-
-
 /* ******************** public API ******************** */
 
 /**
@@ -2276,24 +2065,23 @@ helloToAddress (const GNUNET_MessageHello * hello,
 GNUNET_TransportAPI *
 inittransport_http (GNUNET_CoreAPIForTransport * core)
 {
-  static GNUNET_TransportAPI httpAPI;
-
   ENTER ();
   coreAPI = core;
-  httplock = GNUNET_mutex_create (GNUNET_YES);
+  cfg = coreAPI->cfg;
+  lock = GNUNET_mutex_create (GNUNET_YES);
   curllock = GNUNET_mutex_create (GNUNET_YES);
   if (0 != GNUNET_GC_attach_change_listener (coreAPI->cfg,
-                                             &reloadConfiguration, NULL))
+                                             &reload_configuration, NULL))
     {
-      GNUNET_mutex_destroy (httplock);
+      GNUNET_mutex_destroy (lock);
       return NULL;
     }
   if (0 != curl_global_init (CURL_GLOBAL_WIN32))
     {
       GNUNET_GE_BREAK (NULL, 0);
-      GNUNET_GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration,
+      GNUNET_GC_detach_change_listener (coreAPI->cfg, &reload_configuration,
                                         NULL);
-      GNUNET_mutex_destroy (httplock);
+      GNUNET_mutex_destroy (lock);
       return NULL;
     }
   tsessionCount = 0;
@@ -2335,46 +2123,34 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
                                             "GNUNETD", "HTTP-PROXY", "",
                                             &proxy);
 
-  httpAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP;
-  httpAPI.mtu = 0;
-  httpAPI.cost = 20000;         /* about equal to udp */
-  httpAPI.verifyHello = &verifyHello;
-  httpAPI.createhello = &createhello;
-  httpAPI.connect = &httpConnect;
-  httpAPI.associate = &httpAssociate;
-  httpAPI.send = &httpSend;
-  httpAPI.disconnect = &httpDisconnect;
-  httpAPI.startTransportServer = &startTransportServer;
-  httpAPI.stopTransportServer = &stopTransportServer;
-  httpAPI.helloToAddress = &helloToAddress;
-  httpAPI.testWouldTry = &httpTestWouldTry;
+  myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP;
+  myAPI.mtu = 0;
+  myAPI.cost = 20000;         /* about equal to udp */
+  myAPI.verifyHello = &verify_hello;
+  myAPI.createhello = &create_hello;
+  myAPI.connect = &httpConnect;
+  myAPI.associate = &httpAssociate;
+  myAPI.send = &httpSend;
+  myAPI.disconnect = &httpDisconnect;
+  myAPI.startTransportServer = &startTransportServer;
+  myAPI.stopTransportServer = &stopTransportServer;
+  myAPI.helloToAddress = &hello_to_address;
+  myAPI.testWouldTry = &httpTestWouldTry;
   EXIT ();
 
-  return &httpAPI;
+  return &myAPI;
 }
 
 void
 donetransport_http ()
 {
   ENTER ();
-  GNUNET_GC_detach_change_listener (coreAPI->cfg, &reloadConfiguration, NULL);
-  if (stats != NULL)
-    {
-      coreAPI->release_service (stats);
-      stats = NULL;
-    }
-  if (upnp != NULL)
-    {
-      coreAPI->release_service (upnp);
-      stats = NULL;
-    }
-  GNUNET_free_non_null (filteredNetworks_);
-  GNUNET_mutex_destroy (httplock);
   GNUNET_mutex_destroy (curllock);
   curl_global_cleanup ();
   GNUNET_free_non_null (proxy);
   proxy = NULL;
   GNUNET_array_grow (tsessions, tsessionArrayLength, 0);
+  do_shutdown();
   EXIT ();
 }
 

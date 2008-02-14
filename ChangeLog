@@ -1,3 +1,6 @@
+Thu Feb 14 01:02:32 MST 2008
+	Made HTTP transport work over IPv6 as well.
+
 Wed Feb 13 22:59:07 MST 2008
 	Modified mySQL and SQLite datastores to return diverse
 	result sets during (partial) hash-based get iterations

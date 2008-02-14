@@ -23,43 +23,7 @@
  * @brief Common features between TCP and UDP transports
  * @author Christian Grothoff
  */
-
-
-/**
- * Constants for which IP versions are
- * actually available for the peer.
- */
-#define VERSION_AVAILABLE_NONE 0
-#define VERSION_AVAILABLE_IPV4 1
-#define VERSION_AVAILABLE_IPV6 2
-
-/**
- * Host-Address in the network.
- */
-typedef struct
-{
-  /**
-   * IPv6 address of the sender, network byte order
-   */
-  GNUNET_IPv6Address ipv6;
-
-  /**
-   * claimed IP of the sender, network byte order
-   */
-  GNUNET_IPv4Address ipv4;
-
-  /**
-   * claimed port of the sender, network byte order
-   */
-  unsigned short port;
-
-  /**
-   * Availability.  1 for IPv4 only, 2 for IPv6 only,
-   * 3 for IPv4 and IPv6.
-   */
-  unsigned short availability;
-
-} HostAddress;
+#include "common.h"
 
 static GNUNET_UPnP_ServiceAPI *upnp;
 
@@ -75,6 +39,8 @@ static struct GNUNET_GC_Configuration *cfg;
 
 static struct GNUNET_Mutex *lock;
 
+static GNUNET_TransportAPI myAPI;
+
 /**
  * apis (our advertised API and the core api )
  */
@@ -83,10 +49,6 @@ static GNUNET_CoreAPIForTransport *coreAPI;
 static GNUNET_Stats_ServiceAPI *stats;
 
 static int available_protocols;
-
-static GNUNET_TransportAPI myAPI;
-
-
 
 /**
  * Check if we are allowed to connect to the given IP.
@@ -351,6 +313,28 @@ get_port ()
 }
 
 /**
+ * Get the GNUnet advertised port from the configuration.
+ */
+static unsigned short
+get_advertised_port ()
+{
+  unsigned long long port;
+
+  if (!GNUNET_GC_have_configuration_value
+      (coreAPI->cfg, MY_TRANSPORT_NAME, "ADVERTISED-PORT"))
+    {
+      port = get_port();
+    }
+  else if (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
+                                                           MY_TRANSPORT_NAME,
+                                                           "ADVERTISED-PORT",
+                                                           0, 65535, 80,
+                                                           &port))
+    port = get_port();
+  return (unsigned short) port;
+}
+
+/**
  * Create a hello-Message for the current node. The hello is
  * created without signature and without a timestamp. The
  * GNUnet core will GNUNET_RSA_sign the message and add an expiration time.
@@ -366,7 +350,7 @@ create_hello ()
   unsigned short port;
   unsigned short available;
 
-  port = get_port ();
+  port = get_advertised_port ();
   if (0 == port)
     {
       static int once = 0;

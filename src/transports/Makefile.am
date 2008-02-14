@@ -1,6 +1,6 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
-EXTRA_DIST = common.c test.conf
+EXTRA_DIST = common.c common.h test.conf
 
 plugindir = $(libdir)/GNUnet
 
