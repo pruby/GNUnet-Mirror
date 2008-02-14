@@ -28,13 +28,14 @@
 #include "platform.h"
 #include "migration.h"
 #include "fs.h"
+#include "shared.h"
 #include "gnunet_datastore_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_protocols.h"
 #include "anonymity.h"
 #include "ondemand.h"
 
-#define ENABLE_MIGRATION GNUNET_NO
+#define ENABLE_MIGRATION GNUNET_YES
 
 #if ENABLE_MIGRATION
 

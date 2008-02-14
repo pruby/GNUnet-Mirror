@@ -4,13 +4,7 @@ Annotations:
   RC == Release Critical
 
 0.7.4 [4'08] (aka "fix search"):
-- test that modified datastores return diverse subsets of large response sets
-- modify gap.c to NOT do full iteration over result set (current code
-  might take forever; add bound in # replies (prio+1?) and 
-  # iterations (10*(prio+1)?)done!)
-- fix pid-table assertion crash (rare, produced once (!) with linear-gap test) [RC]
 - tune GAP query planning code [RC]
-- reenable and test GAP migration code [RC]
 - complete IPv4/IPv6 integration of transports (http is missing!) [RC]
 - Insert/Index a "shared directory" automatically [Nils]
   See also: https://gnunet.org/drupal/?q=node/97 [RC]
@@ -18,6 +12,14 @@ Annotations:
   a keyword of the document has been requested (so we would 
   add a special block to the datastore and then trigger
   gnunet-insert only if the file is actually needed!)
+
+TESTING:
+- test that modified datastores return diverse subsets of large response sets
+- test new hostlist application
+- test GAP migration code
+- test GAP code in general (can we reproduce the pid-table assertion crash?)
+
+
 
 0.8.0 [6'08] (aka "advanced features"):
 - gnunet-chat [ RC ]

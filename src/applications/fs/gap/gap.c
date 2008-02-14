@@ -99,6 +99,12 @@ send_delayed (void *cls)
   GNUNET_free (msg);
 }
 
+struct DVPClosure {
+  struct RequestList * request;
+  unsigned int iteration_count;
+  unsigned int result_count;  
+};
+
 /**
  * An iterator over a set of Datastore items.  This
  * function is called whenever GAP is processing a
@@ -122,7 +128,8 @@ datastore_value_processor (const GNUNET_HashCode * key,
                            const GNUNET_DatastoreValue *
                            value, void *closure, unsigned long long uid)
 {
-  struct RequestList *req = closure;
+  struct DVPClosure * cls = closure;
+  struct RequestList *req = cls->request;
   P2P_gap_reply_MESSAGE *msg;
   GNUNET_DatastoreValue *enc;
   unsigned int size;
@@ -131,7 +138,12 @@ datastore_value_processor (const GNUNET_HashCode * key,
   int ret;
   GNUNET_HashCode hc;
   GNUNET_HashCode mhc;
+  int want_more;
 
+  want_more = GNUNET_OK;
+  cls->iteration_count++;
+  if (cls->iteration_count > 10 * (1 + req->value))
+    want_more = GNUNET_SYSERR;
   enc = NULL;
   if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
@@ -145,8 +157,8 @@ datastore_value_processor (const GNUNET_HashCode * key,
       GNUNET_hash (&value[1],
                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &hc);
       GNUNET_FS_HELPER_mingle_hash (&hc, req->bloomfilter_mutator, &mhc);
-      if (GNUNET_YES == GNUNET_bloomfilter_test (req->bloomfilter, &mhc))
-        return GNUNET_OK;       /* not useful */
+      if (GNUNET_YES == GNUNET_bloomfilter_test (req->bloomfilter, &mhc))	
+	return want_more;       /* not useful */      
     }
   et = GNUNET_ntohll (value->expirationTime);
   now = GNUNET_get_time ();
@@ -164,13 +176,16 @@ datastore_value_processor (const GNUNET_HashCode * key,
   msg->reserved = htonl (0);
   msg->expiration = et;
   memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
+  cls->result_count++;
+  if (cls->result_count > 2 * (1 + req->value))
+    want_more = GNUNET_SYSERR;
   GNUNET_cron_add_job (cron,
                        send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
                                           TTL_DECREMENT), 0, msg);
   ret =
     (ntohl (value->type) ==
-     GNUNET_ECRS_BLOCKTYPE_DATA) ? GNUNET_SYSERR : GNUNET_OK;
+     GNUNET_ECRS_BLOCKTYPE_DATA) ? GNUNET_SYSERR : want_more;
   GNUNET_free_non_null (enc);
   return ret;
 }
@@ -204,6 +219,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 {
   struct RequestList *rl;
   struct RequestList *prev;
+  struct DVPClosure cls;
   PID_INDEX peer;
   unsigned int index;
   GNUNET_CronTime now;
@@ -331,7 +347,10 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->policy = policy;
   table[index] = rl;
   /* check local data store */
-  ret = datastore->get (&queries[0], type, datastore_value_processor, rl);
+  cls.request = rl;
+  cls.iteration_count = 0;
+  cls.result_count = 0;
+  ret = datastore->get (&queries[0], type, datastore_value_processor, &cls);
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) && (ret != 1))
     ret = datastore->get (&queries[0],
                           GNUNET_ECRS_BLOCKTYPE_ONDEMAND,

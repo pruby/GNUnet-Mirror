@@ -1,3 +1,8 @@
+Wed Feb 13 22:59:07 MST 2008
+	Modified mySQL and SQLite datastores to return diverse
+	result sets during (partial) hash-based get iterations
+	(should result in more diverse keyword result sets).
+
 Tue Feb 12 23:54:34 MST 2008
 	First shot at integrated hostlist HTTP server based
 	on libmicrohttpd.
