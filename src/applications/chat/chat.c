@@ -139,15 +139,31 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   for (i = 0; i < MAX_LAST_MESSAGES; i++)
     if (0 == memcmp (&hc, &lastMsgs[i], sizeof (GNUNET_HashCode)))
       j = i;
-  if (j == -1)
-    {
+	  if (j == -1)
+	    {
+	    	
+	    	if (clientCount == MAX_CLIENTS)
+	        GNUNET_GE_LOG (ectx,
+	                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+	                       _("Maximum number of chat clients reached.\n"));
+	    }
+      else
+        {
+          GNUNET_array_grow (clients, clientCount, clientCount + 1);
+          clients[clientCount] = client;
+          ++clientCount;
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                         _("Now %d of %d chat clients at this node.\n"),
+                         clientCount, MAX_CLIENTS);
+        }
       /* we have not seen it before, send to all TCP clients
          and broadcast to all peers */
-      markSeen (&hc);
-      broadcastToConnected (message, 5, 1);
-      cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);
-      for (j = 0; j < clientCount; j++)
-        coreAPI->cs_send_to_client (clients[j], &cmsg->header, GNUNET_YES);
+  markSeen (&hc);
+  broadcastToConnected (message, 5, 1);
+  /*cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG);*/
+  for (j = 0; j < clientCount; j++)
+    coreAPI->cs_send_to_client (clients[j], &cmsg->header, GNUNET_YES);
       /*pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
          pmsg->message[CHAT_MSG_LENGTH - 1] = '\0'; */
 
@@ -157,7 +173,6 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
          &pmsg->nick[0],
          &pmsg->message[0]);
        */
-    }
   GNUNET_mutex_unlock (chatMutex);
   return GNUNET_OK;
 }
@@ -227,23 +242,23 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
       j = i;
     else
       coreAPI->cs_send_to_client (clients[i], message, GNUNET_YES);
-  if (j == -1)
-    {
-      if (clientCount == MAX_CLIENTS)
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                       _("Maximum number of chat clients reached.\n"));
-      else
-        {
-          GNUNET_array_grow (clients, clientCount, clientCount + 1);
-          clients[clientCount] = client;
-          ++clientCount;
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                         _("Now %d of %d chat clients at this node.\n"),
-                         clientCount, MAX_CLIENTS);
-        }
-    }
+	  if (j == -1)
+	    {
+	      if (clientCount == MAX_CLIENTS)
+	        GNUNET_GE_LOG (ectx,
+	                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+	                       _("Maximum number of chat clients reached.\n"));
+	      else
+	        {
+	          GNUNET_array_grow (clients, clientCount, clientCount + 1);
+	          clients[clientCount] = client;
+	          ++clientCount;
+	          GNUNET_GE_LOG (ectx,
+	                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+	                         _("Now %d of %d chat clients at this node.\n"),
+	                         clientCount, MAX_CLIENTS);
+	        }
+	    }
   /* forward to all other nodes in the network */
   /*pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
      broadcastToConnected (&pmsg->header, 5, 1); */
