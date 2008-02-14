@@ -1114,7 +1114,10 @@ get (const GNUNET_HashCode * key,
      unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
 {
   int ret;
-  int count = 0;
+  int count;
+  int total;
+  int off;
+  int limit_off;
   sqlite3_stmt *stmt;
   char scratch[256];
   GNUNET_DatastoreValue *datum;
@@ -1129,16 +1132,67 @@ get (const GNUNET_HashCode * key,
   GNUNET_mutex_lock (lock);
   handle = getDBHandle ();
   dbh = handle->dbh;
-  strcpy (scratch, "SELECT ");
-  if (iter == NULL)
-    strcat (scratch, "count(*)");
-  else
-    strcat (scratch,
-            "size, type, prio, anonLevel, expire, hash, value, _ROWID_");
-  strcat (scratch, " FROM gn070 WHERE hash = :1 AND _ROWID_ > :2");
+
+  strcpy (scratch, "SELECT count(*) FROM gn070 WHERE hash = :1");
+  if (type)
+    strcat (scratch, " AND type = :2");
+  if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
+    {
+      LOG_SQLITE (handle,
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_prepare");
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  ret = sqlite3_bind_blob (stmt,
+			   1,
+			   key, sizeof (GNUNET_HashCode),
+			   SQLITE_TRANSIENT);
+  if (type && (ret == SQLITE_OK))
+    ret = sqlite3_bind_int (stmt, 2, type);
+  if (ret != SQLITE_OK)
+    {
+      LOG_SQLITE (handle,
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_bind");
+      sqlite3_reset (stmt);
+      sqlite3_finalize (stmt);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+
+    }
+  ret = sqlite3_step (stmt);
+  if (ret != SQLITE_ROW) 
+    {
+      LOG_SQLITE (handle,
+                  GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
+                  GNUNET_GE_BULK, "sqlite_step");
+      sqlite3_reset (stmt);
+      sqlite3_finalize (stmt);
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+
+    }
+  total = sqlite3_column_int (stmt, 0);
+  sqlite3_reset (stmt);
+  sqlite3_finalize (stmt);
+  if ( (iter == NULL) ||
+       (total == 0) )
+    {
+      GNUNET_mutex_unlock (lock);
+      return total;
+    }
+
+  strcpy (scratch, 
+	  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ "
+	  "FROM gn070 WHERE hash = :1 AND _ROWID_ >= :2");
   if (type)
     strcat (scratch, " AND type = :3");
   strcat (scratch, " ORDER BY _ROWID_ ASC LIMIT 1");
+  if (type)
+    strcat(scratch, " OFFSET :4");
+  else
+    strcat(scratch, " OFFSET :3");
   if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
@@ -1149,9 +1203,14 @@ get (const GNUNET_HashCode * key,
     }
   count = 0;
   last_rowid = 0;
+  off = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, total);
   while (1)
     {
-      ret = sqlite3_bind_blob (stmt,
+     if (count == 0)
+       limit_off = off;
+     else
+       limit_off = 0;
+     ret = sqlite3_bind_blob (stmt,
                                1,
                                key, sizeof (GNUNET_HashCode),
                                SQLITE_TRANSIENT);
@@ -1160,20 +1219,14 @@ get (const GNUNET_HashCode * key,
       if (type && (ret == SQLITE_OK))
         ret = sqlite3_bind_int (stmt, 3, type);
       if (ret == SQLITE_OK)
+	ret = sqlite3_bind_int (stmt, (type == 0) ? 3 : 4, limit_off);
+      if (ret == SQLITE_OK)
         {
           ret = sqlite3_step (stmt);
           if (ret != SQLITE_ROW)
             break;
-          if (iter == NULL)
-            {
-              count = sqlite3_column_int (stmt, 0);
-              sqlite3_reset (stmt);
-              sqlite3_finalize (stmt);
-              GNUNET_mutex_unlock (lock);
-              return count;
-            }
           datum = assembleDatum (handle, stmt, &rkey, &rowid);
-          last_rowid = rowid;
+          last_rowid = rowid + 1;
           sqlite3_reset (stmt);
           if (datum == NULL)
             continue;
@@ -1201,6 +1254,11 @@ get (const GNUNET_HashCode * key,
             }
           GNUNET_free (datum);
         }
+      off++;
+      if (count + off == total)
+	last_rowid = 0; /* back to start */
+      if (off == total)
+	break;
     }
   sqlite3_reset (stmt);
   sqlite3_finalize (stmt);

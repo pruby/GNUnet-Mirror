@@ -1292,12 +1292,21 @@ get (const GNUNET_HashCode * query,
   qbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[1].is_unsigned = GNUNET_YES;
   qbind[1].buffer = &last_vkey;
-  qbind[2].buffer_type = MYSQL_TYPE_LONG;
-  qbind[2].is_unsigned = GNUNET_YES;
-  qbind[2].buffer = &type;
-  qbind[3].buffer_type = MYSQL_TYPE_LONG;
-  qbind[3].is_unsigned = GNUNET_YES;
-  qbind[3].buffer = &limit_off;
+  if (type != 0)
+    {
+      qbind[2].buffer_type = MYSQL_TYPE_LONG;
+      qbind[2].is_unsigned = GNUNET_YES;
+      qbind[2].buffer = &type;
+      qbind[3].buffer_type = MYSQL_TYPE_LONG;
+      qbind[3].is_unsigned = GNUNET_YES;
+      qbind[3].buffer = &limit_off;
+    } 
+  else
+    {
+      qbind[2].buffer_type = MYSQL_TYPE_LONG;
+      qbind[2].is_unsigned = GNUNET_YES;
+      qbind[2].buffer = &limit_off;
+    }
   memset (rbind, 0, sizeof (rbind));
   rbind[0].buffer_type = MYSQL_TYPE_LONG;
   rbind[0].buffer = &size;
@@ -1404,10 +1413,9 @@ get (const GNUNET_HashCode * query,
           GNUNET_mutex_unlock (lock);
         }
       GNUNET_free (datum);
-      off++;
       if (count + off == total)
 	last_vkey = 0; /* back to start */
-      if (off == total)
+      if (count == total)
 	break;
     }
   mysql_thread_end ();
