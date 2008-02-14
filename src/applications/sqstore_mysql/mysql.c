@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -197,10 +197,10 @@ typedef struct
 #define DELETE_ENTRY_BY_VKEY "DELETE FROM gn071 WHERE vkey=?"
   MYSQL_STMT *delete_entry_by_vkey;
 
-#define SELECT_ENTRY_BY_HASH "SELECT * FROM gn071 WHERE hash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1"
+#define SELECT_ENTRY_BY_HASH "SELECT * FROM gn071 WHERE hash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash;
 
-#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT * FROM gn071 WHERE hash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1"
+#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT * FROM gn071 WHERE hash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash_and_type;
 
 #define COUNT_ENTRY_BY_HASH "SELECT count(*) FROM gn071 WHERE hash=?"
@@ -1143,7 +1143,10 @@ iterateAllNow (GNUNET_DatastoreValueIterator iter, void *closure)
 
 /**
  * Iterate over the results for a particular key
- * in the datastore.
+ * in the datastore.  If there are n results, the
+ * code will start the iteration at result offset
+ * "off=rand()%n" in order to ensure diversity of
+ * the responses if iterators process only a subset.
  *
  * @param key maybe NULL (to match all entries)
  * @param type entries of which type are relevant?
@@ -1160,19 +1163,22 @@ get (const GNUNET_HashCode * query,
      unsigned int type, GNUNET_DatastoreValueIterator iter, void *closure)
 {
   int count;
+  unsigned long long total;
+  int off;
   int ret;
   MYSQL_STMT *stmt;
   unsigned int size;
   unsigned int rtype;
   unsigned int prio;
   unsigned int level;
+  unsigned int limit_off;
   unsigned long long expiration;
   unsigned long long vkey;
   unsigned long long last_vkey;
   GNUNET_DatastoreValue *datum;
   GNUNET_HashCode key;
   unsigned long hashSize;
-  MYSQL_BIND qbind[3];
+  MYSQL_BIND qbind[4];
   MYSQL_BIND rbind[7];
 #if DEBUG_MYSQL
   GNUNET_EncName enc;
@@ -1194,12 +1200,104 @@ get (const GNUNET_HashCode * query,
   qbind[0].buffer = (void *) query;
   qbind[0].length = &hashSize;
   qbind[0].buffer_length = hashSize;
+  qbind[1].buffer_type = MYSQL_TYPE_LONG;
+  qbind[1].is_unsigned = GNUNET_YES;
+  qbind[1].buffer = &type;
+  memset (rbind, 0, sizeof (rbind));
+  rbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+  rbind[0].buffer = &total;
+  rbind[0].is_unsigned = GNUNET_YES;
+  /* first, determine total number of results */
+  if (type != 0)
+    stmt = dbh->count_entry_by_hash_and_type;
+  else
+    stmt = dbh->count_entry_by_hash;
+  mysql_thread_init ();
+  GNUNET_mutex_lock (lock);
+  GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 2);
+  GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
+  if (mysql_stmt_bind_param (stmt, qbind))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' failed at %s:%d with error: %s\n"),
+		     "mysql_stmt_bind_param",
+		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+      iclose ();
+      mysql_thread_end ();
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  if (mysql_stmt_execute (stmt))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' failed at %s:%d with error: %s\n"),
+		     "mysql_stmt_execute",
+		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+      iclose ();
+      GNUNET_mutex_unlock (lock);
+      mysql_thread_end ();
+      return GNUNET_SYSERR;
+    }
+  if (mysql_stmt_bind_result (stmt, rbind))
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' failed at %s:%d with error: %s\n"),
+		     "mysql_stmt_bind_result",
+		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+      iclose ();
+      mysql_thread_end ();
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
+  if (0 != mysql_stmt_fetch (stmt))
+    {
+      mysql_stmt_reset (stmt);
+      GNUNET_mutex_unlock (lock);
+      mysql_thread_end ();
+      return GNUNET_SYSERR;
+    }
+  last_vkey = vkey;
+  if (-1 == total) 
+    {
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+		     _("`%s' failed at %s:%d with error: %s\n"),
+		     "mysql_stmt_num_rows",
+		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+      iclose ();
+      GNUNET_mutex_unlock (lock);
+      mysql_thread_end ();
+      return GNUNET_SYSERR;
+    }
+  mysql_stmt_reset (stmt);
+  if ( (iter == NULL) ||
+       (total == 0) )
+    {
+      GNUNET_mutex_unlock (lock);
+      mysql_thread_end ();
+      return (int) total;
+    }  
+  GNUNET_mutex_unlock (lock);
+  last_vkey = 0;
+  count = 0;
+  off = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, total);  
+  memset (qbind, 0, sizeof (qbind));
+  qbind[0].buffer_type = MYSQL_TYPE_BLOB;
+  qbind[0].buffer = (void *) query;
+  qbind[0].length = &hashSize;
+  qbind[0].buffer_length = hashSize;
   qbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   qbind[1].is_unsigned = GNUNET_YES;
   qbind[1].buffer = &last_vkey;
   qbind[2].buffer_type = MYSQL_TYPE_LONG;
   qbind[2].is_unsigned = GNUNET_YES;
   qbind[2].buffer = &type;
+  qbind[3].buffer_type = MYSQL_TYPE_LONG;
+  qbind[3].is_unsigned = GNUNET_YES;
+  qbind[3].buffer = &limit_off;
   memset (rbind, 0, sizeof (rbind));
   rbind[0].buffer_type = MYSQL_TYPE_LONG;
   rbind[0].buffer = &size;
@@ -1223,11 +1321,6 @@ get (const GNUNET_HashCode * query,
   rbind[6].buffer_type = MYSQL_TYPE_LONGLONG;
   rbind[6].buffer = &vkey;
   rbind[6].is_unsigned = GNUNET_YES;
-
-
-  mysql_thread_init ();
-  last_vkey = 0;
-  count = 0;
   while (1)
     {
       GNUNET_mutex_lock (lock);
@@ -1238,25 +1331,15 @@ get (const GNUNET_HashCode * query,
           return GNUNET_SYSERR;
         }
       if (type != 0)
-        {
-          if (iter == NULL)
-            stmt = dbh->count_entry_by_hash_and_type;
-          else
-            stmt = dbh->select_entry_by_hash_and_type;
-        }
+	stmt = dbh->select_entry_by_hash_and_type;
       else
-        {
-          if (iter == NULL)
-            stmt = dbh->count_entry_by_hash;
-          else
-            stmt = dbh->select_entry_by_hash;
-        }
-
-      GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
-      if (iter == NULL)
-        GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
+	stmt = dbh->select_entry_by_hash;
+      if (count == 0)
+	limit_off = off;
       else
-        GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
+	limit_off = 0;
+      GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 4);
+      GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       if (mysql_stmt_bind_param (stmt, qbind))
         {
           GNUNET_GE_LOG (ectx,
@@ -1300,15 +1383,6 @@ get (const GNUNET_HashCode * query,
           break;
         }
       last_vkey = vkey;
-      if (iter == NULL)
-        {
-          count = mysql_stmt_affected_rows (stmt);
-          mysql_stmt_reset (stmt);
-          mysql_thread_end ();
-          GNUNET_mutex_unlock (lock);
-
-          return count;
-        }
       mysql_stmt_reset (stmt);
       GNUNET_mutex_unlock (lock);
       datum = assembleDatum (rbind);
@@ -1330,6 +1404,11 @@ get (const GNUNET_HashCode * query,
           GNUNET_mutex_unlock (lock);
         }
       GNUNET_free (datum);
+      off++;
+      if (count + off == total)
+	last_vkey = 0; /* back to start */
+      if (off == total)
+	break;
     }
   mysql_thread_end ();
   return count;
