@@ -19,6 +19,8 @@ TESTING:
 - test GAP migration code
 - test GAP code in general (can we reproduce the pid-table assertion crash?)
 
+Hostlist for network testing:
+* http://vserver1236.vserver-on.de/hostlist-074
 
 
 0.8.0 [6'08] (aka "advanced features"):
