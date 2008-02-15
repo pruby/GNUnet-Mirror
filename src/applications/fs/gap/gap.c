@@ -354,7 +354,7 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) && (ret != 1))
     ret = datastore->get (&queries[0],
                           GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                          datastore_value_processor, rl);
+                          datastore_value_processor, &cls);
 
   /* if not found or not unique, forward */
   if (((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
