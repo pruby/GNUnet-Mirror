@@ -8,7 +8,6 @@ Annotations:
 
 TESTING:
 - test that modified datastores return diverse subsets of large response sets
-  (known to not work right now -- see fslibtest!)
 - test new hostlist application
 - test GAP migration code
 - test GAP code in general (can we reproduce the pid-table assertion crash?)
