@@ -456,8 +456,8 @@ d_put (const GNUNET_HashCode * key,
   if (bloom != NULL)
     GNUNET_bloomfilter_add (bloom, key);
   payload += size + OVERHEAD;
-  checkQuota ();
   GNUNET_mutex_unlock (lock);
+  checkQuota ();
   if (stats != NULL)
     stats->set (stat_dstore_size, payload);
   return GNUNET_OK;
