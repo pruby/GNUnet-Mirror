@@ -1254,10 +1254,9 @@ get (const GNUNET_HashCode * key,
             }
           GNUNET_free (datum);
         }
-      off++;
       if (count + off == total)
 	last_rowid = 0; /* back to start */
-      if (off == total)
+      if (count == total)
 	break;
     }
   sqlite3_reset (stmt);
