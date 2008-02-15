@@ -130,6 +130,8 @@ find_latest(const char * filename,
   struct stat buf;
   char * fn;
 
+  if (filename[0] == '.')
+    return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
   fn = GNUNET_malloc(strlen(filename) + strlen(dirName) + 2);
@@ -165,9 +167,10 @@ probe_directory(const char * filename,
   struct stat buf;
   char * fn;
 
+  if (filename[0] == '.')
+    return GNUNET_OK;
   if (ul != NULL)
-    return GNUNET_SYSERR;
-  
+    return GNUNET_SYSERR;  
   fn = GNUNET_malloc(strlen(filename) + strlen(dirName) + 2);
   strcpy(fn, dirName);
   strcat(fn, DIR_SEPARATOR_STR);
