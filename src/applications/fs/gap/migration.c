@@ -255,8 +255,16 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                  "Migration: random lookup in datastore returned type %d.\n",
                  ntohl (value->type));
 #endif
-  if ((ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND) ||
-      (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD))
+  if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD)
+    {
+      datastore->del(&content[entry].key,
+		     value);
+      GNUNET_free_non_null (value);
+      content[entry].value = NULL;
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
+      return 0;
+    }
+  if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)    
     {
       if (GNUNET_FS_ONDEMAND_get_indexed_content
           (value, &content[entry].key, &enc) != GNUNET_OK)
