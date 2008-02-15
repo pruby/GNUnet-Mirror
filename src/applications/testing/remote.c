@@ -253,7 +253,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
                                            GNUNET_GE_USER |
                                            GNUNET_GE_BULK, "mkstemp",
                                            temp_path);
-              GNUNET_GC_free (basecfg);
               GNUNET_free (temp_path);
               break;
             }
@@ -263,7 +262,6 @@ GNUNET_REMOTE_start_daemons (struct GNUNET_GC_Configuration *newcfg,
               fprintf (stderr,
                        "Failed to write peer configuration file `%s'\n",
                        temp_path);
-              GNUNET_GC_free (basecfg);
               GNUNET_free (temp_path);
               break;
             }
