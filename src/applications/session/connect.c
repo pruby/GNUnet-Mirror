@@ -935,7 +935,7 @@ provide_module_session (GNUNET_CoreAPIForPlugins * capi)
       stat_pongSent
         = stats->create (gettext_noop ("# encrypted PONG messages sent"));
     }
-  lock = GNUNET_mutex_create (GNUNET_YES);
+  lock = capi->connection_get_lock ();
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_USER | GNUNET_GE_REQUEST,
                  _
@@ -973,7 +973,6 @@ release_module_session ()
   coreAPI->release_service (pingpong);
   pingpong = NULL;
   coreAPI = NULL;
-  GNUNET_mutex_destroy (lock);
   lock = NULL;
   return GNUNET_OK;
 }
