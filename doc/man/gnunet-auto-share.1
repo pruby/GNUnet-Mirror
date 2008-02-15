@@ -1,0 +1,106 @@
+.TH GNUNET-AUTO-SHARE "1" "14 Feb 2008" "GNUnet"
+.SH NAME
+gnunet\-auto\-share \- process to share a directory
+.SH SYNOPSIS
+.B gnunet\-auto\-share
+[\fIOPTIONS\fR] DIRECTORY
+.SH DESCRIPTION
+.PP
+In order to share files with other GNUnet users, the files must first
+be made available to GNUnet.  This tool allows you to automatically
+share all files from a certain directory.
+.PP
+In order to start sharing files, invoke gnunet-auto-share with the
+name of the directory.  As long as gnunet-auto-share is running, any
+files placed in the directory will be automatically shared.  
+Note that files that you share may not always continue to be
+available after you leave the network.
+.PP
+gnunet\-auto\-share will automatically extract keywords from the files that
+are shared.  Users that want to download files from GNUnet use
+keywords to search for the appropriate content.  You can manually add keywords
+using the \-K option.
+.PP
+The directory structure of files in the shared directory will be 
+maintained.  gnunet\-auto\-share only supports publishing files
+using indexing.  Indexing a file means that an index is
+added to the local (!)  database with symbolic links to the file
+itself.  The links will use the SHA-512 hash of the entire file as the
+filename.  Indexing is generally significantly more efficient and the
+default choice.  However, indexing only works if the indexed file can
+be read (using the same absolute path) by gnunetd, so you should
+run gnunet\-auto\-share on the same machine that uses gnunetd.
+.PP
+
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+Use alternate config file (if this option is not specified, the
+default is ~/.gnunet/gnunet.conf).
+
+.TP
+\fB\-D\fR, \fB\-\-disable\-direct\fR 
+Disable direct indexing information that would otherwise refer to
+files inside of directories directly.  Without \-D, contents can be
+found directly using keywords extracted with libextractor.  Use \-D if
+you index directories with many similar files that are adequately
+described using keywords for the directory and for which individual
+references would unduely pollte the global keyword search space.  Also
+use \-D to disable libextractor for individual file publications.
+This way you can ensure that a file will only be referenced using the
+keywords that you are specifying explicitly.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print a brief help page with all the options.
+
+.TP
+\fB\-H \fIHOSTNAME\fR, \fB\-\-host=\fIHOSTNAME\fR
+on which host is gnunetd running (default: localhost).  You can also
+specify a port using the syntax HOSTNAME:PORT.  The default port is
+2087.
+
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL,
+ERROR, WARNING, INFO, STATUS and DEBUG.  Note that options in the 
+configuration file take precedence over this option (the argument 
+will be ignored in that case).
+
+.TP
+\fB\-p \fIPRIORITY\fR, \fB\-\-prio=\fIPRIORITY\fR
+Executive summary: You probably don't need it.
+
+Set the priority of the inserted content (default: 65535).  If the
+local database is full, GNUnet will discard the content with the
+lowest ranking.  Note that ranks change over time depending on
+popularity.  The default should be high enough to preserve the locally
+inserted content in favor of content that migrates from other peers.
+
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Print the version number.
+
+.TP
+\fB\-V\fR, \fB\-\-verbose\fR
+Be verbose.  Using this option causes gnunet\-auto\-share to print 
+progress information and the file identification that can be used to
+download the file from GNUnet.
+
+
+.SH EXAMPLES
+.PP
+
+\fBBasic example\fR
+
+Share the "/home/share" directory:
+
+# nohup gnunet\-auto\-share /home/share/ &
+
+
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1), \fBextract\fP(1)

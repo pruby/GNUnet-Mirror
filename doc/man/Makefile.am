@@ -1,4 +1,5 @@
 man_MANS = \
+gnunet-auto-share.1 \
 gnunet-chat.1\
 gnunet-directory.1 \
 gnunet-download.1 \

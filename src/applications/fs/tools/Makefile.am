@@ -7,6 +7,7 @@ LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 bin_PROGRAMS = \
+  gnunet-auto-share \
   gnunet-directory \
   gnunet-pseudonym \
   gnunet-search \
@@ -15,6 +16,9 @@ bin_PROGRAMS = \
   gnunet-unindex
 
 
+
+gnunet_auto_share_SOURCES = \
+  gnunet-auto-share.c 	
 
 gnunet_insert_SOURCES = \
   gnunet-insert.c 	
