@@ -418,6 +418,7 @@ GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
       GNUNET_FS_PT_change_rc (blocked[i], 1);
     }
   record->sentCount = blocked_size;
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
 #endif
 }
 
