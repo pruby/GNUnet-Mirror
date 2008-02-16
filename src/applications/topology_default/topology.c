@@ -536,7 +536,8 @@ rereadConfiguration (void *ctx,
           return GNUNET_SYSERR;
         }
     }
-  if (fn != NULL)
+  if ( (fn != NULL) &&
+       (size > 0) )
     {
       data = GNUNET_malloc (size);
       if (size != GNUNET_disk_file_read (ectx, fn, size, data))
