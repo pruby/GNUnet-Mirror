@@ -72,6 +72,8 @@ static GNUNET_Stats_ServiceAPI *stats;
 
 static GNUNET_Datastore_ServiceAPI *datastore;
 
+static int active_migration;
+
 static int stat_gap_query_received;
 
 static int stat_gap_query_drop_busy;
@@ -682,7 +684,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
                                                   &query,
                                                   expiration,
                                                   data_size, dblock);
-  if ((sender != NULL) && ((prio > 0) || (!test_load_too_high ())))
+  if ((sender != NULL) &&
+      (active_migration == GNUNET_YES) &&
+      ((prio > 0) || (!test_load_too_high ())))
     {
       /* consider storing in local datastore */
       value = GNUNET_malloc (data_size + sizeof (GNUNET_DatastoreValue));
@@ -733,7 +737,11 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                                                        &hardCPULimit)) || (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "LOAD", "HARDUPLIMIT", 0, 999999999, 0,        /* 0 == no limit */
                                                                                                                            &hardUpLimit)))
     return GNUNET_SYSERR;
-
+  active_migration 
+    = GNUNET_GC_get_configuration_value_yesno(coreAPI->cfg,
+					      "FS",
+					      "ACTIVEMIGRATION",
+					      GNUNET_NO);
   stats = capi->request_service ("stats");
   if (stats != NULL)
     {

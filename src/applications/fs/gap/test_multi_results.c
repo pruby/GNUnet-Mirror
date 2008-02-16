@@ -39,7 +39,7 @@
 /**
  * How many search results are there?
  */
-#define TOTAL 100
+#define TOTAL 40
 
 static struct GNUNET_GE_Context *ectx;
 
@@ -54,7 +54,8 @@ static unsigned int found;
 static int
 testTerminate (void *unused)
 {
-  return found == TOTAL ? GNUNET_SYSERR : GNUNET_OK;
+  /* wait for us to find 90% */
+  return (found > (TOTAL*90)/100) ? GNUNET_SYSERR : GNUNET_OK;
 }
 
 static char *
@@ -101,12 +102,15 @@ uploadFile (int size)
       ret = GNUNET_ECRS_publish_under_keyword (ectx, cfg, key, 0, 0, GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,    /* expire */
                                                uri, meta);
       GNUNET_ECRS_meta_data_destroy (meta);
-      GNUNET_ECRS_uri_destroy (uri);
       GNUNET_free (name);
-      return (ret == GNUNET_OK) ? key : NULL;
+      if (ret == GNUNET_OK) 
+	return uri;
+      GNUNET_ECRS_uri_destroy (uri);
+      return NULL;
     }
   else
     {
+      GNUNET_ECRS_uri_destroy (uri);
       GNUNET_free (name);
       return NULL;
     }
@@ -126,6 +130,8 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 	{
 	  uris[i] = NULL;
 	  found++;
+	  fprintf(stderr,
+		  ".");
 	  return GNUNET_OK;
 	}
     }
@@ -182,14 +188,14 @@ main (int argc, char **argv)
         }
     }
   key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
-  printf ("Uploading...\n");
+  fprintf (stderr, "Uploading...");
   for (i=0;i<TOTAL;i++)    
     {
       uris[i] = uploadFile (i+1);
+      CHECK(uris[i] != NULL);
       fprintf(stderr, ".");
     }
-  fprintf(stderr, "\n");
-
+  fprintf (stderr, "\nSearching...");
   GNUNET_snprintf (buf, 128, "localhost:%u", 2077 + PEER_COUNT * 10);
   GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
                                             buf);
@@ -197,8 +203,10 @@ main (int argc, char **argv)
   ret = GNUNET_ECRS_search (ectx,
                             cfg,
                             key, 1, &searchCB, NULL, &testTerminate, NULL);
+  fprintf(stderr,
+	  "\n");
   CHECK (ret == GNUNET_OK);
-  CHECK (found == TOTAL);
+  CHECK (found > (TOTAL*90)/100);
 FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
