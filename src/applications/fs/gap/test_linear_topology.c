@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/gap/gaptest2.c
+ * @file applications/gap/test_linear_topology.c
  * @brief GAP routing testcase, linear topology
  * @author Christian Grothoff
  */
@@ -269,7 +269,7 @@ main (int argc, char **argv)
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "advertising topology fs stats",
-                                        "/tmp/gnunet-gap-test2",
+                                        "/tmp/gnunet-gap-linear-test",
                                         2087, 10, PEER_COUNT);
   if (peers == NULL)
     {
@@ -320,4 +320,4 @@ FAILURE:
   return ret;
 }
 
-/* end of gaptest2.c */
+/* end of test_linear_topology.c */

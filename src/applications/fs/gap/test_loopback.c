@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/gap/gaptest.c
+ * @file applications/gap/test_loopback.c
  * @brief GAP routing testcase
  * @author Christian Grothoff
  */
@@ -263,7 +263,7 @@ main (int argc, char **argv)
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "advertising topology fs stats",
-                                        "/tmp/gnunet-gap-test",
+                                        "/tmp/gnunet-gap-loopback-test",
                                         2087, 10000, 2);
   if (peers == NULL)
     {
@@ -304,4 +304,4 @@ FAILURE:
   return ret;
 }
 
-/* end of gaptest.c */
+/* end of test_loopback.c */

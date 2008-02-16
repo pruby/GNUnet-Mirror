@@ -604,6 +604,16 @@ GNUNET_FS_ONDEMAND_init (GNUNET_CoreAPIForPlugins * capi)
   if (state == NULL)
     {
       GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      GNUNET_free (index_directory);
+      return GNUNET_SYSERR;
+    }
+  datastore = capi->request_service ("datastore");
+  if (datastore == NULL)
+    {
+      GNUNET_GE_BREAK (coreAPI->ectx, 0);
+      coreAPI->release_service (state);
+      state = NULL;
+      GNUNET_free (index_directory);
       return GNUNET_SYSERR;
     }
 
@@ -615,6 +625,8 @@ GNUNET_FS_ONDEMAND_done ()
 {
   coreAPI->release_service (state);
   state = NULL;
+  coreAPI->release_service (datastore);
+  datastore = NULL;
   GNUNET_free (index_directory);
   index_directory = NULL;
   return 0;

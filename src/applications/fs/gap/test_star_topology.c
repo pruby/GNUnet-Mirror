@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/gap/gaptest3.c
+ * @file applications/gap/test_star_topology.c
  * @brief GAP economy testcase, download from star topology
  * @author Christian Grothoff
  */
@@ -219,7 +219,7 @@ main (int argc, char **argv)
 #if START_PEERS
   peers = GNUNET_TESTING_start_daemons ("tcp",
                                         "advertising topology fs stats",
-                                        "/tmp/gnunet-gap-test3",
+                                        "/tmp/gnunet-gap-star-test",
                                         2087, 10, PEER_COUNT);
   if (peers == NULL)
     {
@@ -290,4 +290,4 @@ FAILURE:
   return ret;
 }
 
-/* end of gaptest3.c */
+/* end of test_star_topology.c */
