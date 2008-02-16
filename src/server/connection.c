@@ -210,13 +210,13 @@
 #define STAT_UP               7
 
 
-#if 1
+#if 0
 #define ENTRY() check_invariants()
 #else
 #define ENTRY() ;
 #endif
 
-#if 1
+#if 0
 #define EXIT() check_invariants()
 #else
 #define EXIT() ;
