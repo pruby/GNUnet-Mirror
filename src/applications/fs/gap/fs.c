@@ -78,8 +78,6 @@ static int stat_gap_query_drop_busy;
 
 static int stat_gap_content_received;
 
-static int stat_gap_content_found_locally;
-
 static int stat_gap_trust_awarded;
 
 /**
@@ -671,13 +669,9 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
-  if (stats != NULL)
-    {
-      if (sender != NULL)
-        stats->change (stat_gap_content_received, 1);
-      else
-        stats->change (stat_gap_content_found_locally, 1);
-    }
+  if ( (stats != NULL) &&
+       (sender != NULL) )
+    stats->change (stat_gap_content_received, 1);
   expiration = GNUNET_ntohll (msg->expiration);
   /* forward to other peers */
   prio = GNUNET_FS_GAP_handle_response (sender,
@@ -749,8 +743,6 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap requests dropped due to load"));
       stat_gap_content_received =
         stats->create (gettext_noop ("# gap content total received"));
-      stat_gap_content_received =
-        stats->create (gettext_noop ("# gap content found locally"));
       stat_gap_trust_awarded =
         stats->create (gettext_noop ("# gap total trust awarded"));
     }

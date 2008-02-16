@@ -74,6 +74,8 @@ static int stat_gap_query_routed;
 
 static int stat_gap_query_refreshed;
 
+static int stat_gap_content_found_locally;
+
 
 static unsigned int
 get_table_index (const GNUNET_HashCode * key)
@@ -93,6 +95,8 @@ send_delayed (void *cls)
 {
   GNUNET_MessageHeader *msg = cls;
 
+  if (stats != NULL)
+    stats->change (stat_gap_content_found_locally, 1);
   coreAPI->p2p_inject_message (NULL,
                                (const char *) msg,
                                ntohs (msg->size), GNUNET_YES, NULL);
@@ -563,6 +567,8 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap queries dropped (redundant)"));
       stat_gap_query_routed =
         stats->create (gettext_noop ("# gap queries routed"));
+      stat_gap_content_found_locally =
+        stats->create (gettext_noop ("# gap content found locally"));
       stat_gap_query_refreshed =
         stats->
         create (gettext_noop ("# gap queries refreshed existing record"));
