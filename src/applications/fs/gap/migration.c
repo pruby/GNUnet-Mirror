@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2007 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,8 +28,8 @@
 #include "platform.h"
 #include "migration.h"
 #include "fs.h"
+#include "pid_table.h"
 #include "shared.h"
-#include "gnunet_datastore_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_protocols.h"
 #include "anonymity.h"
@@ -49,15 +49,6 @@
  * simply a waste of memory.
  */
 #define MAX_RECEIVERS 16
-
-/**
- * How many migration records do we keep in memory
- * at the same time?  Each record is about 32k, so
- * 64 records will use about 2 MB of memory.
- * We might want to allow users to specify larger
- * values in the configuration file some day.
- */
-#define MAX_RECORDS 64
 
 /**
  * How often do we poll the datastore for content (at most).
@@ -91,11 +82,13 @@ struct MigrationRecord
 {
   GNUNET_DatastoreValue *value;
   GNUNET_HashCode key;
-  unsigned int receiverIndices[MAX_RECEIVERS];
+  PID_INDEX receiverIndices[MAX_RECEIVERS];
   unsigned int sentCount;
 };
 
-static struct MigrationRecord content[MAX_RECORDS];
+static unsigned int content_size;
+
+static struct MigrationRecord *content;
 
 /**
  * Callback method for pushing content into the network.
@@ -125,7 +118,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   GNUNET_DatastoreValue *enc;
   GNUNET_DatastoreValue *value;
   P2P_gap_reply_MESSAGE *msg;
-  unsigned int index;
+  PID_INDEX index;
   int entry;
   int discard_entry;
   int discard_match;
@@ -135,14 +128,16 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   unsigned int dist;
   unsigned int minDist;
 
-  index = coreAPI->connection_compute_index_of_peer (receiver);
+  if (content_size == 0)
+    return 0;
+  index = GNUNET_FS_PT_intern (receiver);
   GNUNET_mutex_lock (GNUNET_FS_lock);
   now = GNUNET_get_time ();
   entry = -1;
   discard_entry = -1;
   discard_match = -1;
   minDist = -1;                 /* max */
-  for (i = 0; i < MAX_RECORDS; i++)
+  for (i = 0; i < content_size; i++)
     {
       if (content[i].value == NULL)
         {
@@ -203,6 +198,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       discard_time = now;
       GNUNET_free_non_null (content[discard_entry].value);
       content[discard_entry].value = NULL;
+      GNUNET_FS_PT_decrement_rcs (content[discard_entry].receiverIndices,
+                                  content[discard_entry].sentCount);
       content[discard_entry].sentCount = 0;
       if (GNUNET_OK != datastore->getRandom (&content[discard_entry].key,
                                              &content[discard_entry].value))
@@ -233,6 +230,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
     {
       GNUNET_GE_ASSERT (NULL, 0);
       GNUNET_mutex_unlock (GNUNET_FS_lock);
+      GNUNET_FS_PT_change_rc (index, -1);
       return 0;
     }
   size =
@@ -247,6 +245,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      size, padding);
 #endif
       GNUNET_mutex_unlock (GNUNET_FS_lock);
+      GNUNET_FS_PT_change_rc (index, -1);
       return 0;
     }
 #if DEBUG_MIGRATION
@@ -261,6 +260,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       GNUNET_free_non_null (value);
       content[entry].value = NULL;
       GNUNET_mutex_unlock (GNUNET_FS_lock);
+      GNUNET_FS_PT_change_rc (index, -1);
       return 0;
     }
   if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
@@ -276,6 +276,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                          GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                          "Migration: failed to locate indexed content for migration.\n");
 #endif
+          GNUNET_FS_PT_change_rc (index, -1);
           return 0;
         }
       if (stats != NULL)
@@ -296,6 +297,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      "Migration: available content too big (%u > %u) for migration.\n",
                      size, padding);
 #endif
+      GNUNET_FS_PT_change_rc (index, -1);
       return 0;
     }
   msg = position;
@@ -321,11 +323,14 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         {
           GNUNET_free (content[entry].value);
           content[entry].value = NULL;
+          GNUNET_FS_PT_decrement_rcs (content[discard_entry].receiverIndices,
+                                      content[discard_entry].sentCount);
           content[entry].sentCount = 0;
         }
       else
         {
           content[entry].receiverIndices[content[entry].sentCount++] = index;
+          GNUNET_FS_PT_change_rc (index, 1);
         }
     }
   else
@@ -340,15 +345,88 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   if ((ret > 0) && (stats != NULL))
     stats->change (stat_migration_count, 1);
   GNUNET_GE_BREAK (NULL, ret <= padding);
+  GNUNET_FS_PT_change_rc (index, -1);
   return ret;
 }
-
 #endif
+
+/**
+ * Make a piece of content that we have received
+ * available for transmission via migration.
+ *
+ * @param size size of value
+ * @param value the content to make available
+ * @param expiration expiration time for value
+ * @param blocked_size size of the list of PID_INDEX variables
+ *            refering to peers that must NOT receive
+ *            the content using migration
+ * @param block blocked peers
+ */
+void
+GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
+                            unsigned int size,
+                            const DBlock * value,
+                            GNUNET_CronTime expiration,
+                            unsigned int blocked_size,
+                            const PID_INDEX * blocked)
+{
+#if ENABLE_MIGRATION
+  int i;
+  int discard_entry;
+  int discard_count;
+  struct MigrationRecord *record;
+
+  if (content_size == 0)
+    return;
+  GNUNET_mutex_lock (GNUNET_FS_lock);
+  discard_entry = -1;
+  discard_count = 0;
+  for (i = 0; i < content_size; i++)
+    {
+      record = &content[i];
+      if (record->value == NULL)
+        {
+          discard_entry = i;
+          break;
+        }
+      if (discard_count < record->sentCount)
+        {
+          discard_entry = i;
+          discard_count = record->sentCount;
+        }
+    }
+  if (discard_entry == -1)
+    {
+      GNUNET_mutex_unlock (GNUNET_FS_lock);
+      return;
+    }
+  record = &content[discard_entry];
+  GNUNET_free_non_null (record->value);
+  record->value = NULL;
+  GNUNET_FS_PT_decrement_rcs (record->receiverIndices, record->sentCount);
+  record->sentCount = 0;
+  record->key = *key;
+  record->value = GNUNET_malloc (size + sizeof (GNUNET_DatastoreValue));
+  record->value->size = htonl (size + sizeof (GNUNET_DatastoreValue));
+  record->value->expirationTime = GNUNET_htonll (expiration);
+  record->value->anonymityLevel = 0;
+  record->value->type = value->type;
+  memcpy (&record->value[1], value, size);
+  for (i = 0; i < blocked_size; i++)
+    {
+      record->receiverIndices[i] = blocked[i];
+      GNUNET_FS_PT_change_rc (blocked[i], 1);
+    }
+  record->sentCount = blocked_size;
+#endif
+}
 
 void
 GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
 {
 #if ENABLE_MIGRATION
+  unsigned long long option_value;
+
   coreAPI = capi;
   coreAPI->
     connection_register_send_callback
@@ -363,9 +441,14 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
       stat_migration_factor
         = stats->create (gettext_noop ("# blocks fetched for migration"));
       stat_on_demand_migration_attempts
-        =
-        stats->create (gettext_noop ("# on-demand block migration attempts"));
+        = stats->create (gettext_noop ("# on-demand fetches for migration"));
     }
+  GNUNET_GC_get_configuration_value_number (capi->cfg,
+                                            "FS",
+                                            "MIGRATIONBUFFERSIZE",
+                                            0,
+                                            1024 * 1024, 64, &option_value);
+  GNUNET_array_grow (content, content_size, (unsigned int) option_value);
 #endif
 }
 
@@ -374,6 +457,8 @@ GNUNET_FS_MIGRATION_done ()
 {
 #if ENABLE_MIGRATION
   int i;
+  struct MigrationRecord *record;
+
   coreAPI->
     connection_unregister_send_callback
     (GNUNET_GAP_ESTIMATED_DATA_SIZE, &activeMigrationCallback);
@@ -385,11 +470,14 @@ GNUNET_FS_MIGRATION_done ()
   coreAPI->release_service (datastore);
   datastore = NULL;
   coreAPI = NULL;
-  for (i = 0; i < MAX_RECORDS; i++)
+  for (i = 0; i < content_size; i++)
     {
-      GNUNET_free_non_null (content[i].value);
-      content[i].value = NULL;
+      record = &content[i];
+      GNUNET_free_non_null (record->value);
+      record->value = NULL;
+      GNUNET_FS_PT_decrement_rcs (record->receiverIndices, record->sentCount);
     }
+  GNUNET_array_grow (content, content_size, 0);
   lock = NULL;
 #endif
 }

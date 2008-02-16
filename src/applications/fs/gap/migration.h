@@ -28,11 +28,33 @@
 #define MIGRATION_H
 
 #include "gnunet_core.h"
+#include "ecrs_core.h"
+#include "gnunet_datastore_service.h"
+#include "pid_table.h"
 
 /**
  * Initialize the migration module.
  */
 void GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi);
+
+/**
+ * Make a piece of content that we have received
+ * available for transmission via migration.
+ *
+ * @param size size of value
+ * @param value the content to make available
+ * @param expiration expiration time for value
+ * @param blocked_size size of the list of PID_INDEX variables
+ *            refering to peers that must NOT receive
+ *            the content using migration
+ * @param block blocked peers
+ */
+void GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
+                                 unsigned int size,
+                                 const DBlock * value,
+                                 GNUNET_CronTime expiration,
+                                 unsigned int blocked_size,
+                                 const PID_INDEX * blocked);
 
 void GNUNET_FS_MIGRATION_done (void);
 

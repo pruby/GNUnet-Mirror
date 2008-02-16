@@ -671,8 +671,7 @@ handle_p2p_content (const GNUNET_PeerIdentity * sender,
       GNUNET_GE_BREAK_OP (ectx, 0);
       return GNUNET_SYSERR;     /* invalid! */
     }
-  if ( (stats != NULL) &&
-       (sender != NULL) )
+  if ((stats != NULL) && (sender != NULL))
     stats->change (stat_gap_content_received, 1);
   expiration = GNUNET_ntohll (msg->expiration);
   /* forward to other peers */
@@ -737,11 +736,10 @@ initialize_module_fs (GNUNET_CoreAPIForPlugins * capi)
                                                        &hardCPULimit)) || (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg, "LOAD", "HARDUPLIMIT", 0, 999999999, 0,        /* 0 == no limit */
                                                                                                                            &hardUpLimit)))
     return GNUNET_SYSERR;
-  active_migration 
-    = GNUNET_GC_get_configuration_value_yesno(coreAPI->cfg,
-					      "FS",
-					      "ACTIVEMIGRATION",
-					      GNUNET_NO);
+  active_migration
+    = GNUNET_GC_get_configuration_value_yesno (coreAPI->cfg,
+                                               "FS",
+                                               "ACTIVEMIGRATION", GNUNET_NO);
   stats = capi->request_service ("stats");
   if (stats != NULL)
     {

@@ -728,22 +728,21 @@ handleAskHello (const GNUNET_PeerIdentity * sender,
 }
 
 static void
-peer_disconnect_handler(const GNUNET_PeerIdentity * peer,
-			void * unused)
+peer_disconnect_handler (const GNUNET_PeerIdentity * peer, void *unused)
 {
-  PeerBucket * bucket;
-  PeerInfo * info;
+  PeerBucket *bucket;
+  PeerInfo *info;
 
   GNUNET_mutex_lock (lock);
-  bucket = findBucketFor(peer);
+  bucket = findBucketFor (peer);
   if (bucket != NULL)
     {
-      info = findPeerEntryInBucket(bucket, peer);
+      info = findPeerEntryInBucket (bucket, peer);
       if (info != NULL)
-	{
-	  info->lastActivity = 0;
-	  checkExpiration(bucket);
-	}
+        {
+          info->lastActivity = 0;
+          checkExpiration (bucket);
+        }
     }
   GNUNET_mutex_unlock (lock);
 }
@@ -790,8 +789,7 @@ GNUNET_DHT_table_init (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (coreAPI->ectx, pingpong != NULL);
   capi->registerHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY, &handleDiscovery);
   capi->registerHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO, &handleAskHello);
-  capi->register_notify_peer_disconnect(&peer_disconnect_handler,
-					NULL);
+  capi->register_notify_peer_disconnect (&peer_disconnect_handler, NULL);
   GNUNET_cron_add_job (coreAPI->cron,
                        &maintain_dht_job,
                        MAINTAIN_FREQUENCY, MAINTAIN_FREQUENCY, NULL);
@@ -809,8 +807,7 @@ GNUNET_DHT_table_done ()
   unsigned int i;
   unsigned int j;
 
-  coreAPI->unregister_notify_peer_disconnect(&peer_disconnect_handler,
-					NULL);
+  coreAPI->unregister_notify_peer_disconnect (&peer_disconnect_handler, NULL);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_DISCOVERY,
                               &handleDiscovery);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_DHT_ASK_HELLO,

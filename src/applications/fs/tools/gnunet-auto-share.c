@@ -153,54 +153,48 @@ find_latest (const char *filename, const char *dirName, void *cls)
   return GNUNET_OK;
 }
 
-struct AddMetadataClosure {
-  const char * filename;
-  struct GNUNET_ECRS_MetaData * meta;
+struct AddMetadataClosure
+{
+  const char *filename;
+  struct GNUNET_ECRS_MetaData *meta;
 };
 
 
 static int
-add_meta_data(void * cls,
-	      struct GNUNET_GC_Configuration * cfg,
-	      struct GNUNET_GE_Context * ectx,
-	      const char * section,
-	      const char * option) 
+add_meta_data (void *cls,
+               struct GNUNET_GC_Configuration *cfg,
+               struct GNUNET_GE_Context *ectx,
+               const char *section, const char *option)
 {
-  struct AddMetadataClosure * amc = cls;
+  struct AddMetadataClosure *amc = cls;
   EXTRACTOR_KeywordType type;
   EXTRACTOR_KeywordType max;
-  char * value;
+  char *value;
 
-  if (0 != strcmp(amc->filename,
-		  section) )
+  if (0 != strcmp (amc->filename, section))
     return GNUNET_OK;
-  max = EXTRACTOR_getHighestKeywordTypeNumber();
-  for (type=0;type<max;type++)
+  max = EXTRACTOR_getHighestKeywordTypeNumber ();
+  for (type = 0; type < max; type++)
     {
-      if (0 == strcasecmp(option,
-			  EXTRACTOR_getKeywordTypeAsString(type)))
-	break;
+      if (0 == strcasecmp (option, EXTRACTOR_getKeywordTypeAsString (type)))
+        break;
     }
   if (type == max)
     {
-      GNUNET_GE_LOG(ectx,
-		    GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_BULK,
-		    _("Unknown keyword type `%s' in metadata configuration\n"),
-		    option);
+      GNUNET_GE_LOG (ectx,
+                     GNUNET_GE_USER | GNUNET_GE_WARNING | GNUNET_GE_BULK,
+                     _
+                     ("Unknown keyword type `%s' in metadata configuration\n"),
+                     option);
       return GNUNET_OK;
     }
   value = NULL;
-  GNUNET_GC_get_configuration_value_string(cfg,
-					   section,
-					   option,
-					   NULL,
-					   &value);
+  GNUNET_GC_get_configuration_value_string (cfg,
+                                            section, option, NULL, &value);
   if (value != NULL)
     {
-      GNUNET_ECRS_meta_data_insert(amc->meta,
-				   type,
-				   value);    
-      GNUNET_free(value);
+      GNUNET_ECRS_meta_data_insert (amc->meta, type, value);
+      GNUNET_free (value);
     }
   return GNUNET_OK;
 }
@@ -241,16 +235,12 @@ probe_directory (const char *filename, const char *dirName, void *cls)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  amc.meta = GNUNET_ECRS_meta_data_create();
+  amc.meta = GNUNET_ECRS_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
      over all config values! */
-  GNUNET_GC_attach_change_listener(meta_cfg,
-				   &add_meta_data,
-				   &amc);
-  GNUNET_GC_detach_change_listener(meta_cfg,
-				   &add_meta_data,
-				   &amc);
+  GNUNET_GC_attach_change_listener (meta_cfg, &add_meta_data, &amc);
+  GNUNET_GC_detach_change_listener (meta_cfg, &add_meta_data, &amc);
   ul = GNUNET_FSUI_upload_start (ctx,
                                  fn,
                                  (GNUNET_FSUI_DirectoryScanCallback) &
@@ -259,7 +249,7 @@ probe_directory (const char *filename, const char *dirName, void *cls)
                                  !do_no_direct_references,
                                  GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
                                  amc.meta, gloKeywords, NULL);
-  GNUNET_ECRS_meta_data_destroy(amc.meta);
+  GNUNET_ECRS_meta_data_destroy (amc.meta);
   GNUNET_free (fn);
   return GNUNET_SYSERR;
 }
@@ -281,7 +271,7 @@ main (int argc, char *const *argv)
   time_t last;
   time_t start;
   GNUNET_CronTime delay;
-  char * metafn;
+  char *metafn;
 
   errorCode = 0;
   i = GNUNET_init (argc,
@@ -305,16 +295,14 @@ main (int argc, char *const *argv)
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
   metafn = NULL;
-  GNUNET_GC_get_configuration_value_filename(cfg,
-					     "FS",
-					     "METADATA",
-					     GNUNET_DEFAULT_HOME_DIRECTORY "/metadata.conf",
-					     &metafn);
-  meta_cfg = GNUNET_GC_create();
-  if (GNUNET_YES == 
-      GNUNET_disk_file_test(NULL, metafn))
-    GNUNET_GC_parse_configuration(meta_cfg,
-				  metafn);
+  GNUNET_GC_get_configuration_value_filename (cfg,
+                                              "FS",
+                                              "METADATA",
+                                              GNUNET_DEFAULT_HOME_DIRECTORY
+                                              "/metadata.conf", &metafn);
+  meta_cfg = GNUNET_GC_create ();
+  if (GNUNET_YES == GNUNET_disk_file_test (NULL, metafn))
+    GNUNET_GC_parse_configuration (meta_cfg, metafn);
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
@@ -350,7 +338,7 @@ main (int argc, char *const *argv)
   GNUNET_free (dirname);
 quit:
   if (meta_cfg != NULL)
-    GNUNET_GC_free(meta_cfg);
+    GNUNET_GC_free (meta_cfg);
   GNUNET_fini (ectx, cfg);
   return errorCode;
 }

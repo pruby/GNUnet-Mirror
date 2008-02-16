@@ -34,6 +34,7 @@
 #include "ondemand.h"
 #include "plan.h"
 #include "pid_table.h"
+#include "migration.h"
 
 /**
  * How many entries are allowed per slot in the
@@ -401,6 +402,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   P2P_gap_reply_MESSAGE *msg;
   PID_INDEX rid;
   unsigned int index;
+  PID_INDEX blocked[MAX_ENTRIES_PER_SLOT + 1];
+  unsigned int block_count;
 
   value = 0;
   GNUNET_mutex_lock (GNUNET_FS_lock);
@@ -408,6 +411,15 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
   index = get_table_index (primary_query);
   rl = table[index];
   prev = NULL;
+  if (rid != 0)
+    {
+      blocked[0] = rid;
+      block_count = 1;
+    }
+  else
+    {
+      block_count = 0;
+    }
   while (rl != NULL)
     {
       if (GNUNET_OK == GNUNET_FS_SHARED_test_valid_new_response (rl,
@@ -417,6 +429,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
         {
           GNUNET_GE_ASSERT (NULL, rl->response_target != 0);
           GNUNET_FS_PT_resolve (rl->response_target, &target);
+          GNUNET_GE_ASSERT (NULL, block_count <= MAX_ENTRIES_PER_SLOT);
+          blocked[block_count++] = rl->response_target;
           /* queue response */
           msg = GNUNET_malloc (sizeof (P2P_gap_reply_MESSAGE) + size);
           msg->header.type = htons (GNUNET_P2P_PROTO_GAP_RESULT);
@@ -451,6 +465,8 @@ GNUNET_FS_GAP_handle_response (const GNUNET_PeerIdentity * sender,
       prev = rl;
       rl = rl->next;
     }
+  GNUNET_FS_MIGRATION_inject (primary_query,
+                              size, data, expiration, block_count, blocked);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
   GNUNET_FS_PT_change_rc (rid, -1);
   return value;

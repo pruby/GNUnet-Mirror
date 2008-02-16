@@ -55,7 +55,7 @@ static int
 testTerminate (void *unused)
 {
   /* wait for us to find 90% */
-  return (found > (TOTAL*90)/100) ? GNUNET_SYSERR : GNUNET_OK;
+  return (found > (TOTAL * 90) / 100) ? GNUNET_SYSERR : GNUNET_OK;
 }
 
 static char *
@@ -92,8 +92,7 @@ uploadFile (int size)
                                  1,     /* anon */
                                  0,     /* prio */
                                  GNUNET_get_time () + 100 * GNUNET_CRON_MINUTES,        /* expire */
-                                 NULL,
-                                 NULL, &testTerminate, NULL, &uri);
+                                 NULL, NULL, &testTerminate, NULL, &uri);
   if (ret != GNUNET_SYSERR)
     {
       struct GNUNET_ECRS_MetaData *meta;
@@ -103,8 +102,8 @@ uploadFile (int size)
                                                uri, meta);
       GNUNET_ECRS_meta_data_destroy (meta);
       GNUNET_free (name);
-      if (ret == GNUNET_OK) 
-	return uri;
+      if (ret == GNUNET_OK)
+        return uri;
       GNUNET_ECRS_uri_destroy (uri);
       return NULL;
     }
@@ -122,19 +121,17 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 {
   int i;
 
-  for (i=0;i<TOTAL;i++)
+  for (i = 0; i < TOTAL; i++)
     {
-      if ( (uris[i] != NULL) &&
-	   (GNUNET_ECRS_uri_test_equal(uris[i],
-					fi->uri)) )
-	{
-	  GNUNET_ECRS_uri_destroy  (uris[i]);
-	  uris[i] = NULL;
-	  found++;
-	  fprintf(stderr,
-		  ".");
-	  return GNUNET_OK;
-	}
+      if ((uris[i] != NULL) &&
+          (GNUNET_ECRS_uri_test_equal (uris[i], fi->uri)))
+        {
+          GNUNET_ECRS_uri_destroy (uris[i]);
+          uris[i] = NULL;
+          found++;
+          fprintf (stderr, ".");
+          return GNUNET_OK;
+        }
     }
   return GNUNET_OK;
 }
@@ -152,11 +149,10 @@ main (int argc, char **argv)
   int ret;
   int i;
   char buf[128];
-  const char *keywords[] =
-    {
-      "multi-test",
-      NULL,
-    };  
+  const char *keywords[] = {
+    "multi-test",
+    NULL,
+  };
 
   ret = 0;
   cfg = GNUNET_GC_create ();
@@ -190,28 +186,26 @@ main (int argc, char **argv)
     }
   key = GNUNET_ECRS_keyword_strings_to_uri (keywords);
   fprintf (stderr, "Uploading...");
-  for (i=0;i<TOTAL;i++)    
+  for (i = 0; i < TOTAL; i++)
     {
-      uris[i] = uploadFile (i+1);
-      CHECK(uris[i] != NULL);
-      fprintf(stderr, ".");
+      uris[i] = uploadFile (i + 1);
+      CHECK (uris[i] != NULL);
+      fprintf (stderr, ".");
     }
   fprintf (stderr, "\nSearching...");
   GNUNET_snprintf (buf, 128, "localhost:%u", 2077 + PEER_COUNT * 10);
   GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
                                             buf);
-  
+
   GNUNET_ECRS_search (ectx,
-		      cfg,
-		      key, 1, &searchCB, NULL, &testTerminate, NULL);
-  fprintf(stderr,
-	  "\n");
-  CHECK (found > (TOTAL*90)/100);
+                      cfg, key, 1, &searchCB, NULL, &testTerminate, NULL);
+  fprintf (stderr, "\n");
+  CHECK (found > (TOTAL * 90) / 100);
 FAILURE:
 #if START_PEERS
   GNUNET_TESTING_stop_daemons (peers);
 #endif
-  GNUNET_ECRS_uri_destroy  (key);
+  GNUNET_ECRS_uri_destroy (key);
   GNUNET_GC_free (cfg);
   return ret;
 }

@@ -768,6 +768,19 @@ Note that if you change the quota, you need to run gnunet-update afterwards.")
   'always))
 
 
+(define (fs-migration-buffer builder)
+ (builder
+  "FS"
+  "MIGRATIONBUFFERSIZE"
+  (_ "Number of entries in the migration buffer")
+  (_ "Each entry uses about 32k of memory.  More entries can reduce disk IO and CPU usage at the expense of having gnunetd use more memory. Very large values may again increase CPU usage.  A value of 0 will prevent your peer from sending unsolicited responses.")
+  '()
+  #t
+  64
+  (cons 0 1048576)
+  'always))
+
+
 (define (fs-gap-tablesize builder)
  (builder
   "GAP"

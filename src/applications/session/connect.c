@@ -601,7 +601,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      ("Session key received from peer `%s' has invalid format (discarded).\n"),
                      &enc);
       return GNUNET_SYSERR;
-    } 
+    }
   load = GNUNET_cpu_get_load (ectx, coreAPI->cfg);
   if ((GNUNET_OK !=
        coreAPI->connection_get_session_key_of_peer (sender, NULL,
@@ -790,9 +790,9 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
           ping->type = htons (GNUNET_P2P_PROTO_PONG);
           if (stats != NULL)
             stats->change (stat_pongSent, 1);
-	  GNUNET_mutex_lock(lock);
+          GNUNET_mutex_lock (lock);
           exchangeKey (sender, tsession, ping); /* ping is now pong */
-	  GNUNET_mutex_unlock(lock);
+          GNUNET_mutex_unlock (lock);
         }
       else
         {
