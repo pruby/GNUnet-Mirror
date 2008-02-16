@@ -27,10 +27,6 @@
 ;; Second, a function "gnunet-config-change" which is notified whenever
 ;; configuration options are changed; the script can then
 ;; change the visibility of other options.
-;;
-;;
-;; TODO:
-;; - complete conversion of *.in to *.scm
 
 
 
@@ -262,6 +258,18 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (cons 1 1073741824)
   'rare) )
 
+(define (gnunet-fs-metadata builder)
+ (builder
+  "FS"
+  "METADATA"
+  (_ "Location of the file specifying metadata for the auto-share directory")
+  (nohelp)
+  '()
+  #t
+  "$GNUNET_HOME/metadata.conf"
+  '()
+  'fs-loaded) )
+
 (define (fs builder)
  (builder 
   "File-Sharing"
@@ -272,6 +280,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
     (fs-extractors builder)
     (fs-disable-creation-time builder)
     (fs-uri-db-size builder)
+    (gnunet-fs-metadata builder)
   )
   #t 
   #f 
