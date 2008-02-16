@@ -1,0 +1,19 @@
+This is the basic locking strategy for GNUnet:
+
+1) fine-grained individual locks only allowed in modules that are 
+   limited to calls to modules that are strictly higher in the
+   dependency hierarchy.  The hierarchy can only contain modules
+   that do *not* use the global lock or the configuration lock. 
+   The hierarchy of locking should (roughly) correspond to the
+   build order (but is not strictly defined).
+2) the connection global lock is used for everything using
+   more complex locking (whenever two modules call each other
+   while holding locks).  If possible, this should obviously
+   be avoided.  Apps can call core while holding locks as long
+   as the operation is guaranteed to not require more than the
+   core lock (examples include sendToClient, unicast and other
+   "send" opeations).
+3) whenever config is obtained or modified, no locks must be held.
+   Config operations may require getting the global lock after
+   the config lock has been gotten!  This impacts any operation 
+   that gets "cfg" as an argument (especially those in util!).
