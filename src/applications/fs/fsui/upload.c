@@ -437,6 +437,8 @@ GNUNET_FSUI_uploadThread (void *cls)
          (copied here to allow free later) */
       loc = GNUNET_ECRS_uri_duplicate (utc->uri);
     }
+  while (GNUNET_OK ==
+         GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
   if (utc->shared->global_keywords != NULL)
     GNUNET_ECRS_publish_under_keyword (ectx,
                                        utc->shared->ctx->cfg,
@@ -467,8 +469,6 @@ GNUNET_FSUI_uploadThread (void *cls)
     }
   GNUNET_ECRS_uri_destroy (loc);
   loc = NULL;
-  while (GNUNET_OK ==
-         GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
   fi.meta = utc->meta;
   fi.uri = utc->uri;
   GNUNET_URITRACK_track (ectx, utc->shared->ctx->cfg, &fi);
