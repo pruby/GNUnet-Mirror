@@ -448,7 +448,6 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
     }
 
   /* get or create our session key */
-  GNUNET_mutex_lock (lock);
   if (GNUNET_OK !=
       coreAPI->connection_get_session_key_of_peer (receiver, &sk,
                                                    &age, GNUNET_YES))
@@ -464,7 +463,6 @@ exchangeKey (const GNUNET_PeerIdentity * receiver,
                      printSKEY (&sk), &enc);
 #endif
     }
-  GNUNET_mutex_unlock (lock);
 
   /* build SKEY message */
   skey = makeSessionKeySigned (receiver, &sk, age, ping, pong);
@@ -551,6 +549,7 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
   GNUNET_MessageHeader *ping;
   GNUNET_MessageHeader *pong;
   int size;
+  int load;
   int pos;
   char *plaintext;
   GNUNET_EncName enc;
@@ -602,16 +601,15 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      ("Session key received from peer `%s' has invalid format (discarded).\n"),
                      &enc);
       return GNUNET_SYSERR;
-    }
-  GNUNET_mutex_lock (lock);
+    } 
+  load = GNUNET_cpu_get_load (ectx, coreAPI->cfg);
   if ((GNUNET_OK !=
        coreAPI->connection_get_session_key_of_peer (sender, NULL,
                                                     NULL,
                                                     GNUNET_YES))
       && ((GNUNET_YES == identity->isBlacklisted (sender, GNUNET_NO))
           || ((coreAPI->forAllConnectedNodes (NULL, NULL) >= 3)
-              && (GNUNET_cpu_get_load (ectx, coreAPI->cfg) >
-                  GNUNET_IDLE_LOAD_THRESHOLD))))
+              && (load > GNUNET_IDLE_LOAD_THRESHOLD))))
     {
 #if DEBUG_SESSION
       GNUNET_GE_LOG (ectx,
@@ -619,7 +617,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      "Received session key from peer `%s', but that peer is not allowed to connect right now!\n",
                      &enc);
 #endif
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;     /* other peer initiated but is
                                    listed as not allowed => discard */
     }
@@ -636,7 +633,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      _
                      ("Session key received from peer `%s' is for `%s' and not for me!\n"),
                      &enc, &ta);
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;     /* not for us! */
     }
   ret = verifySKS (sender, newMsg);
@@ -652,7 +648,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
 #endif
       if (stats != NULL)
         stats->change (stat_skeyRejected, 1);
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;     /* rejected */
     }
   memset (&key, 0, sizeof (GNUNET_AES_SessionKey));
@@ -665,7 +660,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
                      | GNUNET_GE_BULK,
                      _("Invalid `%s' message received from peer `%s'.\n"),
                      "setkey", &enc);
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
   if (key.crc32 != htonl (GNUNET_crc32_n (&key, GNUNET_SESSIONKEY_LEN)))
@@ -681,7 +675,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
 #endif
       GNUNET_GE_BREAK_OP (ectx, 0);
       stats->change (stat_skeyRejected, 1);
-      GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
 
@@ -797,7 +790,9 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
           ping->type = htons (GNUNET_P2P_PROTO_PONG);
           if (stats != NULL)
             stats->change (stat_pongSent, 1);
+	  GNUNET_mutex_lock(lock);
           exchangeKey (sender, tsession, ping); /* ping is now pong */
+	  GNUNET_mutex_unlock(lock);
         }
       else
         {
@@ -806,7 +801,6 @@ acceptSessionKey (const GNUNET_PeerIdentity * sender,
         }
     }
   GNUNET_free_non_null (plaintext);
-  GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
