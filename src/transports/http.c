@@ -450,9 +450,7 @@ static int
 acceptPolicyCallback (void *cls,
                       const struct sockaddr *addr, socklen_t addr_len)
 {
-  if (GNUNET_NO !=
-      is_rejected_tester(addr,
-			 addr_len))
+  if (GNUNET_NO != is_rejected_tester (addr, addr_len))
     return MHD_NO;
   return MHD_YES;
 }
@@ -1128,7 +1126,8 @@ create_session_url (HTTPSession * httpSession)
   char *url;
   GNUNET_EncName enc;
   unsigned short available;
-  const HostAddress * haddr = (const HostAddress *) &httpSession->cs.client.address;
+  const HostAddress *haddr =
+    (const HostAddress *) &httpSession->cs.client.address;
 
   ENTER ();
   url = httpSession->cs.client.url;
@@ -1137,37 +1136,29 @@ create_session_url (HTTPSession * httpSession)
       GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &enc);
       available = ntohs (haddr->availability) & available_protocols;
       if (available == 0)
-	return;	
+        return;
       if ((available & VERSION_AVAILABLE_IPV6) > 0)
-	{
-	  if (NULL == inet_ntop(AF_INET6,
-				&haddr->ipv6,
-				buf,
-				IP_BUF_LEN))
-	    {
-	      /* log? */
-	      return;
-	      EXIT ();
-	    }
-	}
+        {
+          if (NULL == inet_ntop (AF_INET6, &haddr->ipv6, buf, IP_BUF_LEN))
+            {
+              /* log? */
+              return;
+              EXIT ();
+            }
+        }
       else
-	{
-	  if (NULL == inet_ntop(AF_INET,
-				&haddr->ipv4,
-				buf,
-				IP_BUF_LEN))
-	    {
-	      /* log? */
-	      EXIT ();
-	      return;
-	    }
-	}      
-      url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen(buf));
+        {
+          if (NULL == inet_ntop (AF_INET, &haddr->ipv4, buf, IP_BUF_LEN))
+            {
+              /* log? */
+              EXIT ();
+              return;
+            }
+        }
+      url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen (buf));
       GNUNET_snprintf (url,
-		       64 + sizeof (GNUNET_EncName),
-		       "http://%s:%u/%s",
-		       buf,
-		       ntohs (haddr->port), &enc);	
+                       64 + sizeof (GNUNET_EncName),
+                       "http://%s:%u/%s", buf, ntohs (haddr->port), &enc);
       httpSession->cs.client.url = url;
     }
   EXIT ();
@@ -1938,7 +1929,7 @@ startTransportServer ()
   STEP ();
   if (curl_multi == NULL)
     return GNUNET_SYSERR;
-  port = get_port();
+  port = get_port ();
   if ((mhd_daemon == NULL) && (port != 0))
     {
       STEP ();
@@ -1958,30 +1949,30 @@ startTransportServer ()
                                      &requestCompletedCallback, NULL,
                                      MHD_OPTION_END);
       if (mhd_daemon == NULL)
-	{
-	  /* try without IPv6 */
-	  mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
-					 port,
-					 &acceptPolicyCallback,
-					 NULL, &accessHandlerCallback, NULL,
-					 MHD_OPTION_CONNECTION_TIMEOUT,
-					 (unsigned int) HTTP_TIMEOUT,
-					 MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-					 (unsigned int) 1024 * 128,
-					 MHD_OPTION_CONNECTION_LIMIT,
-					 (unsigned int) 128,
-					 MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-					 (unsigned int) 8,
-					 MHD_OPTION_NOTIFY_COMPLETED,
-					 &requestCompletedCallback, NULL,
-					 MHD_OPTION_END);
-	}
+        {
+          /* try without IPv6 */
+          mhd_daemon = MHD_start_daemon (MHD_NO_FLAG,
+                                         port,
+                                         &acceptPolicyCallback,
+                                         NULL, &accessHandlerCallback, NULL,
+                                         MHD_OPTION_CONNECTION_TIMEOUT,
+                                         (unsigned int) HTTP_TIMEOUT,
+                                         MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+                                         (unsigned int) 1024 * 128,
+                                         MHD_OPTION_CONNECTION_LIMIT,
+                                         (unsigned int) 128,
+                                         MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+                                         (unsigned int) 8,
+                                         MHD_OPTION_NOTIFY_COMPLETED,
+                                         &requestCompletedCallback, NULL,
+                                         MHD_OPTION_END);
+        }
       else
-	{
-	  available_protocols |= VERSION_AVAILABLE_IPV6;
-	}
+        {
+          available_protocols |= VERSION_AVAILABLE_IPV6;
+        }
       if (mhd_daemon != NULL)
-	available_protocols |= VERSION_AVAILABLE_IPV4;
+        available_protocols |= VERSION_AVAILABLE_IPV4;
       STEP ();
     }
   if (port == 0)
@@ -2125,7 +2116,7 @@ inittransport_http (GNUNET_CoreAPIForTransport * core)
 
   myAPI.protocolNumber = GNUNET_TRANSPORT_PROTOCOL_NUMBER_HTTP;
   myAPI.mtu = 0;
-  myAPI.cost = 20000;         /* about equal to udp */
+  myAPI.cost = 20000;           /* about equal to udp */
   myAPI.verifyHello = &verify_hello;
   myAPI.createhello = &create_hello;
   myAPI.connect = &httpConnect;
@@ -2150,7 +2141,7 @@ donetransport_http ()
   GNUNET_free_non_null (proxy);
   proxy = NULL;
   GNUNET_array_grow (tsessions, tsessionArrayLength, 0);
-  do_shutdown();
+  do_shutdown ();
   EXIT ();
 }
 

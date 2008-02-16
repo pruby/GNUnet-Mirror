@@ -323,14 +323,14 @@ get_advertised_port ()
   if (!GNUNET_GC_have_configuration_value
       (coreAPI->cfg, MY_TRANSPORT_NAME, "ADVERTISED-PORT"))
     {
-      port = get_port();
+      port = get_port ();
     }
   else if (-1 == GNUNET_GC_get_configuration_value_number (coreAPI->cfg,
                                                            MY_TRANSPORT_NAME,
                                                            "ADVERTISED-PORT",
                                                            0, 65535, 80,
                                                            &port))
-    port = get_port();
+    port = get_port ();
   return (unsigned short) port;
 }
 

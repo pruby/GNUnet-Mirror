@@ -571,7 +571,7 @@ tcp_connect (const GNUNET_MessageHello * hello,
         }
       GNUNET_mutex_unlock (lock);
     }
-  haddr = (const HostAddress *) & hello[1];
+  haddr = (const HostAddress *) &hello[1];
   available = ntohs (haddr->availability) & available_protocols;
 
   if ((available & VERSION_AVAILABLE_IPV4) > 0)

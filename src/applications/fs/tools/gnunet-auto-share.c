@@ -64,13 +64,13 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_upload_completed:
       if (*verboselevel)
-	{
-	  fstring = GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
-	  printf(_("Upload of `%s' complete, URI is `%s'."),
-		 event->data.UploadCompleted.filename,
-		 fstring);    
-	  GNUNET_free (fstring);
-	}
+        {
+          fstring =
+            GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
+          printf (_("Upload of `%s' complete, URI is `%s'."),
+                  event->data.UploadCompleted.filename, fstring);
+          GNUNET_free (fstring);
+        }
       if (ul == event->data.UploadCompleted.uc.pos)
         upload_done = GNUNET_YES;
       break;
@@ -106,7 +106,7 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
    gettext_noop
    ("do not use libextractor to add additional references to directory entries and/or the published file"),
    0, &GNUNET_getopt_configure_set_one, &do_no_direct_references},
-  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Automatically share a directory.")),       /* -h */
+  GNUNET_COMMAND_LINE_OPTION_HELP (gettext_noop ("Automatically share a directory.")),  /* -h */
   GNUNET_COMMAND_LINE_OPTION_HOSTNAME,  /* -H */
   {'K', "global-key", "KEYWORD",
    gettext_noop ("add an additional keyword for all files and directories"
@@ -122,92 +122,77 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
 };
 
 static int
-find_latest(const char * filename,
-	    const char * dirName,
-	    void * cls) 
+find_latest (const char *filename, const char *dirName, void *cls)
 {
-  time_t * latest = cls;
+  time_t *latest = cls;
   struct stat buf;
-  char * fn;
+  char *fn;
 
   if (filename[0] == '.')
     return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc(strlen(filename) + strlen(dirName) + 2);
-  strcpy(fn, dirName);
-  strcat(fn, DIR_SEPARATOR_STR);
-  strcat(fn, filename);
-  if (0 != stat(fn, &buf))
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
+  strcpy (fn, dirName);
+  strcat (fn, DIR_SEPARATOR_STR);
+  strcat (fn, filename);
+  if (0 != stat (fn, &buf))
     {
-      printf("Could not stat `%s': %s\n",
-	     fn,
-	     strerror(errno));
-      GNUNET_free(fn);
+      printf ("Could not stat `%s': %s\n", fn, strerror (errno));
+      GNUNET_free (fn);
       return GNUNET_OK;
     }
   if (*latest < buf.st_mtime)
     *latest = buf.st_mtime;
-  if (S_ISDIR(buf.st_mode))
-    GNUNET_disk_directory_scan(ectx,
-			       fn,
-			       &find_latest,
-			       latest);
-  GNUNET_free(fn);
+  if (S_ISDIR (buf.st_mode))
+    GNUNET_disk_directory_scan (ectx, fn, &find_latest, latest);
+  GNUNET_free (fn);
   return GNUNET_OK;
 }
 
 static int
-probe_directory(const char * filename,
-		const char * dirName,
-		void * cls) 
+probe_directory (const char *filename, const char *dirName, void *cls)
 {
-  time_t * last = cls;
+  time_t *last = cls;
   time_t latest;
   struct stat buf;
-  char * fn;
+  char *fn;
 
   if (filename[0] == '.')
     return GNUNET_OK;
   if (ul != NULL)
-    return GNUNET_SYSERR;  
-  fn = GNUNET_malloc(strlen(filename) + strlen(dirName) + 2);
-  strcpy(fn, dirName);
-  strcat(fn, DIR_SEPARATOR_STR);
-  strcat(fn, filename);
-  if (0 != stat(fn, &buf))
+    return GNUNET_SYSERR;
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
+  strcpy (fn, dirName);
+  strcat (fn, DIR_SEPARATOR_STR);
+  strcat (fn, filename);
+  if (0 != stat (fn, &buf))
     {
-      printf("Could not stat `%s': %s\n",
-	     fn,
-	     strerror(errno));
-      GNUNET_free(fn);
+      printf ("Could not stat `%s': %s\n", fn, strerror (errno));
+      GNUNET_free (fn);
       return GNUNET_OK;
     }
-  if ( (buf.st_mtime < *last) &&
-       (! S_ISDIR(buf.st_mode)) )
+  if ((buf.st_mtime < *last) && (!S_ISDIR (buf.st_mode)))
     {
-      GNUNET_free(fn);
+      GNUNET_free (fn);
       return GNUNET_OK;
     }
   latest = buf.st_mtime;
-  GNUNET_disk_directory_scan(ectx,
-			     fn,
-			     &find_latest,
-			     &latest);
-  if (latest < *last) 
+  GNUNET_disk_directory_scan (ectx, fn, &find_latest, &latest);
+  if (latest < *last)
     {
-      GNUNET_free(fn);
+      GNUNET_free (fn);
       return GNUNET_OK;
     }
   ul = GNUNET_FSUI_upload_start (ctx,
-				 fn,
-				 (GNUNET_FSUI_DirectoryScanCallback) &
-				 GNUNET_disk_directory_scan, ectx, anonymity,
-				 priority, GNUNET_YES, GNUNET_YES,
-				 !do_no_direct_references,
-				 GNUNET_get_time() + 2 * GNUNET_CRON_YEARS, NULL,
-				 gloKeywords, NULL);      
-  GNUNET_free(fn);
+                                 fn,
+                                 (GNUNET_FSUI_DirectoryScanCallback) &
+                                 GNUNET_disk_directory_scan, ectx, anonymity,
+                                 priority, GNUNET_YES, GNUNET_YES,
+                                 !do_no_direct_references,
+                                 GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
+                                 NULL, gloKeywords, NULL);
+  GNUNET_free (fn);
   return GNUNET_SYSERR;
 }
 
@@ -242,11 +227,11 @@ main (int argc, char *const *argv)
   if (i != argc - 1)
     {
       printf (_
-	      ("You must specify one and only one directory for sharing.\n"));
+              ("You must specify one and only one directory for sharing.\n"));
       errorCode = -1;
       goto quit;
     }
-  dirname = GNUNET_expand_file_name(ectx, argv[i]);
+  dirname = GNUNET_expand_file_name (ectx, argv[i]);
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
@@ -254,34 +239,30 @@ main (int argc, char *const *argv)
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
   /* first insert all of the top-level files or directories */
-  
+
   last = 0;
-  while (GNUNET_NO == GNUNET_shutdown_test()) 
+  while (GNUNET_NO == GNUNET_shutdown_test ())
     {
-      start = time(NULL);
-      GNUNET_disk_directory_scan(ectx,
-				 dirname,
-				 &probe_directory,
-				 &last);
+      start = time (NULL);
+      GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, &last);
       if (ul == NULL)
-	last = start;
+        last = start;
       if (GNUNET_YES == upload_done)
-	{
-	  GNUNET_FSUI_upload_abort (ctx, ul);
-	  GNUNET_FSUI_upload_stop (ctx, ul);
-	  upload_done = GNUNET_NO;
-	  ul = NULL;
-	}
-      if ( (ul == NULL) &&
-	   (GNUNET_NO == GNUNET_shutdown_test()) )
-	{
-	  GNUNET_thread_sleep(delay);
-	  delay *= 2;
-	  if (delay > GNUNET_CRON_HOURS)
-	    delay = GNUNET_CRON_HOURS;
-	}
+        {
+          GNUNET_FSUI_upload_abort (ctx, ul);
+          GNUNET_FSUI_upload_stop (ctx, ul);
+          upload_done = GNUNET_NO;
+          ul = NULL;
+        }
+      if ((ul == NULL) && (GNUNET_NO == GNUNET_shutdown_test ()))
+        {
+          GNUNET_thread_sleep (delay);
+          delay *= 2;
+          if (delay > GNUNET_CRON_HOURS)
+            delay = GNUNET_CRON_HOURS;
+        }
       else
-	delay = 5 * GNUNET_CRON_SECONDS;
+        delay = 5 * GNUNET_CRON_SECONDS;
     }
   GNUNET_FSUI_stop (ctx);
   if (gloKeywords != NULL)

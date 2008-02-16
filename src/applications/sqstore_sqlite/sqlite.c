@@ -1145,9 +1145,8 @@ get (const GNUNET_HashCode * key,
       return GNUNET_SYSERR;
     }
   ret = sqlite3_bind_blob (stmt,
-			   1,
-			   key, sizeof (GNUNET_HashCode),
-			   SQLITE_TRANSIENT);
+                           1,
+                           key, sizeof (GNUNET_HashCode), SQLITE_TRANSIENT);
   if (type && (ret == SQLITE_OK))
     ret = sqlite3_bind_int (stmt, 2, type);
   if (ret != SQLITE_OK)
@@ -1162,7 +1161,7 @@ get (const GNUNET_HashCode * key,
 
     }
   ret = sqlite3_step (stmt);
-  if (ret != SQLITE_ROW) 
+  if (ret != SQLITE_ROW)
     {
       LOG_SQLITE (handle,
                   GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
@@ -1176,23 +1175,22 @@ get (const GNUNET_HashCode * key,
   total = sqlite3_column_int (stmt, 0);
   sqlite3_reset (stmt);
   sqlite3_finalize (stmt);
-  if ( (iter == NULL) ||
-       (total == 0) )
+  if ((iter == NULL) || (total == 0))
     {
       GNUNET_mutex_unlock (lock);
       return total;
     }
 
-  strcpy (scratch, 
-	  "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ "
-	  "FROM gn070 WHERE hash = :1 AND _ROWID_ >= :2");
+  strcpy (scratch,
+          "SELECT size, type, prio, anonLevel, expire, hash, value, _ROWID_ "
+          "FROM gn070 WHERE hash = :1 AND _ROWID_ >= :2");
   if (type)
     strcat (scratch, " AND type = :3");
   strcat (scratch, " ORDER BY _ROWID_ ASC LIMIT 1");
   if (type)
-    strcat(scratch, " OFFSET :4");
+    strcat (scratch, " OFFSET :4");
   else
-    strcat(scratch, " OFFSET :3");
+    strcat (scratch, " OFFSET :3");
   if (sq_prepare (dbh, scratch, &stmt) != SQLITE_OK)
     {
       LOG_SQLITE (handle,
@@ -1203,14 +1201,14 @@ get (const GNUNET_HashCode * key,
     }
   count = 0;
   last_rowid = 0;
-  off = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, total);
+  off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total);
   while (1)
     {
-     if (count == 0)
-       limit_off = off;
-     else
-       limit_off = 0;
-     ret = sqlite3_bind_blob (stmt,
+      if (count == 0)
+        limit_off = off;
+      else
+        limit_off = 0;
+      ret = sqlite3_bind_blob (stmt,
                                1,
                                key, sizeof (GNUNET_HashCode),
                                SQLITE_TRANSIENT);
@@ -1219,7 +1217,7 @@ get (const GNUNET_HashCode * key,
       if (type && (ret == SQLITE_OK))
         ret = sqlite3_bind_int (stmt, 3, type);
       if (ret == SQLITE_OK)
-	ret = sqlite3_bind_int (stmt, (type == 0) ? 3 : 4, limit_off);
+        ret = sqlite3_bind_int (stmt, (type == 0) ? 3 : 4, limit_off);
       if (ret == SQLITE_OK)
         {
           ret = sqlite3_step (stmt);
@@ -1255,9 +1253,9 @@ get (const GNUNET_HashCode * key,
           GNUNET_free (datum);
         }
       if (count + off == total)
-	last_rowid = 0; /* back to start */
+        last_rowid = 0;         /* back to start */
       if (count == total)
-	break;
+        break;
     }
   sqlite3_reset (stmt);
   sqlite3_finalize (stmt);

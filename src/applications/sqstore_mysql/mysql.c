@@ -1219,10 +1219,10 @@ get (const GNUNET_HashCode * query,
   if (mysql_stmt_bind_param (stmt, qbind))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' failed at %s:%d with error: %s\n"),
-		     "mysql_stmt_bind_param",
-		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_bind_param",
+                     __FILE__, __LINE__, mysql_stmt_error (stmt));
       iclose ();
       mysql_thread_end ();
       GNUNET_mutex_unlock (lock);
@@ -1231,10 +1231,10 @@ get (const GNUNET_HashCode * query,
   if (mysql_stmt_execute (stmt))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' failed at %s:%d with error: %s\n"),
-		     "mysql_stmt_execute",
-		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_execute",
+                     __FILE__, __LINE__, mysql_stmt_error (stmt));
       iclose ();
       GNUNET_mutex_unlock (lock);
       mysql_thread_end ();
@@ -1243,10 +1243,10 @@ get (const GNUNET_HashCode * query,
   if (mysql_stmt_bind_result (stmt, rbind))
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' failed at %s:%d with error: %s\n"),
-		     "mysql_stmt_bind_result",
-		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_bind_result",
+                     __FILE__, __LINE__, mysql_stmt_error (stmt));
       iclose ();
       mysql_thread_end ();
       GNUNET_mutex_unlock (lock);
@@ -1259,30 +1259,29 @@ get (const GNUNET_HashCode * query,
       mysql_thread_end ();
       return GNUNET_SYSERR;
     }
-  if (-1 == total) 
+  if (-1 == total)
     {
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-		     _("`%s' failed at %s:%d with error: %s\n"),
-		     "mysql_stmt_num_rows",
-		     __FILE__, __LINE__, mysql_stmt_error (stmt));
+                     GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
+                     _("`%s' failed at %s:%d with error: %s\n"),
+                     "mysql_stmt_num_rows",
+                     __FILE__, __LINE__, mysql_stmt_error (stmt));
       iclose ();
       GNUNET_mutex_unlock (lock);
       mysql_thread_end ();
       return GNUNET_SYSERR;
     }
   mysql_stmt_reset (stmt);
-  if ( (iter == NULL) ||
-       (total == 0) )
+  if ((iter == NULL) || (total == 0))
     {
       GNUNET_mutex_unlock (lock);
       mysql_thread_end ();
       return (int) total;
-    }  
+    }
   GNUNET_mutex_unlock (lock);
   last_vkey = 0;
   count = 0;
-  off = GNUNET_random_u32(GNUNET_RANDOM_QUALITY_WEAK, total);  
+  off = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, total);
   memset (qbind, 0, sizeof (qbind));
   qbind[0].buffer_type = MYSQL_TYPE_BLOB;
   qbind[0].buffer = (void *) query;
@@ -1299,7 +1298,7 @@ get (const GNUNET_HashCode * query,
       qbind[3].buffer_type = MYSQL_TYPE_LONG;
       qbind[3].is_unsigned = GNUNET_YES;
       qbind[3].buffer = &limit_off;
-    } 
+    }
   else
     {
       qbind[2].buffer_type = MYSQL_TYPE_LONG;
@@ -1339,13 +1338,13 @@ get (const GNUNET_HashCode * query,
           return GNUNET_SYSERR;
         }
       if (type != 0)
-	stmt = dbh->select_entry_by_hash_and_type;
+        stmt = dbh->select_entry_by_hash_and_type;
       else
-	stmt = dbh->select_entry_by_hash;
+        stmt = dbh->select_entry_by_hash;
       if (count == 0)
-	limit_off = off;
+        limit_off = off;
       else
-	limit_off = 0;
+        limit_off = 0;
       GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 4);
       GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 7);
       if (mysql_stmt_bind_param (stmt, qbind))
@@ -1413,9 +1412,9 @@ get (const GNUNET_HashCode * query,
         }
       GNUNET_free (datum);
       if (count + off == total)
-	last_vkey = 0; /* back to start */
+        last_vkey = 0;          /* back to start */
       if (count == total)
-	break;
+        break;
     }
   mysql_thread_end ();
   return count;

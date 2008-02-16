@@ -623,7 +623,10 @@ addUploads (struct GNUNET_FSUI_UploadShared *shared,
           GNUNET_free (utc);
           return NULL;
         }
-      utc->meta = (md == NULL) ? GNUNET_ECRS_meta_data_create() : GNUNET_ECRS_meta_data_duplicate (md);
+      utc->meta =
+        (md ==
+         NULL) ? GNUNET_ECRS_meta_data_create () :
+        GNUNET_ECRS_meta_data_duplicate (md);
     }
   else
     {

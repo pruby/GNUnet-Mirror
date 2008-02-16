@@ -99,10 +99,11 @@ send_delayed (void *cls)
   GNUNET_free (msg);
 }
 
-struct DVPClosure {
-  struct RequestList * request;
+struct DVPClosure
+{
+  struct RequestList *request;
   unsigned int iteration_count;
-  unsigned int result_count;  
+  unsigned int result_count;
 };
 
 /**
@@ -128,7 +129,7 @@ datastore_value_processor (const GNUNET_HashCode * key,
                            const GNUNET_DatastoreValue *
                            value, void *closure, unsigned long long uid)
 {
-  struct DVPClosure * cls = closure;
+  struct DVPClosure *cls = closure;
   struct RequestList *req = cls->request;
   P2P_gap_reply_MESSAGE *msg;
   GNUNET_DatastoreValue *enc;
@@ -157,8 +158,8 @@ datastore_value_processor (const GNUNET_HashCode * key,
       GNUNET_hash (&value[1],
                    ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &hc);
       GNUNET_FS_HELPER_mingle_hash (&hc, req->bloomfilter_mutator, &mhc);
-      if (GNUNET_YES == GNUNET_bloomfilter_test (req->bloomfilter, &mhc))	
-	return want_more;       /* not useful */      
+      if (GNUNET_YES == GNUNET_bloomfilter_test (req->bloomfilter, &mhc))
+        return want_more;       /* not useful */
     }
   et = GNUNET_ntohll (value->expirationTime);
   now = GNUNET_get_time ();
