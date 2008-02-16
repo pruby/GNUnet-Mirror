@@ -1259,7 +1259,6 @@ get (const GNUNET_HashCode * query,
       mysql_thread_end ();
       return GNUNET_SYSERR;
     }
-  last_vkey = vkey;
   if (-1 == total) 
     {
       GNUNET_GE_LOG (ectx,
