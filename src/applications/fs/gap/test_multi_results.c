@@ -128,6 +128,7 @@ searchCB (const GNUNET_ECRS_FileInfo * fi,
 	   (GNUNET_ECRS_uri_test_equal(uris[i],
 					fi->uri)) )
 	{
+	  GNUNET_ECRS_uri_destroy  (uris[i]);
 	  uris[i] = NULL;
 	  found++;
 	  fprintf(stderr,
@@ -200,12 +201,11 @@ main (int argc, char **argv)
   GNUNET_GC_set_configuration_value_string (cfg, ectx, "NETWORK", "HOST",
                                             buf);
   
-  ret = GNUNET_ECRS_search (ectx,
-                            cfg,
-                            key, 1, &searchCB, NULL, &testTerminate, NULL);
+  GNUNET_ECRS_search (ectx,
+		      cfg,
+		      key, 1, &searchCB, NULL, &testTerminate, NULL);
   fprintf(stderr,
 	  "\n");
-  CHECK (ret == GNUNET_OK);
   CHECK (found > (TOTAL*90)/100);
 FAILURE:
 #if START_PEERS
