@@ -9,7 +9,7 @@ Annotations:
 TESTING:
 - test new hostlist application
 - test GAP migration code (seems to be using far too much CPU!)
-- test GAP code in general (and FIX the pid-table assertion crash / double-free segv!)
+- test GAP code in general (still have one unexplained crazy crash!)
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074

@@ -123,12 +123,15 @@ download the file from GNUnet.
 
 .SH EXAMPLES
 .PP
+Use the following command to share the "/home/share/" directory:
 
-\fBBasic example\fR
+ $ nohup gnunet\-auto\-share /home/share/ &
 
-Share the "/home/share" directory:
+Use the following command to share the "/home/share/" directory
+and see the URIs of uploaded files.  You can abort the daemon 
+with CTRL-C:
 
-# nohup gnunet\-auto\-share /home/share/ &
+ $ gnunet\-auto\-share -V /home/share/ 
 
 
 .SH FILES
