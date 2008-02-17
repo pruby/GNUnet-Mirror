@@ -223,6 +223,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                      "Migration: no content available for migration.\n");
 #endif
       GNUNET_mutex_unlock (GNUNET_FS_lock);
+      GNUNET_FS_PT_change_rc (index, -1);  
       return 0;
     }
   value = content[entry].value;
