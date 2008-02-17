@@ -605,6 +605,7 @@ rereadConfiguration (void *ctx,
         }
       GNUNET_free (data);
     }
+  GNUNET_free_non_null(fn);
   return 0;
 }
 
