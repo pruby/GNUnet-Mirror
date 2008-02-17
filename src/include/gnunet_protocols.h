@@ -157,7 +157,7 @@ extern "C"
 /**
  * client to gnunetd: initialize to index file
  */
-#define GNUNET_CS_PROTO_GAP_INIT_INDEX 16
+#define GNUNET_CS_PROTO_GAP_INIT_INDEX 15
 
 
 /* *********** messages for identity module ************* */

@@ -124,7 +124,7 @@ typedef struct
 {
 
   /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, GNUNET_CS_PROTO_RETURN_VALUE)
+   * The CS header (values: sizeof(GNUNET_MessageReturnValue) + error-size, GNUNET_CS_PROTO_RETURN_VALUE)
    */
   GNUNET_MessageHeader header;
 
@@ -142,7 +142,7 @@ typedef struct
 {
 
   /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, GNUNET_CS_PROTO_RETURN_VALUE)
+   * The CS header.
    */
   GNUNET_MessageHeader header;
 
