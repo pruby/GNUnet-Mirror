@@ -539,18 +539,6 @@ typedef struct
   unsigned short functionNameLength;
 } P2P_rpc_MESSAGE;
 
-
-typedef struct
-{
-  P2P_rpc_MESSAGE rpc_message;
-  /**
-   * functionNameLength characters describing the function name
-   * followed by a serialization of argumentCount arguments.
-   */
-  char data[1];
-} P2P_rpc_MESSAGE_GENERIC;
-
-
 /**
  * An ACK message.  An ACK acknowledges the receiving a reply to an
  * RPC call (three-way handshake).  Without an ACK, the receiver of an
@@ -735,8 +723,7 @@ retryRPCJob (void *ctx)
                              GNUNET_GE_USER,
                              "Sending RPC request %p: '%.*s' (expires in %llums, last attempt %llums ago; attempt %u).\n",
                              call, ntohs (call->msg->functionNameLength),
-                             &((P2P_rpc_MESSAGE_GENERIC *) call->msg)->
-                             data[0], call->expirationTime - now,
+                             &call->msg[1], call->expirationTime - now,
                              now - call->lastAttempt, call->attempts);
             }
           else
@@ -792,7 +779,7 @@ getFunctionName (P2P_rpc_MESSAGE * req)
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
   ret = GNUNET_malloc (slen + 1);
-  memcpy (ret, &((P2P_rpc_MESSAGE_GENERIC *) req)->data[0], slen);
+  memcpy (ret, &req[1], slen);
   ret[slen] = '\0';
   return ret;
 }
@@ -810,9 +797,7 @@ deserializeArguments (P2P_rpc_MESSAGE * req)
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
   ret =
-    GNUNET_RPC_parameters_deserialize (&
-                                       ((P2P_rpc_MESSAGE_GENERIC *)
-                                        req)->data[slen],
+    GNUNET_RPC_parameters_deserialize (&((char*)&req[1])[slen],
                                        ntohs (req->header.size) -
                                        sizeof (P2P_rpc_MESSAGE) - slen);
   if (GNUNET_RPC_parameters_count (ret) != ntohs (req->argumentCount))
@@ -866,11 +851,10 @@ buildMessage (unsigned short errorCode,
   ret->argumentCount = htons (GNUNET_RPC_parameters_count (values));
   if (name != NULL)
     {
-      memcpy (&((P2P_rpc_MESSAGE_GENERIC *) ret)->data[0], name, slen);
+      memcpy (&ret[1], name, slen);
     }
   GNUNET_RPC_parameters_serialize (values,
-                                   &((P2P_rpc_MESSAGE_GENERIC *) ret)->
-                                   data[slen]);
+                                   &((char*)&ret[1])[slen]);
 
   if (name == NULL)
     ret->header.type = htons (GNUNET_P2P_PROTO_RPC_RES);
@@ -1110,17 +1094,15 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
   if (NULL != call)
     {
       GNUNET_RPC_CallParameters *reply;
-      P2P_rpc_MESSAGE_GENERIC *gen;
       unsigned short error;
 
       RPC_STATUS ("", "received reply", call);
-      gen = (P2P_rpc_MESSAGE_GENERIC *) res;
       reply = NULL;
       error = ntohs (res->functionNameLength);
 
       if (error == GNUNET_RPC_ERROR_OK)
         {
-          reply = GNUNET_RPC_parameters_deserialize (&gen->data[0],
+          reply = GNUNET_RPC_parameters_deserialize ((char*)&res[1],
                                                      ntohs (message->size) -
                                                      sizeof
                                                      (P2P_rpc_MESSAGE));
