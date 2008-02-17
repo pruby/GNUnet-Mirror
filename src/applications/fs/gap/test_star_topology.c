@@ -37,7 +37,7 @@
 
 #define START_PEERS 1
 
-#define SIZE 1024*1024*2
+#define SIZE (1024*32*10)
 
 static struct GNUNET_GE_Context *ectx;
 
