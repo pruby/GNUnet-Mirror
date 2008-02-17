@@ -250,8 +250,7 @@ typedef struct HTTPSession
   struct GNUNET_Mutex *lock;
 
   /**
-   * To whom are we talking to (set to our identity
-   * if we are still waiting for the welcome message)
+   * To whom are we talking to.
    */
   GNUNET_PeerIdentity sender;
 
