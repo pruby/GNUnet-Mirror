@@ -549,6 +549,7 @@ rereadConfiguration (void *ctx,
           return GNUNET_SYSERR;
         }
       GNUNET_free (fn);
+      fn = NULL;
       pos = 0;
       while ((pos < size) && isspace (data[pos]))
         pos++;
