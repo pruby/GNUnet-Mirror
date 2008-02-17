@@ -2509,8 +2509,8 @@ scheduleInboundTraffic ()
 #endif
               identity->blacklistHost (&entries[u]->session.sender, 24 * 60 * 60,       /* 1 day */
                                        GNUNET_YES);
-	      if (stats != NULL)
-		stats->change(stat_shutdown_excessive_bandwidth, 1);
+              if (stats != NULL)
+                stats->change (stat_shutdown_excessive_bandwidth, 1);
               shutdownConnection (entries[u]);
               activePeerCount--;
               entries[u] = entries[activePeerCount];
@@ -2790,8 +2790,8 @@ scheduleInboundTraffic ()
           identity->blacklistHost (&be->session.sender,
                                    SECONDS_BLACKLIST_AFTER_DISCONNECT,
                                    GNUNET_YES);
-	  if (stats != NULL)
-	    stats->change(stat_shutdown_insufficient_bandwidth, 1);
+          if (stats != NULL)
+            stats->change (stat_shutdown_insufficient_bandwidth, 1);
           shutdownConnection (be);
         }
       else
@@ -2908,8 +2908,8 @@ cronDecreaseLiveness (void *unused)
                   identity->blacklistHost (&root->session.sender,
                                            SECONDS_BLACKLIST_AFTER_DISCONNECT,
                                            GNUNET_YES);
-		  if (stats != NULL)
-		    stats->change(stat_shutdown_timeout, 1);
+                  if (stats != NULL)
+                    stats->change (stat_shutdown_timeout, 1);
                   shutdownConnection (root);
                 }
               if ((root->consider_transport_switch == GNUNET_YES)
@@ -3015,8 +3015,8 @@ cronDecreaseLiveness (void *unused)
                   identity->blacklistHost (&root->session.sender,
                                            SECONDS_BLACKLIST_AFTER_FAILED_CONNECT,
                                            GNUNET_NO);
-		  if (stats != NULL)
-		    stats->change(stat_shutdown_connect_timeout, 1);
+                  if (stats != NULL)
+                    stats->change (stat_shutdown_connect_timeout, 1);
                   shutdownConnection (root);
                 }
               break;
@@ -3256,7 +3256,7 @@ handleHANGUP (const GNUNET_PeerIdentity * sender,
   identity->blacklistHost (&be->session.sender,
                            SECONDS_BLACKLIST_AFTER_DISCONNECT, GNUNET_YES);
   if (stats != NULL)
-    stats->change(stat_shutdown_hangup_received, 1);
+    stats->change (stat_shutdown_hangup_received, 1);
   shutdownConnection (be);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
@@ -3766,19 +3766,24 @@ GNUNET_CORE_connection_init (struct GNUNET_GE_Context *e,
         create (gettext_noop ("# average connection lifetime (in ms)"));
       stat_shutdown_excessive_bandwidth =
         stats->
-        create (gettext_noop ("# connections shutdown because other peer sent too much"));
+        create (gettext_noop
+                ("# connections shutdown because other peer sent too much"));
       stat_shutdown_insufficient_bandwidth =
         stats->
-        create (gettext_noop ("# connections shutdown because we lacked bandwidth"));
+        create (gettext_noop
+                ("# connections shutdown because we lacked bandwidth"));
       stat_shutdown_timeout =
         stats->
-        create (gettext_noop ("# connections shutdown because other peer timed out"));
+        create (gettext_noop
+                ("# connections shutdown because other peer timed out"));
       stat_shutdown_connect_timeout =
         stats->
-        create (gettext_noop ("# connections shutdown because other peer timed out during connect"));
+        create (gettext_noop
+                ("# connections shutdown because other peer timed out during connect"));
       stat_shutdown_hangup_received =
         stats->
-        create (gettext_noop ("# connections shutdown because other peer requested it"));
+        create (gettext_noop
+                ("# connections shutdown because other peer requested it"));
     }
   transport->start (&GNUNET_CORE_p2p_receive);
   EXIT ();

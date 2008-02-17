@@ -797,7 +797,7 @@ deserializeArguments (P2P_rpc_MESSAGE * req)
   if (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen)
     return NULL;                /* invalid! */
   ret =
-    GNUNET_RPC_parameters_deserialize (&((char*)&req[1])[slen],
+    GNUNET_RPC_parameters_deserialize (&((char *) &req[1])[slen],
                                        ntohs (req->header.size) -
                                        sizeof (P2P_rpc_MESSAGE) - slen);
   if (GNUNET_RPC_parameters_count (ret) != ntohs (req->argumentCount))
@@ -853,8 +853,7 @@ buildMessage (unsigned short errorCode,
     {
       memcpy (&ret[1], name, slen);
     }
-  GNUNET_RPC_parameters_serialize (values,
-                                   &((char*)&ret[1])[slen]);
+  GNUNET_RPC_parameters_serialize (values, &((char *) &ret[1])[slen]);
 
   if (name == NULL)
     ret->header.type = htons (GNUNET_P2P_PROTO_RPC_RES);
@@ -1102,7 +1101,7 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
 
       if (error == GNUNET_RPC_ERROR_OK)
         {
-          reply = GNUNET_RPC_parameters_deserialize ((char*)&res[1],
+          reply = GNUNET_RPC_parameters_deserialize ((char *) &res[1],
                                                      ntohs (message->size) -
                                                      sizeof
                                                      (P2P_rpc_MESSAGE));

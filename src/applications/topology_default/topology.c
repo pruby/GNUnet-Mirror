@@ -552,8 +552,8 @@ rereadConfiguration (void *ctx,
       pos = 0;
       while ((pos < size) && isspace (data[pos]))
         pos++;
-      while ( (size >= sizeof(GNUNET_EncName)) &&
-	      (pos <= size - sizeof (GNUNET_EncName)) )
+      while ((size >= sizeof (GNUNET_EncName)) &&
+             (pos <= size - sizeof (GNUNET_EncName)))
         {
           memcpy (&enc, &data[pos], sizeof (GNUNET_EncName));
           if (!isspace (enc.encoding[sizeof (GNUNET_EncName) - 1]))
@@ -563,10 +563,9 @@ rereadConfiguration (void *ctx,
                              GNUNET_GE_USER,
                              _
                              ("Syntax error in topology specification, skipping bytes.\n"));
-	      pos++;
-	      while ( (pos < size) &&
-		      (! isspace (data[pos])) )
-		pos++;
+              pos++;
+              while ((pos < size) && (!isspace (data[pos])))
+                pos++;
               continue;
             }
           enc.encoding[sizeof (GNUNET_EncName) - 1] = '\0';

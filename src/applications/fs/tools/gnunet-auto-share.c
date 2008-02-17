@@ -212,9 +212,9 @@ probe_directory (const char *filename, const char *dirName, void *cls)
   time_t latest;
   struct stat buf;
   struct AddMetadataClosure amc;
-  struct GNUNET_ECRS_URI * kuri;
+  struct GNUNET_ECRS_URI *kuri;
   char *fn;
-  char * keys;
+  char *keys;
 
   if (filename[0] == '.')
     return GNUNET_OK;
@@ -242,8 +242,7 @@ probe_directory (const char *filename, const char *dirName, void *cls)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  if ( (start > latest) &&
-       (current_pos < done_pos) )
+  if ((start > latest) && (current_pos < done_pos))
     {
       GNUNET_free (fn);
       current_pos++;
@@ -256,16 +255,13 @@ probe_directory (const char *filename, const char *dirName, void *cls)
      over all config values! */
   GNUNET_GC_attach_change_listener (meta_cfg, &add_meta_data, &amc);
   GNUNET_GC_detach_change_listener (meta_cfg, &add_meta_data, &amc);
-  keys = GNUNET_ECRS_meta_data_get_by_type(amc.meta,
-					   EXTRACTOR_KEYWORDS);
+  keys = GNUNET_ECRS_meta_data_get_by_type (amc.meta, EXTRACTOR_KEYWORDS);
   if (keys != NULL)
-    kuri = GNUNET_ECRS_keyword_string_to_uri(NULL, keys);
+    kuri = GNUNET_ECRS_keyword_string_to_uri (NULL, keys);
   else
     kuri = NULL;
-  GNUNET_ECRS_meta_data_delete(amc.meta,
-			       EXTRACTOR_KEYWORDS,
-			       keys);
-  GNUNET_free_non_null(keys);
+  GNUNET_ECRS_meta_data_delete (amc.meta, EXTRACTOR_KEYWORDS, keys);
+  GNUNET_free_non_null (keys);
   ul = GNUNET_FSUI_upload_start (ctx,
                                  fn,
                                  (GNUNET_FSUI_DirectoryScanCallback) &
@@ -275,7 +271,7 @@ probe_directory (const char *filename, const char *dirName, void *cls)
                                  GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
                                  amc.meta, gloKeywords, kuri);
   if (kuri != NULL)
-    GNUNET_ECRS_uri_destroy(kuri);
+    GNUNET_ECRS_uri_destroy (kuri);
   GNUNET_ECRS_meta_data_destroy (amc.meta);
   GNUNET_free (fn);
   return GNUNET_SYSERR;
@@ -322,13 +318,14 @@ main (int argc, char *const *argv)
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
   if (0 == GNUNET_GC_get_configuration_value_number (cfg,
-						     "GNUNET-AUTO-SHARE",
-						     "TIMESTAMP-LAST-RUN", 0, -1, 0, &cfg_start))
+                                                     "GNUNET-AUTO-SHARE",
+                                                     "TIMESTAMP-LAST-RUN", 0,
+                                                     -1, 0, &cfg_start))
     {
       last = (time_t) cfg_start;
     }
   else
-    last = 0;  
+    last = 0;
   metafn = NULL;
   GNUNET_GC_get_configuration_value_filename (cfg,
                                               "FS",
@@ -351,17 +348,16 @@ main (int argc, char *const *argv)
       current_pos = 0;
       GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, &last);
       if (ul == NULL)
-	{
-	  last = start;
-	  done_pos = 0;
-	  GNUNET_GC_set_configuration_value_number (cfg,
-						    ectx,
-						    "GNUNET-AUTO-SHARE",
-						    "TIMESTAMP-LAST-RUN", 
-						    last);	  
-	  GNUNET_GC_write_configuration(cfg,
-					cfgFilename);
-	}
+        {
+          last = start;
+          done_pos = 0;
+          GNUNET_GC_set_configuration_value_number (cfg,
+                                                    ectx,
+                                                    "GNUNET-AUTO-SHARE",
+                                                    "TIMESTAMP-LAST-RUN",
+                                                    last);
+          GNUNET_GC_write_configuration (cfg, cfgFilename);
+        }
       if (GNUNET_YES == upload_done)
         {
           GNUNET_FSUI_upload_abort (ctx, ul);
@@ -377,9 +373,9 @@ main (int argc, char *const *argv)
             delay = GNUNET_CRON_HOURS;
         }
       else
-	{	  
-	  delay = 5 * GNUNET_CRON_SECONDS;
-	}
+        {
+          delay = 5 * GNUNET_CRON_SECONDS;
+        }
     }
   GNUNET_FSUI_stop (ctx);
   if (gloKeywords != NULL)
