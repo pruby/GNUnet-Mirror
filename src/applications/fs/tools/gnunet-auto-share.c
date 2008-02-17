@@ -229,7 +229,8 @@ probe_directory (const char *filename, const char *dirName, void *cls)
       return GNUNET_OK;
     }
   latest = buf.st_mtime;
-  GNUNET_disk_directory_scan (ectx, fn, &find_latest, &latest);
+  if (S_ISDIR (buf.st_mode))
+    GNUNET_disk_directory_scan (ectx, fn, &find_latest, &latest);
   if (latest < *last)
     {
       GNUNET_free (fn);
