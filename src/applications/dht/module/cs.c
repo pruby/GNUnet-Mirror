@@ -29,7 +29,6 @@
 #include "platform.h"
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
-#include "gnunet_rpc_service.h"
 #include "dht.h"
 #include "gnunet_dht_service.h"
 
@@ -100,18 +99,17 @@ csPut (struct GNUNET_ClientHandle *client,
 }
 
 static int
-get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
+get_result (const GNUNET_HashCode * key, 
+	    unsigned int type,
+	    unsigned int size,
+	    const char * value,
             void *cls)
 {
   struct DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
   size_t n;
 
-  GNUNET_GE_ASSERT (NULL,
-                    ntohl (value->size) >= sizeof (GNUNET_DataContainer));
-  n =
-    sizeof (CS_dht_request_put_MESSAGE) + ntohl (value->size) -
-    sizeof (GNUNET_DataContainer);
+  n = sizeof (CS_dht_request_put_MESSAGE) + size;
   if (n > GNUNET_MAX_BUFFER_SIZE)
     {
       GNUNET_GE_BREAK (NULL, 0);
@@ -121,8 +119,7 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
   msg->header.size = htons (n);
   msg->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   msg->key = *key;
-  memcpy (&msg[1], &value[1],
-          ntohl (value->size) - sizeof (GNUNET_DataContainer));
+  memcpy (&msg[1], value, size);
 #if DEBUG_CS
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -130,8 +127,8 @@ get_result (const GNUNET_HashCode * key, const GNUNET_DataContainer * value,
                  __FUNCTION__,
                  __FILE__,
                  __LINE__,
-                 ntohl (value->size) - sizeof (GNUNET_DataContainer),
-                 &value[1]);
+                 size,
+                 value);
 #endif
   if (GNUNET_OK !=
       coreAPI->cs_send_to_client (record->client, &msg->header, GNUNET_YES))

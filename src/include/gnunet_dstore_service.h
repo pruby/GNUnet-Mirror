@@ -42,10 +42,10 @@ extern "C"
 #endif
 #endif
 
-typedef void (*GNUNET_ResultProcessor) (const GNUNET_HashCode * key,
-                                        unsigned int type,
-                                        unsigned int size,
-                                        const char *data, void *cls);
+typedef int (*GNUNET_ResultProcessor) (const GNUNET_HashCode * key,
+				       unsigned int type,
+				       unsigned int size,
+				       const char *data, void *cls);
 
 /**
  * @brief Definition of the SQ-Store API.

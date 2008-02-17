@@ -174,13 +174,14 @@ static void
 writeCollection (int fd, struct GNUNET_FSUI_Context *ctx)
 {
   if ((ctx->collectionData == NULL) ||
-      (ctx->collectionData->size > 16 * 1024 * 1024))
+      (ctx->collectionDataSize > 16 * 1024 * 1024))
     {
       WRITEINT (fd, 0);
       return;
     }
   /* serialize collection data */
-  WRITE (fd, ctx->collectionData, ntohl (ctx->collectionData->size));
+  WRITEINT(fd, ctx->collectionDataSize);
+  WRITE (fd, ctx->collectionData, ctx->collectionDataSize);
 }
 
 static void

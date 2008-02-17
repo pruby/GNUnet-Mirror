@@ -13,7 +13,6 @@ EXTRA_DIST = \
 gnunetincludedir = $(includedir)/GNUnet
 
 gnunetinclude_HEADERS = \
-  gnunet_blockstore.h \
   gnunet_bootstrap_service.h \
   gnunet_collection_lib.h \
   gnunet_core.h \

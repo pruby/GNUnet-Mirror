@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -32,7 +32,7 @@
 #define GNUNET_DHT_SERVICE_H
 
 #include "gnunet_core.h"
-#include "gnunet_blockstore.h"
+#include "gnunet_dstore_service.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -61,7 +61,7 @@ typedef struct
    */
   struct GNUNET_DHT_GetHandle *(*get_start) (unsigned int type,
                                              const GNUNET_HashCode * key,
-                                             GNUNET_DataProcessor callback,
+                                             GNUNET_ResultProcessor callback,
                                              void *cls);
 
   /**

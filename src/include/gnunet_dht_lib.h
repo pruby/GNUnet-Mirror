@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -27,7 +27,6 @@
 #ifndef GNUNET_DHT_LIB_H
 #define GNUNET_DHT_LIB_H
 
-#include "gnunet_blockstore.h"
 #include "gnunet_dht_service.h"
 
 #ifdef __cplusplus
@@ -55,7 +54,7 @@ int GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
                     unsigned int type,
                     const GNUNET_HashCode * key,
                     GNUNET_CronTime timeout,
-                    GNUNET_DataProcessor resultCallback,
+                    GNUNET_ResultProcessor resultCallback,
                     void *resCallbackClosure);
 
 /**
@@ -68,7 +67,9 @@ int GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
 int GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                     struct GNUNET_GE_Context *ectx,
                     const GNUNET_HashCode * key,
-                    unsigned int type, const GNUNET_DataContainer * value);
+                    unsigned int type, 
+		    unsigned int size,
+		    const char * value);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

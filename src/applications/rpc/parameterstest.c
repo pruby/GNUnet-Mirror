@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -29,8 +29,9 @@
 int
 main (int argc, char *argv[])
 {
-  GNUNET_RPC_CallParameters *p;
-  void *buf;
+  struct GNUNET_RPC_CallParameters *p;
+  const void *buf;
+  void *wbuf;
   size_t size;
   unsigned int len;
 
@@ -50,17 +51,12 @@ main (int argc, char *argv[])
   GNUNET_RPC_parameters_add (p, "bar", 4, "foo");
   if (GNUNET_RPC_parameters_count (p) != 2)
     return 1;
-  if (0 != strcmp (GNUNET_RPC_parameters_get_name (p, 0), "foo"))
-    return 1;
-  if (0 != strcmp (GNUNET_RPC_parameters_get_name (p, 1), "bar"))
-    return 1;
-
   size = GNUNET_RPC_parameters_get_serialized_size (p);
-  buf = GNUNET_malloc (size);
-  GNUNET_RPC_parameters_serialize (p, buf);
+  wbuf = GNUNET_malloc (size);
+  GNUNET_RPC_parameters_serialize (p, wbuf);
   GNUNET_RPC_parameters_destroy (p);
-  p = GNUNET_RPC_parameters_deserialize (buf, size);
-  GNUNET_free (buf);
+  p = GNUNET_RPC_parameters_deserialize (wbuf, size);
+  GNUNET_free (wbuf);
   if (p == NULL)
     return 1;
   buf = NULL;

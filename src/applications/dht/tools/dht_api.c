@@ -46,7 +46,7 @@ typedef struct
   /**
    * Callback to call for each result.
    */
-  GNUNET_DataProcessor processor;
+  GNUNET_ResultProcessor processor;
 
   /**
    * Extra argument for processor.
@@ -81,7 +81,6 @@ poll_thread (void *cls)
   GetInfo *info = cls;
   GNUNET_MessageHeader *reply;
   CS_dht_request_put_MESSAGE *put;
-  GNUNET_DataContainer *cont;
   unsigned int size;
 
   while (info->aborted == GNUNET_NO)
@@ -100,15 +99,13 @@ poll_thread (void *cls)
         }
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
       put = (CS_dht_request_put_MESSAGE *) reply;
-      if (info->processor != NULL)
-        {
-          cont = GNUNET_malloc (sizeof (GNUNET_DataContainer) + size);
-          cont->size = htonl (sizeof (GNUNET_DataContainer) + size);
-          memcpy (&cont[1], &put[1], size);
-          if (GNUNET_OK != info->processor (&put->key, cont, info->closure))
-            info->aborted = GNUNET_YES;
-          GNUNET_free (cont);
-        }
+      if ( (info->processor != NULL) &&
+	   (GNUNET_OK != info->processor (&put->key, 
+					  0 /* unknown! */, 
+					  size,
+					  (const char*) &put[1],
+					  info->closure)) )
+	info->aborted = GNUNET_YES;        
       info->total++;
       GNUNET_free (reply);
     }
@@ -142,7 +139,7 @@ GNUNET_DHT_get (struct GNUNET_GC_Configuration *cfg,
                 struct GNUNET_GE_Context *ectx,
                 unsigned int type,
                 const GNUNET_HashCode * key,
-                GNUNET_CronTime timeout, GNUNET_DataProcessor processor,
+                GNUNET_CronTime timeout, GNUNET_ResultProcessor processor,
                 void *closure)
 {
   struct GNUNET_ClientServerConnection *sock;
@@ -206,7 +203,9 @@ int
 GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                 struct GNUNET_GE_Context *ectx,
                 const GNUNET_HashCode * key,
-                unsigned int type, const GNUNET_DataContainer * value)
+                unsigned int type, 
+		unsigned int size,
+		const char * value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
@@ -216,24 +215,19 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "DHT_LIB_put called with value '%.*s'\n",
-                 ntohl (value->size), &value[1]);
+                 size, value);
 #endif
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return GNUNET_SYSERR;
-  GNUNET_GE_ASSERT (NULL,
-                    ntohl (value->size) >= sizeof (GNUNET_DataContainer));
   req =
-    GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) + ntohl (value->size) -
-                   sizeof (GNUNET_DataContainer));
+    GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) + size);
   req->header.size =
-    htons (sizeof (CS_dht_request_put_MESSAGE) + ntohl (value->size) -
-           sizeof (GNUNET_DataContainer));
+    htons (sizeof (CS_dht_request_put_MESSAGE) + size);
   req->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   req->key = *key;
   req->type = htonl (type);
-  memcpy (&req[1], &value[1],
-          ntohl (value->size) - sizeof (GNUNET_DataContainer));
+  memcpy (&req[1], value, size);
   ret = GNUNET_client_connection_write (sock, &req->header);
   GNUNET_client_connection_destroy (sock);
   GNUNET_free (req);

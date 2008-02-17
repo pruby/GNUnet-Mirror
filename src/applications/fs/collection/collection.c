@@ -36,7 +36,6 @@
  */
 
 #include "platform.h"
-#include "gnunet_blockstore.h"
 #include "gnunet_directories.h"
 #include "gnunet_collection_lib.h"
 #include "gnunet_util.h"

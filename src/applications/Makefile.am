@@ -18,7 +18,6 @@ SUBDIRS	= \
  identity \
  bootstrap_http \
  datastore \
- rpc \
  fragmentation \
  getoption \
  $(HOSTLIST_DIR) \

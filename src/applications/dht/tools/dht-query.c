@@ -62,14 +62,16 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
 
 static int
 printCallback (const GNUNET_HashCode * hash,
-               const GNUNET_DataContainer * data, void *cls)
+	       unsigned int type,
+	       unsigned int size,
+               const char * data, void *cls)
 {
   char *key = cls;
   printf ("%s(%s): '%.*s'\n",
           "get",
           key,
-          (int) (ntohl (data->size) - sizeof (GNUNET_DataContainer)),
-          (char *) &data[1]);
+          size,
+          data);
   return GNUNET_OK;
 }
 
@@ -99,13 +101,9 @@ static void
 do_put (struct GNUNET_ClientServerConnection *sock,
         const char *key, const char *value)
 {
-  GNUNET_DataContainer *dc;
   GNUNET_HashCode hc;
 
   GNUNET_hash (key, strlen (key), &hc);
-  dc = GNUNET_malloc (sizeof (GNUNET_DataContainer) + strlen (value));
-  dc->size = htonl (strlen (value) + sizeof (GNUNET_DataContainer));
-  memcpy (&dc[1], value, strlen (value));
 #if DEBUG_DHT_QUERY
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -115,7 +113,8 @@ do_put (struct GNUNET_ClientServerConnection *sock,
     timeout = 30 * GNUNET_CRON_MINUTES;
   if (GNUNET_OK ==
       GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                      dc))
+                      strlen(value),
+		      value))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
     }
@@ -123,7 +122,6 @@ do_put (struct GNUNET_ClientServerConnection *sock,
     {
       printf (_("'%s(%s,%s)' failed.\n"), "put", key, value);
     }
-  GNUNET_free (dc);
 }
 
 int

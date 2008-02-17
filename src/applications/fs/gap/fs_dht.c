@@ -130,20 +130,15 @@ purge_old_records (GNUNET_CronTime limit)
  */
 static int
 response_callback (const GNUNET_HashCode * key,
-                   const GNUNET_DataContainer * value, void *cls)
+		   unsigned int type,
+		   unsigned int size,		   
+                   const char * value, void *cls)
 {
   struct ActiveRequestRecords *record = cls;
-  unsigned int size;
   const DBlock *dblock;
   GNUNET_HashCode hc;
 
-  size = ntohl (value->size);
-  if (size < 4)
-    {
-      GNUNET_GE_BREAK_OP (NULL, 0);
-      return GNUNET_OK;
-    }
-  dblock = (const DBlock *) &value[1];
+  dblock = (const DBlock *) value;
   if ((GNUNET_SYSERR ==
        GNUNET_EC_file_block_check_and_get_query (size,
                                                  dblock,

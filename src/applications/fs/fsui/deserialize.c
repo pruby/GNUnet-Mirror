@@ -362,12 +362,13 @@ readCollection (int fd, struct GNUNET_FSUI_Context *ctx)
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }
+  ctx->collectionDataSize = big;
   ctx->collectionData = GNUNET_malloc (big);
-  if (big - sizeof (unsigned int) !=
-      READ (fd, &ctx->collectionData[1], big - sizeof (unsigned int)))
+  if (big != READ (fd, ctx->collectionData, big))
     {
       GNUNET_free (ctx->collectionData);
       ctx->collectionData = NULL;
+      ctx->collectionDataSize = 0;
       GNUNET_GE_BREAK (NULL, 0);
       return GNUNET_SYSERR;
     }

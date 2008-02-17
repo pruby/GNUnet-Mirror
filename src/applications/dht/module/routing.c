@@ -247,7 +247,7 @@ get_forward_count (unsigned int hop_count, double target_replication)
  * Given a result, lookup in the routing table
  * where to send it next.
  */
-static void
+static int
 routeResult (const GNUNET_HashCode * key,
              unsigned int type,
              unsigned int size, const char *data, void *cls)
@@ -387,6 +387,7 @@ routeResult (const GNUNET_HashCode * key,
 #endif
   if (cls == NULL)
     GNUNET_free (result);
+  return GNUNET_OK;
 }
 
 /**
