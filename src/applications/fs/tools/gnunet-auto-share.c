@@ -70,7 +70,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
         {
           fstring =
             GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
-          printf (_("Upload of `%s' complete, URI is `%s'."),
+          printf (_("Upload of `%s' complete, URI is `%s'.\n"),
                   event->data.UploadCompleted.filename, fstring);
           GNUNET_free (fstring);
         }
