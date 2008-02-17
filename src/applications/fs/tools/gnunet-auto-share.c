@@ -52,6 +52,12 @@ static unsigned int priority = 365;
 
 static int do_no_direct_references;
 
+static time_t start;
+
+static unsigned int done_pos;
+
+static unsigned int current_pos;
+
 /**
  * Print progess message.
  */
@@ -135,9 +141,8 @@ find_latest (const char *filename, const char *dirName, void *cls)
     return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 1);
   strcpy (fn, dirName);
-  strcat (fn, DIR_SEPARATOR_STR);
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
@@ -172,7 +177,7 @@ add_meta_data (void *cls,
   char *value;
 
   if (0 != strcmp (amc->filename, section))
-    return GNUNET_OK;
+    return 0;
   max = EXTRACTOR_getHighestKeywordTypeNumber ();
   for (type = 0; type < max; type++)
     {
@@ -186,7 +191,7 @@ add_meta_data (void *cls,
                      _
                      ("Unknown keyword type `%s' in metadata configuration\n"),
                      option);
-      return GNUNET_OK;
+      return 0;
     }
   value = NULL;
   GNUNET_GC_get_configuration_value_string (cfg,
@@ -196,7 +201,7 @@ add_meta_data (void *cls,
       GNUNET_ECRS_meta_data_insert (amc->meta, type, value);
       GNUNET_free (value);
     }
-  return GNUNET_OK;
+  return 0;
 }
 
 
@@ -207,15 +212,16 @@ probe_directory (const char *filename, const char *dirName, void *cls)
   time_t latest;
   struct stat buf;
   struct AddMetadataClosure amc;
+  struct GNUNET_ECRS_URI * kuri;
   char *fn;
+  char * keys;
 
   if (filename[0] == '.')
     return GNUNET_OK;
   if (ul != NULL)
     return GNUNET_SYSERR;
-  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 2);
+  fn = GNUNET_malloc (strlen (filename) + strlen (dirName) + 1);
   strcpy (fn, dirName);
-  strcat (fn, DIR_SEPARATOR_STR);
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
@@ -236,12 +242,30 @@ probe_directory (const char *filename, const char *dirName, void *cls)
       GNUNET_free (fn);
       return GNUNET_OK;
     }
+  if ( (start > latest) &&
+       (current_pos < done_pos) )
+    {
+      GNUNET_free (fn);
+      current_pos++;
+      return GNUNET_OK;
+    }
+  done_pos = ++current_pos;
   amc.meta = GNUNET_ECRS_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
      over all config values! */
   GNUNET_GC_attach_change_listener (meta_cfg, &add_meta_data, &amc);
   GNUNET_GC_detach_change_listener (meta_cfg, &add_meta_data, &amc);
+  keys = GNUNET_ECRS_meta_data_get_by_type(amc.meta,
+					   EXTRACTOR_KEYWORDS);
+  if (keys != NULL)
+    kuri = GNUNET_ECRS_keyword_string_to_uri(NULL, keys);
+  else
+    kuri = NULL;
+  GNUNET_ECRS_meta_data_delete(amc.meta,
+			       EXTRACTOR_KEYWORDS,
+			       keys);
+  GNUNET_free_non_null(keys);
   ul = GNUNET_FSUI_upload_start (ctx,
                                  fn,
                                  (GNUNET_FSUI_DirectoryScanCallback) &
@@ -249,7 +273,9 @@ probe_directory (const char *filename, const char *dirName, void *cls)
                                  priority, GNUNET_YES, GNUNET_YES,
                                  !do_no_direct_references,
                                  GNUNET_get_time () + 2 * GNUNET_CRON_YEARS,
-                                 amc.meta, gloKeywords, NULL);
+                                 amc.meta, gloKeywords, kuri);
+  if (kuri != NULL)
+    GNUNET_ECRS_uri_destroy(kuri);
   GNUNET_ECRS_meta_data_destroy (amc.meta);
   GNUNET_free (fn);
   return GNUNET_SYSERR;
@@ -269,8 +295,8 @@ main (int argc, char *const *argv)
   int i;
   int errorCode;
   unsigned long long verbose;
+  unsigned long long cfg_start;
   time_t last;
-  time_t start;
   GNUNET_CronTime delay;
   char *metafn;
 
@@ -295,6 +321,14 @@ main (int argc, char *const *argv)
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
+  if (0 == GNUNET_GC_get_configuration_value_number (cfg,
+						     "GNUNET-AUTO-SHARE",
+						     "TIMESTAMP-LAST-RUN", 0, -1, 0, &cfg_start))
+    {
+      last = (time_t) cfg_start;
+    }
+  else
+    last = 0;  
   metafn = NULL;
   GNUNET_GC_get_configuration_value_filename (cfg,
                                               "FS",
@@ -309,13 +343,25 @@ main (int argc, char *const *argv)
                            &printstatus, &verbose);
   /* first insert all of the top-level files or directories */
 
-  last = 0;
+  delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
     {
+      GNUNET_thread_sleep (250 * GNUNET_CRON_MILLISECONDS);
       start = time (NULL);
+      current_pos = 0;
       GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, &last);
       if (ul == NULL)
-        last = start;
+	{
+	  last = start;
+	  done_pos = 0;
+	  GNUNET_GC_set_configuration_value_number (cfg,
+						    ectx,
+						    "GNUNET-AUTO-SHARE",
+						    "TIMESTAMP-LAST-RUN", 
+						    last);	  
+	  GNUNET_GC_write_configuration(cfg,
+					cfgFilename);
+	}
       if (GNUNET_YES == upload_done)
         {
           GNUNET_FSUI_upload_abort (ctx, ul);
@@ -331,7 +377,9 @@ main (int argc, char *const *argv)
             delay = GNUNET_CRON_HOURS;
         }
       else
-        delay = 5 * GNUNET_CRON_SECONDS;
+	{	  
+	  delay = 5 * GNUNET_CRON_SECONDS;
+	}
     }
   GNUNET_FSUI_stop (ctx);
   if (gloKeywords != NULL)
