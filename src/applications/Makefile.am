@@ -24,6 +24,7 @@ SUBDIRS	= \
  state \
  stats \
  pingpong \
+ rpc \
  session \
  $(MYSQL_DIR) \
  $(SQLITE_DIR) \
