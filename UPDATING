@@ -8,6 +8,15 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.3 to HEAD
+=============
+
+Run gnunet-update.  Read up on gnunet-auto-share.  Note that
+due to the break in backwards-compatibility, peers running
+the new version will not connect to peers running 0.7.3 and
+older.  Check that the hostlists that you are using in your
+configuration file are for peers running HEAD.
+
 0.7.2c to 0.7.3
 ===============
 
