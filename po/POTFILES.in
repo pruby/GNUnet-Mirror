@@ -165,7 +165,6 @@ src/util/getopt/setoption.c
 src/util/getopt/printhelp.c
 src/util/boot/startup.c
 src/util/containers/bloomfilter.c
-src/util/containers/vector.c
 src/util/config/config.c
 src/util/string/xmalloc.c
 src/util/string/string.c
@@ -245,7 +244,6 @@ src/include/gnunet_fs_lib.h
 src/include/gnunet_util_boot.h
 src/include/gnunet_rpc_service.h
 src/include/gnunet_datastore_service.h
-src/include/gnunet_blockstore.h
 src/include/gnunet_chat_lib.h
 src/include/gnunet_rpc_lib.h
 src/applications/dht/module/routing.h
