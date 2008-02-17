@@ -31,6 +31,41 @@ default choice.  However, indexing only works if the indexed file can
 be read (using the same absolute path) by gnunetd, so you should
 run gnunet\-auto\-share on the same machine that uses gnunetd.
 .PP
+You can add metadata for the shared files by specifying metadata in
+a metadata configuration file (by default located in 
+~/.gnunet/metadata.conf).  The format of this file is just like
+the normal GNUnet configuration files.  Each section name should
+correspond to a filename in the directory.  The keys are the 
+various metadata types and the entries correspond to the metadata
+values.  The special type "keyword" can be used to specify a list
+of keywords that should be used for the respective file.  Multiple
+keywords should be separated by "AND".  Example:
+
+ [COPYING]
+ title = "The GNU Public License"
+ copyright = "1989, 1991 Free Software Foundation, Inc."
+ version = "2"
+ date = "June 1991"
+ mimetype = "text/plain"
+ description = "The most frequently used free software license"
+ language = "English"
+ organization = "Free Software Foundation"
+ keywords = "GPL AND GNU AND free AND license AND public AND FSF AND test"
+ 
+ [gnunet-logo.svg]
+ title = "Official logo of teh GNUnet project"
+ description = "Combines the GNU logo with a spider-net"
+ mimetype = "image/svg+xml"
+ artist = "Nicklas Larsson"
+ date = "14.7.2005"
+ organization = "The GNU Project"
+ keywords = "GNUnet AND logo"
+ contributor = "Christian Muellner"
+
+Metadata specification only works for files in the top-level
+directory, all other files will only be listed as part of the
+top-level directories and be given metadata using libextractor.
+.PP
 
 \fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
 Use alternate config file (if this option is not specified, the

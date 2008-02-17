@@ -265,19 +265,19 @@ download the file from GNUnet.
 
 Index a file COPYING:
 
-# gnunet\-insert COPYING
+ # gnunet\-insert COPYING
 
 Insert a file COPYING:
 
-# gnunet\-insert \-n COPYING
+ # gnunet\-insert \-n COPYING
 
 Index a file COPYING with the keywords \fBgpl\fR and \fBtest\fR:
 
-# gnunet\-insert \-k gpl \-k test COPYING
+ # gnunet\-insert \-k gpl \-k test COPYING
 
 Index a file COPYING with description "GNU License", mime-type "text/plain" and keywords \fBgpl\fR and \fBtest\fR:
 
-# gnunet\-insert \-m "description:GNU License" \-k gpl \-k test -m "mimetype:text/plain" COPYING
+ # gnunet\-insert \-m "description:GNU License" \-k gpl \-k test -m "mimetype:text/plain" COPYING
 
 \fBUsing directories\fR
 
@@ -286,21 +286,21 @@ a directory containing the two files.  Make the directory itself
 available under keyword \fBgnu\fR and disable keyword extraction using
 libextractor:
 
-# mkdir gnu
-# mv COPYING AUTHORS gnu/
-# gnunet\-insert \-K test \-k gnu \-D gnu/
+ # mkdir gnu
+ # mv COPYING AUTHORS gnu/
+ # gnunet\-insert \-K test \-k gnu \-D gnu/
 
 Neatly publish an image gallery in \fBkittendir/\fR and its subdirs
 with keyword \fBkittens\fR for the directory but no keywords for the
 individual files or subdirs (\-n).  Force description for all files:
 
-# gnunet\-insert \-n \-m "description:Kitten collection" \-k kittens kittendir/
+ # gnunet\-insert \-n \-m "description:Kitten collection" \-k kittens kittendir/
 
 \fBSecure publishing with namespaces\fR
 
 Insert file COPYING with pseudonym RIAA (\-P) and with identifier \fBgpl\fR (\-t) and no updates:
 
-# gnunet\-insert \-P RIAA \-t gpl COPYING
+ # gnunet\-insert \-P RIAA \-t gpl COPYING
 
 Recursively index /home/ogg and build a matching directory
 structure.  Insert the top\-level directory into the namespace under
@@ -308,7 +308,7 @@ the pseudonym RIAA (\-P) under identifier MUSIC (\-t) and promise to
 provide an update with identifier VIDEOS (\-N) at an arbitrary point
 in the future (\-S is implied by lack of \-i and presence of \-N):
 
-# gnunet\-insert \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
+ # gnunet\-insert \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
 
 Recursively insert (\-n) /var/lib/mysql and build a matching
 directory structure, but disable the use of libextractor to extract
@@ -318,16 +318,16 @@ GNUnet but without adding any keywords to search for it.  Thus only
 people that have been told the secret file identifiers printed with
 the \-V option can retrieve the (secret?) files:
 
-# gnunet\-insert \-nV /var/lib/mysql
+ # gnunet\-insert \-nV /var/lib/mysql
 
 Create a periodical SBlock with a sporadic update interval and announce
 that the next update will be called 'next':
 
-# gnunet\-insert \-P MPAA \-N next \-S noise.mp3
+ # gnunet\-insert \-P MPAA \-N next \-S noise.mp3
 
 Update the periodical SBlock using settings from a previous time:
 
-# gnunet\-insert \-P MPAA \-t next -N nextnext noise_updated.mp3
+ # gnunet\-insert \-P MPAA \-t next -N nextnext noise_updated.mp3
 
 
 .SH FILES
