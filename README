@@ -26,15 +26,15 @@ Dependencies:
 For the impatient, here is the list of immediate dependencies for
 running GNUnet:
 
-- libextractor >= 0.5.18
-- libgcrypt    >= 1.2
-- libgmp       >= 4.0
-- libcurl      >= 7.15.4
-- libltdl      >= 1.5 (part of GNU libtool)
-- libguile     >= 1.8 (required for gnunet-setup)
-- GNU adns     >= 1.0 (strongly recommended)
-- mysql        >= 5.0 (strongly recommended)
-- sqlite       >= 3.0 (alternative to MySQL)
+- libextractor  >= 0.5.18
+- libgcrypt     >= 1.2
+- libgmp        >= 4.0
+- libcurl       >= 7.15.4
+- libltdl       >= 1.5 (part of GNU libtool)
+- libguile      >= 1.8 (required for gnunet-setup)
+- GNU adns      >= 1.0 (strongly recommended)
+- mysql         >= 5.0 (strongly recommended)
+- sqlite        >= 3.0 (alternative to MySQL)
 
 Certain gnunet-setup plugins would also like to have:
 - GTK          >= 2.6.0
@@ -43,7 +43,7 @@ Certain gnunet-setup plugins would also like to have:
 - ncurses
 
 Certain transports would also like to have:
-- libmicrohttpd >= 0.1.2  (available from http://gnunet.org/libmicrohttpd/)
+- libmicrohttpd >= 0.2.1  (available from http://gnunet.org/libmicrohttpd/)
 - libcurl       >= 7.15.4
 - libesmtp      >= 1.0.4
 
@@ -180,6 +180,11 @@ $ gnunet-download -o FILENAME GNUNET_URI
 to retrieve a file.  The GNUNET_URI is printed by gnunet-search
 together with a description.
 
+In order to share files, the easiest way is to create a directory
+with the files (and directories) that you want to share and run
+
+$ nohup gnunet-auto-share NAME-OF-THE-DIRECTORY &
+
 For further documentation, see our webpage.
 
 
@@ -223,14 +228,18 @@ command (as root, in your startup scripts):
 # iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
 
 Then set in the HTTP section of gnunetd.conf the "ADVERTISED-PORT"
-to "80" and "PORT" to 8080. 
+to "80" and "PORT" to 8080.   You can do the same trick for the
+TCP and UDP transports if you want to map them to a priviledged
+port (from the point of view of the network).
 
 
 Running the SMTP transport
 ==========================
 
-Running GNUnet over SMTP (e-mail) is a bit more involved.  Read the
-instructions at http://gnunet.org/smtp.php3
+Running GNUnet over SMTP (e-mail) is a bit more involved.  Note that
+you do not need to run all transports (only running the NAT transport
+is the only thing that will not work).  If you really want to do
+P2P over SMTP, read the instructions at http://gnunet.org/smtp.php3
 
 
 Stay tuned
@@ -243,4 +252,5 @@ Stay tuned
 * http://mail.gnu.org/mailman/listinfo/gnunet-developers
 * http://mail.gnu.org/mailman/listinfo/help-gnunet
 * http://mail.gnu.org/mailman/listinfo/info-gnunet
+* http://mail.gnu.org/mailman/listinfo/gnunet-svn
 
