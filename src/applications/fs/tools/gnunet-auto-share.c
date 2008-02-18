@@ -109,7 +109,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_upload_started:
     case GNUNET_FSUI_upload_stopped:
-    case GNUNET_FSUI_upload_suspended:
+    case GNUNET_FSUI_upload_suspended:      
     case GNUNET_FSUI_upload_resumed:
       break;
     default:
@@ -476,6 +476,16 @@ main (int argc, char *const *argv)
                                                   "/gnunet-auto-share.log",
                                                   &log_file_name);
       myout = fopen (log_file_name, "a");
+      if (myout == NULL)
+	{
+	  fprintf(stderr,
+		  "Could not open logfile `%s': %s\n",
+		  log_file_name,
+		  strerror(errno));
+	  GNUNET_free (log_file_name);
+	  errorCode = -1;
+	  goto end;
+	}
       GNUNET_free (log_file_name);
 
       GNUNET_GC_get_configuration_value_filename (cfg,
