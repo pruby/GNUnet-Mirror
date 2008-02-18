@@ -2940,7 +2940,7 @@ cronDecreaseLiveness (void *unused)
               if ((root->available_send_window > 35 * 1024) &&
                   (root->sendBufferSize < 4) &&
                   (scl_head != NULL) &&
-		  (root->stats == STAT_UP) &&
+		  (root->status == STAT_UP) &&
                   (load_nup < GNUNET_IDLE_LOAD_THRESHOLD) &&
                   (load_cpu < GNUNET_IDLE_LOAD_THRESHOLD))
                 {
