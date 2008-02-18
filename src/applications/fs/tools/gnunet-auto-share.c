@@ -109,6 +109,8 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_upload_started:
     case GNUNET_FSUI_upload_stopped:
+    case GNUNET_FSUI_upload_suspended:
+    case GNUNET_FSUI_upload_resumed:
       break;
     default:
       fprintf (myout, _("\nUnexpected event: %d\n"), event->type);
