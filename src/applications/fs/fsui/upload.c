@@ -439,6 +439,8 @@ GNUNET_FSUI_uploadThread (void *cls)
     }
   while (GNUNET_OK ==
          GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_SPLIT, NULL));
+  while (GNUNET_OK ==
+         GNUNET_ECRS_meta_data_delete (utc->meta, EXTRACTOR_LOWERCASE, NULL));
   if (utc->shared->global_keywords != NULL)
     GNUNET_ECRS_publish_under_keyword (ectx,
                                        utc->shared->ctx->cfg,
