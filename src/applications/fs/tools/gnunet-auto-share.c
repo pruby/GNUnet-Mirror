@@ -92,6 +92,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
           fprintf (myout,
                    _("Upload of `%s' complete, URI is `%s'.\n"),
                    event->data.UploadCompleted.filename, fstring);
+	  fflush(myout);
           GNUNET_free (fstring);
         }
       if (ul == event->data.UploadCompleted.uc.pos)
@@ -99,12 +100,14 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_upload_aborted:
       fprintf (myout, _("\nUpload aborted.\n"));
+      fflush(myout);
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_error:
       fprintf (myout,
                _("\nError uploading file: %s"),
                event->data.UploadError.message);
+      fflush(myout);	  
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_started:
@@ -114,6 +117,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     default:
       fprintf (myout, _("\nUnexpected event: %d\n"), event->type);
+      fflush(myout);	  
       GNUNET_GE_BREAK (ectx, 0);
       break;
     }
@@ -180,6 +184,7 @@ test_run (const char *filename, const char *dirName, void *cls)
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
+      fflush(myout);
       GNUNET_free (fn);
       return GNUNET_OK;
     }
@@ -283,6 +288,7 @@ probe_directory (const char *filename, const char *dirName, void *unused)
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
+      fflush(myout);
       GNUNET_free (fn);
       return GNUNET_OK;
     }
@@ -350,6 +356,7 @@ auto_share_main (const char *dirname)
   if (sock == NULL)
     {
       fprintf (myout, _("Failed to connect to gnunetd.\n"));
+      fflush(myout);
       errorCode = -1;
       if (GNUNET_NO == debug_flag)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
@@ -520,6 +527,8 @@ main (int argc, char *const *argv)
     }
 end:
   GNUNET_fini (ectx, cfg);
+  if (myout != stdout)
+    fclose(myout);
   return errorCode;
 }
 
