@@ -468,15 +468,16 @@ int
 GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
                                       const GNUNET_HashCode * fileId)
 {
+  struct stat filestat;
   char *fn;
-  int fd;
 
   fn = get_indexed_filename (fileId);
-  fd = GNUNET_disk_file_open (coreAPI->ectx, fn, O_RDONLY);
+  if (0 != STAT(fn, &filestat))
+    {
+      GNUNET_free (fn);
+      return GNUNET_NO;
+    }
   GNUNET_free (fn);
-  if (fd == -1)
-    return GNUNET_NO;
-  CLOSE (fd);
   return GNUNET_YES;
 }
 
