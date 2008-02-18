@@ -2,27 +2,38 @@ This is just the current plan, plans change.
 
 Annotations:
   RC == Release Critical
+  PRE == to be done before a pre-release
 
-0.7.4 [4'08] (aka "fix search"):
+0.8.0 [6'08] (aka "advanced features"):
 - tune GAP query planning code [RC]
+- gnunet-chat (CS-only)
+- power insert (#854)
+- clean up VPN code
+- full support for FSUI pause/resume of search
+- add keywords to known URI (#937)
+- just compute URI without actual insertion/indexing (#1308)
+- insert directory-name as metadata (#1240)
 
 TESTING:
-- test new hostlist application
-- test GAP migration code (seems to be using far too much CPU!)
+- test new hostlist application [PRE]
 - test GAP code in general (still have one unexplained crazy crash!)
+- test RPC code (write a small demo)
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074
 
 
-0.8.0 [6'08] (aka "advanced features"):
-- gnunet-chat [ RC ]
-- power insert [#854]
-- RPC client API and testcase
-- clean up VPN code
-
+0.8.x (aka "growth"):
+- OR service
+- direct WiFi transport
+- tune DHT
+- testbed using remote testing topology setup
+- HTTPS support (#1225)
+- clean up indexing with gnunet-insert (#1107)
 
 1.0.0 (aka "userfriendly"):
+
+
 
 Small extensions (that could be done any time):
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
