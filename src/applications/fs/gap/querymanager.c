@@ -472,8 +472,8 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap client requests tracked"));
       stat_gap_client_query_injected =
         stats->create (gettext_noop ("# gap client requests injected"));
-      stat_gap_client_bf_query_injected =
-        stats->create (gettext_noop ("# gap query bloomfilter updates"));
+      stat_gap_client_bf_updates =
+        stats->create (gettext_noop ("# gap query bloomfilter resizing updates"));
     }
   return 0;
 }
