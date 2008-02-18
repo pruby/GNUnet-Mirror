@@ -333,9 +333,8 @@ probe_directory (const char *filename, const char *dirName, void *unused)
  * @return return 0 for ok, -1 on error
  */
 int
-auto_share_main (const char *argvi)
+auto_share_main (const char *dirname)
 {
-  char *dirname;
   int errorCode;
   unsigned long long verbose;
   GNUNET_CronTime delay;
@@ -346,8 +345,7 @@ auto_share_main (const char *argvi)
   errorCode = 0;
   if ((GNUNET_NO == debug_flag)
       && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
-    return GNUNET_SYSERR;
-
+      return GNUNET_SYSERR;
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
@@ -357,7 +355,6 @@ auto_share_main (const char *argvi)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       goto quit;
     }
-  dirname = GNUNET_expand_file_name (ectx, argvi);
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
@@ -403,7 +400,6 @@ auto_share_main (const char *argvi)
   GNUNET_FSUI_stop (ctx);
   if (gloKeywords != NULL)
     GNUNET_ECRS_uri_destroy (gloKeywords);
-  GNUNET_free (dirname);
 quit:
   while (records != NULL)
     {
@@ -444,6 +440,7 @@ main (int argc, char *const *argv)
   int i;
   int errorCode;
   char *log_file_name;
+  char *dirname;
 
   errorCode = 0;
   i = GNUNET_init (argc,
@@ -516,7 +513,11 @@ main (int argc, char *const *argv)
     }
   else
 #endif
-    errorCode = auto_share_main (argv[i]);
+    {
+      dirname = GNUNET_expand_file_name (ectx, argv[i]);
+      errorCode = auto_share_main (dirname);
+      GNUNET_free(dirname);
+    }
 end:
   GNUNET_fini (ectx, cfg);
   return errorCode;
