@@ -83,6 +83,8 @@ static int stat_gap_client_query_tracked;
 
 static int stat_gap_client_query_injected;
 
+static int stat_gap_client_bf_updates;
+
 
 /**
  * A client is asking us to run a query.  The query should be issued
@@ -165,8 +167,10 @@ compute_bloomfilter_size (unsigned int entry_count)
 {
   unsigned short size;
   unsigned short max = 1 << 15;
-  unsigned int ideal = (entry_count * GAP_BLOOMFILTER_K) / 8;
+  unsigned int ideal = (entry_count * GAP_BLOOMFILTER_K) / 4;
 
+  if (entry_count > max)
+    return max;
   size = 8;
   while ((size < max) && (size < ideal))
     size *= 2;
@@ -270,6 +274,8 @@ handle_response (PID_INDEX sender,
                                                  NULL,
                                                  rl->bloomfilter_size,
                                                  GAP_BLOOMFILTER_K);
+      if (stats != NULL)
+	stats->change(stat_gap_client_bf_updates, 1);
     }
   else if (rl->bloomfilter_size != bf_size)
     {
@@ -280,6 +286,8 @@ handle_response (PID_INDEX sender,
       GNUNET_bloomfilter_resize (rl->bloomfilter,
                                  &response_bf_iterator,
                                  &ic, bf_size, GAP_BLOOMFILTER_K);
+      if (stats != NULL)
+	stats->change(stat_gap_client_bf_updates, 1);
     }
   GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
 
@@ -464,6 +472,8 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
         stats->create (gettext_noop ("# gap client requests tracked"));
       stat_gap_client_query_injected =
         stats->create (gettext_noop ("# gap client requests injected"));
+      stat_gap_client_bf_query_injected =
+        stats->create (gettext_noop ("# gap query bloomfilter updates"));
     }
   return 0;
 }

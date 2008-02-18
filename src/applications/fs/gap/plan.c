@@ -202,6 +202,8 @@ static int stat_gap_query_planned;
 
 static int stat_gap_query_success;
 
+static int stat_gap_bf_query_injected;
+
 /**
  * Find the entry in the client list corresponding
  * to the given client information.  If no such entry
