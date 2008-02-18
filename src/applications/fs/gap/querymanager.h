@@ -29,6 +29,7 @@
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "ecrs_core.h"
+#include "shared.h"
 
 int GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi);
 
@@ -48,7 +49,8 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     unsigned int anonymityLevel,
                                     unsigned int type,
                                     struct GNUNET_ClientHandle *client,
-                                    const GNUNET_PeerIdentity * target);
+                                    const GNUNET_PeerIdentity * target,
+				    const struct ResponseList * seen);
 
 /**
  * Handle the given response (by forwarding it to

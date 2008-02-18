@@ -519,8 +519,10 @@ rank_peers (const GNUNET_PeerIdentity * identity, void *data)
  * @param client maybe NULL, in which case peer is significant
  * @param peer sender of the request (if not a local client)
  * @param request to plan
+ * @return GNUNET_YES if the request is being planned, GNUNET_NO if not,
+ *         GNUNET_SYSERR on error
  */
-void
+int
 GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
                         PID_INDEX peer, struct RequestList *request)
 {
@@ -563,7 +565,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   if (total_score == 0)
     {
       GNUNET_mutex_unlock (GNUNET_FS_lock);
-      return;                   /* no peers available */
+      return GNUNET_NO;                   /* no peers available */
     }
 
   entropy = 0;
@@ -632,6 +634,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
       GNUNET_free (rank);
     }
   GNUNET_mutex_unlock (GNUNET_FS_lock);
+  return target_count > 0 ? GNUNET_YES : GNUNET_NO;
 }
 
 /**

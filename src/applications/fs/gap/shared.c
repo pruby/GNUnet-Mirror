@@ -130,13 +130,16 @@ GNUNET_FS_SHARED_test_valid_new_response (struct RequestList *rl,
  */
 void
 GNUNET_FS_SHARED_mark_response_seen (struct RequestList *rl,
-                                     GNUNET_HashCode * hc)
+                                     const GNUNET_HashCode * hc)
 {
   struct ResponseList *seen;
   GNUNET_HashCode m;
 
-  GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
-  GNUNET_bloomfilter_add (rl->bloomfilter, &m);
+  if (rl->bloomfilter != NULL)
+    {
+      GNUNET_FS_HELPER_mingle_hash (hc, rl->bloomfilter_mutator, &m);
+      GNUNET_bloomfilter_add (rl->bloomfilter, &m);
+    }
   /* update seen list */
   seen = GNUNET_malloc (sizeof (struct ResponseList));
   seen->hash = *hc;

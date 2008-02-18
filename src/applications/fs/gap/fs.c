@@ -388,6 +388,11 @@ handle_cs_test_indexed_request (struct GNUNET_ClientHandle *sock,
   return coreAPI->sendValueToClient (sock, ret);
 }
 
+struct FPPClosure {
+  struct GNUNET_ClientHandle *sock;
+  struct ResponseList * seen;
+};
+
 /**
  * Any response that we get should be passed
  * back to the client.  If the response is unique,
@@ -398,7 +403,9 @@ fast_path_processor (const GNUNET_HashCode * key,
                      const GNUNET_DatastoreValue *
                      value, void *closure, unsigned long long uid)
 {
-  struct GNUNET_ClientHandle *sock = closure;
+  struct FPPClosure * cls = closure;
+  struct GNUNET_ClientHandle *sock = cls->sock;
+  struct ResponseList * rl;
   const DBlock *dblock;
   CS_fs_reply_content_MESSAGE *msg;
   unsigned int size;
@@ -431,6 +438,12 @@ fast_path_processor (const GNUNET_HashCode * key,
   GNUNET_free (msg);
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     return GNUNET_SYSERR;       /* unique response */
+  rl = GNUNET_malloc(sizeof(struct ResponseList));
+  GNUNET_hash(dblock,
+	      size,
+	      &rl->hash);
+  rl->next = cls->seen;
+  cls->seen = rl;
   return GNUNET_OK;
 }
 
@@ -443,8 +456,10 @@ fast_path_processor (const GNUNET_HashCode * key,
 static int
 handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
                                const GNUNET_MessageHeader * req)
-{
+{  
   static GNUNET_PeerIdentity all_zeros;
+  struct FPPClosure fpp;
+  struct ResponseList * pos;
   const CS_fs_request_search_MESSAGE *rs;
   unsigned int keyCount;
   unsigned int type;
@@ -468,17 +483,19 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "FS received QUERY (query: `%s', type: %u)\n", &enc, type);
 #endif
+  fpp.sock = sock;
+  fpp.seen = NULL;
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
       if ((1 == datastore->get (&rs->query[0],
-                                type, &fast_path_processor, sock)) ||
+                                type, &fast_path_processor, &fpp)) ||
           (1 == datastore->get (&rs->query[0],
                                 GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                                &fast_path_processor, sock)))
-        return GNUNET_OK;
+                                &fast_path_processor, &fpp)))
+	goto CLEANUP;
     }
   else
-    datastore->get (&rs->query[0], type, &fast_path_processor, sock);
+    datastore->get (&rs->query[0], type, &fast_path_processor, &fpp);
   anonymityLevel = ntohl (rs->anonymityLevel);
   keyCount =
     1 + (ntohs (req->size) -
@@ -487,7 +504,15 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
     memcmp (&all_zeros, &rs->target, sizeof (GNUNET_PeerIdentity)) != 0;
   GNUNET_FS_QUERYMANAGER_start_query (&rs->query[0], keyCount, anonymityLevel,
                                       type, sock,
-                                      have_target ? &rs->target : NULL);
+                                      have_target ? &rs->target : NULL,
+				      fpp.seen);
+ CLEANUP:
+  while (fpp.seen != NULL)
+    {
+      pos = fpp.seen;
+      fpp.seen = pos->next;
+      GNUNET_free(pos);
+    }
   return GNUNET_OK;
 }
 

@@ -35,8 +35,9 @@
  * Plan the transmission of the given request.
  * Use the history of the request and the client
  * to schedule the request for transmission.
+ * @return GNUNET_YES if planning succeeded
  */
-void
+int
 GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
                         PID_INDEX peer, struct RequestList *request);
 
