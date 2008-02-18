@@ -256,9 +256,11 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
             {
               /* ignore */
               GNUNET_FS_PT_change_rc (peer, -1);
-              GNUNET_mutex_unlock (GNUNET_FS_lock);
               if (stats != NULL)
                 stats->change (stat_gap_query_dropped_redundant, 1);
+	      if (type != GNUNET_ECRS_BLOCKTYPE_DATA)
+		goto CHECK; /* we may have more local results! */
+              GNUNET_mutex_unlock (GNUNET_FS_lock);
               return;
             }
           if (stats != NULL)
@@ -277,6 +279,8 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
                                          bloomfilter_data, filter_size);
                 }
               GNUNET_FS_PT_change_rc (peer, -1);
+	      if (type != GNUNET_ECRS_BLOCKTYPE_DATA)
+		goto CHECK; /* we may have more local results! */
               GNUNET_mutex_unlock (GNUNET_FS_lock);
               return;
             }
@@ -293,6 +297,8 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
           else
             rl->bloomfilter = NULL;
           GNUNET_FS_PT_change_rc (peer, -1);
+	  if (type != GNUNET_ECRS_BLOCKTYPE_DATA)
+	    goto CHECK; /* we may have more local results! */
           GNUNET_mutex_unlock (GNUNET_FS_lock);
           return;
         }
@@ -352,7 +358,10 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
   rl->response_target = peer;
   rl->policy = policy;
   table[index] = rl;
+  if (stats != NULL)
+    stats->change (stat_gap_query_routed, 1);
   /* check local data store */
+ CHECK:
   cls.request = rl;
   cls.iteration_count = 0;
   cls.result_count = 0;
@@ -364,11 +373,10 @@ GNUNET_FS_GAP_execute_query (const GNUNET_PeerIdentity * respond_to,
 
   /* if not found or not unique, forward */
   if (((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
-      (0 != (policy & GNUNET_FS_RoutingPolicy_FORWARD)))
+      (0 != (policy & GNUNET_FS_RoutingPolicy_FORWARD)) &&
+      (rl->plan_entries == NULL) )
     GNUNET_FS_PLAN_request (NULL, peer, rl);
   GNUNET_mutex_unlock (GNUNET_FS_lock);
-  if (stats != NULL)
-    stats->change (stat_gap_query_routed, 1);
 }
 
 /**
