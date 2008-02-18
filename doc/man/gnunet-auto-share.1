@@ -1,4 +1,4 @@
-.TH GNUNET-AUTO-SHARE "1" "14 Feb 2008" "GNUnet"
+.TH GNUNET-AUTO-SHARE "1" "17 Feb 2008" "GNUnet"
 .SH NAME
 gnunet\-auto\-share \- process to share a directory
 .SH SYNOPSIS
@@ -72,6 +72,10 @@ Use alternate config file (if this option is not specified, the
 default is ~/.gnunet/gnunet.conf).
 
 .TP
+\fB\-d\fR, \fB\-\-debug\fR
+do not detach from the console (for debugging); log messages are written to stderr.
+
+.TP
 \fB\-D\fR, \fB\-\-disable\-direct\fR 
 Disable direct indexing information that would otherwise refer to
 files inside of directories directly.  Without \-D, contents can be
@@ -123,15 +127,16 @@ download the file from GNUnet.
 
 .SH EXAMPLES
 .PP
-Use the following command to share the "/home/share/" directory:
+Use the following command to have gnunet\-auto\-share run in the
+background and share the "/home/share/" directory:
 
- $ nohup gnunet\-auto\-share /home/share/ &
+ $ gnunet\-auto\-share /home/share/ 
 
 Use the following command to share the "/home/share/" directory
 and see the URIs of uploaded files.  You can abort the daemon 
 with CTRL-C:
 
- $ gnunet\-auto\-share -V /home/share/ 
+ $ gnunet\-auto\-share -d -V /home/share/ 
 
 
 .SH FILES

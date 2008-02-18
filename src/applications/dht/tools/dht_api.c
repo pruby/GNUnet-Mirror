@@ -99,13 +99,12 @@ poll_thread (void *cls)
         }
       size = ntohs (reply->size) - sizeof (CS_dht_request_put_MESSAGE);
       put = (CS_dht_request_put_MESSAGE *) reply;
-      if ( (info->processor != NULL) &&
-	   (GNUNET_OK != info->processor (&put->key, 
-					  0 /* unknown! */, 
-					  size,
-					  (const char*) &put[1],
-					  info->closure)) )
-	info->aborted = GNUNET_YES;        
+      if ((info->processor != NULL) &&
+          (GNUNET_OK != info->processor (&put->key, 0 /* unknown! */ ,
+                                         size,
+                                         (const char *) &put[1],
+                                         info->closure)))
+        info->aborted = GNUNET_YES;
       info->total++;
       GNUNET_free (reply);
     }
@@ -203,9 +202,7 @@ int
 GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
                 struct GNUNET_GE_Context *ectx,
                 const GNUNET_HashCode * key,
-                unsigned int type, 
-		unsigned int size,
-		const char * value)
+                unsigned int type, unsigned int size, const char *value)
 {
   struct GNUNET_ClientServerConnection *sock;
   CS_dht_request_put_MESSAGE *req;
@@ -214,16 +211,13 @@ GNUNET_DHT_put (struct GNUNET_GC_Configuration *cfg,
 #if DEBUG_DHT_API
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 "DHT_LIB_put called with value '%.*s'\n",
-                 size, value);
+                 "DHT_LIB_put called with value '%.*s'\n", size, value);
 #endif
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     return GNUNET_SYSERR;
-  req =
-    GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) + size);
-  req->header.size =
-    htons (sizeof (CS_dht_request_put_MESSAGE) + size);
+  req = GNUNET_malloc (sizeof (CS_dht_request_put_MESSAGE) + size);
+  req->header.size = htons (sizeof (CS_dht_request_put_MESSAGE) + size);
   req->header.type = htons (GNUNET_CS_PROTO_DHT_REQUEST_PUT);
   req->key = *key;
   req->type = htonl (type);

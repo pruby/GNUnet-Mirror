@@ -49,7 +49,7 @@ struct GNUNET_DHT_GetHandle
    * Function to call for each result.
    */
   GNUNET_ResultProcessor callback;
-  
+
   /**
    * Extra argument to callback.
    */
@@ -90,8 +90,7 @@ dht_get_async_start (unsigned int type,
   ret->callback = callback;
   ret->cls = cls;
   ret->type = type;
-  if (GNUNET_OK !=
-      GNUNET_DHT_get_start (key, type, callback, cls))
+  if (GNUNET_OK != GNUNET_DHT_get_start (key, type, callback, cls))
     {
       GNUNET_free (ret);
       return NULL;
@@ -105,7 +104,8 @@ dht_get_async_start (unsigned int type,
 static int
 dht_get_async_stop (struct GNUNET_DHT_GetHandle *record)
 {
-  GNUNET_DHT_get_stop (&record->key, record->type, record->callback, record->cls);
+  GNUNET_DHT_get_stop (&record->key, record->type, record->callback,
+                       record->cls);
   GNUNET_free (record);
   return GNUNET_OK;
 }

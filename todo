@@ -5,10 +5,6 @@ Annotations:
 
 0.7.4 [4'08] (aka "fix search"):
 - tune GAP query planning code [RC]
-- gnunet-auto-share check for timestamp works for
-  copying, but does not work for files MOVED to the
-  share directory (since the mtime will be in the past!);
-  should ALSO use test_indexed!
 
 TESTING:
 - test new hostlist application

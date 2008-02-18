@@ -62,16 +62,11 @@ static struct GNUNET_CommandLineOption gnunetqueryOptions[] = {
 
 static int
 printCallback (const GNUNET_HashCode * hash,
-	       unsigned int type,
-	       unsigned int size,
-               const char * data, void *cls)
+               unsigned int type,
+               unsigned int size, const char *data, void *cls)
 {
   char *key = cls;
-  printf ("%s(%s): '%.*s'\n",
-          "get",
-          key,
-          size,
-          data);
+  printf ("%s(%s): '%.*s'\n", "get", key, size, data);
   return GNUNET_OK;
 }
 
@@ -113,8 +108,7 @@ do_put (struct GNUNET_ClientServerConnection *sock,
     timeout = 30 * GNUNET_CRON_MINUTES;
   if (GNUNET_OK ==
       GNUNET_DHT_put (cfg, ectx, &hc, GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                      strlen(value),
-		      value))
+                      strlen (value), value))
     {
       printf (_("'%s(%s,%s)' succeeded\n"), "put", key, value);
     }

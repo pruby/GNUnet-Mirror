@@ -407,8 +407,8 @@ typedef struct GNUNET_FSUI_Context
   /**
    * Collection related data.
    */
-  char * collectionData;
-  
+  char *collectionData;
+
   unsigned int collectionDataSize;
 
   /**

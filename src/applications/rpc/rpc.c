@@ -72,12 +72,12 @@ typedef struct
    * Timestamp (of the sender of this message).
    */
   GNUNET_Int32Time timestamp;
-  
+
   /**
    * Sequence number (of the initiator).
    */
   unsigned int sequenceNumber;
-  
+
   /**
    * How important is this message?
    */
@@ -119,9 +119,9 @@ typedef struct
  */
 struct GNUNET_RPC_CallHandle
 {
-  struct GNUNET_RPC_CallHandle * next;
+  struct GNUNET_RPC_CallHandle *next;
 
-  struct GNUNET_RPC_CallHandle * prev;
+  struct GNUNET_RPC_CallHandle *prev;
 
   /**
    * The message we are transmitting.  NULL
@@ -134,8 +134,8 @@ struct GNUNET_RPC_CallHandle
   /**
    * Name of the local RPC function that we
    * have been calling.
-   */ 
-  char * function_name;
+   */
+  char *function_name;
 
   /**
    * For which peer is this response?
@@ -189,9 +189,9 @@ struct GNUNET_RPC_CallHandle
  */
 struct GNUNET_RPC_RequestHandle
 {
-  struct GNUNET_RPC_RequestHandle * next;
+  struct GNUNET_RPC_RequestHandle *next;
 
-  struct GNUNET_RPC_RequestHandle * prev;
+  struct GNUNET_RPC_RequestHandle *prev;
 
   /**
    * The message we are transmitting.
@@ -203,7 +203,7 @@ struct GNUNET_RPC_RequestHandle
    */
   GNUNET_RPC_AsynchronousCompletionCallback callback;
 
-  void * cls;
+  void *cls;
 
   /**
    * To which peer are we sending the request?
@@ -229,7 +229,7 @@ struct GNUNET_RPC_RequestHandle
    * Last time the message was sent.
    */
   GNUNET_CronTime lastAttempt;
-  
+
   /**
    * The sequence number of this RPC.
    */
@@ -256,7 +256,7 @@ struct GNUNET_RPC_RequestHandle
  */
 struct RegisteredRPC
 {
-  struct RegisteredRPC * next;
+  struct RegisteredRPC *next;
 
   /**
    * Name of the RPC.
@@ -271,7 +271,7 @@ struct RegisteredRPC
   /**
    * Extra argument to async_callback.
    */
-  void * cls;
+  void *cls;
 };
 
 /**
@@ -321,8 +321,7 @@ static struct GNUNET_Mutex *lock;
  */
 static int
 RPC_register (const char *name,
-	      GNUNET_RPC_AsynchronousFunction callback,
-	      void * cls)
+              GNUNET_RPC_AsynchronousFunction callback, void *cls)
 {
   struct RegisteredRPC *rrpc;
 
@@ -345,7 +344,7 @@ RPC_register (const char *name,
         }
       rrpc = rrpc->next;
     }
-  rrpc = GNUNET_malloc(sizeof(struct RegisteredRPC));
+  rrpc = GNUNET_malloc (sizeof (struct RegisteredRPC));
   rrpc->name = GNUNET_strdup (name);
   rrpc->async_callback = callback;
   rrpc->cls = cls;
@@ -365,8 +364,7 @@ RPC_register (const char *name,
  */
 static int
 RPC_unregister (const char *name,
-		GNUNET_RPC_AsynchronousFunction callback,
-		void * cls)
+                GNUNET_RPC_AsynchronousFunction callback, void *cls)
 {
   struct RegisteredRPC *pos;
   struct RegisteredRPC *prev;
@@ -378,22 +376,22 @@ RPC_unregister (const char *name,
   pos = list_of_callbacks;
   while (pos != NULL)
     {
-      if ( (0 == strcmp (pos->name, name)) &&
-	   (pos->async_callback == callback) &&
-	   (pos->cls == cls) )
-	{
-	  if (prev == NULL)
-	    list_of_callbacks = pos->next;
-	  else
-	    prev->next = pos->next;
-	  GNUNET_free(pos->name);
-	  GNUNET_free(pos);
+      if ((0 == strcmp (pos->name, name)) &&
+          (pos->async_callback == callback) && (pos->cls == cls))
+        {
+          if (prev == NULL)
+            list_of_callbacks = pos->next;
+          else
+            prev->next = pos->next;
+          GNUNET_free (pos->name);
+          GNUNET_free (pos);
         }
       prev = pos;
       pos = pos->next;
     }
   GNUNET_mutex_unlock (lock);
-  GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
                  _
                  ("%s::%s - async RPC %s:%p could not be unregistered: not found\n"),
                  __FILE__, __FUNCTION__, name, callback);
@@ -410,8 +408,8 @@ RPC_get_function_name (const P2P_rpc_MESSAGE * req)
   unsigned int slen;
 
   slen = ntohl (req->functionNameLength);
-  if ( (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen) ||
-       (sizeof(P2P_rpc_MESSAGE) + slen < sizeof(P2P_rpc_MESSAGE) ) )
+  if ((ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen) ||
+      (sizeof (P2P_rpc_MESSAGE) + slen < sizeof (P2P_rpc_MESSAGE)))
     return NULL;                /* invalid! */
   ret = GNUNET_malloc (slen + 1);
   memcpy (ret, &req[1], slen);
@@ -433,8 +431,8 @@ RPC_deserialize_arguments (const P2P_rpc_MESSAGE * req)
     slen = ntohl (req->functionNameLength);
   else
     slen = 0;
-  if ( (ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen) ||
-       (sizeof(P2P_rpc_MESSAGE) + slen < sizeof(P2P_rpc_MESSAGE) ) )
+  if ((ntohs (req->header.size) < sizeof (P2P_rpc_MESSAGE) + slen) ||
+      (sizeof (P2P_rpc_MESSAGE) + slen < sizeof (P2P_rpc_MESSAGE)))
     return NULL;                /* invalid! */
   ret =
     GNUNET_RPC_parameters_deserialize (&((char *) &req[1])[slen],
@@ -453,8 +451,8 @@ RPC_deserialize_arguments (const P2P_rpc_MESSAGE * req)
  */
 static void
 RPC_send_ack (const GNUNET_PeerIdentity * receiver,
-	      unsigned int sequenceNumber,
-	      unsigned int importance, unsigned int maxDelay)
+              unsigned int sequenceNumber,
+              unsigned int importance, unsigned int maxDelay)
 {
   RPC_ACK_Message msg;
 
@@ -477,19 +475,19 @@ RPC_send_ack (const GNUNET_PeerIdentity * receiver,
  */
 static P2P_rpc_MESSAGE *
 RPC_build_message (unsigned short errorCode,
-		   const char *name,
-		   unsigned int sequenceNumber,
-		   unsigned int importance, 
-		   const struct GNUNET_RPC_CallParameters * values)
+                   const char *name,
+                   unsigned int sequenceNumber,
+                   unsigned int importance,
+                   const struct GNUNET_RPC_CallParameters *values)
 {
   P2P_rpc_MESSAGE *ret;
   size_t size = sizeof (P2P_rpc_MESSAGE);
   int slen;
 
   if (name != NULL)
-    slen = strlen (name);    
+    slen = strlen (name);
   else
-    slen = 0;    
+    slen = 0;
   size += slen;
   if (values != NULL)
     size += GNUNET_RPC_parameters_get_serialized_size (values);
@@ -497,7 +495,9 @@ RPC_build_message (unsigned short errorCode,
     return NULL;                /* message to big! */
   ret = GNUNET_malloc (size);
   ret->header.size = htons (size);
-  ret->header.type = htons ((name == NULL) ? GNUNET_P2P_PROTO_RPC_RES : GNUNET_P2P_PROTO_RPC_REQ);
+  ret->header.type =
+    htons ((name ==
+            NULL) ? GNUNET_P2P_PROTO_RPC_RES : GNUNET_P2P_PROTO_RPC_REQ);
   ret->timestamp = htonl (GNUNET_get_time_int32 (NULL));
   ret->sequenceNumber = htonl (sequenceNumber);
   ret->importance = htonl (importance);
@@ -507,7 +507,7 @@ RPC_build_message (unsigned short errorCode,
     ret->functionNameLength = htonl (slen);
   ret->argumentCount = htonl (GNUNET_RPC_parameters_count (values));
   if (name != NULL)
-    memcpy (&ret[1], name, slen);    
+    memcpy (&ret[1], name, slen);
   GNUNET_RPC_parameters_serialize (values, &((char *) &ret[1])[slen]);
   return ret;
 }
@@ -521,29 +521,27 @@ RPC_build_message (unsigned short errorCode,
  * an RPC to the peer that initiated it.
  */
 static void
-RPC_complete (const struct GNUNET_RPC_CallParameters * results,
-	      int errorCode, 
-	      struct GNUNET_RPC_CallHandle * call)
+RPC_complete (const struct GNUNET_RPC_CallParameters *results,
+              int errorCode, struct GNUNET_RPC_CallHandle *call)
 {
   GNUNET_mutex_lock (lock);
-  GNUNET_GE_ASSERT(NULL, call->msg == NULL);
+  GNUNET_GE_ASSERT (NULL, call->msg == NULL);
   call->msg = RPC_build_message (errorCode,
-				 NULL,
-				 call->sequenceNumber,
-				 call->importance, results);
+                                 NULL,
+                                 call->sequenceNumber,
+                                 call->importance, results);
   if (call->msg == NULL)
     call->msg = RPC_build_message (GNUNET_RPC_ERROR_RETURN_VALUE_TOO_LARGE,
-				   NULL,
-				   call->sequenceNumber,
-				   call->importance, results);
-  call->lastAttempt = GNUNET_get_time();
+                                   NULL,
+                                   call->sequenceNumber,
+                                   call->importance, results);
+  call->lastAttempt = GNUNET_get_time ();
   call->repetitionFrequency = RPC_INITIAL_ROUND_TRIP_TIME;
   call->attempts = 1;
   call->errorCode = errorCode;
-  coreAPI->unicast(&call->initiator,
-		   &call->msg->header,
-		   call->importance,
-		   RPC_INITIAL_ROUND_TRIP_TIME / 2);
+  coreAPI->unicast (&call->initiator,
+                    &call->msg->header,
+                    call->importance, RPC_INITIAL_ROUND_TRIP_TIME / 2);
   GNUNET_mutex_unlock (lock);
 }
 
@@ -556,8 +554,8 @@ static int
 handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
                      const GNUNET_MessageHeader * message)
 {
-  const P2P_rpc_MESSAGE * req;
-  struct GNUNET_RPC_CallHandle * pos;
+  const P2P_rpc_MESSAGE *req;
+  struct GNUNET_RPC_CallHandle *pos;
   struct GNUNET_RPC_CallParameters *argumentValues;
   const struct RegisteredRPC *rpc;
   unsigned int sq;
@@ -566,21 +564,21 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
 
   if (ntohs (message->size) < sizeof (P2P_rpc_MESSAGE))
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;
     }
   req = (const P2P_rpc_MESSAGE *) message;
   functionName = RPC_get_function_name (req);
   if (functionName == NULL)
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;
     }
   argumentValues = RPC_deserialize_arguments (req);
   if (argumentValues == NULL)
     {
       GNUNET_free (functionName);
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;     /* message malformed */
     }
   sq = ntohl (req->sequenceNumber);
@@ -589,24 +587,20 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
   GNUNET_mutex_lock (lock);
   pos = incomingCalls;
   total = 0;
-  while ( (pos != NULL) &&
-	  ( (pos->sequenceNumber != sq) ||
-	    (0 != memcmp(&pos->initiator,
-			 sender,
-			 sizeof(GNUNET_PeerIdentity)))) )
+  while ((pos != NULL) &&
+         ((pos->sequenceNumber != sq) ||
+          (0 != memcmp (&pos->initiator,
+                        sender, sizeof (GNUNET_PeerIdentity)))))
     {
-      if (0 == memcmp(&pos->initiator,
-		      sender,
-		      sizeof(GNUNET_PeerIdentity)))
-	total++;
+      if (0 == memcmp (&pos->initiator, sender, sizeof (GNUNET_PeerIdentity)))
+        total++;
       pos = pos->next;
     }
-  if ( (pos != NULL) ||
-       (total > RPC_MAX_REQUESTS_PER_PEER) )
+  if ((pos != NULL) || (total > RPC_MAX_REQUESTS_PER_PEER))
     {
       /* already pending or too many pending */
       GNUNET_free (functionName);
-      GNUNET_RPC_parameters_destroy(argumentValues);
+      GNUNET_RPC_parameters_destroy (argumentValues);
       GNUNET_mutex_unlock (lock);
       return GNUNET_SYSERR;
     }
@@ -621,7 +615,7 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
     }
   /* create call handle */
   pos = GNUNET_malloc (sizeof (struct GNUNET_RPC_CallHandle));
-  memset(pos, 0, sizeof (struct GNUNET_RPC_CallHandle));
+  memset (pos, 0, sizeof (struct GNUNET_RPC_CallHandle));
   pos->function_name = functionName;
   pos->sequenceNumber = sq;
   pos->initiator = *sender;
@@ -632,14 +626,9 @@ handleRPCMessageReq (const GNUNET_PeerIdentity * sender,
     incomingCalls->prev = pos;
   incomingCalls = pos;
   if (rpc == NULL)
-    RPC_complete(NULL,
-		 GNUNET_RPC_ERROR_UNKNOWN_FUNCTION,
-		 pos);
+    RPC_complete (NULL, GNUNET_RPC_ERROR_UNKNOWN_FUNCTION, pos);
   else
-    rpc->async_callback (rpc->cls,
-			 sender,
-			 argumentValues,
-			 pos);
+    rpc->async_callback (rpc->cls, sender, argumentValues, pos);
   GNUNET_RPC_parameters_destroy (argumentValues);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
@@ -655,20 +644,18 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
                      const GNUNET_MessageHeader * message)
 {
   const P2P_rpc_MESSAGE *res;
-  struct GNUNET_RPC_RequestHandle * pos;
+  struct GNUNET_RPC_RequestHandle *pos;
   struct GNUNET_RPC_CallParameters *reply;
   unsigned int error;
 
   if (ntohs (message->size) < sizeof (P2P_rpc_MESSAGE))
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;
     }
   res = (const P2P_rpc_MESSAGE *) message;
-  RPC_send_ack(sender,
-	       ntohl(res->sequenceNumber),
-	       ntohl(res->importance),
-	       0);
+  RPC_send_ack (sender,
+                ntohl (res->sequenceNumber), ntohl (res->importance), 0);
   /* Locate the GNUNET_RPC_CallHandle structure. */
   GNUNET_mutex_lock (lock);
   pos = outgoingCalls;
@@ -695,11 +682,9 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
   error = ntohl (res->functionNameLength);
   if (error == GNUNET_RPC_ERROR_OK)
     reply = GNUNET_RPC_parameters_deserialize ((char *) &res[1],
-					       ntohs (message->size) -
-					       sizeof
-					       (P2P_rpc_MESSAGE));
-  if (ntohl (res->argumentCount) !=
-      GNUNET_RPC_parameters_count (reply))
+                                               ntohs (message->size) -
+                                               sizeof (P2P_rpc_MESSAGE));
+  if (ntohl (res->argumentCount) != GNUNET_RPC_parameters_count (reply))
     {
       GNUNET_RPC_parameters_destroy (reply);
       reply = NULL;
@@ -707,15 +692,12 @@ handleRPCMessageRes (const GNUNET_PeerIdentity * sender,
     }
   if (pos->callback != NULL)
     {
-      pos->callback(sender,
-		    reply,
-		    error,
-		    pos->cls);
+      pos->callback (sender, reply, error, pos->cls);
       pos->callback = NULL;
       pos->errorCode = error;
     }
   if (reply != NULL)
-    GNUNET_RPC_parameters_destroy (reply);    
+    GNUNET_RPC_parameters_destroy (reply);
   return GNUNET_OK;
 }
 
@@ -731,7 +713,7 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
 
   if (ntohs (message->size) != sizeof (RPC_ACK_Message))
     {
-      GNUNET_GE_BREAK_OP(NULL, 0);
+      GNUNET_GE_BREAK_OP (NULL, 0);
       return GNUNET_SYSERR;
     }
   ack = (const RPC_ACK_Message *) message;
@@ -781,7 +763,7 @@ handleRPCMessageAck (const GNUNET_PeerIdentity * sender,
 static struct GNUNET_RPC_RequestHandle *
 RPC_start (const GNUNET_PeerIdentity * receiver,
            const char *name,
-           const struct GNUNET_RPC_CallParameters * request_param,
+           const struct GNUNET_RPC_CallParameters *request_param,
            unsigned int importance,
            GNUNET_CronTime timeout,
            GNUNET_RPC_AsynchronousCompletionCallback callback, void *closure)
@@ -789,9 +771,9 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   struct GNUNET_RPC_RequestHandle *ret;
 
   if (timeout > 1 * GNUNET_CRON_HOURS)
-    timeout = 1 * GNUNET_CRON_HOURS;   
+    timeout = 1 * GNUNET_CRON_HOURS;
   ret = GNUNET_malloc (sizeof (struct GNUNET_RPC_RequestHandle));
-  memset(ret, 0, sizeof (struct GNUNET_RPC_RequestHandle));
+  memset (ret, 0, sizeof (struct GNUNET_RPC_RequestHandle));
   ret->receiver = *receiver;
   ret->callback = callback;
   ret->cls = closure;
@@ -800,9 +782,9 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   ret->attempts = 0;
   ret->sequenceNumber = rpcIdentifier++;
   ret->msg = RPC_build_message (GNUNET_RPC_ERROR_OK,
-				name,
-				ret->sequenceNumber,
-				importance, request_param);  
+                                name,
+                                ret->sequenceNumber,
+                                importance, request_param);
   ret->repetitionFrequency = RPC_INITIAL_ROUND_TRIP_TIME;
   GNUNET_mutex_lock (lock);
   ret->next = outgoingCalls;
@@ -810,10 +792,9 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
   if (ret->next != NULL)
     ret->next->prev = ret;
   GNUNET_mutex_unlock (lock);
-  coreAPI->unicast(receiver,
-		   &ret->msg->header,
-		   importance,
-		   RPC_INITIAL_ROUND_TRIP_TIME / 2);
+  coreAPI->unicast (receiver,
+                    &ret->msg->header,
+                    importance, RPC_INITIAL_ROUND_TRIP_TIME / 2);
   return ret;
 }
 
@@ -825,7 +806,7 @@ RPC_start (const GNUNET_PeerIdentity * receiver,
  *  another RPC_ERROR code if it was aborted
  */
 static int
-RPC_stop (struct GNUNET_RPC_RequestHandle * record)
+RPC_stop (struct GNUNET_RPC_RequestHandle *record)
 {
   int ret;
 
@@ -838,7 +819,8 @@ RPC_stop (struct GNUNET_RPC_RequestHandle * record)
     record->next->prev = record->prev;
   GNUNET_free (record->msg);
   GNUNET_mutex_unlock (lock);
-  ret = (record->callback == NULL) ? record->errorCode : GNUNET_RPC_ERROR_ABORTED;
+  ret =
+    (record->callback == NULL) ? record->errorCode : GNUNET_RPC_ERROR_ABORTED;
   GNUNET_free (record);
   return ret;
 }
@@ -850,79 +832,75 @@ RPC_stop (struct GNUNET_RPC_RequestHandle * record)
  * there to trigger timeouts.
  */
 static void
-RPC_retry_job (void * unused)
+RPC_retry_job (void *unused)
 {
   GNUNET_CronTime now;
-  struct GNUNET_RPC_CallHandle * ipos;
-  struct GNUNET_RPC_RequestHandle * opos;
+  struct GNUNET_RPC_CallHandle *ipos;
+  struct GNUNET_RPC_RequestHandle *opos;
 
   GNUNET_mutex_lock (lock);
   now = GNUNET_get_time ();
   ipos = incomingCalls;
   while (ipos != NULL)
     {
-      if ( (ipos->expirationTime < now) ||
-	   (ipos->attempts >= RPC_MAX_REPLY_ATTEMPTS) )
-	{
-	  GNUNET_free_non_null(ipos->msg);
-	  GNUNET_free(ipos->function_name);
-	  if (ipos->prev == NULL)
-	    incomingCalls = ipos->next;
-	  else
-	    ipos->prev->next = ipos->next;
-	  if (ipos->next != NULL)
-	    ipos->next = ipos->prev;
-	  GNUNET_free(ipos);
-	  ipos = incomingCalls;
-	  continue;
-	}
-      if ( (ipos->msg != NULL) &&
-	   (ipos->lastAttempt + ipos->repetitionFrequency < now) )
-	{
-	  ipos->lastAttempt = now;
-	  ipos->attempts++;
-	  ipos->repetitionFrequency *= 2;
-	  coreAPI->unicast(&ipos->initiator,
-			   &ipos->msg->header,
-			   ipos->repetitionFrequency / 2,
-			   ipos->importance);
-	}
+      if ((ipos->expirationTime < now) ||
+          (ipos->attempts >= RPC_MAX_REPLY_ATTEMPTS))
+        {
+          GNUNET_free_non_null (ipos->msg);
+          GNUNET_free (ipos->function_name);
+          if (ipos->prev == NULL)
+            incomingCalls = ipos->next;
+          else
+            ipos->prev->next = ipos->next;
+          if (ipos->next != NULL)
+            ipos->next = ipos->prev;
+          GNUNET_free (ipos);
+          ipos = incomingCalls;
+          continue;
+        }
+      if ((ipos->msg != NULL) &&
+          (ipos->lastAttempt + ipos->repetitionFrequency < now))
+        {
+          ipos->lastAttempt = now;
+          ipos->attempts++;
+          ipos->repetitionFrequency *= 2;
+          coreAPI->unicast (&ipos->initiator,
+                            &ipos->msg->header,
+                            ipos->repetitionFrequency / 2, ipos->importance);
+        }
       ipos = ipos->next;
     }
   opos = outgoingCalls;
   while (opos != NULL)
     {
       if (opos->expirationTime < now)
-	{
-	  if (opos->callback != NULL)
-	    {
-	      opos->callback(&opos->receiver,
-			     NULL,
-			     GNUNET_RPC_ERROR_TIMEOUT,
-			     opos->cls);
-	      opos->callback = NULL;
-	    }
-	  GNUNET_free_non_null(opos->msg);
-	  if (opos->prev == NULL)
-	    outgoingCalls = opos->next;
-	  else
-	    opos->prev->next = opos->next;
-	  if (opos->next != NULL)
-	    opos->next = opos->prev;
-	  GNUNET_free(opos);
-	  opos = outgoingCalls;
-	  continue;
-	}
-      if (opos->lastAttempt + opos->repetitionFrequency < now) 
-	{
-	  opos->lastAttempt = now;
-	  opos->attempts++;
-	  opos->repetitionFrequency *= 2;
-	  coreAPI->unicast(&opos->receiver,
-			   &opos->msg->header,
-			   opos->repetitionFrequency / 2,
-			   opos->importance);
-	}
+        {
+          if (opos->callback != NULL)
+            {
+              opos->callback (&opos->receiver,
+                              NULL, GNUNET_RPC_ERROR_TIMEOUT, opos->cls);
+              opos->callback = NULL;
+            }
+          GNUNET_free_non_null (opos->msg);
+          if (opos->prev == NULL)
+            outgoingCalls = opos->next;
+          else
+            opos->prev->next = opos->next;
+          if (opos->next != NULL)
+            opos->next = opos->prev;
+          GNUNET_free (opos);
+          opos = outgoingCalls;
+          continue;
+        }
+      if (opos->lastAttempt + opos->repetitionFrequency < now)
+        {
+          opos->lastAttempt = now;
+          opos->attempts++;
+          opos->repetitionFrequency *= 2;
+          coreAPI->unicast (&opos->receiver,
+                            &opos->msg->header,
+                            opos->repetitionFrequency / 2, opos->importance);
+        }
       opos = opos->next;
     }
   GNUNET_mutex_unlock (lock);
@@ -939,13 +917,11 @@ release_module_rpc ()
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_REQ, &handleRPCMessageReq);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_RES, &handleRPCMessageRes);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_RPC_ACK, &handleRPCMessageAck);
-  GNUNET_GE_ASSERT(NULL, NULL == incomingCalls);
-  GNUNET_GE_ASSERT(NULL, NULL == outgoingCalls);
-  GNUNET_GE_ASSERT(NULL, NULL == list_of_callbacks);
-  GNUNET_cron_del_job(coreAPI->cron,
-		      &RPC_retry_job,
-		      RPC_CRON_FREQUENCY,
-		      NULL);
+  GNUNET_GE_ASSERT (NULL, NULL == incomingCalls);
+  GNUNET_GE_ASSERT (NULL, NULL == outgoingCalls);
+  GNUNET_GE_ASSERT (NULL, NULL == list_of_callbacks);
+  GNUNET_cron_del_job (coreAPI->cron,
+                       &RPC_retry_job, RPC_CRON_FREQUENCY, NULL);
   coreAPI = NULL;
   lock = NULL;
 }
@@ -961,9 +937,10 @@ provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
 
   lock = capi->connection_get_lock ();
   coreAPI = capi;
-  GNUNET_GE_LOG (coreAPI->ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                 _("`%s' registering handlers %d %d %d\n"),
-                 "rpc", GNUNET_P2P_PROTO_RPC_REQ, GNUNET_P2P_PROTO_RPC_RES,
+  GNUNET_GE_LOG (coreAPI->ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 _("`%s' registering handlers %d %d %d\n"), "rpc",
+                 GNUNET_P2P_PROTO_RPC_REQ, GNUNET_P2P_PROTO_RPC_RES,
                  GNUNET_P2P_PROTO_RPC_ACK);
   rvalue = GNUNET_OK;
   if (capi->registerHandler (GNUNET_P2P_PROTO_RPC_REQ,
@@ -983,17 +960,15 @@ provide_module_rpc (GNUNET_CoreAPIForPlugins * capi)
                      _("Failed to initialize `%s' service.\n"), "rpc");
       return NULL;
     }
-  GNUNET_cron_add_job(coreAPI->cron,
-		      &RPC_retry_job,
-		      RPC_CRON_FREQUENCY,
-		      RPC_CRON_FREQUENCY,
-		      NULL);
+  GNUNET_cron_add_job (coreAPI->cron,
+                       &RPC_retry_job,
+                       RPC_CRON_FREQUENCY, RPC_CRON_FREQUENCY, NULL);
   rpcAPI.RPC_register = &RPC_register;
   rpcAPI.RPC_unregister = &RPC_unregister;
   rpcAPI.RPC_complete = &RPC_complete;
   rpcAPI.RPC_start = &RPC_start;
   rpcAPI.RPC_stop = &RPC_stop;
-  return &rpcAPI;    
+  return &rpcAPI;
 }
 
 /* end of rpc.c */

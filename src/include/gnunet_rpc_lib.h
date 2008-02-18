@@ -48,48 +48,56 @@ struct GNUNET_RPC_CallParameters;
  */
 struct GNUNET_RPC_CallParameters *GNUNET_RPC_parameters_create (void);
 
-void GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters * param);
+void GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters *param);
 
-unsigned int GNUNET_RPC_parameters_count (const struct GNUNET_RPC_CallParameters * param);
+unsigned int GNUNET_RPC_parameters_count (const struct
+                                          GNUNET_RPC_CallParameters *param);
 
-void GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters * param,
+void GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters *param,
                                 const char *name,
                                 unsigned int dataLength, const void *data);
 
 /**
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_RPC_parameters_get_value_by_name (const struct GNUNET_RPC_CallParameters *
-                                             param, const char *name,
+int GNUNET_RPC_parameters_get_value_by_name (const struct
+                                             GNUNET_RPC_CallParameters *param,
+                                             const char *name,
                                              unsigned int *dataLength,
-                                             void const ** data);
+                                             void const **data);
 
 /**
  * @return GNUNET_OK on success, GNUNET_SYSERR on error
  */
-int GNUNET_RPC_parameters_get_value_by_index (const struct GNUNET_RPC_CallParameters *
-                                              param, unsigned int i,
+int GNUNET_RPC_parameters_get_value_by_index (const struct
+                                              GNUNET_RPC_CallParameters
+                                              *param, unsigned int i,
                                               unsigned int *dataLength,
-                                              void const ** data);
+                                              void const **data);
 
 /**
  * Serialize the param array.
  *
  * @param target must point to at least GNUNET_RPC_parameters_get_serialized_size(param) bytes of memory.
  */
-void GNUNET_RPC_parameters_serialize (const struct GNUNET_RPC_CallParameters * param,
-                                      char *target);
+void GNUNET_RPC_parameters_serialize (const struct GNUNET_RPC_CallParameters
+                                      *param, char *target);
 
 /**
  * Deserialize parameters from buffer.
  */
-struct GNUNET_RPC_CallParameters *GNUNET_RPC_parameters_deserialize (const char *buffer,
-								     size_t size);
+struct GNUNET_RPC_CallParameters *GNUNET_RPC_parameters_deserialize (const
+                                                                     char
+                                                                     *buffer,
+                                                                     size_t
+                                                                     size);
 
 /**
  * How many bytes are required to serialize the param array?
  */
-size_t GNUNET_RPC_parameters_get_serialized_size (const struct GNUNET_RPC_CallParameters * param);
+size_t GNUNET_RPC_parameters_get_serialized_size (const struct
+                                                  GNUNET_RPC_CallParameters
+                                                  *param);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

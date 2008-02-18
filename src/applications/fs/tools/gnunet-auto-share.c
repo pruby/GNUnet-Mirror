@@ -26,9 +26,20 @@
 
 #include "platform.h"
 #include "gnunet_directories.h"
+#include "gnunet_fs_lib.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util.h"
 #include <extractor.h>
+
+struct FileRecord
+{
+  struct FileRecord *next;
+  char *filename;
+  time_t mtime;
+  time_t last_seen;
+  off_t size;
+  GNUNET_HashCode hc;
+};
 
 static int upload_done;
 
@@ -46,17 +57,19 @@ static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 static struct GNUNET_ECRS_URI *gloKeywords;
 
+static struct GNUNET_ClientServerConnection *sock;
+
 static unsigned int anonymity = 1;
 
 static unsigned int priority = 365;
 
 static int do_no_direct_references;
 
-static time_t start;
+static struct FileRecord *records;
 
-static unsigned int done_pos;
+static int debug_flag;
 
-static unsigned int current_pos;
+static FILE *myout;
 
 /**
  * Print progess message.
@@ -76,27 +89,29 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
         {
           fstring =
             GNUNET_ECRS_uri_to_string (event->data.UploadCompleted.uri);
-          printf (_("Upload of `%s' complete, URI is `%s'.\n"),
-                  event->data.UploadCompleted.filename, fstring);
+          fprintf (myout,
+                   _("Upload of `%s' complete, URI is `%s'.\n"),
+                   event->data.UploadCompleted.filename, fstring);
           GNUNET_free (fstring);
         }
       if (ul == event->data.UploadCompleted.uc.pos)
         upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_aborted:
-      printf (_("\nUpload aborted.\n"));
+      fprintf (myout, _("\nUpload aborted.\n"));
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_error:
-      printf (_("\nError uploading file: %s"),
-              event->data.UploadError.message);
+      fprintf (myout,
+               _("\nError uploading file: %s"),
+               event->data.UploadError.message);
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_started:
     case GNUNET_FSUI_upload_stopped:
       break;
     default:
-      printf (_("\nUnexpected event: %d\n"), event->type);
+      fprintf (myout, _("\nUnexpected event: %d\n"), event->type);
       GNUNET_GE_BREAK (ectx, 0);
       break;
     }
@@ -111,6 +126,11 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
    gettext_noop ("set the desired LEVEL of sender-anonymity"),
    1, &GNUNET_getopt_configure_set_uint, &anonymity},
   GNUNET_COMMAND_LINE_OPTION_CFG_FILE (&cfgFilename),   /* -c */
+  {'d', "debug", NULL,
+   gettext_noop ("run in debug mode; gnunet-auto-share will "
+                 "not daemonize and error messages will "
+                 "be written to stderr instead of a logfile"),
+   0, &GNUNET_getopt_configure_set_one, &debug_flag},
   {'D', "disable-direct", NULL,
    gettext_noop
    ("do not use libextractor to add additional references to directory entries and/or the published file"),
@@ -130,10 +150,21 @@ static struct GNUNET_CommandLineOption gnunetauto_shareOptions[] = {
   GNUNET_COMMAND_LINE_OPTION_END,
 };
 
-static int
-find_latest (const char *filename, const char *dirName, void *cls)
+static struct FileRecord *
+find_entry (const char *filename)
 {
-  time_t *latest = cls;
+  struct FileRecord *pos = records;
+  while ((pos != NULL) && (0 != strcmp (filename, pos->filename)))
+    pos = pos->next;
+  return pos;
+}
+
+static int
+test_run (const char *filename, const char *dirName, void *cls)
+{
+  GNUNET_HashCode hc;
+  int *run = cls;
+  struct FileRecord *rec;
   struct stat buf;
   char *fn;
 
@@ -146,14 +177,39 @@ find_latest (const char *filename, const char *dirName, void *cls)
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
-      printf ("Could not stat `%s': %s\n", fn, strerror (errno));
+      fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  if (*latest < buf.st_mtime)
-    *latest = buf.st_mtime;
+  rec = find_entry (filename);
+  if (rec == NULL)
+    {
+      rec = GNUNET_malloc (sizeof (struct FileRecord));
+      rec->next = records;
+      rec->filename = fn;
+      rec->mtime = buf.st_mtime;
+      rec->size = buf.st_size;
+      rec->last_seen = time (NULL);
+      GNUNET_hash_file (NULL, fn, &rec->hc);
+      if (GNUNET_NO == GNUNET_FS_test_indexed (sock, &rec->hc))
+        *run = 1;
+      return GNUNET_SYSERR;
+    }
+  else
+    {
+      rec->last_seen = time (NULL);
+    }
+  if ((rec->mtime != buf.st_mtime) || (rec->size != buf.st_size))
+    {
+      GNUNET_hash_file (NULL, fn, &hc);
+      if (0 != memcmp (&hc, &rec->hc, sizeof (GNUNET_HashCode)))
+        *run = 1;
+      rec->mtime = buf.st_mtime;
+      rec->size = buf.st_size;
+      rec->hc = hc;
+    }
   if (S_ISDIR (buf.st_mode))
-    GNUNET_disk_directory_scan (ectx, fn, &find_latest, latest);
+    GNUNET_disk_directory_scan (ectx, fn, &test_run, run);
   GNUNET_free (fn);
   return GNUNET_OK;
 }
@@ -206,15 +262,14 @@ add_meta_data (void *cls,
 
 
 static int
-probe_directory (const char *filename, const char *dirName, void *cls)
+probe_directory (const char *filename, const char *dirName, void *unused)
 {
-  time_t *last = cls;
-  time_t latest;
   struct stat buf;
   struct AddMetadataClosure amc;
   struct GNUNET_ECRS_URI *kuri;
   char *fn;
   char *keys;
+  int run;
 
   if (filename[0] == '.')
     return GNUNET_OK;
@@ -225,30 +280,20 @@ probe_directory (const char *filename, const char *dirName, void *cls)
   strcat (fn, filename);
   if (0 != stat (fn, &buf))
     {
-      printf ("Could not stat `%s': %s\n", fn, strerror (errno));
+      fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  if ((buf.st_mtime < *last) && (!S_ISDIR (buf.st_mode)))
-    {
-      GNUNET_free (fn);
-      return GNUNET_OK;
-    }
-  latest = buf.st_mtime;
+  run = 0;
   if (S_ISDIR (buf.st_mode))
-    GNUNET_disk_directory_scan (ectx, fn, &find_latest, &latest);
-  if (latest < *last)
+    GNUNET_disk_directory_scan (ectx, fn, &test_run, &run);
+  else
+    test_run (filename, dirName, &run);
+  if (0 == run)
     {
       GNUNET_free (fn);
       return GNUNET_OK;
     }
-  if ((start > latest) && (current_pos < done_pos))
-    {
-      GNUNET_free (fn);
-      current_pos++;
-      return GNUNET_OK;
-    }
-  done_pos = ++current_pos;
   amc.meta = GNUNET_ECRS_meta_data_create ();
   amc.filename = filename;
   /* attaching a listener will prompt iteration
@@ -277,58 +322,46 @@ probe_directory (const char *filename, const char *dirName, void *cls)
   return GNUNET_SYSERR;
 }
 
+
 /**
- * The main function to auto share directories with GNUnet.
+ * Actual main function.
  *
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
 int
-main (int argc, char *const *argv)
+auto_share_main (const char *argvi)
 {
   char *dirname;
-  int i;
   int errorCode;
   unsigned long long verbose;
-  unsigned long long cfg_start;
-  time_t last;
   GNUNET_CronTime delay;
   char *metafn;
+  struct FileRecord *pos;
+  int filedes[2];               /* pipe between client and parent */
 
   errorCode = 0;
-  i = GNUNET_init (argc,
-                   argv,
-                   "gnunet-auto-share [OPTIONS] DIRECTORY",
-                   &cfgFilename, gnunetauto_shareOptions, &ectx, &cfg);
-  if (i == -1)
+  if ((GNUNET_NO == debug_flag)
+      && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
+    return GNUNET_SYSERR;
+
+  sock = GNUNET_client_connection_create (ectx, cfg);
+  if (sock == NULL)
     {
+      fprintf (myout, _("Failed to connect to gnunetd.\n"));
       errorCode = -1;
+      if (GNUNET_NO == debug_flag)
+        GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
       goto quit;
     }
-  if (i != argc - 1)
-    {
-      printf (_
-              ("You must specify one and only one directory for sharing.\n"));
-      errorCode = -1;
-      goto quit;
-    }
-  dirname = GNUNET_expand_file_name (ectx, argv[i]);
+  dirname = GNUNET_expand_file_name (ectx, argvi);
   GNUNET_GC_get_configuration_value_number (cfg,
                                             "GNUNET",
                                             "VERBOSE", 0, 9999, 0, &verbose);
-  if (0 == GNUNET_GC_get_configuration_value_number (cfg,
-                                                     "GNUNET-AUTO-SHARE",
-                                                     "TIMESTAMP-LAST-RUN", 0,
-                                                     -1, 0, &cfg_start))
-    {
-      last = (time_t) cfg_start;
-    }
-  else
-    last = 0;
   metafn = NULL;
   GNUNET_GC_get_configuration_value_filename (cfg,
-                                              "FS",
+                                              "GNUNET-AUTO-SHARE",
                                               "METADATA",
                                               GNUNET_DEFAULT_HOME_DIRECTORY
                                               "/metadata.conf", &metafn);
@@ -340,24 +373,13 @@ main (int argc, char *const *argv)
                            &printstatus, &verbose);
   /* first insert all of the top-level files or directories */
 
+  if (GNUNET_NO == debug_flag)
+    GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
     {
       GNUNET_thread_sleep (250 * GNUNET_CRON_MILLISECONDS);
-      start = time (NULL);
-      current_pos = 0;
-      GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, &last);
-      if (ul == NULL)
-        {
-          last = start;
-          done_pos = 0;
-          GNUNET_GC_set_configuration_value_number (cfg,
-                                                    ectx,
-                                                    "GNUNET-AUTO-SHARE",
-                                                    "TIMESTAMP-LAST-RUN",
-                                                    last);
-          GNUNET_GC_write_configuration (cfg, cfgFilename);
-        }
+      GNUNET_disk_directory_scan (ectx, dirname, &probe_directory, NULL);
       if (GNUNET_YES == upload_done)
         {
           GNUNET_FSUI_upload_abort (ctx, ul);
@@ -382,8 +404,95 @@ main (int argc, char *const *argv)
     GNUNET_ECRS_uri_destroy (gloKeywords);
   GNUNET_free (dirname);
 quit:
+  while (records != NULL)
+    {
+      pos = records;
+      records = pos->next;
+      GNUNET_free (pos->filename);
+      GNUNET_free (pos);
+    }
   if (meta_cfg != NULL)
     GNUNET_GC_free (meta_cfg);
+  if (sock != NULL)
+    GNUNET_client_connection_destroy (sock);
+  return errorCode;
+}
+
+#ifdef MINGW
+/**
+ * Main method of the windows service
+ */
+void WINAPI
+ServiceMain (DWORD argc, LPSTR * argv)
+{
+  GNUNET_CORE_w32_service_main (auto_share_main);
+}
+#endif
+
+
+/**
+ * The main function to auto share directories with GNUnet.
+ *
+ * @param argc number of arguments from the command line
+ * @param argv command line arguments
+ * @return return 0 for ok, -1 on error
+ */
+int
+main (int argc, char *const *argv)
+{
+  int i;
+  int errorCode;
+  char *log_file_name;
+
+  errorCode = 0;
+  i = GNUNET_init (argc,
+                   argv,
+                   "gnunet-auto-share [OPTIONS] DIRECTORY",
+                   &cfgFilename, gnunetauto_shareOptions, &ectx, &cfg);
+  if (i == -1)
+    {
+      errorCode = -1;
+      goto end;
+    }
+  if (i != argc - 1)
+    {
+      fprintf (stderr,
+               _
+               ("You must specify one and only one directory for sharing.\n"));
+      errorCode = -1;
+      goto end;
+    }
+  if (GNUNET_YES == debug_flag)
+    {
+      myout = stdout;
+    }
+  else
+    {
+      GNUNET_GC_get_configuration_value_filename (cfg,
+                                                  "GNUNET-AUTO-SHARE",
+                                                  "LOGFILE",
+                                                  GNUNET_DEFAULT_HOME_DIRECTORY
+                                                  "/gnunet-auto-share.log",
+                                                  &log_file_name);
+      myout = fopen (log_file_name, "a");
+      GNUNET_free (log_file_name);
+    }
+#ifdef MINGW
+  if (GNUNET_GC_get_configuration_value_yesno (cfg,
+                                               "GNUNET-AUTO-SHARE",
+                                               "WINSERVICE",
+                                               GNUNET_NO) == GNUNET_YES)
+    {
+      SERVICE_TABLE_ENTRY DispatchTable[] =
+        { {"gnunet-auto-share", ServiceMain}
+      , {NULL, NULL}
+      };
+      errorCode = (GNStartServiceCtrlDispatcher (DispatchTable) != 0);
+    }
+  else
+#endif
+    errorCode = auto_share_main (argv[i]);
+end:
   GNUNET_fini (ectx, cfg);
   return errorCode;
 }

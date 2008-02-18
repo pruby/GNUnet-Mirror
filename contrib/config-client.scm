@@ -258,15 +258,27 @@ The default is to use filenames and to break larger words at spaces (and undersc
   (cons 1 1073741824)
   'rare) )
 
-(define (gnunet-fs-metadata builder)
+(define (gnunet-fs-autoshare-metadata builder)
  (builder
-  "FS"
+  "GNUNET-AUTO-SHARE"
   "METADATA"
   (_ "Location of the file specifying metadata for the auto-share directory")
   (nohelp)
   '()
   #t
   "$GNUNET_HOME/metadata.conf"
+  '()
+  'fs-loaded) )
+
+(define (gnunet-fs-autoshare-log builder)
+ (builder
+  "GNUNET-AUTO-SHARE"
+  "LOGFILE"
+  (_ "Location of the log file for gnunet-auto-share")
+  (nohelp)
+  '()
+  #t
+  "$GNUNET_HOME/gnunet-auto-share.log"
   '()
   'fs-loaded) )
 
@@ -280,7 +292,8 @@ The default is to use filenames and to break larger words at spaces (and undersc
     (fs-extractors builder)
     (fs-disable-creation-time builder)
     (fs-uri-db-size builder)
-    (gnunet-fs-metadata builder)
+    (gnunet-fs-autoshare-metadata builder)
+    (gnunet-fs-autoshare-log builder)
   )
   #t 
   #f 

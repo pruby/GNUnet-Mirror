@@ -99,11 +99,9 @@ csPut (struct GNUNET_ClientHandle *client,
 }
 
 static int
-get_result (const GNUNET_HashCode * key, 
-	    unsigned int type,
-	    unsigned int size,
-	    const char * value,
-            void *cls)
+get_result (const GNUNET_HashCode * key,
+            unsigned int type,
+            unsigned int size, const char *value, void *cls)
 {
   struct DHT_CLIENT_GET_RECORD *record = cls;
   CS_dht_request_put_MESSAGE *msg;
@@ -124,11 +122,7 @@ get_result (const GNUNET_HashCode * key,
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  "`%s' at %s:%d processes reply '%.*s'\n",
-                 __FUNCTION__,
-                 __FILE__,
-                 __LINE__,
-                 size,
-                 value);
+                 __FUNCTION__, __FILE__, __LINE__, size, value);
 #endif
   if (GNUNET_OK !=
       coreAPI->cs_send_to_client (record->client, &msg->header, GNUNET_YES))

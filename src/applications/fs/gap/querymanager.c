@@ -128,14 +128,14 @@ void
 GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     unsigned int key_count,
                                     unsigned int anonymityLevel,
-                                    unsigned int type,				    
+                                    unsigned int type,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
-				    const struct ResponseList * seen)
+                                    const struct ResponseList *seen)
 {
   struct ClientDataList *cl;
   struct RequestList *request;
-  const struct ResponseList * pos;
+  const struct ResponseList *pos;
 
   GNUNET_GE_ASSERT (NULL, key_count > 0);
   if (stats != NULL)
@@ -153,30 +153,30 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
   request->primary_target = GNUNET_FS_PT_intern (target);
   request->response_client = client;
   request->policy = GNUNET_FS_RoutingPolicy_ALL;
-  memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count); 
+  memcpy (&request->queries[0], query, sizeof (GNUNET_HashCode) * key_count);
   if (seen != NULL)
     {
       pos = seen;
       while (pos != NULL)
-	{
-	  request->bloomfilter_entry_count++;
-	  pos = pos->next;
-	}
-      request->bloomfilter_size = compute_bloomfilter_size (request->bloomfilter_entry_count);
-      request->bloomfilter_mutator = GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
-      request->bloomfilter = GNUNET_bloomfilter_init (NULL,
-						      NULL,
-						      request->bloomfilter_size,
-						      GAP_BLOOMFILTER_K);
+        {
+          request->bloomfilter_entry_count++;
+          pos = pos->next;
+        }
+      request->bloomfilter_size =
+        compute_bloomfilter_size (request->bloomfilter_entry_count);
+      request->bloomfilter_mutator =
+        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, -1);
+      request->bloomfilter =
+        GNUNET_bloomfilter_init (NULL, NULL, request->bloomfilter_size,
+                                 GAP_BLOOMFILTER_K);
       if (stats != NULL)
-	stats->change(stat_gap_client_bf_updates, 1);
+        stats->change (stat_gap_client_bf_updates, 1);
       pos = seen;
       while (pos != NULL)
-	{
-	  GNUNET_FS_SHARED_mark_response_seen(request,
-					      &pos->hash);
-	  pos = pos->next;
-	}
+        {
+          GNUNET_FS_SHARED_mark_response_seen (request, &pos->hash);
+          pos = pos->next;
+        }
     }
   GNUNET_mutex_lock (GNUNET_FS_lock);
   cl = clients;
@@ -192,8 +192,8 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
     }
   request->next = cl->requests;
   cl->requests = request;
-  if ( (GNUNET_YES == GNUNET_FS_PLAN_request (client, 0, request)) &&
-       (stats != NULL) )
+  if ((GNUNET_YES == GNUNET_FS_PLAN_request (client, 0, request)) &&
+      (stats != NULL))
     stats->change (stat_gap_client_query_injected, 1);
   if (request->anonymityLevel == 0)
     {
@@ -302,7 +302,7 @@ handle_response (PID_INDEX sender,
                                                  rl->bloomfilter_size,
                                                  GAP_BLOOMFILTER_K);
       if (stats != NULL)
-	stats->change(stat_gap_client_bf_updates, 1);
+        stats->change (stat_gap_client_bf_updates, 1);
     }
   else if (rl->bloomfilter_size != bf_size)
     {
@@ -314,7 +314,7 @@ handle_response (PID_INDEX sender,
                                  &response_bf_iterator,
                                  &ic, bf_size, GAP_BLOOMFILTER_K);
       if (stats != NULL)
-	stats->change(stat_gap_client_bf_updates, 1);
+        stats->change (stat_gap_client_bf_updates, 1);
     }
   GNUNET_FS_SHARED_mark_response_seen (rl, &hc);
 
@@ -456,8 +456,9 @@ repeat_requests_job (void *unused)
               (request->last_ttl_used * GNUNET_CRON_SECONDS +
                request->last_request_time < now))
             {
-              if ( (GNUNET_OK == GNUNET_FS_PLAN_request (client->client, 0, request)) &&
-		   (stats != NULL) )
+              if ((GNUNET_OK ==
+                   GNUNET_FS_PLAN_request (client->client, 0, request))
+                  && (stats != NULL))
                 stats->change (stat_gap_client_query_injected, 1);
             }
 
@@ -500,7 +501,8 @@ GNUNET_FS_QUERYMANAGER_init (GNUNET_CoreAPIForPlugins * capi)
       stat_gap_client_query_injected =
         stats->create (gettext_noop ("# gap client requests injected"));
       stat_gap_client_bf_updates =
-        stats->create (gettext_noop ("# gap query bloomfilter resizing updates"));
+        stats->
+        create (gettext_noop ("# gap query bloomfilter resizing updates"));
     }
   return 0;
 }

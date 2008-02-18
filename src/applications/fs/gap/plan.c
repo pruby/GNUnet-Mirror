@@ -565,7 +565,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
   if (total_score == 0)
     {
       GNUNET_mutex_unlock (GNUNET_FS_lock);
-      return GNUNET_NO;                   /* no peers available */
+      return GNUNET_NO;         /* no peers available */
     }
 
   entropy = 0;

@@ -180,7 +180,7 @@ writeCollection (int fd, struct GNUNET_FSUI_Context *ctx)
       return;
     }
   /* serialize collection data */
-  WRITEINT(fd, ctx->collectionDataSize);
+  WRITEINT (fd, ctx->collectionDataSize);
   WRITE (fd, ctx->collectionData, ctx->collectionDataSize);
 }
 

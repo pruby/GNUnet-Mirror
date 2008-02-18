@@ -32,17 +32,17 @@
 /**
  * A linked list of parameters to/from an RPC call. 
  */
-struct Parameter 
+struct Parameter
 {
-  struct Parameter * next;
-  char * name;
-  void * data;
+  struct Parameter *next;
+  char *name;
+  void *data;
   unsigned int dataLength;
 };
 
-struct GNUNET_RPC_CallParameters 
+struct GNUNET_RPC_CallParameters
 {
-  struct Parameter * list;
+  struct Parameter *list;
 };
 
 
@@ -54,9 +54,9 @@ struct GNUNET_RPC_CallParameters
 struct GNUNET_RPC_CallParameters *
 GNUNET_RPC_parameters_create ()
 {
-  struct GNUNET_RPC_CallParameters * ret;
+  struct GNUNET_RPC_CallParameters *ret;
 
-  ret = GNUNET_malloc(sizeof(struct GNUNET_RPC_CallParameters));
+  ret = GNUNET_malloc (sizeof (struct GNUNET_RPC_CallParameters));
   ret->list = NULL;
   return ret;
 }
@@ -69,7 +69,7 @@ GNUNET_RPC_parameters_create ()
  * @param param The RPC parameter structure to be freed
  */
 void
-GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters * param)
+GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters *param)
 {
   if (param == NULL)
     return;
@@ -81,7 +81,7 @@ GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters * param)
       GNUNET_free (p->data);
       GNUNET_free (p);
     }
-  GNUNET_free(param);
+  GNUNET_free (param);
 }
 
 /**
@@ -89,8 +89,8 @@ GNUNET_RPC_parameters_destroy (struct GNUNET_RPC_CallParameters * param)
  * GNUNET_RPC_parameters_get_serialized_size(param) bytes of memory.
  */
 void
-GNUNET_RPC_parameters_serialize (const struct GNUNET_RPC_CallParameters * param,
-                                 char *target)
+GNUNET_RPC_parameters_serialize (const struct GNUNET_RPC_CallParameters
+                                 *param, char *target)
 {
   const struct Parameter *pos;
   unsigned int dataLength;
@@ -103,12 +103,12 @@ GNUNET_RPC_parameters_serialize (const struct GNUNET_RPC_CallParameters * param,
   off = 0;
   dataLength = 0;
   pos = param->list;
-  while (pos != NULL) 
+  while (pos != NULL)
     {
       memcpy (&target[off], pos->name, strlen (pos->name) + 1);
       off += strlen (pos->name) + 1;
-      dataLength = htonl(pos->dataLength);
-      memcpy(&target[off], &dataLength, sizeof(unsigned int));
+      dataLength = htonl (pos->dataLength);
+      memcpy (&target[off], &dataLength, sizeof (unsigned int));
       off += sizeof (unsigned int);
       memcpy (&target[off], pos->data, pos->dataLength);
       off += pos->dataLength;
@@ -142,20 +142,16 @@ GNUNET_RPC_parameters_deserialize (const char *buffer, size_t size)
           GNUNET_RPC_parameters_destroy (ret);
           return NULL;
         }
-      memcpy(&dataLength,
-	     &buffer[pos],
-	     sizeof(unsigned int));
-      dataLength = ntohl(dataLength);
+      memcpy (&dataLength, &buffer[pos], sizeof (unsigned int));
+      dataLength = ntohl (dataLength);
       pos += sizeof (unsigned int);
       if ((pos + dataLength < pos) || (pos + dataLength > size))
         {
           GNUNET_RPC_parameters_destroy (ret);
           return NULL;
         }
-      GNUNET_RPC_parameters_add (ret, 
-				 &buffer[xpos], 
-				 dataLength,
-                                 &buffer[pos]);
+      GNUNET_RPC_parameters_add (ret,
+                                 &buffer[xpos], dataLength, &buffer[pos]);
       pos += dataLength;
     }
   return ret;
@@ -165,7 +161,8 @@ GNUNET_RPC_parameters_deserialize (const char *buffer, size_t size)
  * How many bytes are required to serialize the param array?
  */
 size_t
-GNUNET_RPC_parameters_get_serialized_size (const struct GNUNET_RPC_CallParameters * param)
+GNUNET_RPC_parameters_get_serialized_size (const struct
+                                           GNUNET_RPC_CallParameters * param)
 {
   const struct Parameter *pos;
   size_t off;
@@ -174,14 +171,15 @@ GNUNET_RPC_parameters_get_serialized_size (const struct GNUNET_RPC_CallParameter
     return 0;
   off = 0;
   pos = param->list;
-  while (pos != NULL) {
+  while (pos != NULL)
     {
-      off += strlen (pos->name) + 1;
-      off += sizeof (unsigned int);
-      off += pos->dataLength;
-      pos = pos->next;
+      {
+        off += strlen (pos->name) + 1;
+        off += sizeof (unsigned int);
+        off += pos->dataLength;
+        pos = pos->next;
+      }
     }
-  }
   return off;
 }
 
@@ -192,7 +190,7 @@ GNUNET_RPC_parameters_get_serialized_size (const struct GNUNET_RPC_CallParameter
  * @return The number of parameters
  */
 unsigned int
-GNUNET_RPC_parameters_count (const struct GNUNET_RPC_CallParameters * param)
+GNUNET_RPC_parameters_count (const struct GNUNET_RPC_CallParameters *param)
 {
   const struct Parameter *pos;
   unsigned int s;
@@ -221,7 +219,7 @@ GNUNET_RPC_parameters_count (const struct GNUNET_RPC_CallParameters * param)
  */
 
 void
-GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters * param,
+GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters *param,
                            const char *name, unsigned int dataLength,
                            const void *data)
 {
@@ -251,7 +249,7 @@ GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters * param,
     {
       pos = param->list;
       while (pos->next != NULL)
-	pos = pos->next;
+        pos = pos->next;
       pos->next = p;
     }
 }
@@ -264,10 +262,11 @@ GNUNET_RPC_parameters_add (struct GNUNET_RPC_CallParameters * param,
  * @return GNUNET_SYSERR on error
  */
 int
-GNUNET_RPC_parameters_get_value_by_name (const struct GNUNET_RPC_CallParameters * param,
+GNUNET_RPC_parameters_get_value_by_name (const struct
+                                         GNUNET_RPC_CallParameters *param,
                                          const char *name,
                                          unsigned int *dataLength,
-                                         void const * *value)
+                                         void const **value)
 {
   const struct Parameter *p;
 
@@ -294,7 +293,8 @@ GNUNET_RPC_parameters_get_value_by_name (const struct GNUNET_RPC_CallParameters 
  * @param value set to the value of the parameter
  */
 int
-GNUNET_RPC_parameters_get_value_by_index (const struct GNUNET_RPC_CallParameters * param,
+GNUNET_RPC_parameters_get_value_by_index (const struct
+                                          GNUNET_RPC_CallParameters *param,
                                           unsigned int i,
                                           unsigned int *dataLength,
                                           void const **value)
@@ -304,8 +304,7 @@ GNUNET_RPC_parameters_get_value_by_index (const struct GNUNET_RPC_CallParameters
   if (param == NULL)
     return GNUNET_SYSERR;
   p = param->list;
-  while ( (i > 0) &&
-	  (p != NULL) )
+  while ((i > 0) && (p != NULL))
     {
       i--;
       p = p->next;

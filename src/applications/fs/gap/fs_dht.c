@@ -130,9 +130,8 @@ purge_old_records (GNUNET_CronTime limit)
  */
 static int
 response_callback (const GNUNET_HashCode * key,
-		   unsigned int type,
-		   unsigned int size,		   
-                   const char * value, void *cls)
+                   unsigned int type,
+                   unsigned int size, const char *value, void *cls)
 {
   struct ActiveRequestRecords *record = cls;
   const DBlock *dblock;
