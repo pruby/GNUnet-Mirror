@@ -368,13 +368,12 @@ auto_share_main (const char *argvi)
   meta_cfg = GNUNET_GC_create ();
   if (GNUNET_YES == GNUNET_disk_file_test (NULL, metafn))
     GNUNET_GC_parse_configuration (meta_cfg, metafn);
+  if (GNUNET_NO == debug_flag)
+    GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
   /* first insert all of the top-level files or directories */
-
-  if (GNUNET_NO == debug_flag)
-    GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
   delay = 5 * GNUNET_CRON_SECONDS;
   while (GNUNET_NO == GNUNET_shutdown_test ())
     {
@@ -476,6 +475,20 @@ main (int argc, char *const *argv)
                                                   &log_file_name);
       myout = fopen (log_file_name, "a");
       GNUNET_free (log_file_name);
+
+      GNUNET_GC_get_configuration_value_filename (cfg,
+                                                  "GNUNET",
+                                                  "GNUNET_HOME",
+                                                  GNUNET_DEFAULT_HOME_DIRECTORY,
+                                                  &log_file_name);
+      log_file_name = GNUNET_realloc(log_file_name, strlen(log_file_name) + 30);
+      strcat(log_file_name, "gnunet-auto-share.pid");
+      GNUNET_GC_set_configuration_value_string(cfg,
+					       NULL,
+					       "GNUNETD",
+					       "PIDFILE",
+					       log_file_name);
+      GNUNET_free (log_file_name);	    
     }
 #ifdef MINGW
   if (GNUNET_GC_get_configuration_value_yesno (cfg,
