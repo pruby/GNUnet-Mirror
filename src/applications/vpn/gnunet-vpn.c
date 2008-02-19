@@ -33,15 +33,19 @@
 
 #define buf ((GNUNET_MessageHeader*)&buffer)
 
-
 static struct GNUNET_Semaphore *doneSem;
+
 static struct GNUNET_Semaphore *cmdAck;
+
 static struct GNUNET_Semaphore *exitCheck;
+
 static struct GNUNET_Mutex *lock;
+
 static int wantExit;
+
 static int silent;
 
-static char *cfgFilename = "~/.gnunet/gnunet.conf";
+static char *cfgFilename = GNUNET_DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * All gnunet-transport-check command line options
@@ -65,18 +69,14 @@ receiveThread (void *arg)
   char buffer[GNUNET_MAX_BUFFER_SIZE];
   GNUNET_MessageHeader *bufp = buf;
 
-  /* buffer = GNUNET_malloc(GNUNET_MAX_BUFFER_SIZE); */
   while (GNUNET_OK == GNUNET_client_connection_read (sock, &bufp))
     {
       switch (ntohs (buf->type))
         {
-        case GNUNET_CS_PROTO_VPN_DEBUGOFF:
-        case GNUNET_CS_PROTO_VPN_DEBUGON:
         case GNUNET_CS_PROTO_VPN_TUNNELS:
         case GNUNET_CS_PROTO_VPN_ROUTES:
         case GNUNET_CS_PROTO_VPN_REALISED:
         case GNUNET_CS_PROTO_VPN_RESET:
-        case GNUNET_CS_PROTO_VPN_REALISE:
         case GNUNET_CS_PROTO_VPN_ADD:
         case GNUNET_CS_PROTO_VPN_TRUST:
           if (ntohs (buf->size) > sizeof (GNUNET_MessageHeader))
@@ -97,10 +97,10 @@ receiveThread (void *arg)
               return NULL;
             }
           GNUNET_mutex_unlock (lock);
-          break;;
+          break;
         case GNUNET_CS_PROTO_VPN_MSG:
           if (silent == GNUNET_YES)
-            break;;
+            break;
         case GNUNET_CS_PROTO_VPN_REPLY:
 
           if (ntohs (buf->size) > sizeof (GNUNET_MessageHeader))
@@ -113,10 +113,11 @@ receiveThread (void *arg)
           break;;
         }
     }
-  /* GNUNET_free(buffer); */
   GNUNET_semaphore_up (doneSem);
   return NULL;
 }
+
+#define COMMAND_LINE_SIZE 1024
 
 /**
  * @param argc number of arguments from the command line
@@ -129,7 +130,7 @@ main (int argc, char *const *argv)
   struct GNUNET_ClientServerConnection *sock;
   struct GNUNET_ThreadHandle *messageReceiveThread;
   void *unused;
-  char buffer[sizeof (GNUNET_MessageHeader) + 1024];
+  char buffer[sizeof (GNUNET_MessageHeader) + COMMAND_LINE_SIZE];
   int rancommand = 0;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_GE_Context *ectx;
@@ -166,40 +167,12 @@ main (int argc, char *const *argv)
 
 
   /* accept keystrokes from user and send to gnunetd */
-  while (NULL != fgets (buffer, 1024, stdin))
+  while (NULL != fgets (buffer, COMMAND_LINE_SIZE, stdin))
     {
       if (rancommand)
         {
           rancommand = 0;
           GNUNET_semaphore_up (exitCheck);
-        }
-      if (strncmp (buffer, "debug0", 6) == 0)
-        {
-          ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (GNUNET_CS_PROTO_VPN_DEBUGOFF);
-          ((GNUNET_MessageHeader *) & buffer)->size =
-            htons (sizeof (GNUNET_MessageHeader));
-          if (GNUNET_SYSERR ==
-              GNUNET_client_connection_write (sock,
-                                              (GNUNET_MessageHeader *) &
-                                              buffer))
-            return -1;
-          rancommand = 1;
-          GNUNET_semaphore_down (cmdAck, GNUNET_YES);
-        }
-      else if (strncmp (buffer, "debug1", 6) == 0)
-        {
-          ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (GNUNET_CS_PROTO_VPN_DEBUGON);
-          ((GNUNET_MessageHeader *) & buffer)->size =
-            htons (sizeof (GNUNET_MessageHeader));
-          if (GNUNET_SYSERR ==
-              GNUNET_client_connection_write (sock,
-                                              (GNUNET_MessageHeader *) &
-                                              buffer))
-            return -1;
-          rancommand = 1;
-          GNUNET_semaphore_down (cmdAck, GNUNET_YES);
         }
       else if (strncmp (buffer, "tunnels", 7) == 0)
         {
@@ -257,20 +230,6 @@ main (int argc, char *const *argv)
           rancommand = 1;
           GNUNET_semaphore_down (cmdAck, GNUNET_YES);
         }
-      else if (strncmp (buffer, "realise", 7) == 0)
-        {
-          ((GNUNET_MessageHeader *) & buffer)->type =
-            htons (GNUNET_CS_PROTO_VPN_REALISE);
-          ((GNUNET_MessageHeader *) & buffer)->size =
-            htons (sizeof (GNUNET_MessageHeader));
-          if (GNUNET_SYSERR ==
-              GNUNET_client_connection_write (sock,
-                                              (GNUNET_MessageHeader *) &
-                                              buffer))
-            return -1;
-          rancommand = 1;
-          GNUNET_semaphore_down (cmdAck, GNUNET_YES);
-        }
       else if (strncmp (buffer, "trust", 5) == 0)
         {
           ((GNUNET_MessageHeader *) & buffer)->type =
@@ -312,7 +271,7 @@ main (int argc, char *const *argv)
       else
         {
           printf
-            ("debug0, debug1, tunnels, route, realise, realised, reset, trust, add <hash>\n");
+            ("tunnels, route, realised, reset, trust, add <hash>\n");
         }
     }
   /* wait for shutdown... */
@@ -327,7 +286,6 @@ main (int argc, char *const *argv)
   /* we can't guarantee that this can be called while the other thread is waiting for read */
   GNUNET_client_connection_close_forever (sock);
   GNUNET_semaphore_down (doneSem, GNUNET_YES);
-
   GNUNET_semaphore_destroy (doneSem);
   GNUNET_semaphore_destroy (cmdAck);
   GNUNET_semaphore_destroy (exitCheck);

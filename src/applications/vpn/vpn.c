@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,116 +28,70 @@
  *
  * Yes this will thoroughly break most of the coding guidelines :-/ at least the first release.
  *
- * test^h^h^h^hhack cycle goes like this, make; ./install; /etc/init.d/gnunet stop; /etc/init.d/gnunet start
- *
  * We use IPv6 addresses because they provide a larger space, and are
  * not as likely to be in use by other applications such as NAT.
  *
- * we also follow the guidance in RFC4193 and use only the 40 bits specified
- * for the randomly generated publickey. This allows nodes to
- * connect subnets to the network.
+ * We also follow the guidance in RFC4193 and use only the 40 bits
+ * specified for the randomly generated publickey. This allows nodes
+ * to connect subnets to the network.
  *
- * It also allows interoperation with other users of this
- * space such as anonymous internets. We use GNUnet to benefit from
- * its key infrastructure, though other users may well rip fdxx:: bits directly
- * from public keys, using the private key to GNUNET_RSA_sign route announcements.
+ * It also allows interoperation with other users of this space such
+ * as anonymous internets. We use GNUnet to benefit from its key
+ * infrastructure, though other users may well rip fdxx:: bits
+ * directly from public keys, using the private key to GNUNET_RSA_sign
+ * route announcements.
  *
  * CHANGELOG:
  * 20060110 Change ifconfig/route to ioctl's
  * 20060111 P2P packet includes length of the header.
  * 20060802 Logging for multiple clients
+ *
+ * TODO:
+ * - consider using linked list for routing tables instead of arrays
+ * - split up handlep2pMSG into many individual handlers
+ * - find a better solution for /var/lib/gnunet/gnunet.vpn,
+ *   at least do not hardwire the path
+ * - can we split off P2P and TUN code into
+ *   individual files without keeping globals?
+ * - use PeerIdentities instead of PublicKeys where
+ *   possible
  */
 
-#include "platform.h"
-#include "gnunet_util.h"
-#include "gnunet_core.h"
-#include "gnunet_protocols.h"
-#include "gnunet_identity_service.h"
-#include "gnunet_session_service.h"
-
-/* i'm going to put platform dependent code here for now */
-#include <linux/if_tun.h>
-#include <linux/if_ether.h>
-
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
-
-/* require struct in6_rtmsg */
-#include <net/route.h>
-
-/* This is derived from ifconfig source code... in6_ifreq needed from <linux/ipv6.h> */
-#include <asm/types.h>
-#ifndef _LINUX_IN6_H
-struct in6_ifreq
-{
-  struct in6_addr ifr6_addr;
-  __u32 ifr6_prefixlen;
-  unsigned int ifr6_ifindex;
-};
-#endif
-
-/* the idea is that you can use the first subnet number as a persistent identifier for your
- * website, services etc, so numbering of virtual circuits to other nodes begins at 2.
- * If you want to use more subnets locally, you can of course increase this number.
- */
-#define VC_START 2
-
-#define MAXSIG_BUF 128
-
-/* Here we define the maximum size of any headers that go in front of IP packets
- * it's the maximum of the GNUnet header and any platform headers, such as TUN/TAP's
- * packet information header on Linux.
- */
-#define maxi(a,b) ((a)>(b)?(a):(b))
-#define mini(a,b) ((a)<(b)?(a):(b))
-#define HEADER_FRAME maxi(sizeof(GNUNET_MessageHeader), sizeof(struct tun_pi))
-
-/* we can't actually send messages this long... maybe 2 bytes shorter tho
- * planned includes a way to send yet longer messages
- */
-#define IP_FRAME 65536
+#include "vpn.h"
+#include "cs.h"
+#include "helper.h"
 
 /**
  * Identity service, to reset the core.
  */
-static GNUNET_Identity_ServiceAPI *identity;
-static GNUNET_Session_ServiceAPI *session;
+GNUNET_Identity_ServiceAPI *identity;
 
-static GNUNET_CoreAPIForPlugins *coreAPI;
+GNUNET_Session_ServiceAPI *session;
 
-static struct GNUNET_ClientHandle **clients_store;
-static int clients_entries;
-static int clients_capacity;
+GNUNET_CoreAPIForPlugins *coreAPI;
 
-static int cdebug;
+struct GNUNET_Mutex *lock;
+
+/* from bluetooth agent */
+tunnel_info *store1;
+
+int entries1;
+
+route_info *route_store;
+
+int route_entries;
+
+route_info *realised_store;
+
+int realised_entries;
+
 static int interval = 60;
-static struct GNUNET_Mutex *lock;
 
 static struct GNUNET_ThreadHandle *tunThreadInfo;
 
 static struct GNUNET_GE_Context *ectx;
 
-/* id = number portion of interface name. I.e. 0 = gnu0, 1= gnu1 ...
- * hd = filedescriptor of this tunnel
- * active = tunnel is in use, i.e. peer is online
- * route_entry = index in the remote node's routing table we have requested
- * ifindex = linux internal number to identify an interface
- */
-typedef struct
-{
-/*  char name[IFNAMSIZ]; */
-  int id;
-  int fd;
-  int active;
-  int route_entry;
-  int ifindex;
-  GNUNET_PeerIdentity peer;
-} tunnel_info;
-
-/* from bluetooth agent */
-static tunnel_info *store1 = NULL;
-static int entries1 = 0;
-static int capacity1 = 0;
+static int capacity1;
 
  /**
  * Pipe to communicate with select thread
@@ -146,166 +100,20 @@ static int capacity1 = 0;
 static int signalingPipe[2];
 
 /** is thread to stop? */
-static int running = 0;
+static int running;
 
 static int admin_fd;
-/**
- * Routing goes like this. Gather routes from all peers and put them in prototype store.
- * Only store lowest hop count if get multiple of the same public key from the same peer.
- *
- * When this process is complete, sort (so that 0 hop comes first and put in complete list.
- * complete list used to upload routing table to os.
- *
- * as the routes table can grow very large (need an entry for every reachable node in gnunet!) we can set a limit
- * below (GNUNET_VIEW_LIMIT)
- */
 
-/* This is an entry in the routing table */
-typedef struct
-{
-  /** owner's public key */
-  GNUNET_RSA_PublicKey owner;
-  /** hops to owner 1 = have a tunnel to owner, 0 = I am the owner.*/
-  int hops;
-  /** which tunnel entry in tunnels array */
-  int tunnel;
-} route_info;
+static int route_capacity;
 
-/* here we define a constant to limit the growth of your routing tables, and hence memory consumption
- * of course, increasing this helps the network by providing more routes to nodes further away in the mesh,
- * so long as it does not slow down your node significantly. :-)
- * 100 * 30 peers * 1000 (typical size of public key) = 3 meg of ram.
- * 100 * 30 = upto 3000 accessible peers. (reverse exponential will affect this though)
- */
-#define GNUNET_VIEW_LIMIT 100
+static int realised_capacity;
 
-/* same thing as route but without the tunnel info,
- * which is implicit with the sender GNUNET_PeerIdentity anyway.
- *
- * also the fields here are network byte order.
- */
-typedef struct
-{
-  GNUNET_RSA_PublicKey owner;
-  int hops;
-} transit_route;
-
-static route_info *route_store = NULL;
-static int route_entries = 0;
-static int route_capacity = 0;
-
-static route_info *realised_store = NULL;
-static int realised_entries = 0;
-static int realised_capacity = 0;
-
-/** send given string to client */
-static void
-cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
-{
-  va_list args;
-  int r = -1;
-  int size = 100;
-  GNUNET_MessageHeader *b = NULL, *nb = NULL;
-
-  if ((b = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size)) == NULL)
-    {
-      return;
-    }
-  while (1)
-    {
-      va_start (args, format);
-      r = VSNPRINTF ((char *) (b + 1), size, format, args);
-      va_end (args);
-      if (r > -1 && r < size)
-        break;
-      if (r > -1)
-        {
-          size = r + 1;
-        }
-      else
-        {
-          size *= 2;
-        }
-      if ((nb =
-           GNUNET_realloc (b, sizeof (GNUNET_MessageHeader) + size)) == NULL)
-        {
-          GNUNET_free (b);
-          return;
-        }
-      else
-        {
-          b = nb;
-        }
-    }
-  b->type = htons (t);
-  b->size = htons (sizeof (GNUNET_MessageHeader) + strlen ((char *) (b + 1)));
-  if (c != NULL)
-    {
-      coreAPI->cs_send_to_client (c, b, GNUNET_YES);
-    }
-  else
-    {
-      for (r = 0; r < clients_entries; r++)
-        {
-          coreAPI->cs_send_to_client (*(clients_store + r), b, GNUNET_YES);
-        }
-    }
-  GNUNET_free (b);
-}
-
-#define VLOG if ((cdebug & (GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST)) > 0) cprintf(NULL,GNUNET_CS_PROTO_VPN_MSG,
-
-/** Test if two GNUNET_RSA_PublicKey are equal or not */
-static int
-isEqualP (const GNUNET_RSA_PublicKey * first,
-          const GNUNET_RSA_PublicKey * second)
-{
-  int i;
-  int ln = maxi (first->sizen, second->sizen);
-  int sn = mini (first->sizen, second->sizen);
-
-  /* compare common mode modulus */
-  if (memcmp
-      ((first->key) + ((first->sizen) - sn),
-       (second->key) + ((second->sizen) - sn), sn) != 0)
-    return GNUNET_NO;
-
-  /* difference before n should be 0 */
-  for (i = 0; i < (first->sizen) - sn; i++)
-    {
-      if (*(first->key + i) != 0)
-        return GNUNET_NO;
-    }
-  for (i = 0; i < (second->sizen) - sn; i++)
-    {
-      if (*(second->key + i) != 0)
-        return GNUNET_NO;
-    }
-
-  /* compare common mode exponent */
-  if (memcmp ((first->key) + ln, (second->key) + ln, GNUNET_RSA_KEY_LEN - ln)
-      != 0)
-    return GNUNET_NO;
-
-  for (i = first->sizen; i < ln; i++)
-    {
-      if (*(first->key + i) != 0)
-        return GNUNET_NO;
-    }
-  for (i = second->sizen; i < ln; i++)
-    {
-      if (*(second->key + i) != 0)
-        return GNUNET_NO;
-    }
-
-  return GNUNET_YES;
-}
 
 /**
  * clear out the prototype routes table
  * called at start or when we know a peer changes its route table.
  */
-static void
+void
 init_router ()
 {
   int reqcapacity;
@@ -365,7 +173,9 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
               /* we don't store alternative routes to ourselves,
                * as we already know how to route to ourself
                */
-              VLOG _("Not storing route to myself from peer %d\n"), tunnel);
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			     _("Not storing route to myself from peer %d\n"), tunnel);
               return;
             }
           if ((route_store + i)->tunnel == tunnel)
@@ -374,10 +184,11 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
                * but store the lowest hop count that the peer is advertising for that node.
                */
               (route_store + i)->hops = mini ((route_store + i)->hops, hops);
-              VLOG
-                _
-                ("Duplicate route to node from peer %d, choosing minimum hops"),
-                tunnel);
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			     _
+			     ("Duplicate route to node from peer %d, choosing minimum hops"),
+			     tunnel);
               return;
             }
         }
@@ -409,7 +220,9 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
           (route_store + i)->owner = (route_store + (i - 1))->owner;
           i--;
         }
-      VLOG _("Inserting route from peer %d in route table at location %d\n"),
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     _("Inserting route from peer %d in route table at location %d\n"),
         tunnel, i);
       (route_store + i)->hops = hops;
       (route_store + i)->tunnel = tunnel;
@@ -417,46 +230,6 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
     }
 }
 
-/**
- * Render IPv4 or IPv6 packet info for logging.
- */
-static void ipinfo (char *info, const struct ip6_hdr *fp)
-{
-  struct in_addr fr4;
-  struct in_addr to4;
-
-  if ((((const struct iphdr *) fp)->version == 4))
-    {
-      fr4.s_addr = ((const struct iphdr *) fp)->saddr;
-      to4.s_addr = ((const struct iphdr *) fp)->daddr;
-      sprintf (info, "IPv4 %s -> ", inet_ntoa (fr4));
-      strcat (info, inet_ntoa (to4));
-      return;
-    }
-  if ((((const struct iphdr *) fp)->version == 6))
-    {
-      sprintf (info,
-               "IPv6 %x:%x:%x:%x:%x:%x:%x:%x -> %x:%x:%x:%x:%x:%x:%x:%x",
-               ntohs (fp->ip6_src.s6_addr16[0]),
-               ntohs (fp->ip6_src.s6_addr16[1]),
-               ntohs (fp->ip6_src.s6_addr16[2]),
-               ntohs (fp->ip6_src.s6_addr16[3]),
-               ntohs (fp->ip6_src.s6_addr16[4]),
-               ntohs (fp->ip6_src.s6_addr16[5]),
-               ntohs (fp->ip6_src.s6_addr16[6]),
-               ntohs (fp->ip6_src.s6_addr16[7]),
-               ntohs (fp->ip6_dst.s6_addr16[0]),
-               ntohs (fp->ip6_dst.s6_addr16[1]),
-               ntohs (fp->ip6_dst.s6_addr16[2]),
-               ntohs (fp->ip6_dst.s6_addr16[3]),
-               ntohs (fp->ip6_dst.s6_addr16[4]),
-               ntohs (fp->ip6_dst.s6_addr16[5]),
-               ntohs (fp->ip6_dst.s6_addr16[6]),
-               ntohs (fp->ip6_dst.s6_addr16[7]));
-      return;
-    }
-  sprintf (info, "IPv%d ?", ((const struct iphdr *) fp)->version);
-}
 
 /** check that ethertype matches ip version for incoming packets from linux specific code */
 static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
@@ -484,70 +257,15 @@ static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
            && (((struct iphdr *) fp)->version == 6))
     {
       ipinfo (info, fp);
-      VLOG "-> GNUnet(%d) : %s\n", len - sizeof (struct tun_pi), info);
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     "-> GNUnet(%d) : %s\n", len - sizeof (struct tun_pi), info);
       return GNUNET_YES;
     }
   GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
                  _("RFC4193 Ethertype %x and IP version %x do not match!\n"),
                  ntohs (tp->proto), ((struct iphdr *) fp)->version);
   return GNUNET_NO;
-}
-
-/** Test if two GNUNET_PeerIdentity are equal or not */
-static int isEqual (const GNUNET_PeerIdentity * first,
-                    const GNUNET_PeerIdentity * second)
-{
-  int i;
-  for (i = 0; i < 512 / 8 / sizeof (unsigned int); i++)
-    {
-      if (first->hashPubKey.bits[i] != second->hashPubKey.bits[i])
-        {
-          return 0;
-        }
-    }
-  return -1;
-}
-
-/**
- * Convert a PeerIdentify into a "random" RFC4193 prefix
- * actually we make the first 40 bits of the GNUNET_hash into the prefix!
- */
-static void id2ip (struct GNUNET_ClientHandle *cx,
-                   const GNUNET_PeerIdentity * them)
-{
-  unsigned char a, b, c, d, e;
-  a = (them->hashPubKey.bits[0] >> 8) & 0xff;
-  b = (them->hashPubKey.bits[0] >> 0) & 0xff;
-  c = (them->hashPubKey.bits[1] >> 8) & 0xff;
-  d = (them->hashPubKey.bits[1] >> 0) & 0xff;
-  e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-  cprintf (cx, GNUNET_CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x", a, b, c,
-           d, e);
-}
-
-/* convert GNUNET_PeerIdentity into network octet order IPv6 address */
-static void id2net (struct in6_addr *buf, const GNUNET_PeerIdentity * them)
-{
-  unsigned char a, b, c, d, e;
-  a = (them->hashPubKey.bits[0] >> 8) & 0xff;
-  b = (them->hashPubKey.bits[0] >> 0) & 0xff;
-  c = (them->hashPubKey.bits[1] >> 8) & 0xff;
-  d = (them->hashPubKey.bits[1] >> 0) & 0xff;
-  e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-
-  /* we are unique random */
-  buf->s6_addr16[0] = htons (0xfd00 + a);
-  buf->s6_addr16[1] = htons (b * 256 + c);
-  buf->s6_addr16[2] = htons (d * 256 + e);
-
-  /* IPv6 /48 subnet number is zero */
-  buf->s6_addr16[3] = 0;
-
-  /* IPV6 /64 interface is zero */
-  buf->s6_addr16[4] = 0;
-  buf->s6_addr16[5] = 0;
-  buf->s6_addr16[6] = 0;
-  buf->s6_addr16[7] = 0;
 }
 
 static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
@@ -1040,8 +758,10 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
       memcpy (new_fp, fp, ntohs (gp->size) - sizeof (GNUNET_MessageHeader));
 
       GNUNET_mutex_lock (lock);
-      VLOG _("<- GNUnet(%d) : %s\n"),
-        ntohs (gp->size) - sizeof (GNUNET_MessageHeader), loginfo);
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     _("<- GNUnet(%d) : %s\n"),
+		     ntohs (gp->size) - sizeof (GNUNET_MessageHeader), loginfo);
       for (i = 0; i < entries1; i++)
         {
           if (isEqual (sender, &((store1 + i)->peer)))
@@ -1089,14 +809,18 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
       return GNUNET_OK;
     case GNUNET_P2P_PROTO_AIP_GETROUTE:
         /** peer wants an entry from our routing table */
-      VLOG _("Receive route request\n"));
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     _("Receive route request\n"));
       if (ntohs (gp->size) == (sizeof (GNUNET_MessageHeader) + sizeof (int)))
         {
           i = ntohl (*((int *) fp));
           GNUNET_mutex_lock (lock);
           if (i < realised_entries)
             {
-              VLOG _("Prepare route announcement level %d\n"), i);
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			     _("Prepare route announcement level %d\n"), i);
               rgp =
                 GNUNET_malloc (sizeof (GNUNET_MessageHeader) +
                                sizeof (transit_route));
@@ -1114,13 +838,17 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
               ((transit_route *) (rgp + 1))->hops =
                 htonl ((realised_store + i)->hops);
               GNUNET_mutex_unlock (lock);
-              VLOG _("Send route announcement %d with route announce\n"), i);
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			     _("Send route announcement %d with route announce\n"), i);
               /* it must be delivered if possible, but it can wait longer than IP */
               coreAPI->unicast (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
               GNUNET_free (rgp);
               return GNUNET_OK;
             }
-          VLOG _("Send outside table info %d\n"), i);
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			 _("Send outside table info %d\n"), i);
           rgp = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + sizeof (int));
           if (rgp == NULL)
             {
@@ -1137,20 +865,26 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
         }
       return GNUNET_OK;
     case GNUNET_P2P_PROTO_AIP_ROUTE:
-      VLOG _("Receive route announce.\n"));
+      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     _("Receive route announce.\n"));
         /** peer sent us a route, insert it into routing table, then req next entry */
       if (ntohs (gp->size) ==
           (sizeof (GNUNET_MessageHeader) + sizeof (transit_route)))
         {
           GNUNET_mutex_lock (lock);
-          VLOG _("Going to try insert route into local table.\n"));
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			 _("Going to try insert route into local table.\n"));
           for (i = 0; i < entries1; i++)
             {
               if (isEqual (sender, &((store1 + i)->peer)))
                 {
                   (store1 + i)->active = GNUNET_YES;
-                  VLOG _("Inserting with hops %d\n"),
-                    ntohl (((transit_route *) (gp + 1))->hops));
+		  GNUNET_GE_LOG (ectx,
+				 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+				 _("Inserting with hops %d\n"),
+				 ntohl (((transit_route *) (gp + 1))->hops));
                   add_route (&(((transit_route *) (gp + 1))->owner),
                              1 + ntohl (((transit_route *) (gp + 1))->hops),
                              i);
@@ -1170,8 +904,10 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
                         htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
                       *((int *) (rgp + 1)) =
                         htonl ((store1 + i)->route_entry);
-                      VLOG _("Request level %d from peer %d\n"),
-                        (store1 + i)->route_entry, i);
+		      GNUNET_GE_LOG (ectx,
+				     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+				     _("Request level %d from peer %d\n"),
+				     (store1 + i)->route_entry, i);
                       coreAPI->unicast (&((store1 + i)->peer), rgp,
                                         GNUNET_EXTREME_PRIORITY, 60);
                       GNUNET_free (rgp);
@@ -1188,12 +924,16 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
           /* if this is the last route message, we do route realisation
            * that is, insert the routes into the operating system.
            */
-          VLOG _("Receive table limit on peer reached %d\n"),
-            ntohl (*((int *) fp)));
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+			 _("Receive table limit on peer reached %d\n"),
+			 ntohl (*((int *) fp)));
 /*  		GNUNET_mutex_lock(lock);
   	        for (i = 0; i < entries1; i++) {
           	        if (isEqual(sender, &((store1+i)->peer))) {
-  				VLOG _("Storing table limit %d for peer %d\n"), ntohl( *((int*)fp)), i );
+			      GNUNET_GE_LOG (ectx,
+		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+		     _("Storing table limit %d for peer %d\n"), ntohl( *((int*)fp)), i );
   				(store1+i)->route_limit = ntohl( *((int*)fp));
   				break;
   			}
@@ -1205,10 +945,11 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
   return GNUNET_OK;
 }
 
-/* here we copy the prototype route table we are collecting from peers to the actual
+/**
+ * here we copy the prototype route table we are collecting from peers to the actual
  * "realised" route table we distribute to peers, and to the kernel's table.
  */
-static void realise (struct GNUNET_ClientHandle *c)
+static void realise (void * unused)
 {
   int i, j, found;
   GNUNET_PeerIdentity id;
@@ -1229,8 +970,9 @@ static void realise (struct GNUNET_ClientHandle *c)
           reqstore = GNUNET_realloc (realised_store, reqcapacity);
           if (reqstore == NULL)
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "I cannot up the ram for realised routes.\n");
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+			     "I cannot up the ram for realised routes.\n");
               GNUNET_mutex_unlock (lock);
               return;
             }
@@ -1272,7 +1014,8 @@ static void realise (struct GNUNET_ClientHandle *c)
           rt.rtmsg_metric = (route_store + i)->hops;
           /* how many hops to owner of public key */
           rt.rtmsg_dst_len = 48;        /* always 48 as per RFC4193 */
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                    "Add route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
                    id, rt.rtmsg_metric, ntohs (rt.rtmsg_dst.s6_addr16[0]),
                    ntohs (rt.rtmsg_dst.s6_addr16[1]),
@@ -1284,16 +1027,16 @@ static void realise (struct GNUNET_ClientHandle *c)
                    ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
           if (ioctl (admin_fd, SIOCADDRT, &rt) < 0)
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                        "Cannot add route IPv6 address for gnu%s because %s\n",
                        id, strerror (errno));
             }
         }
     }
-  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Removing routes\n");
   GNUNET_GE_LOG (ectx,
-                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                 _("realise pull routes\n"));
+		 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+		 "Removing routes\n");
   /* pull routes that are in the old table but not the new */
   for (i = 0; i < realised_entries; i++)
     {
@@ -1326,8 +1069,9 @@ static void realise (struct GNUNET_ClientHandle *c)
           rt.rtmsg_metric = (realised_store + i)->hops;
           /* how many hops to owner of public key */
           rt.rtmsg_dst_len = 48;        /* always 48 as per RFC4193 */
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                   "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
+	  GNUNET_GE_LOG (ectx,
+			 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+			 "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
                    id, rt.rtmsg_metric, ntohs (rt.rtmsg_dst.s6_addr16[0]),
                    ntohs (rt.rtmsg_dst.s6_addr16[1]),
                    ntohs (rt.rtmsg_dst.s6_addr16[2]),
@@ -1338,13 +1082,13 @@ static void realise (struct GNUNET_ClientHandle *c)
                    ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
           if (ioctl (admin_fd, SIOCDELRT, &rt) < 0)
             {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "Cannot del route IPv6 address for gnu%s because %s\n",
+	      GNUNET_GE_LOG (ectx,
+			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
+			     "Cannot del route IPv6 address for gnu%s because %s\n",
                        id, strerror (errno));
             }
         }
     }
-  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Copying table\n");
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
                  _("realise copy table\n"));
@@ -1354,332 +1098,6 @@ static void realise (struct GNUNET_ClientHandle *c)
   GNUNET_mutex_unlock (lock);
 }
 
-static void add_client (struct GNUNET_ClientHandle *c)
-{
-  struct GNUNET_ClientHandle **rstore;
-  int i, rcapacity;
-
-  /* we already have them, equality is assumed if the filehandles match */
-  for (i = 0; i < clients_entries; i++)
-    {
-      if (*(clients_store + i) == c)
-        return;
-    }
-
-  clients_entries++;
-  /* do we need more ram to hold the client handle? */
-  rcapacity = clients_entries * sizeof (struct GNUNET_ClientHandle *);
-  if (rcapacity > clients_capacity)
-    {
-      rstore = GNUNET_realloc (clients_store, rcapacity);
-      if (rstore == NULL)
-        {
-          clients_entries--;
-          /* not enough ram, warn in the logs that they
-           * will forego receiving logging
-           */
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
-                         _("Cannot store client info\n"));
-          return;
-        }
-      clients_capacity = rcapacity;
-      clients_store = rstore;
-    }
-  *(clients_store + (clients_entries - 1)) = c;
-}
-
-static void remove_client (struct GNUNET_ClientHandle *c)
-{
-  int i;
-  for (i = 0; i < clients_entries; i++)
-    {
-      if (*(clients_store + i) == c)
-        {
-          *(clients_store + i) = *(clients_store + (clients_entries - 1));
-          clients_entries--;
-          return;
-        }
-    }
-}
-
-/** The console client is used to admin/debug vpn */
-static int csHandle (struct GNUNET_ClientHandle *c,
-                     const GNUNET_MessageHeader * message)
-{
-  GNUNET_MessageHeader *rgp = NULL;
-  int i;
-  GNUNET_PeerIdentity id;
-  int parameter = ntohs (message->size) - sizeof (GNUNET_MessageHeader);
-  char *ccmd = (char *) (message + 1);
-  char *parm;
-
-  GNUNET_mutex_lock (lock);
-  add_client (c);
-  GNUNET_mutex_unlock (lock);
-  /* issued command from client */
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_MSG)
-    {
-      if (ntohs (message->size) == 0)
-        return GNUNET_OK;
-    }
-  /*    while ((l < ll) && (*(ccmd+cl) > 32)) cl++; */
-
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_DEBUGOFF)
-    {
-      GNUNET_mutex_lock (lock);
-      cdebug = 0;
-      GNUNET_mutex_unlock (lock);
-      cprintf (c, GNUNET_CS_PROTO_VPN_DEBUGOFF, "LOG NOTHING\n");
-      return GNUNET_OK;
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_DEBUGON)
-    {
-      GNUNET_mutex_lock (lock);
-      cdebug = GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST;
-      GNUNET_mutex_unlock (lock);
-      cprintf (c, GNUNET_CS_PROTO_VPN_DEBUGON, "LOG DEBUG\n");
-      return GNUNET_OK;
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_TUNNELS)
-    {
-      GNUNET_mutex_lock (lock);
-      id2ip (c, coreAPI->myIdentity);
-      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "::/48 This Node\n");
-      for (i = 0; i < entries1; i++)
-        {
-          id2ip (c, &(store1 + i)->peer);
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                   "::/48 gnu%d active=%s routeentry=%d\n", (store1 + i)->id,
-                   (store1 + i)->active ? _("Yes") : _("No"),
-                   (store1 + i)->route_entry);
-        }
-      cprintf (c, GNUNET_CS_PROTO_VPN_TUNNELS, "%d Tunnels\n", entries1);
-      GNUNET_mutex_unlock (lock);
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_ROUTES)
-    {
-      GNUNET_mutex_lock (lock);
-      for (i = 0; i < route_entries; i++)
-        {
-          identity->getPeerIdentity (&(route_store + i)->owner, &id);
-          id2ip (c, &id);
-          if ((route_store + i)->hops == 0)
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "::/48 hops 0 (This Node)\n");
-            }
-          else
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "::/48 hops %d tunnel gnu%d\n",
-                       (route_store + i)->hops,
-                       (store1 + ((route_store + i)->tunnel))->id);
-            }
-        }
-      cprintf (c, GNUNET_CS_PROTO_VPN_ROUTES, "%d Routes\n", route_entries);
-      GNUNET_mutex_unlock (lock);
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_REALISED)
-    {
-      GNUNET_mutex_lock (lock);
-      for (i = 0; i < realised_entries; i++)
-        {
-          identity->getPeerIdentity (&(realised_store + i)->owner, &id);
-          id2ip (c, &id);
-          if ((realised_store + i)->hops == 0)
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "::/48 hops 0 (This Node)\n");
-            }
-          else
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                       "::/48 hops %d tunnel gnu%d\n",
-                       (realised_store + i)->hops,
-                       (store1 + ((realised_store + i)->tunnel))->id);
-            }
-        }
-      cprintf (c, GNUNET_CS_PROTO_VPN_REALISED, "%d Realised\n",
-               realised_entries);
-      GNUNET_mutex_unlock (lock);
-    }
-  /* add routes in route but not realised to OS
-   * delete routes in realised but not route from OS
-   * memcpy routes to realised metric
-   */
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_REALISE)
-    {
-      realise (c);
-      cprintf (c, GNUNET_CS_PROTO_VPN_REALISE, "Realise done\n");
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_RESET)
-    {
-      GNUNET_mutex_lock (lock);
-      init_router ();
-      for (i = 0; i < entries1; i++)
-        {
-          (store1 + i)->route_entry = 0;
-          /* lets send it to everyone - expect response only from VPN enabled nodes tho :-) */
-/*  		if ((store1+i)->active == GNUNET_YES) { */
-          rgp = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + sizeof (int));
-          if (rgp == NULL)
-            {
-              break;
-            }
-          rgp->type = htons (GNUNET_P2P_PROTO_AIP_GETROUTE);
-          rgp->size = htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
-          *((int *) (rgp + 1)) = htonl ((store1 + i)->route_entry);
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                   "Request level %d from peer %d ",
-                   (store1 + i)->route_entry, i);
-          id2ip (c, &((store1 + i)->peer));
-          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "\n");
-          coreAPI->unicast (&((store1 + i)->peer), rgp,
-                            GNUNET_EXTREME_PRIORITY, 60);
-          GNUNET_free (rgp);
-/*  		}	*/
-        }
-      GNUNET_mutex_unlock (lock);
-      cprintf (c, GNUNET_CS_PROTO_VPN_RESET,
-               "Rebuilding routing tables done\n");
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_TRUST)
-    {
-      GNUNET_mutex_lock (lock);
-      for (i = 0; i < entries1; i++)
-        {
-          if ((store1 + i)->active == GNUNET_YES)
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Uprating peer ");
-              id2ip (c, &(store1 + i)->peer);
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " with credit %d\n",
-                       identity->changeHostTrust (&(store1 + i)->peer, 1000));
-            }
-        }
-      cprintf (c, GNUNET_CS_PROTO_VPN_TRUST,
-               "Gave credit to active nodes of %d nodes...\n", entries1);
-      GNUNET_mutex_unlock (lock);
-    }
-  if (ntohs (message->type) == GNUNET_CS_PROTO_VPN_ADD)
-    {
-      if (parameter > 0)
-        {
-          if ((parm = GNUNET_malloc (parameter + 1)) != NULL)
-            {
-              strncpy (parm, ccmd, parameter);
-              *(parm + parameter) = 0;
-              cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Connect ");
-              if (GNUNET_OK == GNUNET_enc_to_hash (parm, &(id.hashPubKey)))
-                {
-                  id2ip (c, &id);
-
-                  /* this does not seem to work, strangeness with threads and capabilities?
-                   * GNUNET_mutex_lock(lock);
-                   * checkensure_peer(&id, NULL);
-                   * GNUNET_mutex_unlock(lock);
-                   */
-
-                  /* get it off the local blacklist */
-                  identity->whitelistHost (&id);
-
-                  switch (session->tryConnect (&id))
-                    {
-                    case GNUNET_YES:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                               " already connected.\n");
-                      break;
-                    case GNUNET_NO:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                               " schedule connection.\n");
-                      break;
-                    case GNUNET_SYSERR:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                               " core refused.\n");
-                      break;
-                    default:
-                      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-                               " misc error.\n");
-                      break;
-                    }
-
-                  /* req route level 0
-                     rgp = GNUNET_malloc(sizeof(GNUNET_MessageHeader) + sizeof(int));
-                     if (rgp != NULL) {
-                     rgp->type = htons(GNUNET_P2P_PROTO_AIP_GETROUTE);
-                     rgp->size = htons(sizeof(GNUNET_MessageHeader) + sizeof(int));
-                     *((int*)(rgp+1)) = 0;
-                     coreAPI->unicast(&id,rgp,GNUNET_EXTREME_PRIORITY,4);
-                     cprintf(c, " Sent");
-                     GNUNET_free(rgp);
-                     } */
-
-                  cprintf (c, GNUNET_CS_PROTO_VPN_ADD, "\n");
-                }
-              else
-                {
-                  cprintf (c, GNUNET_CS_PROTO_VPN_ADD,
-                           "Could not decode PeerId %s from parameter.\n",
-                           parm);
-
-                }
-              GNUNET_free (parm);
-            }
-          else
-            {
-              cprintf (c, GNUNET_CS_PROTO_VPN_ADD,
-                       "Could not allocate for key.\n");
-            }
-        }
-      else
-        {
-          cprintf (c, GNUNET_CS_PROTO_VPN_ADD, "Require key for parameter\n");
-        }
-    }
-  return GNUNET_OK;
-}
-
-static void clientExitHandler (struct GNUNET_ClientHandle *c)
-{
-  GNUNET_mutex_lock (lock);
-  remove_client (c);
-  GNUNET_mutex_unlock (lock);
-}
-
-
-static int makeNonblocking (int handle)
-{
-#if MINGW
-  u_long mode;
-
-  mode = 1;
-  if (ioctlsocket (handle, FIONBIO, &mode == SOCKET_ERROR))
-    {
-      SetErrnoFromWinsockError (WSAGetLastError ());
-      return GNUNET_SYSERR;
-    }
-  else
-    {
-      /* store the blocking mode */
-#if HAVE_PLIBC_FD
-      plibc_fd_set_blocking (handle, 0);
-#else
-      __win_SetHandleBlockingMode (handle, 0);
-#endif
-    }
-#else
-  int flags = fcntl (handle, F_GETFL);
-  flags |= O_NONBLOCK;
-  if (-1 == fcntl (handle, F_SETFL, flags))
-    {
-      GNUNET_GE_LOG_STRERROR (ectx,
-                              GNUNET_GE_WARNING | GNUNET_GE_USER |
-                              GNUNET_GE_ADMIN | GNUNET_GE_IMMEDIATE, "fcntl");
-      return GNUNET_SYSERR;
-    }
-#endif
-  return GNUNET_OK;
-}
 
 /**
  * Module inserted... create thread to listen to TUNTAP and pass
@@ -1691,7 +1109,7 @@ static int makeNonblocking (int handle)
 int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 {
   int pfd;
-  char *str = "OK\r\n";
+  char *str = GNUNET_strdup("OK\r\n");
 
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -1700,19 +1118,20 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 
   /* Signal to the root init script we want cap_net_admin
    */
-  pfd = open ("/var/lib/GNUnet/gnunet.vpn", O_WRONLY);
+  pfd = open ("/var/lib/gnunet/gnunet.vpn", O_WRONLY);
   if (pfd > -1)
     {
-      write (pfd, str, strlen (str));
-      close (pfd);
+      WRITE (pfd, str, strlen (str));
+      CLOSE (pfd);
     }
-  pfd = open ("/var/lib/GNUnet/gnunet.vpn", O_RDONLY);
+  pfd = open ("/var/lib/gnunet/gnunet.vpn", O_RDONLY);
   if (pfd > -1)
     {
-      read (pfd, str, strlen (str));
-      close (pfd);
+      READ (pfd, str, strlen (str));
+      CLOSE (pfd);
     }
-  unlink ("/var/lib/GNUnet/gnunet.vpn");
+  UNLINK ("/var/lib/gnunet/gnunet.vpn");
+  GNUNET_free(str);
 
   /* system("sudo setpcaps cap_net_admin+eip `pidof gnunetd`"); */
 
@@ -1749,16 +1168,8 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG))
     return GNUNET_SYSERR;
-  if (GNUNET_SYSERR == capi->cs_exit_handler_register (&clientExitHandler))
-    return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_MSG, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_DEBUGOFF, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_DEBUGON, &csHandle))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &csHandle))
@@ -1773,9 +1184,6 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_RESET, &csHandle))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REALISE, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
@@ -1786,27 +1194,31 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
     return GNUNET_SYSERR;
 
   identity = coreAPI->request_service ("identity");
+  GNUNET_GE_ASSERT (ectx, identity != NULL);
   session = coreAPI->request_service ("session");
 
-  GNUNET_GE_ASSERT (ectx, identity != NULL);
   GNUNET_GE_ASSERT (ectx, session != NULL);
 
-  init_router ();               /* reqire identity */
-  init_realised ();             /* reqire identity */
+  init_router ();               /* requires identity */
+  init_realised ();             /* requires identity */
 
   PIPE (signalingPipe);
   /* important: make signalingPipe non-blocking
      to avoid stalling on signaling! */
-  makeNonblocking (signalingPipe[1]);
+  GNUNET_pipe_make_nonblocking(ectx, signalingPipe[1]);
 
   /* Yes we have to make our own thread, cause the GUNnet API is
    * missing some callbacks (Namely CanReadThisFd - SELECT()) that I would like ;-(
    * They may go in the thread that usually monitors the GUI port.
    */
   tunThreadInfo =
-    GNUNET_thread_create ((GNUNET_ThreadMainFunction) & tunThread, NULL,
+    GNUNET_thread_create (&tunThread, NULL,
                           128 * 1024);
-
+  GNUNET_cron_add_job(capi->cron,
+		      &realise,
+		      5 * GNUNET_CRON_MINUTES,
+		      5 * GNUNET_CRON_MINUTES,
+		      NULL);
   /* use capi->unicast to send messages to connected peers */
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -1828,6 +1240,10 @@ void done_module_vpn ()
   int ret;
   void *returnval;
 
+  GNUNET_cron_del_job(coreAPI->cron,
+		      &realise,
+		      5 * GNUNET_CRON_MINUTES,
+		      NULL);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_IP, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_GETROUTE, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTE, &handlep2pMSG);
@@ -1835,17 +1251,13 @@ void done_module_vpn ()
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_MSG, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_DEBUGOFF, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_DEBUGON, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ROUTES, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISED, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISE, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);
-  coreAPI->cs_exit_handler_unregister (&clientExitHandler);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);  
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 Waiting for tun thread to end\n"));
@@ -1866,9 +1278,9 @@ void done_module_vpn ()
                  _("RFC4193 The tun thread has ended\n"));
 
   coreAPI->release_service (identity);
-  coreAPI->release_service (session);
-
   identity = NULL;
+  coreAPI->release_service (session);
+  session = NULL;
 
   CLOSE (signalingPipe[0]);
   CLOSE (signalingPipe[1]);
@@ -1883,7 +1295,7 @@ void done_module_vpn ()
                          GNUNET_GE_REQUEST,
                          _("RFC4193 Closing tunnel %d fd %d\n"), i,
                          (store1 + i)->fd);
-          close ((store1 + i)->fd);
+          CLOSE ((store1 + i)->fd);
           (store1 + i)->fd = 0;
         }
     }
@@ -1893,10 +1305,10 @@ void done_module_vpn ()
       capacity1 = 0;
       GNUNET_free (store1);
     }
-  close (admin_fd);
+  CLOSE (admin_fd);
 
   GNUNET_mutex_destroy (lock);
   coreAPI = NULL;
 }
 
-/* end of template.c */
+/* end of vpn.c */

@@ -17,7 +17,9 @@ gnunet_vpn_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 libgnunetmodule_vpn_la_SOURCES = \
-  vpn.c 
+  cs.c cs.h \
+  helper.c helper.h \
+  vpn.c vpn.h
 libgnunetmodule_vpn_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 libgnunetmodule_vpn_la_LIBADD = \
