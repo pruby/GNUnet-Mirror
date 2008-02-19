@@ -10,8 +10,6 @@ Annotations:
 - power insert (#854)
 - clean up VPN code
 - full support for FSUI pause/resume of search
-- add keywords to known URI (#937)
-- just compute URI without actual insertion/indexing (#1308)
 - insert directory-name as metadata (#1240)
 
 TESTING:
