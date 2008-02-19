@@ -543,7 +543,7 @@ main_setup_text (int argc,
   char c;
   int ret;
 
-#ifdef OSX
+#if OSX || SOMEBSD
 #  define TCGETS TIOCGETA
 #  define TCSETS TIOCSETA
 #endif
