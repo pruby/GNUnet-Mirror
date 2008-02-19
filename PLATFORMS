@@ -23,7 +23,8 @@ FreeBSD (x86):
 - perfect
 
 OpenBSD/NetBSD:
-- known to be problematic (to say the least)
+- known to be problematic (to say the least),
+  see Mantis #1313.
 
 OS X (10.3.7, PowerPC):
 - GNUNET_PREFIX needs to be set properly for 'make check'
