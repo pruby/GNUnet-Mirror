@@ -15,7 +15,6 @@ Annotations:
 - insert directory-name as metadata (#1240)
 
 TESTING:
-- test new hostlist application [PRE]
 - test GAP code in general (still have one unexplained crazy crash!)
 - test RPC code (write a small demo)
 
