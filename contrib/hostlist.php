@@ -3,7 +3,18 @@
 // Author: "Krasko Oleksandr" <0m3r.mail@gmail.com>
 // Minor improvements by Christian Grothoff <christian@grothoff.org>
 header("Content-Type: application/octet-stream\r\n\r\n");
-$extmas = array('2','3','4','5','6','8','12','17','23','25');
+$extmas = array();
+$pv=$_GET['p'];
+if (isset($pv))
+  {
+    for ($ii=0;$ii<64;$ii++)
+      if (0 != ($pv & (1 << $ii)))
+	$extmas[] = $ii;
+  }
+else
+  {
+    $extmas = array('2','3','4','5','6','8','12','17','23','25');
+  }
 $path = '/var/lib/gnunet/data/hosts/'; // adjust as necessary
 $dir = opendir($path);
 if (! $dir)
