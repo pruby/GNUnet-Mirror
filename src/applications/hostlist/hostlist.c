@@ -28,6 +28,7 @@
 #include <microhttpd.h>
 #include "gnunet_identity_service.h"
 #include "gnunet_stats_service.h"
+#include "gnunet_protocols.h"
 
 #define DEBUG_HOSTLIST GNUNET_NO
 
@@ -98,6 +99,8 @@ access_handler_callback (void *cls,
   static int dummy;
   struct MHD_Response *response;
   struct HostSet results;
+  const char * protos;
+  int ret;
 
   if (0 != strcmp (method, MHD_HTTP_METHOD_GET))
     return MHD_NO;
@@ -109,22 +112,28 @@ access_handler_callback (void *cls,
   if (*upload_data_size != 0)
     return MHD_NO;              /* do not support upload data */
   memset (&results, 0, sizeof (struct HostSet));
-  results.protocols = -1;       /* for now */
+  protos = MHD_lookup_connection_value(connection,
+				       MHD_GET_ARGUMENT_KIND,
+				       "p");  
+  if ( (protos == NULL) ||
+       (1 != sscanf(protos, "%llu", &results.protocols)) )
+    results.protocols = -1;
+  host_processor(coreAPI->myIdentity,
+		 GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
+		 GNUNET_YES,
+		 &results);
   identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
     return MHD_NO;              /* no known hosts!? */
   response = MHD_create_response_from_data (results.size,
                                             results.data, MHD_YES, MHD_NO);
-  MHD_queue_response (connection, MHD_HTTP_OK, response);
+  ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
   MHD_destroy_response (response);
-  return MHD_NO;
+  if (stats != NULL)
+    stats->change(stat_request_count, 1);
+  return ret;
 }
 
-/**
- * Initialize the hostlist module. This method name must match
- * the library name (libgnunet_XXX => initialize_XXX).
- * @return GNUNET_SYSERR on errors
- */
 int
 initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
 {
