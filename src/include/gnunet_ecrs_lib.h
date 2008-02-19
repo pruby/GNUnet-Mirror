@@ -166,7 +166,7 @@ char *GNUNET_ECRS_meta_data_get_by_type (const struct GNUNET_ECRS_MetaData
 
 /**
  * Get the first matching MD entry of the given types.
- * @param ... -1-terminated list of types
+ * @paarm ... -1-terminated list of types
  * @return NULL if we do not have any such entry,
  *  otherwise client is responsible for freeing the value!
  */
@@ -538,7 +538,8 @@ typedef int (*GNUNET_ECRS_TestTerminate) (void *closure);
  * @param priority what is the priority for OUR node to
  *   keep this file available?  Use 0 for maximum anonymity and
  *   minimum reliability...
- * @param doIndex GNUNET_YES for index, GNUNET_NO for insertion
+ * @param doIndex GNUNET_YES for index, GNUNET_NO for insertion,
+ *                GNUNET_SYSERR for simulation
  * @param uri set to the URI of the uploaded file
  * @return GNUNET_SYSERR if the upload failed (i.e. not enough space
  *  or gnunetd not running)

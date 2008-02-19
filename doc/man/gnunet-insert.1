@@ -218,6 +218,12 @@ For the top\-level directory or file, create an SBlock that places the
 file into the namespace specified by the pseudonym NAME.
 
 .TP
+\fB\-s\fR, \fB\-\-simulate-only\fR
+When this option is used, gnunet\-insert will not actually publish
+the file but just simulate what would be done.  This can be used to
+compute the GNUnet URI for a file without actually sharing it.
+
+.TP
 \fB\-S\fR, \fB\-\-sporadic\fR
 This option specifies that the file will be updated sporadically but
 not periodically.  It is only valid in conjunction with the \-P
@@ -246,6 +252,22 @@ your locale.
 This option can be used to publish past and future periodical
 SBlocks. The option works best when used together with \-e. Default
 time is the current time.
+
+.TP
+\fB\-u \fIURI\fR, \fB\-\-uri=\fIURI\fR
+This option can be used to specify the URI of a file instead of
+a filename (this is the only case where the otherwise mandatory
+filename argument must be omitted).  Instead of publishing a file
+or directory and using the corresponding URI, gnunet\-insert will
+use this URI and perform the selected namespace or keyword 
+operations.  This can be used to add additional keywords to a
+file that has already been shared or to add files to a namespace
+for which the URI is known but the content is not locally available.
+
+.TP
+\fB\-U \fIID\fR, \fB\-\-update=\fIID\fR
+When updating an entry in the namespace, this option can be used
+to specify the ID of the previous entry.
 
 .TP
 \fB\-v\fR, \fB\-\-version\fR

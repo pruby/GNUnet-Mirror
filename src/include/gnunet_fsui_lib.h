@@ -920,7 +920,7 @@ typedef int (*GNUNET_FSUI_DirectoryScanCallback) (void *data,
  * @param ctx
  * @param filename name of file or directory to upload (directory
  *        implies use of recursion)
- * @param doIndex use indexing, not insertion
+ * @param doIndex GNUNET_YES: use indexing; GNUNET_NO: use insertion; GNUNET_SYSERR: "simulate"
  * @param doExtract use libextractor
  * @param individualKeywords add KBlocks for non-top-level files
  * @param topLevelMetaData metadata for top-level file or directory

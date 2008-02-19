@@ -30,6 +30,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_stats_service.h"
+#include "gnunet_transport_service.h"
 
 #include <curl/curl.h>
 
@@ -37,6 +38,8 @@
  * Stats service (maybe NULL!)
  */
 static GNUNET_Stats_ServiceAPI *stats;
+
+static GNUNET_Transport_ServiceAPI *transport;
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
@@ -129,7 +132,9 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
                   GNUNET_BootstrapTerminateCallback termTest, void *targ)
 {
   BootstrapContext bctx;
+  unsigned long long protocols;
   char *url;
+  char *purl;
   char *proxy;
   CURL *curl;
   CURLcode ret;
@@ -146,6 +151,7 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
 #endif
   unsigned int urls;
   size_t pos;
+  int i;
 
   if (0 != curl_global_init (CURL_GLOBAL_WIN32))
     {
@@ -217,6 +223,14 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                  _("Bootstrapping using `%s'.\n"), url);
+  purl = GNUNET_malloc(strlen(url) + 40);
+  protocols = 0;
+  for (i=GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;i>GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;i--)
+    if (transport->isAvailable((unsigned short)i))
+      protocols |= (1LL << i);    
+  sprintf(purl, "%s&p=%llu", url, protocols);
+  GNUNET_free(url);
+  url = purl;
   bctx.url = url;
   bctx.total = 0;
   proxy = NULL;
@@ -271,7 +285,7 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-                         GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+			 GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
                          "curl_multi_fdset", __FILE__, __LINE__,
                          curl_multi_strerror (mret));
           goto cleanup;
@@ -390,6 +404,9 @@ provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi)
 
   coreAPI = capi;
   ectx = capi->ectx;
+  transport = coreAPI->request_service ("transport");
+  if (transport == NULL)
+    return NULL;
   stats = coreAPI->request_service ("stats");
   if (stats != NULL)
     {
@@ -405,6 +422,8 @@ release_module_bootstrap ()
 {
   if (stats != NULL)
     coreAPI->release_service (stats);
+  coreAPI->release_service (transport);
+  transport = NULL;
   coreAPI = NULL;
 }
 

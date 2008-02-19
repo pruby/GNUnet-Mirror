@@ -104,7 +104,8 @@ pushBlock (struct GNUNET_ClientServerConnection *sock,
  * @param priority what is the priority for OUR node to
  *   keep this file available?  Use 0 for maximum anonymity and
  *   minimum reliability...
- * @param doIndex GNUNET_YES for index, GNUNET_NO for insertion
+ * @param doIndex GNUNET_YES for index, GNUNET_NO for insertion,
+ *         GNUNET_SYSERR for simulation
  * @param uri set to the URI of the uploaded file
  * @return GNUNET_SYSERR if the upload failed (i.e. not enough space
  *  or gnunetd not running)
@@ -173,7 +174,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
   eta = 0;
   if (upcb != NULL)
     upcb (filesize, 0, eta, upcbClosure);
-  if (doIndex)
+  if (doIndex == GNUNET_YES)
     {
       if (GNUNET_SYSERR == GNUNET_hash_file (ectx, filename, &fileId))
         {
@@ -208,7 +209,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
                          _
                          ("Indexing file `%s' failed. Trying to insert file...\n"),
                          filename);
-          doIndex = GNUNET_YES;
+          doIndex = GNUNET_NO;
           break;
         default:
           break;
@@ -293,7 +294,7 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
                "Query for current block of size %u is `%s'\n", size,
                (const char *) &enc);
 #endif
-      if (doIndex)
+      if (doIndex == GNUNET_YES)
         {
           if (GNUNET_SYSERR == GNUNET_FS_index (sock, &fileId, dblock, pos))
             {
@@ -318,8 +319,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
             }
           GNUNET_GE_ASSERT (ectx, value != NULL);
           *value = *dblock;     /* copy options! */
-
-          if (GNUNET_SYSERR == GNUNET_FS_insert (sock, value))
+	  if ( (doIndex == GNUNET_NO) &&
+	       (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)) )
             {
               GNUNET_GE_BREAK (ectx, 0);
               GNUNET_free (value);
@@ -392,7 +393,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
         }
       value->expirationTime = GNUNET_htonll (expirationTime);
       value->prio = htonl (priority);
-      if (GNUNET_SYSERR == GNUNET_FS_insert (sock, value))
+      if ( (doIndex != GNUNET_SYSERR) &&
+	   (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)) )
         {
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (value);
