@@ -30,6 +30,7 @@
 #include "gnunet_chat_lib.h"
 #include "chat.h"
 
+#define MAX_RETRIES 5
 /**
  * Handle for a (joined) chat room.
  */
@@ -70,6 +71,86 @@ thread_main (void *rcls)
   return NULL;
 }
 
+/**
+ * Listen for incoming messages on this chat room.  When received, call the client callback.
+ * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)... 
+ */
+static void *
+poll_thread (void *rcls)
+{
+	int ret = GNUNET_OK;
+  struct GNUNET_CHAT_Room *room = (struct GNUNET_CHAT_Room *)rcls;
+  GNUNET_MessageHeader *reply;
+	
+	CS_chat_MESSAGE *received_msg;
+  
+  unsigned int size;
+  unsigned int nick_len;
+  unsigned int msg_len;
+  unsigned int room_name_len;
+  unsigned int retries;
+  
+  char *nick;
+  char *message_content;
+  char *room_name;
+     
+  while(ret == GNUNET_OK)
+  {
+  	GNUNET_client_connection_test_connected (room->sock);
+  	fprintf(stderr,"Polling...\n");
+  	if (GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO)
+  	{
+  		
+  		retries = 0;
+  		while((GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO) && (retries < MAX_RETRIES))
+  		{
+  			
+  		}
+  	}
+  	fprintf(stderr,"Client is connected\n");
+  	
+  	reply = NULL;
+  	
+		if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
+		{
+      fprintf(stderr,"Read failed\n");
+      break;
+		}
+    fprintf(stderr,"Read sucessful\n");  
+    
+    if ((reply->size < ntohs(sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))||(reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
+    	break;
+      	
+	 	fprintf(stderr,"Received a callback??\n");
+		size = ntohs(reply->size);
+		
+		received_msg = (CS_chat_MESSAGE *)reply;
+		
+		nick_len = ntohl (received_msg->nick_len);
+		msg_len = ntohl (received_msg->msg_len);
+		room_name_len = ntohl (received_msg->room_name_len);
+		
+		nick = GNUNET_malloc (nick_len + 1);
+		message_content = GNUNET_malloc (msg_len + 1);
+		room_name = GNUNET_malloc (room_name_len + 1);
+		
+		memcpy (nick, &received_msg->nick[0], nick_len);
+		memcpy (message_content, &received_msg->nick[nick_len], msg_len);
+		memcpy (room_name, &received_msg->nick[nick_len + msg_len], room_name_len);
+		
+		nick[nick_len] = '\0';
+		message_content[msg_len] = '\0';
+		room_name[room_name_len] = '\0';
+		
+		if(GNUNET_OK != room->callback(room->callback_cls,room,nick,message_content,GNUNET_get_time(),0))
+		{
+			ret = GNUNET_SYSERR;
+		}
+	
+	}    
+
+  return (void *)ret;
+}
 /**
  * List all of the (publically visible) chat rooms.
  * @return number of rooms on success, GNUNET_SYSERR if iterator aborted
@@ -180,11 +261,14 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   chat_room->sock = sock;
 
   // create pthread
+  chat_room->listen_thread = GNUNET_thread_create (&poll_thread, &chat_room, 1024 * 2);
 
   // return room struct
   if (ret != GNUNET_OK)
+  {
+    GNUNET_free(chat_room);
     return NULL;
-
+  }
   return chat_room;
 }
 
@@ -194,6 +278,15 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
+	GNUNET_MessageHeader csHdr;
+	csHdr.type = htons(GNUNET_CS_PROTO_CHAT_LEAVE_MSG);
+	csHdr.size = htons(sizeof(csHdr));
+		
+  /*If this fails we don't care, this means the socket is already gone and the server should know how to deal with that!*/
+  /*We may not even need this message at all, just let the server handle a dead socket*/
+  GNUNET_GE_ASSERT(NULL,GNUNET_client_connection_write (chat_room->sock, &csHdr) == GNUNET_OK);
+  
+  
   // stop thread
   // join thread
   // free room struct
