@@ -35,15 +35,39 @@
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
 #define MAX_LAST_MESSAGES 12
-#define MAX_CLIENTS 4
 
-static struct GNUNET_ClientHandle **clients;
 static unsigned int clientCount;
 static struct GNUNET_HashCode **lastMsgs;
 static int ringIndex;
 static struct GNUNET_Mutex *chatMutex;
 static struct GNUNET_GE_Context *ectx;
 static struct GNUNET_GC_Configuration *cfg;
+
+struct GNUNET_Server_Chat_Room
+{
+  
+  struct GNUNET_ThreadHandle *listen_thread;
+
+  struct GNUNET_GE_Context *ectx;
+
+  struct GNUNET_GC_Configuration *cfg;
+
+  char *room_name;
+
+  GNUNET_HashCode room_name_hash;
+
+};
+
+struct GNUNET_CS_chat_client
+{
+	struct GNUNET_ClientHandle *client;
+	struct GNUNET_CS_chat_client *next;
+	struct GNUNET_CS_chat_client *prev;
+	GNUNET_HashCode *room_name_hash;
+
+};
+
+static struct GNUNET_CS_chat_client client_list;
 
 static void
 markSeen (GNUNET_HashCode * hc)
@@ -82,10 +106,10 @@ static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
                  const GNUNET_MessageHeader * message)
 {
-  int i;
-  int j;
   CS_chat_MESSAGE *cmsg;
-
+  
+  struct GNUNET_CS_chat_client *tempClient;
+  
   GNUNET_HashCode hc;
 
   char *nick;
@@ -96,7 +120,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   unsigned long nick_len;
   unsigned long msg_len;
   unsigned long room_name_len;
-
+  
   cmsg = (CS_chat_MESSAGE *) message;
 
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
@@ -134,46 +158,35 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   GNUNET_hash (cmsg, header_size, &hc);
   /* check if we have seen this message already */
 
-  j = -1;
   GNUNET_mutex_lock (chatMutex);
-  for (i = 0; i < MAX_LAST_MESSAGES; i++)
-    if (0 == memcmp (&hc, &lastMsgs[i], sizeof (GNUNET_HashCode)))
-      j = i;
-  if (j == -1)
-    {
 
-      if (clientCount == MAX_CLIENTS)
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                       _("Maximum number of chat clients reached.\n"));
-    }
-  else
-    {
-      GNUNET_array_grow (clients, clientCount, clientCount + 1);
-      clients[clientCount] = client;
-      ++clientCount;
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     _("Now %d of %d chat clients at this node.\n"),
-                     clientCount, MAX_CLIENTS);
-    }
-  /* we have not seen it before, send to all TCP clients
-     and broadcast to all peers */
+	/*TODO: we have received a message intended for some room, check current client contexts for matching room and send to those clients */
+	/*TODO: p2p messages will need to be sent as well at some point*/
+	
+	tempClient = &client_list;
+  while((tempClient->next != NULL)&&(tempClient->client != NULL))
+  {
+   	if(memcmp(&hc,tempClient->room_name_hash,sizeof(hc)))
+   	{
+   		fprintf(stderr,"room names match, must send message to others!!\n");
+   		coreAPI->cs_send_to_client (tempClient->client, message, GNUNET_YES);
+   		fprintf(stderr,"message sent?\n");
+   	}
+   	
+   	tempClient = tempClient->next; 	
+  }
+	  
+
   markSeen (&hc);
   broadcastToConnected (message, 5, 1);
-  /*cmsg->header.type = htons (GNUNET_CS_PROTO_CHAT_MSG); */
-  for (j = 0; j < clientCount; j++)
-    coreAPI->cs_send_to_client (clients[j], &cmsg->header, GNUNET_YES);
-  /*pmsg->nick[CHAT_NICK_LENGTH - 1] = '\0';
-     pmsg->message[CHAT_MSG_LENGTH - 1] = '\0'; */
-
-  /*
-     GNUNET_GE_LOG(ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-     " CHAT: received new message from %s: %s\n",
-     &pmsg->nick[0],
-     &pmsg->message[0]);
-   */
+  
+  
   GNUNET_mutex_unlock (chatMutex);
+  
+  GNUNET_free(room_name);
+  GNUNET_free(nick);
+  GNUNET_free(message_content);
+  
   return GNUNET_OK;
 }
 
@@ -181,8 +194,6 @@ static int
 csHandleChatRequest (struct GNUNET_ClientHandle *client,
                      const GNUNET_MessageHeader * message)
 {
-  int i;
-  int j;
   const CS_chat_JOIN_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
@@ -192,10 +203,12 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   char *room_name;
 
   int header_size;
+  int tempCount;
   unsigned long nick_len;
   unsigned long pubkey_len;
   unsigned long room_name_len;
-
+  struct GNUNET_CS_chat_client *tempClient;
+  
   pmsg = (P2P_chat_MESSAGE *) message;
   cmsg = (CS_chat_JOIN_MESSAGE *) message;
 
@@ -234,53 +247,136 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   GNUNET_hash (cmsg, header_size, &hc);
   GNUNET_mutex_lock (chatMutex);
   markSeen (&hc);
+  
+  /*TODO: create client context on the server, very simple as of now */
+  tempClient = &client_list;
+  while((tempClient->next != NULL)&&(tempClient->client != NULL))
+   	tempClient = tempClient->next;
+
+	tempClient->client = client;
+	tempClient->next = GNUNET_malloc(sizeof(struct GNUNET_CS_chat_client));
+	tempClient->next->prev = tempClient;
+	tempClient->room_name_hash = &hc;
+	tempClient = &client_list;
+	
+	tempCount = 0;
+  	while((tempClient->next != NULL)&&(tempClient->client != NULL))
+  	{
+			tempCount++;
+			tempClient = tempClient->next;
+  	}
+			
+	fprintf(stderr,"Number of clients currently is... %d\n",tempCount);
+  
 
   /* forward to all other TCP chat clients */
-  j = -1;                       /* marker to check if this is a new client */
+  /* marker to check if this is a new client */
+  /*
+  j = -1;
   for (i = 0; i < clientCount; i++)
     if (clients[i] == client)
       j = i;
     else
       coreAPI->cs_send_to_client (clients[i], message, GNUNET_YES);
-  if (j == -1)
-    {
-      if (clientCount == MAX_CLIENTS)
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                       _("Maximum number of chat clients reached.\n"));
-      else
-        {
-          GNUNET_array_grow (clients, clientCount, clientCount + 1);
-          clients[clientCount] = client;
-          ++clientCount;
-          GNUNET_GE_LOG (ectx,
-                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                         _("Now %d of %d chat clients at this node.\n"),
-                         clientCount, MAX_CLIENTS);
-        }
-    }
+	  if (j == -1)
+	    {
+	      if (clientCount == MAX_CLIENTS)
+	        GNUNET_GE_LOG (ectx,
+	                       GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
+	                       _("Maximum number of chat clients reached.\n"));
+	      else
+	        {
+	          GNUNET_array_grow (clients, clientCount, clientCount + 1);
+	          clients[clientCount] = client;
+	          ++clientCount;
+	          GNUNET_GE_LOG (ectx,
+	                         GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+	                         _("Now %d of %d chat clients at this node.\n"),
+	                         clientCount, MAX_CLIENTS);
+	        }
+	    }
+	*/
   /* forward to all other nodes in the network */
   /*pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
      broadcastToConnected (&pmsg->header, 5, 1); */
+  GNUNET_free(nick);
+  GNUNET_free(client_key);
+  GNUNET_free(room_name);
+ 
   GNUNET_mutex_unlock (chatMutex);
   fprintf (stderr, "End of handleChatRequest\n");
   return GNUNET_OK;
 }
 
+static int
+csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,const GNUNET_MessageHeader * message)
+{
+  /*GNUNET_RSA_PublicKey *client_key;*/ /*May use later for extra verification*/
+  int tempCount;
+
+  struct GNUNET_CS_chat_client *tempClient;
+  struct GNUNET_CS_chat_client *tempClientToRemove;
+ 
+  /*client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
+  memcpy (client_key, &cmsg->nick[nick_len], pubkey_len);*/
+ 
+  GNUNET_GE_LOG (ectx,
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
+                 "Received leave chat room message from client.\n");
+
+  
+  GNUNET_mutex_lock (chatMutex);
+  
+  /*TODO: delete client context on the server*/
+  	
+  tempClient = &client_list;
+  while((tempClient->next != NULL)&&(tempClient->client != NULL))
+  {
+  	if (memcmp(tempClient->client,client,sizeof(client)) == 0)
+  	{
+  		fprintf(stderr,"Client handle matches, remove it!\n");
+  		if(tempClient->prev == NULL)
+  		{
+  			tempClient->next->prev = NULL;
+  			/*tempClientToRemove = &client_list;*/
+  			client_list = *tempClient->next;	
+  		}
+  		else
+  		{
+  			tempClient->next->prev = tempClient->prev;
+  			tempClient->prev->next = tempClient->next;
+  			tempClientToRemove = tempClient;
+  			tempClient = tempClient->next;
+  			GNUNET_free(tempClientToRemove);
+  		}
+  	}
+  	else
+  	 	tempClient = tempClient->next;
+  
+  }
+	
+	/*Count the number of current clients, will be removed*/
+	tempClient = &client_list;
+	tempCount = 0;
+	while((tempClient->next != NULL)&&(tempClient->client != NULL))
+	{
+		tempCount++;
+		tempClient = tempClient->next;
+	}		
+	fprintf(stderr,"Number of clients currently is... %d\n",tempCount);
+
+  GNUNET_mutex_unlock (chatMutex);
+  fprintf (stderr, "End of handleChatLeave\n");
+  return GNUNET_OK;
+}
+
+
 static void
 chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
-  int i;
   GNUNET_mutex_lock (chatMutex);
-  for (i = 0; i < clientCount; i++)
-    if (clients[i] == client)
-      {
-        GNUNET_GE_LOG (ectx,
-                       GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                       "Chat client exits.\n");
-        clients[i] = clients[--clientCount];
-        break;
-      }
+  
+  
   GNUNET_mutex_unlock (chatMutex);
 }
 
@@ -308,10 +404,17 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->cs_exit_handler_register (&chatClientExitHandler))
     ok = GNUNET_SYSERR;
+    
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
                                    &csHandleChatRequest))
     ok = GNUNET_SYSERR;
+    
+  if (GNUNET_SYSERR ==
+      capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_LEAVE_MSG,
+                                   &csHandleChatLeaveRequest))
+    ok = GNUNET_SYSERR;
+    
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                                     &csHandleChatMSG))
     ok = GNUNET_SYSERR;
@@ -335,6 +438,8 @@ done_module_chat ()
                                     &csHandleChatMSG);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
                                     &csHandleChatRequest);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_LEAVE_MSG,
+                                    &csHandleChatLeaveRequest);
   GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;
 }

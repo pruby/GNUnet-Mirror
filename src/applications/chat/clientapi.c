@@ -96,32 +96,26 @@ poll_thread (void *rcls)
      
   while(ret == GNUNET_OK)
   {
-  	GNUNET_client_connection_test_connected (room->sock);
-  	fprintf(stderr,"Polling...\n");
   	if (GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO)
-  	{
-  		
+  	{  		
   		retries = 0;
   		while((GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO) && (retries < MAX_RETRIES))
   		{
   			
   		}
   	}
-  	fprintf(stderr,"Client is connected\n");
   	
   	reply = NULL;
   	
 		if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
 		{
-      fprintf(stderr,"Read failed\n");
+      
       break;
 		}
-    fprintf(stderr,"Read sucessful\n");  
     
     if ((reply->size < ntohs(sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))||(reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
     	break;
       	
-	 	fprintf(stderr,"Received a callback??\n");
 		size = ntohs(reply->size);
 		
 		received_msg = (CS_chat_MESSAGE *)reply;
@@ -261,7 +255,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   chat_room->sock = sock;
 
   // create pthread
-  chat_room->listen_thread = GNUNET_thread_create (&poll_thread, &chat_room, 1024 * 2);
+  chat_room->listen_thread = GNUNET_thread_create (&poll_thread, chat_room, 1024 * 2);
 
   // return room struct
   if (ret != GNUNET_OK)

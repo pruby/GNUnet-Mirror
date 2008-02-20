@@ -151,11 +151,15 @@ main (int argc, char **argv)
       ret = GNUNET_SYSERR;
     }
 
-  room = GNUNET_CHAT_join_room (ectx,
+	if (ret == GNUNET_OK)
+	{
+  	room = GNUNET_CHAT_join_room (ectx,
                                 cfg,
                                 nickname, room_name,
                                 &my_pub, my_priv, "", &receive_callback,
                                 NULL);
+	}
+	
   if (room == NULL)
     {
       fprintf (stderr, _("Failed to join the room\n"));
@@ -181,8 +185,6 @@ main (int argc, char **argv)
           if (message[strlen (message) - 1] == '\n')
             message[strlen (message) - 1] = '\0';
         }
-      fprintf (stderr, "quit: %s message: %s\n", quit, message);
-
       if (GNUNET_OK != GNUNET_CHAT_send_message (room,
                                                  message,
                                                  &confirmation_callback,
@@ -195,10 +197,16 @@ main (int argc, char **argv)
 
     }
 
-
-  GNUNET_CHAT_leave_room (room);
-  GNUNET_free (room);
-  GNUNET_free (message);
+  fprintf(stderr,"Cleaning up...\n");
+	if (room != NULL)
+	{
+  	GNUNET_CHAT_leave_room (room);
+  	GNUNET_free (room);
+	}
+	if (message != NULL)
+	{
+  	GNUNET_free (message);
+	}
   GNUNET_fini (ectx, cfg);
   return GNUNET_OK;
 }
