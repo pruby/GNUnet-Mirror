@@ -472,7 +472,7 @@ GNUNET_FS_ONDEMAND_test_indexed_file (GNUNET_Datastore_ServiceAPI * datastore,
   char *fn;
 
   fn = get_indexed_filename (fileId);
-  if (0 != STAT(fn, &filestat))
+  if (0 != STAT (fn, &filestat))
     {
       GNUNET_free (fn);
       return GNUNET_NO;

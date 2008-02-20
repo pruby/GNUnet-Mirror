@@ -325,7 +325,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    1, &GNUNET_getopt_configure_set_string, &pseudonym},
   {'s', "simulate-only", NULL,
    gettext_noop ("only simulte the process but do not do any "
-		 "actual publishing (useful to compute URIs)"),
+                 "actual publishing (useful to compute URIs)"),
    0, &GNUNET_getopt_configure_set_one, &do_simulate},
   {'S', "sporadic", NULL,
    gettext_noop ("specifies this as an aperiodic but updated publication"
@@ -341,7 +341,7 @@ static struct GNUNET_CommandLineOption gnunetinsertOptions[] = {
    1, &GNUNET_getopt_configure_set_string, &creation_time},
   {'u', "uri", "URI",
    gettext_noop ("URI to be published (can be used instead of passing a "
-		 "file to add keywords to the file with the respective URI)"),
+                 "file to add keywords to the file with the respective URI)"),
    1, &GNUNET_getopt_configure_set_string, &uri_string},
   {'U', "update", "ID",
    gettext_noop ("ID of the previous version of the content"
@@ -377,28 +377,22 @@ main (int argc, char *const *argv)
       errorCode = -1;
       goto quit;
     }
-  if ( ( (uri_string == NULL) ||
-	 (extract_only) ) &&
-       (i != argc - 1) )      
+  if (((uri_string == NULL) || (extract_only)) && (i != argc - 1))
     {
       printf (_
               ("You must specify one and only one filename for insertion.\n"));
       errorCode = -1;
       goto quit;
     }
-  if ( (uri_string != NULL) &&
-       (i != argc) )      
+  if ((uri_string != NULL) && (i != argc))
     {
-      printf (_
-              ("You must NOT specify an URI and a filename.\n"));
+      printf (_("You must NOT specify an URI and a filename.\n"));
       errorCode = -1;
       goto quit;
     }
-  if ( (uri_string != NULL) &&
-       (extract_only) )      
+  if ((uri_string != NULL) && (extract_only))
     {
-      printf (_
-              ("Cannot extract metadata from a URI!\n"));
+      printf (_("Cannot extract metadata from a URI!\n"));
       errorCode = -1;
       goto quit;
     }
@@ -520,33 +514,31 @@ main (int argc, char *const *argv)
 
   if (uri_string != NULL)
     {
-      struct GNUNET_ECRS_URI * us 
-	= GNUNET_ECRS_string_to_uri(ectx, uri_string);
+      struct GNUNET_ECRS_URI *us
+        = GNUNET_ECRS_string_to_uri (ectx, uri_string);
       if (us == NULL)
-	{
-	  errorCode = -1;
-	  goto quit;
-	}
-      postProcess(us);
+        {
+          errorCode = -1;
+          goto quit;
+        }
+      postProcess (us);
       if (gloKeywords != NULL)
-	GNUNET_ECRS_publish_under_keyword(ectx,
-					  cfg,
-					  gloKeywords, 
-					  anonymity,
-					  priority,
-					  start_time + 2 * GNUNET_CRON_YEARS,
-					  us,
-					  meta);
+        GNUNET_ECRS_publish_under_keyword (ectx,
+                                           cfg,
+                                           gloKeywords,
+                                           anonymity,
+                                           priority,
+                                           start_time + 2 * GNUNET_CRON_YEARS,
+                                           us, meta);
       if (topKeywords != NULL)
-	GNUNET_ECRS_publish_under_keyword(ectx,
-					  cfg,
-					  topKeywords, 
-					  anonymity,
-					  priority,
-					  start_time + 2 * GNUNET_CRON_YEARS,
-					  us,
-					  meta);
-      GNUNET_ECRS_uri_destroy(us);
+        GNUNET_ECRS_publish_under_keyword (ectx,
+                                           cfg,
+                                           topKeywords,
+                                           anonymity,
+                                           priority,
+                                           start_time + 2 * GNUNET_CRON_YEARS,
+                                           us, meta);
+      GNUNET_ECRS_uri_destroy (us);
       goto quit;
     }
 
@@ -554,26 +546,27 @@ main (int argc, char *const *argv)
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-insert", GNUNET_NO, 32,   /* make configurable */
                            &printstatus, &verbose);
 
-  /* first insert all of the top-level files or directories */  
+  /* first insert all of the top-level files or directories */
   tmp = GNUNET_expand_file_name (ectx, filename);
   if (!do_disable_creation_time)
     GNUNET_ECRS_meta_data_add_publication_date (meta);
   start_time = GNUNET_get_time ();
   errorCode = 1;
   ul = GNUNET_FSUI_upload_start (ctx,
-				 tmp,
-				 (GNUNET_FSUI_DirectoryScanCallback) &
-				 GNUNET_disk_directory_scan, ectx, anonymity,
-				 priority, do_simulate? GNUNET_SYSERR : (!do_insert), GNUNET_YES,
-				 !do_no_direct_references,
-				 start_time + 2 * GNUNET_CRON_YEARS, meta,
-				 gloKeywords, topKeywords);
+                                 tmp,
+                                 (GNUNET_FSUI_DirectoryScanCallback) &
+                                 GNUNET_disk_directory_scan, ectx, anonymity,
+                                 priority,
+                                 do_simulate ? GNUNET_SYSERR : (!do_insert),
+                                 GNUNET_YES, !do_no_direct_references,
+                                 start_time + 2 * GNUNET_CRON_YEARS, meta,
+                                 gloKeywords, topKeywords);
   GNUNET_free (tmp);
   if (ul != NULL)
     {
       GNUNET_shutdown_wait_for ();
       if (errorCode == 1)
-	GNUNET_FSUI_upload_abort (ctx, ul);
+        GNUNET_FSUI_upload_abort (ctx, ul);
       GNUNET_FSUI_upload_stop (ctx, ul);
     }
   GNUNET_FSUI_stop (ctx);

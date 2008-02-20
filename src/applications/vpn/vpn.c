@@ -173,9 +173,11 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
               /* we don't store alternative routes to ourselves,
                * as we already know how to route to ourself
                */
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			     _("Not storing route to myself from peer %d\n"), tunnel);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _("Not storing route to myself from peer %d\n"),
+                             tunnel);
               return;
             }
           if ((route_store + i)->tunnel == tunnel)
@@ -184,11 +186,12 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
                * but store the lowest hop count that the peer is advertising for that node.
                */
               (route_store + i)->hops = mini ((route_store + i)->hops, hops);
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			     _
-			     ("Duplicate route to node from peer %d, choosing minimum hops"),
-			     tunnel);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _
+                             ("Duplicate route to node from peer %d, choosing minimum hops"),
+                             tunnel);
               return;
             }
         }
@@ -221,9 +224,10 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
           i--;
         }
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		     _("Inserting route from peer %d in route table at location %d\n"),
-        tunnel, i);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     _
+                     ("Inserting route from peer %d in route table at location %d\n"),
+                     tunnel, i);
       (route_store + i)->hops = hops;
       (route_store + i)->tunnel = tunnel;
       (route_store + i)->owner = *them;
@@ -232,7 +236,8 @@ add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel)
 
 
 /** check that ethertype matches ip version for incoming packets from linux specific code */
-static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
+static int
+valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
 {
   char info[100];
   if (len > (65535 - sizeof (struct tun_pi)))
@@ -258,8 +263,9 @@ static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
     {
       ipinfo (info, fp);
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		     "-> GNUnet(%d) : %s\n", len - sizeof (struct tun_pi), info);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     "-> GNUnet(%d) : %s\n", len - sizeof (struct tun_pi),
+                     info);
       return GNUNET_YES;
     }
   GNUNET_GE_LOG (ectx, GNUNET_GE_ERROR | GNUNET_GE_BULK | GNUNET_GE_USER,
@@ -268,7 +274,8 @@ static int valid_incoming (int len, struct tun_pi *tp, struct ip6_hdr *fp)
   return GNUNET_NO;
 }
 
-static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
+static void
+setup_tunnel (int n, const GNUNET_PeerIdentity * them)
 {
   struct ifreq ifr;
   struct in6_ifreq ifr6;
@@ -485,8 +492,8 @@ static void setup_tunnel (int n, const GNUNET_PeerIdentity * them)
  * See if we already got a TUN/TAP open for the given GNUnet peer. if not, make one, stick
  * GNUNET_PeerIdentity and the filehandle and name of the TUN/TAP in an array so we remember we did it.
  */
-static void checkensure_peer (const GNUNET_PeerIdentity * them,
-                              void *callerinfo)
+static void
+checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo)
 {
   int i;
   tunnel_info *rstore1;
@@ -539,7 +546,8 @@ static void checkensure_peer (const GNUNET_PeerIdentity * them,
  * own IPv6 addr is fdXX:XXXX:XXXX::P/48 where X= 40 bits own key, P = gnu0 + 2
  * route add -net fdXX(remote key) dev gnu0 is then used.
  */
-static void *tunThread (void *arg)
+static void *
+tunThread (void *arg)
 {
   fd_set readSet;
   fd_set errorSet;
@@ -689,8 +697,9 @@ static void *tunThread (void *arg)
  * Mainly this routine exchanges the GNUNET_MessageHeader on incoming ipv6 packets
  * for a TUN/TAP header for writing it to TUNTAP.
  */
-static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
-                         const GNUNET_MessageHeader * gp)
+static int
+handlep2pMSG (const GNUNET_PeerIdentity * sender,
+              const GNUNET_MessageHeader * gp)
 {
   int i = 0, fd;
   char loginfo[100];
@@ -759,9 +768,10 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
 
       GNUNET_mutex_lock (lock);
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		     _("<- GNUnet(%d) : %s\n"),
-		     ntohs (gp->size) - sizeof (GNUNET_MessageHeader), loginfo);
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     _("<- GNUnet(%d) : %s\n"),
+                     ntohs (gp->size) - sizeof (GNUNET_MessageHeader),
+                     loginfo);
       for (i = 0; i < entries1; i++)
         {
           if (isEqual (sender, &((store1 + i)->peer)))
@@ -810,17 +820,18 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
     case GNUNET_P2P_PROTO_AIP_GETROUTE:
         /** peer wants an entry from our routing table */
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		     _("Receive route request\n"));
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     _("Receive route request\n"));
       if (ntohs (gp->size) == (sizeof (GNUNET_MessageHeader) + sizeof (int)))
         {
           i = ntohl (*((int *) fp));
           GNUNET_mutex_lock (lock);
           if (i < realised_entries)
             {
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			     _("Prepare route announcement level %d\n"), i);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _("Prepare route announcement level %d\n"), i);
               rgp =
                 GNUNET_malloc (sizeof (GNUNET_MessageHeader) +
                                sizeof (transit_route));
@@ -838,17 +849,20 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
               ((transit_route *) (rgp + 1))->hops =
                 htonl ((realised_store + i)->hops);
               GNUNET_mutex_unlock (lock);
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			     _("Send route announcement %d with route announce\n"), i);
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                             GNUNET_GE_ADMIN,
+                             _
+                             ("Send route announcement %d with route announce\n"),
+                             i);
               /* it must be delivered if possible, but it can wait longer than IP */
               coreAPI->unicast (sender, rgp, GNUNET_EXTREME_PRIORITY, 15);
               GNUNET_free (rgp);
               return GNUNET_OK;
             }
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			 _("Send outside table info %d\n"), i);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                         _("Send outside table info %d\n"), i);
           rgp = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + sizeof (int));
           if (rgp == NULL)
             {
@@ -866,25 +880,26 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
       return GNUNET_OK;
     case GNUNET_P2P_PROTO_AIP_ROUTE:
       GNUNET_GE_LOG (ectx,
-		     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-		     _("Receive route announce.\n"));
+                     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                     _("Receive route announce.\n"));
         /** peer sent us a route, insert it into routing table, then req next entry */
       if (ntohs (gp->size) ==
           (sizeof (GNUNET_MessageHeader) + sizeof (transit_route)))
         {
           GNUNET_mutex_lock (lock);
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			 _("Going to try insert route into local table.\n"));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                         _("Going to try insert route into local table.\n"));
           for (i = 0; i < entries1; i++)
             {
               if (isEqual (sender, &((store1 + i)->peer)))
                 {
                   (store1 + i)->active = GNUNET_YES;
-		  GNUNET_GE_LOG (ectx,
-				 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-				 _("Inserting with hops %d\n"),
-				 ntohl (((transit_route *) (gp + 1))->hops));
+                  GNUNET_GE_LOG (ectx,
+                                 GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                                 GNUNET_GE_ADMIN,
+                                 _("Inserting with hops %d\n"),
+                                 ntohl (((transit_route *) (gp + 1))->hops));
                   add_route (&(((transit_route *) (gp + 1))->owner),
                              1 + ntohl (((transit_route *) (gp + 1))->hops),
                              i);
@@ -904,10 +919,11 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
                         htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
                       *((int *) (rgp + 1)) =
                         htonl ((store1 + i)->route_entry);
-		      GNUNET_GE_LOG (ectx,
-				     GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-				     _("Request level %d from peer %d\n"),
-				     (store1 + i)->route_entry, i);
+                      GNUNET_GE_LOG (ectx,
+                                     GNUNET_GE_DEBUG | GNUNET_GE_BULK |
+                                     GNUNET_GE_ADMIN,
+                                     _("Request level %d from peer %d\n"),
+                                     (store1 + i)->route_entry, i);
                       coreAPI->unicast (&((store1 + i)->peer), rgp,
                                         GNUNET_EXTREME_PRIORITY, 60);
                       GNUNET_free (rgp);
@@ -924,10 +940,10 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
           /* if this is the last route message, we do route realisation
            * that is, insert the routes into the operating system.
            */
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
-			 _("Receive table limit on peer reached %d\n"),
-			 ntohl (*((int *) fp)));
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_BULK | GNUNET_GE_ADMIN,
+                         _("Receive table limit on peer reached %d\n"),
+                         ntohl (*((int *) fp)));
 /*  		GNUNET_mutex_lock(lock);
   	        for (i = 0; i < entries1; i++) {
           	        if (isEqual(sender, &((store1+i)->peer))) {
@@ -949,7 +965,8 @@ static int handlep2pMSG (const GNUNET_PeerIdentity * sender,
  * here we copy the prototype route table we are collecting from peers to the actual
  * "realised" route table we distribute to peers, and to the kernel's table.
  */
-static void realise (void * unused)
+static void
+realise (void *unused)
 {
   int i, j, found;
   GNUNET_PeerIdentity id;
@@ -970,9 +987,10 @@ static void realise (void * unused)
           reqstore = GNUNET_realloc (realised_store, reqcapacity);
           if (reqstore == NULL)
             {
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-			     "I cannot up the ram for realised routes.\n");
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "I cannot up the ram for realised routes.\n");
               GNUNET_mutex_unlock (lock);
               return;
             }
@@ -1014,29 +1032,32 @@ static void realise (void * unused)
           rt.rtmsg_metric = (route_store + i)->hops;
           /* how many hops to owner of public key */
           rt.rtmsg_dst_len = 48;        /* always 48 as per RFC4193 */
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-                   "Add route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
-                   id, rt.rtmsg_metric, ntohs (rt.rtmsg_dst.s6_addr16[0]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[1]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[2]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[3]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[4]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[5]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[6]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                         GNUNET_GE_REQUEST,
+                         "Add route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
+                         id, rt.rtmsg_metric,
+                         ntohs (rt.rtmsg_dst.s6_addr16[0]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[1]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[2]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[3]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[4]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[5]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[6]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
           if (ioctl (admin_fd, SIOCADDRT, &rt) < 0)
             {
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                       "Cannot add route IPv6 address for gnu%s because %s\n",
-                       id, strerror (errno));
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Cannot add route IPv6 address for gnu%s because %s\n",
+                             id, strerror (errno));
             }
         }
     }
   GNUNET_GE_LOG (ectx,
-		 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-		 "Removing routes\n");
+                 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
+                 "Removing routes\n");
   /* pull routes that are in the old table but not the new */
   for (i = 0; i < realised_entries; i++)
     {
@@ -1069,23 +1090,26 @@ static void realise (void * unused)
           rt.rtmsg_metric = (realised_store + i)->hops;
           /* how many hops to owner of public key */
           rt.rtmsg_dst_len = 48;        /* always 48 as per RFC4193 */
-	  GNUNET_GE_LOG (ectx,
-			 GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_REQUEST,
-			 "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
-                   id, rt.rtmsg_metric, ntohs (rt.rtmsg_dst.s6_addr16[0]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[1]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[2]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[3]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[4]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[5]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[6]),
-                   ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
+          GNUNET_GE_LOG (ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER |
+                         GNUNET_GE_REQUEST,
+                         "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
+                         id, rt.rtmsg_metric,
+                         ntohs (rt.rtmsg_dst.s6_addr16[0]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[1]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[2]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[3]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[4]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[5]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[6]),
+                         ntohs (rt.rtmsg_dst.s6_addr16[7]), rt.rtmsg_dst_len);
           if (ioctl (admin_fd, SIOCDELRT, &rt) < 0)
             {
-	      GNUNET_GE_LOG (ectx,
-			     GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-			     "Cannot del route IPv6 address for gnu%s because %s\n",
-                       id, strerror (errno));
+              GNUNET_GE_LOG (ectx,
+                             GNUNET_GE_WARNING | GNUNET_GE_DEVELOPER |
+                             GNUNET_GE_BULK,
+                             "Cannot del route IPv6 address for gnu%s because %s\n",
+                             id, strerror (errno));
             }
         }
     }
@@ -1106,10 +1130,11 @@ static void realise (void * unused)
  * Also enumerate all current peers and create taps for them.
  *
  */
-int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
+int
+initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 {
   int pfd;
-  char *str = GNUNET_strdup("OK\r\n");
+  char *str = GNUNET_strdup ("OK\r\n");
 
   ectx = capi->ectx;
   lock = GNUNET_mutex_create (GNUNET_NO);
@@ -1131,7 +1156,7 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
       CLOSE (pfd);
     }
   UNLINK ("/var/lib/gnunet/gnunet.vpn");
-  GNUNET_free(str);
+  GNUNET_free (str);
 
   /* system("sudo setpcaps cap_net_admin+eip `pidof gnunetd`"); */
 
@@ -1205,20 +1230,17 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   PIPE (signalingPipe);
   /* important: make signalingPipe non-blocking
      to avoid stalling on signaling! */
-  GNUNET_pipe_make_nonblocking(ectx, signalingPipe[1]);
+  GNUNET_pipe_make_nonblocking (ectx, signalingPipe[1]);
 
   /* Yes we have to make our own thread, cause the GUNnet API is
    * missing some callbacks (Namely CanReadThisFd - SELECT()) that I would like ;-(
    * They may go in the thread that usually monitors the GUI port.
    */
-  tunThreadInfo =
-    GNUNET_thread_create (&tunThread, NULL,
-                          128 * 1024);
-  GNUNET_cron_add_job(capi->cron,
-		      &realise,
-		      5 * GNUNET_CRON_MINUTES,
-		      5 * GNUNET_CRON_MINUTES,
-		      NULL);
+  tunThreadInfo = GNUNET_thread_create (&tunThread, NULL, 128 * 1024);
+  GNUNET_cron_add_job (capi->cron,
+                       &realise,
+                       5 * GNUNET_CRON_MINUTES,
+                       5 * GNUNET_CRON_MINUTES, NULL);
   /* use capi->unicast to send messages to connected peers */
   GNUNET_GE_ASSERT (capi->ectx,
                     0 == GNUNET_GC_set_configuration_value_string (capi->cfg,
@@ -1234,16 +1256,15 @@ int initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
 /**
  * Module uninserted.
  */
-void done_module_vpn ()
+void
+done_module_vpn ()
 {
   int i;
   int ret;
   void *returnval;
 
-  GNUNET_cron_del_job(coreAPI->cron,
-		      &realise,
-		      5 * GNUNET_CRON_MINUTES,
-		      NULL);
+  GNUNET_cron_del_job (coreAPI->cron,
+                       &realise, 5 * GNUNET_CRON_MINUTES, NULL);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_IP, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_GETROUTE, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTE, &handlep2pMSG);
@@ -1257,7 +1278,7 @@ void done_module_vpn ()
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);  
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 Waiting for tun thread to end\n"));

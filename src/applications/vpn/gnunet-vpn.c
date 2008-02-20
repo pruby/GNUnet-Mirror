@@ -270,8 +270,7 @@ main (int argc, char *const *argv)
         }
       else
         {
-          printf
-            ("tunnels, route, realised, reset, trust, add <hash>\n");
+          printf ("tunnels, route, realised, reset, trust, add <hash>\n");
         }
     }
   /* wait for shutdown... */

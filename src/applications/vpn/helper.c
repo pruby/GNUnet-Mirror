@@ -43,8 +43,8 @@ cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
   int size = 100;
   GNUNET_MessageHeader *b;
 
-  GNUNET_GE_ASSERT(NULL, c != NULL);
-    
+  GNUNET_GE_ASSERT (NULL, c != NULL);
+
   b = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
   while (1)
     {
@@ -74,8 +74,8 @@ cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
  * Convert a PeerIdentify into a "random" RFC4193 prefix
  * actually we make the first 40 bits of the GNUNET_hash into the prefix!
  */
-void id2ip (struct GNUNET_ClientHandle *cx,
-                   const GNUNET_PeerIdentity * them)
+void
+id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them)
 {
   unsigned char a, b, c, d, e;
   a = (them->hashPubKey.bits[0] >> 8) & 0xff;
@@ -93,15 +93,15 @@ int
 isEqualP (const GNUNET_RSA_PublicKey * first,
           const GNUNET_RSA_PublicKey * second)
 {
-  return 0 == memcmp(first, second,
-		     sizeof(GNUNET_RSA_PublicKey));
+  return 0 == memcmp (first, second, sizeof (GNUNET_RSA_PublicKey));
 }
 
 
 /**
  * Render IPv4 or IPv6 packet info for logging.
  */
-void ipinfo (char *info, const struct ip6_hdr *fp)
+void
+ipinfo (char *info, const struct ip6_hdr *fp)
 {
   struct in_addr fr4;
   struct in_addr to4;
@@ -142,17 +142,19 @@ void ipinfo (char *info, const struct ip6_hdr *fp)
 
 
 /** Test if two GNUNET_PeerIdentity are equal or not */
-int isEqual (const GNUNET_PeerIdentity * first,
-                    const GNUNET_PeerIdentity * second)
+int
+isEqual (const GNUNET_PeerIdentity * first,
+         const GNUNET_PeerIdentity * second)
 {
-  return (0 == memcmp(first, second, sizeof(GNUNET_PeerIdentity)))?-1:0;
+  return (0 == memcmp (first, second, sizeof (GNUNET_PeerIdentity))) ? -1 : 0;
 }
 
 
 
 
 /* convert GNUNET_PeerIdentity into network octet order IPv6 address */
-void id2net (struct in6_addr *buf, const GNUNET_PeerIdentity * them)
+void
+id2net (struct in6_addr *buf, const GNUNET_PeerIdentity * them)
 {
   unsigned char a, b, c, d, e;
   a = (them->hashPubKey.bits[0] >> 8) & 0xff;
@@ -175,4 +177,3 @@ void id2net (struct in6_addr *buf, const GNUNET_PeerIdentity * them)
   buf->s6_addr16[6] = 0;
   buf->s6_addr16[7] = 0;
 }
-

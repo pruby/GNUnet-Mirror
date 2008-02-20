@@ -172,7 +172,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
   for (i = 255; i >= 0; i--)
     {
       memset (&key, 256 - i, sizeof (GNUNET_HashCode));
-      ASSERT (1 == api->get (&key, i, &checkValue, (void *) &i));
+      ASSERT (1 == api->get (&key, NULL, i, &checkValue, (void *) &i));
     }
   ASSERT (256 ==
           api->iterateLowPriority (GNUNET_ECRS_BLOCKTYPE_ANY, NULL, NULL));
@@ -181,7 +181,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
   for (i = 255; i >= 0; i--)
     {
       memset (&key, 256 - i, sizeof (GNUNET_HashCode));
-      ASSERT (1 == api->get (&key, i, &checkValue, (void *) &i));
+      ASSERT (1 == api->get (&key, NULL, i, &checkValue, (void *) &i));
     }
 
   oldSize = api->getSize ();
@@ -189,7 +189,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
     {
       memset (&key, 256 - i, sizeof (GNUNET_HashCode));
       value = initValue (i);
-      ASSERT (1 == api->get (&key, 0, &iterateDelete, NULL));
+      ASSERT (1 == api->get (&key, NULL, 0, &iterateDelete, NULL));
       GNUNET_free (value);
     }
   ASSERT (oldSize > api->getSize ());

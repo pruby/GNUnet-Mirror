@@ -35,8 +35,8 @@
 #include "helper.h"
 
 /** The console client is used to admin/debug vpn */
-int csHandle (struct GNUNET_ClientHandle *c,
-	      const GNUNET_MessageHeader * message)
+int
+csHandle (struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
 {
   GNUNET_MessageHeader *rgp = NULL;
   int i;
@@ -239,6 +239,3 @@ int csHandle (struct GNUNET_ClientHandle *c,
     }
   return GNUNET_OK;
 }
-
-
-

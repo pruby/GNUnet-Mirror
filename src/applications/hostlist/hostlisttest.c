@@ -67,12 +67,12 @@ main (int argc, char **argv)
       return -1;
     }
 #if START_PEERS
-  GNUNET_disk_directory_remove(NULL, "/tmp/gnunet-hostlist-test-server");
-  GNUNET_disk_directory_remove(NULL, "/tmp/gnunet-hostlist-test-client");
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-hostlist-test-server");
+  GNUNET_disk_directory_remove (NULL, "/tmp/gnunet-hostlist-test-client");
   peer1 = GNUNET_daemon_start (NULL, cfg, "tcp-peer.conf", GNUNET_NO);
   if (peer1 == -1)
     {
-      GNUNET_GC_free (cfg);  
+      GNUNET_GC_free (cfg);
       return -1;
     }
   peer2 = GNUNET_daemon_start (NULL, cfg, "nat-peer.conf", GNUNET_NO);
@@ -86,11 +86,11 @@ main (int argc, char **argv)
   if (GNUNET_OK ==
       GNUNET_wait_for_daemon_running (NULL, cfg, 30 * GNUNET_CRON_SECONDS))
     {
-      GNUNET_thread_sleep(GNUNET_CRON_SECONDS); /* give stats time to load!*/
+      GNUNET_thread_sleep (GNUNET_CRON_SECONDS);        /* give stats time to load! */
       sock1 = GNUNET_client_connection_create (NULL, cfg);
       left = 30;                /* how many iterations should we wait? */
       while (GNUNET_OK ==
-	     GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect, NULL))
+             GNUNET_STATS_get_statistics (NULL, sock1, &waitForConnect, NULL))
         {
           printf ("Waiting for peers to connect (%u iterations left)...\n",
                   left);
@@ -103,7 +103,7 @@ main (int argc, char **argv)
             }
         }
       GNUNET_client_connection_destroy (sock1);
-     }
+    }
   else
     {
       printf ("Could not establish connection with peer.\n");

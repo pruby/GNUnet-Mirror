@@ -99,7 +99,7 @@ access_handler_callback (void *cls,
   static int dummy;
   struct MHD_Response *response;
   struct HostSet results;
-  const char * protos;
+  const char *protos;
   int ret;
 
   if (0 != strcmp (method, MHD_HTTP_METHOD_GET))
@@ -112,16 +112,12 @@ access_handler_callback (void *cls,
   if (*upload_data_size != 0)
     return MHD_NO;              /* do not support upload data */
   memset (&results, 0, sizeof (struct HostSet));
-  protos = MHD_lookup_connection_value(connection,
-				       MHD_GET_ARGUMENT_KIND,
-				       "p");  
-  if ( (protos == NULL) ||
-       (1 != sscanf(protos, "%llu", &results.protocols)) )
+  protos = MHD_lookup_connection_value (connection,
+                                        MHD_GET_ARGUMENT_KIND, "p");
+  if ((protos == NULL) || (1 != sscanf (protos, "%llu", &results.protocols)))
     results.protocols = -1;
-  host_processor(coreAPI->myIdentity,
-		 GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY,
-		 GNUNET_YES,
-		 &results);
+  host_processor (coreAPI->myIdentity,
+                  GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_YES, &results);
   identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
     return MHD_NO;              /* no known hosts!? */
@@ -130,7 +126,7 @@ access_handler_callback (void *cls,
   ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
   MHD_destroy_response (response);
   if (stats != NULL)
-    stats->change(stat_request_count, 1);
+    stats->change (stat_request_count, 1);
   return ret;
 }
 

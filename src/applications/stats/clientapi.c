@@ -247,9 +247,6 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
     case GNUNET_CS_PROTO_VPN_REPLY:
       name = "GNUNET_CS_PROTO_VPN_REPLY";
       break;
-    case GNUNET_CS_PROTO_VPN_DEBUGOFF:
-      name = "GNUNET_CS_PROTO_VPN_DEBUGOFF";
-      break;
     case GNUNET_CS_PROTO_VPN_TUNNELS:
       name = "GNUNET_CS_PROTO_VPN_TUNNELS";
       break;
@@ -261,9 +258,6 @@ GNUNET_STATS_cs_message_type_to_string (unsigned short type)
       break;
     case GNUNET_CS_PROTO_VPN_RESET:
       name = "GNUNET_CS_PROTO_VPN_RESET";
-      break;
-    case GNUNET_CS_PROTO_VPN_REALISE:
-      name = "GNUNET_CS_PROTO_VPN_REALISE";
       break;
     case GNUNET_CS_PROTO_VPN_ADD:
       name = "GNUNET_CS_PROTO_VPN_ADD";

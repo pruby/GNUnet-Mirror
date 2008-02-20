@@ -72,6 +72,11 @@ typedef struct
    * in the datastore.
    *
    * @param key maybe NULL (to match all entries)
+   * @param vhash hash of the value, maybe NULL (to 
+   *        match all values that have the right key).
+   *        Note that for DBlocks there is no difference
+   *        betwen key and vhash, but for other blocks
+   *        there may be!
    * @param type entries of which type are relevant?
    *     Use 0 for any type.
    * @param iter maybe NULL (to just count); iter
@@ -82,6 +87,7 @@ typedef struct
    *         GNUNET_SYSERR on error
    */
   int (*get) (const GNUNET_HashCode * key,
+              const GNUNET_HashCode * vhash,
               unsigned int type, GNUNET_DatastoreValueIterator iter,
               void *closure);
 

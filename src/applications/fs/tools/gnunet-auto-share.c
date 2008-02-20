@@ -92,7 +92,7 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
           fprintf (myout,
                    _("Upload of `%s' complete, URI is `%s'.\n"),
                    event->data.UploadCompleted.filename, fstring);
-	  fflush(myout);
+          fflush (myout);
           GNUNET_free (fstring);
         }
       if (ul == event->data.UploadCompleted.uc.pos)
@@ -100,24 +100,24 @@ printstatus (void *ctx, const GNUNET_FSUI_Event * event)
       break;
     case GNUNET_FSUI_upload_aborted:
       fprintf (myout, _("\nUpload aborted.\n"));
-      fflush(myout);
+      fflush (myout);
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_error:
       fprintf (myout,
                _("\nError uploading file: %s"),
                event->data.UploadError.message);
-      fflush(myout);	  
+      fflush (myout);
       upload_done = GNUNET_YES;
       break;
     case GNUNET_FSUI_upload_started:
     case GNUNET_FSUI_upload_stopped:
-    case GNUNET_FSUI_upload_suspended:      
+    case GNUNET_FSUI_upload_suspended:
     case GNUNET_FSUI_upload_resumed:
       break;
     default:
       fprintf (myout, _("\nUnexpected event: %d\n"), event->type);
-      fflush(myout);	  
+      fflush (myout);
       GNUNET_GE_BREAK (ectx, 0);
       break;
     }
@@ -184,7 +184,7 @@ test_run (const char *filename, const char *dirName, void *cls)
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
-      fflush(myout);
+      fflush (myout);
       GNUNET_free (fn);
       return GNUNET_OK;
     }
@@ -288,7 +288,7 @@ probe_directory (const char *filename, const char *dirName, void *unused)
   if (0 != stat (fn, &buf))
     {
       fprintf (myout, "Could not stat `%s': %s\n", fn, strerror (errno));
-      fflush(myout);
+      fflush (myout);
       GNUNET_free (fn);
       return GNUNET_OK;
     }
@@ -351,12 +351,12 @@ auto_share_main (const char *dirname)
   errorCode = 0;
   if ((GNUNET_NO == debug_flag)
       && (GNUNET_OK != GNUNET_terminal_detach (ectx, cfg, filedes)))
-      return GNUNET_SYSERR;
+    return GNUNET_SYSERR;
   sock = GNUNET_client_connection_create (ectx, cfg);
   if (sock == NULL)
     {
       fprintf (myout, _("Failed to connect to gnunetd.\n"));
-      fflush(myout);
+      fflush (myout);
       errorCode = -1;
       if (GNUNET_NO == debug_flag)
         GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_NO);
@@ -481,15 +481,14 @@ main (int argc, char *const *argv)
                                                   &log_file_name);
       myout = fopen (log_file_name, "a");
       if (myout == NULL)
-	{
-	  fprintf(stderr,
-		  "Could not open logfile `%s': %s\n",
-		  log_file_name,
-		  strerror(errno));
-	  GNUNET_free (log_file_name);
-	  errorCode = -1;
-	  goto end;
-	}
+        {
+          fprintf (stderr,
+                   "Could not open logfile `%s': %s\n",
+                   log_file_name, strerror (errno));
+          GNUNET_free (log_file_name);
+          errorCode = -1;
+          goto end;
+        }
       GNUNET_free (log_file_name);
 
       GNUNET_GC_get_configuration_value_filename (cfg,
@@ -497,14 +496,14 @@ main (int argc, char *const *argv)
                                                   "GNUNET_HOME",
                                                   GNUNET_DEFAULT_HOME_DIRECTORY,
                                                   &log_file_name);
-      log_file_name = GNUNET_realloc(log_file_name, strlen(log_file_name) + 30);
-      strcat(log_file_name, "gnunet-auto-share.pid");
-      GNUNET_GC_set_configuration_value_string(cfg,
-					       NULL,
-					       "GNUNETD",
-					       "PIDFILE",
-					       log_file_name);
-      GNUNET_free (log_file_name);	    
+      log_file_name =
+        GNUNET_realloc (log_file_name, strlen (log_file_name) + 30);
+      strcat (log_file_name, "gnunet-auto-share.pid");
+      GNUNET_GC_set_configuration_value_string (cfg,
+                                                NULL,
+                                                "GNUNETD",
+                                                "PIDFILE", log_file_name);
+      GNUNET_free (log_file_name);
     }
 #ifdef MINGW
   if (GNUNET_GC_get_configuration_value_yesno (cfg,
@@ -523,12 +522,12 @@ main (int argc, char *const *argv)
     {
       dirname = GNUNET_expand_file_name (ectx, argv[i]);
       errorCode = auto_share_main (dirname);
-      GNUNET_free(dirname);
+      GNUNET_free (dirname);
     }
 end:
   GNUNET_fini (ectx, cfg);
   if (myout != stdout)
-    fclose(myout);
+    fclose (myout);
   return errorCode;
 }
 

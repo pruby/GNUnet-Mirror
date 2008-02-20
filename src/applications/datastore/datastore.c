@@ -127,7 +127,7 @@ get (const GNUNET_HashCode * query,
         stats->change (stat_filtered, 1);
       return 0;
     }
-  ret = sq->get (query, type, iter, closure);
+  ret = sq->get (query, NULL, type, iter, closure);
   if ((ret == 0) && (stats != NULL))
     stats->change (stat_filter_failed, 1);
   return ret;
@@ -159,6 +159,7 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
   int ok;
   int ret;
   GNUNET_EncName enc;
+  GNUNET_HashCode vhc;
 
   if (!testAvailable (query))
     {
@@ -171,7 +172,9 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
                      __FILE__, __LINE__);
       return GNUNET_NO;
     }
-  ok = sq->get (query, ntohl (value->type), &deleteCB, (void *) value);
+  GNUNET_hash (&value[1],
+               ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &vhc);
+  ok = sq->get (query, &vhc, ntohl (value->type), &deleteCB, (void *) value);
   if (ok == GNUNET_SYSERR)
     return GNUNET_SYSERR;
   if (ok == 0)
@@ -287,15 +290,19 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   int ok;
   int comp_prio;
   GNUNET_DatastoreValue *nvalue;
+  GNUNET_HashCode vhc;
 
   /* check if it already exists... */
   cls.exists = GNUNET_NO;
   cls.value = value;
-  sq->get (key, ntohl (value->type), &checkExists, &cls);
+  GNUNET_hash (&value[1],
+               ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &vhc);
+  sq->get (key, &vhc, ntohl (value->type), &checkExists, &cls);
   if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
-    sq->get (key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
+    sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
   if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
-    sq->get (key, GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD, &checkExists, &cls);
+    sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD, &checkExists,
+             &cls);
   if (cls.exists)
     {
       if ((ntohl (value->prio) == 0) &&

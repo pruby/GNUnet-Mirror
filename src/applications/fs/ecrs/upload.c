@@ -319,8 +319,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
             }
           GNUNET_GE_ASSERT (ectx, value != NULL);
           *value = *dblock;     /* copy options! */
-	  if ( (doIndex == GNUNET_NO) &&
-	       (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)) )
+          if ((doIndex == GNUNET_NO) &&
+              (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)))
             {
               GNUNET_GE_BREAK (ectx, 0);
               GNUNET_free (value);
@@ -393,8 +393,8 @@ GNUNET_ECRS_file_upload (struct GNUNET_GE_Context *ectx,
         }
       value->expirationTime = GNUNET_htonll (expirationTime);
       value->prio = htonl (priority);
-      if ( (doIndex != GNUNET_SYSERR) &&
-	   (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)) )
+      if ((doIndex != GNUNET_SYSERR) &&
+          (GNUNET_SYSERR == GNUNET_FS_insert (sock, value)))
         {
           GNUNET_GE_BREAK (ectx, 0);
           GNUNET_free (value);

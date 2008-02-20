@@ -30,6 +30,6 @@
 
 /** The console client is used to admin/debug vpn */
 int csHandle (struct GNUNET_ClientHandle *c,
-	      const GNUNET_MessageHeader * message);
+              const GNUNET_MessageHeader * message);
 
-#endif 
+#endif

@@ -32,15 +32,13 @@
 /**
  * send given string to client 
  */
-void
-cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...);
+void cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...);
 
 /**
  * Convert a PeerIdentify into a "random" RFC4193 prefix
  * actually we make the first 40 bits of the GNUNET_hash into the prefix!
  */
-void id2ip (struct GNUNET_ClientHandle *cx,
-	    const GNUNET_PeerIdentity * them);
+void id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them);
 
 
 /** Test if two GNUNET_RSA_PublicKey are equal or not */
@@ -55,7 +53,7 @@ void ipinfo (char *info, const struct ip6_hdr *fp);
 
 /** Test if two GNUNET_PeerIdentity are equal or not */
 int isEqual (const GNUNET_PeerIdentity * first,
-	     const GNUNET_PeerIdentity * second);
+             const GNUNET_PeerIdentity * second);
 
 /* convert GNUNET_PeerIdentity into network octet order IPv6 address */
 void id2net (struct in6_addr *buf, const GNUNET_PeerIdentity * them);

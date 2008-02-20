@@ -223,13 +223,14 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_INFO | GNUNET_GE_BULK | GNUNET_GE_USER,
                  _("Bootstrapping using `%s'.\n"), url);
-  purl = GNUNET_malloc(strlen(url) + 40);
+  purl = GNUNET_malloc (strlen (url) + 40);
   protocols = 0;
-  for (i=GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;i>GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;i--)
-    if (transport->isAvailable((unsigned short)i))
-      protocols |= (1LL << i);    
-  sprintf(purl, "%s&p=%llu", url, protocols);
-  GNUNET_free(url);
+  for (i = GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;
+       i > GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT; i--)
+    if (transport->isAvailable ((unsigned short) i))
+      protocols |= (1LL << i);
+  sprintf (purl, "%s&p=%llu", url, protocols);
+  GNUNET_free (url);
   url = purl;
   bctx.url = url;
   bctx.total = 0;
@@ -285,7 +286,7 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
         {
           GNUNET_GE_LOG (ectx,
                          GNUNET_GE_ERROR | GNUNET_GE_ADMIN | GNUNET_GE_USER |
-			 GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
+                         GNUNET_GE_BULK, _("%s failed at %s:%d: `%s'\n"),
                          "curl_multi_fdset", __FILE__, __LINE__,
                          curl_multi_strerror (mret));
           goto cleanup;

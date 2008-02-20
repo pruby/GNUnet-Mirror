@@ -1,3 +1,9 @@
+Tue Feb 19 20:35:28 MST 2008
+	Updated database schemata to support O(1) operations
+	even if there are N files under the same keywords.
+	This breaks database backwards compatibility (and
+	no migration code is provided).
+
 Mon Feb 18 19:47:37 MST 2008
 	Added new options -u and -s to gnunet-insert.
 
