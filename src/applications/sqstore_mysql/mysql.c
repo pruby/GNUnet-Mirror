@@ -303,9 +303,13 @@ iclose ()
   PEND (dbh->insert_entry);
   PEND (dbh->delete_entry_by_vkey);
   PEND (dbh->select_entry_by_hash);
+  PEND (dbh->select_entry_by_hash_and_vhash);
   PEND (dbh->select_entry_by_hash_and_type);
+  PEND (dbh->select_entry_by_hash_vhash_and_type);
   PEND (dbh->count_entry_by_hash);
+  PEND (dbh->count_entry_by_hash_and_vhash);
   PEND (dbh->count_entry_by_hash_and_type);
+  PEND (dbh->count_entry_by_hash_vhash_and_type);
   PEND (dbh->update_entry);
   PEND (dbh->iter[0]);
   PEND (dbh->iter[1]);
@@ -446,9 +450,13 @@ iopen ()
   PINIT (dbh->insert_entry, INSERT_ENTRY);
   PINIT (dbh->delete_entry_by_vkey, DELETE_ENTRY_BY_VKEY);
   PINIT (dbh->select_entry_by_hash, SELECT_ENTRY_BY_HASH);
+  PINIT (dbh->select_entry_by_hash_and_vhash, SELECT_ENTRY_BY_HASH_AND_VHASH);
   PINIT (dbh->select_entry_by_hash_and_type, SELECT_ENTRY_BY_HASH_AND_TYPE);
+  PINIT (dbh->select_entry_by_hash_vhash_and_type, SELECT_ENTRY_BY_HASH_VHASH_AND_TYPE);
   PINIT (dbh->count_entry_by_hash, COUNT_ENTRY_BY_HASH);
+  PINIT (dbh->count_entry_by_hash_and_vhash, COUNT_ENTRY_BY_HASH_AND_VHASH);
   PINIT (dbh->count_entry_by_hash_and_type, COUNT_ENTRY_BY_HASH_AND_TYPE);
+  PINIT (dbh->count_entry_by_hash_vhash_and_type, COUNT_ENTRY_BY_HASH_VHASH_AND_TYPE);
   PINIT (dbh->update_entry, UPDATE_ENTRY);
   PINIT (dbh->iter[0], SELECT_IT_LOW_PRIORITY);
   PINIT (dbh->iter[1], SELECT_IT_NON_ANONYMOUS);
