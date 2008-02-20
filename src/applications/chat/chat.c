@@ -63,7 +63,7 @@ struct GNUNET_CS_chat_client
 	struct GNUNET_ClientHandle *client;
 	struct GNUNET_CS_chat_client *next;
 	struct GNUNET_CS_chat_client *prev;
-	GNUNET_HashCode *room_name_hash;
+	GNUNET_HashCode room_name_hash;
 
 };
 
@@ -111,6 +111,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   struct GNUNET_CS_chat_client *tempClient;
   
   GNUNET_HashCode hc;
+  GNUNET_HashCode room_name_hash;
 
   char *nick;
   char *message_content;
@@ -149,6 +150,8 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   nick[nick_len] = '\0';
   message_content[msg_len] = '\0';
   room_name[room_name_len] = '\0';
+  
+  GNUNET_hash(room_name,strlen(room_name),&room_name_hash);
 
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
@@ -166,11 +169,10 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
 	tempClient = &client_list;
   while((tempClient->next != NULL)&&(tempClient->client != NULL))
   {
-   	if(memcmp(&hc,tempClient->room_name_hash,sizeof(hc)))
+   	if(memcmp(&room_name_hash,&tempClient->room_name_hash,sizeof(GNUNET_HashCode))==0)
    	{
    		fprintf(stderr,"room names match, must send message to others!!\n");
    		coreAPI->cs_send_to_client (tempClient->client, message, GNUNET_YES);
-   		fprintf(stderr,"message sent?\n");
    	}
    	
    	tempClient = tempClient->next; 	
@@ -197,6 +199,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   const CS_chat_JOIN_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
   GNUNET_HashCode hc;
+  GNUNET_HashCode room_name_hash;
 
   char *nick;
   GNUNET_RSA_PublicKey *client_key;
@@ -245,6 +248,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   nick[nick_len] = '\0';
   room_name[room_name_len] = '\0';
   GNUNET_hash (cmsg, header_size, &hc);
+  GNUNET_hash(room_name,strlen(room_name),&room_name_hash);
   GNUNET_mutex_lock (chatMutex);
   markSeen (&hc);
   
@@ -256,7 +260,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
 	tempClient->client = client;
 	tempClient->next = GNUNET_malloc(sizeof(struct GNUNET_CS_chat_client));
 	tempClient->next->prev = tempClient;
-	tempClient->room_name_hash = &hc;
+	memcpy(&tempClient->room_name_hash,&room_name_hash,sizeof(GNUNET_HashCode));
 	tempClient = &client_list;
 	
 	tempCount = 0;
@@ -443,5 +447,6 @@ done_module_chat ()
   GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;
 }
+
 
 /* end of chat.c */
