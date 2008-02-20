@@ -299,6 +299,7 @@ GNUNET_FSUI_uploadThread (void *cls)
   struct GNUNET_ECRS_URI *uri;
   struct GNUNET_ECRS_URI *loc;
   size_t tpos;
+  size_t tend;
   char *error;
   struct GNUNET_GE_Memory *mem;
   struct GNUNET_GE_Context *ee;
@@ -407,6 +408,26 @@ GNUNET_FSUI_uploadThread (void *cls)
         strcat (pfn, DIR_SEPARATOR_STR);
       GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_FILENAME, pfn);
       GNUNET_free (pfn);
+      if (0 != strcmp (utc->shared->top_filename, utc->filename))
+        {
+          /* this is NOT the top-level upload, so we
+             should add the directory name of our
+             parent to the meta data */
+          tend = tpos;          /* index of '/' */
+          if ((utc->filename[tpos] == DIR_SEPARATOR) && (tpos > 0))
+            tpos--;
+          while ((tpos > 0) && (utc->filename[tpos] != DIR_SEPARATOR))
+            tpos--;
+          if (tpos + 1 < tend)
+            {
+              pfn = GNUNET_malloc (tend - tpos + 1);
+              pfn[tend - tpos] = '\0';
+              memcpy (pfn, &utc->filename[tpos + 1], tend - tpos);
+              GNUNET_ECRS_meta_data_insert (utc->meta, EXTRACTOR_RELATION,
+                                            pfn);
+              GNUNET_free (pfn);
+            }
+        }
       if ((utc->shared->anonymityLevel == 0)
           && (utc->shared->doIndex == GNUNET_YES))
         {
@@ -593,7 +614,8 @@ addChildUpload (const char *name, const char *dirName, void *data)
 
   filename = GNUNET_malloc (strlen (dirName) + strlen (name) + 2);
   strcpy (filename, dirName);
-  strcat (filename, DIR_SEPARATOR_STR);
+  if (dirName[strlen (dirName) - 1] != DIR_SEPARATOR)
+    strcat (filename, DIR_SEPARATOR_STR);
   strcat (filename, name);
   md = GNUNET_ECRS_meta_data_create ();
   child = addUploads (parent->shared, filename, NULL, md, parent);
@@ -697,6 +719,7 @@ freeShared (struct GNUNET_FSUI_UploadShared *shared)
     GNUNET_ECRS_uri_destroy (shared->global_keywords);
   EXTRACTOR_removeAll (shared->extractors);
   GNUNET_free_non_null (shared->extractor_config);
+  GNUNET_free (shared->top_filename);
   GNUNET_free (shared);
 }
 
@@ -761,7 +784,7 @@ GNUNET_FSUI_upload_start (struct GNUNET_FSUI_Context *ctx,
   shared->anonymityLevel = anonymityLevel;
   shared->priority = priority;
   shared->individualKeywords = individualKeywords;
-  shared->handle = NULL;
+  shared->top_filename = GNUNET_strdup (filename);
   ul = addUploads (shared, filename, keyUri, md, &ctx->activeUploads);
   if (ul == NULL)
     {

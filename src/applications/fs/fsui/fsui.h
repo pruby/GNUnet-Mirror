@@ -306,6 +306,8 @@ typedef struct GNUNET_FSUI_UploadShared
 
   char *extractor_config;
 
+  char *top_filename;
+
   int doIndex;
 
   unsigned int anonymityLevel;
