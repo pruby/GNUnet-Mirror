@@ -22,6 +22,7 @@
  * @file applications/chat/clientapi.c
  * @brief convenience API to the chat application
  * @author Christian Grothoff
+ * @author Nathan Evans
  */
 
 #include "platform.h"

@@ -23,6 +23,7 @@
  * into the GNUnet core to enable chatting.
  *
  * @author Christian Grothoff
+ * @author Nathan Evans
  * @file applications/chat/chat.c
  */
 

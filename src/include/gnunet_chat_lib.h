@@ -22,6 +22,7 @@
  * @file include/gnunet_chat_lib.h
  * @brief support for chat
  * @author Christian Grothoff
+ * @author Nathan Evans
  */
 
 #ifndef GNUNET_CHAT_LIB_H
@@ -40,7 +41,7 @@ extern "C"
 /**
  * Version number.
  */
-#define GNUNET_CHAT_VERSION "0.0.0"
+#define GNUNET_CHAT_VERSION "0.0.1"
 
 typedef enum
 {
@@ -106,7 +107,7 @@ int GNUNET_CHAT_list_rooms (struct GNUNET_GE_Context *ectx,
 struct GNUNET_CHAT_Room;
 
 /**
- * A message was send in the chat to us.
+ * A message was sent in the chat to us.
  *
  * @param timestamp when was the message sent?
  * @param senderNick what is the nickname of the sender? (maybe NULL)

@@ -22,6 +22,7 @@
  * @file applications/chat/gnunet-chat.c
  * @brief Minimal chat command line tool
  * @author Christian Grothoff
+ * @author Nathan Evans
  */
 
 #include "platform.h"
