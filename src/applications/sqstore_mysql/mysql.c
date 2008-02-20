@@ -197,28 +197,28 @@ typedef struct
 #define DELETE_ENTRY_BY_VKEY "DELETE FROM gn080 WHERE vkey=?"
   MYSQL_STMT *delete_entry_by_vkey;
 
-#define SELECT_ENTRY_BY_HASH "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 WHERE hash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
+#define SELECT_ENTRY_BY_HASH "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX hash_vkey WHERE hash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash;
 
-#define SELECT_ENTRY_BY_HASH_AND_VHASH "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 WHERE hash=? AND vhash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
+#define SELECT_ENTRY_BY_HASH_AND_VHASH "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX hash_vhash_vkey WHERE hash=? AND vhash=? AND vkey > ? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash_and_vhash;
 
-#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 WHERE hash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
+#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX hash_vkey WHERE hash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash_and_type;
 
-#define SELECT_ENTRY_BY_HASH_VHASH_AND_TYPE "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 WHERE hash=? AND vhash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
+#define SELECT_ENTRY_BY_HASH_VHASH_AND_TYPE "SELECT size,type,prio,anonLevel,expire,hash,vkey FROM gn080 FORCE INDEX hash_vhash_vkey WHERE hash=? AND vhash=? AND vkey > ? AND type=? ORDER BY vkey ASC LIMIT 1 OFFSET ?"
   MYSQL_STMT *select_entry_by_hash_vhash_and_type;
 
-#define COUNT_ENTRY_BY_HASH "SELECT count(*) FROM gn080 WHERE hash=?"
+#define COUNT_ENTRY_BY_HASH "SELECT count(*) FROM gn080 FORCE INDEX hash WHERE hash=?"
   MYSQL_STMT *count_entry_by_hash;
 
-#define COUNT_ENTRY_BY_HASH_AND_VHASH "SELECT count(*) FROM gn080 WHERE hash=? AND vhash=?"
+#define COUNT_ENTRY_BY_HASH_AND_VHASH "SELECT count(*) FROM gn080 FORCE INDEX hash_vhash_vkey WHERE hash=? AND vhash=?"
   MYSQL_STMT *count_entry_by_hash_and_vhash;
 
-#define COUNT_ENTRY_BY_HASH_AND_TYPE "SELECT count(*) FROM gn080 WHERE hash=? AND type=?"
+#define COUNT_ENTRY_BY_HASH_AND_TYPE "SELECT count(*) FROM gn080 FORCE INDEX hash WHERE hash=? AND type=?"
   MYSQL_STMT *count_entry_by_hash_and_type;
 
-#define COUNT_ENTRY_BY_HASH_VHASH_AND_TYPE "SELECT count(*) FROM gn080 WHERE hash=? AND vhash=? AND type=?"
+#define COUNT_ENTRY_BY_HASH_VHASH_AND_TYPE "SELECT count(*) FROM gn080 FORCE INDEX hash_vhash WHERE hash=? AND vhash=? AND type=?"
   MYSQL_STMT *count_entry_by_hash_vhash_and_type;
 
 #define UPDATE_ENTRY "UPDATE gn080 SET prio=prio+?,expire=IF(expire>=?,expire,?) WHERE vkey=?"
@@ -388,6 +388,8 @@ iopen ()
                    " vhash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " INDEX hash (hash(64)),"
+                   " INDEX hash_vhash_vkey (hash(64),vhash(64),vkey),"
+                   " INDEX hash_vkey (hash(64),vkey),"
                    " INDEX vkey (vkey),"
                    " INDEX prio (prio,vkey),"
                    " INDEX expire (expire,vkey,type),"
@@ -407,6 +409,8 @@ iopen ()
                    " vhash BINARY(64) NOT NULL DEFAULT '',"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " INDEX hash (hash(64)),"
+                   " INDEX hash_vhash_vkey (hash(64),vhash(64),vkey),"
+                   " INDEX hash_vkey (hash(64),vkey),"
                    " INDEX vkey (vkey),"
                    " INDEX prio (prio,vkey),"
                    " INDEX expire (expire,vkey,type),"
@@ -1481,7 +1485,7 @@ get (const GNUNET_HashCode * query,
       if (count + off == total)
         last_vkey = 0;          /* back to start */
       if (count == total)
-        break;
+	break;
     }
   mysql_thread_end ();
   return count;
