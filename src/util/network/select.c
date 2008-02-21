@@ -377,8 +377,8 @@ writeAndProcess (SelectHandle * sh, Session * session)
 #if DEBUG_SELECT
       GNUNET_GE_LOG (sh->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
-                     "Sending %d bytes from session %p of select %p return %d.\n",
-                     session->wapos - session->wspos, sh, session, ret);
+                     "Sending %d bytes from session %p of select %s return %d.\n",
+                     session->wapos - session->wspos, session, sh->description, ret);
 #endif
       if (ret == GNUNET_SYSERR)
         {
@@ -1012,6 +1012,7 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
   unsigned short len;
   char *newBuffer;
   unsigned int newBufferSize;
+  int do_sig;
 
 #if DEBUG_SELECT
   GNUNET_GE_LOG (sh->ectx,
@@ -1045,6 +1046,10 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
       GNUNET_mutex_unlock (sh->lock);
       return GNUNET_NO;
     }
+  if (session->wspos == session->wapos)
+    do_sig = GNUNET_YES;
+  else
+    do_sig = GNUNET_NO;
   if (session->wsize - session->wapos < len)
     {
       /* need to make space in some way or other */
@@ -1088,7 +1093,8 @@ GNUNET_select_write (struct GNUNET_SelectHandle *sh,
   if (mayBlock)
     session->no_read = GNUNET_YES;
   GNUNET_mutex_unlock (sh->lock);
-  signalSelect (sh);
+  if (do_sig)
+    signalSelect (sh);
   return GNUNET_OK;
 }
 
