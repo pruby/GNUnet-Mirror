@@ -180,6 +180,16 @@ struct RequestList
   unsigned int remaining_value;
 
   /**
+   * What is the chance that we have more results
+   * locally for this request?  Set to a positive
+   * number if we think we have more results, 
+   * decremented by one each time we fail to find
+   * more results; set to zero if we are sure 
+   * that we have no more results.
+   */
+  unsigned int have_more;
+
+  /**
    * Routing policy for the request (foward, indirect).
    */
   enum GNUNET_FS_RoutingPolicy policy;

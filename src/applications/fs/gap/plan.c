@@ -309,8 +309,8 @@ count_query_plan_entries (struct QueryPlanList *qpl)
  * @param prio priority to use for the request
  */
 static void
-add_request (PID_INDEX target,
-             struct RequestList *request, int ttl, unsigned int prio)
+queue_request (PID_INDEX target,
+               struct RequestList *request, int ttl, unsigned int prio)
 {
   struct QueryPlanList *qpl;
   struct QueryPlanEntry *entry;
@@ -611,7 +611,7 @@ GNUNET_FS_PLAN_request (struct GNUNET_ClientHandle *client,
                     }
                   request->remaining_value -= rank->prio;
                 }
-              add_request (rank->peer, request, rank->ttl, rank->prio);
+              queue_request (rank->peer, request, rank->ttl, rank->prio);
               total_score -= rank->score;
               rank->score = 0;  /* mark as used */
               break;
@@ -677,7 +677,7 @@ try_add_request (struct RequestList *req,
     GNUNET_bloomfilter_get_raw_data (req->bloomfilter,
                                      (char *) &msg->queries[req->key_count],
                                      req->bloomfilter_size);
-  now = GNUNET_get_time();
+  now = GNUNET_get_time ();
   if (now + ttl > req->last_request_time + req->last_ttl_used)
     {
       req->last_request_time = now;

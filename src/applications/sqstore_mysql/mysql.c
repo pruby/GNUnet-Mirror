@@ -1485,7 +1485,7 @@ get (const GNUNET_HashCode * query,
       if (count + off == total)
         last_vkey = 0;          /* back to start */
       if (count == total)
-	break;
+        break;
     }
   mysql_thread_end ();
   return count;

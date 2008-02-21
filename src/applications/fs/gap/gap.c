@@ -43,6 +43,17 @@
 #define MAX_ENTRIES_PER_SLOT 2
 
 /**
+ * If, after finding local results, we abort a GET
+ * iteration, we increment "have_more" by this value.
+ */
+#define HAVE_MORE_INCREMENT 5
+
+/**
+ * How often do we check have_more?
+ */
+#define HAVE_MORE_FREQUENCY (100 * GNUNET_CRON_MILLISECONDS)
+
+/**
  * The GAP routing table.
  */
 static struct RequestList **table;
@@ -149,7 +160,11 @@ datastore_value_processor (const GNUNET_HashCode * key,
   want_more = GNUNET_OK;
   cls->iteration_count++;
   if (cls->iteration_count > 10 * (1 + req->value))
-    want_more = GNUNET_SYSERR;
+    {
+      if (cls->result_count > 0)
+        req->have_more += HAVE_MORE_INCREMENT;
+      want_more = GNUNET_SYSERR;
+    }
   enc = NULL;
   if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
@@ -184,7 +199,10 @@ datastore_value_processor (const GNUNET_HashCode * key,
   memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
   cls->result_count++;
   if (cls->result_count > 2 * (1 + req->value))
-    want_more = GNUNET_SYSERR;
+    {
+      req->have_more += HAVE_MORE_INCREMENT;
+      want_more = GNUNET_SYSERR;
+    }
   GNUNET_cron_add_job (cron,
                        send_delayed,
                        GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK,
@@ -365,11 +383,11 @@ CHECK:
   cls.request = rl;
   cls.iteration_count = 0;
   cls.result_count = 0;
-  ret = datastore->get (&queries[0], type, datastore_value_processor, &cls);
+  ret = datastore->get (&queries[0], type, &datastore_value_processor, &cls);
   if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) && (ret != 1))
     ret = datastore->get (&queries[0],
                           GNUNET_ECRS_BLOCKTYPE_ONDEMAND,
-                          datastore_value_processor, &cls);
+                          &datastore_value_processor, &cls);
 
   /* if not found or not unique, forward */
   if (((ret != 1) || (type != GNUNET_ECRS_BLOCKTYPE_DATA)) &&
@@ -556,6 +574,46 @@ cleanup_on_peer_disconnect (const GNUNET_PeerIdentity * peer, void *unused)
   GNUNET_mutex_unlock (GNUNET_FS_lock);
 }
 
+/**
+ * Cron-job to find and transmit more results (beyond
+ * the initial batch) over time -- assuming the entry
+ * is still valid and we have more data.
+ */
+static void
+have_more_processor (void *unused)
+{
+  static unsigned int pos;
+  struct RequestList *req;
+  GNUNET_CronTime now;
+  struct DVPClosure cls;
+
+  GNUNET_mutex_lock (GNUNET_FS_lock);
+  now = GNUNET_get_time ();
+  if (pos >= table_size)
+    pos = 0;
+  req = table[pos];
+  while (req != NULL)
+    {
+      if ((GNUNET_cpu_get_load (coreAPI->ectx,
+                                coreAPI->cfg) > 50) ||
+          (GNUNET_disk_get_load (coreAPI->ectx, coreAPI->cfg) > 25))
+        break;
+      if (req->have_more > 0)
+        {
+          req->have_more--;
+          cls.request = req;
+          cls.iteration_count = 0;
+          cls.result_count = 0;
+          datastore->get (&req->queries[0], req->type,
+                          &datastore_value_processor, &cls);
+        }
+      req = req->next;
+    }
+  if (req == NULL)
+    pos++;
+  GNUNET_mutex_unlock (GNUNET_FS_lock);
+}
+
 int
 GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
 {
@@ -582,6 +640,10 @@ GNUNET_FS_GAP_init (GNUNET_CoreAPIForPlugins * capi)
                     coreAPI->
                     register_notify_peer_disconnect
                     (&cleanup_on_peer_disconnect, NULL));
+  GNUNET_cron_add_job (capi->cron,
+                       &have_more_processor,
+                       HAVE_MORE_FREQUENCY, HAVE_MORE_FREQUENCY, NULL);
+
   stats = capi->request_service ("stats");
   if (stats != NULL)
     {
@@ -607,6 +669,9 @@ GNUNET_FS_GAP_done ()
 {
   unsigned int i;
   struct RequestList *rl;
+
+  GNUNET_cron_del_job (coreAPI->cron,
+                       &have_more_processor, HAVE_MORE_FREQUENCY, NULL);
 
   for (i = 0; i < table_size; i++)
     {
