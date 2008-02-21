@@ -324,8 +324,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         {
           GNUNET_free (content[entry].value);
           content[entry].value = NULL;
-          GNUNET_FS_PT_decrement_rcs (content[discard_entry].receiverIndices,
-                                      content[discard_entry].sentCount);
+          GNUNET_FS_PT_decrement_rcs (content[entry].receiverIndices,
+                                      content[entry].sentCount);
           content[entry].sentCount = 0;
         }
       else
