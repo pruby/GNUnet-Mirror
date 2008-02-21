@@ -47,12 +47,6 @@ static struct GNUNET_GC_Configuration *cfg;
 struct GNUNET_Server_Chat_Room
 {
 
-  struct GNUNET_ThreadHandle *listen_thread;
-
-  struct GNUNET_GE_Context *ectx;
-
-  struct GNUNET_GC_Configuration *cfg;
-
   char *room_name;
 
   GNUNET_HashCode room_name_hash;

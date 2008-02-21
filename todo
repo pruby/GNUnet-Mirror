@@ -5,6 +5,7 @@ Annotations:
   PRE == to be done before a pre-release
 
 0.8.0 [6'08] (aka "advanced features"):
+- HTTP transport uses FAR too much CPU (80-90%!?)
 - full support for FSUI pause/resume of search
 - power insert (#854)
 - clean up VPN code
