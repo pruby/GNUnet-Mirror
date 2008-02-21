@@ -202,7 +202,6 @@ main (int argc, char **argv)
   if (room != NULL)
     {
       GNUNET_CHAT_leave_room (room);
-      GNUNET_free (room);
     }
   if (message != NULL)
     {

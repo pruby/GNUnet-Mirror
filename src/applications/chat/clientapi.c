@@ -88,31 +88,39 @@ poll_thread (void *rcls)
 
   ret = GNUNET_OK;
   /* CHECK FOR SHUTDOWN! */
-  while (ret == GNUNET_OK)
+  while (room->shutdown_flag != GNUNET_YES)
     {
-      if (GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO)
-        {
-	  /* FIXME - why limit retries? */
-          retries = 0;	  
-          while ((GNUNET_client_connection_test_connected (room->sock) ==
-                  GNUNET_NO) && (retries < MAX_RETRIES))
-            {
-
+      if (disconnected)
+	{
+	  if (GNUNET_client_connection_ensure_connected (room->sock) == GNUNET_OK)
+	    {
+	      disconnected = 0;
+	      /* send join! */
+	    }
+	  else
+	    {
+	      GNUNET_thread_sleep(5 * GNUNET_CRON_SECONDS);
+	      continue;
             }
         }
 
       reply = NULL;
 
       if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
-        {
-	  /* NO BREAK! */
-          break;
-        }
+	{
+	  disconnected = GNUNET_YES;
+	  continue;
+	}
 
       if ((reply->size <
            ntohs (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))
           || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
-        break;
+	{
+	  GNUNET_GE_BREAK(NULL, 0);
+	  GNUNET_client_connection_close_temporarily(room->sock);
+	  disconnected = GNUNET_YES;
+	  continue;
+	}
 
       size = ntohs (reply->size);
 
@@ -145,8 +153,7 @@ poll_thread (void *rcls)
         }
 
     }
-  /* RETURN NULL? (void*) ret is TERRIBLE!!! */
-  return (void *) ret;
+  return NULL;
 }
 
 /**
@@ -190,10 +197,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   struct GNUNET_CHAT_Room *chat_room;
   struct GNUNET_ClientServerConnection *sock;
 
-  int ret;
   int size_of_join;
-
-  ret = GNUNET_OK;
 
   csHdr.size = htons (sizeof (CS_chat_JOIN_MESSAGE));
   csHdr.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
@@ -203,7 +207,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   if (sock == NULL)
     {
       fprintf (stderr, _("Error establishing connection with gnunetd.\n"));
-      ret = GNUNET_SYSERR;
+      return NULL;
     }
 
   // connect
@@ -234,8 +238,8 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
     {
       /* ALREADY LOGGED */
       fprintf (stderr, _("Error writing to socket.\n"));
-      ret = GNUNET_SYSERR;
-      /* WHY CONTINUE HERE? => CREATES BAD THREAD! */
+      GNUNET_free(join_msg);
+      return NULL;
     }
 
   GNUNET_free (join_msg);
@@ -264,12 +268,6 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   chat_room->listen_thread =
     GNUNET_thread_create (&poll_thread, chat_room, 1024 * 2);
 
-  // return room struct
-  if (ret != GNUNET_OK)
-    {
-      GNUNET_free (chat_room);
-      return NULL;
-    }
   return chat_room;
 }
 
@@ -279,26 +277,15 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
-  GNUNET_MessageHeader csHdr;
-  csHdr.type = htons (GNUNET_CS_PROTO_CHAT_LEAVE_MSG);
-  csHdr.size = htons (sizeof (csHdr));
-
-  /*If this fails we don't care, this means the socket is already gone and the server should know how to deal with that! */
-  /*We may not even need this message at all, just let the server handle a dead socket */ 
-  /* RIGHT, SO WHY HAVE IT? */
-  GNUNET_GE_ASSERT (NULL,
-                    GNUNET_client_connection_write (chat_room->sock,
-                                                    &csHdr) == GNUNET_OK);
-
-
-  // stop thread
-  // join thread
-  // free room struct
-
+  void * unused;
+  chat_room->shutdown_flag = GNUNET_YES;
+  GNUNET_client_connection_close_forever (chat_room->sock);
+  GNUNET_stop_sleep(room->listen_thread);
+  GNUNET_pthread_join(room->listen_thread, &unused);
   GNUNET_free (chat_room->nickname);
   GNUNET_free (chat_room->memberInfo);
   GNUNET_client_connection_destroy (chat_room->sock);
-
+  GNUNET_free (chat_room);
 }
 
 /**

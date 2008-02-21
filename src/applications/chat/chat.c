@@ -37,26 +37,11 @@ static GNUNET_CoreAPIForPlugins *coreAPI;
 
 #define MAX_LAST_MESSAGES 12
 
-/* P2P */
-static unsigned int clientCount;
-static struct GNUNET_HashCode **lastMsgs;
-static int ringIndex;
-
 static struct GNUNET_Mutex *chatMutex;
 
 static struct GNUNET_GE_Context *ectx;
 
 static struct GNUNET_GC_Configuration *cfg;
-
-/* P2P-ish */
-struct GNUNET_Server_Chat_Room
-{
-
-  char *room_name;
-
-  GNUNET_HashCode room_name_hash;
-
-};
 
 struct GNUNET_CS_chat_client
 {
@@ -67,44 +52,7 @@ struct GNUNET_CS_chat_client
 
 };
 
- /* YUCK - USE PTR! */
-static struct GNUNET_CS_chat_client client_list;
-
-/* P2P */
-static void
-markSeen (GNUNET_HashCode * hc)
-{
-  if (++ringIndex >= MAX_LAST_MESSAGES)
-    ringIndex = 0;
-  memcpy (&lastMsgs[ringIndex], hc, sizeof (GNUNET_HashCode));
-}
-
-typedef struct
-{
-  const GNUNET_MessageHeader *message;
-  unsigned int prio;
-  unsigned int delay;
-} BCC;
-
-/* P2P */
-static void
-bccHelper (const GNUNET_PeerIdentity * peer, BCC * bcc)
-{
-  coreAPI->unicast (peer, bcc->message, bcc->prio, bcc->delay);
-}
-
-/* P2P */
-static void
-broadcastToConnected (const GNUNET_MessageHeader * message,
-                      unsigned int prio, unsigned int delay)
-{
-  BCC bcc;
-  bcc.message = message;
-  bcc.prio = prio;
-  bcc.delay = delay;
-  coreAPI->forAllConnectedNodes ((GNUNET_NodeIteratorCallback) bccHelper,
-                                 &bcc);
-}
+static struct GNUNET_CS_chat_client * client_list_head;
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
@@ -127,15 +75,10 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   unsigned long room_name_len;
 
   cmsg = (CS_chat_MESSAGE *) message;
-
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
     {
-      /* TOO VERBOSE */
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _("Message received from client is invalid\n"));
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
-
     }
 
 
@@ -187,13 +130,6 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
 
       tempClient = tempClient->next;
     }
-
-
-  /* THIS IS P2P STUFF -- MAYBE DEFINE AN INTERNAL P2P API (for bonii)? */
-  markSeen (&hc);
-  broadcastToConnected (message, 5, 1);
-
-
   GNUNET_mutex_unlock (chatMutex);
 
   GNUNET_free (room_name);
@@ -229,15 +165,8 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
 
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_JOIN_MESSAGE))
     {
-      /* TOO VERBOSE */
-      GNUNET_GE_LOG (ectx,
-                     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-                     _
-                     ("Room join from client is invalid! Size is: %d, should be at least %d\n"),
-                     ntohs (cmsg->header.size),
-                     sizeof (CS_chat_JOIN_MESSAGE));
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
-
     }
 
   header_size = ntohs (cmsg->header.size);
@@ -264,21 +193,34 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   GNUNET_hash (cmsg, header_size, &hc);
   GNUNET_hash (room_name, strlen (room_name), &room_name_hash);
   GNUNET_mutex_lock (chatMutex);
-  markSeen (&hc);
 
   /*TODO: create client context on the server, very simple as of now */
-  tempClient = &client_list;
-  while ((tempClient->next != NULL) && (tempClient->client != NULL))
+#if EXTRA_CHECKS
+  tempClient = client_list;
+  while ( (tempClient->client != client) &&
+	  (tempClient != NULL) )
     tempClient = tempClient->next;
-
+  if (tempClient != NULL)
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_free (nick);
+      GNUNET_free (client_key);
+      GNUNET_free (room_name);
+      GNUNET_mutex_unlock (chatMutex);
+      return GNUNET_SYSERR;      
+    }
+#endif
+  tempClient = GNUNET_malloc (sizeof (struct GNUNET_CS_chat_client));
+  memset(tempClient, 0, sizeof (struct GNUNET_CS_chat_client));
+  tempClient->next = client_list_head;
+  if (client_list_head != NULL)
+    client_list_head->prev = tempClient;
+  client_list_head = tempClient;
   tempClient->client = client;
-  tempClient->next = GNUNET_malloc (sizeof (struct GNUNET_CS_chat_client));
-  tempClient->next->prev = tempClient;
   memcpy (&tempClient->room_name_hash, &room_name_hash,
           sizeof (GNUNET_HashCode));
-  tempClient = &client_list;
-
   tempCount = 0;
+#if NATE
   while ((tempClient->next != NULL) && (tempClient->client != NULL))
     {
       tempCount++;
@@ -286,7 +228,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
     }
 
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
-
+#endif
 
   /* forward to all other TCP chat clients */
   /* marker to check if this is a new client */
@@ -315,9 +257,9 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
      }
      }
    */
+
   /* forward to all other nodes in the network */
-  /*pmsg->header.type = htons (GNUNET_P2P_PROTO_CHAT_MSG);
-     broadcastToConnected (&pmsg->header, 5, 1); */
+
   GNUNET_free (nick);
   GNUNET_free (client_key);
   GNUNET_free (room_name);
@@ -335,8 +277,8 @@ csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
   /*GNUNET_RSA_PublicKey *client_key; *//*May use later for extra verification */
   int tempCount;
 
-  struct GNUNET_CS_chat_client *tempClient;
-  struct GNUNET_CS_chat_client *tempClientToRemove;
+  struct GNUNET_CS_chat_client * pos;
+  struct GNUNET_CS_chat_client * prev;
 
   /*client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
      memcpy (client_key, &cmsg->nick[nick_len], pubkey_len); */
@@ -350,35 +292,27 @@ csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
 
   /*TODO: delete client context on the server */
   /* YUCK */
-  tempClient = &client_list;
-  while ((tempClient->next != NULL) && (tempClient->client != NULL))
+  pos = client_list_head;
+  prev = NULL;
+  while ( (pos != NULL) &&
+	  (pos->client != client) )
     {
-      /* YUCK YUCK! */
-      if (memcmp (tempClient->client, client, sizeof (client)) == 0)
-        {
-          fprintf (stderr, "Client handle matches, remove it!\n");
-          if (tempClient->prev == NULL)
-            {
-              tempClient->next->prev = NULL;
-              /*tempClientToRemove = &client_list; */
-              client_list = *tempClient->next;
-            }
-          else
-            {
-              tempClient->next->prev = tempClient->prev;
-              tempClient->prev->next = tempClient->next;
-              tempClientToRemove = tempClient;
-              tempClient = tempClient->next;
-              GNUNET_free (tempClientToRemove);
-            }
-        }
-      else
-        tempClient = tempClient->next;
-
+      prev = pos;
+      pos = pos->next;
     }
-
+  if (pos != NULL)
+    {
+      if (prev == NULL)
+	client_list_head = pos->next;
+      else
+	prev->next = pos->next;
+      if (pos->next != NULL)
+	pos->next->prev = pos->prev;
+      GNUNET_free(pos);
+    }
   /*Count the number of current clients, will be removed */
-  tempClient = &client_list;
+#if NATE
+  tempClient = client_list;
   tempCount = 0;
   while ((tempClient->next != NULL) && (tempClient->client != NULL))
     {
@@ -386,6 +320,7 @@ csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
       tempClient = tempClient->next;
     }
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
+#endif
 
   GNUNET_mutex_unlock (chatMutex);
   fprintf (stderr, "End of handleChatLeave\n");
