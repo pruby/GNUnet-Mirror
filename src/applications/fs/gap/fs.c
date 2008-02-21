@@ -435,7 +435,8 @@ fast_path_processor (const GNUNET_HashCode * key,
   memcpy (&msg[1], dblock, size);
   type = ntohl (dblock->type);
   GNUNET_free_non_null (enc);
-  coreAPI->cs_send_to_client (sock, &msg->header, GNUNET_YES);
+  coreAPI->cs_send_to_client (sock, &msg->header,
+			      type != GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO : GNUNET_YES);
   GNUNET_free (msg);
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     return GNUNET_SYSERR;       /* unique response */
