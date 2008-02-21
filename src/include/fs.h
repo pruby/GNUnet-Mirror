@@ -440,8 +440,23 @@ typedef struct
  */
 #define GNUNET_GAP_ESTIMATED_DATA_SIZE (32 * 1024)
 
+/**
+ * If, after finding local results, we abort a GET
+ * iteration, we increment "have_more" by this value.
+ */
+#define HAVE_MORE_INCREMENT 2
 
+/**
+ * What is the maximum number of local results
+ * that we are willing to return synchronously?
+ */
+#define MAX_SYNC_PROCESSED 8
 
+/**
+ * What is the maximum number of local results
+ * that we are willing to return synchronously?
+ */
+#define MAX_ASYNC_PROCESSED 32
 
 
 

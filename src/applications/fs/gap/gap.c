@@ -43,12 +43,6 @@
 #define MAX_ENTRIES_PER_SLOT 2
 
 /**
- * If, after finding local results, we abort a GET
- * iteration, we increment "have_more" by this value.
- */
-#define HAVE_MORE_INCREMENT 5
-
-/**
  * How often do we check have_more?
  */
 #define HAVE_MORE_FREQUENCY (100 * GNUNET_CRON_MILLISECONDS)

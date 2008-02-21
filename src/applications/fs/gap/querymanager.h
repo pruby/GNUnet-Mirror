@@ -42,6 +42,7 @@ int GNUNET_FS_QUERYMANAGER_done (void);
  * client disconnects.
  *
  * @param target peer known to have the content, maybe NULL.
+ * @param have_more do we have more results in our local datastore?
  */
 void
 GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
@@ -50,7 +51,8 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     unsigned int type,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
-                                    const struct ResponseList *seen);
+                                    const struct ResponseList *seen,
+				    int have_more);
 
 /**
  * Handle the given response (by forwarding it to

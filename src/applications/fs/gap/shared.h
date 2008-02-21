@@ -286,6 +286,7 @@ struct QueryPlanList
  */
 extern struct GNUNET_Mutex *GNUNET_FS_lock;
 
+
 /**
  * Free the request list, including the associated
  * list of pending requests, its entries in the

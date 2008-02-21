@@ -392,6 +392,8 @@ struct FPPClosure
 {
   struct GNUNET_ClientHandle *sock;
   struct ResponseList *seen;
+  unsigned int processed;
+  int have_more;
 };
 
 /**
@@ -413,7 +415,14 @@ fast_path_processor (const GNUNET_HashCode * key,
   GNUNET_DatastoreValue *enc;
   const GNUNET_DatastoreValue *use;
   unsigned int type;
+  int ret;
 
+  if (cls->processed > MAX_SYNC_PROCESSED)
+    {
+      cls->have_more = GNUNET_YES;
+      return GNUNET_SYSERR;
+    }
+  cls->processed++;
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   dblock = (const DBlock *) &value[1];
   enc = NULL;
@@ -435,11 +444,12 @@ fast_path_processor (const GNUNET_HashCode * key,
   memcpy (&msg[1], dblock, size);
   type = ntohl (dblock->type);
   GNUNET_free_non_null (enc);
-  coreAPI->cs_send_to_client (sock, &msg->header,
-			      type != GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO : GNUNET_YES);
+  ret = coreAPI->cs_send_to_client (sock, &msg->header,
+				    type != GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO : GNUNET_YES);
   GNUNET_free (msg);
-  if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
-    return GNUNET_SYSERR;       /* unique response */
+  if ( (type == GNUNET_ECRS_BLOCKTYPE_DATA) || 
+       (ret != GNUNET_OK) )
+    return GNUNET_SYSERR;       /* unique response or client can take no more*/
   rl = GNUNET_malloc (sizeof (struct ResponseList));
   GNUNET_hash (dblock, size, &rl->hash);
   rl->next = cls->seen;
@@ -485,6 +495,8 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
 #endif
   fpp.sock = sock;
   fpp.seen = NULL;
+  fpp.have_more = GNUNET_NO;
+  fpp.processed = 0;
   if (type == GNUNET_ECRS_BLOCKTYPE_DATA)
     {
       if ((1 == datastore->get (&rs->query[0],
@@ -505,7 +517,8 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   GNUNET_FS_QUERYMANAGER_start_query (&rs->query[0], keyCount, anonymityLevel,
                                       type, sock,
                                       have_target ? &rs->target : NULL,
-                                      fpp.seen);
+                                      fpp.seen,
+				      fpp.have_more);
 CLEANUP:
   while (fpp.seen != NULL)
     {

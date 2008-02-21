@@ -330,7 +330,10 @@ receive_response_callback (const GNUNET_HashCode * key,
       GNUNET_EC_file_block_check_and_get_query (size,
                                                 (const DBlock *) &value[1],
                                                 GNUNET_YES, &query))
-    return GNUNET_SYSERR;
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return GNUNET_SYSERR;
+    }
   if (!((0 == memcmp (&query,
                       (GNUNET_HashCode *) & ps[1], sizeof (GNUNET_HashCode)))
         && ((ps->type == type) || (ps->type == GNUNET_ECRS_BLOCKTYPE_ANY))
@@ -341,7 +344,9 @@ receive_response_callback (const GNUNET_HashCode * key,
                                                      ps->keyCount,
                                                      (GNUNET_HashCode *) &
                                                      ps[1]))))
-    return GNUNET_OK;           /* not a match */
+    {
+      return GNUNET_OK;           /* not a match */
+    }
 
   switch (type)
     {
@@ -355,7 +360,10 @@ receive_response_callback (const GNUNET_HashCode * key,
         int j;
 
         if (size < sizeof (KBlock))
-          return GNUNET_SYSERR;
+	  {
+	    GNUNET_GE_BREAK(NULL, 0);
+	    return GNUNET_SYSERR;
+	  }
         kb = GNUNET_malloc (size);
         memcpy (kb, &value[1], size);
 #if DEBUG_SEARCH
