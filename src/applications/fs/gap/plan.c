@@ -650,6 +650,7 @@ try_add_request (struct RequestList *req,
 {
   P2P_gap_query_MESSAGE *msg = buf;
   unsigned int size;
+  GNUNET_CronTime now;
 
   GNUNET_GE_ASSERT (NULL, req->key_count > 0);
   size = sizeof (P2P_gap_query_MESSAGE)
@@ -676,9 +677,13 @@ try_add_request (struct RequestList *req,
     GNUNET_bloomfilter_get_raw_data (req->bloomfilter,
                                      (char *) &msg->queries[req->key_count],
                                      req->bloomfilter_size);
-  req->last_request_time = GNUNET_get_time ();
-  req->last_prio_used = prio;
-  req->last_ttl_used = ttl;
+  now = GNUNET_get_time();
+  if (now + ttl > req->last_request_time + req->last_ttl_used)
+    {
+      req->last_request_time = now;
+      req->last_prio_used = prio;
+      req->last_ttl_used = ttl;
+    }
   req->remaining_value -= prio;
   if (stats != NULL)
     stats->change (stat_gap_query_sent, 1);
