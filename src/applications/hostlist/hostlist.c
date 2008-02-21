@@ -42,6 +42,10 @@ static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_request_count;
 
+static int stat_hello_returned;
+
+static int stat_bytes_returned;
+
 static int
 accept_policy_callback (void *cls,
                         const struct sockaddr *addr, socklen_t addrlen)
@@ -78,6 +82,8 @@ host_processor (const GNUNET_PeerIdentity * peer,
   hello = identity->identity2Hello (peer, protocol, GNUNET_NO);
   if (hello == NULL)
     return GNUNET_OK;
+  if (stats != NULL)
+    stats->change (stat_hello_returned, 1);
   old = results->size;
   GNUNET_array_grow (results->data,
                      results->size,
@@ -121,6 +127,8 @@ access_handler_callback (void *cls,
   identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
     return MHD_NO;              /* no known hosts!? */
+  if (stats != NULL)
+    stats->change (stat_bytes_returned, results.size);
   response = MHD_create_response_from_data (results.size,
                                             results.data, MHD_YES, MHD_NO);
   ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
@@ -153,6 +161,10 @@ initialize_module_hostlist (GNUNET_CoreAPIForPlugins * capi)
     {
       stat_request_count
         = stats->create (gettext_noop ("# hostlist requests received"));
+      stat_hello_returned
+        = stats->create (gettext_noop ("# hostlist HELLOs returned"));
+      stat_bytes_returned
+        = stats->create (gettext_noop ("# hostlist bytes returned"));
     }
   daemon_handle = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY | MHD_USE_IPv6,
                                     (unsigned short) port,
