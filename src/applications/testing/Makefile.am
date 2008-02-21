@@ -19,11 +19,11 @@ libgnunetremote_api_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/applications/identity/libgnunetidentity_api.la 
  
-
+bin_PROGRAMS = \
+  remotetest
 
 check_PROGRAMS = \
   testingtest \
-  remotetest \
   testingtest_loop
 
 TESTS = $(check_PROGRAMS)
