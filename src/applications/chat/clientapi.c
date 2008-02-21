@@ -32,6 +32,7 @@
 #include "chat.h"
 
 #define MAX_RETRIES 5
+
 /**
  * Handle for a (joined) chat room.
  */
@@ -65,13 +66,6 @@ struct GNUNET_CHAT_Room
 
 };
 
-static void *
-thread_main (void *rcls)
-{
-  struct GNUNET_CHAT_Room *room = rcls;
-  return NULL;
-}
-
 /**
  * Listen for incoming messages on this chat room.  When received, call the client callback.
  * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)... 
@@ -79,27 +73,27 @@ thread_main (void *rcls)
 static void *
 poll_thread (void *rcls)
 {
-  int ret = GNUNET_OK;
-  struct GNUNET_CHAT_Room *room = (struct GNUNET_CHAT_Room *) rcls;
+  struct GNUNET_CHAT_Room *room = rcls;
+  int ret;
   GNUNET_MessageHeader *reply;
-
   CS_chat_MESSAGE *received_msg;
-
   unsigned int size;
   unsigned int nick_len;
   unsigned int msg_len;
   unsigned int room_name_len;
   unsigned int retries;
-
   char *nick;
   char *message_content;
   char *room_name;
 
+  ret = GNUNET_OK;
+  /* CHECK FOR SHUTDOWN! */
   while (ret == GNUNET_OK)
     {
       if (GNUNET_client_connection_test_connected (room->sock) == GNUNET_NO)
         {
-          retries = 0;
+	  /* FIXME - why limit retries? */
+          retries = 0;	  
           while ((GNUNET_client_connection_test_connected (room->sock) ==
                   GNUNET_NO) && (retries < MAX_RETRIES))
             {
@@ -111,7 +105,7 @@ poll_thread (void *rcls)
 
       if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
         {
-
+	  /* NO BREAK! */
           break;
         }
 
@@ -126,12 +120,14 @@ poll_thread (void *rcls)
 
       nick_len = ntohl (received_msg->nick_len);
       msg_len = ntohl (received_msg->msg_len);
+      /* NO NEED TO SEND ROOM! */
       room_name_len = ntohl (received_msg->room_name_len);
 
       nick = GNUNET_malloc (nick_len + 1);
       message_content = GNUNET_malloc (msg_len + 1);
       room_name = GNUNET_malloc (room_name_len + 1);
 
+      /* BUFFER OVERFLOWS! */
       memcpy (nick, &received_msg->nick[0], nick_len);
       memcpy (message_content, &received_msg->nick[nick_len], msg_len);
       memcpy (room_name, &received_msg->nick[nick_len + msg_len],
@@ -149,7 +145,7 @@ poll_thread (void *rcls)
         }
 
     }
-
+  /* RETURN NULL? (void*) ret is TERRIBLE!!! */
   return (void *) ret;
 }
 
@@ -236,8 +232,10 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   if (GNUNET_SYSERR ==
       GNUNET_client_connection_write (sock, &join_msg->header))
     {
+      /* ALREADY LOGGED */
       fprintf (stderr, _("Error writing to socket.\n"));
       ret = GNUNET_SYSERR;
+      /* WHY CONTINUE HERE? => CREATES BAD THREAD! */
     }
 
   GNUNET_free (join_msg);
@@ -286,7 +284,8 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
   csHdr.size = htons (sizeof (csHdr));
 
   /*If this fails we don't care, this means the socket is already gone and the server should know how to deal with that! */
-  /*We may not even need this message at all, just let the server handle a dead socket */
+  /*We may not even need this message at all, just let the server handle a dead socket */ 
+  /* RIGHT, SO WHY HAVE IT? */
   GNUNET_GE_ASSERT (NULL,
                     GNUNET_client_connection_write (chat_room->sock,
                                                     &csHdr) == GNUNET_OK);
