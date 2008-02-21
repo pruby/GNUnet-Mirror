@@ -384,8 +384,8 @@ iopen ()
                    " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
                    " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
                    " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-                   " hash BINARY(64) NOT NULL DEFAULT '',"
-                   " vhash BINARY(64) NOT NULL DEFAULT '',"
+                   " hash BINARY(64) NOT NULL,"
+                   " vhash BINARY(64) NOT NULL PRIMARY KEY,"
                    " vkey BIGINT UNSIGNED NOT NULL DEFAULT 0,"
                    " INDEX hash (hash(64)),"
                    " INDEX hash_vhash_vkey (hash(64),vhash(64),vkey),"
@@ -1245,7 +1245,7 @@ get (const GNUNET_HashCode * query,
   if (vhash != NULL)
     {
       qbind[sqoff].buffer_type = MYSQL_TYPE_BLOB;
-      qbind[sqoff].buffer = (void *) &vhash;
+      qbind[sqoff].buffer = (void *) vhash;
       qbind[sqoff].length = &hashSize2;
       qbind[sqoff].buffer_length = hashSize2;
       sqoff++;
@@ -1273,6 +1273,12 @@ get (const GNUNET_HashCode * query,
        NULL) ? dbh->count_entry_by_hash_and_vhash : dbh->count_entry_by_hash;
   mysql_thread_init ();
   GNUNET_mutex_lock (lock);
+  if (GNUNET_OK != CHECK_DBH)
+    {
+      mysql_thread_end ();
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
   GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
   GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
   if (mysql_stmt_bind_param (stmt, qbind))
@@ -1350,7 +1356,7 @@ get (const GNUNET_HashCode * query,
   if (vhash != NULL)
     {
       qbind[sqoff].buffer_type = MYSQL_TYPE_BLOB;
-      qbind[sqoff].buffer = (void *) &vhash;
+      qbind[sqoff].buffer = (void *) vhash;
       qbind[sqoff].length = &hashSize2;
       qbind[sqoff].buffer_length = hashSize2;
       sqoff++;
