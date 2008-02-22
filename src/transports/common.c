@@ -345,6 +345,7 @@ static GNUNET_MessageHello *
 create_hello ()
 {
   static GNUNET_IPv4Address last_addrv4;
+  static GNUNET_IPv6Address last_addrv6;
   GNUNET_MessageHello *msg;
   HostAddress *haddr;
   unsigned short port;
@@ -379,11 +380,21 @@ create_hello ()
       if (0 != memcmp (&haddr->ipv4,
                        &last_addrv4, sizeof (GNUNET_IPv4Address)))
         {
+	  struct in_addr in4;
+	  char dst[INET_ADDRSTRLEN];
+	  
+	  memcpy(&in4,
+		 &haddr->ipv4,
+		 sizeof(struct in_addr));
           GNUNET_GE_LOG (coreAPI->ectx,
                          GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
-                         "%s uses IPv4 address %u.%u.%u.%u.\n",
+                         "%s uses %s address %s.\n",
                          MY_TRANSPORT_NAME,
-                         GNUNET_PRIP (ntohl (*(int *) &haddr->ipv4)));
+			 "IPv4",
+			 inet_ntop(AF_INET,
+				   &in4,
+				   dst,
+				   INET_ADDRSTRLEN));
           last_addrv4 = haddr->ipv4;
         }
       available |= VERSION_AVAILABLE_IPV4;
@@ -392,6 +403,26 @@ create_hello ()
   if (GNUNET_SYSERR !=
       GNUNET_IP_get_public_ipv6_address (cfg, coreAPI->ectx, &haddr->ipv6))
     {
+      if (0 != memcmp (&haddr->ipv6,
+                       &last_addrv6, sizeof (GNUNET_IPv6Address)))
+        {
+	  struct in6_addr in6;
+	  char dst[INET6_ADDRSTRLEN];
+	  
+	  memcpy(&in6,
+		 &haddr->ipv6,
+		 sizeof(struct in6_addr));
+          GNUNET_GE_LOG (coreAPI->ectx,
+                         GNUNET_GE_DEBUG | GNUNET_GE_USER | GNUNET_GE_BULK,
+                         "%s uses %s address %s.\n",
+                         MY_TRANSPORT_NAME,
+			 "IPv6",
+			 inet_ntop(AF_INET6,
+				   &in6,
+				   dst,
+				   INET6_ADDRSTRLEN));
+          last_addrv6 = haddr->ipv6;
+        }
       available |= VERSION_AVAILABLE_IPV6;
     }
   if (available == VERSION_AVAILABLE_NONE)

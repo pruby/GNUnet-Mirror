@@ -250,7 +250,7 @@ getAddress6FromHostname (struct GNUNET_GE_Context *ectx,
   return GNUNET_OK;
 }
 
-#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
 static int
 getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
                            struct GNUNET_GE_Context *ectx,
@@ -353,7 +353,7 @@ getAddress6 (struct GNUNET_GC_Configuration *cfg,
         }
       GNUNET_free (ipString);
     }
-#if HAVE_GETIFADDRS && HAVE_GNUNET_freeIFADDRS
+#if HAVE_GETIFADDRS && HAVE_FREEIFADDRS
   if (retval == GNUNET_SYSERR)
     if (GNUNET_OK == getAddress6FromGetIfAddrs (cfg, ectx, address))
       retval = GNUNET_OK;
