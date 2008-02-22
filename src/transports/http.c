@@ -571,8 +571,8 @@ destroy_tsession (GNUNET_TSession * tsession)
           /* contentReaderFreeCallback WILL
              destroy gpos->lock/gpos */
           gnext = gpos->next;
-          MHD_destroy_response (r);
 	  GNUNET_mutex_unlock (gpos->lock);
+          MHD_destroy_response (r);
           gpos = gnext;
         }
       httpsession->cs.server.gets = NULL;
@@ -803,6 +803,12 @@ accessHandlerCallback (void *cls,
   unsigned int poff;
 
   ENTER ();
+#if DEBUG_HTTP
+  GNUNET_GE_LOG (coreAPI->ectx,
+		 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+		 "HTTP/MHD receives `%s' request.\n",
+		 method);
+#endif
   /* convert URL to sender peer id */
   if ((strlen (url) < 2)
       || (GNUNET_OK != GNUNET_enc_to_hash (&url[1], &client)))
@@ -1746,8 +1752,7 @@ cleanup_connections ()
           mprev = NULL;
           while (mpos != NULL)
             {
-              if ((mpos->done == GNUNET_YES) &&
-                  (mpos->last_activity == 0))
+              if (mpos->last_activity == 0)
                 {
                   if (mprev == NULL)
                     s->cs.server.puts = mpos->next;
@@ -2038,6 +2043,7 @@ stopTransportServer ()
       STEP ();
       mhd_daemon = NULL;
     }
+  cleanup_connections ();
   for (i = 0; i < tsessionCount; i++)
     {
       s = tsessions[i]->internal;
