@@ -31,8 +31,6 @@
 #include "gnunet_chat_lib.h"
 #include "chat.h"
 
-#define MAX_RETRIES 5
-
 /**
  * Handle for a (joined) chat room.
  */
@@ -61,6 +59,8 @@ struct GNUNET_CHAT_Room
   char *memberInfo;
 
   GNUNET_CHAT_MessageCallback callback;
+  
+  int shutdown_flag;
 
   void *callback_cls;
 
@@ -85,24 +85,25 @@ poll_thread (void *rcls)
   char *nick;
   char *message_content;
   char *room_name;
+  int disconnected;
 
   ret = GNUNET_OK;
-  /* CHECK FOR SHUTDOWN! */
+
   while (room->shutdown_flag != GNUNET_YES)
     {
       if (disconnected)
 	{
-	  if (GNUNET_client_connection_ensure_connected (room->sock) == GNUNET_OK)
+	  if (GNUNET_client_connection_ensure_connected (room->sock) != GNUNET_OK)
 	    {
-	      disconnected = 0;
+	      disconnected = GNUNET_YES;
 	      /* send join! */
 	    }
 	  else
 	    {
 	      GNUNET_thread_sleep(5 * GNUNET_CRON_SECONDS);
 	      continue;
-            }
         }
+    }
 
       reply = NULL;
 
@@ -280,8 +281,8 @@ GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
   void * unused;
   chat_room->shutdown_flag = GNUNET_YES;
   GNUNET_client_connection_close_forever (chat_room->sock);
-  GNUNET_stop_sleep(room->listen_thread);
-  GNUNET_pthread_join(room->listen_thread, &unused);
+  GNUNET_thread_stop_sleep(chat_room->listen_thread);
+  GNUNET_thread_join(chat_room->listen_thread, &unused);
   GNUNET_free (chat_room->nickname);
   GNUNET_free (chat_room->memberInfo);
   GNUNET_client_connection_destroy (chat_room->sock);

@@ -115,7 +115,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   /*TODO: we have received a message intended for some room, check current client contexts for matching room and send to those clients */
   /*TODO: p2p messages will need to be sent as well at some point */
 
-  tempClient = &client_list;
+  tempClient = client_list_head;
   while ((tempClient->next != NULL) && (tempClient->client != NULL))
     {
       if (memcmp
@@ -269,12 +269,10 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   return GNUNET_OK;
 }
 
-/* WHY HAVE A LEAVE REQUEST AT ALL? => CLIENT EXIT HANDLER */
-static int
-csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
-                          const GNUNET_MessageHeader * message)
+
+static void
+chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
-  /*GNUNET_RSA_PublicKey *client_key; *//*May use later for extra verification */
   int tempCount;
 
   struct GNUNET_CS_chat_client * pos;
@@ -291,17 +289,15 @@ csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
   GNUNET_mutex_lock (chatMutex);
 
   /*TODO: delete client context on the server */
-  /* YUCK */
   pos = client_list_head;
   prev = NULL;
-  while ( (pos != NULL) &&
-	  (pos->client != client) )
-    {
+  while ( (pos != NULL) && (pos->client != client) )
+	{
       prev = pos;
       pos = pos->next;
     }
   if (pos != NULL)
-    {
+	{
       if (prev == NULL)
 	client_list_head = pos->next;
       else
@@ -324,17 +320,7 @@ csHandleChatLeaveRequest (struct GNUNET_ClientHandle *client,
 
   GNUNET_mutex_unlock (chatMutex);
   fprintf (stderr, "End of handleChatLeave\n");
-  return GNUNET_OK;
-}
-
-
-static void
-chatClientExitHandler (struct GNUNET_ClientHandle *client)
-{
-  GNUNET_mutex_lock (chatMutex);
-
-
-  GNUNET_mutex_unlock (chatMutex);
+  return;
 }
 
 
@@ -342,14 +328,11 @@ int
 initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 {
   int ok = GNUNET_OK;
-  clientCount = 0;
-
-  lastMsgs = GNUNET_malloc (sizeof (GNUNET_HashCode) * MAX_LAST_MESSAGES);
 
   GNUNET_GE_ASSERT (ectx,
                     sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
-  clientCount = 0;
+  
   coreAPI = capi;
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
@@ -365,11 +348,6 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
                                    &csHandleChatRequest))
-    ok = GNUNET_SYSERR;
-
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_LEAVE_MSG,
-                                   &csHandleChatLeaveRequest))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
@@ -395,8 +373,7 @@ done_module_chat ()
                                     &csHandleChatMSG);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
                                     &csHandleChatRequest);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_LEAVE_MSG,
-                                    &csHandleChatLeaveRequest);
+
   GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;
 }
