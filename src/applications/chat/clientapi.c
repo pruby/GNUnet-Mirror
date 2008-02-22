@@ -59,7 +59,7 @@ struct GNUNET_CHAT_Room
   char *memberInfo;
 
   GNUNET_CHAT_MessageCallback callback;
-  
+
   int shutdown_flag;
 
   void *callback_cls;
@@ -92,36 +92,37 @@ poll_thread (void *rcls)
   while (room->shutdown_flag != GNUNET_YES)
     {
       if (disconnected)
-	{
-	  if (GNUNET_client_connection_ensure_connected (room->sock) != GNUNET_OK)
-	    {
-	      disconnected = GNUNET_YES;
-	      /* send join! */
-	    }
-	  else
-	    {
-	      GNUNET_thread_sleep(5 * GNUNET_CRON_SECONDS);
-	      continue;
+        {
+          if (GNUNET_client_connection_ensure_connected (room->sock) !=
+              GNUNET_OK)
+            {
+              disconnected = GNUNET_YES;
+              /* send join! */
+            }
+          else
+            {
+              GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
+              continue;
+            }
         }
-    }
 
       reply = NULL;
 
       if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
-	{
-	  disconnected = GNUNET_YES;
-	  continue;
-	}
+        {
+          disconnected = GNUNET_YES;
+          continue;
+        }
 
       if ((reply->size <
            ntohs (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))
           || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
-	{
-	  GNUNET_GE_BREAK(NULL, 0);
-	  GNUNET_client_connection_close_temporarily(room->sock);
-	  disconnected = GNUNET_YES;
-	  continue;
-	}
+        {
+          GNUNET_GE_BREAK (NULL, 0);
+          GNUNET_client_connection_close_temporarily (room->sock);
+          disconnected = GNUNET_YES;
+          continue;
+        }
 
       size = ntohs (reply->size);
 
@@ -239,7 +240,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
     {
       /* ALREADY LOGGED */
       fprintf (stderr, _("Error writing to socket.\n"));
-      GNUNET_free(join_msg);
+      GNUNET_free (join_msg);
       return NULL;
     }
 
@@ -278,11 +279,11 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
-  void * unused;
+  void *unused;
   chat_room->shutdown_flag = GNUNET_YES;
   GNUNET_client_connection_close_forever (chat_room->sock);
-  GNUNET_thread_stop_sleep(chat_room->listen_thread);
-  GNUNET_thread_join(chat_room->listen_thread, &unused);
+  GNUNET_thread_stop_sleep (chat_room->listen_thread);
+  GNUNET_thread_join (chat_room->listen_thread, &unused);
   GNUNET_free (chat_room->nickname);
   GNUNET_free (chat_room->memberInfo);
   GNUNET_client_connection_destroy (chat_room->sock);

@@ -445,11 +445,12 @@ fast_path_processor (const GNUNET_HashCode * key,
   type = ntohl (dblock->type);
   GNUNET_free_non_null (enc);
   ret = coreAPI->cs_send_to_client (sock, &msg->header,
-				    type != GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO : GNUNET_YES);
+                                    type !=
+                                    GNUNET_ECRS_BLOCKTYPE_DATA ? GNUNET_NO :
+                                    GNUNET_YES);
   GNUNET_free (msg);
-  if ( (type == GNUNET_ECRS_BLOCKTYPE_DATA) || 
-       (ret != GNUNET_OK) )
-    return GNUNET_SYSERR;       /* unique response or client can take no more*/
+  if ((type == GNUNET_ECRS_BLOCKTYPE_DATA) || (ret != GNUNET_OK))
+    return GNUNET_SYSERR;       /* unique response or client can take no more */
   rl = GNUNET_malloc (sizeof (struct ResponseList));
   GNUNET_hash (dblock, size, &rl->hash);
   rl->next = cls->seen;
@@ -517,8 +518,7 @@ handle_cs_query_start_request (struct GNUNET_ClientHandle *sock,
   GNUNET_FS_QUERYMANAGER_start_query (&rs->query[0], keyCount, anonymityLevel,
                                       type, sock,
                                       have_target ? &rs->target : NULL,
-                                      fpp.seen,
-				      fpp.have_more);
+                                      fpp.seen, fpp.have_more);
 CLEANUP:
   while (fpp.seen != NULL)
     {

@@ -378,7 +378,8 @@ writeAndProcess (SelectHandle * sh, Session * session)
       GNUNET_GE_LOG (sh->ectx,
                      GNUNET_GE_DEBUG | GNUNET_GE_DEVELOPER | GNUNET_GE_BULK,
                      "Sending %d bytes from session %p of select %s return %d.\n",
-                     session->wapos - session->wspos, session, sh->description, ret);
+                     session->wapos - session->wspos, session,
+                     sh->description, ret);
 #endif
       if (ret == GNUNET_SYSERR)
         {

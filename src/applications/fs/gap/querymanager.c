@@ -70,7 +70,7 @@ struct ClientDataList
  */
 static struct ClientDataList *clients;
 
-static GNUNET_CoreAPIForPlugins * coreAPI;
+static GNUNET_CoreAPIForPlugins *coreAPI;
 
 static GNUNET_Stats_ServiceAPI *stats;
 
@@ -133,7 +133,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
                                     const struct ResponseList *seen,
-				    int have_more)
+                                    int have_more)
 {
   struct ClientDataList *cl;
   struct RequestList *request;
@@ -279,13 +279,13 @@ handle_response (PID_INDEX sender,
   msg->expirationTime = GNUNET_htonll (expirationTime);
   memcpy (&msg[1], data, size);
   coreAPI->cs_send_to_client (client,
-			      &msg->header,
-			      (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
-			      ? GNUNET_NO : GNUNET_YES);
+                              &msg->header,
+                              (rl->type != GNUNET_ECRS_BLOCKTYPE_DATA)
+                              ? GNUNET_NO : GNUNET_YES);
   if (stats != NULL)
     stats->change (stat_gap_client_response_sent, 1);
   GNUNET_free (msg);
-  
+
   /* update *value */
   *value += 1 + rl->value;
   GNUNET_FS_PLAN_success (sender, client, 0, rl);
@@ -438,7 +438,7 @@ handle_client_exit (struct GNUNET_ClientHandle *client)
 
 struct HMClosure
 {
-  struct RequestList * request;  
+  struct RequestList *request;
   unsigned int processed;
   int have_more;
 };
@@ -463,9 +463,9 @@ have_more_processor (const GNUNET_HashCode * key,
   size = ntohl (value->size) - sizeof (GNUNET_DatastoreValue);
   dblock = (const DBlock *) &value[1];
   if (GNUNET_OK == GNUNET_FS_SHARED_test_valid_new_response (cls->request,
-							     key,
-							     size,
-							     dblock, &hc))
+                                                             key,
+                                                             size,
+                                                             dblock, &hc))
     {
       msg = GNUNET_malloc (sizeof (CS_fs_reply_content_MESSAGE) + size);
       msg->header.type = htons (GNUNET_CS_PROTO_GAP_RESULT);
@@ -474,13 +474,11 @@ have_more_processor (const GNUNET_HashCode * key,
       msg->expirationTime = value->expirationTime;
       memcpy (&msg[1], dblock, size);
       ret = coreAPI->cs_send_to_client (cls->request->response_client,
-					&msg->header,
-					GNUNET_YES);
+                                        &msg->header, GNUNET_YES);
       GNUNET_free (msg);
       if (ret != GNUNET_OK)
-	return GNUNET_SYSERR;       /* client can take no more */	
-      GNUNET_FS_SHARED_mark_response_seen(cls->request,
-					  &hc);
+        return GNUNET_SYSERR;   /* client can take no more */
+      GNUNET_FS_SHARED_mark_response_seen (cls->request, &hc);
     }
   cls->processed++;
   if (cls->processed > MAX_ASYNC_PROCESSED)
@@ -512,40 +510,41 @@ repeat_requests_job (void *unused)
       request = client->requests;
       while (request != NULL)
         {
-	  if (request->have_more > 0)
-	    {
-	      request->have_more--;
-	      hmc.request = request;
-	      hmc.processed = 0;
-	      hmc.have_more = GNUNET_NO;
-	      datastore->get (&request->queries[0], request->type, &have_more_processor, &hmc);
-	      if (hmc.have_more)
-		request->have_more += HAVE_MORE_INCREMENT;
-	    }
-	  else
-	    {
-	      if ((NULL == request->plan_entries) &&
-		  ((client->client != NULL) ||
-		   (request->expiration > now)) &&
-		  (request->last_ttl_used * GNUNET_CRON_SECONDS +
-		   request->last_request_time < now))
-		{
-		  if ((GNUNET_OK ==
-		       GNUNET_FS_PLAN_request (client->client, 0, request))
-		      && (stats != NULL))
-		    stats->change (stat_gap_client_query_injected, 1);
-		}
-	      
-	      if ((request->anonymityLevel == 0) &&
-		  (request->last_dht_get + request->dht_back_off < now))
-		{
-		  if (request->dht_back_off * 2 > request->dht_back_off)
-		    request->dht_back_off *= 2;
-		  request->last_dht_get = now;
-		  GNUNET_FS_DHT_execute_query (request->type,
-					       &request->queries[0]);
-		}
-	    }
+          if (request->have_more > 0)
+            {
+              request->have_more--;
+              hmc.request = request;
+              hmc.processed = 0;
+              hmc.have_more = GNUNET_NO;
+              datastore->get (&request->queries[0], request->type,
+                              &have_more_processor, &hmc);
+              if (hmc.have_more)
+                request->have_more += HAVE_MORE_INCREMENT;
+            }
+          else
+            {
+              if ((NULL == request->plan_entries) &&
+                  ((client->client != NULL) ||
+                   (request->expiration > now)) &&
+                  (request->last_ttl_used * GNUNET_CRON_SECONDS +
+                   request->last_request_time < now))
+                {
+                  if ((GNUNET_OK ==
+                       GNUNET_FS_PLAN_request (client->client, 0, request))
+                      && (stats != NULL))
+                    stats->change (stat_gap_client_query_injected, 1);
+                }
+
+              if ((request->anonymityLevel == 0) &&
+                  (request->last_dht_get + request->dht_back_off < now))
+                {
+                  if (request->dht_back_off * 2 > request->dht_back_off)
+                    request->dht_back_off *= 2;
+                  request->last_dht_get = now;
+                  GNUNET_FS_DHT_execute_query (request->type,
+                                               &request->queries[0]);
+                }
+            }
           request = request->next;
         }
       client = client->next;

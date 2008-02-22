@@ -558,20 +558,19 @@ destroy_tsession (GNUNET_TSession * tsession)
   else
     {
       httpsession->destroyed = GNUNET_YES;
-      GNUNET_GE_BREAK(NULL,
-		      httpsession->cs.server.puts == NULL);
+      GNUNET_GE_BREAK (NULL, httpsession->cs.server.puts == NULL);
 #if DO_GET
       gpos = httpsession->cs.server.gets;
       while (gpos != NULL)
         {
-	  GNUNET_mutex_lock (gpos->lock);
-	  GNUNET_array_grow (gpos->wbuff, gpos->wsize, 0);
+          GNUNET_mutex_lock (gpos->lock);
+          GNUNET_array_grow (gpos->wbuff, gpos->wsize, 0);
           r = gpos->get;
           gpos->get = NULL;
           /* contentReaderFreeCallback WILL
              destroy gpos->lock/gpos */
           gnext = gpos->next;
-	  GNUNET_mutex_unlock (gpos->lock);
+          GNUNET_mutex_unlock (gpos->lock);
           MHD_destroy_response (r);
           gpos = gnext;
         }
@@ -805,9 +804,8 @@ accessHandlerCallback (void *cls,
   ENTER ();
 #if DEBUG_HTTP
   GNUNET_GE_LOG (coreAPI->ectx,
-		 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-		 "HTTP/MHD receives `%s' request.\n",
-		 method);
+                 GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
+                 "HTTP/MHD receives `%s' request.\n", method);
 #endif
   /* convert URL to sender peer id */
   if ((strlen (url) < 2)
@@ -1740,9 +1738,9 @@ cleanup_connections ()
           if ((s->cs.client.last_get_activity + HTTP_TIMEOUT < now) &&
               ((s->users > 0) || (s->cs.client.puts != NULL)) &&
               ((s->cs.client.last_get_initiated + HTTP_GET_REFRESH > now) ||
-		(s->cs.client.get == NULL) ) &&
-	      ((s->cs.client.get == NULL) ||
-		(s->cs.client.last_get_activity + HTTP_GET_REFRESH / 2 < now)))
+               (s->cs.client.get == NULL)) &&
+              ((s->cs.client.get == NULL) ||
+               (s->cs.client.last_get_activity + HTTP_GET_REFRESH / 2 < now)))
             create_curl_get (s);
 #endif
         }

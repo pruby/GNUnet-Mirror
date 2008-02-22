@@ -52,7 +52,7 @@ GNUNET_FS_QUERYMANAGER_start_query (const GNUNET_HashCode * query,
                                     struct GNUNET_ClientHandle *client,
                                     const GNUNET_PeerIdentity * target,
                                     const struct ResponseList *seen,
-				    int have_more);
+                                    int have_more);
 
 /**
  * Handle the given response (by forwarding it to
