@@ -27,6 +27,7 @@
 #define CHAT_CHAT_H
 
 #include "gnunet_core.h"
+#include "gnunet_chat_lib.h"
 
 typedef struct
 {
@@ -58,7 +59,43 @@ typedef struct
 
 } CS_chat_JOIN_MESSAGE;
 
+/**
+ * Handle for a (joined) chat room.
+ */
+struct GNUNET_CHAT_Room
+{
+  struct GNUNET_ClientServerConnection *sock;
 
+  struct GNUNET_ThreadHandle *listen_thread;
+
+  struct GNUNET_GE_Context *ectx;
+
+  struct GNUNET_GC_Configuration *cfg;
+
+  char *nickname;
+
+  char *room_name;
+
+  GNUNET_HashCode room_name_hash;
+
+  const GNUNET_RSA_PublicKey *my_public_key;
+
+  GNUNET_HashCode my_public_key_hash;
+
+  const struct GNUNET_RSA_PrivateKey *my_private_key;
+
+  char *memberInfo;
+
+  GNUNET_CHAT_MessageCallback callback;
+  
+  int shutdown_flag;
+
+  void *callback_cls;
+
+};
+
+int  GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room);
+                       
 #endif
 
 /* end of chat.h */

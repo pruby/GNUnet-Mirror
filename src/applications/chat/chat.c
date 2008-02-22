@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005, 2006, 2007, 2008 Christian Grothoff (and other contributing authors)
+     (C) 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -52,7 +52,7 @@ struct GNUNET_CS_chat_client
 
 };
 
-static struct GNUNET_CS_chat_client *client_list_head;
+static struct GNUNET_CS_chat_client * client_list_head;
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
@@ -77,7 +77,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   cmsg = (CS_chat_MESSAGE *) message;
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
     }
 
@@ -116,7 +116,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   /*TODO: p2p messages will need to be sent as well at some point */
 
   tempClient = client_list_head;
-  while ((tempClient->next != NULL) && (tempClient->client != NULL))
+  while ((tempClient != NULL) && (tempClient->client != NULL))
     {
       if (memcmp
           (&room_name_hash, &tempClient->room_name_hash,
@@ -139,9 +139,8 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   return GNUNET_OK;
 }
 
-/* FUNCTION NAME! */
 static int
-csHandleChatRequest (struct GNUNET_ClientHandle *client,
+csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
                      const GNUNET_MessageHeader * message)
 {
   const CS_chat_JOIN_MESSAGE *cmsg;
@@ -165,7 +164,7 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
 
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_JOIN_MESSAGE))
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
     }
 
@@ -197,20 +196,21 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   /*TODO: create client context on the server, very simple as of now */
 #if EXTRA_CHECKS
   tempClient = client_list;
-  while ((tempClient->client != client) && (tempClient != NULL))
+  while ( (tempClient->client != client) &&
+	  (tempClient != NULL) )
     tempClient = tempClient->next;
   if (tempClient != NULL)
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       GNUNET_free (nick);
       GNUNET_free (client_key);
       GNUNET_free (room_name);
       GNUNET_mutex_unlock (chatMutex);
-      return GNUNET_SYSERR;
+      return GNUNET_SYSERR;      
     }
 #endif
   tempClient = GNUNET_malloc (sizeof (struct GNUNET_CS_chat_client));
-  memset (tempClient, 0, sizeof (struct GNUNET_CS_chat_client));
+  memset(tempClient, 0, sizeof (struct GNUNET_CS_chat_client));
   tempClient->next = client_list_head;
   if (client_list_head != NULL)
     client_list_head->prev = tempClient;
@@ -219,15 +219,15 @@ csHandleChatRequest (struct GNUNET_ClientHandle *client,
   memcpy (&tempClient->room_name_hash, &room_name_hash,
           sizeof (GNUNET_HashCode));
   tempCount = 0;
-#if NATE
-  while ((tempClient->next != NULL) && (tempClient->client != NULL))
+
+  while (tempClient != NULL)
     {
       tempCount++;
       tempClient = tempClient->next;
     }
 
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
-#endif
+
 
   /* forward to all other TCP chat clients */
   /* marker to check if this is a new client */
@@ -274,8 +274,9 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
   int tempCount;
 
-  struct GNUNET_CS_chat_client *pos;
-  struct GNUNET_CS_chat_client *prev;
+	struct GNUNET_CS_chat_client * tempClient;
+  struct GNUNET_CS_chat_client * pos;
+  struct GNUNET_CS_chat_client * prev;
 
   /*client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
      memcpy (client_key, &cmsg->nick[nick_len], pubkey_len); */
@@ -290,32 +291,32 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
   /*TODO: delete client context on the server */
   pos = client_list_head;
   prev = NULL;
-  while ((pos != NULL) && (pos->client != client))
-    {
+  while ( (pos != NULL) && (pos->client != client) )
+	{
       prev = pos;
       pos = pos->next;
     }
   if (pos != NULL)
-    {
+	{
       if (prev == NULL)
-        client_list_head = pos->next;
+	client_list_head = pos->next;
       else
-        prev->next = pos->next;
+	prev->next = pos->next;
       if (pos->next != NULL)
-        pos->next->prev = pos->prev;
-      GNUNET_free (pos);
+	pos->next->prev = pos->prev;
+      GNUNET_free(pos);
     }
   /*Count the number of current clients, will be removed */
-#if NATE
-  tempClient = client_list;
+
+  tempClient = client_list_head;
   tempCount = 0;
-  while ((tempClient->next != NULL) && (tempClient->client != NULL))
+  while (tempClient != NULL)
     {
       tempCount++;
       tempClient = tempClient->next;
     }
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
-#endif
+
 
   GNUNET_mutex_unlock (chatMutex);
   fprintf (stderr, "End of handleChatLeave\n");
@@ -331,7 +332,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx,
                     sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
-
+  
   coreAPI = capi;
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
@@ -346,7 +347,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
 
   if (GNUNET_SYSERR ==
       capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
-                                   &csHandleChatRequest))
+                                   &csHandleChatJoinRequest))
     ok = GNUNET_SYSERR;
 
   if (GNUNET_SYSERR == capi->registerClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
@@ -371,7 +372,7 @@ done_module_chat ()
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_MSG,
                                     &csHandleChatMSG);
   coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_CHAT_JOIN_MSG,
-                                    &csHandleChatRequest);
+                                    &csHandleChatJoinRequest);
 
   GNUNET_mutex_destroy (chatMutex);
   coreAPI = NULL;

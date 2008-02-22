@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2007 Christian Grothoff (and other contributing authors)
+     (C) 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -32,41 +32,6 @@
 #include "chat.h"
 
 /**
- * Handle for a (joined) chat room.
- */
-struct GNUNET_CHAT_Room
-{
-  struct GNUNET_ClientServerConnection *sock;
-
-  struct GNUNET_ThreadHandle *listen_thread;
-
-  struct GNUNET_GE_Context *ectx;
-
-  struct GNUNET_GC_Configuration *cfg;
-
-  char *nickname;
-
-  char *room_name;
-
-  GNUNET_HashCode room_name_hash;
-
-  const GNUNET_RSA_PublicKey *my_public_key;
-
-  GNUNET_HashCode my_public_key_hash;
-
-  const struct GNUNET_RSA_PrivateKey *my_private_key;
-
-  char *memberInfo;
-
-  GNUNET_CHAT_MessageCallback callback;
-
-  int shutdown_flag;
-
-  void *callback_cls;
-
-};
-
-/**
  * Listen for incoming messages on this chat room.  When received, call the client callback.
  * Also, support servers going away/coming back (i.e. rejoin chat room to keep server state up to date)... 
  */
@@ -77,86 +42,85 @@ poll_thread (void *rcls)
   int ret;
   GNUNET_MessageHeader *reply;
   CS_chat_MESSAGE *received_msg;
+
   unsigned int size;
   unsigned int nick_len;
   unsigned int msg_len;
   unsigned int room_name_len;
-  unsigned int retries;
+
   char *nick;
   char *message_content;
   char *room_name;
   int disconnected;
 
   ret = GNUNET_OK;
-
+	disconnected = GNUNET_NO;
   while (room->shutdown_flag != GNUNET_YES)
+  {
+  	if (disconnected)
+		{
+			GNUNET_thread_sleep(15 * GNUNET_CRON_SECONDS);
+			if (GNUNET_client_connection_ensure_connected (room->sock) == GNUNET_OK)
+	    {
+	      /* send join! */
+	      disconnected = GNUNET_NO;
+	      GNUNET_CHAT_rejoin_room(room);
+	      continue;
+	    }
+	    else
+	      break;
+		}
+		
+		fprintf(stderr,"polling\n");
+    reply = NULL;
+
+    if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
+		{
+		  disconnected = GNUNET_YES;
+		  continue;
+		}
+
+    if ((reply->size <
+         ntohs (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))
+        || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
+		{
+		  GNUNET_GE_BREAK(NULL, 0);
+		  GNUNET_client_connection_close_temporarily(room->sock);
+		  disconnected = GNUNET_YES;
+		  continue;
+		}
+
+    size = ntohs (reply->size);
+
+    received_msg = (CS_chat_MESSAGE *) reply;
+
+    nick_len = ntohl (received_msg->nick_len);
+    msg_len = ntohl (received_msg->msg_len);
+    /* NO NEED TO SEND ROOM! */
+    room_name_len = ntohl (received_msg->room_name_len);
+
+    nick = GNUNET_malloc (nick_len + 1);
+    message_content = GNUNET_malloc (msg_len + 1);
+    room_name = GNUNET_malloc (room_name_len + 1);
+
+    /* BUFFER OVERFLOWS! */
+    memcpy (nick, &received_msg->nick[0], nick_len);
+    memcpy (message_content, &received_msg->nick[nick_len], msg_len);
+    memcpy (room_name, &received_msg->nick[nick_len + msg_len],
+            room_name_len);
+
+    nick[nick_len] = '\0';
+    message_content[msg_len] = '\0';
+    room_name[room_name_len] = '\0';
+
+    if (GNUNET_OK != room->callback (room->callback_cls, room, nick, message_content,GNUNET_get_time (), 0))
     {
-      if (disconnected)
-        {
-          if (GNUNET_client_connection_ensure_connected (room->sock) !=
-              GNUNET_OK)
-            {
-              disconnected = GNUNET_YES;
-              /* send join! */
-            }
-          else
-            {
-              GNUNET_thread_sleep (5 * GNUNET_CRON_SECONDS);
-              continue;
-            }
-        }
-
-      reply = NULL;
-
-      if (GNUNET_OK != GNUNET_client_connection_read (room->sock, &reply))
-        {
-          disconnected = GNUNET_YES;
-          continue;
-        }
-
-      if ((reply->size <
-           ntohs (sizeof (GNUNET_MessageHeader) + sizeof (CS_chat_MESSAGE)))
-          || (reply->type != ntohs (GNUNET_CS_PROTO_CHAT_MSG)))
-        {
-          GNUNET_GE_BREAK (NULL, 0);
-          GNUNET_client_connection_close_temporarily (room->sock);
-          disconnected = GNUNET_YES;
-          continue;
-        }
-
-      size = ntohs (reply->size);
-
-      received_msg = (CS_chat_MESSAGE *) reply;
-
-      nick_len = ntohl (received_msg->nick_len);
-      msg_len = ntohl (received_msg->msg_len);
-      /* NO NEED TO SEND ROOM! */
-      room_name_len = ntohl (received_msg->room_name_len);
-
-      nick = GNUNET_malloc (nick_len + 1);
-      message_content = GNUNET_malloc (msg_len + 1);
-      room_name = GNUNET_malloc (room_name_len + 1);
-
-      /* BUFFER OVERFLOWS! */
-      memcpy (nick, &received_msg->nick[0], nick_len);
-      memcpy (message_content, &received_msg->nick[nick_len], msg_len);
-      memcpy (room_name, &received_msg->nick[nick_len + msg_len],
-              room_name_len);
-
-      nick[nick_len] = '\0';
-      message_content[msg_len] = '\0';
-      room_name[room_name_len] = '\0';
-
-      if (GNUNET_OK !=
-          room->callback (room->callback_cls, room, nick, message_content,
-                          GNUNET_get_time (), 0))
-        {
-          ret = GNUNET_SYSERR;
-        }
-
+      ret = GNUNET_SYSERR;
     }
+  }
   return NULL;
 }
+
 
 /**
  * List all of the (publically visible) chat rooms.
@@ -240,7 +204,7 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
     {
       /* ALREADY LOGGED */
       fprintf (stderr, _("Error writing to socket.\n"));
-      GNUNET_free (join_msg);
+      GNUNET_free(join_msg);
       return NULL;
     }
 
@@ -273,17 +237,64 @@ GNUNET_CHAT_join_room (struct GNUNET_GE_Context *ectx,
   return chat_room;
 }
 
+int
+GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room)
+{
+  CS_chat_JOIN_MESSAGE *join_msg;
+  GNUNET_MessageHeader csHdr;
+
+  GNUNET_HashCode hash_of_me;
+  GNUNET_HashCode hash_of_room_name;
+
+  int size_of_join;
+
+  csHdr.size = htons (sizeof (CS_chat_JOIN_MESSAGE));
+  csHdr.type = htons (GNUNET_CS_PROTO_CHAT_JOIN_MSG);
+
+  GNUNET_hash (chat_room->my_public_key, sizeof (GNUNET_RSA_PublicKey), &hash_of_me);
+  GNUNET_hash (chat_room->room_name, strlen (chat_room->room_name), &hash_of_room_name);
+
+  size_of_join =
+    sizeof (CS_chat_JOIN_MESSAGE) + strlen (chat_room->nickname) +
+    sizeof (GNUNET_RSA_PublicKey) + strlen (chat_room->room_name);
+  join_msg = GNUNET_malloc (size_of_join);
+
+  join_msg->nick_len = htonl (strlen (chat_room->nickname));
+  join_msg->pubkey_len = htonl (sizeof (GNUNET_RSA_PublicKey));
+  join_msg->room_name_len = htonl (strlen (chat_room->room_name));
+
+
+  memcpy (&join_msg->nick[0], chat_room->nickname, strlen (chat_room->nickname));
+  memcpy (&join_msg->nick[strlen (chat_room->nickname)], chat_room->my_public_key,
+          sizeof (GNUNET_RSA_PublicKey));
+  memcpy (&join_msg->nick[strlen (chat_room->nickname) + sizeof (GNUNET_RSA_PublicKey)],
+          chat_room->room_name, strlen (chat_room->room_name));
+
+  join_msg->header = csHdr;
+  join_msg->header.size = htons (size_of_join);
+
+  if (GNUNET_SYSERR ==
+      GNUNET_client_connection_write (chat_room->sock, &join_msg->header))
+    {
+      GNUNET_free(join_msg);
+      return GNUNET_SYSERR;
+    }
+
+  GNUNET_free (join_msg);  
+  return GNUNET_OK;
+}
+
 /**
  * Leave a chat room.
  */
 void
 GNUNET_CHAT_leave_room (struct GNUNET_CHAT_Room *chat_room)
 {
-  void *unused;
+  void * unused;
   chat_room->shutdown_flag = GNUNET_YES;
   GNUNET_client_connection_close_forever (chat_room->sock);
-  GNUNET_thread_stop_sleep (chat_room->listen_thread);
-  GNUNET_thread_join (chat_room->listen_thread, &unused);
+  GNUNET_thread_stop_sleep(chat_room->listen_thread);
+  GNUNET_thread_join(chat_room->listen_thread, &unused);
   GNUNET_free (chat_room->nickname);
   GNUNET_free (chat_room->memberInfo);
   GNUNET_client_connection_destroy (chat_room->sock);
@@ -353,6 +364,5 @@ GNUNET_CHAT_list_members (struct GNUNET_CHAT_Room *room,
 {
   return GNUNET_SYSERR;
 }
-
 
 /* end of clientapi.c */
