@@ -52,6 +52,11 @@
 #define HTTP_TIMEOUT (600 * GNUNET_CRON_SECONDS)
 
 /**
+ * How often do we re-issue GET requests?
+ */
+#define HTTP_GET_REFRESH (5 * GNUNET_CRON_SECONDS)
+
+/**
  * Default maximum size of the HTTP read and write buffer.
  */
 #define HTTP_BUF_SIZE (64 * 1024)
@@ -315,6 +320,12 @@ typedef struct HTTPSession
       GNUNET_CronTime last_get_activity;
 
       /**
+       * What was the last time we were able to
+       * transmit data using the current get handle?
+       */
+      GNUNET_CronTime last_get_initiated;
+
+      /**
        * GET operation
        */
       CURL *get;
@@ -490,8 +501,6 @@ destroy_tsession (GNUNET_TSession * tsession)
   HTTPSession *httpsession = tsession->internal;
   struct HTTPPutData *pos;
   struct HTTPPutData *next;
-  struct MHDPutData *mpos;
-  struct MHDPutData *mnext;
 #if DO_GET
   struct MHDGetData *gpos;
   struct MHDGetData *gnext;
@@ -549,28 +558,21 @@ destroy_tsession (GNUNET_TSession * tsession)
   else
     {
       httpsession->destroyed = GNUNET_YES;
-      mpos = httpsession->cs.server.puts;
-      /* this should be NULL already, but just
-         in case it is not, we free it anyway... */
-      while (mpos != NULL)
-        {
-          mnext = mpos->next;
-          GNUNET_array_grow (mpos->rbuff2, mpos->rsize2, 0);
-          GNUNET_free (mpos);
-          mpos = mnext;
-        }
-      httpsession->cs.server.puts = NULL;
+      GNUNET_GE_BREAK(NULL,
+		      httpsession->cs.server.puts == NULL);
 #if DO_GET
       gpos = httpsession->cs.server.gets;
       while (gpos != NULL)
         {
-          GNUNET_array_grow (gpos->wbuff, gpos->wsize, 0);
+	  GNUNET_mutex_lock (gpos->lock);
+	  GNUNET_array_grow (gpos->wbuff, gpos->wsize, 0);
           r = gpos->get;
           gpos->get = NULL;
           /* contentReaderFreeCallback WILL
-             destroy session->lock/tesssion */
+             destroy gpos->lock/gpos */
           gnext = gpos->next;
           MHD_destroy_response (r);
+	  GNUNET_mutex_unlock (gpos->lock);
           gpos = gnext;
         }
       httpsession->cs.server.gets = NULL;
@@ -1176,6 +1178,7 @@ create_curl_get (HTTPSession * httpSession)
   CURL *curl_get;
   CURLcode ret;
   CURLMcode mret;
+  GNUNET_CronTime now;
 
   ENTER ();
   if (httpSession->cs.client.url == NULL)
@@ -1244,8 +1247,10 @@ create_curl_get (HTTPSession * httpSession)
       return GNUNET_SYSERR;
     }
   signal_select ();
-  httpSession->cs.client.last_get_activity = GNUNET_get_time ();
+  now = GNUNET_get_time ();
+  httpSession->cs.client.last_get_activity = now;
   httpSession->cs.client.get = curl_get;
+  httpSession->cs.client.last_get_initiated = now;
 #if DEBUG_HTTP
   GNUNET_GE_LOG (coreAPI->ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
@@ -1727,7 +1732,11 @@ cleanup_connections ()
             }
 #if DO_GET
           if ((s->cs.client.last_get_activity + HTTP_TIMEOUT < now) &&
-              ((s->users > 0) || (s->cs.client.puts != NULL)))
+              ((s->users > 0) || (s->cs.client.puts != NULL)) &&
+              ((s->cs.client.last_get_initiated + HTTP_GET_REFRESH > now) ||
+		(s->cs.client.get == NULL) ) &&
+	      ((s->cs.client.get == NULL) ||
+		(s->cs.client.last_get_activity + HTTP_GET_REFRESH / 2 < now)))
             create_curl_get (s);
 #endif
         }
@@ -1737,8 +1746,8 @@ cleanup_connections ()
           mprev = NULL;
           while (mpos != NULL)
             {
-              if ((mpos->done == GNUNET_YES) ||
-                  (mpos->last_activity + HTTP_TIMEOUT < now))
+              if ((mpos->done == GNUNET_YES) &&
+                  (mpos->last_activity == 0))
                 {
                   if (mprev == NULL)
                     s->cs.server.puts = mpos->next;
