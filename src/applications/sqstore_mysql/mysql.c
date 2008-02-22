@@ -1262,6 +1262,14 @@ get (const GNUNET_HashCode * query,
   rbind[0].buffer = &total;
   rbind[0].is_unsigned = GNUNET_YES;
   /* first, determine total number of results */
+  mysql_thread_init ();
+  GNUNET_mutex_lock (lock);
+  if (GNUNET_OK != CHECK_DBH)
+    {
+      mysql_thread_end ();
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_SYSERR;
+    }
   if (type != 0)
     stmt =
       (vhash !=
@@ -1271,14 +1279,6 @@ get (const GNUNET_HashCode * query,
     stmt =
       (vhash !=
        NULL) ? dbh->count_entry_by_hash_and_vhash : dbh->count_entry_by_hash;
-  mysql_thread_init ();
-  GNUNET_mutex_lock (lock);
-  if (GNUNET_OK != CHECK_DBH)
-    {
-      mysql_thread_end ();
-      GNUNET_mutex_unlock (lock);
-      return GNUNET_SYSERR;
-    }
   GNUNET_GE_ASSERT (ectx, mysql_stmt_param_count (stmt) <= 3);
   GNUNET_GE_ASSERT (ectx, mysql_stmt_field_count (stmt) == 1);
   if (mysql_stmt_bind_param (stmt, qbind))

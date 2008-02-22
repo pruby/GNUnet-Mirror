@@ -127,18 +127,6 @@ typedef struct
   unsigned long long (*getSize) (void);
 
   /**
-   * Store an item in the datastore.  If the item is
-   * already present, a second copy is created.
-   *
-   * @return GNUNET_YES on success, GNUNET_NO if the datastore is
-   *   full and the priority of the item is not high enough
-   *   to justify removing something else, GNUNET_SYSERR on
-   *   other serious error (i.e. IO permission denied)
-   */
-  int (*put) (const GNUNET_HashCode * key,
-              const GNUNET_DatastoreValue * value);
-
-  /**
    * Store an item in the datastore.  If the item is already present,
    * the priorities are summed up and the higher expiration time and
    * lower anonymity level is used.

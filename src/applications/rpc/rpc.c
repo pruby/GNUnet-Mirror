@@ -507,7 +507,7 @@ RPC_build_message (unsigned short errorCode,
     ret->functionNameLength = htonl (errorCode);
   else
     ret->functionNameLength = htonl (slen);
-  ret->argumentCount = htonl ((value == NULL) ? 0 : GNUNET_RPC_parameters_count (values));
+  ret->argumentCount = htonl ((values == NULL) ? 0 : GNUNET_RPC_parameters_count (values));
   if (name != NULL)
     memcpy (&ret[1], name, slen);
   GNUNET_RPC_parameters_serialize (values, &((char *) &ret[1])[slen]);

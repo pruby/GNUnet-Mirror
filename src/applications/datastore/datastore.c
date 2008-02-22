@@ -67,6 +67,8 @@ static unsigned long long quota;
 
 static struct GNUNET_CronManager *cron;
 
+static struct GNUNET_Mutex *lock;
+
 static GNUNET_Stats_ServiceAPI *stats;
 
 static int stat_filtered;
@@ -197,56 +199,6 @@ del (const GNUNET_HashCode * query, const GNUNET_DatastoreValue * value)
   return ret;
 }
 
-/**
- * Store an item in the datastore.  If the item is
- * already present, a second copy is created.
- *
- * @return GNUNET_YES on success, GNUNET_NO if the datastore is
- *   full and the priority of the item is not high enough
- *   to justify removing something else, GNUNET_SYSERR on
- *   other serious error (i.e. IO permission denied)
- */
-static int
-put (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
-{
-  int ok;
-  GNUNET_DatastoreValue *nvalue;
-
-  /* check if we have enough space / priority */
-  if (GNUNET_ntohll (value->expirationTime) < GNUNET_get_time ())
-    {
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Received content for put already expired!\n");
-      return GNUNET_NO;
-    }
-  if ((available < ntohl (value->size)) &&
-      (minPriority > ntohl (value->prio) + comp_priority ()))
-    {
-      GNUNET_GE_LOG (coreAPI->ectx,
-                     GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-                     "Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
-                     sq->getSize (), quota);
-      return GNUNET_NO;         /* new content has such a low priority that
-                                   we should not even bother! */
-    }
-  if (ntohl (value->prio) < minPriority)
-    minPriority = ntohl (value->prio);
-  /* construct new value with comp'ed priority */
-  nvalue = GNUNET_malloc (ntohl (value->size));
-  memcpy (nvalue, value, ntohl (value->size));
-  nvalue->prio = htonl (comp_priority () + ntohl (value->prio));
-  /* add the content */
-  ok = sq->put (key, nvalue);
-  GNUNET_free (nvalue);
-  if (ok == GNUNET_YES)
-    {
-      makeAvailable (key);
-      available -= ntohl (value->size);
-    }
-  return ok;
-}
-
 typedef struct
 {
   int exists;
@@ -297,6 +249,7 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   cls.value = value;
   GNUNET_hash (&value[1],
                ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &vhc);
+  GNUNET_mutex_lock(lock);
   sq->get (key, &vhc, ntohl (value->type), &checkExists, &cls);
   if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
     sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
@@ -308,11 +261,13 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
       if ((ntohl (value->prio) == 0) &&
           (GNUNET_ntohll (value->expirationTime) <= cls.expiration))
         {
-          return GNUNET_OK;
+	  GNUNET_mutex_unlock(lock);
+	  return GNUNET_OK;
         }
       /* update prio */
       sq->update (cls.uid,
                   ntohl (value->prio), GNUNET_ntohll (value->expirationTime));
+      GNUNET_mutex_unlock(lock);
       return GNUNET_OK;
     }
   comp_prio = comp_priority ();
@@ -326,8 +281,11 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   /* check if we have enough space / priority */
   if ((available < ntohl (value->size)) &&
       (minPriority > ntohl (value->prio) + comp_prio))
-    return GNUNET_NO;           /* new content has such a low priority that
-                                   we should not even bother! */
+    {
+      GNUNET_mutex_unlock(lock);
+      return GNUNET_NO;           /* new content has such a low priority that
+				     we should not even bother! */
+    }
   if (ntohl (value->prio) + comp_prio < minPriority)
     minPriority = ntohl (value->prio) + comp_prio;
   /* construct new value with comp'ed priority */
@@ -342,6 +300,7 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
       makeAvailable (key);
       available -= ntohl (value->size);
     }
+  GNUNET_mutex_unlock(lock);
   return ok;
 }
 
@@ -477,6 +436,7 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
         }
       return NULL;
     }
+  lock = GNUNET_mutex_create(GNUNET_NO);
   fsdir = NULL;
   GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                               "FS",
@@ -496,7 +456,6 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
                        10 * GNUNET_CRON_SECONDS, NULL);
   GNUNET_cron_start (cron);
   api.getSize = &getSize;
-  api.put = &put;
   api.fast_get = &testAvailable;
   api.putUpdate = &putUpdate;
   api.get = &get;
@@ -525,6 +484,7 @@ release_module_datastore ()
       coreAPI->release_service (stats);
       stats = NULL;
     }
+  GNUNET_mutex_destroy(lock);
   sq = NULL;
   coreAPI = NULL;
 }
