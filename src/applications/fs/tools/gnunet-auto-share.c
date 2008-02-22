@@ -198,9 +198,13 @@ test_run (const char *filename, const char *dirName, void *cls)
       rec->size = buf.st_size;
       rec->last_seen = time (NULL);
       GNUNET_hash_file (NULL, fn, &rec->hc);
+      rec->next = records;
+      records = rec;
       if (GNUNET_NO == GNUNET_FS_test_indexed (sock, &rec->hc))
-        *run = 1;
-      return GNUNET_SYSERR;
+	{
+	  *run = 1;
+	  return GNUNET_SYSERR;
+	}
     }
   else
     {
@@ -376,6 +380,7 @@ auto_share_main (const char *dirname)
     GNUNET_GC_parse_configuration (meta_cfg, metafn);
   if (GNUNET_NO == debug_flag)
     GNUNET_terminal_detach_complete (ectx, filedes, GNUNET_YES);
+  GNUNET_free(metafn);
   /* fundamental init */
   ctx = GNUNET_FSUI_start (ectx, cfg, "gnunet-auto-share", GNUNET_NO, 32,
                            &printstatus, &verbose);
