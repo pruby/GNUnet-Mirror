@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006, 2008 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -248,6 +248,13 @@ GNUNET_FSUI_searchThread (void *cls)
       event.data.SearchAborted.sc.cctx = pos->cctx;
       pos->ctx->ecb (pos->ctx->ecbClosure, &event);
     }
+  else if (pos->state == GNUNET_FSUI_PAUSED)
+    {
+      event.type = GNUNET_FSUI_search_paused;
+      event.data.SearchPaused.sc.pos = pos;
+      event.data.SearchPaused.sc.cctx = pos->cctx;
+      pos->ctx->ecb (pos->ctx->ecbClosure, &event);
+    }
   else if (pos->state == GNUNET_FSUI_ACTIVE)
     {
       pos->state = GNUNET_FSUI_COMPLETED;
@@ -282,6 +289,22 @@ GNUNET_FSUI_searchThreadSignal (void *cls)
   event.data.SearchStarted.searchURI = pos->uri;
   event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
   pos->cctx = pos->ctx->ecb (pos->ctx->ecbClosure, &event);
+  return GNUNET_FSUI_searchThread (pos);
+}
+
+/**
+ * Thread that searches for data (and signals startup).
+ */
+static void *
+GNUNET_FSUI_searchThreadRestartSignal (void *cls)
+{
+  GNUNET_FSUI_SearchList *pos = cls;
+  GNUNET_FSUI_Event event;
+
+  event.type = GNUNET_FSUI_search_restarted;
+  event.data.SearchStarted.sc.pos = pos;
+  event.data.SearchStarted.sc.cctx = pos->cctx;
+  pos->ctx->ecb (pos->ctx->ecbClosure, &event);
   return GNUNET_FSUI_searchThread (pos);
 }
 
@@ -344,6 +367,54 @@ GNUNET_FSUI_search_abort (struct GNUNET_FSUI_Context *ctx,
     return GNUNET_SYSERR;
   sl->state = GNUNET_FSUI_ABORTED;
   GNUNET_thread_stop_sleep (sl->handle);
+  return GNUNET_OK;
+}
+
+/**
+ * Pause a search.
+ */
+int
+GNUNET_FSUI_search_pause (struct GNUNET_FSUI_Context *ctx,
+                          struct GNUNET_FSUI_SearchList *sl)
+{
+  void * unused; 
+
+  GNUNET_mutex_lock (ctx->lock);
+  if (sl->state != GNUNET_FSUI_ACTIVE)
+    {
+      GNUNET_mutex_unlock (ctx->lock);
+      return GNUNET_SYSERR;
+    }
+  sl->state = GNUNET_FSUI_PAUSED;
+  GNUNET_thread_stop_sleep (sl->handle);
+  GNUNET_thread_join (sl->handle, &unused);
+  GNUNET_mutex_unlock (ctx->lock);
+  return GNUNET_OK;
+}
+
+/**
+ * Restart a paused search.
+ */
+int
+GNUNET_FSUI_search_restart (struct GNUNET_FSUI_Context *ctx,
+                            struct GNUNET_FSUI_SearchList *pos)
+{
+  GNUNET_mutex_lock (ctx->lock);
+  pos->state = GNUNET_FSUI_ACTIVE;
+  pos->handle =
+    GNUNET_thread_create (&GNUNET_FSUI_searchThreadRestartSignal, pos,
+                          32 * 1024);
+  if (pos->handle == NULL)
+    {
+      GNUNET_GE_LOG_STRERROR (ctx->ectx,
+                              GNUNET_GE_ERROR | GNUNET_GE_IMMEDIATE |
+                              GNUNET_GE_USER | GNUNET_GE_ADMIN,
+                              "PTHREAD_CREATE");
+      pos->state = GNUNET_FSUI_PAUSED;
+      GNUNET_mutex_unlock (ctx->lock);
+      return GNUNET_SYSERR;
+    }
+  GNUNET_mutex_unlock (ctx->lock);
   return GNUNET_OK;
 }
 

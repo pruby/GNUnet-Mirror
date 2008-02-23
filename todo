@@ -7,7 +7,6 @@ Annotations:
 0.8.0 [6'08] (aka "advanced features"):
 - full support for FSUI pause/resume of search
 - HTTP transport uses FAR too much CPU (80-90%!?) => possibly fixed!
-- power insert (#854)
 - clean up VPN code
 - tune GAP query planning code [RC]
 - gnunet-chat (CS-only)
@@ -52,6 +51,8 @@ Hostlist for network testing:
 - testbed using remote testing topology setup
 - HTTPS support (#1225)
 - clean up indexing with gnunet-insert (#1107)
+- power insert (#854)
+
 
 1.0.0 (aka "userfriendly"):
 

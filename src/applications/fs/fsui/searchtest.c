@@ -69,6 +69,9 @@ eventCallback (void *cls, const GNUNET_FSUI_Event * event)
     case GNUNET_FSUI_search_suspended:
       search = NULL;
       break;
+    case GNUNET_FSUI_search_paused:
+    case GNUNET_FSUI_search_restarted:
+      break;
     case GNUNET_FSUI_download_resumed:
     case GNUNET_FSUI_upload_resumed:
     case GNUNET_FSUI_unindex_resumed:
@@ -163,6 +166,14 @@ main (int argc, char *argv[])
   ctx = GNUNET_FSUI_start (NULL,
                            cfg, "fsuisearchtest", 32, GNUNET_YES,
                            &eventCallback, NULL);
+  GNUNET_FSUI_search_pause(ctx, search);
+  GNUNET_FSUI_stop (ctx);
+  /* resume search! */
+  ctx = GNUNET_FSUI_start (NULL,
+                           cfg, "fsuisearchtest", 32, GNUNET_YES,
+                           &eventCallback, NULL);
+  GNUNET_FSUI_search_restart(ctx, search);
+
   fn = makeName (42);
   GNUNET_disk_file_write (NULL,
                           fn, "foo bar test!", strlen ("foo bar test!"),

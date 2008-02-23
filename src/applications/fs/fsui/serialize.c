@@ -316,6 +316,7 @@ writeUploads (int fd, struct GNUNET_FSUI_Context *ctx,
       WRITELONG (fd, shared->expiration);
       if (shared->extractor_config != NULL)
         WRITESTRING (fd, shared->extractor_config);
+      WRITESTRING (fd, shared->top_filename);
       if (shared->global_keywords != NULL)
         writeURI (fd, shared->global_keywords);
       writeUploadList (fd, ctx, upos, GNUNET_YES);
@@ -335,7 +336,7 @@ GNUNET_FSUI_serialize (struct GNUNET_FSUI_Context *ctx)
                               S_IRUSR | S_IWUSR);
   if (fd == -1)
     return;
-  WRITE (fd, "FSUI01\n\0", 8);  /* magic */
+  WRITE (fd, "FSUI02\n\0", 8);  /* magic */
   writeCollection (fd, ctx);
   writeSearches (fd, ctx);
   writeDownloadList (ctx->ectx, fd, ctx, ctx->activeDownloads.child);
