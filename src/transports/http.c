@@ -1546,8 +1546,7 @@ httpSend (GNUNET_TSession * tsession,
           if (httpSession->cs.client.puts != NULL)
             {
               /* do not queue more than one unimportant PUT at a time */
-              if (httpSession->cs.client.puts->done == GNUNET_YES)
-                signal_select ();       /* do clean up now! */
+	      signal_select ();       /* do clean up now! */
               GNUNET_mutex_unlock (httpSession->lock);
               if (stats != NULL)
                 stats->change (stat_bytesDropped, size);
