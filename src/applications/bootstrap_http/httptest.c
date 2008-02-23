@@ -92,7 +92,7 @@ main (int argc, char **argv)
                                             NULL,
                                             "GNUNETD",
                                             "HOSTLISTURL",
-                                            "http://gnunet.org/hostlist");
+                                            "http://gnunet.org/hostlist.php");
   memset (&capi, 0, sizeof (GNUNET_CoreAPIForPlugins));
   capi.cfg = cfg;
   capi.request_service = &rs;
@@ -101,11 +101,15 @@ main (int argc, char **argv)
   init =
     GNUNET_plugin_resolve_function (plugin, "provide_module_", GNUNET_YES);
   boot = init (&capi);
-  p = GNUNET_thread_create (&pt, boot, 1024 * 64);
-  GNUNET_thread_join (p, &unused);
-  done =
-    GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
-  done ();
+  if (boot != NULL)
+    {
+      p = GNUNET_thread_create (&pt, boot, 1024 * 64);
+      GNUNET_thread_join (p, &unused);
+      done =
+	GNUNET_plugin_resolve_function (plugin, "release_module_", GNUNET_YES);
+      if (done != NULL) 
+	done ();
+    }
   GNUNET_plugin_unload (plugin);
   GNUNET_GC_free (cfg);
   if (count == 0)

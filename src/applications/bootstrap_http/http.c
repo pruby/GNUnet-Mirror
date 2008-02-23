@@ -227,9 +227,13 @@ downloadHostlist (GNUNET_BootstrapHelloCallback callback,
   protocols = 0;
   for (i = GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;
        i > GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT; i--)
-    if (transport->isAvailable ((unsigned short) i))
-      protocols |= (1LL << i);
-  sprintf (purl, "%s&p=%llu", url, protocols);
+    {
+      if (transport == NULL)
+	protocols |= (1LL << i);
+      else if (transport->isAvailable ((unsigned short) i))
+	protocols |= (1LL << i);
+    }
+  sprintf (purl, "%s?p=%llu", url, protocols);
   GNUNET_free (url);
   url = purl;
   bctx.url = url;
@@ -406,8 +410,6 @@ provide_module_bootstrap (GNUNET_CoreAPIForPlugins * capi)
   coreAPI = capi;
   ectx = capi->ectx;
   transport = coreAPI->request_service ("transport");
-  if (transport == NULL)
-    return NULL;
   stats = coreAPI->request_service ("stats");
   if (stats != NULL)
     {
@@ -423,7 +425,8 @@ release_module_bootstrap ()
 {
   if (stats != NULL)
     coreAPI->release_service (stats);
-  coreAPI->release_service (transport);
+  if (transport != NULL)
+    coreAPI->release_service (transport);
   transport = NULL;
   coreAPI = NULL;
 }
