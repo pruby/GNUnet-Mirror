@@ -249,25 +249,22 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   cls.value = value;
   GNUNET_hash (&value[1],
                ntohl (value->size) - sizeof (GNUNET_DatastoreValue), &vhc);
-  GNUNET_mutex_lock(lock);
+  GNUNET_mutex_lock (lock);
   sq->get (key, &vhc, ntohl (value->type), &checkExists, &cls);
   if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
     sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND, &checkExists, &cls);
-  if ((!cls.exists) && (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_DATA))
-    sq->get (key, &vhc, GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD, &checkExists,
-             &cls);
   if (cls.exists)
     {
       if ((ntohl (value->prio) == 0) &&
           (GNUNET_ntohll (value->expirationTime) <= cls.expiration))
         {
-	  GNUNET_mutex_unlock(lock);
-	  return GNUNET_OK;
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
         }
       /* update prio */
       sq->update (cls.uid,
                   ntohl (value->prio), GNUNET_ntohll (value->expirationTime));
-      GNUNET_mutex_unlock(lock);
+      GNUNET_mutex_unlock (lock);
       return GNUNET_OK;
     }
   comp_prio = comp_priority ();
@@ -282,9 +279,9 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
   if ((available < ntohl (value->size)) &&
       (minPriority > ntohl (value->prio) + comp_prio))
     {
-      GNUNET_mutex_unlock(lock);
-      return GNUNET_NO;           /* new content has such a low priority that
-				     we should not even bother! */
+      GNUNET_mutex_unlock (lock);
+      return GNUNET_NO;         /* new content has such a low priority that
+                                   we should not even bother! */
     }
   if (ntohl (value->prio) + comp_prio < minPriority)
     minPriority = ntohl (value->prio) + comp_prio;
@@ -300,7 +297,7 @@ putUpdate (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value)
       makeAvailable (key);
       available -= ntohl (value->size);
     }
-  GNUNET_mutex_unlock(lock);
+  GNUNET_mutex_unlock (lock);
   return ok;
 }
 
@@ -436,7 +433,7 @@ provide_module_datastore (GNUNET_CoreAPIForPlugins * capi)
         }
       return NULL;
     }
-  lock = GNUNET_mutex_create(GNUNET_NO);
+  lock = GNUNET_mutex_create (GNUNET_NO);
   fsdir = NULL;
   GNUNET_GC_get_configuration_value_filename (capi->cfg,
                                               "FS",
@@ -484,7 +481,7 @@ release_module_datastore ()
       coreAPI->release_service (stats);
       stats = NULL;
     }
-  GNUNET_mutex_destroy(lock);
+  GNUNET_mutex_destroy (lock);
   sq = NULL;
   coreAPI = NULL;
 }

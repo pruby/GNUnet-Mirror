@@ -71,6 +71,8 @@ static int stat_migration_count;
 
 static int stat_migration_factor;
 
+static int stat_migration_injected;
+
 static int stat_on_demand_migration_attempts;
 
 /**
@@ -127,6 +129,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   int match;
   unsigned int dist;
   unsigned int minDist;
+  struct MigrationRecord *rec;
 
   if (content_size == 0)
     return 0;
@@ -139,15 +142,15 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
   minDist = -1;                 /* max */
   for (i = 0; i < content_size; i++)
     {
-      if (content[i].value == NULL)
+      rec = &content[i];
+      if (rec->value == NULL)
         {
           if (discard_time >= now - MAX_POLL_FREQUENCY)
             continue;
           discard_time = now;
-          if (GNUNET_OK !=
-              datastore->getRandom (&content[i].key, &content[i].value))
+          if (GNUNET_OK != datastore->getRandom (&rec->key, &rec->value))
             {
-              content[i].value = NULL;  /* just to be sure... */
+              rec->value = NULL;        /* just to be sure... */
               continue;
             }
           else
@@ -157,14 +160,13 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
             }
         }
       match = 1;
-      if (ntohl (content[i].value->size) + sizeof (P2P_gap_reply_MESSAGE) -
+      if (ntohl (rec->value->size) + sizeof (P2P_gap_reply_MESSAGE) -
           sizeof (GNUNET_DatastoreValue) <= padding)
         {
           match = 0;
-          for (j = 0; j < content[i].sentCount; j++)
-
+          for (j = 0; j < rec->sentCount; j++)
             {
-              if (content[i].receiverIndices[j] == index)
+              if (rec->receiverIndices[j] == index)
                 {
                   match = 1;
                   break;
@@ -173,8 +175,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         }
       if (match == 0)
         {
-          dist =
-            GNUNET_hash_distance_u32 (&content[i].key, &receiver->hashPubKey);
+          dist = GNUNET_hash_distance_u32 (&rec->key, &receiver->hashPubKey);
           if (dist <= minDist)
             {
               entry = i;
@@ -184,9 +185,9 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         }
       else
         {
-          if ((content[i].sentCount > discard_match) || (discard_match == -1))
+          if ((rec->sentCount > discard_match) || (discard_match == -1))
             {
-              discard_match = content[i].sentCount;
+              discard_match = rec->sentCount;
               discard_entry = i;
             }
         }
@@ -195,16 +196,15 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       (discard_match > MAX_RECEIVERS / 2) &&
       (discard_time < now - MAX_POLL_FREQUENCY))
     {
+      rec = &content[discard_entry];
       discard_time = now;
-      GNUNET_free_non_null (content[discard_entry].value);
-      content[discard_entry].value = NULL;
-      GNUNET_FS_PT_decrement_rcs (content[discard_entry].receiverIndices,
-                                  content[discard_entry].sentCount);
-      content[discard_entry].sentCount = 0;
-      if (GNUNET_OK != datastore->getRandom (&content[discard_entry].key,
-                                             &content[discard_entry].value))
+      GNUNET_free_non_null (rec->value);
+      rec->value = NULL;
+      GNUNET_FS_PT_decrement_rcs (rec->receiverIndices, rec->sentCount);
+      rec->sentCount = 0;
+      if (GNUNET_OK != datastore->getRandom (&rec->key, &rec->value))
         {
-          content[discard_entry].value = NULL;  /* just to be sure... */
+          rec->value = NULL;    /* just to be sure... */
           discard_entry = -1;
         }
       else
@@ -226,7 +226,8 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       GNUNET_FS_PT_change_rc (index, -1);
       return 0;
     }
-  value = content[entry].value;
+  rec = &content[entry];
+  value = rec->value;
   if (value == NULL)
     {
       GNUNET_GE_ASSERT (NULL, 0);
@@ -255,22 +256,13 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
                  "Migration: random lookup in datastore returned type %d.\n",
                  ntohl (value->type));
 #endif
-  if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD)
-    {
-      datastore->del (&content[entry].key, value);
-      GNUNET_free_non_null (value);
-      content[entry].value = NULL;
-      GNUNET_mutex_unlock (GNUNET_FS_lock);
-      GNUNET_FS_PT_change_rc (index, -1);
-      return 0;
-    }
   if (ntohl (value->type) == GNUNET_ECRS_BLOCKTYPE_ONDEMAND)
     {
       if (GNUNET_FS_ONDEMAND_get_indexed_content
-          (value, &content[entry].key, &enc) != GNUNET_OK)
+          (value, &rec->key, &enc) != GNUNET_OK)
         {
           GNUNET_free_non_null (value);
-          content[entry].value = NULL;
+          rec->value = NULL;
           GNUNET_mutex_unlock (GNUNET_FS_lock);
 #if DEBUG_MIGRATION
           GNUNET_GE_LOG (ectx,
@@ -282,7 +274,7 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
         }
       if (stats != NULL)
         stats->change (stat_on_demand_migration_attempts, 1);
-      content[entry].value = enc;
+      rec->value = enc;
       GNUNET_free (value);
       value = enc;
     }
@@ -320,17 +312,16 @@ activeMigrationCallback (const GNUNET_PeerIdentity * receiver,
       msg->expiration = GNUNET_htonll (et);
       memcpy (&msg[1], &value[1], size - sizeof (P2P_gap_reply_MESSAGE));
       ret = size;
-      if (content[entry].sentCount == MAX_RECEIVERS)
+      if (rec->sentCount == MAX_RECEIVERS)
         {
-          GNUNET_free (content[entry].value);
-          content[entry].value = NULL;
-          GNUNET_FS_PT_decrement_rcs (content[entry].receiverIndices,
-                                      content[entry].sentCount);
-          content[entry].sentCount = 0;
+          GNUNET_free (rec->value);
+          rec->value = NULL;
+          GNUNET_FS_PT_decrement_rcs (rec->receiverIndices, rec->sentCount);
+          rec->sentCount = 0;
         }
       else
         {
-          content[entry].receiverIndices[content[entry].sentCount++] = index;
+          rec->receiverIndices[rec->sentCount++] = index;
           GNUNET_FS_PT_change_rc (index, 1);
         }
     }
@@ -401,6 +392,8 @@ GNUNET_FS_MIGRATION_inject (const GNUNET_HashCode * key,
       GNUNET_mutex_unlock (GNUNET_FS_lock);
       return;
     }
+  if (stats != NULL)
+    stats->change (stat_migration_injected, 1);
   record = &content[discard_entry];
   GNUNET_free_non_null (record->value);
   record->value = NULL;
@@ -440,6 +433,8 @@ GNUNET_FS_MIGRATION_init (GNUNET_CoreAPIForPlugins * capi)
     {
       stat_migration_count
         = stats->create (gettext_noop ("# blocks migrated"));
+      stat_migration_injected
+        = stats->create (gettext_noop ("# blocks injected for migration"));
       stat_migration_factor
         = stats->create (gettext_noop ("# blocks fetched for migration"));
       stat_on_demand_migration_attempts

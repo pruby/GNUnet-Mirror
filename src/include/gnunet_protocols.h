@@ -456,11 +456,6 @@ extern "C"
  */
 #define GNUNET_ECRS_BLOCKTYPE_RESERVED 0xFFFFFFFE
 
-/**
- * Type of OLD OnDemand encoded blocks.
- */
-#define GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD 0xFFFFFFFF
-
 
 /* ************* priorities for poll-content ************ */
 

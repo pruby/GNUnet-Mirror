@@ -385,8 +385,8 @@ RPC_unregister (const char *name,
             prev->next = pos->next;
           GNUNET_free (pos->name);
           GNUNET_free (pos);
-	  GNUNET_mutex_unlock (lock);
-	  return GNUNET_OK;
+          GNUNET_mutex_unlock (lock);
+          return GNUNET_OK;
         }
       prev = pos;
       pos = pos->next;
@@ -507,7 +507,8 @@ RPC_build_message (unsigned short errorCode,
     ret->functionNameLength = htonl (errorCode);
   else
     ret->functionNameLength = htonl (slen);
-  ret->argumentCount = htonl ((values == NULL) ? 0 : GNUNET_RPC_parameters_count (values));
+  ret->argumentCount =
+    htonl ((values == NULL) ? 0 : GNUNET_RPC_parameters_count (values));
   if (name != NULL)
     memcpy (&ret[1], name, slen);
   GNUNET_RPC_parameters_serialize (values, &((char *) &ret[1])[slen]);

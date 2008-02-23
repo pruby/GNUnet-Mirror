@@ -79,7 +79,6 @@ iter (const GNUNET_HashCode * key, const GNUNET_DatastoreValue * value,
       data->stat_block[5]++;
       break;
     case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
-    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD:
       data->stat_block[6]++;
       break;
     default:

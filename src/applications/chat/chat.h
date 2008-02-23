@@ -87,15 +87,15 @@ struct GNUNET_CHAT_Room
   char *memberInfo;
 
   GNUNET_CHAT_MessageCallback callback;
-  
+
   int shutdown_flag;
 
   void *callback_cls;
 
 };
 
-int  GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room);
-                       
+int GNUNET_CHAT_rejoin_room (struct GNUNET_CHAT_Room *chat_room);
+
 #endif
 
 /* end of chat.h */

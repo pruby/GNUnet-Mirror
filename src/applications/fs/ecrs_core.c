@@ -256,7 +256,6 @@ GNUNET_EC_file_block_check_and_get_query (unsigned int size,
         return GNUNET_OK;
       }
     case GNUNET_ECRS_BLOCKTYPE_ONDEMAND:
-    case GNUNET_ECRS_BLOCKTYPE_ONDEMAND_OLD:
       {
         GNUNET_GE_BREAK (NULL, 0);      /* should never be used here! */
         return GNUNET_SYSERR;
