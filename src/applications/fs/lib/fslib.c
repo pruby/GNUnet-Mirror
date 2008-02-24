@@ -359,7 +359,7 @@ GNUNET_FS_start_search (struct GNUNET_FS_SearchContext *ctx,
            (keyCount - 1) * sizeof (GNUNET_HashCode));
   req->header.type = htons (GNUNET_CS_PROTO_GAP_QUERY_START);
   req->anonymityLevel = htonl (anonymityLevel);
-  req->type = htonl (type);
+  req->type = htonl (type);			
   if (target != NULL)
     req->target = *target;
   else

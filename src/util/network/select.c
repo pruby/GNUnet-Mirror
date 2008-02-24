@@ -24,7 +24,7 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util_network.h"
+#include "gnunet_util.h"
 #include "platform.h"
 #include "network.h"
 
