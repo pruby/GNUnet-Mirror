@@ -71,6 +71,14 @@ static int debug_flag;
 
 static FILE *myout;
 
+#ifdef MINGW
+/**
+ * Windows service information
+ */
+static SERVICE_STATUS theServiceStatus;
+static SERVICE_STATUS_HANDLE hService;
+#endif
+
 /**
  * Print progess message.
  */
@@ -427,14 +435,91 @@ quit:
   return errorCode;
 }
 
+void auto_share_shutdown_initiate ()
+{
+  // FIXME
+}
+
+/**
+ * Shutdown gnunetd
+ * @param cfg configuration, may be NULL if in service mode
+ * @param sig signal code that causes shutdown, optional
+ */
+void
+auto_share_shutdown_request (struct GNUNET_GC_Configuration *cfg, int sig)
+{
+#ifdef MINGW
+  if (!cfg || GNUNET_GC_get_configuration_value_yesno (cfg,
+                                                       "GNUNET-AUTO-SHARE",
+                                                       "WINSERVICE",
+                                                       GNUNET_NO) ==
+      GNUNET_YES)
+    {
+      /* If GNUnet runs as service, only the
+         Service Control Manager is allowed
+         to kill us. */
+      if (sig != SERVICE_CONTROL_STOP)
+        {
+          SERVICE_STATUS theStat;
+
+          /* Init proper shutdown through the SCM */
+          if (GNControlService (hService, SERVICE_CONTROL_STOP, &theStat))
+            {
+              /* Success */
+
+              /* The Service Control Manager will call
+                 gnunetd.c::ServiceCtrlHandler(), which calls
+                 this function again. We then stop the gnunetd. */
+              return;
+            }
+          /* We weren't able to tell the SCM to stop the service,
+             but we don't care.
+             Just shut the gnunetd process down. */
+        }
+
+      /* Acknowledge the shutdown request */
+      theServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+      GNSetServiceStatus (hService, &theServiceStatus);
+    }
+#endif
+
+  auto_share_shutdown_initiate ();
+}
+
 #ifdef MINGW
 /**
- * Main method of the windows service
+ * This function is called from the Windows Service Control Manager
+ * when a service has to shutdown
  */
-void WINAPI
+static void WINAPI
+ServiceCtrlHandler (DWORD dwOpcode)
+{
+  if (dwOpcode == SERVICE_CONTROL_STOP)
+    auto_share_shutdown_request (NULL, dwOpcode);
+}
+
+/**
+ * called by gnunetd.c::ServiceMain()
+ */
+void
 ServiceMain (DWORD argc, LPSTR * argv)
 {
-  GNUNET_CORE_w32_service_main (auto_share_main);
+  memset (&theServiceStatus, 0, sizeof (theServiceStatus));
+  theServiceStatus.dwServiceType = SERVICE_WIN32;
+  theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+  theServiceStatus.dwCurrentState = SERVICE_RUNNING;
+
+  hService = GNRegisterServiceCtrlHandler ("GNUnet Auto Share", ServiceCtrlHandler);
+  if (!hService)
+    return;
+
+  GNSetServiceStatus (hService, &theServiceStatus);
+
+  // FIXME
+  auto_share_main ("FIXME");
+
+  theServiceStatus.dwCurrentState = SERVICE_STOPPED;
+  GNSetServiceStatus (hService, &theServiceStatus);
 }
 #endif
 
