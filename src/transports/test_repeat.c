@@ -19,7 +19,7 @@
 */
 
 /**
- * @file transports/test.c
+ * @file transports/test_repeat.c
  * @brief Test for the transports.
  * @author Christian Grothoff
  *
@@ -32,6 +32,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "common.h"
 
 #define ROUNDS 10
 
@@ -117,8 +118,8 @@ receive (GNUNET_TransportPacket * mp)
         {
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((unsigned short *) &hello[1])[2] =
-            htons (ntohs (((unsigned short *) &hello[1])[2]) - OFFSET);
+          ((HostAddress *) &hello[1])->port =
+            htons (ntohs (((HostAddress *) &hello[1])->port) - OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);
@@ -280,8 +281,8 @@ main (int argc, char *const *argv)
           /* client - initiate requests */
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((unsigned short *) &hello[1])[2] =
-            htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
+          ((HostAddress *) &hello[1])->port =
+            htons (ntohs (((HostAddress *) &hello[1])->port) + OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);
@@ -363,4 +364,4 @@ cleanup:
 }
 
 
-/* end of gnunet-transport-check */
+/* end of test_repeat.c */

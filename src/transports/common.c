@@ -366,6 +366,7 @@ create_hello ()
       return NULL;              /* TCP transport is configured SEND-only! */
     }
   msg = GNUNET_malloc (sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
+  msg->header.size = htons(sizeof (GNUNET_MessageHello) + sizeof (HostAddress));
   haddr = (HostAddress *) & msg[1];
 
   available = VERSION_AVAILABLE_NONE;

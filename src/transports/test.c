@@ -32,6 +32,7 @@
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "common.h"
 
 #define ROUNDS 10
 
@@ -115,8 +116,8 @@ receive (GNUNET_TransportPacket * mp)
         {
           hello = transport->createhello ();
           /* HACK hello -- change port! */
-          ((unsigned short *) &hello[1])[2] =
-            htons (ntohs (((unsigned short *) &hello[1])[2]) - OFFSET);
+          ((HostAddress *) &hello[1])->port =
+            htons (ntohs (((HostAddress *) &hello[1])->port) - OFFSET);
           if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
             {
               GNUNET_free (hello);
@@ -175,7 +176,7 @@ main (int argc, char *const *argv)
   GNUNET_MessageHello *hello;
 
   memset (&api, 0, sizeof (GNUNET_CoreAPIForTransport));
-  pid = fork ();
+  pid = fork();
   res = GNUNET_init (argc,
                      argv,
                      "transport-test",
@@ -202,14 +203,10 @@ main (int argc, char *const *argv)
                                             "BLACKLIST", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP", "UPNP",
                                             "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "TCP6",
-                                            "BLACKLIST", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP",
                                             "BLACKLIST", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP", "UPNP",
                                             "NO");
-  GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "UDP6",
-                                            "BLACKLIST", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP",
                                             "BLACKLIST", "");
   GNUNET_GC_set_configuration_value_string (api.cfg, api.ectx, "HTTP", "UPNP",
@@ -221,12 +218,8 @@ main (int argc, char *const *argv)
     pos = 0;
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "TCP", "PORT",
                                             4444 + pos);
-  GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "TCP6", "PORT",
-                                            4445 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "UDP", "PORT",
                                             4446 + pos);
-  GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "UDP6", "PORT",
-                                            4447 + pos);
   GNUNET_GC_set_configuration_value_number (api.cfg, api.ectx, "HTTP", "PORT",
                                             4448 + pos);
   GNUNET_create_random_hash (&me.hashPubKey);
@@ -274,8 +267,8 @@ main (int argc, char *const *argv)
       /* client - initiate requests */
       hello = transport->createhello ();
       /* HACK hello -- change port! */
-      ((unsigned short *) &hello[1])[2] =
-        htons (ntohs (((unsigned short *) &hello[1])[2]) + OFFSET);
+      ((HostAddress *) &hello[1])->port =
+	htons (ntohs (((HostAddress *) &hello[1])->port) + OFFSET);
       if (GNUNET_OK != transport->connect (hello, &tsession, GNUNET_NO))
         {
           GNUNET_free (hello);
@@ -349,4 +342,4 @@ cleanup:
 }
 
 
-/* end of gnunet-transport-check */
+/* end of test.c */
