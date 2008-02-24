@@ -181,5 +181,7 @@ extern int realised_entries;
 
 void init_router (void);
 
+void
+checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo);
 
 #endif

@@ -25,67 +25,12 @@
  *
  * TODO:
  * - use better naming conventions
- * - clean up cprintf
  * - elimiante isEqualP and isEqual
  */
 
 #include "helper.h"
 
 
-/**
- * send given string to client 
- */
-void
-cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
-{
-  va_list args;
-  int r = -1;
-  int size = 100;
-  GNUNET_MessageHeader *b;
-
-  GNUNET_GE_ASSERT (NULL, c != NULL);
-
-  b = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
-  while (1)
-    {
-      va_start (args, format);
-      r = VSNPRINTF ((char *) (b + 1), size, format, args);
-      va_end (args);
-      if (r > -1 && r < size)
-        break;
-      if (r > -1)
-        {
-          size = r + 1;
-        }
-      else
-        {
-          size *= 2;
-        }
-      b = GNUNET_realloc (b, sizeof (GNUNET_MessageHeader) + size);
-    }
-  b->type = htons (t);
-  b->size = htons (sizeof (GNUNET_MessageHeader) + strlen ((char *) (b + 1)));
-  coreAPI->cs_send_to_client (c, b, GNUNET_YES);
-  GNUNET_free (b);
-}
-
-
-/**
- * Convert a PeerIdentify into a "random" RFC4193 prefix
- * actually we make the first 40 bits of the GNUNET_hash into the prefix!
- */
-void
-id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them)
-{
-  unsigned char a, b, c, d, e;
-  a = (them->hashPubKey.bits[0] >> 8) & 0xff;
-  b = (them->hashPubKey.bits[0] >> 0) & 0xff;
-  c = (them->hashPubKey.bits[1] >> 8) & 0xff;
-  d = (them->hashPubKey.bits[1] >> 0) & 0xff;
-  e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-  cprintf (cx, GNUNET_CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x", a, b, c,
-           d, e);
-}
 
 
 /** Test if two GNUNET_RSA_PublicKey are equal or not */

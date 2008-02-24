@@ -492,7 +492,7 @@ setup_tunnel (int n, const GNUNET_PeerIdentity * them)
  * See if we already got a TUN/TAP open for the given GNUnet peer. if not, make one, stick
  * GNUNET_PeerIdentity and the filehandle and name of the TUN/TAP in an array so we remember we did it.
  */
-static void
+void
 checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo)
 {
   int i;
@@ -1193,30 +1193,7 @@ initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   if (GNUNET_SYSERR ==
       capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG))
     return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_MSG, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ROUTES, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REALISED, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_RESET, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &csHandle))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle))
-    return GNUNET_SYSERR;
+  GNUNET_VPN_cs_handler_init(capi);
 
   identity = coreAPI->request_service ("identity");
   GNUNET_GE_ASSERT (ectx, identity != NULL);
@@ -1271,14 +1248,7 @@ done_module_vpn ()
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTES, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG);
   coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_MSG, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ROUTES, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISED, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &csHandle);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REPLY, &csHandle);
+  GNUNET_VPN_cs_handler_done();
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 Waiting for tun thread to end\n"));

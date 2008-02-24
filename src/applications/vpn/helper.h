@@ -29,18 +29,6 @@
 #include "gnunet_core.h"
 #include "vpn.h"
 
-/**
- * send given string to client 
- */
-void cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...);
-
-/**
- * Convert a PeerIdentify into a "random" RFC4193 prefix
- * actually we make the first 40 bits of the GNUNET_hash into the prefix!
- */
-void id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them);
-
-
 /** Test if two GNUNET_RSA_PublicKey are equal or not */
 int
 isEqualP (const GNUNET_RSA_PublicKey * first,

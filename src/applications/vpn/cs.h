@@ -28,8 +28,8 @@
 
 #include "gnunet_core.h"
 
-/** The console client is used to admin/debug vpn */
-int csHandle (struct GNUNET_ClientHandle *c,
-              const GNUNET_MessageHeader * message);
+int GNUNET_VPN_cs_handler_init(GNUNET_CoreAPIForPlugins * capi);
+
+int GNUNET_VPN_cs_handler_done(void);
 
 #endif
