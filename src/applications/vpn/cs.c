@@ -27,67 +27,51 @@
  * TODO:
  * - define structs for some of the messages
  *   => eliminate mallocs!
- * - clean up cprintf
  */
 
 #include "vpn.h"
 #include "cs.h"
 #include "helper.h"
 
-
 /**
  * send given string to client 
  */
 static void
-cprintf (struct GNUNET_ClientHandle *c, int t, const char *format, ...)
+cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format, ...)
 {
-  va_list args;
-  int r = -1;
-  int size = 100;
+  va_list args;  
+  int size;
   GNUNET_MessageHeader *b;
 
-  GNUNET_GE_ASSERT (NULL, c != NULL);
-
+  size = GNUNET_MAX_BUFFER_SIZE - sizeof(GNUNET_MessageHeader) - 8;
   b = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
-  while (1)
+  va_start (args, format);
+  size = VSNPRINTF ((char *) &b[1], size, format, args);
+  va_end (args);
+  if (size > 0)
     {
-      va_start (args, format);
-      r = VSNPRINTF ((char *) (b + 1), size, format, args);
-      va_end (args);
-      if (r > -1 && r < size)
-        break;
-      if (r > -1)
-        {
-          size = r + 1;
-        }
-      else
-        {
-          size *= 2;
-        }
-      b = GNUNET_realloc (b, sizeof (GNUNET_MessageHeader) + size);
+      b->type = htons (t);
+      b->size = htons (sizeof (GNUNET_MessageHeader) + size);
+      coreAPI->cs_send_to_client (c, b, GNUNET_YES);
     }
-  b->type = htons (t);
-  b->size = htons (sizeof (GNUNET_MessageHeader) + strlen ((char *) (b + 1)));
-  coreAPI->cs_send_to_client (c, b, GNUNET_YES);
   GNUNET_free (b);
 }
 
-
 /**
- * Convert a PeerIdentify into a "random" RFC4193 prefix
- * actually we make the first 40 bits of the GNUNET_hash into the prefix!
+ * Convert a PeerIdentify into a "random" RFC4193 prefix.
+ * We make the first 40 bits of the GNUNET_hash into the prefix!
  */
 static void
 id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them)
 {
-  unsigned char a, b, c, d, e;
-  a = (them->hashPubKey.bits[0] >> 8) & 0xff;
-  b = (them->hashPubKey.bits[0] >> 0) & 0xff;
-  c = (them->hashPubKey.bits[1] >> 8) & 0xff;
-  d = (them->hashPubKey.bits[1] >> 0) & 0xff;
-  e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-  cprintf (cx, GNUNET_CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x", a, b, c,
-           d, e);
+  cprintf (cx, 
+	   GNUNET_CS_PROTO_VPN_REPLY, 
+	   "fd%02x:%02x%02x:%02x%02x", 
+	   (them->hashPubKey.bits[0] >> 8) & 0xff,
+	   (them->hashPubKey.bits[0] >> 0) & 0xff,
+	   (them->hashPubKey.bits[1] >> 8) & 0xff,
+	   (them->hashPubKey.bits[1] >> 0) & 0xff,
+	   (them->hashPubKey.bits[2] >> 8) & 0xff);
 }
 
 
