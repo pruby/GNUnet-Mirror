@@ -5,13 +5,13 @@ Annotations:
   PRE == to be done before a pre-release
 
 0.8.0 [6'08] (aka "advanced features"):
-- full support for FSUI pause/resume of search
-- HTTP transport uses FAR too much CPU (80-90%!?) => possibly fixed!
+- full support for FSUI pause/resume of search [DONE, could use more testing]
 - clean up VPN code
 - tune GAP query planning code [RC]
 - gnunet-chat (CS-only)
 
 TESTING:
+- test RPC code (write a small demo)
 - test GAP code in general (still have one unexplained crazy crash!)
   Program terminated with signal 11, Segmentation fault.
  #0  0xb4e8e73a in GNUNET_FS_SHARED_test_valid_new_response (rl=0x8060,
@@ -35,10 +35,6 @@ TESTING:
   to a valid entry, and table[index]->next is NULL at the time of the
   crash.
 
-
-
-
-- test RPC code (write a small demo)
 
 Hostlist for network testing:
 * http://vserver1236.vserver-on.de/hostlist-074

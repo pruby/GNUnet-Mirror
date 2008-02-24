@@ -1148,7 +1148,9 @@ create_session_url (HTTPSession * httpSession)
       url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen (buf));
       GNUNET_snprintf (url,
                        64 + sizeof (GNUNET_EncName),
-                       "http://%s%s%s/%s", obr, buf, cbr, &enc);
+                       "http://%s%s%s:%u/%s", obr, buf, cbr, 
+		       ntohs(haddr->port),
+		       &enc);
       httpSession->cs.client.url = url;
     }
   EXIT ();
@@ -1168,7 +1170,6 @@ create_curl_get (HTTPSession * httpSession)
   CURLcode ret;
   CURLMcode mret;
   GNUNET_CronTime now;
-  const HostAddress *haddr;
 
   ENTER ();
   if (httpSession->cs.client.url == NULL)
@@ -1192,11 +1193,8 @@ create_curl_get (HTTPSession * httpSession)
   if (curl_get == NULL)
     return GNUNET_SYSERR;
   /* create GET */
-  haddr =
-    (const HostAddress *) &httpSession->cs.client.address;
   CURL_EASY_SETOPT (curl_get, CURLOPT_FAILONERROR, 1);
   CURL_EASY_SETOPT (curl_get, CURLOPT_URL, httpSession->cs.client.url);
-  CURL_EASY_SETOPT (curl_get, CURLOPT_PORT, (long) ntohs (haddr->port));
   if (strlen (proxy) > 0)
     CURL_EASY_SETOPT (curl_get, CURLOPT_PROXY, proxy);
   CURL_EASY_SETOPT (curl_get, CURLOPT_BUFFERSIZE, 32 * 1024);
@@ -1359,7 +1357,6 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   CURLcode ret;
   CURLMcode mret;
   long size;
-  const HostAddress *haddr;
 
   ENTER ();
   /* we should have initiated a GET earlier,
@@ -1371,11 +1368,8 @@ create_curl_put (HTTPSession * httpSession, struct HTTPPutData *put)
   STEP ();
   if (curl_put == NULL)
     return GNUNET_SYSERR;
-  haddr =
-    (const HostAddress *) &httpSession->cs.client.address;
   CURL_EASY_SETOPT (curl_put, CURLOPT_FAILONERROR, 1);
   CURL_EASY_SETOPT (curl_put, CURLOPT_URL, httpSession->cs.client.url);
-  CURL_EASY_SETOPT (curl_put, CURLOPT_PORT, (long) ntohs (haddr->port));
   if (strlen (proxy) > 0)
     CURL_EASY_SETOPT (curl_put, CURLOPT_PROXY, proxy);
   CURL_EASY_SETOPT (curl_put, CURLOPT_BUFFERSIZE, put->size);
