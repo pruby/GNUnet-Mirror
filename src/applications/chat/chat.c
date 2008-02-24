@@ -35,13 +35,9 @@
 
 static GNUNET_CoreAPIForPlugins *coreAPI;
 
-#define MAX_LAST_MESSAGES 12
-
 static struct GNUNET_Mutex *chatMutex;
 
 static struct GNUNET_GE_Context *ectx;
-
-static struct GNUNET_GC_Configuration *cfg;
 
 struct GNUNET_CS_chat_client
 {
@@ -52,7 +48,7 @@ struct GNUNET_CS_chat_client
 
 };
 
-static struct GNUNET_CS_chat_client *client_list_head;
+static struct GNUNET_CS_chat_client * client_list_head;
 
 static int
 csHandleChatMSG (struct GNUNET_ClientHandle *client,
@@ -77,7 +73,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   cmsg = (CS_chat_MESSAGE *) message;
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_MESSAGE))
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
     }
 
@@ -86,12 +82,17 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
   nick_len = ntohl (cmsg->nick_len);
   msg_len = ntohl (cmsg->msg_len);
   room_name_len = ntohl (cmsg->room_name_len);
+  
+  if (header_size < (nick_len + msg_len + room_name_len))
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return GNUNET_SYSERR;     /* invalid message */
+    }
 
   nick = GNUNET_malloc (nick_len + 1);
   message_content = GNUNET_malloc (msg_len + 1);
   room_name = GNUNET_malloc (room_name_len + 1);
 
-  /* BUFFER OVERFLOWS! */
   memcpy (nick, &cmsg->nick[0], nick_len);
   memcpy (message_content, &cmsg->nick[nick_len], msg_len);
   memcpy (room_name, &cmsg->nick[nick_len + msg_len], room_name_len);
@@ -141,7 +142,7 @@ csHandleChatMSG (struct GNUNET_ClientHandle *client,
 
 static int
 csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
-                         const GNUNET_MessageHeader * message)
+                     const GNUNET_MessageHeader * message)
 {
   const CS_chat_JOIN_MESSAGE *cmsg;
   P2P_chat_MESSAGE *pmsg;
@@ -164,20 +165,26 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
 
   if (ntohs (cmsg->header.size) < sizeof (CS_chat_JOIN_MESSAGE))
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       return GNUNET_SYSERR;     /* invalid message */
     }
+    
 
   header_size = ntohs (cmsg->header.size);
   nick_len = ntohl (cmsg->nick_len);
   pubkey_len = ntohl (cmsg->pubkey_len);
   room_name_len = ntohl (cmsg->room_name_len);
 
+  if (header_size < (nick_len + pubkey_len + room_name_len))
+    {
+      GNUNET_GE_BREAK(NULL, 0);
+      return GNUNET_SYSERR;     /* invalid message */
+    }
+
   nick = GNUNET_malloc (nick_len + 1);
   client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
   room_name = GNUNET_malloc (room_name_len + 1);
 
-  /* BUFFER OVERFLOWS */
   memcpy (nick, &cmsg->nick[0], nick_len);
   memcpy (client_key, &cmsg->nick[nick_len], pubkey_len);
   memcpy (room_name, &cmsg->nick[nick_len + pubkey_len], room_name_len);
@@ -196,20 +203,20 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   /*TODO: create client context on the server, very simple as of now */
 #if EXTRA_CHECKS
   tempClient = client_list;
-  while ((tempClient->client != client) && (tempClient != NULL))
+  while ((tempClient != NULL) && (tempClient->client != client))
     tempClient = tempClient->next;
   if (tempClient != NULL)
     {
-      GNUNET_GE_BREAK (NULL, 0);
+      GNUNET_GE_BREAK(NULL, 0);
       GNUNET_free (nick);
       GNUNET_free (client_key);
       GNUNET_free (room_name);
       GNUNET_mutex_unlock (chatMutex);
-      return GNUNET_SYSERR;
+      return GNUNET_SYSERR;      
     }
 #endif
   tempClient = GNUNET_malloc (sizeof (struct GNUNET_CS_chat_client));
-  memset (tempClient, 0, sizeof (struct GNUNET_CS_chat_client));
+  memset(tempClient, 0, sizeof (struct GNUNET_CS_chat_client));
   tempClient->next = client_list_head;
   if (client_list_head != NULL)
     client_list_head->prev = tempClient;
@@ -228,36 +235,6 @@ csHandleChatJoinRequest (struct GNUNET_ClientHandle *client,
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
 
 
-  /* forward to all other TCP chat clients */
-  /* marker to check if this is a new client */
-  /*
-     j = -1;
-     for (i = 0; i < clientCount; i++)
-     if (clients[i] == client)
-     j = i;
-     else
-     coreAPI->cs_send_to_client (clients[i], message, GNUNET_YES);
-     if (j == -1)
-     {
-     if (clientCount == MAX_CLIENTS)
-     GNUNET_GE_LOG (ectx,
-     GNUNET_GE_WARNING | GNUNET_GE_BULK | GNUNET_GE_USER,
-     _("Maximum number of chat clients reached.\n"));
-     else
-     {
-     GNUNET_array_grow (clients, clientCount, clientCount + 1);
-     clients[clientCount] = client;
-     ++clientCount;
-     GNUNET_GE_LOG (ectx,
-     GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
-     _("Now %d of %d chat clients at this node.\n"),
-     clientCount, MAX_CLIENTS);
-     }
-     }
-   */
-
-  /* forward to all other nodes in the network */
-
   GNUNET_free (nick);
   GNUNET_free (client_key);
   GNUNET_free (room_name);
@@ -272,38 +249,32 @@ static void
 chatClientExitHandler (struct GNUNET_ClientHandle *client)
 {
   int tempCount;
-
-  struct GNUNET_CS_chat_client *tempClient;
-  struct GNUNET_CS_chat_client *pos;
-  struct GNUNET_CS_chat_client *prev;
-
-  /*client_key = GNUNET_malloc (sizeof (GNUNET_RSA_PublicKey));
-     memcpy (client_key, &cmsg->nick[nick_len], pubkey_len); */
+  struct GNUNET_CS_chat_client * tempClient;
+  struct GNUNET_CS_chat_client * pos;
+  struct GNUNET_CS_chat_client * prev;
 
   GNUNET_GE_LOG (ectx,
                  GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_DEVELOPER,
                  "Received leave chat room message from client.\n");
 
-
   GNUNET_mutex_lock (chatMutex);
 
-  /*TODO: delete client context on the server */
   pos = client_list_head;
   prev = NULL;
-  while ((pos != NULL) && (pos->client != client))
-    {
+  while ( (pos != NULL) && (pos->client != client) )
+	{
       prev = pos;
       pos = pos->next;
     }
   if (pos != NULL)
-    {
+	{
       if (prev == NULL)
-        client_list_head = pos->next;
+	client_list_head = pos->next;
       else
-        prev->next = pos->next;
+	prev->next = pos->next;
       if (pos->next != NULL)
-        pos->next->prev = pos->prev;
-      GNUNET_free (pos);
+	pos->next->prev = pos->prev;
+      GNUNET_free(pos);
     }
   /*Count the number of current clients, will be removed */
 
@@ -315,10 +286,9 @@ chatClientExitHandler (struct GNUNET_ClientHandle *client)
       tempClient = tempClient->next;
     }
   fprintf (stderr, "Number of clients currently is... %d\n", tempCount);
-
+  /*End of client count code*/
 
   GNUNET_mutex_unlock (chatMutex);
-  fprintf (stderr, "End of handleChatLeave\n");
   return;
 }
 
@@ -331,7 +301,7 @@ initialize_module_chat (GNUNET_CoreAPIForPlugins * capi)
   GNUNET_GE_ASSERT (ectx,
                     sizeof (P2P_chat_MESSAGE) == sizeof (CS_chat_MESSAGE));
   chatMutex = GNUNET_mutex_create (GNUNET_NO);
-
+  
   coreAPI = capi;
   GNUNET_GE_LOG (ectx, GNUNET_GE_DEBUG | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("`%s' registering handlers %d and %d\n"),
