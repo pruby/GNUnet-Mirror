@@ -62,7 +62,7 @@ main (int argc, const char **argv)
 #endif
   int ret = 0;
   GNUNET_HashCode key;
-  GNUNET_DataContainer *value;
+  char *value;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
@@ -154,14 +154,14 @@ main (int argc, const char **argv)
   /* actual test code */
   GNUNET_hash ("key2", 4, &key);
   value = GNUNET_malloc (8);
-  value->size = ntohl (8);
-  memset (&value[1], 'A', 4);
+  memset (&value[1], 'A', 8);
   printf ("Peer1 stores key2\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
-                                      value));
+                                      8,
+				      value));
   printf ("Peer1 gets key2\n");
   CHECK (1 == GNUNET_DHT_get (cfg,
                               ectx,
@@ -174,13 +174,13 @@ main (int argc, const char **argv)
                                             "localhost:12087");
   GNUNET_hash ("key", 3, &key);
   value = GNUNET_malloc (8);
-  value->size = ntohl (8);
-  memset (&value[1], 'B', 4);
+  memset (&value[1], 'B', 8);
   printf ("Peer2 stores key.\n");
   CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                       ectx,
                                       &key,
                                       GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+				      8, 
                                       value));
   printf ("Peer2 gets key.\n");
   CHECK (1 == GNUNET_DHT_get (cfg,

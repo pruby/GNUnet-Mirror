@@ -68,7 +68,7 @@ main (int argc, const char **argv)
   struct GNUNET_TESTING_DaemonContext *peers;
   int ret = 0;
   GNUNET_HashCode key;
-  GNUNET_DataContainer *value;
+  char *value;
   struct GNUNET_GE_Context *ectx;
   struct GNUNET_GC_Configuration *cfg;
   struct GNUNET_ClientServerConnection *sock;
@@ -140,12 +140,12 @@ main (int argc, const char **argv)
 
       GNUNET_hash (buf, 4, &key);
       value = GNUNET_malloc (8);
-      value->size = ntohl (8);
-      memset (&value[1], 'A' + i, 4);
+      memset (&value[1], 'A' + i, 8);
       CHECK (GNUNET_OK == GNUNET_DHT_put (cfg,
                                           ectx,
                                           &key,
                                           GNUNET_ECRS_BLOCKTYPE_DHT_STRING2STRING,
+					  8,
                                           value));
       GNUNET_free (value);
     }
