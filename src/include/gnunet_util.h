@@ -70,13 +70,8 @@ extern "C"
 #endif
 #endif
 
-#ifndef MIN
-#define MIN(x,y) ((x) < (y) ? (x) : (y))
-#endif
-
-#ifndef MAX
-#define MAX(x,y) ((x) > (y) ? (x) : (y))
-#endif
+#define GNUNET_MIN(x,y) ((x) < (y) ? (x) : (y))
+#define GNUNET_MAX(x,y) ((x) > (y) ? (x) : (y))
 
 /**
  * Just the version number of GNUnet-util implementation.

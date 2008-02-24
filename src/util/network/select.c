@@ -533,7 +533,7 @@ selectThread (void *ctx)
                 timeout = 0;
               else
                 timeout =
-                  MIN (timeout, session->lastUse + session->timeout - now);
+                  GNUNET_MIN (timeout, session->lastUse + session->timeout - now);
             }
         }
       GNUNET_mutex_unlock (sh->lock);
