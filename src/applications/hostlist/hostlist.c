@@ -107,6 +107,7 @@ access_handler_callback (void *cls,
   struct HostSet results;
   const char *protos;
   int ret;
+  int i;
 
   if (0 != strcmp (method, MHD_HTTP_METHOD_GET))
     return MHD_NO;
