@@ -122,8 +122,9 @@ access_handler_callback (void *cls,
                                         MHD_GET_ARGUMENT_KIND, "p");
   if ((protos == NULL) || (1 != sscanf (protos, "%llu", &results.protocols)))
     results.protocols = -1;
-  host_processor (coreAPI->myIdentity,
-                  GNUNET_TRANSPORT_PROTOCOL_NUMBER_ANY, GNUNET_YES, &results);
+  for (i=GNUNET_TRANSPORT_PROTOCOL_NUMBER_MAX;i>GNUNET_TRANSPORT_PROTOCOL_NUMBER_NAT;i--)
+    host_processor (coreAPI->myIdentity,
+		    i, GNUNET_YES, &results);
   identity->forEachHost (GNUNET_get_time (), &host_processor, &results);
   if (results.size == 0)
     return MHD_NO;              /* no known hosts!? */
