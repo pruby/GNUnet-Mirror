@@ -1,6 +1,6 @@
 /*
      This file is part of PlibC.
-     (C) 2005, 2006, 2007 Nils Durner (and other contributing authors)
+     (C) 2005, 2006, 2007, 2008 Nils Durner (and other contributing authors)
 
 	   This library is free software; you can redistribute it and/or
 	   modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.45 $
+ * @version $Revision: 1.46 $
  */
 
 #ifndef _PLIBC_H_
@@ -421,6 +421,7 @@ extern "C"
   SOCKET _win_socket (int af, int type, int protocol);
   struct hostent *_win_gethostbyaddr (const char *addr, int len, int type);
   struct hostent *_win_gethostbyname (const char *name);
+  struct hostent *gethostbyname2 (const char *name, int af);
   char *_win_strerror (int errnum);
   int IsWinNT ();
   char *index (const char *s, int c);
