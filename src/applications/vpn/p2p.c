@@ -262,11 +262,6 @@ p2p_handle_vpn_aip_route (const GNUNET_PeerIdentity * sender,
                   rgp =
                     GNUNET_malloc (sizeof (GNUNET_MessageHeader) +
                                    sizeof (int));
-                  if (rgp == NULL)
-                    {
-                      GNUNET_mutex_unlock (lock);
-                      return GNUNET_OK;
-                    }
                   rgp->type = htons (GNUNET_P2P_PROTO_AIP_GETROUTE);
                   rgp->size =
                     htons (sizeof (GNUNET_MessageHeader) + sizeof (int));

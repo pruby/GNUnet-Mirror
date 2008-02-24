@@ -22,6 +22,10 @@
  * @file applications/vpn/gnunet-vpn.c
  * @brief Utility to admin VPN
  * @author Michael John Wensley
+ *
+ * TODO:
+ * - clean up use of semaphores / signaling
+ * - make proper use of structs
  */
 
 #include "gnunet_util.h"
