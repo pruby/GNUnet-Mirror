@@ -28,8 +28,8 @@
 
 #include "gnunet_core.h"
 
-int GNUNET_VPN_cs_handler_init(GNUNET_CoreAPIForPlugins * capi);
+int GNUNET_VPN_cs_handler_init (GNUNET_CoreAPIForPlugins * capi);
 
-int GNUNET_VPN_cs_handler_done(void);
+int GNUNET_VPN_cs_handler_done (void);
 
 #endif

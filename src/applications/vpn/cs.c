@@ -37,13 +37,14 @@
  * send given string to client 
  */
 static void
-cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format, ...)
+cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format,
+         ...)
 {
-  va_list args;  
+  va_list args;
   int size;
   GNUNET_MessageHeader *b;
 
-  size = GNUNET_MAX_BUFFER_SIZE - sizeof(GNUNET_MessageHeader) - 8;
+  size = GNUNET_MAX_BUFFER_SIZE - sizeof (GNUNET_MessageHeader) - 8;
   b = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + size);
   va_start (args, format);
   size = VSNPRINTF ((char *) &b[1], size, format, args);
@@ -64,20 +65,21 @@ cprintf (struct GNUNET_ClientHandle *c, unsigned short t, const char *format, ..
 static void
 id2ip (struct GNUNET_ClientHandle *cx, const GNUNET_PeerIdentity * them)
 {
-  cprintf (cx, 
-	   GNUNET_CS_PROTO_VPN_REPLY, 
-	   "fd%02x:%02x%02x:%02x%02x", 
-	   (them->hashPubKey.bits[0] >> 8) & 0xff,
-	   (them->hashPubKey.bits[0] >> 0) & 0xff,
-	   (them->hashPubKey.bits[1] >> 8) & 0xff,
-	   (them->hashPubKey.bits[1] >> 0) & 0xff,
-	   (them->hashPubKey.bits[2] >> 8) & 0xff);
+  cprintf (cx,
+           GNUNET_CS_PROTO_VPN_REPLY,
+           "fd%02x:%02x%02x:%02x%02x",
+           (them->hashPubKey.bits[0] >> 8) & 0xff,
+           (them->hashPubKey.bits[0] >> 0) & 0xff,
+           (them->hashPubKey.bits[1] >> 8) & 0xff,
+           (them->hashPubKey.bits[1] >> 0) & 0xff,
+           (them->hashPubKey.bits[2] >> 8) & 0xff);
 }
 
 
 /** The console client is used to admin/debug vpn */
 static int
-cs_handle_vpn_tunnels (struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+cs_handle_vpn_tunnels (struct GNUNET_ClientHandle *c,
+                       const GNUNET_MessageHeader * message)
 {
   int i;
 
@@ -88,9 +90,9 @@ cs_handle_vpn_tunnels (struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader
     {
       id2ip (c, &(store1 + i)->peer);
       cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-	       "::/48 gnu%d active=%s routeentry=%d\n", (store1 + i)->id,
-	       (store1 + i)->active ? _("Yes") : _("No"),
-	       (store1 + i)->route_entry);
+               "::/48 gnu%d active=%s routeentry=%d\n", (store1 + i)->id,
+               (store1 + i)->active ? _("Yes") : _("No"),
+               (store1 + i)->route_entry);
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_TUNNELS, "%d Tunnels\n", entries1);
   GNUNET_mutex_unlock (lock);
@@ -98,7 +100,8 @@ cs_handle_vpn_tunnels (struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader
 }
 
 static int
-cs_handle_vpn_routes(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+cs_handle_vpn_routes (struct GNUNET_ClientHandle *c,
+                      const GNUNET_MessageHeader * message)
 {
   int i;
   GNUNET_PeerIdentity id;
@@ -109,25 +112,26 @@ cs_handle_vpn_routes(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader *
       identity->getPeerIdentity (&(route_store + i)->owner, &id);
       id2ip (c, &id);
       if ((route_store + i)->hops == 0)
-	{
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-		   "::/48 hops 0 (This Node)\n");
-	}
+        {
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                   "::/48 hops 0 (This Node)\n");
+        }
       else
-	{
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-		   "::/48 hops %d tunnel gnu%d\n",
-		   (route_store + i)->hops,
-		   (store1 + ((route_store + i)->tunnel))->id);
-	}
+        {
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                   "::/48 hops %d tunnel gnu%d\n",
+                   (route_store + i)->hops,
+                   (store1 + ((route_store + i)->tunnel))->id);
+        }
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_ROUTES, "%d Routes\n", route_entries);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
-static int 
-cs_handle_vpn_realised(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+static int
+cs_handle_vpn_realised (struct GNUNET_ClientHandle *c,
+                        const GNUNET_MessageHeader * message)
 {
   int i;
   GNUNET_PeerIdentity id;
@@ -138,26 +142,27 @@ cs_handle_vpn_realised(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader
       identity->getPeerIdentity (&(realised_store + i)->owner, &id);
       id2ip (c, &id);
       if ((realised_store + i)->hops == 0)
-	{
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-		   "::/48 hops 0 (This Node)\n");
-	}
+        {
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                   "::/48 hops 0 (This Node)\n");
+        }
       else
-	{
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-		   "::/48 hops %d tunnel gnu%d\n",
-		   (realised_store + i)->hops,
-		   (store1 + ((realised_store + i)->tunnel))->id);
-	}
+        {
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
+                   "::/48 hops %d tunnel gnu%d\n",
+                   (realised_store + i)->hops,
+                   (store1 + ((realised_store + i)->tunnel))->id);
+        }
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_REALISED, "%d Realised\n",
-	   realised_entries);
+           realised_entries);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
-static int 
-cs_handle_vpn_reset(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+static int
+cs_handle_vpn_reset (struct GNUNET_ClientHandle *c,
+                     const GNUNET_MessageHeader * message)
 {
   int i;
   GNUNET_MessageHeader *rgp;
@@ -174,22 +179,22 @@ cs_handle_vpn_reset(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * 
       rgp->size = htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
       *((int *) (rgp + 1)) = htonl ((store1 + i)->route_entry);
       cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-	       "Request level %d from peer %d ",
-	       (store1 + i)->route_entry, i);
+               "Request level %d from peer %d ",
+               (store1 + i)->route_entry, i);
       id2ip (c, &((store1 + i)->peer));
       cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "\n");
       coreAPI->unicast (&((store1 + i)->peer), rgp,
-			GNUNET_EXTREME_PRIORITY, 60);
+                        GNUNET_EXTREME_PRIORITY, 60);
       GNUNET_free (rgp);
     }
   GNUNET_mutex_unlock (lock);
-  cprintf (c, GNUNET_CS_PROTO_VPN_RESET,
-	   "Rebuilding routing tables done\n");
+  cprintf (c, GNUNET_CS_PROTO_VPN_RESET, "Rebuilding routing tables done\n");
   return GNUNET_OK;
 }
 
-static int 
-cs_handle_vpn_trust(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+static int
+cs_handle_vpn_trust (struct GNUNET_ClientHandle *c,
+                     const GNUNET_MessageHeader * message)
 {
   int i;
 
@@ -197,23 +202,25 @@ cs_handle_vpn_trust(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * 
   for (i = 0; i < entries1; i++)
     {
       if ((store1 + i)->active == GNUNET_YES)
-	{
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Uprating peer ");
-	  id2ip (c, &(store1 + i)->peer);
-	  cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " with credit %d\n",
-		   identity->changeHostTrust (&(store1 + i)->peer, 1000));
-	}
+        {
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Uprating peer ");
+          id2ip (c, &(store1 + i)->peer);
+          cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " with credit %d\n",
+                   identity->changeHostTrust (&(store1 + i)->peer, 1000));
+        }
     }
   cprintf (c, GNUNET_CS_PROTO_VPN_TRUST,
-	   "Gave credit to active nodes of %d nodes...\n", entries1);
+           "Gave credit to active nodes of %d nodes...\n", entries1);
   GNUNET_mutex_unlock (lock);
   return GNUNET_OK;
 }
 
-static int 
-cs_handle_vpn_add(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * message)
+static int
+cs_handle_vpn_add (struct GNUNET_ClientHandle *c,
+                   const GNUNET_MessageHeader * message)
 {
-  unsigned int parameter = ntohs (message->size) - sizeof (GNUNET_MessageHeader);
+  unsigned int parameter =
+    ntohs (message->size) - sizeof (GNUNET_MessageHeader);
   const char *ccmd = (const char *) &message[1];
   GNUNET_MessageHeader *rgp;
   GNUNET_PeerIdentity id;
@@ -226,86 +233,98 @@ cs_handle_vpn_add(struct GNUNET_ClientHandle *c, const GNUNET_MessageHeader * me
   *(parm + parameter) = 0;
   if (GNUNET_OK != GNUNET_enc_to_hash (parm, &(id.hashPubKey)))
     {
-      GNUNET_free(parm);
+      GNUNET_free (parm);
       return GNUNET_SYSERR;
-    }    
+    }
   GNUNET_free (parm);
   if (0)
     {
       /* this does not seem to work, strangeness with threads and capabilities? */
-      GNUNET_mutex_lock(lock);
-      checkensure_peer(&id, NULL);
-      GNUNET_mutex_unlock(lock);
-    }  
+      GNUNET_mutex_lock (lock);
+      checkensure_peer (&id, NULL);
+      GNUNET_mutex_unlock (lock);
+    }
   /* get it off the local blacklist */
-  identity->whitelistHost (&id);  
+  identity->whitelistHost (&id);
   cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, "Connect ");
   id2ip (c, &id);
   switch (session->tryConnect (&id))
     {
     case GNUNET_YES:
-      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-	       " already connected.\n");
+      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " already connected.\n");
       break;
     case GNUNET_NO:
-      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-	       " schedule connection.\n");
+      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " schedule connection.\n");
       break;
     case GNUNET_SYSERR:
-      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY,
-	       " core refused.\n");
+      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " core refused.\n");
       break;
     default:
-      GNUNET_GE_BREAK(NULL, 0);
+      GNUNET_GE_BREAK (NULL, 0);
       break;
-    }  
+    }
   if (0)
     {
       /* req route level 0 */
-      rgp = GNUNET_malloc(sizeof(GNUNET_MessageHeader) + sizeof(int));
-      rgp->type = htons(GNUNET_P2P_PROTO_AIP_GETROUTE);
-      rgp->size = htons(sizeof(GNUNET_MessageHeader) + sizeof(int));
-      *((int*)&rgp[1]) = 0;
-      coreAPI->unicast(&id, rgp, GNUNET_EXTREME_PRIORITY, 4 * GNUNET_CRON_MILLISECONDS);
-      cprintf(c, GNUNET_CS_PROTO_VPN_REPLY, " Sent");
-      GNUNET_free(rgp);
-     }      
+      rgp = GNUNET_malloc (sizeof (GNUNET_MessageHeader) + sizeof (int));
+      rgp->type = htons (GNUNET_P2P_PROTO_AIP_GETROUTE);
+      rgp->size = htons (sizeof (GNUNET_MessageHeader) + sizeof (int));
+      *((int *) &rgp[1]) = 0;
+      coreAPI->unicast (&id, rgp, GNUNET_EXTREME_PRIORITY,
+                        4 * GNUNET_CRON_MILLISECONDS);
+      cprintf (c, GNUNET_CS_PROTO_VPN_REPLY, " Sent");
+      GNUNET_free (rgp);
+    }
   cprintf (c, GNUNET_CS_PROTO_VPN_ADD, "\n");
   return GNUNET_OK;
 }
 
 
-int GNUNET_VPN_cs_handler_init(GNUNET_CoreAPIForPlugins * capi)
+int
+GNUNET_VPN_cs_handler_init (GNUNET_CoreAPIForPlugins * capi)
 {
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &cs_handle_vpn_tunnels))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS,
+                                   &cs_handle_vpn_tunnels))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ROUTES, &cs_handle_vpn_routes))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ROUTES,
+                                   &cs_handle_vpn_routes))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REALISED, &cs_handle_vpn_realised))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_REALISED,
+                                   &cs_handle_vpn_realised))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_RESET, &cs_handle_vpn_reset))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_RESET,
+                                   &cs_handle_vpn_reset))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &cs_handle_vpn_trust))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_TRUST,
+                                   &cs_handle_vpn_trust))
     return GNUNET_SYSERR;
   if (GNUNET_SYSERR ==
-      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ADD, &cs_handle_vpn_add))
+      capi->registerClientHandler (GNUNET_CS_PROTO_VPN_ADD,
+                                   &cs_handle_vpn_add))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
 
-int GNUNET_VPN_cs_handler_done()
+int
+GNUNET_VPN_cs_handler_done ()
 {
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS, &cs_handle_vpn_tunnels);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ROUTES, &cs_handle_vpn_routes);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISED, &cs_handle_vpn_realised);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET, &cs_handle_vpn_reset);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST, &cs_handle_vpn_trust);
-  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD, &cs_handle_vpn_add);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TUNNELS,
+                                    &cs_handle_vpn_tunnels);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ROUTES,
+                                    &cs_handle_vpn_routes);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_REALISED,
+                                    &cs_handle_vpn_realised);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_RESET,
+                                    &cs_handle_vpn_reset);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_TRUST,
+                                    &cs_handle_vpn_trust);
+  coreAPI->unregisterClientHandler (GNUNET_CS_PROTO_VPN_ADD,
+                                    &cs_handle_vpn_add);
   return GNUNET_OK;
 }
 

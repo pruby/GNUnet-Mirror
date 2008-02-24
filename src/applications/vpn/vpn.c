@@ -21,6 +21,7 @@
 /**
  * @file applications/vpn/vpn.c
  * @author Michael John Wensley
+ * @author Christian Grothoff (code cleanup, breaking things)
  * @brief tunnel RFC 4193 in GNUnet
  *
  *
@@ -48,10 +49,9 @@
  *
  * TODO:
  * - consider using linked list for routing tables instead of arrays
- * - split up handlep2pMSG into many individual handlers
  * - find a better solution for /var/lib/gnunet/gnunet.vpn,
  *   at least do not hardwire the path
- * - can we split off P2P and TUN code into
+ * - can we split off TUN code into
  *   individual files without keeping globals?
  * - use PeerIdentities instead of PublicKeys where
  *   possible
@@ -904,25 +904,8 @@ initialize_module_vpn (GNUNET_CoreAPIForPlugins * capi)
   /* core calls us to receive messages */
   /* get a PONG = peer is online */
   /* get a HANGUP = peer is offline */
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_IP, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_GETROUTE, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_ROUTE, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_AIP_ROUTES, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  if (GNUNET_SYSERR ==
-      capi->registerHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG))
-    return GNUNET_SYSERR;
-  GNUNET_VPN_cs_handler_init(capi);
+  GNUNET_VPN_p2p_handler_init (capi);
+  GNUNET_VPN_cs_handler_init (capi);
 
   identity = coreAPI->request_service ("identity");
   GNUNET_GE_ASSERT (ectx, identity != NULL);
@@ -971,13 +954,8 @@ done_module_vpn ()
 
   GNUNET_cron_del_job (coreAPI->cron,
                        &realise, 5 * GNUNET_CRON_MINUTES, NULL);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_IP, &handlep2pMSG);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_GETROUTE, &handlep2pMSG);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTE, &handlep2pMSG);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_AIP_ROUTES, &handlep2pMSG);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_PONG, &handlep2pMSG);
-  coreAPI->unregisterHandler (GNUNET_P2P_PROTO_HANG_UP, &handlep2pMSG);
-  GNUNET_VPN_cs_handler_done();
+  GNUNET_VPN_p2p_handler_done ();
+  GNUNET_VPN_cs_handler_done ();
 
   GNUNET_GE_LOG (ectx, GNUNET_GE_INFO | GNUNET_GE_REQUEST | GNUNET_GE_USER,
                  _("RFC4193 Waiting for tun thread to end\n"));

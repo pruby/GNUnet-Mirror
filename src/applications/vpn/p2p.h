@@ -26,16 +26,8 @@
 #ifndef VPN_P2P_H
 #define VPN_P2P_H
 
-/**
- * Pass IP packet to tap. Which tap depends on what the GNUNET_PeerIdentity is.
- * If we've not seen the peer before, create a new TAP and tell our thread about it?
- * else scan the array of TAPS and copy the message into it.
- *
- * Mainly this routine exchanges the GNUNET_MessageHeader on incoming ipv6 packets
- * for a TUN/TAP header for writing it to TUNTAP.
- */
-int
-handlep2pMSG (const GNUNET_PeerIdentity * sender,
-              const GNUNET_MessageHeader * gp);
+int GNUNET_VPN_p2p_handler_init (GNUNET_CoreAPIForPlugins * capi);
+
+int GNUNET_VPN_p2p_handler_done (void);
 
 #endif

@@ -181,10 +181,8 @@ extern int realised_entries;
 
 void init_router (void);
 
-void
-checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo);
+void checkensure_peer (const GNUNET_PeerIdentity * them, void *callerinfo);
 
-void
-add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel);
+void add_route (GNUNET_RSA_PublicKey * them, int hops, int tunnel);
 
 #endif
