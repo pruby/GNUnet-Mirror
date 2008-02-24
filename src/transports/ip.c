@@ -288,8 +288,8 @@ getAddress6FromGetIfAddrs (struct GNUNET_GC_Configuration *cfg,
               if (ifa_ptr->ifa_addr->sa_family != AF_INET6)
                 continue;
               memcpy (identity,
-                      &(((struct sockaddr_in6 *) ifa_ptr->ifa_addr)->
-                        sin6_addr), sizeof (struct in6_addr));
+                      &((struct sockaddr_in6 *) ifa_ptr->ifa_addr)->sin6_addr, 
+		      sizeof (struct in6_addr));	      
               freeifaddrs (ifa_first);
               GNUNET_free (interfaces);
               return GNUNET_OK;

@@ -1121,9 +1121,18 @@ create_session_url (HTTPSession * httpSession)
     {
       GNUNET_hash_to_enc (&coreAPI->myIdentity->hashPubKey, &enc);
       available = ntohs (haddr->availability) & available_protocols;
-      if (available == 0)
-        return;
-      if ((available & VERSION_AVAILABLE_IPV6) > 0)
+      if ((available & VERSION_AVAILABLE_IPV4) > 0)
+        {
+          if (NULL == inet_ntop (AF_INET, &haddr->ipv4, buf, IP_BUF_LEN))
+            {
+              /* log? */
+              EXIT ();
+              return;
+            }
+	  obr = "";
+	  cbr = "";
+        }
+      else if ((available & VERSION_AVAILABLE_IPV6) > 0)
         {
           if (NULL == inet_ntop (AF_INET6, &haddr->ipv6, buf, IP_BUF_LEN))
             {
@@ -1135,16 +1144,7 @@ create_session_url (HTTPSession * httpSession)
 	  cbr = "]";
         }
       else
-        {
-          if (NULL == inet_ntop (AF_INET, &haddr->ipv4, buf, IP_BUF_LEN))
-            {
-              /* log? */
-              EXIT ();
-              return;
-            }
-	  obr = "";
-	  cbr = "";
-        }
+	return; /* error */
       url = GNUNET_malloc (64 + sizeof (GNUNET_EncName) + strlen (buf));
       GNUNET_snprintf (url,
                        64 + sizeof (GNUNET_EncName),
