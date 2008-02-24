@@ -778,7 +778,7 @@ selectThread (void *ctx)
 #define MAXSIG_BUF 128
           char buf[MAXSIG_BUF];
           /* just a signal to refresh sets, eat and continue */
-          if (0 >= READ (sh->signal_pipe[0], &buf[0], MAXSIG_BUF))
+          if (0 >= READ (sh->signal_pipe[0], buf, MAXSIG_BUF))
             {
               GNUNET_GE_LOG_STRERROR (sh->ectx,
                                       GNUNET_GE_WARNING | GNUNET_GE_USER |
