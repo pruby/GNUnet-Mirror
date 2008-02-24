@@ -121,7 +121,7 @@ static unsigned long long stored_ops;
 static GNUNET_CronTime start_time;
 
 static int
-putValue (GNUNET_SQstore_ServiceAPI * api, int i)
+putValue (GNUNET_SQstore_ServiceAPI * api, int i, int k)
 {
   GNUNET_DatastoreValue *value;
   size_t size;
@@ -147,6 +147,9 @@ putValue (GNUNET_SQstore_ServiceAPI * api, int i)
     GNUNET_htonll (GNUNET_get_time () +
                    GNUNET_random_u32 (GNUNET_RANDOM_QUALITY_WEAK, 1000));
   memset (&value[1], i, size - sizeof (GNUNET_DatastoreValue));
+  if (i > 255)
+    memset (&value[1], i-255, (size - sizeof (GNUNET_DatastoreValue))/2);
+  ((char*)&value[1])[0] = k;
   if (GNUNET_OK != api->put (&key, value))
     {
       GNUNET_free (value);
@@ -209,7 +212,7 @@ test (GNUNET_SQstore_ServiceAPI * api)
       /* insert data equivalent to 1/10th of MAX_SIZE */
       for (j = 0; j < PUT_10; j++)
         {
-          ASSERT (GNUNET_OK == putValue (api, j));
+          ASSERT (GNUNET_OK == putValue (api, j, i));
           if (GNUNET_shutdown_test () == GNUNET_YES)
             break;
         }
