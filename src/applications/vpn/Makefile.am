@@ -19,6 +19,7 @@ gnunet_vpn_LDADD = \
 libgnunetmodule_vpn_la_SOURCES = \
   cs.c cs.h \
   helper.c helper.h \
+  p2p.c p2p.h \
   vpn.c vpn.h
 libgnunetmodule_vpn_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
